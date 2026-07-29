@@ -1,0 +1,18 @@
+{
+  "python3 -m py_compile scripts/project_sources/build_chatgpt_project_sources.py": 0,
+  "python3 -m py_compile scripts/project_sources/validate_chatgpt_project_sources.py": 0,
+  "python3 -m compileall -q scripts/project_sources": 0,
+  "python3 scripts/project_sources/build_chatgpt_project_sources.py (initial)": 0,
+  "python3 scripts/project_sources/build_chatgpt_project_sources.py (post-drift-refresh)": 0,
+  "python3 scripts/project_sources/build_chatgpt_project_sources.py (post-audit-fix rebuild)": 0,
+  "python3 scripts/project_sources/validate_chatgpt_project_sources.py (all runs)": 0,
+  "unzip -t (all runs)": 0,
+  "shasum -a 256 -c .zip.sha256 (all runs)": 0,
+  "python3 -m json.tool task-packets/generated/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.json": 0,
+  "python3 -m jsonschema -i task-packets/generated/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json (after fixing execution.agent)": 0,
+  "python3 scripts/verify_runtime_authority.py --manifest config/runtime_authority_manifest.json --check static": 0,
+  "git diff --check": 0,
+  "gh pr create": 0,
+  "git push -u origin claude/chatgpt-40-source-refresh-f84dfc": 0,
+  "embedded audit subagent (independent, non-implementer session)": 0
+}

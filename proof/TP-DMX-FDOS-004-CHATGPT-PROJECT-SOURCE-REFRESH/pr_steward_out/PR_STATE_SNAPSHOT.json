@@ -1,0 +1,1400 @@
+{
+  "blockers": [
+    "HARVEST_INCOMPLETE",
+    "REVIEW_ITEM_MUST_FIX",
+    "UNRESOLVED_REVIEW_THREAD",
+    "EMBEDDED_AUDIT_NEEDS_SUPERVISOR"
+  ],
+  "changed_files": [
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip.sha256",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 47,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/CURRENT_MAIN_40.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 44,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1113.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 44,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1115.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 38,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1117.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 38,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1118.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 2501,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1123.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 383,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1126.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 245,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1127.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 482,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1128.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1763,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1136.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 329,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1137.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 485,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1138.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 155,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1140.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 38,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1142.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 50,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1143.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 50,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1144.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 44,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1145.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 38,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1146.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 44,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1147.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 44,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1148.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 50,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1149.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 461,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PR_CAPTURE/open-pr-1150.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 92,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/PACKAGE_VALIDATION.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 16,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/README.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 34,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/SOURCE_REJECTION_LEDGER.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 426,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/SOURCE_RESOLUTION_REPORT.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 310,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/01_AGENTS.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 338,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/02_RULES.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 173,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/03_PROJECT.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 196,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/04_ARCHITECTURE.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 123,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/05_SYSTEM_BOUNDARIES.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 124,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/06_PM_PLANE.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 225,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/07_SERVICE_CATALOG.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 71,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/08_DOC_TRUST_MAP.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 107,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/09_RUNTIME_AUTHORITY_VERIFICATION.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 903,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/10_RUNTIME_AUTHORITY_MANIFEST.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 397,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/11_MEMORY_TRINITY_ADR.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 253,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/12_TRUTH_CANONICALS.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 344,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/13_TRUTH_INTERFACES.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 140,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/14_TRUTH_GAPS.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 191,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/15_SYSTEM_DOPEMUX.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 137,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/16_SYSTEM_DOPETASK.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 158,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/17_SYSTEM_TASK_ORCHESTRATOR.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 102,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/18_SYSTEM_CONPORT.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 98,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/19_SYSTEM_DOPE_MEMORY.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 121,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/20_SYSTEM_DOPE_CONTEXT.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 186,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/21_SYSTEM_DOPECON_BRIDGE.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 236,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/22_SYSTEM_ADHD_ENGINE.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 176,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/23_SYSTEM_REPO_TRUTH_EXTRACTOR.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 159,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/24_PAL_EXECUTION_RULES.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 271,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/25_TASK_PACKET_SCHEMA.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 211,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/26_TASK_PACKET_TEMPLATE.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 262,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/27_PROOF_CONTRACT.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 275,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/28_PROOF_BUNDLE_SCHEMA.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 319,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/29_HANDOFF_CONTRACT.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 313,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/30_EMBEDDED_AUDIT.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 293,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/31_EMBEDDED_AUDIT_SCHEMA.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 143,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/32_PR_STEWARD.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 343,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/33_MERGE_READINESS_SCHEMA.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 297,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/34_MODEL_ROUTING_POLICY.yaml",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 94,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/35_DOPETASK_ADAPTER_CONTRACT.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 148,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/36_DOPETASK_ADAPTER_SCHEMA.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 113,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/37_GOVERNANCE_MODEL.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 67,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/38_SOURCE_FRESHNESS_POLICY.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 735,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/39_PROJECT_SOURCE_MANIFEST.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 622,
+      "deletions": 0,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/40_OPEN_PR_IMPACT_LEDGER.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/BRANCH.txt",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/EXECUTION_BASE_SHA.txt",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 4,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/GIT_REMOTES.txt",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 3,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/GIT_STATUS_BEFORE.txt",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 23,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PRS_CHANGED_FILE_COUNTS.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 343,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/OPEN_PRS_INITIAL.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 18,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/PR_DRIFT_RECHECK.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1113.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1113.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1115.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1115.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1117.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1117.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1118.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1118.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1123.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1123.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1126.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1126.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1127.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1127.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1128.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1128.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1136.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1136.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1137.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1137.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1138.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1138.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1140.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1140.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1142.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1142.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1143.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1143.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1144.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1144.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1145.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1145.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1146.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1146.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1147.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1147.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1148.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1148.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1149.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1149.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1150.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 0,
+      "deletions": 0,
+      "path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-1150.stderr",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 472,
+      "deletions": 0,
+      "path": "scripts/project_sources/build_chatgpt_project_sources.py",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 194,
+      "deletions": 0,
+      "path": "scripts/project_sources/pr_classifications.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 366,
+      "deletions": 0,
+      "path": "scripts/project_sources/source_set_v4.json",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 155,
+      "deletions": 0,
+      "path": "scripts/project_sources/validate_chatgpt_project_sources.py",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 97,
+      "deletions": 0,
+      "path": "task-packets/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.md",
+      "previous_path": null,
+      "status": "added"
+    },
+    {
+      "additions": 141,
+      "deletions": 0,
+      "path": "task-packets/generated/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.json",
+      "previous_path": null,
+      "status": "added"
+    }
+  ],
+  "checks": [
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "failure",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "checks",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086491/job/90444019918"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "failure",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "independent embedded audit",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086449/job/90444019893"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "failure",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "\ud83d\udc85 Code Quality & Linting",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086517/job/90444020238"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "success",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "Analyze (ruby)",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086475/job/90444020117"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "success",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "identity-check",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086523/job/90444020169"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "success",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "identity-check",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410069906/job/90443973033"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "success",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "\ud83d\udee1\ufe0f Clobber Guard",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086553/job/90444020420"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "success",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "preflight",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086530/job/90444020152"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "success",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "\ud83e\udd16 Claude Code Security Analysis",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086504/job/90444019940"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "success",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "Analyze (python)",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086475/job/90444020037"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "success",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "Analyze (javascript-typescript)",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086475/job/90444020052"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "success",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "\ud83d\udcca ADHD-Friendly Security Summary",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086504/job/90444061375"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "success",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "\ud83d\udd12 Security Review",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086517/job/90444020295"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "success",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "\ud83d\udcda Documentation Check",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086517/job/90444020292"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "success",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "\ud83e\uddea Unit Tests",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086517/job/90444020267"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "success",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "\ud83e\uddea Extractor Smoke",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086517/job/90444020326"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "success",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "\ud83d\udd0d Audit Proof Validator (--all)",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086517/job/90444020258"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "success",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "\ud83d\uddfa\ufe0f Model Routing Consistency",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086517/job/90444020269"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "success",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "\ud83e\uddea Extractor Full",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086517/job/90444020356"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "success",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "\ud83e\uddea Auditor Router",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086517/job/90444020277"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "skipped",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "\ud83e\uddea Installer Smoke",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086517/job/90444020972"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "skipped",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "\ud83d\udcca Scoped Coverage",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086517/job/90444020737"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "skipped",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "\ud83d\udd17 Integration Tests",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086517/job/90444020901"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "failure",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "\ud83d\udcca CI Pipeline Summary",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410086517/job/90444557082"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "failure",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "PR Steward / final readiness",
+      "rationale": "Steward self-status 'PR Steward / final readiness' retained as harvest evidence but excluded from readiness evaluation.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30410117405"
+    },
+    {
+      "blockers": [],
+      "blocking": false,
+      "conclusion": "success",
+      "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "name": "CodeQL",
+      "rationale": "Check is nonblocking or successful.",
+      "required": false,
+      "status": "completed",
+      "url": "https://github.com/DDD-Enterprises/dopemux-mvp/runs/90444138425"
+    }
+  ],
+  "commits": [
+    {
+      "message": "docs(fdos-004): refresh ChatGPT Project 40-source upload set to curre\u2026",
+      "sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9"
+    }
+  ],
+  "embedded_audit": {
+    "report_path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/AUDITOR_REPORT.md",
+    "status": "NEEDS_SUPERVISOR"
+  },
+  "generated_at": "2026-07-29T00:23:01.911248Z",
+  "harvest_complete": false,
+  "harvest_errors": [
+    "audit_not_executed: final readiness requires executed=true",
+    "changedFiles harvest exceeded first 100 files"
+  ],
+  "issue_comments": [],
+  "mutation_performed": false,
+  "pr": {
+    "author": "hu3mann",
+    "base_ref": "main",
+    "base_sha": "5f862d36f5417801b9fe148fccbb439731627234",
+    "created_at": "2026-07-29T00:05:51Z",
+    "draft": false,
+    "head_ref": "claude/chatgpt-40-source-refresh-f84dfc",
+    "head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+    "merge_state_status": "BLOCKED",
+    "mergeable": "MERGEABLE",
+    "number": 1152,
+    "review_decision": "",
+    "state": "OPEN",
+    "updated_at": "2026-07-29T00:09:45Z",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1152"
+  },
+  "pr_number": 1152,
+  "proof": {
+    "matches_pr_head": true,
+    "proof_freshness": {
+      "matches_pr_head": true,
+      "pr_head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "proof_recorded_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+      "reason": "Proof head SHA matches PR head SHA.",
+      "self_reference_exception": null,
+      "status": "CURRENT"
+    },
+    "proof_head_sha": "c6e0ebd19f5e5a299512e59239d68003b9016da9",
+    "proof_path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/pr_steward_out/embedded_audit_tool_output/PROOF.json"
+  },
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "review_comments": [
+    {
+      "author": {
+        "login": "chatgpt-codex-connector"
+      },
+      "authorAssociation": "NONE",
+      "body": "**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Point checksum sidecar at archive's actual path**\n\nRunning packet's committed verification command from repository root fails because sidecar names `TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip`, while archive lives under `out/chatgpt-project-upload-set/`. Checked local `shasum --help`: `-c` reads listed sums and checks each recorded file name; actual command reports `No such file or directory` and exits 1. Record repository-relative archive path or run check from archive directory before claiming sidecar verification PASS.\n\nAGENTS.md reference: [AGENTS.md:L115-L133](https://github.com/DDD-Enterprises/dopemux-mvp/blob/c6e0ebd19f5e5a299512e59239d68003b9016da9/AGENTS.md#L115-L133)\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+      "createdAt": "2026-07-29T00:09:44Z",
+      "id": "PRRC_kwDOPyIw987awGsq",
+      "line": 1,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip.sha256",
+      "updatedAt": "2026-07-29T00:09:45Z"
+    },
+    {
+      "author": {
+        "login": "chatgpt-codex-connector"
+      },
+      "authorAssociation": "NONE",
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Require manifest coverage for every upload file**\n\nWhen manifest accidentally omits entry, validator never checks corresponding disk file. For example, deleting slot 01 entry and corrupting `01_AGENTS.md` still leaves 40 valid slot-prefixed names and makes source-identity and hash gates pass. Compare manifest slots/file names exactly against all 40 files before iterating entries, otherwise missing source identity is silently accepted instead of remaining unresolved.\n\nAGENTS.md reference: [AGENTS.md:L22-L24](https://github.com/DDD-Enterprises/dopemux-mvp/blob/c6e0ebd19f5e5a299512e59239d68003b9016da9/AGENTS.md#L22-L24)\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+      "createdAt": "2026-07-29T00:09:44Z",
+      "id": "PRRC_kwDOPyIw987awGsu",
+      "line": 68,
+      "path": "scripts/project_sources/validate_chatgpt_project_sources.py",
+      "updatedAt": "2026-07-29T00:09:45Z"
+    },
+    {
+      "author": {
+        "login": "chatgpt-codex-connector"
+      },
+      "authorAssociation": "NONE",
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Verify hashes for generated package metadata**\n\nWhen slot 38 or 40 is corrupted after assembly, hash gate still passes because loop skips every non-`copied_source` entry, even though manifest records non-null SHA-256 values for both generated files. This can approve altered freshness rules or PR impact decisions; verify every manifest entry carrying non-null `sha256`, reserving exception only for self-referential slot 39.\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+      "createdAt": "2026-07-29T00:09:45Z",
+      "id": "PRRC_kwDOPyIw987awGsy",
+      "line": 69,
+      "path": "scripts/project_sources/validate_chatgpt_project_sources.py",
+      "updatedAt": "2026-07-29T00:09:45Z"
+    },
+    {
+      "author": {
+        "login": "chatgpt-codex-connector"
+      },
+      "authorAssociation": "NONE",
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Reject truncated open-PR file captures**\n\nCurrent count check proves only one capture file exists per PR, not that each capture contains full changed-path set. Captures for PR #1136 and #1123 contain 100 `files` entries while recorded changed-file counts are 366 and 16,206, so selected-source or watched-path changes after API's first page cannot be classified from evidence consumed here. Compare each capture's file count with `OPEN_PRS_CHANGED_FILE_COUNTS.json` and fail closed or consume paginated paths before emitting high-confidence complete ledger.\n\nAGENTS.md reference: [AGENTS.md:L22-L24](https://github.com/DDD-Enterprises/dopemux-mvp/blob/c6e0ebd19f5e5a299512e59239d68003b9016da9/AGENTS.md#L22-L24)\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+      "createdAt": "2026-07-29T00:09:45Z",
+      "id": "PRRC_kwDOPyIw987awGs0",
+      "line": 361,
+      "path": "scripts/project_sources/build_chatgpt_project_sources.py",
+      "updatedAt": "2026-07-29T00:09:45Z"
+    },
+    {
+      "author": {
+        "login": "chatgpt-codex-connector"
+      },
+      "authorAssociation": "NONE",
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Generate deterministic ZIP in committed assembler**\n\nFresh-checkout assembler returns after producing package directory and never creates ZIP or SHA-256 sidecar. Repo-wide search finds no committed archive-construction command recording fixed timestamp, ordering, permissions, or compression settings, so byte-identical ZIP claim cannot be reproduced from committed implementation; add deterministic archive and sidecar generation here or provide checked-in packaging tool.\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+      "createdAt": "2026-07-29T00:09:45Z",
+      "id": "PRRC_kwDOPyIw987awGs8",
+      "line": 468,
+      "path": "scripts/project_sources/build_chatgpt_project_sources.py",
+      "updatedAt": "2026-07-29T00:09:45Z"
+    }
+  ],
+  "review_threads": [
+    {
+      "comments": [
+        {
+          "author": {
+            "login": "chatgpt-codex-connector"
+          },
+          "authorAssociation": "NONE",
+          "body": "**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Point checksum sidecar at archive's actual path**\n\nRunning packet's committed verification command from repository root fails because sidecar names `TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip`, while archive lives under `out/chatgpt-project-upload-set/`. Checked local `shasum --help`: `-c` reads listed sums and checks each recorded file name; actual command reports `No such file or directory` and exits 1. Record repository-relative archive path or run check from archive directory before claiming sidecar verification PASS.\n\nAGENTS.md reference: [AGENTS.md:L115-L133](https://github.com/DDD-Enterprises/dopemux-mvp/blob/c6e0ebd19f5e5a299512e59239d68003b9016da9/AGENTS.md#L115-L133)\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+          "createdAt": "2026-07-29T00:09:44Z",
+          "id": "PRRC_kwDOPyIw987awGsq",
+          "line": 1,
+          "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip.sha256",
+          "updatedAt": "2026-07-29T00:09:45Z"
+        }
+      ],
+      "id": "PRRT_kwDOPyIw986UlYkh",
+      "isOutdated": false,
+      "isResolved": false,
+      "line": 1,
+      "path": "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip.sha256",
+      "startLine": 1
+    },
+    {
+      "comments": [
+        {
+          "author": {
+            "login": "chatgpt-codex-connector"
+          },
+          "authorAssociation": "NONE",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Require manifest coverage for every upload file**\n\nWhen manifest accidentally omits entry, validator never checks corresponding disk file. For example, deleting slot 01 entry and corrupting `01_AGENTS.md` still leaves 40 valid slot-prefixed names and makes source-identity and hash gates pass. Compare manifest slots/file names exactly against all 40 files before iterating entries, otherwise missing source identity is silently accepted instead of remaining unresolved.\n\nAGENTS.md reference: [AGENTS.md:L22-L24](https://github.com/DDD-Enterprises/dopemux-mvp/blob/c6e0ebd19f5e5a299512e59239d68003b9016da9/AGENTS.md#L22-L24)\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+          "createdAt": "2026-07-29T00:09:44Z",
+          "id": "PRRC_kwDOPyIw987awGsu",
+          "line": 68,
+          "path": "scripts/project_sources/validate_chatgpt_project_sources.py",
+          "updatedAt": "2026-07-29T00:09:45Z"
+        }
+      ],
+      "id": "PRRT_kwDOPyIw986UlYkl",
+      "isOutdated": false,
+      "isResolved": false,
+      "line": 68,
+      "path": "scripts/project_sources/validate_chatgpt_project_sources.py",
+      "startLine": 64
+    },
+    {
+      "comments": [
+        {
+          "author": {
+            "login": "chatgpt-codex-connector"
+          },
+          "authorAssociation": "NONE",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Verify hashes for generated package metadata**\n\nWhen slot 38 or 40 is corrupted after assembly, hash gate still passes because loop skips every non-`copied_source` entry, even though manifest records non-null SHA-256 values for both generated files. This can approve altered freshness rules or PR impact decisions; verify every manifest entry carrying non-null `sha256`, reserving exception only for self-referential slot 39.\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+          "createdAt": "2026-07-29T00:09:45Z",
+          "id": "PRRC_kwDOPyIw987awGsy",
+          "line": 69,
+          "path": "scripts/project_sources/validate_chatgpt_project_sources.py",
+          "updatedAt": "2026-07-29T00:09:45Z"
+        }
+      ],
+      "id": "PRRT_kwDOPyIw986UlYkp",
+      "isOutdated": false,
+      "isResolved": false,
+      "line": 69,
+      "path": "scripts/project_sources/validate_chatgpt_project_sources.py",
+      "startLine": 67
+    },
+    {
+      "comments": [
+        {
+          "author": {
+            "login": "chatgpt-codex-connector"
+          },
+          "authorAssociation": "NONE",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Reject truncated open-PR file captures**\n\nCurrent count check proves only one capture file exists per PR, not that each capture contains full changed-path set. Captures for PR #1136 and #1123 contain 100 `files` entries while recorded changed-file counts are 366 and 16,206, so selected-source or watched-path changes after API's first page cannot be classified from evidence consumed here. Compare each capture's file count with `OPEN_PRS_CHANGED_FILE_COUNTS.json` and fail closed or consume paginated paths before emitting high-confidence complete ledger.\n\nAGENTS.md reference: [AGENTS.md:L22-L24](https://github.com/DDD-Enterprises/dopemux-mvp/blob/c6e0ebd19f5e5a299512e59239d68003b9016da9/AGENTS.md#L22-L24)\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+          "createdAt": "2026-07-29T00:09:45Z",
+          "id": "PRRC_kwDOPyIw987awGs0",
+          "line": 361,
+          "path": "scripts/project_sources/build_chatgpt_project_sources.py",
+          "updatedAt": "2026-07-29T00:09:45Z"
+        }
+      ],
+      "id": "PRRT_kwDOPyIw986UlYkr",
+      "isOutdated": false,
+      "isResolved": false,
+      "line": 361,
+      "path": "scripts/project_sources/build_chatgpt_project_sources.py",
+      "startLine": 360
+    },
+    {
+      "comments": [
+        {
+          "author": {
+            "login": "chatgpt-codex-connector"
+          },
+          "authorAssociation": "NONE",
+          "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Generate deterministic ZIP in committed assembler**\n\nFresh-checkout assembler returns after producing package directory and never creates ZIP or SHA-256 sidecar. Repo-wide search finds no committed archive-construction command recording fixed timestamp, ordering, permissions, or compression settings, so byte-identical ZIP claim cannot be reproduced from committed implementation; add deterministic archive and sidecar generation here or provide checked-in packaging tool.\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+          "createdAt": "2026-07-29T00:09:45Z",
+          "id": "PRRC_kwDOPyIw987awGs8",
+          "line": 468,
+          "path": "scripts/project_sources/build_chatgpt_project_sources.py",
+          "updatedAt": "2026-07-29T00:09:45Z"
+        }
+      ],
+      "id": "PRRT_kwDOPyIw986UlYky",
+      "isOutdated": false,
+      "isResolved": false,
+      "line": 468,
+      "path": "scripts/project_sources/build_chatgpt_project_sources.py",
+      "startLine": 465
+    }
+  ],
+  "reviews": [
+    {
+      "author": {
+        "login": "chatgpt-codex-connector"
+      },
+      "authorAssociation": "NONE",
+      "body": "\n### \ud83d\udca1 Codex Review\n\nHere are some automated review suggestions for this pull request.\n\n**Reviewed commit:** `c6e0ebd19f`\n    \n\n<details> <summary>\u2139\ufe0f About Codex in GitHub</summary>\n<br/>\n\n[Your team has set up Codex to review pull requests in this repo](https://chatgpt.com/codex/cloud/settings/general). Reviews are triggered when you\n- Open a pull request for review\n- Mark a draft as ready\n- Comment \"@codex review\".\n\nIf Codex has suggestions, it will comment; otherwise it will react with \ud83d\udc4d.\n\n\n\n\nCodex can also answer questions or update the PR. Try commenting \"@codex address that feedback\".\n            \n</details>",
+      "commit": {
+        "oid": "c6e0ebd19f5e5a299512e59239d68003b9016da9"
+      },
+      "id": "PRR_kwDOPyIw988AAAABHkZkIg",
+      "includesCreatedEdit": false,
+      "reactionGroups": [],
+      "state": "COMMENTED",
+      "submittedAt": "2026-07-29T00:09:44Z"
+    }
+  ],
+  "schema_version": "1.1.0"
+}

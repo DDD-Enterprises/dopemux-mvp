@@ -115,7 +115,7 @@
       "current_main_only": true,
       "open_pr_content_included": false,
       "notes": [
-        "doc-trust-map.md rates docs/03-reference/planes/pm/pm-plane.md HIGH ('PM plane references') and notes it derives from tracked truth docs plus src/dopemux/pm/reads.py and writes.py. Root PM_PLANE.md is bucketed by the same doc-trust-map under 'Top-level promoted or user-provided packet docs...LOW...do not use as stronger authority than tracked truth docs'. The packet's own slot-6 wording is deliberately generic ('current tracked PM-plane source') unlike slots 3/4 which name the root filename explicitly, indicating the resolver should pick the higher-authority tracked reference rather than the root file."
+        "doc-trust-map.md rates docs/03-reference/planes/pm/pm-plane.md HIGH ('PM plane references') and notes it derives from tracked truth docs plus src/dopemux/pm/reads.py and writes.py. Root PM_PLANE.md is NOT itself named in doc-trust-map.md's source-path lists (this is an analogical extension, not a direct citation, corrected after embedded-audit review) -- the direct evidence is a content comparison of the two files themselves: docs/03-reference/planes/pm/pm-plane.md carries dated frontmatter and an explicit authority chain (truth-gaps.md, truth-data-events.md, truth-systems.md, truth-canonicals.md, src/dopemux/pm/writes.py, services/dopecon-bridge/README.md, routes.py, workflow_store.py, bridge_adapter.py), while root PM_PLANE.md has no such frontmatter or cited chain. The packet's own slot-6 wording is deliberately generic ('current tracked PM-plane source') unlike slots 3/4 which name the root filename explicitly, indicating the resolver should pick the higher-authority tracked reference rather than the root file."
       ]
     },
     {
@@ -720,8 +720,8 @@
       "source_path": null,
       "source_commit_sha": null,
       "source_blob_sha": null,
-      "sha256": "5425d19db9ca628704f408e51529bfcd42d501d228ca2909a66fe0cd61ccc69a",
-      "bytes": 29518,
+      "sha256": "1759e5266105dc92878d53c7834a941361e72ff58dd273cedde03484324a972f",
+      "bytes": 29815,
       "authority_class": "generated_package_metadata",
       "freshness_class": "GENERATED_FOR_BASE_SHA",
       "generated": true,

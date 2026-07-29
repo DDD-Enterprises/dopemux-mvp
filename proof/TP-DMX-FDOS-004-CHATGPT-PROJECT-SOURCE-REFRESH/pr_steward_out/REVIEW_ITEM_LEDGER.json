@@ -1,0 +1,140 @@
+{
+  "generated_at": "2026-07-29T00:23:01.911248Z",
+  "items": [
+    {
+      "association": "NONE",
+      "author": "chatgpt-codex-connector",
+      "blockers": [],
+      "blocking": false,
+      "body": "\n### \ud83d\udca1 Codex Review\n\nHere are some automated review suggestions for this pull request.\n\n**Reviewed commit:** `c6e0ebd19f`\n    \n\n<details> <summary>\u2139\ufe0f About Codex in GitHub</summary>\n<br/>\n\n[Your team has set up Codex to review pull requests in this repo](https://chatgpt.com/codex/cloud/settings/general). Reviews are triggered when you\n- Open a pull request for review\n- Mark a draft as ready\n- Comment \"@codex review\".\n\nIf Codex has suggestions, it will comment; otherwise it will react with \ud83d\udc4d.\n\n\n\n\nCodex can also answer questions or update the PR. Try commenting \"@codex address that feedback\".\n            \n</details>",
+      "disposition": "OPTIONAL_DEFERRED",
+      "id": "PRR_kwDOPyIw988AAAABHkZkIg",
+      "rationale": "Known author comment is classified nonblocking.",
+      "source": "review"
+    },
+    {
+      "association": "NONE",
+      "author": "chatgpt-codex-connector",
+      "blockers": [
+        "REVIEW_ITEM_MUST_FIX"
+      ],
+      "blocking": true,
+      "body": "**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Point checksum sidecar at archive's actual path**\n\nRunning packet's committed verification command from repository root fails because sidecar names `TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip`, while archive lives under `out/chatgpt-project-upload-set/`. Checked local `shasum --help`: `-c` reads listed sums and checks each recorded file name; actual command reports `No such file or directory` and exits 1. Record repository-relative archive path or run check from archive directory before claiming sidecar verification PASS.\n\nAGENTS.md reference: [AGENTS.md:L115-L133](https://github.com/DDD-Enterprises/dopemux-mvp/blob/c6e0ebd19f5e5a299512e59239d68003b9016da9/AGENTS.md#L115-L133)\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+      "disposition": "MUST_FIX",
+      "id": "PRRC_kwDOPyIw987awGsq",
+      "rationale": "P1 review item blocks readiness.",
+      "source": "review_comment"
+    },
+    {
+      "association": "NONE",
+      "author": "chatgpt-codex-connector",
+      "blockers": [
+        "REVIEW_ITEM_MUST_FIX"
+      ],
+      "blocking": true,
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Require manifest coverage for every upload file**\n\nWhen manifest accidentally omits entry, validator never checks corresponding disk file. For example, deleting slot 01 entry and corrupting `01_AGENTS.md` still leaves 40 valid slot-prefixed names and makes source-identity and hash gates pass. Compare manifest slots/file names exactly against all 40 files before iterating entries, otherwise missing source identity is silently accepted instead of remaining unresolved.\n\nAGENTS.md reference: [AGENTS.md:L22-L24](https://github.com/DDD-Enterprises/dopemux-mvp/blob/c6e0ebd19f5e5a299512e59239d68003b9016da9/AGENTS.md#L22-L24)\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+      "disposition": "MUST_FIX",
+      "id": "PRRC_kwDOPyIw987awGsu",
+      "rationale": "P2 review item blocks unless documented nonblocking.",
+      "source": "review_comment"
+    },
+    {
+      "association": "NONE",
+      "author": "chatgpt-codex-connector",
+      "blockers": [
+        "REVIEW_ITEM_MUST_FIX"
+      ],
+      "blocking": true,
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Verify hashes for generated package metadata**\n\nWhen slot 38 or 40 is corrupted after assembly, hash gate still passes because loop skips every non-`copied_source` entry, even though manifest records non-null SHA-256 values for both generated files. This can approve altered freshness rules or PR impact decisions; verify every manifest entry carrying non-null `sha256`, reserving exception only for self-referential slot 39.\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+      "disposition": "MUST_FIX",
+      "id": "PRRC_kwDOPyIw987awGsy",
+      "rationale": "P2 review item blocks unless documented nonblocking.",
+      "source": "review_comment"
+    },
+    {
+      "association": "NONE",
+      "author": "chatgpt-codex-connector",
+      "blockers": [
+        "REVIEW_ITEM_MUST_FIX"
+      ],
+      "blocking": true,
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Reject truncated open-PR file captures**\n\nCurrent count check proves only one capture file exists per PR, not that each capture contains full changed-path set. Captures for PR #1136 and #1123 contain 100 `files` entries while recorded changed-file counts are 366 and 16,206, so selected-source or watched-path changes after API's first page cannot be classified from evidence consumed here. Compare each capture's file count with `OPEN_PRS_CHANGED_FILE_COUNTS.json` and fail closed or consume paginated paths before emitting high-confidence complete ledger.\n\nAGENTS.md reference: [AGENTS.md:L22-L24](https://github.com/DDD-Enterprises/dopemux-mvp/blob/c6e0ebd19f5e5a299512e59239d68003b9016da9/AGENTS.md#L22-L24)\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+      "disposition": "MUST_FIX",
+      "id": "PRRC_kwDOPyIw987awGs0",
+      "rationale": "P2 review item blocks unless documented nonblocking.",
+      "source": "review_comment"
+    },
+    {
+      "association": "NONE",
+      "author": "chatgpt-codex-connector",
+      "blockers": [
+        "REVIEW_ITEM_MUST_FIX"
+      ],
+      "blocking": true,
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Generate deterministic ZIP in committed assembler**\n\nFresh-checkout assembler returns after producing package directory and never creates ZIP or SHA-256 sidecar. Repo-wide search finds no committed archive-construction command recording fixed timestamp, ordering, permissions, or compression settings, so byte-identical ZIP claim cannot be reproduced from committed implementation; add deterministic archive and sidecar generation here or provide checked-in packaging tool.\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+      "disposition": "MUST_FIX",
+      "id": "PRRC_kwDOPyIw987awGs8",
+      "rationale": "P2 review item blocks unless documented nonblocking.",
+      "source": "review_comment"
+    },
+    {
+      "association": "NONE",
+      "author": "chatgpt-codex-connector",
+      "blockers": [],
+      "blocking": true,
+      "body": "**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Point checksum sidecar at archive's actual path**\n\nRunning packet's committed verification command from repository root fails because sidecar names `TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip`, while archive lives under `out/chatgpt-project-upload-set/`. Checked local `shasum --help`: `-c` reads listed sums and checks each recorded file name; actual command reports `No such file or directory` and exits 1. Record repository-relative archive path or run check from archive directory before claiming sidecar verification PASS.\n\nAGENTS.md reference: [AGENTS.md:L115-L133](https://github.com/DDD-Enterprises/dopemux-mvp/blob/c6e0ebd19f5e5a299512e59239d68003b9016da9/AGENTS.md#L115-L133)\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+      "disposition": "MUST_FIX",
+      "id": "PRRC_kwDOPyIw987awGsq",
+      "rationale": "Active unresolved review thread blocks readiness.",
+      "source": "review_thread"
+    },
+    {
+      "association": "NONE",
+      "author": "chatgpt-codex-connector",
+      "blockers": [],
+      "blocking": true,
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Require manifest coverage for every upload file**\n\nWhen manifest accidentally omits entry, validator never checks corresponding disk file. For example, deleting slot 01 entry and corrupting `01_AGENTS.md` still leaves 40 valid slot-prefixed names and makes source-identity and hash gates pass. Compare manifest slots/file names exactly against all 40 files before iterating entries, otherwise missing source identity is silently accepted instead of remaining unresolved.\n\nAGENTS.md reference: [AGENTS.md:L22-L24](https://github.com/DDD-Enterprises/dopemux-mvp/blob/c6e0ebd19f5e5a299512e59239d68003b9016da9/AGENTS.md#L22-L24)\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+      "disposition": "MUST_FIX",
+      "id": "PRRC_kwDOPyIw987awGsu",
+      "rationale": "Active unresolved review thread blocks readiness.",
+      "source": "review_thread"
+    },
+    {
+      "association": "NONE",
+      "author": "chatgpt-codex-connector",
+      "blockers": [],
+      "blocking": true,
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Verify hashes for generated package metadata**\n\nWhen slot 38 or 40 is corrupted after assembly, hash gate still passes because loop skips every non-`copied_source` entry, even though manifest records non-null SHA-256 values for both generated files. This can approve altered freshness rules or PR impact decisions; verify every manifest entry carrying non-null `sha256`, reserving exception only for self-referential slot 39.\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+      "disposition": "MUST_FIX",
+      "id": "PRRC_kwDOPyIw987awGsy",
+      "rationale": "Active unresolved review thread blocks readiness.",
+      "source": "review_thread"
+    },
+    {
+      "association": "NONE",
+      "author": "chatgpt-codex-connector",
+      "blockers": [],
+      "blocking": true,
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Reject truncated open-PR file captures**\n\nCurrent count check proves only one capture file exists per PR, not that each capture contains full changed-path set. Captures for PR #1136 and #1123 contain 100 `files` entries while recorded changed-file counts are 366 and 16,206, so selected-source or watched-path changes after API's first page cannot be classified from evidence consumed here. Compare each capture's file count with `OPEN_PRS_CHANGED_FILE_COUNTS.json` and fail closed or consume paginated paths before emitting high-confidence complete ledger.\n\nAGENTS.md reference: [AGENTS.md:L22-L24](https://github.com/DDD-Enterprises/dopemux-mvp/blob/c6e0ebd19f5e5a299512e59239d68003b9016da9/AGENTS.md#L22-L24)\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+      "disposition": "MUST_FIX",
+      "id": "PRRC_kwDOPyIw987awGs0",
+      "rationale": "Active unresolved review thread blocks readiness.",
+      "source": "review_thread"
+    },
+    {
+      "association": "NONE",
+      "author": "chatgpt-codex-connector",
+      "blockers": [],
+      "blocking": true,
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Generate deterministic ZIP in committed assembler**\n\nFresh-checkout assembler returns after producing package directory and never creates ZIP or SHA-256 sidecar. Repo-wide search finds no committed archive-construction command recording fixed timestamp, ordering, permissions, or compression settings, so byte-identical ZIP claim cannot be reproduced from committed implementation; add deterministic archive and sidecar generation here or provide checked-in packaging tool.\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+      "disposition": "MUST_FIX",
+      "id": "PRRC_kwDOPyIw987awGs8",
+      "rationale": "Active unresolved review thread blocks readiness.",
+      "source": "review_thread"
+    }
+  ],
+  "mutation_performed": false,
+  "pr_number": 1152,
+  "schema_version": "1.1.0",
+  "unclassified_count": 0
+}

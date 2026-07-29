@@ -1,0 +1,124 @@
+ ...DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip |  Bin 0 -> 321617 bytes
+ ...S-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip.sha256 |    1 +
+ .../CURRENT_MAIN_40.md                             |   47 +
+ .../OPEN_PR_CAPTURE/open-pr-1113.json              |   44 +
+ .../OPEN_PR_CAPTURE/open-pr-1115.json              |   44 +
+ .../OPEN_PR_CAPTURE/open-pr-1117.json              |   38 +
+ .../OPEN_PR_CAPTURE/open-pr-1118.json              |   38 +
+ .../OPEN_PR_CAPTURE/open-pr-1123.json              | 2501 ++++++++++++++++++++
+ .../OPEN_PR_CAPTURE/open-pr-1126.json              |  383 +++
+ .../OPEN_PR_CAPTURE/open-pr-1127.json              |  245 ++
+ .../OPEN_PR_CAPTURE/open-pr-1128.json              |  482 ++++
+ .../OPEN_PR_CAPTURE/open-pr-1136.json              | 1763 ++++++++++++++
+ .../OPEN_PR_CAPTURE/open-pr-1137.json              |  329 +++
+ .../OPEN_PR_CAPTURE/open-pr-1138.json              |  485 ++++
+ .../OPEN_PR_CAPTURE/open-pr-1140.json              |  155 ++
+ .../OPEN_PR_CAPTURE/open-pr-1142.json              |   38 +
+ .../OPEN_PR_CAPTURE/open-pr-1143.json              |   50 +
+ .../OPEN_PR_CAPTURE/open-pr-1144.json              |   50 +
+ .../OPEN_PR_CAPTURE/open-pr-1145.json              |   44 +
+ .../OPEN_PR_CAPTURE/open-pr-1146.json              |   38 +
+ .../OPEN_PR_CAPTURE/open-pr-1147.json              |   44 +
+ .../OPEN_PR_CAPTURE/open-pr-1148.json              |   44 +
+ .../OPEN_PR_CAPTURE/open-pr-1149.json              |   50 +
+ .../OPEN_PR_CAPTURE/open-pr-1150.json              |  461 ++++
+ .../PACKAGE_VALIDATION.json                        |   92 +
+ .../README.md                                      |   16 +
+ .../SOURCE_REJECTION_LEDGER.md                     |   34 +
+ .../SOURCE_RESOLUTION_REPORT.md                    |  426 ++++
+ .../UPLOAD_FILES/01_AGENTS.md                      |  310 +++
+ .../UPLOAD_FILES/02_RULES.md                       |  338 +++
+ .../UPLOAD_FILES/03_PROJECT.md                     |  173 ++
+ .../UPLOAD_FILES/04_ARCHITECTURE.md                |  196 ++
+ .../UPLOAD_FILES/05_SYSTEM_BOUNDARIES.md           |  123 +
+ .../UPLOAD_FILES/06_PM_PLANE.md                    |  124 +
+ .../UPLOAD_FILES/07_SERVICE_CATALOG.md             |  225 ++
+ .../UPLOAD_FILES/08_DOC_TRUST_MAP.md               |   71 +
+ .../09_RUNTIME_AUTHORITY_VERIFICATION.md           |  107 +
+ .../10_RUNTIME_AUTHORITY_MANIFEST.json             |  903 +++++++
+ .../UPLOAD_FILES/11_MEMORY_TRINITY_ADR.md          |  397 ++++
+ .../UPLOAD_FILES/12_TRUTH_CANONICALS.md            |  253 ++
+ .../UPLOAD_FILES/13_TRUTH_INTERFACES.md            |  344 +++
+ .../UPLOAD_FILES/14_TRUTH_GAPS.md                  |  140 ++
+ .../UPLOAD_FILES/15_SYSTEM_DOPEMUX.md              |  191 ++
+ .../UPLOAD_FILES/16_SYSTEM_DOPETASK.md             |  137 ++
+ .../UPLOAD_FILES/17_SYSTEM_TASK_ORCHESTRATOR.md    |  158 ++
+ .../UPLOAD_FILES/18_SYSTEM_CONPORT.md              |  102 +
+ .../UPLOAD_FILES/19_SYSTEM_DOPE_MEMORY.md          |   98 +
+ .../UPLOAD_FILES/20_SYSTEM_DOPE_CONTEXT.md         |  121 +
+ .../UPLOAD_FILES/21_SYSTEM_DOPECON_BRIDGE.md       |  186 ++
+ .../UPLOAD_FILES/22_SYSTEM_ADHD_ENGINE.md          |  236 ++
+ .../UPLOAD_FILES/23_SYSTEM_REPO_TRUTH_EXTRACTOR.md |  176 ++
+ .../UPLOAD_FILES/24_PAL_EXECUTION_RULES.md         |  159 ++
+ .../UPLOAD_FILES/25_TASK_PACKET_SCHEMA.json        |  271 +++
+ .../UPLOAD_FILES/26_TASK_PACKET_TEMPLATE.md        |  211 ++
+ .../UPLOAD_FILES/27_PROOF_CONTRACT.md              |  262 ++
+ .../UPLOAD_FILES/28_PROOF_BUNDLE_SCHEMA.md         |  275 +++
+ .../UPLOAD_FILES/29_HANDOFF_CONTRACT.md            |  319 +++
+ .../UPLOAD_FILES/30_EMBEDDED_AUDIT.md              |  313 +++
+ .../UPLOAD_FILES/31_EMBEDDED_AUDIT_SCHEMA.json     |  293 +++
+ .../UPLOAD_FILES/32_PR_STEWARD.md                  |  143 ++
+ .../UPLOAD_FILES/33_MERGE_READINESS_SCHEMA.json    |  343 +++
+ .../UPLOAD_FILES/34_MODEL_ROUTING_POLICY.yaml      |  297 +++
+ .../UPLOAD_FILES/35_DOPETASK_ADAPTER_CONTRACT.md   |   94 +
+ .../UPLOAD_FILES/36_DOPETASK_ADAPTER_SCHEMA.md     |  148 ++
+ .../UPLOAD_FILES/37_GOVERNANCE_MODEL.md            |  113 +
+ .../UPLOAD_FILES/38_SOURCE_FRESHNESS_POLICY.md     |   67 +
+ .../UPLOAD_FILES/39_PROJECT_SOURCE_MANIFEST.json   |  735 ++++++
+ .../UPLOAD_FILES/40_OPEN_PR_IMPACT_LEDGER.md       |  622 +++++
+ .../BRANCH.txt                                     |    1 +
+ .../EXECUTION_BASE_SHA.txt                         |    1 +
+ .../GIT_REMOTES.txt                                |    4 +
+ .../GIT_STATUS_BEFORE.txt                          |    3 +
+ .../OPEN_PRS_CHANGED_FILE_COUNTS.json              |   23 +
+ .../OPEN_PRS_INITIAL.json                          |  343 +++
+ .../PR_DRIFT_RECHECK.md                            |   18 +
+ .../open-pr-1113.json                              |    1 +
+ .../open-pr-1113.stderr                            |    0
+ .../open-pr-1115.json                              |    1 +
+ .../open-pr-1115.stderr                            |    0
+ .../open-pr-1117.json                              |    1 +
+ .../open-pr-1117.stderr                            |    0
+ .../open-pr-1118.json                              |    1 +
+ .../open-pr-1118.stderr                            |    0
+ .../open-pr-1123.json                              |    1 +
+ .../open-pr-1123.stderr                            |    0
+ .../open-pr-1126.json                              |    1 +
+ .../open-pr-1126.stderr                            |    0
+ .../open-pr-1127.json                              |    1 +
+ .../open-pr-1127.stderr                            |    0
+ .../open-pr-1128.json                              |    1 +
+ .../open-pr-1128.stderr                            |    0
+ .../open-pr-1136.json                              |    1 +
+ .../open-pr-1136.stderr                            |    0
+ .../open-pr-1137.json                              |    1 +
+ .../open-pr-1137.stderr                            |    0
+ .../open-pr-1138.json                              |    1 +
+ .../open-pr-1138.stderr                            |    0
+ .../open-pr-1140.json                              |    1 +
+ .../open-pr-1140.stderr                            |    0
+ .../open-pr-1142.json                              |    1 +
+ .../open-pr-1142.stderr                            |    0
+ .../open-pr-1143.json                              |    1 +
+ .../open-pr-1143.stderr                            |    0
+ .../open-pr-1144.json                              |    1 +
+ .../open-pr-1144.stderr                            |    0
+ .../open-pr-1145.json                              |    1 +
+ .../open-pr-1145.stderr                            |    0
+ .../open-pr-1146.json                              |    1 +
+ .../open-pr-1146.stderr                            |    0
+ .../open-pr-1147.json                              |    1 +
+ .../open-pr-1147.stderr                            |    0
+ .../open-pr-1148.json                              |    1 +
+ .../open-pr-1148.stderr                            |    0
+ .../open-pr-1149.json                              |    1 +
+ .../open-pr-1149.stderr                            |    0
+ .../open-pr-1150.json                              |    1 +
+ .../open-pr-1150.stderr                            |    0
+ .../build_chatgpt_project_sources.py               |  472 ++++
+ scripts/project_sources/pr_classifications.json    |  194 ++
+ scripts/project_sources/source_set_v4.json         |  366 +++
+ .../validate_chatgpt_project_sources.py            |  155 ++
+ ...-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.md |   97 +
+ ...MX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.json |  141 ++
+ 123 files changed, 19555 insertions(+)

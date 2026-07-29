@@ -1,0 +1,58 @@
+{
+  "packet_id": "TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH",
+  "repository": "DDD-Enterprises/dopemux-mvp",
+  "branch": "claude/chatgpt-40-source-refresh-f84dfc",
+  "execution_base_sha": "5f862d36f5417801b9fe148fccbb439731627234",
+  "final_head_sha": null,
+  "final_head_sha_note": "Structurally cannot self-reference: this file's own committed bytes determine the tree/commit hash of the commit that contains it, so it cannot correctly pre-declare that commit's own SHA (the same category of limitation already disclosed for the 39_PROJECT_SOURCE_MANIFEST.json self-hash field). The true, verifiable head SHA is whatever `git rev-parse HEAD` / the PR's head_sha reports for the commit that adds this exact file -- see FINAL_HEAD_SHA.txt, which is updated in a small follow-up commit after this one lands, and see the PR's live head SHA at https://github.com/DDD-Enterprises/dopemux-mvp/pull/1152.",
+  "generated_at": "2026-07-28T00:30:00Z",
+  "package_disposition": "CURRENT_MAIN_VALID_PENDING_OPEN_PR_REFRESH",
+  "upload_file_count": 40,
+  "material_open_pr_count": 3,
+  "current_main_bytes_verified": true,
+  "open_pr_conservation_verified": true,
+  "secrets_scan_status": "PASS",
+  "zip_sha256": "bd7bea3610caab39569c14df1391390c2d39139c3ce189904d18d0d793ae7001",
+  "embedded_audit": {
+    "auditor_tool": "Claude Code CLI",
+    "auditor_model": "claude-sonnet-5",
+    "auditor_session": "separate Agent-tool subagent, no implementer context",
+    "auditor_verdict": "PASS_WITH_RISKS",
+    "fixes_applied_from_audit": [
+      "Corrected slot 6 (06_PM_PLANE.md) rationale in scripts/project_sources/source_set_v4.json to stop overstating doc-trust-map.md's citation of root PM_PLANE.md (it was an analogical extension, not a direct quote); replaced with the actual independent content-comparison evidence.",
+      "Added an explicit note to PR #1140's classification in scripts/project_sources/pr_classifications.json clarifying that its touched ADR is a different file from the Memory Trinity ADR (slot 11)."
+    ],
+    "report_path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/AUDITOR_REPORT.md",
+    "verdict_path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/AUDIT_VERDICT.json"
+  },
+  "pr_steward": {
+    "invoked_locally_via": "python3 -m tools.pr_steward.intake --repo DDD-Enterprises/dopemux-mvp --pr 1152 --proof-path <embedded-audit-tool-shaped proof>",
+    "final_readiness": "BLOCKED",
+    "final_risk_tier": "CRITICAL",
+    "final_unknowns": [
+      "audit_not_executed: final readiness requires executed=true",
+      "changedFiles harvest exceeded first 100 files"
+    ],
+    "reason": "This local check-only intake CLI (tools/pr_steward/intake.py) requires an --proof-path payload in the shape scripts/audit/run_embedded_audit.py produces (top-level pr_number/head_sha/repo/executed/provenance), not the packet-mandated PROOF.json shape from section 29. Ran scripts/audit/run_embedded_audit.py with --force-skip-reason (no --route-json/CI token or ssh-signed local attestation available in this interactive session) to get a schema-valid, honestly SKIPPED (executed=false) proof, then fed that to the intake CLI. Result: BLOCKED on audit_not_executed -- by design, this gate only accepts a trusted CI-executed (embedded-audit.yml) verdict or an ssh-signed local attestation (per docs/03-reference/governance/proof-contract.md and this session's own memory of PR #1068's local-attestation mechanism), neither of which this session could produce. The genuine, adversarial independent-agent audit that WAS run (see embedded_audit above, PASS_WITH_RISKS) is real and thorough but is intentionally not accepted as a substitute for this specific trust-provenance gate.",
+    "artifacts": [
+      "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/pr_steward_out/MERGE_READINESS.json",
+      "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/pr_steward_out/REVIEW_ITEM_LEDGER.json",
+      "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/pr_steward_out/THREAD_DISPOSITIONS.json",
+      "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/pr_steward_out/CI_TRIAGE.json",
+      "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/pr_steward_out/PR_STATE_SNAPSHOT.json",
+      "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/pr_steward_out/embedded_audit_tool_output/PROOF.json"
+    ],
+    "note_on_proof_freshness": "Given the structural head-SHA self-reference limitation described above, this packet's own section-29 PROOF.json necessarily lags the commit that contains it by construction; the embedded-audit-tool-shaped proof used for the actual intake run above pinned head_sha to c6e0ebd19f5e5a299512e59239d68003b9016da9 (the substantive implementation commit, prior to this proof-and-PR-Steward-artifacts commit), which is the closest honest approximation available."
+  },
+  "remaining_risks": [
+    "doc-trust-map.md (slot 08) is one day from its own next_review date (2026-07-29) as of packaging.",
+    "PR #1123's SUPERSEDED_OR_CONFLICTING classification's raw numbers were independently re-verified live, but the interpretive judgment (stranded vs. recoverable) still partly rests on prior-session context.",
+    "Open-PR count drifted from 21 (capture) to 28 (final check) via new PR creation; disclosed, does not affect the ledger's internal conservation invariant.",
+    "PR Steward's proof-freshness check cannot be satisfied by a self-referential PROOF.json committed in the same commit as the file it describes; this is a structural limitation of any proof-binds-to-its-own-commit scheme, not something this packet can resolve without changing the PR Steward contract (out of scope, section 4.2).",
+    "The canonical Task Packet schema's execution.agent enum has no 'claude' value (workaround: 'shell', flagged as a follow-up)."
+  ],
+  "unknowns": [
+    "Whether PR Steward's actual production trigger (as opposed to this local check-only intake CLI) runs automatically on PR #1152 via GitHub Actions/webhook, and what its live verdict will be once main-branch automation observes the pushed commits.",
+    "Whether any of the 3 material open PRs (#1150, #1136, #1126) will merge before an operator next uses this package, which would trigger the disclosed regeneration requirement."
+  ]
+}

@@ -5,7 +5,7 @@ Every rejected candidate for a selected slot, classified.
 - `RULES.md` (candidate for slot 02 / 02_RULES.md) -- **BLOCKED_SOURCE_MISSING**: git cat-file -e <sha>:RULES.md fails; not present in tree
 - `docs/04-explanation/architecture/dopemux-architecture.md` (candidate for slot 04 / 04_ARCHITECTURE.md) -- **REDUNDANT_WITH_HIGHER_AUTHORITY**: Packet slot 04 explicitly names root ARCHITECTURE.md; this is a separate 'explanation' typed doc (frontmatter type: explanation, dated 2026-05-19), not the named source.
 - `SYSTEM_BOUNDARIES.md` (candidate for slot 05 / 05_SYSTEM_BOUNDARIES.md) -- **BLOCKED_SOURCE_MISSING**: git cat-file -e confirms absent
-- `PM_PLANE.md` (candidate for slot 06 / 06_PM_PLANE.md) -- **REDUNDANT_WITH_HIGHER_AUTHORITY**: doc-trust-map.md explicitly classifies this root file's family as LOW trust ('do not use as stronger authority than tracked truth docs'), while docs/03-reference/planes/pm/pm-plane.md is HIGH trust and runtime-cited.
+- `PM_PLANE.md` (candidate for slot 06 / 06_PM_PLANE.md) -- **REDUNDANT_WITH_HIGHER_AUTHORITY**: Not itself named in doc-trust-map.md's LOW-trust source-path list; rejected on independent content comparison instead -- it lacks the dated frontmatter and explicit truth/runtime-path authority chain that docs/03-reference/planes/pm/pm-plane.md carries.
 - `TRUTH_CANONICALS.md` (candidate for slot 12 / 12_TRUTH_CANONICALS.md) -- **BLOCKED_SOURCE_MISSING**: git cat-file -e confirms absent
 - `TRUTH_INTERFACES.md` (candidate for slot 13 / 13_TRUTH_INTERFACES.md) -- **BLOCKED_SOURCE_MISSING**: git cat-file -e confirms absent
 - `TRUTH_GAPS.md` (candidate for slot 14 / 14_TRUTH_GAPS.md) -- **BLOCKED_SOURCE_MISSING**: git cat-file -e confirms absent

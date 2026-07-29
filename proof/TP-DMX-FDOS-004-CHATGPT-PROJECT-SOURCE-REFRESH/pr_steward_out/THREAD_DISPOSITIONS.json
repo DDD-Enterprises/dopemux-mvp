@@ -1,0 +1,59 @@
+{
+  "generated_at": "2026-07-29T00:23:01.911248Z",
+  "mutation_performed": false,
+  "pr_number": 1152,
+  "schema_version": "1.1.0",
+  "threads": [
+    {
+      "blocking": true,
+      "disposition": "MUST_FIX",
+      "is_resolved": false,
+      "rationale": "Unresolved review thread blocks readiness.",
+      "review_item_ids": [
+        "PRRC_kwDOPyIw987awGsq"
+      ],
+      "thread_id": "PRRT_kwDOPyIw986UlYkh"
+    },
+    {
+      "blocking": true,
+      "disposition": "MUST_FIX",
+      "is_resolved": false,
+      "rationale": "Unresolved review thread blocks readiness.",
+      "review_item_ids": [
+        "PRRC_kwDOPyIw987awGsu"
+      ],
+      "thread_id": "PRRT_kwDOPyIw986UlYkl"
+    },
+    {
+      "blocking": true,
+      "disposition": "MUST_FIX",
+      "is_resolved": false,
+      "rationale": "Unresolved review thread blocks readiness.",
+      "review_item_ids": [
+        "PRRC_kwDOPyIw987awGsy"
+      ],
+      "thread_id": "PRRT_kwDOPyIw986UlYkp"
+    },
+    {
+      "blocking": true,
+      "disposition": "MUST_FIX",
+      "is_resolved": false,
+      "rationale": "Unresolved review thread blocks readiness.",
+      "review_item_ids": [
+        "PRRC_kwDOPyIw987awGs0"
+      ],
+      "thread_id": "PRRT_kwDOPyIw986UlYkr"
+    },
+    {
+      "blocking": true,
+      "disposition": "MUST_FIX",
+      "is_resolved": false,
+      "rationale": "Unresolved review thread blocks readiness.",
+      "review_item_ids": [
+        "PRRC_kwDOPyIw987awGs8"
+      ],
+      "thread_id": "PRRT_kwDOPyIw986UlYky"
+    }
+  ],
+  "unresolved_blocking_count": 5
+}

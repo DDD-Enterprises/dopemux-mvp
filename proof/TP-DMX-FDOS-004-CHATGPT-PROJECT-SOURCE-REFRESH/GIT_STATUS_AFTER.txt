@@ -1,0 +1,14 @@
+ M .claude/claude_config.json
+ M out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip
+ M out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip.sha256
+ M out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/SOURCE_REJECTION_LEDGER.md
+ M out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/SOURCE_RESOLUTION_REPORT.md
+ M out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/39_PROJECT_SOURCE_MANIFEST.json
+ M out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/40_OPEN_PR_IMPACT_LEDGER.md
+ M scripts/project_sources/pr_classifications.json
+ M scripts/project_sources/source_set_v4.json
+?? .claude/.untracked-work-probe-cache.json
+?? proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/AUDITOR_REPORT.md
+?? proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/AUDIT_VERDICT.json
+?? proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/FINAL_HEAD_SHA.txt
+?? proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/GIT_STATUS_AFTER.txt

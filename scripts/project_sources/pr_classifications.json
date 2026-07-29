@@ -84,7 +84,7 @@
     },
     "1140": {
       "classification": "NO_PROJECT_SOURCE_IMPACT",
-      "evidence": "Touches docs/90-adr/adr-dmx-prsteward-soloowner-001.md and tools/pr_steward/solo_owner_security_release.py (18 files total). Slot 32 (docs/ops/pr-steward.md) was grep-checked for 'solo'/'org member'/'exact-head'/'authoriz' and contains no matching content describing this mechanic, so its accuracy is unaffected by this PR merging.",
+      "evidence": "Touches docs/90-adr/adr-dmx-prsteward-soloowner-001.md and tools/pr_steward/solo_owner_security_release.py (18 files total). The touched ADR falls under the ledger's own watched docs/90-adr/** family but is confirmed to be a different file from the Memory Trinity ADR selected as slot 11 (docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md) -- it is not itself a candidate for any of the 37 selected slots. Slot 32 (docs/ops/pr-steward.md) was grep-checked for 'solo'/'org member'/'exact-head'/'authoriz' and contains no matching content describing this mechanic, so its accuracy is unaffected by this PR merging.",
       "current_main_effect": "None.",
       "action_if_merged": "None required for the selected 37-source set; re-check docs/ops/pr-steward.md wording only if a future edit adds solo-owner authorization language.",
       "source_slots_affected": [],

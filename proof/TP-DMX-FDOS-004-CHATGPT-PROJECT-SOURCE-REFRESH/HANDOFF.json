@@ -1,0 +1,45 @@
+{
+  "source_skill": "TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH (implementer: Claude Code CLI, Sonnet)",
+  "target_skill": "PR Steward intake / operator merge decision",
+  "run_id": "claude-worktree-chatgpt-40-source-refresh-f84dfc",
+  "repo_branch": {
+    "repository": "DDD-Enterprises/dopemux-mvp",
+    "branch": "claude/chatgpt-40-source-refresh-f84dfc",
+    "base_branch": "main",
+    "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1152",
+    "execution_base_sha": "5f862d36f5417801b9fe148fccbb439731627234",
+    "final_head_sha_at_handoff": "SEE FINAL_HEAD_SHA.txt (updated after this commit lands)"
+  },
+  "governing_posture": "CURRENT_MAIN_VALID_PENDING_OPEN_PR_REFRESH",
+  "recommended_next_step": "Run PR Steward intake against PR #1152 to confirm merge readiness (no local PR Steward invocation tool was available in this session -- see blocking_reasons). Once READY, operator may merge and, separately, manually upload out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/ (40 files) to the ChatGPT Project -- no such upload was performed by this packet.",
+  "authoritative_artifacts": [
+    "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/39_PROJECT_SOURCE_MANIFEST.json",
+    "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/UPLOAD_FILES/40_OPEN_PR_IMPACT_LEDGER.md",
+    "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/PACKAGE_VALIDATION.json",
+    "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip.sha256",
+    "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/AUDIT_VERDICT.json",
+    "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/PROOF.json"
+  ],
+  "supporting_artifacts": [
+    "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/SOURCE_RESOLUTION_REPORT.md",
+    "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/SOURCE_REJECTION_LEDGER.md",
+    "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/AUDITOR_REPORT.md",
+    "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/COMMAND_LOG.md",
+    "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/PR_DRIFT_RECHECK.md",
+    "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/PR_DRIFT_RECHECK_FINAL.md"
+  ],
+  "warnings": [
+    "Open-PR count has drifted from 21 (capture) to 28 (final check) purely from new PR creation; re-run gh pr list before relying on the ledger for anything beyond this package's own conservation check.",
+    "doc-trust-map.md (slot 08) is one day from its own next_review date (2026-07-29) as of this packaging.",
+    "PR #1123's SUPERSEDED_OR_CONFLICTING classification's raw numbers (changedFiles=16206 etc.) were independently re-verified live by the embedded auditor, but the interpretive judgment (stranded vs. recoverable) still rests partly on prior-session context not re-derived from scratch here."
+  ],
+  "blocking_reasons": [
+    "No local tool to actually invoke 'PR Steward intake' was available in this session (it appears to run as external GitHub automation/CI on the opened PR, not as a directly-callable local command); MERGE_READINESS.json / REVIEW_ITEM_LEDGER.json / THREAD_DISPOSITIONS.json / CI_TRIAGE.json / PR_STATE_SNAPSHOT.json could not be produced by this session. The packet is therefore NOT confirmed merge-ready per section 21 and must not be merged from this packet without that separate confirmation."
+  ],
+  "chain_of_custody": {
+    "parent_packet": "TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP",
+    "packet_json": "task-packets/generated/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.json",
+    "creation_timestamp": "2026-07-28",
+    "auditor_session_id": "ae6a82fe9cb8710db (Agent-tool subagent, independent, non-implementer)"
+  }
+}

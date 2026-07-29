@@ -1,0 +1,23 @@
+{
+  "auditor_tool": "Claude Code CLI",
+  "auditor_model": "claude-sonnet-5",
+  "auditor_session": "separate Agent-tool subagent, no implementer context",
+  "invocation": "Spawned via the Agent tool as a fresh general-purpose subagent by a separate orchestrating Claude Code session; started with no prior conversation history and read all packet/implementation artifacts from disk independently.",
+  "exit_code": 0,
+  "auditor_verdict": "PASS_WITH_RISKS",
+  "auditor_findings": [
+    "Slot 6 (06_PM_PLANE.md) rationale in scripts/project_sources/source_set_v4.json claims root PM_PLANE.md is 'bucketed by the same doc-trust-map' LOW row as ARCHITECTURE.md/RULES.md/etc, but doc-trust-map.md's explicit source-path list for that row does not literally name PM_PLANE.md -- the citation is an analogical extension, not a direct quote. The underlying editorial choice (prefer the HIGH-rated, dated, authority-chain-citing tracked doc over an undated root duplicate) is well-supported by independently diffing both files' actual content, so the pick itself is defensible even though the stated evidence overstates its textual basis.",
+    "PR #1140's ledger entry does not explicitly address that its touched docs/90-adr/adr-dmx-prsteward-soloowner-001.md falls under the ledger's own watched docs/90-adr/** family; it only discusses slot 32 (pr-steward.md). Independent verification confirms the touched ADR is a different file from the one actually selected as slot 11, so the NO_PROJECT_SOURCE_IMPACT classification is still correct, but the written evidence has a completeness gap on this point.",
+    "Slots 4 and 6 apply doc-trust-map's 'top-level promoted docs are LOW' classification inconsistently -- overridden for ARCHITECTURE.md (file is in fact tracked, contradicting doc-trust-map's implied staleness) but leaned on by analogy for PM_PLANE.md (which is not even named in that row). Both individual outcomes are independently defensible on file content, but the reasoning style differs between the two slots.",
+    "Open-PR count has drifted from 21 (captured_at 2026-07-28T00:15:00Z) to 25+ live open PRs at audit time, purely from new PRs landing after capture (all with createdAt after the capture timestamp). This is disclosed/expected churn per the packet's own freshness policy, not an omission -- the ledger's internal conservation check (21 captured = 21 in ledger, 0 missing, 0 extra) still holds."
+  ],
+  "fixes_applied_from_audit": [],
+  "remaining_risks": [
+    "doc-trust-map.md (slot 08) is dated 2026-04-30 with next_review 2026-07-29, one day past this packaging's date -- already disclosed in the PR body as a residual risk.",
+    "PR #1123's SUPERSEDED_OR_CONFLICTING classification relies in part on a prior session's durable finding about the stranded branch rather than being re-litigated from scratch in this build; I independently re-verified its raw gh pr view numbers (changedFiles=16206, additions=5145096, deletions=9284, mergeStateStatus=DIRTY) and they match exactly, so the evidence is real, but the interpretive judgment (stranded vs. potentially-recoverable) still rests partly on external prior-session context not re-derived here.",
+    "Because this repository has very active concurrent PR automation, any operator using this package should re-run the drift recheck (or at minimum re-run gh pr list) immediately before uploading to ChatGPT, since more PRs will likely have landed by the time this is read.",
+    "The execution.agent=shell schema gap (no 'claude' enum value) remains open as a follow-up packet; confirmed genuinely required, not a shortcut, but still an unresolved schema debt."
+  ],
+  "skip_reason": null,
+  "report_path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/AUDITOR_REPORT.md"
+}

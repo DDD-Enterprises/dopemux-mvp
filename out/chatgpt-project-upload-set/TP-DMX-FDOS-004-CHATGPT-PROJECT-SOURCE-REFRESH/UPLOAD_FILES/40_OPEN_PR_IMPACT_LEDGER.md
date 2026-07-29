@@ -389,7 +389,7 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - Updated: 2026-07-27T04:43:23Z
 - Changed-file count: 18
 - **Classification: NO_PROJECT_SOURCE_IMPACT**
-- Evidence: Touches docs/90-adr/adr-dmx-prsteward-soloowner-001.md and tools/pr_steward/solo_owner_security_release.py (18 files total). Slot 32 (docs/ops/pr-steward.md) was grep-checked for 'solo'/'org member'/'exact-head'/'authoriz' and contains no matching content describing this mechanic, so its accuracy is unaffected by this PR merging.
+- Evidence: Touches docs/90-adr/adr-dmx-prsteward-soloowner-001.md and tools/pr_steward/solo_owner_security_release.py (18 files total). The touched ADR falls under the ledger's own watched docs/90-adr/** family but is confirmed to be a different file from the Memory Trinity ADR selected as slot 11 (docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md) -- it is not itself a candidate for any of the 37 selected slots. Slot 32 (docs/ops/pr-steward.md) was grep-checked for 'solo'/'org member'/'exact-head'/'authoriz' and contains no matching content describing this mechanic, so its accuracy is unaffected by this PR merging.
 - Current-main effect: None.
 - Action if merged: None required for the selected 37-source set; re-check docs/ops/pr-steward.md wording only if a future edit adds solo-owner authorization language.
 - Source slots affected: none
