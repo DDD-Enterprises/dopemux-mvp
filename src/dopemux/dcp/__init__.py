@@ -50,6 +50,14 @@ from dopemux.dcp.lane_model import (
 from dopemux.dcp.lane_engine import (
     decide_lane,
 )
+from dopemux.dcp.trusted_adapter_registry import (
+    AdapterRecord,
+    RegistryError,
+    TrustedAdapterRegistry,
+    assert_no_mutation_adapters,
+    listed_adapter_ids,
+    load_registry,
+)
 from dopemux.dcp.input_adapters import (
     TrustedInputCapability,
     TrustedInputError,
@@ -110,4 +118,11 @@ __all__ = [
     "is_execution_eligible",
     "refuse_serialized_trust",
     "untrusted_classify_source",
+    # Trusted adapter registry (0007A)
+    "AdapterRecord",
+    "RegistryError",
+    "TrustedAdapterRegistry",
+    "assert_no_mutation_adapters",
+    "listed_adapter_ids",
+    "load_registry",
 ]

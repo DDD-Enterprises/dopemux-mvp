@@ -1,0 +1,14 @@
+config/dcp/trusted_input_adapters.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/ADAPTER_REGISTRY_POLICY.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/AUDITOR_REPORT.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/COMMAND_LOG.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/EVIDENCE_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/HANDOFF.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/HANDOFF.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/PAL_CHAIN.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/PROOF.json
+schemas/dcp/trusted_input_adapter_registry.schema.json
+src/dopemux/dcp/__init__.py
+src/dopemux/dcp/trusted_adapter_registry.py
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007A.md
+tests/unit/dcp/test_trusted_adapter_registry.py
