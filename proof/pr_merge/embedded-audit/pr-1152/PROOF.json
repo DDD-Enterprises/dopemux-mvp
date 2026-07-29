@@ -1,8 +1,8 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1152,
-  "head_sha": "30b79b5c3aa2372200cb8c9b05bbe6bc52e0d3e0",
-  "note": "head_sha is the R2 repair commit (fix(fdos-004): R2 repair -- fix findings from post-repair independent re-audit). This proof file and its .sig are the ONLY change committed on top of that audited head, per the proof-only-delta requirement in scripts/audit/local_audit_acceptance.py. The embedded_audit object below is the same genuinely-executed, independently-verified audit recorded in proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/PROOF.json's own embedded_audit field and AUDIT_VERDICT.json for this same commit -- not a separate, lesser claim invented only to satisfy this gate.",
+  "head_sha": "631261694992c4ea51763c857a3247a4028b3c9c",
+  "note": "head_sha is the R3 repair commit (fix(fdos-004): R3 repair -- packet allowlist, stale counts, orphaned PR captures), which superseded the R2 commit this proof was previously pinned to (30b79b5c3a) once R3 landed additional fixes on top of it -- re-signed here so the proof-only delta requirement in scripts/audit/local_audit_acceptance.py holds against the true current tip. The embedded_audit object below is unchanged from the R2 signing: R3's fixes (packet allowlist, stale PR counts, orphaned OPEN_PR_CAPTURE cleanup) are packaging/documentation-accuracy corrections responding to review feedback, not corrections to the audited engineering claims themselves (crash fix, PACKAGE_VALIDATION.json-in-ZIP ordering, capture_complete recomputation, classification enum validation), which were independently verified against the R2 head and remain true of the R3 head (verified again: all 9 validator gates pass, ZIP contains PACKAGE_VALIDATION.json, shasum -c passes, reproducibility holds).",
   "embedded_audit": {
     "required": true,
     "status": "PASS_WITH_RISKS",
