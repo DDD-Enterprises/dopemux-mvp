@@ -1,69 +1,57 @@
 {
-  "commit_sha": "edb265c9634d43ad36c0e2f7a6e24dc59bea7d5b",
+  "commit_sha": "131c99c9dfcc7008741120e36d4976617eea7565",
   "embedded_audit": {
     "auditor_model": "sonnet",
     "auditor_tool": "claude-code-cli",
     "exit_code": 0,
     "findings": [
       {
-        "id": "PR1150-A1",
-        "severity": "HIGH",
-        "title": "Guard test regex misses `docker compose -p <project> ... up` invocations",
-        "status": "OPEN",
-        "body": "tests/mcp/test_no_legacy_fleet_start_paths.py _FLEET_START_RE only tolerates -f flags between `compose` and `up`. Live unallowlisted fleet-launch scripts evade it: scripts/start.sh:81 and scripts/compose_nuke.sh:35 (both `docker compose -p ... -f compose.yml up -d`). Both remain live legacy launch paths post-merge."
-      },
-      {
-        "id": "PR1150-A2",
-        "severity": "HIGH",
-        "title": "dopemux init default MCP startup bypasses `dopemux mcp` and is invisible to the guard test",
-        "status": "OPEN",
-        "body": "src/dopemux/cli.py _start_mcp_servers_with_progress (called from `dopemux init` at cli.py:2433) builds `docker compose ... up -d --remove-orphans` as a Python list and runs it via subprocess.Popen — structurally undetectable by a line-based regex scan. File untouched by this PR and not flagged as a known gap."
-      },
-      {
-        "id": "PR1150-A3",
-        "severity": "MEDIUM",
-        "title": "install-mcp-servers.sh Docker-MCP install step now a permanent silent no-op",
-        "status": "OPEN",
-        "body": "scripts/deploy/setup/install-mcp-servers.sh:128 still calls the now-deleted scripts/install-docker-mcp-servers.sh, guarded by an existence check — degrades to skip-with-warning instead of crashing, so the installer's Docker-MCP step silently no-ops after this PR."
-      },
-      {
-        "id": "PR1150-A4",
-        "severity": "MEDIUM",
-        "title": ".github/copilot-instructions.md still presents services/registry.yaml as live authority",
-        "status": "OPEN",
-        "body": "Untouched by this PR; lines 48/348/356 instruct agents to treat services/registry.yaml as the authoritative port/health source, contradicting the PR's registry-deprecation narrative. Copilot-facing instruction file with AGENTS.md-equivalent behavioral weight."
-      },
-      {
-        "id": "PR1150-A5",
-        "severity": "MEDIUM",
-        "title": "pm-plane-runtime-recovery.md contradicts itself after this PR's edit",
-        "status": "OPEN",
-        "body": "docs/02-how-to/operations/pm-plane-runtime-recovery.md received the PR's :8000-vs-:7890 scope note, but lines 84-91 in the same file still recommend scripts/start.sh and raw `docker compose -f compose.yml up -d task-orchestrator` under a 'Recommended' heading — contradicting the PR's own AGENTS.md §12.6 rule."
-      },
-      {
-        "id": "PR1150-A6",
+        "id": "PR1150-B1",
         "severity": "LOW",
-        "title": "P-22 deletion-count phrasing slightly mischaracterizes one file",
+        "title": "Hook's --repo emission branch not exercised by unit tests",
         "status": "OPEN",
-        "body": "Auditor notes scripts/deploy/setup/install-mcp-servers.sh was modified (reference update), not among the deleted set as a reader might infer from the '14 deleted' summary framing."
+        "body": "mcp_health_probe.py's repo-aware remediation (MUST_FIX P2) is correctly implemented, but tests/test_mcp_health_probe.py never calls _format_health with a truthy project_root, so a future refactor could silently drop the --repo argument without breaking CI."
+      },
+      {
+        "id": "PR1150-B2",
+        "severity": "LOW",
+        "title": "Dead local variable left by the sentinel rename sweep",
+        "status": "OPEN",
+        "body": "tests/test_cli_mcp_startup.py:111 keeps an unused `script_path = resolved_path / \"README.md\"` local from the mechanical start-all-mcp-servers.sh rename; cosmetic, no functional effect."
+      },
+      {
+        "id": "PR1150-B3",
+        "severity": "LOW",
+        "title": "Backlog docs still mention deleted scripts/start.sh",
+        "status": "OPEN",
+        "body": "docs/planes/pm/task-orchestrator-leantime-followups.md (and its docs/03-reference duplicate) reference scripts/start.sh in a backlog scope-note; pre-existing doc rot, not introduced by the repair commit, not user-facing instruction."
+      },
+      {
+        "id": "PR1150-B4",
+        "severity": "LOW",
+        "title": "pr-docgen-sync SUBSYSTEM_RULES lists scripts/start.sh as trigger path",
+        "status": "OPEN",
+        "body": "The skill's prefix list (.claude/skills, .github/skills, templates/skills copies of pr_docgen_sync_workflow.py) still names scripts/start.sh; dead config now that the file is deleted — the rule simply never matches."
       }
     ],
-    "fixes_applied": [],
-    "invocation": "claude -p --model sonnet --add-dir <worktree> --allowedTools Read Grep Glob (route #2 per docs/ops/embedded-audit.md route order; route #1 `agy --model claude-sonnet-4-6 --mode plan --print` attempted first and timed out after 15m with no response). Auditor session independent of the implementing session.",
+    "fixes_applied": [
+      "All five supervisor MUST_FIX items verified genuinely repaired: P1 setup.sh compatibility shim (documented flags preserved, canonical delegation), P2 repo-aware `dopemux mcp start --repo --services` hook remediation (flags verified real in mcp_commands.py), A3 installer silent no-op removed, A4 copilot-instructions catalog authority, A5 recovery runbook stripped of start.sh/raw-compose/name-filtered rm -f/blind kill -9",
+      "P-22 claim narrowing verified: guard test renamed to test_p22_safe_subset_guard.py, docstring states what it does NOT prove, surviving paths enumerated with packet IDs P22-F1/F2/F3, widened regex hand-traced against all positive/negative cases, cli.py NOTE block matches _KNOWN_STRUCTURAL_GAPS with a real AST-based rot check",
+      "Prior audit finding A6 resolved: the '14 deleted files' count verified exact; install-mcp-servers.sh correctly categorized modified"
+    ],
+    "invocation": "claude -p --model sonnet --add-dir <worktree> --allowedTools Read Grep Glob (route #2 per docs/ops/embedded-audit.md; route #1 agy --model claude-sonnet-4-6 completed verification but hit provider quota before emitting its formal report — partial narration retained as corroborating evidence only). Auditor session independent of the implementing session.",
     "remaining_risks": [
-      "scripts/start.sh and scripts/compose_nuke.sh remain live, uncatalogued legacy fleet-start paths post-merge",
-      "dopemux init's default MCP startup continues to bypass dopemux mcp with no tracking issue or allowlist disclosure",
-      "Docker-based MCP server installation via scripts/deploy/setup/install-mcp-servers.sh is silently broken (soft no-op) for any user still using that installer",
-      "AI coding agents using GitHub Copilot will be actively misdirected toward the deprecated services/registry.yaml as authoritative",
-      "scripts/ai_startup.sh and scripts/dev/testing/validate-mcp-setup.sh reference a start-mcp-servers.sh path that never existed (pre-existing doc rot, not caused by this PR)"
+      "src/dopemux/cli.py::_start_mcp_servers_with_progress (dopemux init default startup) still bypasses dopemux mcp via a Python-list-built compose invocation — disclosed and tracked as P22-F2, not fixed in this PR",
+      "scripts/compose_nuke.sh remains a live destructive fleet-restart tool outside dopemux mcp (P22-F1) — deliberately kept with justification, a standing capability gap not a defect",
+      "Makefile pm-up/webhook targets, docker/leantime/configure_bridge.sh, scripts/deploy/setup/setup_dopemux.sh remain outside dopemux mcp (P22-F3), flagged for a separate follow-up packet"
     ],
     "report_path": "proof/pr_merge/embedded-audit/pr-1150/AUDITOR_REPORT.md",
     "required": true,
     "skip_reason": null,
     "status": "PASS_WITH_RISKS"
   },
-  "generated_at": "2026-07-28T17:20:00Z",
-  "head_sha": "edb265c9634d43ad36c0e2f7a6e24dc59bea7d5b",
+  "generated_at": "2026-07-29T04:25:00Z",
+  "head_sha": "131c99c9dfcc7008741120e36d4976617eea7565",
   "pr_number": 1150,
   "repo": "DDD-Enterprises/dopemux-mvp"
 }
