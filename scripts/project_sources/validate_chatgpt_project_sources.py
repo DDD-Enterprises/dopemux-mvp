@@ -34,18 +34,15 @@ def sha256_file(p: Path) -> str:
     return hashlib.sha256(p.read_bytes()).hexdigest()
 
 
-def main() -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--repo-root", required=True)
-    ap.add_argument("--execution-base-sha", required=True)
-    ap.add_argument("--package-dir", required=True)
-    ap.add_argument("--open-pr-dir", required=True)
-    args = ap.parse_args()
+def run_validation(repo_root: Path, execution_base_sha: str, package_dir: Path, open_pr_dir: Path) -> tuple[dict, bool]:
+    """Run every validation gate and return (result, all_pass).
 
-    repo_root = Path(args.repo_root).resolve()
-    package_dir = Path(args.package_dir).resolve()
+    Does not write PACKAGE_VALIDATION.json itself -- callers decide where/
+    whether to persist it (the CLI writes it to package_dir; the assembler
+    calls this before zipping so PACKAGE_VALIDATION.json can be included in
+    the archive it builds).
+    """
     upload_dir = package_dir / "UPLOAD_FILES"
-    open_pr_dir = Path(args.open_pr_dir).resolve()
 
     gates = {}
 
@@ -95,14 +92,14 @@ def main() -> int:
             continue
         path = upload_dir / entry["bundle_filename"]
         expected = subprocess.run(
-            ["git", "show", f"{args.execution_base_sha}:{entry['source_path']}"],
+            ["git", "show", f"{execution_base_sha}:{entry['source_path']}"],
             cwd=repo_root, capture_output=True, check=True,
         ).stdout
         actual = path.read_bytes()
         if expected != actual:
             identity_failures.append(entry["bundle_filename"])
         blob_sha = subprocess.run(
-            ["git", "rev-parse", f"{args.execution_base_sha}:{entry['source_path']}"],
+            ["git", "rev-parse", f"{execution_base_sha}:{entry['source_path']}"],
             cwd=repo_root, capture_output=True, text=True, check=True,
         ).stdout.strip()
         if blob_sha != entry["source_blob_sha"]:
@@ -170,7 +167,24 @@ def main() -> int:
         "all_gates_pass": all_pass,
         "gates": gates,
     }
-    (package_dir / "PACKAGE_VALIDATION.json").write_text(json.dumps(result, indent=2) + "\n")
+    return result, all_pass
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--repo-root", required=True)
+    ap.add_argument("--execution-base-sha", required=True)
+    ap.add_argument("--package-dir", required=True)
+    ap.add_argument("--open-pr-dir", required=True)
+    args = ap.parse_args()
+
+    result, all_pass = run_validation(
+        Path(args.repo_root).resolve(),
+        args.execution_base_sha,
+        Path(args.package_dir).resolve(),
+        Path(args.open_pr_dir).resolve(),
+    )
+    (Path(args.package_dir).resolve() / "PACKAGE_VALIDATION.json").write_text(json.dumps(result, indent=2) + "\n")
     print(json.dumps(result, indent=2))
     return 0 if all_pass else 1
 

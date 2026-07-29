@@ -22,9 +22,20 @@ import sys
 import zipfile
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from validate_chatgpt_project_sources import run_validation  # noqa: E402
+
 PACKET_ID = "TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH"
 REPO = "DDD-Enterprises/dopemux-mvp"
 SELF_PR_NUMBER = 1152
+
+VALID_PR_CLASSIFICATIONS = {
+    "NO_PROJECT_SOURCE_IMPACT",
+    "SOURCE_SET_CHANGES_IF_MERGED",
+    "SOURCE_CONTENT_REFRESH_IF_MERGED",
+    "SUPERSEDED_OR_CONFLICTING",
+}
+MATERIAL_PR_CLASSIFICATIONS = ("SOURCE_SET_CHANGES_IF_MERGED", "SOURCE_CONTENT_REFRESH_IF_MERGED")
 
 FRESHNESS_POLICY_TEXT = """# 38_SOURCE_FRESHNESS_POLICY
 
@@ -187,8 +198,17 @@ def build_pr_ledger_entries(prs: list[dict], classifications: dict) -> list[dict
         c = classifications["classifications"].get(n)
         if c is None:
             raise SystemExit(f"FATAL: open PR #{n} has no classification entry -- fail-closed")
+        if c["classification"] not in VALID_PR_CLASSIFICATIONS:
+            raise SystemExit(
+                f"FATAL: open PR #{n} has unrecognized classification "
+                f"'{c['classification']}' -- must be one of {sorted(VALID_PR_CLASSIFICATIONS)}"
+            )
         files = [f["path"] for f in pr.get("files", [])]
-        capture_complete = bool(pr.get("capture_complete", len(files) == pr.get("changedFiles", -1)))
+        # Always recompute from the captured data rather than trusting a
+        # self-reported capture_complete flag: a future capture run with a
+        # paginator bug could set the field to True incorrectly, and trusting
+        # it would silently bypass the fail-closed check below.
+        capture_complete = len(files) == pr.get("changedFiles", -1)
         if not capture_complete and c["classification"] != "SUPERSEDED_OR_CONFLICTING":
             # A truncated/incomplete file capture is only tolerated for PRs
             # whose classification does not depend on path-level intersection
@@ -228,7 +248,7 @@ def build_pr_ledger_entries(prs: list[dict], classifications: dict) -> list[dict
 
 
 def render_ledger_md(entries: list[dict], execution_base_sha: str, generated_at: str) -> str:
-    material = [e for e in entries if e["classification"] in ("SOURCE_SET_CHANGES_IF_MERGED", "SOURCE_CONTENT_REFRESH_IF_MERGED")]
+    material = [e for e in entries if e["classification"] in MATERIAL_PR_CLASSIFICATIONS]
     lines = []
     lines.append("# 40_OPEN_PR_IMPACT_LEDGER")
     lines.append("")
@@ -384,7 +404,7 @@ def main() -> int:
     copied_entries = build_copied_slots(repo_root, args.execution_base_sha, source_set, upload_dir)
 
     pr_entries = build_pr_ledger_entries(prs, classifications)
-    material_count = sum(1 for e in pr_entries if e["classification"] in ("SOURCE_SET_CHANGES_IF_MERGED", "SOURCE_CONTENT_REFRESH_IF_MERGED"))
+    material_count = sum(1 for e in pr_entries if e["classification"] in MATERIAL_PR_CLASSIFICATIONS)
     disposition = "CURRENT_MAIN_VALID_PENDING_OPEN_PR_REFRESH" if material_count > 0 else "CURRENT_MAIN_VALID"
 
     freshness_text = FRESHNESS_POLICY_TEXT.format(packet_id=PACKET_ID, execution_base_sha=args.execution_base_sha)
@@ -485,6 +505,14 @@ No ChatGPT Project upload or mutation was performed by generating this package.
 """
     (output_dir / "README.md").write_text(readme)
 
+    # Validate before archiving (not after) so PACKAGE_VALIDATION.json --
+    # advertised by this very README as a deliverable -- is actually present
+    # inside the ZIP, and so a package that fails its own gates never ships.
+    validation_result, validation_pass = run_validation(repo_root, args.execution_base_sha, output_dir, open_pr_dir)
+    (output_dir / "PACKAGE_VALIDATION.json").write_text(json.dumps(validation_result, indent=2) + "\n")
+    if not validation_pass:
+        raise SystemExit(f"FATAL: package failed validation before archiving -- see {output_dir / 'PACKAGE_VALIDATION.json'}")
+
     zip_sha256 = build_zip_archive(repo_root, output_dir)
 
     print(json.dumps({"disposition": disposition, "material_open_pr_count": material_count, "upload_file_count": len(list(upload_dir.iterdir())), "zip_sha256": zip_sha256}, indent=2))
@@ -526,8 +554,16 @@ def build_zip_archive(repo_root: Path, output_dir: Path) -> str:
             zf.writestr(zi, full.read_bytes())
 
     digest = hashlib.sha256(zip_path.read_bytes()).hexdigest()
-    archive_repo_relative = zip_path.relative_to(repo_root).as_posix()
-    sidecar_path.write_text(f"{digest}  {archive_repo_relative}\n")
+    try:
+        archive_path_for_sidecar = zip_path.relative_to(repo_root).as_posix()
+    except ValueError:
+        # --output-dir isn't under --repo-root (e.g. a scratch rebuild for
+        # verification). No repo-root-relative path exists to write, so fall
+        # back to the bare basename -- `shasum -a 256 -c` still succeeds as
+        # long as it's run from the sidecar's own directory, which is where
+        # the archive actually lives in this case.
+        archive_path_for_sidecar = zip_path.name
+    sidecar_path.write_text(f"{digest}  {archive_path_for_sidecar}\n")
     return digest
 
 

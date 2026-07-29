@@ -5,7 +5,7 @@
   "execution_base_sha": "5f862d36f5417801b9fe148fccbb439731627234",
   "final_head_sha": null,
   "final_head_sha_note": "Deliberately null in THIS commit (the substantive R1 repair commit). A follow-up proof-only commit (touching only proof/** paths) will record the real final head SHA via tools/pr_steward/classifier.py's documented self_reference_exception mechanism (supervisor_accepted flow), which is the repo's actual supported answer to a proof binding its own commit -- see that follow-up commit's PROOF.json for the resolved value.",
-  "generated_at": "2026-07-29T01:15:00Z",
+  "generated_at": "2026-07-29T02:30:00Z",
   "package_disposition": "CURRENT_MAIN_VALID_PENDING_OPEN_PR_REFRESH",
   "upload_file_count": 40,
   "material_open_pr_count": 5,
@@ -33,36 +33,67 @@
       "Final PR Steward re-run against the new head is pending."
     ]
   },
+  "supervisor_repair_r2": {
+    "trigger": "A fresh independent embedded audit (separate Agent-tool subagent, no implementer context) re-audited the R1 repair commit (94c1dcb1bc) specifically, not just the original pre-repair state. It independently re-executed every R1 fix claim (not just re-read PROOF.json's narrative) and confirmed all 5 originally-flagged gaps and the CI-red root causes are genuinely fixed. It also surfaced 4 pieces of new, undisclosed information: a confirmed live defect (the shipped ZIP did not contain PACKAGE_VALIDATION.json despite the package's own README advertising it), a crash bug it found independently (build_zip_archive() threw an uncaught ValueError for any --output-dir outside the repo root), and two dormant structural gaps flagged by 3 fresh chatgpt-codex-connector review threads posted ~4 minutes after 94c1dcb1bc landed (a self-reported capture_complete flag that could mask a future paginator bug, and a classification filter with no enum validation). Verdict: NEEDS_SUPERVISOR -- full findings in AUDITOR_REPORT.md / AUDIT_VERDICT.json.",
+    "fixes_applied": [
+      "scripts/project_sources/build_chatgpt_project_sources.py: build_zip_archive() now catches the ValueError from zip_path.relative_to(repo_root) and falls back to a bare basename in the sidecar when --output-dir is outside --repo-root, instead of crashing.",
+      "scripts/project_sources/validate_chatgpt_project_sources.py: refactored to expose a run_validation() function (previously validation logic was inline in main() only, uncallable from other scripts).",
+      "scripts/project_sources/build_chatgpt_project_sources.py: main() now calls run_validation() and writes PACKAGE_VALIDATION.json into the output dir BEFORE build_zip_archive() runs, and fails closed (SystemExit) if any gate fails -- so the shipped ZIP now genuinely contains PACKAGE_VALIDATION.json as its own README claims, and a package that fails its own gates can never ship.",
+      "scripts/project_sources/build_chatgpt_project_sources.py: capture_complete is now always recomputed as len(files) == pr.get('changedFiles', -1), never trusting a self-reported capture_complete field from captured PR data.",
+      "scripts/project_sources/build_chatgpt_project_sources.py: added a VALID_PR_CLASSIFICATIONS enum and a fail-closed check in build_pr_ledger_entries() that raises SystemExit on any unrecognized classification value in pr_classifications.json.",
+      "Rebuilt the full package fresh (all 9 validator gates pass inline and standalone), confirmed the ZIP now contains PACKAGE_VALIDATION.json via unzip -l, confirmed the out-of-repo --output-dir case no longer crashes, confirmed byte-identical reproducibility across two independent rebuilds still holds."
+    ],
+    "independent_verification": "A SEPARATE Agent-tool subagent (not the R2 auditor, not the implementer) was dispatched specifically to verify these 4 fixes via adversarial tests: rebuilding into an out-of-repo scratch dir (Finding A), inspecting the built ZIP's contents for PACKAGE_VALIDATION.json with all_gates_pass:true (Finding B1), calling the real build_pr_ledger_entries() with a forged self-reported capture_complete=true against mismatched file counts and confirming it was ignored (Finding B2), and running the build against a scratch pr_classifications.json with a bogus classification value and confirming a clean FATAL exit (Finding B3). All 4 findings reported VERIFIED-FIXED; overall verdict 'yes -- all 4 findings are genuinely resolved.'",
+    "not_yet_resolved_in_this_commit": [
+      "Review threads on PR #1152 from chatgpt-codex-connector are addressed by the fixes above but not yet marked resolved on GitHub.",
+      "A genuine signed local audit attestation (scripts/audit/sign_local_audit_proof.sh) to close the CI 'independent embedded audit' / 'PR Steward final readiness' gates is still pending -- to follow in a proof-only commit.",
+      "Final PR Steward re-run against the fully repaired head is still pending."
+    ]
+  },
   "embedded_audit": {
     "required": true,
     "status": "PASS_WITH_RISKS",
     "auditor_tool": "claude-code-cli",
     "auditor_model": "sonnet",
-    "invocation": "Spawned via the Agent tool as a fresh general-purpose subagent by a separate orchestrating Claude Code session; started with no prior conversation history and read all packet/implementation artifacts from disk independently.",
+    "invocation": "Spawned via the Agent tool as a fresh general-purpose subagent by a separate orchestrating Claude Code session; started with no prior conversation history, independently re-executed every R1 repair claim against head 94c1dcb1bc rather than trusting PROOF.json's narrative. See supervisor_repair_r2 for the fix-and-independently-reverify cycle that followed this audit's findings.",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/AUDITOR_REPORT.md",
     "findings": [
       {
-        "id": "AUDIT-1-01",
+        "id": "AUDIT-2-A",
         "severity": "LOW",
-        "title": "Slot 6 (06_PM_PLANE.md) rationale overstated doc-trust-map.md's citation of root PM_PLANE.md",
+        "title": "build_zip_archive() crashed for any --output-dir outside --repo-root",
         "status": "RESOLVED",
-        "body": "The rationale claimed doc-trust-map.md 'buckets' root PM_PLANE.md as LOW, but that document's LOW-row source-path list never actually names PM_PLANE.md -- an analogical extension, not a direct quote. The underlying pick (prefer the HIGH-rated, dated, authority-chain-citing tracked doc) held up on independent content comparison. Fixed: scripts/project_sources/source_set_v4.json slot 6 rationale rewritten to cite the actual independent content-comparison evidence instead."
+        "body": "zip_path.relative_to(repo_root) raised an uncaught ValueError whenever the output directory wasn't a subpath of the repo root -- exactly the 'rebuild into a scratch dir to verify' pattern an auditor or CI job would naturally use. Fixed with a try/except falling back to a bare basename in the sidecar. Independently re-verified by a separate verification subagent: rebuild into /tmp exits 0 and shasum -c passes."
       },
       {
-        "id": "AUDIT-1-02",
-        "severity": "LOW",
-        "title": "PR #1140 ledger entry did not note its touched ADR differs from the selected Memory Trinity ADR",
+        "id": "AUDIT-2-B1",
+        "severity": "MEDIUM",
+        "title": "Shipped ZIP did not contain PACKAGE_VALIDATION.json despite the package's own README advertising it as a deliverable",
         "status": "RESOLVED",
-        "body": "PR #1140 touches docs/90-adr/adr-dmx-prsteward-soloowner-001.md, which falls under the ledger's watched docs/90-adr/** family, but the evidence text only discussed slot 32 and never noted this is a different file from slot 11's Memory Trinity ADR. Independently confirmed it is a different file (NO_PROJECT_SOURCE_IMPACT remains correct). Fixed: pr_classifications.json's #1140 evidence text now states this explicitly."
+        "body": "build_zip_archive() ran before validate_chatgpt_project_sources.py ever executed as a separate script, so the file it produces was never present when the ZIP was built. Fixed by refactoring the validator into a callable run_validation() and having the assembler call it (writing PACKAGE_VALIDATION.json, failing closed on any gate failure) before zipping. Independently re-verified: unzip -l on a fresh build shows the file present with all_gates_pass:true."
+      },
+      {
+        "id": "AUDIT-2-B2",
+        "severity": "LOW",
+        "title": "capture_complete trusted a self-reported flag instead of always recomputing it",
+        "status": "RESOLVED",
+        "body": "A future capture run with a paginator bug could have set capture_complete=true incorrectly and silently bypassed the fail-closed incomplete-capture guard. No live PR was affected (only #1123 is incomplete and correctly disclosed it). Fixed by always recomputing len(files)==changedFiles. Independently re-verified: a forged self-reported capture_complete=true with a real file-count mismatch was ignored, raising the FATAL error."
+      },
+      {
+        "id": "AUDIT-2-B3",
+        "severity": "LOW",
+        "title": "No enum/allow-list validation on PR classification values",
+        "status": "RESOLVED",
+        "body": "A typo'd classification value in pr_classifications.json would have silently been treated as non-material rather than failing closed. No live occurrence (all 29 current values are valid). Fixed with a VALID_PR_CLASSIFICATIONS enum check. Independently re-verified: a scratch classifications file with a bogus value produced a clean FATAL exit naming the exact PR and value."
       }
     ],
     "fixes_applied": [
-      "Corrected slot 6 (06_PM_PLANE.md) rationale in scripts/project_sources/source_set_v4.json to stop overstating doc-trust-map.md's citation of root PM_PLANE.md; replaced with the actual independent content-comparison evidence.",
-      "Added an explicit note to PR #1140's classification in scripts/project_sources/pr_classifications.json clarifying that its touched ADR is a different file from the Memory Trinity ADR (slot 11)."
+      "See supervisor_repair_r2.fixes_applied for the full list (crash fix, PACKAGE_VALIDATION.json-in-ZIP ordering fix, capture_complete recomputation, classification enum validation)."
     ],
     "remaining_risks": [
-      "This audit covered the original 40-source selection and open-PR ledger (21 PRs); it did not review the R1 repair changes made afterward (validator gates, ZIP-in-assembler, 8 newly-classified PRs). A second independent audit pass covering the R1 delta is required before this proof can be treated as covering the packet's final state -- see supervisor_repair_r1.not_yet_resolved_in_this_commit above.",
+      "Review threads from chatgpt-codex-connector on PR #1152 are addressed by these fixes but not yet marked resolved on GitHub.",
+      "The CI 'independent embedded audit' and 'PR Steward / final readiness' gates remain red pending a genuine signed local audit attestation -- to follow in a proof-only commit.",
       "doc-trust-map.md (slot 08) is one day from its own next_review date (2026-07-29) as of packaging.",
       "PR #1123's SUPERSEDED_OR_CONFLICTING classification's raw numbers were independently re-verified live, but the interpretive judgment (stranded vs. recoverable) still partly rests on prior-session context."
     ],
@@ -96,8 +127,8 @@
     "note": "A final re-run against the fully repaired head (after the proof-only signed-attestation commit) is required before claiming READY; not yet performed as of this commit."
   },
   "remaining_risks": [
-    "A second independent audit pass covering this repair's own changes is pending (see embedded_audit.remaining_risks).",
-    "GitHub review threads from chatgpt-codex-connector are not yet marked resolved.",
+    "GitHub review threads from chatgpt-codex-connector are not yet marked resolved on PR #1152.",
+    "A genuine signed local audit attestation is still pending -- to follow in a proof-only commit -- before the CI 'independent embedded audit' and 'PR Steward / final readiness' gates can go green.",
     "Final PR Steward re-run against the fully repaired head has not yet been performed.",
     "The canonical Task Packet schema's execution.agent enum has no 'claude' value; PR #1159 (newly discovered, classified SOURCE_CONTENT_REFRESH_IF_MERGED for slot 25) is the real fix for this and remains unmerged."
   ],
