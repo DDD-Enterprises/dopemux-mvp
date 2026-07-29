@@ -423,4 +423,3 @@ For every slot: logical slot, selected source, rejected candidates, authority cl
 - Bytes: 3309
 - Rationale: Sole tracked candidate.
 - Rejected candidates: none (single tracked candidate)
-

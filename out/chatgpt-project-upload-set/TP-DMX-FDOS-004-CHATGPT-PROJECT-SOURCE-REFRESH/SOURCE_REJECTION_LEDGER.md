@@ -31,4 +31,3 @@ Every rejected candidate for a selected slot, classified.
 - `PAL_CHAINING_DOCTRINE.md` -- **REDUNDANT_WITH_HIGHER_AUTHORITY**: Remains a valid repo reference per packet section 18, but the compressed operational rules (slot 24) plus live AGENTS.md (slot 01) adequately preserve the execution contract for this upload set; not present at a root path in the current tracked tree in any case.
 - `PAL_PACKET_TEMPLATE.md` -- **GENERATED_NAVIGATION_NOISE**: No such file exists in the current tracked tree; only task-packets/TEMPLATE_TASK_PACKET.md (selected, slot 26) is present.
 - `TEMPLATE_TASK_PACKET.md (installer scaffolding copies)` -- **TOOL_SPECIFIC_OUT_OF_SCOPE**: src/dopemux/templates/init/**/TEMPLATE_TASK_PACKET.md are installer scaffolding copies for newly-initialized repos, not this repo's own authoring template (slot 26 uses task-packets/TEMPLATE_TASK_PACKET.md directly).
-

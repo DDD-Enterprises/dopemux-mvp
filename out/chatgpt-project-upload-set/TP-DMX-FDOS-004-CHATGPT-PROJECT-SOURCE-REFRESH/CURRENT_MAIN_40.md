@@ -44,4 +44,3 @@ execution_base_sha: `5f862d36f5417801b9fe148fccbb439731627234`
 | 38 | `38_SOURCE_FRESHNESS_POLICY.md` | (generated) | -- | -- |
 | 39 | `39_PROJECT_SOURCE_MANIFEST.json` | (generated) | -- | -- |
 | 40 | `40_OPEN_PR_IMPACT_LEDGER.md` | (generated) | -- | -- |
-

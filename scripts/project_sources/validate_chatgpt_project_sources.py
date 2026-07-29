@@ -65,12 +65,46 @@ def run_validation(repo_root: Path, execution_base_sha: str, package_dir: Path, 
     # silently missing (or a bundle_filename typo) lets a corrupted/renamed
     # disk file pass every other gate uninspected.
     disk_names = {p.name for p in files}
-    manifest_names = {entry["bundle_filename"] for entry in manifest["files"]}
+    manifest_filenames = [entry["bundle_filename"] for entry in manifest["files"]]
+    manifest_names = set(manifest_filenames)
+    # Set conversion above proves disk/manifest NAME coverage but silently
+    # discards a duplicate bundle_filename (two manifest entries naming the
+    # same file, e.g. conflicting machine-readable metadata for slot 39) --
+    # check exactly-once mapping separately, on the raw list.
+    duplicate_filenames = sorted(
+        {name for name in manifest_filenames if manifest_filenames.count(name) > 1}
+    )
     gates["manifest_disk_coverage"] = {
-        "pass": disk_names == manifest_names,
+        "pass": disk_names == manifest_names and not duplicate_filenames,
         "detail": {
             "on_disk_only": sorted(disk_names - manifest_names),
             "manifest_only": sorted(manifest_names - disk_names),
+            "duplicate_manifest_entries": duplicate_filenames,
+        },
+    }
+
+    # Bind validation to the manifest's own recorded base SHA: without this,
+    # calling this validator with a different --execution-base-sha than what
+    # the manifest declares can pass every other gate (source_identity only
+    # checks entries against the ARGUMENT's SHA, not the manifest's own
+    # execution_base_sha field) as long as the selected source blobs happen
+    # to be byte-identical between the two SHAs, silently reporting success
+    # for a package whose own manifest disagrees with what was validated.
+    manifest_base_sha = manifest.get("execution_base_sha")
+    mismatched_commit_shas = sorted(
+        {
+            entry["source_commit_sha"]
+            for entry in manifest["files"]
+            if entry.get("artifact_type") == "copied_source"
+            and entry.get("source_commit_sha") != execution_base_sha
+        }
+    )
+    gates["execution_base_sha_binding"] = {
+        "pass": manifest_base_sha == execution_base_sha and not mismatched_commit_shas,
+        "detail": {
+            "manifest_execution_base_sha": manifest_base_sha,
+            "validator_execution_base_sha": execution_base_sha,
+            "entries_with_mismatched_source_commit_sha": mismatched_commit_shas,
         },
     }
 

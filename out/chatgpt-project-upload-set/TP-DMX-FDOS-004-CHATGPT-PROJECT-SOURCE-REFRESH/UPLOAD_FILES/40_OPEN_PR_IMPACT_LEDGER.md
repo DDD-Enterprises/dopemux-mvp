@@ -4,7 +4,7 @@
 > No unmerged PR content is represented as current-main truth.
 
 ```yaml
-captured_at: 2026-07-29T04:30:00Z
+captured_at: 2026-07-29T05:10:00Z
 execution_base_sha: 5f862d36f5417801b9fe148fccbb439731627234
 open_pr_count: 29
 material_open_pr_count: 5
@@ -844,4 +844,3 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - Open PR inventory count: 29
 - Ledger entry count: 29
 - Every PR number appears exactly once above (enforced by the build script's fail-closed classification lookup).
-

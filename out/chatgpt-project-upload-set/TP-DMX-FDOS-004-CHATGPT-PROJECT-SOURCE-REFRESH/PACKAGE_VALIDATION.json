@@ -59,7 +59,16 @@
       "pass": true,
       "detail": {
         "on_disk_only": [],
-        "manifest_only": []
+        "manifest_only": [],
+        "duplicate_manifest_entries": []
+      }
+    },
+    "execution_base_sha_binding": {
+      "pass": true,
+      "detail": {
+        "manifest_execution_base_sha": "5f862d36f5417801b9fe148fccbb439731627234",
+        "validator_execution_base_sha": "5f862d36f5417801b9fe148fccbb439731627234",
+        "entries_with_mismatched_source_commit_sha": []
       }
     },
     "source_identity": {
