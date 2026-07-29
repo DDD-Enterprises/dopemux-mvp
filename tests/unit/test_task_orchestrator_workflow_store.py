@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 import uuid
 from pathlib import Path
@@ -74,3 +75,38 @@ async def test_workflow_store_list_ideas_raises_on_bridge_failure():
             await store.list_ideas(limit=5)
     finally:
         await store.close()
+
+
+@pytest.mark.asyncio
+async def test_workflow_store_replays_same_identity_as_authenticated_upsert():
+    module = _load_workflow_store_module()
+    persisted = {}
+    requests = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.method == "POST"
+        assert request.url.path == "/kg/custom_data"
+        assert request.headers["authorization"] == "Bearer synthetic-bridge-token"
+        payload = json.loads(request.content)
+        identity = (payload["workspace_id"], payload["category"], payload["key"])
+        persisted[identity] = payload["value"]
+        requests.append(identity)
+        return httpx.Response(200, json={"success": True, "status": "saved"})
+
+    store = module.WorkflowStore(workspace_id="/synthetic/workspace")
+    await store._client.aclose()
+    store._client = module.AsyncDopeconBridgeClient(
+        base_url="http://bridge",
+        token="synthetic-bridge-token",
+        transport=httpx.MockTransport(handler),
+    )
+
+    try:
+        assert await store.save_idea({"id": "idea_replay", "title": "first"}) is True
+        assert await store.save_idea({"id": "idea_replay", "title": "second"}) is True
+    finally:
+        await store.close()
+
+    identity = ("/synthetic/workspace", "workflow_ideas", "idea_replay")
+    assert requests == [identity, identity]
+    assert persisted == {identity: {"id": "idea_replay", "title": "second"}}
