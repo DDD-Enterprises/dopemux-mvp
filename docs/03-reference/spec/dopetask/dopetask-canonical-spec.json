@@ -84,6 +84,7 @@
           "enum": [
             "gemini",
             "codex",
+            "claude",
             "vibe",
             "shell"
           ]
