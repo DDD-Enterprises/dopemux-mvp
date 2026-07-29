@@ -1,0 +1,13 @@
+{
+  "handoff_id": "DMX-DCP-MODEL-ROUTING-MVP-0007I-HANDOFF-001",
+  "branch": "dcp/model-routing-0007i-trusted-input",
+  "governing_posture": "GO_DRAFT_FIRST",
+  "recommended_next_step": "CREATE_DRAFT_PR",
+  "next_packet": "DMX-DCP-MODEL-ROUTING-MVP-0007T",
+  "merge_readiness": "BLOCKED_NOT_REQUESTED",
+  "active_trusted_adapters": [],
+  "warnings": [
+    "is_runnable forge path residual",
+    "Opus auditor NOT_RUN"
+  ]
+}
