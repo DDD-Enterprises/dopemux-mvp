@@ -1,0 +1,201 @@
+# ddd-release-gate — exact-head security-release APPROVE as org-owned GitHub App
+#
+# Trust model (ADR-DMX-PRSTEWARD-ORG-APP-001):
+# - Runs only via workflow_dispatch from the default branch (main), never from PR head code.
+# - Authenticates as ddd-release-gate[bot] using org secrets (not GITHUB_TOKEN).
+# - Posts APPROVE bound to the PR head commit SHA only.
+# - Never merges, never deploys, never uses auto-merge.
+#
+# Required org/repo secrets:
+#   DDD_RELEASE_GATE_APP_ID
+#   DDD_RELEASE_GATE_PRIVATE_KEY
+#
+name: ddd-release-gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Pull request number to approve at its current head'
+        required: true
+        type: string
+      expected_head_sha:
+        description: 'Optional full 40-char SHA; must match PR head exactly if set'
+        required: false
+        type: string
+        default: ''
+      require_green_checks:
+        description: 'Fail if gh pr checks reports any failed required-looking checks'
+        required: false
+        type: boolean
+        default: true
+
+concurrency:
+  group: ddd-release-gate-${{ github.event.inputs.pr_number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  exact-head-approve:
+    name: exact-head APPROVE as ddd-release-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Operator must run this workflow from the default branch (main) in the UI.
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+
+    steps:
+      - name: Fail closed without app secrets
+        env:
+          APP_ID: ${{ secrets.DDD_RELEASE_GATE_APP_ID }}
+          APP_KEY: ${{ secrets.DDD_RELEASE_GATE_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${APP_ID:-}" ]; then
+            echo "::error::Missing secret DDD_RELEASE_GATE_APP_ID (numeric App ID)."
+            exit 1
+          fi
+          if [ -z "${APP_KEY:-}" ]; then
+            echo "::error::Missing secret DDD_RELEASE_GATE_PRIVATE_KEY (PEM private key)."
+            exit 1
+          fi
+          echo "App secrets present (values not logged)."
+
+      - name: Mint ddd-release-gate installation token
+        id: app_token
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # ratchet:actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DDD_RELEASE_GATE_APP_ID }}
+          private-key: ${{ secrets.DDD_RELEASE_GATE_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: read
+          permission-actions: read
+          permission-checks: read
+          permission-pull-requests: write
+
+      - name: Resolve PR head and preflight
+        id: pr
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          EXPECTED: ${{ inputs.expected_head_sha }}
+          REQUIRE_GREEN: ${{ inputs.require_green_checks }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if ! [[ "${PR_NUMBER}" =~ ^[0-9]+$ ]]; then
+            echo "::error::pr_number must be numeric, got: ${PR_NUMBER}"
+            exit 1
+          fi
+
+          META=$(gh pr view "${PR_NUMBER}" --repo "${REPO}" \
+            --json number,state,isDraft,headRefOid,baseRefName,url,author)
+          echo "${META}" | python3 -m json.tool
+
+          STATE=$(echo "${META}" | python3 -c "import json,sys; print(json.load(sys.stdin)['state'])")
+          DRAFT=$(echo "${META}" | python3 -c "import json,sys; print(json.load(sys.stdin).get('isDraft', False))")
+          HEAD=$(echo "${META}" | python3 -c "import json,sys; print(json.load(sys.stdin)['headRefOid'])")
+          BASE=$(echo "${META}" | python3 -c "import json,sys; print(json.load(sys.stdin)['baseRefName'])")
+          AUTHOR=$(echo "${META}" | python3 -c "import json,sys; a=json.load(sys.stdin).get('author') or {}; print(a.get('login',''))")
+
+          if [ "${STATE}" != "OPEN" ]; then
+            echo "::error::PR #${PR_NUMBER} is not OPEN (state=${STATE})."
+            exit 1
+          fi
+          if [ "${DRAFT}" = "True" ] || [ "${DRAFT}" = "true" ]; then
+            echo "::error::PR #${PR_NUMBER} is a draft; refuse approval."
+            exit 1
+          fi
+          if [ "${BASE}" != "main" ] && [ "${BASE}" != "${{ github.event.repository.default_branch }}" ]; then
+            echo "::error::Refusing non-default base branch: ${BASE}"
+            exit 1
+          fi
+          if [ -n "${EXPECTED}" ]; then
+            EXP=$(echo "${EXPECTED}" | tr '[:upper:]' '[:lower:]')
+            GOT=$(echo "${HEAD}" | tr '[:upper:]' '[:lower:]')
+            if [ "${EXP}" != "${GOT}" ]; then
+              echo "::error::expected_head_sha mismatch: expected=${EXPECTED} actual=${HEAD}"
+              exit 1
+            fi
+          fi
+          if [ "${#HEAD}" -ne 40 ]; then
+            echo "::error::head SHA is not 40 chars: ${HEAD}"
+            exit 1
+          fi
+
+          if [ "${REQUIRE_GREEN}" = "true" ]; then
+            set +e
+            CHECKS=$(gh pr checks "${PR_NUMBER}" --repo "${REPO}" 2>&1)
+            CHECK_RC=$?
+            set -e
+            echo "${CHECKS}"
+            # gh pr checks exits non-zero when any check failed/pending.
+            # Fail closed on explicit failures; allow pending only if none failed.
+            if echo "${CHECKS}" | grep -E $'\tfail\t|\tfailure\t|FAILED' >/dev/null 2>&1; then
+              echo "::error::One or more PR checks are failing; refuse approval."
+              exit 1
+            fi
+            # Also fail if gh reports overall failure with fail lines in default format
+            if [ "${CHECK_RC}" -ne 0 ]; then
+              if echo "${CHECKS}" | grep -qiE 'fail|failure|cancelled|timed_out'; then
+                echo "::error::gh pr checks reported failures (exit ${CHECK_RC})."
+                exit 1
+              fi
+              echo "::warning::gh pr checks exit ${CHECK_RC} but no explicit fail lines; continuing with caution."
+            fi
+          fi
+
+          {
+            echo "head_sha=${HEAD}"
+            echo "author=${AUTHOR}"
+            echo "url=$(echo "${META}" | python3 -c "import json,sys; print(json.load(sys.stdin)['url'])")"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Post exact-head APPROVE as ddd-release-gate[bot]
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          BODY=$(cat <<EOF
+          Security-release gate approval (ddd-release-gate).
+
+          - Exact head: \`${HEAD_SHA}\`
+          - Authority: org-owned GitHub App (ADR-DMX-PRSTEWARD-ORG-APP-001)
+          - Does **not** merge, enable auto-merge, or authorize deployment.
+          - PR Steward may accept this only if audit/proof/CI gates remain green.
+
+          Workflow: \`${{ github.workflow }}\` run \`${{ github.run_id }}\`
+          EOF
+          )
+
+          # Use REST so commit_id is explicit (exact-head binding).
+          gh api --method POST \
+            "repos/${REPO}/pulls/${PR_NUMBER}/reviews" \
+            -f commit_id="${HEAD_SHA}" \
+            -f event="APPROVE" \
+            -f body="${BODY}"
+
+          echo "Posted APPROVE on PR #${PR_NUMBER} at ${HEAD_SHA}"
+
+      - name: Summarize
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          URL: ${{ steps.pr.outputs.url }}
+        run: |
+          {
+            echo "## ddd-release-gate"
+            echo ""
+            echo "- PR: #${PR_NUMBER}"
+            echo "- URL: ${URL}"
+            echo "- Approved head: \`${HEAD_SHA}\`"
+            echo "- Actor: ddd-release-gate[bot] (installation token)"
+            echo "- Merge: **not** performed"
+            echo ""
+            echo "Next: re-run PR Steward; require MERGE_READINESS READY; separate operator merge authorization."
+          } >> "${GITHUB_STEP_SUMMARY}"

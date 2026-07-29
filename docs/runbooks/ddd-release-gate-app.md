@@ -68,6 +68,39 @@ commit_id: H
 
 PR Steward then re-runs and should clear `SECURITY_RELEASE_APPROVAL_REQUIRED` with `approval_kind=github_app` when gates remain green.
 
+## Workflow: exact-head APPROVE from main
+
+Workflow file: `.github/workflows/ddd-release-gate.yml`
+
+### Secrets required (org or repo)
+
+| Secret | Value |
+|---|---|
+| `DDD_RELEASE_GATE_APP_ID` | Numeric App ID (e.g. `4420140`) |
+| `DDD_RELEASE_GATE_PRIVATE_KEY` | Full PEM private key |
+
+### Run (always from branch `main`)
+
+1. Actions → **ddd-release-gate** → **Run workflow**
+2. Branch: **`main`** (required; other branches are rejected)
+3. Inputs:
+   - `pr_number`: e.g. `1126`
+   - `expected_head_sha`: full 40-char SHA (recommended), e.g. `ba8a78fa1ed09dc0d7cbb9f2b2680508c6fa13a3`
+   - `require_green_checks`: leave `true` unless debugging
+4. Confirm the run posted an APPROVE as `ddd-release-gate[bot]` on that commit.
+5. Re-run PR Steward; require READY; then separate operator merge authorization.
+
+### CLI equivalent
+
+```bash
+gh workflow run ddd-release-gate.yml \
+  --repo DDD-Enterprises/dopemux-mvp \
+  --ref main \
+  -f pr_number=1126 \
+  -f expected_head_sha=ba8a78fa1ed09dc0d7cbb9f2b2680508c6fa13a3 \
+  -f require_green_checks=true
+```
+
 ## Explicit non-authority
 
 The app does **not** authorize deployment, production changes, or auto-merge.
