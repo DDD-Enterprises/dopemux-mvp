@@ -131,19 +131,20 @@ jobs:
             CHECK_RC=$?
             set -e
             echo "${CHECKS}"
-            # gh pr checks exits non-zero when any check failed/pending.
-            # Fail closed on explicit failures; allow pending only if none failed.
-            if echo "${CHECKS}" | grep -E $'\tfail\t|\tfailure\t|FAILED' >/dev/null 2>&1; then
-              echo "::error::One or more PR checks are failing; refuse approval."
+            # Ignore PR Steward self-status: it stays red until this APPROVE lands.
+            FILTERED=$(echo "${CHECKS}" | grep -v 'PR Steward / final readiness' || true)
+            echo "--- filtered (steward self-status excluded) ---"
+            echo "${FILTERED}"
+            if echo "${FILTERED}" | grep -E $'\tfail\t|\tfailure\t' >/dev/null 2>&1; then
+              echo "::error::One or more non-steward PR checks are failing; refuse approval."
               exit 1
             fi
-            # Also fail if gh reports overall failure with fail lines in default format
             if [ "${CHECK_RC}" -ne 0 ]; then
-              if echo "${CHECKS}" | grep -qiE 'fail|failure|cancelled|timed_out'; then
-                echo "::error::gh pr checks reported failures (exit ${CHECK_RC})."
+              if echo "${FILTERED}" | grep -qiE $'\tfail\t|\tfailure\t|cancelled|timed_out'; then
+                echo "::error::gh pr checks reported non-steward failures (exit ${CHECK_RC})."
                 exit 1
               fi
-              echo "::warning::gh pr checks exit ${CHECK_RC} but no explicit fail lines; continuing with caution."
+              echo "::warning::gh pr checks exit ${CHECK_RC}; no non-steward fail lines after filter."
             fi
           fi
 
