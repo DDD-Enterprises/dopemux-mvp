@@ -1,3 +1,14 @@
+---
+id: TP-LTAIP-H0-004
+title: Tp Ltaip H0 004
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-07-28'
+last_review: '2026-07-28'
+next_review: '2026-10-26'
+prelude: Tp Ltaip H0 004 (explanation) for dopemux documentation and developer workflows.
+---
 # Macro Packet: TP-LTAIP-H0-004
 
 ## Status
@@ -240,7 +251,7 @@ python scripts/leantime-ai-parity/h0/atomicity/measure_rebase_tax.py --source tm
 ```bash
 bash scripts/leantime-ai-parity/h0/atomicity/destroy_spike.sh --volumes
 rm -rf tmp/ltaip-h0-004
-python -c 'import json,jsonschema; jsonschema.validate(json.load(open("task-packets/leantime-ai-parity/TP-LTAIP-H0-004.json")), json.load(open("dopetask-cannonical-spec.json")))' 
+python -c 'import json,jsonschema; jsonschema.validate(json.load(open("task-packets/leantime-ai-parity/TP-LTAIP-H0-004.json")), json.load(open("dopetask-cannonical-spec.json")))'
 docker compose -f compose/leantime-ai-parity/h0/compose.atomicity-spike.yml config --quiet
 python -m pytest -q tests/prototypes/leantime-ai-parity/h0/atomicity
 python -m json.tool config/leantime-ai-parity/h0/atomicity-spike.json >/dev/null
@@ -322,7 +333,7 @@ All material review findings must be resolved, accepted with evidence, or escala
 ### Final gate
 
 ```bash
-python -c 'import json,jsonschema; jsonschema.validate(json.load(open("task-packets/leantime-ai-parity/TP-LTAIP-H0-004.json")), json.load(open("dopetask-cannonical-spec.json")))' 
+python -c 'import json,jsonschema; jsonschema.validate(json.load(open("task-packets/leantime-ai-parity/TP-LTAIP-H0-004.json")), json.load(open("dopetask-cannonical-spec.json")))'
 docker compose -f compose/leantime-ai-parity/h0/compose.atomicity-spike.yml config --quiet
 python -m pytest -q tests/prototypes/leantime-ai-parity/h0/atomicity
 python -m json.tool config/leantime-ai-parity/h0/atomicity-spike.json >/dev/null

@@ -1,3 +1,14 @@
+---
+id: TP-LTAIP-H0-003
+title: Tp Ltaip H0 003
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-07-28'
+last_review: '2026-07-28'
+next_review: '2026-10-26'
+prelude: Tp Ltaip H0 003 (explanation) for dopemux documentation and developer workflows.
+---
 # Macro Packet: TP-LTAIP-H0-003
 
 ## Status

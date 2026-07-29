@@ -1,3 +1,14 @@
+---
+id: TP-LTAIP-H0-006
+title: Tp Ltaip H0 006
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-07-28'
+last_review: '2026-07-28'
+next_review: '2026-10-26'
+prelude: Tp Ltaip H0 006 (explanation) for dopemux documentation and developer workflows.
+---
 # Macro Packet: TP-LTAIP-H0-006
 
 ## Status
@@ -225,7 +236,7 @@ python scripts/leantime-ai-parity/h0/plugin-qualification/calculate_package_tco.
 
 ```bash
 bash scripts/leantime-ai-parity/h0/plugin-qualification/destroy_lab.sh --volumes
-python -c 'import json,jsonschema; jsonschema.validate(json.load(open("task-packets/leantime-ai-parity/TP-LTAIP-H0-006.json")), json.load(open("dopetask-cannonical-spec.json")))' 
+python -c 'import json,jsonschema; jsonschema.validate(json.load(open("task-packets/leantime-ai-parity/TP-LTAIP-H0-006.json")), json.load(open("dopetask-cannonical-spec.json")))'
 python -m pytest -q tests/prototypes/leantime-ai-parity/h0/plugin-qualification
 python -m json.tool reports/leantime-ai-parity/h0/plugin-qualification/input-register.json >/dev/null
 python -m json.tool reports/leantime-ai-parity/h0/plugin-qualification/package-manifest.json >/dev/null
@@ -302,7 +313,7 @@ All material review findings must be resolved, accepted with evidence, or escala
 ### Final gate
 
 ```bash
-python -c 'import json,jsonschema; jsonschema.validate(json.load(open("task-packets/leantime-ai-parity/TP-LTAIP-H0-006.json")), json.load(open("dopetask-cannonical-spec.json")))' 
+python -c 'import json,jsonschema; jsonschema.validate(json.load(open("task-packets/leantime-ai-parity/TP-LTAIP-H0-006.json")), json.load(open("dopetask-cannonical-spec.json")))'
 python -m pytest -q tests/prototypes/leantime-ai-parity/h0/plugin-qualification
 python -m json.tool reports/leantime-ai-parity/h0/plugin-qualification/input-register.json >/dev/null
 python -m json.tool reports/leantime-ai-parity/h0/plugin-qualification/package-manifest.json >/dev/null

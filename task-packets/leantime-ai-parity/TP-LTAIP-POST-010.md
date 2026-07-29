@@ -1,3 +1,14 @@
+---
+id: TP-LTAIP-POST-010
+title: Tp Ltaip Post 010
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-07-28'
+last_review: '2026-07-28'
+next_review: '2026-10-26'
+prelude: Tp Ltaip Post 010 (explanation) for dopemux documentation and developer workflows.
+---
 # Macro Packet: TP-LTAIP-POST-010
 
 ## Status
@@ -195,7 +206,7 @@ python -m pytest -q tests/prototypes/leantime-ai-parity/h1/test_generated_child_
 **Commands**
 
 ```bash
-python -c 'import json,jsonschema; jsonschema.validate(json.load(open("task-packets/leantime-ai-parity/TP-LTAIP-POST-010.json")), json.load(open("dopetask-cannonical-spec.json")))' 
+python -c 'import json,jsonschema; jsonschema.validate(json.load(open("task-packets/leantime-ai-parity/TP-LTAIP-POST-010.json")), json.load(open("dopetask-cannonical-spec.json")))'
 python -m pytest -q tests/prototypes/leantime-ai-parity/h1/test_selected_gap_plan.py tests/prototypes/leantime-ai-parity/h1/test_generated_child_packets.py
 python -m json.tool config/leantime-ai-parity/h1/selected-gap-plan.json >/dev/null
 python -m json.tool reports/leantime-ai-parity/h1/parity-foundation/capability-map.json >/dev/null
@@ -269,7 +280,7 @@ All material review findings must be resolved, accepted with evidence, or escala
 ### Final gate
 
 ```bash
-python -c 'import json,jsonschema; jsonschema.validate(json.load(open("task-packets/leantime-ai-parity/TP-LTAIP-POST-010.json")), json.load(open("dopetask-cannonical-spec.json")))' 
+python -c 'import json,jsonschema; jsonschema.validate(json.load(open("task-packets/leantime-ai-parity/TP-LTAIP-POST-010.json")), json.load(open("dopetask-cannonical-spec.json")))'
 python -m pytest -q tests/prototypes/leantime-ai-parity/h1/test_selected_gap_plan.py tests/prototypes/leantime-ai-parity/h1/test_generated_child_packets.py
 python -m json.tool config/leantime-ai-parity/h1/selected-gap-plan.json >/dev/null
 python -m json.tool reports/leantime-ai-parity/h1/parity-foundation/capability-map.json >/dev/null

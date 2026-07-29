@@ -1,3 +1,14 @@
+---
+id: TP-LTAIP-POST-012
+title: Tp Ltaip Post 012
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-07-28'
+last_review: '2026-07-28'
+next_review: '2026-10-26'
+prelude: Tp Ltaip Post 012 (explanation) for dopemux documentation and developer workflows.
+---
 # Macro Packet: TP-LTAIP-POST-012
 
 ## Status
@@ -212,7 +223,7 @@ python -m pytest -q tests/prototypes/leantime-ai-parity/upstream
 
 ```bash
 rm -rf tmp/ltaip-upstream
-python -c 'import json,jsonschema; jsonschema.validate(json.load(open("task-packets/leantime-ai-parity/TP-LTAIP-POST-012.json")), json.load(open("dopetask-cannonical-spec.json")))' 
+python -c 'import json,jsonschema; jsonschema.validate(json.load(open("task-packets/leantime-ai-parity/TP-LTAIP-POST-012.json")), json.load(open("dopetask-cannonical-spec.json")))'
 python -m pytest -q tests/prototypes/leantime-ai-parity/upstream
 python -m json.tool reports/leantime-ai-parity/upstream/contribution-register.json >/dev/null
 python -m json.tool reports/leantime-ai-parity/upstream/compatibility-results.json >/dev/null
@@ -287,7 +298,7 @@ All material review findings must be resolved, accepted with evidence, or escala
 ### Final gate
 
 ```bash
-python -c 'import json,jsonschema; jsonschema.validate(json.load(open("task-packets/leantime-ai-parity/TP-LTAIP-POST-012.json")), json.load(open("dopetask-cannonical-spec.json")))' 
+python -c 'import json,jsonschema; jsonschema.validate(json.load(open("task-packets/leantime-ai-parity/TP-LTAIP-POST-012.json")), json.load(open("dopetask-cannonical-spec.json")))'
 python -m pytest -q tests/prototypes/leantime-ai-parity/upstream
 python -m json.tool reports/leantime-ai-parity/upstream/contribution-register.json >/dev/null
 python -m json.tool reports/leantime-ai-parity/upstream/compatibility-results.json >/dev/null

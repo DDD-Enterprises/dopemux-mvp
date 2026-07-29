@@ -1,3 +1,15 @@
+---
+id: ltaip-h0-load-instructions
+title: Ltaip H0 Load Instructions
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-07-28'
+last_review: '2026-07-28'
+next_review: '2026-10-26'
+prelude: Ltaip H0 Load Instructions (explanation) for dopemux documentation and developer
+  workflows.
+---
 # LTAIP Task Orchestrator Load Plan
 
 ## Truth posture
