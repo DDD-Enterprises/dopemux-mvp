@@ -50,6 +50,7 @@
       "task-packets/TP-DMX-MCP-PR1150-REVIEW-REPAIR-001.json",
       "tests/scripts/test_setup_sh.py",
       "tests/test_mcp_health_probe.py",
+      "tests/unit/test_cli_audit_remediations.py",
       "tests/unit/test_mcp_commands_lifecycle.py"
     ],
     "verify": [
@@ -115,6 +116,7 @@
         ".claude/hooks/mcp_health_probe.py",
         "tests/scripts/test_setup_sh.py",
         "tests/test_mcp_health_probe.py",
+        "tests/unit/test_cli_audit_remediations.py",
         "tests/unit/test_mcp_commands_lifecycle.py"
       ],
       "validation": [
