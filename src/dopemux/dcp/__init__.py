@@ -50,6 +50,17 @@ from dopemux.dcp.lane_model import (
 from dopemux.dcp.lane_engine import (
     decide_lane,
 )
+from dopemux.dcp.runner_contract import (
+    RunnerContractDocument,
+    RunnerContractError,
+    RunnerInvocationPlan,
+    RunnerPlanStatus,
+    RunnerProofEnvelope,
+    RunnerResult,
+    build_blocked_plan,
+    document_plan,
+    execute_runner_plan,
+)
 from dopemux.dcp.trusted_adapter_registry import (
     AdapterRecord,
     RegistryError,
@@ -125,4 +136,14 @@ __all__ = [
     "assert_no_mutation_adapters",
     "listed_adapter_ids",
     "load_registry",
+    # Runner contract (0008)
+    "RunnerContractDocument",
+    "RunnerContractError",
+    "RunnerInvocationPlan",
+    "RunnerPlanStatus",
+    "RunnerProofEnvelope",
+    "RunnerResult",
+    "build_blocked_plan",
+    "document_plan",
+    "execute_runner_plan",
 ]

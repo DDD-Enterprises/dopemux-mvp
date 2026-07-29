@@ -1,0 +1,40 @@
+{
+  "bundle_id": "PROOF-DMX-DCP-MODEL-ROUTING-MVP-0008-001",
+  "status": "COMPLETE",
+  "validation_state": "PASS_WITH_RISKS",
+  "created_at": "2026-07-29T00:09:08Z",
+  "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0008",
+  "branch": "dcp/model-routing-0008-runner-contract",
+  "base_sha": "ca487efd253e0399ffee28ec2aa39d07c4335a5b",
+  "subject_sha": "ca487efd253e0399ffee28ec2aa39d07c4335a5b",
+  "invocation_authorized": false,
+  "runtime_execution_added": false,
+  "embedded_audit": {
+    "auditor_verdict": "PASS_WITH_RISKS",
+    "auditor_model": "NOT_RUN"
+  },
+  "remaining_risks": [
+    "Opus NOT_RUN"
+  ],
+  "merge_readiness": "BLOCKED_NOT_REQUESTED",
+  "authoritative_artifacts": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0008/RUNNER_CONTRACT.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0008/PROOF.json"
+  ],
+  "supporting_artifacts": [
+    "src/dopemux/dcp/runner_contract.py"
+  ],
+  "handoff_refs": [],
+  "parent_bundle_refs": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/PROOF.json"
+  ],
+  "review_order_hint": [
+    "RUNNER_CONTRACT.md"
+  ],
+  "chain_of_custody": {
+    "primary_executor": "grok-4.5-build"
+  },
+  "run_id": "0008",
+  "skill": "dcp-runner-contract",
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}
