@@ -162,6 +162,6 @@ else
     echo ""
     echo "⚠️  Some MCP servers are not properly configured."
     echo "🔧 To fix issues, run:"
-    echo "   dopemux mcp start"
+    echo "   dopemux mcp ensure --full"
     exit 1
 fi

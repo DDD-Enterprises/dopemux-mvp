@@ -11,8 +11,8 @@
 #
 # Usage (unchanged):
 #   ./scripts/setup.sh                 # one-command install (delegates to ./install.sh --quick --yes)
-#   ./scripts/setup.sh --skip-docker   # skip Docker services (delegates to the installer's
-#                                      # documented INSTALLER_TEST_MODE=1 dry-run guard)
+#   ./scripts/setup.sh --skip-docker   # install core package and shell integration,
+#                                      # but skip Docker-dependent stages
 #
 set -euo pipefail
 
@@ -34,10 +34,9 @@ done
 echo "scripts/setup.sh is a compatibility shim — delegating to the canonical installer (./install.sh)."
 
 if [ "$SKIP_DOCKER" = true ]; then
-    echo "--skip-docker: running the installer with its documented INSTALLER_TEST_MODE guard"
-    echo "(skips docker checks, network creation, and compose pull/up)."
+    echo "--skip-docker: installing core package without Docker-dependent stages."
     echo "Start Docker MCP services later with: dopemux mcp start"
-    INSTALLER_TEST_MODE=1 ./install.sh --quick --yes
+    DOPEMUX_SKIP_DOCKER=1 ./install.sh --quick --yes
 else
     ./install.sh --quick --yes
 fi

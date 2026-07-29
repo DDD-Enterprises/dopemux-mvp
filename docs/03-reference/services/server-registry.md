@@ -131,7 +131,13 @@ docker-compose logs -f mas-sequential-thinking        # Tail logs
 - **Role**: `workflow`
 - **Repository**: `https://github.com/jpicklyk/task-orchestrator`
 - **Description**: Advanced dependency analysis and task orchestration with 37 specialized tools
-- **Health Check**: `http://localhost:7890/mcp`
+- **Health Check**: Streamable HTTP MCP initialization:
+  ```bash
+  curl -sS -X POST http://localhost:7890/mcp \
+    -H 'Content-Type: application/json' \
+    -H 'Accept: application/json, text/event-stream' \
+    --data '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"health-probe","version":"1.0"}}}'
+  ```
 - **Technology**: Kotlin, specialized orchestration algorithms
 
 > Note: port `8000` in this repo is a separate FastAPI "shadow twin" workflow service (`services/task-orchestrator`), pending rename (per design §10.2 supervisor ruling — the service keeps its behavior but loses the colliding task-orchestrator name) — it is not this MCP tool surface.

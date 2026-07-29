@@ -30,6 +30,7 @@ from urllib.parse import urlparse
 import click
 import yaml
 
+from ..coldstart.network import ensure_docker_networks
 from ..console import console
 from ..mcp.project_identity import ProjectIdentityError, resolve_project_identity
 from ..worktree_commands import get_repo_root
@@ -254,11 +255,12 @@ def mcp_up_cmd(
                 svc_list = sorted(DEFAULT_MCP_SERVICES)
         else:
             svc_list = _parse_services(services)
+        ensure_docker_networks(["dopemux-network"], runner=subprocess.run)
         cmd = ["docker", "compose", "-f", "compose.yml", "up", "-d", "--build"] + svc_list
         console.logger.info(f"[info]{' '.join(cmd)}[/info]")
         subprocess.run(cmd, check=True)
         console.logger.info("[success]MCP servers started[/success]")
-    except (CalledProcessError, FileNotFoundError) as exc:
+    except (CalledProcessError, FileNotFoundError, RuntimeError) as exc:
         console.logger.error(f"[error]Failed to start MCP servers: {exc}[/error]")
         sys.exit(1)
 

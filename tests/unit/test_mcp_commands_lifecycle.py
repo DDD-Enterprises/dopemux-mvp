@@ -164,9 +164,9 @@ def test_cli_up_dry_run_without_repo_stays_legacy(monkeypatch):
     """--dry-run/--json alone must not divert bare `mcp up` to the reconciler."""
     called = {"legacy": False, "lifecycle": False}
 
-    def fake_run(cmd, check=True):  # noqa: ARG001
+    def fake_run(cmd, **kwargs):  # noqa: ARG001
         called["legacy"] = True
-        return SimpleNamespace(returncode=0)
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
 
     def fake_lifecycle(*args, **kwargs):  # noqa: ARG001
         called["lifecycle"] = True
@@ -183,6 +183,38 @@ def test_cli_up_dry_run_without_repo_stays_legacy(monkeypatch):
     assert called["lifecycle"] is False, result.output
     assert called["legacy"] is True, result.output
     assert result.exit_code == 0, result.output
+
+
+def test_cli_up_creates_missing_external_network_before_compose(monkeypatch):
+    """Removing network initialization must fail before compose reaches a clean host."""
+    calls: list[list[str]] = []
+
+    def fake_run(cmd, **kwargs):  # noqa: ARG001
+        calls.append(list(cmd))
+        if cmd == ["docker", "network", "ls", "--format", "{{.Name}}"]:
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(mcp_commands.subprocess, "run", fake_run)
+
+    result = CliRunner().invoke(
+        mcp_commands.mcp,
+        ["up", "--services", "conport"],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert calls[0] == ["docker", "network", "ls", "--format", "{{.Name}}"]
+    assert calls[1] == ["docker", "network", "create", "dopemux-network"]
+    assert calls[2] == [
+        "docker",
+        "compose",
+        "-f",
+        "compose.yml",
+        "up",
+        "-d",
+        "--build",
+        "conport",
+    ]
 
 
 def test_cli_down_dry_run_without_repo_stays_legacy(monkeypatch):

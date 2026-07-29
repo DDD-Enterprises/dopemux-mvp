@@ -71,6 +71,22 @@ def test_down_server_emits_problem_line():
     assert "dopemux mcp start --services conport" in result
 
 
+def test_down_server_shell_quotes_repo_path():
+    health = {
+        "servers": {"conport": {"up": False, "port": 3005}},
+        "leaked_containers": 0,
+    }
+    project_root = Path("/some/repo with spaces;echo unsafe")
+
+    result = _format_health(health, project_root)
+
+    assert result is not None
+    assert (
+        "dopemux mcp start --repo '/some/repo with spaces;echo unsafe' "
+        "--services conport"
+    ) in result
+
+
 def test_task_orchestrator_down_points_to_http_singleton_wrapper():
     health = {
         "servers": {"task-orchestrator": {"up": False, "port": 7890}},

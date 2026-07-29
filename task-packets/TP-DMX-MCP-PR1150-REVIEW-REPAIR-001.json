@@ -1,0 +1,160 @@
+{
+  "id": "TP-DMX-MCP-PR1150-REVIEW-REPAIR-001",
+  "project": "dopemux-mvp",
+  "target": "close all actionable PR #1150 review threads without broadening the accepted MCP fleet design",
+  "invariants": [
+    "Runtime code, compose wiring, and active entrypoints outrank target-state design prose.",
+    "The Python FastAPI workflow service on port 8000 must remain distinct from the Kotlin Task Orchestrator MCP service on port 7890.",
+    "A no-Docker install must still install and verify the Dopemux Python package and shell integration.",
+    "MCP startup must create required external Docker networks before compose uses them.",
+    "Proof must bind to the final audited code head and remain a proof-only descendant."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-PR1150-REVIEW-REPAIR",
+    "base_branch": "origin/claude/mcp-multi-instance-design-d706d6",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/pr1150-review-repair",
+    "base_branch": "origin/claude/mcp-multi-instance-design-d706d6",
+    "stacked_because": "PR #1150 branch is checked out in Claude's worktree with an unfinished local edit; isolated repair branch preserves that worktree and pushes only after validation."
+  },
+  "commit": {
+    "message": "fix(mcp): close PR 1150 review regressions",
+    "allowlist": [
+      ".claude/hooks/mcp_health_probe.py",
+      "AGENTS.md",
+      "claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md",
+      "docs/02-how-to/multi-instance-workflow.md",
+      "docs/02-how-to/operations/pm-plane-runtime-recovery.md",
+      "docs/03-reference/services/server-registry-2.md",
+      "docs/03-reference/services/server-registry.md",
+      "install.sh",
+      "proof/TP-DMX-MCP-PR1150-REVIEW-REPAIR-001/implementation-notes.md",
+      "proof/pr_merge/embedded-audit/pr-1150/AUDITOR_REPORT.md",
+      "proof/pr_merge/embedded-audit/pr-1150/PROOF.json",
+      "proof/pr_merge/embedded-audit/pr-1150/PROOF.json.sig",
+      "scripts/deploy/setup/install-mcp-servers.sh",
+      "scripts/dev/testing/validate-mcp-setup.sh",
+      "scripts/setup.sh",
+      "src/dopemux/commands/mcp_commands.py",
+      "task-packets/TP-DMX-MCP-PR1150-REVIEW-REPAIR-001.json",
+      "tests/scripts/test_setup_sh.py",
+      "tests/test_mcp_health_probe.py",
+      "tests/unit/test_mcp_commands_lifecycle.py"
+    ],
+    "verify": [
+      "mise exec -- python -m jsonschema -i task-packets/TP-DMX-MCP-PR1150-REVIEW-REPAIR-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "mise exec -- python -m pytest tests/scripts/test_setup_sh.py tests/test_mcp_health_probe.py tests/unit/test_mcp_commands_lifecycle.py tests/mcp/test_p22_regression_checks.py -q",
+      "mise exec -- python scripts/docs_validator.py docs/02-how-to/multi-instance-workflow.md docs/02-how-to/operations/pm-plane-runtime-recovery.md docs/03-reference/services/server-registry.md docs/03-reference/services/server-registry-2.md",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "MCP fleet: multi-instance design (supervisor-ruled) + P-22/P-23 safe-subset implementation",
+    "body": "PR #1150 review repair. Closes actionable installer, lifecycle, remediation, runtime-truth documentation, protocol-probe, and exact-head proof findings. Preserves Python :8000 versus Kotlin :7890 service boundary.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "analyze",
+      "task": "Trace every unresolved PR #1150 review thread to runtime, callers, tests, and accepted design evidence.",
+      "requirements": [
+        "Separate current runtime state from authorized target state.",
+        "Classify proof regeneration as finalization work after code head stabilizes."
+      ],
+      "commands": [
+        "gh api graphql",
+        "rg",
+        "git diff"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Every unresolved actionable thread has a root cause and bounded repair."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md",
+        "claudedocs/mcp-fleet-multi-instance-evidence-2026-07-28.md",
+        "claudedocs/mcp-legacy-launch-path-worklist-2026-07-28.md"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Add failing behavior regressions, then implement minimal installer, lifecycle, remediation, and documentation repairs.",
+      "requirements": [
+        "Do not touch the unrelated generated .claude/claude_config.json change.",
+        "Do not rename or retire either task-orchestrator runtime.",
+        "Do not implement P-24 or M11."
+      ],
+      "commands": [
+        "apply_patch"
+      ],
+      "expected_files": [
+        "install.sh",
+        "scripts/setup.sh",
+        "src/dopemux/commands/mcp_commands.py",
+        ".claude/hooks/mcp_health_probe.py",
+        "tests/scripts/test_setup_sh.py",
+        "tests/test_mcp_health_probe.py",
+        "tests/unit/test_mcp_commands_lifecycle.py"
+      ],
+      "validation": [
+        "Each changed behavior has a regression test observed failing before implementation and passing afterward."
+      ],
+      "context_files": [
+        "src/dopemux/coldstart/network.py",
+        "src/dopemux/mcp/lifecycle.py",
+        "compose.yml",
+        "mcp_catalog.yaml"
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Run targeted validation, docs validation, diff/precommit review, independent embedded audit, and exact-head proof validation.",
+      "requirements": [
+        "Record PASS, FAIL, and NOT_RUN explicitly.",
+        "Push only allowlisted changes.",
+        "Merge only after current-head CI, embedded audit, and PR Steward all pass."
+      ],
+      "commands": [
+        "mise exec -- python -m jsonschema -i task-packets/TP-DMX-MCP-PR1150-REVIEW-REPAIR-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "mise exec -- python -m pytest tests/scripts/test_setup_sh.py tests/test_mcp_health_probe.py tests/unit/test_mcp_commands_lifecycle.py tests/mcp/test_p22_regression_checks.py -q",
+        "mise exec -- python scripts/docs_validator.py docs/02-how-to/multi-instance-workflow.md docs/02-how-to/operations/pm-plane-runtime-recovery.md docs/03-reference/services/server-registry.md docs/03-reference/services/server-registry-2.md",
+        "git diff --check",
+        "pre-commit run --files"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-MCP-PR1150-REVIEW-REPAIR-001/implementation-notes.md",
+        "proof/pr_merge/embedded-audit/pr-1150/AUDITOR_REPORT.md",
+        "proof/pr_merge/embedded-audit/pr-1150/PROOF.json",
+        "proof/pr_merge/embedded-audit/pr-1150/PROOF.json.sig"
+      ],
+      "validation": [
+        "All required gates bind to the final PR code head or a proof-only descendant."
+      ],
+      "context_files": [
+        "docs/ops/embedded-audit.md",
+        "schemas/proof/embedded_audit.schema.json"
+      ]
+    }
+  ]
+}

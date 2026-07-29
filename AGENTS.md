@@ -303,7 +303,7 @@ sharing-class table (interim class today → end-state, with the gate packet tha
 |---|---|---|---|
 | `postgres-age`, `redis-primary`, `qdrant`, `dope-context`, `litellm`, `gpt-researcher`, `exa`, `desktop-commander`, `leantime-bridge`, `dopecon-bridge`/`decision-graph-bridge` | host-singleton | host-singleton | — (already correct) |
 | `redis-events` | **OBSERVED: host-singleton — UNSAFE/noncompliant for multi-project** (one global container, fixed `dopemux` compose project, no stream isolation; dope-memory promotes events into canonical work_log via a global consumer group = live contamination path). REQUIRED immediate target: **project-scoped** (supervisor §10.4) — ruling changes the authorized target, not the running container | host-singleton only after cross-project isolation is proven | P-21 (**P0**: prefix streams + consumer groups, enforce event-envelope identity) — no P-21 work has landed yet |
-| `pal` — `mcp-pal` HTTP, `mcp-pal-stdio` | retired | retired | — |
+| `pal` — `mcp-pal` HTTP, `mcp-pal-stdio` | active compose surfaces, pending retirement | retired | M5, blocked on M4/P-07 |
 | `pal` — `pal-mcp-server` (off-compose today) | host-singleton, needs adoption | host-singleton, managed | P-07 (`adopt`) |
 | `serena` | worktree-scoped | host-singleton | P-20 (multi-workspace wrapper deployment) |
 | `conport` | worktree-scoped | **project-scoped** (supervisor §10.3 — storage-level project wall; never host-singleton) | ConPort CRS v2 rewritten around a fixed project tenant (P-18) |

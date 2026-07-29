@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shlex
 import socket
 import subprocess
 from datetime import datetime, timezone
@@ -173,7 +174,7 @@ def _format_health(health: dict, project_root: Path | None = None) -> str | None
         elif up is False:
             status_parts.append(f"{name} ❌")
             port_str = f":{port}" if port else ""
-            repo_arg = f" --repo {project_root}" if project_root else ""
+            repo_arg = f" --repo {shlex.quote(str(project_root))}" if project_root else ""
             remediation = _SERVER_REMEDIATION.get(
                 name, f"dopemux mcp start{repo_arg} --services {name}"
             )

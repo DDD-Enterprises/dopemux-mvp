@@ -91,11 +91,14 @@ If a port is held by an unlabeled/unknown process, treat it as an ownership conf
 and investigate — do not `kill -9` it blind.
 
 ### Restart Canonical Runtime
-Use the canonical Dopemux MCP command:
+From the `dopemux-mvp` repository root, use the existing compose-backed CLI
+compatibility route for this Python service:
 ```bash
-dopemux mcp start --services task-orchestrator
+dopemux mcp up --services task-orchestrator
 ```
-Raw docker compose invocations are no longer a supported path.
+Do not use `dopemux mcp start --services task-orchestrator` here: that
+repo-aware lifecycle target is the separate Kotlin MCP wrapper on port `7890`.
+Raw Docker Compose invocations remain unsupported.
 
 ### Verify Sanctioned Runtime
 Wait a few seconds, then verify the canonical instance is up and is the *only* one running:
