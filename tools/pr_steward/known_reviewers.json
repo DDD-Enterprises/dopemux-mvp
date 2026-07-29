@@ -8,7 +8,8 @@
     "hu3mann",
     "google-labs-jules",
     "github-advanced-security",
-    "ddd-release-gate[bot]"
+    "ddd-release-gate[bot]",
+    "ddd-release-gate"
   ],
   "trusted_author_associations": [
     "OWNER",
