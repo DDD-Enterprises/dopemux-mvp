@@ -366,15 +366,6 @@ def _fetch_changed_files_rest(
     return changed_files, errors
 
 
-# Safety backstop for the GraphQL pagination loop below, not a real limit on
-# PR size: 200 pages * 100 files/page = 20,000 files, comfortably above any
-# PR this repo has seen (the largest observed, #1123, has 16,206 changed
-# files). A `hasNextPage` that never resolves after this many pages indicates
-# a GraphQL response anomaly worth surfacing as an error, not a PR to keep
-# paginating into indefinitely.
-_MAX_CHANGED_FILES_PAGES = 200
-
-
 def _fetch_changed_files_with_pagination_check(
     *, repo: str, pr_number: int, rest_paths: list[str] | None = None
 ) -> tuple[list[str], list[str]]:
@@ -385,29 +376,27 @@ def _fetch_changed_files_with_pagination_check(
     truncated file list could hide a security-sensitive path (e.g. a workflow
     file) from `classify_security_release_paths`, causing the gate to be
     incorrectly marked not-required. This GraphQL query with an explicit
-    `pageInfo.hasNextPage` check, paginated via `after: $cursor` until
-    exhausted, is the completeness signal for that list; the REST list
-    remains the source of truth for `changed_files` in the harvested
+    `pageInfo.hasNextPage` check is the completeness signal for that list; the
+    REST list remains the source of truth for `changed_files` in the harvested
     payload, while this function returns the GraphQL path list only for verification/reconciliation.
 
     When `rest_paths` is provided, this also reconciles the REST path set
-    against the GraphQL path set. An unresolved `hasNextPage` after
-    `_MAX_CHANGED_FILES_PAGES` pages catches pagination overflow (GraphQL
-    side known-incomplete); this reconciliation catches the orthogonal
-    failure mode where REST silently under-reports a file (e.g. a `gh` CLI
-    bug or a timing race between the two independent API calls) while
-    *neither* source signals pagination overflow. Reconciliation is skipped
-    when GraphQL itself reports pagination overflow -- in that case its own
+    against the GraphQL path set. `hasNextPage` catches pagination overflow
+    (GraphQL side known-incomplete); this reconciliation catches the
+    orthogonal failure mode where REST silently under-reports a file (e.g. a
+    `gh` CLI bug or a timing race between the two independent API calls)
+    while *neither* source signals pagination overflow. Reconciliation is
+    skipped when GraphQL itself reports `hasNextPage` — in that case its own
     node list is known-incomplete and would trivially "differ" from REST,
     which would just be duplicate noise on top of the pagination error.
     """
     owner, name = repo.split("/", 1)
     query = textwrap.dedent(
         """
-        query($owner: String!, $repo: String!, $number: Int!, $cursor: String) {
+        query($owner: String!, $repo: String!, $number: Int!) {
           repository(owner: $owner, name: $repo) {
             pullRequest(number: $number) {
-              files(first: 100, after: $cursor) {
+              files(first: 100) {
                 pageInfo { hasNextPage endCursor }
                 nodes {
                   path
@@ -418,11 +407,8 @@ def _fetch_changed_files_with_pagination_check(
         }
         """
     ).strip()
-    paths: list[str] = []
-    cursor: str | None = None
-    has_next_page = False
-    for _ in range(_MAX_CHANGED_FILES_PAGES):
-        args = [
+    result = _run(
+        [
             "gh",
             "api",
             "graphql",
@@ -435,46 +421,25 @@ def _fetch_changed_files_with_pagination_check(
             "-f",
             f"query={query}",
         ]
-        if cursor is not None:
-            args.extend(["-f", f"cursor={cursor}"])
-        result = _run(args)
-        if result.returncode != 0:
-            return [], [f"gh api graphql changedFiles failed: {result.stderr.strip()}"]
-        try:
-            payload = json.loads(result.stdout)
-        except json.JSONDecodeError as exc:
-            return [], [f"gh api graphql changedFiles returned invalid JSON: {exc}"]
-        page = (
-            payload.get("data", {})
-            .get("repository", {})
-            .get("pullRequest", {})
-            .get("files", {})
-        )
-        page_info = page.get("pageInfo", {})
-        nodes = page.get("nodes") or []
-        paths.extend(
-            node.get("path")
-            for node in nodes
-            if isinstance(node, dict) and isinstance(node.get("path"), str)
-        )
-        has_next_page = bool(page_info.get("hasNextPage"))
-        cursor = page_info.get("endCursor")
-        if not has_next_page:
-            break
-        if not cursor:
-            # Anomalous response: server claims more pages exist but gave no
-            # cursor to fetch them. Leave has_next_page=True so this is
-            # reported as incomplete rather than silently treated as done.
-            break
-    else:
-        has_next_page = True
-
+    )
+    if result.returncode != 0:
+        return [], [f"gh api graphql changedFiles failed: {result.stderr.strip()}"]
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        return [], [f"gh api graphql changedFiles returned invalid JSON: {exc}"]
+    page = (
+        payload.get("data", {})
+        .get("repository", {})
+        .get("pullRequest", {})
+        .get("files", {})
+    )
     errors: list[str] = []
+    has_next_page = bool(page.get("pageInfo", {}).get("hasNextPage"))
     if has_next_page:
-        errors.append(
-            f"changedFiles harvest exceeded {_MAX_CHANGED_FILES_PAGES * 100} files "
-            f"({_MAX_CHANGED_FILES_PAGES} pages) without reaching the last page"
-        )
+        errors.append("changedFiles harvest exceeded first 100 files")
+    nodes = page.get("nodes") or []
+    paths = [node.get("path") for node in nodes if isinstance(node, dict) and isinstance(node.get("path"), str)]
     if rest_paths is not None and not has_next_page:
         rest_set = set(rest_paths)
         graphql_set = set(paths)

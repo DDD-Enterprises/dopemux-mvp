@@ -105,13 +105,6 @@ def test_changed_files_pagination_check_no_next_page_produces_no_error(monkeypat
 def test_changed_files_pagination_check_has_next_page_produces_harvest_error(
     monkeypatch,
 ):
-    # This mock ignores the cursor and always reports hasNextPage=True, simulating
-    # a GraphQL response that never resolves to a final page (a genuine large PR
-    # terminates after ceil(changedFiles/100) real pages; see
-    # test_collector_changed_files_pagination_check.py for the realistic
-    # multi-page-then-terminates case). The pagination loop now follows cursors
-    # up to _MAX_CHANGED_FILES_PAGES before giving up and reporting incompleteness,
-    # rather than bailing out after the first page as before.
     def fake_run(args):
         return subprocess.CompletedProcess(
             args,
@@ -124,9 +117,8 @@ def test_changed_files_pagination_check_has_next_page_produces_harvest_error(
     paths, errors = _fetch_changed_files_with_pagination_check(
         repo="owner/repo", pr_number=1
     )
-    assert len(errors) == 1
-    assert "changedFiles harvest exceeded" in errors[0]
-    assert paths  # some paths were collected across pages, even though incomplete
+    assert errors == ["changedFiles harvest exceeded first 100 files"]
+    assert len(paths) == 100
 
 
 def test_changed_files_pagination_check_command_failure_produces_error(monkeypatch):
@@ -198,8 +190,7 @@ def test_changed_files_reconciliation_skipped_when_graphql_has_next_page(monkeyp
     )
     # Pagination-overflow error only; content reconciliation is skipped because
     # the GraphQL side is known-incomplete and would trivially "differ".
-    assert len(errors) == 1
-    assert "changedFiles harvest exceeded" in errors[0]
+    assert errors == ["changedFiles harvest exceeded first 100 files"]
 
 
 def test_changed_files_reconciliation_not_run_when_rest_paths_omitted(monkeypatch):
