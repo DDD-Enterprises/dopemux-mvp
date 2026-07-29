@@ -1,0 +1,57 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1152,
+  "head_sha": "30b79b5c3aa2372200cb8c9b05bbe6bc52e0d3e0",
+  "note": "head_sha is the R2 repair commit (fix(fdos-004): R2 repair -- fix findings from post-repair independent re-audit). This proof file and its .sig are the ONLY change committed on top of that audited head, per the proof-only-delta requirement in scripts/audit/local_audit_acceptance.py. The embedded_audit object below is the same genuinely-executed, independently-verified audit recorded in proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/PROOF.json's own embedded_audit field and AUDIT_VERDICT.json for this same commit -- not a separate, lesser claim invented only to satisfy this gate.",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "Spawned via the Agent tool as a fresh general-purpose subagent by a separate orchestrating Claude Code session; started with no prior conversation history, independently re-executed every R1 repair claim against head 94c1dcb1bc (findings: Finding A crash bug, Finding B1 ZIP missing PACKAGE_VALIDATION.json, Finding B2/B3 dormant structural gaps -- see proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/AUDITOR_REPORT.md). All 4 findings were then fixed and independently re-verified by a SEPARATE verification subagent via targeted adversarial tests (out-of-repo rebuild, ZIP content inspection, forged self-reported capture_complete, bogus classification value), which reported all 4 genuinely resolved as of head 30b79b5c3a.",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "AUDIT-2-A",
+        "severity": "LOW",
+        "title": "build_zip_archive() crashed for any --output-dir outside --repo-root",
+        "status": "RESOLVED",
+        "body": "zip_path.relative_to(repo_root) raised an uncaught ValueError whenever the output directory wasn't a subpath of the repo root. Fixed with a try/except falling back to a bare basename in the sidecar. Independently re-verified: rebuild into /tmp exits 0 and shasum -c passes."
+      },
+      {
+        "id": "AUDIT-2-B1",
+        "severity": "MEDIUM",
+        "title": "Shipped ZIP did not contain PACKAGE_VALIDATION.json despite the package's own README advertising it as a deliverable",
+        "status": "RESOLVED",
+        "body": "build_zip_archive() ran before validate_chatgpt_project_sources.py ever executed as a separate script. Fixed by refactoring the validator into a callable run_validation() and having the assembler call it (writing PACKAGE_VALIDATION.json, failing closed on any gate failure) before zipping. Independently re-verified: unzip -l on a fresh build shows the file present with all_gates_pass:true."
+      },
+      {
+        "id": "AUDIT-2-B2",
+        "severity": "LOW",
+        "title": "capture_complete trusted a self-reported flag instead of always recomputing it",
+        "status": "RESOLVED",
+        "body": "Fixed by always recomputing len(files)==changedFiles rather than trusting any self-reported field. Independently re-verified: a forged self-reported capture_complete=true with a real file-count mismatch was ignored, raising the FATAL error."
+      },
+      {
+        "id": "AUDIT-2-B3",
+        "severity": "LOW",
+        "title": "No enum/allow-list validation on PR classification values",
+        "status": "RESOLVED",
+        "body": "Fixed with a VALID_PR_CLASSIFICATIONS enum check in build_pr_ledger_entries() that raises SystemExit on any unrecognized value. Independently re-verified: a scratch classifications file with a bogus value produced a clean FATAL exit naming the exact PR and value."
+      }
+    ],
+    "fixes_applied": [
+      "scripts/project_sources/build_chatgpt_project_sources.py: build_zip_archive() out-of-repo crash fix.",
+      "scripts/project_sources/validate_chatgpt_project_sources.py + build_chatgpt_project_sources.py: PACKAGE_VALIDATION.json now written and included in the ZIP before archiving, with fail-closed validation gating.",
+      "scripts/project_sources/build_chatgpt_project_sources.py: capture_complete always recomputed, never trusted from self-reported data.",
+      "scripts/project_sources/build_chatgpt_project_sources.py: VALID_PR_CLASSIFICATIONS enum with fail-closed rejection of unrecognized values."
+    ],
+    "remaining_risks": [
+      "Review threads from chatgpt-codex-connector on PR #1152 are addressed by these fixes but not yet marked resolved on GitHub as of the audited head.",
+      "doc-trust-map.md (slot 08) is one day from its own next_review date (2026-07-29) as of packaging.",
+      "PR #1123's SUPERSEDED_OR_CONFLICTING classification's raw numbers were independently re-verified live, but the interpretive judgment (stranded vs. recoverable) still partly rests on prior-session context."
+    ],
+    "skip_reason": null
+  }
+}
