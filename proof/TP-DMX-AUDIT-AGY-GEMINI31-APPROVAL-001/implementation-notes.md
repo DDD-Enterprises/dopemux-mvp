@@ -33,6 +33,14 @@ proof.
 - GitHub accepted all file writes on branch
   `codex/approve-agy-gemini-3-1-pro-audit`.
 - Changed paths are within the task-packet allowlist.
+- At audited head `8f2c009c35309c4aad371d17568528b61b84523d`:
+  - `CI_TESTS=PASS`
+  - `INDEPENDENT_AUDIT=NEEDS_SUPERVISOR`
+  - `PR_STEWARD=FAIL`
+  - `LOCAL_AGY_SELECTOR_PROOF=NOT_RUN`
+- The local AGY installation reported version `1.1.8`; `agy models` did not
+  list `gemini-3.1-pro-preview`. Per this packet's stop condition, no
+  substitute selector and no exact-model print-mode invocation were used.
 
 ### NOT_RUN
 
@@ -40,9 +48,9 @@ proof.
 - `python -m pytest tests/audit/test_audit_proof.py tests/audit/test_agy_gemini31_model.py -q`
 - scoped documentation validation
 - `git diff --check`
-- live `agy --version`, `agy models`, and exact-model print-mode invocation
-- independent embedded audit
-- PR Steward readiness
+- exact-model AGY print-mode invocation
+- fresh independent embedded audit and PR Steward readiness for any successor
+  head; this document itself changes the former audited head.
 
 These remain merge blockers until current-head CI and local AGY evidence are
 captured.

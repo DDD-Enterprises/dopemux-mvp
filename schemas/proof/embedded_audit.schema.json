@@ -245,6 +245,25 @@
           }
         }
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "auditor_model": {
+            "const": "gemini-3.1-pro-preview"
+          }
+        },
+        "required": [
+          "auditor_model"
+        ]
+      },
+      "then": {
+        "properties": {
+          "auditor_tool": {
+            "const": "agy"
+          }
+        }
+      }
     }
   ],
   "definitions": {
