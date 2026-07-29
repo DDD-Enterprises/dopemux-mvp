@@ -1,57 +1,44 @@
 {
-  "commit_sha": "131c99c9dfcc7008741120e36d4976617eea7565",
+  "commit_sha": "5075ee8ad8c791523607da980f08a26df1ce7ac6",
   "embedded_audit": {
     "auditor_model": "sonnet",
     "auditor_tool": "claude-code-cli",
     "exit_code": 0,
     "findings": [
       {
-        "id": "PR1150-B1",
-        "severity": "LOW",
-        "title": "Hook's --repo emission branch not exercised by unit tests",
-        "status": "OPEN",
-        "body": "mcp_health_probe.py's repo-aware remediation (MUST_FIX P2) is correctly implemented, but tests/test_mcp_health_probe.py never calls _format_health with a truthy project_root, so a future refactor could silently drop the --repo argument without breaking CI."
+        "id": "PR1150-C1",
+        "severity": "INFO",
+        "title": "Merge-fidelity verified: PR diff byte-identical before/after required branch update",
+        "status": "RESOLVED",
+        "body": "Branch protection required updating with origin/main before merge (discovered via `gh pr merge` refusal). git diff(merge-base(76abff766b,origin/main), 76abff766b) vs git diff(origin/main...HEAD) on the new head are byte-identical: 62/62 files match, and 3 independent hunk spot-checks (cli.py, mcp_health_probe.py, test_provision.py) confirm identical content, not just identical sizes. The 4 incoming main commits (#1126, #1160, #1158+dup) touch none of the 9 PR-owned path patterns."
       },
       {
-        "id": "PR1150-B2",
+        "id": "PR1150-C2",
         "severity": "LOW",
-        "title": "Dead local variable left by the sentinel rename sweep",
+        "title": "Pre-existing unresolved conflict-marker debris found unrelated to this PR",
         "status": "OPEN",
-        "body": "tests/test_cli_mcp_startup.py:111 keeps an unused `script_path = resolved_path / \"README.md\"` local from the mechanical start-all-mcp-servers.sh rename; cosmetic, no functional effect."
-      },
-      {
-        "id": "PR1150-B3",
-        "severity": "LOW",
-        "title": "Backlog docs still mention deleted scripts/start.sh",
-        "status": "OPEN",
-        "body": "docs/planes/pm/task-orchestrator-leantime-followups.md (and its docs/03-reference duplicate) reference scripts/start.sh in a backlog scope-note; pre-existing doc rot, not introduced by the repair commit, not user-facing instruction."
-      },
-      {
-        "id": "PR1150-B4",
-        "severity": "LOW",
-        "title": "pr-docgen-sync SUBSYSTEM_RULES lists scripts/start.sh as trigger path",
-        "status": "OPEN",
-        "body": "The skill's prefix list (.claude/skills, .github/skills, templates/skills copies of pr_docgen_sync_workflow.py) still names scripts/start.sh; dead config now that the file is deleted — the rule simply never matches."
+        "body": "docs/pr_merge/usage-patterns.md, docs/planes/pm/pm-implementation-ledger.md, docs/planes/pm/write-boundaries.md, docs/02-how-to/pr-merge-flight-dashboard.md contain genuine leftover =======/>>>>>>> conflict-marker fragments referencing real branch names (codex/pr-merge-queue-unblockers, wt-collect-dopemux-pr321-20260330023335, etc.) embedded in prose. Confirmed NOT introduced by this merge (none of the 4 incoming commits touch these files) and NOT illustrative documentation as first assumed -- genuine corruption from a prior, unrelated botched merge/rebase. Flagged for a separate cleanup packet."
       }
     ],
     "fixes_applied": [
-      "All five supervisor MUST_FIX items verified genuinely repaired: P1 setup.sh compatibility shim (documented flags preserved, canonical delegation), P2 repo-aware `dopemux mcp start --repo --services` hook remediation (flags verified real in mcp_commands.py), A3 installer silent no-op removed, A4 copilot-instructions catalog authority, A5 recovery runbook stripped of start.sh/raw-compose/name-filtered rm -f/blind kill -9",
-      "P-22 claim narrowing verified: guard test renamed to test_p22_safe_subset_guard.py, docstring states what it does NOT prove, surviving paths enumerated with packet IDs P22-F1/F2/F3, widened regex hand-traced against all positive/negative cases, cli.py NOTE block matches _KNOWN_STRUCTURAL_GAPS with a real AST-based rot check",
-      "Prior audit finding A6 resolved: the '14 deleted files' count verified exact; install-mcp-servers.sh correctly categorized modified"
+      "Confirmed the required branch update (merge of origin/main) introduced zero changes to the PR's own diff -- mechanically verified via patch-file comparison, not narration",
+      "Confirmed post-merge test suite green: 79 passed, 0 failed (tests/mcp/, tests/test_mcp_health_probe.py, tests/test_cli_mcp_startup.py)",
+      "Reviewed the two incoming CI/security-relevant commits (ddd-release-gate.yml, pr_steward/classifier.py) for adverse interaction with the MCP fleet's own gates -- none found; both are properly scoped (workflow_dispatch/main-only exact-head binding; roster-only bot-login normalization)"
     ],
-    "invocation": "claude -p --model sonnet --add-dir <worktree> --allowedTools Read Grep Glob (route #2 per docs/ops/embedded-audit.md; route #1 agy --model claude-sonnet-4-6 completed verification but hit provider quota before emitting its formal report — partial narration retained as corroborating evidence only). Auditor session independent of the implementing session.",
+    "invocation": "claude -p --model sonnet --add-dir <worktree> --allowedTools Read Grep Glob, evidence-review mode over pre-gathered diffs/logs/test-output files (route #2 per docs/ops/embedded-audit.md; route #1 agy was quota-limited throughout this round). Auditor session independent of the implementing session; re-derived claims from raw evidence rather than trusting summaries, and corrected one inaccurate framing in the supplied evidence (the conflict-marker files were mischaracterized as illustrative docs; auditor read the actual content and identified them as genuine corruption).",
     "remaining_risks": [
-      "src/dopemux/cli.py::_start_mcp_servers_with_progress (dopemux init default startup) still bypasses dopemux mcp via a Python-list-built compose invocation — disclosed and tracked as P22-F2, not fixed in this PR",
-      "scripts/compose_nuke.sh remains a live destructive fleet-restart tool outside dopemux mcp (P22-F1) — deliberately kept with justification, a standing capability gap not a defect",
-      "Makefile pm-up/webhook targets, docker/leantime/configure_bridge.sh, scripts/deploy/setup/setup_dopemux.sh remain outside dopemux mcp (P22-F3), flagged for a separate follow-up packet"
+      "docs/pr_merge/usage-patterns.md and 3 sibling docs carry pre-existing unresolved conflict-marker corruption from an unrelated prior merge -- unrelated to PR #1150, should be cleaned up separately",
+      "ddd-release-gate.yml grants a scoped GitHub App token (pull-requests:write) triggerable by anyone able to run workflow_dispatch on main -- informational, by design, not introduced by this PR",
+      "src/dopemux/cli.py::_start_mcp_servers_with_progress (dopemux init default startup) still bypasses dopemux mcp via a Python-list-built compose invocation -- disclosed and tracked as P22-F2 in prior audit rounds, not fixed in this PR",
+      "scripts/compose_nuke.sh remains a live destructive fleet-restart tool outside dopemux mcp (P22-F1) -- deliberately kept with justification"
     ],
     "report_path": "proof/pr_merge/embedded-audit/pr-1150/AUDITOR_REPORT.md",
     "required": true,
     "skip_reason": null,
     "status": "PASS_WITH_RISKS"
   },
-  "generated_at": "2026-07-29T04:25:00Z",
-  "head_sha": "131c99c9dfcc7008741120e36d4976617eea7565",
+  "generated_at": "2026-07-29T06:10:00Z",
+  "head_sha": "5075ee8ad8c791523607da980f08a26df1ce7ac6",
   "pr_number": 1150,
   "repo": "DDD-Enterprises/dopemux-mvp"
 }
