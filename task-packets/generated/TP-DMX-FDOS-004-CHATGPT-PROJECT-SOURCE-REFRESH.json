@@ -40,7 +40,8 @@
       "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/**",
       "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip",
       "out/chatgpt-project-upload-set/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.zip.sha256",
-      "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/**"
+      "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/**",
+      "proof/pr_merge/embedded-audit/pr-1152/**"
     ],
     "verify": [
       "python -m json.tool task-packets/generated/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.json >/dev/null",
@@ -56,7 +57,7 @@
   },
   "pr": {
     "title": "docs(fdos-004): refresh ChatGPT Project 40-source upload set to current main",
-    "body": "## Summary\n- Deterministic 40-file ChatGPT Project upload set rebuilt from current main (EXECUTION_BASE_SHA 5f862d36f5417801b9fe148fccbb439731627234), replacing the stale FDOS-003 set.\n- Full open-PR impact ledger for all 21 currently-open PRs, each classified exactly once; 3 material (draft/behind PRs touching selected slots).\n- Source-freshness policy and machine-readable source manifest with per-file blob SHA + SHA-256.\n- Deterministic assembler + validator under scripts/project_sources/, reproducible byte-for-byte across reruns (verified) and byte-identical ZIP across reruns (verified).\n\n## Scope\nDocs/package assembly only. No runtime/source/config/test/dependency/CI changes.\n\n## Validation\nAll gates PASS: source count (40), filename, source identity (byte-for-byte vs EXECUTION_BASE_SHA), hash, duplicate-content, JSON, YAML, open-PR conservation (21/21), secret scan. ZIP integrity + sidecar verified. Reproducibility verified for both UPLOAD_FILES and the ZIP itself.\n\n## Package Disposition\nCURRENT_MAIN_VALID_PENDING_OPEN_PR_REFRESH -- valid for current main today; 3 open PRs (#1150, #1136, #1126) would require regenerating specific slots if merged. See 40_OPEN_PR_IMPACT_LEDGER.md.\n\n## Residual Risks / UNKNOWNs\n- doc-trust-map.md (slot 08) is dated 2026-04-30 with next_review 2026-07-29, one day past packaging date.\n- PR #1123 (RTE audit improvement) is classified SUPERSEDED_OR_CONFLICTING based on its scale (16,206 changed files) and prior-session findings; not independently re-litigated here.\n\n## Operator Notes\n- Upload files from UPLOAD_FILES/ (40 files) to replace the ChatGPT Project's current source set.\n- No ChatGPT Project upload or mutation was performed by this packet.\n\n@codex review\n@gemini\n@copilot",
+    "body": "## Summary\n- Deterministic 40-file ChatGPT Project upload set rebuilt from current main (EXECUTION_BASE_SHA 5f862d36f5417801b9fe148fccbb439731627234), replacing the stale FDOS-003 set.\n- Full open-PR impact ledger for all 29 currently-open PRs (self-PR #1152 excluded, R1 recapture), each classified exactly once; 5 material (draft/behind PRs touching selected slots: #1126, #1136, #1150, #1155, #1159).\n- Source-freshness policy and machine-readable source manifest with per-file blob SHA + SHA-256.\n- Deterministic assembler + validator under scripts/project_sources/, reproducible byte-for-byte across reruns (verified) and byte-identical ZIP across reruns (verified), including PACKAGE_VALIDATION.json now genuinely included in the ZIP.\n\n## Scope\nDocs/package assembly only. No runtime/source/config/test/dependency/CI changes.\n\n## Validation\nAll gates PASS: source count (40), filename, manifest-disk coverage, source identity (byte-for-byte vs EXECUTION_BASE_SHA), hash (all manifest entries with a non-null sha256, including generated slots 38/40), duplicate-content, JSON, YAML, open-PR conservation (29/29), secret scan. ZIP integrity + sidecar verified from the repo root. Reproducibility verified for both UPLOAD_FILES and the ZIP itself.\n\n## Package Disposition\nCURRENT_MAIN_VALID_PENDING_OPEN_PR_REFRESH -- valid for current main today; 5 open PRs (#1126, #1136, #1150, #1155, #1159) would require regenerating specific slots if merged. See 40_OPEN_PR_IMPACT_LEDGER.md.\n\n## Residual Risks / UNKNOWNs\n- doc-trust-map.md (slot 08) is dated 2026-04-30 with next_review 2026-07-29, one day past packaging date.\n- PR #1123 (RTE audit improvement) is classified SUPERSEDED_OR_CONFLICTING based on its scale (16,206 changed files, capture explicitly disclosed as incomplete) and prior-session findings; not independently re-litigated here.\n\n## Operator Notes\n- Upload files from UPLOAD_FILES/ (40 files) to replace the ChatGPT Project's current source set.\n- No ChatGPT Project upload or mutation was performed by this packet.\n\n@codex review\n@gemini\n@copilot",
     "base": "main"
   },
   "pal_chain": {
@@ -66,7 +67,7 @@
   "steps": [
     {
       "id": "S1",
-      "task": "Preflight repo identity, worktree, EXECUTION_BASE_SHA resolution, and live open-PR inventory capture (21 PRs).",
+      "task": "Preflight repo identity, worktree, EXECUTION_BASE_SHA resolution, and live open-PR inventory capture (count is whatever `gh pr list --state open` returns at capture time, self-PR excluded -- 29 PRs as of the R1 recapture; do not treat any specific number as a fixed target).",
       "context_files": ["AGENTS.md", "docs/03-reference/governance/doc-trust-map.md", "docs/03-reference/governance/rules.md"],
       "validation": [
         "Repo identity matches DDD-Enterprises/dopemux-mvp and .dopetaskroot exists.",
@@ -84,13 +85,13 @@
     },
     {
       "id": "S3",
-      "task": "Capture full detail for all 21 open PRs and classify each exactly once against the watched-path families and selected slots.",
+      "task": "Capture full detail for all currently open PRs (29 as of the R1 recapture, self-PR #1152 excluded) and classify each exactly once against the watched-path families and selected slots.",
       "expected_files": [
         "proof/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH/open-pr-*.json",
         "scripts/project_sources/pr_classifications.json"
       ],
       "validation": [
-        "Open PR inventory count equals ledger entry count (21 = 21).",
+        "Open PR inventory count equals ledger entry count, derived from the captured inventory rather than a hardcoded literal (29 = 29 as of the R1 recapture).",
         "Every classification is one of the five allowed values with named evidence."
       ]
     },

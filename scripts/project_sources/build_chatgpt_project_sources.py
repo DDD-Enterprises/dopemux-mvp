@@ -17,6 +17,7 @@ import argparse
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 import zipfile
@@ -482,7 +483,12 @@ def main() -> int:
     (output_dir / "CURRENT_MAIN_40.md").write_text(render_current_main_40(copied_entries, args.execution_base_sha))
 
     open_pr_capture_dir = output_dir / "OPEN_PR_CAPTURE"
-    open_pr_capture_dir.mkdir(exist_ok=True)
+    # Clear rather than merge: reusing --output-dir across runs whose open-PR
+    # inventory has changed (closed/merged PRs) would otherwise leave stale
+    # open-pr-<N>.json files for PRs that are no longer open, absent from
+    # the current ledger but still shipped in the ZIP.
+    shutil.rmtree(open_pr_capture_dir, ignore_errors=True)
+    open_pr_capture_dir.mkdir()
     for pr in prs:
         (open_pr_capture_dir / f"open-pr-{pr['number']}.json").write_text(json.dumps(pr, indent=2, sort_keys=True) + "\n")
 
