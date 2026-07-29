@@ -43,6 +43,12 @@
       "proof/pr_merge/embedded-audit/pr-1150/AUDITOR_REPORT.md",
       "proof/pr_merge/embedded-audit/pr-1150/PROOF.json",
       "proof/pr_merge/embedded-audit/pr-1150/PROOF.json.sig",
+      "proof/pr_merge/embedded-audit/pr-1150/review_bundle/AGY_AUDIT_INPUT.md",
+      "proof/pr_merge/embedded-audit/pr-1150/review_bundle/AGY_AUDIT_OUTPUT.json",
+      "proof/pr_merge/embedded-audit/pr-1150/review_bundle/CHANGED_FILES.txt",
+      "proof/pr_merge/embedded-audit/pr-1150/review_bundle/INSTRUCTION_LIKE_CONTENT.json",
+      "proof/pr_merge/embedded-audit/pr-1150/review_bundle/UNIFIED_DIFF.txt",
+      "proof/pr_merge/embedded-audit/pr-1150/review_bundle/VALIDATION.txt",
       "scripts/deploy/setup/install-mcp-servers.sh",
       "scripts/dev/testing/validate-mcp-setup.sh",
       "scripts/setup.sh",
@@ -148,7 +154,13 @@
         "proof/TP-DMX-MCP-PR1150-REVIEW-REPAIR-001/implementation-notes.md",
         "proof/pr_merge/embedded-audit/pr-1150/AUDITOR_REPORT.md",
         "proof/pr_merge/embedded-audit/pr-1150/PROOF.json",
-        "proof/pr_merge/embedded-audit/pr-1150/PROOF.json.sig"
+        "proof/pr_merge/embedded-audit/pr-1150/PROOF.json.sig",
+        "proof/pr_merge/embedded-audit/pr-1150/review_bundle/AGY_AUDIT_INPUT.md",
+        "proof/pr_merge/embedded-audit/pr-1150/review_bundle/AGY_AUDIT_OUTPUT.json",
+        "proof/pr_merge/embedded-audit/pr-1150/review_bundle/CHANGED_FILES.txt",
+        "proof/pr_merge/embedded-audit/pr-1150/review_bundle/INSTRUCTION_LIKE_CONTENT.json",
+        "proof/pr_merge/embedded-audit/pr-1150/review_bundle/UNIFIED_DIFF.txt",
+        "proof/pr_merge/embedded-audit/pr-1150/review_bundle/VALIDATION.txt"
       ],
       "validation": [
         "All required gates bind to the final PR code head or a proof-only descendant."
