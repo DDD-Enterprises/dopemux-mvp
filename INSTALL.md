@@ -1176,8 +1176,8 @@ mcp__dope-context__index_workspace --workspace_path "$(pwd)"
 ### 4. Configure Claude Code
 
 ```bash
-# Install Claude Code Router
-./scripts/install_claude_code_router.sh
+# Install Claude Code Router + LiteLLM launchd services
+dopemux routing install
 
 # Configure statusline
 mkdir -p ~/.claude

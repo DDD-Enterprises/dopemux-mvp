@@ -122,17 +122,9 @@ fi
 print_status success "🎉 NPM MCP server installation complete!"
 
 echo ""
-print_status info "🐳 Installing Docker-based MCP servers..."
-
-# Check if Docker installer exists and run it
-DOCKER_INSTALLER="$(dirname "$0")/install-docker-mcp-servers.sh"
-if [[ -f "$DOCKER_INSTALLER" ]]; then
-    print_status info "📦 Running Docker MCP servers installer..."
-    bash "$DOCKER_INSTALLER"
-else
-    print_status warning "⚠️ Docker MCP installer not found at $DOCKER_INSTALLER"
-    print_status warning "   Skipping Docker-based MCP servers"
-fi
+print_status info "🐳 Docker MCP servers are provisioned via the Dopemux CLI"
+print_status info "   Docker MCP servers are managed by 'dopemux mcp init' + 'dopemux mcp start'"
+print_status info "   See docs/02-how-to/mcp-integration-guide.md for details"
 
 echo ""
 print_status success "🎉 Complete MCP server installation finished!"
@@ -141,6 +133,6 @@ echo "   • NPM-based servers: Available for immediate use"
 echo "   • Docker-based servers: Advanced reasoning and specialized tools"
 echo ""
 print_status info "🔧 To manage Docker MCP servers:"
-echo "   Start: dopemux mcp up --all"
+echo "   Start: dopemux mcp start"
 echo "   Stop:  dopemux mcp down"
 echo "   Logs:  dopemux mcp logs"

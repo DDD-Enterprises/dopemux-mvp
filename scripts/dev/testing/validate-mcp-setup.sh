@@ -162,8 +162,6 @@ else
     echo ""
     echo "⚠️  Some MCP servers are not properly configured."
     echo "🔧 To fix issues, run:"
-    echo "   ./scripts/start-mcp-servers.sh"
-    echo "   # or"
-    echo "   docker compose -f compose.yml up -d"
+    echo "   dopemux mcp start"
     exit 1
 fi

@@ -3730,6 +3730,24 @@ def _start_mcp_servers_with_progress(
 ):
     """
     Start MCP servers with auto-provisioning, instance-scoped overlays, and Phase 0 gate.
+
+    NOTE (tracked P-22 structural bypass, PR #1150 embedded-audit finding
+    A2): this function builds its fleet-start command as a Python list (see
+    the `cmd = [...]` construction below, joining "docker", "compose", the
+    resolved compose files, and the "up" subcommand) and runs it via
+    `subprocess.Popen`, rather than as a contiguous shell command line. That
+    makes it structurally invisible to the line-based guard regex in
+    tests/mcp/test_p22_safe_subset_guard.py -- there is no single source
+    line containing the fleet-start command as a literal contiguous string
+    for the regex to match. It is disclosed instead in that test's
+    `_KNOWN_STRUCTURAL_GAPS` tuple so the gap doesn't go unacknowledged.
+
+    This is also not a mechanical duplicate of the canonical `dopemux mcp`
+    start path: it performs instance-overlay materialization, multi-part
+    compose file resolution, a progress UI, and a post-start gate that the
+    canonical path does not. Rewiring this function to route through that
+    canonical lifecycle (or extracting an equivalent code path there) is
+    tracked as a follow-up packet, not done in PR #1150.
     """
     if os.getenv("DOPEMUX_SKIP_MCP_START", "0").lower() in {"1", "true", "yes"}:
         if wizard:

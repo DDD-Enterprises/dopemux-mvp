@@ -71,25 +71,31 @@ grep -E "PM Write | Mirror Failure" logs/task-orchestrator.log
 ## 3. Cleanup / Recovery
 
 ### Stop Rogue Runtimes
-If you found stray containers or loose process IDs:
-```bash
-# Kill old docker containers aggressively
-docker rm -f $(docker ps -aq --filter "name=task-orchestrator")
+Do **not** blanket force-remove by name or `kill -9` port holders: the `name=task-orchestrator`
+filter also matches *other projects'* Kotlin-jar MCP singletons (e.g. `task-orchestrator-dnh_crm-*`),
+and destroying a foreign project's orchestrator is exactly the cross-project incident the fleet
+design exists to prevent.
 
-# Kill processes holding the port
-kill -9 $(lsof -t -i :8000)
-kill -9 $(lsof -t -i :3014)
+Instead, identify ownership first and only remove containers proven to belong to this project:
+```bash
+# Diagnose — classifies containers by dopemux.* ownership labels
+dopemux mcp doctor
+
+# Inspect a suspect container's ownership before touching it
+docker inspect <container> --format '{{json .Config.Labels}}' | jq 'with_entries(select(.key|startswith("dopemux.")))'
+
+# Stop only a container whose dopemux.project_root label matches THIS repo
+docker rm -f <container-proven-to-be-this-project>
 ```
+If a port is held by an unlabeled/unknown process, treat it as an ownership conflict (fail closed)
+and investigate — do not `kill -9` it blind.
 
 ### Restart Canonical Runtime
-Use the provided shell scripts or docker compose command:
+Use the canonical Dopemux MCP command:
 ```bash
-# Recommended
-scripts/start.sh task-orchestrator
-
-# Or Compose
-docker compose -f compose.yml up -d task-orchestrator
+dopemux mcp start --services task-orchestrator
 ```
+Raw docker compose invocations are no longer a supported path.
 
 ### Verify Sanctioned Runtime
 Wait a few seconds, then verify the canonical instance is up and is the *only* one running:
