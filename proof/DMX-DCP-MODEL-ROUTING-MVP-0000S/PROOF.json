@@ -1,68 +1,62 @@
 {
-  "bundle_id": "PROOF-DMX-DCP-MODEL-ROUTING-MVP-0000S-001",
-  "run_id": "dcp-0000s-20260727T032314Z",
-  "skill": "dcp-series-lineage-reconciliation",
-  "status": "COMPLETE",
-  "validation_state": "PASS_WITH_RISKS",
-  "created_at": "2026-07-27T03:23:14Z",
-  "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000S",
-  "repo": "DDD-Enterprises/dopemux-mvp",
-  "branch": "dcp/model-routing-0000s-series-lineage",
-  "base_sha": "5de3f0ef56dfcf8545c395418b4a3d424b1bc249",
-  "subject_sha": "5de3f0ef56dfcf8545c395418b4a3d424b1bc249",
   "authoritative_artifacts": [
-    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/MODEL_ROUTING_SERIES_MAP.json",
-    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/MODEL_ROUTING_SERIES_STATUS.md",
-    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/PROOF.json",
-    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/AUDITOR_REPORT.md"
+    "IMPLEMENTATION_REPORT.md",
+    "VALIDATION.json",
+    "WARNINGS_AND_BLOCKERS.json",
+    "HANDOFF.json",
+    "FINALIZATION_POINTER.json"
   ],
-  "supporting_artifacts": [
-    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/COMMAND_LOG.md",
-    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/EVIDENCE_LEDGER.md",
-    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/PAL_CHAIN.md",
-    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/gh-pr-dcp-routing-related.json"
-  ],
-  "handoff_refs": [
-    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/HANDOFF.json"
-  ],
-  "parent_bundle_refs": [
-    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/PROOF.json"
-  ],
-  "review_order_hint": [
-    "MODEL_ROUTING_SERIES_STATUS.md",
-    "MODEL_ROUTING_SERIES_MAP.json",
-    "AUDITOR_REPORT.md",
-    "PROOF.json"
-  ],
+  "bundle_id": "DMX-DCP-MODEL-ROUTING-MVP-0000S-FINALIZATION-STRUCTURAL-001",
   "chain_of_custody": {
-    "primary_executor": "Grok-4.5 Build orchestrator (series map evidence; Claude Sonnet used for 0000R)",
-    "embedded_auditor": "Opus NOT_RUN; PASS_WITH_RISKS self-completion audit",
-    "supervisor": "GPT-5.5 Pro pending end-of-tranche"
+    "candidate_subject_sha": "3ce0db080527d64eeb3849e88786528422885333",
+    "created_at": "2026-07-29T10:15:14Z",
+    "documented": true,
+    "parent_bundle_ids": [
+      "DMX-DCP-MODEL-ROUTING-MVP-0000S"
+    ],
+    "source_version": "finalization-repair-support/1.0.0",
+    "trusted_main_sha": "72af781e42e0702d9047946e0f5a250e7dff0fa5"
   },
-  "commands": [
-    {
-      "name": "gh pr list",
-      "exit_code": 0
-    }
-  ],
+  "created_at": "2026-07-29T10:15:14Z",
   "embedded_audit": {
-    "auditor_tool": "orchestrator completion audit",
-    "auditor_model": "grok-4.5-build (Opus NOT_RUN)",
-    "auditor_verdict": "PASS_WITH_RISKS",
-    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/AUDITOR_REPORT.md"
+    "auditor_model": "unknown",
+    "auditor_tool": "none",
+    "exit_code": null,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": null,
+    "remaining_risks": [
+      "Independent Claude Code Opus audit is pending."
+    ],
+    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/AUDITOR_REPAIR_REPORT.md",
+    "required": true,
+    "skip_reason": "Structural proof repair stage precedes the separately signed exact-head Opus audit.",
+    "status": "SKIPPED"
   },
-  "remaining_risks": [
-    "Opus independent auditor NOT_RUN",
-    "Stacked on 0000R tip rather than origin/main tip",
-    "0007 local worktree salvage UNKNOWN"
+  "executed": false,
+  "github_mutation_route_added": false,
+  "handoff_refs": [
+    "DMX-DCP-MODEL-ROUTING-MVP-0000S-FINALIZATION-HANDOFF-001"
   ],
-  "merge_readiness": "BLOCKED_NOT_REQUESTED",
-  "canonical_next_sequence": [
-    "0007I",
-    "0007T",
-    "0007A",
-    "0008",
-    "0009"
+  "head_sha": "3ce0db080527d64eeb3849e88786528422885333",
+  "mutation_performed": false,
+  "parent_bundle_refs": [
+    "DMX-DCP-MODEL-ROUTING-MVP-0000S"
   ],
-  "supervisor_gate_after": "0009"
+  "pr_number": 1138,
+  "proof_freshness": {
+    "reason": "The structural proof commit SHA is captured only after this content is committed.",
+    "status": "PENDING_PROOF_ONLY_SELF_REFERENCE_EXCEPTION"
+  },
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "review_order_hint": 2,
+  "run_id": "proof-finalization-20260729T101514Z",
+  "skill": "proof-finalization-repair",
+  "status": "BLOCKED",
+  "subject_sha": "3ce0db080527d64eeb3849e88786528422885333",
+  "supporting_artifacts": [
+    "AUDITOR_REPAIR_REPORT.md",
+    "review_bundle/"
+  ],
+  "validation_state": "PARTIAL"
 }

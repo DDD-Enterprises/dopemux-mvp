@@ -1,0 +1,79 @@
+tests/unit/dcp/test_routing_backend_policy.py:254:    assert decision.is_runnable() is True
+tests/unit/dcp/test_routing_backend_policy.py:479:    assert decision.is_runnable() is False
+tests/unit/dcp/test_lane_engine.py:151:def test_executability_gate_mirrors_is_runnable_on_forged_decision() -> None:
+tests/unit/dcp/test_lane_engine.py:155:    delegates to RouteDecision.is_runnable(), which fail-closes on authority.
+tests/unit/dcp/test_lane_engine.py:171:        assert forged.is_runnable() is False  # is_runnable already fail-closes
+tests/unit/dcp/test_lane_engine.py:286:    assert not decision.is_runnable()
+tests/unit/dcp/test_lane_engine.py:526:    assert decision.is_runnable()
+tests/unit/dcp/test_lane_engine.py:545:    assert restored.is_runnable()
+tests/unit/dcp/test_lane_engine.py:572:    assert restored.is_runnable()
+tests/unit/dcp/test_lane_engine.py:581:    """Routes with stop_conditions must not be executable even when is_runnable()."""
+tests/unit/dcp/test_lane_engine.py:606:    assert restored.is_runnable()
+tests/unit/dcp/test_lane_engine.py:647:    assert restored.is_runnable()
+tests/unit/dcp/test_lane_engine.py:683:    assert restored.is_runnable()
+tests/unit/dcp/test_lane_engine.py:744:    assert restored.is_runnable()
+tests/unit/dcp/test_lane_engine.py:932:    every enum field known plus a non-empty ``unknowns`` list, yet ``is_runnable()``
+tests/unit/dcp/test_lane_engine.py:952:    assert restored.is_runnable()
+tests/unit/dcp/test_lane_engine.py:998:    assert restored.is_runnable()
+tests/unit/dcp/test_routing_classifier.py:93:def _is_runnable(decision: RouteDecision) -> bool:
+tests/unit/dcp/test_routing_classifier.py:95:    return decision.is_runnable()
+tests/unit/dcp/test_routing_classifier.py:119:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:148:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:218:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:230:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:242:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:254:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:266:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:278:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:500:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:516:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:545:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:632:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:646:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:676:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:689:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:703:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:721:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:735:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:749:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:781:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:799:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:817:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:833:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:850:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:913:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:934:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:1029:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:1045:    assert not _is_runnable(decision)
+tests/unit/dcp/test_routing_classifier.py:1171:    assert not decision.is_runnable()
+tests/unit/dcp/test_routing_classifier.py:1197:    assert not decision.is_runnable()
+tests/unit/dcp/test_routing_classifier.py:1220:    assert not decision.is_runnable()
+tests/unit/dcp/test_routing_classifier.py:1250:    assert not decision.is_runnable()
+tests/unit/dcp/test_routing_classifier.py:1297:    assert not decision.is_runnable()
+tests/unit/dcp/test_routing_classifier.py:1353:def test_allowed_baseline_is_runnable_sanity() -> None:
+tests/unit/dcp/test_routing_classifier.py:1357:    assert decision.is_runnable()
+tests/unit/dcp/test_routing_classifier.py:1374:    assert not decision.is_runnable()
+tests/unit/dcp/test_routing_classifier.py:1387:    assert not decision.is_runnable()
+tests/unit/dcp/test_routing_classifier.py:1396:    assert not decision.is_runnable()
+tests/unit/dcp/test_routing_classifier.py:1408:    assert decision.is_runnable()
+tests/unit/dcp/test_routing_classifier.py:1415:    assert not decision.is_runnable()
+tests/unit/dcp/test_routing_classifier.py:1479:    assert not blocked.is_runnable()
+tests/unit/dcp/test_routing_classifier.py:1488:    assert proven.is_runnable()
+tests/unit/dcp/test_routing_classifier.py:1495:    assert not blocked.is_runnable()
+tests/unit/dcp/test_routing_classifier.py:1510:    assert not decision.is_runnable()
+tests/unit/dcp/test_routing_classifier.py:1517:    assert decision.is_runnable()
+tests/unit/dcp/test_routing_classifier.py:1536:    assert not decision.is_runnable()
+tests/unit/dcp/test_routing_model.py:14:- RED_LANE overrides ALLOWED status in is_runnable()
+tests/unit/dcp/test_routing_model.py:181:    assert rd.is_runnable() is False
+tests/unit/dcp/test_routing_model.py:209:def test_red_lane_overrides_allowed_status_in_is_runnable() -> None:
+tests/unit/dcp/test_routing_model.py:216:    assert rd.is_runnable() is False
+tests/unit/dcp/test_routing_model.py:219:def test_clear_red_lane_and_allowed_status_is_runnable() -> None:
+tests/unit/dcp/test_routing_model.py:225:    assert rd.is_runnable() is True
+tests/unit/dcp/test_routing_model.py:235:    assert rd.is_runnable() is False
+tests/unit/dcp/test_routing_model.py:250:    assert rd.is_runnable() is False
+tests/unit/dcp/test_routing_model.py:259:    assert rd.is_runnable() is False
+src/dopemux/dcp/lane_engine.py:12:- is_executable is stricter than RouteDecision.is_runnable() when lane safety requires.
+src/dopemux/dcp/lane_engine.py:154:    Stricter than raw ``RouteDecision.is_runnable()``: also fail-closes on restored
+src/dopemux/dcp/lane_engine.py:165:    return decision.is_runnable()
+src/dopemux/dcp/routing_model.py:401:    def is_runnable(self) -> bool:
+src/dopemux/dcp/routing_backend_policy.py:311:    if not decision.is_runnable():
