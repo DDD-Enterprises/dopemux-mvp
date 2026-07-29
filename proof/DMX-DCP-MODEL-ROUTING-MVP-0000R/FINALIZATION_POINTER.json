@@ -1,0 +1,9 @@
+{
+  "candidate_subject_sha": "5de3f0ef56dfcf8545c395418b4a3d424b1bc249",
+  "draft_to_ready_authorized": false,
+  "expected_ci_artifact_name_template": "embedded-audit-pr-1137-head-<FINAL_HEAD_SHA>-proof",
+  "expected_signed_audit_path": "proof/pr_merge/embedded-audit/pr-1137/",
+  "merge_authorized": false,
+  "pr_steward_output_location": "EXTERNAL_RUN_ARTIFACT_NOT_COMMITTED",
+  "structural_proof_commit_sha": "CAPTURE_AFTER_COMMIT"
+}

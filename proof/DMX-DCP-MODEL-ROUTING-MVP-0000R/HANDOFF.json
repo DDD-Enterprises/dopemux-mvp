@@ -1,38 +1,41 @@
 {
-  "handoff_id": "DMX-DCP-MODEL-ROUTING-MVP-0000R-HANDOFF-001",
-  "source_skill": "dcp-runtime-reconciliation-implementer",
-  "target_skill": "pr-steward",
-  "run_id": "dcp-0000r-20260727T031523Z-001",
-  "repo": "dopemux-mvp",
-  "branch": "dcp/model-routing-0000r-runtime-reconcile",
-  "base_branch": "main",
-  "governing_posture": "GO_DRAFT_FIRST",
-  "recommended_next_step": "CREATE_DRAFT_PR",
   "authoritative_artifacts": [
-    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/CURRENT_MAIN_RUNTIME_RECONCILIATION.json",
-    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/CURRENT_MAIN_RUNTIME_RECONCILIATION.md",
-    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/PROOF.json",
-    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/AUDITOR_REPORT.md"
+    "IMPLEMENTATION_REPORT.md",
+    "VALIDATION.json",
+    "WARNINGS_AND_BLOCKERS.json",
+    "FINALIZATION_POINTER.json"
   ],
-  "supporting_artifacts": [
-    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/COMMAND_LOG.md",
-    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/EVIDENCE_LEDGER.md",
-    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/PAL_CHAIN.md",
-    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/FINAL_STATUS_PORCELAIN.txt",
-    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/DIFF_NAME_ONLY.txt",
-    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/DIFF_STAT.txt"
+  "base_branch": "main",
+  "blocking_reasons": [
+    "FORMAL_OPUS_AUDIT_PENDING",
+    "CI_EXACT_HEAD_PROOF_PENDING",
+    "PR_STEWARD_PENDING",
+    "PR_DRAFT_PRESERVED"
   ],
-  "warnings": [
-    "PAL chain did not reach full external multi-stage execution: pal-stdio's file-embedding could not read this worktree's paths (files_embedded stayed 0 across repeated analyze attempts with valid absolute paths); analyze/challenge ran externally where the tool schema allowed it, thinkdeep/codereview/precommit were run as disclosed self-directed reasoning instead. See PAL_CHAIN.md for full disclosure — no evidence claim depends on the downgraded stages.",
-      "origin/main has advanced past this branch's pinned base (9a52ecf432...) since the branch was created; this packet's subject_sha remains 9a52ecf432 per operator instruction to stay on the existing branch, not rebase. A later packet should re-verify against the newer main tip if freshness becomes stale.",
-    "Four DCP-adjacent test suites (tests/dcp_extension/**, tests/contracts/test_openclaw_dcp_routing_contracts.py, tests/project_control_plane/test_dcp_extension_export.py, tests/test_dcp_surface_guard.py, tests/test_dcp_denylist_nudge.py) exist but were outside this packet's exact focused pytest scope and were not run; their pass/fail state is UNKNOWN.",
-    "No live HTTP health probe was performed against mcp-pal (:3003) or mcp-litellm (:4000); health claims are Docker's own HEALTHCHECK verdict at snapshot time only.",
-    "A stray .claude/.activity-heartbeat-cache.json file was found written inside proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/.claude/ during the embedded-audit subprocess run (apparent cwd-resolution side effect of the audited claude CLI's own hook system) and was deleted before commit; if it reappears in future re-runs of this pattern, treat it as session noise, not evidence."
-  ],
-  "blocking_reasons": [],
+  "branch": "dcp/model-routing-0000r-runtime-reconcile",
   "chain_of_custody": {
-    "parent_bundle_ids": [],
-    "created_at": "2026-07-27T03:15:23Z",
-    "skill_version": "1.0.0"
-  }
+    "candidate_subject_sha": "5de3f0ef56dfcf8545c395418b4a3d424b1bc249",
+    "created_at": "2026-07-29T10:12:17Z",
+    "merge_base_sha": "9a52ecf4328f28756c3e87a2c351e60d46b805f6",
+    "parent_bundle_ids": [
+      "DMX-DCP-MODEL-ROUTING-MVP-0000R"
+    ],
+    "skill_version": "finalization-repair-support/1.0.0",
+    "trusted_main_sha": "72af781e42e0702d9047946e0f5a250e7dff0fa5"
+  },
+  "governing_posture": "NO_GO_LIMIT_TO_ARTIFACTS_ONLY",
+  "handoff_id": "DMX-DCP-MODEL-ROUTING-MVP-0000R-FINALIZATION-HANDOFF-001",
+  "recommended_next_step": "BLOCK_AND_AWAIT_FIX",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "run_id": "proof-finalization-20260729T101217Z",
+  "source_skill": "proof-finalization-repair",
+  "supporting_artifacts": [
+    "review_bundle/"
+  ],
+  "target_skill": "independent-embedded-auditor",
+  "warnings": [
+    "The structural proof commit cannot name its own future commit SHA without a self-reference cycle.",
+    "A second proof-only commit must carry the signed Opus audit bound to this structural commit.",
+    "The PR remains draft and no draft-to-ready or merge action is authorized."
+  ]
 }
