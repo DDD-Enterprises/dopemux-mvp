@@ -52,8 +52,16 @@ except ImportError:  # pragma: no cover - for constrained test envs
 from ..autonomous.autonomous_controller import AutonomousConfig, AutonomousController
 from ..context.openai_generator import OpenAIContextGenerator
 from ..embeddings.contextualized_embedder import ContextualizedEmbedder
-from ..embeddings.model_registry import DEFAULT_DOC_MODEL, env_model
 from ..embeddings.voyage_embedder import VoyageEmbedder
+from ..index_profile import (
+    assert_manifest_compatible,
+    build_code_collection_profile,
+    build_docs_collection_profile,
+    classify_collections,
+    resolve_contextual_embed_model,
+    write_collection_manifest,
+    workspace_identity_from_path,
+)
 from ..pipeline.docs_pipeline import DocIndexingPipeline
 from ..pipeline.indexing_pipeline import (
     IndexingConfig,
@@ -70,6 +78,7 @@ from ..utils.metrics_tracker import get_tracker
 from ..utils.token_budget import truncate_code_results, truncate_docs_results
 from ..utils.workspace import (
     get_collection_names,
+    get_legacy_collection_names,
     get_snapshot_dir,
     get_workspace_root,
     workspace_to_hash,
@@ -867,15 +876,9 @@ def _initialize_components():
     _reranker = VoyageReranker(api_key=voyage_key)
 
     # Create pipeline
-    # F-015: derive workspace_id from the resolved workspace root (same as
-    # every reachable tool path -- _index_workspace_impl, _index_docs_impl)
-    # rather than os.getenv("WORKSPACE_ID", "default"). Two workspaces that
-    # both left WORKSPACE_ID unset would otherwise collide on "default" and
-    # corrupt each other's deterministic point IDs. This module-level
-    # pipeline is not currently invoked by any tool (each tool builds its own
-    # workspace-scoped pipeline), so the exposure was latent, not realized --
-    # fixed here rather than deleted so the global stays correct if it is
-    # ever wired up.
+    # F-015: derive workspace_id from resolved workspace root (same as tool
+    # paths). Do not use os.getenv("WORKSPACE_ID") here — unset env would make
+    # two workspaces collide if ever wired through this module-level pipeline.
     config = IndexingConfig(
         workspace_path=Path.cwd(),
         workspace_id=str(workspace_root),
@@ -920,7 +923,8 @@ async def _index_workspace_impl(
 ) -> Dict:
     """Implementation of index_workspace tool."""
     workspace = Path(workspace_path).resolve()
-    code_collection, _ = get_collection_names(workspace)
+    code_profile = build_code_collection_profile()
+    code_collection, _ = get_collection_names(workspace, code_profile=code_profile)
 
     logger.info(f"Indexing workspace: {workspace_path} → collection: {code_collection}")
 
@@ -929,9 +933,13 @@ async def _index_workspace_impl(
         collection_name=code_collection,
         url=os.getenv("QDRANT_URL", "localhost"),
         port=int(os.getenv("QDRANT_PORT", "6333")),
+        vector_size=code_profile.content().dimension,
     )
 
+    snapshot_dir = get_snapshot_dir(workspace)
+    assert_manifest_compatible(snapshot_dir, code_profile, code_collection)
     await vector_search.create_collection()
+    write_collection_manifest(snapshot_dir, code_profile, code_collection)
 
     # Create workspace-specific pipeline
     chunker = CodeChunker()
@@ -943,13 +951,18 @@ async def _index_workspace_impl(
 
     standard_embedder = VoyageEmbedder(
         api_key=_get_voyage_api_key(),
-        default_model="voyage-code-3",
+        default_model=code_profile.title().model,
+        output_dimension=code_profile.title().dimension,
+        output_dtype=code_profile.title().dtype,
     )
 
     # Create contextualized embedder for content vectors
     contextualized_embedder = ContextualizedEmbedder(
         api_key=_get_voyage_api_key(),
         cache_ttl_hours=24,
+        default_model=code_profile.content().model,
+        output_dimension=code_profile.content().dimension,
+        output_dtype=code_profile.content().dtype,
     )
 
     config = IndexingConfig(
@@ -957,7 +970,7 @@ async def _index_workspace_impl(
         include_patterns=include_patterns or ["*.py", "*.js", "*.ts", "*.tsx"],
         exclude_patterns=exclude_patterns or ["*test*", "*__pycache__*"],
         max_files=max_files,
-        workspace_id=str(workspace),
+        workspace_id=workspace_identity_from_path(workspace),
     )
 
     pipeline = IndexingPipeline(
@@ -968,6 +981,7 @@ async def _index_workspace_impl(
         vector_search=vector_search,
         config=config,
     )
+    pipeline.collection_profile = code_profile
 
     # Run indexing
     progress = await pipeline.index_workspace()
@@ -1137,10 +1151,12 @@ async def _search_code_impl(
                 }
             ]
 
-        embedder = _get_cached_embedder(
+        code_profile = build_code_collection_profile()
+        standard_embedder = _get_cached_embedder(
             api_key=voyage_key,
-            model="voyage-code-3",
+            model=code_profile.title().model,
         )
+        contextual_embedder = _get_cached_contextualized_embedder(api_key=voyage_key)
 
         # Load BM25 index from cache if available
         bm25_index = BM25Index()
@@ -1209,24 +1225,41 @@ async def _search_code_impl(
         }
         search_profile = profile_map.get(profile, SearchProfile.implementation())
 
-        # Embed query (3 vectors)
+        # Embed query using the same named-vector profiles as indexing (F-001).
+        # content_vec: contextualized endpoint + query input type, single vector.
         try:
-            query_content = await embedder.embed(
+            content_profile = code_profile.content()
+            title_profile = code_profile.title()
+            breadcrumb_profile = code_profile.breadcrumb()
+
+            content_response = await contextual_embedder.embed_document(
+                chunks=[query],
+                model=content_profile.model,
+                input_type=content_profile.query_input_type,
+                output_dimension=content_profile.dimension,
+                output_dtype=content_profile.dtype,
+                enable_auto_chunking=False,
+            )
+            if len(content_response.embeddings) != 1:
+                raise ValueError(
+                    f"Expected exactly one content query vector, got "
+                    f"{len(content_response.embeddings)}"
+                )
+
+            query_title = await standard_embedder.embed(
                 text=query,
-                model="voyage-code-3",
-                input_type="query",
+                model=title_profile.model,
+                input_type=title_profile.query_input_type,
+                output_dimension=title_profile.dimension,
+                output_dtype=title_profile.dtype,
             )
 
-            query_title = await embedder.embed(
+            query_breadcrumb = await standard_embedder.embed(
                 text=query,
-                model="voyage-code-3",
-                input_type="query",
-            )
-
-            query_breadcrumb = await embedder.embed(
-                text=query,
-                model="voyage-code-3",
-                input_type="query",
+                model=breadcrumb_profile.model,
+                input_type=breadcrumb_profile.query_input_type,
+                output_dimension=breadcrumb_profile.dimension,
+                output_dtype=breadcrumb_profile.dtype,
             )
         except Exception as embed_error:
             logger.error(f"Embedding failed: {embed_error}")
@@ -1239,7 +1272,7 @@ async def _search_code_impl(
             ]
 
         query_vectors = {
-            "content": query_content.embedding,
+            "content": content_response.embeddings[0],
             "title": query_title.embedding,
             "breadcrumb": query_breadcrumb.embedding,
         }
@@ -1288,12 +1321,9 @@ async def _search_code_impl(
                         "context": r.search_result.context_snippet,
                         "relevance_score": r.relevance_score,
                         "original_rank": r.original_rank,
-                        # F-011: rerank_response.degraded is True when
-                        # VoyageReranker silently fell back to the original
-                        # dense ordering (API failure or no candidate fit the
-                        # token budget). Do not report degraded results as a
-                        # successful rerank.
                         "reranked": not rerank_response.degraded,
+                        "rerank_degraded": rerank_response.degraded,
+                        "rerank_failure_reason": rerank_response.failure_reason,
                         "start_line": getattr(
                             r.search_result, "start_line", None
                         ),  # F-NEW-5 support
@@ -1316,6 +1346,15 @@ async def _search_code_impl(
                         f"{trunc_info.estimated_tokens} tokens ({trunc_info.budget_used_pct:.1f}% of budget)"
                     )
 
+                if truncated_results:
+                    truncated_results[0]["_meta"] = {
+                        "budget_starvation": trunc_info.budget_starvation,
+                        "degraded_guarantee_applied": trunc_info.degraded_guarantee_applied,
+                        "rerank_degraded": rerank_response.degraded,
+                        "rerank_failure_reason": rerank_response.failure_reason,
+                        "content_vec_model": content_profile.model,
+                        "content_vec_endpoint": content_profile.endpoint,
+                    }
                 return truncated_results
             except Exception as rerank_error:
                 logger.warning(
@@ -1368,6 +1407,13 @@ async def _search_code_impl(
                 logger.warning(f"Code graph enrichment failed: {enrich_error}")
                 # Continue with unenriched results
 
+        if final_results:
+            final_results[0]["_meta"] = {
+                "budget_starvation": trunc_info.budget_starvation,
+                "degraded_guarantee_applied": trunc_info.degraded_guarantee_applied,
+                "content_vec_model": content_profile.model,
+                "content_vec_endpoint": content_profile.endpoint,
+            }
         return final_results
 
     except Exception as execution_error:
@@ -1484,9 +1530,27 @@ async def _get_index_status_impl(
     code_collections: Dict[str, Dict[str, Any]] = {}
     docs_collections: Dict[str, Dict[str, Any]] = {}
 
+    code_profile = build_code_collection_profile()
+    docs_profile = build_docs_collection_profile()
+
+    # Optional live Qdrant collection listing for legacy detection.
+    known_names: List[str] = []
+    try:
+        probe = MultiVectorSearch(
+            collection_name="__probe__",
+            url=qdrant_url,
+            port=qdrant_port,
+        )
+        collections = await probe.client.get_collections()
+        known_names = [c.name for c in collections.collections]
+    except Exception as exc:
+        logger.debug("Could not list Qdrant collections for status: %s", exc)
+
     for workspace in target_workspaces:
         workspace_hash = workspace_to_hash(workspace)
-        code_collection, docs_collection = get_collection_names(workspace)
+        code_collection, docs_collection = get_collection_names(
+            workspace, code_profile=code_profile, docs_profile=docs_profile
+        )
 
         code_status = await _describe_collection(
             code_collection, qdrant_url, qdrant_port
@@ -1496,13 +1560,40 @@ async def _get_index_status_impl(
         )
         snapshot_meta = _load_snapshot_metadata(workspace, workspace_hash)
 
+        code_migration = classify_collections(
+            known_names,
+            kind="code",
+            workspace_hash=workspace_hash,
+            active_digest=code_profile.profile_digest,
+        )
+        docs_migration = classify_collections(
+            known_names,
+            kind="docs",
+            workspace_hash=workspace_hash,
+            active_digest=docs_profile.profile_digest,
+        )
+        # Always report legacy unversioned names even if Qdrant listing failed.
+        legacy_code, legacy_docs = get_legacy_collection_names(workspace)
+        if legacy_code not in code_migration["legacy_collections"]:
+            # Detection-only: do not claim existence without listing.
+            pass
+
         workspace_entry = {
             "workspace": str(workspace),
             "workspace_hash": workspace_hash,
             "workspace_exists": workspace.exists(),
+            "active_code_collection": code_collection,
+            "active_docs_collection": docs_collection,
             "code_collection": code_status,
             "docs_collection": docs_status,
+            "code_profile": code_profile.to_public_dict(),
+            "docs_profile": docs_profile.to_public_dict(),
+            "legacy_code_collection_name": legacy_code,
+            "legacy_docs_collection_name": legacy_docs,
+            "code_migration": code_migration,
+            "docs_migration": docs_migration,
             "snapshot": snapshot_meta,
+            "contextual_embed_model": resolve_contextual_embed_model(),
         }
         workspaces_summary.append(workspace_entry)
 
@@ -1514,14 +1605,23 @@ async def _get_index_status_impl(
                 if key in {"files_indexed", "total_chunks", "last_snapshot"}
             }
         )
+        code_details["profile_digest"] = code_profile.profile_digest
+        code_details["migration"] = code_migration
         code_collections[workspace_hash] = code_details
-        docs_collections[workspace_hash] = dict(docs_status)
+        docs_details = dict(docs_status)
+        docs_details["profile_digest"] = docs_profile.profile_digest
+        docs_details["migration"] = docs_migration
+        docs_collections[workspace_hash] = docs_details
 
     return {
         "workspace_count": len(workspaces_summary),
         "workspaces": workspaces_summary,
         "code_collections": code_collections,
         "docs_collections": docs_collections,
+        "active_profiles": {
+            "code": code_profile.to_public_dict(),
+            "docs": docs_profile.to_public_dict(),
+        },
     }
 
 
@@ -1676,7 +1776,8 @@ async def _index_docs_impl(
 ) -> Dict:
     """Implementation of index_docs tool."""
     workspace = Path(workspace_path).resolve()
-    _, docs_collection = get_collection_names(workspace)
+    docs_profile = build_docs_collection_profile()
+    _, docs_collection = get_collection_names(workspace, docs_profile=docs_profile)
 
     logger.info(f"Indexing docs: {workspace_path} → collection: {docs_collection}")
 
@@ -1685,19 +1786,29 @@ async def _index_docs_impl(
         collection_name=docs_collection,
         url=os.getenv("QDRANT_URL", "localhost"),
         port=int(os.getenv("QDRANT_PORT", "6333")),
+        vector_size=docs_profile.content().dimension,
     )
 
     docs_embedder = ContextualizedEmbedder(
         api_key=_get_voyage_api_key(),
         cache_ttl_hours=24,
+        default_model=docs_profile.content().model,
+        output_dimension=docs_profile.content().dimension,
+        output_dtype=docs_profile.content().dtype,
     )
 
     docs_pipeline = DocIndexingPipeline(
         embedder=docs_embedder,
         doc_search=docs_search,
         workspace_path=workspace,
-        workspace_id=str(workspace),
+        workspace_id=workspace_identity_from_path(workspace),
+        collection_profile=docs_profile,
     )
+
+    snapshot_dir = get_snapshot_dir(workspace)
+    assert_manifest_compatible(snapshot_dir, docs_profile, docs_collection)
+    await docs_search.create_collection()
+    write_collection_manifest(snapshot_dir, docs_profile, docs_collection)
 
     result = await docs_pipeline.index_workspace(
         include_patterns=include_patterns,
@@ -1754,11 +1865,10 @@ async def _docs_search_impl(
     """Implementation of docs_search tool."""
     # Detect workspace
     workspace = Path(workspace_path) if workspace_path else get_workspace_root()
-    _, docs_collection = get_collection_names(workspace)
-    # Placeholder for the no-API-key early return below; resolved from the same
-    # configured source (env var + registry default) the index path uses, so it
-    # can never diverge from what index_docs actually indexed with (F-003).
-    embed_model = env_model("DOPE_CONTEXT_DOC_EMBED_MODEL", DEFAULT_DOC_MODEL)
+    docs_profile = build_docs_collection_profile()
+    _, docs_collection = get_collection_names(workspace, docs_profile=docs_profile)
+    content_profile = docs_profile.content()
+    embed_model = content_profile.model
 
     # Log metrics for benchmarking
     get_tracker().log_search(
@@ -1808,22 +1918,24 @@ async def _docs_search_impl(
     )
 
     docs_embedder = _get_cached_contextualized_embedder(api_key=voyage_key)
-    # Resolve from the embedder's own configured default so the query model can
-    # never split from the index model (F-003): DocIndexingPipeline._index_document
-    # passes this same attribute for the index path.
-    embed_model = docs_embedder.default_model
 
-    # Embed query with the configured contextualized model (index/query symmetric)
+    # Embed query with the same contextual model used for indexing (F-003).
     embed_started = perf_counter()
     result = await docs_embedder.embed_document(
-        chunks=[query],  # Single "chunk" for query
-        model=embed_model,
-        input_type="query",
-        output_dimension=1024,
+        chunks=[query],
+        model=content_profile.model,
+        input_type=content_profile.query_input_type,
+        output_dimension=content_profile.dimension,
+        output_dtype=content_profile.dtype,
+        enable_auto_chunking=False,
     )
+    if len(result.embeddings) != 1:
+        raise ValueError(
+            f"Expected exactly one docs query vector, got {len(result.embeddings)}"
+        )
     embed_duration_ms = round((perf_counter() - embed_started) * 1000, 3)
 
-    # Use same vector for all three (voyage-context-3 has full context)
+    # Same vector for all three named vectors (docs profile uses one model).
     query_embedding = result.embeddings[0]
     query_vectors = {
         "content": query_embedding,

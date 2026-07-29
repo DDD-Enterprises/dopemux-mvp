@@ -36,13 +36,14 @@ def test_current_voyage_models_and_prices():
     assert code.max_request_tokens == 120_000
 
 
-def test_legacy_context_literal_migrates_unless_explicit(monkeypatch):
+def test_legacy_context3_migrates_unless_explicitly_allowed(monkeypatch):
+    """Legacy hard-coded context-3 selects configured default unless allowed."""
     monkeypatch.delenv("DOPE_CONTEXT_ALLOW_LEGACY_CONTEXT3", raising=False)
     assert (
         resolve_context_model("voyage-context-3", "voyage-context-4")
         == "voyage-context-4"
     )
-
+    assert resolve_context_model(None, "voyage-context-4") == "voyage-context-4"
     monkeypatch.setenv("DOPE_CONTEXT_ALLOW_LEGACY_CONTEXT3", "1")
     assert (
         resolve_context_model("voyage-context-3", "voyage-context-4")

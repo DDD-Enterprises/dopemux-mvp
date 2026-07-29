@@ -14,6 +14,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+def _tool_fn(tool):
+    """Invoke FastMCP FunctionTool through the supported underlying function."""
+    return getattr(tool, "fn", tool)
+
+
 TEST_HOME = Path(tempfile.gettempdir()) / "dope-context-test-home"
 TEST_HOME.mkdir(parents=True, exist_ok=True)
 os.environ["HOME"] = str(TEST_HOME)
@@ -129,9 +134,16 @@ def _register_qdrant_stub():
     http_module = types.ModuleType("qdrant_client.http")
     http_module.models = models_module
 
-    sys.modules.setdefault("qdrant_client", qdrant_module)
-    sys.modules.setdefault("qdrant_client.http", http_module)
-    sys.modules.setdefault("qdrant_client.http.models", models_module)
+    # Force stubs so earlier imports of real qdrant cannot poison this module.
+    sys.modules["qdrant_client"] = qdrant_module
+    sys.modules["qdrant_client.http"] = http_module
+    sys.modules["qdrant_client.http.models"] = models_module
+    # Rebind already-imported dense_search clients when present.
+    dense = sys.modules.get("src.search.dense_search")
+    if dense is not None:
+        dense.AsyncQdrantClient = _StubAsyncQdrantClient
+        if hasattr(dense, "models"):
+            dense.models = models_module
 
 
 _register_qdrant_stub()
@@ -246,19 +258,47 @@ async def test_search_code_tool():
     """Test search_code MCP tool."""
     with patch("src.mcp.server._initialize_components"), patch(
         "src.mcp.server._hybrid_search"
-    ) as mock_hybrid, patch("src.mcp.server._embedder") as mock_embedder, patch(
-        "src.mcp.server._reranker"
-    ) as mock_reranker:
-
-        # Mock embedder
+    ) as mock_hybrid, patch(
+        "src.mcp.server._get_cached_embedder"
+    ) as mock_get_embedder, patch(
+        "src.mcp.server._get_cached_contextualized_embedder"
+    ) as mock_get_ctx, patch(
+        "src.mcp.server._get_cached_vector_search"
+    ) as mock_vs, patch(
+        "src.mcp.server._get_cached_reranker"
+    ) as mock_reranker, patch(
+        "src.mcp.server._get_voyage_api_key", return_value="test-key"
+    ):
         from src.embeddings.voyage_embedder import EmbeddingResponse
+        from src.embeddings.contextualized_embedder import ContextualizedEmbeddingResponse
 
+        mock_vs.return_value.get_collection_info = AsyncMock(
+            return_value={"vectors_count": 1}
+        )
         mock_embedding = EmbeddingResponse(
             embedding=[0.1] * 1024,
             model="voyage-code-3",
             tokens=10,
         )
-        mock_embedder.embed = AsyncMock(return_value=mock_embedding)
+        mock_standard = AsyncMock()
+        mock_standard.embed = AsyncMock(return_value=mock_embedding)
+        mock_get_embedder.return_value = mock_standard
+        mock_ctx = AsyncMock()
+        mock_ctx.embed_document = AsyncMock(
+            return_value=ContextualizedEmbeddingResponse(
+                embeddings=[[0.1] * 1024],
+                model="voyage-context-4",
+                total_tokens=10,
+                cached=False,
+                cost_usd=0.0,
+                chunk_tokens=[10],
+                chunk_texts=["q"],
+                output_dimension=1024,
+                output_dtype="float",
+                token_count_exact=True,
+            )
+        )
+        mock_get_ctx.return_value = mock_ctx
 
         # Mock search results
         search_result = SearchResult(
@@ -287,7 +327,7 @@ async def test_search_code_tool():
             tokens_used=50,
             cost_usd=0.0001,
         )
-        mock_reranker.rerank = AsyncMock(return_value=rerank_response)
+        mock_reranker.return_value.rerank = AsyncMock(return_value=rerank_response)
 
         # Call tool impl
         results = await _search_code_impl(
@@ -309,17 +349,45 @@ async def test_search_code_without_reranking():
     """Test search_code without reranking."""
     with patch("src.mcp.server._initialize_components"), patch(
         "src.mcp.server._hybrid_search"
-    ) as mock_hybrid, patch("src.mcp.server._embedder") as mock_embedder:
-
-        # Mock embedder
+    ) as mock_hybrid, patch(
+        "src.mcp.server._get_cached_embedder"
+    ) as mock_get_embedder, patch(
+        "src.mcp.server._get_cached_contextualized_embedder"
+    ) as mock_get_ctx, patch(
+        "src.mcp.server._get_cached_vector_search"
+    ) as mock_vs, patch(
+        "src.mcp.server._get_voyage_api_key", return_value="test-key"
+    ):
         from src.embeddings.voyage_embedder import EmbeddingResponse
+        from src.embeddings.contextualized_embedder import ContextualizedEmbeddingResponse
 
+        mock_vs.return_value.get_collection_info = AsyncMock(
+            return_value={"vectors_count": 1}
+        )
         mock_embedding = EmbeddingResponse(
             embedding=[0.1] * 1024,
             model="voyage-code-3",
             tokens=10,
         )
-        mock_embedder.embed = AsyncMock(return_value=mock_embedding)
+        mock_standard = AsyncMock()
+        mock_standard.embed = AsyncMock(return_value=mock_embedding)
+        mock_get_embedder.return_value = mock_standard
+        mock_ctx = AsyncMock()
+        mock_ctx.embed_document = AsyncMock(
+            return_value=ContextualizedEmbeddingResponse(
+                embeddings=[[0.1] * 1024],
+                model="voyage-context-4",
+                total_tokens=10,
+                cached=False,
+                cost_usd=0.0,
+                chunk_tokens=[10],
+                chunk_texts=["q"],
+                output_dimension=1024,
+                output_dtype="float",
+                token_count_exact=True,
+            )
+        )
+        mock_get_ctx.return_value = mock_ctx
 
         # Mock search results
         search_result = SearchResult(
@@ -541,8 +609,15 @@ async def test_clear_index_tool(tmp_path, monkeypatch):
 
     assert result["status"] == "success"
     assert result["approval_matched"] is True
-    assert set(deleted) == {f"code_{workspace_hash}", f"docs_{workspace_hash}"}
+    from src.utils.workspace import get_collection_names
+
+    code_name, docs_name = get_collection_names(workspace)
+    assert set(deleted) == {code_name, docs_name}
     assert not bm25_path.exists()
+    # Active clear targets versioned collections (kind_hash_digest).
+    assert code_name.startswith(f"code_{workspace_hash}_")
+    assert docs_name.startswith(f"docs_{workspace_hash}_")
+    assert len(code_name.split("_")) >= 3
 
 
 @pytest.mark.anyio
@@ -749,11 +824,12 @@ async def test_search_all_clamps_decision_limit_to_trinity_boundary(
 
 @pytest.mark.anyio
 async def test_docs_search_impl_uses_voyage_context_query_mode(tmp_path, monkeypatch):
-    """_docs_search_impl must resolve its query model from the embedder's own
-    default_model (F-003), the same attribute DocIndexingPipeline._index_document
-    uses to index, so index and query can never diverge."""
+    """_docs_search_impl embeds with the configured contextual profile (query mode)."""
+    from src.index_profile import build_docs_collection_profile
+
     workspace = tmp_path / "workspace"
     workspace.mkdir()
+    expected_model = build_docs_collection_profile().content().model
 
     embed_mock = AsyncMock(
         return_value=types.SimpleNamespace(
@@ -762,7 +838,7 @@ async def test_docs_search_impl_uses_voyage_context_query_mode(tmp_path, monkeyp
     )
 
     class _FakeDocsEmbedder:
-        default_model = "voyage-context-4"
+        default_model = expected_model
         embed_document = embed_mock
 
     fake_result = SearchResult(
@@ -801,7 +877,7 @@ async def test_docs_search_impl_uses_voyage_context_query_mode(tmp_path, monkeyp
     )
 
     assert response["lane_used"] == "docs"
-    assert response["embed_model_used"] == _FakeDocsEmbedder.default_model
+    assert response["embed_model_used"] == expected_model
     assert response["fusion_strategy"] == "dense"
     assert response["rerank_used"] is False
     assert response["timings_ms"]["embed"] >= 0
@@ -813,7 +889,7 @@ async def test_docs_search_impl_uses_voyage_context_query_mode(tmp_path, monkeyp
 
     embed_mock.assert_awaited()
     _, kwargs = embed_mock.call_args
-    assert kwargs["model"] == _FakeDocsEmbedder.default_model
+    assert kwargs["model"] == expected_model
     assert kwargs["input_type"] == "query"
     assert "chunks" in kwargs
     assert len(kwargs["chunks"]) == 1
