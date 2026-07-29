@@ -366,15 +366,6 @@ def _fetch_changed_files_rest(
     return changed_files, errors
 
 
-# Safety backstop for the GraphQL pagination loop below, not a real limit on
-# PR size: 200 pages * 100 files/page = 20,000 files, comfortably above any
-# PR this repo has seen (the largest observed, #1123, has 16,206 changed
-# files). A `hasNextPage` that never resolves after this many pages indicates
-# a GraphQL response anomaly worth surfacing as an error, not a PR to keep
-# paginating into indefinitely.
-_MAX_CHANGED_FILES_PAGES = 200
-
-
 def _fetch_changed_files_with_pagination_check(
     *, repo: str, pr_number: int, rest_paths: list[str] | None = None
 ) -> tuple[list[str], list[str]]:
@@ -390,16 +381,15 @@ def _fetch_changed_files_with_pagination_check(
     remains the source of truth for `changed_files` in the harvested
     payload, while this function returns the GraphQL path list only for verification/reconciliation.
 
-    When `rest_paths` is provided, this also reconciles the REST path set
-    against the GraphQL path set. An unresolved `hasNextPage` after
-    `_MAX_CHANGED_FILES_PAGES` pages catches pagination overflow (GraphQL
-    side known-incomplete); this reconciliation catches the orthogonal
-    failure mode where REST silently under-reports a file (e.g. a `gh` CLI
-    bug or a timing race between the two independent API calls) while
-    *neither* source signals pagination overflow. Reconciliation is skipped
-    when GraphQL itself reports pagination overflow -- in that case its own
-    node list is known-incomplete and would trivially "differ" from REST,
-    which would just be duplicate noise on top of the pagination error.
+    The GraphQL connection's non-negative `totalCount` is pinned across pages.
+    Pagination continues without an arbitrary size ceiling while each page
+    makes verifiable progress through a new non-empty cursor and at least one
+    new path. Any malformed shape, GraphQL error, count drift, duplicate path,
+    or cursor anomaly fails closed before reconciliation.
+
+    When `rest_paths` is provided, this also reconciles the exact REST path set
+    against the complete GraphQL path set. Reconciliation is skipped after any
+    GraphQL failure because the GraphQL side is then untrustworthy.
     """
     owner, name = repo.split("/", 1)
     query = textwrap.dedent(
@@ -408,6 +398,7 @@ def _fetch_changed_files_with_pagination_check(
           repository(owner: $owner, name: $repo) {
             pullRequest(number: $number) {
               files(first: 100, after: $cursor) {
+                totalCount
                 pageInfo { hasNextPage endCursor }
                 nodes {
                   path
@@ -420,8 +411,10 @@ def _fetch_changed_files_with_pagination_check(
     ).strip()
     paths: list[str] = []
     cursor: str | None = None
-    has_next_page = False
-    for _ in range(_MAX_CHANGED_FILES_PAGES):
+    seen_cursors: set[str] = set()
+    seen_paths: set[str] = set()
+    pinned_total_count: int | None = None
+    while True:
         args = [
             "gh",
             "api",
@@ -444,38 +437,138 @@ def _fetch_changed_files_with_pagination_check(
             payload = json.loads(result.stdout)
         except json.JSONDecodeError as exc:
             return [], [f"gh api graphql changedFiles returned invalid JSON: {exc}"]
-        page = (
-            payload.get("data", {})
-            .get("repository", {})
-            .get("pullRequest", {})
-            .get("files", {})
-        )
-        page_info = page.get("pageInfo", {})
-        nodes = page.get("nodes") or []
-        paths.extend(
-            node.get("path")
-            for node in nodes
-            if isinstance(node, dict) and isinstance(node.get("path"), str)
-        )
-        has_next_page = bool(page_info.get("hasNextPage"))
-        cursor = page_info.get("endCursor")
-        if not has_next_page:
-            break
-        if not cursor:
-            # Anomalous response: server claims more pages exist but gave no
-            # cursor to fetch them. Leave has_next_page=True so this is
-            # reported as incomplete rather than silently treated as done.
-            break
-    else:
-        has_next_page = True
+        if not isinstance(payload, dict):
+            return paths, [
+                "changedFiles GraphQL response is malformed: expected an object"
+            ]
+
+        graphql_errors = payload.get("errors")
+        if graphql_errors is not None:
+            if not isinstance(graphql_errors, list):
+                return paths, [
+                    "changedFiles GraphQL response is malformed: errors is not a list"
+                ]
+            if graphql_errors:
+                return paths, ["changedFiles GraphQL response reported GraphQL errors"]
+
+        data = payload.get("data")
+        if not isinstance(data, dict):
+            return paths, [
+                "changedFiles GraphQL response is malformed: data is not an object"
+            ]
+        repository = data.get("repository")
+        if not isinstance(repository, dict):
+            return paths, [
+                "changedFiles GraphQL response is malformed: repository is not an object"
+            ]
+        pull_request = repository.get("pullRequest")
+        if not isinstance(pull_request, dict):
+            return paths, [
+                "changedFiles GraphQL response is malformed: pullRequest is not an object"
+            ]
+        page = pull_request.get("files")
+        if not isinstance(page, dict):
+            return paths, [
+                "changedFiles GraphQL response is malformed: files is not an object"
+            ]
+
+        total_count = page.get("totalCount")
+        if (
+            not isinstance(total_count, int)
+            or isinstance(total_count, bool)
+            or total_count < 0
+        ):
+            return paths, [
+                "changedFiles GraphQL totalCount must be a non-negative integer"
+            ]
+        if pinned_total_count is None:
+            pinned_total_count = total_count
+        elif total_count != pinned_total_count:
+            return paths, [
+                "changedFiles GraphQL totalCount changed during pagination: "
+                f"expected {pinned_total_count}, got {total_count}"
+            ]
+
+        page_info = page.get("pageInfo")
+        if not isinstance(page_info, dict):
+            return paths, [
+                "changedFiles GraphQL response is malformed: pageInfo is not an object"
+            ]
+        if "hasNextPage" not in page_info or "endCursor" not in page_info:
+            return paths, [
+                "changedFiles GraphQL response is malformed: pageInfo fields are missing"
+            ]
+        has_next_page = page_info["hasNextPage"]
+        if not isinstance(has_next_page, bool):
+            return paths, [
+                "changedFiles GraphQL response is malformed: hasNextPage is not a boolean"
+            ]
+        end_cursor = page_info["endCursor"]
+        if end_cursor is not None and not isinstance(end_cursor, str):
+            return paths, [
+                "changedFiles GraphQL response is malformed: endCursor is not a string or null"
+            ]
+
+        nodes = page.get("nodes")
+        if not isinstance(nodes, list):
+            return paths, [
+                "changedFiles GraphQL response is malformed: nodes is not a list"
+            ]
+        page_path_count = 0
+        for index, node in enumerate(nodes):
+            if not isinstance(node, dict):
+                return paths, [
+                    f"changedFiles GraphQL node at index {index} is malformed"
+                ]
+            path = node.get("path")
+            if not isinstance(path, str) or not path:
+                return paths, [
+                    f"changedFiles GraphQL node at index {index} has a malformed path"
+                ]
+            if path in seen_paths:
+                return paths, [f"changedFiles GraphQL returned duplicate path {path!r}"]
+            seen_paths.add(path)
+            paths.append(path)
+            page_path_count += 1
+
+        if len(paths) > pinned_total_count:
+            return paths, [
+                "changedFiles GraphQL collected count exceeded totalCount: "
+                f"collected {len(paths)}, totalCount {pinned_total_count}"
+            ]
+
+        if has_next_page:
+            if page_path_count == 0:
+                return paths, [
+                    "changedFiles GraphQL page reported hasNextPage but added no paths"
+                ]
+            if len(paths) >= pinned_total_count:
+                return paths, [
+                    "changedFiles GraphQL reported hasNextPage after collecting "
+                    f"totalCount {pinned_total_count}"
+                ]
+            if not isinstance(end_cursor, str) or not end_cursor.strip():
+                return paths, [
+                    "changedFiles GraphQL page reported hasNextPage without a "
+                    "non-empty cursor"
+                ]
+            if end_cursor == cursor or end_cursor in seen_cursors:
+                return paths, [
+                    "changedFiles GraphQL cursor repeated or did not advance"
+                ]
+            seen_cursors.add(end_cursor)
+            cursor = end_cursor
+            continue
+
+        if len(paths) != pinned_total_count:
+            return paths, [
+                "changedFiles GraphQL final collected count differed from totalCount: "
+                f"collected {len(paths)}, totalCount {pinned_total_count}"
+            ]
+        break
 
     errors: list[str] = []
-    if has_next_page:
-        errors.append(
-            f"changedFiles harvest exceeded {_MAX_CHANGED_FILES_PAGES * 100} files "
-            f"({_MAX_CHANGED_FILES_PAGES} pages) without reaching the last page"
-        )
-    if rest_paths is not None and not has_next_page:
+    if rest_paths is not None:
         rest_set = set(rest_paths)
         graphql_set = set(paths)
         if rest_set != graphql_set:

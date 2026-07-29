@@ -65,13 +65,18 @@ def test_review_without_commit_oid_is_skipped():
     assert result is None
 
 
-def _graphql_files_response(*, has_next_page: bool, paths: list[str]) -> str:
+def _graphql_files_response(
+    *, has_next_page: bool, paths: list[str], total_count: int | None = None
+) -> str:
     return json.dumps(
         {
             "data": {
                 "repository": {
                     "pullRequest": {
                         "files": {
+                            "totalCount": (
+                                len(paths) if total_count is None else total_count
+                            ),
                             "pageInfo": {
                                 "hasNextPage": has_next_page,
                                 "endCursor": "cursor",
@@ -105,18 +110,18 @@ def test_changed_files_pagination_check_no_next_page_produces_no_error(monkeypat
 def test_changed_files_pagination_check_has_next_page_produces_harvest_error(
     monkeypatch,
 ):
-    # This mock ignores the cursor and always reports hasNextPage=True, simulating
-    # a GraphQL response that never resolves to a final page (a genuine large PR
-    # terminates after ceil(changedFiles/100) real pages; see
-    # test_collector_changed_files_pagination_check.py for the realistic
-    # multi-page-then-terminates case). The pagination loop now follows cursors
-    # up to _MAX_CHANGED_FILES_PAGES before giving up and reporting incompleteness,
-    # rather than bailing out after the first page as before.
+    calls = []
+
     def fake_run(args):
+        calls.append(args)
         return subprocess.CompletedProcess(
             args,
             0,
-            _graphql_files_response(has_next_page=True, paths=["a.py"] * 100),
+            _graphql_files_response(
+                has_next_page=True,
+                paths=["a.py" if len(calls) == 1 else "b.py"],
+                total_count=3,
+            ),
             "",
         )
 
@@ -125,8 +130,8 @@ def test_changed_files_pagination_check_has_next_page_produces_harvest_error(
         repo="owner/repo", pr_number=1
     )
     assert len(errors) == 1
-    assert "changedFiles harvest exceeded" in errors[0]
-    assert paths  # some paths were collected across pages, even though incomplete
+    assert "cursor" in errors[0]
+    assert paths == ["a.py", "b.py"]
 
 
 def test_changed_files_pagination_check_command_failure_produces_error(monkeypatch):
@@ -188,18 +193,19 @@ def test_changed_files_reconciliation_skipped_when_graphql_has_next_page(monkeyp
         return subprocess.CompletedProcess(
             args,
             0,
-            _graphql_files_response(has_next_page=True, paths=["a.py"] * 100),
+            _graphql_files_response(has_next_page=True, paths=["a.py"], total_count=1),
             "",
         )
 
     monkeypatch.setattr("tools.pr_steward.collector._run", fake_run)
     paths, errors = _fetch_changed_files_with_pagination_check(
-        repo="owner/repo", pr_number=1, rest_paths=["a.py"]
+        repo="owner/repo", pr_number=1, rest_paths=["different.py"]
     )
-    # Pagination-overflow error only; content reconciliation is skipped because
-    # the GraphQL side is known-incomplete and would trivially "differ".
+    # Pagination error only; content reconciliation is skipped because the
+    # GraphQL side is known-incomplete and would add misleading duplicate noise.
     assert len(errors) == 1
-    assert "changedFiles harvest exceeded" in errors[0]
+    assert "hasNextPage" in errors[0]
+    assert "content mismatch" not in errors[0]
 
 
 def test_changed_files_reconciliation_not_run_when_rest_paths_omitted(monkeypatch):
@@ -219,8 +225,9 @@ def test_changed_files_reconciliation_not_run_when_rest_paths_omitted(monkeypatc
     assert paths == ["a.py", "b.py"]
 
 
-def test_changed_files_non_string_path_in_graphql_response_is_safely_filtered(monkeypatch):
-    """Verify that non-string path values (e.g., int, dict) are safely filtered out."""
+def test_changed_files_non_string_path_in_graphql_response_fails_closed(monkeypatch):
+    """Verify that malformed paths fail closed instead of being silently filtered."""
+
     def fake_run(args):
         # Simulate a GraphQL response with mixed types: valid strings, an int, and a dict
         response = json.dumps(
@@ -229,6 +236,7 @@ def test_changed_files_non_string_path_in_graphql_response_is_safely_filtered(mo
                     "repository": {
                         "pullRequest": {
                             "files": {
+                                "totalCount": 6,
                                 "pageInfo": {
                                     "hasNextPage": False,
                                     "endCursor": "cursor",
@@ -236,10 +244,12 @@ def test_changed_files_non_string_path_in_graphql_response_is_safely_filtered(mo
                                 "nodes": [
                                     {"path": "a.py"},
                                     {"path": 123},  # Non-string path: integer
-                                    {"path": {"nested": "dict"}},  # Non-string path: dict
+                                    {
+                                        "path": {"nested": "dict"}
+                                    },  # Non-string path: dict
                                     {"path": "b.py"},
-                                    {"path": None},  # None should also be filtered
-                                    {"path": ""},  # Empty string passes type check but is falsy
+                                    {"path": None},  # Also malformed
+                                    {"path": ""},  # Empty path is malformed
                                 ],
                             }
                         }
@@ -250,18 +260,18 @@ def test_changed_files_non_string_path_in_graphql_response_is_safely_filtered(mo
         return subprocess.CompletedProcess(args, 0, response, "")
 
     monkeypatch.setattr("tools.pr_steward.collector._run", fake_run)
-    # No rest_paths provided, so reconciliation is skipped
+    # No rest_paths provided; malformed node still fails closed.
     paths, errors = _fetch_changed_files_with_pagination_check(
         repo="owner/repo", pr_number=1
     )
-    # Only the valid string paths should be returned; non-string values filtered out
-    # Empty string is technically a string so it passes isinstance check
-    assert errors == []
-    assert paths == ["a.py", "b.py", ""]
+    assert len(errors) == 1
+    assert "malformed path" in errors[0]
+    assert paths == ["a.py"]
 
 
-def test_changed_files_non_string_path_with_rest_reconciliation(monkeypatch):
-    """Verify that non-string paths don't crash the reconciliation logic."""
+def test_changed_files_non_string_path_skips_rest_reconciliation(monkeypatch):
+    """Verify that malformed paths fail before set reconciliation."""
+
     def fake_run(args):
         # Simulate a GraphQL response with non-string path values
         response = json.dumps(
@@ -270,6 +280,7 @@ def test_changed_files_non_string_path_with_rest_reconciliation(monkeypatch):
                     "repository": {
                         "pullRequest": {
                             "files": {
+                                "totalCount": 3,
                                 "pageInfo": {
                                     "hasNextPage": False,
                                     "endCursor": "cursor",
@@ -288,37 +299,38 @@ def test_changed_files_non_string_path_with_rest_reconciliation(monkeypatch):
         return subprocess.CompletedProcess(args, 0, response, "")
 
     monkeypatch.setattr("tools.pr_steward.collector._run", fake_run)
-    # Provide rest_paths that match the valid string paths; reconciliation should work
+    # Malformed node blocks reconciliation even when valid paths otherwise match.
     paths, errors = _fetch_changed_files_with_pagination_check(
         repo="owner/repo", pr_number=1, rest_paths=["a.py", "b.py"]
     )
-    # No TypeError should be raised during set operations
-    assert errors == []
-    assert set(paths) == {"a.py", "b.py"}
+    assert len(errors) == 1
+    assert "malformed path" in errors[0]
+    assert "content mismatch" not in errors[0]
+    assert paths == ["a.py"]
 
 
-def test_changed_files_non_string_dict_path_does_not_crash_sorted(monkeypatch):
-    """Verify that a dict path value doesn't crash sorted() during reconciliation.
+def test_changed_files_dict_path_fails_closed_without_crashing_sorted(monkeypatch):
+    """Verify that an unhashable path fails before set reconciliation."""
 
-    Simulate a GraphQL response where one path is a dict (unhashable).
-    This would crash sorted() if not properly filtered by the isinstance(path, str) guard.
-    """
     def fake_run(args):
         # Simulate a GraphQL response where one path is a dict (unhashable)
-        # The dict-valued path should be filtered out, not crash the reconciliation
+        # The dict-valued path should fail before reconciliation can sort sets.
         response = json.dumps(
             {
                 "data": {
                     "repository": {
                         "pullRequest": {
                             "files": {
+                                "totalCount": 3,
                                 "pageInfo": {
                                     "hasNextPage": False,
                                     "endCursor": "cursor",
                                 },
                                 "nodes": [
                                     {"path": "file1.py"},
-                                    {"path": {"nested": "dict"}},  # Non-string dict path
+                                    {
+                                        "path": {"nested": "dict"}
+                                    },  # Non-string dict path
                                     {"path": "file2.py"},
                                 ],
                             }
@@ -335,10 +347,7 @@ def test_changed_files_non_string_dict_path_does_not_crash_sorted(monkeypatch):
     paths, errors = _fetch_changed_files_with_pagination_check(
         repo="owner/repo", pr_number=1, rest_paths=rest_paths
     )
-    # Should not raise TypeError when trying to add dict to set or sort
-    # Dict-valued path should be filtered out, and reconciliation should succeed
-    assert errors == []
-    assert set(paths) == {"file1.py", "file2.py"}
-    assert len(paths) == 2
-    # Verify the dict path is NOT in the result
-    assert all(isinstance(p, str) for p in paths)
+    assert len(errors) == 1
+    assert "malformed path" in errors[0]
+    assert "content mismatch" not in errors[0]
+    assert paths == ["file1.py"]
