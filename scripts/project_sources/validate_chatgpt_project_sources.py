@@ -62,9 +62,35 @@ def main() -> int:
     }
 
     manifest = json.loads((upload_dir / "39_PROJECT_SOURCE_MANIFEST.json").read_text())
+
+    # Manifest-to-disk coverage: every on-disk file must have exactly one
+    # manifest entry naming it, and vice versa. Without this, a manifest entry
+    # silently missing (or a bundle_filename typo) lets a corrupted/renamed
+    # disk file pass every other gate uninspected.
+    disk_names = {p.name for p in files}
+    manifest_names = {entry["bundle_filename"] for entry in manifest["files"]}
+    gates["manifest_disk_coverage"] = {
+        "pass": disk_names == manifest_names,
+        "detail": {
+            "on_disk_only": sorted(disk_names - manifest_names),
+            "manifest_only": sorted(manifest_names - disk_names),
+        },
+    }
+
     identity_failures = []
     hash_failures = []
     for entry in manifest["files"]:
+        # Hash-check every entry that declares a sha256, not only
+        # artifact_type=="copied_source" -- generated slots (38, 40) also
+        # carry a real sha256 and must not be exempt from corruption checks.
+        # Slot 39 (the manifest itself) is the sole legitimate null-sha256
+        # entry (see build_chatgpt_project_sources.py's self-hash note).
+        if entry.get("sha256"):
+            path = upload_dir / entry["bundle_filename"]
+            actual = path.read_bytes()
+            if hashlib.sha256(actual).hexdigest() != entry["sha256"]:
+                hash_failures.append(entry["bundle_filename"])
+
         if not entry.get("artifact_type") == "copied_source":
             continue
         path = upload_dir / entry["bundle_filename"]
@@ -75,8 +101,6 @@ def main() -> int:
         actual = path.read_bytes()
         if expected != actual:
             identity_failures.append(entry["bundle_filename"])
-        if hashlib.sha256(actual).hexdigest() != entry["sha256"]:
-            hash_failures.append(entry["bundle_filename"])
         blob_sha = subprocess.run(
             ["git", "rev-parse", f"{args.execution_base_sha}:{entry['source_path']}"],
             cwd=repo_root, capture_output=True, text=True, check=True,

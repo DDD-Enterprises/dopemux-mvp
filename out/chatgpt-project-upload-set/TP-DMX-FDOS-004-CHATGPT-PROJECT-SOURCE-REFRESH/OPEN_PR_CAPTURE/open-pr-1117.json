@@ -1,6 +1,9 @@
 {
+  "additions": 116,
   "baseRefName": "main",
   "body": "Consolidates safe non-framework-migration patch dependency updates from #1094, #1108, and #1109. Verified 0 vulnerabilities and 19/19 UI unit tests passing.",
+  "capture_complete": true,
+  "changedFiles": 1,
   "commits": [
     {
       "authoredDate": "2026-07-23T17:17:42Z",
@@ -18,11 +21,9 @@
       "oid": "350123f5bb058e5f195349f0197a128416392201"
     }
   ],
+  "deletions": 110,
   "files": [
     {
-      "additions": 116,
-      "changeType": "MODIFIED",
-      "deletions": 110,
       "path": "ui-dashboard/package-lock.json"
     }
   ],

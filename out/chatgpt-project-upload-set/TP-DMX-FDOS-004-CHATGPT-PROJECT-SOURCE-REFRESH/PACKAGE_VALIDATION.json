@@ -55,6 +55,13 @@
         "hidden": []
       }
     },
+    "manifest_disk_coverage": {
+      "pass": true,
+      "detail": {
+        "on_disk_only": [],
+        "manifest_only": []
+      }
+    },
     "source_identity": {
       "pass": true,
       "detail": []
@@ -78,8 +85,8 @@
     "open_pr_conservation": {
       "pass": true,
       "detail": {
-        "initial_count": 21,
-        "ledger_count": 21,
+        "initial_count": 29,
+        "ledger_count": 29,
         "missing_from_ledger": [],
         "extra_in_ledger": []
       }

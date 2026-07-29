@@ -1,6 +1,9 @@
 {
+  "additions": 2594,
   "baseRefName": "main",
   "body": "## Summary\n\nRepair merged dope-context Voyage modernization (PR #1112 / post-merge Opus audit FAIL) before first deployment.\n\n### Audit source\n- Parent: PR #1112 merge `4b42268775d1f94e26500c758128da3e11b151d5`\n- Audit packet: `TP-DOPECONTEXT-VOYAGE4-POSTMERGE-OPUS-AUDIT-001` \u2192 `REPAIR_REQUIRED`\n- This packet: `TP-DOPECONTEXT-VOYAGE4-REPAIR-0002`\n\n### Blocking findings repaired\n- **F-001** Code `content_vec` index/query vector-space mismatch \u2192 query uses same contextualized model/endpoint as index\n- **F-002** Collection compatibility/migration gate \u2192 fingerprint-versioned collection names; legacy never written\n- **F-003** Legacy-context rollback split \u2192 single `DOPE_CONTEXT_CONTEXTUAL_EMBED_MODEL` moves all contextual paths\n\n### Design selected for code content_vec\nBehavior-preserving: configured contextual model + `contextualized_embeddings` on both index and query (query: single chunk, auto-chunking off, exactly one vector). Title/breadcrumb remain `voyage-code-3` / embeddings.\n\n### Collection migration behavior\n- Active: `code_<ws-hash>_<profile-digest>` / `docs_<ws-hash>_<profile-digest>`\n- Changing model/endpoint/dimension/dtype/chunker/schema \u2192 new collection identity\n- Local manifest mismatch fails closed before upsert\n\n### Legacy collection behavior\n- Detected and reported in `get_index_status`\n- Never selected for new writes\n- Never auto-deleted\n\n### Rollback command\n```bash\nexport DOPE_CONTEXT_CONTEXTUAL_EMBED_MODEL=voyage-context-3\n```\n\n### Tests and validation\n- Full dope-context suite: **74 passed**\n- `uv lock --check` PASS (voyageai `>=0.5.0,<0.6`)\n- Docker build `dope-context:repair-0002` PASS\n- No-network container smoke: voyageai `0.5.0` SMOKE_OK\n\n### Embedded auditor\n- Preferred Gemini CLI / AGY / Claude Code Opus **blocked** this window (tier + quota)\n- Verdict: **NOT_RUN** (implementer must not self-PASS)\n- See `proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/AUDITOR_REPORT.md`\n\n### Residual risks\n- Independent embedded audit still required for steward READY\n- No live Voyage billable benchmark\n- Operator reindex required for legacy collections\n\n### Deployment\n**Explicitly NOT performed** in this packet.\n\n## Test plan\n- [x] `PYTHONPATH=services/dope-context uv run --extra services --extra test pytest -q services/dope-context/tests`\n- [x] Docker build + no-network smoke\n- [ ] Independent embedded audit PASS / PASS_WITH_RISKS\n- [ ] PR Steward MERGE_READINESS=READY\n- [ ] Do not deploy from this PR without operator approval",
+  "capture_complete": true,
+  "changedFiles": 36,
   "commits": [
     {
       "authoredDate": "2026-07-27T00:29:12Z",
@@ -153,221 +156,114 @@
       "oid": "ba8a78fa1ed09dc0d7cbb9f2b2680508c6fa13a3"
     }
   ],
+  "deletions": 188,
   "files": [
     {
-      "additions": 92,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "docs/03-reference/systems/dope-context/vector-profiles-and-migration.md"
     },
     {
-      "additions": 74,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/AUDITOR_REPORT.md"
     },
     {
-      "additions": 10,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/AUDIT_INTAKE.json"
     },
     {
-      "additions": 8,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/COLLECTION_MIGRATION_REPORT.json"
     },
     {
-      "additions": 32,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/COMMAND_LOG.txt"
     },
     {
-      "additions": 15,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/HANDOFF.json"
     },
     {
-      "additions": 49,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/IMPLEMENTATION_REPORT.md"
     },
     {
-      "additions": 19,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/MANIFEST.json"
     },
     {
-      "additions": 93,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/PROOF.json"
     },
     {
-      "additions": 9,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/VALIDATION.json"
     },
     {
-      "additions": 164,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/VECTOR_COMPATIBILITY_MATRIX.json"
     },
     {
-      "additions": 64,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/agy_audit_raw.txt"
     },
     {
-      "additions": 1,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/claude_audit_raw.txt"
     },
     {
-      "additions": 46,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/gemini_audit_raw.txt"
     },
     {
-      "additions": 68,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/pr_merge/embedded-audit/pr-1126/PROOF.json"
     },
     {
-      "additions": 6,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/pr_merge/embedded-audit/pr-1126/PROOF.json.sig"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 1,
       "path": "pyproject.toml"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/dope-context/Dockerfile"
     },
     {
-      "additions": 43,
-      "changeType": "MODIFIED",
-      "deletions": 19,
       "path": "services/dope-context/src/embeddings/contextualized_embedder.py"
     },
     {
-      "additions": 25,
-      "changeType": "MODIFIED",
-      "deletions": 19,
       "path": "services/dope-context/src/embeddings/model_registry.py"
     },
     {
-      "additions": 43,
-      "changeType": "MODIFIED",
-      "deletions": 11,
       "path": "services/dope-context/src/embeddings/voyage_embedder.py"
     },
     {
-      "additions": 557,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "services/dope-context/src/index_profile.py"
     },
     {
-      "additions": 166,
-      "changeType": "MODIFIED",
-      "deletions": 33,
       "path": "services/dope-context/src/mcp/server.py"
     },
     {
-      "additions": 70,
-      "changeType": "MODIFIED",
-      "deletions": 21,
       "path": "services/dope-context/src/pipeline/docs_pipeline.py"
     },
     {
-      "additions": 33,
-      "changeType": "MODIFIED",
-      "deletions": 12,
       "path": "services/dope-context/src/pipeline/indexing_pipeline.py"
     },
     {
-      "additions": 68,
-      "changeType": "MODIFIED",
-      "deletions": 22,
       "path": "services/dope-context/src/rerank/voyage_reranker.py"
     },
     {
-      "additions": 28,
-      "changeType": "MODIFIED",
-      "deletions": 4,
       "path": "services/dope-context/src/utils/model_tokenizer.py"
     },
     {
-      "additions": 88,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/dope-context/src/utils/token_budget.py"
     },
     {
-      "additions": 39,
-      "changeType": "MODIFIED",
-      "deletions": 4,
       "path": "services/dope-context/src/utils/workspace.py"
     },
     {
-      "additions": 83,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "services/dope-context/tests/conftest.py"
     },
     {
-      "additions": 36,
-      "changeType": "MODIFIED",
-      "deletions": 13,
       "path": "services/dope-context/tests/test_mcp_server.py"
     },
     {
-      "additions": 313,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "services/dope-context/tests/test_reliability_repairs.py"
     },
     {
-      "additions": 198,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "services/dope-context/tests/test_vector_profiles_and_migration.py"
     },
     {
-      "additions": 5,
-      "changeType": "MODIFIED",
-      "deletions": 3,
       "path": "services/dope-context/tests/test_voyage_modernization.py"
     },
     {
-      "additions": 43,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "task-packets/dope-context/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002.md"
     },
     {
-      "additions": 4,
-      "changeType": "MODIFIED",
-      "deletions": 26,
       "path": "uv.lock"
     }
   ],
@@ -378,6 +274,6 @@
   "number": 1126,
   "state": "OPEN",
   "title": "fix(dope-context): repair vector compatibility and collection migration",
-  "updatedAt": "2026-07-27T02:55:25Z",
+  "updatedAt": "2026-07-29T00:36:34Z",
   "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1126"
 }

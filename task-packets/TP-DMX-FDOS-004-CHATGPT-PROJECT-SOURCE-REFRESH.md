@@ -1,3 +1,15 @@
+---
+id: TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH
+title: Tp Dmx Fdos 004 Chatgpt Project Source Refresh
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-07-28'
+last_review: '2026-07-28'
+next_review: '2026-10-26'
+prelude: Tp Dmx Fdos 004 Chatgpt Project Source Refresh (explanation) for dopemux
+  documentation and developer workflows.
+---
 # TP-DMX-FDOS-004 · ChatGPT Project · Authoritative 40-Source Refresh
 
 ## 0. Execution Directive

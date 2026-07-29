@@ -1,6 +1,9 @@
 {
+  "additions": 46846,
   "baseRefName": "main",
   "body": "## Summary\n\nRTE-TRUTH: a full audit of the Repo Truth Extractor followed by the first waves of remediation. Adds the audit corpus, 49 ranked Task Packets with runner/model routing, a deterministic golden characterization harness, four monolith seam extractions, and the landed R0/R1/R3/R4 fixes.\n\n**Supersedes #1043**, which became unmergeable: that branch's history diverged from `main` (a re-shallowed worktree produced grafted parents), so GitHub reported **16,178 changed files** against a true payload of **274**. This branch replays the same 30 commits onto current `main` \u2014 same content, sane diff, zero deleted files.\n\n## What landed\n\n- **Audit** \u2014 7 workstreams (A1\u2013A7) \u2192 54 findings (9 CRIT / 16 HIGH / 22 MED / 7 LOW), consolidated and severity-ranked in `claudedocs/rte-truth-program-2026-07/`\n- **P0 harness** \u2014 25 normalized golden snapshots + characterization tests, the behaviour contract the seam work is verified against\n- **R1 seams** \u2014 UI, CLI args, phase modules C/D/X, and costing System A extracted from the 24k-line monolith behind compatibility facades\n- **R3 security** \u2014 prompt-injection content boundary at the single assembly choke point; binding secret-redaction rules; write-time secret scrub; promptset section enforcement wired to the canonical entrypoint\n- **Independent audit** \u2014 an out-of-family reviewer (non-author, read-only) re-verified the security work; report in `claudedocs/rte-truth-program-2026-07/REVIEW_REPORT.md`\n\n## Validation\n\nAll dry-run. No live provider calls, no `--execute`, no `DPMX_LIVE_OK`, no destructive migration, no secret or config publication.\n\n- golden harness \u2014 27 passed, 1 documented slow-capture skip\n- security suites (delimiter, write-time scrub, redaction binding, section enforcement) \u2014 green\n- `run_extraction_v5` imports clean; all four seam modules present\n- clobber check vs `main` \u2014 **0 files deleted**\n\n## Known holds\n\n- Two CI checks (`independent embedded audit`, `PR Steward / final readiness`) fail closed on headless runners, which cannot run the auditor CLI. Not merge-blocking; see #1068 for the signed local-attestation path.\n- The independent review returned **PASS_WITH_RISKS**, not PASS. Residual risks are recorded in the review report and tracked as follow-up packets \u2014 notably a narrowed-but-not-eliminated case in the raw artifact path.\n- PAL external chain was NOT_RUN on several packets (provider quota); the independent review substitutes for it on the security commits only.\n- Commits were replayed with `-X theirs`; the clobber check is clean and suites pass, but a line-level read of the `run_extraction_v5.py` diff is worth doing before merge.\n\nFindings detail, per-packet acceptance criteria, and residual tracking live in the repo rather than in this description.\n",
+  "capture_complete": true,
+  "changedFiles": 366,
   "commits": [
     {
       "authoredDate": "2026-07-11T11:24:30Z",
@@ -1149,606 +1152,1105 @@
       "oid": "bf1842e3d0b20396e6d222dccbe97257584849e2"
     }
   ],
+  "deletions": 3533,
   "files": [
     {
-      "additions": 42,
-      "changeType": "MODIFIED",
-      "deletions": 4,
       "path": ".github/workflows/ci-complete.yml"
     },
     {
-      "additions": 22,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": ".gitignore"
     },
     {
-      "additions": 12,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": ".pre-commit-config.yaml"
     },
     {
-      "additions": 177,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "claudedocs/rte-truth-program-2026-07/A1-architecture.md"
     },
     {
-      "additions": 186,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "claudedocs/rte-truth-program-2026-07/A2-cost-truthfulness.md"
     },
     {
-      "additions": 142,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "claudedocs/rte-truth-program-2026-07/A3a-prompts-ABC.md"
     },
     {
-      "additions": 179,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "claudedocs/rte-truth-program-2026-07/A3b-prompts-DEGHM.md"
     },
     {
-      "additions": 145,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "claudedocs/rte-truth-program-2026-07/A3c-prompts-QRST.md"
     },
     {
-      "additions": 121,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "claudedocs/rte-truth-program-2026-07/A3d-prompts-WXZ-promptgen.md"
     },
     {
-      "additions": 200,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "claudedocs/rte-truth-program-2026-07/A4-cli-ux-docs.md"
     },
     {
-      "additions": 204,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "claudedocs/rte-truth-program-2026-07/A5-ops-gates-proof.md"
     },
     {
-      "additions": 159,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "claudedocs/rte-truth-program-2026-07/A6-fresh-eyes.md"
     },
     {
-      "additions": 2143,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "claudedocs/rte-truth-program-2026-07/A7-legacy-refgraph.md"
     },
     {
-      "additions": 237,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md"
     },
     {
-      "additions": 133,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "config/pricing.yaml"
     },
     {
-      "additions": 47,
-      "changeType": "MODIFIED",
-      "deletions": 19,
       "path": "docs/01-tutorials/extraction-quickstart.md"
     },
     {
-      "additions": 7,
-      "changeType": "MODIFIED",
-      "deletions": 5,
       "path": "docs/02-how-to/extraction-wizard.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 1,
       "path": "docs/02-how-to/extraction/batch-quickstart.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 1,
       "path": "docs/02-how-to/extraction/repo-truth-extractor-user-guide.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 1,
       "path": "docs/02-how-to/extraction/run-v4-from-dopemux-cli.md"
     },
     {
-      "additions": 5,
-      "changeType": "MODIFIED",
-      "deletions": 5,
       "path": "docs/03-reference/extraction-wizard.md"
     },
     {
-      "additions": 2,
-      "changeType": "MODIFIED",
-      "deletions": 2,
       "path": "docs/03-reference/extraction/doctor-reprocess.md"
     },
     {
-      "additions": 3,
-      "changeType": "MODIFIED",
-      "deletions": 3,
       "path": "docs/03-reference/extraction/pipeline-phases.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 1,
       "path": "docs/03-reference/extraction/pipeline-reliability.md"
     },
     {
-      "additions": 4,
-      "changeType": "MODIFIED",
-      "deletions": 4,
       "path": "docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md"
     },
     {
-      "additions": 3,
-      "changeType": "MODIFIED",
-      "deletions": 2,
       "path": "docs/04-explanation/architecture/dopemux-architecture.md"
     },
     {
-      "additions": 0,
-      "changeType": "DELETED",
-      "deletions": 83,
       "path": "docs/04-explanation/root-relocated/user-journey.md"
     },
     {
-      "additions": 16,
-      "changeType": "MODIFIED",
-      "deletions": 6,
       "path": "docs/04-explanation/technical-deep-dives/repo-truth-extractor-structure-architecture-and-optimal-design.md"
     },
     {
-      "additions": 64,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/rte-truth-program/TP-RTE-TRUTH-R0-001/PROOF.json"
     },
     {
-      "additions": 65,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/rte-truth-program/TP-RTE-TRUTH-R0-002/PROOF.json"
     },
     {
-      "additions": 61,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/rte-truth-program/TP-RTE-TRUTH-R0-003/PROOF.json"
     },
     {
-      "additions": 88,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/rte-truth-program/TP-RTE-TRUTH-R0-004/PROOF.json"
     },
     {
-      "additions": 185,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/rte-truth-program/TP-RTE-TRUTH-R1-001/PROOF.json"
     },
     {
-      "additions": 155,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/rte-truth-program/TP-RTE-TRUTH-R1-002/PROOF.json"
     },
     {
-      "additions": 164,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/rte-truth-program/TP-RTE-TRUTH-R1-003/PROOF.json"
     },
     {
-      "additions": 153,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/rte-truth-program/TP-RTE-TRUTH-R1-004/PROOF.json"
     },
     {
-      "additions": 130,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/rte-truth-program/TP-RTE-TRUTH-R1-005/PROOF.json"
     },
     {
-      "additions": 119,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/rte-truth-program/TP-RTE-TRUTH-R2-001/PROOF.json"
     },
     {
-      "additions": 115,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/rte-truth-program/TP-RTE-TRUTH-R2-003/PROOF.json"
     },
     {
-      "additions": 117,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/rte-truth-program/TP-RTE-TRUTH-R2-004/PROOF.json"
     },
     {
-      "additions": 234,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/rte-truth-program/TP-RTE-TRUTH-R3-001/PROOF.json"
     },
     {
-      "additions": 287,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/rte-truth-program/TP-RTE-TRUTH-R3-002/PROOF.json"
     },
     {
-      "additions": 286,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/rte-truth-program/TP-RTE-TRUTH-R3-004/PROOF.json"
     },
     {
-      "additions": 78,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/rte-truth-program/TP-RTE-TRUTH-R3-005e/PROOF.json"
     },
     {
-      "additions": 175,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/rte-truth-program/TP-RTE-TRUTH-R3-007/PROOF.json"
     },
     {
-      "additions": 84,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/rte-truth-program/TP-RTE-TRUTH-R3-009/PROOF.json"
     },
     {
-      "additions": 85,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/rte-truth-program/TP-RTE-TRUTH-R3-010/PROOF.json"
     },
     {
-      "additions": 170,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/rte-truth-program/TP-RTE-TRUTH-R4-001/PROOF.json"
     },
     {
-      "additions": 6,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "pyproject.toml"
     },
     {
-      "additions": 8,
-      "changeType": "MODIFIED",
-      "deletions": 1,
       "path": "pytest.ini"
     },
     {
-      "additions": 152,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "scripts/check_workflow_syntax.py"
     },
     {
-      "additions": 78,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "scripts/repo_truth_extractor_promptset_audit_v4.py"
     },
     {
-      "additions": 1,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/.claude/.activity-heartbeat-cache.json"
     },
     {
-      "additions": 2,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/benchmarking/executors/prescan_adapter.py"
     },
     {
-      "additions": 2,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/benchmarking/validators/fl_int_validator_wrapper.py"
     },
     {
-      "additions": 2,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/benchmarking/validators/phase_s_validator_wrapper.py"
     },
     {
-      "additions": 2,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/benchmarking/validators/runtime_validator_wrapper.py"
     },
     {
-      "additions": 66,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/extractor/_spend_tracker_registry.py"
     },
     {
-      "additions": 536,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/extractor/cli_args.py"
     },
     {
-      "additions": 1333,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/extractor/costing.py"
     },
     {
-      "additions": 0,
-      "changeType": "MODIFIED",
-      "deletions": 1,
       "path": "services/repo-truth-extractor/extractor/phases/a.py"
     },
     {
-      "additions": 2,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/extractor/phases/base.py"
     },
     {
-      "additions": 43,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/extractor/phases/c.py"
     },
     {
-      "additions": 31,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/extractor/phases/d.py"
     },
     {
-      "additions": 29,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/extractor/phases/x.py"
     },
     {
-      "additions": 1136,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/extractor/ui.py"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 1,
       "path": "services/repo-truth-extractor/fl_int/reduce_input.py"
     },
     {
-      "additions": 28,
-      "changeType": "MODIFIED",
-      "deletions": 2,
       "path": "services/repo-truth-extractor/lib/prescan/code_prescan.py"
     },
     {
-      "additions": 138,
-      "changeType": "MODIFIED",
-      "deletions": 35,
       "path": "services/repo-truth-extractor/lib/prescan/cost_estimator.py"
     },
     {
-      "additions": 0,
-      "changeType": "MODIFIED",
-      "deletions": 1,
       "path": "services/repo-truth-extractor/lib/prescan/engine.py"
     },
     {
-      "additions": 19,
-      "changeType": "MODIFIED",
-      "deletions": 5,
       "path": "services/repo-truth-extractor/lib/prescan/grok_passes.py"
     },
     {
-      "additions": 48,
-      "changeType": "MODIFIED",
-      "deletions": 6,
       "path": "services/repo-truth-extractor/lib/promptgen/template_renderer.py"
     },
     {
-      "additions": 64,
-      "changeType": "MODIFIED",
-      "deletions": 470,
       "path": "services/repo-truth-extractor/lib/spend_ledger.py"
     },
     {
-      "additions": 60,
-      "changeType": "MODIFIED",
-      "deletions": 5,
       "path": "services/repo-truth-extractor/llm_runtime.py"
     },
     {
-      "additions": 160,
-      "changeType": "MODIFIED",
-      "deletions": 23,
       "path": "services/repo-truth-extractor/output_safety.py"
     },
     {
-      "additions": 85,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/promptsets/generated/README.md"
     },
     {
-      "additions": 41,
-      "changeType": "MODIFIED",
-      "deletions": 1,
       "path": "services/repo-truth-extractor/promptsets/v4/PROMPTSET_RULES.md"
     },
     {
-      "additions": 1,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/.claude/.activity-heartbeat-cache.json"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A10_LEANTIME_SURFACE.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A11_EDITOR_INTEGRATION_SURFACES.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A12_CLI_COMMAND_SURFACE.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A13_HOOK_CONTRACT_SURFACE.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A1_INSTRUCTION_SURFACES.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 1,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A2_MCP_SERVER_DEFS.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 1,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A3_MCP_PROXY_SURFACE.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 1,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 1,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 1,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A6_COMPOSE_SERVICE_GRAPH.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 1,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A7_LITELLM_SURFACE.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 1,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A8_TASKX_SURFACE.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A99_MERGE___QA.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 1,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B0_BOUNDARY_INVENTORY___PARTITION_PLAN.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B1_BOUNDARY_ASSERTIONS___CODE_ENFORCEMENT_POINTS.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B2_REFUSAL_RAILS___GUARDRAILS_SURFACE.md"
     },
     {
-      "additions": 7,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B3_BYPASS_PATHS___WEAK_GUARDS.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B9_MERGE___QA.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md"
     },
     {
-      "additions": 1,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C10_SERVICE_CATALOG_DEEP.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C11_LEANTIME_INTEGRATION_SURFACES.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C12_AGENT_ORCHESTRATION_SURFACE.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C13_ADHD_ENGINE_SURFACE.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C14_CODE_HEALTH_SURFACE.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C15_DEAD_CODE_INVENTORY.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C16_DEPENDENCY_GRAPHS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C17_COGNITIVE_FEATURES_SURFACE.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C18_OBSERVABILITY_SURFACE.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C19_ERROR_HANDLING_PATTERNS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C1_SERVICE_ENTRYPOINTS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C20_STATE_MANAGEMENT_SURFACE.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C21_PERFORMANCE_SURFACE.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C2_EVENTBUS_WIRING_TRUTH_SURFACES.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C3_DOPE_MEMORY_SURFACES.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C4_TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C5_TASKX_INTEGRATION_SURFACES.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C6_WORKFLOW_RUNNERS___MULTI_SERVICE_COORDINATION.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C7_API___DASHBOARDS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C8_DETERMINISM___IDEMPOTENCY___CONCURRENCY_LOCATION_SCANS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C9_MERGE___NORMALIZE___QA.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D0_INVENTORY___PARTITION_PLAN.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D1_CLAIMS___BOUNDARIES___SUPERSESSION.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D2_DEEP_EXTRACTION.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D3_CITATION___REFERENCE_GRAPH.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D4_MERGE___NORMALIZE___COVERAGE_QA.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D5_DOC_TOPIC_CLUSTERS_JSON.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E0_EXECUTION_INVENTORY___PARTITION_PLAN.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E1_BOOTSTRAP_COMMANDS_SURFACE.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E2_ENV_LOADING___CONFIG_CHAIN.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E3_SERVICE_STARTUP_GRAPH.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E4_RUNTIME_MODES___DELTA_REPORT.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E5_ARTIFACT_OUTPUTS___LOGS___STATE.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E6_EXECUTION_RISKS___ORDERING___STATE_DEPENDENCY.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E9_MERGE___NORMALIZE___QA.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G0_GOVERNANCE_INVENTORY___PARTITION_PLAN.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G1_CI_GATES___QUALITY_BARS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G2_REPO_HYGIENE___ALLOWLISTS___POLICIES.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G3_POLICY_FILES___ENFORCEMENT.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G4_SECURITY___SECRETS___REDUCTION_FACTS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G5_AUTH_FLOW_SURFACE.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G6_DEPENDENCY_HEALTH_SURFACE.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G7_TECHNICAL_DEBT_REGISTER.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G9_MERGE___QA.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H0_INVENTORY___PARTITION_PLAN.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H1_KEYS___REFERENCES.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H2_MCP_SURFACE.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H3_ROUTER___PROVIDER_LADDERS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H4_LITELLM_SURFACES.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H5_PROFILES___SESSIONS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H6_TMUX___WORKFLOW_HELPERS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H7_SQLITE___STATE_DB_METADATA.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H9_MERGE___QA.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M0_RUNTIME_EXPORT_INVENTORY.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M1_SQLITE_SCHEMA_SNAPSHOTS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M2_SQLITE_TABLE_COUNTS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M3_CONPORT_EXPORT_SAFE.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M4_DOPE_CONTEXT_EXPORT_SAFE.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M5_MCP_HEALTH_EXPORT_SAFE.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M6_RUNTIME_EXPORT_INDEX.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q11_ARTIFACT_COLLISION_REPORT.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q1_MISSING_ARTIFACTS___RECOVERY_PLAN.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q2_DUPLICATE_IDS___PROMPT_COLLISIONS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q3_DRIFT_DETECTION___NORM_DIFFS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q9_MERGE___QA.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R10_TWO_PLANE_ARCHITECTURE_TRUTH.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R11_SECURITY_RISK_SYNTHESIS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R1_DOPE_MEMORY_IMPLEMENTATION_TRUTH.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R2_EVENTBUS_WIRING_TRUTH.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R4_TASKX_INTEGRATION_TRUTH.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R7_CONFLICT_LEDGER.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R8_RISK_REGISTER_TOP20.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R9_LEANTIME_INTEGRATION_TRUTH.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S0_OPUS_ARCHITECTURE_SYNTHESIS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S10_API_SURFACE_REFERENCE.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S11_DOCUMENTATION_GENERATION.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S12_STABILITY_SIGNATURE.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S2_DECISION_DOSSIER.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S3_ARCHITECTURE_PROOF_HOOKS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S4_TWO_PLANE_ARCHITECTURE.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S5_TASK_ORCHESTRATOR_ANALYSIS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S6_LEANTIME_ANALYSIS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S7_OVERSEER_AGENT_FLOW_DESIGN.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S8_ARCHITECTURE_DIAGRAMS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S9_DEPENDENCY_GRAPH_SUMMARY.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T0_TASK_PACKET_FACTORY.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T1_EMIT_TASK_PACKETS___TOP10.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T2_PACKET_SCHEMA___AUTHORITY_RULES.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T3_PACKET_GENERATION___BATCHED.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T4_PACKET_DEDUP___COLLISION_RESOLUTION.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T5_PACKET_ORDERING___RUN_PLAN.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T9_MERGE___QA.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W0_WORKFLOW_INVENTORY___PARTITION_PLAN.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W1_WORKFLOW_CATALOG___RUNBOOK_FACTS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W2_WORKFLOW_INPUTS_OUTPUTS___ARTIFACTS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W3_MULTI_SERVICE_COORDINATION___COMPOSE_TMUX.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W4_WORKFLOW_FAILURE_MODES___RECOVERY.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W5_WORKFLOW_STATE_DEPENDENCIES___HOME_VS_REPO.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W9_MERGE___QA.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X0_FEATURE_INDEX_INVENTORY___PARTITION_PLAN.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X1_FEATURE_SURFACE_EXTRACT.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X2_FEATURE_TO_CODE_MAP.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X3_FEATURE_TO_DOC_MAP.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X4_FEATURE_DEPENDENCY_GRAPH.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X9_MERGE___QA.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z0_FREEZE_INVENTORY___CHECKSUMS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z1_PROOF_PACK___RUNBOOK.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z2_OPUS_INPUT_BUNDLE___MANIFEST.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z9_FREEZE_MANIFEST___CHECKSUMS.md"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/promptset.yaml"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/B3_BOUNDARY_BYPASS_RISKS.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/C14_CODE_HEALTH_SURFACE.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/C1_SERVICE_ENTRYPOINTS.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/C2_EVENTBUS_SURFACE.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/C2_EVENT_CONSUMERS.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/C2_EVENT_PRODUCERS.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/C7_API_DASHBOARD_SURFACE.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/C8_CONCURRENCY_RISK_LOCATIONS.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/C8_DETERMINISM_RISK_LOCATIONS.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/C8_IDEMPOTENCY_RISK_LOCATIONS.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/C8_SECRETS_RISK_LOCATIONS.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/D1_CAP_NOTICES.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/D1_DOC_BOUNDARIES.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/D1_DOC_CONTRACT_CLAIMS.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/D1_DOC_INDEX.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/D1_DOC_SUPERSESSION.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/E2_EXEC_ENV_CHAIN.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/G1_GOV_CI_GATES.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/G5_AUTH_FLOW_SURFACE.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/G6_DEPENDENCY_HEALTH_SURFACE.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/G7_TECHNICAL_DEBT_REGISTER.schema.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/promptsets/v4/schemas/SCHEMA_COVERAGE.json"
+    },
+    {
+      "path": "services/repo-truth-extractor/reporting.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/rte_ops_surfaces.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/rte_output_layout.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/ruff.toml"
+    },
+    {
+      "path": "services/repo-truth-extractor/run_extraction_v4.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/run_extraction_v5.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/MANIFEST.sha256"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/_normalize.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/cost_preview_value_default.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/help_rte.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/help_rte_doctor.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/help_rte_list.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/help_rte_preflight.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/help_rte_promptset.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/help_rte_run.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/help_rte_scan.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/help_rte_status.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/help_rte_trace.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/help_rte_validate_live.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/help_rte_wizard.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/print_config_balanced_mix.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/print_config_budget_mix.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/print_config_economy.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/print_config_experimental.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/print_config_gemini_value.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/print_config_grok_fast.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/print_config_openai_heavy.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/print_config_openrouter_resilient.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/print_config_quality.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/print_config_quality_mix.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/print_config_value_default.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/rte_list_v5.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/goldens/rte_status_empty_run.golden.txt"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_3_high_1_prompt_input_separator.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_7_med_1_status_no_telemetry.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_8_high_1_preflight_probe.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_c9_merge_contract.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_cli_args_seam.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_costing_seam.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_phase_interaction.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_phase_runner_seam.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_pre_live_gate_v25.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_prescan_contracts.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_prescan_e2e_smoke.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_prescan_incremental.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_pricing_authority_unification.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_pricing_coverage_gate.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_prompt_determinism_keys.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_promptset_rules_injection.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_promptset_section_enforcement.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_promptset_v4_lint.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_r0_007_phase_target_duplicates.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_r2_002_tokenizer_output_ratio.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_r2_003_cap_atomicity_temperature.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_r2_004_go_live_safety_cluster.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_r2_004_webhook_manifest_redaction.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_r3_003_schema_expansion.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_r3_005a_phase_m_h9_e_content_fixes.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_run_extraction_v5_promptset_truth.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_run_extraction_v5_ui_events.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_run_log_rotation.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_secrets_redaction_binding.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_spend_ledger.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_spend_ledger_optimizers.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_tp_rtx_v5_phase_recovery_hardening.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_truth_harness_goldens.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_untrusted_content_delimiter.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/tests/test_write_time_secret_scrub.py"
+    },
+    {
+      "path": "services/repo-truth-extractor/validate_pre_live_gate_v25.py"
+    },
+    {
+      "path": "src/dopemux/cli.py"
+    },
+    {
+      "path": "src/dopemux/commands/audit_commands.py"
+    },
+    {
+      "path": "src/dopemux/commands/extract_commands.py"
+    },
+    {
+      "path": "src/dopemux/commands/upgrades_commands.py"
+    },
+    {
+      "path": "src/dopemux/ux/wizard/extraction.py"
+    },
+    {
+      "path": "src/dopemux/ux/wizard/preflight.py"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-D-001.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-D-002.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-D-003.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-D-004.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-D-005.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-D-006.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-D-007.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-D-008.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-LOAD-PLAN.md"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-MERGE-001.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R0-001.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R0-002.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R0-003.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R0-004.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R0-005.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R0-006.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R0-007.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R0-008.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R0-009.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R1-001.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R1-002.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R1-003.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R1-004.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R2-001.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R2-002.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R2-003.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R2-004.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R2-005.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R3-001.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R3-002.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R3-003.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R3-004.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R3-005a.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R3-005b.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R3-005c.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R3-005d.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R3-005e.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R3-006.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R3-007.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R4-001.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R4-002.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R4-003.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R4-004.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R4-005.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R4-006.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-R5-001.json"
+    },
+    {
+      "path": "task-packets/generated/TP-RTE-TRUTH-REVIEW-001.json"
+    },
+    {
+      "path": "tests/unit/test_cli_audit_remediations.py"
+    },
+    {
+      "path": "tests/unit/test_cli_upgrades_commands.py"
+    },
+    {
+      "path": "tests/unit/test_wizard_interactivity.py"
+    },
+    {
+      "path": "uv.lock"
     }
   ],
   "headRefName": "claude/rte-truth-program",

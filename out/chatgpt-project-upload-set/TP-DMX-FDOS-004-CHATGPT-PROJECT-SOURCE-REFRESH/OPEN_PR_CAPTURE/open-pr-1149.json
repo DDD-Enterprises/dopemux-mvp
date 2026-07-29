@@ -1,6 +1,9 @@
 {
+  "additions": 14,
   "baseRefName": "main",
   "body": "Wrapped the \"Start\" button for pending tasks in TaskSequencer.tsx with a descriptive Tooltip explaining exactly which task will start and receive focus, complementing existing ARIA labels. Added programmatic assertions to Accessibility.test.tsx and successfully performed full build, test, and visual verification.\n\n---\n*PR created automatically by Jules for task [10223693338927440299](https://jules.google.com/task/10223693338927440299) started by @hu3mann*",
+  "capture_complete": true,
+  "changedFiles": 2,
   "commits": [
     {
       "authoredDate": "2026-07-28T23:25:33Z",
@@ -24,24 +27,19 @@
       "oid": "9f2f089dd5e43387ba029c8f5c9de312899dceb3"
     }
   ],
+  "deletions": 9,
   "files": [
     {
-      "additions": 11,
-      "changeType": "MODIFIED",
-      "deletions": 9,
       "path": "ui-dashboard/src/components/TaskSequencer.tsx"
     },
     {
-      "additions": 3,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "ui-dashboard/src/components/__tests__/Accessibility.test.tsx"
     }
   ],
   "headRefName": "jules-10223693338927440299-c662ce23",
   "headRefOid": "9f2f089dd5e43387ba029c8f5c9de312899dceb3",
   "isDraft": false,
-  "mergeStateStatus": "UNSTABLE",
+  "mergeStateStatus": "BEHIND",
   "number": 1149,
   "state": "OPEN",
   "title": "\ud83c\udfa8 Palette: Add descriptive tooltip to task start button",

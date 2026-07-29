@@ -1,6 +1,9 @@
 {
+  "additions": 7,
   "baseRefName": "main",
   "body": "Reconstructs container CI matrix alignment on current `main` for `adhd-dashboard` backend. Fixes / replaces #1107.",
+  "capture_complete": true,
+  "changedFiles": 1,
   "commits": [
     {
       "authoredDate": "2026-07-23T17:18:31Z",
@@ -18,11 +21,9 @@
       "oid": "d13b4aacc9765384e598ef950bb4c9acd9954697"
     }
   ],
+  "deletions": 0,
   "files": [
     {
-      "additions": 7,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": ".github/workflows/containers.yml"
     }
   ],

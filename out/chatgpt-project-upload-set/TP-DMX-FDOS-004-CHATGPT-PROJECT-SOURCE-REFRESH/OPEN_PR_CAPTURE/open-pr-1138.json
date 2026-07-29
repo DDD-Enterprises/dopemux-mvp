@@ -1,6 +1,9 @@
 {
+  "additions": 6814,
   "baseRefName": "main",
   "body": "## Summary\nImplements `DMX-DCP-MODEL-ROUTING-MVP-0000S` (NEXT-TRANCHE-001).\n\nCanonical next sequence: **0007I \u2192 0007T \u2192 0007A \u2192 0008 \u2192 0009 \u2192 GPT-5.5 Pro gate**.\n\n## Key OBSERVED facts\n- #854 closed unmerged \u2014 not main authority\n- #862 clean 0001 lineage\n- 0007 docs on main (#909); `input_adapters.py` **absent** on main\n- Label collision with TP-DCP-MCP-RO-0007..0009 disclosed\n\n## Non-claims\nNo merge, no runner invocation, no trusted mutation adapter.\n\n## Proof\n`proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/`",
+  "capture_complete": true,
+  "changedFiles": 63,
   "commits": [
     {
       "authoredDate": "2026-07-27T03:18:36Z",
@@ -93,383 +96,195 @@
       "oid": "3ce0db080527d64eeb3849e88786528422885333"
     }
   ],
+  "deletions": 0,
   "files": [
     {
-      "additions": 200,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "docs/03-reference/dcp/current-main-runtime-reconciliation.json"
     },
     {
-      "additions": 105,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "docs/03-reference/dcp/current-main-runtime-reconciliation.md"
     },
     {
-      "additions": 676,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "docs/03-reference/dcp/model-routing-series-map.json"
     },
     {
-      "additions": 68,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "docs/03-reference/dcp/model-routing-series-status.md"
     },
     {
-      "additions": 1,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/AUDITOR_REPORT.attempt1.incomplete.json"
     },
     {
-      "additions": 78,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/AUDITOR_REPORT.md"
     },
     {
-      "additions": 1,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/AUDITOR_REPORT.raw.json"
     },
     {
-      "additions": 0,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/AUDITOR_REPORT.stderr.txt"
     },
     {
-      "additions": 63,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/COMMAND_LOG.md"
     },
     {
-      "additions": 200,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/CURRENT_MAIN_RUNTIME_RECONCILIATION.json"
     },
     {
-      "additions": 105,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/CURRENT_MAIN_RUNTIME_RECONCILIATION.md"
     },
     {
-      "additions": 42,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/DIFF_NAME_ONLY.txt"
     },
     {
-      "additions": 43,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/DIFF_STAT.txt"
     },
     {
-      "additions": 36,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/EVIDENCE_LEDGER.md"
     },
     {
-      "additions": 44,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/FINAL_STATUS_PORCELAIN.txt"
     },
     {
-      "additions": 38,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/HANDOFF.json"
     },
     {
-      "additions": 27,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/HANDOFF.md"
     },
     {
-      "additions": 101,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/PAL_CHAIN.md"
     },
     {
-      "additions": 107,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/PROOF.json"
     },
     {
-      "additions": 1,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/compileall.exit"
     },
     {
-      "additions": 1,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/compose-resolved.exit"
     },
     {
-      "additions": 1160,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/compose-resolved.json"
     },
     {
-      "additions": 20,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/compose-resolved.stderr.txt"
     },
     {
-      "additions": 10,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/dcp-help.txt"
     },
     {
-      "additions": 29,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/docker-ps-summary.txt"
     },
     {
-      "additions": 1,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/docker-ps.exit"
     },
     {
-      "additions": 28,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/docker-ps.jsonl"
     },
     {
-      "additions": 0,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/docker-ps.stderr.txt"
     },
     {
-      "additions": 102,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/dopemux-help.txt"
     },
     {
-      "additions": 1,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/gh-pr-dcp-search.exit"
     },
     {
-      "additions": 1,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/gh-pr-dcp-search.json"
     },
     {
-      "additions": 0,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/gh-pr-dcp-search.stderr.txt"
     },
     {
-      "additions": 1,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/gh-pr-open-all.exit"
     },
     {
-      "additions": 1,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/gh-pr-open-all.json"
     },
     {
-      "additions": 0,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/gh-pr-open-all.stderr.txt"
     },
     {
-      "additions": 1,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/gh-pr-this-branch.json"
     },
     {
-      "additions": 105,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/inventory.txt"
     },
     {
-      "additions": 1,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/opencode-resolved-config.exit"
     },
     {
-      "additions": 203,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/opencode-resolved-config.txt"
     },
     {
-      "additions": 1,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/pytest.exit"
     },
     {
-      "additions": 794,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/reference-scan.txt"
     },
     {
-      "additions": 12,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/runner-cli-inventory.txt"
     },
     {
-      "additions": 1,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/verify-pal.exit"
     },
     {
-      "additions": 25,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/AUDITOR_REPORT.md"
     },
     {
-      "additions": 14,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/COMMAND_LOG.md"
     },
     {
-      "additions": 18,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/DIFF_NAME_ONLY.txt"
     },
     {
-      "additions": 19,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/DIFF_STAT.txt"
     },
     {
-      "additions": 12,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/EVIDENCE_LEDGER.md"
     },
     {
-      "additions": 23,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/FINAL_STATUS_PORCELAIN.txt"
     },
     {
-      "additions": 22,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/HANDOFF.json"
     },
     {
-      "additions": 7,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/HANDOFF.md"
     },
     {
-      "additions": 676,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/MODEL_ROUTING_SERIES_MAP.json"
     },
     {
-      "additions": 16,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/PAL_CHAIN.md"
     },
     {
-      "additions": 68,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/PROOF.json"
     },
     {
-      "additions": 1,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/gh-pr-all.exit"
     },
     {
-      "additions": 1,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/gh-pr-all.json"
     },
     {
-      "additions": 1,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/gh-pr-all.stderr.txt"
     },
     {
-      "additions": 422,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/gh-pr-dcp-routing-related.json"
     },
     {
-      "additions": 79,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/model-routing-packets.txt"
     },
     {
-      "additions": 92,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/model-routing-proof.txt"
     },
     {
-      "additions": 58,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/model-routing-runtime-files.txt"
     },
     {
-      "additions": 442,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000R.md"
     },
     {
-      "additions": 409,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000S.md"
     }
   ],

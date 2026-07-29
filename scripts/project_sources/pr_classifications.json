@@ -1,9 +1,83 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
+  "self_exclusion_note": "This packet's own PR (#1152, branch claude/chatgpt-40-source-refresh-f84dfc) is deliberately excluded from classification -- it is the source-refresh PR itself, not a candidate future authority for the 40-source set it produces. Excluding it is a build-time rule (see build_chatgpt_project_sources.py SELF_PR_NUMBER), not a silent omission.",
+  "self_pr_number": 1152,
   "classifications": {
+    "1160": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "mergeStateStatus=BLOCKED. Touches .github/workflows/ddd-release-gate.yml, tests/pr_steward/test_known_author_bot_bare_form.py, tools/pr_steward/classifier.py, tools/pr_steward/known_reviewers.json (4 files) -- a narrow CI-preflight bug fix for PR Steward's own release-gate self-status handling, not a description of PR Steward mechanics carried by slot 32 (docs/ops/pr-steward.md).",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for the selected 37-source set.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "Same tools/pr_steward/ family as #1140; neither touches slot-32 content.",
+      "confidence": "high"
+    },
+    "1159": {
+      "classification": "SOURCE_CONTENT_REFRESH_IF_MERGED",
+      "evidence": "mergeStateStatus=BEHIND, not draft. Directly touches docs/03-reference/spec/dopetask/dopetask-canonical-spec.json (slot 25) plus docs/03-reference/governance/codex-macro-packet-blueprint.md. Title: 'feat(dopetask): add \"claude\" to execution.agent enum' -- this is the exact follow-up this packet itself flagged (see task-packets/generated/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.json's execution.agent invariant note) after discovering the canonical schema's execution.agent enum lacked a 'claude' value.",
+      "current_main_effect": "None; PR is unmerged.",
+      "action_if_merged": "Regenerate slot 25 from the new main tip; also revisit this packet's own task-packets/generated/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.json execution.agent value (currently the 'shell' fallback) since a native 'claude' enum value would then exist.",
+      "source_slots_affected": [25],
+      "contradiction_or_overlap_notes": "Directly resolves a gap this packet itself discovered and flagged as a follow-up task.",
+      "confidence": "high"
+    },
+    "1157": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "Draft, mergeStateStatus=BEHIND. Touches src/dopemux/dcp/__init__.py, input_adapters.py, runner_capability_registry.py, runner_contract.py, trusted_adapter_registry.py (84 files total) -- DCP runner-capability-registry feature work; src/dopemux/dcp/** is a watched-path family but none of the 37 selected slots is a DCP source file.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "Part of the same DCP model-routing-0007/0008/0009 series as #1151/#1153/#1154/#1156.",
+      "confidence": "high"
+    },
+    "1156": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "Draft, mergeStateStatus=BEHIND. Touches src/dopemux/dcp/__init__.py, input_adapters.py, runner_contract.py, trusted_adapter_registry.py (66 files total) -- DCP inert-backend-runner-contract feature work; no intersection with the 37 selected slots.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "Predecessor of #1157 in the same DCP series.",
+      "confidence": "high"
+    },
+    "1155": {
+      "classification": "SOURCE_CONTENT_REFRESH_IF_MERGED",
+      "evidence": "Draft, mergeStateStatus=BEHIND. Touches services/repo-truth-extractor/lib/prescan/code_intelligence_report.py, code_prescan.py, engine.py, and tests/test_code_prescan_truthfulness.py (7 files) -- a narrower RTE prescan fix (tree-sitter degraded-mode surfacing) in the same runtime family slot 23 (system-repotruthextractor.md) describes.",
+      "current_main_effect": "None; PR is unmerged.",
+      "action_if_merged": "Re-verify slot 23 content against the new RTE prescan behavior and regenerate if drift is found.",
+      "source_slots_affected": [23],
+      "contradiction_or_overlap_notes": "Same RTE runtime family as #1136 (broader remediation program) and #1123 (superseded predecessor); this one is narrowly scoped to tree-sitter degraded-mode handling specifically.",
+      "confidence": "medium"
+    },
+    "1154": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "Draft, mergeStateStatus=BEHIND. Touches src/dopemux/dcp/__init__.py, input_adapters.py, trusted_adapter_registry.py (50 files total) -- DCP trusted-adapter-registry (disabled) feature work; no intersection with the 37 selected slots.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "Part of the same DCP model-routing-0007 series as #1151/#1153/#1156/#1157.",
+      "confidence": "high"
+    },
+    "1153": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "Draft, mergeStateStatus=BEHIND. Touches src/dopemux/dcp/__init__.py, input_adapters.py (34 files total, mostly test corpus) -- DCP trusted-input adversarial test corpus; no intersection with the 37 selected slots.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "Companion test PR for #1151 in the same DCP model-routing-0007 series.",
+      "confidence": "high"
+    },
+    "1151": {
+      "classification": "NO_PROJECT_SOURCE_IMPACT",
+      "evidence": "Draft, mergeStateStatus=BEHIND. Touches src/dopemux/dcp/__init__.py, input_adapters.py (17 files total) -- DCP trusted-input capability boundary feature work; no intersection with the 37 selected slots.",
+      "current_main_effect": "None.",
+      "action_if_merged": "None required for this package.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "First PR in the DCP model-routing-0007/0008/0009 series (0007I, followed by 0007T/#1153, 0007A/#1154, 0008/#1156, 0009/#1157).",
+      "confidence": "high"
+    },
     "1150": {
       "classification": "SOURCE_CONTENT_REFRESH_IF_MERGED",
-      "evidence": "Draft PR, mergeStateStatus=UNSTABLE. Changed-file list directly includes AGENTS.md, docs/03-reference/systems/dopemux/system-dopemux.md, and docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md -- exactly slots 01, 15, 17 of this package.",
+      "evidence": "Draft PR, mergeStateStatus=BEHIND (was UNSTABLE at earlier capture; state has since changed but content intersection is unchanged). Refreshed changed-file list (59 files, was 56/56 at two earlier captures) still directly includes AGENTS.md, docs/03-reference/systems/dopemux/system-dopemux.md, and docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md -- exactly slots 01, 15, 17 of this package.",
       "current_main_effect": "None; PR is unmerged and draft.",
       "action_if_merged": "Regenerate slots 01, 15, 17 from the new main tip and re-run all validation gates.",
       "source_slots_affected": [1, 15, 17],
@@ -39,7 +113,7 @@
     },
     "1146": {
       "classification": "NO_PROJECT_SOURCE_IMPACT",
-      "evidence": "Dependabot setuptools 82.0.1->83.0.0 bump; 1 file (uv lock/pyproject dep pin). No intersection with watched paths.",
+      "evidence": "Dependabot setuptools 82.0.1->83.0.0 bump; 1 file. No intersection with watched paths.",
       "current_main_effect": "None.",
       "action_if_merged": "None required for this package.",
       "source_slots_affected": [],
@@ -57,7 +131,7 @@
     },
     "1144": {
       "classification": "NO_PROJECT_SOURCE_IMPACT",
-      "evidence": "Dependabot python-minor-patch group bump (40 updates); 3 files, mergeStateStatus=BLOCKED. No intersection with watched paths.",
+      "evidence": "Dependabot python-minor-patch group bump (40 updates); 3 files. No intersection with watched paths.",
       "current_main_effect": "None.",
       "action_if_merged": "None required for this package.",
       "source_slots_affected": [],
@@ -93,11 +167,11 @@
     },
     "1138": {
       "classification": "NO_PROJECT_SOURCE_IMPACT",
-      "evidence": "Draft PR, mergeStateStatus=BEHIND. Touches docs/03-reference/dcp/model-routing-series-map.json, docs/03-reference/dcp/model-routing-series-status.md, and proof/task-packets artifacts under DMX-DCP-MODEL-ROUTING-MVP-0000R/0000S. docs/03-reference/dcp/** is not in the watched-path list and does not intersect any of the 37 selected slots.",
+      "evidence": "Draft PR, mergeStateStatus=UNKNOWN/BEHIND across captures. Touches docs/03-reference/dcp/model-routing-series-map.json, docs/03-reference/dcp/model-routing-series-status.md, and proof/task-packets artifacts under DMX-DCP-MODEL-ROUTING-MVP-0000R/0000S. docs/03-reference/dcp/** is not in the watched-path list and does not intersect any of the 37 selected slots.",
       "current_main_effect": "None.",
       "action_if_merged": "None required for this package.",
       "source_slots_affected": [],
-      "contradiction_or_overlap_notes": "Overlaps in subject matter with #1137 (same DCP model-routing series, same base proof directory DMX-DCP-MODEL-ROUTING-MVP-0000R); both draft, both BEHIND, no conflict evidence found between them.",
+      "contradiction_or_overlap_notes": "Overlaps in subject matter with #1137 (same DCP model-routing series, same base proof directory DMX-DCP-MODEL-ROUTING-MVP-0000R); both draft, no conflict evidence found between them.",
       "confidence": "high"
     },
     "1137": {
@@ -111,16 +185,16 @@
     },
     "1136": {
       "classification": "SOURCE_CONTENT_REFRESH_IF_MERGED",
-      "evidence": "mergeStateStatus=BEHIND (rebasable, not conflicted). True changedFiles=366 (gh pr view's files connection caps display at 100; verified via --json changedFiles). Directly touches docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md (slot 23) plus extensive services/repo-truth-extractor/** runtime, config/pricing.yaml, and CI workflow changes.",
+      "evidence": "mergeStateStatus=BEHIND (rebasable, not conflicted). Full paginated changedFiles=366 (captured via `gh api .../pulls/1136/files --paginate`, not the 100-file-capped `gh pr view --json files`; capture count verified to equal the PR's own reported changedFiles=366 exactly). Directly touches docs/03-reference/systems/repo-truth-extractor/system-repotruthextractor.md (slot 23) plus extensive services/repo-truth-extractor/** runtime, config/pricing.yaml, and CI workflow changes.",
       "current_main_effect": "None; PR is unmerged.",
       "action_if_merged": "Regenerate slot 23 from the new main tip; re-run all validation gates.",
       "source_slots_affected": [23],
-      "contradiction_or_overlap_notes": "Same problem domain (RTE truth/audit remediation) as #1123, but #1136 is the clean, rebasable, actively-updated branch while #1123 is a massively diverged, DIRTY, likely-abandoned predecessor lineage -- see #1123 classification.",
+      "contradiction_or_overlap_notes": "Same problem domain (RTE truth/audit remediation) as #1123 and the narrower #1155, but #1136 is the clean, rebasable, actively-updated branch while #1123 is a massively diverged, DIRTY, likely-abandoned predecessor lineage -- see #1123 classification.",
       "confidence": "high"
     },
     "1128": {
       "classification": "NO_PROJECT_SOURCE_IMPACT",
-      "evidence": "mergeStateStatus=DIRTY. Touches mcp_catalog.yaml, schemas/mcp/fleet-catalog.schema.json, src/dopemux/mcp/*, docs/90-adr/adr-index.md, docs/90-adr/adr-mcpprof-001-profiled-tool-plane-and-domain-facades.md (a different ADR from the Memory Trinity ADR in slot 11). None of these paths intersect the 37 selected slots.",
+      "evidence": "mergeStateStatus=DIRTY/UNKNOWN across captures. Touches mcp_catalog.yaml, schemas/mcp/fleet-catalog.schema.json, src/dopemux/mcp/*, docs/90-adr/adr-index.md, docs/90-adr/adr-mcpprof-001-profiled-tool-plane-and-domain-facades.md (a different ADR from the Memory Trinity ADR in slot 11). None of these paths intersect the 37 selected slots.",
       "current_main_effect": "None.",
       "action_if_merged": "None required for this package.",
       "source_slots_affected": [],
@@ -129,7 +203,7 @@
     },
     "1127": {
       "classification": "NO_PROJECT_SOURCE_IMPACT",
-      "evidence": "mergeStateStatus=BEHIND. All 33 changed files are under docs/ops/load-plans/**, reports/leantime-ai-parity/**, schemas/leantime-ai-parity/**, scripts/leantime-ai-parity/**, task-packets/leantime-ai-parity/**, and tests/prototypes/leantime-ai-parity/**. None intersect the 37 selected slots or the watched-path list.",
+      "evidence": "mergeStateStatus=UNKNOWN/BEHIND. All 33 changed files are under docs/ops/load-plans/**, reports/leantime-ai-parity/**, schemas/leantime-ai-parity/**, scripts/leantime-ai-parity/**, task-packets/leantime-ai-parity/**, and tests/prototypes/leantime-ai-parity/**. None intersect the 37 selected slots or the watched-path list.",
       "current_main_effect": "None.",
       "action_if_merged": "None required for this package.",
       "source_slots_affected": [],
@@ -145,18 +219,9 @@
       "contradiction_or_overlap_notes": "mergeStateStatus=DIRTY indicates merge conflicts must be resolved before this can land; classification may need revisiting once conflicts are addressed.",
       "confidence": "medium"
     },
-    "1123": {
-      "classification": "SUPERSEDED_OR_CONFLICTING",
-      "evidence": "mergeStateStatus=DIRTY. changedFiles=16206, additions=5,145,096, deletions=9,284 -- two to three orders of magnitude larger than any other open PR, consistent with prior session's durable finding (reference_rte_stranded_branch_2026_07_26.md) that this exact branch (claude/rte-audit-improvement-f4beb7) is 4146 commits ahead / 4221 behind main with a merge-base dated 2025-09-19, i.e. a long-diverged, effectively stranded lineage rather than a clean forward delta.",
-      "current_main_effect": "None; PR is unmerged and not a safe merge candidate in its current form.",
-      "action_if_merged": "Not applicable in current form -- this branch would need to be rebased or its recoverable commits cherry-picked onto current main (per the prior session's recovery note: 160/193 of its changed paths are present on main) before any merge could be evaluated for source-set impact.",
-      "source_slots_affected": [],
-      "contradiction_or_overlap_notes": "Shares problem domain (RTE truth/audit remediation) with #1136, which is the actively-maintained, clean-lineage successor; #1136 should be treated as authoritative for that domain, not #1123.",
-      "confidence": "high"
-    },
     "1118": {
       "classification": "NO_PROJECT_SOURCE_IMPACT",
-      "evidence": "1 file changed (CI container build matrix), mergeStateStatus=BEHIND. No intersection with watched paths.",
+      "evidence": "1 file changed (CI container build matrix), mergeStateStatus=UNKNOWN/BEHIND. No intersection with watched paths.",
       "current_main_effect": "None.",
       "action_if_merged": "None required for this package.",
       "source_slots_affected": [],
@@ -165,7 +230,7 @@
     },
     "1117": {
       "classification": "NO_PROJECT_SOURCE_IMPACT",
-      "evidence": "1 file changed (UI dashboard dependency consolidation), mergeStateStatus=BEHIND. No intersection with watched paths.",
+      "evidence": "1 file changed (UI dashboard dependency consolidation), mergeStateStatus=UNKNOWN/BEHIND. No intersection with watched paths.",
       "current_main_effect": "None.",
       "action_if_merged": "None required for this package.",
       "source_slots_affected": [],
@@ -188,6 +253,15 @@
       "action_if_merged": "None required for this package.",
       "source_slots_affected": [],
       "contradiction_or_overlap_notes": "None.",
+      "confidence": "high"
+    },
+    "1123": {
+      "classification": "SUPERSEDED_OR_CONFLICTING",
+      "evidence": "mergeStateStatus=DIRTY. changedFiles=16206, additions=5,145,096, deletions=9,284 -- two to three orders of magnitude larger than any other open PR, consistent with a prior session's durable finding (reference_rte_stranded_branch_2026_07_26.md) that this exact branch (claude/rte-audit-improvement-f4beb7) is 4146 commits ahead / 4221 behind main with a merge-base dated 2025-09-19, i.e. a long-diverged, effectively stranded lineage rather than a clean forward delta. Full path-level file capture was NOT attempted for this PR (capture_complete=false, disclosed) -- classification rests on these aggregate scale/state metrics, not path intersection, since re-litigating the stranded-branch finding from scratch is out of this packet's scope.",
+      "current_main_effect": "None; PR is unmerged and not a safe merge candidate in its current form.",
+      "action_if_merged": "Not applicable in current form -- this branch would need to be rebased or its recoverable commits cherry-picked onto current main (per the prior session's recovery note: 160/193 of its changed paths are present on main) before any merge could be evaluated for source-set impact.",
+      "source_slots_affected": [],
+      "contradiction_or_overlap_notes": "Shares problem domain (RTE truth/audit remediation) with #1136 and #1155, which are the actively-maintained, clean-lineage successors; #1136/#1155 should be treated as authoritative for that domain, not #1123.",
       "confidence": "high"
     }
   }

@@ -1,0 +1,48 @@
+{
+  "additions": 2,
+  "baseRefName": "main",
+  "body": "## Summary\n- Adds `\"claude\"` to the `execution.agent` enum in `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json` \u2014 task packets that explicitly direct Claude Code as the primary implementer can now record that in `execution.agent` instead of falling back to the generic `\"shell\"` value and noting the real executing tool only in free-text invariants (lossy for routing, PR Steward, and proof aggregation, which read `execution.agent` programmatically).\n- Updates the one place that hard-copies the enum in prose, `docs/03-reference/governance/codex-macro-packet-blueprint.md`, to match.\n- No model-tier variants (`claude-sonnet`/`claude-opus`) added \u2014 surveyed all 146 packets in `task-packets/generated/*.json` and found zero existing precedent for tier granularity in `execution.agent` (even `claude/*`-branch packets record a bare `codex` or `gemini`), so `claude` follows the existing flat tool-name convention.\n- Schema-only change, split out per TP-DMX-FDOS-004 \u00a74.2 which forbade changing the canonical schema in-packet.\n\n## Test plan\n- [x] `python3 -c \"import json; json.load(open('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json'))\"` \u2014 valid JSON\n- [x] `python -m jsonschema -i <file> docs/03-reference/spec/dopetask/dopetask-canonical-spec.json` run against all 146 files in `task-packets/generated/*.json` \u2014 143 pass; the same 3 pre-existing failures remain (unrelated to `execution.agent`: missing `repo_binding`/`series`/`commit`/`pr`/`steps`, or unexpected fields like `starting_head`/`body_update`/`embedded_audit`), confirming the change is purely additive and breaks nothing\n\n\ud83e\udd16 Generated with [Claude Code](https://claude.com/claude-code)",
+  "capture_complete": true,
+  "changedFiles": 2,
+  "commits": [
+    {
+      "authoredDate": "2026-07-29T00:34:00Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "DDD-Enterprises (DJ Daddy Dom & the Department of\u2026 Don\u2019t ask, Don\u2019t tell, Don\u2019t stop, Don\u2019t you dare\u2026)"
+        },
+        {
+          "email": "noreply@anthropic.com",
+          "id": "MDQ6VXNlcjgxODQ3",
+          "login": "claude",
+          "name": "Claude Sonnet 5"
+        }
+      ],
+      "committedDate": "2026-07-29T00:34:00Z",
+      "messageBody": "Task packets are now explicitly authored to direct Claude Code as the\nprimary implementer, but the canonical schema only allowed gemini,\ncodex, vibe, and shell, forcing those packets to fall back to \"shell\"\nand note the real executing tool only in free-text invariants \u2014 lossy\nfor any downstream tooling (routing, PR Steward, proof aggregation)\nthat reads execution.agent programmatically.\n\nNo model-tier variants (sonnet/opus) added: a survey of all 146\npackets in task-packets/generated/ found zero existing precedent for\ntier granularity in this field \u2014 even claude/* branch packets record\na bare \"codex\" or \"gemini\" agent \u2014 so \"claude\" follows the same flat\ntool-name convention.\n\nValidated against all 146 generated task packets with jsonschema; the\nchange is purely additive (widens the enum) and introduces no new\nvalidation failures versus the pre-existing baseline.\n\nCo-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>",
+      "messageHeadline": "feat(dopetask): add \"claude\" to execution.agent enum",
+      "oid": "3a6cda08047776bf62259eb350e79a6840a56892"
+    }
+  ],
+  "deletions": 1,
+  "files": [
+    {
+      "path": "docs/03-reference/governance/codex-macro-packet-blueprint.md"
+    },
+    {
+      "path": "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+    }
+  ],
+  "headRefName": "claude/distracted-brahmagupta-6b0743",
+  "headRefOid": "3a6cda08047776bf62259eb350e79a6840a56892",
+  "isDraft": false,
+  "mergeStateStatus": "BEHIND",
+  "number": 1159,
+  "state": "OPEN",
+  "title": "feat(dopetask): add \"claude\" to execution.agent enum",
+  "updatedAt": "2026-07-29T00:36:42Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1159"
+}

@@ -1,1 +1,279 @@
-{"baseRefName":"main","body":"## Summary\n\nRepair merged dope-context Voyage modernization (PR #1112 / post-merge Opus audit FAIL) before first deployment.\n\n### Audit source\n- Parent: PR #1112 merge `4b42268775d1f94e26500c758128da3e11b151d5`\n- Audit packet: `TP-DOPECONTEXT-VOYAGE4-POSTMERGE-OPUS-AUDIT-001` → `REPAIR_REQUIRED`\n- This packet: `TP-DOPECONTEXT-VOYAGE4-REPAIR-0002`\n\n### Blocking findings repaired\n- **F-001** Code `content_vec` index/query vector-space mismatch → query uses same contextualized model/endpoint as index\n- **F-002** Collection compatibility/migration gate → fingerprint-versioned collection names; legacy never written\n- **F-003** Legacy-context rollback split → single `DOPE_CONTEXT_CONTEXTUAL_EMBED_MODEL` moves all contextual paths\n\n### Design selected for code content_vec\nBehavior-preserving: configured contextual model + `contextualized_embeddings` on both index and query (query: single chunk, auto-chunking off, exactly one vector). Title/breadcrumb remain `voyage-code-3` / embeddings.\n\n### Collection migration behavior\n- Active: `code_<ws-hash>_<profile-digest>` / `docs_<ws-hash>_<profile-digest>`\n- Changing model/endpoint/dimension/dtype/chunker/schema → new collection identity\n- Local manifest mismatch fails closed before upsert\n\n### Legacy collection behavior\n- Detected and reported in `get_index_status`\n- Never selected for new writes\n- Never auto-deleted\n\n### Rollback command\n```bash\nexport DOPE_CONTEXT_CONTEXTUAL_EMBED_MODEL=voyage-context-3\n```\n\n### Tests and validation\n- Full dope-context suite: **74 passed**\n- `uv lock --check` PASS (voyageai `>=0.5.0,<0.6`)\n- Docker build `dope-context:repair-0002` PASS\n- No-network container smoke: voyageai `0.5.0` SMOKE_OK\n\n### Embedded auditor\n- Preferred Gemini CLI / AGY / Claude Code Opus **blocked** this window (tier + quota)\n- Verdict: **NOT_RUN** (implementer must not self-PASS)\n- See `proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/AUDITOR_REPORT.md`\n\n### Residual risks\n- Independent embedded audit still required for steward READY\n- No live Voyage billable benchmark\n- Operator reindex required for legacy collections\n\n### Deployment\n**Explicitly NOT performed** in this packet.\n\n## Test plan\n- [x] `PYTHONPATH=services/dope-context uv run --extra services --extra test pytest -q services/dope-context/tests`\n- [x] Docker build + no-network smoke\n- [ ] Independent embedded audit PASS / PASS_WITH_RISKS\n- [ ] PR Steward MERGE_READINESS=READY\n- [ ] Do not deploy from this PR without operator approval","commits":[{"authoredDate":"2026-07-27T00:29:12Z","authors":[{"email":"167156098+hu3mann@users.noreply.github.com","id":"U_kgDOCfaZgg","login":"hu3mann","name":"DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…)"}],"committedDate":"2026-07-27T00:29:12Z","messageBody":"Introduce canonical named-vector profiles and fingerprint-versioned\ncollection identity so index and query share the same model space, legacy\ncollections cannot receive mixed writes, and contextual rollback is a\nsingle env var. Align code content_vec queries to contextualized embeddings,\nharden tokenizer/rerank/budget/cache paths, and pin voyageai>=0.5.0,<0.6\nfor repo and image parity.\n\nPacket: TP-DOPECONTEXT-VOYAGE4-REPAIR-0002","messageHeadline":"fix(dope-context): repair vector compatibility and collection migration","oid":"efc15f90950068e121f4abb174d0c085f52880c1"},{"authoredDate":"2026-07-27T00:31:08Z","authors":[{"email":"167156098+hu3mann@users.noreply.github.com","id":"U_kgDOCfaZgg","login":"hu3mann","name":"DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…)"}],"committedDate":"2026-07-27T00:31:08Z","messageBody":"Record validation evidence and honest embedded-audit status for\nTP-DOPECONTEXT-VOYAGE4-REPAIR-0002. Independent audit remains blocked by\nGemini tier/AGY/Claude quota limits in this window.","messageHeadline":"docs(dope-context): pin repair proof and audit intake","oid":"32911bdd7ddb848290386be82484680e2ebb243b"},{"authoredDate":"2026-07-27T00:31:08Z","authors":[{"email":"167156098+hu3mann@users.noreply.github.com","id":"U_kgDOCfaZgg","login":"hu3mann","name":"DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…)"}],"committedDate":"2026-07-27T00:31:20Z","messageBody":"","messageHeadline":"docs(dope-context): pin proof head SHA after audit status commit","oid":"4cd67f0bddc598ee13ba78d77a22e463cde6f076"},{"authoredDate":"2026-07-27T00:31:20Z","authors":[{"email":"167156098+hu3mann@users.noreply.github.com","id":"U_kgDOCfaZgg","login":"hu3mann","name":"DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…)"}],"committedDate":"2026-07-27T00:31:20Z","messageBody":"","messageHeadline":"docs(dope-context): align proof head SHA to tip","oid":"6c6452361244b298fe15cf287d3b9941ba7e040d"},{"authoredDate":"2026-07-27T00:31:48Z","authors":[{"email":"167156098+hu3mann@users.noreply.github.com","id":"U_kgDOCfaZgg","login":"hu3mann","name":"DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…)"}],"committedDate":"2026-07-27T00:31:48Z","messageBody":"","messageHeadline":"docs(dope-context): record PR #1126 on repair proof","oid":"06a23630f723017d28a6cce1d1edae36dfd650fe"},{"authoredDate":"2026-07-27T00:32:10Z","authors":[{"email":"167156098+hu3mann@users.noreply.github.com","id":"U_kgDOCfaZgg","login":"hu3mann","name":"DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…)"}],"committedDate":"2026-07-27T00:32:10Z","messageBody":"","messageHeadline":"docs(dope-context): mark PR head as authoritative proof tip","oid":"71f73d9ab02f3477052e8a5ac9d695ae71be5c60"},{"authoredDate":"2026-07-27T00:40:48Z","authors":[{"email":"167156098+hu3mann@users.noreply.github.com","id":"U_kgDOCfaZgg","login":"hu3mann","name":"DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…)"}],"committedDate":"2026-07-27T00:40:48Z","messageBody":"","messageHeadline":"docs(dope-context): record AGY embedded audit PASS_WITH_RISKS","oid":"20d0158a96621005304fa258cedee48ea3f8858f"},{"authoredDate":"2026-07-27T00:41:07Z","authors":[{"email":"167156098+hu3mann@users.noreply.github.com","id":"U_kgDOCfaZgg","login":"hu3mann","name":"DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…)"}],"committedDate":"2026-07-27T00:41:07Z","messageBody":"","messageHeadline":"docs(dope-context): pin proof tip after AGY audit commit","oid":"2fa17492e3b5154a31804a3757f4c9402d97814a"},{"authoredDate":"2026-07-27T00:56:15Z","authors":[{"email":"167156098+hu3mann@users.noreply.github.com","id":"U_kgDOCfaZgg","login":"hu3mann","name":"DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…)"}],"committedDate":"2026-07-27T00:56:15Z","messageBody":"Make packet PROOF.json satisfy embedded_audit schema, normalize\nfrontmatter/trailing whitespace so CI docs and lint gates pass.","messageHeadline":"fix(dope-context): schema-valid audit proof and docs frontmatter","oid":"adee273d937d884a507e393b72f2c92f01ca7079"},{"authoredDate":"2026-07-27T00:56:37Z","authors":[{"email":"167156098+hu3mann@users.noreply.github.com","id":"U_kgDOCfaZgg","login":"hu3mann","name":"DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…)"}],"committedDate":"2026-07-27T00:56:37Z","messageBody":"","messageHeadline":"proof(audit): signed local embedded-audit attestation for PR 1126","oid":"ba8a78fa1ed09dc0d7cbb9f2b2680508c6fa13a3"}],"files":[{"path":"docs/03-reference/systems/dope-context/vector-profiles-and-migration.md","additions":92,"deletions":0,"changeType":"ADDED"},{"path":"proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/AUDITOR_REPORT.md","additions":74,"deletions":0,"changeType":"ADDED"},{"path":"proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/AUDIT_INTAKE.json","additions":10,"deletions":0,"changeType":"ADDED"},{"path":"proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/COLLECTION_MIGRATION_REPORT.json","additions":8,"deletions":0,"changeType":"ADDED"},{"path":"proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/COMMAND_LOG.txt","additions":32,"deletions":0,"changeType":"ADDED"},{"path":"proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/HANDOFF.json","additions":15,"deletions":0,"changeType":"ADDED"},{"path":"proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/IMPLEMENTATION_REPORT.md","additions":49,"deletions":0,"changeType":"ADDED"},{"path":"proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/MANIFEST.json","additions":19,"deletions":0,"changeType":"ADDED"},{"path":"proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/PROOF.json","additions":93,"deletions":0,"changeType":"ADDED"},{"path":"proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/VALIDATION.json","additions":9,"deletions":0,"changeType":"ADDED"},{"path":"proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/VECTOR_COMPATIBILITY_MATRIX.json","additions":164,"deletions":0,"changeType":"ADDED"},{"path":"proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/agy_audit_raw.txt","additions":64,"deletions":0,"changeType":"ADDED"},{"path":"proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/claude_audit_raw.txt","additions":1,"deletions":0,"changeType":"ADDED"},{"path":"proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/gemini_audit_raw.txt","additions":46,"deletions":0,"changeType":"ADDED"},{"path":"proof/pr_merge/embedded-audit/pr-1126/PROOF.json","additions":68,"deletions":0,"changeType":"ADDED"},{"path":"proof/pr_merge/embedded-audit/pr-1126/PROOF.json.sig","additions":6,"deletions":0,"changeType":"ADDED"},{"path":"pyproject.toml","additions":1,"deletions":1,"changeType":"MODIFIED"},{"path":"services/dope-context/Dockerfile","additions":1,"deletions":0,"changeType":"MODIFIED"},{"path":"services/dope-context/src/embeddings/contextualized_embedder.py","additions":43,"deletions":19,"changeType":"MODIFIED"},{"path":"services/dope-context/src/embeddings/model_registry.py","additions":25,"deletions":19,"changeType":"MODIFIED"},{"path":"services/dope-context/src/embeddings/voyage_embedder.py","additions":43,"deletions":11,"changeType":"MODIFIED"},{"path":"services/dope-context/src/index_profile.py","additions":557,"deletions":0,"changeType":"ADDED"},{"path":"services/dope-context/src/mcp/server.py","additions":166,"deletions":33,"changeType":"MODIFIED"},{"path":"services/dope-context/src/pipeline/docs_pipeline.py","additions":70,"deletions":21,"changeType":"MODIFIED"},{"path":"services/dope-context/src/pipeline/indexing_pipeline.py","additions":33,"deletions":12,"changeType":"MODIFIED"},{"path":"services/dope-context/src/rerank/voyage_reranker.py","additions":68,"deletions":22,"changeType":"MODIFIED"},{"path":"services/dope-context/src/utils/model_tokenizer.py","additions":28,"deletions":4,"changeType":"MODIFIED"},{"path":"services/dope-context/src/utils/token_budget.py","additions":88,"deletions":0,"changeType":"MODIFIED"},{"path":"services/dope-context/src/utils/workspace.py","additions":39,"deletions":4,"changeType":"MODIFIED"},{"path":"services/dope-context/tests/conftest.py","additions":83,"deletions":0,"changeType":"ADDED"},{"path":"services/dope-context/tests/test_mcp_server.py","additions":36,"deletions":13,"changeType":"MODIFIED"},{"path":"services/dope-context/tests/test_reliability_repairs.py","additions":313,"deletions":0,"changeType":"ADDED"},{"path":"services/dope-context/tests/test_vector_profiles_and_migration.py","additions":198,"deletions":0,"changeType":"ADDED"},{"path":"services/dope-context/tests/test_voyage_modernization.py","additions":5,"deletions":3,"changeType":"MODIFIED"},{"path":"task-packets/dope-context/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002.md","additions":43,"deletions":0,"changeType":"ADDED"},{"path":"uv.lock","additions":4,"deletions":26,"changeType":"MODIFIED"}],"headRefName":"fix/dope-context-voyage4-repair-0002","headRefOid":"ba8a78fa1ed09dc0d7cbb9f2b2680508c6fa13a3","isDraft":false,"mergeStateStatus":"DIRTY","number":1126,"state":"OPEN","title":"fix(dope-context): repair vector compatibility and collection migration","updatedAt":"2026-07-27T02:55:25Z","url":"https://github.com/DDD-Enterprises/dopemux-mvp/pull/1126"}
+{
+  "additions": 2594,
+  "baseRefName": "main",
+  "body": "## Summary\n\nRepair merged dope-context Voyage modernization (PR #1112 / post-merge Opus audit FAIL) before first deployment.\n\n### Audit source\n- Parent: PR #1112 merge `4b42268775d1f94e26500c758128da3e11b151d5`\n- Audit packet: `TP-DOPECONTEXT-VOYAGE4-POSTMERGE-OPUS-AUDIT-001` \u2192 `REPAIR_REQUIRED`\n- This packet: `TP-DOPECONTEXT-VOYAGE4-REPAIR-0002`\n\n### Blocking findings repaired\n- **F-001** Code `content_vec` index/query vector-space mismatch \u2192 query uses same contextualized model/endpoint as index\n- **F-002** Collection compatibility/migration gate \u2192 fingerprint-versioned collection names; legacy never written\n- **F-003** Legacy-context rollback split \u2192 single `DOPE_CONTEXT_CONTEXTUAL_EMBED_MODEL` moves all contextual paths\n\n### Design selected for code content_vec\nBehavior-preserving: configured contextual model + `contextualized_embeddings` on both index and query (query: single chunk, auto-chunking off, exactly one vector). Title/breadcrumb remain `voyage-code-3` / embeddings.\n\n### Collection migration behavior\n- Active: `code_<ws-hash>_<profile-digest>` / `docs_<ws-hash>_<profile-digest>`\n- Changing model/endpoint/dimension/dtype/chunker/schema \u2192 new collection identity\n- Local manifest mismatch fails closed before upsert\n\n### Legacy collection behavior\n- Detected and reported in `get_index_status`\n- Never selected for new writes\n- Never auto-deleted\n\n### Rollback command\n```bash\nexport DOPE_CONTEXT_CONTEXTUAL_EMBED_MODEL=voyage-context-3\n```\n\n### Tests and validation\n- Full dope-context suite: **74 passed**\n- `uv lock --check` PASS (voyageai `>=0.5.0,<0.6`)\n- Docker build `dope-context:repair-0002` PASS\n- No-network container smoke: voyageai `0.5.0` SMOKE_OK\n\n### Embedded auditor\n- Preferred Gemini CLI / AGY / Claude Code Opus **blocked** this window (tier + quota)\n- Verdict: **NOT_RUN** (implementer must not self-PASS)\n- See `proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/AUDITOR_REPORT.md`\n\n### Residual risks\n- Independent embedded audit still required for steward READY\n- No live Voyage billable benchmark\n- Operator reindex required for legacy collections\n\n### Deployment\n**Explicitly NOT performed** in this packet.\n\n## Test plan\n- [x] `PYTHONPATH=services/dope-context uv run --extra services --extra test pytest -q services/dope-context/tests`\n- [x] Docker build + no-network smoke\n- [ ] Independent embedded audit PASS / PASS_WITH_RISKS\n- [ ] PR Steward MERGE_READINESS=READY\n- [ ] Do not deploy from this PR without operator approval",
+  "capture_complete": true,
+  "changedFiles": 36,
+  "commits": [
+    {
+      "authoredDate": "2026-07-27T00:29:12Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "DDD-Enterprises (DJ Daddy Dom & the Department of\u2026 Don\u2019t ask, Don\u2019t tell, Don\u2019t stop, Don\u2019t you dare\u2026)"
+        }
+      ],
+      "committedDate": "2026-07-27T00:29:12Z",
+      "messageBody": "Introduce canonical named-vector profiles and fingerprint-versioned\ncollection identity so index and query share the same model space, legacy\ncollections cannot receive mixed writes, and contextual rollback is a\nsingle env var. Align code content_vec queries to contextualized embeddings,\nharden tokenizer/rerank/budget/cache paths, and pin voyageai>=0.5.0,<0.6\nfor repo and image parity.\n\nPacket: TP-DOPECONTEXT-VOYAGE4-REPAIR-0002",
+      "messageHeadline": "fix(dope-context): repair vector compatibility and collection migration",
+      "oid": "efc15f90950068e121f4abb174d0c085f52880c1"
+    },
+    {
+      "authoredDate": "2026-07-27T00:31:08Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "DDD-Enterprises (DJ Daddy Dom & the Department of\u2026 Don\u2019t ask, Don\u2019t tell, Don\u2019t stop, Don\u2019t you dare\u2026)"
+        }
+      ],
+      "committedDate": "2026-07-27T00:31:08Z",
+      "messageBody": "Record validation evidence and honest embedded-audit status for\nTP-DOPECONTEXT-VOYAGE4-REPAIR-0002. Independent audit remains blocked by\nGemini tier/AGY/Claude quota limits in this window.",
+      "messageHeadline": "docs(dope-context): pin repair proof and audit intake",
+      "oid": "32911bdd7ddb848290386be82484680e2ebb243b"
+    },
+    {
+      "authoredDate": "2026-07-27T00:31:08Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "DDD-Enterprises (DJ Daddy Dom & the Department of\u2026 Don\u2019t ask, Don\u2019t tell, Don\u2019t stop, Don\u2019t you dare\u2026)"
+        }
+      ],
+      "committedDate": "2026-07-27T00:31:20Z",
+      "messageBody": "",
+      "messageHeadline": "docs(dope-context): pin proof head SHA after audit status commit",
+      "oid": "4cd67f0bddc598ee13ba78d77a22e463cde6f076"
+    },
+    {
+      "authoredDate": "2026-07-27T00:31:20Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "DDD-Enterprises (DJ Daddy Dom & the Department of\u2026 Don\u2019t ask, Don\u2019t tell, Don\u2019t stop, Don\u2019t you dare\u2026)"
+        }
+      ],
+      "committedDate": "2026-07-27T00:31:20Z",
+      "messageBody": "",
+      "messageHeadline": "docs(dope-context): align proof head SHA to tip",
+      "oid": "6c6452361244b298fe15cf287d3b9941ba7e040d"
+    },
+    {
+      "authoredDate": "2026-07-27T00:31:48Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "DDD-Enterprises (DJ Daddy Dom & the Department of\u2026 Don\u2019t ask, Don\u2019t tell, Don\u2019t stop, Don\u2019t you dare\u2026)"
+        }
+      ],
+      "committedDate": "2026-07-27T00:31:48Z",
+      "messageBody": "",
+      "messageHeadline": "docs(dope-context): record PR #1126 on repair proof",
+      "oid": "06a23630f723017d28a6cce1d1edae36dfd650fe"
+    },
+    {
+      "authoredDate": "2026-07-27T00:32:10Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "DDD-Enterprises (DJ Daddy Dom & the Department of\u2026 Don\u2019t ask, Don\u2019t tell, Don\u2019t stop, Don\u2019t you dare\u2026)"
+        }
+      ],
+      "committedDate": "2026-07-27T00:32:10Z",
+      "messageBody": "",
+      "messageHeadline": "docs(dope-context): mark PR head as authoritative proof tip",
+      "oid": "71f73d9ab02f3477052e8a5ac9d695ae71be5c60"
+    },
+    {
+      "authoredDate": "2026-07-27T00:40:48Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "DDD-Enterprises (DJ Daddy Dom & the Department of\u2026 Don\u2019t ask, Don\u2019t tell, Don\u2019t stop, Don\u2019t you dare\u2026)"
+        }
+      ],
+      "committedDate": "2026-07-27T00:40:48Z",
+      "messageBody": "",
+      "messageHeadline": "docs(dope-context): record AGY embedded audit PASS_WITH_RISKS",
+      "oid": "20d0158a96621005304fa258cedee48ea3f8858f"
+    },
+    {
+      "authoredDate": "2026-07-27T00:41:07Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "DDD-Enterprises (DJ Daddy Dom & the Department of\u2026 Don\u2019t ask, Don\u2019t tell, Don\u2019t stop, Don\u2019t you dare\u2026)"
+        }
+      ],
+      "committedDate": "2026-07-27T00:41:07Z",
+      "messageBody": "",
+      "messageHeadline": "docs(dope-context): pin proof tip after AGY audit commit",
+      "oid": "2fa17492e3b5154a31804a3757f4c9402d97814a"
+    },
+    {
+      "authoredDate": "2026-07-27T00:56:15Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "DDD-Enterprises (DJ Daddy Dom & the Department of\u2026 Don\u2019t ask, Don\u2019t tell, Don\u2019t stop, Don\u2019t you dare\u2026)"
+        }
+      ],
+      "committedDate": "2026-07-27T00:56:15Z",
+      "messageBody": "Make packet PROOF.json satisfy embedded_audit schema, normalize\nfrontmatter/trailing whitespace so CI docs and lint gates pass.",
+      "messageHeadline": "fix(dope-context): schema-valid audit proof and docs frontmatter",
+      "oid": "adee273d937d884a507e393b72f2c92f01ca7079"
+    },
+    {
+      "authoredDate": "2026-07-27T00:56:37Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "DDD-Enterprises (DJ Daddy Dom & the Department of\u2026 Don\u2019t ask, Don\u2019t tell, Don\u2019t stop, Don\u2019t you dare\u2026)"
+        }
+      ],
+      "committedDate": "2026-07-27T00:56:37Z",
+      "messageBody": "",
+      "messageHeadline": "proof(audit): signed local embedded-audit attestation for PR 1126",
+      "oid": "ba8a78fa1ed09dc0d7cbb9f2b2680508c6fa13a3"
+    }
+  ],
+  "deletions": 188,
+  "files": [
+    {
+      "path": "docs/03-reference/systems/dope-context/vector-profiles-and-migration.md"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/AUDITOR_REPORT.md"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/AUDIT_INTAKE.json"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/COLLECTION_MIGRATION_REPORT.json"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/COMMAND_LOG.txt"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/HANDOFF.json"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/IMPLEMENTATION_REPORT.md"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/MANIFEST.json"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/PROOF.json"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/VALIDATION.json"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/VECTOR_COMPATIBILITY_MATRIX.json"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/agy_audit_raw.txt"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/claude_audit_raw.txt"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/gemini_audit_raw.txt"
+    },
+    {
+      "path": "proof/pr_merge/embedded-audit/pr-1126/PROOF.json"
+    },
+    {
+      "path": "proof/pr_merge/embedded-audit/pr-1126/PROOF.json.sig"
+    },
+    {
+      "path": "pyproject.toml"
+    },
+    {
+      "path": "services/dope-context/Dockerfile"
+    },
+    {
+      "path": "services/dope-context/src/embeddings/contextualized_embedder.py"
+    },
+    {
+      "path": "services/dope-context/src/embeddings/model_registry.py"
+    },
+    {
+      "path": "services/dope-context/src/embeddings/voyage_embedder.py"
+    },
+    {
+      "path": "services/dope-context/src/index_profile.py"
+    },
+    {
+      "path": "services/dope-context/src/mcp/server.py"
+    },
+    {
+      "path": "services/dope-context/src/pipeline/docs_pipeline.py"
+    },
+    {
+      "path": "services/dope-context/src/pipeline/indexing_pipeline.py"
+    },
+    {
+      "path": "services/dope-context/src/rerank/voyage_reranker.py"
+    },
+    {
+      "path": "services/dope-context/src/utils/model_tokenizer.py"
+    },
+    {
+      "path": "services/dope-context/src/utils/token_budget.py"
+    },
+    {
+      "path": "services/dope-context/src/utils/workspace.py"
+    },
+    {
+      "path": "services/dope-context/tests/conftest.py"
+    },
+    {
+      "path": "services/dope-context/tests/test_mcp_server.py"
+    },
+    {
+      "path": "services/dope-context/tests/test_reliability_repairs.py"
+    },
+    {
+      "path": "services/dope-context/tests/test_vector_profiles_and_migration.py"
+    },
+    {
+      "path": "services/dope-context/tests/test_voyage_modernization.py"
+    },
+    {
+      "path": "task-packets/dope-context/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002.md"
+    },
+    {
+      "path": "uv.lock"
+    }
+  ],
+  "headRefName": "fix/dope-context-voyage4-repair-0002",
+  "headRefOid": "ba8a78fa1ed09dc0d7cbb9f2b2680508c6fa13a3",
+  "isDraft": false,
+  "mergeStateStatus": "DIRTY",
+  "number": 1126,
+  "state": "OPEN",
+  "title": "fix(dope-context): repair vector compatibility and collection migration",
+  "updatedAt": "2026-07-29T00:36:34Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1126"
+}

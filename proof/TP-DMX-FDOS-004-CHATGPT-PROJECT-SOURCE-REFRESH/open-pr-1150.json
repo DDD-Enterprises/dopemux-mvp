@@ -1,1 +1,324 @@
-{"additions":1264,"baseRefName":"main","body":"## MCP fleet multi-instance design + P-22/P-23 safe-subset implementation\n\n**Scope disclosure (per supervisor disposition)**: this branch is **not design-only**. It contains:\n1. The governing design + evidence base (`claudedocs/mcp-fleet-multi-instance-{design,evidence}-2026-07-28.md`), **ACCEPTED with supervisor rulings D1–D4 applied** (design §10), plus the supervisor **repair pass** (commit edb265c963).\n2. **P-22 safe subset (implementation)**: 14 legacy fleet launch scripts / compose overlays deleted (2,521 deleted lines are intentional — see label); runtime callers repaired (`dopemux mcp up` no longer shells out to a deleted script; `provision.py` stack sentinel swapped); CI guard test `tests/mcp/test_no_legacy_fleet_start_paths.py` added.\n3. **P-23 safe subset (docs)**: AGENTS.md §12.6 sharing-class table, `.claude/claude.md` fleet rules, stale pre-#1052 catch-22 workaround removed, lettered A–E model deprecation-bannered, ~40 reader-facing docs corrected (`:8000` shadow twin vs `:7890` MCP surface, `registry.yaml` deprecation).\n4. **M10: attempted then REVERTED** (supervisor repair 3): the `.vibe/config.toml` repoint to `127.0.0.1:7890` was reverted because that port is currently held by the dNh_CRM task-orchestrator and no identity-aware switch mechanism exists yet — a static URL would silently route this repo's workflow calls into another project. A warning comment now guards the entry; M10 is blocked until P-24 or a fail-closed identity-verifying wrapper.\n\n### Supervisor rulings baked into the design (2026-07-28)\n- **D1**: Kotlin TO end-state = **project-scoped leased-port instances** (new ADR required, packet P-24); `multi_project_singleton` NOT authorized; `switch-project` transitional only. Corrected record: PR #1086 was closed for bundling an unapproved authority change — governance rejection, not technical proof.\n- **D2**: python `:8000` service will be **renamed** (candidate `dopemux-workflow-api`), not retired — DopeconBridge and workflow surfaces depend on it (rewritten M11).\n- **D3**: ConPort end-state = **project-scoped**, never host-singleton; CRS v2/P-18 rewritten around a fixed project tenant with the wall enforced in storage.\n- **D4**: redis-events REQUIRED target = **project-scoped**; P-21 elevated to P0. **OBSERVED runtime today remains an unsafe host singleton** — no P-21 implementation is in this branch; docs state observed-vs-required explicitly (supervisor repair 1).\n\n### Migration status\n`GO_M0_ONLY` — M0 snapshots executed to `~/.dopemux/backup/` (containers, volumes, lease registry, pal container inspects). M0 status per supervisor: CLAIMED_COMPLETE (snapshots are operator-local, not independently verified). **M3 is BLOCKED with rollback UNKNOWN** (supervisor repair 2): its previously stated rollback source (`/private/tmp/pal-model-refresh` compose) no longer exists; a bounded recreation-proof packet (pinned `ensure-pal.sh` revision, image digest, mounts/env, shadow-name recreation, health + Codex `docker exec` verification) is required first. M1–M5 remain blocked pending P-07/P-10 implementation.\n\n### Validation\n- PASS: `tests/mcp/` + CLI startup + health-probe suites (72 tests at head edb265c963); removal commit additionally validated against 168 tests incl. unit/arch suites; guard test passes.\n- NOT_RUN: full repo suite; any blocked migration step.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n","changedFiles":56,"commits":[{"authoredDate":"2026-07-28T22:48:44Z","authors":[{"email":"167156098+hu3mann@users.noreply.github.com","id":"U_kgDOCfaZgg","login":"hu3mann","name":"DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…)"},{"email":"noreply@anthropic.com","id":"MDQ6VXNlcjgxODQ3","login":"claude","name":"Claude Fable 5"}],"committedDate":"2026-07-28T22:48:44Z","messageBody":"…worklist\n\nDesign for multi-project/multi-worktree MCP fleet operation: sharing\nclasses per server (interim vs end-state gated on MEMSPINE-IDENTITY-005\nand ConPort CRS v2), single identity module, port/lease GC, discovery\nsnapshot + TRANSIENT/OWNERSHIP finding split, adoption path, 16-step\nmigration, 23 Sonnet-implementable packets.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>","messageHeadline":"docs(mcp): multi-instance fleet design + evidence base + legacy-path …","oid":"c72ea5950a2a73c1b51110df0130532345070013"},{"authoredDate":"2026-07-28T23:06:00Z","authors":[{"email":"167156098+hu3mann@users.noreply.github.com","id":"U_kgDOCfaZgg","login":"hu3mann","name":"DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…)"},{"email":"noreply@anthropic.com","id":"MDQ6VXNlcjgxODQ3","login":"claude","name":"Claude Fable 5"}],"committedDate":"2026-07-28T23:06:00Z","messageBody":"Removes the duplicate/dead MCP fleet start scripts and legacy compose\noverlays identified by claudedocs/mcp-legacy-launch-path-worklist-2026-07-28.md,\nper the P-22 packet in claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md §9.\n\nDeleted (14 files covering all 15 worklist paths — docker/mcp-servers/ is a\ngit-tracked symlink to docker/mcp-servers-source/, so the two worklist\nentries for start-all-mcp-servers.sh under those paths are the same file):\n- scripts/start-all-mcp-servers.sh\n- scripts/manage-mcp-servers.sh, scripts/mcp/manage-mcp-servers.sh\n- scripts/install-docker-mcp-servers.sh\n- scripts/deploy/deployment/{start-all,start-mcp-servers,stack_up_all}.sh\n- scripts/memory/start-memory-stack.sh\n- scripts/setup.sh\n- compose/legacy/{conport-kg,leantime-overlay}-docker-compose.yml\n- docker/mcp-servers-source/{start-all-mcp-servers,start-profile,setup-task-orchestrator}.sh\n\nRuntime fixes required before these could safely go (discovered by tracing\nactual callers, not just grepping filenames):\n- src/dopemux/mcp/provision.py: MCPProvisioner used \"start-all-mcp-servers.sh\"\n  as its \"is this a valid MCP stack\" sentinel across every candidate source\n  (project local/source/vendor/cache/package template). Deleting the script\n  without changing this would have made `ensure_stack_present()` unlink the\n  docker/mcp-servers symlink and then raise, breaking `dopemux init`'s\n  MCP-provisioning flow. Swapped the sentinel to README.md, which ships with\n  every copy of the vendored tree and isn't a launch path.\n- src/dopemux/commands/mcp_commands.py: `dopemux mcp up` (no --repo) shelled\n  out to scripts/start-all-mcp-servers.sh directly for the --all/default\n  case. Replaced with the same docker-compose-service-list approach `mcp\n  down` already uses (DEFAULT_MCP_SERVICES ∩ compose services), so `dopemux\n  mcp up --all` — the command INSTALL.md now documents as canonical — no\n  longer depends on a script that doesn't exist.\n- .claude/hooks/mcp_health_probe.py: generic remediation suggestion changed\n  from `docker compose up -d {name}` to `dopemux mcp up --services {name}`.\n- .vibe/config.toml: task-orchestrator entry repointed from the FastAPI\n  shadow-twin at :8000 to the canonical Kotlin jar singleton at\n  127.0.0.1:7890/mcp (streamable HTTP), per design migration step M10.\n\nReference updates: INSTALL.md (drops the raw-script alternative at\n~L1157, extends the compose-deprecation note to cover the removed\ncompose/legacy/ files), scripts/README.md, docs/03-reference/services/\nserver-registry{,-2}.md and the vendored SERVER_REGISTRY.md copy (Quick\nReference now points at `dopemux mcp up --all`), and\nscripts/deploy/setup/install-mcp-servers.sh's closing hints.\n\nAdded tests/mcp/test_no_legacy_fleet_start_paths.py: a CI guard that walks\ngit-tracked executable files (*.sh/*.py/*.ps1/Makefile — prose in docs/JSON\ncan't launch anything) for `docker compose up` / `docker-compose up` and\nfails on any hit outside an explicitly justified allowlist. The sweep\nsurfaced two pre-existing, out-of-worklist direct-compose paths (Makefile's\npm-up/webhook_receiver targets, docker/leantime/configure_bridge.sh, and an\nunscoped scripts/deploy/setup/setup_dopemux.sh with no live caller) that are\nallowlisted with a note flagging them for a follow-up packet rather than\nrewritten here, to keep this change to the safe subset.\n\nUpdated tests/mcp/test_provision.py, tests/test_cli_mcp_startup.py, and\ntests/test_mcp_health_probe.py for the sentinel/suggestion-string changes\nabove.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>","messageHeadline":"chore(mcp): remove legacy fleet launch paths (design P-22 safe subset)","oid":"b2f2f2d20f1d34dfdf150c7d049b87cf8493a248"},{"authoredDate":"2026-07-28T23:22:24Z","authors":[{"email":"167156098+hu3mann@users.noreply.github.com","id":"U_kgDOCfaZgg","login":"hu3mann","name":"DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…)"},{"email":"noreply@anthropic.com","id":"MDQ6VXNlcjgxODQ3","login":"claude","name":"Claude Fable 5"}],"committedDate":"2026-07-28T23:22:24Z","messageBody":"…n (P-23 safe subset)\n\nAligns agent-facing rules and operator docs with\nclaudedocs/mcp-fleet-multi-instance-design-2026-07-28.md, building on the\nlegacy-script removal in b2f2f2d20f. Adds a sharing-class + command-surface\nsubsection to AGENTS.md §12 and a compact pointer in .claude/CLAUDE.md;\nreplaces the stale pre-#1052 port_allocator catch-22 workaround in\nmcp-integration-guide.md with the current identity-probe behavior; adds a\nDEPRECATED banner to instance-state-persistence.md for the superseded\nlettered A-E instance model; and sweeps live operator-facing docs (tutorials,\nhow-tos, current reference/explanation docs) to stop presenting port :8000 as\nthe task-orchestrator MCP (canonical is the Kotlin jar on :7890),\nregistry.yaml as the current MCP source of truth (superseded by\nmcp_catalog.yaml per ADR-MCPINT-001), or the lettered A-E instance model as\ncurrent outside the one file that documents it. Dated audit/research/history\nsnapshots under docs/90-adr, docs/archive, docs/04-explanation/history,\ndocs/05-audit-reports, docs/06-research, claudedocs, task-packets, and reports\nwere deliberately left untouched.\n\nFiles touched:\n- AGENTS.md, .claude/claude.md — new sharing-class/lifecycle subsection + pointer\n- docs/02-how-to/mcp-integration-guide.md — stale port-allocator workaround replaced\n- docs/02-how-to/instance-state-persistence.md — DEPRECATED banner added\n- docs/01-tutorials/{quickstart,start-here,start-here-2,start-here-3}.md — :8000 vs :7890 clarified\n- docs/02-how-to/deployment-guide.md, multi-instance-workflow.md,\n  operations/{pm-plane-runtime-recovery,workflow-idea-epic-lifecycle}.md\n- docs/03-reference/dcp/chatgpt-mcp-readonly/{MULTI_PROJECT_REGISTRY_CONTRACT,TUNNEL_INTEGRATION}.md\n- docs/03-reference/services/server-registry{,-2}.md\n- docs/03-reference/systems/dddpg/{architecture-analysis,quick-reference,readme-start-here,storage-design}.md\n- docs/03-reference/systems/dopemux/system-dopemux.md\n- docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md\n- docs/04-explanation/architecture/{adhd-architecture-diagram,dopemux-mvp-full-codebase-explainer,multi-instance-implementation}.md\n- docs/planes/pm/dopemux/07-dopetask-integration{,-2}.md\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>","messageHeadline":"docs(mcp): align docs and agent files with multi-instance fleet desig…","oid":"93c21e2326f0a7805b98b25893405fd4b7134664"},{"authoredDate":"2026-07-28T23:39:55Z","authors":[{"email":"167156098+hu3mann@users.noreply.github.com","id":"U_kgDOCfaZgg","login":"hu3mann","name":"DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…)"},{"email":"noreply@anthropic.com","id":"MDQ6VXNlcjgxODQ3","login":"claude","name":"Claude Fable 5"}],"committedDate":"2026-07-28T23:39:55Z","messageBody":"Supervisor decision: GO with mandatory design corrections\n(GO_DRAFT_PR / GO_M0_ONLY / BLOCK_M1_M5_PENDING_PREREQUISITES).\n\n- D1 (10.1): Kotlin TO end-state = project-scoped leased-port instances\n  (one jar per project, new ADR required, packet P-24). Corrects the\n  'revert reason UNKNOWN' claim: PR #1086 was closed for bundling an\n  unapproved authority change - governance rejection, not technical\n  proof. multi_project_singleton stays NOT authorized; switch-project\n  is transitional only.\n- D2 (10.2): python :8000 service is RENAMED (candidate\n  dopemux-workflow-api), not retired - DopeconBridge and workflow/MCP\n  surfaces depend on it; M11 rewritten as bounded rename packet.\n- D3 (10.3): ConPort end-state = project-scoped, never host-singleton;\n  P-18/CRS v2 rewritten around a fixed project tenant with the wall in\n  storage; P-19 flip target corrected.\n- D4 (10.4): redis-events project-scoped NOW; P-21 elevated to P0 -\n  dope-memory promotes activity.events.v1 into work_log_entries via a\n  global consumer group, refuting the events-are-advisory premise.\n- Migration section records M0-only authorization; M10 marked executed.\n- AGENTS.md 12.6, .claude/claude.md, and 12 reader-facing docs updated\n  from 'pending retirement' to 'pending rename' and corrected end-states.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>","messageHeadline":"docs(mcp): apply supervisor rulings D1-D4 to fleet design (2026-07-28)","oid":"51f27534cbe386cfd3b498092b98da3856af7434"},{"authoredDate":"2026-07-28T23:52:27Z","authors":[{"email":"167156098+hu3mann@users.noreply.github.com","id":"U_kgDOCfaZgg","login":"hu3mann","name":"DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…)"},{"email":"noreply@anthropic.com","id":"MDQ6VXNlcjgxODQ3","login":"claude","name":"Claude Fable 5"}],"committedDate":"2026-07-28T23:52:27Z","messageBody":"…lback, M10 revert\n\nSupervisor verdict on PR #1150: NEEDS_REPAIR_BEFORE_READY. Three repairs:\n\n1. redis-events documentation no longer claims project-scoped as 'class\n   today'. AGENTS.md 12.6, .claude/claude.md, and design 1.2/5.1 now state\n   OBSERVED runtime = host singleton (unsafe/noncompliant for\n   multi-project), REQUIRED immediate target = project-scoped, gate =\n   P-21 implementation + isolation validation. The ruling changed the\n   authorized target, not the running container.\n\n2. Design M3 rewritten: BLOCKED with rollback UNKNOWN. M0 established\n   /private/tmp/pal-model-refresh no longer contains its compose file, so\n   the previously stated rollback was impossible. M3 stays blocked until\n   a bounded packet proves deterministic recreation (pinned ensure-pal.sh\n   revision, image digest, mounts/volumes/command/redacted env,\n   shadow-name recreation, health + Codex docker exec verification).\n\n3. .vibe/config.toml task-orchestrator entry REVERTED to :8000. Port 7890\n   is currently held by the dNh_CRM jar and switch-project does not exist\n   yet, so the static repoint could silently route Dopemux workflow calls\n   into another project while looking healthy. A warning comment now\n   guards the entry; design M10 is BLOCKED until P-24 or a fail-closed\n   identity-verifying wrapper exists.\n\nFocused suites: 72 passed.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>","messageHeadline":"fix(mcp): supervisor repairs 1-3 - redis-events runtime truth, M3 rol…","oid":"edb265c9634d43ad36c0e2f7a6e24dc59bea7d5b"}],"deletions":2520,"files":[{"path":".claude/claude.md","additions":12,"deletions":0,"changeType":"MODIFIED"},{"path":".claude/hooks/mcp_health_probe.py","additions":1,"deletions":1,"changeType":"MODIFIED"},{"path":".vibe/config.toml","additions":6,"deletions":0,"changeType":"MODIFIED"},{"path":"AGENTS.md","additions":29,"deletions":0,"changeType":"MODIFIED"},{"path":"INSTALL.md","additions":1,"deletions":4,"changeType":"MODIFIED"},{"path":"claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md","additions":609,"deletions":0,"changeType":"ADDED"},{"path":"claudedocs/mcp-fleet-multi-instance-evidence-2026-07-28.md","additions":125,"deletions":0,"changeType":"ADDED"},{"path":"claudedocs/mcp-legacy-launch-path-worklist-2026-07-28.md","additions":70,"deletions":0,"changeType":"ADDED"},{"path":"compose/legacy/conport-kg-docker-compose.yml","additions":0,"deletions":134,"changeType":"DELETED"},{"path":"compose/legacy/leantime-overlay-docker-compose.yml","additions":0,"deletions":65,"changeType":"DELETED"},{"path":"docker/mcp-servers-source/SERVER_REGISTRY.md","additions":1,"deletions":2,"changeType":"MODIFIED"},{"path":"docker/mcp-servers-source/setup-task-orchestrator.sh","additions":0,"deletions":79,"changeType":"DELETED"},{"path":"docker/mcp-servers-source/start-all-mcp-servers.sh","additions":0,"deletions":81,"changeType":"DELETED"},{"path":"docker/mcp-servers-source/start-profile.sh","additions":0,"deletions":170,"changeType":"DELETED"},{"path":"docs/01-tutorials/quickstart.md","additions":7,"deletions":1,"changeType":"MODIFIED"},{"path":"docs/01-tutorials/start-here-2.md","additions":5,"deletions":1,"changeType":"MODIFIED"},{"path":"docs/01-tutorials/start-here-3.md","additions":5,"deletions":1,"changeType":"MODIFIED"},{"path":"docs/01-tutorials/start-here.md","additions":5,"deletions":1,"changeType":"MODIFIED"},{"path":"docs/02-how-to/deployment-guide.md","additions":7,"deletions":2,"changeType":"MODIFIED"},{"path":"docs/02-how-to/instance-state-persistence.md","additions":14,"deletions":0,"changeType":"MODIFIED"},{"path":"docs/02-how-to/mcp-integration-guide.md","additions":14,"deletions":6,"changeType":"MODIFIED"},{"path":"docs/02-how-to/multi-instance-workflow.md","additions":9,"deletions":0,"changeType":"MODIFIED"},{"path":"docs/02-how-to/operations/pm-plane-runtime-recovery.md","additions":9,"deletions":1,"changeType":"MODIFIED"},{"path":"docs/02-how-to/operations/workflow-idea-epic-lifecycle.md","additions":6,"deletions":0,"changeType":"MODIFIED"},{"path":"docs/03-reference/dcp/chatgpt-mcp-readonly/MULTI_PROJECT_REGISTRY_CONTRACT.md","additions":1,"deletions":1,"changeType":"MODIFIED"},{"path":"docs/03-reference/dcp/chatgpt-mcp-readonly/TUNNEL_INTEGRATION.md","additions":6,"deletions":3,"changeType":"MODIFIED"},{"path":"docs/03-reference/services/server-registry-2.md","additions":5,"deletions":4,"changeType":"MODIFIED"},{"path":"docs/03-reference/services/server-registry.md","additions":5,"deletions":4,"changeType":"MODIFIED"},{"path":"docs/03-reference/systems/dddpg/architecture-analysis.md","additions":5,"deletions":0,"changeType":"MODIFIED"},{"path":"docs/03-reference/systems/dddpg/quick-reference.md","additions":5,"deletions":0,"changeType":"MODIFIED"},{"path":"docs/03-reference/systems/dddpg/readme-start-here.md","additions":5,"deletions":0,"changeType":"MODIFIED"},{"path":"docs/03-reference/systems/dddpg/storage-design.md","additions":5,"deletions":0,"changeType":"MODIFIED"},{"path":"docs/03-reference/systems/dopemux/system-dopemux.md","additions":1,"deletions":1,"changeType":"MODIFIED"},{"path":"docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md","additions":2,"deletions":0,"changeType":"MODIFIED"},{"path":"docs/04-explanation/architecture/adhd-architecture-diagram.md","additions":2,"deletions":1,"changeType":"MODIFIED"},{"path":"docs/04-explanation/architecture/dopemux-mvp-full-codebase-explainer.md","additions":2,"deletions":3,"changeType":"MODIFIED"},{"path":"docs/04-explanation/architecture/multi-instance-implementation.md","additions":8,"deletions":0,"changeType":"MODIFIED"},{"path":"docs/planes/pm/dopemux/07-dopetask-integration-2.md","additions":1,"deletions":1,"changeType":"MODIFIED"},{"path":"docs/planes/pm/dopemux/07-dopetask-integration.md","additions":1,"deletions":1,"changeType":"MODIFIED"},{"path":"scripts/README.md","additions":3,"deletions":3,"changeType":"MODIFIED"},{"path":"scripts/deploy/deployment/stack_up_all.sh","additions":0,"deletions":109,"changeType":"DELETED"},{"path":"scripts/deploy/deployment/start-all.sh","additions":0,"deletions":197,"changeType":"DELETED"},{"path":"scripts/deploy/deployment/start-mcp-servers.sh","additions":0,"deletions":118,"changeType":"DELETED"},{"path":"scripts/deploy/setup/install-mcp-servers.sh","additions":3,"deletions":3,"changeType":"MODIFIED"},{"path":"scripts/install-docker-mcp-servers.sh","additions":0,"deletions":364,"changeType":"DELETED"},{"path":"scripts/manage-mcp-servers.sh","additions":0,"deletions":328,"changeType":"DELETED"},{"path":"scripts/mcp/manage-mcp-servers.sh","additions":0,"deletions":323,"changeType":"DELETED"},{"path":"scripts/memory/start-memory-stack.sh","additions":0,"deletions":100,"changeType":"DELETED"},{"path":"scripts/setup.sh","additions":0,"deletions":287,"changeType":"DELETED"},{"path":"scripts/start-all-mcp-servers.sh","additions":0,"deletions":88,"changeType":"DELETED"},{"path":"src/dopemux/commands/mcp_commands.py","additions":9,"deletions":6,"changeType":"MODIFIED"},{"path":"src/dopemux/mcp/provision.py","additions":16,"deletions":7,"changeType":"MODIFIED"},{"path":"tests/mcp/test_no_legacy_fleet_start_paths.py","additions":225,"deletions":0,"changeType":"ADDED"},{"path":"tests/mcp/test_provision.py","additions":11,"deletions":11,"changeType":"MODIFIED"},{"path":"tests/test_cli_mcp_startup.py","additions":5,"deletions":5,"changeType":"MODIFIED"},{"path":"tests/test_mcp_health_probe.py","additions":3,"deletions":3,"changeType":"MODIFIED"}],"headRefName":"claude/mcp-multi-instance-design-d706d6","headRefOid":"edb265c9634d43ad36c0e2f7a6e24dc59bea7d5b","isDraft":true,"mergeStateStatus":"UNSTABLE","number":1150,"state":"OPEN","title":"MCP fleet: multi-instance design (supervisor-ruled) + P-22/P-23 safe-subset implementation","updatedAt":"2026-07-28T23:52:54Z","url":"https://github.com/DDD-Enterprises/dopemux-mvp/pull/1150"}
+{
+  "additions": 1389,
+  "baseRefName": "main",
+  "body": "## MCP fleet multi-instance design + P-22/P-23 safe-subset implementation\n\n**Scope disclosure (per supervisor disposition)**: this branch is **not design-only**. It contains:\n1. The governing design + evidence base (`claudedocs/mcp-fleet-multi-instance-{design,evidence}-2026-07-28.md`), **ACCEPTED with supervisor rulings D1\u2013D4 applied** (design \u00a710), plus the supervisor **repair pass** (commit edb265c963).\n2. **P-22 safe subset (implementation)**: 14 legacy fleet launch scripts / compose overlays deleted (2,521 deleted lines are intentional \u2014 see label); runtime callers repaired (`dopemux mcp up` no longer shells out to a deleted script; `provision.py` stack sentinel swapped); CI guard test `tests/mcp/test_no_legacy_fleet_start_paths.py` added.\n3. **P-23 safe subset (docs)**: AGENTS.md \u00a712.6 sharing-class table, `.claude/claude.md` fleet rules, stale pre-#1052 catch-22 workaround removed, lettered A\u2013E model deprecation-bannered, ~40 reader-facing docs corrected (`:8000` shadow twin vs `:7890` MCP surface, `registry.yaml` deprecation).\n4. **M10: attempted then REVERTED** (supervisor repair 3): the `.vibe/config.toml` repoint to `127.0.0.1:7890` was reverted because that port is currently held by the dNh_CRM task-orchestrator and no identity-aware switch mechanism exists yet \u2014 a static URL would silently route this repo's workflow calls into another project. A warning comment now guards the entry; M10 is blocked until P-24 or a fail-closed identity-verifying wrapper.\n\n### Supervisor rulings baked into the design (2026-07-28)\n- **D1**: Kotlin TO end-state = **project-scoped leased-port instances** (new ADR required, packet P-24); `multi_project_singleton` NOT authorized; `switch-project` transitional only. Corrected record: PR #1086 was closed for bundling an unapproved authority change \u2014 governance rejection, not technical proof.\n- **D2**: python `:8000` service will be **renamed** (candidate `dopemux-workflow-api`), not retired \u2014 DopeconBridge and workflow surfaces depend on it (rewritten M11).\n- **D3**: ConPort end-state = **project-scoped**, never host-singleton; CRS v2/P-18 rewritten around a fixed project tenant with the wall enforced in storage.\n- **D4**: redis-events REQUIRED target = **project-scoped**; P-21 elevated to P0. **OBSERVED runtime today remains an unsafe host singleton** \u2014 no P-21 implementation is in this branch; docs state observed-vs-required explicitly (supervisor repair 1).\n\n### Migration status\n`GO_M0_ONLY` \u2014 M0 snapshots executed to `~/.dopemux/backup/` (containers, volumes, lease registry, pal container inspects). M0 status per supervisor: CLAIMED_COMPLETE (snapshots are operator-local, not independently verified). **M3 is BLOCKED with rollback UNKNOWN** (supervisor repair 2): its previously stated rollback source (`/private/tmp/pal-model-refresh` compose) no longer exists; a bounded recreation-proof packet (pinned `ensure-pal.sh` revision, image digest, mounts/env, shadow-name recreation, health + Codex `docker exec` verification) is required first. M1\u2013M5 remain blocked pending P-07/P-10 implementation.\n\n### Validation\n- PASS: `tests/mcp/` + CLI startup + health-probe suites (72 tests at head edb265c963); removal commit additionally validated against 168 tests incl. unit/arch suites; guard test passes.\n- NOT_RUN: full repo suite; any blocked migration step.\n\n\ud83e\udd16 Generated with [Claude Code](https://claude.com/claude-code)\n\n### Independent audit (supervisor-required, head edb265c963)\n**PASS_WITH_RISKS** (non-blocking) via route #2 Claude Code CLI/Sonnet (route #1 AGY timed out; recorded in proof provenance). Signed local attestation: `proof/pr_merge/embedded-audit/pr-1150/` (commit a8838e2a62, proof-only delta on the audited head).\n\n**Disclosed P-22 gaps found by the audit** (the guard test under-delivers on its docstring claim; these are follow-up packets, NOT fixed here to preserve audit head-binding):\n- Guard regex misses `docker compose -p <project> \u2026 up` \u2014 `scripts/start.sh:81` and `scripts/compose_nuke.sh:35` remain live un-allowlisted fleet-start paths.\n- `dopemux init`'s default MCP startup (`src/dopemux/cli.py` `_start_mcp_servers_with_progress`) builds a compose invocation in Python and bypasses `dopemux mcp` \u2014 structurally invisible to a regex guard.\n- `scripts/deploy/setup/install-mcp-servers.sh:128` now silently no-ops its Docker-MCP install step (calls a deleted script behind an existence check).\n- `.github/copilot-instructions.md` still presents `services/registry.yaml` as live authority; `docs/02-how-to/operations/pm-plane-runtime-recovery.md` still \"Recommends\" raw compose starts a few lines below this PR's own scope note.\n",
+  "capture_complete": true,
+  "changedFiles": 59,
+  "commits": [
+    {
+      "authoredDate": "2026-07-28T22:48:44Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "DDD-Enterprises (DJ Daddy Dom & the Department of\u2026 Don\u2019t ask, Don\u2019t tell, Don\u2019t stop, Don\u2019t you dare\u2026)"
+        },
+        {
+          "email": "noreply@anthropic.com",
+          "id": "MDQ6VXNlcjgxODQ3",
+          "login": "claude",
+          "name": "Claude Fable 5"
+        }
+      ],
+      "committedDate": "2026-07-28T22:48:44Z",
+      "messageBody": "\u2026worklist\n\nDesign for multi-project/multi-worktree MCP fleet operation: sharing\nclasses per server (interim vs end-state gated on MEMSPINE-IDENTITY-005\nand ConPort CRS v2), single identity module, port/lease GC, discovery\nsnapshot + TRANSIENT/OWNERSHIP finding split, adoption path, 16-step\nmigration, 23 Sonnet-implementable packets.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+      "messageHeadline": "docs(mcp): multi-instance fleet design + evidence base + legacy-path \u2026",
+      "oid": "c72ea5950a2a73c1b51110df0130532345070013"
+    },
+    {
+      "authoredDate": "2026-07-28T23:06:00Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "DDD-Enterprises (DJ Daddy Dom & the Department of\u2026 Don\u2019t ask, Don\u2019t tell, Don\u2019t stop, Don\u2019t you dare\u2026)"
+        },
+        {
+          "email": "noreply@anthropic.com",
+          "id": "MDQ6VXNlcjgxODQ3",
+          "login": "claude",
+          "name": "Claude Fable 5"
+        }
+      ],
+      "committedDate": "2026-07-28T23:06:00Z",
+      "messageBody": "Removes the duplicate/dead MCP fleet start scripts and legacy compose\noverlays identified by claudedocs/mcp-legacy-launch-path-worklist-2026-07-28.md,\nper the P-22 packet in claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md \u00a79.\n\nDeleted (14 files covering all 15 worklist paths \u2014 docker/mcp-servers/ is a\ngit-tracked symlink to docker/mcp-servers-source/, so the two worklist\nentries for start-all-mcp-servers.sh under those paths are the same file):\n- scripts/start-all-mcp-servers.sh\n- scripts/manage-mcp-servers.sh, scripts/mcp/manage-mcp-servers.sh\n- scripts/install-docker-mcp-servers.sh\n- scripts/deploy/deployment/{start-all,start-mcp-servers,stack_up_all}.sh\n- scripts/memory/start-memory-stack.sh\n- scripts/setup.sh\n- compose/legacy/{conport-kg,leantime-overlay}-docker-compose.yml\n- docker/mcp-servers-source/{start-all-mcp-servers,start-profile,setup-task-orchestrator}.sh\n\nRuntime fixes required before these could safely go (discovered by tracing\nactual callers, not just grepping filenames):\n- src/dopemux/mcp/provision.py: MCPProvisioner used \"start-all-mcp-servers.sh\"\n  as its \"is this a valid MCP stack\" sentinel across every candidate source\n  (project local/source/vendor/cache/package template). Deleting the script\n  without changing this would have made `ensure_stack_present()` unlink the\n  docker/mcp-servers symlink and then raise, breaking `dopemux init`'s\n  MCP-provisioning flow. Swapped the sentinel to README.md, which ships with\n  every copy of the vendored tree and isn't a launch path.\n- src/dopemux/commands/mcp_commands.py: `dopemux mcp up` (no --repo) shelled\n  out to scripts/start-all-mcp-servers.sh directly for the --all/default\n  case. Replaced with the same docker-compose-service-list approach `mcp\n  down` already uses (DEFAULT_MCP_SERVICES \u2229 compose services), so `dopemux\n  mcp up --all` \u2014 the command INSTALL.md now documents as canonical \u2014 no\n  longer depends on a script that doesn't exist.\n- .claude/hooks/mcp_health_probe.py: generic remediation suggestion changed\n  from `docker compose up -d {name}` to `dopemux mcp up --services {name}`.\n- .vibe/config.toml: task-orchestrator entry repointed from the FastAPI\n  shadow-twin at :8000 to the canonical Kotlin jar singleton at\n  127.0.0.1:7890/mcp (streamable HTTP), per design migration step M10.\n\nReference updates: INSTALL.md (drops the raw-script alternative at\n~L1157, extends the compose-deprecation note to cover the removed\ncompose/legacy/ files), scripts/README.md, docs/03-reference/services/\nserver-registry{,-2}.md and the vendored SERVER_REGISTRY.md copy (Quick\nReference now points at `dopemux mcp up --all`), and\nscripts/deploy/setup/install-mcp-servers.sh's closing hints.\n\nAdded tests/mcp/test_no_legacy_fleet_start_paths.py: a CI guard that walks\ngit-tracked executable files (*.sh/*.py/*.ps1/Makefile \u2014 prose in docs/JSON\ncan't launch anything) for `docker compose up` / `docker-compose up` and\nfails on any hit outside an explicitly justified allowlist. The sweep\nsurfaced two pre-existing, out-of-worklist direct-compose paths (Makefile's\npm-up/webhook_receiver targets, docker/leantime/configure_bridge.sh, and an\nunscoped scripts/deploy/setup/setup_dopemux.sh with no live caller) that are\nallowlisted with a note flagging them for a follow-up packet rather than\nrewritten here, to keep this change to the safe subset.\n\nUpdated tests/mcp/test_provision.py, tests/test_cli_mcp_startup.py, and\ntests/test_mcp_health_probe.py for the sentinel/suggestion-string changes\nabove.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+      "messageHeadline": "chore(mcp): remove legacy fleet launch paths (design P-22 safe subset)",
+      "oid": "b2f2f2d20f1d34dfdf150c7d049b87cf8493a248"
+    },
+    {
+      "authoredDate": "2026-07-28T23:22:24Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "DDD-Enterprises (DJ Daddy Dom & the Department of\u2026 Don\u2019t ask, Don\u2019t tell, Don\u2019t stop, Don\u2019t you dare\u2026)"
+        },
+        {
+          "email": "noreply@anthropic.com",
+          "id": "MDQ6VXNlcjgxODQ3",
+          "login": "claude",
+          "name": "Claude Fable 5"
+        }
+      ],
+      "committedDate": "2026-07-28T23:22:24Z",
+      "messageBody": "\u2026n (P-23 safe subset)\n\nAligns agent-facing rules and operator docs with\nclaudedocs/mcp-fleet-multi-instance-design-2026-07-28.md, building on the\nlegacy-script removal in b2f2f2d20f. Adds a sharing-class + command-surface\nsubsection to AGENTS.md \u00a712 and a compact pointer in .claude/CLAUDE.md;\nreplaces the stale pre-#1052 port_allocator catch-22 workaround in\nmcp-integration-guide.md with the current identity-probe behavior; adds a\nDEPRECATED banner to instance-state-persistence.md for the superseded\nlettered A-E instance model; and sweeps live operator-facing docs (tutorials,\nhow-tos, current reference/explanation docs) to stop presenting port :8000 as\nthe task-orchestrator MCP (canonical is the Kotlin jar on :7890),\nregistry.yaml as the current MCP source of truth (superseded by\nmcp_catalog.yaml per ADR-MCPINT-001), or the lettered A-E instance model as\ncurrent outside the one file that documents it. Dated audit/research/history\nsnapshots under docs/90-adr, docs/archive, docs/04-explanation/history,\ndocs/05-audit-reports, docs/06-research, claudedocs, task-packets, and reports\nwere deliberately left untouched.\n\nFiles touched:\n- AGENTS.md, .claude/claude.md \u2014 new sharing-class/lifecycle subsection + pointer\n- docs/02-how-to/mcp-integration-guide.md \u2014 stale port-allocator workaround replaced\n- docs/02-how-to/instance-state-persistence.md \u2014 DEPRECATED banner added\n- docs/01-tutorials/{quickstart,start-here,start-here-2,start-here-3}.md \u2014 :8000 vs :7890 clarified\n- docs/02-how-to/deployment-guide.md, multi-instance-workflow.md,\n  operations/{pm-plane-runtime-recovery,workflow-idea-epic-lifecycle}.md\n- docs/03-reference/dcp/chatgpt-mcp-readonly/{MULTI_PROJECT_REGISTRY_CONTRACT,TUNNEL_INTEGRATION}.md\n- docs/03-reference/services/server-registry{,-2}.md\n- docs/03-reference/systems/dddpg/{architecture-analysis,quick-reference,readme-start-here,storage-design}.md\n- docs/03-reference/systems/dopemux/system-dopemux.md\n- docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md\n- docs/04-explanation/architecture/{adhd-architecture-diagram,dopemux-mvp-full-codebase-explainer,multi-instance-implementation}.md\n- docs/planes/pm/dopemux/07-dopetask-integration{,-2}.md\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+      "messageHeadline": "docs(mcp): align docs and agent files with multi-instance fleet desig\u2026",
+      "oid": "93c21e2326f0a7805b98b25893405fd4b7134664"
+    },
+    {
+      "authoredDate": "2026-07-28T23:39:55Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "DDD-Enterprises (DJ Daddy Dom & the Department of\u2026 Don\u2019t ask, Don\u2019t tell, Don\u2019t stop, Don\u2019t you dare\u2026)"
+        },
+        {
+          "email": "noreply@anthropic.com",
+          "id": "MDQ6VXNlcjgxODQ3",
+          "login": "claude",
+          "name": "Claude Fable 5"
+        }
+      ],
+      "committedDate": "2026-07-28T23:39:55Z",
+      "messageBody": "Supervisor decision: GO with mandatory design corrections\n(GO_DRAFT_PR / GO_M0_ONLY / BLOCK_M1_M5_PENDING_PREREQUISITES).\n\n- D1 (10.1): Kotlin TO end-state = project-scoped leased-port instances\n  (one jar per project, new ADR required, packet P-24). Corrects the\n  'revert reason UNKNOWN' claim: PR #1086 was closed for bundling an\n  unapproved authority change - governance rejection, not technical\n  proof. multi_project_singleton stays NOT authorized; switch-project\n  is transitional only.\n- D2 (10.2): python :8000 service is RENAMED (candidate\n  dopemux-workflow-api), not retired - DopeconBridge and workflow/MCP\n  surfaces depend on it; M11 rewritten as bounded rename packet.\n- D3 (10.3): ConPort end-state = project-scoped, never host-singleton;\n  P-18/CRS v2 rewritten around a fixed project tenant with the wall in\n  storage; P-19 flip target corrected.\n- D4 (10.4): redis-events project-scoped NOW; P-21 elevated to P0 -\n  dope-memory promotes activity.events.v1 into work_log_entries via a\n  global consumer group, refuting the events-are-advisory premise.\n- Migration section records M0-only authorization; M10 marked executed.\n- AGENTS.md 12.6, .claude/claude.md, and 12 reader-facing docs updated\n  from 'pending retirement' to 'pending rename' and corrected end-states.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+      "messageHeadline": "docs(mcp): apply supervisor rulings D1-D4 to fleet design (2026-07-28)",
+      "oid": "51f27534cbe386cfd3b498092b98da3856af7434"
+    },
+    {
+      "authoredDate": "2026-07-28T23:52:27Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "DDD-Enterprises (DJ Daddy Dom & the Department of\u2026 Don\u2019t ask, Don\u2019t tell, Don\u2019t stop, Don\u2019t you dare\u2026)"
+        },
+        {
+          "email": "noreply@anthropic.com",
+          "id": "MDQ6VXNlcjgxODQ3",
+          "login": "claude",
+          "name": "Claude Fable 5"
+        }
+      ],
+      "committedDate": "2026-07-28T23:52:27Z",
+      "messageBody": "\u2026lback, M10 revert\n\nSupervisor verdict on PR #1150: NEEDS_REPAIR_BEFORE_READY. Three repairs:\n\n1. redis-events documentation no longer claims project-scoped as 'class\n   today'. AGENTS.md 12.6, .claude/claude.md, and design 1.2/5.1 now state\n   OBSERVED runtime = host singleton (unsafe/noncompliant for\n   multi-project), REQUIRED immediate target = project-scoped, gate =\n   P-21 implementation + isolation validation. The ruling changed the\n   authorized target, not the running container.\n\n2. Design M3 rewritten: BLOCKED with rollback UNKNOWN. M0 established\n   /private/tmp/pal-model-refresh no longer contains its compose file, so\n   the previously stated rollback was impossible. M3 stays blocked until\n   a bounded packet proves deterministic recreation (pinned ensure-pal.sh\n   revision, image digest, mounts/volumes/command/redacted env,\n   shadow-name recreation, health + Codex docker exec verification).\n\n3. .vibe/config.toml task-orchestrator entry REVERTED to :8000. Port 7890\n   is currently held by the dNh_CRM jar and switch-project does not exist\n   yet, so the static repoint could silently route Dopemux workflow calls\n   into another project while looking healthy. A warning comment now\n   guards the entry; design M10 is BLOCKED until P-24 or a fail-closed\n   identity-verifying wrapper exists.\n\nFocused suites: 72 passed.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+      "messageHeadline": "fix(mcp): supervisor repairs 1-3 - redis-events runtime truth, M3 rol\u2026",
+      "oid": "edb265c9634d43ad36c0e2f7a6e24dc59bea7d5b"
+    },
+    {
+      "authoredDate": "2026-07-29T00:21:21Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "DDD-Enterprises (DJ Daddy Dom & the Department of\u2026 Don\u2019t ask, Don\u2019t tell, Don\u2019t stop, Don\u2019t you dare\u2026)"
+        },
+        {
+          "email": "noreply@anthropic.com",
+          "id": "MDQ6VXNlcjgxODQ3",
+          "login": "claude",
+          "name": "Claude Fable 5"
+        }
+      ],
+      "committedDate": "2026-07-29T00:21:21Z",
+      "messageBody": "Independent audit of head edb265c9634d43ad36c0e2f7a6e24dc59bea7d5b.\nRoute #2 (Claude Code CLI, Sonnet) per docs/ops/embedded-audit.md route\norder; route #1 (agy --model claude-sonnet-4-6) attempted first and\ntimed out with no response. Auditor session independent of the\nimplementing session. Verdict: PASS_WITH_RISKS (non-blocking) - 6\nfindings, 5 remaining risks, disclosed in AUDITOR_REPORT.md and the PR\nbody.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+      "messageHeadline": "proof(audit): signed local embedded-audit attestation for PR 1150",
+      "oid": "a8838e2a62d88204a174bbf9ee0d24eed9157057"
+    }
+  ],
+  "deletions": 2520,
+  "files": [
+    {
+      "path": ".claude/claude.md"
+    },
+    {
+      "path": ".claude/hooks/mcp_health_probe.py"
+    },
+    {
+      "path": ".vibe/config.toml"
+    },
+    {
+      "path": "AGENTS.md"
+    },
+    {
+      "path": "INSTALL.md"
+    },
+    {
+      "path": "claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md"
+    },
+    {
+      "path": "claudedocs/mcp-fleet-multi-instance-evidence-2026-07-28.md"
+    },
+    {
+      "path": "claudedocs/mcp-legacy-launch-path-worklist-2026-07-28.md"
+    },
+    {
+      "path": "compose/legacy/conport-kg-docker-compose.yml"
+    },
+    {
+      "path": "compose/legacy/leantime-overlay-docker-compose.yml"
+    },
+    {
+      "path": "docker/mcp-servers-source/SERVER_REGISTRY.md"
+    },
+    {
+      "path": "docker/mcp-servers-source/setup-task-orchestrator.sh"
+    },
+    {
+      "path": "docker/mcp-servers-source/start-all-mcp-servers.sh"
+    },
+    {
+      "path": "docker/mcp-servers-source/start-profile.sh"
+    },
+    {
+      "path": "docs/01-tutorials/quickstart.md"
+    },
+    {
+      "path": "docs/01-tutorials/start-here-2.md"
+    },
+    {
+      "path": "docs/01-tutorials/start-here-3.md"
+    },
+    {
+      "path": "docs/01-tutorials/start-here.md"
+    },
+    {
+      "path": "docs/02-how-to/deployment-guide.md"
+    },
+    {
+      "path": "docs/02-how-to/instance-state-persistence.md"
+    },
+    {
+      "path": "docs/02-how-to/mcp-integration-guide.md"
+    },
+    {
+      "path": "docs/02-how-to/multi-instance-workflow.md"
+    },
+    {
+      "path": "docs/02-how-to/operations/pm-plane-runtime-recovery.md"
+    },
+    {
+      "path": "docs/02-how-to/operations/workflow-idea-epic-lifecycle.md"
+    },
+    {
+      "path": "docs/03-reference/dcp/chatgpt-mcp-readonly/MULTI_PROJECT_REGISTRY_CONTRACT.md"
+    },
+    {
+      "path": "docs/03-reference/dcp/chatgpt-mcp-readonly/TUNNEL_INTEGRATION.md"
+    },
+    {
+      "path": "docs/03-reference/services/server-registry-2.md"
+    },
+    {
+      "path": "docs/03-reference/services/server-registry.md"
+    },
+    {
+      "path": "docs/03-reference/systems/dddpg/architecture-analysis.md"
+    },
+    {
+      "path": "docs/03-reference/systems/dddpg/quick-reference.md"
+    },
+    {
+      "path": "docs/03-reference/systems/dddpg/readme-start-here.md"
+    },
+    {
+      "path": "docs/03-reference/systems/dddpg/storage-design.md"
+    },
+    {
+      "path": "docs/03-reference/systems/dopemux/system-dopemux.md"
+    },
+    {
+      "path": "docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md"
+    },
+    {
+      "path": "docs/04-explanation/architecture/adhd-architecture-diagram.md"
+    },
+    {
+      "path": "docs/04-explanation/architecture/dopemux-mvp-full-codebase-explainer.md"
+    },
+    {
+      "path": "docs/04-explanation/architecture/multi-instance-implementation.md"
+    },
+    {
+      "path": "docs/planes/pm/dopemux/07-dopetask-integration-2.md"
+    },
+    {
+      "path": "docs/planes/pm/dopemux/07-dopetask-integration.md"
+    },
+    {
+      "path": "proof/pr_merge/embedded-audit/pr-1150/AUDITOR_REPORT.md"
+    },
+    {
+      "path": "proof/pr_merge/embedded-audit/pr-1150/PROOF.json"
+    },
+    {
+      "path": "proof/pr_merge/embedded-audit/pr-1150/PROOF.json.sig"
+    },
+    {
+      "path": "scripts/README.md"
+    },
+    {
+      "path": "scripts/deploy/deployment/stack_up_all.sh"
+    },
+    {
+      "path": "scripts/deploy/deployment/start-all.sh"
+    },
+    {
+      "path": "scripts/deploy/deployment/start-mcp-servers.sh"
+    },
+    {
+      "path": "scripts/deploy/setup/install-mcp-servers.sh"
+    },
+    {
+      "path": "scripts/install-docker-mcp-servers.sh"
+    },
+    {
+      "path": "scripts/manage-mcp-servers.sh"
+    },
+    {
+      "path": "scripts/mcp/manage-mcp-servers.sh"
+    },
+    {
+      "path": "scripts/memory/start-memory-stack.sh"
+    },
+    {
+      "path": "scripts/setup.sh"
+    },
+    {
+      "path": "scripts/start-all-mcp-servers.sh"
+    },
+    {
+      "path": "src/dopemux/commands/mcp_commands.py"
+    },
+    {
+      "path": "src/dopemux/mcp/provision.py"
+    },
+    {
+      "path": "tests/mcp/test_no_legacy_fleet_start_paths.py"
+    },
+    {
+      "path": "tests/mcp/test_provision.py"
+    },
+    {
+      "path": "tests/test_cli_mcp_startup.py"
+    },
+    {
+      "path": "tests/test_mcp_health_probe.py"
+    }
+  ],
+  "headRefName": "claude/mcp-multi-instance-design-d706d6",
+  "headRefOid": "a8838e2a62d88204a174bbf9ee0d24eed9157057",
+  "isDraft": false,
+  "mergeStateStatus": "BEHIND",
+  "number": 1150,
+  "state": "OPEN",
+  "title": "MCP fleet: multi-instance design (supervisor-ruled) + P-22/P-23 safe-subset implementation",
+  "updatedAt": "2026-07-29T00:31:18Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1150"
+}

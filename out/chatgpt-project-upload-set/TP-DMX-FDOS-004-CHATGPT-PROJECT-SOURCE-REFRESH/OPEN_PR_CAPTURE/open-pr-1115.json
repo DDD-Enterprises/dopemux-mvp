@@ -1,6 +1,9 @@
 {
+  "additions": 7,
   "baseRefName": "main",
   "body": "Recreates urgent PyASN1 security patch #1090 on current `main` following secret-rewrite reconciliation.\n\nFixes / replaces #1090.",
+  "capture_complete": true,
+  "changedFiles": 2,
   "commits": [
     {
       "authoredDate": "2026-07-23T04:02:12Z",
@@ -18,17 +21,12 @@
       "oid": "396c32013ea91552d08677b245c1b5739b2d2264"
     }
   ],
+  "deletions": 7,
   "files": [
     {
-      "additions": 4,
-      "changeType": "MODIFIED",
-      "deletions": 4,
       "path": "docker/mcp-servers-source/pal/pal-mcp-server/uv.lock"
     },
     {
-      "additions": 3,
-      "changeType": "MODIFIED",
-      "deletions": 3,
       "path": "uv.lock"
     }
   ],

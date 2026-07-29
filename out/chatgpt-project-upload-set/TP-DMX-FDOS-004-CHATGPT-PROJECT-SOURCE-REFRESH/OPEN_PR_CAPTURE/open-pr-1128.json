@@ -1,6 +1,9 @@
 {
+  "additions": 8407,
   "baseRefName": "main",
   "body": "## Summary\n\nImplements **ADR-DMX-MCPPROF-001** (Accepted 2026-07-26) after operator phrase `ACCEPT AND EXECUTE TP-MCP-PROFILE-PROGRAM-001-R1` (supervisor packet `TP-MCP-PROFILE-PROGRAM-001-R1`).\n\nAdds deterministic **profile-selected MCP tool plane**:\n\n- Profiles in `mcp_catalog.yaml` (no implicit `all`)\n- `profile_policy.py` inventory, digests, admin/write filters, fixed-path `repo-domain-read` contract\n- CLI: `dopemux mcp profile list|show`, `doctor --profile`, `init --profile`, `generate --profile`\n- Official GitHub read-only server entry + specialized Playwright/Semgrep/domain-read placement\n- Unit tests for fail-closed negatives; docs + mcp-system PAL stdio truth\n\n**Merge is NOT authorized** by this packet.\n\n### Allowlist amendment (supervisor-approved)\n\n- `schemas/mcp/fleet-catalog.schema.json` \u2014 `profiles` + enums for new servers\n- `src/dopemux/mcp/default_catalog.yaml` \u2014 keep in sync with root catalog\n- `mcp_tool_surfaces.json` \u2014 planned/seed keys for new servers (live capture unavailable)\n\n### Acceptance evidence\n\n- ADR status: **Accepted** with date 2026-07-26, operator phrase, unlocks `TP-DMX-MCPPROF-001`\n- Proof: `proof/TP-DMX-MCPPROF-001/`\n- Auditor: `PASS_WITH_RISKS` (second-pass invariant audit; formal AGY/Claude CLI not available)\n\n### Profile digests (core)\n\n| Profile | tools | profile_digest (prefix) |\n|---|---:|---|\n| core-code | 51 | `27f4d06e9c55\u2026` |\n| core-retrieval | 42 | `d1eba84d64a7\u2026` |\n| planning-audit | 15 | `e9e8f92d5c7d\u2026` |\n| ui-audit | 8 | `2afe4e86f8d5\u2026` (domain-read blocked without contract) |\n\n### Validation (local)\n\n- profile unit tests: PASS\n- mcp unit filter + arch fleet catalog: PASS\n- ruff on touched modules: PASS\n- mypy: FAIL (pre-existing noise on mcp_commands/fleet_catalog; recorded)\n- `git diff --check`: PASS\n\n### Residual risks\n\n- GitHub tool names seeded for policy filters; refresh with live snapshot when available\n- `repo-domain-read` blocked until repo ships fixed executable+manifest\n- Agent-matrix generate remains for OpenCode/Codex parity; task profiles are the non-all plane\n\n## Test plan\n\n- [x] `uv run pytest -q tests/unit/test_mcp_profile_*.py`\n- [x] `uv run pytest -q tests/arch/test_mcp_fleet_catalog_contract.py`\n- [x] `dopemux mcp profile list|show core-code`\n- [x] `dopemux mcp doctor --profile core-code|ui-audit`\n- [ ] CI on PR head",
+  "capture_complete": true,
+  "changedFiles": 40,
   "commits": [
     {
       "authoredDate": "2026-07-27T00:30:11Z",
@@ -228,245 +231,126 @@
       "oid": "e41d134b5b0f32b5475ab5f094274bfac2259601"
     }
   ],
+  "deletions": 23,
   "files": [
     {
-      "additions": 37,
-      "changeType": "MODIFIED",
-      "deletions": 4,
       "path": ".claude/mcp-system.md"
     },
     {
-      "additions": 106,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "docs/02-how-to/mcp-profiles.md"
     },
     {
-      "additions": 2,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "docs/90-adr/adr-index.md"
     },
     {
-      "additions": 251,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "docs/90-adr/adr-mcpprof-001-profiled-tool-plane-and-domain-facades.md"
     },
     {
-      "additions": 214,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "mcp_catalog.yaml"
     },
     {
-      "additions": 91,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "mcp_tool_surfaces.json"
     },
     {
-      "additions": 92,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DMX-MCPPROF-001/AUDITOR_REPORT.json"
     },
     {
-      "additions": 17,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DMX-MCPPROF-001/AUDITOR_REPORT.md"
     },
     {
-      "additions": 17,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DMX-MCPPROF-001/BASELINE.json"
     },
     {
-      "additions": 77,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DMX-MCPPROF-001/COMMANDS.log"
     },
     {
-      "additions": 9,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DMX-MCPPROF-001/EXIT_CODES.json"
     },
     {
-      "additions": 14,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DMX-MCPPROF-001/FILES_INSPECTED.txt"
     },
     {
-      "additions": 3518,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DMX-MCPPROF-001/GIT_DIFF.patch"
     },
     {
-      "additions": 18,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DMX-MCPPROF-001/GIT_DIFF_STAT.txt"
     },
     {
-      "additions": 2,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DMX-MCPPROF-001/GIT_STATUS_AFTER.txt"
     },
     {
-      "additions": 2,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DMX-MCPPROF-001/GIT_STATUS_BEFORE.txt"
     },
     {
-      "additions": 17,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DMX-MCPPROF-001/HANDOFF.json"
     },
     {
-      "additions": 23,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DMX-MCPPROF-001/LINT_TYPE_RESULTS.txt"
     },
     {
-      "additions": 117,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DMX-MCPPROF-001/MERGE_READINESS.json"
     },
     {
-      "additions": 16,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DMX-MCPPROF-001/NEGATIVE_TESTS.json"
     },
     {
-      "additions": 1,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DMX-MCPPROF-001/OPEN_PRS.json"
     },
     {
-      "additions": 7,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DMX-MCPPROF-001/PAL_CHAIN.md"
     },
     {
-      "additions": 91,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DMX-MCPPROF-001/PROFILE_DIGESTS.json"
     },
     {
-      "additions": 784,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DMX-MCPPROF-001/PROFILE_INVENTORY.json"
     },
     {
-      "additions": 300,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DMX-MCPPROF-001/PROOF.json"
     },
     {
-      "additions": 15,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/TP-DMX-MCPPROF-001/TEST_RESULTS.txt"
     },
     {
-      "additions": 7,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/pr_merge/embedded-audit/pr-1128/AUDITOR_REPORT.md"
     },
     {
-      "additions": 96,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/pr_merge/embedded-audit/pr-1128/PROOF.json"
     },
     {
-      "additions": 6,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "proof/pr_merge/embedded-audit/pr-1128/PROOF.json.sig"
     },
     {
-      "additions": 100,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "schemas/mcp-profile.schema.json"
     },
     {
-      "additions": 115,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "schemas/mcp/fleet-catalog.schema.json"
     },
     {
-      "additions": 270,
-      "changeType": "MODIFIED",
-      "deletions": 19,
       "path": "src/dopemux/commands/mcp_commands.py"
     },
     {
-      "additions": 214,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "src/dopemux/mcp/default_catalog.yaml"
     },
     {
-      "additions": 63,
-      "changeType": "MODIFIED",
-      "deletions": 0,
       "path": "src/dopemux/mcp/fleet_catalog.py"
     },
     {
-      "additions": 673,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "src/dopemux/mcp/profile_policy.py"
     },
     {
-      "additions": 168,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "task-packets/mcp-profiles/TP-DMX-MCPPROF-001.json"
     },
     {
-      "additions": 396,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "task-packets/mcp-profiles/TP-DMX-MCPPROF-001.md"
     },
     {
-      "additions": 111,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "tests/unit/test_mcp_profile_doctor.py"
     },
     {
-      "additions": 279,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "tests/unit/test_mcp_profile_policy.py"
     },
     {
-      "additions": 71,
-      "changeType": "ADDED",
-      "deletions": 0,
       "path": "tests/unit/test_mcp_profile_rendering.py"
     }
   ],

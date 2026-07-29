@@ -16,12 +16,15 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import sys
+import zipfile
 from pathlib import Path
 
 PACKET_ID = "TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH"
 REPO = "DDD-Enterprises/dopemux-mvp"
+SELF_PR_NUMBER = 1152
 
 FRESHNESS_POLICY_TEXT = """# 38_SOURCE_FRESHNESS_POLICY
 
@@ -149,7 +152,14 @@ def build_copied_slots(repo_root: Path, execution_base_sha: str, source_set: dic
 def load_captured_prs(open_pr_dir: Path) -> list[dict]:
     prs = []
     for f in sorted(open_pr_dir.glob("open-pr-*.json")):
-        prs.append(json.loads(f.read_text()))
+        pr = json.loads(f.read_text())
+        if pr.get("number") == SELF_PR_NUMBER:
+            raise SystemExit(
+                f"FATAL: captured evidence includes this packet's own PR "
+                f"#{SELF_PR_NUMBER} -- must be excluded from capture, not "
+                f"filtered here (self-referential classification is nonsensical)"
+            )
+        prs.append(pr)
     return prs
 
 
@@ -158,6 +168,7 @@ WATCHED_PATH_FAMILIES = [
     "SERVICE_CATALOG.md", "TRUTH_*.md", "SYSTEM_*.md",
     "docs/03-reference/governance/**", "docs/03-reference/truth/**",
     "docs/03-reference/systems/**", "docs/03-reference/planes/**",
+    "docs/03-reference/spec/dopetask/**",
     "docs/ops/embedded-audit.md", "docs/ops/pr-steward.md", "schemas/proof/**",
     "schemas/pr_steward/**", "config/runtime_authority_manifest.json",
     "scripts/verify_runtime_authority.py", "config/ai/model-routing.policy.yaml",
@@ -169,7 +180,7 @@ WATCHED_PATH_FAMILIES = [
 ]
 
 
-def build_pr_ledger_entries(prs: list[dict], classifications: dict, changed_file_counts: dict) -> list[dict]:
+def build_pr_ledger_entries(prs: list[dict], classifications: dict) -> list[dict]:
     entries = []
     for pr in prs:
         n = str(pr["number"])
@@ -177,6 +188,18 @@ def build_pr_ledger_entries(prs: list[dict], classifications: dict, changed_file
         if c is None:
             raise SystemExit(f"FATAL: open PR #{n} has no classification entry -- fail-closed")
         files = [f["path"] for f in pr.get("files", [])]
+        capture_complete = bool(pr.get("capture_complete", len(files) == pr.get("changedFiles", -1)))
+        if not capture_complete and c["classification"] != "SUPERSEDED_OR_CONFLICTING":
+            # A truncated/incomplete file capture is only tolerated for PRs
+            # whose classification does not depend on path-level intersection
+            # (see #1123's evidence, which discloses capture_complete=false
+            # explicitly). Any other classification with an incomplete
+            # capture is a fail-closed error, not a silent gap.
+            raise SystemExit(
+                f"FATAL: PR #{n} has an incomplete file capture "
+                f"({len(files)}/{pr.get('changedFiles')} files) but is classified "
+                f"'{c['classification']}', which requires full path intersection evidence"
+            )
         entries.append(
             {
                 "pr_number": pr["number"],
@@ -189,7 +212,8 @@ def build_pr_ledger_entries(prs: list[dict], classifications: dict, changed_file
                 "head_sha": pr["headRefOid"],
                 "merge_state_status": pr["mergeStateStatus"],
                 "updated_at": pr["updatedAt"],
-                "changed_file_count": changed_file_counts.get(n, len(files)),
+                "changed_file_count": pr.get("changedFiles", len(files)),
+                "capture_complete": capture_complete,
                 "watched_path_sample": files[:15],
                 "classification": c["classification"],
                 "evidence": c["evidence"],
@@ -245,7 +269,7 @@ def render_ledger_md(entries: list[dict], execution_base_sha: str, generated_at:
         lines.append(f"- Head SHA: `{e['head_sha']}`")
         lines.append(f"- Merge-state status: {e['merge_state_status']}")
         lines.append(f"- Updated: {e['updated_at']}")
-        lines.append(f"- Changed-file count: {e['changed_file_count']}")
+        lines.append(f"- Changed-file count: {e['changed_file_count']} (capture_complete: {e['capture_complete']})")
         lines.append(f"- **Classification: {e['classification']}**")
         lines.append(f"- Evidence: {e['evidence']}")
         lines.append(f"- Current-main effect: {e['current_main_effect']}")
@@ -352,17 +376,14 @@ def main() -> int:
     open_pr_dir = Path(args.open_pr_dir).resolve()
     prs = load_captured_prs(open_pr_dir)
     initial = json.loads((open_pr_dir / "OPEN_PRS_INITIAL.json").read_text())
-    changed_file_counts = {}
-    changed_counts_path = open_pr_dir / "OPEN_PRS_CHANGED_FILE_COUNTS.json"
-    if changed_counts_path.exists():
-        changed_file_counts = json.loads(changed_counts_path.read_text())
+    initial = [pr for pr in initial if pr.get("number") != SELF_PR_NUMBER]
 
     if len(prs) != len(initial):
         raise SystemExit(f"FATAL: captured per-PR file count ({len(prs)}) != initial inventory count ({len(initial)})")
 
     copied_entries = build_copied_slots(repo_root, args.execution_base_sha, source_set, upload_dir)
 
-    pr_entries = build_pr_ledger_entries(prs, classifications, changed_file_counts)
+    pr_entries = build_pr_ledger_entries(prs, classifications)
     material_count = sum(1 for e in pr_entries if e["classification"] in ("SOURCE_SET_CHANGES_IF_MERGED", "SOURCE_CONTENT_REFRESH_IF_MERGED"))
     disposition = "CURRENT_MAIN_VALID_PENDING_OPEN_PR_REFRESH" if material_count > 0 else "CURRENT_MAIN_VALID"
 
@@ -464,8 +485,50 @@ No ChatGPT Project upload or mutation was performed by generating this package.
 """
     (output_dir / "README.md").write_text(readme)
 
-    print(json.dumps({"disposition": disposition, "material_open_pr_count": material_count, "upload_file_count": len(list(upload_dir.iterdir()))}, indent=2))
+    zip_sha256 = build_zip_archive(repo_root, output_dir)
+
+    print(json.dumps({"disposition": disposition, "material_open_pr_count": material_count, "upload_file_count": len(list(upload_dir.iterdir())), "zip_sha256": zip_sha256}, indent=2))
     return 0
+
+
+def build_zip_archive(repo_root: Path, output_dir: Path) -> str:
+    """Build the package ZIP and its SHA-256 sidecar deterministically.
+
+    Member order is sorted, timestamps are normalized, so rebuilding from
+    unchanged inputs produces a byte-identical archive. The sidecar records
+    the archive's path RELATIVE TO THE REPO ROOT (not just its basename) so
+    `shasum -a 256 -c <sidecar>` succeeds when run from the repo root, which
+    is exactly how this packet's own documented verification commands invoke
+    it -- a bare basename in the sidecar looks for the archive in the
+    current working directory and fails with "No such file or directory"
+    unless the caller first `cd`s into out/chatgpt-project-upload-set/.
+    """
+    package_root = output_dir.parent
+    zip_path = package_root / f"{output_dir.name}.zip"
+    sidecar_path = package_root / f"{output_dir.name}.zip.sha256"
+
+    entries = []
+    for root, dirs, fnames in os.walk(output_dir):
+        dirs.sort()
+        for f in sorted(fnames):
+            full = Path(root) / f
+            arc = f"{output_dir.name}/{full.relative_to(output_dir).as_posix()}"
+            entries.append((full, arc))
+    entries.sort(key=lambda pair: pair[1])
+
+    if zip_path.exists():
+        zip_path.unlink()
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+        for full, arc in entries:
+            zi = zipfile.ZipInfo(arc, date_time=(2026, 1, 1, 0, 0, 0))
+            zi.compress_type = zipfile.ZIP_DEFLATED
+            zi.external_attr = 0o644 << 16
+            zf.writestr(zi, full.read_bytes())
+
+    digest = hashlib.sha256(zip_path.read_bytes()).hexdigest()
+    archive_repo_relative = zip_path.relative_to(repo_root).as_posix()
+    sidecar_path.write_text(f"{digest}  {archive_repo_relative}\n")
+    return digest
 
 
 if __name__ == "__main__":
