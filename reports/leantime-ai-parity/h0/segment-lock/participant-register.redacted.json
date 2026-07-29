@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0.0",
+  "packet_id": "TP-LTAIP-H0-001",
+  "status": "OPEN_AWAITING_PARTICIPANTS",
+  "participants": [],
+  "counts": {
+    "qualified": 0,
+    "buyer_class_sessions": 0,
+    "withdrawn": 0
+  },
+  "notes": "Opaque IDs only. No names or contact data."
+}
