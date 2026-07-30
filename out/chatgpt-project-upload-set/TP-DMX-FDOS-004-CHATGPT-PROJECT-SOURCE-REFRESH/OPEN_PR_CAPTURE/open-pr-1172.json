@@ -1,0 +1,38 @@
+{
+  "additions": 1,
+  "baseRefName": "main",
+  "body": "Bumps mysql from 8.0 to 26.7.\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=mysql&package-manager=docker_compose&previous-version=8.0&new-version=26.7)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot show <dependency name> ignore conditions` will show all of the ignore conditions of the specified dependency\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\n\n\n</details>",
+  "changedFiles": 1,
+  "commits": [
+    {
+      "authoredDate": "2026-07-30T16:05:01Z",
+      "authors": [
+        {
+          "email": "49699333+dependabot[bot]@users.noreply.github.com",
+          "id": "MDM6Qm90NDk2OTkzMzM=",
+          "login": "dependabot[bot]",
+          "name": "dependabot[bot]"
+        }
+      ],
+      "committedDate": "2026-07-30T16:05:01Z",
+      "messageBody": "Bumps mysql from 8.0 to 26.7.\n\n---\nupdated-dependencies:\n- dependency-name: mysql\n  dependency-version: '26.7'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>",
+      "messageHeadline": "deps(deps): bump mysql from 8.0 to 26.7",
+      "oid": "d6bfa8669d0ba99f5523142d3da5c29406ba31ea"
+    }
+  ],
+  "deletions": 1,
+  "files": [
+    {
+      "path": "compose.yml"
+    }
+  ],
+  "headRefName": "dependabot/docker_compose/mysql-26.7",
+  "headRefOid": "d6bfa8669d0ba99f5523142d3da5c29406ba31ea",
+  "isDraft": false,
+  "mergeStateStatus": "BLOCKED",
+  "number": 1172,
+  "state": "OPEN",
+  "title": "deps(deps): bump mysql from 8.0 to 26.7",
+  "updatedAt": "2026-07-30T16:05:04Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1172"
+}

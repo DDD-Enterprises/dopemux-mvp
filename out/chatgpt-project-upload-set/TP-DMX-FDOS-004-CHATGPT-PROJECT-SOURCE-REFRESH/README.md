@@ -1,7 +1,7 @@
 # TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH
 
 Deterministic ChatGPT Project 40-source upload set for `DDD-Enterprises/dopemux-mvp`, bound to
-`execution_base_sha` `414c7ac7f998d6eaec7cf7ae9ab431c0fac6476d`.
+`execution_base_sha` `72af781e42e0702d9047946e0f5a250e7dff0fa5`.
 
 - `UPLOAD_FILES/` -- exactly 40 files; upload these to the ChatGPT Project as
   its source set. See `01_AGENTS.md` through `40_OPEN_PR_IMPACT_LEDGER.md`.

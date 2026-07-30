@@ -293,6 +293,35 @@ channel: `native_hooks.py` SessionStart — four bounded blocks, ~3KB, fail-open
 `dopemux mcp snapshot-tools`). Workflow sequences: `docs/03-reference/mcp/workflows.yaml`;
 full guide: `docs/02-how-to/mcp-integration-guide.md`.
 
+### 12.6 Sharing classes & lifecycle (multi-instance fleet design)
+
+Governing design: `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md` (**ACCEPTED with supervisor
+rulings 2026-07-28** — §10 decisions are resolved). Do not restate the full design here — link to it. Compact
+sharing-class table (interim class today → end-state, with the gate packet that flips it):
+
+| Server(s) | Class today | End-state | Gate |
+|---|---|---|---|
+| `postgres-age`, `redis-primary`, `qdrant`, `dope-context`, `litellm`, `gpt-researcher`, `exa`, `desktop-commander`, `leantime-bridge`, `dopecon-bridge`/`decision-graph-bridge` | host-singleton | host-singleton | — (already correct) |
+| `redis-events` | **OBSERVED: host-singleton — UNSAFE/noncompliant for multi-project** (one global container, fixed `dopemux` compose project, no stream isolation; dope-memory promotes events into canonical work_log via a global consumer group = live contamination path). REQUIRED immediate target: **project-scoped** (supervisor §10.4) — ruling changes the authorized target, not the running container | host-singleton only after cross-project isolation is proven | P-21 (**P0**: prefix streams + consumer groups, enforce event-envelope identity) — no P-21 work has landed yet |
+| `pal` — `mcp-pal` HTTP, `mcp-pal-stdio` | active compose surfaces, pending retirement | retired | M5, blocked on M4/P-07 |
+| `pal` — `pal-mcp-server` (off-compose today) | host-singleton, needs adoption | host-singleton, managed | P-07 (`adopt`) |
+| `serena` | worktree-scoped | host-singleton | P-20 (multi-workspace wrapper deployment) |
+| `conport` | worktree-scoped | **project-scoped** (supervisor §10.3 — storage-level project wall; never host-singleton) | ConPort CRS v2 rewritten around a fixed project tenant (P-18) |
+| `dope-memory` | worktree-scoped | host-singleton | DMX-MEMSPINE-IDENTITY-005 |
+| `task-orchestrator` — Kotlin jar (:7890) | host-singleton, single active project (`switch-project` = transitional only) | **project-scoped leased-port instances** (supervisor §10.1; `multi_project_singleton` NOT authorized) | P-24 (new ADR + implementation) |
+| `task-orchestrator` — Python compose svc (:8000) | running under current (colliding) name | **renamed** (candidate `dopemux-workflow-api`), behavior preserved — NOT retired (supervisor §10.2) | rewritten M11 (consumer sweep → bounded rename packet) |
+
+Canonical command surface (`dopemux mcp <verb>`):
+
+| Command | Status |
+|---|---|
+| `init`, `start`, `stop`, `doctor` | **IMPLEMENTED** — safe to invoke today |
+| `reconcile`, `adopt`, `migrate`, `switch-project` | **PLANNED** — designed in §7 of the governing design, not yet implemented. Do not invoke or instruct a user to invoke these; they do not exist in the current CLI. |
+
+Never start fleet services outside `dopemux mcp` (compose/docker-run/shell wrappers are being removed under
+design packet P-22). While ConPort/dope-memory/serena remain worktree-scoped, N worktrees cost 3N containers —
+this is expected, not a bug, until the gates above land.
+
 Respond terse like smart caveman. All technical substance stay. Only fluff die.
 
 Rules:

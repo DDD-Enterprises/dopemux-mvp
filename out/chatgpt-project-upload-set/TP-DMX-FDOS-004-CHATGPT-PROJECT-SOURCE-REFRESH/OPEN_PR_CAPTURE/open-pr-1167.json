@@ -1,0 +1,38 @@
+{
+  "additions": 180,
+  "baseRefName": "main",
+  "body": "## Decision\n\nDraft prerequisite trust-root repair.\n\n## Observed defect\n\nPR Steward currently validates a proof self-reference exception by comparing the declared proof paths with the entire PR diff. That works only for proof-only PRs. It rejects the intended ordinary pattern where implementation reaches validated head `I`, then a final proof-only commit `P` pins evidence to `I`.\n\nPR #1140 currently demonstrates the contradiction: its final commit changes only `PROOF.json`, but the full PR also includes policy code and tests, so the existing exception cannot validate it.\n\n## Scope\n\nImplement `TP-PRSTEWARD-PROOF-PIN-RANGE-SEMANTICS-001`:\n\n- derive deterministic commit-range evidence from recorded implementation SHA to current PR head;\n- accept only a contiguous, non-merge, proof-only final suffix;\n- reject all post-validation source/test/schema/workflow/config changes;\n- preserve all existing audit, CI, reviewer, thread, harvest, and security-release gates;\n- add adversarial regression tests including the #1140-shaped case.\n\n## Authority boundary\n\n- Draft only.\n- No merge-readiness claim.\n- No merges, closures, force pushes, branch deletion, or runtime mutation.\n- Independent exact-head audit is required because this changes proof authority.\n\n## Relationship\n\nThis PR is a prerequisite for truthful readiness evaluation of #1140. Do not merge #1140 first merely because its CI is green.\n",
+  "changedFiles": 1,
+  "commits": [
+    {
+      "authoredDate": "2026-07-29T10:02:54Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "Dj Dom"
+        }
+      ],
+      "committedDate": "2026-07-29T10:02:54Z",
+      "messageBody": "",
+      "messageHeadline": "packet(pr-steward): define proof-pin range semantics repair",
+      "oid": "fa8cf6749182c13353a5554bea458d5c970bae5c"
+    }
+  ],
+  "deletions": 0,
+  "files": [
+    {
+      "path": "task-packets/pr-steward/TP-PRSTEWARD-PROOF-PIN-RANGE-SEMANTICS-001.md"
+    }
+  ],
+  "headRefName": "fix/pr-steward-proof-pin-range-semantics",
+  "headRefOid": "fa8cf6749182c13353a5554bea458d5c970bae5c",
+  "isDraft": true,
+  "mergeStateStatus": "BLOCKED",
+  "number": 1167,
+  "state": "OPEN",
+  "title": "fix(pr-steward): validate proof-only final commit ranges",
+  "updatedAt": "2026-07-29T10:26:03Z",
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1167"
+}

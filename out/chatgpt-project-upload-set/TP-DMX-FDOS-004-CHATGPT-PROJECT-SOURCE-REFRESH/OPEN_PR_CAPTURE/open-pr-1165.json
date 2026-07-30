@@ -1,6 +1,116 @@
 {
+  "additions": 285,
   "baseRefName": "main",
+  "body": "## Decision\n\n`PROPOSED`: approve the exact embedded-auditor model identifier `gemini-3.1-pro-preview` when invoked through AGY with explicit model-selection and no-fallback evidence.\n\n## Why\n\nThe canonical proof schema already allows `auditor_tool: \"agy\"` and the backward-compatible generic model value `gemini`, but it cannot currently record the exact Gemini 3.1 Pro Preview model used by AGY. This blocks exact-model provenance and forces lossy proof.\n\n## Scope\n\n- Add `gemini-3.1-pro-preview` to the canonical `embedded_audit.auditor_model` enum.\n- Document AGY + Gemini 3.1 Pro Preview as an approved Tier-1 route when exact invocation and model selection are proven.\n- Add regression tests for the exact approved identifier, rejection of a near-match, and backward compatibility of generic `gemini`.\n- Add a bounded task packet and implementation notes.\n\n## Explicitly out of scope\n\n- No GitHub Actions workflow changes.\n- No Google/AGY credentials, OAuth state, cookies, tokens, or keyring material in CI.\n- No signer, local-attestation, PR Steward, or verdict-rule changes.\n- No mutation of PR #1150.\n\nThe intended operational path is the existing exact-head signed local-attestation route for locally authenticated AGY runs.\n\n## Bootstrap rule\n\nThis admission PR must be audited under the schema currently trusted on `main`:\n\n- `auditor_tool: \"agy\"`\n- `auditor_model: \"gemini\"`\n- exact invocation and audit report prove `agy --model gemini-3.1-pro-preview --print ...`\n- captured evidence must show no fallback\n\nAfter merge, later proofs may use `auditor_model: \"gemini-3.1-pro-preview\"` directly. The new enum cannot bootstrap its own approval.\n\n## Changed files\n\n- `schemas/proof/embedded_audit.schema.json`\n- `docs/ops/embedded-audit.md`\n- `docs/ops/embedded-audit-proof.md`\n- `tests/audit/test_agy_gemini31_model.py`\n- `task-packets/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001.json`\n- `proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001/implementation-notes.md`\n\n## Validation state\n\n### OBSERVED\n\n- Branch is based on `main` SHA `414c7ac7f998d6eaec7cf7ae9ab431c0fac6476d`.\n- Diff is limited to the six allowlisted files above.\n- No workflow, credential, signer, or PR Steward files changed.\n\n### NOT_RUN / blocking\n\n- `python -m json.tool schemas/proof/embedded_audit.schema.json`\n- `python -m pytest tests/audit/test_audit_proof.py tests/audit/test_agy_gemini31_model.py -q`\n- scoped documentation validation\n- `git diff --check`\n- `agy --version`\n- `agy models`\n- exact `agy --model gemini-3.1-pro-preview --print ...` audit invocation\n- independent audit bound to final code head\n- PR Steward final readiness\n\n## Merge gate\n\nKeep draft until tests, local AGY exact-model evidence, independent audit, required CI, and PR Steward are all current-head green.",
   "changedFiles": 6,
+  "commits": [
+    {
+      "authoredDate": "2026-07-29T07:46:38Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "Dj Dom"
+        }
+      ],
+      "committedDate": "2026-07-29T07:46:38Z",
+      "messageBody": "",
+      "messageHeadline": "chore(audit): add AGY Gemini 3.1 approval packet",
+      "oid": "dd4575b00217d9585c08ee7a82136682a93f5ed8"
+    },
+    {
+      "authoredDate": "2026-07-29T07:46:54Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "Dj Dom"
+        }
+      ],
+      "committedDate": "2026-07-29T07:46:54Z",
+      "messageBody": "",
+      "messageHeadline": "test(audit): cover AGY Gemini 3.1 exact model",
+      "oid": "01cf91331799057abeb90fca046194e4f221007b"
+    },
+    {
+      "authoredDate": "2026-07-29T07:47:47Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "Dj Dom"
+        }
+      ],
+      "committedDate": "2026-07-29T07:47:47Z",
+      "messageBody": "",
+      "messageHeadline": "feat(audit): approve exact AGY Gemini 3.1 model",
+      "oid": "5cf62e3e72b368463010a9271e9d85393da27937"
+    },
+    {
+      "authoredDate": "2026-07-29T07:48:55Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "Dj Dom"
+        }
+      ],
+      "committedDate": "2026-07-29T07:48:55Z",
+      "messageBody": "",
+      "messageHeadline": "docs(audit): document exact AGY Gemini 3.1 proof",
+      "oid": "f91d914a2af2b050146ca4d02fcad54f5d4dde17"
+    },
+    {
+      "authoredDate": "2026-07-29T07:51:00Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "Dj Dom"
+        }
+      ],
+      "committedDate": "2026-07-29T07:51:00Z",
+      "messageBody": "",
+      "messageHeadline": "docs(audit): approve AGY Gemini 3.1 route",
+      "oid": "7bd1f1dc9a1f5b4e59691f0071a0ea109a4cfdbe"
+    },
+    {
+      "authoredDate": "2026-07-29T07:51:32Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "Dj Dom"
+        }
+      ],
+      "committedDate": "2026-07-29T07:51:32Z",
+      "messageBody": "",
+      "messageHeadline": "docs(proof): record AGY Gemini approval implementation",
+      "oid": "8f2c009c35309c4aad371d17568528b61b84523d"
+    },
+    {
+      "authoredDate": "2026-07-29T09:55:11Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "DDD-Enterprises (DJ Daddy Dom & the Department of\u2026 Don\u2019t ask, Don\u2019t tell, Don\u2019t stop, Don\u2019t you dare\u2026)"
+        }
+      ],
+      "committedDate": "2026-07-29T09:55:11Z",
+      "messageBody": "",
+      "messageHeadline": "fix(audit): bind Gemini preview model to AGY",
+      "oid": "188eca5310c83d5f636bc7b5d9170ad859909ac8"
+    }
+  ],
+  "deletions": 8,
   "files": [
     {
       "path": "docs/ops/embedded-audit-proof.md"
@@ -22,12 +132,12 @@
     }
   ],
   "headRefName": "codex/approve-agy-gemini-3-1-pro-audit",
-  "headRefOid": "8f2c009c35309c4aad371d17568528b61b84523d",
+  "headRefOid": "188eca5310c83d5f636bc7b5d9170ad859909ac8",
   "isDraft": true,
-  "mergeStateStatus": "UNSTABLE",
+  "mergeStateStatus": "BEHIND",
   "number": 1165,
   "state": "OPEN",
   "title": "audit: approve AGY Gemini 3.1 Pro exact model",
-  "updatedAt": "2026-07-29T07:53:00Z",
+  "updatedAt": "2026-07-29T09:55:14Z",
   "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1165"
 }

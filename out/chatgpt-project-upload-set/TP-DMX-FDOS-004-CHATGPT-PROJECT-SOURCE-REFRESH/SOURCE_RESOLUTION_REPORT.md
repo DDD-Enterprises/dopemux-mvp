@@ -7,9 +7,9 @@ For every slot: logical slot, selected source, rejected candidates, authority cl
 - Selected source path: `AGENTS.md`
 - Authority class: runtime_governance
 - Freshness class: VOLATILE_14_DAYS
-- Source blob SHA: `c640eb5539d6de584126534ba2a81a01d24feb9d`
-- Content SHA-256: `369e7af2b15af9305ab1256d1ed4b8b231c62d76b0a286ed73d18f488d207bed`
-- Bytes: 17848
+- Source blob SHA: `dd48d9b3d24cf9d75fa87ba8cdaee42e7fcaa3ff`
+- Content SHA-256: `20e09a9e8fcfceaf493f002bbbb2bde4d774bf4b5833343320defb7e90e4f845`
+- Bytes: 20929
 - Rationale: Root AGENTS.md is the single tracked candidate and is the canonical Codex/agent governing-doctrine file referenced directly by .claude/CLAUDE.md.
 - Rejected candidates: none (single tracked candidate)
 
@@ -168,9 +168,9 @@ For every slot: logical slot, selected source, rejected candidates, authority cl
 - Selected source path: `docs/03-reference/systems/dopemux/system-dopemux.md`
 - Authority class: system_reference
 - Freshness class: SYSTEM_SNAPSHOT_30_DAYS
-- Source blob SHA: `c3b990a54eec0086bf052f6c00a0bfbb19586f0c`
-- Content SHA-256: `28c3791264ccadcfca400bde67547dd1000f104763cbe7ac93269861f56d0d38`
-- Bytes: 15177
+- Source blob SHA: `ea7f96d705bac0592fe3715d70c00d4e29060ed3`
+- Content SHA-256: `5fd739cf3998589fe7c62deb55c27de6b44c78d425433550379b447bf978ac5e`
+- Bytes: 15380
 - Rationale: Sole tracked candidate.
 - Rejected candidates: none (single tracked candidate)
 
@@ -190,9 +190,9 @@ For every slot: logical slot, selected source, rejected candidates, authority cl
 - Selected source path: `docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md`
 - Authority class: system_reference
 - Freshness class: SYSTEM_SNAPSHOT_30_DAYS
-- Source blob SHA: `51199defd75d6a4c12b646039e2e3349d3fe1c3e`
-- Content SHA-256: `3df644136cb1475cfa49ba47e6256f25382af8f0beee2b8ee014d03daf7f22b5`
-- Bytes: 13858
+- Source blob SHA: `4545335ff738d62c54c9a62df44edd932e4e272f`
+- Content SHA-256: `36154a6173267f07a20810eb639a94885c8edf64fe36652916493850a9812340`
+- Bytes: 14316
 - Rationale: Sole tracked candidate.
 - Rejected candidates: none (single tracked candidate)
 

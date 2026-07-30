@@ -1,10 +1,10 @@
 # CURRENT_MAIN_40
 
-execution_base_sha: `414c7ac7f998d6eaec7cf7ae9ab431c0fac6476d`
+execution_base_sha: `72af781e42e0702d9047946e0f5a250e7dff0fa5`
 
 | Slot | Bundle filename | Source path | Bytes | SHA-256 |
 | --- | --- | --- | --- | --- |
-| 01 | `01_AGENTS.md` | `AGENTS.md` | 17848 | `369e7af2b15af930...` |
+| 01 | `01_AGENTS.md` | `AGENTS.md` | 20929 | `20e09a9e8fcfceaf...` |
 | 02 | `02_RULES.md` | `docs/03-reference/governance/rules.md` | 9968 | `b9382cff07d86d2e...` |
 | 03 | `03_PROJECT.md` | `PROJECT.md` | 12763 | `a3bfabc28ad461c8...` |
 | 04 | `04_ARCHITECTURE.md` | `ARCHITECTURE.md` | 8742 | `f6d1dfdaddb6afc7...` |
@@ -18,9 +18,9 @@ execution_base_sha: `414c7ac7f998d6eaec7cf7ae9ab431c0fac6476d`
 | 12 | `12_TRUTH_CANONICALS.md` | `docs/03-reference/truth/truth-canonicals.md` | 12438 | `2b1580abfb30bb4d...` |
 | 13 | `13_TRUTH_INTERFACES.md` | `docs/03-reference/truth/truth-interfaces.md` | 11666 | `166710c38e2b930d...` |
 | 14 | `14_TRUTH_GAPS.md` | `docs/03-reference/truth/truth-gaps.md` | 6875 | `450f52a5cb1c609d...` |
-| 15 | `15_SYSTEM_DOPEMUX.md` | `docs/03-reference/systems/dopemux/system-dopemux.md` | 15177 | `28c3791264ccadcf...` |
+| 15 | `15_SYSTEM_DOPEMUX.md` | `docs/03-reference/systems/dopemux/system-dopemux.md` | 15380 | `5fd739cf3998589f...` |
 | 16 | `16_SYSTEM_DOPETASK.md` | `docs/03-reference/systems/dopetask/system-dopetask.md` | 11309 | `6ebe437b8f9bed32...` |
-| 17 | `17_SYSTEM_TASK_ORCHESTRATOR.md` | `docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md` | 13858 | `3df644136cb1475c...` |
+| 17 | `17_SYSTEM_TASK_ORCHESTRATOR.md` | `docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md` | 14316 | `36154a6173267f07...` |
 | 18 | `18_SYSTEM_CONPORT.md` | `docs/03-reference/systems/conport/system-conport.md` | 13606 | `4b87ea1843bef321...` |
 | 19 | `19_SYSTEM_DOPE_MEMORY.md` | `docs/03-reference/systems/dope-memory/system-dopememory.md` | 12716 | `8e26fd3b4234ed9f...` |
 | 20 | `20_SYSTEM_DOPE_CONTEXT.md` | `docs/03-reference/systems/dope-context/system-dopecontext.md` | 12335 | `424ebf49db05454d...` |

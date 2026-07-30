@@ -22,18 +22,42 @@ def test_output_cleanup_rejects_repo_root_and_ancestor(tmp_path: Path) -> None:
     builder = load_script("build_chatgpt_project_sources")
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
+    expected_parent = repo_root / "out" / "chatgpt-project-upload-set"
+    expected_parent.mkdir(parents=True)
+    valid_output = expected_parent / builder.PACKET_ID
 
     with pytest.raises(ValueError, match="unsafe output directory"):
-        builder.validate_output_dir(repo_root, repo_root)
+        builder.validate_output_dir(repo_root, tmp_path) # ancestor of repo root
 
     with pytest.raises(ValueError, match="unsafe output directory"):
-        builder.validate_output_dir(repo_root, tmp_path)
+        builder.validate_output_dir(repo_root, repo_root) # repo root
 
     with pytest.raises(ValueError, match="unsafe output directory"):
-        builder.validate_output_dir(Path("/Users/hue/example-repo"), Path("/private/var"))
+        builder.validate_output_dir(repo_root, Path("/"))
 
     with pytest.raises(ValueError, match="unsafe output directory"):
-        builder.validate_output_dir(Path("/Users/hue/example-repo"), Path("/private/var/folders"))
+        builder.validate_output_dir(repo_root, Path.home())
+
+    # output not beneath expected parent
+    with pytest.raises(ValueError, match="unsafe output directory"):
+        builder.validate_output_dir(repo_root, repo_root / "out" / "something-else")
+
+    # expected parent itself
+    with pytest.raises(ValueError, match="unsafe output directory"):
+        builder.validate_output_dir(repo_root, expected_parent)
+
+    # wrong basename
+    with pytest.raises(ValueError, match="unsafe output directory"):
+        builder.validate_output_dir(repo_root, expected_parent / "wrong-basename")
+
+    # Symlink to repo root
+    symlink_dir = tmp_path / "symlink-to-repo"
+    symlink_dir.symlink_to(repo_root)
+    with pytest.raises(ValueError, match="unsafe output directory"):
+        builder.validate_output_dir(repo_root, symlink_dir)
+
+    # Valid case shouldn't raise
+    builder.validate_output_dir(repo_root, valid_output)
 
 
 def test_secret_scan_includes_package_root_members(tmp_path: Path) -> None:
@@ -49,6 +73,7 @@ def test_secret_scan_includes_package_root_members(tmp_path: Path) -> None:
             "file": "OPEN_PR_CAPTURE/open-pr-1.json",
             "pattern": "github_pat",
             "match_prefix": "ghp_ABCDEFGH",
+            "blocking": True,
         }
     ]
 

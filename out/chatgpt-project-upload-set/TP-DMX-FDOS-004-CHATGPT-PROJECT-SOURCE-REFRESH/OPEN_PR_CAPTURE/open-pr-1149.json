@@ -1,7 +1,390 @@
 {
+  "additions": 16640,
   "baseRefName": "main",
-  "changedFiles": 2,
+  "body": "Wrapped the \"Start\" button for pending tasks in TaskSequencer.tsx with a descriptive Tooltip explaining exactly which task will start and receive focus, complementing existing ARIA labels. Added programmatic assertions to Accessibility.test.tsx and successfully performed full build, test, and visual verification.\n\n---\n*PR created automatically by Jules for task [10223693338927440299](https://jules.google.com/task/10223693338927440299) started by @hu3mann*",
+  "changedFiles": 114,
+  "commits": [
+    {
+      "authoredDate": "2026-07-28T23:25:33Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "hu3mann"
+        },
+        {
+          "email": "161369871+google-labs-jules[bot]@users.noreply.github.com",
+          "id": "BOT_kgDOCZ5PDw",
+          "login": "google-labs-jules[bot]",
+          "name": "google-labs-jules[bot]"
+        }
+      ],
+      "committedDate": "2026-07-28T23:25:33Z",
+      "messageBody": "Wrapped the \"Start\" button for pending, non-current tasks with a descriptive Tooltip component to improve visual context for mouse users, aligning with accessibility standards. Added assertions to Accessibility.test.tsx to verify the tooltip existence.\n\nCo-authored-by: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.github.com>",
+      "messageHeadline": "feat: add descriptive tooltip to TaskSequencer task start button",
+      "oid": "9f2f089dd5e43387ba029c8f5c9de312899dceb3"
+    },
+    {
+      "authoredDate": "2026-07-29T11:23:13Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "hu3mann"
+        },
+        {
+          "email": "161369871+google-labs-jules[bot]@users.noreply.github.com",
+          "id": "BOT_kgDOCZ5PDw",
+          "login": "google-labs-jules[bot]",
+          "name": "google-labs-jules[bot]"
+        }
+      ],
+      "committedDate": "2026-07-29T11:23:13Z",
+      "messageBody": "\u2026oltip verification\n\nCo-authored-by: google-labs-jules[bot] <161369871+google-labs-jules[bot]@users.noreply.github.com>",
+      "messageHeadline": "feat: refresh PR and harden Accessibility tests with live-rendered to\u2026",
+      "oid": "f5e6eb682411073c8a9e212f6693facb5773704e"
+    }
+  ],
+  "deletions": 3084,
   "files": [
+    {
+      "path": ".claude/claude.md"
+    },
+    {
+      "path": ".claude/claude_config.json"
+    },
+    {
+      "path": ".claude/hooks/mcp_health_probe.py"
+    },
+    {
+      "path": ".github/copilot-instructions.md"
+    },
+    {
+      "path": ".github/workflows/ddd-release-gate.yml"
+    },
+    {
+      "path": ".vibe/config.toml"
+    },
+    {
+      "path": "AGENTS.md"
+    },
+    {
+      "path": "INSTALL.md"
+    },
+    {
+      "path": "claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md"
+    },
+    {
+      "path": "claudedocs/mcp-fleet-multi-instance-evidence-2026-07-28.md"
+    },
+    {
+      "path": "claudedocs/mcp-legacy-launch-path-worklist-2026-07-28.md"
+    },
+    {
+      "path": "compose/legacy/conport-kg-docker-compose.yml"
+    },
+    {
+      "path": "compose/legacy/leantime-overlay-docker-compose.yml"
+    },
+    {
+      "path": "docker/mcp-servers-source/SERVER_REGISTRY.md"
+    },
+    {
+      "path": "docker/mcp-servers-source/setup-task-orchestrator.sh"
+    },
+    {
+      "path": "docker/mcp-servers-source/start-all-mcp-servers.sh"
+    },
+    {
+      "path": "docker/mcp-servers-source/start-profile.sh"
+    },
+    {
+      "path": "docs/01-tutorials/quickstart.md"
+    },
+    {
+      "path": "docs/01-tutorials/start-here-2.md"
+    },
+    {
+      "path": "docs/01-tutorials/start-here-3.md"
+    },
+    {
+      "path": "docs/01-tutorials/start-here.md"
+    },
+    {
+      "path": "docs/02-how-to/deployment-guide.md"
+    },
+    {
+      "path": "docs/02-how-to/instance-state-persistence.md"
+    },
+    {
+      "path": "docs/02-how-to/mcp-integration-guide.md"
+    },
+    {
+      "path": "docs/02-how-to/multi-instance-workflow.md"
+    },
+    {
+      "path": "docs/02-how-to/operations/pm-plane-runtime-recovery.md"
+    },
+    {
+      "path": "docs/02-how-to/operations/workflow-idea-epic-lifecycle.md"
+    },
+    {
+      "path": "docs/03-reference/dcp/chatgpt-mcp-readonly/MULTI_PROJECT_REGISTRY_CONTRACT.md"
+    },
+    {
+      "path": "docs/03-reference/dcp/chatgpt-mcp-readonly/TUNNEL_INTEGRATION.md"
+    },
+    {
+      "path": "docs/03-reference/services/server-registry-2.md"
+    },
+    {
+      "path": "docs/03-reference/services/server-registry.md"
+    },
+    {
+      "path": "docs/03-reference/systems/dddpg/architecture-analysis.md"
+    },
+    {
+      "path": "docs/03-reference/systems/dddpg/quick-reference.md"
+    },
+    {
+      "path": "docs/03-reference/systems/dddpg/readme-start-here.md"
+    },
+    {
+      "path": "docs/03-reference/systems/dddpg/storage-design.md"
+    },
+    {
+      "path": "docs/03-reference/systems/dope-context/vector-profiles-and-migration.md"
+    },
+    {
+      "path": "docs/03-reference/systems/dopemux/system-dopemux.md"
+    },
+    {
+      "path": "docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md"
+    },
+    {
+      "path": "docs/04-explanation/architecture/adhd-architecture-diagram.md"
+    },
+    {
+      "path": "docs/04-explanation/architecture/dopemux-mvp-full-codebase-explainer.md"
+    },
+    {
+      "path": "docs/04-explanation/architecture/multi-instance-implementation.md"
+    },
+    {
+      "path": "docs/planes/pm/dopemux/07-dopetask-integration-2.md"
+    },
+    {
+      "path": "docs/planes/pm/dopemux/07-dopetask-integration.md"
+    },
+    {
+      "path": "docs/runbooks/ddd-release-gate-app.md"
+    },
+    {
+      "path": "install.sh"
+    },
+    {
+      "path": "proof/TP-DMX-MCP-PR1150-REVIEW-REPAIR-001/implementation-notes.md"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/AUDITOR_REPORT.md"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/AUDIT_INTAKE.json"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/COLLECTION_MIGRATION_REPORT.json"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/COMMAND_LOG.txt"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/HANDOFF.json"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/IMPLEMENTATION_REPORT.md"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/MANIFEST.json"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/PROOF.json"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/VALIDATION.json"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/VECTOR_COMPATIBILITY_MATRIX.json"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/agy_audit_raw.txt"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/claude_audit_raw.txt"
+    },
+    {
+      "path": "proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002/gemini_audit_raw.txt"
+    },
+    {
+      "path": "proof/pr_merge/embedded-audit/pr-1126/PROOF.json"
+    },
+    {
+      "path": "proof/pr_merge/embedded-audit/pr-1126/PROOF.json.sig"
+    },
+    {
+      "path": "proof/pr_merge/embedded-audit/pr-1150/AUDITOR_REPORT.md"
+    },
+    {
+      "path": "proof/pr_merge/embedded-audit/pr-1150/PROOF.json"
+    },
+    {
+      "path": "proof/pr_merge/embedded-audit/pr-1150/PROOF.json.sig"
+    },
+    {
+      "path": "proof/pr_merge/embedded-audit/pr-1150/review_bundle/AGY_AUDIT_INPUT.md"
+    },
+    {
+      "path": "proof/pr_merge/embedded-audit/pr-1150/review_bundle/AGY_AUDIT_OUTPUT.json"
+    },
+    {
+      "path": "proof/pr_merge/embedded-audit/pr-1150/review_bundle/CHANGED_FILES.txt"
+    },
+    {
+      "path": "proof/pr_merge/embedded-audit/pr-1150/review_bundle/INSTRUCTION_LIKE_CONTENT.json"
+    },
+    {
+      "path": "proof/pr_merge/embedded-audit/pr-1150/review_bundle/UNIFIED_DIFF.txt"
+    },
+    {
+      "path": "proof/pr_merge/embedded-audit/pr-1150/review_bundle/VALIDATION.txt"
+    },
+    {
+      "path": "scripts/README.md"
+    },
+    {
+      "path": "scripts/ai_startup.sh"
+    },
+    {
+      "path": "scripts/deploy/deployment/stack_up_all.sh"
+    },
+    {
+      "path": "scripts/deploy/deployment/start-all.sh"
+    },
+    {
+      "path": "scripts/deploy/deployment/start-mcp-servers.sh"
+    },
+    {
+      "path": "scripts/deploy/setup/install-mcp-servers.sh"
+    },
+    {
+      "path": "scripts/dev/testing/validate-mcp-setup.sh"
+    },
+    {
+      "path": "scripts/install-docker-mcp-servers.sh"
+    },
+    {
+      "path": "scripts/manage-mcp-servers.sh"
+    },
+    {
+      "path": "scripts/mcp/manage-mcp-servers.sh"
+    },
+    {
+      "path": "scripts/memory/start-memory-stack.sh"
+    },
+    {
+      "path": "scripts/setup.sh"
+    },
+    {
+      "path": "scripts/start-all-mcp-servers.sh"
+    },
+    {
+      "path": "scripts/start.sh"
+    },
+    {
+      "path": "services/dope-context/Dockerfile"
+    },
+    {
+      "path": "services/dope-context/src/index_profile.py"
+    },
+    {
+      "path": "services/dope-context/src/mcp/server.py"
+    },
+    {
+      "path": "services/dope-context/src/pipeline/docs_pipeline.py"
+    },
+    {
+      "path": "services/dope-context/src/pipeline/indexing_pipeline.py"
+    },
+    {
+      "path": "services/dope-context/src/rerank/voyage_reranker.py"
+    },
+    {
+      "path": "services/dope-context/src/utils/token_budget.py"
+    },
+    {
+      "path": "services/dope-context/src/utils/workspace.py"
+    },
+    {
+      "path": "services/dope-context/tests/test_mcp_server.py"
+    },
+    {
+      "path": "services/dope-context/tests/test_reliability_repairs.py"
+    },
+    {
+      "path": "services/dope-context/tests/test_vector_profiles_and_migration.py"
+    },
+    {
+      "path": "services/dope-context/tests/test_voyage_modernization.py"
+    },
+    {
+      "path": "src/dopemux/cli.py"
+    },
+    {
+      "path": "src/dopemux/commands/mcp_commands.py"
+    },
+    {
+      "path": "src/dopemux/mcp/provision.py"
+    },
+    {
+      "path": "task-packets/TP-DMX-MCP-PR1150-REVIEW-REPAIR-001.json"
+    },
+    {
+      "path": "task-packets/dope-context/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002.md"
+    },
+    {
+      "path": "tests/mcp/test_p22_regression_checks.py"
+    },
+    {
+      "path": "tests/mcp/test_p22_safe_subset_guard.py"
+    },
+    {
+      "path": "tests/mcp/test_provision.py"
+    },
+    {
+      "path": "tests/pr_steward/test_known_author_bot_bare_form.py"
+    },
+    {
+      "path": "tests/scripts/test_setup_sh.py"
+    },
+    {
+      "path": "tests/test_cli_mcp_startup.py"
+    },
+    {
+      "path": "tests/test_mcp_health_probe.py"
+    },
+    {
+      "path": "tests/unit/test_cli_audit_remediations.py"
+    },
+    {
+      "path": "tests/unit/test_mcp_commands_lifecycle.py"
+    },
+    {
+      "path": "tools/pr_steward/classifier.py"
+    },
+    {
+      "path": "tools/pr_steward/known_reviewers.json"
+    },
     {
       "path": "ui-dashboard/src/components/TaskSequencer.tsx"
     },
@@ -10,12 +393,12 @@
     }
   ],
   "headRefName": "jules-10223693338927440299-c662ce23",
-  "headRefOid": "9f2f089dd5e43387ba029c8f5c9de312899dceb3",
+  "headRefOid": "f5e6eb682411073c8a9e212f6693facb5773704e",
   "isDraft": false,
-  "mergeStateStatus": "BEHIND",
+  "mergeStateStatus": "DIRTY",
   "number": 1149,
   "state": "OPEN",
   "title": "\ud83c\udfa8 Palette: Add descriptive tooltip to task start button",
-  "updatedAt": "2026-07-28T23:25:37Z",
+  "updatedAt": "2026-07-29T11:23:22Z",
   "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1149"
 }

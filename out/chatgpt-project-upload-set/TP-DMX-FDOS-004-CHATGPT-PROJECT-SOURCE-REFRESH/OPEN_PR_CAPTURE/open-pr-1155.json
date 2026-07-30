@@ -1,6 +1,41 @@
 {
+  "additions": 298,
   "baseRefName": "main",
+  "body": "## Summary\n- surface global tree-sitter import/init degradation in both prescan artifact formats\n- emit per-file degraded metadata only when tree-sitter is globally unavailable\n- add focused regression coverage and a rebased task packet/proof\n\n## Validation\n- packet and embedded-audit schemas pass\n- focused prescan tests and offline golden smoke pass\n- compileall, pre-commit, and diff check pass\n\n## Audit status\n- SKIPPED: PAL MCP transport closed for analyze, planner, challenge, codereview, and precommit; the proof records this fail-closed audit gap.\n- no live provider calls or extraction runs were performed.\n\n## Known worktree state\n- .claude/claude_config.json is an auto-generated per-worktree identity change and is not included in this PR.",
   "changedFiles": 7,
+  "commits": [
+    {
+      "authoredDate": "2026-07-29T00:06:52Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "DDD-Enterprises (DJ Daddy Dom & the Department of\u2026 Don\u2019t ask, Don\u2019t tell, Don\u2019t stop, Don\u2019t you dare\u2026)"
+        }
+      ],
+      "committedDate": "2026-07-29T00:06:52Z",
+      "messageBody": "",
+      "messageHeadline": "fix(rte): surface tree-sitter degraded mode",
+      "oid": "87f35a1d38a2f3eb35073744a27a46112ab68eb3"
+    },
+    {
+      "authoredDate": "2026-07-29T00:07:46Z",
+      "authors": [
+        {
+          "email": "167156098+hu3mann@users.noreply.github.com",
+          "id": "U_kgDOCfaZgg",
+          "login": "hu3mann",
+          "name": "DDD-Enterprises (DJ Daddy Dom & the Department of\u2026 Don\u2019t ask, Don\u2019t tell, Don\u2019t stop, Don\u2019t you dare\u2026)"
+        }
+      ],
+      "committedDate": "2026-07-29T00:07:46Z",
+      "messageBody": "",
+      "messageHeadline": "chore(proof): bind tree-sitter degraded mode evidence",
+      "oid": "c05d8c062a40b2d3a1a9485ef239b433b659650b"
+    }
+  ],
+  "deletions": 1,
   "files": [
     {
       "path": "proof/TP-RTE-TRUTH-R0-005/AUDITOR_REPORT.md"
@@ -31,6 +66,6 @@
   "number": 1155,
   "state": "OPEN",
   "title": "fix(rte): surface tree-sitter degraded mode",
-  "updatedAt": "2026-07-29T00:08:54Z",
+  "updatedAt": "2026-07-29T10:27:03Z",
   "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1155"
 }

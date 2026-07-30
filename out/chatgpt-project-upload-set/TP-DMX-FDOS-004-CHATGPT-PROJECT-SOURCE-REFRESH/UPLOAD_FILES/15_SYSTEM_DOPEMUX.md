@@ -89,7 +89,7 @@ prelude: System Dopemux (reference) for dopemux documentation and developer work
   Observed: `scripts/dopetask` is the real pinned runner bootstrap; `scripts/taskx` is a compatibility shim only.
 
 - Config surfaces.
-  Observed: `src/dopemux/routing_config.py` is used by routing and startup flow; `src/dopemux/mcp/registry.py` loads canonical MCP definitions from `src/dopemux/mcp/registry.yaml`; `src/dopemux/auto_configurator.py` rewrites `~/.claude.json` project MCP entries; `src/dopemux/cli.py` writes `.dopemux/env/instance_*.sh` and `.dopemux/env/instance_*.env`.
+  Observed: `src/dopemux/routing_config.py` is used by routing and startup flow; `src/dopemux/mcp/registry.py` loads MCP definitions from `src/dopemux/mcp/registry.yaml`, which is deprecated legacy per ADR-MCPINT-001 — the current source of truth for MCP fleet config is `/mcp_catalog.yaml`, and `registry.yaml` is retained only because some consumers have not yet migrated off it; `src/dopemux/auto_configurator.py` rewrites `~/.claude.json` project MCP entries; `src/dopemux/cli.py` writes `.dopemux/env/instance_*.sh` and `.dopemux/env/instance_*.env`.
 
 - Environment surfaces.
   Observed: `DOPEMUX_INSTANCE_ID`, `DOPEMUX_WORKSPACE_ID`, `DOPEMUX_EXPORT_SECRETS`, `DOPEMUX_ROUTING_MODE`, `DOPEMUX_CCR_API_KEY`, `DOPEMUX_LITELLM_MASTER_KEY`, `DOPEMUX_LITELLM_DB_URL`, `TASK_ORCHESTRATOR_URL`, `DOPE_MEMORY_URL`, `CONPORT_URL`, `DOPE_CONTEXT_URL`, `DOPEMUX_AUTO_INDEX_ON_STARTUP`, `DOPEMUX_AUTO_INDEX_DEBOUNCE_SECONDS`, `DOPEMUX_AUTO_INDEX_PERIODIC_SECONDS`, `DOPEMUX_SKIP_MCP_START`, `DOPEMUX_LEGACY_DETECTION`.

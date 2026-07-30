@@ -135,6 +135,11 @@ def git_show_bytes(repo_root: Path, execution_base_sha: str, path: str) -> bytes
 
 def validate_output_dir(repo_root: Path, output_dir: Path) -> None:
     """Reject paths whose recursive cleanup could destroy a checkout or root."""
+    try:
+        output_dir = output_dir.resolve()
+        repo_root = repo_root.resolve()
+    except Exception:
+        pass
     protected_roots = {
         repo_root,
         Path("/").resolve(),
@@ -148,6 +153,13 @@ def validate_output_dir(repo_root: Path, output_dir: Path) -> None:
         raise ValueError(f"unsafe output directory for recursive cleanup: {output_dir}")
     if (output_dir / ".git").exists():
         raise ValueError(f"unsafe output directory for recursive cleanup: {output_dir}")
+
+    expected_parent = repo_root / "out" / "chatgpt-project-upload-set"
+    if not output_dir.is_relative_to(expected_parent) or output_dir == expected_parent:
+        raise ValueError(f"unsafe output directory, must be strictly beneath {expected_parent}: {output_dir}")
+
+    if output_dir.name != PACKET_ID:
+        raise ValueError(f"unsafe output directory, basename must be {PACKET_ID}: {output_dir}")
 
 
 def build_copied_slots(repo_root: Path, execution_base_sha: str, source_set: dict, upload_dir: Path) -> list[dict]:

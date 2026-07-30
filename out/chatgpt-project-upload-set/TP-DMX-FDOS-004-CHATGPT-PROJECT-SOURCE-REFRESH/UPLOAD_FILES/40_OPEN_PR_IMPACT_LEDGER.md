@@ -4,10 +4,10 @@
 > No unmerged PR content is represented as current-main truth.
 
 ```yaml
-captured_at: 2026-07-29T08:30:00Z
-execution_base_sha: 414c7ac7f998d6eaec7cf7ae9ab431c0fac6476d
-open_pr_count: 32
-material_open_pr_count: 8
+captured_at: 2026-07-30T23:19:07Z
+execution_base_sha: 72af781e42e0702d9047946e0f5a250e7dff0fa5
+open_pr_count: 38
+material_open_pr_count: 7
 regeneration_required_if_any_material_pr_merges: true
 ```
 
@@ -283,10 +283,10 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - State: OPEN (draft: True)
 - Base branch: `main`
 - Head branch: `dcp/model-routing-0000r-runtime-reconcile`
-- Head SHA: `5de3f0ef56dfcf8545c395418b4a3d424b1bc249`
+- Head SHA: `f585d7e271e43c4996244f41c6e9ec44ed79fc4c`
 - Merge-state status: BEHIND
-- Updated: 2026-07-27T03:19:24Z
-- Changed-file count: 42 (capture_complete: True)
+- Updated: 2026-07-29T10:12:22Z
+- Changed-file count: 75 (capture_complete: True)
 - **Classification: NO_PROJECT_SOURCE_IMPACT**
 - Evidence: Draft PR, mergeStateStatus=BEHIND. Touches docs/03-reference/dcp/current-main-runtime-reconciliation.{json,md} and proof/task-packets artifacts. docs/03-reference/dcp/** is not in the watched-path list and does not intersect any of the 37 selected slots.
 - Current-main effect: None.
@@ -297,6 +297,7 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - Sample changed paths:
     - `docs/03-reference/dcp/current-main-runtime-reconciliation.json`
     - `docs/03-reference/dcp/current-main-runtime-reconciliation.md`
+    - `proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/AUDITOR_REPAIR_REPORT.md`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/AUDITOR_REPORT.attempt1.incomplete.json`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/AUDITOR_REPORT.md`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/AUDITOR_REPORT.raw.json`
@@ -307,9 +308,8 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/DIFF_NAME_ONLY.txt`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/DIFF_STAT.txt`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/EVIDENCE_LEDGER.md`
+    - `proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/FINALIZATION_POINTER.json`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/FINAL_STATUS_PORCELAIN.txt`
-    - `proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/HANDOFF.json`
-    - `proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/HANDOFF.md`
 
 ### PR #1138 -- DMX-DCP-MODEL-ROUTING-MVP-0000S: Series lineage and authority map
 
@@ -317,10 +317,10 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - State: OPEN (draft: True)
 - Base branch: `main`
 - Head branch: `dcp/model-routing-0000s-series-lineage`
-- Head SHA: `3ce0db080527d64eeb3849e88786528422885333`
+- Head SHA: `7e4bc6359cfc8efc58adb0ba8fbc1f59ee8a5805`
 - Merge-state status: BEHIND
-- Updated: 2026-07-27T03:23:41Z
-- Changed-file count: 63 (capture_complete: True)
+- Updated: 2026-07-29T10:18:54Z
+- Changed-file count: 89 (capture_complete: True)
 - **Classification: NO_PROJECT_SOURCE_IMPACT**
 - Evidence: Draft PR, mergeStateStatus=UNKNOWN/BEHIND across captures. Touches docs/03-reference/dcp/model-routing-series-map.json, docs/03-reference/dcp/model-routing-series-status.md, and proof/task-packets artifacts under DMX-DCP-MODEL-ROUTING-MVP-0000R/0000S. docs/03-reference/dcp/** is not in the watched-path list and does not intersect any of the 37 selected slots.
 - Current-main effect: None.
@@ -353,7 +353,7 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - Head branch: `fix/pr-steward-solo-owner-org-member`
 - Head SHA: `232fb713fbb927ead17ba2ead2cd1136ad3a5deb`
 - Merge-state status: BEHIND
-- Updated: 2026-07-27T04:43:23Z
+- Updated: 2026-07-29T10:03:40Z
 - Changed-file count: 18 (capture_complete: True)
 - **Classification: NO_PROJECT_SOURCE_IMPACT**
 - Evidence: Touches docs/90-adr/adr-dmx-prsteward-soloowner-001.md and tools/pr_steward/solo_owner_security_release.py (18 files total). The touched ADR falls under the ledger's own watched docs/90-adr/** family but is confirmed to be a different file from the Memory Trinity ADR selected as slot 11 (docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md) -- it is not itself a candidate for any of the 37 selected slots. Slot 32 (docs/ops/pr-steward.md) was grep-checked for 'solo'/'org member'/'exact-head'/'authoriz' and contains no matching content describing this mechanic, so its accuracy is unaffected by this PR merging.
@@ -532,10 +532,10 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - State: OPEN (draft: False)
 - Base branch: `main`
 - Head branch: `jules-10223693338927440299-c662ce23`
-- Head SHA: `9f2f089dd5e43387ba029c8f5c9de312899dceb3`
-- Merge-state status: BEHIND
-- Updated: 2026-07-28T23:25:37Z
-- Changed-file count: 2 (capture_complete: True)
+- Head SHA: `f5e6eb682411073c8a9e212f6693facb5773704e`
+- Merge-state status: DIRTY
+- Updated: 2026-07-29T11:23:22Z
+- Changed-file count: 114 (capture_complete: True)
 - **Classification: NO_PROJECT_SOURCE_IMPACT**
 - Evidence: 2 changed files, UI palette tooltip copy change (jules-authored). No intersection with watched paths or selected slots.
 - Current-main effect: None.
@@ -544,30 +544,11 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - Contradiction/overlap notes: None.
 - Confidence: high
 - Sample changed paths:
-    - `ui-dashboard/src/components/TaskSequencer.tsx`
-    - `ui-dashboard/src/components/__tests__/Accessibility.test.tsx`
-
-### PR #1150 -- MCP fleet: multi-instance design (supervisor-ruled) + P-22/P-23 safe-subset implementation
-
-- URL: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1150
-- State: OPEN (draft: False)
-- Base branch: `main`
-- Head branch: `claude/mcp-multi-instance-design-d706d6`
-- Head SHA: `ad1fe43ed7dca30e3f9af7fa555b87b4406bce30`
-- Merge-state status: CLEAN
-- Updated: 2026-07-29T08:25:16Z
-- Changed-file count: 77 (capture_complete: True)
-- **Classification: SOURCE_CONTENT_REFRESH_IF_MERGED**
-- Evidence: Draft PR, mergeStateStatus=BEHIND (was UNSTABLE at earlier capture; state has since changed but content intersection is unchanged). Refreshed changed-file list (59 files, was 56/56 at two earlier captures) still directly includes AGENTS.md, docs/03-reference/systems/dopemux/system-dopemux.md, and docs/03-reference/systems/task-orchestrator/system-taskorchestrator.md -- exactly slots 01, 15, 17 of this package.
-- Current-main effect: None; PR is unmerged and draft.
-- Action if merged: Regenerate slots 01, 15, 17 from the new main tip and re-run all validation gates.
-- Source slots affected: [1, 15, 17]
-- Contradiction/overlap notes: None observed.
-- Confidence: high
-- Sample changed paths:
     - `.claude/claude.md`
+    - `.claude/claude_config.json`
     - `.claude/hooks/mcp_health_probe.py`
     - `.github/copilot-instructions.md`
+    - `.github/workflows/ddd-release-gate.yml`
     - `.vibe/config.toml`
     - `AGENTS.md`
     - `INSTALL.md`
@@ -578,8 +559,6 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
     - `compose/legacy/leantime-overlay-docker-compose.yml`
     - `docker/mcp-servers-source/SERVER_REGISTRY.md`
     - `docker/mcp-servers-source/setup-task-orchestrator.sh`
-    - `docker/mcp-servers-source/start-all-mcp-servers.sh`
-    - `docker/mcp-servers-source/start-profile.sh`
 
 ### PR #1151 -- feat(dcp): trusted input capability boundary — DMX-DCP-MODEL-ROUTING-MVP-0007I
 
@@ -587,10 +566,10 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - State: OPEN (draft: True)
 - Base branch: `main`
 - Head branch: `dcp/model-routing-0007i-trusted-input`
-- Head SHA: `e36dda5cc51afe663150ada6bfae28e1c35c4f7f`
+- Head SHA: `a091c67c3171e4ef7a2f16311974f42ca0ed4e9b`
 - Merge-state status: BEHIND
-- Updated: 2026-07-29T00:05:38Z
-- Changed-file count: 17 (capture_complete: True)
+- Updated: 2026-07-29T10:23:40Z
+- Changed-file count: 43 (capture_complete: True)
 - **Classification: NO_PROJECT_SOURCE_IMPACT**
 - Evidence: Draft, mergeStateStatus=BEHIND. Touches src/dopemux/dcp/__init__.py, input_adapters.py (17 files total) -- DCP trusted-input capability boundary feature work; no intersection with the 37 selected slots.
 - Current-main effect: None.
@@ -599,21 +578,21 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - Contradiction/overlap notes: First PR in the DCP model-routing-0007/0008/0009 series (0007I, followed by 0007T/#1153, 0007A/#1154, 0008/#1156, 0009/#1157).
 - Confidence: high
 - Sample changed paths:
+    - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/AUDITOR_REPAIR_REPORT.md`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/AUDITOR_REPORT.md`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/COMMAND_LOG.md`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/DIFF_NAME_ONLY.txt`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/DIFF_STAT.txt`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/EVIDENCE_LEDGER.md`
+    - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/FINALIZATION_POINTER.json`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/FINAL_STATUS_PORCELAIN.txt`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/HANDOFF.json`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/HANDOFF.md`
+    - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/IMPLEMENTATION_REPORT.md`
+    - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/MANIFEST.json`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/PAL_CHAIN.md`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/PROOF.json`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/SECURITY_BOUNDARY_REVIEW.md`
-    - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/TRUSTED_INPUT_DESIGN.md`
-    - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/TRUSTED_INPUT_TEST_MATRIX.json`
-    - `src/dopemux/dcp/__init__.py`
-    - `src/dopemux/dcp/input_adapters.py`
 
 ### PR #1153 -- test(dcp): trusted-input adversarial corpus — 0007T
 
@@ -621,10 +600,10 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - State: OPEN (draft: True)
 - Base branch: `main`
 - Head branch: `dcp/model-routing-0007t-adversarial-tests`
-- Head SHA: `dfa01bf12f01b924cd96d2ea483f166b81f73d1d`
+- Head SHA: `17cd5984d6e70f82366afae3d99f28b5f807dc26`
 - Merge-state status: BEHIND
-- Updated: 2026-07-29T00:06:46Z
-- Changed-file count: 34 (capture_complete: True)
+- Updated: 2026-07-29T10:30:06Z
+- Changed-file count: 60 (capture_complete: True)
 - **Classification: NO_PROJECT_SOURCE_IMPACT**
 - Evidence: Draft, mergeStateStatus=BEHIND. Touches src/dopemux/dcp/__init__.py, input_adapters.py (34 files total, mostly test corpus) -- DCP trusted-input adversarial test corpus; no intersection with the 37 selected slots.
 - Current-main effect: None.
@@ -647,7 +626,7 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/TRUSTED_INPUT_DESIGN.md`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/TRUSTED_INPUT_TEST_MATRIX.json`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/ADVERSARIAL_CORPUS.md`
-    - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/AUDITOR_REPORT.md`
+    - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/AUDITOR_REPAIR_REPORT.md`
 
 ### PR #1154 -- feat(dcp): trusted adapter registry (disabled) — 0007A
 
@@ -655,10 +634,10 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - State: OPEN (draft: True)
 - Base branch: `main`
 - Head branch: `dcp/model-routing-0007a-adapter-registry`
-- Head SHA: `ca487efd253e0399ffee28ec2aa39d07c4335a5b`
+- Head SHA: `1e2fb793557f3faf63124d76e2a52658017ca026`
 - Merge-state status: BEHIND
-- Updated: 2026-07-29T00:07:53Z
-- Changed-file count: 50 (capture_complete: True)
+- Updated: 2026-07-29T10:36:26Z
+- Changed-file count: 76 (capture_complete: True)
 - **Classification: NO_PROJECT_SOURCE_IMPACT**
 - Evidence: Draft, mergeStateStatus=BEHIND. Touches src/dopemux/dcp/__init__.py, input_adapters.py, trusted_adapter_registry.py (50 files total) -- DCP trusted-adapter-registry (disabled) feature work; no intersection with the 37 selected slots.
 - Current-main effect: None.
@@ -669,19 +648,19 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - Sample changed paths:
     - `config/dcp/trusted_input_adapters.json`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/ADAPTER_REGISTRY_POLICY.md`
+    - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/AUDITOR_REPAIR_REPORT.md`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/AUDITOR_REPORT.md`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/COMMAND_LOG.md`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/DIFF_NAME_ONLY.txt`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/DIFF_STAT.txt`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/EVIDENCE_LEDGER.md`
+    - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/FINALIZATION_POINTER.json`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/FINAL_STATUS_PORCELAIN.txt`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/HANDOFF.json`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/HANDOFF.md`
+    - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/IMPLEMENTATION_REPORT.md`
+    - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/MANIFEST.json`
     - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/PAL_CHAIN.md`
-    - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/PROOF.json`
-    - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/AUDITOR_REPORT.md`
-    - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/COMMAND_LOG.md`
-    - `proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/DIFF_NAME_ONLY.txt`
 
 ### PR #1155 -- fix(rte): surface tree-sitter degraded mode
 
@@ -691,7 +670,7 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - Head branch: `codex/tp-rte-truth-r0-005-tree-sitter-degraded`
 - Head SHA: `c05d8c062a40b2d3a1a9485ef239b433b659650b`
 - Merge-state status: BEHIND
-- Updated: 2026-07-29T00:08:54Z
+- Updated: 2026-07-29T10:27:03Z
 - Changed-file count: 7 (capture_complete: True)
 - **Classification: SOURCE_CONTENT_REFRESH_IF_MERGED**
 - Evidence: Draft, mergeStateStatus=BEHIND. Touches services/repo-truth-extractor/lib/prescan/code_intelligence_report.py, code_prescan.py, engine.py, and tests/test_code_prescan_truthfulness.py (7 files) -- a narrower RTE prescan fix (tree-sitter degraded-mode surfacing) in the same runtime family slot 23 (system-repotruthextractor.md) describes.
@@ -715,10 +694,10 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - State: OPEN (draft: True)
 - Base branch: `main`
 - Head branch: `dcp/model-routing-0008-runner-contract`
-- Head SHA: `b0e8b750874be1a4146aa15cbff2e0fc62c02192`
+- Head SHA: `dcfa4978f65044d93422f1a5b6837e54a6453319`
 - Merge-state status: BEHIND
-- Updated: 2026-07-29T00:09:14Z
-- Changed-file count: 66 (capture_complete: True)
+- Updated: 2026-07-29T10:44:11Z
+- Changed-file count: 92 (capture_complete: True)
 - **Classification: NO_PROJECT_SOURCE_IMPACT**
 - Evidence: Draft, mergeStateStatus=BEHIND. Touches src/dopemux/dcp/__init__.py, input_adapters.py, runner_contract.py, trusted_adapter_registry.py (66 files total) -- DCP inert-backend-runner-contract feature work; no intersection with the 37 selected slots.
 - Current-main effect: None.
@@ -785,7 +764,7 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - Head branch: `claude/distracted-brahmagupta-6b0743`
 - Head SHA: `3a6cda08047776bf62259eb350e79a6840a56892`
 - Merge-state status: BEHIND
-- Updated: 2026-07-29T00:36:42Z
+- Updated: 2026-07-29T10:26:27Z
 - Changed-file count: 2 (capture_complete: True)
 - **Classification: SOURCE_CONTENT_REFRESH_IF_MERGED**
 - Evidence: mergeStateStatus=BEHIND, not draft. Directly touches docs/03-reference/spec/dopetask/dopetask-canonical-spec.json (slot 25) plus docs/03-reference/governance/codex-macro-packet-blueprint.md. Title: 'feat(dopetask): add "claude" to execution.agent enum' -- this is the exact follow-up this packet itself flagged (see task-packets/generated/TP-DMX-FDOS-004-CHATGPT-PROJECT-SOURCE-REFRESH.json's execution.agent invariant note) after discovering the canonical schema's execution.agent enum lacked a 'claude' value.
@@ -801,13 +780,13 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 ### PR #1161 -- MCP fleet follow-ups: LOW audit findings, M11 consumer sweep, P-24 ADR
 
 - URL: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1161
-- State: OPEN (draft: True)
-- Base branch: `claude/mcp-multi-instance-design-d706d6`
+- State: OPEN (draft: False)
+- Base branch: `main`
 - Head branch: `claude/mcp-fleet-followups`
-- Head SHA: `8f3a10b93a158f78194850995bd781e79f59b70b`
-- Merge-state status: UNSTABLE
-- Updated: 2026-07-29T04:37:32Z
-- Changed-file count: 10 (capture_complete: True)
+- Head SHA: `9de59b49ed8a284feee1087cd4289880deb60e71`
+- Merge-state status: CLEAN
+- Updated: 2026-07-29T10:30:59Z
+- Changed-file count: 19 (capture_complete: True)
 - **Classification: SOURCE_CONTENT_REFRESH_IF_MERGED**
 - Evidence: Draft MCP/task-orchestrator follow-up touching the task-orchestrator Leantime follow-up document and a project-scoped task-orchestrator ADR. These changes can alter context for slot 17's Task Orchestrator system description.
 - Current-main effect: None; PR is unmerged.
@@ -823,9 +802,14 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
     - `docs/03-reference/planes/pm/task-orchestrator-leantime-followups.md`
     - `docs/90-adr/adr-dmx-mcp-project-scoped-task-orchestrator-001.md`
     - `docs/planes/pm/task-orchestrator-leantime-followups.md`
-    - `templates/skills/pr-docgen-sync/scripts/pr_docgen_sync_workflow.py`
-    - `tests/test_cli_mcp_startup.py`
-    - `tests/test_mcp_health_probe.py`
+    - `proof/pr_merge/embedded-audit/pr-1161/AUDITOR_REPORT.md`
+    - `proof/pr_merge/embedded-audit/pr-1161/PROOF.json`
+    - `proof/pr_merge/embedded-audit/pr-1161/PROOF.json.sig`
+    - `proof/pr_merge/embedded-audit/pr-1161/review_bundle/AGY_AUDIT_INPUT.md`
+    - `proof/pr_merge/embedded-audit/pr-1161/review_bundle/AGY_AUDIT_OUTPUT.json`
+    - `proof/pr_merge/embedded-audit/pr-1161/review_bundle/CHANGED_FILES.txt`
+    - `proof/pr_merge/embedded-audit/pr-1161/review_bundle/INSTRUCTION_LIKE_CONTENT.json`
+    - `proof/pr_merge/embedded-audit/pr-1161/review_bundle/UNIFIED_DIFF.txt`
 
 ### PR #1162 -- fix(pr-steward): paginate the changed-files completeness cross-check past 100 files
 
@@ -833,9 +817,9 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - State: OPEN (draft: False)
 - Base branch: `main`
 - Head branch: `fix/pr-steward-changed-files-pagination`
-- Head SHA: `77e26075f31d9675fc385c4f6698e0ddf7292a38`
-- Merge-state status: BLOCKED
-- Updated: 2026-07-29T04:47:31Z
+- Head SHA: `c59fec307e5340cd50acedf73d1d080d4654331d`
+- Merge-state status: BEHIND
+- Updated: 2026-07-29T10:29:45Z
 - Changed-file count: 3 (capture_complete: True)
 - **Classification: SOURCE_CONTENT_REFRESH_IF_MERGED**
 - Evidence: Touches tools/pr_steward/collector.py and pagination/release-approval tests. Changed-file completeness is a documented PR Steward readiness behavior represented by slot 32.
@@ -882,7 +866,7 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - Base branch: `main`
 - Head branch: `codex/to-conport-persistence-repair`
 - Head SHA: `c78c45b0e06a729d51f329e510f0a8069c46fca6`
-- Merge-state status: UNSTABLE
+- Merge-state status: BEHIND
 - Updated: 2026-07-29T06:25:29Z
 - Changed-file count: 11 (capture_complete: True)
 - **Classification: SOURCE_CONTENT_REFRESH_IF_MERGED**
@@ -911,9 +895,9 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
 - State: OPEN (draft: True)
 - Base branch: `main`
 - Head branch: `codex/approve-agy-gemini-3-1-pro-audit`
-- Head SHA: `8f2c009c35309c4aad371d17568528b61b84523d`
-- Merge-state status: UNSTABLE
-- Updated: 2026-07-29T07:53:00Z
+- Head SHA: `188eca5310c83d5f636bc7b5d9170ad859909ac8`
+- Merge-state status: BEHIND
+- Updated: 2026-07-29T09:55:14Z
 - Changed-file count: 6 (capture_complete: True)
 - **Classification: SOURCE_CONTENT_REFRESH_IF_MERGED**
 - Evidence: Draft, mergeStateStatus=UNSTABLE. Directly touches docs/ops/embedded-audit.md (slot 30) and schemas/proof/embedded_audit.schema.json (slot 31), plus the related proof-model test.
@@ -930,8 +914,172 @@ Touching a watched path is a trigger for review, not automatic proof of impact.
     - `task-packets/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001.json`
     - `tests/audit/test_agy_gemini31_model.py`
 
+### PR #1166 -- MCP fleet: follow-up implementation (network fixes, P22-F3 closed, M11 blocked+documented)
+
+- URL: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1166
+- State: OPEN (draft: True)
+- Base branch: `main`
+- Head branch: `claude/mcp-fleet-followup-implementation`
+- Head SHA: `8e2a60221110164e1b180f15b2ec2848ca55ddba`
+- Merge-state status: UNSTABLE
+- Updated: 2026-07-29T22:19:43Z
+- Changed-file count: 16 (capture_complete: True)
+- **Classification: NO_PROJECT_SOURCE_IMPACT**
+- Evidence: Draft PR touching src/dopemux/cli.py, Makefile, test files, and non-watched docs (docs/planes/pm, docs/02-how-to). No intersection with watched paths (src/dopemux/cli.py is not in src/dopemux/mcp/**). No selected slots affected.
+- Current-main effect: None.
+- Action if merged: None required for this package.
+- Source slots affected: none
+- Contradiction/overlap notes: None.
+- Confidence: high
+- Sample changed paths:
+    - `Makefile`
+    - `claudedocs/m11-red-lane-blocker-2026-07-29.md`
+    - `claudedocs/m11-workflow-api-rename-consumer-sweep-2026-07-29.md`
+    - `docker/leantime/configure_bridge.sh`
+    - `docs/02-how-to/pr-merge-flight-dashboard.md`
+    - `docs/planes/pm/pm-implementation-ledger.md`
+    - `docs/planes/pm/write-boundaries.md`
+    - `docs/pr_merge/usage-patterns.md`
+    - `scripts/ai_startup.sh`
+    - `scripts/deploy/setup/setup_dopemux.sh`
+    - `src/dopemux/cli.py`
+    - `src/dopemux/commands/mcp_commands.py`
+    - `tests/mcp/test_p22_safe_subset_guard.py`
+    - `tests/test_cli_mcp_startup.py`
+    - `tests/unit/test_ai_startup_network_preflight.py`
+
+### PR #1167 -- fix(pr-steward): validate proof-only final commit ranges
+
+- URL: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1167
+- State: OPEN (draft: True)
+- Base branch: `main`
+- Head branch: `fix/pr-steward-proof-pin-range-semantics`
+- Head SHA: `fa8cf6749182c13353a5554bea458d5c970bae5c`
+- Merge-state status: BLOCKED
+- Updated: 2026-07-29T10:26:03Z
+- Changed-file count: 1 (capture_complete: True)
+- **Classification: NO_PROJECT_SOURCE_IMPACT**
+- Evidence: Draft PR touching task-packets/pr-steward/TP-PRSTEWARD-PROOF-PIN-RANGE-SEMANTICS-001.md. No intersection with watched paths or selected slots.
+- Current-main effect: None.
+- Action if merged: None required for this package.
+- Source slots affected: none
+- Contradiction/overlap notes: None.
+- Confidence: high
+- Sample changed paths:
+    - `task-packets/pr-steward/TP-PRSTEWARD-PROOF-PIN-RANGE-SEMANTICS-001.md`
+
+### PR #1168 -- deps(deps): bump actions/upload-artifact from 4 to 7
+
+- URL: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1168
+- State: OPEN (draft: False)
+- Base branch: `main`
+- Head branch: `dependabot/github_actions/actions/upload-artifact-7`
+- Head SHA: `48e0f5369ec07585579d2431821380885a0b59fd`
+- Merge-state status: BLOCKED
+- Updated: 2026-07-29T16:05:18Z
+- Changed-file count: 2 (capture_complete: True)
+- **Classification: NO_PROJECT_SOURCE_IMPACT**
+- Evidence: Dependabot bump actions/upload-artifact. 2 files changed. No intersection with watched paths.
+- Current-main effect: None.
+- Action if merged: None required for this package.
+- Source slots affected: none
+- Contradiction/overlap notes: None.
+- Confidence: high
+- Sample changed paths:
+    - `.github/workflows/embedded-audit.yml`
+    - `.github/workflows/pr-steward.yml`
+
+### PR #1169 -- deps(deps): bump actions/create-github-app-token from 2.2.1 to 3.2.0
+
+- URL: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1169
+- State: OPEN (draft: False)
+- Base branch: `main`
+- Head branch: `dependabot/github_actions/actions/create-github-app-token-3.2.0`
+- Head SHA: `5c7ed656ad52f1471a7b2dfe27ad95e1b6e81914`
+- Merge-state status: BLOCKED
+- Updated: 2026-07-29T16:05:24Z
+- Changed-file count: 7 (capture_complete: True)
+- **Classification: NO_PROJECT_SOURCE_IMPACT**
+- Evidence: Dependabot bump actions/create-github-app-token. 7 files changed. No intersection with watched paths.
+- Current-main effect: None.
+- Action if merged: None required for this package.
+- Source slots affected: none
+- Contradiction/overlap notes: None.
+- Confidence: high
+- Sample changed paths:
+    - `.github/workflows/ddd-release-gate.yml`
+    - `.github/workflows/gemini-dispatch.yml`
+    - `.github/workflows/gemini-invoke.yml`
+    - `.github/workflows/gemini-plan-execute.yml`
+    - `.github/workflows/gemini-review.yml`
+    - `.github/workflows/gemini-scheduled-triage.yml`
+    - `.github/workflows/gemini-triage.yml`
+
+### PR #1170 -- deps(deps): bump actions/setup-node from 4 to 7
+
+- URL: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1170
+- State: OPEN (draft: False)
+- Base branch: `main`
+- Head branch: `dependabot/github_actions/actions/setup-node-7`
+- Head SHA: `2fba3993f4b36f361e72455cb6cfc096985233cb`
+- Merge-state status: BLOCKED
+- Updated: 2026-07-29T16:05:26Z
+- Changed-file count: 1 (capture_complete: True)
+- **Classification: NO_PROJECT_SOURCE_IMPACT**
+- Evidence: Dependabot bump actions/setup-node. 1 file changed. No intersection with watched paths.
+- Current-main effect: None.
+- Action if merged: None required for this package.
+- Source slots affected: none
+- Contradiction/overlap notes: None.
+- Confidence: high
+- Sample changed paths:
+    - `.github/workflows/embedded-audit.yml`
+
+### PR #1171 -- 🎨 Palette: Add descriptive hover/focus Tooltip to task Start buttons
+
+- URL: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1171
+- State: OPEN (draft: False)
+- Base branch: `main`
+- Head branch: `palette-task-start-tooltip-15106166164638501174`
+- Head SHA: `8029bcf4e20c7588dfcca2a2a2a44c5d233197d8`
+- Merge-state status: UNSTABLE
+- Updated: 2026-07-30T00:27:32Z
+- Changed-file count: 4 (capture_complete: True)
+- **Classification: NO_PROJECT_SOURCE_IMPACT**
+- Evidence: Palette tooltip change. 4 files changed (ui/test). No intersection with watched paths.
+- Current-main effect: None.
+- Action if merged: None required for this package.
+- Source slots affected: none
+- Contradiction/overlap notes: None.
+- Confidence: high
+- Sample changed paths:
+    - `scripts/audit/pal_clink_runner.py`
+    - `tests/audit/test_pal_clink_runner.py`
+    - `ui-dashboard/src/components/TaskSequencer.tsx`
+    - `ui-dashboard/src/components/__tests__/Accessibility.test.tsx`
+
+### PR #1172 -- deps(deps): bump mysql from 8.0 to 26.7
+
+- URL: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1172
+- State: OPEN (draft: False)
+- Base branch: `main`
+- Head branch: `dependabot/docker_compose/mysql-26.7`
+- Head SHA: `d6bfa8669d0ba99f5523142d3da5c29406ba31ea`
+- Merge-state status: BLOCKED
+- Updated: 2026-07-30T16:05:04Z
+- Changed-file count: 1 (capture_complete: True)
+- **Classification: NO_PROJECT_SOURCE_IMPACT**
+- Evidence: Dependabot bump mysql from 8.0 to 26.7. 1 file changed (compose.yml). No intersection with watched paths.
+- Current-main effect: None.
+- Action if merged: None required for this package.
+- Source slots affected: none
+- Contradiction/overlap notes: None.
+- Confidence: high
+- Sample changed paths:
+    - `compose.yml`
+
 ## 4. Conservation Check
 
-- Open PR inventory count: 32
-- Ledger entry count: 32
+- Open PR inventory count: 38
+- Ledger entry count: 38
 - Every PR number appears exactly once above (enforced by the build script's fail-closed classification lookup).

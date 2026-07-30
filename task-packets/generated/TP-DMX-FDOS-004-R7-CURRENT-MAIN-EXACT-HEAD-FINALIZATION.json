@@ -1,0 +1,27 @@
+{
+  "id": "TP-DMX-FDOS-004-R7-CURRENT-MAIN-EXACT-HEAD-FINALIZATION",
+  "project": "DDD-Enterprises/dopemux-mvp",
+  "target": "governance-package-finalization",
+  "repo_binding": {
+    "repository": "DDD-Enterprises/dopemux-mvp",
+    "base_branch": "main"
+  },
+  "series": "TP-DMX-FDOS-004",
+  "commit": {
+    "description": "Finalize exact-head 40-source refresh"
+  },
+  "pr": {
+    "title": "fix(fdos-004): finalize current-main 40-source package",
+    "body": "Finalization packet execution"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Finalize implementation and package",
+      "validation": "Validation gates pass"
+    }
+  ],
+  "execution": {
+    "agent": "shell"
+  }
+}
