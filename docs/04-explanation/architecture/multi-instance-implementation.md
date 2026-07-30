@@ -17,6 +17,14 @@ prelude: Multi Instance Implementation (explanation) for dopemux documentation a
 **Date**: 2025-10-04
 **Implementation Time**: ~2 hours
 
+> **Superseded**: The lettered A-E `instance_id` / `port_base` model described below (from the
+> original `src/dopemux/instance_manager.py`) has since been superseded by a hash-based
+> worktree identity scheme. `docs/02-how-to/instance-state-persistence.md` documents the same
+> now-deprecated A-E model (see its own deprecation banner); see
+> `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md` §2.1 for the current hash-based
+> model and design rationale. This document is kept as a historical record of the original
+> implementation.
+
 ## Executive Summary
 
 Successfully implemented full multi-instance support for Dopemux with automatic detection, worktree creation, and seamless ConPort integration. Users can now run up to 5 concurrent instances with zero context destruction and automatic data sharing.

@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shlex
 import socket
 import subprocess
 from datetime import datetime, timezone
@@ -139,20 +140,26 @@ def emit_mcp_health(project_root: Path) -> str | None:
     try:
         cached = _load_cache(project_root)
         if cached:
-            return _format_health(cached)
+            return _format_health(cached, project_root)
 
         health: dict = {}
         health["servers"] = _probe_servers(project_root)
         health["leaked_containers"] = _count_leaked_containers()
 
         _save_cache(project_root, health)
-        return _format_health(health)
+        return _format_health(health, project_root)
     except Exception:
         return None
 
 
-def _format_health(health: dict) -> str | None:
-    """Format health dict into the SessionStart injection line(s)."""
+def _format_health(health: dict, project_root: Path | None = None) -> str | None:
+    """Format health dict into the SessionStart injection line(s).
+
+    Remediation must recommend the repo-aware ``dopemux mcp start`` (with
+    ``--repo`` when a project root is known), never bare ``mcp up`` — the
+    no-``--repo`` ``mcp up`` path is legacy cwd-compose and fails in worktrees
+    or external repos without a compose.yml.
+    """
     servers: dict = health.get("servers", {})
     leaked: int | None = health.get("leaked_containers")
 
@@ -167,7 +174,10 @@ def _format_health(health: dict) -> str | None:
         elif up is False:
             status_parts.append(f"{name} ❌")
             port_str = f":{port}" if port else ""
-            remediation = _SERVER_REMEDIATION.get(name, f"docker compose up -d {name}")
+            repo_arg = f" --repo {shlex.quote(str(project_root))}" if project_root else ""
+            remediation = _SERVER_REMEDIATION.get(
+                name, f"dopemux mcp start{repo_arg} --services {name}"
+            )
             problems.append(
                 f"⚠️ {name} {port_str} not listening → "
                 f"{remediation}"
