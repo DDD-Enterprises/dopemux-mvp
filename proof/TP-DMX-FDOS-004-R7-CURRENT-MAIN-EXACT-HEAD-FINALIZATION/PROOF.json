@@ -1,0 +1,19 @@
+{
+  "head_sha": "0e2eb604201e3bb055e874d854b453ae3d539f91",
+  "generated_at": "2026-07-30T23:21:28Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "Claude Code local pre-PR audit",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-FDOS-004-R7-CURRENT-MAIN-EXACT-HEAD-FINALIZATION/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "Fixed trailing whitespace before commit"
+    ],
+    "remaining_risks": [],
+    "skip_reason": null
+  }
+}
