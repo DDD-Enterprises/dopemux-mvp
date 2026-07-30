@@ -16,6 +16,7 @@ from scripts.audit.pal_clink_runner import (
     run_audit,
     run_audit_and_capture_payload,
     run_audit_and_capture_verdict,
+    _extract_json_robust,
 )
 from scripts.audit.route_schema import AuditRoute
 
@@ -629,3 +630,31 @@ class TestRunAuditAndCapturePayload:
         jsonschema.validate(raw_output, json.loads(SCHEMA_PATH.read_text()))
         assert payload["verdict"] == "PASS"
         assert captured_payload["verdict"] == "PASS"
+
+
+# ---------------------------------------------------------------------------
+# _extract_json_robust
+# ---------------------------------------------------------------------------
+
+
+class TestExtractJsonRobust:
+    def test_direct_valid_json(self) -> None:
+        obj = {"key": "value", "number": 123}
+        assert _extract_json_robust(json.dumps(obj)) == obj
+
+    def test_wrapped_in_markdown_fences(self) -> None:
+        obj = {"verdict": "PASS", "findings": []}
+        wrapped = f"```json\n{json.dumps(obj)}\n```"
+        assert _extract_json_robust(wrapped) == obj
+
+        wrapped_no_lang = f"```\n{json.dumps(obj)}\n```"
+        assert _extract_json_robust(wrapped_no_lang) == obj
+
+    def test_conversational_response_with_json_inside(self) -> None:
+        obj = {"verdict": "PASS_WITH_RISKS"}
+        text = f"Sure! Here is the response:\n{json.dumps(obj)}\nHope that helps!"
+        assert _extract_json_robust(text) == obj
+
+    def test_invalid_json_raises_decode_error(self) -> None:
+        with pytest.raises(json.JSONDecodeError):
+            _extract_json_robust("not a json string")

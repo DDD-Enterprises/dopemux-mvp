@@ -418,6 +418,35 @@ def _audit_output_as_dict(output: PalClinkAuditOutput) -> dict[str, Any]:
     }
 
 
+def _extract_json_robust(text: str) -> Any:
+    import re
+    text_stripped = text.strip()
+    try:
+        return json.loads(text_stripped)
+    except json.JSONDecodeError:
+        pass
+
+    # Try removing markdown fences
+    pattern = r"```(?:json)?\s*([\s\S]*?)\s*```"
+    match = re.search(pattern, text_stripped)
+    if match:
+        try:
+            return json.loads(match.group(1).strip())
+        except json.JSONDecodeError:
+            pass
+
+    # Try finding content between first '{' and last '}'
+    first_brace = text_stripped.find('{')
+    last_brace = text_stripped.rfind('}')
+    if first_brace != -1 and last_brace != -1 and last_brace > first_brace:
+        try:
+            return json.loads(text_stripped[first_brace:last_brace+1])
+        except json.JSONDecodeError:
+            pass
+
+    raise json.JSONDecodeError("Could not extract JSON from text", text, 0)
+
+
 def _verdict_payload_from_output(output: PalClinkAuditOutput) -> dict[str, Any]:
     if output.timed_out or output.exit_code != 0 or output.error:
         return {
@@ -426,7 +455,7 @@ def _verdict_payload_from_output(output: PalClinkAuditOutput) -> dict[str, Any]:
             "risks": [output.error or output.stderr or "PAL clink exited non-zero."],
         }
     try:
-        payload = json.loads(output.stdout)
+        payload = _extract_json_robust(output.stdout)
     except json.JSONDecodeError:
         return {"status": "success", "content": output.stdout}
     if isinstance(payload, dict):
@@ -441,7 +470,7 @@ def _unwrap_tool_output_payload(payload: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(content, str):
         return payload
     try:
-        content_payload = json.loads(content)
+        content_payload = _extract_json_robust(content)
     except json.JSONDecodeError:
         return payload
     if isinstance(content_payload, dict):
