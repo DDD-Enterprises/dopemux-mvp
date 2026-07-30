@@ -201,6 +201,25 @@ function App() {
     setNotifications((current) => current.filter((n) => n.id !== id));
   }, []);
 
+  const handleClearNotifications = useCallback(() => {
+    if (!isConfirmingClear) {
+      setIsConfirmingClear(true);
+      if (clearConfirmTimeoutRef.current) clearTimeout(clearConfirmTimeoutRef.current);
+      clearConfirmTimeoutRef.current = setTimeout(() => {
+        setIsConfirmingClear(false);
+        clearConfirmTimeoutRef.current = null;
+      }, 3000);
+      return;
+    }
+    if (clearConfirmTimeoutRef.current) {
+      clearTimeout(clearConfirmTimeoutRef.current);
+      clearConfirmTimeoutRef.current = null;
+    }
+    setIsConfirmingClear(false);
+    setNotifications([]);
+    feedHeadingRef.current?.focus();
+  }, [isConfirmingClear]);
+
   const handleCopyRecommendation = useCallback(async () => {
     if (!navigator.clipboard?.writeText) {
       setErrorMessage('Clipboard API is not supported in this browser or context.');
@@ -769,24 +788,7 @@ function App() {
                   variant="outlined"
                   icon={isConfirmingClear ? <AlertTriangle size={14} aria-hidden="true" /> : <Trash2 size={14} aria-hidden="true" />}
                   label={isConfirmingClear ? 'Confirm Clear?' : 'Clear'}
-                  onClick={() => {
-                    if (!isConfirmingClear) {
-                      setIsConfirmingClear(true);
-                      if (clearConfirmTimeoutRef.current) clearTimeout(clearConfirmTimeoutRef.current);
-                      clearConfirmTimeoutRef.current = setTimeout(() => {
-                        setIsConfirmingClear(false);
-                        clearConfirmTimeoutRef.current = null;
-                      }, 3000);
-                      return;
-                    }
-                    if (clearConfirmTimeoutRef.current) {
-                      clearTimeout(clearConfirmTimeoutRef.current);
-                      clearConfirmTimeoutRef.current = null;
-                    }
-                    setIsConfirmingClear(false);
-                    setNotifications([]);
-                    feedHeadingRef.current?.focus();
-                  }}
+                  onClick={handleClearNotifications}
                   aria-label={isConfirmingClear ? 'Confirm clear all notifications' : 'Clear all notifications'}
                   sx={{
                     ml: isLoading ? 1 : 'auto',

@@ -134,6 +134,7 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toMatch(/aria-label=\{\s*nextTaskAfterCompletion\s*[\s\S]*\?\s*`Complete \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterCompletion\.title\}`\s*[\s\S]*:\s*`Complete \$\{currentTask\.title\}, finish ritual`\s*\}/);
   expect(content).toMatch(/aria-label=\{\s*isSkipConfirming\s*[\s\S]*nextTaskAfterSkip\s*[\s\S]*`Confirm skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*[\s\S]*:\s*`Confirm skip task: \$\{currentTask\.title\}`\s*[\s\S]*:\s*nextTaskAfterSkip\s*[\s\S]*`Skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*[\s\S]*:\s*`Skip task: \$\{currentTask\.title\}`\s*\}/);
   expect(content).toContain('aria-label={`Start task: ${task.title}`}');
+  expect(content).toContain('title={`Start task and switch active focus to: ${task.title}`}');
   // New LinearProgress for task progress
   expect(content).toContain('aria-label={`Progress for task: ${currentTask.title}`}');
   // Timer accessibility
