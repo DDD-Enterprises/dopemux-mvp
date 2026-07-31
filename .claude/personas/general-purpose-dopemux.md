@@ -20,7 +20,7 @@
 
 **Analysis** (PAL MCP):
 ```python
-# ✅ Use Zen for systematic analysis
+# ✅ Use PAL for systematic analysis
 mcp__pal__chat(
     model=model_from_tool_orchestrator,
     step="Analysis step...",

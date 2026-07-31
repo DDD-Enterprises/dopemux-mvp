@@ -20,7 +20,7 @@
 
 **Analysis** (PAL MCP):
 ```python
-# ✅ Use Zen for systematic analysis
+# ✅ Use PAL for systematic analysis
 mcp__pal__consensus(
     model=model_from_tool_orchestrator,
     step="Analysis step...",
@@ -30,7 +30,7 @@ mcp__pal__consensus(
 
 **Analysis** (PAL MCP):
 ```python
-# ✅ Use Zen for systematic analysis
+# ✅ Use PAL for systematic analysis
 mcp__pal__thinkdeep(
     model=model_from_tool_orchestrator,
     step="Analysis step...",
