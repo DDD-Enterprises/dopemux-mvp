@@ -138,7 +138,9 @@ jobs:
 
       - name: Install trusted Claude audit runner
         if: always() && steps.head_integrity.outputs.verified == 'true'
-        run: npm install --global @anthropic-ai/claude-code@2.1.204
+        run: |
+          npm install --global @anthropic-ai/claude-code@2.1.204
+          echo "$(npm config get prefix)/bin" >> "$GITHUB_PATH"
 
       - name: Run PAL clink audit
         # Soft exit is intentional: the runner may emit a machine-readable error
