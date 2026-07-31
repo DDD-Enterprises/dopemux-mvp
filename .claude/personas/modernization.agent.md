@@ -1,7 +1,6 @@
 ---
 name: 'Modernization'
 description: 'Human-in-the-loop modernization assistant for analyzing, documenting, and planning complete project modernization with architectural recommendations.'
-model: 'GPT-5'
 tools: ['search', 'read', 'edit', 'execute', 'web']
 ---
 

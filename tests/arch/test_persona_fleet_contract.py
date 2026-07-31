@@ -68,3 +68,27 @@ def test_no_packaged_persona_is_archived_canonical():
     assert not (archived & packaged), (
         f"packaged personas whose canonical source was archived: {sorted(archived & packaged)}"
     )
+
+
+def test_role_aliases_targets_present_in_packaged():
+    """Every unique InstructionManager.ROLE_ALIASES target must be in PACKAGED_PERSONAS."""
+    im_path = REPO_ROOT / "src" / "dopemux" / "claude" / "instruction_manager.py"
+    source = im_path.read_text()
+    import ast
+    tree = ast.parse(source)
+    aliases = None
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name) and target.id == "ROLE_ALIASES":
+                    aliases = ast.literal_eval(node.value)
+        if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name) and node.target.id == "ROLE_ALIASES":
+            aliases = ast.literal_eval(node.value)
+    assert aliases is not None, "Could not find ROLE_ALIASES in instruction_manager.py"
+    sync = _load_sync_module()
+    packaged_set = set(sync.PACKAGED_PERSONAS)
+    unique_targets = set(aliases.values())
+    missing = sorted(unique_targets - packaged_set)
+    assert not missing, (
+        f"ROLE_ALIASES targets missing from PACKAGED_PERSONAS: {missing}"
+    )
