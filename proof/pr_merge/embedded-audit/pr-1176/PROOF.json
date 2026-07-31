@@ -1,0 +1,37 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1176,
+  "head_sha": "9221dd49b09628d8fd43a9fa7f01def89112beda",
+  "embedded_audit": {
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-3.1-pro-high --effort high --sandbox --mode plan --print-timeout 20m --output-format json --add-dir /tmp/ccar-002-audit-bundle --print '...'",
+    "exit_code": 0,
+    "report_path": "proof/pr_merge/embedded-audit/pr-1176/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "severity": "low",
+        "area": "determinism",
+        "description": "Absolute path leakage in meta.source_manifest causes --check to fail when run in different worktree paths"
+      },
+      {
+        "severity": "low",
+        "area": "portability",
+        "description": "Hardcoded directory depth (.parent.parent.parent) assumes fixed project layout"
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Builder --check path sensitivity does not affect catalog content determinism",
+      "Directory depth assumption is localized and does not affect schema validity"
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}
