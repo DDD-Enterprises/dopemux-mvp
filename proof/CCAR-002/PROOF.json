@@ -1,21 +1,23 @@
 {
-  "required": true,
-  "status": "SKIPPED",
-  "auditor_tool": "none",
-  "auditor_model": "unknown",
-  "invocation": null,
-  "exit_code": null,
-  "report_path": "proof/CCAR-002/AUDITOR_REPORT.md",
-  "findings": [],
-  "fixes_applied": [],
-  "remaining_risks": [
-    "Independent audit not yet run. Pending C1 push and AGY gemini-3.1-pro-high audit per packet S6."
-  ],
-  "skip_reason": "Independent audit not yet run — pending C1 push and AGY gemini-3.1-pro-high audit per packet S6-S7.",
-  "instruction_like_content": {
-    "detected": false,
-    "match_count": 0,
-    "truncated": false,
-    "matches": []
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/CCAR-002/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Independent audit not yet run. Pending C1 push and AGY gemini-3.1-pro-high audit per packet S6."
+    ],
+    "skip_reason": "Independent audit not yet run — pending C1 push and AGY gemini-3.1-pro-high audit per packet S6-S7.",
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
   }
 }
