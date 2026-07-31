@@ -1,0 +1,6 @@
+TO replica A (port 8001) killed and restarted (to1b.log).
+Replay of identical request (idempotency_key=proof-identical-key) on the restarted process returned:
+epic_id: epic_6916e2b901075051a1d5d14988580aff
+status: planned
+title: Identical epic
+Same epic_id and persisted value as before restart. Idempotency survives process restart.

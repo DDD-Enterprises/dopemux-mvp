@@ -1,5 +1,6 @@
 import json
 import sys
+import types
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -19,9 +20,44 @@ for _module_name in list(sys.modules):
     if _module_name == "app" or _module_name.startswith("app."):
         sys.modules.pop(_module_name, None)
 
+# Register a FastMCP stub that accepts the production decorator shape
+# `tool(name=..., description=...)` before `app.main` is imported. The
+# production registration in app/main.py calls the decorator with keyword
+# arguments; a positional-only stub would raise TypeError during import.
+if "mcp.server.fastmcp" not in sys.modules:
+    class _FastMCPStub:
+        def __init__(self, *args, **kwargs):
+            self.tools = {}
+
+        def tool(self, *, name=None, description=None):
+            def decorator(func):
+                self.tools[name or func.__name__] = {
+                    "description": description,
+                    "handler": func,
+                }
+                return func
+
+            return decorator
+
+    fastmcp_module = types.ModuleType("mcp.server.fastmcp")
+    fastmcp_module.FastMCP = _FastMCPStub
+    mcp_module = types.ModuleType("mcp")
+    mcp_server_module = types.ModuleType("mcp.server")
+    mcp_server_models_module = types.ModuleType("mcp.server.models")
+    mcp_server_models_module.InitializationOptions = object
+    mcp_server_stdio_module = types.ModuleType("mcp.server.stdio")
+    mcp_server_stdio_module.stdio_server = object
+
+    sys.modules["mcp"] = mcp_module
+    sys.modules["mcp.server"] = mcp_server_module
+    sys.modules["mcp.server.fastmcp"] = fastmcp_module
+    sys.modules["mcp.server.models"] = mcp_server_models_module
+    sys.modules["mcp.server.stdio"] = mcp_server_stdio_module
+
 from app.main import app  # noqa: E402
 from app.api import project_workflow  # noqa: E402
-from app.services.workflow_service import WorkflowService  # noqa: E402
+from app.models.workflow import CreateEpicRequest  # noqa: E402
+from app.services.workflow_service import WorkflowConflictError, WorkflowService  # noqa: E402
 
 
 class MemoryBridgeClient:
@@ -37,6 +73,36 @@ class MemoryBridgeClient:
         }
         return True
 
+    async def claim_custom_data(self, **kwargs):
+        key = (kwargs["category"], kwargs["key"])
+        value = dict(kwargs["value"])
+        fingerprint = value.get("_fingerprint_v1", "")
+
+        if key in self.rows:
+            existing = self.rows[key]
+            existing_fp = existing.get("value", {}).get("_fingerprint_v1")
+            if existing_fp is None:
+                return {
+                    "result": "LEGACY_UNFINGERPRINTED",
+                    "value": existing["value"],
+                }
+            if existing_fp == fingerprint:
+                return {
+                    "result": "MATCHED",
+                    "value": existing["value"],
+                }
+            return {
+                "result": "CONFLICT",
+                "value": existing["value"],
+            }
+
+        self.rows[key] = {
+            "key": kwargs["key"],
+            "value": value,
+            "timestamp": value.get("updated_at"),
+        }
+        return {"result": "CREATED", "value": value}
+
     async def get_custom_data(self, **kwargs):
         category = kwargs["category"]
         key = kwargs.get("key")
@@ -50,6 +116,108 @@ class MemoryBridgeClient:
 
     async def aclose(self):
         return None
+
+
+@pytest.mark.asyncio
+async def test_create_epic_replays_same_idempotency_key_without_duplicate():
+    service = WorkflowService(workspace_id="/tmp/workflow-idempotency")
+    service.store._client = MemoryBridgeClient()
+    request = CreateEpicRequest(
+        title="Synthetic epic",
+        description="Synthetic persistence test",
+        business_value="Validate replay",
+        tags=["synthetic"],
+        idempotency_key="synthetic-repeat-key",
+    )
+
+    try:
+        first = await service.create_epic(request)
+        second = await service.create_epic(request)
+        stored = await service.list_epics(tag="synthetic")
+
+        assert second.id == first.id
+        assert first.idempotency_key == "synthetic-repeat-key"
+        assert [epic.id for epic in stored] == [first.id]
+    finally:
+        await service.close()
+
+
+@pytest.mark.asyncio
+async def test_create_epic_rejects_conflicting_idempotency_key_payload():
+    service = WorkflowService(workspace_id="/tmp/workflow-idempotency")
+    service.store._client = MemoryBridgeClient()
+    original = CreateEpicRequest(
+        title="Original synthetic epic",
+        description="Synthetic persistence test",
+        business_value="Validate replay",
+        idempotency_key="synthetic-conflict-key",
+    )
+    conflicting = CreateEpicRequest(
+        title="Different synthetic epic",
+        description="Synthetic persistence test",
+        business_value="Validate replay",
+        idempotency_key="synthetic-conflict-key",
+    )
+
+    try:
+        created = await service.create_epic(original)
+        with pytest.raises(WorkflowConflictError):
+            await service.create_epic(conflicting)
+        stored = await service.list_epics()
+
+        assert [epic.id for epic in stored] == [created.id]
+    finally:
+        await service.close()
+
+
+@pytest.mark.asyncio
+async def test_reordered_lists_replay_returns_conflict_and_winner_unchanged():
+    """Reordered immutable lists are distinct requests: replay conflicts.
+
+    A replayed create that merely reorders acceptance criteria or tags is a
+    different immutable request and must conflict, leaving the first
+    persisted value untouched.
+    """
+    service = WorkflowService(workspace_id="/tmp/workflow-reordered-conflict")
+    service.store._client = MemoryBridgeClient()
+    original = CreateEpicRequest(
+        title="Ordered epic",
+        description="Synthetic persistence test",
+        business_value="Validate replay",
+        acceptance_criteria=["alpha", "beta", "gamma"],
+        tags=["one", "two"],
+        idempotency_key="synthetic-reordered-key",
+    )
+    reordered_criteria = CreateEpicRequest(
+        title="Ordered epic",
+        description="Synthetic persistence test",
+        business_value="Validate replay",
+        acceptance_criteria=["gamma", "beta", "alpha"],
+        tags=["one", "two"],
+        idempotency_key="synthetic-reordered-key",
+    )
+    reordered_tags = CreateEpicRequest(
+        title="Ordered epic",
+        description="Synthetic persistence test",
+        business_value="Validate replay",
+        acceptance_criteria=["alpha", "beta", "gamma"],
+        tags=["two", "one"],
+        idempotency_key="synthetic-reordered-key",
+    )
+
+    try:
+        created = await service.create_epic(original)
+        with pytest.raises(WorkflowConflictError):
+            await service.create_epic(reordered_criteria)
+        with pytest.raises(WorkflowConflictError):
+            await service.create_epic(reordered_tags)
+        stored = await service.list_epics()
+
+        assert [epic.id for epic in stored] == [created.id]
+        assert stored[0].acceptance_criteria == ["alpha", "beta", "gamma"]
+        assert stored[0].tags == ["one", "two"]
+    finally:
+        await service.close()
 
 
 @pytest.mark.asyncio

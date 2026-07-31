@@ -14,9 +14,9 @@ class _FastMCPStub:
     def __init__(self, *args, **kwargs):
         self.tools = []
 
-    def tool(self):
+    def tool(self, *, name=None, description=None):
         def decorator(func):
-            self.tools.append(func.__name__)
+            self.tools.append(name or func.__name__)
             return func
 
         return decorator
@@ -37,9 +37,9 @@ sys.modules.setdefault("mcp.server.fastmcp", fastmcp_module)
 sys.modules.setdefault("mcp.server.models", mcp_server_models_module)
 sys.modules.setdefault("mcp.server.stdio", mcp_server_stdio_module)
 
-import conport_mcp_stdio
-import server as mcp_server
-from enhanced_server import EnhancedConPortServer
+import conport_mcp_stdio  # noqa: E402
+import server as mcp_server  # noqa: E402
+from enhanced_server import EnhancedConPortServer  # noqa: E402
 
 
 def _response_json(response):

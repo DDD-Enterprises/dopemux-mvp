@@ -412,6 +412,7 @@ services:
       - AGE_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
       - QDRANT_URL=http://mcp-qdrant:6333
       - REDIS_URL=redis://redis-events:6379
+      - CONPORT_URL=http://conport:3004
     depends_on:
       postgres:
         condition: service_healthy
@@ -441,8 +442,9 @@ services:
       - LEANTIME_TOKEN=${LEANTIME_TOKEN}
       - REDIS_URL=redis://redis-primary:6379
       - WORKSPACE_ID=${DOPEMUX_WORKSPACE_ID:-/app}
-      - CONPORT_URL=http://conport:3005
+      - CONPORT_URL=http://conport:3004
       - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
+      - DOPECON_BRIDGE_TOKEN=${DOPECON_BRIDGE_TOKEN:?DOPECON_BRIDGE_TOKEN must be set to an authenticated bridge JWT}
       - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
       - TASK_ORCHESTRATOR_API_KEY=${TASK_ORCHESTRATOR_API_KEY:-dev-key-456}
       - DOPECON_BRIDGE_REDIS_URL=redis://redis-primary:6379

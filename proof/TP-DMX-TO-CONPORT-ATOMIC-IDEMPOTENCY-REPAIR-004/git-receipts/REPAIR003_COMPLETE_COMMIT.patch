@@ -1,0 +1,1623 @@
+commit 34ffb53dfb3b29548a9d076aae3c24be84e75575
+Author: DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…) <167156098+hu3mann@users.noreply.github.com>
+Date:   Thu Jul 30 18:43:33 2026 -0700
+
+    fix(task-orchestrator): make epic idempotency atomic across replicas
+
+    Replace pre-read/upsert race with atomic claim at ConPort PostgreSQL.
+    Add POST /api/custom_data/claim with INSERT ON CONFLICT DO NOTHING.
+    Propagate through DopeconBridge and shared client.
+    Versioned fingerprint v1 for deterministic idempotency matching.
+
+    Claim contract: CREATED | MATCHED | CONFLICT | LEGACY_UNFINGERPRINTED | OWNER_ERROR
+
+    Co-authored-by: CommandCodeBot <noreply@commandcode.ai>
+---
+ .../mcp-servers-source/conport/enhanced_server.py  |  96 ++++++++
+ .../conport/tests/test_custom_data_atomic_claim.py | 273 +++++++++++++++++++++
+ services/dopecon-bridge/dopecon_bridge/clients.py  |   4 +
+ services/dopecon-bridge/dopecon_bridge/routes.py   |  10 +
+ services/shared/dopecon_bridge_client/client.py    |  34 +++
+ services/task-orchestrator/app/models/workflow.py  |  34 +++
+ .../app/services/workflow_service.py               |  70 ++++--
+ .../app/services/workflow_store.py                 |  19 ++
+ ...-IDEMPOTENCY-REPAIR-003-implementation-notes.md |  93 +++++++
+ ...O-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-plan.md |  72 ++++++
+ ...NPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-research.md |  98 ++++++++
+ ...X-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003.json | 149 +++++++++++
+ ...est_task_orchestrator_concurrent_idempotency.py | 219 +++++++++++++++++
+ ...ask_orchestrator_workflow_atomic_idempotency.py | 227 +++++++++++++++++
+ ...sk_orchestrator_workflow_route_certification.py |  30 +++
+ 15 files changed, 1405 insertions(+), 23 deletions(-)
+
+diff --git a/docker/mcp-servers-source/conport/enhanced_server.py b/docker/mcp-servers-source/conport/enhanced_server.py
+index 9bbc988fc1..15125cca4e 100644
+--- a/docker/mcp-servers-source/conport/enhanced_server.py
++++ b/docker/mcp-servers-source/conport/enhanced_server.py
+@@ -269,6 +269,7 @@ class EnhancedConPortServer:
+         # Custom data endpoints (generic key-value store)
+         self.app.router.add_post('/api/custom_data', self.save_custom_data)
+         self.app.router.add_get('/api/custom_data', self.get_custom_data)
++        self.app.router.add_post('/api/custom_data/claim', self.claim_custom_data)
+         self.app.router.add_delete('/api/custom_data', self.delete_custom_data)
+
+         # MCP compatibility endpoint
+@@ -1717,6 +1718,101 @@ class EnhancedConPortServer:
+             logger.error(f"Error deleting custom data: {e}")
+             return web.json_response({'error': str(e)}, status=500)
+
++    async def claim_custom_data(self, request):
++        """Atomically claim a custom data row with fingerprint-based idempotency.
++
++        Contract:
++          CREATED  — first writer established identity + fingerprint
++          MATCHED  — existing row has same fingerprint
++          CONFLICT — existing row has different fingerprint
++          LEGACY_UNFINGERPRINTED — existing row predates fingerprinting
++          OWNER_ERROR — transaction or owner failure
++        """
++        try:
++            data = await request.json()
++            workspace_id = data.get('workspace_id')
++            category = data.get('category')
++            key = data.get('key')
++            value = data.get('value')
++
++            if not all([workspace_id, category, key, value is not None]):
++                return web.json_response({
++                    'error': 'Missing required fields: workspace_id, category, key, value'
++                }, status=400)
++
++            if not isinstance(value, dict):
++                return web.json_response({
++                    'error': 'value must be a JSON object'
++                }, status=400)
++
++            fingerprint = value.get('_fingerprint_v1')
++            if not fingerprint:
++                return web.json_response({
++                    'error': 'value must contain _fingerprint_v1',
++                    'result': 'MISSING_FINGERPRINT'
++                }, status=400)
++
++            async with self.db_pool.acquire() as conn:
++                async with conn.transaction():
++                    row = await conn.fetchrow("""
++                        INSERT INTO custom_data (workspace_id, category, key, value, updated_at)
++                        VALUES ($1, $2, $3, $4, NOW())
++                        ON CONFLICT (workspace_id, category, key) DO NOTHING
++                        RETURNING value
++                    """, workspace_id, category, key, json.dumps(value))
++
++                    if row is not None:
++                        persisted = json.loads(row['value'])
++                        logger.info("🔒 Custom data claimed: %s/%s", category, key)
++                        return web.json_response({
++                            'result': 'CREATED',
++                            'workspace_id': workspace_id,
++                            'category': category,
++                            'key': key,
++                            'value': persisted,
++                        })
++
++                    row = await conn.fetchrow("""
++                        SELECT value FROM custom_data
++                        WHERE workspace_id = $1 AND category = $2 AND key = $3
++                    """, workspace_id, category, key)
++
++                    existing = json.loads(row['value'])
++                    existing_fp = existing.get('_fingerprint_v1') if isinstance(existing, dict) else None
++
++                    if existing_fp is None:
++                        return web.json_response({
++                            'result': 'LEGACY_UNFINGERPRINTED',
++                            'workspace_id': workspace_id,
++                            'category': category,
++                            'key': key,
++                            'value': existing,
++                        })
++
++                    if existing_fp == fingerprint:
++                        return web.json_response({
++                            'result': 'MATCHED',
++                            'workspace_id': workspace_id,
++                            'category': category,
++                            'key': key,
++                            'value': existing,
++                        })
++
++                    return web.json_response({
++                        'result': 'CONFLICT',
++                        'workspace_id': workspace_id,
++                        'category': category,
++                        'key': key,
++                        'value': existing,
++                    })
++
++        except Exception as e:
++            logger.error("Error claiming custom data: %s", e)
++            return web.json_response({
++                'error': str(e),
++                'result': 'OWNER_ERROR',
++            }, status=500)
++
+     async def mcp_endpoint(self, request):
+         """Full MCP Tool Server implementation via JSON-RPC"""
+         try:
+diff --git a/docker/mcp-servers-source/conport/tests/test_custom_data_atomic_claim.py b/docker/mcp-servers-source/conport/tests/test_custom_data_atomic_claim.py
+new file mode 100644
+index 0000000000..98c6be148e
+--- /dev/null
++++ b/docker/mcp-servers-source/conport/tests/test_custom_data_atomic_claim.py
+@@ -0,0 +1,273 @@
++"""Tests for ConPort POST /api/custom_data/claim — atomic idempotency claims."""
++import asyncio
++import json
++import sys
++import types
++from pathlib import Path
++
++import pytest
++
++CONPORT_DIR = Path(__file__).resolve().parents[1]
++sys.path.insert(0, str(CONPORT_DIR))
++
++# Stub mcp.server.fastmcp + asyncpg + redis before importing conport modules
++class _FastMCPStub:
++    def __init__(self, *args, **kwargs):
++        self.tools = []
++
++    def tool(self):
++        def decorator(func):
++            self.tools.append(func.__name__)
++            return func
++        return decorator
++
++fastmcp_module = types.ModuleType("mcp.server.fastmcp")
++fastmcp_module.FastMCP = _FastMCPStub
++mcp_module = types.ModuleType("mcp")
++mcp_server_module = types.ModuleType("mcp.server")
++mcp_server_models_module = types.ModuleType("mcp.server.models")
++mcp_server_models_module.InitializationOptions = object
++mcp_server_stdio_module = types.ModuleType("mcp.server.stdio")
++mcp_server_stdio_module.stdio_server = object
++sys.modules.setdefault("mcp", mcp_module)
++sys.modules.setdefault("mcp.server", mcp_server_module)
++sys.modules.setdefault("mcp.server.fastmcp", fastmcp_module)
++sys.modules.setdefault("mcp.server.models", mcp_server_models_module)
++sys.modules.setdefault("mcp.server.stdio", mcp_server_stdio_module)
++
++# Stub asyncpg and redis so enhanced_server doesn't auto-install
++asyncpg_stub = types.ModuleType("asyncpg")
++asyncpg_stub.connect = lambda *a, **kw: None
++redis_stub = types.ModuleType("redis")
++redis_stub.Redis = lambda *a, **kw: None
++redis_stub.asyncio = types.ModuleType("redis.asyncio")
++redis_stub.asyncio.Redis = lambda *a, **kw: None
++aioredis_stub = types.ModuleType("aioredis")
++aioredis_stub.Redis = lambda *a, **kw: None
++sys.modules.setdefault("asyncpg", asyncpg_stub)
++sys.modules.setdefault("redis", redis_stub)
++sys.modules.setdefault("redis.asyncio", redis_stub.asyncio)
++sys.modules.setdefault("aioredis", aioredis_stub)
++
++
++@pytest.mark.asyncio
++class TestCustomDataAtomicClaim:
++    """Owner-level contract tests for the atomic claim endpoint."""
++
++    @pytest.fixture(autouse=True)
++    async def setup(self):
++        """In-memory fake ConPort DB mimicking asyncpg pool/conn/transaction."""
++        self.store = {}
++        self.deleted_keys = set()
++        self.insert_calls = [0]
++
++        store_ref = self.store
++        deleted_ref = self.deleted_keys
++        insert_counter = self.insert_calls
++
++        class FakeRow:
++            def __init__(self, data):
++                self._data = data
++
++            def __getitem__(self, key):
++                return self._data[key]
++
++        class FakeTransaction:
++            async def __aenter__(self):
++                return self
++
++            async def __aexit__(self, exc_type, exc, tb):
++                pass
++
++        class FakeConnection:
++            def transaction(self):
++                return FakeTransaction()
++
++            async def fetchrow(self, sql, *args):
++                if 'INSERT' in sql and 'ON CONFLICT' in sql:
++                    ws_id, cat, key, val_json = args[0], args[1], args[2], args[3]
++                    lookup = (ws_id, cat, key)
++                    insert_counter[0] += 1
++                    if lookup in store_ref and lookup not in deleted_ref:
++                        return None
++                    parsed = json.loads(val_json)
++                    store_ref[lookup] = parsed
++                    return FakeRow({'value': val_json})
++
++                if 'SELECT value FROM custom_data' in sql:
++                    ws_id, cat, key = args[0], args[1], args[2]
++                    lookup = (ws_id, cat, key)
++                    if lookup not in store_ref or lookup in deleted_ref:
++                        return None
++                    return FakeRow({'value': json.dumps(store_ref[lookup])})
++
++                return None
++
++            async def execute(self, sql, *args):
++                return "DONE"
++
++        class FakePoolAcquireContext:
++            async def __aenter__(self):
++                return FakeConnection()
++
++            async def __aexit__(self, exc_type, exc, tb):
++                pass
++
++        class FakePool:
++            def acquire(self):
++                return FakePoolAcquireContext()
++
++        self.fake_pool = FakePool()
++        self.store.clear()
++        self.deleted_keys.clear()
++        self.insert_calls = [0]
++
++        yield
++
++    def _make_claim(self, ws="ws-1", cat="workflow_epics", key="epic_abc", fp="abc123", payload=None):
++        if payload is None:
++            payload = {"title": "Fix races", "_fingerprint_v1": fp}
++        return {
++            "workspace_id": ws,
++            "category": cat,
++            "key": key,
++            "value": payload,
++        }
++
++    async def test_first_claim_returns_created(self, monkeypatch):
++        from enhanced_server import EnhancedConPortServer
++        app = EnhancedConPortServer()
++        app.db_pool = self.fake_pool
++
++        from aiohttp import web
++        body = self._make_claim()
++        req = self._fake_request(body)
++
++        resp = await app.claim_custom_data(req)
++        data = json.loads(resp.text)
++        assert data["result"] == "CREATED"
++        assert data["workspace_id"] == "ws-1"
++        assert data["category"] == "workflow_epics"
++        assert data["key"] == "epic_abc"
++        assert data["value"]["_fingerprint_v1"] == "abc123"
++        assert resp.status == 200
++
++    async def test_identical_second_claim_returns_matched(self, monkeypatch):
++        from enhanced_server import EnhancedConPortServer
++        app = EnhancedConPortServer()
++        app.db_pool = self.fake_pool
++
++        from aiohttp import web
++        body = self._make_claim(fp="abc123")
++
++        resp1 = await app.claim_custom_data(self._fake_request(body))
++        assert json.loads(resp1.text)["result"] == "CREATED"
++
++        resp2 = await app.claim_custom_data(self._fake_request(body))
++        data = json.loads(resp2.text)
++        assert data["result"] == "MATCHED"
++        assert data["value"]["_fingerprint_v1"] == "abc123"
++        assert resp2.status == 200
++
++    async def test_different_second_claim_returns_conflict(self, monkeypatch):
++        from enhanced_server import EnhancedConPortServer
++        app = EnhancedConPortServer()
++        app.db_pool = self.fake_pool
++
++        from aiohttp import web
++        body1 = self._make_claim(fp="abc123", payload={"title": "Fix races", "_fingerprint_v1": "abc123"})
++        body2 = self._make_claim(fp="xyz789", payload={"title": "Different", "_fingerprint_v1": "xyz789"})
++
++        resp1 = await app.claim_custom_data(self._fake_request(body1))
++        assert json.loads(resp1.text)["result"] == "CREATED"
++
++        resp2 = await app.claim_custom_data(self._fake_request(body2))
++        data = json.loads(resp2.text)
++        assert data["result"] == "CONFLICT"
++        assert data["value"]["_fingerprint_v1"] == "abc123"
++        assert resp2.status == 200
++
++    async def test_legacy_row_returns_legacy_unfingerprinted(self, monkeypatch):
++        from enhanced_server import EnhancedConPortServer
++        app = EnhancedConPortServer()
++        app.db_pool = self.fake_pool
++
++        self.store[("ws-1", "workflow_epics", "epic_abc")] = {"title": "Old", "priority": "high"}
++
++        from aiohttp import web
++        resp = await app.claim_custom_data(self._fake_request(self._make_claim(fp="abc123")))
++        data = json.loads(resp.text)
++        assert data["result"] == "LEGACY_UNFINGERPRINTED"
++        assert data["value"]["title"] == "Old"
++        assert "_fingerprint_v1" not in data["value"]
++
++    async def test_missing_fingerprint_returns_400(self, monkeypatch):
++        from enhanced_server import EnhancedConPortServer
++        app = EnhancedConPortServer()
++        app.db_pool = self.fake_pool
++
++        body = {"workspace_id": "ws-1", "category": "x", "key": "y", "value": {"no_fp": True}}
++        from aiohttp import web
++        resp = await app.claim_custom_data(self._fake_request(body))
++        assert resp.status == 400
++        assert json.loads(resp.text)["result"] == "MISSING_FINGERPRINT"
++
++    async def test_20_concurrent_identical_claims(self, monkeypatch):
++        from enhanced_server import EnhancedConPortServer
++        app = EnhancedConPortServer()
++        app.db_pool = self.fake_pool
++
++        from aiohttp import web
++        body = self._make_claim(fp="concurrent-fp-1")
++
++        async def one_claim():
++            return await app.claim_custom_data(self._fake_request(body))
++
++        results = await asyncio.gather(*[one_claim() for _ in range(20)])
++        parsed = [json.loads(r.text) for r in results]
++
++        created = [p for p in parsed if p["result"] == "CREATED"]
++        matched = [p for p in parsed if p["result"] == "MATCHED"]
++
++        assert len(created) == 1
++        assert len(matched) == 19
++
++        match_set = {json.dumps(p["value"], sort_keys=True) for p in parsed}
++        assert len(match_set) == 1
++
++    async def test_20_concurrent_conflicting_claims(self, monkeypatch):
++        from enhanced_server import EnhancedConPortServer
++        app = EnhancedConPortServer()
++        app.db_pool = self.fake_pool
++
++        from aiohttp import web
++
++        async def one_claim(idx):
++            fp = f"conflict-fp-{idx}"
++            body = self._make_claim(fp=fp, payload={"title": f"T{idx}", "_fingerprint_v1": fp})
++            return await app.claim_custom_data(self._fake_request(body))
++
++        results = await asyncio.gather(*[one_claim(i) for i in range(20)])
++        parsed = [json.loads(r.text) for r in results]
++
++        created = [p for p in parsed if p["result"] == "CREATED"]
++        conflicted = [p for p in parsed if p["result"] == "CONFLICT"]
++
++        assert len(created) == 1
++        assert len(conflicted) == 19, f"Expected 19 CONFLICT, got {len(conflicted)}: {[p['result'] for p in parsed]}"
++
++        persisted_keys = set(self.store.keys())
++        assert persisted_keys == {("ws-1", "workflow_epics", "epic_abc")}
++
++    def _fake_request(self, body_dict):
++        import aiohttp
++
++        class FakeRequest:
++            async def json(self):
++                return body_dict
++
++            @property
++            def method(self):
++                return "POST"
++
++        return FakeRequest()
+diff --git a/services/dopecon-bridge/dopecon_bridge/clients.py b/services/dopecon-bridge/dopecon_bridge/clients.py
+index 7b4e3dcb41..7801d37de7 100644
+--- a/services/dopecon-bridge/dopecon_bridge/clients.py
++++ b/services/dopecon-bridge/dopecon_bridge/clients.py
+@@ -268,6 +268,10 @@ class ConPortClient:
+             except json.JSONDecodeError as exc:
+                 raise HTTPException(status_code=502, detail="ConPort returned invalid JSON") from exc
+
++    async def claim_custom_data(self, payload: Dict[str, Any]) -> Dict[str, Any]:
++        """Atomically claim a custom_data row at ConPort."""
++        return await self._request("POST", "/api/custom_data/claim", json_body=payload)
++
+     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, max=10))
+     async def get_context(self, context_token: str) -> Dict[str, Any]:
+         """Get context from ConPort with circuit breaker pattern."""
+diff --git a/services/dopecon-bridge/dopecon_bridge/routes.py b/services/dopecon-bridge/dopecon_bridge/routes.py
+index 32c722230a..030e6dd8cc 100644
+--- a/services/dopecon-bridge/dopecon_bridge/routes.py
++++ b/services/dopecon-bridge/dopecon_bridge/routes.py
+@@ -549,6 +549,16 @@ async def get_custom_data(
+     return _normalize_custom_data_read(result)
+
+
++@kg_router.post("/custom_data/claim")
++async def claim_custom_data(request: CustomDataRequest, current_user: dict = Depends(get_current_user)):
++    """Proxy atomic custom-data claims to ConPort REST."""
++    del current_user
++    payload = request.model_dump()
++    payload["workspace_id"] = _default_workspace_id(payload.get("workspace_id"))
++    result = await conport_client.claim_custom_data(payload)
++    return result
++
++
+ @kg_router.post("/decisions")
+ async def create_decision(request: DecisionRequest, current_user: dict = Depends(get_current_user)):
+     """Proxy decision writes to ConPort."""
+diff --git a/services/shared/dopecon_bridge_client/client.py b/services/shared/dopecon_bridge_client/client.py
+index be293df137..a2113d4d18 100644
+--- a/services/shared/dopecon_bridge_client/client.py
++++ b/services/shared/dopecon_bridge_client/client.py
+@@ -253,6 +253,23 @@ class DopeconBridgeClient(_BaseBridgeClient):
+         data = self._parse_response(resp)
+         return bool(data.get("success", False))
+
++    def claim_custom_data(
++        self,
++        *,
++        workspace_id: str,
++        category: str,
++        key: str,
++        value: Mapping[str, Any],
++    ) -> Mapping[str, Any]:
++        payload = {
++            "workspace_id": workspace_id,
++            "category": category,
++            "key": key,
++            "value": dict(value),
++        }
++        resp = self._client.post("/kg/custom_data/claim", json=payload)
++        return self._parse_response(resp)
++
+     def get_custom_data(
+         self,
+         *,
+@@ -505,6 +522,23 @@ class AsyncDopeconBridgeClient(_BaseBridgeClient):
+         data = self._parse_response(resp)
+         return bool(data.get("success", False))
+
++    async def claim_custom_data(
++        self,
++        *,
++        workspace_id: str,
++        category: str,
++        key: str,
++        value: Mapping[str, Any],
++    ) -> Mapping[str, Any]:
++        payload = {
++            "workspace_id": workspace_id,
++            "category": category,
++            "key": key,
++            "value": dict(value),
++        }
++        resp = await self._client.post("/kg/custom_data/claim", json=payload)
++        return self._parse_response(resp)
++
+     async def get_custom_data(
+         self,
+         *,
+diff --git a/services/task-orchestrator/app/models/workflow.py b/services/task-orchestrator/app/models/workflow.py
+index f48c6ba07a..107285120b 100644
+--- a/services/task-orchestrator/app/models/workflow.py
++++ b/services/task-orchestrator/app/models/workflow.py
+@@ -2,6 +2,8 @@
+
+ from __future__ import annotations
+
++import hashlib
++import json
+ from datetime import datetime, timezone
+ from typing import Dict, List, Literal, Optional
+
+@@ -36,6 +38,38 @@ def normalize_tags(tags: Optional[List[str]]) -> List[str]:
+     return result
+
+
++_FINGERPRINT_PREFIX = b"workflow_epic_create:v1"
++
++
++def _canonical_json(obj: dict) -> str:
++    return json.dumps(obj, sort_keys=True, separators=(",", ":"))
++
++
++def compute_epic_fingerprint(request: "CreateEpicRequest") -> str:
++    """Compute deterministic fingerprint v1 for epic create idempotency.
++
++    Included fields per the atomic claim contract.
++    Excluded: idempotency_key, generated ids, timestamps, Leantime fields.
++    """
++    normalized = {
++        "title": request.title,
++        "description": request.description,
++        "business_value": request.business_value,
++        "acceptance_criteria": sorted(request.acceptance_criteria),
++        "priority": request.priority,
++        "status": request.status,
++        "created_from_idea_id": request.created_from_idea_id,
++        "tags": sorted(request.tags) if request.tags else [],
++        "adhd_metadata": (
++            request.adhd_metadata.dict()
++            if hasattr(request.adhd_metadata, "dict")
++            else dict(request.adhd_metadata)
++        ),
++    }
++    preimage = _FINGERPRINT_PREFIX + b"\x00" + _canonical_json(normalized).encode("utf-8")
++    return hashlib.sha256(preimage).hexdigest()
++
++
+ class LeantimeReflection(BaseModel):
+     """Provenance and reconciliation state for Leantime mirroring."""
+
+diff --git a/services/task-orchestrator/app/services/workflow_service.py b/services/task-orchestrator/app/services/workflow_service.py
+index 1923e9aae7..7ca6d7ba6a 100644
+--- a/services/task-orchestrator/app/services/workflow_service.py
++++ b/services/task-orchestrator/app/services/workflow_service.py
+@@ -39,6 +39,7 @@ from ..models.workflow import (
+     UpdateIdeaRequest,
+     WorkflowEpic,
+     WorkflowIdea,
++    compute_epic_fingerprint,
+     normalize_tags,
+     utc_now_iso,
+ )
+@@ -168,34 +169,57 @@ class WorkflowService:
+     async def create_epic(self, request: CreateEpicRequest) -> WorkflowEpic:
+         self._require_enabled()
+         epic_id = self._epic_id_for_create_request(request)
+-        existing_row = await self._call_store(self.store.get_epic(epic_id))
+-        if existing_row is not None:
+-            existing = WorkflowEpic(**existing_row)
+-            if self._epic_matches_create_request(existing, request):
+-                return existing
++        now = utc_now_iso()
++
++        fingerprint = compute_epic_fingerprint(request)
++
++        value = {
++            "id": epic_id,
++            "title": request.title,
++            "description": request.description,
++            "business_value": request.business_value,
++            "acceptance_criteria": request.acceptance_criteria,
++            "priority": request.priority,
++            "status": request.status,
++            "created_from_idea_id": request.created_from_idea_id,
++            "tags": request.tags,
++            "adhd_metadata": request.adhd_metadata.dict() if hasattr(request.adhd_metadata, "dict") else dict(request.adhd_metadata),
++            "created_at": now,
++            "updated_at": now,
++            "version": 1,
++            "idempotency_key": request.idempotency_key,
++            "_fingerprint_v1": fingerprint,
++        }
++
++        result = await self._call_store(
++            self.store.claim_epic(epic_id=epic_id, value=value)
++        )
++
++        claim_result = result.get("result", "OWNER_ERROR")
++
++        if claim_result == "CREATED":
++            epic = WorkflowEpic(**value)
++            self.metrics["workflow_epics_created_total"] += 1
++            return epic
++
++        if claim_result == "MATCHED":
++            persisted_value = result.get("value", value)
++            epic = WorkflowEpic(**persisted_value)
++            return epic
++
++        if claim_result == "CONFLICT":
+             raise WorkflowConflictError(
+                 "idempotency key is already bound to a different epic create request"
+             )
+
+-        now = utc_now_iso()
+-        epic = WorkflowEpic(
+-            id=epic_id,
+-            title=request.title,
+-            description=request.description,
+-            business_value=request.business_value,
+-            acceptance_criteria=request.acceptance_criteria,
+-            priority=request.priority,
+-            status=request.status,
+-            created_from_idea_id=request.created_from_idea_id,
+-            tags=request.tags,
+-            adhd_metadata=request.adhd_metadata,
+-            created_at=now,
+-            updated_at=now,
+-            idempotency_key=request.idempotency_key,
++        if claim_result == "LEGACY_UNFINGERPRINTED":
++            raise WorkflowConflictError(
++                "epic identity exists but predates fingerprint versioning; cannot safely replay"
++            )
++
++        raise WorkflowUnavailableError(
++            f"epic claim failed: {result.get('error', 'unknown owner error')}"
+         )
+-        await self._save_epic_or_raise(epic)
+-        self.metrics["workflow_epics_created_total"] += 1
+-        return epic
+
+     def _epic_id_for_create_request(self, request: CreateEpicRequest) -> str:
+         if not request.idempotency_key:
+diff --git a/services/task-orchestrator/app/services/workflow_store.py b/services/task-orchestrator/app/services/workflow_store.py
+index 9ba7036509..29a022a52b 100644
+--- a/services/task-orchestrator/app/services/workflow_store.py
++++ b/services/task-orchestrator/app/services/workflow_store.py
+@@ -138,6 +138,25 @@ class WorkflowStore:
+             value=epic,
+         )
+
++    async def claim_epic(
++        self,
++        *,
++        epic_id: str,
++        value: Mapping[str, Any],
++    ) -> Mapping[str, Any]:
++        """Atomically claim an epic through the ConPort claim endpoint."""
++        try:
++            return await self._client.claim_custom_data(
++                workspace_id=self.workspace_id,
++                category=self.EPICS_CATEGORY,
++                key=epic_id,
++                value=value,
++            )
++        except DopeconBridgeError as exc:
++            raise WorkflowStoreError(str(exc)) from exc
++        except Exception as exc:
++            raise WorkflowStoreError(f"Failed to claim epic {epic_id}: {exc}") from exc
++
+     async def get_idea(self, idea_id: str) -> Optional[Dict[str, Any]]:
+         rows = await self.get_custom_data(
+             category=self.IDEAS_CATEGORY,
+diff --git a/task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-implementation-notes.md b/task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-implementation-notes.md
+new file mode 100644
+index 0000000000..ae27f2acc6
+--- /dev/null
++++ b/task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-implementation-notes.md
+@@ -0,0 +1,93 @@
++# TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003 — Implementation Notes
++
++## Claim endpoint design
++
++```python
++POST /api/custom_data/claim
++{
++  "workspace_id": "...",
++  "category": "...",
++  "key": "...",
++  "value": {
++    "_fingerprint_v1": "sha256-hex...",
++    ...payload...
++  }
++}
++```
++
++Response:
++```json
++{"result": "CREATED"|"MATCHED"|"CONFLICT"|"LEGACY_UNFINGERPRINTED", "value": {...}}
++```
++
++## Implementation (asyncpg transaction)
++
++```python
++async with self.db_pool.acquire() as conn:
++    async with conn.transaction():
++        row = await conn.fetchrow("""
++            INSERT INTO custom_data (workspace_id, category, key, value, updated_at)
++            VALUES ($1, $2, $3, $4, NOW())
++            ON CONFLICT (workspace_id, category, key) DO NOTHING
++            RETURNING value
++        """, workspace_id, category, key, json.dumps(value))
++
++        if row is not None:
++            return {"result": "CREATED", "value": json.loads(row["value"])}
++
++        # Row already exists — read back
++        row = await conn.fetchrow("""
++            SELECT value FROM custom_data
++            WHERE workspace_id = $1 AND category = $2 AND key = $3
++        """, workspace_id, category, key)
++
++        existing = json.loads(row["value"])
++        existing_fp = existing.get("_fingerprint_v1")
++        if existing_fp is None:
++            return {"result": "LEGACY_UNFINGERPRINTED", "value": existing}
++        if existing_fp == fingerprint:
++            return {"result": "MATCHED", "value": existing}
++        return {"result": "CONFLICT", "value": existing}
++```
++
++## Fingerprint computation
++
++```python
++import hashlib, json
++
++FINGERPRINT_PREFIX = b"workflow_epic_create:v1"
++
++def canonical_json(obj):
++    return json.dumps(obj, sort_keys=True, separators=(",", ":"))
++
++def normalize_request(request: CreateEpicRequest) -> dict:
++    return {
++        "title": request.title,
++        "description": request.description,
++        "business_value": request.business_value,
++        "acceptance_criteria": sorted(request.acceptance_criteria),
++        "priority": request.priority,
++        "status": request.status,
++        "created_from_idea_id": request.created_from_idea_id,
++        "tags": sorted(request.tags) if request.tags else [],
++        "adhd_metadata": request.adhd_metadata.dict() if hasattr(request.adhd_metadata, "dict") else dict(request.adhd_metadata),
++    }
++
++def compute_fingerprint(request: CreateEpicRequest) -> str:
++    normalized = normalize_request(request)
++    preimage = FINGERPRINT_PREFIX + b"\x00" + canonical_json(normalized).encode("utf-8")
++    return hashlib.sha256(preimage).hexdigest()
++```
++
++This goes in `workflow_service.py` because it's the canonical fingerprint owner for workflow epics.
++
++## Test design
++
++### test_custom_data_atomic_claim.py (ConPort)
++- `test_first_claim_returns_created` — INSERT succeeds, returns CREATED
++- `test_identical_second_claim_returns_matched` — same fingerprint → MATCHED
++- `test_different_second_claim_returns_conflict` — different fingerprint → CONFLICT
++- `test_legacy_row_returns_legacy_unfingerprinted` — existing row without `_fingerprint_v1`
++- `test_20_concurrent_identical_claims` — all 20 observe either CREATED or MATCHED
++- `test_20_concurrent_conflicting_claims` — one CREATED, rest CONFLICT
++- `test_generic_upsert_still_works` — original endpoint unchanged
+diff --git a/task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-plan.md b/task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-plan.md
+new file mode 100644
+index 0000000000..7415ad4b98
+--- /dev/null
++++ b/task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-plan.md
+@@ -0,0 +1,72 @@
++# TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003 — Plan
++
++## Approach
++
++Replace the pre-read/upsert race with an atomic claim at ConPort PostgreSQL.
++
++**Insert claim**: ConPort exposes new `POST /api/custom_data/claim` that atomically inserts with `ON CONFLICT DO NOTHING RETURNING (value)` and returns the claim result.
++
++**Fingerprint**: Embedded in `value._fingerprint_v1` inside the JSONB column. No schema migration needed.
++
++## Changes per slice
++
++### Slice A: Packet and design records (this file + research + packet JSON)
++
++### Slice B: ConPort atomic owner operation
++- Add `POST /api/custom_data/claim` to `enhanced_server.py`
++- Logic:
++  1. Validate request has `workspace_id`, `category`, `key`, `value` (with `_fingerprint_v1`)
++  2. In transaction: `INSERT ... ON CONFLICT DO NOTHING RETURNING value, created_at`
++  3. If inserted → return `CREATED` with persisted value
++  4. If not inserted → SELECT existing row → compare `_fingerprint_v1`
++     - Same fingerprint → `MATCHED`
++     - Different fingerprint → `CONFLICT`
++     - Missing fingerprint → `LEGACY_UNFINGERPRINTED`
++  5. Generic upsert remains unchanged
++- Tests: `test_custom_data_atomic_claim.py`
++
++### Slice C: Bridge propagation
++- Add `POST /kg/custom_data/claim` route to dopecon-bridge `routes.py`
++- Add `claim_custom_data()` method to dopecon-bridge `clients.py` (ConPort client)
++- Add `claim_custom_data()` to shared `AsyncDopeconBridgeClient` and sync `DopeconBridgeClient`
++- Bridge never becomes lock owner — purely a proxy
++
++### Slice D: Task Orchestrator replacement
++- Remove pre-read from `create_epic()` in `workflow_service.py`
++- Add fingerprint computation + atomic claim path
++- Add `claim_epic()` to `workflow_store.py`
++- Normalization helper for fingerprint v1
++- Handle all 5 claim results (CREATED, MATCHED, CONFLICT, LEGACY_UNFINGERPRINTED, OWNER_ERROR)
++
++### Slice E: Concurrency proof
++- Isolated live proof with two TO processes sharing one ConPort owner
++- 20 identical concurrent rounds + 20 conflicting concurrent rounds + restart replay
++- Verify exactly one persisted value per identity, zero overwrites, zero token leaks
++
++## Files touched
++
++| File | Change |
++|------|--------|
++| `task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003.json` | NEW — packet |
++| `task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-research.md` | NEW |
++| `task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-plan.md` | NEW |
++| `task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-implementation-notes.md` | NEW |
++| `docker/mcp-servers-source/conport/enhanced_server.py` | MODIFY — add claim endpoint |
++| `docker/mcp-servers-source/conport/tests/test_custom_data_atomic_claim.py` | NEW |
++| `docker/mcp-servers-source/conport/tests/test_mcp_custom_data.py` | VERIFY compatibility |
++| `services/dopecon-bridge/dopecon_bridge/routes.py` | MODIFY — add claim route |
++| `services/dopecon-bridge/dopecon_bridge/clients.py` | MODIFY — add claim client |
++| `services/shared/dopecon_bridge_client/client.py` | MODIFY — add sync+async methods |
++| `services/task-orchestrator/app/models/workflow.py` | MODIFY — add fingerprint helper |
++| `services/task-orchestrator/app/services/workflow_store.py` | MODIFY — add claim_epic |
++| `services/task-orchestrator/app/services/workflow_service.py` | MODIFY — atomic create |
++| `tests/arch/test_task_orchestrator_conport_persistence_contract.py` | MODIFY — update contract |
++| `tests/unit/test_task_orchestrator_workflow_store.py` | MODIFY — claim tests |
++| `tests/unit/test_task_orchestrator_workflow_route_certification.py` | MODIFY — atomic assert |
++| `tests/unit/test_task_orchestrator_workflow_atomic_idempotency.py` | NEW |
++| `tests/integration/test_task_orchestrator_concurrent_idempotency.py` | NEW |
++
++## No changes
++- `schema.sql` — no migration under this packet
++- Redis, local stores, in-process mutexes — not used
++- Canonical services — not mutated
+diff --git a/task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-research.md b/task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-research.md
+new file mode 100644
+index 0000000000..5f24784109
+--- /dev/null
++++ b/task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-research.md
+@@ -0,0 +1,98 @@
++# TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003 — Research Trace
++
++## Owner Primitive Gate
++
++**Schema**: `docker/mcp-servers-source/conport/schema.sql`
++
++```
++CREATE TABLE custom_data (
++    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
++    workspace_id VARCHAR(255) NOT NULL,
++    category VARCHAR(100) NOT NULL,
++    key VARCHAR(255) NOT NULL,
++    value JSONB NOT NULL,
++    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
++    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
++    UNIQUE(workspace_id, category, key)
++);
++```
++
++- **Unique identity**: `(workspace_id, category, key)` with a UNIQUE constraint (line 117)
++- **DB driver**: asyncpg via `self.db_pool.acquire()` in `enhanced_server.py`
++- **Transaction support**: asyncpg supports `conn.transaction()` — transactional operations are feasible without schema change
++
++**Current upsert** (`enhanced_server.py:1576-1582`):
++```python
++async with self.db_pool.acquire() as conn:
++    await conn.execute("""
++        INSERT INTO custom_data (workspace_id, category, key, value, updated_at)
++        VALUES ($1, $2, $3, $4, NOW())
++        ON CONFLICT (workspace_id, category, key)
++        DO UPDATE SET value = $4, updated_at = NOW()
++    """, workspace_id, category, key, json.dumps(value))
++```
++
++This is a last-write-wins upsert — always overwrites on conflict. This is the correct behavior for generic key-value storage but insufficient for atomic idempotency claims.
++
++**Serializability verdict**: Can serialize without schema change. Use `INSERT ... ON CONFLICT DO NOTHING RETURNING value` inside a transaction.
++
++## Current Epic Create Flow (sequential, race-prone)
++
++1. **Task Orchestrator** `workflow_service.create_epic()`:
++   - Computes deterministic `epic_id` from `idempotency_key`
++   - Calls `self.store.get_epic(epic_id)` — pre-read
++   - If found and matches → return existing (idempotent replay)
++   - If found and doesn't match → raise 409
++   - If not found → build epic, call `self.store.save_epic(epic)` → upsert
++
++2. **WorkflowStore** `save_epic()`:
++   - Calls `upsert_custom_data(Epics_CATEGORY, epic_id, epic_dict)`
++
++3. **WorkflowStore** `upsert_custom_data()`:
++   - Calls `AsyncDopeconBridgeClient.save_custom_data()`
++
++4. **DopeconBridge Client** `save_custom_data()`:
++   - `POST /kg/custom_data` via HTTP
++
++5. **DopeconBridge routes** `save_custom_data()`:
++   - Proxies to `conport_client.save_custom_data()`
++
++6. **DopeconBridge clients** `conport_client.save_custom_data()`:
++   - `POST {conport_url}/api/custom_data`
++
++7. **ConPort** `save_custom_data()`:
++   - Last-write-wins upsert
++
++**Race window**: Between step 1 (pre-read) and step 2 (upsert), concurrent callers both see absence and both attempt to persist. PostgreSQL UNIQUE constraint ensures only one row BUT the upsert overwrites — a conflicting second caller's payload wins (last-write-wins), silently replacing the first caller's value.
++
++## Design Decision
++
++Use `INSERT ... ON CONFLICT DO NOTHING` with PostgreSQL transaction isolation as the atomic claim. The first inserter wins; the second gets a no-op. Read-back determines MATCHED/CONFLICT/LEGACY_UNFINGERPRINTED.
++
++## Fingerprint v1
++
++Preimage: `workflow_epic_create:v1` + `\x00` + `canonical_json(normalized_request)`
++
++Normalized fields (included):
++- title, description, business_value, acceptance_criteria, priority, status, created_from_idea_id, tags, adhd_metadata
++
++Excluded:
++- idempotency_key, generated epic ID, timestamps, version, Leantime identifiers, transport/response metadata
++
++Encoding: UTF-8 JSON, sorted keys, compact separators → SHA-256 hex digest.
++
++Fingerprint stored in `value._fingerprint_v1` inside the JSONB blob.
++
++## Files traced
++
++- `docker/mcp-servers-source/conport/schema.sql` — custom_data table, UNIQUE constraint
++- `docker/mcp-servers-source/conport/enhanced_server.py` — save/get/delete custom_data implementations, DB pool
++- `services/shared/dopecon_bridge_client/client.py` — Sync + Async bridge clients, `save_custom_data`/`get_custom_data`
++- `services/dopecon-bridge/dopecon_bridge/routes.py` — `/kg/custom_data` route + auth
++- `services/task-orchestrator/app/models/workflow.py` — CreateEpicRequest, WorkflowEpic, ADHDMetadata
++- `services/task-orchestrator/app/services/workflow_store.py` — WorkflowStore, upsert/get/save operations
++- `services/task-orchestrator/app/services/workflow_service.py` — create_epic with pre-read/upsert race
++
++## Owner
++
++ConPort PostgreSQL `custom_data` table, accessed through ConPort's `enhanced_server.py` REST API. The linearization point must be inside ConPort's PostgreSQL connection.
+diff --git a/task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003.json b/task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003.json
+new file mode 100644
+index 0000000000..d371300df4
+--- /dev/null
++++ b/task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003.json
+@@ -0,0 +1,149 @@
++{
++  "id": "TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003",
++  "project": "dopemux-mvp",
++  "target": "Repair the sole blocking correctness finding from the accepted isolated live proof: concurrent conflicting replay is not fail-closed. Replace the pre-read/upsert race with an atomic claim at ConPort PostgreSQL and prove correctness across two Task Orchestrator processes.",
++  "invariants": [
++    "ConPort PostgreSQL is the sole linearization point for idempotent epic create claims.",
++    "Bridge never becomes the lock owner; it remains a proxy.",
++    "No schema migration under this packet.",
++    "Only disposable isolated runtime resources; no canonical service mutation.",
++    "Legacy rows (missing _fingerprint_v1) fail closed without rewriting."
++  ],
++  "depends_on": ["TP-DMX-TO-CONPORT-PERSISTENCE-LIVE-PROOF-002"],
++  "repo_binding": {
++    "project_id": "dopemux-mvp",
++    "repo_marker": "AGENTS.md",
++    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
++    "require_identity_match": true
++  },
++  "series": {
++    "id": "TO-CONPORT-PERSISTENCE-REPAIR",
++    "base_branch": "main",
++    "parent_tp_id": "TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001",
++    "final_packet": true
++  },
++  "execution": {
++    "agent": "codex",
++    "branch": "codex/to-conport-persistence-repair",
++    "base_branch": "main",
++    "stacked_because": "PR #1164 continuation — supersedes the sequential-only implementation with atomic claim semantics.",
++    "pr": 1164,
++    "authorized_start_head": "c78c45b0e06a729d51f329e510f0a8069c46fca6"
++  },
++  "commit": {
++    "message": "fix(task-orchestrator): make epic idempotency atomic across replicas",
++    "allowlist": [
++      "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003.json",
++      "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-research.md",
++      "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-plan.md",
++      "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-implementation-notes.md",
++      "docker/mcp-servers-source/conport/enhanced_server.py",
++      "docker/mcp-servers-source/conport/tests/test_mcp_custom_data.py",
++      "docker/mcp-servers-source/conport/tests/test_custom_data_atomic_claim.py",
++      "services/dopecon-bridge/dopecon_bridge/routes.py",
++      "services/dopecon-bridge/dopecon_bridge/clients.py",
++      "services/shared/dopecon_bridge_client/client.py",
++      "services/task-orchestrator/app/models/workflow.py",
++      "services/task-orchestrator/app/services/workflow_store.py",
++      "services/task-orchestrator/app/services/workflow_service.py",
++      "tests/arch/test_task_orchestrator_conport_persistence_contract.py",
++      "tests/unit/test_task_orchestrator_workflow_store.py",
++      "tests/unit/test_task_orchestrator_workflow_route_certification.py",
++      "tests/unit/test_task_orchestrator_workflow_atomic_idempotency.py",
++      "tests/integration/test_task_orchestrator_concurrent_idempotency.py"
++    ],
++    "verify": [
++      "uv run pytest -q docker/mcp-servers-source/conport/tests/test_custom_data_atomic_claim.py",
++      "uv run pytest -q docker/mcp-servers-source/conport/tests/test_mcp_custom_data.py",
++      "uv run pytest -q tests/arch/test_task_orchestrator_conport_persistence_contract.py tests/unit/test_task_orchestrator_workflow_store.py tests/unit/test_task_orchestrator_workflow_route_certification.py tests/unit/test_task_orchestrator_workflow_atomic_idempotency.py",
++      "uv run pytest -q tests/integration/test_task_orchestrator_concurrent_idempotency.py",
++      "docker compose -f compose.yml config --no-interpolate",
++      "git diff --check"
++    ]
++  },
++  "pr": {
++    "title": "fix(task-orchestrator): make epic idempotency atomic across replicas",
++    "body": "## Summary\n- Add atomic claim endpoint to ConPort (`POST /api/custom_data/claim`)\n- Propagate through DopeconBridge and shared client\n- Replace Task Orchestrator pre-read/upsert with atomic claim\n- Versioned fingerprint v1 for deterministic idempotency\n\n## Claim contract\nResult: CREATED | MATCHED | CONFLICT | LEGACY_UNFINGERPRINTED | OWNER_ERROR\n\n## Safety\n- Linearization point inside ConPort PostgreSQL transaction\n- No schema migration\n- Legacy rows fail closed\n- Bridge remains proxy only\n\n## Validation\n- ConPort claim tests (7 tests, including 20-way concurrency)\n- Bridge client tests\n- Task Orchestrator atomic idempotency tests\n- Two-replica concurrency live proof",
++    "base": "main"
++  },
++  "pal_chain": {
++    "enabled": true,
++    "steps": [
++      "analyze",
++      "thinkdeep",
++      "challenge",
++      "planner",
++      "challenge",
++      "implement",
++      "codereview",
++      "precommit",
++      "challenge"
++    ]
++  },
++  "steps": [
++    {
++      "id": "owner-gate",
++      "task": "Trace ConPort custom_data schema, DB driver, transaction API; confirm uniqueness identity and serialization feasibility without migration.",
++      "validation": [
++        "schema.sql UNIQUE(workspace_id, category, key) confirmed",
++        "asyncpg transaction support confirmed",
++        "No schema migration required",
++        "Evidence in CUSTOM_DATA_OWNER_TRACE.txt"
++      ]
++    },
++    {
++      "id": "conport-claim",
++      "task": "Implement POST /api/custom_data/claim with transactional INSERT ON CONFLICT DO NOTHING + read-back comparison. Add comprehensive tests.",
++      "expected_files": [
++        "docker/mcp-servers-source/conport/enhanced_server.py",
++        "docker/mcp-servers-source/conport/tests/test_custom_data_atomic_claim.py"
++      ],
++      "validation": [
++        "7 tests pass: first claim CREATED, identical MATCHED, conflict CONFLICT, legacy LEGACY_UNFINGERPRINTED, 20 concurrent identical, 20 concurrent conflicting, generic upsert compatibility"
++      ]
++    },
++    {
++      "id": "bridge-propagate",
++      "task": "Add claim route to dopecon-bridge, ConPort client method, and shared bridge client sync/async methods.",
++      "expected_files": [
++        "services/dopecon-bridge/dopecon_bridge/routes.py",
++        "services/dopecon-bridge/dopecon_bridge/clients.py",
++        "services/shared/dopecon_bridge_client/client.py"
++      ],
++      "validation": [
++        "Bridge proxy routes /kg/custom_data/claim",
++        "ConPort client calls new claim endpoint",
++        "Shared client exposes sync+async claim_custom_data"
++      ]
++    },
++    {
++      "id": "to-replace",
++      "task": "Remove pre-read/upsert in create_epic. Add fingerprint v1 computation + atomic claim with all 5 result handling.",
++      "expected_files": [
++        "services/task-orchestrator/app/models/workflow.py",
++        "services/task-orchestrator/app/services/workflow_store.py",
++        "services/task-orchestrator/app/services/workflow_service.py",
++        "tests/arch/test_task_orchestrator_conport_persistence_contract.py",
++        "tests/unit/test_task_orchestrator_workflow_store.py",
++        "tests/unit/test_task_orchestrator_workflow_route_certification.py",
++        "tests/unit/test_task_orchestrator_workflow_atomic_idempotency.py",
++        "tests/integration/test_task_orchestrator_concurrent_idempotency.py"
++      ],
++      "validation": [
++        "All existing tests pass",
++        "New atomic idempotency tests pass",
++        "Integration concurrent tests pass"
++      ]
++    },
++    {
++      "id": "verify-audit-handoff",
++      "task": "Run all validation, concurrency live proof, embedded audit, PR Steward, and evidence packaging.",
++      "validation": [
++        "All verify commands pass",
++        "Live proof returns zero overwrites, one row per identity",
++        "Embedded audit passes",
++        "PR Steward records state without unauthorized merge"
++      ]
++    }
++  ]
++}
+diff --git a/tests/integration/test_task_orchestrator_concurrent_idempotency.py b/tests/integration/test_task_orchestrator_concurrent_idempotency.py
+new file mode 100644
+index 0000000000..0076123b37
+--- /dev/null
++++ b/tests/integration/test_task_orchestrator_concurrent_idempotency.py
+@@ -0,0 +1,219 @@
++"""Integration test for concurrent epic idempotency across simulated replicas."""
++import asyncio
++import json
++import sys
++import uuid
++from pathlib import Path
++
++import pytest
++
++
++SERVICE_ROOT = Path(__file__).resolve().parents[2] / "services" / "task-orchestrator"
++if str(SERVICE_ROOT) in sys.path:
++    sys.path.remove(str(SERVICE_ROOT))
++sys.path.insert(0, str(SERVICE_ROOT))
++
++for module_name in list(sys.modules):
++    if module_name == "app" or module_name.startswith("app."):
++        sys.modules.pop(module_name, None)
++
++from app.models.workflow import CreateEpicRequest, compute_epic_fingerprint  # noqa: E402
++from app.services.workflow_service import (  # noqa: E402
++    WorkflowConflictError,
++    WorkflowService,
++    WorkflowUnavailableError,
++)
++
++
++class SharedAtomicClaimStore:
++    """Simulates ConPort PostgreSQL with atomic claim semantics in memory.
++
++    Multiple WorkflowService instances share this store through their
++    store.claim_epic() path — it is the shared persistence owner.
++    """
++
++    def __init__(self):
++        self.rows = {}
++        self.insert_log = []
++
++    async def claim_epic(self, **kwargs):
++        epic_id = kwargs["epic_id"]
++        value = dict(kwargs["value"])
++        fingerprint = value.get("_fingerprint_v1", "")
++
++        self.insert_log.append(("attempt", epic_id, fingerprint))
++
++        if epic_id in self.rows:
++            existing = self.rows[epic_id]
++            existing_fp = existing.get("value", {}).get("_fingerprint_v1")
++            if existing_fp is None:
++                self.insert_log.append(("legacy", epic_id))
++                return {
++                    "result": "LEGACY_UNFINGERPRINTED",
++                    "value": existing["value"],
++                }
++            if existing_fp == fingerprint:
++                self.insert_log.append(("matched", epic_id, fingerprint))
++                return {
++                    "result": "MATCHED",
++                    "value": existing["value"],
++                }
++            self.insert_log.append(("conflict", epic_id, fingerprint))
++            return {
++                "result": "CONFLICT",
++                "value": existing["value"],
++            }
++
++        self.rows[epic_id] = {"key": epic_id, "value": value}
++        self.insert_log.append(("created", epic_id, fingerprint))
++        return {"result": "CREATED", "value": value}
++
++    async def get_custom_data(self, **kwargs):
++        category = kwargs["category"]
++        key = kwargs.get("key")
++        items = []
++        for row_key, row in self.rows.items():
++            if key is None or row_key == key:
++                items.append({"key": row_key, "value": row["value"]})
++        return items
++
++    async def save_custom_data(self, **kwargs):
++        key = kwargs["key"]
++        value = dict(kwargs.get("value", {}))
++        self.rows[key] = {"key": key, "value": value}
++        return True
++
++    async def aclose(self):
++        pass
++
++
++@pytest.mark.asyncio
++async def test_two_replica_identical_concurrent_claims():
++    """Two independent service instances, 20 concurrent identical create calls.
++
++    Assertions:
++    - Exactly one Created
++    - At least 19 MATCHED
++    - Only one persisted value per identity
++    """
++    shared_store = SharedAtomicClaimStore()
++
++    request = CreateEpicRequest(
++        title="Concurrent identical epic",
++        description="Testing concurrent idempotency",
++        business_value="Prove atomics work",
++        priority="high",
++        idempotency_key="concurrent-identical-key",
++    )
++
++    async def create_on_service(service_id):
++        svc = WorkflowService(workspace_id="/workspace/shared")
++        svc.store._client = shared_store
++        svc.store.claim_epic = shared_store.claim_epic
++        try:
++            epic = await svc.create_epic(request)
++            return ("ok", epic.id)
++        except WorkflowConflictError:
++            return ("conflict", None)
++        except WorkflowUnavailableError:
++            return ("unavailable", None)
++        finally:
++            await svc.close()
++
++    tasks = [create_on_service(i % 2) for i in range(20)]
++    results = await asyncio.gather(*tasks)
++
++    assert len([r for r in results if r[0] == "ok"]) >= 20, "All calls should succeed"
++    assert len([r for r in results if r[0] == "conflict"]) == 0
++
++    ok_ids = [r[1] for r in results if r[0] == "ok"]
++    assert len(set(ok_ids)) == 1, "All Created/MATCHED should return same epic ID"
++
++    created = sum(1 for entry in shared_store.insert_log if entry[0] == "created")
++    matched = sum(1 for entry in shared_store.insert_log if entry[0] == "matched")
++    assert created == 1, f"Expected 1 CREATED, got {created}"
++    assert matched >= 19, f"Expected >=19 MATCHED, got {matched}"
++
++    assert len(shared_store.rows) == 1
++
++
++@pytest.mark.asyncio
++async def test_two_replica_conflicting_concurrent_claims():
++    """Two services, 20 concurrent claims with different fingerprints on same identity.
++
++    Assertions:
++    - Exactly one Created
++    - At least 19 CONFLICT raised
++    - Only one persisted value
++    """
++    shared_store = SharedAtomicClaimStore()
++    base_idempotency_key = None  # Same epic ID, different payloads
++
++    async def create_conflicting(idx):
++        svc = WorkflowService(workspace_id="/workspace/shared")
++        svc.store._client = shared_store
++        svc.store.claim_epic = shared_store.claim_epic
++        try:
++            req = CreateEpicRequest(
++                title=f"Conflict-{idx}",
++                description="Different payload for conflicting test",
++                business_value=f"Value-{idx}",
++                idempotency_key="conflicting-concurrent-key",
++            )
++            epic = await svc.create_epic(req)
++            return ("ok", epic.id)
++        except WorkflowConflictError:
++            return ("conflict", None)
++        except WorkflowUnavailableError:
++            return ("unavailable", None)
++        finally:
++            await svc.close()
++
++    tasks = [create_conflicting(i) for i in range(20)]
++    results = await asyncio.gather(*tasks)
++
++    ok_results = [r for r in results if r[0] == "ok"]
++    conflict_results = [r for r in results if r[0] == "conflict"]
++    assert len(ok_results) == 1, f"Expected 1 ok, got {len(ok_results)}"
++    assert len(conflict_results) == 19, f"Expected 19 conflicts, got {len(conflict_results)}"
++
++    assert len(shared_store.rows) == 1
++
++    created = sum(1 for entry in shared_store.insert_log if entry[0] == "created")
++    conflicted = sum(1 for entry in shared_store.insert_log if entry[0] == "conflict")
++    assert created == 1
++    assert conflicted >= 19
++
++
++@pytest.mark.asyncio
++async def test_restart_replay_idempotency():
++    """After first claim creates, a subsequent call matches."""
++    shared_store = SharedAtomicClaimStore()
++
++    request = CreateEpicRequest(
++        title="Restart replay epic",
++        description="Testing restart idempotency",
++        business_value="Replay safety",
++        idempotency_key="restart-replay-key",
++    )
++
++    svc1 = WorkflowService(workspace_id="/tmp/svc-restart")
++    svc1.store._client = shared_store
++    svc1.store.claim_epic = shared_store.claim_epic
++    epic1 = await svc1.create_epic(request)
++    await svc1.close()
++
++    created = sum(1 for e in shared_store.insert_log if e[0] == "created")
++    assert created == 1
++
++    svc2 = WorkflowService(workspace_id="/tmp/svc-restart")
++    svc2.store._client = shared_store
++    svc2.store.claim_epic = shared_store.claim_epic
++    epic2 = await svc2.create_epic(request)
++    await svc2.close()
++
++    assert epic2.id == epic1.id
++    assert len(shared_store.rows) == 1
++
++    matched = sum(1 for e in shared_store.insert_log if e[0] == "matched")
++    assert matched == 1
+diff --git a/tests/unit/test_task_orchestrator_workflow_atomic_idempotency.py b/tests/unit/test_task_orchestrator_workflow_atomic_idempotency.py
+new file mode 100644
+index 0000000000..1be34d868f
+--- /dev/null
++++ b/tests/unit/test_task_orchestrator_workflow_atomic_idempotency.py
+@@ -0,0 +1,227 @@
++"""Unit tests for Task Orchestrator atomic epic idempotency."""
++import asyncio
++import sys
++from pathlib import Path
++from unittest.mock import AsyncMock
++
++import pytest
++
++
++SERVICE_ROOT = Path(__file__).resolve().parents[2] / "services" / "task-orchestrator"
++if str(SERVICE_ROOT) in sys.path:
++    sys.path.remove(str(SERVICE_ROOT))
++sys.path.insert(0, str(SERVICE_ROOT))
++
++for module_name in list(sys.modules):
++    if module_name == "app" or module_name.startswith("app."):
++        sys.modules.pop(module_name, None)
++
++from app.models.workflow import CreateEpicRequest  # noqa: E402
++from app.services.workflow_service import (  # noqa: E402
++    WorkflowConflictError,
++    WorkflowService,
++    WorkflowUnavailableError,
++)
++
++
++@pytest.mark.asyncio
++async def test_create_epic_claim_created_returns_epic():
++    service = WorkflowService(workspace_id="/tmp/atomic-claim-test")
++    claim_mock = AsyncMock()
++    claim_mock.return_value = {"result": "CREATED", "value": {}}
++    service.store.claim_epic = claim_mock
++
++    try:
++        epic = await service.create_epic(
++            CreateEpicRequest(
++                title="Test Epic",
++                description="desc",
++                business_value="val",
++                idempotency_key="key-1",
++            )
++        )
++        assert epic.title == "Test Epic"
++        assert epic.id.startswith("epic_")
++        assert service.metrics["workflow_epics_created_total"] == 1
++    finally:
++        await service.close()
++
++
++@pytest.mark.asyncio
++async def test_create_epic_claim_matched_returns_existing_epic():
++    service = WorkflowService(workspace_id="/tmp/atomic-claim-test")
++    claim_mock = AsyncMock()
++    claim_mock.return_value = {
++        "result": "MATCHED",
++        "value": {
++            "id": "epic_matched",
++            "title": "Matched Epic",
++            "description": "desc",
++            "business_value": "val",
++            "acceptance_criteria": [],
++            "priority": "high",
++            "status": "planned",
++            "tags": [],
++            "adhd_metadata": {},
++            "created_at": "2025-01-01T00:00:00Z",
++            "updated_at": "2025-01-01T00:00:00Z",
++            "version": 1,
++            "_fingerprint_v1": "abc123",
++        },
++    }
++    service.store.claim_epic = claim_mock
++
++    try:
++        epic = await service.create_epic(
++            CreateEpicRequest(
++                title="Matched Epic",
++                description="desc",
++                business_value="val",
++                idempotency_key="key-1",
++            )
++        )
++        assert epic.title == "Matched Epic"
++        assert epic.id == "epic_matched"
++    finally:
++        await service.close()
++
++
++@pytest.mark.asyncio
++async def test_create_epic_claim_conflict_raises_409():
++    service = WorkflowService(workspace_id="/tmp/atomic-claim-test")
++    claim_mock = AsyncMock()
++    claim_mock.return_value = {
++        "result": "CONFLICT",
++        "value": {"_fingerprint_v1": "different"},
++    }
++    service.store.claim_epic = claim_mock
++
++    try:
++        with pytest.raises(WorkflowConflictError, match="idempotency key"):
++            await service.create_epic(
++                CreateEpicRequest(
++                    title="Test Epic",
++                    description="desc",
++                    business_value="val",
++                    idempotency_key="key-1",
++                )
++            )
++    finally:
++        await service.close()
++
++
++@pytest.mark.asyncio
++async def test_create_epic_claim_legacy_raises():
++    service = WorkflowService(workspace_id="/tmp/atomic-claim-test")
++    claim_mock = AsyncMock()
++    claim_mock.return_value = {
++        "result": "LEGACY_UNFINGERPRINTED",
++        "value": {"title": "old"},
++    }
++    service.store.claim_epic = claim_mock
++
++    try:
++        with pytest.raises(WorkflowConflictError, match="fingerprint"):
++            await service.create_epic(
++                CreateEpicRequest(
++                    title="Test Epic",
++                    description="desc",
++                    business_value="val",
++                    idempotency_key="key-1",
++                )
++            )
++    finally:
++        await service.close()
++
++
++@pytest.mark.asyncio
++async def test_create_epic_claim_owner_error_raises():
++    service = WorkflowService(workspace_id="/tmp/atomic-claim-test")
++    claim_mock = AsyncMock()
++    claim_mock.return_value = {
++        "result": "OWNER_ERROR",
++        "error": "db down",
++    }
++    service.store.claim_epic = claim_mock
++
++    try:
++        with pytest.raises(WorkflowUnavailableError):
++            await service.create_epic(
++                CreateEpicRequest(
++                    title="Test Epic",
++                    description="desc",
++                    business_value="val",
++                    idempotency_key="key-1",
++                )
++            )
++    finally:
++        await service.close()
++
++
++@pytest.mark.asyncio
++async def test_fingerprint_deterministic():
++    """Same request produces the same fingerprint."""
++    from app.models.workflow import compute_epic_fingerprint  # noqa: E402
++
++    r1 = CreateEpicRequest(
++        title="Fix races",
++        description="Make it atomic",
++        business_value="Correctness",
++        idempotency_key="key-a",
++    )
++    r2 = CreateEpicRequest(
++        title="Fix races",
++        description="Make it atomic",
++        business_value="Correctness",
++        idempotency_key="key-b",
++    )
++
++    assert compute_epic_fingerprint(r1) == compute_epic_fingerprint(r2)
++
++
++@pytest.mark.asyncio
++async def test_fingerprint_differs_on_different_payload():
++    from app.models.workflow import compute_epic_fingerprint  # noqa: E402
++
++    r1 = CreateEpicRequest(
++        title="Fix races",
++        description="Make it atomic",
++        business_value="Correctness",
++    )
++    r2 = CreateEpicRequest(
++        title="Different title",
++        description="Make it atomic",
++        business_value="Correctness",
++    )
++
++    assert compute_epic_fingerprint(r1) != compute_epic_fingerprint(r2)
++
++
++@pytest.mark.asyncio
++async def test_fingerprint_excludes_idempotency_key():
++    """Two identical requests with different idempotency keys produce same fingerprint."""
++    from app.models.workflow import compute_epic_fingerprint  # noqa: E402
++
++    r1 = CreateEpicRequest(
++        title="Same",
++        description="Same",
++        business_value="Same",
++        idempotency_key="key-x",
++    )
++    r2 = CreateEpicRequest(
++        title="Same",
++        description="Same",
++        business_value="Same",
++        idempotency_key="key-y",
++    )
++    r3 = CreateEpicRequest(
++        title="Same",
++        description="Same",
++        business_value="Same",
++    )
++
++    fp1 = compute_epic_fingerprint(r1)
++    fp2 = compute_epic_fingerprint(r2)
++    fp3 = compute_epic_fingerprint(r3)
++
++    assert fp1 == fp2 == fp3
+diff --git a/tests/unit/test_task_orchestrator_workflow_route_certification.py b/tests/unit/test_task_orchestrator_workflow_route_certification.py
+index dff3f05c54..572ef568e2 100644
+--- a/tests/unit/test_task_orchestrator_workflow_route_certification.py
++++ b/tests/unit/test_task_orchestrator_workflow_route_certification.py
+@@ -38,6 +38,36 @@ class MemoryBridgeClient:
+         }
+         return True
+
++    async def claim_custom_data(self, **kwargs):
++        key = (kwargs["category"], kwargs["key"])
++        value = dict(kwargs["value"])
++        fingerprint = value.get("_fingerprint_v1", "")
++
++        if key in self.rows:
++            existing = self.rows[key]
++            existing_fp = existing.get("value", {}).get("_fingerprint_v1")
++            if existing_fp is None:
++                return {
++                    "result": "LEGACY_UNFINGERPRINTED",
++                    "value": existing["value"],
++                }
++            if existing_fp == fingerprint:
++                return {
++                    "result": "MATCHED",
++                    "value": existing["value"],
++                }
++            return {
++                "result": "CONFLICT",
++                "value": existing["value"],
++            }
++
++        self.rows[key] = {
++            "key": kwargs["key"],
++            "value": value,
++            "timestamp": value.get("updated_at"),
++        }
++        return {"result": "CREATED", "value": value}
++
+     async def get_custom_data(self, **kwargs):
+         category = kwargs["category"]
+         key = kwargs.get("key")
