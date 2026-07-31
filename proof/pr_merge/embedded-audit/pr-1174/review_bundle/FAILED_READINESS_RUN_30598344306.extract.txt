@@ -1,0 +1,120 @@
+final readiness	UNKNOWN STEP	﻿2026-07-31T02:12:03.4182469Z Current runner version: '2.336.0'
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4207827Z ##[group]Runner Image Provisioner
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4208820Z Hosted Compute Agent
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4209407Z Version: 20260707.563
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4210008Z Commit: 02667638d2b423fbc733a8e32a88b44996a3ba6e
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4210792Z Build Date: 2026-07-07T19:33:50Z
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4211469Z Worker ID: {b5de03f0-db4c-4b0e-b929-a0c7e9cb8ace}
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4212234Z Azure Region: westus
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4213274Z ##[endgroup]
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4214860Z ##[group]Operating System
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4215604Z Ubuntu
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4216118Z 24.04.4
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4216640Z LTS
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4217271Z ##[endgroup]
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4217875Z ##[group]Runner Image
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4218494Z Image: ubuntu-24.04
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4219069Z Version: 20260720.247.2
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4220390Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260720.247/images/ubuntu/Ubuntu2404-Readme.md
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4221903Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260720.247
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4223107Z ##[endgroup]
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4224662Z ##[group]GITHUB_TOKEN Permissions
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4226778Z Actions: read
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4227402Z Checks: read
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4227956Z Contents: read
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4228545Z Issues: read
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4229115Z Metadata: read
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4229640Z PullRequests: read
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4230262Z Statuses: write
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4230794Z ##[endgroup]
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4233082Z Secret source: Actions
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4234190Z Prepare workflow directory
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4812395Z Prepare all required actions
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.4861185Z Getting action download info
+final readiness	UNKNOWN STEP	2026-07-31T02:12:03.8315354Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.3077484Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.3956066Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.5916291Z Complete job name: final readiness
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.6676718Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.6685886Z ##[group]Run actions/checkout@v4
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.6686685Z with:
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.6687166Z   persist-credentials: false
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.6687764Z   repository: DDD-Enterprises/dopemux-mvp
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.6691964Z   token: ***
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.6692441Z   ssh-strict: true
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.6693113Z   ssh-user: git
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.6693594Z   clean: true
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.6694084Z   sparse-checkout-cone-mode: true
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.6694669Z   fetch-depth: 1
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.6695156Z   fetch-tags: false
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.6695652Z   show-progress: true
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.6696136Z   lfs: false
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.6696626Z   submodules: false
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.6697115Z   set-safe-directory: true
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.6697665Z   allow-unsafe-pr-checkout: false
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.6698494Z env:
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.6702504Z   GH_TOKEN: ***
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.6703187Z ##[endgroup]
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.7733434Z Syncing repository: DDD-Enterprises/dopemux-mvp
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.7736643Z ##[group]Getting Git version info
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.7738157Z Working directory is '/home/runner/work/dopemux-mvp/dopemux-mvp'
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.7740276Z [command]/usr/bin/git version
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.7851363Z git version 2.54.0
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.7885512Z ##[endgroup]
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.7892628Z Temporarily overriding HOME='/home/runner/work/_temp/e825e4da-3ccf-49a9-abbf-2cc22beaa42b' before making global git config changes
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.7896040Z Adding repository directory to the temporary git global config as a safe directory
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.7899499Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/dopemux-mvp/dopemux-mvp
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.7950765Z Deleting the contents of '/home/runner/work/dopemux-mvp/dopemux-mvp'
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.7955733Z ##[group]Initializing the repository
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.7960312Z [command]/usr/bin/git init /home/runner/work/dopemux-mvp/dopemux-mvp
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8086575Z hint: Using 'master' as the name for the initial branch. This default branch name
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8088021Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8089620Z hint: to use in all of your new repositories, which will suppress this warning,
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8091299Z hint: call:
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8092204Z hint:
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8093567Z hint: 	git config --global init.defaultBranch <name>
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8094573Z hint:
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8095836Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8097340Z hint: 'development'. The just-created branch can be renamed via this command:
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8098332Z hint:
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8098812Z hint: 	git branch -m <name>
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8099343Z hint:
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8100112Z hint: Disable this message with "git config set advice.defaultBranchName false"
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8102042Z Initialized empty Git repository in /home/runner/work/dopemux-mvp/dopemux-mvp/.git/
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8105628Z [command]/usr/bin/git remote add origin https://github.com/DDD-Enterprises/dopemux-mvp
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8154214Z ##[endgroup]
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8155092Z ##[group]Disabling automatic garbage collection
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8158280Z [command]/usr/bin/git config --local gc.auto 0
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8190600Z ##[endgroup]
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8191523Z ##[group]Setting up auth
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8198892Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8248071Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8666292Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8705072Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8930809Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.8968495Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.9194244Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.9231908Z ##[endgroup]
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.9233203Z ##[group]Fetching the repository
+final readiness	UNKNOWN STEP	2026-07-31T02:12:04.9241843Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +72af781e42e0702d9047946e0f5a250e7dff0fa5:refs/remotes/origin/main
+final readiness	UNKNOWN STEP	2026-07-31T02:12:08.4233612Z From https://github.com/DDD-Enterprises/dopemux-mvp
+final readiness	UNKNOWN STEP	2026-07-31T02:12:08.4234441Z  * [new ref]         72af781e42e0702d9047946e0f5a250e7dff0fa5 -> origin/main
+final readiness	UNKNOWN STEP	2026-07-31T02:12:08.4272424Z ##[endgroup]
+final readiness	UNKNOWN STEP	2026-07-31T02:12:08.4273378Z ##[group]Determining the checkout info
+final readiness	UNKNOWN STEP	2026-07-31T02:12:08.4275638Z ##[endgroup]
+final readiness	UNKNOWN STEP	2026-07-31T02:12:08.4281554Z [command]/usr/bin/git sparse-checkout disable
+final readiness	UNKNOWN STEP	2026-07-31T02:12:08.4339347Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+final readiness	UNKNOWN STEP	2026-07-31T02:12:08.4370281Z ##[group]Checking out the ref
+final readiness	UNKNOWN STEP	2026-07-31T02:12:08.4374428Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+final readiness	UNKNOWN STEP	2026-07-31T02:12:09.4639565Z Updating files:  60% (9943/16505)
+final readiness	UNKNOWN STEP	2026-07-31T02:12:09.4734461Z Updating files:  61% (10069/16505)
+final readiness	UNKNOWN STEP	2026-07-31T02:12:09.4834019Z Updating files:  62% (10234/16505)
+final readiness	UNKNOWN STEP	2026-07-31T02:12:09.4923457Z Updating files:  63% (10399/16505)
+final readiness	UNKNOWN STEP	2026-07-31T02:12:09.5029488Z Updating files:  64% (10564/16505)
+final readiness	UNKNOWN STEP	2026-07-31T02:12:09.5127499Z Updating files:  65% (10729/16505)
+final readiness	UNKNOWN STEP	2026-07-31T02:12:09.5221316Z Updating files:  66% (10894/16505)
+final readiness	UNKNOWN STEP	2026-07-31T02:12:09.5322923Z Updating files:  67% (11059/16505)
+final readiness	UNKNOWN STEP	2026-07-31T02:12:09.5413016Z Updating files:  68% (11224/16505)
+final readiness	UNKNOWN STEP	2026-07-31T02:12:09.5526545Z Updating files:  69% (11389/16505)
+final readiness	UNKNOWN STEP	2026-07-31T02:12:09.5613580Z Updating files:  70% (11554/16505)
+final readiness	UNKNOWN STEP	2026-07-31T02:12:09.5710156Z Updating files:  71% (11719/16505)
