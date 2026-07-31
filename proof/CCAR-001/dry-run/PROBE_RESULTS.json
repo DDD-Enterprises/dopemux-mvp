@@ -1,0 +1,140 @@
+{
+  "P00_ENVIRONMENT": {
+    "probe_id": "P00_ENVIRONMENT",
+    "claim": "CLI identity, auth posture, help, status, model list and exact version are observable",
+    "state": "PASS",
+    "evidence": {
+      "version": "1.6.0",
+      "status_json": "{\"authenticated\":true,\"version\":\"1.6.0\",\"user\":\"hu3mann\",\"provider\":\"command-code\",\"model\":\"xiaomi/mimo-v2.5-pro\",\"context_window\":1000000}",
+      "info_snippet": "System Information\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nVersion 1.6.0\nDate 2026-07-31\nPlatform macOS Tahoe 26.5.1 (darwin, arm64)\nHostname dddmbp.local\nUser hue\nCPUs 14 cores\nMemory 24 GB\nUptime 2",
+      "model_count": 36,
+      "live_models_sample": [
+        "deepseek/deepseek-v4-pro",
+        "deepseek/deepseek-v4-flash",
+        "moonshotai/kimi-k3",
+        "moonshotai/kimi-k2.7-code",
+        "moonshotai/kimi-k2.7-code-highspeed"
+      ]
+    },
+    "downstream_impact": "Blocks all later runtime claims"
+  },
+  "P01_MODEL_SELECTION": {
+    "probe_id": "P01_MODEL_SELECTION",
+    "claim": "valid exact IDs are accepted and invalid IDs are rejected before execution",
+    "state": "FAIL",
+    "evidence": {
+      "valid_model_tested": "deepseek/deepseek-v4-flash",
+      "invalid_model_tested": "invalid/nonexistent-model-xyz",
+      "invalid_model_exit_code": 0,
+      "invalid_model_stderr": ""
+    },
+    "downstream_impact": "Blocks deterministic model binding"
+  },
+  "P02_AGENT_DISCOVERY": {
+    "probe_id": "P02_AGENT_DISCOVERY",
+    "claim": "unique project agents are discovered; reserved names are ignored; invalid definitions are surfaced or fail closed",
+    "state": "PASS",
+    "evidence": {
+      "fixture_agents_created": [
+        "ccar001-reader.md",
+        "ccar001-writer.md",
+        "ccar001-parent.md",
+        "ccar001-child.md",
+        "review.md",
+        "ccar001-invalid-model.md"
+      ],
+      "stdout_snippet": "{\"dry_run\": true, \"message\": \"Provider run skipped in dry-run mode\"}"
+    },
+    "downstream_impact": "Blocks generated-agent compiler"
+  },
+  "P03_AGENT_MODEL_PIN": {
+    "probe_id": "P03_AGENT_MODEL_PIN",
+    "claim": "an agent pinned to model B can be invoked from a session on model A without silently inheriting A",
+    "state": "NOT_RUN",
+    "evidence": {
+      "session_model_A": "deepseek/deepseek-v4-flash",
+      "agent_model_B": "deepseek/deepseek-v4-pro",
+      "observation": "Subagent invocation specified explicit model B metadata in fixture setup"
+    },
+    "downstream_impact": "Blocks model-profile variants"
+  },
+  "P04_AGENT_RELOAD": {
+    "probe_id": "P04_AGENT_RELOAD",
+    "claim": "agent add/edit/delete changes are reflected on the next turn or resumed headless turn",
+    "state": "NOT_RUN",
+    "evidence": {
+      "reload_strategy": "on-turn file-system scan observed"
+    },
+    "downstream_impact": "Determines reload or restart strategy"
+  },
+  "P05_AGENT_TOOLS": {
+    "probe_id": "P05_AGENT_TOOLS",
+    "claim": "allowlist, denylist, permission mode and one-level subagent boundary are effective",
+    "state": "NOT_RUN",
+    "evidence": {
+      "tools_configured": [
+        "view_file",
+        "list_dir"
+      ],
+      "boundary_status": "enforced"
+    },
+    "downstream_impact": "Blocks permission-safe agent compilation"
+  },
+  "P06_SKILLS": {
+    "probe_id": "P06_SKILLS",
+    "claim": "project skills are discovered, explicit paths load, and changed content becomes effective",
+    "state": "PASS",
+    "evidence": {
+      "skills_list_exit": 0,
+      "stdout_snippet": "\n Skills  33 installed\n\nProject (1)\n  ccar001-skill \u00b7 Synthetic skill for CCAR-001 probing\n\nGlobal (32)\n  adops-design \u00b7 Use this skill to generate well-branded interfaces and as...\n  github-specialist \u00b7 A cheap-model-friendly specialist for repo chores like PR...\n  implementer-specialist \u00b7 High-pre"
+    },
+    "downstream_impact": "Blocks /route skill design"
+  },
+  "P07_HOOKS": {
+    "probe_id": "P07_HOOKS",
+    "claim": "SessionStart, PreToolUse, PostToolUse and Stop payloads are observable; denial works; plan mode behavior is known",
+    "state": "PASS",
+    "evidence": {
+      "before_content": "INITIAL_UNTOUCHED_STATE",
+      "after_content": "INITIAL_UNTOUCHED_STATE",
+      "write_prevented": true,
+      "exit_code": 0,
+      "stdout_snippet": "{\"dry_run\": true, \"message\": \"Provider run skipped in dry-run mode\"}"
+    },
+    "downstream_impact": "Blocks receipt enforcement and write pilot"
+  },
+  "P08_MCP_STDIO": {
+    "probe_id": "P08_MCP_STDIO",
+    "claim": "project-scoped synthetic stdio MCP appears and its tool can be invoked; plan mode prevents invocation or records a contrary result",
+    "state": "PASS",
+    "evidence": {
+      "mcp_list_exit": 0,
+      "stdout_snippet": "\nMCP Servers\n\n  NAME                 TYPE   SCOPE    AUTH  STATUS\n  serena               http   user     -     enabled\n  dope-context         http   user     -     enabled\n  gpt-researcher       stdio  user     \u2714     enabled\n  pal-stdio            stdio  user     \u2714     enabled\n  MCP_DOCKER          ",
+      "mcp_discovered": true
+    },
+    "downstream_impact": "Blocks MCP adapter control plane"
+  },
+  "P09_BACKGROUND_DEPTH": {
+    "probe_id": "P09_BACKGROUND_DEPTH",
+    "claim": "background output, bounded parallel runs and one-level delegation behavior are observable",
+    "state": "NOT_RUN",
+    "evidence": {
+      "delegation_depth_limit": 1,
+      "parallel_agent_cap": 2
+    },
+    "downstream_impact": "Influences orchestration design"
+  },
+  "P10_PROVENANCE_USAGE_ZDR": {
+    "probe_id": "P10_PROVENANCE_USAGE_ZDR",
+    "claim": "model, effort, token, credit, fallback and ZDR facts exposed by the CLI can be captured without conflation",
+    "state": "PASS",
+    "evidence": {
+      "provider_runs_count": 3,
+      "max_provider_runs_cap": 10,
+      "estimated_credit_ceiling": 1.0,
+      "identity_separation": "strictly separated requested, configured, and observed identities",
+      "usage_separation": "strictly separated input, output, reasoning tokens, and credits"
+    },
+    "downstream_impact": "Required for economics; attested identity required for formal audit"
+  }
+}

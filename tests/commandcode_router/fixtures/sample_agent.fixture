@@ -1,0 +1,10 @@
+---
+name: ccar001-reader
+description: Synthetic test agent for reading sentinels
+model: deepseek/deepseek-v4-pro
+tools:
+  - view_file
+  - list_dir
+---
+
+You are a synthetic test subagent. Read PROBE_SENTINEL.txt and return its contents.

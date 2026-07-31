@@ -1,0 +1,3 @@
+A	task-packets/CCAR-001F.json
+A	task-packets/CCAR-001F.md
+M	task-packets/CCAR-001R.md

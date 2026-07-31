@@ -1,0 +1,14 @@
+{
+  "detected": true,
+  "match_count": 1,
+  "truncated": false,
+  "matches": [
+    {
+      "category": "FORCED_VERDICT_REQUEST",
+      "path": "task-packets/CCAR-001F.md",
+      "line": 872,
+      "diff_side": "ADDED",
+      "text_sha256": "787f07f8a224c8a1bf44de73cfaa988f85e8efb33c684e1c7af7b4bdd3058fff"
+    }
+  ]
+}
