@@ -1,0 +1,68 @@
+{
+  "head_sha": "50e39279a1dae515f15d56238c676eec756f19c5",
+  "generated_at": "2026-07-31T02:30:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-AGENT-FLEET-0001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F001",
+        "severity": "MEDIUM",
+        "title": "Residual bare-Zen comments after Zen-to-PAL migration (found by corroborating audit)",
+        "status": "RESOLVED",
+        "body": "Corroborating audit (opencode + xai/grok-4.5, supervisor-approved fallback per operator instruction 2026-07-31) found 10 comment lines in 9 *-dopemux.md files still referencing Zen. Fixed in commit 50e39279a1; final gate with extended pattern (incl. \\bZen\\b) shows 0 stale hits outside archive."
+      },
+      {
+        "id": "F002",
+        "severity": "INFO",
+        "title": "Formal Tier-1 embedded audit routes exhausted; CI lane is the remaining authority",
+        "status": "OPEN",
+        "body": "Route #1 AGY rejected (model selection unproven: responded 'Gemini 3.1 Pro' to --model sonnet and ignored the audit prompt). Routes #2/#3 Claude Code CLI sonnet/opus unavailable (weekly usage limit, resets 4pm America/Vancouver on a future day; re-probed after local 4pm PDT, still limited). Route #4 Gemini CLI 0.46.0 failed (exit 1; session-hook memory output pollution; no audit produced). Tier-2 PAL clink NOT_RUN (requires host-side execution outside this sandbox). Tier-3 Copilot not allowed by packet. The independent CI lane (.github/workflows/embedded-audit.yml) must emit the authoritative proof at the PR head; local signed-attestation path (config/audit/embedded-audit-allowed-signers) is available to the operator."
+      },
+      {
+        "id": "F003",
+        "severity": "INFO",
+        "title": "Corroborating audits performed are not the formal embedded audit",
+        "status": "ACCEPTED_RISK",
+        "body": "Two independent reviews ran against diff main...HEAD: (1) Command Code subagent codereview -> PASS_WITH_RISKS, HIGH finding (Zen MCP refs) fixed in 67b7af2e5f; (2) opencode + xai/grok-4.5 supervisor-approved fallback audit -> PASS_WITH_RISKS, checks 1-7 all PASS (allowlist scope, archive-only, aliased stems intact, packaged mirrors canonical, no secrets, authority hygiene, fail-closed sync), MEDIUM finding F001 fixed in 50e39279a1. Neither satisfies AGENTS.md 9.1 Tier-1 embedded-audit requirements; recorded as corroborating evidence in review_bundle/auditor_raw_output.txt."
+      },
+      {
+        "id": "F004",
+        "severity": "LOW",
+        "title": "Model pins in agent frontmatter are repo-established but externally unverified",
+        "status": "ACCEPTED_RISK",
+        "body": "model: 'Claude Sonnet 4.5' (.github/agents x6), 'GPT-5' (7 personas), 'GPT-4.1' (1 persona) kept per repo-established pattern and authoring-guide example. External vendor verification NOT_RUN (web search returned no results this session). Recorded UNKNOWN in claudedocs/agent-fleet-audit-2026-07-30.md."
+      },
+      {
+        "id": "F005",
+        "severity": "LOW",
+        "title": "tools-field semantics conflict between doc and observed runtime (personal lane)",
+        "status": "ACCEPTED_RISK",
+        "body": "Command Code docs state omitted tools = no tools; observed behavior shows ~/.commandcode/agents agents dispatching and using tools without a tools field. Conflict unresolved (UNKNOWN); no restrictive tools lists were added to working agents without runtime evidence."
+      }
+    ],
+    "fixes_applied": [
+      "Frontmatter normalized across .claude/personas: name added to 17 files, least-privilege tool aliases on 23 files, tools added to 3 files (was all-tools default), descriptions cleaned on 2 files",
+      "6 personas archived via git mv (no hard deletes): gilfoyle, Ultimate-Transparent-Thinking-Beast-Mode, context7, meta-agentic-project-scaffold, plan, mentor",
+      "9 *-dopemux.md persona bodies migrated from Zen MCP to PAL (mcp__pal__*), including 10 comment-level strings (grok-audit F001)",
+      "Stale fleet references removed: Task-Master, Zen, mem4sprint, Context7, o3/gemini-2.5 model names (0 hits on final extended gate incl. \\bZen\\b)",
+      ".claude/agents/ 4 curated agents + _index.md rewritten to current fleet truth with tools frontmatter; stray byte-identical python-mcp-expert.agent.md removed",
+      "scripts/sync_personas.py + tests/arch/test_persona_fleet_contract.py created; src/dopemux/personas re-synced (10/10 byte-identical to canonical)",
+      "templates/skills/ci-remediation-specialist SKILL.md YAML description quoting fixed",
+      "PERSONA_INDEX.md regenerated: 48 -> 42 active, archive documented, overlap groups resolved",
+      "~/.commandcode/agents/dopemux.md: missing required name field added (personal lane, excluded from PR diff)"
+    ],
+    "remaining_risks": [
+      "Formal embedded audit SKIPPED: no Tier-1 auditor route available this session; PR-scoped pr-steward gate --audit-proof is NOT_RUN. CI lane must emit authoritative proof at the PR head before merge readiness.",
+      "Model pins externally unverified (F004).",
+      "tools-field doc/runtime conflict unresolved for personal lane (F005).",
+      "Corroborating audits (subagent codereview PASS_WITH_RISKS; opencode+grok-4.5 PASS_WITH_RISKS) are the strongest independent reviews this diff received locally; both are non-Tier-1."
+    ],
+    "skip_reason": "All Tier-1 auditor routes exhausted: AGY model selection unproven (responded Gemini 3.1 Pro to --model sonnet); Claude Code CLI sonnet/opus weekly usage limit (resets 4pm America/Vancouver, future day); Gemini CLI 0.46.0 exit 1 with session-hook output pollution; Tier-2 PAL clink requires host-side execution outside sandbox; Tier-3 Copilot not allowed by packet. Supervisor-approved fallback corroboration ran instead: opencode + xai/grok-4.5, verdict PASS_WITH_RISKS (see AUDITOR_REPORT.md). Formal audit authority deferred to CI lane (.github/workflows/embedded-audit.yml) at PR head."
+  }
+}
