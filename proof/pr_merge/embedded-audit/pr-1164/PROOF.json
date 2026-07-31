@@ -1,0 +1,27 @@
+{
+  "packet_id": "TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-004",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1164,
+  "head_sha": "11973bd3b75517a2a4fa4d18bfa708edddcf00e5",
+  "executed": true,
+  "mutation_performed": false,
+  "github_mutation_route_added": false,
+  "generated_at": "2026-07-31T06:10:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --print-timeout 30m --add-dir /private/tmp/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-004/audit-input --mode plan --effort high -p <independent embedded audit prompt for PR 1164>; exit_code 0",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-004/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "files": []
+    }
+  }
+}
