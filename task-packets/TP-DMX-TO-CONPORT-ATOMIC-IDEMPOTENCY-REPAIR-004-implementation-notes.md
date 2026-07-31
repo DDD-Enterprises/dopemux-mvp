@@ -1,3 +1,15 @@
+---
+id: TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-004-implementation-notes
+title: Tp Dmx To Conport Atomic Idempotency Repair 004 Implementation Notes
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-07-30'
+last_review: '2026-07-30'
+next_review: '2026-10-28'
+prelude: Tp Dmx To Conport Atomic Idempotency Repair 004 Implementation Notes (explanation)
+  for dopemux documentation and developer workflows.
+---
 # TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-004 — Implementation Notes
 
 ## Execution log
