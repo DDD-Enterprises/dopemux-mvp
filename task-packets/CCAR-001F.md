@@ -1,0 +1,986 @@
+---
+id: CCAR-001F
+title: CCAR-001 PR 1174 Frontmatter and Finalization Repair
+type: explanation
+owner: '@hu3mann'
+author: GPT-5.6 Thinking
+date: '2026-07-30'
+last_review: '2026-07-30'
+next_review: '2026-08-29'
+prelude: Normalize the CCAR-001R task-packet frontmatter, restore required CI checks,
+  and refresh exact-head signed audit and PR Steward evidence for PR 1174.
+---
+# Task Packet: CCAR-001F · PR #1174 · Frontmatter and Finalization Repair
+
+════════════════════════════════════════════════════════════
+
+## Packet Identity
+
+| Field | Value |
+|---|---|
+| Packet | `CCAR-001F` |
+| Parent | `CCAR-001R` |
+| Series | `CCAR-SERIES-001` |
+| Repository | `DDD-Enterprises/dopemux-mvp` |
+| Existing PR | `#1174` |
+| Existing branch | `probe/ccar-001-commandcode-runtime-surfaces` |
+| Required starting PR head | `09cd236d8c916d5b50eadc0600964f8a41f3d31d` |
+| Authoring-time observed base | `72af781e42e0702d9047946e0f5a250e7dff0fa5` |
+| Current dedicated Steward status | `success` |
+| Current required CI blocker | `docs-frontmatter-guard` on `task-packets/CCAR-001R.md` |
+| Risk | Medium, proof and finalization sensitive |
+| Status | `READY_ON_EXACT_STARTING_HEAD` |
+
+This packet repairs one deterministic documentation-compatibility failure and
+then refreshes the exact-head audit and readiness chain. It does not modify the
+CommandCode probe implementation, hook code, workflow code, schemas, or shared
+runtime.
+
+
+### Supervisor Amendment A1 · Formatter Body Normalization
+
+The first execution stopped correctly after observing that
+`scripts/docs_frontmatter_guard.py` writes:
+
+```python
+path.write_text(fm + body.lstrip(), encoding="utf-8")
+```
+
+The formatter therefore removes the body's leading whitespace prefix in
+addition to normalizing YAML frontmatter.
+
+This amendment authorizes that exact deterministic transformation only.
+
+Required body relation:
+
+```text
+after_body == before_body.lstrip()
+```
+
+Additional constraints:
+
+- the removed prefix must contain only whitespace;
+- the first non-whitespace byte and every byte after it must be identical;
+- no internal or trailing body byte may change;
+- the normalized body must begin with the existing `# Task Packet:` heading;
+- formatter convergence is still required on the second run.
+
+This is not authorization to modify the formatter, pre-commit configuration, or
+any other Markdown content. The formatter's current runtime behaviour is the
+truth being accommodated.
+
+────────────────────────────────────────────────────────────
+
+## Decision
+
+Normalize only the existing CCAR-001R Markdown frontmatter using the repository's
+current `docs-frontmatter-guard`, commit that repair together with this follow-up
+packet as `F1`, audit `F1`, then create one signed proof-only commit `F2`.
+
+Required topology:
+
+```text
+09cd236d8c916d5b50eadc0600964f8a41f3d31d   current PR head
+    |
+    v
+F1  fix(docs): normalize CCAR-001R frontmatter
+    |  changes exactly:
+    |    task-packets/CCAR-001R.md
+    |    task-packets/CCAR-001F.md
+    |    task-packets/CCAR-001F.json
+    |  fresh audit targets F1
+    v
+F2  proof(audit): refresh signed embedded-audit attestation for PR 1174
+       changes only proof/pr_merge/embedded-audit/pr-1174/**
+       PROOF.json.head_sha == F1
+       final PR head == F2
+```
+
+Do not attempt to make `PROOF.json.head_sha == F2`.
+
+────────────────────────────────────────────────────────────
+
+## Execution Recommendation
+
+```yaml
+execution_recommendation:
+  stage: implementation
+  runner:
+    preferred: shell/local
+    availability: PROVEN
+  agent:
+    logical_role: developer
+    custom_agent: null
+    authority_ceiling: allowlisted-write
+  model:
+    preferred: none
+    effort: low
+  fallback:
+    runner: CommandCode
+    model: deepseek/deepseek-v4-flash
+    trigger: unexpected formatter or validation failure
+  audit:
+    required: true
+    runner: AGY
+    model: gemini-3.1-pro-high
+    independence: LIMITED
+```
+
+Reasons:
+
+- The implementation is a deterministic repository-formatter operation; a model
+  adds variance and is not the preferred editor.
+- Shell/local has already proven the formatter, packet validator, signing, local
+  attestation, and Git evidence paths.
+- If deterministic validation behaves unexpectedly, CommandCode with
+  `deepseek/deepseek-v4-flash` may diagnose the discrepancy in read-only mode.
+  It may not widen scope or edit files without an amendment.
+- The fresh audit remains mandatory because the packet and canonical proof head
+  change. AGY `gemini-3.1-pro-high` is a previously proven exact selector for
+  this PR. Independence is `LIMITED` because original implementer-family
+  provenance remains unknown.
+- Audit quota or route failure has no silent fallback. Stop and escalate.
+
+Recommendations do not grant authority. This packet's allowlist, invariants, and
+operator instructions remain controlling.
+
+────────────────────────────────────────────────────────────
+
+## Objective
+
+Make PR #1174 eligible for an immediate human finalization decision by:
+
+1. applying the repository-authoritative frontmatter normalization to
+   `task-packets/CCAR-001R.md`;
+2. proving that the Markdown body is unchanged;
+3. restoring all required CI contexts to success;
+4. refreshing the signed canonical audit proof against the new content head;
+5. regenerating PR Steward evidence and a merge-scoped finalization receipt
+   within its freshness TTL.
+
+No merge is authorized.
+
+────────────────────────────────────────────────────────────
+
+## Observed Evidence
+
+At packet authoring time:
+
+- PR #1174 is open and mergeable at
+  `09cd236d8c916d5b50eadc0600964f8a41f3d31d`.
+- `PR Steward / final readiness` is `success` on that head.
+- The `docs` workflow and Complete CI pipeline are red.
+- The sole substantive failing hook is `docs-frontmatter-guard`.
+- The hook ran with `--fix` and changed only
+  `task-packets/CCAR-001R.md`.
+- The current CCAR-001R frontmatter contains `type: task-packet`.
+- `scripts/docs_frontmatter_guard.py` permits only its documented type enum and
+  normalizes unrecognized task-packet paths to `type: explanation`.
+- The same hook rewrites YAML deterministically with `yaml.safe_dump`.
+- The Complete CI summary is red because the Code Quality job is red.
+- Existing canonical proof is current to the pre-repair head only and becomes
+  stale after `F1`.
+
+────────────────────────────────────────────────────────────
+
+## Authority
+
+### Execution authority
+
+1. Explicit operator instruction
+2. This active packet
+3. Current `RULES.md`, `AGENTS.md`, proof/audit/finalization contracts
+4. Tool defaults
+
+### Truth authority
+
+1. Live GitHub PR state, current branch history, workflow logs, current scripts,
+   current schemas, and command output
+2. Trusted-main audit and PR Steward implementation
+3. Current governance and source-of-truth documents
+4. Packet claims
+5. Inference
+
+The Markdown `type: explanation` field is documentation metadata required by the
+current frontmatter system. The machine-readable `task-packets/CCAR-001F.json`
+remains the strict Task Packet artifact. Do not treat the documentation type as
+execution authority.
+
+────────────────────────────────────────────────────────────
+
+## Scope
+
+### IN
+
+- Add `task-packets/CCAR-001F.md`.
+- Add `task-packets/CCAR-001F.json`.
+- Run the current repository frontmatter formatter on:
+  - `task-packets/CCAR-001R.md`
+  - `task-packets/CCAR-001F.md`
+- Accept only the deterministic CCAR-001R frontmatter change.
+- Prove the formatted CCAR-001R body equals the original body after applying only `lstrip()`.
+- Commit the three-file content repair as `F1`.
+- Build a bounded exact-`F1` audit review bundle outside the repository.
+- Run one fresh read-only AGY Gemini 3.1 Pro audit against `F1`.
+- Refresh the canonical signed proof package under:
+  `proof/pr_merge/embedded-audit/pr-1174/**`.
+- Create proof-only commit `F2`.
+- Verify the detached OpenSSH signature and local attestation acceptance.
+- Push normally.
+- Require all required checks, including Code Quality, docs, CI summary,
+  embedded audit, and final readiness, to succeed on `F2`.
+- Run a fresh PR Steward harvest at `F2`.
+- Regenerate or re-pin the merge-scoped finalization proof and evaluate it
+  within the configured TTL.
+- Update the PR body with current evidence.
+- Return a non-merge handoff.
+
+### OUT
+
+- Editing `task-packets/CCAR-001R.json`.
+- Editing CCAR-001 implementation, tests, runtime evidence, or historical proof.
+- Editing the frontmatter hook, pre-commit configuration, workflows, schemas,
+  allowed signers, audit scripts, PR Steward, DCP, routing, agents, or services.
+- Re-running CommandCode provider-backed probes.
+- Changing any CCAR-001R body byte other than the leading whitespace prefix removed by the formatter.
+- Reclassifying the current P07 hook finding.
+- Claiming bounded writes or formal audit dispatch are ready.
+- Rebasing, squashing, force pushing, or rewriting pushed history.
+- Manually publishing a successful status.
+- Merging PR #1174.
+- Implementing CCAR-002.
+
+────────────────────────────────────────────────────────────
+
+## Invariants
+
+1. Local and remote starting head equal
+   `09cd236d8c916d5b50eadc0600964f8a41f3d31d`.
+2. Repository, origin, branch, worktree, and PR identity match exactly.
+3. Worktree is clean before packet files are installed.
+4. The live PR base is captured before `F1` and frozen for the audit bundle.
+5. If the PR base changes before `F2`, stop and rebuild the audit bundle.
+7. `F1` changes exactly the two CCAR-001F packet files and
+   `task-packets/CCAR-001R.md`.
+8. CCAR-001R normalized body equals the original body with only its leading whitespace prefix removed.
+9. Parsed CCAR-001R frontmatter changes only as produced by the current
+   repository formatter.
+10. The final CCAR-001R `type` is `explanation`.
+11. A second formatter run changes no file and exits zero.
+14. No hook, workflow, schema, config, source, service, or proof file changes in
+    `F1`.
+15. The fresh audit is bound to `F1`, the frozen live base, and complete current
+    PR state.
+16. The audit records actual tool, exact model selector, effort, command, exit
+    code, conversation ID when available, findings, and risks.
+17. Passing audit is `PASS` or non-blocking `PASS_WITH_RISKS`.
+18. Model-family independence and provider-attested identity remain separately
+    classified.
+19. `PROOF.json.head_sha` equals `F1`.
+19. `F2` differs from `F1` only under
+    `proof/pr_merge/embedded-audit/pr-1174/**`.
+20. The committed proof bytes exactly match the signed bytes.
+21. Local attestation evaluation returns `accepted=true`.
+22. No tracked file changes after `F2`.
+23. All required GitHub workflows are current to `F2` and successful.
+24. PR Steward harvest is complete, current, and `READY`.
+25. Merge-scoped finalization evidence is evaluated within its TTL and records
+    `generated_at` and `expires_at`.
+26. An expired finalization receipt is not a readiness signal.
+27. No merge occurs.
+
+If an invariant appears impossible, stop and report.
+
+────────────────────────────────────────────────────────────
+
+## Allowed Files
+
+```text
+task-packets/CCAR-001F.md
+task-packets/CCAR-001F.json
+task-packets/CCAR-001R.md
+proof/pr_merge/embedded-audit/pr-1174/**
+```
+
+GitHub metadata mutation is limited to updating the existing PR #1174 body.
+No comments, labels, reviewers, thread resolutions, close, merge, or branch
+mutation are authorized.
+
+────────────────────────────────────────────────────────────
+
+## Forbidden Files
+
+```text
+task-packets/CCAR-001R.json
+task-packets/CCAR-001.md
+proof/CCAR-001/**
+scripts/commandcode_router/**
+tests/commandcode_router/**
+scripts/docs_frontmatter_guard.py
+.pre-commit-config.yaml
+.github/**
+schemas/**
+config/**
+src/**
+services/**
+AGENTS.md
+RULES.md
+pyproject.toml
+uv.lock
+```
+
+If another tracked path is required, stop and request an amendment.
+
+────────────────────────────────────────────────────────────
+
+## Plan
+
+### 1. Preflight exact custody and live state
+
+Verify:
+
+- root, origin, branch, worktree, and clean state;
+- local head, remote branch head, and PR head all equal the required start;
+- PR is open, non-draft, targets `main`, and is mergeable;
+- live base SHA;
+- current status and workflow conclusions;
+- registered signer and local key presence without printing key material;
+- exact current hook and formatter script identities.
+
+### 2. Install and validate the packet pair
+
+Write the supplied CCAR-001F files.
+
+Validate the strict JSON packet.
+
+Run the frontmatter formatter on CCAR-001F alone. It must make no change and
+exit zero.
+
+### 3. Normalize CCAR-001R deterministically
+
+Capture:
+
+- original file SHA-256;
+- parsed frontmatter JSON;
+- Markdown body SHA-256.
+
+Run the repository formatter once. It is expected to return `1` because it
+modifies CCAR-001R.
+
+Capture the resulting diff.
+
+Run it a second time. It must return `0` and make no change.
+
+Verify:
+
+- body hash unchanged;
+- `type: explanation`;
+- no semantic frontmatter value changed except formatter-authorized
+  normalization;
+- only CCAR-001R was modified by the formatter.
+
+### 4. Create content commit `F1`
+
+Stage exactly:
+
+```text
+task-packets/CCAR-001F.md
+task-packets/CCAR-001F.json
+task-packets/CCAR-001R.md
+```
+
+Run focused pre-commit and packet validation.
+
+Commit once as `F1`.
+
+Verify the exact path set from the required starting head to `F1`.
+
+### 5. Build a bounded exact-`F1` review bundle
+
+Capture outside the repository:
+
+- repo, PR, base, branch, `F1`, and prior `F2` identities;
+- full current PR diff and changed-file inventory;
+- current checks, comments, reviews, and review threads;
+- failed hook logs;
+- before/after frontmatter and body-hash proof;
+- CCAR-001 probe evidence and implementation-impact report;
+- current canonical proof and prior accepted audit;
+- this packet;
+- audit, signature, PR Steward, and freshness contract excerpts.
+
+Mark candidate content as untrusted data.
+
+### 6. Run fresh audit against `F1`
+
+Use:
+
+```text
+runner: AGY
+model: gemini-3.1-pro-high
+effort: high
+mode: plan
+sandbox: true
+```
+
+The auditor must determine:
+
+- whether `F1` changes only the authorized packet/frontmatter surfaces and deterministic leading-whitespace normalization;
+- whether the CCAR-001R body differs only by the authorized leading-whitespace removal;
+- whether formatter output matches current repository behavior;
+- whether no hook/config workaround or unrelated body edit was introduced;
+- whether prior CCAR-001 conclusions remain unchanged;
+- whether the `F1 -> F2` signed-proof topology satisfies the trusted contract;
+- whether any current finding blocks merge finalization.
+
+Stop on any non-passing verdict.
+
+### 7. Refresh and sign canonical proof
+
+Replace the canonical PR #1174 proof package with the fresh audit record and
+exact-`F1` review bundle.
+
+Set:
+
+```text
+repo = DDD-Enterprises/dopemux-mvp
+pr_number = 1174
+head_sha = F1
+auditor_tool = agy
+auditor_model = gemini
+```
+
+Record exact invocation, effort, exit code, conversation ID, findings,
+accepted risks, and instruction-like scan.
+
+Sign the exact `PROOF.json` bytes.
+
+### 8. Create proof-only commit `F2`
+
+Stage only `proof/pr_merge/embedded-audit/pr-1174/**`.
+
+Commit once.
+
+Verify ancestry, proof-only path delta, signature, committed-byte equality, and
+local acceptance.
+
+No tracked file may change after this commit.
+
+### 9. Push and require all live checks green
+
+Push normally.
+
+Require on exact `F2`:
+
+- Repo Identity Check: success;
+- Security Review: success;
+- clobber-guard: success;
+- docs/checks: success;
+- Code Quality & Linting: success;
+- Complete CI Pipeline: success;
+- CI Pipeline Summary: success;
+- Audit Proof Validator: success;
+- independent embedded audit: success;
+- `PR Steward / final readiness`: success;
+- every required context terminal and current.
+
+No required red, pending, missing, or cancelled context is acceptable.
+
+### 10. Refresh PR Steward and finalization evidence
+
+Harvest all current PR state at `F2`.
+
+Require zero unknown identities, zero unclassified items, zero unresolved
+blocking threads, current audit, and `READY`.
+
+Regenerate or re-pin the merge-scoped audit/finalization proof and immediately
+run the finalization gate within its configured TTL.
+
+Record:
+
+```text
+generated_at
+evaluated_at
+expires_at
+final_head
+verdict
+```
+
+The packet may report readiness only while that receipt is unexpired.
+
+### 11. Update PR body and hand off
+
+Update the PR body with:
+
+- `F1` and `F2`;
+- formatter and body-hash evidence;
+- fresh audit route and verdict;
+- signed-attestation acceptance;
+- all required workflow results;
+- PR Steward result;
+- finalization receipt timestamps;
+- remaining risks;
+- explicit statement that merge was not performed.
+
+────────────────────────────────────────────────────────────
+
+## Exact Commands
+
+### A. Preflight
+
+```bash
+set -euo pipefail
+
+REPO='DDD-Enterprises/dopemux-mvp'
+PR=1174
+EXPECTED_START='09cd236d8c916d5b50eadc0600964f8a41f3d31d'
+BRANCH='probe/ccar-001-commandcode-runtime-surfaces'
+
+test -f AGENTS.md
+test -f RULES.md
+test -f pyproject.toml
+test -f scripts/dopetask
+test -f scripts/docs_frontmatter_guard.py
+test -f scripts/audit/sign_local_audit_proof.sh
+
+git rev-parse --show-toplevel
+git remote get-url origin
+git status --porcelain=v1 --branch
+test -z "$(git status --porcelain=v1)"
+test "$(git branch --show-current)" = "$BRANCH"
+test "$(git rev-parse HEAD)" = "$EXPECTED_START"
+
+git fetch --prune origin
+test "$(git rev-parse "origin/$BRANCH")" = "$EXPECTED_START"
+test "$(gh pr view "$PR" --repo "$REPO" --json headRefOid --jq .headRefOid)" =   "$EXPECTED_START"
+
+gh pr view "$PR" --repo "$REPO"   --json number,state,isDraft,mergeable,baseRefName,baseRefOid,headRefName,headRefOid,title,url
+
+gh api "repos/$REPO/commits/$EXPECTED_START/status"
+gh run list --repo "$REPO" --commit "$EXPECTED_START" --limit 30
+
+grep -q '^hue@local ' config/audit/embedded-audit-allowed-signers
+test -f "$HOME/.ssh/dopemux_audit_signing"
+```
+
+### B. Packet validation
+
+```bash
+python3 -m json.tool task-packets/CCAR-001F.json >/dev/null
+
+uv run --frozen dopemux orchestrator packet validate   task-packets/CCAR-001F.json
+
+uv run --frozen python -m jsonschema   -i task-packets/CCAR-001F.json   docs/03-reference/spec/dopetask/dopetask-canonical-spec.json
+
+python3 scripts/docs_frontmatter_guard.py --fix   task-packets/CCAR-001F.md
+```
+
+The last command must exit zero and print:
+
+```text
+All docs have valid frontmatter.
+```
+
+### C. Capture CCAR-001R before-state
+
+```bash
+python3 - <<'PY'
+import hashlib
+import json
+from pathlib import Path
+import yaml
+
+path = Path("task-packets/CCAR-001R.md")
+text = path.read_text(encoding="utf-8")
+assert text.startswith("---\n")
+end = text.index("\n---\n", 4)
+frontmatter = yaml.safe_load(text[4:end])
+body = text[end + 5:]
+
+Path("/tmp/ccar001r-frontmatter-before.json").write_text(
+    json.dumps(frontmatter, indent=2, default=str) + "\n",
+    encoding="utf-8",
+)
+body_bytes = body.encode("utf-8")
+stripped_bytes = body.lstrip().encode("utf-8")
+removed_prefix = body_bytes[: len(body_bytes) - len(stripped_bytes)]
+
+Path("/tmp/ccar001r-body-before.bin").write_bytes(body_bytes)
+Path("/tmp/ccar001r-body-lstripped-expected.bin").write_bytes(stripped_bytes)
+Path("/tmp/ccar001r-removed-prefix.bin").write_bytes(removed_prefix)
+Path("/tmp/ccar001r-body-before.sha256").write_text(
+    hashlib.sha256(body_bytes).hexdigest() + "\n",
+    encoding="utf-8",
+)
+Path("/tmp/ccar001r-body-lstripped-expected.sha256").write_text(
+    hashlib.sha256(stripped_bytes).hexdigest() + "\n",
+    encoding="utf-8",
+)
+Path("/tmp/ccar001r-file-before.sha256").write_text(
+    hashlib.sha256(text.encode("utf-8")).hexdigest() + "\n",
+    encoding="utf-8",
+)
+PY
+```
+
+### D. Apply formatter and prove convergence
+
+```bash
+set +e
+python3 scripts/docs_frontmatter_guard.py --fix   task-packets/CCAR-001R.md   task-packets/CCAR-001F.md
+first_rc=$?
+set -e
+
+test "$first_rc" = "1"
+
+git diff -- task-packets/CCAR-001R.md task-packets/CCAR-001F.md
+
+python3 scripts/docs_frontmatter_guard.py --fix   task-packets/CCAR-001R.md   task-packets/CCAR-001F.md
+```
+
+The second formatter invocation must exit zero.
+
+### E. Verify semantic containment
+
+```bash
+python3 - <<'PY'
+import hashlib
+import json
+from pathlib import Path
+import yaml
+
+path = Path("task-packets/CCAR-001R.md")
+text = path.read_text(encoding="utf-8")
+assert text.startswith("---\n")
+end = text.index("\n---\n", 4)
+after = yaml.safe_load(text[4:end])
+body = text[end + 5:]
+
+before = json.loads(
+    Path("/tmp/ccar001r-frontmatter-before.json").read_text(encoding="utf-8")
+)
+before_body = Path("/tmp/ccar001r-body-before.bin").read_bytes()
+expected_body = Path(
+    "/tmp/ccar001r-body-lstripped-expected.bin"
+).read_bytes()
+removed_prefix = Path("/tmp/ccar001r-removed-prefix.bin").read_bytes()
+after_body = body.encode("utf-8")
+
+assert removed_prefix, "formatter removed no leading whitespace"
+assert removed_prefix.isspace(), "removed prefix contains non-whitespace bytes"
+assert after_body == expected_body, (
+    "CCAR-001R body changed beyond authorized leading-whitespace removal"
+)
+assert before_body.endswith(after_body), (
+    "formatted body is not an exact suffix of original body"
+)
+assert after_body.startswith(b"# Task Packet:"), (
+    "normalized body does not begin with the existing Task Packet heading"
+)
+assert before.get("type") == "task-packet"
+assert after.get("type") == "explanation"
+
+before_without_type = dict(before)
+after_without_type = dict(after)
+before_without_type.pop("type", None)
+after_without_type.pop("type", None)
+assert before_without_type == after_without_type, (
+    "frontmatter semantic values changed beyond type normalization"
+)
+print("CCAR-001R formatter-authorized semantic repair: PASS")
+print(f"removed_prefix_bytes={len(removed_prefix)}")
+print(f"before_body_sha256={hashlib.sha256(before_body).hexdigest()}")
+print(f"after_body_sha256={hashlib.sha256(after_body).hexdigest()}")
+PY
+
+test "$(git diff --name-only | sort)" = $'task-packets/CCAR-001F.json\ntask-packets/CCAR-001F.md\ntask-packets/CCAR-001R.md'
+```
+
+### F. Focused validation and F1
+
+```bash
+git diff --check
+
+pre-commit run --files   task-packets/CCAR-001F.md   task-packets/CCAR-001F.json   task-packets/CCAR-001R.md
+
+git add   task-packets/CCAR-001F.md   task-packets/CCAR-001F.json   task-packets/CCAR-001R.md
+
+test "$(git diff --cached --name-only | sort)" = $'task-packets/CCAR-001F.json\ntask-packets/CCAR-001F.md\ntask-packets/CCAR-001R.md'
+
+git diff --cached --check
+git commit -m 'fix(docs): normalize CCAR-001R frontmatter'
+
+F1="$(git rev-parse HEAD)"
+printf '%s\n' "$F1" > /tmp/ccar001f-audited-head.txt
+
+test "$(git diff --name-only "$EXPECTED_START" "$F1" | sort)" = $'task-packets/CCAR-001F.json\ntask-packets/CCAR-001F.md\ntask-packets/CCAR-001R.md'
+```
+
+### G. Build the exact-F1 review bundle
+
+```bash
+set -euo pipefail
+
+F1="$(cat /tmp/ccar001f-audited-head.txt)"
+BUNDLE="$(mktemp -d "${TMPDIR:-/tmp}/ccar001f-audit.XXXXXX")"
+mkdir -p "$BUNDLE/review_bundle"
+
+base_sha="$(gh pr view "$PR" --repo "$REPO" --json baseRefOid --jq .baseRefOid)"
+printf '%s\n' "$base_sha" > "$BUNDLE/review_bundle/BASE_SHA.txt"
+printf '%s\n' "$F1" > "$BUNDLE/review_bundle/AUDITED_HEAD_SHA.txt"
+printf '%s\n' "$EXPECTED_START" > "$BUNDLE/review_bundle/PREVIOUS_HEAD_SHA.txt"
+
+gh pr view "$PR" --repo "$REPO"   --json number,state,isDraft,mergeable,baseRefName,baseRefOid,headRefName,headRefOid,title,body,url   > "$BUNDLE/review_bundle/PR_METADATA.json"
+
+gh pr diff "$PR" --repo "$REPO" --name-only   > "$BUNDLE/review_bundle/CHANGED_FILES.txt"
+
+gh pr diff "$PR" --repo "$REPO"   > "$BUNDLE/review_bundle/UNIFIED_DIFF.txt"
+
+gh api "repos/$REPO/commits/$F1/status"   > "$BUNDLE/review_bundle/CHECKS_AT_AUDIT.json"
+
+gh api --paginate "repos/$REPO/issues/$PR/comments"   > "$BUNDLE/review_bundle/ISSUE_COMMENTS.json"
+
+gh api --paginate "repos/$REPO/pulls/$PR/reviews"   > "$BUNDLE/review_bundle/REVIEWS.json"
+
+gh api --paginate "repos/$REPO/pulls/$PR/comments"   > "$BUNDLE/review_bundle/INLINE_COMMENTS.json"
+
+cp task-packets/CCAR-001F.md "$BUNDLE/review_bundle/"
+cp task-packets/CCAR-001F.json "$BUNDLE/review_bundle/"
+cp task-packets/CCAR-001R.md "$BUNDLE/review_bundle/"
+cp /tmp/ccar001r-frontmatter-before.json "$BUNDLE/review_bundle/"
+cp /tmp/ccar001r-body-before.sha256 "$BUNDLE/review_bundle/"
+cp proof/CCAR-001/IMPLEMENTATION_IMPACT.md "$BUNDLE/review_bundle/"
+cp proof/CCAR-001/runtime/PROBE_RESULTS.json "$BUNDLE/review_bundle/"
+cp proof/pr_merge/embedded-audit/pr-1174/PROOF.json   "$BUNDLE/review_bundle/PRIOR_CANONICAL_PROOF.json"
+cp proof/pr_merge/embedded-audit/pr-1174/AUDITOR_REPORT.md   "$BUNDLE/review_bundle/PRIOR_AUDITOR_REPORT.md"
+
+printf '%s\n' "$BUNDLE" > /tmp/ccar001f-bundle-path.txt
+```
+
+### H. Audit route
+
+```bash
+agy --version
+agy --help
+agy models | tee "$BUNDLE/AGY_MODELS.txt"
+
+agy   --model gemini-3.1-pro-high   --effort high   --sandbox   --mode plan   --print-timeout 20m   --output-format json   --add-dir "$BUNDLE/review_bundle"   --print "$(cat "$BUNDLE/AUDIT_INSTRUCTION.md")"   > "$BUNDLE/AGY_AUDIT_RAW.json"   2> "$BUNDLE/AGY_AUDIT_STDERR.txt"
+
+test "$?" = "0"
+```
+
+Do not silently substitute another selector.
+
+### I. Proof refresh and validation
+
+Create the refreshed canonical package, then run:
+
+```bash
+python3 scripts/audit/validate_audit_proof.py   proof/pr_merge/embedded-audit/pr-1174/PROOF.json
+
+scripts/audit/sign_local_audit_proof.sh 1174
+
+ssh-keygen -Y verify   -f config/audit/embedded-audit-allowed-signers   -I hue@local   -n dopemux-embedded-audit   -s proof/pr_merge/embedded-audit/pr-1174/PROOF.json.sig   < proof/pr_merge/embedded-audit/pr-1174/PROOF.json
+```
+
+### J. F2 proof-only commit
+
+```bash
+git status --porcelain=v1
+
+git add proof/pr_merge/embedded-audit/pr-1174/
+
+test "$(git diff --cached --name-only | grep -v '^proof/pr_merge/embedded-audit/pr-1174/' | wc -l | tr -d ' ')" = "0"
+
+git diff --cached --check
+git commit -m 'proof(audit): refresh signed embedded-audit attestation for PR 1174'
+
+F2="$(git rev-parse HEAD)"
+test "$(git merge-base --is-ancestor "$F1" "$F2"; echo $?)" = "0"
+
+test "$(git diff --no-renames --name-only "$F1" "$F2"   | grep -v '^proof/pr_merge/embedded-audit/pr-1174/'   | wc -l | tr -d ' ')" = "0"
+```
+
+Run the local acceptance evaluator against prospective final head `F2` and
+require `accepted=true`.
+
+### K. Push and finalization
+
+```bash
+git push origin HEAD:"$BRANCH"
+
+test "$(gh pr view "$PR" --repo "$REPO" --json headRefOid --jq .headRefOid)" =   "$F2"
+
+gh run list --repo "$REPO" --commit "$F2" --limit 40
+gh api "repos/$REPO/commits/$F2/status"
+```
+
+Discover current PR Steward and finalization CLI syntax from local help before
+invocation. Do not guess flags.
+
+────────────────────────────────────────────────────────────
+
+## Output Capture Rules
+
+Capture:
+
+- status before and after;
+- root, origin, branch, worktree;
+- starting head, `F1`, `F2`, and frozen base SHA;
+- exact three-file F1 inventory;
+- exact proof-only F2 inventory;
+- before/after frontmatter;
+- body hashes;
+- formatter outputs and exit codes;
+- packet/schema/pre-commit results;
+- audit tool, model, effort, command, exit code, conversation ID, raw output;
+- proof and signature hashes;
+- local attestation result;
+- every workflow and required-context conclusion;
+- reviews, comments, threads, and identity classifications;
+- PR Steward artifacts;
+- finalization receipt timestamps and TTL;
+- PR URL;
+- rollback and remaining risks.
+
+Never record signing-key bytes, credentials, cookies, authorization headers, or
+private provider tokens.
+
+────────────────────────────────────────────────────────────
+
+## Proof and Audit Requirements
+
+Fresh audit is mandatory because this packet changes:
+
+- a Task Packet;
+- exact-head proof binding;
+- canonical audit evidence;
+- PR finalization readiness.
+
+The audit may use incremental reasoning over the previously accepted canonical
+audit, but it must independently inspect `F1` and verify unchanged CCAR-001
+implementation bytes.
+
+Required audit record:
+
+```text
+auditor_tool: agy
+auditor_model: gemini
+configured_selector: gemini-3.1-pro-high
+effort: high
+audited_head: F1
+verdict: PASS or PASS_WITH_RISKS
+```
+
+Provider-attested actual identity remains separate from configured selector.
+
+`FAIL`, `NEEDS_SUPERVISOR`, `SKIPPED`, unknown model, malformed proof, stale
+head, or scope mismatch blocks the packet.
+
+────────────────────────────────────────────────────────────
+
+## Acceptance Criteria
+
+1. The strict CCAR-001F JSON packet validates.
+2. CCAR-001F Markdown is formatter-stable before commit.
+3. CCAR-001R body transformation is exactly `before_body.lstrip()`.
+4. CCAR-001R parsed frontmatter changes only from unrecognized
+   `type: task-packet` to `type: explanation`.
+5. A second formatter run exits zero and changes nothing.
+7. `F1` changes exactly the three authorized content files.
+8. Focused pre-commit passes before `F1`.
+9. Fresh audit passes against exact `F1`.
+10. Refreshed proof is schema-valid, exact-head-bound, and signed.
+11. `F2` is proof-only relative to `F1`.
+14. Local attestation accepts `F2`.
+15. All required GitHub checks are current and successful on `F2`.
+16. Complete CI Pipeline and CI Pipeline Summary are successful.
+17. PR Steward is freshly `READY` at `F2`.
+18. Finalization evidence is evaluated within TTL.
+19. No review, identity, proof, audit, scope, or CI blocker remains.
+19. No merge occurred.
+20. Final disposition is exactly one of:
+
+```text
+CCAR_001F_COMPLETE_READY_FOR_IMMEDIATE_FINALIZATION
+CCAR_001F_BLOCKED_FRONTMATTER_NORMALIZATION
+CCAR_001F_BLOCKED_FRESH_AUDIT
+CCAR_001F_BLOCKED_CI
+CCAR_001F_BLOCKED_FINALIZATION_FRESHNESS
+CCAR_001F_INVALID_EVIDENCE
+```
+
+`READY_FOR_IMMEDIATE_FINALIZATION` must include the receipt's `expires_at`.
+After expiry, rerun the read-only finalization gate before any merge decision.
+
+────────────────────────────────────────────────────────────
+
+## Rollback
+
+- No runtime rollback is required.
+- Before push, reset only packet-created local commits if the packet blocks.
+- After push, do not rewrite history.
+- A later rollback requires a separately authorized revert packet.
+- Do not revert or mutate proof, packet, or frontmatter history manually.
+- Never alter the registered signer or signing key as rollback.
+
+────────────────────────────────────────────────────────────
+
+## Handoff
+
+A successful handoff must state separately:
+
+```text
+CCAR-001 probe and proof-return status
+PR #1174 merge readiness
+finalization receipt freshness
+CCAR-002 planning status
+CCAR-002 implementation status
+```
+
+CCAR-002 planning may continue. CCAR-002 repository implementation remains
+deferred until PR #1174 is merged or a separately reviewed stacked packet
+authorizes overlap.
+
+────────────────────────────────────────────────────────────
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STOP CONDITIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Stop immediately if:
+
+- local, remote, or live PR starting head differs from the required SHA;
+- repository, origin, branch, worktree, or PR identity mismatches;
+- the worktree is dirty before packet installation;
+- live base changes after `F1` audit bundle capture;
+- main changes relevant frontmatter, audit, proof, packet-schema, or PR Steward
+  authority during execution;
+- the formatter changes any CCAR-001R body byte beyond removing the leading whitespace prefix;
+- the formatted body differs from `before_body.lstrip()` or the removed prefix contains non-whitespace bytes;
+- frontmatter changes beyond formatter-authorized normalization;
+- a second formatter run changes any file;
+- `F1` escapes the exact three-file allowlist;
+- a required edit touches hook, workflow, config, schema, source, service, or
+  historical CCAR proof;
+- audit route, exact model, invocation, or exit code cannot be proven;
+- audit is non-passing;
+- signing key is absent, untrusted, or exposed;
+- signature verification or local acceptance fails;
+- `F2` is not proof-only;
+- any tracked file changes after `F2`;
+- any required workflow remains red, pending, missing, or cancelled;
+- PR Steward is not current and `READY`;
+- finalization proof is stale;
+- a merge, force push, history rewrite, service mutation, or scope expansion is
+  attempted.
+
+If stopped, return:
+
+1. exact stop condition;
+2. current repository and PR state;
+3. actions attempted;
+4. command evidence and exit codes;
+5. mutation and unchanged-state confirmation;
+7. affected criteria as `BLOCKED` or `NOT_RUN`;
+8. evidence required for the next verdict.
