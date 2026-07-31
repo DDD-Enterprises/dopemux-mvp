@@ -1,7 +1,7 @@
 ---
 description: "Executor lane for isolated workflow task delivery inside Dopemux."
 name: "Workflow Executor Instructions"
-tools: ["changes", "search", "runCommands", "runTests"]
+tools: ['read', 'edit', 'search', 'execute']
 ---
 
 # Workflow Executor Instructions

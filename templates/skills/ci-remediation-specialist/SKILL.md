@@ -1,6 +1,6 @@
 ---
 name: ci-remediation-specialist
-description: Specialized agent for diagnosing and fixing CI/validation failures. Use when a test, linter, build, or other CI step fails and needs autonomous remediation. Follows a strict runbook: reproduce locally, attempt auto-fixers, surgically edit, and re-verify.
+description: "Specialized agent for diagnosing and fixing CI/validation failures. Use when a test, linter, build, or other CI step fails and needs autonomous remediation. Follows a strict runbook: reproduce locally, attempt auto-fixers, surgically edit, and re-verify."
 ---
 
 # CI Remediation Specialist

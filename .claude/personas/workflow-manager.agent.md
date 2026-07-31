@@ -1,7 +1,7 @@
 ---
 description: "Manager lane for Dopemux workflow orchestration, review gates, and worker validation."
 name: "Workflow Manager Instructions"
-tools: ["changes", "search", "runCommands", "runTests"]
+tools: ['read', 'edit', 'search']
 ---
 
 # Workflow Manager Instructions

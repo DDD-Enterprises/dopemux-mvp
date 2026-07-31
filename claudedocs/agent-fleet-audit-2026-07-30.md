@@ -34,7 +34,8 @@ All 6 conform to `config/instructions/agents.instructions.md`: description (sing
 |---|---|---|
 | KEEP | adr-generator, devops-expert, github-actions-expert, implementation-plan, prd, principal-software-engineer(FIX-name), se-* (6), specification(FIX-name), task-planner, task-researcher(FIX-tools), tech-debt-remediation-plan(FIX-name), wg-code-alchemist(FIX-name), wg-code-sentinel(FIX-name), workflow-executor, workflow-manager, critical-thinking(FIX-name), devils-advocate(FIX-name), search-ai-optimization-expert(FIX-name), prompt-engineer(FIX name+tools) | see FIX columns |
 | FIX | 13 missing `name:`: critical-thinking, devils-advocate, gilfoyle→archive, janitor, mentor→archive, principal-software-engineer, prompt-builder, prompt-engineer, search-ai-optimization-expert, specification, tech-debt-remediation-plan, wg-code-alchemist, wg-code-sentinel | frontmatter |
-| FIX | Raw legacy VS Code tool ids instead of least-privilege aliases: janitor (worst: `vscode/installExtension`, `execute/runTask`, `vscode/vscodeAPI`…), task-researcher, prompt-builder, meta-agentic-project-scaffold→archive | tools |
+| FIX | Raw legacy VS Code tool ids instead of least-privilege aliases — **16 files** (initial ledger listed 4; validation gate B2 caught the full set): janitor (worst: `vscode/installExtension`, `vscode/vscodeAPI`…), task-researcher, prompt-builder, principal-software-engineer, critical-thinking, specification, tech-debt-remediation-plan, wg-code-alchemist, wg-code-sentinel, search-ai-optimization-expert, devops-expert, github-actions-expert, implementation-plan, prd, se-gitops-ci-specialist, se-security-reviewer, se-system-architecture-reviewer, se-technical-writer, se-ux-ui-designer, task-planner, workflow-executor, workflow-manager (all FIXED to role-scoped aliases); meta-agentic-project-scaffold→archive | tools |
+| FIX (gate-caught) | task-planner tools contained `context7` + azure/terraform leftovers; python-expert-dopemux.md:87 `Route to Task-Master` → Task-Orchestrator; templates/skills/ci-remediation-specialist description unquoted colon (YAML error). All found by S9 gates after truncated initial greps — ledger corrected | stale refs / yaml |
 | FIX | 4 missing `tools:` (= all tools granted): adr-generator, prompt-engineer, python-mcp-expert, Beast-Mode→archive | tools |
 | FIX | prompt-builder: body mandates `context7` (lines 56, 175) — service not in fleet | stale ref |
 | ARCHIVE | gilfoyle (snark voice, zero operational value), Ultimate-Transparent-Thinking-Beast-Mode (29KB mandatory-sequential-thinking injection; service not in fleet), context7 (org-level-only `mcp-servers` block invalid at repo level; external hosted MCP not in fleet), meta-agentic-project-scaffold ("pull files from awesome-copilot" scraper; over-privileged: `updateUserPreferences`, `copilotCodingAgent`), plan (thin wrapper per PERSONA_INDEX), mentor (generic; superseded by socratic-mentor/learning-guide dopemux variants) | consolidation |
@@ -73,6 +74,15 @@ Byte-identical to canonical (verified: `scripts/sync_personas.py --check` exit 0
 - name ↔ directory match: 20/20 OK.
 - Variant families (testgen ×4, pr-docgen-sync ×4): consistent wrapper pattern — base skill + per-runner wrappers differing in frontmatter description, title, and routing section only (~93 lines, runner-scoped). By design; no change.
 - Descriptions have clear delegation triggers. pr-docgen-sync base description is ~600 chars (long but functional) — left as-is (no cosmetic-only edits).
+
+## Personal lane (S8) — `~/.commandcode/agents/` (17) + `~/.claude/agents/` (16)
+
+- 16/17 commandcode files compliant (name, description, category). **FIXED**: `dopemux.md` missing required `name:` — added `name: dopemux`. Opencode keys (`mode`, `permission`, `color`) kept: harmless passthrough in Command Code, functional in opencode. Model `anthropic/claude-sonnet-4-5` kept (BYO-provider passthrough, observed live in roster).
+- 15/16 cross-runtime pairs byte-identical; `security-engineer.md` differs by exactly one line (runtime name in context note) — intentional mirroring, no change.
+- Neither set declares `tools:`. Doc says omitted = no tools; observed behavior = agents dispatch and use tools. **CONFLICT unresolved** — recorded UNKNOWN; no restrictive tools lists added to working agents without runtime evidence.
+- Roster difference: `dopemux.md` exists only in commandcode set. Left as-is (intent UNKNOWN).
+- Model pinning on personal agents: considered, **rejected** — inherit-session is the working default; TP lane tagging (done in packet) is the taste-compliant routing mechanism.
+- Personal-lane edits are proof-recorded here and excluded from the PR diff.
 
 ## Archive set (S4) — final
 
