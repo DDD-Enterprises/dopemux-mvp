@@ -1,0 +1,18 @@
+{
+  "escaped": [],
+  "forbidden": [],
+  "paths": [
+    ".claude/personas/modernization.agent.md",
+    ".claude/personas/python-mcp-expert.agent.md",
+    ".claude/personas/se-gitops-ci-specialist.agent.md",
+    ".claude/personas/se-security-reviewer.agent.md",
+    ".claude/personas/se-system-architecture-reviewer.agent.md",
+    ".claude/personas/se-technical-writer.agent.md",
+    ".claude/personas/se-ux-ui-designer.agent.md",
+    "claudedocs/agent-fleet-audit-2026-07-30.md",
+    "src/dopemux/personas/se-security-reviewer.agent.md",
+    "src/dopemux/personas/se-system-architecture-reviewer.agent.md",
+    "tests/arch/test_persona_fleet_contract.py"
+  ],
+  "safe": true
+}
