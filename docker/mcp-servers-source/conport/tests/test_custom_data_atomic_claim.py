@@ -18,9 +18,9 @@ class _FastMCPStub:
     def __init__(self, *args, **kwargs):
         self.tools = []
 
-    def tool(self):
+    def tool(self, *, name=None, description=None):
         def decorator(func):
-            self.tools.append(func.__name__)
+            self.tools.append(name or func.__name__)
             return func
         return decorator
 
