@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from datetime import datetime, timezone
-from typing import Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field, root_validator, validator
 
@@ -55,11 +55,11 @@ def compute_epic_fingerprint(request: "CreateEpicRequest") -> str:
         "title": request.title,
         "description": request.description,
         "business_value": request.business_value,
-        "acceptance_criteria": sorted(request.acceptance_criteria),
+        "acceptance_criteria": list(request.acceptance_criteria),
         "priority": request.priority,
         "status": request.status,
         "created_from_idea_id": request.created_from_idea_id,
-        "tags": sorted(request.tags) if request.tags else [],
+        "tags": list(request.tags) if request.tags else [],
         "adhd_metadata": (
             request.adhd_metadata.dict()
             if hasattr(request.adhd_metadata, "dict")

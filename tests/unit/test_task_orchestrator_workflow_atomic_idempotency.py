@@ -1,5 +1,4 @@
 """Unit tests for Task Orchestrator atomic epic idempotency."""
-import asyncio
 import sys
 from pathlib import Path
 from unittest.mock import AsyncMock
@@ -225,3 +224,68 @@ async def test_fingerprint_excludes_idempotency_key():
     fp3 = compute_epic_fingerprint(r3)
 
     assert fp1 == fp2 == fp3
+
+
+@pytest.mark.asyncio
+async def test_fingerprint_equivalent_normalized_requests_hash_identically():
+    """Equivalent normalized requests hash identically regardless of key order."""
+    from app.models.workflow import compute_epic_fingerprint  # noqa: E402
+
+    r1 = CreateEpicRequest(
+        title="Same",
+        description="Same",
+        business_value="Same",
+        acceptance_criteria=["alpha", "beta", "gamma"],
+        tags=["one", "two"],
+    )
+    r2 = CreateEpicRequest(
+        title="Same",
+        description="Same",
+        business_value="Same",
+        acceptance_criteria=["alpha", "beta", "gamma"],
+        tags=["one", "two"],
+    )
+
+    assert compute_epic_fingerprint(r1) == compute_epic_fingerprint(r2)
+
+
+@pytest.mark.asyncio
+async def test_fingerprint_reordered_acceptance_criteria_differ():
+    """Reordered acceptance criteria are distinct immutable requests."""
+    from app.models.workflow import compute_epic_fingerprint  # noqa: E402
+
+    r1 = CreateEpicRequest(
+        title="Same",
+        description="Same",
+        business_value="Same",
+        acceptance_criteria=["alpha", "beta", "gamma"],
+    )
+    r2 = CreateEpicRequest(
+        title="Same",
+        description="Same",
+        business_value="Same",
+        acceptance_criteria=["gamma", "beta", "alpha"],
+    )
+
+    assert compute_epic_fingerprint(r1) != compute_epic_fingerprint(r2)
+
+
+@pytest.mark.asyncio
+async def test_fingerprint_reordered_tags_differ():
+    """Reordered tags are distinct immutable requests."""
+    from app.models.workflow import compute_epic_fingerprint  # noqa: E402
+
+    r1 = CreateEpicRequest(
+        title="Same",
+        description="Same",
+        business_value="Same",
+        tags=["one", "two", "three"],
+    )
+    r2 = CreateEpicRequest(
+        title="Same",
+        description="Same",
+        business_value="Same",
+        tags=["three", "two", "one"],
+    )
+
+    assert compute_epic_fingerprint(r1) != compute_epic_fingerprint(r2)

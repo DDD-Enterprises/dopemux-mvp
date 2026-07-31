@@ -10,7 +10,10 @@ import pytest
 CONPORT_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(CONPORT_DIR))
 
-# Stub mcp.server.fastmcp + asyncpg + redis before importing conport modules
+# Stub mcp.server.fastmcp + asyncpg + redis before importing conport modules.
+# Guard with `if not in sys.modules` so a prior test module (e.g. the root
+# conftest asyncpg stub) is never replaced, and always force-register so
+# enhanced_server's dependency auto-install can never fire during tests.
 class _FastMCPStub:
     def __init__(self, *args, **kwargs):
         self.tools = []
@@ -21,33 +24,50 @@ class _FastMCPStub:
             return func
         return decorator
 
-fastmcp_module = types.ModuleType("mcp.server.fastmcp")
-fastmcp_module.FastMCP = _FastMCPStub
-mcp_module = types.ModuleType("mcp")
-mcp_server_module = types.ModuleType("mcp.server")
-mcp_server_models_module = types.ModuleType("mcp.server.models")
-mcp_server_models_module.InitializationOptions = object
-mcp_server_stdio_module = types.ModuleType("mcp.server.stdio")
-mcp_server_stdio_module.stdio_server = object
-sys.modules.setdefault("mcp", mcp_module)
-sys.modules.setdefault("mcp.server", mcp_server_module)
-sys.modules.setdefault("mcp.server.fastmcp", fastmcp_module)
-sys.modules.setdefault("mcp.server.models", mcp_server_models_module)
-sys.modules.setdefault("mcp.server.stdio", mcp_server_stdio_module)
+if "mcp.server.fastmcp" not in sys.modules:
+    fastmcp_module = types.ModuleType("mcp.server.fastmcp")
+    fastmcp_module.FastMCP = _FastMCPStub
+    mcp_module = types.ModuleType("mcp")
+    mcp_server_module = types.ModuleType("mcp.server")
+    mcp_server_models_module = types.ModuleType("mcp.server.models")
+    mcp_server_models_module.InitializationOptions = object
+    mcp_server_stdio_module = types.ModuleType("mcp.server.stdio")
+    mcp_server_stdio_module.stdio_server = object
+    sys.modules.setdefault("mcp", mcp_module)
+    sys.modules.setdefault("mcp.server", mcp_server_module)
+    sys.modules.setdefault("mcp.server.fastmcp", fastmcp_module)
+    sys.modules.setdefault("mcp.server.models", mcp_server_models_module)
+    sys.modules.setdefault("mcp.server.stdio", mcp_server_stdio_module)
 
-# Stub asyncpg and redis so enhanced_server doesn't auto-install
-asyncpg_stub = types.ModuleType("asyncpg")
-asyncpg_stub.connect = lambda *a, **kw: None
-redis_stub = types.ModuleType("redis")
-redis_stub.Redis = lambda *a, **kw: None
-redis_stub.asyncio = types.ModuleType("redis.asyncio")
-redis_stub.asyncio.Redis = lambda *a, **kw: None
-aioredis_stub = types.ModuleType("aioredis")
-aioredis_stub.Redis = lambda *a, **kw: None
-sys.modules.setdefault("asyncpg", asyncpg_stub)
-sys.modules.setdefault("redis", redis_stub)
-sys.modules.setdefault("redis.asyncio", redis_stub.asyncio)
-sys.modules.setdefault("aioredis", aioredis_stub)
+# Stub asyncpg and redis so enhanced_server never auto-installs. When the
+# real packages are present in the environment they are used; otherwise the
+# stub guarantees import without triggering `pip install` inside the server.
+if "asyncpg" not in sys.modules:
+    try:
+        import asyncpg  # noqa: F401
+    except ImportError:
+        asyncpg_stub = types.ModuleType("asyncpg")
+        asyncpg_stub.connect = lambda *a, **kw: None
+        sys.modules["asyncpg"] = asyncpg_stub
+
+if "redis" not in sys.modules:
+    try:
+        import redis  # noqa: F401
+    except ImportError:
+        redis_stub = types.ModuleType("redis")
+        redis_stub.Redis = lambda *a, **kw: None
+        redis_stub.asyncio = types.ModuleType("redis.asyncio")
+        redis_stub.asyncio.Redis = lambda *a, **kw: None
+        sys.modules["redis"] = redis_stub
+        sys.modules["redis.asyncio"] = redis_stub.asyncio
+
+if "aioredis" not in sys.modules:
+    try:
+        import aioredis  # noqa: F401
+    except ImportError:
+        aioredis_stub = types.ModuleType("aioredis")
+        aioredis_stub.Redis = lambda *a, **kw: None
+        sys.modules["aioredis"] = aioredis_stub
 
 
 @pytest.mark.asyncio
@@ -139,7 +159,6 @@ class TestCustomDataAtomicClaim:
         app = EnhancedConPortServer()
         app.db_pool = self.fake_pool
 
-        from aiohttp import web
         body = self._make_claim()
         req = self._fake_request(body)
 
@@ -157,7 +176,6 @@ class TestCustomDataAtomicClaim:
         app = EnhancedConPortServer()
         app.db_pool = self.fake_pool
 
-        from aiohttp import web
         body = self._make_claim(fp="abc123")
 
         resp1 = await app.claim_custom_data(self._fake_request(body))
@@ -174,7 +192,6 @@ class TestCustomDataAtomicClaim:
         app = EnhancedConPortServer()
         app.db_pool = self.fake_pool
 
-        from aiohttp import web
         body1 = self._make_claim(fp="abc123", payload={"title": "Fix races", "_fingerprint_v1": "abc123"})
         body2 = self._make_claim(fp="xyz789", payload={"title": "Different", "_fingerprint_v1": "xyz789"})
 
@@ -194,7 +211,6 @@ class TestCustomDataAtomicClaim:
 
         self.store[("ws-1", "workflow_epics", "epic_abc")] = {"title": "Old", "priority": "high"}
 
-        from aiohttp import web
         resp = await app.claim_custom_data(self._fake_request(self._make_claim(fp="abc123")))
         data = json.loads(resp.text)
         assert data["result"] == "LEGACY_UNFINGERPRINTED"
@@ -207,7 +223,6 @@ class TestCustomDataAtomicClaim:
         app.db_pool = self.fake_pool
 
         body = {"workspace_id": "ws-1", "category": "x", "key": "y", "value": {"no_fp": True}}
-        from aiohttp import web
         resp = await app.claim_custom_data(self._fake_request(body))
         assert resp.status == 400
         assert json.loads(resp.text)["result"] == "MISSING_FINGERPRINT"
@@ -217,7 +232,6 @@ class TestCustomDataAtomicClaim:
         app = EnhancedConPortServer()
         app.db_pool = self.fake_pool
 
-        from aiohttp import web
         body = self._make_claim(fp="concurrent-fp-1")
 
         async def one_claim():
@@ -240,7 +254,6 @@ class TestCustomDataAtomicClaim:
         app = EnhancedConPortServer()
         app.db_pool = self.fake_pool
 
-        from aiohttp import web
 
         async def one_claim(idx):
             fp = f"conflict-fp-{idx}"
@@ -260,7 +273,6 @@ class TestCustomDataAtomicClaim:
         assert persisted_keys == {("ws-1", "workflow_epics", "epic_abc")}
 
     def _fake_request(self, body_dict):
-        import aiohttp
 
         class FakeRequest:
             async def json(self):

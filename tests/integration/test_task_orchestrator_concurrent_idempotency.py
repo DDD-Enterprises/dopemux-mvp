@@ -1,8 +1,6 @@
 """Integration test for concurrent epic idempotency across simulated replicas."""
 import asyncio
-import json
 import sys
-import uuid
 from pathlib import Path
 
 import pytest
@@ -17,7 +15,7 @@ for module_name in list(sys.modules):
     if module_name == "app" or module_name.startswith("app."):
         sys.modules.pop(module_name, None)
 
-from app.models.workflow import CreateEpicRequest, compute_epic_fingerprint  # noqa: E402
+from app.models.workflow import CreateEpicRequest  # noqa: E402
 from app.services.workflow_service import (  # noqa: E402
     WorkflowConflictError,
     WorkflowService,
@@ -69,7 +67,6 @@ class SharedAtomicClaimStore:
         return {"result": "CREATED", "value": value}
 
     async def get_custom_data(self, **kwargs):
-        category = kwargs["category"]
         key = kwargs.get("key")
         items = []
         for row_key, row in self.rows.items():
@@ -147,7 +144,6 @@ async def test_two_replica_conflicting_concurrent_claims():
     - Only one persisted value
     """
     shared_store = SharedAtomicClaimStore()
-    base_idempotency_key = None  # Same epic ID, different payloads
 
     async def create_conflicting(idx):
         svc = WorkflowService(workspace_id="/workspace/shared")

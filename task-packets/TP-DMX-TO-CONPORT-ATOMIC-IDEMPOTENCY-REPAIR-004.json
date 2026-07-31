@@ -1,0 +1,195 @@
+{
+  "id": "TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-004",
+  "project": "dopemux-mvp",
+  "target": "Recover the stopped atomic-idempotency repair without reopening its architecture. Fix four verified defects: ConPort owner tests cannot import enhanced_server, Task Orchestrator route tests cannot collect because the FastMCP stub rejects name= and description=, fingerprint v1 incorrectly sorts ordered immutable lists, and prior diff evidence omits newly added files. Then rerun the complete test matrix, prove concurrency across two Task Orchestrator processes, obtain trusted exact-head audit evidence, package every authoritative artifact, and run PR Steward.",
+  "invariants": [
+    "The persistent atomic-claim design remains unchanged unless a newly passing test proves a correctness defect.",
+    "Runtime sys.path mutation is forbidden.",
+    "Production MCP registration code must not be weakened to satisfy a stub.",
+    "Fingerprint v1 preserves Pydantic-normalized order for acceptance_criteria and tags.",
+    "Reordered list values are distinct immutable requests and must conflict.",
+    "The fingerprint contract version and field set remain unchanged.",
+    "Owner-level tests must import and exercise EnhancedConPortServer.",
+    "Complete diff evidence must include new and modified files.",
+    "No force push, rebase, reset, history rewrite, branch deletion, merge, deployment, canonical service restart, or PR ready-state transition is authorized.",
+    "The two-replica proof must use two independently addressable Task Orchestrator processes sharing one authenticated bridge and one ConPort owner.",
+    "At least 20 identical and 20 conflicting concurrent rounds, restart replay, one row per identity, and zero overwrite are mandatory.",
+    "No secret, JWT, signing key, cookie, authorization header, or environment file may enter git, proof, audit prompts, process arguments, or final bundles.",
+    "Trusted embedded audit must execute its substantive step and bind to the final PR head.",
+    "PR Steward must use tools/pr_steward with schemas/pr_steward.",
+    "A successful run still does not authorize merge, deployment, or LTAIP loader retry."
+  ],
+  "depends_on": ["TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003"],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "TO-CONPORT-PERSISTENCE-REPAIR",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/to-conport-persistence-repair",
+    "base_branch": "main",
+    "stacked_because": "PR #1164 continuation — recover the stopped atomic-idempotency repair without reopening its architecture."
+  },
+  "commit": {
+    "message": "test(task-orchestrator): complete atomic idempotency proof gates",
+    "allowlist": [
+      "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-004.json",
+      "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-004-research.md",
+      "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-004-plan.md",
+      "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-004-implementation-notes.md",
+      "services/task-orchestrator/app/models/workflow.py",
+      "tests/unit/test_task_orchestrator_workflow_route_certification.py",
+      "tests/unit/test_task_orchestrator_workflow_atomic_idempotency.py",
+      "docker/mcp-servers-source/conport/tests/test_custom_data_atomic_claim.py",
+      "docker/mcp-servers-source/conport/tests/test_mcp_custom_data.py",
+      "docker/mcp-servers-source/conport/tests/test_mcp_search.py",
+      "docker/mcp-servers-source/conport/tests/test_ensure_schema.py",
+      "tests/integration/test_task_orchestrator_concurrent_idempotency.py",
+      "proof/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-004/**"
+    ],
+    "verify": [
+      "uv run pytest -q docker/mcp-servers-source/conport/tests/test_custom_data_atomic_claim.py",
+      "uv run pytest -q tests/unit/test_task_orchestrator_workflow_route_certification.py tests/unit/test_task_orchestrator_workflow_atomic_idempotency.py",
+      "uv run pytest -q docker/mcp-servers-source/conport/tests/test_mcp_custom_data.py tests/unit/test_task_orchestrator_workflow_store.py tests/unit/test_task_orchestrator_workflow_write_serialization.py",
+      "uv run pytest -q tests/integration/test_task_orchestrator_concurrent_idempotency.py",
+      "uv run ruff check services/task-orchestrator/app/models/workflow.py tests/unit/test_task_orchestrator_workflow_route_certification.py tests/unit/test_task_orchestrator_workflow_atomic_idempotency.py docker/mcp-servers-source/conport/tests/test_custom_data_atomic_claim.py tests/integration/test_task_orchestrator_concurrent_idempotency.py",
+      "git diff --check",
+      "python scripts/check_root_hygiene.py"
+    ]
+  },
+  "pr": {
+    "title": "fix(task-orchestrator): make epic idempotency atomic across replicas",
+    "body": "## Summary\n- Repair ConPort owner test import using established adjacent-test convention\n- Repair FastMCP test stub to accept production decorator shape\n- Fingerprint v1 preserves Pydantic-normalized order for acceptance_criteria and tags\n- Reordered lists are distinct immutable requests and conflict on replay\n- Complete diff evidence includes new and modified files\n- Two-replica concurrency proof with restart replay\n- Trusted exact-head embedded audit\n\n## Safety\n- No protocol, schema, or persistence-provider change\n- No runtime sys.path mutation\n- Production MCP registration unchanged\n- Fingerprint contract version and field set unchanged\n- Draft PR, no force push, no merge authorization",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "implement",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "custody",
+      "task": "Prove live Git/GitHub custody: PR head, remote branch head, lineage, candidate completeness.",
+      "validation": [
+        "PR head equals remote branch head",
+        "Reported candidate is descendant of authorized parent",
+        "Candidate contains every expected REPAIR-003 file",
+        "Evidence in EVIDENCE/GIT_STATUS_BEFORE.txt, REPAIR003_COMPLETE_COMMIT.patch, REPAIR003_CHANGED_FILES.txt"
+      ]
+    },
+    {
+      "id": "owner-import-repair",
+      "task": "Fix test_custom_data_atomic_claim.py using the repository's established adjacent-test import convention so EnhancedConPortServer imports and executes.",
+      "expected_files": [
+        "docker/mcp-servers-source/conport/tests/test_custom_data_atomic_claim.py"
+      ],
+      "validation": [
+        "7 collected, 7 executed, 7 passed",
+        "20 identical claims: 1 CREATED, 19 MATCHED, 1 persisted value",
+        "20 conflicting claims: 1 CREATED, 19 CONFLICT, 1 persisted value, 0 overwrites"
+      ]
+    },
+    {
+      "id": "stub-repair",
+      "task": "Fix the FastMCP test stub to accept tool(name=..., description=...) while preserving the wrapped callable.",
+      "expected_files": [
+        "tests/unit/test_task_orchestrator_workflow_route_certification.py"
+      ],
+      "validation": [
+        "Module imports successfully",
+        "All route-certification tests collect",
+        "All route-certification tests pass",
+        "Production MCP source unchanged"
+      ]
+    },
+    {
+      "id": "fingerprint-ordering",
+      "task": "Replace sorted lists with Pydantic-normalized order in fingerprint v1. Add reordered-list conflict tests.",
+      "expected_files": [
+        "services/task-orchestrator/app/models/workflow.py",
+        "tests/unit/test_task_orchestrator_workflow_atomic_idempotency.py",
+        "tests/unit/test_task_orchestrator_workflow_route_certification.py"
+      ],
+      "validation": [
+        "Equivalent normalized requests hash identically",
+        "Reordered acceptance criteria hash differently",
+        "Reordered tags hash differently",
+        "Reordered replay returns conflict",
+        "Persisted winner remains unchanged"
+      ]
+    },
+    {
+      "id": "validation-matrix",
+      "task": "Run the complete scoped validation matrix. Every command must exit 0.",
+      "validation": [
+        "Packet JSON validates against dopetask-canonical-spec.json",
+        "Owner tests pass",
+        "Route and atomic idempotency tests pass",
+        "Store, serialization, mcp_custom_data tests pass",
+        "Integration concurrent idempotency tests pass",
+        "ruff clean",
+        "git diff --check clean",
+        "Root hygiene clean"
+      ]
+    },
+    {
+      "id": "diff-custody-commit",
+      "task": "Capture precommit diff evidence, stage only authorized files, commit, capture final implementation head and patch.",
+      "validation": [
+        "Staged inventory matches allowlist",
+        "Final commit patch includes every newly added packet and test file",
+        "GIT_STATUS_AFTER clean"
+      ]
+    },
+    {
+      "id": "push-draft",
+      "task": "Fast-forward the existing draft PR with pre-push remote verification and post-push head verification.",
+      "validation": [
+        "Pre-push remote equals PR head",
+        "Post-push PR head equals final implementation head",
+        "PR remains draft"
+      ]
+    },
+    {
+      "id": "concurrency-proof",
+      "task": "Run a disposable two-replica isolated concurrency proof: one ConPort owner, one authenticated DopeconBridge, two independently addressable Task Orchestrator processes, unique loopback ports, unique network and volumes, unique synthetic data, short-lived synthetic credentials.",
+      "validation": [
+        "20 identical concurrent rounds, 20 conflicting concurrent rounds, 1 process restart replay, 0 failed rounds, 0 overwrites, 1 row maximum per identity, 0 token leaks, 0 residual resources",
+        "summary.json assertions all true"
+      ]
+    },
+    {
+      "id": "trusted-audit",
+      "task": "Obtain trusted exact-head embedded audit bound to the final PR head inspecting the complete diff, test harness repairs, fingerprint ordering semantics, ConPort owner transaction, two-replica concurrency proof, bridge authentication, token handling, evidence custody, and allowlist compliance.",
+      "validation": [
+        "Substantive audit step executes",
+        "Verdict PASS or PASS_WITH_RISKS with no blocking finding",
+        "Audit records tool, model, invocation, exit code, audited head, inspected files, findings, fixes, remaining risks, instruction-like-content scan"
+      ]
+    },
+    {
+      "id": "bundle-steward-handoff",
+      "task": "Assemble the clean evidence bundle, run check-only PR Steward, and produce HANDOFF.json.",
+      "validation": [
+        "Bundle contains all Git receipts, test outputs, final patch, concurrency receipts, token scan, cleanup proof, embedded audit, PR Steward outputs, HANDOFF.json",
+        "No .DS_Store, AppleDouble, caches, environment files, secrets, raw authorization headers",
+        "PR Steward intake passes with strict mode",
+        "MERGE_READINESS.json validates against schemas/pr_steward/merge_readiness.schema.json"
+      ]
+    }
+  ]
+}

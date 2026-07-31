@@ -1,5 +1,6 @@
 import json
 import sys
+import types
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -18,6 +19,40 @@ sys.path.insert(0, SERVICE_ROOT_STR)
 for _module_name in list(sys.modules):
     if _module_name == "app" or _module_name.startswith("app."):
         sys.modules.pop(_module_name, None)
+
+# Register a FastMCP stub that accepts the production decorator shape
+# `tool(name=..., description=...)` before `app.main` is imported. The
+# production registration in app/main.py calls the decorator with keyword
+# arguments; a positional-only stub would raise TypeError during import.
+if "mcp.server.fastmcp" not in sys.modules:
+    class _FastMCPStub:
+        def __init__(self, *args, **kwargs):
+            self.tools = {}
+
+        def tool(self, *, name=None, description=None):
+            def decorator(func):
+                self.tools[name or func.__name__] = {
+                    "description": description,
+                    "handler": func,
+                }
+                return func
+
+            return decorator
+
+    fastmcp_module = types.ModuleType("mcp.server.fastmcp")
+    fastmcp_module.FastMCP = _FastMCPStub
+    mcp_module = types.ModuleType("mcp")
+    mcp_server_module = types.ModuleType("mcp.server")
+    mcp_server_models_module = types.ModuleType("mcp.server.models")
+    mcp_server_models_module.InitializationOptions = object
+    mcp_server_stdio_module = types.ModuleType("mcp.server.stdio")
+    mcp_server_stdio_module.stdio_server = object
+
+    sys.modules["mcp"] = mcp_module
+    sys.modules["mcp.server"] = mcp_server_module
+    sys.modules["mcp.server.fastmcp"] = fastmcp_module
+    sys.modules["mcp.server.models"] = mcp_server_models_module
+    sys.modules["mcp.server.stdio"] = mcp_server_stdio_module
 
 from app.main import app  # noqa: E402
 from app.api import project_workflow  # noqa: E402
@@ -131,6 +166,56 @@ async def test_create_epic_rejects_conflicting_idempotency_key_payload():
         stored = await service.list_epics()
 
         assert [epic.id for epic in stored] == [created.id]
+    finally:
+        await service.close()
+
+
+@pytest.mark.asyncio
+async def test_reordered_lists_replay_returns_conflict_and_winner_unchanged():
+    """Reordered immutable lists are distinct requests: replay conflicts.
+
+    A replayed create that merely reorders acceptance criteria or tags is a
+    different immutable request and must conflict, leaving the first
+    persisted value untouched.
+    """
+    service = WorkflowService(workspace_id="/tmp/workflow-reordered-conflict")
+    service.store._client = MemoryBridgeClient()
+    original = CreateEpicRequest(
+        title="Ordered epic",
+        description="Synthetic persistence test",
+        business_value="Validate replay",
+        acceptance_criteria=["alpha", "beta", "gamma"],
+        tags=["one", "two"],
+        idempotency_key="synthetic-reordered-key",
+    )
+    reordered_criteria = CreateEpicRequest(
+        title="Ordered epic",
+        description="Synthetic persistence test",
+        business_value="Validate replay",
+        acceptance_criteria=["gamma", "beta", "alpha"],
+        tags=["one", "two"],
+        idempotency_key="synthetic-reordered-key",
+    )
+    reordered_tags = CreateEpicRequest(
+        title="Ordered epic",
+        description="Synthetic persistence test",
+        business_value="Validate replay",
+        acceptance_criteria=["alpha", "beta", "gamma"],
+        tags=["two", "one"],
+        idempotency_key="synthetic-reordered-key",
+    )
+
+    try:
+        created = await service.create_epic(original)
+        with pytest.raises(WorkflowConflictError):
+            await service.create_epic(reordered_criteria)
+        with pytest.raises(WorkflowConflictError):
+            await service.create_epic(reordered_tags)
+        stored = await service.list_epics()
+
+        assert [epic.id for epic in stored] == [created.id]
+        assert stored[0].acceptance_criteria == ["alpha", "beta", "gamma"]
+        assert stored[0].tags == ["one", "two"]
     finally:
         await service.close()
 
