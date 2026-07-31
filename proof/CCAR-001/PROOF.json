@@ -4,7 +4,7 @@
   "repo": "DDD-Enterprises/dopemux-mvp",
   "branch": "probe/ccar-001-commandcode-runtime-surfaces",
   "pr_number": 1174,
-  "head_sha": "f3a268fd8ff2b3a18a7cb60f9f7d36e6627b998d",
+  "head_sha": "530bdf1079c74fb0cec16f9a7b045cef8cf28352",
   "starting_head": "72af781e42e0702d9047946e0f5a250e7dff0fa5",
   "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/CCAR-001-commandcode-runtime-surfaces",
   "executed": true,
