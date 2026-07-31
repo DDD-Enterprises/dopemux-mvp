@@ -80,7 +80,7 @@
       ],
       "validation": [
         "grep -c '' claudedocs/agent-fleet-audit-2026-07-30.md",
-        "grep -c 'VERDICT' claudedocs/agent-fleet-audit-2026-07-30.md"
+        "grep -c '## Verdicts' claudedocs/agent-fleet-audit-2026-07-30.md"
       ],
       "expected_files": [
         "claudedocs/agent-fleet-audit-2026-07-30.md"
