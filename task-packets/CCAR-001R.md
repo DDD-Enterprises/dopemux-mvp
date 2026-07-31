@@ -1,15 +1,15 @@
 ---
 id: CCAR-001R
 title: CCAR-001 PR 1174 Canonical Audit Proof Return Repair
-type: task-packet
+type: explanation
 owner: '@hu3mann'
 author: GPT-5.6 Thinking
 date: '2026-07-30'
 last_review: '2026-07-30'
 next_review: '2026-08-29'
-prelude: Narrow proof-return repair for PR 1174 with a supervisor-authorized AGY Gemini 3.1 Pro audit fallback after Claude-family quota exhaustion.
+prelude: Narrow proof-return repair for PR 1174 with a supervisor-authorized AGY Gemini
+  3.1 Pro audit fallback after Claude-family quota exhaustion.
 ---
-
 # Task Packet: CCAR-001R · PR #1174 · Canonical Audit Proof Return Repair
 
 ════════════════════════════════════════════════════════════
