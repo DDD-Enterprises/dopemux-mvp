@@ -1,0 +1,232 @@
+{
+  "id": "TP-DMX-AGENT-FLEET-0001",
+  "project": "dopemux-mvp",
+  "target": "audit and remediate all custom agent surfaces (repo + templates + personal lane), consolidate personas deliberately, and make packaged personas a generated artifact of the canonical .claude/personas surface",
+  "invariants": [
+    "Archive only: personas are git-mv'd to .claude/personas/archive/, never hard-deleted.",
+    ".claude/personas/ is the only canonical authoring surface; src/dopemux/personas/ is a generated subset, never hand-edited after sync.",
+    "Archive never lives under src/dopemux/personas/ (would ship in wheel via *.agent.md package data).",
+    "Persona stems referenced by src/dopemux/claude/instruction_manager.py alias table are not renamed or archived unless the alias table is updated in the same slice (requires allowlist entry for that code file).",
+    "Unverifiable model ids are removed, never guessed (model-routing policy: VERIFY_WITH_VENDOR_DOCS).",
+    "Personal lane (~/.commandcode/agents, ~/.claude/agents) is proof-recorded but excluded from the PR diff.",
+    "Unverifiable behavior claims in agent prompts become UNKNOWN, never laundered into certainty."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "agent-fleet-remediation",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "tp/DMX-AGENT-FLEET-0001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(agents): audit + remediate custom agent fleet (TP-DMX-AGENT-FLEET-0001)",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-AGENT-FLEET-0001.json",
+      ".github/agents/",
+      ".claude/personas/",
+      ".claude/agents/",
+      "src/dopemux/personas/",
+      "templates/skills/",
+      "scripts/sync_personas.py",
+      "tests/arch/test_persona_fleet_contract.py",
+      "claudedocs/agent-fleet-audit-2026-07-30.md",
+      "proof/TP-DMX-AGENT-FLEET-0001/"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/generated/TP-DMX-AGENT-FLEET-0001.json >/dev/null",
+      "python -m jsonschema -i task-packets/generated/TP-DMX-AGENT-FLEET-0001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python scripts/sync_personas.py --check",
+      "python -m pytest tests/arch/test_persona_fleet_contract.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(agents): audit + remediate custom agent fleet",
+    "body": "## Summary\\nFleet-wide audit and remediation of all custom agent surfaces per TP-DMX-AGENT-FLEET-0001.\\n\\n- `.github/agents/` (6 Copilot agents): frontmatter compliance, model-field vendor verification, handoff integrity\\n- `.claude/personas/` (48): frontmatter normalization, least-privilege tools, stale-fleet-reference modernization (Task-Master/Zen-MCP/mem4sprint/o3/gemini-2.5 -> current fleet), deliberate consolidation with archive (no hard deletes), PERSONA_INDEX regenerated\\n- `.claude/agents/` (4 + index): rewritten to current fleet truth and proper subagent frontmatter\\n- `src/dopemux/personas/` (10): now a generated subset of canonical `.claude/personas/` via `scripts/sync_personas.py` with a byte-parity arch test\\n- `templates/skills/` (20): description/name/runner-variant consistency\\n\\nPersonal lane (~/.commandcode/agents, ~/.claude/agents) remediated separately, proof-recorded, excluded from this diff.\\n\\n## Validation\\nSee `proof/TP-DMX-AGENT-FLEET-0001/` — TP schema validation, frontmatter parse gate, stale-token grep gate, persona parity test, git diff --check, personas CLI smoke, embedded audit proof.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "s1-audit-ledger",
+      "task": "Parse every agent file across all surfaces (repo agents, personas, curated agents, packaged personas, skill templates, personal lane). Record per-file verdicts (KEEP/FIX/ARCHIVE/MERGE) with file:line evidence in claudedocs/agent-fleet-audit-2026-07-30.md.",
+      "requirements": [
+        "Every one of the ~137 files appears in the ledger with a verdict.",
+        "Stale tokens, over-privileged tool lists, missing frontmatter fields recorded with evidence."
+      ],
+      "validation": [
+        "grep -c '' claudedocs/agent-fleet-audit-2026-07-30.md",
+        "grep -c 'VERDICT' claudedocs/agent-fleet-audit-2026-07-30.md"
+      ],
+      "expected_files": [
+        "claudedocs/agent-fleet-audit-2026-07-30.md"
+      ],
+      "context_files": [
+        ".claude/personas/",
+        ".claude/agents/",
+        ".github/agents/",
+        "src/dopemux/personas/",
+        "templates/skills/",
+        "config/instructions/agents.instructions.md"
+      ]
+    },
+    {
+      "id": "s2-github-agents",
+      "task": "Bring .github/agents/dopemux-*.agent.md to full compliance with config/instructions/agents.instructions.md: verify or drop model fields, review target/infer, verify handoff targets resolve.",
+      "requirements": [
+        "No unverifiable model ids remain.",
+        "All handoff agent targets exist after consolidation."
+      ],
+      "validation": [
+        "python -c \"import yaml,glob; [yaml.safe_load(open(f).read().split('---')[1]) for f in glob.glob('.github/agents/*.agent.md')]\"",
+        "grep -L 'description:' .github/agents/*.agent.md | wc -l"
+      ],
+      "expected_files": [
+        ".github/agents/"
+      ]
+    },
+    {
+      "id": "s3-personas-frontmatter-stalerefs",
+      "task": "Normalize frontmatter across .claude/personas/*.agent.md and *-dopemux.md (name, least-privilege tools, description); modernize stale fleet references (Task-Master, Zen-MCP, mem4sprint, o3/gemini-2.5 model names, Context7) to current fleet truth (task-orchestrator, PAL pal-mcp-server, ConPort, model-routing policy lanes); unverifiable claims become UNKNOWN.",
+      "requirements": [
+        "Least privilege per agents.instructions.md tool aliases.",
+        "Zero stale tokens outside archive/ and the audit ledger.",
+        "No claim about MCP authority that mcp_catalog.yaml does not support."
+      ],
+      "validation": [
+        "python -c \"import yaml,glob; [yaml.safe_load(open(f).read().split('---')[1]) for f in glob.glob('.claude/personas/*.agent.md')]\"",
+        "grep -rEl 'Task-Master|Zen-MCP|mem4sprint|o3-mini|o3-pro|gemini-2.5' .claude/personas --include='*.md' | grep -v archive | wc -l"
+      ],
+      "expected_files": [
+        ".claude/personas/"
+      ]
+    },
+    {
+      "id": "s4-consolidation-archive",
+      "task": "Resolve PERSONA_INDEX overlap groups; git mv archived personas to .claude/personas/archive/; verify instruction_manager alias table and repo-wide filename references before each move; regenerate PERSONA_INDEX.md to match reality.",
+      "requirements": [
+        "No aliased persona stem breaks: dopemux personas list/show still resolves every alias.",
+        "PERSONA_INDEX.md counts and groupings match on-disk reality."
+      ],
+      "validation": [
+        "ls .claude/personas/archive/ | wc -l",
+        "grep -rn 'gilfoyle\\|Beast-Mode' .claude/personas/PERSONA_INDEX.md"
+      ],
+      "expected_files": [
+        ".claude/personas/archive/",
+        ".claude/personas/PERSONA_INDEX.md"
+      ]
+    },
+    {
+      "id": "s5-claude-agents-rewrite",
+      "task": "Rewrite .claude/agents/{architect,developer,project-manager,researcher}.md to current fleet truth with proper subagent frontmatter (name/description/tools); fix _index.md counts and remove retired-service claims.",
+      "requirements": [
+        "Each agent has name, description, tools frontmatter.",
+        "No references to Task-Master, Zen-MCP, mem4sprint, o3/gemini-2.5, Context7."
+      ],
+      "validation": [
+        "grep -L '^name:' .claude/agents/architect.md .claude/agents/developer.md .claude/agents/project-manager.md .claude/agents/researcher.md | wc -l",
+        "grep -rEl 'Task-Master|Zen-MCP|mem4sprint|o3-mini|o3-pro|gemini-2.5|Context7' .claude/agents | wc -l"
+      ],
+      "expected_files": [
+        ".claude/agents/"
+      ]
+    },
+    {
+      "id": "s6-packaged-sync",
+      "task": "Create scripts/sync_personas.py (canonical .claude/personas -> packaged src/dopemux/personas subset, fail-closed, --check mode) and tests/arch/test_persona_fleet_contract.py (byte-parity contract). Run sync.",
+      "requirements": [
+        "Packaged files byte-identical to canonical after sync.",
+        "Parity test fails when drift is introduced.",
+        "sync_personas.py --check exits non-zero on drift, zero when in sync."
+      ],
+      "validation": [
+        "python scripts/sync_personas.py --check",
+        "python -m pytest tests/arch/test_persona_fleet_contract.py -q"
+      ],
+      "expected_files": [
+        "scripts/sync_personas.py",
+        "tests/arch/test_persona_fleet_contract.py",
+        "src/dopemux/personas/"
+      ]
+    },
+    {
+      "id": "s7-skills-templates",
+      "task": "templates/skills/*/SKILL.md: verify name matches directory, description has delegation triggers, runner-variant triplets (testgen-*, pr-docgen-sync-*) differ only in runner-specific sections.",
+      "requirements": [
+        "Every SKILL.md name field equals its directory name.",
+        "Variant triplets are structurally consistent."
+      ],
+      "validation": [
+        "for d in templates/skills/*/; do n=$(basename $d); grep -q \"name: $n\" $d/SKILL.md || echo MISMATCH $n; done; echo SKILL-CHECK-DONE"
+      ],
+      "expected_files": [
+        "templates/skills/"
+      ]
+    },
+    {
+      "id": "s8-personal-lane",
+      "task": "Direct-edit ~/.commandcode/agents/*.md and ~/.claude/agents/*.md: add missing name fields, fix dopemux.md frontmatter, align rosters and formats per runtime. Proof-recorded; excluded from PR diff.",
+      "requirements": [
+        "Every ~/.commandcode/agents file has name + description.",
+        "dopemux.md gains name: dopemux; opencode keys preserved (harmless passthrough)."
+      ],
+      "validation": [
+        "grep -L '^name:' ~/.commandcode/agents/*.md | wc -l",
+        "grep -L '^name:' ~/.claude/agents/*.md | wc -l"
+      ]
+    },
+    {
+      "id": "s9-validation-gate",
+      "task": "Run full gate: frontmatter YAML parse on all touched files, stale-token grep gate (zero hits outside archive/ + ledger), persona parity test, git diff --check, dopemux personas list/show smoke, pytest tests/arch -q.",
+      "requirements": [
+        "All gates PASS with exit codes recorded for proof."
+      ],
+      "validation": [
+        "python scripts/sync_personas.py --check",
+        "python -m pytest tests/arch/test_persona_fleet_contract.py -q",
+        "git diff --check"
+      ]
+    },
+    {
+      "id": "s10-review-audit-pr-proof",
+      "task": "codereview, embedded audit per AGENTS.md 9.1 (Claude Code Tier-1; PROOF.json + AUDITOR_REPORT.md + review_bundle under proof/TP-DMX-AGENT-FLEET-0001/, validated by scripts/audit/validate_audit_proof.py), precommit, commit slices, push, gh pr create, emit proof, remove worktree.",
+      "requirements": [
+        "Embedded audit proof validates with exit 0.",
+        "PR diff touches only allowlisted paths.",
+        "Proof bundle per AGENTS.md section 9."
+      ],
+      "validation": [
+        "python scripts/audit/validate_audit_proof.py proof/TP-DMX-AGENT-FLEET-0001",
+        "git diff --name-only main...HEAD"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-AGENT-FLEET-0001/"
+      ]
+    }
+  ]
+}
