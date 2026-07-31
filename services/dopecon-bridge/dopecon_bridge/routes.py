@@ -549,6 +549,16 @@ async def get_custom_data(
     return _normalize_custom_data_read(result)
 
 
+@kg_router.post("/custom_data/claim")
+async def claim_custom_data(request: CustomDataRequest, current_user: dict = Depends(get_current_user)):
+    """Proxy atomic custom-data claims to ConPort REST."""
+    del current_user
+    payload = request.model_dump()
+    payload["workspace_id"] = _default_workspace_id(payload.get("workspace_id"))
+    result = await conport_client.claim_custom_data(payload)
+    return result
+
+
 @kg_router.post("/decisions")
 async def create_decision(request: DecisionRequest, current_user: dict = Depends(get_current_user)):
     """Proxy decision writes to ConPort."""

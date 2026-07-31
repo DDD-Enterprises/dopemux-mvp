@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 from datetime import datetime, timezone
 from typing import Dict, List, Literal, Optional
 
@@ -34,6 +36,38 @@ def normalize_tags(tags: Optional[List[str]]) -> List[str]:
         seen.add(tag)
         result.append(tag)
     return result
+
+
+_FINGERPRINT_PREFIX = b"workflow_epic_create:v1"
+
+
+def _canonical_json(obj: dict) -> str:
+    return json.dumps(obj, sort_keys=True, separators=(",", ":"))
+
+
+def compute_epic_fingerprint(request: "CreateEpicRequest") -> str:
+    """Compute deterministic fingerprint v1 for epic create idempotency.
+
+    Included fields per the atomic claim contract.
+    Excluded: idempotency_key, generated ids, timestamps, Leantime fields.
+    """
+    normalized = {
+        "title": request.title,
+        "description": request.description,
+        "business_value": request.business_value,
+        "acceptance_criteria": sorted(request.acceptance_criteria),
+        "priority": request.priority,
+        "status": request.status,
+        "created_from_idea_id": request.created_from_idea_id,
+        "tags": sorted(request.tags) if request.tags else [],
+        "adhd_metadata": (
+            request.adhd_metadata.dict()
+            if hasattr(request.adhd_metadata, "dict")
+            else dict(request.adhd_metadata)
+        ),
+    }
+    preimage = _FINGERPRINT_PREFIX + b"\x00" + _canonical_json(normalized).encode("utf-8")
+    return hashlib.sha256(preimage).hexdigest()
 
 
 class LeantimeReflection(BaseModel):

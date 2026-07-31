@@ -38,6 +38,36 @@ class MemoryBridgeClient:
         }
         return True
 
+    async def claim_custom_data(self, **kwargs):
+        key = (kwargs["category"], kwargs["key"])
+        value = dict(kwargs["value"])
+        fingerprint = value.get("_fingerprint_v1", "")
+
+        if key in self.rows:
+            existing = self.rows[key]
+            existing_fp = existing.get("value", {}).get("_fingerprint_v1")
+            if existing_fp is None:
+                return {
+                    "result": "LEGACY_UNFINGERPRINTED",
+                    "value": existing["value"],
+                }
+            if existing_fp == fingerprint:
+                return {
+                    "result": "MATCHED",
+                    "value": existing["value"],
+                }
+            return {
+                "result": "CONFLICT",
+                "value": existing["value"],
+            }
+
+        self.rows[key] = {
+            "key": kwargs["key"],
+            "value": value,
+            "timestamp": value.get("updated_at"),
+        }
+        return {"result": "CREATED", "value": value}
+
     async def get_custom_data(self, **kwargs):
         category = kwargs["category"]
         key = kwargs.get("key")
