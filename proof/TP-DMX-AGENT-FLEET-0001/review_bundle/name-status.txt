@@ -1,0 +1,66 @@
+M	.claude/agents/_index.md
+M	.claude/agents/architect.md
+M	.claude/agents/developer.md
+M	.claude/agents/project-manager.md
+D	.claude/agents/python-mcp-expert.agent.md
+M	.claude/agents/researcher.md
+M	.claude/personas/PERSONA_INDEX.md
+M	.claude/personas/adr-generator.agent.md
+R100	.claude/personas/Ultimate-Transparent-Thinking-Beast-Mode.agent.md	.claude/personas/archive/Ultimate-Transparent-Thinking-Beast-Mode.agent.md
+R100	.claude/personas/context7.agent.md	.claude/personas/archive/context7.agent.md
+R100	.claude/personas/gilfoyle.agent.md	.claude/personas/archive/gilfoyle.agent.md
+R100	.claude/personas/mentor.agent.md	.claude/personas/archive/mentor.agent.md
+R100	.claude/personas/meta-agentic-project-scaffold.agent.md	.claude/personas/archive/meta-agentic-project-scaffold.agent.md
+R100	.claude/personas/plan.agent.md	.claude/personas/archive/plan.agent.md
+M	.claude/personas/backend-architect-dopemux.md
+M	.claude/personas/critical-thinking.agent.md
+M	.claude/personas/devils-advocate.agent.md
+M	.claude/personas/devops-architect-dopemux.md
+M	.claude/personas/devops-expert.agent.md
+M	.claude/personas/general-purpose-dopemux.md
+M	.claude/personas/github-actions-expert.agent.md
+M	.claude/personas/implementation-plan.agent.md
+M	.claude/personas/janitor.agent.md
+M	.claude/personas/learning-guide-dopemux.md
+M	.claude/personas/modernization.agent.md
+M	.claude/personas/performance-engineer-dopemux.md
+M	.claude/personas/prd.agent.md
+M	.claude/personas/principal-software-engineer.agent.md
+M	.claude/personas/prompt-builder.agent.md
+M	.claude/personas/prompt-engineer.agent.md
+M	.claude/personas/python-expert-dopemux.md
+M	.claude/personas/python-mcp-expert.agent.md
+M	.claude/personas/quality-engineer-dopemux.md
+M	.claude/personas/refine-issue.agent.md
+M	.claude/personas/se-gitops-ci-specialist.agent.md
+M	.claude/personas/se-security-reviewer.agent.md
+M	.claude/personas/se-system-architecture-reviewer.agent.md
+M	.claude/personas/se-technical-writer.agent.md
+M	.claude/personas/se-ux-ui-designer.agent.md
+M	.claude/personas/search-ai-optimization-expert.agent.md
+M	.claude/personas/security-engineer-dopemux.md
+M	.claude/personas/socratic-mentor-dopemux.md
+M	.claude/personas/specification.agent.md
+M	.claude/personas/system-architect-dopemux.md
+M	.claude/personas/task-planner.agent.md
+M	.claude/personas/task-researcher.agent.md
+M	.claude/personas/tech-debt-remediation-plan.agent.md
+M	.claude/personas/wg-code-alchemist.agent.md
+M	.claude/personas/wg-code-sentinel.agent.md
+M	.claude/personas/workflow-executor.agent.md
+M	.claude/personas/workflow-manager.agent.md
+A	claudedocs/agent-fleet-audit-2026-07-30.md
+A	scripts/sync_personas.py
+M	src/dopemux/personas/devops-expert.agent.md
+M	src/dopemux/personas/janitor.agent.md
+M	src/dopemux/personas/principal-software-engineer.agent.md
+M	src/dopemux/personas/se-security-reviewer.agent.md
+M	src/dopemux/personas/se-system-architecture-reviewer.agent.md
+M	src/dopemux/personas/task-planner.agent.md
+M	src/dopemux/personas/task-researcher.agent.md
+M	src/dopemux/personas/wg-code-sentinel.agent.md
+M	src/dopemux/personas/workflow-executor.agent.md
+M	src/dopemux/personas/workflow-manager.agent.md
+A	task-packets/generated/TP-DMX-AGENT-FLEET-0001.json
+M	templates/skills/ci-remediation-specialist/SKILL.md
+A	tests/arch/test_persona_fleet_contract.py

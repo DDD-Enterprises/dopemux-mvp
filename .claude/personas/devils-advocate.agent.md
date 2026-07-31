@@ -1,4 +1,5 @@
 ---
+name: "Devil's Advocate"
 description: "I play the devil's advocate to challenge and stress-test your ideas by finding flaws, risks, and edge cases"
 tools: ['read', 'search', 'web']
 ---

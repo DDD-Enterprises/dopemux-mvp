@@ -180,6 +180,18 @@ source .envrc.dopemux-mcp && dopemux mcp doctor
 **Debug sequence**: source envrc → `dopemux mcp doctor` → curl probe → tail docker logs
 → `./mcp_server_health_report.sh`
 
+**Sharing classes today**: `postgres-age`, `redis-primary`, `qdrant`, `dope-context`, `litellm`,
+`gpt-researcher`, `exa`, `desktop-commander`, bridges are host singletons (one process, shared).
+`redis-events` is OBSERVED **host-singleton today and noncompliant** for multi-project use (global container,
+no stream isolation; its events get promoted into canonical work_log) — the REQUIRED target is project-scoped
+(design §10.4, gate P-21, not yet implemented). `conport`, `dope-memory`, `serena`
+are still **worktree-scoped** (one container per worktree) pending identity gates — expect N worktrees to
+cost 3N containers until those land; ConPort's ruled end-state is **project-scoped**, never host-singleton
+(§10.3). Never start fleet services outside `dopemux mcp` (no raw `docker compose up` / `docker run`). Full
+sharing-class table + command surface (`init`/`start`/`stop`/`doctor` implemented;
+`reconcile`/`adopt`/`migrate`/`switch-project` PLANNED — `switch-project` transitional only): AGENTS.md §12.6
+and `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md` (ACCEPTED with supervisor rulings 2026-07-28).
+
 **Key docs**:
 - [`docs/02-how-to/mcp-setup-other-repos.md`](docs/02-how-to/mcp-setup-other-repos.md) — user guide for other projects
 - [`docs/02-how-to/mcp-transport-and-port-bugs.md`](docs/02-how-to/mcp-transport-and-port-bugs.md) — bug record + correct analysis

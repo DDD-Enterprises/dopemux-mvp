@@ -127,6 +127,12 @@ name = "exa"
 transport = "http"
 url = "http://localhost:3007"
 
+# WARNING (fleet design M10, supervisor repair 3 — 2026-07-28): do NOT statically repoint this to
+# 127.0.0.1:7890. That port is identity-unverified and may be held by ANOTHER project's task-orchestrator
+# (it currently serves dNh_CRM), so a naked URL silently routes this repo's workflow calls into foreign
+# state while looking healthy. Blocked until P-24 (project-scoped TO) or a fail-closed identity-verifying
+# wrapper exists. :8000 below is the FastAPI workflow service (pending rename), NOT the MCP tool surface —
+# wrong-service-but-visible beats wrong-project-but-silent.
 [[mcp_servers]]
 name = "task-orchestrator"
 transport = "http"

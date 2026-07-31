@@ -15,6 +15,11 @@ prelude: Storage Design (reference) for dopemux documentation and developer work
 **Status**: Design Phase
 **Goal**: Production-ready hybrid storage (Postgres AGE + SQLite cache)
 
+> **Note**: `instance_id` examples below (`"A"`, `feature-auth`) use the lettered
+> instance-naming scheme from the now-deleted `src/dopemux/instance_manager.py`,
+> superseded by a hash-based worktree identity model — see
+> `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md`.
+
 ---
 
 ## 1. Architecture Overview

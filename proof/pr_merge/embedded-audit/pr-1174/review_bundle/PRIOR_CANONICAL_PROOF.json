@@ -1,0 +1,67 @@
+{
+  "commit_sha": "c352d00389c5dbc7f51c88e522d07dbbb9bb4f69",
+  "embedded_audit": {
+    "auditor_model": "gemini",
+    "auditor_tool": "agy",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "Auditor verified P00_ENVIRONMENT, P01_MODEL_SELECTION, P02_AGENT_DISCOVERY, P03_AGENT_MODEL_PIN, P04_AGENT_RELOAD, P05_AGENT_TOOLS, P06_SKILLS, P08_MCP_STDIO, P09_BACKGROUND_DEPTH, and P10_PROVENANCE_USAGE_ZDR against proof/CCAR-001/runtime/PROBE_RESULTS.json and execution logs. Synthetic containment, user-config isolation, budget/turn caps, and secret redaction verified in the harness. Changed implementation files confined to scripts/commandcode_router/ and tests/commandcode_router/ (CCAR-001 scope). CCAR-001R delta adds only the packet pair.",
+        "id": "CCAR1174-F1",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "10 of 11 CommandCode probe PASS claims verified against committed evidence"
+      },
+      {
+        "body": "Probe P07_HOOKS failed: --yolo write operations were not intercepted by the deny_write.py hook (WRITE_TARGET.txt modified). Accurately documented in proof/CCAR-001/runtime/UNKNOWN_BLOCKERS.md and IMPLEMENTATION_IMPACT.md. Blocks reliance on the write pilot; does not block this proof-return repair or agent/persona normalization after live final-readiness success.",
+        "id": "CCAR1174-F2",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "title": "P07_HOOKS runtime failure under --yolo (PreToolUse write denial bypass)"
+      },
+      {
+        "body": "Historical packet proof binds 530bdf1079c74fb0cec16f9a7b045cef8cf28352, not the live PR head. Explicitly classified historical/noncanonical in the review bundle and preserved unmodified; this canonical package under proof/pr_merge/embedded-audit/pr-1174/ supersedes it for release attestation.",
+        "id": "CCAR1174-F3",
+        "severity": "LOW",
+        "status": "RESOLVED",
+        "title": "Historical proof/CCAR-001/PROOF.json names stale commit 530bdf1079c74fb0cec16f9a7b045cef8cf28352"
+      },
+      {
+        "body": "Deterministic scan flagged one FORCED_VERDICT_REQUEST pattern at task-packets/CCAR-001R.md:695 (ADDED): the repair packet's own embedded trusted audit-instruction template (verdict-keyword contract line). Supervisor-authored governance text, not candidate injection; detection recorded as evidence per runbook.",
+        "id": "CCAR1174-F4",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Instruction-like scan match is the supervisor-authored audit-instruction template"
+      }
+    ],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": true,
+      "match_count": 1,
+      "matches": [
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "diff_side": "ADDED",
+          "line": 695,
+          "path": "task-packets/CCAR-001R.md",
+          "text_sha256": "dda471e8e76997f160873661f1f17a9ae99d7c0d76241465d1f24c5d83dc2ffa"
+        }
+      ],
+      "truncated": false
+    },
+    "invocation": "agy --model gemini-3.1-pro-high --effort high --sandbox --mode plan --print-timeout 20m --output-format json --add-dir /var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/ccar001r-audit.rYQpuB/review_bundle --print <review_bundle/AUDIT_INSTRUCTION.md>; conversation 54cc2de9-348d-44c4-aac1-45e2d9e5d6fe",
+    "remaining_risks": [
+      "Model-family independence UNKNOWN: Supervisor Amendment A1 authorized AGY Gemini 3.1 Pro as audit fallback after Claude-family quota exhaustion; the CCAR-001 implementer model family is unproven in packet evidence.",
+      "P07_HOOKS: CommandCode --yolo mode bypasses PreToolUse write denial scripts; tracked in proof/CCAR-001/runtime/UNKNOWN_BLOCKERS.md, outside CCAR-001R scope.",
+      "Provider-attested actual auditor model identity unavailable: auditor identity rests on the configured AGY selector gemini-3.1-pro-high and conversation metadata, not provider cryptographic attestation."
+    ],
+    "report_path": "proof/pr_merge/embedded-audit/pr-1174/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "generated_at": "2026-07-31T04:59:38Z",
+  "head_sha": "c352d00389c5dbc7f51c88e522d07dbbb9bb4f69",
+  "pr_number": 1174,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}
