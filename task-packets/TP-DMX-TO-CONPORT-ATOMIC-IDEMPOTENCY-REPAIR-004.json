@@ -45,6 +45,8 @@
       "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-004-research.md",
       "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-004-plan.md",
       "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-004-implementation-notes.md",
+      "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-plan.md",
+      "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-implementation-notes.md",
       "services/task-orchestrator/app/models/workflow.py",
       "tests/unit/test_task_orchestrator_workflow_route_certification.py",
       "tests/unit/test_task_orchestrator_workflow_atomic_idempotency.py",

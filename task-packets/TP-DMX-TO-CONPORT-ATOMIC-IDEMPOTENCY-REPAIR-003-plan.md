@@ -1,3 +1,15 @@
+---
+id: TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-plan
+title: Tp Dmx To Conport Atomic Idempotency Repair 003 Plan
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-07-30'
+last_review: '2026-07-30'
+next_review: '2026-10-28'
+prelude: Tp Dmx To Conport Atomic Idempotency Repair 003 Plan (explanation) for dopemux
+  documentation and developer workflows.
+---
 # TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003 — Plan
 
 ## Approach
