@@ -171,6 +171,9 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('<IconButton');
   expect(content).toContain('onClick={() => handleCopyTaskTitle(currentTask.title)}');
 
+  // Verify start button tooltip
+  expect(content).toContain("<Tooltip title={`Start task and switch active focus to: ${task.title}`} arrow>");
+
   // Verify Predictive Skip and Soft Confirmation
   expect(content).toContain('const [isSkipConfirming, setIsSkipConfirming] = useState(false);');
   expect(content).toContain('const skipConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);');
