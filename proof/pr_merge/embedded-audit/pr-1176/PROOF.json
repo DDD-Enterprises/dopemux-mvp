@@ -1,4 +1,5 @@
 {
+  "required": true,
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1176,
   "head_sha": "9221dd49b09628d8fd43a9fa7f01def89112beda",
