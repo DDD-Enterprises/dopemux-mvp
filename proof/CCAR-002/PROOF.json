@@ -1,0 +1,77 @@
+{
+  "packet_id": "CCAR-002",
+  "status": "SKIPPED",
+  "embedded_audit": {
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": null,
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Independent audit not yet run. Pending C1 push and AGY gemini-3.1-pro-high audit per packet S6."
+    ],
+    "skip_reason": "Independent audit not yet run — pending C1 push and AGY gemini-3.1-pro-high audit per packet S6-S7."
+  },
+  "implementation": {
+    "runner": "CommandCode",
+    "agent": "shell",
+    "model": "deepseek/deepseek-v4-pro",
+    "effort": "high",
+    "worktree": "/Users/hue/code/dopemux-mvp-worktrees/CCAR-002",
+    "branch": "feat/CCAR-002-normalized-agent-persona-catalog",
+    "base_commit": "683b2411ebd9df7ed93ce9aa1871ca08956eb588",
+    "steps_completed": ["S1", "S2", "S3", "S4"],
+    "generated_at": "2026-07-31T14:00:00Z"
+  },
+  "files": {
+    "implemented": [
+      "schemas/commandcode/normalized_agent_persona_catalog.schema.json",
+      "config/commandcode/normalized_agent_persona_catalog.yaml",
+      "scripts/commandcode_router/build_normalized_catalog.py",
+      "tests/commandcode_router/test_normalized_catalog.py"
+    ],
+    "proof": [
+      "proof/CCAR-002/SOURCE_MANIFEST.json",
+      "proof/CCAR-002/NORMALIZATION_REPORT.md",
+      "proof/CCAR-002/PROOF.json"
+    ],
+    "task_packets": [
+      "task-packets/CCAR-002.md",
+      "task-packets/CCAR-002.json"
+    ]
+  },
+  "validation": {
+    "source_hash_verification": "PASS",
+    "role_resolution": "PASS",
+    "catalog_schema_validation": "PASS",
+    "builder_determinism": "PASS",
+    "tests": {
+      "commandcode_router/test_normalized_catalog.py": "PASS",
+      "total": 21,
+      "passed": 21,
+      "failed": 0
+    },
+    "invariant_checks": {
+      "nine_base_agents": "PASS",
+      "all_active_personas_covered": "PASS",
+      "no_model_ids_in_catalog": "PASS",
+      "authority_prohibitions_false": "PASS",
+      "no_duplicate_ids": "PASS",
+      "general_purpose_not_route_eligible": "PASS",
+      "source_bytes_identical": "PASS"
+    }
+  },
+  "warnings": [
+    "Source .claude/personas/se-product-manager-advisor.agent.md contains model references (GPT-5). Catalog record is model-free."
+  ],
+  "remaining_work": [
+    "Create C1 commit with allowlist verification",
+    "Push branch and open PR",
+    "Run AGY gemini-3.1-pro-high independent audit",
+    "Create signed canonical C2 proof",
+    "Verify CI and PR Steward gates"
+  ]
+}

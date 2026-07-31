@@ -1,0 +1,201 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.io/schemas/commandcode/normalized_agent_persona_catalog.schema.json",
+  "title": "Normalized Agent/Persona Catalog",
+  "description": "Strict, deterministic, model-free shadow catalog over the Dopemux agent/persona fleet. Advisory only — no runtime activation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "meta",
+    "base_agents",
+    "personas"
+  ],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "packet_id",
+        "generated_at",
+        "source_manifest",
+        "source_commit",
+        "base_agent_count",
+        "persona_count",
+        "model_free",
+        "generator_version"
+      ],
+      "properties": {
+        "packet_id": {
+          "type": "string",
+          "const": "CCAR-002"
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_manifest": {
+          "type": "string"
+        },
+        "source_commit": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 40
+        },
+        "base_agent_count": {
+          "type": "integer",
+          "const": 9
+        },
+        "persona_count": {
+          "type": "integer"
+        },
+        "model_free": {
+          "type": "boolean",
+          "const": true
+        },
+        "generator_version": {
+          "type": "string"
+        }
+      }
+    },
+    "base_agents": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 9,
+      "maxProperties": 9,
+      "patternProperties": {
+        "^[a-z][a-z0-9-]*[a-z0-9]$": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "source_file",
+            "canonical_role",
+            "label",
+            "description",
+            "attention_state",
+            "tools",
+            "mode",
+            "may_edit",
+            "route_eligible"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "source_file": {
+              "type": ["string", "null"]
+            },
+            "canonical_role": {
+              "type": "string",
+              "description": "Resolved canonical role key from src/dopemux/roles/catalog.py"
+            },
+            "label": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "attention_state": {
+              "type": "string",
+              "enum": ["scattered", "focused", "variable"]
+            },
+            "tools": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["read", "search", "edit", "write", "execute", "web_search", "web_fetch", "glob", "grep"]
+              },
+              "uniqueItems": true
+            },
+            "mode": {
+              "type": "string",
+              "enum": ["PLAN", "ACT", "Both"]
+            },
+            "may_edit": {
+              "type": "boolean"
+            },
+            "route_eligible": {
+              "type": "boolean"
+            },
+            "stage_lane": {
+              "type": "string",
+              "enum": ["cheap_read", "standard", "strong", "audit"]
+            }
+          }
+        }
+      }
+    },
+    "personas": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z][a-z0-9-]*[a-z0-9]$": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "source_file",
+            "base_agents",
+            "label",
+            "description",
+            "route_eligible",
+            "may_change_tools",
+            "may_select_model",
+            "may_grant_write_authority"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "source_file": {
+              "type": "string"
+            },
+            "alias_group": {
+              "type": ["string", "null"],
+              "description": "Non-empty when this persona is an alias for another; resolves to the canonical id"
+            },
+            "base_agents": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "description": "Base agent ids this persona maps to for execution"
+            },
+            "label": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "route_eligible": {
+              "type": "boolean"
+            },
+            "may_change_tools": {
+              "type": "boolean"
+            },
+            "may_select_model": {
+              "type": "boolean"
+            },
+            "may_grant_write_authority": {
+              "type": "boolean"
+            },
+            "domain": {
+              "type": "string"
+            },
+            "naming_convention": {
+              "type": "string",
+              "enum": ["agent.md", "dopemux.md"]
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

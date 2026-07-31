@@ -1,0 +1,306 @@
+{
+    "generated_at": "2026-07-31T13:59:25Z",
+    "worktree": "/Users/hue/code/dopemux-mvp-worktrees/CCAR-002",
+    "base_commit": "683b2411ebd9df7ed93ce9aa1871ca08956eb588",
+    "source_counts": {
+        "active_agents": 5,
+        "active_personas": 43,
+        "archived_personas": 6,
+        "reference_only_agents": 6,
+        "reference_only_src_personas": 11
+    },
+    "active_agents": {
+        "_index": {
+            "sha256": "43bbbb9b9872070e64643b95b92ab7bb65214691f22bf6fa3baae51fd0403324",
+            "path": ".claude/agents/_index.md"
+        },
+        "architect": {
+            "sha256": "6146b54913651acce7626a66814e30c8e3f0f988c8e4c2d65ddc35924939e71e",
+            "path": ".claude/agents/architect.md"
+        },
+        "developer": {
+            "sha256": "4593de7c98b4a2885e26ba7a29cf57e270ecff0a416d455593cb9c4510958d60",
+            "path": ".claude/agents/developer.md"
+        },
+        "project-manager": {
+            "sha256": "baf34cc6214afc7b4a040c6e85cf849c0bac671f3b1c4abf403b50f80cb33a14",
+            "path": ".claude/agents/project-manager.md"
+        },
+        "researcher": {
+            "sha256": "d9173e822f5c4fe59cbf0c7026c12522b615fa33099394dc270d2238c17a2c88",
+            "path": ".claude/agents/researcher.md"
+        }
+    },
+    "active_personas": {
+        "PERSONA_INDEX": {
+            "sha256": "77820947fc3808b3203ca73a2fff93f340dba4f8127bb50773a7d1dd6e68e434",
+            "path": ".claude/personas/PERSONA_INDEX.md"
+        },
+        "adr-generator.agent": {
+            "sha256": "80cd7fc3acfc679a8560f162162d630d0efb07f0d5ef8cb83b98805f87b87dad",
+            "path": ".claude/personas/adr-generator.agent.md"
+        },
+        "backend-architect-dopemux": {
+            "sha256": "dc5562119307b690e7fa5e27ee84c2af6ed3f4e31ad79169848f1caa50e8b16f",
+            "path": ".claude/personas/backend-architect-dopemux.md"
+        },
+        "critical-thinking.agent": {
+            "sha256": "e72ef5208c98bcdcd0b049fe9cbed21cf6ff48745e56ea50082a892936c7cc0e",
+            "path": ".claude/personas/critical-thinking.agent.md"
+        },
+        "devils-advocate.agent": {
+            "sha256": "4e10ec2887a48e88a8e8e6c01197819a9ae1101b99bd6db36749254f658137fe",
+            "path": ".claude/personas/devils-advocate.agent.md"
+        },
+        "devops-architect-dopemux": {
+            "sha256": "d91180ca3080ced9d8e2a607ccae64e23d694bbdf5211019741c5984b207ad3f",
+            "path": ".claude/personas/devops-architect-dopemux.md"
+        },
+        "devops-expert.agent": {
+            "sha256": "43abd11ca2f6c65b56beaa6229149e47a3d87fa81a143ec6e239852a3a27878e",
+            "path": ".claude/personas/devops-expert.agent.md"
+        },
+        "frontend-architect-dopemux": {
+            "sha256": "6799110d68388aacbdb87be82b3b06224434852e1f43997582f884210e851e1b",
+            "path": ".claude/personas/frontend-architect-dopemux.md"
+        },
+        "general-purpose-dopemux": {
+            "sha256": "9f661947ce2943fce54014ee2bc07bb1d1845d1f5e68d49d44674ac99aefc571",
+            "path": ".claude/personas/general-purpose-dopemux.md"
+        },
+        "github-actions-expert.agent": {
+            "sha256": "5b0c6aa2c04fa91d72183a7c1da815ee800d64768146d808f2e46d10ba6f564b",
+            "path": ".claude/personas/github-actions-expert.agent.md"
+        },
+        "implementation-plan.agent": {
+            "sha256": "b92d9055f3c78098628f253932a76da83d6637acee2142666ff9d0a102c9f9e9",
+            "path": ".claude/personas/implementation-plan.agent.md"
+        },
+        "janitor.agent": {
+            "sha256": "f68b0501e6687888da30f9530776419129ef23bb08cc19b231212302331e4a5a",
+            "path": ".claude/personas/janitor.agent.md"
+        },
+        "learning-guide-dopemux": {
+            "sha256": "2f0e3f5df6c391e323eb3e79cdd53f147eb419cb60e6bcba185b046bdab4d9d2",
+            "path": ".claude/personas/learning-guide-dopemux.md"
+        },
+        "modernization.agent": {
+            "sha256": "ec0204aac5021c946cf036b7969cf713cca0f83209e45c86ac8dcfe95cdd0674",
+            "path": ".claude/personas/modernization.agent.md"
+        },
+        "performance-engineer-dopemux": {
+            "sha256": "832c13b665f50bc7e96012f2d1b2e67a33d159ae04c2b04b33b24a03773f1cfe",
+            "path": ".claude/personas/performance-engineer-dopemux.md"
+        },
+        "prd.agent": {
+            "sha256": "28fc3ccb1b840cdf0b7a17bcdbcd16f2e063c295c9281801dc7caf5deb3df36e",
+            "path": ".claude/personas/prd.agent.md"
+        },
+        "principal-software-engineer.agent": {
+            "sha256": "3757cbf09dc6b93b43f90a6c52e165d8cc1b77d84676e8d950fc367ff06a8e6e",
+            "path": ".claude/personas/principal-software-engineer.agent.md"
+        },
+        "prompt-builder.agent": {
+            "sha256": "39df92c0a4e368ebf70e8054f406309f522f29fa4b73267ba4a52ecd4445c420",
+            "path": ".claude/personas/prompt-builder.agent.md"
+        },
+        "prompt-engineer.agent": {
+            "sha256": "2e6080cba6f275a199058f07eadc26ac4fe3ca86eb25dc83a8e622333540a237",
+            "path": ".claude/personas/prompt-engineer.agent.md"
+        },
+        "python-expert-dopemux": {
+            "sha256": "2ff3e51920d3647c9b2c881cd1250b195ad32be45c77d44172b01827d5ff3f5e",
+            "path": ".claude/personas/python-expert-dopemux.md"
+        },
+        "python-mcp-expert.agent": {
+            "sha256": "cd66589e07c7a7c9a5cd71a3a3b50209563f234243d4c3052cde837d27d68a92",
+            "path": ".claude/personas/python-mcp-expert.agent.md"
+        },
+        "quality-engineer-dopemux": {
+            "sha256": "aca19d18509d30152b2c388c302190b87559ce1bfcc99914782d48c55ec72644",
+            "path": ".claude/personas/quality-engineer-dopemux.md"
+        },
+        "refine-issue.agent": {
+            "sha256": "d38e96d8ed2df51fef61f16983d88f4bda4097d2b56e70259c9d4c909721bc48",
+            "path": ".claude/personas/refine-issue.agent.md"
+        },
+        "se-gitops-ci-specialist.agent": {
+            "sha256": "ec244168e5f4013c437f22a04412cebeffaa77903ea74ae804461b68138cab3e",
+            "path": ".claude/personas/se-gitops-ci-specialist.agent.md"
+        },
+        "se-product-manager-advisor.agent": {
+            "sha256": "d38a92f0b9a8c8a6d78c303378f95d16d040836e027f63628e4d0266aacddd11",
+            "path": ".claude/personas/se-product-manager-advisor.agent.md"
+        },
+        "se-security-reviewer.agent": {
+            "sha256": "e0d456a8d1e95309aed8a11f62b12da05dc5344ed13400179fe9ef71260a7db9",
+            "path": ".claude/personas/se-security-reviewer.agent.md"
+        },
+        "se-system-architecture-reviewer.agent": {
+            "sha256": "ba202ea1a7213a57454cb256d7e69b08f1f141e12f5bf9ef264679016ace3e5a",
+            "path": ".claude/personas/se-system-architecture-reviewer.agent.md"
+        },
+        "se-technical-writer.agent": {
+            "sha256": "d0be107f09d0a4b8fa29cba0f805e77531a3fe8dea2edf078214d9c8275b6897",
+            "path": ".claude/personas/se-technical-writer.agent.md"
+        },
+        "se-ux-ui-designer.agent": {
+            "sha256": "64faf994be782b69f3cdec1d0ca847d943af3ecfa5a22b0ace0fd036d45ce220",
+            "path": ".claude/personas/se-ux-ui-designer.agent.md"
+        },
+        "search-ai-optimization-expert.agent": {
+            "sha256": "a2442ab9f38fceefef03dc4fb79d21cc5f2d90b02d3263b72d2eae887fe6d6d9",
+            "path": ".claude/personas/search-ai-optimization-expert.agent.md"
+        },
+        "security-engineer-dopemux": {
+            "sha256": "6857b5cee66ba7373d2b56f18da97921397a33e04055dd64e45c544ee8659df4",
+            "path": ".claude/personas/security-engineer-dopemux.md"
+        },
+        "socratic-mentor-dopemux": {
+            "sha256": "eb54d2ddf0c59f34eaecef87420ff9f60417640b4d70420d6b711c12cbcf5d70",
+            "path": ".claude/personas/socratic-mentor-dopemux.md"
+        },
+        "specification.agent": {
+            "sha256": "f5e8350cf0f884410565ebb6f59991da1081bf6edaca9af72d886db02b76f76d",
+            "path": ".claude/personas/specification.agent.md"
+        },
+        "statusline-setup-dopemux": {
+            "sha256": "505aa29009a507343128197ee768ff9f281ba94ada6e66b69ced77656c617552",
+            "path": ".claude/personas/statusline-setup-dopemux.md"
+        },
+        "system-architect-dopemux": {
+            "sha256": "a9e0fc57160caeafcdcda466b81a62d74719970a8b2d4d855a4a65ebe21a65e8",
+            "path": ".claude/personas/system-architect-dopemux.md"
+        },
+        "task-planner.agent": {
+            "sha256": "0630e8a030ee0922751a68fc379e666d1ae01b78ac3c89fbb8e094198a67f6e0",
+            "path": ".claude/personas/task-planner.agent.md"
+        },
+        "task-researcher.agent": {
+            "sha256": "1be510685507259d6cebd1ef6764ae0798396c9f4ecadd13926dc92e90e9d411",
+            "path": ".claude/personas/task-researcher.agent.md"
+        },
+        "tech-debt-remediation-plan.agent": {
+            "sha256": "1b9138f5a66e65798abe843413b1aace4f05f5fafc2b8b919e42b0401f73ec3a",
+            "path": ".claude/personas/tech-debt-remediation-plan.agent.md"
+        },
+        "technical-writer-dopemux": {
+            "sha256": "09b3676dcf2dea08dcf2436f43281c7d8c22b43105f9a493080c347920a53d5d",
+            "path": ".claude/personas/technical-writer-dopemux.md"
+        },
+        "wg-code-alchemist.agent": {
+            "sha256": "7313fde08f283550d7cff96a2017b44b7ee7219b2f53fdf73d909ebf68dd72fe",
+            "path": ".claude/personas/wg-code-alchemist.agent.md"
+        },
+        "wg-code-sentinel.agent": {
+            "sha256": "4108c593b97509c388a2033d98712e491b5befb3036f792fb59d806b64c7324e",
+            "path": ".claude/personas/wg-code-sentinel.agent.md"
+        },
+        "workflow-executor.agent": {
+            "sha256": "588cacc67bdea95b983fee54c7fa357e678dba819f1e2f594c7852dbc4c705c3",
+            "path": ".claude/personas/workflow-executor.agent.md"
+        },
+        "workflow-manager.agent": {
+            "sha256": "3bca09fd872943d0af44c6a76e849c5bcb8132687d0dc0d47ceb5eac0806f126",
+            "path": ".claude/personas/workflow-manager.agent.md"
+        }
+    },
+    "archived_personas": {
+        "Ultimate-Transparent-Thinking-Beast-Mode.agent": {
+            "sha256": "e106b423c8e0c0dcd705f7ba5d940fb0c003d82d0116b2b51bfb0a593640dcf1",
+            "path": ".claude/personas/archive/Ultimate-Transparent-Thinking-Beast-Mode.agent.md"
+        },
+        "context7.agent": {
+            "sha256": "fdc4139376ff3b5dde385988d90b8995ca50cdee1d151e115dd9be8fa8eedd69",
+            "path": ".claude/personas/archive/context7.agent.md"
+        },
+        "gilfoyle.agent": {
+            "sha256": "0b22d17e19e0876e0645476278762d0aeca1c9396e06da0e85a45f768b4ea0b1",
+            "path": ".claude/personas/archive/gilfoyle.agent.md"
+        },
+        "mentor.agent": {
+            "sha256": "59bd43dd5537962e1040142b9a3a6a47cf84a3cc4b8c82c911ee9befe05fce64",
+            "path": ".claude/personas/archive/mentor.agent.md"
+        },
+        "meta-agentic-project-scaffold.agent": {
+            "sha256": "045954f1d22f9c9e5cf36ca248d60b53ace5ffdc286998592df37662795ddda8",
+            "path": ".claude/personas/archive/meta-agentic-project-scaffold.agent.md"
+        },
+        "plan.agent": {
+            "sha256": "33f6a596d04356e35c7b8b706abb3bd326d5415a2e218b078415d8a560310c97",
+            "path": ".claude/personas/archive/plan.agent.md"
+        }
+    },
+    "reference_only_agents": {
+        "dopemux-auditor.agent": {
+            "sha256": "65df9e25726976a87a909f5d0b176adbf28ffba35c4527ce14d2180a13c5d8af",
+            "path": ".github/agents/dopemux-auditor.agent.md"
+        },
+        "dopemux-implementer.agent": {
+            "sha256": "2a3fd440b1bb6c3d36f8b8ecc2516f4eb1622bc55d40648541b3bd9d13202568",
+            "path": ".github/agents/dopemux-implementer.agent.md"
+        },
+        "dopemux-planner.agent": {
+            "sha256": "c5c1b7dbfc648c8173874ce821a4a53d7c082f91620adb7f0a1ba83ee87626be",
+            "path": ".github/agents/dopemux-planner.agent.md"
+        },
+        "dopemux-reader.agent": {
+            "sha256": "cc84a7068d515e4c81001f89b2e22cc1a3db7333fcccb52888f4df1a0c95cb83",
+            "path": ".github/agents/dopemux-reader.agent.md"
+        },
+        "dopemux-reviewer.agent": {
+            "sha256": "53e376bc1b6e456a91997bb5a6e3dbd7e6a83e00ec99750119f32c1ebd168436",
+            "path": ".github/agents/dopemux-reviewer.agent.md"
+        },
+        "dopemux-testgen.agent": {
+            "sha256": "ecfc668dbf24bf189522056ce87db659c6e0381a2a1d9264c9afb6a4a2484024",
+            "path": ".github/agents/dopemux-testgen.agent.md"
+        }
+    },
+    "reference_only_src_personas": {
+        "__init__.py": {
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "path": "src/dopemux/personas/__init__.py"
+        },
+        "devops-expert.agent": {
+            "sha256": "43abd11ca2f6c65b56beaa6229149e47a3d87fa81a143ec6e239852a3a27878e",
+            "path": "src/dopemux/personas/devops-expert.agent.md"
+        },
+        "janitor.agent": {
+            "sha256": "f68b0501e6687888da30f9530776419129ef23bb08cc19b231212302331e4a5a",
+            "path": "src/dopemux/personas/janitor.agent.md"
+        },
+        "principal-software-engineer.agent": {
+            "sha256": "3757cbf09dc6b93b43f90a6c52e165d8cc1b77d84676e8d950fc367ff06a8e6e",
+            "path": "src/dopemux/personas/principal-software-engineer.agent.md"
+        },
+        "se-security-reviewer.agent": {
+            "sha256": "e0d456a8d1e95309aed8a11f62b12da05dc5344ed13400179fe9ef71260a7db9",
+            "path": "src/dopemux/personas/se-security-reviewer.agent.md"
+        },
+        "se-system-architecture-reviewer.agent": {
+            "sha256": "ba202ea1a7213a57454cb256d7e69b08f1f141e12f5bf9ef264679016ace3e5a",
+            "path": "src/dopemux/personas/se-system-architecture-reviewer.agent.md"
+        },
+        "task-planner.agent": {
+            "sha256": "0630e8a030ee0922751a68fc379e666d1ae01b78ac3c89fbb8e094198a67f6e0",
+            "path": "src/dopemux/personas/task-planner.agent.md"
+        },
+        "task-researcher.agent": {
+            "sha256": "1be510685507259d6cebd1ef6764ae0798396c9f4ecadd13926dc92e90e9d411",
+            "path": "src/dopemux/personas/task-researcher.agent.md"
+        },
+        "wg-code-sentinel.agent": {
+            "sha256": "4108c593b97509c388a2033d98712e491b5befb3036f792fb59d806b64c7324e",
+            "path": "src/dopemux/personas/wg-code-sentinel.agent.md"
+        },
+        "workflow-executor.agent": {
+            "sha256": "588cacc67bdea95b983fee54c7fa357e678dba819f1e2f594c7852dbc4c705c3",
+            "path": "src/dopemux/personas/workflow-executor.agent.md"
+        },
+        "workflow-manager.agent": {
+            "sha256": "3bca09fd872943d0af44c6a76e849c5bcb8132687d0dc0d47ceb5eac0806f126",
+            "path": "src/dopemux/personas/workflow-manager.agent.md"
+        }
+    }
+}

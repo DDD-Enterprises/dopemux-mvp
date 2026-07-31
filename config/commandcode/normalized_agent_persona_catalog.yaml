@@ -1,0 +1,848 @@
+meta:
+  packet_id: CCAR-002
+  generated_at: '2026-07-31T14:18:59Z'
+  source_manifest: /Users/hue/code/dopemux-mvp-worktrees/CCAR-002/proof/CCAR-002/SOURCE_MANIFEST.json
+  source_commit: 683b2411ebd9df7ed93ce9aa1871ca08956eb588
+  base_agent_count: 9
+  persona_count: 43
+  model_free: true
+  generator_version: 1.0.0
+base_agents:
+  architect:
+    id: architect
+    source_file: .claude/agents/architect.md
+    canonical_role: architect
+    label: Architect
+    description: Strategic design for system architecture, ADRs, and trade-off analysis.
+    attention_state: focused
+    tools:
+    - read
+    - search
+    - web_search
+    - web_fetch
+    - glob
+    - grep
+    mode: PLAN
+    may_edit: false
+    route_eligible: true
+    stage_lane: strong
+  developer:
+    id: developer
+    source_file: .claude/agents/developer.md
+    canonical_role: developer
+    label: Developer
+    description: Core implementation, debugging, testing, and task-packet execution.
+    attention_state: focused
+    tools:
+    - read
+    - edit
+    - write
+    - search
+    - execute
+    - glob
+    - grep
+    mode: ACT
+    may_edit: true
+    route_eligible: true
+    stage_lane: standard
+  researcher:
+    id: researcher
+    source_file: .claude/agents/researcher.md
+    canonical_role: research
+    label: Researcher
+    description: Information gathering, technology evaluation, and knowledge synthesis.
+    attention_state: focused
+    tools:
+    - read
+    - search
+    - web_search
+    - web_fetch
+    - glob
+    - grep
+    mode: Both
+    may_edit: false
+    route_eligible: true
+    stage_lane: cheap_read
+  reviewer:
+    id: reviewer
+    source_file: null
+    canonical_role: reviewer
+    label: Reviewer
+    description: Code review and decision verification.
+    attention_state: focused
+    tools:
+    - read
+    - search
+    - glob
+    - grep
+    mode: PLAN
+    may_edit: false
+    route_eligible: true
+    stage_lane: standard
+  quickfix:
+    id: quickfix
+    source_file: null
+    canonical_role: quickfix
+    label: Quickfix
+    description: 5-15 minute wins, minimal cognitive load.
+    attention_state: scattered
+    tools:
+    - read
+    - edit
+    - write
+    - search
+    - execute
+    - glob
+    - grep
+    mode: ACT
+    may_edit: true
+    route_eligible: true
+    stage_lane: standard
+  debugger:
+    id: debugger
+    source_file: null
+    canonical_role: debugger
+    label: Debugger
+    description: Targeted debugging and incident reproduction.
+    attention_state: focused
+    tools:
+    - read
+    - edit
+    - search
+    - execute
+    - glob
+    - grep
+    mode: ACT
+    may_edit: true
+    route_eligible: true
+    stage_lane: standard
+  ops:
+    id: ops
+    source_file: null
+    canonical_role: ops
+    label: Ops
+    description: Operations, deployment, and runbook execution.
+    attention_state: focused
+    tools:
+    - read
+    - edit
+    - search
+    - execute
+    - glob
+    mode: ACT
+    may_edit: true
+    route_eligible: true
+    stage_lane: standard
+  plan:
+    id: plan
+    source_file: null
+    canonical_role: plan
+    label: Plan
+    description: Strategic planning, architecture, coordination.
+    attention_state: focused
+    tools:
+    - read
+    - search
+    - web_search
+    - web_fetch
+    - glob
+    - grep
+    mode: PLAN
+    may_edit: false
+    route_eligible: true
+    stage_lane: strong
+  act:
+    id: act
+    source_file: null
+    canonical_role: act
+    label: Act
+    description: Generic implementation and refactoring workflows.
+    attention_state: focused
+    tools:
+    - read
+    - edit
+    - write
+    - search
+    - execute
+    - glob
+    - grep
+    mode: ACT
+    may_edit: true
+    route_eligible: true
+    stage_lane: standard
+personas:
+  project-manager:
+    id: project-manager
+    alias_group: null
+    base_agents:
+    - plan
+    label: Project Manager
+    description: Coordination, sprint tracking, task-packet flow, cross-surface progress visibility.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/agents/project-manager.md
+    domain: coordination
+    naming_convention: agent.md
+    warnings: []
+  system-architect-dopemux:
+    id: system-architect-dopemux
+    alias_group: null
+    base_agents:
+    - architect
+    label: System Architect
+    description: High-level system design with Dopemux integration.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/system-architect-dopemux.md
+    domain: architecture
+    naming_convention: dopemux.md
+    warnings: []
+  se-system-architecture-reviewer:
+    id: se-system-architecture-reviewer
+    alias_group: null
+    base_agents:
+    - architect
+    - reviewer
+    label: 'SE: Architect (Review)'
+    description: System architecture review with Well-Architected frameworks.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/se-system-architecture-reviewer.agent.md
+    domain: architecture
+    naming_convention: agent.md
+    warnings: []
+  backend-architect-dopemux:
+    id: backend-architect-dopemux
+    alias_group: null
+    base_agents:
+    - architect
+    - developer
+    label: Backend Architect
+    description: APIs, databases, scalability, reliability with Dopemux integration.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/backend-architect-dopemux.md
+    domain: architecture
+    naming_convention: dopemux.md
+    warnings: []
+  frontend-architect-dopemux:
+    id: frontend-architect-dopemux
+    alias_group: null
+    base_agents:
+    - architect
+    - developer
+    label: Frontend Architect
+    description: UI/UX, React, accessibility, performance with Dopemux integration.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/frontend-architect-dopemux.md
+    domain: architecture
+    naming_convention: dopemux.md
+    warnings: []
+  devops-architect-dopemux:
+    id: devops-architect-dopemux
+    alias_group: null
+    base_agents:
+    - architect
+    - ops
+    label: DevOps Architect
+    description: Infrastructure, CI/CD, deployment, monitoring with Dopemux integration.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/devops-architect-dopemux.md
+    domain: devops
+    naming_convention: dopemux.md
+    warnings: []
+  devops-expert:
+    id: devops-expert
+    alias_group: null
+    base_agents:
+    - ops
+    - developer
+    label: DevOps Expert
+    description: Hands-on infrastructure and deployment work.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/devops-expert.agent.md
+    domain: devops
+    naming_convention: agent.md
+    warnings: []
+  se-gitops-ci-specialist:
+    id: se-gitops-ci-specialist
+    alias_group: null
+    base_agents:
+    - ops
+    - developer
+    label: 'SE: GitOps CI Specialist'
+    description: CI/CD pipeline design and GitHub Actions expertise.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/se-gitops-ci-specialist.agent.md
+    domain: devops
+    naming_convention: agent.md
+    warnings: []
+  github-actions-expert:
+    id: github-actions-expert
+    alias_group: null
+    base_agents:
+    - ops
+    - developer
+    label: GitHub Actions Expert
+    description: GitHub Actions workflow authoring and debugging.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/github-actions-expert.agent.md
+    domain: devops
+    naming_convention: agent.md
+    warnings: []
+  security-engineer-dopemux:
+    id: security-engineer-dopemux
+    alias_group: null
+    base_agents:
+    - architect
+    - developer
+    - reviewer
+    label: Security Engineer
+    description: Security design and implementation with Dopemux integration.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/security-engineer-dopemux.md
+    domain: security
+    naming_convention: dopemux.md
+    warnings: []
+  se-security-reviewer:
+    id: se-security-reviewer
+    alias_group: null
+    base_agents:
+    - reviewer
+    - architect
+    label: 'SE: Security (Review)'
+    description: Security-focused code review with OWASP, Zero Trust, LLM security.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/se-security-reviewer.agent.md
+    domain: security
+    naming_convention: agent.md
+    warnings: []
+  wg-code-sentinel:
+    id: wg-code-sentinel
+    alias_group: null
+    base_agents:
+    - reviewer
+    label: WG Code Sentinel
+    description: Security review identifying vulnerabilities and attack vectors.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/wg-code-sentinel.agent.md
+    domain: security
+    naming_convention: agent.md
+    warnings: []
+  performance-engineer-dopemux:
+    id: performance-engineer-dopemux
+    alias_group: null
+    base_agents:
+    - architect
+    - developer
+    label: Performance Engineer
+    description: Performance optimization with Dopemux integration.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/performance-engineer-dopemux.md
+    domain: performance
+    naming_convention: dopemux.md
+    warnings: []
+  quality-engineer-dopemux:
+    id: quality-engineer-dopemux
+    alias_group: null
+    base_agents:
+    - reviewer
+    - developer
+    label: Quality Engineer
+    description: QA and test strategy with Dopemux integration.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/quality-engineer-dopemux.md
+    domain: quality
+    naming_convention: dopemux.md
+    warnings: []
+  principal-software-engineer:
+    id: principal-software-engineer
+    alias_group: null
+    base_agents:
+    - architect
+    - developer
+    - reviewer
+    label: Principal Software Engineer
+    description: Senior engineering judgment, clean code, design patterns.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/principal-software-engineer.agent.md
+    domain: engineering
+    naming_convention: agent.md
+    warnings: []
+  janitor:
+    id: janitor
+    alias_group: null
+    base_agents:
+    - developer
+    - quickfix
+    label: Universal Janitor
+    description: Code cleanup, simplification, tech debt remediation.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/janitor.agent.md
+    domain: engineering
+    naming_convention: agent.md
+    warnings: []
+  wg-code-alchemist:
+    id: wg-code-alchemist
+    alias_group: null
+    base_agents:
+    - developer
+    label: WG Code Alchemist
+    description: Clean Code transformation with SOLID principles.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/wg-code-alchemist.agent.md
+    domain: engineering
+    naming_convention: agent.md
+    warnings: []
+  modernization:
+    id: modernization
+    alias_group: null
+    base_agents:
+    - architect
+    - developer
+    label: Modernization
+    description: Code modernization and migration strategies.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/modernization.agent.md
+    domain: engineering
+    naming_convention: agent.md
+    warnings: []
+  tech-debt-remediation-plan:
+    id: tech-debt-remediation-plan
+    alias_group: null
+    base_agents:
+    - architect
+    - developer
+    label: Tech Debt Remediation Plan
+    description: Technical debt analysis and remediation planning.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/tech-debt-remediation-plan.agent.md
+    domain: engineering
+    naming_convention: agent.md
+    warnings: []
+  python-expert-dopemux:
+    id: python-expert-dopemux
+    alias_group: null
+    base_agents:
+    - developer
+    label: Python Expert
+    description: Python development with Dopemux integration.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/python-expert-dopemux.md
+    domain: engineering
+    naming_convention: dopemux.md
+    warnings: []
+  python-mcp-expert:
+    id: python-mcp-expert
+    alias_group: null
+    base_agents:
+    - developer
+    label: Python MCP Server Expert
+    description: MCP server development in Python with FastMCP.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/python-mcp-expert.agent.md
+    domain: engineering
+    naming_convention: agent.md
+    warnings: []
+  refine-issue:
+    id: refine-issue
+    alias_group: null
+    base_agents:
+    - plan
+    - developer
+    label: Refine Issue
+    description: Issue triage and refinement.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/refine-issue.agent.md
+    domain: engineering
+    naming_convention: agent.md
+    warnings: []
+  adr-generator:
+    id: adr-generator
+    alias_group: null
+    base_agents:
+    - architect
+    - plan
+    label: ADR Generator
+    description: Architectural Decision Record creation.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/adr-generator.agent.md
+    domain: documentation
+    naming_convention: agent.md
+    warnings: []
+  specification:
+    id: specification
+    alias_group: null
+    base_agents:
+    - plan
+    - architect
+    label: Specification
+    description: Specification document generation and updates.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/specification.agent.md
+    domain: documentation
+    naming_convention: agent.md
+    warnings: []
+  prd:
+    id: prd
+    alias_group: null
+    base_agents:
+    - plan
+    label: PRD Author
+    description: Product Requirements Document authoring.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/prd.agent.md
+    domain: documentation
+    naming_convention: agent.md
+    warnings: []
+  technical-writer-dopemux:
+    id: technical-writer-dopemux
+    alias_group: null
+    base_agents:
+    - researcher
+    label: Technical Writer
+    description: Technical documentation with Dopemux integration.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/technical-writer-dopemux.md
+    domain: documentation
+    naming_convention: dopemux.md
+    warnings: []
+  se-technical-writer:
+    id: se-technical-writer
+    alias_group: null
+    base_agents:
+    - researcher
+    label: 'SE: Technical Writer'
+    description: Technical writing and documentation standards.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/se-technical-writer.agent.md
+    domain: documentation
+    naming_convention: agent.md
+    warnings: []
+  implementation-plan:
+    id: implementation-plan
+    alias_group: null
+    base_agents:
+    - plan
+    - architect
+    label: Implementation Plan
+    description: Feature implementation planning.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/implementation-plan.agent.md
+    domain: documentation
+    naming_convention: agent.md
+    warnings: []
+  workflow-manager:
+    id: workflow-manager
+    alias_group: null
+    base_agents:
+    - plan
+    - reviewer
+    label: Workflow Manager
+    description: Phase-gated workflow orchestration and validation.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/workflow-manager.agent.md
+    domain: workflow
+    naming_convention: agent.md
+    warnings: []
+  workflow-executor:
+    id: workflow-executor
+    alias_group: null
+    base_agents:
+    - developer
+    - act
+    label: Workflow Executor
+    description: Isolated workflow task implementation.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/workflow-executor.agent.md
+    domain: workflow
+    naming_convention: agent.md
+    warnings: []
+  task-planner:
+    id: task-planner
+    alias_group: null
+    base_agents:
+    - plan
+    label: Task Planner
+    description: Task breakdown and planning.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/task-planner.agent.md
+    domain: workflow
+    naming_convention: agent.md
+    warnings: []
+  task-researcher:
+    id: task-researcher
+    alias_group: null
+    base_agents:
+    - researcher
+    label: Task Researcher
+    description: Focused task research and investigation.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/task-researcher.agent.md
+    domain: workflow
+    naming_convention: agent.md
+    warnings: []
+  critical-thinking:
+    id: critical-thinking
+    alias_group: null
+    base_agents:
+    - architect
+    - reviewer
+    label: Critical Thinking
+    description: Red-team analysis and critical evaluation.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/critical-thinking.agent.md
+    domain: advisory
+    naming_convention: agent.md
+    warnings: []
+  devils-advocate:
+    id: devils-advocate
+    alias_group: null
+    base_agents:
+    - architect
+    - reviewer
+    label: Devil's Advocate
+    description: Challenge assumptions and stress-test proposals.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/devils-advocate.agent.md
+    domain: advisory
+    naming_convention: agent.md
+    warnings: []
+  socratic-mentor-dopemux:
+    id: socratic-mentor-dopemux
+    alias_group: null
+    base_agents:
+    - architect
+    label: Socratic Mentor
+    description: Teaching through strategic questioning with Dopemux integration.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/socratic-mentor-dopemux.md
+    domain: advisory
+    naming_convention: dopemux.md
+    warnings: []
+  learning-guide-dopemux:
+    id: learning-guide-dopemux
+    alias_group: null
+    base_agents:
+    - researcher
+    label: Learning Guide
+    description: Walk-through teaching with Dopemux integration.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/learning-guide-dopemux.md
+    domain: advisory
+    naming_convention: dopemux.md
+    warnings: []
+  prompt-builder:
+    id: prompt-builder
+    alias_group: null
+    base_agents:
+    - plan
+    label: Prompt Builder
+    description: Prompt template construction and optimization.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/prompt-builder.agent.md
+    domain: advisory
+    naming_convention: agent.md
+    warnings: []
+  prompt-engineer:
+    id: prompt-engineer
+    alias_group: null
+    base_agents:
+    - plan
+    - researcher
+    label: Prompt Engineer
+    description: Prompt refinement and evaluation.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/prompt-engineer.agent.md
+    domain: advisory
+    naming_convention: agent.md
+    warnings: []
+  search-ai-optimization-expert:
+    id: search-ai-optimization-expert
+    alias_group: null
+    base_agents:
+    - researcher
+    label: Search AI Optimization Expert
+    description: Web/SEO research and optimization.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/search-ai-optimization-expert.agent.md
+    domain: advisory
+    naming_convention: agent.md
+    warnings: []
+  se-product-manager-advisor:
+    id: se-product-manager-advisor
+    alias_group: null
+    base_agents:
+    - plan
+    - architect
+    label: 'SE: Product Manager Advisor'
+    description: Product strategy and roadmap guidance.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/se-product-manager-advisor.agent.md
+    domain: product
+    naming_convention: agent.md
+    warnings: []
+  se-ux-ui-designer:
+    id: se-ux-ui-designer
+    alias_group: null
+    base_agents:
+    - architect
+    label: 'SE: UX/UI Designer'
+    description: UX/UI design review and guidance.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/se-ux-ui-designer.agent.md
+    domain: product
+    naming_convention: agent.md
+    warnings: []
+  general-purpose-dopemux:
+    id: general-purpose-dopemux
+    alias_group: null
+    base_agents:
+    - architect
+    - developer
+    - researcher
+    label: General Purpose
+    description: Multi-domain tasks with Dopemux integration. NOT an automatic write fallback.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/general-purpose-dopemux.md
+    domain: general
+    naming_convention: dopemux.md
+    warnings:
+    - general-purpose-dopemux is never an automatic write fallback per invariant.
+  statusline-setup-dopemux:
+    id: statusline-setup-dopemux
+    alias_group: null
+    base_agents:
+    - ops
+    label: Statusline Setup
+    description: Statusline configuration with Dopemux integration.
+    route_eligible: false
+    may_change_tools: false
+    may_select_model: false
+    may_grant_write_authority: false
+    source_file: .claude/personas/statusline-setup-dopemux.md
+    domain: general
+    naming_convention: dopemux.md
+    warnings: []
