@@ -1,0 +1,10 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1162,
+  "head_sha": "fe7f2ca456ec163cabf05ec28384e2b56543156f",
+  "embedded_audit": {
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini"
+  }
+}
