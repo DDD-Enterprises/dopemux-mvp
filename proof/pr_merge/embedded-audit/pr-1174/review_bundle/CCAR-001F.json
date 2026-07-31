@@ -1,0 +1,332 @@
+{
+  "id": "CCAR-001F",
+  "project": "dopemux-mvp",
+  "target": "Normalize task-packets/CCAR-001R.md with the current repository formatter, explicitly authorizing only its deterministic leading-whitespace removal, restore all required PR #1174 CI contexts, refresh exact-head signed audit proof, and regenerate current PR Steward/finalization evidence without merging.",
+  "invariants": [
+    "Local, remote branch, and live PR starting head equal 09cd236d8c916d5b50eadc0600964f8a41f3d31d.",
+    "F1 changes exactly task-packets/CCAR-001F.md, task-packets/CCAR-001F.json, and task-packets/CCAR-001R.md.",
+    "The current repository formatter is the sole authority for the frontmatter rewrite.",
+    "The formatted CCAR-001R body equals the original body after applying only Python str.lstrip().",
+    "The removed CCAR-001R body prefix is non-empty and contains only whitespace; every byte from the first non-whitespace byte onward is identical.",
+    "The second formatter run changes no file and exits zero.",
+    "No hook, workflow, config, schema, source, service, historical CCAR proof, or CCAR-001R JSON file changes.",
+    "Fresh AGY Gemini 3.1 Pro audit is bound to exact F1 and the frozen live PR base.",
+    "PROOF.json.head_sha equals F1, not F2.",
+    "F2 differs from F1 only under proof/pr_merge/embedded-audit/pr-1174/.",
+    "The exact committed proof bytes verify against the detached signature and trusted-main allowed signers.",
+    "Local signed-attestation evaluation returns accepted=true for F2.",
+    "No tracked file changes after F2.",
+    "All required GitHub checks are terminal, current, and successful on F2.",
+    "PR Steward is current and READY on F2.",
+    "Merge-scoped finalization evidence is evaluated within its TTL.",
+    "No merge occurs."
+  ],
+  "depends_on": [
+    "CCAR-001R"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "pyproject.toml",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "CCAR-SERIES-001",
+    "base_branch": "main",
+    "parent_tp_id": "CCAR-001R",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "probe/ccar-001-commandcode-runtime-surfaces",
+    "base_branch": "main",
+    "stacked_because": "Continue existing PR #1174 at exact head 09cd236d8c916d5b50eadc0600964f8a41f3d31d. Preferred runner is deterministic shell/local; no model is invoked for the mechanical formatter repair. AGY gemini-3.1-pro-high performs the fresh audit."
+  },
+  "commit": {
+    "message": "fix(docs): normalize CCAR-001R frontmatter",
+    "allowlist": [
+      "task-packets/CCAR-001F.md",
+      "task-packets/CCAR-001F.json",
+      "task-packets/CCAR-001R.md",
+      "proof/pr_merge/embedded-audit/pr-1174/**"
+    ],
+    "verify": [
+      "Validate CCAR-001F.json against the strict canonical Task Packet schema.",
+      "Verify local, remote branch, and live PR starting head equal 09cd236d8c916d5b50eadc0600964f8a41f3d31d.",
+      "Run the repository frontmatter formatter and require convergence on the second invocation.",
+      "Verify the formatted CCAR-001R body equals before_body.lstrip(), with a non-empty whitespace-only removed prefix.",
+      "Verify F1 changes exactly the two CCAR-001F packet files and CCAR-001R.md.",
+      "Run focused pre-commit and git diff --check before F1.",
+      "Run a fresh exact-F1 AGY gemini-3.1-pro-high audit.",
+      "Verify refreshed PROOF.json names F1 and has a passing embedded_audit object.",
+      "Verify the detached OpenSSH signature against trusted-main allowed signers.",
+      "Verify F2 differs from F1 only under proof/pr_merge/embedded-audit/pr-1174/.",
+      "Require local signed-attestation accepted=true for F2.",
+      "Require every required GitHub context success on F2.",
+      "Require fresh PR Steward READY and an in-TTL finalization receipt."
+    ]
+  },
+  "pr": {
+    "title": "feat(commandcode): CCAR-001 CommandCode adapter runtime surface probes",
+    "body": "Update existing PR #1174. Normalize only CCAR-001R Markdown frontmatter using the current repository formatter, preserve its body bytes, refresh the signed canonical exact-head audit proof, require all required CI contexts green, and regenerate current PR Steward/finalization evidence. Do not merge.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "preflight exact repository, PR, branch, head, and current CI state",
+      "apply deterministic frontmatter normalization and prove body preservation",
+      "validate strict packet and focused pre-commit",
+      "commit exact three-file F1",
+      "build bounded exact-F1 review bundle",
+      "run fresh AGY gemini-3.1-pro-high audit",
+      "refresh and sign canonical proof",
+      "commit proof-only F2 and validate local acceptance",
+      "observe all required CI contexts",
+      "run fresh PR Steward and in-TTL finalization gate",
+      "return a current non-merge handoff"
+    ]
+  },
+  "steps": [
+    {
+      "id": "CCAR-001F-S1",
+      "task": "Preflight exact custody and confirm the current frontmatter-only CI blocker on PR #1174.",
+      "requirements": [
+        "Correct repository, branch, worktree, origin, clean state, and PR.",
+        "Local, remote, and live PR head equal the required starting SHA.",
+        "PR is open, non-draft, targets main, and is mergeable.",
+        "Current workflow and status evidence is captured.",
+        "Trusted signer and local signing key are available without exposing private material."
+      ],
+      "commands": [
+        "git rev-parse --show-toplevel",
+        "git remote get-url origin",
+        "git status --porcelain=v1 --branch",
+        "git rev-parse HEAD",
+        "git fetch --prune origin",
+        "gh pr view 1174 --repo DDD-Enterprises/dopemux-mvp --json number,state,isDraft,mergeable,baseRefName,baseRefOid,headRefName,headRefOid,title,url",
+        "gh api repos/DDD-Enterprises/dopemux-mvp/commits/09cd236d8c916d5b50eadc0600964f8a41f3d31d/status",
+        "gh run list --repo DDD-Enterprises/dopemux-mvp --commit 09cd236d8c916d5b50eadc0600964f8a41f3d31d --limit 30",
+        "grep -q '^hue@local ' config/audit/embedded-audit-allowed-signers",
+        "test -f $HOME/.ssh/dopemux_audit_signing"
+      ],
+      "expected_files": [],
+      "validation": [
+        "All identity and clean-state gates pass.",
+        "Current required CI failure is attributable to frontmatter normalization.",
+        "No private key material is emitted."
+      ],
+      "context_files": [
+        ".pre-commit-config.yaml",
+        "scripts/docs_frontmatter_guard.py",
+        "task-packets/CCAR-001R.md",
+        "proof/pr_merge/embedded-audit/pr-1174/PROOF.json"
+      ]
+    },
+    {
+      "id": "CCAR-001F-S2",
+      "task": "Install the CCAR-001F packet pair and normalize CCAR-001R using the current formatter, authorizing only its deterministic leading-whitespace removal.",
+      "requirements": [
+        "Strict packet validation passes.",
+        "CCAR-001F Markdown is formatter-stable.",
+        "The formatted CCAR-001R body equals the original body after applying only str.lstrip().",
+        "The removed prefix is non-empty and whitespace-only.",
+        "Every byte from the first non-whitespace byte onward is identical.",
+        "CCAR-001R frontmatter semantic values change only as produced by the current formatter.",
+        "Second formatter run exits zero and changes nothing."
+      ],
+      "commands": [
+        "python3 -m json.tool task-packets/CCAR-001F.json >/dev/null",
+        "uv run --frozen dopemux orchestrator packet validate task-packets/CCAR-001F.json",
+        "uv run --frozen python -m jsonschema -i task-packets/CCAR-001F.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python3 scripts/docs_frontmatter_guard.py --fix task-packets/CCAR-001F.md",
+        "Capture CCAR-001R parsed frontmatter and body SHA-256.",
+        "python3 scripts/docs_frontmatter_guard.py --fix task-packets/CCAR-001R.md task-packets/CCAR-001F.md",
+        "Run the same formatter command again and require exit zero.",
+        "Verify CCAR-001R body hash and frontmatter semantic containment."
+      ],
+      "expected_files": [
+        "task-packets/CCAR-001F.md",
+        "task-packets/CCAR-001F.json",
+        "task-packets/CCAR-001R.md"
+      ],
+      "validation": [
+        "CCAR-001R type is explanation.",
+        "CCAR-001R body transformation is exactly before_body.lstrip().",
+        "The removed prefix contains only whitespace.",
+        "No file outside the exact three-file set changed."
+      ],
+      "context_files": [
+        "scripts/docs_frontmatter_guard.py",
+        "task-packets/CCAR-001R.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "CCAR-001F-S3",
+      "task": "Run focused validation and create exact three-file content commit F1.",
+      "requirements": [
+        "git diff --check passes.",
+        "Focused pre-commit passes.",
+        "Staged path set is exact.",
+        "F1 is a normal descendant of the required starting head."
+      ],
+      "commands": [
+        "git diff --check",
+        "pre-commit run --files task-packets/CCAR-001F.md task-packets/CCAR-001F.json task-packets/CCAR-001R.md",
+        "git add task-packets/CCAR-001F.md task-packets/CCAR-001F.json task-packets/CCAR-001R.md",
+        "git diff --cached --check",
+        "git commit -m 'fix(docs): normalize CCAR-001R frontmatter'",
+        "git diff --name-only 09cd236d8c916d5b50eadc0600964f8a41f3d31d HEAD | sort"
+      ],
+      "expected_files": [
+        "task-packets/CCAR-001F.md",
+        "task-packets/CCAR-001F.json",
+        "task-packets/CCAR-001R.md"
+      ],
+      "validation": [
+        "F1 changes exactly the authorized three files.",
+        "No proof or implementation file changed in F1."
+      ],
+      "context_files": [
+        ".pre-commit-config.yaml"
+      ]
+    },
+    {
+      "id": "CCAR-001F-S4",
+      "task": "Build a bounded current review bundle and run a fresh AGY Gemini 3.1 Pro audit against exact F1.",
+      "requirements": [
+        "Bundle captures frozen base, F1, full PR diff, checks, reviews, threads, formatter evidence including original body, expected lstripped body, and removed-prefix bytes, and prior canonical proof.",
+        "Candidate material is treated as untrusted.",
+        "Exact AGY selector, effort, invocation, exit code, and conversation ID are captured.",
+        "PASS or non-blocking PASS_WITH_RISKS is required."
+      ],
+      "commands": [
+        "agy --version",
+        "agy --help",
+        "agy models",
+        "agy --model gemini-3.1-pro-high --effort high --sandbox --mode plan --print-timeout 20m --output-format json --add-dir <review_bundle> --print <bounded_instruction>"
+      ],
+      "expected_files": [
+        "temporary exact-F1 review bundle outside the repository",
+        "temporary AGY_AUDIT_RAW.json",
+        "temporary AUDITOR_REPORT.md",
+        "temporary COMMAND_LOG.md"
+      ],
+      "validation": [
+        "Audit is bound to exact F1 and frozen base.",
+        "Audit verifies the only body change is the authorized leading-whitespace removal.",
+        "Verdict is passing.",
+        "No source or hook/config repair is requested.",
+        "Independence and provider identity limits are disclosed."
+      ],
+      "context_files": [
+        "proof/CCAR-001/IMPLEMENTATION_IMPACT.md",
+        "proof/CCAR-001/runtime/PROBE_RESULTS.json",
+        "proof/pr_merge/embedded-audit/pr-1174/PROOF.json",
+        "proof/pr_merge/embedded-audit/pr-1174/AUDITOR_REPORT.md"
+      ]
+    },
+    {
+      "id": "CCAR-001F-S5",
+      "task": "Refresh, validate, and sign the canonical exact-F1 audit proof package.",
+      "requirements": [
+        "PROOF.json names F1, PR 1174, and the correct repository.",
+        "auditor_tool is agy and auditor_model is gemini.",
+        "Exact invocation, effort, exit code, findings, and risks are retained.",
+        "Signature verifies against trusted-main allowed signers.",
+        "No private key material is recorded."
+      ],
+      "commands": [
+        "python3 scripts/audit/validate_audit_proof.py proof/pr_merge/embedded-audit/pr-1174/PROOF.json",
+        "scripts/audit/sign_local_audit_proof.sh 1174",
+        "ssh-keygen -Y verify -f config/audit/embedded-audit-allowed-signers -I hue@local -n dopemux-embedded-audit -s proof/pr_merge/embedded-audit/pr-1174/PROOF.json.sig < proof/pr_merge/embedded-audit/pr-1174/PROOF.json"
+      ],
+      "expected_files": [
+        "proof/pr_merge/embedded-audit/pr-1174/PROOF.json",
+        "proof/pr_merge/embedded-audit/pr-1174/PROOF.json.sig",
+        "proof/pr_merge/embedded-audit/pr-1174/AUDITOR_REPORT.md",
+        "proof/pr_merge/embedded-audit/pr-1174/COMMAND_LOG.md",
+        "proof/pr_merge/embedded-audit/pr-1174/review_bundle/**"
+      ],
+      "validation": [
+        "Proof schema passes.",
+        "Signature verification passes.",
+        "Committed-proof input contains no secret material."
+      ],
+      "context_files": [
+        "schemas/proof/embedded_audit.schema.json",
+        "scripts/audit/sign_local_audit_proof.sh",
+        "scripts/audit/local_audit_acceptance.py",
+        "config/audit/embedded-audit-allowed-signers"
+      ]
+    },
+    {
+      "id": "CCAR-001F-S6",
+      "task": "Create proof-only F2, validate local acceptance, push normally, and require every live gate green.",
+      "requirements": [
+        "F2 changes only the canonical PR-1174 proof directory.",
+        "F1 is an ancestor of F2.",
+        "Local signed-attestation evaluation returns accepted=true.",
+        "No tracked changes remain after F2.",
+        "Push is fast-forward and non-forced.",
+        "All required checks succeed on F2."
+      ],
+      "commands": [
+        "git add proof/pr_merge/embedded-audit/pr-1174/",
+        "git diff --cached --check",
+        "git commit -m 'proof(audit): refresh signed embedded-audit attestation for PR 1174'",
+        "Verify F1..F2 proof-only path delta.",
+        "Run scripts.audit.local_audit_acceptance for prospective F2 and require accepted=true.",
+        "git push origin HEAD:probe/ccar-001-commandcode-runtime-surfaces",
+        "gh run list --repo DDD-Enterprises/dopemux-mvp --commit <F2> --limit 40",
+        "gh api repos/DDD-Enterprises/dopemux-mvp/commits/<F2>/status"
+      ],
+      "expected_files": [
+        "proof/pr_merge/embedded-audit/pr-1174/**"
+      ],
+      "validation": [
+        "F2 is proof-only.",
+        "Local acceptance passes.",
+        "Every required workflow and status is current and successful."
+      ],
+      "context_files": [
+        ".github/workflows/embedded-audit.yml",
+        ".github/workflows/pr-steward-final-readiness.yml"
+      ]
+    },
+    {
+      "id": "CCAR-001F-S7",
+      "task": "Harvest fresh PR Steward state, run the merge-scoped finalization gate within TTL, update the PR body, and return without merging.",
+      "requirements": [
+        "PR Steward harvest is complete and READY at F2.",
+        "No unknown identity, unclassified item, unresolved blocking thread, failed check, stale audit, or head mismatch remains.",
+        "Finalization proof is regenerated or re-pinned and evaluated within TTL.",
+        "Receipt generated_at, evaluated_at, expires_at, final head, and verdict are recorded.",
+        "PR body reflects current live truth.",
+        "No merge occurs."
+      ],
+      "commands": [
+        "Discover current dopemux pr-steward help and exact supported flags.",
+        "Run fresh PR Steward intake against PR 1174 and F2.",
+        "Run merge-scoped finalization gate with current audit proof within TTL.",
+        "Update PR #1174 body with current evidence.",
+        "git status --porcelain=v1 --branch"
+      ],
+      "expected_files": [
+        "temporary PR Steward artifacts",
+        "temporary finalization receipt"
+      ],
+      "validation": [
+        "PR Steward is READY.",
+        "Finalization receipt is current and unexpired.",
+        "Worktree is clean.",
+        "PR remains open and unmerged."
+      ],
+      "context_files": [
+        "docs/32_PR_STEWARD.md",
+        "proof/pr_merge/embedded-audit/pr-1174/PROOF.json"
+      ]
+    }
+  ]
+}
