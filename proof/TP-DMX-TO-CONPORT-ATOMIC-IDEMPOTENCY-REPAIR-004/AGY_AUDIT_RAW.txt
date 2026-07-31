@@ -15,17 +15,17 @@
     "services/task-orchestrator/app/models/workflow.py",
     "services/task-orchestrator/app/services/workflow_service.py",
     "services/task-orchestrator/app/services/workflow_store.py",
-    "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-implementation-notes.md",
+    "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003.json",
     "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-plan.md",
     "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-research.md",
-    "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003.json",
-    "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-004-implementation-notes.md",
+    "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-implementation-notes.md",
+    "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-004.json",
     "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-004-plan.md",
     "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-004-research.md",
-    "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-004.json",
+    "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-004-implementation-notes.md",
     "tests/integration/test_task_orchestrator_concurrent_idempotency.py",
     "tests/unit/test_task_orchestrator_workflow_atomic_idempotency.py",
     "tests/unit/test_task_orchestrator_workflow_route_certification.py"
   ],
-  "summary": "The independent embedded-audit review of PR #1164 confirms that all modified and added files are complete, accounted for, and compliant with the packet allowlist. ConPort owner test loading and FastMCP test stubs were properly repaired without altering production MCP registration or inserting runtime sys.path mutations into production code. Fingerprint v1 semantics preserve Pydantic-normalized list order to guarantee reordered lists produce distinct fingerprints and fail-closed conflicts, while the ConPort transactional claim flow safely handles all five contract outcomes with zero race conditions, overwrites, or token leaks."
+  "summary": "Independent embedded audit of PR #1164 (head 24b2eb80d19c6507ceaa0f039daf1dc3ba6f81d2) passed all verification checks. Test harness repairs allow EnhancedConPortServer owner tests and route-certification tests to run cleanly without production code sys.path mutations or weakened MCP registrations. Fingerprint v1 correctly preserves Pydantic-normalized list order so reordered requests conflict as intended, and atomic claim transactions in ConPort function cleanly without race conditions or token leaks."
 }

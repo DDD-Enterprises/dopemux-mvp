@@ -10,7 +10,7 @@ exit_code: 0
 
 - auditor_tool: agy
 - auditor_model: Gemini 3.1 Pro (High)
-- audited_head_sha: 11973bd3b75517a2a4fa4d18bfa708edddcf00e5
+- audited_head_sha: 24b2eb80d19c6507ceaa0f039daf1dc3ba6f81d2
 - audited_base_sha: c78c45b0e06a729d51f329e510f0a8069c46fca6
 - auditor_verdict: PASS
 
