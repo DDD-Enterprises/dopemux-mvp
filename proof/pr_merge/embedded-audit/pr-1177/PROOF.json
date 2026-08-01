@@ -1,0 +1,23 @@
+{
+  "commit_sha": "87fbdda574bd060c2b2246bcf838323ba075da28",
+  "embedded_audit": {
+    "auditor_model": "claude-sonnet-4.6",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [
+      "Wrap non-current pending task 'Start' buttons in a descriptive Material-UI Tooltip to enhance transition context.",
+      "Fix potential double-trigger keyboard interaction bug on clear notification Chip.",
+      "Document critical learning regarding MUI Chip keyboard event listeners in palette journal."
+    ],
+    "invocation": "mcp__pal__codereview expert_model=claude-sonnet-4.6 review_type=full",
+    "remaining_risks": [],
+    "report_path": "proof/pr_merge/embedded-audit/pr-1177/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "head_sha": "87fbdda574bd060c2b2246bcf838323ba075da28",
+  "pr_number": 1177,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}
