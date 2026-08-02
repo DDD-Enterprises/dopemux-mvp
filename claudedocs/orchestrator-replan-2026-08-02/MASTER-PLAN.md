@@ -175,7 +175,7 @@ HARDENING. GPT-5.5 recon chain (stale notes; re-anchor first). LEANTIME S3/S4.
 | `aafc2630` | CONPORT-OPTIMAL-002 | Verification `unknown` until strong PR↔packet map (PR #894 alone insufficient) |
 | `207ec91a` | TO-CONPORT supervisor review | `operator-gate`; verification `unknown` until supervisor receipt |
 
-Luna-ready: every retained item must pass deterministic packet bar (files, steps, acceptance/target, verify, stop/invariants; no destructive; no operator decision; no premise uncertainty). Items failing the bar lose `luna-ready`.
+Luna-ready: every retained item must pass deterministic packet bar (files, steps, acceptance/target, verify, stop/invariants; no destructive; no operator decision; no premise uncertainty). Items failing the bar lose `luna-ready` **and must not retain `primary_model=gpt-5-6-luna`** (Codex review P2).
 
 ## 5. Cross-tree corrections applied
 - FLEET-P3-001 duplicates CONPORT-OPTIMAL-106 → stale-candidate w/ dedup note.
