@@ -1,0 +1,100 @@
+{
+  "id": "TP-RTE-TRUTH-1136-REPAIR-001",
+  "project": "dopemux-mvp",
+  "target": "Bounded repair of PR #1136 (RTE-TRUTH programme): refresh intended delta against current main without losing patch identity, clear clobber-guard, confirm 366-file inventory + deletion ledger, ensure intentional-deletion label/attestation, bind independent audit + PR Steward to final head, rerun RTE/full CI. Stop rather than force-push without operator approval. Do not admin-merge.",
+  "invariants": [
+    "Do not admin-merge PR #1136.",
+    "Do not bypass failed or missing gates.",
+    "Do not force-push unless explicit operator approval is obtained.",
+    "Refresh against current main without losing patch identity (prefer rebase/merge that preserves intended delta; stop if identity would be destroyed).",
+    "Independent audit must bind to the exact final head.",
+    "PR Steward must run on that exact final head.",
+    "Follow-up branch claude/rte-truth-followup stays stacked on claude/rte-truth-program until #1136 lands; retarget only after refresh+revalidation."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-1136-REPAIR",
+    "base_branch": "origin/claude/rte-truth-program",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-rte-truth-1136-repair-001",
+    "base_branch": "origin/claude/rte-truth-program",
+    "stacked_because": "Repair packet for open programme PR #1136; follow-up remains separate stacked PR."
+  },
+  "commit": {
+    "message": "docs(rte): bounded repair packet for PR #1136",
+    "allowlist": [
+      "task-packets/TP-RTE-TRUTH-1136-REPAIR-001.json",
+      "proof/TP-RTE-TRUTH-1136-REPAIR-001/**"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-RTE-TRUTH-1136-REPAIR-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(rte): bounded repair packet for PR #1136",
+    "body": "Repair packet only. Does not admin-merge #1136. See proof/TP-RTE-TRUTH-1136-REPAIR-001/.",
+    "base": "claude/rte-truth-program"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inventory",
+      "task": "Confirm complete 366-file inventory and deletion ledger against live PR files API (paginate past 100).",
+      "validation": [
+        "File count == 366 with status breakdown.",
+        "Each removed file listed with line-deletion totals."
+      ]
+    },
+    {
+      "id": "clobber-guard",
+      "task": "Diagnose clobber-guard failure (LARGE_DELETION 3533 lines / 1 file). Add intentional-deletion label only after human confirms the single large deletion is deliberate; re-run guard.",
+      "validation": [
+        "INTENTIONAL label present when deletions are operator-approved.",
+        "Clobber-guard PASS or explicit operator hold."
+      ]
+    },
+    {
+      "id": "refresh-main",
+      "task": "Refresh intended delta against current main without losing patch identity. Prefer non-destructive refresh; stop and ask before force-push.",
+      "validation": [
+        "Merge-base/ancestry recorded.",
+        "Patch identity preserved or operator-approved rewrite documented."
+      ]
+    },
+    {
+      "id": "audit-steward",
+      "task": "Run independent embedded audit bound to final head; run PR Steward on that exact head; require complete CI.",
+      "validation": [
+        "PROOF.json head_sha == PR head.",
+        "PR Steward READY or explicit not-READY reasons."
+      ]
+    },
+    {
+      "id": "followup-stack",
+      "task": "Keep claude/rte-truth-followup draft stacked on claude/rte-truth-program. Retarget to main only after #1136 lands and follow-up is refreshed/revalidated.",
+      "validation": [
+        "Follow-up PR URL recorded.",
+        "Base remains programme branch until post-merge refresh."
+      ]
+    }
+  ]
+}

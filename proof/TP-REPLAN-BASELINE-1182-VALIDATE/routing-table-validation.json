@@ -1,0 +1,739 @@
+{
+  "json_parse": "PASS",
+  "structure": {
+    "top_keys": [
+      "baseline",
+      "generated",
+      "items",
+      "summary"
+    ],
+    "missing_top": [],
+    "item_keys_union": [
+      "backup",
+      "flags",
+      "id",
+      "primary",
+      "priority",
+      "reasoning",
+      "role",
+      "title",
+      "tree",
+      "wave"
+    ],
+    "items_missing_required_fields": [],
+    "items_missing_required_count": 0,
+    "primary_shapes": {
+      "null": 200,
+      "str": 339
+    }
+  },
+  "counts": {
+    "summary_declared": {
+      "total_items": 539,
+      "by_wave": {
+        "0": 32,
+        "1": 22,
+        "2": 105,
+        "3": 81,
+        "4": 116,
+        "5": 144
+      },
+      "by_flag": {
+        "stale-candidate": 26,
+        "verify-close": 77,
+        "needs-rescope": 55,
+        "operator-gate": 27,
+        "unblock-candidate": 5,
+        "luna-ready": 51,
+        "env-prereq": 2,
+        "cross-repo-parked": 1
+      },
+      "by_primary_runner": {
+        "none": 201,
+        "rec-claude-code": 160,
+        "rec-codex": 171,
+        "rec-opus-4-8": 2,
+        "rec-gpt-5-3-codex": 1,
+        "rec-gemini-cli": 7,
+        "rec-sonnet-5": 1,
+        "rec-fable-5": 1
+      },
+      "untagged": 39
+    },
+    "summary_reproduced": {
+      "total_items": 539,
+      "by_wave": {
+        "0": 32,
+        "1": 22,
+        "2": 105,
+        "3": 81,
+        "4": 116,
+        "5": 144,
+        "None": 39
+      },
+      "by_flag": {
+        "stale-candidate": 26,
+        "verify-close": 77,
+        "needs-rescope": 55,
+        "operator-gate": 27,
+        "unblock-candidate": 5,
+        "luna-ready": 51,
+        "env-prereq": 2,
+        "cross-repo-parked": 1
+      },
+      "untagged": 39
+    },
+    "summary_match": true,
+    "wave_declared": {
+      "0": 32,
+      "1": 22,
+      "2": 105,
+      "3": 81,
+      "4": 116,
+      "5": 144
+    },
+    "wave_reproduced": {
+      "0": 32,
+      "1": 22,
+      "2": 105,
+      "3": 81,
+      "4": 116,
+      "5": 144,
+      "None": 39
+    },
+    "wave_match": true,
+    "flag_declared": {
+      "stale-candidate": 26,
+      "verify-close": 77,
+      "needs-rescope": 55,
+      "operator-gate": 27,
+      "unblock-candidate": 5,
+      "luna-ready": 51,
+      "env-prereq": 2,
+      "cross-repo-parked": 1
+    },
+    "flag_reproduced": {
+      "stale-candidate": 26,
+      "verify-close": 77,
+      "needs-rescope": 55,
+      "operator-gate": 27,
+      "unblock-candidate": 5,
+      "luna-ready": 51,
+      "env-prereq": 2,
+      "cross-repo-parked": 1
+    },
+    "flag_match": true,
+    "untagged_declared": 39,
+    "untagged_reproduced": 39,
+    "untagged_match": true,
+    "by_role": {
+      "queue": 492,
+      "review": 6,
+      "work": 31,
+      "blocked": 10
+    },
+    "pr_description_approx_520": "~520 is approximate prose; exact exported total is 539",
+    "wave_sum": 500,
+    "wave_sum_plus_untagged": 539,
+    "by_primary_runner_reproduced": {
+      "none": 200,
+      "rec-claude-code+model-haiku-4-5": 28,
+      "rec-codex+model-gpt-5-3-codex": 118,
+      "rec-codex+model-gpt-5-6-luna": 52,
+      "rec-claude-code+model-sonnet-5": 47,
+      "rec-claude-code+model-opus-4-8": 81,
+      "rec-claude-code+rec-opus-4-8": 2,
+      "rec-codex+rec-gpt-5-3-codex": 1,
+      "rec-gemini-cli": 7,
+      "model-gpt-5-6-sol": 1,
+      "rec-claude-code+rec-sonnet-5": 1,
+      "rec-claude-code+rec-fable-5": 1
+    },
+    "by_primary_runner_declared": {
+      "none": 201,
+      "rec-claude-code": 160,
+      "rec-codex": 171,
+      "rec-opus-4-8": 2,
+      "rec-gpt-5-3-codex": 1,
+      "rec-gemini-cli": 7,
+      "rec-sonnet-5": 1,
+      "rec-fable-5": 1
+    },
+    "by_primary_runner_match": false,
+    "wave0_flag_breakdown": {
+      "stale-candidate": 15,
+      "verify-close": 12,
+      "needs-rescope": 1,
+      "operator-gate": 2,
+      "(none)": 2
+    },
+    "wave0_titles": [
+      {
+        "id": "5a80d41d",
+        "title": "DMX-FLEET-P3-001-conport-jsonrpc-parity",
+        "flags": [
+          "stale-candidate"
+        ],
+        "primary": null
+      },
+      {
+        "id": "aafc2630",
+        "title": "DMX-CONPORT-OPTIMAL-002 entity-traversal-repair",
+        "flags": [
+          "verify-close"
+        ],
+        "primary": "rec-claude-code+model-haiku-4-5"
+      },
+      {
+        "id": "0890be0d",
+        "title": "TP-102 Taxonomy instance + detector schema evolution (C1->L1+)",
+        "flags": [
+          "verify-close"
+        ],
+        "primary": "rec-claude-code+model-haiku-4-5"
+      },
+      {
+        "id": "d5e15d07",
+        "title": "DXO-W0-DELETE \u2014 command hard-delete sweep (~83 dead commands/hooks)",
+        "flags": [
+          "needs-rescope"
+        ],
+        "primary": null
+      },
+      {
+        "id": "43214a0e",
+        "title": "DXO-W0-DOCTRINE \u2014 manual doctrine consolidation (collapse 4+ governance copies) [\u26d4 BLOC...",
+        "flags": [
+          "operator-gate"
+        ],
+        "primary": null
+      },
+      {
+        "id": "319cb3c4",
+        "title": "DXO-W0-P6 \u2014 MCP topology cutover to HTTP-singleton orchestrator (CRITICAL PATH)",
+        "flags": [
+          "operator-gate"
+        ],
+        "primary": null
+      },
+      {
+        "id": "56f49c1b",
+        "title": "DXO-W0-PLUMB \u2014 supervisor_accepted \u2192 PR-status plumb",
+        "flags": [],
+        "primary": "rec-codex+model-gpt-5-3-codex"
+      },
+      {
+        "id": "155a8183",
+        "title": "DXO-W0-PROMO-GATE \u2014 cross-series promotion-state manifest + CI gate (Wave-1 protection)",
+        "flags": [],
+        "primary": "rec-codex+model-gpt-5-3-codex"
+      },
+      {
+        "id": "9a96f47e",
+        "title": "ARCH-003 Serena single-surface ADR + archive candidate",
+        "flags": [
+          "stale-candidate"
+        ],
+        "primary": "rec-claude-code+model-haiku-4-5"
+      },
+      {
+        "id": "59d66926",
+        "title": "BETA-DOCS-01: tutorials 'Start Here' is a stale 2025 audit report, not onboarding",
+        "flags": [
+          "verify-close"
+        ],
+        "primary": null
+      },
+      {
+        "id": "00041ced",
+        "title": "BETA-INSTALL-04: installer assumes repo-root CWD but advertises curl | bash",
+        "flags": [
+          "verify-close"
+        ],
+        "primary": null
+      },
+      {
+        "id": "56905b78",
+        "title": "BETA-INSTALL-05: verify_installation reports FAIL on a correctly installed system",
+        "flags": [
+          "verify-close"
+        ],
+        "primary": null
+      },
+      {
+        "id": "b807751c",
+        "title": "BETA-SEC-01: LiteLLM proxy hardcoded master key on 0.0.0.0",
+        "flags": [
+          "verify-close"
+        ],
+        "primary": null
+      },
+      {
+        "id": "579a8ad6",
+        "title": "BETA-SEC-04: adhd-engine API auth fails open when key unset; ships dev-key-123",
+        "flags": [
+          "verify-close"
+        ],
+        "primary": null
+      },
+      {
+        "id": "abc4ca58",
+        "title": "BETA-SEC-05: dope-memory JWT secret defaults to public placeholder (forgeable tokens)",
+        "flags": [
+          "verify-close"
+        ],
+        "primary": null
+      },
+      {
+        "id": "cb80e2fc",
+        "title": "Repair PR #1127 CI only",
+        "flags": [
+          "stale-candidate"
+        ],
+        "primary": null
+      },
+      {
+        "id": "d6c20e4a",
+        "title": "DMX-MCF",
+        "flags": [
+          "stale-candidate"
+        ],
+        "primary": null
+      },
+      {
+        "id": "68c397dd",
+        "title": "DMX-MCF",
+        "flags": [
+          "stale-candidate"
+        ],
+        "primary": null
+      },
+      {
+        "id": "5a7ab174",
+        "title": "TEST-LOAD",
+        "flags": [
+          "stale-candidate"
+        ],
+        "primary": null
+      },
+      {
+        "id": "54239572",
+        "title": "TEST-LOAD",
+        "flags": [
+          "stale-candidate"
+        ],
+        "primary": null
+      },
+      {
+        "id": "2cc4b2ab",
+        "title": "TEST2",
+        "flags": [
+          "stale-candidate"
+        ],
+        "primary": null
+      },
+      {
+        "id": "40789071",
+        "title": "TEST2",
+        "flags": [
+          "stale-candidate"
+        ],
+        "primary": null
+      },
+      {
+        "id": "7ff0c771",
+        "title": "child",
+        "flags": [
+          "stale-candidate"
+        ],
+        "primary": null
+      },
+      {
+        "id": "d868d1d5",
+        "title": "child",
+        "flags": [
+          "stale-candidate"
+        ],
+        "primary": null
+      },
+      {
+        "id": "f07088fb",
+        "title": "TEST3",
+        "flags": [
+          "stale-candidate"
+        ],
+        "primary": null
+      },
+      {
+        "id": "01726920",
+        "title": "TEST3",
+        "flags": [
+          "stale-candidate"
+        ],
+        "primary": null
+      },
+      {
+        "id": "313e9fb3",
+        "title": "child",
+        "flags": [
+          "stale-candidate"
+        ],
+        "primary": null
+      },
+      {
+        "id": "d4a35e3e",
+        "title": "child",
+        "flags": [
+          "stale-candidate"
+        ],
+        "primary": null
+      },
+      {
+        "id": "207ec91a",
+        "title": "Obtain mandatory supervisor review for auth/authority boundary repair",
+        "flags": [
+          "verify-close"
+        ],
+        "primary": null
+      },
+      {
+        "id": "143514d3",
+        "title": "Prove synthetic ConPort CRUD, idempotency, cleanup and gates",
+        "flags": [
+          "verify-close"
+        ],
+        "primary": null
+      },
+      {
+        "id": "248ccf90",
+        "title": "Repair authoritative config/auth injection and add tests",
+        "flags": [
+          "verify-close"
+        ],
+        "primary": null
+      },
+      {
+        "id": "31ccfdbd",
+        "title": "Trace runtime config/auth/REST persistence path",
+        "flags": [
+          "verify-close"
+        ],
+        "primary": null
+      }
+    ]
+  },
+  "invariants": {
+    "unique_ids": {
+      "total": 539,
+      "unique": 539,
+      "dupes": []
+    },
+    "actionable_count": 473,
+    "primary_issues_count": 385,
+    "backup_issues_count": 334,
+    "operator_gate_with_runner_count": 2,
+    "primary_issues_sample": [
+      {
+        "id": "aafc2630",
+        "title": "DMX-CONPORT-OPTIMAL-002 entity-traversal-repair",
+        "primary": "rec-claude-code+model-haiku-4-5",
+        "issue": "primary_not_object"
+      },
+      {
+        "id": "0890be0d",
+        "title": "TP-102 Taxonomy instance + detector schema evolution (C1->L1+)",
+        "primary": "rec-claude-code+model-haiku-4-5",
+        "issue": "primary_not_object"
+      },
+      {
+        "id": "56f49c1b",
+        "title": "DXO-W0-PLUMB \u2014 supervisor_accepted \u2192 PR-status plumb",
+        "primary": "rec-codex+model-gpt-5-3-codex",
+        "issue": "primary_not_object"
+      },
+      {
+        "id": "155a8183",
+        "title": "DXO-W0-PROMO-GATE \u2014 cross-series promotion-state manifest + CI gate (Wave-1 prot",
+        "primary": "rec-codex+model-gpt-5-3-codex",
+        "issue": "primary_not_object"
+      },
+      {
+        "id": "9a96f47e",
+        "title": "ARCH-003 Serena single-surface ADR + archive candidate",
+        "primary": "rec-claude-code+model-haiku-4-5",
+        "issue": "primary_not_object"
+      },
+      {
+        "id": "9010543e",
+        "title": "DMX-COCKPIT-FONTS-105 purge legacy doc refs + reconcile examples",
+        "primary": "rec-codex+model-gpt-5-6-luna",
+        "issue": "primary_not_object"
+      },
+      {
+        "id": "cf9a4c16",
+        "title": "DMX-COCKPIT-FONTS-106 verify remediation (final packet)",
+        "primary": "rec-codex+model-gpt-5-6-luna",
+        "issue": "primary_not_object"
+      },
+      {
+        "id": "04247d4f",
+        "title": "TP-101 Contracts manifest + promotion mechanics + det-vs-LLM ADR",
+        "flags": [],
+        "issue": "missing_primary"
+      },
+      {
+        "id": "2b8628d0",
+        "title": "DMX-SECURITY-DEPENDABOT-2026-06-16 \u2014 remediate 30 open Dependabot alerts",
+        "flags": [],
+        "issue": "missing_primary"
+      },
+      {
+        "id": "12a034e1",
+        "title": "[CRITICAL] Bump fastmcp >= 3.2.0",
+        "primary": "rec-codex+model-gpt-5-6-luna",
+        "issue": "primary_not_object"
+      },
+      {
+        "id": "d324edc8",
+        "title": "[HIGH] Bump Mako >= 1.3.12",
+        "primary": "rec-codex+model-gpt-5-6-luna",
+        "issue": "primary_not_object"
+      },
+      {
+        "id": "37694cd7",
+        "title": "[HIGH] Bump PyJWT/pyjwt >= 2.13.0",
+        "primary": "rec-codex+model-gpt-5-6-luna",
+        "issue": "primary_not_object"
+      },
+      {
+        "id": "17c35065",
+        "title": "[HIGH] Bump esbuild >= 0.28.1",
+        "primary": "rec-codex+model-gpt-5-6-luna",
+        "issue": "primary_not_object"
+      },
+      {
+        "id": "2d6b19ed",
+        "title": "[MEDIUM] Bump npm transitive deps (ws, brace-expansion, postcss, yaml)",
+        "primary": "rec-codex+model-gpt-5-6-luna",
+        "issue": "primary_not_object"
+      },
+      {
+        "id": "7326761f",
+        "title": "BETA-CLI-05: dopemux init exits 0 after .claude/ configuration fails",
+        "primary": "rec-codex+model-gpt-5-6-luna",
+        "issue": "primary_not_object"
+      }
+    ],
+    "backup_issues_sample": [
+      {
+        "id": "aafc2630",
+        "title": "DMX-CONPORT-OPTIMAL-002 entity-traversal-repair",
+        "backup": "alt-model-sonnet-5",
+        "issue": "backup_not_object"
+      },
+      {
+        "id": "0890be0d",
+        "title": "TP-102 Taxonomy instance + detector schema evolution (C1->L1+)",
+        "backup": "alt-model-sonnet-5",
+        "issue": "backup_not_object"
+      },
+      {
+        "id": "56f49c1b",
+        "title": "DXO-W0-PLUMB \u2014 supervisor_accepted \u2192 PR-status plumb",
+        "backup": "alt-claude-code+alt-model-sonnet-5",
+        "issue": "backup_not_object"
+      },
+      {
+        "id": "155a8183",
+        "title": "DXO-W0-PROMO-GATE \u2014 cross-series promotion-state manifest + CI gate (Wave-1 prot",
+        "backup": "alt-claude-code+alt-model-sonnet-5",
+        "issue": "backup_not_object"
+      },
+      {
+        "id": "9a96f47e",
+        "title": "ARCH-003 Serena single-surface ADR + archive candidate",
+        "backup": "alt-model-sonnet-5",
+        "issue": "backup_not_object"
+      },
+      {
+        "id": "9010543e",
+        "title": "DMX-COCKPIT-FONTS-105 purge legacy doc refs + reconcile examples",
+        "backup": "alt-claude-code+alt-model-haiku-4-5",
+        "issue": "backup_not_object"
+      },
+      {
+        "id": "cf9a4c16",
+        "title": "DMX-COCKPIT-FONTS-106 verify remediation (final packet)",
+        "backup": "alt-claude-code+alt-model-haiku-4-5",
+        "issue": "backup_not_object"
+      },
+      {
+        "id": "12a034e1",
+        "title": "[CRITICAL] Bump fastmcp >= 3.2.0",
+        "backup": "alt-claude-code+alt-model-haiku-4-5",
+        "issue": "backup_not_object"
+      },
+      {
+        "id": "d324edc8",
+        "title": "[HIGH] Bump Mako >= 1.3.12",
+        "backup": "alt-claude-code+alt-model-haiku-4-5",
+        "issue": "backup_not_object"
+      },
+      {
+        "id": "37694cd7",
+        "title": "[HIGH] Bump PyJWT/pyjwt >= 2.13.0",
+        "backup": "alt-claude-code+alt-model-haiku-4-5",
+        "issue": "backup_not_object"
+      },
+      {
+        "id": "17c35065",
+        "title": "[HIGH] Bump esbuild >= 0.28.1",
+        "backup": "alt-claude-code+alt-model-haiku-4-5",
+        "issue": "backup_not_object"
+      },
+      {
+        "id": "2d6b19ed",
+        "title": "[MEDIUM] Bump npm transitive deps (ws, brace-expansion, postcss, yaml)",
+        "backup": "alt-claude-code+alt-model-haiku-4-5",
+        "issue": "backup_not_object"
+      },
+      {
+        "id": "7326761f",
+        "title": "BETA-CLI-05: dopemux init exits 0 after .claude/ configuration fails",
+        "backup": "alt-claude-code+alt-model-haiku-4-5",
+        "issue": "backup_not_object"
+      },
+      {
+        "id": "8c181fd5",
+        "title": "BETA-DOCS-02: sole CLI reference (cheat-sheet.md) documents a different product ",
+        "backup": "alt-codex+alt-model-gpt-5-3-codex",
+        "issue": "backup_not_object"
+      },
+      {
+        "id": "8bcf60a0",
+        "title": "BETA-DOCS-04: docs/02-how-to/install.md ends with leaked AI tool-call markup",
+        "backup": "alt-claude-code+alt-model-haiku-4-5",
+        "issue": "backup_not_object"
+      }
+    ],
+    "operator_gate_with_runner_sample": [
+      {
+        "id": "a370e809",
+        "title": "TP-DMX-BRANCH-POLICY-AUDIT-012: Branch protection and ruleset evidence audit",
+        "primary": "rec-codex+model-gpt-5-3-codex",
+        "backup": "alt-claude-code+alt-model-sonnet-5",
+        "flags": [
+          "operator-gate"
+        ]
+      },
+      {
+        "id": "d68168cc",
+        "title": "TP-RTE-TRUTH-R0-008 BLOCKED artifact sweep (operator fixtures decision)",
+        "primary": "model-gpt-5-6-sol",
+        "backup": null,
+        "flags": [
+          "operator-gate"
+        ]
+      }
+    ],
+    "verify_close_by_wave": {
+      "0": 12,
+      "2": 62,
+      "3": 1,
+      "4": 1,
+      "5": 1
+    },
+    "verify_close_spans_multiple_waves": true,
+    "wave0_count": 32,
+    "luna_ready_count": 51,
+    "dependency_fields_present_count": 0,
+    "dependency_note": "routing-table items lack depends_on fields; dependency resolution NOT checkable from this file alone"
+  },
+  "issues": [],
+  "sampling": {
+    "verify_close_candidates": [
+      {
+        "id": "2c88b5b8",
+        "title": "CRIT F-20 \u2014 C9 merge degrades C1/C2/C7/C8 rich schemas + internally incoherent",
+        "tree": "RTE-TRUTH: Deep audit + full remediation program",
+        "wave": 2,
+        "primary": null,
+        "flags": [
+          "verify-close"
+        ]
+      },
+      {
+        "id": "59d66926",
+        "title": "BETA-DOCS-01: tutorials 'Start Here' is a stale 2025 audit report, not onboarding",
+        "tree": "Dopemux Beta-Readiness \u2014 Cutline & Backlog (2026-05-29 @755bf3846)",
+        "wave": 0,
+        "primary": null,
+        "flags": [
+          "verify-close"
+        ]
+      },
+      {
+        "id": "207ec91a",
+        "title": "Obtain mandatory supervisor review for auth/authority boundary repair",
+        "tree": "TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001",
+        "wave": 0,
+        "primary": null,
+        "flags": [
+          "verify-close"
+        ]
+      },
+      {
+        "id": "aafc2630",
+        "title": "DMX-CONPORT-OPTIMAL-002 entity-traversal-repair",
+        "tree": "DMX-CONPORT-OPTIMAL Tier-0 \u2014 Migration Foundation",
+        "wave": 0,
+        "primary": "rec-claude-code+model-haiku-4-5",
+        "flags": [
+          "verify-close"
+        ]
+      },
+      {
+        "id": "0890be0d",
+        "title": "TP-102 Taxonomy instance + detector schema evolution (C1->L1+)",
+        "tree": "DMX-DCP-TOOLING \u2014 DCP contract-promotion + tooling layer v1",
+        "wave": 0,
+        "primary": "rec-claude-code+model-haiku-4-5",
+        "flags": [
+          "verify-close"
+        ]
+      }
+    ],
+    "luna_ready_candidates": [
+      {
+        "id": "cb674145",
+        "title": "DMX-FLEET-P0-002-ensure-pal-managed",
+        "tree": "DMX-BACKLOG-2026-07-07",
+        "wave": 3,
+        "primary": "rec-codex+model-gpt-5-6-luna",
+        "flags": [
+          "luna-ready"
+        ]
+      },
+      {
+        "id": "233bb86e",
+        "title": "Delete dead orchestrator triangle (workflow_manager/adhd_orchestrator/main_orchestrator...",
+        "tree": "DMX-ADHD-COGNITIVE-REMEDIATION: make the ADHD/cognitive layer real, honest, consolidated",
+        "wave": 3,
+        "primary": "rec-codex+model-gpt-5-6-luna",
+        "flags": [
+          "luna-ready"
+        ]
+      },
+      {
+        "id": "12a034e1",
+        "title": "[CRITICAL] Bump fastmcp >= 3.2.0",
+        "tree": "DMX-SECURITY-DEPENDABOT-2026-06-16 \u2014 remediate 30 open Dependabot alerts",
+        "wave": 1,
+        "primary": "rec-codex+model-gpt-5-6-luna",
+        "flags": [
+          "luna-ready"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "id": "TP-REPLAN-BASELINE-1182-VALIDATE",
+  "project": "dopemux-mvp",
+  "target": "Prove PR #1182 is a trustworthy frozen execution baseline (REPLAN_BASELINE_CANDIDATE), without Wave 0 dispatch or further orchestrator DB mutation. Produce count ledger, six-file scope reconciliation, deterministic routing-table checks, sampling evidence, gate status, #1136 repair recommendation, and stacked follow-up PR.",
+  "invariants": [
+    "Do not dispatch Wave 0.",
+    "Do not mutate the orchestrator DB.",
+    "Do not claim COMPLETE, READY, or PASS before audit + PR Steward + sampling gates finish.",
+    "Do not admin-merge PR #1136 or bypass its failed/missing gates.",
+    "Do not force-push without explicit operator approval.",
+    "Validate against current main via ancestry + patch identity + changed-file scope; no brittle exact-SHA stop gates merely because main advanced.",
+    "Deleting the six TEST roots remains a separate destructive operator-gated packet."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "REPLAN-BASELINE-1182",
+    "base_branch": "origin/chore/orchestrator-db-defrag-2026-08-01",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-replan-baseline-1182-validate",
+    "base_branch": "origin/chore/orchestrator-db-defrag-2026-08-01",
+    "stacked_because": "Validation/repair evidence for PR #1182 head; primary checkout was dirty with unrelated local work."
+  },
+  "commit": {
+    "message": "proof(replan): validate PR #1182 as REPLAN_BASELINE_CANDIDATE",
+    "allowlist": [
+      "task-packets/TP-REPLAN-BASELINE-1182-VALIDATE.json",
+      "task-packets/TP-RTE-TRUTH-1136-REPAIR-001.json",
+      "proof/TP-REPLAN-BASELINE-1182-VALIDATE/**",
+      "proof/TP-RTE-TRUTH-1136-REPAIR-001/**"
+    ],
+    "verify": [
+      "python -m json.tool claudedocs/orchestrator-replan-2026-08-02/routing-table.json >/dev/null",
+      "python -m json.tool proof/TP-REPLAN-BASELINE-1182-VALIDATE/VERDICT.json >/dev/null",
+      "python -m jsonschema -i task-packets/TP-REPLAN-BASELINE-1182-VALIDATE.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "proof(replan): validate PR #1182 as REPLAN_BASELINE_CANDIDATE",
+    "body": "## Summary\nEvidence-only validation of PR #1182. Does not dispatch Wave 0. Does not mutate orchestrator DB.\n\n## Verdict\nHOLD / REPLAN_BASELINE_CANDIDATE — not READY.\n\nSee proof/TP-REPLAN-BASELINE-1182-VALIDATE/VERDICT.json and SUMMARY.md.",
+    "base": "chore/orchestrator-db-defrag-2026-08-01"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "preflight-worktree",
+      "task": "Create isolated worktree from PR #1182 head; verify repo identity, isolation, clean status, and branch binding.",
+      "validation": [
+        "Worktree path != primary checkout.",
+        "GIT_DIR != GIT_COMMON.",
+        "HEAD matches PR #1182 head SHA at start of validation."
+      ]
+    },
+    {
+      "id": "count-ledger",
+      "task": "Reproduce population totals from routing-table.json: 539 items, wave buckets, untagged 39, wave-0 32, verify-close 77, and whether verify-close spans multiple waves.",
+      "validation": [
+        "summary.total_items == len(items) == 539.",
+        "Wave sums + untagged == 539.",
+        "verify-close by_wave recorded."
+      ]
+    },
+    {
+      "id": "six-file-scope",
+      "task": "Reconcile handoff two-file claim vs PR six-file scope; classify inherited DB-defrag/load-plan files; recommend keep-with-updated-handoff or split.",
+      "validation": [
+        "Per-commit file lists recorded.",
+        "Scope recommendation explicit."
+      ]
+    },
+    {
+      "id": "ancestry-patch",
+      "task": "Validate against current main via merge-base ancestry, patch identity, and changed-file scope without brittle exact-SHA stop gates.",
+      "validation": [
+        "merge-base, ahead/behind, and six-file patch identity recorded against origin/main."
+      ]
+    },
+    {
+      "id": "deterministic-routing-checks",
+      "task": "JSON parse + structural validation; unique IDs; primary/backup pair rules; operator-gate runner tags; dependency resolvability from export; summary count reproduction.",
+      "validation": [
+        "routing-table-validation.json and pair-invariants.json written under proof/."
+      ]
+    },
+    {
+      "id": "sampling",
+      "task": "Sample five verify-close items across programs and three luna-ready packets across task classes; record evidence and false-positive rate. No status transitions.",
+      "validation": [
+        "sampling-results.json records each sample, evidence, and PASS/FAIL/UNKNOWN."
+      ]
+    },
+    {
+      "id": "gates",
+      "task": "Record independent embedded audit status, PR Steward status, CI completeness, identity evidence. Stop short of READY if any unknown.",
+      "validation": [
+        "VERDICT.json embeds audit and steward outcomes with run IDs."
+      ]
+    },
+    {
+      "id": "rte-1136-repair-packet",
+      "task": "Author bounded repair packet for #1136 and open draft stacked follow-up PR targeting claude/rte-truth-program.",
+      "validation": [
+        "TP-RTE-TRUTH-1136-REPAIR-001.json exists.",
+        "Follow-up draft PR URL recorded or blocker stated."
+      ]
+    }
+  ]
+}

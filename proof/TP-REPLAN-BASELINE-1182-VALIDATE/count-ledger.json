@@ -1,0 +1,60 @@
+{
+  "source": "claudedocs/orchestrator-replan-2026-08-02/routing-table.json",
+  "generated": "2026-08-02",
+  "baseline_field": "origin/main@87fbdda574",
+  "exact_population": {
+    "total_items": 539,
+    "unique_ids": 539,
+    "duplicate_ids": 0
+  },
+  "pr_description_reconciliation": {
+    "pr_body_says": "~520 non-terminal items",
+    "export_says": 539,
+    "verdict": "PROSE_APPROXIMATION — exact ledger is 539; PR body should be corrected before READY"
+  },
+  "by_wave": {
+    "0": 32,
+    "1": 22,
+    "2": 105,
+    "3": 81,
+    "4": 116,
+    "5": 144
+  },
+  "wave_sum": 500,
+  "untagged_wave_null": 39,
+  "wave_sum_plus_untagged": 539,
+  "identity_check": "32+22+105+81+116+144+39 = 539 PASS",
+  "by_flag": {
+    "stale-candidate": 26,
+    "verify-close": 77,
+    "needs-rescope": 55,
+    "operator-gate": 27,
+    "unblock-candidate": 5,
+    "luna-ready": 51,
+    "env-prereq": 2,
+    "cross-repo-parked": 1
+  },
+  "wave0": {
+    "count": 32,
+    "note": "Includes 6 TEST junk roots + stale-candidates + verify-close cohort + DXO-W0 operator gates"
+  },
+  "verify_close": {
+    "count": 77,
+    "spans_multiple_waves": true,
+    "by_wave": {
+      "0": 12,
+      "2": 62,
+      "3": 1,
+      "4": 1,
+      "5": 1
+    },
+    "proof": "Counter over items where flags contains verify-close; majority sit in wave 2 (RTE-TRUTH cohort), not only wave 0"
+  },
+  "summary_field_reproduction": {
+    "total_items": "PASS",
+    "by_wave": "PASS",
+    "by_flag": "PASS",
+    "untagged": "PASS (39)",
+    "by_primary_runner": "FAIL — declared none=201 and splits malformed double-rec tokens as separate runners; reproduced none=200, and rec-claude-code/rec-codex/rec-gemini-cli only for well-formed primaries"
+  }
+}

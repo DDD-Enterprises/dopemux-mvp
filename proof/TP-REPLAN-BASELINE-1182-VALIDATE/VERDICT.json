@@ -1,0 +1,137 @@
+{
+  "packet_id": "TP-REPLAN-BASELINE-1182-VALIDATE",
+  "pr": 1182,
+  "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1182",
+  "head_sha": "b457505ddd5d321374caedeec847947f64e911c8",
+  "head_branch": "chore/orchestrator-db-defrag-2026-08-01",
+  "classification": "REPLAN_BASELINE_CANDIDATE",
+  "exact_head_verdict": "HOLD",
+  "ready": false,
+  "complete": false,
+  "wave0_dispatch": "FORBIDDEN_UNTIL_ACCEPTANCE",
+  "orchestrator_db_mutation": "FORBIDDEN_IN_THIS_PACKET",
+  "worktree": {
+    "path": "/Users/hue/code/dopemux-mvp/.worktrees/TP-REPLAN-BASELINE-1182-VALIDATE",
+    "branch": "codex/tp-replan-baseline-1182-validate",
+    "isolated": true,
+    "base_head": "b457505ddd5d321374caedeec847947f64e911c8"
+  },
+  "ancestry_vs_current_main": {
+    "origin_main": "899082ae74155b2412a2ce862376438c1d33d13e",
+    "merge_base": "87fbdda574bd060c2b2246bcf838323ba075da28",
+    "main_is_ancestor_of_head": false,
+    "head_is_ancestor_of_main": false,
+    "commits_on_pr_not_in_main": [
+      "a905161eb0 docs(orchestrator): record DB defragmentation + backfill load-plan state",
+      "b457505ddd replan(orchestrator): full 539-item wave+runner+luna-ready annotation (2026-08-02)"
+    ],
+    "commits_on_main_not_in_pr": [
+      "899082ae74 Palette: Add Tooltip to Pending Task Start Buttons in TaskSequencer (#1177)"
+    ],
+    "patch_identity": "six-file three-dot diff vs merge-base unchanged; no brittle exact-SHA stop gate applied",
+    "rebase_required_for_clean_merge": "soft — one main commit since baseline; no conflict assumed but not merge-tested in this packet"
+  },
+  "six_file_scope": {
+    "handoff_claimed_files": 2,
+    "pr_files": 6,
+    "recommendation": "KEEP_FOUR_INHERITED_WITH_UPDATED_HANDOFF",
+    "details_path": "proof/TP-REPLAN-BASELINE-1182-VALIDATE/scope-reconciliation.md"
+  },
+  "count_ledger": {
+    "path": "proof/TP-REPLAN-BASELINE-1182-VALIDATE/count-ledger.json",
+    "total_items": 539,
+    "pr_body_approx_520": "MISMATCH_PROSE",
+    "untagged": 39,
+    "wave0": 32,
+    "verify_close": 77,
+    "verify_close_spans_multiple_waves": true,
+    "verify_close_by_wave": {"0": 12, "2": 62, "3": 1, "4": 1, "5": 1},
+    "luna_ready": 51
+  },
+  "deterministic_checks": {
+    "json_parse": "PASS",
+    "structure_top_keys": "PASS",
+    "unique_item_ids": "PASS",
+    "summary_total_wave_flag_untagged": "PASS",
+    "summary_by_primary_runner": "FAIL",
+    "primary_backup_pairs": {
+      "encoding": "string form rec-<runner>+model-<model> / alt-<runner>+alt-model-<model>",
+      "actionable_ok_primary_pairs": 323,
+      "actionable_missing_primary": 102,
+      "malformed_double_rec": 2,
+      "runner_only_primary": 7,
+      "backup_model_only": 25,
+      "backup_runner_only_gemini": 6,
+      "verdict": "FAIL — not every actionable leaf has exactly one primary and one backup pair"
+    },
+    "operator_gate_runner_tags": {
+      "count_with_runners": 2,
+      "ids": ["a370e809", "d68168cc"],
+      "verdict": "FAIL_OR_NEEDS_JUSTIFICATION"
+    },
+    "dependencies_resolve": "NOT_CHECKABLE — routing-table items have no depends_on/dependencies fields",
+    "details": [
+      "proof/TP-REPLAN-BASELINE-1182-VALIDATE/routing-table-validation.json",
+      "proof/TP-REPLAN-BASELINE-1182-VALIDATE/pair-invariants.json"
+    ]
+  },
+  "sampling": {
+    "path": "proof/TP-REPLAN-BASELINE-1182-VALIDATE/sampling-results.json",
+    "verify_close": {"PASS": 2, "FAIL_OR_PARTIAL": 1, "UNKNOWN": 2, "wave0A_gate": "NOT_CLEARED"},
+    "luna_ready": {"PASS_STRUCTURE": 1, "FAIL_STRUCTURE": 2}
+  },
+  "embedded_audit": {
+    "status": "FAIL",
+    "run_id": "30769383066",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30769383066",
+    "expected_head": "b457505ddd5d321374caedeec847947f64e911c8",
+    "outcome": "Independent audit did not pass: NEEDS_SUPERVISOR",
+    "auditor_tool": "UNKNOWN_AT_ENFORCEMENT — CI fell through to NEEDS_SUPERVISOR / missing trusted PASS proof",
+    "auditor_model": "UNKNOWN",
+    "preflight_live_selector": "NOT_RECORDED_IN_CI_LOG_TAIL — stop condition: model identity unknown",
+    "verdict": "NOT_PASS"
+  },
+  "pr_steward": {
+    "status": "FAIL",
+    "run_id": "30769399625",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/30769399625",
+    "description": "final readiness not READY for PR 1182 (audit=failure/failure steward=skipped)",
+    "steward_outcome": "skipped",
+    "verdict": "NOT_READY"
+  },
+  "ci": {
+    "complete_pipeline_summary": "SUCCESS",
+    "clobber_guard": "SUCCESS",
+    "unit_tests": "SUCCESS",
+    "extractor_full": "SUCCESS",
+    "blocking_red": ["independent embedded audit", "PR Steward / final readiness"]
+  },
+  "rte_1136": {
+    "admin_merge": "FORBIDDEN",
+    "repair_packet": "task-packets/TP-RTE-TRUTH-1136-REPAIR-001.json",
+    "diagnosis": "proof/TP-RTE-TRUTH-1136-REPAIR-001/DIAGNOSIS.md",
+    "file_inventory": 366,
+    "deletion_ledger_removed": 1,
+    "clobber_guard": "FAIL LARGE_DELETION without intentional-deletion label",
+    "recommendation": "Bounded repair worktree: label intentional-deletion after human confirm; refresh vs current main without force-push; re-audit + Steward on final head; rerun RTE/CI; stop on unknown identity/scope"
+  },
+  "stacked_followup": {
+    "branch": "claude/rte-truth-followup",
+    "base": "claude/rte-truth-program",
+    "commits_ahead": 6,
+    "stacked_ok": true,
+    "draft_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1183",
+    "retarget_to_main": "ONLY_AFTER_1136_LANDS_AND_REFRESH"
+  },
+  "residual_blockers_before_ready": [
+    "Independent embedded audit PASS bound to final head with known auditor tool+model",
+    "PR Steward READY on that head",
+    "Fix PR body ~520 → 539 and handoff 2-file → 6-file scope",
+    "Repair primary/backup encoding defects + summary by_primary_runner",
+    "Justify or strip runner tags on operator-gated items",
+    "Complete sampling repairs (verify-close false positives; luna-ready thin packets)",
+    "Optional soft-refresh onto main tip (#1177) without losing patch identity"
+  ],
+  "confidence": "VERIFIED_FOR_HOLD_EVIDENCE",
+  "timestamp_utc": "2026-08-02T23:30:00Z"
+}

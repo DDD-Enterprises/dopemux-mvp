@@ -1,0 +1,162 @@
+{
+  "packet_id": "TP-REPLAN-BASELINE-1182-VALIDATE",
+  "mode": "verification-only",
+  "status_transitions": "NONE",
+  "deletions": "NONE",
+  "branch_cleanup": "NONE",
+  "verify_close_samples": [
+    {
+      "id": "b807751c",
+      "title": "BETA-SEC-01: LiteLLM proxy hardcoded master key on 0.0.0.0",
+      "tree": "Dopemux Beta-Readiness — Cutline & Backlog (2026-05-29 @755bf3846)",
+      "wave": 0,
+      "claim": "Fixed on main → verify-close (MASTER-PLAN §3/§5)",
+      "evidence": [
+        "docker/mcp-servers-source/litellm/litellm.config.yaml uses master_key: os.environ/LITELLM_MASTER_KEY",
+        ".env.example uses LITELLM_MASTER_KEY=CHANGE_ME_... placeholder",
+        "compose.yml injects LITELLM_MASTER_KEY from env"
+      ],
+      "contradiction": "compose.yml still publishes litellm as \"${LITELLM_PORT:-4000}:4000\" without 127.0.0.1 bind (unlike conport/dope-memory/adhd-dashboard). Hardcoded key may be fixed; host exposure residual remains.",
+      "verdict": "FAIL_OR_PARTIAL",
+      "false_positive_risk": "HIGH — verify-close premature if original finding included 0.0.0.0 publication"
+    },
+    {
+      "id": "59d66926",
+      "title": "BETA-DOCS-01: tutorials 'Start Here' is a stale 2025 audit report, not onboarding",
+      "tree": "Dopemux Beta-Readiness — Cutline & Backlog (2026-05-29 @755bf3846)",
+      "wave": 0,
+      "claim": "Fixed on main → verify-close",
+      "evidence": [
+        "docs/01-tutorials/start-here.md is onboarding tutorial (last_review 2026-05-31), not a 2025 audit report",
+        "Describes first local run, prerequisites, authority order"
+      ],
+      "contradiction": null,
+      "verdict": "PASS",
+      "false_positive_risk": "LOW"
+    },
+    {
+      "id": "0890be0d",
+      "title": "TP-102 Taxonomy instance + detector schema evolution (C1->L1+)",
+      "tree": "DMX-DCP-TOOLING — DCP contract-promotion + tooling layer v1",
+      "wave": 0,
+      "claim": "PR #885 merged",
+      "evidence": [
+        "PR #885 MERGED 2026-06-18: feat(dcp): DMX-DCP-TOOLING 101+102 foundation bundle",
+        "merge commit 707f767854 on origin/main"
+      ],
+      "contradiction": null,
+      "verdict": "PASS",
+      "false_positive_risk": "LOW — confirm residual review role vs close is operator policy"
+    },
+    {
+      "id": "aafc2630",
+      "title": "DMX-CONPORT-OPTIMAL-002 entity-traversal-repair",
+      "tree": "DMX-CONPORT-OPTIMAL Tier-0 — Migration Foundation",
+      "wave": 0,
+      "claim": "PR #894 merged covers CONPORT-Tier0-002",
+      "evidence": [
+        "PR #894 MERGED 2026-06-16: fix(conport): cold-start grant and unified query 500s",
+        "merge commit a3c2e61acb on origin/main"
+      ],
+      "contradiction": "PR title/body emphasize cold-start grant + unified query 500s, not entity-traversal specifically. Mapping Tier0-002 ↔ this leaf needs stronger packet↔PR binding before close.",
+      "verdict": "UNKNOWN",
+      "false_positive_risk": "MEDIUM"
+    },
+    {
+      "id": "207ec91a",
+      "title": "Obtain mandatory supervisor review for auth/authority boundary repair",
+      "tree": "TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001",
+      "wave": 0,
+      "claim": "TO-CONPORT-REPAIR children vs PR #1164",
+      "evidence": [
+        "PR #1164 MERGED 2026-07-31: fix(task-orchestrator): repair bridge-backed ConPort persistence wiring",
+        "merge commit c4dbe6a5ca on origin/main"
+      ],
+      "contradiction": "This leaf is supervisor-review gate language, not an implementation leaf. Implementation may be done; mandatory supervisor review receipt not proven from PR merge alone.",
+      "verdict": "UNKNOWN",
+      "false_positive_risk": "MEDIUM — do not auto-close without supervisor attestation artifact"
+    }
+  ],
+  "verify_close_summary": {
+    "n": 5,
+    "PASS": 2,
+    "FAIL_OR_PARTIAL": 1,
+    "UNKNOWN": 2,
+    "false_positive_rate_observed": "at least 1/5 clear fail-or-partial; 2/5 unproven mapping (effective caution rate 3/5)",
+    "wave0A_gate": "NOT_CLEARED — Wave 0A requires 5/5 correct before Wave 0B"
+  },
+  "luna_ready_samples": [
+    {
+      "id": "cb674145",
+      "title": "DMX-FLEET-P0-002-ensure-pal-managed",
+      "tree": "DMX-BACKLOG-2026-07-07",
+      "task_class": "mcp-wrapper healthcheck implementation",
+      "packet_path": "task-packets/generated/DMX-FLEET-P0/DMX-FLEET-P0-002-ensure-pal-managed.json",
+      "routing": {
+        "primary": "rec-codex+model-gpt-5-6-luna",
+        "backup": "alt-claude-code+alt-model-haiku-4-5",
+        "reasoning": "reasoning-low"
+      },
+      "luna_bar_check": {
+        "exact_files": true,
+        "numbered_steps": true,
+        "acceptance": true,
+        "runnable_verify": true,
+        "stop_conditions": true
+      },
+      "packet_repairs": "NONE observed for structure",
+      "verdict": "PASS_STRUCTURE",
+      "note": "Did not execute implementation; structural luna-ready bar only"
+    },
+    {
+      "id": "12a034e1",
+      "title": "[CRITICAL] Bump fastmcp >= 3.2.0",
+      "tree": "DMX-SECURITY-DEPENDABOT-2026-06-16 — remediate 30 open Dependabot alerts",
+      "task_class": "dependency bump",
+      "packet_path": null,
+      "routing": {
+        "primary": "rec-codex+model-gpt-5-6-luna",
+        "backup": "alt-claude-code+alt-model-haiku-4-5",
+        "reasoning": "reasoning-low"
+      },
+      "luna_bar_check": {
+        "exact_files": "WEAK — no dedicated TP JSON located; only dependabot proof docs",
+        "numbered_steps": false,
+        "acceptance": "IMPLIED by title only",
+        "runnable_verify": false,
+        "stop_conditions": false
+      },
+      "runtime_note": "pyproject allows fastmcp>=2.4.0,<4; uv.lock currently pins fastmcp 2.14.0. Bump to >=3.2.0 is range-legal but not zero-inference (API contract risk across 3.x).",
+      "packet_repairs": "REQUIRED — materialize luna-ready TP with exact files, pin strategy, VERIFY commands, stop on API break",
+      "verdict": "FAIL_STRUCTURE"
+    },
+    {
+      "id": "233bb86e",
+      "title": "Delete dead orchestrator triangle (workflow_manager/adhd_orchestrator/main_orchestrator...)",
+      "tree": "DMX-ADHD-COGNITIVE-REMEDIATION",
+      "task_class": "destructive deletion after salvage",
+      "packet_path": "docs/ops/load-plans/load_plan-DMX-ADHD-COGNITIVE-REMEDIATION.json (leaf T3-03)",
+      "routing": {
+        "primary": "rec-codex+model-gpt-5-6-luna",
+        "backup": "alt-claude-code+alt-model-haiku-4-5",
+        "reasoning": "reasoning-low"
+      },
+      "luna_bar_check": {
+        "exact_files": "PARTIAL — load-plan leaf only, acceptance one-liner",
+        "numbered_steps": false,
+        "acceptance": "thin: 'removed after T2 salvage; import graph clean'",
+        "runnable_verify": false,
+        "stop_conditions": "implied depends on T2 salvage — not expanded"
+      },
+      "packet_repairs": "REQUIRED before luna dispatch — destructive delete is not low-reasoning zero-inference without file list + import-graph VERIFY + rollback",
+      "verdict": "FAIL_STRUCTURE",
+      "note": "Also conflicts with operator rule that destructive deletes are separate operator-gated packets"
+    }
+  ],
+  "luna_ready_summary": {
+    "n": 3,
+    "PASS_STRUCTURE": 1,
+    "FAIL_STRUCTURE": 2,
+    "false_positive_rate_observed": "2/3 luna-ready flags fail structural bar on export-linked artifacts"
+  }
+}

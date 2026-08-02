@@ -1,0 +1,149 @@
+{
+  "actionable_definition": "wave set AND not operator-gate AND not stale-candidate AND not cross-repo-parked",
+  "actionable_count": 447,
+  "primary_class": {
+    "ok_pair": 323,
+    "null": 115,
+    "malformed_double_rec": 2,
+    "runner_only": 7
+  },
+  "backup_class": {
+    "model_only": 25,
+    "null": 117,
+    "ok_pair": 299,
+    "runner_only": 6
+  },
+  "issue_counts": {
+    "backup_model_only": 25,
+    "missing_primary": 102,
+    "malformed_double_rec": 2,
+    "runner_only": 7,
+    "bad_backup": 6
+  },
+  "missing_primary_count": 102,
+  "malformed_primary": [
+    [
+      "malformed_double_rec",
+      "ea969afa",
+      "rec-claude-code+rec-opus-4-8",
+      []
+    ],
+    [
+      "malformed_double_rec",
+      "7212c3b8",
+      "rec-codex+rec-gpt-5-3-codex",
+      []
+    ],
+    [
+      "runner_only",
+      "0e1f80a9",
+      "rec-gemini-cli",
+      []
+    ],
+    [
+      "bad_backup",
+      "9976d1c1",
+      "alt-gemini-cli",
+      []
+    ],
+    [
+      "bad_backup",
+      "4df7cb86",
+      "alt-gemini-cli",
+      []
+    ],
+    [
+      "bad_backup",
+      "540f6a8d",
+      "alt-gemini-cli",
+      []
+    ],
+    [
+      "bad_backup",
+      "a48678f6",
+      "alt-gemini-cli",
+      []
+    ],
+    [
+      "bad_backup",
+      "67ea6d1b",
+      "alt-gemini-cli",
+      []
+    ],
+    [
+      "bad_backup",
+      "2bd8db66",
+      "alt-gemini-cli",
+      []
+    ],
+    [
+      "runner_only",
+      "357a4ed7",
+      "rec-gemini-cli",
+      []
+    ],
+    [
+      "runner_only",
+      "feb38f04",
+      "rec-gemini-cli",
+      []
+    ],
+    [
+      "runner_only",
+      "bfc12d1e",
+      "rec-gemini-cli",
+      []
+    ],
+    [
+      "runner_only",
+      "b5f6b6eb",
+      "rec-gemini-cli",
+      []
+    ],
+    [
+      "runner_only",
+      "3a9422df",
+      "rec-gemini-cli",
+      []
+    ],
+    [
+      "runner_only",
+      "699a7ddd",
+      "rec-gemini-cli",
+      []
+    ]
+  ],
+  "operator_gate_with_runner": [
+    [
+      "a370e809",
+      "TP-DMX-BRANCH-POLICY-AUDIT-012: Branch protection and rulese",
+      "rec-codex+model-gpt-5-3-codex",
+      "alt-claude-code+alt-model-sonnet-5"
+    ],
+    [
+      "d68168cc",
+      "TP-RTE-TRUTH-R0-008 BLOCKED artifact sweep (operator fixture",
+      "model-gpt-5-6-sol",
+      null
+    ]
+  ],
+  "by_primary_runner_declared": {
+    "none": 201,
+    "rec-claude-code": 160,
+    "rec-codex": 171,
+    "rec-opus-4-8": 2,
+    "rec-gpt-5-3-codex": 1,
+    "rec-gemini-cli": 7,
+    "rec-sonnet-5": 1,
+    "rec-fable-5": 1
+  },
+  "by_primary_runner_repro_split0": {
+    "none": 200,
+    "rec-claude-code": 160,
+    "rec-codex": 171,
+    "rec-gemini-cli": 7,
+    "model-gpt-5-6-sol": 1
+  },
+  "by_primary_runner_match": false,
+  "off_by_one_none": 1
+}
