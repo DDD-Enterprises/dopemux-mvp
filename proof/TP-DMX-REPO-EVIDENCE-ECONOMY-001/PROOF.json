@@ -32,5 +32,7 @@
       "Formal independent audit is recorded after content head freeze in C4/pr-merge package"
     ],
     "skip_reason": "Implementation package only; independent formal audit is a separate proof-only successor after frozen content head."
-  }
+  },
+  "content_head": "56c702ad86ea91585aac1a9c052b3dc8c7bfb657",
+  "after_head_c3": "56c702ad86ea91585aac1a9c052b3dc8c7bfb657"
 }
