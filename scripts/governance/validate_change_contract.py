@@ -325,6 +325,57 @@ def validate_proof_only_closure(
             f"content_head {content_head} is not an ancestor of proof_head {proof_head}",
         )
 
+    # Fail closed: derive the real content_head..proof_head delta from git.
+    # Caller-supplied --paths cannot redefine a non-proof delta as proof-only.
+    delta_proc = subprocess.run(
+        ["git", "diff", "--name-only", f"{content_head}..{proof_head}"],  # type: ignore[arg-type]
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if delta_proc.returncode != 0:
+        result.add(
+            "proof_only_delta_unreadable",
+            "error",
+            "Unable to read git diff for content_head..proof_head; cannot prove proof-only closure",
+        )
+        return
+    derived = sorted(
+        {
+            p.strip().replace("\\", "/")
+            for p in delta_proc.stdout.splitlines()
+            if p.strip()
+        }
+    )
+    if not derived:
+        result.add(
+            "proof_only_empty_delta",
+            "error",
+            "content_head..proof_head has no changed paths",
+        )
+        return
+    if set(norm_paths) != set(derived):
+        result.add(
+            "proof_only_path_mismatch",
+            "error",
+            "Declared paths do not exactly match git diff content_head..proof_head "
+            f"(declared={len(norm_paths)} derived={len(derived)})",
+        )
+        # Continue validating the derived set for escape/signature closure.
+    # Always enforce allowlist + signatures on the derived delta, not caller paths alone.
+    norm_paths = derived
+    escaped_derived = [p for p in norm_paths if not _PROOF_ONLY_ALLOWED.match(p)]
+    if escaped_derived:
+        for p in escaped_derived:
+            result.add(
+                "proof_only_escaped_path",
+                "error",
+                "Derived proof-only delta path outside allowlist",
+                p,
+            )
+        return
+
     # Signature presence for every PROOF.json in the proof-only delta.
     path_set = set(norm_paths)
     for path in norm_paths:

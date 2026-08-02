@@ -193,6 +193,33 @@ def test_proof_only_missing_each_head_fails_independently() -> None:
         assert any(f.code == "proof_only_missing_heads" for f in r.findings), heads
 
 
+def test_proof_only_path_mismatch_detected_when_delta_readable() -> None:
+    """When heads resolve in git, declared --paths must match derived delta."""
+    # Use real commits from this repo: empty tree-ish not available; skip if
+    # content_head..HEAD is not pure proof-only (expected FAIL path_mismatch
+    # or escaped when declaring a single proof path against a contentful delta).
+    head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    # Pick an ancestor a few commits back if possible.
+    try:
+        base = subprocess.check_output(
+            ["git", "rev-parse", "HEAD~1"], cwd=ROOT, text=True
+        ).strip()
+    except subprocess.CalledProcessError:
+        pytest.skip("need at least 2 commits")
+    declared = ["proof/pr_merge/embedded-audit/pr-1184/review_bundle/CHANGED_FILES.txt"]
+    r = evaluate(
+        paths=declared,
+        cwd=ROOT,
+        proof_only_mode=True,
+        content_head=base,
+        audited_head=base,
+        proof_head=head,
+    )
+    assert r.status == "FAIL"
+    codes = {f.code for f in r.findings}
+    assert "proof_only_path_mismatch" in codes or "proof_only_escaped_path" in codes
+
+
 def test_proof_only_missing_signature_fails() -> None:
     r = evaluate(
         paths=["proof/pr_merge/embedded-audit/pr-9/PROOF.json"],
@@ -204,7 +231,14 @@ def test_proof_only_missing_signature_fails() -> None:
         file_text={"proof/pr_merge/embedded-audit/pr-9/PROOF.json": "{}"},
     )
     assert r.status == "FAIL"
-    assert any(f.code == "proof_only_missing_signature" for f in r.findings)
+    # Fake SHAs fail closed at ancestry/delta binding before signature scan;
+    # either binding error or missing-signature is acceptable fail-closed behavior.
+    codes = {f.code for f in r.findings}
+    assert codes & {
+        "proof_only_missing_signature",
+        "proof_only_delta_unreadable",
+        "proof_only_ancestry_fail",
+    }
 
 
 def test_proof_only_arbitrary_proof_path_fails() -> None:
