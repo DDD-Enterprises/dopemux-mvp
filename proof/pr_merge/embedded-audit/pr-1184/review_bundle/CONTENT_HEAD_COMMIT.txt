@@ -1,0 +1,2 @@
+b6d968d9aaefe34408857459229b2c87c710fb40
+fix(governance): tighten proof-only artifacts and exact template exemption
