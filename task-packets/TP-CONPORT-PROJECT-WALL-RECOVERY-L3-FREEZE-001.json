@@ -1,0 +1,95 @@
+{
+  "id": "TP-CONPORT-PROJECT-WALL-RECOVERY-L3-FREEZE-001",
+  "project": "dopemux-mvp",
+  "target": "Freeze and publish recovery head a39ea663db with exact-head L3 proof for ConPort project wall, 2025 corpus recovery, autoheal, backup-restore, and test write-boundary. Do not merge; do not delete source archive.",
+  "invariants": [
+    "Content recovery head a39ea663db is not rebased or rewritten.",
+    "Concurrent PR automation dirt is not committed or pushed.",
+    "Source archive docs/archive/generated/conport-migration/conport_export.json is retained.",
+    "dopemux_knowledge_graph is not deleted; remain non-canonical.",
+    "No operator merge decision is claimed without independent audit PASS/PASS_WITH_RISKS and PR Steward READY."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "CONPORT-PROJECT-WALL-RECOVERY-2026-08-02",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/conport-project-wall-recovery-2026-08-02",
+    "base_branch": "main",
+    "stacked_because": "Freeze recovery content head a39ea663db on dedicated branch without rewriting; open draft PR for L3 proof and operator merge decision."
+  },
+  "commit": {
+    "message": "proof(conport): L3 freeze evidence + follow-up packets for project-wall recovery",
+    "allowlist": [
+      "task-packets/TP-CONPORT-PROJECT-WALL-RECOVERY-L3-FREEZE-001.json",
+      "task-packets/TP-CONPORT-MIGRATION-GATE-DEADLOCK-001.json",
+      "task-packets/TP-CONPORT-SCHEMA-SEED-SEPARATION-001.json",
+      "task-packets/TP-CONPORT-PID1-SUPERVISION-001.json",
+      "task-packets/TP-WORKTREE-AUTOMATION-CUSTODY-001.json",
+      "proof/TP-CONPORT-PROJECT-WALL-RECOVERY-2026-08-02/**"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-CONPORT-PROJECT-WALL-RECOVERY-L3-FREEZE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m jsonschema -i task-packets/TP-CONPORT-MIGRATION-GATE-DEADLOCK-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m jsonschema -i task-packets/TP-CONPORT-SCHEMA-SEED-SEPARATION-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m jsonschema -i task-packets/TP-CONPORT-PID1-SUPERVISION-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m jsonschema -i task-packets/TP-WORKTREE-AUTOMATION-CUSTODY-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(conport): project wall, 2025 corpus recovery, outage autoheal",
+    "body": "Draft freeze PR for recovery head a39ea663db. L3 proof required before operator merge decision. Do not merge from this body alone.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "freeze-push",
+      "task": "Prove identity, push a39ea663db without rewrite, open draft PR against main.",
+      "validation": [
+        "Remote branch fix/conport-project-wall-recovery-2026-08-02 points at a39ea663db.",
+        "Draft PR exists against main."
+      ]
+    },
+    {
+      "id": "l3-proof",
+      "task": "Collect exact-head L3 evidence for custody, isolation, recovery, backup restore, and test contamination.",
+      "validation": [
+        "Proof bundle records source SHA-256, source/dest counts, reconciliation, isolation matrix, autoheal timeline, backup restore verify, write-guard delta."
+      ]
+    },
+    {
+      "id": "followups",
+      "task": "Author four follow-up task packets without implementing them.",
+      "validation": [
+        "Packets exist and validate against dopetask-canonical-spec.json."
+      ]
+    },
+    {
+      "id": "audit-steward",
+      "task": "Independent audit + PR Steward on exact audited head; require PASS/PASS_WITH_RISKS and READY for operator merge decision.",
+      "validation": [
+        "Audit model identity recorded with requested/configured/claimed/proxy/provider fields.",
+        "Stop with NEEDS_SUPERVISOR if any stop condition holds."
+      ]
+    }
+  ]
+}

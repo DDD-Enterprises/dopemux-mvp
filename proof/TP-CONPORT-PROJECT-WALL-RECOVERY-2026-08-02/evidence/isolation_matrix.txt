@@ -1,0 +1,66 @@
+=== isolation matrix 2026-08-02T22:57:07Z ===
+--- adops role -> conport_dopemux_mvp (expect deny CONNECT) ---
+--- ACL: database CONNECT privileges ---
+         datname         | mvp_connect | adops_connect | public_connect | public_create
+-------------------------+-------------+---------------+----------------+---------------
+ conport_adops           | f           | t             | f              | f
+ conport_dopemux_mvp     | t           | f             | f              | f
+ dopemux_knowledge_graph | t           | t             | t              | f
+ litellm                 | t           | t             | t              | f
+ postgres                | t           | t             | t              | f
+(5 rows)
+
+--- try connect as project roles (using env password for mvp; adops via alter temp for probe only if we have superuser) ---
+psql: error: connection to server at "127.0.0.1", port 5432 failed: FATAL:  permission denied for database "conport_adops"
+DETAIL:  User does not have CONNECT privilege.
+  current_database   |    current_user
+---------------------+---------------------
+ conport_dopemux_mvp | conport_dopemux_mvp
+(1 row)
+
+ ?column?
+----------
+        1
+(1 row)
+
+ ?column?
+----------
+        1
+(1 row)
+
+ ?column?
+----------
+        1
+(1 row)
+
+--- adops role -> conport_dopemux_mvp ---
+psql: error: connection to server at "127.0.0.1", port 5432 failed: FATAL:  permission denied for database "conport_dopemux_mvp"
+DETAIL:  User does not have CONNECT privilege.
+--- adops role -> conport_adops ---
+ current_database | count
+------------------+-------
+ conport_adops    |    14
+(1 row)
+
+--- adops role -> legacy ---
+ ?column?
+----------
+        1
+(1 row)
+
+--- default public schema privileges on project DB ---
+  nspname   |       rolname       | can_create | can_usage
+------------+---------------------+------------+-----------
+ ag_catalog | conport_adops       | f          | f
+ ag_catalog | conport_dopemux_mvp | f          | f
+ ag_catalog | dopemux_age         | t          | t
+ public     | conport_adops       | f          | t
+ public     | conport_dopemux_mvp | t          | t
+ public     | dopemux_age         | t          | t
+(6 rows)
+
+--- conport container DSN target (redact password) ---
+AGE_PORT=5432
+AGE_HOST=dopemux-postgres-age
+POSTGRES_URL=postgresql+asyncpg://conport_dopemux_mvp:***@dopemux-postgres-age:5432/conport_dopemux_mvp
+AGE_PASSWORD=***REDACTED***

@@ -1,0 +1,37 @@
+{
+  "source_counts": {
+    "decisions": 294,
+    "progress_entries": 209,
+    "context_links": 111,
+    "system_patterns": 3,
+    "custom_data": 14
+  },
+  "ledger_kind_counts": {
+    "context_link": 110,
+    "custom_data": 14,
+    "decision": 294,
+    "legacy_context": 2,
+    "parent_link": 109,
+    "progress_entry": 209,
+    "system_pattern": 3,
+    "unresolved_link": 1
+  },
+  "missing": {
+    "decisions": [],
+    "progress_entries": [],
+    "context_links": [
+      "33"
+    ],
+    "system_patterns": [],
+    "custom_data": []
+  },
+  "extra_sample": {},
+  "missing_counts": {
+    "decisions": 0,
+    "progress_entries": 0,
+    "context_links": 1,
+    "system_patterns": 0,
+    "custom_data": 0
+  },
+  "missing_count": {}
+}

@@ -1,0 +1,5 @@
+autoheal_image=willfarrell/autoheal:latest
+autoheal_env=AUTOHEAL_INTERVAL=15;AUTOHEAL_START_PERIOD=60;AUTOHEAL_DEFAULT_STOP_TIMEOUT=20;AUTOHEAL_CONTAINER_LABEL=autoheal;
+conport_label_autoheal=true
+conport_health_before=healthy
+conport_started_before=2026-08-02T21:59:23.647643173Z

@@ -1,0 +1,69 @@
+{
+  "id": "TP-CONPORT-MIGRATION-GATE-DEADLOCK-001",
+  "project": "dopemux-mvp",
+  "target": "ADR plus fresh-database transaction repair for conport_migration_gate.py apply self-deadlock on any fresh database (AccessShareLock held while psql child needs AccessExclusiveLock on custom_data).",
+  "invariants": [
+    "docker/mcp-servers-source/conport/ remains red-lane sealed until ADR authorizes edit.",
+    "No silent workarounds that leave gate apply broken on greenfield DBs.",
+    "gate verify continues to use ledger checksums after apply."
+  ],
+  "depends_on": [
+    "TP-CONPORT-PROJECT-WALL-RECOVERY-L3-FREEZE-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "CONPORT-PROJECT-WALL-RECOVERY-2026-08-02",
+    "base_branch": "main",
+    "parent_tp_id": "TP-CONPORT-PROJECT-WALL-RECOVERY-L3-FREEZE-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/conport-migration-gate-deadlock-001",
+    "base_branch": "main",
+    "stacked_because": "Latent sealed-tree bug found under recovery; requires ADR before red-lane edit."
+  },
+  "commit": {
+    "message": "fix(conport): resolve migration gate apply self-deadlock on fresh databases",
+    "allowlist": [
+      "docs/90-adr/**",
+      "docker/mcp-servers-source/conport/conport_migration_gate.py",
+      "docker/mcp-servers-source/conport/tests/**",
+      "task-packets/TP-CONPORT-MIGRATION-GATE-DEADLOCK-001.json",
+      "proof/TP-CONPORT-MIGRATION-GATE-DEADLOCK-001/**"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-CONPORT-MIGRATION-GATE-DEADLOCK-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "Reproduce: gate apply on empty DB completes without idle-in-transaction lock wait",
+      "gate verify passes after apply",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(conport): migration gate apply self-deadlock on fresh DBs",
+    "body": "ADR-authorized repair of conport_migration_gate.py transaction ordering so fresh databases can apply migrations without self-deadlock.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "adr",
+      "task": "Write ADR authorizing sealed-tree edit and preferred fix (close preflight transaction before psql, or run probes outside writer txn).",
+      "validation": [
+        "ADR exists under docs/90-adr/ and references reproduction evidence from 2026-08-02 recovery."
+      ]
+    },
+    {
+      "id": "repair",
+      "task": "Implement minimal gate transaction fix; add regression test on empty DB.",
+      "validation": [
+        "Fresh DB gate apply exits 0 within timeout.",
+        "No AccessExclusiveLock wait on gate's own backend."
+      ]
+    }
+  ]
+}

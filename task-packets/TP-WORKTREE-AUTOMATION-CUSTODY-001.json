@@ -1,0 +1,68 @@
+{
+  "id": "TP-WORKTREE-AUTOMATION-CUSTODY-001",
+  "project": "dopemux-mvp",
+  "target": "Prevent reset, rebase, checkout, clean, or ref mutation in foreign or actively leased worktrees by PR automation and agent harnesses.",
+  "invariants": [
+    "Automation must not mutate refs or working trees it does not own/lease.",
+    "Foreign worktree containers and branches are neither reused nor replaced without explicit custody.",
+    "Concurrent PR merge automation dirt must remain isolated from recovery freeze heads."
+  ],
+  "depends_on": [
+    "TP-CONPORT-PROJECT-WALL-RECOVERY-L3-FREEZE-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "CONPORT-PROJECT-WALL-RECOVERY-2026-08-02",
+    "base_branch": "main",
+    "parent_tp_id": "TP-CONPORT-PROJECT-WALL-RECOVERY-L3-FREEZE-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/worktree-automation-custody-001",
+    "base_branch": "main",
+    "stacked_because": "Observed concurrent PR automation dirt and remote branch divergence during recovery freeze."
+  },
+  "commit": {
+    "message": "fix(automation): fail closed on foreign/leased worktree mutation",
+    "allowlist": [
+      "src/dopemux/**",
+      "scripts/**",
+      "docs/ops/**",
+      "docs/90-adr/**",
+      "task-packets/TP-WORKTREE-AUTOMATION-CUSTODY-001.json",
+      "proof/TP-WORKTREE-AUTOMATION-CUSTODY-001/**"
+    ],
+    "verify": [
+      "Attempts to reset/rebase/checkout/clean foreign worktree are denied",
+      "Lease ownership checks covered by unit tests",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(automation): worktree custody for PR and agent harnesses",
+    "body": "Prevent ref and worktree mutation outside owned/leased paths.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "inventory",
+      "task": "Inventory automation paths that can reset/rebase/checkout/clean/ref-mutate across worktrees.",
+      "validation": [
+        "Inventory lists commands and call sites with ownership checks status."
+      ]
+    },
+    {
+      "id": "guardrails",
+      "task": "Add fail-closed custody guards and tests.",
+      "validation": [
+        "Foreign and leased worktree mutation attempts return deny with proof fixture."
+      ]
+    }
+  ]
+}

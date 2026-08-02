@@ -1,0 +1,69 @@
+{
+  "id": "TP-CONPORT-SCHEMA-SEED-SEPARATION-001",
+  "project": "dopemux-mvp",
+  "target": "Remove fabricated production sample rows from canonical schema initialization (schema.sql lines ~267-292 seeding dopemux-mvp alias decisions/progress/context).",
+  "invariants": [
+    "Fresh project databases must start with zero fabricated user-facing decisions.",
+    "docker/mcp-servers-source/conport/ remains red-lane sealed until ADR authorizes edit.",
+    "Provisioner awk strip is transitional only; seed separation must land in source schema or dedicated seed path."
+  ],
+  "depends_on": [
+    "TP-CONPORT-PROJECT-WALL-RECOVERY-L3-FREEZE-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "CONPORT-PROJECT-WALL-RECOVERY-2026-08-02",
+    "base_branch": "main",
+    "parent_tp_id": "TP-CONPORT-PROJECT-WALL-RECOVERY-L3-FREEZE-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/conport-schema-seed-separation-001",
+    "base_branch": "main",
+    "stacked_because": "Sample seed invents alias split and pollutes every new project DB."
+  },
+  "commit": {
+    "message": "fix(conport): separate sample seeds from canonical schema init",
+    "allowlist": [
+      "docs/90-adr/**",
+      "docker/mcp-servers-source/conport/schema.sql",
+      "docker/mcp-servers-source/conport/**",
+      "scripts/migration/provision_conport_project_db.sh",
+      "task-packets/TP-CONPORT-SCHEMA-SEED-SEPARATION-001.json",
+      "proof/TP-CONPORT-SCHEMA-SEED-SEPARATION-001/**"
+    ],
+    "verify": [
+      "Fresh provisioned DB has zero decisions unless explicit seed flag used",
+      "No INSERT INTO decisions/progress in default schema path",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(conport): remove fabricated rows from schema.sql init",
+    "body": "Separate demo/sample seeds from canonical ConPort schema initialization so project walls start empty.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "adr-or-authorize",
+      "task": "Authorize sealed-tree schema edit and define optional demo seed path.",
+      "validation": [
+        "ADR or supervisor authorization recorded before schema.sql edit."
+      ]
+    },
+    {
+      "id": "split-seed",
+      "task": "Move sample INSERTs out of default schema init; update provisioner assert.",
+      "validation": [
+        "Provisioner apply leaves zero sample decisions.",
+        "Optional seed script remains available for demos only."
+      ]
+    }
+  ]
+}

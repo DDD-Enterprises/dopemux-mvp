@@ -1,0 +1,27 @@
+decisions 294
+{
+  "path": "docs/archive/generated/conport-migration/conport_export.json",
+  "sha256": "99e457d6fcdd21bb954987ce0d1eabe35ab442ba9face51db9b91a20d7df5bb6",
+  "size_bytes": 838823,
+  "counts": {
+    "export_timestamp": {
+      "type": "str"
+    },
+    "source_db": {
+      "type": "str"
+    },
+    "decisions": 294,
+    "progress_entries": 209,
+    "custom_data": 14,
+    "context_links": 111,
+    "system_patterns": 3,
+    "active_context": {
+      "type": "dict",
+      "nkeys": 2
+    },
+    "product_context": {
+      "type": "dict",
+      "nkeys": 2
+    }
+  }
+}

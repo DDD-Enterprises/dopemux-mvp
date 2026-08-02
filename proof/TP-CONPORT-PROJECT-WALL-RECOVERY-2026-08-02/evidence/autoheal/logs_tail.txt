@@ -1,0 +1,7 @@
+AUTOHEAL_CONTAINER_LABEL=autoheal
+AUTOHEAL_START_PERIOD=60
+AUTOHEAL_INTERVAL=15
+AUTOHEAL_DEFAULT_STOP_TIMEOUT=20
+AUTOHEAL_ONLY_MONITOR_RUNNING=false
+Monitoring containers for unhealthy status in 60 second(s)
+02-08-2026 23:08:40 Container /mcp-conport (9f2b390f67fb) found to be unhealthy - Restarting container now with 20s timeout

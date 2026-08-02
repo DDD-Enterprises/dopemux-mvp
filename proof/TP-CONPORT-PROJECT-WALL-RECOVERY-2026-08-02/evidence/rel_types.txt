@@ -1,0 +1,13 @@
+  relationship_type  | count
+---------------------+-------
+ parent_of           |   109
+ relates_to_progress |    35
+ depends_on          |    31
+ BLOCKS              |    26
+ implements          |     6
+ synthesizes         |     6
+ refines             |     2
+ builds_upon         |     2
+ extends             |     1
+ completes           |     1
+(10 rows)

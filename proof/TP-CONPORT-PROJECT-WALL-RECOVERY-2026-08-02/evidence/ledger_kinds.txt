@@ -1,0 +1,11 @@
+      kind       | count
+-----------------+-------
+ decision        |   294
+ progress_entry  |   209
+ context_link    |   110
+ parent_link     |   109
+ custom_data     |    14
+ system_pattern  |     3
+ legacy_context  |     2
+ unresolved_link |     1
+(8 rows)

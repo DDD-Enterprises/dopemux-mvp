@@ -1,0 +1,17 @@
+t0=1785711976 started_before=2026-08-02T21:59:23.647643173Z health=healthy id=9f2b390f67fb
+kill_sent_at=1785711982
+t=6s health=healthy curl=000fail started=2026-08-02T21:59:23.647643173Z id=9f2b390f67fb
+t=10s health=healthy curl=000fail started=2026-08-02T21:59:23.647643173Z id=9f2b390f67fb
+t=13s health=healthy curl=000fail started=2026-08-02T21:59:23.647643173Z id=9f2b390f67fb
+t=19s health=healthy curl=000fail started=2026-08-02T21:59:23.647643173Z id=9f2b390f67fb
+t=22s health=healthy curl=000fail started=2026-08-02T21:59:23.647643173Z id=9f2b390f67fb
+t=48s health=healthy curl=000fail started=2026-08-02T21:59:23.647643173Z id=9f2b390f67fb
+t=51s health=healthy curl=000fail started=2026-08-02T21:59:23.647643173Z id=9f2b390f67fb
+t=61s health=healthy curl=000fail started=2026-08-02T21:59:23.647643173Z id=9f2b390f67fb
+t=64s health=healthy curl=000fail started=2026-08-02T21:59:23.647643173Z id=9f2b390f67fb
+t=147s health=unhealthy curl=000fail started=2026-08-02T21:59:23.647643173Z id=9f2b390f67fb
+t=150s health=unhealthy curl=000fail started=2026-08-02T21:59:23.647643173Z id=9f2b390f67fb
+t=157s health=unhealthy curl=000fail started=2026-08-02T21:59:23.647643173Z id=9f2b390f67fb
+t=166s health=starting curl=200 started=2026-08-02T23:09:00.945256676Z id=9f2b390f67fb
+t=169s health=starting curl=200 started=2026-08-02T23:09:00.945256676Z id=9f2b390f67fb
+t=181s health=healthy curl=200 started=2026-08-02T23:09:00.945256676Z id=9f2b390f67fb

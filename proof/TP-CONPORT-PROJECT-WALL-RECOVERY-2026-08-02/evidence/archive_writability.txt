@@ -1,0 +1,27 @@
+=== archive write probe 2026-08-02T22:58:43Z ===
+--- table grants for conport_dopemux_mvp on dopemux_knowledge_graph ---
+ table_name | privilege_type
+------------+----------------
+(0 rows)
+
+--- attempt INSERT as mvp role into archive (expect fail) ---
+ERROR:  permission denied for table decisions
+--- attempt SELECT count as mvp on archive ---
+ERROR:  permission denied for table decisions
+--- is archive default_transaction_read_only? ---
+ default_transaction_read_only
+-------------------------------
+ off
+(1 row)
+
+         datname         | datallowconn
+-------------------------+--------------
+ dopemux_knowledge_graph | t
+(1 row)
+
+--- conport runtime discovery: which DB is canonical ---
+AGE_PORT=5432
+AGE_HOST=dopemux-postgres-age
+POSTGRES_URL=postgresql+asyncpg://conport_dopemux_mvp:***@dopemux-postgres-age:5432/conport_dopemux_mvp
+AGE_PASSWORD=***REDACTED***
+mcp-conport Up 59 minutes (healthy) dopemux /Users/hue/code/dopemux-mvp

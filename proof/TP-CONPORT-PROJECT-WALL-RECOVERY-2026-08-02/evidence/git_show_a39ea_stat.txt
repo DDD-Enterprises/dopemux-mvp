@@ -1,0 +1,65 @@
+commit a39ea663dbf568cb3edf3ae39d756ce86532d07f
+Author: DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…) <167156098+hu3mann@users.noreply.github.com>
+Date:   Sun Aug 2 15:44:00 2026 -0700
+
+    fix(conport): build project wall, recover 2025 corpus, stop silent outage
+
+    ConPort appeared to be losing data. Investigation found three problems, one
+    masking the other two.
+
+    1. The REST data plane on :3004 had been dead 7+ hours while the container
+       reported Up/healthy. start_with_info.sh runs three servers under a bare
+       `wait`, so PID 1 never exited and `restart: unless-stopped` never fired --
+       Docker restarts on process exit, not healthcheck failure. Writes errored
+       against a dead backend, which is why the store looked empty.
+    2. The real decision corpus had never been migrated. 294 decisions, 209
+       progress entries, 111 context links and 3 system patterns (2025-10-05..25)
+       sat in docs/archive/generated/conport-migration/conport_export.json, whose
+       own active_context reads "ready to migrate ConPort to PostgreSQL AGE".
+    3. The test suite wrote into the live database: 238 custom_data rows across
+       197 workspace_ids, ~236 of them pytest temp directories.
+
+    Contrary to the starting hypothesis there was only ever ONE ConPort database
+    (the other six pg_age volumes were 0 bytes, never initialised) and no genuine
+    workspace_id alias split -- every short-form 'dopemux-mvp' row is schema.sql
+    sample data.
+
+    Changes:
+    - provision_conport_project_db.sh: one database + LOGIN role per project inside
+      the shared Postgres server, CONNECT revoked from PUBLIC, so credentials bind
+      the tenant. Reaches the project wall of adr-conport-canonical-record-service-v2
+      by configuration, without the CRS v2 rewrite.
+    - rehome_conport_rows.sh: moves a workspace's rows into its project database,
+      enumerating columns explicitly because the legacy DB has the same column set
+      in a different ordinal order.
+    - import_conport_export.py: idempotent loader, ledger in custom_data
+      '_migration_ledger' doubling as the old_id -> new_uuid map, so relationships
+      resolve exactly rather than by content-matching summaries. Timestamps
+      preserved; progress parent_id resurrected as 'parent_of' relationships.
+    - compose.yml: CONPORT_DB_* parameters, DOPEMUX_AUTO_FORK_PROGRESS=0, and an
+      autoheal watchdog that acts on the healthcheck that was already failing.
+    - tests/conftest.py: autouse guard on InstanceStateManager.save_instance_state.
+      Sets no env vars -- DOPEMUX_CONPORT_PORT and CONPORT_URL both feed port
+      resolution and broke legitimate port assertions; measured against a live
+      server the env vars did not reliably block the write while the method patch
+      did. Adds a --run-database-tests opt-in for the dormant `database` marker.
+
+    Result: 295 decisions in conport_dopemux_mvp, 219 relationships, 0 orphans,
+    0 pytest rows. Full suite failure set identical to baseline (22 both ways,
+    verified in a detached worktree) -- zero regressions.
+
+    Two latent bugs found under the red-lane-sealed conport tree and documented
+    rather than edited: conport_migration_gate.py `apply` self-deadlocks on any
+    fresh database, and schema.sql seeds the alias into every new one.
+
+    Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
+
+ compose.yml                                        |  59 ++-
+ ...-project-wall-and-corpus-recovery-2026-08-02.md | 252 +++++++++++
+ pytest.ini                                         |   1 +
+ scripts/migration/import_conport_export.py         | 466 +++++++++++++++++++++
+ scripts/migration/provision_conport_project_db.sh  | 310 ++++++++++++++
+ scripts/migration/rehome_conport_rows.sh           | 195 +++++++++
+ src/dopemux/tools/conport_client.py                |  12 +-
+ tests/conftest.py                                  | 108 ++++-
+ 8 files changed, 1392 insertions(+), 11 deletions(-)

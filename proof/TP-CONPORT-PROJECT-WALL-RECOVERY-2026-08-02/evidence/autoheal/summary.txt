@@ -1,0 +1,10 @@
+unhealthy_at_s=147
+restarted_at_s=166
+healthy_at_s=181
+started_after=2026-08-02T23:09:00.945256676Z
+health_after=healthy
+id_after=9f2b390f67fb909ac4008e1f42be69534943adf6021d636b72a00ecac8625bc7
+foreign_worktree_conports=
+container_name_stable=mcp-conport
+started_15s_later=2026-08-02T23:09:00.945256676Z
+{"status": "healthy", "service": "conport-enhanced", "port": 3004, "database": "healthy", "redis": "healthy", "timestamp": 33268.629784252}

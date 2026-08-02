@@ -1,0 +1,2 @@
+requested=claude-code-cli independent L3 audit (sonnet then opus if needed)
+configured=2.1.220 (Claude Code)
