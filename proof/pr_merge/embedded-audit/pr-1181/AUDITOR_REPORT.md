@@ -1,0 +1,54 @@
+# Auditor Report — PR #1181 repair (C3)
+
+- **Status:** PASS_WITH_RISKS
+- **Head (C3):**
+- **Auditor:** claude-code-cli / sonnet
+- **Independence:** implementer grok-4.5 (xAI); auditor Claude Code CLI (different family)
+- **F-001 retest:** RESOLVED
+- **F-002 retest:** RESOLVED
+
+## Summary
+
+Both prior findings are resolved with genuine structural fixes rather than surface patches: F-001's multi-fence rejection is now an explicit, tested line-structure check (exact opener/closer matching plus an interior-line fence scan) replacing the old incidental regex-then-malformed-JSON path, and F-002's size guard now runs as the very first content-dependent step, using UTF-8 byte length, strictly before strip/splitlines/json.loads, with exact-boundary tests at the 1,048,576-byte limit. No first/last-brace scraping or conversational-wrapper acceptance was reintroduced, and all rejection paths route through _rejected_parse_payload, which forces status=error and cannot yield PASS/PASS_WITH_RISKS/READY. Two low-severity, non-blocking robustness gaps remain: a possible UnhandledError path for lone-surrogate stdout bypassing the catch clause, and inability to directly verify the nested tool-content unwrap function's internals from the provided diff (though test evidence supports correct behavior).
+
+## Findings
+
+### F-001 (INFO) — RESOLVED
+
+**Multiple-fence rejection is now explicit structural enforcement, not incidental regex fallout**
+
+The regex-based `_FULL_OUTPUT_FENCED_JSON_RE` full-output fence match was removed entirely (no `re` import remains). `_extract_single_fence_interior` now does deterministic line-based structure checking: `lines = stripped.splitlines()`, first line must be exactly `\`\`\`` or `\`\`\`json` (membership in `_FENCE_OPENERS`), last line must be exactly `\`\`\`` (`_FENCE_CLOSER`), and every interior line is explicitly checked against `line in _FENCE_OPENERS or line == _FENCE_CLOSER`, raising `json.JSONDecodeError('audit output contains interior fence line; only one full-output fence is allowed', ...)` on match. This is a direct structural rejection of a second fence block, not an accidental byproduct of downstream regex/JSON failure. Verified against `test_rejects_two_fenced_objects_explicitly` and `test_rejects_interior_exact_fence_line`, both of which assert on the specific 'interior fence' message via `pytest.raises(..., match='interior fence')`, and against the pathological 5000-line fence-flood test.
+
+### F-002 (INFO) — RESOLVED
+
+**UTF-8 byte-length guard now runs before any strip/splitlines/json.loads work**
+
+In `parse_audit_json_object`, immediately after the `isinstance(text, str)` check and before `text.strip()` is ever called, `byte_len = len(text.encode('utf-8'))` is computed and compared against `MAX_AUDIT_OUTPUT_BYTES = 1_048_576`, raising `json.JSONDecodeError` on overflow. No `.strip()`, `.splitlines()`, or `json.loads()` call occurs before this check in the control flow — confirmed by reading top-to-bottom order in both the diff and the reproduced snippet. Boundary correctness verified by `test_accepts_exactly_at_byte_limit` (exactly 1,048,576 bytes accepted) and `test_rejects_one_byte_over_limit` (1,048,577 bytes rejected with message containing 'exceeds'). The constant value (1048576) matches the required policy exactly. This also eliminates the prior unbounded-regex risk since the old `[\s\S]*?` fence regex was removed outright in favor of O(n) line splitting, so there is no longer a quadratic-scan path reachable before the size check even mattered.
+
+### F-003 (LOW) — ACCEPTED_RISK
+
+**UTF-8 byte-length check may raise UnicodeEncodeError instead of JSONDecodeError for lone-surrogate input**
+
+`len(text.encode('utf-8'))` will raise `UnicodeEncodeError` (not `json.JSONDecodeError`) if `text` contains lone Unicode surrogates, which can occur if upstream subprocess stdout decoding uses `errors='surrogateescape'` on malformed byte sequences. `_verdict_payload_from_output` only catches `json.JSONDecodeError` around the `parse_audit_json_object` call, so such input would propagate as an unhandled exception rather than mapping cleanly to the `status: error` rejection envelope. This still fails closed in the sense that no PASS/READY verdict could result (the process would raise rather than fabricate a passing verdict), but it is a robustness gap relative to the clean 'rejected output maps to status=error' contract. Not covered by any test in this diff. Recommend either catching a broader exception class around the parse call or normalizing subprocess stdout decoding to strict UTF-8 with replacement before this function is reached.
+
+### F-004 (LOW) — ACCEPTED_RISK
+
+**Nested tool-content re-parse path (_unwrap_tool_output_payload) not visible in this diff for line-level verification**
+
+The new `test_nested_tool_content_follows_same_strict_policy` test demonstrates that a multi-fence payload embedded in an outer envelope's `content` field is correctly rejected end-to-end (outer parses, embedded verdict is absent, final status is not PASS/PASS_WITH_RISKS/READY), which is strong behavioral evidence that nested content is re-run through the same strict `parse_audit_json_object` (and therefore the same size/fence guards). However, `_unwrap_tool_output_payload` itself is unchanged/not included in the provided diff, so the internal wiring (e.g., whether it independently re-applies the byte-size cap before its own processing, or relies solely on delegating to `parse_audit_json_object`) could not be directly read line-by-line in this review. Treated as accepted risk based on passing test evidence rather than direct source confirmation.
+
+
+## Remaining risks
+
+- UnicodeEncodeError on lone-surrogate stdout is not caught by the json.JSONDecodeError-only except clause in _verdict_payload_from_output (F-003).
+- _unwrap_tool_output_payload source was not present in the reviewed diff; nested-content strict-policy compliance is inferred from one passing test rather than direct code inspection (F-004).
+
+## Validation observed
+
+- ...........................................................              [100%] PASS
+- ........................................................................ [ 25%]
+........................................................................ [ 51%]
+........................................................................ [ 77%]
+................................................................         [100%] PASS
+- ruff + compileall PASS
+- Task packet schema PASS
