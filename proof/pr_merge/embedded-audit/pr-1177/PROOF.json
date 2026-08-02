@@ -1,0 +1,63 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1177,
+  "commit_sha": "485cada0d23cef3cf657cefdc90cc166ae48e1ec",
+  "head_sha": "485cada0d23cef3cf657cefdc90cc166ae48e1ec",
+  "packet_id": "TP-DMX-PORTFOLIO-TOOLTIP-CLUSTER-RECOVERY-001",
+  "generated_at": "2026-08-02T21:37:32Z",
+  "note": "Audited content head is F1. F2 is proof-only successor; PR topology head after push equals F2 while embedded_audit head_sha remains F1.",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude -p --model sonnet --tools \"\" --strict-mcp-config --output-format text < CLAUDE_AUDIT_PROMPT.txt; preferred AGY gemini-3.1-pro-high UNAVAILABLE (quota); gemini-cli UNAVAILABLE (IneligibleTier)",
+    "exit_code": 0,
+    "report_path": "proof/pr_merge/embedded-audit/pr-1177/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-001",
+        "severity": "INFO",
+        "title": "Tooltip wraps existing Button without altering accessible name",
+        "status": "RESOLVED",
+        "body": "The Button retains its original aria-label={`Start task: ${task.title}`}. MUI Tooltip by default also injects a title/aria attribute on hover/focus for sighted and some AT users, but since the Button already has an explicit aria-label, screen readers will announce the Button's aria-label rather than the Tooltip text as the primary accessible name \u2014 no conflict introduced."
+      },
+      {
+        "id": "F-002",
+        "severity": "LOW",
+        "title": "New test asserts via string/regex match on source, not rendered DOM",
+        "status": "ACCEPTED_RISK",
+        "body": "The added test in Accessibility.test.tsx uses expect(content).toMatch(...) against raw file text (consistent with the pre-existing style in this file) rather than rendering the component and querying the DOM for the tooltip. This verifies the JSX text is present but does not verify the tooltip actually renders/positions correctly at runtime. Given the surrounding tests in this file follow the same pattern, this is consistent with existing conventions, not a new risk introduced by this PR."
+      },
+      {
+        "id": "F-003",
+        "severity": "INFO",
+        "title": "Tooltip import assumed pre-existing",
+        "status": "OPEN",
+        "body": "The diff does not show an added `import { Tooltip } from ...` line, implying Tooltip was already imported in TaskSequencer.tsx prior to this change (used elsewhere in the file). This is consistent with the diff context showing no import-section changes, and the local build/test PASS results corroborate that the import resolves correctly. Flagged only because it cannot be independently re-verified from the diff hunk alone."
+      }
+    ],
+    "fixes_applied": [
+      "Deleted invalid PR #1177 audit files bound to main SHA claiming absent App/palette changes (F1 content repair; UI patch unchanged)."
+    ],
+    "remaining_risks": [
+      "Lint could not be run against this diff (pre-existing missing eslint.config on main), so no independent static-analysis signal beyond what's stated in LOCAL VALIDATION.",
+      "No rendered/DOM-level accessibility test (e.g., via testing-library queries or jest-axe) confirms the Tooltip is reachable via keyboard focus or announced correctly by screen readers at runtime \u2014 only source-text pattern matching was added."
+    ],
+    "skip_reason": null
+  },
+  "route_preflight": {
+    "preferred": {
+      "tool": "agy",
+      "model": "gemini-3.1-pro-high",
+      "status": "UNAVAILABLE",
+      "error": "Individual quota reached"
+    },
+    "used": {
+      "tool": "claude-code-cli",
+      "model": "sonnet",
+      "status": "AVAILABLE"
+    },
+    "independence": "Jules implemented original UI; Claude Code CLI audited F1 (different implementer family). AGY preferred route recorded UNAVAILABLE with live catalog evidence that gemini-3.1-pro-high exists."
+  }
+}
