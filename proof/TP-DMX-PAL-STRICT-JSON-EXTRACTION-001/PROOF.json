@@ -7,7 +7,7 @@
   "branch": "fix/pal-clink-failclosed-json-parse",
   "base_main_sha": "87fbdda574bd060c2b2246bcf838323ba075da28",
   "before_head_c2": "9283346993ba2c00c26e39e06eea4f7cbde5f497",
-  "after_head_c3": "1965f9bd4b960f36c832a3ae745f92df01f34ce1",
+  "after_head_c3": "afe2faa8f0dabeff4fab7ef093edf84439a90d5e",
   "implementer": {
     "runner": "grok-build",
     "model": "grok-4.5",
@@ -44,5 +44,5 @@
   "formal_audit_claimed": false,
   "merge_ready_claimed": false,
   "content_fix_sha": "afe2faa8f0dabeff4fab7ef093edf84439a90d5e",
-  "note_sha_binding": "after_head_c3 equals this commit when clean; self-hash may require single amend"
+  "proof_stamp_note": "after_head_c3 binds to content fix commit afe2faa8f. Tip at push may include stamp-only follow-ups; C3_HEAD.txt records tip."
 }
