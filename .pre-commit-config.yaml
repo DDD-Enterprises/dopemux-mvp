@@ -2,6 +2,14 @@ repos:
   # Knowledge Graph Documentation Enforcement
   - repo: local
     hooks:
+      # Evidence-economy: deterministic change-contract preflight (no auto-fix, offline)
+      - id: change-contract-preflight
+        name: Evidence-economy change-contract preflight
+        entry: python3 scripts/governance/validate_change_contract.py --format text
+        language: system
+        pass_filenames: false
+        always_run: true
+
       # Frontmatter validation (enable existing)
       - id: docs-frontmatter-guard
         name: Validate YAML frontmatter in docs

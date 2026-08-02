@@ -47,6 +47,8 @@ Required:
 - Preserve contradiction when contradiction exists.
 - Prefer exact paths, commands, ports, service names, branch names, and PR URLs.
 - Do not infer implementation from intent, README prose, naming, diagrams, or package presence.
+- Prefer economical evidence: shell/local for deterministic facts; one implementer model for bounded edits; one final independent audit only when risk lane L2/L3 requires it (see `docs/03-reference/governance/evidence-economy.md`).
+- Do not turn frontmatter, schema-field, hash, or packaging failures into recursive Task Packets — repair in the active packet with deterministic checks.
 
 Forbidden:
 
@@ -54,6 +56,8 @@ Forbidden:
 - “Done” without evidence.
 - Normalizing drift into a cleaner story.
 - Promoting mirrors, adapters, shims, or proxies into authority.
+- Intermediate model audits of unfrozen content when a single final L2/L3 audit would suffice.
+- Weakening L2/L3 independent-audit or operator merge/destructive gates in the name of economy.
 
 ---
 
