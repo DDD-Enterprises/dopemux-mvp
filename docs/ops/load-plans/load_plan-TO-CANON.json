@@ -9,7 +9,7 @@
   "offline_artifact": "CREATED",
   "loaded": true,
   "load_mechanism_classified_as": "OBSERVED_MCP_TASK_ORCHESTRATOR_V3",
-  "load_mechanism_evidence": "task-orchestrator MCP v3 would use create_work_tree for root, manage_items(operation=create) per node, manage_dependencies for BLOCKS DAG, manage_notes for gate briefs — same as sibling load plans (DMX-CONPORT-OPTIMAL).",
+  "load_mechanism_evidence": "OBSERVED 2026-08-01: with task-orchestrator containers stopped, root+8 nodes+7 BLOCKS edges were written into the canonical per-repo SQLite instance dopemux-mvp-2e346e2084bca021 (same MCP v3 primitives as create_work_tree / manage_items(create) / manage_dependencies / manage_notes). FTS rebuilt via table triggers. Post-restart verification: live MCP query_items returned the root and leaf UUIDs recorded in this load plan. See docs/03-reference/orchestrator-integration/db-defragmentation-2026-08-01.md.",
   "task_orchestrator_root_id": "8640002a-bbee-441a-84ed-3d380c2c5a0a",
   "task_orchestrator_leaf_ids": {
     "TP-TO-CANON-000": "1a1978b2-3acb-4250-9c01-3951ffd39e19",

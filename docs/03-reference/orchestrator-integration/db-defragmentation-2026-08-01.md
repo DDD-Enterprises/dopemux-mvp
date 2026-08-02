@@ -5,8 +5,14 @@ type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-08-01'
-last_review: '2026-08-01'
+last_review: '2026-08-02'
 next_review: '2026-10-30'
+status: active
+tags:
+  - orchestrator
+  - task-orchestrator
+  - defragmentation
+  - load-plan
 prelude: Record of the 2026-08-01 task-orchestrator instance-database defragmentation, its root cause, and the detection recipe for misfiled work items.
 ---
 # Orchestrator DB Defragmentation (2026-08-01)

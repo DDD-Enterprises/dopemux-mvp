@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "series_id": "DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED",
   "title": "Dopemux Embedded Audit + PR Cleanup Reconciled TP Series",
-  "description": "Delta reconciliation of embedded audit and PR cleanup infrastructure. Not greenfield architecture — docs/ops/operating-model.md and docs/ops/tool-routing-matrix.md already exist. This series hardens CI triggers, evidence bundling, PR Steward freshness, auditor routing, PAL clink runner, Action Bridge, Copilot scaffold, PR gate, branch policy audit, Steward hardening, fixtures, and proof normalization.",
+  "description": "Delta reconciliation of embedded audit and PR cleanup infrastructure. Not greenfield architecture \u2014 docs/ops/operating-model.md and docs/ops/tool-routing-matrix.md already exist. This series hardens CI triggers, evidence bundling, PR Steward freshness, auditor routing, PAL clink runner, Action Bridge, Copilot scaffold, PR gate, branch policy audit, Steward hardening, fixtures, and proof normalization.",
   "authority": "Reconciled synthesis from GPT-5.5 Pro + Opus audit (May 27, 2026). Runtime repo truth outranks this document. Verify paths before edit.",
   "live_task_orchestrator_load": "LOADED",
   "loaded": true,
@@ -25,7 +25,7 @@
   },
   "offline_artifact": "CREATED",
   "load_mechanism_classified_as": "OBSERVED_MCP_TASK_ORCHESTRATOR_V3",
-  "load_mechanism_evidence": "Repo has task-packets/ directory with JSON/MD packets following dopetask-canonical-spec.json. Live load authorized by operator and performed 2026-08-01.",
+  "load_mechanism_evidence": "OBSERVED 2026-08-01: live load into canonical per-repo instance dopemux-mvp-2e346e2084bca021 during orchestrator DB defragmentation. Root + 12 nodes + 23 BLOCKS edges written with containers stopped; FTS rebuilt by table triggers; verified via live MCP query_items after restart. See docs/03-reference/orchestrator-integration/db-defragmentation-2026-08-01.md.",
   "executor_defaults": {
     "primary": "claude-code-sonnet",
     "auditor": "claude-code-opus",
@@ -63,8 +63,14 @@
       "title": "CI trigger repair",
       "objective": "Add explicit ready_for_review handling and workflow_dispatch coverage to ci-complete.yml, pr-steward.yml, and preflight.yml.",
       "depends_on": [],
-      "blocks": ["TP-DMX-PR-GATE-009", "TP-DMX-BRANCH-POLICY-AUDIT-012"],
-      "can_run_parallel_with": ["TP-DMX-AUDIT-BUNDLE-001", "initial read-only branch-policy prep"],
+      "blocks": [
+        "TP-DMX-PR-GATE-009",
+        "TP-DMX-BRANCH-POLICY-AUDIT-012"
+      ],
+      "can_run_parallel_with": [
+        "TP-DMX-AUDIT-BUNDLE-001",
+        "initial read-only branch-policy prep"
+      ],
       "executor": "claude-code-sonnet",
       "auditor": "claude-code-opus",
       "status": "READY",
@@ -91,8 +97,16 @@
       "title": "Evidence bundle builder",
       "objective": "Build deterministic, secret-safe evidence bundle builder for embedded audit and PAL clink reuse.",
       "depends_on": [],
-      "blocks": ["TP-DMX-AUDIT-ROUTER-002", "TP-DMX-PAL-CLINK-RUNNER-003", "TP-DMX-PR-ACTION-BRIDGE-006", "TP-DMX-AUDIT-PROOF-004"],
-      "can_run_parallel_with": ["TP-DMX-CI-TRIGGERS-008", "TP-DMX-PR-STEWARD-FRESHNESS-005"],
+      "blocks": [
+        "TP-DMX-AUDIT-ROUTER-002",
+        "TP-DMX-PAL-CLINK-RUNNER-003",
+        "TP-DMX-PR-ACTION-BRIDGE-006",
+        "TP-DMX-AUDIT-PROOF-004"
+      ],
+      "can_run_parallel_with": [
+        "TP-DMX-CI-TRIGGERS-008",
+        "TP-DMX-PR-STEWARD-FRESHNESS-005"
+      ],
       "executor": "claude-code-sonnet",
       "auditor": "claude-code-opus",
       "status": "READY",
@@ -115,8 +129,15 @@
       "title": "Mixed-SHA hard fail and proof freshness substates",
       "objective": "Add cross-artifact mixed-SHA hard fail and nuanced proof freshness substates to PR Steward without rewriting classifier.",
       "depends_on": [],
-      "blocks": ["TP-DMX-PR-ACTION-BRIDGE-006", "TP-DMX-PR-GATE-009", "TP-DMX-PR-STEWARD-HARDEN-010", "TP-DMX-PR-FIXTURES-011"],
-      "can_run_parallel_with": ["TP-DMX-AUDIT-BUNDLE-001"],
+      "blocks": [
+        "TP-DMX-PR-ACTION-BRIDGE-006",
+        "TP-DMX-PR-GATE-009",
+        "TP-DMX-PR-STEWARD-HARDEN-010",
+        "TP-DMX-PR-FIXTURES-011"
+      ],
+      "can_run_parallel_with": [
+        "TP-DMX-AUDIT-BUNDLE-001"
+      ],
       "executor": "claude-code-sonnet",
       "auditor": "claude-code-opus",
       "status": "READY",
@@ -146,8 +167,13 @@
       "id": "TP-DMX-AUDIT-ROUTER-002",
       "title": "Auditor route registry and capability probes",
       "objective": "Implement host-side auditor route registry and capability probe layer. Default claude-code-cli primary, gemini-cli fallback. No Codex formal auditor.",
-      "depends_on": ["TP-DMX-AUDIT-BUNDLE-001"],
-      "blocks": ["TP-DMX-PAL-CLINK-RUNNER-003", "TP-DMX-AUDIT-PROOF-004"],
+      "depends_on": [
+        "TP-DMX-AUDIT-BUNDLE-001"
+      ],
+      "blocks": [
+        "TP-DMX-PAL-CLINK-RUNNER-003",
+        "TP-DMX-AUDIT-PROOF-004"
+      ],
       "executor": "claude-code-sonnet",
       "auditor": "claude-code-opus",
       "status": "READY_AFTER_DEPENDENCY",
@@ -168,8 +194,13 @@
       "id": "TP-DMX-PAL-CLINK-RUNNER-003",
       "title": "PAL clink audit runner and normalizer",
       "objective": "Build PAL clink runner reusing existing claude-audit/gemini-audit configs. Perform preflight, capture raw output, normalize. No config creation.",
-      "depends_on": ["TP-DMX-AUDIT-BUNDLE-001", "TP-DMX-AUDIT-ROUTER-002"],
-      "blocks": ["TP-DMX-AUDIT-PROOF-004"],
+      "depends_on": [
+        "TP-DMX-AUDIT-BUNDLE-001",
+        "TP-DMX-AUDIT-ROUTER-002"
+      ],
+      "blocks": [
+        "TP-DMX-AUDIT-PROOF-004"
+      ],
       "executor": "claude-code-sonnet",
       "auditor": "claude-code-opus",
       "status": "READY_AFTER_DEPENDENCY",
@@ -190,8 +221,14 @@
       "id": "TP-DMX-PR-ACTION-BRIDGE-006",
       "title": "Read-only PR Action Bridge compiler",
       "objective": "Compile PR Steward artifacts into ACTION_PLAN.json and REPAIR_PACKET.md without mutating GitHub. Emit ACTION_PLAN.json (not PR_STEWARD_ACTION_PLAN.json unless downstream consumer requires alias).",
-      "depends_on": ["TP-DMX-AUDIT-BUNDLE-001", "TP-DMX-PR-STEWARD-FRESHNESS-005"],
-      "blocks": ["TP-DMX-COPILOT-REPAIR-007", "TP-DMX-PR-FIXTURES-011"],
+      "depends_on": [
+        "TP-DMX-AUDIT-BUNDLE-001",
+        "TP-DMX-PR-STEWARD-FRESHNESS-005"
+      ],
+      "blocks": [
+        "TP-DMX-COPILOT-REPAIR-007",
+        "TP-DMX-PR-FIXTURES-011"
+      ],
       "executor": "claude-code-sonnet",
       "auditor": "claude-code-opus",
       "status": "READY_AFTER_DEPENDENCY",
@@ -211,8 +248,12 @@
       "id": "TP-DMX-COPILOT-REPAIR-007",
       "title": "Bounded Copilot PR repair scaffold",
       "objective": "Add Copilot repair packet/comment scaffold treating Copilot only as bounded implementer. No automatic posting, no readiness/merge authority.",
-      "depends_on": ["TP-DMX-PR-ACTION-BRIDGE-006"],
-      "blocks": ["TP-DMX-PR-FIXTURES-011"],
+      "depends_on": [
+        "TP-DMX-PR-ACTION-BRIDGE-006"
+      ],
+      "blocks": [
+        "TP-DMX-PR-FIXTURES-011"
+      ],
       "executor": "claude-code-sonnet",
       "auditor": "claude-code-opus",
       "status": "READY_AFTER_DEPENDENCY",
@@ -232,8 +273,14 @@
       "id": "TP-DMX-PR-GATE-009",
       "title": "Required pr-gate stabilization",
       "objective": "Introduce or stabilize one required pr-gate check. Keep PR Steward advisory. Current ci-summary job is candidate. No branch protection mutation.",
-      "depends_on": ["TP-DMX-CI-TRIGGERS-008", "TP-DMX-PR-STEWARD-FRESHNESS-005"],
-      "blocks": ["TP-DMX-PR-STEWARD-HARDEN-010", "TP-DMX-BRANCH-POLICY-AUDIT-012"],
+      "depends_on": [
+        "TP-DMX-CI-TRIGGERS-008",
+        "TP-DMX-PR-STEWARD-FRESHNESS-005"
+      ],
+      "blocks": [
+        "TP-DMX-PR-STEWARD-HARDEN-010",
+        "TP-DMX-BRANCH-POLICY-AUDIT-012"
+      ],
       "executor": "claude-code-sonnet",
       "auditor": "claude-code-opus",
       "status": "READY_AFTER_DEPENDENCY",
@@ -252,8 +299,12 @@
       "id": "TP-DMX-BRANCH-POLICY-AUDIT-012",
       "title": "Branch protection and ruleset evidence audit",
       "objective": "Capture actual branch protection/ruleset truth read-only. Mark UNKNOWN if admin access unavailable.",
-      "depends_on": ["TP-DMX-CI-TRIGGERS-008"],
-      "blocks": ["TP-DMX-PR-STEWARD-HARDEN-010"],
+      "depends_on": [
+        "TP-DMX-CI-TRIGGERS-008"
+      ],
+      "blocks": [
+        "TP-DMX-PR-STEWARD-HARDEN-010"
+      ],
       "executor": "claude-code-sonnet-readonly",
       "auditor": "supervisor-review-gemini-fallback",
       "status": "READY_AFTER_DEPENDENCY_AND_ADMIN_EVIDENCE",
@@ -270,8 +321,15 @@
       "id": "TP-DMX-PR-STEWARD-HARDEN-010",
       "title": "PR Steward readiness hardening",
       "objective": "Harden readiness semantics for unknown actors, blocking risks, required/advisory checks, proof/audit risk classification.",
-      "depends_on": ["TP-DMX-PR-STEWARD-FRESHNESS-005", "TP-DMX-PR-GATE-009", "TP-DMX-BRANCH-POLICY-AUDIT-012"],
-      "blocks": ["TP-DMX-PR-FIXTURES-011", "TP-DMX-AUDIT-PROOF-004"],
+      "depends_on": [
+        "TP-DMX-PR-STEWARD-FRESHNESS-005",
+        "TP-DMX-PR-GATE-009",
+        "TP-DMX-BRANCH-POLICY-AUDIT-012"
+      ],
+      "blocks": [
+        "TP-DMX-PR-FIXTURES-011",
+        "TP-DMX-AUDIT-PROOF-004"
+      ],
       "executor": "claude-code-sonnet",
       "auditor": "claude-code-opus",
       "status": "READY_AFTER_DEPENDENCY",
@@ -291,8 +349,14 @@
       "id": "TP-DMX-PR-FIXTURES-011",
       "title": "PR Steward and Action Bridge fixture suite",
       "objective": "Create durable fixtures for green no-op and repair cases. Offline and deterministic. No live GitHub calls.",
-      "depends_on": ["TP-DMX-PR-STEWARD-FRESHNESS-005", "TP-DMX-PR-ACTION-BRIDGE-006", "TP-DMX-PR-STEWARD-HARDEN-010"],
-      "blocks": ["TP-DMX-AUDIT-PROOF-004"],
+      "depends_on": [
+        "TP-DMX-PR-STEWARD-FRESHNESS-005",
+        "TP-DMX-PR-ACTION-BRIDGE-006",
+        "TP-DMX-PR-STEWARD-HARDEN-010"
+      ],
+      "blocks": [
+        "TP-DMX-AUDIT-PROOF-004"
+      ],
       "executor": "claude-code-sonnet",
       "auditor": "claude-code-opus",
       "status": "READY_AFTER_DEPENDENCY",
@@ -313,7 +377,13 @@
       "id": "TP-DMX-AUDIT-PROOF-004",
       "title": "Audit proof normalization",
       "objective": "Normalize PROOF.json, AUDITOR_REPORT.md, EVIDENCE_MANIFEST.json, ROUTE_TRACE.json after route/PAL/steward/fixture behavior is concrete.",
-      "depends_on": ["TP-DMX-AUDIT-BUNDLE-001", "TP-DMX-AUDIT-ROUTER-002", "TP-DMX-PAL-CLINK-RUNNER-003", "TP-DMX-PR-STEWARD-FRESHNESS-005", "TP-DMX-PR-FIXTURES-011"],
+      "depends_on": [
+        "TP-DMX-AUDIT-BUNDLE-001",
+        "TP-DMX-AUDIT-ROUTER-002",
+        "TP-DMX-PAL-CLINK-RUNNER-003",
+        "TP-DMX-PR-STEWARD-FRESHNESS-005",
+        "TP-DMX-PR-FIXTURES-011"
+      ],
       "blocks": [],
       "executor": "claude-code-sonnet",
       "auditor": "claude-code-opus",

@@ -2,7 +2,7 @@
 
 **Date**: 2026-08-02 · **Author**: Claude (Fable 5) operator session, subagent fleet (opus/sonnet/haiku)
 **Baseline**: origin/main @ `87fbdda574` · orchestrator DB post-defrag (2026-08-01)
-**Scope**: all ~520 non-terminal work items across 24 real root trees (+6 TEST junk roots)
+**Scope**: all **539** non-terminal work items across 24 real root trees (+6 TEST junk roots)
 **Companion artifacts**: per-item tags written into task-orchestrator (`wave-*`, `rec-*`,
 `model-*`, `alt-*`, flags), enriched luna-ready summaries on thin packets,
 `routing-table.json` appendix (generated from DB after write-back).
@@ -25,19 +25,29 @@
 | `alt-<runner>` / `alt-model-<model>` | Backup runner + model |
 | `reasoning-<low/medium/high/xhigh>` | Reasoning-effort hint |
 | `luna-ready` | Packet meets the zero-inference bar; safe for gpt-5.6-luna |
-| `verify-close` | Evidence says work already done — verify then close, don't implement |
+| `verify-close-candidate` | Evidence *suggests* work may be done — verify then close; **tag alone never authorizes closure**; attach evidence refs |
 | `stale-candidate` | Superseded/phantom/duplicate — candidate for cancel/delete |
 | `needs-rescope` | Premise changed on main; do not implement as written |
 | `unblock-candidate` | All blockers terminal; blocked state is stale |
 | `operator-gate` | Human decision required; no rec-* tags on purpose (blocks auto-pickers) |
 | `cross-repo-parked` | Not actionable from dopemux-mvp |
 
+### Record class (export field `class`)
+
+| Class | Routing |
+|---|---|
+| `actionable_leaf` | Exactly one primary runner, primary model, backup runner, backup model |
+| `series_or_phase_container` | Routing N/A — container only |
+| `operator_gated_decision` | No executable runner/model recommendation |
+| `cross_repository_parked` | No local dispatch recommendation |
+| `stale_or_cancellation_candidate` | No dispatch (includes `needs-rescope` rewrite/cancel cohort) |
+
 Routing rubric (full text: session scratchpad `routing-rubric.md`, derived from
 `config/ai/model-routing.policy.yaml` + `claudedocs/beta-readiness-2026-05-29/04-IMPLEMENTER-ASSIGNMENTS.md`):
 red-lane/security/architecture/ADR/consensus → claude-code+opus-4-8 (alt codex+gpt-5-3);
 well-specified multi-file impl → codex+gpt-5-3-codex ↔ claude-code+sonnet-5;
 mechanical+deterministic-verify → codex+gpt-5-6-luna (alt haiku-4-5), `luna-ready`;
-docs → gemini-cli(+PAL chain per AGENTS §5) alt haiku; verify-close audits → haiku alt sonnet;
+docs → gemini-cli(+PAL chain per AGENTS §5) alt haiku; verify-close-candidate audits → haiku alt sonnet;
 PAL consensus gates → opus+reasoning-xhigh.
 **Schema constraint**: `dopetask-canonical-spec.json` is `additionalProperties:false` —
 routing recommendations live in orchestrator tags / packet markdown `## Model Routing`
@@ -53,7 +63,7 @@ sections / load-plan `executor_defaults`, never as new TP-JSON fields.
 - Merged: #1068, #961 (TO-CANON 000-004), #1174, #894, #885, #858, #879, #1000, #1164.
 - Closed unmerged: #1040, #1056 (merge-integrity ADR + runner) → those items `needs-rescope`.
 - Still stranded on custody branches: SVCFEAT packets (81354ee9), DCP-MCP-RO remainder (8f64113).
-- Beta-readiness spot checks: SEC-01 fixed on main; SEC-03 partial (weak dev-password
+- Beta-readiness spot checks: SEC-01 **partial** (env master key fixed; compose litellm still not loopback-bound → needs-rescope); SEC-03 partial (weak dev-password
   fallback remains); INSTALL-03 (compose profiles) still absent; CLI-05 exit-0 bug confirmed
   at `src/dopemux/cli.py:791-794`.
 - `.worktrees/gpt55-recon-chain` gone → GPT-5.5 recon chain notes stale.
@@ -64,7 +74,7 @@ sections / load-plan `executor_defaults`, never as new TP-JSON fields.
 ### Wave 0 — DB truth & hygiene (cheap; kills phantom work first)
 Junk TEST roots (6) → delete. PR#1127 duplicate tree `cb80e2fc` → cancel in favor of
 `1c691cd2`. Stale-blocked unblocks (COLDSTART-102, SVCFIN DASH-001, COCKPIT-FONTS 105/106).
-Verify-close sweep: CONPORT-Tier0-002 (PR #894), DCP-TOOLING TP-102 (PR #885),
+Verify-close-candidate sweep: CONPORT-Tier0-002 (PR #894), DCP-TOOLING TP-102 (PR #885),
 beta SEC-01, TO-CONPORT-REPAIR children vs PR #1164, FLEET-P1 already-exists items,
 dedup FLEET-P3-001 ↔ CONPORT-OPTIMAL-106.
 *Routing: haiku/luna verify tasks.*
@@ -78,7 +88,7 @@ COCKPIT-FONTS 105/106 cleanup.
 ### Wave 2 — Governance gates with maximum unblock-leverage
 EMBEDDED-AUDIT-RECONCILED chain (cd91e2eb — fresh, RICH, full metadata DAG; entry:
 AUDIT-BUNDLE-001 ∥ CI-TRIGGERS-008 ∥ PR-STEWARD-FRESHNESS-005). DCP-MCP-RO 0019→0026
-(0019 premise updated: attestation live). TO-CANON 005-007. RTE-TRUTH verify-close cohort +
+(0019 premise updated: attestation live). TO-CANON 005-007. RTE-TRUTH verify-close-candidate cohort +
 operator gates (MERGE-001, embedded-audit decision) — merging PR #1136 closes the largest
 single block of DB debt. TP-DCP-MCP-RO-0008 hardening.
 *Routing: opus/codex-high; verify tasks haiku.*
@@ -129,10 +139,12 @@ HARDENING. GPT-5.5 recon chain (stale notes; re-anchor first). LEANTIME S3/S4.
     failed on this) — needs operator seam decision.
 
 ## 5b. Notable premise flips found during write-back (already tagged on items)
-- Fixed on main → verify-close: SEC-01, SEC-04, SEC-05, INSTALL-04/05, DOCS-01,
-  TP-DCP-MCP-RO-0008 (all 22 hardening tests exist), TO-CONPORT-REPAIR ×4 (PR #1164),
-  CONPORT-Tier0-002 + CONPORT-203 premise (PR #894), DCP-TOOLING TP-102 (PR #885),
+- Fixed on main → verify-close-candidate (then re-checked): SEC-04, SEC-05, INSTALL-04/05, DOCS-01,
+  TP-DCP-MCP-RO-0008 (all 22 hardening tests exist), DCP-TOOLING TP-102 (PR #885),
   ADHD 868c057f (ConPort port mismatch already fixed), 19 RTE-TRUTH packets (on unmerged PR #1136).
+- Sampling demotions: SEC-01 → `needs-rescope` (loopback residual); CONPORT-OPTIMAL-002 verification
+  `unknown` (weak PR #894 map); TO-CONPORT supervisor leaf → `operator-gate` until receipt;
+  TO-CONPORT-REPAIR impl children may still be verify-close-candidate only with evidence refs.
 - Still live, confirmed: CLI-05 exit-0 bug, DOCS-04 leaked AI tool-call markup at
   `docs/02-how-to/install.md:1252-1255`, exa-retire (4/5 files still reference exa —
   earlier "likely done" hint was wrong), FLEET-P0-006 (3 of 4 kill-list dirs already deleted).
@@ -147,7 +159,7 @@ HARDENING. GPT-5.5 recon chain (stale notes; re-anchor first). LEANTIME S3/S4.
 - DXO-W0-DELETE would break CI as written: the "57 /tm:* commands" don't exist on main and
   the "6 dead hooks" are live dependencies (test fixture `tests/coldstart/test_l0_membership.py`,
   `adhd_engine/api/routes.py`, active CLAUDE.md) → needs-rescope.
-- Already shipped → verify-close: START-WAVE3 3C-5, COLDSTART GLOBALS-SYNC-106
+- Already shipped → verify-close-candidate (then re-checked): START-WAVE3 3C-5, COLDSTART GLOBALS-SYNC-106
   (`dopemux mcp sync-globals` exists), MCPINT DOC-GUIDE-002; DXO-W0-P6's core cutover may
   already be done (`.mcp.json` shows task-orchestrator on HTTP) — verify before running.
 - `link_conport_items` (MCPINT-FND-INSTRREPAIR-004) has no equivalent in the live 17-tool
@@ -155,20 +167,57 @@ HARDENING. GPT-5.5 recon chain (stale notes; re-anchor first). LEANTIME S3/S4.
 - DOPEMEM epic: real implementation lives at `services/working-memory-assistant/`, not
   `services/dope-memory/` (thin stdio adapter) — FILES paths corrected on items.
 
+## 5c. Sampling repairs (TP-REPLAN-BASELINE-1182-REPAIR-001)
+
+| ID | Item | Repair |
+|---|---|---|
+| `b807751c` | BETA-SEC-01 LiteLLM | Removed verify-close; `needs-rescope` + verification `partial_needs_rescope` (loopback bind residual) |
+| `aafc2630` | CONPORT-OPTIMAL-002 | Verification `unknown` until strong PR↔packet map (PR #894 alone insufficient) |
+| `207ec91a` | TO-CONPORT supervisor review | `operator-gate`; verification `unknown` until supervisor receipt |
+
+Luna-ready: every retained item must pass deterministic packet bar (files, steps, acceptance/target, verify, stop/invariants; no destructive; no operator decision; no premise uncertainty). Items failing the bar lose `luna-ready`.
+
 ## 5. Cross-tree corrections applied
 - FLEET-P3-001 duplicates CONPORT-OPTIMAL-106 → stale-candidate w/ dedup note.
 - SVCFIN ARCH-003 superseded by SVCFEAT DOPECODE-001.
 - MCPINT HRD-SERENAWRAP-006 formally gated on DOPECODE-001 (cross-tree edge).
 - ORCH-FOLLOWUP 014A-UPSTREAM → cross-repo-parked.
-- Prose-only dependencies materialized as BLOCKS edges (with `dep-provenance` notes) in
-  ADHD, SVCFEAT, CONPORT (load-plan DAG), and others.
+- Dependencies are **canonical in the task-orchestrator DB** (not re-embedded per item in
+  the routing export). Deterministic reconciliation: instance
+  `dopemux-mvp-2e346e2084bca021` exports **563** edges (`BLOCKS` 550 + `RELATES_TO` 13)
+  into `routing-table.json` → `dependency_evidence` (full edge manifest). Do **not** claim
+  dependency validation from the routing table alone without that manifest/count match.
 
-## 6. Validation
-- Staleness claims: PASS (verified via gh/git against origin/main @87fbdda574, 2026-08-02).
-- DB write-backs: see §7 appendix + per-agent reports (counts recorded post-run).
-- tp:validate on rewritten TP JSON files: NOT_RUN (no TP JSON files modified — orchestrator
-  summaries/tags/notes only, by design due to schema `additionalProperties:false`).
+## 6. Validation (repair TP-REPLAN-BASELINE-1182-REPAIR-001)
+
+- Exact population: **539** unique non-terminal IDs (duplicate_ids=0).
+- Class totals sum to 539 (`actionable_leaf` / `series_or_phase_container` /
+  `operator_gated_decision` / `cross_repository_parked` / `stale_or_cancellation_candidate`).
+- Routing invariants by class:
+  - actionable leaf → primary_runner + primary_model + backup_runner + backup_model (no concat)
+  - container / operator gate / cross-repo / stale → routing null + explicit `routing_na_reason`
+- Summary counts reproduce from record data (no double-count of malformed `rec-*` tokens).
+- `verify-close` removed; `verify-close-candidate` only, with `verification.evidence_refs` and
+  `closure_authorized_by_tag_alone=false`.
+- Luna-ready revalidated deterministically against repo packets; failing items demoted
+  (destructive deletes never luna-ready).
+- Dependency evidence: DB-exported edge manifest + count reconciliation in
+  `routing-table.json` (`dependency_evidence.edge_count=563`).
+- Staleness baseline: origin/main @87fbdda574 (replan write); soft-refresh vs current main
+  required before READY.
+- tp:validate on rewritten TP JSON files: NOT_RUN (export-only; schema
+  `additionalProperties:false` keeps routing out of TP JSON fields).
+
+## 6b. Six-file PR scope (do not split)
+
+| Slice | Files |
+|---|---|
+| Inherited operational truth | `docs/03-reference/orchestrator-integration/db-defragmentation-2026-08-01.md`, index link, `load_plan-TO-CANON.json`, `load_plan-DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED.json` |
+| Replan export | `MASTER-PLAN.md`, `routing-table.json` |
+
+Rollback: revert replan export commit for routing freeze; revert load-plan/defrag commit only if receipts must be unwound (live DB is out-of-band).
 
 ## 7. Appendix
-`routing-table.json` (same directory) — full per-item table (id, title, tree, wave,
-role, primary/backup routing, flags, quality score) generated from the DB after write-back.
+`routing-table.json` (same directory) — full per-item table after repair: id, title, tree,
+role, priority, wave, **class**, routing fields (runner/model split), flags, verification,
+plus top-level `population`, `dependency_evidence`, and reproducible `summary`.
