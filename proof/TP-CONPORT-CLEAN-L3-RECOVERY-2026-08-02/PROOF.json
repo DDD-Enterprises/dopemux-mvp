@@ -6,7 +6,7 @@
   "base_sha": "525ddb5fe5bd803e974c95ca6f27084d9938cb00",
   "recovery_source_commit": "a39ea663dbf568cb3edf3ae39d756ce86532d07f",
   "clean_transplant_commit": "80e3ed2f426e379c8edc1b86e2727fb416ed0229",
-  "head_sha": "e7aec967692d99ed1cb531f4eec9e46a4ade8049",
+  "head_sha": "74c15e81856fd7754cff5dbefa69ec617b275579",
   "custody_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1185",
   "pr_steward_policy_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1187",
   "supervisor_input": "AUTHORIZE_ONE_CLEAN_L3_REPAIR",
@@ -101,5 +101,14 @@
     "response_claimed": "UNKNOWN_PENDING_AUDIT",
     "proxy_reported": "UNKNOWN",
     "provider_attested": "UNKNOWN"
+  },
+  "branch_tip_at_authoring": "74c15e81856fd7754cff5dbefa69ec617b275579",
+  "proof_bundle_commit": "e7aec967692d99ed1cb531f4eec9e46a4ade8049",
+  "head_classification": {
+    "recovery_source": "a39ea663db",
+    "clean_transplant": "80e3ed2f42",
+    "code_tip_before_proof_meta": "6f4d6b11e3",
+    "proof_bundle": "e7aec96769",
+    "note": "Recovery code claims bind to series after transplant; proof metadata commits follow. Independent audit must pin exact tip SHA from git."
   }
 }
