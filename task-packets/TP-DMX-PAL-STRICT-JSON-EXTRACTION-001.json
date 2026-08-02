@@ -1,0 +1,74 @@
+{
+  "id": "TP-DMX-PAL-STRICT-JSON-EXTRACTION-001",
+  "project": "dopemux-mvp",
+  "target": "Fail-closed PAL clink audit JSON parse: bare object or exactly one full-output fence, explicit multi-fence rejection, 1 MiB UTF-8 size bound, adversarial tests, implementation proof.",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "pyproject.toml",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PORTFOLIO-RECOVERY-ROLLING",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-PAL-STRICT-JSON-EXTRACTION-REPAIR-001R",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/pal-clink-failclosed-json-parse",
+    "base_branch": "main",
+    "stacked_because": "Repair draft PR 1181 in place with normal fast-forward commits."
+  },
+  "commit": {
+    "message": "fix(audit): harden fenced JSON parsing bounds",
+    "allowlist": [
+      "scripts/audit/pal_clink_runner.py",
+      "tests/audit/test_pal_clink_runner.py",
+      "task-packets/TP-DMX-PAL-STRICT-JSON-EXTRACTION-001.json",
+      "task-packets/TP-DMX-PAL-STRICT-JSON-EXTRACTION-001.md",
+      "proof/TP-DMX-PAL-STRICT-JSON-EXTRACTION-001/**",
+      "proof/pr_merge/embedded-audit/pr-1181/**"
+    ],
+    "verify": [
+      "uv run --frozen --extra test pytest -q tests/audit/test_pal_clink_runner.py",
+      "uv run --frozen --extra test pytest -q tests/audit/",
+      "python -m compileall -q scripts/audit tests/audit",
+      "uv run ruff check scripts/audit/pal_clink_runner.py tests/audit/test_pal_clink_runner.py",
+      "python3 -m jsonschema -i task-packets/TP-DMX-PAL-STRICT-JSON-EXTRACTION-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(audit): fail-closed PAL clink JSON parse (fence-only salvage)",
+    "body": "Harden parse_audit_json_object with explicit one-fence line-structure validation and a 1 MiB UTF-8 input cap. Keep PR draft; no merge.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Replace regex fence salvage with explicit single-fence line-structure validation and MAX_AUDIT_OUTPUT_BYTES=1048576 size guard.",
+      "validation": [
+        "No first/last-brace extraction remains.",
+        "Multiple fence blocks raise JSONDecodeError matching interior fence before JSON decode.",
+        "Outputs larger than 1048576 UTF-8 bytes raise before strip/splitlines/json.loads."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Expand adversarial and boundary tests for bare object, plain/json fences, multi-fence, interior fence, prose, arrays/scalars, empty, malformed fences, exact size limit, oversized, pathological fence-like input, and nested tool content.",
+      "validation": [
+        "tests/audit/test_pal_clink_runner.py passes.",
+        "Rejected outputs map to status=error and cannot expose PASS or READY."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Commit canonical task packet and implementation proof package bound to content head C3; do not claim independent audit PASS.",
+      "validation": [
+        "Packet validates against dopetask-canonical-spec.json.",
+        "Implementation proof does not claim formal audit completion."
+      ]
+    }
+  ]
+}

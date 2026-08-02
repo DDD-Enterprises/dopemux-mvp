@@ -28,7 +28,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -419,12 +418,58 @@ def _audit_output_as_dict(output: PalClinkAuditOutput) -> dict[str, Any]:
     }
 
 
-# Full-output fence only: optional language tag, single fence block, whitespace outside.
-# Rejects prose wrappers, multiple fences, and brace-scraped substrings.
-_FULL_OUTPUT_FENCED_JSON_RE = re.compile(
-    r"\A\s*```(?:json)?[ \t]*\r?\n([\s\S]*?)\r?\n[ \t]*```\s*\Z",
-    re.IGNORECASE,
-)
+# Hard cap on model audit stdout / nested tool-content strings before any
+# strip, splitlines, or json.loads work. 1 MiB UTF-8 bytes.
+MAX_AUDIT_OUTPUT_BYTES = 1_048_576
+
+# Exact line-structure fence openers/closer only. No language-tag variants,
+# no trailing whitespace on fence lines, no brace scraping, no multi-fence.
+_FENCE_OPENERS = frozenset({"```", "```json"})
+_FENCE_CLOSER = "```"
+
+
+def _extract_single_fence_interior(stripped: str, original: str) -> str:
+    """Return interior of exactly one full-output fence, or raise JSONDecodeError.
+
+    Deterministic line structure (no regex, no brace scan):
+    - first line must be exactly ``` or ```json
+    - final line must be exactly ```
+    - no interior line may itself be an exact fence opener or closer
+    """
+    lines = stripped.splitlines()
+    if len(lines) < 2:
+        raise json.JSONDecodeError(
+            "audit output fence is incomplete",
+            original,
+            0,
+        )
+    first = lines[0]
+    last = lines[-1]
+    if first not in _FENCE_OPENERS:
+        raise json.JSONDecodeError(
+            "audit output fence opener must be exactly ``` or ```json",
+            original,
+            0,
+        )
+    if last != _FENCE_CLOSER:
+        raise json.JSONDecodeError(
+            "audit output fence closer must be exactly ```",
+            original,
+            0,
+        )
+    interior_lines = lines[1:-1]
+    for line in interior_lines:
+        if line in _FENCE_OPENERS or line == _FENCE_CLOSER:
+            raise json.JSONDecodeError(
+                "audit output contains interior fence line; "
+                "only one full-output fence is allowed",
+                original,
+                0,
+            )
+    candidate = "\n".join(interior_lines).strip()
+    if not candidate:
+        raise json.JSONDecodeError("fenced audit output is empty", original, 0)
+    return candidate
 
 
 def parse_audit_json_object(text: str) -> dict[str, Any]:
@@ -434,30 +479,32 @@ def parse_audit_json_object(text: str) -> dict[str, Any]:
     - a direct full-output JSON object (whitespace outside allowed)
     - exactly one full-output fenced JSON object (whitespace outside the fence only)
 
-    Rejects prose wrappers, first/last-brace scraping, multiple fence candidates,
+    Rejects prose wrappers, first/last-brace scraping, multiple fence blocks
+    (explicit structural check), interior fence lines, oversized output,
     arrays, scalars, malformed JSON, and ambiguous nested non-object content.
     """
     if not isinstance(text, str):
         raise json.JSONDecodeError("audit output must be a string", "", 0)
 
+    # Size bound before strip, splitlines, or json.loads.
+    byte_len = len(text.encode("utf-8"))
+    if byte_len > MAX_AUDIT_OUTPUT_BYTES:
+        raise json.JSONDecodeError(
+            f"audit output exceeds {MAX_AUDIT_OUTPUT_BYTES} UTF-8 bytes "
+            f"(got {byte_len})",
+            "",
+            0,
+        )
+
     stripped = text.strip()
     if not stripped:
         raise json.JSONDecodeError("audit output is empty", text, 0)
 
-    candidate = stripped
-    fence_match = _FULL_OUTPUT_FENCED_JSON_RE.fullmatch(text)
-    if fence_match is not None:
-        candidate = fence_match.group(1).strip()
-        if not candidate:
-            raise json.JSONDecodeError("fenced audit output is empty", text, 0)
-    elif stripped.startswith("```"):
-        # Fence-like output that is not a single full-output fence — reject.
-        raise json.JSONDecodeError(
-            "audit output fence is ambiguous or not a single full-output block",
-            text,
-            0,
-        )
-    elif not stripped.startswith("{"):
+    if stripped.startswith("```"):
+        candidate = _extract_single_fence_interior(stripped, text)
+    elif stripped.startswith("{"):
+        candidate = stripped
+    else:
         # No bare object and no accepted fence — reject prose/brace-scraping paths.
         raise json.JSONDecodeError(
             "audit output must be a bare JSON object or a single full-output fenced object",

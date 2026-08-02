@@ -1,2 +1,0 @@
-scripts/audit/pal_clink_runner.py
-tests/audit/test_pal_clink_runner.py

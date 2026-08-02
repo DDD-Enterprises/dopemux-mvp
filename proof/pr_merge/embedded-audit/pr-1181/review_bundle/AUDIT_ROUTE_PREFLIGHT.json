@@ -1,1 +1,0 @@
-{"preferred":{"tool":"agy","model":"gemini-3.1-pro-high","status":"UNKNOWN"},"used":{"tool":"claude-code-cli","model":"sonnet","status":"AVAILABLE"},"independence":"Grok xAI implemented; Claude Code CLI sonnet audited (different-family)"}

@@ -11,6 +11,7 @@ import pytest
 
 from scripts.audit.auditor_router import _CLINK_CONF_DIR, load_route_from_clink_config
 from scripts.audit.pal_clink_runner import (
+    MAX_AUDIT_OUTPUT_BYTES,
     PalClinkAuditOutput,
     build_invocation,
     parse_audit_json_object,
@@ -659,30 +660,45 @@ class TestParseAuditJsonObject:
         assert parse_audit_json_object(json.dumps(obj)) == obj
         assert parse_audit_json_object(f"  \n{json.dumps(obj)}\n  ") == obj
 
-    def test_single_full_output_fenced_object(self) -> None:
+    def test_single_full_output_plain_fence(self) -> None:
+        obj = {"verdict": "PASS_WITH_RISKS", "findings": [], "risks": ["r1"]}
+        body = json.dumps(obj)
+        assert parse_audit_json_object(f"```\n{body}\n```") == obj
+
+    def test_single_full_output_json_fence(self) -> None:
         obj = {"verdict": "PASS_WITH_RISKS", "findings": [], "risks": ["r1"]}
         body = json.dumps(obj)
         assert parse_audit_json_object(f"```json\n{body}\n```") == obj
-        assert parse_audit_json_object(f"```\n{body}\n```") == obj
         assert parse_audit_json_object(f"  \n```json\n{body}\n```\n  ") == obj
 
-    def test_rejects_prose_wrapper(self) -> None:
+    def test_rejects_prose_prefix_and_suffix(self) -> None:
         body = json.dumps({"verdict": "PASS"})
         with pytest.raises(json.JSONDecodeError):
             parse_audit_json_object(f"Sure! Here you go:\n{body}\nHope that helps!")
         with pytest.raises(json.JSONDecodeError):
             parse_audit_json_object(f"```json\n{body}\n```\nThanks!")
+        with pytest.raises(json.JSONDecodeError):
+            parse_audit_json_object(f"Here is the result:\n```json\n{body}\n```")
 
     def test_rejects_brace_scraping(self) -> None:
         body = json.dumps({"verdict": "PASS"})
         with pytest.raises(json.JSONDecodeError):
             parse_audit_json_object(f"prefix {body} suffix")
 
-    def test_rejects_multiple_fence_candidates(self) -> None:
+    def test_rejects_two_fenced_objects_explicitly(self) -> None:
         a = json.dumps({"verdict": "PASS"})
         b = json.dumps({"verdict": "FAIL"})
-        with pytest.raises(json.JSONDecodeError):
-            parse_audit_json_object(f"```json\n{a}\n```\n```json\n{b}\n```")
+        text = f"```json\n{a}\n```\n```json\n{b}\n```"
+        with pytest.raises(json.JSONDecodeError, match="interior fence"):
+            parse_audit_json_object(text)
+
+    def test_rejects_interior_exact_fence_line(self) -> None:
+        body = json.dumps({"verdict": "PASS"})
+        # Interior exact closer/opener line must fail structurally before JSON.
+        with pytest.raises(json.JSONDecodeError, match="interior fence"):
+            parse_audit_json_object(f"```json\n{body}\n```\n{body}\n```")
+        with pytest.raises(json.JSONDecodeError, match="interior fence"):
+            parse_audit_json_object(f"```\n{body}\n```json\n{body}\n```")
 
     def test_rejects_arrays_and_scalars(self) -> None:
         with pytest.raises(json.JSONDecodeError):
@@ -700,6 +716,30 @@ class TestParseAuditJsonObject:
         with pytest.raises(json.JSONDecodeError):
             parse_audit_json_object("```json\n{not json\n```")
 
+    def test_rejects_empty_output(self) -> None:
+        with pytest.raises(json.JSONDecodeError):
+            parse_audit_json_object("")
+        with pytest.raises(json.JSONDecodeError):
+            parse_audit_json_object("   \n\t  ")
+        with pytest.raises(json.JSONDecodeError):
+            parse_audit_json_object("```json\n\n```")
+
+    def test_rejects_malformed_fences(self) -> None:
+        body = json.dumps({"verdict": "PASS"})
+        with pytest.raises(json.JSONDecodeError):
+            parse_audit_json_object(f"```JSON\n{body}\n```")  # wrong case
+        with pytest.raises(json.JSONDecodeError):
+            parse_audit_json_object(f"```json \n{body}\n```")  # trailing space on opener
+        with pytest.raises(json.JSONDecodeError):
+            # Closer line is not exact ``` (trailing spaces preserved by non-ws tail).
+            parse_audit_json_object(f"```json\n{body}\n```  \n.")
+        with pytest.raises(json.JSONDecodeError):
+            parse_audit_json_object(f"```python\n{body}\n```")
+        with pytest.raises(json.JSONDecodeError):
+            parse_audit_json_object(f"```json\n{body}")  # missing closer
+        with pytest.raises(json.JSONDecodeError):
+            parse_audit_json_object("```")  # incomplete
+
     def test_rejects_ambiguous_nested_content_outside_object(self) -> None:
         # Nested object inside prose must not be brace-scraped into a verdict.
         nested = '{"verdict":"PASS","findings":[]}'
@@ -707,6 +747,73 @@ class TestParseAuditJsonObject:
             parse_audit_json_object(
                 f'I reviewed the change. Result follows: {nested} — approved.'
             )
+
+    def test_accepts_exactly_at_byte_limit(self) -> None:
+        prefix = '{"pad":"'
+        suffix = '"}'
+        pad_len = MAX_AUDIT_OUTPUT_BYTES - len(prefix.encode("utf-8")) - len(
+            suffix.encode("utf-8")
+        )
+        assert pad_len > 0
+        text = prefix + ("x" * pad_len) + suffix
+        assert len(text.encode("utf-8")) == MAX_AUDIT_OUTPUT_BYTES
+        assert parse_audit_json_object(text) == {"pad": "x" * pad_len}
+
+    def test_rejects_one_byte_over_limit(self) -> None:
+        prefix = '{"pad":"'
+        suffix = '"}'
+        pad_len = MAX_AUDIT_OUTPUT_BYTES - len(prefix.encode("utf-8")) - len(
+            suffix.encode("utf-8")
+        )
+        text = prefix + ("x" * (pad_len + 1)) + suffix
+        assert len(text.encode("utf-8")) == MAX_AUDIT_OUTPUT_BYTES + 1
+        with pytest.raises(json.JSONDecodeError, match="exceeds"):
+            parse_audit_json_object(text)
+
+    def test_rejects_large_fence_like_pathological_input(self) -> None:
+        # Many fence-like lines under the byte cap must still fail structure
+        # (interior exact fences), never become a dict.
+        chunk = "```\n"
+        # Build under limit: open + many interior fence lines + close.
+        interior_count = 5000
+        text = "```json\n" + (chunk * interior_count) + '{"v":1}\n```'
+        assert len(text.encode("utf-8")) <= MAX_AUDIT_OUTPUT_BYTES
+        with pytest.raises(json.JSONDecodeError, match="interior fence"):
+            parse_audit_json_object(text)
+
+    def test_nested_tool_content_follows_same_strict_policy(self) -> None:
+        good = json.dumps(
+            {
+                "status": "success",
+                "verdict": "PASS",
+                "findings": [],
+                "risks": [],
+                **_PASS_EVIDENCE,
+            }
+        )
+        multi = f"```json\n{good}\n```\n```json\n{good}\n```"
+        outer = json.dumps({"status": "success", "content": multi})
+        # Outer envelope parses as bare object; unwrap re-parses content strictly.
+        payload = _verdict_payload_from_output(
+            PalClinkAuditOutput(
+                cli_name="claude-audit",
+                exit_code=0,
+                stdout=outer,
+                stderr="",
+                timed_out=False,
+                error=None,
+                duration_seconds=0.01,
+            )
+        )
+        # Content multi-fence rejected: outer kept without unwrapped verdict.
+        assert payload.get("status") == "success"
+        assert "verdict" not in payload
+        embedded = normalize_pal_clink_audit_output(
+            payload,
+            route=_SAFE_ROUTE,
+            report_path="proof/test/AUDITOR_REPORT.md",
+        )
+        assert embedded["status"] not in {"PASS", "PASS_WITH_RISKS", "READY"}
 
 
 class TestVerdictPayloadFailClosed:

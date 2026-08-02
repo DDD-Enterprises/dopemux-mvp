@@ -1,0 +1,46 @@
+{
+  "packet_id": "TP-DMX-PAL-STRICT-JSON-EXTRACTION-001",
+  "repair_packet_id": "TP-DMX-PAL-STRICT-JSON-EXTRACTION-REPAIR-001R",
+  "generated_at": "2026-08-02T22:19:23Z",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1181,
+  "branch": "fix/pal-clink-failclosed-json-parse",
+  "base_main_sha": "87fbdda574bd060c2b2246bcf838323ba075da28",
+  "before_head_c2": "9283346993ba2c00c26e39e06eea4f7cbde5f497",
+  "after_head_c3": "PENDING_COMMIT",
+  "implementer": {
+    "runner": "grok-build",
+    "model": "grok-4.5",
+    "family": "xai",
+    "tp_preferred_was": "codex",
+    "codex_selector": "UNKNOWN_NOT_INVENTED"
+  },
+  "before_status": {
+    "parse_policy": "regex fullmatch single fence; multi-fence rejection incidental via malformed JSON",
+    "size_bound": "none",
+    "audit": "PASS_WITH_RISKS with OPEN F-001 multi-fence structural, F-002 size bound"
+  },
+  "after_status": {
+    "parse_policy": "explicit line-structure one-fence; interior exact fence lines rejected",
+    "size_bound": "MAX_AUDIT_OUTPUT_BYTES=1048576 before strip/splitlines/json.loads",
+    "stale_pr1181_audit_removed": true,
+    "independent_audit": "NOT_YET_RUN"
+  },
+  "changed_paths_intended": [
+    "scripts/audit/pal_clink_runner.py",
+    "tests/audit/test_pal_clink_runner.py",
+    "task-packets/TP-DMX-PAL-STRICT-JSON-EXTRACTION-001.json",
+    "task-packets/TP-DMX-PAL-STRICT-JSON-EXTRACTION-001.md",
+    "proof/TP-DMX-PAL-STRICT-JSON-EXTRACTION-001/**",
+    "proof/pr_merge/embedded-audit/pr-1181/** (deleted in C3; recreated only in C4)"
+  ],
+  "no_mutation_claims": [
+    "PR remains draft",
+    "No mark-ready",
+    "No merge",
+    "No force push",
+    "No closure of other PRs"
+  ],
+  "formal_audit_claimed": false,
+  "merge_ready_claimed": false
+}
