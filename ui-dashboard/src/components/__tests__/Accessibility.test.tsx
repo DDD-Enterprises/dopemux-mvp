@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
 // @ts-nocheck
 import { expect, test } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import React from 'react';
 import fs from 'fs';
 import path from 'path';
 import PredictionPanel from '../PredictionPanel';
+import TaskSequencer from '../TaskSequencer';
 
 const componentsDir = path.resolve(__dirname, '..');
 
@@ -284,4 +285,61 @@ test('PredictionPanel.tsx has TrendIcon based on load and prediction', () => {
   expect(content).toContain('const TrendIcon = isTrendingUp ? TrendingUp : TrendingDown;');
   expect(content).toContain('aria-hidden="true"');
   expect(content).toContain('TrendingDown');
+});
+
+test('TaskSequencer pending Start button renders tooltip on hover and keyboard focus', async () => {
+  const cognitiveState = {
+    energy: 80,
+    attention: 70,
+    load: 40,
+    status: 'optimal' as const,
+    recommendation: 'Stay focused.',
+  };
+
+  const getPendingListStartButton = () => {
+    // List pending/non-current Start controls use "Start task: {title}" and live on
+    // list items without aria-current="step". Exclude the primary ritual Start control
+    // (tooltip "Start Ritual") which shares the same accessible-name pattern.
+    const candidates = screen.getAllByRole('button', { name: /^Start task: / });
+    const pending = candidates.find((btn) => {
+      const listItem = btn.closest('li');
+      return Boolean(listItem) && listItem.getAttribute('aria-current') !== 'step';
+    });
+    expect(pending).toBeTruthy();
+    return pending as HTMLElement;
+  };
+
+  const titleFromStartButton = (button: HTMLElement) => {
+    const accessibleName = button.getAttribute('aria-label') ?? '';
+    const taskTitle = accessibleName.replace(/^Start task:\s*/, '');
+    expect(taskTitle.length).toBeGreaterThan(0);
+    return taskTitle;
+  };
+
+  render(<TaskSequencer cognitiveState={cognitiveState} />);
+
+  const startButton = getPendingListStartButton();
+  const taskTitle = titleFromStartButton(startButton);
+  const expectedTooltip = `Start task and switch active focus to: ${taskTitle}`;
+
+  // Keyboard focus path first: MUI Tooltip opens only on focus-visible.
+  // Use real .focus() so jsdom :focus-visible matches; fireEvent.focus alone may not.
+  fireEvent.keyDown(document, { key: 'Tab' });
+  startButton.focus();
+  fireEvent.focus(startButton);
+  expect(await screen.findByRole('tooltip', {}, { timeout: 2000 })).toHaveTextContent(expectedTooltip);
+
+  startButton.blur();
+  fireEvent.blur(startButton);
+  // Remount for a clean hover path (pointer modality must not poison keyboard assert above).
+  cleanup();
+  render(<TaskSequencer cognitiveState={cognitiveState} />);
+
+  const hoverStartButton = getPendingListStartButton();
+  const hoverTitle = titleFromStartButton(hoverStartButton);
+  const hoverExpected = `Start task and switch active focus to: ${hoverTitle}`;
+
+  // Hover path — MUI Tooltip portals title text after enter delay.
+  fireEvent.mouseOver(hoverStartButton);
+  expect(await screen.findByRole('tooltip', {}, { timeout: 2000 })).toHaveTextContent(hoverExpected);
 });
