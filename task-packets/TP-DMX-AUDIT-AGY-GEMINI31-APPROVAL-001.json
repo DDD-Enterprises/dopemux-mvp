@@ -14,7 +14,7 @@
     "operator_instruction": "Add Gemini 3.1 Pro through AGY to the approved embedded-auditor model list.",
     "canonical_schema": "schemas/proof/embedded_audit.schema.json",
     "canonical_policy": "docs/ops/embedded-audit.md",
-    "vendor_model_id": "gemini-3.1-pro-preview",
+    "vendor_model_id": "gemini-3.1-pro-high",
     "vendor_status": "preview"
   },
   "scope": {
@@ -86,5 +86,6 @@
     "Diff escapes the allowlist.",
     "Independent audit is missing, stale, or not bound to the final code head.",
     "PR Steward is not READY."
-  ]
+  ],
+  "repair_packet": "TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001"
 }

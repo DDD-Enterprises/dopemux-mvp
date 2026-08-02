@@ -21,7 +21,7 @@ Governance, process, schema, prompt, proof, and authority-boundary packets requi
 
 Tier 1 direct CLI routes:
 
-1. AGY / Google Antigravity with either Sonnet or the exact model `gemini-3.1-pro-preview`, if local help or model-list evidence proves both invocation and model selection and the captured run proves no fallback.
+1. AGY / Google Antigravity with either Sonnet or the exact model `gemini-3.1-pro-high`, if local help or model-list evidence proves both invocation and model selection and the captured run proves no fallback.
 2. Claude Code CLI with Sonnet, if AGY is unavailable, unclear, or capacity-limited.
 3. Claude Code CLI with Opus, if Sonnet lacks depth or capacity.
 4. Gemini CLI for broad-context fallback.
@@ -37,8 +37,8 @@ Tier 3 explicit fallback:
 Do not hardcode flags. Do not infer a model from branding. If model or invocation cannot be proven, use the next route or record `SKIPPED`.
 
 For AGY Gemini 3.1 audits, the proof must record `auditor_tool: "agy"`,
-`auditor_model: "gemini-3.1-pro-preview"`, and the exact `agy --model
-gemini-3.1-pro-preview --print ...` invocation. The generic `gemini` model value
+`auditor_model: "gemini-3.1-pro-high"`, and the exact `agy --model
+gemini-3.1-pro-high --print ...` invocation. The generic `gemini` model value
 remains backward-compatible but is not a substitute for exact-model evidence in
 new post-approval proofs.
 
@@ -141,7 +141,7 @@ Procedure:
    with `auditor_model: "opus"` or `"sonnet"`, a non-empty `invocation`, and a
    `report_path` matching `^proof/<PACKET_ID>/AUDITOR_REPORT.md$`. For a
    post-approval AGY Gemini 3.1 route use `auditor_tool: "agy"` and
-   `auditor_model: "gemini-3.1-pro-preview"`; record the exact explicit-model
+   `auditor_model: "gemini-3.1-pro-high"`; record the exact explicit-model
    invocation and evidence that the CLI did not fall back.
 3. **Include the top-level fields the PR Steward gate reads**
    (`src/dopemux_pr_merge_specialist/steward_gate.py`): `head_sha` and

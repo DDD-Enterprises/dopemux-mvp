@@ -1,0 +1,4 @@
+{
+  "formal_auditor": {"tool": "agy", "version": "1.1.9", "requested_selector": "gemini-3.1-pro-high", "observed_selector": "gemini-3.1-pro-high"},
+  "conclusion": {"exact_agy_selector": "gemini-3.1-pro-high", "selector_proven": true, "provider_attested": false}
+}

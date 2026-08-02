@@ -1,0 +1,18 @@
+{
+  "id": "TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001",
+  "project": "dopemux-mvp",
+  "objective": "Repair PR #1165 to bind the exact AGY Gemini model authority.",
+  "pr_number": 1165,
+  "allowed_files": [
+    "task-packets/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001.json",
+    "task-packets/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001.md",
+    "task-packets/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001.json",
+    "schemas/proof/embedded_audit.schema.json",
+    "docs/ops/embedded-audit.md",
+    "docs/ops/embedded-audit-proof.md",
+    "tests/audit/test_agy_gemini31_model.py",
+    "proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001/implementation-notes.md",
+    "proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001/**",
+    "proof/pr_merge/embedded-audit/pr-1165/**"
+  ]
+}

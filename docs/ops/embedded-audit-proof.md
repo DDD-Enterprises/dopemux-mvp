@@ -49,11 +49,11 @@ series stop condition for `DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED`.
 
 **`auditor_tool`** — `agy`, `antigravity`, `claude-code-cli`, `copilot-cli`, `gemini-cli`, `pal-mcp-clink`, `none`
 
-**`auditor_model`** — `sonnet`, `claude-sonnet-4.6`, `opus`, `gemini`, `gemini-3.1-pro-preview`, `unknown`
+**`auditor_model`** — `sonnet`, `claude-sonnet-4.6`, `opus`, `gemini`, `gemini-3.1-pro-high`, `unknown`
 
-`gemini-3.1-pro-preview` is the exact approved model identifier for an AGY audit.
+`gemini-3.1-pro-high` is the exact approved model identifier for an AGY audit.
 Use it only when the invocation proves explicit selection, for example
-`agy --model gemini-3.1-pro-preview --print ...`, and the captured AGY evidence
+`agy --model gemini-3.1-pro-high --print ...`, and the captured AGY evidence
 shows no fallback to another model. The generic `gemini` value remains valid for
 backward compatibility and for bootstrap audits performed before this enum change
 is present on the trusted branch; new post-merge proofs should prefer the exact
@@ -125,8 +125,8 @@ identifier.
   "required": true,
   "status": "PASS_WITH_RISKS",
   "auditor_tool": "agy",
-  "auditor_model": "gemini-3.1-pro-preview",
-  "invocation": "agy --model gemini-3.1-pro-preview --print '<bounded read-only audit prompt>'",
+  "auditor_model": "gemini-3.1-pro-high",
+  "invocation": "agy --model gemini-3.1-pro-high --print '<bounded read-only audit prompt>'",
   "exit_code": 0,
   "report_path": "proof/TP-EXAMPLE-AGY/AUDITOR_REPORT.md",
   "findings": [],
