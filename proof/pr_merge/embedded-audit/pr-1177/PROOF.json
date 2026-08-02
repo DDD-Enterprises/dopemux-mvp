@@ -1,0 +1,78 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1177,
+  "commit_sha": "5aa8b86ae5a008e3bddf4b98111c5c9afccaace4",
+  "head_sha": "5aa8b86ae5a008e3bddf4b98111c5c9afccaace4",
+  "packet_id": "TP-DMX-PORTFOLIO-TOOLTIP-CLOSURE-SALVAGE-002",
+  "generated_at": "2026-08-02T21:58:10Z",
+  "note": "Audited content head is F3. F4 is proof-only successor; PR topology head after push equals F4 while embedded_audit head_sha remains F3.",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude -p --model sonnet --tools \"\" --strict-mcp-config --output-format text < CLAUDE_AUDIT_PROMPT.txt; implementer was grok-4.5-xai (different family); preferred AGY status UNKNOWN (not re-probed for this tranche)",
+    "exit_code": 0,
+    "report_path": "proof/pr_merge/embedded-audit/pr-1177/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-001",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Rendered hover coverage added",
+        "body": "New test fires mouseOver on a freshly remounted pending Start button and asserts screen.findByRole('tooltip') contains the expected 'Start task and switch active focus to: <title>' text, closing the previously accepted LOW risk that tests only checked source text."
+      },
+      {
+        "id": "F-002",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Rendered keyboard-focus coverage added",
+        "body": "Test also calls button.focus() plus fireEvent.focus after a Tab keydown (needed for jsdom :focus-visible matching, since MUI Tooltip only opens on focus-visible) and asserts the same tooltip text appears, giving both interaction modalities real DOM coverage."
+      },
+      {
+        "id": "F-003",
+        "severity": "LOW",
+        "status": "ACCEPTED_RISK",
+        "title": "Weakened source-text regex retained as secondary check",
+        "body": "The pre-existing string-match assertion (line ~175) was kept but loosened to a regex tolerant of whitespace around the Tooltip JSX; this is now redundant with the rendered test but is not harmful \u2014 it still fails if the Tooltip is removed or its title format changes structurally."
+      },
+      {
+        "id": "F-004",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "Accessible-name disambiguation relies on DOM structure, not aria semantics",
+        "body": "getPendingListStartButton() distinguishes the pending list Start button from the ritual 'Start Ritual' control via .closest('li') and aria-current!=='step' rather than a more robust selector (e.g., role='listitem' scoping or a dedicated test id). This works given current markup but is coupled to TaskSequencer's list structure and could silently break (find() returning undefined, caught by the explicit expect(pending).toBeTruthy()) if the DOM nesting changes materially in future refactors."
+      },
+      {
+        "id": "F-005",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Lint failure is a pre-existing environment gap, not introduced by F3",
+        "body": "ESLint fails on both candidate and main baseline due to missing eslint.config.* (ESLint 10 flat-config requirement), unrelated to this diff's content."
+      }
+    ],
+    "fixes_applied": [
+      "F3: removed stale F2 embedded-audit attestation from PR branch",
+      "F3: added rendered testing-library tooltip coverage (hover + keyboard focus) adapted from PR #1149",
+      "TaskSequencer.tsx left unchanged vs F1 tooltip content"
+    ],
+    "remaining_risks": [
+      "Test relies on DOM traversal (closest('li'), aria-current attribute) to disambiguate the pending Start button from the ritual Start button rather than a purpose-built test hook, which is a maintainability/fragility risk if list markup changes.",
+      "Lint tooling remains broken on both branches (pre-existing gap), so no lint signal is available for this or any other PR until eslint.config.* is added."
+    ],
+    "skip_reason": null
+  },
+  "route_preflight": {
+    "preferred": {
+      "tool": "agy",
+      "model": "gemini-3.1-pro-high",
+      "status": "UNKNOWN"
+    },
+    "used": {
+      "tool": "claude-code-cli",
+      "model": "sonnet",
+      "status": "AVAILABLE"
+    },
+    "independence": "Grok xAI implemented F3; Claude Code CLI sonnet audits F3 (different-family)"
+  }
+}
