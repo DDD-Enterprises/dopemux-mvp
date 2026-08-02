@@ -81,9 +81,12 @@ fi
 # --- start required children ----------------------------------------------
 log "Starting ConPort required children (info, rest:3004, mcp:3005)..."
 
-python info_server.py &
+# Pin ports explicitly. Container env may set MCP_SERVER_PORT=3005 for the
+# MCP service; info_server derives INFO_PORT=MCP_SERVER_PORT+1000, so leaving
+# the env inherited would bind info on 4005 while compose publishes 4004.
+MCP_SERVER_PORT=3004 python info_server.py &
 INFO_PID=$!
-log "info_server.py pid=${INFO_PID}"
+log "info_server.py pid=${INFO_PID} (info on 4004)"
 
 MCP_SERVER_PORT=3004 python enhanced_server.py &
 REST_PID=$!
