@@ -1,0 +1,21 @@
+{
+  "captured_at": "2026-08-02T22:57:43Z",
+  "content_head": "e9bb4481957c42b41db45080a995ca81f2406c8e",
+  "preferred": {
+    "tool": "agy",
+    "model": "gemini-3.1-pro-high",
+    "status": "QUOTA_EXCEEDED"
+  },
+  "fallback_claude": {
+    "tool": "claude-code-cli",
+    "model": "sonnet",
+    "status": "SESSION_LIMIT"
+  },
+  "fallback_gemini_cli": {
+    "tool": "gemini-cli",
+    "status": "INELIGIBLE_TIER"
+  },
+  "independence": "UNKNOWN",
+  "verdict": "AUDIT_NOT_RUN",
+  "blocks_readiness": true
+}
