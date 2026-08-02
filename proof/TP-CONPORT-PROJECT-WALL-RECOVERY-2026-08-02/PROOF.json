@@ -4,11 +4,11 @@
   "branch": "fix/conport-project-wall-recovery-2026-08-02",
   "base": "main",
   "recovery_content_head": "a39ea663dbf568cb3edf3ae39d756ce86532d07f",
-  "head_sha": "a4a0e57e08772cafc3c7e9ce64854011527d4de9",
+  "head_sha": "a39ea663dbf568cb3edf3ae39d756ce86532d07f",
   "head_classification": {
     "recovery_code_head": "a39ea663dbf568cb3edf3ae39d756ce86532d07f",
-    "proof_successor_head": "a4a0e57e08772cafc3c7e9ce64854011527d4de9",
-    "note": "Proof/packet metadata only after recovery content head; do not rebind recovery code claims to this SHA alone."
+    "proof_bundle_commit": "a4a0e57e08772cafc3c7e9ce64854011527d4de9",
+    "note": "Recovery code claims bind only to a39ea663db. Proof/packet metadata commits follow; do not silently rebind recovery claims to proof SHAs."
   },
   "draft_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1185",
   "agent": "grok-4.5",
@@ -212,5 +212,5 @@
     "provider_attested": "UNKNOWN"
   },
   "evidence_dir": "proof/TP-CONPORT-PROJECT-WALL-RECOVERY-2026-08-02/evidence",
-  "proof_successor_head": "a4a0e57e08772cafc3c7e9ce64854011527d4de9"
+  "proof_bundle_commit": "a4a0e57e08772cafc3c7e9ce64854011527d4de9"
 }

@@ -1,0 +1,9 @@
+restored_decisions=295
+restored_progress=209
+restored_rels=219
+restored_ledger=742
+restored_import_dec=294
+min_created=2025-10-05 12:50:55+00
+sample=Dopemux Context Deep Dive documentation completed - three-layer architecture val
+parent_of=109
+tables=15
