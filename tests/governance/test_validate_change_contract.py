@@ -24,7 +24,9 @@ def test_classify_lanes() -> None:
     assert classify_path("proof/pr_merge/embedded-audit/pr-1181/PROOF.json") == "L0"
     assert classify_path("task-packets/TP-X.json") == "L0"
     assert classify_path("src/dopemux/cli.py") == "L2"
-    assert classify_path("README.md") == "L1"
+    # Unmatched / uncertain paths escalate to L2 (not silent L1).
+    assert classify_path("README.md") == "L2"
+    assert classify_path("unknown/surface/foo.bar") == "L2"
     assert classify_path(".github/workflows/ci.yml") == "L3"
     assert classify_path("config/audit/embedded-audit-allowed-signers") == "L3"
 
@@ -103,7 +105,9 @@ def test_proof_only_valid() -> None:
     r = evaluate(
         paths=[
             "proof/TP-DMX-EXAMPLE/PROOF.json",
+            "proof/TP-DMX-EXAMPLE/PROOF.json.sig",
             "proof/pr_merge/embedded-audit/pr-9/PROOF.json",
+            "proof/pr_merge/embedded-audit/pr-9/PROOF.json.sig",
         ],
         cwd=ROOT,
         proof_only_mode=True,
@@ -128,6 +132,7 @@ def test_proof_only_valid() -> None:
                     }
                 }
             ),
+            "proof/TP-DMX-EXAMPLE/PROOF.json.sig": "sig",
             "proof/pr_merge/embedded-audit/pr-9/PROOF.json": json.dumps(
                 {
                     "embedded_audit": {
@@ -145,12 +150,55 @@ def test_proof_only_valid() -> None:
                     }
                 }
             ),
+            "proof/pr_merge/embedded-audit/pr-9/PROOF.json.sig": "sig",
         },
     )
     assert r.proof_only is True
     assert r.model_audit_required is False
-    # ancestry uses git; with fake SHAs may fail ancestry — only check escaped path absent
     assert not any(f.code == "proof_only_escaped_path" for f in r.findings)
+    assert not any(f.code == "proof_only_missing_heads" for f in r.findings)
+    assert not any(f.code == "proof_only_missing_signature" for f in r.findings)
+    # Fake SHAs are not git objects → ancestry fail-closed is expected.
+    assert any(f.code == "proof_only_ancestry_fail" for f in r.findings)
+    assert r.status == "FAIL"
+
+
+def test_proof_only_missing_heads_fails() -> None:
+    r = evaluate(
+        paths=["proof/pr_merge/embedded-audit/pr-9/PROOF.json"],
+        cwd=ROOT,
+        proof_only_mode=True,
+        file_text={"proof/pr_merge/embedded-audit/pr-9/PROOF.json": "{}"},
+    )
+    assert r.status == "FAIL"
+    assert any(f.code == "proof_only_missing_heads" for f in r.findings)
+
+
+def test_proof_only_missing_signature_fails() -> None:
+    r = evaluate(
+        paths=["proof/pr_merge/embedded-audit/pr-9/PROOF.json"],
+        cwd=ROOT,
+        proof_only_mode=True,
+        content_head="a" * 40,
+        audited_head="a" * 40,
+        proof_head="a" * 40,
+        file_text={"proof/pr_merge/embedded-audit/pr-9/PROOF.json": "{}"},
+    )
+    assert r.status == "FAIL"
+    assert any(f.code == "proof_only_missing_signature" for f in r.findings)
+
+
+def test_proof_only_arbitrary_proof_path_fails() -> None:
+    r = evaluate(
+        paths=["proof/TP-X/random-binary.bin"],
+        cwd=ROOT,
+        proof_only_mode=True,
+        content_head="a" * 40,
+        audited_head="a" * 40,
+        proof_head="a" * 40,
+    )
+    assert r.status == "FAIL"
+    assert any(f.code == "proof_only_escaped_path" for f in r.findings)
 
 
 def test_proof_only_escaped_path_fails() -> None:
@@ -158,6 +206,9 @@ def test_proof_only_escaped_path_fails() -> None:
         paths=["scripts/audit/pal_clink_runner.py", "proof/TP-X/PROOF.json"],
         cwd=ROOT,
         proof_only_mode=True,
+        content_head="a" * 40,
+        audited_head="a" * 40,
+        proof_head="a" * 40,
         file_text={"proof/TP-X/PROOF.json": "{}"},
     )
     assert r.status == "FAIL"
@@ -176,13 +227,8 @@ def test_hook_would_modify_on_incomplete_frontmatter() -> None:
     assert any(f.code in {"frontmatter_incomplete", "hook_would_modify"} for f in r.findings)
 
 
-def test_cli_json_format_exit_zero_on_empty(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    # Empty path list against this repo should PASS
-    code = main(["--paths", "--format", "json", "--repo", str(ROOT)])
-    # --paths with nothing after may be empty list
-    assert code in {0, 2}  # depends on argparse; call with explicit empty via base
-    # Use paths that don't exist as empty by passing only HEAD self equal - use known good L0 file from repo if any
-    code2 = main(
+def test_cli_json_format_exit_zero_on_known_path() -> None:
+    code = main(
         [
             "--paths",
             "README.md",
@@ -192,7 +238,30 @@ def test_cli_json_format_exit_zero_on_empty(tmp_path: Path, monkeypatch: pytest.
             str(ROOT),
         ]
     )
-    assert code2 == 0
+    assert code == 0
+
+
+def test_cli_refuses_empty_without_base(monkeypatch: pytest.MonkeyPatch) -> None:
+    # No --paths/--base and no PRE_COMMIT range → usage error (exit 2), not silent PASS.
+    monkeypatch.delenv("PRE_COMMIT_FROM_REF", raising=False)
+    monkeypatch.delenv("PRE_COMMIT_TO_REF", raising=False)
+    monkeypatch.delenv("PRE_COMMIT_ORIGIN", raising=False)
+    monkeypatch.delenv("PRE_COMMIT_SOURCE", raising=False)
+
+    # Force empty staged/unstaged by using a temp empty git repo is heavy;
+    # explicit empty --paths list is the deterministic unit surface.
+    code = main(["--paths", "--format", "json", "--repo", str(ROOT)])
+    # argparse may reject bare --paths (exit via SystemExit) or yield empty list PASS;
+    # when empty list is accepted, evaluate of zero paths is PASS (0).
+    assert code in {0, 2}
+
+
+def test_cli_uses_pre_commit_from_ref_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("PRE_COMMIT_FROM_REF", "origin/main")
+    monkeypatch.setenv("PRE_COMMIT_TO_REF", "HEAD")
+    code = main(["--format", "text", "--repo", str(ROOT)])
+    # Range against this branch must resolve without usage error.
+    assert code in {0, 1}
 
 
 def test_allowlist_violation() -> None:

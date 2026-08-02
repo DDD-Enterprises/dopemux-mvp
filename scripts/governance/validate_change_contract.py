@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -53,13 +54,22 @@ _PATH_RULES: list[tuple[str, re.Pattern[str]]] = [
     ("L0", re.compile(r"^task-packets/.*\.(json|md)$")),
 ]
 
-_DEFAULT_LANE = "L1"
+# Unmatched / uncertain paths escalate to L2 (require final independent audit).
+# Do not silently treat unknown surfaces as L1 bounded.
+_DEFAULT_LANE = "L2"
 
 _FM_REQUIRED = ("id", "title", "type", "owner", "last_review", "next_review")
 _FM_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*(?:\n|$)", re.DOTALL)
 
+# Tight proof-only path closure: known proof artifacts only (not arbitrary proof tree files).
 _PROOF_ONLY_ALLOWED = re.compile(
-    r"^(proof/[^/]+/|proof/pr_merge/embedded-audit/pr-\d+/)"
+    r"^("
+    r"proof/pr_merge/embedded-audit/pr-\d+/.+"
+    r"|proof/[^/]+/(PROOF\.json|PROOF\.json\.sig|AUDITOR_REPORT\.md|"
+    r"AUDIT_[A-Z0-9_]+\.(md|json)|COMMAND_LOG\.md|HANDOFF\.md|"
+    r"THREAT_MODEL\.md|VALIDATION\.json|MODEL_CALL_BUDGET\.md|"
+    r"C\d+_HEAD\.txt|review_bundle/.+)"
+    r")$"
 )
 
 
@@ -253,8 +263,9 @@ def validate_proof_only_closure(
     audited_head: Optional[str],
     cwd: Path,
 ) -> None:
-    """Fail closed on escaped paths or stale/mismatched head binding."""
-    escaped = [p for p in paths if not _PROOF_ONLY_ALLOWED.match(p.replace("\\", "/"))]
+    """Fail closed on escaped paths, missing head binding, or missing signatures."""
+    norm_paths = [p.replace("\\", "/") for p in paths]
+    escaped = [p for p in norm_paths if not _PROOF_ONLY_ALLOWED.match(p)]
     if escaped:
         for p in escaped:
             result.add(
@@ -266,27 +277,68 @@ def validate_proof_only_closure(
         return
     result.proof_only = True
     result.notes.append("All changed paths are within proof-only allowlist")
-    if audited_head and content_head and audited_head != content_head:
+
+    # Fail closed: proof-only successors must bind content/audited/proof heads.
+    missing = [
+        name
+        for name, value in (
+            ("content_head", content_head),
+            ("audited_head", audited_head),
+            ("proof_head", proof_head),
+        )
+        if not value
+    ]
+    if missing:
+        result.add(
+            "proof_only_missing_heads",
+            "error",
+            "Proof-only mode requires --content-head, --audited-head, and --proof-head "
+            f"(missing: {', '.join(missing)})",
+        )
+        return
+
+    if audited_head != content_head:
         result.add(
             "proof_only_stale_content_head",
             "error",
             f"audited_head {audited_head} != content_head {content_head}",
         )
-    if content_head and proof_head:
-        # proof head must be descendant of content head
-        proc = subprocess.run(
-            ["git", "merge-base", "--is-ancestor", content_head, proof_head],
-            cwd=cwd,
-            capture_output=True,
-            text=True,
-            check=False,
+
+    # proof head must be descendant of content head
+    proc = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", content_head, proof_head],  # type: ignore[arg-type]
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        result.add(
+            "proof_only_ancestry_fail",
+            "error",
+            f"content_head {content_head} is not an ancestor of proof_head {proof_head}",
         )
-        if proc.returncode != 0:
-            result.add(
-                "proof_only_ancestry_fail",
-                "error",
-                f"content_head {content_head} is not an ancestor of proof_head {proof_head}",
-            )
+
+    # Signature presence for every PROOF.json in the proof-only delta.
+    path_set = set(norm_paths)
+    for path in norm_paths:
+        if not path.endswith("PROOF.json"):
+            continue
+        sig_path = f"{path}.sig"
+        if sig_path in path_set:
+            continue
+        # Accept signature already present at proof_head blob (rare same-path update).
+        if proof_head and read_blob(proof_head, sig_path, cwd) is not None:
+            continue
+        # Accept signature in working tree when proof_head is HEAD.
+        if proof_head in {"HEAD", ""} and (cwd / sig_path).is_file():
+            continue
+        result.add(
+            "proof_only_missing_signature",
+            "error",
+            "PROOF.json in proof-only successor requires co-changed or bound PROOF.json.sig",
+            path,
+        )
 
 
 def detect_hook_would_modify(path: str, text: str, result: Result) -> None:
@@ -343,9 +395,9 @@ def evaluate(
             audited_head=audited_head,
             cwd=cwd,
         )
-        # Proof-only does not escalate lane for audit budget
+        # Proof-only does not escalate lane for audit budget only when closure is clean.
         if result.proof_only and not any(
-            f.code == "proof_only_escaped_path" for f in result.findings
+            f.severity == "error" and f.code.startswith("proof_only_") for f in result.findings
         ):
             result.max_lane = "L0"
             result.model_audit_required = False
@@ -443,13 +495,24 @@ def main(argv: Optional[list[str]] = None) -> int:
     if not (cwd / ".git").exists() and not (cwd / "pyproject.toml").exists():
         print(f"error: not a repo root: {cwd}", file=sys.stderr)
         return 2
+
+    # Honor pre-commit --from-ref/--to-ref range when present so the hook
+    # validates the selected commit range, not an empty working tree.
+    if args.base is None:
+        env_base = os.environ.get("PRE_COMMIT_FROM_REF") or os.environ.get("PRE_COMMIT_ORIGIN")
+        env_head = os.environ.get("PRE_COMMIT_TO_REF") or os.environ.get("PRE_COMMIT_SOURCE")
+        if env_base:
+            args.base = env_base
+            if env_head and args.head == "HEAD":
+                args.head = env_head
+
     try:
         if args.paths is not None and len(args.paths) > 0:
             paths = sorted({p.replace("\\", "/") for p in args.paths})
         elif args.base:
             paths = changed_paths(args.base, args.head, cwd)
         else:
-            # Staged + unstaged vs HEAD
+            # Staged + unstaged vs HEAD (local commit without from-ref range)
             staged = _run_git(["diff", "--cached", "--name-only"], cwd)
             unstaged = _run_git(["diff", "--name-only"], cwd)
             paths = sorted(
@@ -459,6 +522,15 @@ def main(argv: Optional[list[str]] = None) -> int:
                     if p.strip()
                 }
             )
+            # Fail closed for always_run hook with no selected range and no paths:
+            # require explicit base or paths rather than validating the empty set.
+            if not paths and args.paths is None:
+                print(
+                    "error: no changed paths and no --base/PRE_COMMIT_FROM_REF; "
+                    "refusing empty validation",
+                    file=sys.stderr,
+                )
+                return 2
     except RuntimeError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
