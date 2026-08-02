@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "series_id": "TO-CANON",
-  "title": "Task Orchestrator canonical reconciliation series — offline datastore, coldstart materialization, read-only view, supervised cutover plan",
+  "title": "Task Orchestrator canonical reconciliation series \u2014 offline datastore, coldstart materialization, read-only view, supervised cutover plan",
   "description": "8-packet series over the June 22 Task Orchestrator safe evidence pack. 000-004 (intake/adjudication, datastore contract+schema, importer/validator, resolver/dedupe/coldstart, full dry-run) plus the 004R contract-hardening pass are MERGED via PR #961. 005 materializes the committed coldstart reconciliation JSON into a tracked Markdown decision report (offline). 006 exposes the offline canonical SQLite as a read-only operator view behind the CANONICAL_STORE_READ_VIEW_ENABLED flag (default off, derived/read-only, never a canonical authority). 007 authors a supervised, operator-gated cutover plan + red-team risk doc (docs only; no write cutover).",
   "authority": "Task packets at task-packets/TP-TO-CANON-*.json conforming to docs/03-reference/spec/dopetask/dopetask-canonical-spec.json. Contract at docs/03-reference/systems/task-orchestrator/canonical-datastore-contract.md. Runtime repo truth outranks this document; verify paths before edit.",
   "live_task_orchestrator_load": "LOADED",
@@ -34,9 +34,9 @@
     "TP-TO-CANON-002": "MERGED (PR #961)",
     "TP-TO-CANON-003": "MERGED (PR #961)",
     "TP-TO-CANON-004": "MERGED (PR #961); 004R contract-hardening folded in via commit eae033f21",
-    "TP-TO-CANON-005": "READY (this series tail) — offline coldstart materialization",
-    "TP-TO-CANON-006": "READY — read-only operator view behind CANONICAL_STORE_READ_VIEW_ENABLED",
-    "TP-TO-CANON-007": "READY — supervised cutover plan (docs only)"
+    "TP-TO-CANON-005": "READY (this series tail) \u2014 offline coldstart materialization",
+    "TP-TO-CANON-006": "READY \u2014 read-only operator view behind CANONICAL_STORE_READ_VIEW_ENABLED",
+    "TP-TO-CANON-007": "READY \u2014 supervised cutover plan (docs only)"
   },
   "first_unblocked_wave": [
     "TP-TO-CANON-005",
@@ -45,29 +45,151 @@
   "blocks_dag": {
     "description": "7 BLOCKS edges. 000 blocks the four datastore packets; 004 (full dry-run) blocks the two consumers 005/006; 006 (read view) blocks 007 (cutover plan, which lists the read view as a precondition).",
     "edges": [
-      { "predecessor": "TP-TO-CANON-000", "successor": "TP-TO-CANON-001" },
-      { "predecessor": "TP-TO-CANON-000", "successor": "TP-TO-CANON-002" },
-      { "predecessor": "TP-TO-CANON-000", "successor": "TP-TO-CANON-003" },
-      { "predecessor": "TP-TO-CANON-000", "successor": "TP-TO-CANON-004" },
-      { "predecessor": "TP-TO-CANON-004", "successor": "TP-TO-CANON-005" },
-      { "predecessor": "TP-TO-CANON-004", "successor": "TP-TO-CANON-006" },
-      { "predecessor": "TP-TO-CANON-006", "successor": "TP-TO-CANON-007" }
+      {
+        "predecessor": "TP-TO-CANON-000",
+        "successor": "TP-TO-CANON-001"
+      },
+      {
+        "predecessor": "TP-TO-CANON-000",
+        "successor": "TP-TO-CANON-002"
+      },
+      {
+        "predecessor": "TP-TO-CANON-000",
+        "successor": "TP-TO-CANON-003"
+      },
+      {
+        "predecessor": "TP-TO-CANON-000",
+        "successor": "TP-TO-CANON-004"
+      },
+      {
+        "predecessor": "TP-TO-CANON-004",
+        "successor": "TP-TO-CANON-005"
+      },
+      {
+        "predecessor": "TP-TO-CANON-004",
+        "successor": "TP-TO-CANON-006"
+      },
+      {
+        "predecessor": "TP-TO-CANON-006",
+        "successor": "TP-TO-CANON-007"
+      }
     ],
     "edge_count": 7
   },
   "nodes": [
-    { "id": "TP-TO-CANON-000", "role": "terminal", "status": "MERGED", "redlane": true, "orchestrator_uuid": null, "objective": "Safe evidence-pack intake + 26-DB adjudication manifest", "depends_on": [], "blocks": ["TP-TO-CANON-001", "TP-TO-CANON-002", "TP-TO-CANON-003", "TP-TO-CANON-004"] },
-    { "id": "TP-TO-CANON-001", "role": "terminal", "status": "MERGED", "redlane": true, "orchestrator_uuid": null, "objective": "Canonical datastore contract + JSON schemas", "depends_on": ["TP-TO-CANON-000"], "blocks": [] },
-    { "id": "TP-TO-CANON-002", "role": "terminal", "status": "MERGED", "redlane": true, "orchestrator_uuid": null, "objective": "Read-only importer + validator", "depends_on": ["TP-TO-CANON-000"], "blocks": [] },
-    { "id": "TP-TO-CANON-003", "role": "terminal", "status": "MERGED", "redlane": true, "orchestrator_uuid": null, "objective": "Resolver + dedupe + coldstart reconciliation engine", "depends_on": ["TP-TO-CANON-000"], "blocks": [] },
-    { "id": "TP-TO-CANON-004", "role": "terminal", "status": "MERGED", "redlane": true, "orchestrator_uuid": null, "objective": "Full dry-run of all 26 DBs + 004R contract hardening", "depends_on": ["TP-TO-CANON-000"], "blocks": ["TP-TO-CANON-005", "TP-TO-CANON-006"] },
-    { "id": "TP-TO-CANON-005", "role": "queue", "status": "READY", "redlane": false, "orchestrator_uuid": null, "objective": "Materialize committed coldstart reconciliation JSON into a tracked Markdown report (offline, deterministic)", "depends_on": ["TP-TO-CANON-004"], "blocks": [] },
-    { "id": "TP-TO-CANON-006", "role": "queue", "status": "READY", "redlane": true, "orchestrator_uuid": null, "objective": "Read-only operator view over the offline canonical SQLite behind a feature flag (derived/read-only)", "depends_on": ["TP-TO-CANON-004"], "blocks": ["TP-TO-CANON-007"] },
-    { "id": "TP-TO-CANON-007", "role": "queue", "status": "READY", "redlane": false, "orchestrator_uuid": null, "objective": "Supervised, operator-gated cutover plan + red-team risk doc (docs only; no write cutover)", "depends_on": ["TP-TO-CANON-006"], "blocks": [] }
+    {
+      "id": "TP-TO-CANON-000",
+      "role": "terminal",
+      "status": "MERGED",
+      "redlane": true,
+      "orchestrator_uuid": null,
+      "objective": "Safe evidence-pack intake + 26-DB adjudication manifest",
+      "depends_on": [],
+      "blocks": [
+        "TP-TO-CANON-001",
+        "TP-TO-CANON-002",
+        "TP-TO-CANON-003",
+        "TP-TO-CANON-004"
+      ]
+    },
+    {
+      "id": "TP-TO-CANON-001",
+      "role": "terminal",
+      "status": "MERGED",
+      "redlane": true,
+      "orchestrator_uuid": null,
+      "objective": "Canonical datastore contract + JSON schemas",
+      "depends_on": [
+        "TP-TO-CANON-000"
+      ],
+      "blocks": []
+    },
+    {
+      "id": "TP-TO-CANON-002",
+      "role": "terminal",
+      "status": "MERGED",
+      "redlane": true,
+      "orchestrator_uuid": null,
+      "objective": "Read-only importer + validator",
+      "depends_on": [
+        "TP-TO-CANON-000"
+      ],
+      "blocks": []
+    },
+    {
+      "id": "TP-TO-CANON-003",
+      "role": "terminal",
+      "status": "MERGED",
+      "redlane": true,
+      "orchestrator_uuid": null,
+      "objective": "Resolver + dedupe + coldstart reconciliation engine",
+      "depends_on": [
+        "TP-TO-CANON-000"
+      ],
+      "blocks": []
+    },
+    {
+      "id": "TP-TO-CANON-004",
+      "role": "terminal",
+      "status": "MERGED",
+      "redlane": true,
+      "orchestrator_uuid": null,
+      "objective": "Full dry-run of all 26 DBs + 004R contract hardening",
+      "depends_on": [
+        "TP-TO-CANON-000"
+      ],
+      "blocks": [
+        "TP-TO-CANON-005",
+        "TP-TO-CANON-006"
+      ]
+    },
+    {
+      "id": "TP-TO-CANON-005",
+      "role": "queue",
+      "status": "READY",
+      "redlane": false,
+      "orchestrator_uuid": null,
+      "objective": "Materialize committed coldstart reconciliation JSON into a tracked Markdown report (offline, deterministic)",
+      "depends_on": [
+        "TP-TO-CANON-004"
+      ],
+      "blocks": []
+    },
+    {
+      "id": "TP-TO-CANON-006",
+      "role": "queue",
+      "status": "READY",
+      "redlane": true,
+      "orchestrator_uuid": null,
+      "objective": "Read-only operator view over the offline canonical SQLite behind a feature flag (derived/read-only)",
+      "depends_on": [
+        "TP-TO-CANON-004"
+      ],
+      "blocks": [
+        "TP-TO-CANON-007"
+      ]
+    },
+    {
+      "id": "TP-TO-CANON-007",
+      "role": "queue",
+      "status": "READY",
+      "redlane": false,
+      "orchestrator_uuid": null,
+      "objective": "Supervised, operator-gated cutover plan + red-team risk doc (docs only; no write cutover)",
+      "depends_on": [
+        "TP-TO-CANON-006"
+      ],
+      "blocks": []
+    }
   ],
   "verification": {
     "packet_schema": "python -m jsonschema -i task-packets/TP-TO-CANON-<NNN>.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
     "notes": "000-004 verified MERGED via gh pr view 961 (state MERGED, squash af97290a4, ancestor of main). 005/006/007 verified per their packet verify blocks."
   },
-  "replay_instructions": "To load into a healthy task-orchestrator: create_work_tree for the TO-CANON root, manage_items(create) for each node, manage_dependencies for the 7 BLOCKS edges, then backfill task_orchestrator_root_id + task_orchestrator_leaf_ids and set live_task_orchestrator_load=LOADED."
+  "replay_instructions": "DO NOT re-create this series when live_task_orchestrator_load=LOADED. Canonical root UUID already recorded: 8640002a-bbee-441a-84ed-3d380c2c5a0a. Verification (preferred): query_items for that root + leaf UUIDs in task_orchestrator_leaf_ids; confirm count and BLOCKS edges (blocks_dag.edge_count=7). Guarded recovery only if root is missing from the canonical instance dopemux-mvp-2e346e2084bca021: stop, confirm instance identity, then load once with create_work_tree/manage_items/manage_dependencies; refuse if root UUID already exists (duplicate-tree prevention). Never set loaded=true without a successful unique-root check.",
+  "duplicate_load_prevention": {
+    "rule": "If task_orchestrator_root_id exists in the target instance, refuse create_work_tree replay",
+    "root_id": "8640002a-bbee-441a-84ed-3d380c2c5a0a",
+    "status": "LOADED"
+  }
 }

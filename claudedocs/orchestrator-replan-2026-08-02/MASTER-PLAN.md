@@ -188,6 +188,15 @@ Luna-ready: every retained item must pass deterministic packet bar (files, steps
   into `routing-table.json` → `dependency_evidence` (full edge manifest). Do **not** claim
   dependency validation from the routing table alone without that manifest/count match.
 
+## 6c. Steward repair (PR #1182 review threads)
+
+- **Wave topology**: BLOCKS edges reconciled so `wave(prereq) <= wave(dependent)`; dependents raised when inverted.
+- **Implemented packets** (loaded EMBEDDED-AUDIT series with on-disk PASS/PASS_WITH_RISKS proofs): `verify-close-candidate` + evidence refs; not fresh implement routes.
+- **Gemini CLI**: no live-proven Google model selector this session → routes non-auto-dispatchable (`model-selector-unresolved`); never Anthropic/OpenAI model IDs on gemini-cli.
+- **Program roots** (`7212c3b8`, `ea969afa`, …): containers; no executable routing.
+- **needs-rescope**: non-dispatchable (stale cohort or operator-gate); no runner/model.
+- **Load plans**: LOADED series use verification/guarded recovery only; refuse duplicate root create.
+
 ## 6. Validation (repair TP-REPLAN-BASELINE-1182-REPAIR-001)
 
 - Exact population: **539** unique non-terminal IDs (duplicate_ids=0).

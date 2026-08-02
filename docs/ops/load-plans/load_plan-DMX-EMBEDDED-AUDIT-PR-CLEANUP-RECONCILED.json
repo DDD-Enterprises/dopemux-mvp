@@ -414,5 +414,11 @@
     "AGY invocation, read-only posture, model-selection capability",
     "Mutation surface inventory of tools/pr_merge and dopemux_pr_merge_specialist",
     "Whether any downstream consumer requires PR_STEWARD_ACTION_PLAN.json vs ACTION_PLAN.json"
-  ]
+  ],
+  "verification_or_recovery_instructions": "DO NOT re-create this series when live_task_orchestrator_load=LOADED. Canonical root UUID: cd91e2eb-ee1e-4eff-a551-a97f1919ac2f. Verify via query_items on root + task_orchestrator_leaf_ids; confirm nodes and BLOCKS edges. Guarded recovery only if root missing from dopemux-mvp-2e346e2084bca021 after instance identity check; refuse create if root UUID already present.",
+  "duplicate_load_prevention": {
+    "rule": "If task_orchestrator_root_id exists in the target instance, refuse replay create",
+    "root_id": "cd91e2eb-ee1e-4eff-a551-a97f1919ac2f",
+    "status": "LOADED"
+  }
 }
