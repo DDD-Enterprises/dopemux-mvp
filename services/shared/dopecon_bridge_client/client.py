@@ -253,6 +253,23 @@ class DopeconBridgeClient(_BaseBridgeClient):
         data = self._parse_response(resp)
         return bool(data.get("success", False))
 
+    def claim_custom_data(
+        self,
+        *,
+        workspace_id: str,
+        category: str,
+        key: str,
+        value: Mapping[str, Any],
+    ) -> Mapping[str, Any]:
+        payload = {
+            "workspace_id": workspace_id,
+            "category": category,
+            "key": key,
+            "value": dict(value),
+        }
+        resp = self._client.post("/kg/custom_data/claim", json=payload)
+        return self._parse_response(resp)
+
     def get_custom_data(
         self,
         *,
@@ -504,6 +521,23 @@ class AsyncDopeconBridgeClient(_BaseBridgeClient):
         resp = await self._client.post("/kg/custom_data", json=payload)
         data = self._parse_response(resp)
         return bool(data.get("success", False))
+
+    async def claim_custom_data(
+        self,
+        *,
+        workspace_id: str,
+        category: str,
+        key: str,
+        value: Mapping[str, Any],
+    ) -> Mapping[str, Any]:
+        payload = {
+            "workspace_id": workspace_id,
+            "category": category,
+            "key": key,
+            "value": dict(value),
+        }
+        resp = await self._client.post("/kg/custom_data/claim", json=payload)
+        return self._parse_response(resp)
 
     async def get_custom_data(
         self,

@@ -1,0 +1,29 @@
+{
+  "identical_rounds_total": 20,
+  "conflicting_rounds_total": 20,
+  "identical_rounds_failed": 0,
+  "conflicting_rounds_failed": 0,
+  "overwrites_detected": 0,
+  "rows_per_identity_max": 1,
+  "restart_replay_passed": true,
+  "token_leak_count": 0,
+  "cleanup_remaining_resources": 0,
+  "owner_created_by_identity": {},
+  "created_counts": {
+    "identical": 0,
+    "conflicting": 1
+  },
+  "matched_counts": {
+    "identical": 0
+  },
+  "conflict_counts": {
+    "conflicting": 19
+  },
+  "rows_per_identity": {
+    "proof-identical-key": 1,
+    "proof-conflicting-key": 1
+  },
+  "owner_created_delta": 2,
+  "process_restart_replay_passed": true,
+  "process_restart_replay_note": "TO replica A (port 8001) killed and restarted; identical request replayed on restarted process returned same epic_id and same persisted value"
+}

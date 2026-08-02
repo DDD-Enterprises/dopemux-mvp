@@ -1,0 +1,149 @@
+{
+  "id": "TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003",
+  "project": "dopemux-mvp",
+  "target": "Repair the sole blocking correctness finding from the accepted isolated live proof: concurrent conflicting replay is not fail-closed. Replace the pre-read/upsert race with an atomic claim at ConPort PostgreSQL and prove correctness across two Task Orchestrator processes.",
+  "invariants": [
+    "ConPort PostgreSQL is the sole linearization point for idempotent epic create claims.",
+    "Bridge never becomes the lock owner; it remains a proxy.",
+    "No schema migration under this packet.",
+    "Only disposable isolated runtime resources; no canonical service mutation.",
+    "Legacy rows (missing _fingerprint_v1) fail closed without rewriting."
+  ],
+  "depends_on": ["TP-DMX-TO-CONPORT-PERSISTENCE-LIVE-PROOF-002"],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "TO-CONPORT-PERSISTENCE-REPAIR",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/to-conport-persistence-repair",
+    "base_branch": "main",
+    "stacked_because": "PR #1164 continuation — supersedes the sequential-only implementation with atomic claim semantics.",
+    "pr": 1164,
+    "authorized_start_head": "c78c45b0e06a729d51f329e510f0a8069c46fca6"
+  },
+  "commit": {
+    "message": "fix(task-orchestrator): make epic idempotency atomic across replicas",
+    "allowlist": [
+      "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003.json",
+      "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-research.md",
+      "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-plan.md",
+      "task-packets/TP-DMX-TO-CONPORT-ATOMIC-IDEMPOTENCY-REPAIR-003-implementation-notes.md",
+      "docker/mcp-servers-source/conport/enhanced_server.py",
+      "docker/mcp-servers-source/conport/tests/test_mcp_custom_data.py",
+      "docker/mcp-servers-source/conport/tests/test_custom_data_atomic_claim.py",
+      "services/dopecon-bridge/dopecon_bridge/routes.py",
+      "services/dopecon-bridge/dopecon_bridge/clients.py",
+      "services/shared/dopecon_bridge_client/client.py",
+      "services/task-orchestrator/app/models/workflow.py",
+      "services/task-orchestrator/app/services/workflow_store.py",
+      "services/task-orchestrator/app/services/workflow_service.py",
+      "tests/arch/test_task_orchestrator_conport_persistence_contract.py",
+      "tests/unit/test_task_orchestrator_workflow_store.py",
+      "tests/unit/test_task_orchestrator_workflow_route_certification.py",
+      "tests/unit/test_task_orchestrator_workflow_atomic_idempotency.py",
+      "tests/integration/test_task_orchestrator_concurrent_idempotency.py"
+    ],
+    "verify": [
+      "uv run pytest -q docker/mcp-servers-source/conport/tests/test_custom_data_atomic_claim.py",
+      "uv run pytest -q docker/mcp-servers-source/conport/tests/test_mcp_custom_data.py",
+      "uv run pytest -q tests/arch/test_task_orchestrator_conport_persistence_contract.py tests/unit/test_task_orchestrator_workflow_store.py tests/unit/test_task_orchestrator_workflow_route_certification.py tests/unit/test_task_orchestrator_workflow_atomic_idempotency.py",
+      "uv run pytest -q tests/integration/test_task_orchestrator_concurrent_idempotency.py",
+      "docker compose -f compose.yml config --no-interpolate",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(task-orchestrator): make epic idempotency atomic across replicas",
+    "body": "## Summary\n- Add atomic claim endpoint to ConPort (`POST /api/custom_data/claim`)\n- Propagate through DopeconBridge and shared client\n- Replace Task Orchestrator pre-read/upsert with atomic claim\n- Versioned fingerprint v1 for deterministic idempotency\n\n## Claim contract\nResult: CREATED | MATCHED | CONFLICT | LEGACY_UNFINGERPRINTED | OWNER_ERROR\n\n## Safety\n- Linearization point inside ConPort PostgreSQL transaction\n- No schema migration\n- Legacy rows fail closed\n- Bridge remains proxy only\n\n## Validation\n- ConPort claim tests (7 tests, including 20-way concurrency)\n- Bridge client tests\n- Task Orchestrator atomic idempotency tests\n- Two-replica concurrency live proof",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "owner-gate",
+      "task": "Trace ConPort custom_data schema, DB driver, transaction API; confirm uniqueness identity and serialization feasibility without migration.",
+      "validation": [
+        "schema.sql UNIQUE(workspace_id, category, key) confirmed",
+        "asyncpg transaction support confirmed",
+        "No schema migration required",
+        "Evidence in CUSTOM_DATA_OWNER_TRACE.txt"
+      ]
+    },
+    {
+      "id": "conport-claim",
+      "task": "Implement POST /api/custom_data/claim with transactional INSERT ON CONFLICT DO NOTHING + read-back comparison. Add comprehensive tests.",
+      "expected_files": [
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "docker/mcp-servers-source/conport/tests/test_custom_data_atomic_claim.py"
+      ],
+      "validation": [
+        "7 tests pass: first claim CREATED, identical MATCHED, conflict CONFLICT, legacy LEGACY_UNFINGERPRINTED, 20 concurrent identical, 20 concurrent conflicting, generic upsert compatibility"
+      ]
+    },
+    {
+      "id": "bridge-propagate",
+      "task": "Add claim route to dopecon-bridge, ConPort client method, and shared bridge client sync/async methods.",
+      "expected_files": [
+        "services/dopecon-bridge/dopecon_bridge/routes.py",
+        "services/dopecon-bridge/dopecon_bridge/clients.py",
+        "services/shared/dopecon_bridge_client/client.py"
+      ],
+      "validation": [
+        "Bridge proxy routes /kg/custom_data/claim",
+        "ConPort client calls new claim endpoint",
+        "Shared client exposes sync+async claim_custom_data"
+      ]
+    },
+    {
+      "id": "to-replace",
+      "task": "Remove pre-read/upsert in create_epic. Add fingerprint v1 computation + atomic claim with all 5 result handling.",
+      "expected_files": [
+        "services/task-orchestrator/app/models/workflow.py",
+        "services/task-orchestrator/app/services/workflow_store.py",
+        "services/task-orchestrator/app/services/workflow_service.py",
+        "tests/arch/test_task_orchestrator_conport_persistence_contract.py",
+        "tests/unit/test_task_orchestrator_workflow_store.py",
+        "tests/unit/test_task_orchestrator_workflow_route_certification.py",
+        "tests/unit/test_task_orchestrator_workflow_atomic_idempotency.py",
+        "tests/integration/test_task_orchestrator_concurrent_idempotency.py"
+      ],
+      "validation": [
+        "All existing tests pass",
+        "New atomic idempotency tests pass",
+        "Integration concurrent tests pass"
+      ]
+    },
+    {
+      "id": "verify-audit-handoff",
+      "task": "Run all validation, concurrency live proof, embedded audit, PR Steward, and evidence packaging.",
+      "validation": [
+        "All verify commands pass",
+        "Live proof returns zero overwrites, one row per identity",
+        "Embedded audit passes",
+        "PR Steward records state without unauthorized merge"
+      ]
+    }
+  ]
+}

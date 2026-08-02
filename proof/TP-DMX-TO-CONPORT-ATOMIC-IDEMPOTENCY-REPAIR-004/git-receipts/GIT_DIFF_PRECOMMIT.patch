@@ -1,0 +1,485 @@
+diff --git a/docker/mcp-servers-source/conport/tests/test_custom_data_atomic_claim.py b/docker/mcp-servers-source/conport/tests/test_custom_data_atomic_claim.py
+index 98c6be148e..8f95cbfa43 100644
+--- a/docker/mcp-servers-source/conport/tests/test_custom_data_atomic_claim.py
++++ b/docker/mcp-servers-source/conport/tests/test_custom_data_atomic_claim.py
+@@ -10,7 +10,10 @@ import pytest
+ CONPORT_DIR = Path(__file__).resolve().parents[1]
+ sys.path.insert(0, str(CONPORT_DIR))
+
+-# Stub mcp.server.fastmcp + asyncpg + redis before importing conport modules
++# Stub mcp.server.fastmcp + asyncpg + redis before importing conport modules.
++# Guard with `if not in sys.modules` so a prior test module (e.g. the root
++# conftest asyncpg stub) is never replaced, and always force-register so
++# enhanced_server's dependency auto-install can never fire during tests.
+ class _FastMCPStub:
+     def __init__(self, *args, **kwargs):
+         self.tools = []
+@@ -21,33 +24,50 @@ class _FastMCPStub:
+             return func
+         return decorator
+
+-fastmcp_module = types.ModuleType("mcp.server.fastmcp")
+-fastmcp_module.FastMCP = _FastMCPStub
+-mcp_module = types.ModuleType("mcp")
+-mcp_server_module = types.ModuleType("mcp.server")
+-mcp_server_models_module = types.ModuleType("mcp.server.models")
+-mcp_server_models_module.InitializationOptions = object
+-mcp_server_stdio_module = types.ModuleType("mcp.server.stdio")
+-mcp_server_stdio_module.stdio_server = object
+-sys.modules.setdefault("mcp", mcp_module)
+-sys.modules.setdefault("mcp.server", mcp_server_module)
+-sys.modules.setdefault("mcp.server.fastmcp", fastmcp_module)
+-sys.modules.setdefault("mcp.server.models", mcp_server_models_module)
+-sys.modules.setdefault("mcp.server.stdio", mcp_server_stdio_module)
+-
+-# Stub asyncpg and redis so enhanced_server doesn't auto-install
+-asyncpg_stub = types.ModuleType("asyncpg")
+-asyncpg_stub.connect = lambda *a, **kw: None
+-redis_stub = types.ModuleType("redis")
+-redis_stub.Redis = lambda *a, **kw: None
+-redis_stub.asyncio = types.ModuleType("redis.asyncio")
+-redis_stub.asyncio.Redis = lambda *a, **kw: None
+-aioredis_stub = types.ModuleType("aioredis")
+-aioredis_stub.Redis = lambda *a, **kw: None
+-sys.modules.setdefault("asyncpg", asyncpg_stub)
+-sys.modules.setdefault("redis", redis_stub)
+-sys.modules.setdefault("redis.asyncio", redis_stub.asyncio)
+-sys.modules.setdefault("aioredis", aioredis_stub)
++if "mcp.server.fastmcp" not in sys.modules:
++    fastmcp_module = types.ModuleType("mcp.server.fastmcp")
++    fastmcp_module.FastMCP = _FastMCPStub
++    mcp_module = types.ModuleType("mcp")
++    mcp_server_module = types.ModuleType("mcp.server")
++    mcp_server_models_module = types.ModuleType("mcp.server.models")
++    mcp_server_models_module.InitializationOptions = object
++    mcp_server_stdio_module = types.ModuleType("mcp.server.stdio")
++    mcp_server_stdio_module.stdio_server = object
++    sys.modules.setdefault("mcp", mcp_module)
++    sys.modules.setdefault("mcp.server", mcp_server_module)
++    sys.modules.setdefault("mcp.server.fastmcp", fastmcp_module)
++    sys.modules.setdefault("mcp.server.models", mcp_server_models_module)
++    sys.modules.setdefault("mcp.server.stdio", mcp_server_stdio_module)
++
++# Stub asyncpg and redis so enhanced_server never auto-installs. When the
++# real packages are present in the environment they are used; otherwise the
++# stub guarantees import without triggering `pip install` inside the server.
++if "asyncpg" not in sys.modules:
++    try:
++        import asyncpg  # noqa: F401
++    except ImportError:
++        asyncpg_stub = types.ModuleType("asyncpg")
++        asyncpg_stub.connect = lambda *a, **kw: None
++        sys.modules["asyncpg"] = asyncpg_stub
++
++if "redis" not in sys.modules:
++    try:
++        import redis  # noqa: F401
++    except ImportError:
++        redis_stub = types.ModuleType("redis")
++        redis_stub.Redis = lambda *a, **kw: None
++        redis_stub.asyncio = types.ModuleType("redis.asyncio")
++        redis_stub.asyncio.Redis = lambda *a, **kw: None
++        sys.modules["redis"] = redis_stub
++        sys.modules["redis.asyncio"] = redis_stub.asyncio
++
++if "aioredis" not in sys.modules:
++    try:
++        import aioredis  # noqa: F401
++    except ImportError:
++        aioredis_stub = types.ModuleType("aioredis")
++        aioredis_stub.Redis = lambda *a, **kw: None
++        sys.modules["aioredis"] = aioredis_stub
+
+
+ @pytest.mark.asyncio
+@@ -139,7 +159,6 @@ class TestCustomDataAtomicClaim:
+         app = EnhancedConPortServer()
+         app.db_pool = self.fake_pool
+
+-        from aiohttp import web
+         body = self._make_claim()
+         req = self._fake_request(body)
+
+@@ -157,7 +176,6 @@ class TestCustomDataAtomicClaim:
+         app = EnhancedConPortServer()
+         app.db_pool = self.fake_pool
+
+-        from aiohttp import web
+         body = self._make_claim(fp="abc123")
+
+         resp1 = await app.claim_custom_data(self._fake_request(body))
+@@ -174,7 +192,6 @@ class TestCustomDataAtomicClaim:
+         app = EnhancedConPortServer()
+         app.db_pool = self.fake_pool
+
+-        from aiohttp import web
+         body1 = self._make_claim(fp="abc123", payload={"title": "Fix races", "_fingerprint_v1": "abc123"})
+         body2 = self._make_claim(fp="xyz789", payload={"title": "Different", "_fingerprint_v1": "xyz789"})
+
+@@ -194,7 +211,6 @@ class TestCustomDataAtomicClaim:
+
+         self.store[("ws-1", "workflow_epics", "epic_abc")] = {"title": "Old", "priority": "high"}
+
+-        from aiohttp import web
+         resp = await app.claim_custom_data(self._fake_request(self._make_claim(fp="abc123")))
+         data = json.loads(resp.text)
+         assert data["result"] == "LEGACY_UNFINGERPRINTED"
+@@ -207,7 +223,6 @@ class TestCustomDataAtomicClaim:
+         app.db_pool = self.fake_pool
+
+         body = {"workspace_id": "ws-1", "category": "x", "key": "y", "value": {"no_fp": True}}
+-        from aiohttp import web
+         resp = await app.claim_custom_data(self._fake_request(body))
+         assert resp.status == 400
+         assert json.loads(resp.text)["result"] == "MISSING_FINGERPRINT"
+@@ -217,7 +232,6 @@ class TestCustomDataAtomicClaim:
+         app = EnhancedConPortServer()
+         app.db_pool = self.fake_pool
+
+-        from aiohttp import web
+         body = self._make_claim(fp="concurrent-fp-1")
+
+         async def one_claim():
+@@ -240,7 +254,6 @@ class TestCustomDataAtomicClaim:
+         app = EnhancedConPortServer()
+         app.db_pool = self.fake_pool
+
+-        from aiohttp import web
+
+         async def one_claim(idx):
+             fp = f"conflict-fp-{idx}"
+@@ -260,7 +273,6 @@ class TestCustomDataAtomicClaim:
+         assert persisted_keys == {("ws-1", "workflow_epics", "epic_abc")}
+
+     def _fake_request(self, body_dict):
+-        import aiohttp
+
+         class FakeRequest:
+             async def json(self):
+diff --git a/docker/mcp-servers-source/conport/tests/test_ensure_schema.py b/docker/mcp-servers-source/conport/tests/test_ensure_schema.py
+index b2771ef389..6510cff34c 100644
+--- a/docker/mcp-servers-source/conport/tests/test_ensure_schema.py
++++ b/docker/mcp-servers-source/conport/tests/test_ensure_schema.py
+@@ -27,9 +27,9 @@ if "mcp.server.fastmcp" not in sys.modules:
+         def __init__(self, *args, **kwargs):
+             self.tools = []
+
+-        def tool(self):
++        def tool(self, *, name=None, description=None):
+             def decorator(func):
+-                self.tools.append(func.__name__)
++                self.tools.append(name or func.__name__)
+                 return func
+
+             return decorator
+diff --git a/docker/mcp-servers-source/conport/tests/test_mcp_custom_data.py b/docker/mcp-servers-source/conport/tests/test_mcp_custom_data.py
+index 66c917b356..25ec8ca053 100644
+--- a/docker/mcp-servers-source/conport/tests/test_mcp_custom_data.py
++++ b/docker/mcp-servers-source/conport/tests/test_mcp_custom_data.py
+@@ -14,9 +14,9 @@ class _FastMCPStub:
+     def __init__(self, *args, **kwargs):
+         self.tools = []
+
+-    def tool(self):
++    def tool(self, *, name=None, description=None):
+         def decorator(func):
+-            self.tools.append(func.__name__)
++            self.tools.append(name or func.__name__)
+             return func
+
+         return decorator
+@@ -37,9 +37,9 @@ sys.modules.setdefault("mcp.server.fastmcp", fastmcp_module)
+ sys.modules.setdefault("mcp.server.models", mcp_server_models_module)
+ sys.modules.setdefault("mcp.server.stdio", mcp_server_stdio_module)
+
+-import conport_mcp_stdio
+-import server as mcp_server
+-from enhanced_server import EnhancedConPortServer
++import conport_mcp_stdio  # noqa: E402
++import server as mcp_server  # noqa: E402
++from enhanced_server import EnhancedConPortServer  # noqa: E402
+
+
+ def _response_json(response):
+diff --git a/docker/mcp-servers-source/conport/tests/test_mcp_search.py b/docker/mcp-servers-source/conport/tests/test_mcp_search.py
+index 61bf448802..4400995358 100644
+--- a/docker/mcp-servers-source/conport/tests/test_mcp_search.py
++++ b/docker/mcp-servers-source/conport/tests/test_mcp_search.py
+@@ -14,9 +14,9 @@ class _FastMCPStub:
+     def __init__(self, *args, **kwargs):
+         self.tools = []
+
+-    def tool(self):
++    def tool(self, *, name=None, description=None):
+         def decorator(func):
+-            self.tools.append(func.__name__)
++            self.tools.append(name or func.__name__)
+             return func
+
+         return decorator
+@@ -37,9 +37,9 @@ sys.modules.setdefault("mcp.server.fastmcp", fastmcp_module)
+ sys.modules.setdefault("mcp.server.models", mcp_server_models_module)
+ sys.modules.setdefault("mcp.server.stdio", mcp_server_stdio_module)
+
+-import conport_mcp_stdio
+-import server as mcp_server
+-from enhanced_server import EnhancedConPortServer
++import conport_mcp_stdio  # noqa: E402
++import server as mcp_server  # noqa: E402
++from enhanced_server import EnhancedConPortServer  # noqa: E402
+
+
+ def _response_json(response):
+diff --git a/services/task-orchestrator/app/models/workflow.py b/services/task-orchestrator/app/models/workflow.py
+index 107285120b..a38bcde387 100644
+--- a/services/task-orchestrator/app/models/workflow.py
++++ b/services/task-orchestrator/app/models/workflow.py
+@@ -5,7 +5,7 @@ from __future__ import annotations
+ import hashlib
+ import json
+ from datetime import datetime, timezone
+-from typing import Dict, List, Literal, Optional
++from typing import Any, Dict, List, Literal, Optional
+
+ from pydantic import BaseModel, Field, root_validator, validator
+
+@@ -55,11 +55,11 @@ def compute_epic_fingerprint(request: "CreateEpicRequest") -> str:
+         "title": request.title,
+         "description": request.description,
+         "business_value": request.business_value,
+-        "acceptance_criteria": sorted(request.acceptance_criteria),
++        "acceptance_criteria": list(request.acceptance_criteria),
+         "priority": request.priority,
+         "status": request.status,
+         "created_from_idea_id": request.created_from_idea_id,
+-        "tags": sorted(request.tags) if request.tags else [],
++        "tags": list(request.tags) if request.tags else [],
+         "adhd_metadata": (
+             request.adhd_metadata.dict()
+             if hasattr(request.adhd_metadata, "dict")
+diff --git a/tests/integration/test_task_orchestrator_concurrent_idempotency.py b/tests/integration/test_task_orchestrator_concurrent_idempotency.py
+index 0076123b37..737fa92515 100644
+--- a/tests/integration/test_task_orchestrator_concurrent_idempotency.py
++++ b/tests/integration/test_task_orchestrator_concurrent_idempotency.py
+@@ -1,8 +1,6 @@
+ """Integration test for concurrent epic idempotency across simulated replicas."""
+ import asyncio
+-import json
+ import sys
+-import uuid
+ from pathlib import Path
+
+ import pytest
+@@ -17,7 +15,7 @@ for module_name in list(sys.modules):
+     if module_name == "app" or module_name.startswith("app."):
+         sys.modules.pop(module_name, None)
+
+-from app.models.workflow import CreateEpicRequest, compute_epic_fingerprint  # noqa: E402
++from app.models.workflow import CreateEpicRequest  # noqa: E402
+ from app.services.workflow_service import (  # noqa: E402
+     WorkflowConflictError,
+     WorkflowService,
+@@ -69,7 +67,6 @@ class SharedAtomicClaimStore:
+         return {"result": "CREATED", "value": value}
+
+     async def get_custom_data(self, **kwargs):
+-        category = kwargs["category"]
+         key = kwargs.get("key")
+         items = []
+         for row_key, row in self.rows.items():
+@@ -147,7 +144,6 @@ async def test_two_replica_conflicting_concurrent_claims():
+     - Only one persisted value
+     """
+     shared_store = SharedAtomicClaimStore()
+-    base_idempotency_key = None  # Same epic ID, different payloads
+
+     async def create_conflicting(idx):
+         svc = WorkflowService(workspace_id="/workspace/shared")
+diff --git a/tests/unit/test_task_orchestrator_workflow_atomic_idempotency.py b/tests/unit/test_task_orchestrator_workflow_atomic_idempotency.py
+index 1be34d868f..f8a287b645 100644
+--- a/tests/unit/test_task_orchestrator_workflow_atomic_idempotency.py
++++ b/tests/unit/test_task_orchestrator_workflow_atomic_idempotency.py
+@@ -1,5 +1,4 @@
+ """Unit tests for Task Orchestrator atomic epic idempotency."""
+-import asyncio
+ import sys
+ from pathlib import Path
+ from unittest.mock import AsyncMock
+@@ -225,3 +224,68 @@ async def test_fingerprint_excludes_idempotency_key():
+     fp3 = compute_epic_fingerprint(r3)
+
+     assert fp1 == fp2 == fp3
++
++
++@pytest.mark.asyncio
++async def test_fingerprint_equivalent_normalized_requests_hash_identically():
++    """Equivalent normalized requests hash identically regardless of key order."""
++    from app.models.workflow import compute_epic_fingerprint  # noqa: E402
++
++    r1 = CreateEpicRequest(
++        title="Same",
++        description="Same",
++        business_value="Same",
++        acceptance_criteria=["alpha", "beta", "gamma"],
++        tags=["one", "two"],
++    )
++    r2 = CreateEpicRequest(
++        title="Same",
++        description="Same",
++        business_value="Same",
++        acceptance_criteria=["alpha", "beta", "gamma"],
++        tags=["one", "two"],
++    )
++
++    assert compute_epic_fingerprint(r1) == compute_epic_fingerprint(r2)
++
++
++@pytest.mark.asyncio
++async def test_fingerprint_reordered_acceptance_criteria_differ():
++    """Reordered acceptance criteria are distinct immutable requests."""
++    from app.models.workflow import compute_epic_fingerprint  # noqa: E402
++
++    r1 = CreateEpicRequest(
++        title="Same",
++        description="Same",
++        business_value="Same",
++        acceptance_criteria=["alpha", "beta", "gamma"],
++    )
++    r2 = CreateEpicRequest(
++        title="Same",
++        description="Same",
++        business_value="Same",
++        acceptance_criteria=["gamma", "beta", "alpha"],
++    )
++
++    assert compute_epic_fingerprint(r1) != compute_epic_fingerprint(r2)
++
++
++@pytest.mark.asyncio
++async def test_fingerprint_reordered_tags_differ():
++    """Reordered tags are distinct immutable requests."""
++    from app.models.workflow import compute_epic_fingerprint  # noqa: E402
++
++    r1 = CreateEpicRequest(
++        title="Same",
++        description="Same",
++        business_value="Same",
++        tags=["one", "two", "three"],
++    )
++    r2 = CreateEpicRequest(
++        title="Same",
++        description="Same",
++        business_value="Same",
++        tags=["three", "two", "one"],
++    )
++
++    assert compute_epic_fingerprint(r1) != compute_epic_fingerprint(r2)
+diff --git a/tests/unit/test_task_orchestrator_workflow_route_certification.py b/tests/unit/test_task_orchestrator_workflow_route_certification.py
+index 572ef568e2..c69b321ecb 100644
+--- a/tests/unit/test_task_orchestrator_workflow_route_certification.py
++++ b/tests/unit/test_task_orchestrator_workflow_route_certification.py
+@@ -1,5 +1,6 @@
+ import json
+ import sys
++import types
+ from pathlib import Path
+ from types import SimpleNamespace
+
+@@ -19,6 +20,40 @@ for _module_name in list(sys.modules):
+     if _module_name == "app" or _module_name.startswith("app."):
+         sys.modules.pop(_module_name, None)
+
++# Register a FastMCP stub that accepts the production decorator shape
++# `tool(name=..., description=...)` before `app.main` is imported. The
++# production registration in app/main.py calls the decorator with keyword
++# arguments; a positional-only stub would raise TypeError during import.
++if "mcp.server.fastmcp" not in sys.modules:
++    class _FastMCPStub:
++        def __init__(self, *args, **kwargs):
++            self.tools = {}
++
++        def tool(self, *, name=None, description=None):
++            def decorator(func):
++                self.tools[name or func.__name__] = {
++                    "description": description,
++                    "handler": func,
++                }
++                return func
++
++            return decorator
++
++    fastmcp_module = types.ModuleType("mcp.server.fastmcp")
++    fastmcp_module.FastMCP = _FastMCPStub
++    mcp_module = types.ModuleType("mcp")
++    mcp_server_module = types.ModuleType("mcp.server")
++    mcp_server_models_module = types.ModuleType("mcp.server.models")
++    mcp_server_models_module.InitializationOptions = object
++    mcp_server_stdio_module = types.ModuleType("mcp.server.stdio")
++    mcp_server_stdio_module.stdio_server = object
++
++    sys.modules["mcp"] = mcp_module
++    sys.modules["mcp.server"] = mcp_server_module
++    sys.modules["mcp.server.fastmcp"] = fastmcp_module
++    sys.modules["mcp.server.models"] = mcp_server_models_module
++    sys.modules["mcp.server.stdio"] = mcp_server_stdio_module
++
+ from app.main import app  # noqa: E402
+ from app.api import project_workflow  # noqa: E402
+ from app.models.workflow import CreateEpicRequest  # noqa: E402
+@@ -135,6 +170,56 @@ async def test_create_epic_rejects_conflicting_idempotency_key_payload():
+         await service.close()
+
+
++@pytest.mark.asyncio
++async def test_reordered_lists_replay_returns_conflict_and_winner_unchanged():
++    """Reordered immutable lists are distinct requests: replay conflicts.
++
++    A replayed create that merely reorders acceptance criteria or tags is a
++    different immutable request and must conflict, leaving the first
++    persisted value untouched.
++    """
++    service = WorkflowService(workspace_id="/tmp/workflow-reordered-conflict")
++    service.store._client = MemoryBridgeClient()
++    original = CreateEpicRequest(
++        title="Ordered epic",
++        description="Synthetic persistence test",
++        business_value="Validate replay",
++        acceptance_criteria=["alpha", "beta", "gamma"],
++        tags=["one", "two"],
++        idempotency_key="synthetic-reordered-key",
++    )
++    reordered_criteria = CreateEpicRequest(
++        title="Ordered epic",
++        description="Synthetic persistence test",
++        business_value="Validate replay",
++        acceptance_criteria=["gamma", "beta", "alpha"],
++        tags=["one", "two"],
++        idempotency_key="synthetic-reordered-key",
++    )
++    reordered_tags = CreateEpicRequest(
++        title="Ordered epic",
++        description="Synthetic persistence test",
++        business_value="Validate replay",
++        acceptance_criteria=["alpha", "beta", "gamma"],
++        tags=["two", "one"],
++        idempotency_key="synthetic-reordered-key",
++    )
++
++    try:
++        created = await service.create_epic(original)
++        with pytest.raises(WorkflowConflictError):
++            await service.create_epic(reordered_criteria)
++        with pytest.raises(WorkflowConflictError):
++            await service.create_epic(reordered_tags)
++        stored = await service.list_epics()
++
++        assert [epic.id for epic in stored] == [created.id]
++        assert stored[0].acceptance_criteria == ["alpha", "beta", "gamma"]
++        assert stored[0].tags == ["one", "two"]
++    finally:
++        await service.close()
++
++
+ @pytest.mark.asyncio
+ async def test_workflow_route_family_live_certification():
+     service = WorkflowService(workspace_id=Path("/tmp/workflow-route-cert"))

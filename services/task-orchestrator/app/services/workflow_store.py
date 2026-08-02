@@ -138,6 +138,25 @@ class WorkflowStore:
             value=epic,
         )
 
+    async def claim_epic(
+        self,
+        *,
+        epic_id: str,
+        value: Mapping[str, Any],
+    ) -> Mapping[str, Any]:
+        """Atomically claim an epic through the ConPort claim endpoint."""
+        try:
+            return await self._client.claim_custom_data(
+                workspace_id=self.workspace_id,
+                category=self.EPICS_CATEGORY,
+                key=epic_id,
+                value=value,
+            )
+        except DopeconBridgeError as exc:
+            raise WorkflowStoreError(str(exc)) from exc
+        except Exception as exc:
+            raise WorkflowStoreError(f"Failed to claim epic {epic_id}: {exc}") from exc
+
     async def get_idea(self, idea_id: str) -> Optional[Dict[str, Any]]:
         rows = await self.get_custom_data(
             category=self.IDEAS_CATEGORY,
