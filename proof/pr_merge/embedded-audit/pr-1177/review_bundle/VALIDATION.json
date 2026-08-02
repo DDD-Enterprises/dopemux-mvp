@@ -1,0 +1,11 @@
+{
+  "focused_accessibility_tests": {"command": "npm test -- --run src/components/__tests__/Accessibility.test.tsx", "result": "PASS", "tests": 12},
+  "full_ui_suite": {"command": "npm test -- --run", "result": "PASS", "tests": 20, "files": 4},
+  "build": {"command": "npm run build", "result": "PASS"},
+  "lint_candidate": {"command": "npm run lint", "result": "FAIL", "exit_code": 2, "reason": "ESLint 10 missing eslint.config.*"},
+  "lint_baseline_main": {"command": "npm run lint on main ui-dashboard archive", "result": "FAIL", "exit_code": 2, "reason": "same missing eslint.config.* — matching baseline tooling gap, not PASS"},
+  "task_sequencer_unchanged_from_f2": true,
+  "f3_head": "5aa8b86ae5a008e3bddf4b98111c5c9afccaace4",
+  "implementer": "grok-4.5-xai",
+  "packet": "TP-DMX-PORTFOLIO-TOOLTIP-CLOSURE-SALVAGE-002"
+}
