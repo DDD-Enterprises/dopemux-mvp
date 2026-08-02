@@ -57,6 +57,12 @@ repos:
                   if [[ "$file" =~ ^docs/04-explanation/history/sourceFiles/ ]]; then
                     continue
                   fi
+                  # Exact canonical Task Packet template path only.
+                  # Filename contains "template" which otherwise matches *temp*.md.
+                  # Do not broaden this exemption to other temp/notes/todo/scratch names.
+                  if [[ "$file" == "docs/03-reference/governance/task-packet-template.md" ]]; then
+                    continue
+                  fi
                   base="$(basename "$file")"
                   lbase="$(echo "$base" | tr '[:upper:]' '[:lower:]')"
                   if [[ "$lbase" =~ ^template[-_].*\.md$ ]]; then
