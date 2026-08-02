@@ -62,12 +62,14 @@ _FM_REQUIRED = ("id", "title", "type", "owner", "last_review", "next_review")
 _FM_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*(?:\n|$)", re.DOTALL)
 
 # Tight proof-only path closure: enumerated artifact names only.
-# No arbitrary basenames under proof trees or pr_merge audit dirs.
+# review_bundle allows a single basename segment (no / or ..) with safe text-like
+# extensions only — rejects evil.bin and path-traversal segments.
 _PROOF_ARTIFACT = (
     r"(PROOF\.json|PROOF\.json\.sig|AUDITOR_REPORT\.md|"
     r"AUDIT_[A-Z0-9_]+\.(md|json)|COMMAND_LOG\.md|HANDOFF\.md|"
     r"THREAT_MODEL\.md|VALIDATION\.json|MODEL_CALL_BUDGET\.md|"
-    r"C\d+_HEAD\.txt|review_bundle/[A-Za-z0-9._/-]+)"
+    r"C\d+_HEAD\.txt|"
+    r"review_bundle/[A-Za-z0-9][A-Za-z0-9._-]*\.(txt|json|md|diff))"
 )
 _PROOF_ONLY_ALLOWED = re.compile(
     rf"^("

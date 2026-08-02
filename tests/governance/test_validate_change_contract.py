@@ -233,6 +233,24 @@ def test_proof_only_arbitrary_pr_merge_path_fails() -> None:
     assert any(f.code == "proof_only_escaped_path" for f in r.findings)
 
 
+def test_proof_only_review_bundle_evil_and_traversal_fail() -> None:
+    for path in (
+        "proof/pr_merge/embedded-audit/pr-1184/review_bundle/evil.bin",
+        "proof/pr_merge/embedded-audit/pr-1184/review_bundle/../../evil.bin",
+        "proof/TP-X/review_bundle/../secret.env",
+    ):
+        r = evaluate(
+            paths=[path],
+            cwd=ROOT,
+            proof_only_mode=True,
+            content_head="a" * 40,
+            audited_head="a" * 40,
+            proof_head="a" * 40,
+        )
+        assert r.status == "FAIL", path
+        assert any(f.code == "proof_only_escaped_path" for f in r.findings), path
+
+
 def test_proof_only_enumerated_pr_merge_artifact_allowed_for_path_check() -> None:
     r = evaluate(
         paths=[
