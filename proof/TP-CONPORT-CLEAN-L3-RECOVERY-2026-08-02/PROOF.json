@@ -6,7 +6,7 @@
   "base_sha": "525ddb5fe5bd803e974c95ca6f27084d9938cb00",
   "recovery_source_commit": "a39ea663dbf568cb3edf3ae39d756ce86532d07f",
   "clean_transplant_commit": "80e3ed2f426e379c8edc1b86e2727fb416ed0229",
-  "head_sha": "6f4d6b11e366ab2cb0e5e46e5c9ea49a631378b6",
+  "head_sha": "e7aec967692d99ed1cb531f4eec9e46a4ade8049",
   "custody_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1185",
   "pr_steward_policy_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1187",
   "supervisor_input": "AUTHORIZE_ONE_CLEAN_L3_REPAIR",
