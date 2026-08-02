@@ -1,0 +1,4 @@
+t=0s st=running healthy curl=000fail started=2026-08-02T23:56:12.892972631Z
+t=2s st=running starting curl=200 started=2026-08-02T23:56:20.568920259Z
+RECOVERED_AT=2
+restarts=2 started=2026-08-02T23:56:20.568920259Z health=starting

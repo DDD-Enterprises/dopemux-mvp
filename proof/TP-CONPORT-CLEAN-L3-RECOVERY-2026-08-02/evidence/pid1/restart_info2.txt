@@ -1,0 +1,4 @@
+info t=0s curl=503 started=2026-08-02T23:56:37.48165342Z
+info t=3s curl=000fail started=2026-08-02T23:56:45.583036465Z
+info t=5s curl=200 started=2026-08-02T23:56:45.583036465Z
+INFO_RECOVERED=5

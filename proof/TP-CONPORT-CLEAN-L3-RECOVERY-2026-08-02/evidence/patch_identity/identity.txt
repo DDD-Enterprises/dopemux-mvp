@@ -1,0 +1,25 @@
+recovery_source_commit=a39ea663dbf568cb3edf3ae39d756ce86532d07f
+clean_transplant_commit=80e3ed2f426e379c8edc1b86e2727fb416ed0229
+content_head=6f4d6b11e366ab2cb0e5e46e5c9ea49a631378b6
+compose.yml a39ea=700c28660771716eee6e3c378da1930439033eaf transplant=700c28660771716eee6e3c378da1930439033eaf match=YES
+docs/03-reference/systems/conport/db-project-wall-and-corpus-recovery-2026-08-02.md a39ea=cbbd891ef95aef3922858c55442e573bdb064912 transplant=cbbd891ef95aef3922858c55442e573bdb064912 match=YES
+pytest.ini a39ea=1b0ab3f7e84b42a8922be353aeeea5e8c438de26 transplant=1b0ab3f7e84b42a8922be353aeeea5e8c438de26 match=YES
+scripts/migration/import_conport_export.py a39ea=fd2d9338c38bb5a22ad92126a169cadaa5137e88 transplant=fd2d9338c38bb5a22ad92126a169cadaa5137e88 match=YES
+scripts/migration/provision_conport_project_db.sh a39ea=0b90bb8b4a1972a422ba4bcf78471a45b4026c37 transplant=0b90bb8b4a1972a422ba4bcf78471a45b4026c37 match=YES
+scripts/migration/rehome_conport_rows.sh a39ea=da63992ee9ec8565208b92ef7f1eb638d67b02a1 transplant=da63992ee9ec8565208b92ef7f1eb638d67b02a1 match=YES
+src/dopemux/tools/conport_client.py a39ea=3618c52f8cd872043311efe0a12bbab9550345ce transplant=3618c52f8cd872043311efe0a12bbab9550345ce match=YES
+tests/conftest.py a39ea=b80d3860ce79708ad46b87f25ee4f845e0c0c5b2 transplant=b80d3860ce79708ad46b87f25ee4f845e0c0c5b2 match=YES
+--- tip files vs main ---
+compose.yml
+docker/mcp-servers-source/conport/start_with_info.sh
+docker/mcp-servers-source/conport/tests/test_start_with_info_supervision.py
+docs/03-reference/systems/conport/db-project-wall-and-corpus-recovery-2026-08-02.md
+pytest.ini
+scripts/migration/import_conport_export.py
+scripts/migration/lock_legacy_conport_archive.sh
+scripts/migration/provision_conport_project_db.sh
+scripts/migration/rehome_conport_rows.sh
+src/dopemux/tools/conport_client.py
+tests/conftest.py
+--- no 1182 ---
+NONE

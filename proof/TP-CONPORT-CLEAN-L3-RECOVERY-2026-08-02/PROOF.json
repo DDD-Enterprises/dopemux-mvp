@@ -1,0 +1,105 @@
+{
+  "packet_id": "TP-CONPORT-PROJECT-WALL-RECOVERY-L3-FREEZE-001",
+  "series": "CONPORT-PROJECT-WALL-RECOVERY-2026-08-02",
+  "branch": "fix/conport-clean-l3-recovery-2026-08-02",
+  "base": "main",
+  "base_sha": "525ddb5fe5bd803e974c95ca6f27084d9938cb00",
+  "recovery_source_commit": "a39ea663dbf568cb3edf3ae39d756ce86532d07f",
+  "clean_transplant_commit": "80e3ed2f426e379c8edc1b86e2727fb416ed0229",
+  "head_sha": "6f4d6b11e366ab2cb0e5e46e5c9ea49a631378b6",
+  "custody_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1185",
+  "pr_steward_policy_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1187",
+  "supervisor_input": "AUTHORIZE_ONE_CLEAN_L3_REPAIR",
+  "required_next_verdict": "CONPORT_RECOVERY_CLEAN_CANDIDATE_READY_FOR_OPERATOR_MERGE_DECISION",
+  "freeze_verdict": "NEEDS_SUPERVISOR",
+  "merge_ready": false,
+  "agent": "grok-4.5",
+  "timestamp": "2026-08-02T23:58:00Z",
+  "patch_identity": {
+    "eight_file_blob_match_a39ea_at_transplant": true,
+    "pr1182_files_in_diff": false
+  },
+  "validations": {
+    "clean_transplant": "PASS",
+    "patch_identity": "PASS",
+    "no_pr1182_files": "PASS",
+    "pid1_unit_tests": "PASS",
+    "pid1_live_rest_kill": "PASS",
+    "pid1_live_mcp_kill": "PASS",
+    "pid1_live_info_kill": "PASS",
+    "autoheal_removed": "PASS",
+    "docker_sock_default_removed": "PASS",
+    "legacy_connect_revoked": "PASS",
+    "pytest_rows_deleted": "PASS",
+    "write_guard_delta_after_delete": "PASS",
+    "production_health": "PASS",
+    "pr_steward_policy_doctor": "PASS_on_PR1187",
+    "pr_steward_policy_merged": "NOT_YET",
+    "independent_audit": "PENDING",
+    "pr_steward_ready": "NOT_RUN"
+  },
+  "pid1_live": {
+    "rest_kill_recover_s": 2,
+    "mcp_kill_recover_s": 5,
+    "info_kill_recover_s": 5,
+    "restart_policy": "unless-stopped",
+    "foreign_worktree_replaced": false
+  },
+  "row_cleanup": {
+    "export_sha256": "cfb4f18a0488b2661ad9b17695f96ff2df4b5be0daf5463e5399e08191e952e6",
+    "backup_pre_delete_sha256": "e2f1b8806505532ec08985dbc0ed18b728bc5cdc439d939e1a43b3c68ba6615a",
+    "ids": [
+      "8f586440-edce-42e1-8c3f-4d5b507b1354",
+      "2e40de0a-b6f9-4227-937b-71355cbadded"
+    ],
+    "custom_data_before": 765,
+    "custom_data_after": 763,
+    "pytest_after": 0,
+    "decisions_after": 295,
+    "ledger_after": 742
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "NEEDS_SUPERVISOR",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "PENDING independent non-Grok audit on exact content head; implementer family must not serve as formal auditor",
+    "exit_code": 1,
+    "report_path": "proof/TP-CONPORT-CLEAN-L3-RECOVERY-2026-08-02/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-CLEAN-AUDIT-PENDING",
+        "severity": "BLOCKING",
+        "title": "Independent non-Grok audit not completed",
+        "status": "OPEN",
+        "body": "Supervisor forbids Grok-family secondary review as independent audit. AGY/Claude/Gemini formal route required with full identity quintuple."
+      },
+      {
+        "id": "F-CLEAN-POLICY-PR",
+        "severity": "HIGH",
+        "title": "PR Steward policy prerequisite not yet merged",
+        "status": "OPEN",
+        "body": "PR #1187 restores config/pr_steward/policy.json; doctor PASS on that branch; merge required before recovery READY."
+      }
+    ],
+    "fixes_applied": [
+      "Clean transplant without #1182 lineage",
+      "PID1 supervision + autoheal removal",
+      "Legacy CONNECT revoke",
+      "Pytest row deletion with export/backup"
+    ],
+    "remaining_risks": [
+      "Independent audit identity UNKNOWN until Tier-1 run",
+      "Policy PR not merged",
+      "Live terminal-budget storm not re-executed (unit-tested)"
+    ],
+    "skip_reason": null
+  },
+  "model_identity": {
+    "requested": "AGY approved non-Grok or Claude Code or proven Gemini selector",
+    "configured": "UNKNOWN_PENDING_AUDIT",
+    "response_claimed": "UNKNOWN_PENDING_AUDIT",
+    "proxy_reported": "UNKNOWN",
+    "provider_attested": "UNKNOWN"
+  }
+}
