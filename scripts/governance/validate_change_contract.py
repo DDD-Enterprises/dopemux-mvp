@@ -391,11 +391,12 @@ def evaluate(
     if proof_only_mode or (
         paths and all(_PROOF_ONLY_ALLOWED.match(p.replace("\\", "/")) for p in paths)
     ):
+        # Pass heads without fallback substitution — missing values must fail closed.
         validate_proof_only_closure(
             paths,
             result,
-            content_head=content_head or audited_head,
-            proof_head=proof_head or head,
+            content_head=content_head,
+            proof_head=proof_head,
             audited_head=audited_head,
             cwd=cwd,
         )

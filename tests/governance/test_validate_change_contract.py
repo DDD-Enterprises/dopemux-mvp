@@ -174,6 +174,25 @@ def test_proof_only_missing_heads_fails() -> None:
     assert any(f.code == "proof_only_missing_heads" for f in r.findings)
 
 
+def test_proof_only_missing_each_head_fails_independently() -> None:
+    base_kwargs = {
+        "paths": ["proof/pr_merge/embedded-audit/pr-9/PROOF.json.sig"],
+        "cwd": ROOT,
+        "proof_only_mode": True,
+        "file_text": {"proof/pr_merge/embedded-audit/pr-9/PROOF.json.sig": "sig"},
+    }
+    # Each head omitted independently must fail closed (no ambient HEAD substitution).
+    cases = [
+        {"content_head": None, "audited_head": "a" * 40, "proof_head": "b" * 40},
+        {"content_head": "a" * 40, "audited_head": None, "proof_head": "b" * 40},
+        {"content_head": "a" * 40, "audited_head": "a" * 40, "proof_head": None},
+    ]
+    for heads in cases:
+        r = evaluate(**base_kwargs, **heads)
+        assert r.status == "FAIL", heads
+        assert any(f.code == "proof_only_missing_heads" for f in r.findings), heads
+
+
 def test_proof_only_missing_signature_fails() -> None:
     r = evaluate(
         paths=["proof/pr_merge/embedded-audit/pr-9/PROOF.json"],
