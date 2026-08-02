@@ -71,15 +71,12 @@ repos:
                   fi
                   # Exact canonical Task Packet template path only.
                   # Filename contains "template" which otherwise matches *temp*.md.
-                  # Do not broaden this exemption to other temp/notes/todo/scratch names.
+                  # Do NOT exempt other template-*.md / temp / notes / todo / scratch names.
                   if [[ "$file" == "docs/03-reference/governance/task-packet-template.md" ]]; then
                     continue
                   fi
                   base="$(basename "$file")"
                   lbase="$(echo "$base" | tr '[:upper:]' '[:lower:]')"
-                  if [[ "$lbase" =~ ^template[-_].*\.md$ ]]; then
-                    continue
-                  fi
                   case "$lbase" in
                     notes*.md|todo*.md|temp*.md|*temp*.md|*scratch*.md)
                       echo "❌ Found prohibited file pattern in changed file:"

@@ -61,15 +61,19 @@ _DEFAULT_LANE = "L2"
 _FM_REQUIRED = ("id", "title", "type", "owner", "last_review", "next_review")
 _FM_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*(?:\n|$)", re.DOTALL)
 
-# Tight proof-only path closure: known proof artifacts only (not arbitrary proof tree files).
-_PROOF_ONLY_ALLOWED = re.compile(
-    r"^("
-    r"proof/pr_merge/embedded-audit/pr-\d+/.+"
-    r"|proof/[^/]+/(PROOF\.json|PROOF\.json\.sig|AUDITOR_REPORT\.md|"
+# Tight proof-only path closure: enumerated artifact names only.
+# No arbitrary basenames under proof trees or pr_merge audit dirs.
+_PROOF_ARTIFACT = (
+    r"(PROOF\.json|PROOF\.json\.sig|AUDITOR_REPORT\.md|"
     r"AUDIT_[A-Z0-9_]+\.(md|json)|COMMAND_LOG\.md|HANDOFF\.md|"
     r"THREAT_MODEL\.md|VALIDATION\.json|MODEL_CALL_BUDGET\.md|"
-    r"C\d+_HEAD\.txt|review_bundle/.+)"
-    r")$"
+    r"C\d+_HEAD\.txt|review_bundle/[A-Za-z0-9._/-]+)"
+)
+_PROOF_ONLY_ALLOWED = re.compile(
+    rf"^("
+    rf"proof/pr_merge/embedded-audit/pr-\d+/{_PROOF_ARTIFACT}"
+    rf"|proof/[^/]+/{_PROOF_ARTIFACT}"
+    rf")$"
 )
 
 

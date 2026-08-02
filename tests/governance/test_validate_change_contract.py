@@ -201,6 +201,59 @@ def test_proof_only_arbitrary_proof_path_fails() -> None:
     assert any(f.code == "proof_only_escaped_path" for f in r.findings)
 
 
+def test_proof_only_arbitrary_pr_merge_path_fails() -> None:
+    r = evaluate(
+        paths=["proof/pr_merge/embedded-audit/pr-1184/evil.bin"],
+        cwd=ROOT,
+        proof_only_mode=True,
+        content_head="a" * 40,
+        audited_head="a" * 40,
+        proof_head="a" * 40,
+    )
+    assert r.status == "FAIL"
+    assert any(f.code == "proof_only_escaped_path" for f in r.findings)
+
+
+def test_proof_only_enumerated_pr_merge_artifact_allowed_for_path_check() -> None:
+    r = evaluate(
+        paths=[
+            "proof/pr_merge/embedded-audit/pr-1184/PROOF.json",
+            "proof/pr_merge/embedded-audit/pr-1184/PROOF.json.sig",
+            "proof/pr_merge/embedded-audit/pr-1184/AUDITOR_REPORT.md",
+            "proof/pr_merge/embedded-audit/pr-1184/review_bundle/CHANGED_FILES.txt",
+        ],
+        cwd=ROOT,
+        proof_only_mode=True,
+        content_head="a" * 40,
+        audited_head="a" * 40,
+        proof_head="a" * 40,
+        file_text={
+            "proof/pr_merge/embedded-audit/pr-1184/PROOF.json": json.dumps(
+                {
+                    "embedded_audit": {
+                        "required": True,
+                        "status": "PASS",
+                        "auditor_tool": "claude-code-cli",
+                        "auditor_model": "sonnet",
+                        "invocation": "x",
+                        "exit_code": 0,
+                        "report_path": "proof/pr-1184/AUDITOR_REPORT.md",
+                        "findings": [],
+                        "fixes_applied": [],
+                        "remaining_risks": [],
+                        "skip_reason": None,
+                    }
+                }
+            ),
+            "proof/pr_merge/embedded-audit/pr-1184/PROOF.json.sig": "sig",
+            "proof/pr_merge/embedded-audit/pr-1184/AUDITOR_REPORT.md": "# a\n",
+            "proof/pr_merge/embedded-audit/pr-1184/review_bundle/CHANGED_FILES.txt": "x\n",
+        },
+    )
+    assert not any(f.code == "proof_only_escaped_path" for f in r.findings)
+    assert not any(f.code == "proof_only_missing_signature" for f in r.findings)
+
+
 def test_proof_only_escaped_path_fails() -> None:
     r = evaluate(
         paths=["scripts/audit/pal_clink_runner.py", "proof/TP-X/PROOF.json"],
