@@ -1,0 +1,164 @@
+SYSTEM CONSTRAINTS:
+- You are a read-only independent code auditor.
+- Do NOT call tools, shell, MCP, or search.
+- The complete candidate delta is embedded below. Base your verdict only on it.
+- Output ONLY a single JSON object. No prose before or after. No markdown fences.
+
+TASK: Audit PR #1177 content head F3=5aa8b86ae5a008e3bddf4b98111c5c9afccaace4 for Dopemux (packet TP-DMX-PORTFOLIO-TOOLTIP-CLOSURE-SALVAGE-002).
+
+CHANGED PATHS (must be exactly these two vs main):
+ui-dashboard/src/components/TaskSequencer.tsx
+ui-dashboard/src/components/__tests__/Accessibility.test.tsx
+
+CONTEXT:
+- F3 removes stale F2 embedded-audit proof files from the PR branch (proof-only cleanup in the F3 commit) and adds a rendered testing-library tooltip test salvaged/adapted from PR #1149.
+- TaskSequencer.tsx UI tooltip content is unchanged from prior accepted F1 content (Tooltip wrap of pending non-current Start button).
+- Prior independent audit accepted LOW risk that tests only checked source text; F3 is intended to close that gap with rendered hover + keyboard focus coverage.
+- Implementer for F3: Grok (xAI). You (Claude Code sonnet) must remain independent.
+
+UNIFIED DIFF vs main:
+diff --git a/ui-dashboard/src/components/TaskSequencer.tsx b/ui-dashboard/src/components/TaskSequencer.tsx
+index fce96c566..eec1028e4 100644
+--- a/ui-dashboard/src/components/TaskSequencer.tsx
++++ b/ui-dashboard/src/components/TaskSequencer.tsx
+@@ -1029,15 +1029,17 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
+                   }
+                 />
+                 {!isCompleted && !isCurrent && (
+-                  <Button
+-                    size="small"
+-                    variant="outlined"
+-                    startIcon={<Play aria-hidden="true" />}
+-                    onClick={() => startTask(task.id)}
+-                    aria-label={`Start task: ${task.title}`}
+-                  >
+-                    Start
+-                  </Button>
++                  <Tooltip title={`Start task and switch active focus to: ${task.title}`} arrow>
++                    <Button
++                      size="small"
++                      variant="outlined"
++                      startIcon={<Play aria-hidden="true" />}
++                      onClick={() => startTask(task.id)}
++                      aria-label={`Start task: ${task.title}`}
++                    >
++                      Start
++                    </Button>
++                  </Tooltip>
+                 )}
+               </ListItem>
+               {index < optimizedTasks.length - 1 && (
+diff --git a/ui-dashboard/src/components/__tests__/Accessibility.test.tsx b/ui-dashboard/src/components/__tests__/Accessibility.test.tsx
+index dfd363210..39c4d5d8c 100644
+--- a/ui-dashboard/src/components/__tests__/Accessibility.test.tsx
++++ b/ui-dashboard/src/components/__tests__/Accessibility.test.tsx
+@@ -1,12 +1,13 @@
+ // @vitest-environment jsdom
+ // @ts-nocheck
+ import { expect, test } from 'vitest';
+-import { render, screen } from '@testing-library/react';
++import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+ import '@testing-library/jest-dom/vitest';
+ import React from 'react';
+ import fs from 'fs';
+ import path from 'path';
+ import PredictionPanel from '../PredictionPanel';
++import TaskSequencer from '../TaskSequencer';
+
+ const componentsDir = path.resolve(__dirname, '..');
+
+@@ -171,6 +172,9 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator',
+   expect(content).toContain('<IconButton');
+   expect(content).toContain('onClick={() => handleCopyTaskTitle(currentTask.title)}');
+
++  // Verify start button tooltip
++  expect(content).toMatch(/<Tooltip\s+title=\{\s*`Start task and switch active focus to: \$\{task\.title\}`\s*\}\s*arrow\s*>/);
++
+   // Verify Predictive Skip and Soft Confirmation
+   expect(content).toContain('const [isSkipConfirming, setIsSkipConfirming] = useState(false);');
+   expect(content).toContain('const skipConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);');
+@@ -282,3 +286,60 @@ test('PredictionPanel.tsx has TrendIcon based on load and prediction', () => {
+   expect(content).toContain('aria-hidden="true"');
+   expect(content).toContain('TrendingDown');
+ });
++
++test('TaskSequencer pending Start button renders tooltip on hover and keyboard focus', async () => {
++  const cognitiveState = {
++    energy: 80,
++    attention: 70,
++    load: 40,
++    status: 'optimal' as const,
++    recommendation: 'Stay focused.',
++  };
++
++  const getPendingListStartButton = () => {
++    // List pending/non-current Start controls use "Start task: {title}" and live on
++    // list items without aria-current="step". Exclude the primary ritual Start control
++    // (tooltip "Start Ritual") which shares the same accessible-name pattern.
++    const candidates = screen.getAllByRole('button', { name: /^Start task: / });
++    const pending = candidates.find((btn) => {
++      const listItem = btn.closest('li');
++      return Boolean(listItem) && listItem.getAttribute('aria-current') !== 'step';
++    });
++    expect(pending).toBeTruthy();
++    return pending as HTMLElement;
++  };
++
++  const titleFromStartButton = (button: HTMLElement) => {
++    const accessibleName = button.getAttribute('aria-label') ?? '';
++    const taskTitle = accessibleName.replace(/^Start task:\s*/, '');
++    expect(taskTitle.length).toBeGreaterThan(0);
++    return taskTitle;
++  };
++
++  render(<TaskSequencer cognitiveState={cognitiveState} />);
++
++  const startButton = getPendingListStartButton();
++  const taskTitle = titleFromStartButton(startButton);
++  const expectedTooltip = `Start task and switch active focus to: ${taskTitle}`;
++
++  // Keyboard focus path first: MUI Tooltip opens only on focus-visible.
++  // Use real .focus() so jsdom :focus-visible matches; fireEvent.focus alone may not.
++  fireEvent.keyDown(document, { key: 'Tab' });
++  startButton.focus();
++  fireEvent.focus(startButton);
++  expect(await screen.findByRole('tooltip', {}, { timeout: 2000 })).toHaveTextContent(expectedTooltip);
++
++  startButton.blur();
++  fireEvent.blur(startButton);
++  // Remount for a clean hover path (pointer modality must not poison keyboard assert above).
++  cleanup();
++  render(<TaskSequencer cognitiveState={cognitiveState} />);
++
++  const hoverStartButton = getPendingListStartButton();
++  const hoverTitle = titleFromStartButton(hoverStartButton);
++  const hoverExpected = `Start task and switch active focus to: ${hoverTitle}`;
++
++  // Hover path — MUI Tooltip portals title text after enter delay.
++  fireEvent.mouseOver(hoverStartButton);
++  expect(await screen.findByRole('tooltip', {}, { timeout: 2000 })).toHaveTextContent(hoverExpected);
++});
+
+
+LOCAL VALIDATION:
+- focused Accessibility tests PASS (12)
+- full UI vitest PASS (20 tests / 4 files)
+- build PASS (tsc && vite)
+- lint FAIL on both candidate and main baseline (ESLint 10 missing eslint.config.*); matching tooling gap, not PASS for this PR
+
+HARD RULES:
+- Do not claim App.tsx, palette, PAL, or any non-listed path changed in the UI content delta
+- Do not authorize merge or PR closure
+- Verify rendered test locates pending Start by accessible name, derives task title, and checks tooltip on hover and keyboard focus
+- Verdict must be one of PASS, PASS_WITH_RISKS, FAIL, NEEDS_SUPERVISOR
+
+JSON SCHEMA:
+{
+  "verdict": "PASS|PASS_WITH_RISKS|FAIL|NEEDS_SUPERVISOR",
+  "summary": "string",
+  "findings": [{"id":"F-001","severity":"INFO|LOW|MEDIUM|HIGH|BLOCKING","status":"OPEN|RESOLVED|ACCEPTED_RISK","title":"string","body":"string"}],
+  "remaining_risks": ["string"],
+  "claims_absent_from_diff": ["string"],
+  "audited_head": "5aa8b86ae5a008e3bddf4b98111c5c9afccaace4",
+  "changed_paths_observed": ["string"]
+}
