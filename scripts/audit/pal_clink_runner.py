@@ -28,6 +28,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -418,6 +419,84 @@ def _audit_output_as_dict(output: PalClinkAuditOutput) -> dict[str, Any]:
     }
 
 
+# Full-output fence only: optional language tag, single fence block, whitespace outside.
+# Rejects prose wrappers, multiple fences, and brace-scraped substrings.
+_FULL_OUTPUT_FENCED_JSON_RE = re.compile(
+    r"\A\s*```(?:json)?[ \t]*\r?\n([\s\S]*?)\r?\n[ \t]*```\s*\Z",
+    re.IGNORECASE,
+)
+
+
+def parse_audit_json_object(text: str) -> dict[str, Any]:
+    """Fail-closed parse of model audit stdout into a JSON object.
+
+    Accepts only:
+    - a direct full-output JSON object (whitespace outside allowed)
+    - exactly one full-output fenced JSON object (whitespace outside the fence only)
+
+    Rejects prose wrappers, first/last-brace scraping, multiple fence candidates,
+    arrays, scalars, malformed JSON, and ambiguous nested non-object content.
+    """
+    if not isinstance(text, str):
+        raise json.JSONDecodeError("audit output must be a string", "", 0)
+
+    stripped = text.strip()
+    if not stripped:
+        raise json.JSONDecodeError("audit output is empty", text, 0)
+
+    candidate = stripped
+    fence_match = _FULL_OUTPUT_FENCED_JSON_RE.fullmatch(text)
+    if fence_match is not None:
+        candidate = fence_match.group(1).strip()
+        if not candidate:
+            raise json.JSONDecodeError("fenced audit output is empty", text, 0)
+    elif stripped.startswith("```"):
+        # Fence-like output that is not a single full-output fence — reject.
+        raise json.JSONDecodeError(
+            "audit output fence is ambiguous or not a single full-output block",
+            text,
+            0,
+        )
+    elif not stripped.startswith("{"):
+        # No bare object and no accepted fence — reject prose/brace-scraping paths.
+        raise json.JSONDecodeError(
+            "audit output must be a bare JSON object or a single full-output fenced object",
+            text,
+            0,
+        )
+
+    try:
+        payload = json.loads(candidate)
+    except json.JSONDecodeError as exc:
+        # Re-raise without attempting brace scraping or partial recovery.
+        raise json.JSONDecodeError(
+            f"audit output JSON is malformed: {exc.msg}",
+            text,
+            exc.pos if isinstance(exc.pos, int) else 0,
+        ) from exc
+
+    if not isinstance(payload, dict):
+        raise json.JSONDecodeError(
+            "audit output must decode to a JSON object (not array/scalar)",
+            text,
+            0,
+        )
+    return payload
+
+
+def _rejected_parse_payload(raw: str, exc: json.JSONDecodeError) -> dict[str, Any]:
+    """Map rejected model text to an error payload — never a structured PASS/READY."""
+    return {
+        "status": "error",
+        "content": raw,
+        "risks": [
+            "Fail-closed JSON parse rejected model output: "
+            f"{exc.msg}. Rejected output cannot become PASS, READY, or a "
+            "structured audit verdict."
+        ],
+    }
+
+
 def _verdict_payload_from_output(output: PalClinkAuditOutput) -> dict[str, Any]:
     if output.timed_out or output.exit_code != 0 or output.error:
         return {
@@ -426,12 +505,10 @@ def _verdict_payload_from_output(output: PalClinkAuditOutput) -> dict[str, Any]:
             "risks": [output.error or output.stderr or "PAL clink exited non-zero."],
         }
     try:
-        payload = json.loads(output.stdout)
-    except json.JSONDecodeError:
-        return {"status": "success", "content": output.stdout}
-    if isinstance(payload, dict):
-        return _unwrap_tool_output_payload(payload)
-    return {"status": "success", "content": output.stdout}
+        payload = parse_audit_json_object(output.stdout)
+    except json.JSONDecodeError as exc:
+        return _rejected_parse_payload(output.stdout, exc)
+    return _unwrap_tool_output_payload(payload)
 
 
 def _unwrap_tool_output_payload(payload: dict[str, Any]) -> dict[str, Any]:
@@ -441,12 +518,11 @@ def _unwrap_tool_output_payload(payload: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(content, str):
         return payload
     try:
-        content_payload = json.loads(content)
+        content_payload = parse_audit_json_object(content)
     except json.JSONDecodeError:
+        # Keep the outer envelope; missing explicit verdict stays fail-closed upstream.
         return payload
-    if isinstance(content_payload, dict):
-        return content_payload
-    return payload
+    return content_payload
 
 
 def _payload_is_fixture_only(payload: dict[str, Any]) -> bool:

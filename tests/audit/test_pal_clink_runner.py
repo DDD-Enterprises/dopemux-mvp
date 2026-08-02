@@ -13,11 +13,14 @@ from scripts.audit.auditor_router import _CLINK_CONF_DIR, load_route_from_clink_
 from scripts.audit.pal_clink_runner import (
     PalClinkAuditOutput,
     build_invocation,
+    parse_audit_json_object,
     run_audit,
     run_audit_and_capture_payload,
     run_audit_and_capture_verdict,
+    _verdict_payload_from_output,
 )
 from scripts.audit.route_schema import AuditRoute
+from tools.auditor_router.pal_clink import normalize_pal_clink_audit_output
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = ROOT / "schemas" / "audit" / "pal_clink_audit_output.schema.json"
@@ -629,3 +632,145 @@ class TestRunAuditAndCapturePayload:
         jsonschema.validate(raw_output, json.loads(SCHEMA_PATH.read_text()))
         assert payload["verdict"] == "PASS"
         assert captured_payload["verdict"] == "PASS"
+
+
+# ---------------------------------------------------------------------------
+# parse_audit_json_object (fail-closed fenced JSON salvage)
+# ---------------------------------------------------------------------------
+
+
+_SAFE_ROUTE = {
+    "tool": "pal-mcp-clink",
+    "underlying_cli": "claude",
+    "clink_client_name": "claude-audit",
+    "audit_safe_config_proven": True,
+    "clink_mutation_flags_detected": [],
+    "invocation_template": (
+        "pal-clink --client claude-audit --role codereviewer "
+        "--input PAL_CLINK_AUDIT_INPUT.md "
+        "--output PAL_CLINK_AUDIT_OUTPUT.json"
+    ),
+}
+
+
+class TestParseAuditJsonObject:
+    def test_direct_full_output_object(self) -> None:
+        obj = {"verdict": "PASS", "findings": [], "risks": []}
+        assert parse_audit_json_object(json.dumps(obj)) == obj
+        assert parse_audit_json_object(f"  \n{json.dumps(obj)}\n  ") == obj
+
+    def test_single_full_output_fenced_object(self) -> None:
+        obj = {"verdict": "PASS_WITH_RISKS", "findings": [], "risks": ["r1"]}
+        body = json.dumps(obj)
+        assert parse_audit_json_object(f"```json\n{body}\n```") == obj
+        assert parse_audit_json_object(f"```\n{body}\n```") == obj
+        assert parse_audit_json_object(f"  \n```json\n{body}\n```\n  ") == obj
+
+    def test_rejects_prose_wrapper(self) -> None:
+        body = json.dumps({"verdict": "PASS"})
+        with pytest.raises(json.JSONDecodeError):
+            parse_audit_json_object(f"Sure! Here you go:\n{body}\nHope that helps!")
+        with pytest.raises(json.JSONDecodeError):
+            parse_audit_json_object(f"```json\n{body}\n```\nThanks!")
+
+    def test_rejects_brace_scraping(self) -> None:
+        body = json.dumps({"verdict": "PASS"})
+        with pytest.raises(json.JSONDecodeError):
+            parse_audit_json_object(f"prefix {body} suffix")
+
+    def test_rejects_multiple_fence_candidates(self) -> None:
+        a = json.dumps({"verdict": "PASS"})
+        b = json.dumps({"verdict": "FAIL"})
+        with pytest.raises(json.JSONDecodeError):
+            parse_audit_json_object(f"```json\n{a}\n```\n```json\n{b}\n```")
+
+    def test_rejects_arrays_and_scalars(self) -> None:
+        with pytest.raises(json.JSONDecodeError):
+            parse_audit_json_object("[1, 2, 3]")
+        with pytest.raises(json.JSONDecodeError):
+            parse_audit_json_object('"just a string"')
+        with pytest.raises(json.JSONDecodeError):
+            parse_audit_json_object("42")
+        with pytest.raises(json.JSONDecodeError):
+            parse_audit_json_object("```json\n[1, 2]\n```")
+
+    def test_rejects_malformed_json(self) -> None:
+        with pytest.raises(json.JSONDecodeError):
+            parse_audit_json_object("{not json")
+        with pytest.raises(json.JSONDecodeError):
+            parse_audit_json_object("```json\n{not json\n```")
+
+    def test_rejects_ambiguous_nested_content_outside_object(self) -> None:
+        # Nested object inside prose must not be brace-scraped into a verdict.
+        nested = '{"verdict":"PASS","findings":[]}'
+        with pytest.raises(json.JSONDecodeError):
+            parse_audit_json_object(
+                f'I reviewed the change. Result follows: {nested} — approved.'
+            )
+
+
+class TestVerdictPayloadFailClosed:
+    def _ok_output(self, stdout: str) -> PalClinkAuditOutput:
+        return PalClinkAuditOutput(
+            cli_name="claude-audit",
+            exit_code=0,
+            stdout=stdout,
+            stderr="",
+            timed_out=False,
+            error=None,
+            duration_seconds=0.1,
+        )
+
+    def test_rejected_stdout_never_becomes_pass_or_ready(self) -> None:
+        prose = 'Sure! {"verdict":"PASS","findings":[],"risks":[]} done.'
+        payload = _verdict_payload_from_output(self._ok_output(prose))
+        assert payload["status"] == "error"
+        assert "verdict" not in payload
+        assert any("Fail-closed JSON parse" in r for r in payload["risks"])
+
+        embedded = normalize_pal_clink_audit_output(
+            payload,
+            route=_SAFE_ROUTE,
+            report_path="proof/test/AUDITOR_REPORT.md",
+        )
+        # Rejected parse must never become a structured passing/ready verdict.
+        assert embedded["status"] not in {"PASS", "PASS_WITH_RISKS", "READY"}
+        assert embedded["status"] in {"NEEDS_SUPERVISOR", "FAIL", "SKIPPED"}
+        assert any(
+            "Fail-closed JSON parse" in r or "ToolOutput status was error" in r
+            for r in embedded.get("remaining_risks") or []
+        )
+
+    def test_fenced_object_can_surface_structured_verdict(self) -> None:
+        body = json.dumps(
+            {
+                "status": "success",
+                "verdict": "PASS",
+                "findings": [],
+                "risks": [],
+                **_PASS_EVIDENCE,
+            }
+        )
+        payload = _verdict_payload_from_output(
+            self._ok_output(f"```json\n{body}\n```")
+        )
+        assert payload.get("verdict") == "PASS"
+        embedded = normalize_pal_clink_audit_output(
+            payload,
+            route=_SAFE_ROUTE,
+            report_path="proof/test/AUDITOR_REPORT.md",
+        )
+        assert embedded["status"] == "PASS"
+
+    def test_direct_object_unchanged(self) -> None:
+        body = json.dumps(
+            {
+                "status": "success",
+                "verdict": "PASS",
+                "findings": [],
+                "risks": [],
+                **_PASS_EVIDENCE,
+            }
+        )
+        payload = _verdict_payload_from_output(self._ok_output(body))
+        assert payload.get("verdict") == "PASS"
