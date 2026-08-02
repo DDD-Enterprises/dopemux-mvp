@@ -1,3 +1,15 @@
+---
+id: TP-DMX-PAL-STRICT-JSON-EXTRACTION-001
+title: Fail-closed PAL clink strict JSON extraction
+type: reference
+owner: '@hu3mann'
+last_review: 2026-08-02
+next_review: 2026-10-31
+author: '@hu3mann'
+date: '2026-08-02'
+prelude: Fail-closed PAL clink strict JSON extraction (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Task Packet: TP-DMX-PAL-STRICT-JSON-EXTRACTION-001
 
 ## Goal
