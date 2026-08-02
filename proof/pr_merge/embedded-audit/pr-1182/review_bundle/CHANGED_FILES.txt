@@ -1,0 +1,6 @@
+claudedocs/orchestrator-replan-2026-08-02/MASTER-PLAN.md
+claudedocs/orchestrator-replan-2026-08-02/routing-table.json
+docs/03-reference/orchestrator-integration/db-defragmentation-2026-08-01.md
+docs/03-reference/orchestrator-integration/index.md
+docs/ops/load-plans/load_plan-DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED.json
+docs/ops/load-plans/load_plan-TO-CANON.json

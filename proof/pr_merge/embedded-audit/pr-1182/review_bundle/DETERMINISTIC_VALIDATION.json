@@ -1,0 +1,19 @@
+{
+  "total_items": 539,
+  "unique_ids": 539,
+  "class_sum": 539,
+  "by_class": {
+    "actionable_leaf": 377,
+    "cross_repository_parked": 1,
+    "operator_gated_decision": 28,
+    "series_or_phase_container": 70,
+    "stale_or_cancellation_candidate": 63
+  },
+  "legacy_verify_close": 0,
+  "operator_with_routing": 0,
+  "luna_primaries": 12,
+  "luna_ready": 12,
+  "dep_edges": 563,
+  "dep_edges_len": 563,
+  "verdict": "PASS"
+}
