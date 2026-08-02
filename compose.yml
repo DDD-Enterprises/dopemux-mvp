@@ -42,6 +42,7 @@ volumes:
   mcp_client_logs:
   mcp_plane_coordinator_data:
   mcp_plane_coordinator_logs:
+  conport_supervision_state:
 
 
 services:
@@ -234,18 +235,11 @@ services:
       context: .
       dockerfile: docker/mcp-servers/conport/Dockerfile
     container_name: ${CONPORT_CONTAINER_NAME:-mcp-conport}
+    # Child death now exits PID 1 (start_with_info.sh supervisor). Docker
+    # restarts the container. Permanent failure is bounded inside the
+    # supervisor (volume-backed budget → terminal alert sleep, no storm).
+    # Third-party autoheal + docker.sock is intentionally NOT used.
     restart: unless-stopped
-    # ConPort runs three servers under one `wait` in its (red-lane sealed)
-    # start_with_info.sh. If the REST data plane on 3004 dies, PID 1 keeps
-    # waiting on the survivors, so the container stays "Up", `restart:
-    # unless-stopped` never fires (Docker restarts on process exit, not on
-    # healthcheck failure), and every ConPort write fails against a dead
-    # backend while the fleet still looks healthy. Observed 2026-08-02: 3004
-    # down 7+ hours with the healthcheck below failing the entire time.
-    # The healthcheck already detects this; the autoheal service at the bottom
-    # of this file is what finally acts on it.
-    labels:
-      - autoheal=true
     networks:
       - dopemux-network
 
@@ -276,6 +270,12 @@ services:
       - DOPE_MEMORY_EVENTS_REDIS_URL=redis://redis-events:6379
       - DOPE_MEMORY_INPUT_STREAM=activity.events.v1
       - QDRANT_URL=http://mcp-qdrant:6333
+      # PID1 supervision budget (persists across restarts for bound).
+      - CONPORT_SUPERVISION_STATE_DIR=/var/lib/conport-supervision
+      - CONPORT_MAX_CHILD_FAILURES=${CONPORT_MAX_CHILD_FAILURES:-5}
+      - CONPORT_FAILURE_WINDOW_SECS=${CONPORT_FAILURE_WINDOW_SECS:-600}
+    volumes:
+      - conport_supervision_state:/var/lib/conport-supervision
     ports:
       - "127.0.0.1:${CONPORT_HTTP_PORT:-3004}:3004"
       - "127.0.0.1:${CONPORT_MCP_PORT:-3005}:3005"
@@ -289,11 +289,16 @@ services:
         condition: service_started
       dopecon-bridge:
         condition: service_started
+    # All three required children: REST :3004, MCP :3005 (listen), info :4004.
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:3004/health || exit 1" ]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:3004/health >/dev/null && curl -fsS http://localhost:4004/health >/dev/null && python -c \"import socket;s=socket.create_connection(('127.0.0.1',3005),2);s.close()\"",
+        ]
       timeout: 10s
       retries: 3
-      interval: 30s
+      interval: 15s
       start_period: 30s
 
   # Zen - Multi-Model Reasoning
@@ -746,35 +751,6 @@ services:
       - ./.dopemux/webhook_receiver:/data
     command: ["python", "/app/services/webhook_receiver/poller.py", "--providers", "xai,gemini", "--interval-seconds", "10"]
 
-  # Autoheal - restart containers whose healthcheck has gone unhealthy.
-  #
-  # Docker's `restart:` policies react to PROCESS EXIT, not to healthcheck
-  # failure. Any container that supervises several servers under one PID 1 can
-  # therefore lose a subprocess, keep reporting "Up", fail its healthcheck
-  # forever, and never be restarted. ConPort hit exactly this on 2026-08-02:
-  # its REST data plane on 3004 died, the MCP layer kept proxying to a dead
-  # backend, every write failed, and the container sat "Up (unhealthy)" for
-  # 7+ hours. Nothing in the stack was watching.
-  #
-  # Opt a service in by giving it `labels: [autoheal=true]` AND a healthcheck.
-  # A service without a healthcheck is never touched, label or not.
-  #
-  # NOTE: this mounts the Docker socket, which is root-equivalent control of
-  # the local daemon. Acceptable for a local dev fleet; do not ship as-is to a
-  # shared or multi-tenant host.
-  autoheal:
-    image: willfarrell/autoheal:latest
-    container_name: dopemux-autoheal
-    restart: unless-stopped
-    networks:
-      - dopemux-network
-    environment:
-      - AUTOHEAL_CONTAINER_LABEL=autoheal
-      # Poll a little faster than ConPort's 30s healthcheck interval.
-      - AUTOHEAL_INTERVAL=15
-      # Give a restarted container time to boot before judging it again.
-      - AUTOHEAL_START_PERIOD=60
-      - AUTOHEAL_DEFAULT_STOP_TIMEOUT=20
-      - DOCKER_SOCK=/var/run/docker.sock
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+  # NOTE: third-party autoheal (docker.sock mount) was removed. ConPort PID 1
+  # supervision in start_with_info.sh fails closed on required-child death so
+  # Docker restart:unless-stopped recovers natively without socket access.
