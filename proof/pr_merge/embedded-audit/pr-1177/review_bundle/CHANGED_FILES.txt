@@ -1,0 +1,2 @@
+ui-dashboard/src/components/TaskSequencer.tsx
+ui-dashboard/src/components/__tests__/Accessibility.test.tsx
