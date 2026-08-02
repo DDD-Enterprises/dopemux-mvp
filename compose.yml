@@ -235,6 +235,17 @@ services:
       dockerfile: docker/mcp-servers/conport/Dockerfile
     container_name: ${CONPORT_CONTAINER_NAME:-mcp-conport}
     restart: unless-stopped
+    # ConPort runs three servers under one `wait` in its (red-lane sealed)
+    # start_with_info.sh. If the REST data plane on 3004 dies, PID 1 keeps
+    # waiting on the survivors, so the container stays "Up", `restart:
+    # unless-stopped` never fires (Docker restarts on process exit, not on
+    # healthcheck failure), and every ConPort write fails against a dead
+    # backend while the fleet still looks healthy. Observed 2026-08-02: 3004
+    # down 7+ hours with the healthcheck below failing the entire time.
+    # The healthcheck already detects this; the autoheal service at the bottom
+    # of this file is what finally acts on it.
+    labels:
+      - autoheal=true
     networks:
       - dopemux-network
 
@@ -242,8 +253,19 @@ services:
       - DOPEMUX_INSTANCE_ID=${DOPEMUX_INSTANCE_ID:-}
       - MCP_SERVER_PORT=3005
       - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
-      - DATABASE_URL=postgresql://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@dopemux-postgres-age:5432/dopemux_knowledge_graph
-      - POSTGRES_URL=postgresql+asyncpg://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@dopemux-postgres-age:5432/dopemux_knowledge_graph
+      # Project wall: each project gets its own database and LOGIN role inside
+      # the shared Postgres server, so credentials bind the tenant and a client
+      # cannot reach another project's rows whatever workspace_id it sends.
+      # Provision with scripts/migration/provision_conport_project_db.sh, then
+      # set CONPORT_DB_* in the project's .envrc.dopemux-mcp.
+      # The legacy defaults below reproduce the old shared-store behaviour for
+      # any project that has not been provisioned yet.
+      - DATABASE_URL=postgresql://${CONPORT_DB_USER:-dopemux_age}:${CONPORT_DB_PASSWORD:-${AGE_PASSWORD:-dopemux_age_dev_password}}@dopemux-postgres-age:5432/${CONPORT_DB_NAME:-dopemux_knowledge_graph}
+      - POSTGRES_URL=postgresql+asyncpg://${CONPORT_DB_USER:-dopemux_age}:${CONPORT_DB_PASSWORD:-${AGE_PASSWORD:-dopemux_age_dev_password}}@dopemux-postgres-age:5432/${CONPORT_DB_NAME:-dopemux_knowledge_graph}
+      # GET /api/progress forks-on-read unless this is explicitly 0. Neither
+      # running ConPort container set it as of 2026-08-02, so the auto-fork
+      # hazard that /dcp:doctor checks for was live.
+      - DOPEMUX_AUTO_FORK_PROGRESS=${DOPEMUX_AUTO_FORK_PROGRESS:-0}
       - AGE_HOST=dopemux-postgres-age
       - AGE_PORT=5432
       - AGE_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
@@ -723,3 +745,36 @@ services:
     volumes:
       - ./.dopemux/webhook_receiver:/data
     command: ["python", "/app/services/webhook_receiver/poller.py", "--providers", "xai,gemini", "--interval-seconds", "10"]
+
+  # Autoheal - restart containers whose healthcheck has gone unhealthy.
+  #
+  # Docker's `restart:` policies react to PROCESS EXIT, not to healthcheck
+  # failure. Any container that supervises several servers under one PID 1 can
+  # therefore lose a subprocess, keep reporting "Up", fail its healthcheck
+  # forever, and never be restarted. ConPort hit exactly this on 2026-08-02:
+  # its REST data plane on 3004 died, the MCP layer kept proxying to a dead
+  # backend, every write failed, and the container sat "Up (unhealthy)" for
+  # 7+ hours. Nothing in the stack was watching.
+  #
+  # Opt a service in by giving it `labels: [autoheal=true]` AND a healthcheck.
+  # A service without a healthcheck is never touched, label or not.
+  #
+  # NOTE: this mounts the Docker socket, which is root-equivalent control of
+  # the local daemon. Acceptable for a local dev fleet; do not ship as-is to a
+  # shared or multi-tenant host.
+  autoheal:
+    image: willfarrell/autoheal:latest
+    container_name: dopemux-autoheal
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=autoheal
+      # Poll a little faster than ConPort's 30s healthcheck interval.
+      - AUTOHEAL_INTERVAL=15
+      # Give a restarted container time to boot before judging it again.
+      - AUTOHEAL_START_PERIOD=60
+      - AUTOHEAL_DEFAULT_STOP_TIMEOUT=20
+      - DOCKER_SOCK=/var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
