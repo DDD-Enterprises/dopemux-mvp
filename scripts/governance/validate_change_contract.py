@@ -260,6 +260,42 @@ def validate_proof_json(path: str, text: str, result: Result, cwd: Path) -> None
         result.add("proof_schema_fail", "error", msg, path)
 
 
+def _load_json_object(text: str) -> Optional[dict[str, Any]]:
+    try:
+        data = json.loads(text)
+    except Exception:
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def _is_quarantine_skipped_proof(text: str) -> bool:
+    """True when PROOF.json is a deliberate SKIPPED quarantine (not audited PASS)."""
+    data = _load_json_object(text)
+    if not data:
+        return False
+    embedded = data.get("embedded_audit")
+    if not isinstance(embedded, dict):
+        return False
+    if embedded.get("status") != "SKIPPED":
+        return False
+    return bool(str(embedded.get("skip_reason") or "").strip())
+
+
+def _resolve_text(
+    path: str,
+    *,
+    cwd: Path,
+    head: str,
+    file_text: Optional[dict[str, str]],
+) -> Optional[str]:
+    if file_text is not None and path in file_text:
+        return file_text[path]
+    wt = cwd / path
+    if head in {"HEAD", ""} and wt.is_file():
+        return wt.read_text(encoding="utf-8")
+    return read_blob(head, path, cwd)
+
+
 def validate_proof_only_closure(
     paths: list[str],
     result: Result,
@@ -268,8 +304,21 @@ def validate_proof_only_closure(
     proof_head: Optional[str],
     audited_head: Optional[str],
     cwd: Path,
+    head: str = "HEAD",
+    file_text: Optional[dict[str, str]] = None,
+    quarantine_mode: bool = False,
 ) -> None:
-    """Fail closed on escaped paths, missing head binding, or missing signatures."""
+    """Fail closed on escaped paths / head binding; audited PASS requires signatures.
+
+    Quarantine mode (explicit flag or detected SKIPPED PROOF.json):
+      - requires content_head + proof_head only (not audited_head)
+      - forbids PROOF.json.sig (no audit-pass signature on NOT_PROVEN quarantine)
+      - requires each PROOF.json to be schema-shaped SKIPPED with non-empty skip_reason
+    Audited proof-only successor mode (default):
+      - requires content_head + audited_head + proof_head
+      - requires audited_head == content_head
+      - requires PROOF.json.sig for every PROOF.json
+    """
     norm_paths = [p.replace("\\", "/") for p in paths]
     escaped = [p for p in norm_paths if not _PROOF_ONLY_ALLOWED.match(p)]
     if escaped:
@@ -284,31 +333,85 @@ def validate_proof_only_closure(
     result.proof_only = True
     result.notes.append("All changed paths are within proof-only allowlist")
 
-    # Fail closed: proof-only successors must bind content/audited/proof heads.
-    missing = [
-        name
-        for name, value in (
-            ("content_head", content_head),
-            ("audited_head", audited_head),
-            ("proof_head", proof_head),
-        )
-        if not value
-    ]
-    if missing:
-        result.add(
-            "proof_only_missing_heads",
-            "error",
-            "Proof-only mode requires --content-head, --audited-head, and --proof-head "
-            f"(missing: {', '.join(missing)})",
-        )
-        return
+    # Detect quarantine from PROOF.json bodies (or explicit flag).
+    proof_json_paths = [p for p in norm_paths if p.endswith("PROOF.json")]
+    quarantine_hits: list[str] = []
+    non_quarantine_proofs: list[str] = []
+    for path in proof_json_paths:
+        text = _resolve_text(path, cwd=cwd, head=head, file_text=file_text)
+        if text is None:
+            # deleted PROOF.json — neither audited-pass nor quarantine
+            continue
+        if _is_quarantine_skipped_proof(text):
+            quarantine_hits.append(path)
+        else:
+            non_quarantine_proofs.append(path)
 
-    if audited_head != content_head:
-        result.add(
-            "proof_only_stale_content_head",
-            "error",
-            f"audited_head {audited_head} != content_head {content_head}",
+    if quarantine_mode or quarantine_hits:
+        if non_quarantine_proofs:
+            for path in non_quarantine_proofs:
+                result.add(
+                    "quarantine_mixed_proof_status",
+                    "error",
+                    "Quarantine mode requires every PROOF.json to be status=SKIPPED "
+                    "with non-empty skip_reason (no audited PASS in the same package)",
+                    path,
+                )
+            return
+        if not quarantine_hits and quarantine_mode:
+            result.add(
+                "quarantine_missing_skipped_proof",
+                "error",
+                "Quarantine mode requires at least one PROOF.json with status=SKIPPED "
+                "and non-empty skip_reason",
+            )
+            return
+        result.notes.append(
+            "Quarantine mode: SKIPPED post-merge/exact-head-NOT_PROVEN package "
+            "(signature forbidden; audited_head not required)"
         )
+        missing = [
+            name
+            for name, value in (
+                ("content_head", content_head),
+                ("proof_head", proof_head),
+            )
+            if not value
+        ]
+        if missing:
+            result.add(
+                "proof_only_missing_heads",
+                "error",
+                "Quarantine mode requires --content-head and --proof-head "
+                f"(missing: {', '.join(missing)}; audited_head is not required)",
+            )
+            return
+    else:
+        # Fail closed: audited proof-only successors must bind all three heads.
+        missing = [
+            name
+            for name, value in (
+                ("content_head", content_head),
+                ("audited_head", audited_head),
+                ("proof_head", proof_head),
+            )
+            if not value
+        ]
+        if missing:
+            result.add(
+                "proof_only_missing_heads",
+                "error",
+                "Proof-only mode requires --content-head, --audited-head, and --proof-head "
+                f"(missing: {', '.join(missing)})",
+            )
+            return
+
+        if audited_head != content_head:
+            result.add(
+                "proof_only_stale_content_head",
+                "error",
+                f"audited_head {audited_head} != content_head {content_head}",
+            )
 
     # proof head must be descendant of content head
     proc = subprocess.run(
@@ -363,7 +466,7 @@ def validate_proof_only_closure(
             f"(declared={len(norm_paths)} derived={len(derived)})",
         )
         # Continue validating the derived set for escape/signature closure.
-    # Always enforce allowlist + signatures on the derived delta, not caller paths alone.
+    # Always enforce allowlist on the derived delta, not caller paths alone.
     norm_paths = derived
     escaped_derived = [p for p in norm_paths if not _PROOF_ONLY_ALLOWED.match(p)]
     if escaped_derived:
@@ -376,8 +479,32 @@ def validate_proof_only_closure(
             )
         return
 
-    # Signature presence for every PROOF.json in the proof-only delta.
     path_set = set(norm_paths)
+    quarantine_active = quarantine_mode or bool(quarantine_hits)
+
+    if quarantine_active:
+        # Forbids audit-pass signatures on deliberate NOT_PROVEN quarantines.
+        for path in norm_paths:
+            if not path.endswith("PROOF.json"):
+                continue
+            sig_path = f"{path}.sig"
+            sig_present = sig_path in path_set
+            if not sig_present and proof_head:
+                if read_blob(proof_head, sig_path, cwd) is not None:
+                    sig_present = True
+            if not sig_present and proof_head in {"HEAD", ""} and (cwd / sig_path).is_file():
+                sig_present = True
+            if sig_present:
+                result.add(
+                    "quarantine_forbids_signature",
+                    "error",
+                    "Quarantine SKIPPED package must not carry PROOF.json.sig "
+                    "(do not invent or restore an audit-pass signature)",
+                    path,
+                )
+        return
+
+    # Audited proof-only: signature presence for every PROOF.json.
     for path in norm_paths:
         if not path.endswith("PROOF.json"):
             continue
@@ -429,6 +556,8 @@ def evaluate(
     proof_head: Optional[str] = None,
     audited_head: Optional[str] = None,
     file_text: Optional[dict[str, str]] = None,
+    quarantine_mode: bool = False,
+    range_base: Optional[str] = None,
 ) -> Result:
     result = Result(status="PASS", max_lane="L0")
     path_rows: list[dict[str, str]] = []
@@ -441,25 +570,59 @@ def evaluate(
     result.max_lane = max_lane(lanes) if lanes else "L0"
     result.model_audit_required = result.max_lane in {"L2", "L3"}
 
-    if proof_only_mode or (
+    pure_proof = bool(
         paths and all(_PROOF_ONLY_ALLOWED.match(p.replace("\\", "/")) for p in paths)
-    ):
-        # Pass heads without fallback substitution — missing values must fail closed.
+    )
+    if proof_only_mode or pure_proof:
+        # Auto-detect quarantine SKIPPED when heads omitted (pre-commit range only).
+        eff_quarantine = quarantine_mode
+        eff_content = content_head
+        eff_proof = proof_head
+        if pure_proof and not content_head and not proof_head and not audited_head:
+            for path in paths:
+                npath = path.replace("\\", "/")
+                if not npath.endswith("PROOF.json"):
+                    continue
+                text = _resolve_text(
+                    npath, cwd=cwd, head=head, file_text=file_text
+                )
+                if text and _is_quarantine_skipped_proof(text):
+                    eff_quarantine = True
+                    break
+        if eff_quarantine:
+            # Bind range refs only for quarantine — never invent audited_head.
+            if not eff_content and range_base:
+                eff_content = range_base
+            if not eff_proof:
+                eff_proof = head
         validate_proof_only_closure(
             paths,
             result,
-            content_head=content_head,
-            proof_head=proof_head,
+            content_head=eff_content,
+            proof_head=eff_proof,
             audited_head=audited_head,
             cwd=cwd,
+            head=head,
+            file_text=file_text,
+            quarantine_mode=eff_quarantine,
         )
         # Proof-only does not escalate lane for audit budget only when closure is clean.
         if result.proof_only and not any(
-            f.severity == "error" and f.code.startswith("proof_only_") for f in result.findings
+            f.severity == "error"
+            and (f.code.startswith("proof_only_") or f.code.startswith("quarantine_"))
+            for f in result.findings
         ):
             result.max_lane = "L0"
             result.model_audit_required = False
-            result.notes.append("Proof-only successor: model re-audit of content NOT_REQUIRED")
+            if eff_quarantine or any("Quarantine mode" in n for n in result.notes):
+                result.notes.append(
+                    "Quarantine package: model re-audit of content NOT_REQUIRED "
+                    "(exact-head audit NOT_PROVEN)"
+                )
+            else:
+                result.notes.append(
+                    "Proof-only successor: model re-audit of content NOT_REQUIRED"
+                )
 
     for path in paths:
         text: Optional[str]
@@ -540,6 +703,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--repo", type=Path, default=REPO_ROOT, help="Repository root")
     p.add_argument("--format", choices=("text", "json"), default="text")
     p.add_argument("--proof-only", action="store_true", help="Force proof-only closure checks")
+    p.add_argument(
+        "--quarantine",
+        action="store_true",
+        help=(
+            "Post-merge / exact-head-NOT_PROVEN quarantine mode: require content_head+proof_head, "
+            "require PROOF.json status=SKIPPED, and forbid PROOF.json.sig"
+        ),
+    )
     p.add_argument("--content-head", default=None, help="Frozen content head SHA")
     p.add_argument("--proof-head", default=None, help="Proof-only successor head SHA")
     p.add_argument("--audited-head", default=None, help="Audited content head SHA")
@@ -597,10 +768,12 @@ def main(argv: Optional[list[str]] = None) -> int:
         paths=paths,
         cwd=cwd,
         head=args.head,
-        proof_only_mode=args.proof_only,
+        proof_only_mode=args.proof_only or args.quarantine,
         content_head=args.content_head,
         proof_head=args.proof_head,
         audited_head=args.audited_head,
+        quarantine_mode=args.quarantine,
+        range_base=args.base,
     )
 
     if args.allowlist is not None:
