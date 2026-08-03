@@ -1,0 +1,9 @@
+The embedded-audit proof is stale relative to the current head and is rejected by the repository's local attestation gate, so the patch cannot clear readiness as submitted. One load-plan evidence claim is also internally inconsistent with its represented dependency graph.
+
+Full review comments:
+
+- [P1] Re-pin audit proof to current head — /Users/hue/code/dopemux-mvp/.worktrees/TP-REPLAN-BASELINE-1182-REPAIR/proof/pr_merge/embedded-audit/pr-1182/PROOF.json:4-5
+  When evaluated at current branch head `1b80fc6f11681baebdb00acc7f756ce8471a24b0`, this signed proof still audits `b7387429a408a47b81476d75cdcc0be8e07e7ce6`; `scripts.audit.local_audit_acceptance` rejects this because `git diff b7387429..1b80fc6f` touches paths outside `proof/pr_merge/embedded-audit/pr-1182/`. `docs/ops/embedded-audit.md:172-183` requires exact-head, proof-only delta, so the readiness gate remains red until the proof is regenerated and re-signed at the final head.
+
+- [P2] Fix inconsistent BLOCKS edge count — /Users/hue/code/dopemux-mvp/.worktrees/TP-REPLAN-BASELINE-1182-REPAIR/docs/ops/load-plans/load_plan-DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED.json:10-10
+  This load evidence claims `23 BLOCKS edges`, but summing the `blocks` arrays for the 12 nodes in this same file yields only 22 and there is no separate edge manifest for a 23rd edge. Operators using this artifact for verification or guarded recovery will either expect the wrong live state or replay an incomplete dependency graph, so align the count with the represented DAG or add the missing edge.

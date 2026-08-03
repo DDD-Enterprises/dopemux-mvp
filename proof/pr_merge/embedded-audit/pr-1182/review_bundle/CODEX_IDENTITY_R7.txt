@@ -1,0 +1,8 @@
+codex_version=codex-cli 0.146.0
+date=2026-08-03T01:31:09Z
+content_head=73563a4aa92bd37b77c61ef52ecf1c52b011bcf6
+base=fb710ef40500695882a5b421a3325150176fffa1
+session_id=019fc539-2385-77a2-86b2-b7ca80f7d84f
+model=gpt-5.5
+provider=openai
+review_command=codex exec review --base origin/main

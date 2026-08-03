@@ -1,16 +1,23 @@
 {
-  "total": 539,
-  "unique": 539,
-  "class_sum": 539,
-  "by_class": {
+  "generated_at": "2026-08-03T01:31:09Z",
+  "content_head": "73563a4aa92bd37b77c61ef52ecf1c52b011bcf6",
+  "unique_items": 539,
+  "unique_ids": 539,
+  "class_totals": {
+    "stale_or_cancellation_candidate": 82,
     "actionable_leaf": 355,
-    "cross_repository_parked": 2,
     "operator_gated_decision": 28,
     "series_or_phase_container": 72,
-    "stale_or_cancellation_candidate": 82
+    "cross_repository_parked": 2
   },
+  "class_sum": 539,
   "blocks_wave_inversions": 0,
-  "dispatchable_actionable": 355,
-  "verify_close_candidates": 21,
-  "verdict": "PASS"
+  "program_roots_as_actionable_leaves": 0,
+  "needs_rescope_with_executable_routing": 0,
+  "incompatible_runner_model_pairs": 0,
+  "containers_with_executable_routing": 0,
+  "summary_total_matches": true,
+  "summary_class_sum_matches": true,
+  "pass": true,
+  "load_plan_blocks_claim_aligned": true
 }
