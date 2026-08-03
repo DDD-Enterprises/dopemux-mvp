@@ -6,12 +6,12 @@
   "base_sha": "fb710ef40500695882a5b421a3325150176fffa1",
   "recovery_source_commit": "a39ea663dbf568cb3edf3ae39d756ce86532d07f",
   "clean_transplant_commit": "80e3ed2f426e379c8edc1b86e2727fb416ed0229",
-  "head_sha": "aada46b59ae41fe5cf1977ce1653e95939f52d8b",
+  "head_sha": "fd04b9406c7f8183574f975459b88d91040066d0",
   "custody_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1185",
   "pr_steward_policy_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1187",
   "supervisor_input": "AUTHORIZE_STAGE_2_REFRESH_AND_VALIDATION_ONLY",
   "required_next_verdict": "CONPORT_RECOVERY_CLEAN_CANDIDATE_READY_FOR_OPERATOR_MERGE_DECISION",
-  "freeze_verdict": "VALIDATION_COMPLETE_AUDIT_PENDING",
+  "freeze_verdict": "BLOCKED_AUDITOR_IDENTITY",
   "merge_ready": false,
   "agent": "grok-4.5",
   "timestamp": "2026-08-03T01:41:48Z",
@@ -35,7 +35,7 @@
     "production_health": "PASS",
     "pr_steward_policy_doctor": "PASS_on_PR1187",
     "pr_steward_policy_merged": "PASS",
-    "independent_audit": "PENDING",
+    "independent_audit": "BLOCKED_AUDITOR_IDENTITY",
     "pr_steward_ready": "NOT_RUN",
     "main_refresh_merge": "PASS",
     "overlap_compatible": "PASS",
@@ -95,18 +95,11 @@
     "report_path": "proof/TP-CONPORT-CLEAN-L3-RECOVERY-2026-08-02/AUDITOR_REPORT.md",
     "findings": [
       {
-        "id": "F-REFRESH-AUDIT-PENDING",
+        "id": "F-PROVIDER-ATTESTED-UNKNOWN",
         "severity": "BLOCKING",
-        "title": "Independent Codex audit pending on frozen tip",
+        "title": "provider_attested UNKNOWN",
         "status": "OPEN",
-        "body": "provider_attested must not be UNKNOWN; #1187 exception does not transfer."
-      },
-      {
-        "id": "F-POLICY-MERGED",
-        "severity": "INFO",
-        "title": "PR #1187 policy restored on main",
-        "status": "RESOLVED",
-        "body": "Inherited via merge; not in PR delta."
+        "body": "Codex probe yields runner/version, requested/configured/response model, proxy provider, session id. No provider-attested identity. #1187 UNKNOWN exception does not transfer. Formal audit not invoked."
       }
     ],
     "fixes_applied": [
@@ -116,19 +109,20 @@
       "Pytest row deletion with export/backup"
     ],
     "remaining_risks": [
-      "Formal audit not yet run",
-      "BASELINE_EXISTING doctor placeholder test debt on main"
+      "Formal L3 audit blocked on provider attestation"
     ],
     "skip_reason": null
   },
   "model_identity": {
     "implementer": "grok-4.5",
-    "auditor": "PENDING_CODEX",
-    "requested": "PENDING",
-    "configured": "PENDING",
-    "response_claimed": "PENDING",
-    "proxy_reported": "PENDING",
-    "provider_attested": "PENDING_MUST_NOT_BE_UNKNOWN"
+    "auditor_candidate": "codex-cli 0.146.0",
+    "requested": "gpt-5.6-terra",
+    "configured": "gpt-5.6-terra (CLI -m; config default gpt-5.6-luna)",
+    "response_claimed": "gpt-5.6-terra",
+    "proxy_reported": "openai",
+    "provider_attested": "UNKNOWN",
+    "session_id": "019fc54c-21ce-7b41-a850-b4194aedaf01",
+    "stop": "BLOCKED_AUDITOR_IDENTITY"
   },
   "branch_tip_at_authoring": "aada46b59ae41fe5cf1977ce1653e95939f52d8b",
   "proof_bundle_commit": "e7aec967692d99ed1cb531f4eec9e46a4ade8049",
@@ -160,6 +154,8 @@
     "main_and_branch_identical_failure": true,
     "repaired_in_1188": false
   },
-  "content_head_frozen": "aada46b59ae41fe5cf1977ce1653e95939f52d8b",
-  "validation_commit": "a4e4c877fb36afdc32b3105f8eb89c6d7cdf13a5"
+  "content_head_frozen": "fd04b9406c7f8183574f975459b88d91040066d0",
+  "validation_commit": "a4e4c877fb36afdc32b3105f8eb89c6d7cdf13a5",
+  "validation_complete": true,
+  "formal_audit_invoked": false
 }
