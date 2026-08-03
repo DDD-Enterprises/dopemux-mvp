@@ -2,12 +2,12 @@
   "packet_id": "TP-CONPORT-PROJECT-WALL-RECOVERY-L3-FREEZE-001",
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1188,
-  "head_sha": "95bdf0015730ab3087cf71e07eca2d4425b214ac",
+  "head_sha": "1799d98cabfbb9bc23dc4f80f0c8322dd2552dfe",
   "content_head_audited": "95bdf0015730ab3087cf71e07eca2d4425b214ac",
   "executed": true,
   "mutation_performed": false,
   "github_mutation_route_added": false,
-  "generated_at": "2026-08-03T02:26:36Z",
+  "generated_at": "2026-08-03T02:28:51Z",
   "formal_auditor": {
     "tool": "Claude Code CLI",
     "version": "2.1.220",
@@ -69,5 +69,6 @@
   "supervisor_exceptions": {
     "codex_unknown_attestation_does_not_transfer": true,
     "auditor_route": "claude-code-cli Tier-1"
-  }
+  },
+  "content_head_note": "Claude formal audit reviewed 95bdf00157; CI binds head_sha to this parent tip so successor is pr_merge-only."
 }
