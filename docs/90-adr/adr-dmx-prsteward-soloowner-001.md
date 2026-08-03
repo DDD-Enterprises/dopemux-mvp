@@ -5,10 +5,10 @@ type: adr
 owner: '@hu3mann'
 author: 'Grok Build, for operator decision'
 date: '2026-07-27'
-last_review: '2026-07-27'
-next_review: '2026-10-25'
+last_review: '2026-08-03'
+next_review: '2026-11-01'
 status: accepted
-prelude: Resolves solo-owner PR Steward security-release deadlock without inventing a second reviewer or weakening multi-reviewer enforcement.
+prelude: Resolves solo-owner PR Steward security-release deadlock without inventing a second reviewer or weakening multi-reviewer enforcement. Org-repo association amendment 2026-08-03.
 graph_metadata:
   node_type: ADR
   impact: high
@@ -66,7 +66,8 @@ Provide a narrowly scoped override that activates **only** when all of the
 following hold:
 
 1. trusted security-release roster on trusted main contains exactly one human;
-2. that identity is the repository owner and PR author;
+2. that identity is the PR author and the sole semantic release authority
+   (roster match) — not necessarily GitHub `authorAssociation=OWNER`;
 3. no eligible non-author trusted approver exists;
 4. independent embedded audit is current to the exact PR head with
    `PASS` or non-blocking `PASS_WITH_RISKS`, and auditor tool/model/provider/
@@ -81,6 +82,32 @@ following hold:
 AUTHORIZE SOLO-OWNER SECURITY RELEASE FOR PR #<PR_NUMBER> AT HEAD <FULL_SHA>
 ```
 
+9. the authorizing comment (and PR author association when present) carries a
+   trusted human association: `OWNER`, `MEMBER`, or `COLLABORATOR` — the same
+   set accepted for ordinary human security-release approvals.
+
+### Amendment 2026-08-03 — org-repo association semantics
+
+**Incident:** PR #1188 on `DDD-Enterprises/dopemux-mvp` (org-owned) harvested a
+valid exact-head solo-owner phrase from `hu3mann`, then failed with
+`solo_owner:SOLO_OWNER_PHRASE_OPERATOR_NOT_OWNER` because live GitHub
+associations were `MEMBER` / `COLLABORATOR`, never `OWNER`.
+
+**Ruling:** "Solo-owner" names **sole trusted roster identity**, not the GitHub
+enum value `OWNER`. GitHub emits `OWNER` primarily for personal-repository
+ownership; organization-owned repositories typically emit `MEMBER` or
+`COLLABORATOR` for the same human operator. Requiring enum `OWNER` makes the
+solo path unreachable on the governing org repo and is rejected as incorrect
+contract interpretation.
+
+**Policy:** Accept `OWNER` | `MEMBER` | `COLLABORATOR` for solo-owner operator
+and phrase-comment associations, aligned with
+`security_release_approval._TRUSTED_HUMAN_ASSOCIATIONS`. Continue to fail closed
+on `CONTRIBUTOR`, `NONE`, missing dual associations, foreign logins, multi-human
+rosters, and all non-`SECURITY_RELEASE_*` blockers.
+
+Packet: `TP-DMX-PR-STEWARD-SOLO-OWNER-ORG-ASSOC-001`.
+
 ## Decision
 
 Adopt **Option B** as a durable fail-closed contract.
@@ -93,6 +120,8 @@ The solo-owner phrase must:
 - bind repository, PR number, full 40-char head SHA, operator login, timestamp,
   and scope `security_release_only`;
 - become stale immediately if the PR head changes;
+- come from the sole trusted roster login with trusted association
+  `OWNER` / `MEMBER` / `COLLABORATOR` (org-repo compatible; see amendment);
 - **never** count as an ordinary GitHub `APPROVED` review
   (`security_release.approval` remains null when only the override is used);
 - emit receipt code `SOLO_OWNER_SECURITY_RELEASE_OVERRIDE_USED` on
@@ -124,6 +153,9 @@ remains mandatory whenever a non-author trusted approver exists.
 5. Head binding is exact (full SHA); partial SHAs and wrong PR numbers fail closed.
 6. Phrase author must be the solo trusted identity; foreign logins are ignored.
 7. Receipt is evidence, not a second catalog of authority.
+8. Operator association trust set equals ordinary human security-release
+   associations (`OWNER`/`MEMBER`/`COLLABORATOR`); untrusted associations fail
+   closed.
 
 ## Consequences
 
