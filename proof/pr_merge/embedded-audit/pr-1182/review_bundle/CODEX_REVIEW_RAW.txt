@@ -1,6 +1,0 @@
-The routing export contains a direct contradiction: items explicitly demoted from Luna readiness are still assigned Luna as their primary model. This can misroute non-verifiable or destructive work if the artifact is used for dispatch.
-
-Review comment:
-
-- [P2] Avoid routing demoted items to Luna — /Users/hue/code/dopemux-mvp/.worktrees/TP-REPLAN-BASELINE-1182-REPAIR/claudedocs/orchestrator-replan-2026-08-02/routing-table.json:3879-3879
-  When an auto-dispatcher consumes `primary_model`, this item is still sent to `gpt-5-6-luna` even though the same ID appears in `luna_ready_removals` because it lacks an executable packet with VERIFY; 30 other removed IDs have the same Luna primary. That contradicts the replan validation that failing items were demoted (`MASTER-PLAN.md:202-203`) and repo packet work must be verifiable (`AGENTS.md:67-70`), so either restore verifiable Luna-ready evidence or change these primary routes away from Luna.

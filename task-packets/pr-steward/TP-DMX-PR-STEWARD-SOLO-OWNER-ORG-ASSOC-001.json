@@ -1,0 +1,96 @@
+{
+  "id": "TP-DMX-PR-STEWARD-SOLO-OWNER-ORG-ASSOC-001",
+  "project": "dopemux-mvp",
+  "target": "Accept OWNER|MEMBER|COLLABORATOR associations on the solo-owner security-release path so org-owned repos (e.g. PR #1188) can activate exact-head solo authorization without inventing a second reviewer.",
+  "invariants": [
+    "Trusted operator associations equal ordinary human security-release associations: OWNER, MEMBER, COLLABORATOR.",
+    "CONTRIBUTOR, NONE, and missing dual associations remain fail-closed.",
+    "Phrase format, head binding, receipt code, and non-SECURITY_RELEASE blocker non-waiver are unchanged.",
+    "Multi-human trusted roster still forces ordinary non-author APPROVED path.",
+    "No auto-merge is enabled.",
+    "This packet does not modify PR #1188 commits; it only unblocks Steward after merge to main.",
+    "ADR-DMX-PRSTEWARD-SOLOOWNER-001 amendment 2026-08-03 is the governing policy note."
+  ],
+  "depends_on": [
+    "TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PR-STEWARD-SOLO-OWNER",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "fix/pr-steward-solo-owner-org-assoc-2026-08-03",
+    "base_branch": "origin/main"
+  },
+  "commit": {
+    "message": "fix(pr-steward): accept org MEMBER/COLLABORATOR for solo-owner path",
+    "allowlist": [
+      "tools/pr_steward/solo_owner_security_release.py",
+      "tests/pr_steward/test_solo_owner_security_release.py",
+      "tests/pr_steward/test_classifier_solo_owner.py",
+      "docs/90-adr/adr-dmx-prsteward-soloowner-001.md",
+      "docs/90-adr/adr-index.md",
+      "task-packets/pr-steward/TP-DMX-PR-STEWARD-SOLO-OWNER-ORG-ASSOC-001.md",
+      "task-packets/pr-steward/TP-DMX-PR-STEWARD-SOLO-OWNER-ORG-ASSOC-001.json"
+    ],
+    "verify": [
+      "python3 -m json.tool task-packets/pr-steward/TP-DMX-PR-STEWARD-SOLO-OWNER-ORG-ASSOC-001.json",
+      "python -m pytest tests/pr_steward/test_solo_owner_security_release.py tests/pr_steward/test_classifier_solo_owner.py -q",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(pr-steward): org-repo associations for solo-owner security release",
+    "body": "Unblock solo-owner path on org repos (PR #1188 incident): accept MEMBER/COLLABORATOR alongside OWNER.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Amend ADR-DMX-PRSTEWARD-SOLOOWNER-001 association policy for org repos",
+      "validation": [
+        "rg -n 'Amendment 2026-08-03|MEMBER|COLLABORATOR' docs/90-adr/adr-dmx-prsteward-soloowner-001.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Expand solo_owner trusted associations to OWNER|MEMBER|COLLABORATOR and rename untrusted diagnostics",
+      "validation": [
+        "rg -n '_TRUSTED_OPERATOR_ASSOCIATIONS|SOLO_OWNER_PHRASE_OPERATOR_ASSOCIATION_UNTRUSTED' tools/pr_steward/solo_owner_security_release.py"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Add unit and classifier regression tests for MEMBER/COLLABORATOR success and CONTRIBUTOR/NONE failure",
+      "validation": [
+        "python -m pytest tests/pr_steward/test_solo_owner_security_release.py tests/pr_steward/test_classifier_solo_owner.py -q"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Commit allowlisted files, push branch, open PR; document bootstrap merge residual for trust-root recursion",
+      "validation": [
+        "git rev-parse --abbrev-ref HEAD",
+        "git status --porcelain"
+      ]
+    }
+  ]
+}

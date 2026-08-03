@@ -1,0 +1,165 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1176,
+  "head_sha": "c8181389864bfc099bc24f7d689716057c3c8573",
+  "packet_id": "CCAR-002R-A2",
+  "generated_at": "2026-08-03T08:30:08Z",
+  "note": "R4: signed, exact-head-bound successor to the stale R1(sonnet)-bound proof. Repair packet CCAR-002R-A2 landed four evidence/test-correctness fixes on top of the R2 signed-audit head (41bc6207..c818138, 5 commits / 23 files, all in-allowlist). This PROOF.json's independent audit is a fresh Claude Opus 5 (claude-code-cli) formal audit of the exact current head c818138986..., run as a separate subprocess/session per Supervisor decision after AGY's preferred route (OpenCode + OpenRouter kimi-k3/deepseek-v4-pro) was superseded and Gemini CLI direct route was found ineligible. R4 authorizes proceeding to trusted embedded-audit/PR-Steward evaluation only — it does not authorize merge.",
+  "history": [
+    {
+      "round": "R1->R2 (A1)",
+      "audited_sha": "41bc62071ce4e152a3b2040e408eda0c830fb215",
+      "auditor": "claude-code-cli/sonnet",
+      "verdict": "PASS_WITH_RISKS",
+      "note": "Formally superseded by this R4 proof; retained as prior-round evidence in review_bundle/R1_*."
+    },
+    {
+      "round": "R3 advisory pre-checks (not canonical)",
+      "auditor": "opencode/openrouter (moonshotai/kimi-k3, deepseek/deepseek-v4-pro fallback)",
+      "note": "Two advisory-only passes against intermediate A2 commits b096551dfa and fd7afbe295. Per project policy this route is advisory, not the canonical embedded audit. Round vs b096551dfa: PASS with 2 residual findings. Round vs fd7afbe295: kimi-k3 primary failed twice with malformed output; deepseek-v4-pro fallback returned PASS but its rationale dismissing a NORMALIZATION_REPORT.md timestamp/catalog mismatch as 'not a contradiction' was itself wrong on direct inspection (the mismatch was real). Operator-determination overrode that round to FAIL. Preserved as advisory challenge history only — not treated as canonical evidence for the current head."
+    },
+    {
+      "round": "R4 (this proof)",
+      "audited_sha": "c8181389864bfc099bc24f7d689716057c3c8573",
+      "auditor": "claude-code-cli/opus",
+      "verdict": "PASS_WITH_RISKS",
+      "note": "Canonical audit for this proof. See embedded_audit below."
+    }
+  ],
+  "audit_route": {
+    "runner_version": "2.1.220 (Claude Code)",
+    "requested_selector": "opus",
+    "configured_selector": "opus",
+    "response_claimed_model": "Claude Opus 5 (self-identified in the auditor's own response text: 'Auditor: Claude Opus 5 (claude-code-cli)'; the subprocess was invoked as `claude -p --model opus --permission-mode plan \"<prompt>\"` WITHOUT --output-format json, so there is no structured API-level model field in the captured output to cross-check this self-report against)",
+    "provider_attested_model": "UNKNOWN",
+    "session_id": "696c53ec-1cb2-49d8-a0ab-0fbe7560cbbf (orchestrating Claude Code CLI session, sonnet, that launched and supervised the audit subprocess; the audited `claude -p --model opus` subprocess ran detached/backgrounded with combined stdout+stderr redirected to review_bundle/A2_AUDIT_RAW_OUTPUT.txt and has no separately captured session id of its own)",
+    "canonical_model_field_if_any": null,
+    "independence": "LIMITED_SAME_FAMILY_DIFFERENT_MODEL_SESSION",
+    "preferred_route_status": "GEMINI_CLI_INELIGIBLE_TIER",
+    "fallback_authority": "SUPERVISOR_AUTHORIZED",
+    "gemini_failure_evidence": "IneligibleTierError: This client is no longer supported for Gemini Code Assist for individuals. To continue using Gemini, please migrate to the Antigravity suite of products: https://antigravity.google (captured verbatim from the orchestrating session's Gemini CLI invocation attempt; full text in review_bundle/A2_GEMINI_FAILURE.txt)"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "opus",
+    "invocation": "cd /Users/hue/code/dopemux-mvp-worktrees/CCAR-002 && claude -p --model opus --permission-mode plan \"$(cat review_bundle/A2_AUDIT_INSTRUCTION.md)\" > review_bundle/A2_AUDIT_RAW_OUTPUT.txt 2>&1",
+    "exit_code": 0,
+    "report_path": "proof/pr_merge/embedded-audit/pr-1176/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "A2-F-001",
+        "severity": "MEDIUM",
+        "title": "test_generation_idempotent still writes the committed catalog",
+        "status": "ACCEPTED_RISK",
+        "body": "The test regenerates config/commandcode/normalized_agent_persona_catalog.yaml in place and restores it via a `finally` block. Verified clean on a normal run (catalog sha256 identical before/after, git status clean afterward), but a SIGKILL, pytest timeout, or `-n auto` run could still leave committed evidence dirty. The builder already exposes `--stdout`; the regeneration leg could avoid touching the committed file entirely. Non-blocking."
+      },
+      {
+        "id": "A2-F-002",
+        "severity": "LOW",
+        "title": "--check cannot detect generated_at drift",
+        "status": "OPEN",
+        "body": "build_normalized_catalog.py's main() calls normalize_generated_at() on both the committed and freshly-built YAML before comparing in --check mode, so --check is structurally blind to generated_at mismatches — the exact defect class A2 was repairing. Timestamp/catalog sync for this head was independently confirmed by direct byte comparison instead of by trusting --check's exit code."
+      },
+      {
+        "id": "A2-F-003",
+        "severity": "LOW",
+        "title": "Audit-route attribution inconsistent between proof files",
+        "status": "OPEN",
+        "body": "proof/CCAR-002/PROOF.json records 'round 2 vs fd7afbe295 (kimi-k3): FAIL', but proof/CCAR-002/COMMAND_LOG.md correctly states kimi-k3 emitted no verdict at all and deepseek-v4-pro was the fallback whose PASS was overridden to FAIL by direct operator inspection. The FAIL was an operator determination, not kimi-k3's own verdict; the two files should be reconciled."
+      },
+      {
+        "id": "A2-F-004",
+        "severity": "LOW",
+        "title": "Stale generator version string in NORMALIZATION_REPORT.md",
+        "status": "OPEN",
+        "body": "proof/CCAR-002/NORMALIZATION_REPORT.md's 'Generator' section still reads 'build_normalized_catalog.py v1.0.0', contradicting the catalog's meta.generator_version: 1.0.1 and the R1 notes section of the same file."
+      },
+      {
+        "id": "A2-F-005",
+        "severity": "INFO",
+        "title": "Manifest count label overcounts reference-only personas",
+        "status": "ACCEPTED_RISK",
+        "body": "SOURCE_MANIFEST.json reports reference_only_src_personas: 11 because it includes src/dopemux/personas/__init__.py, while NORMALIZATION_REPORT.md's '10 fallback copies' counts only .md personas. Both counts are individually defensible; only the category label is imprecise."
+      },
+      {
+        "id": "A2-F-006",
+        "severity": "INFO",
+        "title": "Canonical PR proof was stale by design prior to this commit",
+        "status": "RESOLVED",
+        "body": "Prior to this R4 commit, proof/pr_merge/embedded-audit/pr-1176/PROOF.json was bound to head_sha=41bc62071ce4e152a3b2040e408eda0c830fb215 (R1) with a signature covering only that R1-bound content, correctly disclosed in proof/CCAR-002/PROOF.json's remaining_risks. This R4 commit regenerates and re-signs PROOF.json against the exact final head c8181389864bfc099bc24f7d689716057c3c8573, resolving the finding."
+      },
+      {
+        "id": "A2-F-007",
+        "severity": "INFO",
+        "title": "Committed instruction-like content in the R1 review bundle",
+        "status": "ACCEPTED_RISK",
+        "body": "proof/pr_merge/embedded-audit/pr-1176/review_bundle/AUDIT_INSTRUCTION.md is a legitimate committed auditor prompt from the R1/A1 round, but contains directive phrasing ('Only PASS or non-blocking PASS_WITH_RISKS authorizes R2.') and a pre-filled JSON answer template with several boolean fields defaulted to true and blocking_findings defaulted to false. Benign by design (a template, not a live injection), but a soft anchoring hazard for a future auditor skimming rather than deriving each field independently. Not obeyed as an instruction by the auditor that flagged it; retained unmodified as historical record rather than edited, since editing prior-round evidence after the fact would itself be a truthfulness problem."
+      },
+      {
+        "id": "A2-F-008",
+        "severity": "INFO",
+        "title": "No dedicated CI/pre-commit drift gate for the catalog",
+        "status": "OPEN",
+        "body": "No .github/workflows/** or .pre-commit-config.yaml entry references the normalized catalog or its builder specifically. Drift protection depends entirely on the pytest suite (tests/commandcode_router/test_normalized_catalog.py) being collected in CI via testpaths = [\"tests\"], which it is, but there is no dedicated gate."
+      },
+      {
+        "id": "A2-F-009",
+        "severity": "INFO",
+        "title": "REVIEW-001 satisfied but named audit route not used",
+        "status": "RESOLVED",
+        "body": "task-packets/CCAR-002R-A2.md:115 names OpenCode + OpenRouter as the R3/R4 independent-audit route ('Not Claude Sonnet — Claude Sonnet authored this repair and cannot audit its own work'). This audit was instead run by Claude Opus 5 in a separate process and session from the Claude Sonnet session that authored the A2 repair commits. REVIEW-001's self-audit prohibition is satisfied (different model, different session, did not author any of the audited work), but the specific route named in the packet was not used; recorded honestly here per Supervisor decision (independence classified LIMITED_SAME_FAMILY_DIFFERENT_MODEL_SESSION, not full cross-vendor independence)."
+      }
+    ],
+    "fixes_applied": [
+      "Verified (not authored by this audit round; landed in prior A2 commits cd0d6a469c/b096551dfa/fd7afbe295/c818138): repo-relative proof/CCAR-002/SOURCE_MANIFEST.json with the absolute worktree key removed",
+      "Verified: proof/CCAR-002/NORMALIZATION_REPORT.md 'Generated' field is a concrete UTC timestamp (2026-08-03T07:37:00Z) matching the committed catalog's meta.generated_at byte-for-byte, not an unexpanded $(date ...) literal",
+      "Verified: test_generation_idempotent now runs --check against the committed catalog before any regeneration, and the working tree is confirmed clean (git status --short, catalog sha256 identical) after a full test run (26 passed, 0 failed, 0 skipped)",
+      "Verified: _scan_model_ids() uses a non-capturing group plus finditer(...).group(0), confirmed to return full matched tokens (not truncated capture fragments) across 7 manual probes including claude-sonnet-4.5, Claude Opus 4.1, gpt-5.4-mini, gemini-3-pro, grok-4",
+      "Verified: no stale 'Claude'/'Claude Sonnet'/'Claude audit return' wording remains anywhere in task-packets/CCAR-002*.{json,md} or proof/CCAR-002/** outside correct historical statements about the R1 Sonnet audit"
+    ],
+    "remaining_risks": [
+      "test_generation_idempotent still writes-then-restores the committed catalog in place; a killed or parallelized (-n auto) test run could leave committed evidence dirty even though a normal run was verified clean (A2-F-001, MEDIUM, accepted).",
+      "The builder's --check mode structurally cannot detect generated_at drift because it normalizes that field on both sides before comparing; any future timestamp-sync claim resting solely on --check exit code, rather than direct comparison, should be treated with the same skepticism this round applied (A2-F-002, LOW, open).",
+      "proof/CCAR-002/PROOF.json and proof/CCAR-002/COMMAND_LOG.md disagree on whether kimi-k3 or an operator determination produced the round-2-vs-fd7afbe295 FAIL verdict; should be reconciled in a follow-up, non-blocking cleanup (A2-F-003, LOW, open).",
+      "proof/CCAR-002/NORMALIZATION_REPORT.md's Generator section still reads v1.0.0 against the catalog's actual v1.0.1; cosmetic, non-blocking (A2-F-004, LOW, open).",
+      "No dedicated CI/pre-commit gate references the normalized catalog specifically; drift protection currently depends entirely on the general pytest suite being collected (A2-F-008, INFO, open).",
+      "This audit's independence is LIMITED_SAME_FAMILY_DIFFERENT_MODEL_SESSION (Claude Opus auditing Claude-Sonnet-authored work in a separate session), not cross-vendor independence; the packet's originally named OpenCode/OpenRouter route was not used because the operator authorized this fallback route directly (A2-F-009, INFO, resolved-as-disclosed)."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": true,
+      "match_count": 1,
+      "truncated": false,
+      "matches": [
+        {
+          "path": "proof/pr_merge/embedded-audit/pr-1176/review_bundle/AUDIT_INSTRUCTION.md",
+          "line": 34,
+          "category": "FORCED_VERDICT_REQUEST",
+          "text_sha256": "70815f6252b6a8c749f5021e2733e64c3404be9b4c13dbb4445f5f4ff531ae22",
+          "diff_side": "METADATA"
+        }
+      ]
+    }
+  },
+  "route_preflight": {
+    "preferred": {
+      "tool": "opencode",
+      "model": "openrouter/moonshotai-kimi-k3 (deepseek/deepseek-v4-pro fallback)",
+      "status": "SUPERSEDED_BY_SUPERVISOR_DECISION"
+    },
+    "secondary_preferred": {
+      "tool": "gemini-cli",
+      "model": "gemini-3.1-pro-high",
+      "status": "INELIGIBLE_TIER"
+    },
+    "used": {
+      "tool": "claude-code-cli",
+      "model": "opus",
+      "status": "AVAILABLE"
+    },
+    "independence": "Claude Sonnet authored the CCAR-002R-A2 repair commits (cd0d6a469c/b096551dfa/fd7afbe295/c818138); Claude Opus 5 audited the exact final head in a separate process and session, re-deriving ground truth (git log, diff --stat, pytest run, direct file inspection) rather than trusting prior commit messages or in-repo audit claims. Different model tier, different session — LIMITED_SAME_FAMILY_DIFFERENT_MODEL_SESSION independence per Supervisor classification, not full cross-vendor independence.",
+    "authority": "Supervisor decision (2026-08-03, 'CCAR_002R_A2_OPUS_AUDIT_ACCEPTED / R4_PROOF_RETURN_AUTHORIZED') accepted the Opus route as a documented fallback after confirming Gemini CLI's IneligibleTierError made the direct Gemini route unavailable and treating the two prior OpenCode/OpenRouter advisory passes as non-canonical challenge history only."
+  }
+}

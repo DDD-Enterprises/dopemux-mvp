@@ -1,6 +1,9 @@
 # PR #1182 Post-Merge Audit Quarantine
 
-- Packet: TP-REPLAN-BASELINE-1182 post-merge proof quarantine
+- Packet: `TP-REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE`
+- Canonical Task Packet: `task-packets/TP-REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE.json`
+- Schema report path: `proof/TP-REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE/AUDITOR_REPORT.md`
+- PR-merge package (historical/support): `proof/pr_merge/embedded-audit/pr-1182/`
 - Merged PR head (authoritative for landed content): `1b80fc6f11681baebdb00acc7f756ce8471a24b0`
 - Merge commit on main: `fb710ef40500695882a5b421a3325150176fffa1`
 - Formal status: **SKIPPED** (exact-head independent audit **NOT_PROVEN**)

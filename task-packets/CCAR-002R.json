@@ -1,0 +1,129 @@
+{
+  "id": "CCAR-002R",
+  "project": "dopemux-mvp",
+  "target": "Repair CCAR-002 portability/determinism (repo-relative catalog paths, validated repo-root resolution, dual-worktree byte-identical catalog) on PR #1176, then return a fresh AGY-audited, correctly signed, exact-R1-bound proof-only commit such that trusted embedded audit succeeds and PR Steward final readiness is READY — without merge, force push, source agent/persona mutation, or CCAR-003.",
+  "invariants": [
+    "Starting PR head must be exactly a22699fc9834c77017ac88e482a6c94fdd319bda; stop if different.",
+    "R1 changes only the R1 allowlist: packet pair, builder, focused tests, generated catalog, proof/CCAR-002/**, and schema only if relative-path enforcement requires it.",
+    "All agent and persona source files remain byte-identical.",
+    "meta.source_manifest is a stable repo-relative path with no absolute or private machine path.",
+    "Repo root resolution is explicit or validated; fixed sole .parent.parent.parent discovery is not authorized as the only strategy.",
+    "A test generates the catalog from two differently located worktrees and requires byte-identical output under the packet timestamp rule.",
+    "CCAR-002 product invariants remain: nine base agents, persona coverage, no model IDs, authority booleans false, no runtime activation, schema-valid, builder --check passes.",
+    "Fresh independent AGY audit is bound to exact R1, not R2 and not any prior head.",
+    "PROOF.json.head_sha equals R1 exactly; pr_number is 1176; repo is DDD-Enterprises/dopemux-mvp.",
+    "PROOF.json is fully finalized before signing; signature verifies against trusted main allowed-signers.",
+    "R2 changes only proof/pr_merge/embedded-audit/pr-1176/** relative to R1.",
+    "local_audit_acceptance returns accepted=true for prospective R2 before push.",
+    "Trusted embedded audit success and PR Steward READY on final live head outrank local claims.",
+    "No force push, history rewrite, merge, or CCAR-003 execution."
+  ],
+  "depends_on": [
+    "CCAR-002"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "CCAR-SERIES-001",
+    "base_branch": "main",
+    "parent_tp_id": "CCAR-002",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "feat/CCAR-002-normalized-agent-persona-catalog",
+    "base_branch": "origin/main",
+    "stacked_because": "Repair existing PR #1176. Start from exact live head a22699fc9834c77017ac88e482a6c94fdd319bda. R1 portability then R2 AGY-audited signed proof-only return. No merge. No CCAR-003."
+  },
+  "commit": {
+    "message": "fix(commandcode): portable catalog paths + CCAR-002R repair packet",
+    "allowlist": [
+      "task-packets/CCAR-002R.md",
+      "task-packets/CCAR-002R.json",
+      "scripts/commandcode_router/build_normalized_catalog.py",
+      "tests/commandcode_router/test_normalized_catalog.py",
+      "config/commandcode/normalized_agent_persona_catalog.yaml",
+      "proof/CCAR-002/**",
+      "schemas/commandcode/normalized_agent_persona_catalog.schema.json",
+      "proof/pr_merge/embedded-audit/pr-1176/**"
+    ],
+    "verify": [
+      "git rev-parse HEAD equals pinned start a22699fc9834c77017ac88e482a6c94fdd319bda before R1 mutation",
+      "python3 -m json.tool task-packets/CCAR-002R.json",
+      "uv run --frozen dopemux orchestrator packet validate task-packets/CCAR-002R.json",
+      "uv run --frozen python -m jsonschema -i task-packets/CCAR-002R.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "builder --check and dual-worktree byte-identical catalog gate",
+      "focused tests/commandcode_router/test_normalized_catalog.py",
+      "source agent/persona SHA-256 match SOURCE_MANIFEST",
+      "R1 allowlist path gate",
+      "fresh AGY audit bound to R1",
+      "sign and verify PROOF.json; local_audit_acceptance accepted=true",
+      "R2 only proof/pr_merge/embedded-audit/pr-1176/**",
+      "trusted embedded audit success and PR Steward READY",
+      "do not merge"
+    ]
+  },
+  "pr": {
+    "title": "feat(commandcode): normalized agent and persona catalog",
+    "body": "PR #1176 CCAR-002R portability repair + canonical audit proof return. No merge until trusted embedded audit and PR Steward READY.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "R1-S1",
+      "task": "Exact-head preflight: lock worktree to a22699fc9834c77017ac88e482a6c94fdd319bda, clean status, PR #1176 open, record live blockers.",
+      "validation": [
+        "test \"$(git rev-parse HEAD)\" = \"a22699fc9834c77017ac88e482a6c94fdd319bda\"",
+        "test -z \"$(git status --porcelain=v1)\"",
+        "gh pr view 1176 --json state,headRefOid --jq 'select(.state==\"OPEN\" and .headRefOid==\"a22699fc9834c77017ac88e482a6c94fdd319bda\")'"
+      ]
+    },
+    {
+      "id": "R1-S2",
+      "task": "Portability repair: repo-relative meta.source_manifest; validated repo-root resolution; dual-worktree byte-identical catalog test; regenerate catalog and proof/CCAR-002 implementation evidence; preserve source agent/persona bytes.",
+      "validation": [
+        "rg -n 'source_manifest:' config/commandcode/normalized_agent_persona_catalog.yaml | rg -v '/Users/|/home/'",
+        "python scripts/commandcode_router/build_normalized_catalog.py --check",
+        "uv run --frozen pytest tests/commandcode_router/test_normalized_catalog.py -q"
+      ]
+    },
+    {
+      "id": "R1-S3",
+      "task": "Commit R1 only on allowlisted portability/packet/catalog/evidence paths; capture R1 SHA.",
+      "validation": [
+        "git diff --check",
+        "git diff --name-only a22699fc9834c77017ac88e482a6c94fdd319bda HEAD | python3 -c \"import sys; allowed=set(['task-packets/CCAR-002R.md','task-packets/CCAR-002R.json','scripts/commandcode_router/build_normalized_catalog.py','tests/commandcode_router/test_normalized_catalog.py','config/commandcode/normalized_agent_persona_catalog.yaml','schemas/commandcode/normalized_agent_persona_catalog.schema.json']); paths=[l.strip() for l in sys.stdin if l.strip()]; bad=[p for p in paths if p not in allowed and not p.startswith('proof/CCAR-002/')]; assert not bad, bad\""
+      ]
+    },
+    {
+      "id": "R2-S1",
+      "task": "Fresh read-only AGY audit against exact R1; assemble complete pr-1176 PROOF.json with head_sha=R1 before any signature.",
+      "validation": [
+        "test -f proof/pr_merge/embedded-audit/pr-1176/PROOF.json",
+        "python3 -c \"import json; p=json.load(open('proof/pr_merge/embedded-audit/pr-1176/PROOF.json')); h=p.get('head_sha') or p.get('embedded_audit',{}).get('head_sha'); assert h and h!='9221dd49b09628d8fd43a9fa7f01def89112beda'\""
+      ]
+    },
+    {
+      "id": "R2-S2",
+      "task": "Sign exact final PROOF bytes; verify against trusted main allowed-signers; commit proof-only R2; local_audit_acceptance accepted=true; push; require trusted embedded audit success and PR Steward READY; do not merge.",
+      "validation": [
+        "python3 -m scripts.audit.local_audit_acceptance --repo DDD-Enterprises/dopemux-mvp --pr 1176 --head-sha HEAD --allowed-signers config/audit/embedded-audit-allowed-signers --schema schemas/proof/embedded_audit.schema.json",
+        "git diff --name-only HEAD~1 HEAD | sort | rg -x 'proof/pr_merge/embedded-audit/pr-1176/.+'"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+{
+  "id": "CCAR-002R-A2",
+  "project": "dopemux-mvp",
+  "target": "Repair two surviving evidence defects and two surviving review defects in the CCAR-002R return on PR #1176 (absolute worktree path in SOURCE_MANIFEST.json; literal unexpanded $(date ...) in NORMALIZATION_REPORT.md; self-healing test_generation_idempotent; capturing-group truncation in _scan_model_ids), then return a fresh independent audit (OpenCode + OpenRouter moonshotai/kimi-k3, deepseek/deepseek-v4-pro fallback) against exact R3 and a signed canonical proof-only R4 such that trusted embedded audit succeeds and PR Steward is READY — without merge, force push, source agent/persona mutation, or CCAR-003.",
+  "invariants": [
+    "Starting PR head must be exactly R2 = 1cb80e40f0f818389307aedeb14aaaceaa3e8ed1; stop if different.",
+    "R3 changes only the R3 allowlist: proof/CCAR-002/**, the builder script, the focused test file, and the packet pair.",
+    "All agent and persona source files remain byte-identical.",
+    "proof/CCAR-002/SOURCE_MANIFEST.json contains no absolute or private machine path under any key.",
+    "proof/CCAR-002/NORMALIZATION_REPORT.md contains no unexpanded shell command substitution; timestamps are concrete UTC values.",
+    "test_generation_idempotent asserts builder --check against the committed catalog BEFORE any regeneration occurs, so committed drift cannot be self-healed by the test.",
+    "_scan_model_ids returns the full matched token for every pattern, never a bare capture-group fragment.",
+    "A focused regression test pins the full-match behavior of _scan_model_ids.",
+    "CCAR-002 product invariants remain: nine base agents, persona coverage, no model IDs in catalog, authority booleans false, no runtime activation, schema-valid, builder --check passes.",
+    "Fresh independent audit (OpenCode + OpenRouter kimi-k3, deepseek-v4-pro fallback) is bound to exact R3, not R2 and not any prior head.",
+    "R4 changes only proof/pr_merge/embedded-audit/pr-1176/** relative to R3.",
+    "PROOF.json.head_sha equals R3 exactly; pr_number is 1176; repo is DDD-Enterprises/dopemux-mvp.",
+    "local_audit_acceptance returns accepted=true for prospective R4 before push.",
+    "Trusted embedded audit success and PR Steward READY on the final live head outrank local claims.",
+    "No force push, history rewrite, merge, or CCAR-003 execution."
+  ],
+  "depends_on": [
+    "CCAR-002",
+    "CCAR-002R"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "CCAR-SERIES-001",
+    "base_branch": "main",
+    "parent_tp_id": "CCAR-002R",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "feat/CCAR-002-normalized-agent-persona-catalog",
+    "base_branch": "origin/main",
+    "stacked_because": "Narrow amendment to PR #1176. Start from exact R2 head 1cb80e40f0f818389307aedeb14aaaceaa3e8ed1. R3 fixes evidence + test correctness only, then R4 signed proof-only return. No architecture reopen. No CCAR-003."
+  },
+  "commit": {
+    "message": "fix(commandcode): CCAR-002R-A2 evidence + test correctness repair",
+    "allowlist": [
+      "proof/CCAR-002/SOURCE_MANIFEST.json",
+      "proof/CCAR-002/NORMALIZATION_REPORT.md",
+      "proof/CCAR-002/**",
+      "scripts/commandcode_router/build_normalized_catalog.py",
+      "tests/commandcode_router/test_normalized_catalog.py",
+      "config/commandcode/normalized_agent_persona_catalog.yaml",
+      "task-packets/CCAR-002R-A2.md",
+      "task-packets/CCAR-002R-A2.json",
+      "proof/pr_merge/embedded-audit/pr-1176/**"
+    ],
+    "verify": [
+      "git rev-parse HEAD equals pinned start 1cb80e40f0f818389307aedeb14aaaceaa3e8ed1 before R3 mutation",
+      "python3 -m json.tool task-packets/CCAR-002R-A2.json",
+      "python3 -m json.tool proof/CCAR-002/SOURCE_MANIFEST.json | grep -v -E '/Users/|/home/'",
+      "grep -E '^\\*\\*Generated\\*\\*: [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$' proof/CCAR-002/NORMALIZATION_REPORT.md",
+      "python scripts/commandcode_router/build_normalized_catalog.py --check",
+      "python -m pytest tests/commandcode_router/test_normalized_catalog.py -v",
+      "R3 allowlist path gate",
+      "fresh independent OpenRouter audit (kimi-k3 / deepseek-v4-pro) bound to R3",
+      "sign and verify PROOF.json; local_audit_acceptance accepted=true",
+      "R4 only proof/pr_merge/embedded-audit/pr-1176/**",
+      "trusted embedded audit success and PR Steward READY",
+      "do not merge"
+    ]
+  },
+  "pr": {
+    "title": "feat(commandcode): normalized agent and persona catalog",
+    "body": "PR #1176 CCAR-002R-A2 evidence + test correctness repair, then canonical audit proof return. No merge until trusted embedded audit and PR Steward READY.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "R3-S1",
+      "task": "Exact-head preflight: lock worktree to 1cb80e40f0f818389307aedeb14aaaceaa3e8ed1, clean status, PR #1176 open, record live blockers.",
+      "validation": [
+        "test \"$(git rev-parse HEAD)\" = \"1cb80e40f0f818389307aedeb14aaaceaa3e8ed1\"",
+        "test -z \"$(git status --porcelain=v1)\"",
+        "gh pr view 1176 --json state,headRefOid --jq 'select(.state==\"OPEN\" and .headRefOid==\"1cb80e40f0f818389307aedeb14aaaceaa3e8ed1\")'"
+      ]
+    },
+    {
+      "id": "R3-S2",
+      "task": "Remove the absolute worktree value from SOURCE_MANIFEST.json (no code path reads it; dropped rather than replaced with a fabricated repo-relative placeholder).",
+      "validation": [
+        "grep -v '\"worktree\"' proof/CCAR-002/SOURCE_MANIFEST.json | python3 -m json.tool >/dev/null",
+        "! grep -q '/Users/' proof/CCAR-002/SOURCE_MANIFEST.json"
+      ]
+    },
+    {
+      "id": "R3-S3",
+      "task": "Replace the literal $(date -u +%Y-%m-%dT%H:%M:%SZ) in NORMALIZATION_REPORT.md with the concrete UTC generated_at timestamp emitted by the actual regeneration run of build_normalized_catalog.py for this repair.",
+      "validation": [
+        "grep -E '^\\*\\*Generated\\*\\*: [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$' proof/CCAR-002/NORMALIZATION_REPORT.md"
+      ]
+    },
+    {
+      "id": "R3-S4",
+      "task": "Reorder test_generation_idempotent so builder --check runs against the committed catalog first, before any regeneration; keep a post-regeneration --check as an idempotency assertion.",
+      "validation": [
+        "python -m pytest tests/commandcode_router/test_normalized_catalog.py::TestDeterministic::test_generation_idempotent -v"
+      ]
+    },
+    {
+      "id": "R3-S5",
+      "task": "Change the Claude regex group in _scan_model_ids to non-capturing and switch matching to finditer(...).group(0) so full matches (e.g. claude-sonnet-4.5) are returned instead of bare capture fragments (e.g. sonnet); add a focused regression test.",
+      "validation": [
+        "python -m pytest tests/commandcode_router/test_normalized_catalog.py::TestScanModelIds -v"
+      ]
+    },
+    {
+      "id": "R3-S6",
+      "task": "Regenerate config/commandcode/normalized_agent_persona_catalog.yaml and proof/CCAR-002/** implementation evidence honestly; verify source agent/persona hashes still match SOURCE_MANIFEST.json.",
+      "validation": [
+        "python scripts/commandcode_router/build_normalized_catalog.py --check",
+        "python -m pytest tests/commandcode_router/test_normalized_catalog.py -v"
+      ]
+    },
+    {
+      "id": "R3-S7",
+      "task": "Commit R3 only on allowlisted evidence/test/packet paths; capture R3 SHA.",
+      "validation": [
+        "git diff --check",
+        "git diff --name-only 1cb80e40f0f818389307aedeb14aaaceaa3e8ed1 HEAD | python3 -c \"import sys; allowed=set(['proof/CCAR-002/SOURCE_MANIFEST.json','proof/CCAR-002/NORMALIZATION_REPORT.md','scripts/commandcode_router/build_normalized_catalog.py','tests/commandcode_router/test_normalized_catalog.py','config/commandcode/normalized_agent_persona_catalog.yaml','task-packets/CCAR-002R-A2.md','task-packets/CCAR-002R-A2.json']); paths=[l.strip() for l in sys.stdin if l.strip()]; bad=[p for p in paths if p not in allowed and not p.startswith('proof/CCAR-002/')]; assert not bad, bad\""
+      ]
+    },
+    {
+      "id": "R4-S1",
+      "task": "Fresh read-only independent audit (OpenCode + OpenRouter kimi-k3, deepseek-v4-pro fallback) against exact R3; assemble complete pr-1176 PROOF.json with head_sha=R3 before any signature.",
+      "validation": [
+        "test -f proof/pr_merge/embedded-audit/pr-1176/PROOF.json",
+        "python3 -c \"import json; p=json.load(open('proof/pr_merge/embedded-audit/pr-1176/PROOF.json')); h=p.get('head_sha') or p.get('embedded_audit',{}).get('head_sha'); assert h\""
+      ]
+    },
+    {
+      "id": "R4-S2",
+      "task": "Finalize, sign, and verify PROOF.json bytes against trusted main allowed-signers; require local_audit_acceptance accepted=true for prospective R4 before push.",
+      "validation": [
+        "python3 -m scripts.audit.local_audit_acceptance --repo DDD-Enterprises/dopemux-mvp --pr 1176 --head-sha \"$(git rev-parse HEAD)\" --allowed-signers config/audit/embedded-audit-allowed-signers --schema schemas/proof/embedded_audit.schema.json"
+      ]
+    },
+    {
+      "id": "R4-S3",
+      "task": "Push R3+R4 normally; observe trusted embedded audit success and PR Steward final readiness READY; do not merge.",
+      "validation": [
+        "gh pr view 1176 --json state,mergeable --jq 'select(.state==\"OPEN\")'"
+      ]
+    }
+  ]
+}

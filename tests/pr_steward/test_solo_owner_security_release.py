@@ -95,6 +95,69 @@ def test_activate_happy_path():
     assert result.receipt["pr_number"] == PR
 
 
+def test_activate_with_member_association_org_repo():
+    """Org-owned repos emit MEMBER for the sole trusted operator, not OWNER."""
+    result = _eval(
+        pr_author_association="MEMBER",
+        issue_comments=[_comment(_phrase(), association="MEMBER")],
+    )
+    assert result.activated is True
+    assert result.receipt is not None
+    assert result.receipt["operator_association"] == "MEMBER"
+
+
+def test_activate_with_collaborator_association_org_repo():
+    """Steward harvest may report COLLABORATOR for the same org operator."""
+    result = _eval(
+        pr_author_association="COLLABORATOR",
+        issue_comments=[_comment(_phrase(), association="COLLABORATOR")],
+    )
+    assert result.activated is True
+    assert result.receipt is not None
+    assert result.receipt["operator_association"] == "COLLABORATOR"
+
+
+def test_activate_when_author_assoc_missing_but_comment_is_member():
+    result = _eval(
+        pr_author_association=None,
+        issue_comments=[_comment(_phrase(), association="MEMBER")],
+    )
+    assert result.activated is True
+    assert result.receipt is not None
+    assert result.receipt["operator_association"] == "MEMBER"
+
+
+def test_reject_contributor_association():
+    result = _eval(
+        pr_author_association="CONTRIBUTOR",
+        issue_comments=[_comment(_phrase(), association="CONTRIBUTOR")],
+    )
+    assert result.activated is False
+    assert "SOLO_OWNER_AUTHOR_ASSOCIATION_UNTRUSTED" in result.diagnostic_errors
+
+
+def test_reject_none_comment_association_when_author_also_untrusted():
+    result = _eval(
+        pr_author_association=None,
+        issue_comments=[_comment(_phrase(), association="NONE")],
+    )
+    assert result.activated is False
+    assert (
+        "SOLO_OWNER_PHRASE_OPERATOR_ASSOCIATION_UNTRUSTED" in result.diagnostic_errors
+    )
+
+
+def test_reject_untrusted_comment_even_if_author_is_member():
+    result = _eval(
+        pr_author_association="MEMBER",
+        issue_comments=[_comment(_phrase(), association="CONTRIBUTOR")],
+    )
+    assert result.activated is False
+    assert (
+        "SOLO_OWNER_PHRASE_OPERATOR_ASSOCIATION_UNTRUSTED" in result.diagnostic_errors
+    )
+
+
 def test_cannot_activate_when_non_author_trusted_approver_exists():
     result = _eval(trusted_approvers=[AUTHOR, "second-human"])
     assert result.activated is False
