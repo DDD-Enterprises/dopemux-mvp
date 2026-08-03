@@ -18,7 +18,7 @@
       "Wave 0 remains unauthorized by this evidence package",
       "Historical proofs must not be treated as PR Steward READY"
     ],
-    "report_path": "proof/pr-1182/AUDITOR_REPORT.md",
+    "report_path": "proof/pr_merge/embedded-audit/pr-1182/AUDITOR_REPORT.md",
     "required": true,
     "skip_reason": "PR #1182 merged at fb710ef40500695882a5b421a3325150176fffa1 from head 1b80fc6f11681baebdb00acc7f756ce8471a24b0 without an exact-head independent audit of the landed content. Intermediate commits after any partial audits changed substantive routing-table content. Prior main proof bound b7387429 and used claude-code-cli/sonnet schema carriers while stating real auditor was Codex \u2014 quarantined as non-truthful formal evidence. Formal status is SKIPPED / EXACT_HEAD_AUDIT=NOT_PROVEN.",
     "status": "SKIPPED"
