@@ -1,7 +1,16 @@
- .../orchestrator-replan-2026-08-02/MASTER-PLAN.md  |   223 +
- .../routing-table.json                             | 14161 +++++++++++++++++++
+ .../orchestrator-replan-2026-08-02/MASTER-PLAN.md  |   232 +
+ .../routing-table.json                             | 14447 +++++++++++++++++++
  .../db-defragmentation-2026-08-01.md               |   121 +
  .../03-reference/orchestrator-integration/index.md |     1 +
- ...n-DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED.json |   142 +-
- docs/ops/load-plans/load_plan-TO-CANON.json        |    30 +-
- 6 files changed, 14636 insertions(+), 42 deletions(-)
+ ...n-DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED.json |   150 +-
+ docs/ops/load-plans/load_plan-TO-CANON.json        |   192 +-
+ .../embedded-audit/pr-1182/AUDITOR_REPORT.md       |    53 +
+ proof/pr_merge/embedded-audit/pr-1182/PROOF.json   |    69 +
+ .../pr_merge/embedded-audit/pr-1182/PROOF.json.sig |     6 +
+ .../pr-1182/review_bundle/CHANGED_FILES.txt        |     6 +
+ .../review_bundle/CODEX_IDENTITY_PREFLIGHT.txt     |    85 +
+ .../pr-1182/review_bundle/CODEX_REVIEW_RAW.txt     |     6 +
+ .../pr-1182/review_bundle/CODEX_REVIEW_RAW_R2.txt  |     1 +
+ .../review_bundle/DETERMINISTIC_VALIDATION.json    |    19 +
+ .../pr-1182/review_bundle/DIFF_STAT.txt            |     7 +
+ 15 files changed, 15332 insertions(+), 63 deletions(-)

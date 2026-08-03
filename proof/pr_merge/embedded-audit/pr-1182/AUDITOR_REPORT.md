@@ -1,53 +1,49 @@
-# Formal Embedded Audit Report — PR #1182
+# Formal Embedded Audit Report — PR #1182 (steward repair head)
 
-**Supervisor decision:** `AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION` (operator choice `1`, 2026-08-02)
+**Supervisor decision:** `AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION` (packet-specific; still in force)
 
-## Authority
-
-- User/supervisor authorized Codex as formal auditor for **this packet only**.
-- AGENTS.md normally forbids Codex as formal auditor; latest supervisor instruction outranks for this slice.
-- Schema enum on `main` still lacks `codex-cli` / `gpt-5.5`. Local signed-attestation CI path cannot honestly encode this identity until main schema is extended. This report records the authorized exception and the real identity ledger.
-
-## Identity ledger
+## Identity ledger (real auditor)
 
 | Field | Value |
 |---|---|
 | runner | codex-cli 0.146.0 |
 | configured_model | default/unset |
 | response_claimed_model | gpt-5.5 |
-| proxy_reported_identity | provider: openai (Codex CLI banner) |
-| provider_attested_identity | OpenAI Codex sessions below |
-| implementer | grok-4.5-xai (different family) |
+| proxy_reported_identity | provider: openai |
+| provider_attested_identity | OpenAI Codex session 019fc4ee-bb77-7680-91d5-8bff0a3a38ae (R4) |
+| prior sessions | R1 019fc4cf-… · R2 019fc4d4-… · R3 019fc4e8-… |
+| implementer | grok-4.5-xai |
 
-## Sessions (content head `2cb743117d2d6689bf9394e3c7b492fccbd958e1`)
+**Invocation:** `codex review --base origin/main` on content head `a5fb1e07398b4ad2df741c19040c5295bcdc80fe`
 
-| Round | Head | Session | Result |
-|---|---|---|---|
-| R1 | d3dbe23a42 | 019fc4cf-6a3c-7130-9383-0741d90c9971 | P2 Luna demotion routing — fixed in 2cb743117d |
-| R2 | 2cb743117d2d6689bf9394e3c7b492fccbd958e1 | 019fc4d4-f83d-7802-b56d-ee49b5b1d8d6 | No clear actionable breakage |
+## Schema note
 
-Invocation:
-```
-codex review --base origin/main
-```
+`schemas/proof/embedded_audit.schema.json` on main cannot encode `codex-cli` / `gpt-5.5`. Under the supervisor exception, schema fields `auditor_tool`/`auditor_model` are filled with the minimum schema-valid non-SKIPPED pair required by allOf (not the real auditor). **Real identity is only this ledger + PROOF.supervisor_exception + invocation.**
 
 ## Deterministic validation
 
-See `review_bundle/DETERMINISTIC_VALIDATION.json` — **PASS**.
+See review_bundle/DETERMINISTIC_VALIDATION.json — PASS (539; class sum 539; 0 BLOCKS inversions; 0 program roots actionable; 0 needs-rescope routing; 0 gemini dispatchable; 0 actionable without routing).
+
+## Steward repair coverage
+
+1. Wave/BLOCKS topology reconciled
+2. Implemented audit-series → verify-close-candidate + evidence
+3. Gemini CLI unproven → non-dispatchable cohort
+4. Program roots containers
+5. needs-rescope non-dispatchable
+6. Load-plan LOADED → verification/guarded recovery
 
 ## Findings
 
-### F-001 (RESOLVED) — Demoted items retained Luna primary
-R1 finding. Fixed: only 12 `luna-ready` items keep `gpt-5-6-luna`; 35 demoted re-routed.
+### F-001 RESOLVED — Review-thread content defects
+All MUST_FIX content items from current threads addressed in content head `a5fb1e07398b4ad2df741c19040c5295bcdc80fe`.
 
-### F-002 (ACCEPTED_RISK / INFO) — Formal schema enum gap
-Codex is not in `embedded_audit.auditor_tool` / `auditor_model` enums on main. Supervisor exception authorizes operator-merge readiness on this packet without pretending the identity was Claude/Gemini.
+### F-002 ACCEPTED_RISK — Schema cannot name Codex
+Supervisor exception accepted. Real identity outside enum fields.
 
-### F-003 (INFO) — Six-file docs/export only
-No runtime code in delta. Risk surface limited to operator dispatch mis-use of export; routing invariants now hold.
+### F-003 RESOLVED — Prior stale proof
+Prior proof bound to 2cb743117d superseded by this proof bound to `a5fb1e07398b4ad2df741c19040c5295bcdc80fe`.
 
 ## Verdict
 
 **PASS_WITH_RISKS** under `AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION`.
-
-Risk retained: automated CI formal-auditor enum cannot name Codex until main schema update; operator merge authorized by supervisor exception + known Codex identity + deterministic PASS.

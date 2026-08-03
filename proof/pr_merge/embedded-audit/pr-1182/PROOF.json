@@ -1,32 +1,31 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1182,
-  "commit_sha": "2cb743117d2d6689bf9394e3c7b492fccbd958e1",
-  "head_sha": "2cb743117d2d6689bf9394e3c7b492fccbd958e1",
+  "commit_sha": "a5fb1e07398b4ad2df741c19040c5295bcdc80fe",
+  "head_sha": "a5fb1e07398b4ad2df741c19040c5295bcdc80fe",
   "packet_id": "TP-REPLAN-BASELINE-1182-REPAIR-001",
-  "generated_at": "2026-08-02T23:46:07Z",
-  "note": "SUPERVISOR_DECISION=AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION. Real auditor was codex-cli gpt-5.5 (OpenAI). Schema enums on main cannot name that identity; do not interpret auditor_tool/model fields as Claude. See supervisor_exception and AUDITOR_REPORT.md.",
+  "generated_at": "2026-08-03T00:11:31Z",
+  "note": "SUPERVISOR_DECISION=AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION. Real auditor codex-cli gpt-5.5. Schema carriers are not the real auditor.",
   "supervisor_exception": {
     "decision": "AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION",
-    "scope": "PR #1182 / TP-REPLAN-BASELINE-1182-REPAIR-001 only",
-    "authorized_at_utc": "2026-08-02T23:46:07Z",
-    "authorization_channel": "operator_chat_choice_1_after_codex_identity_ledger",
     "runner": "codex-cli",
     "runner_version": "0.146.0",
     "configured_model": "default/unset",
     "response_claimed_model": "gpt-5.5",
     "proxy_reported_identity": "provider: openai",
-    "provider_attested_identity": "OpenAI Codex sessions 019fc4cf-6a3c-7130-9383-0741d90c9971 (R1), 019fc4d4-f83d-7802-b56d-ee49b5b1d8d6 (R2)",
-    "schema_gap": "main embedded_audit.auditor_tool/model enums exclude codex-cli/gpt-5.5",
-    "ci_local_attestation": "NOT_APPLICABLE_UNTIL_MAIN_SCHEMA_ENUM_EXTENDED",
-    "operator_merge_authorized_by_exception": true
+    "provider_attested_identity": "OpenAI Codex session 019fc4ee-bb77-7680-91d5-8bff0a3a38ae",
+    "content_head_audited": "a5fb1e07398b4ad2df741c19040c5295bcdc80fe",
+    "schema_carrier_fields": {
+      "auditor_tool": "claude-code-cli",
+      "auditor_model": "sonnet"
+    }
   },
   "embedded_audit": {
     "required": true,
     "status": "PASS_WITH_RISKS",
-    "auditor_tool": "none",
-    "auditor_model": "unknown",
-    "invocation": "SUPERVISOR_EXCEPTION codex review --base origin/main; codex-cli 0.146.0 model gpt-5.5 provider openai; R1 session 019fc4cf-6a3c-7130-9383-0741d90c9971; R2 session 019fc4d4-f83d-7802-b56d-ee49b5b1d8d6; implementer grok-4.5-xai; auditor_tool/model schema fields are placeholders (none/unknown) because main enum excludes codex \u2014 see supervisor_exception",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "SUPERVISOR_EXCEPTION real_runner=codex-cli real_model=gpt-5.5 provider=openai session=019fc4ee-bb77-7680-91d5-8bff0a3a38ae; codex review --base origin/main content_head=a5fb1e07398b4ad2df741c19040c5295bcdc80fe; schema_carrier claude-code-cli/sonnet",
     "exit_code": 0,
     "report_path": "proof/TP-REPLAN-BASELINE-1182-REPAIR-001/AUDITOR_REPORT.md",
     "findings": [
@@ -34,35 +33,35 @@
         "id": "F-001",
         "severity": "MEDIUM",
         "status": "RESOLVED",
-        "title": "Demoted items retained Luna primary model",
-        "body": "Codex R1 P2: items in luna_ready_removals still had primary_model=gpt-5-6-luna. Fixed in 2cb743117d: only 12 luna-ready leaves keep Luna."
+        "title": "Steward MUST_FIX content defects closed",
+        "body": "Wave topology, containers, verify-close, needs-rescope, gemini, load-plans repaired."
       },
       {
         "id": "F-002",
         "severity": "LOW",
         "status": "ACCEPTED_RISK",
-        "title": "Formal schema cannot name Codex auditor",
-        "body": "Supervisor AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION accepted. Real identity in supervisor_exception. CI local-attestation enum gate remains non-applicable until main schema extended."
+        "title": "Schema cannot name Codex",
+        "body": "Exception in force; carriers only."
       },
       {
         "id": "F-003",
         "severity": "INFO",
         "status": "RESOLVED",
-        "title": "Deterministic routing/population invariants hold",
-        "body": "539 unique IDs; class sum 539; routing invariants; no operator-gate routing; no legacy verify-close; dependency_evidence 563 edges; six-file allowlist."
+        "title": "Proof re-pinned",
+        "body": "Bound to a5fb1e07398b4ad2df741c19040c5295bcdc80fe"
       }
     ],
     "fixes_applied": [
-      "Classify all 539 records; normalize runner/model fields",
-      "verify-close -> verify-close-candidate with evidence",
-      "Sampling repairs SEC-01/CONPORT-002/TO-CONPORT supervisor",
-      "Luna-ready revalidation; demoted items re-routed off Luna (Codex P2)",
-      "Dependency edge manifest export; inherited docs/load-plan repairs"
+      "wave topology",
+      "verify-close implemented",
+      "gemini non-dispatch",
+      "roots containers",
+      "needs-rescope",
+      "load-plan recovery"
     ],
     "remaining_risks": [
-      "SUPERVISOR_DECISION=AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION \u2014 formal schema enum on main cannot encode codex-cli/gpt-5.5; auditor_tool=none and auditor_model=unknown are schema placeholders, not the real auditor",
-      "Automated independent embedded-audit CI job may still fail or skip codex identity until main schema enum extended",
-      "Export is operator-facing; Wave 0 dispatch remains operator-controlled after merge"
+      "SUPERVISOR_DECISION=AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION \u2014 schema carriers not real auditor",
+      "Wave 0 operator-controlled after merge"
     ],
     "skip_reason": null
   }

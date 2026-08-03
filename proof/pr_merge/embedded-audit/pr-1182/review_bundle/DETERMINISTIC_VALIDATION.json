@@ -1,19 +1,19 @@
 {
-  "total_items": 539,
-  "unique_ids": 539,
+  "total": 539,
+  "unique": 539,
   "class_sum": 539,
   "by_class": {
-    "actionable_leaf": 377,
+    "actionable_leaf": 356,
     "cross_repository_parked": 1,
     "operator_gated_decision": 28,
-    "series_or_phase_container": 70,
-    "stale_or_cancellation_candidate": 63
+    "series_or_phase_container": 72,
+    "stale_or_cancellation_candidate": 82
   },
-  "legacy_verify_close": 0,
-  "operator_with_routing": 0,
-  "luna_primaries": 12,
-  "luna_ready": 12,
-  "dep_edges": 563,
-  "dep_edges_len": 563,
+  "blocks_wave_inversions": 0,
+  "program_roots_actionable": 0,
+  "needs_rescope_with_routing": 0,
+  "gemini_dispatchable": 0,
+  "actionable_without_routing": 0,
+  "dispatchable_actionable": 356,
   "verdict": "PASS"
 }
