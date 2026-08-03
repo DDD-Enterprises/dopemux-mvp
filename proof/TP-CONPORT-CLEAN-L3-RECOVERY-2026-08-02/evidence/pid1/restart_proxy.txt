@@ -1,0 +1,4 @@
+proxy t=0s curl=000fail started=2026-08-02T23:56:20.568920259Z
+proxy t=2s curl=000fail started=2026-08-02T23:56:37.48165342Z
+proxy t=5s curl=200 started=2026-08-02T23:56:37.48165342Z
+PROXY_RECOVERED=5

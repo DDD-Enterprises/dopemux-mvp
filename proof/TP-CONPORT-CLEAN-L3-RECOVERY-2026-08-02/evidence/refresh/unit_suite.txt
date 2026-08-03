@@ -1,0 +1,51 @@
+........................................................................ [  4%]
+........................................................................ [  8%]
+........................................................................ [ 12%]
+........................................................................ [ 16%]
+........................................................................ [ 21%]
+........................................................................ [ 25%]
+........................................................................ [ 29%]
+........................................................................ [ 33%]
+........................................................................ [ 38%]
+........................................................................ [ 42%]
+........................................................................ [ 46%]
+........................................................................ [ 50%]
+..FF.................................................................... [ 55%]
+........................................................................ [ 59%]
+........................................................................ [ 63%]
+........................................................................ [ 67%]
+........................................................................ [ 72%]
+........................................................................ [ 76%]
+........................................................................ [ 80%]
+..........................................................F............. [ 84%]
+........................................................................ [ 89%]
+........................................................................ [ 93%]
+........................................................................ [ 97%]
+.........................................                                [100%]
+=================================== FAILURES ===================================
+E   AssertionError: assert '`dopemux truth` is not a supported Repo Truth Extractor entrypoint' in '╭────────────────────────────── ! RITUAL ABORTED ──────────────────────────────╮\n│                                  ...                                 │\n╰──────────────────────────────────────────────────────────────────────────────╯\n'
+     +  where '╭────────────────────────────── ! RITUAL ABORTED ──────────────────────────────╮\n│                                  ...                                 │\n╰──────────────────────────────────────────────────────────────────────────────╯\n' = <Result SystemExit(1)>.output
+/Users/hue/code/dopemux-mvp/.worktrees/TP-CONPORT-CLEAN-L3-REPAIR/tests/unit/test_cli_upgrades_commands.py:380: AssertionError: assert '`dopemux truth` is not a supported Repo Truth Extractor entrypoint' in '╭────────────────────────────── ! RITUAL ABORTED ──────────────────────────────╮\n│                                  ...                                 │\n╰──────────────────────────────────────────────────────────────────────────────╯\n'
+E   AssertionError: assert '`dopemux truth` is not a supported Repo Truth Extractor entrypoint' in '╭────────────────────────────── ! RITUAL ABORTED ──────────────────────────────╮\n│                                  ...                                 │\n╰──────────────────────────────────────────────────────────────────────────────╯\n'
+     +  where '╭────────────────────────────── ! RITUAL ABORTED ──────────────────────────────╮\n│                                  ...                                 │\n╰──────────────────────────────────────────────────────────────────────────────╯\n' = <Result SystemExit(1)>.output
+/Users/hue/code/dopemux-mvp/.worktrees/TP-CONPORT-CLEAN-L3-REPAIR/tests/unit/test_cli_upgrades_commands.py:389: AssertionError: assert '`dopemux truth` is not a supported Repo Truth Extractor entrypoint' in '╭────────────────────────────── ! RITUAL ABORTED ──────────────────────────────╮\n│                                  ...                                 │\n╰──────────────────────────────────────────────────────────────────────────────╯\n'
+E   AssertionError: assert PosixPath('/Users/hue/code/dopemux-mvp') is None
+/Users/hue/code/dopemux-mvp/.worktrees/TP-CONPORT-CLEAN-L3-REPAIR/tests/unit/test_pm_source_events.py:126: AssertionError: assert PosixPath('/Users/hue/code/dopemux-mvp') is None
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /Users/hue/code/dopemux-mvp/.worktrees/TP-CONPORT-CLEAN-L3-REPAIR/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+tests/unit/dopemux/pm/test_conport_adapter.py::TestConPortAdapterRecordProgress::test_record_progress_lock_timeout
+  /Users/hue/code/dopemux-mvp/.worktrees/TP-CONPORT-CLEAN-L3-REPAIR/src/dopemux/pm/adapters/conport.py:148: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+    response.raise_for_status()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/unit/test_bridge_task_integration.py:3: bridge task integration tests are quarantined from the fast unit lane pending dopecon-bridge dependency slimming
+SKIPPED [1] tests/unit/test_conport_memory_server.py:3: conport memory server tests are quarantined from the fast unit lane pending MCP dependency slimming
+FAILED tests/unit/test_cli_upgrades_commands.py::test_truth_command_is_deprecated
+FAILED tests/unit/test_cli_upgrades_commands.py::test_truth_command_rejects_legacy_deep_mode
+FAILED tests/unit/test_pm_source_events.py::test_emit_pm_promotable_source_event_rejects_bare_non_repo_workspace_root

@@ -1,0 +1,1 @@
+{"status": "healthy", "service": "conport-enhanced", "port": 3004, "database": "healthy", "redis": "healthy", "timestamp": 35762.474713456}

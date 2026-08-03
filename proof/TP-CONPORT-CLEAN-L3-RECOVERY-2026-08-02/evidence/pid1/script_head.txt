@@ -1,0 +1,5 @@
+#!/bin/bash
+# ConPort multi-server supervisor (PID 1).
+#
+# Required children (all three must stay up):
+#   INFO_PID  — info_server.py      (service discovery)

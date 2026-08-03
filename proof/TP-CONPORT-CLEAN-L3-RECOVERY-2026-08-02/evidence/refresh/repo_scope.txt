@@ -1,0 +1,8 @@
+status:
+## fix/conport-clean-l3-recovery-2026-08-02...origin/fix/conport-clean-l3-recovery-2026-08-02 [ahead 4]
+?? proof/TP-CONPORT-CLEAN-L3-RECOVERY-2026-08-02/evidence/refresh/
+?? proof/TP-CONPORT-CLEAN-L3-RECOVERY-2026-08-02/review_bundle/
+HEAD=5ab419b9e3236f17add2c2d09ac22efde942500e
+origin/main=fb710ef40500695882a5b421a3325150176fffa1
+diff --check:
+diff_check_exit=0

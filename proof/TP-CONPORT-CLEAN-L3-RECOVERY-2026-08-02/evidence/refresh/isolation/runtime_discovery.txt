@@ -1,0 +1,5 @@
+=== runtime discovery ===
+postgresql://conport_dopemux_mvp:***@dopemux-postgres-age:5432/conport_dopemux_mvp
+db= conport_dopemux_mvp
+user= conport_dopemux_mvp
+PASS resolves only conport_dopemux_mvp

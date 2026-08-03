@@ -1,0 +1,6 @@
+NO_AUTOHEAL
+241:    # Third-party autoheal + docker.sock is intentionally NOT used.
+754:  # NOTE: third-party autoheal (docker.sock mount) was removed. ConPort PID 1
+["conport_supervision_state:/var/lib/conport-supervision"] null
+
+Image=dopemux-conport:pid1-l3 Name=/mcp-conport Restart=unless-stopped

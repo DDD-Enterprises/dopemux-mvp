@@ -1,0 +1,10 @@
+=== restore service after terminal probe ===
+mcp-conport
+RESTORED_HEALTHY at_s=1
+PID                 CMD
+68473               bash start_with_info.sh
+68528               python info_server.py
+68529               python enhanced_server.py
+68530               python server.py sse
+{"status": "healthy", "service": "conport-enhanced", "port": 3004, "database": "healthy", "redis": "healthy", "timestamp": 42319.905042634}
+Name=/mcp-conport Status=running RestartCount=0

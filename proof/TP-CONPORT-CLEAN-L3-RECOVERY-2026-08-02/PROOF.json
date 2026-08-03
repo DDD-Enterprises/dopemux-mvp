@@ -1,0 +1,193 @@
+{
+  "packet_id": "TP-CONPORT-PROJECT-WALL-RECOVERY-L3-FREEZE-001",
+  "series": "CONPORT-PROJECT-WALL-RECOVERY-2026-08-02",
+  "branch": "fix/conport-clean-l3-recovery-2026-08-02",
+  "base": "main",
+  "base_sha": "fb710ef40500695882a5b421a3325150176fffa1",
+  "recovery_source_commit": "a39ea663dbf568cb3edf3ae39d756ce86532d07f",
+  "clean_transplant_commit": "80e3ed2f426e379c8edc1b86e2727fb416ed0229",
+  "head_sha": "95bdf0015730ab3087cf71e07eca2d4425b214ac",
+  "custody_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1185",
+  "pr_steward_policy_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1187",
+  "supervisor_input": "AUTHORIZE_STAGE_2_REFRESH_AND_VALIDATION_ONLY",
+  "required_next_verdict": "CONPORT_RECOVERY_CLEAN_CANDIDATE_READY_FOR_OPERATOR_MERGE_DECISION",
+  "freeze_verdict": "PASS_WITH_RISKS",
+  "merge_ready": false,
+  "agent": "grok-4.5",
+  "timestamp": "2026-08-03T02:26:00Z",
+  "patch_identity": {
+    "eight_file_blob_match_a39ea_at_transplant": true,
+    "pr1182_files_in_diff": false
+  },
+  "validations": {
+    "clean_transplant": "PASS",
+    "patch_identity": "PASS",
+    "no_pr1182_files": "PASS",
+    "pid1_unit_tests": "PASS",
+    "pid1_live_rest_kill": "PASS",
+    "pid1_live_mcp_kill": "PASS",
+    "pid1_live_info_kill": "PASS",
+    "autoheal_removed": "PASS",
+    "docker_sock_default_removed": "PASS",
+    "legacy_connect_revoked": "PASS",
+    "pytest_rows_deleted": "PASS",
+    "write_guard_delta_after_delete": "PASS",
+    "production_health": "PASS",
+    "pr_steward_policy_doctor": "PASS_on_PR1187",
+    "pr_steward_policy_merged": "PASS",
+    "independent_audit": "PASS_WITH_RISKS",
+    "pr_steward_ready": "NOT_RUN",
+    "main_refresh_merge": "PASS",
+    "overlap_compatible": "PASS",
+    "impl_blob_identity_post_merge": "PASS",
+    "path_classification_complete": "PASS",
+    "no_policy_in_delta": "PASS",
+    "pid1_terminal_budget_alert": "PASS",
+    "pid1_terminal_restore": "PASS",
+    "docker_sock_absent": "PASS",
+    "isolation_mvp_adops_cross": "PASS",
+    "isolation_legacy_connect": "PASS",
+    "isolation_public_privs": "PASS",
+    "isolation_archive_ro": "PASS",
+    "runtime_discovery_mvp_only": "PASS",
+    "counts_decisions_295": "PASS",
+    "counts_progress_209": "PASS",
+    "counts_relationships_219": "PASS",
+    "counts_ledger_742": "PASS",
+    "imported_decisions_294": "PASS",
+    "pytest_contamination_zero": "PASS",
+    "authorized_write": "PASS",
+    "backup_restore_disposable": "PASS",
+    "baseline_doctor_anomaly": "BASELINE_EXISTING"
+  },
+  "pid1_live": {
+    "rest_kill_recover_s": 2,
+    "mcp_kill_recover_s": 2,
+    "info_kill_recover_s": 2,
+    "terminal_alert": true,
+    "terminal_marker": "/var/lib/conport-supervision/TERMINAL_ALERT",
+    "restart_policy": "unless-stopped",
+    "container_name_stable": "mcp-conport",
+    "foreign_worktree_replaced": false,
+    "autoheal": false,
+    "docker_sock": false
+  },
+  "row_cleanup": {
+    "export_sha256": "cfb4f18a0488b2661ad9b17695f96ff2df4b5be0daf5463e5399e08191e952e6",
+    "backup_pre_delete_sha256": "e2f1b8806505532ec08985dbc0ed18b728bc5cdc439d939e1a43b3c68ba6615a",
+    "ids": [
+      "8f586440-edce-42e1-8c3f-4d5b507b1354",
+      "2e40de0a-b6f9-4227-937b-71355cbadded"
+    ],
+    "custom_data_before": 765,
+    "custom_data_after": 763,
+    "pytest_after": 0,
+    "decisions_after": 295,
+    "ledger_after": 742
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude -p <audit-prompt> --model sonnet --allowedTools read/git/rg (independent formal audit of PR #1188 content head 95bdf00157)",
+    "exit_code": 0,
+    "report_path": "proof/TP-CONPORT-CLEAN-L3-RECOVERY-2026-08-02/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-DOC-STALE-AUTOHEAL",
+        "severity": "MEDIUM",
+        "title": "Recovery doc still describes autoheal design",
+        "status": "ACCEPTED_RISK",
+        "body": "Doc superseded by PID1; fix as follow-up. Non-blocking per formal auditor."
+      },
+      {
+        "id": "F-EVIDENCE-FAILED-PROBES",
+        "severity": "LOW",
+        "title": "Failed kill probe files retained",
+        "status": "ACCEPTED_RISK",
+        "body": "Successful host/probe kills establish supervision; hygiene only."
+      },
+      {
+        "id": "F-PID1-TESTS-STUB-ONLY",
+        "severity": "LOW",
+        "title": "Unit tests use stub not production script exec",
+        "status": "ACCEPTED_RISK",
+        "body": "Live kill evidence substitutes; CI-repeatable exec tests are follow-up."
+      },
+      {
+        "id": "F-PROVIDER-CODEX-BLOCKED",
+        "severity": "INFO",
+        "title": "Codex provider_attested UNKNOWN path abandoned",
+        "status": "RESOLVED",
+        "body": "Claude Code Tier-1 route used instead with first-party attestation."
+      }
+    ],
+    "fixes_applied": [
+      "Main refresh merge COMPATIBLE",
+      "L3 live validation complete",
+      "Claude Code formal audit PASS_WITH_RISKS"
+    ],
+    "remaining_risks": [
+      "Stale autoheal doc (F-DOC-STALE-AUTOHEAL)",
+      "Evidence-bundle failed-probe noise",
+      "PID1 unit tests stub-only"
+    ],
+    "skip_reason": null
+  },
+  "model_identity": {
+    "implementer": "grok-4.5",
+    "auditor": "claude-code-cli 2.1.220",
+    "requested": "sonnet",
+    "configured": "sonnet",
+    "response_claimed": "sonnet",
+    "proxy_reported": "N/A_first_party",
+    "provider_attested": "Anthropic first-party (claude.ai OAuth, apiProvider=firstParty)",
+    "auth_method": "claude.ai",
+    "email_principal": "houston@krohman.org"
+  },
+  "branch_tip_at_authoring": "aada46b59ae41fe5cf1977ce1653e95939f52d8b",
+  "proof_bundle_commit": "e7aec967692d99ed1cb531f4eec9e46a4ade8049",
+  "head_classification": {
+    "recovery_source": "a39ea663db",
+    "clean_transplant": "80e3ed2f42",
+    "code_tip_before_proof_meta": "6f4d6b11e3",
+    "proof_bundle": "e7aec96769",
+    "note": "Recovery code claims bind to series after transplant; proof metadata commits follow. Independent audit must pin exact tip SHA from git."
+  },
+  "supervisor_prior": "AUTHORIZE_ONE_CLEAN_L3_REPAIR",
+  "pre_refresh_tip": "2f4303a1be8a49ecd4ab280d3523a09adbb69cbc",
+  "merge_commit": "5ab419b9e3236f17add2c2d09ac22efde942500e",
+  "overlap_classification": "COMPATIBLE",
+  "pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1188",
+  "pr_steward_policy_merged": true,
+  "data_refresh": {
+    "decisions": 295,
+    "progress": 209,
+    "entity_relationships": 219,
+    "migration_ledger": 742,
+    "imported_decisions": 294,
+    "pytest": 0,
+    "backup_restore": "PASS"
+  },
+  "baseline_anomaly": {
+    "test": "tests/dopemux_cli/test_pr_steward_cmd.py::test_doctor_placeholder_fails_closed",
+    "classification": "BASELINE_EXISTING",
+    "main_and_branch_identical_failure": true,
+    "repaired_in_1188": false
+  },
+  "content_head_frozen": "95bdf0015730ab3087cf71e07eca2d4425b214ac",
+  "validation_commit": "a4e4c877fb36afdc32b3105f8eb89c6d7cdf13a5",
+  "validation_complete": true,
+  "formal_audit_invoked": true,
+  "content_head_audited": "95bdf0015730ab3087cf71e07eca2d4425b214ac",
+  "generated_at": "2026-08-03T02:26:00Z",
+  "formal_auditor": {
+    "tool": "Claude Code CLI",
+    "version": "2.1.220",
+    "configured_model": "sonnet",
+    "response_claimed_model": "sonnet",
+    "provider_attested": "Anthropic first-party (claude.ai OAuth)",
+    "proxy_reported_provider": "N/A_first_party"
+  }
+}

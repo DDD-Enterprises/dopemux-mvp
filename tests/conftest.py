@@ -87,14 +87,10 @@ from dopemux.config.manager import ConfigManager
 # Skip asyncio-marked tests when pytest-asyncio is unavailable.
 try:  # pragma: no cover - best effort compatibility
     import pytest_asyncio  # type: ignore  # noqa: F401
-except ImportError:  # pragma: no cover - fallback
 
-    def pytest_addoption(parser):
-        parser.addini(
-            "asyncio_mode",
-            "Compatibility setting consumed by pytest-asyncio when installed.",
-            default="auto",
-        )
+    _HAVE_PYTEST_ASYNCIO = True
+except ImportError:  # pragma: no cover - fallback
+    _HAVE_PYTEST_ASYNCIO = False
 
     @pytest.hookimpl(tryfirst=True)
     def pytest_runtest_setup(item):
@@ -103,6 +99,104 @@ except ImportError:  # pragma: no cover - fallback
                 "pytest-asyncio is not installed in this environment",
                 allow_module_level=False,
             )
+
+
+# Single pytest_addoption for the whole file. Defining a second one at module
+# scope would silently shadow this via normal Python rebinding, so the
+# asyncio_mode ini registration lives here rather than inside the ImportError
+# branch above.
+def pytest_addoption(parser):
+    parser.addoption(
+        "--run-database-tests",
+        action="store_true",
+        default=False,
+        help="Run tests marked @pytest.mark.database against a real database. "
+             "Use a throwaway instance, never the shared dev store.",
+    )
+    if not _HAVE_PYTEST_ASYNCIO:
+        parser.addini(
+            "asyncio_mode",
+            "Compatibility setting consumed by pytest-asyncio when installed.",
+            default="auto",
+        )
+
+
+# ---------------------------------------------------------------------------
+# Fail-closed guard: tests must never write to a live ConPort.
+# ---------------------------------------------------------------------------
+# On 2026-08-02 the shared ConPort database was found holding 238 custom_data
+# rows across 197 distinct workspace_ids, ~236 of which were pytest temp
+# directories: `/private/var/folders/.../pytest-of-hue/pytest-N/test_*` and
+# `.../tmpXXXX/test_project`. The test suite had been writing into the live
+# development database for months.
+#
+# The path: `dopemux start` calls instance_state.save_instance_state_sync(),
+# which builds an InstanceStateManager and POSTs to
+# http://localhost:<port>/api/custom_data. resolve_conport_port() actively
+# PROBES localhost for a listening ConPort, so it finds production by design.
+# Any test that invokes `cli, ["start", ...]` without mocking that call writes
+# real rows — e.g. tests/integration/test_project_workflow.py and
+# tests/integration/test_start_crit_gaps.py, whose base_mocks stop short of it.
+#
+# Environment variables alone are NOT sufficient: cli.py passes
+# `conport_port=3004` explicitly at four call sites, and an explicit argument
+# is candidate #1 in resolve_conport_port's precedence order, ahead of every
+# env override. Measured against a live ConPort: with no guard,
+# resolve_conport_port(3004) returned 3019 (it probed and found production) and
+# a real row was written. So the guard is applied at the actual network
+# chokepoint — InstanceStateManager.save_instance_state, the method that
+# performs the POST.
+#
+# resolve_conport_port itself is deliberately left unpatched so that
+# tests/dopemux/test_instance_state_filtering.py and friends keep testing the
+# real resolver.
+
+@pytest.fixture(autouse=True)
+def _block_live_conport_writes(monkeypatch):
+    """Neutralise the ConPort state writer so no test can reach a live server.
+
+    Deliberately does NOT set DOPEMUX_CONPORT_PORT / CONPORT_PORT / CONPORT_URL.
+    Every one of those feeds port resolution as well as client base URLs, and
+    forcing them to an unreachable value breaks tests that legitimately assert
+    on resolved ports:
+      - test_port_config.py::test_get_conport_port_multi_instance (wanted 3034)
+      - test_startup_integration.py::test_startup_flow_calls_recovery_menu
+        (wanted 3004; CONPORT_URL is candidate #3 in resolve_conport_port)
+    They were only ever defense in depth. Measured against a live ConPort, the
+    env vars did not reliably block the write while this method patch did —
+    resolve_conport_port still returned 3019 (production) and the POST was
+    refused anyway. So the guard sits exactly on the write.
+    """
+    try:
+        from dopemux.instance_state import InstanceStateManager
+    except Exception:  # pragma: no cover - import shape varies across envs
+        return
+
+    async def _refuse_to_write(self, state):
+        # Same return contract as a ConPort that is simply down, which is the
+        # condition cli.py's try/except already handles.
+        return False
+
+    monkeypatch.setattr(
+        InstanceStateManager, "save_instance_state", _refuse_to_write, raising=False
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    """Skip @pytest.mark.database tests unless explicitly opted in.
+
+    pytest.ini has declared a `database` marker for a long time and no test has
+    ever used it. It is the supported way to write a test that genuinely needs a
+    real database: mark it, and run with --run-database-tests against a
+    throwaway instance — never against the shared dev store.
+    """
+    if config.getoption("--run-database-tests", default=False):
+        return
+    skip = pytest.mark.skip(reason="needs a real database; pass --run-database-tests")
+    for item in items:
+        if item.get_closest_marker("database"):
+            item.add_marker(skip)
+
 
 @pytest.fixture
 def temp_project_dir():
