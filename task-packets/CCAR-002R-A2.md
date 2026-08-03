@@ -7,8 +7,9 @@ author: Claude Sonnet
 date: '2026-08-03'
 last_review: '2026-08-03'
 next_review: '2026-08-31'
-prelude: Narrow R3 evidence/test-correctness repair plus R4 signed exact-head Claude
-  audit return for PR 1176 after CCAR-002R R2 left two surviving evidence defects
+prelude: Narrow R3 evidence/test-correctness repair plus R4 signed exact-head
+  independent (OpenCode + OpenRouter kimi-k3, deepseek-v4-pro fallback) audit
+  return for PR 1176 after CCAR-002R R2 left two surviving evidence defects
   and two surviving review defects undiagnosed by the Claude PASS_WITH_RISKS audit.
 ---
 # Task Packet: CCAR-002R-A2 · PR #1176 · Evidence + Test Correctness Repair
