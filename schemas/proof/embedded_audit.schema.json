@@ -36,6 +36,7 @@
         "agy",
         "antigravity",
         "claude-code-cli",
+        "codex-cli",
         "copilot-cli",
         "gemini-cli",
         "pal-mcp-clink",
@@ -49,6 +50,7 @@
         "claude-sonnet-4.6",
         "opus",
         "gemini",
+        "gpt-5.6-terra",
         "unknown"
       ]
     },
