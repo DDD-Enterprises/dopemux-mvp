@@ -90,7 +90,8 @@
         "actionlint reveals real workflow syntax failure (if available)",
         "Any pull_request_target introduced",
         "Any file outside allowlist must be changed"
-      ]
+      ],
+      "orchestrator_uuid": "0096ed7d-add0-47ae-9e9f-179f2f122897"
     },
     {
       "id": "TP-DMX-AUDIT-BUNDLE-001",
@@ -122,7 +123,8 @@
         "schemas/audit/bundle_manifest.schema.json",
         "proof/TP-DMX-AUDIT-BUNDLE-001/**"
       ],
-      "commit": "feat(audit): add deterministic evidence bundle builder"
+      "commit": "feat(audit): add deterministic evidence bundle builder",
+      "orchestrator_uuid": "552002c7-a5ed-42d4-ab3c-5f7d4de4075c"
     },
     {
       "id": "TP-DMX-PR-STEWARD-FRESHNESS-005",
@@ -161,7 +163,8 @@
         "MERGE_READINESS schema additionalProperties constraint cannot accommodate new fields without versioning",
         "schemas/proof/embedded_audit.schema.json must change"
       ],
-      "commit": "fix(pr-steward): fail closed on mixed-sha artifact sets"
+      "commit": "fix(pr-steward): fail closed on mixed-sha artifact sets",
+      "orchestrator_uuid": "074de734-5ae7-4075-8506-d60ed20976a6"
     },
     {
       "id": "TP-DMX-AUDIT-ROUTER-002",
@@ -188,7 +191,8 @@
         "docs/ops/auditor-routing.md",
         "proof/TP-DMX-AUDIT-ROUTER-002/**"
       ],
-      "commit": "feat(audit): add host auditor route registry"
+      "commit": "feat(audit): add host auditor route registry",
+      "orchestrator_uuid": "a8277b92-0889-4ccd-a936-5ce881e9f8ea"
     },
     {
       "id": "TP-DMX-PAL-CLINK-RUNNER-003",
@@ -215,7 +219,8 @@
         "docs/ops/pal-clink-audit-runner.md",
         "proof/TP-DMX-PAL-CLINK-RUNNER-003/**"
       ],
-      "commit": "feat(audit): add PAL clink audit runner"
+      "commit": "feat(audit): add PAL clink audit runner",
+      "orchestrator_uuid": "00e36c73-3fe8-463a-b631-a2ee03c80e12"
     },
     {
       "id": "TP-DMX-PR-ACTION-BRIDGE-006",
@@ -242,7 +247,8 @@
         "docs/ops/pr-action-bridge.md",
         "proof/TP-DMX-PR-ACTION-BRIDGE-006/**"
       ],
-      "commit": "feat(pr): add read-only action bridge compiler"
+      "commit": "feat(pr): add read-only action bridge compiler",
+      "orchestrator_uuid": "eb8aef9d-7750-4df7-a4ab-f4aef5348d02"
     },
     {
       "id": "TP-DMX-COPILOT-REPAIR-007",
@@ -267,7 +273,8 @@
         "tests/copilot_repair/**",
         "proof/TP-DMX-COPILOT-REPAIR-007/**"
       ],
-      "commit": "docs(copilot): add bounded PR repair scaffold"
+      "commit": "docs(copilot): add bounded PR repair scaffold",
+      "orchestrator_uuid": "e96fbef9-b0e3-4833-b3db-d77777ab90ff"
     },
     {
       "id": "TP-DMX-PR-GATE-009",
@@ -293,7 +300,8 @@
         "tests/ci/**",
         "proof/TP-DMX-PR-GATE-009/**"
       ],
-      "commit": "ci: stabilize required pr-gate job"
+      "commit": "ci: stabilize required pr-gate job",
+      "orchestrator_uuid": "29ae65ba-8fb2-4c55-8c30-e1c7ffcfa2a3"
     },
     {
       "id": "TP-DMX-BRANCH-POLICY-AUDIT-012",
@@ -315,7 +323,8 @@
         "proof/TP-DMX-BRANCH-POLICY-AUDIT-012/**",
         "docs/ops/branch-policy-audit.md"
       ],
-      "notes": "Branch protection truth remains UNKNOWN. Admin-visible gh api calls required. Mark UNKNOWN if access denied."
+      "notes": "Branch protection truth remains UNKNOWN. Admin-visible gh api calls required. Mark UNKNOWN if access denied.",
+      "orchestrator_uuid": "a370e809-ec35-4e39-99c9-32df2edad5f8"
     },
     {
       "id": "TP-DMX-PR-STEWARD-HARDEN-010",
@@ -343,7 +352,8 @@
         "docs/ops/pr-steward-readiness.md",
         "proof/TP-DMX-PR-STEWARD-HARDEN-010/**"
       ],
-      "commit": "fix(pr-steward): harden readiness risk classification"
+      "commit": "fix(pr-steward): harden readiness risk classification",
+      "orchestrator_uuid": "fda3bd1d-7599-417a-bf51-3b634787b864"
     },
     {
       "id": "TP-DMX-PR-FIXTURES-011",
@@ -371,7 +381,8 @@
         "docs/ops/pr-fixtures.md",
         "proof/TP-DMX-PR-FIXTURES-011/**"
       ],
-      "commit": "test(pr): add steward and action bridge fixtures"
+      "commit": "test(pr): add steward and action bridge fixtures",
+      "orchestrator_uuid": "8f189c4f-c5b8-453b-b8ce-7db8de65fb7a"
     },
     {
       "id": "TP-DMX-AUDIT-PROOF-004",
@@ -403,7 +414,8 @@
         "Existing proof fixtures break unexpectedly",
         "schemas/proof/embedded_audit.schema.json enum change needed (supervisor required)"
       ],
-      "commit": "feat(audit): normalize embedded audit proof artifacts"
+      "commit": "feat(audit): normalize embedded audit proof artifacts",
+      "orchestrator_uuid": "7cd356b9-1343-4b0b-ac5b-dc47e41ac801"
     }
   ],
   "blocked_nodes": [],

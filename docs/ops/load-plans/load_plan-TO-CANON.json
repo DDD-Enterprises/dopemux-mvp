@@ -82,7 +82,7 @@
       "role": "terminal",
       "status": "MERGED",
       "redlane": true,
-      "orchestrator_uuid": null,
+      "orchestrator_uuid": "1a1978b2-3acb-4250-9c01-3951ffd39e19",
       "objective": "Safe evidence-pack intake + 26-DB adjudication manifest",
       "depends_on": [],
       "blocks": [
@@ -97,7 +97,7 @@
       "role": "terminal",
       "status": "MERGED",
       "redlane": true,
-      "orchestrator_uuid": null,
+      "orchestrator_uuid": "bd8227c8-0dcf-4bdd-8e4e-3591f2a87170",
       "objective": "Canonical datastore contract + JSON schemas",
       "depends_on": [
         "TP-TO-CANON-000"
@@ -109,7 +109,7 @@
       "role": "terminal",
       "status": "MERGED",
       "redlane": true,
-      "orchestrator_uuid": null,
+      "orchestrator_uuid": "03f8f37e-98cd-4a8f-abff-17d5de913784",
       "objective": "Read-only importer + validator",
       "depends_on": [
         "TP-TO-CANON-000"
@@ -121,7 +121,7 @@
       "role": "terminal",
       "status": "MERGED",
       "redlane": true,
-      "orchestrator_uuid": null,
+      "orchestrator_uuid": "25cc0d67-4d07-45cd-8947-6cf84de10247",
       "objective": "Resolver + dedupe + coldstart reconciliation engine",
       "depends_on": [
         "TP-TO-CANON-000"
@@ -133,7 +133,7 @@
       "role": "terminal",
       "status": "MERGED",
       "redlane": true,
-      "orchestrator_uuid": null,
+      "orchestrator_uuid": "9b82434f-f814-47f3-81cf-01e1c9653c54",
       "objective": "Full dry-run of all 26 DBs + 004R contract hardening",
       "depends_on": [
         "TP-TO-CANON-000"
@@ -148,7 +148,7 @@
       "role": "queue",
       "status": "READY",
       "redlane": false,
-      "orchestrator_uuid": null,
+      "orchestrator_uuid": "ebc23079-2812-437f-9009-34cd87d30203",
       "objective": "Materialize committed coldstart reconciliation JSON into a tracked Markdown report (offline, deterministic)",
       "depends_on": [
         "TP-TO-CANON-004"
@@ -160,7 +160,7 @@
       "role": "queue",
       "status": "READY",
       "redlane": true,
-      "orchestrator_uuid": null,
+      "orchestrator_uuid": "73af55ff-ce44-4138-a3bf-d62691d2b439",
       "objective": "Read-only operator view over the offline canonical SQLite behind a feature flag (derived/read-only)",
       "depends_on": [
         "TP-TO-CANON-004"
@@ -174,7 +174,7 @@
       "role": "queue",
       "status": "READY",
       "redlane": false,
-      "orchestrator_uuid": null,
+      "orchestrator_uuid": "7dc271fd-3852-4463-9c92-98072bc43ac7",
       "objective": "Supervised, operator-gated cutover plan + red-team risk doc (docs only; no write cutover)",
       "depends_on": [
         "TP-TO-CANON-006"
