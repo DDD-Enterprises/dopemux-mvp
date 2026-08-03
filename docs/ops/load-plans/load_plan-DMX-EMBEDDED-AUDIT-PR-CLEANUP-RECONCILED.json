@@ -7,7 +7,7 @@
   "live_task_orchestrator_load": "LOADED",
   "loaded": true,
   "loaded_at": "2026-08-01T09:15:00Z",
-  "live_load_evidence": "Loaded 2026-08-01 during the orchestrator DB defragmentation (docs/03-reference/orchestrator-integration/db-defragmentation-2026-08-01.md). Root + 12 nodes + 23 BLOCKS edges written to the canonical per-repo instance dopemux-mvp-2e346e2084bca021 with containers stopped; FTS rebuilt by table triggers; verified via live MCP query_items after restart.",
+  "live_load_evidence": "Loaded 2026-08-01 during the orchestrator DB defragmentation (docs/03-reference/orchestrator-integration/db-defragmentation-2026-08-01.md). Root + 12 nodes + 22 BLOCKS edges written to the canonical per-repo instance dopemux-mvp-2e346e2084bca021 with containers stopped; FTS rebuilt by table triggers; verified via live MCP query_items after restart.",
   "task_orchestrator_root_id": "cd91e2eb-ee1e-4eff-a551-a97f1919ac2f",
   "task_orchestrator_leaf_ids": {
     "TP-DMX-AUDIT-BUNDLE-001": "552002c7-a5ed-42d4-ab3c-5f7d4de4075c",
