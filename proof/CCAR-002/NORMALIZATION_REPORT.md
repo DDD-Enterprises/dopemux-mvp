@@ -1,7 +1,7 @@
 # CCAR-002 Normalization Report
 
 **Packet**: CCAR-002
-**Generated**: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+**Generated**: 2026-08-03T06:34:47Z
 **Source commit**: 683b2411ebd9df7ed93ce9aa1871ca08956eb588
 
 ## Normalization Summary
@@ -77,3 +77,25 @@ No `general-purpose-dopemux` automatic write fallback.
 - Absolute worktree path leakage removed
 - Validated repository-root resolution (explicit `--repo-root`, `git rev-parse --show-toplevel`, marker walk)
 - Dual-worktree generation produces byte-identical YAML when `generated_at` is fixed
+
+## CCAR-002R-A2 R3 evidence + test correctness repair notes
+
+- `proof/CCAR-002/SOURCE_MANIFEST.json`: removed the `worktree` key, which held an
+  absolute local machine path (`/Users/hue/code/dopemux-mvp-worktrees/CCAR-002`).
+  No code path reads this key; it was dropped rather than replaced with a
+  fabricated repo-relative placeholder.
+- This report: the `**Generated**` line previously contained the literal,
+  unexpanded string `$(date -u +%Y-%m-%dT%H:%M:%SZ)` instead of a real
+  timestamp. Replaced with the concrete UTC `generated_at` value emitted by
+  the actual regeneration run for this repair.
+- `tests/commandcode_router/test_normalized_catalog.py::test_generation_idempotent`:
+  previously regenerated the catalog before running `--check`, so committed
+  drift could be silently self-healed rather than detected. Reordered so
+  `--check` runs against the committed catalog first; a post-regeneration
+  `--check` remains as a separate idempotency assertion.
+- `scripts/commandcode_router/build_normalized_catalog.py::_scan_model_ids`:
+  the Claude pattern used a capturing group with `re.findall`, which returned
+  bare fragments (e.g. `sonnet`) instead of the full matched token (e.g.
+  `claude-sonnet-4.5`). Changed the group to non-capturing and switched to
+  `finditer(...).group(0)`. Added a focused regression test
+  (`TestScanModelIds`) pinning full-match behavior.

@@ -9,13 +9,14 @@
     "report_path": "proof/CCAR-002/AUDITOR_REPORT.md",
     "findings": [],
     "fixes_applied": [
-      "CCAR-002R R1: repo-relative source_manifest; validated repo-root resolution; dual-worktree determinism test; regenerated catalog"
+      "CCAR-002R R1: repo-relative source_manifest; validated repo-root resolution; dual-worktree determinism test; regenerated catalog",
+      "CCAR-002R-A2 R3: removed absolute worktree path from SOURCE_MANIFEST.json; replaced unexpanded $(date ...) literal in NORMALIZATION_REPORT.md with a real timestamp; test_generation_idempotent now checks the committed catalog before regenerating; _scan_model_ids returns full matches instead of capture-group fragments, with a new regression test"
     ],
     "remaining_risks": [
-      "Independent AGY audit not yet run for R1 \u2014 pending CCAR-002R R2 against exact R1 head.",
-      "Canonical CI proof remains under proof/pr_merge/embedded-audit/pr-1176/** after R2."
+      "Independent Claude Sonnet audit not yet run for R3 \u2014 pending CCAR-002R-A2 R4 against exact R3 head.",
+      "Canonical CI proof remains under proof/pr_merge/embedded-audit/pr-1176/** after R4."
     ],
-    "skip_reason": "CCAR-002R R1 portability repair complete; independent AGY audit and signed PR proof deferred to R2.",
+    "skip_reason": "CCAR-002R-A2 R3 evidence and test correctness repair complete; independent Claude Sonnet audit and signed PR proof deferred to R4.",
     "instruction_like_content": {
       "detected": false,
       "match_count": 0,

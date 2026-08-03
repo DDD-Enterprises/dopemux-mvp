@@ -662,15 +662,14 @@ def validate_catalog(catalog: Dict[str, Any]) -> List[str]:
 def _scan_model_ids(text: str) -> List[str]:
     """Scan for model ID patterns in source text. Used for warnings only."""
     patterns = [
-        r'claude[\s-]?(sonnet|opus|haiku)[\s-]?\d[\d.]*',
+        r'claude[\s-]?(?:sonnet|opus|haiku)[\s-]?\d[\d.]*',
         r'gpt[\s-]?\d[\d.]*[-\w]*',
         r'gemini[\s-]?\d[\d.]*[-\w]*',
         r'grok[\s-]?\d[\d.]*[-\w]*',
     ]
     found = []
     for pattern in patterns:
-        matches = re.findall(pattern, text, re.IGNORECASE)
-        found.extend(matches)
+        found.extend(m.group(0) for m in re.finditer(pattern, text, re.IGNORECASE))
     return found
 
 

@@ -1,6 +1,6 @@
 meta:
   packet_id: CCAR-002
-  generated_at: '2026-08-03T05:30:04Z'
+  generated_at: '2026-08-03T06:41:38Z'
   source_manifest: proof/CCAR-002/SOURCE_MANIFEST.json
   source_commit: 683b2411ebd9df7ed93ce9aa1871ca08956eb588
   base_agent_count: 9

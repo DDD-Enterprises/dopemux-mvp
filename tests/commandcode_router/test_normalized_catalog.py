@@ -206,10 +206,27 @@ class TestDeterministic:
     """Catalog generation is deterministic."""
 
     def test_generation_idempotent(self):
-        """Builder must produce identical output on repeated runs."""
+        """Committed catalog must match source, and regeneration must be a no-op.
+
+        ``--check`` runs first against the committed catalog, before any
+        regeneration, so committed drift cannot be silently self-healed by
+        regenerating before the check ever inspects it.
+        """
         builder = str(BUILDER_SCRIPT)
 
-        # Regenerate to ensure catalog is current
+        # --check must pass against the committed catalog as-is.
+        committed_check = subprocess.run(
+            [sys.executable, builder, "--check", "--repo-root", str(PROJECT_ROOT)],
+            cwd=str(PROJECT_ROOT),
+            capture_output=True,
+            text=True,
+        )
+        assert committed_check.returncode == 0, (
+            "Builder --check failed against the committed catalog "
+            f"(drift detected): {committed_check.stderr}"
+        )
+
+        # Regenerating must be a no-op: --check must still pass afterward.
         subprocess.run(
             [sys.executable, builder, "--repo-root", str(PROJECT_ROOT)],
             cwd=str(PROJECT_ROOT),
@@ -217,8 +234,6 @@ class TestDeterministic:
             text=True,
             check=True,
         )
-
-        # --check must pass after regeneration
         result = subprocess.run(
             [sys.executable, builder, "--check", "--repo-root", str(PROJECT_ROOT)],
             cwd=str(PROJECT_ROOT),
@@ -309,6 +324,22 @@ class TestDeterministic:
     def test_resolve_repo_root_rejects_invalid(self, tmp_path):
         with pytest.raises(SystemExit):
             _BUILDER.resolve_repo_root(explicit=tmp_path)
+
+
+class TestScanModelIds:
+    """_scan_model_ids must report the full matched token, not a fragment."""
+
+    def test_returns_full_match_not_capture_fragment(self):
+        found = _BUILDER._scan_model_ids("Model: claude-sonnet-4.5, notes below.")
+        assert "claude-sonnet-4.5" in found
+        assert "sonnet" not in found
+
+    def test_matches_each_claude_family(self):
+        text = "claude opus-3, claude-haiku-4.5, claude sonnet-5"
+        found = _BUILDER._scan_model_ids(text)
+        assert any(m.lower().startswith("claude opus-3") for m in found)
+        assert any(m.lower().startswith("claude-haiku-4.5") for m in found)
+        assert any(m.lower().startswith("claude sonnet-5") for m in found)
 
 
 class TestSourceCoverage:
