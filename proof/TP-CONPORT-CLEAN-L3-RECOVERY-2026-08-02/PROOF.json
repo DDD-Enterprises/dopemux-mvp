@@ -6,7 +6,7 @@
   "base_sha": "fb710ef40500695882a5b421a3325150176fffa1",
   "recovery_source_commit": "a39ea663dbf568cb3edf3ae39d756ce86532d07f",
   "clean_transplant_commit": "80e3ed2f426e379c8edc1b86e2727fb416ed0229",
-  "head_sha": "PENDING_FREEZE_COMMIT",
+  "head_sha": "a4e4c877fb36afdc32b3105f8eb89c6d7cdf13a5",
   "custody_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1185",
   "pr_steward_policy_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1187",
   "supervisor_input": "AUTHORIZE_STAGE_2_REFRESH_AND_VALIDATION_ONLY",
@@ -130,7 +130,7 @@
     "proxy_reported": "PENDING",
     "provider_attested": "PENDING_MUST_NOT_BE_UNKNOWN"
   },
-  "branch_tip_at_authoring": "74c15e81856fd7754cff5dbefa69ec617b275579",
+  "branch_tip_at_authoring": "a4e4c877fb36afdc32b3105f8eb89c6d7cdf13a5",
   "proof_bundle_commit": "e7aec967692d99ed1cb531f4eec9e46a4ade8049",
   "head_classification": {
     "recovery_source": "a39ea663db",
@@ -159,5 +159,6 @@
     "classification": "BASELINE_EXISTING",
     "main_and_branch_identical_failure": true,
     "repaired_in_1188": false
-  }
+  },
+  "content_head_frozen": "a4e4c877fb36afdc32b3105f8eb89c6d7cdf13a5"
 }
