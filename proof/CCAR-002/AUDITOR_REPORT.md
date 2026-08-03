@@ -1,8 +1,8 @@
-# CCAR-002 Auditor Report
+# CCAR-002 / CCAR-002R Auditor Report (implementation packet)
 
-**Audit Status**: SKIPPED
-**Reason**: Independent audit not yet run — pending C1 push and AGY gemini-3.1-pro-high audit per packet S6-S7.
+**Status**: Independent audit **not** recorded here.
 
-This report exists to satisfy schema requirements for the pre-audit PROOF.json.
-The actual audit was later performed with AGY gemini-3.1-pro-high per S6 and
-recorded in proof/pr_merge/embedded-audit/pr-1176/.
+- Historical C1 proof package: audit SKIPPED pending push.
+- CCAR-002R R1: portability repair only; no independent audit claim.
+- Canonical release audit for PR #1176 is produced in R2 under
+  `proof/pr_merge/embedded-audit/pr-1176/**` against exact R1.

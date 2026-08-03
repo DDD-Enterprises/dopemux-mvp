@@ -1,26 +1,21 @@
-# CCAR-002 Changed Files
+# CCAR-002R R1 Changed Files
 
-## New Files (to be committed as C1)
+## Allowlisted R1 delta (relative to a22699fc9834c77017ac88e482a6c94fdd319bda)
+
+### Packet
+- `task-packets/CCAR-002R.md` (new)
+- `task-packets/CCAR-002R.json` (new)
 
 ### Implementation
-- `schemas/commandcode/normalized_agent_persona_catalog.schema.json`
-- `config/commandcode/normalized_agent_persona_catalog.yaml`
-- `scripts/commandcode_router/build_normalized_catalog.py`
-- `tests/commandcode_router/test_normalized_catalog.py`
+- `scripts/commandcode_router/build_normalized_catalog.py` (portability + determinism)
+- `tests/commandcode_router/test_normalized_catalog.py` (dual-worktree + relative-path gates)
+- `config/commandcode/normalized_agent_persona_catalog.yaml` (regenerated)
 
-### Task Packets
-- `task-packets/CCAR-002.md`
-- `task-packets/CCAR-002.json`
+### Implementation proof
+- `proof/CCAR-002/**` (evidence refresh; audit remains SKIPPED pending R2)
 
-### Proof
-- `proof/CCAR-002/SOURCE_MANIFEST.json`
-- `proof/CCAR-002/NORMALIZATION_REPORT.md`
-- `proof/CCAR-002/COMMAND_LOG.md`
-- `proof/CCAR-002/CHANGED_FILES.md`
-- `proof/CCAR-002/PROOF.json`
-
-## Modified Files
-None. All files are new.
-
-## Deleted Files
-None.
+## Source surfaces (must be byte-identical)
+- `.claude/agents/**` — unchanged
+- `.claude/personas/**` — unchanged
+- `.github/agents/**` — unchanged
+- `src/dopemux/personas/**` — unchanged

@@ -69,3 +69,11 @@ No `general-purpose-dopemux` automatic write fallback.
 - Deterministic: `--check` passes after regeneration
 - Schema validation: PASS (strict `additionalProperties=false`)
 - Source hash verification: PASS (5 categories, all SHA-256 match)
+
+## CCAR-002R R1 portability notes
+
+- Generator version: 1.0.1
+- `meta.source_manifest` fixed to repo-relative `proof/CCAR-002/SOURCE_MANIFEST.json`
+- Absolute worktree path leakage removed
+- Validated repository-root resolution (explicit `--repo-root`, `git rev-parse --show-toplevel`, marker walk)
+- Dual-worktree generation produces byte-identical YAML when `generated_at` is fixed

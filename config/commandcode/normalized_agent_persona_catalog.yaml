@@ -1,12 +1,12 @@
 meta:
   packet_id: CCAR-002
-  generated_at: '2026-07-31T14:18:59Z'
-  source_manifest: /Users/hue/code/dopemux-mvp-worktrees/CCAR-002/proof/CCAR-002/SOURCE_MANIFEST.json
+  generated_at: '2026-08-03T05:30:04Z'
+  source_manifest: proof/CCAR-002/SOURCE_MANIFEST.json
   source_commit: 683b2411ebd9df7ed93ce9aa1871ca08956eb588
   base_agent_count: 9
   persona_count: 43
   model_free: true
-  generator_version: 1.0.0
+  generator_version: 1.0.1
 base_agents:
   architect:
     id: architect

@@ -16,6 +16,7 @@ import hashlib
 import json
 import os
 import re
+import subprocess
 import sys
 import yaml
 from datetime import datetime, timezone
@@ -23,31 +24,140 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 
+# Repo-relative constants — never emit absolute machine paths into the catalog.
+SOURCE_MANIFEST_REL = "proof/CCAR-002/SOURCE_MANIFEST.json"
+SCHEMA_REL = "schemas/commandcode/normalized_agent_persona_catalog.schema.json"
+CATALOG_REL = "config/commandcode/normalized_agent_persona_catalog.yaml"
+REPO_MARKERS = (".dopetaskroot", "pyproject.toml")
+ROOT_REQUIRED_REL_PATHS = (
+    SOURCE_MANIFEST_REL,
+    SCHEMA_REL,
+    "src/dopemux/roles/catalog.py",
+)
+
+GENERATOR_VERSION = "1.0.1"
+
+
+def _validate_repo_root(root: Path) -> Path:
+    """Fail closed if candidate is not a usable dopemux-mvp repository root."""
+    root = root.resolve()
+    if not root.is_dir():
+        raise SystemExit(f"Repository root is not a directory: {root}")
+    if not any((root / marker).exists() for marker in REPO_MARKERS):
+        raise SystemExit(
+            f"Repository root missing markers {REPO_MARKERS}: {root}"
+        )
+    missing = [rel for rel in ROOT_REQUIRED_REL_PATHS if not (root / rel).exists()]
+    if missing:
+        raise SystemExit(
+            f"Repository root missing required paths {missing}: {root}"
+        )
+    return root
+
+
+def resolve_repo_root(
+    explicit: Optional[Path] = None,
+    start: Optional[Path] = None,
+) -> Path:
+    """Resolve repository root via explicit path, git toplevel, or marker walk.
+
+    Does not rely solely on a fixed ``Path(__file__).parent×N`` depth, so the
+    builder remains portable across differently located worktrees and checkouts.
+    """
+    if explicit is not None:
+        return _validate_repo_root(Path(explicit))
+
+    start_path = (start or Path.cwd()).resolve()
+
+    try:
+        out = subprocess.check_output(
+            ["git", "rev-parse", "--show-toplevel"],
+            cwd=str(start_path),
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+        if out:
+            return _validate_repo_root(Path(out))
+    except (subprocess.CalledProcessError, FileNotFoundError, OSError):
+        pass
+
+    cur = start_path
+    for _ in range(32):
+        if any((cur / marker).exists() for marker in REPO_MARKERS):
+            return _validate_repo_root(cur)
+        if cur.parent == cur:
+            break
+        cur = cur.parent
+
+    # Last resort: script location (validated). Prefer git/markers above.
+    script_candidate = Path(__file__).resolve().parent.parent.parent
+    try:
+        return _validate_repo_root(script_candidate)
+    except SystemExit:
+        raise SystemExit(
+            f"Cannot resolve repository root from start={start_path} "
+            f"or script candidate={script_candidate}"
+        ) from None
+
+
+def _paths_for_root(root: Path) -> Dict[str, Path]:
+    root = root.resolve()
+    personas_dir = root / ".claude" / "personas"
+    agents_dir = root / ".claude" / "agents"
+    return {
+        "root": root,
+        "agents_dir": agents_dir,
+        "personas_dir": personas_dir,
+        "personas_archive": personas_dir / "archive",
+        "ref_agents_dir": root / ".github" / "agents",
+        "src_personas_dir": root / "src" / "dopemux" / "personas",
+        "schema_path": root / SCHEMA_REL,
+        "catalog_path": root / CATALOG_REL,
+        "proof_dir": root / "proof" / "CCAR-002",
+        "source_manifest_path": root / SOURCE_MANIFEST_REL,
+        "persona_index_path": personas_dir / "PERSONA_INDEX.md",
+        "agents_index_path": agents_dir / "_index.md",
+    }
+
+
+# Module-level paths bound at import for compatibility; re-bound in main().
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-AGENTS_DIR = PROJECT_ROOT / ".claude" / "agents"
-PERSONAS_DIR = PROJECT_ROOT / ".claude" / "personas"
-PERSONAS_ARCHIVE = PERSONAS_DIR / "archive"
-REF_AGENTS_DIR = PROJECT_ROOT / ".github" / "agents"
-SRC_PERSONAS_DIR = PROJECT_ROOT / "src" / "dopemux" / "personas"
-SCHEMA_PATH = (
-    PROJECT_ROOT
-    / "schemas"
-    / "commandcode"
-    / "normalized_agent_persona_catalog.schema.json"
-)
-CATALOG_PATH = (
-    PROJECT_ROOT
-    / "config"
-    / "commandcode"
-    / "normalized_agent_persona_catalog.yaml"
-)
-PROOF_DIR = PROJECT_ROOT / "proof" / "CCAR-002"
-SOURCE_MANIFEST_PATH = PROOF_DIR / "SOURCE_MANIFEST.json"
+_PATHS = _paths_for_root(PROJECT_ROOT)
+AGENTS_DIR = _PATHS["agents_dir"]
+PERSONAS_DIR = _PATHS["personas_dir"]
+PERSONAS_ARCHIVE = _PATHS["personas_archive"]
+REF_AGENTS_DIR = _PATHS["ref_agents_dir"]
+SRC_PERSONAS_DIR = _PATHS["src_personas_dir"]
+SCHEMA_PATH = _PATHS["schema_path"]
+CATALOG_PATH = _PATHS["catalog_path"]
+PROOF_DIR = _PATHS["proof_dir"]
+SOURCE_MANIFEST_PATH = _PATHS["source_manifest_path"]
+PERSONA_INDEX_PATH = _PATHS["persona_index_path"]
+AGENTS_INDEX_PATH = _PATHS["agents_index_path"]
 
-PERSONA_INDEX_PATH = PERSONAS_DIR / "PERSONA_INDEX.md"
-AGENTS_INDEX_PATH = AGENTS_DIR / "_index.md"
 
-GENERATOR_VERSION = "1.0.0"
+def bind_repo_root(root: Path) -> Path:
+    """Bind module path globals to a validated repository root."""
+    global PROJECT_ROOT, AGENTS_DIR, PERSONAS_DIR, PERSONAS_ARCHIVE
+    global REF_AGENTS_DIR, SRC_PERSONAS_DIR, SCHEMA_PATH, CATALOG_PATH
+    global PROOF_DIR, SOURCE_MANIFEST_PATH, PERSONA_INDEX_PATH, AGENTS_INDEX_PATH
+    global _PATHS
+
+    root = _validate_repo_root(root)
+    _PATHS = _paths_for_root(root)
+    PROJECT_ROOT = _PATHS["root"]
+    AGENTS_DIR = _PATHS["agents_dir"]
+    PERSONAS_DIR = _PATHS["personas_dir"]
+    PERSONAS_ARCHIVE = _PATHS["personas_archive"]
+    REF_AGENTS_DIR = _PATHS["ref_agents_dir"]
+    SRC_PERSONAS_DIR = _PATHS["src_personas_dir"]
+    SCHEMA_PATH = _PATHS["schema_path"]
+    CATALOG_PATH = _PATHS["catalog_path"]
+    PROOF_DIR = _PATHS["proof_dir"]
+    SOURCE_MANIFEST_PATH = _PATHS["source_manifest_path"]
+    PERSONA_INDEX_PATH = _PATHS["persona_index_path"]
+    AGENTS_INDEX_PATH = _PATHS["agents_index_path"]
+    return PROJECT_ROOT
 
 # 9 base agents — resolved through src/dopemux/roles/catalog.py
 # Each is an executable lane. Personas map to one or more of these.
@@ -421,7 +531,10 @@ def _validate_role_resolution() -> None:
         except RoleNotFoundError as e:
             print(f"ERROR: Base agent {agent_id} role {role} not found: {e}", file=sys.stderr)
             sys.exit(1)
-    print(f"PASS: All {len(BASE_AGENTS)} base agents resolve through roles/catalog.py")
+    print(
+        f"PASS: All {len(BASE_AGENTS)} base agents resolve through roles/catalog.py",
+        file=sys.stderr,
+    )
 
 
 def _verify_persona_coverage() -> List[str]:
@@ -477,15 +590,20 @@ def _verify_source_hashes(manifest: Dict[str, Any]) -> List[str]:
     return warnings
 
 
-def build_catalog() -> Dict[str, Any]:
-    """Build the complete normalized catalog."""
+def build_catalog(generated_at: Optional[str] = None) -> Dict[str, Any]:
+    """Build the complete normalized catalog.
+
+    ``meta.source_manifest`` is always the stable repo-relative path
+    ``proof/CCAR-002/SOURCE_MANIFEST.json`` — never an absolute worktree path.
+    """
     manifest = _load_source_manifest()
+    ts = generated_at or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     catalog: Dict[str, Any] = {
         "meta": {
             "packet_id": "CCAR-002",
-            "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "source_manifest": str(SOURCE_MANIFEST_PATH),
+            "generated_at": ts,
+            "source_manifest": SOURCE_MANIFEST_REL,
             "source_commit": manifest["base_commit"],
             "base_agent_count": len(BASE_AGENTS),
             "persona_count": len(PERSONA_DEFINITIONS),
@@ -579,13 +697,66 @@ def _generate_warnings(catalog: Dict[str, Any]) -> List[str]:
     return warnings
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Build normalized agent/persona catalog")
-    parser.add_argument("--check", action="store_true",
-                        help="Exit nonzero if catalog differs from committed version")
-    args = parser.parse_args()
+def catalog_to_yaml(catalog: Dict[str, Any]) -> str:
+    """Serialize catalog to deterministic YAML text."""
+    return yaml.dump(catalog, sort_keys=False, allow_unicode=True, width=200)
 
+
+def normalize_generated_at(yaml_text: str) -> str:
+    """Normalize generated_at timestamps for cross-run / cross-worktree compare."""
+    return re.sub(
+        r'generated_at:\s*["\']?\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z["\']?',
+        "generated_at: NORMALIZED",
+        yaml_text,
+    )
+
+
+def assert_no_absolute_source_manifest(catalog: Dict[str, Any]) -> None:
+    """Fail closed if meta.source_manifest is not the stable repo-relative path."""
+    sm = catalog.get("meta", {}).get("source_manifest", "")
+    if sm != SOURCE_MANIFEST_REL:
+        raise SystemExit(
+            f"INVARIANT_VIOLATION: source_manifest must be "
+            f"{SOURCE_MANIFEST_REL!r}, got {sm!r}"
+        )
+    if sm.startswith("/") or re.match(r"^[A-Za-z]:[\\/]", sm):
+        raise SystemExit(
+            f"INVARIANT_VIOLATION: absolute source_manifest forbidden: {sm!r}"
+        )
+
+
+def main(argv: Optional[List[str]] = None) -> None:
+    parser = argparse.ArgumentParser(description="Build normalized agent/persona catalog")
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Exit nonzero if catalog differs from committed version",
+    )
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=None,
+        help="Explicit repository root (validated). Overrides git/marker discovery.",
+    )
+    parser.add_argument(
+        "--generated-at",
+        default=None,
+        help="Optional fixed UTC timestamp (YYYY-MM-DDTHH:MM:SSZ) for deterministic builds",
+    )
+    parser.add_argument(
+        "--stdout",
+        action="store_true",
+        help="Write catalog YAML to stdout instead of the catalog file",
+    )
+    args = parser.parse_args(argv)
+
+    root = resolve_repo_root(explicit=args.repo_root, start=Path.cwd())
+    bind_repo_root(root)
     os.chdir(PROJECT_ROOT)
+
+    # Status noise always goes to stderr so --stdout stays pure YAML.
+    def status(msg: str) -> None:
+        print(msg, file=sys.stderr)
 
     # Verify role resolution
     _validate_role_resolution()
@@ -597,10 +768,11 @@ def main():
         for w in hash_warnings:
             print(f"HASH_VIOLATION: {w}", file=sys.stderr)
         sys.exit(1)
-    print(f"PASS: Source hash verification ({len(manifest['source_counts'])} categories)")
+    status(f"PASS: Source hash verification ({len(manifest['source_counts'])} categories)")
 
     # Build catalog
-    catalog = build_catalog()
+    catalog = build_catalog(generated_at=args.generated_at)
+    assert_no_absolute_source_manifest(catalog)
 
     # Validate catalog
     violations = validate_catalog(catalog)
@@ -608,12 +780,12 @@ def main():
         for v in violations:
             print(f"INVARIANT_VIOLATION: {v}", file=sys.stderr)
         sys.exit(1)
-    print(f"PASS: Catalog invariant validation")
+    status("PASS: Catalog invariant validation")
 
     # Generate warnings
     warnings = _generate_warnings(catalog)
     for w in warnings:
-        print(f"WARNING: {w}")
+        print(f"WARNING: {w}", file=sys.stderr)
 
     # Schema validation
     with open(SCHEMA_PATH, "r") as f:
@@ -622,42 +794,38 @@ def main():
     try:
         import jsonschema
         jsonschema.validate(catalog, schema)
-        print("PASS: Schema validation")
+        status("PASS: Schema validation")
     except ImportError:
-        print("WARNING: jsonschema not installed, skipping schema validation")
+        print("WARNING: jsonschema not installed, skipping schema validation", file=sys.stderr)
     except jsonschema.ValidationError as e:
         print(f"SCHEMA_VIOLATION: {e.message}", file=sys.stderr)
         sys.exit(1)
 
     # Serialize to YAML
     CATALOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    yaml_str = yaml.dump(catalog, sort_keys=False, allow_unicode=True, width=200)
+    yaml_str = catalog_to_yaml(catalog)
 
     if args.check:
         if not CATALOG_PATH.exists():
             print("CHECK_FAILED: Catalog file does not exist", file=sys.stderr)
             sys.exit(1)
         current = CATALOG_PATH.read_text()
-        # Normalize generated_at timestamps for comparison
-        norm_current = re.sub(
-            r'generated_at:\s*["\']?\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z["\']?',
-            'generated_at: NORMALIZED',
-            current,
-        )
-        norm_new = re.sub(
-            r'generated_at:\s*["\']?\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z["\']?',
-            'generated_at: NORMALIZED',
-            yaml_str,
-        )
+        norm_current = normalize_generated_at(current)
+        norm_new = normalize_generated_at(yaml_str)
         if norm_current != norm_new:
             print("CHECK_FAILED: Catalog differs from committed version", file=sys.stderr)
             sys.exit(1)
-        print("CHECK_PASS: Catalog matches committed version")
+        status("CHECK_PASS: Catalog matches committed version")
+    elif args.stdout:
+        sys.stdout.write(yaml_str)
     else:
         CATALOG_PATH.write_text(yaml_str)
-        print(f"Catalog written to {CATALOG_PATH}")
+        status(f"Catalog written to {CATALOG_PATH.relative_to(PROJECT_ROOT)}")
 
-    print(f"\nSummary: {len(catalog['base_agents'])} base agents, {len(catalog['personas'])} personas")
+    status(
+        f"Summary: {len(catalog['base_agents'])} base agents, "
+        f"{len(catalog['personas'])} personas; root={PROJECT_ROOT}"
+    )
 
 
 if __name__ == "__main__":

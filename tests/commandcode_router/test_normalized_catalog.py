@@ -5,7 +5,10 @@ Focused, deterministic validation of catalog invariants.
 
 from __future__ import annotations
 
+import importlib.util
 import json
+import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -13,18 +16,35 @@ import pytest
 import yaml
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-CATALOG_PATH = (
-    PROJECT_ROOT
-    / "config"
-    / "commandcode"
-    / "normalized_agent_persona_catalog.yaml"
-)
+def _load_builder_module():
+    """Load build_normalized_catalog without requiring package install."""
+    builder_path = (
+        Path(__file__).resolve().parents[2]
+        / "scripts"
+        / "commandcode_router"
+        / "build_normalized_catalog.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "build_normalized_catalog", builder_path
+    )
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+_BUILDER = _load_builder_module()
+PROJECT_ROOT = _BUILDER.resolve_repo_root(start=Path(__file__).resolve())
+CATALOG_PATH = PROJECT_ROOT / "config" / "commandcode" / "normalized_agent_persona_catalog.yaml"
 SCHEMA_PATH = (
     PROJECT_ROOT
     / "schemas"
     / "commandcode"
     / "normalized_agent_persona_catalog.schema.json"
+)
+SOURCE_MANIFEST_REL = "proof/CCAR-002/SOURCE_MANIFEST.json"
+BUILDER_SCRIPT = (
+    PROJECT_ROOT / "scripts" / "commandcode_router" / "build_normalized_catalog.py"
 )
 
 # Allowlist: tests that expect jsonschema to be available for schema validation
@@ -63,6 +83,10 @@ class TestCatalogStructure:
         assert "generated_at" in meta
         assert "source_commit" in meta
         assert len(meta["source_commit"]) == 40
+        assert meta["source_manifest"] == SOURCE_MANIFEST_REL
+        assert not meta["source_manifest"].startswith("/")
+        assert "/Users/" not in meta["source_manifest"]
+        assert "/home/" not in meta["source_manifest"]
 
     def test_exactly_nine_base_agents(self):
         catalog = _load_catalog()
@@ -183,13 +207,11 @@ class TestDeterministic:
 
     def test_generation_idempotent(self):
         """Builder must produce identical output on repeated runs."""
-        import subprocess
-
-        builder = str(PROJECT_ROOT / "scripts" / "commandcode_router" / "build_normalized_catalog.py")
+        builder = str(BUILDER_SCRIPT)
 
         # Regenerate to ensure catalog is current
         subprocess.run(
-            [sys.executable, builder],
+            [sys.executable, builder, "--repo-root", str(PROJECT_ROOT)],
             cwd=str(PROJECT_ROOT),
             capture_output=True,
             text=True,
@@ -198,7 +220,7 @@ class TestDeterministic:
 
         # --check must pass after regeneration
         result = subprocess.run(
-            [sys.executable, builder, "--check"],
+            [sys.executable, builder, "--check", "--repo-root", str(PROJECT_ROOT)],
             cwd=str(PROJECT_ROOT),
             capture_output=True,
             text=True,
@@ -206,6 +228,87 @@ class TestDeterministic:
 
         assert result.returncode == 0, \
             f"Builder --check failed after regeneration: {result.stderr}"
+
+    def test_source_manifest_repo_relative_in_yaml(self):
+        text = CATALOG_PATH.read_text()
+        assert "source_manifest: proof/CCAR-002/SOURCE_MANIFEST.json" in text
+        assert "/Users/" not in text.split("personas:")[0]
+        assert re.search(r"source_manifest:\s*/", text) is None
+
+    def test_dual_worktree_byte_identical_catalog(self, tmp_path):
+        """Catalog YAML from two differently located worktrees must match.
+
+        ``generated_at`` is fixed so true byte identity is required (CCAR-002R).
+        """
+        head = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            cwd=str(PROJECT_ROOT),
+            text=True,
+        ).strip()
+        wt_a = tmp_path / "wt-a-ccar002r"
+        wt_b = tmp_path / "wt-b-ccar002r"
+        # Detached worktrees at same commit, different absolute paths
+        for wt in (wt_a, wt_b):
+            subprocess.run(
+                ["git", "worktree", "add", "--detach", str(wt), head],
+                cwd=str(PROJECT_ROOT),
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+
+        fixed_ts = "2026-08-02T00:00:00Z"
+        outs = []
+        try:
+            for wt in (wt_a, wt_b):
+                # Use the under-test builder (working tree) against each worktree root.
+                # Worktrees are at HEAD (pre-R1) so their own script lacks --repo-root;
+                # portability is exercised by binding different absolute roots.
+                proc = subprocess.run(
+                    [
+                        sys.executable,
+                        str(BUILDER_SCRIPT),
+                        "--repo-root",
+                        str(wt),
+                        "--generated-at",
+                        fixed_ts,
+                        "--stdout",
+                    ],
+                    cwd=str(wt),
+                    capture_output=True,
+                    text=True,
+                )
+                assert proc.returncode == 0, (
+                    f"Builder failed in {wt}:\nstdout={proc.stdout}\nstderr={proc.stderr}"
+                )
+                # --stdout emits pure YAML on stdout; status goes to stderr.
+                yaml_body = proc.stdout
+                assert yaml_body.startswith("meta:"), (
+                    f"Expected pure YAML from {wt}, got: {yaml_body[:300]!r}"
+                )
+                outs.append(yaml_body)
+        finally:
+            for wt in (wt_a, wt_b):
+                subprocess.run(
+                    ["git", "worktree", "remove", "--force", str(wt)],
+                    cwd=str(PROJECT_ROOT),
+                    capture_output=True,
+                    text=True,
+                )
+
+        assert outs[0] == outs[1], (
+            "Dual-worktree catalog outputs differ.\n"
+            f"len_a={len(outs[0])} len_b={len(outs[1])}\n"
+            f"a_head={outs[0][:200]!r}\nb_head={outs[1][:200]!r}"
+        )
+        assert "source_manifest: proof/CCAR-002/SOURCE_MANIFEST.json" in outs[0]
+        assert str(wt_a) not in outs[0]
+        assert str(wt_b) not in outs[0]
+        assert "/Users/" not in outs[0].split("personas:")[0]
+
+    def test_resolve_repo_root_rejects_invalid(self, tmp_path):
+        with pytest.raises(SystemExit):
+            _BUILDER.resolve_repo_root(explicit=tmp_path)
 
 
 class TestSourceCoverage:
