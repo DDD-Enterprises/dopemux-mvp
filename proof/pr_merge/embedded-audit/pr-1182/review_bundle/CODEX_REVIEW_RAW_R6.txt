@@ -1,0 +1,6 @@
+The signed embedded-audit attestation is stale relative to the reviewed branch head and is rejected by the repository’s local audit acceptance gate. This blocks the proof/readiness path for the patch.
+
+Review comment:
+
+- [P1] Re-sign local audit proof at current head — /Users/hue/code/dopemux-mvp/.worktrees/TP-REPLAN-BASELINE-1182-REPAIR/proof/pr_merge/embedded-audit/pr-1182/PROOF.json:4-5
+  When this PR is evaluated at current head `b7387429a408a47b81476d75cdcc0be8e07e7ce6`, this signed proof still audits `7159d0b2481802837a9efbc4296666fccce7a908`; `scripts/audit/local_audit_acceptance.py` rejects that because the later commit changes `claudedocs/orchestrator-replan-2026-08-02/routing-table.json` outside `proof/pr_merge/embedded-audit/pr-1182/`. The local-attestation policy requires only proof-directory changes after the audited SHA (`docs/ops/embedded-audit.md:170-181`), so regenerate and re-sign the proof after the final content commit.

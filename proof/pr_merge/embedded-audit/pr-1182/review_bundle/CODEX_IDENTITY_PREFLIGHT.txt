@@ -1,0 +1,85 @@
+=== codex version ===
+codex-cli 0.146.0
+=== which ===
+/Users/hue/.local/share/mise/shims/codex
+=== doctor (truncated) ===
+Codex Doctor v0.146.0 · macos-aarch64
+
+Notes
+   ⚠ rollouts     727 active files · 1.01 GB on disk
+   ⚠ mcp          MCP configuration has optional issues - Set the missing MCP env vars or disable the affected server.
+   ⚠ threads      2 issues - state DB rows point at missing or unusable rollout files; rollout scan was incomplete or found bad files
+─────────────────────────────────────────────────────────────
+
+Environment
+  ✓ system       en-CA
+      os                       Mac OS 26.6.0 [64-bit]
+      OS language              en-CA
+      LANG                     en_CA.UTF-8
+      VISUAL                   not set
+      EDITOR                   not set
+      PAGER                    cat
+      GIT_PAGER                cat
+      GH_PAGER                 cat
+  ✓ runtime      npm (package /Users/hue/.local/share/mise/installs/node/25.9.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin, bin /Users/hue/.local/share/mise/installs/node/25.9.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin, resources /Users/hue/.local/share/mise/installs/node/25.9.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-resources, path /Users/hue/.local/share/mise/installs/node/25.9.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path)
+      version                  0.146.0
+      install method           npm (package /Users/hue/.local/share/mise/installs/node/25.9.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin, bin /Users/hue/.local/share/mise/installs/node/25.9.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin, resources /Users/hue/.local/share/mise/installs/node/25.9.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-resources, path /Users/hue/.local/share/mise/installs/node/25.9.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path)
+      commit                   unknown
+      executable               ~/.local/share/mise/inst…-apple-darwin/bin/codex
+  ✓ install      consistent
+      context                  npm (package /Users/hue/.local/share/mise/installs/node/25.9.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin, bin /Users/hue/.local/share/mise/installs/node/25.9.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin, resources /Users/hue/.local/share/mise/installs/node/25.9.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-resources, path /Users/hue/.local/share/mise/installs/node/25.9.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path)
+      managed by               npm: yes · bun: no · pnpm: no · package root /Users/hue/.local/share/mise/installs/node/25.9.0/lib/node_modules/@openai/codex
+      PATH entries (5)         ~/.local/share/mise/installs/node/25/bin/codex
+                               ~/.local/share/mise/shims/codex
+                               /opt/homebrew/bin/codex
+                               … (full list with --all)
+      npm update target        ~/.local/share/mise/inst…e_modules/@openai/codex
+  ✓ search       file exists (bundled, `/Users/hue/.local/share/mise/installs/node/25.9.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path/rg`)
+      search command           ~/.local/share/mise/inst…le-darwin/codex-path/rg
+      search provider          bundled
+      search command readiness file exists
+  ✓ git          git version 2.54.0
+      selected git             /opt/homebrew/bin/git
+      version                  git version 2.54.0
+      exec path                /opt/homebrew/opt/git/libexec/git-core
+      repo detected            true
+      repo root                ~/code/dopemux-mvp/.work…AN-BASELINE-1182-REPAIR
+      .git entry               file -> /Users/hue/code/dopemux-mvp/.git/worktrees/TP-REPLAN-BASELINE-1182-REPAIR
+      branch                   codex/tp-replan-baseline-1182-repair-001
+      core.fsmonitor           true
+      PATH entries (2)         /opt/homebrew/bin/git
+                               /usr/bin/git
+  ✓ terminal     Ghostty 1.3.1
+      terminal                 Ghostty
+      TERM_PROGRAM             ghostty
+      terminal version         1.3.1
+      stdin is terminal        false
+      stdout is terminal       false
+      stderr is terminal       false
+      terminal size            80x24
+      color output             disabled (NO_COLOR)
+      COLORTERM                truecolor
+      NO_COLOR                 1
+      CLICOLOR                 0
+      CLICOLOR_FORCE           0
+      FORCE_COLOR              0
+      TERMINFO                 /Applications/Ghostty.ap…ents/Resources/terminfo (dir)
+      effective locale         en_CA.UTF-8
+      DISPLAY                  present
+  ✓ title        default · project TP-REPLAN-BASELINE-11...
+      title source             default
+      title items              activity, project-name
+      activity item            true
+      project source           git repo root
+      project value            TP-REPLAN-BASELINE-11...
+  ✓ state        databases healthy
+      CODEX_HOME               ~/.codex (dir)
+      log dir                  ~/.codex/log (dir)
+      sqlite home              ~/.codex (dir)
+      state DB                 ~/.codex/state_5.sqlite (file) · integrity ok
+      log DB                   ~/.codex/logs_2.sqlite (file) · integrity ok
+      goals DB                 ~/.codex/goals_1.sqlite (file) · integrity ok
+      memories DB              ~/.codex/memories_1.sqlite (file) · integrity ok
+      active rollouts          727 files · 1.01 GB (avg 1.42 MB)
+      archived rollouts        270 files · 767.46 MB (avg 2.84 MB)
+      thread history DB        ~/.codex/thread_history_1.sqlite (missing)

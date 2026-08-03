@@ -1,0 +1,16 @@
+{
+  "total": 539,
+  "unique": 539,
+  "class_sum": 539,
+  "by_class": {
+    "actionable_leaf": 355,
+    "cross_repository_parked": 2,
+    "operator_gated_decision": 28,
+    "series_or_phase_container": 72,
+    "stale_or_cancellation_candidate": 82
+  },
+  "blocks_wave_inversions": 0,
+  "dispatchable_actionable": 355,
+  "verify_close_candidates": 21,
+  "verdict": "PASS"
+}

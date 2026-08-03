@@ -1,0 +1,1 @@
+Diff is limited to documentation and JSON planning artifacts; reviewed changes are internally valid JSON/Markdown and do not introduce a clear, actionable breakage against the base diff.
