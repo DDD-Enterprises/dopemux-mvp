@@ -1,7 +1,7 @@
 {
   "id": "CCAR-002R-A2",
   "project": "dopemux-mvp",
-  "target": "Repair two surviving evidence defects and two surviving review defects in the CCAR-002R return on PR #1176 (absolute worktree path in SOURCE_MANIFEST.json; literal unexpanded $(date ...) in NORMALIZATION_REPORT.md; self-healing test_generation_idempotent; capturing-group truncation in _scan_model_ids), then return a fresh Claude Sonnet audit against exact R3 and a signed canonical proof-only R4 such that trusted embedded audit succeeds and PR Steward is READY — without merge, force push, source agent/persona mutation, or CCAR-003.",
+  "target": "Repair two surviving evidence defects and two surviving review defects in the CCAR-002R return on PR #1176 (absolute worktree path in SOURCE_MANIFEST.json; literal unexpanded $(date ...) in NORMALIZATION_REPORT.md; self-healing test_generation_idempotent; capturing-group truncation in _scan_model_ids), then return a fresh independent audit (OpenCode + OpenRouter moonshotai/kimi-k3, deepseek/deepseek-v4-pro fallback) against exact R3 and a signed canonical proof-only R4 such that trusted embedded audit succeeds and PR Steward is READY — without merge, force push, source agent/persona mutation, or CCAR-003.",
   "invariants": [
     "Starting PR head must be exactly R2 = 1cb80e40f0f818389307aedeb14aaaceaa3e8ed1; stop if different.",
     "R3 changes only the R3 allowlist: proof/CCAR-002/**, the builder script, the focused test file, and the packet pair.",
@@ -12,7 +12,7 @@
     "_scan_model_ids returns the full matched token for every pattern, never a bare capture-group fragment.",
     "A focused regression test pins the full-match behavior of _scan_model_ids.",
     "CCAR-002 product invariants remain: nine base agents, persona coverage, no model IDs in catalog, authority booleans false, no runtime activation, schema-valid, builder --check passes.",
-    "Fresh Claude Sonnet audit is bound to exact R3, not R2 and not any prior head.",
+    "Fresh independent audit (OpenCode + OpenRouter kimi-k3, deepseek-v4-pro fallback) is bound to exact R3, not R2 and not any prior head.",
     "R4 changes only proof/pr_merge/embedded-audit/pr-1176/** relative to R3.",
     "PROOF.json.head_sha equals R3 exactly; pr_number is 1176; repo is DDD-Enterprises/dopemux-mvp.",
     "local_audit_acceptance returns accepted=true for prospective R4 before push.",
@@ -62,7 +62,7 @@
       "python scripts/commandcode_router/build_normalized_catalog.py --check",
       "python -m pytest tests/commandcode_router/test_normalized_catalog.py -v",
       "R3 allowlist path gate",
-      "fresh Claude Sonnet audit bound to R3",
+      "fresh independent OpenRouter audit (kimi-k3 / deepseek-v4-pro) bound to R3",
       "sign and verify PROOF.json; local_audit_acceptance accepted=true",
       "R4 only proof/pr_merge/embedded-audit/pr-1176/**",
       "trusted embedded audit success and PR Steward READY",
@@ -141,7 +141,7 @@
     },
     {
       "id": "R4-S1",
-      "task": "Fresh read-only Claude Sonnet audit against exact R3; assemble complete pr-1176 PROOF.json with head_sha=R3 before any signature.",
+      "task": "Fresh read-only independent audit (OpenCode + OpenRouter kimi-k3, deepseek-v4-pro fallback) against exact R3; assemble complete pr-1176 PROOF.json with head_sha=R3 before any signature.",
       "validation": [
         "test -f proof/pr_merge/embedded-audit/pr-1176/PROOF.json",
         "python3 -c \"import json; p=json.load(open('proof/pr_merge/embedded-audit/pr-1176/PROOF.json')); h=p.get('head_sha') or p.get('embedded_audit',{}).get('head_sha'); assert h\""

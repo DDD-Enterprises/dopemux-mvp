@@ -210,39 +210,45 @@ class TestDeterministic:
 
         ``--check`` runs first against the committed catalog, before any
         regeneration, so committed drift cannot be silently self-healed by
-        regenerating before the check ever inspects it.
+        regenerating before the check ever inspects it. The on-disk catalog
+        bytes (including ``generated_at``) are restored afterward so this
+        test has no lasting side effect on committed evidence.
         """
         builder = str(BUILDER_SCRIPT)
+        original_bytes = CATALOG_PATH.read_bytes()
 
-        # --check must pass against the committed catalog as-is.
-        committed_check = subprocess.run(
-            [sys.executable, builder, "--check", "--repo-root", str(PROJECT_ROOT)],
-            cwd=str(PROJECT_ROOT),
-            capture_output=True,
-            text=True,
-        )
-        assert committed_check.returncode == 0, (
-            "Builder --check failed against the committed catalog "
-            f"(drift detected): {committed_check.stderr}"
-        )
+        try:
+            # --check must pass against the committed catalog as-is.
+            committed_check = subprocess.run(
+                [sys.executable, builder, "--check", "--repo-root", str(PROJECT_ROOT)],
+                cwd=str(PROJECT_ROOT),
+                capture_output=True,
+                text=True,
+            )
+            assert committed_check.returncode == 0, (
+                "Builder --check failed against the committed catalog "
+                f"(drift detected): {committed_check.stderr}"
+            )
 
-        # Regenerating must be a no-op: --check must still pass afterward.
-        subprocess.run(
-            [sys.executable, builder, "--repo-root", str(PROJECT_ROOT)],
-            cwd=str(PROJECT_ROOT),
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        result = subprocess.run(
-            [sys.executable, builder, "--check", "--repo-root", str(PROJECT_ROOT)],
-            cwd=str(PROJECT_ROOT),
-            capture_output=True,
-            text=True,
-        )
+            # Regenerating must be a no-op: --check must still pass afterward.
+            subprocess.run(
+                [sys.executable, builder, "--repo-root", str(PROJECT_ROOT)],
+                cwd=str(PROJECT_ROOT),
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            result = subprocess.run(
+                [sys.executable, builder, "--check", "--repo-root", str(PROJECT_ROOT)],
+                cwd=str(PROJECT_ROOT),
+                capture_output=True,
+                text=True,
+            )
 
-        assert result.returncode == 0, \
-            f"Builder --check failed after regeneration: {result.stderr}"
+            assert result.returncode == 0, \
+                f"Builder --check failed after regeneration: {result.stderr}"
+        finally:
+            CATALOG_PATH.write_bytes(original_bytes)
 
     def test_source_manifest_repo_relative_in_yaml(self):
         text = CATALOG_PATH.read_text()

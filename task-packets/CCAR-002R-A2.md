@@ -69,7 +69,7 @@ PR_1176_NOT_READY
 ## Objective
 
 1. **R3** — Fix the two evidence defects and two review defects listed above, honestly regenerate implementation proof, and add a focused scanner regression test.
-2. **R4** — Fresh Claude Sonnet audit against exact R3; finalize, sign, and verify a canonical proof-only commit under `proof/pr_merge/embedded-audit/pr-1176/**`; require local acceptance + trusted embedded audit success + PR Steward READY.
+2. **R4** — Fresh independent audit (OpenCode + OpenRouter `moonshotai/kimi-k3`, `deepseek/deepseek-v4-pro` fallback) against exact R3; finalize, sign, and verify a canonical proof-only commit under `proof/pr_merge/embedded-audit/pr-1176/**`; require local acceptance + trusted embedded audit success + PR Steward READY.
 
 No force push, history rewrite, merge, or CCAR-003 execution.
 
@@ -111,7 +111,7 @@ Local `PASS`, local `READY`, PR description, or handoff summary cannot override 
 
 ### IN — R4 (canonical audit return)
 
-* Fresh **Claude Sonnet** independent audit against **exact R3** (not R2, not any prior head).
+* Fresh **independent** audit (OpenCode + OpenRouter `moonshotai/kimi-k3`, `deepseek/deepseek-v4-pro` fallback) against **exact R3** (not R2, not any prior head). Not Claude Sonnet — Claude Sonnet authored this repair and cannot audit its own work (REVIEW-001).
 * Finalize `proof/pr_merge/embedded-audit/pr-1176/PROOF.json` completely **before** signing.
 * Sign the exact final bytes; verify signature locally against trusted `main` allowed-signers.
 * Require `local_audit_acceptance accepted=true` for prospective R4 head.
@@ -186,7 +186,7 @@ No other tracked file may change on R4.
     |
     v
 R3  evidence + test correctness repair
-    |  fresh Claude Sonnet audit targets exact R3
+    |  fresh independent OpenRouter audit (kimi-k3 / deepseek-v4-pro) targets exact R3
     v
 R4  signed canonical proof-only return
        changes only proof/pr_merge/embedded-audit/pr-1176/**
@@ -217,7 +217,7 @@ Do **not** set `PROOF.json.head_sha == R4`.
 
 | Gate | Expect |
 |---|---|
-| Claude Sonnet audit bound to R3 | recorded tool/model/invocation/exit/findings |
+| Independent audit (OpenRouter kimi-k3 / deepseek-v4-pro) bound to R3 | recorded tool/model/invocation/exit/findings |
 | `PROOF.json.head_sha` | equals R3 |
 | Signature verify | valid vs trusted main signers |
 | `local_audit_acceptance` | `accepted=true` |
@@ -260,7 +260,7 @@ Stop and report if:
 * head is not exactly the pinned R2 SHA;
 * source agent/persona bytes change;
 * the focused tests fail after repair;
-* Claude Sonnet audit unavailable or non-passing;
+* Independent audit unavailable or non-passing (after exhausting both kimi-k3 and the deepseek-v4-pro fallback);
 * signature verification fails;
 * local acceptance false;
 * live embedded audit or Steward not READY after honest R4;
@@ -276,7 +276,7 @@ pr: 1176
 start_head: 1cb80e40f0f818389307aedeb14aaaceaa3e8ed1
 R3: <sha>
 R4: <sha>
-audit_tool/model: claude / sonnet
+audit_tool/model: opencode / openrouter/moonshotai/kimi-k3 (fallback: openrouter/deepseek/deepseek-v4-pro)
 local_acceptance: true
 trusted_embedded_audit: success
 pr_steward: READY

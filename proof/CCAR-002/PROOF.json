@@ -13,10 +13,11 @@
       "CCAR-002R-A2 R3: removed absolute worktree path from SOURCE_MANIFEST.json; replaced unexpanded $(date ...) literal in NORMALIZATION_REPORT.md with a real timestamp; test_generation_idempotent now checks the committed catalog before regenerating; _scan_model_ids returns full matches instead of capture-group fragments, with a new regression test"
     ],
     "remaining_risks": [
-      "Independent Claude Sonnet audit not yet run for R3 \u2014 pending CCAR-002R-A2 R4 against exact R3 head.",
+      "Advisory read-only pre-check (OpenCode + OpenRouter moonshotai/kimi-k3, --agent ccar-audit-notools) against exact R3 (b096551dfa...) returned VERDICT: PASS; this is NOT the signed canonical embedded audit and does not itself satisfy R4.",
+      "The signed canonical embedded audit required for R4 is still pending \u2014 pending CCAR-002R-A2 R4 against exact R3 head.",
       "Canonical CI proof remains under proof/pr_merge/embedded-audit/pr-1176/** after R4."
     ],
-    "skip_reason": "CCAR-002R-A2 R3 evidence and test correctness repair complete; independent Claude Sonnet audit and signed PR proof deferred to R4.",
+    "skip_reason": "CCAR-002R-A2 R3 evidence and test correctness repair complete; independent OpenRouter audit (kimi-k3, deepseek-v4-pro fallback) used for the advisory pre-check; signed canonical PR proof deferred to R4.",
     "instruction_like_content": {
       "detected": false,
       "match_count": 0,
