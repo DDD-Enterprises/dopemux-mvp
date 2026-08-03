@@ -328,6 +328,47 @@ def test_quarantine_forbids_signature() -> None:
     )
 
 
+def test_quarantine_deleted_sig_path_is_not_treated_as_carried() -> None:
+    """Deleted PROOF.json.sig appears in name-only delta but must not trip forbid."""
+    # Direct unit of validate_proof_only_closure with monkeypatched delta is heavy;
+    # assert the tip-blob rule: sig only in path_set (deletion) without blob/file_text
+    # does not yield quarantine_forbids_signature when delta mismatches.
+    from scripts.governance.validate_change_contract import (
+        Result,
+        validate_proof_only_closure,
+    )
+
+    head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    try:
+        base = subprocess.check_output(
+            ["git", "rev-parse", "HEAD~1"], cwd=ROOT, text=True
+        ).strip()
+    except subprocess.CalledProcessError:
+        pytest.skip("need at least 2 commits")
+
+    result = Result(status="PASS", max_lane="L0")
+    # Paths include deleted .sig; file_text has only SKIPPED PROOF (no .sig payload).
+    validate_proof_only_closure(
+        [
+            "proof/pr_merge/embedded-audit/pr-9/PROOF.json",
+            "proof/pr_merge/embedded-audit/pr-9/PROOF.json.sig",
+        ],
+        result,
+        content_head=base,
+        proof_head=head,
+        audited_head=None,
+        cwd=ROOT,
+        head=head,
+        file_text={
+            "proof/pr_merge/embedded-audit/pr-9/PROOF.json": _skipped_quarantine_proof(),
+        },
+        quarantine_mode=True,
+    )
+    codes = {f.code for f in result.findings}
+    assert "quarantine_forbids_signature" not in codes
+    assert "proof_only_missing_signature" not in codes
+
+
 def test_quarantine_auto_detect_from_skipped_proof_without_audited_head() -> None:
     """Auto-detect SKIPPED quarantine when range_base/head supplied (pre-commit style)."""
     head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()

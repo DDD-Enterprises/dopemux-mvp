@@ -484,12 +484,18 @@ def validate_proof_only_closure(
 
     if quarantine_active:
         # Forbids audit-pass signatures on deliberate NOT_PROVEN quarantines.
+        # Presence is tip/blob truth at proof_head — not membership in the
+        # path set (a deleted PROOF.json.sig still appears in git name-only
+        # diffs and must NOT be treated as a carried signature).
         for path in norm_paths:
             if not path.endswith("PROOF.json"):
                 continue
             sig_path = f"{path}.sig"
-            sig_present = sig_path in path_set
-            if not sig_present and proof_head:
+            sig_present = False
+            if file_text is not None and sig_path in file_text:
+                # Unit-test override: synthetic payload means "carried at tip".
+                sig_present = True
+            elif proof_head:
                 if read_blob(proof_head, sig_path, cwd) is not None:
                     sig_present = True
             if not sig_present and proof_head in {"HEAD", ""} and (cwd / sig_path).is_file():
