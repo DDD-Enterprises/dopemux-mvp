@@ -1,11 +1,11 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1182,
-  "commit_sha": "a5fb1e07398b4ad2df741c19040c5295bcdc80fe",
-  "head_sha": "a5fb1e07398b4ad2df741c19040c5295bcdc80fe",
+  "commit_sha": "7159d0b2481802837a9efbc4296666fccce7a908",
+  "head_sha": "7159d0b2481802837a9efbc4296666fccce7a908",
   "packet_id": "TP-REPLAN-BASELINE-1182-REPAIR-001",
-  "generated_at": "2026-08-03T00:11:31Z",
-  "note": "SUPERVISOR_DECISION=AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION. Real auditor codex-cli gpt-5.5. Schema carriers are not the real auditor.",
+  "generated_at": "2026-08-03T00:23:35Z",
+  "note": "SUPERVISOR_DECISION=AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION. Real auditor codex-cli gpt-5.5.",
   "supervisor_exception": {
     "decision": "AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION",
     "runner": "codex-cli",
@@ -13,19 +13,15 @@
     "configured_model": "default/unset",
     "response_claimed_model": "gpt-5.5",
     "proxy_reported_identity": "provider: openai",
-    "provider_attested_identity": "OpenAI Codex session 019fc4ee-bb77-7680-91d5-8bff0a3a38ae",
-    "content_head_audited": "a5fb1e07398b4ad2df741c19040c5295bcdc80fe",
-    "schema_carrier_fields": {
-      "auditor_tool": "claude-code-cli",
-      "auditor_model": "sonnet"
-    }
+    "provider_attested_identity": "OpenAI Codex session 019fc4f8-7fb5-7f51-80b7-3bfbb652987f",
+    "content_head_audited": "7159d0b2481802837a9efbc4296666fccce7a908"
   },
   "embedded_audit": {
     "required": true,
     "status": "PASS_WITH_RISKS",
     "auditor_tool": "claude-code-cli",
     "auditor_model": "sonnet",
-    "invocation": "SUPERVISOR_EXCEPTION real_runner=codex-cli real_model=gpt-5.5 provider=openai session=019fc4ee-bb77-7680-91d5-8bff0a3a38ae; codex review --base origin/main content_head=a5fb1e07398b4ad2df741c19040c5295bcdc80fe; schema_carrier claude-code-cli/sonnet",
+    "invocation": "SUPERVISOR_EXCEPTION real_runner=codex-cli real_model=gpt-5.5 provider=openai session=019fc4f8-7fb5-7f51-80b7-3bfbb652987f; review --base origin/main head=7159d0b2481802837a9efbc4296666fccce7a908; schema_carrier claude-code-cli/sonnet",
     "exit_code": 0,
     "report_path": "proof/TP-REPLAN-BASELINE-1182-REPAIR-001/AUDITOR_REPORT.md",
     "findings": [
@@ -33,35 +29,30 @@
         "id": "F-001",
         "severity": "MEDIUM",
         "status": "RESOLVED",
-        "title": "Steward MUST_FIX content defects closed",
-        "body": "Wave topology, containers, verify-close, needs-rescope, gemini, load-plans repaired."
+        "title": "Steward content defects closed",
+        "body": "Full steward repair on head 7159d0b248."
       },
       {
         "id": "F-002",
         "severity": "LOW",
         "status": "ACCEPTED_RISK",
         "title": "Schema cannot name Codex",
-        "body": "Exception in force; carriers only."
+        "body": "Exception in force."
       },
       {
         "id": "F-003",
         "severity": "INFO",
         "status": "RESOLVED",
-        "title": "Proof re-pinned",
-        "body": "Bound to a5fb1e07398b4ad2df741c19040c5295bcdc80fe"
+        "title": "Proof pinned",
+        "body": "7159d0b2481802837a9efbc4296666fccce7a908"
       }
     ],
     "fixes_applied": [
-      "wave topology",
-      "verify-close implemented",
-      "gemini non-dispatch",
-      "roots containers",
-      "needs-rescope",
-      "load-plan recovery"
+      "steward repairs"
     ],
     "remaining_risks": [
-      "SUPERVISOR_DECISION=AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION \u2014 schema carriers not real auditor",
-      "Wave 0 operator-controlled after merge"
+      "SUPERVISOR_DECISION=AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION",
+      "Wave 0 operator-controlled"
     ],
     "skip_reason": null
   }

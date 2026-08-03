@@ -1,0 +1,9 @@
+The patch includes embedded-audit proof that is stale relative to the current content head and will be rejected by the local audit acceptance gate. The proof bundle also references a canonical report path that is not included in the tracked diff.
+
+Full review comments:
+
+- [P1] Re-pin local audit proof to current head — /Users/hue/code/dopemux-mvp/.worktrees/TP-REPLAN-BASELINE-1182-REPAIR/proof/pr_merge/embedded-audit/pr-1182/PROOF.json:4-5
+  When PR #1182 is checked at current branch head `7159d0b2481802837a9efbc4296666fccce7a908`, this signed proof still audits `a5fb1e07398b4ad2df741c19040c5295bcdc80fe`; `scripts/audit/local_audit_acceptance.py` rejects it because the later commit changes the routing table and load plans outside the proof directory. `AGENTS.md:137-142` makes head-mismatched or stale embedded-audit proof readiness-blocking, so regenerate and re-sign after the latest content commit.
+
+- [P2] Track the report named by the proof — /Users/hue/code/dopemux-mvp/.worktrees/TP-REPLAN-BASELINE-1182-REPAIR/proof/pr_merge/embedded-audit/pr-1182/PROOF.json:30-30
+  In a clean checkout, this `report_path` points to `proof/TP-REPLAN-BASELINE-1182-REPAIR-001/AUDITOR_REPORT.md`, but the diff only adds `proof/pr_merge/embedded-audit/pr-1182/AUDITOR_REPORT.md`; the canonical path is not tracked, so bundle readers cannot follow the proof to its required report. `docs/ops/embedded-audit.md:130-148` requires the `proof/<PACKET_ID>/AUDITOR_REPORT.md` bundle, so add the named report or generate the proof in the tracked bundle path.
