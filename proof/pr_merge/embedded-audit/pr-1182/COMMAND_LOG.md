@@ -20,16 +20,26 @@ Deterministic only. MODEL_CALLS_REQUIRED=0. WAVE_0_AUTHORIZED=false.
 8. Open PR; do not merge
 
 ## Follow-up repair (SUPERVISOR_DECISION=AUTHORIZE_ONE_L0_PR1190_QUARANTINE_REPAIR_COMMIT)
-1. Add tracked L0 Task Packet: task-packets/TP-REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE.md
-2. Correct embedded_audit.report_path to bundled report:
-   proof/pr_merge/embedded-audit/pr-1182/AUDITOR_REPORT.md
+1. Add tracked L0 Task Packet narrative: task-packets/TP-REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE.md
+2. Correct embedded_audit.report_path (later superseded by schema-conforming path below)
 3. Preserve unsigned SKIPPED state (no PROOF.json.sig; auditor_tool=none; auditor_model=unknown)
-4. Confirm allowlist is Task Packet + proof/pr_merge/embedded-audit/pr-1182/**
-5. Confirm this is **not** an audited proof-only successor:
-   proof-only head/signature contract intentionally inapplicable (exact_head_audit=NOT_PROVEN)
-6. Re-validate change-contract (max lane L0, model_audit_required=false), frontmatter, proof schema, pre-commit
-7. Push single repair commit; resolve review threads only after CI passes
-8. Operator merge only; no Wave 0; no model calls
+4. Confirm allowlist is Task Packet + proof package
+5. Confirm this is **not** an audited proof-only successor
+6. Re-validate change-contract / frontmatter / proof schema / pre-commit
+7. Push repair; resolve prior threads after CI
+
+## Canonical contract repair (PR_1190_BLOCKED_REVIEW_CONTRACT_GAPS)
+1. Add machine-valid canonical JSON Task Packet:
+   task-packets/TP-REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE.json
+2. Add schema-conforming report at:
+   proof/TP-REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE/AUDITOR_REPORT.md
+3. Point embedded_audit.report_path to that path (matches
+   ^proof/[^/]+/AUDITOR..._REPORT\.md$)
+4. Run canonical scripts/audit/validate_audit_proof.py with no schema softening
+5. Validate packet against dopetask-canonical-spec.json
+6. Preserve SKIPPED / none / unknown / unsigned / exact_head_audit=NOT_PROVEN /
+   wave_0_authorized=false / MODEL_CALLS_REQUIRED=0
+7. Resolve both P2 contract-gap threads only after validation + CI pass
 
 ## Non-claims
 - Does not claim PR Steward READY for PR #1182 content

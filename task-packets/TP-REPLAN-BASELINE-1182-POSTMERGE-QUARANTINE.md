@@ -12,6 +12,11 @@ prelude: L0 quarantine packet for false or stale formal audit evidence after PR 
 
 # Task Packet: TP-REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE
 
+> **Canonical machine form:** `task-packets/TP-REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE.json`
+> (validated against `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json`).
+> This Markdown file is human narrative only; execution allowlist and step
+> validations are owned by the JSON packet.
+
 ## Objective
 
 Quarantine false or stale formal audit evidence after PR #1182 merged.
