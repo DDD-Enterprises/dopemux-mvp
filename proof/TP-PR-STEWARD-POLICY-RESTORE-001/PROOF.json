@@ -4,7 +4,7 @@
   "branch": "fix/pr-steward-policy-restore-001",
   "base": "main",
   "content_head_audited": "c9038b5a1e2031e19b7245b8ac5e0dd8761b3be3",
-  "head_sha": "PENDING_TIP",
+  "head_sha": "b8bd0f03bb4fd047582f85f8ce1dbc2b087252dd",
   "pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1187",
   "risk_lane": "L2",
   "supervisor_exceptions": [
