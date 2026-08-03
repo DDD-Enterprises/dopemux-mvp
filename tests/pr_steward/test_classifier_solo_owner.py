@@ -135,6 +135,63 @@ def test_solo_owner_phrase_clears_security_gate(tmp_path: Path):
     assert readiness["readiness"] == "READY"
 
 
+def test_solo_owner_phrase_clears_security_gate_with_member_association(
+    tmp_path: Path,
+):
+    """Regression: org-repo live path (#1188) emits MEMBER/COLLABORATOR, not OWNER."""
+    known = _known_reviewers(tmp_path, ["hu3mann"])
+    phrase = build_solo_owner_phrase(pr_number=PR, head_sha=HEAD_SHA)
+    harvest = _harvest(
+        issue_comments=[
+            {
+                "id": "ic-auth",
+                "body": phrase,
+                "author": {"login": "hu3mann"},
+                "authorAssociation": "MEMBER",
+                "createdAt": "2026-07-27T12:00:00Z",
+            }
+        ],
+        author_association="MEMBER",
+    )
+    readiness = _readiness(harvest, known)
+    assert readiness["security_release"]["required"] is True
+    assert readiness["security_release"]["approved"] is True
+    assert (
+        readiness["security_release"]["solo_owner_override"]["receipt_code"]
+        == RECEIPT_CODE
+    )
+    assert readiness["security_release"]["solo_owner_override"][
+        "operator_association"
+    ] == "MEMBER"
+    assert "SECURITY_RELEASE_APPROVAL_REQUIRED" not in readiness["blockers"]
+    assert readiness["readiness"] == "READY"
+
+
+def test_solo_owner_phrase_clears_security_gate_with_collaborator_association(
+    tmp_path: Path,
+):
+    known = _known_reviewers(tmp_path, ["hu3mann"])
+    phrase = build_solo_owner_phrase(pr_number=PR, head_sha=HEAD_SHA)
+    harvest = _harvest(
+        issue_comments=[
+            {
+                "id": "ic-auth",
+                "body": phrase,
+                "author": {"login": "hu3mann"},
+                "authorAssociation": "COLLABORATOR",
+                "createdAt": "2026-07-27T12:00:00Z",
+            }
+        ],
+        author_association="COLLABORATOR",
+    )
+    readiness = _readiness(harvest, known)
+    assert readiness["security_release"]["approved"] is True
+    assert readiness["security_release"]["solo_owner_override"][
+        "operator_association"
+    ] == "COLLABORATOR"
+    assert readiness["readiness"] == "READY"
+
+
 def test_solo_owner_does_not_activate_with_second_trusted_approver(tmp_path: Path):
     known = _known_reviewers(tmp_path, ["hu3mann", "second-human"])
     phrase = build_solo_owner_phrase(pr_number=PR, head_sha=HEAD_SHA)
