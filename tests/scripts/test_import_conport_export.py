@@ -90,3 +90,24 @@ async def test_custom_data_row_addressable_by_both_id_and_key():
     by_key = importer.seen("custom_data", "python-tmux-research")
     assert by_id is not None
     assert by_id == by_key
+
+
+class _FakeConnWithPreexistingLedger:
+    """Simulates a re-run against a ledger populated by the pre-fix importer:
+    custom_data row 2 was already recorded, but only under its numeric id --
+    the key alias did not exist yet."""
+
+    async def fetch(self, *_args, **_kwargs):
+        return [{"key": "custom_data:2", "value": {"new_id": "existing-uuid-from-prior-run"}}]
+
+
+@pytest.mark.asyncio
+async def test_rerun_against_existing_ledger_backfills_key_alias():
+    """A re-run must heal a link that quarantined under the pre-fix importer,
+    not just resolve links on a from-scratch import."""
+    importer = Importer(_FakeConnWithPreexistingLedger(), "/workspace", _bundle(), dry_run=True)
+    await importer.run()
+
+    assert importer.seen("custom_data", "python-tmux-research") == "existing-uuid-from-prior-run"
+    assert importer.stats["context_links"]["unresolved"] == 0
+    assert importer.stats["custom_datas"]["skip"] == 1

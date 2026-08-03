@@ -328,8 +328,17 @@ class Importer:
     # -- custom data + system patterns + contexts --------------------------
     async def _put_custom(self, kind: str, old_id: Any, category: str, key: str,
                           value: Any, created: datetime | None, raw: dict) -> None:
-        if self.seen(kind, old_id):
+        existing = self.seen(kind, old_id)
+        if existing:
             self._bump(kind + "s", "skip")
+            if kind == "custom_data" and key and str(key) != str(old_id) \
+                    and not self.seen(kind, key):
+                # This row was ledgered (by numeric id only) on a prior run,
+                # before the id/key aliasing below existed. Backfill the key
+                # alias now so a re-run against an existing ledger heals
+                # previously-quarantined key-addressed links, not just fresh
+                # imports.
+                await self.record(kind, key, existing, raw)
             return
         if self.dry_run:
             new_id = f"dry-run-{kind}-{old_id}"

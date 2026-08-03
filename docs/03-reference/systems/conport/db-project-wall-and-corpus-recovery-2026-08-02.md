@@ -137,11 +137,15 @@ Observed single-kill recovery (`proof/TP-CONPORT-CLEAN-L3-RECOVERY-2026-08-02/ev
 the REST child was killed on the host at `01:36:49Z`; PID 1 exited immediately,
 Docker restarted the container by `01:37:05Z` (16 s later, most of it PID1's
 1 s sibling-teardown grace plus container/runtime overhead), and all three
-health probes passed again by `01:37:11Z` (22 s total). Repeated kills within
-the same failure window restart faster in wall-clock terms per kill, but
-Docker's exponential `unless-stopped` backoff (10 s, 20 s, 40 s, capped at 60 s)
-lengthens *later* restarts in a burst — which is what the bounded failure
-budget above exists to bound.
+health probes passed again by `01:37:11Z` (22 s total). This was an isolated
+kill; the evidence above does not cover a tight burst of consecutive failures,
+where Docker's own restart-manager backoff (it grows on consecutive failures
+and resets once a container has stayed up past a short threshold) could
+lengthen individual restarts beyond this figure. The bounded failure budget
+above does not depend on knowing Docker's exact backoff schedule -- it exists
+so that a persistently crashing container converges on the non-exiting
+terminal-alert state (visibly unhealthy, no restart storm) regardless of how
+Docker's own retry timing behaves in a given burst.
 
 ### Test-to-production leak (`tests/conftest.py`)
 
