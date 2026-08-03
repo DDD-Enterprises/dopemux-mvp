@@ -1,0 +1,15 @@
+{
+  "preferred": {
+    "tool": "claude-code-cli",
+    "model": "sonnet",
+    "status": "AVAILABLE"
+  },
+  "used": {
+    "tool": "claude-code-cli",
+    "model": "sonnet",
+    "status": "AVAILABLE"
+  },
+  "independence": "Grok xAI (grok-4.5) implemented; Claude Code CLI sonnet audited (different-family)",
+  "preflight_reply": "AUDITOR_PREFLIGHT_OK",
+  "claude_version": "2.1.220"
+}
