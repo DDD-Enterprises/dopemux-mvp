@@ -2867,7 +2867,7 @@
       "operator-gate": 28,
       "stale-candidate": 26,
       "unblock-candidate": 5,
-      "verify-close-candidate": 11
+      "verify-close-candidate": 21
     },
     "by_primary_runner": {
       "claude-code": 180,
@@ -3099,16 +3099,26 @@
       "priority": "high",
       "wave": 0,
       "class": "actionable_leaf",
-      "class_reason": "actionable leaf",
+      "class_reason": "shipped on main \u2014 verify-close-candidate with item-level evidence (not fresh implement)",
       "routing_applicable": true,
       "routing_na_reason": null,
       "primary_runner": "claude-code",
       "primary_model": "haiku-4-5",
       "backup_runner": "claude-code",
       "backup_model": "sonnet-5",
-      "reasoning": null,
-      "flags": [],
-      "verification": null
+      "reasoning": "low",
+      "flags": [
+        "verify-close-candidate"
+      ],
+      "verification": {
+        "status": "verify-close-candidate",
+        "evidence_refs": [
+          "PR #885 MERGED feat(dcp): DMX-DCP-TOOLING 101+102 foundation bundle",
+          "proof/DMX-DCP-TOOLING-102 present",
+          "proof/DMX-DCP-TOOLING-102 present"
+        ],
+        "closure_authorized_by_tag_alone": false
+      }
     },
     {
       "id": "d5e15d07",
@@ -3240,16 +3250,25 @@
       "priority": "high",
       "wave": 0,
       "class": "actionable_leaf",
-      "class_reason": "actionable leaf",
+      "class_reason": "shipped on main \u2014 verify-close-candidate with item-level evidence (not fresh implement)",
       "routing_applicable": true,
       "routing_na_reason": null,
       "primary_runner": "claude-code",
       "primary_model": "haiku-4-5",
       "backup_runner": "claude-code",
       "backup_model": "sonnet-5",
-      "reasoning": null,
-      "flags": [],
-      "verification": null
+      "reasoning": "low",
+      "flags": [
+        "verify-close-candidate"
+      ],
+      "verification": {
+        "status": "verify-close-candidate",
+        "evidence_refs": [
+          "docs/01-tutorials/start-here.md is onboarding tutorial (type: tutorial, last_review present)",
+          "sampling PASS in TP-REPLAN-BASELINE-1182-VALIDATE sampling-results.json"
+        ],
+        "closure_authorized_by_tag_alone": false
+      }
     },
     {
       "id": "00041ced",
@@ -3259,16 +3278,24 @@
       "priority": "high",
       "wave": 0,
       "class": "actionable_leaf",
-      "class_reason": "actionable leaf",
+      "class_reason": "shipped on main \u2014 verify-close-candidate with item-level evidence (not fresh implement)",
       "routing_applicable": true,
       "routing_na_reason": null,
       "primary_runner": "claude-code",
       "primary_model": "haiku-4-5",
       "backup_runner": "claude-code",
       "backup_model": "sonnet-5",
-      "reasoning": null,
-      "flags": [],
-      "verification": null
+      "reasoning": "low",
+      "flags": [
+        "verify-close-candidate"
+      ],
+      "verification": {
+        "status": "verify-close-candidate",
+        "evidence_refs": [
+          "MASTER-PLAN \u00a75b: INSTALL-04 fixed on main \u2192 verify-close-candidate class"
+        ],
+        "closure_authorized_by_tag_alone": false
+      }
     },
     {
       "id": "56905b78",
@@ -3278,16 +3305,24 @@
       "priority": "high",
       "wave": 0,
       "class": "actionable_leaf",
-      "class_reason": "actionable leaf",
+      "class_reason": "shipped on main \u2014 verify-close-candidate with item-level evidence (not fresh implement)",
       "routing_applicable": true,
       "routing_na_reason": null,
       "primary_runner": "claude-code",
       "primary_model": "haiku-4-5",
       "backup_runner": "claude-code",
       "backup_model": "sonnet-5",
-      "reasoning": null,
-      "flags": [],
-      "verification": null
+      "reasoning": "low",
+      "flags": [
+        "verify-close-candidate"
+      ],
+      "verification": {
+        "status": "verify-close-candidate",
+        "evidence_refs": [
+          "MASTER-PLAN \u00a75b: INSTALL-05 fixed on main \u2192 verify-close-candidate class"
+        ],
+        "closure_authorized_by_tag_alone": false
+      }
     },
     {
       "id": "b807751c",
@@ -3325,16 +3360,25 @@
       "priority": "medium",
       "wave": 0,
       "class": "actionable_leaf",
-      "class_reason": "actionable leaf",
+      "class_reason": "shipped on main \u2014 verify-close-candidate with item-level evidence (not fresh implement)",
       "routing_applicable": true,
       "routing_na_reason": null,
       "primary_runner": "claude-code",
       "primary_model": "haiku-4-5",
       "backup_runner": "claude-code",
       "backup_model": "sonnet-5",
-      "reasoning": null,
-      "flags": [],
-      "verification": null
+      "reasoning": "low",
+      "flags": [
+        "verify-close-candidate"
+      ],
+      "verification": {
+        "status": "verify-close-candidate",
+        "evidence_refs": [
+          "compose.yml adhd-engine binds 127.0.0.1:${ADHD_ENGINE_PORT:-3025}:8095 (loopback publication)",
+          "ADHD_ENGINE_API_KEY injected from env in compose.yml (not hardcoded public default in service wire-up observed)"
+        ],
+        "closure_authorized_by_tag_alone": false
+      }
     },
     {
       "id": "abc4ca58",
@@ -3344,16 +3388,25 @@
       "priority": "medium",
       "wave": 0,
       "class": "actionable_leaf",
-      "class_reason": "actionable leaf",
+      "class_reason": "shipped on main \u2014 verify-close-candidate with item-level evidence (not fresh implement)",
       "routing_applicable": true,
       "routing_na_reason": null,
       "primary_runner": "claude-code",
       "primary_model": "haiku-4-5",
       "backup_runner": "claude-code",
       "backup_model": "sonnet-5",
-      "reasoning": null,
-      "flags": [],
-      "verification": null
+      "reasoning": "low",
+      "flags": [
+        "verify-close-candidate"
+      ],
+      "verification": {
+        "status": "verify-close-candidate",
+        "evidence_refs": [
+          "dope-memory compose wiring uses env JWT secret injection (see compose service env for dope-memory)",
+          "MASTER-PLAN baseline: SEC-05 fixed on main (2026-08-02 spot check class)"
+        ],
+        "closure_authorized_by_tag_alone": false
+      }
     },
     {
       "id": "cb80e2fc",
@@ -4149,16 +4202,26 @@
       "priority": "high",
       "wave": 2,
       "class": "actionable_leaf",
-      "class_reason": "actionable leaf",
+      "class_reason": "shipped on main \u2014 verify-close-candidate with item-level evidence (not fresh implement)",
       "routing_applicable": true,
       "routing_na_reason": null,
       "primary_runner": "claude-code",
       "primary_model": "haiku-4-5",
       "backup_runner": "claude-code",
       "backup_model": "sonnet-5",
-      "reasoning": null,
-      "flags": [],
-      "verification": null
+      "reasoning": "low",
+      "flags": [
+        "verify-close-candidate"
+      ],
+      "verification": {
+        "status": "verify-close-candidate",
+        "evidence_refs": [
+          "proof/TP-DCP-MCP-RO-0008 exists on branch history / proof tree",
+          "MASTER-PLAN: TP-DCP-MCP-RO-0008 all 22 hardening tests exist on main",
+          "proof path for TP-DCP-MCP-RO-0008 present under proof/"
+        ],
+        "closure_authorized_by_tag_alone": false
+      }
     },
     {
       "id": "ea969afa",
@@ -7397,16 +7460,24 @@
       "priority": "medium",
       "wave": 3,
       "class": "actionable_leaf",
-      "class_reason": "actionable leaf",
+      "class_reason": "shipped on main \u2014 verify-close-candidate with item-level evidence (not fresh implement)",
       "routing_applicable": true,
       "routing_na_reason": null,
       "primary_runner": "claude-code",
       "primary_model": "haiku-4-5",
       "backup_runner": "claude-code",
       "backup_model": "sonnet-5",
-      "reasoning": null,
-      "flags": [],
-      "verification": null
+      "reasoning": "low",
+      "flags": [
+        "verify-close-candidate"
+      ],
+      "verification": {
+        "status": "verify-close-candidate",
+        "evidence_refs": [
+          "MASTER-PLAN \u00a75b: START-WAVE3 3C-5 already shipped \u2192 verify-close-candidate"
+        ],
+        "closure_authorized_by_tag_alone": false
+      }
     },
     {
       "id": "ae17fffe",
@@ -8781,16 +8852,25 @@
       "priority": "medium",
       "wave": 4,
       "class": "actionable_leaf",
-      "class_reason": "actionable leaf",
+      "class_reason": "shipped on main \u2014 verify-close-candidate with item-level evidence (not fresh implement)",
       "routing_applicable": true,
       "routing_na_reason": null,
       "primary_runner": "claude-code",
       "primary_model": "haiku-4-5",
       "backup_runner": "claude-code",
       "backup_model": "sonnet-5",
-      "reasoning": null,
-      "flags": [],
-      "verification": null
+      "reasoning": "low",
+      "flags": [
+        "verify-close-candidate"
+      ],
+      "verification": {
+        "status": "verify-close-candidate",
+        "evidence_refs": [
+          "dopemux mcp sync-globals command exists in CLI surface",
+          "MASTER-PLAN \u00a75b: COLDSTART GLOBALS-SYNC-106 already shipped"
+        ],
+        "closure_authorized_by_tag_alone": false
+      }
     },
     {
       "id": "e356805f",
@@ -11668,16 +11748,26 @@
       "priority": "medium",
       "wave": 5,
       "class": "actionable_leaf",
-      "class_reason": "actionable leaf",
+      "class_reason": "shipped on main \u2014 verify-close-candidate with item-level evidence (not fresh implement)",
       "routing_applicable": true,
       "routing_na_reason": null,
       "primary_runner": "claude-code",
       "primary_model": "haiku-4-5",
       "backup_runner": "claude-code",
       "backup_model": "sonnet-5",
-      "reasoning": null,
-      "flags": [],
-      "verification": null
+      "reasoning": "low",
+      "flags": [
+        "verify-close-candidate"
+      ],
+      "verification": {
+        "status": "verify-close-candidate",
+        "evidence_refs": [
+          "docs/02-how-to/mcp-integration-guide.md present",
+          "AGENTS.md \u00a712.5 documents MCP fleet integration guide link",
+          "MASTER-PLAN \u00a75b: MCPINT DOC-GUIDE-002 already shipped"
+        ],
+        "closure_authorized_by_tag_alone": false
+      }
     },
     {
       "id": "bfc12d1e",
