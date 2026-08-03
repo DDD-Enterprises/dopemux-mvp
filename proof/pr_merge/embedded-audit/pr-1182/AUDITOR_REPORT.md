@@ -2,12 +2,17 @@
 
 **Supervisor:** AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION
 
-## Real identity
+## Real identity ledger
 - runner: codex-cli 0.146.0
 - model: gpt-5.5
 - provider: openai
-- session: 019fc4f8-7fb5-7f51-80b7-3bfbb652987f
-- content_head: 7159d0b2481802837a9efbc4296666fccce7a908
+- session: 019fc508-5ff2-75d3-af55-06244d96346f
+- content_head: b7387429a408a47b81476d75cdcc0be8e07e7ce6
+
+Schema cannot encode codex; carriers are not real identity (supervisor exception).
+
+## Deterministic validation
+PASS: 539, class sum 539, inversions 0, verify-close 21.
 
 ## Verdict
-PASS_WITH_RISKS under supervisor exception. Deterministic validation PASS.
+PASS_WITH_RISKS under supervisor exception.
