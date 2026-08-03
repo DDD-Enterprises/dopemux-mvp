@@ -1,0 +1,26 @@
+=== codex config model (non-secret) ===
+2:model = "gpt-5.6-terra"
+3:model_reasoning_effort = "high"
+155:[notice.model_migrations]
+461:status_line = ["model-with-reasoning", "current-dir", "git-branch", "pull-request-number", "context-used", "weekly-limit", "used-tokens", "total-input-tokens", "total-output-tokens"]
+464:[tui.model_availability_nux]
+agents
+AGENTS.md
+ambient-suggestions
+archived_sessions
+attachments
+auth.json
+automations
+browser
+cache
+chrome-native-hosts-v2.json
+chrome-native-hosts.json
+computer-use
+config.json
+config.toml
+config.toml.backup_20250904_230541
+config.toml.bak-20260331-131435
+config.toml.bak-20260710-service-tier
+config.toml.bak.20260226_014933
+config.toml5
+external_agent_session_imports.json

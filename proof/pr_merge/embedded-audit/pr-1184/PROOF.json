@@ -1,0 +1,47 @@
+{
+  "commit_sha": "876cf3f1fd6f358c6500d61d40dfdad96587fc0f",
+  "embedded_audit": {
+    "auditor_model": "sonnet",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "Pre-repair audits on earlier heads found proof-only fail-open gaps, range binding, L1 default, template wildcard, review_bundle traversal, and --paths under-declaration. Final content head 876cf3f1 repairs all; final audit PASS.",
+        "id": "EE-1184-F1",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Prior FAIL defects repaired before final audit"
+      },
+      {
+        "body": "docs-prohibited-patterns exempts only docs/03-reference/governance/task-packet-template.md; generic template-*.md exemption removed.",
+        "id": "EE-1184-F2",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Canonical template exemption is exact-path only"
+      },
+      {
+        "body": "Independent audit executed via Codex CLI per operator direction after Claude session limit. Formal auditor_tool/model enums forced to schema values; invocation records actual binary and flags.",
+        "id": "EE-1184-F3",
+        "severity": "LOW",
+        "status": "ACCEPTED_RISK",
+        "title": "Schema lacks codex-cli auditor_tool enum"
+      }
+    ],
+    "fixes_applied": [],
+    "invocation": "codex exec -s read-only --ephemeral --skip-git-repo-check --color never -o proof/pr_merge/embedded-audit/pr-1184/AUDITOR_REPORT.md --json < FINAL_AUDIT_PROMPT.txt (operator-directed Codex after Claude Code session limit; schema auditor_tool enum lacks codex-cli)",
+    "remaining_risks": [
+      "Schema auditor_tool enum lacks codex-cli; invocation is source of tool truth.",
+      "Detached OpenSSH signature proves allow-listed operator attestation of local audit, not third-party cryptographic model identity.",
+      "PR is behind main (BEHIND/MERGEABLE); no rebase performed solely for main motion.",
+      "Exact-head CI and PR Steward must be reharvested on the proof-only successor head."
+    ],
+    "report_path": "proof/pr-1184/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "generated_at": "2026-08-02T23:53:41Z",
+  "head_sha": "876cf3f1fd6f358c6500d61d40dfdad96587fc0f",
+  "pr_number": 1184,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

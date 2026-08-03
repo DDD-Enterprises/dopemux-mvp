@@ -1,0 +1,126 @@
+=== _PROOF_ONLY_ALLOWED / _DEFAULT_LANE ===
+59:_DEFAULT_LANE = "L2"
+60-
+61-_FM_REQUIRED = ("id", "title", "type", "owner", "last_review", "next_review")
+62-_FM_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*(?:\n|$)", re.DOTALL)
+63-
+64-# Tight proof-only path closure: enumerated artifact names only.
+65-# No arbitrary basenames under proof trees or pr_merge audit dirs.
+66:_PROOF_ARTIFACT = (
+67-    r"(PROOF\.json|PROOF\.json\.sig|AUDITOR_REPORT\.md|"
+68-    r"AUDIT_[A-Z0-9_]+\.(md|json)|COMMAND_LOG\.md|HANDOFF\.md|"
+69-    r"THREAT_MODEL\.md|VALIDATION\.json|MODEL_CALL_BUDGET\.md|"
+70-    r"C\d+_HEAD\.txt|review_bundle/[A-Za-z0-9._/-]+)"
+71-)
+72:_PROOF_ONLY_ALLOWED = re.compile(
+73-    rf"^("
+74:    rf"proof/pr_merge/embedded-audit/pr-\d+/{_PROOF_ARTIFACT}"
+75:    rf"|proof/[^/]+/{_PROOF_ARTIFACT}"
+76-    rf")$"
+77-)
+78-
+79-
+80-@dataclass
+81-class Finding:
+82-    code: str
+83-    severity: str  # error|warning|info
+84-    path: str = ""
+85-    message: str = ""
+86-
+87-
+88-@dataclass
+89-class Result:
+90-    status: str  # PASS|FAIL
+91-    max_lane: str
+92-    paths: list[dict[str, str]] = field(default_factory=list)
+93-    findings: list[Finding] = field(default_factory=list)
+94-    proof_only: bool = False
+95-    model_audit_required: bool = False
+96-    notes: list[str] = field(default_factory=list)
+97-
+98-    def add(self, code: str, severity: str, message: str, path: str = "") -> None:
+99-        self.findings.append(Finding(code=code, severity=severity, path=path, message=message))
+100-
+101-
+102-def classify_path(path: str) -> str:
+103-    norm = path.replace("\\", "/")
+104-    while norm.startswith("./"):
+105-        norm = norm[2:]
+--
+110:    return _DEFAULT_LANE
+111-
+112-
+113-def max_lane(lanes: Iterable[str]) -> str:
+114-    best = "L0"
+115-    for lane in lanes:
+116-        if LANE_RANK.get(lane, 1) > LANE_RANK.get(best, 0):
+117-            best = lane
+118-    return best
+119-
+120-
+121-def _run_git(args: list[str], cwd: Path) -> str:
+122-    proc = subprocess.run(
+123-        ["git", *args],
+124-        cwd=cwd,
+125-        capture_output=True,
+126-        text=True,
+127-        check=False,
+128-    )
+129-    if proc.returncode != 0:
+130-        raise RuntimeError(proc.stderr.strip() or proc.stdout.strip() or f"git {' '.join(args)} failed")
+131-    return proc.stdout
+132-
+133-
+134-def changed_paths(base: str, head: str, cwd: Path) -> list[str]:
+135-    out = _run_git(["diff", "--name-only", f"{base}...{head}"], cwd)
+136-    return sorted({p.strip().replace("\\", "/") for p in out.splitlines() if p.strip()})
+137-
+138-
+139-def read_blob(ref: str, path: str, cwd: Path) -> Optional[str]:
+140-    proc = subprocess.run(
+--
+=== docs-prohibited-patterns exemption ===
+57:      - id: docs-prohibited-patterns
+58-        name: Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)
+59-        entry: bash -c
+60-        args:
+61-          - |
+62-            set -e
+63-            prohibited_found=false
+64-            # Evaluate only the changed docs files passed by pre-commit.
+65-            for file in "$@"; do
+66-              case "$file" in
+67-                docs/*|task-packets/*)
+68-                  # Skip quarantined files
+69-                  if [[ "$file" =~ ^docs/04-explanation/history/sourceFiles/ ]]; then
+70-                    continue
+71-                  fi
+72-                  # Exact canonical Task Packet template path only.
+73-                  # Filename contains "template" which otherwise matches *temp*.md.
+74-                  # Do NOT exempt other template-*.md / temp / notes / todo / scratch names.
+75:                  if [[ "$file" == "docs/03-reference/governance/task-packet-template.md" ]]; then
+76-                    continue
+77-                  fi
+78-                  base="$(basename "$file")"
+79-                  lbase="$(echo "$base" | tr '[:upper:]' '[:lower:]')"
+80-                  case "$lbase" in
+81-                    notes*.md|todo*.md|temp*.md|*temp*.md|*scratch*.md)
+82-                      echo "❌ Found prohibited file pattern in changed file:"
+83-                      echo "  $file"
+84-                      prohibited_found=true
+85-                      ;;
+86-                  esac
+87-                  ;;
+88-              esac
+89-            done
+90-            if [ "$prohibited_found" = true ]; then
+91-              echo "Use structured workflow: RFC->ADR->arc42 for documentation"
+92-              exit 1
+93-            fi
+94-            echo "✅ No prohibited patterns found in changed docs"
+95-          - --
+96-        language: system
+97-        files: ^(docs/|task-packets/).*\.md$
+98-        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
+99-        pass_filenames: true
+100-

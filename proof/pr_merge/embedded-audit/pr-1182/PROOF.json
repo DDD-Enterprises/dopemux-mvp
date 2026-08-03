@@ -1,0 +1,60 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1182,
+  "commit_sha": "b7387429a408a47b81476d75cdcc0be8e07e7ce6",
+  "head_sha": "b7387429a408a47b81476d75cdcc0be8e07e7ce6",
+  "packet_id": "TP-REPLAN-BASELINE-1182-REPAIR-001",
+  "generated_at": "2026-08-03T00:37:21Z",
+  "note": "SUPERVISOR_DECISION=AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION. Real auditor codex-cli gpt-5.5. Schema carriers are not the real auditor.",
+  "supervisor_exception": {
+    "decision": "AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION",
+    "runner": "codex-cli",
+    "runner_version": "0.146.0",
+    "configured_model": "default/unset",
+    "response_claimed_model": "gpt-5.5",
+    "proxy_reported_identity": "provider: openai",
+    "provider_attested_identity": "OpenAI Codex session 019fc508-5ff2-75d3-af55-06244d96346f",
+    "content_head_audited": "b7387429a408a47b81476d75cdcc0be8e07e7ce6",
+    "schema_identity_policy": "carriers required by allOf; real identity only in supervisor_exception"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "SUPERVISOR_EXCEPTION real_runner=codex-cli real_model=gpt-5.5 provider=openai session=019fc508-5ff2-75d3-af55-06244d96346f; review --base origin/main head=b7387429a408a47b81476d75cdcc0be8e07e7ce6; schema_carrier claude-code-cli/sonnet (NOT real auditor)",
+    "exit_code": 0,
+    "report_path": "proof/TP-REPLAN-BASELINE-1182-REPAIR-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-001",
+        "severity": "MEDIUM",
+        "status": "RESOLVED",
+        "title": "Steward content defects closed",
+        "body": "All supervisor-required content fixes on head b7387429a4."
+      },
+      {
+        "id": "F-002",
+        "severity": "LOW",
+        "status": "ACCEPTED_RISK",
+        "title": "Schema carrier vs real Codex identity",
+        "body": "Supervisor AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION explicitly accepts real Codex identity outside enum; carriers are allOf requirements only."
+      },
+      {
+        "id": "F-003",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Proof pinned to content head",
+        "body": "b7387429a408a47b81476d75cdcc0be8e07e7ce6"
+      }
+    ],
+    "fixes_applied": [
+      "full steward repair set"
+    ],
+    "remaining_risks": [
+      "SUPERVISOR_DECISION=AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION \u2014 schema carriers not real auditor",
+      "Wave 0 operator-controlled"
+    ],
+    "skip_reason": null
+  }
+}

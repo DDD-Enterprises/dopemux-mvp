@@ -1,0 +1,9 @@
+Patch adds embedded-audit proof that is stale relative to the current PR head and also fails the repository proof schema for non-skipped audits. These issues block the readiness/proof path even though the planning JSON itself parses.
+
+Full review comments:
+
+- [P1] Re-run audit against current PR head — /Users/hue/code/dopemux-mvp/.worktrees/TP-REPLAN-BASELINE-1182-REPAIR/proof/pr_merge/embedded-audit/pr-1182/PROOF.json:4-5
+  When this PR is evaluated at current head `a5fb1e07398b4ad2df741c19040c5295bcdc80fe`, this proof still binds `commit_sha`/`head_sha` to `2cb743117d2d6689bf9394e3c7b492fccbd958e1`; `scripts/audit/local_audit_acceptance.py` rejects exactly this case when later commits touch paths outside `proof/pr_merge/embedded-audit/pr-1182/`, and the later commits changed `claudedocs/...` plus load-plan files. Since `AGENTS.md:135-137` treats stale or head-mismatched embedded-audit proof as readiness-blocking, this attestation will not clear until it is re-run and re-signed against the final head.
+
+- [P1] Record a schema-valid auditor identity — /Users/hue/code/dopemux-mvp/.worktrees/TP-REPLAN-BASELINE-1182-REPAIR/proof/pr_merge/embedded-audit/pr-1182/PROOF.json:27-28
+  For a non-`SKIPPED` audit, `schemas/proof/embedded_audit.schema.json` rejects `auditor_tool: "none"` and `auditor_model: "unknown"`; running `python scripts/audit/validate_audit_proof.py proof/pr_merge/embedded-audit/pr-1182/PROOF.json` fails on these fields. Since `AGENTS.md:135-137` says malformed embedded-audit proof blocks readiness, this checked-in `PASS_WITH_RISKS` proof needs a schema-compatible identity path or a schema/acceptance update before it can be treated as valid.

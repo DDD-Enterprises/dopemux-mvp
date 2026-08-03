@@ -23,6 +23,7 @@ This section contains canonical documentation for the Task Orchestrator integrat
 3.  **[Per-Packet Isolated Validation](perpacket.md)**: Targeted testing and validation mapping.
 4.  **[GitHub PR Integration](github/_index.md)**: Live `gh`-backed subprocess PR queue and comment adapter.
 5.  **[Memory Writers & Mirroring](memory/_index.md)**: Live ConPort writes with dope-memory mirrors.
+6.  **[DB Defragmentation 2026-08-01](db-defragmentation-2026-08-01.md)**: Per-repo instance scoping, the misfiled-work incident, and the detection recipe for packets loaded into the wrong instance.
 
 ## Invariants & Posture
 All surfaces observe Option A soft-gates posture. In this mode, queue and work notes are advisory, while the final `proof-bundle` review-phase note serves as the strict complete-gate.
