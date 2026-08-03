@@ -1,83 +1,124 @@
-# CCAR-002R Independent Audit Report (Supervisor Amendment A1)
+# CCAR-002R-A2 Independent Audit Report (R4 — canonical, supersedes R1/A1)
 
 **PR**: 1176
-**Audit Head (R1)**: `41bc62071ce4e152a3b2040e408eda0c830fb215`
-**Pinned start**: `a22699fc9834c77017ac88e482a6c94fdd319bda`
+**Audit Head (R4 / exact-head, "R3" in the Supervisor decision's numbering)**: `c8181389864bfc099bc24f7d689716057c3c8573`
 **PR base**: `899082ae74155b2412a2ce862376438c1d33d13e`
 **Auditor tool**: claude-code-cli
-**Auditor model (proof enum)**: sonnet
+**Auditor model (proof enum)**: opus
 **CLI version**: 2.1.220 (Claude Code)
-**Session ID**: af5c844c-099b-4e51-b20b-bc5d8b7a821c
+**Orchestrating session ID**: 696c53ec-1cb2-49d8-a0ab-0fbe7560cbbf (see review_bundle/A2_INVOCATION_AND_SESSION.md for full invocation and session detail; the audited `claude -p --model opus` subprocess has no separately captured session id of its own)
 **Exit code**: 0
 **Verdict**: PASS_WITH_RISKS
 **Blocking findings**: False
 
+## Supersession note
+
+This report and its bound `PROOF.json` supersede the prior R1/A1 report (Claude Sonnet, bound to
+head `41bc62071ce4e152a3b2040e408eda0c830fb215`), which is preserved unmodified as historical record
+under `review_bundle/R1_*` and referenced in `PROOF.json.history`. That prior audit's own finding
+F-013 ("r2_not_yet_executed") and the current round's finding A2-F-006 both describe exactly the gap
+this R4 report closes: the canonical proof is now bound to the exact current PR head, not a stale
+intermediate one.
+
 ## Independence
-- Implementation: CommandCode / DeepSeek (R1)
-- Audit: Claude Code CLI sonnet (Supervisor Amendment A1)
-- Different family — independence PROVEN by amendment authority + observed runners
+
+- Implementation (CCAR-002R-A2 repair commits cd0d6a469c/b096551dfa/fd7afbe295/c818138): Claude Sonnet, single session
+- Audit (this report): Claude Opus 5 (claude-code-cli), separate process and separate session
+- Classification: `LIMITED_SAME_FAMILY_DIFFERENT_MODEL_SESSION` — different model tier, different
+  session, did not author any of the audited work (REVIEW-001 satisfied), but same model family
+  (Claude), not the cross-vendor OpenCode/OpenRouter route originally named in
+  `task-packets/CCAR-002R-A2.md:115`. The named route was superseded by Supervisor decision after the
+  direct Gemini CLI route was found unavailable (`IneligibleTierError`; see
+  `review_bundle/A2_GEMINI_FAILURE.txt`) and the two prior OpenCode/OpenRouter passes were classified
+  as advisory-only challenge history, not canonical evidence for this head.
+
+## Ground truth re-derived by the auditor (not trusted from prior commit messages or in-repo claims)
+
+- `git log -1 --format=%H` → `c8181389864bfc099bc24f7d689716057c3c8573` — matches the audited head.
+- `git diff --stat 899082ae..HEAD` → 29 files, 4686 insertions, 0 deletions; `--name-status` shows
+  all 29 entries as `A` (pure addition).
+- `41bc6207..HEAD` → 5 commits, 23 files, all within the A2 allowlist (builder, tests, generated
+  catalog, `proof/CCAR-002/**`, `proof/pr_merge/embedded-audit/pr-1176/**`, `task-packets/CCAR-002*`).
 
 ## Summary
-R1 (41bc6207) is a direct child of pinned start a22699fc, touches only the CCAR-002R R1 allowlist (packet pair, builder, focused tests, generated catalog, proof/CCAR-002/**), and leaves all active agent/persona source surfaces byte-identical (SOURCE_BYTES_TOUCHED: NO). The builder now fails closed on repo-root resolution (explicit --repo-root -> git rev-parse --show-toplevel -> marker walk -> validated last-resort script-relative fallback), rejects any non-repo-relative meta.source_manifest via assert_no_absolute_source_manifest(), and the diff confirms the absolute worktree path was removed from the committed catalog and replaced with 'proof/CCAR-002/SOURCE_MANIFEST.json'. A genuine dual-worktree determinism test (test_dual_worktree_byte_identical_catalog) creates two detached git worktrees at distinct filesystem locations, runs the builder against each with a fixed --generated-at, and asserts byte-identical --stdout YAML with no leaked absolute paths from either root. Nine base agents and 43 persona records are present and match declared counts; model-ID regex scan and hard-coded may_change_tools/may_select_model/may_grant_write_authority=False plus route_eligible checks enforce the model-free/advisory-only contract, both in validate_catalog() and in the test suite. No hooks, MCP config, skills, DCP surfaces, or CommandCode routing activation appear in the R1 changed-files set. proof/CCAR-002/PROOF.json and AUDITOR_REPORT.md are internally consistent and honest: they explicitly label the independent audit as SKIPPED/deferred to R2 rather than fabricating a PASS, which is the accepted shape per this bundle's own R1 evidentiary standard. The proposed R2 topology (proof/pr_merge/embedded-audit/pr-1176/** only, head_sha pinned to this exact R1 SHA) matches the packet's own R2 allowlist and invariants and is structurally consistent with the trusted local-acceptance contract described in the surrounding governance docs, though R2 itself has not yet been executed and cannot be verified as accepted in this bundle. Residual, non-blocking risks: (1) the '24 passed' test-suite claim in COMMAND_LOG.md is self-reported prose, not raw pytest output embedded in this bundle; (2) a stale/inaccurate code comment in the dual-worktree test references worktrees being 'pre-R1,' which is a cosmetic documentation defect, not a functional one; (3) the module-level import-time PROJECT_ROOT still initializes via the old fixed three-level parent walk before any bind_repo_root() call, which is harmless under the actual CLI/test invocation paths (both funnel through resolve_repo_root/bind_repo_root before use) but is a latent footgun if the module's build_catalog()/globals are ever called directly without going through main() or bind_repo_root(); (4) R2 execution, signing, and trusted embedded-audit/PR-Steward outcomes are prospective and unverified as of this snapshot. None of these rise to a blocking level against the R1 allowlist and invariants actually being reviewed here.
+
+All four CCAR-002R-A2 repair items were independently verified present and correct in the working
+tree at the exact audited head, not merely claimed in commit messages: the absolute `worktree` key is
+gone from `SOURCE_MANIFEST.json`; `NORMALIZATION_REPORT.md`'s `**Generated**` timestamp is a real
+value (`2026-08-03T07:37:00Z`) matching the committed catalog's `meta.generated_at` byte-for-byte;
+`test_generation_idempotent` now runs `--check` against the committed catalog before any
+regeneration; and `_scan_model_ids()` uses a non-capturing group plus `finditer(...).group(0)`,
+verified to return full matched tokens (not truncated fragments) across 7 manual probes. The full
+test suite (`tests/commandcode_router/test_normalized_catalog.py`) passed 26/26 with the working tree
+left byte-identical (catalog sha256 unchanged, `git status --short` clean). No stale "Claude Sonnet"
+wording survives outside correct historical statements about the R1 round. No scope creep: the
+41bc6207→HEAD range is 5 commits / 23 files, all inside the A2 allowlist. No hooks, MCP config,
+skills, DCP surfaces, or CommandCode routing activation appear anywhere in the base→HEAD diff — the
+catalog remains inert config/proof data. Nine base agents and 43 personas are present; all
+authority-prohibition booleans (`may_change_tools`/`may_select_model`/`may_grant_write_authority`)
+are `False` for all 43 records, and `route_eligible` is `False` throughout. No BLOCKING findings.
 
 ## Findings
 
-### F-001 [info] lineage — resolved
-R1 (41bc6207) direct child of pinned start a22699fc per LINEAGE.txt and R1_COMMIT.txt.
+### A2-F-001 [MEDIUM] test_generation_idempotent still writes the committed catalog — accepted_risk
+The test regenerates `config/commandcode/normalized_agent_persona_catalog.yaml` in place and restores
+it via a `finally` block. Verified clean on a normal run (catalog sha256 identical before/after, `git
+status --short` clean afterward), but a SIGKILL, pytest timeout, or `-n auto` run could still leave
+committed evidence dirty. The builder already exposes `--stdout`; the regeneration leg could avoid
+touching the committed file entirely.
 
-### F-002 [info] allowlist — resolved
-R1_CHANGED_FILES.txt restricted to packet, builder, tests, catalog, and proof/CCAR-002/** paths; no schema, hook, MCP, or source-surface files touched.
+### A2-F-002 [LOW] --check cannot detect generated_at drift — open
+`main()` calls `normalize_generated_at()` on both the committed and freshly-built YAML before
+comparing in `--check` mode, so `--check` is structurally blind to `generated_at` mismatches — the
+exact defect class A2 was repairing. Timestamp/catalog sync for this head was confirmed here by
+direct byte comparison instead of by trusting `--check`'s exit code.
 
-### F-003 [info] source_manifest_portability — resolved
-Diff shows absolute worktree path replaced with repo-relative 'proof/CCAR-002/SOURCE_MANIFEST.json'; enforced at runtime via assert_no_absolute_source_manifest() and at test time via test_source_manifest_repo_relative_in_yaml / test_meta_fields.
+### A2-F-003 [LOW] Audit-route attribution inconsistent between proof files — open
+`proof/CCAR-002/PROOF.json` records "round 2 vs fd7afbe295 (kimi-k3): FAIL", but
+`proof/CCAR-002/COMMAND_LOG.md` correctly states kimi-k3 emitted no verdict at all and
+deepseek-v4-pro was the fallback whose PASS was overridden to FAIL by direct operator inspection. The
+FAIL was an operator determination, not kimi-k3's own verdict.
 
-### F-004 [info] repo_root_discovery — resolved
-resolve_repo_root() layers explicit --repo-root, git toplevel, marker walk, and a validated last-resort script-relative fallback, all gated by _validate_repo_root() marker+required-path checks; no longer solely dependent on fixed parent depth.
+### A2-F-004 [LOW] Stale generator version string in NORMALIZATION_REPORT.md — open
+The "Generator" section still reads `build_normalized_catalog.py v1.0.0`, contradicting the catalog's
+`meta.generator_version: 1.0.1` and the R1 notes section of the same file.
 
-### F-005 [low] repo_root_discovery — accepted_risk
-Module-level globals (PROJECT_ROOT, CATALOG_PATH, etc.) are still initialized at import time via the old fixed parent.parent.parent walk before any explicit bind_repo_root() call; safe under observed main()/test invocation paths but a latent risk if internals are called directly.
+### A2-F-005 [INFO] Manifest count label overcounts reference-only personas — accepted_risk
+`SOURCE_MANIFEST.json` reports `reference_only_src_personas: 11` because it includes
+`src/dopemux/personas/__init__.py`, while `NORMALIZATION_REPORT.md`'s "10 fallback copies" counts
+only `.md` personas. Both counts are individually defensible; only the category label is imprecise.
 
-### F-006 [info] determinism_test — resolved
-test_dual_worktree_byte_identical_catalog creates two detached git worktrees at distinct absolute paths, generates the catalog in each with a fixed --generated-at via --stdout, and asserts byte-for-byte identical output with no leaked worktree paths.
+### A2-F-006 [INFO] Canonical PR proof was stale by design prior to this commit — resolved
+Prior to this R4 commit, `proof/pr_merge/embedded-audit/pr-1176/PROOF.json` was bound to
+`head_sha=41bc62071ce4e152a3b2040e408eda0c830fb215` with a signature covering only that R1-bound
+content. This R4 commit regenerates and re-signs `PROOF.json` against the exact final head, resolving
+the finding.
 
-### F-007 [low] determinism_test — accepted_risk
-Inline comment in the new test claims worktrees are 'pre-R1' which appears stale/inaccurate relative to the actual HEAD used; cosmetic only, does not change test semantics.
+### A2-F-007 [INFO] Committed instruction-like content in the R1 review bundle — accepted_risk
+`review_bundle/AUDIT_INSTRUCTION.md` (R1 round) is a legitimate committed auditor prompt but contains
+directive phrasing ("Only PASS or non-blocking PASS_WITH_RISKS authorizes R2.") and a pre-filled JSON
+answer template with several booleans defaulted to `true`. Benign by design, not obeyed here, flagged
+as a soft anchoring hazard for future auditors skimming rather than deriving each field
+independently. Retained unmodified as historical record rather than edited after the fact.
 
-### F-008 [info] source_surface_integrity — resolved
-SOURCE_SURFACE_CHECK.txt reports SOURCE_BYTES_TOUCHED: NO; confirmed no .claude/agents/**, .claude/personas/**, .github/agents/**, or src/dopemux/personas/** paths appear in R1's changed-files list.
+### A2-F-008 [INFO] No dedicated CI/pre-commit drift gate for the catalog — open
+No `.github/workflows/**` or `.pre-commit-config.yaml` entry references the catalog or its builder
+specifically. Drift protection depends entirely on the pytest suite being collected via
+`testpaths = ["tests"]`, which it is, but there is no dedicated gate.
 
-### F-009 [info] counts — resolved
-COUNTS.txt and catalog meta both report base_agent_count=9, persona_count=43; manual enumeration of BASE_AGENTS dict (9 entries) and _register() calls (43 entries) in the builder source matches.
-
-### F-010 [info] model_free_and_authority — resolved
-validate_catalog() regex-scans for model-family tokens and enforces may_change_tools/may_select_model/may_grant_write_authority=False for every persona; _register() hardcodes these booleans and route_eligible defaults to False; test suite (test_no_model_ids_in_catalog, test_authority_prohibitions_false, test_personas_not_automatically_route_eligible) enforces the same at test time.
-
-### F-011 [info] runtime_activation — resolved
-No hook, MCP config (.mcp.json), skill, DCP path, or routing-activation file appears in R1's changed-files list; catalog remains a config/proof artifact only.
-
-### F-012 [medium] proof_verification_depth — accepted_risk
-COMMAND_LOG.md's '24 passed' claim and dual-worktree PASS claim are self-reported prose within proof/CCAR-002/**; this bundle does not include raw pytest stdout/exit-code evidence to independently corroborate the claim, though the embedded audit is explicitly and honestly marked SKIPPED (deferred to R2) rather than falsely marked PASS.
-
-### F-013 [medium] r2_not_yet_executed — open
-The R1→R2 proof-only topology (head_sha=R1, changes restricted to proof/pr_merge/embedded-audit/pr-1176/**) is well-specified in CCAR-002R.json/.md and structurally consistent with the trusted local-acceptance contract described in surrounding governance docs, but R2 itself (fresh AGY audit, signing, local_audit_acceptance, trusted CI, PR Steward readiness) has not been executed or evidenced in this bundle.
+### A2-F-009 [INFO] REVIEW-001 satisfied but named audit route not used — resolved
+`task-packets/CCAR-002R-A2.md:115` names OpenCode + OpenRouter as the R3/R4 independent-audit route.
+This audit was run by Claude Opus 5 in a separate process and session from the Claude Sonnet session
+that authored the A2 repair; REVIEW-001's self-audit prohibition is satisfied, but the named route
+was not used. Recorded honestly per Supervisor decision; independence classified
+`LIMITED_SAME_FAMILY_DIFFERENT_MODEL_SESSION`, not full cross-vendor independence.
 
 ## Remaining risks
-- R2 (signed, exact-R1-bound proof-only commit) is unexecuted; PASS here only authorizes proceeding to attempt R2, not final PR readiness.
-- Self-reported test-pass counts in proof/CCAR-002/COMMAND_LOG.md are not corroborated by raw CI/pytest output embedded in this audit bundle.
-- Module-level path globals retain a legacy fixed-depth fallback at import time; safe under current call paths but should be hardened or removed in a future revision to eliminate the residual footgun.
-- Stale 'pre-R1' comment in the dual-worktree test should be corrected for clarity in a follow-up, non-blocking cleanup.
 
-## Answers (Q1–Q13)
-- **q1**: Yes. LINEAGE.txt (r1_parent=a22699fc9834c77017ac88e482a6c94fdd319bda, direct_child_of_pin=true) and R1_COMMIT.txt both confirm R1 (41bc6207) is a direct child of the pinned start.
-- **q2**: Yes. R1_CHANGED_FILES.txt lists exactly 10 files, all within config/commandcode/**, proof/CCAR-002/**, scripts/commandcode_router/build_normalized_catalog.py, task-packets/CCAR-002R.{md,json}, and tests/commandcode_router/test_normalized_catalog.py — matching the R1 allowlist in CCAR-002R.json/.md with no schema, source, hook, or MCP files touched.
-- **q3**: Yes. The diff replaces the previous absolute worktree path with 'proof/CCAR-002/SOURCE_MANIFEST.json'; CATALOG_META.yaml and build_normalized_catalog.py's SOURCE_MANIFEST_REL constant plus assert_no_absolute_source_manifest() runtime guard confirm this is enforced, not just cosmetic.
-- **q4**: Yes. resolve_repo_root() tries explicit --repo-root, then 'git rev-parse --show-toplevel', then a marker walk (.dopetaskroot/pyproject.toml) up to 32 levels, and only as a last resort falls back to the validated script-relative path — all candidates pass through _validate_repo_root() marker + required-path checks, so it is not dependent solely on fixed parent depth.
-- **q5**: Yes. test_dual_worktree_byte_identical_catalog creates two detached git worktrees at distinct tmp_path locations, generates catalog YAML in each via --repo-root/--generated-at/--stdout, and asserts the two outputs are byte-identical and free of either worktree's absolute path.
-- **q6**: Yes. SOURCE_SURFACE_CHECK.txt reports SOURCE_BYTES_TOUCHED: NO, and this is corroborated by R1_CHANGED_FILES.txt containing no entries under .claude/agents/**, .claude/personas/**, .github/agents/**, or src/dopemux/personas/**.
-- **q7**: Yes. COUNTS.txt and the generated catalog meta both report base_agent_count=9 and persona_count=43; manual enumeration of the BASE_AGENTS dict (9 keys) and the _register() call sequence (43 persona registrations) in the builder source matches both counts.
-- **q8**: Yes. validate_catalog() regex-scans the serialized catalog for claude/gpt/gemini/grok model-family patterns and fails closed on a match; the test suite (test_no_model_ids_in_catalog) independently re-checks non-source_file string fields. Authority fields (may_change_tools/may_select_model/may_grant_write_authority) are hardcoded False in _register() and validated both at build time and by test_authority_prohibitions_false.
-- **q9**: Yes. All personas default route_eligible=False in _register() (none override it to True in the visible registrations), may_change_tools/may_select_model/may_grant_write_authority are hardcoded False, and test_personas_not_automatically_route_eligible asserts zero route-eligible personas — personas remain advisory metadata records only.
-- **q10**: Yes. R1's changed-files set contains no hook scripts, .mcp.json/MCP config, skill definitions, DCP-tagged paths, or CommandCode routing-activation files; only catalog config, proof docs, the builder, tests, and the packet pair were touched.
-- **q11**: Yes, with the caveat structured into the question itself. proof/CCAR-002/PROOF.json and AUDITOR_REPORT.md honestly and consistently record embedded_audit.status=SKIPPED with a clear skip_reason ('CCAR-002R R1 portability repair complete; independent AGY audit and signed PR proof deferred to R2') rather than fabricating a PASS; NORMALIZATION_REPORT.md and COMMAND_LOG.md are updated to reflect the R1 portability work. This is truthful and current to R1, and the question explicitly permits SKIPPED for the canonical CI audit path at this stage.
-- **q12**: Provisionally yes, based on specification, not execution. CCAR-002R.json/.md define R2 as touching only proof/pr_merge/embedded-audit/pr-1176/** with PROOF.json.head_sha pinned to the exact R1 SHA, gated by local_audit_acceptance accepted=true against trusted main allowed-signers — a shape consistent with the embedded-audit contract described in the surrounding governance materials. However, R2 itself has not been executed in this bundle, so this answer is a structural/plausibility assessment, not a verified outcome.
-- **q13**: No blocking findings identified against the R1 scope under review. All required invariants (lineage, allowlist, repo-relative source_manifest, validated repo-root discovery, dual-worktree determinism, source-surface immutability, 9/43 counts, model-free + authority prohibitions, no runtime activation, truthful proof) are satisfied by direct evidence in this bundle. Remaining items (unverified '24 passed' claim, R2 not yet executed, minor stale comment, legacy import-time path fallback) are low/medium severity and non-blocking, appropriately classified as accepted_risk/open for R2 rather than findings that should stop R1 acceptance.
+See `PROOF.json.embedded_audit.remaining_risks` for the canonical list (mirrors the findings above).
+
+## Verdict
+
+**PASS_WITH_RISKS** — R4 (this proof-only commit) authorized. Merge is **not** authorized by this
+audit; PR Steward, trusted embedded-audit CI, and current security-release approval on the exact
+final head are still required per the Supervisor decision's stop conditions.

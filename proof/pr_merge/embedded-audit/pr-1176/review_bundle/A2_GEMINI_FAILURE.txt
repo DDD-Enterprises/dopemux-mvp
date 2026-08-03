@@ -1,0 +1,25 @@
+Preferred route (per CCAR-002R-A2.md:115: OpenCode + OpenRouter) was superseded by Supervisor decision before this round; the R4-authorizing decision's own text additionally records that the Gemini CLI direct route was attempted and found unavailable for this account before falling back to the Claude Opus subprocess route used in this proof.
+
+Verbatim captured error (from the orchestrating session's Gemini CLI invocation attempt, transcript
+/Users/hue/.claude/projects/-Users-hue-code-dopemux-mvp/696c53ec-1cb2-49d8-a0ab-0fbe7560cbbf.jsonl,
+tool_result at 2026-08-03T08:06:18.965Z):
+
+An unexpected critical error occurred:IneligibleTierError: This client is no longer supported for Gemini Code Assist for individuals. To continue using Gemini, please migrate to the Antigravity suite of products: https://antigravity.google
+    at throwIneligibleOrProjectIdError (file:///opt/homebrew/Cellar/gemini-cli/0.46.0/libexec/lib/node_modules/@google/gemini-cli/bundle/chunk-RCJSF5RP.js:307474:11)
+    at _doSetupUser (file:///opt/homebrew/Cellar/gemini-cli/0.46.0/libexec/lib/node_modules/@google/gemini-cli/bundle/chunk-RCJSF5RP.js:307463:5)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+gemini-cli version: 0.46.0 (from the same transcript, tool output immediately preceding this error)
+
+Orchestrating session's own summary of the decision to fall back (same transcript, assistant turn
+at 2026-08-03T08:06:XX, msg_011CdfUF4qJ7zASsDnAMhwJP):
+
+"Gemini CLI's auth tier is no longer eligible for this account — that route is dead right now, not
+a config issue I can fix locally. Falling back to the documented fallback route (Gemini CLI's OAuth
+tier is no longer eligible for this account — `IneligibleTierError`, so it can't be used at all
+right now; fell back to an independent `claude -p --model opus --permission-mode plan` subprocess
+per the contract's own fallback clause)."
+
+Classification: preferred_route_status = GEMINI_CLI_INELIGIBLE_TIER; fallback_authority =
+SUPERVISOR_AUTHORIZED (per the R4-authorizing Supervisor decision text, which explicitly names this
+exact error and explicitly authorizes the Opus-subprocess fallback).
