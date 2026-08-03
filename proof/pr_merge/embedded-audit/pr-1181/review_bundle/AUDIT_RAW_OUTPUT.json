@@ -1,0 +1,36 @@
+{
+  "status": "PASS_WITH_RISKS",
+  "auditor_tool": "claude-code-cli",
+  "auditor_model": "sonnet",
+  "head_sha": "ed8459d29cb7abd215af1931457fe97af359a173",
+  "findings": [
+    {
+      "id": "F-001-RETEST",
+      "severity": "INFO",
+      "status": "RESOLVED",
+      "title": "Multi-fence rejection is now explicit structural, not regex incidental",
+      "body": "parse_audit_json_object no longer relies on a fullmatch regex whose non-greedy interior group happened to reject multi-fence inputs as a side effect. New _extract_single_fence_interior() does deterministic line-based validation: first line must equal exactly '```' or '```json', last line must equal exactly '```', and every interior line is explicitly checked against the same opener/closer set, raising a dedicated 'audit output contains interior fence line; only one full-output fence is allowed' error. Tests test_rejects_two_fenced_objects_explicitly and test_rejects_interior_exact_fence_line assert on match='interior fence', proving the rejection path is the intended structural check, not an accidental regex artifact. Verified by tracing the code path for both classic two-fence-block input and same-fence-reopened input."
+    },
+    {
+      "id": "F-002-RETEST",
+      "severity": "INFO",
+      "status": "RESOLVED",
+      "title": "Size bound now enforced before any strip/splitlines/json.loads work",
+      "body": "MAX_AUDIT_OUTPUT_BYTES = 1_048_576 is checked via len(text.encode('utf-8')) as the very first operation on the raw input text, prior to text.strip(), stripped.splitlines(), or any json.loads call. Order in source confirmed: isinstance check -> byte_len computation/comparison -> stripped = text.strip(). Boundary correctness verified by test_accepts_exactly_at_byte_limit (exact 1_048_576 bytes accepted) and test_rejects_one_byte_over_limit (1_048_577 bytes rejected with 'exceeds' in message), i.e. no off-by-one. test_rejects_large_fence_like_pathological_input further shows the size check and the structural fence check are independent layers (an input can stay under the byte cap yet still be rejected on fence structure), which is the correct fail-closed layering."
+    },
+    {
+      "id": "F-003-NEW",
+      "severity": "LOW",
+      "status": "ACCEPTED_RISK",
+      "title": "str.splitlines() splits on more characters than plain LF/CRLF, which can silently normalize Unicode line-separator bytes on reconstruction",
+      "body": "_extract_single_fence_interior uses stripped.splitlines() to derive the interior lines, then rejoins with '\\n'.join(interior_lines). Python's splitlines() treats U+2028 (LINE SEPARATOR), U+2029 (PARAGRAPH SEPARATOR), \\x0b, \\x0c, \\x1c-\\x1e, and \\x85 as line boundaries in addition to \\n/\\r\\n. JSON strings may legally contain a literal U+2028/U+2029 character unescaped (JSON spec permits any code point >= 0x20 unescaped in a string, unlike JS eval which treats these as line terminators). If an audited model's JSON payload embeds one of these characters inside a string value on a pretty-printed multi-line fenced block, the extractor would over-split that value into an extra 'line', and reconstruction via '\\n'.join would silently replace the original separator with an ordinary '\\n', altering string content (typically a 'body'/'title'/free-text field, not the 'verdict' enum, since verdict values won't naturally contain these code points) rather than the intended fence semantics. This is a content-fidelity nit, not a security bypass: it biases toward false-rejection/garbling of unusual input, which is consistent with (not a violation of) the fail-closed posture, and json.dumps-produced single-line output (the realistic PAL/Claude audit format) is unaffected because internal newlines are escaped, not literal. No exploit path to smuggle a second JSON object past the fence check was found \u2014 if anything, the broader splitlines() boundary set makes duplicate-fence detection strictly more conservative, not less. Recommend switching to str.split('\\n') for byte-exact fidelity in a follow-up, but not blocking for this audit."
+    }
+  ],
+  "f001_retest": "RESOLVED",
+  "f002_retest": "RESOLVED",
+  "remaining_risks": [
+    "_extract_single_fence_interior's use of str.splitlines() (rather than an explicit '\\n' split) treats Unicode line-separator code points (U+2028/U+2029/\\x0b/\\x0c/\\x1c-\\x1e/\\x85) as line boundaries, which can theoretically over-split and silently rewrite unescaped-but-legal Unicode separator characters embedded in a fenced JSON string value into plain '\\n' on reconstruction; low real-world likelihood given single-line json.dumps output is the expected format, and the effect biases toward stricter rejection rather than bypass.",
+    "Case-sensitivity and whitespace tightening (e.g. '```JSON', '```json ' with trailing space, '```python') are now rejected where the prior regex (with re.IGNORECASE and [ \\t]* tolerance) may have accepted some of these; this is an intentional behavior change per the updated policy and is fully covered by new tests, but any downstream caller that depended on the old looser acceptance would now fail closed instead of parsing \u2014 expected/desired per policy, flagged only for completeness."
+  ],
+  "summary": "The diff replaces the prior fullmatch-regex fence extraction with an explicit, line-structural check (_extract_single_fence_interior) that independently validates opener, closer, and interior lines against an exact fence-token set, and adds a hard MAX_AUDIT_OUTPUT_BYTES=1_048_576 gate computed on the raw text before any strip/splitlines/json.loads work. Both prior open findings are resolved with direct code evidence and targeted boundary/adversarial tests (multi-fence, interior-fence-reopen, exact-at-limit, one-byte-over-limit, pathological fence-dense-but-under-cap input, nested tool-content re-parse). No brace-scraping path remains, and the nested-tool-content test confirms failure to unwrap never injects a PASS/READY-family verdict. One low-severity/informational content-fidelity nit is noted around splitlines() over-splitting on non-LF Unicode line separators, which is fail-closed-biased rather than a bypass vector, and does not reopen either prior finding."
+}

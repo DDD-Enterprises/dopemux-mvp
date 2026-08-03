@@ -15,6 +15,8 @@ prelude: Embedded audit policy and proof contract for governance/process/schema 
 
 Governance, process, schema, prompt, proof, and authority-boundary packets require embedded audit unless the packet explicitly says otherwise and records why.
 
+**Evidence economy (L0–L3):** Independent model audit runs **once** after the content head is frozen for L2/L3 (and for packets that require embedded audit by policy). L0 deterministic metadata and proof-only successors do **not** require a second content audit — validate schema, signature, ancestry, and path closure with `scripts/governance/validate_change_contract.py` (and `scripts/audit/validate_audit_proof.py` / signing checks as applicable). Do not audit intermediate implementer commits.
+
 ## Route Order
 
 Tier 1 direct CLI routes:

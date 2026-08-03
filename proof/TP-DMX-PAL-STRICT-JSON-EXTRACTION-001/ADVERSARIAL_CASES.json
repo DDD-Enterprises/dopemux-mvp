@@ -1,0 +1,80 @@
+{
+  "cases": [
+    {
+      "id": "A1",
+      "name": "direct_json_object",
+      "expect": "accept"
+    },
+    {
+      "id": "A2",
+      "name": "plain_fence_object",
+      "expect": "accept"
+    },
+    {
+      "id": "A3",
+      "name": "json_fence_object",
+      "expect": "accept"
+    },
+    {
+      "id": "A4",
+      "name": "two_fenced_objects",
+      "expect": "reject_interior_fence"
+    },
+    {
+      "id": "A5",
+      "name": "interior_exact_fence_line",
+      "expect": "reject_interior_fence"
+    },
+    {
+      "id": "A6",
+      "name": "prose_prefix_suffix",
+      "expect": "reject"
+    },
+    {
+      "id": "A7",
+      "name": "arrays_scalars",
+      "expect": "reject"
+    },
+    {
+      "id": "A8",
+      "name": "malformed_json",
+      "expect": "reject"
+    },
+    {
+      "id": "A9",
+      "name": "empty_output",
+      "expect": "reject"
+    },
+    {
+      "id": "A10",
+      "name": "malformed_fences",
+      "expect": "reject"
+    },
+    {
+      "id": "A11",
+      "name": "exactly_at_1MiB",
+      "expect": "accept"
+    },
+    {
+      "id": "A12",
+      "name": "one_byte_over_1MiB",
+      "expect": "reject_exceeds"
+    },
+    {
+      "id": "A13",
+      "name": "pathological_fence_like",
+      "expect": "reject_interior_fence"
+    },
+    {
+      "id": "A14",
+      "name": "nested_tool_multi_fence_content",
+      "expect": "no_PASS_READY"
+    },
+    {
+      "id": "A15",
+      "name": "rejected_maps_status_error",
+      "expect": "status=error no verdict"
+    }
+  ],
+  "result": "covered_by_tests_audit_test_pal_clink_runner_PASS"
+}
