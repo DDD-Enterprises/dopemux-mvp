@@ -110,24 +110,38 @@ Re-running produces zero inserts.
 
 `progress_entries.parent_id` has no column in the Postgres schema; its 109 rows
 became `entity_relationships` with `relationship_type='parent_of'` rather than
-being dropped. One context link (id 33) targets
-`custom_data 'python-tmux-research'`, a row absent from the export — a dangling
-reference in the *source* data. It is quarantined in the ledger rather than
-inserted half-formed or silently discarded.
+being dropped. Context links resolve against the same ledger, populated for
+`custom_data` under both its numeric export id and its key (link target ids for
+`custom_data` endpoints are the legacy key, e.g. `'python-tmux-research'`, not
+the numeric id) — a link is only ever quarantined as unresolved when its
+endpoint is genuinely absent from the bundle.
 
-### Outage prevention (autoheal)
+### Outage prevention (PID 1 supervision)
 
 The compose healthcheck already detected the dead data plane correctly; nothing
-acted on it. An `autoheal` service now restarts any container whose healthcheck
-fails and that carries `labels: [autoheal=true]`. Regression-tested by killing
-the data plane:
+acted on it, because `start_with_info.sh` supervised its three children with a
+bare `wait $INFO_PID $REST_PID $PROXY_PID` — PID 1 kept waiting on the two
+survivors when one child died, so the container never exited and
+`restart: unless-stopped` never fired (Docker restarts on *process exit*, not
+on healthcheck failure). Third-party `autoheal` (a `docker.sock`-mounted
+watcher) was considered and rejected in favor of fixing the supervisor itself.
 
-| t | port 3004 | container |
-|---|---|---|
-| 0 s | killed | `Up (healthy)` — the bug |
-| 60 s | dead | `Up (unhealthy)` |
-| ~78 s | dead | autoheal restarts it |
-| ~98 s | serving | `Up (healthy)` |
+`start_with_info.sh` now runs `wait -n $CHILDREN`, which returns as soon as the
+*first* child exits; PID 1 then kills the remaining siblings and exits
+nonzero, so Docker's own restart policy reacts immediately. A volume-backed
+failure counter trips into a non-exiting terminal-alert sleep if child deaths
+exceed a bounded budget within a time window, so a persistently crashing
+container fails its healthcheck visibly instead of restart-storming forever.
+
+Observed single-kill recovery (`proof/TP-CONPORT-CLEAN-L3-RECOVERY-2026-08-02/evidence/refresh/pid1/host_kill_rest.txt`):
+the REST child was killed on the host at `01:36:49Z`; PID 1 exited immediately,
+Docker restarted the container by `01:37:05Z` (16 s later, most of it PID1's
+1 s sibling-teardown grace plus container/runtime overhead), and all three
+health probes passed again by `01:37:11Z` (22 s total). Repeated kills within
+the same failure window restart faster in wall-clock terms per kill, but
+Docker's exponential `unless-stopped` backoff (10 s, 20 s, 40 s, capped at 60 s)
+lengthens *later* restarts in a burst — which is what the bounded failure
+budget above exists to bound.
 
 ### Test-to-production leak (`tests/conftest.py`)
 

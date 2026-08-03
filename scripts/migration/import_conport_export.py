@@ -293,10 +293,10 @@ class Importer:
                 # either: quarantine the full original row in the ledger so its
                 # description and endpoints stay auditable.
                 #
-                # Known case in this bundle: link 33 targets
-                # custom_data 'python-tmux-research', a row that was never
-                # included in the export. The reference dangles in the SOURCE
-                # data; it is not an import failure.
+                # custom_data/system_pattern/legacy_context endpoints resolve
+                # via the ledger populated by import_custom_data() et al.,
+                # which run() now runs before this method; a genuinely
+                # unresolved link means the endpoint is absent from the bundle.
                 # Sentinel rather than "" so load_ledger() rehydrates it and a
                 # re-run recognises the row as already handled.
                 if not self.seen("unresolved_link", old_id):
@@ -332,31 +332,35 @@ class Importer:
             self._bump(kind + "s", "skip")
             return
         if self.dry_run:
-            await self.record(kind, old_id, f"dry-run-{kind}-{old_id}", raw)
-            self._bump(kind + "s", "new")
-            return
-
-        # UNIQUE(workspace_id, category, key): the bundle has duplicate keys
-        # (session_summary, research_in_progress) under one category.
-        new_id = await self.conn.fetchval(
-            """
-            INSERT INTO custom_data (workspace_id, category, key, value, created_at, updated_at)
-            VALUES ($1,$2,$3,$4::jsonb,$5,$5)
-            ON CONFLICT (workspace_id, category, key) DO NOTHING
-            RETURNING id
-            """,
-            self.ws, category, key, as_jsonb(value), created,
-        )
-        if new_id is None:
+            new_id = f"dry-run-{kind}-{old_id}"
+        else:
+            # UNIQUE(workspace_id, category, key): the bundle has duplicate keys
+            # (session_summary, research_in_progress) under one category.
             new_id = await self.conn.fetchval(
                 """
                 INSERT INTO custom_data (workspace_id, category, key, value, created_at, updated_at)
                 VALUES ($1,$2,$3,$4::jsonb,$5,$5)
+                ON CONFLICT (workspace_id, category, key) DO NOTHING
                 RETURNING id
                 """,
-                self.ws, category, f"{key}-legacy-{old_id}", as_jsonb(value), created,
+                self.ws, category, key, as_jsonb(value), created,
             )
+            if new_id is None:
+                new_id = await self.conn.fetchval(
+                    """
+                    INSERT INTO custom_data (workspace_id, category, key, value, created_at, updated_at)
+                    VALUES ($1,$2,$3,$4::jsonb,$5,$5)
+                    RETURNING id
+                    """,
+                    self.ws, category, f"{key}-legacy-{old_id}", as_jsonb(value), created,
+                )
+
         await self.record(kind, old_id, str(new_id), raw)
+        if kind == "custom_data" and key and str(key) != str(old_id):
+            # context_links.target_item_id for custom_data endpoints is the
+            # legacy row's key (e.g. "python-tmux-research"), not its numeric
+            # id -- alias the ledger so import_context_links can resolve it.
+            await self.record(kind, key, str(new_id), raw)
         self._bump(kind + "s", "new")
 
     async def import_custom_data(self) -> None:
@@ -402,10 +406,13 @@ class Importer:
         await self.import_decisions()
         await self.import_progress()
         await self.import_parent_links()
-        await self.import_context_links()
+        # custom_data/system_patterns/contexts must land before context_links
+        # resolves them -- otherwise every link targeting a custom_data row
+        # quarantines as unresolved even when the row is present in the bundle.
         await self.import_custom_data()
         await self.import_system_patterns()
         await self.import_contexts()
+        await self.import_context_links()
 
     def report(self) -> int:
         logger.info("")

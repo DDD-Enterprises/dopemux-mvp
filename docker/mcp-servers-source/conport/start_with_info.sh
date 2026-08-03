@@ -81,12 +81,19 @@ fi
 # --- start required children ----------------------------------------------
 log "Starting ConPort required children (info, rest:3004, mcp:3005)..."
 
+# Real advertised MCP/SSE port -- capture the container-level value (compose
+# sets MCP_SERVER_PORT=3005) before overriding it below for the REST/info
+# children. info_server's own MCP_SERVER_PORT is pinned to the REST port so
+# INFO_PORT derives to 4004; without this it would advertise :3004/sse to
+# clients when the actual SSE listener is on :3005.
+MCP_ADVERTISED_PORT="${MCP_SERVER_PORT:-3005}"
+
 # Pin ports explicitly. Container env may set MCP_SERVER_PORT=3005 for the
 # MCP service; info_server derives INFO_PORT=MCP_SERVER_PORT+1000, so leaving
 # the env inherited would bind info on 4005 while compose publishes 4004.
-MCP_SERVER_PORT=3004 python info_server.py &
+MCP_SERVER_PORT=3004 CONPORT_ADVERTISED_MCP_PORT="${MCP_ADVERTISED_PORT}" python info_server.py &
 INFO_PID=$!
-log "info_server.py pid=${INFO_PID} (info on 4004)"
+log "info_server.py pid=${INFO_PID} (info on 4004, advertises mcp on ${MCP_ADVERTISED_PORT})"
 
 MCP_SERVER_PORT=3004 python enhanced_server.py &
 REST_PID=$!
