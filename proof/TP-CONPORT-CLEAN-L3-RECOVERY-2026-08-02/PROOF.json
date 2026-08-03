@@ -6,15 +6,15 @@
   "base_sha": "fb710ef40500695882a5b421a3325150176fffa1",
   "recovery_source_commit": "a39ea663dbf568cb3edf3ae39d756ce86532d07f",
   "clean_transplant_commit": "80e3ed2f426e379c8edc1b86e2727fb416ed0229",
-  "head_sha": "fd04b9406c7f8183574f975459b88d91040066d0",
+  "head_sha": "95bdf0015730ab3087cf71e07eca2d4425b214ac",
   "custody_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1185",
   "pr_steward_policy_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1187",
   "supervisor_input": "AUTHORIZE_STAGE_2_REFRESH_AND_VALIDATION_ONLY",
   "required_next_verdict": "CONPORT_RECOVERY_CLEAN_CANDIDATE_READY_FOR_OPERATOR_MERGE_DECISION",
-  "freeze_verdict": "BLOCKED_AUDITOR_IDENTITY",
+  "freeze_verdict": "PASS_WITH_RISKS",
   "merge_ready": false,
   "agent": "grok-4.5",
-  "timestamp": "2026-08-03T01:41:48Z",
+  "timestamp": "2026-08-03T02:26:00Z",
   "patch_identity": {
     "eight_file_blob_match_a39ea_at_transplant": true,
     "pr1182_files_in_diff": false
@@ -35,7 +35,7 @@
     "production_health": "PASS",
     "pr_steward_policy_doctor": "PASS_on_PR1187",
     "pr_steward_policy_merged": "PASS",
-    "independent_audit": "BLOCKED_AUDITOR_IDENTITY",
+    "independent_audit": "PASS_WITH_RISKS",
     "pr_steward_ready": "NOT_RUN",
     "main_refresh_merge": "PASS",
     "overlap_compatible": "PASS",
@@ -87,42 +87,64 @@
   },
   "embedded_audit": {
     "required": true,
-    "status": "NEEDS_SUPERVISOR",
+    "status": "PASS_WITH_RISKS",
     "auditor_tool": "claude-code-cli",
     "auditor_model": "sonnet",
-    "invocation": "PENDING independent non-Grok audit on exact content head; implementer family must not serve as formal auditor",
-    "exit_code": 1,
+    "invocation": "claude -p <audit-prompt> --model sonnet --allowedTools read/git/rg (independent formal audit of PR #1188 content head 95bdf00157)",
+    "exit_code": 0,
     "report_path": "proof/TP-CONPORT-CLEAN-L3-RECOVERY-2026-08-02/AUDITOR_REPORT.md",
     "findings": [
       {
-        "id": "F-PROVIDER-ATTESTED-UNKNOWN",
-        "severity": "BLOCKING",
-        "title": "provider_attested UNKNOWN",
-        "status": "OPEN",
-        "body": "Codex probe yields runner/version, requested/configured/response model, proxy provider, session id. No provider-attested identity. #1187 UNKNOWN exception does not transfer. Formal audit not invoked."
+        "id": "F-DOC-STALE-AUTOHEAL",
+        "severity": "MEDIUM",
+        "title": "Recovery doc still describes autoheal design",
+        "status": "ACCEPTED_RISK",
+        "body": "Doc superseded by PID1; fix as follow-up. Non-blocking per formal auditor."
+      },
+      {
+        "id": "F-EVIDENCE-FAILED-PROBES",
+        "severity": "LOW",
+        "title": "Failed kill probe files retained",
+        "status": "ACCEPTED_RISK",
+        "body": "Successful host/probe kills establish supervision; hygiene only."
+      },
+      {
+        "id": "F-PID1-TESTS-STUB-ONLY",
+        "severity": "LOW",
+        "title": "Unit tests use stub not production script exec",
+        "status": "ACCEPTED_RISK",
+        "body": "Live kill evidence substitutes; CI-repeatable exec tests are follow-up."
+      },
+      {
+        "id": "F-PROVIDER-CODEX-BLOCKED",
+        "severity": "INFO",
+        "title": "Codex provider_attested UNKNOWN path abandoned",
+        "status": "RESOLVED",
+        "body": "Claude Code Tier-1 route used instead with first-party attestation."
       }
     ],
     "fixes_applied": [
-      "Clean transplant without #1182 lineage",
-      "PID1 supervision + autoheal removal",
-      "Legacy CONNECT revoke",
-      "Pytest row deletion with export/backup"
+      "Main refresh merge COMPATIBLE",
+      "L3 live validation complete",
+      "Claude Code formal audit PASS_WITH_RISKS"
     ],
     "remaining_risks": [
-      "Formal L3 audit blocked on provider attestation"
+      "Stale autoheal doc (F-DOC-STALE-AUTOHEAL)",
+      "Evidence-bundle failed-probe noise",
+      "PID1 unit tests stub-only"
     ],
     "skip_reason": null
   },
   "model_identity": {
     "implementer": "grok-4.5",
-    "auditor_candidate": "codex-cli 0.146.0",
-    "requested": "gpt-5.6-terra",
-    "configured": "gpt-5.6-terra (CLI -m; config default gpt-5.6-luna)",
-    "response_claimed": "gpt-5.6-terra",
-    "proxy_reported": "openai",
-    "provider_attested": "UNKNOWN",
-    "session_id": "019fc54c-21ce-7b41-a850-b4194aedaf01",
-    "stop": "BLOCKED_AUDITOR_IDENTITY"
+    "auditor": "claude-code-cli 2.1.220",
+    "requested": "sonnet",
+    "configured": "sonnet",
+    "response_claimed": "sonnet",
+    "proxy_reported": "N/A_first_party",
+    "provider_attested": "Anthropic first-party (claude.ai OAuth, apiProvider=firstParty)",
+    "auth_method": "claude.ai",
+    "email_principal": "houston@krohman.org"
   },
   "branch_tip_at_authoring": "aada46b59ae41fe5cf1977ce1653e95939f52d8b",
   "proof_bundle_commit": "e7aec967692d99ed1cb531f4eec9e46a4ade8049",
@@ -154,8 +176,18 @@
     "main_and_branch_identical_failure": true,
     "repaired_in_1188": false
   },
-  "content_head_frozen": "fd04b9406c7f8183574f975459b88d91040066d0",
+  "content_head_frozen": "95bdf0015730ab3087cf71e07eca2d4425b214ac",
   "validation_commit": "a4e4c877fb36afdc32b3105f8eb89c6d7cdf13a5",
   "validation_complete": true,
-  "formal_audit_invoked": false
+  "formal_audit_invoked": true,
+  "content_head_audited": "95bdf0015730ab3087cf71e07eca2d4425b214ac",
+  "generated_at": "2026-08-03T02:26:00Z",
+  "formal_auditor": {
+    "tool": "Claude Code CLI",
+    "version": "2.1.220",
+    "configured_model": "sonnet",
+    "response_claimed_model": "sonnet",
+    "provider_attested": "Anthropic first-party (claude.ai OAuth)",
+    "proxy_reported_provider": "N/A_first_party"
+  }
 }
