@@ -236,3 +236,47 @@ def test_report_json_serializes():
     assert data["report_family"] == "DCP_RED_LANE_REPORT"
     assert "findings" in data
     assert json.dumps(data)
+
+
+# ---------------------------------------------------------------------------
+# ADR-224 / TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R Phase A: narrow workflow carve-out
+# ---------------------------------------------------------------------------
+
+def test_carved_out_workflow_paths_are_not_forbidden_path_findings(tmp_path):
+    repo_root = tmp_path / "tp_dcp_seam_lift_carveout_clean"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    report = scanner.scan(
+        changed_files=[
+            ".github/workflows/embedded-audit.yml",
+            ".github/workflows/pr-steward.yml",
+        ]
+    )
+    assert not any(f.category == "FORBIDDEN_PATH" for f in report.findings)
+
+
+def test_other_workflow_paths_still_forbidden_path_blocked(tmp_path):
+    """The carve-out must be exact-filename scoped, not a blanket exemption."""
+    repo_root = tmp_path / "tp_dcp_seam_lift_carveout_other"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    report = scanner.scan(changed_files=[".github/workflows/ci-complete.yml"])
+    assert report.status == Status.BLOCKED
+    assert any(f.category == "FORBIDDEN_PATH" for f in report.findings)
+
+
+def test_carved_out_workflow_still_subject_to_text_rules(tmp_path):
+    """Path-level carve-out must not exempt content-level TEXT_RULES scanning."""
+    repo_root = tmp_path / "tp_dcp_seam_lift_carveout_text_rules"
+    repo_root.mkdir()
+    wf_dir = repo_root / ".github" / "workflows"
+    wf_dir.mkdir(parents=True)
+    (wf_dir / "embedded-audit.yml").write_text("run: gh pr merge --auto\n")
+
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+    report = scanner.scan(changed_files=[".github/workflows/embedded-audit.yml"])
+    assert report.status == Status.BLOCKED
+    assert not any(f.category == "FORBIDDEN_PATH" for f in report.findings)
+    assert any(f.category == "MERGE_SEAM_VIOLATION" for f in report.findings)
