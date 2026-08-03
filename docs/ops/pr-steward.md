@@ -15,6 +15,8 @@ prelude: Check-only PR review intake and packaged CLI reference for PR Steward v
 
 PR Steward v1 is a check-only review-intake gate. It does not mutate GitHub, apply fixes, resolve threads, enqueue merges, approve PRs, or merge PRs.
 
+**Evidence economy:** Steward still requires current exact-head gates and a current independent audit when the risk lane or packet requires one (L2/L3 / embedded-audit policy). Draft may be the only expected blocker before operator mark-ready. Proof-only successors must bind to the audited content head; path-escape or stale-head proofs fail closed. See `docs/03-reference/governance/evidence-economy.md`.
+
 The v1 GitHub Actions workflow is advisory. It may emit `NOT_READY`, `NEEDS_IMPLEMENTER`, `NEEDS_SUPERVISOR`, or `BLOCKED` while other checks are still running, but it does not fail the workflow job for those readiness states and must not be configured as a required branch-protection check until the pending-check race is solved.
 
 ## Inputs

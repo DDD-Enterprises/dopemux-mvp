@@ -1,0 +1,265 @@
+{
+  "id": "TP-DMX-REPO-EVIDENCE-ECONOMY-001",
+  "project": "dopemux-mvp",
+  "target": "Replace audit-heavy repository workflow with risk-laned evidence economy, deterministic pre-push contract validation, and one-final-audit execution",
+  "invariants": [
+    "Runtime truth, authority boundaries, fail-closed proof, and explicit operator merge/destructive gates remain unchanged.",
+    "The change reduces model and token usage without weakening L2/L3 independent-audit or PR Steward requirements.",
+    "L0 deterministic changes do not require model audit unless they alter meaning, authority, security, workflow, or public behavior.",
+    "L2/L3 changes receive exactly one independent audit after the content head is frozen.",
+    "Proof-only successors validate schema, signature, ancestry, and changed paths deterministically and do not trigger a second content audit.",
+    "CI-equivalent changed-file checks run before first push.",
+    "Hooks that modify files must be rerun and pass cleanly before push.",
+    "Bounded metadata failures are repaired within the active packet rather than spawning recursive Task Packets.",
+    "Ordinary main or PR drift triggers affected-scope reharvest, not blanket stop.",
+    "No production, service, credential, permission, merge, close, mark-ready, branch-delete, force-push, or history-rewrite action is authorized."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "pyproject.toml",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-REPO-EVIDENCE-ECONOMY",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "base_branch": "main",
+    "stacked_because": "Fresh isolated governance/tooling worktree; not stacked."
+  },
+  "commit": {
+    "message": "feat(governance): enforce evidence-economy workflow",
+    "allowlist": [
+      "AGENTS.md",
+      "docs/03-reference/governance/rules.md",
+      "docs/03-reference/governance/task-packet-template.md",
+      "docs/03-reference/governance/evidence-economy.md",
+      "docs/ops/embedded-audit.md",
+      "docs/ops/pr-steward.md",
+      "config/ai/model-routing.policy.yaml",
+      ".pre-commit-config.yaml",
+      "scripts/governance/validate_change_contract.py",
+      "tests/governance/test_validate_change_contract.py",
+      "task-packets/TP-DMX-REPO-EVIDENCE-ECONOMY-001.json",
+      "task-packets/TP-DMX-REPO-EVIDENCE-ECONOMY-001.md",
+      "proof/TP-DMX-REPO-EVIDENCE-ECONOMY-001/**",
+      "proof/pr_merge/embedded-audit/pr-*/**"
+    ],
+    "verify": [
+      "All changed files are allowlisted.",
+      "No runtime service, product behavior, schema, workflow YAML, credential, signer, or production path changes.",
+      "Governance documents agree on risk lanes, one-final-audit policy, proof-only successor handling, and pre-push gates.",
+      "The validator is deterministic, offline, and model-free.",
+      "No existing Task Packet or proof bundle is rewritten except this packet's own proof."
+    ]
+  },
+  "pr": {
+    "title": "feat(governance): evidence-economy execution and pre-push contract gate",
+    "body": "Replace ritualized multi-model stages with risk lanes, one final independent audit for material changes, deterministic proof/packet validation before push, resilient drift handling, and compact proof/handoff requirements. No runtime or production mutation.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "E0",
+      "task": "Preflight repository truth, current governance, and open-PR overlap.",
+      "requirements": [
+        "Capture repo root, current main, worktree, branch, status, and targeted-file blob hashes.",
+        "Harvest open PRs touching the allowlist.",
+        "Classify overlaps as IDENTICAL, SUBSET, SUPERSET, COMPATIBLE, CONFLICTING, or UNKNOWN.",
+        "Do not blanket-stop for ordinary main drift or non-conflicting overlap."
+      ],
+      "commands": [
+        "git fetch --prune origin",
+        "git status --short",
+        "git rev-parse --show-toplevel",
+        "git rev-parse origin/main",
+        "gh pr list --repo DDD-Enterprises/dopemux-mvp --state open --limit 200 --json number,title,headRefOid,baseRefName,files"
+      ],
+      "expected_files": [
+        "$PROOF_DIR/E0_CUSTODY.json",
+        "$PROOF_DIR/E0_OVERLAP_LEDGER.json"
+      ],
+      "validation": [
+        "Dedicated worktree and branch identity are proven.",
+        "Target-file overlap is classified with exact PR/head/path evidence.",
+        "CONFLICTING authority or security overlap stops affected-file editing and escalates."
+      ]
+    },
+    {
+      "id": "E1",
+      "task": "Write the canonical evidence-economy policy and reconcile governing docs.",
+      "requirements": [
+        "Add L0-L3 risk lanes.",
+        "Replace mandatory model-stage chains with risk-appropriate deterministic checks and one final audit.",
+        "Define no-audit handling for deterministic metadata and proof-only successors.",
+        "Define one repair attempt per substantive model failure.",
+        "Define rolling cluster adjudication and affected-scope reharvest.",
+        "Preserve truth hierarchy, system boundaries, operator authority, and fail-closed semantics."
+      ],
+      "commands": [
+        "python3 scripts/docs_frontmatter_guard.py --fix docs/03-reference/governance/evidence-economy.md",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "docs/03-reference/governance/evidence-economy.md",
+        "AGENTS.md",
+        "docs/03-reference/governance/rules.md",
+        "docs/03-reference/governance/task-packet-template.md",
+        "docs/ops/embedded-audit.md",
+        "docs/ops/pr-steward.md",
+        "config/ai/model-routing.policy.yaml"
+      ],
+      "validation": [
+        "No document still mandates a model audit for L0 deterministic changes.",
+        "No document still mandates repeated audits of unchanged content.",
+        "L2/L3 final independent audit and PR Steward remain required.",
+        "Routing policy uses live selectors and records UNKNOWN when unverified."
+      ]
+    },
+    {
+      "id": "E2",
+      "task": "Implement deterministic changed-contract preflight.",
+      "requirements": [
+        "Create scripts/governance/validate_change_contract.py.",
+        "The command accepts base/head refs and optional allowlist.",
+        "Classify changed paths into L0/L1/L2/L3 using a checked-in deterministic mapping.",
+        "Validate Task Packet JSON against the canonical schema.",
+        "Validate changed Task Packet Markdown frontmatter without silently fixing it.",
+        "Validate changed implementation and canonical embedded-audit proofs.",
+        "Detect hooks that would modify changed files by running them in check mode or inspecting a clean rerun result.",
+        "Validate proof-only successor path closure when parent/audited/head SHAs are supplied.",
+        "Emit stable JSON and concise text summaries.",
+        "Never call a model, network service, or mutate files."
+      ],
+      "commands": [
+        "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format json",
+        "python -m pytest -q tests/governance/test_validate_change_contract.py",
+        "python -m compileall -q scripts/governance tests/governance"
+      ],
+      "expected_files": [
+        "scripts/governance/validate_change_contract.py",
+        "tests/governance/test_validate_change_contract.py"
+      ],
+      "validation": [
+        "Tests cover clean L0 metadata, L2 governance, L3 security, invalid packet, missing frontmatter, invalid proof, modified-by-hook, proof-only valid, and proof-only escaped-path cases.",
+        "Output ordering and exit codes are deterministic.",
+        "The script performs no network or model invocation."
+      ]
+    },
+    {
+      "id": "E3",
+      "task": "Wire the deterministic preflight into local changed-file validation.",
+      "requirements": [
+        "Add one pre-commit hook for the validator.",
+        "Avoid duplicate hook IDs.",
+        "The hook must not auto-fix files.",
+        "The hook must run before expensive broad checks where ordering supports it.",
+        "Existing docs-frontmatter and proof-schema hooks remain authoritative."
+      ],
+      "commands": [
+        "pre-commit validate-config",
+        "pre-commit run change-contract-preflight --all-files",
+        "pre-commit run --from-ref origin/main --to-ref HEAD"
+      ],
+      "expected_files": [
+        ".pre-commit-config.yaml"
+      ],
+      "validation": [
+        "The new hook passes on the packet branch.",
+        "A fixture branch with missing frontmatter fails before push.",
+        "A fixture implementation proof missing embedded_audit fails before push.",
+        "A proof-only escaped-path fixture fails closed."
+      ]
+    },
+    {
+      "id": "E4",
+      "task": "Validate behavior, governance consistency, and token-economy acceptance.",
+      "requirements": [
+        "Run focused tests and all governance/audit/PR Steward tests affected by the change.",
+        "Measure the documented model-call budget for L0-L3 example workflows.",
+        "Prove L0 uses zero model calls, L1 at most one implementer model, and L2/L3 one implementer plus one final independent auditor by default.",
+        "Prove audit failure does not recursively create a new Task Packet for deterministic metadata repair."
+      ],
+      "commands": [
+        "python -m pytest -q tests/governance tests/audit tests/pr_steward",
+        "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "$PROOF_DIR/VALIDATION.json",
+        "$PROOF_DIR/MODEL_CALL_BUDGET.md",
+        "$PROOF_DIR/COMMAND_LOG.md"
+      ],
+      "validation": [
+        "All relevant tests pass.",
+        "Policy examples satisfy the model-call budgets.",
+        "No runtime or workflow behavior changed."
+      ]
+    },
+    {
+      "id": "E5",
+      "task": "Run one final independent audit on the frozen content head.",
+      "requirements": [
+        "This is an L2 governance/process change, so one independent final audit is required.",
+        "Preferred implementer is Codex with exact live selector recorded.",
+        "Preferred auditor is AGY with a live-listed independent Gemini model; fallback Claude Code Sonnet.",
+        "The auditor reviews the complete frozen content diff, validator threat model, tests, governance consistency, and any overlap decisions.",
+        "No intermediate model audit is permitted."
+      ],
+      "commands": [
+        "agy --version",
+        "agy models",
+        "agy --model '<LIVE_GEMINI_SELECTOR>' --print '<BOUNDED_FINAL_AUDIT_PROMPT>'"
+      ],
+      "expected_files": [
+        "$PROOF_DIR/AUDIT_ROUTE_PREFLIGHT.json",
+        "$PROOF_DIR/AUDITOR_REPORT.md",
+        "$PROOF_DIR/AUDIT_RAW_OUTPUT.json"
+      ],
+      "validation": [
+        "Auditor is independent of implementer.",
+        "Audit is bound to the frozen content head.",
+        "Verdict is PASS or non-blocking PASS_WITH_RISKS.",
+        "FAIL, NEEDS_SUPERVISOR, SKIPPED, stale proof, unknown identity, or head mismatch blocks finalization."
+      ]
+    },
+    {
+      "id": "E6",
+      "task": "Create proof-only successor, push, open PR, and run PR Steward.",
+      "requirements": [
+        "Create implementation proof and canonical signed embedded audit.",
+        "The successor changes only this packet's proof and canonical PR audit directory.",
+        "Run changed-contract preflight again on the final head.",
+        "Push normally, open a PR, harvest CI, and run PR Steward.",
+        "Do not merge."
+      ],
+      "commands": [
+        "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+        "python3 scripts/audit/validate_audit_proof.py \"$CANONICAL_AUDIT_PROOF\"",
+        "git diff --check",
+        "git push -u origin HEAD",
+        "gh pr create --base main --head \"$BRANCH\" --title 'feat(governance): evidence-economy execution and pre-push contract gate' --body-file \"$PR_BODY\"",
+        "dopemux-pr-steward intake --repo DDD-Enterprises/dopemux-mvp --pr \"$PR_NUMBER\" --strict"
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-REPO-EVIDENCE-ECONOMY-001.json",
+        "task-packets/TP-DMX-REPO-EVIDENCE-ECONOMY-001.md",
+        "proof/TP-DMX-REPO-EVIDENCE-ECONOMY-001/PROOF.json",
+        "proof/TP-DMX-REPO-EVIDENCE-ECONOMY-001/AUDITOR_REPORT.md",
+        "$PROOF_DIR/HANDOFF.md",
+        "$PROOF_DIR/PR_STEWARD.json"
+      ],
+      "validation": [
+        "Final head passes deterministic preflight.",
+        "Proof-only successor path closure is proven.",
+        "CI and PR Steward are current on the final head.",
+        "No merge or destructive action occurred."
+      ]
+    }
+  ]
+}

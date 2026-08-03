@@ -38,17 +38,20 @@ For implementation or repo-changing work, ChatGPT/Codex must execute this lifecy
 2. Read required authority files and call out missing authority as `UNKNOWN`.
 3. Create a fresh dedicated worktree from the verified base branch.
 4. Verify the worktree root, remote, branch, markers, clean status, and that execution is not in the primary checkout.
-5. Create a Task Packet before implementation.
+5. Create a Task Packet before implementation; assign risk lane L0–L3 per `docs/03-reference/governance/evidence-economy.md`.
 6. Validate the Task Packet against `dopetask-canonical-spec.json` when the schema is present; otherwise perform and report a manual schema check.
-7. Implement only files in the TP allowlist, in commit-sized slices.
-8. After each meaningful slice, run the smallest relevant validation and inspect the diff before continuing.
-9. Run codereview before precommit.
-10. Run targeted tests, lint, or type checks where relevant; always run `git diff --check`.
-11. Run repo pre-commit hooks if configured and safe.
-12. Commit only allowed files, push the branch, and open a PR with `gh pr create` when authenticated.
-13. Emit proof and remove the dedicated worktree after PR creation when safe.
+7. Implement only files in the TP allowlist, in commit-sized slices (one bounded implementer).
+8. After each meaningful slice, run the smallest relevant **deterministic** validation and inspect the diff before continuing. Do **not** run intermediate model audits.
+9. Run targeted tests, lint, or type checks where relevant; always run `git diff --check`.
+10. Run changed-contract preflight: `python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text`.
+11. Run repo pre-commit hooks if configured and safe. If a hook modifies files, re-run until clean.
+12. Freeze content head. For L2/L3 only: one independent final audit (no intermediate audits). Proof-only successors use deterministic validation only.
+13. Commit only allowed files, push the branch, and open a PR with `gh pr create` when authenticated.
+14. Emit proof and remove the dedicated worktree after PR creation when safe.
 
 Do not emit standalone Task Packets as the final deliverable unless the user explicitly asks for only a packet.
+
+**Evidence economy:** default model-call budgets are L0=0, L1≤1 implementer, L2/L3=1 implementer + 1 final auditor. See `docs/03-reference/governance/evidence-economy.md`.
 
 ## 5. Task Packet Rules
 
@@ -69,9 +72,9 @@ Rules:
 - Every step must include `id`, `task`, and non-empty `validation`.
 - Packets must be repo-bound, series-bound, commit-sized, and verifiable.
 - If `execution.agent = "gemini"`, then `pal_chain.enabled = true`.
-- Codex minimum chain: `analyze -> planner -> codereview -> precommit`.
-- Risky or architecture-sensitive chain: `analyze -> thinkdeep -> challenge -> planner -> challenge -> implement -> codereview -> precommit -> challenge`.
-- Stage-based dev-workflow model routing: see config/ai/model-routing.policy.yaml §AUTHORITY for scope and relationship to PAL chain, LiteLLM proxy, and RTE extraction routing.
+- **Risk-laned execution (default):** L0 deterministic checks only; L1 one implementer; L2/L3 one implementer then **one** final independent audit after content head freeze. Do not mandate multi-model stage rituals for L0/L1.
+- PAL tools remain available when explicitly invoked. Optional deep chain for high-uncertainty design: `analyze -> planner -> implement` (plus final audit when L2/L3). Do not re-audit unchanged content on proof-only successors.
+- Stage-based dev-workflow model routing: see config/ai/model-routing.policy.yaml §AUTHORITY and `docs/03-reference/governance/evidence-economy.md` for cost-first lane budgets.
 
 ## 6. Architecture Boundaries
 
