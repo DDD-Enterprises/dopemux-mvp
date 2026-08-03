@@ -1,0 +1,9 @@
+runner_version=2.1.220 (Claude Code)
+requested_selector=sonnet
+configured_selector=sonnet
+permission_mode=plan
+tools=empty_string_disabled
+strict_mcp_config=true
+mcp_config=none
+output_format=json
+started_at=2026-08-03T05:52:04Z
