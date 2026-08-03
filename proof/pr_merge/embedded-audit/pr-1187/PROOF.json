@@ -2,11 +2,11 @@
   "packet_id": "TP-PR-STEWARD-POLICY-RESTORE-001",
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1187,
-  "head_sha": "071d07a2785c4dac01a3a1f9052de5deebb6a181",
+  "head_sha": "01a9d6c329529d3cc201cf8ead4d428eb3ea7a24",
   "executed": true,
   "mutation_performed": false,
   "github_mutation_route_added": false,
-  "generated_at": "2026-08-03T00:16:16Z",
+  "generated_at": "2026-08-03T00:19:51Z",
   "embedded_audit": {
     "required": true,
     "status": "PASS_WITH_RISKS",
@@ -14,7 +14,7 @@
     "auditor_model": "gpt-5.6-terra",
     "invocation": "codex exec review --base main -m gpt-5.6-terra; session 019fc4f2-698e-7b00-b668-56d829746a36; stdout proof/TP-PR-STEWARD-POLICY-RESTORE-001/review_bundle/codex_formal_audit_extract.md",
     "exit_code": 0,
-    "report_path": "proof/pr_merge/embedded-audit/pr-1187/AUDITOR_REPORT.md",
+    "report_path": "proof/TP-PR-STEWARD-POLICY-RESTORE-001/AUDITOR_REPORT.md",
     "findings": [
       {
         "id": "F-1187-PROOF-GAP",
@@ -38,7 +38,8 @@
     ],
     "remaining_risks": [
       "provider_attested UNKNOWN beyond Codex session header",
-      "CI must re-run green on proof tip before operator merge"
+      "CI must re-run green on proof tip before operator merge",
+      "CI trusted main schema lacks codex-cli/gpt-5.6-terra enums; local-attestation may be rejected by trusted-schema validate until enums land on main or EMBEDDED_AUDIT_TOKEN enables CI-executed audit."
     ],
     "skip_reason": null
   },
