@@ -1,0 +1,13 @@
+Hashes of the failed-route evidence, preserved outside the repository (not
+committed). Recorded here so the content can be verified unchanged without
+committing the raw transcripts to the repository. See AUDIT_ROUTE_INCIDENT.md
+for the narrative.
+
+algorithm: sha256
+
+f2a2491fe06bd9eec8ebc2d1fd7a6ae9dc075231cda1937f89393686ba693467  RAW_OUTPUT.txt (attempt 1, degenerate premature stop, ~75 output tokens)
+a6e2117b66d635bfee1db46c9cec8ecc6b2d679acd27b527480216d55edc6a5d  RAW_OUTPUT_retry1.txt (attempt 2, 1930 lines, fully fabricated fictional audit session)
+2be4ad17bc33a6e1e3fc6be7e2a221c0d8e2ef735d0ba24609aa26aaecf2e04b  AUDIT_PROMPT.md (the real prompt given to both DeepSeek attempts; independently re-read and confirmed correct)
+
+External path (not part of this repository, local to the machine that ran
+the audit): /tmp/seam-lift-final-audit-34cc73c3ed/_AUDIT_CONTEXT/
