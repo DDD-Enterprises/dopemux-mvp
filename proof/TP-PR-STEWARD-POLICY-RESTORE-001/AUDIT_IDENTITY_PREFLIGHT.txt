@@ -1,0 +1,5 @@
+runner=/Users/hue/.local/share/mise/shims/codex
+version=codex-cli 0.146.0
+date_utc=2026-08-03T00:06:53Z
+implementer=grok-4.5 (prior session; not Codex)
+independence=Codex did not implement or repair PR 1187
