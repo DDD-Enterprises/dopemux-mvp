@@ -1,0 +1,58 @@
+{
+  "packet_id": "TP-PR-STEWARD-POLICY-RESTORE-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1187,
+  "head_sha": "071d07a2785c4dac01a3a1f9052de5deebb6a181",
+  "executed": true,
+  "mutation_performed": false,
+  "github_mutation_route_added": false,
+  "generated_at": "2026-08-03T00:16:16Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "codex-cli",
+    "auditor_model": "gpt-5.6-terra",
+    "invocation": "codex exec review --base main -m gpt-5.6-terra; session 019fc4f2-698e-7b00-b668-56d829746a36; stdout proof/TP-PR-STEWARD-POLICY-RESTORE-001/review_bundle/codex_formal_audit_extract.md",
+    "exit_code": 0,
+    "report_path": "proof/pr_merge/embedded-audit/pr-1187/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-1187-PROOF-GAP",
+        "severity": "HIGH",
+        "title": "Pre-audit SUMMARY overclaimed readiness",
+        "status": "RESOLVED",
+        "body": "Codex review P1: SUMMARY implied READY without embedded audit bundle. Fixed by this proof successor (SUMMARY rewritten; PROOF+AUDITOR_REPORT+review_bundle added)."
+      },
+      {
+        "id": "F-1187-PROVIDER-ATTEST",
+        "severity": "LOW",
+        "title": "provider_attested UNKNOWN",
+        "status": "ACCEPTED_RISK",
+        "body": "Codex session header reports provider=openai and model=gpt-5.6-terra; no separate provider attestation token captured. Non-blocking for L2 packaged-policy restore."
+      }
+    ],
+    "fixes_applied": [
+      "Rewrote SUMMARY to NOT claim operator-merge READY",
+      "Added PROOF.json, AUDITOR_REPORT.md, codex review stdout, identity preflight",
+      "Extended embedded_audit schema enums for codex-cli and gpt-5.6-terra under supervisor exception"
+    ],
+    "remaining_risks": [
+      "provider_attested UNKNOWN beyond Codex session header",
+      "CI must re-run green on proof tip before operator merge"
+    ],
+    "skip_reason": null
+  },
+  "model_identity": {
+    "runner": "OpenAI Codex v0.146.0",
+    "requested": "codex exec review --base main -m gpt-5.6-terra",
+    "configured": "gpt-5.6-terra (CLI -m and ~/.codex/config.toml model=gpt-5.6-terra)",
+    "response_claimed": "gpt-5.6-terra",
+    "proxy_reported": "openai",
+    "provider_attested": "UNKNOWN",
+    "session_id": "019fc4f2-698e-7b00-b668-56d829746a36",
+    "implementer": "grok-4.5",
+    "independence": "Codex did not implement PR #1187"
+  },
+  "content_head_audited": "c9038b5a1e2031e19b7245b8ac5e0dd8761b3be3",
+  "supervisor_exception": "AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION_1187_1188"
+}
