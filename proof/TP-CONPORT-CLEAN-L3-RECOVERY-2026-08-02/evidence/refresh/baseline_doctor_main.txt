@@ -1,0 +1,12 @@
+=== main doctor placeholder ===
+main_HEAD=fb710ef40500695882a5b421a3325150176fffa1
+config/pr_steward/policy.json
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____________________ test_doctor_placeholder_fails_closed _____________________
+tests/dopemux_cli/test_pr_steward_cmd.py:132: in test_doctor_placeholder_fails_closed
+    assert rc == 2
+E   assert 0 == 2
+=========================== short test summary info ============================
+FAILED tests/dopemux_cli/test_pr_steward_cmd.py::test_doctor_placeholder_fails_closed
+main_exit_1

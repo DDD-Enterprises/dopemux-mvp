@@ -1,5 +1,22 @@
 # TP-CONPORT-CLEAN-L3-RECOVERY — Clean candidate summary
 
+
+## Stage-2 refresh (2026-08-03)
+
+Supervisor: `AUTHORIZE_STAGE_2_REFRESH_AND_VALIDATION_ONLY`
+
+| Role | SHA |
+|---|---|
+| Pre-refresh tip | `2f4303a1be` |
+| Merged main | `fb710ef405` |
+| Merge commit | `5ab419b9e3` |
+| Overlap | COMPATIBLE (0 paths) |
+| Impl blob identity | IDENTICAL (13 non-proof paths) |
+
+See `evidence/refresh/VALIDATION_SUMMARY.md` and `evidence/refresh/REFRESH_RECORD.md`.
+
+Policy PR #1187 merged on main. Baseline doctor placeholder failure is BASELINE_EXISTING (main+branch).
+
 ## Supervisor
 
 `AUTHORIZE_ONE_CLEAN_L3_REPAIR`

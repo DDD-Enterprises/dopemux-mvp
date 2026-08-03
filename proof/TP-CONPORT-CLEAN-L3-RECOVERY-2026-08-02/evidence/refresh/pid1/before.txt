@@ -1,0 +1,13 @@
+=== before ===
+2026-08-03T01:29:00Z
+Id=24955f4c22c472726dd1388ee7abe832a49e3893226e874a9992ca68320eba71 Name=/mcp-conport Status=running RestartCount=4 StartedAt=2026-08-02T23:56:45.583036465Z
+PID                 PPID                CMD
+98707               98683               bash start_with_info.sh
+98768               98707               python info_server.py
+98769               98707               python enhanced_server.py
+98770               98707               python server.py sse
+51208               98683               /bin/sh -c curl -fsS http://localhost:3004/health >/dev/null && curl -fsS http://localhost:4004/health >/dev/null && python -c "import socket;s=socket.create_connection((\"127.0.0.1\",3005),2);s.close()"
+=== health ===
+{"status": "healthy", "service": "conport-enhanced", "port": 3004, "database": "healthy", "redis": "healthy", "timestamp": 41608.229368389}
+{"status":"healthy","service":"conport","port":3004}
+mcp_ok

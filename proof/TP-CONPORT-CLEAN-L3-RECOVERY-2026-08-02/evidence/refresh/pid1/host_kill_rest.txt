@@ -1,0 +1,10 @@
+=== HOST_KILL rest match=enhanced_server.py ===
+2026-08-03T01:36:49Z
+before restart=4 started=2026-08-02T23:56:45.583036465Z id=24955f4c22c4
+PID                 PPID                CMD
+98707               98683               bash start_with_info.sh
+98768               98707               python info_server.py
+98769               98707               python enhanced_server.py
+98770               98707               python server.py sse
+host_pid=98769
+  PID  PPID COMMAND

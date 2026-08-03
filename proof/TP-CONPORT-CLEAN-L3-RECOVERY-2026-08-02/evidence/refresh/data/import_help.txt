@@ -1,0 +1,30 @@
+usage: import_conport_export.py [-h] --json-path JSON_PATH --db-url DB_URL
+                                --workspace-id WORKSPACE_ID [--dry-run]
+
+Import a legacy ConPort SQLite export bundle into a project-walled Postgres DB.
+
+WHY THIS EXISTS
+---------------
+docs/archive/generated/conport-migration/conport_export.json was exported on
+2025-10-25 from /Users/hue/code/dopemux-mvp/context_portal/context.db (a SQLite
+store that no longer exists). It holds 294 decisions, 209 progress entries, 111
+context links and 3 system patterns spanning 2025-10-05..2025-10-25. Its own
+active_context says "Migration scripts complete - ready to migrate ConPort to
+PostgreSQL AGE" -- and that migration was never run. The corpus has been sitting
+in an archive directory ever since while the live database held 3 decisions.
+
+WHY NOT scripts/deploy/migration/import_to_postgresql_age.py
+-----------------------------------------------------------
+That script reads exactly this bundle shape and was the obvious thing to reuse,
+but it has four defects that matter here:
+  1. updated_at falls back to datetime.utcnow() (import time) rather than
+     created_at, destroying the timestamps this import exists to preserve.
+  2. implementation_details is written to `alternatives`. Wrong semantics --
+     alternatives means "roads not taken", not "how it was built". 283 of the
+     294 decisions carry this field.
+  3. system_patterns is detected and skipped, because no such table exists.
+  4. It is not idempotent: every run mints fresh UUIDs and re-inserts everything.
+This script fixes all four.
+
+IDEMPOTENCY
+-----------

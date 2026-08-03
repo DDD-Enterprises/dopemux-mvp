@@ -1,0 +1,17 @@
+                                                                               List of databases
+          Name           |        Owner        | Encoding | Locale Provider |   Collate   |    Ctype    | ICU Locale | ICU Rules |              Access privileges
+-------------------------+---------------------+----------+-----------------+-------------+-------------+------------+-----------+---------------------------------------------
+ conport_adops           | conport_adops       | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |            |           | =T/conport_adops                           +
+                         |                     |          |                 |             |             |            |           | conport_adops=CTc/conport_adops
+ conport_dopemux_mvp     | conport_dopemux_mvp | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |            |           | =T/conport_dopemux_mvp                     +
+                         |                     |          |                 |             |             |            |           | conport_dopemux_mvp=CTc/conport_dopemux_mvp
+ dopemux_knowledge_graph | dopemux_age         | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |            |           | =T/dopemux_age                             +
+                         |                     |          |                 |             |             |            |           | dopemux_age=CTc/dopemux_age                +
+                         |                     |          |                 |             |             |            |           | conport_archive_ro=c/dopemux_age
+ litellm                 | dopemux_age         | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |            |           |
+ postgres                | dopemux_age         | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |            |           |
+ template0               | dopemux_age         | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |            |           | =c/dopemux_age                             +
+                         |                     |          |                 |             |             |            |           | dopemux_age=CTc/dopemux_age
+ template1               | dopemux_age         | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |            |           | =c/dopemux_age                             +
+                         |                     |          |                 |             |             |            |           | dopemux_age=CTc/dopemux_age
+(7 rows)

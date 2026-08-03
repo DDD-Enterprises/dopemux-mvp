@@ -1,0 +1,19 @@
+                        List of relations
+ Schema |           Name            | Type  |        Owner
+--------+---------------------------+-------+---------------------
+ public | adhd_metrics              | table | conport_dopemux_mvp
+ public | conport_schema_migrations | table | conport_dopemux_mvp
+ public | custom_data               | table | conport_dopemux_mvp
+ public | decision_patterns         | table | conport_dopemux_mvp
+ public | decision_relationships    | table | conport_dopemux_mvp
+ public | decisions                 | table | conport_dopemux_mvp
+ public | entity_relationships      | table | conport_dopemux_mvp
+ public | progress_entries          | table | conport_dopemux_mvp
+ public | review_reminders          | table | conport_dopemux_mvp
+ public | search_cache              | table | conport_dopemux_mvp
+ public | session_snapshots         | table | conport_dopemux_mvp
+ public | user_workspace_access     | table | conport_dopemux_mvp
+ public | users                     | table | conport_dopemux_mvp
+ public | workspace_contexts        | table | conport_dopemux_mvp
+ public | workspaces                | table | conport_dopemux_mvp
+(15 rows)

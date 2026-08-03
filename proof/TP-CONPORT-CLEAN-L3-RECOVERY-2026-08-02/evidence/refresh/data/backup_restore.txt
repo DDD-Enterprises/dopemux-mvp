@@ -1,0 +1,61 @@
+dump_bytes= 1908862
+CREATE EXTENSION
+CREATE EXTENSION
+restore_exit=0
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+=== restore counts ===
+decisions=295
+progress=209
+entity_relationships=219
+migration_ledger=742
+imported=294
+=== sample identities ===
+                  id                  |                             left                             |       created_at
+--------------------------------------+--------------------------------------------------------------+------------------------
+ 13723648-2be4-4878-a9e3-ffbb9f87b2f6 | Dopemux Context Deep Dive documentation completed - three-la | 2025-10-05 12:50:55+00
+ b522459f-9630-46cb-8140-0a4be7be79f2 | Cross-component architectural analysis completed - identifie | 2025-10-05 13:09:00+00
+ 2143d96e-d849-48a5-acfa-af9da571620c | Architecture consolidation synthesis completed - Recommended | 2025-10-05 14:00:50+00
+(3 rows)
+
+                  id                  |                             left                             |          created_at
+--------------------------------------+--------------------------------------------------------------+-------------------------------
+ 2c1f9a6f-b3a5-4af0-9a07-8d0986b06bc7 | [DMX-MCPINT P2: integration architecture ADR set + gate deci | 2026-07-17 11:55:32.576111+00
+ f8e033d3-ad39-4d1d-b28b-1f4b3daafb41 | ConPort SQLite → PostgreSQL AGE migration toolkit complete w | 2025-10-25 01:11:00+00
+ 83373519-8baa-470b-b2e2-3c13524869a1 | User feedback: MCP-first violations during cleanup session - | 2025-10-25 00:19:53+00
+(3 rows)
+
+=== sample relationships ===
+              source_id               |              target_id               | relationship_type
+--------------------------------------+--------------------------------------+-------------------
+ 69f05f80-5918-41bd-b6a0-08375b42016c | 57eede41-35ff-49cb-b091-a3192561820d | parent_of
+ 69f05f80-5918-41bd-b6a0-08375b42016c | a4dee6a6-801c-4c43-8ffc-f90134c132a5 | parent_of
+ 69f05f80-5918-41bd-b6a0-08375b42016c | d0c6f091-3083-453f-96f8-92119f72995e | parent_of
+ 69f05f80-5918-41bd-b6a0-08375b42016c | d12a8e27-40ea-4317-b51c-31b08902b566 | parent_of
+ 69f05f80-5918-41bd-b6a0-08375b42016c | 37f73757-3044-4a8c-a306-696e87f3de0e | parent_of
+(5 rows)
+
+match decisions: 295 vs 295
+match progress: 209 vs 209
+match relationships: 219 vs 219
+match ledger: 742 vs 742
+PASS backup_restore_counts_match
+disposable_removed
