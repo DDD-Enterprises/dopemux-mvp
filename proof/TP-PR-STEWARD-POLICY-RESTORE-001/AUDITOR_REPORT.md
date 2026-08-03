@@ -3,70 +3,77 @@
 ## Authority
 
 `SUPERVISOR_DECISION=AUTHORIZE_CODEX_AS_FORMAL_AUDITOR_EXCEPTION_1187_1188`
-Scope limited to PR #1187 (this report) and later PR #1188. **Not** a repo-wide Codex audit policy.
+Limited to PR #1187 (this report) and later PR #1188. Not a repo-wide Codex audit policy.
+
+`SUPERVISOR_DECISION=AUTHORIZE_POLICY_ONLY_EXCEPTION_REPAIR_1187`
+Schema enum extension is **NOT INCLUDED / DEFERRED** to a separate governance packet. This audit does **not** cover any schema change.
 
 ## Independence
 
 | Role | Identity |
 |---|---|
 | Implementer | Grok-4.5 (prior session); restored policy + doctor receipt |
-| Formal auditor | OpenAI Codex CLI (did **not** implement or repair #1187) |
+| Formal auditor | OpenAI Codex CLI (did not implement or repair #1187) |
 
-## Model identity (this run only — not copied from PR #1182)
+## Model identity (this run only)
 
 | Field | Observed value |
 |---|---|
 | runner / version | OpenAI Codex **v0.146.0** (`codex-cli 0.146.0`) |
-| requested | Formal audit via `codex exec review --base main -m gpt-5.6-terra` |
-| configured | `~/.codex/config.toml` model=`gpt-5.6-terra`; CLI `-m gpt-5.6-terra` |
-| response_claimed | Header of session: `model: gpt-5.6-terra` |
-| proxy_reported | `provider: openai` (Codex session header) |
-| provider_attested | UNKNOWN (no separate provider attestation artifact beyond Codex session header) |
+| requested | `codex exec review --base main -m gpt-5.6-terra` |
+| configured | `gpt-5.6-terra` (CLI `-m` and `~/.codex/config.toml`) |
+| response_claimed | `model: gpt-5.6-terra` |
+| proxy_reported | `provider: openai` |
+| provider_attested | **UNKNOWN** (accepted non-blocking residual for PR #1187 only per AUTHORIZE_POLICY_ONLY_EXCEPTION_REPAIR_1187) |
 | session_id | `019fc4f2-698e-7b00-b668-56d829746a36` |
-
-All identity fields recorded from **this** run’s `review_bundle/codex_formal_audit_extract.md (+ stdout.sha256)` lines 1–11.
 
 ## Frozen content head audited
 
-`c9038b5a1e2031e19b7245b8ac5e0dd8761b3be3`
+**`c9038b5a1e2031e19b7245b8ac5e0dd8761b3be3`**
 
-Changed files vs `main` at audit time:
+### Audit scope (three original files only)
 
 1. `config/pr_steward/policy.json`
 2. `proof/TP-PR-STEWARD-POLICY-RESTORE-001/SUMMARY.md`
 3. `proof/TP-PR-STEWARD-POLICY-RESTORE-001/doctor.txt`
 
-## Independent verification performed
+### Explicitly out of scope
 
-- `cmp` policy.json == packaged scaffold → exit 0; SHA-256 both `41d28d3e…`
-- jsonschema validate against `schemas/pr_steward/config.schema.json` → PASS
-- `dopemux_pr_steward.cli doctor --format json` → status PASS, scaffold_skew PASS
-- `pytest -q tests/dopemux_cli/test_doctor.py tests/dopemux_init/test_pr_steward_scaffold.py` → 7 passed (Codex session)
-- `git diff --check` base…HEAD → clean
-- Policy keys: `mode=check_only`, `mutates_github=false`, no automerge field
+- Schema enum extension for `codex-cli` / `gpt-5.6-terra` — **DEFERRED**, not in this PR after policy-only repair
+- PR #1188 ConPort L3 recovery
+- Any claim that Codex audited a schema change
+
+## Independent verification
+
+- `cmp` policy.json == packaged scaffold → PASS (SHA-256 `41d28d3e…`)
+- policy content byte-identical to `c9038b5a1e:config/pr_steward/policy.json` → PASS
+- `mode=check_only`, `mutates_github=false`, no automerge → PASS
+- jsonschema vs `schemas/pr_steward/config.schema.json` → PASS
+- `dopemux-pr-steward doctor` → PASS (config_schema + scaffold_skew)
+- Non-proof repository config beyond policy.json → none (schema restored to main)
 
 ## A) VERDICT
 
 # **PASS_WITH_RISKS**
 
-Non-blocking residual risks only (see findings). Policy restoration is correct and fail-closed governance posture preserved.
+Policy restoration is correct. Residual risks are non-blocking under the #1187 exceptions.
 
 ## C) FINDINGS
 
 | ID | Severity | Status | Title | Body |
 |---|---|---|---|---|
-| F-1187-PROOF-GAP | HIGH | **RESOLVED** | Pre-audit SUMMARY overclaimed readiness | Codex P1: SUMMARY said recovery prerequisite READY without embedded audit. Fixed in this proof successor: SUMMARY states NOT operator-merged; full PROOF + AUDITOR_REPORT + review bundle added. |
-| F-1187-PROVIDER-ATTEST | LOW | ACCEPTED_RISK | provider_attested UNKNOWN | Codex session reports provider=openai and model=gpt-5.6-terra; no separate OpenAI API attestation token captured. Acceptable for L2 policy restore under recorded session header. |
-| F-1187-SCHEMA-ENUM | INFO | RESOLVED | Schema lacked codex-cli / gpt-5.6-terra | Under supervisor Codex-auditor exception, enum extended in `schemas/proof/embedded_audit.schema.json` so formal identity can be recorded honestly. |
+| F-1187-PROOF-GAP | HIGH | RESOLVED | Pre-audit SUMMARY overclaimed readiness | Fixed: SUMMARY states not operator-merged; formal PROOF + AUDITOR_REPORT present. |
+| F-1187-PROVIDER-ATTEST | LOW | ACCEPTED_RISK | provider_attested UNKNOWN | Accepted for PR #1187 only with recorded runner/model/proxy/session and independence. Does not transfer to #1188. |
+| F-1187-SCHEMA-ENUM-DEFERRED | INFO | ACCEPTED_RISK | Trusted-main enums lack Codex identity | Schema extension removed from this PR (deferred). CI independent embedded audit may stay red solely because trusted-main cannot name Codex honestly. Explicitly overridden for #1187 merge posture only. |
 
 ## D) INDEPENDENCE
 
-Confirmed: Codex did not author commits `2a96b0cfb0` or `c9038b5a1e`. Auditor is independent of implementer (Grok-4.5).
+Codex did not author content commits for the policy restore. Auditor is independent of implementer Grok-4.5.
 
 ## E) RECOMMENDATION
 
-After this proof-only tip is pushed, CI is green, and PR Steward is **READY** on the exact proof tip, operator may merge PR #1187. **Do not auto-merge.**
+After repaired tip validation, operator may merge under
+`PR_1187_READY_FOR_OPERATOR_MERGE_WITH_CODEX_EXCEPTION`
+with expected remaining reds limited to independent embedded audit / Steward inheritance of that status due to trusted-main enum lag.
 
-## Codex primary review output (summary)
-
-Codex confirmed policy matches scaffold and doctor validation passes. Its only P1 was missing formal audit bundle / overclaim of READY — addressed by this packet.
+**Do not auto-merge.** Stage 2 (#1188) waits for operator merge of #1187.
