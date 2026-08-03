@@ -21,4 +21,24 @@
 - `test_generation_idempotent` reordered: `--check` against committed catalog runs before any regeneration
 - `_scan_model_ids` regex group changed to non-capturing; matching switched to `finditer(...).group(0)`
 - Source agent/persona bytes: UNCHANGED vs pre-R1 baseline
-- Independent audit: pending R4 (Claude Sonnet against exact R3)
+
+## CCAR-002R-A2 R3 follow-up · Evidence timestamp re-sync (2026-08-03)
+- Root cause: `test_generation_idempotent` (fixed above) legitimately regenerates the
+  catalog as part of its own idempotency check, rewriting `generated_at` to a fresh
+  wall-clock value on disk. The `NORMALIZATION_REPORT.md` `**Generated**` line was
+  written from an earlier manual regeneration, then the full test suite was run for
+  verification *after* that, silently advancing the on-disk `generated_at` past what
+  the report recorded. The mismatch was not caught before the prior commit was pushed;
+  an independent OpenRouter DeepSeek V4 Pro audit (below) surfaced it and it was
+  confirmed by direct inspection of the committed catalog.
+- Fix: ran the full mutating test suite FIRST, captured the resulting final
+  `generated_at` from disk, then wrote that exact value into the report. No mutating
+  regeneration run after this point — only non-writing `--check` from here on.
+- `python -m pytest tests/commandcode_router/test_normalized_catalog.py -q` → 26 passed
+- `python scripts/commandcode_router/build_normalized_catalog.py --check --repo-root <wt>` → exit 0
+- Independent audit: OpenCode + OpenRouter `moonshotai/kimi-k3` (preferred) failed twice
+  with malformed/incomplete output (reasoned correctly but never emitted a tool call or
+  verdict); fallback OpenCode + OpenRouter `deepseek/deepseek-v4-pro` completed with
+  `VERDICT: PASS` against the pre-fix head, but its rationale dismissing the timestamp
+  mismatch as "not a contradiction" was itself wrong per the root-cause above — treated
+  as a partial finding, not a clean PASS. Fresh audit required against the corrected head.
