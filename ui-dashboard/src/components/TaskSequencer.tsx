@@ -937,6 +937,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                   )}
                 </ListItemIcon>
                 <ListItemText
+                  disableTypography
                   primary={
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Typography variant="body2" sx={{ flexGrow: 1 }}>
@@ -1024,7 +1025,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                           </Tooltip>
                         )}
                       </Box>
-                      <Typography variant="caption">#{index + 1}</Typography>
+                      <Typography variant="caption" sx={{ color: brandTokens.text.secondary }}>#{index + 1}</Typography>
                     </Box>
                   }
                 />
