@@ -77,6 +77,46 @@ def test_no_file_path_returns_none():
 
 
 # ---------------------------------------------------------------------------
+# ADR-224 / TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R Phase A: narrow workflow carve-out
+# ---------------------------------------------------------------------------
+
+def test_embedded_audit_workflow_is_carved_out():
+    inp = {"file_path": str(_ROOT / ".github/workflows/embedded-audit.yml")}
+    result = surface_guard_block("Edit", inp, _ROOT)
+    assert result is None
+
+
+def test_pr_steward_workflow_is_carved_out():
+    inp = {"file_path": str(_ROOT / ".github/workflows/pr-steward.yml")}
+    result = surface_guard_block("Write", inp, _ROOT)
+    assert result is None
+
+
+def test_other_workflow_files_remain_blocked():
+    """The carve-out must be exact-filename scoped, not a blanket exemption."""
+    inp = {"file_path": str(_ROOT / ".github/workflows/ci-complete.yml")}
+    result = surface_guard_block("Edit", inp, _ROOT)
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_near_miss_backup_filename_remains_blocked():
+    """A file that merely starts with the carved-out name must still be blocked."""
+    inp = {"file_path": str(_ROOT / ".github/workflows/embedded-audit.yml.bak")}
+    result = surface_guard_block("Edit", inp, _ROOT)
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_nested_carved_out_filename_remains_blocked():
+    """Carve-out is top-level only; a same-named file in a subdirectory is not exempt."""
+    inp = {"file_path": str(_ROOT / ".github/workflows/sub/embedded-audit.yml")}
+    result = surface_guard_block("Edit", inp, _ROOT)
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+# ---------------------------------------------------------------------------
 # Sync test: fallback ⊆ live FORBIDDEN_PATHS
 # ---------------------------------------------------------------------------
 

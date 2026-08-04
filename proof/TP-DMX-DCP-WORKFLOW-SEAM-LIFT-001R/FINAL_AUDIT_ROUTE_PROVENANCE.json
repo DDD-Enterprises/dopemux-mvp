@@ -1,0 +1,65 @@
+{
+  "packet": "TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R",
+  "stage": "final_audit",
+  "pr": 1193,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "audited_content_head": "34cc73c3edcde27ea362cf2046995ada9db97999",
+  "base_sha": "ff08e573b4259ac7456dae1a9985968603e9111d",
+  "route": {
+    "runner": "opencode",
+    "runner_version": "1.18.11",
+    "broker": "openrouter",
+    "requested_model_selector": "openrouter/moonshotai/kimi-k3",
+    "model_selector_is_exact_non_aliased": true,
+    "model_selector_verified_present_in": "opencode models",
+    "agent": "ccar-audit-notools",
+    "agent_permission_profile": "all tools denied (read/glob/grep/edit/write/bash/webfetch/websearch/task/todowrite/lsp/skill all false); evidence supplied entirely inline in the message, not via file access",
+    "invocation_mode": "STATIC_IMMUTABLE_BUNDLE_NO_TOOLS",
+    "independence": "DIFFERENT_FAMILY_FROM_CLAUDE_IMPLEMENTER",
+    "fallback_allowed_by_authorization": false
+  },
+  "route_evidence_self_reported_by_model": {
+    "requested_model": "UNKNOWN",
+    "configured_model": "UNKNOWN",
+    "served_model": "moonshotai/kimi-k3 (exact ID openrouter/moonshotai/kimi-k3)",
+    "runner": "opencode",
+    "broker": "openrouter",
+    "provider": "UNKNOWN",
+    "generation_id": "UNKNOWN",
+    "fallback_allowed": "UNKNOWN",
+    "fallback_used": "UNKNOWN",
+    "zdr_requested": "UNKNOWN",
+    "zdr_confirmed": "UNKNOWN",
+    "note": "Model self-reported these fields from its own self-knowledge only; it was explicitly instructed not to access credentials to determine unknown fields, and did not."
+  },
+  "route_evidence_cli_confirmed": {
+    "cli_reported_agent_and_model_banner": "ccar-audit-notools · moonshotai/kimi-k3",
+    "exit_code": 0
+  },
+  "evidence_bundle": {
+    "construction_method": "Deterministic static bundle assembled outside the repository from the exact audited head via `git show`/file copy; every file content and the base..head diff pasted directly into the single message sent to the model. No tool access was given, so the model could not read anything beyond what was pasted.",
+    "manifest_sha256": "1b8cb98b90e74e12fd2e9b17c01a94a0f05fda65697b61b369baa4b5a6a2ec90",
+    "input_file_count": 15,
+    "input_file_count_includes_diff_and_stat": 17,
+    "message_file_sha256": "7465e2e3842fd04daeb12b663865e691e5c28b6cd801fb500fe83558cd42e87f",
+    "message_file_bytes": 171554,
+    "raw_output_sha256": "1045bc270aa11ec5988b84b09de39bd6c4b05b509a3140973a8a1b8bc741e94a"
+  },
+  "model_self_reported_header_cross_check": {
+    "AUDIT_TARGET_HEAD_reported": "34cc73c3edcde27ea362cf2046995ada9db97999",
+    "AUDIT_TARGET_HEAD_matches_actual": true,
+    "BUNDLE_MANIFEST_SHA256_reported": "1b8cb98b90e74e12fd2e9b17c01a94a0f05fda65697b61b369baa4b5a6a2ec90",
+    "BUNDLE_MANIFEST_SHA256_matches_actual": true,
+    "INPUT_FILE_COUNT_reported": 15,
+    "INPUT_FILE_COUNT_matches_actual": true,
+    "EXTERNAL_TOOLS_USED_reported": false,
+    "EXTERNAL_FILES_REFERENCED_reported": false,
+    "no_nonexistent_files_or_repos_referenced_in_output": true,
+    "note": "Unlike the disqualified DeepSeek attempt, no fabricated file, path, packet ID, or repository name appears anywhere in this output; every finding cites a real path present in the bundle."
+  },
+  "prior_route_incident": {
+    "route": "opencode + openrouter/deepseek/deepseek-v4-pro + ccar-audit-readonly",
+    "status": "UNAVAILABLE",
+    "detail": "See AUDIT_ROUTE_INCIDENT.md in this directory"
+  }
+}
