@@ -168,3 +168,7 @@
 ## 2026-07-16 - [Task Transition Confirmation Reset]
 **Learning:** When implementing 'Soft Confirmation' patterns (like a two-step skip action) in stateful components, failing to reset the confirmation state when the target item changes (e.g., when the active task is switched or completes) can leave the confirmation state 'stuck'. This means the next item immediately renders in the confirm state, leading to potential accidental actions on the wrong item.
 **Action:** Always reset any active confirmation state (e.g., `isSkipConfirming`) and clear any associated timeout refs within the effect or logic that triggers on item/task transitions.
+
+## 2026-07-17 - [MUI ListItemText Nesting Validation]
+**Learning:** Using block-level container components (such as `<Box>` or other complex layouts) within the primary or secondary slots of an MUI `<ListItemText>` component causes React console DOM nesting warnings because MUI wraps those slots in standard paragraph (`<p>`) tags by default. Adding the `disableTypography` prop to `<ListItemText>` prevents this wrapping and resolves the invalid DOM nesting without affecting the layout.
+**Action:** When passing non-text, block-level elements into `<ListItemText>`'s slots, always set the `disableTypography` prop to ensure valid HTML semantics.
