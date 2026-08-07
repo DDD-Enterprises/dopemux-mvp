@@ -16,16 +16,18 @@
   },
   "execution": {
     "agent": "gemini",
-    "branch": "tp/DMX-DELTA-REHARVEST-001",
+    "branch": "tp/DMX-DELTA-REHARVEST-001-R1",
     "base_branch": "main"
   },
   "commit": {
-    "message": "feat(portfolio): open PR portfolio bounded delta reharvest",
+    "message": "fix(portfolio): R1 repair of open PR mechanical evidence collector and pair matrix",
     "allowlist": [
-      "tasks/TP-DMX-DELTA-REHARVEST-001.json",
+      "task-packets/TP-DMX-DELTA-REHARVEST-001.json",
       "scripts/audit/pr_portfolio_delta_reharvest.py",
       "proof/TP-DMX-DELTA-REHARVEST-001/OBSERVATION_SNAPSHOT.json",
       "proof/TP-DMX-DELTA-REHARVEST-001/OPEN_PR_LEDGER.csv",
+      "proof/TP-DMX-DELTA-REHARVEST-001/PAIR_RELATIONSHIPS.json",
+      "proof/TP-DMX-DELTA-REHARVEST-001/PAIR_RELATIONSHIPS.csv",
       "proof/TP-DMX-DELTA-REHARVEST-001/CAPABILITY_PREFLIGHT.md",
       "proof/TP-DMX-DELTA-REHARVEST-001/DELTA_REHARVEST_REPORT.md",
       "proof/TP-DMX-DELTA-REHARVEST-001/SHA256SUMS.txt",
@@ -34,8 +36,8 @@
     ]
   },
   "pr": {
-    "title": "feat(portfolio): open PR portfolio bounded delta reharvest",
-    "body": "Bounded delta reharvest for open PR portfolio facts, head OIDs, pair matrix, and relative checksum package.",
+    "title": "fix(portfolio): R1 repair of open PR mechanical evidence collector and pair matrix",
+    "body": "R1 repair addressing paginated changed-file harvesting, explicit pair relationship matrix, S0/S1 dual-state drift classification, evidence PR exclusion, root-hygiene compliance, and deterministic ZIP packaging.",
     "base": "main"
   },
   "pal_chain": {
@@ -49,22 +51,22 @@
   },
   "steps": [
     {
-      "id": "S1_CREATE_REHARVEST_SCRIPT",
-      "task": "Create deterministic open PR portfolio delta reharvest script supporting exact heads, check state, relative SHA256SUMS, and ZIP packaging",
+      "id": "S1_HARVEST_PAGINATED_PR_FILES",
+      "task": "Implement paginated changed-file collection via GitHub GraphQL API to eliminate 100-file ceiling and reconcile against aggregate changedFiles count",
       "validation": [
         "python3 -m py_compile scripts/audit/pr_portfolio_delta_reharvest.py"
       ]
     },
     {
-      "id": "S2_EXECUTE_DELTA_REHARVEST",
-      "task": "Run bounded delta reharvest via authenticated GitHub CLI for all current open PRs",
+      "id": "S2_GENERATE_PAIR_RELATIONS_AND_S1_DRIFT",
+      "task": "Compute full pair relationship matrix (N*(N-1)/2 records) and classify S0/S1 dual-state main and PR drift",
       "validation": [
         "python3 scripts/audit/pr_portfolio_delta_reharvest.py"
       ]
     },
     {
-      "id": "S3_PACKAGE_AND_VERIFY",
-      "task": "Generate portable archive with relative paths, checksum manifest, and ZIP sidecar",
+      "id": "S3_PACKAGE_AND_VERIFY_REPAIR",
+      "task": "Build reproducible ZIP package, SHA256SUMS manifest, and verify all collection invariants pass",
       "validation": [
         "python3 scripts/audit/pr_portfolio_delta_reharvest.py --verify-only"
       ]
