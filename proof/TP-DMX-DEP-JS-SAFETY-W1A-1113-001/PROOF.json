@@ -1,11 +1,21 @@
 {
+  "packet_id": "TP-DMX-DEP-JS-SAFETY-W1A-1113-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1113,
+  "head_sha": "9c32a281f7e5c3a0ca74409db0aa005beeaf1a25",
+  "executed": true,
+  "generated_at": "2026-08-07T15:31:00Z",
+  "provenance": {
+    "proof_author": "independent-embedded-audit",
+    "workflow": "embedded-audit.yml"
+  },
   "embedded_audit": {
     "required": true,
-    "status": "PASS_WITH_RISKS",
-    "auditor_tool": "pal-mcp-clink",
-    "auditor_model": "sonnet",
-    "invocation": "cmd -p --model deepseek/deepseek-v4-flash 'Audit TP-DMX-DEP-JS-SAFETY-W1A-1113-001'",
-    "exit_code": 0,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
     "report_path": "proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/AUDITOR_REPORT.md",
     "findings": [],
     "fixes_applied": [
@@ -14,8 +24,9 @@
     "remaining_risks": [
       "Pre-existing baseline build and lint failure (missing pages/app directory) on main",
       "npm ci requires --legacy-peer-deps due to pre-existing eslint-config-next@16.1.6 vs eslint@^8 peer conflict on main",
-      "4 high transitive npm audit findings (nanoid, next, postcss, sharp) persist on main baseline and require Next 16 semver-major upgrade"
+      "4 high transitive npm audit findings (nanoid, next, postcss, sharp) persist on main baseline and require Next 16 semver-major upgrade",
+      "CommandCode DeepSeek audit retained as supplemental evidence; canonical embedded audit provided via signed local attestation under proof/pr_merge/embedded-audit/pr-1113/"
     ],
-    "skip_reason": null
+    "skip_reason": "CANONICAL_EMBEDDED_AUDIT_DEFERRED_TO_SIGNED_LOCAL_ATTESTATION"
   }
 }

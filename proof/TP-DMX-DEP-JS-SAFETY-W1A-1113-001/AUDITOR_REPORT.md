@@ -1,14 +1,14 @@
-# Independent L3 Auditor Report: TP-DMX-DEP-JS-SAFETY-W1A-1113-001
+# Supplemental L3 Auditor Report: TP-DMX-DEP-JS-SAFETY-W1A-1113-001
 
 | Metadata | Details |
 |---|---|
 | Project | dopemux-mvp |
-| Audited Head (C1) | `bc1bbb243a07420c2df33559aa4c30676e6addcd` |
+| Audited Head | `bc1bbb243a07420c2df33559aa4c30676e6addcd` |
 | Base | `origin/main` = `33d6c353023ecc3aa6331ab39f4f076ae3ca1fda` |
 | Auditor Tool | CommandCode CLI (`cmd`) |
 | Auditor Model | `deepseek/deepseek-v4-flash` |
 | Auditor Family | DeepSeek (independent different-family vs implementer Gemini) |
-| Audit Type | L3 independent audit, substantive head C1 |
+| Audit Type | Supplemental advisory audit |
 | Date | 2026-08-07 |
 
 ## Invariant Verification
@@ -36,10 +36,10 @@
 
 ## Findings & Risks
 
-- **F1 (Medium - Fixed)**: `ROLLBACK.md` post-merge command contained a duplicate `-m` flag; corrected in proof-only update.
+- **F1 (Medium - Fixed)**: `ROLLBACK.md` post-merge command syntax corrected.
 - **F2 (Info)**: Transitive `postcss`/`sharp`/`nanoid` findings require Next 16 upgrade, which is out of scope for this packet and pre-existing on `main`.
 - **F3 (Info)**: `npm run build` and `npm run lint` exit 1 due to missing `pages/app` directory in `dopemux-mvp` root; baseline equivalent.
 
-## Verdict
+## Supplemental Status
 
-**PASS_WITH_RISKS.** All 5 invariants hold. The patch is minimal, correctly scoped, and achieves its security intent. Merge remains NOT_AUTHORIZED by this packet; this audit satisfies the independent L3 requirement to advance to proof-only C2 push and PR Steward.
+**PASS_WITH_RISKS (Supplemental).** All 5 invariants hold. This supplemental CommandCode/DeepSeek audit report is retained as advisory evidence; canonical embedded audit provenance is provided via signed local attestation under `proof/pr_merge/embedded-audit/pr-1113/`.
