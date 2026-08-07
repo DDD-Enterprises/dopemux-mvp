@@ -266,4 +266,5 @@ def test_drifted_stack_patch_relation_unknown(monkeypatch):
     assert pair["stack_relation"] == "A_IS_PREDECESSOR_OF_B"
     assert pair["a_is_ancestor_of_b"] is False
     assert pair["patch_relation"] == "PATCH_IDENTITY_UNKNOWN"
+    assert pair["stack_drift"] == "DRIFTED_PREDECESSOR"
     assert pair["candidate_classification"] == "STACKED_PREDECESSOR"

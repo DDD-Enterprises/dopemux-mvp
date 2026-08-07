@@ -1011,7 +1011,7 @@
     },
     {
       "pr": 1205,
-      "head_sha": "824d247ac13b85235ff5ac7716cbddf359ec325a",
+      "head_sha": "85f88ef7b0ebbd2e9f1d6082a82a9d282c2a501b",
       "base_ref": "main",
       "base_sha": "33d6c353023ecc3aa6331ab39f4f076ae3ca1fda",
       "is_non_main_base": false,
@@ -1020,14 +1020,14 @@
       "predecessor_head_is_ancestor": null,
       "base_drift_detected": false,
       "merge_base_with_main": "17ddf9aa716956af9cd07f738c08b646edfeabee",
-      "ahead_of_main": 6,
+      "ahead_of_main": 8,
       "behind_main": 14,
       "main_is_ancestor_of_head": false,
       "head_is_ancestor_of_main": false,
-      "head_tree": "86284581d76bf29186ff552d32559ac2e0ce8e24",
+      "head_tree": "e85b96b36202040d4466e255ef1a94318536557d",
       "main_contains_patch": false,
       "merge_compatibility_against_main": "CLEAN",
-      "unique_commit_count": 6,
+      "unique_commit_count": 8,
       "topology_class": "STALE_REPAIRABLE"
     },
     {

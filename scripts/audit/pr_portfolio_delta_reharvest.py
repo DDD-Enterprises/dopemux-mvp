@@ -313,19 +313,25 @@ def compute_single_pair_topology(pr_a, pr_b, top_map):
         if same_head or tree_equal:
             patch_relation = "PATCH_IDENTICAL"
             classification = "TREE_EQUAL"
+            stack_drift = "NONE"
         elif a_is_ancestor_b or stack_relation == "A_IS_PREDECESSOR_OF_B":
             classification = "STACKED_PREDECESSOR"
             if a_is_ancestor_b:
                 patch_relation = "A_PATCH_SUBSET_OF_B"
+                stack_drift = "NONE"
             else:
                 patch_relation = "PATCH_IDENTITY_UNKNOWN"
+                stack_drift = "DRIFTED_PREDECESSOR"
         elif b_is_ancestor_a or stack_relation == "B_IS_PREDECESSOR_OF_A":
             classification = "STACKED_SUCCESSOR"
             if b_is_ancestor_a:
                 patch_relation = "B_PATCH_SUBSET_OF_A"
+                stack_drift = "NONE"
             else:
                 patch_relation = "PATCH_IDENTITY_UNKNOWN"
+                stack_drift = "DRIFTED_PREDECESSOR"
         else:
+            stack_drift = "NONE"
             # Check patch-id equivalence between A and B against main merge bases
             try:
                 mb_a = top_map[num_a].get("merge_base_with_main", "origin/main")
@@ -345,6 +351,8 @@ def compute_single_pair_topology(pr_a, pr_b, top_map):
                 classification = "PARTIAL_OVERLAP_COMPATIBLE" if merge_ab_clean else "PARTIAL_OVERLAP_CONFLICTING"
             else:
                 classification = "PATH_DISJOINT_UNSTACKED"
+    else:
+        stack_drift = "NONE"
 
     return {
         "pr_a": num_a,
@@ -354,6 +362,7 @@ def compute_single_pair_topology(pr_a, pr_b, top_map):
         "path_relation": path_relation,
         "ancestry_relation": ancestry_relation,
         "stack_relation": stack_relation,
+        "stack_drift": stack_drift,
         "patch_relation": patch_relation,
         "merge_compatibility": merge_compatibility,
         "a_is_ancestor_of_b": a_is_ancestor_b,
@@ -725,7 +734,7 @@ def main():
 
     with open(out_dir / "PAIR_RELATIONSHIPS.csv", "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f, lineterminator="\n")
-        writer.writerow(["pr_a", "pr_b", "head_a", "head_b", "path_relation", "ancestry_relation", "stack_relation", "patch_relation", "merge_compatibility", "a_is_ancestor", "b_is_ancestor", "intersection_count", "tree_equal", "classification", "intersecting_files"])
+        writer.writerow(["pr_a", "pr_b", "head_a", "head_b", "path_relation", "ancestry_relation", "stack_relation", "stack_drift", "patch_relation", "merge_compatibility", "a_is_ancestor", "b_is_ancestor", "intersection_count", "tree_equal", "classification", "intersecting_files"])
         for p in pair_records:
             writer.writerow([
                 p["pr_a"],
@@ -735,6 +744,7 @@ def main():
                 p.get("path_relation", "UNKNOWN"),
                 p.get("ancestry_relation", "UNKNOWN"),
                 p.get("stack_relation", "UNKNOWN"),
+                p.get("stack_drift", "NONE"),
                 p.get("patch_relation", "UNKNOWN"),
                 p.get("merge_compatibility", "UNKNOWN"),
                 str(p["a_is_ancestor_of_b"]),
