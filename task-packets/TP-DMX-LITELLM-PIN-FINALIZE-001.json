@@ -1,0 +1,282 @@
+{
+  "id": "TP-DMX-LITELLM-PIN-FINALIZE-001",
+  "project": "dopemux-mvp",
+  "target": "pr-1201-litellm-prisma-fastapi-crashloop-finalization",
+  "invariants": [
+    "Risk lane is L2 because this changes runtime container dependency resolution and startup behavior.",
+    "PR #1201 is the only product target. The only authorized product file is docker/mcp-servers-source/litellm/Dockerfile.",
+    "Preserve the exact intended runtime fix: prisma==0.11.0 and fastapi==0.140.0 while retaining the existing LiteLLM, Starlette, multipart, wheel, setuptools, MCP, cryptography and PyYAML intent.",
+    "Do not perform a general LiteLLM upgrade, model-routing change, provider change, configuration rewrite, Docker Compose rewrite, or unrelated dependency pin.",
+    "No production or shared runtime mutation is authorized. Do not restart, replace, exec into, migrate, or otherwise alter the existing mcp-litellm service or any shared database. Runtime smoke must use disposable containers only.",
+    "Ordinary origin/main movement is not a stop. Refresh only affected facts; historical SHAs are observations, not blanket gates.",
+    "If current main already contains the exact Prisma/FastAPI fix or a proven superseding runtime fix, stop ALREADY_CONTAINED_OR_SUPERSEDED rather than manufacturing another delta.",
+    "If current LiteLLM Dockerfile/runtime contract has materially changed so these pins are no longer applicable, stop BLOCKED_RUNTIME_BASELINE_CHANGED with the conflicting evidence.",
+    "AGY implementation must use gemini-3.6-flash with no silent fallback; record requested, configured and runner-reported identities separately.",
+    "The final L2 audit must be independent of the Gemini implementer and run only after the substantive content head is frozen. Preferred canonical route: claude-code-cli/sonnet if live-proven.",
+    "After the substantive audit head is frozen, later commits may change only proof/audit custody paths. No product re-audit is needed for proof-only successors.",
+    "Use the trusted signed-local-attestation contract under proof/pr_merge/embedded-audit/pr-1201/ when signer authority is available. Never expose private key bytes, passphrases, tokens, or secrets.",
+    "PASS_WITH_RISKS is acceptable only when every remaining risk is explicit and non-blocking.",
+    "Merge, mark-ready, force-push, history rewrite, branch deletion, repository-settings mutation, and production mutation remain NOT_AUTHORIZED."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PORTFOLIO-RECOVERY-W1-RUNTIME",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "gemini",
+    "branch": "fix/litellm-prisma-pin",
+    "base_branch": "main",
+    "stacked_because": "Independent Wave 1 runtime lane; may execute in parallel with #1115 and #1199."
+  },
+  "commit": {
+    "message": "fix(litellm): finalize Prisma and FastAPI crash-loop pins",
+    "allowlist": [
+      "docker/mcp-servers-source/litellm/Dockerfile",
+      "task-packets/TP-DMX-LITELLM-PIN-FINALIZE-001.json",
+      "proof/TP-DMX-LITELLM-PIN-FINALIZE-001/**",
+      "proof/pr_merge/embedded-audit/pr-1201/**"
+    ],
+    "verify": [
+      "Product delta is confined to docker/mcp-servers-source/litellm/Dockerfile.",
+      "Prisma is pinned exactly to 0.11.0 and FastAPI exactly to 0.140.0.",
+      "No unrelated pip dependency intent changes.",
+      "Disposable container build, import smoke, startup and health checks pass or any failure is baseline-classified.",
+      "Final substantive head is frozen before independent audit.",
+      "Signed-attestation successor is proof-only.",
+      "Remote push is fast-forward to the existing PR #1201 branch."
+    ]
+  },
+  "pr": {
+    "title": "fix(litellm): pin prisma==0.11.0 and fastapi==0.140.0 to stop crash-loop",
+    "body": "Finalize existing PR #1201 as the narrow LiteLLM crash-loop repair. Preserve only the Prisma 0.11.0 and FastAPI 0.140.0 compatibility pins and their explanatory comments. Validate in disposable containers only. No production mutation, general LiteLLM upgrade, merge, mark-ready, force-push, or history rewrite is authorized.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Prove runner/model, repository, live main, and current PR #1201 identity before edits.",
+      "requirements": [
+        "Prove gemini-3.6-flash is the configured AGY implementation model with no fallback.",
+        "Verify DDD-Enterprises/dopemux-mvp identity and clean starting tree.",
+        "Refresh origin/main and #1201 metadata.",
+        "Verify #1201 remains open and its product path is exactly docker/mcp-servers-source/litellm/Dockerfile."
+      ],
+      "commands": [
+        "agy --version",
+        "agy models",
+        "git rev-parse --show-toplevel",
+        "git remote get-url origin",
+        "git status --short --branch",
+        "git fetch --prune origin",
+        "git rev-parse origin/main",
+        "gh pr view 1201 --json number,state,isDraft,baseRefName,headRefName,headRefOid,mergeable,changedFiles,url",
+        "gh pr diff 1201 --name-only"
+      ],
+      "validation": [
+        "AGY Gemini 3.6 Flash identity is proven or the run stops before edits.",
+        "Repository and remote identity match.",
+        "Starting tree is clean.",
+        "#1201 is open and the source product path is exactly the LiteLLM Dockerfile."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "RULES.md",
+        "docker/mcp-servers-source/litellm/Dockerfile",
+        "docker/mcp-servers-source/litellm/entrypoint.sh",
+        "docker/mcp-servers-source/litellm/litellm.config.yaml",
+        "schemas/proof/embedded_audit.schema.json",
+        "scripts/audit/local_audit_acceptance.py"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Classify applicability against live main and preserve the exact #1201 runtime intent.",
+      "requirements": [
+        "Inspect current-main Dockerfile dependency block before modifying anything.",
+        "If current main already contains both exact pins or a proven superseding compatible fix, stop ALREADY_CONTAINED_OR_SUPERSEDED.",
+        "If LiteLLM installation or entrypoint semantics changed materially, stop BLOCKED_RUNTIME_BASELINE_CHANGED.",
+        "Do not broaden scope to adjacent runtime issues."
+      ],
+      "commands": [
+        "git show origin/main:docker/mcp-servers-source/litellm/Dockerfile > /tmp/pr1201-main.Dockerfile",
+        "gh pr diff 1201 --patch > /tmp/pr1201-source.patch",
+        "grep -nE 'litellm\\[proxy\\]|fastapi|prisma|starlette|cryptography' /tmp/pr1201-main.Dockerfile"
+      ],
+      "validation": [
+        "Applicability is APPLY_1201, ALREADY_CONTAINED_OR_SUPERSEDED, or BLOCKED_RUNTIME_BASELINE_CHANGED.",
+        "The exact source intent is captured before refresh."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create an isolated #1201-derived worktree and incorporate current main without rebase or destructive history surgery.",
+      "requirements": [
+        "Use a dedicated worktree.",
+        "Start from the current remote #1201 head.",
+        "Merge origin/main without rebase.",
+        "Any conflict outside the authorized Dockerfile stops execution.",
+        "Do not push yet."
+      ],
+      "commands": [
+        "PACKET=TP-DMX-LITELLM-PIN-FINALIZE-001; ROOT=\"$(git rev-parse --show-toplevel)\"; WT=\"$(dirname \"$ROOT\")/.worktrees/$PACKET\"; HEAD_REF=\"$(gh pr view 1201 --json headRefName -q .headRefName)\"; git fetch origin \"$HEAD_REF:refs/remotes/origin/$HEAD_REF\"; test ! -e \"$WT\"; git worktree add -b \"tp/$PACKET\" \"$WT\" \"refs/remotes/origin/$HEAD_REF\"",
+        "cd \"$(dirname \"$(git rev-parse --show-toplevel)\")/.worktrees/TP-DMX-LITELLM-PIN-FINALIZE-001\" && git merge --no-edit origin/main"
+      ],
+      "validation": [
+        "Current main is incorporated without rebase or force-push.",
+        "Product conflicts, if any, are confined to the Dockerfile and resolved without widening intent.",
+        "No remote mutation occurred."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Verify exact dependency scope and build the candidate image.",
+      "requirements": [
+        "The Dockerfile must pin prisma==0.11.0 and fastapi==0.140.0.",
+        "Existing security floors and unrelated dependency lines must remain semantically unchanged.",
+        "Build from repository root because the Dockerfile COPY instructions use root-relative paths.",
+        "Do not use production credentials during build or smoke."
+      ],
+      "commands": [
+        "git diff --check",
+        "git diff --name-only origin/main...HEAD",
+        "grep -nF \"prisma==0.11.0\" docker/mcp-servers-source/litellm/Dockerfile",
+        "grep -nF \"fastapi==0.140.0\" docker/mcp-servers-source/litellm/Dockerfile",
+        "IMG=\"dmx-litellm-pr1201:$(git rev-parse --short HEAD)\"; docker build --progress=plain -f docker/mcp-servers-source/litellm/Dockerfile -t \"$IMG\" .; echo \"$IMG\" > /tmp/pr1201-image.txt"
+      ],
+      "validation": [
+        "Product path is exactly the authorized Dockerfile.",
+        "Both exact pins are present.",
+        "No unrelated dependency intent changed.",
+        "Candidate image build succeeds."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run import, disposable database startup, and health smoke without touching the live fleet.",
+      "requirements": [
+        "Use only disposable containers and a packet-specific network.",
+        "Never connect to or migrate a shared or production database.",
+        "Use dummy provider credentials only to satisfy config parsing. Make no provider or model requests.",
+        "Verify FastAPI still exports get_flat_dependant, Prisma resolves correctly, LiteLLM proxy imports, the entrypoint remains running, and health endpoints respond.",
+        "Always clean up disposable containers and network.",
+        "If candidate smoke fails, reproduce the same failure against current main before attributing it to #1201."
+      ],
+      "commands": [
+        "IMG=\"$(cat /tmp/pr1201-image.txt)\"; docker run --rm --entrypoint python \"$IMG\" -c \"import fastapi, prisma; from fastapi.dependencies.utils import get_flat_dependant; import litellm.proxy.proxy_server; print(fastapi.__version__)\"",
+        "Run the candidate image against a uniquely named disposable PostgreSQL container and Docker network, with dummy LITELLM_MASTER_KEY/XAI_API_KEY/OPENROUTER_API_KEY values.",
+        "Require GET /health/liveliness to succeed.",
+        "Require authenticated GET /health/readiness to succeed.",
+        "Verify the application container remains running after startup.",
+        "Destroy the packet-specific application container, PostgreSQL container, and network on exit."
+      ],
+      "validation": [
+        "Import smoke passes.",
+        "Disposable PostgreSQL becomes ready.",
+        "LiteLLM entrypoint completes Prisma generation and migration only against the disposable database and stays running.",
+        "Liveliness and readiness checks pass.",
+        "No production or shared service is mutated."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run pre-push gates, create proof, and freeze the final substantive C1 head.",
+      "requirements": [
+        "Write the Task Packet JSON and bounded validation, rollback, and provisional proof records.",
+        "Initial proof must not fabricate the final audit.",
+        "Run schema validation, allowlist, git diff --check, changed-file pre-commit, and secret scan.",
+        "If a hook modifies files, rerun until clean.",
+        "Freeze C1 before audit.",
+        "Do not push C1."
+      ],
+      "commands": [
+        "python3 -m json.tool task-packets/TP-DMX-LITELLM-PIN-FINALIZE-001.json >/dev/null",
+        "python3 -c \"import json,jsonschema; jsonschema.validate(json.load(open('task-packets/TP-DMX-LITELLM-PIN-FINALIZE-001.json')),json.load(open('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json')))\"",
+        "git diff --check",
+        "pre-commit run --files docker/mcp-servers-source/litellm/Dockerfile task-packets/TP-DMX-LITELLM-PIN-FINALIZE-001.json proof/TP-DMX-LITELLM-PIN-FINALIZE-001/PROOF.json proof/TP-DMX-LITELLM-PIN-FINALIZE-001/VALIDATION.md proof/TP-DMX-LITELLM-PIN-FINALIZE-001/ROLLBACK.md",
+        "git diff --name-only origin/main...HEAD",
+        "git add docker/mcp-servers-source/litellm/Dockerfile task-packets/TP-DMX-LITELLM-PIN-FINALIZE-001.json proof/TP-DMX-LITELLM-PIN-FINALIZE-001",
+        "git commit -m \"fix(litellm): finalize Prisma and FastAPI crash-loop pins\"",
+        "git rev-parse HEAD"
+      ],
+      "validation": [
+        "Packet schema passes.",
+        "All changed files are allowlisted.",
+        "Deterministic gates pass.",
+        "Proof is truthful and secrets-free.",
+        "C1 is frozen.",
+        "No push occurred."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run one independent exact-C1 Claude Code Sonnet audit.",
+      "requirements": [
+        "Auditor is independent from AGY Gemini.",
+        "Use claude-code-cli/sonnet only if live-proven and with no fallback.",
+        "Audit exact C1 including pin rationale, container build, disposable startup and health evidence, rollback, and proof hygiene.",
+        "Require PASS or non-blocking PASS_WITH_RISKS.",
+        "Do not alter product content after audit."
+      ],
+      "commands": [
+        "claude --version",
+        "claude -p \"Audit exact frozen C1 for TP-DMX-LITELLM-PIN-FINALIZE-001. Review the one-file LiteLLM compatibility pin, disposable runtime evidence, rollback, and proof. Return PASS, PASS_WITH_RISKS, FAIL, or NEEDS_SUPERVISOR.\" --print --safe-mode --no-session-persistence --permission-mode plan --tools \"\" --strict-mcp-config --model sonnet"
+      ],
+      "validation": [
+        "Auditor identity is claude-code-cli/sonnet.",
+        "Audit is exact-C1.",
+        "Verdict passes or execution stops.",
+        "Product content remains frozen."
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Create signed proof-only successor, locally verify it, fast-forward push to #1201, and harvest GitHub embedded-audit and Steward.",
+      "requirements": [
+        "Create proof/pr_merge/embedded-audit/pr-1201/PROOF.json and AUDITOR_REPORT.md bound to C1 with truthful Claude/Sonnet provenance.",
+        "Sign exact PROOF.json bytes using namespace dopemux-embedded-audit without exposing key material.",
+        "Commit signed proof before local acceptance.",
+        "If local acceptance fails, repair only proof custody in another unpushed proof-only successor. Do not re-audit unchanged C1.",
+        "Push only after local acceptance passes.",
+        "Push fast-forward only to the existing #1201 branch.",
+        "Do not merge or mark ready."
+      ],
+      "commands": [
+        "mkdir -p proof/pr_merge/embedded-audit/pr-1201",
+        "ssh-keygen -Y sign -f ~/.ssh/dopemux_audit_signing -n dopemux-embedded-audit proof/pr_merge/embedded-audit/pr-1201/PROOF.json",
+        "git add proof/pr_merge/embedded-audit/pr-1201",
+        "git commit -m \"proof: bind signed local audit for PR 1201\"",
+        "C2=\"$(git rev-parse HEAD)\"; python3 scripts/audit/local_audit_acceptance.py --repo DDD-Enterprises/dopemux-mvp --pr 1201 --head-sha \"$C2\" --allowed-signers config/audit/embedded-audit-allowed-signers --schema schemas/proof/embedded_audit.schema.json --out /tmp/pr1201-local-attestation.json",
+        "HEAD_REF=\"$(gh pr view 1201 --json headRefName -q .headRefName)\"; git push origin \"HEAD:$HEAD_REF\"",
+        "gh pr checks 1201"
+      ],
+      "validation": [
+        "Signed local acceptance passes.",
+        "C1 to pushed head is proof-only.",
+        "Push is fast-forward.",
+        "Remote head matches.",
+        "OPERATOR_READY is true only if exact-head embedded audit and PR Steward are green.",
+        "MERGE_AUTHORIZATION remains NOT_GRANTED."
+      ]
+    }
+  ]
+}

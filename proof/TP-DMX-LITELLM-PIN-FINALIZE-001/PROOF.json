@@ -1,0 +1,61 @@
+{
+  "packet_id": "TP-DMX-LITELLM-PIN-FINALIZE-001",
+  "series": "DMX-PORTFOLIO-RECOVERY-W1-RUNTIME",
+  "branch": "fix/litellm-prisma-pin",
+  "base": "main",
+  "target_pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1201",
+  "agent": "AGY / Gemini 3.6 Flash",
+  "model_identity": {
+    "implementer": "gemini-3.6-flash",
+    "requested": "gemini-3.6-flash",
+    "configured": "gemini-3.6-flash",
+    "runner_reported": "Gemini 3.6 Flash (High)"
+  },
+  "substantive_files": [
+    "docker/mcp-servers-source/litellm/Dockerfile"
+  ],
+  "validations": {
+    "prisma_pin": "prisma==0.11.0",
+    "fastapi_pin": "fastapi==0.140.0",
+    "docker_build": "PASS (dmx-litellm-pr1201:22c06b36e1)",
+    "import_smoke": "PASS (fastapi 0.140.0, prisma 0.11.0)",
+    "disposable_db_migration": "PASS",
+    "liveliness_health": "PASS (HTTP 200)",
+    "readiness_health": "PASS (HTTP 200)",
+    "container_status": "PASS (Up)",
+    "fleet_isolation": "PASS (disposable containers only, 0 production/shared mutation)"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude -p 'Audit exact frozen C1 for TP-DMX-LITELLM-PIN-FINALIZE-001...' --model sonnet",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-LITELLM-PIN-FINALIZE-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-SUBSTANTIVE-BOOLEAN-DISCREPANCY",
+        "severity": "LOW",
+        "title": "Provisional PROOF.json boolean flag was false prior to C1 freeze",
+        "status": "RESOLVED",
+        "body": "Updated substantive_c1_frozen to true in proof-only successor."
+      },
+      {
+        "id": "F-PREEXISTING-PATCH-TRANSPARENCY",
+        "severity": "INFO",
+        "title": "PR 1201 Dockerfile pin originated prior to packet execution",
+        "status": "RESOLVED",
+        "body": "Verified applicability and re-validated in disposable container smoke during this packet."
+      }
+    ],
+    "fixes_applied": [
+      "Updated substantive_c1_frozen to true",
+      "Created AUDITOR_REPORT.md and bound signed local attestation for PR 1201"
+    ],
+    "remaining_risks": [],
+    "skip_reason": null
+  },
+  "substantive_c1_frozen": true,
+  "substantive_c1_sha": "b5ed179590f4bc1e6c456bda260734a60690aefa"
+}
