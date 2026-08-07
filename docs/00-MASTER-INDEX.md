@@ -122,7 +122,7 @@ Status: [LOGGED] Topology Complete
 - [Features and Benefits](04-explanation/product/features-and-benefits.md) - Feature benefits tied to repo evidence and limitations
 - [Full Codebase Explainer](04-explanation/architecture/dopemux-mvp-full-codebase-explainer.md) - Repo-truth explainer for the active Dopemux control surfaces, service boundaries, and authority split
 - [System Bible](04-explanation/architecture/system-bible.md) - Consolidated knowledge base
-- [Second Brain Architecture Authority](03-reference/architecture/second-brain/authority/README.md) - Ratified architecture authority record (persistence only; ADR acceptance not yet authorized)
+- [Second Brain Architecture Authority](03-reference/architecture/second-brain/authority/readme.md) - Ratified architecture authority record (persistence only; ADR acceptance not yet authorized)
 - [Three-Layer Integration](90-adr/adr-207-architecture-3-0-three-layer-integration.md)
 - [Multi-Instance Implementation](04-explanation/architecture/multi-instance-implementation.md)
 - [Canonical Compose Runtime](../compose.yml) - Single orchestration source for smoke + full-stack operations
