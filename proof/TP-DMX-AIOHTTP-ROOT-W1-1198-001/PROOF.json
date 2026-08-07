@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0.0",
+  "tp_id": "TP-DMX-AIOHTTP-ROOT-W1-1198-001",
+  "series_id": "DMX-PORTFOLIO-RECOVERY-W1-PY-PATCHES",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "tp/TP-DMX-AIOHTTP-ROOT-W1-1198-001",
+  "base_branch": "main",
+  "head_before": "e7e04c20b2cd2a528bc1f1698e183e569b5dae3f",
+  "head_after": "96b2810931c40a7f842a0c6365ab5caf521a01fa",
+  "mutation_performed": false,
+  "github_mutation_performed": false,
+  "secret_values_recorded": false,
+  "operator_authorization_used": [],
+  "forbidden_surfaces_touched": false,
+  "files_changed": [
+    "pyproject.toml",
+    "uv.lock",
+    "task-packets/TP-DMX-AIOHTTP-ROOT-W1-1198-001.json",
+    "proof/TP-DMX-AIOHTTP-ROOT-W1-1198-001/PROOF.json",
+    "proof/TP-DMX-AIOHTTP-ROOT-W1-1198-001/VALIDATION.md",
+    "proof/TP-DMX-AIOHTTP-ROOT-W1-1198-001/ROLLBACK.md",
+    "proof/TP-DMX-AIOHTTP-ROOT-W1-1198-001/AUDITOR_REPORT.md",
+    "proof/pr_merge/embedded-audit/pr-1198/PROOF.json"
+  ],
+  "commands": [
+    {
+      "cmd": "uv lock --check",
+      "exit_code": 0,
+      "result": "Root lock check passed"
+    },
+    {
+      "cmd": "uv sync --frozen",
+      "exit_code": 0,
+      "result": "Root frozen sync success"
+    },
+    {
+      "cmd": "uv run python -c 'import aiohttp; assert aiohttp.__version__ == \"3.14.3\"'",
+      "exit_code": 0,
+      "result": "aiohttp 3.14.3 import success"
+    },
+    {
+      "cmd": "xargs uv run pytest -q < /tmp/pr1198-aiohttp-tests.txt",
+      "exit_code": 0,
+      "result": "11 focused aiohttp tests passed"
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "details": [
+      {"check": "root_lock_aiohttp_version", "status": "PASS", "detail": "uv.lock resolves aiohttp 3.14.3"},
+      {"check": "solver_conservation", "status": "PASS", "detail": "Lock structures identical to main after normalizing aiohttp"},
+      {"check": "secretstorage_churn_removal", "status": "PASS", "detail": "Secretstorage block restored from main"},
+      {"check": "diff_check", "status": "PASS", "detail": "git diff --check passes cleanly"}
+    ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude -p formal L1 audit --model sonnet; Claude Code 2.1.224; Anthropic first-party OAuth",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-AIOHTTP-ROOT-W1-1198-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-MAIN-BASELINE-FAILURES",
+        "severity": "LOW",
+        "title": "Pre-existing test failures on main baseline",
+        "status": "ACCEPTED_RISK",
+        "body": "pytest failures in unrelated modules are 100% baseline-equivalent to origin/main."
+      }
+    ],
+    "fixes_applied": [
+      "Removed secretstorage lock churn from uv.lock",
+      "Restored aiohttp>=3.14.3 floor in pyproject.toml"
+    ],
+    "remaining_risks": [
+      "Pre-existing test failures on main baseline"
+    ],
+    "skip_reason": null
+  },
+  "embedded_audit_status": "PASS_WITH_RISKS",
+  "governance": {
+    "branch_protection_changed": false,
+    "required_checks_changed": false,
+    "pull_request_target_introduced": false,
+    "secrets_touched": false,
+    "codeowners_changed": false,
+    "mutation_surfaces_added": false
+  },
+  "stop_conditions_hit": [],
+  "remaining_risks": [
+    "Pre-existing test failures on origin/main baseline"
+  ],
+  "next_recommended_action": "Bind signed proof C2 and push."
+}

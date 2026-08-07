@@ -1,0 +1,260 @@
+{
+  "id": "TP-DMX-AIOHTTP-ROOT-W1-1198-001",
+  "project": "dopemux-mvp",
+  "target": "pr-1198-root-aiohttp-3-14-3-clean-lock-finalization",
+  "invariants": [
+    "Risk lane begins at L1 because this is a bounded root dependency patch; escalate to L2 if runtime behavior, unrelated dependencies, schemas, workflows, or public interfaces change.",
+    "Existing PR #1198 is the target. Authorized product paths are pyproject.toml and uv.lock only.",
+    "Preserve the exact intended dependency floor aiohttp>=3.14.3 and lock aiohttp==3.14.3.",
+    "Current #1198 uv.lock contains unrelated secretstorage marker churn. That churn is not part of the accepted payload and must be removed before readiness.",
+    "Do not change pyasn1, cryptography, google-genai, openai, PAL locks, service-local requirements, or any other dependency.",
+    "Ordinary main movement is not a stop. If main moves without overlapping pyproject.toml or uv.lock, do not create merge churn solely for freshness.",
+    "If main changes pyproject.toml or uv.lock, recompute only this dependency relation and regenerate from current main before freezing.",
+    "Lock conservation is strict: after normalizing the aiohttp package record and root aiohttp requires-dist specifier, the parsed candidate uv.lock must equal current main.",
+    "AGY implementation should use gemini-3.6-flash with no silent fallback.",
+    "Independent model audit is not required by L1 itself, but one exact-head claude-code-cli/sonnet audit is authorized for the repository's embedded-audit/Steward gate.",
+    "If Steward fails solely because Dependabot is still classified as UNKNOWN_PR_AUTHOR before PR #1207 merges, stop WAITING_GOVERNANCE_1207 without changing the branch.",
+    "After PR #1207 merges, reuse the successful exact-head embedded-audit artifact and manually dispatch PR Steward from new main; do not re-audit or create another commit.",
+    "Do not merge, mark ready, force-push, rewrite history, or broaden dependency scope."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PORTFOLIO-RECOVERY-W1-PY-PATCHES",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "gemini",
+    "branch": "dependabot/uv/aiohttp-3.14.3",
+    "base_branch": "main",
+    "stacked_because": "Root aiohttp patch is unblocked after #1115 merged and may proceed independently of #1207, #1199, and #1201."
+  },
+  "commit": {
+    "message": "chore(deps): finalize root aiohttp 3.14.3 patch",
+    "allowlist": [
+      "pyproject.toml",
+      "uv.lock",
+      "task-packets/TP-DMX-AIOHTTP-ROOT-W1-1198-001.json",
+      "proof/TP-DMX-AIOHTTP-ROOT-W1-1198-001/**",
+      "proof/pr_merge/embedded-audit/pr-1198/**"
+    ],
+    "verify": [
+      "pyproject.toml changes only aiohttp floor to >=3.14.3.",
+      "uv.lock resolves aiohttp 3.14.3.",
+      "Unrelated secretstorage marker churn is absent.",
+      "Parsed lock is identical to current main after removing the aiohttp package record and normalizing the root aiohttp requires-dist specifier.",
+      "Focused aiohttp-using tests and the relevant complete suite pass or failures are proven baseline-equivalent.",
+      "Post-audit successor is proof-only."
+    ]
+  },
+  "pr": {
+    "title": "deps(deps): bump aiohttp from 3.14.1 to 3.14.3",
+    "body": "Repair and finalize existing PR #1198 as the root aiohttp 3.14.3 dependency patch. Remove unrelated uv.lock marker churn and preserve only the aiohttp floor/package update. No unrelated dependency changes, merge, mark-ready, force-push, or history rewrite are authorized.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Prove AGY/model, repository, live main, PR #1198, and current diff identity.",
+      "requirements": [
+        "Prove gemini-3.6-flash with no fallback.",
+        "Verify repository identity and clean isolated worktree.",
+        "Refresh origin/main and #1198.",
+        "Record whether main changed pyproject.toml or uv.lock since the PR base.",
+        "Confirm current PR scope is pyproject.toml and uv.lock."
+      ],
+      "commands": [
+        "agy --version",
+        "agy models",
+        "git rev-parse --show-toplevel",
+        "git remote get-url origin",
+        "git status --short --branch",
+        "git fetch --prune origin",
+        "git rev-parse origin/main",
+        "gh pr view 1198 --json number,state,isDraft,baseRefName,headRefName,headRefOid,mergeable,url",
+        "gh pr diff 1198 --name-only",
+        "gh pr diff 1198 --patch > /tmp/pr1198-source.patch"
+      ],
+      "validation": [
+        "Gemini 3.6 Flash route is proven or execution stops.",
+        "Repository identity matches.",
+        "#1198 is open.",
+        "Current source scope is exactly pyproject.toml and uv.lock.",
+        "Any main overlap is classified before repair."
+      ],
+      "context_files": [
+        "RULES.md",
+        "AGENTS.md",
+        "pyproject.toml",
+        "uv.lock",
+        "schemas/proof/embedded_audit.schema.json",
+        "scripts/audit/local_audit_acceptance.py"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Create an isolated #1198 worktree and remove unrelated lock churn while preserving only aiohttp intent.",
+      "requirements": [
+        "Start from the current #1198 remote head to preserve fast-forward history.",
+        "If main did not overlap the two product paths, do not merge main merely for SHA freshness.",
+        "If main did overlap, merge current main without rebase, then regenerate the aiohttp delta.",
+        "Restore the secretstorage package block exactly from current main.",
+        "Any other unrelated lock difference stops execution."
+      ],
+      "commands": [
+        "PACKET=TP-DMX-AIOHTTP-ROOT-W1-1198-001; ROOT=\"$(git rev-parse --show-toplevel)\"; WT=\"$(dirname \"$ROOT\")/.worktrees/$PACKET\"; HEAD_REF=\"$(gh pr view 1198 --json headRefName -q .headRefName)\"; git fetch origin \"$HEAD_REF:refs/remotes/origin/$HEAD_REF\"; test ! -e \"$WT\"; git worktree add -b \"tp/$PACKET\" \"$WT\" \"refs/remotes/origin/$HEAD_REF\"",
+        "python3 - <<'PY'\nimport re,subprocess\nfrom pathlib import Path\nbase=subprocess.check_output(['git','show','origin/main:uv.lock'],text=True)\np=Path('uv.lock'); cand=p.read_text()\npat=r'(?ms)^\\[\\[package\\]\\]\\nname = \"secretstorage\"\\n.*?(?=\\[\\[package\\]\\]|\\Z)'\nbm=re.search(pat,base); cm=re.search(pat,cand)\nif not bm or not cm: raise SystemExit('secretstorage block not found')\np.write_text(cand[:cm.start()]+bm.group(0)+cand[cm.end():])\nPY",
+        "git diff --check"
+      ],
+      "validation": [
+        "Fast-forward ancestry from the current PR head is preserved.",
+        "Secretstorage block matches current main exactly.",
+        "No product file outside pyproject.toml/uv.lock changed."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Prove strict semantic lock conservation and validate the root dependency environment.",
+      "requirements": [
+        "pyproject.toml must differ from current main only at the aiohttp floor.",
+        "Candidate lock must resolve aiohttp 3.14.3.",
+        "After removing aiohttp package records and normalizing aiohttp requires-dist specifier values, parsed base and candidate lock structures must be identical.",
+        "uv lock --check and uv sync --frozen must pass.",
+        "Run focused tests that reference aiohttp, then the relevant complete root suite once.",
+        "If the complete suite fails, compare with current-main baseline before attribution."
+      ],
+      "commands": [
+        "uv --version",
+        "python3 - <<'PY'\nimport tomllib,copy,subprocess\nfrom pathlib import Path\nbase=tomllib.loads(subprocess.check_output(['git','show','origin/main:uv.lock'],text=True))\ncand=tomllib.loads(Path('uv.lock').read_text())\ndef normalize(d):\n    d=copy.deepcopy(d)\n    d['package']=[p for p in d.get('package',[]) if p.get('name')!='aiohttp']\n    for p in d.get('package',[]):\n        md=p.get('metadata') or {}\n        for item in md.get('requires-dist',[]) or []:\n            if item.get('name')=='aiohttp': item['specifier']='<AIOHTTP_SPEC>'\n    return d\nif normalize(base)!=normalize(cand): raise SystemExit('UNRELATED_LOCK_CHURN')\nrows=[p for p in cand.get('package',[]) if p.get('name')=='aiohttp']\nassert rows and all(p.get('version')=='3.14.3' for p in rows)\nprint('LOCK_CONSERVATION=PASS')\nPY",
+        "python3 - <<'PY'\nimport subprocess\nfrom pathlib import Path\nbase=subprocess.check_output(['git','show','origin/main:pyproject.toml'],text=True).splitlines()\ncand=Path('pyproject.toml').read_text().splitlines()\ndef norm(xs): return [('<AIOHTTP>' if 'aiohttp' in x else x) for x in xs]\nassert norm(base)==norm(cand)\nassert any('aiohttp>=3.14.3' in x for x in cand)\nprint('PYPROJECT_SCOPE=PASS')\nPY",
+        "uv lock --check",
+        "uv sync --frozen",
+        "uv run python -c \"import aiohttp; print(aiohttp.__version__); assert aiohttp.__version__=='3.14.3'\"",
+        "git grep -l 'aiohttp' -- 'tests/*.py' 'tests/**/*.py' > /tmp/pr1198-aiohttp-tests.txt || true",
+        "if [ -s /tmp/pr1198-aiohttp-tests.txt ]; then xargs uv run pytest -q < /tmp/pr1198-aiohttp-tests.txt; else echo NOT_RUN_NO_FOCUSED_TESTS_FOUND; fi",
+        "uv run pytest -q",
+        "git diff --check"
+      ],
+      "validation": [
+        "Pyproject scope is exact.",
+        "Lock conservation passes.",
+        "uv lock --check passes.",
+        "Frozen sync and aiohttp import pass.",
+        "Focused tests pass or are explicitly absent.",
+        "Complete relevant suite passes or any failure is proven baseline-equivalent."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Create packet/proof, run pre-push gates, and freeze substantive C1.",
+      "requirements": [
+        "Write truthful provisional proof with audit not yet claimed.",
+        "Run schema validation, allowlist, diff check, pre-commit, and secret scan.",
+        "Freeze C1 and do not push before audit."
+      ],
+      "commands": [
+        "python3 -m json.tool task-packets/TP-DMX-AIOHTTP-ROOT-W1-1198-001.json >/dev/null",
+        "python3 -c \"import json,jsonschema; jsonschema.validate(json.load(open('task-packets/TP-DMX-AIOHTTP-ROOT-W1-1198-001.json')),json.load(open('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json')))\"",
+        "git diff --check",
+        "pre-commit run --files pyproject.toml uv.lock task-packets/TP-DMX-AIOHTTP-ROOT-W1-1198-001.json proof/TP-DMX-AIOHTTP-ROOT-W1-1198-001/PROOF.json proof/TP-DMX-AIOHTTP-ROOT-W1-1198-001/VALIDATION.md proof/TP-DMX-AIOHTTP-ROOT-W1-1198-001/ROLLBACK.md",
+        "git add pyproject.toml uv.lock task-packets/TP-DMX-AIOHTTP-ROOT-W1-1198-001.json proof/TP-DMX-AIOHTTP-ROOT-W1-1198-001",
+        "git commit -m \"chore(deps): finalize root aiohttp 3.14.3 patch\"",
+        "git rev-parse HEAD"
+      ],
+      "validation": [
+        "Packet schema and deterministic gates pass.",
+        "All files are allowlisted.",
+        "C1 is frozen and unpushed."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run one low-cost exact-C1 independent audit for repository readiness plumbing.",
+      "requirements": [
+        "Use claude-code-cli/sonnet if live-proven, no fallback.",
+        "Review only scope conservation, aiohttp dependency semantics, tests, rollback, and proof.",
+        "Require PASS or non-blocking PASS_WITH_RISKS.",
+        "No substantive change after audit."
+      ],
+      "commands": [
+        "claude --version",
+        "claude -p \"Audit exact frozen C1 for TP-DMX-AIOHTTP-ROOT-W1-1198-001. Verify only aiohttp 3.14.3 changed, unrelated secretstorage lock churn was removed, validation is sufficient, and proof/rollback are sound. Return PASS, PASS_WITH_RISKS, FAIL, or NEEDS_SUPERVISOR.\" --print --safe-mode --no-session-persistence --permission-mode plan --tools \"\" --strict-mcp-config --model sonnet"
+      ],
+      "validation": [
+        "Audit is exact-C1 and independent.",
+        "Verdict passes.",
+        "Product content stays frozen."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Create signed proof-only C2, push fast-forward, and evaluate current GitHub gates.",
+      "requirements": [
+        "Create canonical signed proof under proof/pr_merge/embedded-audit/pr-1198.",
+        "Commit proof-only C2 and verify local acceptance before push.",
+        "Push fast-forward to existing #1198 branch.",
+        "Record the successful exact-head embedded-audit run ID by matching artifact name embedded-audit-pr-1198-head-<C2>-proof.",
+        "If PR Steward is green, report OPERATOR_READY.",
+        "If the only Steward blocker is UNKNOWN_PR_AUTHOR for Dependabot and #1207 is not merged, report WAITING_GOVERNANCE_1207 and make no further commit."
+      ],
+      "commands": [
+        "mkdir -p proof/pr_merge/embedded-audit/pr-1198",
+        "ssh-keygen -Y sign -f ~/.ssh/dopemux_audit_signing -n dopemux-embedded-audit proof/pr_merge/embedded-audit/pr-1198/PROOF.json",
+        "git add proof/pr_merge/embedded-audit/pr-1198",
+        "git commit -m \"proof: bind signed local audit for PR 1198\"",
+        "C2=\"$(git rev-parse HEAD)\"; python3 scripts/audit/local_audit_acceptance.py --repo DDD-Enterprises/dopemux-mvp --pr 1198 --head-sha \"$C2\" --allowed-signers config/audit/embedded-audit-allowed-signers --schema schemas/proof/embedded_audit.schema.json --out /tmp/pr1198-local-attestation.json",
+        "HEAD_REF=\"$(gh pr view 1198 --json headRefName -q .headRefName)\"; git push origin \"HEAD:$HEAD_REF\"",
+        "gh pr checks 1198"
+      ],
+      "validation": [
+        "Local acceptance passes.",
+        "C1 to C2 is proof-only.",
+        "Remote head equals C2.",
+        "Successful embedded-audit run ID is captured by exact artifact/head binding.",
+        "Either PR Steward is READY or the sole remaining blocker is explicitly WAITING_GOVERNANCE_1207.",
+        "MERGE_AUTHORIZATION remains NOT_GRANTED."
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "After #1207 merges, re-evaluate the unchanged C2 with trusted new-main PR Steward only if needed.",
+      "requirements": [
+        "Run only if S5 ended WAITING_GOVERNANCE_1207.",
+        "Verify #1207 is merged into current main and #1198 remote head is unchanged.",
+        "Reuse the successful embedded-audit run ID captured in S5.",
+        "Dispatch pr-steward.yml from current main with that audit_run_id.",
+        "Do not re-audit and do not create another commit."
+      ],
+      "commands": [
+        "gh pr view 1207 --json state,mergedAt,mergeCommit",
+        "gh pr view 1198 --json headRefOid,state,mergeable",
+        "gh workflow run pr-steward.yml --ref main -f audit_run_id=\"$AUDIT_RUN_ID\""
+      ],
+      "validation": [
+        "#1207 is merged.",
+        "#1198 head is unchanged from C2.",
+        "Fresh Steward uses current main classifier.",
+        "PR Steward final readiness becomes success or any new blocker is reported exactly.",
+        "No repository content mutation occurs."
+      ]
+    }
+  ]
+}
