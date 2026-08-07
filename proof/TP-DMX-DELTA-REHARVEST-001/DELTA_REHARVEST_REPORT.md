@@ -16,7 +16,7 @@
 | S0 origin/main Commit | `33d6c35302` |
 | S1 origin/main Commit | `33d6c35302` |
 | Main Branch Drift | `False` |
-| S1 Portfolio Drift Classification | `NO_MATERIAL_EFFECT` |
+| S1 Portfolio Drift Classification | `NO_PR_HEAD_MOVEMENT` |
 
 ## Harvested PR Range
 - **Lowest PR**: #1113 (`deps(deps): bump next from 15.5.18 to 15.5.21`)

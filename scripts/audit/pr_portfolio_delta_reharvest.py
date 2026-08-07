@@ -314,11 +314,17 @@ def compute_single_pair_topology(pr_a, pr_b, top_map):
             patch_relation = "PATCH_IDENTICAL"
             classification = "TREE_EQUAL"
         elif a_is_ancestor_b or stack_relation == "A_IS_PREDECESSOR_OF_B":
-            patch_relation = "A_PATCH_SUBSET_OF_B"
             classification = "STACKED_PREDECESSOR"
+            if a_is_ancestor_b:
+                patch_relation = "A_PATCH_SUBSET_OF_B"
+            else:
+                patch_relation = "PATCH_IDENTITY_UNKNOWN"
         elif b_is_ancestor_a or stack_relation == "B_IS_PREDECESSOR_OF_A":
-            patch_relation = "B_PATCH_SUBSET_OF_A"
             classification = "STACKED_SUCCESSOR"
+            if b_is_ancestor_a:
+                patch_relation = "B_PATCH_SUBSET_OF_A"
+            else:
+                patch_relation = "PATCH_IDENTITY_UNKNOWN"
         else:
             # Check patch-id equivalence between A and B against main merge bases
             try:
@@ -604,13 +610,25 @@ def main():
                 changed_bases.append(pnum)
 
     only_meta_pr_1205_moved = (
-        set(moved_heads).issubset({1205}) and
+        moved_heads == [1205] and
+        len(changed_bases) == 0 and
+        len(opened_prs) == 0 and
+        len(closed_prs) == 0
+    )
+    no_pr_head_movement = (
+        len(moved_heads) == 0 and
         len(changed_bases) == 0 and
         len(opened_prs) == 0 and
         len(closed_prs) == 0
     )
 
-    drift_classification = "NO_MATERIAL_EFFECT" if (only_meta_pr_1205_moved or (not moved_heads and not changed_bases and not opened_prs and not closed_prs)) else "PORTFOLIO_REFRESHED"
+    if no_pr_head_movement:
+        drift_classification = "NO_PR_HEAD_MOVEMENT"
+    elif only_meta_pr_1205_moved:
+        drift_classification = "ONLY_META_PR_1205_MOVED"
+    else:
+        drift_classification = "MATERIAL_PORTFOLIO_MOVEMENT"
+
     portfolio_drift_classified = True
     no_path_only_independent = all(p["candidate_classification"] != "INDEPENDENT" for p in pair_records)
 

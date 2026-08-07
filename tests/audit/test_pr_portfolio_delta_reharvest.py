@@ -243,3 +243,27 @@ def test_pr_topology_non_main_base_resolution(monkeypatch):
     assert top["predecessor_head_sha"] == "sha1136"
     assert top["base_drift_detected"] is True
     assert top["topology_class"] == "STACKED_ON_OPEN_PR"
+
+
+def test_drifted_stack_patch_relation_unknown(monkeypatch):
+    """
+    R2A repair: Proves that a stacked PR whose predecessor head is NOT an ancestor
+    returns patch_relation = PATCH_IDENTITY_UNKNOWN rather than claiming A_PATCH_SUBSET_OF_B.
+    """
+    # Ancestry check returns False
+    monkeypatch.setattr("scripts.audit.pr_portfolio_delta_reharvest.run_cmd_bool", lambda cmd: False)
+    monkeypatch.setattr("scripts.audit.pr_portfolio_delta_reharvest.run_cmd", lambda cmd: "dummy_patch_id\t-")
+
+    pr_1136 = {"number": 1136, "headRefOid": "sha1136", "headRefName": "claude/rte-truth-program", "baseRefName": "main", "files": ["rte.py"]}
+    pr_1183 = {"number": 1183, "headRefOid": "sha1183", "headRefName": "feat/1183", "baseRefName": "claude/rte-truth-program", "files": ["rte.py"]}
+    top_map = {
+        1136: {"head_tree": "tree1136", "merge_base_with_main": "mbSHA"},
+        1183: {"head_tree": "tree1183", "merge_base_with_main": "mbSHA"}
+    }
+
+    pair = compute_single_pair_topology(pr_1136, pr_1183, top_map)
+
+    assert pair["stack_relation"] == "A_IS_PREDECESSOR_OF_B"
+    assert pair["a_is_ancestor_of_b"] is False
+    assert pair["patch_relation"] == "PATCH_IDENTITY_UNKNOWN"
+    assert pair["candidate_classification"] == "STACKED_PREDECESSOR"

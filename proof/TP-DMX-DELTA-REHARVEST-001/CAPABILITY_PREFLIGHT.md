@@ -4,7 +4,7 @@
 - **S0 origin/main Commit**: `33d6c353023ecc3aa6331ab39f4f076ae3ca1fda`
 - **S1 origin/main Commit**: `33d6c353023ecc3aa6331ab39f4f076ae3ca1fda`
 - **Main Branch Drift**: `False`
-- **Portfolio PR Drift Classified**: `True` (NO_MATERIAL_EFFECT)
+- **Portfolio PR Drift Classified**: `True` (NO_PR_HEAD_MOVEMENT)
 - **Authenticated GitHub Connector**: `PASS`
 - **Open PR Count**: `50`
 - **Actual Pair Records Generated**: `1225` (Expected: `1225`)
