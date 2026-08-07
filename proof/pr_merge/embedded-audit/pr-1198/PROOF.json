@@ -1,0 +1,58 @@
+{
+  "packet_id": "TP-DMX-AIOHTTP-ROOT-W1-1198-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1198,
+  "head_sha": "61468e02355f405482f6abffa8a790a236c6ea27",
+  "content_head_audited": "61468e02355f405482f6abffa8a790a236c6ea27",
+  "executed": true,
+  "mutation_performed": false,
+  "github_mutation_route_added": false,
+  "generated_at": "2026-08-07T23:52:14Z",
+  "formal_auditor": {
+    "tool": "Claude Code CLI",
+    "version": "2.1.224",
+    "configured_model": "sonnet",
+    "response_claimed_model": "sonnet",
+    "provider_attested": "Anthropic first-party (claude.ai OAuth)",
+    "proxy_reported_provider": "N/A_first_party"
+  },
+  "model_identity": {
+    "implementer": "gemini-3.6-flash",
+    "runner": "Claude Code CLI 2.1.224",
+    "requested": "sonnet",
+    "configured": "sonnet",
+    "response_claimed": "sonnet",
+    "proxy_reported": "N/A_first_party",
+    "provider_attested": "Anthropic first-party (claude.ai OAuth)"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude -p formal L1 audit --model sonnet; Claude Code 2.1.224; Anthropic first-party OAuth",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-AIOHTTP-ROOT-W1-1198-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-MAIN-BASELINE-FAILURES",
+        "severity": "LOW",
+        "title": "Pre-existing test failures on main baseline",
+        "status": "ACCEPTED_RISK",
+        "body": "pytest failures in unrelated components match origin/main baseline exactly."
+      }
+    ],
+    "fixes_applied": [
+      "Removed secretstorage lock churn from uv.lock",
+      "Restored aiohttp>=3.14.3 floor in pyproject.toml"
+    ],
+    "remaining_risks": [
+      "Pre-existing test failures on main baseline"
+    ],
+    "skip_reason": null
+  },
+  "supervisor_exceptions": {
+    "auditor_route": "claude-code-cli Tier-1"
+  },
+  "content_head_note": "Claude formal audit reviewed 96b2810931c40a7f842a0c6365ab5caf521a01fa; head_sha bound to C1 so successor C2 is proof-only."
+}
