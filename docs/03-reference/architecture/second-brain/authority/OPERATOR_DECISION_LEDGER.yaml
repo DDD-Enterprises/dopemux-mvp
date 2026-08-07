@@ -1,0 +1,214 @@
+schema_version: "1.0.0"
+
+subject:
+  candidate: TP-DMX-SECOND-BRAIN-ARCHITECTURE-SYNTHESIS-001-R2-CANDIDATE.zip
+  sha256: 94b735c72ff3533f0cd73bed18fd3fb64b164530f7ef360f37584c73504a4e8e
+
+disposition_provenance:
+  authority: HUMAN_OPERATOR
+  facilitator_authored_dispositions: false
+  confirmation_outstanding: false
+  disposition_confirmed: true
+  form: explicit human operator disposition, first person
+  operator_disposition_statement_verbatim: >-
+    The 32/32 ACCEPT dispositions are mine. SB-DEC-001 through SB-DEC-032 are my explicit
+    operator dispositions: ACCEPT, as written in
+    TP-DMX-SECOND-BRAIN-ARCHITECTURE-SYNTHESIS-001-R2-CANDIDATE.zip, SHA-256
+    94b735c72ff3533f0cd73bed18fd3fb64b164530f7ef360f37584c73504a4e8e.
+  prior_recommendation_text_is_not_authority: true
+  authority_note: >-
+    The operator directed that the earlier recommendation text must NOT be treated as the
+    disposition authority. This statement, not that text, is the disposition of record.
+  bulk_token: RATIFY_ALL_32_AS_WRITTEN
+  binding_correction: >-
+    BINDING_CORRECTED 77593f4566bd00666cac2aa347a5926ca627471ae763eb21cc2a3329d3371e65
+    (ratification packet binding value corrected; no 002A artifact modified)
+  ratification_pending: >-
+    Architecture is not governing authority until the operator issues
+    RATIFY_ARCHITECTURE <ratification digest> against the digest computed from these final bytes.
+
+decisions:
+  - decision_id: SB-DEC-001
+    title: Dopemux extension, not a fourth authority plane
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-002
+    title: Small deployable footprint
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-003
+    title: Dope-Memory is the canonical capture and candidate history
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-004
+    title: Derived review read model
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-005
+    title: Digest-bound visible approval
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-006
+    title: Promotion router preserves canonical boundaries
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-007
+    title: Open loops are event-sourced attention markers
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-008
+    title: Task proposals remain proposals
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-009
+    title: Typed native entity references
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-010
+    title: Separate domain and classification policy dimensions
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-011
+    title: Policy before retrieval and model context assembly
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-012
+    title: Conservative provider eligibility
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-013
+    title: Single-project automatic capture
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-014
+    title: Local spool is non-canonical and narrowly enabled
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-015
+    title: CustodyPort abstraction
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-016
+    title: Deterministic authority-first recall fusion
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-017
+    title: Contradictions are first-class outputs
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-018
+    title: Deterministic Markdown projections
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-019
+    title: Purge is a graph with residual verification
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-020
+    title: Bounded session receipt
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-021
+    title: One unified review queue
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-022
+    title: Capability receipts gate runtime routes
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-023
+    title: MacBook correctness, Mac mini optional
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-024
+    title: Explicit writer role and idempotency prevent split brain
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-025
+    title: V1 exclusions are hard scope controls
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-026
+    title: DCP integration is read-first
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-027
+    title: Partial outage is explicit, not smoothed over
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-028
+    title: Audit receipts are append-only and content-minimized
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-029
+    title: Forget differs from purge
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-030
+    title: Task promotion disabled in initial v1
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-031
+    title: Runtime and benchmark claims remain NOT_RUN
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - decision_id: SB-DEC-032
+    title: Observed remote drift is non-material to this candidate
+    source_status: PROPOSED
+    operator_disposition: ACCEPT
+    operator_note: >-
+      Accepted as a historical observation of drift at the point recorded, not as an assertion of the current authority head. Required recheck has since occurred twice (002A MATERIAL_DRIFT_CONTAINED; this packet NO_NEW_MATERIAL_DRIFT).
+
+counts:
+  total: 32
+  accepted: 32
+  deferred: 0
+  rejected: 0
+
+carried_forward:
+  - id: R2A-01
+    disposition: CORRECTED_BY_EXTERNAL_RATIFICATION_RECORD
+    architecture_effect: NONE
+  - id: FO-01
+    architecture_ratification_blocker: NO
+    ADR_acceptance_blocker: YES
+    required_resolution: REPAIR_AND_REVERIFY_TRACEABILITY_BEFORE_ANY_ADR_ACCEPTANCE
+
+preserved_not_run:
+  runtime_conformance: NOT_RUN
+  retrieval_benchmarks: NOT_RUN
+  purge_completeness: NOT_RUN
+  multi_project_isolation: NOT_RUN
+  split_brain_proof: NOT_RUN
+  encryption_implementation: ABSENT

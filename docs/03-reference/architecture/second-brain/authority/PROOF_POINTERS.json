@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "authority_domain": "Dopemux Second Brain Architecture",
+  "ratification_task": "TP-DMX-SECOND-BRAIN-ARCHITECTURE-OPERATOR-RATIFICATION-001",
+  "ratification_package": "TP-DMX-SECOND-BRAIN-ARCHITECTURE-OPERATOR-RATIFICATION-001.zip",
+  "ratification_package_sha256": "fe336eb871b19896fd77d553a46d88ef1c03e1f7af5818d0c7c11085d7beac72",
+  "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "architecture_candidate": "TP-DMX-SECOND-BRAIN-ARCHITECTURE-SYNTHESIS-001-R2-CANDIDATE.zip",
+  "architecture_candidate_sha256": "94b735c72ff3533f0cd73bed18fd3fb64b164530f7ef360f37584c73504a4e8e",
+  "verification_002a_package_sha256": "6e32e2a2b4488e3fce1d241c0f50d4c4c269c416d17b21319d8d1bedeff8a6bc",
+  "verification_002a_route_receipt_sha256": "77593f4566bd00666cac2aa347a5926ca627471ae763eb21cc2a3329d3371e65",
+  "source_files": {
+    "ARCHITECTURE_AUTHORITY_HEAD.json": "1e8f8dcbd52e62b6d29cb5d2655d1793a4bddb0b181fddc82b41a654f147b7f4",
+    "ARCHITECTURE_RATIFICATION_RECORD.md": "880cc9fabcf0cfe5b8d8205f18356ae4e930c4d7655db28fc148a1c742b1fe23",
+    "OPERATOR_DECISION_LEDGER.yaml": "8e0380eb1d49c10ac7ecca38fdd06e6fe9755bf607f389bdf91479981cb93b93",
+    "RATIFICATION_BINDING.json": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+    "RATIFICATION_CORRECTIONS.md": "135881e3cb1809369eaa06df766293fe91cd969d17657cb3a82f21749de478d8",
+    "FINAL_RATIFICATION_VERDICT.md": "1bdfef1a94dfb108f3541e8851ca4cab7f38a3740c500c39afd1ae140708f9c6"
+  }
+}
