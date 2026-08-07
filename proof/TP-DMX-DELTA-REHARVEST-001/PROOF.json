@@ -1,21 +1,21 @@
 {
-  "head_sha": "9424dd2c913ff05ae34ac6069bf6b6bef61c2731",
-  "generated_at": "2026-08-07T18:51:38Z",
+  "head_sha": "539b1e338ee03e260b0542d02c1620392789fc95",
+  "generated_at": "2026-08-07T19:00:10Z",
   "embedded_audit": {
     "required": true,
     "status": "PASS",
     "auditor_tool": "pal-mcp-clink",
-    "auditor_model": "sonnet",
-    "invocation": "mcp pal-stdio codereview with model anthropic/claude-sonnet-4.5 on commit 9424dd2c913ff05ae34ac6069bf6b6bef61c2731",
+    "auditor_model": "gemini",
+    "invocation": "mcp pal-stdio codereview with model gemini-2.5-pro on commit 539b1e338ee03e260b0542d02c1620392789fc95",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-DELTA-REHARVEST-001/AUDITOR_REPORT.md",
     "findings": [],
     "fixes_applied": [
       "Quarantined PR #1123 partial file coverage (16205/16206) and removed generic forgiveness",
-      "Implemented S1 PR inventory drift re-harvesting (moved_heads, changed_bases, opened_prs, closed_prs)",
-      "Added deterministic patch_relation (PATCH_IDENTICAL, A_PATCH_SUBSET_OF_B, B_PATCH_SUBSET_OF_A, PATCH_DISTINCT) for candidate edges",
-      "Renamed merge-tree status to merge_compatibility (CLEAN, CONFLICTING)",
-      "Bound PROOF.json and AUDITOR_REPORT.md explicitly to frozen C1 head_sha 9424dd2c913ff05ae34ac6069bf6b6bef61c2731"
+      "Implemented S1 PR inventory drift re-harvesting and accurate NO_PR_HEAD_MOVEMENT classification",
+      "Corrected patch_relation for drifted stacks (#1136->#1183, #1127->#1163) to PATCH_IDENTITY_UNKNOWN when predecessor head is not an ancestor",
+      "Isolated merge tree result under separate merge_compatibility field (CLEAN, CONFLICTING)",
+      "Bound PROOF.json and AUDITOR_REPORT.md explicitly to frozen C1 head_sha 539b1e338ee03e260b0542d02c1620392789fc95"
     ],
     "remaining_risks": [],
     "skip_reason": null

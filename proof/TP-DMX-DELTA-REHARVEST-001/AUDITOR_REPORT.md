@@ -1,33 +1,31 @@
-# Independent Auditor Report: TP-DMX-DELTA-REHARVEST-001-R2A
+# Independent Auditor Report: TP-DMX-DELTA-REHARVEST-001-R2A Micro-Closure
 
 - **Packet ID**: `TP-DMX-DELTA-REHARVEST-001-R2A`
-- **Target**: `open-pr-portfolio-topology-r2a-closure`
-- **Reviewed Head SHA (C1)**: `9424dd2c913ff05ae34ac6069bf6b6bef61c2731`
+- **Target**: `open-pr-portfolio-topology-r2a-micro-closure`
+- **Reviewed Head SHA (C1)**: `539b1e338ee03e260b0542d02c1620392789fc95`
 - **Auditor Tool**: `pal-mcp-clink` (PAL MCP codereview tool)
-- **Auditor Model**: `anthropic/claude-sonnet-4.5` (normalized: `sonnet`)
-- **Invocation**: `mcp pal-stdio codereview with model anthropic/claude-sonnet-4.5 on commit 9424dd2c913ff05ae34ac6069bf6b6bef61c2731`
-- **Generated At**: `2026-08-07T18:51:38Z`
+- **Auditor Model**: `gemini-2.5-pro` (normalized: `gemini`)
+- **Invocation**: `mcp pal-stdio codereview with model gemini-2.5-pro on commit 539b1e338ee03e260b0542d02c1620392789fc95`
+- **Generated At**: `2026-08-07T19:00:10Z`
 - **Status**: `PASS`
 
 ## Audit Evaluation Summary
 
-1. **PR #1123 File Quarantine (Repair 1)**:
-   - Forgiveness logic (`is_reconciled = True` for 16205/16206) removed.
-   - PR #1123 marked `file_count_reconciled = False`, `pr_1123_coverage = "PARTIAL"`, `reconciliation_exception = "UNPROVEN"`.
-   - All 49 other PRs exactly reconciled (`all_other_prs_exactly_reconciled = True`).
+1. **Drifted Stack Patch Relation Fix (Micro-Fix 1)**:
+   - Verified that stacked PRs whose predecessor head is NOT an ancestor (#1136 -> #1183 and #1127 -> #1163) emit `patch_relation: "PATCH_IDENTITY_UNKNOWN"`.
+   - `A_PATCH_SUBSET_OF_B` is only claimed when `a_is_ancestor_of_b` is True.
 
-2. **S1 PR Inventory Drift Comparison (Repair 2)**:
-   - Open PR set, head SHAs, baseRefNames re-fetched and compared at S1.
-   - S1 drift classified (`moved_heads=[1205]`, `only_meta_pr_1205_moved=True`, `drift_classification="NO_MATERIAL_EFFECT"`).
+2. **S1 Meta-Movement Classification Fix (Micro-Fix 2)**:
+   - Verified that zero head movement during collection is correctly classified as `drift_classification: "NO_PR_HEAD_MOVEMENT"` with `moved_heads: []`.
 
-3. **Deterministic Patch Identity & `merge_compatibility` (Repair 3)**:
-   - Candidate edges evaluate deterministic `patch_relation` (`PATCH_IDENTICAL`, `A_PATCH_SUBSET_OF_B`, `B_PATCH_SUBSET_OF_A`, `PATCH_DISTINCT`).
-   - Merge tree result isolated under separate `merge_compatibility` field (`CLEAN`, `CONFLICTING`).
+3. **PR #1123 File Quarantine & Exact Reconciliation**:
+   - Forgiveness logic removed. PR #1123 recorded as `file_count_reconciled: False` (16205/16206) with `pr_1123_coverage: "PARTIAL"` and quarantined.
+   - All 49 other PRs 100% exactly reconciled (`all_other_prs_exactly_reconciled: True`).
 
-4. **Exact Head Binding & Audit Provenance (Repair 4)**:
-   - Substantive C1 content head frozen at `9424dd2c913ff05ae34ac6069bf6b6bef61c2731`.
+4. **Exact Head Binding & Audit Provenance**:
+   - Substantive C1 content head frozen at `539b1e338ee03e260b0542d02c1620392789fc95`.
    - PROOF.json contains top-level `head_sha` and `generated_at` matching C1.
-   - `auditor_tool` (`pal-mcp-clink`) and `auditor_model` (`sonnet`) match schema enum and reflect true invocation route (`anthropic/claude-sonnet-4.5`).
+   - Auditor tool (`pal-mcp-clink`) and model (`gemini`) match schema enums and reflect true invocation route (`gemini-2.5-pro`).
 
 ## Final Verdict
-`PASS` - The R2A closure resolves all 4 blocking integrity gaps.
+`PASS` - All micro-closure defects resolved. Evidence package is ready for GPT-5.6 Pro portfolio synthesis.
