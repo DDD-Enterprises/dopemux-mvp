@@ -1,41 +1,33 @@
-# Independent Auditor Report: TP-DMX-DELTA-REHARVEST-001-R2
+# Independent Auditor Report: TP-DMX-DELTA-REHARVEST-001-R2A
 
-- **Packet ID**: `TP-DMX-DELTA-REHARVEST-001-R2`
-- **Target**: `open-pr-portfolio-topology-and-package-rebuild`
-- **Auditor Model/Tool**: `anthropic/claude-sonnet-4.5` (via PAL MCP codereview tool)
-- **Reviewed Head**: `HEAD` (dedicated worktree `/tmp/wt-1205`)
+- **Packet ID**: `TP-DMX-DELTA-REHARVEST-001-R2A`
+- **Target**: `open-pr-portfolio-topology-r2a-closure`
+- **Reviewed Head SHA (C1)**: `9424dd2c913ff05ae34ac6069bf6b6bef61c2731`
+- **Auditor Tool**: `pal-mcp-clink` (PAL MCP codereview tool)
+- **Auditor Model**: `anthropic/claude-sonnet-4.5` (normalized: `sonnet`)
+- **Invocation**: `mcp pal-stdio codereview with model anthropic/claude-sonnet-4.5 on commit 9424dd2c913ff05ae34ac6069bf6b6bef61c2731`
+- **Generated At**: `2026-08-07T18:51:38Z`
 - **Status**: `PASS`
 
 ## Audit Evaluation Summary
 
-1. **Step S0 - Preflight and Custody**:
-   - Repository identity verified (`DDD-Enterprises/dopemux-mvp`).
-   - Dedicated worktree created (`/tmp/wt-1205`), avoiding primary checkout mutation.
-   - S0/S1 origin/main drift tracked explicitly.
+1. **PR #1123 File Quarantine (Repair 1)**:
+   - Forgiveness logic (`is_reconciled = True` for 16205/16206) removed.
+   - PR #1123 marked `file_count_reconciled = False`, `pr_1123_coverage = "PARTIAL"`, `reconciliation_exception = "UNPROVEN"`.
+   - All 49 other PRs exactly reconciled (`all_other_prs_exactly_reconciled = True`).
 
-2. **Step S1 - Changed-File Reconciliation & Offline Rebuild**:
-   - +/-1 generic tolerance removed. Exact equality required for all PRs.
-   - Documented exception bound strictly to PR #1123 (`len(files) == 16205` vs `changedFiles == 16206`).
-   - Offline `--rebuild-zip` mode executes deterministically using pure Python SHA verification without Git or GitHub API calls.
-   - Consecutive offline rebuilds produce identical SHA-256 (`ed7cfef98f78`).
+2. **S1 PR Inventory Drift Comparison (Repair 2)**:
+   - Open PR set, head SHAs, baseRefNames re-fetched and compared at S1.
+   - S1 drift classified (`moved_heads=[1205]`, `only_meta_pr_1205_moved=True`, `drift_classification="NO_MATERIAL_EFFECT"`).
 
-3. **Step S2 - Per-PR Git Topology**:
-   - Open PR base ref mapping added (`is_non_main_base`, `predecessor_pr`, `predecessor_head_sha`, `base_drift_detected`).
-   - PR #1183 mechanically resolves baseRef `claude/rte-truth-program` to PR #1136.
+3. **Deterministic Patch Identity & `merge_compatibility` (Repair 3)**:
+   - Candidate edges evaluate deterministic `patch_relation` (`PATCH_IDENTICAL`, `A_PATCH_SUBSET_OF_B`, `B_PATCH_SUBSET_OF_A`, `PATCH_DISTINCT`).
+   - Merge tree result isolated under separate `merge_compatibility` field (`CLEAN`, `CONFLICTING`).
 
-4. **Step S3 - Multi-Axis Pair Evidence**:
-   - Multi-axis relations (`path_relation`, `ancestry_relation`, `stack_relation`, `patch_relation`) populated across all 1,225 pair records.
-   - `INDEPENDENT` heuristic removed; disjoint unstacked pairs classified as `PATH_DISJOINT_UNSTACKED`.
-
-5. **Step S4 - Reharvest & Proof Artifacts**:
-   - Collector executed live; all 50 open PRs harvested.
-   - Relative `SHA256SUMS.txt` generated. `portfolio_reharvest.zip.sha256` verified after offline rebuild.
-
-6. **Step S5 - Validation & Tests**:
-   - `git diff --check` passed cleanly.
-   - `jsonschema` validation passed for `TP-DMX-DELTA-REHARVEST-001.json` and `TP-DMX-DELTA-REHARVEST-001-R2.json`.
-   - Unit tests in `tests/audit/test_pr_portfolio_delta_reharvest.py` passed 5/5.
-   - `validate_audit_proof.py` embedded audit validation passed.
+4. **Exact Head Binding & Audit Provenance (Repair 4)**:
+   - Substantive C1 content head frozen at `9424dd2c913ff05ae34ac6069bf6b6bef61c2731`.
+   - PROOF.json contains top-level `head_sha` and `generated_at` matching C1.
+   - `auditor_tool` (`pal-mcp-clink`) and `auditor_model` (`sonnet`) match schema enum and reflect true invocation route (`anthropic/claude-sonnet-4.5`).
 
 ## Final Verdict
-`PASS` - The R2 repair fulfills all invariants and produces deterministic mechanical evidence ready for GPT-5.6 Pro portfolio synthesis.
+`PASS` - The R2A closure resolves all 4 blocking integrity gaps.
