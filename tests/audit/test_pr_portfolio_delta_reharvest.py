@@ -80,7 +80,7 @@ def test_reconciliation_exact_match_and_mismatch(monkeypatch):
     assert details_exact["aggregate_changed_files"] == 10
     assert details_exact["file_count_reconciled"] is True
 
-    # Documented exception for PR 1123 (16205 vs 16206)
+    # PR 1123 quarantine test (16205 vs 16206 aggregate => marked PARTIAL and file_count_reconciled=False)
     def fake_run_cmd_1123(cmd):
         if "graphql" in cmd:
             query_data = {
@@ -106,8 +106,9 @@ def test_reconciliation_exact_match_and_mismatch(monkeypatch):
 
     monkeypatch.setattr("scripts.audit.pr_portfolio_delta_reharvest.run_cmd", fake_run_cmd_1123)
     details_1123 = fetch_pr_details_graphql(1123)
-    assert details_1123["file_count_reconciled"] is True
-    assert details_1123["exception_reason"] is not None
+    assert details_1123["file_count_reconciled"] is False
+    assert details_1123["pr_1123_coverage"] == "PARTIAL"
+    assert details_1123["reconciliation_exception"] == "UNPROVEN"
 
 
 def test_rebuild_zip_offline_no_network_or_git(tmp_path, monkeypatch):

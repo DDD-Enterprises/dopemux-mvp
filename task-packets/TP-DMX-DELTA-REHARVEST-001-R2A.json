@@ -1,0 +1,86 @@
+{
+  "id": "TP-DMX-DELTA-REHARVEST-001-R2A",
+  "project": "dopemux-mvp",
+  "target": "open-pr-portfolio-topology-r2a-closure",
+  "invariants": [
+    "This is a small 4-repair closure of TP-DMX-DELTA-REHARVEST-001-R2 on existing PR #1205.",
+    "PR #1123 exact reconciliation is marked UNPROVEN for missing 1 file path and quarantined; generic forgiveness is removed.",
+    "S1 drift check re-harvests open PR inventory (heads + bases) and recomputes affected PRs/edges.",
+    "patch_relation is renamed merge_compatibility, and real patch identity (PATCH_IDENTICAL, A_PATCH_SUBSET_OF_B, B_PATCH_SUBSET_OF_A, PATCH_DISTINCT) is computed for candidate edges.",
+    "Final audit C1 content head is frozen before independent audit; PROOF.json includes top-level head_sha and generated_at.",
+    "No merge, close, mark-ready, force-push, branch deletion, history rewrite, or review mutation is authorized."
+  ],
+  "depends_on": [
+    "TP-DMX-DELTA-REHARVEST-001-R2"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "PORTFOLIO-REHARVEST-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-DELTA-REHARVEST-001-R2",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "gemini",
+    "branch": "tp/DMX-DELTA-REHARVEST-001",
+    "base_branch": "main",
+    "stacked_because": "Perform 4 narrow R2A repairs on PR #1205 evidence collector and audit provenance."
+  },
+  "commit": {
+    "message": "fix(portfolio): R2A closure for PR 1123 quarantine, S1 PR inventory drift, patch identity, and audit provenance",
+    "allowlist": [
+      "task-packets/TP-DMX-DELTA-REHARVEST-001.json",
+      "task-packets/TP-DMX-DELTA-REHARVEST-001-R2.json",
+      "task-packets/TP-DMX-DELTA-REHARVEST-001-R2A.json",
+      "scripts/audit/pr_portfolio_delta_reharvest.py",
+      "tests/audit/test_pr_portfolio_delta_reharvest.py",
+      "proof/TP-DMX-DELTA-REHARVEST-001/OBSERVATION_SNAPSHOT.json",
+      "proof/TP-DMX-DELTA-REHARVEST-001/OPEN_PR_LEDGER.csv",
+      "proof/TP-DMX-DELTA-REHARVEST-001/PR_TOPOLOGY.json",
+      "proof/TP-DMX-DELTA-REHARVEST-001/PR_TOPOLOGY.csv",
+      "proof/TP-DMX-DELTA-REHARVEST-001/PAIR_RELATIONSHIPS.json",
+      "proof/TP-DMX-DELTA-REHARVEST-001/PAIR_RELATIONSHIPS.csv",
+      "proof/TP-DMX-DELTA-REHARVEST-001/CAPABILITY_PREFLIGHT.md",
+      "proof/TP-DMX-DELTA-REHARVEST-001/DELTA_REHARVEST_REPORT.md",
+      "proof/TP-DMX-DELTA-REHARVEST-001/SHA256SUMS.txt",
+      "proof/TP-DMX-DELTA-REHARVEST-001/portfolio_reharvest.zip.sha256",
+      "proof/TP-DMX-DELTA-REHARVEST-001/PROOF.json",
+      "proof/TP-DMX-DELTA-REHARVEST-001/AUDITOR_REPORT.md"
+    ]
+  },
+  "pr": {
+    "title": "feat(portfolio): open PR portfolio bounded delta reharvest (R2A)",
+    "body": "R2A closure: PR #1123 file quarantine, S1 PR inventory drift comparison, deterministic patch identity vs merge compatibility, and accurate audit provenance.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1_R2A_COLLECTOR_REPAIRS",
+      "task": "Implement PR 1123 file quarantine, S1 PR inventory drift comparison, patch identity calculation, and merge_compatibility field renaming.",
+      "validation": [
+        "python3 -m py_compile scripts/audit/pr_portfolio_delta_reharvest.py",
+        "python3 -m pytest -q tests/audit/test_pr_portfolio_delta_reharvest.py"
+      ]
+    },
+    {
+      "id": "S2_REHARVEST_AND_PROVE",
+      "task": "Reharvest portfolio evidence, verify offline package rebuild, and update proof artifacts.",
+      "validation": [
+        "python3 scripts/audit/pr_portfolio_delta_reharvest.py",
+        "python3 scripts/audit/pr_portfolio_delta_reharvest.py --rebuild-zip"
+      ]
+    },
+    {
+      "id": "S3_FREEZE_C1_AND_INDEPENDENT_AUDIT",
+      "task": "Commit C1 content head, run independent audit, and emit C2 proof-only commit.",
+      "validation": [
+        "python3 scripts/audit/validate_audit_proof.py proof/TP-DMX-DELTA-REHARVEST-001/PROOF.json"
+      ]
+    }
+  ]
+}

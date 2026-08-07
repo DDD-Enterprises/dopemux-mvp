@@ -1,4 +1,4 @@
-# Delta Reharvest Report (R2 Repair)
+# Delta Reharvest Report (R2A Repair)
 
 ## Verdict
 `CURRENT_MECHANICAL_EVIDENCE_COMPLETE_READY_FOR_PORTFOLIO_SYNTHESIS`
@@ -9,13 +9,14 @@
 | Open PRs | 50 |
 | Actual Pair Records Generated | 1225 |
 | Expected Pair Records | 1225 |
-| Exact File Reconciliation Pass | `True` |
+| 49 Other PRs Exact File Reconciliation | `True` |
+| PR #1123 File Coverage | `PARTIAL (16205/16206, Quarantined)` |
 | Stack Regression Fixture (#1136 -> #1183) | `True` |
 | No Path-Only Independence Classifications | `True` |
 | S0 origin/main Commit | `33d6c35302` |
 | S1 origin/main Commit | `33d6c35302` |
 | Main Branch Drift | `False` |
-| Final Drift Classified | `True` |
+| S1 Portfolio Drift Classification | `NO_MATERIAL_EFFECT` |
 
 ## Harvested PR Range
 - **Lowest PR**: #1113 (`deps(deps): bump next from 15.5.18 to 15.5.21`)

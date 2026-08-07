@@ -18,7 +18,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "51955c5b1f34a8a69c8847b89ed9b7fa5228e8f3",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -39,7 +39,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "61caed1f21b8ce5764d0ea9b7cfe0e0b9a12df3d",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -60,7 +60,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "8e92b00671702b883fb57d7b0048466bffbafe96",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -81,7 +81,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "844f296a230f9075c682c39450dd0711928e4083",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -102,7 +102,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "6bf49d5169066416f519e846d762545a448e9446",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CONFLICTING",
+      "merge_compatibility_against_main": "CONFLICTING",
       "unique_commit_count": 4146,
       "topology_class": "CONFLICTING_REPAIRABLE"
     },
@@ -123,7 +123,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "90092ccc1dfb4962f18f90c9465e6e83e287715c",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 3,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -144,7 +144,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "8ef06d015b1176e50b403b39749a1a9a7ad6c278",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CONFLICTING",
+      "merge_compatibility_against_main": "CONFLICTING",
       "unique_commit_count": 15,
       "topology_class": "CONFLICTING_REPAIRABLE"
     },
@@ -165,7 +165,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "1fbefdaa826ea79c2c42ec33dbd9283906796a9a",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 3,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -186,7 +186,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "2ec2f16700d1dfa6c8e78db7d30f945683fbb823",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 6,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -207,7 +207,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "ed160081f6e22a4c82c4ae8207cedf2bcec424e6",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 8,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -228,7 +228,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "080932fcae74d74121be30f4471f3a6ff16c4de5",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -249,7 +249,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "5bc304cfc907153ea4e15f1db4699a71ca32e2e0",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -270,7 +270,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "3bc4ee630bbd901e013eba2694ece7a09630880c",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -291,7 +291,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "f7f2fb97876713b67e831992c342bcc37406a3ca",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "CLEAN_INDEPENDENT_DELTA"
     },
@@ -312,7 +312,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "41495d3788b220e84ac94296c31c065d1f0e5e68",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -333,7 +333,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "f4ef1e3399de5d45fbf89f35fc9a09910b8ce506",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 3,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -354,7 +354,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "f6c9151f999d4f5353ee61d393eee92f5385becf",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 17,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -375,7 +375,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "87144a87121bf661fb57773b5dc851c9e9b7a98c",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 4,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -396,7 +396,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "da350e355badb8e4e25efa0bd3e98024e892bc99",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 5,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -417,7 +417,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "6122631a177094fd52cc8fdcb9092e2d37ad720f",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 2,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -438,7 +438,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "3e22601142c31405eb9b2131b1f8f3d7c74e3085",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 6,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -459,7 +459,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "83b4931807ffd7e43950cec557a87d20cc9f511d",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 5,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -480,7 +480,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "097cfb1e17f84d67a4859a715eeb784e319306ef",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -501,7 +501,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "2a2c4e3f9223f3c726e4bd968a4d51d00c8aae75",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 10,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -522,7 +522,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "253abd015f1520649e9ee4b4f16173b8704ba6fa",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 2,
       "topology_class": "STACKED_ON_OPEN_PR"
     },
@@ -543,7 +543,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "33225a8e2648a31b4a29f5e2e03bccb39a1e11f1",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 9,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -564,7 +564,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "cc16e87ff25303516347922baf3c78b17907f876",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 5,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -585,7 +585,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "de7d5e09887f20fbe0800b0b74d8ce67660c88c6",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -606,7 +606,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "af39c405d563e32f8b6b1f34111161f9e703140c",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -627,7 +627,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "8de6ee707d4c38e7cb7c1d34021bb3b60a1625db",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -648,7 +648,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "b90ee6220a1f38a1e1f408ad37eb874cb437024c",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -669,7 +669,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "4d9e8b93166cec80a094446f9ca2a5a71f90f29b",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -690,7 +690,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "637b45629226a45ee9ed9f389b1281a028a882ed",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -711,7 +711,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "03504d07af7ca31d68b6e3e09f45694edc029ed1",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 4,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -732,7 +732,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "a7722796a03cc8eb4128506182aa75f8ec68a1e7",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 7,
       "topology_class": "STACKED_ON_OPEN_PR"
     },
@@ -753,7 +753,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "f511644e6c1a3d48871535d13b0ba3052fe8b030",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 2,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -774,7 +774,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "94762d5258d13be29da130a6be72226d204775c4",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 2,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -795,7 +795,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "2970e93de1939f60e65d52b1ba0239a4a682bde0",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -816,7 +816,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "2ce8d4c4173ef9edf3e19dba473875a94c6f3fd6",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -837,7 +837,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "e4f5566343e0bcf3122c182462ee770392554914",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -858,7 +858,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "55c8fb55808973fdfcb7845eb57446ee07d8fb01",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "STALE_REPAIRABLE"
     },
@@ -879,7 +879,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "b569f338d8ecb7ce6525ea06673177730b5dc8ec",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "CLEAN_INDEPENDENT_DELTA"
     },
@@ -900,7 +900,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "811c08330f4bf4ee15dcd4d29653941d69d66484",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "CLEAN_INDEPENDENT_DELTA"
     },
@@ -921,7 +921,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "34b7a050321faaab85bb7a5c01b7ee548cbc6e6a",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 2,
       "topology_class": "CLEAN_INDEPENDENT_DELTA"
     },
@@ -942,7 +942,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "8806d2185e48c522406940a9fe513a663c8396ef",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "CLEAN_INDEPENDENT_DELTA"
     },
@@ -963,7 +963,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "b32ebd2795dfa3c6e273ace619dced49920b5691",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "CLEAN_INDEPENDENT_DELTA"
     },
@@ -984,7 +984,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "f7becceb9908de005d68ec34546ea82998e941d4",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 2,
       "topology_class": "CLEAN_INDEPENDENT_DELTA"
     },
@@ -1005,13 +1005,13 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "074a6718903ef6ca4a12acd455494cd76dbc8afa",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 2,
       "topology_class": "CLEAN_INDEPENDENT_DELTA"
     },
     {
       "pr": 1205,
-      "head_sha": "d5eed7d5f01b824b21c0c3eb9b3a6f3115c6b1ca",
+      "head_sha": "c59bb3fe4e182d37f6ee84a4f1f70c053a336917",
       "base_ref": "main",
       "base_sha": "33d6c353023ecc3aa6331ab39f4f076ae3ca1fda",
       "is_non_main_base": false,
@@ -1020,14 +1020,14 @@
       "predecessor_head_is_ancestor": null,
       "base_drift_detected": false,
       "merge_base_with_main": "17ddf9aa716956af9cd07f738c08b646edfeabee",
-      "ahead_of_main": 3,
+      "ahead_of_main": 4,
       "behind_main": 14,
       "main_is_ancestor_of_head": false,
       "head_is_ancestor_of_main": false,
-      "head_tree": "ba9be5036c5bedc5730a9b0dc64675a0d07fe30d",
+      "head_tree": "9c48b5003dd99c3d73f7e1fb3e0634a91cd0833c",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
-      "unique_commit_count": 3,
+      "merge_compatibility_against_main": "CLEAN",
+      "unique_commit_count": 4,
       "topology_class": "STALE_REPAIRABLE"
     },
     {
@@ -1047,7 +1047,7 @@
       "head_is_ancestor_of_main": false,
       "head_tree": "1130fbba53f393a3507330e74be82b106252d53c",
       "main_contains_patch": false,
-      "merge_tree_against_main": "CLEAN_MERGE",
+      "merge_compatibility_against_main": "CLEAN",
       "unique_commit_count": 1,
       "topology_class": "CLEAN_INDEPENDENT_DELTA"
     }
