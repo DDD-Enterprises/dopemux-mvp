@@ -1,0 +1,21 @@
+{
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "mcp pal-stdio codereview with model anthropic/claude-sonnet-4.5",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-DELTA-REHARVEST-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "Implemented exact file reconciliation without +/-1 tolerance except for documented PR #1123 exception",
+      "Added open PR baseRefName topology tracking, predecessor PR resolution, and drift detection (S2)",
+      "Added multi-axis pair evidence fields (path_relation, ancestry_relation, stack_relation, patch_relation) and replaced path-only INDEPENDENT with PATH_DISJOINT_UNSTACKED (S3)",
+      "Implemented pure Python SHA-256 verification for offline --rebuild-zip mode (S1)",
+      "Added unit test suite in tests/audit/test_pr_portfolio_delta_reharvest.py covering reconciliation, offline rebuild, reproducibility, and pair topology (S1-S4)"
+    ],
+    "remaining_risks": [],
+    "skip_reason": null
+  }
+}

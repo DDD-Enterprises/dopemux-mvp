@@ -1,0 +1,293 @@
+{
+  "id": "TP-DMX-DELTA-REHARVEST-001-R2",
+  "project": "dopemux-mvp",
+  "target": "open-pr-portfolio-topology-and-package-rebuild",
+  "invariants": [
+    "This is a bounded repair of TP-DMX-DELTA-REHARVEST-001 on existing PR #1205; do not restart the portfolio investigation from scratch.",
+    "The previously harvested PR metadata and complete changed-file evidence may be reused when its bound PR head is unchanged.",
+    "At execution start, refresh origin/main and PR #1205 head. The previously observed head d6c07835f1fc988f2f0b111e4224113d4e789388 is context, not an exact-SHA stop gate.",
+    "Ordinary movement of main or an open PR is not a blanket stop. Refresh only affected facts and relationships.",
+    "Never classify two PRs as independent merely because their changed-file sets are disjoint.",
+    "Pair evidence must separate path relationship, Git ancestry, base-ref relationship, tree relationship, patch relationship, and merge-tree result rather than collapsing them into one heuristic label.",
+    "A non-main baseRefName matching another open PR headRefName must be represented as an explicit stack relationship even if that predecessor branch has moved since the successor branch was created.",
+    "PR #1183 must mechanically resolve its baseRefName claude/rte-truth-program to open PR #1136 when that live relationship still exists. If current-head ancestry no longer matches, classify that drift explicitly rather than forcing a false ancestry claim.",
+    "Changed-file reconciliation requires exact equality between collected file paths and GitHub aggregate changedFiles. A +/-1 tolerance is forbidden unless a specific documented GitHub semantic exception is proven and recorded for that PR.",
+    "The offline --rebuild-zip path must perform no GitHub API calls, no Git fetches, and no evidence reharvest.",
+    "The ZIP must be reconstructible solely from committed frozen evidence inputs and must verify against its committed sidecar after deterministic rebuild.",
+    "No merge, close, mark-ready, force-push, branch deletion, history rewrite, review mutation, or production/shared-service mutation is authorized.",
+    "This packet produces mechanical evidence only. It must not decide portfolio merge order, supersession, semantic compatibility, or final PR disposition.",
+    "All UNKNOWN topology facts must remain UNKNOWN and name the missing evidence.",
+    "If implementation changes the meaning of portfolio evidence, the final frozen content head requires an independent audit before this repair may claim PASS.",
+    "PR Steward is check-only and cannot grant merge authority."
+  ],
+  "depends_on": [
+    "TP-DMX-DELTA-REHARVEST-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "PORTFOLIO-REHARVEST-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-DELTA-REHARVEST-001",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "gemini",
+    "branch": "tp/DMX-DELTA-REHARVEST-001",
+    "base_branch": "main",
+    "stacked_because": "Repair the existing PR #1205 evidence collector and proof artifacts in place without creating a parallel portfolio-reharvest PR."
+  },
+  "commit": {
+    "message": "fix(portfolio): add git topology and deterministic evidence rebuild",
+    "allowlist": [
+      "task-packets/TP-DMX-DELTA-REHARVEST-001.json",
+      "task-packets/TP-DMX-DELTA-REHARVEST-001-R2.json",
+      "scripts/audit/pr_portfolio_delta_reharvest.py",
+      "tests/audit/test_pr_portfolio_delta_reharvest.py",
+      "proof/TP-DMX-DELTA-REHARVEST-001/OBSERVATION_SNAPSHOT.json",
+      "proof/TP-DMX-DELTA-REHARVEST-001/OPEN_PR_LEDGER.csv",
+      "proof/TP-DMX-DELTA-REHARVEST-001/PR_TOPOLOGY.json",
+      "proof/TP-DMX-DELTA-REHARVEST-001/PR_TOPOLOGY.csv",
+      "proof/TP-DMX-DELTA-REHARVEST-001/PAIR_RELATIONSHIPS.json",
+      "proof/TP-DMX-DELTA-REHARVEST-001/PAIR_RELATIONSHIPS.csv",
+      "proof/TP-DMX-DELTA-REHARVEST-001/CAPABILITY_PREFLIGHT.md",
+      "proof/TP-DMX-DELTA-REHARVEST-001/DELTA_REHARVEST_REPORT.md",
+      "proof/TP-DMX-DELTA-REHARVEST-001/SHA256SUMS.txt",
+      "proof/TP-DMX-DELTA-REHARVEST-001/portfolio_reharvest.zip.sha256",
+      "proof/TP-DMX-DELTA-REHARVEST-001/PROOF.json",
+      "proof/TP-DMX-DELTA-REHARVEST-001/AUDITOR_REPORT.md"
+    ],
+    "verify": [
+      "Only allowlisted tracked files changed.",
+      "No generated portfolio_reharvest.zip is committed unless repository policy explicitly requires it.",
+      "Frozen committed evidence must deterministically rebuild the ZIP and reproduce the committed sidecar.",
+      "No unrelated portfolio synthesis or PR repair work is included."
+    ]
+  },
+  "pr": {
+    "title": "feat(portfolio): open PR portfolio bounded delta reharvest",
+    "body": "Repair PR #1205 in place to add deterministic Git topology, exact changed-file reconciliation, richer pair evidence, S0/S1 drift integrity, and a genuinely offline reproducible evidence-package rebuild. No merge or portfolio disposition authority is claimed.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S0_PREFLIGHT_AND_CUSTODY",
+      "task": "Create a fresh dedicated worktree for the existing PR #1205 branch, establish live repository and GitHub identity, capture current main and PR-head state, and determine drift from the previously reviewed R1 head without treating ordinary drift as a blanket stop.",
+      "requirements": [
+        "Verify repository identity and AGENTS.md marker before mutation.",
+        "Fetch current origin/main and existing PR #1205 branch.",
+        "Record current origin/main SHA and current PR #1205 head SHA.",
+        "If PR #1205 moved from d6c07835f1fc988f2f0b111e4224113d4e789388, inspect the delta and continue when compatible with this packet.",
+        "If another actor changed an allowlisted file incompatibly, classify CONFLICTING and stop mutation.",
+        "Do not discard or overwrite unrelated work."
+      ],
+      "commands": [
+        "git status --short --branch",
+        "git remote -v",
+        "git fetch --prune origin",
+        "git rev-parse origin/main",
+        "gh pr view 1205 --json number,state,isDraft,baseRefName,baseRefOid,headRefName,headRefOid,mergeable,url",
+        "git diff --name-status origin/main...HEAD"
+      ],
+      "validation": [
+        "Repository identity matches DDD-Enterprises/dopemux-mvp.",
+        "Dedicated worktree and branch identity are correct.",
+        "Current PR #1205 head and origin/main are recorded.",
+        "Any drift from the previously observed R1 head is classified as NO_MATERIAL_EFFECT, AFFECTS_SINGLE_PR, AFFECTS_WORKSTREAM, AFFECTS_GLOBAL_SEQUENCE, or CONFLICTING before implementation proceeds."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "RULES.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "scripts/audit/pr_portfolio_delta_reharvest.py",
+        "proof/TP-DMX-DELTA-REHARVEST-001/OBSERVATION_SNAPSHOT.json",
+        "proof/TP-DMX-DELTA-REHARVEST-001/PAIR_RELATIONSHIPS.json"
+      ]
+    },
+    {
+      "id": "S1_HARDEN_FILE_RECONCILIATION_AND_REBUILD_MODE",
+      "task": "Remove the +/-1 changed-file reconciliation tolerance and implement a genuinely offline deterministic --rebuild-zip mode using only committed frozen evidence inputs.",
+      "requirements": [
+        "Changed-file reconciliation passes only when collected file count exactly equals GitHub changedFiles.",
+        "If an exceptional GitHub counting semantic is encountered, fail closed first; do not add a generic tolerance.",
+        "--rebuild-zip must branch before every Git fetch, gh command, GraphQL call, or portfolio recollection.",
+        "--rebuild-zip reads existing committed evidence artifacts, validates SHA256SUMS.txt, builds the archive in deterministic file order with normalized archive metadata, computes the sidecar, and verifies the resulting archive.",
+        "Two consecutive offline rebuilds from identical inputs must produce the same SHA-256.",
+        "A test must monkeypatch or otherwise prohibit run_cmd/network execution during rebuild mode."
+      ],
+      "expected_files": [
+        "scripts/audit/pr_portfolio_delta_reharvest.py",
+        "tests/audit/test_pr_portfolio_delta_reharvest.py"
+      ],
+      "validation": [
+        "python3 -m py_compile scripts/audit/pr_portfolio_delta_reharvest.py",
+        "python3 -m pytest -q tests/audit/test_pr_portfolio_delta_reharvest.py",
+        "Focused test proves a one-file count mismatch is NOT reconciled.",
+        "Focused test proves --rebuild-zip executes without Git or GitHub access.",
+        "Focused test rebuilds the archive twice from identical frozen inputs and obtains identical SHA-256 values."
+      ]
+    },
+    {
+      "id": "S2_GENERATE_PER_PR_GIT_TOPOLOGY",
+      "task": "Add deterministic per-PR Git topology collection against current origin/main and each PR's actual base ref, producing PR_TOPOLOGY.json and PR_TOPOLOGY.csv.",
+      "requirements": [
+        "Fetch every open PR head under an isolated local ref namespace.",
+        "Record each PR's baseRefName and resolve whether that base ref corresponds to another currently open PR headRefName.",
+        "For each PR compute merge base with origin/main, ahead/behind counts, ancestry direction, head tree, unique commit count, and merge-tree result against current main where supported.",
+        "Discover current git merge-tree capability before relying on a particular invocation syntax.",
+        "Record whether the PR base is main or another open PR branch.",
+        "For a non-main base matching another open PR, record predecessor PR number explicitly.",
+        "Do not force current-head ancestry if the predecessor branch moved after successor creation; preserve that as stack/base drift.",
+        "Classify only mechanically supported topology states."
+      ],
+      "expected_files": [
+        "proof/TP-DMX-DELTA-REHARVEST-001/PR_TOPOLOGY.json",
+        "proof/TP-DMX-DELTA-REHARVEST-001/PR_TOPOLOGY.csv"
+      ],
+      "validation": [
+        "Every canonical open PR has exactly one topology record.",
+        "Every topology record has a current head SHA and baseRefName.",
+        "Every canonical open PR has a merge-base result or an explicit UNKNOWN with missing evidence.",
+        "Every canonical open PR has ahead/behind counts or an explicit UNKNOWN.",
+        "Every canonical open PR has ancestry classification against origin/main.",
+        "Every non-main base is resolved to an open-PR predecessor when possible.",
+        "Live PR #1183 baseRefName relationship to #1136 is represented mechanically when still present.",
+        "If #1136 current head is not an ancestor of #1183 current head, the record says the stack/base ref moved or diverged rather than falsely reporting clean ancestry."
+      ]
+    },
+    {
+      "id": "S3_ENRICH_PAIR_RELATIONSHIPS",
+      "task": "Replace the current SAME_HEAD/SHARED_FILES/INDEPENDENT heuristic with multi-axis mechanical pair evidence and reserve semantic judgment for the later GPT-5.6 Pro synthesis stage.",
+      "requirements": [
+        "Retain all N*(N-1)/2 pair records.",
+        "Each pair must contain separate path_relation and ancestry_relation fields.",
+        "Use PATH_DISJOINT rather than INDEPENDENT when paths do not intersect.",
+        "Record A_IS_ANCESTOR_OF_B, B_IS_ANCESTOR_OF_A, SAME_HEAD, or NO_ANCESTRY_RELATION where mechanically established.",
+        "Record base-ref stack links separately from ancestry.",
+        "Record tree equality.",
+        "For candidate edges only, compute stable patch/delta evidence sufficient to identify obvious identical, subset, superset, or distinct patches when mechanically provable.",
+        "Candidate edges include path overlap, explicit stack/base relation, ancestry relation, same tree, or other deterministic similarity discovered by the collector.",
+        "Do not label semantic compatibility or conflict from path overlap alone.",
+        "Merge-tree conflict evidence may be recorded mechanically but must not be promoted to final portfolio disposition."
+      ],
+      "expected_files": [
+        "proof/TP-DMX-DELTA-REHARVEST-001/PAIR_RELATIONSHIPS.json",
+        "proof/TP-DMX-DELTA-REHARVEST-001/PAIR_RELATIONSHIPS.csv"
+      ],
+      "validation": [
+        "EXPECTED_PAIR_RECORDS == ACTUAL_PAIR_RECORDS.",
+        "No pair is classified INDEPENDENT solely from path disjointness.",
+        "Every pair has path_relation and ancestry_relation.",
+        "Every explicit open-PR base-ref relationship is represented in the pair evidence.",
+        "Known live stack relation #1136/#1183 is not reduced to SHARED_FILES.",
+        "Heavy patch analysis is limited to candidate edges and reports UNKNOWN when evidence is insufficient."
+      ]
+    },
+    {
+      "id": "S4_REHARVEST_S0_S1_AND_REBUILD_PROOF",
+      "task": "Run the repaired collector once against current live state, perform final S1 drift reconciliation, regenerate frozen evidence artifacts, and prove that the package can subsequently be rebuilt offline without recollection.",
+      "requirements": [
+        "Capture S0 origin/main and complete open-PR head map.",
+        "Run complete file and topology harvest.",
+        "Generate pair evidence.",
+        "Capture S1 origin/main and open-PR head map.",
+        "If main, PR set, base refs, or relevant heads moved during collection, refresh only affected facts and edges before issuing the final verdict.",
+        "The evidence PR itself may remain EXCLUDED_EVIDENCE_PR for portfolio judgment while still being present in collection cardinality; document the distinction.",
+        "Regenerate relative SHA256SUMS.txt.",
+        "Delete the generated ZIP after first build, reconstruct it using --rebuild-zip with network/Git disabled, and verify the sidecar.",
+        "Do not claim PACKAGE_REBUILDABLE merely because the command-line flag exists."
+      ],
+      "expected_files": [
+        "proof/TP-DMX-DELTA-REHARVEST-001/OBSERVATION_SNAPSHOT.json",
+        "proof/TP-DMX-DELTA-REHARVEST-001/OPEN_PR_LEDGER.csv",
+        "proof/TP-DMX-DELTA-REHARVEST-001/PR_TOPOLOGY.json",
+        "proof/TP-DMX-DELTA-REHARVEST-001/PR_TOPOLOGY.csv",
+        "proof/TP-DMX-DELTA-REHARVEST-001/PAIR_RELATIONSHIPS.json",
+        "proof/TP-DMX-DELTA-REHARVEST-001/PAIR_RELATIONSHIPS.csv",
+        "proof/TP-DMX-DELTA-REHARVEST-001/CAPABILITY_PREFLIGHT.md",
+        "proof/TP-DMX-DELTA-REHARVEST-001/DELTA_REHARVEST_REPORT.md",
+        "proof/TP-DMX-DELTA-REHARVEST-001/SHA256SUMS.txt",
+        "proof/TP-DMX-DELTA-REHARVEST-001/portfolio_reharvest.zip.sha256"
+      ],
+      "validation": [
+        "python3 scripts/audit/pr_portfolio_delta_reharvest.py",
+        "python3 scripts/audit/pr_portfolio_delta_reharvest.py --verify-only",
+        "Offline package rebuild succeeds after deleting the generated ZIP.",
+        "sha256sum -c portfolio_reharvest.zip.sha256 passes in the proof directory after offline rebuild.",
+        "EXPECTED_PR_RECORDS == ACTUAL_PR_RECORDS.",
+        "EXPECTED_PAIR_RECORDS == ACTUAL_PAIR_RECORDS.",
+        "ALL_CHANGED_FILE_COUNTS_EXACTLY_RECONCILED == true.",
+        "ALL_PR_BASE_REFS_CAPTURED == true.",
+        "ALL_OPEN_PR_HEADS_FETCHED == true.",
+        "ALL_PR_MAIN_MERGE_BASES_COMPUTED == true or every exception is explicitly UNKNOWN with missing evidence.",
+        "ALL_PR_MAIN_ANCESTRY_CLASSIFIED == true or every exception is explicitly UNKNOWN.",
+        "ALL_NON_MAIN_BASE_PRS_TOPOLOGY_CLASSIFIED == true.",
+        "NO_PAIR_CLASSIFIED_INDEPENDENT_FROM_PATHS_ALONE == true.",
+        "S0_S1_DRIFT_CLASSIFIED == true.",
+        "FROZEN_PACKAGE_REBUILD_WITHOUT_NETWORK == true.",
+        "PACKAGE_INTERNAL_CHECKSUMS_PASS == true."
+      ]
+    },
+    {
+      "id": "S5_PREPUSH_VALIDATION_AND_INDEPENDENT_AUDIT",
+      "task": "Freeze the final content head, run CI-equivalent local gates, then obtain one independent audit because this packet modifies L2 portfolio evidence/proof logic.",
+      "requirements": [
+        "Run the complete changed-file allowlist check.",
+        "Run git diff --check.",
+        "Validate both Task Packets against the canonical dopeTask schema.",
+        "Run focused tests and any existing portfolio-evidence tests.",
+        "Run changed-file pre-commit and repeat it if hooks modify files.",
+        "Run a secret scan over proof/package outputs.",
+        "Audit only after the implementation content head is frozen.",
+        "The independent auditor must not be the implementer and should use a different model family/runtime when available.",
+        "Record actual auditor tool/model/invocation and exact reviewed head.",
+        "If no compliant independent auditor route is available, record SKIPPED or NEEDS_SUPERVISOR and do not claim final PASS."
+      ],
+      "expected_files": [
+        "proof/TP-DMX-DELTA-REHARVEST-001/PROOF.json",
+        "proof/TP-DMX-DELTA-REHARVEST-001/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "git diff --check",
+        "python3 -m jsonschema -i task-packets/TP-DMX-DELTA-REHARVEST-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python3 -m jsonschema -i task-packets/TP-DMX-DELTA-REHARVEST-001-R2.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python3 -m pytest -q tests/audit/test_pr_portfolio_delta_reharvest.py",
+        "Changed-file pre-commit lane passes cleanly.",
+        "Secret scan over proof and rebuilt package outputs passes.",
+        "Independent audit is bound to the frozen final content head.",
+        "Audit verdict is PASS or non-blocking PASS_WITH_RISKS before the packet claims evidence readiness."
+      ]
+    },
+    {
+      "id": "S6_PUSH_AND_PR_STEWARD",
+      "task": "Push the repaired existing branch, refresh PR #1205, harvest current checks/reviews/threads with PR Steward, and report readiness without merging or mutating review state.",
+      "requirements": [
+        "Push only after all pre-push gates pass.",
+        "Update existing PR #1205 rather than opening a duplicate PR.",
+        "Do not mark ready, merge, close, delete branches, or resolve review threads.",
+        "PR Steward must evaluate the exact pushed head.",
+        "Current CI may continue asynchronously, but the returned packet verdict must distinguish IN_PROGRESS checks from PASS.",
+        "Portfolio synthesis readiness is separate from PR #1205 merge readiness."
+      ],
+      "validation": [
+        "Remote PR #1205 head equals the pushed repair head.",
+        "PR Steward evidence is bound to that same head.",
+        "All reviewers, bots, threads, comments, and checks are classified or explicitly UNKNOWN.",
+        "No merge authorization is claimed."
+      ]
+    }
+  ]
+}

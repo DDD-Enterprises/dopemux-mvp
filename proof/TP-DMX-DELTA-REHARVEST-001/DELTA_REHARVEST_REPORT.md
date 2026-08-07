@@ -6,11 +6,12 @@
 ## Portfolio Summary
 | Metric | Value |
 | --- | --- |
-| Open PRs | 49 |
-| Actual Pair Records Generated | 1176 |
-| Expected Pair Records | 1176 |
+| Open PRs | 50 |
+| Actual Pair Records Generated | 1225 |
+| Expected Pair Records | 1225 |
 | Exact File Reconciliation Pass | `True` |
 | Stack Regression Fixture (#1136 -> #1183) | `True` |
+| No Path-Only Independence Classifications | `True` |
 | S0 origin/main Commit | `33d6c35302` |
 | S1 origin/main Commit | `33d6c35302` |
 | Main Branch Drift | `False` |
@@ -18,7 +19,7 @@
 
 ## Harvested PR Range
 - **Lowest PR**: #1113 (`deps(deps): bump next from 15.5.18 to 15.5.21`)
-- **Highest PR**: #1205 (`feat(portfolio): open PR portfolio bounded delta reharvest`)
+- **Highest PR**: #1206 (`docs(second-brain): persist ratified architecture authority`)
 
 ## Next Step
 Pass `proof/TP-DMX-DELTA-REHARVEST-001/portfolio_reharvest.zip` and `OBSERVATION_SNAPSHOT.json` to **GPT-5.6 Pro** for portfolio judgment and merge-wave synthesis.
