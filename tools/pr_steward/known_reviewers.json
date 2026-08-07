@@ -5,6 +5,8 @@
     "github-actions[bot]",
     "github-actions",
     "dependabot[bot]",
+    "dependabot",
+    "app/dependabot",
     "hu3mann",
     "google-labs-jules",
     "github-advanced-security",
