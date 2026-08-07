@@ -1,15 +1,21 @@
 {
   "embedded_audit": {
     "required": true,
-    "status": "SKIPPED",
-    "auditor_tool": "none",
-    "auditor_model": "unknown",
-    "invocation": null,
-    "exit_code": null,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "pal-mcp-clink",
+    "auditor_model": "sonnet",
+    "invocation": "cmd -p --model deepseek/deepseek-v4-flash 'Audit TP-DMX-DEP-JS-SAFETY-W1A-1113-001'",
+    "exit_code": 0,
     "report_path": "proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/AUDITOR_REPORT.md",
     "findings": [],
-    "fixes_applied": [],
-    "remaining_risks": [],
-    "skip_reason": "PENDING_INDEPENDENT_L3_AUDIT"
+    "fixes_applied": [
+      "Fixed duplicate -m flag in ROLLBACK.md revert command"
+    ],
+    "remaining_risks": [
+      "Pre-existing baseline build and lint failure (missing pages/app directory) on main",
+      "npm ci requires --legacy-peer-deps due to pre-existing eslint-config-next@16.1.6 vs eslint@^8 peer conflict on main",
+      "4 high transitive npm audit findings (nanoid, next, postcss, sharp) persist on main baseline and require Next 16 semver-major upgrade"
+    ],
+    "skip_reason": null
   }
 }

@@ -1,0 +1,99 @@
+EXIT: 0
+STDOUT: File writes are blocked in this read-only session, so I'll deliver the report and JSON inline.
+
+# Independent L3 Audit Report — TP-DMX-DEP-JS-SAFETY-W1A-1113-001
+
+## Audit Metadata
+
+| Field | Value |
+|---|---|
+| Task Packet | `TP-DMX-DEP-JS-SAFETY-W1A-1113-001` |
+| Project | dopemux-mvp |
+| Audited head (C1) | `bc1bbb243a07420c2df33559aa4c30676e6addcd` |
+| Base | `origin/main` = `33d6c353023ecc3aa6331ab39f4f076ae3ca1fda` |
+| Merge-base | `33d6c353023ecc3aa6331ab39f4f076ae3ca1fda` (C1 is direct descendant) |
+| Auditor tool | CommandCode CLI (cmd) |
+| Auditor model | `deepseek/deepseek-v4-flash` |
+| Auditor family | DeepSeek (different family vs implementer Gemini) |
+| Audit type | L3 independent, substantive head C1, pre-push |
+| Date | 2026-08-07 |
+
+## Invariant Verification
+
+**1. Next.js 15.5.21 patch intent preserved, no Next 16 migration — PASS**
+- `package.json` diff is exactly one line: `"next": "15.5.18"` → `"next": "15.5.21"`; `dependencies.next` at HEAD == `15.5.21`.
+- No `next@16`, no eslint-config-next migration, no other dependency or workflow change.
+- Installed `node_modules/next` == `15.5.21` (verified live).
+
+**2. Product changes strictly confined to package.json + package-lock.json — PASS**
+- `git diff --name-only origin/main...HEAD` = exactly the 7 allowlisted paths (2 product + 5 proof/packet).
+- Merge `368a16a931` resolved cleanly: tree vs main differs only in the 2 package files; main content won everywhere else. No rebase/force-push; lineage is dependabot head → merge → proof commit.
+
+**3. Lockfile churn strictly bounded to root + next + @next/* closure — PASS**
+- 11 changed package keys: `""`, `node_modules/next`, `node_modules/@next/env`, 8× `@next/swc-*`. Zero unrelated keys (programmatic comparison).
+- All closure at 15.5.21; postcss/sharp/nanoid versions identical to main; root record delta = next value only.
+
+**4. npm ci / build / lint / audit baselines accurate — PASS (env caveats)**
+- Peer-dep conflict (`eslint-config-next@16.1.6` vs `eslint@^8`) is pre-existing and untouched; `npm ci --legacy-peer-deps` claim consistent.
+- build/lint exit-1 claims corroborated: no `pages/`/`app/` dir exists; reproduced exit 1 in this env.
+- **npm audit comparison (decisive):** all 8 Next.js-specific advisories cleared by 15.5.21 (`via` drops from 8 Next titles + postcss/sharp to only postcss/sharp). Remaining 4 high findings (nanoid, next, postcss, sharp) are pre-existing transitive chains; the only non-major-flagged fix for the postcss/sharp chain is `next@16.3.0` — explicitly out of scope. Baseline vs candidate severity profile identical (4 high, 0 critical).
+- Live npm audit re-run blocked (sandboxed network `ENOTFOUND`); implementer artifacts cross-verified instead. `git diff --check` clean.
+
+**5. No secrets/tokens/credentials in proof — PASS**
+- Regex scan (GitHub/OpenAI/Slack/AWS/GCP tokens, JWTs, PEM keys, password/token/api_key assignments) over all 5 files: zero matches. `.env` mention is the prohibition invariant text, not a value.
+- SOURCE_BINDING sha256s for both package files recompute identically.
+
+## Findings
+
+- **F1 (Medium):** ROLLBACK.md post-merge command `git revert -m 1 <sha> -m "revert(deps): …"` is invalid — second `-m` is a duplicate mainline flag and rejects non-numeric arg (`error: option 'mainline' expects a number greater than zero`, reproduced). Rollback mechanism is sound once the message flag is dropped.
+- **F2 (Info):** Remaining transitive postcss/sharp/nanoid high findings fixable only via Next 16 — pre-existing on main, out of scope, must be tracked separately.
+- **F3 (Info):** Live npm audit / full build re-run not possible (no network; read-only worktree blocks `.next`); baseline-equivalence established structurally and via stored artifacts.
+
+## Verdict
+
+**PASS_WITH_RISKS.** All 5 invariants hold; the patch is minimal, correctly scoped, and achieves its security intent. Merge remains NOT_AUTHORIZED by the packet — this audit is the independent L3 evidence needed to advance to proof-only C2 push + PR Steward per S7.
+
+---
+
+```json
+{
+  "status": "PASS_WITH_RISKS",
+  "auditor_tool": "cmd",
+  "auditor_model": "deepseek/deepseek-v4-flash",
+  "rationale": "Independent L3 audit of frozen substantive head C1 (bc1bbb243a07420c2df33559aa4c30676e6addcd) vs origin/main (33d6c353). All 5 invariants verified: (1) package.json single-line next bump 15.5.18->15.5.21, no Next 16 anywhere; (2) product diff strictly package.json + package-lock.json, net diff = exactly the 7 allowlisted paths, merge resolved cleanly with main content winning; (3) lockfile package-key churn exactly the 11 allowed keys (root, next, @next/env, 8x @next/swc), zero unrelated churn; (4) npm audit baseline-vs-candidate comparison proves all 8 Next.js-specific advisories cleared by 15.5.21 (next 'via' drops to only postcss/sharp, whose only fix is next@16.3.0 major — out of scope and pre-existing), build/lint exit-1 failures corroborated as baseline-equivalent via absent pages/app dir, git diff --check clean; (5) proof files secret-scan clean, SOURCE_BINDING hashes recompute exactly. Non-blocking risks: ROLLBACK.md revert command has invalid duplicate -m flag; residual postcss/sharp/nanoid transitive findings require Next 16; live npm audit/build re-run blocked by sandbox (no network, read-only worktree) and validated via stored artifacts instead. Merge NOT_AUTHORIZED per packet; audit advances readiness to proof-only C2 push + PR Steward.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "F1",
+      "title": "ROLLBACK.md post-merge revert command contains invalid duplicate -m flag",
+      "detail": "git revert -m is the mainline parent selector, not a message flag. 'git revert -m 1 <sha> -m \"revert(deps): ...\"' passes a non-numeric argument to the second -m and fails with 'error: option mainline expects a number greater than zero' (reproduced live). Rollback mechanism (clean revert, no force-push/history rewrite) is correct once the message flag is removed; recommend fixing the doc before/at merge.",
+      "evidence": "proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/ROLLBACK.md line 12; live git error reproduction"
+    },
+    {
+      "severity": "info",
+      "id": "F2",
+      "title": "Remaining transitive audit findings require Next 16 upgrade",
+      "detail": "npm audit --omit=dev still reports 4 high findings (nanoid, next, postcss, sharp). The next record is now purely a carrier of the postcss/sharp transitive chain; the only non-major fix is next@16.3.0 (isSemVerMajor). Pre-existing on origin/main, not introduced by this patch, and explicitly out of scope (no Next 16 migration). Must be tracked in a separate bounded major-upgrade packet.",
+      "evidence": "/tmp/main-npm-audit.json vs /tmp/TP-DMX-DEP-JS-SAFETY-W1A-1113-001-npm-audit.json comparison"
+    },
+    {
+      "severity": "info",
+      "id": "F3",
+      "title": "Live npm audit and full build re-run blocked by sandbox",
+      "detail": "No network (ENOTFOUND registry.npmjs.org) prevented a fresh npm audit; read-only worktree blocked .next creation for a full build. Baseline-equivalence established structurally (no pages/app dir exists in repo) and via the implementer's stored audit artifacts, which are internally consistent and cross-verified. Residual risk: exact 'Couldn't find any pages' string not re-observed live.",
+      "evidence": "audit environment constraints observed during verification"
+    }
+  ],
+  "fixes_applied": [
+    "No fixes applied during audit — read-only session; C1 remains frozen and unmodified (HEAD verified == bc1bbb243a, working tree matches HEAD for both package files)."
+  ],
+  "remaining_risks": [
+    "ROLLBACK.md post-merge revert command fails as written due to duplicate -m flag; must be corrected before an operator relies on it (doc-only change, product unaffected).",
+    "4 high transitive npm audit findings (nanoid, next, postcss, sharp) persist; remediation requires next@16.3.0 (semver-major), which is outside this packet's scope and must be scheduled separately.",
+    "Live npm audit and full next build could not be re-executed in the sandbox; validation relies on implementer-stored artifacts plus structural baseline evidence.",
+    "Merge remains NOT_AUTHORIZED by the packet; this PASS_WITH_RISKS verdict only enables the S7 proof-only C2 push and PR Steward harvest on the frozen head."
+  ]
+}
+```
+
+STDERR:
