@@ -1,0 +1,359 @@
+{
+  "id": "TP-DMX-PYASN1-SECURITY-W1-001",
+  "project": "dopemux-mvp",
+  "target": "pr-1115-pyasn1-0-6-4-root-pal-security-consolidation",
+  "invariants": [
+    "Risk lane is L3 because pyasn1 0.6.4 is a security update addressing multiple denial-of-service/resource-exhaustion vulnerabilities.",
+    "PR #1115 is the retained implementation vehicle. PRs #1178 and #1179 are preservation sources and closure candidates only; this packet does not close them.",
+    "Authorized product files are exactly uv.lock and docker/mcp-servers-source/pal/pal-mcp-server/uv.lock.",
+    "The intended dependency outcome is pyasn1 0.6.4 in both root and PAL lock surfaces with no unrelated dependency upgrade.",
+    "Do not modify pyproject.toml, requirements files, provider SDK versions, cryptography, google-genai, aiohttp, LiteLLM, workflows, or application code.",
+    "Ordinary movement of origin/main is not a stop. Refresh live facts and recompute only the affected root/PAL lock relationships.",
+    "Historical main and PR SHAs are observations, not blanket gates.",
+    "If both current-main lock surfaces already resolve pyasn1 0.6.4 and the #1115 payload is proven contained, stop ALREADY_CONTAINED_CANDIDATE.",
+    "If only one surface already contains 0.6.4, preserve that surface and refresh only the missing surface; report the partial-containment classification.",
+    "Lock regeneration must not introduce unrelated package changes. Any unrelated solver churn is a stop condition.",
+    "AGY must use gemini-3.6-flash with no silent model fallback.",
+    "The Gemini implementer cannot serve as the final independent L3 auditor.",
+    "The canonical final auditor is a live-proven Claude Code CLI Sonnet route unless that route is unavailable or repository policy requires a stronger different-family route.",
+    "Do not mislabel CommandCode, DeepSeek, PAL, Claude, Gemini, or any other runner/model identity to fit a schema enum.",
+    "The canonical audit proof must truthfully represent the actual supported auditor route.",
+    "After the substantive head is frozen, subsequent commits may modify proof/audit custody paths only.",
+    "Use the trusted signed-local-attestation contract under proof/pr_merge/embedded-audit/pr-1115 when signer authority is available.",
+    "Private signing key material must never be read into output, committed, copied, logged, or exposed. Signing may invoke the configured key through ssh-keygen only under operator-authorized signer use.",
+    "PASS_WITH_RISKS is acceptable only when every remaining risk is explicit, non-blocking, and proven pre-existing or outside this patch's responsibility.",
+    "No merge, PR close, mark-ready, force-push, history rewrite, branch deletion, or repository-settings mutation is authorized.",
+    "Every UNKNOWN must identify the evidence needed to resolve it."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PORTFOLIO-RECOVERY-W1-PY-SAFETY",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "gemini",
+    "branch": "fix/security-pyasn1-0.6.4-current-main",
+    "base_branch": "main",
+    "stacked_because": "Independent Wave 1 Python security lane; may proceed while JS security lane #1113 settles."
+  },
+  "commit": {
+    "message": "fix(security): refresh pyasn1 0.6.4 root and PAL locks",
+    "allowlist": [
+      "uv.lock",
+      "docker/mcp-servers-source/pal/pal-mcp-server/uv.lock",
+      "task-packets/TP-DMX-PYASN1-SECURITY-W1-001.json",
+      "proof/TP-DMX-PYASN1-SECURITY-W1-001/**",
+      "proof/pr_merge/embedded-audit/pr-1115/**"
+    ],
+    "verify": [
+      "Product changes are confined to the two authorized uv.lock files.",
+      "Both retained lock surfaces resolve pyasn1 exactly to 0.6.4.",
+      "No unrelated package record changes are introduced by lock regeneration.",
+      "The final retained #1115 delta preserves the complete functional delta of #1178 and #1179.",
+      "The substantive implementation head is frozen before canonical independent audit.",
+      "Any signed-attestation successor changes only proof/pr_merge/embedded-audit/pr-1115/**.",
+      "No merge or closure occurs under this packet."
+    ]
+  },
+  "pr": {
+    "title": "fix(security): bump pyasn1 to 0.6.4 (recreates #1090 on current main)",
+    "body": "Repair and finalize existing PR #1115 as the canonical root+PAL pyasn1 0.6.4 security update. Preserve both #1178 and #1179 deltas. No unrelated dependency updates, merge, close, mark-ready, force-push, or history rewrite are authorized.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "implement",
+      "secaudit",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S0_MODEL_REPO_AND_PR_PREFLIGHT",
+      "task": "Prove AGY/model identity, repository identity, clean state, live main, and current #1115/#1178/#1179 identities before edits.",
+      "requirements": [
+        "Prove gemini-3.6-flash is the selected AGY model with no fallback.",
+        "Verify DDD-Enterprises/dopemux-mvp identity.",
+        "Refresh origin/main and all three PR records.",
+        "Verify #1115 changed product paths are exactly the root uv.lock and PAL uv.lock.",
+        "Record source heads for #1115/#1178/#1179 as observations, not immutable gates."
+      ],
+      "commands": [
+        "agy --version",
+        "agy --help",
+        "agy models",
+        "git rev-parse --show-toplevel",
+        "git remote get-url origin",
+        "git status --short --branch",
+        "git fetch --prune origin",
+        "git rev-parse origin/main",
+        "gh pr view 1115 --json number,state,isDraft,baseRefName,headRefName,headRefOid,mergeable,changedFiles,url",
+        "gh pr view 1178 --json number,state,headRefName,headRefOid,changedFiles,url",
+        "gh pr view 1179 --json number,state,headRefName,headRefOid,changedFiles,url",
+        "gh pr diff 1115 --name-only",
+        "gh pr diff 1178 --name-only",
+        "gh pr diff 1179 --name-only"
+      ],
+      "validation": [
+        "gemini-3.6-flash route is proven or execution stops before editing.",
+        "Repository identity is correct.",
+        "Starting tree is clean.",
+        "#1115 is open.",
+        "#1115 product paths are exactly the two authorized uv.lock files.",
+        "Duplicate-source PR identities are captured."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "RULES.md",
+        "uv.lock",
+        "pyproject.toml",
+        "docker/mcp-servers-source/pal/pal-mcp-server/uv.lock",
+        "docker/mcp-servers-source/pal/pal-mcp-server/pyproject.toml",
+        "schemas/proof/embedded_audit.schema.json",
+        "scripts/audit/local_audit_acceptance.py",
+        "config/audit/embedded-audit-allowed-signers"
+      ]
+    },
+    {
+      "id": "S1_APPLICABILITY_AND_DUPLICATE_PROOF",
+      "task": "Classify the live pyasn1 state and establish the exact preservation relationships for #1178/#1179.",
+      "requirements": [
+        "Read pyasn1 package records from current-main root and PAL locks.",
+        "Compare #1115 against #1178 and #1179 by exact changed lock surface and resulting pyasn1 package state.",
+        "Do not infer preservation merely from filenames.",
+        "Classify each duplicate as IDENTICAL_DELTA, SUBSET_OF_1115, CONFLICTING, or UNKNOWN.",
+        "If #1115 no longer preserves either duplicate, stop before implementation and report the mismatch."
+      ],
+      "commands": [
+        "git show origin/main:uv.lock > /tmp/pyasn1-main-root.lock",
+        "git show origin/main:docker/mcp-servers-source/pal/pal-mcp-server/uv.lock > /tmp/pyasn1-main-pal.lock",
+        "gh pr diff 1115 --patch > /tmp/pr1115.patch",
+        "gh pr diff 1178 --patch > /tmp/pr1178.patch",
+        "gh pr diff 1179 --patch > /tmp/pr1179.patch",
+        "python3 - <<'PY'\nimport tomllib\nfrom pathlib import Path\nfor label,path in [('root','/tmp/pyasn1-main-root.lock'),('pal','/tmp/pyasn1-main-pal.lock')]:\n    data=tomllib.loads(Path(path).read_text())\n    rows=[p for p in data.get('package',[]) if p.get('name')=='pyasn1']\n    print(label, rows)\nPY"
+      ],
+      "validation": [
+        "Live current-main pyasn1 state is recorded independently for root and PAL.",
+        "#1178 preservation destination is proven or explicitly UNKNOWN.",
+        "#1179 preservation destination is proven or explicitly UNKNOWN.",
+        "Implementation continues only if #1115 remains the coherent union vehicle."
+      ]
+    },
+    {
+      "id": "S2_ISOLATED_CURRENT_MAIN_REFRESH",
+      "task": "Build an isolated local #1115-derived candidate and incorporate current main without rebase or destructive history surgery.",
+      "requirements": [
+        "Create a dedicated worktree.",
+        "Start from current remote #1115 head.",
+        "Merge current origin/main; never rebase or force-push.",
+        "Conflicts outside the two authorized uv.lock files are forbidden.",
+        "Do not push."
+      ],
+      "commands": [
+        "PACKET=TP-DMX-PYASN1-SECURITY-W1-001; ROOT=\"$(git rev-parse --show-toplevel)\"; WT=\"$(dirname \"$ROOT\")/.worktrees/$PACKET\"; HEAD_REF=\"$(gh pr view 1115 --json headRefName -q .headRefName)\"; git fetch origin \"$HEAD_REF:refs/remotes/origin/$HEAD_REF\"; test ! -e \"$WT\"; git worktree add -b \"tp/$PACKET\" \"$WT\" \"refs/remotes/origin/$HEAD_REF\"",
+        "cd \"$(dirname \"$(git rev-parse --show-toplevel)\")/.worktrees/TP-DMX-PYASN1-SECURITY-W1-001\" && git status --short --branch",
+        "cd \"$(dirname \"$(git rev-parse --show-toplevel)\")/.worktrees/TP-DMX-PYASN1-SECURITY-W1-001\" && git merge --no-edit origin/main"
+      ],
+      "validation": [
+        "Current main is incorporated without rebase or force-push.",
+        "Any product conflict is confined to the authorized lock files.",
+        "No remote mutation occurred."
+      ]
+    },
+    {
+      "id": "S3_REGENERATE_ROOT_AND_PAL_LOCKS",
+      "task": "Regenerate only pyasn1 in both lock surfaces and prove solver conservation.",
+      "requirements": [
+        "Capture uv and Python versions.",
+        "Upgrade only pyasn1 in root lock.",
+        "Upgrade only pyasn1 in PAL lock.",
+        "Compare parsed candidate locks with origin/main after removing pyasn1 package records; all remaining structures must be identical unless a specific deterministic uv metadata normalization is proven.",
+        "Both final locks must contain pyasn1 0.6.4 and no pyasn1 0.6.3 package record.",
+        "Any unrelated package solver movement stops execution."
+      ],
+      "commands": [
+        "uv --version",
+        "python3 --version",
+        "uv lock --upgrade-package pyasn1",
+        "cd docker/mcp-servers-source/pal/pal-mcp-server && uv lock --upgrade-package pyasn1",
+        "cd -",
+        "git show origin/main:uv.lock > /tmp/pyasn1-base-root.lock",
+        "git show origin/main:docker/mcp-servers-source/pal/pal-mcp-server/uv.lock > /tmp/pyasn1-base-pal.lock",
+        "python3 - <<'PY'\nimport copy, tomllib\nfrom pathlib import Path\npairs=[('/tmp/pyasn1-base-root.lock','uv.lock','root'),('/tmp/pyasn1-base-pal.lock','docker/mcp-servers-source/pal/pal-mcp-server/uv.lock','pal')]\nfor base_path,cand_path,label in pairs:\n    base=tomllib.loads(Path(base_path).read_text())\n    cand=tomllib.loads(Path(cand_path).read_text())\n    b_rows=[p for p in base.get('package',[]) if p.get('name')=='pyasn1']\n    c_rows=[p for p in cand.get('package',[]) if p.get('name')=='pyasn1']\n    print(label,'BASE_PYASN1=',b_rows)\n    print(label,'CAND_PYASN1=',c_rows)\n    if not c_rows or any(p.get('version')!='0.6.4' for p in c_rows):\n        raise SystemExit(f'{label}: candidate pyasn1 is not exclusively 0.6.4')\n    b=copy.deepcopy(base); c=copy.deepcopy(cand)\n    b['package']=[p for p in b.get('package',[]) if p.get('name')!='pyasn1']\n    c['package']=[p for p in c.get('package',[]) if p.get('name')!='pyasn1']\n    if b != c:\n        raise SystemExit(f'{label}: unrelated parsed lock structure changed')\nPY",
+        "git diff --check",
+        "git diff --name-only",
+        "git diff -- uv.lock docker/mcp-servers-source/pal/pal-mcp-server/uv.lock"
+      ],
+      "validation": [
+        "Root lock resolves pyasn1 0.6.4.",
+        "PAL lock resolves pyasn1 0.6.4.",
+        "No unrelated parsed lock package structure changed.",
+        "Changed product paths remain exactly the two uv.lock files.",
+        "git diff --check passes."
+      ],
+      "expected_files": [
+        "uv.lock",
+        "docker/mcp-servers-source/pal/pal-mcp-server/uv.lock"
+      ]
+    },
+    {
+      "id": "S4_INSTALL_IMPORT_SECURITY_AND_RELEVANT_TESTS",
+      "task": "Validate root and PAL environments against the refreshed locks.",
+      "requirements": [
+        "Use frozen sync semantics.",
+        "Verify pyasn1 import/version in both environments.",
+        "Run the complete relevant PAL test suite.",
+        "Run the repository relevant/full suite where supported by the existing environment.",
+        "Do not blame the candidate for a failure unless the same command is shown to pass on an equivalent current-main baseline.",
+        "Record any environment-limited NOT_RUN precisely."
+      ],
+      "commands": [
+        "uv sync --frozen",
+        "uv run python -c 'import pyasn1; print(pyasn1.__version__); assert pyasn1.__version__ == \"0.6.4\"'",
+        "uv run python -c 'from pyasn1.codec.ber import decoder; from pyasn1.type import univ; print(\"root-pyasn1-smoke: PASS\")'",
+        "cd docker/mcp-servers-source/pal/pal-mcp-server && uv sync --frozen",
+        "cd docker/mcp-servers-source/pal/pal-mcp-server && uv run python -c 'import pyasn1; print(pyasn1.__version__); assert pyasn1.__version__ == \"0.6.4\"'",
+        "cd docker/mcp-servers-source/pal/pal-mcp-server && uv run pytest -q",
+        "cd -",
+        "uv run pytest -q",
+        "git diff --check"
+      ],
+      "validation": [
+        "Root frozen sync succeeds.",
+        "PAL frozen sync succeeds.",
+        "Both environments import pyasn1 0.6.4.",
+        "PAL complete relevant test suite passes or a baseline-equivalent/environment limitation is proven.",
+        "Repository suite passes or any non-candidate failure is baseline-classified with evidence.",
+        "No candidate-specific security/runtime regression remains."
+      ]
+    },
+    {
+      "id": "S5_PRESERVATION_RECEIPTS_PRECOMMIT_AND_FREEZE_C1",
+      "task": "Produce preservation receipts for #1178/#1179, run pre-push gates, and freeze the final substantive C1 head.",
+      "requirements": [
+        "Create deterministic receipts showing whether the final #1115 root lock preserves #1179 and the PAL lock preserves #1178.",
+        "A closure receipt is PREPARED only; this packet does not close either PR.",
+        "Write the canonical Task Packet and proof records.",
+        "Initial packet PROOF.json must not falsely claim the final canonical embedded audit before it runs.",
+        "Run schema validation, proof validation, allowlist, pre-commit, git diff --check, and secret scan.",
+        "If a hook changes files, rerun it until clean.",
+        "Commit/freeze C1 before handing anything to the canonical auditor."
+      ],
+      "commands": [
+        "mkdir -p proof/TP-DMX-PYASN1-SECURITY-W1-001/closure_receipts",
+        "git show \"$(gh pr view 1178 --json headRefOid -q .headRefOid)\":docker/mcp-servers-source/pal/pal-mcp-server/uv.lock > /tmp/pr1178-pal.lock",
+        "git show \"$(gh pr view 1179 --json headRefOid -q .headRefOid)\":uv.lock > /tmp/pr1179-root.lock",
+        "python3 - <<'PY'\nimport tomllib, json\nfrom pathlib import Path\npairs=[('/tmp/pr1178-pal.lock','docker/mcp-servers-source/pal/pal-mcp-server/uv.lock',1178,'PAL'),('/tmp/pr1179-root.lock','uv.lock',1179,'ROOT')]\nout=Path('proof/TP-DMX-PYASN1-SECURITY-W1-001/closure_receipts')\nfor src,dst,pr,surface in pairs:\n    a=tomllib.loads(Path(src).read_text()); b=tomllib.loads(Path(dst).read_text())\n    pa=[p for p in a.get('package',[]) if p.get('name')=='pyasn1']\n    pb=[p for p in b.get('package',[]) if p.get('name')=='pyasn1']\n    status='PRESERVED' if pa==pb and pb and all(p.get('version')=='0.6.4' for p in pb) else 'NOT_PROVEN'\n    rec={'source_pr':pr,'surface':surface,'source_pyasn1':pa,'retained_pyasn1':pb,'status':status,'close_authorized':False}\n    (out/f'PR_{pr}_PRESERVATION.json').write_text(json.dumps(rec,indent=2,sort_keys=True)+'\\n')\n    if status!='PRESERVED': raise SystemExit(f'PR #{pr} preservation not proven')\nPY",
+        "python3 -m jsonschema -i task-packets/TP-DMX-PYASN1-SECURITY-W1-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python3 scripts/audit/validate_audit_proof.py proof/TP-DMX-PYASN1-SECURITY-W1-001/PROOF.json",
+        "git diff --check",
+        "pre-commit run --files uv.lock docker/mcp-servers-source/pal/pal-mcp-server/uv.lock task-packets/TP-DMX-PYASN1-SECURITY-W1-001.json proof/TP-DMX-PYASN1-SECURITY-W1-001/PROOF.json proof/TP-DMX-PYASN1-SECURITY-W1-001/VALIDATION.md proof/TP-DMX-PYASN1-SECURITY-W1-001/ROLLBACK.md proof/TP-DMX-PYASN1-SECURITY-W1-001/closure_receipts/PR_1178_PRESERVATION.json proof/TP-DMX-PYASN1-SECURITY-W1-001/closure_receipts/PR_1179_PRESERVATION.json",
+        "git status --short",
+        "git diff --name-only origin/main...HEAD",
+        "git add uv.lock docker/mcp-servers-source/pal/pal-mcp-server/uv.lock task-packets/TP-DMX-PYASN1-SECURITY-W1-001.json proof/TP-DMX-PYASN1-SECURITY-W1-001",
+        "git commit -m 'fix(security): refresh pyasn1 0.6.4 root and PAL locks'",
+        "git rev-parse HEAD"
+      ],
+      "validation": [
+        "Both preservation receipts say PRESERVED.",
+        "Both receipts explicitly say close_authorized=false.",
+        "All changed files are allowlisted.",
+        "Task Packet and provisional proof validate.",
+        "Pre-commit and diff check pass cleanly.",
+        "No secret material exists in proof.",
+        "C1 is frozen and committed.",
+        "No push has occurred."
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-PYASN1-SECURITY-W1-001.json",
+        "proof/TP-DMX-PYASN1-SECURITY-W1-001/PROOF.json",
+        "proof/TP-DMX-PYASN1-SECURITY-W1-001/VALIDATION.md",
+        "proof/TP-DMX-PYASN1-SECURITY-W1-001/ROLLBACK.md",
+        "proof/TP-DMX-PYASN1-SECURITY-W1-001/closure_receipts/PR_1178_PRESERVATION.json",
+        "proof/TP-DMX-PYASN1-SECURITY-W1-001/closure_receipts/PR_1179_PRESERVATION.json"
+      ]
+    },
+    {
+      "id": "S6_CANONICAL_DIFFERENT_FAMILY_L3_AUDIT",
+      "task": "Audit frozen C1 with the schema-supported independent Claude Code Sonnet route.",
+      "requirements": [
+        "The auditor must be independent from the Gemini implementer.",
+        "Use claude-code-cli with model sonnet if live-proven.",
+        "No silent model fallback.",
+        "Audit C1 exactly.",
+        "Review dependency intent, both lock surfaces, solver conservation, test evidence, preservation receipts, rollback, and proof hygiene.",
+        "Record actual runner/model provenance truthfully.",
+        "PASS or non-blocking PASS_WITH_RISKS is required.",
+        "Do not use CommandCode as the canonical audit unless the trusted embedded-audit schema has independently changed to represent it truthfully."
+      ],
+      "commands": [
+        "claude --version",
+        "claude -p 'Audit frozen C1 for TP-DMX-PYASN1-SECURITY-W1-001. Review only the supplied frozen diff/evidence. Return PASS, PASS_WITH_RISKS, FAIL, or NEEDS_SUPERVISOR with explicit findings.' --print --safe-mode --no-session-persistence --permission-mode plan --tools '' --strict-mcp-config --model sonnet"
+      ],
+      "validation": [
+        "Auditor is different-family from implementer.",
+        "Actual auditor identity is claude-code-cli/sonnet or execution stops.",
+        "Audit is bound to exact C1.",
+        "Audit verdict is PASS or acceptable PASS_WITH_RISKS.",
+        "No substantive file changes occur after audit."
+      ]
+    },
+    {
+      "id": "S7_SIGNED_LOCAL_ATTESTATION_PUSH_AND_STEWARD",
+      "task": "Create the canonical signed local embedded-audit proof, push a proof-only successor to #1115, and allow GitHub embedded-audit plus PR Steward to evaluate the exact remote head.",
+      "requirements": [
+        "Create proof/pr_merge/embedded-audit/pr-1115/PROOF.json bound to audited C1.",
+        "Record canonical auditor_tool=claude-code-cli and auditor_model=sonnet truthfully.",
+        "Sign exact PROOF.json bytes using OpenSSH namespace dopemux-embedded-audit only when authorized signer use is available.",
+        "Never print, copy, inspect, or expose private key contents.",
+        "Run local_audit_acceptance.py before commit.",
+        "The successor commit after C1 may touch only proof/pr_merge/embedded-audit/pr-1115/** and other explicitly proof-only custody files if required by the canonical contract.",
+        "Push fast-forward to existing #1115 head branch; never force.",
+        "Do not mark ready, merge, or close #1178/#1179.",
+        "Wait only for the current GitHub checks to produce evidence; do not create another freshness commit merely because checks are pending.",
+        "Final readiness requires current-head embedded-audit PASS and PR Steward READY."
+      ],
+      "commands": [
+        "mkdir -p proof/pr_merge/embedded-audit/pr-1115",
+        "python3 scripts/audit/local_audit_acceptance.py --repo DDD-Enterprises/dopemux-mvp --pr 1115 --head-sha \"$(git rev-parse HEAD)\" --allowed-signers config/audit/embedded-audit-allowed-signers --schema schemas/proof/embedded_audit.schema.json --out /tmp/PR1115_LOCAL_AUDIT_ATTESTATION.json",
+        "ssh-keygen -Y sign -f ~/.ssh/dopemux_audit_signing -n dopemux-embedded-audit proof/pr_merge/embedded-audit/pr-1115/PROOF.json",
+        "python3 scripts/audit/local_audit_acceptance.py --repo DDD-Enterprises/dopemux-mvp --pr 1115 --head-sha \"$(git rev-parse HEAD)\" --allowed-signers config/audit/embedded-audit-allowed-signers --schema schemas/proof/embedded_audit.schema.json --out /tmp/PR1115_LOCAL_AUDIT_ATTESTATION.json",
+        "git diff --check",
+        "git add proof/pr_merge/embedded-audit/pr-1115",
+        "git commit -m 'proof: bind signed local audit for PR 1115'",
+        "C2=\"$(git rev-parse HEAD)\"; HEAD_REF=\"$(gh pr view 1115 --json headRefName -q .headRefName)\"; git push origin \"HEAD:$HEAD_REF\"; echo \"$C2\"",
+        "gh pr view 1115 --json number,state,isDraft,headRefOid,mergeable,url",
+        "gh pr checks 1115"
+      ],
+      "validation": [
+        "Local signed audit acceptance passes before push.",
+        "Proof-only successor contains no product change.",
+        "Push is fast-forward.",
+        "Remote #1115 head equals local proof-only successor.",
+        "GitHub embedded-audit consumes the signed proof successfully.",
+        "PR Steward evaluates the exact current remote head.",
+        "Final disposition is OPERATOR_READY only when current Steward is READY.",
+        "MERGE_AUTHORIZATION remains NOT_GRANTED.",
+        "#1178/#1179 remain open until a later explicit operator closure action."
+      ],
+      "expected_files": [
+        "proof/pr_merge/embedded-audit/pr-1115/PROOF.json",
+        "proof/pr_merge/embedded-audit/pr-1115/PROOF.json.sig",
+        "proof/pr_merge/embedded-audit/pr-1115/AUDITOR_REPORT.md"
+      ]
+    }
+  ]
+}
