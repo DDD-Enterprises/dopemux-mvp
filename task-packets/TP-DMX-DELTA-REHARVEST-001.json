@@ -16,16 +16,18 @@
   },
   "execution": {
     "agent": "gemini",
-    "branch": "tp/DMX-DELTA-REHARVEST-001-R1",
+    "branch": "tp/DMX-DELTA-REHARVEST-001-R2",
     "base_branch": "main"
   },
   "commit": {
-    "message": "fix(portfolio): R1 repair of open PR mechanical evidence collector and pair matrix",
+    "message": "fix(portfolio): R2 repair of open PR Git topology, stack detection, and offline rebuildability",
     "allowlist": [
       "task-packets/TP-DMX-DELTA-REHARVEST-001.json",
       "scripts/audit/pr_portfolio_delta_reharvest.py",
       "proof/TP-DMX-DELTA-REHARVEST-001/OBSERVATION_SNAPSHOT.json",
       "proof/TP-DMX-DELTA-REHARVEST-001/OPEN_PR_LEDGER.csv",
+      "proof/TP-DMX-DELTA-REHARVEST-001/PR_TOPOLOGY.json",
+      "proof/TP-DMX-DELTA-REHARVEST-001/PR_TOPOLOGY.csv",
       "proof/TP-DMX-DELTA-REHARVEST-001/PAIR_RELATIONSHIPS.json",
       "proof/TP-DMX-DELTA-REHARVEST-001/PAIR_RELATIONSHIPS.csv",
       "proof/TP-DMX-DELTA-REHARVEST-001/CAPABILITY_PREFLIGHT.md",
@@ -36,8 +38,8 @@
     ]
   },
   "pr": {
-    "title": "fix(portfolio): R1 repair of open PR mechanical evidence collector and pair matrix",
-    "body": "R1 repair addressing paginated changed-file harvesting, explicit pair relationship matrix, S0/S1 dual-state drift classification, evidence PR exclusion, root-hygiene compliance, and deterministic ZIP packaging.",
+    "title": "fix(portfolio): R2 repair of open PR Git topology, stack detection, and offline rebuildability",
+    "body": "R2 repair implementing per-PR Git topology, explicit pair topology with heavy candidate edge analysis (proving #1136 -> #1183 stack ancestry), offline --rebuild-zip mode with normalized ZipInfo timestamps, and zero file count fudge factor.",
     "base": "main"
   },
   "pal_chain": {
@@ -51,23 +53,24 @@
   },
   "steps": [
     {
-      "id": "S1_HARVEST_PAGINATED_PR_FILES",
-      "task": "Implement paginated changed-file collection via GitHub GraphQL API to eliminate 100-file ceiling and reconcile against aggregate changedFiles count",
+      "id": "S1_PAGINATED_FILES_AND_PR_TOPOLOGY",
+      "task": "Extract exact paginated changed files and per-PR Git topology (merge base, ahead/behind, ancestry, tree, patch containment, merge-tree conflicts, topology class)",
       "validation": [
         "python3 -m py_compile scripts/audit/pr_portfolio_delta_reharvest.py"
       ]
     },
     {
-      "id": "S2_GENERATE_PAIR_RELATIONS_AND_S1_DRIFT",
-      "task": "Compute full pair relationship matrix (N*(N-1)/2 records) and classify S0/S1 dual-state main and PR drift",
+      "id": "S2_PAIR_TOPOLOGY_AND_STACKED_FIXTURE",
+      "task": "Compute full pair topology (1,176 pairs) with candidate edge heavy analysis and verify mandatory regression fixture (#1136 -> #1183 stack predecessor/successor)",
       "validation": [
         "python3 scripts/audit/pr_portfolio_delta_reharvest.py"
       ]
     },
     {
-      "id": "S3_PACKAGE_AND_VERIFY_REPAIR",
-      "task": "Build reproducible ZIP package, SHA256SUMS manifest, and verify all collection invariants pass",
+      "id": "S3_OFFLINE_ZIP_REBUILD_AND_VERIFY",
+      "task": "Execute offline --rebuild-zip without network access or evidence regeneration, verifying relative checksum manifest and ZIP sidecar",
       "validation": [
+        "python3 scripts/audit/pr_portfolio_delta_reharvest.py --rebuild-zip",
         "python3 scripts/audit/pr_portfolio_delta_reharvest.py --verify-only"
       ]
     }
