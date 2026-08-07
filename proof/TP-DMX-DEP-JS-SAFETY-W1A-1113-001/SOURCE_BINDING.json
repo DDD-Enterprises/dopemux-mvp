@@ -1,0 +1,17 @@
+{
+  "live_main_sha": "33d6c353023ecc3aa6331ab39f4f076ae3ca1fda",
+  "source_pr": 1113,
+  "source_pr_head_oid": "bf6cf155d1ad764f8a9479f0988bc3066a5ceb24",
+  "source_paths": [
+    "package.json",
+    "package-lock.json"
+  ],
+  "requested_model": "gemini-3.6-flash",
+  "actual_model": "Gemini 3.6 Flash (High)",
+  "node_version": "v25.9.0",
+  "npm_version": "11.12.1",
+  "candidate_file_hashes": {
+    "package.json": "aad5cbeb1a70f55f500bc7441c3821b5234237ac202d2d8fa2371c83e4a824f6",
+    "package-lock.json": "419fabad41e8a4ab8cfd42bf22949ea47c813130e1fd2dddf1c9179d6ccc80fa"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": "PENDING_INDEPENDENT_L3_AUDIT"
+  }
+}

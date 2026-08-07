@@ -1,0 +1,315 @@
+{
+  "id": "TP-DMX-DEP-JS-SAFETY-W1A-1113-001",
+  "project": "dopemux-mvp",
+  "target": "pr-1113-next-15-5-21-security-refresh-and-readiness",
+  "invariants": [
+    "Risk lane is L3 because this is a security-motivated dependency update. Implementation may proceed, but merge remains NOT_AUTHORIZED by this packet.",
+    "Use PR #1113 only as the source delta. Preserve the exact product intent: root Next.js 15.5.x patch to 15.5.21. Do not migrate to Next 16.",
+    "Allowed product files are package.json and package-lock.json only. Any additional product/runtime/workflow file change is a scope breach.",
+    "Ordinary movement of origin/main is not a stop. Refresh against live main and classify only affected facts. Never require an old exact main SHA merely because it appeared in prior evidence.",
+    "Do not rebase, force-push, rewrite history, close PRs, mark ready, merge, mutate branch protection, or alter repository settings.",
+    "Repair existing PR #1113 in place only if its remote head can be updated without force-push or unrelated history surgery. If that is not possible, stop with NEEDS_SUPERVISOR_RECREATE instead of silently opening a replacement PR.",
+    "The current-main direct Next.js version controls applicability: if current main is already at 15.5.21 or a later accepted 15.5.x patch, prove containment and stop as ALREADY_CONTAINED_CANDIDATE; if current main has changed major/minor, stop for bounded JS-lane re-adjudication.",
+    "Regenerated package-lock.json may change only the root next dependency record and next/@next package closure required by next@15.5.21. Unrelated dependency churn is a stop condition.",
+    "Use AGY with requested model gemini-3.6-flash and no model fallback. The exact AGY selector and actual model must be proven from live runner output before substantive edits.",
+    "The AGY Gemini implementer is not the independent L3 auditor. Final readiness requires a different-family independent audit on the frozen substantive head plus rollback evidence and PR Steward.",
+    "A failed or unavailable independent audit leaves the verdict BLOCKED_AWAITING_AUDIT; it must not be converted into PASS, READY, or merge authorization.",
+    "Proof must distinguish OBSERVED, INFERRED, PROPOSED, CLAIMED, CONFLICTING, UNKNOWN, and NOT_RUN. Every UNKNOWN names missing evidence.",
+    "No secrets, credentials, tokens, cookies, private keys, .env values, or sensitive provider output may enter commits, proof, logs, or chat output."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PORTFOLIO-RECOVERY-W1-JS-SAFETY",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "gemini",
+    "branch": "dependabot/npm_and_yarn/next-15.5.21",
+    "base_branch": "main",
+    "stacked_because": "First executable slice of the accepted Wave 1 JS security lane. It refreshes/finalizes PR #1113 before #1196 and #1195 are touched."
+  },
+  "commit": {
+    "message": "fix(deps): refresh Next.js 15.5.21 security patch",
+    "allowlist": [
+      "package.json",
+      "package-lock.json",
+      "task-packets/TP-DMX-DEP-JS-SAFETY-W1A-1113-001.json",
+      "proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/SOURCE_BINDING.json",
+      "proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/VALIDATION.md",
+      "proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/ROLLBACK.md",
+      "proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/PROOF.json",
+      "proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/AUDITOR_REPORT.md",
+      "proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/review_bundle/**"
+    ],
+    "verify": [
+      "Changed product files are exactly package.json and package-lock.json.",
+      "package.json dependencies.next is exactly 15.5.21.",
+      "Lockfile semantic changes are limited to the root next record and next/@next package closure required by 15.5.21.",
+      "No Next 16, eslint-config-next migration, broad UI dependency refresh, workflow change, or unrelated lock churn is present.",
+      "Final substantive head is frozen before independent audit.",
+      "Any proof-only successor after audit changes proof/audit custody files only."
+    ]
+  },
+  "pr": {
+    "title": "deps(deps): bump next from 15.5.18 to 15.5.21",
+    "body": "Repair and finalize existing PR #1113 in place on current main. Preserve only the Next.js 15.5.21 security-patch intent. No Next 16 migration, unrelated dependency refresh, merge, close, mark-ready, force-push, or history rewrite is authorized.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "implement",
+      "secaudit",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S0_MODEL_REPO_AND_PR_PREFLIGHT",
+      "task": "Prove the AGY Gemini route, repository identity, live main, and current PR #1113 source delta before editing anything.",
+      "requirements": [
+        "Requested implementation model is gemini-3.6-flash with no fallback.",
+        "Run AGY model discovery/help before substantive edits. If gemini-3.6-flash is not a live selectable model in this AGY runtime, stop BLOCKED_AGY_MODEL_UNPROVEN.",
+        "Record requested model, configured model, response-claimed model if any, and runner/proxy-reported model separately.",
+        "Verify repository identity and clean starting tree.",
+        "Refresh origin/main and PR #1113 metadata. Historical SHAs are observations only.",
+        "Verify PR #1113 is still open and its changed product paths are exactly package.json and package-lock.json."
+      ],
+      "commands": [
+        "agy --version",
+        "agy --help",
+        "agy models",
+        "git rev-parse --show-toplevel",
+        "git remote get-url origin",
+        "git status --short --branch",
+        "git fetch --prune origin",
+        "git rev-parse origin/main",
+        "gh pr view 1113 --json number,state,isDraft,baseRefName,headRefName,headRefOid,mergeable,changedFiles,url",
+        "gh pr diff 1113 --name-only"
+      ],
+      "validation": [
+        "AGY runtime identity is captured.",
+        "gemini-3.6-flash is proven selectable with no fallback, or execution stops before edits.",
+        "Repository identity matches DDD-Enterprises/dopemux-mvp.",
+        "Starting worktree is clean.",
+        "PR #1113 is OPEN.",
+        "PR #1113 changed paths are exactly package.json and package-lock.json."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "RULES.md",
+        "config/ai/model-routing.policy.yaml",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "package.json",
+        "package-lock.json"
+      ]
+    },
+    {
+      "id": "S1_APPLICABILITY_AND_DRIFT_CLASSIFICATION",
+      "task": "Determine whether the #1113 Next.js 15.5.21 delta is still needed on live main and classify drift without brittle SHA gating.",
+      "requirements": [
+        "Read the Next.js version from live origin/main.",
+        "If origin/main is in the 15.5 line below 15.5.21, continue.",
+        "If origin/main is exactly 15.5.21 or a later 15.5 patch, compare the source delta for containment and stop ALREADY_CONTAINED_CANDIDATE when proven.",
+        "If origin/main has moved to a different Next major/minor, stop BLOCKED_JS_BASELINE_CHANGED and report the exact observed version.",
+        "Do not touch #1196 or #1195 in this packet."
+      ],
+      "commands": [
+        "git show origin/main:package.json | python3 -c 'import json,sys; print(json.load(sys.stdin)[\"dependencies\"][\"next\"])'",
+        "gh pr diff 1113 --patch > /tmp/TP-DMX-DEP-JS-SAFETY-W1A-1113-001-source.patch",
+        "git merge-base origin/main \"$(gh pr view 1113 --json headRefOid -q .headRefOid)\" || true"
+      ],
+      "validation": [
+        "Applicability is classified as APPLY_15_5_21, ALREADY_CONTAINED_CANDIDATE, or BLOCKED_JS_BASELINE_CHANGED.",
+        "No exact historical SHA is used as a blanket stop.",
+        "#1196 and #1195 remain untouched."
+      ]
+    },
+    {
+      "id": "S2_ISOLATED_IN_PLACE_REFRESH",
+      "task": "Create an isolated worktree from the current #1113 head and bring in live main without rebase or history rewrite.",
+      "requirements": [
+        "Use a dedicated worktree.",
+        "Fetch the live PR head by its current headRefName.",
+        "Merge origin/main into the local PR-derived branch. Rebase and force-push are forbidden.",
+        "If conflicts occur outside package.json/package-lock.json, stop CONFLICTING_SCOPE_EXPANSION.",
+        "If package files conflict, resolve only to preserve current-main content plus exact Next.js 15.5.21 intent.",
+        "Do not push yet."
+      ],
+      "commands": [
+        "PACKET=TP-DMX-DEP-JS-SAFETY-W1A-1113-001; ROOT=\"$(git rev-parse --show-toplevel)\"; WT=\"$(dirname \"$ROOT\")/.worktrees/$PACKET\"; HEAD_REF=\"$(gh pr view 1113 --json headRefName -q .headRefName)\"; git fetch origin \"$HEAD_REF:refs/remotes/origin/$HEAD_REF\"; test ! -e \"$WT\"; git worktree add -b \"tp/$PACKET\" \"$WT\" \"refs/remotes/origin/$HEAD_REF\"",
+        "cd \"$(dirname \"$(git rev-parse --show-toplevel)\")/.worktrees/TP-DMX-DEP-JS-SAFETY-W1A-1113-001\" && git status --short --branch",
+        "cd \"$(dirname \"$(git rev-parse --show-toplevel)\")/.worktrees/TP-DMX-DEP-JS-SAFETY-W1A-1113-001\" && git merge --no-edit origin/main"
+      ],
+      "validation": [
+        "Dedicated worktree exists on local branch tp/TP-DMX-DEP-JS-SAFETY-W1A-1113-001.",
+        "origin/main is incorporated without rebase or force-push.",
+        "Any merge conflict is confined to the two authorized package files and resolved without broadening dependency intent.",
+        "No remote mutation has occurred."
+      ]
+    },
+    {
+      "id": "S3_REGENERATE_EXACT_NEXT_PATCH",
+      "task": "Regenerate the root manifest/lock deterministically for next@15.5.21 and prove there is no unrelated dependency churn.",
+      "requirements": [
+        "Capture Node and npm versions.",
+        "Regenerate the package lock from the refreshed base with next pinned exactly to 15.5.21.",
+        "Do not update eslint-config-next or any other direct dependency.",
+        "Compare package-lock package records against origin/main. Changed package keys may only be the root record, node_modules/next, and node_modules/@next/*.",
+        "If npm resolution changes any unrelated package record, stop BLOCKED_UNRELATED_LOCK_CHURN."
+      ],
+      "commands": [
+        "node --version",
+        "npm --version",
+        "npm install --package-lock-only --ignore-scripts --save-exact next@15.5.21",
+        "node -e 'const p=require(\"./package.json\"); if(p.dependencies.next!==\"15.5.21\"){console.error(p.dependencies.next); process.exit(1)}'",
+        "git show origin/main:package-lock.json > /tmp/TP-DMX-DEP-JS-SAFETY-W1A-1113-001-main-lock.json",
+        "python3 - <<'PY'\nimport json\nfrom pathlib import Path\nbase=json.loads(Path('/tmp/TP-DMX-DEP-JS-SAFETY-W1A-1113-001-main-lock.json').read_text())\ncand=json.loads(Path('package-lock.json').read_text())\nbp=base.get('packages',{})\ncp=cand.get('packages',{})\nkeys=sorted(set(bp)|set(cp))\nchanged=[k for k in keys if bp.get(k)!=cp.get(k)]\nallowed=[k for k in changed if k=='' or k=='node_modules/next' or k.startswith('node_modules/@next/')]\nprint('CHANGED_PACKAGE_KEYS=', changed)\nif changed != allowed:\n    print('UNRELATED_PACKAGE_KEYS=', sorted(set(changed)-set(allowed)))\n    raise SystemExit(1)\nPY",
+        "git diff -- package.json package-lock.json",
+        "git diff --name-only"
+      ],
+      "validation": [
+        "package.json pins next exactly to 15.5.21.",
+        "Changed lock package keys are limited to the authorized Next.js closure.",
+        "No unrelated product/runtime/workflow files changed.",
+        "Candidate intent remains semantically equivalent to #1113."
+      ],
+      "expected_files": [
+        "package.json",
+        "package-lock.json"
+      ]
+    },
+    {
+      "id": "S4_INSTALL_BUILD_LINT_AND_SECURITY_VALIDATION",
+      "task": "Run current-main-equivalent installation, build, lint, version, and security checks on the refreshed candidate.",
+      "requirements": [
+        "Use npm ci for lock integrity.",
+        "Run the repository-defined production build and lint scripts.",
+        "Confirm installed Next.js and @next/env versions.",
+        "Run npm audit in evidence mode. A nonzero audit exit caused solely by pre-existing unrelated findings is not automatically attributed to this patch; any new or Next-related unresolved security finding blocks readiness.",
+        "On any candidate failure, reproduce the same command against a clean origin/main baseline before claiming the patch caused it."
+      ],
+      "commands": [
+        "npm ci",
+        "npm run build",
+        "npm run lint",
+        "npm ls next @next/env --depth=0",
+        "node -e 'const e=require(\"./node_modules/next/package.json\").engines; console.log(JSON.stringify(e)); console.log(process.version)'",
+        "bash -lc 'set +e; npm audit --omit=dev --json > /tmp/TP-DMX-DEP-JS-SAFETY-W1A-1113-001-npm-audit.json; rc=$?; echo NPM_AUDIT_EXIT=$rc; exit 0'",
+        "git diff --check",
+        "git status --short"
+      ],
+      "validation": [
+        "npm ci passes.",
+        "npm run build passes.",
+        "npm run lint passes, or an identical pre-existing origin/main failure is proven and recorded without laundering it as PASS.",
+        "Installed next and @next/env resolve to 15.5.21.",
+        "No new or Next-related unresolved security finding is introduced.",
+        "git diff --check passes."
+      ]
+    },
+    {
+      "id": "S5_PROOF_PRECOMMIT_AND_FREEZE_C1",
+      "task": "Create the bounded proof records, run the complete pre-push deterministic gates, and freeze the substantive content head C1 for independent audit.",
+      "requirements": [
+        "Write the Task Packet JSON into the canonical task-packets directory.",
+        "Create SOURCE_BINDING.json with live main, #1113 source head, source path list, requested/actual AGY model identity, Node/npm versions, and candidate file hashes.",
+        "Create VALIDATION.md with exact commands, exit codes, and any baseline comparison.",
+        "Create ROLLBACK.md describing how to restore the pre-packet PR head and how to revert the dependency commit after merge without history rewrite.",
+        "Create PROOF.json with embedded_audit.status=SKIPPED and skip_reason=PENDING_INDEPENDENT_L3_AUDIT until an independent auditor has actually run. Do not claim readiness.",
+        "Run packet schema validation, proof validation, changed-file pre-commit, git diff --check, changed-file allowlist, and proof secret hygiene.",
+        "Freeze a substantive C1 commit. Do not modify package.json/package-lock.json after C1 is handed to the auditor."
+      ],
+      "commands": [
+        "python3 -m jsonschema -i task-packets/TP-DMX-DEP-JS-SAFETY-W1A-1113-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python3 scripts/audit/validate_audit_proof.py proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/PROOF.json",
+        "git diff --check",
+        "pre-commit run --files package.json package-lock.json task-packets/TP-DMX-DEP-JS-SAFETY-W1A-1113-001.json proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/SOURCE_BINDING.json proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/VALIDATION.md proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/ROLLBACK.md proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/PROOF.json",
+        "git status --short",
+        "git diff --name-only origin/main...HEAD",
+        "git add package.json package-lock.json task-packets/TP-DMX-DEP-JS-SAFETY-W1A-1113-001.json proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001",
+        "git commit -m 'fix(deps): refresh Next.js 15.5.21 security patch'",
+        "git rev-parse HEAD"
+      ],
+      "validation": [
+        "All changed files are allowlisted.",
+        "Task Packet validates against the canonical schema.",
+        "Provisional proof validates structurally but explicitly blocks readiness pending independent audit.",
+        "Pre-commit passes cleanly after any modifying hook is rerun.",
+        "No secret-like material is present in proof outputs.",
+        "C1 is a committed frozen substantive head.",
+        "No push has occurred before independent audit."
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-DEP-JS-SAFETY-W1A-1113-001.json",
+        "proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/SOURCE_BINDING.json",
+        "proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/VALIDATION.md",
+        "proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/ROLLBACK.md",
+        "proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/PROOF.json"
+      ]
+    },
+    {
+      "id": "S6_INDEPENDENT_L3_AUDIT_HANDOFF",
+      "task": "Stop the AGY Gemini implementer at C1 and hand the exact frozen substantive head to an independent different-family auditor.",
+      "requirements": [
+        "AGY Gemini must not self-issue the final L3 audit.",
+        "Use a different-family independent auditor whose runner/model identity is live-proven at audit time.",
+        "The auditor reviews C1 exactly, including source-delta preservation, lockfile scope, security rationale, validation evidence, rollback, and proof.",
+        "Audit verdict must be PASS or non-blocking PASS_WITH_RISKS before readiness can advance.",
+        "If the auditor is unavailable, malformed, same-family without approved independence, or returns FAIL/NEEDS_SUPERVISOR, stop."
+      ],
+      "validation": [
+        "C1 SHA is recorded in the handoff.",
+        "Independent auditor route is different-family and invocation-proven.",
+        "AGY implementer verdict is AWAITING_INDEPENDENT_AUDIT, not PASS/READY.",
+        "No push/merge/mark-ready/close action is performed by the AGY implementer."
+      ]
+    },
+    {
+      "id": "S7_PROOF_ONLY_C2_PUSH_AND_STEWARD",
+      "task": "After a passing independent audit, create a proof-only C2 successor, rerun deterministic proof gates, push to the existing #1113 head branch, and harvest PR Steward without merging.",
+      "requirements": [
+        "This stage is NOT_RUN by the AGY implementer unless a separate independent audit has already completed with passing evidence.",
+        "Update only PROOF.json, AUDITOR_REPORT.md, and required review_bundle custody files after C1.",
+        "C1 to C2 must contain no package.json/package-lock.json change.",
+        "Rerun proof validation, pre-commit for changed proof files, git diff --check, and secret hygiene.",
+        "Push C2 to the existing PR #1113 head branch without force. If non-fast-forward or permission denied, stop NEEDS_SUPERVISOR_PUSH_ROUTE.",
+        "Run PR Steward against exact pushed C2 and report its verdict.",
+        "Do not mark ready, merge, close, or mutate review state."
+      ],
+      "commands": [
+        "git diff --name-only HEAD^..HEAD",
+        "python3 scripts/audit/validate_audit_proof.py proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/PROOF.json",
+        "git diff --check",
+        "pre-commit run --files proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/PROOF.json proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/AUDITOR_REPORT.md",
+        "HEAD_REF=\"$(gh pr view 1113 --json headRefName -q .headRefName)\"; git push origin \"HEAD:$HEAD_REF\"",
+        "gh pr view 1113 --json number,state,isDraft,baseRefName,headRefName,headRefOid,mergeable,url"
+      ],
+      "validation": [
+        "C2 is proof-only relative to frozen C1.",
+        "Audit proof validates and is bound to C1.",
+        "Push is fast-forward and succeeds without force.",
+        "Remote #1113 head equals C2.",
+        "PR Steward is harvested on the exact pushed head.",
+        "Final packet verdict is MERGE_CANDIDATE_AFTER_CURRENT_GATES or BLOCKED with exact blockers; MERGE_AUTHORIZATION remains NOT_GRANTED."
+      ],
+      "expected_files": [
+        "proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/PROOF.json",
+        "proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/AUDITOR_REPORT.md",
+        "proof/TP-DMX-DEP-JS-SAFETY-W1A-1113-001/review_bundle/**"
+      ]
+    }
+  ]
+}
