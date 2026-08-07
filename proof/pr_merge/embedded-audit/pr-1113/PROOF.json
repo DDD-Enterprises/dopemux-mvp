@@ -1,0 +1,31 @@
+{
+  "packet_id": "TP-DMX-DEP-JS-SAFETY-W1A-1113-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1113,
+  "head_sha": "cb0651f0f6db8a29229c7b61f64426b169fa3ce9",
+  "executed": true,
+  "generated_at": "2026-08-07T15:31:00Z",
+  "provenance": {
+    "proof_author": "independent-embedded-audit",
+    "workflow": "embedded-audit.yml"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude -p 'Audit C3 for TP-DMX-DEP-JS-SAFETY-W1A-1113-001' --print --safe-mode --no-session-persistence --permission-mode plan --tools '' --strict-mcp-config --model sonnet",
+    "exit_code": 0,
+    "report_path": "proof/pr_merge/embedded-audit/pr-1113/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "Fixed duplicate -m flag in ROLLBACK.md revert command"
+    ],
+    "remaining_risks": [
+      "Pre-existing baseline build and lint failure (missing pages/app directory) on main",
+      "npm ci requires --legacy-peer-deps due to pre-existing eslint-config-next@16.1.6 vs eslint@^8 peer conflict on main",
+      "4 high transitive npm audit findings (nanoid, next, postcss, sharp) persist on main baseline and require Next 16 semver-major upgrade"
+    ],
+    "skip_reason": null
+  }
+}
