@@ -82,12 +82,16 @@ curl -fsS http://localhost:3016/health  # dopecon-bridge
 curl -fsS http://localhost:3004/health  # ConPort HTTP
 curl -fsS http://localhost:3010/health  # dope-context
 curl -fsS http://localhost:3020/health  # dope-memory
-curl -fsS http://localhost:8000/health  # task-orchestrator
+curl -fsS http://localhost:8000/health  # task-orchestrator FastAPI shadow twin (pending rename)
 curl -fsS http://localhost:3025/health  # ADHD Engine
 ```
 
 These ports are defaults from the tracked compose and registry configuration.
 Local `.env` overrides can change them.
+
+`8000` above is a compose-only FastAPI service, not the task-orchestrator MCP
+tool surface. The MCP surface is a separate host-singleton Kotlin jar on port
+`7890` (Streamable HTTP, `POST /mcp`), managed via `dopemux mcp`.
 
 ## Authority Notes
 

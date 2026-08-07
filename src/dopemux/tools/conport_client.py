@@ -7,10 +7,18 @@ ADHD-optimized context preservation through direct API access
 import asyncio
 import aiohttp
 import json
+import os
 from typing import Dict, Any, Optional, List
 import logging
 
 logger = logging.getLogger(__name__)
+
+# Kept in sync with pm/adapters/conport.py and instance_state.resolve_conport_port,
+# both of which already honour CONPORT_URL. This client previously hardcoded its
+# base URL with no env fallback, so it silently ignored every override and always
+# addressed whatever ConPort happened to be on localhost:3005 — including
+# production. Consistency with the other two clients is the point.
+DEFAULT_CONPORT_URL = "http://localhost:3005"
 
 class ConPortClient:
     """
@@ -18,8 +26,8 @@ class ConPortClient:
     Provides immediate, reliable access to ADHD context preservation features
     """
 
-    def __init__(self, base_url: str = "http://localhost:3005"):
-        self.base_url = base_url
+    def __init__(self, base_url: Optional[str] = None):
+        self.base_url = (base_url or os.getenv("CONPORT_URL", DEFAULT_CONPORT_URL)).rstrip("/")
         self.session: Optional[aiohttp.ClientSession] = None
 
     async def _ensure_session(self):

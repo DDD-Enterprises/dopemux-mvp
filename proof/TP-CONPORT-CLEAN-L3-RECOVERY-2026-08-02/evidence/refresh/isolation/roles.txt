@@ -1,0 +1,7 @@
+                                  List of roles
+      Role name      |                         Attributes
+---------------------+------------------------------------------------------------
+ conport_adops       |
+ conport_archive_ro  | No inheritance, Cannot login
+ conport_dopemux_mvp |
+ dopemux_age         | Superuser, Create role, Create DB, Replication, Bypass RLS

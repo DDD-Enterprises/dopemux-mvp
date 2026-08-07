@@ -47,7 +47,7 @@ projects:
         base_url: "http://127.0.0.1:3010"  # MCP transport
       task_orchestrator:
         project_id: "<to-project-id>"
-        base_url: "http://127.0.0.1:8000"
+        base_url: "http://127.0.0.1:7890"  # canonical task-orchestrator MCP (Kotlin jar, Streamable HTTP POST /mcp); :8000 is the separate FastAPI shadow service, not the MCP surface
 ```
 
 Field notes:

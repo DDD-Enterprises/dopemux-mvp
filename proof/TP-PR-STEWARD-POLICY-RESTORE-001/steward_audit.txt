@@ -1,0 +1,7 @@
+embedded_audit_status=PASS_WITH_RISKS
+status=PASS
+reason_code=PASS
+workspace=/Users/hue/code/dopemux-mvp/.worktrees/TP-PR-STEWARD-POLICY-RESTORE-001
+contract_version=1.0.0
+config_schema: PASS - config/pr_steward/policy.json validates against schemas/pr_steward/config.schema.json.
+scaffold_skew: PASS - config/pr_steward/policy.json matches packaged scaffold policy.

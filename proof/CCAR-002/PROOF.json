@@ -1,0 +1,28 @@
+{
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/CCAR-002/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "CCAR-002R R1: repo-relative source_manifest; validated repo-root resolution; dual-worktree determinism test; regenerated catalog",
+      "CCAR-002R-A2 R3: removed absolute worktree path from SOURCE_MANIFEST.json; replaced unexpanded $(date ...) literal in NORMALIZATION_REPORT.md with a real timestamp; test_generation_idempotent now checks the committed catalog before regenerating; _scan_model_ids returns full matches instead of capture-group fragments, with a new regression test"
+    ],
+    "remaining_risks": [
+      "Advisory read-only pre-checks (OpenCode + OpenRouter, --agent ccar-audit-notools) are historical log entries against specific prior SHAs, not a live claim about the current committed head (editing this file itself advances the head, so an in-file claim of 'exact current head' cannot stay true across the edit that states it) \u2014 round 1 vs b096551dfa (kimi-k3): PASS with two residual findings (test mutated committed catalog with no cleanup; packet/proof still said Claude Sonnet for R4) \u2014 both addressed in a follow-up commit; round 2 vs fd7afbe295 (kimi-k3): FAIL \u2014 packet frontmatter prelude still said 'Claude audit return' (fixed in this commit) and this file's round-1 entry called b096551dfa 'exact R3' after a newer R3 iteration existed (reworded here to be historical, not present-tense).",
+      "None of these advisory pre-checks are the signed canonical embedded audit; none themselves satisfy R4. The signed canonical embedded audit required for R4 is still pending.",
+      "Canonical CI proof remains under proof/pr_merge/embedded-audit/pr-1176/** after R4."
+    ],
+    "skip_reason": "CCAR-002R-A2 R3 evidence and test correctness repair complete; independent OpenRouter audit (kimi-k3, deepseek-v4-pro fallback) used for the advisory pre-check; signed canonical PR proof deferred to R4.",
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}

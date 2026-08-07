@@ -1,0 +1,60 @@
+{
+  "id": "TP-DMX-CI-WORKFLOW-TRUTHFUL-001",
+  "project": "dopemux-mvp",
+  "target": "ci-complete-truthful-summaries",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-CI-HARDEN",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "gemini",
+    "branch": "fix/ci-complete-truthful-summaries",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(ci): reconcile ci-summary job requirements and test assertions",
+    "allowlist": [
+      "tests/ci/test_pr_gate.py",
+      "task-packets/TP-DMX-CI-WORKFLOW-TRUTHFUL-001.json",
+      "proof/ci-complete-truthful-summaries/AUDITOR_REPORT.md",
+      "proof/ci-complete-truthful-summaries/PROOF.json"
+    ]
+  },
+  "pr": {
+    "title": "fix(ci): reconcile ci-summary job requirements and test assertions (#1130)",
+    "body": "## Summary\n- Reconciles routing-consistency job requirement in test_pr_gate.py\n- Replaces PR #1100 with truthful workflow assertions and current-head embedded proof",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Align test_pr_gate.py _REQUIRED_BLOCKING with ci-complete.yml",
+      "validation": [
+        "python -m jsonschema -i task-packets/TP-DMX-CI-WORKFLOW-TRUTHFUL-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "pytest tests/ci/test_pr_gate.py"
+      ]
+    }
+  ]
+}

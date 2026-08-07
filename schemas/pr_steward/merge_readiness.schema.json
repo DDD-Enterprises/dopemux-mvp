@@ -139,7 +139,35 @@
         },
         "approval": {
           "type": ["object", "null"],
-          "additionalProperties": true
+          "additionalProperties": true,
+          "description": "Ordinary non-author GitHub APPROVED review binding, or null."
+        },
+        "solo_owner_override": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "description": "Exact-head solo-owner security-release receipt (ADR-DMX-PRSTEWARD-SOLOOWNER-001). Never a GitHub APPROVED review. Null when unused."
+        },
+        "override_receipt_code": {
+          "type": ["string", "null"],
+          "description": "When solo-owner override activates: SOLO_OWNER_SECURITY_RELEASE_OVERRIDE_USED."
+        },
+        "approval_kind": {
+          "description": "Which security-release authority satisfied the gate.",
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "string",
+              "enum": ["human_review", "github_app", "solo_owner_phrase"]
+            }
+          ]
+        },
+        "trusted_apps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Configured trusted_security_release_apps snapshot (login/owner only)."
         }
       }
     }

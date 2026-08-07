@@ -31,6 +31,7 @@ _REQUIRED_BLOCKING = (
     "audit-validator",
     "extractor-full",
     "auditor-router",
+    "routing-consistency",
 )
 _ADVISORY = (
     "installer-smoke",

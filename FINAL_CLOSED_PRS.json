@@ -1,0 +1,614 @@
+[
+  {
+    "closedAt": "2026-07-27T00:44:39Z",
+    "headRefName": "jules-18181946955387858302-34ac56e7",
+    "mergedAt": null,
+    "number": 1124,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: Keyboard Accessibility Chips and Button Focus Highlight Overrides",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1124"
+  },
+  {
+    "closedAt": "2026-07-27T00:44:32Z",
+    "headRefName": "palette-hydration-sip-logger-16578487634847064377",
+    "mergedAt": null,
+    "number": 1119,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: Interactive Hydration Sip Logger",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1119"
+  },
+  {
+    "closedAt": "2026-07-22T11:56:55Z",
+    "headRefName": "feat/CONPORT-W2-FREEZE-PIN-INVENTORY",
+    "mergedAt": null,
+    "number": 1110,
+    "state": "CLOSED",
+    "title": "feat(conport): pin ConPort Dockerfile digests + land Wave 2 SBOM/audit proof",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1110"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:50Z",
+    "headRefName": "dependabot/npm_and_yarn/postcss-8.5.16",
+    "mergedAt": null,
+    "number": 1109,
+    "state": "CLOSED",
+    "title": "deps(deps-dev): bump postcss from 8.5.15 to 8.5.16",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1109"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:47Z",
+    "headRefName": "dependabot/npm_and_yarn/ui-dashboard/npm_and_yarn-7429694490",
+    "mergedAt": null,
+    "number": 1108,
+    "state": "CLOSED",
+    "title": "chore(deps): bump brace-expansion from 5.0.6 to 5.0.7 in /ui-dashboard in the npm_and_yarn group across 1 directory",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1108"
+  },
+  {
+    "closedAt": "2026-07-23T17:18:40Z",
+    "headRefName": "fix/container-ci-ghcr-publish",
+    "mergedAt": null,
+    "number": 1107,
+    "state": "CLOSED",
+    "title": "fix(ci): align container builds and GHCR publishing",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1107"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:36Z",
+    "headRefName": "dependabot/uv/google-genai-2.13.0",
+    "mergedAt": null,
+    "number": 1105,
+    "state": "CLOSED",
+    "title": "deps(deps): bump google-genai from 1.69.0 to 2.13.0",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1105"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:34Z",
+    "headRefName": "dependabot/uv/cryptography-49.0.0",
+    "mergedAt": null,
+    "number": 1104,
+    "state": "CLOSED",
+    "title": "deps(deps): bump cryptography from 48.0.1 to 49.0.0",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1104"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:43Z",
+    "headRefName": "dependabot/uv/python-minor-patch-92520cb303",
+    "mergedAt": null,
+    "number": 1103,
+    "state": "CLOSED",
+    "title": "deps(deps): bump the python-minor-patch group with 40 updates",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1103"
+  },
+  {
+    "closedAt": "2026-07-27T00:47:33Z",
+    "headRefName": "chore/dependabot-codeql-v4",
+    "mergedAt": null,
+    "number": 1100,
+    "state": "CLOSED",
+    "title": "chore(ci): harden and optimize GitHub Actions workflows",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1100"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:40Z",
+    "headRefName": "dependabot/github_actions/actions/github-script-9.0.0",
+    "mergedAt": null,
+    "number": 1099,
+    "state": "CLOSED",
+    "title": "deps(deps): bump actions/github-script from 8.0.0 to 9.0.0",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1099"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:23Z",
+    "headRefName": "dependabot/github_actions/github/codeql-action-4",
+    "mergedAt": null,
+    "number": 1098,
+    "state": "CLOSED",
+    "title": "deps(deps): bump github/codeql-action from 3 to 4",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1098"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:38Z",
+    "headRefName": "dependabot/github_actions/actions/checkout-7",
+    "mergedAt": null,
+    "number": 1097,
+    "state": "CLOSED",
+    "title": "deps(deps): bump actions/checkout from 4 to 7",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1097"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:32Z",
+    "headRefName": "dependabot/npm_and_yarn/tailwind-merge-3.6.0",
+    "mergedAt": null,
+    "number": 1096,
+    "state": "CLOSED",
+    "title": "deps(deps): bump tailwind-merge from 2.6.1 to 3.6.0",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1096"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:30Z",
+    "headRefName": "dependabot/npm_and_yarn/tailwindcss-4.3.3",
+    "mergedAt": null,
+    "number": 1095,
+    "state": "CLOSED",
+    "title": "deps(deps-dev): bump tailwindcss from 3.4.19 to 4.3.3",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1095"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:45Z",
+    "headRefName": "dependabot/npm_and_yarn/javascript-minor-patch-6d1b28dda4",
+    "mergedAt": null,
+    "number": 1094,
+    "state": "CLOSED",
+    "title": "deps(deps): bump the javascript-minor-patch group with 9 updates",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1094"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:28Z",
+    "headRefName": "dependabot/docker_compose/redis-8-alpine",
+    "mergedAt": null,
+    "number": 1093,
+    "state": "CLOSED",
+    "title": "deps(deps): bump redis from 7-alpine to 8-alpine",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1093"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:26Z",
+    "headRefName": "dependabot/docker_compose/mysql-9.7",
+    "mergedAt": null,
+    "number": 1092,
+    "state": "CLOSED",
+    "title": "deps(deps): bump mysql from 8.0 to 9.7",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1092"
+  },
+  {
+    "closedAt": "2026-07-23T04:02:30Z",
+    "headRefName": "dependabot/uv/uv-dac362c65a",
+    "mergedAt": null,
+    "number": 1090,
+    "state": "CLOSED",
+    "title": "chore(deps): bump the uv group across 2 directories with 1 update",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1090"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:10Z",
+    "headRefName": "jules-16837399954055447998-253b9702",
+    "mergedAt": null,
+    "number": 1087,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: Adaptive Prediction Trend Icons in Prediction Panel",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1087"
+  },
+  {
+    "closedAt": "2026-07-27T00:21:09Z",
+    "headRefName": "fix/mcp-shared-task-orchestrator",
+    "mergedAt": null,
+    "number": 1086,
+    "state": "CLOSED",
+    "title": "fix(mcp): support shared task orchestrator",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1086"
+  },
+  {
+    "closedAt": "2026-07-22T10:22:51Z",
+    "headRefName": "dependabot/npm_and_yarn/npm_and_yarn-7429694490",
+    "mergedAt": null,
+    "number": 1083,
+    "state": "CLOSED",
+    "title": "chore(deps): bump brace-expansion from 5.0.6 to 5.0.7 in the npm_and_yarn group across 1 directory",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1083"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:08Z",
+    "headRefName": "jules-296645046766798792-9f095e10",
+    "mergedAt": null,
+    "number": 1081,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: Adaptive Prediction Trend Icons in PredictionPanel",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1081"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:12Z",
+    "headRefName": "chore/caveman-repo-rules",
+    "mergedAt": null,
+    "number": 1080,
+    "state": "CLOSED",
+    "title": "chore(rules): add per-repo caveman agent rule files",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1080"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:06Z",
+    "headRefName": "jules-adaptive-prediction-trend-icons-9642582448892635060",
+    "mergedAt": null,
+    "number": 1075,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: Adaptive Prediction Trend Icons for Cognitive Load Forecast",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1075"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:17Z",
+    "headRefName": "claude/svcfeat-packets",
+    "mergedAt": null,
+    "number": 1072,
+    "state": "CLOSED",
+    "title": "chore(packets): DMX-SVCFEAT \u2014 24 flagship feature packets (dope-memory, DopeCode, Dope Brain)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1072"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:15Z",
+    "headRefName": "claude/dcp-mcp-ro-remainder-packets",
+    "mergedAt": null,
+    "number": 1071,
+    "state": "CLOSED",
+    "title": "chore(packets): DCP-MCP-RO remainder \u2014 8 packets (0019\u20130026) to production READY",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1071"
+  },
+  {
+    "closedAt": "2026-07-19T01:20:41Z",
+    "headRefName": "jules-13931363824015958601-f32e34f2",
+    "mergedAt": null,
+    "number": 1070,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: Adaptive Prediction Trend Icons & Accessibility Alignment",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1070"
+  },
+  {
+    "closedAt": "2026-07-19T01:20:38Z",
+    "headRefName": "jules-9458741411230156367-1e82d6f7",
+    "mergedAt": null,
+    "number": 1063,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: Complete Adaptive Prediction Trend Indicators & Gauge A11y Fix",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1063"
+  },
+  {
+    "closedAt": "2026-07-23T17:16:50Z",
+    "headRefName": "codex/svcfin-dash",
+    "mergedAt": null,
+    "number": 1056,
+    "state": "CLOSED",
+    "title": "feat(dashboard): deploy adhd-dashboard backend for the React operator UI",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1056"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:21Z",
+    "headRefName": "claude/rte-audit-improvement-f4beb7",
+    "mergedAt": null,
+    "number": 1043,
+    "state": "CLOSED",
+    "title": "refactor(rte): audit remediation foundation and seam extraction",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1043"
+  },
+  {
+    "closedAt": "2026-07-23T04:00:19Z",
+    "headRefName": "codex/tp-dmx-merge-integrity-0001-investigation-adr",
+    "mergedAt": null,
+    "number": 1040,
+    "state": "CLOSED",
+    "title": "docs(merge-integrity): investigate stale clobbers and propose exact-candidate admission",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1040"
+  },
+  {
+    "closedAt": "2026-07-16T21:09:31Z",
+    "headRefName": "palette-task-skip-soft-confirm-774176508838366537",
+    "mergedAt": null,
+    "number": 1038,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: Soft Confirmation for Skip Task Action",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1038"
+  },
+  {
+    "closedAt": "2026-07-10T05:42:57Z",
+    "headRefName": "codex/tp-dmx-mcp-runtime-005-to-project-identity-fixed-port",
+    "mergedAt": null,
+    "number": 1029,
+    "state": "CLOSED",
+    "title": "feat(mcp): TP-DMX-MCP-RUNTIME-005 task-orchestrator project identity",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1029"
+  },
+  {
+    "closedAt": "2026-07-10T05:42:54Z",
+    "headRefName": "codex/tp-dmx-mcp-runtime-003-config-repair-agent-bootstrap",
+    "mergedAt": null,
+    "number": 1027,
+    "state": "CLOSED",
+    "title": "feat(mcp): TP-DMX-MCP-RUNTIME-003 config repair, agent bootstrap, fleet",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1027"
+  },
+  {
+    "closedAt": "2026-07-10T04:44:42Z",
+    "headRefName": "palette/notification-copy-ux-6049176801687568928",
+    "mergedAt": null,
+    "number": 1024,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: Notification Copy-to-Clipboard UX",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1024"
+  },
+  {
+    "closedAt": "2026-07-07T04:03:46Z",
+    "headRefName": "palette-copyable-insights-10679588452890549820",
+    "mergedAt": null,
+    "number": 1016,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: Copyable AI Insights in Team Dashboard",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1016"
+  },
+  {
+    "closedAt": "2026-07-06T23:02:12Z",
+    "headRefName": "palette-interactive-team-insight-7569224110481966334",
+    "mergedAt": null,
+    "number": 1010,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: Interactive Copyable AI Insights in Team Dashboard",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1010"
+  },
+  {
+    "closedAt": "2026-07-06T23:02:10Z",
+    "headRefName": "palette/copyable-ai-insight-5073311841404756258",
+    "mergedAt": null,
+    "number": 994,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: Copyable AI Insight in Team Dashboard",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/994"
+  },
+  {
+    "closedAt": "2026-07-06T23:02:08Z",
+    "headRefName": "palette/team-dashboard-ux-polish-16445460156745475081",
+    "mergedAt": null,
+    "number": 992,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: Team Dashboard Accessibility & AI Insight Tactile Feedback",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/992"
+  },
+  {
+    "closedAt": "2026-07-06T23:02:06Z",
+    "headRefName": "palette-interactive-team-insight-1393868841689515563",
+    "mergedAt": null,
+    "number": 991,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: Interactive Copyable Team Insight",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/991"
+  },
+  {
+    "closedAt": "2026-07-06T23:02:04Z",
+    "headRefName": "palette/ai-transparency-load-pulse-2134777483617140129",
+    "mergedAt": null,
+    "number": 990,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: AI transparency and status-driven pulse cues in Cognitive Load Gauge",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/990"
+  },
+  {
+    "closedAt": "2026-07-06T23:02:03Z",
+    "headRefName": "zzwlcfze-11101996443692294419",
+    "mergedAt": null,
+    "number": 989,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: AI Context & Personality Harmonization for Cognitive Load Gauge",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/989"
+  },
+  {
+    "closedAt": "2026-07-06T23:02:01Z",
+    "headRefName": "palette/interactive-team-insight-12390066836427306448",
+    "mergedAt": null,
+    "number": 988,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: Interactive AI Team Insights",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/988"
+  },
+  {
+    "closedAt": "2026-07-06T23:01:59Z",
+    "headRefName": "palette-interactive-insights-refinement-13455943263259288805",
+    "mergedAt": null,
+    "number": 987,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: Interactive AI Insights & UI De-cluttering",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/987"
+  },
+  {
+    "closedAt": "2026-06-27T06:53:25Z",
+    "headRefName": "grok/pcp-dcp-routing-activation-repair-0001",
+    "mergedAt": null,
+    "number": 975,
+    "state": "CLOSED",
+    "title": "fix(pcp): harden activation gates, DCP proof mapping, routing contracts",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/975"
+  },
+  {
+    "closedAt": "2026-06-26T05:59:54Z",
+    "headRefName": "claude/unruffled-ramanujan-7f95f5",
+    "mergedAt": null,
+    "number": 974,
+    "state": "CLOSED",
+    "title": "feat(pcp): extension contract + authority map co-keystones",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/974"
+  },
+  {
+    "closedAt": "2026-06-19T21:13:05Z",
+    "headRefName": "codex/conport-optimal-migration-gate",
+    "mergedAt": null,
+    "number": 928,
+    "state": "CLOSED",
+    "title": "fix(conport): fail closed on incompatible migration ledger",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/928"
+  },
+  {
+    "closedAt": "2026-06-18T06:54:10Z",
+    "headRefName": "palette/adaptive-reconnection-bridge-6446814017864914991",
+    "mergedAt": null,
+    "number": 921,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: Adaptive Reconnection Bridge for Service Health",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/921"
+  },
+  {
+    "closedAt": "2026-06-18T06:52:56Z",
+    "headRefName": "feat/rte-cost-profile-alignment",
+    "mergedAt": null,
+    "number": 919,
+    "state": "CLOSED",
+    "title": "feat(rte): align cost profile controls and proof visibility",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/919"
+  },
+  {
+    "closedAt": "2026-06-18T06:53:03Z",
+    "headRefName": "feat/conport-optimal-tier0-hardening",
+    "mergedAt": null,
+    "number": 916,
+    "state": "CLOSED",
+    "title": "feat(conport): Tier-0 migration foundation + hardening seams + DAG-safe amendments",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/916"
+  },
+  {
+    "closedAt": "2026-06-16T16:28:43Z",
+    "headRefName": "feat/conport-optimal-series",
+    "mergedAt": null,
+    "number": 910,
+    "state": "CLOSED",
+    "title": "feat(conport): DMX-CONPORT-OPTIMAL TP-101 bring-up fix + loaded packet set",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/910"
+  },
+  {
+    "closedAt": "2026-06-16T16:43:55Z",
+    "headRefName": "feat/dcp-0005-lane-engine-packet",
+    "mergedAt": null,
+    "number": 907,
+    "state": "CLOSED",
+    "title": "docs(dcp): canonical 0005 lane-engine packet + consensus hardening",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/907"
+  },
+  {
+    "closedAt": "2026-06-16T10:14:36Z",
+    "headRefName": "dcp/model-routing-0003-status-precedence",
+    "mergedAt": null,
+    "number": 905,
+    "state": "CLOSED",
+    "title": "fix(dcp): status precedence \u2014 hard-BLOCKED reasons outrank UNKNOWN-authority",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/905"
+  },
+  {
+    "closedAt": "2026-06-18T06:53:03Z",
+    "headRefName": "feat/cockpit-fonts-series",
+    "mergedAt": null,
+    "number": 903,
+    "state": "CLOSED",
+    "title": "DMX-COCKPIT-FONTS: cockpit font build/patch remediation series (6 TPs + load plan)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/903"
+  },
+  {
+    "closedAt": "2026-06-16T16:33:21Z",
+    "headRefName": "dependabot/uv/uv-1074aaa37a",
+    "mergedAt": null,
+    "number": 893,
+    "state": "CLOSED",
+    "title": "chore(deps): bump the uv group across 2 directories with 1 update",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/893"
+  },
+  {
+    "closedAt": "2026-06-19T20:22:26Z",
+    "headRefName": "palette/progressive-urgency-timer-8008441604436464373",
+    "mergedAt": null,
+    "number": 892,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: Progressive urgency micro-interaction for task progress",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/892"
+  },
+  {
+    "closedAt": "2026-06-19T20:22:28Z",
+    "headRefName": "palette-task-sequencer-near-overtime-9383837741526332928",
+    "mergedAt": null,
+    "number": 891,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: Task Sequencer Near-Overtime Cue & Accessibility Enhancement",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/891"
+  },
+  {
+    "closedAt": "2026-06-16T06:11:54Z",
+    "headRefName": "dcp/model-routing-0003-backend-policy",
+    "mergedAt": null,
+    "number": 890,
+    "state": "CLOSED",
+    "title": "feat(dcp): add inert backend policy map",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/890"
+  },
+  {
+    "closedAt": "2026-06-19T20:22:29Z",
+    "headRefName": "palette-enhance-task-metadata-5892450388021592191",
+    "mergedAt": null,
+    "number": 883,
+    "state": "CLOSED",
+    "title": "\ud83c\udfa8 Palette: Enhance active task metadata in TaskSequencer",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/883"
+  },
+  {
+    "closedAt": "2026-06-18T06:55:09Z",
+    "headRefName": "claude/intelligent-banach-8426ff",
+    "mergedAt": null,
+    "number": 878,
+    "state": "CLOSED",
+    "title": "docs(dcp): DMX-DCP-TOOLING series \u2014 design pack + 15 task packets + load plan",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/878"
+  },
+  {
+    "closedAt": "2026-06-12T23:36:24Z",
+    "headRefName": "dependabot/npm_and_yarn/npm_and_yarn-30ae9b537b",
+    "mergedAt": null,
+    "number": 875,
+    "state": "CLOSED",
+    "title": "chore(deps): bump esbuild from 0.27.3 to removed in the npm_and_yarn group across 1 directory",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/875"
+  },
+  {
+    "closedAt": "2026-06-11T02:14:48Z",
+    "headRefName": "feat/mcp-dcp-combined-workstream",
+    "mergedAt": null,
+    "number": 863,
+    "state": "CLOSED",
+    "title": "feat: MCP server fixes, DCP routing domain model, OpenCode/PAL integration, and security upgrades",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/863"
+  },
+  {
+    "closedAt": "2026-06-12T01:03:04Z",
+    "headRefName": "claude/magical-grothendieck-28dd50",
+    "mergedAt": null,
+    "number": 856,
+    "state": "CLOSED",
+    "title": "fix(docker): copy full src/ and tools/ before installing dopemux wheel",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/856"
+  },
+  {
+    "closedAt": "2026-06-12T01:03:02Z",
+    "headRefName": "dcp/chatgpt-mcp-ro-0006-dope-context-and-task-orchestrat",
+    "mergedAt": null,
+    "number": 854,
+    "state": "CLOSED",
+    "title": "feat(dcp): DMX-DCP-MODEL-ROUTING-MVP-0001 domain model, OpenCode integration, and predecessor routing packets",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/854"
+  },
+  {
+    "closedAt": "2026-06-10T06:49:25Z",
+    "headRefName": "claude/hungry-lalande-e617d2",
+    "mergedAt": null,
+    "number": 844,
+    "state": "CLOSED",
+    "title": "feat(dcp+docs): wire RedLaneScanner gate + Development Factory architecture docs + proof policy",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/844"
+  },
+  {
+    "closedAt": "2026-06-07T01:56:30Z",
+    "headRefName": "claude/tp-dmx-ai-routing-003-governance-residue",
+    "mergedAt": null,
+    "number": 839,
+    "state": "CLOSED",
+    "title": "TP-DMX-AI-ROUTING-003: register, align, reference (governance follow-up to #837)",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/839"
+  },
+  {
+    "closedAt": "2026-06-05T04:11:42Z",
+    "headRefName": "claude/distracted-kare-249400",
+    "mergedAt": null,
+    "number": 822,
+    "state": "CLOSED",
+    "title": "fix(brand): danger reads red across all themes + brand_lint hue invariant",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/822"
+  }
+]

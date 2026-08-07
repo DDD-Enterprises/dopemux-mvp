@@ -42,6 +42,7 @@ volumes:
   mcp_client_logs:
   mcp_plane_coordinator_data:
   mcp_plane_coordinator_logs:
+  conport_supervision_state:
 
 
 services:
@@ -234,6 +235,10 @@ services:
       context: .
       dockerfile: docker/mcp-servers/conport/Dockerfile
     container_name: ${CONPORT_CONTAINER_NAME:-mcp-conport}
+    # Child death now exits PID 1 (start_with_info.sh supervisor). Docker
+    # restarts the container. Permanent failure is bounded inside the
+    # supervisor (volume-backed budget → terminal alert sleep, no storm).
+    # Third-party autoheal + docker.sock is intentionally NOT used.
     restart: unless-stopped
     networks:
       - dopemux-network
@@ -242,8 +247,19 @@ services:
       - DOPEMUX_INSTANCE_ID=${DOPEMUX_INSTANCE_ID:-}
       - MCP_SERVER_PORT=3005
       - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
-      - DATABASE_URL=postgresql://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@dopemux-postgres-age:5432/dopemux_knowledge_graph
-      - POSTGRES_URL=postgresql+asyncpg://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@dopemux-postgres-age:5432/dopemux_knowledge_graph
+      # Project wall: each project gets its own database and LOGIN role inside
+      # the shared Postgres server, so credentials bind the tenant and a client
+      # cannot reach another project's rows whatever workspace_id it sends.
+      # Provision with scripts/migration/provision_conport_project_db.sh, then
+      # set CONPORT_DB_* in the project's .envrc.dopemux-mcp.
+      # The legacy defaults below reproduce the old shared-store behaviour for
+      # any project that has not been provisioned yet.
+      - DATABASE_URL=postgresql://${CONPORT_DB_USER:-dopemux_age}:${CONPORT_DB_PASSWORD:-${AGE_PASSWORD:-dopemux_age_dev_password}}@dopemux-postgres-age:5432/${CONPORT_DB_NAME:-dopemux_knowledge_graph}
+      - POSTGRES_URL=postgresql+asyncpg://${CONPORT_DB_USER:-dopemux_age}:${CONPORT_DB_PASSWORD:-${AGE_PASSWORD:-dopemux_age_dev_password}}@dopemux-postgres-age:5432/${CONPORT_DB_NAME:-dopemux_knowledge_graph}
+      # GET /api/progress forks-on-read unless this is explicitly 0. Neither
+      # running ConPort container set it as of 2026-08-02, so the auto-fork
+      # hazard that /dcp:doctor checks for was live.
+      - DOPEMUX_AUTO_FORK_PROGRESS=${DOPEMUX_AUTO_FORK_PROGRESS:-0}
       - AGE_HOST=dopemux-postgres-age
       - AGE_PORT=5432
       - AGE_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
@@ -254,6 +270,12 @@ services:
       - DOPE_MEMORY_EVENTS_REDIS_URL=redis://redis-events:6379
       - DOPE_MEMORY_INPUT_STREAM=activity.events.v1
       - QDRANT_URL=http://mcp-qdrant:6333
+      # PID1 supervision budget (persists across restarts for bound).
+      - CONPORT_SUPERVISION_STATE_DIR=/var/lib/conport-supervision
+      - CONPORT_MAX_CHILD_FAILURES=${CONPORT_MAX_CHILD_FAILURES:-5}
+      - CONPORT_FAILURE_WINDOW_SECS=${CONPORT_FAILURE_WINDOW_SECS:-600}
+    volumes:
+      - conport_supervision_state:/var/lib/conport-supervision
     ports:
       - "127.0.0.1:${CONPORT_HTTP_PORT:-3004}:3004"
       - "127.0.0.1:${CONPORT_MCP_PORT:-3005}:3005"
@@ -267,11 +289,16 @@ services:
         condition: service_started
       dopecon-bridge:
         condition: service_started
+    # All three required children: REST :3004, MCP :3005 (listen), info :4004.
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:3004/health || exit 1" ]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:3004/health >/dev/null && curl -fsS http://localhost:4004/health >/dev/null && python -c \"import socket;s=socket.create_connection(('127.0.0.1',3005),2);s.close()\"",
+        ]
       timeout: 10s
       retries: 3
-      interval: 30s
+      interval: 15s
       start_period: 30s
 
   # Zen - Multi-Model Reasoning
@@ -343,10 +370,13 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f -H \"Authorization: Bearer $${LITELLM_MASTER_KEY}\" http://localhost:4000/health || exit 1" ]
-      timeout: 10s
+      # /health probes every model (~15-30s) and exceeds the HC timeout → false unhealthy.
+      # liveliness is process-up only; readiness also checks DB and stays sub-second.
+      test: [ "CMD-SHELL", "curl -fsS http://localhost:4000/health/readiness || exit 1" ]
+      timeout: 5s
       retries: 3
       interval: 30s
+      start_period: 45s
 
   # Dope-Context - Semantic Code & Docs Search
   dope-context:
@@ -409,6 +439,7 @@ services:
       - AGE_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
       - QDRANT_URL=http://mcp-qdrant:6333
       - REDIS_URL=redis://redis-events:6379
+      - CONPORT_URL=http://conport:3004
     depends_on:
       postgres:
         condition: service_healthy
@@ -438,8 +469,9 @@ services:
       - LEANTIME_TOKEN=${LEANTIME_TOKEN}
       - REDIS_URL=redis://redis-primary:6379
       - WORKSPACE_ID=${DOPEMUX_WORKSPACE_ID:-/app}
-      - CONPORT_URL=http://conport:3005
+      - CONPORT_URL=http://conport:3004
       - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
+      - DOPECON_BRIDGE_TOKEN=${DOPECON_BRIDGE_TOKEN:?DOPECON_BRIDGE_TOKEN must be set to an authenticated bridge JWT}
       - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
       - TASK_ORCHESTRATOR_API_KEY=${TASK_ORCHESTRATOR_API_KEY:-dev-key-456}
       - DOPECON_BRIDGE_REDIS_URL=redis://redis-primary:6379
@@ -498,6 +530,41 @@ services:
       retries: 3
       interval: 30s
       start_period: 30s
+
+  # ADHD Dashboard - React operator UI backend
+  adhd-dashboard:
+    build:
+      context: .
+      dockerfile: services/adhd-dashboard/Dockerfile
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    environment:
+      - REDIS_URL=redis://redis-primary:6379
+      - ADHD_ENGINE_URL=http://adhd-engine:8095
+      - ADHD_ENGINE_REDIS_PREFIX=${ADHD_ENGINE_REDIS_PREFIX:-${DOPEMUX_INSTANCE_ID:-default}}
+      - ADHD_ENGINE_API_KEY=${ADHD_ENGINE_API_KEY:-}
+      - DASHBOARD_API_KEY=${DASHBOARD_API_KEY:-}
+      - DASHBOARD_USER_ID=${DASHBOARD_USER_ID:-default}
+      - ALLOWED_ORIGINS=${ADHD_DASHBOARD_ALLOWED_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173,http://localhost:8097,http://127.0.0.1:8097}
+    ports:
+      - "127.0.0.1:${ADHD_DASHBOARD_PORT:-8097}:8097"
+    depends_on:
+      redis-primary:
+        condition: service_healthy
+      adhd-engine:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://localhost:8097/health', timeout=2)
+      timeout: 5s
+      retries: 3
+      interval: 30s
+      start_period: 20s
+
 
   # Dope-Memory - Temporal Chronicle and Working Context
   dope-memory:
@@ -683,3 +750,7 @@ services:
     volumes:
       - ./.dopemux/webhook_receiver:/data
     command: ["python", "/app/services/webhook_receiver/poller.py", "--providers", "xai,gemini", "--interval-seconds", "10"]
+
+  # NOTE: third-party autoheal (docker.sock mount) was removed. ConPort PID 1
+  # supervision in start_with_info.sh fails closed on required-child death so
+  # Docker restart:unless-stopped recovers natively without socket access.

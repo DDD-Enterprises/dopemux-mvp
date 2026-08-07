@@ -1,0 +1,323 @@
+{
+  "id": "CCAR-002",
+  "project": "dopemux-mvp",
+  "target": "Compile the merged Dopemux agent and persona fleet into a strict, deterministic, model-free, advisory CommandCode catalog without generating agents, activating routing, or granting new authority.",
+  "invariants": [
+    "PR #1175 is merged before any tracked mutation.",
+    "Execution starts from a clean dedicated worktree at fresh merged origin/main.",
+    "Relevant post-PR1175 drift is absent.",
+    "All agent and persona source files remain byte-identical.",
+    "The catalog contains exactly nine executable base-agent records.",
+    "Every base-agent canonical role resolves through src/dopemux/roles/catalog.py.",
+    "Every active persona source is represented exactly once by record or alias group.",
+    "No duplicate normalized agent or persona ID exists.",
+    "No archived or personal-lane source becomes automatic route authority.",
+    "Normalized catalog and schema contain no exact model IDs or model preferences.",
+    "Every persona has may_change_tools=false, may_select_model=false, and may_grant_write_authority=false.",
+    "general-purpose-dopemux is never an automatic write fallback.",
+    "Only architecture-approved personas are route_eligible=true; every other persona is advisory/manual.",
+    "Catalog generation is deterministic and builder --check reports no drift.",
+    "The catalog validates against a strict additionalProperties=false schema.",
+    "No generated CommandCode agent, skill, hook, MCP, DCP, Universal Router, role, or runtime activation is created or changed.",
+    "C1 changed paths equal the implementation allowlist.",
+    "proof/CCAR-002/PROOF.json records required audit as SKIPPED with a nonempty pending-audit reason.",
+    "Fresh independent audit is bound to exact C1 and current PR base.",
+    "C2 differs from C1 only under proof/pr_merge/embedded-audit/pr-<actual PR>/**.",
+    "Signed proof bytes, committed bytes, and local acceptance agree.",
+    "All required CI and PR Steward gates are current and successful.",
+    "No merge occurs."
+  ],
+  "depends_on": [
+    "CCAR-001F",
+    "TP-DMX-AGENT-FLEET-0001-REPAIR-002"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "pyproject.toml",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "CCAR-SERIES-001",
+    "base_branch": "main",
+    "parent_tp_id": "CCAR-001F",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "feat/CCAR-002-normalized-agent-persona-catalog",
+    "base_branch": "main",
+    "stacked_because": "Do not stack on PR #1175. Start only after PR #1175 is merged from fresh origin/main. Preferred route: CommandCode deepseek/deepseek-v4-pro high; fallback xiaomi/mimo-v2.5-pro. Mandatory audit: AGY gemini-3.1-pro-high."
+  },
+  "commit": {
+    "message": "feat(commandcode): add normalized agent/persona catalog",
+    "allowlist": [
+      "task-packets/CCAR-002.md",
+      "task-packets/CCAR-002.json",
+      "schemas/commandcode/normalized_agent_persona_catalog.schema.json",
+      "config/commandcode/normalized_agent_persona_catalog.yaml",
+      "scripts/commandcode_router/build_normalized_catalog.py",
+      "tests/commandcode_router/test_normalized_catalog.py",
+      "proof/CCAR-002/**",
+      "proof/pr_merge/embedded-audit/pr-*/**"
+    ],
+    "verify": [
+      "Require PR #1175 merged and contained in locked origin/main.",
+      "Capture repo, branch, worktree, base, dependency PR, runner, agent, model, effort, and route evidence.",
+      "Require exact source inventory coverage and source SHA-256 immutability.",
+      "Require exactly nine base agents and current runtime role resolution.",
+      "Require every active persona represented exactly once by record or alias group.",
+      "Require no exact model ID in normalized catalog or schema.",
+      "Require every persona authority-prohibition boolean false.",
+      "Require catalog schema validation, deterministic regeneration, and builder --check.",
+      "Require focused CommandCode-router tests and persona-fleet architecture tests.",
+      "Require no generated CommandCode agent, skill, hook, MCP, router, role, or runtime change.",
+      "Require C1 paths equal the implementation allowlist and proof/CCAR-002 audit status honestly pending.",
+      "Require fresh AGY gemini-3.1-pro-high audit bound to exact C1.",
+      "Require signed canonical C2 proof-only delta and local acceptance.",
+      "Require all CI and PR Steward gates current and successful.",
+      "Do not merge."
+    ]
+  },
+  "pr": {
+    "title": "feat(commandcode): normalized agent and persona catalog",
+    "body": "Add a deterministic, schema-valid shadow catalog over the merged Dopemux agent/persona fleet. Separate roles, executable base agents and advisory personas; exclude model IDs and authority leakage; generate no CommandCode agents and activate no routing. Include fresh implementation proof and independent audit. Do not merge.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "verify PR #1175 merged and lock fresh main",
+      "capture immutable source inventory and hashes",
+      "implement strict catalog schema and deterministic builder",
+      "generate normalized catalog and implementation proof",
+      "run schema, determinism, coverage, source-immutability, focused, architecture and pre-commit gates",
+      "create/push C1 and open PR",
+      "run fresh AGY gemini-3.1-pro-high audit",
+      "create signed canonical proof-only C2",
+      "require exact-head CI and PR Steward success",
+      "return current non-merge handoff"
+    ]
+  },
+  "steps": [
+    {
+      "id": "CCAR-002-S1",
+      "task": "Verify merged dependencies, current main custody, relevant drift, and recommended runner/model availability.",
+      "requirements": [
+        "PR #1174 merged.",
+        "PR #1175 merged and its merge commit is ancestor of origin/main.",
+        "No relevant post-PR1175 drift.",
+        "Dedicated worktree clean at locked main.",
+        "CommandCode deepseek/deepseek-v4-pro and AGY gemini-3.1-pro-high proven."
+      ],
+      "commands": [
+        "git fetch --prune origin",
+        "gh pr view 1174 and 1175 with state/head/base/merge metadata",
+        "verify PR1175 merge ancestry and watched drift",
+        "create dedicated worktree from origin/main",
+        "cmd --version; cmd status --json; cmd --list-models",
+        "agy --version; agy models"
+      ],
+      "expected_files": [],
+      "validation": [
+        "All dependency, identity, drift, runner and model gates pass.",
+        "No tracked mutation before gates pass."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "RULES.md",
+        "proof/pr_merge/embedded-audit/pr-1174/PROOF.json",
+        "task-packets/generated/TP-DMX-AGENT-FLEET-0001-REPAIR-002.json"
+      ]
+    },
+    {
+      "id": "CCAR-002-S2",
+      "task": "Build complete source inventory, precedence map, and immutable source snapshot.",
+      "requirements": [
+        "Active and reference-only sets separated.",
+        "Paths sorted, unique, repo-relative and hashed.",
+        "Archive/personal sources cannot gain automatic authority."
+      ],
+      "commands": [
+        "inventory .claude/agents and active .claude/personas",
+        "inventory .github/agents and src/dopemux/personas as reference-only",
+        "hash source bytes to proof/CCAR-002/SOURCE_MANIFEST.json"
+      ],
+      "expected_files": [
+        "proof/CCAR-002/SOURCE_MANIFEST.json"
+      ],
+      "validation": [
+        "No duplicate/missing source path.",
+        "Every hash is full SHA-256.",
+        "No private absolute path recorded."
+      ],
+      "context_files": [
+        ".claude/agents/_index.md",
+        ".claude/personas/PERSONA_INDEX.md",
+        "src/dopemux/roles/catalog.py",
+        "config/ai/model-routing.policy.yaml"
+      ]
+    },
+    {
+      "id": "CCAR-002-S3",
+      "task": "Implement strict normalized catalog schema and deterministic builder.",
+      "requirements": [
+        "Strict additionalProperties=false schema.",
+        "Safe frontmatter parsing, explicit precedence and alias grouping.",
+        "Role resolution without activation.",
+        "Model/tool/authority preferences excluded.",
+        "Builder generation and --check.",
+        "Duplicate/missing/unresolved/unauthorized routes fail closed."
+      ],
+      "commands": [
+        "implement schema",
+        "implement builder",
+        "generate catalog",
+        "implement focused tests"
+      ],
+      "expected_files": [
+        "schemas/commandcode/normalized_agent_persona_catalog.schema.json",
+        "config/commandcode/normalized_agent_persona_catalog.yaml",
+        "scripts/commandcode_router/build_normalized_catalog.py",
+        "tests/commandcode_router/test_normalized_catalog.py"
+      ],
+      "validation": [
+        "Exactly nine base agents.",
+        "Every active persona covered once.",
+        "Authority prohibitions false.",
+        "No exact model IDs.",
+        "No source edit."
+      ],
+      "context_files": [
+        ".claude/agents/architect.md",
+        ".claude/agents/developer.md",
+        ".claude/agents/project-manager.md",
+        ".claude/agents/researcher.md",
+        ".claude/personas/PERSONA_INDEX.md",
+        "src/dopemux/roles/catalog.py"
+      ]
+    },
+    {
+      "id": "CCAR-002-S4",
+      "task": "Generate catalog and honest implementation proof.",
+      "requirements": [
+        "Catalog deterministic and schema-valid.",
+        "Coverage, aliases, warnings, claims and hashes captured.",
+        "Proof records actual runner/agent/model/effort/command/exit/identity.",
+        "Audit remains SKIPPED with pending reason."
+      ],
+      "commands": [
+        "run builder generation/check",
+        "generate NORMALIZATION_REPORT, COMMAND_LOG, CHANGED_FILES, FULL_DIFF, MANIFEST and PROOF"
+      ],
+      "expected_files": [
+        "proof/CCAR-002/**"
+      ],
+      "validation": [
+        "Proof complete and honest; no audit success claim.",
+        "No credential/private path/false identity."
+      ],
+      "context_files": [
+        "docs/27_PROOF_CONTRACT.md",
+        "docs/28_PROOF_BUNDLE_SCHEMA.md",
+        "schemas/proof/embedded_audit.schema.json"
+      ]
+    },
+    {
+      "id": "CCAR-002-S5",
+      "task": "Run bounded validation and create implementation commit C1.",
+      "requirements": [
+        "Packet/schema/determinism/coverage/role/authority/source/test/pre-commit/secret/diff gates pass.",
+        "C1 exact allowlist.",
+        "No canonical PR audit proof in C1."
+      ],
+      "commands": [
+        "validate packet",
+        "run builder/check",
+        "run focused and architecture tests",
+        "verify source hash equality",
+        "scan model IDs/stale tokens",
+        "git diff --check and focused pre-commit",
+        "verify allowlist and commit C1"
+      ],
+      "expected_files": [
+        "task-packets/CCAR-002.md",
+        "task-packets/CCAR-002.json",
+        "schemas/commandcode/normalized_agent_persona_catalog.schema.json",
+        "config/commandcode/normalized_agent_persona_catalog.yaml",
+        "scripts/commandcode_router/build_normalized_catalog.py",
+        "tests/commandcode_router/test_normalized_catalog.py",
+        "proof/CCAR-002/**"
+      ],
+      "validation": [
+        "All commands exit zero.",
+        "No out-of-scope path.",
+        "Source surfaces byte-identical."
+      ],
+      "context_files": [
+        ".pre-commit-config.yaml",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json"
+      ]
+    },
+    {
+      "id": "CCAR-002-S6",
+      "task": "Push C1, open PR, and run fresh independent authority/routing audit.",
+      "requirements": [
+        "Normal push; PR targets main.",
+        "Review bundle exact C1/current base.",
+        "AGY Gemini 3.1 Pro read-only high effort.",
+        "PASS or nonblocking PASS_WITH_RISKS."
+      ],
+      "commands": [
+        "push branch",
+        "create PR",
+        "capture exact review bundle",
+        "run agy --model gemini-3.1-pro-high --effort high --sandbox --mode plan --print-timeout 20m --output-format json --add-dir <bundle> --print <instruction>"
+      ],
+      "expected_files": [
+        "temporary exact-C1 audit bundle and AGY output"
+      ],
+      "validation": [
+        "Audit route/identity/exit/conversation/head/base recorded.",
+        "Audit verifies no authority leakage/activation.",
+        "Non-passing stops."
+      ],
+      "context_files": [
+        "task-packets/CCAR-002.md",
+        "proof/CCAR-002/PROOF.json"
+      ]
+    },
+    {
+      "id": "CCAR-002-S7",
+      "task": "Create signed canonical audit proof C2, validate local acceptance, and require CI/PR Steward success.",
+      "requirements": [
+        "Proof actual PR/head C1 and agy/gemini invocation evidence.",
+        "Signature trusted.",
+        "C2 canonical proof-only.",
+        "Local acceptance true.",
+        "All required CI/Steward gates pass."
+      ],
+      "commands": [
+        "assemble canonical proof",
+        "validate/sign/verify",
+        "commit proof-only C2",
+        "run local acceptance",
+        "push and observe embedded audit/PR Steward",
+        "strict intake and PR body update"
+      ],
+      "expected_files": [
+        "proof/pr_merge/embedded-audit/pr-<PR_NUMBER>/**"
+      ],
+      "validation": [
+        "C2 proof-only.",
+        "Local/live gates pass.",
+        "PR remains open/unmerged."
+      ],
+      "context_files": [
+        "scripts/audit/sign_local_audit_proof.sh",
+        "scripts/audit/local_audit_acceptance.py",
+        "config/audit/embedded-audit-allowed-signers"
+      ]
+    }
+  ]
+}

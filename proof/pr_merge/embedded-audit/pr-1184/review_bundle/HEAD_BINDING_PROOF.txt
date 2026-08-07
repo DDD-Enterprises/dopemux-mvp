@@ -1,0 +1,4 @@
+path_mismatch_case FAIL ['proof_only_escaped_path', 'proof_only_path_mismatch']
+unmatched L2
+proof/pr_merge/embedded-audit/pr-1/review_bundle/evil.bin ['proof_only_escaped_path']
+proof/pr_merge/embedded-audit/pr-1/evil.bin ['proof_only_escaped_path']

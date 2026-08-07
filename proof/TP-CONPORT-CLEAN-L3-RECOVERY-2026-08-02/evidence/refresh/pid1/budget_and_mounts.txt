@@ -1,0 +1,9 @@
+=== budget state after 3 kills this session ===
+3
+
+1785721023 enhanced_server_rest 137
+1785721046 mcp_proxy_sse 137
+1785721053 info_server 137
+
+RestartCount=7 RestartPolicy=unless-stopped
+Binds=["conport_supervision_state:/var/lib/conport-supervision"] Mounts=/var/lib/docker/volumes/conport_supervision_state/_data->/var/lib/conport-supervision

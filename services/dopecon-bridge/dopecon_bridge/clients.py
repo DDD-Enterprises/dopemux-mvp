@@ -268,6 +268,10 @@ class ConPortClient:
             except json.JSONDecodeError as exc:
                 raise HTTPException(status_code=502, detail="ConPort returned invalid JSON") from exc
 
+    async def claim_custom_data(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Atomically claim a custom_data row at ConPort."""
+        return await self._request("POST", "/api/custom_data/claim", json_body=payload)
+
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, max=10))
     async def get_context(self, context_token: str) -> Dict[str, Any]:
         """Get context from ConPort with circuit breaker pattern."""

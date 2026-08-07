@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
 // @ts-nocheck
 import { expect, test } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import React from 'react';
 import fs from 'fs';
 import path from 'path';
 import PredictionPanel from '../PredictionPanel';
+import TaskSequencer from '../TaskSequencer';
 
 const componentsDir = path.resolve(__dirname, '..');
 
@@ -64,6 +65,16 @@ test('PredictionPanel.tsx rendered accessibility and state feedback', () => {
   const optimalValue = '40%';
   expect(screen.getByText(optimalValue)).toBeDefined();
   expect(screen.getByLabelText(/15-min prediction 40%, Flow Ritual/i)).toBeDefined();
+
+  // Test 4: Verify dynamic trend icon (TrendingUp when prediction > currentLoad)
+  const { container: containerUp } = render(<PredictionPanel prediction={0.8} currentLoad={0.4} />);
+  expect(containerUp.querySelector('.lucide-trending-up')).not.toBeNull();
+  expect(containerUp.querySelector('.lucide-trending-down')).toBeNull();
+
+  // Test 5: Verify dynamic trend icon (TrendingDown when prediction < currentLoad)
+  const { container: containerDown } = render(<PredictionPanel prediction={0.3} currentLoad={0.7} />);
+  expect(containerDown.querySelector('.lucide-trending-down')).not.toBeNull();
+  expect(containerDown.querySelector('.lucide-trending-up')).toBeNull();
 });
 
 test('TeamDashboard.tsx has aria-labels for team and member progress bars and Tooltips', () => {
@@ -161,6 +172,9 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('<IconButton');
   expect(content).toContain('onClick={() => handleCopyTaskTitle(currentTask.title)}');
 
+  // Verify start button tooltip
+  expect(content).toMatch(/<Tooltip\s+title=\{\s*`Start task and switch active focus to: \$\{task\.title\}`\s*\}\s*arrow\s*>/);
+
   // Verify Predictive Skip and Soft Confirmation
   expect(content).toContain('const [isSkipConfirming, setIsSkipConfirming] = useState(false);');
   expect(content).toContain('const skipConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);');
@@ -242,4 +256,90 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('<Tooltip title="Dismiss notification" arrow describeChild>');
   expect(appContent).toContain('aria-label={notificationLabel}');
   expect(appContent).toContain('tabIndex={0}');
+
+  // Verify hydration aftercare sip logger interactive states
+  expect(appContent).toContain('const [isHydrated, setIsHydrated] = useState(false);');
+  expect(appContent).toContain('const handleHydrate = useCallback(() => {');
+  expect(appContent).toContain("isHydrated ? 'Sip Logged!' : 'Health and hydration status: Click to log a hydration sip.'");
+  expect(appContent).toContain('onClick={handleHydrate}');
+
+  // Verify onKeyDown handlers for connection, hydration, and recommendation chips
+  expect(appContent).toContain('onKeyDown={');
+  expect(appContent).toContain('handleReconnect();');
+  expect(appContent).toContain('handleHydrate();');
+  expect(appContent).toContain('void handleCopyRecommendation();');
+
+  // Verify focus-visible overrides for buttons and icon buttons in theme
+  expect(themeContent).toContain('MuiIconButton');
+  expect(themeContent).toContain('&:focus-visible');
+});
+
+test('PredictionPanel.tsx has TrendIcon based on load and prediction', () => {
+  const filePath = path.join(componentsDir, 'PredictionPanel.tsx');
+  if (!fs.existsSync(filePath)) {
+    console.warn(`Skipping: Required component missing: ${filePath}`);
+    return;
+  }
+  const content = fs.readFileSync(filePath, 'utf8');
+  expect(content).toContain("const isTrendingUp = hasPrediction && typeof currentLoad === 'number' ? prediction > currentLoad : true;");
+  expect(content).toContain('const TrendIcon = isTrendingUp ? TrendingUp : TrendingDown;');
+  expect(content).toContain('aria-hidden="true"');
+  expect(content).toContain('TrendingDown');
+});
+
+test('TaskSequencer pending Start button renders tooltip on hover and keyboard focus', async () => {
+  const cognitiveState = {
+    energy: 80,
+    attention: 70,
+    load: 40,
+    status: 'optimal' as const,
+    recommendation: 'Stay focused.',
+  };
+
+  const getPendingListStartButton = () => {
+    // List pending/non-current Start controls use "Start task: {title}" and live on
+    // list items without aria-current="step". Exclude the primary ritual Start control
+    // (tooltip "Start Ritual") which shares the same accessible-name pattern.
+    const candidates = screen.getAllByRole('button', { name: /^Start task: / });
+    const pending = candidates.find((btn) => {
+      const listItem = btn.closest('li');
+      return Boolean(listItem) && listItem.getAttribute('aria-current') !== 'step';
+    });
+    expect(pending).toBeTruthy();
+    return pending as HTMLElement;
+  };
+
+  const titleFromStartButton = (button: HTMLElement) => {
+    const accessibleName = button.getAttribute('aria-label') ?? '';
+    const taskTitle = accessibleName.replace(/^Start task:\s*/, '');
+    expect(taskTitle.length).toBeGreaterThan(0);
+    return taskTitle;
+  };
+
+  render(<TaskSequencer cognitiveState={cognitiveState} />);
+
+  const startButton = getPendingListStartButton();
+  const taskTitle = titleFromStartButton(startButton);
+  const expectedTooltip = `Start task and switch active focus to: ${taskTitle}`;
+
+  // Keyboard focus path first: MUI Tooltip opens only on focus-visible.
+  // Use real .focus() so jsdom :focus-visible matches; fireEvent.focus alone may not.
+  fireEvent.keyDown(document, { key: 'Tab' });
+  startButton.focus();
+  fireEvent.focus(startButton);
+  expect(await screen.findByRole('tooltip', {}, { timeout: 2000 })).toHaveTextContent(expectedTooltip);
+
+  startButton.blur();
+  fireEvent.blur(startButton);
+  // Remount for a clean hover path (pointer modality must not poison keyboard assert above).
+  cleanup();
+  render(<TaskSequencer cognitiveState={cognitiveState} />);
+
+  const hoverStartButton = getPendingListStartButton();
+  const hoverTitle = titleFromStartButton(hoverStartButton);
+  const hoverExpected = `Start task and switch active focus to: ${hoverTitle}`;
+
+  // Hover path — MUI Tooltip portals title text after enter delay.
+  fireEvent.mouseOver(hoverStartButton);
+  expect(await screen.findByRole('tooltip', {}, { timeout: 2000 })).toHaveTextContent(hoverExpected);
 });

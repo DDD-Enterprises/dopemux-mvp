@@ -68,7 +68,23 @@ def test_down_server_emits_problem_line():
     assert result is not None
     lines = result.splitlines()
     assert len(lines) >= 2
-    assert "docker compose up -d conport" in result
+    assert "dopemux mcp start --services conport" in result
+
+
+def test_down_server_shell_quotes_repo_path():
+    health = {
+        "servers": {"conport": {"up": False, "port": 3005}},
+        "leaked_containers": 0,
+    }
+    project_root = Path("/some/repo with spaces;echo unsafe")
+
+    result = _format_health(health, project_root)
+
+    assert result is not None
+    assert (
+        "dopemux mcp start --repo '/some/repo with spaces;echo unsafe' "
+        "--services conport"
+    ) in result
 
 
 def test_task_orchestrator_down_points_to_http_singleton_wrapper():
@@ -79,7 +95,7 @@ def test_task_orchestrator_down_points_to_http_singleton_wrapper():
     result = _format_health(health)
     assert result is not None
     assert "scripts/mcp-wrappers/task-orchestrator-http-singleton.sh" in result
-    assert "docker compose up -d task-orchestrator" not in result
+    assert "dopemux mcp start --services task-orchestrator" not in result
 
 
 def test_stdio_server_shown_as_gear():
@@ -162,7 +178,7 @@ def test_port_closed_emits_warning(tmp_path):
          patch("mcp_health_probe._count_leaked_containers", return_value=0):
         result = emit_mcp_health(tmp_path)
     assert result is not None
-    assert "docker compose up" in result
+    assert "dopemux mcp start" in result
 
 
 def test_docker_timeout_omits_container_line(tmp_path):

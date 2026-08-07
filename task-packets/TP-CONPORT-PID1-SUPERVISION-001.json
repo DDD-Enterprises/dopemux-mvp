@@ -1,0 +1,70 @@
+{
+  "id": "TP-CONPORT-PID1-SUPERVISION-001",
+  "project": "dopemux-mvp",
+  "target": "Repair ConPort child-process lifecycle so required server death terminates or fails the container correctly (start_with_info.sh bare wait masks REST plane death; Docker restart policy never fires).",
+  "invariants": [
+    "If REST data plane dies, container health and process supervision must fail closed without relying solely on external autoheal.",
+    "Autoheal remains defense-in-depth, not primary supervision.",
+    "Foreign-worktree containers must not be reused or replaced by this repair."
+  ],
+  "depends_on": [
+    "TP-CONPORT-PROJECT-WALL-RECOVERY-L3-FREEZE-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "CONPORT-PROJECT-WALL-RECOVERY-2026-08-02",
+    "base_branch": "main",
+    "parent_tp_id": "TP-CONPORT-PROJECT-WALL-RECOVERY-L3-FREEZE-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/conport-pid1-supervision-001",
+    "base_branch": "main",
+    "stacked_because": "Root cause of 7h+ silent outage is PID1 wait masking child death; autoheal is mitigation only."
+  },
+  "commit": {
+    "message": "fix(conport): fail closed when required child servers die",
+    "allowlist": [
+      "docs/90-adr/**",
+      "docker/mcp-servers-source/conport/start_with_info.sh",
+      "docker/mcp-servers/conport/**",
+      "compose.yml",
+      "task-packets/TP-CONPORT-PID1-SUPERVISION-001.json",
+      "proof/TP-CONPORT-PID1-SUPERVISION-001/**"
+    ],
+    "verify": [
+      "Kill REST child => container exits or becomes restarting without external autoheal within healthcheck budget",
+      "Kill info/SSE child documented behavior matches policy",
+      "No restart storm under permanent failure without alert/stop path",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(conport): PID1 supervision for multi-server process tree",
+    "body": "Replace bare wait with fail-closed supervision so required child death triggers container restart policy.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "design",
+      "task": "Choose supervision model (wait -n + exit, tini+wrapper, or single-process redesign) under red-lane ADR.",
+      "validation": [
+        "Design documents required vs optional children and exit policy."
+      ]
+    },
+    {
+      "id": "implement-prove",
+      "task": "Implement supervision; prove child kill fails container without autoheal; prove backoff/stop on permanent failure.",
+      "validation": [
+        "Evidence timeline with and without autoheal.",
+        "No indefinite flap without alert."
+      ]
+    }
+  ]
+}

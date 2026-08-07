@@ -16,6 +16,11 @@ prelude: Architecture Analysis (reference) for dopemux documentation and develop
 **Status**: Pre-Storage Planning
 **Goal**: Ensure we don't miss critical data models or storage requirements
 
+> **Note**: `instance_id` examples below (`A`, `B`, `feature-auth`) use the lettered
+> instance-naming scheme from the now-deleted `src/dopemux/instance_manager.py`,
+> superseded by a hash-based worktree identity model — see
+> `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md`.
+
 ---
 
 ## 1. Missing Data Models Analysis

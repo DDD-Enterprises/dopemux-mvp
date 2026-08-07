@@ -1,0 +1,12 @@
+ .claude/personas/modernization.agent.md            |   1 -
+ .claude/personas/python-mcp-expert.agent.md        |   1 -
+ .claude/personas/se-gitops-ci-specialist.agent.md  |   1 -
+ .claude/personas/se-security-reviewer.agent.md     |   1 -
+ .../se-system-architecture-reviewer.agent.md       |   1 -
+ .claude/personas/se-technical-writer.agent.md      |   1 -
+ .claude/personas/se-ux-ui-designer.agent.md        |   1 -
+ claudedocs/agent-fleet-audit-2026-07-30.md         | 224 +++++++++++++--------
+ src/dopemux/personas/se-security-reviewer.agent.md |   1 -
+ .../se-system-architecture-reviewer.agent.md       |   1 -
+ tests/arch/test_persona_fleet_contract.py          |  24 +++
+ 11 files changed, 159 insertions(+), 98 deletions(-)

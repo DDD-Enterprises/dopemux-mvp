@@ -16,6 +16,11 @@ prelude: Readme Start Here (reference) for dopemux documentation and developer w
 **Status**: Week 4 Day 2 - Fully Analyzed & Ready to Build
 **Analysis Date**: 2025-10-29
 
+> **Note**: This document's `instance_id` examples (`A`, `B`, `feature-auth`) reflect the
+> lettered instance-naming scheme from the now-deleted `src/dopemux/instance_manager.py`.
+> That scheme is superseded by a hash-based worktree identity model — see
+> `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md`.
+
 ---
 
 ## 📖 Quick Navigation

@@ -1,0 +1,29 @@
+[0m
+> build · grok-4.5
+[0m
+VERDICT: PASS_WITH_RISKS
+
+RATIONALE: Allowlist, persona archive-only discipline, all 9 aliased stems retained, packaged↔canonical frontmatter parity, fail-closed sync script, and agent rewrites remove operational Task-Master/Zen-MCP/mem4sprint/o3/gemini/Context7 calls. Residual risk is incomplete Zen renames in `*-dopemux.md` body comments (`# ✅ Use Zen…` still present while headers/calls say PAL) plus intentional hard-delete of stray `.claude/agents/python-mcp-expert.agent.md` (persona copy kept).
+
+FINDINGS:
+- id: F001 | severity: MEDIUM | title: Residual bare "Zen" comments after Zen→PAL migration | evidence: `.claude/personas/*-dopemux.md` hunks keep `# ✅ Use Zen for systematic analysis` beside `mcp__pal__*` (e.g. backend-architect, devops-architect, general-purpose, learning-guide, performance-engineer, quality-engineer, security-engineer, socratic-mentor, system-architect×2). Gate B pattern `Zen[- ]MCP|mcp__zen` does not match bare "Zen".
+- id: F002 | severity: INFO | title: Hard-delete of stray curated agent (not a persona) | evidence: `.claude/agents/python-mcp-expert.agent.md` deleted; ledger says byte-identical stray; canonical remains `.claude/personas/python-mcp-expert.agent.md` (tools FIX kept). Persona archive-only invariant still holds.
+- id: F003 | severity: LOW | title: Model pins left as repo-established UNKNOWN | evidence: `modernization.agent.md` / se-* / python-mcp-expert still pin `GPT-5`/`GPT-4.1`; ledger marks vendor verify NOT_RUN — consistent with packet UNKNOWN rule, not invented ids.
+- id: F004 | severity: INFO | title: No `.github/agents/` or `proof/` content in this candidate diff | evidence: allowlisted surfaces absent from hunks; consistent with KEEP-no-change / proof emitted outside this slice if present at PR time.
+
+CHECKS:
+1. Allowlist scope — PASS: every path under `.claude/agents/`, `.claude/personas/`, `src/dopemux/personas/`, `templates/skills/`, `scripts/sync_personas.py`, `tests/arch/test_persona_fleet_contract.py`, `claudedocs/agent-fleet-audit-2026-07-30.md`, `task-packets/generated/TP-DMX-AGENT-FLEET-0001.json`; no out-of-allowlist paths.
+2. No persona hard-deletes — PASS: six personas are `rename`/`similarity index 100%` into `.claude/personas/archive/`; only non-persona stray under `.claude/agents/` is deleted.
+3. Aliased stems intact — PASS: task-researcher, task-planner, principal-software-engineer, janitor, workflow-manager, workflow-executor, se-system-architecture-reviewer, wg-code-sentinel, devops-expert all appear as modified `.claude/personas/<stem>.agent.md` (none renamed/archived).
+4. Packaged mirrors canonical — PASS: all 10 `src/dopemux/personas/*.agent.md` hunks match corresponding canonical frontmatter edits; trusted `sync_personas.py --check` IN SYNC 10/10.
+5. Secrets/credentials — PASS: no tokens, keys, passwords, or credential material in diff.
+6. Authority / stale-claim hygiene on non-archive — PASS_WITH_RISKS: rewritten `.claude/agents/*` drop Task-Master/Zen-MCP/mem4sprint/o3/gemini/Context7 and point at task-orchestrator, PAL, ConPort, Leantime, model-routing; personas fix operational refs; residual bare "Zen" comments (F001) contradict “Zen fixed” completeness.
+7. `sync_personas.py` fail-closed — PASS: missing canonical → `FileNotFoundError`/exit 2; `--check` drift/missing → exit 1; in-sync → 0; undeclared packaged reported; post-apply re-check.
+
+REMAINING_RISKS:
+- Comment-level "Zen" strings may still confuse agents or future greps; extend Gate B to `\bZen\b` (excluding archive/ledger) and scrub comments.
+- Model id vendor verification still UNKNOWN for GPT-5/GPT-4.1/Claude Sonnet 4.5 pins.
+- Personal-lane tools-omission CONFLICT left UNKNOWN in ledger (out of PR diff by design).
+- This audit did not re-execute gates; relies on implementer-trusted exit codes + diff inspection.
+
+VALIDATION_STATUS: NOT_RUN

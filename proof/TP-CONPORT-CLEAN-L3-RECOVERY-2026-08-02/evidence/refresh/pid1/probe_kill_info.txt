@@ -1,0 +1,37 @@
+=== PROBE info ===
+2026-08-03T01:37:33Z
+before restart=6 started=2026-08-03T01:37:28.283524628Z
+PID                 PPID                CMD
+60877               60853               bash start_with_info.sh
+60938               60877               python info_server.py
+60939               60877               python enhanced_server.py
+60940               60877               python server.py sse
+killing 15 'python info_server.py '
+killed ['15']
+kill_cmd_exit=0
+t=1 status=restarting restart=7
+PASS recovered_s=2 name=/mcp-conport restart=7 started=2026-08-03T01:37:34.928392214Z
+Name=/mcp-conport Status=running RestartCount=7 StartedAt=2026-08-03T01:37:34.928392214Z
+PID                 PPID                CMD
+61338               61316               bash start_with_info.sh
+61402               61338               python info_server.py
+61403               61338               python enhanced_server.py
+61404               61338               python server.py sse
+count=3
+1785721023 enhanced_server_rest 137
+1785721046 mcp_proxy_sse 137
+1785721053 info_server 137
+mcp-conport Up 1 second (health: starting)
+mcp-conport-pre-pid1-l3 Exited (137) 2 hours ago
+INFO:__main__:✅ Redis connection established
+INFO:integration_bridge_client:✅ DopeconBridge client initialized
+INFO:__main__:✅ F-NEW-7 Unified Query API initialized
+INFO:__main__:🔄 Auto-save loop started (every 30s)
+INFO:__main__:✅ Enhanced ConPort API available at http://0.0.0.0:3004
+INFO:__main__:📋 Features: Real PostgreSQL persistence + Redis caching + ADHD optimization
+INFO:     Started server process [17]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3005 (Press CTRL+C to quit)
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:37:36 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:     127.0.0.1:34136 - "GET /health HTTP/1.1" 200 OK

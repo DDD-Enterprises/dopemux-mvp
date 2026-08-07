@@ -1,0 +1,58 @@
+{
+  "commit_sha": "5c67b59c436c756ea9d06c78f9371d37b7cbdfa4",
+  "embedded_audit": {
+    "auditor_model": "claude-sonnet-4.6",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "evaluate_security_release_approval unchanged; multi-approver negatives pass.",
+        "id": "B1",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Ordinary approval path preserved"
+      },
+      {
+        "body": "Missing/stale/wrong-author phrases do not clear SECURITY_RELEASE_APPROVAL_REQUIRED.",
+        "id": "B2",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Solo path fails closed without exact phrase"
+      },
+      {
+        "body": "FAILED_CHECK, PROOF_STALE, EMBEDDED_AUDIT_*, UNRESOLVED_REVIEW_THREAD block activation.",
+        "id": "B3",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Non-security gates non-waivable"
+      },
+      {
+        "body": "On override, security_release.approval is null; receipt is separate.",
+        "id": "B4",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "No fabricated GitHub APPROVED review"
+      },
+      {
+        "body": "This PR will fail current gate until one-time bootstrap merge authorization; fail-closed by design.",
+        "id": "B5",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Bootstrap trust-root recursion acknowledged"
+      }
+    ],
+    "fixes_applied": [],
+    "invocation": "independent-audit TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001; focus: authority inflation, solo path non-weakening of multi-reviewer gate, head binding, receipt semantics",
+    "remaining_risks": [
+      "Policy PR cannot pass current SECURITY_RELEASE gate until merged via one-time bootstrap authorization",
+      "Operators must post exact-head phrases after every head change once live"
+    ],
+    "report_path": "proof/pr_merge/embedded-audit/pr-1131/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "head_sha": "5c67b59c436c756ea9d06c78f9371d37b7cbdfa4",
+  "pr_number": 1131,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

@@ -18,8 +18,15 @@ def test_mcp_up_uses_argv_and_validates_services(monkeypatch):
 
     monkeypatch.setattr(mcp_commands, "_compose_services", lambda *_: {"conport", "pal"})
 
-    def fake_run(cmd, *, check):
-        recorded.append((list(cmd), check))
+    def fake_run(cmd, **kwargs):
+        recorded.append((list(cmd), kwargs))
+        if cmd[:4] == ["docker", "network", "ls", "--format"]:
+            return subprocess.CompletedProcess(
+                cmd,
+                0,
+                stdout="dopemux-network\n",
+                stderr="",
+            )
         return subprocess.CompletedProcess(cmd, 0)
 
     monkeypatch.setattr(mcp_commands.subprocess, "run", fake_run)
@@ -28,6 +35,10 @@ def test_mcp_up_uses_argv_and_validates_services(monkeypatch):
 
     assert result.exit_code == 0, result.output
     assert recorded == [
+        (
+            ["docker", "network", "ls", "--format", "{{.Name}}"],
+            {"capture_output": True, "text": True, "check": False},
+        ),
         (
             [
                 "docker",
@@ -40,7 +51,7 @@ def test_mcp_up_uses_argv_and_validates_services(monkeypatch):
                 "conport",
                 "pal",
             ],
-            True,
+            {"check": True},
         )
     ]
 

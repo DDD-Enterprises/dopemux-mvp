@@ -1,0 +1,94 @@
+{
+  "files": [
+    {
+      "bytes": 75,
+      "path": "AUDITOR_REPORT.md",
+      "sha256": "7705421806f125b692709edd5b599a27cb7295631829ffb1bf13c57a88460972"
+    },
+    {
+      "bytes": 84,
+      "path": "COMMAND_LOG.md",
+      "sha256": "65354fe3deb67f946b2e19015b61ad51f64cd4e3fc3b9fe521e9713eedbd906a"
+    },
+    {
+      "bytes": 80,
+      "path": "HANDOFF.md",
+      "sha256": "c9a662fbfec121495fceaf16a22daee44f1b65f418361dc550ac57615e17783b"
+    },
+    {
+      "bytes": 909,
+      "path": "PROOF.json",
+      "sha256": "298950d9138ad0dfbd2ae416773e63614e6f8fa4ecfa97df4e647f318036c346"
+    },
+    {
+      "bytes": 116,
+      "path": "WARNINGS.md",
+      "sha256": "b9345ce50ff337af6cfac47434665b7750352dcf71d4bb18e3b301b95df10c60"
+    },
+    {
+      "bytes": 34283,
+      "path": "review_bundle/AGENT_FLEET_INVENTORY.json",
+      "sha256": "9ffae5f55470febb913d55fa52a5a0286445da5944ed50d0da0f55a8798332a2"
+    },
+    {
+      "bytes": 736,
+      "path": "review_bundle/C1_DIFF_STAT.txt",
+      "sha256": "b172298e79247c9d9634ad71c3113c05252c885d28e6bcca87f0bb64f22c05bd"
+    },
+    {
+      "bytes": 47026,
+      "path": "review_bundle/C1_FULL_DIFF.patch",
+      "sha256": "7a413b9f21a48b8750ac4cc747700198d0e384cd2d0b83d03a755040e70d9a81"
+    },
+    {
+      "bytes": 676,
+      "path": "review_bundle/C1_SCOPE.json",
+      "sha256": "76b49587808dc649f67f9826b69aec9fda3476c8674dbba57cb96125c095b22d"
+    },
+    {
+      "bytes": 41,
+      "path": "review_bundle/C1_SHA.txt",
+      "sha256": "bf5ce5e3ca04ff3af90509155b5835a2757d93c8da2a7c00b08acb559e387117"
+    },
+    {
+      "bytes": 8565,
+      "path": "review_bundle/FRONTMATTER_VALIDATION.json",
+      "sha256": "cf26566c1d496a0be5c68c198d8182aa1d9d88c22984344eca677ccb5fc91007"
+    },
+    {
+      "bytes": 153,
+      "path": "review_bundle/LEDGER_VALIDATION.json",
+      "sha256": "68b6cbad5257b0da2f2f4dab186ea11bc62957d90557d180a5dc93ad5354b758"
+    },
+    {
+      "bytes": 754,
+      "path": "review_bundle/MODEL_REMOVAL_RECEIPT.json",
+      "sha256": "6acf6415125e1dd0f76d4142a9d4881b707bbc324e359421bafea8728efd11bb"
+    },
+    {
+      "bytes": 160,
+      "path": "review_bundle/arch-tests.log",
+      "sha256": "a4195c5e7b1cd3cf8245ff52175a9beabe0b85262837e21dc3f91e1e431bebff"
+    },
+    {
+      "bytes": 371,
+      "path": "review_bundle/jsonschema.log",
+      "sha256": "ad0cb2210685558129611a969aadae0cdf016ea5bb662bddce2a8c554db99c3f"
+    },
+    {
+      "bytes": 980,
+      "path": "review_bundle/packet-validate.log",
+      "sha256": "4bea41dc6288c4f1f797098323a8adca0213a87dc76875a43bab56440d1d8e3c"
+    },
+    {
+      "bytes": 80,
+      "path": "review_bundle/persona-contract.log",
+      "sha256": "4d2df7a96ce4a667da3ccf295f2d16c728a65ed0e861a3baa919f7bb469b02b5"
+    },
+    {
+      "bytes": 46,
+      "path": "review_bundle/sync-check.log",
+      "sha256": "199fe5ee93071367f7b94ef624d51c3b3155f7fa96f8957ab44280e41a19fcc4"
+    }
+  ]
+}

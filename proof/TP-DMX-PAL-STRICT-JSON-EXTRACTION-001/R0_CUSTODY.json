@@ -1,0 +1,21 @@
+{
+  "packet_id": "TP-DMX-PAL-STRICT-JSON-EXTRACTION-REPAIR-001R",
+  "canonical_packet_id": "TP-DMX-PAL-STRICT-JSON-EXTRACTION-001",
+  "captured_at": "2026-08-02T22:18:33Z",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+  "branch": "fix/pal-clink-failclosed-json-parse",
+  "pre_repair_head_c2": "9283346993ba2c00c26e39e06eea4f7cbde5f497",
+  "main_sha": "87fbdda574bd060c2b2246bcf838323ba075da28",
+  "pr": 1181,
+  "pr_state": {
+    "open": true,
+    "draft": true,
+    "head_at_preflight": "9283346993ba2c00c26e39e06eea4f7cbde5f497"
+  },
+  "identity": {
+    "repo_marker": "pyproject.toml",
+    "present": true
+  },
+  "mutation_during_preflight": false
+}

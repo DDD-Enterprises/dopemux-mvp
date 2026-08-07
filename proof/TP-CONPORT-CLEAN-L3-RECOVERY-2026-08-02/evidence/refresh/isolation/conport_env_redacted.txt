@@ -1,0 +1,5 @@
+AGE_PORT=5432
+AGE_HOST=dopemux-postgres-age
+POSTGRES_URL=postgresql+asyncpg://conport_dopemux_mvp:***REDACTED***@dopemux-postgres-age:5432/conport_dopemux_mvp
+DATABASE_URL=postgresql://conport_dopemux_mvp:***REDACTED***@dopemux-postgres-age:5432/conport_dopemux_mvp
+AGE_PASSWORD=***REDACTED***

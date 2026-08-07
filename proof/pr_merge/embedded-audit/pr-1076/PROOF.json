@@ -1,0 +1,22 @@
+{
+  "commit_sha": "fb0ce34eb8ddc55463d35bfcf2eb4582913d9c25",
+  "embedded_audit": {
+    "auditor_model": "claude-sonnet-4.6",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [
+      "Implemented adaptive prediction trend icons pattern in PredictionPanel UI",
+      "Rebased cleanly on latest main post PR #1086"
+    ],
+    "invocation": "mcp__pal__codereview expert_model=claude-sonnet-4.6 review_type=full",
+    "remaining_risks": [],
+    "report_path": "proof/pr_merge/embedded-audit/pr-1076/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "head_sha": "fb0ce34eb8ddc55463d35bfcf2eb4582913d9c25",
+  "pr_number": 1076,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

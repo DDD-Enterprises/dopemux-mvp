@@ -1,0 +1,27 @@
+{
+  "commit_sha": "f8e3c9de4152d20de7fcf9976fa8a1977f6e73c3",
+  "embedded_audit": {
+    "auditor_model": "claude-sonnet-4.6",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [
+      "Reverted closed-PR-#1086 shared TO runtime from main direct-push",
+      "Peer-instance non-blocking doctor classification",
+      "Schema enum left matching main (no schema_contract security gate)"
+    ],
+    "invocation": "local embedded audit after clean reapply on latest main; ssh-sign",
+    "remaining_risks": [
+      "Schema enum may still list unused multi_project_singleton; runtime catalog is single_active_project.",
+      "CI PAL clink may fail on provider credits; local signed attestation substitutes."
+    ],
+    "report_path": "proof/pr_merge/embedded-audit/pr-1125/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "generated_at": "2026-07-27T00:52:42Z",
+  "head_sha": "f8e3c9de4152d20de7fcf9976fa8a1977f6e73c3",
+  "pr_number": 1125,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

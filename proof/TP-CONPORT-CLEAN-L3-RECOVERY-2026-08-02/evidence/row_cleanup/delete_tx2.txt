@@ -1,0 +1,8 @@
+BEGIN
+DELETE 2
+      ?column?      | count
+--------------------+-------
+ remaining_targeted |     0
+(1 row)
+
+COMMIT

@@ -1,0 +1,10 @@
+Cleanup proof (2026-07-31):
+- ConPort owner process (enhanced_server.py) killed
+- DopeconBridge process (uvicorn main:app) killed
+- Both Task Orchestrator replicas (uvicorn app.main:app on 8001/8002) killed
+- tp004-postgres and tp004-redis containers force-removed
+- /home/hue.linux/tp004-proof proof directory removed from dockfix VM
+- bridge_token.txt (synthetic JWT) removed with proof dir
+- Host-side staging tars removed (/Users/hue/tp004-*, /tmp/tp004-*)
+- Verified: 0 proof processes, 0 tp004 containers, proof dir gone
+- dockfix VM (lima) left running as pre-existing environment; Docker Desktop left as found (not running)

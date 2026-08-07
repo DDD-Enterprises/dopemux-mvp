@@ -55,6 +55,12 @@ SERVICE_NAME = "adhd-dashboard"
 API_KEY = os.getenv("DASHBOARD_API_KEY") or None
 ADHD_ENGINE_API_KEY = os.getenv("ADHD_ENGINE_API_KEY") or None
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+ADHD_ENGINE_REDIS_PREFIX = (
+    os.getenv("ADHD_ENGINE_REDIS_PREFIX")
+    or os.getenv("ADHD_ENGINE_INSTANCE_ID")
+    or os.getenv("DOPEMUX_INSTANCE_ID")
+    or ""
+).strip().strip(":")
 # activity-capture was removed (graveyard 2026-07); metrics are local/stub only.
 ADHD_ENGINE_URL = os.getenv("ADHD_ENGINE_URL", "http://localhost:8095")
 DASHBOARD_USER_ID = os.getenv("DASHBOARD_USER_ID", "default")
@@ -257,7 +263,10 @@ async def redis_pubsub_reader():
     """Broadcast ADHD state changes produced by the engine."""
     logger.info(brand_log("Starting Redis Pub/Sub reader for ADHD state changes", chip=StatusChip.LIVE))
     pubsub = redis_client.pubsub()
-    await pubsub.psubscribe("adhd:state_changes:*")
+    patterns = ["adhd:state_changes:*", "*:adhd:state_changes:*"]
+    if ADHD_ENGINE_REDIS_PREFIX:
+        patterns.insert(0, f"{ADHD_ENGINE_REDIS_PREFIX}:adhd:state_changes:*")
+    await pubsub.psubscribe(*patterns)
 
     try:
         async for message in pubsub.listen():
@@ -325,11 +334,13 @@ async def redis_stream_reader(stream: str, consumer_group: str, consumer_name: s
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    findings_stream = f"{ADHD_ENGINE_REDIS_PREFIX}:dopemux:adhd-findings" if ADHD_ENGINE_REDIS_PREFIX else "dopemux:adhd-findings"
+    events_stream = f"{ADHD_ENGINE_REDIS_PREFIX}:dopemux:events" if ADHD_ENGINE_REDIS_PREFIX else "dopemux:events"
     tasks = [
         asyncio.create_task(redis_pubsub_reader(), name="dashboard_state_reader"),
         asyncio.create_task(
             redis_stream_reader(
-                "dopemux:adhd-findings",
+                findings_stream,
                 "adhd-dashboard-findings",
                 f"{SERVICE_NAME}-findings",
             ),
@@ -337,7 +348,7 @@ async def lifespan(_: FastAPI):
         ),
         asyncio.create_task(
             redis_stream_reader(
-                "dopemux:events",
+                events_stream,
                 "adhd-dashboard-events",
                 f"{SERVICE_NAME}-events",
             ),

@@ -1,0 +1,1154 @@
+diff --git a/docs/90-adr/adr-dmx-prsteward-soloowner-001.md b/docs/90-adr/adr-dmx-prsteward-soloowner-001.md
+new file mode 100644
+index 0000000000..d9399b36dc
+--- /dev/null
++++ b/docs/90-adr/adr-dmx-prsteward-soloowner-001.md
+@@ -0,0 +1,156 @@
++---
++id: adr-dmx-prsteward-soloowner-001
++title: 'PR Steward Solo-Owner Security-Release Authorization'
++type: adr
++owner: '@hu3mann'
++author: 'Grok Build, for operator decision'
++date: '2026-07-27'
++last_review: '2026-07-27'
++next_review: '2026-10-25'
++status: accepted
++prelude: Resolves solo-owner PR Steward security-release deadlock without inventing a second reviewer or weakening multi-reviewer enforcement.
++graph_metadata:
++  node_type: ADR
++  impact: high
++  relates_to:
++    - adr-mcpprof-001
++---
++
++# ADR-DMX-PRSTEWARD-SOLOOWNER-001: PR Steward Solo-Owner Security-Release Authorization
++
++**Status:** Accepted
++**Decision owner:** Operator
++**Packet:** `TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001`
++
++## Context
++
++PR Steward requires an exact-head GitHub `APPROVED` review from a login in
++`trusted_security_release_approvers` when a PR touches security-release
++categories (CI workflows, schema/contract, CODEOWNERS, secrets-like paths,
++`tools/pr_steward/**` trust root).
++
++Observed solo-owner deadlock on `DDD-Enterprises/dopemux-mvp`:
++
++- trusted roster on `origin/main` is exactly `hu3mann`;
++- PR author is `hu3mann`;
++- GitHub forbids author self-approval;
++- no second independent human GitHub identity is established;
++- inventing a cosmetic second account is not independent review;
++- changing the gate itself touches `tools/pr_steward/**` and re-triggers the same gate (bootstrap problem).
++
++Ordinary multi-reviewer enforcement must remain unchanged when a non-author
++trusted approver exists.
++
++## Options compared
++
++### Option A — Real second human approver
++
++**Valid only if** a concrete non-author GitHub account is identified with:
++
++- repository review access;
++- independent human control;
++- explicit operator authorization to add it to `trusted_security_release_approvers` on trusted main;
++- willingness to review exact-head evidence.
++
++**Rejected for this decision cycle** because no such independent reviewer
++identity has been established. This ADR does not authorize inventing bots or
++second usernames controlled by the same implementation session.
++
++Option A remains the preferred long-term path when a real second human becomes
++available: add them to the roster on main; the ordinary non-author APPROVED
++path already works and is not altered by this ADR.
++
++### Option B — Solo-owner exact-head release authorization (chosen)
++
++Provide a narrowly scoped override that activates **only** when all of the
++following hold:
++
++1. trusted security-release roster on trusted main contains exactly one human;
++2. that identity is the repository owner and PR author;
++3. no eligible non-author trusted approver exists;
++4. independent embedded audit is current to the exact PR head with
++   `PASS` or non-blocking `PASS_WITH_RISKS`, and auditor tool/model/provider/
++   runner/session fields are recorded when present;
++5. all required CI checks are current and green (no failed/pending required);
++6. proof is current to the exact PR head;
++7. no unknown reviewers, unclassified review items, unresolved blocking threads,
++   harvest incompleteness, draft/closed PR, or mixed-SHA artifact sets remain;
++8. the operator posts an exact phrase as a PR issue comment:
++
++```text
++AUTHORIZE SOLO-OWNER SECURITY RELEASE FOR PR #<PR_NUMBER> AT HEAD <FULL_SHA>
++```
++
++## Decision
++
++Adopt **Option B** as a durable fail-closed contract.
++
++### Authorization properties
++
++The solo-owner phrase must:
++
++- be harvested from GitHub issue comments (not invented in local proof);
++- bind repository, PR number, full 40-char head SHA, operator login, timestamp,
++  and scope `security_release_only`;
++- become stale immediately if the PR head changes;
++- **never** count as an ordinary GitHub `APPROVED` review
++  (`security_release.approval` remains null when only the override is used);
++- emit receipt code `SOLO_OWNER_SECURITY_RELEASE_OVERRIDE_USED` on
++  `MERGE_READINESS.json.security_release`;
++- leave the ordinary non-author APPROVED path unchanged;
++- never enable auto-merge;
++- never waive CI, proof, audit, review-thread, reviewer-classification, harvest,
++  or scope gates — those remain independent blockers.
++
++### Bootstrap exception (out of band)
++
++Because the implementing PR itself touches `tools/pr_steward/**`, it predictably
++fails the *current* security-release gate before this policy exists on main.
++That first merge requires an explicit one-time operator bootstrap phrase naming
++the policy PR and full head SHA, scoped only to that administrative merge. It
++does **not** authorize any other PR (including MCP profile PR #1128).
++
++After the policy SHA is on `origin/main`, subsequent security-release PRs by
++the solo owner use the in-band phrase above; the ordinary multi-reviewer path
++remains mandatory whenever a non-author trusted approver exists.
++
++## Invariants
++
++1. Multi-reviewer enforcement is not weakened when ≥1 non-author trusted
++   approver is configured.
++2. Solo path never fabricates GitHub review objects.
++3. Solo path never sets auto-merge.
++4. Solo path never clears non-`SECURITY_RELEASE_*` blockers.
++5. Head binding is exact (full SHA); partial SHAs and wrong PR numbers fail closed.
++6. Phrase author must be the solo trusted identity; foreign logins are ignored.
++7. Receipt is evidence, not a second catalog of authority.
++
++## Consequences
++
++### Positive
++
++- Solo-owner repositories can complete security-release gates without fake
++  second accounts.
++- Evidence is explicit, exact-head-bound, and auditable.
++- Ordinary team workflows remain unchanged.
++
++### Costs
++
++- Operators must post a precise phrase after every head change.
++- Bootstrap of the policy itself still requires a one-time out-of-band merge
++  authorization because of trust-root recursion.
++- Schema for `MERGE_READINESS` gains optional solo-owner fields.
++
++### Failure direction
++
++When roster, ownership, phrase, head, audit, CI, proof, or classification truth
++is incomplete, the path does not activate and
++`SECURITY_RELEASE_APPROVAL_REQUIRED` (or other blockers) remain.
++
++## Rollback
++
++1. Revert the policy commits introducing `solo_owner_security_release.py` and
++   classifier wiring.
++2. Restore prior `merge_readiness.schema.json`.
++3. Re-run PR Steward tests.
++4. Do not delete historical receipts in already-merged PRs.
+diff --git a/docs/90-adr/adr-index.md b/docs/90-adr/adr-index.md
+index 90c37113d1..310c036bed 100644
+--- a/docs/90-adr/adr-index.md
++++ b/docs/90-adr/adr-index.md
+@@ -39,6 +39,7 @@ graph_metadata:
+ | [adr-serena-as-technical-context-plane.md](adr-serena-as-technical-context-plane.md) | ADR: Serena as technical context plane | Proposed | Bound Serena to technical/code context authority without promoting it into PM, workflow, decision, or chronicle truth. | PM Plane Authority Boundaries, ConPort, dope-memory, dope-context, Memory Trinity |
+ | [adr-dope-context-as-search-and-retrieval-plane.md](adr-dope-context-as-search-and-retrieval-plane.md) | ADR: dope-context as search and retrieval plane | Accepted, amended | Bound dope-context to retrieval and provenance-aware search rather than canonical PM, workflow, context, or chronicle truth. | PM Plane Authority Boundaries, ConPort, dope-memory, Serena, Memory Trinity |
+ | [adr-dcp-mcp-ro-0009-chatgpt-mcp-exposure-targets-runtime-resolution-ownership-evidence.md](adr-dcp-mcp-ro-0009-chatgpt-mcp-exposure-targets-runtime-resolution-ownership-evidence.md) | ADR-DCP-MCP-RO-0009: ChatGPT MCP Exposure Targets, Runtime Resolution, and Ownership Evidence | Accepted, amended | Require opaque ChatGPT target IDs, explicit exposure consent, live ownership evidence, and fail-closed runtime resolution before backend calls. | DCP read-only facade, Memory Trinity, Task Orchestrator |
++| [adr-dmx-prsteward-soloowner-001.md](adr-dmx-prsteward-soloowner-001.md) | ADR-DMX-PRSTEWARD-SOLOOWNER-001: PR Steward Solo-Owner Security-Release Authorization | Accepted | Exact-head solo-owner security-release path when the trusted roster is a single owner-author; preserves multi-reviewer enforcement otherwise. | PR Steward, security-release gate |
+ 
+ ## Notes
+ 
+diff --git a/proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/BASELINE_HEAD.txt b/proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/BASELINE_HEAD.txt
+new file mode 100644
+index 0000000000..2145266d43
+--- /dev/null
++++ b/proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/BASELINE_HEAD.txt
+@@ -0,0 +1 @@
++3c3f14eba44ed09f54e6860d4f4cec05fb856cc7
+diff --git a/proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/EXIT_CODES.json b/proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/EXIT_CODES.json
+new file mode 100644
+index 0000000000..85ea8e485e
+--- /dev/null
++++ b/proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/EXIT_CODES.json
+@@ -0,0 +1,3 @@
++{
++  "pytest_pr_steward": 0
++}
+diff --git a/proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/FILES_CHANGED.txt b/proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/FILES_CHANGED.txt
+new file mode 100644
+index 0000000000..a9aa8d90ac
+--- /dev/null
++++ b/proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/FILES_CHANGED.txt
+@@ -0,0 +1,13 @@
++docs/90-adr/adr-dmx-prsteward-soloowner-001.md
++docs/90-adr/adr-index.md
++proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/BASELINE_HEAD.txt
++proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/EXIT_CODES.json
++proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/FILES_CHANGED.txt
++proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/GIT_STATUS_BEFORE.txt
++schemas/pr_steward/merge_readiness.schema.json
++task-packets/pr-steward/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001.md
++tests/pr_steward/test_classifier_solo_owner.py
++tests/pr_steward/test_solo_owner_security_release.py
++tests/pr_steward/test_trusted_security_approvers.py
++tools/pr_steward/classifier.py
++tools/pr_steward/solo_owner_security_release.py
+diff --git a/proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/GIT_STATUS_BEFORE.txt b/proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/GIT_STATUS_BEFORE.txt
+new file mode 100644
+index 0000000000..6881d64412
+--- /dev/null
++++ b/proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/GIT_STATUS_BEFORE.txt
+@@ -0,0 +1,10 @@
++ M .claude/claude_config.json
++ M docs/90-adr/adr-index.md
++ M schemas/pr_steward/merge_readiness.schema.json
++ M tests/pr_steward/test_trusted_security_approvers.py
++ M tools/pr_steward/classifier.py
++?? docs/90-adr/adr-dmx-prsteward-soloowner-001.md
++?? proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/
++?? tests/pr_steward/test_classifier_solo_owner.py
++?? tests/pr_steward/test_solo_owner_security_release.py
++?? tools/pr_steward/solo_owner_security_release.py
+diff --git a/schemas/pr_steward/merge_readiness.schema.json b/schemas/pr_steward/merge_readiness.schema.json
+index 91f8eea484..a67b9ed55a 100644
+--- a/schemas/pr_steward/merge_readiness.schema.json
++++ b/schemas/pr_steward/merge_readiness.schema.json
+@@ -139,7 +139,17 @@
+         },
+         "approval": {
+           "type": ["object", "null"],
+-          "additionalProperties": true
++          "additionalProperties": true,
++          "description": "Ordinary non-author GitHub APPROVED review binding, or null."
++        },
++        "solo_owner_override": {
++          "type": ["object", "null"],
++          "additionalProperties": true,
++          "description": "Exact-head solo-owner security-release receipt (ADR-DMX-PRSTEWARD-SOLOOWNER-001). Never a GitHub APPROVED review. Null when unused."
++        },
++        "override_receipt_code": {
++          "type": ["string", "null"],
++          "description": "When solo-owner override activates: SOLO_OWNER_SECURITY_RELEASE_OVERRIDE_USED."
+         }
+       }
+     }
+diff --git a/task-packets/pr-steward/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001.md b/task-packets/pr-steward/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001.md
+new file mode 100644
+index 0000000000..c2344d08b7
+--- /dev/null
++++ b/task-packets/pr-steward/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001.md
+@@ -0,0 +1,39 @@
++---
++id: tp-dmx-pr-steward-solo-owner-bootstrap-001
++title: TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001
++type: how-to
++owner: '@hu3mann'
++author: '@hu3mann'
++date: '2026-07-27'
++last_review: '2026-07-27'
++next_review: '2026-10-25'
++prelude: Decision-first bootstrap packet for solo-owner PR Steward security-release authorization.
++---
++
++# TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001
++
++## Objective
++
++Resolve the solo-owner PR Steward security-release deadlock without inventing a second reviewer, without weakening multi-reviewer enforcement, and without silently bypassing the trust-root bootstrap problem.
++
++## ADR
++
++`ADR-DMX-PRSTEWARD-SOLOOWNER-001` — Option B accepted.
++
++## Non-goals
++
++- Do not modify PR #1128.
++- Do not start dNh CRM or adOps.
++- Do not merge this policy PR without the one-time bootstrap authorization phrase.
++- Do not enable auto-merge.
++
++## Implementation summary
++
++- `tools/pr_steward/solo_owner_security_release.py`
++- classifier wiring after ordinary approval evaluation
++- `schemas/pr_steward/merge_readiness.schema.json` fields for solo override receipt
++- unit + classifier negatives
++
++## Terminal stop for this packet
++
++`READY_FOR_ONE_TIME_BOOTSTRAP_MERGE_AUTHORIZATION`
+diff --git a/tests/pr_steward/test_classifier_solo_owner.py b/tests/pr_steward/test_classifier_solo_owner.py
+new file mode 100644
+index 0000000000..793d7d7523
+--- /dev/null
++++ b/tests/pr_steward/test_classifier_solo_owner.py
+@@ -0,0 +1,230 @@
++"""Classifier integration for solo-owner security-release override."""
++
++from __future__ import annotations
++
++from pathlib import Path
++
++from tools.pr_steward.classifier import build_artifacts
++from tools.pr_steward.solo_owner_security_release import (
++    RECEIPT_CODE,
++    build_solo_owner_phrase,
++)
++
++HEAD_SHA = "e41d134b5b0f32b5475ab5f094274bfac2259601"
++PR = 1128
++REPO = "DDD-Enterprises/dopemux-mvp"
++
++
++def _known_reviewers(tmp_path: Path, approvers: list[str]) -> Path:
++    path = tmp_path / "known_reviewers.json"
++    import json
++
++    path.write_text(
++        json.dumps(
++            {
++                "known_reviewers": ["hu3mann", *approvers],
++                "trusted_author_associations": ["OWNER", "MEMBER", "COLLABORATOR"],
++                "trusted_security_release_approvers": approvers,
++            }
++        )
++        + "\n",
++        encoding="utf-8",
++    )
++    return path
++
++
++def _harvest(
++    *,
++    issue_comments=None,
++    security_release_approval=None,
++    checks=None,
++    audit_status="PASS_WITH_RISKS",
++    author_association=None,
++) -> dict:
++    pr = {
++        "number": PR,
++        "url": f"https://github.com/{REPO}/pull/{PR}",
++        "state": "OPEN",
++        "isDraft": False,
++        "mergeable": "MERGEABLE",
++        "mergeStateStatus": "CLEAN",
++        "reviewDecision": None,
++        "baseRefName": "main",
++        "baseRefOid": "base000000000000000000000000000000000000",
++        "headRefName": "feat/test",
++        "headRefOid": HEAD_SHA,
++        "author": {"login": "hu3mann"},
++        "createdAt": "2026-07-26T01:00:00Z",
++        "updatedAt": "2026-07-26T02:00:00Z",
++    }
++    if author_association:
++        pr["authorAssociation"] = author_association
++        pr["author"] = {"login": "hu3mann", "authorAssociation": author_association}
++    return {
++        "harvest_complete": True,
++        "harvest_errors": [],
++        "pr": pr,
++        "changed_files": [
++            {"path": "schemas/mcp/fleet-catalog.schema.json", "additions": 1}
++        ],
++        "commits": [{"oid": HEAD_SHA, "messageHeadline": "test"}],
++        "reviews": [],
++        "review_comments": [],
++        "review_threads": [],
++        "issue_comments": issue_comments or [],
++        "checks": checks
++        or [
++            {
++                "name": "unit",
++                "status": "COMPLETED",
++                "conclusion": "success",
++                "headSha": HEAD_SHA,
++            }
++        ],
++        "proof": {
++            "proof_path": "proof/PROOF.json",
++            "proof_head_sha": HEAD_SHA,
++            "matches_pr_head": True,
++        },
++        "embedded_audit": {
++            "status": audit_status,
++            "report_path": "proof/AUDITOR_REPORT.md",
++            "auditor_tool": "claude-code-cli",
++            "auditor_model": "claude-sonnet-4.6",
++            "auditor_provider": "local-signed-attestation",
++            "auditor_runner": "supervisor-session",
++            "auditor_session": "bootstrap-001",
++            "invocation": "test-audit",
++        },
++        "security_release_approval": security_release_approval,
++    }
++
++
++def _readiness(harvest: dict, known_path: Path) -> dict:
++    return build_artifacts(
++        harvest,
++        repo=REPO,
++        pr_number=PR,
++        strict=True,
++        allow_closed=False,
++        known_reviewers_path=known_path,
++    )["MERGE_READINESS.json"]
++
++
++def test_solo_owner_phrase_clears_security_gate(tmp_path: Path):
++    known = _known_reviewers(tmp_path, ["hu3mann"])
++    phrase = build_solo_owner_phrase(pr_number=PR, head_sha=HEAD_SHA)
++    harvest = _harvest(
++        issue_comments=[
++            {
++                "id": "ic-auth",
++                "body": phrase,
++                "author": {"login": "hu3mann"},
++                "authorAssociation": "OWNER",
++                "createdAt": "2026-07-27T12:00:00Z",
++            }
++        ],
++        author_association="OWNER",
++    )
++    readiness = _readiness(harvest, known)
++    assert readiness["security_release"]["required"] is True
++    assert readiness["security_release"]["approved"] is True
++    assert readiness["security_release"]["solo_owner_override"]["receipt_code"] == RECEIPT_CODE
++    assert readiness["security_release"]["approval"] is None
++    assert "SECURITY_RELEASE_APPROVAL_REQUIRED" not in readiness["blockers"]
++    assert readiness["readiness"] == "READY"
++
++
++def test_solo_owner_does_not_activate_with_second_trusted_approver(tmp_path: Path):
++    known = _known_reviewers(tmp_path, ["hu3mann", "second-human"])
++    phrase = build_solo_owner_phrase(pr_number=PR, head_sha=HEAD_SHA)
++    harvest = _harvest(
++        issue_comments=[
++            {
++                "id": "ic-auth",
++                "body": phrase,
++                "author": {"login": "hu3mann"},
++                "authorAssociation": "OWNER",
++                "createdAt": "2026-07-27T12:00:00Z",
++            }
++        ],
++        author_association="OWNER",
++    )
++    readiness = _readiness(harvest, known)
++    assert readiness["security_release"]["approved"] is False
++    assert readiness["security_release"]["solo_owner_override"] is None
++    assert "SECURITY_RELEASE_APPROVAL_REQUIRED" in readiness["blockers"]
++    assert readiness["readiness"] != "READY"
++
++
++def test_ordinary_non_author_approval_still_works(tmp_path: Path):
++    known = _known_reviewers(tmp_path, ["trusted-approver"])
++    approval = {
++        "state": "APPROVED",
++        "repository": REPO,
++        "pr_number": PR,
++        "head_sha": HEAD_SHA,
++        "approver": "trusted-approver",
++        "approver_association": "COLLABORATOR",
++        "approval_ref": "review-1",
++        "approved_at": "2026-07-20T12:00:00Z",
++    }
++    readiness = _readiness(
++        _harvest(security_release_approval=approval),
++        known,
++    )
++    assert readiness["security_release"]["approved"] is True
++    assert readiness["security_release"]["solo_owner_override"] is None
++    assert readiness["security_release"]["approval"]["approver"] == "trusted-approver"
++    assert readiness["readiness"] == "READY"
++
++
++def test_solo_owner_does_not_waive_failed_ci(tmp_path: Path):
++    known = _known_reviewers(tmp_path, ["hu3mann"])
++    phrase = build_solo_owner_phrase(pr_number=PR, head_sha=HEAD_SHA)
++    harvest = _harvest(
++        issue_comments=[
++            {
++                "id": "ic-auth",
++                "body": phrase,
++                "author": {"login": "hu3mann"},
++                "authorAssociation": "OWNER",
++                "createdAt": "2026-07-27T12:00:00Z",
++            }
++        ],
++        author_association="OWNER",
++        checks=[
++            {
++                "name": "unit",
++                "status": "COMPLETED",
++                "conclusion": "failure",
++                "headSha": HEAD_SHA,
++                "required": True,
++            }
++        ],
++    )
++    readiness = _readiness(harvest, known)
++    # Solo cannot activate while FAILED_CHECK is present.
++    assert "FAILED_CHECK" in readiness["blockers"]
++    assert readiness["security_release"]["solo_owner_override"] is None
++    assert readiness["readiness"] != "READY"
++
++
++def test_stale_head_phrase_does_not_approve(tmp_path: Path):
++    known = _known_reviewers(tmp_path, ["hu3mann"])
++    stale = build_solo_owner_phrase(pr_number=PR, head_sha="a" * 40)
++    harvest = _harvest(
++        issue_comments=[
++            {
++                "id": "ic-auth",
++                "body": stale,
++                "author": {"login": "hu3mann"},
++                "authorAssociation": "OWNER",
++                "createdAt": "2026-07-27T12:00:00Z",
++            }
++        ],
++        author_association="OWNER",
++    )
++    readiness = _readiness(harvest, known)
++    assert readiness["security_release"]["approved"] is False
++    assert "SECURITY_RELEASE_APPROVAL_REQUIRED" in readiness["blockers"]
+diff --git a/tests/pr_steward/test_solo_owner_security_release.py b/tests/pr_steward/test_solo_owner_security_release.py
+new file mode 100644
+index 0000000000..07e2a29efe
+--- /dev/null
++++ b/tests/pr_steward/test_solo_owner_security_release.py
+@@ -0,0 +1,200 @@
++"""Unit tests for solo-owner security-release authorization."""
++
++from __future__ import annotations
++
++from tools.pr_steward.solo_owner_security_release import (
++    RECEIPT_CODE,
++    build_solo_owner_phrase,
++    evaluate_solo_owner_security_release,
++    harvest_solo_owner_authorization,
++    parse_solo_owner_phrase,
++    solo_owner_roster_eligible,
++)
++
++HEAD = "e41d134b5b0f32b5475ab5f094274bfac2259601"
++REPO = "DDD-Enterprises/dopemux-mvp"
++PR = 1128
++AUTHOR = "hu3mann"
++
++
++def _phrase(pr: int = PR, head: str = HEAD) -> str:
++    return build_solo_owner_phrase(pr_number=pr, head_sha=head)
++
++
++def _comment(
++    body: str,
++    *,
++    login: str = AUTHOR,
++    association: str = "OWNER",
++    created: str = "2026-07-27T01:00:00Z",
++    cid: str = "c1",
++) -> dict:
++    return {
++        "id": cid,
++        "body": body,
++        "author": {"login": login},
++        "authorAssociation": association,
++        "createdAt": created,
++    }
++
++
++def _eval(**overrides):
++    base = dict(
++        required=True,
++        trusted_approvers=[AUTHOR],
++        pr_author=AUTHOR,
++        pr_author_association="OWNER",
++        expected_repo=REPO,
++        expected_pr=PR,
++        expected_head_sha=HEAD,
++        issue_comments=[_comment(_phrase())],
++        blockers=["SECURITY_RELEASE_APPROVAL_REQUIRED"],
++        unclassified_review_item_count=0,
++        audit_status="PASS_WITH_RISKS",
++        audit_meta={
++            "auditor_tool": "claude-code-cli",
++            "auditor_model": "claude-sonnet-4.6",
++            "auditor_provider": "local-signed-attestation",
++            "auditor_runner": "supervisor-embedded-audit-session",
++            "auditor_session": "TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001",
++            "invocation": "test",
++            "report_path": "proof/x/AUDITOR_REPORT.md",
++        },
++        proof_status="CURRENT",
++    )
++    base.update(overrides)
++    return evaluate_solo_owner_security_release(**base)
++
++
++def test_phrase_roundtrip():
++    phrase = _phrase()
++    assert parse_solo_owner_phrase(phrase) == (PR, HEAD)
++    assert parse_solo_owner_phrase(f"prefix\n{phrase}\nsuffix") == (PR, HEAD)
++
++
++def test_phrase_rejects_partial_sha():
++    bad = f"AUTHORIZE SOLO-OWNER SECURITY RELEASE FOR PR #{PR} AT HEAD abc123"
++    assert parse_solo_owner_phrase(bad) is None
++
++
++def test_roster_eligible_only_for_single_author_approver():
++    assert solo_owner_roster_eligible([AUTHOR], pr_author=AUTHOR) is True
++    assert solo_owner_roster_eligible([AUTHOR, "other"], pr_author=AUTHOR) is False
++    assert solo_owner_roster_eligible(["other"], pr_author=AUTHOR) is False
++    assert solo_owner_roster_eligible([], pr_author=AUTHOR) is False
++
++
++def test_activate_happy_path():
++    result = _eval()
++    assert result.activated is True
++    assert result.receipt is not None
++    assert result.receipt["receipt_code"] == RECEIPT_CODE
++    assert result.receipt["does_not_count_as_github_approved_review"] is True
++    assert result.receipt["auto_merge_enabled"] is False
++    assert result.receipt["head_sha"] == HEAD
++    assert result.receipt["pr_number"] == PR
++
++
++def test_cannot_activate_when_non_author_trusted_approver_exists():
++    result = _eval(trusted_approvers=[AUTHOR, "second-human"])
++    assert result.activated is False
++    assert "SOLO_OWNER_INELIGIBLE_ROSTER" in result.diagnostic_errors
++
++
++def test_cannot_activate_when_trusted_approver_is_not_author():
++    result = _eval(trusted_approvers=["second-human"], pr_author=AUTHOR)
++    assert result.activated is False
++    assert "SOLO_OWNER_INELIGIBLE_ROSTER" in result.diagnostic_errors
++
++
++def test_stale_head_phrase_rejected():
++    other = "a" * 40
++    result = _eval(issue_comments=[_comment(_phrase(head=other))])
++    assert result.activated is False
++    assert "SOLO_OWNER_PHRASE_MISSING_OR_MISMATCH" in result.diagnostic_errors
++
++
++def test_wrong_pr_number_phrase_rejected():
++    result = _eval(issue_comments=[_comment(_phrase(pr=9999))])
++    assert result.activated is False
++    assert "SOLO_OWNER_PHRASE_MISSING_OR_MISMATCH" in result.diagnostic_errors
++
++
++def test_author_phrase_mismatch_rejected():
++    result = _eval(
++        issue_comments=[_comment(_phrase(), login="not-the-author", association="OWNER")]
++    )
++    assert result.activated is False
++    assert "SOLO_OWNER_PHRASE_MISSING_OR_MISMATCH" in result.diagnostic_errors
++
++
++def test_missing_phrase_rejected():
++    result = _eval(issue_comments=[_comment("LGTM")])
++    assert result.activated is False
++    assert "SOLO_OWNER_PHRASE_MISSING_OR_MISMATCH" in result.diagnostic_errors
++
++
++def test_failed_audit_blocks_activation():
++    result = _eval(audit_status="FAIL")
++    assert result.activated is False
++    assert "SOLO_OWNER_AUDIT_NOT_PASSING" in result.diagnostic_errors
++
++
++def test_stale_proof_blocks_activation():
++    result = _eval(proof_status="STALE")
++    assert result.activated is False
++    assert "SOLO_OWNER_PROOF_NOT_CURRENT" in result.diagnostic_errors
++
++
++def test_failed_check_blocks_activation():
++    result = _eval(
++        blockers=["SECURITY_RELEASE_APPROVAL_REQUIRED", "FAILED_CHECK"]
++    )
++    assert result.activated is False
++    assert "SOLO_OWNER_OTHER_GATES_BLOCKING" in result.diagnostic_errors
++
++
++def test_unresolved_thread_blocks_activation():
++    result = _eval(
++        blockers=["SECURITY_RELEASE_APPROVAL_REQUIRED", "UNRESOLVED_REVIEW_THREAD"]
++    )
++    assert result.activated is False
++    assert "SOLO_OWNER_OTHER_GATES_BLOCKING" in result.diagnostic_errors
++
++
++def test_unknown_reviewer_blocks_activation():
++    result = _eval(
++        blockers=[
++            "SECURITY_RELEASE_APPROVAL_REQUIRED",
++            "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION",
++        ]
++    )
++    assert result.activated is False
++    assert "SOLO_OWNER_OTHER_GATES_BLOCKING" in result.diagnostic_errors
++
++
++def test_unclassified_items_block_activation():
++    result = _eval(unclassified_review_item_count=1)
++    assert result.activated is False
++    assert "SOLO_OWNER_UNCLASSIFIED_REVIEW_ITEMS" in result.diagnostic_errors
++
++
++def test_not_required_does_not_activate():
++    result = _eval(required=False)
++    assert result.activated is False
++
++
++def test_harvest_picks_newest_matching_phrase():
++    comments = [
++        _comment(_phrase(), created="2026-07-27T01:00:00Z", cid="old"),
++        _comment(_phrase(), created="2026-07-27T02:00:00Z", cid="new"),
++        _comment(_phrase(head="b" * 40), created="2026-07-27T03:00:00Z", cid="stale"),
++    ]
++    auth = harvest_solo_owner_authorization(
++        comments,
++        expected_pr=PR,
++        expected_head_sha=HEAD,
++        expected_operator=AUTHOR,
++    )
++    assert auth is not None
++    assert auth["authorization_ref"] == "new"
+diff --git a/tests/pr_steward/test_trusted_security_approvers.py b/tests/pr_steward/test_trusted_security_approvers.py
+index baa9b8955d..3fc8cffe5d 100644
+--- a/tests/pr_steward/test_trusted_security_approvers.py
++++ b/tests/pr_steward/test_trusted_security_approvers.py
+@@ -26,9 +26,18 @@ def test_populated_key_returns_list(tmp_path: Path):
+     assert load_trusted_security_approvers(path) == ["alice", "bob"]
+ 
+ 
+-def test_repo_known_reviewers_file_has_empty_roster():
+-    """The shipped roster starts empty — approver identity is an operator decision."""
++def test_repo_known_reviewers_file_roster_is_operator_owned():
++    """Trusted security-release approvers are an operator decision.
++
++    Solo-owner repositories may list exactly one human (the owner). Multi-owner
++    repositories list non-author humans. An empty list remains valid but means
++    no security-release path can approve until operators populate the roster.
++    """
+     from pathlib import Path as _P
+ 
+     repo_path = _P(__file__).resolve().parents[2] / "tools" / "pr_steward" / "known_reviewers.json"
+-    assert load_trusted_security_approvers(repo_path) == []
++    roster = load_trusted_security_approvers(repo_path)
++    assert isinstance(roster, list)
++    assert all(isinstance(item, str) and item.strip() for item in roster)
++    # No duplicates; logins are exact GitHub handles.
++    assert len(roster) == len(set(roster))
+\ No newline at end of file
+diff --git a/tools/pr_steward/classifier.py b/tools/pr_steward/classifier.py
+index 15b697dccd..2f17accdc0 100644
+--- a/tools/pr_steward/classifier.py
++++ b/tools/pr_steward/classifier.py
+@@ -8,6 +8,9 @@ from typing import Any
+ 
+ from tools.pr_steward.security_release_gate import classify_security_release_paths
+ from tools.pr_steward.security_release_approval import evaluate_security_release_approval
++from tools.pr_steward.solo_owner_security_release import (
++    evaluate_solo_owner_security_release,
++)
+ 
+ 
+ SCHEMA_VERSION = "1.1.0"
+@@ -264,6 +267,7 @@ def build_artifacts(
+         "approved": security_classification.required and not security_release_errors,
+         "categories": list(security_classification.categories),
+         "approval": harvest.get("security_release_approval"),
++        "solo_owner_override": None,
+     }
+     proof = _proof(harvest, pr_head_sha=pr["head_sha"])
+     proof_status = _proof_status(proof)
+@@ -283,6 +287,57 @@ def build_artifacts(
+     if not proof["proof_head_sha"]:
+         _append_once(unknowns, "Proof head SHA missing")
+ 
++    # Solo-owner path (ADR-DMX-PRSTEWARD-SOLOOWNER-001): only after ordinary
++    # approval failed, and only when every non-security gate is already clean.
++    if security_classification.required and any(
++        str(b).startswith("SECURITY_RELEASE_") for b in blockers
++    ):
++        raw_audit = harvest.get("embedded_audit") or {}
++        audit_meta = {
++            "auditor_tool": raw_audit.get("auditor_tool"),
++            "auditor_model": raw_audit.get("auditor_model"),
++            "auditor_provider": raw_audit.get("auditor_provider"),
++            "auditor_runner": raw_audit.get("auditor_runner"),
++            "auditor_session": raw_audit.get("auditor_session"),
++            "invocation": raw_audit.get("invocation"),
++            "report_path": raw_audit.get("report_path")
++            or embedded_audit.get("report_path"),
++        }
++        proof_status_str = str(
++            proof_status.get("status") if isinstance(proof_status, dict) else proof_status
++            or ""
++        )
++        solo = evaluate_solo_owner_security_release(
++            required=True,
++            trusted_approvers=trusted_security_approvers,
++            pr_author=str(pr["author"] or ""),
++            pr_author_association=pr_assoc,
++            expected_repo=repo,
++            expected_pr=pr_number,
++            expected_head_sha=str(pr["head_sha"] or ""),
++            issue_comments=issue_comments_in,
++            blockers=blockers,
++            unclassified_review_item_count=unclassified_count,
++            audit_status=str(audit_status or ""),
++            audit_meta=audit_meta,
++            proof_status=proof_status_str,
++        )
++        if solo.activated and solo.receipt is not None:
++            blockers[:] = [
++                b for b in blockers if not str(b).startswith("SECURITY_RELEASE_")
++            ]
++            security_release_errors = []
++            security_release["approved"] = True
++            security_release["solo_owner_override"] = solo.receipt
++            # Never fabricate a GitHub APPROVED review object.
++            security_release["approval"] = None
++            security_release["override_receipt_code"] = solo.receipt["receipt_code"]
++        elif solo.diagnostic_errors:
++            # Preserve ordinary SECURITY_RELEASE_* blockers; attach diagnostics as unknowns.
++            for diag in solo.diagnostic_errors:
++                if not str(diag).startswith("SECURITY_RELEASE_"):
++                    _append_once(unknowns, f"solo_owner:{diag}")
++
+     readiness = _readiness(blockers)
+     tier = _risk_tier(readiness)
+     review_item_ledger = {
+diff --git a/tools/pr_steward/solo_owner_security_release.py b/tools/pr_steward/solo_owner_security_release.py
+new file mode 100644
+index 0000000000..375d8feec0
+--- /dev/null
++++ b/tools/pr_steward/solo_owner_security_release.py
+@@ -0,0 +1,306 @@
++"""Solo-owner exact-head security-release authorization (ADR-DMX-PRSTEWARD-SOLOOWNER-001).
++
++This path exists only for repositories whose trusted security-release roster on
++the trusted main ref contains exactly one human approver who is also the PR
++author/owner, and who cannot post a GitHub APPROVED review on their own PR.
++
++It never:
++- counts as an ordinary GitHub APPROVED review;
++- enables auto-merge;
++- waives CI, proof, audit, review-thread, reviewer-classification, or harvest gates;
++- activates when any eligible non-author trusted approver exists.
++
++Activation requires an exact operator phrase harvested from PR issue comments:
++
++  AUTHORIZE SOLO-OWNER SECURITY RELEASE FOR PR #<N> AT HEAD <40-char-sha>
++"""
++
++from __future__ import annotations
++
++import re
++from dataclasses import dataclass
++from datetime import datetime, timezone
++from typing import Any, Mapping, Sequence
++
++# Exact phrase format (case-sensitive). Full 40-char lowercase or mixed hex SHA.
++SOLO_OWNER_PHRASE_RE = re.compile(
++    r"AUTHORIZE SOLO-OWNER SECURITY RELEASE FOR PR #(\d+) AT HEAD ([0-9a-fA-F]{40})\b"
++)
++
++RECEIPT_CODE = "SOLO_OWNER_SECURITY_RELEASE_OVERRIDE_USED"
++AUTHORIZATION_SCOPE = "security_release_only"
++
++# Associations that prove owner/operator authority for the solo path.
++_OWNER_ASSOCIATIONS = frozenset({"OWNER"})
++
++# Audit statuses that may accompany a solo-owner override.
++_PASSING_AUDITS = frozenset({"PASS", "PASS_WITH_RISKS"})
++
++@dataclass(frozen=True)
++class SoloOwnerEvaluation:
++    """Result of attempting the solo-owner security-release path."""
++
++    activated: bool
++    receipt: dict[str, Any] | None
++    diagnostic_errors: tuple[str, ...]
++
++
++def build_solo_owner_phrase(*, pr_number: int, head_sha: str) -> str:
++    """Return the exact operator phrase for a PR head."""
++    return (
++        f"AUTHORIZE SOLO-OWNER SECURITY RELEASE FOR PR #{int(pr_number)} "
++        f"AT HEAD {head_sha}"
++    )
++
++
++def parse_solo_owner_phrase(body: str) -> tuple[int, str] | None:
++    """Parse the first exact solo-owner phrase in *body*, if any."""
++    if not isinstance(body, str) or not body:
++        return None
++    match = SOLO_OWNER_PHRASE_RE.search(body)
++    if not match:
++        return None
++    return int(match.group(1)), match.group(2).lower()
++
++
++def solo_owner_roster_eligible(
++    trusted_approvers: Sequence[str],
++    *,
++    pr_author: str,
++) -> bool:
++    """True when the roster is exactly one human and that human is the PR author.
++
++    A non-author trusted approver makes the ordinary multi-reviewer path
++    mandatory; the solo path must not activate.
++    """
++    cleaned = [str(a).strip() for a in trusted_approvers if str(a).strip()]
++    if len(cleaned) != 1:
++        return False
++    return cleaned[0].lower() == str(pr_author or "").strip().lower()
++
++
++def _comment_login(comment: Mapping[str, Any]) -> str | None:
++    author = comment.get("author") or comment.get("user")
++    if isinstance(author, dict):
++        login = author.get("login")
++        return str(login) if login else None
++    if isinstance(author, str) and author:
++        return author
++    return None
++
++
++def _comment_association(comment: Mapping[str, Any]) -> str | None:
++    raw = comment.get("authorAssociation") or comment.get("author_association")
++    if raw is None and isinstance(comment.get("author"), dict):
++        raw = comment["author"].get("authorAssociation") or comment["author"].get(
++            "association"
++        )
++    if raw is None:
++        return None
++    return str(raw).upper()
++
++
++def _comment_timestamp(comment: Mapping[str, Any]) -> str | None:
++    for key in ("createdAt", "created_at", "updatedAt", "updated_at", "submittedAt"):
++        value = comment.get(key)
++        if isinstance(value, str) and value:
++            return value
++    return None
++
++
++def _comment_ref(comment: Mapping[str, Any]) -> str:
++    for key in ("id", "databaseId", "url", "node_id"):
++        value = comment.get(key)
++        if value is not None and str(value):
++            return str(value)
++    return "issue-comment-unknown"
++
++
++def harvest_solo_owner_authorization(
++    issue_comments: Sequence[Any],
++    *,
++    expected_pr: int,
++    expected_head_sha: str,
++    expected_operator: str,
++) -> dict[str, Any] | None:
++    """Return the newest exact-head solo-owner authorization from issue comments.
++
++    Comments from non-operators or with mismatched PR/head are ignored.
++    """
++    expected_head = str(expected_head_sha or "").lower()
++    expected_op = str(expected_operator or "").lower()
++    candidates: list[tuple[str, dict[str, Any]]] = []
++
++    for raw in issue_comments:
++        if not isinstance(raw, Mapping):
++            continue
++        body = raw.get("body")
++        if not isinstance(body, str):
++            continue
++        parsed = parse_solo_owner_phrase(body)
++        if parsed is None:
++            continue
++        phrase_pr, phrase_head = parsed
++        if phrase_pr != int(expected_pr):
++            continue
++        if phrase_head != expected_head:
++            continue
++        login = _comment_login(raw)
++        if not login or login.lower() != expected_op:
++            continue
++        ts = _comment_timestamp(raw) or ""
++        candidates.append(
++            (
++                ts,
++                {
++                    "operator_login": login,
++                    "operator_association": _comment_association(raw),
++                    "authorized_at": ts or None,
++                    "authorization_ref": _comment_ref(raw),
++                    "authorization_phrase": build_solo_owner_phrase(
++                        pr_number=phrase_pr, head_sha=phrase_head
++                    ),
++                    "pr_number": phrase_pr,
++                    "head_sha": phrase_head,
++                },
++            )
++        )
++
++    if not candidates:
++        return None
++    # Newest by timestamp string (RFC3339 sorts lexicographically when present).
++    candidates.sort(key=lambda item: item[0])
++    return candidates[-1][1]
++
++
++def _has_non_waivable_blockers(blockers: Sequence[str]) -> list[str]:
++    """Return non-security blockers that prevent solo-owner activation.
++
++    Any blocker other than ``SECURITY_RELEASE_*`` is non-waivable: the solo path
++    only substitutes for the missing non-author APPROVED review.
++    """
++    seen: set[str] = set()
++    ordered: list[str] = []
++    for blocker in blockers:
++        text = str(blocker)
++        if text.startswith("SECURITY_RELEASE_"):
++            continue
++        if text not in seen:
++            seen.add(text)
++            ordered.append(text)
++    return ordered
++
++
++def evaluate_solo_owner_security_release(
++    *,
++    required: bool,
++    trusted_approvers: Sequence[str],
++    pr_author: str,
++    pr_author_association: str | None,
++    expected_repo: str,
++    expected_pr: int,
++    expected_head_sha: str,
++    issue_comments: Sequence[Any],
++    blockers: Sequence[str],
++    unclassified_review_item_count: int,
++    audit_status: str,
++    audit_meta: Mapping[str, Any] | None,
++    proof_status: str,
++) -> SoloOwnerEvaluation:
++    """Evaluate whether a solo-owner security-release override may activate.
++
++    Returns ``activated=True`` only when every activation condition holds and an
++    exact-head operator phrase is harvested from issue comments.
++    """
++    diagnostics: list[str] = []
++
++    if not required:
++        return SoloOwnerEvaluation(False, None, ("SOLO_OWNER_NOT_REQUIRED",))
++
++    if not solo_owner_roster_eligible(trusted_approvers, pr_author=pr_author):
++        return SoloOwnerEvaluation(
++            False,
++            None,
++            ("SOLO_OWNER_INELIGIBLE_ROSTER",),
++        )
++
++    assoc = str(pr_author_association or "").upper()
++    # If association is present and not OWNER, refuse. Missing association is
++    # allowed only when the authorizing issue comment itself carries OWNER.
++    if assoc and assoc not in _OWNER_ASSOCIATIONS:
++        diagnostics.append("SOLO_OWNER_AUTHOR_NOT_OWNER")
++        return SoloOwnerEvaluation(False, None, tuple(diagnostics))
++
++    if unclassified_review_item_count:
++        diagnostics.append("SOLO_OWNER_UNCLASSIFIED_REVIEW_ITEMS")
++        return SoloOwnerEvaluation(False, None, tuple(diagnostics))
++
++    audit = str(audit_status or "").upper()
++    if audit not in _PASSING_AUDITS:
++        diagnostics.append("SOLO_OWNER_AUDIT_NOT_PASSING")
++        return SoloOwnerEvaluation(False, None, tuple(diagnostics))
++
++    proof = str(proof_status or "").upper()
++    if proof not in {"CURRENT", "CURRENT_WITH_SELF_REFERENCE_EXCEPTION", "FRESH"}:
++        diagnostics.append("SOLO_OWNER_PROOF_NOT_CURRENT")
++        return SoloOwnerEvaluation(False, None, tuple(diagnostics))
++
++    non_waivable = _has_non_waivable_blockers(blockers)
++    if non_waivable:
++        diagnostics.append("SOLO_OWNER_OTHER_GATES_BLOCKING")
++        return SoloOwnerEvaluation(
++            False,
++            None,
++            tuple(diagnostics + non_waivable[:8]),
++        )
++
++    auth = harvest_solo_owner_authorization(
++        issue_comments,
++        expected_pr=expected_pr,
++        expected_head_sha=expected_head_sha,
++        expected_operator=pr_author,
++    )
++    if auth is None:
++        diagnostics.append("SOLO_OWNER_PHRASE_MISSING_OR_MISMATCH")
++        return SoloOwnerEvaluation(False, None, tuple(diagnostics))
++
++    # Operator association on the phrase comment must be OWNER (fail-closed when
++    # both PR author association and comment association are missing/untrusted).
++    comment_assoc = str(auth.get("operator_association") or "").upper()
++    if comment_assoc not in _OWNER_ASSOCIATIONS and assoc not in _OWNER_ASSOCIATIONS:
++        diagnostics.append("SOLO_OWNER_PHRASE_OPERATOR_NOT_OWNER")
++        return SoloOwnerEvaluation(False, None, tuple(diagnostics))
++    if comment_assoc and comment_assoc not in _OWNER_ASSOCIATIONS:
++        diagnostics.append("SOLO_OWNER_PHRASE_OPERATOR_NOT_OWNER")
++        return SoloOwnerEvaluation(False, None, tuple(diagnostics))
++
++    meta = dict(audit_meta or {})
++    receipt = {
++        "receipt_code": RECEIPT_CODE,
++        "kind": "SOLO_OWNER_SECURITY_RELEASE_OVERRIDE",
++        "repository": expected_repo,
++        "pr_number": int(expected_pr),
++        "head_sha": str(expected_head_sha).lower(),
++        "operator_login": auth["operator_login"],
++        "operator_association": comment_assoc or assoc,
++        "authorized_at": auth.get("authorized_at")
++        or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
++        "authorization_ref": auth["authorization_ref"],
++        "authorization_phrase": auth["authorization_phrase"],
++        "authorization_scope": AUTHORIZATION_SCOPE,
++        "does_not_count_as_github_approved_review": True,
++        "auto_merge_enabled": False,
++        "trusted_roster_snapshot": [str(a) for a in trusted_approvers],
++        "audit": {
++            "status": audit,
++            "auditor_tool": meta.get("auditor_tool"),
++            "auditor_model": meta.get("auditor_model"),
++            "auditor_provider": meta.get("auditor_provider"),
++            "auditor_runner": meta.get("auditor_runner"),
++            "auditor_session": meta.get("auditor_session"),
++            "invocation": meta.get("invocation"),
++            "report_path": meta.get("report_path"),
++        },
++        "proof_status": proof,
++    }
++    return SoloOwnerEvaluation(True, receipt, ())

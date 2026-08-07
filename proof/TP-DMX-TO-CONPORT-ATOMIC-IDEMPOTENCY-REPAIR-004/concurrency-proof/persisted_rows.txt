@@ -1,0 +1,5 @@
+        workspace_id         |    category    |                  key                  |          ik           |                                fp
+-----------------------------+----------------+---------------------------------------+-----------------------+------------------------------------------------------------------
+ /home/hue.linux/tp004-proof | workflow_epics | epic_7de631c5294257339e2da83a9a76e31b | proof-conflicting-key | 3901b8e625ab5deea35cfe72f5cdb97817850cc594fa50a0fa1645f797d0172e
+ /home/hue.linux/tp004-proof | workflow_epics | epic_6916e2b901075051a1d5d14988580aff | proof-identical-key   | cdb33e728669f587dc6167fc3a4acec9b5bdf531695fe9fc735eb2c079d87433
+(2 rows)

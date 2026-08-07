@@ -1,0 +1,142 @@
+{
+  "id": "TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001",
+  "project": "dopemux-mvp",
+  "target": "Repair canonical Task Orchestrator workflow persistence configuration so authenticated DopeconBridge custom-data calls reach ConPort REST, without live writes or authority-boundary changes.",
+  "invariants": [
+    "WorkflowStore continues to use Task Orchestrator -> authenticated DopeconBridge -> ConPort REST /api/custom_data.",
+    "No direct ConPort writer, local fallback store, credential value, token generator, auth bypass, retry policy, schema, or provider call is introduced.",
+    "REST callers use ConPort port 3004; they do not use MCP port 3005 or info port 4004.",
+    "Only synthetic mocked transport and static configuration checks run; no live container or production write occurs.",
+    "ConPort custom_data idempotency remains the existing workspace/category/key upsert contract."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "TO-CONPORT-PERSISTENCE-REPAIR",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/to-conport-persistence-repair",
+    "base_branch": "main",
+    "stacked_because": "Dedicated red-lane repair branch starts from verified worktree base 414c7ac7f998d6eaec7cf7ae9ab431c0fac6476d."
+  },
+  "commit": {
+    "message": "fix(task-orchestrator): repair bridge-backed ConPort persistence wiring",
+    "allowlist": [
+      "compose.yml",
+      "services/task-orchestrator/app/services/workflow_service.py",
+      "tests/arch/test_task_orchestrator_conport_persistence_contract.py",
+      "tests/unit/test_task_orchestrator_workflow_store.py",
+      "tests/unit/test_task_orchestrator_workflow_route_certification.py",
+      "task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001.json",
+      "task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001-research.md",
+      "task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001-research-review.md",
+      "task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001-plan.md",
+      "task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001-plan-review.md",
+      "task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001-implementation-notes.md",
+      "proof/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001/**"
+    ],
+    "verify": [
+      "uv run pytest -q tests/arch/test_task_orchestrator_conport_persistence_contract.py tests/unit/test_task_orchestrator_workflow_store.py tests/unit/test_task_orchestrator_workflow_route_certification.py tests/unit/test_task_orchestrator_workflow_write_serialization.py",
+      "uv run pytest -q docker/mcp-servers-source/conport/tests/test_mcp_custom_data.py",
+      "docker compose -f compose.yml config --no-interpolate",
+      "python -m jsonschema -i task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(task-orchestrator): repair bridge-backed ConPort persistence wiring",
+    "body": "## Summary\n- inject configured DopeconBridge bearer token into Task Orchestrator\n- pin Task Orchestrator and bridge REST callers to ConPort port 3004\n- add static/synthetic contracts; no live writes\n\n## Validation\n- targeted pytest contracts\n- `docker compose -f compose.yml config --no-interpolate`\n- packet schema and diff checks\n\n## Gates\n- Embedded audit and PR Steward status recorded truthfully; no claim of live JWT or container validation.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "trace-contract",
+      "task": "Trace canonical compose, WorkflowStore, shared DopeconBridge client, bridge authentication, ConPort REST launch, and custom-data upsert semantics.",
+      "requirements": [
+        "Record observed facts separately from unknown live state.",
+        "Do not call live services or persist data."
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001-research.md",
+        "task-packets/TP-DMX-TO-CONPORT-PERSISTENCE-REPAIR-001-research-review.md"
+      ],
+      "validation": [
+        "Research identifies the actual authenticated bridge path, REST port, and existing upsert key."
+      ],
+      "context_files": [
+        "compose.yml",
+        "services/task-orchestrator/app/services/workflow_store.py",
+        "services/shared/dopecon_bridge_client/client.py",
+        "services/dopecon-bridge/dopecon_bridge/routes.py",
+        "services/dopecon-bridge/dopecon_bridge/auth.py",
+        "docker/mcp-servers-source/conport/start_with_info.sh",
+        "docker/mcp-servers-source/conport/enhanced_server.py"
+      ]
+    },
+    {
+      "id": "repair-compose-contract",
+      "task": "Wire the configured bearer token into Task Orchestrator, route REST clients to ConPort port 3004, and enforce repeat epic-create idempotency through the existing custom-data key.",
+      "requirements": [
+        "Token expression must contain no value or unsafe default.",
+        "Keep authenticated bridge boundary and existing WorkflowStore client.",
+        "A repeated epic idempotency key must return the original immutable request; a conflicting payload must fail closed."
+      ],
+      "expected_files": [
+        "compose.yml",
+        "services/task-orchestrator/app/services/workflow_service.py",
+        "tests/arch/test_task_orchestrator_conport_persistence_contract.py",
+        "tests/unit/test_task_orchestrator_workflow_store.py",
+        "tests/unit/test_task_orchestrator_workflow_route_certification.py"
+      ],
+      "validation": [
+        "Static test proves token injection and REST-port wiring.",
+        "Synthetic test proves bridge client sends configured bearer token and workflow custom-data upsert path remains stable."
+      ],
+      "context_files": [
+        "compose.yml",
+        "services/task-orchestrator/app/services/workflow_service.py",
+        "tests/unit/test_task_orchestrator_workflow_store.py",
+        "tests/unit/test_task_orchestrator_workflow_route_certification.py"
+      ]
+    },
+    {
+      "id": "verify-audit-handoff",
+      "task": "Run narrow tests, compose syntax, schema, diff, code review, precommit, embedded-audit route, and PR Steward intake; create a draft PR only when needed gates remain unavailable.",
+      "requirements": [
+        "Record PASS, FAIL, and NOT_RUN without claiming live proof.",
+        "Stop for audit or review gate failure."
+      ],
+      "validation": [
+        "All local validation exit codes recorded.",
+        "Embedded audit, PR Steward, and supervisor-review states are recorded with exact blockers."
+      ],
+      "context_files": [
+        "docs/ops/embedded-audit.md",
+        "scripts/audit/validate_audit_proof.py"
+      ]
+    }
+  ]
+}

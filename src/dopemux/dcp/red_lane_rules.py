@@ -16,7 +16,17 @@ FORBIDDEN_PATHS = [
     re.compile(r"^src/dopemux" + r"_pr_merge_specialist/queue" + r"_drain\.py$"),
     re.compile(r"^dopemux" + r"_pr_merge_specialist/queue" + r"_drain\.py$"),
     re.compile(r"^scripts/batch" + r"_resolve_and_merge\.py$"),
-    re.compile(r"^\.github/workflows/.*$"),
+    # DCP-RED-MERGE-SEAM-0001 narrow carve-out (ADR-224, TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R
+    # Phase A): exactly these two top-level workflow files are exempt from the path-level
+    # block so their content can eventually be edited to wire embedded-audit schema
+    # validation. Every other path under .github/workflows/ (including subdirectories and
+    # any near-miss filename) remains hard-blocked. TEXT_RULES content scanning in
+    # red_lane_scanner.py is untouched by this carve-out and still applies to these files.
+    re.compile(
+        r"^\.github/workflows/"
+        r"(?!embedded-audit\.yml$)(?!pr-steward\.yml$)"
+        r".*$"
+    ),
     re.compile(r"^scripts/" + r"dopetask$"),
     re.compile(r"^scripts/" + r"taskx$"),
     re.compile(r"^services/task-orchestrator/.*$"),

@@ -1,0 +1,33 @@
+{
+  "changed": [
+    {
+      "path": ".claude/personas/modernization.agent.md",
+      "removed_count": 1
+    },
+    {
+      "path": ".claude/personas/python-mcp-expert.agent.md",
+      "removed_count": 1
+    },
+    {
+      "path": ".claude/personas/se-gitops-ci-specialist.agent.md",
+      "removed_count": 1
+    },
+    {
+      "path": ".claude/personas/se-security-reviewer.agent.md",
+      "removed_count": 1
+    },
+    {
+      "path": ".claude/personas/se-system-architecture-reviewer.agent.md",
+      "removed_count": 1
+    },
+    {
+      "path": ".claude/personas/se-technical-writer.agent.md",
+      "removed_count": 1
+    },
+    {
+      "path": ".claude/personas/se-ux-ui-designer.agent.md",
+      "removed_count": 1
+    }
+  ],
+  "key": "model"
+}

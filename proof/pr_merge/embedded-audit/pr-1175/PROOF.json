@@ -1,0 +1,36 @@
+{
+  "embedded_audit": {
+    "auditor_model": "gemini",
+    "auditor_tool": "agy",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "All hardcoded model pins have been removed from the agent frontmatter in accordance with the fleet audit rules.",
+        "id": "F-001",
+        "resolution": "RESOLVED",
+        "severity": "INFO",
+        "title": "Model pins removed successfully"
+      },
+      {
+        "body": "The deterministic inventory of 123 agents matches the constructed ledger.",
+        "id": "F-002",
+        "resolution": "RESOLVED",
+        "severity": "INFO",
+        "title": "Fleet ledger and inventory match"
+      }
+    ],
+    "fixes_applied": [],
+    "invocation": "AGY_MODEL=gemini-3.1-pro-high agy --output-format json -p <prompt>",
+    "remaining_risks": [
+      "Exact-head CI validation required before merge",
+      "PR Steward sign-off required before merge"
+    ],
+    "report_path": "proof/pr_merge/embedded-audit/pr-1175/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "head_sha": "8f9d9f01683785972ae2cdda36212cd15596e9ed",
+  "pr_number": 1175,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

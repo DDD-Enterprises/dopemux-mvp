@@ -1,0 +1,14 @@
+{
+  "run_id": "df6bc99d",
+  "dry_run": true,
+  "provider_runs_count": 3,
+  "max_provider_runs": 10,
+  "probe_count": 11,
+  "probe_states": {
+    "PASS": 6,
+    "FAIL": 1,
+    "BLOCKED": 0,
+    "UNKNOWN": 0,
+    "NOT_RUN": 4
+  }
+}
