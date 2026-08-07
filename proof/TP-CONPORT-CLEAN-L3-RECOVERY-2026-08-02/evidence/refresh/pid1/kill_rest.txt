@@ -1,0 +1,121 @@
+=== KILL rest substr=enhanced_server.py ===
+2026-08-03T01:31:01Z
+before_id=24955f4c22c472726dd1388ee7abe832a49e3893226e874a9992ca68320eba71 restart=4 started=2026-08-02T23:56:45.583036465Z name=/mcp-conport
+PID                 PPID                CMD
+98707               98683               bash start_with_info.sh
+98768               98707               python info_server.py
+98769               98707               python enhanced_server.py
+98770               98707               python server.py sse
+killed_at=2026-08-03T01:32:24Z
+t=1s status=running restart=4 changed=0
+t=2s status=running restart=4 changed=0
+t=3s status=running restart=4 changed=0
+t=4s status=running restart=4 changed=0
+t=5s status=running restart=4 changed=0
+t=6s status=running restart=4 changed=0
+t=7s status=running restart=4 changed=0
+t=8s status=running restart=4 changed=0
+t=9s status=running restart=4 changed=0
+t=10s status=running restart=4 changed=0
+t=11s status=running restart=4 changed=0
+t=12s status=running restart=4 changed=0
+t=13s status=running restart=4 changed=0
+t=14s status=running restart=4 changed=0
+t=15s status=running restart=4 changed=0
+t=16s status=running restart=4 changed=0
+t=17s status=running restart=4 changed=0
+t=18s status=running restart=4 changed=0
+t=19s status=running restart=4 changed=0
+t=20s status=running restart=4 changed=0
+t=21s status=running restart=4 changed=0
+t=22s status=running restart=4 changed=0
+t=23s status=running restart=4 changed=0
+t=24s status=running restart=4 changed=0
+t=25s status=running restart=4 changed=0
+t=26s status=running restart=4 changed=0
+t=27s status=running restart=4 changed=0
+t=28s status=running restart=4 changed=0
+t=29s status=running restart=4 changed=0
+t=30s status=running restart=4 changed=0
+t=31s status=running restart=4 changed=0
+t=32s status=running restart=4 changed=0
+t=33s status=running restart=4 changed=0
+t=34s status=running restart=4 changed=0
+t=35s status=running restart=4 changed=0
+t=36s status=running restart=4 changed=0
+t=37s status=running restart=4 changed=0
+t=38s status=running restart=4 changed=0
+t=39s status=running restart=4 changed=0
+t=40s status=running restart=4 changed=0
+t=41s status=running restart=4 changed=0
+t=42s status=running restart=4 changed=0
+t=43s status=running restart=4 changed=0
+t=44s status=running restart=4 changed=0
+t=45s status=running restart=4 changed=0
+RECOVERY_TIMEOUT_OR_FAIL
+Name=/mcp-conport Status=running Restart=4 Exit=0 OOM=false Error=
+INFO:     127.0.0.1:53158 - "GET /health HTTP/1.1" 200 OK
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:21:47 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:     127.0.0.1:38424 - "GET /health HTTP/1.1" 200 OK
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:21:58 +0000] "GET /health HTTP/1.1" 200 298 "-" "curl/8.14.1"
+INFO:     127.0.0.1:35434 - "GET /health HTTP/1.1" 200 OK
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:22:09 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:     127.0.0.1:41498 - "GET /health HTTP/1.1" 200 OK
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:22:19 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:     127.0.0.1:44832 - "GET /health HTTP/1.1" 200 OK
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:22:30 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:     127.0.0.1:46688 - "GET /health HTTP/1.1" 200 OK
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:22:41 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:     127.0.0.1:51632 - "GET /health HTTP/1.1" 200 OK
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:23:33 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:     127.0.0.1:35832 - "GET /health HTTP/1.1" 200 OK
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:23:55 +0000] "GET /health HTTP/1.1" 200 298 "-" "curl/8.14.1"
+INFO:     127.0.0.1:52548 - "GET /health HTTP/1.1" 200 OK
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:25:56 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:26:06 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:     127.0.0.1:52182 - "GET /health HTTP/1.1" 200 OK
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:27:44 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:     127.0.0.1:38136 - "GET /health HTTP/1.1" 200 OK
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:28:04 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:     127.0.0.1:44370 - "GET /health HTTP/1.1" 200 OK
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:29:01 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:     127.0.0.1:42534 - "GET /health HTTP/1.1" 200 OK
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:29:01 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:     127.0.0.1:42536 - "GET /health HTTP/1.1" 200 OK
+ERROR:__main__:❌ Auto-save error:
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:30:42 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:     127.0.0.1:52942 - "GET /health HTTP/1.1" 200 OK
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:32:34 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:     127.0.0.1:52968 - "GET /health HTTP/1.1" 200 OK
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:32:49 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:     127.0.0.1:59392 - "GET /health HTTP/1.1" 200 OK
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:33:49 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:34:10 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:     127.0.0.1:54156 - "GET /health HTTP/1.1" 200 OK
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:34:23 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:     127.0.0.1:52436 - "GET /health HTTP/1.1" 200 OK
+=== after ===
+Name=/mcp-conport Id=24955f4c22c472726dd1388ee7abe832a49e3893226e874a9992ca68320eba71 Status=running RestartCount=4 StartedAt=2026-08-02T23:56:45.583036465Z ExitCode=0
+PID                 PPID                CMD
+98707               98683               bash start_with_info.sh
+98768               98707               python info_server.py
+98769               98707               python enhanced_server.py
+98770               98707               python server.py sse
+{"status": "healthy", "service": "conport-enhanced", "port": 3004, "database": "healthy", "redis": "healthy", "timestamp": 41935.059155625}
+{"status":"healthy","service":"conport","port":3004}
+mcp_ok
+container_names:
+mcp-conport Up 2 hours (healthy)
+mcp-conport-pre-pid1-l3 Exited (137) 2 hours ago
+total 16
+drwxr-xr-x 2 root root 4096 Aug  2 23:56 .
+drwxr-xr-x 1 root root 4096 Aug  2 23:51 ..
+-rw-r--r-- 1 root root    2 Aug  2 23:56 failure_count
+-rw-r--r-- 1 root root  128 Aug  2 23:56 failures.log
+== /var/lib/conport-supervision/failure_count
+4
+== /var/lib/conport-supervision/failures.log
+1785714971 enhanced_server_rest 137
+1785714979 enhanced_server_rest 137
+1785714995 mcp_proxy_sse 137
+1785715003 info_server 137

@@ -14,6 +14,14 @@ prelude: Concrete runbook for detecting and clearing rogue runtimes, interpretin
 
 This runbook provides actionable steps for recovering from PM-plane drift, rogue runtime containers, and dealing with pending reconciliation states. It addresses the `PM-TO-004` rogue container remediation requirement.
 
+**Scope note**: every `task-orchestrator` reference below (port 8000, `/health`,
+`/info`, `/metrics`, `docker ps | grep task-orchestrator`, `logs/task-orchestrator.log`)
+is the FastAPI compose service that does PM-plane canonical/mirror writes
+(Leantime + ConPort). It is a shadow twin pending rename, not the
+task-orchestrator MCP tool surface — that MCP is a separate host-singleton
+Kotlin jar on port `7890` (Streamable HTTP, `POST /mcp`), managed via
+`dopemux mcp`, and is unaffected by anything in this runbook.
+
 ## 1. Symptoms
 
 You are likely experiencing a PM-plane runtime or synchronization issue if:
@@ -28,7 +36,7 @@ You are likely experiencing a PM-plane runtime or synchronization issue if:
 ### Check Readiness Endpoints
 Both `task-orchestrator` and `dopecon-bridge` expose a standard `/health` endpoint:
 ```bash
-# Check Task Orchestrator (Canonical Port: 8000)
+# Check Task Orchestrator FastAPI compose service (port 8000; not the MCP surface — see scope note above)
 curl -s http://localhost:8000/health | jq .
 # Expect: { "status": "ok", "service": "task-orchestrator", "dependencies": {...} }
 
@@ -63,25 +71,34 @@ grep -E "PM Write | Mirror Failure" logs/task-orchestrator.log
 ## 3. Cleanup / Recovery
 
 ### Stop Rogue Runtimes
-If you found stray containers or loose process IDs:
-```bash
-# Kill old docker containers aggressively
-docker rm -f $(docker ps -aq --filter "name=task-orchestrator")
+Do **not** blanket force-remove by name or `kill -9` port holders: the `name=task-orchestrator`
+filter also matches *other projects'* Kotlin-jar MCP singletons (e.g. `task-orchestrator-dnh_crm-*`),
+and destroying a foreign project's orchestrator is exactly the cross-project incident the fleet
+design exists to prevent.
 
-# Kill processes holding the port
-kill -9 $(lsof -t -i :8000)
-kill -9 $(lsof -t -i :3014)
+Instead, identify ownership first and only remove containers proven to belong to this project:
+```bash
+# Diagnose — classifies containers by dopemux.* ownership labels
+dopemux mcp doctor
+
+# Inspect a suspect container's ownership before touching it
+docker inspect <container> --format '{{json .Config.Labels}}' | jq 'with_entries(select(.key|startswith("dopemux.")))'
+
+# Stop only a container whose dopemux.project_root label matches THIS repo
+docker rm -f <container-proven-to-be-this-project>
 ```
+If a port is held by an unlabeled/unknown process, treat it as an ownership conflict (fail closed)
+and investigate — do not `kill -9` it blind.
 
 ### Restart Canonical Runtime
-Use the provided shell scripts or docker compose command:
+From the `dopemux-mvp` repository root, use the existing compose-backed CLI
+compatibility route for this Python service:
 ```bash
-# Recommended
-scripts/start.sh task-orchestrator
-
-# Or Compose
-docker compose -f compose.yml up -d task-orchestrator
+dopemux mcp up --services task-orchestrator
 ```
+Do not use `dopemux mcp start --services task-orchestrator` here: that
+repo-aware lifecycle target is the separate Kotlin MCP wrapper on port `7890`.
+Raw Docker Compose invocations remain unsupported.
 
 ### Verify Sanctioned Runtime
 Wait a few seconds, then verify the canonical instance is up and is the *only* one running:

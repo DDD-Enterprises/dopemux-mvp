@@ -1,0 +1,3 @@
+pin_ancestor_of_r1=true
+r1_parent=a22699fc9834c77017ac88e482a6c94fdd319bda
+direct_child_of_pin=true

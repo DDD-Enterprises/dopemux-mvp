@@ -45,7 +45,9 @@ python scripts/docs_normalize.py --apply      # Normalize filenames
 
 ### Service Registry and Ports
 
-All services are registered in `services/registry.yaml` with their ports and health endpoints:
+All services are registered in `services/registry.yaml` with their ports and health endpoints.
+**For MCP server transports and ports**, consult `mcp_catalog.yaml` (the authoritative source per ADR-MCPINT-001).
+Fleet MCP services must only be started via `dopemux mcp` commands, never raw `docker compose up`:
 
 - **postgres** (5432): PostgreSQL with AGE extension
 - **redis** (6379): Caching and event streaming
@@ -345,7 +347,8 @@ When code changes in a PR/branch:
 Each service has its own README: `services/[service-name]/README.md`
 
 ### Key Reference Files
-- `services/registry.yaml`: Port mappings and health endpoints
+- `services/registry.yaml`: Port mappings and health endpoints (general services)
+- `mcp_catalog.yaml`: MCP server transport types and port declarations (authoritative per ADR-MCPINT-001)
 - `docs/docs_index.yaml`: Machine-readable doc index
 - `.env.example`: Environment variable reference
 - `pyproject.toml`: Python dependencies and tool configs
@@ -353,7 +356,7 @@ Each service has its own README: `services/[service-name]/README.md`
 
 ### When Making Changes
 1. Check `AGENTS.md` for AI-specific guidance
-2. Check `services/registry.yaml` for port conflicts
+2. Check `mcp_catalog.yaml` for MCP server port declarations; check `services/registry.yaml` for other service port conflicts
 3. Check `docs/90-adr/` for relevant architectural decisions
 4. Check existing tests in `tests/` for patterns
 5. Check `.pre-commit-config.yaml` for validation rules

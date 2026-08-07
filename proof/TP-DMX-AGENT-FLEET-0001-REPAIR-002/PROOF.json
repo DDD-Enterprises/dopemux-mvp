@@ -1,0 +1,27 @@
+{
+  "draft_state_change_authorized": false,
+  "embedded_audit": {
+    "auditor_model": "unknown",
+    "auditor_tool": "none",
+    "exit_code": null,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": null,
+    "remaining_risks": [
+      "Independent audit not yet run",
+      "Exact-head CI and PR Steward pending"
+    ],
+    "report_path": "proof/TP-DMX-AGENT-FLEET-0001-REPAIR-002/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": "C2 proof assembly precedes independent exact-C2 audit.",
+    "status": "SKIPPED"
+  },
+  "implementation_sha": "b70769900452c13f08a13697be3b947a59694fd4",
+  "merge_authorized": false,
+  "packet_id": "TP-DMX-AGENT-FLEET-0001-REPAIR-002",
+  "pr_number": 1175,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "start_sha": "7fa42642ad9f04f5d7153856e05781f7fcca071d",
+  "status": "BLOCKED_PENDING_INDEPENDENT_AUDIT",
+  "validation_status": "PASS_LOCAL_BOUNDED"
+}

@@ -1,0 +1,23 @@
+{
+  "commit_sha": "c28abc45bf9bdfc128e3f127e9105cf5c93b6c92",
+  "embedded_audit": {
+    "auditor_model": "claude-sonnet-4.6",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [
+      "Replaced PR #1100 with truthful workflow assertions",
+      "Reconciled routing-consistency required blocking job in test_pr_gate.py",
+      "Validated TP-DMX-CI-WORKFLOW-TRUTHFUL-001.json against canonical spec"
+    ],
+    "invocation": "mcp__pal__codereview expert_model=claude-sonnet-4.6 review_type=full",
+    "remaining_risks": [],
+    "report_path": "proof/ci-complete-truthful-summaries/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "head_sha": "c28abc45bf9bdfc128e3f127e9105cf5c93b6c92",
+  "pr_number": 1130,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

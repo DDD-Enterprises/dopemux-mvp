@@ -1,0 +1,67 @@
+{
+  "commit_sha": "e87f033ed191d1c162f3cef39210bf367cbcf3cf",
+  "embedded_audit": {
+    "auditor_model": "gemini",
+    "auditor_tool": "agy",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "Auditor verified F1 touches only task-packets/CCAR-001F.md, task-packets/CCAR-001F.json, and task-packets/CCAR-001R.md. CCAR-001R body equals before_body.lstrip() with a single leading newline removed; type normalized task-packet→explanation via docs-frontmatter-guard. No hook/config/runtime changes. Prior CCAR-001 probe conclusions unchanged; P07_HOOKS remains OPEN/MEDIUM non-blocking for this finalization path.",
+        "id": "CCAR1174-F1",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "F1 frontmatter repair confined to authorized packet surfaces with lstrip body invariant"
+      },
+      {
+        "body": "Probe P07_HOOKS failed: --yolo write operations were not intercepted by the deny_write.py hook. Accurately documented in proof/CCAR-001/runtime and carried forward. Blocks reliance on the write pilot; does not block this frontmatter/finalization repair after live final-readiness success.",
+        "id": "CCAR1174-F2",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "title": "P07_HOOKS runtime failure under --yolo (PreToolUse write denial bypass)"
+      },
+      {
+        "body": "Historical packet proof binds 530bdf1079c74fb0cec16f9a7b045cef8cf28352, not the live PR head. Explicitly classified historical/noncanonical; this canonical package under proof/pr_merge/embedded-audit/pr-1174/ supersedes it for release attestation.",
+        "id": "CCAR1174-F3",
+        "severity": "LOW",
+        "status": "RESOLVED",
+        "title": "Historical proof/CCAR-001/PROOF.json names stale commit 530bdf1079c74fb0cec16f9a7b045cef8cf28352"
+      },
+      {
+        "body": "Deterministic scan flagged one FORCED_VERDICT_REQUEST pattern at task-packets/CCAR-001F.md:872 (ADDED): the repair packet's own embedded trusted audit-instruction template (verdict-keyword contract line). Supervisor-authored governance text, not candidate injection; detection recorded as evidence per runbook.",
+        "id": "CCAR1174-F4",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Instruction-like scan match is the supervisor-authored audit-instruction template"
+      }
+    ],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": true,
+      "match_count": 1,
+      "truncated": false,
+      "matches": [
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "path": "task-packets/CCAR-001F.md",
+          "line": 872,
+          "diff_side": "ADDED",
+          "text_sha256": "787f07f8a224c8a1bf44de73cfaa988f85e8efb33c684e1c7af7b4bdd3058fff"
+        }
+      ]
+    },
+    "invocation": "agy --model gemini-3.1-pro-high --effort high --sandbox --mode plan --print-timeout 20m --output-format json --add-dir <review_bundle> --print <AUDIT_INSTRUCTION.md>; conversation 548ae455-8ea5-4692-8d3e-65fd395f49fb",
+    "remaining_risks": [
+      "Model-family independence UNKNOWN: AGY Gemini 3.1 Pro used after Claude-family quota exhaustion; CCAR-001 implementer model family unproven in packet evidence.",
+      "P07_HOOKS: CommandCode --yolo mode bypasses PreToolUse write denial scripts; tracked in proof/CCAR-001/runtime/UNKNOWN_BLOCKERS.md, outside CCAR-001F scope.",
+      "Provider-attested actual auditor model identity unavailable: auditor identity rests on the configured AGY selector gemini-3.1-pro-high and conversation metadata, not provider cryptographic attestation."
+    ],
+    "report_path": "proof/pr_merge/embedded-audit/pr-1174/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "generated_at": "2026-07-31T10:43:35Z",
+  "head_sha": "e87f033ed191d1c162f3cef39210bf367cbcf3cf",
+  "pr_number": 1174,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

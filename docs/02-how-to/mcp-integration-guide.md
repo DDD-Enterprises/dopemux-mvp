@@ -190,12 +190,20 @@ Three runtime lessons this program paid for (evidence:
    `:3004` HTTP health listener, which can reset connections while the real MCP
    surface on `:3005/sse` works fine. Trust the SSE probe over `docker ps`
    health; if the MCP surface itself fails, `docker restart mcp-conport`.
-3. **`mcp init` reserved-singleton catch-22.** A *healthy* task-orchestrator on
-   reserved port 7890 reads as "occupied by an unknown process" because reserved
-   singletons never write leases yet occupancy is judged by lease identity
-   (`port_allocator.py`) — so `mcp init` blocks precisely when the fleet is
-   healthy. Until the port_allocator fix lands: hand-fix `.envrc.dopemux-mcp`
-   (copy port vars from a working worktree) instead of forcing init.
+3. **`mcp init` reserved-singleton catch-22 — FIXED 2026-07-16 (#1052,
+   `268dd05c1f`).** A *healthy* task-orchestrator on reserved port 7890 used to
+   read as "occupied by an unknown process" because reserved singletons never
+   write leases yet occupancy was judged by lease identity (`port_allocator.py`).
+   The fix added a positive MCP identity probe: when the reserved port is
+   occupied with no matching lease, `port_allocator` performs the `initialize`
+   handshake and checks `result.serverInfo.name` — a match (`mcp-task-orchestrator*`)
+   assigns the port with no lease (singleton policy preserved); an unknown or
+   unreachable occupant still blocks. **Current behavior**: `mcp init` recognizes
+   a healthy singleton on 7890 automatically; there is no hand-editing of
+   `.envrc.dopemux-mcp` required or supported for this case. See also the
+   multi-instance fleet design's reserved-singleton probe allowlist (§3.2 of
+   `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md`), which extends the
+   same identity-probe pattern to other host-singleton servers.
 
 ## 7. Known gaps this guide papers over
 

@@ -1,0 +1,10 @@
+=== #1188 branch doctor placeholder ===
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____________________ test_doctor_placeholder_fails_closed _____________________
+tests/dopemux_cli/test_pr_steward_cmd.py:132: in test_doctor_placeholder_fails_closed
+    assert rc == 2
+E   assert 0 == 2
+=========================== short test summary info ============================
+FAILED tests/dopemux_cli/test_pr_steward_cmd.py::test_doctor_placeholder_fails_closed
+exit_1

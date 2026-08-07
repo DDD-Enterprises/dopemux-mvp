@@ -31,7 +31,9 @@ to the facade and nothing else.
 
 - The tunnel client connects to the **facade endpoint only** — never to a backend
   service (ConPort `:3004`, dope-memory `:3020`, dope-context `:3010`,
-  task-orchestrator `:8000`, dopecon-bridge `:3016`).
+  task-orchestrator MCP `:7890`, dopecon-bridge `:3016`). (Note: `:8000` is the
+  separate FastAPI coordination service, not the task-orchestrator MCP surface —
+  it too must never be a tunnel target.)
 - The tunnel does **not** provide the security boundary. ChatGPT developer mode
   can expose read **and write** MCP tools, and a tunnel forwards whatever the
   endpoint serves. The mandatory control is the **facade's own read-only surface +
@@ -50,8 +52,9 @@ ChatGPT (untrusted client)
             → DCP Read-Only Facade (loopback bind, read-only tools)
                → backend adapters (route/method allowlist)
 
-NEVER:  tunnel-client → 127.0.0.1:3004 / :3020 / :3010 / :8000 / :3016
-        (backend services are not tunnel targets)
+NEVER:  tunnel-client → 127.0.0.1:3004 / :3020 / :3010 / :7890 / :8000 / :3016
+        (backend services are not tunnel targets; :7890 is the task-orchestrator
+        MCP, :8000 the separate FastAPI coordination service)
 ```
 
 ## 2. Runtime posture — loopback binding is operator-enforced

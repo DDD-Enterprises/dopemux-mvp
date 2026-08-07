@@ -1,0 +1,6 @@
+=== archive_ro grants ===
+                                              Access privileges
+ Schema |           Name            | Type  |        Access privileges         | Column privileges | Policies
+--------+---------------------------+-------+----------------------------------+-------------------+----------
+ public | active_work               | view  | dopemux_age=arwdDxt/dopemux_age +|                   |
+        |                           |       | conport_archive_ro=r/dopemux_age |                   |

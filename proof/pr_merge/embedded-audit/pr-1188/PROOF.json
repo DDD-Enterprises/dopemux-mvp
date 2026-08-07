@@ -1,0 +1,74 @@
+{
+  "packet_id": "TP-CONPORT-PROJECT-WALL-RECOVERY-L3-FREEZE-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1188,
+  "head_sha": "1799d98cabfbb9bc23dc4f80f0c8322dd2552dfe",
+  "content_head_audited": "95bdf0015730ab3087cf71e07eca2d4425b214ac",
+  "executed": true,
+  "mutation_performed": false,
+  "github_mutation_route_added": false,
+  "generated_at": "2026-08-03T02:28:51Z",
+  "formal_auditor": {
+    "tool": "Claude Code CLI",
+    "version": "2.1.220",
+    "configured_model": "sonnet",
+    "response_claimed_model": "sonnet",
+    "provider_attested": "Anthropic first-party (claude.ai OAuth)",
+    "proxy_reported_provider": "N/A_first_party"
+  },
+  "model_identity": {
+    "implementer": "grok-4.5",
+    "runner": "Claude Code CLI 2.1.220",
+    "requested": "sonnet",
+    "configured": "sonnet",
+    "response_claimed": "sonnet",
+    "proxy_reported": "N/A_first_party",
+    "provider_attested": "Anthropic first-party (claude.ai OAuth)"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude -p formal L3 audit --model sonnet (independent of Grok implementer); Claude Code 2.1.220; Anthropic first-party OAuth",
+    "exit_code": 0,
+    "report_path": "proof/TP-CONPORT-CLEAN-L3-RECOVERY-2026-08-02/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-DOC-STALE-AUTOHEAL",
+        "severity": "MEDIUM",
+        "title": "Stale autoheal doc",
+        "status": "ACCEPTED_RISK",
+        "body": "Non-blocking doc drift"
+      },
+      {
+        "id": "F-EVIDENCE-FAILED-PROBES",
+        "severity": "LOW",
+        "title": "Failed probe files retained",
+        "status": "ACCEPTED_RISK",
+        "body": "Successful retries prove supervision"
+      },
+      {
+        "id": "F-PID1-TESTS-STUB-ONLY",
+        "severity": "LOW",
+        "title": "Stub unit tests",
+        "status": "ACCEPTED_RISK",
+        "body": "Live evidence covers behavior"
+      }
+    ],
+    "fixes_applied": [
+      "Claude Code independent audit on frozen tip 95bdf00157"
+    ],
+    "remaining_risks": [
+      "Stale autoheal doc",
+      "Evidence hygiene",
+      "Stub unit tests"
+    ],
+    "skip_reason": null
+  },
+  "supervisor_exceptions": {
+    "codex_unknown_attestation_does_not_transfer": true,
+    "auditor_route": "claude-code-cli Tier-1"
+  },
+  "content_head_note": "Claude formal audit reviewed 95bdf00157; CI binds head_sha to this parent tip so successor is pr_merge-only."
+}

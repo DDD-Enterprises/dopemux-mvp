@@ -1,0 +1,65 @@
+{
+  "packet": "TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R",
+  "pr": 1193,
+  "audited_content_head": "34cc73c3edcde27ea362cf2046995ada9db97999",
+  "base_sha": "ff08e573b4259ac7456dae1a9985968603e9111d",
+  "verdict": "PASS_WITH_RISKS",
+  "verdict_ceiling_reasoning": "No blocking or substantive-defect findings were raised against the audited diff itself. All findings are pre-existing guard characteristics not introduced or worsened by this PR, and are explicitly scoped as out-of-scope hardening for a future change. Because several route-evidence fields (provider, generation_id, fallback_used, zdr_confirmed) are UNKNOWN from the model's own self-knowledge, the verdict ceiling caps at PASS_WITH_RISKS rather than PASS, per the supervisor's stated rule: 'No blocking findings + provider/ZDR/generation UNKNOWN -> PASS_WITH_RISKS maximum'.",
+  "nine_point_verification_summary": [
+    {"item": "1. Exact-path scope of carve-out", "result": "VERIFIED"},
+    {"item": "2. TEXT_RULES remain active on carved-out files", "result": "VERIFIED"},
+    {"item": "3. Canonical/fallback guard sync", "result": "VERIFIED"},
+    {"item": "4. ADR-224 accuracy", "result": "VERIFIED"},
+    {"item": "5. Repaired 001R packet schema + scope correctness", "result": "VERIFIED"},
+    {"item": "6. Baseline-failure proof unrelatedness", "result": "REASONING_SOUND_EXECUTION_UNVERIFIED"},
+    {"item": "7. No workflow/automation/signer/production changes", "result": "VERIFIED"},
+    {"item": "8. Test coverage sufficiency", "result": "ADEQUATE_WITH_NOTED_GAPS"},
+    {"item": "9. README scope-drift pre-existing and ADR-flagged", "result": "VERIFIED_PRE_EXISTING_NOT_WORSENED" }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "LOW",
+      "status": "PRE_EXISTING_NOT_INTRODUCED_OR_WORSENED_BY_THIS_PR",
+      "file": ".claude/hooks/dcp_surface_guard.py",
+      "location": "_repo_relative(), approx lines 44-50",
+      "summary": "_repo_relative() is purely lexical: it never resolves '..' segments, and an absolute path outside project_root is used verbatim after a ValueError. A crafted path like '<root>/x/../.github/workflows/ci-complete.yml' yields a relative string no ^-anchored FORBIDDEN_PATHS pattern matches, evading every path-level rule, not just the workflows carve-out.",
+      "repair": "Resolve with Path(file_path).resolve().relative_to(project_root.resolve()) in a separate hardening change. Out of scope for this packet; not worsened by it.",
+      "in_scope_for_this_pr": false
+    },
+    {
+      "id": "F2",
+      "severity": "LOW",
+      "status": "PRE_EXISTING",
+      "file": "src/dopemux/dcp/red_lane_scanner.py",
+      "location": "FORBIDDEN_PATHS check loop",
+      "summary": "FORBIDDEN_PATHS is matched against raw, unnormalized changed_files strings. './'-prefixed, absolute, or doubled-separator forms can evade path findings (fail-open for evasion in the general case). For the two carved-out files specifically, the doubled-separator form over-blocks (fail-safe), not under-blocks.",
+      "repair": "Introduce a shared path-normalization helper used by both the hook and the scanner. Separate change.",
+      "in_scope_for_this_pr": false
+    },
+    {
+      "id": "F3",
+      "severity": "INFORMATIONAL",
+      "status": "NOT_A_REALISTIC_BYPASS",
+      "summary": "Python's '$' anchor matches immediately before a trailing newline, so the literal string 'embedded-audit.yml\\n' would technically evade the new negative-lookahead pattern. That string names a distinct filename (containing a newline byte), never the real protected file, so this is not a realistic bypass of the two carved-out files.",
+      "in_scope_for_this_pr": false
+    },
+    {
+      "id": "F4",
+      "severity": "MINOR",
+      "status": "TEST_COVERAGE_GAP",
+      "summary": "No committed test pins case-variant, '..'-traversal, leading-'./', doubled-separator, or trailing-whitespace path inputs against the new carve-out. Behavior for these was verified by direct regex/pathlib reasoning only, and in every case reasoned to be fail-safe (over-blocking), not fail-open.",
+      "repair": "Add explicit regression tests for these edge classes alongside the existing hostile-path tests.",
+      "in_scope_for_this_pr": false
+    }
+  ],
+  "residual_risks": [
+    "F1/F2/F3 above (all pre-existing, all fail-safe or non-realistic for the carved-out pair specifically).",
+    "BASELINE_FAILURE_PROOF.md's executed-output claims (byte-identical pytest output between origin/main and 9e113e68d0; diff exit 0) could not be independently re-executed from the static bundle, since tests/dcp/test_dcp_0002_contract_derivation.py and task-packets/TP-DCP-0002.md were not included in the bundle. The auditor found the underlying reasoning internally consistent (this PR adds zero files matching any FORBIDDEN_PATHS pattern) but marked execution UNVERIFIED rather than assuming PASS.",
+    "PHASE_A_VALIDATION.md / REPAIR_COMMAND_LOG.md executed-output claims (42/42 focused tests, 173/174 suite run, pre-commit results, SCHEMA_VALID print) are plausible and internally consistent with the pasted code and tests, but likewise not re-executable from a static bundle.",
+    "README scope-drift (DCP-RED-MERGE-SEAM-0001 documented more narrowly than the code enforces) remains open; ADR-224 flags it as out-of-scope and this PR does not worsen it."
+  ],
+  "no_mutation_confirmed": true,
+  "no_mutation_statement": "The auditing agent had zero tools (read/glob/grep/edit/write/bash/webfetch/websearch/task/todowrite/lsp/skill all denied) and worked entirely from content pasted into a single message. No mutation of any kind was possible or performed.",
+  "verdict_authorized_next_action": "Conditional proof-only successor commit adding exactly the FINAL_AUDIT_* and AUDIT_ROUTE_INCIDENT* files under proof/TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R/. No semantic file changes. PR #1193 remains draft. MARK_READY and MERGE remain NOT_AUTHORIZED pending supervisor review of this verdict."
+}

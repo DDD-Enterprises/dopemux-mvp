@@ -25,10 +25,10 @@ mcp__pal__apilookup(libraryName="fastapi")
 mcp__pal__apilookup(prompt="/org/project")
 ```
 
-**Analysis** (Zen MCP):
+**Analysis** (PAL MCP):
 ```python
-# ✅ Use Zen for systematic analysis
-mcp__zen__chat(
+# ✅ Use PAL for systematic analysis
+mcp__pal__chat(
     model=model_from_tool_orchestrator,
     step="Analysis step...",
     ...

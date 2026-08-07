@@ -1,0 +1,164 @@
+{
+  "code.content_vec": {
+    "index": {
+      "vector_role": "code.content_vec",
+      "model": "voyage-context-4",
+      "endpoint": "contextualized_embeddings",
+      "dimension": 1024,
+      "dtype": "float",
+      "chunker_version": "code_chunker.v1",
+      "index_schema_version": "dope-context-v2",
+      "index_input_type": "document",
+      "query_input_type": "query"
+    },
+    "query": {
+      "vector_role": "code.content_vec",
+      "model": "voyage-context-4",
+      "endpoint": "contextualized_embeddings",
+      "dimension": 1024,
+      "dtype": "float",
+      "chunker_version": "code_chunker.v1",
+      "index_schema_version": "dope-context-v2",
+      "index_input_type": "document",
+      "query_input_type": "query"
+    },
+    "model_endpoint_dimension_dtype_equal": true,
+    "index_input_type": "document",
+    "query_input_type": "query"
+  },
+  "code.title_vec": {
+    "index": {
+      "vector_role": "code.title_vec",
+      "model": "voyage-code-3",
+      "endpoint": "embeddings",
+      "dimension": 1024,
+      "dtype": "float",
+      "chunker_version": "code_chunker.v1",
+      "index_schema_version": "dope-context-v2",
+      "index_input_type": "document",
+      "query_input_type": "query"
+    },
+    "query": {
+      "vector_role": "code.title_vec",
+      "model": "voyage-code-3",
+      "endpoint": "embeddings",
+      "dimension": 1024,
+      "dtype": "float",
+      "chunker_version": "code_chunker.v1",
+      "index_schema_version": "dope-context-v2",
+      "index_input_type": "document",
+      "query_input_type": "query"
+    },
+    "model_endpoint_dimension_dtype_equal": true,
+    "index_input_type": "document",
+    "query_input_type": "query"
+  },
+  "code.breadcrumb_vec": {
+    "index": {
+      "vector_role": "code.breadcrumb_vec",
+      "model": "voyage-code-3",
+      "endpoint": "embeddings",
+      "dimension": 1024,
+      "dtype": "float",
+      "chunker_version": "code_chunker.v1",
+      "index_schema_version": "dope-context-v2",
+      "index_input_type": "document",
+      "query_input_type": "query"
+    },
+    "query": {
+      "vector_role": "code.breadcrumb_vec",
+      "model": "voyage-code-3",
+      "endpoint": "embeddings",
+      "dimension": 1024,
+      "dtype": "float",
+      "chunker_version": "code_chunker.v1",
+      "index_schema_version": "dope-context-v2",
+      "index_input_type": "document",
+      "query_input_type": "query"
+    },
+    "model_endpoint_dimension_dtype_equal": true,
+    "index_input_type": "document",
+    "query_input_type": "query"
+  },
+  "docs.content_vec": {
+    "index": {
+      "vector_role": "docs.content_vec",
+      "model": "voyage-context-4",
+      "endpoint": "contextualized_embeddings",
+      "dimension": 1024,
+      "dtype": "float",
+      "chunker_version": "document_processor.v2-voyage-token-accounting",
+      "index_schema_version": "dope-context-v2",
+      "index_input_type": "document",
+      "query_input_type": "query"
+    },
+    "query": {
+      "vector_role": "docs.content_vec",
+      "model": "voyage-context-4",
+      "endpoint": "contextualized_embeddings",
+      "dimension": 1024,
+      "dtype": "float",
+      "chunker_version": "document_processor.v2-voyage-token-accounting",
+      "index_schema_version": "dope-context-v2",
+      "index_input_type": "document",
+      "query_input_type": "query"
+    },
+    "model_endpoint_dimension_dtype_equal": true,
+    "index_input_type": "document",
+    "query_input_type": "query"
+  },
+  "docs.title_vec": {
+    "index": {
+      "vector_role": "docs.title_vec",
+      "model": "voyage-context-4",
+      "endpoint": "contextualized_embeddings",
+      "dimension": 1024,
+      "dtype": "float",
+      "chunker_version": "document_processor.v2-voyage-token-accounting",
+      "index_schema_version": "dope-context-v2",
+      "index_input_type": "document",
+      "query_input_type": "query"
+    },
+    "query": {
+      "vector_role": "docs.title_vec",
+      "model": "voyage-context-4",
+      "endpoint": "contextualized_embeddings",
+      "dimension": 1024,
+      "dtype": "float",
+      "chunker_version": "document_processor.v2-voyage-token-accounting",
+      "index_schema_version": "dope-context-v2",
+      "index_input_type": "document",
+      "query_input_type": "query"
+    },
+    "model_endpoint_dimension_dtype_equal": true,
+    "index_input_type": "document",
+    "query_input_type": "query"
+  },
+  "docs.breadcrumb_vec": {
+    "index": {
+      "vector_role": "docs.breadcrumb_vec",
+      "model": "voyage-context-4",
+      "endpoint": "contextualized_embeddings",
+      "dimension": 1024,
+      "dtype": "float",
+      "chunker_version": "document_processor.v2-voyage-token-accounting",
+      "index_schema_version": "dope-context-v2",
+      "index_input_type": "document",
+      "query_input_type": "query"
+    },
+    "query": {
+      "vector_role": "docs.breadcrumb_vec",
+      "model": "voyage-context-4",
+      "endpoint": "contextualized_embeddings",
+      "dimension": 1024,
+      "dtype": "float",
+      "chunker_version": "document_processor.v2-voyage-token-accounting",
+      "index_schema_version": "dope-context-v2",
+      "index_input_type": "document",
+      "query_input_type": "query"
+    },
+    "model_endpoint_dimension_dtype_equal": true,
+    "index_input_type": "document",
+    "query_input_type": "query"
+  }
+}

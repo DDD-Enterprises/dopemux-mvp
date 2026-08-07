@@ -8,6 +8,15 @@ logger = logging.getLogger(__name__)
 
 PINNED_VERSION = "0.1.0"
 
+# Sentinel file used to recognize a valid MCP stack directory across every
+# candidate source (project local, project source, vendor, cache, package
+# template, source tree). Previously this was the string "start-all-mcp-
+# servers.sh", but that legacy launch script was removed (design P-22 safe
+# subset — see claudedocs/mcp-legacy-launch-path-worklist-2026-07-28.md).
+# README.md ships with every copy of the vendored mcp-servers-source tree
+# and is not a launch path, so it is safe to use as the "valid stack" marker.
+_STACK_MARKER = "README.md"
+
 class MCPProvisioner:
     """
     Handles auto-provisioning of MCP stack assets per project.
@@ -35,26 +44,26 @@ class MCPProvisioner:
         # 1. Project local
         local_path = self.project_root / "docker" / "mcp-servers"
         if local_path.exists() and not local_path.is_symlink():
-            if (local_path / "start-all-mcp-servers.sh").exists():
+            if (local_path / _STACK_MARKER).exists():
                 self.report["source_resolved"] = "project_local"
                 return local_path
 
         # 1b. Project source (internal vendor)
         source_path = self.project_root / "docker" / "mcp-servers-source"
         if source_path.exists():
-            if (source_path / "start-all-mcp-servers.sh").exists():
+            if (source_path / _STACK_MARKER).exists():
                 self.report["source_resolved"] = "project_source"
                 return source_path
 
         # 2. Project vendor
         if self.vendor_dir.exists():
-            if (self.vendor_dir / "start-all-mcp-servers.sh").exists():
+            if (self.vendor_dir / _STACK_MARKER).exists():
                 self.report["source_resolved"] = "project_vendor"
                 return self.vendor_dir
 
         # 3. User cache
         if self.cache_dir.exists():
-            if (self.cache_dir / "start-all-mcp-servers.sh").exists():
+            if (self.cache_dir / _STACK_MARKER).exists():
                 self.report["source_resolved"] = "user_cache"
                 return self.cache_dir
 
@@ -64,14 +73,14 @@ class MCPProvisioner:
             import dopemux
             pkg_root = Path(dopemux.__file__).resolve().parent
             pkg_mcp = pkg_root / "docker" / "mcp-servers"
-            if pkg_mcp.exists() and (pkg_mcp / "start-all-mcp-servers.sh").exists():
+            if pkg_mcp.exists() and (pkg_mcp / _STACK_MARKER).exists():
                 self.report["source_resolved"] = "package_template"
                 return pkg_mcp
             
             # Fallback for editable install/source tree
             repo_root = pkg_root.parents[1]
             repo_mcp = repo_root / "docker" / "mcp-servers"
-            if repo_mcp.exists() and (repo_mcp / "start-all-mcp-servers.sh").exists():
+            if repo_mcp.exists() and (repo_mcp / _STACK_MARKER).exists():
                 self.report["source_resolved"] = "source_tree"
                 return repo_mcp
         except Exception:
@@ -89,7 +98,7 @@ class MCPProvisioner:
         # If already exists and valid, just return it
         # Note: .exists() returns False for broken symlinks
         if os.path.lexists(target_path):
-            if target_path.exists() and (target_path / "start-all-mcp-servers.sh").exists():
+            if target_path.exists() and (target_path / _STACK_MARKER).exists():
                 self.report["method"] = "already_present"
                 return target_path
             else:

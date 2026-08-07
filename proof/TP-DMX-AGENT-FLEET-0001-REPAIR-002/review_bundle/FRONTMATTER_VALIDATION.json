@@ -1,0 +1,451 @@
+{
+  "errors": [],
+  "files": [
+    {
+      "keys": [
+        "description",
+        "handoffs",
+        "infer",
+        "model",
+        "name",
+        "target",
+        "tools"
+      ],
+      "path": ".github/agents/dopemux-auditor.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "handoffs",
+        "infer",
+        "model",
+        "name",
+        "target",
+        "tools"
+      ],
+      "path": ".github/agents/dopemux-implementer.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "handoffs",
+        "infer",
+        "model",
+        "name",
+        "target",
+        "tools"
+      ],
+      "path": ".github/agents/dopemux-planner.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "handoffs",
+        "infer",
+        "model",
+        "name",
+        "target",
+        "tools"
+      ],
+      "path": ".github/agents/dopemux-reader.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "handoffs",
+        "infer",
+        "model",
+        "name",
+        "target",
+        "tools"
+      ],
+      "path": ".github/agents/dopemux-reviewer.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "handoffs",
+        "infer",
+        "model",
+        "name",
+        "target",
+        "tools"
+      ],
+      "path": ".github/agents/dopemux-testgen.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/adr-generator.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/critical-thinking.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/devils-advocate.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/devops-expert.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/github-actions-expert.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/implementation-plan.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/janitor.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/modernization.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/prd.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/principal-software-engineer.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/prompt-builder.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/prompt-engineer.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/python-mcp-expert.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/refine-issue.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/se-gitops-ci-specialist.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "model",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/se-product-manager-advisor.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/se-security-reviewer.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/se-system-architecture-reviewer.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/se-technical-writer.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/se-ux-ui-designer.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/search-ai-optimization-expert.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/specification.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/task-planner.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/task-researcher.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/tech-debt-remediation-plan.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/wg-code-alchemist.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/wg-code-sentinel.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/workflow-executor.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name",
+        "tools"
+      ],
+      "path": ".claude/personas/workflow-manager.agent.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name"
+      ],
+      "path": "templates/skills/brief-drafter/SKILL.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name"
+      ],
+      "path": "templates/skills/ci-remediation-specialist/SKILL.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name"
+      ],
+      "path": "templates/skills/code-implementer/SKILL.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name"
+      ],
+      "path": "templates/skills/code-researcher/SKILL.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name"
+      ],
+      "path": "templates/skills/implementation-planner/SKILL.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name"
+      ],
+      "path": "templates/skills/load-orchestrator-persona/SKILL.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name"
+      ],
+      "path": "templates/skills/plan-reviewer/SKILL.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name"
+      ],
+      "path": "templates/skills/pr-docgen-sync/SKILL.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name"
+      ],
+      "path": "templates/skills/pr-docgen-sync-claude/SKILL.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name"
+      ],
+      "path": "templates/skills/pr-docgen-sync-copilot/SKILL.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name"
+      ],
+      "path": "templates/skills/pr-docgen-sync-gemini/SKILL.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name"
+      ],
+      "path": "templates/skills/pr-merge-specialist/SKILL.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name"
+      ],
+      "path": "templates/skills/quality-refactorer/SKILL.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name"
+      ],
+      "path": "templates/skills/research-reviewer/SKILL.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name"
+      ],
+      "path": "templates/skills/task-breakdown/SKILL.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name"
+      ],
+      "path": "templates/skills/testgen/SKILL.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name"
+      ],
+      "path": "templates/skills/testgen-claude/SKILL.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name"
+      ],
+      "path": "templates/skills/testgen-copilot/SKILL.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name"
+      ],
+      "path": "templates/skills/testgen-gemini/SKILL.md"
+    },
+    {
+      "keys": [
+        "description",
+        "name"
+      ],
+      "path": "templates/skills/vibe-pr-merge/SKILL.md"
+    }
+  ],
+  "valid": true
+}

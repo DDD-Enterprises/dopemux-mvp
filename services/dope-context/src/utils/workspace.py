@@ -161,25 +161,60 @@ def workspace_to_hash(workspace_path: Path) -> str:
     return hash_full[:8]
 
 
-def get_collection_names(workspace_path: Optional[Path] = None) -> Tuple[str, str]:
+def get_collection_names(
+    workspace_path: Optional[Path] = None,
+    *,
+    code_profile=None,
+    docs_profile=None,
+) -> Tuple[str, str]:
     """
-    Get collection names for workspace.
+    Get versioned collection names for workspace.
+
+    Names embed the full vector-profile digest so incompatible model/endpoint/
+    dimension/dtype/chunker/schema changes never share a collection.
+
+    Legacy unversioned names (``code_<hash>``, ``docs_<hash>``) are never
+    returned for new writes.
 
     Args:
         workspace_path: Workspace path (auto-detects if None)
+        code_profile: Optional CollectionProfile (built from env when omitted)
+        docs_profile: Optional CollectionProfile (built from env when omitted)
 
     Returns:
         Tuple of (code_collection_name, docs_collection_name)
     """
+    # Local import keeps workspace detection usable without full embedding stack.
+    from ..index_profile import (
+        build_code_collection_profile,
+        build_docs_collection_profile,
+        versioned_collection_name,
+    )
+
     if workspace_path is None:
         workspace_path = get_workspace_root()
 
     workspace_hash = workspace_to_hash(workspace_path)
+    code = code_profile or build_code_collection_profile()
+    docs = docs_profile or build_docs_collection_profile()
 
     return (
-        f"code_{workspace_hash}",
-        f"docs_{workspace_hash}",
+        versioned_collection_name("code", workspace_hash, code.profile_digest),
+        versioned_collection_name("docs", workspace_hash, docs.profile_digest),
     )
+
+
+def get_legacy_collection_names(
+    workspace_path: Optional[Path] = None,
+) -> Tuple[str, str]:
+    """Return legacy unversioned collection names for detection only.
+
+    Never use these for new writes or active query routing.
+    """
+    if workspace_path is None:
+        workspace_path = get_workspace_root()
+    workspace_hash = workspace_to_hash(workspace_path)
+    return (f"code_{workspace_hash}", f"docs_{workspace_hash}")
 
 
 def get_snapshot_dir(workspace_path: Optional[Path] = None) -> Path:

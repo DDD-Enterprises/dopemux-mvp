@@ -1,0 +1,10 @@
+config/commandcode/normalized_agent_persona_catalog.yaml
+proof/CCAR-002/AUDITOR_REPORT.md
+proof/CCAR-002/CHANGED_FILES.md
+proof/CCAR-002/COMMAND_LOG.md
+proof/CCAR-002/NORMALIZATION_REPORT.md
+proof/CCAR-002/PROOF.json
+scripts/commandcode_router/build_normalized_catalog.py
+task-packets/CCAR-002R.json
+task-packets/CCAR-002R.md
+tests/commandcode_router/test_normalized_catalog.py

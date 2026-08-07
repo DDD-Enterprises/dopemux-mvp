@@ -1,0 +1,13 @@
+       rolname       | mvp_connect | adops_connect | legacy_connect
+---------------------+-------------+---------------+----------------
+ conport_adops       | f           | t             | f
+ conport_archive_ro  | f           | f             | t
+ conport_dopemux_mvp | t           | f             | f
+(3 rows)
+
+         datname         | public_connect | public_create
+-------------------------+----------------+---------------
+ conport_dopemux_mvp     | f              | f
+ conport_adops           | f              | f
+ dopemux_knowledge_graph | f              | f
+(3 rows)

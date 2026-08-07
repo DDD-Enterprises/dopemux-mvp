@@ -1,0 +1,10 @@
+{
+  "command": [
+    "agy",
+    "--model",
+    "claude-sonnet-4-6",
+    "--print"
+  ],
+  "command_shell": "agy --model claude-sonnet-4-6 --print",
+  "requested_model": "claude-sonnet-4-6"
+}

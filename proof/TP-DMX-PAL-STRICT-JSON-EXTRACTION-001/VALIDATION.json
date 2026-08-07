@@ -1,0 +1,41 @@
+{
+  "captured_at": "2026-08-02T22:19:23Z",
+  "focused_tests": {
+    "command": "uv run --frozen --extra test pytest -q tests/audit/test_pal_clink_runner.py",
+    "result": "PASS",
+    "exit_code": 0
+  },
+  "full_audit_tests": {
+    "command": "uv run --frozen --extra test pytest -q tests/audit/",
+    "result": "PASS",
+    "exit_code": 0
+  },
+  "compileall": {
+    "command": "python -m compileall -q scripts/audit tests/audit",
+    "result": "PASS",
+    "exit_code": 0
+  },
+  "ruff": {
+    "command": "uv run ruff check scripts/audit/pal_clink_runner.py tests/audit/test_pal_clink_runner.py",
+    "result": "PASS",
+    "exit_code": 0
+  },
+  "diff_check": {
+    "command": "git diff --check",
+    "result": "PASS",
+    "exit_code": 0
+  },
+  "schema": {
+    "command": "python3 -m jsonschema -i task-packets/TP-DMX-PAL-STRICT-JSON-EXTRACTION-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    "result": "PASS",
+    "exit_code": 0
+  },
+  "guard_probes": {
+    "size_guard_active_rejects_oversized": "PASS",
+    "size_guard_disable_accepts_oversized": "PASS (oversized accepted when MAX_AUDIT_OUTPUT_BYTES raised)",
+    "interior_fence_active_rejects_multi": "PASS",
+    "interior_fence_disable_falls_to_json_malform": "PASS (Extra data; multi-fence match='interior fence' test would fail)"
+  },
+  "independent_audit": "NOT_CLAIMED_IN_IMPLEMENTATION_PROOF",
+  "merge_readiness": "NOT_CLAIMED"
+}

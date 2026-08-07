@@ -225,3 +225,13 @@ services:
     enabled_in_smoke: false
     category: infrastructure
     description: "LiteLLM Proxy"
+
+  - name: adhd-dashboard
+    port: 8097
+    container_port: 8097
+    health_path: /health
+    compose_service_name: adhd-dashboard
+    enabled_in_smoke: false
+    category: cognitive
+    description: "ADHD Dashboard backend for operator UI"
+

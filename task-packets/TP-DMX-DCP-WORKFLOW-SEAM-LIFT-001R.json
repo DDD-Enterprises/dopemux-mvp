@@ -1,0 +1,173 @@
+{
+  "id": "TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R",
+  "project": "dopemux-mvp",
+  "target": "Author an ADR and a narrow, exact-filename carve-out in DCP-RED-MERGE-SEAM-0001's FORBIDDEN_PATHS so that exactly two workflow files (.github/workflows/embedded-audit.yml, .github/workflows/pr-steward.yml) become editable via the normal tool path, with focused tests proving the carve-out's boundaries and that TEXT_RULES content scanning remains fully active on both files. This packet authorizes the guard change and, later, the two-file wiring itself as a separate, explicitly-gated step; it does not authorize any other workflow file to become editable, any permission/merge/release automation, or a merge of this series.",
+  "invariants": [
+    "Scope is exactly two paths: .github/workflows/embedded-audit.yml and .github/workflows/pr-steward.yml. No other .github/workflows/* file is exempted from DCP-RED-MERGE-SEAM-0001's block.",
+    "The carve-out is implemented as an exact-filename, end-anchored regex exemption (negative lookahead) inside the existing FORBIDDEN_PATHS blanket workflow pattern -- it does not remove or weaken that pattern for any other file, subdirectory, or near-miss filename (e.g. embedded-audit.yml.bak, a nested workflows/sub/embedded-audit.yml).",
+    "DCP-RED-MERGE-SEAM-0001's actual merge-seam prohibition (src/dopemux_pr_merge_specialist/queue_drain.py execute=True, scripts/batch_resolve_and_merge.py) is untouched by this packet.",
+    "TEXT_RULES content-level scanning in red_lane_scanner.py remains fully active and unconditional on both carved-out files; a forbidden-text match (e.g. gh pr merge) in either file must still produce a BLOCKED scan result. Proven by a dedicated test, not asserted only.",
+    "The _FALLBACK_COMPILED sync invariant in .claude/hooks/dcp_surface_guard.py (fallback patterns subset-of live FORBIDDEN_PATHS) continues to pass unmodified; the fallback list never included a workflows entry, so no fallback change is required or made.",
+    "No permission expansion, merge automation, or release automation is introduced by this packet in either workflow file, because this packet does not edit either workflow file's content at all -- only the guard mechanism and its tests change.",
+    "This packet does not itself wire schema_validate_embedded_audit() (or any other change) into either workflow file's content. That is a separate, later step gated on its own explicit authorization, once this packet's guard carve-out has merged.",
+    "The pre-existing TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001 (no R suffix) draft is superseded for this scope: it never validated against the repo's canonical task-packet schema and mixes in unrelated historical extraction work (workflow_run_identity.py cherry-pick, diagnostic_proof.py extraction) that this packet does not authorize or carry forward.",
+    "tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified fails identically on unmodified origin/main and on this packet's implementation head, proven via two clean detached worktrees -- it is a pre-existing stale-anchor artifact (fixed historical base ref from an unrelated packet, task-packets/TP-DCP-0002.md) and is explicitly not repaired or suppressed by this packet.",
+    "Pushing the implementation branch and opening a draft PR is conditionally authorized only after the repaired packet validates against the canonical schema and the baseline-failure proof is recorded as IDENTICAL. Marking the PR ready-for-review, merging, or any release/merge automation is not authorized by this packet.",
+    "auditor != implementer for this packet's post-push independent audit; the audit must use OpenCode/OpenRouter with a model family distinct from this packet's implementer and must run against the exact frozen pushed head, not the local intermediate head, with no further semantic changes added after freezing."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "pyproject.toml",
+    "origin_hint": "git@github.com:DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DCP-WORKFLOW-SEAM-LIFT",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "feat/TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(dcp): narrow DCP-RED-MERGE-SEAM-0001 carve-out for two embedded-audit workflows (ADR-224)",
+    "allowlist": [
+      "docs/90-adr/adr-224-dcp-workflow-seam-narrow-carveout.md",
+      "src/dopemux/dcp/red_lane_rules.py",
+      "tests/test_dcp_surface_guard.py",
+      "tests/dcp/test_dcp_0005_red_lane_scanner.py",
+      "task-packets/TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R.md",
+      "task-packets/TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R.json",
+      "proof/TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R/**"
+    ],
+    "verify": [
+      "git diff --check",
+      "Task Packet JSON validates against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "tests/test_dcp_surface_guard.py and tests/dcp/test_dcp_0005_red_lane_scanner.py pass in full (42/42 focused)",
+      "tests/dcp/ full suite: only the pre-existing, proven-identical test_16_no_forbidden_files_modified failure, no other regression",
+      "Baseline-failure proof recorded as IDENTICAL (main and candidate both FAIL with byte-identical output)",
+      "pre-commit passes on all changed files",
+      "secret scan finds no new matches"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): narrow DCP-RED-MERGE-SEAM-0001 carve-out for two embedded-audit workflows (ADR-224)",
+    "body": "Draft PR. Scope: four implementation files (ADR-224, red_lane_rules.py carve-out, two focused test files) plus the task-packet and proof files for TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R -- no other file. No workflow content is changed by this PR; embedded-audit.yml and pr-steward.yml become editable in a strictly narrower sense (path-level, exact-filename only) but neither file's content is touched here. 42/42 focused DCP guard tests pass (34 pre-existing + 8 new). Full tests/dcp/ suite is 173/174, with the single failure (test_16_no_forbidden_files_modified) deterministically reproduced as identical on unmodified origin/main -- a pre-existing stale historical-base-ref artifact, not a regression, and not repaired here. This PR grants no permission expansion, no merge automation, no release automation, and no broader workflow carve-out than the two named files. Follow-up workflow wiring (calling schema_validate_embedded_audit() from either workflow) remains blocked until this PR merges and is authorized as its own separate step. Not marked ready for review; merge is not authorized by the originating task packet.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Establish a clean worktree off undrifted origin/main for the seam-lift work.",
+      "commands": [
+        "git fetch origin main --quiet",
+        "git rev-parse origin/main",
+        "git worktree add .worktrees/TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R -b feat/TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R origin/main"
+      ],
+      "expected_files": [],
+      "validation": [
+        "origin/main resolves to ff08e573b4259ac7456dae1a9985968603e9111d, matching the reported implementation base",
+        "worktree HEAD matches origin/main exactly, zero drift"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Author ADR-224 documenting the narrow carve-out's context, decision, alternatives considered and rejected, consequences, and migration strategy.",
+      "expected_files": [
+        "docs/90-adr/adr-224-dcp-workflow-seam-narrow-carveout.md"
+      ],
+      "validation": [
+        "ADR passes docs-frontmatter-guard and markdownlint pre-commit hooks",
+        "ADR explicitly lists non-goals: does not edit workflow content, does not widen the carve-out beyond the two named files, does not reconcile the separately-noted README-vs-code scope drift of DCP-RED-MERGE-SEAM-0001"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement the exact-filename, negative-lookahead carve-out in src/dopemux/dcp/red_lane_rules.py FORBIDDEN_PATHS, and add focused tests at both the PreToolUse hook layer and the RedLaneScanner layer proving the carve-out's exact boundaries and that TEXT_RULES stays active.",
+      "expected_files": [
+        "src/dopemux/dcp/red_lane_rules.py",
+        "tests/test_dcp_surface_guard.py",
+        "tests/dcp/test_dcp_0005_red_lane_scanner.py"
+      ],
+      "validation": [
+        "PreToolUse Edit on .github/workflows/embedded-audit.yml no longer hard-blocks",
+        "PreToolUse Edit on .github/workflows/pr-steward.yml no longer hard-blocks",
+        "PreToolUse Edit on any other .github/workflows/*.yml file still hard-blocks, including near-miss and nested-path variants",
+        "RedLaneScanner still returns BLOCKED with a MERGE_SEAM_VIOLATION finding when a carved-out file's content contains forbidden text",
+        "existing red-lane / surface-guard test suite (tests/dcp/**) still passes except the pre-existing, separately-proven stale-anchor failure"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Pre-push repair: split this packet away from the unrelated historical scope in the pre-existing TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001 (no R) draft, author this schema-valid 001R packet in its place, and produce the required deterministic baseline-failure proof for test_16_no_forbidden_files_modified across two clean detached worktrees (origin/main and the Phase A implementation head).",
+      "commands": [
+        "git worktree add --detach /tmp/seam-lift-baseline-main origin/main",
+        "git worktree add --detach /tmp/seam-lift-candidate-9e113e68d0 9e113e68d0",
+        "python3 -m pytest -q tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified"
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R.md",
+        "task-packets/TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R.json",
+        "proof/TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R/PACKET_SCOPE_REPAIR.md",
+        "proof/TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R/BASELINE_FAILURE_PROOF.md",
+        "proof/TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R/PHASE_A_VALIDATION.md",
+        "proof/TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R/REPAIR_COMMAND_LOG.md"
+      ],
+      "validation": [
+        "new packet JSON validates against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json with no errors",
+        "main and candidate runs of the baseline test produce byte-identical output and identical exit code (1/FAIL), classified IDENTICAL -> BASELINE_EXISTING_STALE_ANCHOR, non-blocking",
+        "the unrelated S3/S4 historical scope from the non-R draft is not present anywhere in this packet"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Push the implementation branch and open a draft PR (not marked ready for review) once S3's repair commit is validated.",
+      "requirements": [
+        "Only push after the repaired packet validates and the baseline-failure proof is recorded as IDENTICAL.",
+        "Draft PR body must state exactly: four implementation files plus packet/proof files only; no workflow content changed; 42/42 focused guard tests passed; full DCP suite 173/174 with one deterministically reproduced baseline stale-anchor failure; no permission, merge automation, release automation, or broader workflow carve-out; follow-up workflow wiring remains blocked until this PR merges."
+      ],
+      "validation": [
+        "branch feat/TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R pushed to origin",
+        "draft PR opened against main, NOT marked ready for review",
+        "PR diff contains exactly the allowlisted files, no fifth semantic file, no workflow file content change"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Freeze the exact pushed remote head and run one independent final audit using OpenCode/OpenRouter with a model family distinct from this packet's implementer.",
+      "requirements": [
+        "Audit the exact frozen pushed head only -- do not audit the local intermediate head and then add further semantic changes.",
+        "auditor != implementer."
+      ],
+      "validation": [
+        "Audit verdict recorded as PASS, PASS_WITH_RISKS, FAIL, or NEEDS_SUPERVISOR",
+        "Audit target SHA matches the frozen pushed remote head exactly"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "NOT AUTHORIZED in this packet: wire schema_validate_embedded_audit() (or any other change) into .github/workflows/embedded-audit.yml and .github/workflows/pr-steward.yml content, using the carve-out landed by S2-S4.",
+      "requirements": [
+        "Blocked until this packet's PR (S4) merges to main.",
+        "Requires its own separate, explicit supervisor authorization -- this packet's authorization does not carry forward to workflow content edits."
+      ],
+      "validation": [
+        "Not executed by this packet under any circumstance"
+      ]
+    }
+  ],
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "implement",
+      "codereview(auditor!=implementer)",
+      "precommit"
+    ]
+  }
+}

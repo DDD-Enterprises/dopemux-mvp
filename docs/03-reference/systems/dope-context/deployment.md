@@ -22,6 +22,7 @@ Production deployment instructions for Docker, Docker Compose, and Claude Code i
 - Python 3.11+
 - Docker & Docker Compose (for Qdrant)
 - Voyage AI API key ([get one here](https://www.voyageai.com/))
+- Outbound HTTPS egress to `huggingface.co` (see [Network Security](#network-security))
 
 ### Optional
 
@@ -398,6 +399,26 @@ RUN mkdir -p /root/.dope-context/snapshots && \
 ```
 
 ### Network Security
+
+**Outbound egress to huggingface.co (required):**
+
+The tokenizer used for rerank and embedding token accounting
+(`VoyageTokenCounter` in `src/utils/model_tokenizer.py`) calls
+`voyageai.Client.tokenize()`, which loads a model-specific HuggingFace
+tokenizer via `Tokenizer.from_pretrained(f"voyageai/{model}")` -- an HTTPS
+fetch to `huggingface.co` the first time each model is used in a process.
+Neither the Dockerfile nor prior versions of this guide declared this
+requirement (F-006).
+
+- If `huggingface.co` is reachable, the fetch succeeds once per model and the
+  SDK caches the loaded tokenizer for the life of the process.
+- If it is blocked (air-gapped deployment, egress allowlist, `--network
+  none`), token counts fall back to a conservative local estimator instead of
+  failing the request. The counter also remembers the failure per model so a
+  blocked Hub costs one failed attempt per model, not one per chunk indexed.
+- To run fully offline, allowlist `huggingface.co` for tokenizer downloads, or
+  accept the conservative token estimates (they intentionally overestimate
+  rather than undercount, so request-size validation stays safe either way).
 
 **Production Qdrant:**
 

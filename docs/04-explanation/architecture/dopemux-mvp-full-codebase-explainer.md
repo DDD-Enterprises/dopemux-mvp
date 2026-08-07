@@ -101,7 +101,7 @@ Repo truth here:
 
 ### 3. task-orchestrator (`services/task-orchestrator/`, port `8000`)
 
-This is the workflow coordination surface. The intended FastAPI runtime entrypoint is `services/task-orchestrator/app/main.py`.
+This is a FastAPI workflow-coordination service. The intended runtime entrypoint is `services/task-orchestrator/app/main.py`. Note: this is a separate "shadow twin" service pending rename — it is not the canonical task-orchestrator MCP surface. The canonical task-orchestrator MCP is a Kotlin jar on port `7890` (Streamable HTTP, `POST /mcp`).
 
 Observed responsibilities include:
 
@@ -109,7 +109,6 @@ Observed responsibilities include:
 - idea and epic CRUD
 - workflow transition and audit surfaces
 - project workflow state routes
-- MCP tool exposure through its own server wiring
 
 Within the PM split, this is the intended authority for workflow-significant transitions. That matches `src/dopemux/pm/writes.py`, which routes transition writes to the orchestrator path.
 
@@ -286,7 +285,7 @@ This repo exposes multiple MCP-facing systems that can be used by external codin
 - ConPort
 - dope-context
 - Serena
-- task-orchestrator MCP tools
+- task-orchestrator MCP tools (canonical surface: Kotlin jar on port `7890`, Streamable HTTP `POST /mcp` — not the FastAPI service on port `8000` described in section 3)
 - additional MCP services listed in `services/registry.yaml`, including PAL
 
 The important boundary is that these tools expose retrieval, logging, or assistance surfaces. They do not collapse PM truth, workflow truth, and memory truth into one shared authority.

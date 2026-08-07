@@ -1,0 +1,70 @@
+[0m
+> ccar-audit-notools · moonshotai/kimi-k3
+[0m
+AUDIT_TARGET_HEAD=34cc73c3edcde27ea362cf2046995ada9db97999
+BUNDLE_MANIFEST_SHA256=1b8cb98b90e74e12fd2e9b17c01a94a0f05fda65697b61b369baa4b5a6a2ec90
+INPUT_FILE_COUNT=15
+EXTERNAL_TOOLS_USED=false
+EXTERNAL_FILES_REFERENCED=false
+
+# Independent L3 Audit — PR #1193, DCP-RED-MERGE-SEAM-0001 narrow carve-out
+
+All evidence below is traced solely from the pasted bundle. No tools were run; no mutation was performed (I have no tools — read-only reasoning only).
+
+## Verification of the nine required items
+
+**1. Exact-path scope of the carve-out — VERIFIED by direct regex trace.**
+The new pattern (`src/dopemux/dcp/red_lane_rules.py`, 4th `FORBIDDEN_PATHS` entry) concatenates to `^\.github/workflows/(?!embedded-audit\.yml$)(?!pr-steward\.yml$).*$`. Both lookaheads evaluate at the position immediately after the literal `workflows/` prefix, and each inner pattern is `$`-anchored:
+- `embedded-audit.yml` / `pr-steward.yml` → inner lookahead matches → negative lookahead fails → no match → exempt. Exactly these two strings.
+- `embedded-audit.yml.bak` → after `embedded-audit.yml` the next char is `.`, `$` fails → lookahead passes → `.*$` matches → **blocked**. ✓
+- `sub/embedded-audit.yml` → lookahead position starts at `s`, inner pattern cannot match there → **blocked**. ✓
+- Case variants (`Embedded-Audit.yml`) → regex is case-sensitive → **blocked** (fail-safe, even on case-insensitive APFS where the name would resolve to the real file). ✓
+- Leading `./` and duplicate separators → `pathlib.PurePath` collapses `.` and `//` segments in `_repo_relative()` before the regex sees the string → normalized, then blocked. ✓
+- `..` traversal (`workflows/sub/../embedded-audit.yml`) → pathlib does **not** collapse `..`; the lexical remainder starts with `sub/` → **blocked** (fail-safe over-block). ✓
+- Hook-layer tests pin the two positives, sibling negative, `.bak` near-miss, and nested negative; all asserted against `surface_guard_block` with `RED_LANE_ID` in the reason. ✓
+
+**2. TEXT_RULES remain active on carved-out files — VERIFIED.** `red_lane_scanner.py` applies `FORBIDDEN_PATHS` and `TEXT_RULES` in two independent loops; `is_safe_false_positive` exempts only `dcp/red_lane_rules.py` / `dcp/red_lane_scanner.py`. The diff touches neither the scanner nor `TEXT_RULES`. The new test `test_carved_out_workflow_still_subject_to_text_rules` writes `run: gh pr merge --auto` into the carved-out path and asserts `BLOCKED` + `MERGE_SEAM_VIOLATION` + no `FORBIDDEN_PATH` finding — the `gh pr merge` pattern is present in `MERGE_SEAM_001`. ✓
+
+**3. Fallback sync — VERIFIED.** The pasted `dcp_surface_guard.py` (untouched by this diff) shows `_FALLBACK_FORBIDDEN` = exactly the two `queue_drain` variants + `batch_resolve_and_merge`; no workflows entry ever existed. `test_fallback_patterns_covered_by_live_rules` only exercises those three paths, all still present in live `FORBIDDEN_PATHS`. No live/fallback divergence is created. ✓
+
+**4. ADR-224 accuracy — VERIFIED.** Quoted old pattern matches the diff's removed line exactly; quoted new pattern matches the committed regex exactly; invariants, rejected alternatives (A/B/C), remaining prohibitions (non-goals), the deferred wiring stage (Migration Step 2/3 + Notes), and the fallback claim all match the pasted code and tests. ✓
+
+**5. Repaired packet `001R` — VERIFIED field-by-field against `dopetask-canonical-spec.json`.** All 12 top-level keys exist in schema `properties` (top-level `additionalProperties: false` satisfied); all required top-level keys present (`id, project, target, repo_binding, series, commit, pr, steps`); `repo_binding`, `series`, `execution` (agent `"shell"` ∈ enum), `commit` (allowlist ≥1), `pr`, `pal_chain`, and every step (S0–S6 each with required `id`/`task`/`validation`, `validation` minItems 1 met) contain only permitted sub-properties. The `allOf` gemini-conditional is inapplicable (agent=`shell`) and `pal_chain.enabled=true` anyway. The old `001` draft is confirmed non-conformant on the grounds stated (extraneous `status`/`background`/`authorizes_edits_to`/`does_not_authorize`; missing required `commit`/`pr`; additionally its S1 lacks required `validation`). The unrelated historical scope (`94f368b8c`, `workflow_run_identity.py`, `diagnostic_proof.py`, `worktree-pr-steward-security-approval-parity`) appears in `001R` only as a named exclusion, not as authorized scope; the commit allowlist contains none of those paths. S6 is explicitly NOT_AUTHORIZED; merge/ready-for-review explicitly not granted. ✓
+
+**6. Baseline-failure proof — REASONING SOUND, EXECUTION UNVERIFIED.** The diff adds/modifies zero `FORBIDDEN_PATHS`-matching files, so a stale-anchor diff `68f7435f6...HEAD` would indeed be signature-identical with or without this packet; the method (two detached worktrees, identical command, `diff` exit 0) is coherent. However `tests/dcp/test_dcp_0002_contract_derivation.py` and `task-packets/TP-DCP-0002.md` are not in the bundle, so the `_packet_base_ref()` root-cause claim and the byte-identical-output claim cannot be cross-checked or re-executed from the pasted evidence.
+
+**7. No workflow/permissions/triggers/automation/signer/production changes — VERIFIED.** The diff contains exactly 10 files; none is under `.github/workflows/`; the only code change is the guard regex. Insertion arithmetic is internally consistent: 249+94+62+71+52+173+133 (new files) + 11 + 44 + 40 = 929 insertions, 1 deletion — matches the stated stat. ✓
+
+**8. Test sufficiency — ADEQUATE with noted gaps.** Positive, sibling, near-miss, nested, and TEXT_RULES-still-active cases are pinned. Not pinned by tests (verified instead by reasoning, all fail-safe): case variants, `..` traversal, `./` and `//` forms, trailing whitespace. See Findings.
+
+**9. README scope-drift — VERIFIED AS PRE-EXISTING AND FLAGGED.** `docs/03-reference/dcp/README.md` describes the seam only via `queue_drain.py execute=True` and `batch_resolve_and_merge.py`; the code blocks additional surfaces (workflows, `scripts/dopetask`, `scripts/taskx`, several `services/*`, `docker/*`, `src/conport/*`). ADR-224 explicitly flags this drift as out-of-scope in both Context and Notes. This PR narrows the code slightly and does not worsen the drift. ✓
+
+## Findings (non-blocking)
+
+- **F1 — LOW (pre-existing, not introduced):** `.claude/hooks/dcp_surface_guard.py::_repo_relative` (def ~lines 44–50) is purely lexical: `..` segments are never resolved, and an absolute path outside `project_root` is used verbatim after `ValueError`. A `file_path` like `<root>/x/../.github/workflows/ci-complete.yml` yields rel `x/../.github/workflows/ci-complete.yml`, which no `^`-anchored pattern matches — evading **every** `FORBIDDEN_PATHS` rule, not just workflows. *Impact:* the OS-resolved target is the real protected file, so this is a genuine pre-existing guard bypass. *Repair:* resolve with `Path(file_path).resolve().relative_to(project_root.resolve())` in a separate hardening change; out of scope here, not worsened by this PR.
+- **F2 — LOW (pre-existing):** `red_lane_scanner.py` path-check loop applies `FORBIDDEN_PATHS` to raw `changed_files` strings with no normalization; `./`-prefixed, absolute, or doubled-separator forms evade path findings (fail-open for evasion; for the carved-out pair the doubled-separator form over-blocks, fail-safe). *Repair:* shared normalization helper; separate change.
+- **F3 — INFORMATIONAL:** Python `$` matches before a trailing newline, so the literal string `.github/workflows/embedded-audit.yml\n` would evade the new regex. Such a string names a distinct file (newline in filename), never the real protected file — no realistic bypass; noted because the exempted string set is therefore technically not *exactly* two strings.
+- **F4 — Test-coverage gap (minor):** no committed tests pin case-variant, traversal, separator, or whitespace edge inputs; behavior verified by reasoning only (all fail-safe).
+
+## Residual risks
+F1/F2/F3 above; the baseline-failure proof (F-as-UNVERIFIED) rests on executed evidence I cannot reproduce; README drift remains open (ADR-flagged, separately deferred).
+
+## Mutation statement
+No mutation was performed. I have no tools; this audit is pure reasoning over the pasted bundle.
+
+## Route evidence (self-knowledge only)
+requested_model=UNKNOWN; configured_model=UNKNOWN; served_model=moonshotai/kimi-k3 (exact ID openrouter/moonshotai/kimi-k3); runner=opencode; broker=openrouter; provider=UNKNOWN; generation_id=UNKNOWN; fallback_allowed=UNKNOWN; fallback_used=UNKNOWN; zdr_requested=UNKNOWN; zdr_confirmed=UNKNOWN.
+
+```
+VERDICT: PASS_WITH_RISKS
+FINDINGS:
+- F1 LOW (pre-existing, not introduced/worsened): dcp_surface_guard.py::_repo_relative (~L44-50) does not resolve `..` or handle outside-root absolute paths — lexical evasion bypasses ALL FORBIDDEN_PATHS rules, not just workflows; repair via Path.resolve() in a separate hardening change.
+- F2 LOW (pre-existing): red_lane_scanner.py path-check loop matches FORBIDDEN_PATHS against raw unnormalized changed_files strings; ./-prefixed/absolute/double-separator forms evade path findings.
+- F3 INFORMATIONAL: `$` matches before trailing newline, so "embedded-audit.yml\n" as a literal string evades the new regex — names a distinct file, no realistic bypass of the two protected files.
+- F4 MINOR: no committed tests for case-variant/traversal/separator/whitespace edge inputs; verified fail-safe by regex+pathlib reasoning only.
+- VERIFIED: carve-out exempts exactly the two named top-level files; .bak/nested/case-variant/traversal forms remain blocked; TEXT_RULES still fire on carved-out files (dedicated test); fallback never had workflows entry, sync invariant holds untouched; ADR-224 matches code exactly; 001R packet passes the canonical schema field-by-field (additionalProperties, required commit/pr, per-step validation, agent enum, allOf conditional inapplicable); old 001 draft's disqualifying defects confirmed as stated; historical extraction scope excluded; S6 wiring NOT_AUTHORIZED; merge/ready not granted; zero files under .github/workflows/ touched; diff arithmetic consistent (929 insertions/1 deletion, 10 files, all within packet allowlist); README scope-drift pre-existing, ADR-flagged, not worsened.
+UNVERIFIED:
+- BASELINE_FAILURE_PROOF.md execution claims (byte-identical pytest output on origin/main vs 9e113e68d0; diff exit 0) and its root-cause claim that tests/dcp/test_dcp_0002_contract_derivation.py::_packet_base_ref() extracts 68f7435f6 from task-packets/TP-DCP-0002.md:20 — neither file is in the bundle and the runs cannot be re-executed; reasoning is internally consistent because this PR adds zero forbidden-path files.
+- PHASE_A_VALIDATION.md / REPAIR_COMMAND_LOG.md executed-output claims (42/42 focused tests, 173/174 suite, pre-commit results, SCHEMA_VALID print) — plausible and internally consistent with the pasted code/tests, but not re-executable from the bundle.
+- Route/provider/generation_id/fallback/ZDR fields — UNKNOWN from self-knowledge; per the stated verdict ceiling this caps the verdict at PASS_WITH_RISKS.
+```

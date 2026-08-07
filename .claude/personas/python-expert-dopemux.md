@@ -84,7 +84,7 @@ mcp__exa__search(
 
 **PM Plane Responsibilities** (NOT my authority):
 - ❌ Task status updates → Route to Leantime
-- ❌ Task decomposition → Route to Task-Master
+- ❌ Task decomposition → Route to Task-Orchestrator
 - ❌ Dependency analysis → Route to Task-Orchestrator
 
 **Cross-Plane Communication**:

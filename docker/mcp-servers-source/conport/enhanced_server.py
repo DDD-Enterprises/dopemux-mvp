@@ -269,6 +269,7 @@ class EnhancedConPortServer:
         # Custom data endpoints (generic key-value store)
         self.app.router.add_post('/api/custom_data', self.save_custom_data)
         self.app.router.add_get('/api/custom_data', self.get_custom_data)
+        self.app.router.add_post('/api/custom_data/claim', self.claim_custom_data)
         self.app.router.add_delete('/api/custom_data', self.delete_custom_data)
 
         # MCP compatibility endpoint
@@ -1716,6 +1717,101 @@ class EnhancedConPortServer:
         except Exception as e:
             logger.error(f"Error deleting custom data: {e}")
             return web.json_response({'error': str(e)}, status=500)
+
+    async def claim_custom_data(self, request):
+        """Atomically claim a custom data row with fingerprint-based idempotency.
+
+        Contract:
+          CREATED  — first writer established identity + fingerprint
+          MATCHED  — existing row has same fingerprint
+          CONFLICT — existing row has different fingerprint
+          LEGACY_UNFINGERPRINTED — existing row predates fingerprinting
+          OWNER_ERROR — transaction or owner failure
+        """
+        try:
+            data = await request.json()
+            workspace_id = data.get('workspace_id')
+            category = data.get('category')
+            key = data.get('key')
+            value = data.get('value')
+
+            if not all([workspace_id, category, key, value is not None]):
+                return web.json_response({
+                    'error': 'Missing required fields: workspace_id, category, key, value'
+                }, status=400)
+
+            if not isinstance(value, dict):
+                return web.json_response({
+                    'error': 'value must be a JSON object'
+                }, status=400)
+
+            fingerprint = value.get('_fingerprint_v1')
+            if not fingerprint:
+                return web.json_response({
+                    'error': 'value must contain _fingerprint_v1',
+                    'result': 'MISSING_FINGERPRINT'
+                }, status=400)
+
+            async with self.db_pool.acquire() as conn:
+                async with conn.transaction():
+                    row = await conn.fetchrow("""
+                        INSERT INTO custom_data (workspace_id, category, key, value, updated_at)
+                        VALUES ($1, $2, $3, $4, NOW())
+                        ON CONFLICT (workspace_id, category, key) DO NOTHING
+                        RETURNING value
+                    """, workspace_id, category, key, json.dumps(value))
+
+                    if row is not None:
+                        persisted = json.loads(row['value'])
+                        logger.info("🔒 Custom data claimed: %s/%s", category, key)
+                        return web.json_response({
+                            'result': 'CREATED',
+                            'workspace_id': workspace_id,
+                            'category': category,
+                            'key': key,
+                            'value': persisted,
+                        })
+
+                    row = await conn.fetchrow("""
+                        SELECT value FROM custom_data
+                        WHERE workspace_id = $1 AND category = $2 AND key = $3
+                    """, workspace_id, category, key)
+
+                    existing = json.loads(row['value'])
+                    existing_fp = existing.get('_fingerprint_v1') if isinstance(existing, dict) else None
+
+                    if existing_fp is None:
+                        return web.json_response({
+                            'result': 'LEGACY_UNFINGERPRINTED',
+                            'workspace_id': workspace_id,
+                            'category': category,
+                            'key': key,
+                            'value': existing,
+                        })
+
+                    if existing_fp == fingerprint:
+                        return web.json_response({
+                            'result': 'MATCHED',
+                            'workspace_id': workspace_id,
+                            'category': category,
+                            'key': key,
+                            'value': existing,
+                        })
+
+                    return web.json_response({
+                        'result': 'CONFLICT',
+                        'workspace_id': workspace_id,
+                        'category': category,
+                        'key': key,
+                        'value': existing,
+                    })
+
+        except Exception as e:
+            logger.error("Error claiming custom data: %s", e)
+            return web.json_response({
+                'error': str(e),
+                'result': 'OWNER_ERROR',
+            }, status=500)
 
     async def mcp_endpoint(self, request):
         """Full MCP Tool Server implementation via JSON-RPC"""

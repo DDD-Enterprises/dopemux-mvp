@@ -1,0 +1,23 @@
+Reading additional input from stdin...
+OpenAI Codex v0.146.0
+--------
+workdir: /Users/hue/code/dopemux-mvp/.worktrees/TP-CONPORT-CLEAN-L3-REPAIR
+model: gpt-5.6-terra
+provider: openai
+approval: on-request
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: none
+session id: 019fc54c-21ce-7b41-a850-b4194aedaf01
+--------
+user
+Reply with only the word PONG and nothing else.
+warning: Under-development features enabled: chronicle. Under-development features are incomplete and may behave unpredictably. To suppress this warning, set `suppress_unstable_features_warning = true` in /Users/hue/.codex/config.toml.
+warning: Skill descriptions were shortened to fit the 2% skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+hook: SessionStart
+hook: SessionStart Completed
+codex
+PONG
+tokens used
+25,178
+PONG

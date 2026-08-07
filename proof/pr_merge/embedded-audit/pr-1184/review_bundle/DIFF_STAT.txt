@@ -1,0 +1,22 @@
+ .pre-commit-config.yaml                            |  29 +-
+ AGENTS.md                                          |  25 +-
+ config/ai/model-routing.policy.yaml                |  29 +
+ docs/03-reference/governance/evidence-economy.md   |  74 +++
+ docs/03-reference/governance/rules.md              |   4 +
+ .../governance/task-packet-template.md             |  62 ++
+ docs/ops/embedded-audit.md                         |   2 +
+ docs/ops/pr-steward.md                             |   2 +
+ .../AUDITOR_REPORT.md                              |  14 +
+ .../AUDIT_ROUTE_PREFLIGHT.json                     |  21 +
+ proof/TP-DMX-REPO-EVIDENCE-ECONOMY-001/C3_HEAD.txt |   1 +
+ .../COMMAND_LOG.md                                 |  15 +
+ proof/TP-DMX-REPO-EVIDENCE-ECONOMY-001/HANDOFF.md  |  19 +
+ .../MODEL_CALL_BUDGET.md                           |  10 +
+ proof/TP-DMX-REPO-EVIDENCE-ECONOMY-001/PROOF.json  |  39 ++
+ .../THREAT_MODEL.md                                |   6 +
+ .../VALIDATION.json                                |   7 +
+ scripts/governance/validate_change_contract.py     | 640 +++++++++++++++++++++
+ task-packets/TP-DMX-REPO-EVIDENCE-ECONOMY-001.json | 265 +++++++++
+ task-packets/TP-DMX-REPO-EVIDENCE-ECONOMY-001.md   | 137 +++++
+ tests/governance/test_validate_change_contract.py  | 404 +++++++++++++
+ 21 files changed, 1791 insertions(+), 14 deletions(-)

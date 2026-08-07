@@ -1,0 +1,8 @@
+=== Claude Code formal auditor identity ===
+2026-08-03T02:18:31Z
+implementer=grok-4.5 (not this session)
+auditor_tool=claude-code-cli
+/Users/hue/.local/bin/claude
+2.1.220 (Claude Code)
+requested_model=sonnet (default or explicit)
+27:  "model": "haiku"

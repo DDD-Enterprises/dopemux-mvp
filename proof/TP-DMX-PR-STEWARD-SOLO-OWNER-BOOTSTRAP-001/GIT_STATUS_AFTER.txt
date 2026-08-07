@@ -1,0 +1,2 @@
+ M .claude/claude_config.json
+?? proof/TP-DMX-PR-STEWARD-SOLO-OWNER-BOOTSTRAP-001/GIT_STATUS_AFTER.txt

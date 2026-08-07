@@ -1,0 +1,102 @@
+{
+  "id": "TP-REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE",
+  "project": "dopemux-mvp",
+  "target": "Quarantine false or stale formal audit evidence after PR #1182 merged; restore fail-closed SKIPPED package without exact-head READY claims or Wave 0 authorization.",
+  "invariants": [
+    "exact_head_audit=NOT_PROVEN",
+    "wave_0_authorized=false",
+    "No historical artifact may be interpreted as PR Steward READY",
+    "Canonical formal status remains embedded_audit.status=SKIPPED with auditor_tool=none and auditor_model=unknown",
+    "PROOF.json.sig must remain absent; no signed audit attestation over quarantine disposition",
+    "This is a quarantine/correction packet, not an audited proof-only successor",
+    "No claim that PR #1182 is safe to dispatch; no Wave 0; no implementation mutation",
+    "MODEL_CALLS_REQUIRED=0; risk lane L0 only"
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "chore/pr-1182-postmerge-proof-quarantine",
+    "base_branch": "main",
+    "stacked_because": "L0 post-merge proof quarantine for merged PR #1182; not implementation re-open."
+  },
+  "commit": {
+    "message": "proof(audit): quarantine PR 1182 post-merge audit evidence as SKIPPED",
+    "allowlist": [
+      "task-packets/TP-REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE.json",
+      "task-packets/TP-REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE.md",
+      "proof/TP-REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE/**",
+      "proof/pr_merge/embedded-audit/pr-1182/**"
+    ],
+    "verify": [
+      "python3 -m jsonschema -i task-packets/TP-REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python3 scripts/audit/validate_audit_proof.py proof/pr_merge/embedded-audit/pr-1182/PROOF.json",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "git diff --check origin/main...HEAD",
+      "pre-commit run --from-ref origin/main --to-ref HEAD"
+    ]
+  },
+  "pr": {
+    "title": "proof(audit): quarantine PR 1182 post-merge audit evidence as SKIPPED",
+    "body": "Post-merge L0 quarantine for PR #1182 formal audit evidence. Merged content head 1b80fc6f11681baebdb00acc7f756ce8471a24b0; merge commit fb710ef40500695882a5b421a3325150176fffa1. Canonical SKIPPED unsigned status; exact_head_audit=NOT_PROVEN; wave_0_authorized=false. Not an audited proof-only successor. No Wave 0. No implementation mutation.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "bind-canonical-packet",
+      "task": "Add machine-valid canonical Task Packet JSON for TP-REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE with L0 allowlist, invariants, validation, and stop conditions.",
+      "validation": [
+        "task-packets/TP-REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE.json validates against dopetask-canonical-spec.json",
+        "Required roots present: id, project, target, repo_binding, series, commit, pr, steps"
+      ]
+    },
+    {
+      "id": "schema-conforming-report-path",
+      "task": "Place quarantine AUDITOR_REPORT at proof/TP-REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE/AUDITOR_REPORT.md and point embedded_audit.report_path to that schema-conforming path.",
+      "validation": [
+        "report_path equals proof/TP-REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE/AUDITOR_REPORT.md",
+        "scripts/audit/validate_audit_proof.py PASSes without schema pattern softening",
+        "report file exists at the declared path"
+      ]
+    },
+    {
+      "id": "preserve-skipped-unsigned",
+      "task": "Preserve truthful unsigned SKIPPED state: status=SKIPPED, auditor_tool=none, auditor_model=unknown, exact_head_audit=NOT_PROVEN, wave_0_authorized=false, no PROOF.json.sig.",
+      "validation": [
+        "PROOF.json embedded_audit.status is SKIPPED",
+        "auditor_tool is none and auditor_model is unknown",
+        "PROOF.json.sig is absent",
+        "wave_0_authorized is false and model_calls_required is 0"
+      ]
+    },
+    {
+      "id": "l0-validate-and-stop",
+      "task": "Run L0 deterministic validation only; stop if allowlist escapes, lane escalates, signature appears, or READY/Wave 0 claims are introduced.",
+      "validation": [
+        "change-contract max_lane=L0 and model_audit_required=false",
+        "no runtime, routing, orchestration, workflow, schema, signer-policy, or governance-tool path changes",
+        "pre-commit and git diff --check PASS"
+      ]
+    }
+  ]
+}

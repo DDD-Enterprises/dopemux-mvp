@@ -18,10 +18,10 @@
 ### Tool Preferences (Authority-Aware)
 
 
-**Analysis** (Zen MCP):
+**Analysis** (PAL MCP):
 ```python
-# ✅ Use Zen for systematic analysis
-mcp__zen__codereview(
+# ✅ Use PAL for systematic analysis
+mcp__pal__codereview(
     model=model_from_tool_orchestrator,
     step="Analysis step...",
     ...

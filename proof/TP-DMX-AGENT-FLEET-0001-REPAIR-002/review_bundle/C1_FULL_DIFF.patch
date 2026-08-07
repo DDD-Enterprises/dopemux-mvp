@@ -1,0 +1,369 @@
+diff --git a/.claude/personas/modernization.agent.md b/.claude/personas/modernization.agent.md
+index ef64a26b43..ad8a5a666a 100644
+--- a/.claude/personas/modernization.agent.md
++++ b/.claude/personas/modernization.agent.md
+@@ -1,7 +1,6 @@
+ ---
+ name: 'Modernization'
+ description: 'Human-in-the-loop modernization assistant for analyzing, documenting, and planning complete project modernization with architectural recommendations.'
+-model: 'GPT-5'
+ tools: ['search', 'read', 'edit', 'execute', 'web']
+ ---
+
+diff --git a/.claude/personas/python-mcp-expert.agent.md b/.claude/personas/python-mcp-expert.agent.md
+index faccb8e803..1466422118 100644
+--- a/.claude/personas/python-mcp-expert.agent.md
++++ b/.claude/personas/python-mcp-expert.agent.md
+@@ -1,7 +1,6 @@
+ ---
+ description: "Expert assistant for developing Model Context Protocol (MCP) servers in Python"
+ name: "Python MCP Server Expert"
+-model: GPT-4.1
+ tools: ['read', 'edit', 'search', 'execute']
+ ---
+
+diff --git a/.claude/personas/se-gitops-ci-specialist.agent.md b/.claude/personas/se-gitops-ci-specialist.agent.md
+index 1315293ccd..c8619a886c 100644
+--- a/.claude/personas/se-gitops-ci-specialist.agent.md
++++ b/.claude/personas/se-gitops-ci-specialist.agent.md
+@@ -1,7 +1,6 @@
+ ---
+ name: 'SE: DevOps/CI'
+ description: 'DevOps specialist for CI/CD pipelines, deployment debugging, and GitOps workflows focused on making deployments boring and reliable'
+-model: GPT-5
+ tools: ['read', 'edit', 'search', 'execute']
+ ---
+
+diff --git a/.claude/personas/se-security-reviewer.agent.md b/.claude/personas/se-security-reviewer.agent.md
+index f3a97ce880..af7d667d9b 100644
+--- a/.claude/personas/se-security-reviewer.agent.md
++++ b/.claude/personas/se-security-reviewer.agent.md
+@@ -1,7 +1,6 @@
+ ---
+ name: 'SE: Security'
+ description: 'Security-focused code review specialist with OWASP Top 10, Zero Trust, LLM security, and enterprise security standards'
+-model: GPT-5
+ tools: ['read', 'search']
+ ---
+
+diff --git a/.claude/personas/se-system-architecture-reviewer.agent.md b/.claude/personas/se-system-architecture-reviewer.agent.md
+index 7d0c9c6465..10055a1e53 100644
+--- a/.claude/personas/se-system-architecture-reviewer.agent.md
++++ b/.claude/personas/se-system-architecture-reviewer.agent.md
+@@ -1,7 +1,6 @@
+ ---
+ name: 'SE: Architect'
+ description: 'System architecture review specialist with Well-Architected frameworks, design validation, and scalability analysis for AI and distributed systems'
+-model: GPT-5
+ tools: ['read', 'search']
+ ---
+
+diff --git a/.claude/personas/se-technical-writer.agent.md b/.claude/personas/se-technical-writer.agent.md
+index 67fa118031..8f7cfefe1f 100644
+--- a/.claude/personas/se-technical-writer.agent.md
++++ b/.claude/personas/se-technical-writer.agent.md
+@@ -1,7 +1,6 @@
+ ---
+ name: 'SE: Tech Writer'
+ description: 'Technical writing specialist for creating developer documentation, technical blogs, tutorials, and educational content'
+-model: GPT-5
+ tools: ['read', 'edit', 'search']
+ ---
+
+diff --git a/.claude/personas/se-ux-ui-designer.agent.md b/.claude/personas/se-ux-ui-designer.agent.md
+index 7faf420b15..ce8d5c5fec 100644
+--- a/.claude/personas/se-ux-ui-designer.agent.md
++++ b/.claude/personas/se-ux-ui-designer.agent.md
+@@ -1,7 +1,6 @@
+ ---
+ name: 'SE: UX Designer'
+ description: 'Jobs-to-be-Done analysis, user journey mapping, and UX research artifacts for Figma and design workflows'
+-model: GPT-5
+ tools: ['read', 'edit', 'search']
+ ---
+
+diff --git a/claudedocs/agent-fleet-audit-2026-07-30.md b/claudedocs/agent-fleet-audit-2026-07-30.md
+index 5058ed2a98..b0ac325049 100644
+--- a/claudedocs/agent-fleet-audit-2026-07-30.md
++++ b/claudedocs/agent-fleet-audit-2026-07-30.md
+@@ -1,89 +1,135 @@
+-# Agent Fleet Audit Ledger — 2026-07-30
+-
+-**Packet**: TP-DMX-AGENT-FLEET-0001
+-**Method**: deterministic inspection (grep/frontmatter parse/cmp), no runtime calls.
+-**Scope**: 104 repo files + 33 personal-lane files = 137 total.
+-**Note**: two cheap-model audit subagents (Kimi-K2.5, GLM-5.2) were delegated this audit and both stopped early without writing output (platform early-stop). Audit completed in-session deterministically. Recorded for proof honesty.
+-
+-## Surface inventory
+-
+-| Surface | Files | Role |
+-|---|---|---|
+-| `.github/agents/*.agent.md` | 6 | Copilot custom agents (VS Code target, handoff-chained) |
+-| `.claude/personas/*.agent.md` | 35 | Persona library (canonical, runtime-primary via `InstructionManager`) |
+-| `.claude/personas/*-dopemux.md` | 13 | Dopemux-tuned persona bodies (no frontmatter by design) |
+-| `.claude/personas/PERSONA_INDEX.md` | 1 | Hand-maintained index |
+-| `.claude/agents/*.md` | 6 | Curated active set (4 agents + `_index.md` + 1 stray duplicate) |
+-| `src/dopemux/personas/*.agent.md` | 10 | Packaged wheel fallback — **byte-identical copies** of canonical |
+-| `templates/skills/*/SKILL.md` | 20 | Skill templates (2 runner-variant families) |
+-| `~/.commandcode/agents/*.md` | 17 | Personal Command Code agents (lane S8) |
+-| `~/.claude/agents/*.md` | 16 | Personal Claude Code agents (lane S8) |
+-
+-Runtime truth (`src/dopemux/claude/instruction_manager.py`): `.claude/personas/*.agent.md` resolves first (alias table lines 41-59), packaged `src/dopemux/personas/` is the `dopemux init` fallback. Aliased stems: task-researcher, task-planner, principal-software-engineer, janitor, workflow-manager, workflow-executor, se-system-architecture-reviewer, wg-code-sentinel, devops-expert.
+-
+-## Verdicts — `.github/agents/` (6/6 KEEP)
+-
+-All 6 conform to `config/instructions/agents.instructions.md`: description (single-quoted, 50-150 chars), name, least-privilege tools (readers = read+search; implementer/testgen add edit+execute — justified), `target: vscode` (correct: handoffs are VS Code-only), `infer: true`, handoff targets all resolve within the set.
+-
+-- UNKNOWN: `model: 'Claude Sonnet 4.5'` external vendor verification NOT_RUN (web unavailable this session). Kept: matches the repo's own authoring-guide example and is marked "repo-established Copilot model" in-file.
+-- Minor: reviewer/testgen lack the lane comments the other 4 carry. Cosmetic; not changed (no cosmetic-only edits).
+-
+-## Verdicts — `.claude/personas/*.agent.md` (35)
+-
+-| Verdict | Files | Issues |
+-|---|---|---|
+-| KEEP | adr-generator, devops-expert, github-actions-expert, implementation-plan, prd, principal-software-engineer(FIX-name), se-* (6), specification(FIX-name), task-planner, task-researcher(FIX-tools), tech-debt-remediation-plan(FIX-name), wg-code-alchemist(FIX-name), wg-code-sentinel(FIX-name), workflow-executor, workflow-manager, critical-thinking(FIX-name), devils-advocate(FIX-name), search-ai-optimization-expert(FIX-name), prompt-engineer(FIX name+tools) | see FIX columns |
+-| FIX | 13 missing `name:`: critical-thinking, devils-advocate, gilfoyle→archive, janitor, mentor→archive, principal-software-engineer, prompt-builder, prompt-engineer, search-ai-optimization-expert, specification, tech-debt-remediation-plan, wg-code-alchemist, wg-code-sentinel | frontmatter |
+-| FIX | Raw legacy VS Code tool ids instead of least-privilege aliases — **16 files** (initial ledger listed 4; validation gate B2 caught the full set): janitor (worst: `vscode/installExtension`, `vscode/vscodeAPI`…), task-researcher, prompt-builder, principal-software-engineer, critical-thinking, specification, tech-debt-remediation-plan, wg-code-alchemist, wg-code-sentinel, search-ai-optimization-expert, devops-expert, github-actions-expert, implementation-plan, prd, se-gitops-ci-specialist, se-security-reviewer, se-system-architecture-reviewer, se-technical-writer, se-ux-ui-designer, task-planner, workflow-executor, workflow-manager (all FIXED to role-scoped aliases); meta-agentic-project-scaffold→archive | tools |
+-| FIX (gate-caught) | task-planner tools contained `context7` + azure/terraform leftovers; python-expert-dopemux.md:87 `Route to Task-Master` → Task-Orchestrator; templates/skills/ci-remediation-specialist description unquoted colon (YAML error). All found by S9 gates after truncated initial greps — ledger corrected | stale refs / yaml |
+-| FIX | 4 missing `tools:` (= all tools granted): adr-generator, prompt-engineer, python-mcp-expert, Beast-Mode→archive | tools |
+-| FIX | prompt-builder: body mandates `context7` (lines 56, 175) — service not in fleet | stale ref |
+-| ARCHIVE | gilfoyle (snark voice, zero operational value), Ultimate-Transparent-Thinking-Beast-Mode (29KB mandatory-sequential-thinking injection; service not in fleet), context7 (org-level-only `mcp-servers` block invalid at repo level; external hosted MCP not in fleet), meta-agentic-project-scaffold ("pull files from awesome-copilot" scraper; over-privileged: `updateUserPreferences`, `copilotCodingAgent`), plan (thin wrapper per PERSONA_INDEX), mentor (generic; superseded by socratic-mentor/learning-guide dopemux variants) | consolidation |
+-| KEEP (model note) | se-* ×6 pin `GPT-5`; modernization `GPT-5`; meta-scaffold/python-mcp-expert `GPT-4.1` — plausible Copilot ids, external verification NOT_RUN (web unavailable); kept per repo-established pattern | UNKNOWN |
+-
+-No Task-Master / mem4sprint / o3 / gemini-2.5 hits anywhere in `.claude/personas/`. ~~Zen-MCP 0 hits~~ **CORRECTED (codereview HIGH)**: initial grep matched only `Zen-MCP` (hyphen) and missed `Zen MCP` / `mcp__zen__` — 9 `*-dopemux.md` files carried 16 Zen references; all rewritten to PAL (`(PAL MCP)`, `mcp__pal__*`, prefix verified in repo docs) in the gate-caught slice. Extended gate pattern now includes `Zen[- ]MCP|mcp__zen`. No file exceeds the 30k-char guide limit (max 29,019 = Beast-Mode, archived).
+-
+-## Verdicts — `.claude/personas/*-dopemux.md` (13 KEEP, 1 FIX-note)
+-
+-No frontmatter by design (persona bodies, paired with `~/.claude/agents` counterparts per index). ~~Zero stale-fleet hits~~ **CORRECTED**: 9 files carried Zen MCP refs (see above) — fixed. Serena/ConPort "authority" claims verified against `mcp_catalog.yaml` — both servers exist in fleet (serena worktree-scoped pending P-20; conport worktree-scoped pending P-18), claims directionally correct. Also corrected in the gate-caught slice: `modernization` tools → `['search','read','edit','execute','web']` (was aliases + execute/* extras + agent/todo); `refine-issue` tools → `['read','search', github/* minimal subset]` (was bare ids incl. `delete_issue` — least-privilege violation removed).
+-- backend-architect, devops-architect, frontend-architect, general-purpose, learning-guide, performance-engineer, python-expert, quality-engineer, security-engineer, socratic-mentor, statusline-setup, system-architect, technical-writer: KEEP.
+-
+-## Verdicts — PERSONA_INDEX.md (FIX)
+-
+-- Claims "48 persona files" — accurate today (35 + 13); must be regenerated after archives (→ 42 + archive note).
+-- Quick-pick table: all entries resolve to on-disk files (verified). Post-archive entries for gilfoyle/Beast-Mode/context7/meta-scaffold/plan/mentor must be removed.
+-- Overlap section resolves as: archive plan.agent.md, mentor.agent.md; keep remaining groups (distinct scopes, documented).
+-
+-## Verdicts — `.claude/agents/` (4 FIX-REWRITE + 1 stray + index FIX)
+-
+-| File | Verdict | Evidence |
+-|---|---|---|
+-| architect.md | FIX-REWRITE | o3/o3-mini/o3-pro/gemini-2.5 ×6 (lines 16,26,27,31,49,92), Context7, Zen-MCP; no `tools:` |
+-| developer.md | FIX-REWRITE | same model staleness ×6, Context7 ×2, Task-Master (line 143); no `tools:` |
+-| project-manager.md | FIX-REWRITE | mem4sprint (lines 24,129), Task-Master ×4 (25,138,151,206), stale models ×5; no `tools:` |
+-| researcher.md | FIX-REWRITE | Context7 ×3 (25,39…), stale models ×6; no `tools:` |
+-| _index.md | FIX | Task-Master (108), mem4sprint (166), stale models (52-65), "48 personas" claim, Context7 |
+-| python-mcp-expert.agent.md | REMOVE (stray) | **byte-identical** to `.claude/personas/python-mcp-expert.agent.md` (cmp verified); `_index.md` defines curated set as 4 agents |
+-
+-## Verdicts — `src/dopemux/personas/` (10 KEEP-as-generated)
+-
+-Byte-identical to canonical (verified: `scripts/sync_personas.py --check` exit 0). Drift risk resolved by new sync script + `tests/arch/test_persona_fleet_contract.py`. No aliased/packaged stem is in the archive set — fallback resolution safe.
+-
+-## Verdicts — `templates/skills/` (20 KEEP)
+-
+-- name ↔ directory match: 20/20 OK.
+-- Variant families (testgen ×4, pr-docgen-sync ×4): consistent wrapper pattern — base skill + per-runner wrappers differing in frontmatter description, title, and routing section only (~93 lines, runner-scoped). By design; no change.
+-- Descriptions have clear delegation triggers. pr-docgen-sync base description is ~600 chars (long but functional) — left as-is (no cosmetic-only edits).
+-
+-## Personal lane (S8) — `~/.commandcode/agents/` (17) + `~/.claude/agents/` (16)
+-
+-- 16/17 commandcode files compliant (name, description, category). **FIXED**: `dopemux.md` missing required `name:` — added `name: dopemux`. Opencode keys (`mode`, `permission`, `color`) kept: harmless passthrough in Command Code, functional in opencode. Model `anthropic/claude-sonnet-4-5` kept (BYO-provider passthrough, observed live in roster).
+-- 15/16 cross-runtime pairs byte-identical; `security-engineer.md` differs by exactly one line (runtime name in context note) — intentional mirroring, no change.
+-- Neither set declares `tools:`. Doc says omitted = no tools; observed behavior = agents dispatch and use tools. **CONFLICT unresolved** — recorded UNKNOWN; no restrictive tools lists added to working agents without runtime evidence.
+-- Roster difference: `dopemux.md` exists only in commandcode set. Left as-is (intent UNKNOWN).
+-- Model pinning on personal agents: considered, **rejected** — inherit-session is the working default; TP lane tagging (done in packet) is the taste-compliant routing mechanism.
+-- Personal-lane edits are proof-recorded here and excluded from the PR diff.
+-
+-## Archive set (S4) — final
+-
+-`gilfoyle`, `Ultimate-Transparent-Thinking-Beast-Mode`, `context7`, `meta-agentic-project-scaffold`, `plan`, `mentor` → `.claude/personas/archive/`. None aliased in `ROLE_ALIASES`; none packaged; no repo-wide filename references outside PERSONA_INDEX (grep-verified at implementation time, recorded in proof).
++# Agent Fleet Audit Ledger
++
++## Deterministic scope
++
++- Derived inventory count: **123**
++- Prior approximate `137` / `104 repo + 33 personal` claims: **CONFLICTING until equal to this deterministic inventory**.
++- Personal-lane paths are home-relative and contents are not committed.
++
++<!-- AGENT_FLEET_LEDGER_BEGIN -->
++| Claim | Surface | Path | Verdict | Evidence | Action | Residual risk |
++|---|---|---|---|---|---|---|
++| OBSERVED | repo | `.claude/agents/_index.md` | INSPECTED | sha256 `43bbbb9b9872070e64643b95b92ab7bb65214691f22bf6fa3baae51fd0403324`; 2564 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/agents/architect.md` | INSPECTED | sha256 `6146b54913651acce7626a66814e30c8e3f0f988c8e4c2d65ddc35924939e71e`; 2132 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/agents/developer.md` | INSPECTED | sha256 `4593de7c98b4a2885e26ba7a29cf57e270ecff0a416d455593cb9c4510958d60`; 1937 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/agents/project-manager.md` | INSPECTED | sha256 `baf34cc6214afc7b4a040c6e85cf849c0bac671f3b1c4abf403b50f80cb33a14`; 2005 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/agents/researcher.md` | INSPECTED | sha256 `d9173e822f5c4fe59cbf0c7026c12522b615fa33099394dc270d2238c17a2c88`; 1780 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/PERSONA_INDEX.md` | INSPECTED | sha256 `77820947fc3808b3203ca73a2fff93f340dba4f8127bb50773a7d1dd6e68e434`; 5906 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/adr-generator.agent.md` | INSPECTED | sha256 `80cd7fc3acfc679a8560f162162d630d0efb07f0d5ef8cb83b98805f87b87dad`; 6696 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/archive/Ultimate-Transparent-Thinking-Beast-Mode.agent.md` | INSPECTED | sha256 `e106b423c8e0c0dcd705f7ba5d940fb0c003d82d0116b2b51bfb0a593640dcf1`; 29019 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/archive/context7.agent.md` | INSPECTED | sha256 `fdc4139376ff3b5dde385988d90b8995ca50cdee1d151e115dd9be8fa8eedd69`; 26684 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/archive/gilfoyle.agent.md` | INSPECTED | sha256 `0b22d17e19e0876e0645476278762d0aeca1c9396e06da0e85a45f768b4ea0b1`; 3886 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/archive/mentor.agent.md` | INSPECTED | sha256 `59bd43dd5537962e1040142b9a3a6a47cf84a3cc4b8c82c911ee9befe05fce64`; 3538 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/archive/meta-agentic-project-scaffold.agent.md` | INSPECTED | sha256 `045954f1d22f9c9e5cf36ca248d60b53ace5ffdc286998592df37662795ddda8`; 1535 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/archive/plan.agent.md` | INSPECTED | sha256 `33f6a596d04356e35c7b8b706abb3bd326d5415a2e218b078415d8a560310c97`; 6774 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/backend-architect-dopemux.md` | INSPECTED | sha256 `dc5562119307b690e7fa5e27ee84c2af6ed3f4e31ad79169848f1caa50e8b16f`; 5397 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/critical-thinking.agent.md` | INSPECTED | sha256 `e72ef5208c98bcdcd0b049fe9cbed21cf6ff48745e56ea50082a892936c7cc0e`; 2034 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/devils-advocate.agent.md` | INSPECTED | sha256 `4e10ec2887a48e88a8e8e6c01197819a9ae1101b99bd6db36749254f658137fe`; 2127 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/devops-architect-dopemux.md` | INSPECTED | sha256 `d91180ca3080ced9d8e2a607ccae64e23d694bbdf5211019741c5984b207ad3f`; 5170 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/devops-expert.agent.md` | INSPECTED | sha256 `43abd11ca2f6c65b56beaa6229149e47a3d87fa81a143ec6e239852a3a27878e`; 8226 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/frontend-architect-dopemux.md` | INSPECTED | sha256 `6799110d68388aacbdb87be82b3b06224434852e1f43997582f884210e851e1b`; 5213 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/general-purpose-dopemux.md` | INSPECTED | sha256 `9f661947ce2943fce54014ee2bc07bb1d1845d1f5e68d49d44674ac99aefc571`; 5397 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/github-actions-expert.agent.md` | INSPECTED | sha256 `5b0c6aa2c04fa91d72183a7c1da815ee800d64768146d808f2e46d10ba6f564b`; 4525 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/implementation-plan.agent.md` | INSPECTED | sha256 `b92d9055f3c78098628f253932a76da83d6637acee2142666ff9d0a102c9f9e9`; 6463 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/janitor.agent.md` | INSPECTED | sha256 `f68b0501e6687888da30f9530776419129ef23bb08cc19b231212302331e4a5a`; 2722 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/learning-guide-dopemux.md` | INSPECTED | sha256 `2f0e3f5df6c391e323eb3e79cdd53f147eb419cb60e6bcba185b046bdab4d9d2`; 5141 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/modernization.agent.md` | INSPECTED | sha256 `ec0204aac5021c946cf036b7969cf713cca0f83209e45c86ac8dcfe95cdd0674`; 26626 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/performance-engineer-dopemux.md` | INSPECTED | sha256 `832c13b665f50bc7e96012f2d1b2e67a33d159ae04c2b04b33b24a03773f1cfe`; 5432 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/prd.agent.md` | INSPECTED | sha256 `28fc3ccb1b840cdf0b7a17bcdbcd16f2e063c295c9281801dc7caf5deb3df36e`; 5386 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/principal-software-engineer.agent.md` | INSPECTED | sha256 `3757cbf09dc6b93b43f90a6c52e165d8cc1b77d84676e8d950fc367ff06a8e6e`; 2449 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/prompt-builder.agent.md` | INSPECTED | sha256 `39df92c0a4e368ebf70e8054f406309f522f29fa4b73267ba4a52ecd4445c420`; 18169 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/prompt-engineer.agent.md` | INSPECTED | sha256 `2e6080cba6f275a199058f07eadc26ac4fe3ca86eb25dc83a8e622333540a237`; 5695 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/python-expert-dopemux.md` | INSPECTED | sha256 `2ff3e51920d3647c9b2c881cd1250b195ad32be45c77d44172b01827d5ff3f5e`; 15069 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/python-mcp-expert.agent.md` | INSPECTED | sha256 `cd66589e07c7a7c9a5cd71a3a3b50209563f234243d4c3052cde837d27d68a92`; 6143 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/quality-engineer-dopemux.md` | INSPECTED | sha256 `aca19d18509d30152b2c388c302190b87559ce1bfcc99914782d48c55ec72644`; 5419 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/refine-issue.agent.md` | INSPECTED | sha256 `d38e96d8ed2df51fef61f16983d88f4bda4097d2b56e70259c9d4c909721bc48`; 1330 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/se-gitops-ci-specialist.agent.md` | INSPECTED | sha256 `ec244168e5f4013c437f22a04412cebeffaa77903ea74ae804461b68138cab3e`; 5313 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/se-product-manager-advisor.agent.md` | INSPECTED | sha256 `d38a92f0b9a8c8a6d78c303378f95d16d040836e027f63628e4d0266aacddd11`; 6499 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/se-security-reviewer.agent.md` | INSPECTED | sha256 `e0d456a8d1e95309aed8a11f62b12da05dc5344ed13400179fe9ef71260a7db9`; 3915 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/se-system-architecture-reviewer.agent.md` | INSPECTED | sha256 `ba202ea1a7213a57454cb256d7e69b08f1f141e12f5bf9ef264679016ace3e5a`; 4323 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/se-technical-writer.agent.md` | INSPECTED | sha256 `d0be107f09d0a4b8fa29cba0f805e77531a3fe8dea2edf078214d9c8275b6897`; 10727 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/se-ux-ui-designer.agent.md` | INSPECTED | sha256 `64faf994be782b69f3cdec1d0ca847d943af3ecfa5a22b0ace0fd036d45ce220`; 10436 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/search-ai-optimization-expert.agent.md` | INSPECTED | sha256 `a2442ab9f38fceefef03dc4fb79d21cc5f2d90b02d3263b72d2eae887fe6d6d9`; 14922 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/security-engineer-dopemux.md` | INSPECTED | sha256 `6857b5cee66ba7373d2b56f18da97921397a33e04055dd64e45c544ee8659df4`; 5207 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/socratic-mentor-dopemux.md` | INSPECTED | sha256 `eb54d2ddf0c59f34eaecef87420ff9f60417640b4d70420d6b711c12cbcf5d70`; 5171 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/specification.agent.md` | INSPECTED | sha256 `f5e8350cf0f884410565ebb6f59991da1081bf6edaca9af72d886db02b76f76d`; 5659 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/statusline-setup-dopemux.md` | INSPECTED | sha256 `505aa29009a507343128197ee768ff9f281ba94ada6e66b69ced77656c617552`; 5472 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/system-architect-dopemux.md` | INSPECTED | sha256 `a9e0fc57160caeafcdcda466b81a62d74719970a8b2d4d855a4a65ebe21a65e8`; 5364 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/task-planner.agent.md` | INSPECTED | sha256 `0630e8a030ee0922751a68fc379e666d1ae01b78ac3c89fbb8e094198a67f6e0`; 15118 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/task-researcher.agent.md` | INSPECTED | sha256 `1be510685507259d6cebd1ef6764ae0798396c9f4ecadd13926dc92e90e9d411`; 12288 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/tech-debt-remediation-plan.agent.md` | INSPECTED | sha256 `1b9138f5a66e65798abe843413b1aace4f05f5fafc2b8b919e42b0401f73ec3a`; 1654 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/technical-writer-dopemux.md` | INSPECTED | sha256 `09b3676dcf2dea08dcf2436f43281c7d8c22b43105f9a493080c347920a53d5d`; 4985 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/wg-code-alchemist.agent.md` | INSPECTED | sha256 `7313fde08f283550d7cff96a2017b44b7ee7219b2f53fdf73d909ebf68dd72fe`; 4309 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/wg-code-sentinel.agent.md` | INSPECTED | sha256 `4108c593b97509c388a2033d98712e491b5befb3036f792fb59d806b64c7324e`; 3352 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/workflow-executor.agent.md` | INSPECTED | sha256 `588cacc67bdea95b983fee54c7fa357e678dba819f1e2f594c7852dbc4c705c3`; 1986 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.claude/personas/workflow-manager.agent.md` | INSPECTED | sha256 `3bca09fd872943d0af44c6a76e849c5bcb8132687d0dc0d47ceb5eac0806f126`; 2066 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.github/agents/dopemux-auditor.agent.md` | INSPECTED | sha256 `65df9e25726976a87a909f5d0b176adbf28ffba35c4527ce14d2180a13c5d8af`; 3926 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.github/agents/dopemux-implementer.agent.md` | INSPECTED | sha256 `2a3fd440b1bb6c3d36f8b8ecc2516f4eb1622bc55d40648541b3bd9d13202568`; 3974 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.github/agents/dopemux-planner.agent.md` | INSPECTED | sha256 `c5c1b7dbfc648c8173874ce821a4a53d7c082f91620adb7f0a1ba83ee87626be`; 3069 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.github/agents/dopemux-reader.agent.md` | INSPECTED | sha256 `cc84a7068d515e4c81001f89b2e22cc1a3db7333fcccb52888f4df1a0c95cb83`; 3109 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.github/agents/dopemux-reviewer.agent.md` | INSPECTED | sha256 `53e376bc1b6e456a91997bb5a6e3dbd7e6a83e00ec99750119f32c1ebd168436`; 2748 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `.github/agents/dopemux-testgen.agent.md` | INSPECTED | sha256 `ecfc668dbf24bf189522056ce87db659c6e0381a2a1d9264c9afb6a4a2484024`; 3459 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `src/dopemux/personas/devops-expert.agent.md` | INSPECTED | sha256 `43abd11ca2f6c65b56beaa6229149e47a3d87fa81a143ec6e239852a3a27878e`; 8226 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `src/dopemux/personas/janitor.agent.md` | INSPECTED | sha256 `f68b0501e6687888da30f9530776419129ef23bb08cc19b231212302331e4a5a`; 2722 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `src/dopemux/personas/principal-software-engineer.agent.md` | INSPECTED | sha256 `3757cbf09dc6b93b43f90a6c52e165d8cc1b77d84676e8d950fc367ff06a8e6e`; 2449 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `src/dopemux/personas/se-security-reviewer.agent.md` | INSPECTED | sha256 `e0d456a8d1e95309aed8a11f62b12da05dc5344ed13400179fe9ef71260a7db9`; 3915 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `src/dopemux/personas/se-system-architecture-reviewer.agent.md` | INSPECTED | sha256 `ba202ea1a7213a57454cb256d7e69b08f1f141e12f5bf9ef264679016ace3e5a`; 4323 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `src/dopemux/personas/task-planner.agent.md` | INSPECTED | sha256 `0630e8a030ee0922751a68fc379e666d1ae01b78ac3c89fbb8e094198a67f6e0`; 15118 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `src/dopemux/personas/task-researcher.agent.md` | INSPECTED | sha256 `1be510685507259d6cebd1ef6764ae0798396c9f4ecadd13926dc92e90e9d411`; 12288 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `src/dopemux/personas/wg-code-sentinel.agent.md` | INSPECTED | sha256 `4108c593b97509c388a2033d98712e491b5befb3036f792fb59d806b64c7324e`; 3352 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `src/dopemux/personas/workflow-executor.agent.md` | INSPECTED | sha256 `588cacc67bdea95b983fee54c7fa357e678dba819f1e2f594c7852dbc4c705c3`; 1986 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `src/dopemux/personas/workflow-manager.agent.md` | INSPECTED | sha256 `3bca09fd872943d0af44c6a76e849c5bcb8132687d0dc0d47ceb5eac0806f126`; 2066 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `templates/skills/brief-drafter/SKILL.md` | INSPECTED | sha256 `41b9e06ea34c5ec5a2adbcae54ac23f27b04a95e9ebb16652c9fae96d46f9efa`; 1255 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `templates/skills/ci-remediation-specialist/SKILL.md` | INSPECTED | sha256 `ce755c132962b4d4c3f04e065160035e82c39e51abafbaf4a4f4ba5a894ea2c3`; 2506 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `templates/skills/code-implementer/SKILL.md` | INSPECTED | sha256 `5313de1f7a53e7fb13a8aff0d73b38b8394a97821fd72760d8c5865741bf0d00`; 1472 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `templates/skills/code-researcher/SKILL.md` | INSPECTED | sha256 `ea58656ace51afee80e93b66e695e451cd0c12da137aa45501eb40ec6a799e82`; 821 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `templates/skills/implementation-planner/SKILL.md` | INSPECTED | sha256 `053de210efabfbc104e15ba705b05b791b6441bc6f50648dad20e9c7a4dae9ed`; 1194 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `templates/skills/load-orchestrator-persona/SKILL.md` | INSPECTED | sha256 `07600f92a29ca6e86f9f28ac31b5f5badd217fd7f3847f728acf7501a998bd5c`; 3073 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `templates/skills/plan-reviewer/SKILL.md` | INSPECTED | sha256 `fcd76718b13694488101e82ee05a7aa9dad67ef45d6194fd4a5cb7943e893255`; 928 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `templates/skills/pr-docgen-sync-claude/SKILL.md` | INSPECTED | sha256 `718716e011715287ba3f4cfb2bb2b635118e00e1ffd22385dcff1662d0c77524`; 623 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `templates/skills/pr-docgen-sync-copilot/SKILL.md` | INSPECTED | sha256 `df902df8cfca2367b283b7218d9dd8287e60243d6da1799712c3cea5542a9834`; 634 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `templates/skills/pr-docgen-sync-gemini/SKILL.md` | INSPECTED | sha256 `eb61d7d2935178606f4a720befbc3fd42045266de884b431c89f3b32aa8f9afe`; 626 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `templates/skills/pr-docgen-sync/SKILL.md` | INSPECTED | sha256 `fe45204440db243c2b37be7b073cfbcb37766ece042ac5f5ad83131619e32712`; 3689 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `templates/skills/pr-merge-specialist/SKILL.md` | INSPECTED | sha256 `5d6bd0eec8cccffd7c4f8e172ac1d0231e41b68f60df1a71ccc79a8498aa9c97`; 2138 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `templates/skills/quality-refactorer/SKILL.md` | INSPECTED | sha256 `80b55bfac0b6b4725ae104acfcc1e82c5d250af397f752b31265683a65419303`; 929 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `templates/skills/research-reviewer/SKILL.md` | INSPECTED | sha256 `e28b17967a8ec45fe6aafdb83c1da3694a21ce9cc1766369f71331c441a586e8`; 946 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `templates/skills/task-breakdown/SKILL.md` | INSPECTED | sha256 `1be265e138db40ddf9d2ec6c8d8648c9411ba0c73a346e7bbb3f9f7497925706`; 1272 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `templates/skills/testgen-claude/SKILL.md` | INSPECTED | sha256 `89e9581c0495fc896ff0c7fb09d4f9215ba6d752cc6cac50926e5bc54dd5c90d`; 619 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `templates/skills/testgen-copilot/SKILL.md` | INSPECTED | sha256 `b5ebfb750520bbc843d5d4ba2594813722c8e307d0e63f01c4d36f59a15bf0d7`; 662 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `templates/skills/testgen-gemini/SKILL.md` | INSPECTED | sha256 `6236f5eec41d225aa11462a332e3c695b5bd24f340c13f48f6850fb4d025cfa1`; 619 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `templates/skills/testgen/SKILL.md` | INSPECTED | sha256 `c0a7cf6dab00ba99b313643e46f1602f34c84e8e35733880db41d869c20a63e0`; 3126 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | repo | `templates/skills/vibe-pr-merge/SKILL.md` | INSPECTED | sha256 `d3cd63bed0a70aab24a72c94841b6f834161df82185514e1c55b07c0aee2e79a`; 2127 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.claude/agents/backend-architect.md` | INSPECTED | sha256 `23df3e884971ae87ef865cc10ba18c42c0f29783c48afa48e677d364c305b0de`; 2346 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.claude/agents/business-panel-experts.md` | INSPECTED | sha256 `ba5556ea283a67b1d945dff10d890ba3bda4126554339e64b27b518448802e51`; 9822 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.claude/agents/deep-research-agent.md` | INSPECTED | sha256 `a5f7e80464dd80d41b8a65ae8190a0139743e2eded5b612251c934ace2bf327e`; 4702 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.claude/agents/devops-architect.md` | INSPECTED | sha256 `abb658244093a92a342aca91f8b433a742cb4e20ee402dfc6b1479f5f5eafdcb`; 2534 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.claude/agents/frontend-architect.md` | INSPECTED | sha256 `82a033a43a48e34ea8ec82d4ecbdcb03266c5bae97f2de7b05bfe9f93a17f338`; 2402 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.claude/agents/learning-guide.md` | INSPECTED | sha256 `6c97888c32b57915f2e0e36071ff1fd65c0663e6295295935f031e5042944806`; 2982 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.claude/agents/performance-engineer.md` | INSPECTED | sha256 `d1758473c8b1f77d45dd1aef82084f0678527db7a66330a52a5aad9ee69ca879`; 2700 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.claude/agents/python-expert.md` | INSPECTED | sha256 `92aeadd7ed8fad5f2ed92e4a925190424a71f0c2193b1a9c64488a7e5a8fd692`; 3127 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.claude/agents/quality-engineer.md` | INSPECTED | sha256 `c73af473790a23306fe6aa73b13f1cec1dbd65a5fd131f3ff3eb3414d75a4cec`; 2787 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.claude/agents/refactoring-expert.md` | INSPECTED | sha256 `156b847ab5fbe479a6a3c161317d34b962bb3852e5a3d095b1d263d6543ef8e2`; 2946 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.claude/agents/requirements-analyst.md` | INSPECTED | sha256 `696ef1da2837d8646186ef921ae8ca60f16c9ab93abcc87ad57f557936b782e9`; 2977 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.claude/agents/root-cause-analyst.md` | INSPECTED | sha256 `3aef640cdbfdf73c024587c66a26e1738995b5cf60b56bce008f3c74d0e14dcc`; 3022 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.claude/agents/security-engineer.md` | INSPECTED | sha256 `5c55270a8eabf14bc11a537773ce3693faa5c378707f0934710d54529e4c2f1f`; 3064 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.claude/agents/socratic-mentor.md` | INSPECTED | sha256 `2418ba5518bb89021c539503a83d841d7aa2b7093a621341d8a81a499ec283e8`; 12061 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.claude/agents/system-architect.md` | INSPECTED | sha256 `76e9a1f807a8af3fa56a8098525c82175f2524ca1e79798487ff0f1ce288a6fe`; 2580 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.claude/agents/technical-writer.md` | INSPECTED | sha256 `956840387cac655277a849356d18726d48bdf87c93eff6b8b9fddda451642d56`; 2847 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.commandcode/agents/backend-architect.md` | INSPECTED | sha256 `23df3e884971ae87ef865cc10ba18c42c0f29783c48afa48e677d364c305b0de`; 2346 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.commandcode/agents/business-panel-experts.md` | INSPECTED | sha256 `ba5556ea283a67b1d945dff10d890ba3bda4126554339e64b27b518448802e51`; 9822 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.commandcode/agents/deep-research-agent.md` | INSPECTED | sha256 `a5f7e80464dd80d41b8a65ae8190a0139743e2eded5b612251c934ace2bf327e`; 4702 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.commandcode/agents/devops-architect.md` | INSPECTED | sha256 `abb658244093a92a342aca91f8b433a742cb4e20ee402dfc6b1479f5f5eafdcb`; 2534 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.commandcode/agents/dopemux.md` | INSPECTED | sha256 `b178d93d5bba9672bd31420939c660e3620c55bad7fa6f4c815fe2c7127f735a`; 1806 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.commandcode/agents/frontend-architect.md` | INSPECTED | sha256 `82a033a43a48e34ea8ec82d4ecbdcb03266c5bae97f2de7b05bfe9f93a17f338`; 2402 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.commandcode/agents/learning-guide.md` | INSPECTED | sha256 `6c97888c32b57915f2e0e36071ff1fd65c0663e6295295935f031e5042944806`; 2982 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.commandcode/agents/performance-engineer.md` | INSPECTED | sha256 `d1758473c8b1f77d45dd1aef82084f0678527db7a66330a52a5aad9ee69ca879`; 2700 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.commandcode/agents/python-expert.md` | INSPECTED | sha256 `92aeadd7ed8fad5f2ed92e4a925190424a71f0c2193b1a9c64488a7e5a8fd692`; 3127 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.commandcode/agents/quality-engineer.md` | INSPECTED | sha256 `c73af473790a23306fe6aa73b13f1cec1dbd65a5fd131f3ff3eb3414d75a4cec`; 2787 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.commandcode/agents/refactoring-expert.md` | INSPECTED | sha256 `156b847ab5fbe479a6a3c161317d34b962bb3852e5a3d095b1d263d6543ef8e2`; 2946 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.commandcode/agents/requirements-analyst.md` | INSPECTED | sha256 `696ef1da2837d8646186ef921ae8ca60f16c9ab93abcc87ad57f557936b782e9`; 2977 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.commandcode/agents/root-cause-analyst.md` | INSPECTED | sha256 `3aef640cdbfdf73c024587c66a26e1738995b5cf60b56bce008f3c74d0e14dcc`; 3022 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.commandcode/agents/security-engineer.md` | INSPECTED | sha256 `332c4d608ae064b53ca382a17db179024a6588a67a670d38d1c6cdd01ff0a509`; 3065 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.commandcode/agents/socratic-mentor.md` | INSPECTED | sha256 `2418ba5518bb89021c539503a83d841d7aa2b7093a621341d8a81a499ec283e8`; 12061 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.commandcode/agents/system-architect.md` | INSPECTED | sha256 `76e9a1f807a8af3fa56a8098525c82175f2524ca1e79798487ff0f1ce288a6fe`; 2580 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++| OBSERVED | personal | `~/.commandcode/agents/technical-writer.md` | INSPECTED | sha256 `956840387cac655277a849356d18726d48bdf87c93eff6b8b9fddda451642d56`; 2847 bytes | PRESERVE_OR_REPAIR_AS_ALLOWLISTED | Content semantics require review |
++<!-- AGENT_FLEET_LEDGER_END -->
+diff --git a/src/dopemux/personas/se-security-reviewer.agent.md b/src/dopemux/personas/se-security-reviewer.agent.md
+index f3a97ce880..af7d667d9b 100644
+--- a/src/dopemux/personas/se-security-reviewer.agent.md
++++ b/src/dopemux/personas/se-security-reviewer.agent.md
+@@ -1,7 +1,6 @@
+ ---
+ name: 'SE: Security'
+ description: 'Security-focused code review specialist with OWASP Top 10, Zero Trust, LLM security, and enterprise security standards'
+-model: GPT-5
+ tools: ['read', 'search']
+ ---
+
+diff --git a/src/dopemux/personas/se-system-architecture-reviewer.agent.md b/src/dopemux/personas/se-system-architecture-reviewer.agent.md
+index 7d0c9c6465..10055a1e53 100644
+--- a/src/dopemux/personas/se-system-architecture-reviewer.agent.md
++++ b/src/dopemux/personas/se-system-architecture-reviewer.agent.md
+@@ -1,7 +1,6 @@
+ ---
+ name: 'SE: Architect'
+ description: 'System architecture review specialist with Well-Architected frameworks, design validation, and scalability analysis for AI and distributed systems'
+-model: GPT-5
+ tools: ['read', 'search']
+ ---
+
+diff --git a/tests/arch/test_persona_fleet_contract.py b/tests/arch/test_persona_fleet_contract.py
+index ff046a78a4..574b23ee49 100644
+--- a/tests/arch/test_persona_fleet_contract.py
++++ b/tests/arch/test_persona_fleet_contract.py
+@@ -68,3 +68,27 @@ def test_no_packaged_persona_is_archived_canonical():
+     assert not (archived & packaged), (
+         f"packaged personas whose canonical source was archived: {sorted(archived & packaged)}"
+     )
++
++
++def test_role_aliases_targets_present_in_packaged():
++    """Every unique InstructionManager.ROLE_ALIASES target must be in PACKAGED_PERSONAS."""
++    im_path = REPO_ROOT / "src" / "dopemux" / "claude" / "instruction_manager.py"
++    source = im_path.read_text()
++    import ast
++    tree = ast.parse(source)
++    aliases = None
++    for node in ast.walk(tree):
++        if isinstance(node, ast.Assign):
++            for target in node.targets:
++                if isinstance(target, ast.Name) and target.id == "ROLE_ALIASES":
++                    aliases = ast.literal_eval(node.value)
++        if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name) and node.target.id == "ROLE_ALIASES":
++            aliases = ast.literal_eval(node.value)
++    assert aliases is not None, "Could not find ROLE_ALIASES in instruction_manager.py"
++    sync = _load_sync_module()
++    packaged_set = set(sync.PACKAGED_PERSONAS)
++    unique_targets = set(aliases.values())
++    missing = sorted(unique_targets - packaged_set)
++    assert not missing, (
++        f"ROLE_ALIASES targets missing from PACKAGED_PERSONAS: {missing}"
++    )

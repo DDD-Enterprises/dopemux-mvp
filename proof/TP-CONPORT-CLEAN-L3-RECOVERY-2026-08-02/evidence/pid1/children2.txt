@@ -1,0 +1,5 @@
+PID 1 :: bash start_with_info.sh
+PID 10 :: python info_server.py
+PID 11 :: python enhanced_server.py
+PID 12 :: python server.py sse
+PID 290 :: bash -c for d in /proc/[0-9]*; do pid=${d#/proc/}; cmd=$(tr "\0" " " < $d/cmdline 2>/dev/null); echo "PID $pid :: $cmd"; done

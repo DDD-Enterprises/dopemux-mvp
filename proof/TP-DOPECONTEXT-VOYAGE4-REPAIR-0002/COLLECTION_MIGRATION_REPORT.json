@@ -1,0 +1,8 @@
+{
+  "active_code_digest": "7a3fda64c982",
+  "active_docs_digest": "bc3e80ff1a1b",
+  "legacy_auto_delete": false,
+  "legacy_write_selection": false,
+  "naming": "code_<workspace-hash>_<profile-digest>",
+  "rollback_env": "DOPE_CONTEXT_CONTEXTUAL_EMBED_MODEL=voyage-context-3"
+}

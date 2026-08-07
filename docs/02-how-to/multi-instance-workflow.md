@@ -32,6 +32,16 @@ Zero context destruction through parallel ADHD-optimized development instances.
 > `.envrc.dopemux-mcp` into dopemux-mvp compose.
 > Runtime registry: `~/.dopemux/mcp/runtime/instances.json`.
 
+> **Current split model (2026-07):** Everything from "Architecture" through
+> "Advanced Usage" describes the still-active lettered `A`/`B`/`C`/`D`/`E`
+> `instance_id` and fixed `port_base` behavior used by `dopemux start` and
+> `dopemux instances` through `src/dopemux/instance_manager.py`. MCP sidecars
+> now use separate hash-based worktree identity
+> (`dopemux_{slug}_{worktree_hash}`). The accepted target design plans to
+> remove the lettered allocator under P-04, but that migration has not landed.
+> See `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md`; do not treat
+> target-state prose as current runtime.
+
 ## Overview
 
 Dopemux supports running up to 5 concurrent instances with isolated worktrees, enabling you to:

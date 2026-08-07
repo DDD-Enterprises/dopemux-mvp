@@ -58,7 +58,7 @@ export default function CognitiveLoadGauge({
   }, []);
 
   return (
-    <Tooltip title={copied ? 'Copied!' : `AI Recommendation: ${recommendation}. Click to copy details.`} arrow>
+    <Tooltip title={copied ? 'Copied!' : `AI Recommendation: ${recommendation}. Click to copy.`} arrow>
       <Paper
         role="button"
         tabIndex={0}
@@ -69,7 +69,7 @@ export default function CognitiveLoadGauge({
             onCopy();
           }
         }}
-        aria-label={copied ? 'Copied' : `Load ${val}%, ${statusMeta.label}. AI Recommendation: ${recommendation}. Click to copy details.`}
+        aria-label={copied ? 'Copied' : `Load ${val}%, ${statusMeta.label}. AI Recommendation: ${recommendation}. Click to copy.`}
         sx={{
           p: 3,
           minHeight: 300,

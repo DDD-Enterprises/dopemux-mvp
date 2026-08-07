@@ -1,0 +1,7 @@
+{
+  "focused_tests": "PASS",
+  "change_contract": "PASS",
+  "pre_commit_hooks": "PASS",
+  "independent_audit": "NOT_RUN",
+  "blocks_readiness": true
+}

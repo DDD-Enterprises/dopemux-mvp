@@ -1,0 +1,6 @@
+=== authorized write probe ===
+{"status": "healthy", "service": "conport-enhanced", "port": 3004, "database": "healthy", "redis": "healthy", "timestamp": 42195.429201702}
+{"status": "logged", "decision": {"id": "e46f33dc-74ab-4038-8bf4-c5c704565544", "workspace_id": "/Users/hue/code/dopemux-mvp", "summary": "L3 refresh write probe 2026-08-03", "rationale": "authorized production write probe for PR1188 refresh", "alternatives": [], "tags": ["l3-refresh-probe"], "confidence_level": "medium", "decision_type": "implementation", "created_by_instance": null, "created_at": "2026-08-03T01:38:48.913536+00:00", "updated_at": "2026-08-03T01:38:48.913536+00:00", "impact_scor
+before=295 after=296
+DELETE 1
+final_after_cleanup=295

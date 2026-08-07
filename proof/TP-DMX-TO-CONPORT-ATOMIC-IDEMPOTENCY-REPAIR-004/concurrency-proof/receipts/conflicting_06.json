@@ -1,0 +1,10 @@
+{
+ "round": "conflicting",
+ "index": 6,
+ "http_status": 409,
+ "elapsed_ms": 24,
+ "request_id": "8c742811-c36b-4dea-ad18-0b8ae40ae829",
+ "payload": {
+  "detail": "idempotency key is already bound to a different epic create request"
+ }
+}

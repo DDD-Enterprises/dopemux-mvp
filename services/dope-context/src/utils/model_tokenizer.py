@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import logging
 import math
 import re
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Set, Tuple
 
 import voyageai
+
+logger = logging.getLogger(__name__)
 
 _TOKEN_RE = re.compile(r"\w+|[^\w\s]", re.UNICODE)
 
@@ -35,12 +38,24 @@ class TokenCount:
 
 
 class VoyageTokenCounter:
-    """Use Voyage's model-specific tokenizer with a deterministic fallback."""
+    """Use Voyage's model-specific tokenizer with a deterministic fallback.
+
+    ``voyageai.Client.tokenize`` loads a HuggingFace tokenizer via
+    ``Tokenizer.from_pretrained(f"voyageai/{model}")`` -- an HTTP fetch to
+    huggingface.co. The SDK memoizes a *successful* load with ``lru_cache``,
+    but it does not memoize a raised failure, so a blocked Hub would otherwise
+    cost one failed network attempt per unique (uncached) text -- thousands
+    per repo during indexing (F-006). ``_unavailable_models`` remembers a
+    failure the first time it happens so every later call for that model
+    skips straight to the conservative estimate instead of retrying the
+    network fetch.
+    """
 
     def __init__(self, api_key: Optional[str] = None):
         client_type = getattr(voyageai, "Client", None)
         self._client = client_type(api_key=api_key) if client_type else None
         self._cache: Dict[Tuple[str, str], TokenCount] = {}
+        self._unavailable_models: Set[str] = set()
 
     @staticmethod
     def _key(text: str, model: str) -> Tuple[str, str]:
@@ -51,7 +66,7 @@ class VoyageTokenCounter:
         if not texts:
             return []
 
-        if self._client is not None:
+        if self._client is not None and model not in self._unavailable_models:
             try:
                 encodings = self._client.tokenize(list(texts), model=model)
                 counts: List[TokenCount] = []
@@ -66,10 +81,21 @@ class VoyageTokenCounter:
                         raise TypeError("Voyage tokenizer returned an unknown encoding")
                 if len(counts) == len(texts):
                     return counts
-            except Exception:
+            except Exception as exc:
                 # Networkless/constrained environments may not have tokenizer
-                # files. Request validation stays conservative rather than false.
-                pass
+                # files. Memoize the failure per model (F-006): retrying the
+                # same doomed huggingface.co fetch for every subsequent chunk
+                # would turn one blocked Hub into thousands of failed
+                # requests. Request validation stays conservative rather than
+                # false.
+                logger.warning(
+                    "Voyage tokenizer unavailable for model '%s' (%s); "
+                    "falling back to conservative token estimates for the "
+                    "remainder of this process",
+                    model,
+                    exc,
+                )
+                self._unavailable_models.add(model)
 
         return [TokenCount(conservative_token_estimate(text), False) for text in texts]
 

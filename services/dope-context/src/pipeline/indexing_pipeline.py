@@ -18,14 +18,22 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
 from ..embeddings.contextualized_embedder import ContextualizedEmbedder
+from ..embeddings.model_registry import build_collection_manifest
 
 # OpenAIContextGenerator imported inside the example function to avoid import-time issues
 from ..embeddings.voyage_embedder import VoyageEmbedder
+from ..index_profile import (
+    CollectionProfile,
+    build_code_collection_profile,
+    workspace_identity_from_path,
+)
 from ..preprocessing.code_chunker import ChunkingConfig, CodeChunk, CodeChunker
 from ..search.dense_search import MultiVectorSearch
 from ..sync.incremental_indexer import ChunkMetadata, ChunkSnapshot, IncrementalIndexer
 
 logger = logging.getLogger(__name__)
+
+CODE_CHUNKER_VERSION = "code_chunker.v1"
 
 
 @dataclass
@@ -64,7 +72,8 @@ class IndexingConfig:
 
     # Pipeline control
     skip_context_generation: bool = False  # For testing
-    workspace_id: str = "default"
+    # Empty means derive from workspace_path (never hard-code "default" for identity).
+    workspace_id: str = ""
 
 
 @dataclass
@@ -154,6 +163,11 @@ class IndexingPipeline:
         self.contextualized_embedder = contextualized_embedder
         self.vector_search = vector_search
         self.config = config
+        if not self.config.workspace_id:
+            self.config.workspace_id = workspace_identity_from_path(
+                self.config.workspace_path
+            )
+        self.collection_profile: CollectionProfile = build_code_collection_profile()
         self.incremental_indexer = IncrementalIndexer(config.workspace_path)
 
         self.progress = IndexingProgress()
@@ -278,27 +292,34 @@ class IndexingPipeline:
                 for chunk in chunks
             ]
 
-            # 4. Embed all texts
-            # Content vector: Use contextualized embedding (document-aware, 14.24% better accuracy)
+            # 4. Embed all texts using canonical vector profiles (index side).
+            content_profile = self.collection_profile.content()
+            title_profile = self.collection_profile.title()
+            breadcrumb_profile = self.collection_profile.breadcrumb()
+
             content_response = await self.contextualized_embedder.embed_document(
-                chunks=content_texts,  # All chunks from this file
-                model="voyage-context-3",
-                input_type="document",
-                output_dimension=1024,
+                chunks=content_texts,
+                model=content_profile.model,
+                input_type=content_profile.index_input_type,
+                output_dimension=content_profile.dimension,
+                output_dtype=content_profile.dtype,
             )
             content_embeddings = content_response.embeddings
 
-            # Title + Breadcrumb vectors: Use standard embedding (simple identifiers)
             title_embeddings = await self.standard_embedder.embed_batch(
                 texts=title_texts,
-                model="voyage-code-3",
-                input_type="document",
+                model=title_profile.model,
+                input_type=title_profile.index_input_type,
+                output_dimension=title_profile.dimension,
+                output_dtype=title_profile.dtype,
             )
 
             breadcrumb_embeddings = await self.standard_embedder.embed_batch(
                 texts=breadcrumb_texts,
-                model="voyage-code-3",
-                input_type="document",
+                model=breadcrumb_profile.model,
+                input_type=breadcrumb_profile.index_input_type,
+                output_dimension=breadcrumb_profile.dimension,
+                output_dtype=breadcrumb_profile.dtype,
             )
 
             # Track embedding cost
@@ -317,12 +338,14 @@ class IndexingPipeline:
                 # Generate deterministic chunk ID for incremental updates
                 chunk_id = self._generate_chunk_id(file_path, chunk)
 
+                provenance = self.collection_profile.provenance_fields()
                 doc = {
                     "content_vector": content_embeddings[i],  # Already List[float]
                     "title_vector": title_embeddings[i].embedding,
                     "breadcrumb_vector": breadcrumb_embeddings[i].embedding,
                     "payload": {
                         "file_path": str(file_path),
+                        "source_path": str(file_path),
                         "function_name": chunk.symbol_name,
                         "language": chunk.language,
                         "raw_code": chunk.content,
@@ -331,6 +354,7 @@ class IndexingPipeline:
                         "end_line": chunk.end_line,
                         "complexity": chunk.complexity,
                         "workspace_id": self.config.workspace_id,
+                        **provenance,
                     },
                     "point_id": chunk_id,  # Deterministic ID for incremental updates
                 }
@@ -379,7 +403,17 @@ class IndexingPipeline:
             self.progress.end_time = datetime.now()
             return self.progress
 
-        # 2. Ensure collection exists
+        # 2. Ensure collection exists.
+        # The manifest records the CONTENT vector's model: it determines the
+        # primary retrieval space and is the one that varies. title_vec and
+        # breadcrumb_vec are always voyage-code-3. If F-001 collapses code onto
+        # a single model, this becomes the only model in play.
+        self.vector_search.manifest = build_collection_manifest(
+            model=self.contextualized_embedder.default_model,
+            output_dimension=self.contextualized_embedder.output_dimension,
+            output_dtype=self.contextualized_embedder.output_dtype,
+            chunker_version=CODE_CHUNKER_VERSION,
+        )
         await self.vector_search.create_collection()
 
         # 3. Initialize chunk snapshot for incremental indexing

@@ -1029,15 +1029,17 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                   }
                 />
                 {!isCompleted && !isCurrent && (
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    startIcon={<Play aria-hidden="true" />}
-                    onClick={() => startTask(task.id)}
-                    aria-label={`Start task: ${task.title}`}
-                  >
-                    Start
-                  </Button>
+                  <Tooltip title={`Start task and switch active focus to: ${task.title}`} arrow>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<Play aria-hidden="true" />}
+                      onClick={() => startTask(task.id)}
+                      aria-label={`Start task: ${task.title}`}
+                    >
+                      Start
+                    </Button>
+                  </Tooltip>
                 )}
               </ListItem>
               {index < optimizedTasks.length - 1 && (

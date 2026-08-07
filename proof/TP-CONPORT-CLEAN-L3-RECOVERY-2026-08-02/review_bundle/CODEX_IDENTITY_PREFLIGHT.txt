@@ -1,0 +1,60 @@
+=== implementer ===
+implementer=grok-4.5
+auditor_candidate=codex-cli (independent)
+=== codex version ===
+codex-cli 0.146.0
+/Users/hue/.local/share/mise/shims/codex
+=== config model (non-secret) ===
+2:model = "gpt-5.6-luna"
+3:model_reasoning_effort = "medium"
+=== env model selectors ===
+JAVA_HOME=***
+PATH=***
+ZSH_CODEX_PREEXECUTE_COMMENT=***
+__MISE_ORIG_PATH=***
+Run Codex non-interactively
+
+Usage: codex exec [OPTIONS] [PROMPT]
+       codex exec [OPTIONS] <COMMAND> [ARGS]
+
+Commands:
+  resume  Resume a previous session by id or pick the most recent with --last
+  review  Run a code review against the current repository
+  help    Print this message or the help of the given subcommand(s)
+
+Arguments:
+  [PROMPT]
+          Initial instructions for the agent. If not provided as an argument (or if `-` is used),
+          instructions are read from stdin. If stdin is piped and a prompt is also provided, stdin
+          is appended as a `<stdin>` block
+
+Options:
+  -c, --config <key=value>
+          Override a configuration value that would otherwise be loaded from `~/.codex/config.toml`.
+          Use a dotted path (`foo.bar.baz`) to override nested values. The `value` portion is parsed
+          as TOML. If it fails to parse as TOML, the raw string is used as a literal.
+
+          Examples: - `-c model="o3"` - `-c 'sandbox_permissions=["disk-full-read-access"]'` - `-c
+          shell_environment_policy.inherit=all`
+
+      --enable <FEATURE>
+          Enable a feature (repeatable). Equivalent to `-c features.<name>=true`
+
+      --disable <FEATURE>
+          Disable a feature (repeatable). Equivalent to `-c features.<name>=false`
+
+      --strict-config
+          Error out when config.toml contains fields that are not recognized by this version of
+          Codex
+
+  -i, --image <FILE>...
+          Optional image(s) to attach to the initial prompt
+
+  -m, --model <MODEL>
+          Model the agent should use
+2:OpenAI Codex v0.146.0
+5:model: gpt-5.6-terra
+6:provider: openai
+11:session id: 019fc54c-21ce-7b41-a850-b4194aedaf01
+17:hook: SessionStart
+18:hook: SessionStart Completed
