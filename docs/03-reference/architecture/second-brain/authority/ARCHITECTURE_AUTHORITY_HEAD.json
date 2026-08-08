@@ -1,0 +1,32 @@
+{
+  "authority_domain": "Dopemux Second Brain Architecture",
+  "candidate": "TP-DMX-SECOND-BRAIN-ARCHITECTURE-SYNTHESIS-001-R2-CANDIDATE.zip",
+  "candidate_sha256": "94b735c72ff3533f0cd73bed18fd3fb64b164530f7ef360f37584c73504a4e8e",
+  "decision_count": 32,
+  "accepted_decision_count": 32,
+  "ratification_digest": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "remote_main_at_ratification": "33d6c353023ecc3aa6331ab39f4f076ae3ca1fda",
+  "verification_status": "R2_REVALIDATED_WITH_NONBLOCKING_RISKS",
+  "r2a01": "CORRECTED_BY_EXTERNAL_RATIFICATION_RECORD",
+  "architecture_accepted_as_law": true,
+  "implementation_authorized": false,
+  "adr_acceptance_authorized": false,
+  "slice_execution_authorized": false,
+  "repo_persistence_required": true,
+  "fo01": {
+    "architecture_ratification_blocker": false,
+    "ADR_acceptance_blocker": true,
+    "required_resolution": "REPAIR_AND_REVERIFY_TRACEABILITY_BEFORE_ANY_ADR_ACCEPTANCE"
+  },
+  "verification_002a_zip_sha256": "6e32e2a2b4488e3fce1d241c0f50d4c4c269c416d17b21319d8d1bedeff8a6bc",
+  "operator_decision_ledger_sha256": "8e0380eb1d49c10ac7ecca38fdd06e6fe9755bf607f389bdf91479981cb93b93",
+  "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "not_run": {
+    "runtime_conformance": "NOT_RUN",
+    "retrieval_benchmarks": "NOT_RUN",
+    "purge_completeness": "NOT_RUN",
+    "multi_project_isolation": "NOT_RUN",
+    "split_brain_proof": "NOT_RUN",
+    "encryption_implementation": "ABSENT"
+  }
+}
