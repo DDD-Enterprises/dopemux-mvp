@@ -1,0 +1,87 @@
+{
+  "fo01_status": "REPAIR_COMPLETE_PENDING_INDEPENDENT_VERIFICATION",
+  "architecture_semantics_modified": false,
+  "adr_semantics_modified": false,
+  "decision_references_modified": true,
+  "adr_acceptance_authorized": false,
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001",
+  "required_resolution": "REPAIR_AND_REVERIFY_TRACEABILITY_BEFORE_ANY_ADR_ACCEPTANCE",
+  "authority": {
+    "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+    "r2_candidate_sha256": "94b735c72ff3533f0cd73bed18fd3fb64b164530f7ef360f37584c73504a4e8e",
+    "authority_persistence_merge": "32cc788ad8babb4f51d234bbf2b6336162511ab9",
+    "architecture_accepted_as_law": true,
+    "sb_dec_dispositions": "32 ACCEPT / 0 DEFER / 0 REJECT",
+    "architecture_decisions_reopened": false
+  },
+  "source_hashes": {
+    "24_ADR_CANDIDATES.md": "9cff1e6c90c009ccc931676df14c838e6affafa7732fb11b5aecc0b8cf0858da",
+    "03_ARCHITECTURE_DECISION_REGISTER.yaml": "3a223be56a9df80bbe3141ebb892cbf908ed371c7d4c853eaae5d7f67959bf80",
+    "frozen_source_proof_copy": "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/source/24_ADR_CANDIDATES.md"
+  },
+  "repaired_candidate": {
+    "path": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+    "sha256": "946054a4675271856e0214dbf1ce0aa9b1ec17e71e79a82711ad3ca0d9df9c22",
+    "body_non_reference_text_identical_to_source": true,
+    "authorized_change_class": "DECISION_REFERENCE_CHANGE",
+    "frontmatter_added_outside_source_body": true
+  },
+  "content_head": null,
+  "content_head_binding": "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/C1_HEAD.txt",
+  "content_head_note": "A file cannot contain its own commit sha; C1 is bound in the proof successor commit.",
+  "coverage": {
+    "adrs_inspected": 10,
+    "decisions_in_register": 32,
+    "decisions_linked": 26,
+    "decisions_intentionally_unlinked": 6,
+    "adrs_changed": 8,
+    "adrs_correct_as_written": 2,
+    "fo01_known_defective_adrs_repaired": 5,
+    "additional_defective_adrs_found": 3,
+    "ambiguous_mappings": 1,
+    "one_to_one_coverage_imposed": false
+  },
+  "adr_statuses": {
+    "all_remain": "PROPOSED (candidate)",
+    "document_status": "CANDIDATE",
+    "promoted_to_accepted": 0
+  },
+  "sb_dec_031": {
+    "decision_id": "SB-DEC-031",
+    "title": "Runtime and benchmark claims remain NOT_RUN",
+    "disposition": "INTENTIONALLY_UNLINKED_CROSS_CUTTING_CLAIMS_DISCIPLINE",
+    "rationale": "Claims/evidence discipline holding all runtime conformance, latency, retrieval quality, purge completeness, offline sync, and isolation measurements NOT_RUN. Already expressed uniformly in every ADR's acceptance condition 'No runtime, implementation, or production claim is inferred from acceptance', which is the discipline applied across all ten ADRs rather than a standalone architectural choice. Option B under the packet's SB-DEC-031 adjudication. No ADR cites it; none was broadened to.",
+    "adr_created": false,
+    "existing_adr_broadened": false,
+    "operator_adjudication_required": false
+  },
+  "sb_dec_032": {
+    "decision_id": "SB-DEC-032",
+    "title": "Observed remote drift is non-material to this candidate",
+    "disposition": "INTENTIONALLY_UNLINKED_HISTORICAL_EVIDENCE_OBSERVATION",
+    "rationale": "Historical evidence observation recording remote main 17ddf9aa716956af9cd07f738c08b646edfeabee as advanced from the discovery base, with web-observation evidence pointers. Not an architectural choice; no ADR created and none broadened.",
+    "adr_created": false,
+    "existing_adr_broadened": false,
+    "operator_adjudication_required": false
+  },
+  "independent_verification": {
+    "performed": false,
+    "verdict": null,
+    "note": "Not claimed. Bound only after the independent non-implementer audit of the exact C1 content head."
+  },
+  "preserved_not_run": {
+    "runtime_conformance": "NOT_RUN",
+    "retrieval_benchmarks": "NOT_RUN",
+    "purge_completeness": "NOT_RUN",
+    "multi_project_isolation": "NOT_RUN",
+    "split_brain_proof": "NOT_RUN",
+    "encryption_implementation": "ABSENT"
+  },
+  "gates": {
+    "adr_acceptance": "CLOSED",
+    "implementation_planning": "AUTHORIZED",
+    "implementation_execution": "NOT_AUTHORIZED",
+    "merge": "NOT_AUTHORIZED"
+  }
+}

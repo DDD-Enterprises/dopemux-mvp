@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0.0",
+  "content_head": "25b50f019765263d1abf21fd5bc3ae9c6e522c7a",
+  "base": "32cc788ad8babb4f51d234bbf2b6336162511ab9",
+  "changed_paths": [
+    [
+      "A",
+      "docs/03-reference/architecture/second-brain/adr-candidates/fo-01-repair-status.json"
+    ],
+    [
+      "A",
+      "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md"
+    ],
+    [
+      "A",
+      "docs/03-reference/architecture/second-brain/adr-candidates/traceability-matrix.json"
+    ],
+    [
+      "A",
+      "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/source/24_ADR_CANDIDATES.md"
+    ]
+  ],
+  "changed_path_count": 4,
+  "all_paths_authorized": true,
+  "all_additions_only": true,
+  "docs_90_adr_touched": false,
+  "authority_records_touched": false,
+  "master_index_touched": false,
+  "implementation_or_runtime_surface_touched": false,
+  "validators": {
+    "git_diff_check": {
+      "exit": 0,
+      "result": "PASS"
+    },
+    "pre_commit_from_ref_to_ref": {
+      "result": "PASS",
+      "hooks_failed": 0,
+      "working_tree_modified_by_hooks": false,
+      "fixed_point": true
+    },
+    "docs_validator": {
+      "result": "PASS"
+    },
+    "docs_frontmatter_guard": {
+      "result": "PASS"
+    },
+    "json_validity": {
+      "traceability-matrix.json": "VALID",
+      "fo-01-repair-status.json": "VALID"
+    },
+    "filename_hygiene": {
+      "result": "PASS",
+      "note": "kebab-case docs hooks passed"
+    }
+  },
+  "not_run_preserved": {
+    "runtime_conformance": "NOT_RUN",
+    "retrieval_benchmarks": "NOT_RUN",
+    "purge_completeness": "NOT_RUN",
+    "multi_project_isolation": "NOT_RUN",
+    "split_brain_proof": "NOT_RUN",
+    "encryption_implementation": "ABSENT"
+  },
+  "file_sha256": {
+    "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md": "946054a4675271856e0214dbf1ce0aa9b1ec17e71e79a82711ad3ca0d9df9c22",
+    "docs/03-reference/architecture/second-brain/adr-candidates/traceability-matrix.json": "7ce481011a2da98d6840d0c300fcd27f1f52e4b0713f4e073d628de00337c9cc",
+    "docs/03-reference/architecture/second-brain/adr-candidates/fo-01-repair-status.json": "0e0258e0dc3e524fc2a01e6b3f17875c3969d3266fd5e727c2ff03a84cf4fb3a",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/source/24_ADR_CANDIDATES.md": "9cff1e6c90c009ccc931676df14c838e6affafa7732fb11b5aecc0b8cf0858da"
+  }
+}
