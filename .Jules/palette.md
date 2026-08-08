@@ -168,3 +168,7 @@
 ## 2026-07-16 - [Task Transition Confirmation Reset]
 **Learning:** When implementing 'Soft Confirmation' patterns (like a two-step skip action) in stateful components, failing to reset the confirmation state when the target item changes (e.g., when the active task is switched or completes) can leave the confirmation state 'stuck'. This means the next item immediately renders in the confirm state, leading to potential accidental actions on the wrong item.
 **Action:** Always reset any active confirmation state (e.g., `isSkipConfirming`) and clear any associated timeout refs within the effect or logic that triggers on item/task transitions.
+
+## 2026-07-20 - [Eliminating Nested Typography Warnings]
+**Learning:** In Material-UI, `ListItemText` defaults to wrapping its child contents in a `<p>` tag (Typography). When passing complex layouts, interactive surfaces, or block elements (like `<Box>` or standard divs) to its `primary` or `secondary` slots, this results in a React DOM nesting validation warning (`<div> cannot appear as a descendant of <p>`), which can break semantic rendering and screen reader accessibility.
+**Action:** Always apply the `disableTypography` prop on `ListItemText` when injecting block-level, layout, or custom interactive components into `primary` or `secondary` slots.

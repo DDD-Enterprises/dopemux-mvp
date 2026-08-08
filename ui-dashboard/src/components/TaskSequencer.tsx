@@ -937,6 +937,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                   )}
                 </ListItemIcon>
                 <ListItemText
+                  disableTypography
                   primary={
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Typography variant="body2" sx={{ flexGrow: 1 }}>
