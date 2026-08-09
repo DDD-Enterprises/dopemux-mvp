@@ -937,6 +937,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                   )}
                 </ListItemIcon>
                 <ListItemText
+                  disableTypography
                   primary={
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Typography variant="body2" sx={{ flexGrow: 1 }}>
@@ -977,7 +978,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                             }}
                           >
                             <Clock size={12} color={brandTokens.colors.ritualCyan} aria-hidden="true" />
-                            <Typography variant="caption">{task.estimatedMinutes}m</Typography>
+                            <Typography variant="caption" color="text.secondary">{task.estimatedMinutes}m</Typography>
                           </Box>
                         </Tooltip>
                         <Tooltip title={`Energy requirement: ${task.energyRequired}`} arrow>
@@ -1014,6 +1015,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                                 outline: 'none',
                                 borderRadius: 1,
                                 px: 0.5,
+                                color: 'text.secondary',
                                 '&:focus-visible': {
                                   boxShadow: `0 0 0 2px ${alpha(brandTokens.text.primary, 0.4)}`,
                                 },
@@ -1024,7 +1026,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                           </Tooltip>
                         )}
                       </Box>
-                      <Typography variant="caption">#{index + 1}</Typography>
+                      <Typography variant="caption" color="text.secondary">#{index + 1}</Typography>
                     </Box>
                   }
                 />
