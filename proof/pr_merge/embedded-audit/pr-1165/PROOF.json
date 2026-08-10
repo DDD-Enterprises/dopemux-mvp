@@ -1,0 +1,53 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1165,
+  "head_sha": "4d6cc9a1f673e58ad47f7af5e5aabe498646dfd4",
+  "generated_at": "2026-08-10T03:38:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-3.1-pro-high --mode plan --effort high --output-format json --print '<bounded read-only embedded-audit prompt + full content-head diff origin/main...02c915d8006ca5cddba9247ba9bf440581be7257>'",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-001-MED-1",
+        "severity": "MEDIUM",
+        "title": "Exact-model conditional relied on the top-level required list",
+        "status": "RESOLVED",
+        "body": "Round 1 flagged that the gemini-3.1-pro-high if/then clause could pass vacuously when auditor_tool is absent, since JSON Schema properties is vacuous for a missing key. The risk was not reachable: auditor_tool is in the schema's top-level required array. It was closed directly anyway by adding \"required\": [\"auditor_tool\"] to the then clause, making the conditional self-contained. Strict tightening; no proof that validated before changes verdict. Covered by tests/audit/test_agy_gemini31_model.py::test_exact_model_requires_auditor_tool_to_be_present. Round 2 Q1 and Q10(a): PASS."
+      },
+      {
+        "id": "F-002-LOW-1",
+        "severity": "LOW",
+        "title": "Round 1 was asked to verify the auditor report inside the tree it was auditing",
+        "status": "RESOLVED",
+        "body": "Producer prompt-scope defect, not a change defect. The canonical AUDITOR_REPORT.md is this audit's own output and cannot exist in the audited tree. The placement is forced: the trusted schema requires report_path under a single proof/ directory, while proof-only closure confines the successor commit to proof/pr_merge/embedded-audit/pr-1165/. Round 2 was given the ordering constraint and instructed to flag any file claiming the report already existed; it found none. Disclosed in the report itself. Round 2 Q6 and Q10(b): PASS."
+      },
+      {
+        "id": "F-003-MED-1",
+        "severity": "MEDIUM",
+        "title": "Claimed unauthorized addition of pal-mcp-clink to the auditor_tool enum",
+        "status": "RESOLVED",
+        "body": "Refuted. pal-mcp-clink is already present in the trusted schema on main at 5d694cc9898e5046b5da03319f20f48599c40ca8; this change does not touch the auditor_tool enum. The documentation line had omitted it and the diff corrects that omission, now stated explicitly in docs/ops/embedded-audit-proof.md so it cannot be misread. Round 1 saw only the diff, not main, so it could not distinguish documentation catch-up from an enum addition. Round 2, shown the full schema hunk, confirmed the enum is untouched. Round 2 Q10(c): PASS."
+      }
+    ],
+    "fixes_applied": [
+      "Added \"required\": [\"auditor_tool\"] to the gemini-3.1-pro-high conditional's then clause so it cannot pass vacuously, with a regression test.",
+      "Stated in docs/ops/embedded-audit-proof.md that pal-mcp-clink was already present in the trusted schema on main and is documentation catch-up, not an enum addition.",
+      "Moved the canonical auditor report to proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001/AUDITOR_REPORT.md so report_path satisfies the trusted schema pattern; the previous head's value was rejected by scripts/audit/validate_audit_proof.py and passed CI only because proof/.validator_scope.json skips proof/pr_merge/**.",
+      "Recorded the schema evidence boundary as ACCEPTED_DESIGN_BOUNDARY in docs and pinned it with a characterisation test.",
+      "Removed an orphaned branch SHA from MODEL_ROUTE.json rather than refreshing it to false precision."
+    ],
+    "remaining_risks": [
+      "provider_attested is false: the exact selector gemini-3.1-pro-high is established by local AGY CLI evidence (v1.1.11 model list, fail-closed rejection of an unknown selector) and by the recorded invocation, not by a credentialed provider attestation. No hosted credential was added and none is claimed.",
+      "Bootstrap representation: auditor_model is recorded as the generic 'gemini' because gemini-3.1-pro-high is absent from origin/main:schemas/proof/embedded_audit.schema.json at 5d694cc9898e5046b5da03319f20f48599c40ca8. The new enum value does not bootstrap its own admission; exact-selector truth is carried by the invocation and the auditor report.",
+      "The JSON Schema binds the declared tool/model pair only and deliberately does not parse invocation, so schema validity is not evidence of runtime selector execution. Recorded as ACCEPTED_DESIGN_BOUNDARY: SCHEMA_BINDS_DECLARED_TOOL_MODEL_PAIR; RUNTIME_SELECTOR_PROVEN_BY_EXECUTION_EVIDENCE.",
+      "Pre-existing and out of scope for this packet: proof/.validator_scope.json includes only proof/TP-DMX-*/PROOF.json and skips proof/pr_merge/** under default_when_unmatched skip_with_warning, so the scanned sweep is not evidence of conformance for proofs in that tree. This proof was validated with a direct scripts/audit/validate_audit_proof.py run instead. The scope gap remains open as follow-up work.",
+      "The audited head 4d6cc9a1f673e58ad47f7af5e5aabe498646dfd4 adds the audit's own outputs on top of the tree AGY reviewed (02c915d8006ca5cddba9247ba9bf440581be7257). The delta is only AUDITOR_REPORT.md and the raw transcripts and runner-evidence captures under review_bundle/; no schema, test, packet, documentation, or workflow byte changed after the audit. This ordering is forced and is disclosed in the report rather than left implicit."
+    ],
+    "skip_reason": null
+  }
+}
