@@ -1,86 +1,88 @@
 {
-  "record_type": "SUBSTANTIVE_INDEPENDENT_AUDIT_ROUTE_CUSTODY",
-  "packet": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001",
-  "phase": "AC2_ACCEPTANCE_CONDITION_AMENDMENT",
-  "authority": "operator AUDITOR ROUTE OVERRIDE — GROK IS CONTROLLING",
   "audit_authority_statement": "The Grok audit is the substantive independent audit authority for this packet. The repository-native embedded-audit lane is recorded separately and truthfully; see GROK_SCHEMA_REPRESENTATION_GAP.md.",
-
-  "route": {
-    "provider": "xAI",
-    "provider_surface_observed": "grok.com account session (runner reports 'You are logged in with grok.com')",
-    "runner": "Grok CLI (~/.grok/bin/grok)",
-    "requested_model": "grok-4.5",
-    "observed_model_usage_key": "grok-4.5-build",
-    "operator_specified_requested_model": "grok-4.5-build",
-    "requested_model_deviation_reason": "grok-4.5-build is NOT a requestable model id on this runner. Probing '-m grok-4.5-build' returns: Couldn't set model 'grok-4.5-build': Invalid params: \"unknown model id\". 'grok models' lists exactly one available model: grok-4.5 (default). grok-4.5-build is a runner-internal usage/telemetry label, not an API model id. Recorded truthfully rather than normalised in either direction.",
-    "fallback_enabled": false,
-    "model_switching": false,
-    "fallback_and_switching_basis": "STRUCTURAL, not merely asserted: the runner exposes exactly one model (grok-4.5), so there is no alternate route to fall back to or switch into.",
-    "session": "fresh, no producer conversation history",
-    "posture": "independent read-only non-implementer auditor",
-    "read_only_enforcement": "--deny Write --deny Edit --deny MultiEdit --deny NotebookEdit",
-    "producer_is_not_auditor": true,
-    "producer": "Claude Code / claude-opus-5[1m] (facilitator only)"
-  },
-
+  "audited_content_head": "cc2f49ccad3d7c39d6b9f0a9fb044616069585a7",
   "audits_performed": [
     {
-      "id": "AMENDMENT_BYTES",
-      "target": "exact amended candidate bytes (pre-commit)",
-      "audited_base_sha256": "946054a4675271856e0214dbf1ce0aa9b1ec17e71e79a82711ad3ca0d9df9c22",
       "audited_amended_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
-      "session_id": "019fe94f-ff56-7c81-a6b8-4b0e1a8b6a5d",
-      "turns": 8,
-      "verdict": "PASS_ADR_ACCEPTANCE_CONDITION_AMENDMENT",
+      "audited_base_sha256": "946054a4675271856e0214dbf1ce0aa9b1ec17e71e79a82711ad3ca0d9df9c22",
       "blockers": 0,
+      "id": "AMENDMENT_BYTES",
       "must_fix": 0,
       "nonblocking": 1,
-      "report": "AUDITOR_REPORT_AMENDMENT.md"
+      "report": "AUDITOR_REPORT_AMENDMENT.md",
+      "session_id": "019fe93a-d8a9-7673-b69c-966e64b44e86",
+      "session_id_correction": {
+        "corrected_to": "019fe93a-d8a9-7673-b69c-966e64b44e86",
+        "found_by": "automated PR review (chatgpt-codex-connector) on PR #1214",
+        "incorrect_value_first_committed": "019fe94f-ff56-7c81-a6b8-4b0e1a8b6a5d",
+        "nature": "producer transcription error \u2014 an identifier was recorded that no run emitted. Corrected rather than explained away; this is the defect class this packet's own custody rules exist to prevent.",
+        "source_of_truth": "AUDITOR_REPORT_AMENDMENT.md header, derived from the runner's own JSON sessionId field"
+      },
+      "target": "exact amended candidate bytes (pre-commit)",
+      "turns": 8,
+      "verdict": "PASS_ADR_ACCEPTANCE_CONDITION_AMENDMENT"
     },
     {
-      "id": "PR_HEAD",
-      "target": "PR #1214 at exact content head",
-      "audited_content_head": "cc2f49ccad3d7c39d6b9f0a9fb044616069585a7",
       "audited_base": "cfa4927a883b469c06f37343c18e6582f23d1443",
-      "session_id": "019fe955-cbc2-7562-be17-cbdc1acf481d",
-      "turns": 13,
-      "cost_usd": 0.3897,
-      "verdict": "PASS",
+      "audited_content_head": "cc2f49ccad3d7c39d6b9f0a9fb044616069585a7",
       "blockers": 0,
-      "must_fix": 0,
-      "nonblocking": 2,
-      "report": "AUDITOR_REPORT_PR1214.md",
-      "nonblocking_findings": [
-        "N1 — scope of 'required denial fixtures' is not enumerated per ADR; inherent to the operator-authorized wording, closed for enablement claims by sentence 3 plus AC#3",
-        "N2 — proof narrative layering: CONFLICT_NOTICE said UNRESOLVED and did not point at SUPERSESSION_LINEAGE; receipt gate fields read as a pre-landing snapshot. Addressed in the proof-only successor; no ADR byte or promotion claim was affected."
-      ],
+      "cost_usd": 0.3897,
       "explicitly_not_verified_by_auditor": [
         "operator directive character source (no original directive artifact in-tree)",
-        "sealed zip hash 7954e238… (zip not present in the worktree for re-hash)",
+        "sealed zip hash 7954e238\u2026 (zip not present in the worktree for re-hash)",
         "full remote history that the superseded acceptance branch was never force-pushed elsewhere"
-      ]
+      ],
+      "id": "PR_HEAD",
+      "must_fix": 0,
+      "nonblocking": 2,
+      "nonblocking_findings": [
+        "N1 \u2014 scope of 'required denial fixtures' is not enumerated per ADR; inherent to the operator-authorized wording, closed for enablement claims by sentence 3 plus AC#3",
+        "N2 \u2014 proof narrative layering: CONFLICT_NOTICE said UNRESOLVED and did not point at SUPERSESSION_LINEAGE; receipt gate fields read as a pre-landing snapshot. Addressed in the proof-only successor; no ADR byte or promotion claim was affected."
+      ],
+      "report": "AUDITOR_REPORT_PR1214.md",
+      "session_id": "019fe955-cbc2-7562-be17-cbdc1acf481d",
+      "target": "PR #1214 at exact content head",
+      "turns": 13,
+      "verdict": "PASS"
     }
   ],
-
-  "audited_content_head": "cc2f49ccad3d7c39d6b9f0a9fb044616069585a7",
-  "successor_is_proof_only": true,
-  "successor_rationale": "Per docs/03-reference/governance/evidence-economy.md, proof-only successors do not re-audit unchanged content. This successor adds evidence only; the audited ADR document bytes are unchanged from the audited content head.",
-
-  "prohibited_actions_not_taken": {
-    "fabricated_passing_embedded_audit_attestation": false,
-    "normalised_grok_into_another_allowed_enum": false,
-    "modified_embedded_audit_schema_in_this_pr": false,
-    "substituted_claude_sonnet_gemini_kimi_or_other_model": false,
-    "signed_any_attestation_naming_a_model_that_did_not_audit": false
-  },
-
+  "authority": "operator AUDITOR ROUTE OVERRIDE \u2014 GROK IS CONTROLLING",
   "gates": {
+    "ac2_replacements": 10,
     "adr_dispositions_recorded": 0,
     "all_adrs_status": "PROPOSED / CANDIDATE",
-    "sb_dec_changes": 0,
-    "traceability_changes": 0,
-    "ac2_replacements": 10,
     "implementation_execution": "NOT_AUTHORIZED",
-    "runtime_mutation": "NONE"
-  }
+    "runtime_mutation": "NONE",
+    "sb_dec_changes": 0,
+    "traceability_changes": 0
+  },
+  "packet": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001",
+  "phase": "AC2_ACCEPTANCE_CONDITION_AMENDMENT",
+  "prohibited_actions_not_taken": {
+    "fabricated_passing_embedded_audit_attestation": false,
+    "modified_embedded_audit_schema_in_this_pr": false,
+    "normalised_grok_into_another_allowed_enum": false,
+    "signed_any_attestation_naming_a_model_that_did_not_audit": false,
+    "substituted_claude_sonnet_gemini_kimi_or_other_model": false
+  },
+  "record_type": "SUBSTANTIVE_INDEPENDENT_AUDIT_ROUTE_CUSTODY",
+  "route": {
+    "fallback_and_switching_basis": "STRUCTURAL, not merely asserted: the runner exposes exactly one model (grok-4.5), so there is no alternate route to fall back to or switch into.",
+    "fallback_enabled": false,
+    "model_switching": false,
+    "observed_model_usage_key": "grok-4.5-build",
+    "operator_specified_requested_model": "grok-4.5-build",
+    "posture": "independent read-only non-implementer auditor",
+    "producer": "Claude Code / claude-opus-5[1m] (facilitator only)",
+    "producer_is_not_auditor": true,
+    "provider": "xAI",
+    "provider_surface_observed": "grok.com account session (runner reports 'You are logged in with grok.com')",
+    "read_only_enforcement": "--deny Write --deny Edit --deny MultiEdit --deny NotebookEdit",
+    "requested_model": "grok-4.5",
+    "requested_model_deviation_reason": "grok-4.5-build is NOT a requestable model id on this runner. Probing '-m grok-4.5-build' returns: Couldn't set model 'grok-4.5-build': Invalid params: \"unknown model id\". 'grok models' lists exactly one available model: grok-4.5 (default). grok-4.5-build is a runner-internal usage/telemetry label, not an API model id. Recorded truthfully rather than normalised in either direction.",
+    "runner": "Grok CLI (~/.grok/bin/grok)",
+    "session": "fresh, no producer conversation history"
+  },
+  "successor_is_proof_only": true,
+  "successor_rationale": "Per docs/03-reference/governance/evidence-economy.md, proof-only successors do not re-audit unchanged content. This successor adds evidence only; the audited ADR document bytes are unchanged from the audited content head."
 }

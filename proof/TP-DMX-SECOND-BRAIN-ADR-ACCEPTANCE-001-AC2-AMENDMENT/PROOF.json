@@ -1,0 +1,27 @@
+{
+  "content_head_audited": "cc2f49ccad3d7c39d6b9f0a9fb044616069585a7",
+  "embedded_audit": {
+    "auditor_model": "unknown",
+    "auditor_tool": "none",
+    "exit_code": null,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": null,
+    "remaining_risks": [
+      "Native embedded-audit lane could not represent the auditor that actually ran.",
+      "Substantive independent audit was performed by Grok 4.5 (xAI) bound to content head cc2f49ccad and returned PASS with 0 BLOCKER and 0 MUST_FIX; see AUDITOR_REPORT.md and GROK_AUDIT_ROUTE_CUSTODY.json."
+    ],
+    "report_path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": "GROK_AUDIT_VALID_SCHEMA_REPRESENTATION_UNSUPPORTED. The substantive independent audit was executed by the Grok CLI (provider xAI, requested model grok-4.5, observed usage key grok-4.5-build) and returned PASS. The trusted schemas/proof/embedded_audit.schema.json, read from main, enumerates auditor_tool values [agy, antigravity, claude-code-cli, copilot-cli, gemini-cli, pal-mcp-clink, none] and auditor_model values [sonnet, claude-sonnet-4.6, opus, gemini, unknown], contains zero grok entries, sets additionalProperties false, and via allOf[1] forbids auditor_tool none or auditor_model unknown for any non-SKIPPED status. There is therefore no truthful way to encode this audit as a passing native attestation. Per operator directive, no passing attestation was fabricated, Grok was not normalised into another enum, no substitute model was named, and the schema was not modified in this PR. First-class Grok support is deferred to a separate governance packet.",
+    "status": "SKIPPED"
+  },
+  "executed": false,
+  "generated_at": "2026-08-10T02:05:00Z",
+  "github_mutation_route_added": false,
+  "head_sha": "cc2f49ccad3d7c39d6b9f0a9fb044616069585a7",
+  "mutation_performed": false,
+  "packet_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT",
+  "pr_number": 1214,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

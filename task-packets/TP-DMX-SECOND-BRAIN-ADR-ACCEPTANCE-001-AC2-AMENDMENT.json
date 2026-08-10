@@ -1,0 +1,140 @@
+{
+  "id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT",
+  "project": "dopemux-mvp",
+  "target": "Narrow, operator-authorized amendment of ADR acceptance condition #2 across ADR-SB-001..010 in the repaired Second Brain ADR candidate. Separates architecture-time contract evidence from implementation-time denial-fixture proof. Accepts no ADR; all ten remain PROPOSED and the document remains CANDIDATE.",
+  "invariants": [
+    "Exactly 10 substitutions of the AC#2 bullet, one per ADR; no other line of the candidate document changes.",
+    "Zero changes to SB-DEC-001..032 semantics; the 28 SB-DEC references keep identical order and identity.",
+    "Zero changes to repaired traceability, ADR decision text, consequences, or rejected alternatives.",
+    "For all ten ADRs the Context, Proposed decision, Consequences, Rejected alternatives, and Evidence and traceability sections remain byte-identical.",
+    "YAML frontmatter remains byte-identical; document status remains CANDIDATE.",
+    "Zero ADR dispositions recorded; the token ACCEPTED does not appear in the candidate document.",
+    "Byte delta must equal 10 x (len(new_line) - len(old_line)); a mismatch means a non-additive rewrite and fails the packet.",
+    "Substitution must round-trip in both directions against the base bytes.",
+    "The embedded-audit schema and the allowed-signers file are NOT modified by this packet.",
+    "No passing embedded-audit attestation is fabricated and Grok is not normalised into another allowed enum.",
+    "The superseded pre-amendment acceptance commit 19fa74faa9 is not pushed, merged, rebased, deleted, or otherwise promoted.",
+    "Implementation execution remains NOT_AUTHORIZED and runtime mutation remains NONE."
+  ],
+  "depends_on": [
+    "TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001",
+    "TP-DMX-SECOND-BRAIN-IMPLEMENTATION-PLANNING-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "dopetask-canonical-spec.json",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "docs(second-brain): clarify ADR acceptance condition #2 (AC#2)",
+    "allowlist": [
+      "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+      "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/**",
+      "task-packets/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT.json"
+    ],
+    "verify": [
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "git diff --check",
+      "pre-commit run --from-ref origin/main --to-ref HEAD"
+    ]
+  },
+  "pr": {
+    "title": "docs(second-brain): clarify ADR acceptance condition #2 (AC#2)",
+    "body": "Narrow AC#2 amendment across ADR-SB-001..010. Accepts no ADR. Independent Grok 4.5 audit bound to the exact content head returned PASS with 0 BLOCKER and 0 MUST_FIX. The repository-native embedded-audit lane is recorded truthfully as GROK_AUDIT_VALID_SCHEMA_REPRESENTATION_UNSUPPORTED because the trusted schema enumerates no Grok auditor value; no passing attestation was fabricated.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Resolve base fresh and confirm the repaired ADR candidate bytes match the FO-01 receipt.",
+      "commands": [
+        "git fetch origin main && git rev-parse origin/main",
+        "git show origin/main:docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md | shasum -a 256"
+      ],
+      "expected_files": [],
+      "validation": "origin/main resolves to cfa4927a883b469c06f37343c18e6582f23d1443 and the candidate hashes to 946054a4675271856e0214dbf1ce0aa9b1ec17e71e79a82711ad3ca0d9df9c22, matching FO01_RESOLUTION_RECEIPT.json.",
+      "context_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/FO01_RESOLUTION_RECEIPT.json"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Apply exactly 10 AC#2 substitutions using the operator-specified wording verbatim.",
+      "commands": [
+        "grep -c '^\\* Machine contracts and denial fixtures parse and cover the decision\\.$' <candidate>"
+      ],
+      "expected_files": [
+        "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md"
+      ],
+      "validation": "Occurrence count is 10 before substitution and 0 after; the amended file hashes to e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c; line count is 375 before and after.",
+      "context_files": []
+    },
+    {
+      "id": "S3",
+      "task": "Prove the change is a pure line replacement, not a rewrite (falsifiable byte-delta and round-trip tests).",
+      "commands": [
+        "python3 - <<'PY'\nassert len(amended)-len(base) == 10*(len(NEW)-len(OLD))\nassert base.replace(OLD,NEW)==amended and amended.replace(NEW,OLD)==base\nPY"
+      ],
+      "expected_files": [],
+      "validation": "Predicted delta 10 x 322 = 3220 equals observed delta 3220, and both round-trip directions are exact. Any mismatch fails the packet.",
+      "context_files": []
+    },
+    {
+      "id": "S4",
+      "task": "Assert every forbidden surface is unchanged.",
+      "commands": [
+        "python3 - <<'PY'\n# per-ADR section comparison + SB-DEC sequence + frontmatter\nPY"
+      ],
+      "expected_files": [],
+      "validation": "For all ten ADRs the Context, Proposed decision, Consequences, Rejected alternatives, and Evidence and traceability sections are byte-identical; the 28 SB-DEC references are identical in order; frontmatter is identical; ten '**Status:** `PROPOSED`' remain and the token ACCEPTED is absent.",
+      "context_files": []
+    },
+    {
+      "id": "S5",
+      "task": "Obtain an independent read-only audit of the exact amended bytes and of the exact content head from a non-implementer auditor.",
+      "commands": [
+        "grok -m grok-4.5 --effort high --prompt-file <audit-prompt> --permission-mode auto --deny Write --deny Edit --deny MultiEdit --deny NotebookEdit --output-format json"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/GROK_AUDIT_ROUTE_CUSTODY.json"
+      ],
+      "validation": "Auditor verdict is PASS with 0 BLOCKER and 0 MUST_FIX, bound to content head cc2f49ccad3d7c39d6b9f0a9fb044616069585a7. Route custody records provider, requested model, observed usage key, fallback disabled, and model switching disabled, sourced from runner metadata rather than model self-report. Session identifiers in the custody record must match the auditor report headers exactly.",
+      "context_files": []
+    },
+    {
+      "id": "S6",
+      "task": "Record the repository-native embedded-audit lane truthfully without fabricating a passing attestation.",
+      "commands": [
+        "python3 scripts/audit/validate_audit_proof.py proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/PROOF.json"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/PROOF.json",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/GROK_SCHEMA_REPRESENTATION_GAP.md"
+      ],
+      "validation": "PROOF.json validates against schemas/proof/embedded_audit.schema.json with status SKIPPED, auditor_tool none, auditor_model unknown, and a non-empty skip_reason naming the representation gap. No PASS status is claimed for the native lane and no auditor tool or model that did not run is named.",
+      "context_files": [
+        "schemas/proof/embedded_audit.schema.json"
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Run the deterministic preflight against a commit that actually contains the change, not an empty diff.",
+      "commands": [
+        "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+        "pre-commit run --from-ref origin/main --to-ref HEAD",
+        "git diff --check"
+      ],
+      "expected_files": [],
+      "validation": "Preflight reports paths greater than zero and lists the L2 authority document; a paths=0 result is treated as a false green and the step is re-run against the committed head. All pre-commit hooks pass without modifying files.",
+      "context_files": []
+    }
+  ]
+}
