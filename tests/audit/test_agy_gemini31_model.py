@@ -42,3 +42,21 @@ def test_gemini_31_pro_rejected() -> None:
 
 def test_generic_gemini_backward_compatible() -> None:
     assert _errors("gemini") == []
+
+def test_schema_does_not_constrain_invocation_string() -> None:
+    """ACCEPTED_DESIGN_BOUNDARY: the schema binds the declared tool/model pair only.
+
+    `invocation` is an opaque string. A proof that declares the exact model but whose
+    invocation never mentions `--model` is still schema-valid, so schema validity must
+    never be read as proof that AGY was executed with the exact selector. Runtime
+    selector truth comes from execution evidence (recorded invocation, captured AGY
+    version/model list, requested/observed selector, fail-closed rejection of an invalid
+    selector, and the independent audit) — see docs/ops/embedded-audit-proof.md.
+
+    If this test ever fails, someone added invocation parsing to the schema: update the
+    documented boundary deliberately rather than deleting this test.
+    """
+    audit = _audit("gemini-3.1-pro-high")
+    audit["invocation"] = "agy --print '<bounded read-only embedded-audit prompt>'"
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    assert list(Draft7Validator(schema).iter_errors(audit)) == []

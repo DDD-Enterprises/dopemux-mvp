@@ -7,8 +7,8 @@
 `task-packets/*.json` against `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json`.
 That spec sets `additionalProperties: false`. The gate **did not exist at the branch's
 original base** (`414c7ac7f9`) and was only surfaced by rebasing onto current `main`
-(`cfa4927a88`) — which is precisely why GitHub reporting `MERGEABLE` was not evidence of
-gate conformance.
+(first `cfa4927a88`, then `5d694cc989` under strict branch protection) — which is precisely
+why GitHub reporting `MERGEABLE` was not evidence of gate conformance.
 
 **Result:** both packets validate with **0 schema errors / 0 additional-property errors**.
 
@@ -43,7 +43,7 @@ is marked **SUPERSEDED/CORRECTED**, never carried forward as active truth.
 | `stop_conditions` (6 items) | `invariants[]` `FAIL CLOSED:` ×6 | PRESERVED — all 6 |
 | `repair_packet` | child's `series.parent_tp_id` + child's `depends_on` | PRESERVED — relationship now expressed canonically from the child side |
 | `repo_binding.base_branch` | `series.base_branch` | PRESERVED |
-| `repo_binding.base_sha` | `invariants[]` `BASE HISTORY:` | **CORRECTED** — illegal `repo_binding` property; original base recorded as history, current binding base is `cfa4927a88` |
+| `repo_binding.base_sha` | `invariants[]` `BASE HISTORY:` | **CORRECTED** — illegal `repo_binding` property; original base recorded as history, current binding base is `5d694cc989` |
 | `invariants[0]` exact identifier | `invariants[]` `EXACT SELECTOR:` | **CORRECTED** (`-preview` → `-high`; `-preview` retained only in the rejected-alias list) |
 | `invariants[1..4]` | `invariants[]` | PRESERVED — proof shape, auth boundary, isolation, bootstrap |
 

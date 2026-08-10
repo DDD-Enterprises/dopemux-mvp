@@ -33,7 +33,7 @@
     "FAIL CLOSED: stop if the independent audit is missing, stale, or not bound to the final code head.",
     "FAIL CLOSED: stop if PR Steward is not READY.",
     "ROLLBACK: revert the approval commit. Existing generic gemini proofs remain valid; exact gemini-3.1-pro-high proofs created after the change would again fail schema validation and must not be accepted after rollback.",
-    "BASE HISTORY: this packet was originally authored against base 414c7ac7f998d6eaec7cf7ae9ab431c0fac6476d and was rebased onto cfa4927a883b469c06f37343c18e6582f23d1443; only the current base binds the work."
+    "BASE HISTORY: this packet was originally authored against base 414c7ac7f998d6eaec7cf7ae9ab431c0fac6476d, was rebased onto cfa4927a883b469c06f37343c18e6582f23d1443, and was rebased again onto 5d694cc9898e5046b5da03319f20f48599c40ca8 to satisfy strict branch protection; only the current base binds the work."
   ],
   "depends_on": [],
   "repo_binding": {

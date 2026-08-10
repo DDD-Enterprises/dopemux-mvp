@@ -7,7 +7,7 @@ Approve gemini-3.1-pro-high as the exact AGY auditor model identifier.
 - AGY v1.1.9 lists gemini-3.1-pro-high
 - AGY v1.1.9 does NOT list gemini-3.1-pro-preview
 
-### Re-verification 2026-08-10 (post-rebase onto main cfa4927a88)
+### Re-verification 2026-08-10 (post-rebase; branch now based on main 5d694cc989)
 
 The original evidence above was captured at AGY v1.1.9. It was re-verified rather
 than trusted, because the branch was rebased onto current main and the local AGY

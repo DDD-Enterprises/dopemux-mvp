@@ -75,6 +75,36 @@ identifier.
 - `exit_code` must be an integer
 - `skip_reason` must be `null`
 
+### What the schema proves — and what it does not
+
+`ACCEPTED_DESIGN_BOUNDARY: SCHEMA_BINDS_DECLARED_TOOL_MODEL_PAIR; RUNTIME_SELECTOR_PROVEN_BY_EXECUTION_EVIDENCE`
+
+The `auditor_model` → `auditor_tool` conditionals bind the **declared pairing**: a proof
+claiming `auditor_model: "gemini-3.1-pro-high"` must also claim `auditor_tool: "agy"`.
+That is a consistency constraint on the declaration.
+
+The schema deliberately **does not parse `invocation`**. It is an opaque string, so a
+schema-valid proof is *not* evidence that the runner was actually executed with
+`--model gemini-3.1-pro-high`. A regex over `invocation` would only prove that a
+substring appeared in a field the producer wrote — the same trust level as the
+`auditor_model` field itself — while creating a brittle shell-command parser and a
+false impression of runtime enforcement.
+
+Runtime selector truth is carried by execution evidence instead:
+
+- the recorded `invocation`;
+- captured runner evidence (`agy --version`, model list) at capture time;
+- `requested_selector` / `observed_selector` in the route record;
+- fail-closed rejection of an invalid selector — AGY aborts with
+  `model ... is not recognized as a known model` rather than silently substituting,
+  so no unproven fallback can occur;
+- the independent audit itself.
+
+Do not read schema validity as proof of runtime execution semantics, and do not widen
+these conditionals into invocation parsing without replacing this boundary statement.
+`tests/audit/test_agy_gemini31_model.py::test_schema_does_not_constrain_invocation_string`
+pins the boundary so it cannot drift silently.
+
 ### Finding shape
 
 ```json

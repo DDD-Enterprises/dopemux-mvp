@@ -10,6 +10,7 @@
     "gemini_3_1_pro_preview_present": false,
     "fallback_observed": false,
     "no_fallback_evidence": "agy --model gemini-3.1-pro-preview aborts with 'model gemini-3.1-pro-preview is not recognized as a known model'; agy --model gemini-3.1-pro-high succeeds. Selector validation is fail-closed, so no silent substitution is possible.",
-    "audited_content_head": "a1307fdbbdd0e599c0ca42ab919f391eccb76971"
+    "evidence_scope": "host-level AGY CLI evidence (version + model list + selector rejection); independent of repository history",
+    "capture_context_note": "Captured while the branch was based on cfa4927a88. The branch was subsequently rebased onto current main, so the capture-time branch SHA is no longer reachable and is deliberately not recorded here; a dangling SHA would be false precision. The exact audited content head is bound by the signed embedded-audit proof under proof/pr_merge/embedded-audit/pr-1165/."
   }
 }
