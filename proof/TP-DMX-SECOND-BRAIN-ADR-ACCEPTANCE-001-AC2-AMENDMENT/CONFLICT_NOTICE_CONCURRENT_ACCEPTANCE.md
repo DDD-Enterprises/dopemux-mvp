@@ -1,7 +1,7 @@
 # CONFLICT NOTICE — concurrent ADR acceptance discovered
 
 ```text
-status: UNRESOLVED — REQUIRES OPERATOR ADJUDICATION
+status: RESOLVED — OPTION 1, HONOUR THE LATER DEFER (see SUPERSESSION_LINEAGE.md)
 raised by: TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001 (AC#2 amendment track, this session)
 discovered: 2026-08-10T01:18Z, during post-amendment mutation verification
 action taken: NONE. The conflicting branch and worktree were inspected read-only and not touched.
@@ -88,7 +88,14 @@ did not record any ADR disposition
 did not land the AC#2 amendment
 ```
 
-## Operator options
+## Operator resolution — OPTION 1 (recorded)
+
+The operator selected **Option 1: honour the later defer**. `19fa74faa9` is classified
+`SUPERSEDED_PRE_AMENDMENT_ACCEPTANCE_ATTEMPT`, preserved untouched as historical evidence,
+and not pushed, merged, or rebased. The replacement acceptance chain is rebuilt from the
+amended candidate with fresh operator dispositions. Full lineage: `SUPERSESSION_LINEAGE.md`.
+
+## Options as originally presented (retained for the record)
 
 1. **Honour the later DEFER (recommended).** Land the AC#2 amendment first, then re-disposition
    the ten ADRs against the amended condition, and rebuild or rebase the accepted set on top.

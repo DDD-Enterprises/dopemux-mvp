@@ -27,13 +27,14 @@
   "gates": {
     "adr_dispositions": "DEFERRED_BY_OPERATOR \u2014 gate-level procedural defer, NOT a substantive DEFER against any ADR",
     "adrs_status": "all ten remain PROPOSED / CANDIDATE",
-    "amendment_landed_in_repo": false,
+    "amendment_landed_in_repo": "PR_OPEN_PENDING_MERGE (PR #1214)",
     "facilitator_authored_dispositions": false,
-    "github_mutation": "NONE",
+    "github_mutation": "PR #1214 opened",
     "implementation_execution": "NOT_AUTHORIZED",
     "implementation_packet_authorization": "NOT_YET",
-    "repo_mutation": "NONE",
-    "runtime_mutation": "NONE"
+    "repo_mutation": "branch tp/DMX-SB-AC2-AMENDMENT + PR #1214; main NOT yet modified",
+    "runtime_mutation": "NONE",
+    "snapshot_note": "Gate values above were a pre-landing snapshot when first written; corrected in the proof-only successor per auditor observation N2."
   },
   "independent_verification": {
     "blockers": 0,
@@ -44,6 +45,15 @@
     "nonblocking_observations": 1,
     "observed_model": "grok-4.5-build",
     "performed": true,
+    "pr_head_audit": {
+      "audited_content_head": "cc2f49ccad3d7c39d6b9f0a9fb044616069585a7",
+      "blockers": 0,
+      "must_fix": 0,
+      "nonblocking": 2,
+      "report": "AUDITOR_REPORT_PR1214.md",
+      "route_custody": "GROK_AUDIT_ROUTE_CUSTODY.json",
+      "verdict": "PASS"
+    },
     "provider": "xAI",
     "read_only": true,
     "report": "AUDITOR_REPORT_AMENDMENT.md",
@@ -75,6 +85,7 @@
     "sb_dec_semantics_changed": false,
     "token_ACCEPTED_present": false
   },
+  "native_embedded_audit_lane": "GROK_AUDIT_VALID_SCHEMA_REPRESENTATION_UNSUPPORTED \u2014 see GROK_SCHEMA_REPRESENTATION_GAP.md; recorded truthfully as failing, no attestation fabricated",
   "next_required_operator_actions": [
     "authorize landing the amended bytes to the repository (branch + PR + merge), or direct an alternative landing path",
     "after landing, provide explicit ADR-SB-001..010 dispositions"
