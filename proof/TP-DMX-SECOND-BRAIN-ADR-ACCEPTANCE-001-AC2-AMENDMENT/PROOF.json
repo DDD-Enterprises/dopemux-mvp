@@ -9,7 +9,8 @@
     "invocation": null,
     "remaining_risks": [
       "Native embedded-audit lane could not represent the auditor that actually ran.",
-      "Substantive independent audit was performed by Grok 4.5 (xAI) bound to content head cc2f49ccad and returned PASS with 0 BLOCKER and 0 MUST_FIX; see AUDITOR_REPORT.md and GROK_AUDIT_ROUTE_CUSTODY.json."
+      "Substantive independent audit was performed by Grok 4.5 (xAI) bound to content head cc2f49ccad and returned PASS with 0 BLOCKER and 0 MUST_FIX; see AUDITOR_REPORT.md and GROK_AUDIT_ROUTE_CUSTODY.json.",
+      "Native-lane head binding lags the final PR head by the proof-only successor commits; the audited authority document is byte-identical across that span (git diff -- docs/ is empty)."
     ],
     "report_path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT.md",
     "required": true,
@@ -19,7 +20,8 @@
   "executed": false,
   "generated_at": "2026-08-10T02:05:00Z",
   "github_mutation_route_added": false,
-  "head_sha": "cc2f49ccad3d7c39d6b9f0a9fb044616069585a7",
+  "head_binding_note": "head_sha names the commit this proof was written against. A proof file cannot contain the SHA of the commit that carries it, so the final PR head is always one commit ahead of any head_sha it embeds; this repo resolves that with a proof-only successor (see proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/C1_HEAD.txt for the same pattern). content_head_audited names the commit the independent Grok audit actually bound. Everything committed after cc2f49ccad is proof, task-packet, and governance metadata only: `git diff cc2f49ccad..HEAD -- docs/` is EMPTY, so the audited authority document bytes (e4b28946...) are unchanged from the audited head. This proof is SKIPPED and is NOT being used as a passing attestation, so it grants no readiness on the strength of that binding.",
+  "head_sha": "b21be126eb0ba18d7814831a3dd1d01a1aecfc36",
   "mutation_performed": false,
   "packet_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT",
   "pr_number": 1214,

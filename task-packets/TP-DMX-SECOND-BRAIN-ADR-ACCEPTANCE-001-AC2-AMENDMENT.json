@@ -59,7 +59,9 @@
         "git show origin/main:docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md | shasum -a 256"
       ],
       "expected_files": [],
-      "validation": "origin/main resolves to cfa4927a883b469c06f37343c18e6582f23d1443 and the candidate hashes to 946054a4675271856e0214dbf1ce0aa9b1ec17e71e79a82711ad3ca0d9df9c22, matching FO01_RESOLUTION_RECEIPT.json.",
+      "validation": [
+        "origin/main resolves to cfa4927a883b469c06f37343c18e6582f23d1443 and the candidate hashes to 946054a4675271856e0214dbf1ce0aa9b1ec17e71e79a82711ad3ca0d9df9c22, matching FO01_RESOLUTION_RECEIPT.json."
+      ],
       "context_files": [
         "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/FO01_RESOLUTION_RECEIPT.json"
       ]
@@ -73,7 +75,11 @@
       "expected_files": [
         "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md"
       ],
-      "validation": "Occurrence count is 10 before substitution and 0 after; the amended file hashes to e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c; line count is 375 before and after.",
+      "validation": [
+        "Occurrence count is 10 before substitution and 0 after.",
+        "the amended file hashes to e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c.",
+        "line count is 375 before and after."
+      ],
       "context_files": []
     },
     {
@@ -83,7 +89,10 @@
         "python3 - <<'PY'\nassert len(amended)-len(base) == 10*(len(NEW)-len(OLD))\nassert base.replace(OLD,NEW)==amended and amended.replace(NEW,OLD)==base\nPY"
       ],
       "expected_files": [],
-      "validation": "Predicted delta 10 x 322 = 3220 equals observed delta 3220, and both round-trip directions are exact. Any mismatch fails the packet.",
+      "validation": [
+        "Predicted delta 10 x 322 = 3220 equals observed delta 3220, and both round-trip directions are exact.",
+        "Any mismatch fails the packet."
+      ],
       "context_files": []
     },
     {
@@ -93,7 +102,12 @@
         "python3 - <<'PY'\n# per-ADR section comparison + SB-DEC sequence + frontmatter\nPY"
       ],
       "expected_files": [],
-      "validation": "For all ten ADRs the Context, Proposed decision, Consequences, Rejected alternatives, and Evidence and traceability sections are byte-identical; the 28 SB-DEC references are identical in order; frontmatter is identical; ten '**Status:** `PROPOSED`' remain and the token ACCEPTED is absent.",
+      "validation": [
+        "For all ten ADRs the Context, Proposed decision, Consequences, Rejected alternatives, and Evidence and traceability sections are byte-identical.",
+        "the 28 SB-DEC references are identical in order.",
+        "frontmatter is identical.",
+        "ten '**Status:** `PROPOSED`' remain and the token ACCEPTED is absent."
+      ],
       "context_files": []
     },
     {
@@ -106,7 +120,11 @@
         "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT.md",
         "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/GROK_AUDIT_ROUTE_CUSTODY.json"
       ],
-      "validation": "Auditor verdict is PASS with 0 BLOCKER and 0 MUST_FIX, bound to content head cc2f49ccad3d7c39d6b9f0a9fb044616069585a7. Route custody records provider, requested model, observed usage key, fallback disabled, and model switching disabled, sourced from runner metadata rather than model self-report. Session identifiers in the custody record must match the auditor report headers exactly.",
+      "validation": [
+        "Auditor verdict is PASS with 0 BLOCKER and 0 MUST_FIX, bound to content head cc2f49ccad3d7c39d6b9f0a9fb044616069585a7.",
+        "Route custody records provider, requested model, observed usage key, fallback disabled, and model switching disabled, sourced from runner metadata rather than model self-report.",
+        "Session identifiers in the custody record must match the auditor report headers exactly."
+      ],
       "context_files": []
     },
     {
@@ -119,7 +137,10 @@
         "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/PROOF.json",
         "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/GROK_SCHEMA_REPRESENTATION_GAP.md"
       ],
-      "validation": "PROOF.json validates against schemas/proof/embedded_audit.schema.json with status SKIPPED, auditor_tool none, auditor_model unknown, and a non-empty skip_reason naming the representation gap. No PASS status is claimed for the native lane and no auditor tool or model that did not run is named.",
+      "validation": [
+        "PROOF.json validates against schemas/proof/embedded_audit.schema.json with status SKIPPED, auditor_tool none, auditor_model unknown, and a non-empty skip_reason naming the representation gap.",
+        "No PASS status is claimed for the native lane and no auditor tool or model that did not run is named."
+      ],
       "context_files": [
         "schemas/proof/embedded_audit.schema.json"
       ]
@@ -133,7 +154,11 @@
         "git diff --check"
       ],
       "expected_files": [],
-      "validation": "Preflight reports paths greater than zero and lists the L2 authority document; a paths=0 result is treated as a false green and the step is re-run against the committed head. All pre-commit hooks pass without modifying files.",
+      "validation": [
+        "Preflight reports paths greater than zero and lists the L2 authority document.",
+        "a paths=0 result is treated as a false green and the step is re-run against the committed head.",
+        "All pre-commit hooks pass without modifying files."
+      ],
       "context_files": []
     }
   ]
