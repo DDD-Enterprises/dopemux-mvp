@@ -15,10 +15,10 @@
     "final_packet": false
   },
   "execution": {
-    "agent": "grok",
+    "agent": "shell",
     "branch": "fix/dependabot-vuln-repair-86",
     "base_branch": "main",
-    "risk_lane": "L2"
+    "stacked_because": "L2 security floor repair across Python/JS locks for 86 open Dependabot alerts."
   },
   "commit": {
     "message": "fix(security): close Dependabot GHSA floors across Python and JS locks",
