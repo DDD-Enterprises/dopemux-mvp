@@ -1,17 +1,38 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1165,
-  "head_sha": "9b901093e441a709d8c31e1067d5745a1604112f",
-  "generated_at": "2026-08-10T05:30:00Z",
+  "head_sha": "06c4caa1763718239fabdb9d405fef6e2067b94d",
+  "generated_at": "2026-08-10T13:04:36Z",
   "embedded_audit": {
     "required": true,
-    "status": "PASS_WITH_RISKS",
+    "status": "PASS",
     "auditor_tool": "agy",
     "auditor_model": "gemini",
-    "invocation": "agy --model gemini-3.1-pro-high --mode plan --effort high --output-format json --print '<bounded read-only embedded-audit prompt + full diff origin/main...d2d3ff808e80e6d6a490616d4ff2341a63c29d86>'",
+    "invocation": "agy --model gemini-3.1-pro-high --mode plan --effort high --output-format json --print '<bounded read-only embedded-audit prompt + full content-head diff for AUDITED_TREE ca3ff647f8bdfd3cc85f6a15b5404d12617708b7>'",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001/AUDITOR_REPORT.md",
     "findings": [
+      {
+        "id": "F-005-HIGH-1",
+        "severity": "HIGH",
+        "status": "RESOLVED",
+        "title": "Canonical-schema refactor silently dropped the required=true acceptance gate",
+        "body": "Controlling finding of round 4. The pre-refactor hand-rolled validator in scripts/audit/local_audit_acceptance.py enforced a check the canonical schema cannot express: embedded_audit.required must be true. The schema types required as a plain boolean, so {required: false, status: PASS} is schema-VALID. Replacing the structural check with canonical Draft 7 execution (the F-004 repair) therefore removed the gate without any schema error to signal it. Not cosmetic, measured end to end: build_embedded_audit_proof promotes an accepted local attestation to executed: true, and enforce_independent_audit_proof checks the verdict but not this flag, so the mandatory embedded-audit gate went GREEN for a proof declaring the audit was not required. Found by @chatgpt-codex-connector reviewing the pushed head AFTER round 3 returned PASS 11/11 over a tree that still carried the live regression; round 3's Q4 covered gate preservation directly and answered PASS, and it was wrong. That audit limitation is preserved as evidence and is not rewritten into a stronger historical result. Repaired in AUDITED_TREE ca3ff647f8bdfd3cc85f6a15b5404d12617708b7 by restoring the gate in policy_errors() as acceptance policy rather than as a schema rule, after enumerating all nine pre-refactor checks against the refactored path; required was the only loss. Round 4 Q1, Q2, Q6, Q7, Q10: PASS."
+      },
+      {
+        "id": "F-004-HIGH-1",
+        "severity": "HIGH",
+        "status": "RESOLVED",
+        "title": "Trusted local-attestation route did not enforce the canonical schema's conditionals",
+        "body": "Found by reviewer after round 2 passed. scripts/audit/local_audit_acceptance.py validated the signed embedded_audit with a hand-rolled stdlib check of required keys, a few enum memberships and a few types. It never walked allOf, so no schema conditional was enforced on the signed route, and it exempted report_path outright. Reproduced before repair: the fixture {status PASS, auditor_model gemini-3.1-pro-high, auditor_tool claude-code-cli} was ACCEPTED by the origin/main acceptance route while the canonical Draft7Validator rejected it with 'agy' was expected. The defect sat behind the signature trust boundary, so it let a trusted signer record a forbidden pairing rather than letting an untrusted party in; it is nonetheless disqualifying for a PR whose purpose is an exact model-to-tool trust contract. Repaired by executing the canonical schema with real Draft 7 semantics on both validation routes, with no second hand-written validator. Both paths now reject the fixture. Evidence: review_bundle/DEFECT_REPRODUCTION_ROUND3.txt. Round 3 Q1-Q3, Q5, Q7-Q8: PASS; re-confirmed intact by round 4 Q3, Q4, Q5."
+      },
+      {
+        "id": "F-003-MED-1",
+        "severity": "MEDIUM",
+        "status": "RESOLVED",
+        "title": "Claimed unauthorized addition of pal-mcp-clink to the auditor_tool enum",
+        "body": "Refuted. pal-mcp-clink is already present in the trusted schema on main at 5d694cc9898e5046b5da03319f20f48599c40ca8; this change does not touch the auditor_tool enum. The documentation line had omitted it and the diff corrects that omission, now stated explicitly in docs/ops/embedded-audit-proof.md. Round 1 saw only the diff, not main, so it could not distinguish documentation catch-up from an enum addition. Round 2, shown the full schema hunk, confirmed the enum is untouched. Round 2 Q10(c): PASS."
+      },
       {
         "id": "F-001-MED-1",
         "severity": "MEDIUM",
@@ -24,30 +45,21 @@
         "severity": "LOW",
         "status": "RESOLVED",
         "title": "Round 1 was asked to verify the auditor report inside the tree it was auditing",
-        "body": "Producer prompt-scope defect, not a change defect. The canonical AUDITOR_REPORT.md is the audit's own output and cannot exist in the audited tree. The placement is forced: the trusted schema requires report_path under a single proof/ directory, while proof-only closure confines the successor commit to proof/pr_merge/embedded-audit/pr-1165/. Rounds 2 and 3 were given the ordering constraint and instructed to flag any file claiming the report already existed; neither found one. Disclosed in the report. Round 2 Q6/Q10(b): PASS."
-      },
-      {
-        "id": "F-003-MED-1",
-        "severity": "MEDIUM",
-        "status": "RESOLVED",
-        "title": "Claimed unauthorized addition of pal-mcp-clink to the auditor_tool enum",
-        "body": "Refuted. pal-mcp-clink is already present in the trusted schema on main at 5d694cc9898e5046b5da03319f20f48599c40ca8; this change does not touch the auditor_tool enum. The documentation line had omitted it and the diff corrects that omission, now stated explicitly in docs/ops/embedded-audit-proof.md. Round 1 saw only the diff, not main, so it could not distinguish documentation catch-up from an enum addition. Round 2, shown the full schema hunk, confirmed the enum is untouched. Round 2 Q10(c): PASS."
-      },
-      {
-        "id": "F-004-HIGH-1",
-        "severity": "HIGH",
-        "status": "RESOLVED",
-        "title": "Trusted local-attestation route did not enforce the canonical schema's conditionals",
-        "body": "Found by reviewer after round 2 passed. scripts/audit/local_audit_acceptance.py validated the signed embedded_audit with a hand-rolled stdlib check of required keys, a few enum memberships and a few types. It never walked allOf, so no schema conditional was enforced on the signed route, and it exempted report_path outright. Reproduced before repair: the fixture {status PASS, auditor_model gemini-3.1-pro-high, auditor_tool claude-code-cli} was ACCEPTED by the origin/main acceptance route while the canonical Draft7Validator rejected it with 'agy' was expected. The defect sat behind the signature trust boundary, so it let a trusted signer record a forbidden pairing rather than letting an untrusted party in; it is nonetheless disqualifying for a PR whose purpose is an exact model-to-tool trust contract. Repaired by executing the canonical schema with real Draft 7 semantics on both validation routes, with no second hand-written validator. Both paths now reject the fixture. Evidence: review_bundle/DEFECT_REPRODUCTION_ROUND3.txt. Round 3 Q1-Q3, Q5, Q7-Q8: PASS."
+        "body": "Producer prompt-scope defect, not a change defect. The canonical AUDITOR_REPORT.md is the audit's own output and cannot exist in the audited tree. The placement is forced: the trusted schema requires report_path under a single proof/ directory, while proof-only closure confines the successor commit to proof/pr_merge/embedded-audit/pr-1165/. Rounds 2, 3 and 4 were given the ordering constraint and instructed to flag any file claiming the report already existed; none found one. Disclosed in the report. Round 2 Q6/Q10(b): PASS."
       }
     ],
     "fixes_applied": [
+      "Restored the embedded_audit.required must be true gate in scripts/audit/local_audit_acceptance.py policy_errors(), which the canonical-schema refactor had silently dropped. It is enforced as LOCAL ATTESTATION ACCEPTANCE POLICY and deliberately not as a schema rule: the trusted schema types required as a plain boolean and must keep admitting required: false, because it also describes CI-emitted diagnostic proofs.",
+      "Separated the two gate classes explicitly: schema-expressible structure in schema_validation_errors(), everything the schema cannot express in policy_errors(). policy_errors() now reports every violated gate at once rather than returning on the first.",
+      "Enumerated all nine checks the pre-refactor implementation performed and tested each against the refactored path, rather than fixing only the reported field. required was the only loss; the enumeration is published as a table in the auditor report.",
+      "Added POLICY_ONLY_REJECTIONS in tests/audit/test_local_audit_acceptance.py: a corpus of fixtures the trusted schema ACCEPTS but acceptance policy must REJECT (non-passing verdict, and audit declared not required), each asserted schema-valid first so that only policy can be the rejecting authority. A future refactor cannot drop one of these quietly.",
+      "Added test_rejects_required_false_even_though_schema_allows_it, an end-to-end regression that signs a {required: false, status: PASS} proof and asserts accepted is false with a local_audit_required_flag reason.",
+      "Stated the schema-permissive/acceptance-strict distinction in docs/ops/embedded-audit-proof.md, including the concrete consequence (executed: true promotion with no downstream check of the flag) and the instruction that adding a schema check must never remove a policy gate.",
       "Replaced the partial hand-rolled structural check in scripts/audit/local_audit_acceptance.py with canonical Draft 7 execution against the trusted schema, so allOf conditionals, additionalProperties and report_path are all enforced and a future schema conditional needs no second implementation.",
       "Removed the report_path validation exemption and the docstrings promising it; a downstream emitter substituting its own path is not a reason to accept a schema-invalid signed input.",
-      "Kept verdict policy separate from schema validity, since the trusted schema admits FAIL and SKIPPED for CI diagnostic proofs while local attestation accepts passing verdicts only.",
       "Made the acceptance route fail closed with schema_validator_unavailable when jsonschema is absent, with no fallback to a partial check, and provisioned the validator explicitly in the embedded-audit workflow so a trust gate does not depend on an undeclared runner-image package.",
       "Added a parity fixture corpus asserting the acceptance route and Draft7Validator agree, an end-to-end wrong-tool rejection test, and a guard that fails when a new schema conditional lacks coverage.",
-      "Corrected the acceptance test fixture, which itself encoded a schema-invalid two-directory report_path \u2014 which is why the exemption had looked safe.",
+      "Corrected the acceptance test fixture, which itself encoded a schema-invalid two-directory report_path - which is why the exemption had looked safe.",
       "Added \"required\": [\"auditor_tool\"] to the gemini-3.1-pro-high conditional's then clause so it cannot pass vacuously, with a regression test.",
       "Stated in docs/ops/embedded-audit-proof.md that pal-mcp-clink was already present in the trusted schema on main and is documentation catch-up, not an enum addition.",
       "Moved the canonical auditor report to proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001/AUDITOR_REPORT.md so report_path satisfies the trusted schema pattern.",
@@ -55,12 +67,17 @@
       "Filed TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001 for the separate sweep and pre-commit scope gap, which this repair does not close."
     ],
     "remaining_risks": [
-      "provider_attested is false: the exact selector gemini-3.1-pro-high is established by local AGY CLI evidence (v1.1.11 model list, fail-closed rejection of an unknown selector) and by the recorded invocation, not by a credentialed provider attestation. No hosted credential was added and none is claimed.",
-      "Bootstrap representation: auditor_model is recorded as the generic 'gemini' because gemini-3.1-pro-high is absent from origin/main:schemas/proof/embedded_audit.schema.json at 5d694cc9898e5046b5da03319f20f48599c40ca8. The new enum value does not bootstrap its own admission; exact-selector truth is carried by the invocation and the auditor report.",
+      "ROUND 4 IS CONTROLLING. Four AGY rounds were run. Round 4 audited AUDITED_TREE ca3ff647f8bdfd3cc85f6a15b5404d12617708b7 and returned VERDICT: PASS with an empty RISKS list, 10/10 questions PASS (review_bundle/agy-audit-round4-ca3ff647f8.json). Rounds 1 (FAIL, 3 risks, 491e59a868), 2 (PASS, 02c915d800) and 3 (PASS 11/11, d2d3ff808e) are HISTORICAL EVIDENCE ONLY: the audited tree changed after each, so none is signed as current authority. All four raw transcripts are committed unedited, including the failing round and the round that passed over a live defect.",
+      "AUDIT LIMITATION, PRESERVED NOT REWRITTEN: round 3 returned PASS with 11/11 and an empty risk list over a tree that still contained the live required=true gate regression, and it was asked about gate preservation directly (its Q4) and answered PASS. It was wrong; a human reviewer found the defect afterwards. That historical PASS is recorded as what it was and is not restated as anything stronger. A clean audit verdict is evidence, not proof, and replacing a validator is a change class where check-by-check enumeration of the old behaviour is worth more than any single verdict.",
+      "AUDIT TOPOLOGY, NAMED NOT CONFLATED: the substantive tree AGY actually examined in round 4 is AUDITED_TREE = ca3ff647f8bdfd3cc85f6a15b5404d12617708b7. The head_sha recorded in this proof, 06c4caa1763718239fabdb9d405fef6e2067b94d, is the AUDIT_EVIDENCE_HEAD and adds AUDIT EVIDENCE ONLY on top of it - the round-4 auditor report and the round-4 raw transcript and runner-evidence captures under review_bundle/. No schema, validator, test, packet, documentation or workflow byte changed after the audit; verify with git diff --name-only ca3ff647f8bdfd3cc85f6a15b5404d12617708b7..06c4caa1763718239fabdb9d405fef6e2067b94d. AGY did NOT audit its own report. The ordering is forced, because the trusted schema requires report_path under a single proof/ directory while proof-only closure confines the signed successor commit to proof/pr_merge/embedded-audit/pr-1165/.",
+      "SUPERSEDES THE PUBLISHED PROOF. The signed proof previously published at PR head e2b06ffbd0640c69bbb478f65d48361557efc4ba is SUPERSEDED by this one and must not be cited as current authority. It was generated from round-3 evidence, recorded head_sha 9b901093e441a709d8c31e1067d5745a1604112f and status PASS_WITH_RISKS, and it predates the required=true gate repair. Its signature is not reused: this proof was regenerated from the round-4 evidence rather than copy-edited, and was signed over its own bytes.",
+      "provider_attested is FALSE and remains false. The exact selector gemini-3.1-pro-high is established by local AGY CLI evidence (v1.1.11 model list, fail-closed rejection of an unknown selector) and by the recorded invocation, not by a credentialed provider attestation. No hosted credential was added, called, or claimed.",
+      "Bootstrap representation: auditor_model is recorded as the generic 'gemini' because gemini-3.1-pro-high is absent from origin/main:schemas/proof/embedded_audit.schema.json at 5d694cc9898e5046b5da03319f20f48599c40ca8. The new enum value does not bootstrap its own admission; exact-selector provenance is carried by the invocation string and the auditor report.",
       "The JSON Schema binds the declared tool/model pair only and deliberately does not parse invocation, so schema validity is not evidence of runtime selector execution. Recorded as ACCEPTED_DESIGN_BOUNDARY: SCHEMA_BINDS_DECLARED_TOOL_MODEL_PAIR; RUNTIME_SELECTOR_PROVEN_BY_EXECUTION_EVIDENCE.",
-      "Confirmed and still open: proof/.validator_scope.json includes only proof/TP-DMX-*/PROOF.json and skips proof/pr_merge/** under default_when_unmatched skip_with_warning, and the pre-commit proof hook has the same blind spot via files ^proof/[^/]+/PROOF\\.json$. Repairing local_audit_acceptance.py closes the signed local-attestation route only and does NOT close the sweep or pre-commit gap; observed again this cycle, the pre-commit proof hook reported no files to check while this proof was in the diff. This proof is validated by a direct scripts/audit/validate_audit_proof.py run instead. Filed as TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001.",
-      "The workflow now installs jsonschema at job runtime. Because embedded-audit runs on pull_request_target, both the workflow and the acceptance script are taken from the trusted base ref, so this provisioning is inert for PR #1165's own CI and is first exercised after merge. Until then the acceptance route in CI is main's pre-repair version.",
-      "The audited head 9b901093e441a709d8c31e1067d5745a1604112f adds the audit's own outputs on top of the tree AGY reviewed (d2d3ff808e80e6d6a490616d4ff2341a63c29d86). The delta is only AUDITOR_REPORT.md, the raw round-3 transcript, the defect reproduction, and runner-evidence captures under review_bundle/; no schema, validator, test, packet, documentation, or workflow byte changed after the audit. This ordering is forced and is disclosed rather than left implicit."
+      "SEPARATE AND STILL OPEN - validator scope parity: proof/.validator_scope.json includes only proof/TP-DMX-*/PROOF.json and skips proof/pr_merge/** under default_when_unmatched skip_with_warning, and the pre-commit proof hook has the same blind spot via files ^proof/[^/]+/PROOF\\.json$. Repairing local_audit_acceptance.py closed the signed local-attestation route only and does NOT close the sweep or pre-commit gap; observed again this cycle, the pre-commit proof hook reported no files to check while this proof was in the diff. This proof is therefore validated by a DIRECT scripts/audit/validate_audit_proof.py run, which is the controlling result; the --all proof sweep is not cited as evidence for it. Filed as TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001. Not a merge blocker for this PR and deliberately not widened into it.",
+      "SEPARATE AND STILL OPEN - signing wrapper false success: scripts/audit/sign_local_audit_proof.sh can print 'signed: <path>.sig' when no new signature was created. When a stale .sig already exists, ssh-keygen prompts before overwriting; on EOF the prompt is declined, the old signature survives untouched, and the wrapper still reports apparent success. Wrapper stdout is therefore NOT evidence of signing. Mitigated for this proof by removing the stale signature before invoking the signer and by independently verifying the resulting bytes with ssh-keygen -Y verify, plus asserting the new signature bytes differ from the superseded ones. The wrapper defect itself is not fixed here; it is filed with the validator-scope parity follow-up. Not a merge blocker for this PR and deliberately not widened into it.",
+      "The workflow installs jsonschema at job runtime. Because embedded-audit runs on pull_request_target, both the workflow and the acceptance script are taken from the trusted base ref, so this provisioning is inert for PR #1165's own CI and is first exercised after merge. Until then the acceptance route in CI is main's pre-repair version, which is also why the required=true gate repair cannot be demonstrated by this PR's own CI run.",
+      "Producer-invoked signing: standing rule REVIEW-001 says the producing agent must not author the signed attestation for its own work. The operator issued a fresh, explicitly scoped one-time override for this replacement proof only, superseding all previously consumed PR #1165 signing authorizations. Disclosed rather than left implicit; details in SIGNING_DISCLOSURE.md alongside this proof."
     ],
     "skip_reason": null
   }
