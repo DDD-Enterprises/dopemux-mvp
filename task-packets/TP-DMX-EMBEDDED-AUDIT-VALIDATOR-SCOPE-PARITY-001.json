@@ -1,0 +1,152 @@
+{
+  "id": "TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001",
+  "project": "dopemux-mvp",
+  "target": "Make embedded-audit proofs under proof/pr_merge/** visible to every deterministic validation route, and remove the false-success path from the local signing wrapper, so that neither a proof the canonical schema rejects nor an unsigned/stale-signed proof can pass unexamined — without converting unrelated legacy proof debt into an unbounded repair campaign.",
+  "invariants": [
+    "SCOPE: this packet exists because FOUR independent routes under-enforce on proof/pr_merge/**, three of them filters and one a signing wrapper. (1) proof/.validator_scope.json sets include_patterns to proof/TP-DMX-*/PROOF.json with default_when_unmatched: skip_with_warning. (2) The pre-commit proof hook matches only a single directory under proof/ — files pattern proof/<one-dir>/PROOF.json — so nested proof/pr_merge/embedded-audit/pr-<N>/ never matches. (3) scripts/governance/validate_change_contract.py strips the report_path pattern from the trusted schema before validating any path starting with proof/pr_merge/. (4) scripts/audit/sign_local_audit_proof.sh can report success when no new signature was written. Closing any one of these leaves the others open.",
+    "EVIDENCE: every item is a confirmed defect, not a hypothesis. (1)+(2) PR #1165 published a proof whose report_path violated the trusted schema pattern; a direct scripts/audit/validate_audit_proof.py run rejected it while CI stayed green, because neither filter looked. (3) Confirmed on trusted main at 5d694cc9898e5046b5da03319f20f48599c40ca8, scripts/governance/validate_change_contract.py lines 245-251, and raised independently as review thread #8 on PR #1165. (4) Confirmed during the PR #1165 round-4 signing: with a stale .sig present, ssh-keygen prompts before overwrite, EOF declines the prompt, the old signature survives untouched, and the wrapper still prints 'signed: <path>.sig'.",
+    "PRE-EXISTING, NOT INTRODUCED: defect (3) is present on trusted main and is NOT touched by PR #1165. Its correct disposition is this separated packet, not a widening of #1165. Do not describe it as a regression introduced by the embedded-audit repair series.",
+    "NOT ALREADY FIXED: repairing scripts/audit/local_audit_acceptance.py to execute the canonical schema (TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001, steps R07 and the round-4 required=true restoration) closes the signed local-attestation route ONLY. It does not make the deterministic sweep, pre-commit, or the changed-contract preflight look at proof/pr_merge/**, and it does not touch the signing wrapper. Do not report this packet's work as done by that repair.",
+    "STALE JUSTIFYING COMMENT: the softening in validate_change_contract.py is justified in-code by the comment 'Local acceptance intentionally skips report_path for pr_merge'. That statement is FALSE as of TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001, which removed the report_path exemption from local acceptance. Removing the softening must also remove or correct the comment, so the next reader does not restore it on the strength of an obsolete rationale.",
+    "BOUNDED BLAST RADIUS: widening validator scope will surface pre-existing nonconformant proofs. Enumerate them first and classify each as REPAIR / QUARANTINE / DOCUMENTED-LEGACY before changing any default. A scope widening that turns CI red across unrelated history is a failed execution of this packet, not a success.",
+    "NO SILENT SKIPS: default_when_unmatched: skip_with_warning is the mechanism that produced the false green. Any retained skip must be an explicit, enumerated, reviewed entry — never a fallthrough.",
+    "FAIL CLOSED: an unmatched or unreadable proof must not be reported as PASS. A sweep that validates nothing must not exit 0 with a green summary. A signer that wrote no signature must not exit 0 with a success line.",
+    "NO GATE WEAKENING: this packet must not weaken signature verification, allowed-signers trust, namespace binding, repository or PR identity, audited-head ancestry, proof-only successor closure, passing-verdict policy, the embedded_audit.required=true acceptance policy, or PR Steward semantics.",
+    "SCHEMA VALIDITY AND ACCEPTANCE POLICY REMAIN DISTINCT: schemas/proof/embedded_audit.schema.json is the only authority on embedded_audit shape, and it is deliberately more permissive than acceptance because it also describes CI-emitted diagnostic proofs. Gates the schema cannot express live in local_audit_acceptance.policy_errors() and are pinned by POLICY_ONLY_REJECTIONS. Do not introduce a second hand-written structural validator, and do not migrate a policy gate into the schema to make it 'consistent'.",
+    "SINGLE POLICY ENGINE: extend coverage, not the number of implementations. Every route that validates an embedded_audit object must execute the canonical schema rather than approximate it."
+  ],
+  "depends_on": [
+    "TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "fix(audit): validator-scope parity for proof/pr_merge proofs and fail-closed local signing",
+    "allowlist": [
+      "task-packets/TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001.json",
+      "proof/.validator_scope.json",
+      ".pre-commit-config.yaml",
+      "scripts/audit/validate_audit_proof.py",
+      "scripts/governance/validate_change_contract.py",
+      "scripts/audit/sign_local_audit_proof.sh",
+      "tests/audit/**",
+      "tests/governance/**",
+      "docs/ops/embedded-audit-proof.md",
+      "proof/TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001/**"
+    ],
+    "verify": [
+      "python scripts/audit/validate_audit_proof.py --all proof",
+      "python -m pytest tests/audit -q",
+      "python -m pytest tests/governance -q",
+      "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(audit): validator-scope parity for proof/pr_merge embedded-audit proofs and fail-closed local signing",
+    "body": "Closes the sweep, pre-commit, and changed-contract-preflight blind spots that let a schema-invalid embedded-audit proof pass CI green, and removes the false-success path from the local signing wrapper. Enumerates existing nonconformance before widening scope, so the change does not convert legacy proof debt into an unbounded repair campaign.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S01",
+      "task": "Enumerate the true blast radius before changing any configuration.",
+      "requirements": [
+        "Run scripts/audit/validate_audit_proof.py directly against every PROOF.json under proof/, including proof/pr_merge/**, with no scope filtering.",
+        "Produce a census of conforming and nonconforming bundles with the exact schema error for each.",
+        "Classify every nonconforming bundle as REPAIR, QUARANTINE, or DOCUMENTED-LEGACY with a stated reason.",
+        "Do not change proof/.validator_scope.json, .pre-commit-config.yaml, or scripts/governance/validate_change_contract.py in this step."
+      ],
+      "expected_files": [
+        "proof/TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001/PROOF_CENSUS.md"
+      ],
+      "validation": [
+        "python scripts/audit/validate_audit_proof.py --all proof"
+      ]
+    },
+    {
+      "id": "S02",
+      "task": "Bring proof/pr_merge/** into deterministic validation scope with an explicit, enumerated disposition for every pre-existing failure.",
+      "requirements": [
+        "Add proof/pr_merge/embedded-audit/** to the sweep's include patterns.",
+        "Replace default_when_unmatched: skip_with_warning with a fail-closed default, or justify in writing why it must remain and enumerate every path that relies on it.",
+        "Extend the pre-commit proof hook's files pattern to cover the same path family, including nested directories — the current pattern matches only a single directory under proof/, which is why proof/pr_merge/embedded-audit/pr-<N>/PROOF.json never matched.",
+        "Any retained exemption must be an explicit enumerated entry with a reason, never a silent fallthrough."
+      ],
+      "expected_files": [
+        "proof/.validator_scope.json",
+        ".pre-commit-config.yaml"
+      ],
+      "validation": [
+        "python scripts/audit/validate_audit_proof.py --all proof",
+        "pre-commit run --from-ref origin/main --to-ref HEAD"
+      ]
+    },
+    {
+      "id": "S03",
+      "task": "Remove the report_path softening from the changed-contract preflight so it stops issuing false green for proof/pr_merge proofs.",
+      "requirements": [
+        "In scripts/governance/validate_change_contract.py, delete the branch that copies the trusted schema and pops report_path.pattern for paths beginning with proof/pr_merge/ (lines 245-251 as of 5d694cc9898e5046b5da03319f20f48599c40ca8), so the preflight validates the unmodified canonical schema.",
+        "Remove or correct the justifying comment 'Local acceptance intentionally skips report_path for pr_merge' — it is obsolete, because local acceptance no longer skips report_path.",
+        "Confirm against the S01 census that removing the softening does not red-line any bundle whose disposition was not already classified; if it does, handle it under that classification rather than by restoring the exemption.",
+        "Do not add a compensating exemption elsewhere. If a legacy proof genuinely cannot conform, it must be an enumerated QUARANTINE entry, not a pattern-stripping branch."
+      ],
+      "expected_files": [
+        "scripts/governance/validate_change_contract.py"
+      ],
+      "validation": [
+        "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+        "python -m pytest tests/governance -q"
+      ]
+    },
+    {
+      "id": "S04",
+      "task": "Make the local signing wrapper fail closed, so it cannot report success without having written a new signature.",
+      "requirements": [
+        "In scripts/audit/sign_local_audit_proof.sh, ensure an existing .sig cannot be silently retained: either remove/relocate it before invoking ssh-keygen, or pass a non-interactive mode, so ssh-keygen is never left at an overwrite prompt that EOF declines.",
+        "After signing, verify the produced signature over the exact PROOF.json bytes with ssh-keygen -Y verify against config/audit/embedded-audit-allowed-signers, and exit non-zero if verification fails.",
+        "Assert the signature file's modification identity actually changed — comparing content hashes before and after is sufficient — and exit non-zero if it did not.",
+        "The success line must be printed only after verification succeeds, never before, and never on a path where no signature was written.",
+        "Document in docs/ops/embedded-audit-proof.md that wrapper stdout is not evidence of signing and that ssh-keygen -Y verify over the committed bytes is the controlling check."
+      ],
+      "expected_files": [
+        "scripts/audit/sign_local_audit_proof.sh",
+        "docs/ops/embedded-audit-proof.md"
+      ],
+      "validation": [
+        "python -m pytest tests/audit -q"
+      ]
+    },
+    {
+      "id": "S05",
+      "task": "Pin the scope contract with regression tests so a future narrowing is caught rather than discovered by a false green.",
+      "requirements": [
+        "Assert that a proof placed under proof/pr_merge/embedded-audit/ is validated rather than skipped.",
+        "Assert that an unmatched proof path fails closed and is not reported as PASS.",
+        "Assert that the pre-commit hook pattern, the sweep include patterns, and the changed-contract preflight cover the same path family, so the routes cannot drift apart again.",
+        "Assert that the changed-contract preflight rejects a proof/pr_merge proof whose report_path violates the canonical pattern — the exact case the softening used to admit.",
+        "Assert that the signing wrapper exits non-zero when a stale .sig is present and no new signature is written.",
+        "Record in docs/ops/embedded-audit-proof.md which routes validate which paths, and state the historical false-green plainly."
+      ],
+      "expected_files": [
+        "tests/audit/test_validator_scope_parity.py",
+        "tests/governance/test_change_contract_proof_schema.py",
+        "docs/ops/embedded-audit-proof.md"
+      ],
+      "validation": [
+        "python -m pytest tests/audit -q",
+        "python -m pytest tests/governance -q"
+      ]
+    }
+  ]
+}
