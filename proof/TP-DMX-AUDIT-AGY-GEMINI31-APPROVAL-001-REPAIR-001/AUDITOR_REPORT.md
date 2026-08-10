@@ -13,27 +13,101 @@
 
 ## Verdict
 
-**PASS.** Two audit rounds were run. Round 1 returned `VERDICT: FAIL` with three risks;
+**PASS.** Three audit rounds were run. Round 1 returned `VERDICT: FAIL` with three risks;
 two produced code changes and one was a prompt-scope defect on the producer's side. Round 2,
-against the repaired head, returned `VERDICT: PASS` with an empty `RISKS:` list — 10/10
-questions PASS, zero FAIL, zero UNCERTAIN.
+against the repaired head, returned `VERDICT: PASS` with an empty `RISKS:` list. Round 3 was
+required because a reviewer found a real defect *after* round 2 passed — the trusted
+local-attestation gate did not enforce the very contract this PR establishes — and it
+returned `VERDICT: PASS` with an empty `RISKS:` list, 11/11 questions PASS.
 
-Both raw runner transcripts are committed unedited alongside this report. The failing round
-is published, not discarded.
+**Round 3 is the controlling authority.** Rounds 1 and 2 are historical evidence only: the
+audited tree changed after them, so they are stale and are not signed as current.
+
+All three raw runner transcripts are committed unedited alongside this report. The failing
+round is published, not discarded.
 
 ## Audit binding
 
-| | Round 1 | Round 2 (controlling) |
-|---|---|---|
-| audited content head | `491e59a8686b50782aee5b1bc245eb9c36dd2fd2` | `02c915d8006ca5cddba9247ba9bf440581be7257` |
-| base (main) | `5d694cc9898e5046b5da03319f20f48599c40ca8` | `5d694cc9898e5046b5da03319f20f48599c40ca8` |
-| prompt sha256 | `38dc613b63f4a7884055df1851e9c1e384737a25b9964f13629e80c6bfc22f28` | `642b741baaf05a6ee13ee089649cbd17a3265c7820aaf8fb5a1fd61240a4d637` |
-| diff sha256 | `bcc5eb0881bc6fcc37d1779dfeb0549f216ce54f8203f16bf0a2efc552d09d85` | `1fdb9ffa408bea91a4efdf38e547cf02944e66b7b2a56d9b351716ea650ef837` |
-| verdict | FAIL (3 risks) | **PASS** (0 risks) |
-| transcript | `review_bundle/agy-audit-round1-491e59a868.json` | `review_bundle/agy-audit-round2-02c915d800.json` |
+| | Round 1 | Round 2 | Round 3 (controlling) |
+|---|---|---|---|
+| AUDITED_TREE | `491e59a8686b50782aee5b1bc245eb9c36dd2fd2` | `02c915d8006ca5cddba9247ba9bf440581be7257` | `d2d3ff808e80e6d6a490616d4ff2341a63c29d86` |
+| base (main) | `5d694cc9898e5046b5da03319f20f48599c40ca8` | `5d694cc9898e5046b5da03319f20f48599c40ca8` | `5d694cc9898e5046b5da03319f20f48599c40ca8` |
+| prompt sha256 | `38dc613b63f4a7884055df1851e9c1e384737a25b9964f13629e80c6bfc22f28` | `642b741baaf05a6ee13ee089649cbd17a3265c7820aaf8fb5a1fd61240a4d637` | `3419d9e49f17b693c711da6d4aa9a3937637cc25717131eea5731b7453d96838` |
+| diff sha256 | `bcc5eb0881bc6fcc37d1779dfeb0549f216ce54f8203f16bf0a2efc552d09d85` | `1fdb9ffa408bea91a4efdf38e547cf02944e66b7b2a56d9b351716ea650ef837` | `2508bc82dcfe94b1f57898768372dbe847b458d0549a05818cb9e7044af46fb9` |
+| verdict | FAIL (3 risks) | PASS (0 risks) | **PASS** (0 risks, 11/11) |
+| transcript | `review_bundle/agy-audit-round1-491e59a868.json` | `review_bundle/agy-audit-round2-02c915d800.json` | `review_bundle/agy-audit-round3-d2d3ff808e.json` |
 
-Session properties for both rounds: fresh single-turn session (`num_turns: 1`), read-only
-`--mode plan`, no repository code executed, no repository writes.
+Session properties for all three rounds: fresh single-turn session (`num_turns: 1`),
+read-only `--mode plan`, no repository code executed, no repository writes.
+
+## Round 3 — trusted local-attestation enforcement
+
+### The defect, reproduced before repair
+
+`scripts/audit/local_audit_acceptance.py` validated a signed `embedded_audit` object with a
+hand-rolled stdlib check: `required` keys, a few enum memberships, a few types. It never
+walked `allOf`, so **no** schema conditional was enforced on the signed local-attestation
+route — not this PR's exact-model conditional, and not the pre-existing `SKIPPED`
+conditionals either, which were caught only incidentally by the separate passing-verdict
+policy check. It also exempted `report_path` outright.
+
+Measured, not argued (`review_bundle/DEFECT_REPRODUCTION_ROUND3.txt`):
+
+| Validator | Verdict on `{PASS, gemini-3.1-pro-high, claude-code-cli}` |
+|---|---|
+| canonical `Draft7Validator` | `'agy' was expected` |
+| `origin/main` acceptance route | **ACCEPTED** — the defect |
+| repaired acceptance route | `local_audit_schema_invalid: /auditor_tool: 'agy' was expected` |
+
+The gap sat behind the signature trust boundary: it let a *trusted signer* record a pairing
+the schema forbids, not an untrusted party in. That bound is real and is stated rather than
+used to minimise the defect — PR #1165 exists to establish an exact model-to-tool trust
+contract, and a contract the trusted path does not enforce is not a contract.
+
+### The repair
+
+The canonical schema is now the single policy engine on both validation routes, executed
+with real Draft 7 semantics rather than mirrored by hand. A conditional added to the schema
+is therefore enforced the day it lands, with no second implementation to update. Verdict
+policy stays separate — the schema admits `FAIL` and `SKIPPED` because CI also emits
+diagnostic proofs, while local attestation accepts passing verdicts only. `report_path` is
+no longer exempt. Absent `jsonschema` the route fails closed and never falls back.
+
+### Round 3 findings — 11/11 PASS
+
+| Q | Subject | Result |
+|---|---|---|
+| Q1 | canonical schema actually executed, not re-implemented | PASS |
+| Q2 | wrong-tool exact-model fixture now rejected | PASS |
+| Q3 | `report_path` validated; no exemption survives, including in docstrings | PASS |
+| Q4 | non-schema gates preserved (verdict, repo, PR, signature, principal, ancestry, proof-only closure) | PASS |
+| Q5 | fail-closed when `jsonschema` is unavailable | PASS |
+| Q6 | workflow step changes no gating semantics, adds no credential, ordered before the gate | PASS |
+| Q7 | new tests prove what they claim | PASS |
+| Q8 | verdict policy correctly separated from schema validity | PASS |
+| Q9 | no overstated claims | PASS |
+| Q10 | no credentials, no Grok support, no Steward or signer-roster changes | PASS |
+| Q11 | the sweep/pre-commit scope gap is accurately declared still open | PASS |
+
+Round 3 volunteered, in answer to Q7, that three positive-path tests would still pass if the
+repair were reverted: `test_exact_model_bound_to_agy_is_accepted_end_to_end`,
+`test_skipped_proof_is_schema_valid_but_policy_rejected`, and
+`test_generic_gemini_backward_compatible`. That is correct and expected — they assert
+backward compatibility, not enforcement. The revert-sensitive tests are
+`test_exact_model_with_wrong_tool_is_rejected_end_to_end`,
+`test_rejects_report_path_outside_schema_pattern`, `test_unknown_key_is_rejected`, and the
+`PARITY_CORPUS` parametrisation. Recorded here rather than omitted, since a reader should
+know which tests carry the weight.
+
+## Audit topology
+
+An audit cannot audit its own output, so the heads are named rather than conflated:
+
+| Term | Meaning | Round 3 |
+|---|---|---|
+| `AUDITED_TREE` | exact substantive tree sent to AGY | `d2d3ff808e80e6d6a490616d4ff2341a63c29d86` |
+| `AUDIT_EVIDENCE_HEAD` | successor adding only the report, raw transcript, runner evidence | this commit |
+| `SIGNED_PROOF_HEAD` | successor adding/replacing only signed proof artefacts | the PR head |
 
 ## Ordering disclosure — what the auditor did and did not see
 
@@ -48,12 +122,14 @@ The ordering is **forced**, not chosen:
 Those two constraints cannot both be satisfied by a report placed in the proof-only commit,
 so the canonical report must live in the content lineage. Concretely:
 
-- AGY audited head `02c915d800` in full.
-- The audited head recorded in `PROOF.json` is the report commit that sits directly on top
-  of it. The delta between them is **only** this report and the audit's own raw transcripts
-  and runner-evidence captures under `review_bundle/` — verifiable with
-  `git diff --name-only 02c915d8006ca5cddba9247ba9bf440581be7257..<PROOF head_sha>`.
-- No schema, test, packet, documentation, or workflow byte changed after the audit.
+- AGY audited `AUDITED_TREE` = `d2d3ff808e80e6d6a490616d4ff2341a63c29d86` in full.
+- The head recorded in `PROOF.json` is `AUDIT_EVIDENCE_HEAD`, the commit sitting directly on
+  top of it. The delta between them is **only** this report and the audit's own raw
+  transcript, defect reproduction, and runner-evidence captures under `review_bundle/` —
+  verifiable with
+  `git diff --name-only d2d3ff808e80e6d6a490616d4ff2341a63c29d86..<PROOF head_sha>`.
+- No schema, validator, test, packet, documentation, or workflow byte changed after the
+  audit.
 
 Do not read this report as evidence that the auditor reviewed itself.
 
@@ -127,20 +203,31 @@ schema hunk, confirmed the enum is untouched. Round 2 Q10(c): PASS.
    `ACCEPTED_DESIGN_BOUNDARY: SCHEMA_BINDS_DECLARED_TOOL_MODEL_PAIR; RUNTIME_SELECTOR_PROVEN_BY_EXECUTION_EVIDENCE`
    in `docs/ops/embedded-audit-proof.md` and pinned by
    `test_schema_does_not_constrain_invocation_string`.
-4. **Validator scope gap (pre-existing, out of scope here).** `proof/.validator_scope.json`
-   includes only `proof/TP-DMX-*/PROOF.json` and skips `proof/pr_merge/**` under
-   `default_when_unmatched: "skip_with_warning"`. That is how the previous head's
-   nonconformant `report_path` passed CI. This PR repairs its own proof and validates it
-   with a direct `scripts/audit/validate_audit_proof.py` run rather than relying on the
-   scanned sweep, but the scope gap itself is outside this packet's allowlist and remains
-   open as follow-up work.
+4. **Validator scope gap — confirmed, still open, and NOT closed by this repair.**
+   `proof/.validator_scope.json` includes only `proof/TP-DMX-*/PROOF.json` and skips
+   `proof/pr_merge/**` under `default_when_unmatched: "skip_with_warning"`; the pre-commit
+   proof hook has the same blind spot independently via `files: ^proof/[^/]+/PROOF\.json$`.
+   That is how the previous head's nonconformant `report_path` passed CI green. Repairing
+   `local_audit_acceptance.py` closes the **signed local-attestation route only** — it does
+   not make the deterministic sweep or pre-commit look at `proof/pr_merge/**`, and this
+   report does not claim otherwise. Observed again during this cycle: the pre-commit hook
+   "Validate proof bundle embedded_audit schema" reported *no files to check* while this
+   PR's own proof was in the diff. This proof is therefore validated by a **direct**
+   `scripts/audit/validate_audit_proof.py` run, which is the controlling result. The scope
+   gap is filed as `TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001`, whose first step is a
+   census of existing nonconformance so widening scope does not convert legacy proof debt
+   into an unbounded repair campaign.
 
 ## Validation performed on the audited content
 
 | Check | Result |
 |---|---|
-| `pytest tests/audit tests/governance tests/pr_steward tests/auditor_router` | PASS (637 tests) |
-| canonical dopetask packet schema, both packets | PASS — 0 errors |
-| `pre-commit --from-ref origin/main --to-ref HEAD` | PASS — exit 0, 13 hooks |
-| `scripts/audit/validate_audit_proof.py --all proof` | PASS — 71/71 |
+| `pytest tests/audit tests/governance tests/pr_steward tests/auditor_router` | PASS (660 tests) |
+| canonical dopetask packet schema, all three packets | PASS — 0 errors |
+| `change-contract-preflight` | PASS — `max_lane=L3`, operator gate satisfied by explicit authorization |
+| `pre-commit --from-ref origin/main --to-ref HEAD` | PASS — exit 0 |
+| defect reproduction (main vs repaired validator) | PASS — see `review_bundle/DEFECT_REPRODUCTION_ROUND3.txt` |
 | `git diff --check` | PASS |
+
+The `--all proof` sweep is deliberately **not** cited as evidence for this proof while its
+`pr_merge` scope gap remains open.
