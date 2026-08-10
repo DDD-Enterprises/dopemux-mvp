@@ -1,91 +1,150 @@
 {
   "id": "TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001",
   "project": "dopemux-mvp",
-  "objective": "Approve the exact AGY auditor model identifier gemini-3.1-pro-high for embedded-audit proof while preserving existing CI and signed-attestation trust boundaries.",
+  "target": "Approve the exact AGY auditor model identifier gemini-3.1-pro-high in the canonical embedded-audit proof schema, so an AGY audit can be recorded truthfully as an exact model rather than as generic branding, while preserving every existing CI, signer-trust, and signed-attestation boundary.",
+  "invariants": [
+    "AUTHORITY: the canonical schema is schemas/proof/embedded_audit.schema.json and the canonical policy is docs/ops/embedded-audit.md; both outrank prose elsewhere.",
+    "AUTHORITY: the operator instruction authorising this packet is to add Gemini 3.1 Pro through AGY to the approved embedded-auditor model list.",
+    "AUTHORITY: the admitted vendor model id is gemini-3.1-pro-high.",
+    "AUTHORITY: vendor release status for gemini-3.1-pro-high is UNKNOWN; it was never independently attested, and no proof may assert it.",
+    "EXACT SELECTOR: the exact model identifier is gemini-3.1-pro-high. Aliases such as pro, generic gemini branding, or any other near-match identifier are insufficient for exact-model proof.",
+    "HISTORY (SUPERSEDED): this packet originally named gemini-3.1-pro-preview as the exact selector. REPAIR-001 established that gemini-3.1-pro-preview is not offered by AGY and that gemini-3.1-pro-high is the canonical exact AGY selector. gemini-3.1-pro-preview is a rejected identifier and must never be admitted.",
+    "SCOPE IN: add gemini-3.1-pro-high to the canonical embedded_audit auditor_model enum.",
+    "SCOPE IN: document AGY with Gemini 3.1 Pro High as an approved Tier-1 audit route only when exact invocation and model selection are proven.",
+    "SCOPE IN: add regression coverage proving the exact AGY/model pair validates and that near-match or unapproved identifiers remain rejected.",
+    "SCOPE IN: record that local signed attestation remains the path for personal AGY authentication, and that hosted CI provider wiring is unchanged.",
+    "MUST NOT: install or authenticate AGY in GitHub Actions.",
+    "MUST NOT: add Google credentials, OAuth state, cookies, tokens, or keyring material to the repository or CI.",
+    "MUST NOT: change PR Steward readiness semantics.",
+    "MUST NOT: change audit verdict rules or signer trust.",
+    "MUST NOT: modify PR #1150 in this packet.",
+    "MUST NOT modify these paths: .github/workflows/embedded-audit.yml, config/audit/embedded-audit-allowed-signers, scripts/audit/local_audit_acceptance.py, src/dopemux_pr_merge_specialist/.",
+    "PAIRING: auditor_model gemini-3.1-pro-high is valid only with auditor_tool agy; every other tool pairing must fail schema validation.",
+    "BACKWARD COMPATIBILITY: the generic auditor_model value gemini remains valid and must keep validating.",
+    "PROOF SHAPE: a passing proof must still record auditor_tool, auditor_model, exact invocation, exit code, findings, and remaining risks.",
+    "AUTH BOUNDARY: AGY authentication stays local unless a separately reviewed CI credential design is approved.",
+    "ISOLATION: candidate PR code remains unexecuted by the independent audit workflow.",
+    "AUDIT REQUIRED: this packet changes the canonical proof schema and the auditor authority allowlist, so an independent embedded audit bound to the final content head is mandatory.",
+    "BOOTSTRAP RULE: the admission PR must be audited under the pre-change trusted schema using auditor_tool=agy and auditor_model=gemini, while the invocation and report prove --model gemini-3.1-pro-high. The new exact enum must not be used to bootstrap its own approval.",
+    "FAIL CLOSED: stop if AGY help/models output does not prove the exact selector.",
+    "FAIL CLOSED: stop if the selected AGY session silently falls back to another model.",
+    "FAIL CLOSED: stop if any change requires CI credentials or workflow mutation.",
+    "FAIL CLOSED: stop if the diff escapes the commit allowlist.",
+    "FAIL CLOSED: stop if the independent audit is missing, stale, or not bound to the final code head.",
+    "FAIL CLOSED: stop if PR Steward is not READY.",
+    "ROLLBACK: revert the approval commit. Existing generic gemini proofs remain valid; exact gemini-3.1-pro-high proofs created after the change would again fail schema validation and must not be accepted after rollback.",
+    "BASE HISTORY: this packet was originally authored against base 414c7ac7f998d6eaec7cf7ae9ab431c0fac6476d and was rebased onto cfa4927a883b469c06f37343c18e6582f23d1443; only the current base binds the work."
+  ],
+  "depends_on": [],
   "repo_binding": {
     "project_id": "dopemux-mvp",
     "repo_marker": "AGENTS.md",
     "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
-    "base_branch": "main",
-    "base_sha": "cfa4927a883b469c06f37343c18e6582f23d1443",
     "require_identity_match": true
   },
-  "authority": {
-    "operator_instruction": "Add Gemini 3.1 Pro through AGY to the approved embedded-auditor model list.",
-    "canonical_schema": "schemas/proof/embedded_audit.schema.json",
-    "canonical_policy": "docs/ops/embedded-audit.md",
-    "vendor_model_id": "gemini-3.1-pro-high",
-    "vendor_status": "UNKNOWN"
+  "series": {
+    "id": "AGY-GEMINI31-APPROVAL-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
   },
-  "scope": {
-    "in": [
-      "Add gemini-3.1-pro-high to the canonical embedded_audit auditor_model enum.",
-      "Document AGY with Gemini 3.1 Pro High as an approved Tier-1 audit route when exact invocation and model selection are proven.",
-      "Add regression coverage proving the exact AGY/model pair validates and near-match/unapproved identifiers remain rejected.",
-      "Record that local signed attestation remains the path for personal AGY authentication; hosted CI provider wiring is unchanged."
+  "commit": {
+    "message": "feat(audit): approve exact AGY Gemini 3.1 Pro High auditor model",
+    "allowlist": [
+      "schemas/proof/embedded_audit.schema.json",
+      "docs/ops/embedded-audit.md",
+      "docs/ops/embedded-audit-proof.md",
+      "tests/audit/test_agy_gemini31_model.py",
+      "task-packets/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001.json",
+      "proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001/implementation-notes.md"
     ],
-    "out": [
-      "Installing or authenticating AGY in GitHub Actions.",
-      "Adding Google credentials, OAuth state, cookies, tokens, or keyring material to the repository or CI.",
-      "Changing PR Steward readiness semantics.",
-      "Changing audit verdict rules or signer trust.",
-      "Modifying PR #1150 in this packet."
+    "verify": [
+      "python -m json.tool schemas/proof/embedded_audit.schema.json >/dev/null",
+      "python -m pytest tests/audit/test_audit_proof.py tests/audit/test_agy_gemini31_model.py -q",
+      "python scripts/docs_validator.py docs/ops/embedded-audit.md docs/ops/embedded-audit-proof.md",
+      "git diff --check"
     ]
   },
-  "invariants": [
-    "The exact model identifier is gemini-3.1-pro-high; aliases such as pro, gemini-3.1-pro-preview, or generic branding are insufficient for exact-model proof.",
-    "A passing proof must still record auditor_tool, auditor_model, exact invocation, exit code, findings, and remaining risks.",
-    "AGY authentication stays local unless a separately reviewed CI credential design is approved.",
-    "Candidate PR code remains unexecuted by the independent audit workflow.",
-    "The admission PR must be audited under the pre-change schema using auditor_model=gemini with the exact AGY model selector preserved in invocation/provenance; the new enum must not be used to bootstrap its own approval."
-  ],
-  "allowed_files": [
-    "schemas/proof/embedded_audit.schema.json",
-    "docs/ops/embedded-audit.md",
-    "docs/ops/embedded-audit-proof.md",
-    "tests/audit/test_agy_gemini31_model.py",
-    "task-packets/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001.json",
-    "proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001/implementation-notes.md"
-  ],
-  "forbidden_files": [
-    ".github/workflows/embedded-audit.yml",
-    "config/audit/embedded-audit-allowed-signers",
-    "scripts/audit/local_audit_acceptance.py",
-    "src/dopemux_pr_merge_specialist/"
-  ],
-  "validation": [
-    "python -m json.tool schemas/proof/embedded_audit.schema.json >/dev/null",
-    "python -m pytest tests/audit/test_audit_proof.py tests/audit/test_agy_gemini31_model.py -q",
-    "python scripts/docs_validator.py docs/ops/embedded-audit.md docs/ops/embedded-audit-proof.md",
-    "git diff --check",
-    "agy --version",
-    "agy models",
-    "agy --model gemini-3.1-pro-high --print '<bounded read-only audit prompt>'"
-  ],
-  "proof_requirements": [
-    "git status before and after",
-    "repo root, branch, base SHA, and head SHA",
-    "changed-file inventory and git diff --stat",
-    "full relevant diff",
-    "validation commands with exit codes",
-    "AGY version and exact model-selection evidence without credentials",
-    "independent audit report bound to the final code head",
-    "PR URL or exact blocker",
-    "PR Steward readiness after merge gates"
-  ],
-  "audit": {
-    "required": true,
-    "reason": "This changes the canonical proof schema and auditor authority allowlist.",
-    "bootstrap_rule": "Audit this PR under the current main schema. Record auditor_tool=agy and auditor_model=gemini, while the invocation and report prove --model gemini-3.1-pro-high. After merge, later proofs may record auditor_model=gemini-3.1-pro-high directly."
+  "pr": {
+    "title": "audit: approve AGY Gemini 3.1 Pro exact model",
+    "body": "Admits the exact AGY auditor model identifier gemini-3.1-pro-high to the canonical embedded-audit schema, bound to auditor_tool=agy, with generic gemini retained for backward compatibility. Adds no hosted AGY credential, changes no workflow, and weakens no signer-trust, audit-verdict, or PR Steward semantics.",
+    "base": "main"
   },
-  "rollback": "Revert the approval commit. Existing generic gemini proofs remain valid; exact gemini-3.1-pro-high proofs created after the change would again fail schema validation and must not be accepted after rollback.",
-  "stop_conditions": [
-    "AGY help/models output does not prove the exact selector.",
-    "The selected AGY session silently falls back to another model.",
-    "Any change requires CI credentials or workflow mutation.",
-    "Diff escapes the allowlist.",
-    "Independent audit is missing, stale, or not bound to the final code head.",
-    "PR Steward is not READY."
-  ],
-  "repair_packet": "TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001"
+  "steps": [
+    {
+      "id": "S01",
+      "task": "Prove the exact AGY selector locally without exposing credentials.",
+      "requirements": [
+        "AGY version and exact model-selection evidence captured without credentials.",
+        "Evidence must show gemini-3.1-pro-high present and gemini-3.1-pro-preview absent.",
+        "Evidence must show the selected session did not fall back to another model."
+      ],
+      "commands": [
+        "agy --version",
+        "agy models"
+      ],
+      "validation": [
+        "agy --version",
+        "agy models"
+      ]
+    },
+    {
+      "id": "S02",
+      "task": "Admit gemini-3.1-pro-high in the canonical embedded-audit schema and bind it to auditor_tool=agy.",
+      "requirements": [
+        "auditor_model enum gains gemini-3.1-pro-high and does not gain gemini-3.1-pro-preview.",
+        "A conditional requires auditor_tool=agy whenever auditor_model=gemini-3.1-pro-high.",
+        "Generic gemini remains in the enum."
+      ],
+      "expected_files": [
+        "schemas/proof/embedded_audit.schema.json"
+      ],
+      "validation": [
+        "python -m json.tool schemas/proof/embedded_audit.schema.json >/dev/null"
+      ]
+    },
+    {
+      "id": "S03",
+      "task": "Document the approved AGY Gemini 3.1 Pro High route and its exact-invocation requirement.",
+      "expected_files": [
+        "docs/ops/embedded-audit.md",
+        "docs/ops/embedded-audit-proof.md"
+      ],
+      "validation": [
+        "python scripts/docs_validator.py docs/ops/embedded-audit.md docs/ops/embedded-audit-proof.md"
+      ]
+    },
+    {
+      "id": "S04",
+      "task": "Add regression coverage for the exact pair, wrong-tool pairings, near-match rejection, and generic gemini compatibility.",
+      "expected_files": [
+        "tests/audit/test_agy_gemini31_model.py"
+      ],
+      "validation": [
+        "python -m pytest tests/audit/test_audit_proof.py tests/audit/test_agy_gemini31_model.py -q"
+      ]
+    },
+    {
+      "id": "S05",
+      "task": "Produce the bootstrap independent audit and proof bundle bound to the final content head.",
+      "requirements": [
+        "git status before and after.",
+        "repo root, branch, base SHA, and head SHA.",
+        "changed-file inventory and git diff --stat.",
+        "full relevant diff.",
+        "validation commands with exit codes.",
+        "AGY version and exact model-selection evidence without credentials.",
+        "independent audit report bound to the final code head.",
+        "PR URL or exact blocker.",
+        "PR Steward readiness after merge gates.",
+        "The bootstrap proof records auditor_tool=agy and auditor_model=gemini under the pre-change trusted schema, while the invocation proves --model gemini-3.1-pro-high."
+      ],
+      "expected_files": [
+        "proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001/implementation-notes.md"
+      ],
+      "validation": [
+        "git diff --check"
+      ]
+    }
+  ]
 }
