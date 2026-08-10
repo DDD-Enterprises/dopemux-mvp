@@ -43,6 +43,18 @@ def test_gemini_31_pro_rejected() -> None:
 def test_generic_gemini_backward_compatible() -> None:
     assert _errors("gemini") == []
 
+def test_exact_model_requires_auditor_tool_to_be_present() -> None:
+    """The conditional must not pass vacuously when `auditor_tool` is absent.
+
+    JSON Schema `properties` is vacuous for a missing key, so `then.required` makes the
+    conditional self-contained rather than relying on the top-level `required` list.
+    """
+    audit = _audit("gemini-3.1-pro-high")
+    del audit["auditor_tool"]
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    messages = [err.message for err in Draft7Validator(schema).iter_errors(audit)]
+    assert any("auditor_tool" in message for message in messages)
+
 def test_schema_does_not_constrain_invocation_string() -> None:
     """ACCEPTED_DESIGN_BOUNDARY: the schema binds the declared tool/model pair only.
 

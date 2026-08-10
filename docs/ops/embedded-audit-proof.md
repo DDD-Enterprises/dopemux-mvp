@@ -49,6 +49,10 @@ series stop condition for `DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED`.
 
 **`auditor_tool`** — `agy`, `antigravity`, `claude-code-cli`, `copilot-cli`, `gemini-cli`, `pal-mcp-clink`, `none`
 
+`pal-mcp-clink` is not new here: it is already present in the trusted schema on `main`.
+This line previously omitted it, and the omission is corrected as documentation catching
+up to the enacted schema — no `auditor_tool` value is added by this change.
+
 **`auditor_model`** — `sonnet`, `claude-sonnet-4.6`, `opus`, `gemini`, `gemini-3.1-pro-high`, `unknown`
 
 `gemini-3.1-pro-high` is the exact approved model identifier for an AGY audit.
@@ -74,6 +78,14 @@ identifier.
 - `invocation` must be a non-empty string
 - `exit_code` must be an integer
 - `skip_reason` must be `null`
+
+**Exact AGY model** (`auditor_model == "gemini-3.1-pro-high"`):
+- `auditor_tool` must be present and must be `"agy"`
+
+The `required` inside that conditional is deliberate. JSON Schema `properties` is vacuous
+for an absent key, so without it the constraint would pass for a payload that omits
+`auditor_tool`. The top-level `required` list already forbids that, but the conditional is
+made self-contained so it cannot be weakened by an unrelated edit to that list.
 
 ### What the schema proves — and what it does not
 

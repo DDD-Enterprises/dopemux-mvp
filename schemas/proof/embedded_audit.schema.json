@@ -262,7 +262,10 @@
           "auditor_tool": {
             "const": "agy"
           }
-        }
+        },
+        "required": [
+          "auditor_tool"
+        ]
       }
     }
   ],
