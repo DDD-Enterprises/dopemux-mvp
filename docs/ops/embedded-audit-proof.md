@@ -261,10 +261,22 @@ Two consequences worth stating plainly:
   may later substitute its own canonical artifact path, but that is not a reason
   to accept a schema-invalid signed input. Skipping the field is precisely how a
   nonconformant `report_path` reached a published proof while CI stayed green.
-- **Verdict policy is separate from schema validity.** The schema deliberately
-  admits `FAIL` and `SKIPPED`, because CI also emits diagnostic proofs. Local
-  attestation accepts passing verdicts only, applied as its own check after
-  schema validation.
+- **Some acceptance gates are not schema concerns, and the schema is more
+  permissive on purpose** — it also describes CI-emitted diagnostic proofs.
+  Those gates live in `policy_errors()` and are applied after schema validation:
+  - **passing verdict** — the schema admits `FAIL` and `SKIPPED`; acceptance
+    does not.
+  - **`required` must be `true`** — the schema types it as a plain boolean, so
+    `required: false` is schema-valid. Accepting it would matter, because a
+    downstream emitter promotes an accepted attestation to `executed: true`
+    while final enforcement checks the verdict and not this flag: the mandatory
+    embedded-audit gate would go green for a proof declaring the audit was not
+    required.
+
+  Adding a schema check must never remove one of these. When the canonical-schema
+  refactor first landed it dropped the `required` gate, because the schema
+  appeared to cover the field. Both gates are now pinned by
+  `POLICY_ONLY_REJECTIONS` in `tests/audit/test_local_audit_acceptance.py`.
 
 `jsonschema` is a declared project dependency (`pyproject.toml`). Where it is
 absent the acceptance route **fails closed** with `schema_validator_unavailable`

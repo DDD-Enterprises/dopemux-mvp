@@ -603,3 +603,70 @@ def test_every_schema_conditional_is_exercised_by_the_corpus() -> None:
     )
     violating = [row for row in PARITY_CORPUS if row[2] is False]
     assert len(violating) >= len(conditionals)
+
+
+# ---------------------------------------------------------------------------
+# Non-schema acceptance policy
+#
+# The trusted schema is deliberately more permissive than acceptance, because it
+# also describes CI-emitted diagnostic proofs. Gates the schema cannot express
+# live in policy_errors(), and replacing the structural validator must never
+# quietly remove one — which is exactly what happened to the `required` flag
+# when the canonical-schema refactor first landed.
+# ---------------------------------------------------------------------------
+
+
+def test_rejects_required_false_even_though_schema_allows_it(tmp_path: Path) -> None:
+    """`required: false` is schema-valid and must still be rejected.
+
+    A downstream emitter promotes an accepted attestation to `executed: true`
+    while final enforcement checks the verdict and not this flag, so accepting
+    it would let the mandatory embedded-audit gate go green for a proof that
+    declares the audit was not required.
+    """
+    audit = _local_embedded_audit() | {"required": False}
+    assert schema_validation_errors(audit, _schema()) == [], "fixture must be schema-valid"
+    assert policy_errors(audit) == [
+        "local_audit_required_flag: embedded_audit.required must be true"
+    ]
+
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_and_sign_proof(embedded=audit)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("local_audit_required_flag") for r in attestation["reasons"]
+    )
+
+
+def test_policy_reports_every_violated_gate_at_once() -> None:
+    audit = _local_embedded_audit(status="FAIL") | {"required": False, "exit_code": 1}
+    assert sorted(policy_errors(audit)) == [
+        "local_audit_not_passing: 'FAIL'",
+        "local_audit_required_flag: embedded_audit.required must be true",
+    ]
+
+
+# Fixtures the trusted schema accepts but acceptance policy must not.
+# Each entry is a gate the schema cannot express; losing one is a silent
+# weakening of the trust contract, so it is asserted rather than assumed.
+POLICY_ONLY_REJECTIONS: list[tuple[str, dict, str]] = [
+    ("non-passing verdict", _local_embedded_audit(status="FAIL") | {"exit_code": 1},
+     "local_audit_not_passing"),
+    ("audit declared not required", _local_embedded_audit() | {"required": False},
+     "local_audit_required_flag"),
+]
+
+
+@pytest.mark.parametrize(
+    "name,audit,reason_prefix",
+    POLICY_ONLY_REJECTIONS,
+    ids=[row[0] for row in POLICY_ONLY_REJECTIONS],
+)
+def test_schema_valid_but_policy_rejected(
+    name: str, audit: dict, reason_prefix: str
+) -> None:
+    assert schema_validation_errors(audit, _schema()) == [], (
+        f"{name}: fixture is meant to be schema-valid, so only policy can reject it"
+    )
+    assert any(err.startswith(reason_prefix) for err in policy_errors(audit)), name

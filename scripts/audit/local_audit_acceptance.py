@@ -243,14 +243,29 @@ def schema_validation_errors(
 def policy_errors(embedded: Mapping[str, Any]) -> list[str]:
     """Acceptance policy that is not a JSON Schema concern.
 
-    The trusted schema permits non-passing verdicts because it also describes
-    CI-emitted diagnostic proofs. Local attestation accepts passing verdicts
-    only.
+    The trusted schema describes CI-emitted diagnostic proofs as well as
+    attestations, so it is deliberately more permissive than acceptance:
+
+    * it permits non-passing verdicts (``FAIL``, ``SKIPPED``);
+    * it types ``required`` as a plain boolean, so ``required: false`` is
+      schema-valid.
+
+    Local attestation accepts neither. ``required: false`` matters because a
+    downstream emitter promotes an accepted attestation to ``executed: true``
+    while final enforcement checks the verdict and not this flag — so accepting
+    it would let the mandatory embedded-audit gate go green for a proof that
+    declares the audit was not required.
+
+    Every gate here is one the schema cannot express. Adding a schema check must
+    never remove one of them.
     """
+    errors: list[str] = []
     status = embedded.get("status")
     if status not in PASSING_AUDIT_STATUSES:
-        return [f"local_audit_not_passing: {status!r}"]
-    return []
+        errors.append(f"local_audit_not_passing: {status!r}")
+    if embedded.get("required") is not True:
+        errors.append("local_audit_required_flag: embedded_audit.required must be true")
+    return errors
 
 
 def _validate_embedded_audit(
