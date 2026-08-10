@@ -60,6 +60,14 @@
       "ws": "8.21.0",
       "esbuild": "0.28.1",
       "yaml@^1.0.0": "1.10.3"
+    },
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "yaml"
+      ],
+      "allowedVersions": {
+        "vite>yaml": "*"
+      }
     }
   }
 }
