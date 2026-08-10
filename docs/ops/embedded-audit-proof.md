@@ -118,7 +118,7 @@ identifier.
 }
 ```
 
-## Canonical example: AGY Gemini 3.1 Pro Preview
+## Canonical example: AGY Gemini 3.1 Pro High
 
 ```json
 {
@@ -131,7 +131,7 @@ identifier.
   "report_path": "proof/TP-EXAMPLE-AGY/AUDITOR_REPORT.md",
   "findings": [],
   "fixes_applied": [],
-  "remaining_risks": ["Preview availability is account-dependent; captured model-selection evidence is required."],
+  "remaining_risks": ["Model availability is account-dependent; captured model-selection evidence is required."],
   "skip_reason": null
 }
 ```

@@ -1,13 +1,13 @@
 {
   "id": "TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001",
   "project": "dopemux-mvp",
-  "objective": "Approve the exact AGY auditor model identifier gemini-3.1-pro-preview for embedded-audit proof while preserving existing CI and signed-attestation trust boundaries.",
+  "objective": "Approve the exact AGY auditor model identifier gemini-3.1-pro-high for embedded-audit proof while preserving existing CI and signed-attestation trust boundaries.",
   "repo_binding": {
     "project_id": "dopemux-mvp",
     "repo_marker": "AGENTS.md",
     "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
     "base_branch": "main",
-    "base_sha": "414c7ac7f998d6eaec7cf7ae9ab431c0fac6476d",
+    "base_sha": "cfa4927a883b469c06f37343c18e6582f23d1443",
     "require_identity_match": true
   },
   "authority": {
@@ -15,12 +15,12 @@
     "canonical_schema": "schemas/proof/embedded_audit.schema.json",
     "canonical_policy": "docs/ops/embedded-audit.md",
     "vendor_model_id": "gemini-3.1-pro-high",
-    "vendor_status": "preview"
+    "vendor_status": "UNKNOWN"
   },
   "scope": {
     "in": [
-      "Add gemini-3.1-pro-preview to the canonical embedded_audit auditor_model enum.",
-      "Document AGY with Gemini 3.1 Pro Preview as an approved Tier-1 audit route when exact invocation and model selection are proven.",
+      "Add gemini-3.1-pro-high to the canonical embedded_audit auditor_model enum.",
+      "Document AGY with Gemini 3.1 Pro High as an approved Tier-1 audit route when exact invocation and model selection are proven.",
       "Add regression coverage proving the exact AGY/model pair validates and near-match/unapproved identifiers remain rejected.",
       "Record that local signed attestation remains the path for personal AGY authentication; hosted CI provider wiring is unchanged."
     ],
@@ -33,7 +33,7 @@
     ]
   },
   "invariants": [
-    "The exact model identifier is gemini-3.1-pro-preview; aliases such as pro or generic branding are insufficient for exact-model proof.",
+    "The exact model identifier is gemini-3.1-pro-high; aliases such as pro, gemini-3.1-pro-preview, or generic branding are insufficient for exact-model proof.",
     "A passing proof must still record auditor_tool, auditor_model, exact invocation, exit code, findings, and remaining risks.",
     "AGY authentication stays local unless a separately reviewed CI credential design is approved.",
     "Candidate PR code remains unexecuted by the independent audit workflow.",
@@ -60,7 +60,7 @@
     "git diff --check",
     "agy --version",
     "agy models",
-    "agy --model gemini-3.1-pro-preview --print '<bounded read-only audit prompt>'"
+    "agy --model gemini-3.1-pro-high --print '<bounded read-only audit prompt>'"
   ],
   "proof_requirements": [
     "git status before and after",
@@ -76,9 +76,9 @@
   "audit": {
     "required": true,
     "reason": "This changes the canonical proof schema and auditor authority allowlist.",
-    "bootstrap_rule": "Audit this PR under the current main schema. Record auditor_tool=agy and auditor_model=gemini, while the invocation and report prove --model gemini-3.1-pro-preview. After merge, later proofs may record auditor_model=gemini-3.1-pro-preview directly."
+    "bootstrap_rule": "Audit this PR under the current main schema. Record auditor_tool=agy and auditor_model=gemini, while the invocation and report prove --model gemini-3.1-pro-high. After merge, later proofs may record auditor_model=gemini-3.1-pro-high directly."
   },
-  "rollback": "Revert the approval commit. Existing generic gemini proofs remain valid; exact gemini-3.1-pro-preview proofs created after the change would again fail schema validation and must not be accepted after rollback.",
+  "rollback": "Revert the approval commit. Existing generic gemini proofs remain valid; exact gemini-3.1-pro-high proofs created after the change would again fail schema validation and must not be accepted after rollback.",
   "stop_conditions": [
     "AGY help/models output does not prove the exact selector.",
     "The selected AGY session silently falls back to another model.",
