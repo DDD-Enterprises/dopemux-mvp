@@ -1,0 +1,92 @@
+{
+  "id": "TP-DMX-DEPENDABOT-VULN-REPAIR-001",
+  "project": "dopemux-mvp",
+  "target": "dependabot-open-alerts-86-security-floor-repair",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-SECURITY-DEPENDABOT-REPAIR",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "fix/dependabot-vuln-repair-86",
+    "base_branch": "main",
+    "stacked_because": "L2 security floor repair across Python/JS locks for 86 open Dependabot alerts."
+  },
+  "commit": {
+    "message": "fix(security): close Dependabot GHSA floors across Python and JS locks",
+    "allowlist": [
+      "pyproject.toml",
+      "uv.lock",
+      "package.json",
+      "package-lock.json",
+      "ui-dashboard/package.json",
+      "ui-dashboard/package-lock.json",
+      "ui-dashboard/pnpm-lock.yaml",
+      "services/dopemux-gpt-researcher/backend/requirements.txt",
+      "services/working-memory-assistant/services/working-memory-assistant/requirements.txt",
+      "docker/mcp-servers-source/pal/pal-mcp-server/pyproject.toml",
+      "docker/mcp-servers-source/pal/pal-mcp-server/uv.lock",
+      "task-packets/TP-DMX-DEPENDABOT-VULN-REPAIR-001.json",
+      "proof/TP-DMX-DEPENDABOT-VULN-REPAIR-001/**"
+    ],
+    "verify": [
+      "Root uv.lock resolves patched floors for aiohttp, cryptography, fastmcp, mcp, h2, mako, setuptools.",
+      "Root and ui-dashboard npm audits report 0 vulnerabilities for package-lock surfaces.",
+      "pnpm audit reports no known vulnerabilities for ui-dashboard.",
+      "diskcache absent from root uv.lock after fastmcp 3.x upgrade.",
+      "Residual ecdsa (python-jose) documented as unpatched upstream.",
+      "FastMCP imports and exposes http_app under uv-managed services extra."
+    ]
+  },
+  "pr": {
+    "title": "fix(security): close Dependabot vulnerability floors (86 open alerts)",
+    "body": "Deterministic security floor repair for open Dependabot alerts on default branch. Bumps patched packages across root uv/npm, ui-dashboard npm+pnpm, secondary requirements, and PAL uv lock. Residual: ecdsa via python-jose (no upstream patch).",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1_INVENTORY",
+      "task": "Inventory open Dependabot alerts and map packages to manifests.",
+      "validation": [
+        "gh dependabot alerts count is 86 with 1 critical / 48 high / 31 medium / 6 low.",
+        "Critical package is fastmcp (<3.2.0)."
+      ]
+    },
+    {
+      "id": "S2_PYTHON",
+      "task": "Raise Python floors in pyproject.toml and regenerate uv.lock; fix secondary pip manifests and PAL lock.",
+      "validation": [
+        "aiohttp>=3.14.3, cryptography>=50.0.0, fastmcp>=3.2.0,<4, mcp>=1.28.1,<2 resolved.",
+        "h2>=4.4.1, mako>=1.3.12, setuptools>=83.0.0 present in root lock.",
+        "diskcache removed from root lock.",
+        "PAL cryptography 50.0.0 and mcp 1.29.0."
+      ]
+    },
+    {
+      "id": "S3_JS",
+      "task": "Bump root Next/postcss and apply npm overrides; regenerate ui-dashboard npm and pnpm locks.",
+      "validation": [
+        "next 15.5.21; postcss 8.5.23; nanoid 3.3.18; sharp 0.35.0 on root lock.",
+        "npm audit --package-lock-only reports 0 vulnerabilities for root and ui-dashboard.",
+        "pnpm audit reports no known vulnerabilities for ui-dashboard."
+      ]
+    },
+    {
+      "id": "S4_VALIDATE",
+      "task": "Smoke FastMCP under uv env; git diff --check; open PR.",
+      "validation": [
+        "uv run imports fastmcp 3.4.6 with http_app True.",
+        "git diff --check clean.",
+        "PR opened against main."
+      ]
+    }
+  ]
+}
