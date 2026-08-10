@@ -37,7 +37,9 @@
     "allowlist": [
       "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
       "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/**",
-      "task-packets/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT.json"
+      "task-packets/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT.json",
+      "docs/03-reference/architecture/second-brain/adr-candidates/ADR_CANDIDATE_AMENDMENT_HEAD.json",
+      "docs/03-reference/architecture/second-brain/adr-candidates/ac2-acceptance-condition-amendment.json"
     ],
     "verify": [
       "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
@@ -160,6 +162,28 @@
         "All pre-commit hooks pass without modifying files."
       ],
       "context_files": []
+    },
+    {
+      "id": "S8",
+      "task": "Bind the machine-readable authority metadata for the amendment and declare what the bound audit does and does not cover.",
+      "commands": [
+        "python3 -c \"import json;json.load(open('docs/03-reference/architecture/second-brain/adr-candidates/ac2-acceptance-condition-amendment.json'))\"",
+        "python3 -c \"import json;json.load(open('docs/03-reference/architecture/second-brain/adr-candidates/ADR_CANDIDATE_AMENDMENT_HEAD.json'))\"",
+        "git diff cc2f49ccad3d7c39d6b9f0a9fb044616069585a7..HEAD --name-only -- docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md"
+      ],
+      "expected_files": [
+        "docs/03-reference/architecture/second-brain/adr-candidates/ADR_CANDIDATE_AMENDMENT_HEAD.json",
+        "docs/03-reference/architecture/second-brain/adr-candidates/ac2-acceptance-condition-amendment.json"
+      ],
+      "validation": [
+        "Both authority records parse as JSON and bind the prior and amended candidate SHA-256, replacement count 10, line count 375 to 375, and byte delta 3220.",
+        "The amended candidate document itself is unchanged since the audited content head, so the diff for that single path is empty.",
+        "Records added after the audited head are declared UNAUDITED by the bound audit rather than presented as covered by it.",
+        "ADR status remains CANDIDATE with ten PROPOSED and SB-DEC-026 remains A_LEAVE_UNLINKED."
+      ],
+      "context_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/PROOF.json"
+      ]
     }
   ]
 }

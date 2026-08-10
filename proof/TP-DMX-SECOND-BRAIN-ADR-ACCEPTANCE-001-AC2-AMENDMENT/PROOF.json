@@ -10,7 +10,7 @@
     "remaining_risks": [
       "Native embedded-audit lane could not represent the auditor that actually ran.",
       "Substantive independent audit was performed by Grok 4.5 (xAI) bound to content head cc2f49ccad and returned PASS with 0 BLOCKER and 0 MUST_FIX; see AUDITOR_REPORT.md and GROK_AUDIT_ROUTE_CUSTODY.json.",
-      "Native-lane head binding lags the final PR head by the proof-only successor commits; the audited authority document is byte-identical across that span (git diff -- docs/ is empty)."
+      "UNAUDITED BY THE BOUND AUDIT: docs/.../adr-candidates/ADR_CANDIDATE_AMENDMENT_HEAD.json and ac2-acceptance-condition-amendment.json were added at 48098c8178, after the audited content head cc2f49ccad. They are authority metadata, not the amended candidate; the candidate bytes are unchanged. A fresh audit of the final frozen head is required before any readiness claim that depends on those two records."
     ],
     "report_path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT.md",
     "required": true,
@@ -20,7 +20,7 @@
   "executed": false,
   "generated_at": "2026-08-10T02:05:00Z",
   "github_mutation_route_added": false,
-  "head_binding_note": "head_sha names the commit this proof was written against. A proof file cannot contain the SHA of the commit that carries it, so the final PR head is always one commit ahead of any head_sha it embeds; this repo resolves that with a proof-only successor (see proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/C1_HEAD.txt for the same pattern). content_head_audited names the commit the independent Grok audit actually bound. Everything committed after cc2f49ccad is proof, task-packet, and governance metadata only: `git diff cc2f49ccad..HEAD -- docs/` is EMPTY, so the audited authority document bytes (e4b28946...) are unchanged from the audited head. This proof is SKIPPED and is NOT being used as a passing attestation, so it grants no readiness on the strength of that binding.",
+  "head_binding_note": "CORRECTED. An earlier revision of this note claimed `git diff cc2f49ccad..HEAD -- docs/` is empty. That was true when written and became FALSE at commit 48098c8178, which added two authority-metadata records under docs/.../adr-candidates/ (ADR_CANDIDATE_AMENDMENT_HEAD.json, ac2-acceptance-condition-amendment.json). The false claim is corrected here rather than left standing. Accurate statement: the Grok audit bound content head cc2f49ccad and therefore covers the ADR candidate document, whose bytes remain e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c and are unchanged (`git diff cc2f49ccad..HEAD -- <candidate>` is empty). It does NOT cover the two authority metadata records added afterwards; those are UNAUDITED by the bound audit and are flagged as such. A proof file cannot contain the SHA of the commit carrying it, so some lag is inherent (cf. TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/C1_HEAD.txt); the lag is disclosed, not used to imply coverage it does not have. This proof is SKIPPED and grants no readiness.",
   "head_sha": "b21be126eb0ba18d7814831a3dd1d01a1aecfc36",
   "mutation_performed": false,
   "packet_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT",
