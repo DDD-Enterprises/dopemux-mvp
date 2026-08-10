@@ -6,39 +6,96 @@
 **Auditor**: AGY (Google Antigravity CLI) v1.1.11, `--model gemini-3.1-pro-high`
 **Invocation**: `agy --model gemini-3.1-pro-high --mode plan --effort high --output-format json --print '<bounded read-only embedded-audit prompt + full content-head diff>'`
 **Exit code**: 0
-**Status**: PASS
+**Status**: PASS (round 4 controlling)
 **Date**: 2026-08-10
 
 ---
 
 ## Verdict
 
-**PASS.** Three audit rounds were run. Round 1 returned `VERDICT: FAIL` with three risks;
+**PASS.** Four audit rounds were run. Round 1 returned `VERDICT: FAIL` with three risks;
 two produced code changes and one was a prompt-scope defect on the producer's side. Round 2,
 against the repaired head, returned `VERDICT: PASS` with an empty `RISKS:` list. Round 3 was
 required because a reviewer found a real defect *after* round 2 passed — the trusted
 local-attestation gate did not enforce the very contract this PR establishes — and it
-returned `VERDICT: PASS` with an empty `RISKS:` list, 11/11 questions PASS.
+returned `VERDICT: PASS` with an empty `RISKS:` list, 11/11 questions PASS. Round 4 was then
+required because round 3 **missed a defect that a reviewer found** — the canonical-schema
+refactor had silently dropped a non-schema acceptance gate — and it returned `VERDICT: PASS`
+with an empty `RISKS:` list, 10/10 questions PASS.
 
-**Round 3 is the controlling authority.** Rounds 1 and 2 are historical evidence only: the
-audited tree changed after them, so they are stale and are not signed as current.
+**Round 4 is the controlling authority.** Rounds 1-3 are historical evidence only: the
+audited tree changed after each of them, so they are stale and are not signed as current.
 
-All three raw runner transcripts are committed unedited alongside this report. The failing
-round is published, not discarded.
+All four raw runner transcripts are committed unedited alongside this report. The failing
+round is published, not discarded, and so is the round that returned a clean PASS over a
+tree that still contained a real defect.
 
 ## Audit binding
 
-| | Round 1 | Round 2 | Round 3 (controlling) |
-|---|---|---|---|
-| AUDITED_TREE | `491e59a8686b50782aee5b1bc245eb9c36dd2fd2` | `02c915d8006ca5cddba9247ba9bf440581be7257` | `d2d3ff808e80e6d6a490616d4ff2341a63c29d86` |
-| base (main) | `5d694cc9898e5046b5da03319f20f48599c40ca8` | `5d694cc9898e5046b5da03319f20f48599c40ca8` | `5d694cc9898e5046b5da03319f20f48599c40ca8` |
-| prompt sha256 | `38dc613b63f4a7884055df1851e9c1e384737a25b9964f13629e80c6bfc22f28` | `642b741baaf05a6ee13ee089649cbd17a3265c7820aaf8fb5a1fd61240a4d637` | `3419d9e49f17b693c711da6d4aa9a3937637cc25717131eea5731b7453d96838` |
-| diff sha256 | `bcc5eb0881bc6fcc37d1779dfeb0549f216ce54f8203f16bf0a2efc552d09d85` | `1fdb9ffa408bea91a4efdf38e547cf02944e66b7b2a56d9b351716ea650ef837` | `2508bc82dcfe94b1f57898768372dbe847b458d0549a05818cb9e7044af46fb9` |
-| verdict | FAIL (3 risks) | PASS (0 risks) | **PASS** (0 risks, 11/11) |
-| transcript | `review_bundle/agy-audit-round1-491e59a868.json` | `review_bundle/agy-audit-round2-02c915d800.json` | `review_bundle/agy-audit-round3-d2d3ff808e.json` |
+| | Round 1 | Round 2 | Round 3 | Round 4 (controlling) |
+|---|---|---|---|---|
+| AUDITED_TREE | `491e59a868` | `02c915d800` | `d2d3ff808e` | `ca3ff647f8bdfd3cc85f6a15b5404d12617708b7` |
+| base (main) | `5d694cc989` | `5d694cc989` | `5d694cc989` | `5d694cc9898e5046b5da03319f20f48599c40ca8` |
+| prompt sha256 | `38dc613b63f4a788…` | `642b741baaf05a6e…` | `3419d9e49f17b693…` | `1a94f8b4d83399b911869747b2df166011f30ec7d80f94c011fd57c3b91bdcab` |
+| diff sha256 | `bcc5eb0881bc6fcc…` | `1fdb9ffa408bea91…` | `2508bc82dcfe94b1…` | `290846cc7b8d5cd4e99b48ce5b7d6eb67f13d7527da7d24d397c5d751674c360` |
+| verdict | FAIL (3 risks) | PASS (0 risks) | PASS (0 risks, 11/11) | **PASS** (0 risks, 10/10) |
+| transcript | `review_bundle/agy-audit-round1-491e59a868.json` | `review_bundle/agy-audit-round2-02c915d800.json` | `review_bundle/agy-audit-round3-d2d3ff808e.json` | `review_bundle/agy-audit-round4-ca3ff647f8.json` |
 
-Session properties for all three rounds: fresh single-turn session (`num_turns: 1`),
+Session properties for all four rounds: fresh single-turn session (`num_turns: 1`),
 read-only `--mode plan`, no repository code executed, no repository writes.
+
+## Round 4 — a gate the refactor dropped, and what that says about round 3
+
+Round 3 passed 11/11 over a tree that still contained a real defect, and it was asked the
+relevant question directly. Its Q4 covered gate preservation and answered PASS. It was
+wrong. `@chatgpt-codex-connector`, reviewing the pushed head, found it.
+
+**The defect.** The old hand-rolled validator carried a check the canonical schema cannot
+express: `embedded_audit.required` must be `true`. The schema types `required` as a plain
+boolean, so `required: false` with `status: PASS` is schema-**valid**. Replacing the
+structural check with canonical schema execution therefore silently removed the gate.
+
+It is not cosmetic. Measured end to end: `build_embedded_audit_proof` promotes an accepted
+local attestation to `executed: true`, and `enforce_independent_audit_proof` checks the
+verdict but not this flag — so the mandatory embedded-audit gate went **green** for a proof
+declaring the audit was not required.
+
+**The response.** Rather than fix only the reported field, all nine checks the pre-refactor
+implementation performed were enumerated and tested against the refactored path:
+
+| Old check | Now enforced by | Regression? |
+|---|---|---|
+| required keys present | schema `required` | no — and `report_path` is now covered too |
+| `status` in enum · `auditor_tool` in enum · `auditor_model` in enum | schema `enum` | no |
+| `findings`/`fixes_applied`/`remaining_risks` are lists | schema `type: array` | no |
+| `exit_code` int-or-null · `invocation` string-or-null | schema `type` | no |
+| status is a passing verdict | `policy_errors()` | no |
+| **`required` is `true`** | **`policy_errors()` — was dropped, now restored** | **yes** |
+
+`required` was the only loss. The two gate classes are now explicitly separated —
+schema-expressible checks in `schema_validation_errors()`, everything else in
+`policy_errors()` — and `POLICY_ONLY_REJECTIONS` pins fixtures the schema accepts but
+acceptance must not, so the next refactor cannot drop one quietly.
+
+### Round 4 findings — 10/10 PASS
+
+| Q | Subject | Result |
+|---|---|---|
+| Q1 | `required: true` gate restored and applied on the acceptance path | PASS |
+| Q2 | no other pre-refactor check left uncovered (the crux of this round) | PASS |
+| Q3 | `allOf`, `additionalProperties`, `report_path` still enforced | PASS |
+| Q4 | wrong-tool exact-model fixture still rejected | PASS |
+| Q5 | fail-closed on absent `jsonschema` intact | PASS |
+| Q6 | tests genuinely pin the restored gate and fail if it is dropped | PASS |
+| Q7 | schema and non-schema gates cleanly separated, none orphaned | PASS |
+| Q8 | no overstated claims | PASS |
+| Q9 | no credentials, Grok support, Steward or signer-roster changes | PASS |
+| Q10 | no remaining path to accept a schema-rejected or not-required proof | PASS |
+
+**Standing caution recorded for future cycles:** a clean audit verdict is evidence, not
+proof. Round 3 returned 11/11 with an empty risk list over a tree carrying a live gate
+regression. Replacing a validator is a change class where enumerating the old behaviour
+check-by-check is worth more than any single verdict.
 
 ## Round 3 — trusted local-attestation enforcement
 
@@ -105,7 +162,7 @@ An audit cannot audit its own output, so the heads are named rather than conflat
 
 | Term | Meaning | Round 3 |
 |---|---|---|
-| `AUDITED_TREE` | exact substantive tree sent to AGY | `d2d3ff808e80e6d6a490616d4ff2341a63c29d86` |
+| `AUDITED_TREE` | exact substantive tree sent to AGY | `ca3ff647f8bdfd3cc85f6a15b5404d12617708b7` |
 | `AUDIT_EVIDENCE_HEAD` | successor adding only the report, raw transcript, runner evidence | this commit |
 | `SIGNED_PROOF_HEAD` | successor adding/replacing only signed proof artefacts | the PR head |
 
@@ -122,12 +179,12 @@ The ordering is **forced**, not chosen:
 Those two constraints cannot both be satisfied by a report placed in the proof-only commit,
 so the canonical report must live in the content lineage. Concretely:
 
-- AGY audited `AUDITED_TREE` = `d2d3ff808e80e6d6a490616d4ff2341a63c29d86` in full.
+- AGY audited `AUDITED_TREE` = `ca3ff647f8bdfd3cc85f6a15b5404d12617708b7` in full.
 - The head recorded in `PROOF.json` is `AUDIT_EVIDENCE_HEAD`, the commit sitting directly on
   top of it. The delta between them is **only** this report and the audit's own raw
   transcript, defect reproduction, and runner-evidence captures under `review_bundle/` —
   verifiable with
-  `git diff --name-only d2d3ff808e80e6d6a490616d4ff2341a63c29d86..<PROOF head_sha>`.
+  `git diff --name-only ca3ff647f8bdfd3cc85f6a15b5404d12617708b7..<PROOF head_sha>`.
 - No schema, validator, test, packet, documentation, or workflow byte changed after the
   audit.
 
@@ -222,7 +279,7 @@ schema hunk, confirmed the enum is untouched. Round 2 Q10(c): PASS.
 
 | Check | Result |
 |---|---|
-| `pytest tests/audit tests/governance tests/pr_steward tests/auditor_router` | PASS (660 tests) |
+| `pytest tests/audit tests/governance tests/pr_steward tests/auditor_router` | PASS (664 tests) |
 | canonical dopetask packet schema, all three packets | PASS — 0 errors |
 | `change-contract-preflight` | PASS — `max_lane=L3`, operator gate satisfied by explicit authorization |
 | `pre-commit --from-ref origin/main --to-ref HEAD` | PASS — exit 0 |
