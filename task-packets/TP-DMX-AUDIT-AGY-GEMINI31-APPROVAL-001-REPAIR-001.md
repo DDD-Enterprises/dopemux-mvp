@@ -17,16 +17,20 @@ Repair the existing draft PR #1165 in place.
 
 ## Objective
 
-Repair PR #1165 so the canonical embedded-audit schema approves the exact AGY Gemini 3.1 Pro High selector only for auditor_tool=agy.
+Repair PR #1165 so the canonical embedded-audit schema approves the exact AGY Gemini 3.1 Pro High selector only for auditor_tool=agy — and so the trusted local-attestation route actually enforces that contract. A trust contract the trusted path does not enforce is not a trust contract.
 
 ## Commit Topology
 
-C1: repair commit (schema, docs, tests, packets)
-C2: proof-only commit (proof/pr_merge/embedded-audit/pr-1165/**)
+Named explicitly, because an audit cannot audit its own output:
+
+- **AUDITED_TREE** — the exact substantive tree sent to the auditor (schema, validator, workflow, docs, tests, packets).
+- **AUDIT_EVIDENCE_HEAD** — successor adding only the resulting auditor report, the raw runner transcript, and deterministic runner evidence.
+- **SIGNED_PROOF_HEAD** — successor adding or replacing only the permitted signed proof artefacts under `proof/pr_merge/embedded-audit/pr-1165/`.
 
 ## Stop Conditions
 
 - Exact AGY high selector absent
 - gemini-3.1-pro-preview remains approved
-- Audit verdict FAIL
+- Audit verdict FAIL, or any BLOCKER / MUST_FIX finding
+- A signed embedded_audit accepted by the local route that the canonical Draft7Validator rejects
 - PR Steward not READY

@@ -228,6 +228,48 @@ python scripts/audit/validate_audit_proof.py --schema path/to/schema.json proof/
 - `1` — one or more bundles FAIL
 - `2` — usage error (bad arguments, missing schema, no files found)
 
+### The schema is the single policy engine
+
+Two routes validate an `embedded_audit` object, and both execute **this schema**
+under real Draft 7 semantics via `jsonschema.Draft7Validator`:
+
+| Route | Entry point | Schema is read from |
+|---|---|---|
+| Deterministic sweep | `scripts/audit/validate_audit_proof.py` | working tree |
+| Signed local attestation | `scripts/audit/local_audit_acceptance.py` | the **trusted base ref**, never the PR branch |
+
+Neither route mirrors the schema's rules in hand-written Python. That matters
+most for the `allOf` conditionals: a conditional added to the schema is enforced
+by both routes the day it lands, with no second implementation to update.
+
+This was not always true. The acceptance route previously used a hand-rolled
+stdlib check that verified `required`, a few enum memberships, and a few types —
+it never walked `allOf` and it exempted `report_path`. The consequence was that
+a signed proof the canonical validator **rejects** could be **accepted** by the
+attestation route: for example `auditor_model: gemini-3.1-pro-high` declared
+with `auditor_tool: claude-code-cli`, a pairing the schema forbids. The gap sat
+behind the signature trust boundary, so it let a *trusted signer* record a
+forbidden pairing rather than letting an untrusted party in — but a trust
+contract that the trusted path does not enforce is not a trust contract.
+Parity is now pinned by `tests/audit/test_local_audit_acceptance.py`, which
+asserts agreement between the acceptance route and `Draft7Validator` over a
+fixture corpus and fails if a new `allOf` branch appears without coverage.
+
+Two consequences worth stating plainly:
+
+- **`report_path` is validated on both routes.** A downstream trusted emitter
+  may later substitute its own canonical artifact path, but that is not a reason
+  to accept a schema-invalid signed input. Skipping the field is precisely how a
+  nonconformant `report_path` reached a published proof while CI stayed green.
+- **Verdict policy is separate from schema validity.** The schema deliberately
+  admits `FAIL` and `SKIPPED`, because CI also emits diagnostic proofs. Local
+  attestation accepts passing verdicts only, applied as its own check after
+  schema validation.
+
+`jsonschema` is a declared project dependency (`pyproject.toml`). Where it is
+absent the acceptance route **fails closed** with `schema_validator_unavailable`
+and never falls back to a partial check.
+
 ## Independent Workflow Output
 
 `scripts/audit/run_embedded_audit.py` writes a top-level `PROOF.json` bundle with

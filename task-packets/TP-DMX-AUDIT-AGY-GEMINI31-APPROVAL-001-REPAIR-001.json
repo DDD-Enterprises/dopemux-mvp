@@ -28,7 +28,12 @@
     "COMMIT TOPOLOGY: C1 carries the repair content (schema, docs, tests, packets); C2 is a proof-only successor touching proof/pr_merge/embedded-audit/pr-1165/** so the signed local attestation binds an exact audited head.",
     "REPORT PATH: the embedded-audit report_path must satisfy the trusted schema pattern ^proof/[^/]+/AUDITOR(_REPAIR(_[0-9]+)?)?_REPORT\\.md$. Because proof-only closure confines C2 to proof/pr_merge/embedded-audit/pr-1165/, the canonical auditor report must live in the audited content head at proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001/AUDITOR_REPORT.md and that file must actually exist there.",
     "VALIDATOR SCOPE: a skip by proof/.validator_scope.json is not evidence of conformance. scripts/audit/validate_audit_proof.py must be run directly on the replacement proof and its result is controlling.",
-    "SCHEMA EVIDENCE BOUNDARY: ACCEPTED_DESIGN_BOUNDARY: SCHEMA_BINDS_DECLARED_TOOL_MODEL_PAIR; RUNTIME_SELECTOR_PROVEN_BY_EXECUTION_EVIDENCE. The model-to-tool conditional binds the declared pairing only. It must not be widened into invocation parsing, and schema validity must never be claimed as proof that the runner executed the exact selector."
+    "SCHEMA EVIDENCE BOUNDARY: ACCEPTED_DESIGN_BOUNDARY: SCHEMA_BINDS_DECLARED_TOOL_MODEL_PAIR; RUNTIME_SELECTOR_PROVEN_BY_EXECUTION_EVIDENCE. The model-to-tool conditional binds the declared pairing only. It must not be widened into invocation parsing, and schema validity must never be claimed as proof that the runner executed the exact selector.",
+    "SINGLE POLICY ENGINE: schemas/proof/embedded_audit.schema.json is the only authority on embedded_audit shape. Both validation routes execute it with real Draft 7 semantics (jsonschema.Draft7Validator). No route may mirror, summarise, or partially reimplement its rules in hand-written code; a conditional added to the schema must be enforced everywhere the day it lands.",
+    "LOCAL_ATTESTATION_ENFORCES_CANONICAL_JSON_SCHEMA_CONDITIONALS: scripts/audit/local_audit_acceptance.py must reject any signed embedded_audit that the canonical Draft7Validator rejects, including allOf conditionals, additionalProperties, and report_path. The controlling regression fixture is status=PASS with auditor_model=gemini-3.1-pro-high and auditor_tool=claude-code-cli: both validation paths must reject it.",
+    "FAIL CLOSED ON ABSENT ENGINE: when jsonschema is unavailable the acceptance route emits schema_validator_unavailable and rejects. It must never fall back to a partial structural check. The trusted workflow provisions the validator explicitly rather than relying on an undeclared runner-image package.",
+    "PRESERVED GATES: the enforcement repair must not weaken passing-verdict policy, repository identity, PR identity, signature verification, trusted principal, audited-head ancestry, or proof-only successor closure. Schema validity is added to those gates, never substituted for them.",
+    "AUDIT TOPOLOGY VOCABULARY: AUDITED_TREE is the exact substantive tree sent to the auditor; AUDIT_EVIDENCE_HEAD is the successor adding only the audit report, raw transcript, and deterministic runner evidence; SIGNED_PROOF_HEAD is the successor adding only permitted signed proof artefacts. An audit cannot audit its own output, and the ordering must be recorded explicitly rather than elided."
   ],
   "depends_on": [
     "TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001"
@@ -57,11 +62,16 @@
       "tests/audit/test_agy_gemini31_model.py",
       "proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001/implementation-notes.md",
       "proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001/**",
-      "proof/pr_merge/embedded-audit/pr-1165/**"
+      "proof/pr_merge/embedded-audit/pr-1165/**",
+      "scripts/audit/local_audit_acceptance.py",
+      "tests/audit/test_local_audit_acceptance.py",
+      ".github/workflows/embedded-audit.yml",
+      "task-packets/TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001.json"
     ],
     "verify": [
       "python -m json.tool task-packets/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001.json >/dev/null",
       "python -m json.tool task-packets/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001.json >/dev/null",
+      "python -m pytest tests/audit/test_local_audit_acceptance.py -q",
       "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
       "git diff --check"
     ]
@@ -161,6 +171,28 @@
       ],
       "validation": [
         "python scripts/audit/validate_audit_proof.py proof/pr_merge/embedded-audit/pr-1165/PROOF.json"
+      ]
+    },
+    {
+      "id": "R07",
+      "task": "Repair trusted local-attestation schema enforcement so the signed route cannot accept a proof the canonical schema rejects.",
+      "requirements": [
+        "Reproduce the defect before repairing it and record the reproduction as evidence.",
+        "Replace the partial structural check with canonical Draft 7 execution against the trusted schema; do not hand-copy the schema's conditionals into a second validator.",
+        "Validate the signed embedded_audit payload in full, including report_path; skipping it is how a canonical-schema failure was previously concealed.",
+        "Keep verdict policy separate from schema validity: the schema admits FAIL and SKIPPED, local attestation accepts passing verdicts only.",
+        "Prove parity with jsonschema over a fixture corpus, and fail the suite when a new schema conditional lacks coverage.",
+        "Provision the validator in the trusted workflow so the gate does not silently die fail-closed after merge."
+      ],
+      "expected_files": [
+        "scripts/audit/local_audit_acceptance.py",
+        "tests/audit/test_local_audit_acceptance.py",
+        ".github/workflows/embedded-audit.yml",
+        "docs/ops/embedded-audit-proof.md"
+      ],
+      "validation": [
+        "python -m pytest tests/audit/test_local_audit_acceptance.py -q",
+        "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
       ]
     }
   ]
