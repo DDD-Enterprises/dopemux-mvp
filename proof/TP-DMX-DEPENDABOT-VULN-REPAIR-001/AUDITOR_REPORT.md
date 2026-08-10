@@ -41,10 +41,18 @@ via python-jose has no upstream patch; full multi-service integration suite NOT_
 - body: Replaced blanket yaml:1.10.3 with yaml@^1.0.0 / yaml@1 selectors; vite no longer
   peers to yaml@1.10.3; peerDependencyRules ignore missing optional vite yaml peer.
 
+### F-006 — sharp 0.35 requires Node >=20.9; frontend image bumped
+- severity: LOW
+- status: RESOLVED
+- body: Dependabot first_patched for sharp is 0.35.0 (engines.node >=20.9.0).
+  Dockerfile.frontend stages moved from node:18-alpine to node:20-alpine so the
+  Next optional sharp native dep installs on a supported runtime.
+
 ## Remaining risks
 - ecdsa via python-jose (GHSA-wj6h-64fc-37mp) — no upstream patch
 - Full multi-service integration suite NOT_RUN after fastmcp 3.x
 - Local signed attestation is operator attestation, not CI-executed model audit
+- Frontend Docker image now requires Node 20 (was 18); verify deploy targets
 
 ## Fixes applied by auditor
 - none (audit-only)
