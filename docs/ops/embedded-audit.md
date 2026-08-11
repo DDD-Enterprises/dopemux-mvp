@@ -5,8 +5,8 @@ type: reference
 owner: '@hu3mann'
 author: '@codex'
 date: '2026-05-25'
-last_review: '2026-07-20'
-next_review: '2026-10-18'
+last_review: '2026-07-29'
+next_review: '2026-10-27'
 prelude: Embedded audit policy and proof contract for governance/process/schema packets.
 ---
 # Embedded Audit
@@ -21,7 +21,7 @@ Governance, process, schema, prompt, proof, and authority-boundary packets requi
 
 Tier 1 direct CLI routes:
 
-1. AGY / Google Antigravity with Sonnet, if local help proves both invocation and model selection.
+1. AGY / Google Antigravity with either Sonnet or the exact model `gemini-3.1-pro-high`, if local help or model-list evidence proves both invocation and model selection and the captured run proves no fallback.
 2. Claude Code CLI with Sonnet, if AGY is unavailable, unclear, or capacity-limited.
 3. Claude Code CLI with Opus, if Sonnet lacks depth or capacity.
 4. Gemini CLI for broad-context fallback.
@@ -35,6 +35,12 @@ Tier 3 explicit fallback:
 6. Copilot no-tools fallback only when the packet and command explicitly allow fallback. Copilot clink support remains deferred.
 
 Do not hardcode flags. Do not infer a model from branding. If model or invocation cannot be proven, use the next route or record `SKIPPED`.
+
+For AGY Gemini 3.1 audits, the proof must record `auditor_tool: "agy"`,
+`auditor_model: "gemini-3.1-pro-high"`, and the exact `agy --model
+gemini-3.1-pro-high --print ...` invocation. The generic `gemini` model value
+remains backward-compatible but is not a substitute for exact-model evidence in
+new post-approval proofs.
 
 Packet-specific supervisor-approved fallback auditors may be used only when the packet records the approval, bounded input, no-secret constraints, exact invocation, and resulting verdict in proof.
 
@@ -133,7 +139,10 @@ Procedure:
    must conform to `schemas/proof/embedded_audit.schema.json` (see "Required
    Proof Object"). For a Claude Code route use `auditor_tool: "claude-code-cli"`
    with `auditor_model: "opus"` or `"sonnet"`, a non-empty `invocation`, and a
-   `report_path` matching `^proof/<PACKET_ID>/AUDITOR_REPORT.md$`.
+   `report_path` matching `^proof/<PACKET_ID>/AUDITOR_REPORT.md$`. For a
+   post-approval AGY Gemini 3.1 route use `auditor_tool: "agy"` and
+   `auditor_model: "gemini-3.1-pro-high"`; record the exact explicit-model
+   invocation and evidence that the CLI did not fall back.
 3. **Include the top-level fields the PR Steward gate reads**
    (`src/dopemux_pr_merge_specialist/steward_gate.py`): `head_sha` and
    `generated_at`, alongside the `embedded_audit` object:

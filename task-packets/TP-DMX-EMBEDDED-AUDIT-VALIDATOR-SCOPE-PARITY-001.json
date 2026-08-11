@@ -1,0 +1,106 @@
+{
+  "id": "TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001",
+  "project": "dopemux-mvp",
+  "target": "Make embedded-audit proofs under proof/pr_merge/** visible to deterministic validation, so that a proof the canonical schema rejects cannot pass CI unexamined — without converting unrelated legacy proof debt into an unbounded repair campaign.",
+  "invariants": [
+    "SCOPE: this packet exists because two independent filters both skip proof/pr_merge/**. proof/.validator_scope.json sets include_patterns to proof/TP-DMX-*/PROOF.json with default_when_unmatched: skip_with_warning, and the pre-commit proof hook matches only ^proof/[^/]+/PROOF\\.json$. Every proof under proof/pr_merge/** is therefore unvalidated by both the scanned sweep and pre-commit.",
+    "EVIDENCE: this is a confirmed defect, not a hypothesis. PR #1165 published a proof whose report_path violated the trusted schema pattern; a direct scripts/audit/validate_audit_proof.py run rejected it while CI stayed green, because neither filter looked.",
+    "NOT ALREADY FIXED: repairing scripts/audit/local_audit_acceptance.py to execute the canonical schema (TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001, step R07) closes the signed local-attestation route only. It does not make the deterministic sweep or pre-commit look at proof/pr_merge/**. Do not report this packet's work as done by that repair.",
+    "BOUNDED BLAST RADIUS: widening validator scope will surface pre-existing nonconformant proofs. Enumerate them first and classify each as REPAIR / QUARANTINE / DOCUMENTED-LEGACY before changing any default. A scope widening that turns CI red across unrelated history is a failed execution of this packet, not a success.",
+    "NO SILENT SKIPS: default_when_unmatched: skip_with_warning is the mechanism that produced the false green. Any retained skip must be an explicit, enumerated, reviewed entry — never a fallthrough.",
+    "FAIL CLOSED: an unmatched or unreadable proof must not be reported as PASS. A sweep that validates nothing must not exit 0 with a green summary.",
+    "NO GATE WEAKENING: this packet must not weaken signature verification, allowed-signers trust, namespace binding, repository or PR identity, audited-head ancestry, proof-only successor closure, passing-verdict policy, or PR Steward semantics.",
+    "SINGLE POLICY ENGINE: schemas/proof/embedded_audit.schema.json remains the only authority on embedded_audit shape. Do not introduce a second hand-written validator; extend coverage, not the number of implementations."
+  ],
+  "depends_on": [
+    "TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "fix(audit): bring proof/pr_merge embedded-audit proofs into deterministic validation scope",
+    "allowlist": [
+      "task-packets/TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001.json",
+      "proof/.validator_scope.json",
+      ".pre-commit-config.yaml",
+      "scripts/audit/validate_audit_proof.py",
+      "tests/audit/**",
+      "docs/ops/embedded-audit-proof.md",
+      "proof/TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001/**"
+    ],
+    "verify": [
+      "python scripts/audit/validate_audit_proof.py --all proof",
+      "python -m pytest tests/audit -q",
+      "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(audit): validator-scope parity for proof/pr_merge embedded-audit proofs",
+    "body": "Closes the sweep and pre-commit blind spots that let a schema-invalid embedded-audit proof pass CI green. Enumerates existing nonconformance before widening scope, so the change does not convert legacy proof debt into an unbounded repair campaign.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S01",
+      "task": "Enumerate the true blast radius before changing any configuration.",
+      "requirements": [
+        "Run scripts/audit/validate_audit_proof.py directly against every PROOF.json under proof/, including proof/pr_merge/**, with no scope filtering.",
+        "Produce a census of conforming and nonconforming bundles with the exact schema error for each.",
+        "Classify every nonconforming bundle as REPAIR, QUARANTINE, or DOCUMENTED-LEGACY with a stated reason.",
+        "Do not change proof/.validator_scope.json or .pre-commit-config.yaml in this step."
+      ],
+      "expected_files": [
+        "proof/TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001/PROOF_CENSUS.md"
+      ],
+      "validation": [
+        "python scripts/audit/validate_audit_proof.py --all proof"
+      ]
+    },
+    {
+      "id": "S02",
+      "task": "Bring proof/pr_merge/** into deterministic validation scope with an explicit, enumerated disposition for every pre-existing failure.",
+      "requirements": [
+        "Add proof/pr_merge/embedded-audit/** to the sweep's include patterns.",
+        "Replace default_when_unmatched: skip_with_warning with a fail-closed default, or justify in writing why it must remain and enumerate every path that relies on it.",
+        "Extend the pre-commit proof hook's files pattern to cover the same path family.",
+        "Any retained exemption must be an explicit enumerated entry with a reason, never a silent fallthrough."
+      ],
+      "expected_files": [
+        "proof/.validator_scope.json",
+        ".pre-commit-config.yaml"
+      ],
+      "validation": [
+        "python scripts/audit/validate_audit_proof.py --all proof",
+        "pre-commit run --from-ref origin/main --to-ref HEAD"
+      ]
+    },
+    {
+      "id": "S03",
+      "task": "Pin the scope contract with regression tests so a future narrowing is caught rather than discovered by a false green.",
+      "requirements": [
+        "Assert that a proof placed under proof/pr_merge/embedded-audit/ is validated rather than skipped.",
+        "Assert that an unmatched proof path fails closed and is not reported as PASS.",
+        "Assert that the pre-commit hook pattern and the sweep include patterns cover the same path family, so the two filters cannot drift apart again.",
+        "Record in docs/ops/embedded-audit-proof.md which routes validate which paths, and state the historical false-green plainly."
+      ],
+      "expected_files": [
+        "tests/audit/test_validator_scope_parity.py",
+        "docs/ops/embedded-audit-proof.md"
+      ],
+      "validation": [
+        "python -m pytest tests/audit -q"
+      ]
+    }
+  ]
+}

@@ -20,7 +20,11 @@ strict, fail-closed contract:
    allowed on top of the audited code).
 4. The local ``embedded_audit`` object must be a passing verdict and must be
    valid against the trusted ``schemas/proof/embedded_audit.schema.json``
-   (with ``report_path`` overridden by the trusted emitter downstream).
+   under full Draft 7 semantics — the canonical schema is the single policy
+   engine here, so conditional constraints (``allOf``/``if``/``then``),
+   ``additionalProperties``, and ``report_path`` are all enforced. A signed
+   payload the canonical validator rejects is never accepted, even when a
+   downstream trusted emitter would later replace a field of its own.
 
 Every failure produces ``accepted=false`` with explicit reasons; the caller
 (workflow) then falls through to today's SKIPPED/red behaviour. Candidate PR
@@ -41,6 +45,16 @@ import sys
 import tempfile
 from pathlib import Path
 from typing import Any, Mapping
+
+try:  # Canonical schema engine. Absence must fail closed, never fall back.
+    from jsonschema import Draft7Validator
+    from jsonschema.exceptions import SchemaError
+except ImportError as _exc:  # pragma: no cover - exercised via monkeypatch
+    Draft7Validator = None  # type: ignore[assignment]
+    SchemaError = None  # type: ignore[assignment]
+    JSONSCHEMA_IMPORT_ERROR: str | None = str(_exc)
+else:
+    JSONSCHEMA_IMPORT_ERROR = None
 
 SIGNATURE_NAMESPACE = "dopemux-embedded-audit"
 DEFAULT_ALLOWED_SIGNERS = Path("config/audit/embedded-audit-allowed-signers")
@@ -173,7 +187,7 @@ def _verify_signature(
     return principal, None
 
 
-def _load_schema_enums(schema_path: Path) -> tuple[dict[str, Any] | None, str | None]:
+def _load_trusted_schema(schema_path: Path) -> tuple[dict[str, Any] | None, str | None]:
     try:
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
@@ -183,57 +197,86 @@ def _load_schema_enums(schema_path: Path) -> tuple[dict[str, Any] | None, str | 
     return schema, None
 
 
+def _pointer(error: Any) -> str:
+    """JSON Pointer for a validation error, ``<root>`` for the object itself."""
+    parts = [str(part) for part in error.absolute_path]
+    return "/" + "/".join(parts) if parts else "<root>"
+
+
+def schema_validation_errors(
+    embedded: Mapping[str, Any],
+    schema: Mapping[str, Any],
+) -> list[str]:
+    """Validate ``embedded_audit`` against the trusted schema, Draft 7 semantics.
+
+    The canonical schema is the single policy engine: conditional constraints
+    are executed by the real validator rather than mirrored by hand, so a
+    conditional added to the schema is enforced here the day it lands. This is
+    deliberately the *whole* object — ``report_path`` included. A previous
+    hand-rolled implementation skipped ``allOf`` entirely and exempted
+    ``report_path``, which let a signed payload the canonical validator rejects
+    be accepted here (see ``tests/audit/test_local_audit_acceptance.py``).
+
+    Returns schema errors only. Verdict policy is applied separately by
+    :func:`policy_errors` — the schema admits ``FAIL``/``SKIPPED``, acceptance
+    does not.
+    """
+    if Draft7Validator is None:
+        return [
+            "schema_validator_unavailable: jsonschema is required to validate the "
+            f"signed embedded_audit against the trusted schema ({JSONSCHEMA_IMPORT_ERROR})"
+        ]
+    try:
+        Draft7Validator.check_schema(schema)
+    except SchemaError as exc:  # type: ignore[misc]
+        return [f"schema_malformed: trusted schema is not valid Draft 7: {exc.message}"]
+
+    errors = sorted(
+        Draft7Validator(schema).iter_errors(embedded),
+        key=lambda err: (list(err.absolute_path), err.message),
+    )
+    return [
+        f"local_audit_schema_invalid: {_pointer(err)}: {err.message}" for err in errors
+    ]
+
+
+def policy_errors(embedded: Mapping[str, Any]) -> list[str]:
+    """Acceptance policy that is not a JSON Schema concern.
+
+    The trusted schema describes CI-emitted diagnostic proofs as well as
+    attestations, so it is deliberately more permissive than acceptance:
+
+    * it permits non-passing verdicts (``FAIL``, ``SKIPPED``);
+    * it types ``required`` as a plain boolean, so ``required: false`` is
+      schema-valid.
+
+    Local attestation accepts neither. ``required: false`` matters because a
+    downstream emitter promotes an accepted attestation to ``executed: true``
+    while final enforcement checks the verdict and not this flag — so accepting
+    it would let the mandatory embedded-audit gate go green for a proof that
+    declares the audit was not required.
+
+    Every gate here is one the schema cannot express. Adding a schema check must
+    never remove one of them.
+    """
+    errors: list[str] = []
+    status = embedded.get("status")
+    if status not in PASSING_AUDIT_STATUSES:
+        errors.append(f"local_audit_not_passing: {status!r}")
+    if embedded.get("required") is not True:
+        errors.append("local_audit_required_flag: embedded_audit.required must be true")
+    return errors
+
+
 def _validate_embedded_audit(
     embedded: Mapping[str, Any],
     schema: Mapping[str, Any],
 ) -> list[str]:
-    """Structural validation against the trusted schema (stdlib only).
-
-    ``report_path`` is intentionally NOT validated here — the trusted emitter
-    overrides it with its own canonical artifact path.
-    """
-    errors: list[str] = []
-    properties = schema.get("properties", {})
-    required = [key for key in schema.get("required", []) if key != "report_path"]
-
-    for key in required:
-        if key not in embedded:
-            errors.append(f"local_audit_missing_field: {key}")
+    """Canonical-schema validation followed by acceptance policy."""
+    errors = schema_validation_errors(embedded, schema)
     if errors:
         return errors
-
-    status = embedded.get("status")
-    status_enum = properties.get("status", {}).get("enum", [])
-    if status not in status_enum:
-        errors.append(f"local_audit_status_not_in_schema: {status!r}")
-    elif status not in PASSING_AUDIT_STATUSES:
-        errors.append(f"local_audit_not_passing: {status!r}")
-
-    tool = embedded.get("auditor_tool")
-    tool_enum = properties.get("auditor_tool", {}).get("enum", [])
-    if tool not in tool_enum:
-        errors.append(
-            f"local_audit_tool_not_in_schema: {tool!r} (allowed: {sorted(tool_enum)})"
-        )
-    model = embedded.get("auditor_model")
-    model_enum = properties.get("auditor_model", {}).get("enum", [])
-    if model not in model_enum:
-        errors.append(
-            f"local_audit_model_not_in_schema: {model!r} (allowed: {sorted(model_enum)})"
-        )
-
-    if embedded.get("required") is not True:
-        errors.append("local_audit_required_flag: embedded_audit.required must be true")
-    for list_field in ("findings", "fixes_applied", "remaining_risks"):
-        if not isinstance(embedded.get(list_field), list):
-            errors.append(f"local_audit_field_not_list: {list_field}")
-    exit_code = embedded.get("exit_code")
-    if exit_code is not None and not isinstance(exit_code, int):
-        errors.append("local_audit_exit_code_type: must be integer or null")
-    invocation = embedded.get("invocation")
-    if invocation is not None and not isinstance(invocation, str):
-        errors.append("local_audit_invocation_type: must be string or null")
-    return errors
+    return policy_errors(embedded)
 
 
 def evaluate_local_audit(
@@ -347,7 +390,7 @@ def evaluate_local_audit(
     if not isinstance(embedded, dict):
         reasons.append("local_audit_missing: embedded_audit object required")
         return attestation
-    schema, schema_error = _load_schema_enums(schema_path)
+    schema, schema_error = _load_trusted_schema(schema_path)
     if schema is None:
         reasons.append(schema_error or f"schema_unreadable: {schema_path}")
         return attestation

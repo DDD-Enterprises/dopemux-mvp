@@ -5,8 +5,8 @@ type: reference
 owner: governance
 date: 2026-05-27
 author: '@hu3mann'
-last_review: '2026-05-31'
-next_review: '2026-08-29'
+last_review: '2026-07-29'
+next_review: '2026-10-27'
 prelude: Embedded Audit Proof Format (explanation) for dopemux documentation and developer
   workflows.
 ---
@@ -47,9 +47,21 @@ series stop condition for `DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED`.
 
 **`status`** — `PASS`, `PASS_WITH_RISKS`, `FAIL`, `NEEDS_SUPERVISOR`, `SKIPPED`
 
-**`auditor_tool`** — `agy`, `antigravity`, `claude-code-cli`, `copilot-cli`, `gemini-cli`, `none`
+**`auditor_tool`** — `agy`, `antigravity`, `claude-code-cli`, `copilot-cli`, `gemini-cli`, `pal-mcp-clink`, `none`
 
-**`auditor_model`** — `sonnet`, `claude-sonnet-4.6`, `opus`, `gemini`, `unknown`
+`pal-mcp-clink` is not new here: it is already present in the trusted schema on `main`.
+This line previously omitted it, and the omission is corrected as documentation catching
+up to the enacted schema — no `auditor_tool` value is added by this change.
+
+**`auditor_model`** — `sonnet`, `claude-sonnet-4.6`, `opus`, `gemini`, `gemini-3.1-pro-high`, `unknown`
+
+`gemini-3.1-pro-high` is the exact approved model identifier for an AGY audit.
+Use it only when the invocation proves explicit selection, for example
+`agy --model gemini-3.1-pro-high --print ...`, and the captured AGY evidence
+shows no fallback to another model. The generic `gemini` value remains valid for
+backward compatibility and for bootstrap audits performed before this enum change
+is present on the trusted branch; new post-merge proofs should prefer the exact
+identifier.
 
 ### Conditional constraints
 
@@ -66,6 +78,44 @@ series stop condition for `DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED`.
 - `invocation` must be a non-empty string
 - `exit_code` must be an integer
 - `skip_reason` must be `null`
+
+**Exact AGY model** (`auditor_model == "gemini-3.1-pro-high"`):
+- `auditor_tool` must be present and must be `"agy"`
+
+The `required` inside that conditional is deliberate. JSON Schema `properties` is vacuous
+for an absent key, so without it the constraint would pass for a payload that omits
+`auditor_tool`. The top-level `required` list already forbids that, but the conditional is
+made self-contained so it cannot be weakened by an unrelated edit to that list.
+
+### What the schema proves — and what it does not
+
+`ACCEPTED_DESIGN_BOUNDARY: SCHEMA_BINDS_DECLARED_TOOL_MODEL_PAIR; RUNTIME_SELECTOR_PROVEN_BY_EXECUTION_EVIDENCE`
+
+The `auditor_model` → `auditor_tool` conditionals bind the **declared pairing**: a proof
+claiming `auditor_model: "gemini-3.1-pro-high"` must also claim `auditor_tool: "agy"`.
+That is a consistency constraint on the declaration.
+
+The schema deliberately **does not parse `invocation`**. It is an opaque string, so a
+schema-valid proof is *not* evidence that the runner was actually executed with
+`--model gemini-3.1-pro-high`. A regex over `invocation` would only prove that a
+substring appeared in a field the producer wrote — the same trust level as the
+`auditor_model` field itself — while creating a brittle shell-command parser and a
+false impression of runtime enforcement.
+
+Runtime selector truth is carried by execution evidence instead:
+
+- the recorded `invocation`;
+- captured runner evidence (`agy --version`, model list) at capture time;
+- `requested_selector` / `observed_selector` in the route record;
+- fail-closed rejection of an invalid selector — AGY aborts with
+  `model ... is not recognized as a known model` rather than silently substituting,
+  so no unproven fallback can occur;
+- the independent audit itself.
+
+Do not read schema validity as proof of runtime execution semantics, and do not widen
+these conditionals into invocation parsing without replacing this boundary statement.
+`tests/audit/test_agy_gemini31_model.py::test_schema_does_not_constrain_invocation_string`
+pins the boundary so it cannot drift silently.
 
 ### Finding shape
 
@@ -109,6 +159,27 @@ series stop condition for `DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED`.
   "skip_reason": null
 }
 ```
+
+## Canonical example: AGY Gemini 3.1 Pro High
+
+```json
+{
+  "required": true,
+  "status": "PASS_WITH_RISKS",
+  "auditor_tool": "agy",
+  "auditor_model": "gemini-3.1-pro-high",
+  "invocation": "agy --model gemini-3.1-pro-high --print '<bounded read-only audit prompt>'",
+  "exit_code": 0,
+  "report_path": "proof/TP-EXAMPLE-AGY/AUDITOR_REPORT.md",
+  "findings": [],
+  "fixes_applied": [],
+  "remaining_risks": ["Model availability is account-dependent; captured model-selection evidence is required."],
+  "skip_reason": null
+}
+```
+
+This proof shape approves the model identifier. It does not grant AGY write
+authority, authorize CI credentials, or permit an unproven alias such as `pro`.
 
 ## Canonical example: SKIPPED
 
@@ -156,6 +227,60 @@ python scripts/audit/validate_audit_proof.py --schema path/to/schema.json proof/
 - `0` — all validated bundles PASS
 - `1` — one or more bundles FAIL
 - `2` — usage error (bad arguments, missing schema, no files found)
+
+### The schema is the single policy engine
+
+Two routes validate an `embedded_audit` object, and both execute **this schema**
+under real Draft 7 semantics via `jsonschema.Draft7Validator`:
+
+| Route | Entry point | Schema is read from |
+|---|---|---|
+| Deterministic sweep | `scripts/audit/validate_audit_proof.py` | working tree |
+| Signed local attestation | `scripts/audit/local_audit_acceptance.py` | the **trusted base ref**, never the PR branch |
+
+Neither route mirrors the schema's rules in hand-written Python. That matters
+most for the `allOf` conditionals: a conditional added to the schema is enforced
+by both routes the day it lands, with no second implementation to update.
+
+This was not always true. The acceptance route previously used a hand-rolled
+stdlib check that verified `required`, a few enum memberships, and a few types —
+it never walked `allOf` and it exempted `report_path`. The consequence was that
+a signed proof the canonical validator **rejects** could be **accepted** by the
+attestation route: for example `auditor_model: gemini-3.1-pro-high` declared
+with `auditor_tool: claude-code-cli`, a pairing the schema forbids. The gap sat
+behind the signature trust boundary, so it let a *trusted signer* record a
+forbidden pairing rather than letting an untrusted party in — but a trust
+contract that the trusted path does not enforce is not a trust contract.
+Parity is now pinned by `tests/audit/test_local_audit_acceptance.py`, which
+asserts agreement between the acceptance route and `Draft7Validator` over a
+fixture corpus and fails if a new `allOf` branch appears without coverage.
+
+Two consequences worth stating plainly:
+
+- **`report_path` is validated on both routes.** A downstream trusted emitter
+  may later substitute its own canonical artifact path, but that is not a reason
+  to accept a schema-invalid signed input. Skipping the field is precisely how a
+  nonconformant `report_path` reached a published proof while CI stayed green.
+- **Some acceptance gates are not schema concerns, and the schema is more
+  permissive on purpose** — it also describes CI-emitted diagnostic proofs.
+  Those gates live in `policy_errors()` and are applied after schema validation:
+  - **passing verdict** — the schema admits `FAIL` and `SKIPPED`; acceptance
+    does not.
+  - **`required` must be `true`** — the schema types it as a plain boolean, so
+    `required: false` is schema-valid. Accepting it would matter, because a
+    downstream emitter promotes an accepted attestation to `executed: true`
+    while final enforcement checks the verdict and not this flag: the mandatory
+    embedded-audit gate would go green for a proof declaring the audit was not
+    required.
+
+  Adding a schema check must never remove one of these. When the canonical-schema
+  refactor first landed it dropped the `required` gate, because the schema
+  appeared to cover the field. Both gates are now pinned by
+  `POLICY_ONLY_REJECTIONS` in `tests/audit/test_local_audit_acceptance.py`.
+
+`jsonschema` is a declared project dependency (`pyproject.toml`). Where it is
+absent the acceptance route **fails closed** with `schema_validator_unavailable`
+and never falls back to a partial check.
 
 ## Independent Workflow Output
 
