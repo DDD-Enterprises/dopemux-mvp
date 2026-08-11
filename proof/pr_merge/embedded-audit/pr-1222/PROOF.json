@@ -1,0 +1,26 @@
+{
+  "packet_id": "PR-MERGE-STEWARD-1222",
+  "pr_number": 1222,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "head_sha": "3e8fcc1c70c5b859dd651a1cd33c85eab837c93e",
+  "generated_at": "2026-08-11T23:45:00Z",
+  "mutation_performed": false,
+  "github_mutation_route_added": false,
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "pnpm build && pnpm test -- --run",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "Resolve MUI ListItemText DOM nesting validation warning in TaskSequencer.tsx by adding the disableTypography prop, ensuring a clean and semantically valid HTML hierarchy."
+    ],
+    "remaining_risks": [
+      "None. Visual representation is verified via Playwright visual screenshot and video recording."
+    ],
+    "skip_reason": null
+  }
+}
