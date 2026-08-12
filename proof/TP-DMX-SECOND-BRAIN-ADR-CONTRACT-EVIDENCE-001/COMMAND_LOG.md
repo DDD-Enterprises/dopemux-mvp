@@ -506,3 +506,69 @@ All paths fall under `proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/**` an
 `task-packets/**`. Nothing under `schemas/`, `scripts/`, `tests/` or `docs/` moved, so
 `C1_CONTENT_HEAD.txt` remains `7955ef33d7` and the audit binding stays valid. This is
 what prevents an audit → commit → re-audit carousel.
+
+---
+
+## S6 (re-run) — embedded-audit representation gap
+
+Once `PROOF.json` existed, the change-contract preflight and the pre-commit proof
+hook began requiring a top-level `embedded_audit` block. Adding one truthfully is
+impossible for this audit route, and the reason is worth recording precisely.
+
+`schemas/proof/embedded_audit.schema.json` is strictly binary:
+
+```text
+status == SKIPPED   -> auditor_tool MUST be "none", auditor_model MUST be "unknown",
+                       invocation null, exit_code null, skip_reason a string
+status != SKIPPED   -> auditor_tool MUST NOT be "none", auditor_model MUST NOT be
+                       "unknown", invocation a string, exit_code an integer,
+                       skip_reason null
+```
+
+`auditor_tool` enumerates `[agy, antigravity, claude-code-cli, copilot-cli,
+gemini-cli, pal-mcp-clink, none]` and `auditor_model` enumerates `[sonnet,
+claude-sonnet-4.6, opus, gemini, gemini-3.1-pro-high, unknown]`. **Neither can name
+the grok CLI that actually ran.** So the only two representable options are:
+
+1. `status: SKIPPED` with `none`/`unknown` — falsely asserts no audit happened, which
+   would hide a FAIL verdict behind an apparently un-audited packet. The worst
+   available falsehood.
+2. `status: FAIL` with a tool and model picked from the enum — fabricating an auditor
+   identity, which packet §19 explicitly forbids.
+
+Neither is truthful, so neither was used. The block records `status: "FAIL"` (true and
+representable), keeps the honest fallback values for the two fields the schema cannot
+express, and states the limitation in `skip_reason`. The gate consequently reports:
+
+```text
+status=FAIL
+  - [error] proof_schema_fail: auditor_model 'unknown' should not be valid under
+    {'const': 'unknown'}; auditor_tool 'none' should not be valid under
+    {'const': 'none'}; skip_reason ... is not of type 'null'
+```
+
+**Three error strings, one cause.** Everything else in the block validates: the eight
+findings were converted to the schema's `finding` object shape (`id`, `severity`,
+`title`, `status`, `body`) and are accepted.
+
+This is the same representation gap recorded in the predecessor bundle
+(`GROK_SCHEMA_REPRESENTATION_GAP.md`), except that the escape used there —
+`auditor_tool: none` with a non-SKIPPED status — has since been closed by the
+`allOf` conditionals. Repairing the schema is **explicitly out of scope**: packet §1
+forbids embedded-audit platform repair. It is recorded here and left for the operator.
+
+Note the direction of the error: the gate fails because the packet refuses to
+overstate its audit. A packet that fabricated `auditor_tool: claude-code-cli` would
+have passed this gate while lying about who audited it.
+
+### Gate results at the final head
+
+```text
+git diff --check                          PASS
+validate_second_brain_adr_contracts.py    PASS  (114 checks, 0 failed)
+pytest tests/governance/...               PASS  (52 passed)
+dopeTask packet schema validation         PASS
+validate_change_contract.py               FAIL  (embedded-audit representation gap only)
+pre-commit (changed slice)                FAIL  (same single cause, same file)
+independent audit                         FAIL  (3 blockers, 5 must-fix) <- controlling
+```

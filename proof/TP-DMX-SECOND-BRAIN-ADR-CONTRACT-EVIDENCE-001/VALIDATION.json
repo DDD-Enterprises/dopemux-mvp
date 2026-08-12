@@ -7,9 +7,9 @@
     "contract_validator": "PASS",
     "adversarial_matrix": "PASS",
     "packet_schema": "PASS",
-    "change_contract_preflight": "PASS",
+    "change_contract_preflight": "FAIL",
     "diff_whitespace": "PASS",
-    "pre_commit": "PASS",
+    "pre_commit": "FAIL",
     "independent_audit": "FAIL",
     "runtime_conformance": "NOT_RUN",
     "retrieval_benchmarks": "NOT_RUN",
@@ -38,10 +38,11 @@
     },
     {
       "command": "python3 scripts/governance/validate_change_contract.py --base 6153bd4fb3 --head HEAD",
-      "exit_code": 0,
-      "status": "PASS",
+      "exit_code": 1,
+      "status": "FAIL",
       "max_lane": "L2",
-      "paths": 29
+      "paths": 29,
+      "reason": "embedded-audit representation gap only; all path/lane checks pass"
     },
     {
       "command": "git diff --check",
@@ -50,11 +51,12 @@
     },
     {
       "command": "pre-commit run --files <changed slice>",
-      "exit_code": 0,
+      "exit_code": 1,
       "hooks_total": 18,
       "passed": 4,
       "skipped": 14,
-      "note": "The 14 skips are genuine: those hooks are scoped by `files:` to docs/ and task-packets/ markdown, and this slice contains no matching file. Verified against .pre-commit-config.yaml rather than assumed."
+      "note": "The 14 skips are genuine: those hooks are scoped by `files:` to docs/ and task-packets/ markdown, and this slice contains no matching file. Verified against .pre-commit-config.yaml rather than assumed.",
+      "reason": "proof bundle embedded_audit schema hook, same single cause"
     }
   ],
   "not_run_rationale": "This packet produces architecture-time contract evidence only. Every runtime and enablement measurement remains NOT_RUN by design and is not inferred from contract coverage.",
@@ -65,5 +67,15 @@
     "controlling": true,
     "effect": "Packet terminal state is BLOCKED_INDEPENDENT_AUDIT. Publication does not progress; the PR remains a draft.",
     "audited_head": "7955ef33d7c0ab29daecbab966bc6a9497dc69ce"
+  },
+  "embedded_audit_representation_gap": {
+    "effect": "change-contract preflight and the pre-commit proof hook both FAIL",
+    "single_cause": "schemas/proof/embedded_audit.schema.json cannot name the grok CLI that ran, and forbids the none/unknown fallback unless status is SKIPPED.",
+    "options_rejected": [
+      "status=SKIPPED with none/unknown \u2014 would falsely assert no audit happened and hide a FAIL verdict",
+      "status=FAIL with a tool/model picked from the enum \u2014 fabricating an auditor identity, forbidden by packet section 19"
+    ],
+    "chosen": "status=FAIL (true and representable) with honest fallback values and the limitation stated in skip_reason; the gate error is accepted and recorded rather than engineered away.",
+    "schema_repair": "OUT_OF_SCOPE \u2014 packet section 1 forbids embedded-audit platform repair."
   }
 }
