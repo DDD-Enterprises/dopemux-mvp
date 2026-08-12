@@ -9268,15 +9268,36 @@ def run_doctor_full(
     }
     payload.update(_shared_doctor_advisory_fields("DOCTOR_FULL.json", run_id=run_id))
 
+    # RTE-W1-010: --doctor with persist=True writes DOCTOR_FULL.json and
+    # calls write_certification_result -- genuine canonical certification
+    # evidence for the current run, not a report of a historical one. It
+    # must not be persisted with an unproven source identity, even though
+    # it is reached via a different CLI dispatch than the main
+    # phase-execution path's identity gate. The persist=False variant
+    # (read-only doctor probe) is unaffected -- it never reaches this block.
+    identity_unproven_reason: Optional[str] = None
     if persist:
-        doctor_dir = current_doctor_root(root)
-        doctor_dir.mkdir(parents=True, exist_ok=True)
-        write_json(doctor_dir / "DOCTOR_FULL.json", payload)
-        write_certification_result(
-            dirs["root"],
-            topology_payload=payload,
-        )
+        try:
+            required_execution_source_identity(root)
+        except SourceIdentityUnprovenError as exc:
+            identity_unproven_reason = str(exc)
+            logger.error(
+                "Source identity unproven; refusing to persist certification "
+                "evidence: %s",
+                exc,
+            )
+        else:
+            doctor_dir = current_doctor_root(root)
+            doctor_dir.mkdir(parents=True, exist_ok=True)
+            write_json(doctor_dir / "DOCTOR_FULL.json", payload)
+            write_certification_result(
+                dirs["root"],
+                topology_payload=payload,
+            )
     print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
+
+    if identity_unproven_reason is not None:
+        return 1
 
     has_missing = any(missing_steps.values())
     has_duplicates = bool(duplicates)

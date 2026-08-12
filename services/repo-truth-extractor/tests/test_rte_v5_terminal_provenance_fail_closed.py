@@ -709,3 +709,75 @@ def test_cli_dispatch_exits_with_outcome_exit_code(monkeypatch) -> None:
     assert "sys.exit(0 if integrated >= 0 else 1)" not in source
     assert "sys.exit(outcome.exit_code)" in source
     assert "run_batch_retrieval_and_integration_detailed(" in source
+
+
+def test_s9_doctor_full_persist_blocks_certification_on_unproven_identity(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """RTE-W1-010: --doctor's persist=True path (run_doctor_full) writes
+    genuine certification evidence (DOCTOR_FULL.json + CERTIFICATION_RESULT
+    via write_certification_result) for the CURRENT run -- it is not
+    read-only introspection reporting a historical run, so it must be
+    gated the same as the main phase-execution path. Found during
+    independent audit: this dispatch is reached via a different CLI branch
+    than the phase-execution gate and was originally left ungated."""
+    runner = _load_runner_module()
+    run_root = tmp_path / "artifact-root" / "runs" / "doctor_probe"
+    dirs = {"root": run_root}
+    cfg = runner.RunnerConfig.__new__(runner.RunnerConfig)
+    object.__setattr__(cfg, "routing_policy", "cost")
+
+    monkeypatch.setattr(runner, "collect_prompt_index", lambda: ({}, []))
+    monkeypatch.setattr(runner, "get_phase_prompts", lambda phase: [])
+    monkeypatch.setattr(
+        runner,
+        "get_required_artifact_status",
+        lambda dirs_arg, phases: {"required_groups_present_pct": 100.0},
+    )
+    monkeypatch.setattr(runner, "collect_provider_routes", lambda **kwargs: {})
+    monkeypatch.setattr(runner, "run_provider_doctor_probe", lambda **kwargs: {})
+    monkeypatch.setattr(runner, "get_git_sha", lambda root: "UNKNOWN")
+
+    exit_code = runner.run_doctor_full(
+        tmp_path, dirs, run_id="doctor_probe", phases=["A"], cfg=cfg
+    )
+
+    assert exit_code == 1
+    assert not (run_root / "CERTIFICATION_RESULT.json").exists()
+    assert not (runner.current_doctor_root(tmp_path) / "DOCTOR_FULL.json").exists()
+
+
+def test_s9_doctor_full_persist_false_is_unaffected_by_identity_gate(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """Read-only preservation: the persist=False --doctor variant must not
+    be blocked by the identity gate (invariant 11)."""
+    runner = _load_runner_module()
+    run_root = tmp_path / "artifact-root" / "runs" / "doctor_probe"
+    dirs = {"root": run_root}
+    cfg = runner.RunnerConfig.__new__(runner.RunnerConfig)
+    object.__setattr__(cfg, "routing_policy", "cost")
+
+    monkeypatch.setattr(runner, "collect_prompt_index", lambda: ({}, []))
+    monkeypatch.setattr(runner, "get_phase_prompts", lambda phase: [])
+    monkeypatch.setattr(
+        runner,
+        "get_required_artifact_status",
+        lambda dirs_arg, phases: {"required_groups_present_pct": 100.0},
+    )
+    monkeypatch.setattr(runner, "collect_provider_routes", lambda **kwargs: {})
+    monkeypatch.setattr(runner, "run_provider_doctor_probe", lambda **kwargs: {})
+    monkeypatch.setattr(runner, "get_git_sha", lambda root: "UNKNOWN")
+
+    exit_code = runner.run_doctor_full(
+        tmp_path, dirs, run_id="doctor_probe", phases=["A"], cfg=cfg, persist=False
+    )
+
+    # No prompts are registered for phase A in this fixture, so run_doctor_full's
+    # own has_missing check independently drives exit_code=1 -- unrelated to
+    # source identity. The point of this test is that persist=False never
+    # invokes required_execution_source_identity() at all (no certification
+    # evidence is ever written for the read-only variant, gate or no gate).
+    assert exit_code == 1
+    assert not (run_root / "CERTIFICATION_RESULT.json").exists()
+    assert not (runner.current_doctor_root(tmp_path) / "DOCTOR_FULL.json").exists()
