@@ -48,11 +48,98 @@ python3 scripts/governance/validate_change_contract.py --base origin/main --head
 #
 # and again on the proof-only successor:
 #   status=PASS  paths=11  (same single L2 authority path, 10 x L0 proof)
+#   ^^^ SUPERSEDED — INCOMPLETE FOR FINAL-SLICE COVERAGE. See "Final-slice re-run" below.
+#   This run is preserved as historical evidence of what was actually executed at the time.
+#   It is NOT deleted or back-dated. It predates commit 48098c8178, which added two L2
+#   authority-metadata records, so its "same single L2 authority path" claim understates
+#   the authority surface of the final slice.
 
 pre-commit run --from-ref origin/main --to-ref HEAD   # 18 hooks, all Passed, no files modified
 git diff --check                                       # clean
 python3 scripts/audit/validate_audit_proof.py proof/.../PROOF.json   # 1/1 PASS (SKIPPED, truthful)
 ```
+
+### Final-slice re-run — supersedes the `paths=11` record above
+
+Raised by automated PR review (chatgpt-codex-connector, P2, "Re-run preflight after final
+authority additions") and confirmed: the recorded `paths=11` run did not cover the final slice.
+Re-run against the current PR comparison, actual verbatim result:
+
+```bash
+python3 scripts/governance/validate_change_contract.py \
+  --base origin/main --head HEAD --format text
+```
+
+```text
+status=PASS
+max_lane=L2
+model_audit_required=True
+proof_only=False
+paths=16
+  [L2] docs/03-reference/architecture/second-brain/adr-candidates/ADR_CANDIDATE_AMENDMENT_HEAD.json
+  [L2] docs/03-reference/architecture/second-brain/adr-candidates/ac2-acceptance-condition-amendment.json
+  [L2] docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AC2_AMENDMENT_RECEIPT.json
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT.md
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT_AMENDMENT.md
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT_PR1214.md
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/C1_CONTENT_HEAD.txt
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/COMMAND_LOG.md
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/CONFLICT_NOTICE_CONCURRENT_ACCEPTANCE.md
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/GROK_AUDIT_ROUTE_CUSTODY.json
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/GROK_SCHEMA_REPRESENTATION_GAP.md
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/PROOF.json
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/SUPERSESSION_LINEAGE.md
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/source-base-second-brain-adr-candidates.md
+  [L0] task-packets/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT.json
+```
+
+**Three L2 authority paths, not one — `paths=16`, not 11.** The two additional L2 records are
+`ADR_CANDIDATE_AMENDMENT_HEAD.json` and `ac2-acceptance-condition-amendment.json`, added at
+`48098c8178` after the earlier run.
+
+`COMMAND_LOG.md` and the task packet were already in the changed-path set before this correction,
+so recording it does not alter the set; the result above remains accurate for the head that
+carries it. `max_lane` stays L2 and `model_audit_required` stays true — unchanged from the
+earlier record.
+
+Note this is the same coverage-lag defect that `PROOF.json` already discloses for the bound Grok
+audit (`cc2f49ccad` predates `48098c8178`); it recurred here in the preflight record.
+
+### S4 invariant validation is now executable — was a no-op
+
+Also raised by automated PR review (P2, "Replace no-op invariant validation") and confirmed. The
+task packet's S4 step — the central scope invariant — was recorded as:
+
+```text
+python3 - <<'PY'
+# per-ADR section comparison + SB-DEC sequence + frontmatter
+PY
+```
+
+A comment-only heredoc: it read nothing, compared nothing, and exited 0. Any change to forbidden
+sections, frontmatter, statuses, or SB-DEC references would have satisfied it while the packet
+claimed the invariant was verified.
+
+Replaced with an executable byte round-trip check. It asserts both SHA-256 values, that the
+pre-amendment AC#2 line occurs exactly 10x in the frozen base and 0x in the candidate (and the
+converse for the amended text), and — the load-bearing part — that reversing exactly those ten
+replacements reconstructs the frozen base **byte-for-byte**, with the forward direction
+reproducing the candidate. Any edit anywhere else in the document breaks that equality.
+
+The replacement was verified to actually fail, not merely to pass:
+
+```text
+control (unmodified tree)                         exit 0   S4 PASSED
+flip one **Status:** PROPOSED -> ACCEPTED         exit 1   S4 FAILED (3 checks)
+corrupt one SB-DEC reference                      exit 1   S4 FAILED (3 checks)
+tamper frontmatter source_candidate_sha256        exit 1   S4 FAILED (3 checks)
+reword one acceptance-condition line              exit 1   S4 FAILED (4 checks)
+drop one of the ten AC#2 replacements             exit 1   S4 FAILED (5 checks)
+```
+
+Packet re-validated against `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json`:
+**0 schema errors**.
 
 ## Auditor findings addressed on this PR
 
