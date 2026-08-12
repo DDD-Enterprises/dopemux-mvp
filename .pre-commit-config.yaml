@@ -56,43 +56,7 @@ repos:
       # Prohibited file pattern check
       - id: docs-prohibited-patterns
         name: Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)
-        entry: bash -c
-        args:
-          - |
-            set -e
-            prohibited_found=false
-            # Evaluate only the changed docs files passed by pre-commit.
-            for file in "$@"; do
-              case "$file" in
-                docs/*|task-packets/*)
-                  # Skip quarantined files
-                  if [[ "$file" =~ ^docs/04-explanation/history/sourceFiles/ ]]; then
-                    continue
-                  fi
-                  # Exact canonical Task Packet template path only.
-                  # Filename contains "template" which otherwise matches *temp*.md.
-                  # Do NOT exempt other template-*.md / temp / notes / todo / scratch names.
-                  if [[ "$file" == "docs/03-reference/governance/task-packet-template.md" ]]; then
-                    continue
-                  fi
-                  base="$(basename "$file")"
-                  lbase="$(echo "$base" | tr '[:upper:]' '[:lower:]')"
-                  case "$lbase" in
-                    notes*.md|todo*.md|temp*.md|*temp*.md|*scratch*.md)
-                      echo "❌ Found prohibited file pattern in changed file:"
-                      echo "  $file"
-                      prohibited_found=true
-                      ;;
-                  esac
-                  ;;
-              esac
-            done
-            if [ "$prohibited_found" = true ]; then
-              echo "Use structured workflow: RFC->ADR->arc42 for documentation"
-              exit 1
-            fi
-            echo "✅ No prohibited patterns found in changed docs"
-          - --
+        entry: scripts/ci/docs_prohibited_patterns.sh
         language: system
         files: ^(docs/|task-packets/).*\.md$
         exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
