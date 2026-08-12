@@ -1,0 +1,105 @@
+{
+  "amendment": {
+    "amended_bytes": 17140,
+    "amended_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+    "base_bytes": 13920,
+    "base_sha256": "946054a4675271856e0214dbf1ce0aa9b1ec17e71e79a82711ad3ca0d9df9c22",
+    "delta_bytes": 3220,
+    "line_count_after": 375,
+    "line_count_before": 375,
+    "lines_added": 10,
+    "lines_removed": 10,
+    "occurrences_replaced": 10,
+    "predicted_delta_bytes": 3220,
+    "pure_line_replacement": true,
+    "round_trip_forward": true,
+    "round_trip_reverse": true,
+    "wording_verbatim_to_operator_directive": true
+  },
+  "authority": {
+    "operator_authority": "HUMAN_OPERATOR_EXPLICIT",
+    "operator_directive": "narrow AC#2 amendment across ADR-SB-001..010; do not reopen SB-DEC-001..032, ADR decision text, consequences, rejected alternatives, or repaired traceability",
+    "r2_candidate_sha256": "94b735c72ff3533f0cd73bed18fd3fb64b164530f7ef360f37584c73504a4e8e",
+    "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34"
+  },
+  "base_sha": "cfa4927a883b469c06f37343c18e6582f23d1443",
+  "base_unmoved_at_amendment_time": true,
+  "gates": {
+    "adr_dispositions": "DEFERRED_BY_OPERATOR \u2014 gate-level procedural defer, NOT a substantive DEFER against any ADR",
+    "adrs_status": "all ten remain PROPOSED / CANDIDATE",
+    "amendment_landed_in_repo": "PR_OPEN_PENDING_MERGE (PR #1214)",
+    "facilitator_authored_dispositions": false,
+    "github_mutation": "PR #1214 opened",
+    "implementation_execution": "NOT_AUTHORIZED",
+    "implementation_packet_authorization": "NOT_YET",
+    "repo_mutation": "branch tp/DMX-SB-AC2-AMENDMENT + PR #1214; main NOT yet modified",
+    "runtime_mutation": "NONE",
+    "snapshot_note": "Gate values above were a pre-landing snapshot when first written; corrected in the proof-only successor per auditor observation N2."
+  },
+  "independent_verification": {
+    "blockers": 0,
+    "fallback_enabled": false,
+    "model_switching": false,
+    "must_fix": 0,
+    "nonblocking_N1": "scope of 'required denial fixtures' is not enumerated per ADR; this is the operator's own authorized wording, not a producer edit, and sentence 3 plus AC#3 prevent it becoming an enablement loophole",
+    "nonblocking_observations": 1,
+    "observed_model": "grok-4.5-build",
+    "performed": true,
+    "pr_head_audit": {
+      "audited_content_head": "cc2f49ccad3d7c39d6b9f0a9fb044616069585a7",
+      "blockers": 0,
+      "must_fix": 0,
+      "nonblocking": 2,
+      "report": "AUDITOR_REPORT_PR1214.md",
+      "route_custody": "GROK_AUDIT_ROUTE_CUSTODY.json",
+      "verdict": "PASS"
+    },
+    "provider": "xAI",
+    "read_only": true,
+    "report": "AUDITOR_REPORT_AMENDMENT.md",
+    "report_normalisation": {
+      "applied": "trailing whitespace stripped (4 markdown hard-line-break lines) to satisfy git diff --check / pre-commit",
+      "byte_exact_original_location": "sealed bundle TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT.zip (7954e23823006b651bb6b65d8248722028b8f0a02d42535f167625312bee9695)",
+      "semantic_content_changed": false,
+      "sha256_as_committed": "e766ddc26e8a5667da6b72b1d39bade19ec331965fff04885e368ae6a2d121d1",
+      "sha256_as_emitted_by_runner": "6157b5874a6ec8a6716d578ed94f3ed35db27361a3440caf707f9a539c1a187e"
+    },
+    "requested_model": "grok-4.5",
+    "runner": "Grok CLI",
+    "session": "fresh",
+    "turns": 8,
+    "verdict": "PASS_ADR_ACCEPTANCE_CONDITION_AMENDMENT"
+  },
+  "invariants_held": {
+    "adr_headings_identical": true,
+    "all_adrs_still_PROPOSED": true,
+    "consequences_sections_identical": true,
+    "context_sections_identical": true,
+    "document_status": "CANDIDATE",
+    "evidence_and_traceability_sections_identical": true,
+    "frontmatter_identical": true,
+    "proposed_decision_sections_identical": true,
+    "rejected_alternatives_sections_identical": true,
+    "sb_dec_reference_count": 28,
+    "sb_dec_reference_sequence_identical": true,
+    "sb_dec_semantics_changed": false,
+    "token_ACCEPTED_present": false
+  },
+  "native_embedded_audit_lane": "GROK_AUDIT_VALID_SCHEMA_REPRESENTATION_UNSUPPORTED \u2014 see GROK_SCHEMA_REPRESENTATION_GAP.md; recorded truthfully as failing, no attestation fabricated",
+  "next_required_operator_actions": [
+    "authorize landing the amended bytes to the repository (branch + PR + merge), or direct an alternative landing path",
+    "after landing, provide explicit ADR-SB-001..010 dispositions"
+  ],
+  "phase": "AC2_ACCEPTANCE_CONDITION_AMENDMENT",
+  "preserved_not_run": {
+    "encryption_implementation": "ABSENT",
+    "multi_project_isolation": "NOT_RUN",
+    "purge_completeness": "NOT_RUN",
+    "retrieval_benchmarks": "NOT_RUN",
+    "runtime_conformance": "NOT_RUN",
+    "split_brain_proof": "NOT_RUN"
+  },
+  "schema_version": "1.0.0",
+  "status": "AMENDED_AND_INDEPENDENTLY_VERIFIED_PENDING_LANDING_AND_DISPOSITIONS",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001"
+}

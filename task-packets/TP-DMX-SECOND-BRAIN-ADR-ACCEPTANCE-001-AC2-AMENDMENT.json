@@ -1,0 +1,222 @@
+{
+  "id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT",
+  "project": "dopemux-mvp",
+  "target": "Narrow, operator-authorized amendment of ADR acceptance condition #2 across ADR-SB-001..010 in the repaired Second Brain ADR candidate. Separates architecture-time contract evidence from implementation-time denial-fixture proof. Accepts no ADR; all ten remain PROPOSED and the document remains CANDIDATE.",
+  "invariants": [
+    "Exactly 10 substitutions of the AC#2 bullet, one per ADR; no other line of the candidate document changes.",
+    "Zero changes to SB-DEC-001..032 semantics; the 28 SB-DEC references keep identical order and identity.",
+    "Zero changes to repaired traceability, ADR decision text, consequences, or rejected alternatives.",
+    "For all ten ADRs the Context, Proposed decision, Consequences, Rejected alternatives, and Evidence and traceability sections remain byte-identical.",
+    "YAML frontmatter remains byte-identical; document status remains CANDIDATE.",
+    "Zero ADR dispositions recorded; the token ACCEPTED does not appear in the candidate document.",
+    "Byte delta must equal 10 x (len(new_line) - len(old_line)); a mismatch means a non-additive rewrite and fails the packet.",
+    "Substitution must round-trip in both directions against the base bytes.",
+    "The embedded-audit schema and the allowed-signers file are NOT modified by this packet.",
+    "No passing embedded-audit attestation is fabricated and Grok is not normalised into another allowed enum.",
+    "The superseded pre-amendment acceptance commit 19fa74faa9 is not pushed, merged, rebased, deleted, or otherwise promoted.",
+    "Implementation execution remains NOT_AUTHORIZED and runtime mutation remains NONE.",
+    "PLANNING_OUTPUT_EVIDENCE_CLASS=PRODUCER_MACHINE_VERIFIED_OFF_REPO_UNVERIFIABLE. Producer-machine inspection found the sealed, self-verifying planning bundle TP-DMX-SECOND-BRAIN-IMPLEMENTATION-PLANNING-001-20260809T232914Z, its zip sha256 5b021fc9b436b63973b73c9e6324fb0c9bdd909fb650ca300af600eec6c7ccd7, its 37-member manifest, and its COMPLETE / internal manifest final_verdict PASS_IMPLEMENTATION_PLAN_WITH_NONBLOCKING_RISKS_READY_FOR_OPERATOR_PACKET_AUTHORIZATION result. Those observations were verified against durable primary evidence on the producer machine, but the bundle is NOT imported by this packet and is not committed here; a repository-only consumer cannot independently reproduce them. The observations are therefore neither presented as repository-verifiable fact nor downgraded to UNKNOWN — they carry their evidence class. Same taxonomy as proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDIT_PROMPT_CUSTODY.json.",
+    "The Task Packet TP-DMX-SECOND-BRAIN-IMPLEMENTATION-PLANNING-001 is not present in repository-accessible evidence — it was added on no branch (git log --all --diff-filter=A returns nothing), matches no file under the producer's checkout or task-run cache, and is not among the sealed bundle's 37 members, which carry the planning outputs rather than the packet. It therefore cannot be verified as an authority object and is not listed as a machine dependency of this packet.",
+    "This amendment does not depend on, inherit authority from, or claim execution authority from that missing packet. Standing status is PLANNING_OUTPUT_STATUS=COMPLETE [evidence_class=PRODUCER_MACHINE_VERIFIED_OFF_REPO_UNVERIFIABLE], PLANNING_PACKET_AUTHORITY=UNVERIFIABLE, IMPLEMENTATION_EXECUTION=NOT_AUTHORIZED. The three propositions are deliberately kept distinct: planning work was observed complete on the producer machine; the planning packet's authority is unverifiable; implementation execution is not authorized.",
+    "Every command recorded in this packet is reproducible as written: no step carries a placeholder standing in for an artifact, and each independent-audit invocation names the tracked prompt file whose bytes were actually sent."
+  ],
+  "depends_on": [
+    "TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "docs(second-brain): clarify ADR acceptance condition #2 (AC#2)",
+    "allowlist": [
+      "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+      "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/**",
+      "task-packets/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT.json",
+      "docs/03-reference/architecture/second-brain/adr-candidates/ADR_CANDIDATE_AMENDMENT_HEAD.json",
+      "docs/03-reference/architecture/second-brain/adr-candidates/ac2-acceptance-condition-amendment.json"
+    ],
+    "verify": [
+      "python3 scripts/governance/validate_change_contract.py --base 9dce8ffaec489f486d0356d300f0e8ea5aefa3d2 --head HEAD --format text",
+      "git diff --check",
+      "pre-commit run --from-ref 9dce8ffaec489f486d0356d300f0e8ea5aefa3d2 --to-ref HEAD"
+    ]
+  },
+  "pr": {
+    "title": "docs(second-brain): clarify ADR acceptance condition #2 (AC#2)",
+    "body": "Narrow AC#2 amendment across ADR-SB-001..010. Accepts no ADR. Independent Grok 4.5 audit bound to the exact content head returned PASS with 0 BLOCKER and 0 MUST_FIX. The repository-native embedded-audit lane is recorded truthfully as GROK_AUDIT_VALID_SCHEMA_REPRESENTATION_UNSUPPORTED because the trusted schema enumerates no Grok auditor value; no passing attestation was fabricated.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Confirm the repaired ADR candidate bytes match the FO-01 receipt, binding to the frozen FO-01 repair merge rather than to a moving ref.",
+      "commands": [
+        "git fetch origin main",
+        "git rev-parse cfa4927a883b469c06f37343c18e6582f23d1443^{commit}",
+        "git show cfa4927a883b469c06f37343c18e6582f23d1443:docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md | shasum -a 256"
+      ],
+      "expected_files": [],
+      "validation": [
+        "FO01_REPAIR_BASE = cfa4927a883b469c06f37343c18e6582f23d1443. It resolves to a commit, is the FO-01 traceability-repair merge, and is an ancestor of main, so it remains reachable in any full clone. It is a frozen revision, not a moving ref.",
+        "The repaired pre-amendment candidate read at FO01_REPAIR_BASE hashes to 946054a4675271856e0214dbf1ce0aa9b1ec17e71e79a82711ad3ca0d9df9c22, matching FO01_RESOLUTION_RECEIPT.json.",
+        "The fetch is repository freshness only. origin/main is deliberately NOT an input to either assertion above and this step asserts no value for it: main advances independently of this amendment, so binding the historical candidate to a moving ref would make the step fail on wholly unrelated commits."
+      ],
+      "context_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/FO01_RESOLUTION_RECEIPT.json"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Apply exactly 10 AC#2 substitutions using the operator-specified wording verbatim.",
+      "commands": [
+        "grep -c '^\\* Machine contracts and denial fixtures parse and cover the decision\\.$' proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/source-base-second-brain-adr-candidates.md",
+        "grep -c '^\\* Machine contracts and denial fixtures parse and cover the decision\\.$' docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md || true"
+      ],
+      "expected_files": [
+        "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/source-base-second-brain-adr-candidates.md"
+      ],
+      "validation": [
+        "Occurrence count is 10 before substitution and 0 after. Both halves are checkable from tracked bytes: the first command counts the pre-amendment line in the frozen base (expect 10) and the second counts it in the amended candidate (expect 0). The '|| true' is required because grep -c exits 1 on a zero count, which is the expected post-substitution result.",
+        "the amended file hashes to e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c.",
+        "line count is 375 before and after."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "S3",
+      "task": "Prove the change is a pure line replacement, not a rewrite (falsifiable byte-delta and round-trip tests).",
+      "commands": [
+        "python3 - <<'PY'\nimport hashlib\nimport pathlib\nimport sys\n\n# Frozen pre-amendment base and the amended candidate. Both are read explicitly;\n# nothing in this step relies on names defined elsewhere.\nBASE_PATH = pathlib.Path(\n    \"proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/\"\n    \"source-base-second-brain-adr-candidates.md\"\n)\nCAND_PATH = pathlib.Path(\n    \"docs/03-reference/architecture/second-brain/adr-candidates/\"\n    \"second-brain-adr-candidates.md\"\n)\n\nBASE_SHA256 = \"946054a4675271856e0214dbf1ce0aa9b1ec17e71e79a82711ad3ca0d9df9c22\"\nAMENDED_SHA256 = \"e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c\"\nEXPECTED_REPLACEMENTS = 10\n\nOLD = b\"* Machine contracts and denial fixtures parse and cover the decision.\\n\"\nNEW = (\n    b\"* Machine contracts required by this ADR MUST parse and cover the decision at ADR \"\n    b\"acceptance. Required denial fixtures MUST be implemented, executed, and pass before \"\n    b\"the affected implementation capability is authorized for enablement. Absence of \"\n    b\"not-yet-implemented denial fixtures does not constitute implementation evidence and \"\n    b\"does not permit any runtime, production, or enablement claim.\\n\"\n)\n\nbase = BASE_PATH.read_bytes()\namended = CAND_PATH.read_bytes()\n\nfailures = []\n\n\ndef check(label, ok, detail=\"\"):\n    print(f\"  [{'PASS' if ok else 'FAIL'}] {label}\" + (f\" — {detail}\" if detail else \"\"))\n    if not ok:\n        failures.append(label)\n\n\nprint(\"S3 — pure line replacement: byte-delta and round-trip (falsifiable)\")\n\nbase_sha = hashlib.sha256(base).hexdigest()\namended_sha = hashlib.sha256(amended).hexdigest()\ncheck(\"frozen base sha256 binding\", base_sha == BASE_SHA256, base_sha)\ncheck(\"amended candidate sha256 binding\", amended_sha == AMENDED_SHA256, amended_sha)\n\nn_old_base = base.count(OLD)\nn_new_amended = amended.count(NEW)\ncheck(f\"pre-amendment AC#2 occurs exactly {EXPECTED_REPLACEMENTS}x in base\",\n      n_old_base == EXPECTED_REPLACEMENTS, f\"found {n_old_base}\")\ncheck(f\"amended AC#2 occurs exactly {EXPECTED_REPLACEMENTS}x in candidate\",\n      n_new_amended == EXPECTED_REPLACEMENTS, f\"found {n_new_amended}\")\ncheck(\"amended AC#2 absent from base\", base.count(NEW) == 0, f\"found {base.count(NEW)}\")\ncheck(\"pre-amendment AC#2 absent from candidate\",\n      amended.count(OLD) == 0, f\"found {amended.count(OLD)}\")\n\npredicted = EXPECTED_REPLACEMENTS * (len(NEW) - len(OLD))\nobserved = len(amended) - len(base)\ncheck(\"byte delta matches prediction\",\n      observed == predicted, f\"predicted {predicted}, observed {observed}\")\n\nforward = base.replace(OLD, NEW)\ncheck(\"forward transformation base -> amended is exact\",\n      forward == amended,\n      \"byte-identical\" if forward == amended\n      else f\"differs ({len(forward)}B vs {len(amended)}B)\")\n\nreverse = amended.replace(NEW, OLD)\ncheck(\"reverse transformation amended -> base is exact\",\n      reverse == base,\n      \"byte-identical\" if reverse == base\n      else f\"differs ({len(reverse)}B vs {len(base)}B)\")\n\ncheck(\"line count preserved (line replacement, not rewrite)\",\n      base.count(b\"\\n\") == amended.count(b\"\\n\"),\n      f\"{base.count(chr(10).encode())} -> {amended.count(chr(10).encode())}\")\n\nif failures:\n    print(f\"\\nS3 FAILED: {len(failures)} check(s) failed: {failures}\")\n    sys.exit(1)\nprint(\"\\nS3 PASSED: pure line replacement confirmed — \"\n      f\"{EXPECTED_REPLACEMENTS} AC#2 lines, delta {observed}B, both round-trips exact.\")\nPY"
+      ],
+      "expected_files": [],
+      "validation": [
+        "The command exits 0 and prints 'S3 PASSED'. It loads the frozen base and amended candidate bytes explicitly and defines OLD/NEW inline, so it cannot raise NameError or pass vacuously.",
+        "Frozen base sha256 946054a4675271856e0214dbf1ce0aa9b1ec17e71e79a82711ad3ca0d9df9c22 and amended candidate sha256 e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c both bind.",
+        "The pre-amendment AC#2 line occurs exactly 10x in the base and 0x in the candidate; the amended AC#2 text occurs exactly 10x in the candidate and 0x in the base.",
+        "Predicted delta 10 x 322 = 3220 equals observed delta 3220, and both round-trip directions are exact: base.replace(OLD,NEW) == amended and amended.replace(NEW,OLD) == base.",
+        "Line count is preserved, confirming line replacement rather than rewrite.",
+        "Any mismatch exits nonzero and fails the packet."
+      ],
+      "context_files": [
+        "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/source-base-second-brain-adr-candidates.md"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Assert every forbidden surface is unchanged, by executable byte round-trip. Reversing exactly the ten AC#2 replacements must reconstruct the frozen pre-amendment base byte-for-byte; any change to frontmatter, ADR headings, statuses, decision text, consequences, rejected alternatives, evidence, or SB-DEC references breaks that equality.",
+      "commands": [
+        "python3 - <<'PY'\nimport hashlib\nimport pathlib\nimport sys\n\nBASE_PATH = pathlib.Path(\n    \"proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/\"\n    \"source-base-second-brain-adr-candidates.md\"\n)\nCAND_PATH = pathlib.Path(\n    \"docs/03-reference/architecture/second-brain/adr-candidates/\"\n    \"second-brain-adr-candidates.md\"\n)\n\nBASE_SHA256 = \"946054a4675271856e0214dbf1ce0aa9b1ec17e71e79a82711ad3ca0d9df9c22\"\nAMENDED_SHA256 = \"e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c\"\nEXPECTED_REPLACEMENTS = 10\n\nOLD_AC2 = b\"* Machine contracts and denial fixtures parse and cover the decision.\\n\"\nNEW_AC2 = (\n    b\"* Machine contracts required by this ADR MUST parse and cover the decision at ADR \"\n    b\"acceptance. Required denial fixtures MUST be implemented, executed, and pass before \"\n    b\"the affected implementation capability is authorized for enablement. Absence of \"\n    b\"not-yet-implemented denial fixtures does not constitute implementation evidence and \"\n    b\"does not permit any runtime, production, or enablement claim.\\n\"\n)\n\nfailures = []\n\n\ndef check(label, condition, detail=\"\"):\n    status = \"PASS\" if condition else \"FAIL\"\n    print(f\"  [{status}] {label}{(' — ' + detail) if detail else ''}\")\n    if not condition:\n        failures.append(label)\n\n\nbase = BASE_PATH.read_bytes()\ncand = CAND_PATH.read_bytes()\n\nbase_sha = hashlib.sha256(base).hexdigest()\ncand_sha = hashlib.sha256(cand).hexdigest()\n\nprint(\"S4 — AC#2 amendment scope invariant (byte round-trip)\")\ncheck(\"frozen base sha256\", base_sha == BASE_SHA256, base_sha)\ncheck(\"amended candidate sha256\", cand_sha == AMENDED_SHA256, cand_sha)\n\nn_old_in_base = base.count(OLD_AC2)\nn_new_in_base = base.count(NEW_AC2)\nn_new_in_cand = cand.count(NEW_AC2)\nn_old_in_cand = cand.count(OLD_AC2)\n\ncheck(\"old AC#2 occurs exactly 10x in frozen base\",\n      n_old_in_base == EXPECTED_REPLACEMENTS, f\"found {n_old_in_base}\")\ncheck(\"amended AC#2 absent from frozen base\",\n      n_new_in_base == 0, f\"found {n_new_in_base}\")\ncheck(\"amended AC#2 occurs exactly 10x in candidate\",\n      n_new_in_cand == EXPECTED_REPLACEMENTS, f\"found {n_new_in_cand}\")\ncheck(\"old AC#2 fully removed from candidate\",\n      n_old_in_cand == 0, f\"found {n_old_in_cand}\")\n\n# The load-bearing check: reversing exactly the 10 AC#2 replacements must reconstruct\n# the frozen base byte-for-byte. Any change anywhere else in the document — frontmatter,\n# ADR headings, statuses, decision text, consequences, rejected alternatives, evidence,\n# or SB-DEC references — breaks this equality.\nreconstructed = cand.replace(NEW_AC2, OLD_AC2)\ncheck(\"reverse round-trip reconstructs frozen base exactly\",\n      reconstructed == base,\n      \"byte-identical\" if reconstructed == base\n      else f\"differs (reconstructed {len(reconstructed)}B vs base {len(base)}B)\")\n\nforward = base.replace(OLD_AC2, NEW_AC2)\ncheck(\"forward round-trip reproduces amended candidate exactly\",\n      forward == cand,\n      \"byte-identical\" if forward == cand\n      else f\"differs (forward {len(forward)}B vs candidate {len(cand)}B)\")\n\nbase_lines = base.count(b\"\\n\")\ncand_lines = cand.count(b\"\\n\")\ncheck(\"line count preserved (pure line replacement)\",\n      base_lines == cand_lines, f\"{base_lines} -> {cand_lines}\")\n\ndelta = len(cand) - len(base)\nexpected_delta = EXPECTED_REPLACEMENTS * (len(NEW_AC2) - len(OLD_AC2))\ncheck(\"byte delta matches 10x per-replacement delta\",\n      delta == expected_delta, f\"{delta} == {expected_delta}\")\n\nif failures:\n    print(f\"\\nS4 FAILED: {len(failures)} check(s) failed: {failures}\")\n    sys.exit(1)\nprint(\"\\nS4 PASSED: amendment is confined to exactly 10 AC#2 replacements; \"\n      \"all other bytes are unchanged.\")\nPY"
+      ],
+      "expected_files": [],
+      "validation": [
+        "The command exits 0 and prints 'S4 PASSED'. It exits 1 and prints 'S4 FAILED' on any violation; it performs real comparisons and does not pass vacuously.",
+        "Frozen base sha256 is 946054a4675271856e0214dbf1ce0aa9b1ec17e71e79a82711ad3ca0d9df9c22 and amended candidate sha256 is e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c.",
+        "The pre-amendment AC#2 line occurs exactly 10 times in the frozen base and 0 times in the candidate; the amended AC#2 text occurs exactly 10 times in the candidate and 0 times in the base.",
+        "Reverse round-trip (candidate with the 10 amended blocks replaced by the old block) is byte-identical to the frozen base, and forward round-trip is byte-identical to the candidate. This is what proves the Context, Proposed decision, Consequences, Rejected alternatives, Evidence and traceability sections, the 28 SB-DEC references and their order, the frontmatter, the ten '**Status:** `PROPOSED`' lines, and the absence of the token ACCEPTED are all unchanged.",
+        "Line count is preserved at 375 and the byte delta is 3220 = 10 x 322."
+      ],
+      "context_files": [
+        "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/source-base-second-brain-adr-candidates.md"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Obtain an independent read-only audit of the exact amended bytes and of the exact content head from a non-implementer auditor. Two distinct invocations were run, each with its own prompt, its own session, and its own report; neither report is derived from the other's prompt.",
+      "commands": [
+        "grok -m grok-4.5 --effort high --prompt-file proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDIT_PROMPT_AMENDMENT.md --permission-mode auto --deny Write --deny Edit --deny MultiEdit --deny NotebookEdit --output-format json",
+        "grok -m grok-4.5 --effort high --prompt-file proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDIT_PROMPT_PR1214.md --permission-mode auto --deny Write --deny Edit --deny MultiEdit --deny NotebookEdit --output-format json",
+        "python3 - <<'PY'\nimport hashlib\nimport json\nimport pathlib\nimport sys\n\n# Repository-side verification of the independent-audit binding. This is NOT a third\n# audit invocation and runs no auditor: it re-checks, from committed bytes alone, that\n# the bytes the auditor reported on are the bytes this repository carries. It needs no\n# network and no historical commit object to be reachable.\n\nADR_DIR = pathlib.Path(\"docs/03-reference/architecture/second-brain/adr-candidates\")\nPROOF_DIR = pathlib.Path(\"proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT\")\n\nCAND_PATH = ADR_DIR / \"second-brain-adr-candidates.md\"\nHEAD_RECORD = ADR_DIR / \"ADR_CANDIDATE_AMENDMENT_HEAD.json\"\nAMEND_RECORD = ADR_DIR / \"ac2-acceptance-condition-amendment.json\"\nREPORT = PROOF_DIR / \"AUDITOR_REPORT_AMENDMENT.md\"\n\nAUDITED_SHA256 = \"e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c\"\nVERDICT = \"PASS_ADR_ACCEPTANCE_CONDITION_AMENDMENT\"\n\nfailures = []\n\n\ndef check(label, ok, detail=\"\"):\n    print(f\"  [{'PASS' if ok else 'FAIL'}] {label}\" + (f\" - {detail}\" if detail else \"\"))\n    if not ok:\n        failures.append(label)\n\n\nprint(\"S5 - independent-audit binding, verified from committed bytes only\")\n\nlive = hashlib.sha256(CAND_PATH.read_bytes()).hexdigest()\ncheck(\"live candidate sha256 equals the audited candidate sha256\",\n      live == AUDITED_SHA256, live)\n\nhead = json.loads(HEAD_RECORD.read_text())\nbinding = head[\"independent_audit_binding\"]\ncheck(\"authority head records the same audited sha256\",\n      binding[\"audited_candidate_sha256\"] == AUDITED_SHA256,\n      binding[\"audited_candidate_sha256\"])\ncheck(\"authority head verdict is PASS with 0 blockers and 0 must_fix\",\n      binding[\"verdict\"] == VERDICT\n      and binding[\"blockers\"] == 0\n      and binding[\"must_fix\"] == 0,\n      f\"{binding['verdict']} / {binding['blockers']} / {binding['must_fix']}\")\n\namend = json.loads(AMEND_RECORD.read_text())\naudit = amend[\"independent_audit\"]\ncheck(\"amendment record records the same audited sha256\",\n      audit[\"audited_amended_sha256\"] == AUDITED_SHA256,\n      audit[\"audited_amended_sha256\"])\ncheck(\"amendment record verdict is PASS with 0 blockers and 0 must_fix\",\n      audit[\"verdict\"] == VERDICT\n      and audit[\"blockers\"] == 0\n      and audit[\"must_fix\"] == 0,\n      f\"{audit['verdict']} / {audit['blockers']} / {audit['must_fix']}\")\n\nwant = f\"audited_amended: {AUDITED_SHA256}\"\nfound = want in REPORT.read_text().splitlines()\ncheck(\"auditor report header binds the same audited sha256\", found,\n      want if found else \"header line not found\")\n\nif failures:\n    print(f\"\\nS5 FAILED: {len(failures)} check(s) failed: {failures}\")\n    sys.exit(1)\nprint(\"\\nS5 PASSED: the audited bytes are the bytes this repository carries. \"\n      \"No historical commit object is required to establish this.\")\nPY"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDIT_PROMPT_AMENDMENT.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDIT_PROMPT_PR1214.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDIT_PROMPT_CUSTODY.json",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT_AMENDMENT.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT_PR1214.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/GROK_AUDIT_ROUTE_CUSTODY.json"
+      ],
+      "validation": [
+        "Auditor verdict is PASS with 0 BLOCKER and 0 MUST_FIX. The binding is established by candidate-byte equality, verifiable from committed bytes: the amended candidate hashes to e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c, and the same value is recorded as the audited candidate SHA-256 in ADR_CANDIDATE_AMENDMENT_HEAD.json (independent_audit_binding.audited_candidate_sha256), in ac2-acceptance-condition-amendment.json (independent_audit.audited_amended_sha256), and in the auditor report header (audited_amended). The third command above performs exactly this check and exits nonzero on any mismatch.",
+        "HISTORICAL IDENTIFIER, NOT AN EXECUTION DEPENDENCY: the audit ran at content head cc2f49ccad3d7c39d6b9f0a9fb044616069585a7. That identifier is retained as metadata describing the historical audit run and is NOT a repository object any step requires to be reachable. PR #1214 merges by squash, so the commit is not reachable from main afterwards; nothing here depends on its reachability, and the substantive binding is the candidate-byte equality above, which survives the squash intact.",
+        "Route custody records provider, requested model, observed usage key, fallback disabled, and model switching disabled, sourced from runner metadata rather than model self-report.",
+        "Session identifiers in the custody record must match the auditor report headers exactly.",
+        "Each tracked prompt hashes to the sha256 recorded in AUDIT_PROMPT_CUSTODY.json: AUDIT_PROMPT_AMENDMENT.md = 85437c1ad4373313fd5e9d80db5cf75b2210aa98c2bc09daaff250606ab4442c, AUDIT_PROMPT_PR1214.md = 6b5c8e536daf641a6548ccd710b57a2a79f5168552476e23e7459145fd5082a2.",
+        "Each tracked prompt's bytes occur verbatim inside the first non-synthetic user record of its bound Grok session transcript, offset by a runner-added wrapper of exactly 26 bytes (13-byte prefix '<user_query>\\n' and 13-byte suffix '</user_query>'). This is recorded as a byte-level difference, not a normalisation: the tracked file is not the transcript record, and no hash is asserted over the wrapped form.",
+        "Prompt-to-report binding is one-to-one and is not inferred from content similarity: AUDIT_PROMPT_AMENDMENT.md -> session 019fe93a-d8a9-7673-b69c-966e64b44e86 -> AUDITOR_REPORT_AMENDMENT.md; AUDIT_PROMPT_PR1214.md -> session 019fe955-cbc2-7562-be17-cbdc1acf481d -> AUDITOR_REPORT_PR1214.md, of which AUDITOR_REPORT.md is a byte-identical copy of the same run and not a third audit.",
+        "No prompt artifact is reconstructed, regenerated, or paraphrased; both are the recovered exact bytes. Closing this step required no new Grok execution because the historical sessions supply durable binding evidence."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "S6",
+      "task": "Record the repository-native embedded-audit lane truthfully without fabricating a passing attestation.",
+      "commands": [
+        "python3 scripts/audit/validate_audit_proof.py proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/PROOF.json"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/PROOF.json",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/GROK_SCHEMA_REPRESENTATION_GAP.md"
+      ],
+      "validation": [
+        "PROOF.json validates against schemas/proof/embedded_audit.schema.json with status SKIPPED, auditor_tool none, auditor_model unknown, and a non-empty skip_reason naming the representation gap.",
+        "No PASS status is claimed for the native lane and no auditor tool or model that did not run is named."
+      ],
+      "context_files": [
+        "schemas/proof/embedded_audit.schema.json"
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Run the deterministic preflight against a commit that actually contains the change, not an empty diff.",
+      "commands": [
+        "python3 scripts/governance/validate_change_contract.py --base 9dce8ffaec489f486d0356d300f0e8ea5aefa3d2 --head HEAD --format text",
+        "pre-commit run --from-ref 9dce8ffaec489f486d0356d300f0e8ea5aefa3d2 --to-ref HEAD",
+        "git diff --check"
+      ],
+      "expected_files": [],
+      "validation": [
+        "S7_BASE = 9dce8ffaec489f486d0356d300f0e8ea5aefa3d2, the frozen execution base this branch has incorporated. The moving form --base origin/main was removed: origin/main advances on wholly unrelated commits, which changes the measured path set and silently invalidates the receipt. --head HEAD is deliberately retained rather than pinned, because at a checkout of the packet commit HEAD is stable, and pinning it would make every successor commit invalidate the step. If main later advances with no Second Brain overlap, S7 does not need rewriting: its purpose is a reproducible receipt against its frozen execution base, and merge readiness is judged separately against live main.",
+        "Preflight reports paths greater than zero and lists the L2 authority document.",
+        "a paths=0 result is treated as a false green and the step is re-run against the committed head.",
+        "All pre-commit hooks pass without modifying files."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "S8",
+      "task": "Bind the machine-readable authority metadata for the amendment and declare what the bound audit does and does not cover.",
+      "commands": [
+        "python3 -c \"import json;json.load(open('docs/03-reference/architecture/second-brain/adr-candidates/ac2-acceptance-condition-amendment.json'))\"",
+        "python3 -c \"import json;json.load(open('docs/03-reference/architecture/second-brain/adr-candidates/ADR_CANDIDATE_AMENDMENT_HEAD.json'))\"",
+        "python3 - <<'PY'\nimport hashlib\nimport json\nimport pathlib\nimport sys\n\n# Verify the amended candidate and its authority metadata from committed bytes alone.\n# This deliberately replaces a `git diff <historical audit commit>..HEAD` check: that\n# object is not reachable from main after a squash merge, and its reachability was never\n# what needed proving. Byte equality is.\n\nADR_DIR = pathlib.Path(\"docs/03-reference/architecture/second-brain/adr-candidates\")\nCAND_PATH = ADR_DIR / \"second-brain-adr-candidates.md\"\nHEAD_RECORD = ADR_DIR / \"ADR_CANDIDATE_AMENDMENT_HEAD.json\"\nAMEND_RECORD = ADR_DIR / \"ac2-acceptance-condition-amendment.json\"\n\nBASE_SHA256 = \"946054a4675271856e0214dbf1ce0aa9b1ec17e71e79a82711ad3ca0d9df9c22\"\nAMENDED_SHA256 = \"e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c\"\n\nfailures = []\n\n\ndef check(label, ok, detail=\"\"):\n    print(f\"  [{'PASS' if ok else 'FAIL'}] {label}\" + (f\" - {detail}\" if detail else \"\"))\n    if not ok:\n        failures.append(label)\n\n\nprint(\"S8 - authority metadata bound to committed candidate bytes\")\n\nlive = hashlib.sha256(CAND_PATH.read_bytes()).hexdigest()\ncheck(\"live candidate sha256 equals the amended sha256\", live == AMENDED_SHA256, live)\n\nhead = json.loads(HEAD_RECORD.read_text())\ncheck(\"head record binds prior and current candidate sha256\",\n      head[\"prior_candidate_sha256\"] == BASE_SHA256\n      and head[\"current_candidate_sha256\"] == AMENDED_SHA256)\ncheck(\"head record: status CANDIDATE, ten PROPOSED, zero accepted\",\n      head[\"adr_status\"] == \"CANDIDATE\"\n      and len(head[\"adr_status_by_id\"]) == 10\n      and set(head[\"adr_status_by_id\"].values()) == {\"PROPOSED\"}\n      and head[\"accepted_adr_count\"] == 0,\n      f\"{head['adr_status']} / {len(head['adr_status_by_id'])} ADRs / \"\n      f\"{head['accepted_adr_count']} accepted\")\ncheck(\"head record: SB-DEC-026 remains A_LEAVE_UNLINKED\",\n      head[\"sb_dec_026\"] == \"A_LEAVE_UNLINKED\", head[\"sb_dec_026\"])\n\namend = json.loads(AMEND_RECORD.read_text())\ndoc = amend[\"candidate_document\"]\ncheck(\"amendment record binds base and amended candidate sha256\",\n      doc[\"base_candidate_sha256\"] == BASE_SHA256\n      and doc[\"amended_candidate_sha256\"] == AMENDED_SHA256)\ncheck(\"amendment record binds 10 replacements, 375 -> 375 lines, byte delta 3220\",\n      amend[\"replacement_count\"] == 10\n      and amend[\"line_count_before\"] == 375\n      and amend[\"line_count_after\"] == 375\n      and amend[\"observed_byte_delta\"] == 3220,\n      f\"{amend['replacement_count']} / {amend['line_count_before']}->\"\n      f\"{amend['line_count_after']} / {amend['observed_byte_delta']}\")\n\nheld = amend[\"invariants_held\"]\ncheck(\"amendment record: 10 PROPOSED, ACCEPTED absent, 28 SB-DEC refs, CANDIDATE\",\n      held[\"adr_status_proposed_count\"] == 10\n      and held[\"token_ACCEPTED_present\"] is False\n      and held[\"sb_dec_reference_count\"] == 28\n      and held[\"document_status\"] == \"CANDIDATE\")\n\ntext = CAND_PATH.read_text()\nn_proposed = text.count(\"**Status:** `PROPOSED`\")\ncheck(\"candidate document itself carries ten PROPOSED and no ACCEPTED token\",\n      n_proposed == 10 and \"ACCEPTED\" not in text, f\"{n_proposed} PROPOSED\")\n\nif failures:\n    print(f\"\\nS8 FAILED: {len(failures)} check(s) failed: {failures}\")\n    sys.exit(1)\nprint(\"\\nS8 PASSED: authority metadata binds the committed candidate bytes; \"\n      \"no historical commit object is required.\")\nPY"
+      ],
+      "expected_files": [
+        "docs/03-reference/architecture/second-brain/adr-candidates/ADR_CANDIDATE_AMENDMENT_HEAD.json",
+        "docs/03-reference/architecture/second-brain/adr-candidates/ac2-acceptance-condition-amendment.json"
+      ],
+      "validation": [
+        "Both authority records parse as JSON and bind the prior and amended candidate SHA-256, replacement count 10, line count 375 to 375, and byte delta 3220.",
+        "The amended candidate document carries the audited bytes: it hashes to e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c, equal to the audited candidate SHA-256 recorded in both authority records. This is checked from committed bytes and does not require the historical audit commit to be reachable.",
+        "HISTORICAL IDENTIFIER, NOT AN EXECUTION DEPENDENCY: cc2f49ccad3d7c39d6b9f0a9fb044616069585a7 is retained in the authority records (amendment_content_commit, lineage.amendment_content_commit) and in PROOF.json as an identifier describing the historical audit run. No step of this packet requires that object to be reachable. The previous form of this step diffed against it, which would fail with 'unknown revision' in a clone of the squash-merged history rather than verify anything.",
+        "Records added after the audited head are declared UNAUDITED by the bound audit rather than presented as covered by it.",
+        "ADR status remains CANDIDATE with ten PROPOSED and SB-DEC-026 remains A_LEAVE_UNLINKED."
+      ],
+      "context_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/PROOF.json"
+      ]
+    }
+  ]
+}
