@@ -1,0 +1,31 @@
+Reproduction of the local-attestation enforcement defect, before and after repair.
+
+Fixture (the pairing the trusted schema forbids):
+
+  status        : PASS
+  auditor_model : gemini-3.1-pro-high
+  auditor_tool  : claude-code-cli
+  report_path   : proof/TP-DMX-X/AUDITOR_REPORT.md
+
+Schema: schemas/proof/embedded_audit.schema.json (candidate)
+Old validator: origin/main:scripts/audit/local_audit_acceptance.py at 5d694cc9898e5046b5da03319f20f48599c40ca8
+New validator: scripts/audit/local_audit_acceptance.py at d2d3ff808e80e6d6a490616d4ff2341a63c29d86
+
+RESULT
+------
+  canonical Draft7Validator : ["'agy' was expected"]
+  origin/main validator     : ACCEPTED   <-- THE DEFECT
+  repaired validator        : ["local_audit_schema_invalid: /auditor_tool: 'agy' was expected"]
+
+The old acceptance route accepted a signed proof that the canonical schema
+rejects. Both paths now agree.
+
+Root cause: the old _validate_embedded_audit was a hand-rolled stdlib check of
+`required`, a few enum memberships, and a few types. It never walked `allOf`, so
+NO schema conditional was enforced on the signed local-attestation route — not
+the exact-model conditional added by this PR, and not the pre-existing SKIPPED
+conditionals either (those were caught only incidentally by the separate
+passing-verdict policy check). It also exempted `report_path` outright.
+
+Bound: this sits behind the signature trust boundary. It let a TRUSTED signer
+declare a forbidden pairing; it did not let an untrusted party in.
