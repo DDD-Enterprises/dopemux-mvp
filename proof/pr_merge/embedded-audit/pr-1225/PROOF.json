@@ -1,20 +1,23 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1225,
-  "head_sha": "67ec086d71b4b8df37244f513450067a04688e52",
+  "head_sha": "b3274a54bacbe4ba8ca758ff5619782af77d329c",
   "generated_at": "2026-08-11T00:00:00Z",
   "embedded_audit": {
     "required": true,
     "status": "PASS",
     "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "agy --model gemini-3.1-pro-high --print \"<S4 independent audit prompt for TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001, targeting PR #1225 substantive head fcb7d2a95fbcdfdce3ac7e15a29c940791848c1a>\"",
+    "invocation": "agy --model gemini-3.1-pro-high --print \"<S4 independent audit R2 prompt for TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001, targeting PR #1225 substantive head 833f8cdac448dbf93f7d70e44526674fa48b37c7>\"",
     "exit_code": 0,
-    "report_path": "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/AUDITOR_REPORT.md",
+    "report_path": "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/AUDITOR_REPAIR_REPORT.md",
     "findings": [],
-    "fixes_applied": [],
+    "fixes_applied": [
+      "R2: fixed a policy-loosening gap flagged by an automated Codex review on PR #1225 -- R1's blanket '*template*) continue' short-circuited ALL prohibition checks (not just the temp-family ones), so a filename combining 'template' with a genuinely prohibited token (todo-template.md, notes-template.md, temp-template.md, scratch-template.md) was incorrectly allowed. Fixed by stripping 'template' occurrences only before the temp*.md/*temp*.md check; notes*.md/todo*.md/*scratch*.md are still checked against the untouched basename. Added 4 regression tests covering exactly the reported anti-patterns; independently re-audited PASS."
+    ],
     "remaining_risks": [
-      "AUDIT_TOPOLOGY, NAMED NOT CONFLATED. AUDITED_TREE (the substantive content examined by the S4 auditor) = fcb7d2a95fbcdfdce3ac7e15a29c940791848c1a. This PROOF.json's head_sha, 67ec086d71b4b8df37244f513450067a04688e52, is the AUDIT_EVIDENCE_HEAD: a proof-only successor that adds only proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/{AUDITOR_REPORT.md,AGY_AUDIT_RAW.txt,S4_AUDIT_PROMPT.md} on top of AUDITED_TREE. AUDITED_TREE is an ancestor of AUDIT_EVIDENCE_HEAD; no substantive byte changed after AUDITED_TREE. This bridge commit itself adds only proof/pr_merge/embedded-audit/pr-1225/** on top of AUDIT_EVIDENCE_HEAD -- a second proof-only delta, not a re-audit.",
+      "AUDIT_TOPOLOGY, NAMED NOT CONFLATED. AUDITED_TREE (the substantive content examined by the R2 S4 audit) = 833f8cdac448dbf93f7d70e44526674fa48b37c7. This PROOF.json's head_sha, b3274a54bacbe4ba8ca758ff5619782af77d329c, is the AUDIT_EVIDENCE_HEAD: a proof-only successor that adds only proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/{AUDITOR_REPAIR_REPORT.md,AGY_AUDIT_RAW_R2.txt,S4_AUDIT_PROMPT_R2.md} on top of AUDITED_TREE. AUDITED_TREE is an ancestor of AUDIT_EVIDENCE_HEAD; no substantive byte changed after AUDITED_TREE. This bridge commit itself adds only proof/pr_merge/embedded-audit/pr-1225/** on top of AUDIT_EVIDENCE_HEAD -- a second proof-only delta, not a re-audit. This PROOF.json supersedes the prior R1 proof at the same path (R1 audited fcb7d2a95fbcdfdce3ac7e15a29c940791848c1a, superseded because the substantive code changed in R2); R1's evidence remains on record at proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/{AUDITOR_REPORT.md,AGY_AUDIT_RAW.txt,S4_AUDIT_PROMPT.md}.",
+      "The R2 auditor noted one adversarial edge case (docs/ttemplateemp.md, a gibberish filename) that is now over-blocked by the de-templating substitution where R1 would have allowed it -- assessed as a strictly more conservative outcome (still no policy loosening), not a regression, and 'very unlikely to be used in production.'",
       "merge=NOT_AUTHORIZED per the L3 gate on this packet regardless of this PASS verdict; this proof satisfies only the independent_audit=REQUIRED gate, not the separate merge authorization.",
       "PR #1224 (TP-DMX-PR-PREP-SPECIALIST-V2-001) is untouched by this packet and by this proof; no claim is made about its state."
     ],
