@@ -1,0 +1,17 @@
+F019 reproduction, run against execution-base source (origin/main 9dce8ffaec489f486d0356d300f0e8ea5aefa3d2, before any packet changes).
+
+Setup: DiscoveryGate with resolver/discovery stubbed to return a mandatory
+(repo_profile) service "repo" with required_tool_globs=["needed_*"], reachable=True,
+tools=[], warning="transport active, handshake required".
+
+$ python3 repro_f019.py
+passed: True
+status: PASS
+missing_required_tools: {}
+F019 DEFECT CONFIRMED: mandatory service with zero proven tools reached PASS via handshake suppression
+
+Result: the handshake-required warning caused the gate to skip required-tool-glob
+validation entirely, so a mandatory service with zero proven matching tools still
+reached PASS. Confirms F019 exactly as specified in the task packet. No network or
+external MCP service was used -- resolver.resolve and discovery.discover were
+stubbed with deterministic in-memory data.

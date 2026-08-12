@@ -1,0 +1,23 @@
+OK: repo_preflight project=dopemux-mvp root=/Users/hue/code/dopemux-mvp/.worktrees/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001
+[preflight] check: run-mode
+[preflight] OK: run mode enforce
+[preflight] check: jq-present
+[preflight] OK: jq present
+[preflight] check: git-clean
+[preflight] SKIP: git clean disabled for hook context
+[preflight] check: ledger-present
+[preflight] OK: ledger present
+[preflight] check: ledger-json
+[preflight] OK: ledger JSON valid
+[preflight] check: diff-whitespace
+[preflight] OK: diff whitespace clean
+[preflight] check: smoke-tests
+......                                                                   [100%]
+syntax-ok files=964
+[preflight] OK: smoke checks passed
+[preflight] manifest written: .runs/run-20260812-041247.manifest.json
+[tp/DMX-MCP-CAPABILITY-FAIL-CLOSED-001 40783797fe] fix(mcp): fail closed on downgraded authority and unproven required tools
+ Date: Tue Aug 11 21:05:31 2026 -0700
+ 6 files changed, 455 insertions(+), 36 deletions(-)
+ create mode 100644 task-packets/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001.json
+ create mode 100644 task-packets/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001.md

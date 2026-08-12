@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0.0",
+  "record_class": "AUTHORITY_METADATA_COMPLETION",
+  "record_type": "ADR_CANDIDATE_AMENDMENT_HEAD",
+  "description": "Machine-readable statement of the current Second Brain ADR candidate revision. This file is the authority head for which candidate bytes are current; it does not accept, defer, or reject any ADR.",
+
+  "current_candidate_path": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+  "current_candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+  "prior_candidate_sha256": "946054a4675271856e0214dbf1ce0aa9b1ec17e71e79a82711ad3ca0d9df9c22",
+
+  "supersession_reason": "ACCEPTANCE_CONDITION_2_CLARIFIED_BEFORE_ADR_DISPOSITION",
+  "amendment_id": "AC2-CLARIFICATION-001",
+  "amendment_record": "docs/03-reference/architecture/second-brain/adr-candidates/ac2-acceptance-condition-amendment.json",
+
+  "traceability_source": "docs/03-reference/architecture/second-brain/adr-candidates/traceability-matrix.json",
+  "traceability_changed": false,
+  "traceability_validity_basis": "The AC#2 amendment changes no SB-DEC references (28 references, sequence identical), so the FO-01 traceability repair evidence bound to prior candidate 946054a4...9df9c22 remains valid for the amended candidate.",
+
+  "adr_status": "CANDIDATE",
+  "adr_status_by_id": {
+    "ADR-SB-001": "PROPOSED",
+    "ADR-SB-002": "PROPOSED",
+    "ADR-SB-003": "PROPOSED",
+    "ADR-SB-004": "PROPOSED",
+    "ADR-SB-005": "PROPOSED",
+    "ADR-SB-006": "PROPOSED",
+    "ADR-SB-007": "PROPOSED",
+    "ADR-SB-008": "PROPOSED",
+    "ADR-SB-009": "PROPOSED",
+    "ADR-SB-010": "PROPOSED"
+  },
+
+  "operator_dispositions_present": false,
+  "operator_disposition_count": 0,
+  "accepted_adr_count": 0,
+  "adr_acceptance_authorized": false,
+  "implementation_execution_authorized": false,
+
+  "sb_dec_026": "A_LEAVE_UNLINKED",
+  "sb_dec_026_note": "Operator-directed posture preserved. SB-DEC-026 remains unlinked to ADR-SB-001; this amendment adds no traceability link.",
+
+  "lineage": {
+    "r2_candidate_sha256": "94b735c72ff3533f0cd73bed18fd3fb64b164530f7ef360f37584c73504a4e8e",
+    "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+    "fo01_repair_merge_commit": "cfa4927a883b469c06f37343c18e6582f23d1443",
+    "amendment_content_commit": "cc2f49ccad3d7c39d6b9f0a9fb044616069585a7",
+    "superseded_acceptance_attempt": {
+      "commit": "19fa74faa935dfcf86c41c2aaa40f4b257652756",
+      "classification": "SUPERSEDED_PRE_AMENDMENT_ACCEPTANCE_ATTEMPT",
+      "authoritative": false,
+      "carried_forward": false
+    }
+  },
+
+  "independent_audit_binding": {
+    "provider": "xAI",
+    "model": "grok-4.5",
+    "verdict": "PASS_ADR_ACCEPTANCE_CONDITION_AMENDMENT",
+    "blockers": 0,
+    "must_fix": 0,
+    "audited_candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+    "audited_bytes_equal_current_candidate": true,
+    "sealed_audit_bundle_sha256": "7954e23823006b651bb6b65d8248722028b8f0a02d42535f167625312bee9695"
+  },
+
+  "next_required_operator_actions": [
+    "merge decision on PR #1214 (merge is NOT_AUTHORIZED to the agent)",
+    "after merge: resolve new main and run a fresh MA-08",
+    "provide fresh ADR-SB-001..010 dispositions against the amended candidate",
+    "rebuild the ADR acceptance chain from scratch; do not reuse the superseded pre-amendment ledger",
+    "run a fresh Grok 4.5 acceptance-integrity audit before persisting any accepted ADRs"
+  ]
+}

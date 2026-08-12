@@ -1,0 +1,12 @@
+F018 reproduction, re-run against C1 (40783797fe30325766a2cb6f53aaa53254785712) with
+the identical script and setup as f018_pre_fix_repro.txt.
+
+$ python3 repro_f018.py
+url: http://env-url:4000
+provenance: repo_profile
+required_tool_globs preserved: ['needed_*']
+F018 NOT PRESENT (already repo_profile)
+
+Result: the env URL override still changes the endpoint address, but the
+provenance/authority classification now correctly remains repo_profile. F018
+confirmed repaired.

@@ -1,0 +1,1 @@
+ValidationReport(kind='task_packet', path='task-packets/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001.json', authority='dopetask-canonical-spec', status='PASS', valid=True, errors=[], warnings=[], details={'schema_path': 'docs/03-reference/spec/dopetask/dopetask-canonical-spec.json', 'authority_boundary': 'read_only_schema_validation_only'}, exit_code=0)

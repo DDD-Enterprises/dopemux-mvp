@@ -1,0 +1,29 @@
+{
+  "packet_id": "TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001",
+  "proof_root": "proof/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001",
+  "c1": "40783797fe30325766a2cb6f53aaa53254785712",
+  "files": [
+    "PROOF.json",
+    "VALIDATION.json",
+    "COMMAND_LOG.md",
+    "CHANGED_FILES.txt",
+    "MANIFEST.json",
+    "HANDOFF.md",
+    "AUDITOR_REPORT.md",
+    "AUDITOR_REPAIR_REPORT.md",
+    "review_bundle/f018_pre_fix_repro.txt",
+    "review_bundle/f018_post_fix_repro.txt",
+    "review_bundle/f019_pre_fix_repro.txt",
+    "review_bundle/f019_post_fix_repro.txt",
+    "review_bundle/focused_tests_output.txt",
+    "review_bundle/relevant_suite_output.txt",
+    "review_bundle/adjacent_smoke_output.txt",
+    "review_bundle/packet_schema_validation.txt",
+    "review_bundle/secret_scan.txt",
+    "review_bundle/diff_check.txt",
+    "review_bundle/pre_commit_second_pass.txt",
+    "review_bundle/commit_hook_output.txt",
+    "review_bundle/audit_pass_1_needs_supervisor.md",
+    "review_bundle/audit_pass_2_pass_with_risks.md"
+  ]
+}

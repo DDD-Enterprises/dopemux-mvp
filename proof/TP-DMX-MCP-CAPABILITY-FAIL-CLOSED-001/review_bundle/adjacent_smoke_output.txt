@@ -1,0 +1,12 @@
+............F......................                                      [100%]
+=================================== FAILURES ===================================
+__________________________ test_extract_port_default ___________________________
+
+    def test_extract_port_default():
+>       assert _extract_port("http://localhost:${CONPORT_MCP_PORT:-3005}/mcp") == 3005
+E       AssertionError: assert 3007 == 3005
+E        +  where 3007 = _extract_port('http://localhost:${CONPORT_MCP_PORT:-3005}/mcp')
+
+tests/test_mcp_health_probe.py:27: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_mcp_health_probe.py::test_extract_port_default - AssertionE...
