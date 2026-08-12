@@ -36,6 +36,13 @@ FORBIDDEN_FILES = [
     "docs/scratch/scratch.md",
     "docs/scratch/foo-scratch-bar.md",
     "task-packets/temp-draft.md",
+    # A filename combining "template" with a genuinely prohibited token must
+    # still be blocked -- the template exemption may not swallow the
+    # notes/todo/scratch/temp prohibition wholesale.
+    "docs/scratch/todo-template.md",
+    "docs/scratch/notes-template.md",
+    "docs/scratch/temp-template.md",
+    "docs/scratch/scratch-template.md",
 ]
 
 

@@ -21,22 +21,31 @@ for file in "$@"; do
       lbase="$(echo "$base" | tr '[:upper:]' '[:lower:]')"
 
       # "template" legitimately contains the substring "temp" (task-packet-template.md,
-      # template-agent.md, template-task.md, ...). Treat any filename containing
-      # "template" as a template asset, not a temporary/scratch file, before applying
-      # the temp/notes/todo/scratch prohibition below.
+      # template-agent.md, template-task.md, ...), so the temp*.md/*temp*.md checks must
+      # not fire on that incidental substring alone. Strip "template" occurrences before
+      # testing the temp-family patterns only -- notes*.md/todo*.md/*scratch*.md are
+      # still evaluated against the untouched basename, so a genuinely prohibited file
+      # that happens to also say "template" (e.g. notes-template.md, todo-template.md,
+      # temp-template.md, scratch-template.md) remains blocked.
+      detemplated="${lbase//template/}"
+
+      is_prohibited=false
       case "$lbase" in
-        *template*)
-          continue
+        notes*.md|todo*.md|*scratch*.md)
+          is_prohibited=true
+          ;;
+      esac
+      case "$detemplated" in
+        temp*.md|*temp*.md)
+          is_prohibited=true
           ;;
       esac
 
-      case "$lbase" in
-        notes*.md|todo*.md|temp*.md|*temp*.md|*scratch*.md)
-          echo "❌ Found prohibited file pattern in changed file:"
-          echo "  $file"
-          prohibited_found=true
-          ;;
-      esac
+      if [ "$is_prohibited" = true ]; then
+        echo "❌ Found prohibited file pattern in changed file:"
+        echo "  $file"
+        prohibited_found=true
+      fi
       ;;
   esac
 done
