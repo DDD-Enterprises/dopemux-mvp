@@ -76,8 +76,9 @@ def test_mixed_batch_flags_only_the_forbidden_file() -> None:
         "docs/scratch/temp.md",
     )
     assert result.returncode == 1
-    assert "template-agent.md" not in result.stdout.split("temp.md")[0]
+    assert "template-agent.md" not in result.stdout
     assert "docs/scratch/temp.md" in result.stdout
+    assert result.stdout.count("❌") == 1
 
 
 def test_quarantined_history_source_files_are_skipped() -> None:

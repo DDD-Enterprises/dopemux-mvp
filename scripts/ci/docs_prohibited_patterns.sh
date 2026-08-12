@@ -2,7 +2,7 @@
 # Block prohibited documentation filename patterns (NOTES, TODO, TEMP, SCRATCH).
 #
 # Extracted from .pre-commit-config.yaml's docs-prohibited-patterns hook so the
-# matching logic is independently testable (tests/governance/test_docs_prohibited_patterns.py).
+# matching logic is independently testable (tests/ci/test_docs_prohibited_patterns.py).
 #
 # Usage: docs_prohibited_patterns.sh <file> [<file> ...]
 set -e
