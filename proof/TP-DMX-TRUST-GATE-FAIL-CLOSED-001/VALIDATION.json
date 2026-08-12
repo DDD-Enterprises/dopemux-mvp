@@ -25,5 +25,17 @@
   "pre_commit_command": "pre-commit run --files <all 14 changed/added files>",
   "pre_commit_result": "all applicable hooks Passed, remainder Skipped (no matching files) — repo preflight hook also ran on commit and passed (repo_preflight, run-mode, jq-present, ledger-present, ledger-json, diff-whitespace, smoke-tests all OK)",
   "secret_scan_command": "grep -rniE credential-shaped patterns over changed source/tests/fixtures/proof",
-  "secret_scan_result": "one match, pre-existing (not in this packet's diff), obviously-synthetic repeating-digit ghp_ pattern in an existing redaction test"
+  "secret_scan_result": "one match, pre-existing (not in this packet's diff), obviously-synthetic repeating-digit ghp_ pattern in an existing redaction test",
+  "l3_final_audit_gate": {
+    "first_pass": "FAIL - Claude Code quality-engineer subagent audit ruled LIMITED independence by supervisor (same runtime/company family as implementer), 2026-08-12",
+    "second_pass": "PASS - CommandCode CLI audit (gpt-5.3-codex evidence-gathering phase, deepseek/deepseek-v4-flash continuation phase), genuinely different family/runtime from implementer, verdict PASS_WITH_RISKS, all risks non-blocking",
+    "gate_result": "SATISFIED",
+    "controlling_report": "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/AUDITOR_REPAIR_REPORT.md"
+  },
+  "baseline_failure_adjudication": {
+    "claim": "BASELINE_FAILURE_PROVEN_NONREGRESSION",
+    "independently_verified_by": "controlling audit (CommandCode/gpt-5.3-codex phase)",
+    "method": "Traced test_16_no_forbidden_files_modified's _packet_base_ref() range to the TP-DCP-0001 merge commit (ancestor of both HEAD and origin/main); confirmed the 8 failing .github/workflows/* files match git diff --name-only over that same range against origin/main; confirmed C1's diff touches zero .github/** files.",
+    "supervisor_requirement_met": true
+  }
 }
