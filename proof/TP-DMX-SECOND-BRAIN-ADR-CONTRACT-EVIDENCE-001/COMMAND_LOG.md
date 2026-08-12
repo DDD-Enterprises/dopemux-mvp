@@ -781,3 +781,80 @@ Round-2 audit artifacts take new filenames rather than overwriting them.
 is the last embedded audit that actually happened; `independent_audit.round_2` is
 `PENDING`. Rewriting the block to look current would claim an audit of this head
 that has not been performed.
+
+## Round-2 independent audit — execution
+
+The `PENDING <- controlling` line above is left as written: it was true at the
+freeze, and this log is appended to rather than rewritten.
+
+```bash
+$ git worktree add --detach /private/tmp/sb-audit-r2 6e1b4472ba626df2a5d7724e87c5ec77c9c46043
+$ grok --cwd /private/tmp/sb-audit-r2 --always-approve --max-turns 80 \
+       --output-format plain -p "$(cat .../AUDIT_PROMPT_R2.md)"
+```
+
+The **first invocation was killed mid-run**, after confirming the head and
+starting its adversarial mutations, having produced 319 bytes and no verdict. A
+killed audit is not a skipped audit, so it is recorded rather than dropped. Both
+worktrees were checked before re-running: the audit worktree had no tracked
+modification and still resolved to the frozen head, consistent with the
+auditor's statement that it sandboxes its mutations under `/tmp`.
+
+The re-run exited 0 and returned:
+
+```text
+VERDICT   PASS
+BLOCKERS  0
+MUST_FIX  0
+```
+
+The prompt was written **after** the freeze, so it names the head it audited.
+Round 1's prompt was written before its head moved and named a stale commit; the
+auditor caught that itself. This ordering removes the failure mode rather than
+repeating it. Custody, including the killed first attempt and the full raw
+transcript hash, is in `AUDIT_PROMPT_CUSTODY_R2.json`.
+
+The auditor's report required one byte-level change to land: it used Markdown
+hard line-breaks, and the repository's preflight whitespace gate rejects trailing
+whitespace. Trailing spaces were stripped from 3 lines, no other byte changed,
+and both hashes plus the affected line numbers are recorded in the custody file.
+Custody bytes are not altered silently.
+
+Two residual observations, neither a must-fix, both independently confirmed by
+the producer and recorded with evidence in `AUDIT_R2_RESIDUALS.json`:
+
+```text
+R2-OBS-1  census worksheet labels 25 clauses UNCHANGED that the computed
+          supersession record lists as modified. All 25 are rule_type renames
+          under the new taxonomy; machine_value and operator are identical in
+          every one. Not corrected in place — editing audited content after the
+          audit is the recursion the post-C1 boundary exists to prevent.
+R2-OBS-2  with the validator's own pin and the receipt both rewritten, clause
+          booleans that no Group S pin covers can be flipped while the validator
+          exits 0. Documented in the validator header before the audit ran. A
+          consistent bilateral edit with the pin left alone still fails at A09,
+          which is the false-green round 1 found.
+```
+
+### Final gate results
+
+```text
+git diff --check                          PASS
+validate_second_brain_adr_contracts.py    PASS  (94 checks, 0 failed)
+pytest tests/governance/...               PASS  (63 passed)
+FALSE_GREEN_MATRIX                        PASS  (10/10 rows failed as intended)
+dopeTask packet schema validation         PASS
+independent audit (round 2)               PASS  (0 blockers, 0 must-fix)
+validate_change_contract.py               FAIL  (embedded-audit representation gap only)
+pre-commit (changed slice)                FAIL  (same single cause, same file)
+```
+
+The two failures are expected, are out of lane per packet §1, and are unaffected
+by the audit verdict: they fail because the embedded-audit schema cannot name the
+auditor that actually ran, not because of anything in the contract evidence.
+Setting `skip_reason` to null — correct, since this was not a skip — reduced that
+finding from three error strings to two, with the cause unchanged.
+
+Terminal verdict: `READY_FOR_OPERATOR_CONTRACT_EVIDENCE_MERGE_DECISION`. The
+final head is bound by the commit that carries this line, and by
+`C1_CONTENT_HEAD.txt`.
