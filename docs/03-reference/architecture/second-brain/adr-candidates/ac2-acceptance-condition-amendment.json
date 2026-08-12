@@ -100,8 +100,13 @@
   },
 
   "audit_reuse": {
-    "fresh_audit_required": false,
+    "candidate_document_audit_reuse_allowed": true,
+    "fresh_audit_required_for_candidate_document": false,
+    "fresh_audit_required_before_readiness_claims_depending_on_post_audit_authority_metadata": true,
     "basis": "The persisted candidate bytes (e4b28946...b66c) are byte-identical to the candidate bytes audited by Grok. This record adds deterministic authority-head metadata only; it does not change the candidate, traceability, or any disposition.",
+    "scope_note": "The three fields above deliberately replace a single unscoped fresh_audit_required boolean, which stated a scoped truth as a flat fact. Reuse of the bound Grok audit is permitted for the candidate document alone, whose audited bytes are unchanged. The bound audit does NOT cover ADR_CANDIDATE_AMENDMENT_HEAD.json or this record: both were added at 48098c8178, after the audited content head cc2f49ccad. A fresh audit of the final frozen head is therefore required before any readiness claim that depends on those two records. This is the same statement already carried in proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/PROOF.json (embedded_audit.remaining_risks, head_binding_note), now made machine-readable here instead of contradicted by an unscoped boolean.",
+    "clarification_classification": "NON_SUBSTANTIVE_METADATA_CLARIFICATION",
+    "clarification_classification_basis": "Operator-classified. Replacing the unscoped boolean with the scoped fields above introduces no new policy; it reconciles two facts already published in this pull request — the candidate bytes were audited and remain byte-identical, and the later authority metadata was not covered by that audit and needs fresh review before readiness claims depend on it. It therefore does not meet the 'any new substantive interpretation introduced by metadata' trigger enumerated below, and does not recursively require an audit of itself.",
     "fresh_audit_trigger_conditions": [
       "any change to the candidate document bytes",
       "any change to traceability",
