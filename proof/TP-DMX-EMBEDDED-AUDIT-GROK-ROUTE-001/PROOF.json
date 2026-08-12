@@ -6,7 +6,7 @@
   "branch": "tp/DMX-EMBEDDED-AUDIT-GROK-ROUTE-001",
   "base_branch": "main",
   "head_before": "6626aa9a58dd82e62226cfca63498cc3f711bb75",
-  "head_after": "8290d7bd8e8b67a8197c1c33ac1af7fdf2f9a946",
+  "head_after": "aadb4ed32831bacf5720b94888fbfd94f3eb6b73",
   "mutation_performed": false,
   "github_mutation_performed": false,
   "secret_values_recorded": false,
@@ -16,39 +16,52 @@
   ],
   "forbidden_surfaces_touched": false,
   "files_changed": [
-    "schemas/proof/embedded_audit.schema.json",
-    "tests/audit/test_embedded_audit_grok_route.py",
-    "tests/audit/test_local_audit_acceptance.py",
-    "task-packets/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001.json",
+    "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDITOR_REPORT.md",
+    "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDIT_CUSTODY.json",
+    "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDIT_PROMPT.md",
+    "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/COMMAND_LOG.md",
     "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/CONSUMER_INVENTORY.json",
-    "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/review_bundle/GROK_VERSION_20260812.txt",
+    "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/HANDOFF.md",
+    "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/PROOF.json",
+    "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/VALIDATION.json",
     "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/review_bundle/GROK_MODELS_20260812.txt",
     "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/review_bundle/GROK_MODEL_SELECTOR_PROBE_20260812.txt",
+    "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/review_bundle/GROK_VERSION_20260812.txt",
     "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/review_bundle/pr1227_r2_session_model_evidence/README.md",
-    "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/review_bundle/pr1227_r2_session_model_evidence/completed-run-019ff62b-summary.json",
     "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/review_bundle/pr1227_r2_session_model_evidence/completed-run-019ff62b-signals.json",
-    "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/review_bundle/pr1227_r2_session_model_evidence/killed-attempt-019ff628-summary.json"
+    "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/review_bundle/pr1227_r2_session_model_evidence/completed-run-019ff62b-summary.json",
+    "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/review_bundle/pr1227_r2_session_model_evidence/killed-attempt-019ff628-summary.json",
+    "schemas/proof/embedded_audit.schema.json",
+    "task-packets/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001.json",
+    "tests/audit/fixtures/embedded_audit.schema.pre_grok.json",
+    "tests/audit/test_embedded_audit_grok_route.py",
+    "tests/audit/test_local_audit_acceptance.py"
   ],
   "commands": [
     {
       "cmd": "python3 -m pytest tests/audit/test_embedded_audit_grok_route.py",
       "exit_code": 0,
-      "result": "57 passed"
+      "result": "59 passed"
     },
     {
       "cmd": "python3 -m pytest tests/audit/",
       "exit_code": 0,
-      "result": "379 passed"
+      "result": "381 passed"
     },
     {
       "cmd": "python3 scripts/audit/validate_audit_proof.py --all proof",
       "exit_code": 0,
-      "result": "74/74 PASS"
+      "result": "75/75 PASS (74 pre-existing bundles plus this one)"
     },
     {
       "cmd": "python3 scripts/audit/validate_audit_proof.py --schema <origin/main copy> <intended #1227 block>",
       "exit_code": 1,
       "result": "FAIL under the pre-change schema for exactly the two enum reasons; PASS under the new schema"
+    },
+    {
+      "cmd": "python3 scripts/audit/validate_audit_proof.py --schema <origin/main copy> proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/PROOF.json",
+      "exit_code": 0,
+      "result": "1/1 PASS — this bundle's own auditor identity is representable under the PRE-change schema, which is the mechanical proof of the bootstrap rule"
     },
     {
       "cmd": "pre-commit run --files <staged>",
@@ -62,7 +75,7 @@
       {
         "check": "backward_compatibility",
         "status": "PASS",
-        "detail": "74/74 existing proof bundles revalidate. A differential test reads the pre-change schema from git and asserts old and new agree on the verdict for every pre-change tool/model pair across all five statuses."
+        "detail": "74 pre-existing proof bundles revalidate unchanged (75/75 including this one). A differential test compares old and new schema verdicts for every pre-change tool/model pair across all five statuses. The pre-change contract is vendored and sha256-pinned rather than read from a git ref, so the differential is hermetic and cannot skip under a shallow CI checkout. The auditor independently tampered with the vendored fixture and confirmed the pin fires."
       },
       {
         "check": "bidirectional_binding",
@@ -77,7 +90,7 @@
       {
         "check": "scope_boundary",
         "status": "PASS",
-        "detail": "Deterministic consumer inventory recorded in CONSUMER_INVENTORY.json. run_embedded_audit.py has no auditor recognition table and is untouched, satisfying the operator's stated condition for not mutating it."
+        "detail": "Consumer inventory in CONSUMER_INVENTORY.json, searched repository-wide with no directory allowlist. run_embedded_audit.py has no auditor recognition table and is untouched, satisfying the operator's stated condition for not mutating it. The one grok-4.5 string outside the audit lane (pal-mcp-server/providers/xai.py) is dispositioned by name as a string coincidence; auditor_tool, auditor_model and embedded_audit have zero occurrences under docker/, corroborated by the auditor."
       },
       {
         "check": "tests_detect_removal",
@@ -86,8 +99,8 @@
       },
       {
         "check": "live_ci_required_contexts",
-        "status": "NOT_RUN",
-        "detail": "Not yet pushed when this record was written. Local results do not override live CI state."
+        "status": "PASS_AT_PRIOR_HEAD",
+        "detail": "All 8 required contexts were SUCCESS at head d95b48a52a, including CI Pipeline Summary, Code Quality & Linting and Audit Proof Validator (--all) — the checks that are red on PR #1227. Re-running at the final head. Non-required 'independent embedded audit' is red (CI audit lane lacks a trusted provider credential) and 'checks' failed once at the lychee binary download step (exit 22, infrastructure). Local results do not override live CI state."
       }
     ]
   },
@@ -96,18 +109,18 @@
     "status": "PASS",
     "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "agy --model gemini-3.1-pro-high --effort high --sandbox --mode accept-edits --print-timeout 25m --print \"$(cat proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDIT_PROMPT.md)\" — run in a throwaway detached worktree at /private/tmp/grok-route-audit pinned to 8290d7bd8e, no producer conversation history",
+    "invocation": "agy --model gemini-3.1-pro-high --effort high --sandbox --mode accept-edits --print-timeout 40m --print \"$(cat proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDIT_PROMPT.md)\" — throwaway detached worktree at /private/tmp/grok-route-audit pinned to aadb4ed32831bacf5720b94888fbfd94f3eb6b73, no producer conversation history",
     "exit_code": 0,
-    "report_path": "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDITOR_REPORT.md",
+    "report_path": "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDITOR_REPAIR_3_REPORT.md",
     "findings": [],
     "fixes_applied": [],
     "remaining_risks": [
-      "The auditor reported VERDICT PASS and 'Findings: None' but did not print the explicit BLOCKERS/MUST_FIX counters the prompt requested, and omitted the 'WHAT I COULD NOT VERIFY' section. Zero blockers and zero must-fix are DERIVED from 'Findings: None', not auditor-stated. The report was recorded as produced rather than rewritten to fit the requested shape; see AUDIT_CUSTODY.json.",
-      "Because the auditor omitted its own limits section, it asserts no bound on its coverage. The producer-known residuals are stated here rather than attributed to the auditor.",
+      "Five audit rounds were run; two returned FAIL and both findings were accepted and repaired rather than argued down. The FAIL reports are retained as controlling evidence for why the repairs exist. The controlling audit is the round-6 PASS on aadb4ed328, which states BLOCKERS: 0 and MUST_FIX: 0 explicitly.",
+      "The round-6 report contains one factual slip: it says the allOf conditional count went 'from 4 to 5' when it went from 3 to 5. Immaterial to the verdict, recorded rather than silently inherited.",
       "Auditor identity rests on the configured AGY selector and the recorded invocation, not on provider cryptographic attestation. Same residual already carried for this route by prior packets.",
       "The grok CLI default model moved to grok-4.6 while this packet was being written. Any future Grok audit invoked without an explicit -m will run on grok-4.6 and be unrepresentable under this contract. Future Grok audits must pin -m grok-4.5 until an operator decides whether to admit grok-4.6.",
       "The claim that PR #1227's round-2 audit was served by grok-4.5 rests on the runner's own per-session metadata (summary.json current_model_id, signals.json primaryModelId), not on provider-side attestation. #1227 itself recorded the model as UNKNOWN_TO_PRODUCER; this packet supplies the evidence but does not edit that record.",
-      "TP-DMX-TRUST-GATE-FAIL-CLOSED-001 recorded AGY gemini-3.1-pro-high as non-functional earlier the same day. It was re-probed and found functional on version 1.1.12 before use; that earlier finding is not disputed for the version it described."
+      "TP-DMX-TRUST-GATE-FAIL-CLOSED-001 recorded AGY gemini-3.1-pro-high as non-functional earlier the same day. It was re-probed and found functional on 1.1.12 before use; that earlier finding is not disputed for the version it described."
     ],
     "skip_reason": null
   }

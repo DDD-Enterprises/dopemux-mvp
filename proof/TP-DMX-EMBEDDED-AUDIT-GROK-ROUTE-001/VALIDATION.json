@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "task_id": "TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001",
   "record_kind": "VALIDATION",
-  "content_head": "8290d7bd8e8b67a8197c1c33ac1af7fdf2f9a946",
+  "content_head": "aadb4ed32831bacf5720b94888fbfd94f3eb6b73",
   "base": "6626aa9a58dd82e62226cfca63498cc3f711bb75",
   "buckets": {
     "PASS": 10,
@@ -53,7 +53,7 @@
     {
       "check": "changed_paths_within_allowlist",
       "status": "PASS",
-      "detail": "git diff --name-only origin/main..HEAD returns 12 paths, all inside the packet's declared commit allowlist. No runtime code, no other packet's proof bundle, no docs, no CI config."
+      "detail": "Verified programmatically, not by eye: all 20 paths changed between 6626aa9a58 and HEAD are covered by the packet's declared commit allowlist, 0 uncovered. An earlier head failed this check -- the vendored fixture was committed uncovered, found by the independent audit and repaired."
     },
     {
       "check": "pre_commit",
@@ -78,18 +78,37 @@
   ],
   "independent_audit": {
     "performed": true,
+    "rounds_run": 5,
     "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
+    "controlling_round": 6,
+    "controlling_head": "aadb4ed32831bacf5720b94888fbfd94f3eb6b73",
     "verdict": "PASS",
-    "findings": "None",
     "blockers": 0,
     "must_fix": 0,
-    "counts_are_derived": true,
-    "audited_head": "8290d7bd8e8b67a8197c1c33ac1af7fdf2f9a946",
-    "report": "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDITOR_REPORT.md",
+    "counts_auditor_stated": true,
+    "report": "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDITOR_REPAIR_3_REPORT.md",
+    "superseded_rounds": [
+      {
+        "head": "8290d7bd8e8b67a8197c1c33ac1af7fdf2f9a946",
+        "verdict": "PASS",
+        "note": "content head moved afterwards in response to code review"
+      },
+      {
+        "head": "d95b48a52af332afc1c25c162033cb1b372ed26e",
+        "verdict": "FAIL",
+        "blockers": 1,
+        "finding": "consumer inventory method claim vs bounded search"
+      },
+      {
+        "head": "29a6fb54d032b1f501ed6d29ecaf87a2150c0515",
+        "verdict": "FAIL",
+        "blockers": 1,
+        "finding": "commit allowlist did not cover the vendored fixture"
+      }
+    ],
     "custody": "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDIT_CUSTODY.json",
-    "bootstrap_rule_satisfied": true,
-    "bootstrap_evidence": "auditor is representable under the PRE-change schema; no Grok runner was invoked for this packet's audit"
+    "bootstrap_rule_satisfied": true
   },
   "review_bundle_sha256": {
     "GROK_VERSION_20260812.txt": "27eb4c04386e6966cbe26516a431c5b9b22fdeb99c7bed31eaf5f4989413af69",
