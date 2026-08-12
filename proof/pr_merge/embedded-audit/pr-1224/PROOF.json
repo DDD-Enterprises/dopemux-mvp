@@ -1,24 +1,33 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1224,
-  "head_sha": "efdaf2d42bb679fcea0e7c1d0bdf2b8011c4595a",
-  "generated_at": "2026-08-12T03:27:57Z",
+  "head_sha": "f33728b7848d5d1503117441a8750815065bb2ed",
+  "generated_at": "2026-08-12T00:00:00Z",
   "embedded_audit": {
     "required": true,
     "status": "PASS",
     "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "agy --model gemini-3.1-pro-high --print \"<S4 independent audit prompt for TP-DMX-PR-PREP-SPECIALIST-V2-001-R4, targeting content head C1-R4>\"",
+    "invocation": "agy --model gemini-3.1-pro-high --print \"<S4 independent audit R5 scoped prompt for TP-DMX-PR-PREP-SPECIALIST-V2-001, targeting merge-commit head a89c11dbfd9d132797575118f3f7b8c4f819a2ab>\"",
     "exit_code": 0,
-    "report_path": "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/AUDITOR_REPORT.md",
-    "findings": [],
+    "report_path": "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/AUDITOR_REPAIR_REPORT.md",
+    "findings": [
+      {
+        "id": "R5-WHOLE-TREE-CONFLICT-MARKERS",
+        "severity": "LOW",
+        "title": "Pre-existing, out-of-scope repository conflict-marker debt (not introduced by this packet)",
+        "status": "ACCEPTED_RISK",
+        "body": "The initial R5 audit (whole-tree scope) found real, unresolved git conflict markers in docs/pr_merge/usage-patterns.md, docs/planes/pm/write-boundaries.md, docs/planes/pm/pm-implementation-ledger.md, and further hits under docs/archive/ and proof/. Deterministically proven byte-identical on both parents of the C1-R5 merge commit (88c3cc73cd, 6626aa9a58) before the merge; traces to unrelated commit 09b648f176 (2026-03-30, #361); outside this packet's owned paths. Operator-adjudicated out of scope for TP-DMX-PR-PREP-SPECIALIST-V2-001 (see proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/AUDIT_R5_SCOPE_ADJUDICATION.md); requires its own bounded repository-hygiene packet, tracked separately. Not waived as a real defect -- accepted as out-of-scope risk for this packet's readiness gate specifically."
+      }
+    ],
     "fixes_applied": [
-      "R4: repaired the frozen 19-path ACTIVE_CONTRADICTION set identified by the R3 terminal semantic census (9 canonical files under docs/03-reference/pr-pipeline/prep/** converted to deprecation stubs deferring to operator-contract.md; 10 compatibility files under docs/pr_prep/** converted to pure pointer stubs), leaving the 7 NON_BLOCKING_LOCAL_MEASUREMENT files and 2 envelope-only paths byte-unchanged, and re-ran the census to ACTIVE_CONTRADICTION_COUNT=0."
+      "R5: merged origin/main into the branch (operator-authorized normal merge commit, not rebase/squash/force-push) to satisfy GitHub branch protection's up-to-date-with-base requirement. Drift pre-classified COMPATIBLE: zero file-path overlap between the branch's 81 changed files (since merge-base 3e8fcc1c70) and main's 104 changed files over the same range. C1-R5=a89c11dbfd9d132797575118f3f7b8c4f819a2ab. Two independent audit rounds run against this unchanged commit: round 1 (whole-tree scope) returned FAIL solely on out-of-scope, pre-existing repository debt (see findings[0]); round 2 (scoped to this packet's owned audit universe, per operator scope adjudication) returned PASS -- confirmed genuine two-parent merge, zero diff on this packet's own owned surfaces vs. the already-audited R4 state, zero packet-scoped conflict markers, 92/92 governance tests, task-packet schema-valid, docs-prohibited-patterns false positive (noted at R4) now resolved via the merge, 0 commits behind main."
     ],
     "remaining_risks": [
-      "AUDIT_TOPOLOGY, NAMED NOT CONFLATED. AUDITED_TREE (the substantive content examined) = C1-R4 = 6f32ac97dfd64f4386182fdd24380b2817551303. This proof's head_sha, efdaf2d42bb679fcea0e7c1d0bdf2b8011c4595a, is the AUDIT_EVIDENCE_HEAD: a proof-only successor that adds only proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/CONTENT_HEAD_R4.txt, proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/MODEL_ROUTE.json, and proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/AUDITOR_REPORT.md on top of C1-R4. C1-R4 is an ancestor of the AUDIT_EVIDENCE_HEAD; no substantive byte changed after C1-R4 (verify with: git diff --exit-code 6f32ac97dfd64f4386182fdd24380b2817551303..efdaf2d42bb679fcea0e7c1d0bdf2b8011c4595a -- docs/03-reference/pr-pipeline/prep docs/pr_prep docs/pr_merge tests/governance task-packets). This bridge commit itself adds only proof/pr_merge/embedded-audit/pr-1224/** on top of the AUDIT_EVIDENCE_HEAD -- a second proof-only delta, not a re-audit.",
-      "Full 12-point audit scope findings (V2 operator authority, canonical vs compatibility topology, adapters, handoff semantics, terminal census re-run, 7 non-blocking re-adjudications, envelope byte-identity, deterministic gates, task packet schema validation, test suite, docs hygiene false-positive confirmation, and overall coherence) are carried verbatim in proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/AUDITOR_REPORT.md; this PROOF.json's schema-bound findings/fixes_applied fields are kept minimal per the embedded_audit.schema.json contract and must not be read as the full record.",
-      "One pre-existing, unrelated pre-commit false positive is on record: the docs-prohibited-patterns hook flags docs/pr_prep/adapters/vibe/template-agent.md's basename against a *temp*.md glob (present since commit 139944337a, predates R4, not introduced or touched in scope by this packet). Recorded in proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/VALIDATION_R4.json and independently confirmed by the S4 auditor; non-blocking."
+      "AUDIT_TOPOLOGY, NAMED NOT CONFLATED. AUDITED_TREE (the substantive content examined by the R5 audits) = C1-R5 = a89c11dbfd9d132797575118f3f7b8c4f819a2ab (a real merge commit, parents 88c3cc73cd and 6626aa9a58). This PROOF.json's head_sha, f33728b7848d5d1503117441a8750815065bb2ed, is the AUDIT_EVIDENCE_HEAD: a proof-only successor that adds only proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/{AUDITOR_REPAIR_REPORT.md,AGY_AUDIT_RAW_R5_INITIAL.txt,S4_AUDIT_PROMPT_R5_INITIAL.md,AGY_AUDIT_RAW_R5_SCOPED.txt,S4_AUDIT_PROMPT_R5_SCOPED.md,AUDIT_R5_SCOPE_ADJUDICATION.md,VALIDATION_R5.json} on top of C1-R5. C1-R5 is an ancestor of AUDIT_EVIDENCE_HEAD; no substantive byte changed after C1-R5. This bridge commit itself adds only proof/pr_merge/embedded-audit/pr-1224/** on top of AUDIT_EVIDENCE_HEAD -- a second proof-only delta, not a re-audit.",
+      "This PROOF.json supersedes the prior R4 proof at the same path (R4 audited C1-R4=6f32ac97dfd64f4386182fdd24380b2817551303, AUDIT_EVIDENCE_HEAD=efdaf2d42bb679fcea0e7c1d0bdf2b8011c4595a); superseded because branch protection required merging origin/main to become up to date, which by construction invalidates the prior proof's ancestor/proof-only-delta binding -- expected local_audit_acceptance.py behavior, not a defect. The R4 evidence (AUDITOR_REPORT.md, CONTENT_HEAD_R4.txt, MODEL_ROUTE.json, LEGACY_SEMANTICS_SCAN_R4.md, VALIDATION_R4.json, etc.) remains on record unaltered at proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/.",
+      "See findings[0] for the initial R5 whole-tree audit FAIL, preserved unaltered as historical evidence per operator instruction. Its disposition: AUDIT_R5_INITIAL_VERDICT=FAIL, AUDIT_R5_INITIAL_DISPOSITION=SUPERSEDED_AS_CONTROLLING_AUDIT_DUE_TO_SCOPE_MISMATCH, FINDING_VALIDITY=REAL_PREEXISTING_REPO_DEBT, PACKET_BLOCKING_EFFECT=NONE_AFTER_SUPERVISOR_SCOPE_ADJUDICATION. This packet's controlling verdict is the scoped round-2 audit (PASS), per explicit operator scope adjudication documented in proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/AUDIT_R5_SCOPE_ADJUDICATION.md.",
+      "Merge is NOT authorized by this proof. Only readiness-check progression (exact-head CI, PR Steward, and mark-ready if draft is the sole blocker) is authorized. Per the operator's explicit instruction: stop at READY_FOR_OPERATOR_MERGE_DECISION -- do not merge #1224."
     ],
     "skip_reason": null
   }
