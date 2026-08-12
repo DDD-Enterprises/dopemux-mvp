@@ -1,0 +1,20 @@
+{
+  "round": "R5",
+  "purpose": "Branch-protection-driven up-to-date closure: merge current origin/main into feat/pr-prep-specialist-v2-contract via a normal merge commit (operator-authorized), same pattern as PR #1225 R5",
+  "pre_merge_head": "88c3cc73cdcd7c5373beae41a17c5c8a1c76f56c",
+  "main_at_merge_time": "6626aa9a58dd82e62226cfca63498cc3f711bb75",
+  "merge_commit_c1_r5": "a89c11dbfd9d132797575118f3f7b8c4f819a2ab",
+  "merge_parents": ["88c3cc73cdcd7c5373beae41a17c5c8a1c76f56c", "6626aa9a58dd82e62226cfca63498cc3f711bb75"],
+  "drift_classification": "COMPATIBLE (zero file-path overlap between the 81 files changed by this branch since merge-base 3e8fcc1c70 and the 104 files changed by main over the same range; verified via comm -12 before merging)",
+  "git_diff_check": "PASS (exit 0)",
+  "origin_main_drift_after_merge": "PASS (origin/main == merge-base(HEAD, origin/main) == 6626aa9a58; branch 12 ahead, 0 behind)",
+  "terminal_semantic_census": "PASS (branch-owned files byte-identical to R4 content head 6f32ac97df; ACTIVE_CONTRADICTION_COUNT remains 0, per LEGACY_SEMANTICS_SCAN_R4.md, unaffected by the merge)",
+  "focused_tests": "PASS (tests/governance/test_pr_prep_contract_v2.py, 69 passed)",
+  "relevant_complete_governance_docs_suite": "PASS (tests/governance/, 92 passed -- unchanged from R4 baseline)",
+  "task_packet_schema_validation": "PASS (dopemux.orchestrator.validation.packets.validate_packet_file: status=PASS, 0 errors, 0 warnings)",
+  "changed_file_precommit": "PASS -- notably, docs-prohibited-patterns now PASSES on docs/pr_prep/adapters/vibe/template-agent.md, resolving the R4-documented pre-existing false positive (fixed upstream by PR #1225, now pulled in via this merge). All other hooks Passed/Skipped, zero file modifications.",
+  "secret_scan": "PASS (grep sweep over branch-owned diff for api_key/secret/password/BEGIN-key/token patterns; all hits are doc-schema placeholder/field-name text, no live secrets)",
+  "open_pr_overlap": "PASS (49 open PRs; only PR #1224 itself matches pr-prep-specialist scope, 0 other overlap)",
+  "stray_state_note": "1 unstaged file (.claude/claude_config.json) + several untracked dirs pre-existing at session start were stashed (stash@{0}, pre-R5-merge working state) before the merge to keep the merge commit clean; not restored yet, pending user direction -- unrelated to this packet's content.",
+  "overall": "PASS"
+}
