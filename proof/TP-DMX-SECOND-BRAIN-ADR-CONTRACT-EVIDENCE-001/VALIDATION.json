@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+  "base_sha": "6153bd4fb30ed3d038e51b371ad9ebfb4916bfac",
+  "risk_lane": "L2",
+  "buckets": {
+    "contract_validator": "PASS",
+    "adversarial_matrix": "PASS",
+    "packet_schema": "PASS",
+    "change_contract_preflight": "PASS",
+    "diff_whitespace": "PASS",
+    "pre_commit": "PASS",
+    "independent_audit": "PENDING_S7",
+    "runtime_conformance": "NOT_RUN",
+    "retrieval_benchmarks": "NOT_RUN",
+    "purge_completeness": "NOT_RUN",
+    "multi_project_isolation": "NOT_RUN",
+    "split_brain_proof": "NOT_RUN",
+    "denial_fixtures": "NOT_IMPLEMENTED",
+    "encryption_implementation": "ABSENT"
+  },
+  "commands": [
+    {
+      "command": "python3 scripts/governance/validate_second_brain_adr_contracts.py",
+      "exit_code": 0,
+      "checks_total": 113,
+      "checks_failed": 0,
+      "tokens": [
+        "PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE",
+        "FO01_STALE_RECORD_RECONCILED"
+      ]
+    },
+    {
+      "command": "python3 -m pytest -q tests/governance/test_second_brain_adr_contracts.py",
+      "exit_code": 0,
+      "passed": 46,
+      "failed": 0
+    },
+    {
+      "command": "python3 scripts/governance/validate_change_contract.py --base 6153bd4fb3 --head HEAD",
+      "exit_code": 0,
+      "status": "PASS",
+      "max_lane": "L2",
+      "paths": 29
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "clean"
+    },
+    {
+      "command": "pre-commit run --files <changed slice>",
+      "exit_code": 0,
+      "hooks_total": 18,
+      "passed": 4,
+      "skipped": 14,
+      "note": "The 14 skips are genuine: those hooks are scoped by `files:` to docs/ and task-packets/ markdown, and this slice contains no matching file. Verified against .pre-commit-config.yaml rather than assumed."
+    }
+  ],
+  "not_run_rationale": "This packet produces architecture-time contract evidence only. Every runtime and enablement measurement remains NOT_RUN by design and is not inferred from contract coverage."
+}

@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+  "step": "S5",
+  "result": "FO01_STALE_RECORD_RECONCILED",
+  "defect_class": "RECORD_BOUND_TO_SUPERSEDED_STATE",
+  "defect": "Two records on main disagreed about whether FO-01 still blocked ADR acceptance. fo-01-repair-status.json asserted REPAIR_COMPLETE_PENDING_INDEPENDENT_VERIFICATION with independent_verification.performed=false; FO01_RESOLUTION_RECEIPT.json, written later after the audit, asserted TRACEABILITY_REPAIRED_AND_INDEPENDENTLY_REVERIFIED. The stale copy lives in the authority tree, so it surfaced first and read as 'never verified'. The finding is the disagreement, not an absence of verification.",
+  "resolution": "The receipt is later in time and supersedes. The status record now mirrors it.",
+  "evidence_source": "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/FO01_RESOLUTION_RECEIPT.json",
+  "evidence_source_sha256": "d2325fa27a6541fa9b1cbce3032c7f2af31f7a448e81eb80e3b69e57a58705cd",
+  "reconciled_file": "docs/03-reference/architecture/second-brain/adr-candidates/fo-01-repair-status.json",
+  "reconciled_file_sha256_after": "bc2decd1eec9660c9889059cacf41e6ca3333f5cb809516dcb5b0b38e6c99687",
+  "reconciled_file_sha256_before": "0e0258e0dc3e524fc2a01e6b3f17875c3969d3266fd5e727c2ff03a84cf4fb3a",
+  "values_are_receipt_derived_only": true,
+  "reconciled_values": {
+    "fo01_status": "TRACEABILITY_REPAIRED_AND_INDEPENDENTLY_REVERIFIED",
+    "independent_verification.performed": true,
+    "independent_verification.verdict": "PASS_FO01_TRACEABILITY_REPAIR_WITH_NONBLOCKING_OBSERVATIONS",
+    "independent_verification.audited_content_head": "25b50f019765263d1abf21fd5bc3ae9c6e522c7a",
+    "independent_verification.auditor_report_sha256": "6bc2785455644b40ca860cb8fb996d116b433a2b324babebf422d69677567384",
+    "fo01_gate_condition": "CLOSED",
+    "adr_acceptance_gate_eligible": true,
+    "other_adr_acceptance_conditions": "STILL_REQUIRED"
+  },
+  "deliberately_unchanged": {
+    "adr_acceptance_authorized": false,
+    "gates.adr_acceptance": "CLOSED",
+    "gates.implementation_execution": "NOT_AUTHORIZED",
+    "gates.merge": "NOT_AUTHORIZED",
+    "preserved_not_run": {
+      "runtime_conformance": "NOT_RUN",
+      "retrieval_benchmarks": "NOT_RUN",
+      "purge_completeness": "NOT_RUN",
+      "multi_project_isolation": "NOT_RUN",
+      "split_brain_proof": "NOT_RUN",
+      "encryption_implementation": "ABSENT"
+    },
+    "sb_dec_031_disposition": "INTENTIONALLY_UNLINKED_CROSS_CUTTING_CLAIMS_DISCIPLINE",
+    "sb_dec_032_disposition": "INTENTIONALLY_UNLINKED_HISTORICAL_EVIDENCE_OBSERVATION",
+    "coverage": {
+      "adrs_inspected": 10,
+      "decisions_in_register": 32,
+      "decisions_linked": 26,
+      "decisions_intentionally_unlinked": 6,
+      "adrs_changed": 8,
+      "adrs_correct_as_written": 2,
+      "fo01_known_defective_adrs_repaired": 5,
+      "additional_defective_adrs_found": 3,
+      "ambiguous_mappings": 1,
+      "one_to_one_coverage_imposed": false
+    },
+    "source_hashes": {
+      "24_ADR_CANDIDATES.md": "9cff1e6c90c009ccc931676df14c838e6affafa7732fb11b5aecc0b8cf0858da",
+      "03_ARCHITECTURE_DECISION_REGISTER.yaml": "3a223be56a9df80bbe3141ebb892cbf908ed371c7d4c853eaae5d7f67959bf80",
+      "frozen_source_proof_copy": "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/source/24_ADR_CANDIDATES.md"
+    },
+    "repaired_candidate_sha256": "946054a4675271856e0214dbf1ce0aa9b1ec17e71e79a82711ad3ca0d9df9c22"
+  },
+  "semantic_collision_avoided": "gates.adr_acceptance=CLOSED means the acceptance gate is shut; fo01_gate_condition=CLOSED means the FO-01 blocker is closed. Opposite senses of the same word. Rather than overload either field, gate eligibility was recorded in separately named keys and the distinction written into gate_field_semantics in the file itself.",
+  "candidate_semantics_modified": false,
+  "adr_semantics_modified": false,
+  "adr_acceptance_authorized": false,
+  "verified_by": "scripts/governance/validate_second_brain_adr_contracts.py check group B"
+}
