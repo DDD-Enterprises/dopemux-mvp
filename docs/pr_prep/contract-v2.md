@@ -13,7 +13,11 @@ prelude: Canonical V2 contract for pr-prep-specialist — mission, authority, ri
 ---
 # PR Prep Specialist — Canonical V2 Contract
 
-Status: ACCEPTED (migrated from proposed contract, 2026-08-11)
+active Task Packet: TP-DMX-PR-PREP-SPECIALIST-V2-001 (packet content not
+located in-repo as of 2026-08-11; see repair notes below)
+design input: PR_PREP_SPECIALIST_V2_SPEC.md
+design-input status: PROPOSED / supplied basis
+implementation authority: Task Packet
 Repository: `DDD-Enterprises/dopemux-mvp`
 Risk of this contract migration: L2
 
@@ -406,6 +410,37 @@ No runtime code, hook, or `.claude/skills/` entry consumes `docs/pr_prep/` today
 it is operator/agent reference documentation only, not a wired skill. This
 migration therefore replaces stale content in-place rather than touching a
 code adapter layer.
+
+### Repair status (2026-08-11, TP-DMX-PR-PREP-SPECIALIST-V2-001)
+
+Two items remain **UNKNOWN** and block freezing a repaired content head:
+
+1. **Task Packet not located.** `TP-DMX-PR-PREP-SPECIALIST-V2-001` was not
+   found anywhere in this repository (`task-packets/`, full-tree grep) or in
+   task-orchestrator (FTS search, zero hits). Its claimed allowlist — which
+   would determine whether this file is in-scope — cannot be verified
+   against evidence.
+2. **A second, near-complete duplicate tree exists and was missed by the
+   original consumer sweep**: `docs/03-reference/pr-pipeline/prep/**` and
+   `docs/03-reference/pr-pipeline/merge/**` mirror `docs/pr_prep/**` and
+   `docs/pr_merge/**` almost file-for-file (46/47 and equivalent content,
+   only cosmetic kebab-case filename differences). Neither tree has a
+   runtime/code consumer, a `docs/00-MASTER-INDEX.md` or `docs/INDEX.md`
+   entry, or a docs-hygiene duplicate-detection flag naming one canonical.
+   The `03-reference` copy's last edit (`09b648f176`, 2026-03-30) is more
+   recent than `docs/pr_prep`'s pre-repair last edit (`bfdff9f481`), but that
+   commit was a large multi-topic "consolidate everything" batch (mostly
+   unrelated extraction/prompt work) — not a decision record naming
+   `03-reference/pr-pipeline` canonical. This is circumstantial, not
+   decisive. **Canonicality classification: UNKNOWN for both trees.**
+
+Per the repair instruction, canonicality is not being invented. The
+`docs/03-reference/pr-pipeline/{prep,merge}/**` tree has **not** been touched
+by this migration and still carries every legacy split-brain defect this
+contract retires (mandatory 7-step, fixed seven-artifact bundle,
+`risk_hint` LOW/MEDIUM/HIGH, `GO_DIRECT`, PRPS-produced `MERGE_READY`) —
+regardless of which tree turns out to be canonical, that tree needs the same
+treatment this one received, once a canonical path is confirmed.
 
 Files replaced with pointers to this contract:
 - `skill-model.md` (superseded LOW/MEDIUM/HIGH risk model, six-step lifecycle)
