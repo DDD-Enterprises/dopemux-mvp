@@ -461,7 +461,9 @@ def _grok_audit(**overrides: Any) -> dict:
     audit = _local_embedded_audit()
     audit["auditor_model"] = "grok-4.5"
     audit["auditor_tool"] = "grok-cli"
-    audit["invocation"] = "grok --always-approve --output-format plain -p '<prompt>'"
+    # Pins the model explicitly: the runner's default has moved off grok-4.5, and
+    # the fixtures should model the recommended pinned usage.
+    audit["invocation"] = "grok -m grok-4.5 --always-approve --output-format plain -p '<prompt>'"
     audit.update(overrides)
     return audit
 

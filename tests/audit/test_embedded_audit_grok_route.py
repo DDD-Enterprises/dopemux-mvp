@@ -16,6 +16,7 @@ would let a proof name a model that cannot be requested.
 
 from __future__ import annotations
 
+import hashlib
 import itertools
 import json
 import subprocess
@@ -26,6 +27,17 @@ from jsonschema import Draft7Validator
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = ROOT / "schemas" / "proof" / "embedded_audit.schema.json"
+
+# The contract exactly as it stood before this packet, vendored so the
+# backward-compatibility differential is hermetic instead of depending on a git
+# ref that a shallow CI checkout may not have. Pinned by hash so the fixture
+# cannot be quietly edited into agreement.
+PRE_CHANGE_SCHEMA_PATH = (
+    Path(__file__).resolve().parent / "fixtures" / "embedded_audit.schema.pre_grok.json"
+)
+PRE_CHANGE_SCHEMA_SHA256 = (
+    "ec144a96e560afad132b6ff3e6974bc56cd9a4f9065beafa9750d0381f74ca33"
+)
 
 # The enum members as they stood BEFORE this packet. These are historical facts,
 # not configuration: every pair valid under them must stay valid, or this change
@@ -58,8 +70,14 @@ def _audit(
     status: str = "PASS",
     auditor_tool: str = "grok-cli",
     auditor_model: str = "grok-4.5",
-    invocation: str | None = "grok --cwd /private/tmp/sb-audit-r2 --always-approve "
-    "--max-turns 80 --output-format plain -p '<bounded read-only audit prompt>'",
+    # Pins `-m grok-4.5` deliberately. The schema does not parse `invocation`
+    # (see test_schema_does_not_constrain_invocation_string in the AGY suite), so
+    # this consistency is not enforced -- which is exactly why the fixtures should
+    # model the recommended usage rather than teach the unpinned form. The runner
+    # default has moved to grok-4.6, so an unpinned invocation now drifts off the
+    # only admitted model.
+    invocation: str | None = "grok -m grok-4.5 --always-approve --max-turns 80 "
+    "--output-format plain -p '<bounded read-only audit prompt>'",
     exit_code: int | None = 0,
     skip_reason: str | None = None,
 ) -> dict:
@@ -196,14 +214,32 @@ def test_pre_change_enum_members_still_accepted(tool: str, model: str) -> None:
     assert enum_errors == [], f"{tool}/{model} lost enum membership: {enum_errors}"
 
 
-def test_new_schema_matches_pre_change_schema_on_all_old_pairs() -> None:
-    """Exact differential: old and new schema must agree on every pre-change pair.
+def test_pre_change_fixture_is_the_real_pre_change_contract() -> None:
+    """The vendored pre-change schema is pinned by content hash.
 
-    Reads the pre-change schema from git rather than re-implementing its rules,
-    so this compares contracts instead of comparing a contract to a paraphrase.
+    The differential below is only meaningful if it compares against the actual
+    contract as it stood before this packet. Pinning the hash means the fixture
+    cannot be edited to make the differential pass -- doing so fails here first.
+    """
+    actual = hashlib.sha256(PRE_CHANGE_SCHEMA_PATH.read_bytes()).hexdigest()
+    assert actual == PRE_CHANGE_SCHEMA_SHA256, (
+        "The vendored pre-change schema does not match the pinned hash. Either it "
+        "was edited, or it was regenerated from the wrong ref. Do not update the "
+        "constant to match the file -- work out which one is wrong."
+    )
+    assert "grok" not in PRE_CHANGE_SCHEMA_PATH.read_text(encoding="utf-8")
+
+
+def test_vendored_pre_change_schema_matches_git_when_git_is_available() -> None:
+    """Cross-check the vendored copy against git, when git can answer.
+
+    This is the belt to the hash pin's braces: it catches a fixture that was
+    vendored from the wrong ref but whose hash constant was updated to match.
+    It may skip -- it is a corroboration, not the guarantee. The guarantee is
+    the hash pin above and the differential below, neither of which can skip.
     """
     try:
-        old_source = subprocess.run(
+        from_git = subprocess.run(
             ["git", "show", "origin/main:schemas/proof/embedded_audit.schema.json"],
             capture_output=True,
             check=True,
@@ -211,12 +247,30 @@ def test_new_schema_matches_pre_change_schema_on_all_old_pairs() -> None:
             text=True,
         ).stdout
     except (subprocess.CalledProcessError, FileNotFoundError) as exc:
-        pytest.skip(f"pre-change schema unavailable from git: {exc}")
+        pytest.skip(f"git cannot resolve origin/main: {exc}")
 
-    old_schema = json.loads(old_source)
-    if "grok-cli" in json.dumps(old_schema):
-        pytest.skip("origin/main already contains the grok route; differential is moot")
+    if "grok-cli" in from_git:
+        pytest.skip("origin/main already carries the grok route; this packet merged")
 
+    assert json.loads(from_git) == json.loads(
+        PRE_CHANGE_SCHEMA_PATH.read_text(encoding="utf-8")
+    )
+
+
+def test_new_schema_matches_pre_change_schema_on_all_old_pairs() -> None:
+    """Exact differential: old and new schema must agree on every pre-change pair.
+
+    Compares against the real pre-change contract rather than a re-implementation
+    of its rules, so this compares contracts instead of comparing a contract to a
+    paraphrase.
+
+    This test **cannot skip**. An earlier draft read the old schema from
+    ``git show`` and skipped when the ref was unavailable, which would have gone
+    silently green under a shallow CI checkout -- a backward-compatibility
+    guarantee that evaporates exactly when nobody is watching. The pre-change
+    schema is vendored and hash-pinned instead, so the differential is hermetic.
+    """
+    old_schema = json.loads(PRE_CHANGE_SCHEMA_PATH.read_text(encoding="utf-8"))
     new_schema = _schema()
     disagreements = []
     for tool, model in itertools.product(PRE_CHANGE_TOOLS, PRE_CHANGE_MODELS):
