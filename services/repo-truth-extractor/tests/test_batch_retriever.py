@@ -16,6 +16,11 @@ def _load_module():
     assert spec is not None
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
+    # Register in sys.modules before exec: the module now defines
+    # @dataclass BatchRetrievalIntegrationOutcome, and dataclasses' string
+    # annotation resolution looks the defining module up via
+    # sys.modules[cls.__module__] during class creation.
+    sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
 

@@ -28,6 +28,7 @@ import random
 import uuid
 from collections import Counter, defaultdict
 from dataclasses import dataclass, replace
+from types import SimpleNamespace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Set, Tuple
@@ -4709,6 +4710,15 @@ def record_request_cost(
     if meta.get("failure_type") == "cost_aborted":
         # Request was never sent due to existing cap breach; skip recording
         return meta
+    if meta.get("dry_run"):
+        # RTE-W1-001 fail-closed-exit fix side effect discovered in S4:
+        # dry-run partitions never send a real request, so there is no
+        # usage to record and no real spend to cap. Previously this fell
+        # through to the "usage unavailable" branch below, which
+        # incorrectly set cost_abort_triggered=True for every dry run
+        # (masked pre-fix because main() exited 0 regardless of run
+        # status). Dry-run cost tracking is a no-op, not a cap breach.
+        return meta
     with _SPEND_TRACKER_LOCK:
         state = _ACTIVE_SPEND_TRACKER
         if state is None:
@@ -5612,6 +5622,34 @@ def sha256_file_strict(path: Path) -> str:
     return sha256_bytes(read_bytes_strict(path))
 
 
+_TERMINAL_SUCCESS_STATUSES = {RUN_STATUS_OK}
+
+
+def resolve_final_run_terminal_exit_code(dirs_root: Path) -> Tuple[int, Optional[str]]:
+    """RTE-W1-001: shell exit code must match canonical semantic run status.
+
+    Reuses the existing coverage-rollup run_status (compute_run_status /
+    update_run_manifest_status machinery) rather than inventing a second
+    status authority (system invariant 6). Exit 0 only when run_status is
+    exactly RUN_STATUS_OK. Any other value -- RUN_STATUS_BLOCKED,
+    RUN_STATUS_COST_ABORTED, an unrecognized/injected value, or a missing/
+    unreadable rollup -- fails closed with a nonzero exit code.
+    """
+    rollup_path = dirs_root / COVERAGE_ROLLUP_FILENAME
+    if not rollup_path.exists():
+        return 1, None
+    try:
+        payload = _load_json(rollup_path)
+    except Exception:
+        return 1, None
+    if not isinstance(payload, dict):
+        return 1, None
+    run_status = payload.get("run_status")
+    if run_status in _TERMINAL_SUCCESS_STATUSES:
+        return 0, run_status
+    return 1, run_status
+
+
 def get_git_sha(root: Path) -> str:
     try:
         return subprocess.check_output(
@@ -5619,6 +5657,68 @@ def get_git_sha(root: Path) -> str:
         ).strip()
     except Exception:
         return "UNKNOWN"
+
+
+# RTE-W1-010: source identity provenance. ``get_git_sha`` above is
+# intentionally left unchanged (it is imported by run_extraction_v3.py and
+# monkeypatched in tests/test_prescan_import_staleness.py with non-shape
+# values such as "git-current") -- it remains a best-effort, never-raises
+# lookup. The functions below are the fail-closed layer: they call
+# ``get_git_sha`` and additionally validate that the result plausibly *is* a
+# git commit id before letting canonical execution evidence be produced.
+_PLAUSIBLE_GIT_SHA_RE = re.compile(r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$")
+
+
+class SourceIdentityUnprovenError(RuntimeError):
+    """Raised when canonical execution evidence requires a positively proven
+    git source identity and none could be obtained.
+
+    Read-only introspection commands (help/list/status/print-*) that do not
+    produce canonical execution evidence must never raise or catch this --
+    they should keep calling ``get_git_sha``/``best_effort_source_identity``
+    directly and tolerate "UNKNOWN".
+    """
+
+
+def _looks_like_plausible_git_sha(value: Any) -> bool:
+    if not isinstance(value, str):
+        return False
+    candidate = value.strip()
+    if not candidate or candidate.upper() == "UNKNOWN":
+        return False
+    return bool(_PLAUSIBLE_GIT_SHA_RE.match(candidate))
+
+
+def best_effort_source_identity(root: Path) -> str:
+    """Non-blocking git identity lookup for advisory/informational surfaces.
+
+    May return the literal string "UNKNOWN". Callers that need proven
+    identity for canonical execution evidence must use
+    ``required_execution_source_identity`` instead.
+    """
+    return get_git_sha(root)
+
+
+def required_execution_source_identity(root: Path) -> str:
+    """Git identity required before canonical execution evidence may be
+    accepted as authoritative (RTE-W1-010, system invariants 7-10).
+
+    Raises ``SourceIdentityUnprovenError`` when identity cannot be positively
+    proven: resolution exception, blank/None output, the literal "UNKNOWN",
+    or output that does not look like a plausible git commit id (40 hex
+    chars for SHA-1 repos, 64 for SHA-256 repos). Never returns "UNKNOWN".
+    """
+    try:
+        sha = get_git_sha(root)
+    except Exception as exc:  # pragma: no cover - get_git_sha already swallows
+        raise SourceIdentityUnprovenError(
+            f"git identity resolution raised: {type(exc).__name__}: {exc}"
+        ) from exc
+    if not _looks_like_plausible_git_sha(sha):
+        raise SourceIdentityUnprovenError(
+            f"git identity could not be positively proven (resolved={sha!r})"
+        )
+    return sha
 
 
 def collect_manifest_artifacts(dirs: Dict[str, Path]) -> List[Dict[str, Any]]:
@@ -15567,6 +15667,7 @@ else sdk_auth_present_flags(p_provider, True)
                 **endpoint_fingerprint(endpoint_url),
                 "status_code": None,
                 "failure_type": None,
+                "dry_run": True,
                 "request_payload_bytes": payload_bytes,
                 "request_payload_bytes_mode": (
                     "sdk_estimate"
@@ -23900,18 +24001,36 @@ def main() -> None:
             args.retrieve_provider,
             len(args.batch_ids),
         )
-        integrated = run_batch_retrieval_and_integration(
+        outcome = run_batch_retrieval_and_integration_detailed(
             run_id=run_id,
             batch_ids=args.batch_ids,
             cfg=cfg,
             provider=args.retrieve_provider,
         )
-        logger.info("Batch retrieval complete: %s events integrated", integrated)
-        if integrated > 0:
+        logger.info(
+            "Batch retrieval complete: attempted=%s retrieved=%s terminal=%s "
+            "integrated=%s idempotent_duplicates=%s failed=%s unmapped=%s "
+            "success=%s reason_codes=%s",
+            outcome.attempted,
+            outcome.retrieved,
+            outcome.terminal,
+            outcome.integrated,
+            outcome.idempotent_duplicates,
+            outcome.failed,
+            outcome.unmapped,
+            outcome.success,
+            outcome.reason_codes,
+        )
+        if outcome.integrated > 0:
             logger.info(
                 "You can now run --finalize to process the integrated batch results"
             )
-        sys.exit(0 if integrated >= 0 else 1)
+        if not outcome.success:
+            logger.error(
+                "Batch retrieval/integration reported material failure: %s",
+                outcome.reason_codes,
+            )
+        sys.exit(outcome.exit_code)
 
     try:
         selected_execution_step = _get_execution_step_filter(args)
@@ -24007,6 +24126,24 @@ def main() -> None:
             failure_message=str(exc),
         )
         logger.error("Launch provider preflight failed: %s", exc)
+        sys.exit(1)
+
+    # RTE-W1-010: canonical execution evidence (RUN_MANIFEST.json,
+    # RUNNER_IDENTITY.json, coverage rollup, certification result) must not
+    # be accepted as authoritative unless source identity is positively
+    # proven. Gate here, immediately before phase execution begins and
+    # before any terminal/certification evidence is written for this run.
+    try:
+        required_execution_source_identity(root)
+    except SourceIdentityUnprovenError as exc:
+        update_run_manifest_startup_failure(
+            dirs["root"],
+            failure_reason="source_identity_unproven",
+            failure_message=str(exc),
+        )
+        logger.error(
+            "Source identity unproven; blocking canonical execution: %s", exc
+        )
         sys.exit(1)
 
     runners = {
@@ -24188,6 +24325,20 @@ def main() -> None:
         )
         print(sanitized_json_text(preview_payload, indent=2, sort_keys=True, ensure_ascii=True))
 
+    # RTE-W1-001: terminal truth. Every phase in this loop completed without
+    # raising (raising already exits nonzero above), but a phase can still
+    # be semantically FAIL/BLOCKED per its own coverage evidence without
+    # raising an exception. Shell exit code must match the canonical
+    # semantic run status recorded in the coverage rollup -- never fall off
+    # the end of main() with an implicit (and potentially false) exit 0.
+    exit_code, final_run_status = resolve_final_run_terminal_exit_code(dirs["root"])
+    if exit_code != 0:
+        logger.error(
+            "RUN_TERMINAL_STATUS_NOT_OK run_status=%s reason=fail_closed_exit",
+            final_run_status,
+        )
+    sys.exit(exit_code)
+
 
 def run_batch_retrieval_and_integration(
     run_id: str, batch_ids: List[str], cfg: RunnerConfig, provider: str = "openai"
@@ -24280,6 +24431,179 @@ def run_batch_retrieval_and_integration(
         "Batch retrieval integration complete: %s events created", events_integrated
     )
     return events_integrated
+
+
+def run_batch_retrieval_and_integration_detailed(
+    run_id: str, batch_ids: List[str], cfg: RunnerConfig, provider: str = "openai"
+) -> "BatchRetrievalIntegrationOutcome":
+    """Typed companion to :func:`run_batch_retrieval_and_integration` (RTE-W1-006).
+
+    A bare integer count cannot distinguish "nothing was requested/is still
+    pending" from "everything failed" from "everything was already
+    integrated" -- all of which previously collapsed to a value that made
+    ``sys.exit(0 if integrated >= 0 else 1)`` always exit 0. This function
+    classifies each material failure mode explicitly and reports a single
+    ``success``/``exit_code`` the caller can trust.
+
+    Original submission phase/step/partition provenance is NOT recovered
+    here (this code has always hardcoded phase="R", step_id="batch_retrieval"
+    at retrieval time, independent of the batch's true submission context) --
+    ``original_submission_provenance`` is reported as ``DEFERRED_RESIDUAL``
+    rather than fabricated (system invariant 20).
+    """
+    attempted = len(batch_ids)
+
+    try:
+        from lib.batch_retriever import (
+            BatchRetrievalIntegrationOutcome,
+            retrieve_openai_batches,
+            retrieve_gemini_batches,
+            integrate_batch_results_with_webhook_detailed,
+        )
+    except ImportError as exc:
+        logger.error("Batch retriever module not available: %s", exc)
+        # The typed dataclass itself is what failed to import here, so build
+        # a duck-typed equivalent with the same attribute contract rather
+        # than crashing with an uncaught ImportError (that would defeat the
+        # entire point of a fail-closed typed outcome).
+        return SimpleNamespace(
+            attempted=attempted,
+            retrieved=0,
+            terminal=0,
+            integrated=0,
+            idempotent_duplicates=0,
+            failed=attempted,
+            unmapped=0,
+            success=False,
+            exit_code=1,
+            reason_codes=["retriever_module_unavailable"],
+            original_submission_provenance="DEFERRED_RESIDUAL",
+        )
+
+    outcome = BatchRetrievalIntegrationOutcome(attempted=attempted)
+
+    if provider == "gemini":
+        api_key, _api_key_env = resolve_api_key("gemini", "GEMINI_API_KEY")
+        if not api_key:
+            logger.error("Gemini API key not available")
+            outcome.reason_codes.append("provider_credential_unavailable")
+            outcome.failed = attempted
+            outcome.success = False
+            outcome.exit_code = 1
+            return outcome
+    else:
+        api_key, _api_key_env = resolve_api_key("openai", "OPENAI_API_KEY")
+        if not api_key:
+            logger.error("OpenAI API key not available")
+            outcome.reason_codes.append("provider_credential_unavailable")
+            outcome.failed = attempted
+            outcome.success = False
+            outcome.exit_code = 1
+            return outcome
+
+    output_dir = Path("batch_downloads")
+    output_dir.mkdir(exist_ok=True)
+
+    logger.info("Retrieving %s %s batches...", len(batch_ids), provider)
+
+    if provider == "gemini":
+        batch_results = retrieve_gemini_batches(
+            api_key=api_key, batch_ids=batch_ids, output_dir=output_dir
+        )
+    else:
+        batch_results = retrieve_openai_batches(
+            api_key=api_key, batch_ids=batch_ids, output_dir=output_dir
+        )
+
+    terminal_states = ("completed", "failed", "expired", "succeeded", "done", "cancelled", "canceled", "timeout")
+    retrieved = sum(1 for result in batch_results.values() if not result.get("error"))
+    terminal_ids = [
+        batch_id
+        for batch_id, result in batch_results.items()
+        if str(result.get("status") or "").strip().lower() in terminal_states
+    ]
+    outcome.retrieved = retrieved
+    outcome.terminal = len(terminal_ids)
+    outcome.failed += attempted - retrieved
+
+    try:
+        event_store = _build_event_store_for_runner()
+    except Exception as exc:
+        logger.error("Failed to build event store: %s", exc)
+        outcome.reason_codes.append("event_store_unavailable")
+        outcome.failed = attempted
+        outcome.success = False
+        outcome.exit_code = 1
+        return outcome
+
+    integrated_total = 0
+    idempotent_total = 0
+    integration_failed_total = 0
+    for batch_id in terminal_ids:
+        result = batch_results[batch_id]
+        try:
+            integration_result = integrate_batch_results_with_webhook_detailed(
+                batch_results={batch_id: result},
+                event_store=event_store,
+                run_id=run_id,
+                phase="R",  # Default to phase R for batch processing; see
+                # ORIGINAL_SUBMISSION_PROVENANCE_DEFERRED -- true submission
+                # phase/step/partition is not recoverable here.
+                step_id="batch_retrieval",
+                partition_id=batch_id,
+                provider=provider,
+            )
+        except Exception as exc:
+            logger.error("Failed to integrate batch %s: %s", batch_id, exc)
+            integration_failed_total += 1
+            continue
+        integrated_total += integration_result["integrated"]
+        idempotent_total += integration_result["idempotent_duplicates"]
+        integration_failed_total += integration_result["failed"]
+
+    outcome.integrated = integrated_total
+    outcome.idempotent_duplicates = idempotent_total
+    outcome.failed += integration_failed_total
+    accounted_for = integrated_total + idempotent_total + integration_failed_total
+    outcome.unmapped = max(0, len(terminal_ids) - accounted_for)
+
+    logger.info(
+        "Batch retrieval integration complete: integrated=%s idempotent_duplicates=%s "
+        "failed=%s unmapped=%s",
+        integrated_total,
+        idempotent_total,
+        integration_failed_total,
+        outcome.unmapped,
+    )
+
+    if outcome.failed > 0 or outcome.unmapped > 0:
+        # Any material failure -- including partial failure -- defaults to
+        # success=false (system invariant 16; no evidence in this repo of an
+        # existing warning-only partial-success policy for batch retrieval).
+        outcome.success = False
+        outcome.exit_code = 1
+        if integration_failed_total > 0 and integrated_total == 0 and idempotent_total == 0 and len(terminal_ids) > 0:
+            outcome.reason_codes.append("all_integrations_failed")
+        elif outcome.retrieved < outcome.attempted:
+            outcome.reason_codes.append("retrieval_failed")
+        else:
+            outcome.reason_codes.append("partial_failure")
+    elif outcome.terminal == 0:
+        # Legitimate zero-work: batches were retrieved but none are terminal
+        # yet (still in-progress upstream). Not a failure (invariant 17).
+        outcome.success = True
+        outcome.exit_code = 0
+        outcome.reason_codes.append("no_terminal_batches_yet")
+    elif integrated_total == 0 and idempotent_total > 0:
+        outcome.success = True
+        outcome.exit_code = 0
+        outcome.reason_codes.append("idempotent_replay_only")
+    else:
+        outcome.success = True
+        outcome.exit_code = 0
+        outcome.reason_codes.append("fully_integrated")
+
+    return outcome
 
 
 if __name__ == "__main__":

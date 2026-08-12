@@ -7,8 +7,9 @@ import json
 import logging
 import os
 import time
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 try:
     from .batch_clients import (
@@ -50,6 +51,64 @@ TERMINAL_BATCH_STATES = {
     "canceled",
     "timeout",
 }
+
+# RTE-W1-006: typed batch retrieval/integration outcome reason codes.
+# These are machine-stable tokens; do not rename without updating callers.
+REASON_RETRIEVER_MODULE_UNAVAILABLE = "retriever_module_unavailable"
+REASON_PROVIDER_CREDENTIAL_UNAVAILABLE = "provider_credential_unavailable"
+REASON_EVENT_STORE_UNAVAILABLE = "event_store_unavailable"
+REASON_RETRIEVAL_FAILED = "retrieval_failed"
+REASON_ALL_INTEGRATIONS_FAILED = "all_integrations_failed"
+REASON_PARTIAL_FAILURE = "partial_failure"
+REASON_NO_TERMINAL_BATCHES_YET = "no_terminal_batches_yet"
+REASON_FULLY_INTEGRATED = "fully_integrated"
+REASON_IDEMPOTENT_REPLAY_ONLY = "idempotent_replay_only"
+
+# RTE-W1-006-V3-LEGACY / original submission provenance: this module has never
+# truthfully tracked which submission phase/step/partition a retrieved batch
+# originated from -- the v5 caller hardcodes phase="R", step_id="batch_retrieval"
+# at retrieval time. We do not fabricate a truthful mapping here; callers that
+# need this must record ORIGINAL_SUBMISSION_PROVENANCE=DEFERRED_RESIDUAL.
+ORIGINAL_SUBMISSION_PROVENANCE_DEFERRED = "DEFERRED_RESIDUAL"
+
+
+@dataclass
+class BatchRetrievalIntegrationOutcome:
+    """Typed, machine-stable outcome for batch retrieval + webhook integration.
+
+    Replaces the historical bare-integer-count contract (RTE-W1-006). A bare
+    ``integrated`` count of ``0`` is ambiguous -- it can mean "nothing was
+    requested", "everything is still pending", "everything failed", or
+    "everything was already integrated (idempotent replay)". This type makes
+    each of those cases explicit and machine-distinguishable.
+    """
+
+    attempted: int = 0
+    retrieved: int = 0
+    terminal: int = 0
+    integrated: int = 0
+    idempotent_duplicates: int = 0
+    failed: int = 0
+    unmapped: int = 0
+    success: bool = False
+    exit_code: int = 1
+    reason_codes: List[str] = field(default_factory=list)
+    original_submission_provenance: str = ORIGINAL_SUBMISSION_PROVENANCE_DEFERRED
+
+    def as_dict(self) -> Dict[str, Any]:
+        return {
+            "attempted": self.attempted,
+            "retrieved": self.retrieved,
+            "terminal": self.terminal,
+            "integrated": self.integrated,
+            "idempotent_duplicates": self.idempotent_duplicates,
+            "failed": self.failed,
+            "unmapped": self.unmapped,
+            "success": self.success,
+            "exit_code": self.exit_code,
+            "reason_codes": list(self.reason_codes),
+            "original_submission_provenance": self.original_submission_provenance,
+        }
 
 
 def _normalize_provider(provider: str) -> str:
@@ -443,6 +502,130 @@ def integrate_batch_results_with_webhook(
         except Exception as exc:
             logger.error("Failed to integrate batch %s: %s", batch_id, exc)
     return events_integrated
+
+
+def integrate_batch_results_with_webhook_detailed(
+    batch_results: Dict[str, Dict[str, Any]],
+    event_store: Any,
+    run_id: str,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    provider: str = "openai",
+) -> Dict[str, Any]:
+    """Typed companion to :func:`integrate_batch_results_with_webhook`.
+
+    Performs the identical integration work (same webhook events, same
+    idempotency key derivation, same event-store calls) but classifies each
+    terminal batch as one of: newly integrated, idempotent duplicate (already
+    integrated -- distinguished via the event store's own idempotency
+    evidence, ``fetch_webhook_event_id``, per RTE-W1-006 invariant 19), or
+    materially failed (insert/append raised, or the event store reported a
+    non-insert with no discoverable prior event id).
+
+    Does not fabricate original submission phase/step/partition provenance;
+    the caller-supplied ``phase``/``step_id``/``partition_id`` are recorded
+    as-is and ``original_submission_provenance`` is always reported as
+    ``DEFERRED_RESIDUAL`` (see module-level constant) unless a caller passes
+    genuinely authoritative values.
+    """
+    integrated = 0
+    idempotent_duplicates = 0
+    failed = 0
+    details: List[Dict[str, Any]] = []
+    provider_id = str(provider or "openai").strip().lower()
+
+    for batch_id, result in batch_results.items():
+        status = str(result.get("status") or "").strip().lower()
+        if status not in TERMINAL_BATCH_STATES:
+            continue
+
+        event_type = "batch.completed" if status in {"completed", "succeeded", "done"} else "batch.failed"
+        payload = {
+            "schema": "DPMX_WEBHOOK_V1",
+            "event": event_type,
+            "event_id": f"batch_{batch_id}",
+            "run_id": run_id,
+            "phase": phase,
+            "step_id": step_id,
+            "partition_id": partition_id,
+            "batch_id": batch_id,
+            "status": status,
+            "generated_at_utc": result.get("completed_at", ""),
+            "provider": provider_id,
+            "provider_ref": batch_id,
+        }
+
+        try:
+            inserted = event_store.insert_webhook_event_if_absent(
+                provider=provider_id,
+                idempotency_key=f"batch_{batch_id}",
+                event_type=event_type,
+                event_id=f"batch_{batch_id}",
+                received_at_utc=result.get("completed_at", ""),
+                payload_json=json.dumps(payload, ensure_ascii=True),
+                headers_json="{}",
+                signature_valid=True,
+            )
+            webhook_event_id = None
+            if hasattr(event_store, "fetch_webhook_event_id"):
+                webhook_event_id = event_store.fetch_webhook_event_id(provider_id, f"batch_{batch_id}")
+
+            if inserted:
+                from ledger.interface import RunEventInsert
+
+                event_store.append_run_event(
+                    RunEventInsert(
+                        run_id=run_id,
+                        phase=phase,
+                        step_id=step_id,
+                        partition_id=partition_id,
+                        provider=provider_id,
+                        event_type=event_type,
+                        event_id=f"batch_{batch_id}",
+                        provider_ref=batch_id,
+                        webhook_event_id=webhook_event_id,
+                        dedupe_key=f"batch_{batch_id}_{run_id}_{phase}_{step_id}_{partition_id}",
+                        orphaned=False,
+                    )
+                )
+                integrated += 1
+                logger.info("Integrated batch %s as webhook event", batch_id)
+                details.append({"batch_id": batch_id, "outcome": "integrated"})
+            elif webhook_event_id:
+                # Not a new insert, but the event store has prior idempotency
+                # evidence for this exact key -- this is a legitimate
+                # duplicate/idempotent replay, not a failure (invariant 19).
+                idempotent_duplicates += 1
+                logger.info("Batch %s already integrated (idempotent replay)", batch_id)
+                details.append({"batch_id": batch_id, "outcome": "idempotent_duplicate"})
+            else:
+                # Not inserted and no discoverable prior event id: the event
+                # store gave us no idempotency evidence to justify treating
+                # this as a duplicate. Fail closed.
+                failed += 1
+                logger.error(
+                    "Batch %s not inserted and no idempotency evidence found; treating as failure",
+                    batch_id,
+                )
+                details.append(
+                    {
+                        "batch_id": batch_id,
+                        "outcome": "failed",
+                        "error": "not_inserted_no_idempotency_evidence",
+                    }
+                )
+        except Exception as exc:
+            failed += 1
+            logger.error("Failed to integrate batch %s: %s", batch_id, exc)
+            details.append({"batch_id": batch_id, "outcome": "failed", "error": str(exc)})
+
+    return {
+        "integrated": integrated,
+        "idempotent_duplicates": idempotent_duplicates,
+        "failed": failed,
+        "details": details,
+    }
 
 
 def main() -> int:
