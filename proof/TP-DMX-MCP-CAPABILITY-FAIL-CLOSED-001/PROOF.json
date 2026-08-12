@@ -65,5 +65,20 @@
   },
   "disposition": "PASS_WITH_NONBLOCKING_RISKS_READY_FOR_PROOF_CLOSURE",
   "publication_authorized": false,
-  "merge_authorized": false
+  "merge_authorized": false,
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "No schema-supported embedded-audit projection has been produced yet as of this commit (C3). The actual controlling L3 audit for this packet is a separately recorded, cross-family audit: Codex (OpenAI GPT-5 Codex, ChatGPT/Codex API runtime, via codex:codex-rescue), verdict PASS_WITH_RISKS (all risks non-blocking), bound to substantive head C1=40783797fe30325766a2cb6f53aaa53254785712, recorded in full at proof/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001/AUDITOR_REPORT.md and review_bundle/audit_pass_1_needs_supervisor.md + review_bundle/audit_pass_2_pass_with_risks.md. This SKIPPED placeholder exists solely to satisfy the trusted proof validator's mechanical requirement for a schema-conformant embedded_audit object; it does not represent an audit outcome and must not be read as PASS. It is expected to be superseded by a schema-representable supporting audit at the next proof-only successor head (C4), per this packet's proof-repair authorization."
+    ],
+    "skip_reason": "Codex, the packet's controlling cross-family L3 auditor, is not a representable value in schemas/proof/embedded_audit.schema.json's auditor_tool/auditor_model enums (agy/antigravity/claude-code-cli/copilot-cli/gemini-cli/pal-mcp-clink/none; sonnet/claude-sonnet-4.6/opus/gemini/gemini-3.1-pro-high/unknown). Relabeling Codex as one of these tools/models would be a false attestation, and schemas/** is outside this packet's original mutation allowlist. This field is set to SKIPPED as an honest placeholder pending a schema-representable supporting audit (see remaining_risks)."
+  }
 }
