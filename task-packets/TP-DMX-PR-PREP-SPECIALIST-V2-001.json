@@ -15,7 +15,8 @@
     "Legacy duplicate docs may be updated only after their live consumer/compatibility role is proven; archive material remains historical.",
     "No merge, close, mark-ready, force push, history rewrite, branch deletion, permission change, credential change, release, migration, or production mutation is authorized.",
     "For this packet, docs/03-reference/pr-pipeline/prep/** and docs/03-reference/pr-pipeline/merge/** are the canonical PR-pipeline reference-contract surfaces; docs/pr_prep/** and docs/pr_merge/** are compatibility surfaces only and must not carry independent behavioral authority.",
-    "R2 is a narrow closure amendment only: the six newly allowlisted residual PR-prep documentation paths may be changed solely to remove dangling contract-v2 references and legacy V1 behavioral semantics or convert them to compatibility/canonical pointers."
+    "R2 is a narrow closure amendment only: the six newly allowlisted residual PR-prep documentation paths may be changed solely to remove dangling contract-v2 references and legacy V1 behavioral semantics or convert them to compatibility/canonical pointers.",
+    "R3 is the terminal semantic-census closure before audit: the twelve newly allowlisted PR-prep documentation paths may be changed only to retire contradictory V1 behavioral authority or convert compatibility copies to canonical pointers. Any additional non-archive authority-bearing contradiction discovered outside the amended allowlist is a stop condition, not an automatic scope expansion."
   ],
   "depends_on": [],
   "repo_binding": {
@@ -67,7 +68,19 @@
       "docs/03-reference/pr-pipeline/prep/handoff-contract.md",
       "docs/pr_prep/branch-state-schema.md",
       "docs/pr_prep/consensus-gate-rules.md",
-      "docs/pr_prep/handoff-contract.md"
+      "docs/pr_prep/handoff-contract.md",
+      "docs/03-reference/pr-pipeline/prep/operational-posture-options.md",
+      "docs/03-reference/pr-pipeline/prep/layered-validation-model.md",
+      "docs/03-reference/pr-pipeline/prep/creation-mode-rules.md",
+      "docs/03-reference/pr-pipeline/prep/pr-drafting-rules.md",
+      "docs/03-reference/pr-pipeline/prep/live-pilot-protocol.md",
+      "docs/03-reference/pr-pipeline/prep/stash-and-branch-safety-rules.md",
+      "docs/pr_prep/operational-posture-options.md",
+      "docs/pr_prep/layered-validation-model.md",
+      "docs/pr_prep/creation-mode-rules.md",
+      "docs/pr_prep/pr-drafting-rules.md",
+      "docs/pr_prep/live-pilot-protocol.md",
+      "docs/pr_prep/stash-and-branch-safety-rules.md"
     ],
     "verify": [
       "Every changed path is in the allowlist.",
@@ -83,7 +96,13 @@
       "The six R2 residual paths contain no link to docs/pr_prep/contract-v2.md.",
       "The three canonical R2 paths do not independently encode legacy PR-prep LOW/MEDIUM/HIGH risk_hint semantics or obsolete V1 readiness authority.",
       "The three docs/pr_prep R2 paths are compatibility-only and point to canonical docs/03-reference/pr-pipeline/prep counterparts.",
-      "The prior C1 1ab5d6c1cc56e85557776b37b0ffa0594858aa02 is not used as the audit target; audit must bind only to the new frozen C1-R2."
+      "The prior C1 1ab5d6c1cc56e85557776b37b0ffa0594858aa02 is not used as the audit target; audit must bind only to the new frozen C1-R2.",
+      "The six R3 canonical files contain no current V1 authority that contradicts operator-contract.md V2 semantics.",
+      "The six R3 docs/pr_prep counterparts are compatibility-only pointers and contain no independent behavioral contract.",
+      "No current PR-prep document authorizes PR Prep to create a non-draft or merge-ready PR without the V2 operator/mutation boundaries.",
+      "No current PR-prep document emits CREATE_READY, CLEAN_CREATE_READY, HIGH_RISK_ESCALATE, DRAFT_RECOMMENDED, GO_SUPERVISED_FINAL_CREATION, or SUPERVISED_FINAL_CREATION as governing V2 states.",
+      "A full non-archive semantic census of docs/03-reference/pr-pipeline/prep/** and docs/pr_prep/** reports zero ACTIVE_CONTRADICTION items.",
+      "C1-R2 f0877721059c30d611db44521d0020603806076e is SUPERSEDED_NOT_AUDITED and S4 binds only C1-R3."
     ]
   },
   "pr": {
@@ -174,7 +193,14 @@
         "R2 closure: update docs/03-reference/pr-pipeline/prep/branch-state-schema.md, consensus-gate-rules.md, and handoff-contract.md so they do not independently encode legacy LOW/MEDIUM/HIGH or V1 seven-step semantics. Prefer concise canonical pointers where their former standalone schema/rule text is superseded by operator-contract.md or handoff-to-prms-contract.md.",
         "R2 closure: update docs/pr_prep/branch-state-schema.md, consensus-gate-rules.md, and handoff-contract.md as compatibility-only pointer stubs to their canonical docs/03-reference/pr-pipeline/prep counterparts.",
         "Remove every live link to docs/pr_prep/contract-v2.md from the six R2 paths.",
-        "Do not edit archive copies and do not broaden the migration to unrelated occurrences of LOW/MEDIUM/HIGH that belong to other domains."
+        "Do not edit archive copies and do not broaden the migration to unrelated occurrences of LOW/MEDIUM/HIGH that belong to other domains.",
+        "R3 closure: retire contradictory V1 behavior in the six newly allowlisted canonical files under docs/03-reference/pr-pipeline/prep/. Prefer concise pointer/deprecation stubs to operator-contract.md and the specific V2 contract files rather than rewriting parallel policy bodies.",
+        "R3 closure: convert the six corresponding docs/pr_prep/ files to compatibility-only pointer stubs to their canonical docs/03-reference/pr-pipeline/prep/ counterparts.",
+        "The canonical operational-posture and creation-mode files must not authorize non-draft or merge-ready PR creation by PR Prep; draft creation remains mutation-gated and PR Prep never grants merge readiness.",
+        "The canonical layered-validation and drafting files must not emit obsolete CREATE_READY, CLEAN_CREATE_READY, HIGH_RISK_ESCALATE, DRAFT_RECOMMENDED, or legacy LOW/MEDIUM/HIGH risk semantics as current V2 states.",
+        "The canonical live-pilot file must not retain SUPERVISED_FINAL_CREATION as a current PR-prep capability.",
+        "The canonical stash/branch safety file may preserve useful read-only discovery constraints but must express risk/posture decisions using V2 states and L0-L3 semantics or defer to operator-contract.md.",
+        "Run a terminal semantic census over every non-archive file under docs/03-reference/pr-pipeline/prep/** and docs/pr_prep/**. Classify every legacy-token match as RETIRED_PROSE, NON_PR_PREP_DOMAIN, or ACTIVE_CONTRADICTION. ACTIVE_CONTRADICTION outside the R3 allowlist stops execution."
       ],
       "commands": [
         "git diff --name-only",
@@ -193,7 +219,7 @@
     },
     {
       "id": "S3_PRE_PUSH_AND_FREEZE_CONTENT",
-      "task": "After the R2 residual closure, rerun all deterministic gates and freeze a NEW substantive content head C1-R2. The prior C1 1ab5d6c1cc56e85557776b37b0ffa0594858aa02 is superseded for audit purposes.",
+      "task": "After the R3 terminal semantic-census closure, rerun all deterministic gates and freeze a NEW substantive content head C1-R3. Prior C1 and C1-R2 are superseded and must never be audit targets.",
       "requirements": [
         "Run repo/worktree/branch identity, changed-file allowlist, git diff --check, Task Packet/frontmatter validation, proof/audit schema validation for present artifacts, focused tests, relevant complete governance/docs suite, changed-file pre-commit, and secret scan.",
         "If pre-commit modifies a file, rerun it to a clean pass before commit.",
@@ -201,7 +227,10 @@
         "Freeze exactly one substantive content head C1.",
         "Open a draft PR. Do not mark ready.",
         "Run a targeted scan proving the six R2 files contain no dangling contract-v2 link and no legacy PR-prep LOW/MEDIUM/HIGH risk_hint values.",
-        "Record the prior C1 as SUPERSEDED_NOT_AUDITED and bind all subsequent audit instructions only to C1-R2."
+        "Record the prior C1 as SUPERSEDED_NOT_AUDITED and bind all subsequent audit instructions only to C1-R2.",
+        "Record C1-R2 f0877721059c30d611db44521d0020603806076e as SUPERSEDED_NOT_AUDITED.",
+        "Run the terminal semantic census across the complete non-archive canonical and compatibility PR-prep documentation trees and require zero ACTIVE_CONTRADICTION findings.",
+        "Bind all subsequent S4 instructions only to the new exact C1-R3."
       ],
       "commands": [
         "git diff --check",
