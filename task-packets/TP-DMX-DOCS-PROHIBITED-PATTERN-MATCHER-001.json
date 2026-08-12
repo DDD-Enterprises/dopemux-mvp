@@ -1,8 +1,7 @@
 {
   "id": "TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001",
   "project": "dopemux-mvp",
-  "risk_lane": "L3",
-  "target": "Repair the docs-prohibited-patterns pre-commit hook so legitimate 'template' filenames (which contain the substring 'temp') are no longer misclassified as prohibited temporary/scratch files, while genuine temp/notes/todo/scratch filenames remain blocked. Extract the inline bash matcher into a standalone, independently testable script and add deterministic regression tests for both the allow-list and the deny-list.",
+  "target": "Risk lane L3 (touches .pre-commit-config.yaml, CI trust policy; independent audit required before merge). Repair the docs-prohibited-patterns pre-commit hook so legitimate 'template' filenames (which contain the substring 'temp') are no longer misclassified as prohibited temporary/scratch files, while genuine temp/notes/todo/scratch filenames remain blocked. Extract the inline bash matcher into a standalone, independently testable script and add deterministic regression tests for both the allow-list and the deny-list.",
   "invariants": [
     "Real temporary/scratch/notes/todo filenames must remain blocked (no net loosening of the policy).",
     "No one-off exemption for a specific filename (e.g. template-agent.md); the classification logic itself must stop treating 'template' as containing the prohibited token 'temp'.",
@@ -23,7 +22,7 @@
     "final_packet": true
   },
   "execution": {
-    "agent": "claude",
+    "agent": "shell",
     "branch": "fix/docs-prohibited-pattern-matcher-001",
     "base_branch": "main"
   },
@@ -34,7 +33,8 @@
       "scripts/ci/docs_prohibited_patterns.sh",
       "tests/ci/test_docs_prohibited_patterns.py",
       "task-packets/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001.json",
-      "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/**"
+      "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/**",
+      "proof/pr_merge/embedded-audit/pr-1225/**"
     ]
   },
   "pr": {

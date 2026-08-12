@@ -72,3 +72,50 @@ Per the L3 gate on this packet (`.pre-commit-config.yaml` is CI trust
 policy): implementer is Claude Sonnet (this session). Independent audit by
 a separate model/runtime family is required before merge. `merge=NOT_AUTHORIZED`
 until that audit records a PASS verdict.
+
+## Repair rounds (post-audit review findings)
+
+Automated PR review (Codex, Copilot) on PR #1225 surfaced further findings
+after R1's initial audit; each was independently re-audited (agy/
+gemini-3.1-pro-high) before the embedded-audit gate would accept the
+resulting head:
+
+- **R2** (`833f8cdac448dbf93f7d70e44526674fa48b37c7`): Codex flagged that
+  R1's blanket `*template*) continue` short-circuited *all* prohibition
+  checks, not just the temp-family ones, so `todo-template.md` /
+  `notes-template.md` / `temp-template.md` / `scratch-template.md` were
+  incorrectly allowed — a real policy-loosening regression. Fixed by
+  stripping `template` occurrences only before the temp-family glob check;
+  `notes*.md`/`todo*.md`/`*scratch*.md` still run against the untouched
+  basename. 4 regression tests added. Re-audited PASS (see
+  `AUDITOR_REPAIR_REPORT.md`).
+- **R3** (`06abbf7119901bca1633728dd0ad12c9312857f6`): Copilot flagged (a) a
+  stale docstring path reference (`tests/governance/...` instead of the
+  real `tests/ci/...`) and (b) a weak test assertion in
+  `test_mixed_batch_flags_only_the_forbidden_file` that only checked the
+  stdout prefix before the first match. Both fixed with zero change to the
+  matcher's executable logic (independently confirmed byte-identical to
+  R2). Re-audited PASS (see `AUDITOR_REPAIR_2_REPORT.md`).
+- **R4** (packet-JSON only, no script/test change): Codex flagged that
+  `task-packets/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001.json` failed
+  `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json` schema
+  validation on two counts — the root-level `risk_lane` field is not a
+  declared schema property (root `additionalProperties: false`), and
+  `execution.agent: "claude"` is not in the schema's enum
+  (`gemini`/`codex`/`vibe`/`shell`). Fixed by moving the L3 risk-lane
+  designation into the `target` description text (matching this repo's
+  existing convention — no other packet in `task-packets/` uses a
+  `risk_lane` field) and changing `execution.agent` to `"shell"` (matching
+  the convention used by other Claude-Code/shell-executed packets in this
+  repo, e.g. `CCAR-001.json`). Also added the merge-proof directory
+  (`proof/pr_merge/embedded-audit/pr-1225/**`, which Codex separately
+  flagged as out-of-allowlist) to `commit.allowlist`. Verified with
+  `Draft7Validator` against the canonical schema: 0 errors.
+
+Every repair round required rebinding the signed embedded-audit proof to a
+new `AUDIT_EVIDENCE_HEAD`, because `scripts/audit/local_audit_acceptance.py`
+requires the delta from the audited commit to the enforced PR head to touch
+*only* `proof/pr_merge/embedded-audit/pr-1225/**` — any further commit,
+including a metadata-only packet-JSON fix, invalidates the prior proof's
+binding by design. This is documented CI behavior (a prior Codex review
+comment on this PR named the exact mechanism), not a defect.
