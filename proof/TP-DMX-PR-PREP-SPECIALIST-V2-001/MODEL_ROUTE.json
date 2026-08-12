@@ -1,0 +1,16 @@
+{
+  "packet": "TP-DMX-PR-PREP-SPECIALIST-V2-001-R4",
+  "audit_target": "6f32ac97dfd64f4386182fdd24380b2817551303",
+  "route_order_applied": "docs/ops/embedded-audit.md Tier 1, option 1 (AGY / Google Antigravity)",
+  "auditor_tool": "agy",
+  "requested_model": "gemini-3.1-pro-high",
+  "configured_model": "gemini-3.1-pro-high",
+  "model_list_evidence": "`agy models` output includes `gemini-3.1-pro-high\tGemini 3.1 Pro (High)` in the returned model catalog, confirming the requested model is a real, selectable option (not inferred from branding)",
+  "response_claimed_model": "not separately self-reported by the tool in free text; invocation succeeded with no fallback message",
+  "proxy_reported_identity": "UNKNOWN (no proxy in this route)",
+  "provider_attested_identity": "UNKNOWN (no separate provider attestation surface exposed by this CLI)",
+  "invocation": "agy --model gemini-3.1-pro-high --print \"<audit prompt>\"",
+  "no_fallback_evidence": "invocation completed with a structured 12-point verdict addressing repo-specific file contents (exact filenames, exact commit SHA, exact diff stats) that could only be produced by a model that actually read the repository; no fallback/degradation message was emitted",
+  "independence": "auditor is a separate CLI process and model family (Gemini) from the implementer (Claude Sonnet running this session); auditor was instructed not to trust the implementer's framing and to verify independently",
+  "verdict": "PASS"
+}
