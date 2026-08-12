@@ -55,6 +55,12 @@ python3 scripts/governance/validate_change_contract.py --base origin/main --head
 #   the authority surface of the final slice.
 
 pre-commit run --from-ref origin/main --to-ref HEAD   # 18 hooks, all Passed, no files modified
+#   ^^^ ACCURATE FOR ITS OWN SLICE, SUPERSEDED FOR FULL-SLICE COVERAGE.
+#   Like the paths=11 preflight above, this ran before the later commits and therefore
+#   covers fewer paths than the final slice. It is preserved, not rewritten. For the
+#   full 19-path slice see PRE-COMMIT RECEIPT below. (Hook counts differ between the
+#   two runs because pre-commit only executes hooks whose file filters match the paths
+#   in range; a different slice legitimately runs a different number of hooks.)
 git diff --check                                       # clean
 python3 scripts/audit/validate_audit_proof.py proof/.../PROOF.json   # 1/1 PASS (SKIPPED, truthful)
 ```
@@ -222,6 +228,78 @@ above, so the successor commit changes bytes without changing path identities: `
 membership at a named commit, not the bytes of the files in it — which is what stops it
 self-invalidating. The re-run at the successor head is reported on the PR review thread rather
 than committed, so that recording the record does not itself require another record.
+
+### Commit-bound pre-commit receipt — target head `27ba49b4fd`
+
+Raised by automated PR review (chatgpt-codex-connector, P2, `COMMAND_LOG.md:57`) and confirmed:
+the only pre-commit receipt in this log predates the later commits and therefore covers fewer
+paths than the final slice. The hooks *were* run on the full slice; what was missing was the
+record, not the run. It is recorded here against the head it actually names.
+
+```text
+PRE-COMMIT RECEIPT
+
+BASE          = 3e8fcc1c70c5b859dd651a1cd33c85eab837c93e
+TARGET_HEAD   = 27ba49b4fd0fa44aed90c31b790807ad66a1f4a6
+PATH_SET      = 19
+RESULT        = PASS
+HOOKS         = 18 evaluated / 14 Passed / 4 Skipped (no files to check) / 0 Failed
+FILES_MODIFIED = none
+
+This receipt proves the full 19-path PR slice at the named target head. It does not claim
+immutable finality for later successor commits.
+```
+
+Command as run, both endpoints pinned:
+
+```bash
+pre-commit run --from-ref 3e8fcc1c70c5b859dd651a1cd33c85eab837c93e \
+               --to-ref 27ba49b4fd0fa44aed90c31b790807ad66a1f4a6
+```
+
+Eighteen hooks were evaluated: 14 reported `Passed`, 4 reported `Skipped (no files to check)`,
+none Failed, and the tree was unchanged afterwards. The earlier `18 hooks, all Passed` record is
+not contradicted — `pre-commit` evaluates only the hooks whose file filters match the paths in
+range, and reports a hook with no matching files as `Skipped` rather than omitting it, so the same
+18 hooks can legitimately tally differently across two different slices.
+
+Re-verification at the successor head is reported on the PR review thread rather than committed,
+for the same reason as the preflight receipt above: recording the record would itself require
+another record.
+
+### Class-closing repair — records bound to things that move or disappear
+
+Round 6 of automated review raised four P2 findings which, on inspection, are one defect family:
+**validation machinery depending on moving refs, on commits that do not survive a squash merge, or
+on a non-root identity marker.** A sweep on that axis found two further instances the review had
+not named. All are repaired together rather than one per round.
+
+| Site | Was | Now |
+|---|---|---|
+| `repo_binding.repo_marker` | `dopetask-canonical-spec.json` — exists only under `docs/03-reference/spec/dopetask/`, so with `require_identity_match: true` it cannot identify the repository from its root | `.dopetaskroot`, the documented per-repo root marker (`docs/03-reference/fast-dev-os/template-task-packet.md:44`) |
+| `S1` | asserted `origin/main` resolves to `cfa4927a…` — false as soon as main advanced | binds `FO01_REPAIR_BASE = cfa4927a883b469c06f37343c18e6582f23d1443` directly; the fetch is retained as freshness only and no value is asserted for `origin/main` |
+| `S5.validation[0]` | audit binding stated against content head `cc2f49ccad…` | binding established by candidate-byte equality, plus a new executable check over committed bytes; `cc2f49ccad…` reclassified as a historical identifier |
+| `S8.commands[2]` | `git diff cc2f49ccad…..HEAD` — unreachable after squash merge, fails with `unknown revision` rather than verifying anything | executable verifier over committed bytes (candidate hash, both authority records, ADR statuses, SB-DEC-026) |
+| **`S7.commands` (not raised by review)** | `--base origin/main` in both the preflight and the pre-commit command — the packet-side twin of the two receipt defects above | pinned to `S7_BASE = 9dce8ffaec489f486d0356d300f0e8ea5aefa3d2` |
+| **`commit.verify` (not raised by review)** | the same two moving-base forms, second occurrence in the same file | pinned to the same frozen execution base |
+
+`--head HEAD` is deliberately **not** pinned anywhere in the packet's executable steps. The moving
+input was the base; pinning the head instead would mean every successor commit invalidates the
+step, which is the recursion the commit-bound receipts exist to stop. Both endpoints are pinned
+only in *recorded receipts*, which describe a run that already happened.
+
+Two identifiers are retained as historical metadata and are no longer execution dependencies:
+`cc2f49ccad3d7c39d6b9f0a9fb044616069585a7` (content head of the historical Grok audit) and the
+superseded acceptance attempt `19fa74faa9`. Neither needs to be reachable for any step to run.
+
+Post-repair class check on the packet:
+
+```text
+grep -n 'origin/main' <packet>   -> 2 hits, both prose explaining why it is NOT an input
+grep -n 'cc2f49cc'    <packet>   -> 2 hits, both labelled HISTORICAL IDENTIFIER
+executable commands referencing a moving ref or a squash-unreachable commit: 0
+schema validation against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json: 0 errors
+```
 
 ## Auditor findings addressed on this PR
 
