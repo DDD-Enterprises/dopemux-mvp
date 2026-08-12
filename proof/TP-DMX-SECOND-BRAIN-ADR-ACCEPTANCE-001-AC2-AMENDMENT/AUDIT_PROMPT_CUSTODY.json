@@ -1,0 +1,91 @@
+{
+  "auditor_reports_modified": false,
+  "auditor_reports_modified_note": "AUDITOR_REPORT.md, AUDITOR_REPORT_AMENDMENT.md and AUDITOR_REPORT_PR1214.md remain frozen audit artifacts and were not edited by this repair.",
+  "closure_class": "CUSTODY_COMPLETION_NOT_NEW_AUDIT",
+  "counts": {
+    "distinct_audits": 2,
+    "distinct_prompts": 2,
+    "distinct_sessions": 2,
+    "report_files": 3,
+    "report_files_note": "3 files, 2 audits \u2014 one report is stored twice under different names."
+  },
+  "new_grok_execution_performed": false,
+  "new_grok_execution_required": false,
+  "not_verified": [
+    "provider-side attestation of the model that served either session (no credentialed provider API call was made)",
+    "that the runner did not alter prompt bytes between reading the file and transmitting them upstream \u2014 only the runner's own transcript is available, and it agrees with the file"
+  ],
+  "packet": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT",
+  "phase": "AC2_ACCEPTANCE_CONDITION_AMENDMENT",
+  "prompts": [
+    {
+      "artifact_path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDIT_PROMPT_AMENDMENT.md",
+      "audit_id": "AMENDMENT_BYTES",
+      "bytes": 4097,
+      "corresponding_audit_report": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT_AMENDMENT.md",
+      "corresponding_audit_report_emitted_path": "~/.cache/dopemux/task-runs/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-20260809T233351Z/proof/AUDITOR_REPORT_AMENDMENT.md",
+      "corresponding_audit_report_hash_note": "The emitted and committed forms of this report differ by trailing whitespace only (verified by comparing both byte streams after stripping trailing whitespace per line). Both identities are legitimate and are recorded rather than collapsed. The emitted hash is also the value carried by the sealed bundle's own SHA256SUMS.txt.",
+      "corresponding_audit_report_sha256_committed": "e766ddc26e8a5667da6b72b1d39bade19ec331965fff04885e368ae6a2d121d1",
+      "corresponding_audit_report_sha256_emitted": "6157b5874a6ec8a6716d578ed94f3ed35db27361a3440caf707f9a539c1a187e",
+      "exact_bytes_recovered": true,
+      "grok_result_json": "~/.cache/dopemux/task-runs/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-20260809T233351Z/GROK_AMENDMENT_AUDIT.json",
+      "grok_session_id": "019fe93a-d8a9-7673-b69c-966e64b44e86",
+      "provider_attested_model": "UNKNOWN",
+      "provider_attested_model_note": "No provider-side attestation was obtained. The usage key is runner telemetry, not a provider attestation, and the two are not normalised into one another.",
+      "reconstructed_or_paraphrased": false,
+      "requested_model_as_recorded_in_s5_command": "grok-4.5",
+      "requested_model_reconciliation_note": "GROK_AUDIT_ROUTE_CUSTODY.json records operator_specified_requested_model = 'grok-4.5-build', while the S5 command line records the CLI flag '-m grok-4.5'. These are different identity layers (operator-specified string vs CLI-flag string) and are recorded separately rather than reconciled into one value. Neither is a provider attestation. The runner's own telemetry key is 'grok-4.5-build'.",
+      "sha256": "85437c1ad4373313fd5e9d80db5cf75b2210aa98c2bc09daaff250606ab4442c",
+      "telemetry_or_usage_key": "grok-4.5-build",
+      "turns": 8,
+      "verbatim_containment_in_session_first_user_record": true
+    },
+    {
+      "artifact_path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDIT_PROMPT_PR1214.md",
+      "audit_id": "PR_HEAD",
+      "bytes": 2585,
+      "corresponding_audit_report": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT_PR1214.md",
+      "corresponding_audit_report_duplicate": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT.md",
+      "corresponding_audit_report_duplicate_note": "AUDITOR_REPORT.md is byte-identical to AUDITOR_REPORT_PR1214.md. It is the same single run stored under two names, NOT a third independent audit. Two prompts, two sessions, two audits, three files.",
+      "corresponding_audit_report_duplicate_sha256": "847daae492459d55e9ce038399fe679de3f842ac0133a8dceceaf268ce16a484",
+      "corresponding_audit_report_sha256_committed": "847daae492459d55e9ce038399fe679de3f842ac0133a8dceceaf268ce16a484",
+      "exact_bytes_recovered": true,
+      "grok_result_json": "~/.cache/dopemux/task-runs/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-20260809T233351Z/GROK_PR1214_AUDIT.json",
+      "grok_session_id": "019fe955-cbc2-7562-be17-cbdc1acf481d",
+      "provider_attested_model": "UNKNOWN",
+      "provider_attested_model_note": "No provider-side attestation was obtained. The usage key is runner telemetry, not a provider attestation, and the two are not normalised into one another.",
+      "reconstructed_or_paraphrased": false,
+      "requested_model_as_recorded_in_s5_command": "grok-4.5",
+      "requested_model_reconciliation_note": "GROK_AUDIT_ROUTE_CUSTODY.json records operator_specified_requested_model = 'grok-4.5-build', while the S5 command line records the CLI flag '-m grok-4.5'. These are different identity layers (operator-specified string vs CLI-flag string) and are recorded separately rather than reconciled into one value. Neither is a provider attestation. The runner's own telemetry key is 'grok-4.5-build'.",
+      "sha256": "6b5c8e536daf641a6548ccd710b57a2a79f5168552476e23e7459145fd5082a2",
+      "telemetry_or_usage_key": "grok-4.5-build",
+      "turns": 13,
+      "verbatim_containment_in_session_first_user_record": true
+    }
+  ],
+  "purpose": "Close the S5 reproducibility gap. The recorded audit command previously carried a literal '<audit-prompt>' placeholder, so the packet named no artifact and the invocation could not be reproduced. These are the recovered exact prompt bytes, bound to the sessions that consumed them.",
+  "record_type": "INDEPENDENT_AUDIT_PROMPT_CUSTODY",
+  "recovery": {
+    "binding_evidence_class": "RUNNER_EMITTED_SESSION_TRANSCRIPT_AND_RESULT_JSON",
+    "binding_evidence_locations": [
+      "~/.grok/sessions/%2FUsers%2Fhue%2F.cache%2Fdopemux%2Ftask-runs%2FTP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-20260809T233351Z/<session-id>/chat_history.jsonl",
+      "~/.cache/dopemux/task-runs/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-20260809T233351Z/GROK_AMENDMENT_AUDIT.json",
+      "~/.cache/dopemux/task-runs/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-20260809T233351Z/GROK_PR1214_AUDIT.json"
+    ],
+    "session_directory_cwd_decoded": "/Users/hue/.cache/dopemux/task-runs/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-20260809T233351Z",
+    "session_directory_cwd_note": "The transcript directory name url-encodes the working directory the runner was invoked in. It decodes to the same task-run directory the prompts were recovered from, independently corroborating that these sessions ran from this run.",
+    "session_directory_name_is_url_encoded_cwd": true,
+    "source_class": "PRODUCER_LOCAL_TASK_RUN_DIRECTORY",
+    "source_directory": "~/.cache/dopemux/task-runs/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-20260809T233351Z"
+  },
+  "wrapper_difference": {
+    "added_by": "Grok runner, not the producer",
+    "classification": "BYTE_LEVEL_DIFFERENCE_NOT_NORMALIZATION",
+    "note": "The recorded sha256 of each artifact is the sha256 of the UNWRAPPED tracked file. No hash is asserted over the wrapped transcript form, and the tracked file is not claimed to be byte-identical to the transcript record \u2014 it is claimed to occur verbatim inside it, offset by this constant wrapper. Verified identical on both sessions.",
+    "prefix_bytes": 13,
+    "prefix_literal": "<user_query>\n",
+    "suffix_bytes": 13,
+    "suffix_literal": "</user_query>",
+    "total_wrapper_bytes": 26
+  }
+}

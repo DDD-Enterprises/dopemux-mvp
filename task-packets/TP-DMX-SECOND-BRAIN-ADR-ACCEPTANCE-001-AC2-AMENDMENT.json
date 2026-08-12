@@ -14,11 +14,14 @@
     "The embedded-audit schema and the allowed-signers file are NOT modified by this packet.",
     "No passing embedded-audit attestation is fabricated and Grok is not normalised into another allowed enum.",
     "The superseded pre-amendment acceptance commit 19fa74faa9 is not pushed, merged, rebased, deleted, or otherwise promoted.",
-    "Implementation execution remains NOT_AUTHORIZED and runtime mutation remains NONE."
+    "Implementation execution remains NOT_AUTHORIZED and runtime mutation remains NONE.",
+    "Historical implementation-planning outputs exist in a sealed, self-verifying planning bundle (TP-DMX-SECOND-BRAIN-IMPLEMENTATION-PLANNING-001-20260809T232914Z, zip sha256 5b021fc9b436b63973b73c9e6324fb0c9bdd909fb650ca300af600eec6c7ccd7, 37 members, internal manifest final_verdict PASS_IMPLEMENTATION_PLAN_WITH_NONBLOCKING_RISKS_READY_FOR_OPERATOR_PACKET_AUTHORIZATION) and support the factual claim that planning work reached COMPLETE. That bundle is NOT imported by this packet.",
+    "The Task Packet TP-DMX-SECOND-BRAIN-IMPLEMENTATION-PLANNING-001 is not present in repository-accessible evidence — it was added on no branch (git log --all --diff-filter=A returns nothing), matches no file under the producer's checkout or task-run cache, and is not among the sealed bundle's 37 members, which carry the planning outputs rather than the packet. It therefore cannot be verified as an authority object and is not listed as a machine dependency of this packet.",
+    "This amendment does not depend on, inherit authority from, or claim execution authority from that missing packet. Standing status is PLANNING_OUTPUT_STATUS=COMPLETE, PLANNING_PACKET_AUTHORITY=UNVERIFIABLE, IMPLEMENTATION_EXECUTION=NOT_AUTHORIZED.",
+    "Every command recorded in this packet is reproducible as written: no step carries a placeholder standing in for an artifact, and each independent-audit invocation names the tracked prompt file whose bytes were actually sent."
   ],
   "depends_on": [
-    "TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001",
-    "TP-DMX-SECOND-BRAIN-IMPLEMENTATION-PLANNING-001"
+    "TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001"
   ],
   "repo_binding": {
     "project_id": "dopemux-mvp",
@@ -72,13 +75,15 @@
       "id": "S2",
       "task": "Apply exactly 10 AC#2 substitutions using the operator-specified wording verbatim.",
       "commands": [
-        "grep -c '^\\* Machine contracts and denial fixtures parse and cover the decision\\.$' <candidate>"
+        "grep -c '^\\* Machine contracts and denial fixtures parse and cover the decision\\.$' proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/source-base-second-brain-adr-candidates.md",
+        "grep -c '^\\* Machine contracts and denial fixtures parse and cover the decision\\.$' docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md || true"
       ],
       "expected_files": [
-        "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md"
+        "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/source-base-second-brain-adr-candidates.md"
       ],
       "validation": [
-        "Occurrence count is 10 before substitution and 0 after.",
+        "Occurrence count is 10 before substitution and 0 after. Both halves are checkable from tracked bytes: the first command counts the pre-amendment line in the frozen base (expect 10) and the second counts it in the amended candidate (expect 0). The '|| true' is required because grep -c exits 1 on a zero count, which is the expected post-substitution result.",
         "the amended file hashes to e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c.",
         "line count is 375 before and after."
       ],
@@ -125,18 +130,28 @@
     },
     {
       "id": "S5",
-      "task": "Obtain an independent read-only audit of the exact amended bytes and of the exact content head from a non-implementer auditor.",
+      "task": "Obtain an independent read-only audit of the exact amended bytes and of the exact content head from a non-implementer auditor. Two distinct invocations were run, each with its own prompt, its own session, and its own report; neither report is derived from the other's prompt.",
       "commands": [
-        "grok -m grok-4.5 --effort high --prompt-file <audit-prompt> --permission-mode auto --deny Write --deny Edit --deny MultiEdit --deny NotebookEdit --output-format json"
+        "grok -m grok-4.5 --effort high --prompt-file proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDIT_PROMPT_AMENDMENT.md --permission-mode auto --deny Write --deny Edit --deny MultiEdit --deny NotebookEdit --output-format json",
+        "grok -m grok-4.5 --effort high --prompt-file proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDIT_PROMPT_PR1214.md --permission-mode auto --deny Write --deny Edit --deny MultiEdit --deny NotebookEdit --output-format json"
       ],
       "expected_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDIT_PROMPT_AMENDMENT.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDIT_PROMPT_PR1214.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDIT_PROMPT_CUSTODY.json",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT_AMENDMENT.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT_PR1214.md",
         "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT.md",
         "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/GROK_AUDIT_ROUTE_CUSTODY.json"
       ],
       "validation": [
         "Auditor verdict is PASS with 0 BLOCKER and 0 MUST_FIX, bound to content head cc2f49ccad3d7c39d6b9f0a9fb044616069585a7.",
         "Route custody records provider, requested model, observed usage key, fallback disabled, and model switching disabled, sourced from runner metadata rather than model self-report.",
-        "Session identifiers in the custody record must match the auditor report headers exactly."
+        "Session identifiers in the custody record must match the auditor report headers exactly.",
+        "Each tracked prompt hashes to the sha256 recorded in AUDIT_PROMPT_CUSTODY.json: AUDIT_PROMPT_AMENDMENT.md = 85437c1ad4373313fd5e9d80db5cf75b2210aa98c2bc09daaff250606ab4442c, AUDIT_PROMPT_PR1214.md = 6b5c8e536daf641a6548ccd710b57a2a79f5168552476e23e7459145fd5082a2.",
+        "Each tracked prompt's bytes occur verbatim inside the first non-synthetic user record of its bound Grok session transcript, offset by a runner-added wrapper of exactly 26 bytes (13-byte prefix '<user_query>\\n' and 13-byte suffix '</user_query>'). This is recorded as a byte-level difference, not a normalisation: the tracked file is not the transcript record, and no hash is asserted over the wrapped form.",
+        "Prompt-to-report binding is one-to-one and is not inferred from content similarity: AUDIT_PROMPT_AMENDMENT.md -> session 019fe93a-d8a9-7673-b69c-966e64b44e86 -> AUDITOR_REPORT_AMENDMENT.md; AUDIT_PROMPT_PR1214.md -> session 019fe955-cbc2-7562-be17-cbdc1acf481d -> AUDITOR_REPORT_PR1214.md, of which AUDITOR_REPORT.md is a byte-identical copy of the same run and not a third audit.",
+        "No prompt artifact is reconstructed, regenerated, or paraphrased; both are the recovered exact bytes. Closing this step required no new Grok execution because the historical sessions supply durable binding evidence."
       ],
       "context_files": []
     },
