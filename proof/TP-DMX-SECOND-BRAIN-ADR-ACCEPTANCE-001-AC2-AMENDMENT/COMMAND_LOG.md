@@ -48,7 +48,7 @@ python3 scripts/governance/validate_change_contract.py --base origin/main --head
 #
 # and again on the proof-only successor:
 #   status=PASS  paths=11  (same single L2 authority path, 10 x L0 proof)
-#   ^^^ SUPERSEDED — INCOMPLETE FOR FINAL-SLICE COVERAGE. See "Final-slice re-run" below.
+#   ^^^ SUPERSEDED — INCOMPLETE COVERAGE FOR ITS OWN SLICE. See the commit-bound receipts below.
 #   This run is preserved as historical evidence of what was actually executed at the time.
 #   It is NOT deleted or back-dated. It predates commit 48098c8178, which added two L2
 #   authority-metadata records, so its "same single L2 authority path" claim understates
@@ -59,7 +59,12 @@ git diff --check                                       # clean
 python3 scripts/audit/validate_audit_proof.py proof/.../PROOF.json   # 1/1 PASS (SKIPPED, truthful)
 ```
 
-### Final-slice re-run — supersedes the `paths=11` record above
+### Preflight re-run at `764f1644d1` — supersedes the `paths=11` record above
+
+> Retitled later. This section was originally headed *"Final-slice re-run — supersedes the
+> `paths=11` record above"*. Only the title changed; the run recorded below is untouched, and it
+> reproduces exactly at the commit now named in the title. The word *final* was the defect — see
+> **Commit-bound preflight receipt** below.
 
 Raised by automated PR review (chatgpt-codex-connector, P2, "Re-run preflight after final
 authority additions") and confirmed: the recorded `paths=11` run did not cover the final slice.
@@ -140,6 +145,83 @@ drop one of the ten AC#2 replacements             exit 1   S4 FAILED (5 checks)
 
 Packet re-validated against `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json`:
 **0 schema errors**.
+
+### Commit-bound preflight receipt — target head `e10a79a32d`
+
+Raised by automated PR review (chatgpt-codex-connector, P2, `COMMAND_LOG.md:78`) and confirmed:
+the `paths=16` record above no longer covered the slice, because the round-4 commit `e10a79a32d`
+added three audit-prompt custody artifacts. That is the same defect the `paths=16` record was
+itself written to fix.
+
+The cause is structural, not arithmetic. A receipt that calls itself *final* is invalidated by any
+successor commit that adds a file, so replacing one number with another would only reproduce the
+defect at the next commit. Receipts are therefore **bound to a named commit** from here on and
+claim nothing about successors. The superseded records are kept in place rather than overwritten:
+`paths=11` (pre-`48098c8178`) and `paths=16` (at `764f1644d1`) each remain accurate for the head
+that carried them, and `paths=16` was re-confirmed by re-running the validator with `--head
+764f1644d1`.
+
+```text
+COMMIT-BOUND PREFLIGHT RECEIPT
+
+VALIDATED_TARGET_HEAD = e10a79a32db1f200cd36d75d6fb04a25fce12e30
+BASE                  = 3e8fcc1c70c5b859dd651a1cd33c85eab837c93e   (origin/main at time of run)
+STATUS                = PASS
+MAX_LANE              = L2
+MODEL_AUDIT_REQUIRED  = True
+PATHS                 = 19
+L2_AUTHORITY_PATHS    = 3
+
+This result describes the PR slice at target head e10a79a32d. It supersedes earlier path-count
+receipts for coverage of that target, but does not claim to be an immutable "final" result for
+all future successor commits.
+```
+
+Command as run, with both endpoints pinned so it reproduces regardless of where `origin/main`
+later moves (byte-identical to the same run expressed as `--base origin/main --head HEAD`):
+
+```bash
+python3 scripts/governance/validate_change_contract.py \
+  --base 3e8fcc1c70c5b859dd651a1cd33c85eab837c93e \
+  --head e10a79a32db1f200cd36d75d6fb04a25fce12e30 --format text
+```
+
+Verbatim result:
+
+```text
+status=PASS
+max_lane=L2
+model_audit_required=True
+proof_only=False
+paths=19
+  [L2] docs/03-reference/architecture/second-brain/adr-candidates/ADR_CANDIDATE_AMENDMENT_HEAD.json
+  [L2] docs/03-reference/architecture/second-brain/adr-candidates/ac2-acceptance-condition-amendment.json
+  [L2] docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AC2_AMENDMENT_RECEIPT.json
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT.md
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT_AMENDMENT.md
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT_PR1214.md
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDIT_PROMPT_AMENDMENT.md
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDIT_PROMPT_CUSTODY.json
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDIT_PROMPT_PR1214.md
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/C1_CONTENT_HEAD.txt
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/COMMAND_LOG.md
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/CONFLICT_NOTICE_CONCURRENT_ACCEPTANCE.md
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/GROK_AUDIT_ROUTE_CUSTODY.json
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/GROK_SCHEMA_REPRESENTATION_GAP.md
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/PROOF.json
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/SUPERSESSION_LINEAGE.md
+  [L0] proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/source-base-second-brain-adr-candidates.md
+  [L0] task-packets/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT.json
+```
+
+**Successor commit.** The repair that adds this receipt modifies exactly two files —
+`COMMAND_LOG.md` and `AUDIT_PROMPT_CUSTODY.json`. Both are already members of the 19-path set
+above, so the successor commit changes bytes without changing path identities: `paths` stays 19,
+`max_lane` stays L2, `model_audit_required` stays true. What this receipt measures is path-set
+membership at a named commit, not the bytes of the files in it — which is what stops it
+self-invalidating. The re-run at the successor head is reported on the PR review thread rather
+than committed, so that recording the record does not itself require another record.
 
 ## Auditor findings addressed on this PR
 
