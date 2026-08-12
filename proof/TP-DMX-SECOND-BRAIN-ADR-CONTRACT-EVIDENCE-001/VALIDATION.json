@@ -4,12 +4,12 @@
   "base_sha": "6153bd4fb30ed3d038e51b371ad9ebfb4916bfac",
   "risk_lane": "L2",
   "buckets": {
-    "contract_validator": "PASS",
+    "contract_validator": "PASS (94 checks, 0 failed)",
     "adversarial_matrix": "PASS",
-    "packet_schema": "PASS",
+    "packet_schema": "PASS (task packet re-validated against dopetask-canonical-spec.json after being updated to round-2 counts and the new freeze)",
     "change_contract_preflight": "FAIL",
-    "diff_whitespace": "PASS",
-    "pre_commit": "FAIL",
+    "diff_whitespace": "PASS (git diff --check clean, re-run at the round-2 tree)",
+    "pre_commit": "FAIL (re-run on the round-2 changed slice; 1 hook of 1 applicable failed, proof-embedded-audit-schema, same single cause)",
     "independent_audit": "FAIL",
     "runtime_conformance": "NOT_RUN",
     "retrieval_benchmarks": "NOT_RUN",
@@ -17,7 +17,12 @@
     "multi_project_isolation": "NOT_RUN",
     "split_brain_proof": "NOT_RUN",
     "denial_fixtures": "NOT_IMPLEMENTED",
-    "encryption_implementation": "ABSENT"
+    "encryption_implementation": "ABSENT",
+    "adversarial_suite": "PASS (63 tests, 0 failed)",
+    "false_green_matrix": "PASS (10/10 operator-mandated mutations failed as intended, each via its intended guard)",
+    "denominator_refreeze": "PASS (160 clauses, sha256 b164fc0b4459…, frozen in 3e0d89815c with no contract or validator change)",
+    "change_contract": "FAIL (re-run at the round-2 tree; single cause = embedded-audit representation gap, no second cause)",
+    "embedded_audit": "FAIL (representation gap; out of lane per packet §1, not repaired)"
   },
   "commands": [
     {
@@ -61,21 +66,27 @@
   ],
   "not_run_rationale": "This packet produces architecture-time contract evidence only. Every runtime and enablement measurement remains NOT_RUN by design and is not inferred from contract coverage.",
   "independent_audit": {
-    "verdict": "FAIL",
-    "blockers": 3,
-    "must_fix": 5,
-    "controlling": true,
-    "effect": "Packet terminal state is BLOCKED_INDEPENDENT_AUDIT. Publication does not progress; the PR remains a draft.",
-    "audited_head": "7955ef33d7c0ab29daecbab966bc6a9497dc69ce"
+    "round_1": {
+      "verdict": "FAIL",
+      "blockers": 3,
+      "must_fix": 5,
+      "audited_head": "7955ef33d7c0ab29daecbab966bc6a9497dc69ce",
+      "status": "HISTORICAL_CONTROLLING_EVIDENCE_DO_NOT_EDIT",
+      "report": "AUDITOR_REPORT.md"
+    },
+    "round_2": "PENDING — run against the frozen round-2 content head"
   },
   "embedded_audit_representation_gap": {
     "effect": "change-contract preflight and the pre-commit proof hook both FAIL",
     "single_cause": "schemas/proof/embedded_audit.schema.json cannot name the grok CLI that ran, and forbids the none/unknown fallback unless status is SKIPPED.",
     "options_rejected": [
-      "status=SKIPPED with none/unknown \u2014 would falsely assert no audit happened and hide a FAIL verdict",
-      "status=FAIL with a tool/model picked from the enum \u2014 fabricating an auditor identity, forbidden by packet section 19"
+      "status=SKIPPED with none/unknown — would falsely assert no audit happened and hide a FAIL verdict",
+      "status=FAIL with a tool/model picked from the enum — fabricating an auditor identity, forbidden by packet section 19"
     ],
     "chosen": "status=FAIL (true and representable) with honest fallback values and the limitation stated in skip_reason; the gate error is accepted and recorded rather than engineered away.",
-    "schema_repair": "OUT_OF_SCOPE \u2014 packet section 1 forbids embedded-audit platform repair."
-  }
+    "schema_repair": "OUT_OF_SCOPE — packet section 1 forbids embedded-audit platform repair."
+  },
+  "round": 2,
+  "gate_results_are_fresh_round_2_observations": "change-contract and pre-commit were re-executed against the round-2 tree rather than carried forward from round 1. 'Still failing for the recorded reason' is an observation here, not an assumption.",
+  "skipped_hooks_note": "The pre-commit hooks reported as Skipped are scoped to docs/*.md and similar paths this slice does not touch; the skips are the hook config's file filters, not suppressed failures."
 }

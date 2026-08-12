@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "task_id": "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
-  "step": "S5",
+  "step": "S5-R2",
   "result": "FO01_STALE_RECORD_RECONCILED",
   "defect_class": "RECORD_BOUND_TO_SUPERSEDED_STATE",
   "defect": "Two records on main disagreed about whether FO-01 still blocked ADR acceptance. fo-01-repair-status.json asserted REPAIR_COMPLETE_PENDING_INDEPENDENT_VERIFICATION with independent_verification.performed=false; FO01_RESOLUTION_RECEIPT.json, written later after the audit, asserted TRACEABILITY_REPAIRED_AND_INDEPENDENTLY_REVERIFIED. The stale copy lives in the authority tree, so it surfaced first and read as 'never verified'. The finding is the disagreement, not an absence of verification.",
@@ -60,5 +60,12 @@
   "candidate_semantics_modified": false,
   "adr_semantics_modified": false,
   "adr_acceptance_authorized": false,
-  "verified_by": "scripts/governance/validate_second_brain_adr_contracts.py check group B"
+  "verified_by": "scripts/governance/validate_second_brain_adr_contracts.py check group B",
+  "validation_expanded_round_2": {
+    "finding": "MUST_FIX 5 — the reconciliation check was partial.",
+    "detail": "Several receipt-derived fields (nonblocking_observations, the auditor identity block, the source hashes) could drift while the checked subset still passed.",
+    "resolution": "Group B now computes the full expected projection from the receipt and compares all 39 mapped fields, pins the 37 fields that are not receipt-derived, requires the traceability matrix to be present rather than skipping when it is absent, and fails on any status leaf that is not classified as projected, pinned, matrix-derived or declared prose.",
+    "file_changed_this_round": false,
+    "note": "fo-01-repair-status.json itself is unchanged in round 2. The finding was about the strength of the check, not the content of the record."
+  }
 }

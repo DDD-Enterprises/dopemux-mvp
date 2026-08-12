@@ -1,12 +1,13 @@
 {
   "$schema": "./adr-machine-contract.schema.json",
-  "contract_version": "1.0.0",
+  "contract_version": "2.0.0",
   "adr_id": "ADR-SB-001",
   "adr_title": "Extension Boundary and Non-Authority",
   "contract_kind": "ARCHITECTURE_DECISION_CONTRACT",
   "candidate_document": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
   "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
   "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "clause_inventory_sha256": "b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439",
   "adr_status_at_contract_authoring": "PROPOSED",
   "sb_dec_references": [
     "SB-DEC-001",
@@ -14,13 +15,6 @@
     "SB-DEC-027"
   ],
   "required_artifacts": [],
-  "forbidden_authority_claims": [
-    "SECOND_BRAIN_AS_CANONICAL_DATABASE",
-    "SECOND_BRAIN_AS_FOURTH_AUTHORITY_PLANE",
-    "SECOND_BRAIN_PM_AUTHORITY",
-    "SECOND_BRAIN_WORKFLOW_AUTHORITY",
-    "DERIVED_READ_MODEL_AS_AUTHORITY"
-  ],
   "implementation_deferred": [
     "DENIAL_FIXTURES",
     "RUNTIME_CONFORMANCE",
@@ -32,59 +26,47 @@
   ],
   "runtime_claims_permitted": false,
   "denial_fixtures": "NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE",
-  "authority_targets_permitted": [
-    "ConPort",
-    "Dope-Memory",
-    "Leantime",
-    "Task Orchestrator",
-    "dopeTask"
-  ],
   "decision_clauses": [
     {
       "clause_id": "ADR-SB-001-C01",
-      "requirement_text": "Second Brain is an extension/control plane",
-      "subject": "second_brain.role",
+      "requirement_text": "Second Brain is an extension, not a memory plane",
+      "subject": "second_brain.form",
       "rule_type": "CONSTANT",
       "operator": "EQUALS",
-      "machine_value": "EXTENSION_CONTROL_PLANE",
+      "machine_value": "EXTENSION",
+      "section": "PROPOSED_DECISION",
       "source_fragments": [
-        "Create a Dopemux PCP/DCP-compatible extension.",
-        "It owns control logic, derived read models, projections, local spool coordination, purge coordination, and receipts only."
+        "Create a Dopemux PCP/DCP-compatible extension."
       ],
-      "source_decision_text_hash": "a803caf7deb4466662b2e1f5191f510d9ee241829b33a28c59b2f75ac92366bf",
+      "source_decision_text_hash": "7cac76065384c9276b523d94645c0a7315acebe7b13e46f992a54e7c52ba0ed3",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-001.contract.json#/decision_clauses/0"
       ]
     },
     {
       "clause_id": "ADR-SB-001-C02",
-      "requirement_text": "no canonical Second Brain database",
-      "subject": "second_brain.canonical_database",
-      "rule_type": "FORBID",
-      "operator": "MUST_NOT_EXIST",
-      "machine_value": "SECOND_BRAIN_CANONICAL_DATABASE",
+      "requirement_text": "no canonical Second Brain database exists",
+      "subject": "second_brain.canonical_database.exists",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "CONSEQUENCES",
       "source_fragments": [
-        "No canonical SB database",
-        "Dedicated Second Brain database"
+        "No canonical SB database"
       ],
-      "source_decision_text_hash": "139ade5f2e3e6470c846fac46a5eedfd64abae929df012a274172969d04edfae",
+      "source_decision_text_hash": "9a52079c247a3407f2322e6f3a647903ac6270324e2a6b5cdb8b2e84ba2f7356",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-001.contract.json#/decision_clauses/1"
       ]
     },
     {
       "clause_id": "ADR-SB-001-C03",
-      "requirement_text": "canonical writes target existing authorities",
-      "subject": "second_brain.canonical_write.target",
-      "rule_type": "AUTHORITY_TARGET",
-      "operator": "IN",
-      "machine_value": [
-        "ConPort",
-        "Dope-Memory",
-        "Leantime",
-        "Task Orchestrator",
-        "dopeTask"
-      ],
+      "requirement_text": "canonical writes target an existing authority",
+      "subject": "second_brain.canonical_write.target_is_existing_authority",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
       "source_fragments": [
         "Canonical writes go to existing authorities."
       ],
@@ -95,27 +77,29 @@
     },
     {
       "clause_id": "ADR-SB-001-C04",
-      "requirement_text": "derived read models are non-canonical",
-      "subject": "second_brain.derived_read_model.canonicality",
-      "rule_type": "FORBID",
-      "operator": "NOT_EQUALS",
-      "machine_value": "CANONICAL",
+      "requirement_text": "derived read models are not canonical",
+      "subject": "second_brain.derived_read_model.canonical",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "PROPOSED_DECISION",
       "source_fragments": [
         "It owns control logic, derived read models, projections, local spool coordination, purge coordination, and receipts only.",
-        "No canonical SB database"
+        "Canonical writes go to existing authorities."
       ],
-      "source_decision_text_hash": "e4fd91a93042aea45cb41c49c2df650544c3cde2d3b65a456c5cd0a891edee4d",
+      "source_decision_text_hash": "610fb6209e5d5b11fcbf1b3ee297d0b079a0a9283aa761520ca10595b6f966f3",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-001.contract.json#/decision_clauses/3"
       ]
     },
     {
       "clause_id": "ADR-SB-001-C05",
-      "requirement_text": "projection/spool/purge coordination does not confer authority",
+      "requirement_text": "coordination responsibilities confer no authority",
       "subject": "second_brain.coordination.confers_authority",
-      "rule_type": "FORBID",
+      "rule_type": "BOOLEAN",
       "operator": "EQUALS",
       "machine_value": false,
+      "section": "PROPOSED_DECISION",
       "source_fragments": [
         "It owns control logic, derived read models, projections, local spool coordination, purge coordination, and receipts only.",
         "Canonical writes go to existing authorities."
@@ -127,17 +111,106 @@
     },
     {
       "clause_id": "ADR-SB-001-C06",
-      "requirement_text": "extension can be disabled without canonical-store migration",
-      "subject": "second_brain.disable.requires_canonical_store_migration",
-      "rule_type": "REQUIRE",
+      "requirement_text": "the extension can be disabled without changing canonical stores",
+      "subject": "second_brain.disable.requires_canonical_store_change",
+      "rule_type": "BOOLEAN",
       "operator": "EQUALS",
       "machine_value": false,
+      "section": "CONSEQUENCES",
       "source_fragments": [
         "Disable extension without changing canonical stores"
       ],
       "source_decision_text_hash": "5934ffc735e1f629386e8940e800cb216f79d72416360562e00cf89d81b89808",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-001.contract.json#/decision_clauses/5"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-001-C07",
+      "requirement_text": "no fourth canonical memory plane is created",
+      "subject": "second_brain.creates_fourth_canonical_memory_plane",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "CONTEXT",
+      "source_fragments": [
+        "forbids a fourth canonical memory plane"
+      ],
+      "source_decision_text_hash": "366c2a7a1276f3818809a77695370aa16fb500eec0fcbdf5e29e4331b3608872",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-001.contract.json#/decision_clauses/6"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-001-C08",
+      "requirement_text": "the extension is PCP/DCP compatible",
+      "subject": "second_brain.pcp_dcp_compatible",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Create a Dopemux PCP/DCP-compatible extension."
+      ],
+      "source_decision_text_hash": "7cac76065384c9276b523d94645c0a7315acebe7b13e46f992a54e7c52ba0ed3",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-001.contract.json#/decision_clauses/7"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-001-C09",
+      "requirement_text": "closed set of what the extension owns",
+      "subject": "second_brain.owned_responsibilities",
+      "rule_type": "ENUM",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "CONTROL_LOGIC",
+        "DERIVED_READ_MODELS",
+        "PROJECTIONS",
+        "LOCAL_SPOOL_COORDINATION",
+        "PURGE_COORDINATION",
+        "RECEIPTS"
+      ],
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "It owns control logic, derived read models, projections, local spool coordination, purge coordination, and receipts only."
+      ],
+      "source_decision_text_hash": "7be28fe0538a606056f12410b4e84c9e24a29dced9da778538541bcd83df0a05",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-001.contract.json#/decision_clauses/8"
+      ],
+      "source_enumeration": "control logic, derived read models, projections, local spool coordination, purge coordination, and receipts"
+    },
+    {
+      "clause_id": "ADR-SB-001-C10",
+      "requirement_text": "one package",
+      "subject": "second_brain.deployment.package_count",
+      "rule_type": "NUMERIC",
+      "operator": "EQUALS",
+      "machine_value": 1,
+      "section": "CONSEQUENCES",
+      "source_fragments": [
+        "One package plus optional worker"
+      ],
+      "source_decision_text_hash": "56ebddd18aeef2442e0cec458163ea983a59ed9014a5ae318b710b50ce72ef0c",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-001.contract.json#/decision_clauses/9"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-001-C11",
+      "requirement_text": "the worker is optional",
+      "subject": "second_brain.deployment.worker_required",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "CONSEQUENCES",
+      "source_fragments": [
+        "One package plus optional worker"
+      ],
+      "source_decision_text_hash": "56ebddd18aeef2442e0cec458163ea983a59ed9014a5ae318b710b50ce72ef0c",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-001.contract.json#/decision_clauses/10"
       ]
     }
   ]

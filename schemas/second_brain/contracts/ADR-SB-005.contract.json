@@ -1,25 +1,19 @@
 {
   "$schema": "./adr-machine-contract.schema.json",
-  "contract_version": "1.0.0",
+  "contract_version": "2.0.0",
   "adr_id": "ADR-SB-005",
   "adr_title": "Markdown Projection Contract",
   "contract_kind": "ARCHITECTURE_DECISION_CONTRACT",
   "candidate_document": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
   "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
   "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "clause_inventory_sha256": "b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439",
   "adr_status_at_contract_authoring": "PROPOSED",
   "sb_dec_references": [
     "SB-DEC-018",
     "SB-DEC-019"
   ],
   "required_artifacts": [],
-  "forbidden_authority_claims": [
-    "SECOND_BRAIN_AS_CANONICAL_DATABASE",
-    "SECOND_BRAIN_AS_FOURTH_AUTHORITY_PLANE",
-    "SECOND_BRAIN_PM_AUTHORITY",
-    "SECOND_BRAIN_WORKFLOW_AUTHORITY",
-    "DERIVED_READ_MODEL_AS_AUTHORITY"
-  ],
   "implementation_deferred": [
     "DENIAL_FIXTURES",
     "RUNTIME_CONFORMANCE",
@@ -31,103 +25,103 @@
   ],
   "runtime_claims_permitted": false,
   "denial_fixtures": "NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE",
-  "authority_targets_permitted": [
-    "ConPort",
-    "Dope-Memory",
-    "Leantime",
-    "Task Orchestrator",
-    "dopeTask"
-  ],
   "decision_clauses": [
     {
       "clause_id": "ADR-SB-005-C01",
-      "requirement_text": "projection derives from canonical snapshot revision",
+      "requirement_text": "projection derives from canonical snapshot revisions",
       "subject": "second_brain.projection.source",
-      "rule_type": "REQUIRE",
+      "rule_type": "CONSTANT",
       "operator": "EQUALS",
       "machine_value": "CANONICAL_SNAPSHOT_REVISION",
+      "section": "PROPOSED_DECISION",
       "source_fragments": [
-        "Compile deterministic Markdown from canonical snapshot revisions"
+        "Compile deterministic Markdown from canonical snapshot revisions with stable paths, managed/manual regions, visible freshness, content hashes, purge propagation, and no silent write-back."
       ],
-      "source_decision_text_hash": "cb955dd5d7bf66fc4bbb0effbc547f8d6fa20eaa8892648a04d58071c2421acd",
+      "source_decision_text_hash": "f1aeaa9fdc01b6e2f593bc77977572cf2e2443927fc6a14ba09e4dc9878ea793",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-005.contract.json#/decision_clauses/0"
       ]
     },
     {
       "clause_id": "ADR-SB-005-C02",
-      "requirement_text": "stable paths",
+      "requirement_text": "projection paths are stable",
       "subject": "second_brain.projection.path_stability",
-      "rule_type": "REQUIRE",
+      "rule_type": "CONSTANT",
       "operator": "EQUALS",
       "machine_value": "STABLE",
+      "section": "PROPOSED_DECISION",
       "source_fragments": [
-        "with stable paths"
+        "Compile deterministic Markdown from canonical snapshot revisions with stable paths, managed/manual regions, visible freshness, content hashes, purge propagation, and no silent write-back."
       ],
-      "source_decision_text_hash": "8f67d587712d91449b1b857f50ec8586687883d6f695e44bc906742114e354f6",
+      "source_decision_text_hash": "f1aeaa9fdc01b6e2f593bc77977572cf2e2443927fc6a14ba09e4dc9878ea793",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-005.contract.json#/decision_clauses/1"
       ]
     },
     {
       "clause_id": "ADR-SB-005-C03",
-      "requirement_text": "managed/manual regions",
+      "requirement_text": "region kinds = managed / manual",
       "subject": "second_brain.projection.region_kinds",
       "rule_type": "ENUM",
       "operator": "SET_EQUALS",
       "machine_value": [
-        "managed",
-        "manual"
+        "MANAGED",
+        "MANUAL"
       ],
+      "section": "PROPOSED_DECISION",
       "source_fragments": [
-        "managed/manual regions"
+        "Compile deterministic Markdown from canonical snapshot revisions with stable paths, managed/manual regions, visible freshness, content hashes, purge propagation, and no silent write-back."
       ],
-      "source_decision_text_hash": "b495dc8affd96957161fd8cd04050fc606b2aa18cd10130c0ae8f1601be2beb2",
+      "source_decision_text_hash": "f1aeaa9fdc01b6e2f593bc77977572cf2e2443927fc6a14ba09e4dc9878ea793",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-005.contract.json#/decision_clauses/2"
-      ]
+      ],
+      "source_enumeration": "managed/manual"
     },
     {
       "clause_id": "ADR-SB-005-C04",
-      "requirement_text": "visible freshness",
+      "requirement_text": "freshness is visible",
       "subject": "second_brain.projection.freshness_visibility",
-      "rule_type": "REQUIRE",
+      "rule_type": "CONSTANT",
       "operator": "EQUALS",
       "machine_value": "VISIBLE",
+      "section": "PROPOSED_DECISION",
       "source_fragments": [
-        "visible freshness"
+        "Compile deterministic Markdown from canonical snapshot revisions with stable paths, managed/manual regions, visible freshness, content hashes, purge propagation, and no silent write-back."
       ],
-      "source_decision_text_hash": "9a6054492fcbaddbbd2592067280f7a308b976ad6ac0b8b9b748a42b0c734052",
+      "source_decision_text_hash": "f1aeaa9fdc01b6e2f593bc77977572cf2e2443927fc6a14ba09e4dc9878ea793",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-005.contract.json#/decision_clauses/3"
       ]
     },
     {
       "clause_id": "ADR-SB-005-C05",
-      "requirement_text": "content hash",
-      "subject": "second_brain.projection.content_hash",
-      "rule_type": "REQUIRE",
-      "operator": "MUST_EXIST",
-      "machine_value": "PROJECTION_CONTENT_SHA256",
+      "requirement_text": "content hashes are required",
+      "subject": "second_brain.projection.content_hash.required",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
       "source_fragments": [
-        "content hashes"
+        "Compile deterministic Markdown from canonical snapshot revisions with stable paths, managed/manual regions, visible freshness, content hashes, purge propagation, and no silent write-back."
       ],
-      "source_decision_text_hash": "16f3c5106768d94066315b9bf58a63d1fe12f6242ea5a0273e72f42587b3a074",
+      "source_decision_text_hash": "f1aeaa9fdc01b6e2f593bc77977572cf2e2443927fc6a14ba09e4dc9878ea793",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-005.contract.json#/decision_clauses/4"
       ]
     },
     {
       "clause_id": "ADR-SB-005-C06",
-      "requirement_text": "purge propagation",
+      "requirement_text": "purge propagates into the projection",
       "subject": "second_brain.projection.purge_propagation",
-      "rule_type": "REQUIRE",
+      "rule_type": "BOOLEAN",
       "operator": "EQUALS",
       "machine_value": true,
+      "section": "PROPOSED_DECISION",
       "source_fragments": [
-        "purge propagation"
+        "Compile deterministic Markdown from canonical snapshot revisions with stable paths, managed/manual regions, visible freshness, content hashes, purge propagation, and no silent write-back."
       ],
-      "source_decision_text_hash": "1456e9866a44b49a3660e6092cf6ad31f99f84a63d5c5e7b6eeebf27b372603d",
+      "source_decision_text_hash": "f1aeaa9fdc01b6e2f593bc77977572cf2e2443927fc6a14ba09e4dc9878ea793",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-005.contract.json#/decision_clauses/5"
       ]
@@ -135,25 +129,27 @@
     {
       "clause_id": "ADR-SB-005-C07",
       "requirement_text": "no silent write-back",
-      "subject": "second_brain.projection.write_back",
-      "rule_type": "FORBID",
-      "operator": "MUST_NOT_EXIST",
-      "machine_value": "SILENT_WRITE_BACK",
+      "subject": "second_brain.projection.silent_write_back",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "PROPOSED_DECISION",
       "source_fragments": [
-        "and no silent write-back"
+        "Compile deterministic Markdown from canonical snapshot revisions with stable paths, managed/manual regions, visible freshness, content hashes, purge propagation, and no silent write-back."
       ],
-      "source_decision_text_hash": "ac8b9f41ba7f87342409c10e4fa8eed6b3c09cf2fa2c9da51ba4eaf67fede6fc",
+      "source_decision_text_hash": "f1aeaa9fdc01b6e2f593bc77977572cf2e2443927fc6a14ba09e4dc9878ea793",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-005.contract.json#/decision_clauses/6"
       ]
     },
     {
       "clause_id": "ADR-SB-005-C08",
-      "requirement_text": "canonical source wins",
-      "subject": "second_brain.projection.conflict_resolution",
-      "rule_type": "REQUIRE",
+      "requirement_text": "canonical sources win any conflict",
+      "subject": "second_brain.projection.conflict.canonical_source_wins",
+      "rule_type": "BOOLEAN",
       "operator": "EQUALS",
-      "machine_value": "CANONICAL_SOURCE_WINS",
+      "machine_value": true,
+      "section": "CONSEQUENCES",
       "source_fragments": [
         "Canonical sources always win"
       ],
@@ -164,18 +160,98 @@
     },
     {
       "clause_id": "ADR-SB-005-C09",
-      "requirement_text": "Obsidian optional, never authority",
-      "subject": "second_brain.projection.obsidian.role",
-      "rule_type": "FORBID",
+      "requirement_text": "Obsidian is optional",
+      "subject": "second_brain.projection.obsidian.required",
+      "rule_type": "BOOLEAN",
       "operator": "EQUALS",
-      "machine_value": "OPTIONAL_OPENER_NEVER_AUTHORITY",
+      "machine_value": false,
+      "section": "PROPOSED_DECISION",
       "source_fragments": [
-        "Obsidian is an optional opener.",
-        "Markdown and Obsidian must not become accidental authorities"
+        "Obsidian is an optional opener."
       ],
-      "source_decision_text_hash": "2245d51047b3e3518f2dd18e1dc11ca9bdf7048bc2b8c63ff310b5fc72dd7ec3",
+      "source_decision_text_hash": "bb2737f1a14b32ad1203c62d043ef8e8d1d049afe6d71ea110b803c21f390ac0",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-005.contract.json#/decision_clauses/8"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-005-C10",
+      "requirement_text": "Obsidian is never an authority",
+      "subject": "second_brain.projection.obsidian.is_authority",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "CONTEXT",
+      "source_fragments": [
+        "Operators benefit from readable durable views, but Markdown and Obsidian must not become accidental authorities."
+      ],
+      "source_decision_text_hash": "162f3f961a6cb2d288c4ad2b81998a36bed3ced8b8b3743b2e87f8fd9d318cda",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-005.contract.json#/decision_clauses/9"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-005-C11",
+      "requirement_text": "Markdown is never an authority",
+      "subject": "second_brain.projection.markdown.is_authority",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "CONTEXT",
+      "source_fragments": [
+        "Operators benefit from readable durable views, but Markdown and Obsidian must not become accidental authorities."
+      ],
+      "source_decision_text_hash": "162f3f961a6cb2d288c4ad2b81998a36bed3ced8b8b3743b2e87f8fd9d318cda",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-005.contract.json#/decision_clauses/10"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-005-C12",
+      "requirement_text": "Markdown compilation is deterministic",
+      "subject": "second_brain.projection.compilation.deterministic",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Compile deterministic Markdown from canonical snapshot revisions with stable paths, managed/manual regions, visible freshness, content hashes, purge propagation, and no silent write-back."
+      ],
+      "source_decision_text_hash": "f1aeaa9fdc01b6e2f593bc77977572cf2e2443927fc6a14ba09e4dc9878ea793",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-005.contract.json#/decision_clauses/11"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-005-C13",
+      "requirement_text": "the vault is regenerable",
+      "subject": "second_brain.projection.vault.regenerable",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "CONSEQUENCES",
+      "source_fragments": [
+        "Regenerable vault"
+      ],
+      "source_decision_text_hash": "d4a6af8b0bd2a74ed3b89c620817f97bc2537d7aea62154b6c5c61fa7bffa6cf",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-005.contract.json#/decision_clauses/12"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-005-C14",
+      "requirement_text": "manual regions are preserved",
+      "subject": "second_brain.projection.manual_regions.preserved",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "CONSEQUENCES",
+      "source_fragments": [
+        "Manual regions preserved"
+      ],
+      "source_decision_text_hash": "2ee8e097ae2df4819d0b8b3cc570d9a70a068356dfe4649d0a166f91c182a3f4",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-005.contract.json#/decision_clauses/13"
       ]
     }
   ]

@@ -2,82 +2,46 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://dopemux.dev/schemas/second_brain/contracts/task-proposal.schema.json",
   "title": "TaskProposal",
-  "description": "A task-shaped suggestion held strictly separate from OpenLoopCandidate (ADR-SB-008). A proposal is not a task and confers no PM authority; it can only become one through TaskPromotionRequest, which is disabled.",
+  "description": "A task-shaped suggestion held strictly separate from OpenLoopCandidate (ADR-SB-008). Separateness is the decision; everything else about a proposal's shape is implementation-time.",
   "type": "object",
-  "additionalProperties": false,
   "required": [
-    "proposal_id",
-    "project_id",
-    "proposed_at",
-    "title",
-    "proposal_state",
-    "canonicality"
+    "separate_candidate"
   ],
   "properties": {
-    "proposal_id": {
-      "type": "string",
-      "minLength": 1
-    },
-    "project_id": {
-      "type": "string",
-      "minLength": 1
-    },
-    "proposed_at": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "derived_from_open_loop": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "title": {
-      "type": "string",
-      "minLength": 1
-    },
-    "rationale": {
-      "type": "string"
-    },
-    "proposal_state": {
-      "enum": [
-        "proposed",
-        "withdrawn",
-        "superseded"
-      ]
-    },
-    "evidence_refs": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "canonicality": {
-      "const": "NON_CANONICAL",
-      "description": "Second Brain artifacts are never canonical. Canonical writes target existing authorities only (ADR-SB-001)."
+    "separate_candidate": {
+      "const": true,
+      "description": "Task proposals are separate candidates. A TaskProposal is never an OpenLoopCandidate with extra fields."
     }
   },
-  "x-forbidden-properties": [
-    "assignee",
-    "owner",
-    "priority",
-    "pm_priority",
-    "status",
-    "workflow_status",
-    "sprint",
-    "sprint_state",
-    "task_completion_state",
-    "completed",
-    "done",
-    "scheduled_at"
-  ],
+  "x-unspecified-in-candidate": "The candidate states that task proposals are separate candidates and that task-shaped behaviour must be represented as a TaskProposal. It specifies no proposal field, state or lifecycle, so none is asserted.",
+  "x-grounding": {
+    "/required/0": {
+      "clause_id": "ADR-SB-008-C23",
+      "term": "separate candidate"
+    },
+    "/properties/separate_candidate": {
+      "clause_id": "ADR-SB-008-C23",
+      "term": "separate candidate"
+    }
+  },
   "x-machine-invariants": {
     "ADR-SB-008-C02": {
       "subject": "second_brain.task_proposal",
       "rule_type": "INTERFACE_REQUIREMENT",
       "operator": "MUST_EXIST",
-      "machine_value": "TaskProposal",
-      "enforced_by": "#/properties"
+      "machine_value": "TaskProposal"
+    },
+    "ADR-SB-008-C23": {
+      "subject": "second_brain.task_proposal.separate_from_open_loop",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true
+    },
+    "ADR-SB-008-C27": {
+      "subject": "second_brain.task_shaped_behavior.represented_as_task_proposal",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true
     }
   }
 }

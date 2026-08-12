@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://dopemux.dev/schemas/second_brain/contracts/adr-machine-contract.schema.json",
   "title": "Second Brain ADR machine contract",
-  "description": "Architecture-time machine contract for a single Second Brain ADR candidate. Satisfies amended acceptance condition #2 (\"Machine contracts required by this ADR MUST parse and cover the decision at ADR acceptance\"). Carries no implementation, runtime, or enablement authority.",
+  "description": "Machine-readable form of one candidate ADR's decision. Architecture-time evidence only: it encodes what must be true of any future implementation, and asserts nothing about one existing.",
   "type": "object",
   "required": [
     "contract_version",
@@ -12,11 +12,11 @@
     "candidate_document",
     "candidate_sha256",
     "ratification_binding_sha256",
+    "clause_inventory_sha256",
     "adr_status_at_contract_authoring",
     "sb_dec_references",
     "decision_clauses",
     "required_artifacts",
-    "forbidden_authority_claims",
     "implementation_deferred",
     "runtime_claims_permitted",
     "denial_fixtures"
@@ -27,11 +27,11 @@
       "type": "string"
     },
     "contract_version": {
-      "const": "1.0.0"
+      "const": "2.0.0"
     },
     "adr_id": {
-      "pattern": "^ADR-SB-0(0[1-9]|10)$",
-      "type": "string"
+      "type": "string",
+      "pattern": "^ADR-SB-0(0[1-9]|10)$"
     },
     "adr_title": {
       "type": "string",
@@ -48,6 +48,10 @@
     },
     "ratification_binding_sha256": {
       "const": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34"
+    },
+    "clause_inventory_sha256": {
+      "const": "b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439",
+      "description": "The re-frozen denominator this contract was generated from. Pinned here and independently pinned in the validator, so a post-freeze edit to the inventory cannot be absorbed by editing the contracts to agree with it."
     },
     "adr_status_at_contract_authoring": {
       "const": "PROPOSED"
@@ -69,14 +73,6 @@
         "pattern": "^schemas/second_brain/contracts/"
       }
     },
-    "forbidden_authority_claims": {
-      "type": "array",
-      "minItems": 1,
-      "uniqueItems": true,
-      "items": {
-        "type": "string"
-      }
-    },
     "implementation_deferred": {
       "type": "array",
       "minItems": 1,
@@ -93,19 +89,6 @@
       "const": "NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE",
       "description": "Denial fixtures are an implementation/enablement gate outside architecture-time contract evidence. No contract may claim they exist."
     },
-    "authority_targets_permitted": {
-      "type": "array",
-      "uniqueItems": true,
-      "items": {
-        "enum": [
-          "ConPort",
-          "Dope-Memory",
-          "Leantime",
-          "Task Orchestrator",
-          "dopeTask"
-        ]
-      }
-    },
     "decision_clauses": {
       "type": "array",
       "minItems": 1,
@@ -118,6 +101,7 @@
           "rule_type",
           "operator",
           "machine_value",
+          "section",
           "source_fragments",
           "source_decision_text_hash",
           "covered_by"
@@ -126,7 +110,7 @@
         "properties": {
           "clause_id": {
             "type": "string",
-            "pattern": "^ADR-SB-\\d{3}-C\\d{2}$"
+            "pattern": "^ADR-SB-0(0[1-9]|10)-C\\d{2}$"
           },
           "requirement_text": {
             "type": "string",
@@ -134,41 +118,36 @@
           },
           "subject": {
             "type": "string",
-            "pattern": "^second_brain\\."
+            "minLength": 1
           },
           "rule_type": {
             "enum": [
-              "REQUIRE",
-              "FORBID",
+              "BOOLEAN",
+              "NUMERIC",
               "ENUM",
               "CONSTANT",
-              "MAXIMUM",
               "AUTHORITY_TARGET",
-              "FAIL_CLOSED",
-              "STATE_TRANSITION",
-              "LIFECYCLE",
-              "CAPABILITY_GATE",
-              "INTERFACE_REQUIREMENT",
-              "HASH_BINDING",
-              "ORDERING"
+              "INTERFACE_REQUIREMENT"
             ]
           },
           "operator": {
             "enum": [
               "EQUALS",
-              "NOT_EQUALS",
-              "IN",
-              "NOT_IN",
               "SET_EQUALS",
-              "SUPERSET_OF",
               "LESS_THAN_OR_EQUAL",
-              "MUST_EXIST",
-              "MUST_NOT_EXIST",
-              "PRECEDES",
-              "DEFAULTS_TO"
+              "MUST_EXIST"
             ]
           },
           "machine_value": {},
+          "section": {
+            "enum": [
+              "CONTEXT",
+              "PROPOSED_DECISION",
+              "MA06_AMENDMENT",
+              "CONSEQUENCES"
+            ],
+            "description": "Which subsection of the ADR grounds this clause. 'Rejected alternatives' is absent by construction: a rejected design may never ground a rule."
+          },
           "source_fragments": {
             "type": "array",
             "minItems": 1,
@@ -176,6 +155,11 @@
               "type": "string",
               "minLength": 1
             }
+          },
+          "source_enumeration": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Required for SET_EQUALS. The verbatim candidate phrase the closed set is tokenized from; the asserted set must equal that tokenization exactly, so the set can neither widen nor shrink."
           },
           "source_decision_text_hash": {
             "type": "string",
@@ -186,7 +170,7 @@
             "minItems": 1,
             "items": {
               "type": "string",
-              "pattern": "#/"
+              "minLength": 1
             }
           }
         }

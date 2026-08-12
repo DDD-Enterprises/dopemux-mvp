@@ -1171,6 +1171,18 @@ JUDGMENTS = [
                      "project switching' (C04), so no set member is invented.",
     },
     {
+        "unit": "ADR-SB-005 'Obsidian is an optional opener.'",
+        "disposition": "INCLUDED as two clauses (C09 optional, C10 never an "
+                       "authority); 'opener' itself carries no clause",
+        "rationale": "The sentence constrains two things: Obsidian is not "
+                     "required, and it is not an authority (the latter from the "
+                     "Context sentence). 'Opener' is a functional description of "
+                     "what it does when present, not an additional invariant, so "
+                     "no clause asserts it. The superseded contract collapsed all "
+                     "of this into one ungrounded token, "
+                     "OPTIONAL_OPENER_NEVER_AUTHORITY.",
+    },
+    {
         "unit": "ADR-SB-009 ProjectIdentityEnvelope / ServiceCapabilityReceipt",
         "disposition": "NOT modelled as INTERFACE_REQUIREMENT clauses",
         "rationale": "Unlike LocalSpoolPort, CustodyPort, OpenLoopCandidate, "

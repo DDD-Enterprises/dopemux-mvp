@@ -1,12 +1,13 @@
 {
   "$schema": "./adr-machine-contract.schema.json",
-  "contract_version": "1.0.0",
+  "contract_version": "2.0.0",
   "adr_id": "ADR-SB-008",
   "adr_title": "Open Loop and Task Proposal Boundary",
   "contract_kind": "ARCHITECTURE_DECISION_CONTRACT",
   "candidate_document": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
   "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
   "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "clause_inventory_sha256": "b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439",
   "adr_status_at_contract_authoring": "PROPOSED",
   "sb_dec_references": [
     "SB-DEC-006",
@@ -19,13 +20,6 @@
     "schemas/second_brain/contracts/task-promotion-request.schema.json",
     "schemas/second_brain/contracts/task-proposal.schema.json"
   ],
-  "forbidden_authority_claims": [
-    "SECOND_BRAIN_AS_CANONICAL_DATABASE",
-    "SECOND_BRAIN_AS_FOURTH_AUTHORITY_PLANE",
-    "SECOND_BRAIN_PM_AUTHORITY",
-    "SECOND_BRAIN_WORKFLOW_AUTHORITY",
-    "DERIVED_READ_MODEL_AS_AUTHORITY"
-  ],
   "implementation_deferred": [
     "DENIAL_FIXTURES",
     "RUNTIME_CONFORMANCE",
@@ -37,13 +31,6 @@
   ],
   "runtime_claims_permitted": false,
   "denial_fixtures": "NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE",
-  "authority_targets_permitted": [
-    "ConPort",
-    "Dope-Memory",
-    "Leantime",
-    "Task Orchestrator",
-    "dopeTask"
-  ],
   "decision_clauses": [
     {
       "clause_id": "ADR-SB-008-C01",
@@ -52,13 +39,14 @@
       "rule_type": "INTERFACE_REQUIREMENT",
       "operator": "MUST_EXIST",
       "machine_value": "OpenLoopCandidate",
+      "section": "MA06_AMENDMENT",
       "source_fragments": [
-        "Represent detected loops as suggested candidates."
+        "`OpenLoopCandidate.due_at` is advisory display metadata only."
       ],
-      "source_decision_text_hash": "cc348e883298d4e71f1282b50baa5f8e9008d07e32a9c241b8c61543bbec4f58",
+      "source_decision_text_hash": "d71269fef6f1ce433265fece6e6ca75e0baca77462f9015f0e019f1494ab0331",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/0",
-        "schemas/second_brain/contracts/open-loop-candidate.schema.json#/x-machine-invariants/ADR-SB-008-C01"
+        "schemas/second_brain/contracts/open-loop-candidate.schema.json"
       ]
     },
     {
@@ -68,13 +56,14 @@
       "rule_type": "INTERFACE_REQUIREMENT",
       "operator": "MUST_EXIST",
       "machine_value": "TaskProposal",
+      "section": "MA06_AMENDMENT",
       "source_fragments": [
-        "Any task-shaped behavior must be represented as a separate `TaskProposal`"
+        "Any task-shaped behavior must be represented as a separate `TaskProposal` and mutated only through the disabled `TaskPromotionRequest` path (Slice 6)."
       ],
-      "source_decision_text_hash": "21ff6fdfc17f0e77c00798bb179cdb885920ad53269d67584d404f7133c840bb",
+      "source_decision_text_hash": "95ab8481224cab11e3ac23ba5abd33560937399c6d6b752c22609b3ef3a80608",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/1",
-        "schemas/second_brain/contracts/task-proposal.schema.json#/x-machine-invariants/ADR-SB-008-C02"
+        "schemas/second_brain/contracts/task-proposal.schema.json"
       ]
     },
     {
@@ -84,225 +73,587 @@
       "rule_type": "INTERFACE_REQUIREMENT",
       "operator": "MUST_EXIST",
       "machine_value": "TaskPromotionRequest",
+      "section": "MA06_AMENDMENT",
       "source_fragments": [
-        "mutated only through the disabled `TaskPromotionRequest` path"
+        "Any task-shaped behavior must be represented as a separate `TaskProposal` and mutated only through the disabled `TaskPromotionRequest` path (Slice 6)."
       ],
-      "source_decision_text_hash": "dc0d478d556f0c756eec75994222c60c98a835e04d6c80f88ac9d2c1ba240ec2",
+      "source_decision_text_hash": "95ab8481224cab11e3ac23ba5abd33560937399c6d6b752c22609b3ef3a80608",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/2",
-        "schemas/second_brain/contracts/task-promotion-request.schema.json#/x-machine-invariants/ADR-SB-008-C03"
+        "schemas/second_brain/contracts/task-promotion-request.schema.json"
       ]
     },
     {
       "clause_id": "ADR-SB-008-C04",
-      "requirement_text": "confirmed open-loop events → Dope-Memory",
+      "requirement_text": "confirmed open-loop events are appended to Dope-Memory",
       "subject": "second_brain.open_loop.confirmed_event.append_target",
       "rule_type": "AUTHORITY_TARGET",
       "operator": "EQUALS",
       "machine_value": "Dope-Memory",
+      "section": "PROPOSED_DECISION",
       "source_fragments": [
-        "Confirmation appends open/close/cancel events to Dope-Memory"
+        "Confirmation appends open/close/cancel events to Dope-Memory; the active list is derived."
       ],
-      "source_decision_text_hash": "54c72377b81533ce42c1d79c76d150aeb0a2af90a4c5ddd697c48fd1cd45286c",
+      "source_decision_text_hash": "9510427f02bae8f0da0458381926daee7e200e0b4d691cc2c7efbe53dc018e04",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/3"
       ]
     },
     {
       "clause_id": "ADR-SB-008-C05",
-      "requirement_text": "active loop list = derived",
-      "subject": "second_brain.open_loop.active_list.canonicality",
-      "rule_type": "FORBID",
-      "operator": "NOT_EQUALS",
-      "machine_value": "CANONICAL",
+      "requirement_text": "the active open-loop list is derived",
+      "subject": "second_brain.open_loop.active_list.derived",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
       "source_fragments": [
-        "the active list is derived"
+        "Confirmation appends open/close/cancel events to Dope-Memory; the active list is derived."
       ],
-      "source_decision_text_hash": "4fadb0f4751ebbd483f1a0a412278a21601bb9c3fa08d60edc499f75b37784ba",
+      "source_decision_text_hash": "9510427f02bae8f0da0458381926daee7e200e0b4d691cc2c7efbe53dc018e04",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/4"
       ]
     },
     {
       "clause_id": "ADR-SB-008-C06",
-      "requirement_text": "task mutation requires Leantime + Task Orchestrator proof + explicit approval",
-      "subject": "second_brain.task_mutation.preconditions",
-      "rule_type": "CAPABILITY_GATE",
-      "operator": "SET_EQUALS",
-      "machine_value": [
-        "LEANTIME_PROOF",
-        "TASK_ORCHESTRATOR_PROOF",
-        "EXPLICIT_OPERATOR_APPROVAL"
-      ],
+      "requirement_text": "task creation requires Leantime proof",
+      "subject": "second_brain.task_creation.requires_leantime_proof",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
       "source_fragments": [
-        "Actual task creation requires Leantime plus Task Orchestrator proof and explicit approval"
+        "Actual task creation requires Leantime plus Task Orchestrator proof and explicit approval; it is disabled initially."
       ],
-      "source_decision_text_hash": "61d79d505a6d03796c963fd4c2631baa6a181be1af536b3949ebeda17b269892",
+      "source_decision_text_hash": "2a58e88033c895f9a16ca9c089eeb7b4eb249729e9f4501eff5a7d4d412db92d",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/5",
-        "schemas/second_brain/contracts/task-promotion-request.schema.json#/x-machine-invariants/ADR-SB-008-C06"
+        "schemas/second_brain/contracts/task-promotion-request.schema.json"
       ]
     },
     {
       "clause_id": "ADR-SB-008-C07",
-      "requirement_text": "task promotion initially disabled",
+      "requirement_text": "task promotion is disabled",
       "subject": "second_brain.task_promotion.enabled",
-      "rule_type": "CAPABILITY_GATE",
+      "rule_type": "BOOLEAN",
       "operator": "EQUALS",
       "machine_value": false,
+      "section": "PROPOSED_DECISION",
       "source_fragments": [
-        "it is disabled initially"
+        "Actual task creation requires Leantime plus Task Orchestrator proof and explicit approval; it is disabled initially."
       ],
-      "source_decision_text_hash": "1a2abd6b655b6e18a332d3c8149d826d5bcc6cc55ce411d5a75f060e3e476638",
+      "source_decision_text_hash": "2a58e88033c895f9a16ca9c089eeb7b4eb249729e9f4501eff5a7d4d412db92d",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/6",
-        "schemas/second_brain/contracts/task-promotion-request.schema.json#/x-machine-invariants/ADR-SB-008-C07"
+        "schemas/second_brain/contracts/task-promotion-request.schema.json"
       ]
     },
     {
       "clause_id": "ADR-SB-008-C08",
-      "requirement_text": "open loop has no assignee",
-      "subject": "second_brain.open_loop.field.assignee",
-      "rule_type": "FORBID",
-      "operator": "MUST_NOT_EXIST",
-      "machine_value": "assignee",
+      "requirement_text": "a confirmed open loop may never carry an assignee",
+      "subject": "second_brain.open_loop.field.assignee.permitted",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "MA06_AMENDMENT",
       "source_fragments": [
-        "may never carry an assignee"
+        "A confirmed open loop, and its derived current-state view, may never carry an assignee, PM priority, workflow status, sprint state, ownership assignment, due-driven escalation, automatic scheduling, or task completion state."
       ],
-      "source_decision_text_hash": "9e239a5a756bb1ebf6ab906309464a713e34a5e6d3b9e3e06e9f51571d5f0403",
+      "source_decision_text_hash": "a53f4ae0e2152447d962d8b05d77f19a23cd3938d741be9d661c12417478bca8",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/7",
-        "schemas/second_brain/contracts/open-loop-candidate.schema.json#/x-machine-invariants/ADR-SB-008-C08"
+        "schemas/second_brain/contracts/open-loop-candidate.schema.json"
       ]
     },
     {
       "clause_id": "ADR-SB-008-C09",
-      "requirement_text": "no PM priority",
-      "subject": "second_brain.open_loop.field.pm_priority",
-      "rule_type": "FORBID",
-      "operator": "MUST_NOT_EXIST",
-      "machine_value": "pm_priority",
+      "requirement_text": "a confirmed open loop may never carry PM priority",
+      "subject": "second_brain.open_loop.field.pm_priority.permitted",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "MA06_AMENDMENT",
       "source_fragments": [
-        "PM priority"
+        "A confirmed open loop, and its derived current-state view, may never carry an assignee, PM priority, workflow status, sprint state, ownership assignment, due-driven escalation, automatic scheduling, or task completion state."
       ],
-      "source_decision_text_hash": "b36ee38d465877dd9c767a44223566ec69f01ec41617b2691d03dc460974a1ae",
+      "source_decision_text_hash": "a53f4ae0e2152447d962d8b05d77f19a23cd3938d741be9d661c12417478bca8",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/8",
-        "schemas/second_brain/contracts/open-loop-candidate.schema.json#/x-machine-invariants/ADR-SB-008-C09"
+        "schemas/second_brain/contracts/open-loop-candidate.schema.json"
       ]
     },
     {
       "clause_id": "ADR-SB-008-C10",
-      "requirement_text": "no workflow status",
-      "subject": "second_brain.open_loop.field.workflow_status",
-      "rule_type": "FORBID",
-      "operator": "MUST_NOT_EXIST",
-      "machine_value": "workflow_status",
+      "requirement_text": "a confirmed open loop may never carry workflow status",
+      "subject": "second_brain.open_loop.field.workflow_status.permitted",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "MA06_AMENDMENT",
       "source_fragments": [
-        "workflow status"
+        "A confirmed open loop, and its derived current-state view, may never carry an assignee, PM priority, workflow status, sprint state, ownership assignment, due-driven escalation, automatic scheduling, or task completion state."
       ],
-      "source_decision_text_hash": "523ba9f8e212f9d695f04a8422d5bbc42b45521be7d34e36da37ef9e1d2d6a7b",
+      "source_decision_text_hash": "a53f4ae0e2152447d962d8b05d77f19a23cd3938d741be9d661c12417478bca8",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/9",
-        "schemas/second_brain/contracts/open-loop-candidate.schema.json#/x-machine-invariants/ADR-SB-008-C10"
+        "schemas/second_brain/contracts/open-loop-candidate.schema.json"
       ]
     },
     {
       "clause_id": "ADR-SB-008-C11",
-      "requirement_text": "no sprint state",
-      "subject": "second_brain.open_loop.field.sprint_state",
-      "rule_type": "FORBID",
-      "operator": "MUST_NOT_EXIST",
-      "machine_value": "sprint_state",
+      "requirement_text": "a confirmed open loop may never carry sprint state",
+      "subject": "second_brain.open_loop.field.sprint_state.permitted",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "MA06_AMENDMENT",
       "source_fragments": [
-        "sprint state"
+        "A confirmed open loop, and its derived current-state view, may never carry an assignee, PM priority, workflow status, sprint state, ownership assignment, due-driven escalation, automatic scheduling, or task completion state."
       ],
-      "source_decision_text_hash": "7675db1f9222f9b92347186c0ec50ac5daf1a9e973b7dc9ee5bdd73917d0c3c2",
+      "source_decision_text_hash": "a53f4ae0e2152447d962d8b05d77f19a23cd3938d741be9d661c12417478bca8",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/10",
-        "schemas/second_brain/contracts/open-loop-candidate.schema.json#/x-machine-invariants/ADR-SB-008-C11"
+        "schemas/second_brain/contracts/open-loop-candidate.schema.json"
       ]
     },
     {
       "clause_id": "ADR-SB-008-C12",
-      "requirement_text": "no ownership assignment",
-      "subject": "second_brain.open_loop.field.ownership",
-      "rule_type": "FORBID",
-      "operator": "MUST_NOT_EXIST",
-      "machine_value": "ownership",
+      "requirement_text": "a confirmed open loop may never carry an ownership assignment",
+      "subject": "second_brain.open_loop.field.ownership_assignment.permitted",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "MA06_AMENDMENT",
       "source_fragments": [
-        "ownership assignment"
+        "A confirmed open loop, and its derived current-state view, may never carry an assignee, PM priority, workflow status, sprint state, ownership assignment, due-driven escalation, automatic scheduling, or task completion state."
       ],
-      "source_decision_text_hash": "7f17165a5a501a33076f640990b8360ae848ef5b9a5d8be58138c6c5a297ed96",
+      "source_decision_text_hash": "a53f4ae0e2152447d962d8b05d77f19a23cd3938d741be9d661c12417478bca8",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/11",
-        "schemas/second_brain/contracts/open-loop-candidate.schema.json#/x-machine-invariants/ADR-SB-008-C12"
+        "schemas/second_brain/contracts/open-loop-candidate.schema.json"
       ]
     },
     {
       "clause_id": "ADR-SB-008-C13",
-      "requirement_text": "no due-driven escalation",
-      "subject": "second_brain.open_loop.due_driven_escalation",
-      "rule_type": "FORBID",
+      "requirement_text": "a confirmed open loop may never carry due-driven escalation",
+      "subject": "second_brain.open_loop.field.due_driven_escalation.permitted",
+      "rule_type": "BOOLEAN",
       "operator": "EQUALS",
       "machine_value": false,
+      "section": "MA06_AMENDMENT",
       "source_fragments": [
-        "due-driven escalation",
-        "`due_at` cannot trigger scheduling or escalation"
+        "A confirmed open loop, and its derived current-state view, may never carry an assignee, PM priority, workflow status, sprint state, ownership assignment, due-driven escalation, automatic scheduling, or task completion state."
       ],
-      "source_decision_text_hash": "67f751161be8e856fb80f7245909e0eca7d0176d12eadec0c9f1f30ab53c7cd6",
+      "source_decision_text_hash": "a53f4ae0e2152447d962d8b05d77f19a23cd3938d741be9d661c12417478bca8",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/12",
-        "schemas/second_brain/contracts/open-loop-candidate.schema.json#/x-machine-invariants/ADR-SB-008-C13"
+        "schemas/second_brain/contracts/open-loop-candidate.schema.json"
       ]
     },
     {
       "clause_id": "ADR-SB-008-C14",
-      "requirement_text": "no automatic scheduling",
-      "subject": "second_brain.open_loop.automatic_scheduling",
-      "rule_type": "FORBID",
+      "requirement_text": "a confirmed open loop may never carry automatic scheduling",
+      "subject": "second_brain.open_loop.field.automatic_scheduling.permitted",
+      "rule_type": "BOOLEAN",
       "operator": "EQUALS",
       "machine_value": false,
+      "section": "MA06_AMENDMENT",
       "source_fragments": [
-        "automatic scheduling"
+        "A confirmed open loop, and its derived current-state view, may never carry an assignee, PM priority, workflow status, sprint state, ownership assignment, due-driven escalation, automatic scheduling, or task completion state."
       ],
-      "source_decision_text_hash": "badddfcf700bfcc893e4db6113d22a9bd6e62d86aec713c83bd97785b5bd7303",
+      "source_decision_text_hash": "a53f4ae0e2152447d962d8b05d77f19a23cd3938d741be9d661c12417478bca8",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/13",
-        "schemas/second_brain/contracts/open-loop-candidate.schema.json#/x-machine-invariants/ADR-SB-008-C14"
+        "schemas/second_brain/contracts/open-loop-candidate.schema.json"
       ]
     },
     {
       "clause_id": "ADR-SB-008-C15",
-      "requirement_text": "no task completion state",
-      "subject": "second_brain.open_loop.field.task_completion_state",
-      "rule_type": "FORBID",
-      "operator": "MUST_NOT_EXIST",
-      "machine_value": "task_completion_state",
+      "requirement_text": "a confirmed open loop may never carry task completion state",
+      "subject": "second_brain.open_loop.field.task_completion_state.permitted",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "MA06_AMENDMENT",
       "source_fragments": [
-        "or task completion state"
+        "A confirmed open loop, and its derived current-state view, may never carry an assignee, PM priority, workflow status, sprint state, ownership assignment, due-driven escalation, automatic scheduling, or task completion state."
       ],
-      "source_decision_text_hash": "f3b674ff4d91bc0c4bedd757682c715cf5e2ff59775414ed1c2d802973104857",
+      "source_decision_text_hash": "a53f4ae0e2152447d962d8b05d77f19a23cd3938d741be9d661c12417478bca8",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/14",
-        "schemas/second_brain/contracts/open-loop-candidate.schema.json#/x-machine-invariants/ADR-SB-008-C15"
+        "schemas/second_brain/contracts/open-loop-candidate.schema.json"
       ]
     },
     {
       "clause_id": "ADR-SB-008-C16",
-      "requirement_text": "due_at is display/advisory only",
+      "requirement_text": "due_at is advisory display metadata only",
       "subject": "second_brain.open_loop.due_at.semantics",
       "rule_type": "CONSTANT",
       "operator": "EQUALS",
       "machine_value": "ADVISORY_DISPLAY_METADATA_ONLY",
+      "section": "MA06_AMENDMENT",
       "source_fragments": [
         "`OpenLoopCandidate.due_at` is advisory display metadata only."
       ],
       "source_decision_text_hash": "d71269fef6f1ce433265fece6e6ca75e0baca77462f9015f0e019f1494ab0331",
       "covered_by": [
         "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/15",
-        "schemas/second_brain/contracts/open-loop-candidate.schema.json#/x-machine-invariants/ADR-SB-008-C16"
+        "schemas/second_brain/contracts/open-loop-candidate.schema.json"
       ]
+    },
+    {
+      "clause_id": "ADR-SB-008-C17",
+      "requirement_text": "task creation requires Task Orchestrator proof",
+      "subject": "second_brain.task_creation.requires_task_orchestrator_proof",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Actual task creation requires Leantime plus Task Orchestrator proof and explicit approval; it is disabled initially."
+      ],
+      "source_decision_text_hash": "2a58e88033c895f9a16ca9c089eeb7b4eb249729e9f4501eff5a7d4d412db92d",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/16",
+        "schemas/second_brain/contracts/task-promotion-request.schema.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-008-C18",
+      "requirement_text": "task creation requires explicit approval",
+      "subject": "second_brain.task_creation.requires_explicit_approval",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Actual task creation requires Leantime plus Task Orchestrator proof and explicit approval; it is disabled initially."
+      ],
+      "source_decision_text_hash": "2a58e88033c895f9a16ca9c089eeb7b4eb249729e9f4501eff5a7d4d412db92d",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/17",
+        "schemas/second_brain/contracts/task-promotion-request.schema.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-008-C19",
+      "requirement_text": "closed set of PM semantics a confirmed open loop may never carry",
+      "subject": "second_brain.open_loop.forbidden_pm_semantics",
+      "rule_type": "ENUM",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "ASSIGNEE",
+        "PM_PRIORITY",
+        "WORKFLOW_STATUS",
+        "SPRINT_STATE",
+        "OWNERSHIP_ASSIGNMENT",
+        "DUE_DRIVEN_ESCALATION",
+        "AUTOMATIC_SCHEDULING",
+        "TASK_COMPLETION_STATE"
+      ],
+      "section": "MA06_AMENDMENT",
+      "source_fragments": [
+        "A confirmed open loop, and its derived current-state view, may never carry an assignee, PM priority, workflow status, sprint state, ownership assignment, due-driven escalation, automatic scheduling, or task completion state."
+      ],
+      "source_decision_text_hash": "a53f4ae0e2152447d962d8b05d77f19a23cd3938d741be9d661c12417478bca8",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/18",
+        "schemas/second_brain/contracts/open-loop-candidate.schema.json"
+      ],
+      "source_enumeration": "assignee, PM priority, workflow status, sprint state, ownership assignment, due-driven escalation, automatic scheduling, or task completion state"
+    },
+    {
+      "clause_id": "ADR-SB-008-C20",
+      "requirement_text": "an unresolved commitment is not necessarily a PM task",
+      "subject": "second_brain.open_loop.is_pm_task",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "CONTEXT",
+      "source_fragments": [
+        "An unresolved commitment is not necessarily a PM task, and the PM/workflow authority path is not yet operationally unambiguous."
+      ],
+      "source_decision_text_hash": "3ed70d5e65f3fd93a1a2e838471f566a6f379aa6904c46263422149e9353b383",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/19"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-008-C21",
+      "requirement_text": "detected loops are represented as suggested candidates",
+      "subject": "second_brain.open_loop.represented_as_suggested_candidate",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Represent detected loops as suggested candidates."
+      ],
+      "source_decision_text_hash": "cc348e883298d4e71f1282b50baa5f8e9008d07e32a9c241b8c61543bbec4f58",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/20",
+        "schemas/second_brain/contracts/open-loop-candidate.schema.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-008-C22",
+      "requirement_text": "confirmed loop event kinds = open / close / cancel",
+      "subject": "second_brain.open_loop.confirmed_event.kinds",
+      "rule_type": "ENUM",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "OPEN",
+        "CLOSE",
+        "CANCEL"
+      ],
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Confirmation appends open/close/cancel events to Dope-Memory; the active list is derived."
+      ],
+      "source_decision_text_hash": "9510427f02bae8f0da0458381926daee7e200e0b4d691cc2c7efbe53dc018e04",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/21"
+      ],
+      "source_enumeration": "open/close/cancel"
+    },
+    {
+      "clause_id": "ADR-SB-008-C23",
+      "requirement_text": "task proposals are separate candidates",
+      "subject": "second_brain.task_proposal.separate_from_open_loop",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Task proposals are separate candidates."
+      ],
+      "source_decision_text_hash": "63f7e63948ba26e0a4102dad30647ba5dae317c5b6b2d996ec6c6034b6fef2dc",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/22",
+        "schemas/second_brain/contracts/task-proposal.schema.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-008-C24",
+      "requirement_text": "confirmed open-loop events are chronological attention markers",
+      "subject": "second_brain.open_loop.confirmed_event.is_chronological_attention_marker",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "MA06_AMENDMENT",
+      "source_fragments": [
+        "confirmed open-loop events are chronological attention markers, not tasks."
+      ],
+      "source_decision_text_hash": "108d48305073a127f5690e368e7240326973a231171cbb7f316bb1ca0e461fa9",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/23"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-008-C25",
+      "requirement_text": "confirmed open-loop events are not tasks",
+      "subject": "second_brain.open_loop.confirmed_event.is_task",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "MA06_AMENDMENT",
+      "source_fragments": [
+        "confirmed open-loop events are chronological attention markers, not tasks."
+      ],
+      "source_decision_text_hash": "108d48305073a127f5690e368e7240326973a231171cbb7f316bb1ca0e461fa9",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/24"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-008-C26",
+      "requirement_text": "the derived current-state view carries the same prohibition",
+      "subject": "second_brain.open_loop.current_state_view.bound_by_pm_prohibition",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "MA06_AMENDMENT",
+      "source_fragments": [
+        "A confirmed open loop, and its derived current-state view, may never carry an assignee, PM priority, workflow status, sprint state, ownership assignment, due-driven escalation, automatic scheduling, or task completion state."
+      ],
+      "source_decision_text_hash": "a53f4ae0e2152447d962d8b05d77f19a23cd3938d741be9d661c12417478bca8",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/25"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-008-C27",
+      "requirement_text": "task-shaped behavior is represented as a separate TaskProposal",
+      "subject": "second_brain.task_shaped_behavior.represented_as_task_proposal",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "MA06_AMENDMENT",
+      "source_fragments": [
+        "Any task-shaped behavior must be represented as a separate `TaskProposal` and mutated only through the disabled `TaskPromotionRequest` path (Slice 6)."
+      ],
+      "source_decision_text_hash": "95ab8481224cab11e3ac23ba5abd33560937399c6d6b752c22609b3ef3a80608",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/26",
+        "schemas/second_brain/contracts/task-proposal.schema.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-008-C28",
+      "requirement_text": "task mutation happens only through the TaskPromotionRequest path",
+      "subject": "second_brain.task_mutation.only_through_task_promotion_request",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "MA06_AMENDMENT",
+      "source_fragments": [
+        "Any task-shaped behavior must be represented as a separate `TaskProposal` and mutated only through the disabled `TaskPromotionRequest` path (Slice 6)."
+      ],
+      "source_decision_text_hash": "95ab8481224cab11e3ac23ba5abd33560937399c6d6b752c22609b3ef3a80608",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/27",
+        "schemas/second_brain/contracts/task-promotion-request.schema.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-008-C29",
+      "requirement_text": "sole PM and workflow authorities = Leantime / Task Orchestrator",
+      "subject": "second_brain.pm_workflow.sole_authorities",
+      "rule_type": "AUTHORITY_TARGET",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "Leantime",
+        "Task Orchestrator"
+      ],
+      "section": "MA06_AMENDMENT",
+      "source_fragments": [
+        "Leantime and Task Orchestrator remain the sole authorities for PM and workflow semantics; this ADR does not grant Dope-Memory or the Second Brain any PM authority."
+      ],
+      "source_decision_text_hash": "5e3f50f8b987f18b633bcba7ac63c4774c1b8690f1dcee18ad00fd674e06a128",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/28",
+        "schemas/second_brain/contracts/task-promotion-request.schema.json"
+      ],
+      "source_enumeration": "Leantime and Task Orchestrator"
+    },
+    {
+      "clause_id": "ADR-SB-008-C30",
+      "requirement_text": "Dope-Memory is granted no PM authority",
+      "subject": "dope_memory.pm_authority",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "MA06_AMENDMENT",
+      "source_fragments": [
+        "Leantime and Task Orchestrator remain the sole authorities for PM and workflow semantics; this ADR does not grant Dope-Memory or the Second Brain any PM authority."
+      ],
+      "source_decision_text_hash": "5e3f50f8b987f18b633bcba7ac63c4774c1b8690f1dcee18ad00fd674e06a128",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/29"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-008-C31",
+      "requirement_text": "the Second Brain is granted no PM authority",
+      "subject": "second_brain.pm_authority",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "MA06_AMENDMENT",
+      "source_fragments": [
+        "Leantime and Task Orchestrator remain the sole authorities for PM and workflow semantics; this ADR does not grant Dope-Memory or the Second Brain any PM authority."
+      ],
+      "source_decision_text_hash": "5e3f50f8b987f18b633bcba7ac63c4774c1b8690f1dcee18ad00fd674e06a128",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/30"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-008-C32",
+      "requirement_text": "no automatic task pressure",
+      "subject": "second_brain.open_loop.automatic_task_pressure",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "CONSEQUENCES",
+      "source_fragments": [
+        "No automatic task pressure"
+      ],
+      "source_decision_text_hash": "bf0fd17478ab60f08419e49ff6f0916d3fd8bfeea09bb0aa05de3b5ab870ad58",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/31"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-008-C33",
+      "requirement_text": "chronology remains in Dope-Memory",
+      "subject": "second_brain.chronology.authority",
+      "rule_type": "AUTHORITY_TARGET",
+      "operator": "EQUALS",
+      "machine_value": "Dope-Memory",
+      "section": "CONSEQUENCES",
+      "source_fragments": [
+        "Chronology remains in Dope-Memory"
+      ],
+      "source_decision_text_hash": "52821044c5020073183d898f03c7527cd2d7952c2ed003c0de3db80f8bfe182f",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/32"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-008-C34",
+      "requirement_text": "ConPort never owns task state",
+      "subject": "conport.owns_task_state",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "CONSEQUENCES",
+      "source_fragments": [
+        "ConPort never owns task state"
+      ],
+      "source_decision_text_hash": "8d10531d6511f39e13fc406d3bd8fc8bbf6c074eab2cf078f988e7b25746ffc6",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/33"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-008-C35",
+      "requirement_text": "open loops carry zero PM-semantic fields",
+      "subject": "second_brain.open_loop.pm_semantic_field_count",
+      "rule_type": "NUMERIC",
+      "operator": "EQUALS",
+      "machine_value": 0,
+      "section": "CONSEQUENCES",
+      "source_fragments": [
+        "Open loops carry zero PM-semantic fields; `due_at` cannot trigger scheduling or escalation"
+      ],
+      "source_decision_text_hash": "640b724e38e06d68834ec3cf2b7a414f52f9ed965887457e317212583d36bc33",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/34",
+        "schemas/second_brain/contracts/open-loop-candidate.schema.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-008-C36",
+      "requirement_text": "due_at may not trigger scheduling or escalation",
+      "subject": "second_brain.open_loop.due_at.forbidden_triggers",
+      "rule_type": "ENUM",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "SCHEDULING",
+        "ESCALATION"
+      ],
+      "section": "CONSEQUENCES",
+      "source_fragments": [
+        "Open loops carry zero PM-semantic fields; `due_at` cannot trigger scheduling or escalation"
+      ],
+      "source_decision_text_hash": "640b724e38e06d68834ec3cf2b7a414f52f9ed965887457e317212583d36bc33",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-008.contract.json#/decision_clauses/35",
+        "schemas/second_brain/contracts/open-loop-candidate.schema.json"
+      ],
+      "source_enumeration": "scheduling or escalation"
     }
   ]
 }

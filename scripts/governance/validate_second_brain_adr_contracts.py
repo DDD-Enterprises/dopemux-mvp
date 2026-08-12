@@ -6,13 +6,40 @@ mutation. Fails closed: any exception, missing dependency, missing file,
 unresolved pointer, or parse error exits nonzero. There is no
 exception-to-PASS path.
 
-Two check groups, both of which must pass for exit 0:
+Three check groups, all of which must pass for exit 0:
 
-  A. Machine-contract coverage  -> PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE
-  B. FO-01 record reconciliation -> FO01_STALE_RECORD_RECONCILED
+  A. Structure, binding, coverage, grounding
+  S. Semantic invariants held independently of the inventory
+  B. FO-01 record reconciliation
+
+What changed after the first independent audit
+----------------------------------------------
+That audit returned FAIL with three blockers, and the repairs are structural
+rather than per-finding:
+
+* The frozen denominator's sha256 is const-pinned below (A09). Editing a clause
+  after the freeze changes that hash and fails, and because every contract rule
+  must equal its inventory clause (A20), editing both sides consistently fails
+  too. That closes the bilateral-edit class, including for boolean values,
+  which carry no text to check.
+* Closed sets are checked *bidirectionally* against a verbatim source
+  enumeration (A26). The previous grounding rejected widening but accepted
+  shrinking, so dropping PURGE from the deletion set passed.
+* Clause grounding covers every rule shape, and the shapes themselves are
+  restricted to testable ones (A24, A25). A rule whose value is a label like
+  ``PURGE_DEPENDENCY_GRAPH`` states that something is named, not that anything
+  must be true, and no shape can express one now.
+* Every property name, enum member and const string in the typed artifacts must
+  be bound to a clause and a verbatim candidate phrase (A31, A32). Invented
+  interface surface fails as a class rather than being removed case by case.
+* A clause may not be grounded in text from a 'Rejected alternatives' section
+  (A23). "Vector-first answer generation" is verbatim candidate text.
+* The FO-01 status file is checked as a whole projection of its receipt (B02),
+  and every field of it must be classified (B11), so no field can drift while
+  a partial projection still passes.
 
 Exit codes:
-  0 — PASS (both groups)
+  0 — PASS (all groups)
   1 — FAIL (one or more checks failed)
   2 — usage / environment error
 """
@@ -26,9 +53,31 @@ import sys
 from pathlib import Path
 from typing import Any
 
+# --------------------------------------------------------------------------
+# Pinned authority
+# --------------------------------------------------------------------------
+
 CANDIDATE_SHA256 = "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c"
 RATIFICATION_BINDING_SHA256 = (
     "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34"
+)
+
+# The re-frozen coverage denominator, authorized by the operator ruling of
+# 2026-08-12 and recorded in DENOMINATOR_REFREEZE_RECEIPT.json. This pin is the
+# single most load-bearing line in this file: it is what makes a post-freeze
+# edit to the denominator fail even when the contracts are edited to agree.
+#
+# Honest limit: a producer can also edit this constant. What that costs is
+# visibility — the pin, the receipt and the operator's verbatim ruling all move
+# together, and the receipt asserts an authorization that would then be false.
+# The guarantee is not that the denominator cannot change; it is that it cannot
+# change quietly.
+FROZEN_INVENTORY_SHA256 = (
+    "b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439"
+)
+FROZEN_CLAUSE_TOTAL = 160
+SUPERSEDED_INVENTORY_SHA256 = (
+    "f073ca28802e6b140dd5789d5fad5839962635f7b287cac589ec704efc663288"
 )
 
 CONTRACT_DIR = "schemas/second_brain/contracts"
@@ -48,27 +97,37 @@ TRACEABILITY_PATH = (
     "docs/03-reference/architecture/second-brain/adr-candidates/"
     "traceability-matrix.json"
 )
-CLAUSE_INVENTORY_PATH = (
-    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/ADR_CLAUSE_INVENTORY.json"
-)
+PROOF_DIR = "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001"
+CLAUSE_INVENTORY_PATH = f"{PROOF_DIR}/ADR_CLAUSE_INVENTORY.json"
+REFREEZE_RECEIPT_PATH = f"{PROOF_DIR}/DENOMINATOR_REFREEZE_RECEIPT.json"
 
 ADR_IDS = [f"ADR-SB-{i:03d}" for i in range(1, 11)]
 
-RULE_TYPES = {
-    "REQUIRE", "FORBID", "ENUM", "CONSTANT", "MAXIMUM", "AUTHORITY_TARGET",
-    "FAIL_CLOSED", "STATE_TRANSITION", "LIFECYCLE", "CAPABILITY_GATE",
-    "INTERFACE_REQUIREMENT", "HASH_BINDING", "ORDERING",
+# Closed, testable rule shapes. Anything else is a label, not a rule.
+VALID_SHAPES = {
+    ("BOOLEAN", "EQUALS"),
+    ("NUMERIC", "EQUALS"),
+    ("NUMERIC", "LESS_THAN_OR_EQUAL"),
+    ("ENUM", "SET_EQUALS"),
+    ("CONSTANT", "EQUALS"),
+    ("AUTHORITY_TARGET", "EQUALS"),
+    ("AUTHORITY_TARGET", "SET_EQUALS"),
+    ("INTERFACE_REQUIREMENT", "MUST_EXIST"),
 }
-OPERATORS = {
-    "EQUALS", "NOT_EQUALS", "IN", "NOT_IN", "SET_EQUALS", "SUPERSET_OF",
-    "LESS_THAN_OR_EQUAL", "MUST_EXIST", "MUST_NOT_EXIST", "PRECEDES",
-    "DEFAULTS_TO",
-}
+VALID_SECTIONS = {"CONTEXT", "PROPOSED_DECISION", "MA06_AMENDMENT", "CONSEQUENCES"}
 
-# Closed set of canonical authority targets. Second Brain and Dope-Context are
-# never members: the Second Brain is a control plane and Dope-Context is
-# advisory retrieval.
-AUTHORITY_TARGETS = {"ConPort", "Dope-Memory", "Leantime", "Task Orchestrator", "dopeTask"}
+# Subsections whose text may never ground a clause.
+FORBIDDEN_SUBSECTIONS = (
+    "Rejected alternatives",
+    "Evidence and traceability",
+    "Acceptance conditions",
+)
+
+# Values that entered the superseded contracts from the task packet's own
+# framing rather than from the candidate. Kept as a named regression guard: the
+# grounding rules already reject them, and this says so by name.
+INVENTED_AUTHORITY_TOKENS = ("dopeTask",)
+
 NEVER_AUTHORITY = {
     "second_brain", "Second Brain", "SecondBrain", "Dope-Context", "dope-context",
 }
@@ -81,8 +140,9 @@ DATA_CONTRACTS = [
     "project-identity-envelope.schema.json",
     "service-capability-receipt.schema.json",
 ]
+LAYER_B = PORT_CONTRACTS + DATA_CONTRACTS
+META_SCHEMAS = ["adr-machine-contract.schema.json", "interface-contract.schema.json"]
 
-# Keys that would assert implementation / runtime / enablement authority.
 FORBIDDEN_TRUTHY_KEYS = {
     "implemented", "runtime_implemented", "enablement_authorized",
     "runtime_authorized", "production_authorized", "implementation_authorized",
@@ -99,12 +159,17 @@ ALLOWED_DENIAL_FIXTURE_VALUES = (
     False,
 )
 
-PM_FORBIDDEN_PROPERTIES = {
-    "assignee", "owner", "ownership", "priority", "pm_priority", "status",
-    "workflow_status", "sprint", "sprint_state", "task_completion_state",
-    "completed", "done", "escalation", "escalation_policy", "scheduled_at",
-    "schedule", "estimate", "story_points",
+NUMBER_WORDS = {
+    0: "zero", 1: "one", 2: "two", 3: "three", 4: "four", 5: "five",
+    6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten",
 }
+
+# Longest separators first: ", and " must not be consumed by ",\s*", which
+# would leave "and Purge" as a member.
+_SEP = re.compile(
+    r"\s*,\s+and\s+|\s*,\s+or\s+|\s*,\s*|\s+and\s+|\s+or\s+|\s+plus\s+|\s*/\s*"
+)
+_NONWORD = re.compile(r"[^A-Za-z0-9]+")
 
 
 class Report:
@@ -137,6 +202,15 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def normalize(text: str) -> str:
+    """UPPER_SNAKE projection used for token grounding."""
+    return _NONWORD.sub("_", text).strip("_").upper()
+
+
+def tokenize_enumeration(text: str) -> list[str]:
+    return [p.strip() for p in _SEP.split(text) if p.strip()]
+
+
 def resolve_pointer(doc: Any, pointer: str) -> Any:
     """Strict RFC-6901 resolution. Raises KeyError/IndexError when absent."""
     if pointer in ("", "#"):
@@ -157,18 +231,6 @@ def resolve_pointer(doc: Any, pointer: str) -> Any:
     return node
 
 
-def asserted_value(val: Any) -> Any:
-    """Unwrap a JSON-Schema pin to the value it actually asserts.
-
-    In a schema file a field appears as ``{"const": false, "description": ...}``.
-    That node asserts ``false``; treating the dict itself as the value would
-    read every const-pinned prohibition as a truthy claim.
-    """
-    if isinstance(val, dict) and "const" in val:
-        return val["const"]
-    return val
-
-
 def walk(node: Any, path: str = ""):
     if isinstance(node, dict):
         for k, v in node.items():
@@ -177,6 +239,42 @@ def walk(node: Any, path: str = ""):
     elif isinstance(node, list):
         for i, v in enumerate(node):
             yield from walk(v, f"{path}/{i}")
+
+
+def leaves(node: Any, path: str = "") -> list[tuple[str, Any]]:
+    """Every scalar leaf with its JSON Pointer."""
+    if isinstance(node, dict):
+        out: list[tuple[str, Any]] = []
+        if not node:
+            return [(path, node)]
+        for k, v in node.items():
+            out += leaves(v, f"{path}/{k}")
+        return out
+    if isinstance(node, list):
+        if not node:
+            return [(path, node)]
+        out = []
+        for i, v in enumerate(node):
+            out += leaves(v, f"{path}/{i}")
+        return out
+    return [(path, node)]
+
+
+def adr_allowed_span(candidate: str, adr_id: str) -> str:
+    """One ADR's Context + Proposed decision + Consequences, nothing else."""
+    start = candidate.find(f"\n## {adr_id}:")
+    if start < 0:
+        raise ValueError(f"{adr_id}: section not found in candidate")
+    nxt = candidate.find("\n## ", start + 1)
+    block = candidate[start : nxt if nxt >= 0 else len(candidate)]
+    keep: list[str] = []
+    ok = True
+    for line in block.splitlines():
+        if line.startswith("### "):
+            ok = line[4:].strip() not in FORBIDDEN_SUBSECTIONS
+        if ok:
+            keep.append(line)
+    return "\n".join(keep)
 
 
 def parse_candidate_sb_dec(text: str) -> dict[str, list[str]]:
@@ -194,621 +292,882 @@ def parse_candidate_sb_dec(text: str) -> dict[str, list[str]]:
     return out
 
 
-# --------------------------------------------------------------------------
-# Group A — machine-contract coverage
-# --------------------------------------------------------------------------
+def clause_grounding_error(clause: dict) -> str | None:
+    """Why a clause's machine value is not traceable to the text it cites.
+
+    Booleans have no text to match; they are held instead by the const-pinned
+    inventory hash. Everything else must appear in the cited fragments.
+    """
+    rt, op = clause["rule_type"], clause["operator"]
+    val = clause["machine_value"]
+    joined = "\n".join(clause["source_fragments"])
+    norm = normalize(joined)
+
+    if rt == "BOOLEAN":
+        return None if isinstance(val, bool) else "BOOLEAN value is not true/false"
+
+    if rt == "NUMERIC":
+        if isinstance(val, bool) or not isinstance(val, int):
+            return "NUMERIC value is not an integer"
+        word = NUMBER_WORDS.get(val)
+        if str(val) not in joined and (word is None or word not in joined.lower()):
+            return f"numeric value {val} appears in no cited fragment"
+        return None
+
+    if op == "SET_EQUALS":
+        enumeration = clause.get("source_enumeration")
+        if not enumeration:
+            return "SET_EQUALS without a verbatim source_enumeration"
+        if enumeration not in joined:
+            return "source_enumeration is not a substring of the cited fragments"
+        if not isinstance(val, list) or not val:
+            return "SET_EQUALS value is not a non-empty list"
+        derived = {normalize(t) for t in tokenize_enumeration(enumeration)}
+        asserted = {normalize(m) for m in val}
+        if derived != asserted:
+            return (
+                "closed set is not exactly the source-derived set "
+                f"(dropped: {sorted(derived - asserted)}; "
+                f"invented: {sorted(asserted - derived)})"
+            )
+        return None
+
+    if rt == "INTERFACE_REQUIREMENT":
+        if not isinstance(val, str):
+            return "INTERFACE_REQUIREMENT value is not a string"
+        if val not in joined:
+            return f"interface name {val!r} is not verbatim in the cited text"
+        return None
+
+    # CONSTANT / AUTHORITY_TARGET EQUALS
+    if not isinstance(val, str):
+        return f"{rt}/{op} value is not a string"
+    if normalize(val) not in norm:
+        return f"value {val!r} does not appear in the cited text"
+    return None
 
 
-def group_a(root: Path, rep: Report) -> None:
+# --------------------------------------------------------------------------
+# Layer B surface enumeration
+# --------------------------------------------------------------------------
+
+def assertion_locations(doc: Any) -> list[tuple[str, str]]:
+    """Every string in a typed artifact that asserts architecture surface.
+
+    Property names, required entries, enum members, string consts and the
+    string members of x- extension lists. Prose (title, description,
+    x-unspecified-in-candidate) is not surface and is not collected.
+    """
+    found: list[tuple[str, str]] = []
+
+    def visit(node: Any, path: str) -> None:
+        if isinstance(node, dict):
+            for k, v in node.items():
+                child = f"{path}/{k}"
+                if k == "properties" and isinstance(v, dict):
+                    for name, sub in v.items():
+                        found.append((f"{child}/{name}", name))
+                        visit(sub, f"{child}/{name}")
+                    continue
+                if k == "assertions" and isinstance(v, dict):
+                    for name, sub in v.items():
+                        found.append((f"{child}/{name}", name))
+                        if isinstance(sub, str):
+                            found.append((f"{child}/{name}", sub))
+                    continue
+                if k == "required" and isinstance(v, list):
+                    for i, name in enumerate(v):
+                        if isinstance(name, str):
+                            found.append((f"{child}/{i}", name))
+                    continue
+                if k == "enum" and isinstance(v, list):
+                    for i, name in enumerate(v):
+                        if isinstance(name, str):
+                            found.append((f"{child}/{i}", name))
+                    continue
+                if k == "const" and isinstance(v, str):
+                    found.append((path, v))
+                    continue
+                if k in ("title", "description", "$schema", "$id",
+                         "x-unspecified-in-candidate", "x-grounding",
+                         "x-machine-invariants"):
+                    continue
+                if k.startswith("x-"):
+                    if isinstance(v, str):
+                        found.append((child, v))
+                    elif isinstance(v, list):
+                        for i, m in enumerate(v):
+                            if isinstance(m, str):
+                                found.append((f"{child}/{i}", m))
+                    continue
+                visit(v, child)
+        elif isinstance(node, list):
+            for i, v in enumerate(node):
+                visit(v, f"{path}/{i}")
+
+    visit(doc, "")
+    return found
+
+
+# --------------------------------------------------------------------------
+# Group A — structure, binding, coverage, grounding
+# --------------------------------------------------------------------------
+
+def group_a(root: Path, rep: Report) -> dict[str, Any] | None:
     try:
         from jsonschema import Draft7Validator
     except ImportError as exc:  # fail closed on missing dependency
         rep.check("A", "A00-dependency", False, f"jsonschema unavailable: {exc}")
-        return
+        return None
+    rep.check("A", "A00-dependency", True)
 
     cdir = root / CONTRACT_DIR
-
-    # A01 — all ten ADR contract files exist.
-    missing = [a for a in ADR_IDS if not (cdir / f"{a}.contract.json").is_file()]
-    rep.check("A", "A01-ten-adr-contracts-exist", not missing, f"missing={missing}")
-
-    # A12/A13 — mandatory typed artifacts exist.
-    named = PORT_CONTRACTS + DATA_CONTRACTS
-    missing_named = [n for n in named if not (cdir / n).is_file()]
+    contracts = {aid: cdir / f"{aid}.contract.json" for aid in ADR_IDS}
     rep.check(
-        "A", "A13-named-typed-artifacts-exist", not missing_named,
-        f"missing={missing_named}",
+        "A", "A01-ten-adr-contracts-exist",
+        all(p.is_file() for p in contracts.values()),
+        f"missing: {[a for a, p in contracts.items() if not p.is_file()]}",
     )
 
-    meta = cdir / "adr-machine-contract.schema.json"
-    iface = cdir / "interface-contract.schema.json"
-    cov_path = cdir / "ADR_CONTRACT_COVERAGE.json"
-    for label, p in (
-        ("meta-schema", meta), ("interface-schema", iface), ("coverage-matrix", cov_path)
-    ):
-        rep.check("A", f"A01-{label}-exists", p.is_file(), str(p.relative_to(root)))
-    if missing or missing_named or not meta.is_file() or not cov_path.is_file():
-        return
-
-    # A02 — every artifact parses as JSON.
     docs: dict[str, Any] = {}
+    parse_errors: list[str] = []
     for p in sorted(cdir.glob("*.json")):
-        rel = str(p.relative_to(root))
         try:
-            docs[rel] = json.loads(p.read_text(encoding="utf-8"))
+            docs[p.name] = json.loads(p.read_text(encoding="utf-8"))
         except json.JSONDecodeError as exc:
-            rep.check("A", f"A02-parse:{p.name}", False, str(exc))
-            return
-    rep.check("A", "A02-all-artifacts-parse", True, f"{len(docs)} files")
+            parse_errors.append(f"{p.name}: {exc}")
+    if not rep.check("A", "A02-all-artifacts-parse", not parse_errors,
+                     "; ".join(parse_errors)):
+        return None
 
-    meta_schema = docs[f"{CONTRACT_DIR}/adr-machine-contract.schema.json"]
-    iface_schema = docs[f"{CONTRACT_DIR}/interface-contract.schema.json"]
-    coverage = docs[f"{CONTRACT_DIR}/ADR_CONTRACT_COVERAGE.json"]
+    cand_file = root / CANDIDATE_PATH
+    if not rep.check("A", "A03-candidate-present", cand_file.is_file(),
+                     str(cand_file)):
+        return None
+    cand_text = cand_file.read_text(encoding="utf-8")
+    rep.check(
+        "A", "A04-candidate-sha256",
+        sha256_bytes(cand_file.read_bytes()) == CANDIDATE_SHA256,
+        sha256_bytes(cand_file.read_bytes()),
+    )
 
-    # A03 — schema validation of every contract against its governing schema.
-    for label, schema in (("meta", meta_schema), ("interface", iface_schema)):
-        try:
-            Draft7Validator.check_schema(schema)
-            rep.check("A", f"A03-{label}-schema-well-formed", True)
-        except Exception as exc:
-            rep.check("A", f"A03-{label}-schema-well-formed", False, str(exc))
-            return
+    # ---- inventory pin: the load-bearing binding -----------------------
+    inv_file = root / CLAUSE_INVENTORY_PATH
+    if not rep.check("A", "A08-inventory-present", inv_file.is_file(), str(inv_file)):
+        return None
+    inv_bytes = inv_file.read_bytes()
+    inv_sha = sha256_bytes(inv_bytes)
+    if not rep.check(
+        "A", "A09-inventory-matches-frozen-pin",
+        inv_sha == FROZEN_INVENTORY_SHA256,
+        f"file={inv_sha} pinned={FROZEN_INVENTORY_SHA256}",
+    ):
+        # Every downstream comparison would be against an unauthorized
+        # denominator, so stop rather than report agreement with it.
+        return None
+    inventory = json.loads(inv_bytes.decode("utf-8"))
 
-    for adr_id in ADR_IDS:
-        rel = f"{CONTRACT_DIR}/{adr_id}.contract.json"
-        errs = sorted(
-            Draft7Validator(meta_schema).iter_errors(docs[rel]),
-            key=lambda e: list(e.path),
+    rcpt_file = root / REFREEZE_RECEIPT_PATH
+    if rep.check("A", "A10-refreeze-receipt-present", rcpt_file.is_file(),
+                 str(rcpt_file)):
+        refreeze = json.loads(rcpt_file.read_text(encoding="utf-8"))
+        rep.check(
+            "A", "A10-pin-matches-refreeze-receipt",
+            refreeze.get("new_inventory_sha256") == FROZEN_INVENTORY_SHA256
+            and refreeze.get("new_clause_count") == FROZEN_CLAUSE_TOTAL,
+            f"receipt={refreeze.get('new_inventory_sha256')}",
         )
         rep.check(
-            "A", f"A03-validates:{adr_id}", not errs,
-            "; ".join(f"{list(e.path)}: {e.message}" for e in errs[:3]),
-        )
-    for name in PORT_CONTRACTS:
-        rel = f"{CONTRACT_DIR}/{name}"
-        errs = sorted(
-            Draft7Validator(iface_schema).iter_errors(docs[rel]),
-            key=lambda e: list(e.path),
+            "A", "A11-refreeze-authorization-recorded",
+            isinstance(refreeze.get("authorization", {}).get("ruling_verbatim"), str)
+            and len(refreeze["authorization"]["ruling_verbatim"]) > 500
+            and refreeze["authorization"].get("granted_by") == "HUMAN_OPERATOR",
+            "the pin claims an operator-authorized freeze; the ruling must be "
+            "readable from the repository",
         )
         rep.check(
-            "A", f"A03-validates:{name}", not errs,
-            "; ".join(f"{list(e.path)}: {e.message}" for e in errs[:3]),
+            "A", "A11-supersession-recorded",
+            refreeze.get("supersedes_inventory_sha256")
+            == SUPERSEDED_INVENTORY_SHA256
+            and refreeze.get("supersession_reason")
+            == "INCOMPLETE_MATERIAL_DECISION_DENOMINATOR",
+            f"supersedes={refreeze.get('supersedes_inventory_sha256')}",
         )
-    for name in DATA_CONTRACTS:
-        rel = f"{CONTRACT_DIR}/{name}"
-        try:
-            Draft7Validator.check_schema(docs[rel])
-            rep.check("A", f"A03-draft7-well-formed:{name}", True)
-        except Exception as exc:
-            rep.check("A", f"A03-draft7-well-formed:{name}", False, str(exc))
-
-    # A04 — candidate binding, recomputed from the document itself.
-    cand_path = root / CANDIDATE_PATH
-    if not cand_path.is_file():
-        rep.check("A", "A04-candidate-present", False, CANDIDATE_PATH)
-        return
-    cand_bytes = cand_path.read_bytes()
-    live = sha256_bytes(cand_bytes)
-    rep.check(
-        "A", "A04-candidate-sha256", live == CANDIDATE_SHA256,
-        f"live={live}",
-    )
-    cand_text = cand_bytes.decode("utf-8")
-
-    bad = [
-        rel for rel, d in docs.items()
-        if isinstance(d, dict) and "candidate_sha256" in d
-        and d["candidate_sha256"] != CANDIDATE_SHA256
-    ]
-    rep.check("A", "A04-contracts-bind-candidate", not bad, f"divergent={bad}")
-
-    # A05 — ratification binding matches the candidate's own frontmatter.
-    fm = re.search(r"^ratification_binding_sha256:\s*(\S+)$", cand_text, re.M)
-    rep.check(
-        "A", "A05-ratification-binding",
-        bool(fm) and fm.group(1) == RATIFICATION_BINDING_SHA256,
-        f"frontmatter={fm.group(1) if fm else None}",
-    )
-    bad = [
-        rel for rel, d in docs.items()
-        if isinstance(d, dict) and "ratification_binding_sha256" in d
-        and d["ratification_binding_sha256"] != RATIFICATION_BINDING_SHA256
-    ]
-    rep.check("A", "A05-contracts-bind-ratification", not bad, f"divergent={bad}")
-
-    # A06 — ADR ids exactly 001..010, no duplicates.
-    ids = [docs[f"{CONTRACT_DIR}/{a}.contract.json"]["adr_id"] for a in ADR_IDS]
-    rep.check(
-        "A", "A06-adr-ids-exact",
-        sorted(ids) == ADR_IDS and len(set(ids)) == 10, f"ids={sorted(ids)}",
-    )
-
-    # A07 — SB-DEC lists equal the candidate's, parsed live.
-    live_refs = parse_candidate_sb_dec(cand_text)
-    total = 0
-    for adr_id in ADR_IDS:
-        contract_refs = docs[f"{CONTRACT_DIR}/{adr_id}.contract.json"]["sb_dec_references"]
-        expected = live_refs.get(adr_id, [])
-        total += len(expected)
-        rep.check(
-            "A", f"A07-sb-dec:{adr_id}", contract_refs == expected,
-            f"contract={contract_refs} candidate={expected}",
-        )
-    rep.check("A", "A07-sb-dec-total-28", total == 28, f"total={total}")
-
-    # A19 — SB-DEC-026 remains unlinked, in the candidate and in every contract.
-    in_candidate = any("SB-DEC-026" in v for v in live_refs.values())
-    in_contracts = [
-        rel for rel, d in docs.items()
-        if "SB-DEC-026" in json.dumps(d)
-    ]
-    rep.check(
-        "A", "A19-sb-dec-026-unlinked",
-        not in_candidate and not in_contracts,
-        f"candidate={in_candidate} contracts={in_contracts}",
-    )
-
-    # A16/A17/A18 — ADR status frozen at PROPOSED, document status CANDIDATE.
-    n_proposed = cand_text.count("**Status:** `PROPOSED`")
-    rep.check("A", "A16-ten-proposed", n_proposed == 10, f"count={n_proposed}")
-    rep.check(
-        "A", "A18-no-accepted-token", "ACCEPTED" not in cand_text,
-        "candidate contains the ACCEPTED token" if "ACCEPTED" in cand_text else "",
-    )
-    status_fm = re.search(r"^status:\s*(\S+)$", cand_text, re.M)
-    rep.check(
-        "A", "A17-document-status-candidate",
-        bool(status_fm) and status_fm.group(1) == "CANDIDATE",
-        f"status={status_fm.group(1) if status_fm else None}",
-    )
-    bad_status = [
-        f"{CONTRACT_DIR}/{a}.contract.json" for a in ADR_IDS
-        if docs[f"{CONTRACT_DIR}/{a}.contract.json"].get(
-            "adr_status_at_contract_authoring"
-        ) != "PROPOSED"
-    ]
-    rep.check("A", "A16-contracts-record-proposed", not bad_status, f"bad={bad_status}")
-
-    # A08 — frozen denominator: three-way hash agreement + exact 1:1 coverage.
-    inv_path = root / CLAUSE_INVENTORY_PATH
-    if not inv_path.is_file():
-        rep.check("A", "A08-inventory-present", False, CLAUSE_INVENTORY_PATH)
-        return
-    inv = json.loads(inv_path.read_text(encoding="utf-8"))
-    inv_live = sha256_bytes(inv_path.read_bytes())
-    rep.check(
-        "A", "A08-inventory-hash-agrees-with-coverage",
-        coverage.get("clause_inventory_sha256") == inv_live,
-        f"coverage={coverage.get('clause_inventory_sha256')} live={inv_live}",
-    )
 
     inv_clauses = {
-        c["clause_id"]: c for adr in inv["adrs"] for c in adr["clauses"]
+        c["clause_id"]: c for a in inventory["adrs"] for c in a["clauses"]
     }
     rep.check(
-        "A", "A08-inventory-total",
-        len(inv_clauses) == inv["clause_total"] == 97,
-        f"inventory={len(inv_clauses)} declared={inv['clause_total']}",
+        "A", "A12-inventory-total-agrees",
+        inventory["clause_total"] == len(inv_clauses) == FROZEN_CLAUSE_TOTAL,
+        f"declared={inventory['clause_total']} actual={len(inv_clauses)}",
     )
 
-    entries = coverage.get("entries", [])
-    seen: dict[str, int] = {}
-    for e in entries:
-        seen[e["clause_id"]] = seen.get(e["clause_id"], 0) + 1
-    absent = sorted(set(inv_clauses) - set(seen))
-    extra = sorted(set(seen) - set(inv_clauses))
-    dupes = sorted(k for k, v in seen.items() if v > 1)
-    rep.check("A", "A08-every-clause-covered-once",
-              not absent and not extra and not dupes,
-              f"absent={absent} extra={extra} duplicated={dupes}")
+    # ---- meta-schema validation ---------------------------------------
+    schema_errors: list[str] = []
+    for name in META_SCHEMAS:
+        if name not in docs:
+            schema_errors.append(f"{name}: absent")
+    for name, doc in docs.items():
+        if name in META_SCHEMAS or name == "ADR_CONTRACT_COVERAGE.json":
+            continue
+        meta_name = (
+            "interface-contract.schema.json" if name in PORT_CONTRACTS
+            else "adr-machine-contract.schema.json"
+        )
+        if name in DATA_CONTRACTS:
+            try:
+                Draft7Validator.check_schema(doc)
+            except Exception as exc:  # noqa: BLE001 - report, never swallow
+                schema_errors.append(f"{name}: not a valid draft-07 schema: {exc}")
+            continue
+        try:
+            v = Draft7Validator(docs[meta_name])
+            for err in v.iter_errors(doc):
+                schema_errors.append(f"{name}: {err.message} at {list(err.path)}")
+        except Exception as exc:  # noqa: BLE001
+            schema_errors.append(f"{name}: {type(exc).__name__}: {exc}")
+    rep.check("A", "A13-artifacts-validate", not schema_errors,
+              "; ".join(schema_errors[:4]))
 
-    # A08b — denominator integrity: fragments really are candidate substrings.
-    frag_bad, hash_bad = [], []
-    for cid, c in inv_clauses.items():
+    # ---- bindings ------------------------------------------------------
+    bind_errors: list[str] = []
+    for name, doc in docs.items():
+        if not isinstance(doc, dict):
+            continue
+        for field, expected in (
+            ("candidate_sha256", CANDIDATE_SHA256),
+            ("ratification_binding_sha256", RATIFICATION_BINDING_SHA256),
+            ("clause_inventory_sha256", FROZEN_INVENTORY_SHA256),
+        ):
+            if field in doc and doc[field] != expected:
+                bind_errors.append(f"{name}.{field}={doc[field]}")
+    rep.check("A", "A14-artifacts-bind-frozen-authority", not bind_errors,
+              "; ".join(bind_errors))
+
+    pins_required = [f"{a}.contract.json" for a in ADR_IDS] + PORT_CONTRACTS + [
+        "ADR_CONTRACT_COVERAGE.json"
+    ]
+    missing_pin = [
+        n for n in pins_required
+        if docs.get(n, {}).get("clause_inventory_sha256") != FROZEN_INVENTORY_SHA256
+    ]
+    rep.check(
+        "A", "A15-contracts-pin-inventory", not missing_pin,
+        f"not pinned to the frozen denominator: {missing_pin}",
+    )
+
+    rep.check(
+        "A", "A16-adr-ids-exact",
+        [docs[f"{a}.contract.json"]["adr_id"] for a in ADR_IDS] == ADR_IDS,
+    )
+
+    sb_dec_doc = parse_candidate_sb_dec(cand_text)
+    sb_mismatch = [
+        a for a in ADR_IDS
+        if docs[f"{a}.contract.json"]["sb_dec_references"] != sb_dec_doc.get(a)
+    ]
+    rep.check("A", "A17-sb-dec-references-match-candidate", not sb_mismatch,
+              f"mismatched: {sb_mismatch}")
+    # 28 references across 26 distinct decisions: SB-DEC-006 and SB-DEC-019 are
+    # each cited by two ADRs. Both numbers are checked because collapsing them
+    # would hide a dropped citation behind a surviving duplicate.
+    ref_total = sum(len(refs) for refs in sb_dec_doc.values())
+    all_sb = {d for refs in sb_dec_doc.values() for d in refs}
+    rep.check("A", "A17-sb-dec-references-28", ref_total == 28, f"count={ref_total}")
+    rep.check("A", "A17-sb-dec-distinct-26", len(all_sb) == 26, f"count={len(all_sb)}")
+    rep.check("A", "A18-sb-dec-026-unlinked", "SB-DEC-026" not in all_sb)
+
+    # ---- coverage ------------------------------------------------------
+    cov = docs.get("ADR_CONTRACT_COVERAGE.json")
+    if cov is None:
+        rep.check("A", "A19-coverage-present", False, "ADR_CONTRACT_COVERAGE.json")
+        return None
+    rep.check("A", "A19-coverage-present", True)
+    rep.check(
+        "A", "A19-coverage-pins-inventory",
+        cov.get("clause_inventory_sha256") == FROZEN_INVENTORY_SHA256
+        and cov.get("clause_total") == FROZEN_CLAUSE_TOTAL,
+    )
+
+    entries = cov.get("entries", [])
+    covered = [e["clause_id"] for e in entries]
+    rep.check(
+        "A", "A20-every-clause-covered-once",
+        sorted(covered) == sorted(inv_clauses) and len(covered) == len(set(covered)),
+        f"entries={len(covered)} inventory={len(inv_clauses)}",
+    )
+    counts = cov.get("coverage_status_counts", {})
+    rep.check(
+        "A", "A21-coverage-counts-agree",
+        counts.get("COVERED") == len(entries)
+        and counts.get("MISSING") == 0
+        and counts.get("AMBIGUOUS") == 0,
+        f"counts={counts}",
+    )
+    rep.check(
+        "A", "A21-no-clause-excused",
+        counts.get("NOT_APPLICABLE_PROVEN") == 0
+        and all(e["coverage_status"] == "COVERED" for e in entries),
+    )
+
+    # ---- contract rules must equal inventory clauses -------------------
+    pointer_errors: list[str] = []
+    rule_errors: list[str] = []
+    for e in entries:
+        artifact = e["contract_artifact"].split("/")[-1]
+        doc = docs.get(artifact)
+        if doc is None:
+            pointer_errors.append(f"{e['clause_id']}: artifact {artifact} absent")
+            continue
+        try:
+            rule = resolve_pointer(doc, e["contract_rule_pointer"])
+        except (KeyError, IndexError, ValueError) as exc:
+            pointer_errors.append(f"{e['clause_id']}: {exc}")
+            continue
+        # A pointer into prose resolves to a string, and a clause dropped from
+        # the inventory has no counterpart. Both are reported, never raised:
+        # an exception here would discard the whole report, so the mutation
+        # would show up as an opaque crash instead of as the finding it is.
+        if not isinstance(rule, dict):
+            rule_errors.append(
+                f"{e['clause_id']}: pointer {e['contract_rule_pointer']} resolves "
+                f"to {type(rule).__name__}, not a structured rule"
+            )
+            continue
+        inv_c = inv_clauses.get(e["clause_id"])
+        if inv_c is None:
+            rule_errors.append(
+                f"{e['clause_id']}: covered but absent from the frozen denominator"
+            )
+            continue
+        for field in ("subject", "rule_type", "operator", "machine_value",
+                      "section", "source_fragments", "source_decision_text_hash",
+                      "requirement_text"):
+            if rule.get(field) != inv_c.get(field):
+                rule_errors.append(
+                    f"{e['clause_id']}.{field}: contract={rule.get(field)!r} "
+                    f"inventory={inv_c.get(field)!r}"
+                )
+        if inv_c.get("source_enumeration") != rule.get("source_enumeration"):
+            rule_errors.append(f"{e['clause_id']}.source_enumeration differs")
+    rep.check("A", "A22-pointers-resolve", not pointer_errors,
+              "; ".join(pointer_errors[:3]))
+    rep.check("A", "A22-rules-agree-with-inventory", not rule_errors,
+              "; ".join(rule_errors[:3]))
+
+    # ---- fragments -----------------------------------------------------
+    spans = {a: adr_allowed_span(cand_text, a) for a in ADR_IDS}
+    not_substr: list[str] = []
+    wrong_section: list[str] = []
+    bad_hash: list[str] = []
+    for cid, c in sorted(inv_clauses.items()):
+        adr = cid.rsplit("-", 1)[0]
         for frag in c["source_fragments"]:
             if frag not in cand_text:
-                frag_bad.append(cid)
-                break
-        if sha256_text("\n".join(c["source_fragments"])) != c["source_decision_text_hash"]:
-            hash_bad.append(cid)
-    rep.check("A", "A08-fragments-are-candidate-substrings", not frag_bad,
-              f"not-found={frag_bad[:5]}")
-    rep.check("A", "A08-fragment-hashes-recompute", not hash_bad,
-              f"mismatch={hash_bad[:5]}")
-
-    # A08c — coverage source_text_hash must equal the frozen inventory hash.
-    drift = [
-        e["clause_id"] for e in entries
-        if e["clause_id"] in inv_clauses
-        and e.get("source_text_hash")
-        != inv_clauses[e["clause_id"]]["source_decision_text_hash"]
-    ]
-    rep.check("A", "A08-coverage-hash-matches-inventory", not drift, f"drift={drift[:5]}")
-
-    # A10/A11 — no MISSING, no AMBIGUOUS.
-    statuses = [e.get("coverage_status") for e in entries]
-    n_missing = statuses.count("MISSING")
-    n_ambig = statuses.count("AMBIGUOUS")
-    bad_status_vals = sorted(
-        {s for s in statuses if s not in
-         {"COVERED", "NOT_APPLICABLE_PROVEN", "MISSING", "AMBIGUOUS"}}
-    )
-    rep.check("A", "A10-missing-zero", n_missing == 0, f"MISSING={n_missing}")
-    rep.check("A", "A11-ambiguous-zero", n_ambig == 0, f"AMBIGUOUS={n_ambig}")
-    rep.check("A", "A11-status-values-known", not bad_status_vals, f"bad={bad_status_vals}")
-    counts = coverage.get("coverage_status_counts", {})
+                not_substr.append(f"{cid}: {frag[:50]!r}")
+            elif frag not in spans[adr]:
+                wrong_section.append(f"{cid}: {frag[:50]!r}")
+        if sha256_text("\n".join(c["source_fragments"])) != \
+                c["source_decision_text_hash"]:
+            bad_hash.append(cid)
+    rep.check("A", "A23-fragments-are-candidate-substrings", not not_substr,
+              "; ".join(not_substr[:3]))
     rep.check(
-        "A", "A10-declared-counts-agree",
-        counts.get("MISSING") == n_missing and counts.get("AMBIGUOUS") == n_ambig
-        and counts.get("COVERED") == statuses.count("COVERED"),
-        f"declared={counts}",
+        "A", "A23-fragments-not-from-rejected-alternatives", not wrong_section,
+        "a rejected design, an evidence list or the acceptance boilerplate may "
+        f"never ground a rule: {wrong_section[:3]}",
+    )
+    rep.check("A", "A24-fragment-hashes-recompute", not bad_hash,
+              f"mismatched: {bad_hash[:3]}")
+
+    # ---- rule shapes and grounding -------------------------------------
+    bad_shape = [
+        f"{cid}: {c['rule_type']}/{c['operator']}"
+        for cid, c in sorted(inv_clauses.items())
+        if (c["rule_type"], c["operator"]) not in VALID_SHAPES
+    ]
+    rep.check(
+        "A", "A25-rule-shapes-are-testable", not bad_shape,
+        "a rule shape that carries an opaque label proves nothing: "
+        f"{bad_shape[:3]}",
+    )
+    bad_section = [
+        cid for cid, c in sorted(inv_clauses.items())
+        if c.get("section") not in VALID_SECTIONS
+    ]
+    rep.check("A", "A25-sections-known", not bad_section, f"{bad_section[:3]}")
+
+    ungrounded = []
+    setwise = []
+    for cid, c in sorted(inv_clauses.items()):
+        err = clause_grounding_error(c)
+        if err:
+            (setwise if c["operator"] == "SET_EQUALS" else ungrounded).append(
+                f"{cid}: {err}"
+            )
+    rep.check("A", "A26-machine-values-grounded", not ungrounded,
+              "; ".join(ungrounded[:3]))
+    rep.check(
+        "A", "A26-closed-sets-bidirectional", not setwise,
+        "a closed set must equal its source enumeration exactly — shrinking is "
+        f"as much a rewrite as widening: {setwise[:3]}",
     )
 
-    # A09 — every coverage pointer resolves to a real structured machine rule
-    #       that AGREES with the clause it claims to cover.
-    def load_rel(rel: str) -> Any:
-        if rel in docs:
-            return docs[rel]
-        p = root / rel
-        if not p.is_file():
-            raise FileNotFoundError(rel)
-        return json.loads(p.read_text(encoding="utf-8"))
+    # ---- invented authority regression guard ---------------------------
+    invented: list[str] = []
+    for cid, c in sorted(inv_clauses.items()):
+        vals = c["machine_value"]
+        vals = vals if isinstance(vals, list) else [vals]
+        for v in vals:
+            if isinstance(v, str) and any(
+                tok.lower() in v.lower() for tok in INVENTED_AUTHORITY_TOKENS
+            ):
+                invented.append(f"{cid}={v}")
+    for name in LAYER_B + [f"{a}.contract.json" for a in ADR_IDS]:
+        body = (cdir / name).read_text(encoding="utf-8") if (cdir / name).is_file() \
+            else ""
+        for tok in INVENTED_AUTHORITY_TOKENS:
+            if tok in body:
+                invented.append(f"{name} contains {tok!r}")
+    rep.check(
+        "A", "A27-no-invented-authority-value", not invented,
+        f"present nowhere in the candidate: {invented[:3]}",
+    )
 
-    unresolved, unstructured, disagreeing = [], [], []
-    for e in entries:
-        cid = e["clause_id"]
-        clause = inv_clauses.get(cid)
-        if clause is None:
+    never = []
+    for cid, c in sorted(inv_clauses.items()):
+        if c["rule_type"] != "AUTHORITY_TARGET":
             continue
-        targets = [(e["contract_artifact"], e["contract_rule_pointer"])]
-        targets += [
-            (a["contract_artifact"], a["contract_rule_pointer"])
-            for a in e.get("additional_coverage", [])
-        ]
-        for rel, ptr in targets:
-            try:
-                node = resolve_pointer(load_rel(rel), ptr)
-            except Exception as exc:
-                unresolved.append(f"{cid}->{rel}{ptr} ({type(exc).__name__})")
-                continue
-            if not (
-                isinstance(node, dict)
-                and {"subject", "rule_type", "operator", "machine_value"} <= set(node)
-                and node["rule_type"] in RULE_TYPES
-                and node["operator"] in OPERATORS
-            ):
-                unstructured.append(f"{cid}->{rel}{ptr}")
-                continue
-            if (
-                node["subject"] != clause["subject"]
-                or node["rule_type"] != clause["rule_type"]
-                or node["operator"] != clause["operator"]
-                or node["machine_value"] != clause["machine_value"]
-            ):
-                disagreeing.append(f"{cid}->{rel}{ptr}")
-            ep = node.get("enforced_by")
-            if ep is not None:
-                try:
-                    resolve_pointer(load_rel(rel), ep)
-                except Exception:
-                    unresolved.append(f"{cid}->{rel}{ep} (enforced_by)")
+        vals = c["machine_value"]
+        vals = vals if isinstance(vals, list) else [vals]
+        never += [f"{cid}={v}" for v in vals if v in NEVER_AUTHORITY]
+    rep.check("A", "A28-second-brain-never-authority", not never, f"{never}")
 
-    rep.check("A", "A09-pointers-resolve", not unresolved, f"unresolved={unresolved[:5]}")
-    rep.check(
-        "A", "A09-pointers-are-structured-rules", not unstructured,
-        f"prose-or-shapeless={unstructured[:5]}",
-    )
-    rep.check(
-        "A", "A09-rules-agree-with-clause", not disagreeing,
-        f"disagreeing={disagreeing[:5]}",
-    )
-
-    # A12 — declared required_artifacts exist.
-    absent_req = []
-    for adr_id in ADR_IDS:
-        for rel in docs[f"{CONTRACT_DIR}/{adr_id}.contract.json"].get(
-            "required_artifacts", []
-        ):
+    # ---- required artifacts -------------------------------------------
+    missing_art: list[str] = []
+    for a in ADR_IDS:
+        for rel in docs[f"{a}.contract.json"]["required_artifacts"]:
             if not (root / rel).is_file():
-                absent_req.append(f"{adr_id}->{rel}")
-    rep.check("A", "A12-required-artifacts-exist", not absent_req, f"absent={absent_req}")
+                missing_art.append(rel)
+    rep.check("A", "A29-required-artifacts-exist", not missing_art,
+              f"{sorted(set(missing_art))}")
+    rep.check(
+        "A", "A29-named-typed-artifacts-exist",
+        all((cdir / n).is_file() for n in LAYER_B),
+        f"missing: {[n for n in LAYER_B if not (cdir / n).is_file()]}",
+    )
 
-    # A14 — no contract grants implementation / runtime authority.
-    offenders = []
-    for rel, d in docs.items():
-        for _, key, raw in walk(d):
-            val = asserted_value(raw)
-            if key in FORBIDDEN_TRUTHY_KEYS and val not in (False, None):
-                offenders.append(f"{rel}:{key}={val!r}")
-            if isinstance(val, str) and val in FORBIDDEN_VALUE_TOKENS:
-                offenders.append(f"{rel}:{key}={val!r}")
-    rep.check("A", "A14-no-runtime-or-implementation-authority", not offenders,
-              f"offenders={offenders[:5]}")
+    iface_missing = []
+    for cid, c in sorted(inv_clauses.items()):
+        if c["rule_type"] != "INTERFACE_REQUIREMENT":
+            continue
+        arts = c.get("additional_covering_artifacts", [])
+        if not arts or not all((root / a).is_file() for a in arts):
+            iface_missing.append(f"{cid}={c['machine_value']}")
+    rep.check(
+        "A", "A30-interface-requirements-resolve", not iface_missing,
+        f"named type without an existing artifact: {iface_missing}",
+    )
 
-    for name in PORT_CONTRACTS:
-        d = docs[f"{CONTRACT_DIR}/{name}"]
-        rep.check(
-            "A", f"A14-port-not-implemented:{name}",
-            d.get("implementation_status") == "NOT_IMPLEMENTED"
-            and d.get("runtime_claims_permitted") is False,
-            f"status={d.get('implementation_status')}",
-        )
+    # ---- Layer B surface grounding (the invented-surface class) --------
+    surface_err: list[str] = []
+    binding_err: list[str] = []
+    for name in LAYER_B:
+        doc = docs[name]
+        bindings = doc.get("x-grounding", {})
+        locs = assertion_locations(doc)
+        loc_ptrs = {p for p, _ in locs}
+        for ptr, text in locs:
+            b = bindings.get(ptr)
+            if b is None:
+                surface_err.append(f"{name}{ptr} ({text!r}) has no grounding")
+                continue
+            cl = inv_clauses.get(b.get("clause_id"))
+            if cl is None:
+                surface_err.append(f"{name}{ptr} cites unknown {b.get('clause_id')}")
+                continue
+            term = b.get("term", "")
+            if term not in "\n".join(cl["source_fragments"]):
+                surface_err.append(
+                    f"{name}{ptr} term {term!r} is not verbatim in "
+                    f"{b['clause_id']}'s fragments"
+                )
+            elif normalize(text) != normalize(term):
+                surface_err.append(
+                    f"{name}{ptr} asserts {text!r} but is grounded on {term!r}"
+                )
+        for ptr in bindings:
+            if ptr not in loc_ptrs:
+                binding_err.append(f"{name}{ptr} binds nothing")
+    rep.check(
+        "A", "A31-layer-b-surface-grounded", not surface_err,
+        "every property, enum member and const string must be a candidate "
+        f"phrase: {surface_err[:3]}",
+    )
+    rep.check(
+        "A", "A32-no-orphan-grounding", not binding_err,
+        f"grounding entries pointing at nothing: {binding_err[:3]}",
+    )
 
-    # A15 — no contract claims denial fixtures exist.
-    df_bad = []
-    for rel, d in docs.items():
-        for _, key, raw in walk(d):
-            val = asserted_value(raw)
-            if (
-                "denial_fixture" in key.lower()
-                and val not in ALLOWED_DENIAL_FIXTURE_VALUES
-            ):
-                df_bad.append(f"{rel}:{key}={val!r}")
-    rep.check("A", "A15-no-denial-fixture-claim", not df_bad, f"claims={df_bad[:5]}")
-    no_defer = [
-        a for a in ADR_IDS
-        if "DENIAL_FIXTURES"
-        not in docs[f"{CONTRACT_DIR}/{a}.contract.json"]["implementation_deferred"]
+    inv_disagree: list[str] = []
+    for name in LAYER_B:
+        for cid, rule in docs[name].get("x-machine-invariants", {}).items():
+            c = inv_clauses.get(cid)
+            if c is None:
+                inv_disagree.append(f"{name}:{cid} unknown clause")
+                continue
+            for field in ("subject", "rule_type", "operator", "machine_value"):
+                if rule.get(field) != c.get(field):
+                    inv_disagree.append(f"{name}:{cid}.{field}")
+    rep.check("A", "A33-layer-b-invariants-agree-with-inventory", not inv_disagree,
+              f"{inv_disagree[:4]}")
+
+    # ---- status discipline ---------------------------------------------
+    rep.check(
+        "A", "A34-contracts-record-proposed",
+        all(
+            docs[f"{a}.contract.json"]["adr_status_at_contract_authoring"]
+            == "PROPOSED"
+            for a in ADR_IDS
+        ),
+    )
+    rep.check(
+        "A", "A35-document-status-candidate",
+        "\nstatus: CANDIDATE\n" in cand_text,
+    )
+    accepted_hits = [
+        f"{n}{path}/{k}"
+        for n, doc in docs.items()
+        for path, k, v in walk(doc)
+        if isinstance(v, str) and v.upper() in FORBIDDEN_VALUE_TOKENS
     ]
-    rep.check("A", "A15-denial-fixtures-deferred", not no_defer, f"missing={no_defer}")
+    rep.check("A", "A36-no-accepted-token", not accepted_hits,
+              f"{accepted_hits[:3]}")
 
-    # A20 — no new canonical authority introduced.
-    authority_bad, never_bad = [], []
-    for adr_id in ADR_IDS:
-        d = docs[f"{CONTRACT_DIR}/{adr_id}.contract.json"]
-        if not d.get("forbidden_authority_claims"):
-            authority_bad.append(f"{adr_id}: empty forbidden_authority_claims")
-        for c in d.get("decision_clauses", []):
-            # A malformed clause is already reported by A03/A09; skip it here so
-            # this pass still produces a report instead of an opaque traceback.
-            if not isinstance(c, dict):
-                authority_bad.append(f"{adr_id}: non-object decision clause")
+    truthy = []
+    for n, doc in docs.items():
+        for path, k, v in walk(doc):
+            if k in FORBIDDEN_TRUTHY_KEYS:
+                asserted = v.get("const") if isinstance(v, dict) and "const" in v else v
+                if asserted not in (False, None) and k != "denial_fixtures":
+                    truthy.append(f"{n}{path}/{k}={asserted!r}")
+    rep.check("A", "A37-no-runtime-or-implementation-authority", not truthy,
+              f"{truthy[:3]}")
+
+    df = []
+    for n, doc in docs.items():
+        for path, k, v in walk(doc):
+            if k != "denial_fixtures":
                 continue
-            if c.get("rule_type") != "AUTHORITY_TARGET":
-                continue
-            vals = c["machine_value"]
-            vals = vals if isinstance(vals, list) else [vals]
-            for v in vals:
-                if not isinstance(v, (str, int, float, bool, type(None))):
-                    authority_bad.append(f"{c.get('clause_id')}: non-scalar target")
-                    continue
-                if v not in AUTHORITY_TARGETS:
-                    authority_bad.append(f"{c['clause_id']}: {v!r} not a canonical authority")
-                if v in NEVER_AUTHORITY:
-                    never_bad.append(f"{c['clause_id']}: {v!r}")
-    rep.check("A", "A20-authority-targets-closed-set", not authority_bad,
-              f"violations={authority_bad[:5]}")
-    rep.check("A", "A20-second-brain-never-authority", not never_bad,
-              f"violations={never_bad[:5]}")
+            asserted = v.get("const") if isinstance(v, dict) and "const" in v else v
+            if asserted not in ALLOWED_DENIAL_FIXTURE_VALUES:
+                df.append(f"{n}{path}={asserted!r}")
+    rep.check("A", "A38-denial-fixtures-deferred", not df, f"{df[:3]}")
 
-    value_grounding(inv_clauses, cand_text, rep)
-    semantic_invariants(root, docs, inv_clauses, rep)
+    return {"docs": docs, "inv_clauses": inv_clauses, "candidate": cand_text}
 
 
-# Small-integer words as they appear in architecture prose.
-_NUMBER_WORDS = {
-    0: "zero", 1: "one", 2: "two", 3: "three", 4: "four", 5: "five",
-    6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten",
+# --------------------------------------------------------------------------
+# Group S — semantic invariants, held independently of the inventory
+# --------------------------------------------------------------------------
+
+def semantic_invariants(root: Path, ctx: dict[str, Any], rep: Report) -> None:
+    """Hard-coded pins on the values that carry the architecture decision.
+
+    Deliberately duplicated from the inventory. Group A proves the contracts
+    agree with the denominator; this group proves the denominator still says
+    what the architecture decided, so a coordinated rewrite of both has to get
+    past a third, independent statement of the same facts.
+    """
+    docs = ctx["docs"]
+    inv = ctx["inv_clauses"]
+
+    def clause(cid: str) -> Any:
+        c = inv.get(cid)
+        return None if c is None else c["machine_value"]
+
+    spool = docs["local-spool-port.contract.json"]["assertions"]
+    rep.check("S", "S01-internal-requires-os-protection",
+              spool.get("internal_requires_os_protected_storage") is True)
+    rep.check(
+        "S", "S02-confidential-restricted-spool-disabled",
+        spool.get(
+            "confidential_restricted_remain_disabled_until_verified_encryption_"
+            "and_key_ownership"
+        ) is True
+        and clause("ADR-SB-006-C13")
+        == "DISABLED_UNTIL_VERIFIED_ENCRYPTION_AND_KEY_OWNERSHIP",
+    )
+    rep.check("S", "S03-unknown-class-spooling-denied",
+              spool.get("no_unknown_class_spooling") is True
+              and clause("ADR-SB-006-C14") is False)
+    rep.check("S", "S03-spool-never-remote-backed-up",
+              spool.get("never_remote_backed_up") is True
+              and clause("ADR-SB-006-C10") is False)
+
+    olc = docs["open-loop-candidate.schema.json"]
+    denied = {
+        e["required"][0]
+        for e in olc.get("not", {}).get("anyOf", [])
+        if isinstance(e, dict) and e.get("required")
+    }
+    expected_pm = {
+        "assignee", "pm_priority", "workflow_status", "sprint_state",
+        "ownership_assignment", "due_driven_escalation", "automatic_scheduling",
+        "task_completion_state",
+    }
+    rep.check(
+        "S", "S04-open-loop-denies-all-eight-pm-semantics",
+        denied == expected_pm,
+        f"missing={sorted(expected_pm - denied)} extra={sorted(denied - expected_pm)}",
+    )
+    rep.check(
+        "S", "S04-pm-semantic-closed-set-complete",
+        {normalize(m) for m in (clause("ADR-SB-008-C19") or [])}
+        == {normalize(m) for m in expected_pm},
+    )
+    rep.check(
+        "S", "S05-due-at-advisory-only",
+        olc["properties"]["due_at"].get("x-semantics")
+        == "ADVISORY_DISPLAY_METADATA_ONLY"
+        and clause("ADR-SB-008-C16") == "ADVISORY_DISPLAY_METADATA_ONLY",
+    )
+    rep.check("S", "S05-open-loop-zero-pm-fields", clause("ADR-SB-008-C35") == 0)
+
+    tpr = docs["task-promotion-request.schema.json"]
+    rep.check(
+        "S", "S06-task-promotion-disabled",
+        tpr["properties"]["disabled"].get("const") is True
+        and "disabled" in tpr["required"]
+        and clause("ADR-SB-008-C07") is False,
+    )
+    rep.check(
+        "S", "S07-promotion-requires-both-proofs-and-approval",
+        set(tpr["required"]) == {
+            "disabled", "leantime_plus_task_orchestrator_proof",
+            "explicit_approval",
+        }
+        and clause("ADR-SB-008-C06") is True
+        and clause("ADR-SB-008-C17") is True
+        and clause("ADR-SB-008-C18") is True,
+    )
+    rep.check(
+        "S", "S08-pm-authority-is-leantime-and-orchestrator",
+        sorted(clause("ADR-SB-008-C29") or []) == ["Leantime", "Task Orchestrator"],
+    )
+    rep.check("S", "S09-conport-never-owns-task-state",
+              clause("ADR-SB-008-C34") is False)
+    rep.check("S", "S10-dope-memory-no-pm-authority",
+              clause("ADR-SB-008-C30") is False
+              and clause("ADR-SB-008-C31") is False)
+    rep.check(
+        "S", "S10-loop-event-kinds-exact",
+        sorted(clause("ADR-SB-008-C22") or []) == ["CANCEL", "CLOSE", "OPEN"],
+    )
+
+    rep.check("S", "S11-unknown-eligibility-denies",
+              clause("ADR-SB-004-C04") is True
+              and clause("ADR-SB-004-C11") is False)
+    rep.check("S", "S12-no-confidential-restricted-indexing",
+              clause("ADR-SB-004-C07") is False)
+    rep.check(
+        "S", "S12-policy-dimensions-complete",
+        sorted(clause("ADR-SB-004-C09") or []) == sorted([
+            "IDENTITY", "GRANTS", "PROVIDER", "EMBEDDING", "CUSTODY", "BACKUP",
+            "OPERATION",
+        ]),
+    )
+
+    env = docs["project-identity-envelope.schema.json"]
+    rejected = {
+        e["required"][0]
+        for e in env.get("not", {}).get("anyOf", [])
+        if isinstance(e, dict) and e.get("required")
+    }
+    rep.check(
+        "S", "S13-identity-sources-rejected",
+        rejected == {"path_hashes", "ports", "singleton_event_streams"},
+        f"{sorted(rejected)}",
+    )
+    rep.check("S", "S14-single-active-capture-project",
+              env["properties"]["active_automatic_capture_project"].get("maximum") == 1
+              and clause("ADR-SB-009-C03") == 1)
+    rep.check(
+        "S", "S15-multi-project-capture-disabled",
+        env["properties"]["multi_project_background_capture"].get("const") is False
+        and clause("ADR-SB-009-C08") is False,
+    )
+    rep.check("S", "S16-wrong-project-denied",
+              env["properties"]["wrong_project_denial"].get("const") is True
+              and clause("ADR-SB-009-C06") is True)
+    rep.check(
+        "S", "S16-capability-receipt-must-be-current",
+        docs["service-capability-receipt.schema.json"]["properties"]["current"]
+        .get("const") is True
+        and clause("ADR-SB-009-C02") is True,
+    )
+
+    rep.check("S", "S17-visible-queue-max-7", clause("ADR-SB-010-C03") == 7)
+    rep.check(
+        "S", "S18-consequential-default-defer-or-cancel",
+        sorted(clause("ADR-SB-010-C08") or []) == ["CANCEL", "DEFER"],
+    )
+    rep.check(
+        "S", "S18-ux-operations-exact",
+        sorted(clause("ADR-SB-010-C01") or []) == ["CAPTURE", "RECALL", "REVIEW"],
+    )
+    rep.check("S", "S19-no-productivity-scoring", clause("ADR-SB-010-C09") is False)
+    rep.check("S", "S20-no-surprise-writes", clause("ADR-SB-010-C10") is False)
+
+    rep.check("S", "S21-searchable-residual-zero", clause("ADR-SB-007-C07") == 0)
+    rep.check("S", "S22-purge-completion-receipt-required",
+              clause("ADR-SB-007-C13") is True)
+    rep.check(
+        "S", "S22-deletion-operations-exact",
+        sorted(clause("ADR-SB-007-C01") or []) == ["ARCHIVE", "FORGET", "PURGE"],
+    )
+
+    rep.check("S", "S23-recall-authority-first", clause("ADR-SB-003-C01") is True)
+    rep.check("S", "S23-search-rank-not-truth", clause("ADR-SB-003-C08") is False)
+    rep.check("S", "S24-historical-and-current-distinct",
+              clause("ADR-SB-003-C12") is True)
+    rep.check(
+        "S", "S25-review-default-defer-no-mutation",
+        clause("ADR-SB-002-C05") == "DEFER" and clause("ADR-SB-002-C09") is False,
+    )
+    rep.check("S", "S26-second-brain-owns-no-canonical-database",
+              clause("ADR-SB-001-C02") is False)
+
+
+# --------------------------------------------------------------------------
+# Group B — FO-01 record reconciliation, as a whole projection
+# --------------------------------------------------------------------------
+
+# status pointer -> receipt pointer. Checked in full: a partial projection can
+# pass while a sibling field has drifted, which is exactly the finding this
+# replaces.
+RECEIPT_PROJECTION: dict[str, str] = {
+    "/fo01_status": "/status",
+    "/architecture_semantics_modified": "/architecture_semantics_modified",
+    "/adr_semantics_modified": "/adr_semantics_modified",
+    "/decision_references_modified": "/decision_references_modified",
+    "/adr_acceptance_authorized": "/adr_acceptance_authorized",
+    "/adr_acceptance_gate_eligible": "/adr_acceptance_gate_eligible",
+    "/authority/ratification_binding_sha256": "/ratification_binding_sha256",
+    "/authority/r2_candidate_sha256": "/r2_candidate_sha256",
+    "/authority/authority_persistence_merge": "/base_sha",
+    "/source_hashes/24_ADR_CANDIDATES.md": "/source_adr_candidates_sha256",
+    "/source_hashes/03_ARCHITECTURE_DECISION_REGISTER.yaml":
+        "/decision_register_sha256",
+    "/repaired_candidate/sha256": "/repaired_candidate_sha256",
+    "/coverage/one_to_one_coverage_imposed": "/one_to_one_coverage_imposed",
+    "/sb_dec_031/disposition": "/sb_dec_031_disposition",
+    "/sb_dec_032/disposition": "/sb_dec_032_disposition",
+    "/independent_verification/verdict": "/audit_verdict",
+    "/independent_verification/audited_content_head": "/audited_content_head",
+    "/independent_verification/auditor_report_sha256": "/auditor_report_sha256",
+    "/independent_verification/blockers": "/audit_blockers",
+    "/independent_verification/must_fix": "/audit_must_fix",
+    "/independent_verification/nonblocking_observations":
+        "/audit_nonblocking_observations",
+    "/independent_verification/known_mappings_verified": "/known_mappings_verified",
+    "/independent_verification/matrix_independently_reproduced":
+        "/matrix_independently_reproduced",
+    "/independent_verification/auditor/runner": "/auditor/runner",
+    "/independent_verification/auditor/model": "/auditor/model",
+    "/independent_verification/auditor/variant": "/auditor/variant",
+    "/independent_verification/auditor/independent_of_producer":
+        "/auditor/independent_of_producer",
+    "/independent_verification/auditor/read_only": "/auditor/read_only",
+    "/independent_verification/auditor/separate_process": "/auditor/separate_process",
+    "/independent_verification/auditor/separate_clone": "/auditor/separate_clone",
+    "/stale_record_reconciliation/semantics_unchanged/adr_semantics_modified":
+        "/adr_semantics_modified",
+    "/stale_record_reconciliation/semantics_unchanged/"
+    "architecture_semantics_modified": "/architecture_semantics_modified",
+    "/preserved_not_run/runtime_conformance": "/preserved_not_run/runtime_conformance",
+    "/preserved_not_run/retrieval_benchmarks":
+        "/preserved_not_run/retrieval_benchmarks",
+    "/preserved_not_run/purge_completeness": "/preserved_not_run/purge_completeness",
+    "/preserved_not_run/multi_project_isolation":
+        "/preserved_not_run/multi_project_isolation",
+    "/preserved_not_run/split_brain_proof": "/preserved_not_run/split_brain_proof",
+    "/preserved_not_run/encryption_implementation":
+        "/preserved_not_run/encryption_implementation",
+    "/gates/implementation_planning": "/implementation_planning",
+    "/gates/implementation_execution": "/implementation_execution",
 }
 
+# Fields that are not receipt-derived and must not drift.
+PINNED: dict[str, Any] = {
+    "/schema_version": "1.0.0",
+    "/task_id": "TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001",
+    "/required_resolution":
+        "REPAIR_AND_REVERIFY_TRACEABILITY_BEFORE_ANY_ADR_ACCEPTANCE",
+    "/fo01_gate_condition": "CLOSED",
+    "/other_adr_acceptance_conditions": "STILL_REQUIRED",
+    "/authority/architecture_accepted_as_law": True,
+    "/authority/sb_dec_dispositions": "32 ACCEPT / 0 DEFER / 0 REJECT",
+    "/authority/architecture_decisions_reopened": False,
+    "/source_hashes/frozen_source_proof_copy":
+        "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/source/"
+        "24_ADR_CANDIDATES.md",
+    "/repaired_candidate/path": CANDIDATE_PATH,
+    "/repaired_candidate/body_non_reference_text_identical_to_source": True,
+    "/repaired_candidate/authorized_change_class": "DECISION_REFERENCE_CHANGE",
+    "/repaired_candidate/frontmatter_added_outside_source_body": True,
+    "/content_head": None,
+    "/content_head_binding":
+        "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/C1_HEAD.txt",
+    "/adr_statuses/all_remain": "PROPOSED (candidate)",
+    "/adr_statuses/document_status": "CANDIDATE",
+    "/adr_statuses/promoted_to_accepted": 0,
+    "/sb_dec_031/decision_id": "SB-DEC-031",
+    "/sb_dec_031/adr_created": False,
+    "/sb_dec_031/existing_adr_broadened": False,
+    "/sb_dec_031/operator_adjudication_required": False,
+    "/sb_dec_032/decision_id": "SB-DEC-032",
+    "/sb_dec_032/adr_created": False,
+    "/sb_dec_032/existing_adr_broadened": False,
+    "/sb_dec_032/operator_adjudication_required": False,
+    "/independent_verification/performed": True,
+    "/independent_verification/evidence": FO01_RECEIPT_PATH,
+    "/stale_record_reconciliation/task_id":
+        "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+    "/stale_record_reconciliation/change_class":
+        "STALE_STATUS_RECORD_RECONCILIATION",
+    "/stale_record_reconciliation/evidence_source": FO01_RECEIPT_PATH,
+    "/stale_record_reconciliation/semantics_unchanged/candidate_document_modified":
+        False,
+    "/stale_record_reconciliation/semantics_unchanged/sb_dec_dispositions_modified":
+        False,
+    "/stale_record_reconciliation/semantics_unchanged/adr_statuses_modified": False,
+    "/stale_record_reconciliation/verified_by":
+        "scripts/governance/validate_second_brain_adr_contracts.py (check group B)",
+    "/gates/adr_acceptance": "CLOSED",
+    "/gates/merge": "NOT_AUTHORIZED",
+}
 
-def value_grounding(inv_clauses: dict[str, Any], cand_text: str, rep: Report) -> None:
-    """A21 — a rule's machine value must be traceable to the text it cites.
-
-    The semantic invariants below pin specific high-risk values, but they cannot
-    cover all 97 clauses, and the inventory and contract can be edited
-    *consistently* — which keeps cross-file agreement intact and leaves the cited
-    source fragment untouched, since the fragment is still a real candidate
-    substring. Without this check, rerouting a canonical write from Dope-Memory to
-    ConPort passes every other guard.
-
-    So for the rule classes where a silent swap does the most damage — canonical
-    authority routing, closed policy enums, and numeric bounds — require the value
-    itself to appear in the decision text the clause claims to derive from.
-
-    Deliberately narrow. It is applied only where grounding is genuinely sound;
-    e.g. SUPERSET_OF clauses are excluded because a contract may legitimately
-    normalise a term the prose abbreviates ("class" -> "classification").
-    """
-    ungrounded = []
-    for cid, c in sorted(inv_clauses.items()):
-        text = "\n".join(c["source_fragments"]).lower()
-        val = c["machine_value"]
-        rt, op = c["rule_type"], c["operator"]
-
-        if rt == "AUTHORITY_TARGET" and op == "EQUALS" and isinstance(val, str):
-            if val.lower() not in text:
-                ungrounded.append(f"{cid}: authority target {val!r} not in cited text")
-
-        elif rt == "ENUM" and op == "SET_EQUALS" and isinstance(val, list):
-            for member in val:
-                if isinstance(member, str) and member.lower() not in text:
-                    ungrounded.append(f"{cid}: enum member {member!r} not in cited text")
-
-        elif isinstance(val, int) and not isinstance(val, bool):
-            word = _NUMBER_WORDS.get(val)
-            if str(val) not in text and (word is None or word not in text):
-                ungrounded.append(f"{cid}: numeric bound {val} not in cited text")
-
-    rep.check(
-        "A", "A21-machine-values-grounded-in-cited-text", not ungrounded,
-        f"ungrounded={ungrounded[:5]}",
-    )
-
-
-def semantic_invariants(
-    root: Path, docs: dict[str, Any], inv_clauses: dict[str, Any], rep: Report
-) -> None:
-    """Hard invariants keyed to specific artifacts.
-
-    A purely structural pass would green-light a contract that says the right
-    shape but the wrong thing. These checks pin the values that carry the
-    architecture decision, so the §9 semantic mutations fail here even when the
-    artifact still validates against its schema.
-    """
-    def clause(cid: str) -> dict[str, Any]:
-        return inv_clauses.get(cid, {})
-
-    def doc(name: str) -> dict[str, Any]:
-        return docs.get(f"{CONTRACT_DIR}/{name}", {})
-
-    # S01 — spool custody gates.
-    spool = doc("local-spool-port.contract.json")
-    cm = spool.get("classification_matrix", {})
-    rep.check(
-        "S", "S01-restricted-spool-requires-encryption",
-        cm.get("restricted") == "DISABLED_UNTIL_VERIFIED_ENCRYPTION_AND_KEY_OWNERSHIP"
-        and cm.get("confidential")
-        == "DISABLED_UNTIL_VERIFIED_ENCRYPTION_AND_KEY_OWNERSHIP",
-        f"confidential={cm.get('confidential')} restricted={cm.get('restricted')}",
-    )
-    rep.check(
-        "S", "S01-unknown-class-denied", cm.get("unknown") == "DENY",
-        f"unknown={cm.get('unknown')}",
-    )
-    rep.check(
-        "S", "S01-internal-requires-os-protection",
-        cm.get("internal") == "ALLOWED_REQUIRES_OS_PROTECTED_STORAGE",
-        f"internal={cm.get('internal')}",
-    )
-
-    # S02 — OpenLoopCandidate carries no PM semantics.
-    olc = doc("open-loop-candidate.schema.json")
-    props = set(olc.get("properties", {}))
-    leaked = sorted(props & PM_FORBIDDEN_PROPERTIES)
-    rep.check("S", "S02-open-loop-no-pm-properties", not leaked, f"leaked={leaked}")
-    rep.check(
-        "S", "S02-open-loop-closed-shape",
-        olc.get("additionalProperties") is False,
-        f"additionalProperties={olc.get('additionalProperties')!r}",
-    )
-    due = olc.get("properties", {}).get("due_at", {})
-    rep.check(
-        "S", "S02-due-at-advisory-only",
-        due.get("x-semantics") == "ADVISORY_DISPLAY_METADATA_ONLY"
-        and {"SCHEDULING", "ESCALATION"} <= set(due.get("x-forbidden-behaviors", [])),
-        f"x-semantics={due.get('x-semantics')}",
-    )
-    tp = doc("task-proposal.schema.json")
-    tp_leaked = sorted(set(tp.get("properties", {})) & PM_FORBIDDEN_PROPERTIES)
-    rep.check("S", "S02-task-proposal-no-pm-properties", not tp_leaked, f"leaked={tp_leaked}")
-    rep.check(
-        "S", "S02-task-proposal-closed-shape",
-        tp.get("additionalProperties") is False,
-    )
-
-    # S03 — task promotion disabled by construction, not by default.
-    tpr = doc("task-promotion-request.schema.json")
-    enabled = tpr.get("properties", {}).get("enabled", {})
-    rep.check(
-        "S", "S03-task-promotion-disabled",
-        enabled.get("const") is False and enabled.get("default") in (False, None),
-        f"const={enabled.get('const')!r} default={enabled.get('default')!r}",
-    )
-    req = set(tpr.get("required", []))
-    rep.check(
-        "S", "S03-promotion-requires-both-proofs-and-approval",
-        {"leantime_proof_ref", "task_orchestrator_proof_ref", "operator_approval",
-         "enabled"} <= req,
-        f"required={sorted(req)}",
-    )
-    rep.check(
-        "S", "S03-promotion-target-is-pm-authority",
-        set(tpr.get("properties", {}).get("target_authority", {}).get("enum", []))
-        == {"Leantime", "Task Orchestrator"},
-    )
-    c = clause("ADR-SB-008-C07")
-    rep.check(
-        "S", "S03-clause-promotion-disabled",
-        c.get("machine_value") is False and c.get("rule_type") == "CAPABILITY_GATE",
-        f"machine_value={c.get('machine_value')!r}",
-    )
-
-    # S04 — unknown policy eligibility denies.
-    c = clause("ADR-SB-004-C04")
-    rep.check(
-        "S", "S04-unknown-eligibility-denies",
-        c.get("machine_value") == "DENY" and c.get("rule_type") == "FAIL_CLOSED",
-        f"machine_value={c.get('machine_value')!r} rule_type={c.get('rule_type')!r}",
-    )
-    c = clause("ADR-SB-004-C07")
-    rep.check(
-        "S", "S04-no-confidential-restricted-indexing",
-        sorted(c.get("machine_value") or []) == ["internal", "public"],
-        f"machine_value={c.get('machine_value')!r}",
-    )
-
-    # S05 — wrong-project writes deny across clause and both typed artifacts.
-    c = clause("ADR-SB-009-C06")
-    rep.check(
-        "S", "S05-wrong-project-clause-denies",
-        c.get("machine_value") == "DENY" and c.get("rule_type") == "FAIL_CLOSED",
-        f"machine_value={c.get('machine_value')!r}",
-    )
-    pie = doc("project-identity-envelope.schema.json").get("properties", {})
-    rep.check(
-        "S", "S05-envelope-denies-wrong-project",
-        pie.get("wrong_project_write_disposition", {}).get("const") == "DENY",
-    )
-    rep.check(
-        "S", "S05-envelope-single-active-project",
-        pie.get("active_automatic_capture_project_count", {}).get("maximum") == 1,
-        f"maximum={pie.get('active_automatic_capture_project_count', {}).get('maximum')!r}",
-    )
-    rep.check(
-        "S", "S05-multi-project-capture-disabled",
-        pie.get("multi_project_background_capture_enabled", {}).get("const") is False,
-    )
-    rep.check(
-        "S", "S05-identity-sources-rejected",
-        set(pie.get("rejected_identity_sources", {}).get("const", []))
-        == {"PORT", "PATH_HASH", "CURRENT_DIRECTORY", "SINGLETON_EVENT_STREAM"},
-    )
-    scr = doc("service-capability-receipt.schema.json").get("properties", {})
-    rep.check(
-        "S", "S05-receipt-denies-wrong-project",
-        scr.get("wrong_project_disposition", {}).get("const") == "DENY"
-        and scr.get("unknown_capability_disposition", {}).get("const") == "DENY",
-    )
-
-    # S06 — UX bounds.
-    c = clause("ADR-SB-010-C03")
-    rep.check(
-        "S", "S06-visible-queue-max-7",
-        c.get("machine_value") == 7 and c.get("operator") == "LESS_THAN_OR_EQUAL",
-        f"machine_value={c.get('machine_value')!r} operator={c.get('operator')!r}",
-    )
-    c = clause("ADR-SB-010-C08")
-    rep.check(
-        "S", "S06-consequential-default-defer-or-cancel",
-        sorted(c.get("machine_value") or []) == ["CANCEL", "DEFER"],
-        f"machine_value={c.get('machine_value')!r}",
-    )
-
-    # S07 — no surprise writes, no productivity scoring.
-    for cid, label in (
-        ("ADR-SB-010-C10", "S07-no-surprise-writes"),
-        ("ADR-SB-010-C09", "S07-no-productivity-scoring"),
-    ):
-        c = clause(cid)
-        rep.check(
-            "S", label,
-            c.get("machine_value") is False and c.get("rule_type") == "FORBID",
-            f"machine_value={c.get('machine_value')!r} rule_type={c.get('rule_type')!r}",
-        )
-
-    # S08 — purge completeness threshold is zero, not "best effort".
-    c = clause("ADR-SB-007-C07")
-    rep.check(
-        "S", "S08-searchable-residual-zero",
-        c.get("machine_value") == 0 and c.get("rule_type") == "FAIL_CLOSED",
-        f"machine_value={c.get('machine_value')!r}",
-    )
-
-
-# --------------------------------------------------------------------------
-# Group B — FO-01 stale-record reconciliation
-# --------------------------------------------------------------------------
+# Prose. Carries no assertion a machine can check, and is enumerated so that a
+# *new* field cannot hide here by default.
+NARRATIVE_POINTERS = {
+    "/content_head_note",
+    "/independent_verification/note",
+    "/sb_dec_031/title",
+    "/sb_dec_031/rationale",
+    "/sb_dec_032/title",
+    "/sb_dec_032/rationale",
+    "/stale_record_reconciliation/defect",
+    "/stale_record_reconciliation/resolution",
+    "/stale_record_reconciliation/semantics_unchanged/note",
+}
+NARRATIVE_PREFIXES = (
+    "/gate_field_semantics/",
+    "/stale_record_reconciliation/still_forbidden/",
+)
+# Derived from the traceability matrix rather than the receipt.
+MATRIX_PREFIX = "/coverage/"
 
 
 def group_b(root: Path, rep: Report) -> None:
@@ -828,128 +1187,95 @@ def group_b(root: Path, rep: Report) -> None:
         return
     rep.check("B", "B01-records-parse", True)
 
-    # B02 — the reconciled status mirrors the later receipt verbatim.
+    # B02 — the whole projection, computed from the receipt.
+    drift: list[str] = []
+    for sptr, rptr in sorted(RECEIPT_PROJECTION.items()):
+        try:
+            sval = resolve_pointer(status, sptr)
+        except (KeyError, IndexError):
+            drift.append(f"{sptr}: absent from the status record")
+            continue
+        try:
+            rval = resolve_pointer(receipt, rptr)
+        except (KeyError, IndexError):
+            drift.append(f"{rptr}: absent from the receipt")
+            continue
+        if sval != rval:
+            drift.append(f"{sptr}: status={sval!r} receipt={rval!r}")
     rep.check(
-        "B", "B02-status-matches-receipt",
-        status.get("fo01_status") == receipt["status"]
-        == "TRACEABILITY_REPAIRED_AND_INDEPENDENTLY_REVERIFIED",
-        f"status={status.get('fo01_status')!r}",
+        "B", "B02-receipt-projection-exact", not drift,
+        f"{len(drift)} field(s) diverge from the receipt: {drift[:3]}",
+    )
+    rep.check(
+        "B", "B02-projection-covers-every-receipt-derived-field",
+        len(RECEIPT_PROJECTION) >= 39,
+        f"mapped={len(RECEIPT_PROJECTION)}",
     )
 
-    # B03 — independent verification asserted only with receipt evidence.
-    iv = status.get("independent_verification", {})
-    rep.check(
-        "B", "B03-independent-verification-performed",
-        iv.get("performed") is True,
-        f"performed={iv.get('performed')!r}",
-    )
-    rep.check(
-        "B", "B03-verdict-matches-receipt",
-        iv.get("verdict") == receipt["audit_verdict"]
-        == "PASS_FO01_TRACEABILITY_REPAIR_WITH_NONBLOCKING_OBSERVATIONS",
-        f"verdict={iv.get('verdict')!r}",
-    )
-    for field, key in (
-        ("audited_content_head", "audited_content_head"),
-        ("auditor_report_sha256", "auditor_report_sha256"),
-    ):
-        rep.check(
-            "B", f"B03-receipt-derived:{field}",
-            iv.get(field) == receipt[key],
-            f"status={iv.get(field)!r} receipt={receipt[key]!r}",
-        )
-    rep.check(
-        "B", "B03-blockers-and-must-fix-zero",
-        iv.get("blockers") == receipt["audit_blockers"] == 0
-        and iv.get("must_fix") == receipt["audit_must_fix"] == 0,
-        f"blockers={iv.get('blockers')!r} must_fix={iv.get('must_fix')!r}",
-    )
+    pin_drift = []
+    for ptr, expected in sorted(PINNED.items(), key=lambda kv: kv[0]):
+        try:
+            val = resolve_pointer(status, ptr)
+        except (KeyError, IndexError):
+            pin_drift.append(f"{ptr}: absent")
+            continue
+        if val != expected:
+            pin_drift.append(f"{ptr}: {val!r} != {expected!r}")
+    rep.check("B", "B03-pinned-fields-unchanged", not pin_drift,
+              f"{pin_drift[:3]}")
 
-    # B04/B05 — the FO-01 blocker is closed; ADR acceptance is still not authorized.
+    # B04 — verdict and counts are the receipt's, and they are clean.
     rep.check(
-        "B", "B04-adr-acceptance-not-authorized",
+        "B", "B04-fo01-audit-clean",
+        receipt.get("audit_blockers") == 0 and receipt.get("audit_must_fix") == 0,
+        f"blockers={receipt.get('audit_blockers')} "
+        f"must_fix={receipt.get('audit_must_fix')}",
+    )
+    rep.check(
+        "B", "B05-adr-acceptance-not-authorized",
         status.get("adr_acceptance_authorized") is False
-        and receipt["adr_acceptance_authorized"] is False,
-        f"authorized={status.get('adr_acceptance_authorized')!r}",
+        and receipt.get("adr_acceptance_authorized") is False
+        and receipt.get("accepts_any_adr") is False,
     )
     rep.check(
-        "B", "B05-fo01-gate-eligible",
+        "B", "B06-fo01-blocker-closed-gate-still-shut",
         status.get("fo01_gate_condition") == "CLOSED"
         and status.get("adr_acceptance_gate_eligible") is True
-        and receipt["adr_acceptance_gate_eligible"] is True,
-        f"gate={status.get('fo01_gate_condition')!r} "
-        f"eligible={status.get('adr_acceptance_gate_eligible')!r}",
-    )
-    rep.check(
-        "B", "B06-other-conditions-still-required",
-        status.get("other_adr_acceptance_conditions") == "STILL_REQUIRED",
-        f"value={status.get('other_adr_acceptance_conditions')!r}",
-    )
-
-    # B07 — execution authority untouched.
-    gates = status.get("gates", {})
-    rep.check(
-        "B", "B07-implementation-execution-not-authorized",
-        gates.get("implementation_execution") == "NOT_AUTHORIZED"
-        == receipt["implementation_execution"],
-        f"gates={gates}",
+        and status.get("gates", {}).get("adr_acceptance") == "CLOSED",
     )
     rep.check(
         "B", "B07-merge-not-authorized",
-        gates.get("merge") == "NOT_AUTHORIZED" and receipt["merge_authorized"] is False,
+        status.get("gates", {}).get("merge") == "NOT_AUTHORIZED"
+        and receipt.get("merge_authorized") is False,
     )
 
-    # B08 — candidate/authority semantics were NOT altered while reconciling.
-    rep.check(
-        "B", "B08-repaired-candidate-unchanged",
-        status.get("repaired_candidate", {}).get("sha256")
-        == receipt["repaired_candidate_sha256"],
-    )
-    rep.check(
-        "B", "B08-ratification-binding-unchanged",
-        status.get("authority", {}).get("ratification_binding_sha256")
-        == receipt["ratification_binding_sha256"] == RATIFICATION_BINDING_SHA256,
-    )
-    rep.check(
-        "B", "B08-source-hashes-unchanged",
-        status.get("source_hashes", {}).get("24_ADR_CANDIDATES.md")
-        == receipt["source_adr_candidates_sha256"]
-        and status.get("source_hashes", {}).get(
-            "03_ARCHITECTURE_DECISION_REGISTER.yaml"
-        ) == receipt["decision_register_sha256"],
-    )
-    rep.check(
-        "B", "B08-sb-dec-031-032-dispositions-unchanged",
-        status.get("sb_dec_031", {}).get("disposition")
-        == receipt["sb_dec_031_disposition"]
-        and status.get("sb_dec_032", {}).get("disposition")
-        == receipt["sb_dec_032_disposition"],
-    )
-    rep.check(
-        "B", "B08-adr-statuses-unchanged",
-        status.get("adr_statuses", {}).get("document_status") == "CANDIDATE"
-        and status.get("adr_statuses", {}).get("promoted_to_accepted") == 0,
-    )
-    rep.check(
-        "B", "B08-decision-reference-count",
-        status.get("coverage", {}).get("decisions_linked") == 26
-        and receipt["decision_reference_changes"] == 28,
-    )
-
-    # B09 — the NOT_RUN discipline survives reconciliation verbatim.
-    rep.check(
-        "B", "B09-not-run-preserved",
-        status.get("preserved_not_run") == receipt["preserved_not_run"],
-        f"status={status.get('preserved_not_run')}",
-    )
-
+    # B08 — coverage is the traceability matrix's, and its absence is a failure
+    # rather than a skipped check.
     tm = root / TRACEABILITY_PATH
-    if tm.is_file():
-        matrix = json.loads(tm.read_text(encoding="utf-8"))
-        rep.check(
-            "B", "B08-coverage-matches-traceability-matrix",
-            status.get("coverage") == matrix.get("coverage"),
-        )
+    if not rep.check("B", "B08-traceability-matrix-present", tm.is_file(), str(tm)):
+        return
+    matrix = json.loads(tm.read_text(encoding="utf-8"))
+    rep.check(
+        "B", "B08-coverage-matches-traceability-matrix",
+        status.get("coverage") == matrix.get("coverage"),
+    )
+
+    # B11 — every field of the status record is classified. Without this, a new
+    # authoritative-looking field could be added with no check behind it.
+    unclassified = []
+    for ptr, _ in leaves(status):
+        if ptr in RECEIPT_PROJECTION or ptr in PINNED or ptr in NARRATIVE_POINTERS:
+            continue
+        if ptr.startswith(MATRIX_PREFIX):
+            continue
+        if any(ptr.startswith(pref) for pref in NARRATIVE_PREFIXES):
+            continue
+        unclassified.append(ptr)
+    rep.check(
+        "B", "B11-every-status-field-classified", not unclassified,
+        "receipt-projected, pinned, matrix-derived or declared prose — "
+        f"unclassified: {unclassified[:5]}",
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -972,7 +1298,12 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     rep = Report()
-    group_a(root, rep)
+    ctx = group_a(root, rep)
+    if ctx is not None:
+        semantic_invariants(root, ctx, rep)
+    else:
+        rep.check("S", "S00-not-reached", False,
+                  "group A stopped before the semantic pins could run")
     group_b(root, rep)
 
     a_fail = rep.failures("A") + rep.failures("S")
@@ -983,6 +1314,7 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(
             {
                 "repo_root": str(root),
+                "frozen_inventory_sha256": FROZEN_INVENTORY_SHA256,
                 "checks_total": len(rep.rows),
                 "checks_failed": len(a_fail) + len(b_fail),
                 "coverage_group": "PASS" if not a_fail else "FAIL",
@@ -1002,6 +1334,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print("Second Brain ADR machine-contract validation")
     print(f"  repo root: {root}")
+    print(f"  frozen denominator: {FROZEN_INVENTORY_SHA256}")
     rep.emit()
     print()
     print(f"  checks: {len(rep.rows)}  failed: {len(a_fail) + len(b_fail)}")

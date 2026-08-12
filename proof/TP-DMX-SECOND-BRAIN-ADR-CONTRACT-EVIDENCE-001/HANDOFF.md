@@ -12,65 +12,118 @@ disposition was 10× DEFER.
 
 This packet builds the missing evidence and nothing else. It accepts no ADR.
 
-## Status: BLOCKED_INDEPENDENT_AUDIT — do not merge
+## Round 2 — what the operator authorized and what was done
 
-The independent audit of frozen head `7955ef33d7` returned **FAIL, 3 blockers,
-5 must-fix**. Packet §19 requires PASS with zero of each, so publication does not
-progress. PR #1227 stays a **draft** and is not marked ready.
+Round 1 ended at `BLOCKED_INDEPENDENT_AUDIT`: the independent audit of frozen head
+`7955ef33d7` returned **FAIL, 3 blockers, 5 must-fix**. The producer re-verified
+all three blockers from repository bytes and disputed none.
 
-**The operator is not being asked for a merge decision.** They are being asked to
-direct remediation. The artifacts below are real and the mechanical gates are green,
-but the audit found the evidence is not yet sufficient to carry ADR acceptance.
+On 2026-08-12 the operator authorized a **denominator re-freeze and a
+class-level repair of the whole finding set in one wave**, and required a fresh
+independent audit returning PASS with zero blockers and zero must-fix before this
+can reach a merge decision. That ruling is reproduced verbatim inside
+`DENOMINATOR_REFREEZE_RECEIPT.json`, because the validator now pins the frozen
+denominator's hash and that pin claims an authorization an auditor must be able
+to read from the repository.
 
-The producer independently re-verified all three blockers from repository bytes and
-**disputes none of them**.
+### The re-freeze
+
+The superseded denominator declared its authority to be
+`TASK_PACKET_SECTION_5_MANDATORY_COVERAGE`. That is the root cause of two
+findings at once: §5 calls itself a *minimum*, so the denominator was incomplete
+(MUST_FIX 1); and because the packet's own boundary list was being read as
+architecture, `dopeTask` — a string that appears **nowhere** in the candidate —
+became a canonical authority value (BLOCKER 2).
+
+The replacement denominator comes from a fresh sentence-by-sentence census of the
+candidate under the operator's INCLUDE / DO-NOT-INCLUDE rule. **160 clauses: 63
+added, 86 modified, 11 unchanged, 0 removed.** Every normative unit of the
+document is disposed of in `DENOMINATOR_CENSUS_WORKSHEET.json` — mapped to clause
+IDs, or excluded with the operator's own reason quoted. Judgment calls are
+recorded there by name so the auditor can attack them directly instead of
+reconstructing them.
+
+`removed_clause_ids` is empty because every superseded requirement still has a
+home. The invented content was removed at *value* level and each such change is
+recorded with its prior and current value in `modified_clauses` — the four-way
+recall ordering, the `dopeTask` member, `CURRENT_DIRECTORY` (grounded only in a
+rejected alternative), and `classification` where the candidate says `class`.
+
+The re-freeze is its own commit containing no contract file and no validator
+change, so git history proves the denominator preceded the contracts written
+against it. The old freeze at `a9397e5630` stays in history and is **not**
+described as valid in hindsight.
+
+### The repairs
+
+| Finding | Class-level repair |
+|---|---|
+| **B1** bilateral-edit false-green | The frozen inventory sha256 is const-pinned in the validator (A09). Any post-freeze clause edit fails, and since every contract rule must equal its inventory clause (A22), editing both sides consistently fails too — including for booleans, which have no text to check. |
+| **B2** invented `dopeTask` authority | Removed. Authority values must appear verbatim in the cited candidate text (A26); a named regression guard (A27) restates it across the clause set and every contract file. |
+| **B3** one-way set grounding | Closed sets are compared against the deterministic tokenization of a verbatim `source_enumeration` (A26). Shrinking now fails exactly as widening does. |
+| **MF1** denominator gaps | Re-frozen under operator authorization. All six omissions the auditor named by hand are present and are checked **by name** at generation time. |
+| **MF2** invented typed surface | Port operation catalogues deleted; invented properties, enums and lifecycle states deleted. Every remaining property name, enum member and const string is bound in `x-grounding` to a clause and a verbatim candidate phrase, recomputed by A31/A32. |
+| **MF3** invented recall ordering | The four-way ranking is gone. `authority_first` is a boolean; the four recall source classes are a closed set; no relative order is asserted among chronology, source-native state and advisory retrieval. |
+| **MF4** label-only pseudo-contracts | The taxonomy no longer has a shape that can carry an opaque label. `REQUIRE/MUST_EXIST` token rules became boolean predicates on precise subjects, and A25 rejects any other shape. |
+| **MF5** FO-01 partial receipt lock | Group B computes the full expected projection from the receipt and compares all 39 mapped fields, pins the 37 that are not receipt-derived, requires the traceability matrix rather than skipping when absent, and fails on any status leaf that is not classified. |
+
+Two repairs were not on the auditor's list and came out of the census:
+
+- **Fragment provenance (A23).** "Vector-first answer generation" is verbatim
+  candidate text, so before this a clause could have cited a *rejected* design as
+  its own grounding. Every fragment must now fall inside its own ADR's Context /
+  Proposed decision / Consequences span.
+- **Naming honesty.** `ProjectIdentityEnvelope` and `ServiceCapabilityReceipt` are
+  this repository's names for things the candidate describes but never names, so
+  they are no longer stated as named-type requirements. The two schema files say
+  so in the file.
 
 ## Structure of the evidence
 
 Two layers under `schemas/second_brain/contracts/`:
 
 - **Layer A** — `ADR-SB-001..010.contract.json`, each validated by
-  `adr-machine-contract.schema.json`. 97 decision clauses total, each one a
-  structured machine rule: `subject`, `rule_type`, `operator`, `machine_value`,
-  plus the verbatim candidate fragments it derives from and their hash.
+  `adr-machine-contract.schema.json`. 160 decision clauses, each a structured
+  machine rule: `subject`, `rule_type`, `operator`, `machine_value`, the section
+  it comes from, the verbatim candidate fragments it derives from, and their hash.
 - **Layer B** — typed artifacts for the seven types the ADRs name directly. Ports
   use `interface-contract.schema.json`; data contracts are JSON Schema draft-07.
 
-`ADR_CONTRACT_COVERAGE.json` maps all 97 clauses to the rules expressing them:
-**97/97 COVERED, MISSING=0, AMBIGUOUS=0**, and `NOT_APPLICABLE_PROVEN` used zero
-times — no clause was excused.
+`ADR_CONTRACT_COVERAGE.json` maps all 160 clauses to the rules expressing them:
+**160/160 COVERED, MISSING=0, AMBIGUOUS=0**, with `NOT_APPLICABLE_PROVEN` used
+zero times — no clause was excused.
 
 ## Why the coverage number is trustworthy
 
-A coverage matrix that scores itself is worthless. Three things make this one hard
+A coverage matrix that scores itself is worthless. Four things make this one hard
 to fake:
 
-1. **The denominator is frozen in an earlier commit.** `ADR_CLAUSE_INVENTORY.json`
-   (97 clauses, sha256 `f073ca28…`) was committed at `a9397e5630` — a commit that
-   contains no file under `schemas/second_brain/`. Git history proves the freeze
-   preceded authoring; a hash recorded alongside the contracts would prove nothing.
+1. **The denominator is frozen in an earlier commit and pinned in the validator.**
+   Git history proves the ordering; the pin makes a later edit fail.
 2. **The denominator is anchored to text nobody here wrote.** Every clause cites
-   exact substrings of the ratified candidate `e4b28946…`, and the validator
-   re-checks that each fragment is genuinely a substring and that its hash
-   recomputes. A clause cannot cite decision text the architecture does not contain.
-3. **The validator is proven to reject, not just to accept.** 46 tests execute the
-   real validator against mutated repository copies. Each asserts the specific
-   guard responsible fires — not merely that something failed, which would let an
-   unrelated check take the credit while the intended guard sits dead.
+   exact substrings of the ratified candidate, inside its own ADR's normative
+   sections, and the validator re-checks both the substring and the hash.
+3. **Every non-boolean value must appear in the text it cites**, and closed sets
+   must equal their source enumeration exactly in both directions.
+4. **The validator is proven to reject.** 63 tests execute the real validator
+   against mutated repository copies, each asserting the specific guard responsible
+   fires. Roughly half of them additionally re-pin the validator and the
+   supersession receipt to the mutated state, so the freeze hash cannot take credit
+   for a semantic guard's work.
 
-## The part worth reviewing most carefully
+## The false-green matrix
 
-Structural validation alone green-lights a contract with the right shape and the
-wrong content. So the validator hard-pins the values that carry the architecture
-decision: restricted spooling stays disabled until verified encryption,
-`OpenLoopCandidate` is `additionalProperties: false` with no PM-semantic property,
-`TaskPromotionRequest.enabled` is `const: false`, unknown policy eligibility
-denies, wrong-project writes deny, the visible queue maximum is exactly 7.
+`FALSE_GREEN_MATRIX.json` records the ten mutations the operator required to be
+proven to fail, each with the guard its test requires to fire. **All ten failed as
+intended.** Two rows are loops rather than samples: row 9 removes *each* of the 63
+clauses the re-freeze added, one at a time; row 10 drifts *each* of the 39
+receipt-derived FO-01 fields. Neither is truncated.
 
-The adversarial tests for these apply the mutation **consistently across the
-inventory and the contract**, so cross-file agreement still holds and only the
-semantic invariant can catch it. That is the real false-green attempt, and it is
-what those hard-coded invariants exist for.
+The row worth reading is the one that is honest about a limit: with the pin also
+rewritten, removing a denominator clause is caught by the coverage matrix and by a
+semantic pin if one covers that clause — but denominator *completeness* is held by
+the freeze and by independent audit, not by a checker. No amount of validation
+proves a decision the census never wrote down.
 
 ## FO-01
 
@@ -80,8 +133,8 @@ verification, with `performed: false`. `FO01_RESOLUTION_RECEIPT.json` — writte
 later, after the audit — said repaired *and independently re-verified*, gate
 eligible. The stale copy lives in the authority tree, so it surfaces first and
 reads as "never verified". **The finding is the disagreement, not an absence of
-verification.** The receipt is later and supersedes; the status record now mirrors
-it, using only receipt-derived values.
+verification.** The receipt is later and supersedes; the status record mirrors it,
+using only receipt-derived values.
 
 One trap handled explicitly: `gates.adr_acceptance: "CLOSED"` means the acceptance
 gate is *shut*, while "FO-01 gate condition = CLOSED" means the *blocker* is
@@ -89,6 +142,9 @@ closed — opposite senses of one word. Neither field was overloaded. Eligibilit
 went into separately named keys and the distinction is recorded in
 `gate_field_semantics` inside the file. `adr_acceptance_authorized` remains
 `false`.
+
+The status file itself is **unchanged in round 2**. MUST_FIX 5 was about the
+strength of the check, not the content of the record.
 
 ## What is still NOT true after this merges
 
@@ -108,66 +164,28 @@ Therefore still unauthorized: runtime or production enablement, Slice 0
 implementation, automatic capture, task promotion, real Dom data, multi-project
 background capture, and confidential/restricted spooling.
 
-## The audit findings, and what each actually requires
+## Gates that remain red, and why that is not this packet's to fix
 
-**BLOCKER 1 — the coverage PASS can survive silent architecture rewrites.**
-Editing the inventory *and* the contract consistently changes an ADR decision while
-the validator still exits 0. Confirmed on ~75 of 97 clauses. Demonstrated: recall
-fusion inverted to the explicitly rejected vector-first order; the review default
-flipped from DEFER/NO-MUTATION to auto-apply.
+The embedded-audit gate fails, as it did in round 1, for one cause:
+`schemas/proof/embedded_audit.schema.json` is strictly binary — `SKIPPED` forces
+`auditor_tool: "none"` / `auditor_model: "unknown"`, and any other status forbids
+both — and its enums cannot name the auditor that actually ran. Claiming `SKIPPED`
+would hide a real audit; picking an enum tool would fabricate an auditor identity.
+Packet §19 forbids the second and §1 puts embedded-audit platform repair out of
+lane, so the gate is left failing and the representation gap is recorded instead.
 
-*Class-level remedy* (one change, not per-finding): **const-pin the frozen inventory
-sha256 `f073ca28…` inside the validator.** Any post-freeze inventory edit then fails
-regardless of coverage-matrix agreement, and because A09 already requires
-contract ≡ inventory, editing the contract alone fails too. That closes the whole
-bilateral class rather than narrowing it, and puts the freeze on the same trust
-boundary as the validator itself. A21 becomes defence in depth.
+**A PASS from the independent audit therefore does not turn those two gates
+green.** They fail for a schema-representation reason that has nothing to do with
+the contract evidence.
 
-**BLOCKER 2 — `dopeTask` is an invented canonical authority.** `grep -c dopeTask`
-against the candidate returns **0**. It came from this task packet's own
-architecture-boundary list, not from the ratified candidate. Remedy: remove it from
-`AUTHORITY_TARGETS`, `authority_targets_permitted`, and the two `AUTHORITY_TARGET/IN`
-clause values, then regenerate.
+## Recommended sequence from here
 
-**BLOCKER 3 — A21's enum grounding is one-way.** It rejects *widening* (a new member
-is absent from the cited text) but accepts *shrinking*: dropping `PURGE` from the
-deletion-operation set and `Review` from the UX operation set both still pass.
-Remedy: make the membership test bidirectional against the enumerated terms in the
-cited fragment.
-
-**MUST_FIX 1 — denominator gaps.** The 97 clauses were derived from the packet's §5
-list, which §5 itself calls a *minimum*. The auditor names material decision content
-with no clause: the ADR-SB-004 policy-evaluation *dimensions* (identity, grants,
-provider, embedding, custody, backup, operation — only the stage ordering was
-captured); the ADR-SB-007 purge *completion receipt*; "ConPort never owns task state"
-and the Dope-Memory PM-authority forbid (ADR-SB-008); "historical and current states
-remain distinct" (ADR-SB-003); open/close/cancel event kinds (ADR-SB-008). This
-requires expanding and **re-freezing** the denominator — a governance act, not a
-patch, and the reason this cannot be quietly fixed in place.
-
-**MUST_FIX 2–4 — invented surface and token-label rules.** The port `operations`
-lists, several schema property/enum sets, and the four-way fusion ranking assert
-structure the candidate never states; and many `REQUIRE/MUST_EXIST` rules name an
-artifact class without giving it a shape. Remedy: either delete the invention or
-justify each against an exact clause, and give the named artifacts real structure.
-
-**MUST_FIX 5 — FO-01 Group B is partial.** Several status fields
-(`nonblocking_observations`, `authority.architecture_accepted_as_law`, the expanded
-coverage metrics) can diverge from the receipt while Group B still passes.
-
-## Recommended sequence
-
-1. **Operator directs remediation scope.** In particular: whether the denominator is
-   re-frozen to include the MUST_FIX 1 content, since that supersedes the freeze
-   recorded at `a9397e5630` and is the one decision the producer should not take
-   alone.
-2. Apply the **class-level** fixes in one pass — inventory const-pin, `dopeTask`
-   removal, bidirectional enum grounding, denominator expansion, invented-surface
-   removal, Group B field locking. Per-finding patching is what has historically kept
-   these review carousels turning; the A21 experience in this very packet shows a
-   narrowed class comes back.
-3. Re-freeze a new content head and run **one** fresh independent audit.
-4. Only then Human Gate A.
+1. Fresh independent audit of the frozen round-2 content head, requiring
+   `VERDICT=PASS`, `BLOCKERS=0`, `MUST_FIX=0`, explicitly attacking denominator
+   completeness, bilateral mutation, closed-set shrinking and widening, invented
+   authority values, invented typed surface, label-only rules and the FO-01 lock.
+2. Only then Human Gate A, whose terminal state is
+   `READY_FOR_OPERATOR_CONTRACT_EVIDENCE_MERGE_DECISION`.
 
 Phase B (post-merge MA-08, fresh acceptance-integrity audit, operator worksheet) is
 unreachable from here and is not started. Opening a PR does not begin it.

@@ -1,0 +1,124 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+  "record_kind": "FALSE_GREEN_MATRIX",
+  "purpose": "The ten mutations the operator required to be proven to fail, before a fresh independent audit. Each row names the guard its test requires to fire; the test helper fails unless that guard is among the validator's reported failures, so an unrelated parse error cannot take credit for catching a mutation.",
+  "adversary_modes": {
+    "plain": "Artifacts edited. The const-pinned frozen denominator catches any clause change, however consistently applied across files.",
+    "repinned": "The pin inside the validator and the supersession receipt are rewritten too, so the freeze no longer objects. This is what tests whether the semantic guards do independent work — the first audit's BLOCKER 1 lived here."
+  },
+  "no_silent_caps": "Row 9 loops over every one of the 63 clauses the re-freeze added, not a sample. Row 10 loops over every one of the 39 receipt-derived FO-01 fields. Neither is truncated.",
+  "rows": [
+    {
+      "mutation": "inventory + contract bilateral change",
+      "adversary_mode": "plain",
+      "implementing_test": "tests/governance/test_second_brain_adr_contracts.py::test_m01_bilateral_inventory_and_contract_change",
+      "intended_guard": "A09-inventory-matches-frozen-pin",
+      "additional_guards_asserted": [],
+      "result": "FAILED_AS_INTENDED",
+      "pytest_summary": ".                                                                        [100%]"
+    },
+    {
+      "mutation": "authority-first -> vector-first",
+      "adversary_mode": "repinned",
+      "implementing_test": "tests/governance/test_second_brain_adr_contracts.py::test_m02_authority_first_inverted",
+      "intended_guard": "S23-recall-authority-first",
+      "additional_guards_asserted": [],
+      "result": "FAILED_AS_INTENDED",
+      "pytest_summary": ".                                                                        [100%]"
+    },
+    {
+      "mutation": "DEFER/NO MUTATION -> auto-apply",
+      "adversary_mode": "repinned",
+      "implementing_test": "tests/governance/test_second_brain_adr_contracts.py::test_m03_review_default_becomes_auto_apply",
+      "intended_guard": "S25-review-default-defer-no-mutation",
+      "additional_guards_asserted": [],
+      "result": "FAILED_AS_INTENDED",
+      "pytest_summary": ".                                                                        [100%]"
+    },
+    {
+      "mutation": "drop PURGE from a closed set",
+      "adversary_mode": "repinned",
+      "implementing_test": "tests/governance/test_second_brain_adr_contracts.py::test_m04_drop_purge_from_closed_set",
+      "intended_guard": "A26-closed-sets-bidirectional",
+      "additional_guards_asserted": [
+        "S22-deletion-operations-exact"
+      ],
+      "result": "FAILED_AS_INTENDED",
+      "pytest_summary": ".                                                                        [100%]"
+    },
+    {
+      "mutation": "drop Review from UX operations",
+      "adversary_mode": "repinned",
+      "implementing_test": "tests/governance/test_second_brain_adr_contracts.py::test_m05_drop_review_from_ux_operations",
+      "intended_guard": "A26-closed-sets-bidirectional",
+      "additional_guards_asserted": [
+        "S18-ux-operations-exact"
+      ],
+      "result": "FAILED_AS_INTENDED",
+      "pytest_summary": ".                                                                        [100%]"
+    },
+    {
+      "mutation": "add dopeTask as canonical authority",
+      "adversary_mode": "repinned",
+      "implementing_test": "tests/governance/test_second_brain_adr_contracts.py::test_m06_add_invented_canonical_authority",
+      "intended_guard": "A27-no-invented-authority-value",
+      "additional_guards_asserted": [
+        "A26-closed-sets-bidirectional"
+      ],
+      "result": "FAILED_AS_INTENDED",
+      "pytest_summary": ".                                                                        [100%]"
+    },
+    {
+      "mutation": "add cloud_offload to CustodyPort",
+      "adversary_mode": "plain",
+      "implementing_test": "tests/governance/test_second_brain_adr_contracts.py::test_m07_add_cloud_offload_to_custody_port",
+      "intended_guard": "A31-layer-b-surface-grounded",
+      "additional_guards_asserted": [],
+      "result": "FAILED_AS_INTENDED",
+      "pytest_summary": ".                                                                        [100%]"
+    },
+    {
+      "mutation": "invent unsupported schema enum/property",
+      "adversary_mode": "plain",
+      "implementing_test": "tests/governance/test_second_brain_adr_contracts.py::test_m08_invent_schema_property_and_enum",
+      "intended_guard": "A31-layer-b-surface-grounded",
+      "additional_guards_asserted": [],
+      "result": "FAILED_AS_INTENDED",
+      "pytest_summary": ".                                                                        [100%]"
+    },
+    {
+      "mutation": "remove each newly-added MUST_FIX-1 denominator clause",
+      "adversary_mode": "plain",
+      "implementing_test": "tests/governance/test_second_brain_adr_contracts.py::test_m09_remove_each_newly_added_denominator_clause",
+      "intended_guard": "A09-inventory-matches-frozen-pin",
+      "additional_guards_asserted": [],
+      "result": "FAILED_AS_INTENDED",
+      "pytest_summary": ".                                                                        [100%]"
+    },
+    {
+      "mutation": "alter FO-01 receipt-derived field",
+      "adversary_mode": "plain",
+      "implementing_test": "tests/governance/test_second_brain_adr_contracts.py::test_m10_alter_each_fo01_receipt_derived_field",
+      "intended_guard": "B02-receipt-projection-exact",
+      "additional_guards_asserted": [],
+      "result": "FAILED_AS_INTENDED",
+      "pytest_summary": ".                                                                        [100%]"
+    }
+  ],
+  "supporting_controls": [
+    {
+      "test": "tests/governance/test_second_brain_adr_contracts.py::test_m09b_removed_clause_survives_a_repin",
+      "intended_guard": "A20-every-clause-covered-once",
+      "result": "FAILED_AS_INTENDED",
+      "pytest_summary": ".                                                                        [100%]"
+    },
+    {
+      "test": "tests/governance/test_second_brain_adr_contracts.py::test_repinned_pristine_still_passes",
+      "intended_guard": null,
+      "result": "CONTROL_PASSES",
+      "pytest_summary": ".                                                                        [100%]"
+    }
+  ],
+  "all_rows_held": true
+}

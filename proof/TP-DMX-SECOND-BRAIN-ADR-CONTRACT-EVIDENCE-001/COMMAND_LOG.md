@@ -572,3 +572,212 @@ validate_change_contract.py               FAIL  (embedded-audit representation g
 pre-commit (changed slice)                FAIL  (same single cause, same file)
 independent audit                         FAIL  (3 blockers, 5 must-fix) <- controlling
 ```
+
+---
+
+# ROUND 2 — operator-authorized denominator re-freeze and class-level repair
+
+Round 1's terminal verdict was `BLOCKED_INDEPENDENT_AUDIT`. On 2026-08-12 the
+operator authorized re-freezing the coverage denominator and repairing all three
+blockers and all five must-fix classes in one wave, and required a fresh
+independent audit at `PASS / 0 / 0`. The ruling is reproduced verbatim in
+`DENOMINATOR_REFREEZE_RECEIPT.json`.
+
+## C0_REFREEZE — denominator only
+
+The operator's freeze sequence forbids touching contracts or the validator in this
+commit, so the census generator writes denominator artifacts and nothing else.
+
+```bash
+$ python3 gen_c0.py
+clause_total       160  (was 97)
+new_inventory_sha  b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439
+added 63  removed 0  modified 86  unchanged 11
+  ADR-SB-001    11
+  ADR-SB-002    14
+  ADR-SB-003    13
+  ADR-SB-004    11
+  ADR-SB-005    14
+  ADR-SB-006    17
+  ADR-SB-007    17
+  ADR-SB-008    36
+  ADR-SB-009    12
+  ADR-SB-010    15
+```
+
+The generator fails closed before writing anything: every fragment must be a
+verbatim substring of the candidate **and** fall inside its own ADR's Context /
+Proposed decision / Consequences span, every closed set must equal the
+tokenization of its verbatim `source_enumeration`, and the six omissions the
+auditor named by hand are looked up by subject and must be present.
+
+Two implementation notes worth recording because both were real defects caught in
+the loop rather than in review:
+
+- The generator originally read the superseded inventory from the worktree — the
+  same path it writes. On a second run it therefore compared the new denominator
+  against itself and reported `added 63 removed 63 modified 0`. It now reads the
+  predecessor from `git show <freeze-commit>:<path>` and refuses to proceed unless
+  that content hashes to the sha256 the operator's ruling names.
+- The tokenizer must try `", and "` before `","`, or `"Archive, Forget, and Purge"`
+  yields `["Archive", "Forget", "and Purge"]`.
+
+```bash
+$ git commit   # 3e0d89815c
+$ git show --stat --name-only 3e0d89815c | grep -c '^schemas/'
+0
+```
+
+Zero contract files in the freeze commit. That is the ordering evidence; a hash
+recorded next to the artifacts would prove nothing.
+
+## Contract regeneration
+
+```bash
+$ python3 gen_contracts2.py
+inventory sha256  b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439
+clauses           160
+artifacts written 20
+```
+
+Every property name, enum member and const string in the seven Layer B artifacts
+is bound in `x-grounding` to a clause and a verbatim candidate phrase, and the
+generator refuses to emit a binding whose phrase is not a substring of that
+clause's fragments. Several names therefore read as candidate prose rather than as
+conventional API names — `leantime_plus_task_orchestrator_proof` instead of
+`leantime_proof_ref` — which is the point: each one is traceable to the sentence
+that authorises it.
+
+What was deleted, and why it was invention:
+
+```text
+LocalSpoolPort.operations   admit / append / flush / expire / participate_in_purge
+CustodyPort.operations      put / verify_integrity / residual_scan /
+                            backup_eligibility / tombstone
+OpenLoopCandidate           candidate_id, project_id, detected_at,
+                            source_event_ref, summary, confidence,
+                            evidence_refs, canonicality, loop_state enum
+TaskProposal                proposal_id, proposed_at, title, rationale,
+                            proposal_state enum, a PM-forbid list MA-06 does
+                            not place on proposals
+TaskPromotionRequest        request_id, requested_at, disposition enum,
+                            approved_digest_sha256
+ProjectIdentityEnvelope     envelope_id, registry_ref, issued_at, expires_at,
+                            CURRENT_DIRECTORY as a rejected identity source
+ServiceCapabilityReceipt    service, resolved_identity, capabilities,
+                            issued_at, expires_at, freshness_state enum,
+                            unknown_capability_disposition
+```
+
+`CURRENT_DIRECTORY` is the instructive one: it is verbatim candidate text, but only
+from ADR-SB-009's *rejected alternatives*. The accepted Context sentence enumerates
+exactly three sources. That is what check A23 now exists to catch generally.
+
+## Validator
+
+```bash
+$ python3 scripts/governance/validate_second_brain_adr_contracts.py
+  checks: 94  failed: 0
+PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE
+FO01_STALE_RECORD_RECONCILED
+```
+
+Two crashes were found by the adversarial suite and fixed, both of the same class
+as a defect fixed in round 1: an exception discards the whole report, so a
+mutation surfaces as an opaque exit 2 instead of as the finding it is.
+
+- A coverage pointer aimed at prose resolves to a string; `rule.get(...)` then
+  raised `AttributeError`.
+- A clause removed from the inventory but still listed in the coverage matrix
+  raised `KeyError`.
+
+Both are now reported as findings.
+
+## Adversarial suite and the operator's false-green matrix
+
+```bash
+$ python3 -m pytest tests/governance/test_second_brain_adr_contracts.py -q
+...............................................................          [100%]
+63 passed
+```
+
+```bash
+$ python3 gen_false_green.py
+  FAILED_AS_INTENDED         inventory + contract bilateral change
+  FAILED_AS_INTENDED         authority-first -> vector-first
+  FAILED_AS_INTENDED         DEFER/NO MUTATION -> auto-apply
+  FAILED_AS_INTENDED         drop PURGE from a closed set
+  FAILED_AS_INTENDED         drop Review from UX operations
+  FAILED_AS_INTENDED         add dopeTask as canonical authority
+  FAILED_AS_INTENDED         add cloud_offload to CustodyPort
+  FAILED_AS_INTENDED         invent unsupported schema enum/property
+  FAILED_AS_INTENDED         remove each newly-added MUST_FIX-1 denominator clause
+  FAILED_AS_INTENDED         alter FO-01 receipt-derived field
+  FAILED_AS_INTENDED         test_m09b_removed_clause_survives_a_repin
+  CONTROL_PASSES             test_repinned_pristine_still_passes
+
+all_rows_held: True
+```
+
+Each row asserts a **named** guard, not merely a nonzero exit, so an unrelated
+parse error cannot take credit. Rows 9 and 10 are loops over all 63 added clauses
+and all 39 projected FO-01 fields respectively — the operator's matrix says
+"each", so nothing is sampled and nothing is capped.
+
+Half the rows run in **repinned** mode: the test rewrites `FROZEN_INVENTORY_SHA256`
+inside a copy of the validator *and* the supersession receipt, so the freeze no
+longer objects and only the semantic guards can catch the mutation. Without that
+mode the pin would absorb every mutation and the S-group pins could be dead code
+without anyone noticing — which is close to how BLOCKER 1 survived round 1.
+`test_repinned_pristine_still_passes` is the control: an unmutated repin must
+still pass, or every repinned row would be failing for the wrong reason.
+
+## Round-2 gate results at the final head
+
+Re-executed against the round-2 tree, not carried forward from round 1.
+
+```text
+git diff --check                          PASS
+validate_second_brain_adr_contracts.py    PASS  (94 checks, 0 failed)
+pytest tests/governance/...               PASS  (63 passed)
+FALSE_GREEN_MATRIX                        PASS  (10/10 rows failed as intended)
+dopeTask packet schema validation         PASS  (after round-2 counts applied)
+validate_change_contract.py               FAIL  (embedded-audit representation gap only)
+pre-commit (changed slice)                FAIL  (same single cause, same file)
+independent audit                         PENDING <- controlling
+```
+
+The change-contract and pre-commit failures name one hook and one cause:
+
+```text
+proof-embedded-audit-schema
+  - auditor_model: 'unknown' should not be valid under {'const': 'unknown'}
+  - auditor_tool: 'none' should not be valid under {'const': 'none'}
+  - skip_reason: '...' is not of type 'null'
+```
+
+Three error strings, one cause, unchanged from round 1: the schema is strictly
+binary, and its enums cannot name the auditor that actually ran. Packet §1 places
+embedded-audit platform repair out of lane and the operator's round-2
+authorization did not add it, so the gap is recorded and the gate is left red.
+A PASS from the independent audit will not turn these two gates green.
+
+Note the direction of the failure: the gate fails because the bundle refuses to
+overstate its audit. A bundle claiming `auditor_tool: claude-code-cli` would pass
+this gate while lying about who audited it.
+
+The `Skipped` pre-commit hooks are scoped by file filter to `docs/*.md` and
+similar paths this slice does not touch. Those are the hook config's own filters,
+not suppressed failures.
+
+## What is deliberately NOT claimed
+
+The round-1 audit artifacts — `AUDITOR_REPORT.md`, `AUDIT_PROMPT.md`,
+`AUDIT_PROMPT_CUSTODY.json` — are untouched. They are the controlling evidence for
+why round 2 was required, and the operator directed that they stay as written.
+Round-2 audit artifacts take new filenames rather than overwriting them.
+
+`PROOF.json`'s `embedded_audit` block still records the round-1 run, because that
+is the last embedded audit that actually happened; `independent_audit.round_2` is
+`PENDING`. Rewriting the block to look current would claim an audit of this head
+that has not been performed.

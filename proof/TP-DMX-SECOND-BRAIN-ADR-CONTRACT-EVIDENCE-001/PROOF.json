@@ -4,50 +4,59 @@
   "program": "SECOND_BRAIN",
   "repository": "DDD-Enterprises/dopemux-mvp",
   "phase": "CONTRACT_EVIDENCE",
-  "terminal_verdict": "BLOCKED_INDEPENDENT_AUDIT",
+  "round": 2,
+  "terminal_verdict": "PENDING_INDEPENDENT_AUDIT",
   "risk_lane": "L2",
   "execution_base": "6153bd4fb30ed3d038e51b371ad9ebfb4916bfac",
   "issue_baseline_main": "6153bd4fb30ed3d038e51b371ad9ebfb4916bfac",
   "drift_from_issue_baseline": "NONE",
-  "content_head": "7955ef33d7c0ab29daecbab966bc6a9497dc69ce",
   "branch": "tp/DMX-SB-ADR-CONTRACT-EVIDENCE-001",
   "pr_number": 1227,
-  "clause_inventory_frozen_in_commit": "a9397e5630577ac5a2b0c8f89ad7d62d8ff7b296",
+  "content_head": null,
+  "content_head_binding": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/C1_CONTENT_HEAD.txt",
+  "content_head_note": "A file cannot contain the sha of the commit that introduces it. The round-2 content head is bound in the successor commit.",
+  "denominator": {
+    "inventory": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/ADR_CLAUSE_INVENTORY.json",
+    "sha256": "b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439",
+    "clause_total": 160,
+    "frozen_in_commit": "3e0d89815c66f8a42e3a2d349c3d0f18028bdf40",
+    "const_pinned_in_validator": true,
+    "authority": "OPERATOR_AUTHORIZED_CANDIDATE_CENSUS_2026_08_12",
+    "supersedes": {
+      "sha256": "f073ca28802e6b140dd5789d5fad5839962635f7b287cac589ec704efc663288",
+      "clause_total": 97,
+      "frozen_in_commit": "a9397e5630577ac5a2b0c8f89ad7d62d8ff7b296",
+      "status": "SUPERSEDED_INCOMPLETE_DENOMINATOR",
+      "note": "Stays in history. Not valid in hindsight: the first independent audit proved it materially incomplete."
+    },
+    "freeze_evidence_command": "git show --stat --name-only 3e0d89815c66f8a42e3a2d349c3d0f18028bdf40 | grep -c '^schemas/'  # expect 0"
+  },
   "authority": {
     "candidate_document": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
     "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
     "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
     "candidate_document_modified": false,
     "adr_status": "10x PROPOSED",
-    "accepted_adr_count": 0,
-    "operator_dispositions_changed": 0,
-    "sb_dec_reference_count": 28,
-    "sb_dec_026": "A_LEAVE_UNLINKED"
+    "accepted_adr_count": 0
   },
   "coverage": {
     "adr_coverage": "10/10",
-    "clause_coverage": "97/97",
+    "clause_coverage": "160/160",
     "missing": 0,
     "ambiguous": 0,
     "not_applicable_proven": 0,
     "contract_artifact_count": 20
   },
   "validation": {
-    "validator_checks_total": 114,
+    "validator_checks_total": 94,
     "validator_checks_failed": 0,
     "validator_result": "PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE",
     "coverage_group": "PASS",
     "fo01_group": "PASS",
-    "adversarial_tests": 52,
-    "adversarial_failures": 0,
-    "change_contract": {
-      "status": "FAIL",
-      "max_lane": "L2",
-      "reason": "embedded-audit representation gap only; every path and lane check passes"
-    },
-    "packet_schema": "PASS",
-    "pre_commit": "FAIL \u2014 proof bundle embedded_audit schema hook, same single cause",
-    "diff_whitespace": "PASS"
+    "adversarial_tests": 63,
+    "adversarial_tests_failed": 0,
+    "false_green_matrix_rows": 10,
+    "false_green_matrix_all_held": true
   },
   "not_run": {
     "denial_fixtures": "NOT_IMPLEMENTED",
@@ -63,28 +72,42 @@
     "runtime_mutation": "NONE",
     "production_mutation": "NONE",
     "merge": "OPERATOR_ONLY",
-    "adr_disposition": "OPERATOR_ONLY"
+    "adr_disposition": "OPERATOR_ONLY",
+    "force_push": "NOT_PERFORMED",
+    "rebase": "NOT_PERFORMED",
+    "pr_state": "DRAFT"
   },
   "independent_audit": {
-    "verdict": "FAIL",
-    "blockers": 3,
-    "must_fix": 5,
-    "audited_head": "7955ef33d7c0ab29daecbab966bc6a9497dc69ce",
-    "controlling": true,
-    "producer_disputes": 0,
-    "report": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/AUDITOR_REPORT.md",
-    "custody": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/AUDIT_PROMPT_CUSTODY.json",
-    "effect": "Packet \u00a719 requires PASS with BLOCKERS=0 and MUST_FIX=0. The verdict is FAIL, so publication does not progress: the PR stays a draft, is not marked ready, and no ADR disposition changes."
+    "round_1": {
+      "verdict": "FAIL",
+      "blockers": 3,
+      "must_fix": 5,
+      "audited_head": "7955ef33d7c0ab29daecbab966bc6a9497dc69ce",
+      "report": "AUDITOR_REPORT.md",
+      "prompt": "AUDIT_PROMPT.md",
+      "custody": "AUDIT_PROMPT_CUSTODY.json",
+      "status": "HISTORICAL_CONTROLLING_EVIDENCE",
+      "disposition": "Not edited. It is the controlling evidence for why the round-2 remediation was required, and the operator directed that it stay as written.",
+      "producer_disputes": 0
+    },
+    "round_2": {
+      "verdict": "PENDING",
+      "blockers": null,
+      "must_fix": null,
+      "audited_head": null,
+      "report": "AUDITOR_REPORT_R2.md",
+      "prompt": "AUDIT_PROMPT_R2.md",
+      "custody": "AUDIT_PROMPT_CUSTODY_R2.json",
+      "requirement": "PASS with zero blockers and zero must-fix"
+    }
   },
   "post_c1_mutation_boundary": {
-    "rule": "Commits after C1 contain producer record about the audited content, never audited content.",
+    "rule": "Commits after the frozen content head contain producer record about the audited content, never audited content.",
     "allowed_prefixes": [
-      "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/",
-      "task-packets/"
+      "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/"
     ],
-    "verification_command": "git diff --name-only 7955ef33d7c0ab29daecbab966bc6a9497dc69ce..<pr head> | grep -vE '^(proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/|task-packets/)'",
-    "expected_result": "no output \u2014 any line printed is a violation of the boundary",
-    "why_not_a_snapshot": "A precomputed list here would be captured while HEAD still equalled C1, so it would record an empty set and prove nothing. The boundary is stated as a command the consumer runs against the live PR head instead."
+    "verification_command": "git diff <C1-R2>..HEAD --name-only | grep -v '^proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/'  # expect no output",
+    "note": "Computed at generation time this would read empty because HEAD still equals the frozen head, which proves nothing. The command is stated so a consumer can run it themselves."
   },
   "embedded_audit": {
     "required": true,
@@ -161,6 +184,16 @@
     ],
     "skip_reason": "GROK_AUDIT_VALID_SCHEMA_REPRESENTATION_UNSUPPORTED. The substantive independent audit was executed by the grok CLI 1.0.0 in a throwaway detached worktree at the audited head, session 019ff54e-59b1-7a12-bc2a-1cc88f3e3189, and returned FAIL with 3 blockers and 5 must-fix. schemas/proof/embedded_audit.schema.json enumerates auditor_tool as [agy, antigravity, claude-code-cli, copilot-cli, gemini-cli, pal-mcp-clink, none] and auditor_model as [sonnet, claude-sonnet-4.6, opus, gemini, gemini-3.1-pro-high, unknown]; neither can name this runner. The fallback values are recorded rather than fabricating a representable identity. status=FAIL is the true verdict and is representable. See AUDITOR_REPORT.md and AUDIT_PROMPT_CUSTODY.json, which also records three audit routes that failed before this one."
   },
+  "embedded_audit_lane_note": "This block records the ROUND 1 audit of head 7955ef33d7, carried forward unchanged because it is the last embedded audit that actually ran. independent_audit.round_2 is PENDING. It is replaced in the successor commit once the round-2 audit has run.",
+  "embedded_audit_representation_gap": {
+    "cause": "schemas/proof/embedded_audit.schema.json is strictly binary: SKIPPED forces auditor_tool 'none' and auditor_model 'unknown', and any other status forbids both. Its enums cannot name the auditor that actually ran.",
+    "refused": [
+      "status SKIPPED — would hide a real audit that did run",
+      "an enum auditor_tool — would fabricate an auditor identity, which packet §19 forbids"
+    ],
+    "in_scope": false,
+    "in_scope_note": "Packet §1 places embedded-audit platform repair out of lane, and the operator's round-2 authorization did not add it. The gap is recorded rather than repaired, and a PASS from the independent audit does not turn the two gates that fail for this cause green."
+  },
   "changed_paths": [
     "docs/03-reference/architecture/second-brain/adr-candidates/fo-01-repair-status.json",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/ADR_CLAUSE_INVENTORY.json",
@@ -171,14 +204,20 @@
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/C1_CONTENT_HEAD.txt",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/COMMAND_LOG.md",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/CONTRACT_COVERAGE_RECEIPT.json",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/DENOMINATOR_CENSUS_WORKSHEET.json",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/DENOMINATOR_REFREEZE_RECEIPT.json",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/FO01_RECONCILIATION_RECEIPT.json",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/HANDOFF.md",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/PROOF.json",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/VALIDATION.json",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/clause_table.py",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/gen_c0.py",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/gen_contracts.py",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/gen_proof.py",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/gen_s1_s2.py",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/operator_ruling.txt",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/sb_census.py",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/sb_ground.py",
     "schemas/second_brain/contracts/ADR-SB-001.contract.json",
     "schemas/second_brain/contracts/ADR-SB-002.contract.json",
     "schemas/second_brain/contracts/ADR-SB-003.contract.json",
@@ -203,40 +242,44 @@
     "task-packets/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001.json",
     "tests/governance/test_second_brain_adr_contracts.py"
   ],
-  "changed_path_count": 40,
+  "changed_path_count": 46,
+  "allowlist_conformance": "Every changed path lies inside the packet §11 mutation allowlist.",
   "artifact_sha256": {
-    "BASELINE_CONTRACT_INVENTORY.json": "1428a89983114ca3aec6134de6aa83b8962deb0517419eef71600e276f5e5650",
-    "ADR_CLAUSE_INVENTORY.json": "f073ca28802e6b140dd5789d5fad5839962635f7b287cac589ec704efc663288",
-    "CONTRACT_COVERAGE_RECEIPT.json": "bec06507c2ea623973dbf7e38933720c63567e139af07934042772b42037c586",
-    "FO01_RECONCILIATION_RECEIPT.json": "b67b78603f9da57cd0feb311692c3c498ce45d6bf3e1c5a4e3208be95a9e1a95",
-    "VALIDATION.json": "707a3af8eb44467ec0c2906a315b754650b9a6d0ab461a620c0ecec572a36c68",
-    "COMMAND_LOG.md": "cfc5cc56cab44dea34a4ec9349b63de483feb44845fbe0c7737cc780432425c1",
+    "ADR_CLAUSE_INVENTORY.json": "b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439",
     "AUDITOR_REPORT.md": "ec52c250af995d115827725cbc667cd01f155cde43016f03ecbdd45ce5c89e05",
-    "HANDOFF.md": "a7889356d62dc77c68bfdc9f83450f206d9295337d2f187af908db9144d7639b",
     "AUDIT_PROMPT.md": "090cdea2702a531763488b10f2f583c2e9bd7a5b339186c11d58c07e68501baf",
     "AUDIT_PROMPT_CUSTODY.json": "4053be60a0f358fd4e58d1b8aae3c9eafe9030d3801609d5d3add9c272a6ea7a",
-    "C1_CONTENT_HEAD.txt": "b256bcd3d14dcfc6278a9b11ef52a43093a60d1f75ac06562aa1b33b3c024be7"
+    "BASELINE_CONTRACT_INVENTORY.json": "1428a89983114ca3aec6134de6aa83b8962deb0517419eef71600e276f5e5650",
+    "C1_CONTENT_HEAD.txt": "b256bcd3d14dcfc6278a9b11ef52a43093a60d1f75ac06562aa1b33b3c024be7",
+    "COMMAND_LOG.md": "82541dd9f309c49fe00a257a9b74d118cf7a96d38b9a705c873b0ccb3af0a889",
+    "CONTRACT_COVERAGE_RECEIPT.json": "b39954098e09f12fbf97197d7eadcba1f40dc376cd8b10c571aa7dc633a919e3",
+    "DENOMINATOR_CENSUS_WORKSHEET.json": "bc4157808577d3770d788b5cc0356297a9f0ece97d077441447383a05cbfa339",
+    "DENOMINATOR_REFREEZE_RECEIPT.json": "8f75a967a1e10fb794817c050f1e8a284c247bf25aeca67e786ef3eec845098c",
+    "FALSE_GREEN_MATRIX.json": "3df44d55377b2d245ee4499888ba31b655cb58edd629278e2221e3b8ba49bd11",
+    "FO01_RECONCILIATION_RECEIPT.json": "1a61d97a2ae17999efbff96d0d3243c9a4c53c7dada55209fcb5cd2f538a558b",
+    "HANDOFF.md": "40dd9132ac790f7b0f9d385a3e5d33e402a9de5f4c5cc6ff0421560cfdf13d55",
+    "VALIDATION.json": "8c7399c8b9d5e127b4d975900850ff914a6341353390fe3dfa54e7ab3919cd0f"
   },
   "contract_sha256": {
-    "ADR-SB-001.contract.json": "b0af0c8caa9e737414f14630fa2b1be3770770452e83c05633adbf7303de2a8d",
-    "ADR-SB-002.contract.json": "3a4547f0935e9cf8f9e2bb825054d3ea9f6bc6994d3dcd196bae2476b9c332a7",
-    "ADR-SB-003.contract.json": "1d7b6e6c729e939993ace5f52504ecf32af8706a971926a36b905f8bfb8c4a07",
-    "ADR-SB-004.contract.json": "f493b94fe8de1626042e6286c255b94afcc6792d8f6ef3fafab73480579a3a18",
-    "ADR-SB-005.contract.json": "4c7e59e3d4b30ecd5f1445257e008876d0bcf3427d39bb241855912435cfee7d",
-    "ADR-SB-006.contract.json": "5e47fd58f077c51fde8afa0886d182eb57f5f48c74ce302c59b7de1bf1664c95",
-    "ADR-SB-007.contract.json": "e427b2103e2af2698cd33d3082da57a58e627451024c93b56268ad4696b3905f",
-    "ADR-SB-008.contract.json": "8840c05d5c53af40a53b6cd6854df628aac64a8647030f78cf2b7a24b85cbe1f",
-    "ADR-SB-009.contract.json": "8da8e76afcce91a9c5cb028bb93833176f1bd4983a7e79384874f0f33dd10573",
-    "ADR-SB-010.contract.json": "fc422b396cff9c2760d96156da810a8d9cec3854aa75baa58602a5cfbea5ea64",
-    "ADR_CONTRACT_COVERAGE.json": "8ae99895861b8cc9bf97021733c797f0c81d92259ac6d3c648517ed1121da34a",
-    "adr-machine-contract.schema.json": "3750b5ef09b2683a5481cd50f4a269b52cb5eec4ceee81e0497c76de99873f72",
-    "custody-port.contract.json": "dc883566a764d4fb6420a712758dc4cd256050523a9a244b4178097bcc4e84a8",
-    "interface-contract.schema.json": "35d2f1580855921ccf8de0b304dccf9e5697a0faaa6218b3f57d30876448c6da",
-    "local-spool-port.contract.json": "bfaecd1cebbfbc23d27a68fc33d9dd74e1d2c52046d230fcd2a93b73b4b9ac24",
-    "open-loop-candidate.schema.json": "641232ddc6eb6c8309fac95a448e22b99073ce85c800478e3a0e9f02322803c8",
-    "project-identity-envelope.schema.json": "1c98c13ee47ebf338ed039360c3cf42ec08a5ae899ba3337e85e668f9d21fa75",
-    "service-capability-receipt.schema.json": "025cfdb1a0bef5dd4bde878b6fdb0578c3ee0e3c5947c939030ebfd79a21df99",
-    "task-promotion-request.schema.json": "d920e2ea7dc2622734b449b8e7cecb2ac34b6d2d3fe61696f80b01b535bf1e9a",
-    "task-proposal.schema.json": "6e099657701c6c595907cc873b78db4614a148db7fd84e2845d5eab309ba5175"
+    "ADR-SB-001.contract.json": "257679d68d5b1ae914da0b4dc326e039759c7372ccbca2b26b7cd48154c49eab",
+    "ADR-SB-002.contract.json": "d6a183fc0525807b2d06f11a123a2288891c27e3d572f4a58dbdb6d0e435694b",
+    "ADR-SB-003.contract.json": "892f13f1839dc37e43bd526ca3b88c903899f584d8987fc930c5f3e399706988",
+    "ADR-SB-004.contract.json": "539d0411b1bc67eb2c8ce5c42192988e69ffc8d839ebea6bd1d2dcbeef3e54f3",
+    "ADR-SB-005.contract.json": "b884df41325df0b19c4504ba19b798c14e0f117814f63a4965c875379edcd5ba",
+    "ADR-SB-006.contract.json": "60ca27a1268711132d05753e09ecde27ed6fcd6b3a446ffe75b827890b83d1d4",
+    "ADR-SB-007.contract.json": "9b93ac9707710e54b641c2edf33479930ccdead4be78ea2b694fd657492106a1",
+    "ADR-SB-008.contract.json": "cbf88b5704ba5a69e988d379e15f24ea701c214cd8b21ea0b074038b04897793",
+    "ADR-SB-009.contract.json": "aad682a701fd3089890cf21e992025a1e3a42474ac7ee0f5150899bd98e9511b",
+    "ADR-SB-010.contract.json": "87e39666fc99ff377e5cd7bbf5dcd0281b7bb37d958f3f32687d23243eee6f91",
+    "ADR_CONTRACT_COVERAGE.json": "58dae6be052d5173732a6abf9ca45a770729ad01c8c28688962e351650c3fbb4",
+    "adr-machine-contract.schema.json": "272c65db1a0bf679b61d822b8415240142afd601a8df8204a8ccfd22818d8cbe",
+    "custody-port.contract.json": "2a512bf051c4cf5ff84548ec4c2a60daaef573c77acd806d4ef6774bc876f4f6",
+    "interface-contract.schema.json": "ec6857193e2859aaab095cc7322aea3f0bcd6ba9fab9ee392e22157fd1eac93e",
+    "local-spool-port.contract.json": "61d0110dfd9651bfc3d70a12c41abcbc7449b5eea5170dc15eea26ec3c979d56",
+    "open-loop-candidate.schema.json": "5058fc2457e63456e9a484284f339593c9438fea64a95ab8c563b958dbf2b615",
+    "project-identity-envelope.schema.json": "cd65be230543cb928f90983e6daa421525502e3bfd42ffefd466c253be6601fa",
+    "service-capability-receipt.schema.json": "75f30ba5572657a5e73f5fa8f43a1e9f729abebffb211603b21325f92f0c1225",
+    "task-promotion-request.schema.json": "06087723d8ada20e1954b9057db9ff0b1c9448025ccbb8f6c2d3940f8d2a7240",
+    "task-proposal.schema.json": "70541591b0f67fbf47be45ffa76df9ce978cc2431d2788b530f5952fc620240f"
   }
 }
