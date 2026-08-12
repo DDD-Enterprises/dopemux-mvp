@@ -1,0 +1,69 @@
+{
+  "packet_id": "TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001",
+  "campaign_id": "DMX-REPO-DEEP-AUDIT-001",
+  "repository": "DDD-Enterprises/dopemux-mvp",
+  "base_branch": "main",
+  "authoring_main": "9dce8ffaec489f486d0356d300f0e8ea5aefa3d2",
+  "execution_main": "9dce8ffaec489f486d0356d300f0e8ea5aefa3d2",
+  "scoped_drift": "IDENTICAL",
+  "branch": "tp/DMX-MCP-CAPABILITY-FAIL-CLOSED-001",
+  "worktree": ".worktrees/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001",
+  "operator_authorization": {
+    "status": "OBSERVED",
+    "text": "AUTHORIZE IMPLEMENTATION TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001",
+    "note": "Explicit operator instruction received in-session prior to any mutation, per packet section 12."
+  },
+  "substantive_head_history": [
+    {
+      "commit": "c1fbf8e6ce15535e6bfe1c215c874736da2b8ea3",
+      "status": "SUPERSEDED",
+      "reason": "First independent audit (Codex) returned NEEDS_SUPERVISOR, identifying that InstanceResolver.resolve() did not reset per-call state, creating a latent authority-broadening path under resolver reuse. Amended before any acceptance/publication, per packet section 6 (no re-audit-of-unchanged-content rule was violated since this head was never accepted)."
+    },
+    {
+      "commit": "40783797fe30325766a2cb6f53aaa53254785712",
+      "status": "FROZEN_C1",
+      "reason": "Adds InstanceResolver.resolve() state reset plus a regression test proving no stale-provenance leak across reused-instance resolve() calls. This is the audited and accepted substantive head."
+    }
+  ],
+  "c1": "40783797fe30325766a2cb6f53aaa53254785712",
+  "findings": {
+    "DMX-W1-04-F018": {
+      "disposition": "REPAIRED",
+      "evidence": "OBSERVED",
+      "pre_fix_repro": "review_bundle/f018_pre_fix_repro.txt",
+      "post_fix_repro": "review_bundle/f018_post_fix_repro.txt"
+    },
+    "DMX-W1-04-F019": {
+      "disposition": "REPAIRED",
+      "evidence": "OBSERVED",
+      "pre_fix_repro": "review_bundle/f019_pre_fix_repro.txt",
+      "post_fix_repro": "review_bundle/f019_post_fix_repro.txt"
+    }
+  },
+  "changed_files": "CHANGED_FILES.txt",
+  "validation": "VALIDATION.json",
+  "audit": {
+    "runner": "codex:codex-rescue (Codex CLI subagent)",
+    "route": "OBSERVED - actually used, no other route attempted",
+    "self_reported_identity": "OpenAI GPT-5 Codex, ChatGPT/Codex API runtime",
+    "independence": "OBSERVED - different model family/runtime from implementer (Claude Sonnet 5)",
+    "passes": [
+      {
+        "audited_commit": "c1fbf8e6ce15535e6bfe1c215c874736da2b8ea3",
+        "verdict": "NEEDS_SUPERVISOR",
+        "report": "review_bundle/audit_pass_1_needs_supervisor.md"
+      },
+      {
+        "audited_commit": "40783797fe30325766a2cb6f53aaa53254785712",
+        "verdict": "PASS_WITH_RISKS",
+        "report": "review_bundle/audit_pass_2_pass_with_risks.md"
+      }
+    ],
+    "final_verdict": "PASS_WITH_RISKS",
+    "final_verdict_risk": "Auditor's own sandbox could not execute pytest (tempdir permission restriction in the Codex sandbox), so the auditor could not directly confirm test pass/fail counts. This is a limitation of the auditor's execution environment, not a finding against the code. The implementer independently executed the full test suites in the actual repository environment (not sandboxed) with results captured in review_bundle/focused_tests_output.txt and review_bundle/relevant_suite_output.txt -- both fully green, including the new reuse-regression test the auditor could not itself run.",
+    "risk_disposition": "NON_BLOCKING"
+  },
+  "disposition": "PASS_WITH_NONBLOCKING_RISKS_READY_FOR_PROOF_CLOSURE",
+  "publication_authorized": false,
+  "merge_authorized": false
+}
