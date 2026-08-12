@@ -248,6 +248,19 @@ def test_20_json_schema_validates_generated_snapshot():
     assert not errors, [error.message for error in errors]
 
 
+def test_22_missing_prerequisite_packet_evidence_blocks_readiness():
+    """DMX-W1-04-F002: TP-DCP-0002 entirely absent must not be silently READY."""
+    snapshot = _snapshot(_fixture("tp_dcp_0004_missing_tp0002_evidence"))
+
+    state = _packet_state(snapshot, "TP-DCP-0002")
+    assert state["state"] == "UNKNOWN"
+    assert snapshot["readiness"]["snapshot_status"] != "READY"
+    assert any(
+        "TP-DCP-0002" in reason
+        for reason in snapshot["readiness"]["blocking_reasons"]
+    )
+
+
 def test_21_write_snapshot_is_explicit_and_local(tmp_path):
     output = tmp_path / "DCP_CONTROL_SNAPSHOT.json"
     snapshot = write_control_snapshot(

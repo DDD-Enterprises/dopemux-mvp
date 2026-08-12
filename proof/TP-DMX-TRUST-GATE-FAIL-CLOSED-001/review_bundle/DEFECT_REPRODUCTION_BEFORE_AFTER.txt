@@ -1,0 +1,18 @@
+=== BEFORE (parent 3e8fcc1c70) F001 empty-proof repro ===
+empty_proof.json = {}
+reproduced result: status=PASS self_certification_status=NONE guards={live_write_ready_status: UNDEFINED_AND_BLOCKING, live_write_status: NONE, merge_seam_status: PRESERVED, dopetask_execution_status: NONE, github_mutation_status: NONE, external_write_status: NONE, self_certification_status: NONE}
+
+=== BEFORE (parent 3e8fcc1c70) F002 missing-TP-DCP-0002 repro ===
+TP-DCP-0002: state=UNKNOWN freshness=UNKNOWN
+readiness: {'snapshot_status': 'READY', 'blocking_reasons': [], 'warnings': ['TP-DCP-0004 proof not present during snapshot generation'], 'recommended_next_action': 'Generate TP-DCP-0004 proof and audit artifacts.'}
+
+=== AFTER (C1 352a3d888d) F001 empty-proof repro ===
+EMPTY PROOF -> status: UNKNOWN self_cert: UNKNOWN
+HEAD-ONLY PROOF -> status: UNKNOWN self_cert: UNKNOWN
+
+=== AFTER (C1 352a3d888d) F002 missing-TP-DCP-0002 repro ===
+TP-DCP-0001 state= OBSERVED
+TP-DCP-0002 state= UNKNOWN
+TP-DCP-0003 state= OBSERVED
+TP-DCP-0004 state= UNKNOWN
+READINESS: {'snapshot_status': 'BLOCKED', 'blocking_reasons': ['TP-DCP-0002 evidence is incomplete or unproven (state=UNKNOWN)'], 'warnings': ['TP-DCP-0004 proof not present during snapshot generation'], 'recommended_next_action': 'Resolve blocking local evidence before downstream use.'}

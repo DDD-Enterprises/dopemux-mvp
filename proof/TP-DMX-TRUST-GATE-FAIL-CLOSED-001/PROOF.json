@@ -1,0 +1,128 @@
+{
+  "packet_id": "TP-DMX-TRUST-GATE-FAIL-CLOSED-001",
+  "project_id": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": ".dopemux"
+  },
+  "authoring_h0": "5d694cc9898e5046b5da03319f20f48599c40ca8",
+  "execution_base": "3e8fcc1c70c5b859dd651a1cd33c85eab837c93e",
+  "worktree": "/Users/hue/code/dopemux-mvp-worktrees/tp-trust-gate-fail-closed-001",
+  "branch": "tp/DMX-TRUST-GATE-FAIL-CLOSED-001",
+  "head_sha": "352a3d888d1ce5116b9af65d696fe62373728a7c",
+  "content_head_c1": "352a3d888d1ce5116b9af65d696fe62373728a7c",
+  "proof_head_c2": null,
+  "findings_repaired": ["DMX-W1-04-F001", "DMX-W1-04-F002"],
+  "f001_disposition": "REPAIRED_AND_VERIFIED: empty/partial proof and missing-identity proofs no longer reach Status.PASS; self_certification_status only reaches NONE when both implementer and auditor identities are observed and distinct.",
+  "f002_disposition": "REPAIRED_AND_VERIFIED: a prerequisite packet (TP-DCP-0001/0002/0003) left in UNKNOWN or CLAIMED state now produces an explicit blocking_reasons entry and snapshot_status != READY.",
+  "implementer_identity": "Claude Code (Sonnet 5) interactive session",
+  "audit": {
+    "independence": "LIMITED",
+    "supervisor_ruling": "2026-08-12: same-runtime/company-family (Claude Code) independence between implementer and this auditor is insufficient for L3 sign-off. Retained as historical evidence only. See controlling_audit below for the audit that actually governs this packet's disposition.",
+    "auditor_identity": "Claude Code quality-engineer subagent (independent session, no prior conversation context)",
+    "auditor_model_route_deviation": "Packet-preferred AGY gemini-3.1-pro-high was not invocable in this environment/session; fell back to an independent Claude Code subagent per packet §9 fallback rule. Deviation recorded in AUDITOR_REPORT.md.",
+    "auditor_verdict": "PASS_WITH_RISKS",
+    "audit_verdict": "PASS_WITH_RISKS",
+    "risks": [
+      {"id": "R1", "summary": "Multi-proof-path last-writer-wins guard aggregation; pre-existing, strictly improved (not introduced) by this commit.", "blocking": false},
+      {"id": "R2", "summary": "Pre-existing UNKNOWN->PRESERVED/NONE normalization for non-self-certification guards, outside allowlisted diff.", "blocking": false}
+    ]
+  },
+  "controlling_audit": {
+    "note": "This is the audit that governs this packet's disposition, per supervisor disposition of 2026-08-12 requiring genuine different-family/runtime L3 independence from the implementer (Claude Code / Sonnet 5). It is bound to C1, not C2/C3. The schema-constrained 'embedded_audit' block below could not be updated to name this route: its auditor_tool enum (agy, antigravity, claude-code-cli, copilot-cli, gemini-cli, pal-mcp-clink, none) predates CommandCode and schemas/** is out of this packet's allowlist, so embedded_audit intentionally still reflects the historical LIMITED audit only.",
+    "bound_to_commit": "352a3d888d1ce5116b9af65d696fe62373728a7c",
+    "report_path": "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/AUDITOR_REPAIR_REPORT.md",
+    "route_discovery": "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/review_bundle/AUDIT_ROUTE_DISCOVERY.md",
+    "route_attempts": [
+      {"route": "agy", "selector": "gemini-3.1-pro-high", "result": "REJECTED_NONFUNCTIONAL", "evidence": "Model selects and self-identifies correctly but returns a fixed canned response regardless of prompt content across multiple distinct test prompts; never processes the actual request."},
+      {"route": "gemini-cli", "selector": "gemini-3.1-pro-high", "result": "REJECTED_HARD_ERROR", "evidence": "IneligibleTierError: free-tier client no longer supported for Gemini Code Assist for individuals, exit code 1."},
+      {"route": "commandcode", "selector": "gpt-5.3-codex then deepseek/deepseek-v4-flash", "result": "ACCEPTED", "evidence": "Functional: reads real files, executes real shell commands, produces contextual non-canned output."}
+    ],
+    "auditor_tool_actual": "CommandCode CLI v1.17.0",
+    "auditor_model_actual_phase1_evidence_gathering": "gpt-5.3-codex (OpenAI) - confirmed via CLI model_request_start event metadata",
+    "auditor_model_actual_phase2_continuation_and_report": "deepseek/deepseek-v4-flash (DeepSeek, open-source) - confirmed via CLI model_request_start event metadata; reached via an unintended CLI default-model fallback on --session resume without re-passing --model, disclosed in AUDIT_ROUTE_DISCOVERY.md",
+    "self_report_defect": "The phase-2 model's own final-report text claimed to be 'Anthropic Claude (Claude Sonnet 5)', which is factually false per the CLI's own model_request_start metadata for every request in that phase. Proof record uses ground-truth API metadata, not the model's self-description, as authoritative.",
+    "independence_conclusion": "Both phases ran on vendors (OpenAI, DeepSeek) genuinely distinct from the implementer (Claude Code / Sonnet 5) and from the prior LIMITED audit (also Claude Code / Sonnet 5). Different-family/runtime independence satisfied for the full audit.",
+    "verdict": "PASS_WITH_RISKS",
+    "risks": [
+      {"id": "R1", "summary": "Distinct-identities-but-no-head_sha proof still reaches PASS; pre-existing, not introduced by C1.", "blocking": false},
+      {"id": "R2", "summary": "Last-writer-wins guard aggregation ordering; independently re-verified against both parent and C1 - C1 strictly improves one ordering, residual gap on the other disclosed precisely.", "blocking": false},
+      {"id": "R3", "summary": "_readiness() CONFLICTING status can preempt appending other blocking_reasons for the same snapshot; arguably correct precedence, disclosed for completeness.", "blocking": false},
+      {"id": "R4", "summary": "New fixture tp_dcp_0004_missing_tp0002_evidence omits tests/dcp/test_placeholder.py present in the fixture it was copied from; no test impact, minor consistency gap.", "blocking": false}
+    ],
+    "baseline_failure_independent_verdict": "BASELINE_FAILURE_PROVEN_NONREGRESSION - independently re-traced test_16_no_forbidden_files_modified's git range via _packet_base_ref() back to the TP-DCP-0001 merge commit (an ancestor of both HEAD and origin/main), confirmed the 8 failing .github/workflows/* files are identical to git diff --name-only over that same range against origin/main, and confirmed C1's own diff touches zero .github/** files."
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "Agent tool, subagent_type=quality-engineer, independent session with no prior conversation context (implementer's session history not forwarded). Packet-preferred AGY gemini-3.1-pro-high was not invocable in this environment; deviation recorded per packet Section 9 fallback rule.",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "R1",
+        "severity": "LOW",
+        "title": "Multi-proof-path last-writer-wins guard aggregation",
+        "status": "ACCEPTED_RISK",
+        "body": "_scan_artifacts overwrites guards.self_certification_status (and live_write_status, merge_seam_status) per proof file with no aggregation across multiple proof_paths; an incomplete proof listed before a complete one has its UNKNOWN silently overwritten. Auditor empirically confirmed this is pre-existing on the parent commit (which was strictly worse: it also passed on complete-then-empty ordering) and is strictly improved, not introduced, by this commit. Out of scope for F001/F002 (single-proof identity classification); recommended as a follow-up finding (e.g. DMX-W1-04-F003)."
+      },
+      {
+        "id": "R2",
+        "severity": "LOW",
+        "title": "Pre-existing UNKNOWN->PRESERVED/NONE guard normalization outside this diff",
+        "status": "ACCEPTED_RISK",
+        "body": "red_lane_scanner.py lines ~245-271 (untouched by this commit) convert merge_seam_status, dopetask_execution_status, external_write_status, and github_mutation_status from UNKNOWN to PRESERVED/NONE purely on absence of specific finding categories, which is the same invariant-6 pattern as F001 but for different guards. Outside the two named findings and outside the allowlisted diff; invariant 6 is confirmed only for the self_certification_status guard this commit repairs, not the whole GuardsInfo surface."
+      }
+    ],
+    "fixes_applied": [
+      "red_lane_scanner.py: self_certification_status now UNKNOWN when either implementer or auditor identity is missing, NONE only when both present and distinct",
+      "red_lane_scanner.py: malformed/non-dict-root proof JSON now raises an explicit MALFORMED_PROOF BLOCKER finding instead of silently continuing",
+      "control_snapshot.py: _readiness() now blocks (non-READY) when a prerequisite packet is left in UNKNOWN or CLAIMED state"
+    ],
+    "remaining_risks": [
+      "R1: pre-existing multi-proof-path last-writer-wins guard aggregation ordering issue (non-blocking, strictly improved by this commit, recommend follow-up finding)",
+      "R2: pre-existing UNKNOWN->NONE/PRESERVED normalization on non-self-certification guards, outside this commit's diff (non-blocking)"
+    ],
+    "skip_reason": null
+  },
+  "live_write_ready_status": "UNDEFINED_AND_BLOCKING",
+  "live_write_status": "NONE",
+  "merge_seam_status": "PRESERVED",
+  "changed_files": [
+    "src/dopemux/dcp/control_snapshot.py",
+    "src/dopemux/dcp/red_lane_scanner.py",
+    "task-packets/TP-DMX-TRUST-GATE-FAIL-CLOSED-001.json",
+    "task-packets/TP-DMX-TRUST-GATE-FAIL-CLOSED-001.md",
+    "tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/proof/TP-DCP-0001/PROOF.json",
+    "tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/proof/TP-DCP-0003/MERGE_READINESS.json",
+    "tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/proof/TP-DCP-0003/PROOF.json",
+    "tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/schemas/dcp/README.md",
+    "tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/schemas/dcp/dcp_control_snapshot.schema.json",
+    "tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/task-packets/TP-DCP-0001.json",
+    "tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/task-packets/TP-DCP-0003.json",
+    "tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/task-packets/TP-DCP-0004.json",
+    "tests/dcp/test_dcp_0004_control_snapshot.py",
+    "tests/dcp/test_dcp_0005_red_lane_scanner.py"
+  ],
+  "focused_tests": "PASS (69 passed)",
+  "relevant_full_suite": "BASELINE_FAILURE_PROVEN_NONREGRESSION: tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified fails identically against origin/main's own history via the test's _packet_base_ref() range (an ancestor of both HEAD and origin/main), independently re-traced by the controlling audit; C1's diff touches zero .github/** files; all in-allowlist tests pass. This is a supervisor-accepted exception per disposition 2026-08-12 and must not be described as bare \"tests/dcp PASS\".",
+  "git_diff_check": "PASS (exit 0)",
+  "pre_commit": "PASS (all applicable hooks Passed; rest Skipped for no matching files)",
+  "secret_scan": "PASS (one synthetic ghp_-shaped string found, pre-existing in test_dcp_0005_red_lane_scanner.py before this packet's diff, obviously-fake repeating-digit pattern, part of an existing redaction test)",
+  "unresolved_unknown": [
+    "R1-R4 in controlling_audit / AUDITOR_REPAIR_REPORT.md (all non-blocking, recommended as follow-up findings, not fixed here as out of minimal-change scope)"
+  ],
+  "blockers": [],
+  "not_run": [],
+  "route_attempts_prior_to_acceptance": [
+    "AGY gemini-3.1-pro-high: live-tried, non-functional (selects model but does not process prompts) - see controlling_audit.route_attempts",
+    "Native Gemini CLI gemini-3.1-pro-high: live-tried, hard IneligibleTierError - see controlling_audit.route_attempts"
+  ],
+  "rollback_state": "Pre-push: worktree/branch deletable, no push performed. Isolated worktree at /Users/hue/code/dopemux-mvp-worktrees/tp-trust-gate-fail-closed-001, branch tp/DMX-TRUST-GATE-FAIL-CLOSED-001, not pushed to origin.",
+  "disposition": "PASS_WITH_NONBLOCKING_RISKS_READY_FOR_PROOF_CLOSURE",
+  "merge_authority": "NONE",
+  "mark_ready_authority": "NONE",
+  "close_pr_authority": "NONE"
+}

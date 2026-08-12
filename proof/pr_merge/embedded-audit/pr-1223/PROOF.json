@@ -1,0 +1,44 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1223,
+  "head_sha": "ab4d2ae6b155b13f331dc2cfdd5112a943aea402",
+  "generated_at": "2026-08-12T02:22:59Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "Claude Code Agent tool, subagent_type=quality-engineer, spawned with no prior conversation context, given only the repo, the audited commit SHA 352a3d888d1ce5116b9af65d696fe62373728a7c, and the task packet TP-DMX-TRUST-GATE-FAIL-CLOSED-001",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "R1-LAST-WRITER-WINS",
+        "severity": "LOW",
+        "title": "Multi-proof-path last-writer-wins guard aggregation",
+        "status": "ACCEPTED_RISK",
+        "body": "_scan_artifacts overwrites guards.self_certification_status (and similarly live_write_status, merge_seam_status) per proof file in the loop with no aggregation across multiple proof_paths. If an incomplete proof is listed before a complete one, the incomplete file's UNKNOWN is silently overwritten by the later complete file's NONE, and the whole scan reaches PASS. Empirically confirmed pre-existing on the parent commit (worse: parent also passed for the complete-then-empty order, which the audited commit correctly blocks). Not in scope for F001/F002 (both concern single-proof identity classification); fixing it requires aggregation logic beyond the allowlisted files' minimal-change mandate. Recommend follow-up finding DMX-W1-04-F003 to make guard aggregation a monotone worst-of across all supplied proof paths rather than last-write-wins."
+      },
+      {
+        "id": "R2-PREEXISTING-NORMALIZATION",
+        "severity": "LOW",
+        "title": "Pre-existing UNKNOWN-to-PRESERVED/NONE normalization outside this diff",
+        "status": "ACCEPTED_RISK",
+        "body": "red_lane_scanner.py:245-271 (not modified in the audited commit) converts merge_seam_status, dopetask_execution_status, external_write_status, github_mutation_status from UNKNOWN to PRESERVED/NONE purely on the absence of specific finding categories. This block is outside the two named findings and outside the allowlisted diff, so it is not treated as a defect of the audited commit, but the fail-closed invariant should be read as confirmed only for the guard the audited commit actually touches (self_certification_status), not the whole GuardsInfo surface."
+      }
+    ],
+    "fixes_applied": [
+      "DMX-W1-04-F001: RedLaneScanner no longer reaches PASS/NONE self-certification on empty, malformed, or identity-incomplete proof evidence; missing implementer or auditor identity now yields UNKNOWN rather than a false NONE. Verified via live repro against both the audited commit and its parent, and via test_dcp_0005_red_lane_scanner.py (8 new tests, including a real subprocess CLI exit-code test).",
+      "DMX-W1-04-F002: control_snapshot no longer reaches READY when a prerequisite packet has zero evidence (UNKNOWN state) or only a proof file with no task-packet (CLAIMED state); both are now blocking. Verified via a live constructed fixture and test_dcp_0004_control_snapshot.py (1 new test plus new fixture tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/)."
+    ],
+    "remaining_risks": [
+      "THIS RECORD IS SUPPORTING EVIDENCE ONLY, NOT THE CONTROLLING L3 AUDIT. The audit represented by this schema-bound embedded_audit object (Claude Code quality-engineer subagent, Sonnet 5) was ruled LIMITED independence by supervisor disposition on 2026-08-12: same runtime/company family (Claude Code) as the implementer does not satisfy this packet's L3 different-family/runtime requirement on its own.",
+      "CONTROLLING_L3_AUDIT=COMMANDCODE_MIXED_PROVEN_ROUTE. A second, genuinely independent audit was performed via CommandCode CLI v1.17.0 (a separate coding-agent product), evidence-gathering phase on gpt-5.3-codex (OpenAI), continuation/final-report phase on deepseek/deepseek-v4-flash (DeepSeek) after an unintended CLI default-model fallback on session resume (disclosed, not concealed). Both phases confirmed via the CLI's own model_request_start event metadata, not model self-report (the continuation phase's own final text incorrectly self-identified as 'Anthropic Claude (Claude Sonnet 5)' -- rejected as a hallucinated identity in favor of ground-truth metadata). Verdict PASS_WITH_RISKS, all risks non-blocking. Independence is PROVEN_AGAINST_IMPLEMENTER for this route. This audit is bound to content head C1=352a3d888d1ce5116b9af65d696fe62373728a7c, NOT to this proof's head_sha. Controlling report: proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/AUDITOR_REPAIR_REPORT.md. Route-discovery evidence (AGY non-functional, native Gemini CLI hard-errored IneligibleTierError, CommandCode accepted): proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/review_bundle/AUDIT_ROUTE_DISCOVERY.md.",
+      "SCHEMA ENUM GAP, NOT A MISREPRESENTATION. schemas/proof/embedded_audit.schema.json's auditor_tool/auditor_model enums have no slot for CommandCode, GPT-5.3-Codex, or DeepSeek V4 Flash, and schemas/** is outside this packet's file allowlist. This embedded_audit object therefore truthfully describes the ORIGINAL, LIMITED-independence Claude Code audit only -- it does not, and must not be read to, represent the controlling CommandCode audit. auditor_tool=claude-code-cli / auditor_model=sonnet are literally true for what is recorded here.",
+      "AUDIT TOPOLOGY, NAMED NOT CONFLATED. AUDITED_TREE (the substantive tree both audits examined) = C1 = 352a3d888d1ce5116b9af65d696fe62373728a7c. This proof's head_sha, ab4d2ae6b155b13f331dc2cfdd5112a943aea402, is C3, the AUDIT_EVIDENCE_HEAD: a proof-only successor that adds only proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/** on top of C1 (verify with git diff --name-only 352a3d888d1ce5116b9af65d696fe62373728a7c..ab4d2ae6b155b13f331dc2cfdd5112a943aea402). C1 is an ancestor of C3; no substantive byte changed after C1. This bridge proof itself adds only proof/pr_merge/embedded-audit/pr-1223/** on top of C3.",
+      "BASELINE_FAILURE_PROVEN_NONREGRESSION: the one tests/dcp suite failure (test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified) is independently re-traced by the controlling CommandCode audit to a commit already merged to origin/main (PR #1165) before this packet's worktree existed, and confirmed to touch zero files this packet's C1 touches. Must not be described as bare 'tests/dcp PASS'.",
+      "R1 and R2 above (from the supporting audit) are pre-existing, non-blocking, and not introduced by C1; see fixes_applied and the full auditor report for detail. Neither blocks this PR."
+    ],
+    "skip_reason": null
+  }
+}

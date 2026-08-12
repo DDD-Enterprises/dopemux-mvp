@@ -172,8 +172,29 @@ class RedLaneScanner:
                         try:
                             data = json.load(f)
                         except json.JSONDecodeError:
+                            findings.append(Finding(
+                                category="MALFORMED_PROOF",
+                                severity=Severity.BLOCKER,
+                                status=Status.BLOCKED,
+                                authority_label=AuthorityLabel.CONFLICTING,
+                                evidence=f"Proof artifact is not valid JSON: {pp}",
+                                recommended_action="Regenerate a well-formed proof artifact.",
+                                path=pp
+                            ))
                             continue
-                            
+
+                        if not isinstance(data, dict):
+                            findings.append(Finding(
+                                category="MALFORMED_PROOF",
+                                severity=Severity.BLOCKER,
+                                status=Status.BLOCKED,
+                                authority_label=AuthorityLabel.CONFLICTING,
+                                evidence=f"Proof artifact root is not a JSON object: {pp}",
+                                recommended_action="Regenerate a well-formed proof artifact.",
+                                path=pp
+                            ))
+                            continue
+
                         # Stale proof check
                         # Post-merge reconciliation artifacts are governance records only unless scanner logic explicitly consumes them.
                         # This scanner still treats mismatched proof head SHA as stale proof.
@@ -192,18 +213,25 @@ class RedLaneScanner:
                         impl = data.get("implementer_identity")
                         auditor = data.get("audit", {}).get("auditor_identity", data.get("auditor_identity"))
                         
-                        if impl and auditor and impl == auditor:
-                            guards.self_certification_status = "DETECTED"
-                            findings.append(Finding(
-                                category="SELF_CERTIFICATION",
-                                severity=Severity.BLOCKER,
-                                status=Status.BLOCKED,
-                                authority_label=AuthorityLabel.OBSERVED,
-                                evidence="Implementer and auditor are the same identity",
-                                recommended_action="Use a distinct auditor."
-                            ))
+                        if impl and auditor:
+                            if impl == auditor:
+                                guards.self_certification_status = "DETECTED"
+                                findings.append(Finding(
+                                    category="SELF_CERTIFICATION",
+                                    severity=Severity.BLOCKER,
+                                    status=Status.BLOCKED,
+                                    authority_label=AuthorityLabel.OBSERVED,
+                                    evidence="Implementer and auditor are the same identity",
+                                    recommended_action="Use a distinct auditor."
+                                ))
+                            else:
+                                # Both required identities are observed and demonstrably
+                                # distinct: NONE is a positively-established fact.
+                                guards.self_certification_status = "NONE"
                         else:
-                            guards.self_certification_status = "NONE"
+                            # Missing implementer or auditor identity does not prove
+                            # absence of self-certification; it remains unproven.
+                            guards.self_certification_status = "UNKNOWN"
                             
                         # Other guards inferred from proof file fields if present
                         guards.live_write_ready_status = data.get("live_write_ready_status", guards.live_write_ready_status)
