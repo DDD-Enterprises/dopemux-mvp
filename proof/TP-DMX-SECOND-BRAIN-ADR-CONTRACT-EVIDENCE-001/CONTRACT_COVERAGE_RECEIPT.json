@@ -46,10 +46,10 @@
   "runtime_claims_permitted": false,
   "validator": "scripts/governance/validate_second_brain_adr_contracts.py",
   "validator_result": "PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE",
-  "validator_checks_total": 113,
+  "validator_checks_total": 114,
   "validator_checks_failed": 0,
   "adversarial_suite": "tests/governance/test_second_brain_adr_contracts.py",
-  "adversarial_tests_passed": 46,
+  "adversarial_tests_passed": 52,
   "adversarial_tests_failed": 0,
   "false_green_defence": "Every negative test executes the real validator against a mutated repository copy and asserts the specific guard responsible fires. Semantic mutations are applied consistently across inventory and contract so the cross-file agreement check cannot take credit for a semantic guard.",
   "artifact_sha256": {
@@ -73,5 +73,12 @@
     "service-capability-receipt.schema.json": "025cfdb1a0bef5dd4bde878b6fdb0578c3ee0e3c5947c939030ebfd79a21df99",
     "task-promotion-request.schema.json": "d920e2ea7dc2622734b449b8e7cecb2ac34b6d2d3fe61696f80b01b535bf1e9a",
     "task-proposal.schema.json": "6e099657701c6c595907cc873b78db4614a148db7fd84e2845d5eab309ba5175"
+  },
+  "false_green_defect_found_and_closed": {
+    "defect": "A consistent bilateral edit of the inventory AND the contract changed an architecture decision while the validator still exited 0. Demonstrated by rerouting ADR-SB-002-C01 canonical capture from Dope-Memory to ConPort: 113/113 checks passed on the mutated tree.",
+    "why_every_other_guard_survived_it": "The cited source fragment was untouched, so it remained a real candidate substring with a matching hash; and both sides were edited, so cross-file agreement held. Roughly 60 of 97 clauses had no pinned semantic guard.",
+    "fix": "Added check A21: for canonical authority routing (AUTHORITY_TARGET/EQUALS), closed policy enums (ENUM/SET_EQUALS) and numeric bounds, the machine value must itself appear in the decision text the clause cites.",
+    "verification": "The same mutation now fails with A21-machine-values-grounded-in-cited-text; six tests cover this class, including two clauses that have no pinned Group-S guard.",
+    "found_by": "PRODUCER_SELF_ADVERSARIAL_PROBE"
   }
 }

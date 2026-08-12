@@ -515,6 +515,71 @@ def test_second_brain_as_authority_target_fails(sandbox: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Value grounding — the consistent-bilateral-edit attack
+#
+# These are the hardest mutations in the suite. Every other guard survives them:
+# the cited source fragment is untouched (so it is still a real candidate
+# substring with a matching hash), and inventory and contract are edited
+# together (so cross-file agreement holds). Only grounding the value in the text
+# it claims to derive from catches these.
+# ---------------------------------------------------------------------------
+
+
+def test_rerouting_canonical_authority_fails(sandbox: Path) -> None:
+    """Silently sending captured events to ConPort instead of Dope-Memory."""
+    mutate_clause(sandbox, "ADR-SB-002-C01", machine_value="ConPort")
+    code, payload = run_validator(sandbox)
+    assert code != 0
+    assert "A21-machine-values-grounded-in-cited-text" in failed_checks(payload)
+
+
+def test_rerouting_promotion_receipt_authority_fails(sandbox: Path) -> None:
+    mutate_clause(sandbox, "ADR-SB-002-C07", machine_value="Leantime")
+    code, payload = run_validator(sandbox)
+    assert code != 0
+    assert "A21-machine-values-grounded-in-cited-text" in failed_checks(payload)
+
+
+def test_widening_a_policy_enum_fails(sandbox: Path) -> None:
+    """Adding a domain the architecture never defined."""
+    mutate_clause(
+        sandbox, "ADR-SB-004-C01", machine_value=["project", "hue", "dom", "shared", "public"]
+    )
+    code, payload = run_validator(sandbox)
+    assert code != 0
+    assert "A21-machine-values-grounded-in-cited-text" in failed_checks(payload)
+
+
+def test_widening_classification_enum_fails(sandbox: Path) -> None:
+    mutate_clause(
+        sandbox,
+        "ADR-SB-004-C02",
+        machine_value=["public", "internal", "confidential", "restricted", "unclassified"],
+    )
+    code, payload = run_validator(sandbox)
+    assert code != 0
+    assert "A21-machine-values-grounded-in-cited-text" in failed_checks(payload)
+
+
+def test_queue_max_change_caught_by_grounding_too(sandbox: Path) -> None:
+    """Defence in depth: the UX bound has both a pinned guard and grounding."""
+    mutate_clause(sandbox, "ADR-SB-010-C03", machine_value=25)
+    code, payload = run_validator(sandbox)
+    assert code != 0
+    failed = failed_checks(payload)
+    assert "S06-visible-queue-max-7" in failed
+    assert "A21-machine-values-grounded-in-cited-text" in failed
+
+
+def test_relaxing_single_active_project_bound_fails(sandbox: Path) -> None:
+    """ADR-SB-009-C03 has no pinned Group-S guard; grounding is what catches it."""
+    mutate_clause(sandbox, "ADR-SB-009-C03", machine_value=4)
+    code, payload = run_validator(sandbox)
+    assert code != 0
+    assert "A21-machine-values-grounded-in-cited-text" in failed_checks(payload)
+
+
+# ---------------------------------------------------------------------------
 # FO-01 reconciliation
 # ---------------------------------------------------------------------------
 

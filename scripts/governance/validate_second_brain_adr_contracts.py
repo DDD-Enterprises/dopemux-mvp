@@ -581,7 +581,59 @@ def group_a(root: Path, rep: Report) -> None:
     rep.check("A", "A20-second-brain-never-authority", not never_bad,
               f"violations={never_bad[:5]}")
 
+    value_grounding(inv_clauses, cand_text, rep)
     semantic_invariants(root, docs, inv_clauses, rep)
+
+
+# Small-integer words as they appear in architecture prose.
+_NUMBER_WORDS = {
+    0: "zero", 1: "one", 2: "two", 3: "three", 4: "four", 5: "five",
+    6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten",
+}
+
+
+def value_grounding(inv_clauses: dict[str, Any], cand_text: str, rep: Report) -> None:
+    """A21 — a rule's machine value must be traceable to the text it cites.
+
+    The semantic invariants below pin specific high-risk values, but they cannot
+    cover all 97 clauses, and the inventory and contract can be edited
+    *consistently* — which keeps cross-file agreement intact and leaves the cited
+    source fragment untouched, since the fragment is still a real candidate
+    substring. Without this check, rerouting a canonical write from Dope-Memory to
+    ConPort passes every other guard.
+
+    So for the rule classes where a silent swap does the most damage — canonical
+    authority routing, closed policy enums, and numeric bounds — require the value
+    itself to appear in the decision text the clause claims to derive from.
+
+    Deliberately narrow. It is applied only where grounding is genuinely sound;
+    e.g. SUPERSET_OF clauses are excluded because a contract may legitimately
+    normalise a term the prose abbreviates ("class" -> "classification").
+    """
+    ungrounded = []
+    for cid, c in sorted(inv_clauses.items()):
+        text = "\n".join(c["source_fragments"]).lower()
+        val = c["machine_value"]
+        rt, op = c["rule_type"], c["operator"]
+
+        if rt == "AUTHORITY_TARGET" and op == "EQUALS" and isinstance(val, str):
+            if val.lower() not in text:
+                ungrounded.append(f"{cid}: authority target {val!r} not in cited text")
+
+        elif rt == "ENUM" and op == "SET_EQUALS" and isinstance(val, list):
+            for member in val:
+                if isinstance(member, str) and member.lower() not in text:
+                    ungrounded.append(f"{cid}: enum member {member!r} not in cited text")
+
+        elif isinstance(val, int) and not isinstance(val, bool):
+            word = _NUMBER_WORDS.get(val)
+            if str(val) not in text and (word is None or word not in text):
+                ungrounded.append(f"{cid}: numeric bound {val} not in cited text")
+
+    rep.check(
+        "A", "A21-machine-values-grounded-in-cited-text", not ungrounded,
+        f"ungrounded={ungrounded[:5]}",
+    )
 
 
 def semantic_invariants(

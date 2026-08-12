@@ -23,7 +23,7 @@
     {
       "command": "python3 scripts/governance/validate_second_brain_adr_contracts.py",
       "exit_code": 0,
-      "checks_total": 113,
+      "checks_total": 114,
       "checks_failed": 0,
       "tokens": [
         "PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE",
@@ -33,7 +33,7 @@
     {
       "command": "python3 -m pytest -q tests/governance/test_second_brain_adr_contracts.py",
       "exit_code": 0,
-      "passed": 46,
+      "passed": 52,
       "failed": 0
     },
     {

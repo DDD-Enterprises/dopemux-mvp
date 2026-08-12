@@ -336,3 +336,65 @@ The 14 skips were **verified, not assumed**: `trailing-whitespace`,
 this slice contains no matching file. pre-commit reports a hook with no matching
 files as `Skipped` rather than omitting it, so a changed skip count is not by
 itself a defect.
+
+---
+
+## S4 (continued) — a real false-green found by the producer, and closed
+
+The §9 matrix passed 46/46, so I attacked the validator directly rather than
+trusting that result. Group S pins ~37 of 97 clauses; the other ~60 have no pinned
+semantic guard. The question is whether anything else stops them being weakened.
+
+Attack: edit the inventory **and** the contract consistently, so cross-file
+agreement still holds, and leave the cited source fragment untouched, so it remains
+a genuine candidate substring with a matching hash.
+
+```bash
+# reroute ADR-SB-002-C01 canonical capture: Dope-Memory -> ConPort, on both sides
+python3 scripts/governance/validate_second_brain_adr_contracts.py --repo-root /tmp/fg-probe
+```
+
+```text
+checks: 113  failed: 0
+PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE
+```
+
+**That is a real false-green.** The architecture decision "captured events go to
+Dope-Memory" had been silently rerouted to a different canonical authority, and
+every guard passed: the fragment check passed (fragment unchanged), the cross-file
+agreement check passed (both sides edited), and `ConPort` is a legitimate member of
+the closed authority set, so the A20 check passed too.
+
+Fix — check **A21, value grounding**: for the rule classes where a silent swap does
+the most damage, the machine value must itself appear in the decision text the
+clause cites.
+
+```text
+AUTHORITY_TARGET / EQUALS    value must appear in the cited fragments
+ENUM / SET_EQUALS            every member must appear
+numeric bounds               digit or English number word must appear
+```
+
+Deliberately narrow: `SUPERSET_OF` is excluded because a contract may legitimately
+normalise a term the prose abbreviates (`class` → `classification` in ADR-SB-006-C04),
+and a grounding rule that is sometimes wrong is worse than none.
+
+```bash
+python3 scripts/governance/validate_second_brain_adr_contracts.py --repo-root /tmp/fg-probe --json
+```
+
+```text
+result: FAIL | failed: 1
+  A21-machine-values-grounded-in-cited-text
+    ungrounded=["ADR-SB-002-C01: authority target 'ConPort' not in cited text"]
+```
+
+Six tests now cover this class, including `ADR-SB-009-C03` (max one active
+automatic-capture project) and `ADR-SB-002-C07` (promotion receipt target), which
+have **no** pinned Group-S guard and are caught by grounding alone.
+
+Final: **114 checks / 0 failed; 52 adversarial tests / 0 failed.**
+
+The lesson worth carrying: a green adversarial matrix proves the mutations you
+thought of are caught. It says nothing about the ones you did not. The matrix had to
+be attacked separately from the artifacts it guards.
