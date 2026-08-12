@@ -4,9 +4,16 @@
   "record_kind": "DETERMINISTIC_CONSUMER_INVENTORY",
   "why_this_exists": "The operator authorized mutation of scripts/audit/run_embedded_audit.py ONLY if inspection proves it contains an explicit auditor-tool/model recognition table that must change for grok-cli, and forbade broadening the packet unless a deterministic consumer inventory proves another exact compatibility site is required. This file is that inventory. It is the evidence for every scope decision below, including the non-changes.",
   "method": {
-    "search": "Repository-wide grep for auditor_tool, auditor_model, and every existing enum member (agy, antigravity, claude-code-cli, copilot-cli, gemini-cli, pal-mcp-clink, none, sonnet, claude-sonnet-4.6, opus, gemini, gemini-3.1-pro-high, unknown) across schemas/, scripts/, src/, tools/, config/, .github/, docs/, tests/ and AGENTS.md.",
+    "search": "Grep across the entire working tree, excluding only .git, .venv, node_modules and __pycache__, for auditor_tool, auditor_model, embedded_audit, every existing enum member, and the bare token 'grok'. No directory allowlist.",
     "then": "Every hit outside proof/ was read in source rather than classified from the grep line, because a grep hit does not distinguish a producer of these values from a consumer of them.",
-    "cross_check": "The full tests/audit suite was executed against the modified schema. That is what surfaced the one consumer this grep alone would have missed."
+    "cross_check": "The full tests/audit suite was executed against the modified schema. That is what surfaced the one consumer grep alone would have missed.",
+    "result": "Outside proof/, tests/ and task-packets/, the ONLY occurrence of auditor_tool or auditor_model anywhere in the repository is a descriptive comment at .pre-commit-config.yaml:247 that names no enum member.",
+    "method_correction": {
+      "corrected": true,
+      "what_was_wrong": "An earlier revision of this file described the search as bounded to schemas/, scripts/, src/, tools/, config/, .github/, docs/, tests/ and AGENTS.md, while also claiming to be a deterministic inventory of every consumer. A bounded path list cannot support that claim.",
+      "found_by": "The independent audit of content head d95b48a52a raised it as a BLOCKER, having found a 'grok-4.5' string under docker/, which the bounded list excluded.",
+      "disposition": "The search was re-run repository-wide. The method claim is corrected here rather than quietly widened, and the docker/ hit is dispositioned by name below."
+    }
   },
   "changed": [
     {
@@ -49,6 +56,16 @@
       "finding": "TOOL_AGNOSTIC",
       "evidence": "Structural validation delegates to jsonschema Draft7Validator against the trusted schema, so it inherits both new conditionals with no code change. Proven by the parity corpus, which requires the local route and canonical jsonschema to agree on every fixture including the four new Grok rows.",
       "conclusion": "No change needed, matching the prediction recorded in GROK_SCHEMA_REPRESENTATION_GAP.md."
+    },
+    {
+      "path": "docker/mcp-servers-source/pal/pal-mcp-server/providers/xai.py and tests/test_xai_provider.py",
+      "finding": "STRING_COINCIDENCE_NOT_A_CONSUMER",
+      "raised_by": "independent audit of d95b48a52a, as a BLOCKER",
+      "what_it_actually_is": "The PAL MCP server's xAI provider. `get_preferred_model(category, allowed_models)` at line 54 returns 'grok-4.5' when that model is in the caller's allowed list. This selects a model for PAL *reasoning tool calls* (thinkdeep, codereview, consensus, ...). It is provider capability routing, not proof vocabulary.",
+      "evidence": "The strings 'auditor_tool', 'auditor_model' and 'embedded_audit' do not occur anywhere under docker/ -- zero hits. The file cannot read, write, or validate an embedded_audit block, and nothing in the embedded-audit lane imports from docker/mcp-servers-source/. The two artifacts share the substring 'grok-4.5' and nothing else.",
+      "why_it_is_still_worth_recording": "The auditor was right that the inventory's stated method could not support its claim, and right that a reviewer should be shown this hit rather than left to find it. It is dispositioned here by name so the judgment can be attacked directly. It is NOT recorded as a compatibility site, because it is not one -- adding an enum member to a proof contract cannot affect a provider's model preference function.",
+      "consequence_for_scope": "None. No file under docker/ is added to the mutation set.",
+      "judgment_call": true
     },
     {
       "path": "schemas/proof/auditor_route.schema.json",

@@ -12,11 +12,11 @@ even so, changing tracked files would invalidate the audit.
 ```text
 repository    DDD-Enterprises/dopemux-mvp
 branch        tp/DMX-EMBEDDED-AUDIT-GROK-ROUTE-001
-frozen head   8290d7bd8e8b67a8197c1c33ac1af7fdf2f9a946
+frozen head   d95b48a52af332afc1c25c162033cb1b372ed26e
 base          6626aa9a58dd82e62226cfca63498cc3f711bb75   (trusted main)
 ```
 
-Confirm first that `git rev-parse HEAD` is `8290d7bd8e8b67a8197c1c33ac1af7fdf2f9a946`.
+Confirm first that `git rev-parse HEAD` is `d95b48a52af332afc1c25c162033cb1b372ed26e`.
 If it is not, stop and report that instead of auditing whatever is there.
 
 ## What this packet claims to do
@@ -114,6 +114,17 @@ Then read `tests/audit/test_embedded_audit_grok_route.py`. Specifically:
 Try deleting one new conditional from a **copy** of the schema and confirm the suite
 goes red. A test suite that passes against a schema with the feature removed is not
 testing the feature.
+
+### 7a. Review-response delta
+
+This head is a **second** content head. Commit `d95b48a52a` responded to three
+Copilot review findings on the first (`8290d7bd8e`). Check the delta yourself with
+`git diff 8290d7bd8e..HEAD` and judge whether it strengthens or weakens the
+guarantees. Specifically: the backward-compatibility differential no longer reads the
+pre-change schema from git and no longer skips — it reads a vendored, hash-pinned
+fixture. Is that hash pin real? Try editing the fixture and confirm the suite fails.
+Is the vendored copy actually the pre-change contract, or was it produced from the
+wrong ref?
 
 ### 7. Bootstrap integrity
 
