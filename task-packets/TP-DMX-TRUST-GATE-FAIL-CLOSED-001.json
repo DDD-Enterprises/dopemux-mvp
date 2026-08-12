@@ -1,0 +1,104 @@
+{
+  "id": "TP-DMX-TRUST-GATE-FAIL-CLOSED-001",
+  "project": "dopemux-mvp",
+  "target": "DCP control-evidence fail-closed repair for DMX-W1-04-F001 and F002",
+  "invariants": [
+    "Incomplete mandatory evidence cannot produce unsupported PASS or READY",
+    "Missing evidence remains UNKNOWN rather than being defaulted safe",
+    "Stale evidence blocks",
+    "Conflicting evidence remains CONFLICTING",
+    "UNDEFINED_AND_BLOCKING does not grant live-write authority",
+    "No implementation outside the explicit allowlist",
+    "No merge or production authority"
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopemux",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-REPO-DEEP-AUDIT-001-REMEDIATION",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "fix(dcp): fail closed on incomplete control evidence",
+    "allowlist": [
+      "src/dopemux/dcp/red_lane.py",
+      "src/dopemux/dcp/red_lane_scanner.py",
+      "src/dopemux/dcp/control_snapshot.py",
+      "src/dopemux/dcp/proof_family.py",
+      "tests/dcp/test_dcp_0003_proof_family_dispatch.py",
+      "tests/dcp/test_dcp_0004_control_snapshot.py",
+      "tests/dcp/test_dcp_0005_red_lane_scanner.py",
+      "tests/dcp/fixtures/**",
+      "task-packets/TP-DMX-TRUST-GATE-FAIL-CLOSED-001.md",
+      "task-packets/TP-DMX-TRUST-GATE-FAIL-CLOSED-001.json",
+      "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/**"
+    ],
+    "verify": [
+      "git diff --check",
+      "python -m pytest -q tests/dcp/test_dcp_0003_proof_family_dispatch.py tests/dcp/test_dcp_0004_control_snapshot.py tests/dcp/test_dcp_0005_red_lane_scanner.py",
+      "python -m pytest -q tests/dcp"
+    ]
+  },
+  "pr": {
+    "title": "fix(dcp): fail closed on incomplete control evidence",
+    "body": "L3 repair for DMX-W1-04-F001 and F002. Merge is not authorized by this packet.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Establish custody, drift, and overlap without mutation.",
+      "validation": [
+        "Repository identity matches",
+        "Scoped drift is classified",
+        "Relevant PR overlap is not CONFLICTING"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Reproduce F001 and F002 deterministically with local temporary fixtures.",
+      "validation": [
+        "Empty or partial proof reproduces unsupported success on the pre-fix source",
+        "No network or external state is touched"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add regression coverage and implement the minimum fail-closed completeness repair.",
+      "validation": [
+        "Negative fixtures never produce unsupported PASS or READY",
+        "Positive valid fixture remains functional",
+        "Changed files remain allowlisted"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Run deterministic validation and freeze substantive content head C1.",
+      "validation": [
+        "Focused tests pass",
+        "Relevant tests/dcp suite passes",
+        "git diff --check passes",
+        "pre-commit passes",
+        "secret scan passes",
+        "C1 is frozen"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run one independent L3 audit against exact C1 and produce proof/handoff.",
+      "validation": [
+        "Auditor is independent",
+        "Audit is bound to exact C1",
+        "Only PASS or non-blocking PASS_WITH_RISKS advances",
+        "Proof-only successor does not alter substantive content",
+        "Merge remains unauthorized"
+      ]
+    }
+  ]
+}
