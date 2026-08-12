@@ -1,0 +1,289 @@
+{
+  "id": "TP-DMX-PR-PREP-SPECIALIST-V2-001",
+  "project": "dopemux-mvp",
+  "target": "Migrate the active pr-prep-specialist governance contract from the stale March seven-step/LOW-MEDIUM-HIGH/MERGE_READY model to the current Dopemux L0-L3, resilient-drift, frozen-content-audit, proof-only-successor, CI, PR Steward, and explicit-operator-gate model. Do not merge.",
+  "invariants": [
+    "Live repository/GitHub state and current governance beat historical PR-prep documentation.",
+    "Execution refreshes origin/main; the authoring SHA is an observation, not an exact-SHA stop gate.",
+    "Ordinary main movement is not a blocker; recompute only affected ancestry, path overlap, semantic overlap, tests, and proof freshness.",
+    "Relevant overlap is classified IDENTICAL, SUBSET, SUPERSET, COMPATIBLE, CONFLICTING, or UNKNOWN.",
+    "Open PR content is future state until merged.",
+    "PR Prep never grants merge authority and never substitutes its own verdict for current PR Steward READY.",
+    "L2/L3 audit occurs once on the final frozen substantive content head.",
+    "A proof-only successor with unchanged substantive content does not require another model audit.",
+    "No platform adapter may weaken Task Packet scope, operator gates, audit independence, proof freshness, or PR Steward requirements.",
+    "Legacy duplicate docs may be updated only after their live consumer/compatibility role is proven; archive material remains historical.",
+    "No merge, close, mark-ready, force push, history rewrite, branch deletion, permission change, credential change, release, migration, or production mutation is authorized.",
+    "For this packet, docs/03-reference/pr-pipeline/prep/** and docs/03-reference/pr-pipeline/merge/** are the canonical PR-pipeline reference-contract surfaces; docs/pr_prep/** and docs/pr_merge/** are compatibility surfaces only and must not carry independent behavioral authority."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PR-PREP-V2",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "feat/pr-prep-specialist-v2-contract",
+    "base_branch": "main",
+    "stacked_because": "Create a fresh dedicated worktree from live origin/main at execution. Do not stack on an open PR. Preserve compatible main movement and stop only on conflicting or materially unknown overlap."
+  },
+  "commit": {
+    "message": "docs(pr-prep): align specialist with current governance",
+    "allowlist": [
+      "task-packets/TP-DMX-PR-PREP-SPECIALIST-V2-001.json",
+      "task-packets/TP-DMX-PR-PREP-SPECIALIST-V2-001.md",
+      "docs/03-reference/pr-pipeline/prep/skill-model.md",
+      "docs/03-reference/pr-pipeline/prep/operator-contract.md",
+      "docs/03-reference/pr-pipeline/prep/workflow-sequence.md",
+      "docs/03-reference/pr-pipeline/prep/deterministic-gate-rules.md",
+      "docs/03-reference/pr-pipeline/prep/go-no-go-criteria.md",
+      "docs/03-reference/pr-pipeline/prep/handoff-to-prms-contract.md",
+      "docs/03-reference/pr-pipeline/prep/pr-creation-policy.md",
+      "docs/03-reference/pr-pipeline/prep/high-risk-handoff-rules.md",
+      "docs/03-reference/pr-pipeline/merge/handoff-from-prps-contract.md",
+      "docs/pr_merge/handoff-from-prps-contract.md",
+      "docs/pr_prep/skill-model.md",
+      "docs/pr_prep/operator-contract.md",
+      "docs/pr_prep/workflow-sequence.md",
+      "docs/pr_prep/deterministic-gate-rules.md",
+      "docs/pr_prep/go-no-go-criteria.md",
+      "docs/pr_prep/handoff-to-prms-contract.md",
+      "docs/pr_prep/pr-creation-policy.md",
+      "docs/pr_prep/high-risk-handoff-rules.md",
+      "tests/governance/test_pr_prep_contract_v2.py",
+      "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/**",
+      "proof/pr_merge/embedded-audit/pr-<ACTUAL_PR>/**"
+    ],
+    "verify": [
+      "Every changed path is in the allowlist.",
+      "No archive path is rewritten.",
+      "No active contract still grants PR Prep independent MERGE_READY authority.",
+      "L0-L3, resilient drift, frozen-content audit, proof-only successor, and PR Steward semantics agree across changed active contracts.",
+      "Pre-push gates pass before the first push.",
+      "Final audit is independent and bound to the frozen substantive content head.",
+      "Proof-only successor changes only authorized proof paths.",
+      "Current-head CI and PR Steward are successful before PREP_READY_FOR_OPERATOR_DECISION is claimed.",
+      "Canonical PR-pipeline behavior lives under docs/03-reference/pr-pipeline/**; docs/pr_prep/** and docs/pr_merge/** are compatibility-only and do not define competing semantics.",
+      "docs/pr_prep/contract-v2.md is absent from the final base-to-head changed-file set."
+    ]
+  },
+  "pr": {
+    "title": "docs(pr-prep): align specialist with current governance",
+    "body": "L2 governance refresh for pr-prep-specialist. Replaces stale seven-step and LOW/MEDIUM/HIGH semantics with current L0-L3 risk lanes, resilient drift/overlap classification, deterministic pre-push gates, frozen-content final audit, proof-only successor handling, and exact-head PR Steward handoff. Draft first. No merge authority.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0_LIVE_CUSTODY_AND_CONSUMER_INVENTORY",
+      "task": "Establish live repository custody, current main, active PR-prep consumers, duplicate-doc relationships, and current open-PR overlap before editing.",
+      "requirements": [
+        "Verify repo marker, origin, worktree, branch, cleanliness, and current origin/main.",
+        "Inventory every active reference to pr-prep-specialist, its seven-step artifacts, old postures, old risk bands, and MERGE_READY handoff semantics across docs, adapters, scripts, tools, tests, and workflows.",
+        "Compare docs/03-reference/pr-pipeline/prep files with docs/pr_prep compatibility copies.",
+        "Inventory open PRs and inspect complete changed paths only for PRs that overlap the allowed or consuming surfaces.",
+        "Record ordinary compatible main movement rather than stopping on authoring-SHA mismatch."
+      ],
+      "commands": [
+        "git fetch --prune origin",
+        "git rev-parse --show-toplevel",
+        "git remote get-url origin",
+        "git status --short --branch",
+        "git rev-parse origin/main",
+        "git worktree list --porcelain",
+        "rg -n \"pr-prep-specialist|PR-PREP-SPECIALIST|INSPECT_BRANCH_STATE|GO_DRAFT_FIRST|GO_DIRECT|MERGE_READY|LOW|MEDIUM|HIGH|BRANCH_STATE.json|PR_HANDOFF_BUNDLE.json\" docs .claude .github src tools scripts tests -S",
+        "git ls-files 'docs/03-reference/pr-pipeline/prep/**' 'docs/pr_prep/**' 'docs/03-reference/pr-pipeline/merge/**' 'docs/pr_merge/**'",
+        "gh pr list --repo DDD-Enterprises/dopemux-mvp --state open --limit 200 --json number,title,baseRefName,headRefName,headRefOid,isDraft,updatedAt"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/BASELINE.json",
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/CONSUMER_INVENTORY.md",
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/DUPLICATE_PATH_MAP.json",
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/OPEN_PR_OVERLAP.json"
+      ],
+      "validation": [
+        "Repository identity is proven.",
+        "Current main is recorded without using the authoring SHA as an exact drift gate.",
+        "Every active consumer found by the search is classified as canonical, compatibility, adapter, downstream, historical, or unknown.",
+        "Relevant open-PR overlap is classified and no CONFLICTING or materially UNKNOWN overlap remains."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/governance/rules.md",
+        "docs/ops/pr-steward.md",
+        "docs/ops/embedded-audit.md",
+        "docs/03-reference/pr-pipeline/prep/operator-contract.md",
+        "docs/03-reference/pr-pipeline/merge/handoff-from-prps-contract.md"
+      ]
+    },
+    {
+      "id": "S1_FREEZE_V2_CONTRACT",
+      "task": "Freeze one coherent V2 behavior contract before broad editing.",
+      "requirements": [
+        "Make docs/03-reference/pr-pipeline/prep/operator-contract.md the behavioral source of truth. This is the supervisor ruling for this packet; repository history did not independently prove pre-existing exclusive canonicality.",
+        "Replace the exact seven-step artifact ceremony with the conditional S0-S8 lifecycle.",
+        "Replace LOW/MEDIUM/HIGH with L0-L3.",
+        "Separate PREP state from PR Steward READY and operator merge authority.",
+        "Define deterministic evidence reuse, ordinary-main drift behavior, frozen-content audit, proof-only successor behavior, and minimal V2 handoff.",
+        "Keep current repository-wide handoff minimums compatible.",
+        "Treat docs/pr_prep/** and docs/pr_merge/** as compatibility surfaces only; they may contain pointer stubs or deterministic mirrors but no independent behavioral contract."
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/CONTRACT_DECISIONS.md"
+      ],
+      "validation": [
+        "The frozen contract has one authority for prep state and does not duplicate PR Steward authority.",
+        "No V2 rule weakens current Task Packet, audit, proof, or operator gates."
+      ],
+      "context_files": [
+        "docs/03-reference/pr-pipeline/prep/operator-contract.md",
+        "docs/03-reference/pr-pipeline/prep/workflow-sequence.md",
+        "docs/03-reference/pr-pipeline/prep/handoff-to-prms-contract.md",
+        "docs/03-reference/pr-pipeline/merge/handoff-from-prps-contract.md"
+      ]
+    },
+    {
+      "id": "S2_IMPLEMENT_ACTIVE_CONTRACTS_AND_COMPATIBILITY",
+      "task": "Update the active PR-prep contract family and receiving handoff contract, then repair only proven compatibility mirrors/adapters.",
+      "requirements": [
+        "Update skill model, operator contract, workflow, deterministic gates, go/no-go states, PR creation policy, high-risk rules, outgoing handoff, and receiving handoff.",
+        "Treat docs/pr_prep files as compatibility surfaces. Prefer explicit pointer stubs to the canonical docs/03-reference/pr-pipeline/prep counterparts; do not maintain independently hand-edited copies.",
+        "Do not edit archive copies.",
+        "Do not touch unrelated PR-merge behavior.",
+        "Add a narrow governance contract test if no existing test proves forbidden legacy semantics are absent from active governing surfaces.",
+        "Treat docs/pr_merge/handoff-from-prps-contract.md as the compatibility receiver for docs/03-reference/pr-pipeline/merge/handoff-from-prps-contract.md.",
+        "Remove docs/pr_prep/contract-v2.md from the final base-to-head diff; its creation was outside the original allowlist and the canonical V2 contract belongs in docs/03-reference/pr-pipeline/prep/operator-contract.md."
+      ],
+      "commands": [
+        "git diff --name-only",
+        "git diff --no-ext-diff"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/CHANGED_FILES.txt",
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/LEGACY_SEMANTICS_SCAN.txt"
+      ],
+      "validation": [
+        "Changed files remain allowlisted.",
+        "Active governing surfaces no longer require the legacy seven artifacts or allow PR Prep to emit independent MERGE_READY.",
+        "Adapters or compatibility copies do not contradict V2."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "S3_PRE_PUSH_AND_FREEZE_CONTENT",
+      "task": "Run current CI-equivalent deterministic gates, freeze the substantive content head C1, push it, and create or update a draft PR only after all pre-push gates pass.",
+      "requirements": [
+        "Run repo/worktree/branch identity, changed-file allowlist, git diff --check, Task Packet/frontmatter validation, proof/audit schema validation for present artifacts, focused tests, relevant complete governance/docs suite, changed-file pre-commit, and secret scan.",
+        "If pre-commit modifies a file, rerun it to a clean pass before commit.",
+        "Do not push known-failing metadata.",
+        "Freeze exactly one substantive content head C1.",
+        "Open a draft PR. Do not mark ready."
+      ],
+      "commands": [
+        "git diff --check",
+        "git diff --name-only",
+        "git status --short",
+        "pre-commit run --files $(git diff --name-only origin/main...HEAD)",
+        "python -m pytest -q tests/governance/test_pr_prep_contract_v2.py",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/VALIDATION.json",
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/COMMAND_LOG.md",
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/CONTENT_HEAD.txt"
+      ],
+      "validation": [
+        "All eight pre-push classes pass or a repository-proven NOT_CONFIGURED status is recorded where policy permits it.",
+        "The substantive content head is frozen and exact.",
+        "The PR is draft and unmerged."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "S4_FINAL_INDEPENDENT_AUDIT",
+      "task": "Run one independent L2 audit against exact frozen C1.",
+      "requirements": [
+        "Discover the live approved auditor route and exact selector at execution; do not invent a model ID.",
+        "Auditor must be independent of the implementer.",
+        "Review the complete active contract diff, downstream handoff, legacy-consumer scan, risk-lane semantics, drift rules, operator boundaries, proof-only reuse, and PR Steward authority separation.",
+        "Record requested, configured, response-claimed, proxy-reported, and provider-attested identities separately when available.",
+        "Accept PASS or explicitly non-blocking PASS_WITH_RISKS only.",
+        "One substantive repair attempt maximum; any repair creates a new frozen content head and requires a fresh audit."
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/AUDITOR_REPORT.md",
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/MODEL_ROUTE.json"
+      ],
+      "validation": [
+        "Audit is bound to exact C1.",
+        "Auditor independence is proven.",
+        "Verdict is acceptable and no blocking finding remains."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "S5_PROOF_ONLY_SUCCESSOR",
+      "task": "Bind the accepted audit in canonical proof and create a proof-only successor C2 without changing substantive content.",
+      "requirements": [
+        "Use the actual PR number in canonical embedded-audit proof paths.",
+        "Validate proof schema and signature according to current repo contracts.",
+        "Prove C1 is an ancestor of C2.",
+        "Prove C1..C2 changes only authorized proof/handoff paths.",
+        "Do not re-audit unchanged substantive content."
+      ],
+      "commands": [
+        "git diff --check"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/PROOF.json",
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/HANDOFF.md",
+        "proof/pr_merge/embedded-audit/pr-<ACTUAL_PR>/PROOF.json",
+        "proof/pr_merge/embedded-audit/pr-<ACTUAL_PR>/PROOF.json.sig"
+      ],
+      "validation": [
+        "Proof validates and is bound to the audited C1.",
+        "C2 is a proof-only descendant with no substantive content change."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "S6_CI_STEWARD_AND_OPERATOR_HANDOFF",
+      "task": "Harvest exact-C2 CI, reviews, current PR Steward output, and stop at the operator merge decision.",
+      "requirements": [
+        "Require all repository-required current-head checks to be terminal and successful.",
+        "Require current accepted audit proof on the exact head lineage.",
+        "Require PR Steward READY on the current PR head.",
+        "Classify every review item, bot, and blocking thread.",
+        "Do not merge, close, mark ready, force push, or delete the branch.",
+        "Return PREP_READY_FOR_OPERATOR_DECISION only when current evidence supports it."
+      ],
+      "commands": [
+        "gh pr checks <ACTUAL_PR> --repo DDD-Enterprises/dopemux-mvp",
+        "python -m dopemux.cli pr-steward --help"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/PR_STATE_FINAL.json",
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/MERGE_READINESS.json",
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/HANDOFF.md"
+      ],
+      "validation": [
+        "Current-head required checks pass.",
+        "PR Steward is READY on the current head.",
+        "No blocking review/thread/bot/unknown remains.",
+        "PR is open and unmerged.",
+        "Final handoff grants no merge authority."
+      ],
+      "context_files": [
+        "docs/ops/pr-steward.md",
+        "schemas/pr_steward/merge_readiness.schema.json"
+      ]
+    }
+  ]
+}

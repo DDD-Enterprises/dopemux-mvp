@@ -1,0 +1,16 @@
+{
+  "repo_worktree_branch_identity": "PASS",
+  "changed_file_allowlist": "PASS",
+  "allowlist_note": "Only path outside literal allowlist is docs/pr_prep/contract-v2.md staged as deletion (D), which the packet's own verify condition mandates. It nets to absent from the origin/main..HEAD diff (created and edited in prior R-1 commits on this same branch, deleted here).",
+  "git_diff_check": "PASS",
+  "task_packet_frontmatter_validation": "PASS",
+  "task_packet_schema_validation": "PASS (0 missing required fields, 0 extra fields, 0 step errors against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json)",
+  "proof_audit_schema_validation_for_present_artifacts": "NOT_RUN (no PROOF.json/audit artifacts yet — S4/S5 not started per stop instruction)",
+  "focused_tests": "PASS (tests/governance/test_pr_prep_contract_v2.py, 22 passed)",
+  "relevant_complete_governance_docs_suite": "PASS (tests/governance/, 47 passed)",
+  "changed_file_precommit": "PASS (evidence-economy preflight, frontmatter, knowledge-graph schema, prohibited-pattern gate, prelude token limit, docs placement/filename hygiene incl. full-tree legacy audit, root hygiene, markdownlint, trailing-whitespace, end-of-file — all Passed, zero file modifications on this run)",
+  "secret_scan": "PASS (grep sweep over staged diff for api_key/secret/password/BEGIN-key/token patterns — only doc-schema placeholder tokens found, no live secrets)",
+  "docs_hygiene_check": "PASS (19 files checked, 0 violations)",
+  "hook_reruns_required": 0,
+  "overall": "PASS"
+}

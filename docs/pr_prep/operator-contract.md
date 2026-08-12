@@ -11,12 +11,10 @@ prelude: Operator Contract (explanation) for dopemux documentation and developer
 ---
 # PR-PREP-SPECIALIST Operator Contract
 
-Superseded by [`contract-v2.md`](./contract-v2.md).
+`docs/pr_prep/**` is a compatibility surface only, by ruling of
+TP-DMX-PR-PREP-SPECIALIST-V2-001-R1. This file must not carry independent
+behavioral authority.
 
-The fixed 7-step workflow, fixed seven-artifact `authoritative_artifacts`
-list, and `GO_DIRECT` / `MERGE_READY` vocabulary previously mandated here are
-no longer the contract. Authority precedence, hard boundaries, risk lanes,
-prep states, and the handoff schema now live in the canonical V2 contract
-(§2, §3, §4, §6, §8 respectively).
+Canonical: [`../03-reference/pr-pipeline/prep/operator-contract.md`](../03-reference/pr-pipeline/prep/operator-contract.md)
 
 This stub is kept only so existing links into this filename keep resolving.

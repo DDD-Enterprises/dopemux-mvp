@@ -11,17 +11,10 @@ prelude: Workflow Sequence (explanation) for dopemux documentation and developer
 ---
 # PR-PREP-SPECIALIST Canonical Workflow Sequence
 
-Superseded by [`contract-v2.md`](./contract-v2.md) §5 (Conditional workflow).
+`docs/pr_prep/**` is a compatibility surface only, by ruling of
+TP-DMX-PR-PREP-SPECIALIST-V2-001-R1. This file must not carry independent
+behavioral authority.
 
-The mandatory exact-7-step sequence (`INSPECT_BRANCH_STATE` →
-`AUDIT_ADJACENT_WORK` → `DETECT_OBLIGATIONS` → `DRAFT_PR_FROM_TEMPLATE` →
-`RUN_DETERMINISTIC_VALIDATION` → `CREATE_PR_UNDER_POSTURE` →
-`HANDOFF_TO_PRMS`) and its fixed seven-artifact bundle previously documented
-here are no longer the contract. The current workflow is conditional
-(S0-S8): steps are ordered but not all are mandatory ceremony for every
-run, and the specialist must not manufacture artifacts merely to satisfy a
-fixed step count. `GO_DIRECT` as a governing posture and a PRPS-produced
-`MERGE_READY` recommendation are forbidden — see §3 (Hard boundaries) and §6
-(Prep states) in the canonical contract.
+Canonical: [`../03-reference/pr-pipeline/prep/operator-contract.md`](../03-reference/pr-pipeline/prep/operator-contract.md) §5 (Conditional workflow)
 
 This stub is kept only so existing links into this filename keep resolving.

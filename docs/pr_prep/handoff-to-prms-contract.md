@@ -12,17 +12,11 @@ prelude: Handoff To Prms Contract (explanation) for dopemux documentation and de
 ---
 # PR-PREP-SPECIALIST to PR-MERGE-SPECIALIST Handoff Contract
 
-Superseded by [`contract-v2.md`](./contract-v2.md) §8 (Handoff V2).
+`docs/pr_prep/**` is a compatibility surface only, by ruling of
+TP-DMX-PR-PREP-SPECIALIST-V2-001-R1. This file must not carry independent
+behavioral authority.
 
-The fixed `TP-PRPS-<number>-HANDOFF-<sequence>` id format, the
-`GO_DRAFT_FIRST|GO_DIRECT|AWAIT_REVIEW` posture enum, the
-`AWAIT_REVIEW|MERGE_READY|BLOCKED` next-step enum, and the fixed
-seven-artifact `authoritative_artifacts` list previously documented here have
-been replaced by the `schema_version: "2.0.0"` handoff bundle in the
-canonical contract, which carries `risk_lane`, exact `heads`, `drift`
-classification, and `pr_steward` status instead of a fixed artifact count.
-The receiving side of this contract is
-[`../pr_merge/handoff-from-prps-contract.md`](../pr_merge/handoff-from-prps-contract.md),
-updated to match in the same change.
+Canonical: [`../03-reference/pr-pipeline/prep/operator-contract.md`](../03-reference/pr-pipeline/prep/operator-contract.md) §9 (Handoff V2)
+Receiving side: [`../03-reference/pr-pipeline/merge/handoff-from-prps-contract.md`](../03-reference/pr-pipeline/merge/handoff-from-prps-contract.md)
 
 This stub is kept only so existing links into this filename keep resolving.

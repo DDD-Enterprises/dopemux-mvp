@@ -1,0 +1,16 @@
+{
+  "repo_root": "/Users/hue/code/dopemux-mvp",
+  "origin_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+  "branch": "feat/pr-prep-specialist-v2-contract",
+  "origin_main_sha": "3e8fcc1c70c5b859dd651a1cd33c85eab837c93e",
+  "merge_base": "3e8fcc1c70c5b859dd651a1cd33c85eab837c93e",
+  "branch_ahead_of_main": 2,
+  "authoring_sha_observed_by_prior_supervisor": "3e8fcc1c70c5b859dd651a1cd33c85eab837c93e",
+  "drift_classification": "IDENTICAL",
+  "drift_note": "origin/main has not moved since the branch was cut; no drift to reconcile.",
+  "worktree_state": "single checkout, no separate worktree entry for this branch",
+  "pre_existing_dirty_state": [
+    ".claude/claude_config.json (unrelated MCP instance-identity config, not touched by this packet)",
+    "untracked proof/, .claude cache files, .commandcode/ (pre-existing, not created by this packet)"
+  ]
+}
