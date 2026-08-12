@@ -12,11 +12,11 @@ even so, changing tracked files would invalidate the audit.
 ```text
 repository    DDD-Enterprises/dopemux-mvp
 branch        tp/DMX-EMBEDDED-AUDIT-GROK-ROUTE-001
-frozen head   2c1d15afbb12fcb3a20e79231dc14d505590aaf3
+frozen head   aadb4ed32831bacf5720b94888fbfd94f3eb6b73
 base          6626aa9a58dd82e62226cfca63498cc3f711bb75   (trusted main)
 ```
 
-Confirm first that `git rev-parse HEAD` is `2c1d15afbb12fcb3a20e79231dc14d505590aaf3`.
+Confirm first that `git rev-parse HEAD` is `aadb4ed32831bacf5720b94888fbfd94f3eb6b73`.
 If it is not, stop and report that instead of auditing whatever is there.
 
 ## What this packet claims to do
