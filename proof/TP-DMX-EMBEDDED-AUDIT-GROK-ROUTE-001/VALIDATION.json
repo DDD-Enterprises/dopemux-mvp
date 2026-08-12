@@ -1,0 +1,99 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001",
+  "record_kind": "VALIDATION",
+  "content_head": "8290d7bd8e8b67a8197c1c33ac1af7fdf2f9a946",
+  "base": "6626aa9a58dd82e62226cfca63498cc3f711bb75",
+  "buckets": {
+    "PASS": 10,
+    "FAIL": 0,
+    "NOT_RUN": 1
+  },
+  "checks": [
+    {
+      "check": "schema_parses",
+      "status": "PASS",
+      "cmd": "python3 -c \"import json;json.load(open('schemas/proof/embedded_audit.schema.json'))\"",
+      "result": "valid JSON, Draft-07"
+    },
+    {
+      "check": "new_regression_suite",
+      "status": "PASS",
+      "cmd": "python3 -m pytest tests/audit/test_embedded_audit_grok_route.py",
+      "result": "57 passed"
+    },
+    {
+      "check": "full_audit_suite",
+      "status": "PASS",
+      "cmd": "python3 -m pytest tests/audit/",
+      "result": "379 passed"
+    },
+    {
+      "check": "proof_corpus_no_regression",
+      "status": "PASS",
+      "cmd": "python3 scripts/audit/validate_audit_proof.py --all proof",
+      "result": "74/74 PASS",
+      "note": "This is the check CI runs as '🔍 Audit Proof Validator (--all)'."
+    },
+    {
+      "check": "differential_intended_1227_block",
+      "status": "PASS",
+      "detail": "The intended PR #1227 embedded_audit block validates under the new schema (1/1 PASS) and fails under the pre-change schema read from origin/main with exactly two errors: auditor_model 'grok-4.5' not in the old enum, auditor_tool 'grok-cli' not in the old enum. #1227's PROOF.json was read but not modified; the fixture was built in a scratch directory."
+    },
+    {
+      "check": "negative_control_tests_detect_removal",
+      "status": "PASS",
+      "detail": "Deleting the tool->model conditional from a copy of the schema turns three tests red: test_pass_grok_cli_with_gemini_model_is_invalid, the '[grok tool with wrong model]' parity row, and test_every_schema_conditional_is_exercised_by_the_corpus. Schema restored and confirmed byte-identical by git diff. A suite that passes against a schema with the feature removed is not testing the feature."
+    },
+    {
+      "check": "task_packet_schema",
+      "status": "PASS",
+      "detail": "Validates against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json via Draft7Validator."
+    },
+    {
+      "check": "changed_paths_within_allowlist",
+      "status": "PASS",
+      "detail": "git diff --name-only origin/main..HEAD returns 12 paths, all inside the packet's declared commit allowlist. No runtime code, no other packet's proof bundle, no docs, no CI config."
+    },
+    {
+      "check": "pre_commit",
+      "status": "PASS",
+      "cmd": "pre-commit run --files <staged>",
+      "result": "0 failed hooks",
+      "note": "Recorded at the C1 staging pass. 'Validate proof bundle embedded_audit schema' reported no files to check at that point because this bundle's PROOF.json did not exist yet; it is exercised directly by the proof_self_validates check below."
+    },
+    {
+      "check": "proof_self_validates_under_both_schemas",
+      "status": "PASS",
+      "detail": "This bundle's own PROOF.json validates under the new schema AND under the pre-change schema read from origin/main. The second result is the mechanical proof of the bootstrap rule: this packet's auditor identity did not require the route this packet admits, so the Grok route did not approve its own admission. Full corpus including this bundle: 75/75 PASS."
+    },
+    {
+      "check": "live_ci_required_contexts",
+      "status": "NOT_RUN",
+      "detail": "Not yet pushed at the time this record was written. Local results do not override live CI state."
+    }
+  ],
+  "independent_audit": {
+    "performed": true,
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "verdict": "PASS",
+    "findings": "None",
+    "blockers": 0,
+    "must_fix": 0,
+    "counts_are_derived": true,
+    "audited_head": "8290d7bd8e8b67a8197c1c33ac1af7fdf2f9a946",
+    "report": "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDITOR_REPORT.md",
+    "custody": "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDIT_CUSTODY.json",
+    "bootstrap_rule_satisfied": true,
+    "bootstrap_evidence": "auditor is representable under the PRE-change schema; no Grok runner was invoked for this packet's audit"
+  },
+  "review_bundle_sha256": {
+    "GROK_VERSION_20260812.txt": "27eb4c04386e6966cbe26516a431c5b9b22fdeb99c7bed31eaf5f4989413af69",
+    "GROK_MODELS_20260812.txt": "6e495049ee1ee9c25d09444b4fbcf873e5a5b50b3aefe66de0170aa9b7575360",
+    "GROK_MODEL_SELECTOR_PROBE_20260812.txt": "34fe62eff76591812533598a2a1102c937290735df4ff98b0b1fbdeb7752383b",
+    "pr1227_r2_session_model_evidence/completed-run-019ff62b-summary.json": "55b7c174635275c21575a9d6c46b696259f22026ddfac643f59772c27989107a",
+    "pr1227_r2_session_model_evidence/completed-run-019ff62b-signals.json": "e8cf0e06ba2b98e8b536d5df869507e86a44f490cd1759709169db6159bc6674",
+    "pr1227_r2_session_model_evidence/killed-attempt-019ff628-summary.json": "60efc09d19b84f1328ad7cd47b6afddef8b5e991ad02fe721ad600f95cb6b190"
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001",
+  "record_kind": "AUDIT_PROMPT_CUSTODY",
+  "round": 1,
+  "audited_content_head": "8290d7bd8e8b67a8197c1c33ac1af7fdf2f9a946",
+  "base": "6626aa9a58dd82e62226cfca63498cc3f711bb75",
+  "prompt_file": "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDIT_PROMPT.md",
+  "prompt_names_the_head_it_audited": true,
+  "prompt_is_not_part_of_the_audited_tree": {
+    "fact": true,
+    "why": "The prompt names the frozen head, so it cannot exist inside the commit that creates that head. It was written after C1 and is committed in the successor commit together with this record."
+  },
+  "report_file": "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDITOR_REPORT.md",
+  "bootstrap_rule": {
+    "rule": "The packet that admits the Grok route may not be approved by Grok as its controlling audit, or the route would bootstrap its own admission.",
+    "satisfied": true,
+    "how": "The controlling auditor is AGY running gemini-3.1-pro-high. That pair is representable under the PRE-change schema, which is the property the operator required: allOf[2] on the pre-change contract already binds auditor_model gemini-3.1-pro-high to auditor_tool agy. No Grok runner was invoked for this packet's audit.",
+    "additional_property": "Different model family from the producer (Claude), which is stronger independence than a same-family fallback. This was available rather than assumed -- see route_attempts."
+  },
+  "route_attempts": [
+    {
+      "n": 1,
+      "route": "agy --model gemini-3.1-pro-high --sandbox --mode plan",
+      "result": "REJECTED_WRONG_MODE",
+      "evidence": "Returned an audit plan and asked for approval rather than auditing. 638 bytes, no verdict. `--mode plan` gates execution behind interactive approval, which cannot be satisfied in print mode. The precedent packet used plan mode for read-only safety; on AGY 1.1.12 that also blocks the read-only commands an audit needs.",
+      "recorded_because": "A route attempt that produced no verdict is not a skipped audit and should not disappear from the record."
+    },
+    {
+      "n": 2,
+      "route": "agy ... --dangerously-skip-permissions",
+      "result": "NOT_ATTEMPTED",
+      "evidence": "Blocked by the harness permission classifier before any execution. No audit ran under this route."
+    },
+    {
+      "n": 3,
+      "route": "agy --model gemini-3.1-pro-high --effort high --sandbox --mode accept-edits --print-timeout 25m --print \"$(cat AUDIT_PROMPT.md)\"",
+      "result": "COMPLETED",
+      "exit_code": 0
+    }
+  ],
+  "auditor_functionality_probe": {
+    "why": "TP-DMX-TRUST-GATE-FAIL-CLOSED-001, earlier the same day, recorded AGY gemini-3.1-pro-high as REJECTED_NONFUNCTIONAL -- selecting the model correctly but returning a fixed canned response regardless of prompt content. That finding had to be re-tested rather than inherited, because accepting a canned responder as an auditor would be worse than having no auditor.",
+    "agy_version": "1.1.12",
+    "probes": [
+      {
+        "prompt": "Reply with only the result of 7919 multiplied by 13. No other words.",
+        "response": "102947",
+        "assessment": "correct"
+      },
+      {
+        "prompt": "Reply with only the third word of this sentence: alpha bravo charlie delta.",
+        "response": "only",
+        "assessment": "prompt-appropriate under a literal reading of 'this sentence' as the instruction sentence itself, whose third word is 'only'"
+      }
+    ],
+    "conclusion": "Two distinct, prompt-dependent answers. Not a canned responder on 1.1.12. The earlier non-functional finding does not hold today and is not disputed for the version it described."
+  },
+  "auditor": {
+    "tool": "agy",
+    "version": "1.1.12",
+    "model_selector": "gemini-3.1-pro-high",
+    "effort": "high",
+    "sandbox": true,
+    "independent_of_producer": true,
+    "producer_conversation_history": false,
+    "separate_process": true,
+    "separate_worktree": true,
+    "worktree": "/private/tmp/grok-route-audit (throwaway, git worktree add --detach)",
+    "different_model_family_from_producer": true
+  },
+  "verdict": {
+    "as_reported": "PASS",
+    "findings_as_reported": "None",
+    "blockers_derived": 0,
+    "must_fix_derived": 0,
+    "derivation_note": "The auditor wrote 'VERDICT: PASS' and 'Findings: None' but did not print the explicit 'BLOCKERS: n / MUST_FIX: n' counters the prompt asked for. Zero blockers and zero must-fix follow from 'Findings: None'. The counts are recorded as DERIVED rather than as auditor-stated, because the auditor did not state them."
+  },
+  "report_format_deviation": {
+    "deviated": true,
+    "requested_sections": ["# VERDICT", "BLOCKERS: <n>", "MUST_FIX: <n>", "# WHAT I VERIFIED", "# FINDINGS", "# WHAT I COULD NOT VERIFY"],
+    "delivered_sections": ["## VERDICT", "## Findings", "## Verification Report"],
+    "missing": ["explicit BLOCKERS/MUST_FIX counters", "# WHAT I COULD NOT VERIFY"],
+    "handling": "Recorded as a deviation rather than repaired. The report was not rewritten to fit the requested shape, because editing an auditor's report to look compliant is the failure this custody record exists to prevent. The substance the prompt asked for -- per-area verification with commands and results -- is present.",
+    "materiality": "The absent 'could not verify' section is a real gap in rigour: the auditor asserts no limits on its own coverage. The producer's own known residuals are recorded in PROOF.json remaining_risks rather than being attributed to the auditor."
+  },
+  "raw_transcript": {
+    "sha256": "2722c16c2a9d75e74f7c5b17b6d768f9c9e1371d22c0d6314ad5480aeac3ef74",
+    "bytes": 2361,
+    "progress_preamble_bytes": 29,
+    "progress_preamble_sha256": "290e76a1fc49c54c95814532abfbf55e8354febadffe1cdfcf6e689671c33f1e",
+    "progress_preamble_verbatim": "Waiting for tasks to finish.\n",
+    "note": "The runner emits one progress line before the report. It is recorded here so the report file contains the report and nothing else, while the full transcript stays reconstructible: preamble + report-as-produced = raw."
+  },
+  "report_whitespace_normalisation": {
+    "applied": true,
+    "what": "Trailing whitespace stripped from 1 line. The repository preflight whitespace gate rejects trailing whitespace.",
+    "lines_affected": [18],
+    "sha256_as_produced": "085b08ec480b2afce7d9a000ee01eb0eba0b34f36066b8b14e2a7df12785aa51",
+    "sha256_as_committed": "355e42ddc18df01e31564c336de9489a753a714dc6d7357af3330fd4b7435a9a",
+    "no_other_byte_changed": true,
+    "why_recorded": "The report is custody. A change to its bytes, even a whitespace one forced by a repository gate, is stated rather than made silently."
+  },
+  "audited_tree_unmodified": {
+    "verified": true,
+    "method": "After the run, `git status --porcelain` in the audit worktree returned zero lines and `git rev-parse HEAD` still resolved to 8290d7bd8e8b67a8197c1c33ac1af7fdf2f9a946. The auditor states it mutated only a copy of the schema; the worktree confirms nothing tracked was changed.",
+    "note": "The auditor ran under --mode accept-edits, which permits edits, so this check is load-bearing rather than ceremonial. Read-only compliance is proven by the tree, not by the instruction."
+  }
+}
