@@ -69,8 +69,11 @@
     },
     {
       "check": "live_ci_required_contexts",
-      "status": "NOT_RUN",
-      "detail": "Not yet pushed at the time this record was written. Local results do not override live CI state."
+      "status": "PARTIAL",
+      "detail": "7 of 8 required contexts SUCCESS on head 1ba25d3dc7: Security Review, Documentation Check, identity-check, Unit Tests, Analyze (python), Analyze (ruby), CI Pipeline Summary. The 8th, Analyze (javascript-typescript), did not fail: its CodeQL run (31618698948, event=dynamic) completed while that single job stayed orphaned in status=queued, and dynamic runs cannot be retried via rerun-failed-jobs (HTTP 403). 18 runs were queued repo-wide at the time. The same check is SUCCESS on main HEAD 6626aa9a58, so this is a scheduling anomaly rather than a result. Re-triggered by this proof-only commit.",
+      "pr": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1228",
+      "notable": "CI Pipeline Summary — the one required context that blocks PR #1227 — is GREEN here, together with Code Quality & Linting and Audit Proof Validator (--all). That is the direct evidence that this packet removes #1227's blocker.",
+      "not_required_contexts_red": "'independent embedded audit' and 'PR Steward / final readiness' are FAILURE and are NOT in the branch-protection required list. The former is the CI-executed audit lane, which needs a trusted provider credential this run did not have; it is unrelated to the contract change."
     }
   ],
   "independent_audit": {
