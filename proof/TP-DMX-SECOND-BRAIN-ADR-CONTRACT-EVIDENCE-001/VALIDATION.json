@@ -101,5 +101,14 @@
   "round": 2,
   "gate_results_are_fresh_round_2_observations": "change-contract and pre-commit were re-executed against the round-2 tree rather than carried forward from round 1. 'Still failing for the recorded reason' is an observation here, not an assumption.",
   "skipped_hooks_note": "The pre-commit hooks reported as Skipped are scoped to docs/*.md and similar paths this slice does not touch; the skips are the hook config's file filters, not suppressed failures.",
-  "terminal_verdict": "READY_FOR_OPERATOR_CONTRACT_EVIDENCE_MERGE_DECISION"
+  "terminal_verdict": "READY_FOR_OPERATOR_CONTRACT_EVIDENCE_MERGE_DECISION",
+  "base_sync": {
+    "synced_to_main": "6626aa9a58dd82e62226cfca63498cc3f711bb75",
+    "merge_commit": "c80c62df91a5ae85aaf5abb307cd2135a81b48f1",
+    "audited_bytes_drifted": 0,
+    "audited_files_checked": 36,
+    "ancestry_preserved": true,
+    "record": "BASE_SYNC_REVERIFY.json",
+    "gates_reverified": true
+  }
 }

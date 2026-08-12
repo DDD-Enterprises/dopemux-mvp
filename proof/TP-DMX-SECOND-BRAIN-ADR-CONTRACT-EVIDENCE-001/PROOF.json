@@ -5,11 +5,20 @@
   "repository": "DDD-Enterprises/dopemux-mvp",
   "phase": "CONTRACT_EVIDENCE",
   "round": 2,
-  "terminal_verdict": "READY_FOR_OPERATOR_CONTRACT_EVIDENCE_MERGE_DECISION",
+  "terminal_verdict": "MERGE_AUTHORIZED_AFTER_BASE_SYNC_REVERIFY",
   "risk_lane": "L2",
   "execution_base": "6153bd4fb30ed3d038e51b371ad9ebfb4916bfac",
   "issue_baseline_main": "6153bd4fb30ed3d038e51b371ad9ebfb4916bfac",
-  "drift_from_issue_baseline": "NONE",
+  "base_sync": {
+    "synced_to_main": "6626aa9a58dd82e62226cfca63498cc3f711bb75",
+    "main_commits_absorbed": 16,
+    "audited_files_checked": 36,
+    "audited_bytes_drifted": 0,
+    "ancestry_preserved": true,
+    "method": "git merge --no-ff (never rebase: the audited head must stay a real ancestor)",
+    "record": "BASE_SYNC_REVERIFY.json"
+  },
+  "drift_from_issue_baseline": "main advanced 16 commits (PR #1225); none touches an audited path and none shares a file with this branch",
   "branch": "tp/DMX-SB-ADR-CONTRACT-EVIDENCE-001",
   "pr_number": 1227,
   "content_head": "6e1b4472ba626df2a5d7724e87c5ec77c9c46043",
@@ -122,7 +131,7 @@
     "fixes_applied": [],
     "remaining_risks": [
       "The native embedded-audit lane cannot represent the auditor that actually ran. auditor_tool and auditor_model carry the schema's fallback values; they are not a claim that no audit occurred. The audit ran, returned PASS with zero blockers and zero must-fix, and its verbatim report is at proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/AUDITOR_REPAIR_2_REPORT.md.",
-      "Because of that representation gap, validate_change_contract.py and pre-commit still fail. A PASS from the independent audit does not turn them green: they fail for a schema-representation cause, not for anything about the contract evidence. Repairing that schema is out of lane per packet section 1.",
+      "Because of that representation gap, validate_change_contract.py and pre-commit still fail after the base sync. pre-commit reports two hooks, proof-embedded-audit-schema and change-contract-preflight, but the second fails because it runs the first's check: one cause counted twice. Repairing that schema is out of lane per packet section 1.",
       "Residual, confirmed by the producer and documented in the validator header before the audit ran: with FROZEN_INVENTORY_SHA256 and the supersession receipt both rewritten, clause booleans that no Group S pin covers can be flipped while the validator exits 0. A consistent bilateral edit with the pin left alone fails at A09, which is the false-green round 1 found. A checker cannot defend its own constants.",
       "The census worksheet labels 25 clauses UNCHANGED that the computed supersession record lists as modified. All 25 are rule_type renames under the new taxonomy with byte-identical machine values. The receipt is authoritative; see AUDIT_R2_RESIDUALS.json.",
       "The operator ruling is bound to this freeze by presence and by naming the superseded inventory hash, not by a content hash linking the ruling to the new inventory bytes. The ruling predates those bytes, so that binding cannot exist."
@@ -197,6 +206,7 @@
     "tests/governance/test_second_brain_adr_contracts.py"
   ],
   "changed_path_count": 55,
+  "changed_paths_measured_against": "6626aa9a58dd82e62226cfca63498cc3f711bb75 (origin/main at the base sync). Measuring from the issue baseline after a merge would fold in the commits main brought and overstate this packet's footprint.",
   "allowlist_conformance": "Every changed path lies inside the packet §11 mutation allowlist.",
   "artifact_sha256": {
     "ADR_CLAUSE_INVENTORY.json": "b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439",
@@ -208,15 +218,16 @@
     "AUDIT_PROMPT_R2.md": "2b54d5b5c4e1e68b404dd43db3546b9915605592e1b8d7268db54ad6fb7201d4",
     "AUDIT_R2_RESIDUALS.json": "5ad7782cda73d12ee5ab4ab5c49be4e9e8b55fcd0f447345db62e04e939e42fa",
     "BASELINE_CONTRACT_INVENTORY.json": "1428a89983114ca3aec6134de6aa83b8962deb0517419eef71600e276f5e5650",
+    "BASE_SYNC_REVERIFY.json": "9831e27c0867bdc4bd241199cc37bff60f832cdd2c9d06c2915b5cdc4bd7a98f",
     "C1_CONTENT_HEAD.txt": "e7435cf37571f5bd2dedbb44cffc40b32549f7dc6f37d48c80cad0935626f503",
-    "COMMAND_LOG.md": "84d5ba7b410ff347ca92cdfeb6793a7b2e1a39414c20a771a98d430146446f70",
+    "COMMAND_LOG.md": "f96942cd156ccda388f55a3d34d76fe7aed1c17e89e0d260e50779ce2e97ab20",
     "CONTRACT_COVERAGE_RECEIPT.json": "b39954098e09f12fbf97197d7eadcba1f40dc376cd8b10c571aa7dc633a919e3",
     "DENOMINATOR_CENSUS_WORKSHEET.json": "bc4157808577d3770d788b5cc0356297a9f0ece97d077441447383a05cbfa339",
     "DENOMINATOR_REFREEZE_RECEIPT.json": "8f75a967a1e10fb794817c050f1e8a284c247bf25aeca67e786ef3eec845098c",
     "FALSE_GREEN_MATRIX.json": "3df44d55377b2d245ee4499888ba31b655cb58edd629278e2221e3b8ba49bd11",
     "FO01_RECONCILIATION_RECEIPT.json": "1a61d97a2ae17999efbff96d0d3243c9a4c53c7dada55209fcb5cd2f538a558b",
     "HANDOFF.md": "a3f84fb3a3d2caa040210f9e4a9e28133a660d95e31abe8a5521c3b7d4b1893d",
-    "VALIDATION.json": "b8c95b6e60914b9d2901631ac9c4e73f2a5be693deb7136d22423ecca5e3171e"
+    "VALIDATION.json": "461ef3b5b1bd9452638d769f6c1af57fab32742f79b448cdfb899e5655fdc72c"
   },
   "contract_sha256": {
     "ADR-SB-001.contract.json": "257679d68d5b1ae914da0b4dc326e039759c7372ccbca2b26b7cd48154c49eab",

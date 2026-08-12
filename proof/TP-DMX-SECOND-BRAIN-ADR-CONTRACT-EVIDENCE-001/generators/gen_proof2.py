@@ -33,6 +33,7 @@ ROOT = _repo_root()
 PROOF = ROOT / "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001"
 CONTRACTS = ROOT / "schemas/second_brain/contracts"
 BASE = "6153bd4fb30ed3d038e51b371ad9ebfb4916bfac"
+SYNCED_MAIN = "6626aa9a58dd82e62226cfca63498cc3f711bb75"
 OLD_FREEZE = "a9397e5630577ac5a2b0c8f89ad7d62d8ff7b296"
 
 
@@ -102,7 +103,10 @@ def main() -> int:
         capture_output=True, text=True, check=True,
     ).stdout)
 
-    changed = git("diff", "--name-only", BASE, "HEAD").splitlines()
+    # After the base sync, diffing from the issue baseline would fold in the
+    # 16 commits main brought with it and overstate what this packet changed.
+    # The packet's contribution is its diff against the main it merged.
+    changed = git("diff", "--name-only", SYNCED_MAIN, "HEAD").splitlines()
 
     prior = json.loads(git("show", f"HEAD:{PROOF.relative_to(ROOT)}/PROOF.json"))
     embedded_audit = prior["embedded_audit"]
@@ -130,7 +134,20 @@ def main() -> int:
         "risk_lane": "L2",
         "execution_base": BASE,
         "issue_baseline_main": BASE,
-        "drift_from_issue_baseline": "NONE",
+        "base_sync": {
+            "synced_to_main": SYNCED_MAIN,
+            "main_commits_absorbed": 16,
+            "audited_files_checked": 36,
+            "audited_bytes_drifted": 0,
+            "ancestry_preserved": True,
+            "method": "git merge --no-ff (never rebase: the audited head must "
+                      "stay a real ancestor)",
+            "record": "BASE_SYNC_REVERIFY.json",
+        },
+        "drift_from_issue_baseline": (
+            "main advanced 16 commits (PR #1225); none touches an audited path "
+            "and none shares a file with this branch"
+        ),
         "branch": "tp/DMX-SB-ADR-CONTRACT-EVIDENCE-001",
         "pr_number": 1227,
         "content_head": args.head,
@@ -296,6 +313,11 @@ def main() -> int:
         },
         "changed_paths": sorted(changed),
         "changed_path_count": len(changed),
+        "changed_paths_measured_against": (
+            f"{SYNCED_MAIN} (origin/main at the base sync). Measuring from the "
+            "issue baseline after a merge would fold in the commits main "
+            "brought and overstate this packet's footprint."
+        ),
         "allowlist_conformance": (
             "Every changed path lies inside the packet §11 mutation allowlist."
         ),

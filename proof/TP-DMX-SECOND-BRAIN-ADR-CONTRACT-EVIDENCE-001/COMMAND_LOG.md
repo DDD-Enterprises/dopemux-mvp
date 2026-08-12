@@ -858,3 +858,60 @@ finding from three error strings to two, with the cause unchanged.
 Terminal verdict: `READY_FOR_OPERATOR_CONTRACT_EVIDENCE_MERGE_DECISION`. The
 final head is bound by the commit that carries this line, and by
 `C1_CONTENT_HEAD.txt`.
+
+## Base sync and re-verification, under operator merge authorization
+
+The operator authorized merge subject to a base sync and a re-run of the bounded
+gate set, preserving the C0_REFREEZE → C1-R2 → audit-record ancestry, by merge
+commit rather than squash, with no `--admin`, no force-push, no rebase, and the
+branch retained.
+
+```bash
+$ git fetch origin main
+$ git rev-list --count 6153bd4fb3..origin/main
+16
+$ git diff --name-only 6153bd4fb3 origin/main | grep -E 'second_brain|adr-candidates|governance|TRACEABILITY-REPAIR'
+(no output)
+$ git merge --no-ff origin/main        # -> c80c62df91
+```
+
+`origin/main` advanced by PR #1225 — a docs-prohibited-patterns CI fix, its proof
+bundle, and `.pre-commit-config.yaml`. It touches no audited path and shares no
+file with this branch, so there was nothing to resolve.
+
+A merge, not a rebase. The audit is a statement about the bytes at `6e1b4472ba`;
+a rebase would rewrite that commit and the audited head would stop existing in
+the history being merged.
+
+```text
+3e0d89815c  C0_REFREEZE            ancestor of HEAD: yes
+6e1b4472ba  C1-R2 audited head     ancestor of HEAD: yes
+3d41344411  audit record           ancestor of HEAD: yes
+97edbae91f  command-log closure    ancestor of HEAD: yes
+6626aa9a58  origin/main at sync    ancestor of HEAD: yes
+```
+
+Every file under the audited trees was hashed at the merge result and compared to
+its content at `6e1b4472ba`: **36 files checked, 0 drifted**. Checking the diff
+alone would not have caught a same-path change arriving from main, which is the
+case that would have invalidated the audit.
+
+### Bounded gate set, re-executed after the sync
+
+```text
+validate_second_brain_adr_contracts.py    PASS  (94 checks, 0 failed)
+pytest tests/governance/...               PASS  (63 passed)
+FALSE_GREEN_MATRIX                        PASS  (10/10, re-executed)
+dopeTask packet schema validation         PASS
+git diff --check                          PASS
+validate_change_contract.py               FAIL  (1 finding, embedded-audit gap)
+pre-commit (changed slice)                FAIL  (2 hooks, one underlying cause)
+```
+
+pre-commit reports two hooks now: `proof-embedded-audit-schema`, and
+`change-contract-preflight`, which fails because it runs that same check. One
+cause, counted twice. It was re-run under main's updated `.pre-commit-config.yaml`
+rather than assumed unchanged.
+
+Full record, including the drift analysis and the ancestry proof, is in
+`BASE_SYNC_REVERIFY.json`.
