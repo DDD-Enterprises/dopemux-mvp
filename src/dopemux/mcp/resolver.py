@@ -21,6 +21,19 @@ class InstanceResolver:
         }
 
     def resolve(self, profile_name: str = "default") -> Dict[str, Any]:
+        # Reset per-call state. Without this, a reused InstanceResolver instance
+        # would retain servers/provenance from a prior resolve() call, which
+        # (post-F018-fix) could let stale repo_profile provenance leak into an
+        # otherwise env-only service on a later call -- violating both
+        # determinism (same effective inputs -> same output) and the
+        # authority invariant the F018 fix establishes.
+        self.resolution_report = {
+            "project_id": "unknown",
+            "instance_profile": "default",
+            "servers": {},
+            "provenance": {}
+        }
+
         # 1. Start with repo profile
         repo_profile_path = self.project_root / ".dopemux" / "mcp.instances.toml"
         
@@ -61,7 +74,13 @@ class InstanceResolver:
                 if name not in self.resolution_report["servers"]:
                     self.resolution_report["servers"][name] = {}
                 self.resolution_report["servers"][name]["url"] = env_val
-                self.resolution_report["provenance"][name] = "env_var"
+                # An env URL override changes the endpoint address only. It must not
+                # erase repo-profile authority (DMX-W1-04-F018): a service already
+                # declared authoritative by the repo profile stays repo_profile even
+                # when its URL is overridden here. A service with no prior provenance
+                # is genuinely env-only and is recorded as such.
+                if self.resolution_report["provenance"].get(name) != "repo_profile":
+                    self.resolution_report["provenance"][name] = "env_var"
 
         # 3. Global fallback (~/.vibe/config.toml) - ONLY if allowed
         if allow_global:
