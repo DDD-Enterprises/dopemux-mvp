@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+  "record_kind": "AUDIT_PROMPT_CUSTODY",
+  "round": 2,
+  "audited_content_head": "6e1b4472ba626df2a5d7724e87c5ec77c9c46043",
+  "prompt_file": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/AUDIT_PROMPT_R2.md",
+  "prompt_sha256": "2b54d5b5c4e1e68b404dd43db3546b9915605592e1b8d7268db54ad6fb7201d4",
+  "prompt_names_the_head_it_audited": true,
+  "prompt_is_not_part_of_the_audited_tree": {
+    "fact": true,
+    "why": "The prompt names the frozen head, so it cannot exist inside the commit that creates that head. It was written after C1-R2 and is committed in the successor commit, together with this record. Round 1's prompt was written before its head moved and ended up naming a stale commit; the auditor caught that itself. This ordering removes the failure mode rather than repeating it."
+  },
+  "report_file": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/AUDITOR_REPAIR_2_REPORT.md",
+  "report_sha256": "90746444772f72c92cac031a8ca108ca51fedcf5862dfa2e288307c356bd31fd",
+  "round_1_artifacts_untouched": {
+    "AUDITOR_REPORT.md": "ec52c250af995d115827725cbc667cd01f155cde43016f03ecbdd45ce5c89e05",
+    "AUDIT_PROMPT.md": "090cdea2702a531763488b10f2f583c2e9bd7a5b339186c11d58c07e68501baf",
+    "AUDIT_PROMPT_CUSTODY.json": "4053be60a0f358fd4e58d1b8aae3c9eafe9030d3801609d5d3add9c272a6ea7a",
+    "note": "Round 1's FAIL is the controlling evidence for why round 2 was required. The operator directed that it not be edited, so round 2 uses new filenames rather than overwriting."
+  },
+  "auditor": {
+    "runner": "grok CLI 1.0.0 (3cd0d0cbcebe) [stable]",
+    "model": "UNKNOWN_TO_PRODUCER",
+    "model_note": "The CLI does not report the served model in plain output mode. Recorded as unknown rather than guessed.",
+    "independent_of_producer": true,
+    "producer_conversation_history": false,
+    "read_only": true,
+    "separate_process": true,
+    "separate_worktree": true,
+    "worktree": "/private/tmp/sb-audit-r2 (throwaway, git worktree add --detach)",
+    "session_dir_hint": "019ff62b-f270-7930-8d50-c95d094d1e3d\nprompt_history.jsonl\n019ff628-f3a8-79b3-8bb9-6c9fec672e53"
+  },
+  "invocation": "grok --cwd /private/tmp/sb-audit-r2 --always-approve --max-turns 80 --output-format plain -p \"$(cat proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/AUDIT_PROMPT_R2.md)\"",
+  "exit_code": 0,
+  "verdict": "PASS",
+  "blockers": 0,
+  "must_fix": 0,
+  "first_attempt": {
+    "outcome": "KILLED_MID_RUN_NO_VERDICT",
+    "bytes_produced": 319,
+    "detail": "A first invocation was stopped while running its adversarial mutations and produced no verdict. It is recorded because a killed audit is not a skipped audit and should not disappear from the record. Both worktrees were verified unmodified afterwards (the auditor sandboxes its mutations under /tmp), and the audit was re-run from the same frozen head."
+  },
+  "raw_transcript": {
+    "sha256": "55b888b19bd33525d47d6f519792009d0600398d79a4b932616f0c0148c4921b",
+    "bytes": 7811,
+    "progress_preamble_bytes": 732,
+    "progress_preamble_sha256": "619884259df2ef4b6927f7a61b9e94b3ef188425d7b362d6c56a710906c07959",
+    "progress_preamble_verbatim": "Independent audit starts now. Confirm frozen head first, then attack the seven areas from bytes and commands only.HEAD matches freeze `6e1b4472ba`. Loading prior findings, freeze chain, validator, and inventory.Baseline clean. Next: adversarial mutation attacks in `/tmp` and deep candidate/inventory review.Running adversarial mutations in a `/tmp` sandbox; also finishing census, Layer B grounding, and gate checks.Restore polluted sandbox. Re-sync from pristine and continue attack series.Closed-set attacks hold. Digging FO-01 escapes, Layer B surface, denominator gaps, and gate claims.Boolean bilateral+repin still false-greens many clauses. Checking whether that is residual-by-design or a real hole in authorization binding.",
+    "note": "The runner streams short progress lines before the report. They are kept here so the report file is the report the prompt asked for and nothing else, while the full transcript remains reconstructible: preamble + report = raw."
+  },
+  "audited_tree_unmodified": {
+    "verified": true,
+    "method": "git status --porcelain in the audit worktree after the run showed no tracked modification, and git rev-parse HEAD still resolved to the frozen head. The auditor states it ran every mutation in a /tmp sandbox."
+  },
+  "report_whitespace_normalisation": {
+    "applied": true,
+    "what": "Trailing spaces were stripped from 3 lines. The auditor used Markdown hard line-breaks (two trailing spaces); the repository's preflight whitespace gate rejects trailing whitespace.",
+    "lines_affected": [
+      19,
+      91,
+      92
+    ],
+    "sha256_as_produced": "89e7715ed29ce240ac479a26e0c6250e990e9d856363bd6280e4c12cdd617dff",
+    "sha256_as_committed": "90746444772f72c92cac031a8ca108ca51fedcf5862dfa2e288307c356bd31fd",
+    "no_other_byte_changed": true,
+    "verification": "Every line is byte-identical after rstrip. The full unmodified transcript hashes to raw_transcript.sha256 recorded in this file, and equals progress_preamble_verbatim followed by the report as produced.",
+    "why_recorded": "The report is custody. A change to its bytes, even a whitespace one forced by a repository gate, is stated rather than made silently."
+  }
+}

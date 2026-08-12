@@ -5,14 +5,14 @@
   "repository": "DDD-Enterprises/dopemux-mvp",
   "phase": "CONTRACT_EVIDENCE",
   "round": 2,
-  "terminal_verdict": "PENDING_INDEPENDENT_AUDIT",
+  "terminal_verdict": "READY_FOR_OPERATOR_CONTRACT_EVIDENCE_MERGE_DECISION",
   "risk_lane": "L2",
   "execution_base": "6153bd4fb30ed3d038e51b371ad9ebfb4916bfac",
   "issue_baseline_main": "6153bd4fb30ed3d038e51b371ad9ebfb4916bfac",
   "drift_from_issue_baseline": "NONE",
   "branch": "tp/DMX-SB-ADR-CONTRACT-EVIDENCE-001",
   "pr_number": 1227,
-  "content_head": null,
+  "content_head": "6e1b4472ba626df2a5d7724e87c5ec77c9c46043",
   "content_head_binding": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/C1_CONTENT_HEAD.txt",
   "content_head_note": "A file cannot contain the sha of the commit that introduces it. The round-2 content head is bound in the successor commit.",
   "denominator": {
@@ -91,12 +91,13 @@
       "producer_disputes": 0
     },
     "round_2": {
-      "verdict": "PENDING",
-      "blockers": null,
-      "must_fix": null,
-      "audited_head": null,
-      "report": "AUDITOR_REPORT_R2.md",
+      "verdict": "PASS",
+      "blockers": 0,
+      "must_fix": 0,
+      "audited_head": "6e1b4472ba626df2a5d7724e87c5ec77c9c46043",
+      "report": "AUDITOR_REPAIR_2_REPORT.md",
       "prompt": "AUDIT_PROMPT_R2.md",
+      "residuals": "AUDIT_R2_RESIDUALS.json",
       "custody": "AUDIT_PROMPT_CUSTODY_R2.json",
       "requirement": "PASS with zero blockers and zero must-fix"
     }
@@ -111,80 +112,24 @@
   },
   "embedded_audit": {
     "required": true,
-    "status": "FAIL",
+    "status": "PASS",
     "auditor_tool": "none",
     "auditor_model": "unknown",
-    "invocation": "grok --cwd /private/tmp/sb-audit-c1 --always-approve --max-turns 60 --output-format plain -p \"$(cat proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/AUDIT_PROMPT.md)\"",
+    "invocation": "grok --cwd /private/tmp/sb-audit-r2 --always-approve --max-turns 80 --output-format plain -p \"$(cat proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/AUDIT_PROMPT_R2.md)\"",
     "exit_code": 0,
-    "report_path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/AUDITOR_REPORT.md",
-    "findings": [
-      {
-        "id": "B1",
-        "severity": "BLOCKING",
-        "title": "Coverage PASS survives silent architecture rewrites",
-        "status": "OPEN",
-        "body": "Editing inventory and contract consistently changes an ADR decision while the validator exits 0, on roughly 75 of 97 clauses. Producer-confirmed twice: canonical capture rerouted Dope-Memory -> ConPort, and recall fusion inverted to the explicitly rejected vector-first order."
-      },
-      {
-        "id": "B2",
-        "severity": "BLOCKING",
-        "title": "'dopeTask' is an invented canonical authority",
-        "status": "OPEN",
-        "body": "grep -c dopeTask against the ratified candidate returns 0. The token came from this task packet's own architecture-boundary list, not from the audited authority, yet it entered AUTHORITY_TARGETS and two AUTHORITY_TARGET/IN clause values."
-      },
-      {
-        "id": "B3",
-        "severity": "BLOCKING",
-        "title": "A21 enum grounding is one-way",
-        "status": "OPEN",
-        "body": "It rejects widening but accepts shrinking. Dropping PURGE from the ADR-SB-007 deletion-operation set and Review from the ADR-SB-010 UX operation set both still pass. Producer-confirmed."
-      },
-      {
-        "id": "M1",
-        "severity": "HIGH",
-        "title": "Denominator omits material decision content",
-        "status": "OPEN",
-        "body": "Missing: ADR-SB-004 policy-evaluation dimensions (only the stage ordering was captured); ADR-SB-007 purge completion receipt; 'ConPort never owns task state' and the Dope-Memory PM-authority forbid; the ADR-SB-003 historical-vs-current distinction; ADR-SB-008 open/close/cancel event kinds. Repair requires re-freezing the denominator, superseding the freeze at a9397e5630."
-      },
-      {
-        "id": "M2",
-        "severity": "HIGH",
-        "title": "Typed artifacts invent API and schema surface",
-        "status": "OPEN",
-        "body": "LocalSpoolPort/CustodyPort operation lists and several property and enum sets assert structure the candidate never states, and the validator does not constrain them."
-      },
-      {
-        "id": "M3",
-        "severity": "HIGH",
-        "title": "ADR-SB-003-C01 invents a total fusion ranking",
-        "status": "OPEN",
-        "body": "The candidate states 'authority-first'; the clause asserts a four-way total order over authority, chronology, source-native and advisory retrieval."
-      },
-      {
-        "id": "M4",
-        "severity": "MEDIUM",
-        "title": "Many rules are token labels rather than machine expression",
-        "status": "OPEN",
-        "body": "REQUIRE/MUST_EXIST rules name an artifact class (PURGE_DEPENDENCY_GRAPH, FRESHNESS_METADATA, ...) without giving it a shape, so 'cover' is naming."
-      },
-      {
-        "id": "M5",
-        "severity": "MEDIUM",
-        "title": "FO-01 check group B leaves status fields unlocked",
-        "status": "OPEN",
-        "body": "nonblocking_observations, authority.architecture_accepted_as_law and the expanded coverage metrics can diverge from the receipt while group B still passes."
-      }
-    ],
+    "report_path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/AUDITOR_REPAIR_2_REPORT.md",
+    "findings": [],
     "fixes_applied": [],
     "remaining_risks": [
-      "Native embedded-audit lane cannot represent the auditor that actually ran; auditor_tool and auditor_model are the schema's fallback values, not a claim that no audit occurred.",
-      "The controlling verdict is FAIL with 3 blockers and 5 must-fix. This packet is BLOCKED_INDEPENDENT_AUDIT: the PR remains a draft, is not marked ready, and no ADR disposition changes.",
-      "Repairing MUST_FIX 1 requires re-freezing the coverage denominator, which supersedes the freeze recorded at a9397e5630577ac5a2b0c8f89ad7d62d8ff7b296. That is an operator decision, not a producer patch.",
-      "The audit prompt names content head 8a9b0ee53c while the audit ran against 7955ef33d7 (the A21 fix landed after the prompt was written). The auditor detected this itself and verified the real head. The prompt was not rewritten, because editing it to name a head it did not name would falsify custody."
+      "The native embedded-audit lane cannot represent the auditor that actually ran. auditor_tool and auditor_model carry the schema's fallback values; they are not a claim that no audit occurred. The audit ran, returned PASS with zero blockers and zero must-fix, and its verbatim report is at proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/AUDITOR_REPAIR_2_REPORT.md.",
+      "Because of that representation gap, validate_change_contract.py and pre-commit still fail. A PASS from the independent audit does not turn them green: they fail for a schema-representation cause, not for anything about the contract evidence. Repairing that schema is out of lane per packet section 1.",
+      "Residual, confirmed by the producer and documented in the validator header before the audit ran: with FROZEN_INVENTORY_SHA256 and the supersession receipt both rewritten, clause booleans that no Group S pin covers can be flipped while the validator exits 0. A consistent bilateral edit with the pin left alone fails at A09, which is the false-green round 1 found. A checker cannot defend its own constants.",
+      "The census worksheet labels 25 clauses UNCHANGED that the computed supersession record lists as modified. All 25 are rule_type renames under the new taxonomy with byte-identical machine values. The receipt is authoritative; see AUDIT_R2_RESIDUALS.json.",
+      "The operator ruling is bound to this freeze by presence and by naming the superseded inventory hash, not by a content hash linking the ruling to the new inventory bytes. The ruling predates those bytes, so that binding cannot exist."
     ],
-    "skip_reason": "GROK_AUDIT_VALID_SCHEMA_REPRESENTATION_UNSUPPORTED. The substantive independent audit was executed by the grok CLI 1.0.0 in a throwaway detached worktree at the audited head, session 019ff54e-59b1-7a12-bc2a-1cc88f3e3189, and returned FAIL with 3 blockers and 5 must-fix. schemas/proof/embedded_audit.schema.json enumerates auditor_tool as [agy, antigravity, claude-code-cli, copilot-cli, gemini-cli, pal-mcp-clink, none] and auditor_model as [sonnet, claude-sonnet-4.6, opus, gemini, gemini-3.1-pro-high, unknown]; neither can name this runner. The fallback values are recorded rather than fabricating a representable identity. status=FAIL is the true verdict and is representable. See AUDITOR_REPORT.md and AUDIT_PROMPT_CUSTODY.json, which also records three audit routes that failed before this one."
+    "skip_reason": null
   },
-  "embedded_audit_lane_note": "This block records the ROUND 1 audit of head 7955ef33d7, carried forward unchanged because it is the last embedded audit that actually ran. independent_audit.round_2 is PENDING. It is replaced in the successor commit once the round-2 audit has run.",
+  "embedded_audit_lane_note": "Records the round-2 independent audit of the frozen content head.",
   "embedded_audit_representation_gap": {
     "cause": "schemas/proof/embedded_audit.schema.json is strictly binary: SKIPPED forces auditor_tool 'none' and auditor_model 'unknown', and any other status forbids both. Its enums cannot name the auditor that actually ran.",
     "refused": [
@@ -206,6 +151,7 @@
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/CONTRACT_COVERAGE_RECEIPT.json",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/DENOMINATOR_CENSUS_WORKSHEET.json",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/DENOMINATOR_REFREEZE_RECEIPT.json",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/FALSE_GREEN_MATRIX.json",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/FO01_RECONCILIATION_RECEIPT.json",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/HANDOFF.md",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/PROOF.json",
@@ -213,7 +159,11 @@
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/clause_table.py",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/gen_c0.py",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/gen_contracts.py",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/gen_contracts2.py",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/gen_false_green.py",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/gen_proof.py",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/gen_proof2.py",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/gen_receipts2.py",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/gen_s1_s2.py",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/operator_ruling.txt",
     "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/sb_census.py",
@@ -242,23 +192,27 @@
     "task-packets/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001.json",
     "tests/governance/test_second_brain_adr_contracts.py"
   ],
-  "changed_path_count": 46,
+  "changed_path_count": 51,
   "allowlist_conformance": "Every changed path lies inside the packet §11 mutation allowlist.",
   "artifact_sha256": {
     "ADR_CLAUSE_INVENTORY.json": "b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439",
+    "AUDITOR_REPAIR_2_REPORT.md": "90746444772f72c92cac031a8ca108ca51fedcf5862dfa2e288307c356bd31fd",
     "AUDITOR_REPORT.md": "ec52c250af995d115827725cbc667cd01f155cde43016f03ecbdd45ce5c89e05",
     "AUDIT_PROMPT.md": "090cdea2702a531763488b10f2f583c2e9bd7a5b339186c11d58c07e68501baf",
     "AUDIT_PROMPT_CUSTODY.json": "4053be60a0f358fd4e58d1b8aae3c9eafe9030d3801609d5d3add9c272a6ea7a",
+    "AUDIT_PROMPT_CUSTODY_R2.json": "e4d017dce9c9cb3025875992c2f5ca37ff1ce4d3b669723a713d5f55e62dc712",
+    "AUDIT_PROMPT_R2.md": "2b54d5b5c4e1e68b404dd43db3546b9915605592e1b8d7268db54ad6fb7201d4",
+    "AUDIT_R2_RESIDUALS.json": "5ad7782cda73d12ee5ab4ab5c49be4e9e8b55fcd0f447345db62e04e939e42fa",
     "BASELINE_CONTRACT_INVENTORY.json": "1428a89983114ca3aec6134de6aa83b8962deb0517419eef71600e276f5e5650",
-    "C1_CONTENT_HEAD.txt": "b256bcd3d14dcfc6278a9b11ef52a43093a60d1f75ac06562aa1b33b3c024be7",
+    "C1_CONTENT_HEAD.txt": "e7435cf37571f5bd2dedbb44cffc40b32549f7dc6f37d48c80cad0935626f503",
     "COMMAND_LOG.md": "82541dd9f309c49fe00a257a9b74d118cf7a96d38b9a705c873b0ccb3af0a889",
     "CONTRACT_COVERAGE_RECEIPT.json": "b39954098e09f12fbf97197d7eadcba1f40dc376cd8b10c571aa7dc633a919e3",
     "DENOMINATOR_CENSUS_WORKSHEET.json": "bc4157808577d3770d788b5cc0356297a9f0ece97d077441447383a05cbfa339",
     "DENOMINATOR_REFREEZE_RECEIPT.json": "8f75a967a1e10fb794817c050f1e8a284c247bf25aeca67e786ef3eec845098c",
     "FALSE_GREEN_MATRIX.json": "3df44d55377b2d245ee4499888ba31b655cb58edd629278e2221e3b8ba49bd11",
     "FO01_RECONCILIATION_RECEIPT.json": "1a61d97a2ae17999efbff96d0d3243c9a4c53c7dada55209fcb5cd2f538a558b",
-    "HANDOFF.md": "40dd9132ac790f7b0f9d385a3e5d33e402a9de5f4c5cc6ff0421560cfdf13d55",
-    "VALIDATION.json": "8c7399c8b9d5e127b4d975900850ff914a6341353390fe3dfa54e7ab3919cd0f"
+    "HANDOFF.md": "a3f84fb3a3d2caa040210f9e4a9e28133a660d95e31abe8a5521c3b7d4b1893d",
+    "VALIDATION.json": "b8c95b6e60914b9d2901631ac9c4e73f2a5be693deb7136d22423ecca5e3171e"
   },
   "contract_sha256": {
     "ADR-SB-001.contract.json": "257679d68d5b1ae914da0b4dc326e039759c7372ccbca2b26b7cd48154c49eab",

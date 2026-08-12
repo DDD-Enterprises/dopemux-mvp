@@ -60,8 +60,13 @@ def build_round2_embedded_audit(args) -> dict:
         "auditor_model": "unknown",
         "invocation": args.invocation,
         "exit_code": args.exit_code,
+        # The schema's report_path pattern accepts AUDITOR_REPORT.md and the
+        # AUDITOR_REPAIR[_n]_REPORT.md forms. Round 1 keeps AUDITOR_REPORT.md
+        # unedited, so round 2 takes a name the pattern already allows rather
+        # than introducing a second schema failure alongside the known one.
         "report_path": (
-            "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/AUDITOR_REPORT.md"
+            "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/"
+            "AUDITOR_REPAIR_2_REPORT.md"
         ),
         "findings": json.loads(Path(args.findings_json).read_text())
         if args.findings_json else [],
@@ -235,8 +240,9 @@ def main() -> int:
                 "blockers": args.audit_blockers,
                 "must_fix": args.audit_must_fix,
                 "audited_head": args.head,
-                "report": "AUDITOR_REPORT_R2.md",
+                "report": "AUDITOR_REPAIR_2_REPORT.md",
                 "prompt": "AUDIT_PROMPT_R2.md",
+                "residuals": "AUDIT_R2_RESIDUALS.json",
                 "custody": "AUDIT_PROMPT_CUSTODY_R2.json",
                 "requirement": "PASS with zero blockers and zero must-fix",
             },

@@ -10,7 +10,7 @@
     "change_contract_preflight": "FAIL",
     "diff_whitespace": "PASS (git diff --check clean, re-run at the round-2 tree)",
     "pre_commit": "FAIL (re-run on the round-2 changed slice; 1 hook of 1 applicable failed, proof-embedded-audit-schema, same single cause)",
-    "independent_audit": "FAIL",
+    "independent_audit": "PASS (round 2, frozen head 6e1b4472ba, 0 blockers, 0 must-fix)",
     "runtime_conformance": "NOT_RUN",
     "retrieval_benchmarks": "NOT_RUN",
     "purge_completeness": "NOT_RUN",
@@ -71,10 +71,22 @@
       "blockers": 3,
       "must_fix": 5,
       "audited_head": "7955ef33d7c0ab29daecbab966bc6a9497dc69ce",
-      "status": "HISTORICAL_CONTROLLING_EVIDENCE_DO_NOT_EDIT",
-      "report": "AUDITOR_REPORT.md"
+      "report": "AUDITOR_REPORT.md",
+      "status": "HISTORICAL_CONTROLLING_EVIDENCE_DO_NOT_EDIT"
     },
-    "round_2": "PENDING — run against the frozen round-2 content head"
+    "round_2": {
+      "verdict": "PASS",
+      "blockers": 0,
+      "must_fix": 0,
+      "audited_head": "6e1b4472ba626df2a5d7724e87c5ec77c9c46043",
+      "report": "AUDITOR_REPAIR_2_REPORT.md",
+      "prompt": "AUDIT_PROMPT_R2.md",
+      "custody": "AUDIT_PROMPT_CUSTODY_R2.json",
+      "residuals": "AUDIT_R2_RESIDUALS.json",
+      "residual_observations": 2,
+      "residuals_disputed": 0,
+      "requirement_met": "PASS with zero blockers and zero must-fix"
+    }
   },
   "embedded_audit_representation_gap": {
     "effect": "change-contract preflight and the pre-commit proof hook both FAIL",
@@ -88,5 +100,6 @@
   },
   "round": 2,
   "gate_results_are_fresh_round_2_observations": "change-contract and pre-commit were re-executed against the round-2 tree rather than carried forward from round 1. 'Still failing for the recorded reason' is an observation here, not an assumption.",
-  "skipped_hooks_note": "The pre-commit hooks reported as Skipped are scoped to docs/*.md and similar paths this slice does not touch; the skips are the hook config's file filters, not suppressed failures."
+  "skipped_hooks_note": "The pre-commit hooks reported as Skipped are scoped to docs/*.md and similar paths this slice does not touch; the skips are the hook config's file filters, not suppressed failures.",
+  "terminal_verdict": "READY_FOR_OPERATOR_CONTRACT_EVIDENCE_MERGE_DECISION"
 }

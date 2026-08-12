@@ -178,16 +178,44 @@ lane, so the gate is left failing and the representation gap is recorded instead
 green.** They fail for a schema-representation reason that has nothing to do with
 the contract evidence.
 
-## Recommended sequence from here
+## Status: READY_FOR_OPERATOR_CONTRACT_EVIDENCE_MERGE_DECISION
 
-1. Fresh independent audit of the frozen round-2 content head, requiring
-   `VERDICT=PASS`, `BLOCKERS=0`, `MUST_FIX=0`, explicitly attacking denominator
-   completeness, bilateral mutation, closed-set shrinking and widening, invented
-   authority values, invented typed surface, label-only rules and the FO-01 lock.
-2. Only then Human Gate A, whose terminal state is
-   `READY_FOR_OPERATOR_CONTRACT_EVIDENCE_MERGE_DECISION`.
+The round-2 independent audit of frozen head `6e1b4472ba` returned **PASS, 0
+blockers, 0 must-fix**, which is the bar the operator set. It ran in a fresh
+read-only session in a throwaway detached worktree, with no producer
+conversation history, and it verified the freeze chain, the census, the closed
+sets, the Layer B grounding and the FO-01 lock from bytes and commands rather
+than from this document.
+
+Two residual observations were raised, neither a must-fix, both confirmed by the
+producer and recorded in `AUDIT_R2_RESIDUALS.json`:
+
+- The census worksheet labels 25 clauses `UNCHANGED` that the computed
+  supersession record lists as modified. All 25 are rule-type renames under the
+  new taxonomy with byte-identical machine values; the receipt is authoritative.
+  Not corrected in place, because editing audited content after the audit is the
+  recursion the post-C1 boundary exists to prevent.
+- With the validator's own pin and the supersession receipt both rewritten,
+  clause booleans that no Group S pin covers can be flipped while the validator
+  exits 0. This is the limit written into the validator header before the audit
+  ran. A consistent bilateral edit with the pin left alone still fails — that is
+  the false-green round 1 found, and it is closed.
+
+**This is not a merge.** It is the point at which the operator has a merge
+decision to make. Merge remains OPERATOR_ONLY, the PR stays a draft, and no ADR
+disposition changes.
+
+Two gates remain red for one cause, and a PASS does not change that: see the
+section above. Repairing the embedded-audit schema is out of lane.
+
+## What the operator is being asked for
+
+A merge decision on the contract evidence, and nothing else. Merging this does
+not accept an ADR, does not authorize implementation, and does not open the
+acceptance gate — the other acceptance conditions are still outstanding and
+`adr_acceptance_authorized` remains `false`.
 
 Phase B (post-merge MA-08, fresh acceptance-integrity audit, operator worksheet) is
-unreachable from here and is not started. Opening a PR does not begin it.
+not started and does not begin by merging.
 
 Prior DEFER dispositions stand. Only the operator fills ACCEPT / DEFER / REJECT.
