@@ -147,3 +147,155 @@ async def test_mandatory_reachable_with_all_globs_passes(tmp_path):
     assert passed is True
     assert gate.report["status"] == "PASS"
     assert gate.report["warnings"] == []
+
+
+# --- DMX-W1-04-F019: transport reachability is not proof of required capability ---
+#
+# Previously, a "transport active, handshake required" discovery warning caused the
+# gate to silently skip required-glob validation entirely, so a mandatory service
+# with zero proven matching tools could still reach PASS. These cases lock in the
+# corrected invariant: an unproven required glob blocks for a mandatory service
+# regardless of *why* the tool list came back empty.
+
+
+@pytest.mark.asyncio
+async def test_g1_mandatory_handshake_zero_tools_blocks(tmp_path):
+    """Case G1: mandatory + required glob + handshake-required + zero tools -> BLOCK."""
+    gate = _make_gate(
+        tmp_path,
+        servers={"repo": {"required_tool_globs": ["needed_*"]}},
+        provenance={"repo": "repo_profile"},
+        discovery_servers=[
+            {
+                "name": "repo",
+                "reachable": True,
+                "status": "ok",
+                "tools": [],
+                "warning": "transport active, handshake required",
+            }
+        ],
+    )
+    passed = await gate.run()
+    assert passed is False
+    assert gate.report["status"] == "BLOCK"
+    assert "needed_*" in gate.report["missing_required_tools"].get("repo", [])
+
+
+@pytest.mark.asyncio
+async def test_g2_mandatory_handshake_partial_glob_match_blocks(tmp_path):
+    """Case G2: one glob matches, one doesn't -> BLOCK, missing glob recorded."""
+    gate = _make_gate(
+        tmp_path,
+        servers={"repo": {"required_tool_globs": ["needed_*", "other_*"]}},
+        provenance={"repo": "repo_profile"},
+        discovery_servers=[
+            {
+                "name": "repo",
+                "reachable": True,
+                "status": "ok",
+                "tools": ["needed_tool"],
+                "warning": "transport active, handshake required",
+            }
+        ],
+    )
+    passed = await gate.run()
+    assert passed is False
+    assert gate.report["status"] == "BLOCK"
+    assert gate.report["missing_required_tools"].get("repo") == ["other_*"]
+
+
+@pytest.mark.asyncio
+async def test_g4_mandatory_handshake_no_required_globs_passes(tmp_path):
+    """Case G4: mandatory + handshake required but no required_tool_globs -> PASS.
+
+    Transport reachability is sufficient here only because there is no
+    capability requirement to prove.
+    """
+    gate = _make_gate(
+        tmp_path,
+        servers={"repo": {"required_tool_globs": []}},
+        provenance={"repo": "repo_profile"},
+        discovery_servers=[
+            {
+                "name": "repo",
+                "reachable": True,
+                "status": "ok",
+                "tools": [],
+                "warning": "transport active, handshake required",
+            }
+        ],
+    )
+    passed = await gate.run()
+    assert passed is True
+    assert gate.report["status"] == "PASS"
+
+
+@pytest.mark.asyncio
+async def test_g5_optional_handshake_zero_tools_warns_but_passes_by_default(tmp_path):
+    """Case G5: optional + required glob + handshake + zero tools -> WARN, PASS by default."""
+    gate = _make_gate(
+        tmp_path,
+        servers={"opt": {"required_tool_globs": ["needed_*"]}},
+        provenance={"opt": "env_var"},
+        discovery_servers=[
+            {
+                "name": "opt",
+                "reachable": True,
+                "status": "ok",
+                "tools": [],
+                "warning": "transport active, handshake required",
+            }
+        ],
+    )
+    passed = await gate.run()
+    assert passed is True
+    assert gate.report["status"] == "PASS"
+    assert "needed_*" in gate.report["missing_required_tools"].get("opt", [])
+    assert any("opt" in w for w in gate.report["warnings"]), gate.report["warnings"]
+
+
+@pytest.mark.asyncio
+async def test_g6_optional_handshake_zero_tools_blocks_under_strict(tmp_path):
+    """Case G6: same as G5 but strict_optional=True -> BLOCK."""
+    gate = _make_gate(
+        tmp_path,
+        servers={"opt": {"required_tool_globs": ["needed_*"]}},
+        provenance={"opt": "env_var"},
+        discovery_servers=[
+            {
+                "name": "opt",
+                "reachable": True,
+                "status": "ok",
+                "tools": [],
+                "warning": "transport active, handshake required",
+            }
+        ],
+        strict_optional=True,
+    )
+    passed = await gate.run()
+    assert passed is False
+    assert gate.report["status"] == "BLOCK"
+
+
+@pytest.mark.asyncio
+async def test_r4_env_overridden_repo_profile_service_stays_mandatory(tmp_path):
+    """Case R4 (cross-seam): a repo-profile service whose URL is overridden by env
+    (per resolver F018 fix) still reports provenance=repo_profile, and the gate
+    must therefore still treat it as mandatory -- a missing required tool blocks."""
+    gate = _make_gate(
+        tmp_path,
+        servers={"conport": {"url": "http://env-url:4000", "required_tool_globs": ["needed_*"]}},
+        provenance={"conport": "repo_profile"},
+        discovery_servers=[
+            {
+                "name": "conport",
+                "reachable": True,
+                "status": "ok",
+                "tools": ["other_tool"],
+            }
+        ],
+    )
+    passed = await gate.run()
+    assert passed is False
+    assert gate.report["status"] == "BLOCK"
+    assert "needed_*" in gate.report["missing_required_tools"].get("conport", [])

@@ -1,0 +1,11 @@
+F019 reproduction, re-run against C1 (40783797fe30325766a2cb6f53aaa53254785712) with
+the identical script and setup as f019_pre_fix_repro.txt.
+
+$ python3 repro_f019.py
+passed: False
+status: BLOCK
+missing_required_tools: {'repo': ['needed_*']}
+F019 NOT PRESENT (blocked as expected)
+
+Result: the mandatory service with an unproven required glob now correctly BLOCKs,
+regardless of the handshake-required warning. F019 confirmed repaired.
