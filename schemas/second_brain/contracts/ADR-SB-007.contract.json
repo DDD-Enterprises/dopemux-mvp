@@ -1,0 +1,213 @@
+{
+  "$schema": "./adr-machine-contract.schema.json",
+  "contract_version": "1.0.0",
+  "adr_id": "ADR-SB-007",
+  "adr_title": "Forget, Purge, and Residual Verification",
+  "contract_kind": "ARCHITECTURE_DECISION_CONTRACT",
+  "candidate_document": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+  "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+  "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "adr_status_at_contract_authoring": "PROPOSED",
+  "sb_dec_references": [
+    "SB-DEC-019",
+    "SB-DEC-029"
+  ],
+  "required_artifacts": [],
+  "forbidden_authority_claims": [
+    "SECOND_BRAIN_AS_CANONICAL_DATABASE",
+    "SECOND_BRAIN_AS_FOURTH_AUTHORITY_PLANE",
+    "SECOND_BRAIN_PM_AUTHORITY",
+    "SECOND_BRAIN_WORKFLOW_AUTHORITY",
+    "DERIVED_READ_MODEL_AS_AUTHORITY"
+  ],
+  "implementation_deferred": [
+    "DENIAL_FIXTURES",
+    "RUNTIME_CONFORMANCE",
+    "RETRIEVAL_BENCHMARKS",
+    "PURGE_COMPLETENESS",
+    "MULTI_PROJECT_ISOLATION",
+    "SPLIT_BRAIN_PROOF",
+    "ENCRYPTION_IMPLEMENTATION"
+  ],
+  "runtime_claims_permitted": false,
+  "denial_fixtures": "NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE",
+  "authority_targets_permitted": [
+    "ConPort",
+    "Dope-Memory",
+    "Leantime",
+    "Task Orchestrator",
+    "dopeTask"
+  ],
+  "decision_clauses": [
+    {
+      "clause_id": "ADR-SB-007-C01",
+      "requirement_text": "Archive != Forget != Purge",
+      "subject": "second_brain.deletion.operations",
+      "rule_type": "ENUM",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "ARCHIVE",
+        "FORGET",
+        "PURGE"
+      ],
+      "source_fragments": [
+        "Model Archive, Forget, and Purge separately.",
+        "Hide-from-view, retrieval denial, logical tombstone, physical deletion, and backup expiry are different operations."
+      ],
+      "source_decision_text_hash": "4ba42b95e798014fbab8dce817e34ff47701b8284d423d671266fcc53126f2a0",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/0"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C02",
+      "requirement_text": "dependency graph",
+      "subject": "second_brain.purge.dependency_graph",
+      "rule_type": "REQUIRE",
+      "operator": "MUST_EXIST",
+      "machine_value": "PURGE_DEPENDENCY_GRAPH",
+      "source_fragments": [
+        "Build a dependency graph"
+      ],
+      "source_decision_text_hash": "3ed151c615059eff83f52cc9bb4c793fcafaf70ea0bd52a58e2933cb4c5cd399",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/1"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C03",
+      "requirement_text": "impact preview",
+      "subject": "second_brain.purge.impact_preview",
+      "rule_type": "REQUIRE",
+      "operator": "MUST_EXIST",
+      "machine_value": "PURGE_IMPACT_PREVIEW",
+      "source_fragments": [
+        "impact preview"
+      ],
+      "source_decision_text_hash": "411f9ad104fc1d60c5aec1c07e7443ed0c6e005d433961c6c9a6cefae6e4b6da",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/2"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C04",
+      "requirement_text": "explicit approval",
+      "subject": "second_brain.purge.approval",
+      "rule_type": "REQUIRE",
+      "operator": "EQUALS",
+      "machine_value": "EXPLICIT_OPERATOR_APPROVAL",
+      "source_fragments": [
+        "explicit approval"
+      ],
+      "source_decision_text_hash": "2245925ae91b853582e8aa56423396ef0357b6406f4ffc52d535ceb6535e3e4e",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/3"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C05",
+      "requirement_text": "per-surface receipts",
+      "subject": "second_brain.purge.receipts.granularity",
+      "rule_type": "REQUIRE",
+      "operator": "EQUALS",
+      "machine_value": "PER_SURFACE",
+      "source_fragments": [
+        "per-surface receipts"
+      ],
+      "source_decision_text_hash": "14aec2fadc32d0cf0e3c4142e9ef3a3f81943753e16285d4337157f18a632c27",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/4"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C06",
+      "requirement_text": "residual scan",
+      "subject": "second_brain.purge.residual_scan",
+      "rule_type": "REQUIRE",
+      "operator": "MUST_EXIST",
+      "machine_value": "RESIDUAL_SCAN",
+      "source_fragments": [
+        "residual scan"
+      ],
+      "source_decision_text_hash": "2e46c0e1f1d992d85c91440236655493de195c77dff1f77fd7cbb4fdff4df247",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/5"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C07",
+      "requirement_text": "searchable residual count must equal zero before success",
+      "subject": "second_brain.purge.searchable_residual_count",
+      "rule_type": "FAIL_CLOSED",
+      "operator": "EQUALS",
+      "machine_value": 0,
+      "source_fragments": [
+        "Searchable residual count must be zero before success."
+      ],
+      "source_decision_text_hash": "600c91d87e84b0fff00723040cbf922c44d18a25075c5dd5cd66ec8ab48ad485",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/6"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C08",
+      "requirement_text": "impossible physical deletion → tombstone/retrieval denial",
+      "subject": "second_brain.purge.physical_deletion_impossible.disposition",
+      "rule_type": "STATE_TRANSITION",
+      "operator": "EQUALS",
+      "machine_value": "EXPLICIT_TOMBSTONE_AND_RETRIEVAL_DENIAL",
+      "source_fragments": [
+        "Impossible physical deletion uses explicit tombstone/retrieval denial"
+      ],
+      "source_decision_text_hash": "fa0d041d157bde7f0351492794bf26bb02eb9fef22611ec1d43a506da569e69a",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/7"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C09",
+      "requirement_text": "backup expiry may remain pending",
+      "subject": "second_brain.purge.backup_expiry.state",
+      "rule_type": "LIFECYCLE",
+      "operator": "EQUALS",
+      "machine_value": "PENDING_BACKUP_EXPIRY",
+      "source_fragments": [
+        "and pending backup-expiry state"
+      ],
+      "source_decision_text_hash": "e40de2627b901cb90be31a285f48fb49ea2de34cf5d537912749f7266fb85d81",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/8"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C10",
+      "requirement_text": "irreversible steps require immediate confirmation",
+      "subject": "second_brain.purge.irreversible_step.confirmation",
+      "rule_type": "REQUIRE",
+      "operator": "EQUALS",
+      "machine_value": "IMMEDIATE",
+      "source_fragments": [
+        "Irreversible steps require immediate confirmation"
+      ],
+      "source_decision_text_hash": "603c78b9677120cfdd3c453c7787a4c38ec0148b7739c867fa7c1d55eec9e553",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/9"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C11",
+      "requirement_text": "derived representations participate",
+      "subject": "second_brain.purge.derived_representations.participate",
+      "rule_type": "REQUIRE",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "source_fragments": [
+        "Derived representations participate"
+      ],
+      "source_decision_text_hash": "acc9243105a7fe88f7ba4c22283343d6ead6dcaeb1d27943bb9341b4b3bebd84",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/10"
+      ]
+    }
+  ]
+}

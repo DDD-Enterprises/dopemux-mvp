@@ -1,0 +1,166 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/second_brain/contracts/open-loop-candidate.schema.json",
+  "title": "OpenLoopCandidate",
+  "description": "A detected, non-canonical attention marker. Per the ADR-SB-008 MA-06 PM-semantics firewall an open loop carries zero PM-semantic fields; `additionalProperties: false` is what makes that machine-enforceable rather than aspirational.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "candidate_id",
+    "project_id",
+    "detected_at",
+    "source_event_ref",
+    "loop_state",
+    "canonicality"
+  ],
+  "properties": {
+    "candidate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "detected_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_event_ref": {
+      "type": "string",
+      "description": "Pointer to the Dope-Memory event this was derived from."
+    },
+    "summary": {
+      "type": "string"
+    },
+    "loop_state": {
+      "enum": [
+        "open",
+        "closed",
+        "cancelled"
+      ],
+      "description": "Chronological loop lifecycle only. Deliberately NOT named `status`: workflow status is a PM semantic reserved to Leantime and Task Orchestrator."
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "due_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "x-semantics": "ADVISORY_DISPLAY_METADATA_ONLY",
+      "x-forbidden-behaviors": [
+        "SCHEDULING",
+        "ESCALATION",
+        "PRIORITY_DERIVATION",
+        "NOTIFICATION_TRIGGER"
+      ]
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "canonicality": {
+      "const": "NON_CANONICAL",
+      "description": "Second Brain artifacts are never canonical. Canonical writes target existing authorities only (ADR-SB-001)."
+    }
+  },
+  "x-forbidden-properties": [
+    "assignee",
+    "owner",
+    "ownership",
+    "priority",
+    "pm_priority",
+    "status",
+    "workflow_status",
+    "sprint",
+    "sprint_state",
+    "task_completion_state",
+    "completed",
+    "done",
+    "escalation",
+    "escalation_policy",
+    "scheduled_at",
+    "schedule",
+    "estimate",
+    "story_points"
+  ],
+  "x-machine-invariants": {
+    "ADR-SB-008-C01": {
+      "subject": "second_brain.open_loop_candidate",
+      "rule_type": "INTERFACE_REQUIREMENT",
+      "operator": "MUST_EXIST",
+      "machine_value": "OpenLoopCandidate",
+      "enforced_by": "#/properties"
+    },
+    "ADR-SB-008-C08": {
+      "subject": "second_brain.open_loop.field.assignee",
+      "rule_type": "FORBID",
+      "operator": "MUST_NOT_EXIST",
+      "machine_value": "assignee",
+      "enforced_by": "#/additionalProperties"
+    },
+    "ADR-SB-008-C09": {
+      "subject": "second_brain.open_loop.field.pm_priority",
+      "rule_type": "FORBID",
+      "operator": "MUST_NOT_EXIST",
+      "machine_value": "pm_priority",
+      "enforced_by": "#/additionalProperties"
+    },
+    "ADR-SB-008-C10": {
+      "subject": "second_brain.open_loop.field.workflow_status",
+      "rule_type": "FORBID",
+      "operator": "MUST_NOT_EXIST",
+      "machine_value": "workflow_status",
+      "enforced_by": "#/additionalProperties"
+    },
+    "ADR-SB-008-C11": {
+      "subject": "second_brain.open_loop.field.sprint_state",
+      "rule_type": "FORBID",
+      "operator": "MUST_NOT_EXIST",
+      "machine_value": "sprint_state",
+      "enforced_by": "#/additionalProperties"
+    },
+    "ADR-SB-008-C12": {
+      "subject": "second_brain.open_loop.field.ownership",
+      "rule_type": "FORBID",
+      "operator": "MUST_NOT_EXIST",
+      "machine_value": "ownership",
+      "enforced_by": "#/additionalProperties"
+    },
+    "ADR-SB-008-C13": {
+      "subject": "second_brain.open_loop.due_driven_escalation",
+      "rule_type": "FORBID",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "enforced_by": "#/properties/due_at/x-forbidden-behaviors"
+    },
+    "ADR-SB-008-C14": {
+      "subject": "second_brain.open_loop.automatic_scheduling",
+      "rule_type": "FORBID",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "enforced_by": "#/properties/due_at/x-forbidden-behaviors"
+    },
+    "ADR-SB-008-C15": {
+      "subject": "second_brain.open_loop.field.task_completion_state",
+      "rule_type": "FORBID",
+      "operator": "MUST_NOT_EXIST",
+      "machine_value": "task_completion_state",
+      "enforced_by": "#/additionalProperties"
+    },
+    "ADR-SB-008-C16": {
+      "subject": "second_brain.open_loop.due_at.semantics",
+      "rule_type": "CONSTANT",
+      "operator": "EQUALS",
+      "machine_value": "ADVISORY_DISPLAY_METADATA_ONLY",
+      "enforced_by": "#/properties/due_at/x-semantics"
+    }
+  }
+}

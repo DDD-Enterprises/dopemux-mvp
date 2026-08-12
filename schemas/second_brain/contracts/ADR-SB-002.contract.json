@@ -1,0 +1,171 @@
+{
+  "$schema": "./adr-machine-contract.schema.json",
+  "contract_version": "1.0.0",
+  "adr_id": "ADR-SB-002",
+  "adr_title": "Capture, Candidate, Review, and Promotion",
+  "contract_kind": "ARCHITECTURE_DECISION_CONTRACT",
+  "candidate_document": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+  "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+  "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "adr_status_at_contract_authoring": "PROPOSED",
+  "sb_dec_references": [
+    "SB-DEC-003",
+    "SB-DEC-004",
+    "SB-DEC-005",
+    "SB-DEC-006"
+  ],
+  "required_artifacts": [],
+  "forbidden_authority_claims": [
+    "SECOND_BRAIN_AS_CANONICAL_DATABASE",
+    "SECOND_BRAIN_AS_FOURTH_AUTHORITY_PLANE",
+    "SECOND_BRAIN_PM_AUTHORITY",
+    "SECOND_BRAIN_WORKFLOW_AUTHORITY",
+    "DERIVED_READ_MODEL_AS_AUTHORITY"
+  ],
+  "implementation_deferred": [
+    "DENIAL_FIXTURES",
+    "RUNTIME_CONFORMANCE",
+    "RETRIEVAL_BENCHMARKS",
+    "PURGE_COMPLETENESS",
+    "MULTI_PROJECT_ISOLATION",
+    "SPLIT_BRAIN_PROOF",
+    "ENCRYPTION_IMPLEMENTATION"
+  ],
+  "runtime_claims_permitted": false,
+  "denial_fixtures": "NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE",
+  "authority_targets_permitted": [
+    "ConPort",
+    "Dope-Memory",
+    "Leantime",
+    "Task Orchestrator",
+    "dopeTask"
+  ],
+  "decision_clauses": [
+    {
+      "clause_id": "ADR-SB-002-C01",
+      "requirement_text": "captured events → Dope-Memory",
+      "subject": "second_brain.capture.captured_event.append_target",
+      "rule_type": "AUTHORITY_TARGET",
+      "operator": "EQUALS",
+      "machine_value": "Dope-Memory",
+      "source_fragments": [
+        "Append captured events and candidates to Dope-Memory"
+      ],
+      "source_decision_text_hash": "ee3909dedbe5cf99f8744deaef723ff9f9ecf3f1b12ddfb0f7ee2a7218c7a77f",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-002.contract.json#/decision_clauses/0"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-002-C02",
+      "requirement_text": "candidates → Dope-Memory",
+      "subject": "second_brain.capture.candidate.append_target",
+      "rule_type": "AUTHORITY_TARGET",
+      "operator": "EQUALS",
+      "machine_value": "Dope-Memory",
+      "source_fragments": [
+        "Append captured events and candidates to Dope-Memory"
+      ],
+      "source_decision_text_hash": "ee3909dedbe5cf99f8744deaef723ff9f9ecf3f1b12ddfb0f7ee2a7218c7a77f",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-002.contract.json#/decision_clauses/1"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-002-C03",
+      "requirement_text": "review read model = non-canonical",
+      "subject": "second_brain.review.read_model.canonicality",
+      "rule_type": "FORBID",
+      "operator": "NOT_EQUALS",
+      "machine_value": "CANONICAL",
+      "source_fragments": [
+        "build a non-canonical review read model"
+      ],
+      "source_decision_text_hash": "3b4089ba16c252a3f32eee7579369cb74a6270bb1e750cbbf8a56307e61ae404",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-002.contract.json#/decision_clauses/2"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-002-C04",
+      "requirement_text": "affirmative review is digest-bound",
+      "subject": "second_brain.review.affirmative.digest_binding",
+      "rule_type": "REQUIRE",
+      "operator": "MUST_EXIST",
+      "machine_value": "REVIEW_DIGEST_SHA256",
+      "source_fragments": [
+        "require digest-bound affirmative review"
+      ],
+      "source_decision_text_hash": "65347e6c0a63dd11061d0e8277cc52afc4e117b443478bd62c91e6f3edd7680a",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-002.contract.json#/decision_clauses/3"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-002-C05",
+      "requirement_text": "default = DEFER / NO MUTATION",
+      "subject": "second_brain.review.default_disposition",
+      "rule_type": "FAIL_CLOSED",
+      "operator": "DEFAULTS_TO",
+      "machine_value": "DEFER_NO_MUTATION",
+      "source_fragments": [
+        "Default DEFER/NO MUTATION"
+      ],
+      "source_decision_text_hash": "2f7a6b607a7fa9a23e59fbc2af99694e61aaa380615a3b4752123be1fc4ad38f",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-002.contract.json#/decision_clauses/4"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-002-C06",
+      "requirement_text": "approved action has exact canonical target",
+      "subject": "second_brain.promotion.approved_action.canonical_target",
+      "rule_type": "AUTHORITY_TARGET",
+      "operator": "IN",
+      "machine_value": [
+        "ConPort",
+        "Dope-Memory",
+        "Leantime",
+        "Task Orchestrator",
+        "dopeTask"
+      ],
+      "source_fragments": [
+        "route approved actions to exact canonical targets"
+      ],
+      "source_decision_text_hash": "1cf0fbaee867db3c9199d16a65e62d2bd6f30ac33bfc2494fb70bad510ab34f7",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-002.contract.json#/decision_clauses/5"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-002-C07",
+      "requirement_text": "promotion receipt → Dope-Memory",
+      "subject": "second_brain.promotion.receipt.append_target",
+      "rule_type": "AUTHORITY_TARGET",
+      "operator": "EQUALS",
+      "machine_value": "Dope-Memory",
+      "source_fragments": [
+        "append promotion receipts to Dope-Memory"
+      ],
+      "source_decision_text_hash": "568b203afe9ee564c6c6a3622fad54e0d8c826db48211e26c8bdbe20b41ae6cd",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-002.contract.json#/decision_clauses/6"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-002-C08",
+      "requirement_text": "no cross-authority transaction fiction",
+      "subject": "second_brain.promotion.cross_authority_transaction",
+      "rule_type": "FORBID",
+      "operator": "MUST_NOT_EXIST",
+      "machine_value": "CROSS_AUTHORITY_ATOMIC_TRANSACTION",
+      "source_fragments": [
+        "No cross-authority transaction fiction"
+      ],
+      "source_decision_text_hash": "b0b18bfd6650f6f5d6d33f6202b5de114208c524b085c8593484c4506df19375",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-002.contract.json#/decision_clauses/7"
+      ]
+    }
+  ]
+}

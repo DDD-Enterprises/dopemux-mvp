@@ -1,0 +1,183 @@
+{
+  "$schema": "./adr-machine-contract.schema.json",
+  "contract_version": "1.0.0",
+  "adr_id": "ADR-SB-009",
+  "adr_title": "Single-Project Safety and Identity Dependencies",
+  "contract_kind": "ARCHITECTURE_DECISION_CONTRACT",
+  "candidate_document": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+  "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+  "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "adr_status_at_contract_authoring": "PROPOSED",
+  "sb_dec_references": [
+    "SB-DEC-009",
+    "SB-DEC-013",
+    "SB-DEC-022",
+    "SB-DEC-024"
+  ],
+  "required_artifacts": [
+    "schemas/second_brain/contracts/project-identity-envelope.schema.json",
+    "schemas/second_brain/contracts/service-capability-receipt.schema.json"
+  ],
+  "forbidden_authority_claims": [
+    "SECOND_BRAIN_AS_CANONICAL_DATABASE",
+    "SECOND_BRAIN_AS_FOURTH_AUTHORITY_PLANE",
+    "SECOND_BRAIN_PM_AUTHORITY",
+    "SECOND_BRAIN_WORKFLOW_AUTHORITY",
+    "DERIVED_READ_MODEL_AS_AUTHORITY"
+  ],
+  "implementation_deferred": [
+    "DENIAL_FIXTURES",
+    "RUNTIME_CONFORMANCE",
+    "RETRIEVAL_BENCHMARKS",
+    "PURGE_COMPLETENESS",
+    "MULTI_PROJECT_ISOLATION",
+    "SPLIT_BRAIN_PROOF",
+    "ENCRYPTION_IMPLEMENTATION"
+  ],
+  "runtime_claims_permitted": false,
+  "denial_fixtures": "NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE",
+  "authority_targets_permitted": [
+    "ConPort",
+    "Dope-Memory",
+    "Leantime",
+    "Task Orchestrator",
+    "dopeTask"
+  ],
+  "decision_clauses": [
+    {
+      "clause_id": "ADR-SB-009-C01",
+      "requirement_text": "registry-backed project identity envelope",
+      "subject": "second_brain.project_identity_envelope",
+      "rule_type": "INTERFACE_REQUIREMENT",
+      "operator": "MUST_EXIST",
+      "machine_value": "ProjectIdentityEnvelope",
+      "source_fragments": [
+        "Require registry-backed identity envelopes"
+      ],
+      "source_decision_text_hash": "51fe2bd71a9a31fe77c69eea9f2a98e8d6149eed471a01ba0452fb4ff7512d33",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-009.contract.json#/decision_clauses/0",
+        "schemas/second_brain/contracts/project-identity-envelope.schema.json#/x-machine-invariants/ADR-SB-009-C01"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-009-C02",
+      "requirement_text": "current service capability receipt",
+      "subject": "second_brain.service_capability_receipt",
+      "rule_type": "INTERFACE_REQUIREMENT",
+      "operator": "MUST_EXIST",
+      "machine_value": "ServiceCapabilityReceipt",
+      "source_fragments": [
+        "current service capability receipts for authority operations"
+      ],
+      "source_decision_text_hash": "3bb6125365f51f1ac051c1104271fa4ce4fd82384138ee9769df6269a38261a0",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-009.contract.json#/decision_clauses/1",
+        "schemas/second_brain/contracts/service-capability-receipt.schema.json#/x-machine-invariants/ADR-SB-009-C02"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-009-C03",
+      "requirement_text": "one active automatic-capture project",
+      "subject": "second_brain.automatic_capture.active_project_count",
+      "rule_type": "MAXIMUM",
+      "operator": "LESS_THAN_OR_EQUAL",
+      "machine_value": 1,
+      "source_fragments": [
+        "Permit one active automatic-capture project"
+      ],
+      "source_decision_text_hash": "de1b12b9959e0db1c7f9d48787687ad7b2ef675e0ae5636636c4f88fb69fd53d",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-009.contract.json#/decision_clauses/2",
+        "schemas/second_brain/contracts/project-identity-envelope.schema.json#/x-machine-invariants/ADR-SB-009-C03"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-009-C04",
+      "requirement_text": "explicit project switching",
+      "subject": "second_brain.project_switch.mode",
+      "rule_type": "REQUIRE",
+      "operator": "EQUALS",
+      "machine_value": "EXPLICIT",
+      "source_fragments": [
+        "explicit project switching"
+      ],
+      "source_decision_text_hash": "e27f17e38291f848577f2d65e835bc3156faa334ddba31b5d2694d6b51f7680b",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-009.contract.json#/decision_clauses/3",
+        "schemas/second_brain/contracts/project-identity-envelope.schema.json#/x-machine-invariants/ADR-SB-009-C04"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-009-C05",
+      "requirement_text": "writer epoch",
+      "subject": "second_brain.writer_epoch",
+      "rule_type": "REQUIRE",
+      "operator": "MUST_EXIST",
+      "machine_value": "WRITER_EPOCH",
+      "source_fragments": [
+        "writer epochs"
+      ],
+      "source_decision_text_hash": "302a8be7089f5005f6463a11a80f73a1c6dc90d845633ac99083a79524e2249d",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-009.contract.json#/decision_clauses/4",
+        "schemas/second_brain/contracts/project-identity-envelope.schema.json#/x-machine-invariants/ADR-SB-009-C05"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-009-C06",
+      "requirement_text": "wrong-project denial",
+      "subject": "second_brain.write.wrong_project",
+      "rule_type": "FAIL_CLOSED",
+      "operator": "EQUALS",
+      "machine_value": "DENY",
+      "source_fragments": [
+        "and wrong-project denial"
+      ],
+      "source_decision_text_hash": "ae4497a66f44546de53009e7112f7974c394852ada664598c254e05b325314c5",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-009.contract.json#/decision_clauses/5",
+        "schemas/second_brain/contracts/project-identity-envelope.schema.json#/x-machine-invariants/ADR-SB-009-C06",
+        "schemas/second_brain/contracts/service-capability-receipt.schema.json#/x-machine-invariants/ADR-SB-009-C06"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-009-C07",
+      "requirement_text": "port/path/current-directory cannot establish write authority",
+      "subject": "second_brain.write_authority.rejected_identity_sources",
+      "rule_type": "FORBID",
+      "operator": "SUPERSET_OF",
+      "machine_value": [
+        "PORT",
+        "PATH_HASH",
+        "CURRENT_DIRECTORY",
+        "SINGLETON_EVENT_STREAM"
+      ],
+      "source_fragments": [
+        "Path hashes, ports, and singleton event streams cannot safely establish canonical project identity.",
+        "Implicit current-directory project selection for writes"
+      ],
+      "source_decision_text_hash": "72b6f4763162484a0724429a16d159497179dc04f15a05f49b825e14d8831482",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-009.contract.json#/decision_clauses/6",
+        "schemas/second_brain/contracts/project-identity-envelope.schema.json#/x-machine-invariants/ADR-SB-009-C07"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-009-C08",
+      "requirement_text": "multi-project background capture disabled until isolation proof",
+      "subject": "second_brain.multi_project_background_capture.enabled",
+      "rule_type": "CAPABILITY_GATE",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "source_fragments": [
+        "Multi-project background capture remains disabled until isolation proof."
+      ],
+      "source_decision_text_hash": "e48db7285070eb06d2fa2d74218f19a44157ef04f3af0094645bd9050b165f28",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-009.contract.json#/decision_clauses/7",
+        "schemas/second_brain/contracts/project-identity-envelope.schema.json#/x-machine-invariants/ADR-SB-009-C08"
+      ]
+    }
+  ]
+}

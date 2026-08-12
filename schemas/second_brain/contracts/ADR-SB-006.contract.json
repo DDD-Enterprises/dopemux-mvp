@@ -1,0 +1,276 @@
+{
+  "$schema": "./adr-machine-contract.schema.json",
+  "contract_version": "1.0.0",
+  "adr_id": "ADR-SB-006",
+  "adr_title": "Local Spool and Custody Interface",
+  "contract_kind": "ARCHITECTURE_DECISION_CONTRACT",
+  "candidate_document": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+  "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+  "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "adr_status_at_contract_authoring": "PROPOSED",
+  "sb_dec_references": [
+    "SB-DEC-014",
+    "SB-DEC-015"
+  ],
+  "required_artifacts": [
+    "schemas/second_brain/contracts/custody-port.contract.json",
+    "schemas/second_brain/contracts/local-spool-port.contract.json"
+  ],
+  "forbidden_authority_claims": [
+    "SECOND_BRAIN_AS_CANONICAL_DATABASE",
+    "SECOND_BRAIN_AS_FOURTH_AUTHORITY_PLANE",
+    "SECOND_BRAIN_PM_AUTHORITY",
+    "SECOND_BRAIN_WORKFLOW_AUTHORITY",
+    "DERIVED_READ_MODEL_AS_AUTHORITY"
+  ],
+  "implementation_deferred": [
+    "DENIAL_FIXTURES",
+    "RUNTIME_CONFORMANCE",
+    "RETRIEVAL_BENCHMARKS",
+    "PURGE_COMPLETENESS",
+    "MULTI_PROJECT_ISOLATION",
+    "SPLIT_BRAIN_PROOF",
+    "ENCRYPTION_IMPLEMENTATION"
+  ],
+  "runtime_claims_permitted": false,
+  "denial_fixtures": "NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE",
+  "authority_targets_permitted": [
+    "ConPort",
+    "Dope-Memory",
+    "Leantime",
+    "Task Orchestrator",
+    "dopeTask"
+  ],
+  "decision_clauses": [
+    {
+      "clause_id": "ADR-SB-006-C01",
+      "requirement_text": "LocalSpoolPort exists as a machine interface contract",
+      "subject": "second_brain.local_spool_port",
+      "rule_type": "INTERFACE_REQUIREMENT",
+      "operator": "MUST_EXIST",
+      "machine_value": "LocalSpoolPort",
+      "source_fragments": [
+        "Define `LocalSpoolPort` and `CustodyPort`."
+      ],
+      "source_decision_text_hash": "d49861a0f0bfecb388315617a345394f76bb88a72cd5735a258b61f0068453a0",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/0",
+        "schemas/second_brain/contracts/local-spool-port.contract.json#/invariants/ADR-SB-006-C01"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C02",
+      "requirement_text": "CustodyPort exists as a machine interface contract",
+      "subject": "second_brain.custody_port",
+      "rule_type": "INTERFACE_REQUIREMENT",
+      "operator": "MUST_EXIST",
+      "machine_value": "CustodyPort",
+      "source_fragments": [
+        "Define `LocalSpoolPort` and `CustodyPort`."
+      ],
+      "source_decision_text_hash": "d49861a0f0bfecb388315617a345394f76bb88a72cd5735a258b61f0068453a0",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/1",
+        "schemas/second_brain/contracts/custody-port.contract.json#/invariants/ADR-SB-006-C02"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C03",
+      "requirement_text": "spool record is non-canonical",
+      "subject": "second_brain.local_spool.record.canonicality",
+      "rule_type": "FORBID",
+      "operator": "NOT_EQUALS",
+      "machine_value": "CANONICAL",
+      "source_fragments": [
+        "Spool records are non-canonical"
+      ],
+      "source_decision_text_hash": "bd241bdb9fd80127e589f0bef6fb12af912e9efe96e64abd75d6f3e2af270931",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/2",
+        "schemas/second_brain/contracts/local-spool-port.contract.json#/invariants/ADR-SB-006-C03"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C04",
+      "requirement_text": "identity/domain/class scoped",
+      "subject": "second_brain.local_spool.record.scope_keys",
+      "rule_type": "REQUIRE",
+      "operator": "SUPERSET_OF",
+      "machine_value": [
+        "identity",
+        "domain",
+        "classification"
+      ],
+      "source_fragments": [
+        "identity/domain/class scoped"
+      ],
+      "source_decision_text_hash": "e1034b3833b4ac288614f81c210b922b6521c07c20bd869c3658f61f0fe38e68",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/3",
+        "schemas/second_brain/contracts/local-spool-port.contract.json#/invariants/ADR-SB-006-C04"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C05",
+      "requirement_text": "deterministic",
+      "subject": "second_brain.local_spool.record.determinism",
+      "rule_type": "REQUIRE",
+      "operator": "EQUALS",
+      "machine_value": "DETERMINISTIC",
+      "source_fragments": [
+        "deterministic"
+      ],
+      "source_decision_text_hash": "0badac3c6df445ad3aea62da1350683923aba37c685978afed96a515d12921a3",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/4",
+        "schemas/second_brain/contracts/local-spool-port.contract.json#/invariants/ADR-SB-006-C05"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C06",
+      "requirement_text": "integrity protected",
+      "subject": "second_brain.local_spool.record.integrity",
+      "rule_type": "REQUIRE",
+      "operator": "MUST_EXIST",
+      "machine_value": "INTEGRITY_DIGEST",
+      "source_fragments": [
+        "integrity-protected"
+      ],
+      "source_decision_text_hash": "d607cb930b0b41bec28e9d2baf64dab5c53199dc116e014dd712dd91cee9ffe6",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/5",
+        "schemas/second_brain/contracts/local-spool-port.contract.json#/invariants/ADR-SB-006-C06"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C07",
+      "requirement_text": "short-lived",
+      "subject": "second_brain.local_spool.record.retention",
+      "rule_type": "LIFECYCLE",
+      "operator": "EQUALS",
+      "machine_value": "SHORT_LIVED_BOUNDED_TTL",
+      "source_fragments": [
+        "short-lived"
+      ],
+      "source_decision_text_hash": "e63a3e594b0e0250c087d551fe9744f5141ad8145ae904dbcbe009139e00239c",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/6",
+        "schemas/second_brain/contracts/local-spool-port.contract.json#/invariants/ADR-SB-006-C07"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C08",
+      "requirement_text": "idempotently flushable",
+      "subject": "second_brain.local_spool.flush.idempotency",
+      "rule_type": "REQUIRE",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "source_fragments": [
+        "idempotently flushed"
+      ],
+      "source_decision_text_hash": "963e540a2453e2fb1fa80c4cf2cbe3ea0775c38952a5d59c754854896e901416",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/7",
+        "schemas/second_brain/contracts/local-spool-port.contract.json#/invariants/ADR-SB-006-C08"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C09",
+      "requirement_text": "purge aware",
+      "subject": "second_brain.local_spool.purge_participation",
+      "rule_type": "REQUIRE",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "source_fragments": [
+        "purge-aware"
+      ],
+      "source_decision_text_hash": "52a23adcb2b9f677408be4f854a378571999692a5edf3b221f34a0a4cdc49488",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/8",
+        "schemas/second_brain/contracts/local-spool-port.contract.json#/invariants/ADR-SB-006-C09"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C10",
+      "requirement_text": "never remotely backed up",
+      "subject": "second_brain.local_spool.remote_backup",
+      "rule_type": "FORBID",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "source_fragments": [
+        "never remote backed up"
+      ],
+      "source_decision_text_hash": "8b31f9e4acf64feee083e7edfd353298e016620473aa476010e9eac054bf1793",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/9",
+        "schemas/second_brain/contracts/local-spool-port.contract.json#/invariants/ADR-SB-006-C10",
+        "schemas/second_brain/contracts/custody-port.contract.json#/invariants/ADR-SB-006-C10"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C11",
+      "requirement_text": "public allowed",
+      "subject": "second_brain.local_spool.classification.public",
+      "rule_type": "CAPABILITY_GATE",
+      "operator": "EQUALS",
+      "machine_value": "ALLOWED",
+      "source_fragments": [
+        "Public is allowed"
+      ],
+      "source_decision_text_hash": "90b8f27cd4e8b068d4b68bdc81a80bb5c9dac6adb23105b0c0106b3433b91016",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/10",
+        "schemas/second_brain/contracts/local-spool-port.contract.json#/invariants/ADR-SB-006-C11"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C12",
+      "requirement_text": "internal requires OS-protected storage",
+      "subject": "second_brain.local_spool.classification.internal",
+      "rule_type": "CAPABILITY_GATE",
+      "operator": "EQUALS",
+      "machine_value": "ALLOWED_REQUIRES_OS_PROTECTED_STORAGE",
+      "source_fragments": [
+        "internal requires OS-protected storage"
+      ],
+      "source_decision_text_hash": "53c04d3cb13154cd652fd133b248049ab8cb349beeb613fbe813a7f442dde543",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/11",
+        "schemas/second_brain/contracts/local-spool-port.contract.json#/invariants/ADR-SB-006-C12"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C13",
+      "requirement_text": "confidential/restricted disabled until verified encryption/key ownership",
+      "subject": "second_brain.local_spool.classification.confidential_restricted",
+      "rule_type": "CAPABILITY_GATE",
+      "operator": "EQUALS",
+      "machine_value": "DISABLED_UNTIL_VERIFIED_ENCRYPTION_AND_KEY_OWNERSHIP",
+      "source_fragments": [
+        "confidential/restricted remain disabled until verified encryption and key ownership"
+      ],
+      "source_decision_text_hash": "3d6095781aa9dbfb4d6b95566554bea82831c315ac4100e11540d755a049c42b",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/12",
+        "schemas/second_brain/contracts/local-spool-port.contract.json#/invariants/ADR-SB-006-C13",
+        "schemas/second_brain/contracts/custody-port.contract.json#/invariants/ADR-SB-006-C13"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C14",
+      "requirement_text": "unknown class denied",
+      "subject": "second_brain.local_spool.classification.unknown",
+      "rule_type": "FAIL_CLOSED",
+      "operator": "EQUALS",
+      "machine_value": "DENY",
+      "source_fragments": [
+        "No unknown-class spooling"
+      ],
+      "source_decision_text_hash": "21bc46ff059b7c5b1144f2402d6767d00bbc53e6f89eb24cbe300b9fbadd72bb",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/13",
+        "schemas/second_brain/contracts/local-spool-port.contract.json#/invariants/ADR-SB-006-C14"
+      ]
+    }
+  ]
+}

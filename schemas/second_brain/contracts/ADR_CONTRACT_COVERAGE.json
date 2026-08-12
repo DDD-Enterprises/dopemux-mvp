@@ -1,0 +1,1194 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+  "purpose": "Maps every frozen §5 clause to the machine rule that expresses it. The denominator is ADR_CLAUSE_INVENTORY.json, frozen in an earlier commit and hash-bound below; this matrix cannot widen or narrow it.",
+  "candidate_document": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+  "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+  "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "clause_inventory": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/ADR_CLAUSE_INVENTORY.json",
+  "clause_inventory_sha256": "f073ca28802e6b140dd5789d5fad5839962635f7b287cac589ec704efc663288",
+  "adr_count": 10,
+  "clause_total": 97,
+  "coverage_status_counts": {
+    "COVERED": 97,
+    "NOT_APPLICABLE_PROVEN": 0,
+    "MISSING": 0,
+    "AMBIGUOUS": 0
+  },
+  "adr_contract_sha256": {
+    "ADR-SB-001": "b0af0c8caa9e737414f14630fa2b1be3770770452e83c05633adbf7303de2a8d",
+    "ADR-SB-002": "3a4547f0935e9cf8f9e2bb825054d3ea9f6bc6994d3dcd196bae2476b9c332a7",
+    "ADR-SB-003": "1d7b6e6c729e939993ace5f52504ecf32af8706a971926a36b905f8bfb8c4a07",
+    "ADR-SB-004": "f493b94fe8de1626042e6286c255b94afcc6792d8f6ef3fafab73480579a3a18",
+    "ADR-SB-005": "4c7e59e3d4b30ecd5f1445257e008876d0bcf3427d39bb241855912435cfee7d",
+    "ADR-SB-006": "5e47fd58f077c51fde8afa0886d182eb57f5f48c74ce302c59b7de1bf1664c95",
+    "ADR-SB-007": "e427b2103e2af2698cd33d3082da57a58e627451024c93b56268ad4696b3905f",
+    "ADR-SB-008": "8840c05d5c53af40a53b6cd6854df628aac64a8647030f78cf2b7a24b85cbe1f",
+    "ADR-SB-009": "8da8e76afcce91a9c5cb028bb93833176f1bd4983a7e79384874f0f33dd10573",
+    "ADR-SB-010": "fc422b396cff9c2760d96156da810a8d9cec3854aa75baa58602a5cfbea5ea64"
+  },
+  "entries": [
+    {
+      "adr_id": "ADR-SB-001",
+      "clause_id": "ADR-SB-001-C01",
+      "requirement_text": "Second Brain is an extension/control plane",
+      "source_text_hash": "a803caf7deb4466662b2e1f5191f510d9ee241829b33a28c59b2f75ac92366bf",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-001.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/0",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-001",
+      "clause_id": "ADR-SB-001-C02",
+      "requirement_text": "no canonical Second Brain database",
+      "source_text_hash": "139ade5f2e3e6470c846fac46a5eedfd64abae929df012a274172969d04edfae",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-001.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/1",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-001",
+      "clause_id": "ADR-SB-001-C03",
+      "requirement_text": "canonical writes target existing authorities",
+      "source_text_hash": "7be94a9c380106b1905423acf0bf41d74a629e7f13f5142a226dad914bcfdad0",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-001.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/2",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-001",
+      "clause_id": "ADR-SB-001-C04",
+      "requirement_text": "derived read models are non-canonical",
+      "source_text_hash": "e4fd91a93042aea45cb41c49c2df650544c3cde2d3b65a456c5cd0a891edee4d",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-001.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/3",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-001",
+      "clause_id": "ADR-SB-001-C05",
+      "requirement_text": "projection/spool/purge coordination does not confer authority",
+      "source_text_hash": "610fb6209e5d5b11fcbf1b3ee297d0b079a0a9283aa761520ca10595b6f966f3",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-001.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/4",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-001",
+      "clause_id": "ADR-SB-001-C06",
+      "requirement_text": "extension can be disabled without canonical-store migration",
+      "source_text_hash": "5934ffc735e1f629386e8940e800cb216f79d72416360562e00cf89d81b89808",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-001.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/5",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C01",
+      "requirement_text": "captured events → Dope-Memory",
+      "source_text_hash": "ee3909dedbe5cf99f8744deaef723ff9f9ecf3f1b12ddfb0f7ee2a7218c7a77f",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-002.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/0",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C02",
+      "requirement_text": "candidates → Dope-Memory",
+      "source_text_hash": "ee3909dedbe5cf99f8744deaef723ff9f9ecf3f1b12ddfb0f7ee2a7218c7a77f",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-002.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/1",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C03",
+      "requirement_text": "review read model = non-canonical",
+      "source_text_hash": "3b4089ba16c252a3f32eee7579369cb74a6270bb1e750cbbf8a56307e61ae404",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-002.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/2",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C04",
+      "requirement_text": "affirmative review is digest-bound",
+      "source_text_hash": "65347e6c0a63dd11061d0e8277cc52afc4e117b443478bd62c91e6f3edd7680a",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-002.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/3",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C05",
+      "requirement_text": "default = DEFER / NO MUTATION",
+      "source_text_hash": "2f7a6b607a7fa9a23e59fbc2af99694e61aaa380615a3b4752123be1fc4ad38f",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-002.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/4",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C06",
+      "requirement_text": "approved action has exact canonical target",
+      "source_text_hash": "1cf0fbaee867db3c9199d16a65e62d2bd6f30ac33bfc2494fb70bad510ab34f7",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-002.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/5",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C07",
+      "requirement_text": "promotion receipt → Dope-Memory",
+      "source_text_hash": "568b203afe9ee564c6c6a3622fad54e0d8c826db48211e26c8bdbe20b41ae6cd",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-002.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/6",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C08",
+      "requirement_text": "no cross-authority transaction fiction",
+      "source_text_hash": "b0b18bfd6650f6f5d6d33f6202b5de114208c524b085c8593484c4506df19375",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-002.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/7",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C01",
+      "requirement_text": "authority-first fusion",
+      "source_text_hash": "f2083ef83b8145bc99c430b88dcbdc3b6678607e1d673dcacf6faa62e4ff7971",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-003.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/0",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C02",
+      "requirement_text": "policy filtering occurs before model context",
+      "source_text_hash": "184b28bf863b9e7029fe8206ccad3d869e2b30572101e644fc049892571cfcc2",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-003.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/1",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C03",
+      "requirement_text": "freshness represented",
+      "source_text_hash": "92a3f9c691dcb9fe671490e01155495161c5af599803c2a96058c63a65198a71",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-003.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/2",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C04",
+      "requirement_text": "contradictions represented",
+      "source_text_hash": "92a3f9c691dcb9fe671490e01155495161c5af599803c2a96058c63a65198a71",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-003.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/3",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C05",
+      "requirement_text": "advisory retrieval bounded and non-canonical",
+      "source_text_hash": "537c7e1eb93bac74a92d42c8504e6103a69b78d41b01dfad8c47bff183a6084a",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-003.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/4",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C06",
+      "requirement_text": "every response exposes evidence/access/uncertainty metadata",
+      "source_text_hash": "f8e76eb833edc29065f1e9ccaf783df7db4f254d0774eff1ae43e8b40617a7ef",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-003.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/5",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C07",
+      "requirement_text": "partial outage is explicit",
+      "source_text_hash": "200d0a048848891f3f9a02d8515c54d1266757e441149e5a0cdf67b589fab1d6",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-003.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/6",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C08",
+      "requirement_text": "search rank cannot become truth",
+      "source_text_hash": "091e57def5c400c5ce3c57caa1f81cbd7bdb79daa429b8928d5aa71726febfd1",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-003.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/7",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-004",
+      "clause_id": "ADR-SB-004-C01",
+      "requirement_text": "domain enum = project/hue/dom/shared",
+      "source_text_hash": "e55f175fbc876e89331c09ce3bf6c1ca8a869d7fce5d52893ded372ef4b359f7",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-004.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/0",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-004",
+      "clause_id": "ADR-SB-004-C02",
+      "requirement_text": "classification enum = public/internal/confidential/restricted",
+      "source_text_hash": "be7d727c4b65bb138fcc4979cf3a9dee5698b0dbf45039e4cc157b3d1715638f",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-004.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/1",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-004",
+      "clause_id": "ADR-SB-004-C03",
+      "requirement_text": "identity/grant/provider/embedding/custody/backup/operation eligibility evaluated pre-disclosure",
+      "source_text_hash": "a80763f9748e961dbdcdda3f6ea5984f72f3443024fdb82f1f052e7a21f20450",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-004.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/2",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-004",
+      "clause_id": "ADR-SB-004-C04",
+      "requirement_text": "UNKNOWN eligibility denies",
+      "source_text_hash": "b7483517172fe3352990a9f57cd4d8b28365c0d70565547545be96a3dcb096e1",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-004.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/3",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-004",
+      "clause_id": "ADR-SB-004-C05",
+      "requirement_text": "Dom real-data path disabled / synthetic-only",
+      "source_text_hash": "bf8ceecfb8850aae0051c6822bbd40d41b71e5b87c410b7baa6eb2ea543154d6",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-004.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/4",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-004",
+      "clause_id": "ADR-SB-004-C06",
+      "requirement_text": "shared requires grant",
+      "source_text_hash": "38b31f8927edb7793c8dcae00c348d4d34e3ba6df015f51c16ad0e9c1d62ecb1",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-004.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/5",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-004",
+      "clause_id": "ADR-SB-004-C07",
+      "requirement_text": "confidential/restricted semantic indexing disabled in v1",
+      "source_text_hash": "3d0bbf2ae75e3dbb148d1350a4defe5ce638baf1f40963d057bea21a6f8b63ca",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-004.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/6",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C01",
+      "requirement_text": "projection derives from canonical snapshot revision",
+      "source_text_hash": "cb955dd5d7bf66fc4bbb0effbc547f8d6fa20eaa8892648a04d58071c2421acd",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-005.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/0",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C02",
+      "requirement_text": "stable paths",
+      "source_text_hash": "8f67d587712d91449b1b857f50ec8586687883d6f695e44bc906742114e354f6",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-005.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/1",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C03",
+      "requirement_text": "managed/manual regions",
+      "source_text_hash": "b495dc8affd96957161fd8cd04050fc606b2aa18cd10130c0ae8f1601be2beb2",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-005.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/2",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C04",
+      "requirement_text": "visible freshness",
+      "source_text_hash": "9a6054492fcbaddbbd2592067280f7a308b976ad6ac0b8b9b748a42b0c734052",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-005.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/3",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C05",
+      "requirement_text": "content hash",
+      "source_text_hash": "16f3c5106768d94066315b9bf58a63d1fe12f6242ea5a0273e72f42587b3a074",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-005.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/4",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C06",
+      "requirement_text": "purge propagation",
+      "source_text_hash": "1456e9866a44b49a3660e6092cf6ad31f99f84a63d5c5e7b6eeebf27b372603d",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-005.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/5",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C07",
+      "requirement_text": "no silent write-back",
+      "source_text_hash": "ac8b9f41ba7f87342409c10e4fa8eed6b3c09cf2fa2c9da51ba4eaf67fede6fc",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-005.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/6",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C08",
+      "requirement_text": "canonical source wins",
+      "source_text_hash": "c9c5ff65c2a0a110aa4c8944f020e3672b5030a337d0ff893e1a274cf984c721",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-005.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/7",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C09",
+      "requirement_text": "Obsidian optional, never authority",
+      "source_text_hash": "2245d51047b3e3518f2dd18e1dc11ca9bdf7048bc2b8c63ff310b5fc72dd7ec3",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-005.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/8",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C01",
+      "requirement_text": "LocalSpoolPort exists as a machine interface contract",
+      "source_text_hash": "d49861a0f0bfecb388315617a345394f76bb88a72cd5735a258b61f0068453a0",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-006.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/0",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/local-spool-port.contract.json",
+          "contract_rule_pointer": "#/invariants/ADR-SB-006-C01"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C02",
+      "requirement_text": "CustodyPort exists as a machine interface contract",
+      "source_text_hash": "d49861a0f0bfecb388315617a345394f76bb88a72cd5735a258b61f0068453a0",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-006.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/1",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/custody-port.contract.json",
+          "contract_rule_pointer": "#/invariants/ADR-SB-006-C02"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C03",
+      "requirement_text": "spool record is non-canonical",
+      "source_text_hash": "bd241bdb9fd80127e589f0bef6fb12af912e9efe96e64abd75d6f3e2af270931",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-006.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/2",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/local-spool-port.contract.json",
+          "contract_rule_pointer": "#/invariants/ADR-SB-006-C03"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C04",
+      "requirement_text": "identity/domain/class scoped",
+      "source_text_hash": "e1034b3833b4ac288614f81c210b922b6521c07c20bd869c3658f61f0fe38e68",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-006.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/3",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/local-spool-port.contract.json",
+          "contract_rule_pointer": "#/invariants/ADR-SB-006-C04"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C05",
+      "requirement_text": "deterministic",
+      "source_text_hash": "0badac3c6df445ad3aea62da1350683923aba37c685978afed96a515d12921a3",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-006.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/4",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/local-spool-port.contract.json",
+          "contract_rule_pointer": "#/invariants/ADR-SB-006-C05"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C06",
+      "requirement_text": "integrity protected",
+      "source_text_hash": "d607cb930b0b41bec28e9d2baf64dab5c53199dc116e014dd712dd91cee9ffe6",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-006.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/5",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/local-spool-port.contract.json",
+          "contract_rule_pointer": "#/invariants/ADR-SB-006-C06"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C07",
+      "requirement_text": "short-lived",
+      "source_text_hash": "e63a3e594b0e0250c087d551fe9744f5141ad8145ae904dbcbe009139e00239c",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-006.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/6",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/local-spool-port.contract.json",
+          "contract_rule_pointer": "#/invariants/ADR-SB-006-C07"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C08",
+      "requirement_text": "idempotently flushable",
+      "source_text_hash": "963e540a2453e2fb1fa80c4cf2cbe3ea0775c38952a5d59c754854896e901416",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-006.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/7",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/local-spool-port.contract.json",
+          "contract_rule_pointer": "#/invariants/ADR-SB-006-C08"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C09",
+      "requirement_text": "purge aware",
+      "source_text_hash": "52a23adcb2b9f677408be4f854a378571999692a5edf3b221f34a0a4cdc49488",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-006.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/8",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/local-spool-port.contract.json",
+          "contract_rule_pointer": "#/invariants/ADR-SB-006-C09"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C10",
+      "requirement_text": "never remotely backed up",
+      "source_text_hash": "8b31f9e4acf64feee083e7edfd353298e016620473aa476010e9eac054bf1793",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-006.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/9",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/local-spool-port.contract.json",
+          "contract_rule_pointer": "#/invariants/ADR-SB-006-C10"
+        },
+        {
+          "contract_artifact": "schemas/second_brain/contracts/custody-port.contract.json",
+          "contract_rule_pointer": "#/invariants/ADR-SB-006-C10"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C11",
+      "requirement_text": "public allowed",
+      "source_text_hash": "90b8f27cd4e8b068d4b68bdc81a80bb5c9dac6adb23105b0c0106b3433b91016",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-006.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/10",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/local-spool-port.contract.json",
+          "contract_rule_pointer": "#/invariants/ADR-SB-006-C11"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C12",
+      "requirement_text": "internal requires OS-protected storage",
+      "source_text_hash": "53c04d3cb13154cd652fd133b248049ab8cb349beeb613fbe813a7f442dde543",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-006.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/11",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/local-spool-port.contract.json",
+          "contract_rule_pointer": "#/invariants/ADR-SB-006-C12"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C13",
+      "requirement_text": "confidential/restricted disabled until verified encryption/key ownership",
+      "source_text_hash": "3d6095781aa9dbfb4d6b95566554bea82831c315ac4100e11540d755a049c42b",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-006.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/12",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/local-spool-port.contract.json",
+          "contract_rule_pointer": "#/invariants/ADR-SB-006-C13"
+        },
+        {
+          "contract_artifact": "schemas/second_brain/contracts/custody-port.contract.json",
+          "contract_rule_pointer": "#/invariants/ADR-SB-006-C13"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C14",
+      "requirement_text": "unknown class denied",
+      "source_text_hash": "21bc46ff059b7c5b1144f2402d6767d00bbc53e6f89eb24cbe300b9fbadd72bb",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-006.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/13",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/local-spool-port.contract.json",
+          "contract_rule_pointer": "#/invariants/ADR-SB-006-C14"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C01",
+      "requirement_text": "Archive != Forget != Purge",
+      "source_text_hash": "4ba42b95e798014fbab8dce817e34ff47701b8284d423d671266fcc53126f2a0",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-007.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/0",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C02",
+      "requirement_text": "dependency graph",
+      "source_text_hash": "3ed151c615059eff83f52cc9bb4c793fcafaf70ea0bd52a58e2933cb4c5cd399",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-007.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/1",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C03",
+      "requirement_text": "impact preview",
+      "source_text_hash": "411f9ad104fc1d60c5aec1c07e7443ed0c6e005d433961c6c9a6cefae6e4b6da",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-007.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/2",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C04",
+      "requirement_text": "explicit approval",
+      "source_text_hash": "2245925ae91b853582e8aa56423396ef0357b6406f4ffc52d535ceb6535e3e4e",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-007.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/3",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C05",
+      "requirement_text": "per-surface receipts",
+      "source_text_hash": "14aec2fadc32d0cf0e3c4142e9ef3a3f81943753e16285d4337157f18a632c27",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-007.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/4",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C06",
+      "requirement_text": "residual scan",
+      "source_text_hash": "2e46c0e1f1d992d85c91440236655493de195c77dff1f77fd7cbb4fdff4df247",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-007.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/5",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C07",
+      "requirement_text": "searchable residual count must equal zero before success",
+      "source_text_hash": "600c91d87e84b0fff00723040cbf922c44d18a25075c5dd5cd66ec8ab48ad485",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-007.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/6",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C08",
+      "requirement_text": "impossible physical deletion → tombstone/retrieval denial",
+      "source_text_hash": "fa0d041d157bde7f0351492794bf26bb02eb9fef22611ec1d43a506da569e69a",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-007.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/7",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C09",
+      "requirement_text": "backup expiry may remain pending",
+      "source_text_hash": "e40de2627b901cb90be31a285f48fb49ea2de34cf5d537912749f7266fb85d81",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-007.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/8",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C10",
+      "requirement_text": "irreversible steps require immediate confirmation",
+      "source_text_hash": "603c78b9677120cfdd3c453c7787a4c38ec0148b7739c867fa7c1d55eec9e553",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-007.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/9",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C11",
+      "requirement_text": "derived representations participate",
+      "source_text_hash": "acc9243105a7fe88f7ba4c22283343d6ead6dcaeb1d27943bb9341b4b3bebd84",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-007.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/10",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C01",
+      "requirement_text": "OpenLoopCandidate exists as a machine data contract",
+      "source_text_hash": "cc348e883298d4e71f1282b50baa5f8e9008d07e32a9c241b8c61543bbec4f58",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-008.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/0",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/open-loop-candidate.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-008-C01"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C02",
+      "requirement_text": "TaskProposal exists as a separate machine data contract",
+      "source_text_hash": "21ff6fdfc17f0e77c00798bb179cdb885920ad53269d67584d404f7133c840bb",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-008.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/1",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/task-proposal.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-008-C02"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C03",
+      "requirement_text": "TaskPromotionRequest exists as a separate machine contract",
+      "source_text_hash": "dc0d478d556f0c756eec75994222c60c98a835e04d6c80f88ac9d2c1ba240ec2",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-008.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/2",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/task-promotion-request.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-008-C03"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C04",
+      "requirement_text": "confirmed open-loop events → Dope-Memory",
+      "source_text_hash": "54c72377b81533ce42c1d79c76d150aeb0a2af90a4c5ddd697c48fd1cd45286c",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-008.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/3",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C05",
+      "requirement_text": "active loop list = derived",
+      "source_text_hash": "4fadb0f4751ebbd483f1a0a412278a21601bb9c3fa08d60edc499f75b37784ba",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-008.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/4",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C06",
+      "requirement_text": "task mutation requires Leantime + Task Orchestrator proof + explicit approval",
+      "source_text_hash": "61d79d505a6d03796c963fd4c2631baa6a181be1af536b3949ebeda17b269892",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-008.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/5",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/task-promotion-request.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-008-C06"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C07",
+      "requirement_text": "task promotion initially disabled",
+      "source_text_hash": "1a2abd6b655b6e18a332d3c8149d826d5bcc6cc55ce411d5a75f060e3e476638",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-008.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/6",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/task-promotion-request.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-008-C07"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C08",
+      "requirement_text": "open loop has no assignee",
+      "source_text_hash": "9e239a5a756bb1ebf6ab906309464a713e34a5e6d3b9e3e06e9f51571d5f0403",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-008.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/7",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/open-loop-candidate.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-008-C08"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C09",
+      "requirement_text": "no PM priority",
+      "source_text_hash": "b36ee38d465877dd9c767a44223566ec69f01ec41617b2691d03dc460974a1ae",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-008.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/8",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/open-loop-candidate.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-008-C09"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C10",
+      "requirement_text": "no workflow status",
+      "source_text_hash": "523ba9f8e212f9d695f04a8422d5bbc42b45521be7d34e36da37ef9e1d2d6a7b",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-008.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/9",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/open-loop-candidate.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-008-C10"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C11",
+      "requirement_text": "no sprint state",
+      "source_text_hash": "7675db1f9222f9b92347186c0ec50ac5daf1a9e973b7dc9ee5bdd73917d0c3c2",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-008.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/10",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/open-loop-candidate.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-008-C11"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C12",
+      "requirement_text": "no ownership assignment",
+      "source_text_hash": "7f17165a5a501a33076f640990b8360ae848ef5b9a5d8be58138c6c5a297ed96",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-008.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/11",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/open-loop-candidate.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-008-C12"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C13",
+      "requirement_text": "no due-driven escalation",
+      "source_text_hash": "67f751161be8e856fb80f7245909e0eca7d0176d12eadec0c9f1f30ab53c7cd6",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-008.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/12",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/open-loop-candidate.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-008-C13"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C14",
+      "requirement_text": "no automatic scheduling",
+      "source_text_hash": "badddfcf700bfcc893e4db6113d22a9bd6e62d86aec713c83bd97785b5bd7303",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-008.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/13",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/open-loop-candidate.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-008-C14"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C15",
+      "requirement_text": "no task completion state",
+      "source_text_hash": "f3b674ff4d91bc0c4bedd757682c715cf5e2ff59775414ed1c2d802973104857",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-008.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/14",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/open-loop-candidate.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-008-C15"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C16",
+      "requirement_text": "due_at is display/advisory only",
+      "source_text_hash": "d71269fef6f1ce433265fece6e6ca75e0baca77462f9015f0e019f1494ab0331",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-008.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/15",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/open-loop-candidate.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-008-C16"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "clause_id": "ADR-SB-009-C01",
+      "requirement_text": "registry-backed project identity envelope",
+      "source_text_hash": "51fe2bd71a9a31fe77c69eea9f2a98e8d6149eed471a01ba0452fb4ff7512d33",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-009.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/0",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/project-identity-envelope.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-009-C01"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "clause_id": "ADR-SB-009-C02",
+      "requirement_text": "current service capability receipt",
+      "source_text_hash": "3bb6125365f51f1ac051c1104271fa4ce4fd82384138ee9769df6269a38261a0",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-009.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/1",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/service-capability-receipt.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-009-C02"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "clause_id": "ADR-SB-009-C03",
+      "requirement_text": "one active automatic-capture project",
+      "source_text_hash": "de1b12b9959e0db1c7f9d48787687ad7b2ef675e0ae5636636c4f88fb69fd53d",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-009.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/2",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/project-identity-envelope.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-009-C03"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "clause_id": "ADR-SB-009-C04",
+      "requirement_text": "explicit project switching",
+      "source_text_hash": "e27f17e38291f848577f2d65e835bc3156faa334ddba31b5d2694d6b51f7680b",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-009.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/3",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/project-identity-envelope.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-009-C04"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "clause_id": "ADR-SB-009-C05",
+      "requirement_text": "writer epoch",
+      "source_text_hash": "302a8be7089f5005f6463a11a80f73a1c6dc90d845633ac99083a79524e2249d",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-009.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/4",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/project-identity-envelope.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-009-C05"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "clause_id": "ADR-SB-009-C06",
+      "requirement_text": "wrong-project denial",
+      "source_text_hash": "ae4497a66f44546de53009e7112f7974c394852ada664598c254e05b325314c5",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-009.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/5",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/project-identity-envelope.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-009-C06"
+        },
+        {
+          "contract_artifact": "schemas/second_brain/contracts/service-capability-receipt.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-009-C06"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "clause_id": "ADR-SB-009-C07",
+      "requirement_text": "port/path/current-directory cannot establish write authority",
+      "source_text_hash": "72b6f4763162484a0724429a16d159497179dc04f15a05f49b825e14d8831482",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-009.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/6",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/project-identity-envelope.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-009-C07"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "clause_id": "ADR-SB-009-C08",
+      "requirement_text": "multi-project background capture disabled until isolation proof",
+      "source_text_hash": "e48db7285070eb06d2fa2d74218f19a44157ef04f3af0094645bd9050b165f28",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-009.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/7",
+      "coverage_status": "COVERED",
+      "additional_coverage": [
+        {
+          "contract_artifact": "schemas/second_brain/contracts/project-identity-envelope.schema.json",
+          "contract_rule_pointer": "#/x-machine-invariants/ADR-SB-009-C08"
+        }
+      ]
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C01",
+      "requirement_text": "operations = Capture / Recall / Review",
+      "source_text_hash": "21100637be3dea47e2ad00f07f41b6d551802cca3f5b182a5b20237315fe37c8",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-010.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/0",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C02",
+      "requirement_text": "one dominant next action",
+      "source_text_hash": "714e6a34c8942f09b21d6941f36ab16f564414efa32a6e7b97ee1019446f32b8",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-010.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/1",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C03",
+      "requirement_text": "visible queue maximum = 7",
+      "source_text_hash": "093dec80060e3f7a90a9c5ffb86cbbb2f0d6afc4a39c59ea424ee34dadad5cad",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-010.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/2",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C04",
+      "requirement_text": "answer-first recall",
+      "source_text_hash": "65c1d94f810ab384313814c5b60eee3da78812da3af5930b71c327b4ac1678da",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-010.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/3",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C05",
+      "requirement_text": "evidence one action away",
+      "source_text_hash": "2e4832ce27f4d38f2b617b7b7462106edcb2ee7e8d14ed51c8658b6a4a26d96f",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-010.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/4",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C06",
+      "requirement_text": "session-end batching",
+      "source_text_hash": "ffe760dd6c0bde0e8f0870270c917bc6ea29fd67650598d370e2aad25fc6ba13",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-010.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/5",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C07",
+      "requirement_text": "immediate interruption only for: privacy, identity, data-loss, irreversible-action, authority-conflict",
+      "source_text_hash": "5fd2c7cd06a76d29322e198dbdd67a71142074a8e9982058d9f7737eb0a05532",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-010.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/6",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C08",
+      "requirement_text": "consequential default = DEFER or CANCEL",
+      "source_text_hash": "5ff3992f3224d551e345c5cb9da86c6c27e3d3b2b203c15aae7f955b4b096d86",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-010.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/7",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C09",
+      "requirement_text": "no productivity scoring",
+      "source_text_hash": "9d4f5c9383ed374616cc26a42dc361d9a308980dbcb0eac812b7289cedc9b6ed",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-010.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/8",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C10",
+      "requirement_text": "no surprise writes",
+      "source_text_hash": "9d4f5c9383ed374616cc26a42dc361d9a308980dbcb0eac812b7289cedc9b6ed",
+      "contract_artifact": "schemas/second_brain/contracts/ADR-SB-010.contract.json",
+      "contract_rule_pointer": "#/decision_clauses/9",
+      "coverage_status": "COVERED",
+      "additional_coverage": []
+    }
+  ]
+}

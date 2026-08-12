@@ -1,0 +1,166 @@
+{
+  "$schema": "./adr-machine-contract.schema.json",
+  "contract_version": "1.0.0",
+  "adr_id": "ADR-SB-004",
+  "adr_title": "Domain, Classification, and Provider Policy",
+  "contract_kind": "ARCHITECTURE_DECISION_CONTRACT",
+  "candidate_document": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+  "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+  "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "adr_status_at_contract_authoring": "PROPOSED",
+  "sb_dec_references": [
+    "SB-DEC-010",
+    "SB-DEC-011",
+    "SB-DEC-012"
+  ],
+  "required_artifacts": [],
+  "forbidden_authority_claims": [
+    "SECOND_BRAIN_AS_CANONICAL_DATABASE",
+    "SECOND_BRAIN_AS_FOURTH_AUTHORITY_PLANE",
+    "SECOND_BRAIN_PM_AUTHORITY",
+    "SECOND_BRAIN_WORKFLOW_AUTHORITY",
+    "DERIVED_READ_MODEL_AS_AUTHORITY"
+  ],
+  "implementation_deferred": [
+    "DENIAL_FIXTURES",
+    "RUNTIME_CONFORMANCE",
+    "RETRIEVAL_BENCHMARKS",
+    "PURGE_COMPLETENESS",
+    "MULTI_PROJECT_ISOLATION",
+    "SPLIT_BRAIN_PROOF",
+    "ENCRYPTION_IMPLEMENTATION"
+  ],
+  "runtime_claims_permitted": false,
+  "denial_fixtures": "NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE",
+  "authority_targets_permitted": [
+    "ConPort",
+    "Dope-Memory",
+    "Leantime",
+    "Task Orchestrator",
+    "dopeTask"
+  ],
+  "decision_clauses": [
+    {
+      "clause_id": "ADR-SB-004-C01",
+      "requirement_text": "domain enum = project/hue/dom/shared",
+      "subject": "second_brain.policy.domain",
+      "rule_type": "ENUM",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "project",
+        "hue",
+        "dom",
+        "shared"
+      ],
+      "source_fragments": [
+        "Use project/hue/dom/shared"
+      ],
+      "source_decision_text_hash": "e55f175fbc876e89331c09ce3bf6c1ca8a869d7fce5d52893ded372ef4b359f7",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-004.contract.json#/decision_clauses/0"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-004-C02",
+      "requirement_text": "classification enum = public/internal/confidential/restricted",
+      "subject": "second_brain.policy.classification",
+      "rule_type": "ENUM",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "public",
+        "internal",
+        "confidential",
+        "restricted"
+      ],
+      "source_fragments": [
+        "and public/internal/confidential/restricted"
+      ],
+      "source_decision_text_hash": "be7d727c4b65bb138fcc4979cf3a9dee5698b0dbf45039e4cc157b3d1715638f",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-004.contract.json#/decision_clauses/1"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-004-C03",
+      "requirement_text": "identity/grant/provider/embedding/custody/backup/operation eligibility evaluated pre-disclosure",
+      "subject": "second_brain.policy.evaluation.stage",
+      "rule_type": "ORDERING",
+      "operator": "PRECEDES",
+      "machine_value": [
+        "POLICY_EVALUATION",
+        "RETRIEVAL_DISCLOSURE",
+        "MODEL_CONTEXT_ASSEMBLY"
+      ],
+      "source_fragments": [
+        "Evaluate identity, grants, provider, embedding, custody, backup, and operation policy before retrieval disclosure or model context assembly."
+      ],
+      "source_decision_text_hash": "a80763f9748e961dbdcdda3f6ea5984f72f3443024fdb82f1f052e7a21f20450",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-004.contract.json#/decision_clauses/2"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-004-C04",
+      "requirement_text": "UNKNOWN eligibility denies",
+      "subject": "second_brain.policy.eligibility.unknown",
+      "rule_type": "FAIL_CLOSED",
+      "operator": "EQUALS",
+      "machine_value": "DENY",
+      "source_fragments": [
+        "Unknown denies."
+      ],
+      "source_decision_text_hash": "b7483517172fe3352990a9f57cd4d8b28365c0d70565547545be96a3dcb096e1",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-004.contract.json#/decision_clauses/3"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-004-C05",
+      "requirement_text": "Dom real-data path disabled / synthetic-only",
+      "subject": "second_brain.policy.domain.dom.data_path",
+      "rule_type": "CAPABILITY_GATE",
+      "operator": "EQUALS",
+      "machine_value": "SYNTHETIC_ONLY",
+      "source_fragments": [
+        "Dom synthetic-only"
+      ],
+      "source_decision_text_hash": "bf8ceecfb8850aae0051c6822bbd40d41b71e5b87c410b7baa6eb2ea543154d6",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-004.contract.json#/decision_clauses/4"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-004-C06",
+      "requirement_text": "shared requires grant",
+      "subject": "second_brain.policy.domain.shared.requires_grant",
+      "rule_type": "REQUIRE",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "source_fragments": [
+        "Shared disabled without grant"
+      ],
+      "source_decision_text_hash": "38b31f8927edb7793c8dcae00c348d4d34e3ba6df015f51c16ad0e9c1d62ecb1",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-004.contract.json#/decision_clauses/5"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-004-C07",
+      "requirement_text": "confidential/restricted semantic indexing disabled in v1",
+      "subject": "second_brain.policy.semantic_indexing.enabled_classifications",
+      "rule_type": "CAPABILITY_GATE",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "public",
+        "internal"
+      ],
+      "source_fragments": [
+        "No confidential/restricted semantic indexing in v1"
+      ],
+      "source_decision_text_hash": "3d0bbf2ae75e3dbb148d1350a4defe5ce638baf1f40963d057bea21a6f8b63ca",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-004.contract.json#/decision_clauses/6"
+      ]
+    }
+  ]
+}

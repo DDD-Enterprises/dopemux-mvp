@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/second_brain/contracts/task-promotion-request.schema.json",
+  "title": "TaskPromotionRequest",
+  "description": "The only path by which a TaskProposal could ever become a real task (ADR-SB-008, Slice 6). `enabled` is const-pinned false: the disabled state is structural, not a default that a caller can override.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "request_id",
+    "task_proposal_ref",
+    "enabled",
+    "requested_at",
+    "target_authority",
+    "leantime_proof_ref",
+    "task_orchestrator_proof_ref",
+    "operator_approval",
+    "disposition"
+  ],
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_proposal_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "enabled": {
+      "const": false,
+      "default": false,
+      "description": "Task promotion is disabled initially (ADR-SB-008). Const, so no instance can enable it and no default can drift."
+    },
+    "requested_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "target_authority": {
+      "enum": [
+        "Leantime",
+        "Task Orchestrator"
+      ],
+      "description": "PM and workflow authority is never the Second Brain."
+    },
+    "leantime_proof_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_orchestrator_proof_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operator_approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "explicit",
+        "approved_digest_sha256"
+      ],
+      "properties": {
+        "explicit": {
+          "const": true
+        },
+        "approved_digest_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "disposition": {
+      "enum": [
+        "DENIED_PROMOTION_DISABLED"
+      ],
+      "default": "DENIED_PROMOTION_DISABLED",
+      "description": "Only terminal disposition available at this architecture revision. Enabling promotion is a separately authorized implementation-time gate."
+    }
+  },
+  "x-machine-invariants": {
+    "ADR-SB-008-C03": {
+      "subject": "second_brain.task_promotion_request",
+      "rule_type": "INTERFACE_REQUIREMENT",
+      "operator": "MUST_EXIST",
+      "machine_value": "TaskPromotionRequest",
+      "enforced_by": "#/properties"
+    },
+    "ADR-SB-008-C06": {
+      "subject": "second_brain.task_mutation.preconditions",
+      "rule_type": "CAPABILITY_GATE",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "LEANTIME_PROOF",
+        "TASK_ORCHESTRATOR_PROOF",
+        "EXPLICIT_OPERATOR_APPROVAL"
+      ],
+      "enforced_by": "#/required"
+    },
+    "ADR-SB-008-C07": {
+      "subject": "second_brain.task_promotion.enabled",
+      "rule_type": "CAPABILITY_GATE",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "enforced_by": "#/properties/enabled/const"
+    }
+  }
+}

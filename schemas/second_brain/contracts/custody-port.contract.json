@@ -1,0 +1,117 @@
+{
+  "$schema": "./interface-contract.schema.json",
+  "contract_version": "1.0.0",
+  "interface_id": "CustodyPort",
+  "interface_kind": "PORT",
+  "source_adr": "ADR-SB-006",
+  "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+  "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "implementation_status": "NOT_IMPLEMENTED",
+  "runtime_claims_permitted": false,
+  "denial_fixtures": "NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE",
+  "canonicality": "NON_CANONICAL",
+  "classification_matrix": {
+    "public": "REMOTE_BACKUP_FORBIDDEN_FOR_SPOOL_DERIVED_CONTENT",
+    "internal": "REMOTE_BACKUP_FORBIDDEN_FOR_SPOOL_DERIVED_CONTENT",
+    "confidential": "DISABLED_UNTIL_VERIFIED_ENCRYPTION_AND_KEY_OWNERSHIP",
+    "restricted": "DISABLED_UNTIL_VERIFIED_ENCRYPTION_AND_KEY_OWNERSHIP",
+    "unknown": "DENY"
+  },
+  "operations": [
+    {
+      "name": "put",
+      "summary": "Store content-addressed bytes; the address is the integrity claim.",
+      "inputs": [
+        "CustodyBlob"
+      ],
+      "outputs": [
+        "ContentAddress"
+      ],
+      "idempotent": true,
+      "fail_closed_on": [
+        "UNKNOWN_CLASSIFICATION",
+        "REMOTE_BACKUP_REQUESTED"
+      ]
+    },
+    {
+      "name": "verify_integrity",
+      "summary": "Recompute and compare the content address.",
+      "inputs": [
+        "ContentAddress"
+      ],
+      "outputs": [
+        "IntegrityVerdict"
+      ],
+      "idempotent": true,
+      "fail_closed_on": [
+        "DIGEST_MISMATCH",
+        "CONTENT_ABSENT"
+      ]
+    },
+    {
+      "name": "residual_scan",
+      "summary": "Count searchable residue for a purge subject across custody.",
+      "inputs": [
+        "PurgeSubjectRef"
+      ],
+      "outputs": [
+        "ResidualCount"
+      ],
+      "idempotent": true,
+      "fail_closed_on": [
+        "SCAN_INCOMPLETE"
+      ]
+    },
+    {
+      "name": "backup_eligibility",
+      "summary": "Decide whether content may leave local custody at all.",
+      "inputs": [
+        "Classification"
+      ],
+      "outputs": [
+        "EligibilityVerdict"
+      ],
+      "idempotent": true,
+      "fail_closed_on": [
+        "UNKNOWN_CLASSIFICATION"
+      ]
+    },
+    {
+      "name": "tombstone",
+      "summary": "Record explicit tombstone plus retrieval denial where physical deletion is impossible.",
+      "inputs": [
+        "ContentAddress"
+      ],
+      "outputs": [
+        "TombstoneReceipt"
+      ],
+      "idempotent": true,
+      "fail_closed_on": [
+        "RETRIEVAL_DENIAL_UNENFORCEABLE"
+      ]
+    }
+  ],
+  "invariants": {
+    "ADR-SB-006-C02": {
+      "subject": "second_brain.custody_port",
+      "rule_type": "INTERFACE_REQUIREMENT",
+      "operator": "MUST_EXIST",
+      "machine_value": "CustodyPort",
+      "enforced_by": "#/operations"
+    },
+    "ADR-SB-006-C10": {
+      "subject": "second_brain.local_spool.remote_backup",
+      "rule_type": "FORBID",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "enforced_by": "#/operations/3"
+    },
+    "ADR-SB-006-C13": {
+      "subject": "second_brain.local_spool.classification.confidential_restricted",
+      "rule_type": "CAPABILITY_GATE",
+      "operator": "EQUALS",
+      "machine_value": "DISABLED_UNTIL_VERIFIED_ENCRYPTION_AND_KEY_OWNERSHIP",
+      "enforced_by": "#/classification_matrix/restricted"
+    }
+  }
+}

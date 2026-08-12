@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/second_brain/contracts/task-proposal.schema.json",
+  "title": "TaskProposal",
+  "description": "A task-shaped suggestion held strictly separate from OpenLoopCandidate (ADR-SB-008). A proposal is not a task and confers no PM authority; it can only become one through TaskPromotionRequest, which is disabled.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "proposal_id",
+    "project_id",
+    "proposed_at",
+    "title",
+    "proposal_state",
+    "canonicality"
+  ],
+  "properties": {
+    "proposal_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "proposed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "derived_from_open_loop": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "proposal_state": {
+      "enum": [
+        "proposed",
+        "withdrawn",
+        "superseded"
+      ]
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "canonicality": {
+      "const": "NON_CANONICAL",
+      "description": "Second Brain artifacts are never canonical. Canonical writes target existing authorities only (ADR-SB-001)."
+    }
+  },
+  "x-forbidden-properties": [
+    "assignee",
+    "owner",
+    "priority",
+    "pm_priority",
+    "status",
+    "workflow_status",
+    "sprint",
+    "sprint_state",
+    "task_completion_state",
+    "completed",
+    "done",
+    "scheduled_at"
+  ],
+  "x-machine-invariants": {
+    "ADR-SB-008-C02": {
+      "subject": "second_brain.task_proposal",
+      "rule_type": "INTERFACE_REQUIREMENT",
+      "operator": "MUST_EXIST",
+      "machine_value": "TaskProposal",
+      "enforced_by": "#/properties"
+    }
+  }
+}

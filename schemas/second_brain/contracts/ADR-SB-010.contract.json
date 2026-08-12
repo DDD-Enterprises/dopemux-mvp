@@ -1,0 +1,209 @@
+{
+  "$schema": "./adr-machine-contract.schema.json",
+  "contract_version": "1.0.0",
+  "adr_id": "ADR-SB-010",
+  "adr_title": "UX Contract",
+  "contract_kind": "ARCHITECTURE_DECISION_CONTRACT",
+  "candidate_document": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+  "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+  "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "adr_status_at_contract_authoring": "PROPOSED",
+  "sb_dec_references": [
+    "SB-DEC-020",
+    "SB-DEC-021"
+  ],
+  "required_artifacts": [],
+  "forbidden_authority_claims": [
+    "SECOND_BRAIN_AS_CANONICAL_DATABASE",
+    "SECOND_BRAIN_AS_FOURTH_AUTHORITY_PLANE",
+    "SECOND_BRAIN_PM_AUTHORITY",
+    "SECOND_BRAIN_WORKFLOW_AUTHORITY",
+    "DERIVED_READ_MODEL_AS_AUTHORITY"
+  ],
+  "implementation_deferred": [
+    "DENIAL_FIXTURES",
+    "RUNTIME_CONFORMANCE",
+    "RETRIEVAL_BENCHMARKS",
+    "PURGE_COMPLETENESS",
+    "MULTI_PROJECT_ISOLATION",
+    "SPLIT_BRAIN_PROOF",
+    "ENCRYPTION_IMPLEMENTATION"
+  ],
+  "runtime_claims_permitted": false,
+  "denial_fixtures": "NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE",
+  "authority_targets_permitted": [
+    "ConPort",
+    "Dope-Memory",
+    "Leantime",
+    "Task Orchestrator",
+    "dopeTask"
+  ],
+  "decision_clauses": [
+    {
+      "clause_id": "ADR-SB-010-C01",
+      "requirement_text": "operations = Capture / Recall / Review",
+      "subject": "second_brain.ux.operations",
+      "rule_type": "ENUM",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "Capture",
+        "Recall",
+        "Review"
+      ],
+      "source_fragments": [
+        "Use Capture, Recall, Review"
+      ],
+      "source_decision_text_hash": "21100637be3dea47e2ad00f07f41b6d551802cca3f5b182a5b20237315fe37c8",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-010.contract.json#/decision_clauses/0"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-010-C02",
+      "requirement_text": "one dominant next action",
+      "subject": "second_brain.ux.dominant_next_action_count",
+      "rule_type": "MAXIMUM",
+      "operator": "LESS_THAN_OR_EQUAL",
+      "machine_value": 1,
+      "source_fragments": [
+        "one dominant next action"
+      ],
+      "source_decision_text_hash": "714e6a34c8942f09b21d6941f36ab16f564414efa32a6e7b97ee1019446f32b8",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-010.contract.json#/decision_clauses/1"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-010-C03",
+      "requirement_text": "visible queue maximum = 7",
+      "subject": "second_brain.ux.visible_queue_max",
+      "rule_type": "MAXIMUM",
+      "operator": "LESS_THAN_OR_EQUAL",
+      "machine_value": 7,
+      "source_fragments": [
+        "at most seven visible queue items"
+      ],
+      "source_decision_text_hash": "093dec80060e3f7a90a9c5ffb86cbbb2f0d6afc4a39c59ea424ee34dadad5cad",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-010.contract.json#/decision_clauses/2"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-010-C04",
+      "requirement_text": "answer-first recall",
+      "subject": "second_brain.ux.recall.presentation",
+      "rule_type": "ORDERING",
+      "operator": "PRECEDES",
+      "machine_value": [
+        "ANSWER",
+        "EVIDENCE"
+      ],
+      "source_fragments": [
+        "answer-first recall"
+      ],
+      "source_decision_text_hash": "65c1d94f810ab384313814c5b60eee3da78812da3af5930b71c327b4ac1678da",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-010.contract.json#/decision_clauses/3"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-010-C05",
+      "requirement_text": "evidence one action away",
+      "subject": "second_brain.ux.evidence.max_actions_away",
+      "rule_type": "MAXIMUM",
+      "operator": "LESS_THAN_OR_EQUAL",
+      "machine_value": 1,
+      "source_fragments": [
+        "evidence one action away"
+      ],
+      "source_decision_text_hash": "2e4832ce27f4d38f2b617b7b7462106edcb2ee7e8d14ed51c8658b6a4a26d96f",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-010.contract.json#/decision_clauses/4"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-010-C06",
+      "requirement_text": "session-end batching",
+      "subject": "second_brain.ux.notification.batching",
+      "rule_type": "REQUIRE",
+      "operator": "EQUALS",
+      "machine_value": "SESSION_END",
+      "source_fragments": [
+        "session-end batching"
+      ],
+      "source_decision_text_hash": "ffe760dd6c0bde0e8f0870270c917bc6ea29fd67650598d370e2aad25fc6ba13",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-010.contract.json#/decision_clauses/5"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-010-C07",
+      "requirement_text": "immediate interruption only for: privacy, identity, data-loss, irreversible-action, authority-conflict",
+      "subject": "second_brain.ux.immediate_interruption.allowed_conditions",
+      "rule_type": "ENUM",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "privacy",
+        "identity",
+        "data-loss",
+        "irreversible-action",
+        "authority-conflict"
+      ],
+      "source_fragments": [
+        "immediate interruption only for privacy, identity, data-loss, irreversible-action, or authority-conflict conditions"
+      ],
+      "source_decision_text_hash": "5fd2c7cd06a76d29322e198dbdd67a71142074a8e9982058d9f7737eb0a05532",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-010.contract.json#/decision_clauses/6"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-010-C08",
+      "requirement_text": "consequential default = DEFER or CANCEL",
+      "subject": "second_brain.ux.consequential_default",
+      "rule_type": "FAIL_CLOSED",
+      "operator": "IN",
+      "machine_value": [
+        "DEFER",
+        "CANCEL"
+      ],
+      "source_fragments": [
+        "Consequential defaults are DEFER or CANCEL."
+      ],
+      "source_decision_text_hash": "5ff3992f3224d551e345c5cb9da86c6c27e3d3b2b203c15aae7f955b4b096d86",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-010.contract.json#/decision_clauses/7"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-010-C09",
+      "requirement_text": "no productivity scoring",
+      "subject": "second_brain.ux.productivity_scoring",
+      "rule_type": "FORBID",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "source_fragments": [
+        "No productivity scoring or surprise writes"
+      ],
+      "source_decision_text_hash": "9d4f5c9383ed374616cc26a42dc361d9a308980dbcb0eac812b7289cedc9b6ed",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-010.contract.json#/decision_clauses/8"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-010-C10",
+      "requirement_text": "no surprise writes",
+      "subject": "second_brain.ux.surprise_writes",
+      "rule_type": "FORBID",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "source_fragments": [
+        "No productivity scoring or surprise writes"
+      ],
+      "source_decision_text_hash": "9d4f5c9383ed374616cc26a42dc361d9a308980dbcb0eac812b7289cedc9b6ed",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-010.contract.json#/decision_clauses/9"
+      ]
+    }
+  ]
+}

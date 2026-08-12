@@ -1,0 +1,174 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/second_brain/contracts/interface-contract.schema.json",
+  "title": "Second Brain interface (port) machine contract",
+  "description": "Machine-readable interface descriptor for a port named directly by a Second Brain ADR. Architecture-time only: describes the obligations of any future adapter without implementing one.",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "interface_id",
+    "interface_kind",
+    "source_adr",
+    "candidate_sha256",
+    "ratification_binding_sha256",
+    "implementation_status",
+    "runtime_claims_permitted",
+    "denial_fixtures",
+    "canonicality",
+    "operations",
+    "invariants"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "contract_version": {
+      "const": "1.0.0"
+    },
+    "interface_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "interface_kind": {
+      "enum": [
+        "PORT"
+      ]
+    },
+    "source_adr": {
+      "type": "string",
+      "pattern": "^ADR-SB-\\d{3}$"
+    },
+    "candidate_sha256": {
+      "const": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c"
+    },
+    "ratification_binding_sha256": {
+      "const": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34"
+    },
+    "implementation_status": {
+      "const": "NOT_IMPLEMENTED"
+    },
+    "runtime_claims_permitted": {
+      "const": false
+    },
+    "denial_fixtures": {
+      "const": "NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE"
+    },
+    "canonicality": {
+      "const": "NON_CANONICAL"
+    },
+    "classification_matrix": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "inputs",
+          "outputs",
+          "fail_closed_on"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "summary": {
+            "type": "string"
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "outputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "idempotent": {
+            "type": "boolean"
+          },
+          "fail_closed_on": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "invariants": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^ADR-SB-\\d{3}-C\\d{2}$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "subject",
+          "rule_type",
+          "operator",
+          "machine_value"
+        ],
+        "properties": {
+          "subject": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rule_type": {
+            "enum": [
+              "REQUIRE",
+              "FORBID",
+              "ENUM",
+              "CONSTANT",
+              "MAXIMUM",
+              "AUTHORITY_TARGET",
+              "FAIL_CLOSED",
+              "STATE_TRANSITION",
+              "LIFECYCLE",
+              "CAPABILITY_GATE",
+              "INTERFACE_REQUIREMENT",
+              "HASH_BINDING",
+              "ORDERING"
+            ]
+          },
+          "operator": {
+            "enum": [
+              "EQUALS",
+              "NOT_EQUALS",
+              "IN",
+              "NOT_IN",
+              "SET_EQUALS",
+              "SUPERSET_OF",
+              "LESS_THAN_OR_EQUAL",
+              "MUST_EXIST",
+              "MUST_NOT_EXIST",
+              "PRECEDES",
+              "DEFAULTS_TO"
+            ]
+          },
+          "machine_value": {},
+          "enforced_by": {
+            "type": "string",
+            "description": "JSON Pointer, within this same artifact, to the concrete structure that carries the rule."
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

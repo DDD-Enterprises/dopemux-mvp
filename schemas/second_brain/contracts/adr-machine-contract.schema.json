@@ -1,0 +1,196 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/second_brain/contracts/adr-machine-contract.schema.json",
+  "title": "Second Brain ADR machine contract",
+  "description": "Architecture-time machine contract for a single Second Brain ADR candidate. Satisfies amended acceptance condition #2 (\"Machine contracts required by this ADR MUST parse and cover the decision at ADR acceptance\"). Carries no implementation, runtime, or enablement authority.",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "adr_id",
+    "adr_title",
+    "contract_kind",
+    "candidate_document",
+    "candidate_sha256",
+    "ratification_binding_sha256",
+    "adr_status_at_contract_authoring",
+    "sb_dec_references",
+    "decision_clauses",
+    "required_artifacts",
+    "forbidden_authority_claims",
+    "implementation_deferred",
+    "runtime_claims_permitted",
+    "denial_fixtures"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "contract_version": {
+      "const": "1.0.0"
+    },
+    "adr_id": {
+      "pattern": "^ADR-SB-0(0[1-9]|10)$",
+      "type": "string"
+    },
+    "adr_title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "contract_kind": {
+      "const": "ARCHITECTURE_DECISION_CONTRACT"
+    },
+    "candidate_document": {
+      "const": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md"
+    },
+    "candidate_sha256": {
+      "const": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c"
+    },
+    "ratification_binding_sha256": {
+      "const": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34"
+    },
+    "adr_status_at_contract_authoring": {
+      "const": "PROPOSED"
+    },
+    "sb_dec_references": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^SB-DEC-\\d{3}$"
+      }
+    },
+    "required_artifacts": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^schemas/second_brain/contracts/"
+      }
+    },
+    "forbidden_authority_claims": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "implementation_deferred": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "runtime_claims_permitted": {
+      "const": false,
+      "description": "Structural, not conventional: a contract asserting runtime authority fails schema validation."
+    },
+    "denial_fixtures": {
+      "const": "NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE",
+      "description": "Denial fixtures are an implementation/enablement gate outside architecture-time contract evidence. No contract may claim they exist."
+    },
+    "authority_targets_permitted": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "ConPort",
+          "Dope-Memory",
+          "Leantime",
+          "Task Orchestrator",
+          "dopeTask"
+        ]
+      }
+    },
+    "decision_clauses": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "clause_id",
+          "requirement_text",
+          "subject",
+          "rule_type",
+          "operator",
+          "machine_value",
+          "source_fragments",
+          "source_decision_text_hash",
+          "covered_by"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "clause_id": {
+            "type": "string",
+            "pattern": "^ADR-SB-\\d{3}-C\\d{2}$"
+          },
+          "requirement_text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "subject": {
+            "type": "string",
+            "pattern": "^second_brain\\."
+          },
+          "rule_type": {
+            "enum": [
+              "REQUIRE",
+              "FORBID",
+              "ENUM",
+              "CONSTANT",
+              "MAXIMUM",
+              "AUTHORITY_TARGET",
+              "FAIL_CLOSED",
+              "STATE_TRANSITION",
+              "LIFECYCLE",
+              "CAPABILITY_GATE",
+              "INTERFACE_REQUIREMENT",
+              "HASH_BINDING",
+              "ORDERING"
+            ]
+          },
+          "operator": {
+            "enum": [
+              "EQUALS",
+              "NOT_EQUALS",
+              "IN",
+              "NOT_IN",
+              "SET_EQUALS",
+              "SUPERSET_OF",
+              "LESS_THAN_OR_EQUAL",
+              "MUST_EXIST",
+              "MUST_NOT_EXIST",
+              "PRECEDES",
+              "DEFAULTS_TO"
+            ]
+          },
+          "machine_value": {},
+          "source_fragments": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "source_decision_text_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "covered_by": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "#/"
+            }
+          }
+        }
+      }
+    }
+  }
+}

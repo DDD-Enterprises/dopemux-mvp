@@ -1,0 +1,175 @@
+{
+  "$schema": "./adr-machine-contract.schema.json",
+  "contract_version": "1.0.0",
+  "adr_id": "ADR-SB-003",
+  "adr_title": "Recall Fusion and Provenance",
+  "contract_kind": "ARCHITECTURE_DECISION_CONTRACT",
+  "candidate_document": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+  "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+  "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "adr_status_at_contract_authoring": "PROPOSED",
+  "sb_dec_references": [
+    "SB-DEC-016",
+    "SB-DEC-017"
+  ],
+  "required_artifacts": [],
+  "forbidden_authority_claims": [
+    "SECOND_BRAIN_AS_CANONICAL_DATABASE",
+    "SECOND_BRAIN_AS_FOURTH_AUTHORITY_PLANE",
+    "SECOND_BRAIN_PM_AUTHORITY",
+    "SECOND_BRAIN_WORKFLOW_AUTHORITY",
+    "DERIVED_READ_MODEL_AS_AUTHORITY"
+  ],
+  "implementation_deferred": [
+    "DENIAL_FIXTURES",
+    "RUNTIME_CONFORMANCE",
+    "RETRIEVAL_BENCHMARKS",
+    "PURGE_COMPLETENESS",
+    "MULTI_PROJECT_ISOLATION",
+    "SPLIT_BRAIN_PROOF",
+    "ENCRYPTION_IMPLEMENTATION"
+  ],
+  "runtime_claims_permitted": false,
+  "denial_fixtures": "NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE",
+  "authority_targets_permitted": [
+    "ConPort",
+    "Dope-Memory",
+    "Leantime",
+    "Task Orchestrator",
+    "dopeTask"
+  ],
+  "decision_clauses": [
+    {
+      "clause_id": "ADR-SB-003-C01",
+      "requirement_text": "authority-first fusion",
+      "subject": "second_brain.recall.fusion.order",
+      "rule_type": "ORDERING",
+      "operator": "PRECEDES",
+      "machine_value": [
+        "AUTHORITY",
+        "CHRONOLOGY",
+        "SOURCE_NATIVE",
+        "ADVISORY_RETRIEVAL"
+      ],
+      "source_fragments": [
+        "Use deterministic authority-first fusion"
+      ],
+      "source_decision_text_hash": "f2083ef83b8145bc99c430b88dcbdc3b6678607e1d673dcacf6faa62e4ff7971",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/0"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-003-C02",
+      "requirement_text": "policy filtering occurs before model context",
+      "subject": "second_brain.recall.policy_filter.stage",
+      "rule_type": "ORDERING",
+      "operator": "PRECEDES",
+      "machine_value": [
+        "POLICY_FILTER",
+        "MODEL_CONTEXT_ASSEMBLY"
+      ],
+      "source_fragments": [
+        "with pre-model policy filtering"
+      ],
+      "source_decision_text_hash": "184b28bf863b9e7029fe8206ccad3d869e2b30572101e644fc049892571cfcc2",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/1"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-003-C03",
+      "requirement_text": "freshness represented",
+      "subject": "second_brain.recall.response.freshness",
+      "rule_type": "REQUIRE",
+      "operator": "MUST_EXIST",
+      "machine_value": "FRESHNESS_METADATA",
+      "source_fragments": [
+        "freshness and contradiction detection"
+      ],
+      "source_decision_text_hash": "92a3f9c691dcb9fe671490e01155495161c5af599803c2a96058c63a65198a71",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/2"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-003-C04",
+      "requirement_text": "contradictions represented",
+      "subject": "second_brain.recall.response.contradictions",
+      "rule_type": "REQUIRE",
+      "operator": "MUST_EXIST",
+      "machine_value": "CONTRADICTION_SET",
+      "source_fragments": [
+        "freshness and contradiction detection"
+      ],
+      "source_decision_text_hash": "92a3f9c691dcb9fe671490e01155495161c5af599803c2a96058c63a65198a71",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/3"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-003-C05",
+      "requirement_text": "advisory retrieval bounded and non-canonical",
+      "subject": "second_brain.recall.advisory_retrieval.canonicality",
+      "rule_type": "FORBID",
+      "operator": "NOT_EQUALS",
+      "machine_value": "CANONICAL",
+      "source_fragments": [
+        "bounded advisory retrieval"
+      ],
+      "source_decision_text_hash": "537c7e1eb93bac74a92d42c8504e6103a69b78d41b01dfad8c47bff183a6084a",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/4"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-003-C06",
+      "requirement_text": "every response exposes evidence/access/uncertainty metadata",
+      "subject": "second_brain.recall.response.required_metadata",
+      "rule_type": "REQUIRE",
+      "operator": "SUPERSET_OF",
+      "machine_value": [
+        "evidence",
+        "access",
+        "uncertainty"
+      ],
+      "source_fragments": [
+        "evidence/access/uncertainty metadata on every response"
+      ],
+      "source_decision_text_hash": "f8e76eb833edc29065f1e9ccaf783df7db4f254d0774eff1ae43e8b40617a7ef",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/5"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-003-C07",
+      "requirement_text": "partial outage is explicit",
+      "subject": "second_brain.recall.partial_outage.disclosure",
+      "rule_type": "FAIL_CLOSED",
+      "operator": "EQUALS",
+      "machine_value": "EXPLICIT",
+      "source_fragments": [
+        "Partial outages are explicit"
+      ],
+      "source_decision_text_hash": "200d0a048848891f3f9a02d8515c54d1266757e441149e5a0cdf67b589fab1d6",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/6"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-003-C08",
+      "requirement_text": "search rank cannot become truth",
+      "subject": "second_brain.recall.search_rank.authority",
+      "rule_type": "FORBID",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "source_fragments": [
+        "without allowing search rank to become truth"
+      ],
+      "source_decision_text_hash": "091e57def5c400c5ce3c57caa1f81cbd7bdb79daa429b8928d5aa71726febfd1",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/7"
+      ]
+    }
+  ]
+}

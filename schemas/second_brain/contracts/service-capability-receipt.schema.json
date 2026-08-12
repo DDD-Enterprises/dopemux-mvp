@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/second_brain/contracts/service-capability-receipt.schema.json",
+  "title": "ServiceCapabilityReceipt",
+  "description": "Current capability receipt required before any authority operation (ADR-SB-009). Staleness and unknown capability both deny; a receipt is evidence of capability, never a grant of authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "receipt_id",
+    "service",
+    "project_id",
+    "resolved_identity",
+    "capabilities",
+    "issued_at",
+    "freshness_state",
+    "wrong_project_disposition",
+    "unknown_capability_disposition",
+    "canonicality"
+  ],
+  "properties": {
+    "receipt_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "service": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "resolved_identity": {
+      "type": "string",
+      "minLength": 1
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "freshness_state": {
+      "enum": [
+        "CURRENT",
+        "STALE"
+      ],
+      "description": "Only CURRENT may gate an authority operation."
+    },
+    "wrong_project_disposition": {
+      "const": "DENY"
+    },
+    "unknown_capability_disposition": {
+      "const": "DENY"
+    },
+    "canonicality": {
+      "const": "NON_CANONICAL",
+      "description": "Second Brain artifacts are never canonical. Canonical writes target existing authorities only (ADR-SB-001)."
+    }
+  },
+  "x-machine-invariants": {
+    "ADR-SB-009-C02": {
+      "subject": "second_brain.service_capability_receipt",
+      "rule_type": "INTERFACE_REQUIREMENT",
+      "operator": "MUST_EXIST",
+      "machine_value": "ServiceCapabilityReceipt",
+      "enforced_by": "#/properties/freshness_state"
+    },
+    "ADR-SB-009-C06": {
+      "subject": "second_brain.write.wrong_project",
+      "rule_type": "FAIL_CLOSED",
+      "operator": "EQUALS",
+      "machine_value": "DENY",
+      "enforced_by": "#/properties/wrong_project_disposition/const"
+    }
+  }
+}
