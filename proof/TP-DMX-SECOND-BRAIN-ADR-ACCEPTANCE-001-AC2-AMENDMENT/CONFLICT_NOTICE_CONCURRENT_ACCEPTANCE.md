@@ -27,11 +27,17 @@ It creates ten **accepted** ADRs at `docs/90-adr/adr-sb-001..010-*.md`
 ships a full proof bundle including `06_ADR_OPERATOR_DECISION_LEDGER.yaml`,
 `07_ADR_ACCEPTANCE_BINDING.json`, and `ADR_ACCEPTANCE_RECEIPT.json`.
 
-## Its provenance is genuine, not fabricated
+## Its provenance is `UNKNOWN` — unverifiable off-machine, not alleged fabricated
 
-`06_ADR_OPERATOR_DECISION_LEDGER.yaml` records:
+**Provenance status: `UNKNOWN`** (downgraded from `GENUINE` on operator direction after PR #1214
+review — see `SUPERSESSION_LINEAGE.md`).
+
+The ledger below was read from the producer's local worktree. Commit `19fa74faa9` is unpushed,
+so it cannot be resolved in any other checkout and no consumer can verify these values
+independently. They are recorded as **producer-machine observations, off-machine-unverifiable**:
 
 ```text
+06_ADR_OPERATOR_DECISION_LEDGER.yaml   (observed locally; not externally verifiable)
 authority: HUMAN_OPERATOR
 facilitator_authored_dispositions: false
 disposition_confirmed: true
@@ -42,8 +48,9 @@ blank_disposition_treated_as_accept: false
 sb_dec_026_adjudication.operator_choice: A_LEAVE_UNLINKED
 ```
 
-That is a real operator election, recorded with the correct discipline. This notice does **not**
-allege fabrication.
+This notice does **not** allege fabrication, and none was found. `UNKNOWN` marks the limit of
+externally verifiable evidence. Nothing in this notice depends on the election being verified:
+the conflict below is resolved by authority ordering (the later DEFER controls) regardless.
 
 ## Why it nevertheless conflicts
 
@@ -108,6 +115,11 @@ amended candidate with fresh operator dispositions. Full lineage: `SUPERSESSION_
    concurrent branch, keep the operator's existing "ACCEPT all ten" election, and re-verify the
    combined result independently before landing.
 
-Option 3 preserves both the genuine operator election and the amendment, at the cost of one
-re-verification pass. Option 1 is cleanest on authority ordering. This facilitator has no
+Option 3 preserves both the locally-observed operator election and the amendment, at the cost of
+one re-verification pass. Option 1 is cleanest on authority ordering. This facilitator has no
 authority to choose between them.
+
+> **Resolved:** the operator selected **Option 1 — honour the later DEFER**. See
+> `SUPERSESSION_LINEAGE.md`. Note that Options 2 and 3 would each have required relying on an
+> election whose provenance is now recorded as `UNKNOWN` (unverifiable off-machine); Option 1
+> does not.

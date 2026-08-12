@@ -113,7 +113,9 @@
   "superseded_acceptance_attempt": {
     "commit": "19fa74faa935dfcf86c41c2aaa40f4b257652756",
     "classification": "SUPERSEDED_PRE_AMENDMENT_ACCEPTANCE_ATTEMPT",
-    "operator_provenance": "GENUINE",
+    "operator_provenance": "UNKNOWN",
+    "operator_provenance_note": "Downgraded from GENUINE to UNKNOWN on operator direction after PR #1214 review. The commit is unpushed and exists only in the producer's local worktree, so no consumer of this repository can inspect the referenced operator ledger or independently verify the provenance claim. UNKNOWN records the limit of externally verifiable evidence; it is NOT an allegation of fabrication, and no fabrication was alleged or found. The claim was downgraded rather than substantiated because the operator directed that the superseded commit not be pushed or otherwise promoted.",
+    "operator_provenance_audit_note": "The independent Grok audits bound content head cc2f49ccad and therefore describe the pre-correction bytes, in which this field read GENUINE. Those auditor reports (AUDITOR_REPORT.md, AUDITOR_REPORT_AMENDMENT.md, AUDITOR_REPORT_PR1214.md) are preserved verbatim as historical audit records and were deliberately NOT edited to match this correction. Their observation was accurate as to the bytes they audited.",
     "authoritative": false,
     "pushed": false,
     "merged": false,

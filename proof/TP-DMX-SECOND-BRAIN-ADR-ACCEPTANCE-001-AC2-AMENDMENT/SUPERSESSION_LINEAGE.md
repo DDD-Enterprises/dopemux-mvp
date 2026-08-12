@@ -20,12 +20,36 @@ state:     UNPUSHED · NO PR · NOT ON MAIN
 
 ## Why it is superseded — and what is *not* being alleged
 
-Its operator provenance was **genuine**. Its
-`06_ADR_OPERATOR_DECISION_LEDGER.yaml` records `authority: HUMAN_OPERATOR`,
-`facilitator_authored_dispositions: false`, `silence_treated_as_accept: false`, an explicit
-operator election of "ACCEPT all ten" for ADR-SB-001..010, and
-`sb_dec_026_adjudication.operator_choice: A_LEAVE_UNLINKED`. No fabrication is alleged and none
-was found.
+Its operator provenance is recorded as **`UNKNOWN`** — downgraded from `GENUINE` on operator
+direction after PR #1214 review.
+
+```text
+operator_provenance: UNKNOWN
+```
+
+The reason is evidentiary reach, not suspicion. Everything below was read from the producer's
+local worktree, and commit `19fa74faa9` is unpushed — so `git cat-file -t 19fa74faa9…` fails in
+any other checkout, and no consumer of this repository can inspect the ledger or verify these
+observations independently. They are therefore recorded as **producer-machine observations,
+off-machine-unverifiable**, not as established fact:
+
+```text
+06_ADR_OPERATOR_DECISION_LEDGER.yaml   (observed locally; not externally verifiable)
+  authority:                            HUMAN_OPERATOR
+  facilitator_authored_dispositions:    false
+  silence_treated_as_accept:            false
+  operator election:                    "ACCEPT all ten" for ADR-SB-001..010
+  sb_dec_026_adjudication.operator_choice: A_LEAVE_UNLINKED
+committed: 2026-08-10T01:07:06Z         (observed locally; not externally verifiable)
+```
+
+The claim was downgraded rather than substantiated because the operator directed that the
+superseded commit not be pushed or otherwise promoted; publishing durable archival evidence was
+the only alternative remedy and it is foreclosed by that directive.
+
+**No fabrication is alleged, and none was found.** `UNKNOWN` marks the limit of externally
+verifiable evidence — it is not an accusation, and it does not downgrade the *classification*
+below, which is unaffected.
 
 It is superseded on a **substantive** ground, not a procedural one: those ten dispositions were
 made against the **pre-amendment AC#2** —
