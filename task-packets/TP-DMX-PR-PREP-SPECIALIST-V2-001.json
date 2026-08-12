@@ -14,7 +14,8 @@
     "No platform adapter may weaken Task Packet scope, operator gates, audit independence, proof freshness, or PR Steward requirements.",
     "Legacy duplicate docs may be updated only after their live consumer/compatibility role is proven; archive material remains historical.",
     "No merge, close, mark-ready, force push, history rewrite, branch deletion, permission change, credential change, release, migration, or production mutation is authorized.",
-    "For this packet, docs/03-reference/pr-pipeline/prep/** and docs/03-reference/pr-pipeline/merge/** are the canonical PR-pipeline reference-contract surfaces; docs/pr_prep/** and docs/pr_merge/** are compatibility surfaces only and must not carry independent behavioral authority."
+    "For this packet, docs/03-reference/pr-pipeline/prep/** and docs/03-reference/pr-pipeline/merge/** are the canonical PR-pipeline reference-contract surfaces; docs/pr_prep/** and docs/pr_merge/** are compatibility surfaces only and must not carry independent behavioral authority.",
+    "R2 is a narrow closure amendment only: the six newly allowlisted residual PR-prep documentation paths may be changed solely to remove dangling contract-v2 references and legacy V1 behavioral semantics or convert them to compatibility/canonical pointers."
   ],
   "depends_on": [],
   "repo_binding": {
@@ -60,7 +61,13 @@
       "docs/pr_prep/high-risk-handoff-rules.md",
       "tests/governance/test_pr_prep_contract_v2.py",
       "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/**",
-      "proof/pr_merge/embedded-audit/pr-<ACTUAL_PR>/**"
+      "proof/pr_merge/embedded-audit/pr-<ACTUAL_PR>/**",
+      "docs/03-reference/pr-pipeline/prep/branch-state-schema.md",
+      "docs/03-reference/pr-pipeline/prep/consensus-gate-rules.md",
+      "docs/03-reference/pr-pipeline/prep/handoff-contract.md",
+      "docs/pr_prep/branch-state-schema.md",
+      "docs/pr_prep/consensus-gate-rules.md",
+      "docs/pr_prep/handoff-contract.md"
     ],
     "verify": [
       "Every changed path is in the allowlist.",
@@ -72,7 +79,11 @@
       "Proof-only successor changes only authorized proof paths.",
       "Current-head CI and PR Steward are successful before PREP_READY_FOR_OPERATOR_DECISION is claimed.",
       "Canonical PR-pipeline behavior lives under docs/03-reference/pr-pipeline/**; docs/pr_prep/** and docs/pr_merge/** are compatibility-only and do not define competing semantics.",
-      "docs/pr_prep/contract-v2.md is absent from the final base-to-head changed-file set."
+      "docs/pr_prep/contract-v2.md is absent from the final base-to-head changed-file set.",
+      "The six R2 residual paths contain no link to docs/pr_prep/contract-v2.md.",
+      "The three canonical R2 paths do not independently encode legacy PR-prep LOW/MEDIUM/HIGH risk_hint semantics or obsolete V1 readiness authority.",
+      "The three docs/pr_prep R2 paths are compatibility-only and point to canonical docs/03-reference/pr-pipeline/prep counterparts.",
+      "The prior C1 1ab5d6c1cc56e85557776b37b0ffa0594858aa02 is not used as the audit target; audit must bind only to the new frozen C1-R2."
     ]
   },
   "pr": {
@@ -159,7 +170,11 @@
         "Do not touch unrelated PR-merge behavior.",
         "Add a narrow governance contract test if no existing test proves forbidden legacy semantics are absent from active governing surfaces.",
         "Treat docs/pr_merge/handoff-from-prps-contract.md as the compatibility receiver for docs/03-reference/pr-pipeline/merge/handoff-from-prps-contract.md.",
-        "Remove docs/pr_prep/contract-v2.md from the final base-to-head diff; its creation was outside the original allowlist and the canonical V2 contract belongs in docs/03-reference/pr-pipeline/prep/operator-contract.md."
+        "Remove docs/pr_prep/contract-v2.md from the final base-to-head diff; its creation was outside the original allowlist and the canonical V2 contract belongs in docs/03-reference/pr-pipeline/prep/operator-contract.md.",
+        "R2 closure: update docs/03-reference/pr-pipeline/prep/branch-state-schema.md, consensus-gate-rules.md, and handoff-contract.md so they do not independently encode legacy LOW/MEDIUM/HIGH or V1 seven-step semantics. Prefer concise canonical pointers where their former standalone schema/rule text is superseded by operator-contract.md or handoff-to-prms-contract.md.",
+        "R2 closure: update docs/pr_prep/branch-state-schema.md, consensus-gate-rules.md, and handoff-contract.md as compatibility-only pointer stubs to their canonical docs/03-reference/pr-pipeline/prep counterparts.",
+        "Remove every live link to docs/pr_prep/contract-v2.md from the six R2 paths.",
+        "Do not edit archive copies and do not broaden the migration to unrelated occurrences of LOW/MEDIUM/HIGH that belong to other domains."
       ],
       "commands": [
         "git diff --name-only",
@@ -178,13 +193,15 @@
     },
     {
       "id": "S3_PRE_PUSH_AND_FREEZE_CONTENT",
-      "task": "Run current CI-equivalent deterministic gates, freeze the substantive content head C1, push it, and create or update a draft PR only after all pre-push gates pass.",
+      "task": "After the R2 residual closure, rerun all deterministic gates and freeze a NEW substantive content head C1-R2. The prior C1 1ab5d6c1cc56e85557776b37b0ffa0594858aa02 is superseded for audit purposes.",
       "requirements": [
         "Run repo/worktree/branch identity, changed-file allowlist, git diff --check, Task Packet/frontmatter validation, proof/audit schema validation for present artifacts, focused tests, relevant complete governance/docs suite, changed-file pre-commit, and secret scan.",
         "If pre-commit modifies a file, rerun it to a clean pass before commit.",
         "Do not push known-failing metadata.",
         "Freeze exactly one substantive content head C1.",
-        "Open a draft PR. Do not mark ready."
+        "Open a draft PR. Do not mark ready.",
+        "Run a targeted scan proving the six R2 files contain no dangling contract-v2 link and no legacy PR-prep LOW/MEDIUM/HIGH risk_hint values.",
+        "Record the prior C1 as SUPERSEDED_NOT_AUDITED and bind all subsequent audit instructions only to C1-R2."
       ],
       "commands": [
         "git diff --check",

@@ -11,14 +11,12 @@ prelude: Handoff Contract for pr-prep-specialist to pr-merge-specialist handoff.
 ---
 # Handoff Contract
 
-Superseded by [`contract-v2.md`](./contract-v2.md) §8 (Handoff V2).
+`docs/pr_prep/**` is a compatibility surface only, by ruling of
+TP-DMX-PR-PREP-SPECIALIST-V2-001-R1. This file must not carry independent
+behavioral authority.
 
-This file previously documented a third, competing handoff schema (a
-`risk_hint: LOW|MEDIUM|HIGH|CRITICAL` field and a
-`MERGE_SPECIALIST_NORMAL_FLOW|MERGE_SPECIALIST_DRAFT_FLOW|MERGE_SPECIALIST_HIGH_RISK_AWARE_FLOW|NO_HANDOFF_BLOCKED`
-next-step enum) alongside the one in `handoff-to-prms-contract.md`. Both are
-superseded by the single `schema_version: "2.0.0"` handoff bundle in the
-canonical contract, which uses `risk_lane: L0|L1|L2|L3` in place of
-`risk_hint`.
+Canonical: [`../03-reference/pr-pipeline/prep/handoff-contract.md`](../03-reference/pr-pipeline/prep/handoff-contract.md),
+which points to [`operator-contract.md`](../03-reference/pr-pipeline/prep/operator-contract.md)
+§9 (Handoff V2) and [`handoff-to-prms-contract.md`](../03-reference/pr-pipeline/prep/handoff-to-prms-contract.md).
 
 This stub is kept only so existing links into this filename keep resolving.

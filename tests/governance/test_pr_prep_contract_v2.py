@@ -6,6 +6,12 @@ contract tree must use the V2 (L0-L3, S0-S8, schema_version 2.0.0) model,
 and compatibility surfaces must not carry independent behavioral content
 that could reintroduce the legacy mandatory-7-step / fixed-seven-artifact /
 LOW-MEDIUM-HIGH / GO_DIRECT / PRPS-produced-MERGE_READY model.
+
+Also covers the TP-DMX-PR-PREP-SPECIALIST-V2-001-R2 closure: three residual
+canonical/compatibility file pairs (`branch-state-schema.md`,
+`consensus-gate-rules.md`, `handoff-contract.md`) still carried an active
+`risk_hint: LOW|MEDIUM|HIGH` schema and dangling links to the deleted
+`contract-v2.md` after R1; R2 converts all six into pointer stubs.
 """
 from __future__ import annotations
 
@@ -20,7 +26,7 @@ CANONICAL_MERGE_DIR = ROOT / "docs/03-reference/pr-pipeline/merge"
 COMPAT_DIR = ROOT / "docs/pr_prep"
 COMPAT_MERGE_DIR = ROOT / "docs/pr_merge"
 
-# Files this packet (TP-DMX-PR-PREP-SPECIALIST-V2-001) authorized touching.
+# Files this packet (TP-DMX-PR-PREP-SPECIALIST-V2-001, R1) authorized touching.
 IN_SCOPE_CANONICAL = [
     "skill-model.md",
     "operator-contract.md",
@@ -32,6 +38,20 @@ IN_SCOPE_CANONICAL = [
     "high-risk-handoff-rules.md",
 ]
 IN_SCOPE_COMPAT = IN_SCOPE_CANONICAL
+
+# Residual files added to the allowlist by R2.
+R2_RESIDUAL_FILES = [
+    "branch-state-schema.md",
+    "consensus-gate-rules.md",
+    "handoff-contract.md",
+]
+
+ALL_IN_SCOPE_CANONICAL = IN_SCOPE_CANONICAL + R2_RESIDUAL_FILES
+ALL_IN_SCOPE_COMPAT = IN_SCOPE_COMPAT + R2_RESIDUAL_FILES
+
+# The legacy risk_hint enum as a JSON type annotation (not prose describing
+# what was retired).
+LEGACY_RISK_HINT_ENUM_SNIPPET = '"enum": ["LOW", "MEDIUM", "HIGH", "UNKNOWN"]'
 
 # The literal fixed seven-artifact JSON list from the legacy handoff schema.
 # Its reappearance anywhere in an active contract means the old schema crept
@@ -105,3 +125,30 @@ def test_should_mark_compat_merge_receiver_as_pointer_when_scanning_compat_merge
     text = _read(COMPAT_MERGE_DIR / "handoff-from-prps-contract.md")
     assert "compatibility surface only" in text
     assert "03-reference/pr-pipeline/merge" in text
+
+
+@pytest.mark.parametrize("filename", R2_RESIDUAL_FILES)
+def test_should_not_encode_legacy_risk_hint_enum_when_scanning_r2_residual_canonical_files(
+    filename: str,
+) -> None:
+    text = _read(CANONICAL_DIR / filename)
+    assert LEGACY_RISK_HINT_ENUM_SNIPPET not in text
+    assert "contract-v2.md" not in text
+
+
+@pytest.mark.parametrize("filename", R2_RESIDUAL_FILES)
+def test_should_not_encode_legacy_risk_hint_enum_when_scanning_r2_residual_compat_files(
+    filename: str,
+) -> None:
+    text = _read(COMPAT_DIR / filename)
+    assert LEGACY_RISK_HINT_ENUM_SNIPPET not in text
+    assert "contract-v2.md" not in text
+
+
+@pytest.mark.parametrize("filename", R2_RESIDUAL_FILES)
+def test_should_reference_canonical_tree_when_scanning_r2_residual_compat_stubs(
+    filename: str,
+) -> None:
+    text = _read(COMPAT_DIR / filename)
+    assert "TP-DMX-PR-PREP-SPECIALIST-V2-001-R1" in text
+    assert "03-reference/pr-pipeline/prep" in text
