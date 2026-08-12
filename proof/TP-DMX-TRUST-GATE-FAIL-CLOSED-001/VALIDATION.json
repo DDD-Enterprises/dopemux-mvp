@@ -1,0 +1,29 @@
+{
+  "gates": {
+    "repo_worktree_branch_identity": "PASS",
+    "changed_file_allowlist": "PASS",
+    "git_diff_check": "PASS",
+    "task_packet_schema": "PASS",
+    "generated_packet_frontmatter_checks": "PASS",
+    "proof_audit_schemas_present": "NOT_REQUIRED (no schemas/dcp/dcp_*_proof*.schema.json exists for this proof-bundle shape at execution time)",
+    "focused_tests": "PASS",
+    "tests_dcp_complete_suite": "PASS_WITH_ONE_PRE_EXISTING_UNRELATED_FAILURE",
+    "changed_file_pre_commit": "PASS",
+    "secret_scan": "PASS"
+  },
+  "focused_tests_command": "python3.12 -m pytest -q tests/dcp/test_dcp_0003_proof_family_dispatch.py tests/dcp/test_dcp_0004_control_snapshot.py tests/dcp/test_dcp_0005_red_lane_scanner.py",
+  "focused_tests_result": "69 passed",
+  "full_suite_command": "python3.12 -m pytest -q tests/dcp",
+  "full_suite_result": "1 failed, rest passed",
+  "full_suite_failure": {
+    "test": "tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified",
+    "classification": "PRE_EXISTING_OUT_OF_SCOPE",
+    "evidence": "The test diffs HEAD^..HEAD (no _packet_base_ref found) which is 3e8fcc1c70c5b859dd651a1cd33c85eab837c93e vs its parent 5d694cc9898e5046b5da03319f20f48599c40ca8 — a change already merged to origin/main (PR #1165) before this packet's worktree was created. Reproduces identically with zero packet changes present, since git diff over committed history is unaffected by uncommitted/committed packet changes on top. File touched (.github/workflows/embedded-audit.yml etc.) is outside this packet's allowlist and outside test_dcp_0002's own test-file allowlist (which is also not in this packet's IN scope)."
+  },
+  "diff_check_command": "git diff --check",
+  "diff_check_result": "exit 0, no output",
+  "pre_commit_command": "pre-commit run --files <all 14 changed/added files>",
+  "pre_commit_result": "all applicable hooks Passed, remainder Skipped (no matching files) — repo preflight hook also ran on commit and passed (repo_preflight, run-mode, jq-present, ledger-present, ledger-json, diff-whitespace, smoke-tests all OK)",
+  "secret_scan_command": "grep -rniE credential-shaped patterns over changed source/tests/fixtures/proof",
+  "secret_scan_result": "one match, pre-existing (not in this packet's diff), obviously-synthetic repeating-digit ghp_ pattern in an existing redaction test"
+}

@@ -1,0 +1,18 @@
+{
+  "packet_id": "TP-DMX-TRUST-GATE-FAIL-CLOSED-001",
+  "artifacts": [
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/PROOF.json",
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/VALIDATION.json",
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/COMMAND_LOG.md",
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/CHANGED_FILES.txt",
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/MANIFEST.json",
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/HANDOFF.md",
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/AUDITOR_REPORT.md",
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/review_bundle/DEFECT_REPRODUCTION_BEFORE_AFTER.txt",
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/review_bundle/FINAL_VALIDATION_LOG.txt"
+  ],
+  "content_head_c1": "352a3d888d1ce5116b9af65d696fe62373728a7c",
+  "proof_head_c2": null,
+  "c1_ancestor_of_c2": null,
+  "note": "C2 (proof-only successor) not yet created; this MANIFEST is written as part of the C2 commit itself, which contains only proof/task-packets/HANDOFF content on top of C1 with no substantive tree changes."
+}
