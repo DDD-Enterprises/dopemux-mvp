@@ -68,17 +68,22 @@
   "merge_authorized": false,
   "embedded_audit": {
     "required": true,
-    "status": "SKIPPED",
-    "auditor_tool": "none",
-    "auditor_model": "unknown",
-    "invocation": null,
-    "exit_code": null,
-    "report_path": "proof/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001/AUDITOR_REPORT.md",
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "Claude Code Agent tool, subagent_type=quality-engineer, spawned with no prior conversation context, given only the repo, the audited commit SHA d1f016a19adef97bf2e5dd40655061a77d043ee3 (C3), and this packet's proof-repair scope (verify C1 unchanged, verify C1..C3 proof-evidence-only, verify embedded_audit truthfulness and schema validity, verify no fail-open/authority-broadening behavior)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001/AUDITOR_REPAIR_REPORT.md",
     "findings": [],
-    "fixes_applied": [],
-    "remaining_risks": [
-      "No schema-supported embedded-audit projection has been produced yet as of this commit (C3). The actual controlling L3 audit for this packet is a separately recorded, cross-family audit: Codex (OpenAI GPT-5 Codex, ChatGPT/Codex API runtime, via codex:codex-rescue), verdict PASS_WITH_RISKS (all risks non-blocking), bound to substantive head C1=40783797fe30325766a2cb6f53aaa53254785712, recorded in full at proof/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001/AUDITOR_REPORT.md and review_bundle/audit_pass_1_needs_supervisor.md + review_bundle/audit_pass_2_pass_with_risks.md. This SKIPPED placeholder exists solely to satisfy the trusted proof validator's mechanical requirement for a schema-conformant embedded_audit object; it does not represent an audit outcome and must not be read as PASS. It is expected to be superseded by a schema-representable supporting audit at the next proof-only successor head (C4), per this packet's proof-repair authorization."
+    "fixes_applied": [
+      "Added the schema-required top-level embedded_audit object to PROOF.json (previously missing, causing CI Audit Proof Validator / change-contract preflight / Code Quality failures), as a truthful SKIPPED placeholder at C3, now superseded by this schema-representable supporting-audit record at C4."
     ],
-    "skip_reason": "Codex, the packet's controlling cross-family L3 auditor, is not a representable value in schemas/proof/embedded_audit.schema.json's auditor_tool/auditor_model enums (agy/antigravity/claude-code-cli/copilot-cli/gemini-cli/pal-mcp-clink/none; sonnet/claude-sonnet-4.6/opus/gemini/gemini-3.1-pro-high/unknown). Relabeling Codex as one of these tools/models would be a false attestation, and schemas/** is outside this packet's original mutation allowlist. This field is set to SKIPPED as an honest placeholder pending a schema-representable supporting audit (see remaining_risks)."
+    "remaining_risks": [
+      "THIS RECORD IS SUPPORTING EVIDENCE ONLY, NOT THE CONTROLLING L3 AUDIT. The audit represented by this schema-bound embedded_audit object (Claude Code quality-engineer subagent, Sonnet 5) is LIMITED independence: same runtime/company family (Claude Code) as the implementer does not satisfy this packet's L3 different-family/runtime requirement on its own.",
+      "CONTROLLING_L3_AUDIT=CODEX. The actual controlling audit for this packet was performed by Codex (OpenAI GPT-5 Codex, ChatGPT/Codex API runtime, via codex:codex-rescue), a genuinely independent tool/model family from the implementer. Two passes: pass 1 (pre-repair head) NEEDS_SUPERVISOR, identifying a resolver reuse/state-reset gap that was fixed; pass 2 (final C1=40783797fe30325766a2cb6f53aaa53254785712, controlling) PASS_WITH_RISKS, all risks non-blocking. Full reports: proof/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001/AUDITOR_REPORT.md, review_bundle/audit_pass_1_needs_supervisor.md, review_bundle/audit_pass_2_pass_with_risks.md.",
+      "SCHEMA ENUM GAP, NOT A MISREPRESENTATION. schemas/proof/embedded_audit.schema.json's auditor_tool/auditor_model enums have no slot for Codex/GPT-5-Codex, and schemas/** is outside this packet's file allowlist. This embedded_audit object therefore truthfully describes the supporting Claude Code audit only -- it does not, and must not be read to, represent the controlling Codex audit. auditor_tool=claude-code-cli / auditor_model=sonnet are literally true for what is recorded here.",
+      "AUDIT TOPOLOGY, NAMED NOT CONFLATED. AUDITED_TREE (the substantive tree the controlling audit examined) = C1 = 40783797fe30325766a2cb6f53aaa53254785712. This proof's head, C4, is a proof-only successor that adds only proof/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001/** on top of C1 via C3 (verify with git diff --name-only 40783797fe30325766a2cb6f53aaa53254785712..HEAD -- ':!proof/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001/**'). C1 is an ancestor of C4; no substantive byte changed after C1."
+    ],
+    "skip_reason": null
   }
 }

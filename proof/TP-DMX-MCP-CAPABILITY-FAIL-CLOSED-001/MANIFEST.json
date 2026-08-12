@@ -10,6 +10,7 @@
     "MANIFEST.json",
     "HANDOFF.md",
     "AUDITOR_REPORT.md",
+    "AUDITOR_REPAIR_REPORT.md",
     "review_bundle/f018_pre_fix_repro.txt",
     "review_bundle/f018_post_fix_repro.txt",
     "review_bundle/f019_pre_fix_repro.txt",
