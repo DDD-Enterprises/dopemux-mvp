@@ -1,0 +1,25 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1224,
+  "head_sha": "efdaf2d42bb679fcea0e7c1d0bdf2b8011c4595a",
+  "generated_at": "2026-08-12T03:27:57Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --print \"<S4 independent audit prompt for TP-DMX-PR-PREP-SPECIALIST-V2-001-R4, targeting content head C1-R4>\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "R4: repaired the frozen 19-path ACTIVE_CONTRADICTION set identified by the R3 terminal semantic census (9 canonical files under docs/03-reference/pr-pipeline/prep/** converted to deprecation stubs deferring to operator-contract.md; 10 compatibility files under docs/pr_prep/** converted to pure pointer stubs), leaving the 7 NON_BLOCKING_LOCAL_MEASUREMENT files and 2 envelope-only paths byte-unchanged, and re-ran the census to ACTIVE_CONTRADICTION_COUNT=0."
+    ],
+    "remaining_risks": [
+      "AUDIT_TOPOLOGY, NAMED NOT CONFLATED. AUDITED_TREE (the substantive content examined) = C1-R4 = 6f32ac97dfd64f4386182fdd24380b2817551303. This proof's head_sha, efdaf2d42bb679fcea0e7c1d0bdf2b8011c4595a, is the AUDIT_EVIDENCE_HEAD: a proof-only successor that adds only proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/CONTENT_HEAD_R4.txt, proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/MODEL_ROUTE.json, and proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/AUDITOR_REPORT.md on top of C1-R4. C1-R4 is an ancestor of the AUDIT_EVIDENCE_HEAD; no substantive byte changed after C1-R4 (verify with: git diff --exit-code 6f32ac97dfd64f4386182fdd24380b2817551303..efdaf2d42bb679fcea0e7c1d0bdf2b8011c4595a -- docs/03-reference/pr-pipeline/prep docs/pr_prep docs/pr_merge tests/governance task-packets). This bridge commit itself adds only proof/pr_merge/embedded-audit/pr-1224/** on top of the AUDIT_EVIDENCE_HEAD -- a second proof-only delta, not a re-audit.",
+      "Full 12-point audit scope findings (V2 operator authority, canonical vs compatibility topology, adapters, handoff semantics, terminal census re-run, 7 non-blocking re-adjudications, envelope byte-identity, deterministic gates, task packet schema validation, test suite, docs hygiene false-positive confirmation, and overall coherence) are carried verbatim in proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/AUDITOR_REPORT.md; this PROOF.json's schema-bound findings/fixes_applied fields are kept minimal per the embedded_audit.schema.json contract and must not be read as the full record.",
+      "One pre-existing, unrelated pre-commit false positive is on record: the docs-prohibited-patterns hook flags docs/pr_prep/adapters/vibe/template-agent.md's basename against a *temp*.md glob (present since commit 139944337a, predates R4, not introduced or touched in scope by this packet). Recorded in proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/VALIDATION_R4.json and independently confirmed by the S4 auditor; non-blocking."
+    ],
+    "skip_reason": null
+  }
+}
