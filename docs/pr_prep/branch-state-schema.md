@@ -4,13 +4,15 @@ title: Branch State Schema
 type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-03-14'
-last_review: '2026-03-14'
-next_review: '2026-06-12'
+date: '2026-08-11'
+last_review: '2026-08-11'
+next_review: '2026-11-09'
 prelude: Branch State Schema (explanation) for dopemux documentation and developer
   workflows.
 ---
 # Branch State Schema
+
+`risk_lane` values are defined in [`contract-v2.md`](./contract-v2.md) §4.
 
 ## Definition
 The `BRANCH_STATE.json` object is the canonical state representation for a branch undergoing PR preparation.
@@ -31,7 +33,7 @@ The `BRANCH_STATE.json` object is the canonical state representation for a branc
     "changed_files_total",
     "worktree_state",
     "change_profile",
-    "risk_hint",
+    "risk_lane",
     "prep_posture"
   ],
   "properties": {
@@ -79,8 +81,8 @@ The `BRANCH_STATE.json` object is the canonical state representation for a branc
         "DIRTY_OR_AMBIGUOUS"
       ]
     },
-    "risk_hint": {
-      "enum": ["LOW", "MEDIUM", "HIGH", "UNKNOWN"]
+    "risk_lane": {
+      "enum": ["L0_DETERMINISTIC", "L1_BOUNDED", "L2_MATERIAL", "L3_RED"]
     },
     "prep_posture": {
       "enum": ["NORMAL", "CAUTION", "BLOCK_UNTIL_CLEAN", "HIGH_RISK_ESCALATE"]

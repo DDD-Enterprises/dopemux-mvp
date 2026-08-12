@@ -4,41 +4,21 @@ title: Handoff Contract
 type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-03-14'
-last_review: '2026-03-14'
-next_review: '2026-06-12'
+date: '2026-08-11'
+last_review: '2026-08-11'
+next_review: '2026-11-09'
 prelude: Handoff Contract for pr-prep-specialist to pr-merge-specialist handoff.
 ---
 # Handoff Contract
 
-This document defines the exact payload that `pr-prep-specialist` delivers to `pr-merge-specialist`.
+Superseded by [`contract-v2.md`](./contract-v2.md) §8 (Handoff V2).
 
-## PR_HANDOFF_BUNDLE.json Requirements
+This file previously documented a third, competing handoff schema (a
+`risk_hint: LOW|MEDIUM|HIGH|CRITICAL` field and a
+`MERGE_SPECIALIST_NORMAL_FLOW|MERGE_SPECIALIST_DRAFT_FLOW|MERGE_SPECIALIST_HIGH_RISK_AWARE_FLOW|NO_HANDOFF_BLOCKED`
+next-step enum) alongside the one in `handoff-to-prms-contract.md`. Both are
+superseded by the single `schema_version: "2.0.0"` handoff bundle in the
+canonical contract, which uses `risk_lane: L0|L1|L2|L3` in place of
+`risk_hint`.
 
-The bundle must guarantee that `pr-merge-specialist` receives:
-
-### Required Identity
-- `repo`: Repository name.
-- `current_branch`: The head branch being merged.
-- `base_branch`: The target branch.
-- `pr_id` / `pr_url`: Populated if created.
-
-### Required Content
-- `title`: Final chosen title.
-- `body_path`: Path to the generated body markdown.
-- `final_prep_decision`: The synthesized validation decision.
-- `validation_summary`: A sub-object detailing deterministic/consensus outcomes.
-
-### Required Risk/Context
-- `risk_hint`: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`.
-- `high_risk_handoff_required`: Boolean flag.
-- `adjacent_work_decision`: Context on uncommitted local overlaps.
-- `obligation_summary`: Status of docs, changelogs, migrations.
-- `warnings`: Array of explicit warnings.
-
-### Required Next Step
-Must be exactly one of:
-- `MERGE_SPECIALIST_NORMAL_FLOW`
-- `MERGE_SPECIALIST_DRAFT_FLOW`
-- `MERGE_SPECIALIST_HIGH_RISK_AWARE_FLOW`
-- `NO_HANDOFF_BLOCKED`
+This stub is kept only so existing links into this filename keep resolving.
