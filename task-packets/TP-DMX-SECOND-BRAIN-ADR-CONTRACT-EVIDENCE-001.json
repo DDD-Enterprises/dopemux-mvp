@@ -143,8 +143,8 @@
         "tests/governance/test_second_brain_adr_contracts.py"
       ],
       "validation": [
-        "Validator exits 0 emitting PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE and FO01_STALE_RECONCILED tokens with 113 checks and 0 failures",
-        "the adversarial suite passes 46/46 with every mutation rejected by its intended guard."
+        "Validator exits 0 emitting PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE and FO01_STALE_RECORD_RECONCILED tokens with 114 checks and 0 failures",
+        "the adversarial suite passes 52/52 with every mutation rejected by its intended guard."
       ],
       "context_files": []
     },

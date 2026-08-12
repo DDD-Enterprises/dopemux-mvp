@@ -12,10 +12,18 @@ disposition was 10× DEFER.
 
 This packet builds the missing evidence and nothing else. It accepts no ADR.
 
-## What the operator is being asked for
+## Status: BLOCKED_INDEPENDENT_AUDIT — do not merge
 
-**Nothing yet beyond a merge decision.** This packet stops at Human Gate A. ADR
-dispositions are Phase B and remain operator-only.
+The independent audit of frozen head `7955ef33d7` returned **FAIL, 3 blockers,
+5 must-fix**. Packet §19 requires PASS with zero of each, so publication does not
+progress. PR #1227 stays a **draft** and is not marked ready.
+
+**The operator is not being asked for a merge decision.** They are being asked to
+direct remediation. The artifacts below are real and the mechanical gates are green,
+but the audit found the evidence is not yet sufficient to carry ADR acceptance.
+
+The producer independently re-verified all three blockers from repository bytes and
+**disputes none of them**.
 
 ## Structure of the evidence
 
@@ -100,19 +108,68 @@ Therefore still unauthorized: runtime or production enablement, Slice 0
 implementation, automatic capture, task promotion, real Dom data, multi-project
 background capture, and confidential/restricted spooling.
 
-## Next steps in order
+## The audit findings, and what each actually requires
 
-1. **Operator merge decision** on this PR (Human Gate A). Squash or rebase only;
-   the repository has `delete_branch_on_merge = true`, so if the branch must
-   survive, either flip that setting first or re-push the ref immediately after —
-   omitting `--delete-branch` is not sufficient.
-2. **Phase B**: re-run the validator from clean `main`; run a fresh full-diff
-   MA-08 from discovery base `72af781e42e0702d9047946e0f5a250e7dff0fa5` (the
-   candidate's own standing baseline, not the ratification snapshot); produce a
-   fresh `DRIFT_RECHECK.md`.
-3. **Fresh post-merge acceptance-integrity audit** against the exact post-merge
-   `main`. Do not reuse the audit in this bundle — it binds this content head.
-4. **Fresh operator worksheet**, then `AWAITING_OPERATOR_ADR_DISPOSITIONS`.
+**BLOCKER 1 — the coverage PASS can survive silent architecture rewrites.**
+Editing the inventory *and* the contract consistently changes an ADR decision while
+the validator still exits 0. Confirmed on ~75 of 97 clauses. Demonstrated: recall
+fusion inverted to the explicitly rejected vector-first order; the review default
+flipped from DEFER/NO-MUTATION to auto-apply.
 
-Recommendations in that worksheet are advisory. Prior DEFER dispositions are not
-auto-converted; only the operator fills ACCEPT / DEFER / REJECT.
+*Class-level remedy* (one change, not per-finding): **const-pin the frozen inventory
+sha256 `f073ca28…` inside the validator.** Any post-freeze inventory edit then fails
+regardless of coverage-matrix agreement, and because A09 already requires
+contract ≡ inventory, editing the contract alone fails too. That closes the whole
+bilateral class rather than narrowing it, and puts the freeze on the same trust
+boundary as the validator itself. A21 becomes defence in depth.
+
+**BLOCKER 2 — `dopeTask` is an invented canonical authority.** `grep -c dopeTask`
+against the candidate returns **0**. It came from this task packet's own
+architecture-boundary list, not from the ratified candidate. Remedy: remove it from
+`AUTHORITY_TARGETS`, `authority_targets_permitted`, and the two `AUTHORITY_TARGET/IN`
+clause values, then regenerate.
+
+**BLOCKER 3 — A21's enum grounding is one-way.** It rejects *widening* (a new member
+is absent from the cited text) but accepts *shrinking*: dropping `PURGE` from the
+deletion-operation set and `Review` from the UX operation set both still pass.
+Remedy: make the membership test bidirectional against the enumerated terms in the
+cited fragment.
+
+**MUST_FIX 1 — denominator gaps.** The 97 clauses were derived from the packet's §5
+list, which §5 itself calls a *minimum*. The auditor names material decision content
+with no clause: the ADR-SB-004 policy-evaluation *dimensions* (identity, grants,
+provider, embedding, custody, backup, operation — only the stage ordering was
+captured); the ADR-SB-007 purge *completion receipt*; "ConPort never owns task state"
+and the Dope-Memory PM-authority forbid (ADR-SB-008); "historical and current states
+remain distinct" (ADR-SB-003); open/close/cancel event kinds (ADR-SB-008). This
+requires expanding and **re-freezing** the denominator — a governance act, not a
+patch, and the reason this cannot be quietly fixed in place.
+
+**MUST_FIX 2–4 — invented surface and token-label rules.** The port `operations`
+lists, several schema property/enum sets, and the four-way fusion ranking assert
+structure the candidate never states; and many `REQUIRE/MUST_EXIST` rules name an
+artifact class without giving it a shape. Remedy: either delete the invention or
+justify each against an exact clause, and give the named artifacts real structure.
+
+**MUST_FIX 5 — FO-01 Group B is partial.** Several status fields
+(`nonblocking_observations`, `authority.architecture_accepted_as_law`, the expanded
+coverage metrics) can diverge from the receipt while Group B still passes.
+
+## Recommended sequence
+
+1. **Operator directs remediation scope.** In particular: whether the denominator is
+   re-frozen to include the MUST_FIX 1 content, since that supersedes the freeze
+   recorded at `a9397e5630` and is the one decision the producer should not take
+   alone.
+2. Apply the **class-level** fixes in one pass — inventory const-pin, `dopeTask`
+   removal, bidirectional enum grounding, denominator expansion, invented-surface
+   removal, Group B field locking. Per-finding patching is what has historically kept
+   these review carousels turning; the A21 experience in this very packet shows a
+   narrowed class comes back.
+3. Re-freeze a new content head and run **one** fresh independent audit.
+4. Only then Human Gate A.
+
+Phase B (post-merge MA-08, fresh acceptance-integrity audit, operator worksheet) is
+unreachable from here and is not started. Opening a PR does not begin it.
+
+Prior DEFER dispositions stand. Only the operator fills ACCEPT / DEFER / REJECT.

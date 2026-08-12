@@ -10,7 +10,7 @@
     "change_contract_preflight": "PASS",
     "diff_whitespace": "PASS",
     "pre_commit": "PASS",
-    "independent_audit": "PENDING_S7",
+    "independent_audit": "FAIL",
     "runtime_conformance": "NOT_RUN",
     "retrieval_benchmarks": "NOT_RUN",
     "purge_completeness": "NOT_RUN",
@@ -57,5 +57,13 @@
       "note": "The 14 skips are genuine: those hooks are scoped by `files:` to docs/ and task-packets/ markdown, and this slice contains no matching file. Verified against .pre-commit-config.yaml rather than assumed."
     }
   ],
-  "not_run_rationale": "This packet produces architecture-time contract evidence only. Every runtime and enablement measurement remains NOT_RUN by design and is not inferred from contract coverage."
+  "not_run_rationale": "This packet produces architecture-time contract evidence only. Every runtime and enablement measurement remains NOT_RUN by design and is not inferred from contract coverage.",
+  "independent_audit": {
+    "verdict": "FAIL",
+    "blockers": 3,
+    "must_fix": 5,
+    "controlling": true,
+    "effect": "Packet terminal state is BLOCKED_INDEPENDENT_AUDIT. Publication does not progress; the PR remains a draft.",
+    "audited_head": "7955ef33d7c0ab29daecbab966bc6a9497dc69ce"
+  }
 }

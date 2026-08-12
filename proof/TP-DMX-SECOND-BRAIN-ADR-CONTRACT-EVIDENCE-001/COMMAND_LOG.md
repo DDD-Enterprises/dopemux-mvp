@@ -398,3 +398,111 @@ Final: **114 checks / 0 failed; 52 adversarial tests / 0 failed.**
 The lesson worth carrying: a green adversarial matrix proves the mutations you
 thought of are caught. It says nothing about the ones you did not. The matrix had to
 be attacked separately from the artifacts it guards.
+
+---
+
+## S7 — Independent audit: FAIL
+
+Content head frozen at `7955ef33d7c0ab29daecbab966bc6a9497dc69ce` (C1).
+
+Three audit routes failed before one worked. Each failure is recorded rather than
+quietly retried:
+
+| Route | Outcome |
+|---|---|
+| pal-stdio codereview / gemini-2.5-pro | `429 RESOURCE_EXHAUSTED`, `quota_limit_value: 0` |
+| pal-stdio chat / gpt-5-pro | The pal MCP containers have **zero bind mounts** (`docker inspect ... .Mounts` is empty), so the server cannot read any host file; every `files[]` attachment resolved to nothing and the model kept asking for bytes it could never receive |
+| opencode run / openrouter `~openai/gpt-latest` | Headless run auto-rejected its own bash permission request and terminated after 224 bytes with no verdict |
+
+Working route — a throwaway detached worktree at C1, so the auditor could be granted
+command approval with no possibility of touching the reviewed artifacts:
+
+```bash
+git worktree add --detach /private/tmp/sb-audit-c1 7955ef33d7c0ab29daecbab966bc6a9497dc69ce
+grok --cwd /private/tmp/sb-audit-c1 --always-approve --max-turns 60 \
+     --output-format plain -p "$(cat proof/.../AUDIT_PROMPT.md)"
+```
+
+```text
+VERDICT: FAIL
+BLOCKERS: 3
+MUST_FIX: 5
+```
+
+The auditor independently detected that `AUDIT_PROMPT.md` names head `8a9b0ee53c`
+while the tree it was given is `7955ef33d7` — a real discrepancy caused by the A21 fix
+landing after the prompt was written. The prompt was **not** rewritten to match; it is
+the artifact that was executed. The discrepancy is recorded in
+`AUDIT_PROMPT_CUSTODY.json` instead.
+
+### Producer re-verification of the blockers
+
+Findings were re-derived from repository bytes rather than accepted on assertion.
+
+```bash
+grep -c "dopeTask" docs/.../second-brain-adr-candidates.md
+```
+
+```text
+0        # B2 confirmed: `dopeTask` is in the task packet's own boundary list,
+         # not in the ratified candidate. It should never have entered
+         # AUTHORITY_TARGETS as a canonical write target.
+```
+
+```bash
+# B3: drop PURGE from the deletion-operation set and Review from the UX set,
+# consistently on both sides
+python3 scripts/governance/validate_second_brain_adr_contracts.py --repo-root /tmp/fg-probe3
+```
+
+```text
+PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE
+         # B3 confirmed: A21's membership test is one-way. It rejects enum
+         # WIDENING (a new member is not in the cited text) but accepts enum
+         # SHRINKING, because every surviving member is still present.
+```
+
+```bash
+# B1 residual: invert recall fusion to the explicitly REJECTED vector-first
+# alternative, and flip the review default to auto-apply
+python3 scripts/governance/validate_second_brain_adr_contracts.py --repo-root /tmp/fg-probe2
+```
+
+```text
+checks: 114  failed: 0
+         # B1 residual confirmed: A21 narrowed the bilateral-edit class but did
+         # not close it. Normalised tokens (ORDERING lists, FAIL_CLOSED and
+         # CONSTANT strings) cannot be grounded in prose, so ~75 of 97 clauses
+         # have neither a Group-S pin nor A21 grounding.
+```
+
+**No finding is disputed.** The controlling verdict is FAIL, so the packet's terminal
+state is `BLOCKED_INDEPENDENT_AUDIT`. Publication does not progress and the PR is not
+marked ready.
+
+### Stale-assertion sweep (class-level, not instance-level)
+
+```bash
+git grep -nE '\b113\b|\b46\b|FO01_STALE_RECONCILED' -- task-packets/... proof/...
+```
+
+Two stale assertions found in the committed packet — `113 checks` and `46/46`, both
+superseded by the A21 fix, plus the token `FO01_STALE_RECONCILED` where the validator
+actually emits `FO01_STALE_RECORD_RECONCILED`. All corrected in one pass; the packet
+still validates against `dopetask-canonical-spec.json`. Classified
+`NON_SUBSTANTIVE_RECORD_MAINTENANCE`: the corrected text asserts nothing the receipts
+did not already record, and the packet JSON is not among the files the auditor read.
+
+### Post-C1 mutation boundary
+
+Everything committed after C1 is producer record *about* the audited content, never
+audited content. Verified mechanically:
+
+```bash
+git diff 7955ef33d7c0ab29daecbab966bc6a9497dc69ce..HEAD --name-only
+```
+
+All paths fall under `proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/**` and
+`task-packets/**`. Nothing under `schemas/`, `scripts/`, `tests/` or `docs/` moved, so
+`C1_CONTENT_HEAD.txt` remains `7955ef33d7` and the audit binding stays valid. This is
+what prevents an audit → commit → re-audit carousel.
