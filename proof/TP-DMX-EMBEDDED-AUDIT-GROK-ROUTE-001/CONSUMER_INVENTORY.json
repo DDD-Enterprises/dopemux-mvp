@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001",
+  "record_kind": "DETERMINISTIC_CONSUMER_INVENTORY",
+  "why_this_exists": "The operator authorized mutation of scripts/audit/run_embedded_audit.py ONLY if inspection proves it contains an explicit auditor-tool/model recognition table that must change for grok-cli, and forbade broadening the packet unless a deterministic consumer inventory proves another exact compatibility site is required. This file is that inventory. It is the evidence for every scope decision below, including the non-changes.",
+  "method": {
+    "search": "Repository-wide grep for auditor_tool, auditor_model, and every existing enum member (agy, antigravity, claude-code-cli, copilot-cli, gemini-cli, pal-mcp-clink, none, sonnet, claude-sonnet-4.6, opus, gemini, gemini-3.1-pro-high, unknown) across schemas/, scripts/, src/, tools/, config/, .github/, docs/, tests/ and AGENTS.md.",
+    "then": "Every hit outside proof/ was read in source rather than classified from the grep line, because a grep hit does not distinguish a producer of these values from a consumer of them.",
+    "cross_check": "The full tests/audit suite was executed against the modified schema. That is what surfaced the one consumer this grep alone would have missed."
+  },
+  "changed": [
+    {
+      "path": "schemas/proof/embedded_audit.schema.json",
+      "role": "CANONICAL_WRITER of the contract",
+      "change": "Added grok-cli to auditor_tool, grok-4.5 to auditor_model, and two allOf conditionals binding the pair in both directions, each self-contained via then.required.",
+      "authorized_by": "operator TAKE_OPTION_B, explicit"
+    },
+    {
+      "path": "tests/audit/test_embedded_audit_grok_route.py",
+      "role": "new regression suite",
+      "change": "Operator-mandated matrix, bidirectional vacuity guards, and a class-level backward-compatibility differential against the pre-change schema read from git.",
+      "authorized_by": "operator TAKE_OPTION_B, 'tests for embedded-audit schema / enforcement'"
+    },
+    {
+      "path": "tests/audit/test_local_audit_acceptance.py",
+      "role": "parity corpus that proves the canonical validator is actually running",
+      "change": "Added a _grok_audit fixture helper, four parity rows (one valid pair plus three violations covering both new conditionals and the rejected build label), and updated the pinned conditional count from 3 to 5.",
+      "authorized_by": "operator TAKE_OPTION_B, 'tests for embedded-audit schema / enforcement'",
+      "note": "This is the compatibility site the grep missed and the test suite caught. test_every_schema_conditional_is_exercised_by_the_corpus deliberately fails when allOf grows, so that a new conditional cannot silently become unenforced. It failed as designed and told us exactly what it wanted."
+    }
+  ],
+  "inspected_and_deliberately_not_changed": [
+    {
+      "path": "scripts/audit/run_embedded_audit.py",
+      "operator_condition": "mutate ONLY if it contains an explicit auditor-tool/model recognition table that must change for grok-cli",
+      "finding": "NO_RECOGNITION_TABLE",
+      "evidence": "The file never selects a tool or model by name. Its embedded_audit values arrive from exactly two places: normalize_pal_clink_audit_output() in tools/auditor_router/pal_clink.py, which hardcodes auditor_tool 'pal-mcp-clink' at line 1060 and derives the model via _embedded_audit_model(); or verbatim pass-through of an already-accepted local attestation. Its only literal pair is in _skipped_audit(), which correctly hardcodes none/unknown for status SKIPPED and must stay that way.",
+      "conclusion": "The operator's condition is not met, so the file is not touched."
+    },
+    {
+      "path": "tools/auditor_router/pal_clink.py",
+      "finding": "CANNOT_COLLIDE_WITH_THE_NEW_RULE",
+      "evidence": "_embedded_audit_model() returns exactly 'sonnet' (underlying_cli claude), 'gemini' (underlying_cli gemini), or 'unknown'. It has no branch that can return a grok model. SUPPORTED_AUDIT_CLIENTS is {claude-audit: claude, gemini-audit: gemini}, so the existing scripts/audit/fixtures/clink_clients/xai-grok-audit.json config is rejected as an unsupported client before any proof is emitted.",
+      "why_it_matters": "This was checked specifically because the new rule binds grok-cli and grok-4.5 to each other. If this lane could emit auditor_model grok-4.5 while hardcoding auditor_tool pal-mcp-clink, the new conditional would have broken a working lane. It cannot.",
+      "conclusion": "Out of the authorized set and not required."
+    },
+    {
+      "path": "scripts/audit/local_audit_acceptance.py",
+      "finding": "TOOL_AGNOSTIC",
+      "evidence": "Structural validation delegates to jsonschema Draft7Validator against the trusted schema, so it inherits both new conditionals with no code change. Proven by the parity corpus, which requires the local route and canonical jsonschema to agree on every fixture including the four new Grok rows.",
+      "conclusion": "No change needed, matching the prediction recorded in GROK_SCHEMA_REPRESENTATION_GAP.md."
+    },
+    {
+      "path": "schemas/proof/auditor_route.schema.json",
+      "finding": "DIFFERENT_LANE",
+      "evidence": "This contract governs AUDITOR_ROUTE.json, the router's route-selection record. Its tool enum also lacks grok-cli, but its model field is an unconstrained string|null, so it imposes no model vocabulary. Representing a completed audit in a proof bundle does not write this artifact.",
+      "conclusion": "Not a required compatibility site for this packet. Recorded here as a named exclusion so the judgment can be attacked directly rather than reconstructed. If Grok is ever added to the automated router, that packet must extend this enum.",
+      "judgment_call": true
+    },
+    {
+      "path": "docs/**",
+      "finding": "NO_NORMATIVE_ENUM_LISTING",
+      "evidence": "Documentation hits for these tokens are prose and research reports, not machine-read vocabulary. No validator, hook, or CI job reads an enum list out of docs.",
+      "conclusion": "Not a compatibility site. GROK_SCHEMA_REPRESENTATION_GAP.md sketched a docs update as indicative scope; the operator's ruling narrowed the packet and forbade broadening without proof of necessity, so the docs update is deliberately left for a separate packet rather than smuggled in here.",
+      "judgment_call": true
+    },
+    {
+      "path": ".pre-commit-config.yaml",
+      "finding": "NO_ENUM_LISTING",
+      "evidence": "The proof-embedded-audit-schema hook invokes scripts/audit/validate_audit_proof.py and filters on ^proof/[^/]+/PROOF\\.json$. Its only mention of the enums is a descriptive comment naming no members.",
+      "conclusion": "No change needed."
+    },
+    {
+      "path": ".github/workflows/embedded-audit.yml",
+      "finding": "PRODUCES_ONE_FIXED_ROUTE",
+      "evidence": "Writes \"tool\": \"pal-mcp-clink\" for the CI route and reads the schema from the trusted ref. Adding an unrelated enum member does not affect it.",
+      "conclusion": "No change needed."
+    }
+  ],
+  "runner_evidence": {
+    "why_captured": "The admitted model id is a claim about an external runner, so it is captured from the runner rather than asserted, following the AGY precedent's capture-and-reverify pattern.",
+    "grok_cli_version_at_packet_time": "grok 1.0.3 (1a29d5bc12d4) [stable]",
+    "models_available_at_packet_time": ["grok-4.6 (default)", "grok-4.5"],
+    "grok_4_5_build_status": "NOT_REQUESTABLE",
+    "grok_4_5_build_evidence": "`grok -m grok-4.5-build` returns: Couldn't set model 'grok-4.5-build': Invalid params: \"unknown model id\". It appears only as a usage/telemetry label in session chat history. Recorded previously in GROK_SCHEMA_REPRESENTATION_GAP.md and unchanged.",
+    "drift_since_the_gap_was_recorded": {
+      "changed": true,
+      "what": "When the gap was recorded the runner exposed exactly one model, grok-4.5, which was also the default. It now exposes two, and the DEFAULT IS grok-4.6.",
+      "consequence": "Any future Grok audit invoked without an explicit -m will run on grok-4.6 and be unrepresentable under this contract. Future Grok audits must pin `-m grok-4.5` until an operator decides whether to admit grok-4.6.",
+      "stale_claim_superseded": "GROK_SCHEMA_REPRESENTATION_GAP.md states that because the runner exposes exactly one model, fallback_enabled false and model_switching false are structurally guaranteed. That structural guarantee no longer holds. The historical document is left unedited; this record supersedes that one claim."
+    }
+  },
+  "not_in_this_packet": [
+    "Any change to PR #1227 or its proof bundle.",
+    "Admitting grok-4.6, or any Grok model other than grok-4.5.",
+    "Admitting grok-4.5-build.",
+    "Adding Grok to the automated auditor router.",
+    "Any runtime behaviour change."
+  ]
+}

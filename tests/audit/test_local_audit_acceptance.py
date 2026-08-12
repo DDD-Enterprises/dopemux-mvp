@@ -457,6 +457,15 @@ def _exact_model_audit(**overrides: Any) -> dict:
     return audit
 
 
+def _grok_audit(**overrides: Any) -> dict:
+    audit = _local_embedded_audit()
+    audit["auditor_model"] = "grok-4.5"
+    audit["auditor_tool"] = "grok-cli"
+    audit["invocation"] = "grok --always-approve --output-format plain -p '<prompt>'"
+    audit.update(overrides)
+    return audit
+
+
 def _skipped_audit(**overrides: Any) -> dict:
     audit = _local_embedded_audit(status="SKIPPED", tool="none")
     audit["auditor_model"] = "unknown"
@@ -477,6 +486,10 @@ PARITY_CORPUS: list[tuple[str, dict, bool]] = [
     ("exact model bound to agy", _exact_model_audit(), True),
     ("exact model with wrong tool", _exact_model_audit(auditor_tool="claude-code-cli"), False),
     ("exact model with gemini-cli", _exact_model_audit(auditor_tool="gemini-cli"), False),
+    ("grok pair bound both ways", _grok_audit(), True),
+    ("grok model with wrong tool", _grok_audit(auditor_tool="claude-code-cli"), False),
+    ("grok tool with wrong model", _grok_audit(auditor_model="gemini"), False),
+    ("grok build label is not a model", _grok_audit(auditor_model="grok-4.5-build"), False),
     ("skipped diagnostic", _skipped_audit(), True),
     ("skipped without skip_reason", _skipped_audit(skip_reason=None), False),
     ("skipped with a live tool", _skipped_audit(auditor_tool="agy"), False),
@@ -597,7 +610,7 @@ def test_every_schema_conditional_is_exercised_by_the_corpus() -> None:
     the corpus is what proves the canonical engine is actually running.
     """
     conditionals = _schema().get("allOf", [])
-    assert len(conditionals) == 3, (
+    assert len(conditionals) == 5, (
         "The trusted schema's allOf set changed. Add parity fixtures covering the "
         "new conditional to PARITY_CORPUS, then update this count."
     )
