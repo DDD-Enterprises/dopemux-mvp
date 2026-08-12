@@ -1,0 +1,291 @@
+## Decision: **authorize the denominator re-freeze and class-level remediation**
+
+**Yes. MUST_FIX 1 should be absorbed into a new denominator.** The auditor's missing items are not new architecture. They are already present in the ratified candidate's Proposed Decision / Consequences, so excluding them would knowingly preserve an incomplete acceptance denominator. The controlling audit explicitly identifies those omissions and returns `FAIL` with 3 blockers and 5 must-fix findings.
+
+PR #1227 should remain a draft at the current published head `8321bb2943887a9ec71847f9ead2ebd9fa7025b2` while this is repaired.
+
+### Operator ruling
+
+```text
+MUST_FIX_1_DISPOSITION=
+AUTHORIZED_DENOMINATOR_REFREEZE
+
+OLD_FREEZE_COMMIT=
+a9397e5630...
+
+OLD_INVENTORY_SHA256=
+f073ca28802e6b140dd5789d5fad5839962635f7b287cac589ec704efc663288
+
+OLD_FREEZE_STATUS=
+SUPERSEDED_INCOMPLETE_DENOMINATOR
+
+ARCHITECTURE_SEMANTICS_CHANGED=
+false
+
+ADR_DISPOSITIONS_CHANGED=
+false
+
+IMPLEMENTATION_EXECUTION=
+NOT_AUTHORIZED
+```
+
+The old 97-clause freeze must **not** be rewritten out of history or described as valid-in-hindsight. It remains the historical denominator that the first independent audit proved incomplete. The handoff itself correctly identifies §5 as a *minimum*, which is why the 97-clause derivation missed material candidate content.
+
+## How to re-freeze it
+
+Do **not** merely add the auditor's five rows and declare victory. That risks another denominator carousel.
+
+The replacement denominator must be produced by a fresh exhaustive census of the candidate using this rule:
+
+```text
+INCLUDE:
+- every atomic normative assertion in each ADR Proposed decision;
+- every Consequence that constrains authority, safety, state semantics,
+  privacy, write behavior, enablement, or canonical ownership;
+- every normative amendment/firewall embedded in an ADR, including MA-06;
+- exact closed sets, limits, defaults, deny rules, authority targets,
+  state distinctions, required receipts, and required interfaces.
+
+DO NOT INCLUDE AS CONTRACT REQUIREMENTS:
+- Context-only narrative unless it establishes a normative invariant;
+- Evidence/traceability references;
+- the acceptance-condition boilerplate itself;
+- MA-08 process mechanics;
+- packaging observations that do not constrain architecture;
+- rejected alternatives unless the accepted decision independently
+  expresses the corresponding prohibition.
+
+REJECTED ALTERNATIVES MAY BE USED:
+- as adversarial oracles proving that a mutation crosses into an
+  explicitly rejected design.
+```
+
+At minimum the new denominator must add the omissions already established by the independent auditor:
+
+```text
+ADR-SB-003
+  historical state and current state remain distinct
+
+ADR-SB-004
+  policy evaluation dimensions exactly cover:
+  identity
+  grants
+  provider
+  embedding
+  custody
+  backup
+  operation
+
+ADR-SB-007
+  purge completion receipt
+
+ADR-SB-008
+  ConPort never owns task state
+  Dope-Memory is not granted PM authority
+  confirmed loop event kinds = open / close / cancel
+```
+
+Those are **source recovery**, not architecture expansion.
+
+### Freeze sequence
+
+Use a dedicated denominator-only commit **before modifying contracts again**:
+
+```text
+C0_REFREEZE
+  ADR_CLAUSE_INVENTORY.json
+  denominator-generation logic if required
+  DENOMINATOR_REFREEZE_RECEIPT.json
+
+NO schemas/second_brain/contracts/** changes in C0_REFREEZE
+NO validator semantic repair in C0_REFREEZE
+```
+
+The receipt must bind:
+
+```text
+supersedes_freeze_commit = a9397e5630...
+supersedes_inventory_sha256 = f073ca2880...
+supersession_reason = INCOMPLETE_MATERIAL_DECISION_DENOMINATOR
+candidate_sha256 = e4b28946...b66c
+new_inventory_sha256 = <recomputed>
+new_clause_count = <actual>
+added_clause_ids = [...]
+removed_clause_ids = [...]
+```
+
+`removed_clause_ids` should normally be empty unless a prior clause is proven to encode invented semantics rather than candidate law.
+
+## Authorize the whole repair class now
+
+I also authorize the producer to fix **all 3 blockers + all 5 must-fix classes in one remediation wave**. Do not return after every individual mechanical repair.
+
+Use the existing packet allowlist only.
+
+The repair must satisfy these controlling rules:
+
+```text
+B1 — bilateral semantic false-green
+-----------------------------------
+Const-pin the NEW frozen inventory SHA256 in the validator.
+
+Validator must require:
+candidate SHA == frozen candidate
+inventory SHA == operator-authorized refreeze
+inventory source fragments resolve exactly
+contract rule == frozen inventory rule
+
+Changing inventory + contract together must FAIL.
+
+
+B2 — invented dopeTask authority
+---------------------------------
+Remove dopeTask from all canonical-authority sets and affected rules.
+
+Do not substitute another authority absent from candidate law.
+
+
+B3 — one-way set grounding
+--------------------------
+For a closed set, source-grounding must be BIDIRECTIONAL.
+
+contract set == exact source-derived set
+
+Not:
+contract set ⊆ source set
+
+
+MUST_FIX 2 — invented typed/API surface
+---------------------------------------
+Remove invented operations/properties/enums unless an exact candidate
+clause supports them.
+
+For LocalSpoolPort/CustodyPort:
+do not invent an API operation catalogue merely because a port exists.
+
+For OpenLoop/TaskProposal/capability schemas:
+do not invent lifecycle states, freshness enums, or fields absent from
+candidate law.
+
+
+MUST_FIX 3 — invented recall total ordering
+-------------------------------------------
+Remove the four-way ranking.
+
+Machine contract may encode:
+AUTHORITY_FIRST = true
+
+It may encode participation of chronology/source-native/advisory sources.
+
+It may NOT invent relative order among those three unless the candidate
+states one.
+
+
+MUST_FIX 4 — token-label pseudo-contracts
+-----------------------------------------
+A string like PURGE_DEPENDENCY_GRAPH or FRESHNESS_METADATA is not enough
+to prove machine coverage.
+
+For every required artifact:
+either provide minimal checkable machine structure grounded in candidate
+law,
+or encode the underlying decision as an actually testable primitive rule.
+
+No label-only COVERED result.
+
+
+MUST_FIX 5 — FO-01 partial receipt lock
+---------------------------------------
+Expand FO-01 reconciliation validation so every receipt-derived field
+presented as authoritative is checked against the receipt.
+
+No partial projection may PASS while another receipt-derived status field
+has drifted.
+```
+
+This matches the handoff's recommended class-level repair rather than another series of narrow patches.
+
+## Stronger false-green requirement
+
+Before another audit, the producer must deliberately prove these mutations fail:
+
+```text
+inventory + contract bilateral change                  FAIL
+authority-first → vector-first                         FAIL
+DEFER/NO MUTATION → auto-apply                         FAIL
+drop PURGE from a closed set                           FAIL
+drop Review from UX operations                         FAIL
+add dopeTask as canonical authority                    FAIL
+add cloud_offload to CustodyPort                       FAIL
+invent unsupported schema enum/property                FAIL
+remove each newly-added MUST_FIX-1 denominator clause  FAIL
+alter FO-01 receipt-derived field                      FAIL
+```
+
+A mutation may count only if the **intended guard** is what fails. An unrelated parse error cannot take credit.
+
+## Fresh audit
+
+The existing Grok `FAIL` report is now historical controlling evidence for **why remediation was required**. Do not edit it.
+
+After the repair:
+
+```text
+freeze final substantive head
+→ generate a fresh audit prompt naming that exact head
+→ fresh independent read-only session
+→ audit the exact frozen bytes
+```
+
+Require:
+
+```text
+VERDICT=PASS
+BLOCKERS=0
+MUST_FIX=0
+```
+
+The fresh auditor must explicitly attack:
+
+```text
+denominator completeness
+bilateral inventory+contract mutation
+closed-set shrinking and widening
+invented authority values
+invented typed surface
+label-only pseudo-contracts
+FO-01 receipt lock
+```
+
+Do not reuse the current failed audit as acceptance evidence.
+
+## Authority granted now
+
+```text
+DENOMINATOR REFREEZE:          AUTHORIZED
+CLASS-LEVEL CONTRACT REPAIR:   AUTHORIZED
+VALIDATOR/TEST REPAIR:         AUTHORIZED
+FO-01 VALIDATION REPAIR:       AUTHORIZED
+PROOF REGENERATION:            AUTHORIZED
+FRESH INDEPENDENT AUDIT:       AUTHORIZED
+FAST-FORWARD PUSH TO #1227:    AUTHORIZED
+
+MARK READY:                    NOT_AUTHORIZED
+MERGE:                         NOT_AUTHORIZED
+ADR ACCEPTANCE:                NOT_AUTHORIZED
+ADR REDISPOSITION:             NOT YET
+RUNTIME IMPLEMENTATION:        NOT_AUTHORIZED
+DENIAL FIXTURES:               NOT_AUTHORIZED
+FORCE PUSH:                    FORBIDDEN
+REBASE:                        FORBIDDEN
+```
+
+The next legitimate terminal state remains:
+
+```text
+READY_FOR_OPERATOR_CONTRACT_EVIDENCE_MERGE_DECISION
+```
+
+and it is reachable only after a fresh independent `PASS / 0 / 0`.
+
+So the answer to the producer's specific question is **yes: re-freeze the denominator, preserve the old freeze as superseded evidence, then repair the entire audit finding class in one pass.**
