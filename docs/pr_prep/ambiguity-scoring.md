@@ -4,33 +4,20 @@ title: Ambiguity Scoring
 type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-03-14'
-last_review: '2026-03-14'
-next_review: '2026-06-12'
+date: '2026-08-11'
+last_review: '2026-08-11'
+next_review: '2026-11-09'
 prelude: Ambiguity Scoring (explanation) for dopemux documentation and developer workflows.
 ---
 # Ambiguity Scoring
 
-## Overview
-Ambiguity scoring quantifies the risk that a PR is incomplete based on local git state. The score ranges from 0 to 100.
+`docs/pr_prep/**` is a compatibility surface only, by ruling of
+TP-DMX-PR-PREP-SPECIALIST-V2-001-R1. This file must not carry independent
+behavioral authority.
 
-## Score Components
+Canonical: [`../03-reference/pr-pipeline/prep/ambiguity-scoring.md`](../03-reference/pr-pipeline/prep/ambiguity-scoring.md),
+which retains the ambiguity-score formula as an S1/S2 evidence signal and
+points decision authority to [`operator-contract.md`](../03-reference/pr-pipeline/prep/operator-contract.md)
+§4 (Risk lanes) and §S4 (default `DRAFT_ONLY` creation posture).
 
-| Factor | Weight/Formula | Description |
-|---|---|---|
-| **Branch Overlap** | `max_overlap_ratio * 40` | The highest overlap ratio with any sibling branch. |
-| **Stash Overlap** | `max_overlap_ratio * 40` | The highest overlap ratio with any git stash. |
-| **Dirty Worktree** | `+20` | Any uncommitted work that overlaps with current branch changes. |
-| **High Signal** | `+10` | Any overlap occurring in migrations, config, or documentation. |
-
-## Interpretation
-
-| Score | Level | Decision |
-|---|---|---|
-| **0–19** | `NONE` | `PROCEED` |
-| **20–39** | `LOW` | `PROCEED_WITH_CAUTION` |
-| **40–69** | `MEDIUM` | `DRAFT_ONLY` |
-| **70–100** | `HIGH` | `BLOCK_PENDING_REVIEW` |
-
-## Hard Blockers
-The `BLOCK_PENDING_REVIEW` decision is triggered for any score over 70, indicating high confidence that significant related work is missing from the branch.
+This stub is kept only so existing links into this filename keep resolving.

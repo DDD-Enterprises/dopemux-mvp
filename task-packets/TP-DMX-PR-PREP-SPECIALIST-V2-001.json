@@ -16,7 +16,11 @@
     "No merge, close, mark-ready, force push, history rewrite, branch deletion, permission change, credential change, release, migration, or production mutation is authorized.",
     "For this packet, docs/03-reference/pr-pipeline/prep/** and docs/03-reference/pr-pipeline/merge/** are the canonical PR-pipeline reference-contract surfaces; docs/pr_prep/** and docs/pr_merge/** are compatibility surfaces only and must not carry independent behavioral authority.",
     "R2 is a narrow closure amendment only: the six newly allowlisted residual PR-prep documentation paths may be changed solely to remove dangling contract-v2 references and legacy V1 behavioral semantics or convert them to compatibility/canonical pointers.",
-    "R3 is the terminal semantic-census closure before audit: the twelve newly allowlisted PR-prep documentation paths may be changed only to retire contradictory V1 behavioral authority or convert compatibility copies to canonical pointers. Any additional non-archive authority-bearing contradiction discovered outside the amended allowlist is a stop condition, not an automatic scope expansion."
+    "R3 is the terminal semantic-census closure before audit: the twelve newly allowlisted PR-prep documentation paths may be changed only to retire contradictory V1 behavioral authority or convert compatibility copies to canonical pointers. Any additional non-archive authority-bearing contradiction discovered outside the amended allowlist is a stop condition, not an automatic scope expansion.",
+    "R4 is the final semantic closure before audit. The R3 census artifact proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/LEGACY_SEMANTICS_SCAN_R3.md is the frozen source for the exact 19 ACTIVE_CONTRADICTION paths. Before editing, record its SHA256 and extract a sorted exact path list. If the extracted ACTIVE_CONTRADICTION count is not exactly 19, stop with PREP_V2_NEEDS_SUPERVISOR.",
+    "The 21 R4 candidate paths are a transport envelope only. The R4 substantive repair commit may modify only paths that are both in that 21-path envelope and in the exact frozen 19-path ACTIVE_CONTRADICTION set from the R3 census. Candidate paths not classified ACTIVE_CONTRADICTION must remain byte-unchanged.",
+    "R3 supervisor-judgment files using LOW/MEDIUM/HIGH as a clearly namespaced local measurement such as obligation severity, override severity, evidence confidence, quality, or signal level are NON_BLOCKING_LOCAL_MEASUREMENT and must not be changed solely to rename those values. Such scales become blocking only if they act as the PR risk lane, creation posture, audit trigger, proof acceptance rule, or readiness state.",
+    "No additional scope expansion follows R4. Any non-archive ACTIVE_CONTRADICTION outside the frozen 19-path R3 set is a genuine stop condition requiring a new supervisor decision, not automatic mutation."
   ],
   "depends_on": [],
   "repo_binding": {
@@ -80,7 +84,28 @@
       "docs/pr_prep/creation-mode-rules.md",
       "docs/pr_prep/pr-drafting-rules.md",
       "docs/pr_prep/live-pilot-protocol.md",
-      "docs/pr_prep/stash-and-branch-safety-rules.md"
+      "docs/pr_prep/stash-and-branch-safety-rules.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/codex/readme.md",
+      "docs/pr_prep/adapters/codex/readme-2.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/vibe/agent-spec.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/vibe/checkpoint-sequence.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/vibe/guardrails.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/vibe/operator-review-form.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/vibe/readme.md",
+      "docs/pr_prep/adapters/vibe/agent-blueprint.md",
+      "docs/pr_prep/adapters/vibe/checkpoint-sequence.md",
+      "docs/pr_prep/adapters/vibe/guardrails-2.md",
+      "docs/pr_prep/adapters/vibe/operator-review-form.md",
+      "docs/pr_prep/adapters/vibe/readme-2.md",
+      "docs/pr_prep/adapters/vibe/template-agent.md",
+      "docs/03-reference/pr-pipeline/prep/final-prep-decision-model.md",
+      "docs/pr_prep/final-prep-decision-model.md",
+      "docs/03-reference/pr-pipeline/prep/post-pilot-go-no-go-criteria.md",
+      "docs/pr_prep/post-pilot-go-no-go-criteria.md",
+      "docs/03-reference/pr-pipeline/prep/post-eval-governance-options.md",
+      "docs/pr_prep/post-eval-governance-options.md",
+      "docs/03-reference/pr-pipeline/prep/ambiguity-scoring.md",
+      "docs/pr_prep/ambiguity-scoring.md"
     ],
     "verify": [
       "Every changed path is in the allowlist.",
@@ -102,7 +127,14 @@
       "No current PR-prep document authorizes PR Prep to create a non-draft or merge-ready PR without the V2 operator/mutation boundaries.",
       "No current PR-prep document emits CREATE_READY, CLEAN_CREATE_READY, HIGH_RISK_ESCALATE, DRAFT_RECOMMENDED, GO_SUPERVISED_FINAL_CREATION, or SUPERVISED_FINAL_CREATION as governing V2 states.",
       "A full non-archive semantic census of docs/03-reference/pr-pipeline/prep/** and docs/pr_prep/** reports zero ACTIVE_CONTRADICTION items.",
-      "C1-R2 f0877721059c30d611db44521d0020603806076e is SUPERSEDED_NOT_AUDITED and S4 binds only C1-R3."
+      "C1-R2 f0877721059c30d611db44521d0020603806076e is SUPERSEDED_NOT_AUDITED and S4 binds only C1-R3.",
+      "The SHA256 and exact sorted 19-path R3 ACTIVE_CONTRADICTION set are frozen before R4 edits.",
+      "The R4 substantive repair modifies only paths in the frozen 19-path set; the two extra candidate-envelope paths, if not active in the R3 census, remain unchanged.",
+      "The final non-archive PR-prep semantic census reports ACTIVE_CONTRADICTION_COUNT=0.",
+      "Namespaced local severity/confidence/quality/signal scales are not misclassified as V2 risk lanes and remain unchanged unless they directly control creation, audit, proof acceptance, or readiness.",
+      "No active adapter claims the legacy seven-step workflow or fixed seven-artifact bundle as the current V2 contract.",
+      "No active PR-prep document grants non-draft, merge-ready, CREATE_READY, GO_SUPERVISED_FINAL_CREATION, SUPERVISED_FINAL_CREATION, or MERGE_READY authority to PR Prep.",
+      "C1-R4 is the only audit target, and the final independent audit is bound to its exact SHA."
     ]
   },
   "pr": {
@@ -200,7 +232,14 @@
         "The canonical layered-validation and drafting files must not emit obsolete CREATE_READY, CLEAN_CREATE_READY, HIGH_RISK_ESCALATE, DRAFT_RECOMMENDED, or legacy LOW/MEDIUM/HIGH risk semantics as current V2 states.",
         "The canonical live-pilot file must not retain SUPERVISED_FINAL_CREATION as a current PR-prep capability.",
         "The canonical stash/branch safety file may preserve useful read-only discovery constraints but must express risk/posture decisions using V2 states and L0-L3 semantics or defer to operator-contract.md.",
-        "Run a terminal semantic census over every non-archive file under docs/03-reference/pr-pipeline/prep/** and docs/pr_prep/**. Classify every legacy-token match as RETIRED_PROSE, NON_PR_PREP_DOMAIN, or ACTIVE_CONTRADICTION. ACTIVE_CONTRADICTION outside the R3 allowlist stops execution."
+        "Run a terminal semantic census over every non-archive file under docs/03-reference/pr-pipeline/prep/** and docs/pr_prep/**. Classify every legacy-token match as RETIRED_PROSE, NON_PR_PREP_DOMAIN, or ACTIVE_CONTRADICTION. ACTIVE_CONTRADICTION outside the R3 allowlist stops execution.",
+        "R4 pre-edit scope freeze: hash LEGACY_SEMANTICS_SCAN_R3.md and emit proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/R4_ACTIVE_CONTRADICTION_PATHS.txt containing the sorted exact 19 paths classified ACTIVE_CONTRADICTION. The file is immutable for the remainder of R4.",
+        "Repair only the frozen 19 active paths. For canonical files under docs/03-reference/pr-pipeline/prep/**, replace obsolete V1 behavioral authority with concise V2 pointers/deprecation language unless useful non-conflicting descriptive content can be preserved safely.",
+        "For docs/pr_prep/** compatibility copies in the frozen 19-path set, prefer short pointer stubs to the corresponding canonical docs/03-reference/pr-pipeline/prep/** path. They must not independently specify artifacts, risk lanes, creation modes, audit triggers, or readiness.",
+        "Adapter repair rule: adapter docs may describe platform invocation format but must defer behavior to the V2 operator contract. They must not require the legacy seven-step workflow, fixed seven-artifact bundle, BRANCH_STATE.json or PR_HANDOFF_BUNDLE.json as mandatory V2 outputs, legacy LOW/MEDIUM/HIGH PR risk hints, CREATE_READY, or merge-ready/non-draft PR creation authority.",
+        "State-model repair rule: final-prep, post-pilot, and post-eval documents must not emit CREATE_READY, CLEAN_CREATE_READY, DRAFT_RECOMMENDED, GO_SUPERVISED_FINAL_CREATION, SUPERVISED_FINAL_CREATION, GO_DIRECT, or MERGE_READY as current governing V2 states. Current prep states and operator boundaries come from operator-contract.md.",
+        "Ambiguity repair rule: ambiguity may remain an evidence/uncertainty signal, but LOW/MEDIUM/HIGH ambiguity must not become a competing PR risk lane or direct creation/readiness decision table. V2 risk remains L0-L3 and overlap classification remains IDENTICAL/SUBSET/SUPERSET/COMPATIBLE/CONFLICTING/UNKNOWN.",
+        "Adjudicate every R3 supervisor-judgment item read-only. Mark it NON_BLOCKING_LOCAL_MEASUREMENT when its scale is explicitly namespaced to severity/confidence/quality/signal and cannot itself grant or block PR creation, audit, proof acceptance, or readiness. Do not edit those files."
       ],
       "commands": [
         "git diff --name-only",
@@ -219,7 +258,7 @@
     },
     {
       "id": "S3_PRE_PUSH_AND_FREEZE_CONTENT",
-      "task": "After the R3 terminal semantic-census closure, rerun all deterministic gates and freeze a NEW substantive content head C1-R3. Prior C1 and C1-R2 are superseded and must never be audit targets.",
+      "task": "After R4 repairs the frozen 19-path active contradiction set, rerun every deterministic gate, prove the R4 repair commit touched no non-frozen candidate path, and freeze the final substantive content head C1-R4.",
       "requirements": [
         "Run repo/worktree/branch identity, changed-file allowlist, git diff --check, Task Packet/frontmatter validation, proof/audit schema validation for present artifacts, focused tests, relevant complete governance/docs suite, changed-file pre-commit, and secret scan.",
         "If pre-commit modifies a file, rerun it to a clean pass before commit.",
@@ -230,7 +269,12 @@
         "Record the prior C1 as SUPERSEDED_NOT_AUDITED and bind all subsequent audit instructions only to C1-R2.",
         "Record C1-R2 f0877721059c30d611db44521d0020603806076e as SUPERSEDED_NOT_AUDITED.",
         "Run the terminal semantic census across the complete non-archive canonical and compatibility PR-prep documentation trees and require zero ACTIVE_CONTRADICTION findings.",
-        "Bind all subsequent S4 instructions only to the new exact C1-R3."
+        "Bind all subsequent S4 instructions only to the new exact C1-R3.",
+        "Record C1 1ab5d6c1cc56e85557776b37b0ffa0594858aa02 and C1-R2 f0877721059c30d611db44521d0020603806076e as SUPERSEDED_NOT_AUDITED. C1-R3 does not exist.",
+        "Require the post-repair terminal semantic census across every non-archive file under docs/03-reference/pr-pipeline/prep/** and docs/pr_prep/** to report ACTIVE_CONTRADICTION_COUNT=0.",
+        "Require a deterministic R4 scope check proving every path changed by the R4 content repair is present in R4_ACTIVE_CONTRADICTION_PATHS.txt, and every candidate-envelope path absent from that file is byte-unchanged from the R4 parent.",
+        "Borderline local-measurement matches are not failures when classified NON_BLOCKING_LOCAL_MEASUREMENT under the R4 supervisor rule. Preserve the classification evidence in the terminal scan.",
+        "If all gates pass, freeze C1-R4 as the sole substantive audit target. Do not create an extra proof-record commit before the auditor has been given the exact C1-R4 identity unless existing repository tooling requires one; if a proof-record commit is used, prove it changes proof-only paths."
       ],
       "commands": [
         "git diff --check",
@@ -254,14 +298,18 @@
     },
     {
       "id": "S4_FINAL_INDEPENDENT_AUDIT",
-      "task": "Run one independent L2 audit against exact frozen C1.",
+      "task": "Conditionally proceed directly to one final independent L2 audit after C1-R4 is frozen, provided every R4 deterministic gate passes and ACTIVE_CONTRADICTION_COUNT=0. No additional supervisor round is required.",
       "requirements": [
         "Discover the live approved auditor route and exact selector at execution; do not invent a model ID.",
         "Auditor must be independent of the implementer.",
         "Review the complete active contract diff, downstream handoff, legacy-consumer scan, risk-lane semantics, drift rules, operator boundaries, proof-only reuse, and PR Steward authority separation.",
         "Record requested, configured, response-claimed, proxy-reported, and provider-attested identities separately when available.",
         "Accept PASS or explicitly non-blocking PASS_WITH_RISKS only.",
-        "One substantive repair attempt maximum; any repair creates a new frozen content head and requires a fresh audit."
+        "One substantive repair attempt maximum; any repair creates a new frozen content head and requires a fresh audit.",
+        "Audit exact C1-R4 only. Prior C1/C1-R2 and the nonexistent C1-R3 are invalid audit targets.",
+        "The audit scope must include the canonical V2 operator contract, outgoing and receiving handoff semantics, the complete canonical/compatibility PR-prep tree census, adapter deferral behavior, L0-L3 risk semantics, drift/overlap semantics, operator mutation boundaries, proof-only successor rule, and PR Steward authority separation.",
+        "The auditor must explicitly review the R4 frozen 19-path manifest and the terminal semantic census, including the NON_BLOCKING_LOCAL_MEASUREMENT adjudications, for false negatives or accidental over-normalization.",
+        "If the auditor returns PASS or PASS_WITH_RISKS with only explicit non-blocking risks, stop and report the audit result. Do not create a PR or proof-only PR-number-bound successor without separate operator authorization for draft PR creation."
       ],
       "expected_files": [
         "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/AUDITOR_REPORT.md",

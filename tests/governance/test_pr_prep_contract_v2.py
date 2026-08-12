@@ -12,6 +12,24 @@ canonical/compatibility file pairs (`branch-state-schema.md`,
 `consensus-gate-rules.md`, `handoff-contract.md`) still carried an active
 `risk_hint: LOW|MEDIUM|HIGH` schema and dangling links to the deleted
 `contract-v2.md` after R1; R2 converts all six into pointer stubs.
+
+Also covers the TP-DMX-PR-PREP-SPECIALIST-V2-001-R4 closure: the R3 terminal
+semantic census found 19 files outside the R1+R2+R3 allowlist (codex/vibe
+adapter blueprints, `final-prep-decision-model.md`,
+`post-pilot-go-no-go-criteria.md`, `post-eval-governance-options.md`, and
+`ambiguity-scoring.md`, in both canonical and compat form) that actively
+instructed current behavior using the retired fixed-artifact ceremony,
+`risk_hint`/`Risk Hint` `LOW/MEDIUM/HIGH`, and `CREATE_READY`/
+`GO_SUPERVISED_FINAL_CREATION` vocabulary. R4 converts the 9 canonical files
+to deprecation stubs deferring to `operator-contract.md` and the 10 compat
+files to pure pointer stubs. This module does not test the 7
+`NON_BLOCKING_LOCAL_MEASUREMENT` files identified by the same census
+(`base-branch-detection-rules.md`, `obligation-model.md`,
+`obligation-severity-rules.md`, `evaluation-model.md`,
+`section-fill-policy.md`, `pilot-case-selection-rules.md`,
+`operator-review-form.md`) — the R4 ruling requires those left unedited,
+using LOW/MEDIUM/HIGH as a namespaced local measurement rather than the PR
+risk lane.
 """
 from __future__ import annotations
 
@@ -48,6 +66,80 @@ R2_RESIDUAL_FILES = [
 
 ALL_IN_SCOPE_CANONICAL = IN_SCOPE_CANONICAL + R2_RESIDUAL_FILES
 ALL_IN_SCOPE_COMPAT = IN_SCOPE_COMPAT + R2_RESIDUAL_FILES
+
+# The frozen 19-path R3 ACTIVE_CONTRADICTION set repaired by R4. Canonical
+# and compat filenames differ (compat copies use disambiguated names like
+# `readme-2.md`), so these are paired explicitly rather than reusing one
+# filename list across both trees.
+R4_REPAIRED_PAIRS = [
+    (
+        "adapters/codex/readme.md",
+        "adapters/codex/readme-2.md",
+    ),
+    (
+        "adapters/vibe/agent-spec.md",
+        "adapters/vibe/agent-blueprint.md",
+    ),
+    (
+        "adapters/vibe/agent-spec.md",
+        "adapters/vibe/template-agent.md",
+    ),
+    (
+        "adapters/vibe/checkpoint-sequence.md",
+        "adapters/vibe/checkpoint-sequence.md",
+    ),
+    (
+        "adapters/vibe/guardrails.md",
+        "adapters/vibe/guardrails-2.md",
+    ),
+    (
+        "adapters/vibe/operator-review-form.md",
+        "adapters/vibe/operator-review-form.md",
+    ),
+    (
+        "final-prep-decision-model.md",
+        "final-prep-decision-model.md",
+    ),
+    (
+        "post-pilot-go-no-go-criteria.md",
+        "post-pilot-go-no-go-criteria.md",
+    ),
+    (
+        "post-eval-governance-options.md",
+        "post-eval-governance-options.md",
+    ),
+    (
+        "ambiguity-scoring.md",
+        "ambiguity-scoring.md",
+    ),
+]
+
+R4_CANONICAL_FILES = sorted({canonical for canonical, _ in R4_REPAIRED_PAIRS})
+R4_COMPAT_FILES = sorted({compat for _, compat in R4_REPAIRED_PAIRS})
+
+# Structural remnants of the retired ceremony: markdown headers/fields that
+# only appear if a file still actively *defines* the checkpoint/artifact
+# ceremony (as opposed to prose describing, in the past tense, that it was
+# retired -- retirement prose legitimately quotes the retired literals, so
+# these checks target live structural markup, not the vocabulary itself).
+R4_LIVE_CEREMONY_STRUCTURE_MARKERS = (
+    "## Mandatory Checkpoints",
+    "**Required Artifact**:",
+    "**Required Artifacts**:",
+    "**HUMAN SUMMARY TEMPLATE**:",
+    "### INTAKE_CHECKPOINT",
+    "### CREATION_CHECKPOINT",
+    "## Guardrail Rules",
+    "## Checkpoint Sequence",
+)
+
+# The retired ambiguity-band decision table this file previously used to
+# compete with the L0-L3 risk lanes.
+LEGACY_AMBIGUITY_DECISION_TABLE_SNIPPET = "| **70–100** | `HIGH` | `BLOCK_PENDING_REVIEW` |"
+
+# The retired live decision-criteria heading structure this file previously
+# used to define GO_* postures as current governing outcomes.
+LEGACY_GO_CRITERIA_HEADING_SNIPPET = "### GO_SUPERVISED_FINAL_CREATION"
 
 # The legacy risk_hint enum as a JSON type annotation (not prose describing
 # what was retired).
@@ -152,3 +244,71 @@ def test_should_reference_canonical_tree_when_scanning_r2_residual_compat_stubs(
     text = _read(COMPAT_DIR / filename)
     assert "TP-DMX-PR-PREP-SPECIALIST-V2-001-R1" in text
     assert "03-reference/pr-pipeline/prep" in text
+
+
+@pytest.mark.parametrize("filename", R4_CANONICAL_FILES)
+def test_should_not_encode_legacy_enum_literals_when_scanning_r4_repaired_canonical_files(
+    filename: str,
+) -> None:
+    text = _read(CANONICAL_DIR / filename)
+    for marker in R4_LIVE_CEREMONY_STRUCTURE_MARKERS:
+        assert marker not in text
+    assert LEGACY_FIXED_ARTIFACT_SNIPPET not in text
+    assert "contract-v2.md" not in text
+    assert "Superseded" in text
+
+
+@pytest.mark.parametrize("filename", R4_COMPAT_FILES)
+def test_should_not_encode_legacy_enum_literals_when_scanning_r4_repaired_compat_files(
+    filename: str,
+) -> None:
+    text = _read(COMPAT_DIR / filename)
+    for marker in R4_LIVE_CEREMONY_STRUCTURE_MARKERS:
+        assert marker not in text
+    assert LEGACY_FIXED_ARTIFACT_SNIPPET not in text
+    assert "contract-v2.md" not in text
+
+
+@pytest.mark.parametrize("filename", R4_COMPAT_FILES)
+def test_should_reference_canonical_tree_when_scanning_r4_repaired_compat_stubs(
+    filename: str,
+) -> None:
+    text = _read(COMPAT_DIR / filename)
+    assert "TP-DMX-PR-PREP-SPECIALIST-V2-001-R1" in text
+    assert "compatibility surface only" in text
+
+
+def test_should_not_encode_legacy_ambiguity_decision_table_when_scanning_canonical_ambiguity_scoring() -> None:
+    text = _read(CANONICAL_DIR / "ambiguity-scoring.md")
+    assert LEGACY_AMBIGUITY_DECISION_TABLE_SNIPPET not in text
+    assert "| Score | Level | Decision |" not in text
+
+
+def test_should_not_define_legacy_pilot_go_states_as_governing_when_scanning_canonical_post_pilot_criteria() -> None:
+    text = _read(CANONICAL_DIR / "post-pilot-go-no-go-criteria.md")
+    assert LEGACY_GO_CRITERIA_HEADING_SNIPPET not in text
+    assert "Superseded" in text
+
+
+# The R4 ruling exempts these 7 files (plus their compat copies) as
+# NON_BLOCKING_LOCAL_MEASUREMENT: LOW/MEDIUM/HIGH here grades a namespaced
+# local quantity (confidence, obligation severity, evaluation quality,
+# override severity) and does not itself gate PR creation, audit, or
+# readiness. They must remain unedited by this packet.
+R4_NON_BLOCKING_FILES = [
+    "base-branch-detection-rules.md",
+    "obligation-model.md",
+    "obligation-severity-rules.md",
+    "evaluation-model.md",
+    "section-fill-policy.md",
+    "pilot-case-selection-rules.md",
+    "operator-review-form.md",
+]
+
+
+@pytest.mark.parametrize("filename", R4_NON_BLOCKING_FILES)
+def test_should_not_declare_itself_a_pointer_stub_when_scanning_non_blocking_canonical_files(
+    filename: str,
+) -> None:
+    text = _read(CANONICAL_DIR / filename)
+    assert "compatibility surface only" not in text
