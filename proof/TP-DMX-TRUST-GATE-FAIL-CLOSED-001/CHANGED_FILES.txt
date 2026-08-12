@@ -1,0 +1,14 @@
+src/dopemux/dcp/control_snapshot.py
+src/dopemux/dcp/red_lane_scanner.py
+task-packets/TP-DMX-TRUST-GATE-FAIL-CLOSED-001.json
+task-packets/TP-DMX-TRUST-GATE-FAIL-CLOSED-001.md
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/proof/TP-DCP-0001/PROOF.json
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/proof/TP-DCP-0003/MERGE_READINESS.json
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/proof/TP-DCP-0003/PROOF.json
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/schemas/dcp/README.md
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/schemas/dcp/dcp_control_snapshot.schema.json
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/task-packets/TP-DCP-0001.json
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/task-packets/TP-DCP-0003.json
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/task-packets/TP-DCP-0004.json
+tests/dcp/test_dcp_0004_control_snapshot.py
+tests/dcp/test_dcp_0005_red_lane_scanner.py

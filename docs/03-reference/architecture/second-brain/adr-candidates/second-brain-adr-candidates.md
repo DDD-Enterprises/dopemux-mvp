@@ -54,7 +54,7 @@ Create a Dopemux PCP/DCP-compatible extension. It owns control logic, derived re
 ### Acceptance conditions
 
 * Independent reviewer confirms alignment with accepted repository authority.
-* Machine contracts and denial fixtures parse and cover the decision.
+* Machine contracts required by this ADR MUST parse and cover the decision at ADR acceptance. Required denial fixtures MUST be implemented, executed, and pass before the affected implementation capability is authorized for enablement. Absence of not-yet-implemented denial fixtures does not constitute implementation evidence and does not permit any runtime, production, or enablement claim.
 * No runtime, implementation, or production claim is inferred from acceptance.
 * Any authority-corpus drift is re-adjudicated before implementation planning.
 ## ADR-SB-002: Capture, Candidate, Review, and Promotion
@@ -90,7 +90,7 @@ Append captured events and candidates to Dope-Memory, build a non-canonical revi
 ### Acceptance conditions
 
 * Independent reviewer confirms alignment with accepted repository authority.
-* Machine contracts and denial fixtures parse and cover the decision.
+* Machine contracts required by this ADR MUST parse and cover the decision at ADR acceptance. Required denial fixtures MUST be implemented, executed, and pass before the affected implementation capability is authorized for enablement. Absence of not-yet-implemented denial fixtures does not constitute implementation evidence and does not permit any runtime, production, or enablement claim.
 * No runtime, implementation, or production claim is inferred from acceptance.
 * Any authority-corpus drift is re-adjudicated before implementation planning.
 ## ADR-SB-003: Recall Fusion and Provenance
@@ -124,7 +124,7 @@ Use deterministic authority-first fusion with pre-model policy filtering, freshn
 ### Acceptance conditions
 
 * Independent reviewer confirms alignment with accepted repository authority.
-* Machine contracts and denial fixtures parse and cover the decision.
+* Machine contracts required by this ADR MUST parse and cover the decision at ADR acceptance. Required denial fixtures MUST be implemented, executed, and pass before the affected implementation capability is authorized for enablement. Absence of not-yet-implemented denial fixtures does not constitute implementation evidence and does not permit any runtime, production, or enablement claim.
 * No runtime, implementation, or production claim is inferred from acceptance.
 * Any authority-corpus drift is re-adjudicated before implementation planning.
 ## ADR-SB-004: Domain, Classification, and Provider Policy
@@ -159,7 +159,7 @@ Use project/hue/dom/shared and public/internal/confidential/restricted. Evaluate
 ### Acceptance conditions
 
 * Independent reviewer confirms alignment with accepted repository authority.
-* Machine contracts and denial fixtures parse and cover the decision.
+* Machine contracts required by this ADR MUST parse and cover the decision at ADR acceptance. Required denial fixtures MUST be implemented, executed, and pass before the affected implementation capability is authorized for enablement. Absence of not-yet-implemented denial fixtures does not constitute implementation evidence and does not permit any runtime, production, or enablement claim.
 * No runtime, implementation, or production claim is inferred from acceptance.
 * Any authority-corpus drift is re-adjudicated before implementation planning.
 ## ADR-SB-005: Markdown Projection Contract
@@ -193,7 +193,7 @@ Compile deterministic Markdown from canonical snapshot revisions with stable pat
 ### Acceptance conditions
 
 * Independent reviewer confirms alignment with accepted repository authority.
-* Machine contracts and denial fixtures parse and cover the decision.
+* Machine contracts required by this ADR MUST parse and cover the decision at ADR acceptance. Required denial fixtures MUST be implemented, executed, and pass before the affected implementation capability is authorized for enablement. Absence of not-yet-implemented denial fixtures does not constitute implementation evidence and does not permit any runtime, production, or enablement claim.
 * No runtime, implementation, or production claim is inferred from acceptance.
 * Any authority-corpus drift is re-adjudicated before implementation planning.
 ## ADR-SB-006: Local Spool and Custody Interface
@@ -227,7 +227,7 @@ Define `LocalSpoolPort` and `CustodyPort`. Spool records are non-canonical, iden
 ### Acceptance conditions
 
 * Independent reviewer confirms alignment with accepted repository authority.
-* Machine contracts and denial fixtures parse and cover the decision.
+* Machine contracts required by this ADR MUST parse and cover the decision at ADR acceptance. Required denial fixtures MUST be implemented, executed, and pass before the affected implementation capability is authorized for enablement. Absence of not-yet-implemented denial fixtures does not constitute implementation evidence and does not permit any runtime, production, or enablement claim.
 * No runtime, implementation, or production claim is inferred from acceptance.
 * Any authority-corpus drift is re-adjudicated before implementation planning.
 ## ADR-SB-007: Forget, Purge, and Residual Verification
@@ -261,7 +261,7 @@ Model Archive, Forget, and Purge separately. Build a dependency graph, impact pr
 ### Acceptance conditions
 
 * Independent reviewer confirms alignment with accepted repository authority.
-* Machine contracts and denial fixtures parse and cover the decision.
+* Machine contracts required by this ADR MUST parse and cover the decision at ADR acceptance. Required denial fixtures MUST be implemented, executed, and pass before the affected implementation capability is authorized for enablement. Absence of not-yet-implemented denial fixtures does not constitute implementation evidence and does not permit any runtime, production, or enablement claim.
 * No runtime, implementation, or production claim is inferred from acceptance.
 * Any authority-corpus drift is re-adjudicated before implementation planning.
 ## ADR-SB-008: Open Loop and Task Proposal Boundary
@@ -300,7 +300,7 @@ Represent detected loops as suggested candidates. Confirmation appends open/clos
 ### Acceptance conditions
 
 * Independent reviewer confirms alignment with accepted repository authority.
-* Machine contracts and denial fixtures parse and cover the decision.
+* Machine contracts required by this ADR MUST parse and cover the decision at ADR acceptance. Required denial fixtures MUST be implemented, executed, and pass before the affected implementation capability is authorized for enablement. Absence of not-yet-implemented denial fixtures does not constitute implementation evidence and does not permit any runtime, production, or enablement claim.
 * No runtime, implementation, or production claim is inferred from acceptance.
 * Any authority-corpus drift is re-adjudicated before implementation planning.
 ## ADR-SB-009: Single-Project Safety and Identity Dependencies
@@ -336,7 +336,7 @@ Require registry-backed identity envelopes and current service capability receip
 ### Acceptance conditions
 
 * Independent reviewer confirms alignment with accepted repository authority.
-* Machine contracts and denial fixtures parse and cover the decision.
+* Machine contracts required by this ADR MUST parse and cover the decision at ADR acceptance. Required denial fixtures MUST be implemented, executed, and pass before the affected implementation capability is authorized for enablement. Absence of not-yet-implemented denial fixtures does not constitute implementation evidence and does not permit any runtime, production, or enablement claim.
 * No runtime, implementation, or production claim is inferred from acceptance.
 * Any authority-corpus drift is re-adjudicated before implementation planning.
 ## ADR-SB-010: UX Contract
@@ -370,6 +370,6 @@ Use Capture, Recall, Review; one dominant next action; at most seven visible que
 ### Acceptance conditions
 
 * Independent reviewer confirms alignment with accepted repository authority.
-* Machine contracts and denial fixtures parse and cover the decision.
+* Machine contracts required by this ADR MUST parse and cover the decision at ADR acceptance. Required denial fixtures MUST be implemented, executed, and pass before the affected implementation capability is authorized for enablement. Absence of not-yet-implemented denial fixtures does not constitute implementation evidence and does not permit any runtime, production, or enablement claim.
 * No runtime, implementation, or production claim is inferred from acceptance.
 * Any authority-corpus drift is re-adjudicated before implementation planning.

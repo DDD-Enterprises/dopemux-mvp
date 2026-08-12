@@ -1,0 +1,6 @@
+src/dopemux/mcp/gate.py
+src/dopemux/mcp/resolver.py
+task-packets/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001.json
+task-packets/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001.md
+tests/mcp/test_discovery_gate_strict.py
+tests/mcp/test_resolver.py

@@ -1,0 +1,812 @@
+==================== PHASE 1 (gpt-5.3-codex) ====================
+--- CALL [shell_command]: git show 352a3d888d1ce5116b9af65d696fe62373728a7c --sta
+--- CALL [shell_command]: git show 352a3d888d1ce5116b9af65d696fe62373728a7c
+--- CALL [shell_command]: git diff 3e8fcc1c70c5b859dd651a1cd33c85eab837c93e..352a3d888d1ce5116b9af65d696fe62373728a7c
+--- CALL [shell_command]: git diff --name-only 352a3d888d1ce5116b9af65d696fe62373728a7c..1777213d436a528c12906ca0ca55132971e69392
+proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/AUDITOR_REPORT.md
+proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/CHANGED_FILES.tx
+proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/COMMAND_LOG.md
+proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/HANDOFF.md
+proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/MANIFEST.json
+proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/PROOF.json
+proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/VALIDATION.json
+proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/review_bundle/DEFECT_REPRODUCTION_BEFORE_AFTER.tx
+proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/review_bundle/FINAL_VALIDATION_LOG.tx
+
+
+commit 352a3d888d1ce5116b9af65d696fe62373728a7c
+Author: DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…) <167156098+hu3mann@users.noreply.github.com>
+Date:   Tue Aug 11 18:18:22 2026 -0700
+
+    fix(dcp): fail closed on incomplete control evidence
+
+    TP-DMX-TRUST-GATE-FAIL-CLOSED-001
+
+    Repairs:
+    - DMX-W1-04-F001: RedLaneScanner defaulted self_certification_status to
+      NONE whenever either implementer or auditor identity was absent (the
+      else branch of `impl and auditor and impl == auditor` also caught the
+      missing-identity case), so an empty {} or head-only proof reached
+      Status.PASS with no supporting evidence. Missing identity now yields
+      UNKNOWN. A JSON parse failure on a proof artifact now raises an
+      explicit MALFORMED_PROOF BLOCKER finding instead of silently
+      continuing past it.
+    - DMX-W1-04-F002: control_snapshot._readiness() only special-cased
+      CONFLICTING and STALE packet states; a prerequisite packe
+      (TP-DCP-0001/0002/0003) with no task-packet file and no proof at all
+      classifies UNKNOWN but fell through untouched, leaving readiness a
+      its default READY. UNKNOWN/CLAIMED prerequisite state now appends an
+      explicit blocking reason.
+
+    Invariant: incomplete or unproven mandatory DCP control evidence canno
+    be promoted to PASS/READY. UNDEFINED_AND_BLOCKING semantics (live-write
+    readiness not operational) are unchanged.
+
+
+
+commit 352a3d888d1ce5116b9af65d696fe62373728a7c
+Author: DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…) <167156098+hu3mann@users.noreply.github.com>
+Date:   Tue Aug 11 18:18:22 2026 -0700
+
+    fix(dcp): fail closed on incomplete control evidence
+
+    TP-DMX-TRUST-GATE-FAIL-CLOSED-001
+
+    Repairs:
+    - DMX-W1-04-F001: RedLaneScanner defaulted self_certification_status to
+      NONE whenever either implementer or auditor identity was absent (the
+      else branch of `impl and auditor and impl == auditor` also caught the
+      missing-identity case), so an empty {} or head-only proof reached
+      Status.PASS with no supporting evidence. Missing identity now yields
+      UNKNOWN. A JSON parse failure on a proof artifact now raises an
+      explicit MALFORMED_PROOF BLOCKER finding instead of silently
+      continuing past it.
+    - DMX-W1-04-F002: control_snapshot._readiness() only special-cased
+      CONFLICTING and STALE packet states; a prerequisite packe
+      (TP-DCP-0001/0002/0003) with no task-packet file and no proof at all
+      classifies UNKNOWN but fell through untouched, leaving readiness a
+      its default READY. UNKNOWN/CLAIMED prerequisite state now appends an
+      explicit blocking reason.
+
+    Invariant: incomplete or unproven mandatory DCP control evidence canno
+    be promoted to PASS/READY. UNDEFINED_AND_BLOCKING semantics (live-write
+    readiness not operational) are unchanged.
+
+
+
+diff --git a/src/dopemux/dcp/control_snapshot.py b/src/dopemux/dcp/control_snapshot.py
+index 85649cf6c0..efdbb20e28 100644
+--- a/src/dopemux/dcp/control_snapshot.py
++++ b/src/dopemux/dcp/control_snapshot.py
+@@ -488,6 +488,11 @@ def _readiness(
+             status = "CONFLICTING"
+         elif state["freshness"] == FreshnessStatus.STALE.value:
+             blocking.append("stale proof artifact detected")
++        elif state["state"] in (AuthorityLabel.UNKNOWN.value, AuthorityLabel.CLAIMED.value):
++            blocking.append(
++                f"{state['packet_id']} evidence is incomplete or unproven "
++                f"(state={state['state']})"
++            )
+
+     if blocking and status != "CONFLICTING":
+         status = "BLOCKED"
+diff --git a/src/dopemux/dcp/red_lane_scanner.py b/src/dopemux/dcp/red_lane_scanner.py
+index 49a18a5641..4b88618172 100644
+--- a/src/dopemux/dcp/red_lane_scanner.py
++++ b/src/dopemux/dcp/red_lane_scanner.py
+@@ -172,8 +172,29 @@ class RedLaneScanner:
+                         try:
+                             data = json.load(f)
+                         except json.JSONDecodeError:
++                            findings.append(Finding(
++                                category="MALFORMED_PROOF",
++                                severity=Severity.BLOCKER,
++                                status=Status.BLOCKED,
++                                authority_label=AuthorityLabel.CONFLICTING,
++                                evidence=f"Proof artifact is no
+
+--- CALL [read_file]: /Users/hue/code/dopemux-mvp-worktrees/tp-trust-gate-fail-closed-001/src/dopemux/dcp/red_lane_scanner.py
+--- CALL [read_file]: /Users/hue/code/dopemux-mvp-worktrees/tp-trust-gate-fail-closed-001/src/dopemux/dcp/control_snapshot.py
+--- CALL [read_file]: /Users/hue/code/dopemux-mvp-worktrees/tp-trust-gate-fail-closed-001/task-packets/TP-DMX-TRUST-GATE-FAIL-CLOSED-001.md
+--- CALL [read_file]: /Users/hue/code/dopemux-mvp-worktrees/tp-trust-gate-fail-closed-001/tests/dcp/test_dcp_0002_contract_derivation.py
+--- CALL [shell_command]: /Users/hue/.local/share/mise/installs/python/3.12.13/bin/python3.12 -m pytest -q tests/dcp/test_dcp_0003_proof_family_dispatch.py tests/dcp/test_dcp_0004_control_snapshot.py tests/dcp/test_dcp_0005_red_lane_scanner.py
+Read 1/1 file, 320 lines
+Note: showing lines 1-320. More of the file remains. Use offset=321 to continue.
+1: """
+2: DCP Contract Derivation Tests — TP-DCP-0002
+3:
+4: Assertions (numbered per TP-DCP-0002 §13):
+5:   1.  All three schemas are valid JSON.
+6:   2.  All three fixtures validate against their schemas.
+7:   3.  Every schema has additionalProperties: false at root.
+8:   4.  Every schema has contract-level provenance.
+9:   5.  Every fixture has field_provenance.
+10:   6.  Every field in each fixture is represented in field_provenance.
+11:   7.  validation_state is constrained to TP-DCP-0001 vocabulary or explicit extension.
+12:   8.  No fixture promotes EXTERNAL_PROPOSED or SYNTHESIS_INVENTED to REPO_VALIDATED.
+13:   9.  No schema defines LIVE_WRITE_READY.
+14:   10. No schema creates live-write permission.
+15:   11. No schema imports or references merge specialist as an allowed execution path.
+16:   12. DCP-RED-MERGE-SEAM-0001 is preserved / referenced as forbidden.
+17:   13. DCP_MUTATION_CLASS contains a hard-block class for merge automation seam.
+18:   14. DCP_APPROVAL_ARTIFACT requires separate requester/approver or explicit supervisor signoff.
+19:   15. DCP_PROJECT_RESOURCE_MAP marks ConPort/dope-memory endpoint binding as PROVISIONAL or UNKNOWN.
+20:   16. No forbidden files are modified (checked by git diff).
+21:   17. No live external calls are required for validation.
+22:
+23: Run modes:
+24:   python3 tests/dcp/test_dcp_0002_contract_derivation.py
+25:   python3
+
+Read 1/1 file, 178 lines
+430:                 continue
+431:             artifact_root = state.get("_root")
+432:             _ = artifact_roo
+433:
+434:     # Re-read through state errors and freshness only; live-write details are
+435:     # derived during source artifact inspection in a stable second pass.
+436:     for state in packet_states:
+437:         if any("LIVE_WRITE_READY appears operational" in error for error in state["errors"]):
+438:             live_ready = LiveWriteReadyStatus.OPERATIONAL
+439:             live_write = LiveWriteStatus.DETECTED
+440:         if any("live_write_status appears detected" in error for error in state["errors"]):
+441:             live_write = LiveWriteStatus.DETECTED
+442:             if live_ready is not LiveWriteReadyStatus.OPERATIONAL:
+443:                 live_ready = LiveWriteReadyStatus.UNKNOWN
+444:         if any("merge_seam_status" in error for error in state["errors"]):
+445:             merge_seam = MergeSeamStatus.VIOLATED
+446:
+447:     if merge_seam is MergeSeamStatus.UNKNOWN and not any(
+448:         state["state"] == AuthorityLabel.CONFLICTING.value for state in packet_states
+449:     ):
+450:         merge_seam = MergeSeamStatus.PRESERVED
+451:
+452:     return {
+453:         "live_write_ready_status": live_ready.value,
+454:         "live_write_status": live_write.value,
+455:         "merge_seam_status": merge_seam.value,
+456:         "dopetask_execution_status": dopetask_execution.value,
+457:         "external_write_status":
+
+Read 1/1 file, 366 lines
+1: import os
+2: import json
+3: from datetime import datetime
+4: from typing import List, Optional
+5:
+6: from dopemux.dcp.red_lane import (
+7:     RedLaneReport, Finding, ScannerInfo, RepoInfo, InputsInfo, GuardsInfo, SummaryInfo,
+8:     Severity, Status, AuthorityLabel
+9: )
+10: from dopemux.dcp.red_lane_taxonomy import load_red_lane_taxonomy_info
+11: from dopemux.dcp.red_lane_rules import FORBIDDEN_PATHS, TEXT_RULES, is_safe_false_positive, redact_secret_like
+12:
+13: class RedLaneScanner:
+14:     def __init__(self, repo_root: str):
+15:         self.repo_root = repo_roo
+16:
+17:     def scan(
+18:         self,
+19:         changed_files: Optional[List[str]] = None,
+20:         diff_text: Optional[str] = None,
+21:         control_snapshot_paths: Optional[List[str]] = None,
+22:         proof_paths: Optional[List[str]] = None,
+23:         audit_paths: Optional[List[str]] = None,
+24:         merge_readiness_paths: Optional[List[str]] = None,
+25:         expected_head_sha: Optional[str] = None
+26:     ) -> RedLaneReport:
+27:         changed_files = changed_files or []
+28:         control_snapshot_paths = control_snapshot_paths or []
+29:         proof_paths = proof_paths or []
+30:         audit_paths = audit_paths or []
+31:         merge_readiness_paths = merge_readiness_paths or []
+32:         taxonomy_info = load_red_lane_taxonomy_info(self.repo_root)
+33:
+34:         findings = []
+35:
+36:         # Check Paths
+37:         for fpath in c
+
+Read 1/1 file, 157 lines
+1: ---
+2: id: TP-DMX-TRUST-GATE-FAIL-CLOSED-001
+3: title: DCP Evidence Completeness and False-Ready Repair
+4: type: explanation
+5: owner: '@hu3mann'
+6: author: Claude
+7: date: '2026-08-11'
+8: last_review: '2026-08-11'
+9: next_review: '2026-11-09'
+10: prelude: L3 fail-closed repair for DCP red-lane scanner false PASS and control-snapshot false READY on incomplete evidence.
+11: ---
+12: # TP-DMX-TRUST-GATE-FAIL-CLOSED-001 - DCP Evidence Completeness and False-Ready Repair
+13:
+14: **Packet ID**: TP-DMX-TRUST-GATE-FAIL-CLOSED-001
+15: **Repository**: DDD-Enterprises/dopemux-mvp
+16: **Base branch**: main
+17: **Risk lane**: L3
+18: **Stage**: implementation
+19: **Merge authority**: NONE (this packet does not authorize merge, close, mark-ready, force-push, history rewrite, or production mutation)
+20:
+21: ## 1. Objective
+22:
+23: Repair the DCP control-evidence path so incomplete, malformed, stale, conflicting, or
+24: identity-unproven evidence cannot be promoted into an unsupported `PASS` or `READY`
+25: result.
+26:
+27: Fixes exactly:
+28:
+29: - `DMX-W1-04-F001` - red-lane scanner false `PASS`
+30: - `DMX-W1-04-F002` - control snapshot false `READY`
+31:
+32: Out of scope: MCP gate, RTE, PM, memory, lifecycle, or any other Wave 1 remediation;
+33: F003 and later findings from the core CLI/fleet audit.
+34:
+35: ## 2. Evidence and authoring base
+36:
+37: Deep-audit source revision: `H0=5d694cc9898e5046b5da03319f20f48599c40ca8`.
+38:
+39: Authenticated GitHub state
+
+.....................................................................    [100%]
+
+
+==================== PHASE 2 (deepseek/deepseek-v4-flash, continuation) ====================
+--- CALL [read_file]: /Users/hue/code/dopemux-mvp-worktrees/tp-trust-gate-fail-closed-001/tests/dcp/test_dcp_0002_contract_derivation.py
+--- CALL [read_file]: /Users/hue/code/dopemux-mvp-worktrees/tp-trust-gate-fail-closed-001/src/dopemux/dcp/control_snapshot.py
+--- CALL [shell_command]: git show 3e8fcc1c70c5b859dd651a1cd33c85eab837c93e:src/dopemux/dcp/red_lane_scanner.py
+Read 1/1 file, 430 lines
+Note: showing lines 1-430. More of the file remains. Use offset=431 to continue.
+1: """Local-only DCP control snapshot generation."""
+2:
+3: from __future__ import annotations
+4:
+5: from dataclasses import dataclass
+6: from datetime import UTC, datetime
+7: import json
+8: from pathlib import Path
+9: from typing import Any
+10:
+11: from dopemux.dcp.proof_family import (
+12:     AuthorityLabel,
+13:     FreshnessStatus,
+14:     LiveWriteReadyStatus,
+15:     LiveWriteStatus,
+16:     MergeSeamStatus,
+17:     ProofFamily,
+18:     classify_artifact,
+19: )
+20:
+21:
+22: PACKET_ID = "TP-DCP-0004"
+23: SNAPSHOT_FAMILY = "DCP_CONTROL_SNAPSHOT"
+24: SCHEMA_VERSION = "dcp-control-snapshot.v0"
+25: SNAPSHOT_CONTRACT_VERSION = "0.1.0"
+26: EXPECTED_PACKETS = ("TP-DCP-0001", "TP-DCP-0002", "TP-DCP-0003", "TP-DCP-0004")
+27:
+28:
+29: class SnapshotBlocked(RuntimeError):
+30:     """Raised when a required local dependency is absent."""
+31:
+32:
+33: @dataclass(frozen=True)
+34: class _ArtifactPathSet:
+35:     task_packet_path: str | None
+36:     proof_path: str | None
+37:     audit_path: str | None
+38:     merge_readiness_path: str | None
+39:
+40:
+41: def generate_control_snapshot(
+42:     root: str | Path,
+43:     *,
+44:     generated_at: str | None = None,
+45:     expected_head_sha: str | None = None,
+46: ) -> dict[str, Any]:
+47:     """Build a deterministic local DCP control snapshot from repo-local files."""
+48:
+49:     root_path = Path(root)
+50:     if not root_path.e
+
+Read 1/1 file, 281 lines
+320:                 errors.append(
+321:                     f"[schema:{name}] property '{prop_name}' has 'LIVE_WRITE_READY' as enum value"
+322:                 )
+323:     assert not errors, "\n".join(errors)
+324:
+325:
+326: # ---------------------------------------------------------------------------
+327: # Test 10: No schema creates live-write permission
+328: # ---------------------------------------------------------------------------
+329:
+330: def test_10_no_live_write_permission():
+331:     """
+332:     Schemas must not encode patterns that directly grant live-write permission.
+333:     Checked by verifying no schema contains the string patterns associated with
+334:     live-write authorization.
+335:     """
+336:     live_write_indicators = ["live_write_allowed", "live_write_enabled", "execute_mutation"]
+337:     errors = []
+338:     for name, path in _SCHEMA_FILES.items():
+339:         text = path.read_text(encoding="utf-8")
+340:         for indicator in live_write_indicators:
+341:             if indicator in text:
+342:                 errors.append(
+343:                     f"[schema:{name}] contains live-write indicator '{indicator}'"
+344:                 )
+345:     assert not errors, "\n".join(errors)
+346:
+347:
+348: # ---------------------------------------------------------------------------
+349: # Test 11: No schema imports/references merge specialist as execution path
+350: # -------------------------------------------------------------
+
+import os
+import json
+from datetime import datetime
+from typing import List, Optional
+
+from dopemux.dcp.red_lane import (
+    RedLaneReport, Finding, ScannerInfo, RepoInfo, InputsInfo, GuardsInfo, SummaryInfo,
+    Severity, Status, AuthorityLabel
+)
+from dopemux.dcp.red_lane_taxonomy import load_red_lane_taxonomy_info
+from dopemux.dcp.red_lane_rules import FORBIDDEN_PATHS, TEXT_RULES, is_safe_false_positive, redact_secret_like
+
+class RedLaneScanner:
+    def __init__(self, repo_root: str):
+        self.repo_root = repo_roo
+
+    def scan(
+        self,
+        changed_files: Optional[List[str]] = None,
+        diff_text: Optional[str] = None,
+        control_snapshot_paths: Optional[List[str]] = None,
+        proof_paths: Optional[List[str]] = None,
+        audit_paths: Optional[List[str]] = None,
+        merge_readiness_paths: Optional[List[str]] = None,
+        expected_head_sha: Optional[str] = None
+    ) -> RedLaneReport:
+        changed_files = changed_files or []
+        control_snapshot_paths = control_snapshot_paths or []
+        proof_paths = proof_paths or []
+        audit_paths = audit_paths or []
+        merge_readiness_paths = merge_readiness_paths or []
+        taxonomy_info = load_red_lane_taxonomy_info(self.repo_root)
+
+        findings = []
+
+        # Check Paths
+        for fpath in changed_files:
+            for pattern in FORBIDDEN_PATHS:
+                if pattern.match(fpath):
+                    findings.append(Finding(
+
+
+--- CALL [read_file]: /Users/hue/code/dopemux-mvp-worktrees/tp-trust-gate-fail-closed-001/tests/dcp/test_dcp_0004_control_snapshot.py
+--- CALL [read_file]: /Users/hue/code/dopemux-mvp-worktrees/tp-trust-gate-fail-closed-001/src/dopemux/dcp/proof_family.py
+--- CALL [read_file]: /Users/hue/code/dopemux-mvp-worktrees/tp-trust-gate-fail-closed-001/src/dopemux/dcp/red_lane.py
+--- CALL [shell_command]: head -n 30 task-packets/TP-DCP-0002.md; echo ---; ls tests/dcp/fixtures/
+--- CALL [shell_command]: /Users/hue/.local/share/mise/installs/python/3.12.13/bin/python3.12 -m pytest -q tests/dcp 2>&1 | tail -n 25
+Read 1/1 file, 180 lines
+Note: showing lines 1-180. More of the file remains. Use offset=181 to continue.
+1: """Deterministic local DCP proof-family classification."""
+2:
+3: from __future__ import annotations
+4:
+5: from dataclasses import dataclass, field
+6: from enum import Enum
+7: import json
+8: from pathlib import Path
+9: import re
+10: from typing import Any
+11: from urllib.parse import urlparse
+12:
+13:
+14: class ProofFamily(str, Enum):
+15:     DCP_PROOF_POINTER = "DCP_PROOF_POINTER"
+16:     DCP_PROOF_BUNDLE = "DCP_PROOF_BUNDLE"
+17:     DCP_AUDIT_REPORT = "DCP_AUDIT_REPORT"
+18:     DCP_MERGE_READINESS = "DCP_MERGE_READINESS"
+19:     UNKNOWN = "UNKNOWN"
+20:     CONFLICTING = "CONFLICTING"
+21:
+22:
+23: class AuthorityLabel(str, Enum):
+24:     OBSERVED = "OBSERVED"
+25:     CLAIMED = "CLAIMED"
+26:     INFERRED = "INFERRED"
+27:     UNKNOWN = "UNKNOWN"
+28:     CONFLICTING = "CONFLICTING"
+29:
+30:
+31: class FreshnessStatus(str, Enum):
+32:     FRESH = "FRESH"
+33:     STALE = "STALE"
+34:     UNKNOWN = "UNKNOWN"
+35:     CONFLICTING = "CONFLICTING"
+36:
+37:
+38: class LiveWriteStatus(str, Enum):
+39:     NONE = "NONE"
+40:     DETECTED = "DETECTED"
+41:     UNKNOWN = "UNKNOWN"
+42:
+43:
+44: class LiveWriteReadyStatus(str, Enum):
+45:     UNDEFINED_AND_BLOCKING = "UNDEFINED_AND_BLOCKING"
+46:     OPERATIONAL = "OPERATIONAL"
+47:     UNKNOWN = "UNKNOWN"
+48:
+49:
+50: class MergeSeamStatus(str, Enum):
+51:     PRESERVED = "PRESERVED"
+52:     VIOLATED = "VIOLATED"
+53:     UNKNOWN = "UNKNO
+
+Read 1/1 file, 150 lines
+Note: showing lines 1-150. More of the file remains. Use offset=151 to continue.
+1: from dataclasses import dataclass, field
+2: from typing import List, Optional, Dict, Any
+3: from enum import Enum
+4:
+5: class Severity(str, Enum):
+6:     INFO = "INFO"
+7:     WARNING = "WARNING"
+8:     BLOCKER = "BLOCKER"
+9:     CRITICAL = "CRITICAL"
+10:
+11: class Status(str, Enum):
+12:     PASS = "PASS"
+13:     BLOCKED = "BLOCKED"
+14:     UNKNOWN = "UNKNOWN"
+15:     CONFLICTING = "CONFLICTING"
+16:
+17: class AuthorityLabel(str, Enum):
+18:     OBSERVED = "OBSERVED"
+19:     CLAIMED = "CLAIMED"
+20:     INFERRED = "INFERRED"
+21:     UNKNOWN = "UNKNOWN"
+22:     CONFLICTING = "CONFLICTING"
+23:
+24: @dataclass
+25: class Finding:
+26:     category: str
+27:     severity: Severity
+28:     status: Status
+29:     authority_label: AuthorityLabel
+30:     evidence: str
+31:     recommended_action: str
+32:     path: Optional[str] = None
+33:     line: int = 0
+34:     match: Optional[str] = None
+35:
+36:     def to_dict(self) -> Dict[str, Any]:
+37:         return {
+38:             "category": self.category,
+39:             "severity": self.severity.value,
+40:             "status": self.status.value,
+41:             "authority_label": self.authority_label.value,
+42:             "evidence": self.evidence,
+43:             "recommended_action": self.recommended_action,
+44:             "path": self.path,
+45:             "line": self.line,
+46:             "match": self.match
+47:         }
+48
+
+Read 1/1 file, 120 lines
+Note: showing lines 1-120. More of the file remains. Use offset=121 to continue.
+1: """TP-DCP-0004 local control snapshot tests."""
+2:
+3: from __future__ import annotations
+4:
+5: import copy
+6: import json
+7: from pathlib import Path
+8:
+9: from jsonschema import Draft7Validator
+10: import pytes
+11:
+12: from dopemux.dcp.control_snapshot import (
+13:     SnapshotBlocked,
+14:     generate_control_snapshot,
+15:     write_control_snapshot,
+16: )
+17:
+18:
+19: _THIS_DIR = Path(__file__).resolve().paren
+20: _FIXTURES_DIR = _THIS_DIR / "fixtures"
+21: _REPO_ROOT = _THIS_DIR.parents[1]
+22: _EXPECTED_HEAD_SHA = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+23: _GENERATED_AT = "2026-06-04T12:00:00Z"
+24:
+25:
+26: def _fixture(name: str) -> Path:
+27:     return _FIXTURES_DIR / name
+28:
+29:
+30: def _snapshot(root: Path) -> dict:
+31:     return generate_control_snapshot(
+32:         root,
+33:         generated_at=_GENERATED_AT,
+34:         expected_head_sha=_EXPECTED_HEAD_SHA,
+35:     )
+36:
+37:
+38: def _packet_state(snapshot: dict, packet_id: str) -> dict:
+39:     return next(
+40:         state for state in snapshot["packet_states"] if state["packet_id"] == packet_id
+41:     )
+42:
+43:
+44: def test_1_valid_local_snapshot_generation_preserves_core_contract():
+45:     snapshot = _snapshot(_fixture("tp_dcp_0004_valid_snapshot_inputs"))
+46:
+47:     assert snapshot["snapshot_family"] == "DCP_CONTROL_SNAPSHOT"
+48:     assert snapshot["schema_version"] == "dcp-con
+
+---
+id: TP-DCP-0002
+title: Tp Dcp 0002
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-06-04'
+last_review: '2026-06-04'
+next_review: '2026-09-02'
+prelude: Tp Dcp 0002 (explanation) for dopemux documentation and developer workflows.
+---
+# TP-DCP-0002 — Derive Mutation Classes, Approval Artifact, and Project Resource Map
+
+**Packet ID**: TP-DCP-0002
+**Project**: DCP — Data Control Plane
+**Target**: `dcp/contract-derivation-tp-0002` branch
+**Implementer**: claude-sonne
+**Auditor**: claude-opus (distinct from implementer)
+**Status**: IMPLEMENTATION_COMPLETE — pending Opus audi
+**Base**: `main` @ `68f7435f6` (TP-DCP-0001 merge commit)
+
+---
+
+## Objective
+
+Derive and lock the next three DCP v0 contracts from repo authority:
+
+1. `DCP_MUTATION_CLASS.v0`
+2. `DCP_APPROVAL_ARTIFACT.v0`
+3. `DCP_PROJECT_RESOURCE_MAP.v0`
+---
+dcp_core_fixture.json
+tp_dcp_0002_approval_artifact.fixture.json
+tp_dcp_0002_mutation_class.fixture.json
+tp_dcp_0002_project_resource_map.fixture.json
+tp_dcp_0003_conflicting_artifacts.json
+tp_dcp_0003_stale_sha.json
+tp_dcp_0003_unknown_family.json
+tp_dcp_0003_valid_merge_readiness.json
+tp_dcp_0003_valid_proof_bundle.json
+tp_dcp_0003_valid_proof_pointer.json
+tp_dcp_0004_conflicting_proof
+tp_dcp_0004_live_write_detected
+tp_dcp_0004_missing_tp0002_evidence
+tp_dcp_0004_missing_tp0003
+tp_dcp_0004_stale_proof
+tp_dcp_0004_valid_snapshot_inputs
+
+
+            "dopemux_pr_merge_specialist/",
+            "scripts/batch_resolve_and_merge.py",
+            ".github/workflows/",
+        ]
+        violations = [
+            f for f in changed
+            if any(f.startswith(p) for p in forbidden_prefixes)
+        ]
+>       assert not violations, (
+            "Forbidden files in git diff:\n" + "\n".join(violations)
+        )
+E       AssertionError: Forbidden files in git diff:
+E         .github/workflows/ci-complete.yml
+E         .github/workflows/clobber-guard.yml
+E         .github/workflows/ddd-release-gate.yml
+E         .github/workflows/docker-scout.yml
+E         .github/workflows/embedded-audit.yml
+E         .github/workflows/gemini-plan-execute.yml
+E         .github/workflows/gemini-review.yml
+E         .github/workflows/pr-steward.yml
+E       assert not ['.github/workflows/ci-complete.yml', '.github/workflows/clobber-guard.yml', '.github/workflows/ddd-release-gate.yml',.../workflows/docker-scout.yml', '.github/workflows/embedded-audit.yml', '.github/workflows/gemini-plan-execute.yml', ...]
+
+tests/dcp/test_dcp_0002_contract_derivation.py:526: AssertionError
+=========================== short test summary info ============================
+FAILED tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified
+
+
+--- CALL [shell_command]: git log --oneline -n 5 68f7435f6..HEAD; echo "---branch-point---"; git merge-base origin/main HEAD; echo "---workflow commits in range---"; git log --oneline 68f7435f6..HEAD -- .github/workflows/
+--- CALL [shell_command]: git show 352a3d888d1ce5116b9af65d696fe62373728a7c --stat | grep -E "\.github|workflows" ; echo "grep_exit=$?"
+--- CALL [shell_command]: git branch --contains 68f7435f6 2>/dev/null | head; echo "---"; git log --oneline -1 68f7435f6; echo "---main sha---"; git rev-parse origin/main; echo "---is 68f7435f6 ancestor of origin/main---"; git merge-base --is-ancestor 68f7435f6 origin/main && echo YES || echo NO
+Author: DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…) <167156098+hu3mann@users.noreply.github.com>
+grep_exit=0
+
+
+1777213d43 proof(dcp): audit + proof bundle for TP-DMX-TRUST-GATE-FAIL-CLOSED-001
+352a3d888d fix(dcp): fail closed on incomplete control evidence
+3e8fcc1c70 audit: approve AGY Gemini 3.1 Pro exact model (#1165)
+3a6cc60d53 proof(audit): signed local embedded-audit attestation for PR 1165 (round 4)
+06c4caa176 proof(audit): record the independent AGY audit of AUDITED_TREE ca3ff647f8
+---branch-point---
+3e8fcc1c70c5b859dd651a1cd33c85eab837c93e
+---workflow commits in range---
+d2d3ff808e fix(audit): enforce the canonical schema on the signed local-attestation route
+f3e4dec342 fix(pr-steward): bare app login roster + exact steward self-status filter (#1160)
+212f915dec feat(ci): wire ddd-release-gate exact-head APPROVE workflow
+eb75d5ec96 fix(ci): setup python and install dopemux package in PR Steward workflow
+322d4e5554 fix(ci): add PYTHONPATH=. to PR Steward intake step in workflow
+d752c955cd fix(ci): skip Docker Hub login on pull requests (#1101)
+9d7878092e feat(audit): embedded-audit prompt trust (TP-DMX-EMBEDDED-AUDIT-PROMPT-TRUST-001) (#1082)
+e2e3e9a7af fix(audit): provision trusted Claude audit runner (#1058)
+f242ba13c7 feat(audit): accept signed local audit attestations in the embedded-audit gate
+b5a0034f6d feat(ci): clobber-guard — prevent stale-branch clobbers (the #1025 class) (#1039)
+45b5ee3f32 fix(audit): run PAL audit runner as a package module (#1044)
+db9b844fc7 fix(audit): make independent audit and Steward fail closed (#1042)
+cd6243721e ci: parallelize extractor full
+
+  archive/rte-truth-program-pre-transplan
+  audit/auditor-fleet-capability-probe-001
+  backup/pr1165-cycle2-preRepair
+  chore/caveman-plugin-config
+  chore/caveman-repo-rules
+  chore/dcp-ruff-unused-imports
+  chore/dependabot-codeql-v4
++ chore/orchestrator-db-defrag-2026-08-01
++ chore/pr-1182-postmerge-proof-quarantine
+  chore/remove-system-archive
+---
+68f7435f66 feat(dcp): DCP core provenance contracts + control-snapshot envelope (TP-DCP-0001) (#797)
+---main sha---
+3e8fcc1c70c5b859dd651a1cd33c85eab837c93e
+---is 68f7435f6 ancestor of origin/main---
+YES
+
+
+--- CALL [shell_command]: echo "=== C1 name-only ==="; git diff --name-only 3e8fcc1c70c5b859dd651a1cd33c85eab837c93e..352a3d888d1ce5116b9af65d696fe62373728a7c; echo "=== workflow files failing test_16 also present in origin/main range ==="; git diff --name-only 68f7435f66..origin/main -- .github/workflows/ | head -20; echo "=== count ==="; git diff --name-only 68f7435f66..origin/main -- .github/workflows/ | wc -l
+--- CALL [shell_command]: find tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs -type f | sort; echo "=== missing_tp0002 fixture ==="; find tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence -type f | sor
+--- CALL [read_file]: /Users/hue/code/dopemux-mvp-worktrees/tp-trust-gate-fail-closed-001/src/dopemux/dcp/proof_family.py
+Read 1/1 file, 120 lines
+Note: showing lines 180-299. More of the file remains. Use offset=300 to continue.
+180:             fields=fields,
+181:             errors=[f"malformed JSON: {exc.msg} at line {exc.lineno} column {exc.colno}"],
+182:             live_write_status=live_write_status,
+183:             live_write_ready_status=live_write_ready_status,
+184:             merge_seam_status=merge_seam_status,
+185:         )
+186:
+187:     if not isinstance(payload, dict):
+188:         return ArtifactInspection(
+189:             path=str(path),
+190:             family=ProofFamily.UNKNOWN,
+191:             authority_label=AuthorityLabel.UNKNOWN,
+192:             freshness=FreshnessStatus.UNKNOWN,
+193:             fields=fields,
+194:             errors=["JSON artifact root is not an object"],
+195:             live_write_status=live_write_status,
+196:             live_write_ready_status=live_write_ready_status,
+197:             merge_seam_status=merge_seam_status,
+198:         )
+199:
+200:     live_write_ready_status, live_write_status = _live_write_status(text, payload)
+201:     merge_seam_status = _merge_seam_status(text, payload)
+202:     family = _classify_json_family(path, payload)
+203:     fields = _extract_fields(payload, family)
+204:     raw_references, referenced_paths, reference_errors = _extract_references(payload)
+205:     conflicts = _conflicts(payload)
+206:     freshness = _freshness(payload, expected_head_sha, conflicts)
+207:     errors = list(reference_errors)
+208:
+
+
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/proof/TP-DCP-0001/PROOF.json
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/proof/TP-DCP-0002/PROOF.json
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/proof/TP-DCP-0003/MERGE_READINESS.json
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/proof/TP-DCP-0003/PROOF.json
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/schemas/dcp/dcp_control_snapshot.schema.json
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/schemas/dcp/README.md
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/task-packets/TP-DCP-0001.json
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/task-packets/TP-DCP-0002.json
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/task-packets/TP-DCP-0003.json
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/task-packets/TP-DCP-0004.json
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/tests/dcp/__pycache__/test_placeholder.cpython-312-pytest-9.0.3.pyc
+tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/tests/dcp/test_placeholder.py
+=== missing_tp0002 fixture ===
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/proof/TP-DCP-0001/PROOF.json
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/proof/TP-DCP-0003/MERGE_READINESS.json
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/proof/TP-DCP-0003/PROOF.json
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/schemas/dcp/dcp_control_snapshot.schema.json
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/schem
+
+=== C1 name-only ===
+src/dopemux/dcp/control_snapshot.py
+src/dopemux/dcp/red_lane_scanner.py
+task-packets/TP-DMX-TRUST-GATE-FAIL-CLOSED-001.json
+task-packets/TP-DMX-TRUST-GATE-FAIL-CLOSED-001.md
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/proof/TP-DCP-0001/PROOF.json
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/proof/TP-DCP-0003/MERGE_READINESS.json
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/proof/TP-DCP-0003/PROOF.json
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/schemas/dcp/README.md
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/schemas/dcp/dcp_control_snapshot.schema.json
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/task-packets/TP-DCP-0001.json
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/task-packets/TP-DCP-0003.json
+tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/task-packets/TP-DCP-0004.json
+tests/dcp/test_dcp_0004_control_snapshot.py
+tests/dcp/test_dcp_0005_red_lane_scanner.py
+=== workflow files failing test_16 also present in origin/main range ===
+.github/workflows/ci-complete.yml
+.github/workflows/clobber-guard.yml
+.github/workflows/ddd-release-gate.yml
+.github/workflows/docker-scout.yml
+.github/workflows/embedded-audit.yml
+.github/workflows/gemini-plan-execute.yml
+.github/workflows/gemini-review.yml
+.github/workflows/pr-steward.yml
+=== count ===
+       8
+
+
+--- CALL [write_file]: /private/tmp/commandcode-501/-Users-hue-code-dopemux-mvp-worktrees-tp-trust-gate-fail-closed-001/f71050d0-7338-4814-9b12-9fe0dc0468af/scratchpad/l3_audit_repro.py
+File created successfully at: /private/tmp/commandcode-501/-Users-hue-code-dopemux-mvp-worktrees-tp-trust-gate-fail-closed-001/f71050d0-7338-4814-9b12-9fe0dc0468af/scratchpad/l3_audit_repro.py
+
+--- CALL [shell_command]: /Users/hue/.local/share/mise/installs/python/3.12.13/bin/python3.12 /private/tmp/commandcode-501/-Users-hue-code-dopemux-mvp-worktrees-tp-trust-gate-fail-closed-001/f71050d0-7338-4814-9b12-9fe0dc0468af/scratchpad/l3_audit_repro.py
+=== F001 scanner scenarios (C1) ===
+          empty: {'status': 'UNKNOWN', 'self_cert': 'UNKNOWN', 'findings': []}
+      head_only: {'status': 'UNKNOWN', 'self_cert': 'UNKNOWN', 'findings': []}
+ no_implementer: {'status': 'UNKNOWN', 'self_cert': 'UNKNOWN', 'findings': []}
+     no_auditor: {'status': 'UNKNOWN', 'self_cert': 'UNKNOWN', 'findings': []}
+       distinct: {'status': 'PASS', 'self_cert': 'NONE', 'findings': []}
+           same: {'status': 'BLOCKED', 'self_cert': 'DETECTED', 'findings': [('SELF_CERTIFICATION', 'BLOCKER')]}
+      malformed: {'status': 'BLOCKED', 'self_cert': 'UNKNOWN', 'findings': [('MALFORMED_PROOF', 'BLOCKER')]}
+ no_proof_paths: {'status': 'UNKNOWN', 'self_cert': 'UNKNOWN'}
+
+=== F002 UNKNOWN state (missing_tp0002 fixture) ===
+TP-DCP-0002 state: UNKNOWN | proof_path: None | tp_path: None
+snapshot_status: BLOCKED
+blocking_reasons: ['TP-DCP-0002 evidence is incomplete or unproven (state=UNKNOWN)']
+recommended: Resolve blocking local evidence before downstream use.
+
+=== F002 CLAIMED state (proof present, no task-packet) ===
+TP-DCP-0002 state: UNKNOWN | proof_path: None | tp_path: None
+snapshot_status: BLOCKED
+blocking_reasons: ['TP-DCP-0001 evidence is incomplete or unproven (state=CLAIMED)', 'TP-DCP-0002 evidence is incomplete or unproven (state=UNKNOWN)']
+
+=== Positive path (valid fixture) ===
+snapshot_status: READY
+
+=== Last-writer-wins: PARENT (3e8fcc1c70) ===
+exit: 0
+{"incomplete_first": {"status": "PASS", "self_cert": "NONE"}, "complete_first": {"
+
+--- CALL [write_file]: /private/tmp/commandcode-501/-Users-hue-code-dopemux-mvp-worktrees-tp-trust-gate-fail-closed-001/f71050d0-7338-4814-9b12-9fe0dc0468af/scratchpad/l3_audit_extra.py
+File created successfully at: /private/tmp/commandcode-501/-Users-hue-code-dopemux-mvp-worktrees-tp-trust-gate-fail-closed-001/f71050d0-7338-4814-9b12-9fe0dc0468af/scratchpad/l3_audit_extra.py
+
+--- CALL [shell_command]: /Users/hue/.local/share/mise/installs/python/3.12.13/bin/python3.12 /private/tmp/commandcode-501/-Users-hue-code-dopemux-mvp-worktrees-tp-trust-gate-fail-closed-001/f71050d0-7338-4814-9b12-9fe0dc0468af/scratchpad/l3_audit_extra.py
+--- CALL [shell_command]: git status --porcelain; echo "status_exit=$?"
+status_exit=0
+
+
+=== C1 adversarial: distinct ids, no head_sha, expected given ===
+{'status': 'PASS', 'self_cert': 'NONE', 'lw_ready': 'UNDEFINED_AND_BLOCKING', 'findings': []}
+=== C1: distinct ids + matching head_sha, no live-write fields ===
+{'status': 'PASS', 'self_cert': 'NONE', 'lw_ready': 'UNDEFINED_AND_BLOCKING', 'findings': []}
+=== C1: malformed + complete proof together ===
+{'status': 'BLOCKED', 'self_cert': 'NONE', 'lw_ready': 'UNDEFINED_AND_BLOCKING', 'findings': [('MALFORMED_PROOF', 'BLOCKER')]}
+
+=== PARENT: distinct ids, no head_sha, expected given ===
+{"status": "PASS", "self_cert": "NONE", "lw_ready": "UNDEFINED_AND_BLOCKING", "findings": []}
+
+=== C1: distinct ids, no head_sha, expected given ===
+{"status": "PASS", "self_cert": "NONE", "lw_ready": "UNDEFINED_AND_BLOCKING", "findings": []}
+
+=== PARENT: malformed + complete ===
+{"status": "PASS", "self_cert": "NONE", "lw_ready": "UNDEFINED_AND_BLOCKING", "findings": []}
+
+=== C1: malformed + complete ===
+{"status": "BLOCKED", "self_cert": "NONE", "lw_ready": "UNDEFINED_AND_BLOCKING", "findings": [["MALFORMED_PROOF", "BLOCKER"]]}
