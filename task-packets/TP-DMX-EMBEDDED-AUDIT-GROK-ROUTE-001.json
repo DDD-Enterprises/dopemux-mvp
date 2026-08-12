@@ -34,6 +34,7 @@
       "schemas/proof/embedded_audit.schema.json",
       "tests/audit/test_embedded_audit_grok_route.py",
       "tests/audit/test_local_audit_acceptance.py",
+      "tests/audit/fixtures/embedded_audit.schema.pre_grok.json",
       "task-packets/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001.json",
       "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/**"
     ]

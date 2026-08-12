@@ -12,11 +12,11 @@ even so, changing tracked files would invalidate the audit.
 ```text
 repository    DDD-Enterprises/dopemux-mvp
 branch        tp/DMX-EMBEDDED-AUDIT-GROK-ROUTE-001
-frozen head   d95b48a52af332afc1c25c162033cb1b372ed26e
+frozen head   2c1d15afbb12fcb3a20e79231dc14d505590aaf3
 base          6626aa9a58dd82e62226cfca63498cc3f711bb75   (trusted main)
 ```
 
-Confirm first that `git rev-parse HEAD` is `d95b48a52af332afc1c25c162033cb1b372ed26e`.
+Confirm first that `git rev-parse HEAD` is `2c1d15afbb12fcb3a20e79231dc14d505590aaf3`.
 If it is not, stop and report that instead of auditing whatever is there.
 
 ## What this packet claims to do
@@ -117,9 +117,26 @@ testing the feature.
 
 ### 7a. Review-response delta
 
-This head is a **second** content head. Commit `d95b48a52a` responded to three
-Copilot review findings on the first (`8290d7bd8e`). Check the delta yourself with
-`git diff 8290d7bd8e..HEAD` and judge whether it strengthens or weakens the
+This head is a **fourth** content head. The previous audit returned FAIL on
+`29a6fb54d0` with one blocker: the vendored fixture
+`tests/audit/fixtures/embedded_audit.schema.pre_grok.json` was committed without being
+covered by the packet's declared commit allowlist. The allowlist now includes it.
+**Re-check that yourself**: compare `git diff --name-only 6626aa9a58..HEAD` against the
+allowlist in the task packet and confirm every changed path is covered.
+
+This head is also a third-generation content head. `8290d7bd8e` was the first; `d95b48a52a`
+responded to three Copilot review findings; this head responds to a prior independent
+audit that returned FAIL on `d95b48a52a` with one blocker — that `CONSUMER_INVENTORY.json`
+claimed a deterministic inventory while documenting a bounded directory search, and so
+missed a `grok-4.5` string under `docker/`.
+
+Judge the response yourself rather than accepting it. The producer re-ran the search
+repository-wide and dispositioned the `docker/` hit as a string coincidence
+(`pal-mcp-server/providers/xai.py` selects a PAL *reasoning* model; the strings
+`auditor_tool`/`auditor_model`/`embedded_audit` are claimed to have zero occurrences
+under `docker/`). **Verify that zero-occurrence claim yourself.** If the disposition is
+wrong, or if the repository-wide search still misses a consumer, say so. Also check the
+delta with `git diff 8290d7bd8e..HEAD` and judge whether it strengthens or weakens the
 guarantees. Specifically: the backward-compatibility differential no longer reads the
 pre-change schema from git and no longer skips — it reads a vendored, hash-pinned
 fixture. Is that hash pin real? Try editing the fixture and confirm the suite fails.
