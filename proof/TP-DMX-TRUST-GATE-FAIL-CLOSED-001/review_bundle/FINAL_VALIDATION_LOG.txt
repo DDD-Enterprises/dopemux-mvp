@@ -1,0 +1,48 @@
+=== focused tests ===
+.....................................................................    [100%]
+exit: 0
+
+=== tests/dcp full suite ===
+            f for f in changed
+            if any(f.startswith(p) for p in forbidden_prefixes)
+        ]
+>       assert not violations, (
+            "Forbidden files in git diff:\n" + "\n".join(violations)
+        )
+E       AssertionError: Forbidden files in git diff:
+E         .github/workflows/ci-complete.yml
+E         .github/workflows/clobber-guard.yml
+E         .github/workflows/ddd-release-gate.yml
+E         .github/workflows/docker-scout.yml
+E         .github/workflows/embedded-audit.yml
+E         .github/workflows/gemini-plan-execute.yml
+E         .github/workflows/gemini-review.yml
+E         .github/workflows/pr-steward.yml
+E       assert not ['.github/workflows/ci-complete.yml', '.github/workflows/clobber-guard.yml', '.github/workflows/ddd-release-gate.yml',.../workflows/docker-scout.yml', '.github/workflows/embedded-audit.yml', '.github/workflows/gemini-plan-execute.yml', ...]
+
+tests/dcp/test_dcp_0002_contract_derivation.py:526: AssertionError
+=========================== short test summary info ============================
+FAILED tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified
+
+=== git diff --check ===
+exit: 0
+
+=== pre-commit on all committed packet files ===
+Evidence-economy change-contract preflight.................................................Passed
+Validate YAML frontmatter in docs..........................................................Passed
+Block deprecated memory backends in slash commands.....................(no files to check)Skipped
+Validate templates/skills SKILL.md frontmatter.........................(no files to check)Skipped
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+Validate proof bundle embedded_audit schema............................(no files to check)Skipped
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
