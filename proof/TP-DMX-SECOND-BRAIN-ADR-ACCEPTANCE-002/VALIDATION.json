@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002",
+  "phase": "POST_MERGE_ACCEPTANCE_READINESS",
+  "ma08_main_sha": "75b4cfc581786a53445e412bfc8e25a6e0fdb978",
+  "audited_content_head": "f7326b18397a4381df88ec4dc933eeb3f0011288",
+  "operator_step_results": {
+    "1_resolve_origin_main_at_execution_time": "PASS \u2014 75b4cfc581786a53445e412bfc8e25a6e0fdb978",
+    "2_verify_merged_contract_family_from_clean_main": "PASS",
+    "3_fresh_MA08": "PASS \u2014 NO_NEW_MATERIAL_DRIFT",
+    "4_fresh_post_merge_acceptance_integrity_audit": "PASS \u2014 BLOCKERS 0, MUST_FIX 0 (round 2, controlling)",
+    "5_fresh_ten_ADR_disposition_worksheet": "PASS \u2014 04_ADR_DISPOSITION_WORKSHEET.md, all ten dispositions PENDING_OPERATOR",
+    "6_stop_at_terminal_state": "READY_FOR_OPERATOR_ADR_REDISPOSITION / AWAITING_OPERATOR_ADR_DISPOSITIONS"
+  },
+  "operator_required_values": {
+    "validator_result": "PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE",
+    "adr_coverage": "10/10",
+    "clause_coverage": "160/160",
+    "missing": 0,
+    "ambiguous": 0,
+    "ma08_result": "NO_NEW_MATERIAL_DRIFT",
+    "audit_verdict": "PASS_ADR_ACCEPTANCE_EVIDENCE_READY_FOR_OPERATOR_REDISPOSITION",
+    "blockers": 0,
+    "must_fix": 0,
+    "all_required_values_met": true
+  },
+  "buckets": {
+    "PASS": [
+      "origin/main resolved at execution time from a fresh fetch and pinned",
+      "validate_second_brain_adr_contracts.py exit 0, 94 checks, 0 failed",
+      "coverage recomputed independently: 160/160 COVERED, 0 MISSING, 0 AMBIGUOUS, 0 duplicates, 0 set differences",
+      "tests/governance/test_second_brain_adr_contracts.py 63/63",
+      "MA-08 window arithmetic reproduces: 94 commits, 823 files, segments 22+5+67",
+      "segment C class table sums to 239",
+      "segment A and B re-reviewed rather than inherited",
+      "13 custody hashes recomputed at MA08_MAIN_SHA and cross-checked against the prior run's record",
+      "independent audit round 2: BLOCKERS 0, MUST_FIX 0",
+      "read-only boundary held: diff from MA08_MAIN_SHA is this packet's proof dir plus its task packet",
+      "no ADR disposition recorded; adr_acceptance_authorized remains false"
+    ],
+    "FAIL": [],
+    "NOT_RUN": [
+      "runtime conformance \u2014 implementation-time gate, not attempted",
+      "retrieval benchmarks \u2014 implementation-time gate, not attempted",
+      "purge completeness \u2014 implementation-time gate, not attempted",
+      "multi-project isolation \u2014 implementation-time gate, not attempted",
+      "split-brain proof \u2014 implementation-time gate, not attempted",
+      "denial fixtures \u2014 NOT_IMPLEMENTED by the amended AC#2's own terms; implementing them is forbidden by this packet",
+      "encryption implementation \u2014 ABSENT",
+      "live CI \u2014 this packet is unpushed and has no PR; no CI has run against it",
+      "python3 scripts/audit/validate_audit_proof.py --all proof \u2014 deferred to the final commit, recorded in the command log"
+    ]
+  },
+  "gates_still_closed": {
+    "adr_acceptance": "CLOSED \u2014 adr_acceptance_authorized false",
+    "implementation_execution": "NOT_AUTHORIZED",
+    "slice_execution": "NOT_AUTHORIZED",
+    "runtime_mutation": "FORBIDDEN",
+    "deployment": "NOT_AUTHORIZED",
+    "merge": "NOT_AUTHORIZED",
+    "push": "NOT_AUTHORIZED"
+  },
+  "dispositions": {
+    "current": "10x DEFER \u2014 a single blanket operator directive, unchanged by this packet",
+    "recorded_by_this_packet": "NONE",
+    "worksheet_field_values": "PENDING_OPERATOR on all ten"
+  }
+}

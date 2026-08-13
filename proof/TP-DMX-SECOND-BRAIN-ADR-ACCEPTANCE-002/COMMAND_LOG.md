@@ -155,3 +155,56 @@ any ADR disposition                                              OPERATOR_ONLY
 Nothing was written to, checked out from, or rebased onto
 `tp/DMX-SB-ADR-ACCEPTANCE-001` or its worktree. It was read once, read-only, to establish
 that its ledger is the superseded attempt and not the controlling prior disposition.
+
+## S4 addendum — repair round
+
+```bash
+# round 1 returned PASS with MUST_FIX 1; repaired, then re-committed as a SUCCESSOR commit
+# (amending would have moved the head and orphaned the round-1 prompt — a failure mode this
+#  series already paid for on PR #1228)
+git commit    # -> f7326b18397a4381df88ec4dc933eeb3f0011288
+
+git worktree add --detach /private/tmp/sb-accept-002-audit-r2 f7326b1839…
+git -C /private/tmp/sb-accept-002-audit-r2 diff --name-only 1939640e4d..HEAD   # proof dir only
+
+grok --cwd /private/tmp/sb-accept-002-audit-r2 -m grok-4.5 --always-approve \
+     --max-turns 120 --output-format plain -p "$(cat …/AUDIT_PROMPT_REPAIR.md)"
+# -> PASS_ADR_ACCEPTANCE_EVIDENCE_READY_FOR_OPERATOR_REDISPOSITION, BLOCKERS 0, MUST_FIX 0
+```
+
+Round 2 wrote its report into `AUDITOR_REPORT.md` **inside its own throwaway worktree**,
+overwriting round 1's copy there. The producer branch was never written to; the committed
+round-1 report was re-hashed afterwards and is byte-identical
+(`9f9063858cae345a3fe8ad8f631b505cb9e4eb70d50d8dc6bc261eb08c54805c`). The round-2 report was
+taken from that file and committed under a distinct name, `AUDITOR_REPAIR_REPORT.md`, so no
+round overwrites another. Recorded in `AUDIT_CUSTODY.json`.
+
+## S4 addendum — auditor model identity
+
+The round-2 auditor noticed that round 1's own session metadata disagreed with itself. Every
+model-bearing field in the runner's session store was then enumerated for both rounds, and
+the same enumeration was run against PR #1227's round-2 session for comparison:
+
+```bash
+# per-turn and per-message records, all four sessions
+jq -r 'select(.type=="turn_started") | .model_id' events.jsonl        # grok-4.5
+jq -r 'select(.model_id) | .model_id' chat_history.jsonl | sort -u    # grok-4.5-build
+# aggregate field
+jq -r '.primaryModelId, (.modelsUsed|join(","))' signals.json
+#   CLI 1.0.3 (this phase):  grok-4.6   grok-4.6,grok-4.5
+#   CLI 1.0.0 (PR #1227):    grok-4.5   grok-4.5
+```
+
+Conclusion recorded in `AUDITOR_MODEL_IDENTITY_EVIDENCE.json`: `signals.json primaryModelId`
+tracks the runner default, not the served model, and is not an independent corroborator.
+Turn-level and message-level records are unanimous on `grok-4.5` in all four sessions.
+
+## S5 — closure
+
+```bash
+python3 scripts/governance/validate_second_brain_adr_contracts.py     # re-run at the final head
+python3 -m pytest -q tests/governance/test_second_brain_adr_contracts.py
+python3 scripts/audit/validate_audit_proof.py --all proof
+git diff --cached --check
+git diff --name-only 75b4cfc581…..HEAD          # this packet's proof dir + its task packet only
+```

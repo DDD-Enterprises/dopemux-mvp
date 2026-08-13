@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002",
+  "record_kind": "AUDIT_CUSTODY",
+  "phase": "POST_MERGE_ACCEPTANCE_READINESS",
+  "ma08_main_sha": "75b4cfc581786a53445e412bfc8e25a6e0fdb978",
+  "producer_is_not_auditor": true,
+  "auditor_had_no_producer_conversation_history": true,
+  "rounds": [
+    {
+      "round": 1,
+      "audited_content_head": "1939640e4d94159875543f1e0a22dba65032602f",
+      "prompt_path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/AUDIT_PROMPT.md",
+      "prompt_sha256": "8506c23eeff02494024c0b62956014614f5be483eec3293e7bf15b2628d5e59e",
+      "prompt_authored_after_freeze": true,
+      "worktree": "/private/tmp/sb-accept-002-audit (throwaway, detached, pinned to the audited head)",
+      "invocation": "grok --cwd /private/tmp/sb-accept-002-audit -m grok-4.5 --always-approve --max-turns 120 --output-format plain -p \"$(cat proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/AUDIT_PROMPT.md)\"",
+      "model_pinned": "grok-4.5",
+      "session_id": "019ffd2a-4777-7ac1-bc85-ff096f5479d6",
+      "exit_code": 0,
+      "verdict": "PASS_ADR_ACCEPTANCE_EVIDENCE_READY_FOR_OPERATOR_REDISPOSITION",
+      "blockers": 0,
+      "must_fix": 1,
+      "must_fix_summary": "MF-1: the fourth-canonical-DB hard-gate row supported a correct answer with a false number. 41 was the sum of all two-space compose keys, not the service count, and was not equal at both ends of the window (40 at base).",
+      "disposition": "ACCEPTED WITHOUT QUALIFICATION. Recounted per section from bytes at both ends; document repaired and the defect recorded rather than silently corrected.",
+      "report_path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/AUDITOR_REPORT.md",
+      "report_raw_sha256": "b08c93571a83a0a3df675e6ad1a35efcb25d02b227f37cf9e32b822cda157b41",
+      "report_committed_sha256": "9f9063858cae345a3fe8ad8f631b505cb9e4eb70d50d8dc6bc261eb08c54805c",
+      "report_transformation": "TRAILING_WHITESPACE_NORMALIZATION_ONLY",
+      "report_transformation_detail": "Trailing whitespace stripped from 4 markdown hard-line-break lines to satisfy the repository whitespace gate. Verified whitespace-only by comparing both files after stripping: identical.",
+      "controlling": false,
+      "why_not_controlling": "Superseded by round 2. A verdict bound to a head that has since moved cannot govern the later head, and the phase gate requires MUST_FIX 0. Retained verbatim as the controlling evidence for why the repair exists."
+    },
+    {
+      "round": 2,
+      "audited_content_head": "f7326b18397a4381df88ec4dc933eeb3f0011288",
+      "prompt_path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/AUDIT_PROMPT_REPAIR.md",
+      "prompt_sha256": "6bc163f31bebe07df6b0d0ab00102878d8cbea041e9c64f89044ae508504f27c",
+      "prompt_authored_after_freeze": true,
+      "prompt_note": "Carries the round-1 prompt verbatim plus a repair preamble that states the defect and instructs the auditor to attack the repair, including a scan for the same defect class elsewhere in the document.",
+      "worktree": "/private/tmp/sb-accept-002-audit-r2 (throwaway, detached, pinned to the audited head)",
+      "invocation": "grok --cwd /private/tmp/sb-accept-002-audit-r2 -m grok-4.5 --always-approve --max-turns 120 --output-format plain -p \"$(cat proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/AUDIT_PROMPT_REPAIR.md)\"",
+      "model_pinned": "grok-4.5",
+      "session_id": "019ffd36-0c17-7633-b305-5cff7efb7f9e",
+      "exit_code": 0,
+      "verdict": "PASS_ADR_ACCEPTANCE_EVIDENCE_READY_FOR_OPERATOR_REDISPOSITION",
+      "blockers": 0,
+      "must_fix": 0,
+      "report_path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/AUDITOR_REPAIR_REPORT.md",
+      "report_raw_sha256": "ec19d7bf1885e64f3b35199b9a002b658a3aed7ecca0cc51b2e229343636c80e",
+      "report_committed_sha256": "8dc34517d6575ad261713e3beff448459f3320be51503a5af694b2cb6b4c01a4",
+      "report_transformation": "TRAILING_WHITESPACE_NORMALIZATION_ONLY",
+      "report_transformation_detail": "Trailing whitespace stripped from 7 markdown hard-line-break lines. Verified whitespace-only by comparison after stripping: identical.",
+      "stdout_stream_archived": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/review_bundle/AUDITOR_R2_STDOUT.md",
+      "controlling": true
+    }
+  ],
+  "auditor_wrote_one_file_in_its_throwaway_worktree": {
+    "what_happened": "In round 2 the auditor wrote its report to proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/AUDITOR_REPORT.md inside its own throwaway checkout, overwriting round 1's report there.",
+    "scope": "The throwaway worktree only. git status in that worktree showed exactly one modified tracked file and one untracked hook cache.",
+    "impact_on_evidence": "None. The producer branch was never written to by the auditor, and the committed round-1 report was re-hashed after the run and is byte-identical to what was committed (9f9063858cae345a3fe8ad8f631b505cb9e4eb70d50d8dc6bc261eb08c54805c).",
+    "how_it_was_handled": "The round-2 report was taken from that file and committed under a DISTINCT filename, AUDITOR_REPAIR_REPORT.md, so no round's report overwrites another. The throwaway worktree was discarded.",
+    "recorded_because": "An audit that was asked to be read-only performed one write. It changed nothing, but a reader should learn that from the record rather than discover it."
+  },
+  "auditor_model_identity": {
+    "established": "grok-4.5",
+    "established_from": "events.jsonl turn_started.model_id and chat_history.jsonl per-message model_id, for both rounds",
+    "divergent_field_recorded": "signals.json primaryModelId reads grok-4.6 on CLI 1.0.3 and is not an independent corroborator",
+    "full_record": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/AUDITOR_MODEL_IDENTITY_EVIDENCE.json"
+  },
+  "residual_risks": [
+    "Auditor identity rests on the runner's own session store, not on provider-side cryptographic attestation. Same residual this route has carried since PR #1214.",
+    "Round 2 read round 1's report as part of its input. It was instructed to treat those findings as prior claims to recheck rather than as fact, and it recomputed them, but it was not a blind re-audit.",
+    "Both rounds ran on the same model and runner. Model-diversity across rounds was not attempted."
+  ]
+}

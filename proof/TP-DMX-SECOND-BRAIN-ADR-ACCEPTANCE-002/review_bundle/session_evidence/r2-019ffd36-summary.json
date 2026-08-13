@@ -1,0 +1,26 @@
+{
+  "info": {
+    "id": "019ffd36-0c17-7633-b305-5cff7efb7f9e",
+    "cwd": "/private/tmp/sb-accept-002-audit-r2"
+  },
+  "session_summary": "Round 2 ADR Acceptance Integrity Audit Repair",
+  "created_at": "2026-08-13T22:20:05.763806Z",
+  "updated_at": "2026-08-13T22:26:39.446958Z",
+  "num_messages": 193,
+  "num_chat_messages": 67,
+  "current_model_id": "grok-4.5",
+  "next_trace_turn": 1,
+  "chat_format_version": 1,
+  "git_root_dir": "/private/tmp/sb-accept-002-audit-r2/",
+  "git_remotes": [
+    "https://github.com/DDD-Enterprises/dopemux-mvp.git"
+  ],
+  "head_commit": "f7326b18397a4381df88ec4dc933eeb3f0011288",
+  "request_id": "a6eff80f-cd0e-4918-832c-40f4cbe1280b",
+  "grok_home": "/Users/hue/.grok",
+  "last_active_at": "2026-08-13T22:26:39.446958Z",
+  "generated_title": "Round 2 ADR Acceptance Integrity Audit Repair",
+  "agent_name": "grok-build-plan",
+  "sandbox_profile": "off",
+  "reasoning_effort": "high"
+}
