@@ -6,7 +6,7 @@
   "branch": "tp/DMX-SB-ADR-ACCEPTANCE-002",
   "base_branch": "main",
   "head_before": "75b4cfc581786a53445e412bfc8e25a6e0fdb978",
-  "head_after": "<final proof-only commit; see C1_CONTENT_HEAD.txt>",
+  "head_after": "f7326b18397a4381df88ec4dc933eeb3f0011288",
   "audited_content_head": "f7326b18397a4381df88ec4dc933eeb3f0011288",
   "mutation_performed": false,
   "github_mutation_performed": false,
@@ -139,5 +139,6 @@
       "The hard-gate parenthetical 'zero classification/privacy policy paths in the window' is overbroad if read as a raw path-name grep, since the full window contains files with 'policy' or 'classification' in their names. The substantive answer holds and the segment A table classifies those files explicitly. Recorded rather than rewritten, because the round-2 auditor judged it a wording issue and not a false-integer defect."
     ],
     "skip_reason": null
-  }
+  },
+  "head_after_note": "This is the audited content head, and it is what C1_CONTENT_HEAD.txt records. Commits after it on this branch are proof records only -- the audit reports, custody, worksheet, and closure files -- and by construction none of them can name its own sha. The branch is local and unpushed; git log on tp/DMX-SB-ADR-ACCEPTANCE-002 is the authority for the tip."
 }

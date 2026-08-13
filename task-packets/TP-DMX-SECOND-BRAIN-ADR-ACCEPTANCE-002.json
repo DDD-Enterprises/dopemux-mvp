@@ -52,7 +52,13 @@
         "git worktree add --detach <clean> 75b4cfc581786a53445e412bfc8e25a6e0fdb978",
         "shasum -a 256 <second brain authority, candidate, traceability, FO-01 receipt, inventory, coverage, validator>"
       ],
-      "outputs": ["proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/01_INPUT_CUSTODY.md"]
+      "expected_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/01_INPUT_CUSTODY.md"
+      ],
+      "validation": [
+        "origin/main is read from a fresh fetch and recorded verbatim.",
+        "Every custody sha256 difference against the prior run's record is explained by a merged, operator-authorized change."
+      ]
     },
     {
       "id": "S1",
@@ -67,7 +73,15 @@
         "python3 scripts/governance/validate_second_brain_adr_contracts.py --json",
         "python3 -m pytest -q tests/governance/test_second_brain_adr_contracts.py"
       ],
-      "outputs": ["proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/03_CONTRACT_FAMILY_VERIFICATION.json"]
+      "expected_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/03_CONTRACT_FAMILY_VERIFICATION.json"
+      ],
+      "validation": [
+        "Validator exits 0 with PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE.",
+        "ADR coverage 10/10, clause coverage 160/160, MISSING 0, AMBIGUOUS 0.",
+        "Coverage is recomputed from the frozen inventory and coverage index, not read from the producer-authored receipt.",
+        "Adversarial suite passes from the clean worktree."
+      ]
     },
     {
       "id": "S2",
@@ -76,14 +90,22 @@
         "No prior MA-08 result is inherited; previously adjudicated segments are re-reviewed.",
         "The new segment's file classification is complete: class counts must sum to the segment's file count.",
         "Runtime, schema, and service file counts are enumerated rather than asserted as zero.",
-        "The §11 hard-gate checklist is evaluated over the full window, not the new segment alone.",
+        "The \u00a711 hard-gate checklist is evaluated over the full window, not the new segment alone.",
         "Result is exactly one of NO_NEW_MATERIAL_DRIFT or BLOCKED_NEW_MATERIAL_DRIFT."
       ],
       "commands": [
         "git rev-list --count 72af781e42..75b4cfc581 && git diff --shortstat 72af781e42..75b4cfc581",
         "git diff --name-status cfa4927a88..75b4cfc581"
       ],
-      "outputs": ["proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/02_MA08_DRIFT_RECHECK.md"]
+      "expected_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/02_MA08_DRIFT_RECHECK.md"
+      ],
+      "validation": [
+        "Segment commit counts sum to the window commit count.",
+        "Segment C class counts sum to the segment file count.",
+        "Runtime, schema, and service file counts are enumerated by name rather than asserted as zero.",
+        "Result is exactly NO_NEW_MATERIAL_DRIFT or BLOCKED_NEW_MATERIAL_DRIFT."
+      ]
     },
     {
       "id": "S3",
@@ -97,9 +119,14 @@
         "git add -A && git commit",
         "git diff --name-only 75b4cfc581..HEAD"
       ],
-      "outputs": [
+      "expected_files": [
         "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/AUDIT_PROMPT.md",
         "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/C1_CONTENT_HEAD.txt"
+      ],
+      "validation": [
+        "git diff --cached --check is clean.",
+        "The diff from MA08_MAIN_SHA to the frozen head contains only this packet's proof paths and its task packet.",
+        "The prompt is authored after the freeze and names the head it audits."
       ]
     },
     {
@@ -111,10 +138,18 @@
         "Any Grok invocation pins -m grok-4.5 explicitly.",
         "The verdict is recorded verbatim including a FAIL. A FAIL stops the phase."
       ],
-      "commands": ["<auditor CLI> --print \"$(cat proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/AUDIT_PROMPT.md)\""],
-      "outputs": [
+      "commands": [
+        "<auditor CLI> --print \"$(cat proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/AUDIT_PROMPT.md)\""
+      ],
+      "expected_files": [
         "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/AUDITOR_REPORT.md",
         "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/AUDIT_CUSTODY.json"
+      ],
+      "validation": [
+        "The auditor runs in a throwaway detached worktree pinned to the audited head.",
+        "Any Grok invocation pins -m grok-4.5, verified afterwards from the runner's own per-turn session record.",
+        "The verdict is recorded verbatim, including a FAIL or a remaining must-fix.",
+        "The phase advances only on BLOCKERS 0 and MUST_FIX 0."
       ]
     },
     {
@@ -127,12 +162,18 @@
         "Terminal state is READY_FOR_OPERATOR_ADR_REDISPOSITION / AWAITING_OPERATOR_ADR_DISPOSITIONS."
       ],
       "commands": [],
-      "outputs": [
+      "expected_files": [
         "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/04_ADR_DISPOSITION_WORKSHEET.md",
         "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/PROOF.json",
         "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/VALIDATION.json",
         "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/HANDOFF.md",
         "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/COMMAND_LOG.md"
+      ],
+      "validation": [
+        "Every worksheet disposition field reads PENDING_OPERATOR.",
+        "Recommendations are carried in a field separate from the disposition field.",
+        "validate_audit_proof.py accepts this bundle.",
+        "Terminal state is READY_FOR_OPERATOR_ADR_REDISPOSITION."
       ]
     }
   ],
@@ -151,6 +192,6 @@
   "pr": {
     "title": "proof(second-brain): post-merge ADR acceptance readiness",
     "body": "NOT AUTHORIZED. This packet stops at READY_FOR_OPERATOR_ADR_REDISPOSITION with its branch local and unpushed. No pull request is opened, and none may be opened without a fresh operator instruction. The field is present because the packet schema requires it, not because a PR is intended.",
-    "draft": true
+    "base": "main"
   }
 }
