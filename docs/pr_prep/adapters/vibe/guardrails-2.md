@@ -15,7 +15,7 @@ prelude: Guardrails (explanation) for dopemux documentation and developer workfl
 TP-DMX-PR-PREP-SPECIALIST-V2-001-R1. This file must not carry independent
 behavioral authority.
 
-Canonical: [`../../03-reference/pr-pipeline/prep/adapters/vibe/guardrails.md`](../../03-reference/pr-pipeline/prep/adapters/vibe/guardrails.md),
-which points to [`operator-contract.md`](../../03-reference/pr-pipeline/prep/operator-contract.md) §3 (Hard boundaries) and §5 (Conditional workflow).
+Canonical: [`../../../03-reference/pr-pipeline/prep/adapters/vibe/guardrails.md`](../../../03-reference/pr-pipeline/prep/adapters/vibe/guardrails.md),
+which points to [`operator-contract.md`](../../../03-reference/pr-pipeline/prep/operator-contract.md) §3 (Hard boundaries) and §5 (Conditional workflow).
 
 This stub is kept only so existing links into this filename keep resolving.

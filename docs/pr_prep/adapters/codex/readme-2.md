@@ -15,7 +15,7 @@ prelude: Readme (explanation) for dopemux documentation and developer workflows.
 TP-DMX-PR-PREP-SPECIALIST-V2-001-R1. This file must not carry independent
 behavioral authority.
 
-Canonical: [`../../03-reference/pr-pipeline/prep/adapters/codex/readme.md`](../../03-reference/pr-pipeline/prep/adapters/codex/readme.md),
-which points to [`operator-contract.md`](../../03-reference/pr-pipeline/prep/operator-contract.md).
+Canonical: [`../../../03-reference/pr-pipeline/prep/adapters/codex/readme.md`](../../../03-reference/pr-pipeline/prep/adapters/codex/readme.md),
+which points to [`operator-contract.md`](../../../03-reference/pr-pipeline/prep/operator-contract.md).
 
 This stub is kept only so existing links into this filename keep resolving.

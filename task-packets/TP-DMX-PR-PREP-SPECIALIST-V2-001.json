@@ -105,7 +105,17 @@
       "docs/03-reference/pr-pipeline/prep/post-eval-governance-options.md",
       "docs/pr_prep/post-eval-governance-options.md",
       "docs/03-reference/pr-pipeline/prep/ambiguity-scoring.md",
-      "docs/pr_prep/ambiguity-scoring.md"
+      "docs/pr_prep/ambiguity-scoring.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/claude/readme.md",
+      "docs/pr_prep/adapters/claude/readme-2.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/cursor/readme.md",
+      "docs/pr_prep/adapters/cursor/readme-2.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/gemini/readme.md",
+      "docs/pr_prep/adapters/gemini/readme-2.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/jules/readme.md",
+      "docs/pr_prep/adapters/jules/readme-2.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/copilot/readme.md",
+      "docs/pr_prep/adapters/copilot/readme-2.md"
     ],
     "verify": [
       "Every changed path is in the allowlist.",

@@ -16,8 +16,8 @@ prelude: Operator Review Form (explanation) for dopemux documentation and develo
 TP-DMX-PR-PREP-SPECIALIST-V2-001-R1. This file must not carry independent
 behavioral authority.
 
-Canonical: [`../../03-reference/pr-pipeline/prep/adapters/vibe/operator-review-form.md`](../../03-reference/pr-pipeline/prep/adapters/vibe/operator-review-form.md),
-which points to [`operator-contract.md`](../../03-reference/pr-pipeline/prep/operator-contract.md).
+Canonical: [`../../../03-reference/pr-pipeline/prep/adapters/vibe/operator-review-form.md`](../../../03-reference/pr-pipeline/prep/adapters/vibe/operator-review-form.md),
+which points to [`operator-contract.md`](../../../03-reference/pr-pipeline/prep/operator-contract.md).
 
 The distinct top-level `docs/pr_prep/operator-review-form.md` (its own
 canonical counterpart is `docs/03-reference/pr-pipeline/prep/operator-review-form.md`)

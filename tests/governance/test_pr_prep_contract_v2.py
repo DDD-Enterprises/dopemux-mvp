@@ -30,6 +30,20 @@ files to pure pointer stubs. This module does not test the 7
 `operator-review-form.md`) — the R4 ruling requires those left unedited,
 using LOW/MEDIUM/HIGH as a namespaced local measurement rather than the PR
 risk lane.
+
+Also covers the TP-DMX-PR-PREP-SPECIALIST-V2-001-R6 closure: the R3/R4
+scanner searched for fixed-artifact/risk-hint/GO_* vocabulary but never for
+`TP-PRPS-000` or `7-step`, so it missed that the six non-codex adapter
+README families (claude, cursor, gemini, jules, copilot, vibe -- both
+canonical and compat copies) still actively declared
+`Contract: TP-PRPS-000-1.0.0`, a "7-step canonical workflow", and
+`Status: IMPLEMENTED AND COMPLIANT`. That is a false-negative census, not a
+judgment call. R6 converts all 12 files to deprecation/pointer stubs
+matching the codex pattern already established at R4, and separately fixes
+a broken-relative-link defect the R4 compat-stub template introduced: six
+files under `docs/pr_prep/adapters/{vibe,codex}/**` linked to their
+canonical counterpart with two `../` hops instead of the three actually
+required, so every such link 404'd.
 """
 from __future__ import annotations
 
@@ -312,3 +326,92 @@ def test_should_not_declare_itself_a_pointer_stub_when_scanning_non_blocking_can
 ) -> None:
     text = _read(CANONICAL_DIR / filename)
     assert "compatibility surface only" not in text
+
+
+# R6: the R3/R4 census scanner never searched for TP-PRPS-000 or 7-step, so
+# it false-negatived these six adapter families straight through -- each
+# still actively declared the retired V1 contract.
+R6_ADAPTER_PLATFORMS = ["claude", "cursor", "gemini", "jules", "copilot", "vibe"]
+
+R6_REPAIRED_PAIRS = [
+    (f"adapters/{platform}/readme.md", f"adapters/{platform}/readme-2.md")
+    for platform in R6_ADAPTER_PLATFORMS
+]
+
+R6_CANONICAL_FILES = sorted({canonical for canonical, _ in R6_REPAIRED_PAIRS})
+R6_COMPAT_FILES = sorted({compat for _, compat in R6_REPAIRED_PAIRS})
+
+# Live structural markers of the retired V1 adapter-compliance ceremony.
+# Retirement prose legitimately quotes these as single-backtick inline code
+# describing what was retired (e.g. "previously claimed `Contract:
+# TP-PRPS-000-1.0.0`"); these snippets target the bold-labelled/checkmarked
+# live-claim form only, never the retrospective quoting form.
+R6_LIVE_V1_CONTRACT_MARKERS = (
+    "**Contract**: TP-PRPS-000-1.0.0",
+    "**Status**: ✅ IMPLEMENTED AND COMPLIANT",
+    "✅ 7-step canonical workflow",
+    "✅ Workflow: Exact 7-step sequence",
+    "contract: TP-PRPS-000-1.0.0",
+)
+
+
+@pytest.mark.parametrize("filename", R6_CANONICAL_FILES)
+def test_should_not_declare_live_v1_adapter_contract_when_scanning_r6_repaired_canonical_files(
+    filename: str,
+) -> None:
+    text = _read(CANONICAL_DIR / filename)
+    for marker in R6_LIVE_V1_CONTRACT_MARKERS:
+        assert marker not in text
+    assert "Superseded" in text
+
+
+@pytest.mark.parametrize("filename", R6_COMPAT_FILES)
+def test_should_not_declare_live_v1_adapter_contract_when_scanning_r6_repaired_compat_files(
+    filename: str,
+) -> None:
+    text = _read(COMPAT_DIR / filename)
+    for marker in R6_LIVE_V1_CONTRACT_MARKERS:
+        assert marker not in text
+
+
+@pytest.mark.parametrize("filename", R6_COMPAT_FILES)
+def test_should_not_retain_independent_behavioral_authority_when_scanning_r6_repaired_compat_stubs(
+    filename: str,
+) -> None:
+    text = _read(COMPAT_DIR / filename)
+    assert "compatibility surface only" in text
+    assert "TP-DMX-PR-PREP-SPECIALIST-V2-001-R1" in text
+
+
+# R6: the R4 compat-stub template's canonical link used two "../" hops from
+# docs/pr_prep/adapters/{platform}/ but three are required to reach
+# docs/03-reference/**; every such link 404'd (flagged live by
+# copilot-pull-request-reviewer on PR #1224). This regression test resolves
+# every markdown link target on disk for every non-archive compat file, not
+# just the ones already flagged, so a future template bug can't hide behind
+# an incomplete file list.
+_LINK_PATTERN = __import__("re").compile(r"\]\(([^)#][^)]*)\)")
+
+
+def _iter_markdown_files(base: Path):
+    for path in base.rglob("*.md"):
+        if "archive" in path.parts:
+            continue
+        yield path
+
+
+@pytest.mark.parametrize(
+    "path",
+    [p for p in _iter_markdown_files(COMPAT_DIR)],
+    ids=lambda p: str(p.relative_to(ROOT)),
+)
+def test_should_resolve_every_relative_link_when_scanning_non_archive_compat_markdown(
+    path: Path,
+) -> None:
+    text = path.read_text(encoding="utf-8")
+    for match in _LINK_PATTERN.finditer(text):
+        target = match.group(1)
+        if target.startswith("http"):
+            continue
+        resolved = (path.parent / target).resolve()
+        assert resolved.exists(), f"{path.relative_to(ROOT)} -> {target} does not resolve ({resolved})"
