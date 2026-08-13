@@ -1,0 +1,282 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+  "step": "S1",
+  "purpose": "Reproduce the architecture-time machine-contract evidence gap before authoring any contract artifact.",
+  "candidate_document": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+  "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+  "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "schemas_second_brain_directory_exists": false,
+  "search_terms": [
+    "LocalSpoolPort",
+    "CustodyPort",
+    "OpenLoopCandidate",
+    "TaskProposal",
+    "TaskPromotionRequest",
+    "project identity envelope",
+    "service capability receipt"
+  ],
+  "classification_counts": {
+    "PROSE_ONLY": 29
+  },
+  "machine_contract_hit_total": 0,
+  "runtime_implementation_hit_total": 0,
+  "test_only_hit_total": 0,
+  "prose_only_hit_total": 29,
+  "finding": "NO_SUFFICIENT_SECOND_BRAIN_MACHINE_CONTRACT_SET",
+  "finding_basis": "Zero hits classify as MACHINE_CONTRACT; schemas/second_brain/ does not exist; every occurrence of every ADR-named type is narrative prose or a free-form explanatory string field. Amended acceptance condition #2 therefore has nothing to parse at ADR acceptance.",
+  "denial_fixtures": "NOT_IMPLEMENTED_AND_OUT_OF_SCOPE_FOR_THIS_PACKET",
+  "findings": [
+    {
+      "term": "LocalSpoolPort",
+      "hit_count": 4,
+      "machine_contract_hits": 0,
+      "hits": [
+        {
+          "path": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+          "line": 209,
+          "classification": "PROSE_ONLY",
+          "rationale": "Markdown narrative; not parseable by deterministic tooling as a contract.",
+          "excerpt": "Define `LocalSpoolPort` and `CustodyPort`. Spool records are non-canonical, identity/domain/class scoped, deterministic, integrity-protected, short-lived, idempotently flushed, purge-aware, and never "
+        },
+        {
+          "path": "docs/03-reference/architecture/second-brain/adr-candidates/traceability-matrix.json",
+          "line": 314,
+          "classification": "PROSE_ONLY",
+          "rationale": "Hit occurs inside a free-form explanatory string field (title/semantic_relationship/note) of a structured file; packet §3 excludes free-form explanatory text from counting as a machine contract.",
+          "excerpt": "\"semantic_relationship\": \"ADR decision clause 'Define LocalSpoolPort and CustodyPort' and consequence 'Custody product remains replaceable' are SB-DEC-015 verbatim. Confirms the FO-01 known finding.\","
+        },
+        {
+          "path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/source-base-second-brain-adr-candidates.md",
+          "line": 209,
+          "classification": "PROSE_ONLY",
+          "rationale": "Markdown narrative; not parseable by deterministic tooling as a contract.",
+          "excerpt": "Define `LocalSpoolPort` and `CustodyPort`. Spool records are non-canonical, identity/domain/class scoped, deterministic, integrity-protected, short-lived, idempotently flushed, purge-aware, and never "
+        },
+        {
+          "path": "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/source/24_ADR_CANDIDATES.md",
+          "line": 196,
+          "classification": "PROSE_ONLY",
+          "rationale": "Markdown narrative; not parseable by deterministic tooling as a contract.",
+          "excerpt": "Define `LocalSpoolPort` and `CustodyPort`. Spool records are non-canonical, identity/domain/class scoped, deterministic, integrity-protected, short-lived, idempotently flushed, purge-aware, and never "
+        }
+      ]
+    },
+    {
+      "term": "CustodyPort",
+      "hit_count": 8,
+      "machine_contract_hits": 0,
+      "hits": [
+        {
+          "path": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+          "line": 209,
+          "classification": "PROSE_ONLY",
+          "rationale": "Markdown narrative; not parseable by deterministic tooling as a contract.",
+          "excerpt": "Define `LocalSpoolPort` and `CustodyPort`. Spool records are non-canonical, identity/domain/class scoped, deterministic, integrity-protected, short-lived, idempotently flushed, purge-aware, and never "
+        },
+        {
+          "path": "docs/03-reference/architecture/second-brain/adr-candidates/traceability-matrix.json",
+          "line": 164,
+          "classification": "PROSE_ONLY",
+          "rationale": "Hit occurs inside a free-form explanatory string field (title/semantic_relationship/note) of a structured file; packet §3 excludes free-form explanatory text from counting as a machine contract.",
+          "excerpt": "\"decision_title\": \"CustodyPort abstraction\","
+        },
+        {
+          "path": "docs/03-reference/architecture/second-brain/adr-candidates/traceability-matrix.json",
+          "line": 166,
+          "classification": "PROSE_ONLY",
+          "rationale": "Hit occurs inside a free-form explanatory string field (title/semantic_relationship/note) of a structured file; packet §3 excludes free-form explanatory text from counting as a machine contract.",
+          "excerpt": "\"semantic_relationship\": \"SB-DEC-015 is CustodyPort abstraction (content-addressed blob storage, integrity verification, residual scanning, backup eligibility). It bears no relationship to recall fusi"
+        },
+        {
+          "path": "docs/03-reference/architecture/second-brain/adr-candidates/traceability-matrix.json",
+          "line": 312,
+          "classification": "PROSE_ONLY",
+          "rationale": "Hit occurs inside a free-form explanatory string field (title/semantic_relationship/note) of a structured file; packet §3 excludes free-form explanatory text from counting as a machine contract.",
+          "excerpt": "\"decision_title\": \"CustodyPort abstraction\","
+        },
+        {
+          "path": "docs/03-reference/architecture/second-brain/adr-candidates/traceability-matrix.json",
+          "line": 314,
+          "classification": "PROSE_ONLY",
+          "rationale": "Hit occurs inside a free-form explanatory string field (title/semantic_relationship/note) of a structured file; packet §3 excludes free-form explanatory text from counting as a machine contract.",
+          "excerpt": "\"semantic_relationship\": \"ADR decision clause 'Define LocalSpoolPort and CustodyPort' and consequence 'Custody product remains replaceable' are SB-DEC-015 verbatim. Confirms the FO-01 known finding.\","
+        },
+        {
+          "path": "docs/03-reference/architecture/second-brain/authority/OPERATOR_DECISION_LEDGER.yaml",
+          "line": 102,
+          "classification": "PROSE_ONLY",
+          "rationale": "Hit occurs inside a free-form explanatory string field (title/semantic_relationship/note) of a structured file; packet §3 excludes free-form explanatory text from counting as a machine contract.",
+          "excerpt": "title: CustodyPort abstraction"
+        },
+        {
+          "path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/source-base-second-brain-adr-candidates.md",
+          "line": 209,
+          "classification": "PROSE_ONLY",
+          "rationale": "Markdown narrative; not parseable by deterministic tooling as a contract.",
+          "excerpt": "Define `LocalSpoolPort` and `CustodyPort`. Spool records are non-canonical, identity/domain/class scoped, deterministic, integrity-protected, short-lived, idempotently flushed, purge-aware, and never "
+        },
+        {
+          "path": "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/source/24_ADR_CANDIDATES.md",
+          "line": 196,
+          "classification": "PROSE_ONLY",
+          "rationale": "Markdown narrative; not parseable by deterministic tooling as a contract.",
+          "excerpt": "Define `LocalSpoolPort` and `CustodyPort`. Spool records are non-canonical, identity/domain/class scoped, deterministic, integrity-protected, short-lived, idempotently flushed, purge-aware, and never "
+        }
+      ]
+    },
+    {
+      "term": "OpenLoopCandidate",
+      "hit_count": 3,
+      "machine_contract_hits": 0,
+      "hits": [
+        {
+          "path": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+          "line": 279,
+          "classification": "PROSE_ONLY",
+          "rationale": "Markdown narrative; not parseable by deterministic tooling as a contract.",
+          "excerpt": "**MA-06 PM-semantics firewall** (`TP-DMX-SECOND-BRAIN-ARCHITECTURE-AMENDMENTS-001`): confirmed open-loop events are chronological attention markers, not tasks. A confirmed open loop, and its derived c"
+        },
+        {
+          "path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/source-base-second-brain-adr-candidates.md",
+          "line": 279,
+          "classification": "PROSE_ONLY",
+          "rationale": "Markdown narrative; not parseable by deterministic tooling as a contract.",
+          "excerpt": "**MA-06 PM-semantics firewall** (`TP-DMX-SECOND-BRAIN-ARCHITECTURE-AMENDMENTS-001`): confirmed open-loop events are chronological attention markers, not tasks. A confirmed open loop, and its derived c"
+        },
+        {
+          "path": "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/source/24_ADR_CANDIDATES.md",
+          "line": 266,
+          "classification": "PROSE_ONLY",
+          "rationale": "Markdown narrative; not parseable by deterministic tooling as a contract.",
+          "excerpt": "**MA-06 PM-semantics firewall** (`TP-DMX-SECOND-BRAIN-ARCHITECTURE-AMENDMENTS-001`): confirmed open-loop events are chronological attention markers, not tasks. A confirmed open loop, and its derived c"
+        }
+      ]
+    },
+    {
+      "term": "TaskProposal",
+      "hit_count": 3,
+      "machine_contract_hits": 0,
+      "hits": [
+        {
+          "path": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+          "line": 279,
+          "classification": "PROSE_ONLY",
+          "rationale": "Markdown narrative; not parseable by deterministic tooling as a contract.",
+          "excerpt": "**MA-06 PM-semantics firewall** (`TP-DMX-SECOND-BRAIN-ARCHITECTURE-AMENDMENTS-001`): confirmed open-loop events are chronological attention markers, not tasks. A confirmed open loop, and its derived c"
+        },
+        {
+          "path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/source-base-second-brain-adr-candidates.md",
+          "line": 279,
+          "classification": "PROSE_ONLY",
+          "rationale": "Markdown narrative; not parseable by deterministic tooling as a contract.",
+          "excerpt": "**MA-06 PM-semantics firewall** (`TP-DMX-SECOND-BRAIN-ARCHITECTURE-AMENDMENTS-001`): confirmed open-loop events are chronological attention markers, not tasks. A confirmed open loop, and its derived c"
+        },
+        {
+          "path": "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/source/24_ADR_CANDIDATES.md",
+          "line": 266,
+          "classification": "PROSE_ONLY",
+          "rationale": "Markdown narrative; not parseable by deterministic tooling as a contract.",
+          "excerpt": "**MA-06 PM-semantics firewall** (`TP-DMX-SECOND-BRAIN-ARCHITECTURE-AMENDMENTS-001`): confirmed open-loop events are chronological attention markers, not tasks. A confirmed open loop, and its derived c"
+        }
+      ]
+    },
+    {
+      "term": "TaskPromotionRequest",
+      "hit_count": 4,
+      "machine_contract_hits": 0,
+      "hits": [
+        {
+          "path": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+          "line": 279,
+          "classification": "PROSE_ONLY",
+          "rationale": "Markdown narrative; not parseable by deterministic tooling as a contract.",
+          "excerpt": "**MA-06 PM-semantics firewall** (`TP-DMX-SECOND-BRAIN-ARCHITECTURE-AMENDMENTS-001`): confirmed open-loop events are chronological attention markers, not tasks. A confirmed open loop, and its derived c"
+        },
+        {
+          "path": "docs/03-reference/architecture/second-brain/adr-candidates/traceability-matrix.json",
+          "line": 433,
+          "classification": "PROSE_ONLY",
+          "rationale": "Hit occurs inside a free-form explanatory string field (title/semantic_relationship/note) of a structured file; packet §3 excludes free-form explanatory text from counting as a machine contract.",
+          "excerpt": "\"semantic_relationship\": \"ADR MA-06 firewall names the 'disabled TaskPromotionRequest path (Slice 6)'; SB-DEC-030 consequence is 'Slice 6 is an enablement gate'. SB-DEC-030 was mis-filed under ADR-SB-"
+        },
+        {
+          "path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/source-base-second-brain-adr-candidates.md",
+          "line": 279,
+          "classification": "PROSE_ONLY",
+          "rationale": "Markdown narrative; not parseable by deterministic tooling as a contract.",
+          "excerpt": "**MA-06 PM-semantics firewall** (`TP-DMX-SECOND-BRAIN-ARCHITECTURE-AMENDMENTS-001`): confirmed open-loop events are chronological attention markers, not tasks. A confirmed open loop, and its derived c"
+        },
+        {
+          "path": "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/source/24_ADR_CANDIDATES.md",
+          "line": 266,
+          "classification": "PROSE_ONLY",
+          "rationale": "Markdown narrative; not parseable by deterministic tooling as a contract.",
+          "excerpt": "**MA-06 PM-semantics firewall** (`TP-DMX-SECOND-BRAIN-ARCHITECTURE-AMENDMENTS-001`): confirmed open-loop events are chronological attention markers, not tasks. A confirmed open loop, and its derived c"
+        }
+      ]
+    },
+    {
+      "term": "project identity envelope",
+      "hit_count": 0,
+      "machine_contract_hits": 0,
+      "hits": []
+    },
+    {
+      "term": "service capability receipt",
+      "hit_count": 7,
+      "machine_contract_hits": 0,
+      "hits": [
+        {
+          "path": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+          "line": 316,
+          "classification": "PROSE_ONLY",
+          "rationale": "Markdown narrative; not parseable by deterministic tooling as a contract.",
+          "excerpt": "Require registry-backed identity envelopes and current service capability receipts for authority operations. Permit one active automatic-capture project, explicit project switching, writer epochs, and"
+        },
+        {
+          "path": "docs/03-reference/architecture/second-brain/adr-candidates/traceability-matrix.json",
+          "line": 335,
+          "classification": "PROSE_ONLY",
+          "rationale": "Hit occurs inside a free-form explanatory string field (title/semantic_relationship/note) of a structured file; packet §3 excludes free-form explanatory text from counting as a machine contract.",
+          "excerpt": "\"semantic_relationship\": \"SB-DEC-022 is ServiceCapabilityReceipt gating of runtime routes. No spool or custody content. Correct home is ADR-SB-009, whose decision text requires 'current service capabi"
+        },
+        {
+          "path": "docs/03-reference/architecture/second-brain/adr-candidates/traceability-matrix.json",
+          "line": 486,
+          "classification": "PROSE_ONLY",
+          "rationale": "Hit occurs inside a free-form explanatory string field (title/semantic_relationship/note) of a structured file; packet §3 excludes free-form explanatory text from counting as a machine contract.",
+          "excerpt": "\"semantic_relationship\": \"ADR decision text requires 'current service capability receipts for authority operations' and 'wrong-project denial'; SB-DEC-022 is the ServiceCapabilityReceipt decision whos"
+        },
+        {
+          "path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/source-base-second-brain-adr-candidates.md",
+          "line": 316,
+          "classification": "PROSE_ONLY",
+          "rationale": "Markdown narrative; not parseable by deterministic tooling as a contract.",
+          "excerpt": "Require registry-backed identity envelopes and current service capability receipts for authority operations. Permit one active automatic-capture project, explicit project switching, writer epochs, and"
+        },
+        {
+          "path": "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/AUDITOR_REPORT.md",
+          "line": 83,
+          "classification": "PROSE_ONLY",
+          "rationale": "Markdown narrative; not parseable by deterministic tooling as a contract.",
+          "excerpt": "ADDITIONAL_REPAIRS_JUDGED: ADR-SB-002 JUSTIFIED (removed 029 \"Forget differs from purge\" — belongs to ADR-SB-007; added 006 \"Promotion router preserves canonical boundaries\" — ADR text \"route approved"
+        },
+        {
+          "path": "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/HANDOFF.md",
+          "line": 52,
+          "classification": "PROSE_ONLY",
+          "rationale": "Markdown narrative; not parseable by deterministic tooling as a contract.",
+          "excerpt": "ADR's own decision text requires \"current service capability receipts for"
+        },
+        {
+          "path": "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/source/24_ADR_CANDIDATES.md",
+          "line": 301,
+          "classification": "PROSE_ONLY",
+          "rationale": "Markdown narrative; not parseable by deterministic tooling as a contract.",
+          "excerpt": "Require registry-backed identity envelopes and current service capability receipts for authority operations. Permit one active automatic-capture project, explicit project switching, writer epochs, and"
+        }
+      ]
+    }
+  ]
+}

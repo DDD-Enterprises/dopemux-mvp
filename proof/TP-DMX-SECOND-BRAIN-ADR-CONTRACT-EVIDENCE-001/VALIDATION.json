@@ -1,0 +1,163 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+  "base_sha": "6153bd4fb30ed3d038e51b371ad9ebfb4916bfac",
+  "risk_lane": "L2",
+  "buckets": {
+    "contract_validator": "PASS (94 checks, 0 failed)",
+    "adversarial_matrix": "PASS",
+    "packet_schema": "PASS (task packet re-validated against dopetask-canonical-spec.json after being updated to round-2 counts and the new freeze)",
+    "change_contract_preflight": "PASS (post-#1228; was FAIL for representation gap only)",
+    "diff_whitespace": "PASS (git diff --check clean, re-run at the round-2 tree)",
+    "pre_commit": "PASS (post-#1228; was FAIL for representation gap only)",
+    "independent_audit": "PASS (round 2, frozen head 6e1b4472ba, 0 blockers, 0 must-fix)",
+    "runtime_conformance": "NOT_RUN",
+    "retrieval_benchmarks": "NOT_RUN",
+    "purge_completeness": "NOT_RUN",
+    "multi_project_isolation": "NOT_RUN",
+    "split_brain_proof": "NOT_RUN",
+    "denial_fixtures": "NOT_IMPLEMENTED",
+    "encryption_implementation": "ABSENT",
+    "adversarial_suite": "PASS (63 tests, 0 failed)",
+    "false_green_matrix": "PASS (10/10 operator-mandated mutations failed as intended, each via its intended guard)",
+    "denominator_refreeze": "PASS (160 clauses, sha256 b164fc0b4459\u2026, frozen in 3e0d89815c with no contract or validator change)",
+    "change_contract": "PASS (post-#1228 rebind)",
+    "embedded_audit": "PASS (grok-cli/grok-4.5 representable; identity evidence-backed)"
+  },
+  "commands": [
+    {
+      "command": "python3 scripts/governance/validate_second_brain_adr_contracts.py",
+      "exit_code": 0,
+      "checks_total": 114,
+      "checks_failed": 0,
+      "tokens": [
+        "PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE",
+        "FO01_STALE_RECORD_RECONCILED"
+      ]
+    },
+    {
+      "command": "python3 -m pytest -q tests/governance/test_second_brain_adr_contracts.py",
+      "exit_code": 0,
+      "passed": 52,
+      "failed": 0
+    },
+    {
+      "command": "python3 scripts/governance/validate_change_contract.py --base 6153bd4fb3 --head HEAD",
+      "exit_code": 1,
+      "status": "FAIL",
+      "max_lane": "L2",
+      "paths": 29,
+      "reason": "embedded-audit representation gap only; all path/lane checks pass"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "clean"
+    },
+    {
+      "command": "pre-commit run --files <changed slice>",
+      "exit_code": 1,
+      "hooks_total": 18,
+      "passed": 4,
+      "skipped": 14,
+      "note": "The 14 skips are genuine: those hooks are scoped by `files:` to docs/ and task-packets/ markdown, and this slice contains no matching file. Verified against .pre-commit-config.yaml rather than assumed.",
+      "reason": "proof bundle embedded_audit schema hook, same single cause"
+    }
+  ],
+  "not_run_rationale": "This packet produces architecture-time contract evidence only. Every runtime and enablement measurement remains NOT_RUN by design and is not inferred from contract coverage.",
+  "independent_audit": {
+    "round_1": {
+      "verdict": "FAIL",
+      "blockers": 3,
+      "must_fix": 5,
+      "audited_head": "7955ef33d7c0ab29daecbab966bc6a9497dc69ce",
+      "report": "AUDITOR_REPORT.md",
+      "status": "HISTORICAL_CONTROLLING_EVIDENCE_DO_NOT_EDIT"
+    },
+    "round_2": {
+      "verdict": "PASS",
+      "blockers": 0,
+      "must_fix": 0,
+      "audited_head": "6e1b4472ba626df2a5d7724e87c5ec77c9c46043",
+      "report": "AUDITOR_REPAIR_2_REPORT.md",
+      "prompt": "AUDIT_PROMPT_R2.md",
+      "custody": "AUDIT_PROMPT_CUSTODY_R2.json",
+      "residuals": "AUDIT_R2_RESIDUALS.json",
+      "residual_observations": 2,
+      "residuals_disputed": 0,
+      "requirement_met": "PASS with zero blockers and zero must-fix"
+    }
+  },
+  "embedded_audit_representation_gap": {
+    "effect": "change-contract preflight and the pre-commit proof hook both FAIL",
+    "single_cause": "schemas/proof/embedded_audit.schema.json cannot name the grok CLI that ran, and forbids the none/unknown fallback unless status is SKIPPED.",
+    "options_rejected": [
+      "status=SKIPPED with none/unknown \u2014 would falsely assert no audit happened and hide a FAIL verdict",
+      "status=FAIL with a tool/model picked from the enum \u2014 fabricating an auditor identity, forbidden by packet section 19"
+    ],
+    "chosen": "status=FAIL (true and representable) with honest fallback values and the limitation stated in skip_reason; the gate error is accepted and recorded rather than engineered away.",
+    "schema_repair": "OUT_OF_SCOPE \u2014 packet section 1 forbids embedded-audit platform repair.",
+    "status": "HISTORICAL_RESOLVED",
+    "resolved_by": "f0a0e839b456eab05aa6b3592fdebb31c488fa5b (PR #1228)"
+  },
+  "round": 2,
+  "gate_results_are_fresh_round_2_observations": "change-contract and pre-commit were re-executed against the round-2 tree rather than carried forward from round 1. 'Still failing for the recorded reason' is an observation here, not an assumption.",
+  "skipped_hooks_note": "The pre-commit hooks reported as Skipped are scoped to docs/*.md and similar paths this slice does not touch; the skips are the hook config's file filters, not suppressed failures.",
+  "terminal_verdict": "READY_FOR_OPERATOR_CONTRACT_EVIDENCE_MERGE_DECISION",
+  "base_sync": {
+    "synced_to_main": "6626aa9a58dd82e62226cfca63498cc3f711bb75",
+    "merge_commit": "c80c62df91a5ae85aaf5abb307cd2135a81b48f1",
+    "audited_bytes_drifted": 0,
+    "audited_files_checked": 36,
+    "ancestry_preserved": true,
+    "record": "BASE_SYNC_REVERIFY.json",
+    "gates_reverified": true
+  },
+  "final_base_sync_and_identity_reconciliation": {
+    "date": "2026-08-12",
+    "authority": "operator GO_PR1227_COMPLETE",
+    "synced_to_main": "f0a0e839b456eab05aa6b3592fdebb31c488fa5b",
+    "merge_commit": "ca72781c32ef9c5ee0d3fc6cd1c70a696ecbb68e",
+    "method": "git merge --no-ff origin/main. No rebase, no force-push.",
+    "incoming": "9 commits, all PR #1228 (TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001). Zero overlap with this branch's audited surface: the merge changed only paths under proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001, schemas/proof, task-packets and tests/audit.",
+    "audited_bytes": {
+      "AUDITED_FILES": 36,
+      "DRIFTED_AUDITED_FILES": 0,
+      "audited_head": "6e1b4472ba626df2a5d7724e87c5ec77c9c46043",
+      "method": "Each of the 36 files was hashed individually at the merge result and compared to its content at the audited head. A diff was NOT relied on: a same-path change arriving from main would not appear in a branch diff at all.",
+      "set_definition": "Every non-generator file changed between the issue baseline and the audited head, minus the five records post-C1 proof-only commits are permitted to touch (PROOF.json, VALIDATION.json, COMMAND_LOG.md, HANDOFF.md, C1_CONTENT_HEAD.txt), plus the two audited INPUTS the packet never modifies -- the ratified candidate and FO01_RESOLUTION_RECEIPT.json. Those two are precisely where an incoming same-path change would have hidden."
+    },
+    "gates": {
+      "proof-embedded-audit-schema": "PASS (was FAIL for representation through rounds 1 and 2)",
+      "change-contract": "PASS, exit 0 (was FAIL with 1 finding: proof_schema_fail on this PROOF.json)",
+      "pre-commit": "PASS, 0 failed hooks (was 2 failing hooks, one underlying cause)",
+      "contract_validator": "PASS 94 checks, 0 failed",
+      "adversarial_suite": "PASS 63/63",
+      "false_green_matrix": "PASS 10/10, every row FAILED_AS_INTENDED via its named guard",
+      "packet_schema": "PASS",
+      "diff_check": "PASS",
+      "required_ci": "see live CI; local results do not override live state"
+    },
+    "no_fresh_contract_audit": "Not required and not performed. The proof vocabulary became able to represent the auditor; the audited content did not change. The 36 audited files are byte-identical to 6e1b4472ba.",
+    "auditor_identity": {
+      "historical_status": "UNKNOWN_TO_PRODUCER",
+      "reconciled_runner": "grok-cli",
+      "reconciled_model": "grok-4.5",
+      "evidence_class": "RUNNER_SESSION_METADATA_VERIFIED",
+      "provider_attestation": "UNKNOWN",
+      "record": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/R2_AUDITOR_IDENTITY_RECONCILIATION.json",
+      "historical_invocation_rewritten": false,
+      "audit_time_records_edited": false
+    }
+  },
+  "post_1228_rebind": {
+    "embedded_audit_schema": "PASS (PROOF.json validates under post-#1228 trusted schema with grok-cli/grok-4.5)",
+    "full_proof_corpus": "PASS (76/76)",
+    "contract_validator": "PASS (94 checks, 0 failed)",
+    "adversarial_suite": "PASS (63 passed)",
+    "change_contract_preflight": "PASS (status=PASS, max_lane=L2 against origin/main)",
+    "pre_commit_embedded_audit_hook": "PASS",
+    "identity_reconciliation": "R2_AUDITOR_IDENTITY_RECONCILIATION.json (append-only; AUDIT_PROMPT_CUSTODY_R2 untouched)",
+    "hash_recheck": "R2_AUDITED_BYTES_HASH_RECHECK.json (31/36 contract corpus identical; 5 post-C1 attestation paths)"
+  }
+}

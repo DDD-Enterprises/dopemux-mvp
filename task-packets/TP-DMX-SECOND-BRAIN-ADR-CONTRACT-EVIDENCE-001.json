@@ -1,0 +1,264 @@
+{
+  "id": "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+  "project": "dopemux-mvp",
+  "target": "Close the architecture-time machine-contract evidence gap that prevents ADR-SB-001..010 from satisfying amended acceptance condition #2. Materializes a repository-owned machine-contract family under schemas/second_brain/contracts/, a deterministic fail-closed validator, an adversarial test matrix, and reconciles the stale FO-01 status record against its later independent-verification receipt. Accepts no ADR; all ten remain PROPOSED and the candidate document remains CANDIDATE.",
+  "invariants": [
+    "RISK_LANE=L2. Architecture-time evidence only.",
+    "CANDIDATE_SHA256=e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c — the candidate document is frozen authority and is not modified by this packet.",
+    "RATIFICATION_BINDING_SHA256=a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34 — preserved without semantic modification.",
+    "ADR_STATUS=10x PROPOSED. ACCEPTED_ADR_COUNT=0. No ADR disposition is changed; disposition is OPERATOR_ONLY.",
+    "SB_DEC_REFERENCE_COUNT=28, parsed live from the candidate and required to equal every contract's sb_dec_references.",
+    "SB-DEC-026 remains A_LEAVE_UNLINKED and appears in no ADR evidence list and in no contract.",
+    "IMPLEMENTATION_EXECUTION=NOT_AUTHORIZED. RUNTIME_MUTATION=FORBIDDEN. PRODUCTION_MUTATION=FORBIDDEN.",
+    "DENIAL_FIXTURE_IMPLEMENTATION=FORBIDDEN. Denial fixtures remain an implementation-time enablement gate; no contract may claim they exist.",
+    "Machine contracts are architecture artifacts, not runtime implementations. No Python protocol, class, or adapter is created.",
+    "The coverage denominator (160 clauses) is frozen in commit 3e0d89815c66f8a42e3a2d349c3d0f18028bdf40, before any contract artifact was re-authored, and its sha256 b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439 is const-pinned inside the validator. It supersedes the 97-clause freeze at a9397e5630577ac5a2b0c8f89ad7d62d8ff7b296, which the first independent audit proved to be a materially incomplete denominator; that freeze stays in history and is not valid in hindsight. Re-freezing was authorized by the operator ruling of 2026-08-12, reproduced verbatim in DENOMINATOR_REFREEZE_RECEIPT.json.",
+    "Every clause source_fragment is an exact substring of the candidate at CANDIDATE_SHA256, machine-verified at generation and re-verified at validation. The denominator cannot be silently redefined.",
+    "MISSING=0 and AMBIGUOUS=0 are required for success; NOT_APPLICABLE_PROVEN is not used anywhere in this packet.",
+    "FO01_SUBSTANTIVE_STATUS=RESOLVED_AND_INDEPENDENTLY_REVERIFIED. The reconciliation copies values from FO01_RESOLUTION_RECEIPT.json only; none is inferred by the producer.",
+    "FO-01 gate eligibility is recorded separately from acceptance authorization. adr_acceptance_authorized remains false and gates.adr_acceptance remains CLOSED, because the other acceptance conditions are still outstanding.",
+    "MERGE=OPERATOR_ONLY. FORCE_PUSH=FORBIDDEN. REBASE=FORBIDDEN. DELETE_BRANCH=FORBIDDEN.",
+    "Runtime conformance, retrieval benchmarks, purge completeness, multi-project isolation, and split-brain proof all remain NOT_RUN; encryption implementation remains ABSENT.",
+    "Every clause carries a testable rule shape. No shape can carry an opaque label: a value like PURGE_DEPENDENCY_GRAPH states that something is named, not that anything must be true.",
+    "Every property name, enum member and const string in the typed artifacts is bound to a clause and a verbatim candidate phrase. Interface surface the candidate does not state is not asserted.",
+    "No clause may be grounded in text from a Rejected alternatives section. A rejected design is verbatim candidate text and must never justify a rule."
+  ],
+  "depends_on": [
+    "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT",
+    "TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT",
+    "final_packet": false
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Fresh identity and drift preflight against the packet issue baseline.",
+      "requirements": [
+        "EXECUTION_MAIN is recorded from a fresh fetch, not from a cached ref.",
+        "Any incoming change touching docs/03-reference/architecture/second-brain/**, schemas/second_brain/**, or proof/TP-DMX-SECOND-BRAIN-*/** is classified explicitly.",
+        "Material Second Brain authority overlap halts with BLOCKED_NEW_SECOND_BRAIN_DRIFT."
+      ],
+      "commands": [
+        "git fetch origin --prune && git rev-parse origin/main && git remote get-url origin",
+        "git diff --name-only dc279256fedf63c9a799c8eeea249c0a7fd83d14 6153bd4fb30ed3d038e51b371ad9ebfb4916bfac | grep -E '^(docs/03-reference/architecture/second-brain|schemas/second_brain|proof/TP-DMX-SECOND-BRAIN-)' && { echo 'SECOND BRAIN OVERLAP FOUND'; exit 1; } || echo 'NO_SECOND_BRAIN_OVERLAP'"
+      ],
+      "expected_files": [],
+      "validation": [
+        "origin/main resolves to 6153bd4fb30ed3d038e51b371ad9ebfb4916bfac, equal to ISSUE_BASELINE_MAIN, and the delta since the AC#2 merge touches zero Second Brain paths."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "S1",
+      "task": "Reproduce the machine-contract evidence gap before authoring anything.",
+      "requirements": [
+        "Every ADR-named type is searched repository-wide and every hit classified.",
+        "The gap claim is not made unless the inventory supports it."
+      ],
+      "commands": [
+        "python3 - <<'PY'\nimport json, pathlib, sys\np = pathlib.Path('proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/BASELINE_CONTRACT_INVENTORY.json')\ninv = json.loads(p.read_text())\nfail = []\nif inv['finding'] != 'NO_SUFFICIENT_SECOND_BRAIN_MACHINE_CONTRACT_SET':\n    fail.append(f\"finding={inv['finding']}\")\nif inv['machine_contract_hit_total'] != 0:\n    fail.append(f\"machine_contract_hits={inv['machine_contract_hit_total']}\")\nif inv['runtime_implementation_hit_total'] != 0:\n    fail.append(f\"runtime_hits={inv['runtime_implementation_hit_total']}\")\nif inv['candidate_sha256'] != 'e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c':\n    fail.append('candidate binding drift')\nterms = {f['term'] for f in inv['findings']}\nexpected = {'LocalSpoolPort','CustodyPort','OpenLoopCandidate','TaskProposal','TaskPromotionRequest','project identity envelope','service capability receipt'}\nif terms != expected:\n    fail.append(f'terms={sorted(terms ^ expected)}')\nif fail:\n    print('S1 FAILED:', fail); sys.exit(1)\nprint(f\"S1 PASSED: gap reproduced across {len(terms)} terms, \"\n      f\"{inv['prose_only_hit_total']} prose-only hits, 0 machine contracts\")\nPY"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/BASELINE_CONTRACT_INVENTORY.json"
+      ],
+      "validation": [
+        "BASELINE_CONTRACT_INVENTORY.json records NO_SUFFICIENT_SECOND_BRAIN_MACHINE_CONTRACT_SET with zero MACHINE_CONTRACT and zero RUNTIME_IMPLEMENTATION hits across all seven searched terms."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "S2",
+      "task": "Verify the frozen clause denominator is intact and genuinely derived from the candidate.",
+      "requirements": [
+        "The inventory hash equals the value frozen before contract authoring.",
+        "Every source fragment is an exact substring of the ratified candidate.",
+        "The denominator is 160 clauses across 10 ADRs, const-pinned in the validator, and cannot be silently redefined."
+      ],
+      "commands": [
+        "python3 - <<'PY'\nimport hashlib, json, pathlib, sys\nFROZEN = 'b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439'\nCAND = 'e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c'\ninv_p = pathlib.Path('proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/ADR_CLAUSE_INVENTORY.json')\ncand_p = pathlib.Path('docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md')\nfail = []\nlive = hashlib.sha256(inv_p.read_bytes()).hexdigest()\nif live != FROZEN:\n    fail.append(f'denominator moved: {live}')\ncand_bytes = cand_p.read_bytes()\nif hashlib.sha256(cand_bytes).hexdigest() != CAND:\n    fail.append('candidate drift')\ntext = cand_bytes.decode('utf-8')\ninv = json.loads(inv_p.read_text())\nclauses = [c for a in inv['adrs'] for c in a['clauses']]\nif len(clauses) != 160 or inv['clause_total'] != 160 or inv['adr_count'] != 10:\n    fail.append(f'shape: {inv[\"adr_count\"]} ADRs / {len(clauses)} clauses')\nfor c in clauses:\n    for frag in c['source_fragments']:\n        if frag not in text:\n            fail.append(f\"{c['clause_id']}: fragment not in candidate\")\n    joined = '\\n'.join(c['source_fragments'])\n    if hashlib.sha256(joined.encode()).hexdigest() != c['source_decision_text_hash']:\n        fail.append(f\"{c['clause_id']}: fragment hash mismatch\")\nif fail:\n    print('S2 FAILED:', fail[:10]); sys.exit(1)\nprint(f'S2 PASSED: denominator frozen at {FROZEN}, 160/160 clauses bound to candidate substrings')\nPY"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/ADR_CLAUSE_INVENTORY.json"
+      ],
+      "validation": [
+        "ADR_CLAUSE_INVENTORY.json hashes to b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439 and all 160 clauses bind verbatim candidate fragments."
+      ],
+      "context_files": [
+        "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Verify the authored contract family is complete, parses, and introduces no new authority.",
+      "requirements": [
+        "All 20 contract artifacts exist and parse.",
+        "No contract grants implementation, runtime, or enablement authority.",
+        "No contract claims denial fixtures exist."
+      ],
+      "commands": [
+        "python3 - <<'PY'\nimport json, pathlib, sys\nd = pathlib.Path('schemas/second_brain/contracts')\nrequired = [f'ADR-SB-{i:03d}.contract.json' for i in range(1, 11)] + [\n    'adr-machine-contract.schema.json', 'interface-contract.schema.json',\n    'ADR_CONTRACT_COVERAGE.json', 'local-spool-port.contract.json',\n    'custody-port.contract.json', 'open-loop-candidate.schema.json',\n    'task-proposal.schema.json', 'task-promotion-request.schema.json',\n    'project-identity-envelope.schema.json', 'service-capability-receipt.schema.json']\nfail = []\nfor name in required:\n    p = d / name\n    if not p.is_file():\n        fail.append(f'missing {name}'); continue\n    try:\n        json.loads(p.read_text())\n    except json.JSONDecodeError as exc:\n        fail.append(f'{name}: {exc}')\nfor adr in range(1, 11):\n    c = json.loads((d / f'ADR-SB-{adr:03d}.contract.json').read_text())\n    if c['runtime_claims_permitted'] is not False:\n        fail.append(f'ADR-SB-{adr:03d}: runtime claims permitted')\n    if c['denial_fixtures'] != 'NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE':\n        fail.append(f'ADR-SB-{adr:03d}: denial fixture claim')\n    if 'DENIAL_FIXTURES' not in c['implementation_deferred']:\n        fail.append(f'ADR-SB-{adr:03d}: denial fixtures not deferred')\nif fail:\n    print('S3 FAILED:', fail[:10]); sys.exit(1)\nprint(f'S3 PASSED: {len(required)} artifacts present and parsing; zero runtime/denial-fixture claims')\nPY"
+      ],
+      "expected_files": [
+        "schemas/second_brain/contracts/adr-machine-contract.schema.json",
+        "schemas/second_brain/contracts/interface-contract.schema.json",
+        "schemas/second_brain/contracts/ADR_CONTRACT_COVERAGE.json",
+        "schemas/second_brain/contracts/ADR-SB-001.contract.json",
+        "schemas/second_brain/contracts/ADR-SB-010.contract.json",
+        "schemas/second_brain/contracts/local-spool-port.contract.json",
+        "schemas/second_brain/contracts/custody-port.contract.json",
+        "schemas/second_brain/contracts/open-loop-candidate.schema.json",
+        "schemas/second_brain/contracts/task-proposal.schema.json",
+        "schemas/second_brain/contracts/task-promotion-request.schema.json",
+        "schemas/second_brain/contracts/project-identity-envelope.schema.json",
+        "schemas/second_brain/contracts/service-capability-receipt.schema.json"
+      ],
+      "validation": [
+        "All 20 artifacts exist and parse",
+        "every ADR contract declares runtime_claims_permitted=false, denial_fixtures=NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE, and defers DENIAL_FIXTURES."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "S4",
+      "task": "Run the deterministic validator and prove it cannot false-green.",
+      "requirements": [
+        "The real validator runs against the working tree and reports both terminal tokens.",
+        "The adversarial matrix executes the real validator, not a reimplementation.",
+        "Every negative test asserts the specific guard responsible fires."
+      ],
+      "commands": [
+        "python3 scripts/governance/validate_second_brain_adr_contracts.py",
+        "python3 -m pytest -q tests/governance/test_second_brain_adr_contracts.py",
+        "python3 - <<'PY'\nimport json, subprocess, sys\nout = subprocess.run([sys.executable, 'scripts/governance/validate_second_brain_adr_contracts.py', '--json'], capture_output=True, text=True)\nr = json.loads(out.stdout)\nfail = []\nif out.returncode != 0:\n    fail.append(f'exit={out.returncode}')\nif r['result'] != 'PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE':\n    fail.append(f\"result={r['result']}\")\nif r['coverage_group'] != 'PASS' or r['fo01_group'] != 'PASS':\n    fail.append(f\"groups={r['coverage_group']}/{r['fo01_group']}\")\nif r['checks_failed'] != 0:\n    fail.append(f\"failed={r['checks_failed']}\")\nif r['checks_total'] < 100:\n    fail.append(f\"suspiciously few checks: {r['checks_total']}\")\ncov = json.load(open('schemas/second_brain/contracts/ADR_CONTRACT_COVERAGE.json'))\nc = cov['coverage_status_counts']\nif c['MISSING'] != 0 or c['AMBIGUOUS'] != 0 or c['COVERED'] != 160:\n    fail.append(f'coverage={c}')\nif fail:\n    print('S4 FAILED:', fail); sys.exit(1)\nprint(f\"S4 PASSED: {r['checks_total']} checks, 0 failed; coverage 160/160, MISSING=0, AMBIGUOUS=0\")\nPY"
+      ],
+      "expected_files": [
+        "scripts/governance/validate_second_brain_adr_contracts.py",
+        "tests/governance/test_second_brain_adr_contracts.py"
+      ],
+      "validation": [
+        "Validator exits 0 emitting PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE and FO01_STALE_RECORD_RECONCILED tokens with 94 checks and 0 failures",
+        "the adversarial suite passes 63/63 with every mutation rejected by its intended guard, and FALSE_GREEN_MATRIX.json records all ten operator-mandated mutations failing via their intended guard."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "S5",
+      "task": "Verify FO-01 stale-record reconciliation agrees with the later receipt and alters no candidate semantics.",
+      "requirements": [
+        "Every reconciled value is present in FO01_RESOLUTION_RECEIPT.json.",
+        "Gate eligibility is recorded separately from acceptance authorization.",
+        "ADR and SB-DEC semantics are untouched."
+      ],
+      "commands": [
+        "python3 - <<'PY'\nimport json, pathlib, sys\nstatus = json.loads(pathlib.Path('docs/03-reference/architecture/second-brain/adr-candidates/fo-01-repair-status.json').read_text())\nreceipt = json.loads(pathlib.Path('proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/FO01_RESOLUTION_RECEIPT.json').read_text())\nfail = []\nif status['fo01_status'] != receipt['status'] != 'TRACEABILITY_REPAIRED_AND_INDEPENDENTLY_REVERIFIED':\n    fail.append('status does not mirror receipt')\niv = status['independent_verification']\nif iv['performed'] is not True or iv['verdict'] != receipt['audit_verdict']:\n    fail.append('verification not receipt-derived')\nif iv['audited_content_head'] != receipt['audited_content_head']:\n    fail.append('content head not receipt-derived')\nif status['adr_acceptance_authorized'] is not False:\n    fail.append('acceptance wrongly authorized')\nif status['fo01_gate_condition'] != 'CLOSED' or status['adr_acceptance_gate_eligible'] is not True:\n    fail.append('gate condition not reconciled')\nif status['other_adr_acceptance_conditions'] != 'STILL_REQUIRED':\n    fail.append('other conditions dropped')\nif status['gates']['implementation_execution'] != 'NOT_AUTHORIZED':\n    fail.append('execution wrongly authorized')\nif status['preserved_not_run'] != receipt['preserved_not_run']:\n    fail.append('NOT_RUN discipline altered')\nif status['adr_statuses']['document_status'] != 'CANDIDATE' or status['adr_statuses']['promoted_to_accepted'] != 0:\n    fail.append('ADR statuses altered')\nif status['repaired_candidate']['sha256'] != receipt['repaired_candidate_sha256']:\n    fail.append('repaired candidate hash altered')\nif fail:\n    print('S5 FAILED:', fail); sys.exit(1)\nprint('S5 PASSED: FO01_STALE_RECORD_RECONCILED; acceptance still unauthorized, NOT_RUN preserved')\nPY"
+      ],
+      "expected_files": [
+        "docs/03-reference/architecture/second-brain/adr-candidates/fo-01-repair-status.json"
+      ],
+      "validation": [
+        "fo-01-repair-status.json mirrors FO01_RESOLUTION_RECEIPT.json exactly on status, verdict, content head, blockers and NOT_RUN discipline, while adr_acceptance_authorized remains false and implementation_execution remains NOT_AUTHORIZED."
+      ],
+      "context_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/FO01_RESOLUTION_RECEIPT.json"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Repository gates over the exact changed slice.",
+      "requirements": [
+        "The changed-contract preflight runs against a pinned base, never a moving ref.",
+        "Whitespace, packet schema, and pre-commit gates all run on the real slice."
+      ],
+      "commands": [
+        "git diff --check",
+        "python3 scripts/governance/validate_change_contract.py --base 6153bd4fb30ed3d038e51b371ad9ebfb4916bfac --head HEAD",
+        "python3 - <<'PY'\nimport json, pathlib, sys\nfrom jsonschema import Draft7Validator\nspec = json.loads(pathlib.Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text())\npacket = json.loads(pathlib.Path('task-packets/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001.json').read_text())\nerrs = sorted(Draft7Validator(spec).iter_errors(packet), key=lambda e: list(e.path))\nif errs:\n    for e in errs[:10]:\n        print(f'  {list(e.path)}: {e.message}')\n    sys.exit(1)\nprint('S6 PASSED: task packet validates against dopetask-canonical-spec.json')\nPY",
+        "pre-commit run --files $(git diff --name-only 6153bd4fb30ed3d038e51b371ad9ebfb4916bfac HEAD | tr '\\n' ' ')"
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001.json"
+      ],
+      "validation": [
+        "git diff --check clean",
+        "change-contract preflight resolves the slice at risk lane L2 from the pinned base",
+        "the packet validates against the canonical dopeTask spec",
+        "pre-commit passes on the exact changed slice."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "S7",
+      "task": "Independent read-only audit of the frozen content head, plus a self-sweep for the packet defect classes that have historically recurred.",
+      "requirements": [
+        "The auditor is independent of the producer and reads only committed bytes.",
+        "Auditor identity is recorded truthfully; no schema-compatible identity is fabricated.",
+        "Every command in this packet is executed, not eyeballed: placeholders and unresolvable paths are swept for directly."
+      ],
+      "commands": [
+        "python3 - <<'PY'\nimport json, pathlib, re, sys\npacket = json.loads(pathlib.Path('task-packets/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001.json').read_text())\nfail = []\nPLACEHOLDER = re.compile(r'<[a-z][a-z0-9_-]*>')\nfor step in packet['steps']:\n    for cmd in step.get('commands', []):\n        for m in PLACEHOLDER.findall(cmd):\n            if m not in ('<<', ):\n                fail.append(f\"{step['id']}: placeholder {m}\")\n    for f in step.get('expected_files', []) + step.get('context_files', []):\n        if not pathlib.Path(f).exists():\n            fail.append(f\"{step['id']}: missing path {f}\")\nfor f in packet['commit']['allowlist']:\n    base = f.split('*')[0].rstrip('/')\n    if base and not pathlib.Path(base).exists():\n        fail.append(f'allowlist path absent: {f}')\nif fail:\n    print('S7 SWEEP FAILED:', fail); sys.exit(1)\nprint(f\"S7 SWEEP PASSED: {sum(len(s.get('commands', [])) for s in packet['steps'])} commands, 0 placeholders, 0 unresolvable paths\")\nPY"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "No command contains a placeholder token",
+        "every expected_files, context_files and allowlist path resolves",
+        "an independent read-only audit of the frozen content head returns PASS with zero blockers and zero must-fix findings."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "S8",
+      "task": "Assemble the proof bundle with hashes recomputed from actual bytes.",
+      "requirements": [
+        "Every hash is recomputed from real file bytes; no hash prefix is expanded from notes.",
+        "No claimed artifact exists only in scratchpad or cache.",
+        "Off-repository evidence carries an explicit evidence class."
+      ],
+      "commands": [
+        "python3 - <<'PY'\nimport hashlib, json, pathlib, sys\nd = pathlib.Path('proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001')\nrequired = ['BASELINE_CONTRACT_INVENTORY.json', 'ADR_CLAUSE_INVENTORY.json',\n            'CONTRACT_COVERAGE_RECEIPT.json', 'FO01_RECONCILIATION_RECEIPT.json',\n            'VALIDATION.json', 'COMMAND_LOG.md', 'AUDITOR_REPORT.md',\n            'HANDOFF.md', 'PROOF.json', 'DENOMINATOR_REFREEZE_RECEIPT.json',\n            'DENOMINATOR_CENSUS_WORKSHEET.json', 'FALSE_GREEN_MATRIX.json']\nfail = [n for n in required if not (d / n).is_file()]\nif fail:\n    print('S8 FAILED: missing', fail); sys.exit(1)\nproof = json.loads((d / 'PROOF.json').read_text())\nfor name, recorded in proof['artifact_sha256'].items():\n    live = hashlib.sha256((d / name).read_bytes()).hexdigest()\n    if live != recorded:\n        fail.append(f'{name}: recorded {recorded} live {live}')\nif fail:\n    print('S8 FAILED:', fail); sys.exit(1)\nprint(f'S8 PASSED: {len(required)} bundle artifacts present, {len(proof[\"artifact_sha256\"])} hashes recompute from bytes')\nPY"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/PROOF.json",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/VALIDATION.json",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/HANDOFF.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/COMMAND_LOG.md"
+      ],
+      "validation": [
+        "All nine bundle artifacts exist and every recorded sha256 recomputes from the committed bytes."
+      ],
+      "context_files": []
+    }
+  ],
+  "commit": {
+    "message": "docs(second-brain): add machine contracts for ADR acceptance evidence",
+    "allowlist": [
+      "schemas/second_brain/contracts/**",
+      "scripts/governance/validate_second_brain_adr_contracts.py",
+      "tests/governance/test_second_brain_adr_contracts.py",
+      "docs/03-reference/architecture/second-brain/adr-candidates/fo-01-repair-status.json",
+      "task-packets/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001.json",
+      "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/**"
+    ],
+    "verify": [
+      "python3 scripts/governance/validate_second_brain_adr_contracts.py",
+      "python3 -m pytest -q tests/governance/test_second_brain_adr_contracts.py",
+      "python3 scripts/governance/validate_change_contract.py --base 6153bd4fb30ed3d038e51b371ad9ebfb4916bfac --head HEAD"
+    ]
+  },
+  "pr": {
+    "title": "docs(second-brain): add machine contracts for ADR acceptance evidence",
+    "body": "Closes the architecture-time machine-contract evidence gap blocking amended acceptance condition #2 for ADR-SB-001..010.\n\nBefore this change nothing in the repository could satisfy \"machine contracts required by this ADR MUST parse and cover the decision at ADR acceptance\": every ADR-named type (LocalSpoolPort, CustodyPort, OpenLoopCandidate, TaskProposal, TaskPromotionRequest, project identity envelope, service capability receipt) existed only as prose. That gap is reproduced and recorded in BASELINE_CONTRACT_INVENTORY.json before any artifact was authored.\n\nAdds a repository-owned contract family under schemas/second_brain/contracts/ — two meta-schemas, ten per-ADR contracts carrying 160 structured decision clauses, seven typed artifacts for the types the ADRs name directly, and a coverage matrix at 160/160 COVERED with MISSING=0 and AMBIGUOUS=0.\n\nThe coverage denominator is frozen in its own earlier commit, before any contract existed, so git history proves the freeze preceded authoring. Every clause binds verbatim fragments of the ratified candidate e4b28946..., machine-verified in both directions.\n\nA fail-closed validator (94 checks) and an adversarial matrix (63 tests executing the real validator against mutated repository copies) prove the evidence cannot false-green. Semantic mutations are applied consistently across inventory and contract, so a mutation that keeps the right shape and changes the architecture decision is still rejected.\n\nAlso reconciles the stale fo-01-repair-status.json against its later independent-verification receipt; the two records on main disagreed about whether FO-01 still blocked ADR acceptance.\n\nAccepts no ADR. All ten remain PROPOSED, the document remains CANDIDATE, SB-DEC-026 remains unlinked, and implementation execution remains NOT_AUTHORIZED. Denial fixtures remain an implementation-time gate and are explicitly not implemented.",
+    "base": "main"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+  "record_kind": "R2_AUDITOR_IDENTITY_RECONCILIATION",
+  "round": 2,
+  "audited_content_head": "6e1b4472ba626df2a5d7724e87c5ec77c9c46043",
+  "why_this_record_exists": "AUDIT_PROMPT_CUSTODY_R2.json recorded the round-2 auditor model as UNKNOWN_TO_PRODUCER, which was the truthful statement available at audit time: the CLI does not report the served model in plain output mode, and the invocation pinned no model flag. That was adequate while no Grok model was representable in the trusted proof contract. It stops being adequate the moment a proof is asked to NAME the model. This record supplies the identity from recovered evidence rather than by assumption, and does so in a new file so that no audit-time record is rewritten.",
+  "historical_status": "UNKNOWN_TO_PRODUCER",
+  "reconciled_runner": "grok-cli",
+  "reconciled_model": "grok-4.5",
+  "provider_attestation": "UNKNOWN",
+  "evidence_class": "RUNNER_SESSION_METADATA_VERIFIED",
+  "grok_route_support_merge": "f0a0e839b456eab05aa6b3592fdebb31c488fa5b",
+  "evidence_source": "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/review_bundle/pr1227_r2_session_model_evidence/**",
+  "evidence": {
+    "how_the_chain_is_established": "AUDIT_PROMPT_CUSTODY_R2.json recorded a session_dir_hint naming both grok session ids. The runner persists per-session metadata under ~/.grok/sessions/<url-encoded cwd>/<session-id>/. That hint is the link from the audit-time custody record to the session directory to the served model, so the identity is derived from a pointer written at audit time rather than reconstructed after the fact.",
+    "completed_session_id": "019ff62b-f270-7930-8d50-c95d094d1e3d",
+    "completed_session_current_model_id": "grok-4.5",
+    "completed_session_primaryModelId": "grok-4.5",
+    "completed_session_created_at": "2026-08-12T13:31:43.284326Z",
+    "completed_session_updated_at": "2026-08-12T13:41:29.047414Z",
+    "killed_precursor_session_id": "019ff628-f3a8-79b3-8bb9-6c9fec672e53",
+    "killed_precursor_current_model_id": "grok-4.5",
+    "killed_precursor_created_at": "2026-08-12T13:28:26.905680Z",
+    "killed_precursor_updated_at": "2026-08-12T13:30:46.843769Z",
+    "both_sessions_agree": true,
+    "timestamps_corroborate_the_custody_record": "The custody record states a first invocation was killed mid-run after producing 319 bytes and no verdict, followed by a re-run from the same frozen head. The killed precursor ran 13:28:26Z to 13:30:46Z and the completed run began 13:31:43Z, which matches that sequence.",
+    "archived_copies_sha256": {
+      "completed-run-019ff62b-summary.json": "55b7c174635275c21575a9d6c46b696259f22026ddfac643f59772c27989107a",
+      "completed-run-019ff62b-signals.json": "e8cf0e06ba2b98e8b536d5df869507e86a44f490cd1759709169db6159bc6674",
+      "killed-attempt-019ff628-summary.json": "60efc09d19b84f1328ad7cd47b6afddef8b5e991ad02fe721ad600f95cb6b190"
+    },
+    "why_archived_elsewhere": "The session bytes were captured and committed in the Grok-route support packet, because that packet needed them to justify admitting grok-4.5 specifically rather than some other Grok model. They are referenced here rather than duplicated. Both packets are now on the same branch, so the path resolves."
+  },
+  "historical_invocation_not_rewritten": {
+    "rule": "The recorded invocation is preserved exactly. It did not contain a model flag, and adding one now would convert a true identity reconciliation into fabricated execution history.",
+    "exact_historical_invocation": "grok --cwd /private/tmp/sb-audit-r2 --always-approve --max-turns 80 --output-format plain -p \"$(cat proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/AUDIT_PROMPT_R2.md)\"",
+    "contains_model_flag": false,
+    "how_identity_is_established_instead": "Separately, by the runner's own per-session metadata recorded above. The invocation says what was executed; the session metadata says what served it. Conflating the two would be the fabrication this rule exists to prevent.",
+    "why_the_unpinned_invocation_still_resolved_to_grok-4.5": "At the time of the round-2 audit the runner was grok CLI 1.0.0 and grok-4.5 was its default. The default has since moved to grok-4.6 on CLI 1.0.3, which is why this identity had to be recovered from evidence rather than inferred from today's default.",
+    "forward_rule": "Future Grok audits must pin -m grok-4.5 explicitly. An unpinned invocation now selects grok-4.6, which the trusted contract does not admit."
+  },
+  "records_deliberately_not_edited": {
+    "AUDIT_PROMPT_CUSTODY_R2.json": "Accurately records what was known at audit time, including model UNKNOWN_TO_PRODUCER and the reason it was recorded as unknown rather than guessed. Left byte-identical.",
+    "AUDITOR_REPAIR_2_REPORT.md": "The auditor's verbatim round-2 report. Left byte-identical.",
+    "note": "Both are part of the 36-file audited set proven unchanged at this head. Reconciliation adds a record; it does not revise one."
+  },
+  "what_this_does_not_establish": [
+    "Provider-side cryptographic attestation of the served model. This is the runner's own record of its own session. The residual is stated rather than papered over, and is carried into PROOF.json remaining_risks.",
+    "Anything about the audit's substance. The verdict, findings and coverage are unchanged; only the auditor's identity field is reconciled.",
+    "Any ADR acceptance or disposition change."
+  ]
+}

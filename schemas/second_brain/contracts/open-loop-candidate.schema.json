@@ -1,0 +1,213 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/second_brain/contracts/open-loop-candidate.schema.json",
+  "title": "OpenLoopCandidate",
+  "description": "A detected, non-canonical attention marker (ADR-SB-008). The MA-06 PM-semantics firewall is the whole machine content of this schema: an open loop may never carry any of eight named PM semantics, and its `due_at` is advisory display metadata. Identifier, timestamp and lifecycle fields are absent on purpose — the candidate states none, and inventing them would put this repository's design into the architecture's contract.",
+  "type": "object",
+  "properties": {
+    "due_at": {
+      "x-semantics": "ADVISORY_DISPLAY_METADATA_ONLY",
+      "x-forbidden-triggers": [
+        "SCHEDULING",
+        "ESCALATION"
+      ],
+      "description": "Advisory display metadata only. It may not drive scheduling or escalation, so it is not typed as a scheduling input."
+    }
+  },
+  "not": {
+    "anyOf": [
+      {
+        "required": [
+          "assignee"
+        ]
+      },
+      {
+        "required": [
+          "pm_priority"
+        ]
+      },
+      {
+        "required": [
+          "workflow_status"
+        ]
+      },
+      {
+        "required": [
+          "sprint_state"
+        ]
+      },
+      {
+        "required": [
+          "ownership_assignment"
+        ]
+      },
+      {
+        "required": [
+          "due_driven_escalation"
+        ]
+      },
+      {
+        "required": [
+          "automatic_scheduling"
+        ]
+      },
+      {
+        "required": [
+          "task_completion_state"
+        ]
+      }
+    ],
+    "description": "The eight PM semantics MA-06 forbids, expressed so an instance carrying any of them fails validation. Stated as a denial rather than `additionalProperties: false`, because the candidate forbids PM semantics — it does not close the object."
+  },
+  "x-unspecified-in-candidate": "The candidate names OpenLoopCandidate and constrains it, but specifies no identifier, timestamp, provenance or state field. None is asserted here. Those are implementation-time surface.",
+  "x-grounding": {
+    "/properties/due_at": {
+      "clause_id": "ADR-SB-008-C16",
+      "term": "due_at"
+    },
+    "/properties/due_at/x-semantics": {
+      "clause_id": "ADR-SB-008-C16",
+      "term": "advisory display metadata only"
+    },
+    "/properties/due_at/x-forbidden-triggers/0": {
+      "clause_id": "ADR-SB-008-C36",
+      "term": "scheduling"
+    },
+    "/properties/due_at/x-forbidden-triggers/1": {
+      "clause_id": "ADR-SB-008-C36",
+      "term": "escalation"
+    },
+    "/not/anyOf/0/required/0": {
+      "clause_id": "ADR-SB-008-C08",
+      "term": "assignee"
+    },
+    "/not/anyOf/1/required/0": {
+      "clause_id": "ADR-SB-008-C09",
+      "term": "PM priority"
+    },
+    "/not/anyOf/2/required/0": {
+      "clause_id": "ADR-SB-008-C10",
+      "term": "workflow status"
+    },
+    "/not/anyOf/3/required/0": {
+      "clause_id": "ADR-SB-008-C11",
+      "term": "sprint state"
+    },
+    "/not/anyOf/4/required/0": {
+      "clause_id": "ADR-SB-008-C12",
+      "term": "ownership assignment"
+    },
+    "/not/anyOf/5/required/0": {
+      "clause_id": "ADR-SB-008-C13",
+      "term": "due-driven escalation"
+    },
+    "/not/anyOf/6/required/0": {
+      "clause_id": "ADR-SB-008-C14",
+      "term": "automatic scheduling"
+    },
+    "/not/anyOf/7/required/0": {
+      "clause_id": "ADR-SB-008-C15",
+      "term": "task completion state"
+    }
+  },
+  "x-machine-invariants": {
+    "ADR-SB-008-C01": {
+      "subject": "second_brain.open_loop_candidate",
+      "rule_type": "INTERFACE_REQUIREMENT",
+      "operator": "MUST_EXIST",
+      "machine_value": "OpenLoopCandidate"
+    },
+    "ADR-SB-008-C08": {
+      "subject": "second_brain.open_loop.field.assignee.permitted",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false
+    },
+    "ADR-SB-008-C09": {
+      "subject": "second_brain.open_loop.field.pm_priority.permitted",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false
+    },
+    "ADR-SB-008-C10": {
+      "subject": "second_brain.open_loop.field.workflow_status.permitted",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false
+    },
+    "ADR-SB-008-C11": {
+      "subject": "second_brain.open_loop.field.sprint_state.permitted",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false
+    },
+    "ADR-SB-008-C12": {
+      "subject": "second_brain.open_loop.field.ownership_assignment.permitted",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false
+    },
+    "ADR-SB-008-C13": {
+      "subject": "second_brain.open_loop.field.due_driven_escalation.permitted",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false
+    },
+    "ADR-SB-008-C14": {
+      "subject": "second_brain.open_loop.field.automatic_scheduling.permitted",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false
+    },
+    "ADR-SB-008-C15": {
+      "subject": "second_brain.open_loop.field.task_completion_state.permitted",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false
+    },
+    "ADR-SB-008-C16": {
+      "subject": "second_brain.open_loop.due_at.semantics",
+      "rule_type": "CONSTANT",
+      "operator": "EQUALS",
+      "machine_value": "ADVISORY_DISPLAY_METADATA_ONLY"
+    },
+    "ADR-SB-008-C19": {
+      "subject": "second_brain.open_loop.forbidden_pm_semantics",
+      "rule_type": "ENUM",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "ASSIGNEE",
+        "PM_PRIORITY",
+        "WORKFLOW_STATUS",
+        "SPRINT_STATE",
+        "OWNERSHIP_ASSIGNMENT",
+        "DUE_DRIVEN_ESCALATION",
+        "AUTOMATIC_SCHEDULING",
+        "TASK_COMPLETION_STATE"
+      ],
+      "source_enumeration": "assignee, PM priority, workflow status, sprint state, ownership assignment, due-driven escalation, automatic scheduling, or task completion state"
+    },
+    "ADR-SB-008-C21": {
+      "subject": "second_brain.open_loop.represented_as_suggested_candidate",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true
+    },
+    "ADR-SB-008-C35": {
+      "subject": "second_brain.open_loop.pm_semantic_field_count",
+      "rule_type": "NUMERIC",
+      "operator": "EQUALS",
+      "machine_value": 0
+    },
+    "ADR-SB-008-C36": {
+      "subject": "second_brain.open_loop.due_at.forbidden_triggers",
+      "rule_type": "ENUM",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "SCHEDULING",
+        "ESCALATION"
+      ],
+      "source_enumeration": "scheduling or escalation"
+    }
+  }
+}
