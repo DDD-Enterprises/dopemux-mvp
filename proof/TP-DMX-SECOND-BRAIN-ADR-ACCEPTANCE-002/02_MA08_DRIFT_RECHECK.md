@@ -137,7 +137,7 @@ architectural weight were re-verified from bytes rather than accepted:
 
 | Change | Subsystem | Effect on the ADR set |
 |---|---|---|
-| `compose.yml`, `scripts/migration/{provision_conport_project_db,rehome_conport_rows,lock_legacy_conport_archive}.sh`, `import_conport_export.py` (#1188) — the ConPort "project wall": per-project database + per-project LOGIN role, `CONNECT` revoked from `PUBLIC`, ConPort PID-1 supervision | ConPort / project identity | **Re-verified from bytes this run:** no new top-level service block is added to `compose.yml`; the one added top-level name, `conport_supervision_state`, is under `volumes:` (line 45) and is mounted at `/var/lib/conport-supervision` — a supervision-state volume, not a database. The existing postgres-age database is *parameterized*, not multiplied. Directionally reinforces ADR-SB-009 (fail-closed identity, wrong-project denial); establishes no registry and grants no authority, so it neither satisfies nor contradicts the ADR's registry-backed-identity requirement. **CONTAINED, non-contradictory.** |
+| `compose.yml`, `scripts/migration/{provision_conport_project_db,rehome_conport_rows,lock_legacy_conport_archive}.sh`, `import_conport_export.py` (#1188) — the ConPort "project wall": per-project database + per-project LOGIN role, `CONNECT` revoked from `PUBLIC`, ConPort PID-1 supervision | ConPort / project identity | **Re-verified from bytes this run, per section:** `services:` holds 24 entries at base and 24 at head — the service set is unchanged. `volumes:` goes 15 → 16; the single added name, `conport_supervision_state`, is under `volumes:` (line 45) and is mounted at `/var/lib/conport-supervision` — a supervision-state volume, not a database. `networks:` is 1 → 1. The existing postgres-age database is *parameterized*, not multiplied. Directionally reinforces ADR-SB-009 (fail-closed identity, wrong-project denial); establishes no registry and grants no authority, so it neither satisfies nor contradicts the ADR's registry-backed-identity requirement. **CONTAINED, non-contradictory.** |
 | `services/dopecon-bridge/{routes,clients}.py`, `services/shared/dopecon_bridge_client/client.py` | dopecon bridge | Adds a `claim_custom_data` proxy for atomic ConPort custom-data claims (re-verified: the added surface is one client method and one route handler). Bridge stays adapter-only; ConPort stays canonical writer. NON-MATERIAL. |
 | `services/task-orchestrator/app/services/{workflow_service,workflow_store}.py`, `models/workflow.py` (#1164) | Task Orchestrator | Epic-create idempotency via `uuid5` replay id + fingerprint claim. TO remains sole workflow authority; no PM semantics moved. Consistent with ADR-SB-008. NON-MATERIAL. |
 | `src/dopemux/tools/conport_client.py` | ConPort | Honours `CONPORT_URL` instead of a hardcoded base URL. Client wiring only. NON-MATERIAL. |
@@ -172,7 +172,7 @@ Segment B disposition, unchanged on re-review: **`NO_NEW_MATERIAL_DRIFT`**.
 ## §11 hard gates — evaluated over the FULL window at `MA08_MAIN_SHA`
 
 ```text
-fourth canonical DB created?                            NO   (compose.yml adds one named VOLUME, zero DB services; 41 services at base and at head)
+fourth canonical DB created?                            NO   (compose.yml `services:` 24 at base and 24 at head — unchanged; the one addition is a named VOLUME, `volumes:` 15 -> 16)
 canonical write authority moved off existing owners?    NO
 Dope-Memory granted PM/workflow semantics?              NO
 ConPort granted task state?                             NO
@@ -190,6 +190,33 @@ Second Brain authority records modified post-seal?      NO   (authority/** byte-
 Two rows in the window are Second Brain surface changes and neither is a hard-gate breach,
 because both are the operator's own authorized instruments: the AC#2 clarification (#1214)
 and the FO-01 reconciliation plus machine contracts (#1227).
+
+### Repair after independent audit round 1 (MF-1)
+
+Round 1 of the independent audit returned PASS with 0 blockers and **1 must-fix**, against
+the first row of this checklist. The original parenthetical read:
+
+```text
+fourth canonical DB created?  NO  (compose.yml adds one named VOLUME, zero DB services; 41 services at base and at head)
+```
+
+The auditor recomputed and showed `41` was not the service count at all: it was the sum of
+every two-space key across `services:`, `volumes:`, and `networks:`, and that sum is 40 at
+base, not 41. So the number was both mislabelled and asserted equal when it was not.
+Accepted without qualification. Recomputed per section:
+
+```text
+             base 72af781e    head 75b4cfc5
+services:         24               24        unchanged
+volumes:          15               16        + conport_supervision_state
+networks:          1                1        unchanged
+sum of all 2-space keys  40        41        <- what the original 41 actually measured
+```
+
+The gate answer did not change — no database service was added, at base or head — but a
+true conclusion resting on a false supporting number is exactly the defect an audit exists
+to catch, and it is repaired here rather than argued down. The corrected numbers appear in
+the checklist row and in the segment A table above.
 
 ---
 

@@ -1,0 +1,26 @@
+{
+  "info": {
+    "id": "019ffd2a-4777-7ac1-bc85-ff096f5479d6",
+    "cwd": "/private/tmp/sb-accept-002-audit"
+  },
+  "session_summary": "ADR Acceptance Integrity Audit Evidence Review",
+  "created_at": "2026-08-13T22:07:14.475305Z",
+  "updated_at": "2026-08-13T22:15:27.928530Z",
+  "num_messages": 308,
+  "num_chat_messages": 98,
+  "current_model_id": "grok-4.5",
+  "next_trace_turn": 1,
+  "chat_format_version": 1,
+  "git_root_dir": "/private/tmp/sb-accept-002-audit/",
+  "git_remotes": [
+    "https://github.com/DDD-Enterprises/dopemux-mvp.git"
+  ],
+  "head_commit": "1939640e4d94159875543f1e0a22dba65032602f",
+  "request_id": "0a586e10-891d-48f0-90c4-60aeae0dbfee",
+  "grok_home": "/Users/hue/.grok",
+  "last_active_at": "2026-08-13T22:15:27.928530Z",
+  "generated_title": "ADR Acceptance Integrity Audit Evidence Review",
+  "agent_name": "grok-build-plan",
+  "sandbox_profile": "off",
+  "reasoning_effort": "high"
+}
