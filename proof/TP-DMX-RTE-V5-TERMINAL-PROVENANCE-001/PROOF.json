@@ -1,0 +1,145 @@
+{
+  "packet_id": "TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001",
+  "campaign_id": "DMX-REPO-DEEP-AUDIT-001",
+  "project_id": "dopemux-mvp",
+  "repo_binding": {
+    "repo": "DDD-Enterprises/dopemux-mvp",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp"
+  },
+  "authoring_h0": "5d694cc9898e5046b5da03319f20f48599c40ca",
+  "authoring_main": "6153bd4fb30ed3d038e51b371ad9ebfb4916bfac",
+  "execution_base": "6626aa9a58dd82e62226cfca63498cc3f711bb75",
+  "worktree": "/Users/hue/code/dopemux-mvp/.worktrees/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001",
+  "branch": "tp/DMX-RTE-V5-TERMINAL-PROVENANCE-001",
+  "content_head_c1": "67f22b4829b0e3e98ba59fcb609f42c5af213ffc",
+  "head_sha": "67f22b4829b0e3e98ba59fcb609f42c5af213ffc",
+  "targets": [
+    "RTE-W1-001",
+    "RTE-W1-006-CANONICAL-V5-TERMINAL",
+    "RTE-W1-010"
+  ],
+  "finding_dispositions": {
+    "RTE_W1_001": "REPAIRED_AND_VERIFIED",
+    "RTE_W1_006_V5_TERMINAL": "REPAIRED_AND_VERIFIED",
+    "RTE_W1_006_V3_LEGACY": "DEFERRED_LEGACY_RESIDUAL",
+    "RTE_W1_006_ORIGINAL_SUBMISSION_PROVENANCE": "DEFERRED_RESIDUAL",
+    "RTE_W1_010": "REPAIRED_AND_VERIFIED"
+  },
+  "implementer_identity": {
+    "requested_runner": "developer subagent (Claude Code, in-process Agent tool)",
+    "requested_model": "inherits session model (Sonnet 5)",
+    "configured_runner": "Claude Code CLI, developer subagent type",
+    "configured_model": "claude-sonnet-5",
+    "runtime_reported_model": "not independently captured by the orchestrating session; subagent inherited session model"
+  },
+  "self_repair": {
+    "description": "A second substantive commit was added after the implementer's initial commit (250e46bd6b, superseded) by the orchestrating session itself, closing a gap the first-round GPT-5-pro supporting audit found: run_doctor_full's persist=True path wrote certification evidence (DOCTOR_FULL.json, CERTIFICATION_RESULT.json) via an ungated get_git_sha(), bypassing RTE-W1-010 entirely. Fixed by gating that path with the same required_execution_source_identity()/SourceIdentityUnprovenError machinery the implementer already added elsewhere, plus two new regression tests and a fixture-shape fix to an unrelated pre-existing test (test_run_doctor_full_certification_stays_unknown_without_explicit_gate_statuses) whose placeholder git_sha incidentally tripped the new check.",
+    "commit": "67f22b4829b0e3e98ba59fcb609f42c5af213ffc"
+  },
+  "controlling_audit_identity": {
+    "requested_runner": "PAL clink, non-Claude family (per packet routing preference given a Claude implementer)",
+    "configured_runner": "grok-cli (~/.grok/bin/grok, headless single-turn, direct host invocation)",
+    "requested_model": "grok-4.5",
+    "runtime_reported_model": "grok-4.5-build (per API modelUsage telemetry)",
+    "model_self_report": "inconsistent within the transcript (\"Grok 4.6\", \"Grok-2\", \"Grok 4.5\") -- runtime-reported identity (grok-4.5-build) treated as authoritative per packet Section 15",
+    "note": "grok-4.5-build represented as grok-4.5 in embedded_audit.auditor_model per the schema's admitted pairing (repo PR #1228): -build is a usage/telemetry label, not a distinct requestable model id."
+  },
+  "supporting_audit": {
+    "tool": "pal-stdio MCP chat tool",
+    "model": "gpt-5-pro (OpenAI, via PAL)",
+    "role": "First-round independent review that discovered the --doctor persist=True RTE-W1-010 gap later closed in commit 67f22b4829. Not schema-representable as the controlling embedded_audit (auditor_tool/auditor_model enums have no OpenAI-family entries) -- recorded here as supporting evidence only, not the controlling audit.",
+    "verdict_on_repair": "PASS_WITH_RISKS (two non-blocking risks: narrower-than-ideal exception catch in the fix, theoretical root vs dirs[\"root\"] divergence that does not apply in the current call pattern)"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "~/.grok/bin/grok --prompt-file proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/GROK_AUDIT_PROMPT.md --output-format json --permission-mode dontAsk --model grok-4.5, headless single-turn, direct filesystem access to the worktree, run by the operator at the orchestrating session's request",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "R1",
+        "severity": "LOW",
+        "title": "RUN_MANIFEST.json / RUNNER_IDENTITY.json written via ungated get_git_sha before the identity gate",
+        "status": "ACCEPTED_RISK",
+        "body": "write_run_manifest and write_runner_identity execute before required_execution_source_identity() in main()'s phase-execution path. A failed identity check still leaves git_sha:\"UNKNOWN\" on those two files, though RUN_MANIFEST.json's run_status is subsequently overwritten to FAILED/source_identity_unproven. Same nuance the implementer self-disclosed (satisfies invariant 9's 'accepted as authoritative' reading, not a stricter 'before any write' reading); independently rediscovered by the auditor, not new."
+      },
+      {
+        "id": "R2",
+        "severity": "LOW",
+        "title": "Preset write_confidence_ramp_artifacts can write CERTIFICATION_RESULT.json before the phase-loop identity gate",
+        "status": "ACCEPTED_RISK",
+        "body": "Reached via --preset before the RTE-W1-010 gate. Lower severity than the closed doctor gap: the auditor verified write_certification_result's payload for this call path does not itself embed a git_sha field (only the doctor-full topology_payload does, and that path is now gated)."
+      },
+      {
+        "id": "R3",
+        "severity": "INFO",
+        "title": "Audit-prompt wording overstated the implementation's guarantee",
+        "status": "ACCEPTED_RISK",
+        "body": "The audit prompt's checklist item 3 said 'before any canonical evidence write'; the actual guarantee is 'before phase-execution completes and before doctor-persist writes.' A description-precision issue, not an additional code defect beyond R1/R2."
+      },
+      {
+        "id": "R4",
+        "severity": "INFO",
+        "title": "origin/main advanced past the packet's recorded execution base during the session",
+        "status": "ACCEPTED_RISK",
+        "body": "At audit time the repo's origin/main tip had moved to 75b4cfc581 from the packet's execution_base 6626aa9a58 due to normal upstream activity during this long session. The RTE branch was correctly created from 6626aa9a58 and is unaffected; expected drift per packet Section 23, not a defect in this packet's work."
+      },
+      {
+        "id": "R5",
+        "severity": "INFO",
+        "title": "Some new regression tests are source-order structural guards, not full runtime end-to-end",
+        "status": "ACCEPTED_RISK",
+        "body": "main() is several thousand lines; true e2e simulation offline is impractical. Disclosed limitation, already acknowledged by the implementer. One persist=False test checks outcomes (no cert files written, correct exit code) but does not spy that required_execution_source_identity is never called -- the code path (if persist:) makes this trivially true by construction."
+      }
+    ],
+    "fixes_applied": [
+      "run_doctor_full persist=True path gated with required_execution_source_identity before any DOCTOR_FULL.json / CERTIFICATION_RESULT.json write (commit 67f22b4829, closing the gap the supporting GPT-5-pro audit found)"
+    ],
+    "remaining_risks": [
+      "R1: RUN_MANIFEST.json/RUNNER_IDENTITY.json can transiently contain git_sha:UNKNOWN before the identity-failure status overwrite",
+      "R2: preset CERTIFICATION_RESULT.json write is not identity-gated (payload does not embed git_sha for this call path)",
+      "R3: audit-prompt wording overstatement, not a code defect",
+      "R4: unrelated origin/main drift during the session",
+      "R5: some tests are structural rather than full e2e"
+    ],
+    "skip_reason": null
+  },
+  "changed_files": [
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/OPEN_PR_CARRY_FORWARD.md",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/scratch_notes.md",
+    "services/repo-truth-extractor/lib/batch_retriever.py",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/tests/test_batch_retriever.py",
+    "services/repo-truth-extractor/tests/test_pre_live_gate_v25.py",
+    "services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py",
+    "services/repo-truth-extractor/tests/test_rte_v5_terminal_provenance_fail_closed.py",
+    "services/repo-truth-extractor/validate_pre_live_gate_v25.py"
+  ],
+  "allowlist_compliance": "PASS -- all 9 changed files fall within Task Packet Section 5",
+  "focused_tests": "PASS -- test_rte_v5_terminal_provenance_fail_closed.py + test_run_extraction_v5_live_gate_terminality.py + test_pre_live_gate_v25.py all green",
+  "batch_tests": "PASS -- test_batch_retriever.py green",
+  "cert_characterization_tests": "PASS -- test_rte_live_cert_characterization.py + test_proof_contract.py green",
+  "relevant_full_suite": "PASS -- python -m pytest -q services/repo-truth-extractor/tests: 0 failed (1 unrelated pre-existing SKIP, 7 unrelated pre-existing XFAIL, all pre-dating this packet)",
+  "compileall": "PASS",
+  "git_diff_check": "PASS",
+  "secret_scan": "PASS -- no raw credentials in new code/tests; reason_codes are string tokens, not values; test fixture git_sha values are synthetic plausible-looking hex",
+  "open_pr_carry_forward": {
+    "pr_1136": "COMPATIBLE, not superseded, carry-forward required, no conflict",
+    "pr_1183": "COMPATIBLE, not superseded, carry-forward required, no conflict",
+    "report_path": "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/OPEN_PR_CARRY_FORWARD.md"
+  },
+  "unresolved_unknown": [],
+  "blockers": [],
+  "not_run": [
+    "adjacent RTE CLI smoke subset -- superseded by the full relevant_full_suite run, which already covers services/repo-truth-extractor/tests in its entirety"
+  ],
+  "rollback_state": "Not pushed. Local commits only on tp/DMX-RTE-V5-TERMINAL-PROVENANCE-001 (base origin/main 6626aa9a58). Rollback: delete local branch and worktree; no remote or shared state touched.",
+  "disposition": "PASS_WITH_RISKS_READY_FOR_PROOF_CLOSURE",
+  "publication_authority": "NONE -- publication, signing, mark-ready, merge, and admin bypass are explicitly not authorized by this packet",
+  "merge_authority": "NONE",
+  "mark_ready_authority": "NONE",
+  "close_pr_authority": "NONE"
+}

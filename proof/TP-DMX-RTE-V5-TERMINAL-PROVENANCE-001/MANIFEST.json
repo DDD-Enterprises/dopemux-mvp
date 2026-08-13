@@ -1,0 +1,20 @@
+{
+  "packet_id": "TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001",
+  "proof_bundle_files": [
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/PROOF.json",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/VALIDATION.json",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/MANIFEST.json",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/COMMAND_LOG.md",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/CHANGED_FILES.txt",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/HANDOFF.md",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/AUDITOR_REPORT.md",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/OPEN_PR_CARRY_FORWARD.md",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/GROK_AUDIT_PROMPT.md",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/GROK_AUDIT_OUTPUT.json",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/scratch_notes.md",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/review_bundle/"
+  ],
+  "content_head_c1": "67f22b4829b0e3e98ba59fcb609f42c5af213ffc",
+  "execution_base": "6626aa9a58dd82e62226cfca63498cc3f711bb75",
+  "note": "content_head_c1 is the last commit touching source/test bytes. This proof bundle (and the earlier merge of unrelated upstream schema movement, needed for the audit-schema pairing to validate) is added after it, per packet Section 18 S8 -- no source/test byte changes after 67f22b4829."
+}

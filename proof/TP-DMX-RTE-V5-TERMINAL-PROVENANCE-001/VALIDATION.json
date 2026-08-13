@@ -1,0 +1,26 @@
+{
+  "packet_id": "TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001",
+  "content_head_c1": "67f22b4829b0e3e98ba59fcb609f42c5af213ffc",
+  "gates": {
+    "repo_worktree_branch_identity": "PASS",
+    "changed_file_allowlist": "PASS -- all 9 changed files (2 proof/**, 7 source/test) within Task Packet Section 5",
+    "git_diff_check": "PASS",
+    "task_packet_schema": "NOT_RUN -- task-packets/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001.json was authored as a best-effort informational companion but does NOT validate against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json: execution.agent requires one of {gemini, codex, vibe, shell}, none of which truthfully represents the actual implementer (a Claude Code developer subagent). Per the same non-mislabeling principle applied to the audit-tool schema gap, the field was left honest rather than forced to a false enum value; the companion JSON is present but unvalidated.",
+    "embedded_audit_proof_schema": "PASS -- python scripts/audit/validate_audit_proof.py proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/PROOF.json => PASS 1/1",
+    "focused_tests": "PASS -- pytest -q services/repo-truth-extractor/tests/test_rte_v5_terminal_provenance_fail_closed.py services/repo-truth-extractor/tests/test_run_extraction_v5_live_gate_terminality.py services/repo-truth-extractor/tests/test_pre_live_gate_v25.py",
+    "batch_tests": "PASS -- pytest -q services/repo-truth-extractor/tests/test_batch_retriever.py",
+    "evidence_cert_tests": "PASS -- pytest -q services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py services/repo-truth-extractor/tests/test_proof_contract.py",
+    "relevant_full_rte_suite": "PASS -- pytest -q services/repo-truth-extractor/tests: 0 failed, 1 pre-existing SKIP, 7 pre-existing XFAIL (all unrelated to this packet, all predating it)",
+    "adjacent_rte_cli_smoke": "PASS (superseded) -- covered in full by the relevant_full_rte_suite run above; no narrower CLI-only subset was separately isolated",
+    "compileall": "PASS -- python -m compileall -q services/repo-truth-extractor",
+    "changed_file_pre_commit": "PASS -- repo's changed-file pre-commit lane (repo_preflight hook: run-mode, jq-present, ledger-present, ledger-json, diff-whitespace, smoke-tests) ran clean on both substantive commits",
+    "secret_scan": "PASS -- no raw credentials/tokens in new code or tests; test fixture git_sha values are synthetic (\"UNKNOWN\", \"d\"*40, plausible hex) not real; reason_codes are string tokens, never secret values",
+    "open_pr_carry_forward_classification": "COMPLETE -- PR #1136 and #1183 both COMPATIBLE / not superseded / carry-forward-required / no conflict",
+    "independent_audit": "PASS_WITH_RISKS -- grok-cli / grok-4.5 (API-reported grok-4.5-build), 5 explicit non-blocking risks, none reopening the three original defects"
+  },
+  "baseline_failures": [],
+  "unresolved_unknown": [],
+  "not_run": [
+    "task_packet_schema: no stored task-packets/*.json companion was authored for this operator-supplied packet run"
+  ]
+}

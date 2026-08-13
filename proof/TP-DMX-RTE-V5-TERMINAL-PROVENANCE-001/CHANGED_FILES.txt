@@ -1,0 +1,9 @@
+proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/OPEN_PR_CARRY_FORWARD.md
+proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/scratch_notes.md
+services/repo-truth-extractor/lib/batch_retriever.py
+services/repo-truth-extractor/run_extraction_v5.py
+services/repo-truth-extractor/tests/test_batch_retriever.py
+services/repo-truth-extractor/tests/test_pre_live_gate_v25.py
+services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py
+services/repo-truth-extractor/tests/test_rte_v5_terminal_provenance_fail_closed.py
+services/repo-truth-extractor/validate_pre_live_gate_v25.py

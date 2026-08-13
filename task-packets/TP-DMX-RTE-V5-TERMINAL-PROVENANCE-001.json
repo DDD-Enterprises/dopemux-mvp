@@ -1,0 +1,48 @@
+{
+  "id": "TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001",
+  "project": "dopemux-mvp",
+  "target": "Fail closed canonical RTE v5 terminal outcome, batch failure semantics, and source identity",
+  "invariants": [
+    "Canonical v5 semantic execution failure cannot exit zero",
+    "Material v5 batch retrieval or integration failure cannot become zero-work success",
+    "Canonical v5 evidence-producing execution cannot be accepted with unknown source identity",
+    "Read-only inspection behavior remains available where currently safe",
+    "Existing semantic status/evidence machinery remains authoritative",
+    "No fabricated original batch provenance",
+    "Legacy v3 residual is disclosed rather than falsely closed",
+    "Open PR 1136 and 1183 unique payload is preserved",
+    "No live provider or production mutation"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopemux",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-REPO-DEEP-AUDIT-001-REMEDIATION",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "execution_base": "6626aa9a58dd82e62226cfca63498cc3f711bb75",
+    "worktree": "/Users/hue/code/dopemux-mvp/.worktrees/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001",
+    "branch": "tp/DMX-RTE-V5-TERMINAL-PROVENANCE-001",
+    "content_head_c1": "67f22b4829b0e3e98ba59fcb609f42c5af213ffc"
+  },
+  "commit": "67f22b4829b0e3e98ba59fcb609f42c5af213ffc",
+  "pr": null,
+  "pal_chain": null,
+  "steps": [
+    "S0: custody/drift/overlap characterization -- COMPLETE",
+    "S1: reproduce RTE-001/006/010 defects offline -- COMPLETE",
+    "S2: write failing regression tests -- COMPLETE",
+    "S3: implement minimal repair -- COMPLETE (two rounds: initial fix at 250e46bd6b, self-repair of the --doctor persist=True gap at 67f22b4829)",
+    "S4: deterministic validation gates -- COMPLETE (all PASS)",
+    "S5: open-PR carry-forward simulation -- COMPLETE (#1136 and #1183 both COMPATIBLE)",
+    "S6: freeze C1 -- COMPLETE (67f22b4829)",
+    "S7: independent final audit -- COMPLETE (grok-cli/grok-4.5, PASS_WITH_RISKS)",
+    "S8: proof-only closure -- IN_PROGRESS"
+  ]
+}
