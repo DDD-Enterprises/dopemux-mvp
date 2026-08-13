@@ -1,0 +1,95 @@
+{
+  "id": "TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001",
+  "project": "dopemux-mvp",
+  "target": "Risk lane L3 (mutates a CI-enforced proof contract; independent audit required before merge). Add truthful first-class Grok representation to the trusted embedded-audit contract so a real Grok audit can be recorded as PASS without fabricating an auditor identity and without abusing SKIPPED semantics. Admits exactly one pair, grok-cli / grok-4.5, bound fail-closed in both directions. This packet fixes the vocabulary; it does not audit, accept, or merge any other packet.",
+  "invariants": [
+    "Existing enum values and SKIPPED behaviour are unchanged: every tool/model pair valid under the pre-change schema stays valid, proven by a differential test against the pre-change schema read from git rather than a paraphrase of its rules.",
+    "The Grok pair is bound in both directions: auditor_model grok-4.5 requires auditor_tool grok-cli, and auditor_tool grok-cli requires auditor_model grok-4.5. Neither half may be borrowed by another runner.",
+    "grok-4.5-build is NOT admitted. It is a runner-internal usage/telemetry label, not a requestable model id; `grok -m grok-4.5-build` fails with 'unknown model id' while grok-4.5 selects.",
+    "grok-4.6 is NOT admitted. The operator authorized grok-4.5 only. Admitting any further Grok model is a separate operator decision.",
+    "This packet's own controlling audit must NOT be performed by Grok. A route that bootstraps its own admission is not an independent audit.",
+    "No runtime behaviour changes. No proof bundle other than this packet's is edited, and PR #1227 is not touched by this packet."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-EMBEDDED-AUDIT-GROK-ROUTE",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "tp/DMX-EMBEDDED-AUDIT-GROK-ROUTE-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(audit): admit the grok-cli/grok-4.5 embedded-audit route (TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001)",
+    "allowlist": [
+      "schemas/proof/embedded_audit.schema.json",
+      "tests/audit/test_embedded_audit_grok_route.py",
+      "tests/audit/test_local_audit_acceptance.py",
+      "tests/audit/fixtures/embedded_audit.schema.pre_grok.json",
+      "task-packets/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001.json",
+      "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/**"
+    ]
+  },
+  "pr": {
+    "title": "feat(audit): admit the grok-cli/grok-4.5 embedded-audit route",
+    "body": "The trusted embedded-audit contract had no vocabulary for the Grok runner: auditor_tool enumerated [agy, antigravity, claude-code-cli, copilot-cli, gemini-cli, pal-mcp-clink, none] and auditor_model enumerated [sonnet, claude-sonnet-4.6, opus, gemini, gemini-3.1-pro-high, unknown], with zero grok entries, additionalProperties false, and allOf[1] forbidding tool 'none' or model 'unknown' for any non-SKIPPED status. A completed, passing Grok audit therefore had exactly two representable encodings, both false: claim SKIPPED (asserts no audit happened) or name a runner from the enum (fabricates an auditor identity). The gap was recorded rather than papered over in proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/GROK_SCHEMA_REPRESENTATION_GAP.md, which scoped this packet.\n\nThis fixes the vocabulary instead of teaching the evidence to lie. It admits exactly one pair, grok-cli / grok-4.5, bound fail-closed in both directions so neither half can be stated without the other, following the existing gemini-3.1-pro-high/agy precedent and closing that precedent's one-directional gap for the new pair. grok-4.5-build is deliberately excluded as a usage/telemetry label rather than a requestable model id, and grok-4.6 (now the runner default) is excluded as outside the authorization.\n\nBackward compatibility is proven at class level, not by sample: a differential test reads the pre-change schema from git and asserts old and new agree on the verdict for every pre-change tool/model pair across all five statuses. The full proof corpus revalidates 74/74 PASS under the new schema.\n\nScope was set by a deterministic consumer inventory, recorded in the proof bundle. scripts/audit/run_embedded_audit.py is deliberately NOT changed: it holds no auditor recognition table; its tool/model values come from normalize_pal_clink_audit_output (which always emits pal-mcp-clink) or pass through from an accepted local attestation, and its _skipped_audit helper correctly hardcodes the none/unknown pair. scripts/audit/local_audit_acceptance.py is likewise unchanged, being tool-agnostic and delegating to Draft7. The one consumer that did require a change is the parity corpus in tests/audit/test_local_audit_acceptance.py, which pins the conditional count and demands a violating fixture per conditional.\n\nNo runtime behaviour changes and no other packet's proof bundle is edited.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Perform a deterministic consumer inventory of the embedded-audit auditor_tool/auditor_model enums before mutating the contract, and record which sites change and which are excluded with reasons.",
+      "validation": [
+        "test -f proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/CONSUMER_INVENTORY.json"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add grok-cli to auditor_tool and grok-4.5 to auditor_model, plus the two fail-closed conditionals binding the pair in both directions, each self-contained via then.required.",
+      "validation": [
+        "python3 -c \"import json;json.load(open('schemas/proof/embedded_audit.schema.json'))\"",
+        "python3 -m pytest tests/audit/test_embedded_audit_grok_route.py -q"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Extend the local-acceptance parity corpus with violating fixtures for both new conditionals and update the pinned conditional count.",
+      "validation": [
+        "python3 -m pytest tests/audit/test_local_audit_acceptance.py -q"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Prove no regression across the existing proof corpus and prove the intended PR #1227 embedded_audit block passes under the new schema and fails under the pre-change schema.",
+      "validation": [
+        "python3 scripts/audit/validate_audit_proof.py --all proof",
+        "python3 -m pytest tests/audit/ -q"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Obtain an independent controlling audit from a route representable by the PRE-change schema. Grok is forbidden as this packet's auditor; if no representable independent route is available, stop and report BLOCKED_AUDITOR_BOOTSTRAP.",
+      "validation": [
+        "test -f proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDITOR_REPORT.md",
+        "python3 scripts/audit/validate_audit_proof.py proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/PROOF.json"
+      ]
+    }
+  ]
+}
