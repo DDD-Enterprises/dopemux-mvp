@@ -72,5 +72,21 @@
     "Auditor identity rests on the runner's own session store, not on provider-side cryptographic attestation. Same residual this route has carried since PR #1214.",
     "Round 2 read round 1's report as part of its input. It was instructed to treat those findings as prior claims to recheck rather than as fact, and it recomputed them, but it was not a blind re-audit.",
     "Both rounds ran on the same model and runner. Model-diversity across rounds was not attempted."
-  ]
+  ],
+  "post_audit_mutation": {
+    "commit": "de52443a08c0517617314cfd2b7d77973fcb18b0",
+    "file": "task-packets/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002.json",
+    "was_inside_the_audited_delta": true,
+    "why_it_happened": "The repository's task-packet schema gate rejected the packet on five counts after the audit had already run: pr.base is required, pr.draft is not allowed, and every step both required a validation array and forbade an outputs key. The packet was authored before that gate was exercised against it.",
+    "exact_scope_verified_by_parsing_both_revisions": [
+      "pr: 'draft' removed, 'base': 'main' added. pr.title and pr.body byte-identical.",
+      "steps: 'outputs' renamed to 'expected_files' in all six steps, with the array contents preserved element for element.",
+      "steps: a 'validation' array added to each of the six steps (2, 4, 4, 3, 4, 4 entries).",
+      "target, invariants, depends_on, repo_binding, series and the commit block are all identical across the two revisions.",
+      "Every step's id, task, requirements and commands are identical across the two revisions."
+    ],
+    "honest_characterization_of_the_added_text": "The six validation arrays are NEW text, not a reformatting. They are derived from the acceptance checks already stated in each step's own requirements and in the operator's Phase B instruction, but they did not exist at the audited head and are not claimed to be unchanged.",
+    "does_this_require_a_third_audit": "No. The controlling verdict binds content head f7326b18397a4381df88ec4dc933eeb3f0011288, and the audit prompt itself stated that proof-record successors follow the audited head. No artifact the auditor evaluated -- the ADRs, the contracts, the validator, the traceability matrix, the FO-01 records, the MA-08 recheck, the custody record -- was touched. The edit adds packet-level acceptance criteria and satisfies a mechanical schema gate.",
+    "residual": "A reader diffing f7326b18..tip will see an audited file change. That is why this entry exists. If the operator wants the packet file itself re-audited, that is a cheap third round against the tip; it was not run because the change is schema-mechanical and adds no claim the audit tested."
+  }
 }

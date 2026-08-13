@@ -140,5 +140,5 @@
     ],
     "skip_reason": null
   },
-  "head_after_note": "This is the audited content head, and it is what C1_CONTENT_HEAD.txt records. Commits after it on this branch are proof records only -- the audit reports, custody, worksheet, and closure files -- and by construction none of them can name its own sha. The branch is local and unpushed; git log on tp/DMX-SB-ADR-ACCEPTANCE-002 is the authority for the tip."
+  "head_after_note": "This is the audited content head, and it is what C1_CONTENT_HEAD.txt records. Commits after it on this branch are proof records, PLUS one schema-compliance fix to this packet's own task-packet file at de52443a08c0517617314cfd2b7d77973fcb18b0. That file was inside the audited 11-path delta, so the edit is a post-audit mutation of an audited file and is declared as such rather than left for a reader to find. Its exact scope and why it does not disturb the verdict are recorded in AUDIT_CUSTODY.json under post_audit_mutation. By construction no commit can name its own sha; the branch is local and unpushed, and git log on tp/DMX-SB-ADR-ACCEPTANCE-002 is the authority for the tip."
 }

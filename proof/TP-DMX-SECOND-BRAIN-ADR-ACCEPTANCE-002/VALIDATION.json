@@ -36,7 +36,9 @@
       "13 custody hashes recomputed at MA08_MAIN_SHA and cross-checked against the prior run's record",
       "independent audit round 2: BLOCKERS 0, MUST_FIX 0",
       "read-only boundary held: diff from MA08_MAIN_SHA is this packet's proof dir plus its task packet",
-      "no ADR disposition recorded; adr_acceptance_authorized remains false"
+      "no ADR disposition recorded; adr_acceptance_authorized remains false",
+      "python3 scripts/audit/validate_audit_proof.py --all proof \u2014 77/77 PASS, including this bundle",
+      "pre-commit run --files <staged> \u2014 0 failing hooks (after the task-packet schema fix recorded in AUDIT_CUSTODY.json post_audit_mutation)"
     ],
     "FAIL": [],
     "NOT_RUN": [
@@ -47,8 +49,7 @@
       "split-brain proof \u2014 implementation-time gate, not attempted",
       "denial fixtures \u2014 NOT_IMPLEMENTED by the amended AC#2's own terms; implementing them is forbidden by this packet",
       "encryption implementation \u2014 ABSENT",
-      "live CI \u2014 this packet is unpushed and has no PR; no CI has run against it",
-      "python3 scripts/audit/validate_audit_proof.py --all proof \u2014 deferred to the final commit, recorded in the command log"
+      "live CI \u2014 this packet is unpushed and has no PR; no CI has run against it"
     ]
   },
   "gates_still_closed": {
