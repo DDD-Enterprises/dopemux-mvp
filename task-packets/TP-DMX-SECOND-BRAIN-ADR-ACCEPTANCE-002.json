@@ -1,0 +1,156 @@
+{
+  "id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002",
+  "project": "dopemux-mvp",
+  "target": "Post-merge acceptance-readiness evidence for ADR-SB-001..010, executed after the machine-contract evidence merged to main as 75b4cfc581786a53445e412bfc8e25a6e0fdb978. Verifies the merged contract family from clean main, runs a fresh MA-08 drift recheck from discovery base 72af781e42 through that SHA, obtains a fresh independent acceptance-integrity audit bound to it, and prepares a fresh ten-ADR disposition worksheet for the operator. Records no disposition, accepts no ADR, and authorizes no implementation. Read-only with respect to Second Brain architecture and runtime.",
+  "invariants": [
+    "PROGRAM=SECOND_BRAIN. PHASE=POST_MERGE_ACCEPTANCE_READINESS.",
+    "RISK_LANE=L2. Evidence and readiness only; no architecture or runtime change.",
+    "MA08_MAIN_SHA=75b4cfc581786a53445e412bfc8e25a6e0fdb978 governs every artifact in this packet. It was resolved from a fresh fetch at execution time and matches the operator-stated contract-evidence merge commit.",
+    "ADR_ACCEPTANCE_AUTHORIZED=false. No ADR disposition is recorded by this packet. Dispositions are OPERATOR_ONLY and every worksheet disposition field reads PENDING_OPERATOR.",
+    "PRIOR_OPERATOR_DISPOSITIONS=10x DEFER, a single blanket operator directive covering ADR-SB-001..010, not a per-ADR ledger. It remains the current disposition until the operator replaces it.",
+    "The 10x ACCEPT ledger at unpushed commit 19fa74faa9 is SUPERSEDED_PRE_AMENDMENT_ACCEPTANCE_ATTEMPT with operator_provenance UNKNOWN. It is not the prior disposition state, is not inherited, copied, or inferred, and is not touched by this packet.",
+    "IMPLEMENTATION_EXECUTION=NOT_AUTHORIZED. RUNTIME_MUTATION=FORBIDDEN. SLICE_EXECUTION=NOT_AUTHORIZED. DEPLOYMENT=NOT_AUTHORIZED.",
+    "DENIAL_FIXTURES=NOT_IMPLEMENTED. Implementing them is forbidden by this packet; they remain an implementation-time enablement gate under the amended AC#2.",
+    "CANDIDATE_SHA256=e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c and RATIFICATION_BINDING_SHA256=a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34 are frozen authority. This packet reads them and modifies neither.",
+    "Second Brain authority records, the candidate document, the traceability matrix, the FO-01 receipt, the machine contracts, the validator, and the adversarial suite are all READ-ONLY to this packet. It writes only under proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/** plus this packet file.",
+    "Nothing is written into proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001/**. That is a prior run's bundle bound to head cfa4927a88 and writing into it would edit controlling historical evidence.",
+    "Only MA-08 result NO_NEW_MATERIAL_DRIFT may advance the phase. A material authority or privacy change in the window stops the phase as BLOCKED_NEW_MATERIAL_DRIFT.",
+    "The required audit outcome string is the gate to advance, not an instruction to the auditor. A FAIL verdict is recorded verbatim and stops the phase.",
+    "The audit must not infer runtime behaviour from architecture-time artifacts.",
+    "Any Grok audit must pin -m grok-4.5 explicitly. The grok CLI default moved to grok-4.6, which the trusted embedded-audit contract does not admit.",
+    "MERGE=NOT_AUTHORIZED. PUSH=NOT_AUTHORIZED. PR=NOT_AUTHORIZED. FORCE_PUSH=FORBIDDEN. REBASE=FORBIDDEN.",
+    "Terminal state is READY_FOR_OPERATOR_ADR_REDISPOSITION / AWAITING_OPERATOR_ADR_DISPOSITIONS. No work continues past it without new operator instruction."
+  ],
+  "depends_on": [
+    "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+    "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT",
+    "TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+    "final_packet": false
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Resolve the actual current origin/main at execution time and pin it as MA08_MAIN_SHA.",
+      "requirements": [
+        "origin/main is read from a fresh fetch, not a cached ref.",
+        "The resolved SHA is recorded and every downstream artifact binds to it.",
+        "Source custody hashes are computed at that SHA and compared against the prior run's recorded values, with every difference explained by a merged operator-authorized change."
+      ],
+      "commands": [
+        "git fetch origin --prune && git rev-parse origin/main",
+        "git worktree add --detach <clean> 75b4cfc581786a53445e412bfc8e25a6e0fdb978",
+        "shasum -a 256 <second brain authority, candidate, traceability, FO-01 receipt, inventory, coverage, validator>"
+      ],
+      "outputs": ["proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/01_INPUT_CUSTODY.md"]
+    },
+    {
+      "id": "S1",
+      "task": "Verify the merged contract family from clean main.",
+      "requirements": [
+        "Validator exit 0 with result PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE.",
+        "ADR coverage 10/10, clause coverage 160/160, MISSING 0, AMBIGUOUS 0.",
+        "Coverage is recomputed independently from the frozen inventory and the coverage index rather than read from the producer-authored coverage receipt.",
+        "The adversarial suite is re-run from the clean worktree, not inherited from PR #1227's record."
+      ],
+      "commands": [
+        "python3 scripts/governance/validate_second_brain_adr_contracts.py --json",
+        "python3 -m pytest -q tests/governance/test_second_brain_adr_contracts.py"
+      ],
+      "outputs": ["proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/03_CONTRACT_FAMILY_VERIFICATION.json"]
+    },
+    {
+      "id": "S2",
+      "task": "Run a fresh MA-08 drift recheck from discovery base 72af781e42 through MA08_MAIN_SHA.",
+      "requirements": [
+        "No prior MA-08 result is inherited; previously adjudicated segments are re-reviewed.",
+        "The new segment's file classification is complete: class counts must sum to the segment's file count.",
+        "Runtime, schema, and service file counts are enumerated rather than asserted as zero.",
+        "The §11 hard-gate checklist is evaluated over the full window, not the new segment alone.",
+        "Result is exactly one of NO_NEW_MATERIAL_DRIFT or BLOCKED_NEW_MATERIAL_DRIFT."
+      ],
+      "commands": [
+        "git rev-list --count 72af781e42..75b4cfc581 && git diff --shortstat 72af781e42..75b4cfc581",
+        "git diff --name-status cfa4927a88..75b4cfc581"
+      ],
+      "outputs": ["proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/02_MA08_DRIFT_RECHECK.md"]
+    },
+    {
+      "id": "S3",
+      "task": "Freeze the packet content head, then generate the audit prompt against the frozen head.",
+      "requirements": [
+        "The prompt is authored after the freeze so it names the head it audits; a prompt naming a dead head is a defect this series has already paid for.",
+        "The prompt proves that the frozen head differs from MA08_MAIN_SHA only in this packet's own proof and task-packet paths.",
+        "The prompt carries the operator's must-not-infer-runtime-behaviour constraint verbatim and requires explicit BLOCKERS and MUST_FIX counts."
+      ],
+      "commands": [
+        "git add -A && git commit",
+        "git diff --name-only 75b4cfc581..HEAD"
+      ],
+      "outputs": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/AUDIT_PROMPT.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/C1_CONTENT_HEAD.txt"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run a fresh independent post-merge acceptance-integrity audit bound to the frozen head.",
+      "requirements": [
+        "The auditor runs in a throwaway detached worktree pinned to the frozen head with no producer conversation history.",
+        "The auditor reviews the ten ADRs, the 160-clause denominator, the typed contracts, FO-01 reconciled state, current traceability, and the fresh MA-08 result.",
+        "Any Grok invocation pins -m grok-4.5 explicitly.",
+        "The verdict is recorded verbatim including a FAIL. A FAIL stops the phase."
+      ],
+      "commands": ["<auditor CLI> --print \"$(cat proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/AUDIT_PROMPT.md)\""],
+      "outputs": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/AUDITOR_REPORT.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/AUDIT_CUSTODY.json"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Prepare the fresh ten-ADR disposition worksheet and stop.",
+      "requirements": [
+        "Each ADR carries its machine contracts, parse/coverage result, MA-08 result, audit result, remaining implementation-time requirements, and a fresh facilitator recommendation.",
+        "Recommendations are stated in a field separate from the disposition field, and every disposition field reads PENDING_OPERATOR.",
+        "The prior 10x DEFER is stated as still current and is not mechanically inherited as the recommendation.",
+        "Terminal state is READY_FOR_OPERATOR_ADR_REDISPOSITION / AWAITING_OPERATOR_ADR_DISPOSITIONS."
+      ],
+      "commands": [],
+      "outputs": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/04_ADR_DISPOSITION_WORKSHEET.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/PROOF.json",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/VALIDATION.json",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/HANDOFF.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/COMMAND_LOG.md"
+      ]
+    }
+  ],
+  "commit": {
+    "message": "proof(second-brain): post-merge ADR acceptance readiness (MA-08, contract family, worksheet)",
+    "allowlist": [
+      "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/**",
+      "task-packets/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002.json"
+    ],
+    "verify": [
+      "python3 scripts/governance/validate_second_brain_adr_contracts.py",
+      "python3 -m pytest -q tests/governance/test_second_brain_adr_contracts.py",
+      "python3 scripts/audit/validate_audit_proof.py --all proof"
+    ]
+  },
+  "pr": {
+    "title": "proof(second-brain): post-merge ADR acceptance readiness",
+    "body": "NOT AUTHORIZED. This packet stops at READY_FOR_OPERATOR_ADR_REDISPOSITION with its branch local and unpushed. No pull request is opened, and none may be opened without a fresh operator instruction. The field is present because the packet schema requires it, not because a PR is intended.",
+    "draft": true
+  }
+}
