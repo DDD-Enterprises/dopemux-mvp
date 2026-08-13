@@ -7,9 +7,9 @@
     "contract_validator": "PASS (94 checks, 0 failed)",
     "adversarial_matrix": "PASS",
     "packet_schema": "PASS (task packet re-validated against dopetask-canonical-spec.json after being updated to round-2 counts and the new freeze)",
-    "change_contract_preflight": "FAIL",
+    "change_contract_preflight": "PASS (post-#1228; was FAIL for representation gap only)",
     "diff_whitespace": "PASS (git diff --check clean, re-run at the round-2 tree)",
-    "pre_commit": "FAIL (re-run on the round-2 changed slice; 1 hook of 1 applicable failed, proof-embedded-audit-schema, same single cause)",
+    "pre_commit": "PASS (post-#1228; was FAIL for representation gap only)",
     "independent_audit": "PASS (round 2, frozen head 6e1b4472ba, 0 blockers, 0 must-fix)",
     "runtime_conformance": "NOT_RUN",
     "retrieval_benchmarks": "NOT_RUN",
@@ -20,9 +20,9 @@
     "encryption_implementation": "ABSENT",
     "adversarial_suite": "PASS (63 tests, 0 failed)",
     "false_green_matrix": "PASS (10/10 operator-mandated mutations failed as intended, each via its intended guard)",
-    "denominator_refreeze": "PASS (160 clauses, sha256 b164fc0b4459…, frozen in 3e0d89815c with no contract or validator change)",
-    "change_contract": "FAIL (re-run at the round-2 tree; single cause = embedded-audit representation gap, no second cause)",
-    "embedded_audit": "FAIL (representation gap; out of lane per packet §1, not repaired)"
+    "denominator_refreeze": "PASS (160 clauses, sha256 b164fc0b4459\u2026, frozen in 3e0d89815c with no contract or validator change)",
+    "change_contract": "PASS (post-#1228 rebind)",
+    "embedded_audit": "PASS (grok-cli/grok-4.5 representable; identity evidence-backed)"
   },
   "commands": [
     {
@@ -92,11 +92,11 @@
     "effect": "change-contract preflight and the pre-commit proof hook both FAIL",
     "single_cause": "schemas/proof/embedded_audit.schema.json cannot name the grok CLI that ran, and forbids the none/unknown fallback unless status is SKIPPED.",
     "options_rejected": [
-      "status=SKIPPED with none/unknown — would falsely assert no audit happened and hide a FAIL verdict",
-      "status=FAIL with a tool/model picked from the enum — fabricating an auditor identity, forbidden by packet section 19"
+      "status=SKIPPED with none/unknown \u2014 would falsely assert no audit happened and hide a FAIL verdict",
+      "status=FAIL with a tool/model picked from the enum \u2014 fabricating an auditor identity, forbidden by packet section 19"
     ],
     "chosen": "status=FAIL (true and representable) with honest fallback values and the limitation stated in skip_reason; the gate error is accepted and recorded rather than engineered away.",
-    "schema_repair": "OUT_OF_SCOPE — packet section 1 forbids embedded-audit platform repair.",
+    "schema_repair": "OUT_OF_SCOPE \u2014 packet section 1 forbids embedded-audit platform repair.",
     "status": "HISTORICAL_RESOLVED",
     "resolved_by": "f0a0e839b456eab05aa6b3592fdebb31c488fa5b (PR #1228)"
   },
@@ -149,5 +149,15 @@
       "historical_invocation_rewritten": false,
       "audit_time_records_edited": false
     }
+  },
+  "post_1228_rebind": {
+    "embedded_audit_schema": "PASS (PROOF.json validates under post-#1228 trusted schema with grok-cli/grok-4.5)",
+    "full_proof_corpus": "PASS (76/76)",
+    "contract_validator": "PASS (94 checks, 0 failed)",
+    "adversarial_suite": "PASS (63 passed)",
+    "change_contract_preflight": "PASS (status=PASS, max_lane=L2 against origin/main)",
+    "pre_commit_embedded_audit_hook": "PASS",
+    "identity_reconciliation": "R2_AUDITOR_IDENTITY_RECONCILIATION.json (append-only; AUDIT_PROMPT_CUSTODY_R2 untouched)",
+    "hash_recheck": "R2_AUDITED_BYTES_HASH_RECHECK.json (31/36 contract corpus identical; 5 post-C1 attestation paths)"
   }
 }
