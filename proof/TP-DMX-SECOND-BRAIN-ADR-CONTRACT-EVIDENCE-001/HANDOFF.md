@@ -164,19 +164,48 @@ Therefore still unauthorized: runtime or production enablement, Slice 0
 implementation, automatic capture, task promotion, real Dom data, multi-project
 background capture, and confidential/restricted spooling.
 
-## Gates that remain red, and why that is not this packet's to fix
+## The embedded-audit gate — was red for representation, now resolved
 
-The embedded-audit gate fails, as it did in round 1, for one cause:
-`schemas/proof/embedded_audit.schema.json` is strictly binary — `SKIPPED` forces
-`auditor_tool: "none"` / `auditor_model: "unknown"`, and any other status forbids
-both — and its enums cannot name the auditor that actually ran. Claiming `SKIPPED`
-would hide a real audit; picking an enum tool would fabricate an auditor identity.
-Packet §19 forbids the second and §1 puts embedded-audit platform repair out of
-lane, so the gate is left failing and the representation gap is recorded instead.
+For rounds 1 and 2 the embedded-audit gate failed for one cause, and not an
+evidentiary one: `schemas/proof/embedded_audit.schema.json` was strictly binary —
+`SKIPPED` forces `auditor_tool: "none"` / `auditor_model: "unknown"`, and any other
+status forbids both — and its enums could not name the auditor that actually ran.
+Claiming `SKIPPED` would have hidden a real audit; picking an enum tool would have
+fabricated an auditor identity. Packet §19 forbids the second and §1 put
+embedded-audit platform repair out of lane, so the gate was left failing and the
+representation gap recorded in the open. A PASS from the independent audit did not
+turn it green, because it never failed for want of evidence.
 
-**A PASS from the independent audit therefore does not turn those two gates
-green.** They fail for a schema-representation reason that has nothing to do with
-the contract evidence.
+**Resolved 2026-08-12 by `f0a0e839b4` (PR #1228,
+`TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001`)**, a separate packet on trusted `main` under
+operator ruling `TAKE_OPTION_B`. It admits `grok-cli` / `grok-4.5`, bound fail-closed
+in both directions. The trusted schema is read from the trusted ref, never from a PR
+branch, which is why this could not have been fixed here.
+
+Two things did **not** happen as a result. No audit was re-run, and no verdict
+changed — only the vocabulary available to describe the auditor changed. And the
+audited contract corpus did not move: of the exact 36 paths in C1 commit
+`6e1b4472ba`, the **31-file contract corpus** is byte-identical to that head, verified by
+per-file blob hash against `6e1b4472ba` (not by reading a branch diff — a same-path change
+arriving from `main` would not appear in a branch diff at all). The other 5 are post-C1
+attestation paths under this proof directory, already allowed to evolve by the post-C1
+mutation boundary. See `R2_AUDITED_BYTES_HASH_RECHECK.json`.
+
+The round-2 auditor model, honestly recorded at the time as `UNKNOWN_TO_PRODUCER`,
+was recovered from the runner's own per-session metadata as **`grok-4.5`** — the
+completed run and its killed precursor agree, and the timestamps corroborate the
+custody record's account of a killed first attempt. That is
+`RUNNER_SESSION_METADATA_VERIFIED`, not provider attestation, and it is written down
+that way. See `R2_AUDITOR_IDENTITY_RECONCILIATION.json`.
+
+The historical invocation is preserved exactly and was **not** rewritten to add
+`-m grok-4.5`. It never contained a model flag. The invocation records what was
+executed; the session metadata records what served it. Merging the two would turn a
+true identity repair into fabricated execution history. (Future Grok audits must pin
+`-m grok-4.5`, because the runner default has since moved to `grok-4.6`.)
+
+`AUDIT_PROMPT_CUSTODY_R2.json` and `AUDITOR_REPAIR_2_REPORT.md` are untouched.
+Reconciliation adds a record; it does not revise one.
 
 ## Status: READY_FOR_OPERATOR_CONTRACT_EVIDENCE_MERGE_DECISION
 
@@ -205,8 +234,8 @@ producer and recorded in `AUDIT_R2_RESIDUALS.json`:
 decision to make. Merge remains OPERATOR_ONLY, the PR stays a draft, and no ADR
 disposition changes.
 
-Two gates remain red for one cause, and a PASS does not change that: see the
-section above. Repairing the embedded-audit schema is out of lane.
+The embedded-audit representation gap that kept two gates red through rounds 1 and 2
+is resolved on trusted `main`; see the section above. The audited bytes are unchanged.
 
 ## What the operator is being asked for
 

@@ -915,3 +915,100 @@ rather than assumed unchanged.
 
 Full record, including the drift analysis and the ancestry proof, is in
 `BASE_SYNC_REVERIFY.json`.
+
+## Post-#1228 proof rebinding (identity + schema vocabulary only)
+
+Operator authorized absorbing merged PR #1228 (`f0a0e839b4`, admits `grok-cli` /
+`grok-4.5` on the trusted embedded-audit contract) and rebinding this packet's
+proof metadata only. No audit was re-run. No contract corpus file was rewritten.
+
+```bash
+$ git merge --no-ff origin/main   # absorb #1228; ancestry of 6e1b4472ba preserved
+$ # Hash the exact 36 paths from `git show --name-only 6e1b4472ba` against that head
+$ # Result: 31/36 byte-identical (contract corpus); 5/36 are post-C1 attestation paths
+```
+
+`UNKNOWN_TO_PRODUCER` is resolved **append-only** in
+`R2_AUDITOR_IDENTITY_RECONCILIATION.json`. `AUDIT_PROMPT_CUSTODY_R2.json` is not
+edited. Identity is evidence-backed from runner session metadata archived by
+`TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001` (`current_model_id` / `primaryModelId` =
+`grok-4.5` on both the completed run and its killed precursor) — not inferred from
+today's runner default (now `grok-4.6`).
+
+`PROOF.json` embedded_audit now states `auditor_tool: grok-cli` and
+`auditor_model: grok-4.5`. The historical invocation string is preserved without
+adding `-m` (that would fabricate execution history). Future Grok audits must pin
+`-m grok-4.5`.
+
+Hash detail: `R2_AUDITED_BYTES_HASH_RECHECK.json`.
+
+
+## 12. Final base-sync, identity reconciliation, and gate closure (2026-08-12)
+
+Authority: operator `GO_PR1227_COMPLETE`.
+
+### Base-sync
+
+```bash
+$ git fetch origin --prune
+$ git merge --no-ff origin/main       # f0a0e839b4 — PR #1228, the grok-cli route
+merge commit ca72781c32
+```
+
+Nine incoming commits, all from the Grok-route support packet. The merge changed
+only `proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/**`, `schemas/proof/`,
+`task-packets/` and `tests/audit/` — zero paths on this packet's audited surface.
+
+### Audited-byte identity, re-proven
+
+```text
+AUDITED_FILES          = 36
+DRIFTED_AUDITED_FILES  = 0
+```
+
+Each file hashed individually at the merge result against `6e1b4472ba`. A diff was
+deliberately not relied on: a same-path change arriving from `main` does not appear
+in a branch diff. The set is every non-generator file changed between the issue
+baseline and the audited head, minus the five records post-C1 proof-only commits may
+touch, **plus the two audited inputs this packet never modifies** — the ratified
+candidate and `FO01_RESOLUTION_RECEIPT.json`. Those two are exactly where an incoming
+same-path change would have hidden, and both are byte-identical.
+
+### Auditor identity reconciled from recovered evidence
+
+Round 2 recorded `model: UNKNOWN_TO_PRODUCER` — truthful then, and insufficient the
+moment a proof must *name* the model. The runner persists per-session metadata, and
+`AUDIT_PROMPT_CUSTODY_R2.json` recorded `session_dir_hint` at audit time, which is the
+chain from custody → session → served model:
+
+```text
+completed run  019ff62b  current_model_id = grok-4.5   primaryModelId = grok-4.5
+killed run     019ff628  current_model_id = grok-4.5
+```
+
+Timestamps corroborate the custody account: the killed attempt ran 13:28:26Z–13:30:46Z,
+the verdict run began 13:31:43Z. Recorded in `R2_AUDITOR_IDENTITY_RECONCILIATION.json`
+as `RUNNER_SESSION_METADATA_VERIFIED`, with `provider_attestation = UNKNOWN`.
+
+**The historical invocation was not rewritten.** It contained no `-m` flag, and adding
+one now would convert a true identity repair into fabricated execution history. The
+invocation says what was executed; the session metadata says what served it.
+
+`AUDIT_PROMPT_CUSTODY_R2.json` and `AUDITOR_REPAIR_2_REPORT.md` are untouched —
+both are inside the 36-file set proven unchanged.
+
+### Gates
+
+```text
+proof-embedded-audit-schema   PASS   (was FAIL for representation)
+change-contract               PASS   exit 0, was FAIL with 1 finding
+pre-commit                    PASS   0 failed hooks, was 2
+contract validator            PASS   94 checks, 0 failed
+adversarial suite             PASS   63/63
+false-green matrix            PASS   10/10, each via its named guard
+packet schema                 PASS
+git diff --check              PASS
+```
+
+No fresh contract audit was run or required: the proof vocabulary became able to
+represent the auditor, while the audited content did not change.

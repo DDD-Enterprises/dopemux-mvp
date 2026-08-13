@@ -1,0 +1,282 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+  "record_kind": "R2_AUDITED_BYTES_HASH_RECHECK",
+  "audited_content_head": "6e1b4472ba626df2a5d7724e87c5ec77c9c46043",
+  "checked_at_commit_ish": "ca72781c32ef9c5ee0d3fc6cd1c70a696ecbb68e",
+  "method": "For each of the exact 36 paths introduced/updated by C1 commit 6e1b4472ba (git show --name-only 6e1b4472ba), compare git blob id at 6e1b4472ba:<path> to git hash-object of the working-tree file. Equivalence is NOT inferred from git diff against the branch.",
+  "files_checked": 36,
+  "byte_identical_count": 31,
+  "drifted_count": 5,
+  "contract_corpus_byte_identical_count": 31,
+  "contract_corpus_byte_identical": true,
+  "post_c1_attestation_paths_already_divergent_before_this_rebind": [
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/COMMAND_LOG.md",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/HANDOFF.md",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/PROOF.json",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/VALIDATION.json",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/gen_proof2.py"
+  ],
+  "drifted_paths": [
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/COMMAND_LOG.md",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/HANDOFF.md",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/PROOF.json",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/VALIDATION.json",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/gen_proof2.py"
+  ],
+  "note": "The 5 drifted paths are producer attestation records under the post-C1 mutation boundary (proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/**). They were allowed to evolve after the audited head for audit/base-sync bookkeeping. The 31-file contract corpus (schemas, validator, tests, task packet, freeze receipts, generators other than gen_proof2) is byte-identical to 6e1b4472ba. Do not overstate this as 36/36 identical.",
+  "files": [
+    {
+      "path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/COMMAND_LOG.md",
+      "blob_at_6e1b4472ba": "d5626bfd185a50b45307c379fe21f88ed68052a4",
+      "blob_at_worktree": "325332f8a65b96e7c690af5baac74c99a638bd03",
+      "sha256_at_worktree": "f96942cd156ccda388f55a3d34d76fe7aed1c17e89e0d260e50779ce2e97ab20",
+      "byte_identical_to_audited_head": false
+    },
+    {
+      "path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/CONTRACT_COVERAGE_RECEIPT.json",
+      "blob_at_6e1b4472ba": "f63d2207b2fedcb3ee4fbf8c1b0f69303a1993f2",
+      "blob_at_worktree": "f63d2207b2fedcb3ee4fbf8c1b0f69303a1993f2",
+      "sha256_at_worktree": "b39954098e09f12fbf97197d7eadcba1f40dc376cd8b10c571aa7dc633a919e3",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/DENOMINATOR_CENSUS_WORKSHEET.json",
+      "blob_at_6e1b4472ba": "c14d756d9639d15a8223041122d239cf58ec3917",
+      "blob_at_worktree": "c14d756d9639d15a8223041122d239cf58ec3917",
+      "sha256_at_worktree": "bc4157808577d3770d788b5cc0356297a9f0ece97d077441447383a05cbfa339",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/FALSE_GREEN_MATRIX.json",
+      "blob_at_6e1b4472ba": "f27fc0887f8298924db8cadc46ca24c84c90b933",
+      "blob_at_worktree": "f27fc0887f8298924db8cadc46ca24c84c90b933",
+      "sha256_at_worktree": "3df44d55377b2d245ee4499888ba31b655cb58edd629278e2221e3b8ba49bd11",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/FO01_RECONCILIATION_RECEIPT.json",
+      "blob_at_6e1b4472ba": "63d9274c8a10ba64b11fb18dd92e50efc7cf983f",
+      "blob_at_worktree": "63d9274c8a10ba64b11fb18dd92e50efc7cf983f",
+      "sha256_at_worktree": "1a61d97a2ae17999efbff96d0d3243c9a4c53c7dada55209fcb5cd2f538a558b",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/HANDOFF.md",
+      "blob_at_6e1b4472ba": "8314a6aaff6aadffea059474371c6fab6d3bb31a",
+      "blob_at_worktree": "0600cae88f66c0a26e9393c7c615b749db8045ba",
+      "sha256_at_worktree": "40e15b20adfd1884d1606bb3f7d10afbda3cf0d93fac821519ec617cf6864619",
+      "byte_identical_to_audited_head": false
+    },
+    {
+      "path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/PROOF.json",
+      "blob_at_6e1b4472ba": "bff596a3c839f280171b8743ce7cd9f9992102b9",
+      "blob_at_worktree": "c038c386242dedf0518f3be49ed77e8009b1424e",
+      "sha256_at_worktree": "a3e662e8210b83dbc9990d53cd81d9114f3bf4c3302296505bb7bdfc51412338",
+      "byte_identical_to_audited_head": false
+    },
+    {
+      "path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/VALIDATION.json",
+      "blob_at_6e1b4472ba": "63adee48a47e219aad36249eade4d3a994d2ce0a",
+      "blob_at_worktree": "981ca22f4d3b88445bd3d6754e7171993fe186bd",
+      "sha256_at_worktree": "461ef3b5b1bd9452638d769f6c1af57fab32742f79b448cdfb899e5655fdc72c",
+      "byte_identical_to_audited_head": false
+    },
+    {
+      "path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/gen_contracts2.py",
+      "blob_at_6e1b4472ba": "7b517c91139ed273cd07d88a06cf66d262fae34d",
+      "blob_at_worktree": "7b517c91139ed273cd07d88a06cf66d262fae34d",
+      "sha256_at_worktree": "c1ac867325b203fbd8aaa96c217e4cece4149a8e3870b30d122814b7e2463cc0",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/gen_false_green.py",
+      "blob_at_6e1b4472ba": "faf6514379a471c02c91d997e782f42b53a58980",
+      "blob_at_worktree": "faf6514379a471c02c91d997e782f42b53a58980",
+      "sha256_at_worktree": "8b2704fd2be909cc655cf4853fa8a1f2b7e2c58f05ece477b172871ec8446063",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/gen_proof2.py",
+      "blob_at_6e1b4472ba": "4fcd634204643425c08ab90577dc53491f1a31cc",
+      "blob_at_worktree": "07bb6c6cc7f13984948364bcf7a043aa9b19668f",
+      "sha256_at_worktree": "27392348e9121c6f9b20c5d8599f08485c8e216fc7f0595f41d706317133017c",
+      "byte_identical_to_audited_head": false
+    },
+    {
+      "path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/gen_receipts2.py",
+      "blob_at_6e1b4472ba": "2afa9ad31eab081fd22c4730ae1269c9a7e9a785",
+      "blob_at_worktree": "2afa9ad31eab081fd22c4730ae1269c9a7e9a785",
+      "sha256_at_worktree": "5305d246a862e5ba243489864b1cb30ae79dd6541aa938797e5b2ad98d9a8b95",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/generators/sb_census.py",
+      "blob_at_6e1b4472ba": "f47eefe7682a636efb038b6a423fe602c1c2c44b",
+      "blob_at_worktree": "f47eefe7682a636efb038b6a423fe602c1c2c44b",
+      "sha256_at_worktree": "947988137f11614d054f133cf85be9935ca90c77f148bf1a9473089414ae931e",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "schemas/second_brain/contracts/ADR-SB-001.contract.json",
+      "blob_at_6e1b4472ba": "c3be96cfc9603f87290ac8c9d9780fd72f1138df",
+      "blob_at_worktree": "c3be96cfc9603f87290ac8c9d9780fd72f1138df",
+      "sha256_at_worktree": "257679d68d5b1ae914da0b4dc326e039759c7372ccbca2b26b7cd48154c49eab",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "schemas/second_brain/contracts/ADR-SB-002.contract.json",
+      "blob_at_6e1b4472ba": "79ff0575d2f144918b144889952f786bf7da8ec7",
+      "blob_at_worktree": "79ff0575d2f144918b144889952f786bf7da8ec7",
+      "sha256_at_worktree": "d6a183fc0525807b2d06f11a123a2288891c27e3d572f4a58dbdb6d0e435694b",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "schemas/second_brain/contracts/ADR-SB-003.contract.json",
+      "blob_at_6e1b4472ba": "61f2aedc7c970ff4e5b6f36aaf67797bb732ba93",
+      "blob_at_worktree": "61f2aedc7c970ff4e5b6f36aaf67797bb732ba93",
+      "sha256_at_worktree": "892f13f1839dc37e43bd526ca3b88c903899f584d8987fc930c5f3e399706988",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "schemas/second_brain/contracts/ADR-SB-004.contract.json",
+      "blob_at_6e1b4472ba": "fa712fdbce0b31c5f60a04b6039841eb48dfe0ef",
+      "blob_at_worktree": "fa712fdbce0b31c5f60a04b6039841eb48dfe0ef",
+      "sha256_at_worktree": "539d0411b1bc67eb2c8ce5c42192988e69ffc8d839ebea6bd1d2dcbeef3e54f3",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "schemas/second_brain/contracts/ADR-SB-005.contract.json",
+      "blob_at_6e1b4472ba": "97cdbe1f603929564f066b40089bb84e8d9f21e7",
+      "blob_at_worktree": "97cdbe1f603929564f066b40089bb84e8d9f21e7",
+      "sha256_at_worktree": "b884df41325df0b19c4504ba19b798c14e0f117814f63a4965c875379edcd5ba",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "schemas/second_brain/contracts/ADR-SB-006.contract.json",
+      "blob_at_6e1b4472ba": "4b012181198ef64eadc4c2bbe97deb0702fe2571",
+      "blob_at_worktree": "4b012181198ef64eadc4c2bbe97deb0702fe2571",
+      "sha256_at_worktree": "60ca27a1268711132d05753e09ecde27ed6fcd6b3a446ffe75b827890b83d1d4",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "schemas/second_brain/contracts/ADR-SB-007.contract.json",
+      "blob_at_6e1b4472ba": "77d9174837854dd4537c1582f4a59bb58c8a5a7a",
+      "blob_at_worktree": "77d9174837854dd4537c1582f4a59bb58c8a5a7a",
+      "sha256_at_worktree": "9b93ac9707710e54b641c2edf33479930ccdead4be78ea2b694fd657492106a1",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "schemas/second_brain/contracts/ADR-SB-008.contract.json",
+      "blob_at_6e1b4472ba": "e54c39da8b72029f7b7bec17501bd4db979fd816",
+      "blob_at_worktree": "e54c39da8b72029f7b7bec17501bd4db979fd816",
+      "sha256_at_worktree": "cbf88b5704ba5a69e988d379e15f24ea701c214cd8b21ea0b074038b04897793",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "schemas/second_brain/contracts/ADR-SB-009.contract.json",
+      "blob_at_6e1b4472ba": "d6fcb191a3286d47120b45574847d987181f38a3",
+      "blob_at_worktree": "d6fcb191a3286d47120b45574847d987181f38a3",
+      "sha256_at_worktree": "aad682a701fd3089890cf21e992025a1e3a42474ac7ee0f5150899bd98e9511b",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "schemas/second_brain/contracts/ADR-SB-010.contract.json",
+      "blob_at_6e1b4472ba": "fc9fd1a6ada3cdca3885c7110f73a50739df013e",
+      "blob_at_worktree": "fc9fd1a6ada3cdca3885c7110f73a50739df013e",
+      "sha256_at_worktree": "87e39666fc99ff377e5cd7bbf5dcd0281b7bb37d958f3f32687d23243eee6f91",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "schemas/second_brain/contracts/ADR_CONTRACT_COVERAGE.json",
+      "blob_at_6e1b4472ba": "935c4a56bcd9376e46817060d08fd49108b37e5f",
+      "blob_at_worktree": "935c4a56bcd9376e46817060d08fd49108b37e5f",
+      "sha256_at_worktree": "58dae6be052d5173732a6abf9ca45a770729ad01c8c28688962e351650c3fbb4",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "schemas/second_brain/contracts/adr-machine-contract.schema.json",
+      "blob_at_6e1b4472ba": "44ce1840375af33f5201ef0935d36c1a7eb0333a",
+      "blob_at_worktree": "44ce1840375af33f5201ef0935d36c1a7eb0333a",
+      "sha256_at_worktree": "272c65db1a0bf679b61d822b8415240142afd601a8df8204a8ccfd22818d8cbe",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "schemas/second_brain/contracts/custody-port.contract.json",
+      "blob_at_6e1b4472ba": "f642a3cd368521601d997f519f4593f0589f3b1a",
+      "blob_at_worktree": "f642a3cd368521601d997f519f4593f0589f3b1a",
+      "sha256_at_worktree": "2a512bf051c4cf5ff84548ec4c2a60daaef573c77acd806d4ef6774bc876f4f6",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "schemas/second_brain/contracts/interface-contract.schema.json",
+      "blob_at_6e1b4472ba": "70aeee6b3319691ef964542fbd14a999a6416356",
+      "blob_at_worktree": "70aeee6b3319691ef964542fbd14a999a6416356",
+      "sha256_at_worktree": "ec6857193e2859aaab095cc7322aea3f0bcd6ba9fab9ee392e22157fd1eac93e",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "schemas/second_brain/contracts/local-spool-port.contract.json",
+      "blob_at_6e1b4472ba": "5db14d289406c9a718e98c770f607dcfa27950c4",
+      "blob_at_worktree": "5db14d289406c9a718e98c770f607dcfa27950c4",
+      "sha256_at_worktree": "61d0110dfd9651bfc3d70a12c41abcbc7449b5eea5170dc15eea26ec3c979d56",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "schemas/second_brain/contracts/open-loop-candidate.schema.json",
+      "blob_at_6e1b4472ba": "bf21754508b095bbd6291054cf79e6cc717780f8",
+      "blob_at_worktree": "bf21754508b095bbd6291054cf79e6cc717780f8",
+      "sha256_at_worktree": "5058fc2457e63456e9a484284f339593c9438fea64a95ab8c563b958dbf2b615",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "schemas/second_brain/contracts/project-identity-envelope.schema.json",
+      "blob_at_6e1b4472ba": "254b7fc83c8f089a02eb03fe794c912d830ad954",
+      "blob_at_worktree": "254b7fc83c8f089a02eb03fe794c912d830ad954",
+      "sha256_at_worktree": "cd65be230543cb928f90983e6daa421525502e3bfd42ffefd466c253be6601fa",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "schemas/second_brain/contracts/service-capability-receipt.schema.json",
+      "blob_at_6e1b4472ba": "09ad004b93db15fbd9824f95254cebc3a2420a1d",
+      "blob_at_worktree": "09ad004b93db15fbd9824f95254cebc3a2420a1d",
+      "sha256_at_worktree": "75f30ba5572657a5e73f5fa8f43a1e9f729abebffb211603b21325f92f0c1225",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "schemas/second_brain/contracts/task-promotion-request.schema.json",
+      "blob_at_6e1b4472ba": "01d1171ff784192de72b3ed32b365ecc38bf7bce",
+      "blob_at_worktree": "01d1171ff784192de72b3ed32b365ecc38bf7bce",
+      "sha256_at_worktree": "06087723d8ada20e1954b9057db9ff0b1c9448025ccbb8f6c2d3940f8d2a7240",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "schemas/second_brain/contracts/task-proposal.schema.json",
+      "blob_at_6e1b4472ba": "d748f932a9f77ae12a0e8b909092f3fdad0a2522",
+      "blob_at_worktree": "d748f932a9f77ae12a0e8b909092f3fdad0a2522",
+      "sha256_at_worktree": "70541591b0f67fbf47be45ffa76df9ce978cc2431d2788b530f5952fc620240f",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "scripts/governance/validate_second_brain_adr_contracts.py",
+      "blob_at_6e1b4472ba": "e0d64cdc29f08e060dce60bd73baab513bc8592d",
+      "blob_at_worktree": "e0d64cdc29f08e060dce60bd73baab513bc8592d",
+      "sha256_at_worktree": "3777d33dc02048ef3587bd0324c7fe7acbba979054f6de2946c5a7ce5f58161e",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "task-packets/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001.json",
+      "blob_at_6e1b4472ba": "3dd18feeab361e8de369f54cbb07526e039f2342",
+      "blob_at_worktree": "3dd18feeab361e8de369f54cbb07526e039f2342",
+      "sha256_at_worktree": "50eac746ea9b45acae459d405195cf5b6ed400548575ea5f10ac946a389503d9",
+      "byte_identical_to_audited_head": true
+    },
+    {
+      "path": "tests/governance/test_second_brain_adr_contracts.py",
+      "blob_at_6e1b4472ba": "06aea4a869e287097194a8a4e23f95f4289f9e63",
+      "blob_at_worktree": "06aea4a869e287097194a8a4e23f95f4289f9e63",
+      "sha256_at_worktree": "a79a98c1e65d7f5ad08e5a0f6e60d9c5fc81ce1ef8836602aa62cbaa98628e65",
+      "byte_identical_to_audited_head": true
+    }
+  ]
+}

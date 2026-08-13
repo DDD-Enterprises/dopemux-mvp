@@ -16,7 +16,17 @@
     "audited_bytes_drifted": 0,
     "ancestry_preserved": true,
     "method": "git merge --no-ff (never rebase: the audited head must stay a real ancestor)",
-    "record": "BASE_SYNC_REVERIFY.json"
+    "record": "BASE_SYNC_REVERIFY.json",
+    "post_1228_merge": {
+      "merged_main": "f0a0e839b456eab05aa6b3592fdebb31c488fa5b",
+      "merge_commit_or_head_parent": "ca72781c32ef9c5ee0d3fc6cd1c70a696ecbb68e",
+      "absorbed_pr": 1228,
+      "absorbed_merge_commit": "f0a0e839b456eab05aa6b3592fdebb31c488fa5b",
+      "ancestry_preserved": true,
+      "method": "git merge --no-ff origin/main",
+      "hash_recheck": "R2_AUDITED_BYTES_HASH_RECHECK.json",
+      "identity_reconciliation": "R2_AUDITOR_IDENTITY_RECONCILIATION.json"
+    }
   },
   "drift_from_issue_baseline": "main advanced 16 commits (PR #1225); none touches an audited path and none shares a file with this branch",
   "branch": "tp/DMX-SB-ADR-CONTRACT-EVIDENCE-001",
@@ -122,31 +132,35 @@
   "embedded_audit": {
     "required": true,
     "status": "PASS",
-    "auditor_tool": "none",
-    "auditor_model": "unknown",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
     "invocation": "grok --cwd /private/tmp/sb-audit-r2 --always-approve --max-turns 80 --output-format plain -p \"$(cat proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/AUDIT_PROMPT_R2.md)\"",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/AUDITOR_REPAIR_2_REPORT.md",
     "findings": [],
     "fixes_applied": [],
     "remaining_risks": [
-      "The native embedded-audit lane cannot represent the auditor that actually ran. auditor_tool and auditor_model carry the schema's fallback values; they are not a claim that no audit occurred. The audit ran, returned PASS with zero blockers and zero must-fix, and its verbatim report is at proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/AUDITOR_REPAIR_2_REPORT.md.",
-      "Because of that representation gap, validate_change_contract.py and pre-commit still fail after the base sync. pre-commit reports two hooks, proof-embedded-audit-schema and change-contract-preflight, but the second fails because it runs the first's check: one cause counted twice. Repairing that schema is out of lane per packet section 1.",
+      "Auditor identity is established by the runner's own per-session metadata (summary.json current_model_id and signals.json primaryModelId, both grok-4.5, on the completed run and its killed precursor), not by provider-side cryptographic attestation. provider_attestation = UNKNOWN; evidence_class = RUNNER_SESSION_METADATA_VERIFIED. See R2_AUDITOR_IDENTITY_RECONCILIATION.json.",
+      "The recorded invocation is the exact historical one and contains no model flag, because none was passed. It is deliberately NOT rewritten to add -m grok-4.5: the invocation states what was executed, the session metadata states what served it, and conflating them would fabricate execution history. Future Grok audits must pin -m grok-4.5, since the runner default has moved to grok-4.6.",
       "Residual, confirmed by the producer and documented in the validator header before the audit ran: with FROZEN_INVENTORY_SHA256 and the supersession receipt both rewritten, clause booleans that no Group S pin covers can be flipped while the validator exits 0. A consistent bilateral edit with the pin left alone fails at A09, which is the false-green round 1 found. A checker cannot defend its own constants.",
       "The census worksheet labels 25 clauses UNCHANGED that the computed supersession record lists as modified. All 25 are rule_type renames under the new taxonomy with byte-identical machine values. The receipt is authoritative; see AUDIT_R2_RESIDUALS.json.",
       "The operator ruling is bound to this freeze by presence and by naming the superseded inventory hash, not by a content hash linking the ruling to the new inventory bytes. The ruling predates those bytes, so that binding cannot exist."
     ],
     "skip_reason": null
   },
-  "embedded_audit_lane_note": "Records the round-2 independent audit of the frozen content head.",
+  "embedded_audit_lane_note": "Records the round-2 independent audit of the frozen content head. [SUPERSEDED 2026-08-12] The lane can now represent this auditor; see grok_schema_representation_gap and R2_AUDITOR_IDENTITY_RECONCILIATION.json.",
   "embedded_audit_representation_gap": {
     "cause": "schemas/proof/embedded_audit.schema.json is strictly binary: SKIPPED forces auditor_tool 'none' and auditor_model 'unknown', and any other status forbids both. Its enums cannot name the auditor that actually ran.",
     "refused": [
-      "status SKIPPED — would hide a real audit that did run",
-      "an enum auditor_tool — would fabricate an auditor identity, which packet §19 forbids"
+      "status SKIPPED \u2014 would hide a real audit that did run",
+      "an enum auditor_tool \u2014 would fabricate an auditor identity, which packet \u00a719 forbids"
     ],
     "in_scope": false,
-    "in_scope_note": "Packet §1 places embedded-audit platform repair out of lane, and the operator's round-2 authorization did not add it. The gap is recorded rather than repaired, and a PASS from the independent audit does not turn the two gates that fail for this cause green."
+    "in_scope_note": "Packet \u00a71 places embedded-audit platform repair out of lane, and the operator's round-2 authorization did not add it. The gap is recorded rather than repaired, and a PASS from the independent audit does not turn the two gates that fail for this cause green. RESOLVED: the repair landed as its own separate packet on trusted main under operator ruling TAKE_OPTION_B, after which this proof could state the identity. The schema is read from the trusted ref, so it could not have been fixed on this branch.",
+    "status": "HISTORICAL_RESOLVED",
+    "resolved_by": "f0a0e839b456eab05aa6b3592fdebb31c488fa5b (PR #1228, TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001)",
+    "resolved_on": "2026-08-12",
+    "historical_note": "This block describes the state during rounds 1 and 2 and is kept because the gap was real and shaped how those rounds were reported. It is no longer an active blocker: the trusted contract now admits grok-cli / grok-4.5, so embedded_audit above states the auditor truthfully. The two refusals recorded here still stand as the right calls at the time -- the gap was resolved by widening the contract, not by choosing the least-false encoding."
   },
   "changed_paths": [
     "docs/03-reference/architecture/second-brain/adr-candidates/fo-01-repair-status.json",
@@ -207,7 +221,7 @@
   ],
   "changed_path_count": 55,
   "changed_paths_measured_against": "6626aa9a58dd82e62226cfca63498cc3f711bb75 (origin/main at the base sync). Measuring from the issue baseline after a merge would fold in the commits main brought and overstate this packet's footprint.",
-  "allowlist_conformance": "Every changed path lies inside the packet §11 mutation allowlist.",
+  "allowlist_conformance": "Every changed path lies inside the packet \u00a711 mutation allowlist.",
   "artifact_sha256": {
     "ADR_CLAUSE_INVENTORY.json": "b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439",
     "AUDITOR_REPAIR_2_REPORT.md": "90746444772f72c92cac031a8ca108ca51fedcf5862dfa2e288307c356bd31fd",
@@ -250,5 +264,24 @@
     "service-capability-receipt.schema.json": "75f30ba5572657a5e73f5fa8f43a1e9f729abebffb211603b21325f92f0c1225",
     "task-promotion-request.schema.json": "06087723d8ada20e1954b9057db9ff0b1c9448025ccbb8f6c2d3940f8d2a7240",
     "task-proposal.schema.json": "70541591b0f67fbf47be45ffa76df9ce978cc2431d2788b530f5952fc620240f"
+  },
+  "grok_schema_representation_gap": {
+    "status": "RESOLVED_BY_TRUSTED_SCHEMA_MERGE",
+    "resolution_commit": "f0a0e839b456eab05aa6b3592fdebb31c488fa5b",
+    "resolution_pr": 1228,
+    "resolution_packet": "TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001",
+    "historical_fact_preserved": true,
+    "what_the_gap_was": "Until f0a0e839b4, schemas/proof/embedded_audit.schema.json enumerated no Grok values, set additionalProperties false, and forbade auditor_tool 'none' or auditor_model 'unknown' for any non-SKIPPED status. A completed passing Grok audit therefore had exactly two representable encodings and both were false: claim SKIPPED (asserts no audit happened) or name a runner from the enum (fabricates an auditor identity). Rounds 1 and 2 of this packet were reported with the schema fallback values and the gap recorded in the open, rather than resolved by picking the least-false encoding.",
+    "how_it_was_resolved": "The trusted contract now admits auditor_tool grok-cli and auditor_model grok-4.5, bound fail-closed in both directions. The schema is read from the trusted ref, which is why the fix had to land on main before this proof could state the identity.",
+    "this_did_not_change_the_audit": "No audit was re-run and no verdict changed. Only the vocabulary available to describe the auditor changed. Of the exact 36 paths in C1 commit 6e1b4472ba, the 31-file contract corpus is byte-identical to that head (verified by per-file blob hash, not by branch diff). The other 5 are post-C1 attestation paths under proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/ that the mutation boundary already allowed to evolve; see R2_AUDITED_BYTES_HASH_RECHECK.json."
+  },
+  "auditor_identity_reconciliation": {
+    "status": "RESOLVED_APPEND_ONLY",
+    "historical_custody_untouched": "AUDIT_PROMPT_CUSTODY_R2.json",
+    "record": "R2_AUDITOR_IDENTITY_RECONCILIATION.json",
+    "reconciled_model": "grok-4.5",
+    "reconciled_tool": "grok-cli",
+    "evidence_class": "RUNNER_SESSION_METADATA_VERIFIED",
+    "not_inferred_from_todays_default": true
   }
 }
