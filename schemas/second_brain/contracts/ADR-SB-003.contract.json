@@ -1,0 +1,249 @@
+{
+  "$schema": "./adr-machine-contract.schema.json",
+  "contract_version": "2.0.0",
+  "adr_id": "ADR-SB-003",
+  "adr_title": "Recall Fusion and Provenance",
+  "contract_kind": "ARCHITECTURE_DECISION_CONTRACT",
+  "candidate_document": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+  "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+  "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "clause_inventory_sha256": "b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439",
+  "adr_status_at_contract_authoring": "PROPOSED",
+  "sb_dec_references": [
+    "SB-DEC-016",
+    "SB-DEC-017"
+  ],
+  "required_artifacts": [],
+  "implementation_deferred": [
+    "DENIAL_FIXTURES",
+    "RUNTIME_CONFORMANCE",
+    "RETRIEVAL_BENCHMARKS",
+    "PURGE_COMPLETENESS",
+    "MULTI_PROJECT_ISOLATION",
+    "SPLIT_BRAIN_PROOF",
+    "ENCRYPTION_IMPLEMENTATION"
+  ],
+  "runtime_claims_permitted": false,
+  "denial_fixtures": "NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE",
+  "decision_clauses": [
+    {
+      "clause_id": "ADR-SB-003-C01",
+      "requirement_text": "recall fusion is authority-first",
+      "subject": "second_brain.recall.fusion.authority_first",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Use deterministic authority-first fusion with pre-model policy filtering, freshness and contradiction detection, bounded advisory retrieval, and evidence/access/uncertainty metadata on every response."
+      ],
+      "source_decision_text_hash": "eace3a362257854154b762e9ba98cded6c8462ab0502e195410371ce5aec2148",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/0"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-003-C02",
+      "requirement_text": "policy filtering occurs before model context assembly",
+      "subject": "second_brain.recall.policy_filtering.occurs_before_model_context",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Use deterministic authority-first fusion with pre-model policy filtering, freshness and contradiction detection, bounded advisory retrieval, and evidence/access/uncertainty metadata on every response."
+      ],
+      "source_decision_text_hash": "eace3a362257854154b762e9ba98cded6c8462ab0502e195410371ce5aec2148",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/1"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-003-C03",
+      "requirement_text": "freshness detection is required",
+      "subject": "second_brain.recall.freshness_detection.required",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Use deterministic authority-first fusion with pre-model policy filtering, freshness and contradiction detection, bounded advisory retrieval, and evidence/access/uncertainty metadata on every response."
+      ],
+      "source_decision_text_hash": "eace3a362257854154b762e9ba98cded6c8462ab0502e195410371ce5aec2148",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/2"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-003-C04",
+      "requirement_text": "contradiction detection is required",
+      "subject": "second_brain.recall.contradiction_detection.required",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Use deterministic authority-first fusion with pre-model policy filtering, freshness and contradiction detection, bounded advisory retrieval, and evidence/access/uncertainty metadata on every response."
+      ],
+      "source_decision_text_hash": "eace3a362257854154b762e9ba98cded6c8462ab0502e195410371ce5aec2148",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/3"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-003-C05",
+      "requirement_text": "advisory retrieval is bounded",
+      "subject": "second_brain.recall.advisory_retrieval.bounded",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Use deterministic authority-first fusion with pre-model policy filtering, freshness and contradiction detection, bounded advisory retrieval, and evidence/access/uncertainty metadata on every response."
+      ],
+      "source_decision_text_hash": "eace3a362257854154b762e9ba98cded6c8462ab0502e195410371ce5aec2148",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/4"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-003-C06",
+      "requirement_text": "response metadata set = evidence / access / uncertainty",
+      "subject": "second_brain.recall.response.required_metadata",
+      "rule_type": "ENUM",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "EVIDENCE",
+        "ACCESS",
+        "UNCERTAINTY"
+      ],
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Use deterministic authority-first fusion with pre-model policy filtering, freshness and contradiction detection, bounded advisory retrieval, and evidence/access/uncertainty metadata on every response."
+      ],
+      "source_decision_text_hash": "eace3a362257854154b762e9ba98cded6c8462ab0502e195410371ce5aec2148",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/5"
+      ],
+      "source_enumeration": "evidence/access/uncertainty"
+    },
+    {
+      "clause_id": "ADR-SB-003-C07",
+      "requirement_text": "partial outages are explicit",
+      "subject": "second_brain.recall.partial_outage.explicit",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "CONSEQUENCES",
+      "source_fragments": [
+        "Partial outages are explicit"
+      ],
+      "source_decision_text_hash": "200d0a048848891f3f9a02d8515c54d1266757e441149e5a0cdf67b589fab1d6",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/6"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-003-C08",
+      "requirement_text": "search rank never becomes truth",
+      "subject": "second_brain.recall.search_rank_is_truth",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "CONTEXT",
+      "source_fragments": [
+        "Recall spans structured authority, chronology, source-native state, and advisory retrieval without allowing search rank to become truth."
+      ],
+      "source_decision_text_hash": "7b8eee215f81999aeb417f43d0bac957028d0c9ea637e926ce3cf66e08cb5a16",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/7"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-003-C09",
+      "requirement_text": "fusion is deterministic",
+      "subject": "second_brain.recall.fusion.deterministic",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Use deterministic authority-first fusion with pre-model policy filtering, freshness and contradiction detection, bounded advisory retrieval, and evidence/access/uncertainty metadata on every response."
+      ],
+      "source_decision_text_hash": "eace3a362257854154b762e9ba98cded6c8462ab0502e195410371ce5aec2148",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/8"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-003-C10",
+      "requirement_text": "closed set of recall source classes",
+      "subject": "second_brain.recall.source_classes",
+      "rule_type": "ENUM",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "STRUCTURED_AUTHORITY",
+        "CHRONOLOGY",
+        "SOURCE_NATIVE_STATE",
+        "ADVISORY_RETRIEVAL"
+      ],
+      "section": "CONTEXT",
+      "source_fragments": [
+        "Recall spans structured authority, chronology, source-native state, and advisory retrieval without allowing search rank to become truth."
+      ],
+      "source_decision_text_hash": "7b8eee215f81999aeb417f43d0bac957028d0c9ea637e926ce3cf66e08cb5a16",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/9"
+      ],
+      "source_enumeration": "structured authority, chronology, source-native state, and advisory retrieval"
+    },
+    {
+      "clause_id": "ADR-SB-003-C11",
+      "requirement_text": "recall output is answer-first",
+      "subject": "second_brain.recall.output.answer_first",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "CONSEQUENCES",
+      "source_fragments": [
+        "Answer-first output"
+      ],
+      "source_decision_text_hash": "1a73fb4556491c32b84357be08b5cc6a32080f0e4a490e7e54782cc9d2c196ae",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/10"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-003-C12",
+      "requirement_text": "historical state and current state remain distinct",
+      "subject": "second_brain.recall.historical_and_current_state_distinct",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "CONSEQUENCES",
+      "source_fragments": [
+        "Historical and current states remain distinct"
+      ],
+      "source_decision_text_hash": "4a9e12da8d31df81810415b80cc9840a532ce080783b49ee90af8dbea9f87030",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/11"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-003-C13",
+      "requirement_text": "required metadata appears on every response",
+      "subject": "second_brain.recall.response.metadata_required_on_every_response",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Use deterministic authority-first fusion with pre-model policy filtering, freshness and contradiction detection, bounded advisory retrieval, and evidence/access/uncertainty metadata on every response."
+      ],
+      "source_decision_text_hash": "eace3a362257854154b762e9ba98cded6c8462ab0502e195410371ce5aec2148",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-003.contract.json#/decision_clauses/12"
+      ]
+    }
+  ]
+}

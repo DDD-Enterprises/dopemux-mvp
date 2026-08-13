@@ -1,0 +1,11 @@
+# Frozen content heads, in order. A file cannot contain the sha of the commit
+# that introduces it, so each head is bound by a later commit.
+
+round 1  7955ef33d7c0ab29daecbab966bc6a9497dc69ce   audited, FAIL (3 blockers, 5 must-fix)
+round 2  6e1b4472ba626df2a5d7724e87c5ec77c9c46043   audited, see AUDITOR_REPORT_R2.md
+
+# Post-C1 mutation boundary for round 2:
+#   git diff 6e1b4472ba626df2a5d7724e87c5ec77c9c46043..HEAD --name-only \
+#     | grep -v '^proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/'
+# expects no output: commits after the frozen head carry producer record about
+# the audited content, never audited content.

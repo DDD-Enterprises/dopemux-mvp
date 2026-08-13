@@ -1,0 +1,1674 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+  "purpose": "Per-unit disposition of the candidate document. Every normative unit is either mapped to clause IDs or excluded with the operator's DO-NOT-INCLUDE reason. An asserted census invites the same completeness finding twice; this is the checkable form.",
+  "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+  "included_total": 160,
+  "included": [
+    {
+      "adr_id": "ADR-SB-001",
+      "clause_id": "ADR-SB-001-C01",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "Second Brain is an extension, not a memory plane",
+      "rule_shape": "CONSTANT/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-001-C01"
+    },
+    {
+      "adr_id": "ADR-SB-001",
+      "clause_id": "ADR-SB-001-C02",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "no canonical Second Brain database exists",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-001-C02"
+    },
+    {
+      "adr_id": "ADR-SB-001",
+      "clause_id": "ADR-SB-001-C03",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "canonical writes target an existing authority",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-001-C03"
+    },
+    {
+      "adr_id": "ADR-SB-001",
+      "clause_id": "ADR-SB-001-C04",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "derived read models are not canonical",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-001-C04"
+    },
+    {
+      "adr_id": "ADR-SB-001",
+      "clause_id": "ADR-SB-001-C05",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "coordination responsibilities confer no authority",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-001-C05"
+    },
+    {
+      "adr_id": "ADR-SB-001",
+      "clause_id": "ADR-SB-001-C06",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "the extension can be disabled without changing canonical stores",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-001-C06"
+    },
+    {
+      "adr_id": "ADR-SB-001",
+      "clause_id": "ADR-SB-001-C07",
+      "section": "CONTEXT",
+      "disposition": "INCLUDED",
+      "requirement_text": "no fourth canonical memory plane is created",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-001",
+      "clause_id": "ADR-SB-001-C08",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "the extension is PCP/DCP compatible",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-001",
+      "clause_id": "ADR-SB-001-C09",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "closed set of what the extension owns",
+      "rule_shape": "ENUM/SET_EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-001",
+      "clause_id": "ADR-SB-001-C10",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "one package",
+      "rule_shape": "NUMERIC/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-001",
+      "clause_id": "ADR-SB-001-C11",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "the worker is optional",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C01",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "captured events are appended to Dope-Memory",
+      "rule_shape": "AUTHORITY_TARGET/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-002-C01"
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C02",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "candidates are appended to Dope-Memory",
+      "rule_shape": "AUTHORITY_TARGET/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-002-C02"
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C03",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "the review read model is not canonical",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-002-C03"
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C04",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "review is digest-bound",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-002-C04"
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C05",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "the review default disposition is DEFER",
+      "rule_shape": "CONSTANT/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-002-C05"
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C06",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "approved actions route to an exact canonical target",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-002-C06"
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C07",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "promotion receipts are appended to Dope-Memory",
+      "rule_shape": "AUTHORITY_TARGET/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-002-C07"
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C08",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "no cross-authority transaction is claimed",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-002-C08"
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C09",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "the review default performs no mutation",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C10",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "review must be affirmative",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C11",
+      "section": "CONTEXT",
+      "disposition": "INCLUDED",
+      "requirement_text": "capture never silently promotes a candidate",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C12",
+      "section": "CONTEXT",
+      "disposition": "INCLUDED",
+      "requirement_text": "capture never silently mutates a downstream authority",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C13",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "candidate history is replayable",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "clause_id": "ADR-SB-002-C14",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "capture is append-only",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C01",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "recall fusion is authority-first",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-003-C01"
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C02",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "policy filtering occurs before model context assembly",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-003-C02"
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C03",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "freshness detection is required",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-003-C03"
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C04",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "contradiction detection is required",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-003-C04"
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C05",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "advisory retrieval is bounded",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-003-C05"
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C06",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "response metadata set = evidence / access / uncertainty",
+      "rule_shape": "ENUM/SET_EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-003-C06"
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C07",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "partial outages are explicit",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-003-C07"
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C08",
+      "section": "CONTEXT",
+      "disposition": "INCLUDED",
+      "requirement_text": "search rank never becomes truth",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-003-C08"
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C09",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "fusion is deterministic",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C10",
+      "section": "CONTEXT",
+      "disposition": "INCLUDED",
+      "requirement_text": "closed set of recall source classes",
+      "rule_shape": "ENUM/SET_EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C11",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "recall output is answer-first",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C12",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "historical state and current state remain distinct",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "clause_id": "ADR-SB-003-C13",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "required metadata appears on every response",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-004",
+      "clause_id": "ADR-SB-004-C01",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "domain set = project / hue / dom / shared",
+      "rule_shape": "ENUM/SET_EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-004-C01"
+    },
+    {
+      "adr_id": "ADR-SB-004",
+      "clause_id": "ADR-SB-004-C02",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "classification set = public / internal / confidential / restricted",
+      "rule_shape": "ENUM/SET_EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-004-C02"
+    },
+    {
+      "adr_id": "ADR-SB-004",
+      "clause_id": "ADR-SB-004-C03",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "policy evaluation precedes retrieval disclosure",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-004-C03"
+    },
+    {
+      "adr_id": "ADR-SB-004",
+      "clause_id": "ADR-SB-004-C04",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "unknown eligibility denies",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-004-C04"
+    },
+    {
+      "adr_id": "ADR-SB-004",
+      "clause_id": "ADR-SB-004-C05",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "the dom domain is synthetic-only",
+      "rule_shape": "CONSTANT/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-004-C05"
+    },
+    {
+      "adr_id": "ADR-SB-004",
+      "clause_id": "ADR-SB-004-C06",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "the shared domain requires a grant",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-004-C06"
+    },
+    {
+      "adr_id": "ADR-SB-004",
+      "clause_id": "ADR-SB-004-C07",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "confidential/restricted semantic indexing is disabled",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-004-C07"
+    },
+    {
+      "adr_id": "ADR-SB-004",
+      "clause_id": "ADR-SB-004-C08",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "policy evaluation precedes model context assembly",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-004",
+      "clause_id": "ADR-SB-004-C09",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "closed set of policy evaluation dimensions",
+      "rule_shape": "ENUM/SET_EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-004",
+      "clause_id": "ADR-SB-004-C10",
+      "section": "CONTEXT",
+      "disposition": "INCLUDED",
+      "requirement_text": "domain and classification are separate dimensions",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-004",
+      "clause_id": "ADR-SB-004-C11",
+      "section": "CONTEXT",
+      "disposition": "INCLUDED",
+      "requirement_text": "a model may not infer unknown eligibility",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C01",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "projection derives from canonical snapshot revisions",
+      "rule_shape": "CONSTANT/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-005-C01"
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C02",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "projection paths are stable",
+      "rule_shape": "CONSTANT/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-005-C02"
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C03",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "region kinds = managed / manual",
+      "rule_shape": "ENUM/SET_EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-005-C03"
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C04",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "freshness is visible",
+      "rule_shape": "CONSTANT/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-005-C04"
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C05",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "content hashes are required",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-005-C05"
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C06",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "purge propagates into the projection",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-005-C06"
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C07",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "no silent write-back",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-005-C07"
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C08",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "canonical sources win any conflict",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-005-C08"
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C09",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "Obsidian is optional",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-005-C09"
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C10",
+      "section": "CONTEXT",
+      "disposition": "INCLUDED",
+      "requirement_text": "Obsidian is never an authority",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C11",
+      "section": "CONTEXT",
+      "disposition": "INCLUDED",
+      "requirement_text": "Markdown is never an authority",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C12",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "Markdown compilation is deterministic",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C13",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "the vault is regenerable",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "clause_id": "ADR-SB-005-C14",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "manual regions are preserved",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C01",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "LocalSpoolPort exists as a machine interface contract",
+      "rule_shape": "INTERFACE_REQUIREMENT/MUST_EXIST",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-006-C01"
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C02",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "CustodyPort exists as a machine interface contract",
+      "rule_shape": "INTERFACE_REQUIREMENT/MUST_EXIST",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-006-C02"
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C03",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "spool records are not canonical",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-006-C03"
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C04",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "spool record scope = identity / domain / class",
+      "rule_shape": "ENUM/SET_EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-006-C04"
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C05",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "spool records are deterministic",
+      "rule_shape": "CONSTANT/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-006-C05"
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C06",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "spool records are integrity-protected",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-006-C06"
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C07",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "spool records are short-lived",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-006-C07"
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C08",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "spool flush is idempotent",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-006-C08"
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C09",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "the spool participates in purge",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-006-C09"
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C10",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "spool records are never remote backed up",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-006-C10"
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C11",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "public classification is allowed to spool",
+      "rule_shape": "CONSTANT/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-006-C11"
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C12",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "internal classification requires OS-protected storage",
+      "rule_shape": "CONSTANT/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-006-C12"
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C13",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "confidential/restricted spooling is disabled until verified encryption and key ownership",
+      "rule_shape": "CONSTANT/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-006-C13"
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C14",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "unknown-class spooling is not permitted",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-006-C14"
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C15",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "eligible capture is crash-safe",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C16",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "the custody product remains replaceable",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "clause_id": "ADR-SB-006-C17",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "closed set of confidential/restricted enablement preconditions",
+      "rule_shape": "ENUM/SET_EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C01",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "deletion operations = Archive / Forget / Purge",
+      "rule_shape": "ENUM/SET_EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-007-C01"
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C02",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "a purge dependency graph is required",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-007-C02"
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C03",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "an impact preview is required",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-007-C03"
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C04",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "explicit approval is required",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-007-C04"
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C05",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "receipts are per-surface",
+      "rule_shape": "CONSTANT/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-007-C05"
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C06",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "a residual scan is required",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-007-C06"
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C07",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "searchable residual count must be zero before success",
+      "rule_shape": "NUMERIC/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-007-C07"
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C08",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "impossible physical deletion requires an explicit tombstone",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-007-C08"
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C09",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "backup expiry may remain pending",
+      "rule_shape": "CONSTANT/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-007-C09"
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C10",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "irreversible steps require immediate confirmation",
+      "rule_shape": "CONSTANT/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-007-C10"
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C11",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "derived representations participate in purge",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-007-C11"
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C12",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "impossible physical deletion requires retrieval denial",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C13",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "a purge completion receipt is required",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C14",
+      "section": "CONTEXT",
+      "disposition": "INCLUDED",
+      "requirement_text": "closed set of distinct deletion-adjacent operation classes",
+      "rule_shape": "ENUM/SET_EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C15",
+      "section": "CONTEXT",
+      "disposition": "INCLUDED",
+      "requirement_text": "those operation classes are different operations",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C16",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "no soft-delete is accepted as a purge",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "clause_id": "ADR-SB-007-C17",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "Archive, Forget, and Purge are modeled separately",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C01",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "OpenLoopCandidate exists as a machine data contract",
+      "rule_shape": "INTERFACE_REQUIREMENT/MUST_EXIST",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-008-C01"
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C02",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "TaskProposal exists as a separate machine data contract",
+      "rule_shape": "INTERFACE_REQUIREMENT/MUST_EXIST",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-008-C02"
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C03",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "TaskPromotionRequest exists as a separate machine contract",
+      "rule_shape": "INTERFACE_REQUIREMENT/MUST_EXIST",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-008-C03"
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C04",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "confirmed open-loop events are appended to Dope-Memory",
+      "rule_shape": "AUTHORITY_TARGET/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-008-C04"
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C05",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "the active open-loop list is derived",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-008-C05"
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C06",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "task creation requires Leantime proof",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-008-C06"
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C07",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "task promotion is disabled",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-008-C07"
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C08",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "a confirmed open loop may never carry an assignee",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-008-C08"
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C09",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "a confirmed open loop may never carry PM priority",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-008-C09"
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C10",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "a confirmed open loop may never carry workflow status",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-008-C10"
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C11",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "a confirmed open loop may never carry sprint state",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-008-C11"
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C12",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "a confirmed open loop may never carry an ownership assignment",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-008-C12"
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C13",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "a confirmed open loop may never carry due-driven escalation",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-008-C13"
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C14",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "a confirmed open loop may never carry automatic scheduling",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-008-C14"
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C15",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "a confirmed open loop may never carry task completion state",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-008-C15"
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C16",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "due_at is advisory display metadata only",
+      "rule_shape": "CONSTANT/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-008-C16"
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C17",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "task creation requires Task Orchestrator proof",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C18",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "task creation requires explicit approval",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C19",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "closed set of PM semantics a confirmed open loop may never carry",
+      "rule_shape": "ENUM/SET_EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C20",
+      "section": "CONTEXT",
+      "disposition": "INCLUDED",
+      "requirement_text": "an unresolved commitment is not necessarily a PM task",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C21",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "detected loops are represented as suggested candidates",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C22",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "confirmed loop event kinds = open / close / cancel",
+      "rule_shape": "ENUM/SET_EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C23",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "task proposals are separate candidates",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C24",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "confirmed open-loop events are chronological attention markers",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C25",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "confirmed open-loop events are not tasks",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C26",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "the derived current-state view carries the same prohibition",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C27",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "task-shaped behavior is represented as a separate TaskProposal",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C28",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "task mutation happens only through the TaskPromotionRequest path",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C29",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "sole PM and workflow authorities = Leantime / Task Orchestrator",
+      "rule_shape": "AUTHORITY_TARGET/SET_EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C30",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "Dope-Memory is granted no PM authority",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C31",
+      "section": "MA06_AMENDMENT",
+      "disposition": "INCLUDED",
+      "requirement_text": "the Second Brain is granted no PM authority",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C32",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "no automatic task pressure",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C33",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "chronology remains in Dope-Memory",
+      "rule_shape": "AUTHORITY_TARGET/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C34",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "ConPort never owns task state",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C35",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "open loops carry zero PM-semantic fields",
+      "rule_shape": "NUMERIC/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "clause_id": "ADR-SB-008-C36",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "due_at may not trigger scheduling or escalation",
+      "rule_shape": "ENUM/SET_EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "clause_id": "ADR-SB-009-C01",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "authority operations require a registry-backed identity envelope",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-009-C01"
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "clause_id": "ADR-SB-009-C02",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "authority operations require a current service capability receipt",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-009-C02"
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "clause_id": "ADR-SB-009-C03",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "at most one active automatic-capture project",
+      "rule_shape": "NUMERIC/LESS_THAN_OR_EQUAL",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-009-C03"
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "clause_id": "ADR-SB-009-C04",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "project switching is explicit",
+      "rule_shape": "CONSTANT/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-009-C04"
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "clause_id": "ADR-SB-009-C05",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "writer epochs are required",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-009-C05"
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "clause_id": "ADR-SB-009-C06",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "wrong-project writes are denied",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-009-C06"
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "clause_id": "ADR-SB-009-C07",
+      "section": "CONTEXT",
+      "disposition": "INCLUDED",
+      "requirement_text": "closed set of identity sources that cannot establish identity",
+      "rule_shape": "ENUM/SET_EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-009-C07"
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "clause_id": "ADR-SB-009-C08",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "multi-project background capture is disabled",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-009-C08"
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "clause_id": "ADR-SB-009-C09",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "enabling multi-project background capture requires isolation proof",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "clause_id": "ADR-SB-009-C10",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "split-brain prevention is fail-closed",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "clause_id": "ADR-SB-009-C11",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "no dedicated host is required",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "clause_id": "ADR-SB-009-C12",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "no host-singleton routing authority",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C01",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "UX operations = Capture / Recall / Review",
+      "rule_shape": "ENUM/SET_EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-010-C01"
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C02",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "one dominant next action",
+      "rule_shape": "NUMERIC/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-010-C02"
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C03",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "at most seven visible queue items",
+      "rule_shape": "NUMERIC/LESS_THAN_OR_EQUAL",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-010-C03"
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C04",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "recall is answer-first",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-010-C04"
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C05",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "evidence is one action away",
+      "rule_shape": "NUMERIC/LESS_THAN_OR_EQUAL",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-010-C05"
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C06",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "notifications batch at session end",
+      "rule_shape": "CONSTANT/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-010-C06"
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C07",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "closed set of immediate-interruption conditions",
+      "rule_shape": "ENUM/SET_EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-010-C07"
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C08",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "consequential defaults = DEFER / CANCEL",
+      "rule_shape": "ENUM/SET_EQUALS",
+      "change_vs_superseded": "MODIFIED",
+      "prior_clause_id": "ADR-SB-010-C08"
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C09",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "no productivity scoring",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-010-C09"
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C10",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "no surprise writes",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "UNCHANGED",
+      "prior_clause_id": "ADR-SB-010-C10"
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C11",
+      "section": "PROPOSED_DECISION",
+      "disposition": "INCLUDED",
+      "requirement_text": "immediate interruption is restricted to the listed conditions",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C12",
+      "section": "CONTEXT",
+      "disposition": "INCLUDED",
+      "requirement_text": "the UX does not hide authority decisions",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C13",
+      "section": "CONTEXT",
+      "disposition": "INCLUDED",
+      "requirement_text": "the UX does not hide privacy decisions",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C14",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "terminal and agent UX stay quiet",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "clause_id": "ADR-SB-010-C15",
+      "section": "CONSEQUENCES",
+      "disposition": "INCLUDED",
+      "requirement_text": "no dashboard dependency",
+      "rule_shape": "BOOLEAN/EQUALS",
+      "change_vs_superseded": "ADDED",
+      "prior_clause_id": null
+    }
+  ],
+  "excluded": [
+    {
+      "unit": "Document preamble: 'These are architecture candidates only. Every ADR below remains `PROPOSED`; this synthesis does not alter the repository ADR index or confer implementation authority.'",
+      "location": "document preamble",
+      "disposition": "EXCLUDED",
+      "reason": "Document-status narrative, not per-ADR architecture content. It belongs to no ADR and therefore cannot be a clause of one. The same invariant is enforced structurally by validator checks A16-A18 (every contract records PROPOSED; the document status is CANDIDATE; no ACCEPTED token appears)."
+    },
+    {
+      "unit": "'Standing drift recheck precondition (MA-08)' section in full",
+      "location": "standing section, lines 21-23",
+      "disposition": "EXCLUDED",
+      "reason": "Operator DO-NOT-INCLUDE: 'MA-08 process mechanics'. It governs when an acceptance decision may be taken, not what the architecture must be."
+    },
+    {
+      "unit": "Acceptance-condition bullets, all 10 ADRs (4 bullets each)",
+      "location": "'### Acceptance conditions' in every ADR",
+      "disposition": "EXCLUDED",
+      "reason": "Operator DO-NOT-INCLUDE: 'the acceptance-condition boilerplate itself'. Condition #2 is the reason this contract evidence exists; it is not itself a decision the contracts must encode."
+    },
+    {
+      "unit": "'### Evidence and traceability' SB-DEC reference lists, all 10 ADRs",
+      "location": "'### Evidence and traceability' in every ADR",
+      "disposition": "EXCLUDED_AS_CLAUSE_RETAINED_AS_BINDING",
+      "reason": "Operator DO-NOT-INCLUDE: 'Evidence/traceability references'. The references are still carried on each contract as sb_dec_references and cross-checked against the traceability matrix (check B08), but they assert no architecture rule."
+    },
+    {
+      "unit": "'### Rejected alternatives' bullets, all 10 ADRs (20 bullets)",
+      "location": "'### Rejected alternatives' in every ADR",
+      "disposition": "EXCLUDED_AS_GROUNDING_USED_AS_ORACLE",
+      "reason": "Operator: rejected alternatives may be used only 'as adversarial oracles proving that a mutation crosses into an explicitly rejected design'. Where the accepted decision independently expresses the corresponding prohibition, that accepted sentence is the clause's grounding instead. Validator check A22 rejects any clause whose fragments come from this subsection: 'Vector-first answer generation' is verbatim candidate text, so without that rule a clause could cite a rejected design as its own justification."
+    },
+    {
+      "unit": "ADR-SB-006 Context: 'Outage capture needs bounded durability, but an unencrypted spool can become a private-data trapdoor.'",
+      "location": "ADR-SB-006 Context",
+      "disposition": "EXCLUDED",
+      "reason": "Motivational narrative. Both invariants it motivates are stated normatively in the Proposed decision and are captured there (ADR-SB-006-C07 short-lived; ADR-SB-006-C13 confidential/restricted disabled until verified encryption)."
+    }
+  ],
+  "judgment_calls": [
+    {
+      "unit": "ADR-SB-001 Consequence 'One package plus optional worker'",
+      "disposition": "INCLUDED (C10, C11)",
+      "rationale": "The operator excludes 'packaging observations that do not constrain architecture'. This one does constrain: it bounds the component count and makes the worker optional, which is an enablement constraint. Recorded as a judgment call."
+    },
+    {
+      "unit": "ADR-SB-009 Consequence 'Mac mini remains optional'",
+      "disposition": "INCLUDED (C11)",
+      "rationale": "Same rule applied consistently: host optionality is an enablement constraint (the system must be enablable without dedicated hardware), not a deployment aside."
+    },
+    {
+      "unit": "ADR-SB-009 rejected alternative 'Implicit current-directory project selection for writes'",
+      "disposition": "NOT ADDED to the rejected-identity-source set",
+      "rationale": "The accepted Context sentence enumerates exactly three sources (path hashes, ports, singleton event streams). CURRENT_DIRECTORY appeared in the superseded contract's machine set but is grounded only in a rejected alternative. The prohibition is independently expressed by 'explicit project switching' (C04), so no set member is invented."
+    },
+    {
+      "unit": "ADR-SB-005 'Obsidian is an optional opener.'",
+      "disposition": "INCLUDED as two clauses (C09 optional, C10 never an authority); 'opener' itself carries no clause",
+      "rationale": "The sentence constrains two things: Obsidian is not required, and it is not an authority (the latter from the Context sentence). 'Opener' is a functional description of what it does when present, not an additional invariant, so no clause asserts it. The superseded contract collapsed all of this into one ungrounded token, OPTIONAL_OPENER_NEVER_AUTHORITY."
+    },
+    {
+      "unit": "ADR-SB-009 ProjectIdentityEnvelope / ServiceCapabilityReceipt",
+      "disposition": "NOT modelled as INTERFACE_REQUIREMENT clauses",
+      "rationale": "Unlike LocalSpoolPort, CustodyPort, OpenLoopCandidate, TaskProposal and TaskPromotionRequest, these two names do not appear in the candidate — they are this repository's names for things the candidate describes but does not name. The clauses are therefore stated as the obligations the candidate does express (C01, C02), and the schema files carry an explicit naming note."
+    }
+  ]
+}

@@ -1,0 +1,314 @@
+{
+  "$schema": "./adr-machine-contract.schema.json",
+  "contract_version": "2.0.0",
+  "adr_id": "ADR-SB-007",
+  "adr_title": "Forget, Purge, and Residual Verification",
+  "contract_kind": "ARCHITECTURE_DECISION_CONTRACT",
+  "candidate_document": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+  "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+  "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "clause_inventory_sha256": "b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439",
+  "adr_status_at_contract_authoring": "PROPOSED",
+  "sb_dec_references": [
+    "SB-DEC-019",
+    "SB-DEC-029"
+  ],
+  "required_artifacts": [],
+  "implementation_deferred": [
+    "DENIAL_FIXTURES",
+    "RUNTIME_CONFORMANCE",
+    "RETRIEVAL_BENCHMARKS",
+    "PURGE_COMPLETENESS",
+    "MULTI_PROJECT_ISOLATION",
+    "SPLIT_BRAIN_PROOF",
+    "ENCRYPTION_IMPLEMENTATION"
+  ],
+  "runtime_claims_permitted": false,
+  "denial_fixtures": "NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE",
+  "decision_clauses": [
+    {
+      "clause_id": "ADR-SB-007-C01",
+      "requirement_text": "deletion operations = Archive / Forget / Purge",
+      "subject": "second_brain.deletion.operations",
+      "rule_type": "ENUM",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "ARCHIVE",
+        "FORGET",
+        "PURGE"
+      ],
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Model Archive, Forget, and Purge separately."
+      ],
+      "source_decision_text_hash": "b3248949f84868df8bf090a66fa2ac614ec9d0020de7cfc49755c5e653a91231",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/0"
+      ],
+      "source_enumeration": "Archive, Forget, and Purge"
+    },
+    {
+      "clause_id": "ADR-SB-007-C02",
+      "requirement_text": "a purge dependency graph is required",
+      "subject": "second_brain.purge.dependency_graph.required",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Build a dependency graph, impact preview, explicit approval, per-surface receipts, residual scan, and completion receipt."
+      ],
+      "source_decision_text_hash": "e3b6852955aa075447d8293ebbb78f65378295d36fbf1daecbf084e7d6b30fd9",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/1"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C03",
+      "requirement_text": "an impact preview is required",
+      "subject": "second_brain.purge.impact_preview.required",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Build a dependency graph, impact preview, explicit approval, per-surface receipts, residual scan, and completion receipt."
+      ],
+      "source_decision_text_hash": "e3b6852955aa075447d8293ebbb78f65378295d36fbf1daecbf084e7d6b30fd9",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/2"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C04",
+      "requirement_text": "explicit approval is required",
+      "subject": "second_brain.purge.approval.explicit_required",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Build a dependency graph, impact preview, explicit approval, per-surface receipts, residual scan, and completion receipt."
+      ],
+      "source_decision_text_hash": "e3b6852955aa075447d8293ebbb78f65378295d36fbf1daecbf084e7d6b30fd9",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/3"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C05",
+      "requirement_text": "receipts are per-surface",
+      "subject": "second_brain.purge.receipts.granularity",
+      "rule_type": "CONSTANT",
+      "operator": "EQUALS",
+      "machine_value": "PER_SURFACE",
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Build a dependency graph, impact preview, explicit approval, per-surface receipts, residual scan, and completion receipt."
+      ],
+      "source_decision_text_hash": "e3b6852955aa075447d8293ebbb78f65378295d36fbf1daecbf084e7d6b30fd9",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/4"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C06",
+      "requirement_text": "a residual scan is required",
+      "subject": "second_brain.purge.residual_scan.required",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Build a dependency graph, impact preview, explicit approval, per-surface receipts, residual scan, and completion receipt."
+      ],
+      "source_decision_text_hash": "e3b6852955aa075447d8293ebbb78f65378295d36fbf1daecbf084e7d6b30fd9",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/5"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C07",
+      "requirement_text": "searchable residual count must be zero before success",
+      "subject": "second_brain.purge.searchable_residual_count",
+      "rule_type": "NUMERIC",
+      "operator": "EQUALS",
+      "machine_value": 0,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Searchable residual count must be zero before success."
+      ],
+      "source_decision_text_hash": "600c91d87e84b0fff00723040cbf922c44d18a25075c5dd5cd66ec8ab48ad485",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/6"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C08",
+      "requirement_text": "impossible physical deletion requires an explicit tombstone",
+      "subject": "second_brain.purge.physical_deletion_impossible.explicit_tombstone_required",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Impossible physical deletion uses explicit tombstone/retrieval denial and pending backup-expiry state."
+      ],
+      "source_decision_text_hash": "3909ba22989146600ac9b7f0a40b618422e0a4f1bad1832c8b260d80ad9ee234",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/7"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C09",
+      "requirement_text": "backup expiry may remain pending",
+      "subject": "second_brain.purge.backup_expiry.state",
+      "rule_type": "CONSTANT",
+      "operator": "EQUALS",
+      "machine_value": "PENDING_BACKUP_EXPIRY",
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Impossible physical deletion uses explicit tombstone/retrieval denial and pending backup-expiry state."
+      ],
+      "source_decision_text_hash": "3909ba22989146600ac9b7f0a40b618422e0a4f1bad1832c8b260d80ad9ee234",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/8"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C10",
+      "requirement_text": "irreversible steps require immediate confirmation",
+      "subject": "second_brain.purge.irreversible_step.confirmation",
+      "rule_type": "CONSTANT",
+      "operator": "EQUALS",
+      "machine_value": "IMMEDIATE",
+      "section": "CONSEQUENCES",
+      "source_fragments": [
+        "Irreversible steps require immediate confirmation"
+      ],
+      "source_decision_text_hash": "603c78b9677120cfdd3c453c7787a4c38ec0148b7739c867fa7c1d55eec9e553",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/9"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C11",
+      "requirement_text": "derived representations participate in purge",
+      "subject": "second_brain.purge.derived_representations.participate",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "CONSEQUENCES",
+      "source_fragments": [
+        "Derived representations participate"
+      ],
+      "source_decision_text_hash": "acc9243105a7fe88f7ba4c22283343d6ead6dcaeb1d27943bb9341b4b3bebd84",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/10"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C12",
+      "requirement_text": "impossible physical deletion requires retrieval denial",
+      "subject": "second_brain.purge.physical_deletion_impossible.retrieval_denial_required",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Impossible physical deletion uses explicit tombstone/retrieval denial and pending backup-expiry state."
+      ],
+      "source_decision_text_hash": "3909ba22989146600ac9b7f0a40b618422e0a4f1bad1832c8b260d80ad9ee234",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/11"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C13",
+      "requirement_text": "a purge completion receipt is required",
+      "subject": "second_brain.purge.completion_receipt.required",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Build a dependency graph, impact preview, explicit approval, per-surface receipts, residual scan, and completion receipt."
+      ],
+      "source_decision_text_hash": "e3b6852955aa075447d8293ebbb78f65378295d36fbf1daecbf084e7d6b30fd9",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/12"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C14",
+      "requirement_text": "closed set of distinct deletion-adjacent operation classes",
+      "subject": "second_brain.deletion.operation_classes",
+      "rule_type": "ENUM",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "HIDE_FROM_VIEW",
+        "RETRIEVAL_DENIAL",
+        "LOGICAL_TOMBSTONE",
+        "PHYSICAL_DELETION",
+        "BACKUP_EXPIRY"
+      ],
+      "section": "CONTEXT",
+      "source_fragments": [
+        "Hide-from-view, retrieval denial, logical tombstone, physical deletion, and backup expiry are different operations."
+      ],
+      "source_decision_text_hash": "8a11034308abeaad5d133941014e2d017ff297a50c1eb89c32ea093a4b243a71",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/13"
+      ],
+      "source_enumeration": "Hide-from-view, retrieval denial, logical tombstone, physical deletion, and backup expiry"
+    },
+    {
+      "clause_id": "ADR-SB-007-C15",
+      "requirement_text": "those operation classes are different operations",
+      "subject": "second_brain.deletion.operation_classes.distinct",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "CONTEXT",
+      "source_fragments": [
+        "Hide-from-view, retrieval denial, logical tombstone, physical deletion, and backup expiry are different operations."
+      ],
+      "source_decision_text_hash": "8a11034308abeaad5d133941014e2d017ff297a50c1eb89c32ea093a4b243a71",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/14"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C16",
+      "requirement_text": "no soft-delete is accepted as a purge",
+      "subject": "second_brain.purge.soft_delete_accepted",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "CONSEQUENCES",
+      "source_fragments": [
+        "No soft-delete masquerading as purge"
+      ],
+      "source_decision_text_hash": "7e53ab5e4af0ade0d4faecfb6f484fe1d8cdc8c633c9256e17af8a918f92728d",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/15"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-007-C17",
+      "requirement_text": "Archive, Forget, and Purge are modeled separately",
+      "subject": "second_brain.deletion.archive_forget_purge_modeled_separately",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Model Archive, Forget, and Purge separately."
+      ],
+      "source_decision_text_hash": "b3248949f84868df8bf090a66fa2ac614ec9d0020de7cfc49755c5e653a91231",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-007.contract.json#/decision_clauses/16"
+      ]
+    }
+  ]
+}

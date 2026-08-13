@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/second_brain/contracts/service-capability-receipt.schema.json",
+  "title": "ServiceCapabilityReceipt",
+  "description": "The receipt an authority operation requires (ADR-SB-009). The candidate says exactly one thing about it — that it must be current — so that is all this schema asserts. A CURRENT/STALE enum, a capability list and a service identifier were all present in the superseded version and were all this repository's invention. Same naming caveat as ProjectIdentityEnvelope: the candidate requires 'current service capability receipts' but does not name a type.",
+  "type": "object",
+  "required": [
+    "current"
+  ],
+  "properties": {
+    "current": {
+      "const": true
+    }
+  },
+  "x-unspecified-in-candidate": "No freshness vocabulary, capability list, service identifier or expiry field is asserted; the candidate names none of them.",
+  "x-grounding": {
+    "/required/0": {
+      "clause_id": "ADR-SB-009-C02",
+      "term": "current"
+    },
+    "/properties/current": {
+      "clause_id": "ADR-SB-009-C02",
+      "term": "current"
+    }
+  },
+  "x-machine-invariants": {
+    "ADR-SB-009-C02": {
+      "subject": "second_brain.authority_operation.requires_current_service_capability_receipt",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true
+    }
+  }
+}
