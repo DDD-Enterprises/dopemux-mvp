@@ -157,6 +157,9 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toMatch(/\{taskFinishTimes\[task\.id\] && \(/);
   expect(content).toContain('• Ends at {taskFinishTimes[task.id]}');
 
+  // Verify ListItemText uses disableTypography to avoid invalid DOM nesting (<p><div>)
+  expect(content).toContain('disableTypography');
+
   // Verify task metadata is focusable and has correct aria-labels
   expect(content).toContain('tabIndex={0}');
   expect(content).toContain('aria-label={`Complexity: ${Math.round(task.complexity * 100)}%`}');
