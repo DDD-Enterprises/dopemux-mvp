@@ -1,97 +1,93 @@
-# Signing disclosure — PR #1224 local attestation (R6)
+# Signing disclosure — PR #1224 local attestation (R7)
 
 This disclosure and the `PROOF.json` beside it satisfy the trusted, signed
 local-attestation fallback (`scripts/audit/local_audit_acceptance.py`) for
-`TP-DMX-PR-PREP-SPECIALIST-V2-001` / PR #1224, round R6.
+`TP-DMX-PR-PREP-SPECIALIST-V2-001` / PR #1224, round R7.
 
-## Why R6 supersedes the R5 proof at this same path
+## Prior rounds, briefly (full detail on record, unaltered)
 
-R5 (`AUDITED_TREE a89c11dbfd9d132797575118f3f7b8c4f819a2ab`, controlling
-verdict PASS via a scoped re-audit) reached `READY_FOR_OPERATOR_MERGE_DECISION`,
-but the operator **revoked** that readiness after fresh repository truth
-outranked the prior claims:
+- **R4**: independently audited PASS, 9 canonical + 10 compat files
+  repaired against a 19-path frozen ACTIVE_CONTRADICTION census.
+- **R5**: merged `main` for branch-protection up-to-date closure. Initial
+  whole-tree audit FAIL on real-but-out-of-scope, pre-existing conflict
+  markers (preserved as historical evidence, operator-adjudicated out of
+  scope); scoped re-audit PASS. Reached `READY_FOR_OPERATOR_MERGE_DECISION`.
+- **R6**: operator revoked R5 readiness after fresh evidence outranked it
+  — main had advanced 9 more commits, 4 live review threads reported
+  broken compatibility links, and the R3/R4 census was a genuine false
+  negative (never searched for `TP-PRPS-000`/`7-step`, missing 6 adapter
+  families still declaring a retired V1 contract). R6 merged main, ran an
+  expanded census, repaired 12 files + 6 broken links, added regression
+  tests. Independently re-audited PASS with explicit instruction not to
+  trust the claimed file list. Reached `READY_FOR_OPERATOR_MERGE_DECISION`
+  again, at head `f4fa9c2555cec4e1f40fc736c71609e55ecdb804`.
 
-1. `main` had advanced 9 commits past the R5 head (an independently
-   audited change to the embedded-audit schema/acceptance tests among
-   them), staling the R5 exact-head readiness.
-2. **Four live unresolved review threads** (`copilot-pull-request-reviewer`)
-   reported broken compatibility relative links under
-   `docs/pr_prep/adapters/{vibe,codex}/**`. Confirmed real by direct read.
-3. **A false-negative census.** The R3/R4 terminal semantic census scanned
-   for fixed-artifact/risk-hint/GO_* vocabulary but never for
-   `TP-PRPS-000` or `7-step`. Six adapter README families (claude, cursor,
-   gemini, jules, copilot, vibe — codex was already correctly repaired at
-   R4) still actively declared `Contract: TP-PRPS-000-1.0.0`, a "7-step
-   canonical workflow", and `Status: IMPLEMENTED AND COMPLIANT`, in both
-   canonical and compatibility form. Confirmed real by direct read of
-   every matched file, not by trusting the grep hit count.
+## Why R7 exists, and what it deliberately is not
 
-## R6 closure
+After R6 reached readiness, `main` advanced 16 further commits (base
+`f0a0e839b456eab05aa6b3592fdebb31c488fa5b` → tip
+`75b4cfc581786a53445e412bfc8e25a6e0fdb978`), entirely Second Brain ADR
+contract/evidence work. Before merging, drift was classified: 58 files
+touched by main, **zero** path overlap with the 105 files this branch had
+changed since the R6 base (verified via `comm -12`), and no touch to the
+embedded-audit trust machinery (`schemas/proof/embedded_audit.schema.json`,
+`scripts/audit/local_audit_acceptance.py`).
 
-1. Merged current `origin/main` into the branch (operator-authorized
-   normal merge commit, not rebase/squash/force-push). Drift
-   pre-classified `COMPATIBLE`: zero file-path overlap between the
-   branch's 88 changed files (since merge-base `6626aa9a58`) and main's 23
-   changed files over the same range, verified before merging.
-   Pre-repair merge head: `4faa2d40a47b95713f5353f7e0d0f8e64b9e57af`.
-2. Ran an expanded census (`TP-PRPS-000`, `7-step`, `seven-step`,
-   `IMPLEMENTED AND COMPLIANT`, plus all prior R4 patterns) across
-   `docs/03-reference/pr-pipeline/prep/**` and `docs/pr_prep/**`
-   (non-archive). 32 pattern hits, every one read in full and classified:
-   20 already correctly `RETIRED_PROSE` (left unedited), 12 genuine
-   `ACTIVE_CONTRADICTION` (frozen in `R6_ACTIVE_CONTRADICTION_PATHS.txt`
-   before any edit).
-3. Repaired the 12 `ACTIVE_CONTRADICTION` files (canonical
-   deprecation/pointer stubs + compat pointer stubs, matching the
-   established R4 `codex` pattern) and separately fixed a 6-file
-   broken-relative-link defect the R4 compat-stub template introduced
-   (`../../03-reference` → `../../../03-reference`), including the 4
-   files behind the live review threads plus 2 more found by grepping the
-   whole compat tree for the same broken pattern.
-4. Added regression tests: no live V1 contract markers in any R6-repaired
-   file, every R6 compat stub declares compatibility-surface-only, and
-   every relative link in every non-archive `docs/pr_prep/**` markdown
-   file resolves on disk. 92 → 157 governance tests, all passing.
-5. Frozen as `C1-R6 = ecab6aba71e204fc47337bee13b37e1b715dc37d`.
-6. One fresh independent L2 audit against exact `C1-R6`, explicitly
-   instructed not to trust the claimed file list and to independently
-   re-derive the adapter-family census and link-resolution scan: **PASS**
-   on all 9 scope items — 0 commits behind main, all 7 adapter platforms
-   independently re-scanned and confirmed clean, a custom whole-tree
-   link-resolution script found 0 broken links, the 4 originally-flagged
-   links confirmed resolving, retired-prose files confirmed untouched,
-   157/157 tests, schema-valid with allowlist verified by direct read,
-   pre-commit clean.
+The operator explicitly scoped this as a **narrow drift closure**, not a
+new semantic repair round and not a re-audit of R1-R6 substance: merge
+`main` with a normal merge commit, verify nothing PR-Prep-owned changed,
+re-verify the deterministic gates, and stop.
+
+## R7 closure
+
+1. Merged current `origin/main` (operator-authorized normal merge commit,
+   not rebase/squash/force-push). `C1-R7 = 488e6b89773255ac08b915a2bc6ba6e489a33ce2`,
+   two parents: `f4fa9c2555cec4e1f40fc736c71609e55ecdb804` (R6 head),
+   `75b4cfc581786a53445e412bfc8e25a6e0fdb978` (main tip). Clean merge, no
+   conflicts.
+2. Verified `git diff --exit-code` over R6's full owned-surface set
+   (`docs/03-reference/pr-pipeline/prep`, `docs/pr_prep`, `docs/pr_merge`,
+   `tests/governance/test_pr_prep_contract_v2.py`,
+   `task-packets/TP-DMX-PR-PREP-SPECIALIST-V2-001.{json,md}`,
+   `proof/TP-DMX-PR-PREP-SPECIALIST-V2-001`,
+   `proof/pr_merge/embedded-audit/pr-1224`) between R6 head and C1-R7 —
+   exit 0, empty diff. Zero conflict markers in that same universe.
+3. Re-ran the R6 census patterns, the whole-`docs/pr_prep/**`
+   link-resolution scan, the full governance suite (220 passed, PR-Prep
+   count unchanged), schema validation, and the `origin/main` drift check
+   (0 behind) — all clean.
+4. One fresh independent L2 audit against exact `C1-R7`, explicitly
+   scoped narrower than R6 (confirm the merge is inert with respect to
+   this packet, not re-derive R1-R6 substance): **PASS** on all 10 scope
+   items.
 
 Full findings verbatim in
-`proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/AUDITOR_REPAIR_2_REPORT.md` (raw
-transcript: `AGY_AUDIT_RAW_R6.txt`). This `PROOF.json` and signature
-replace the prior R5 proof at this same path; R1-R5 evidence remain on
-record unaltered at `proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/`, including
-the R5-initial whole-tree FAIL and the R5-scoped PASS.
+`proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/AUDITOR_REPAIR_3_REPORT.md` (raw
+transcript: `AGY_AUDIT_RAW_R7.txt`). This `PROOF.json` and signature
+replace the prior R6 proof at this same path; R1-R6 evidence remain on
+record unaltered at `proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/`.
 
 ## What this bridge is, and is not
 
-This is **not** a new repair beyond what's already committed, nor a
-re-audit of the substantive code beyond the R6 audit already on record. It
-is a proof-only publication step that lets the trusted embedded-audit CI
-gate accept that evidence. Three heads are in play, named rather than
-conflated:
+This is **not** a new repair, nor a re-audit of the substantive code
+beyond the R7 audit already on record. It is a proof-only publication
+step that lets the trusted embedded-audit CI gate accept that evidence.
+Three heads are in play, named rather than conflated:
 
 | Term | Meaning | SHA |
 |---|---|---|
-| `AUDITED_TREE` (R6) | merge + repair commit, examined by the R6 audit | `ecab6aba71e204fc47337bee13b37e1b715dc37d` |
-| `AUDIT_EVIDENCE_HEAD` (R6) | proof-only successor adding the R6 audit report/prompt/raw-transcript | `514b8d8c38daf564e9bd95ce9a9f8519ce9b4b95` |
+| `AUDITED_TREE` (R7) | merge commit, examined by the R7 audit | `488e6b89773255ac08b915a2bc6ba6e489a33ce2` |
+| `AUDIT_EVIDENCE_HEAD` (R7) | proof-only successor adding the R7 audit report/prompt/raw-transcript | `3fa5c8e97b998734205a2dbd42a282ff82625ce6` |
 | `SIGNED_PROOF_HEAD` (this bridge) | proof-only successor adding **only** `proof/pr_merge/embedded-audit/pr-1224/**` | the PR #1224 head after this commit |
 
-`head_sha` in `PROOF.json` is `AUDIT_EVIDENCE_HEAD` (R6). Its delta from
-`AUDITED_TREE` (R6) is proof-only
-(`proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/{AUDITOR_REPAIR_2_REPORT.md,AGY_AUDIT_RAW_R6.txt,S4_AUDIT_PROMPT_R6.md}`
+`head_sha` in `PROOF.json` is `AUDIT_EVIDENCE_HEAD` (R7). Its delta from
+`AUDITED_TREE` (R7) is proof-only
+(`proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/{AUDITOR_REPAIR_3_REPORT.md,AGY_AUDIT_RAW_R7.txt,S4_AUDIT_PROMPT_R7.md}`
 exclusively); no substantive byte changed after `AUDITED_TREE`. Verify
 with:
 
 ```
-git diff --exit-code ecab6aba71e204fc47337bee13b37e1b715dc37d..514b8d8c38daf564e9bd95ce9a9f8519ce9b4b95 -- \
+git diff --exit-code 488e6b89773255ac08b915a2bc6ba6e489a33ce2..3fa5c8e97b998734205a2dbd42a282ff82625ce6 -- \
   docs/03-reference/pr-pipeline/prep docs/pr_prep docs/pr_merge tests/governance task-packets
 ```
 
@@ -107,12 +103,13 @@ commit rather than alongside `PROOF.json`.
 
 | Round | Runner | Model | Independence | Verdict |
 |---|---|---|---|---|
-| R4 | AGY / Google Antigravity CLI | `gemini-3.1-pro-high` | separate CLI process and model family from the implementer | `PASS` (0 risks flagged, 12/12 required scope items) |
-| R5-initial | AGY / Google Antigravity CLI | `gemini-3.1-pro-high` | separate CLI process and model family from the implementer | `FAIL` (whole-tree conflict-marker scope item; real but pre-existing, out-of-scope; preserved as historical evidence) |
-| R5-scoped | AGY / Google Antigravity CLI | `gemini-3.1-pro-high` | separate CLI process and model family from the implementer; instructed explicitly not to re-litigate the out-of-scope whole-tree finding | `PASS` (0 blocking findings within the packet-owned audit universe) — **subsequently revoked by operator decision, superseded by R6, not by staleness alone** |
-| R6 | AGY / Google Antigravity CLI | `gemini-3.1-pro-high` | separate CLI process and model family from the implementer; instructed explicitly not to trust the claimed file list and to independently re-derive the census and link scan | `PASS` (0 findings, all 9 scope items independently re-verified) |
+| R4 | AGY / Google Antigravity CLI | `gemini-3.1-pro-high` | separate CLI process and model family from the implementer | `PASS` |
+| R5-initial | AGY / Google Antigravity CLI | `gemini-3.1-pro-high` | separate CLI process and model family from the implementer | `FAIL` (whole-tree conflict-marker scope item; out-of-scope; preserved as historical evidence) |
+| R5-scoped | AGY / Google Antigravity CLI | `gemini-3.1-pro-high` | separate CLI process and model family from the implementer | `PASS` (subsequently revoked by operator decision, superseded by R6) |
+| R6 | AGY / Google Antigravity CLI | `gemini-3.1-pro-high` | separate CLI process and model family from the implementer; instructed not to trust the claimed file list | `PASS` (0 findings, independently re-derived) |
+| R7 | AGY / Google Antigravity CLI | `gemini-3.1-pro-high` | separate CLI process and model family from the implementer; scoped narrower than R6 by explicit operator instruction | `PASS` (0 findings, confirms the drift-closure merge is inert) |
 
-This packet's controlling verdict is the R6 audit (PASS). This bridge does
+This packet's controlling verdict is the R7 audit (PASS). This bridge does
 not weaken or replace that governance; it exists solely to satisfy CI's
 mechanical requirement for a schema-conformant, signed `embedded_audit`
 object bound to PR #1224 so the `embedded-audit` and `PR Steward`
@@ -122,16 +119,16 @@ workflows can execute.
 
 Standing rule: the producing agent must not author the signed attestation for
 its own work without an explicit, narrowly-scoped operator override (see the
-PR #1165/#1223/#1225 precedent). The R5 override for this same path already
+PR #1165/#1223/#1225 precedent). The R6 override for this same path already
 expired after producing one signature. The operator granted a **fresh**
-override for this R6 bridge commit, via an `AskUserQuestion` confirmation
+override for this R7 bridge commit, via an `AskUserQuestion` confirmation
 in-session (recommended option selected):
 
 - authorized principal: `hue@local`
 - authorized namespace: `dopemux-embedded-audit`
 - authorized target: PR #1224 only
-- authorized audit lineage: `AUDITED_TREE ecab6aba71e204fc47337bee13b37e1b715dc37d`,
-  `AUDIT_EVIDENCE_HEAD 514b8d8c38daf564e9bd95ce9a9f8519ce9b4b95`
+- authorized audit lineage: `AUDITED_TREE 488e6b89773255ac08b915a2bc6ba6e489a33ce2`,
+  `AUDIT_EVIDENCE_HEAD 3fa5c8e97b998734205a2dbd42a282ff82625ce6`
 - expires immediately after one valid signature is produced; no standing
   signing authority granted
 
@@ -154,9 +151,9 @@ print `signed: <path>.sig` when no new signature was actually created, if a
 stale `.sig` already exists and `ssh-keygen` declines an overwrite prompt on
 EOF), the procedure did not trust wrapper stdout alone:
 
-1. the prior R5 `PROOF.json.sig` (signed over the R5 `head_sha`) was removed
+1. the prior R6 `PROOF.json.sig` (signed over the R6 `head_sha`) was removed
    before re-signing;
-2. the signer was invoked over the R6 `PROOF.json`, already schema-validated
+2. the signer was invoked over the R7 `PROOF.json`, already schema-validated
    (`python3 scripts/audit/validate_audit_proof.py` — PASS);
 3. the result was **independently verified** with
    `ssh-keygen -Y verify -f config/audit/embedded-audit-allowed-signers
@@ -168,21 +165,15 @@ EOF), the procedure did not trust wrapper stdout alone:
 
 ## What this bridge explicitly does not authorize
 
-No mark-ready beyond the explicit condition below. **No merge** — the
-operator's authorization stops at a fresh `READY_FOR_OPERATOR_MERGE_DECISION`;
-a separate, explicit merge authorization is required, same as the PR
-#1225 precedent. No force push. No history rewrite. No branch deletion.
-No production mutation. No further re-audit beyond the R6 PASS. No
-substantive change — this commit's diff versus `AUDIT_EVIDENCE_HEAD` is
-confined to `proof/pr_merge/embedded-audit/pr-1224/**`.
+**No merge** — the operator's authorization stops at a fresh
+`READY_FOR_OPERATOR_MERGE_DECISION`; a separate, explicit merge
+authorization is required, same as the PR #1225 precedent. No force push.
+No history rewrite. No branch deletion. No production mutation. No
+further re-audit beyond the R7 PASS. No substantive change — this
+commit's diff versus `AUDIT_EVIDENCE_HEAD` is confined to
+`proof/pr_merge/embedded-audit/pr-1224/**`.
 
-**Mark-ready is conditionally authorized**: PR #1224 was already marked
-ready for review during the R5 round and has not been reverted to draft;
-if Steward nonetheless reports `PR_IS_DRAFT` as a blocker at this exact
-head, the implementer may mark it ready again and re-run Steward. If
-Steward reports any other blocker or unknown, halt and report back — do
-not proceed further. **Review-thread resolution is authorized**: the 4
-originally-flagged live threads may be classified, replied to, and
-resolved once their underlying link defects are confirmed fixed at this
-exact head. The implementer will check CI + Steward at the exact final
-head and stop at a fresh `READY_FOR_OPERATOR_MERGE_DECISION`.
+PR #1224 was already marked ready for review at R5 and has remained
+non-draft since; no mark-ready action is expected at this round. The
+implementer will check CI + Steward at the exact final head and stop at a
+fresh `READY_FOR_OPERATOR_MERGE_DECISION`.
