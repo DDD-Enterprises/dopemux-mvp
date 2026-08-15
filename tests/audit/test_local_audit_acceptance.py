@@ -517,6 +517,49 @@ def test_head_mismatch_between_evaluate_arg_and_actual_head_still_fails(
     assert real_head != stale_head
 
 
+def test_packet_proof_malformed_json_is_rejected(tmp_path: Path) -> None:
+    """proof/<PACKET_ID>/PROOF.json present but not valid JSON must fail
+    closed, not raise or pass through as absent."""
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.packet_dir.mkdir(parents=True, exist_ok=True)
+    (fixture.packet_dir / "PROOF.json").write_text("{not valid json", encoding="utf-8")
+    (fixture.packet_dir / "AUDITOR_REPORT.md").write_text("PASS.\n", encoding="utf-8")
+    bundle_dir = fixture.packet_dir / "review_bundle"
+    bundle_dir.mkdir()
+    (bundle_dir / "evidence.txt").write_text("x\n", encoding="utf-8")
+    _git(fixture.repo, "add", str(fixture.packet_dir.relative_to(fixture.repo)))
+    _git(fixture.repo, "commit", "--quiet", "-m", "malformed packet proof")
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(r.startswith("packet_proof_malformed") for r in attestation["reasons"])
+
+
+def test_extract_packet_id_returns_none_for_non_matching_report_path() -> None:
+    """Direct unit coverage of the defensive branch: a report_path that does
+    not match the trusted schema's pattern yields no PACKET_ID at all. Once
+    schema validation has already passed, the pattern's fixed 3-segment
+    shape makes this unreachable through evaluate_local_audit -- covered
+    here directly so the fail-closed branch itself is exercised."""
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    assert (
+        local_audit_acceptance._extract_packet_id(
+            "docs/not-a-proof-path.md", schema
+        )
+        is None
+    )
+    assert (
+        local_audit_acceptance._extract_packet_id(
+            "proof/too/many/segments/AUDITOR_REPORT.md", schema
+        )
+        is None
+    )
+    assert (
+        local_audit_acceptance._extract_packet_id("proof/PKT/AUDITOR_REPORT.md", schema)
+        == "PKT"
+    )
+
+
 # ---------------------------------------------------------------------------
 # Emitter integration: attestation feeding build_embedded_audit_proof
 # ---------------------------------------------------------------------------
