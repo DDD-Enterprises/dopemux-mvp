@@ -4,8 +4,48 @@
 PROGRAM=SECOND_BRAIN
 PHASE=POST_MERGE_ACCEPTANCE_READINESS
 MA08_MAIN_SHA=75b4cfc581786a53445e412bfc8e25a6e0fdb978
-STATUS=READY_FOR_OPERATOR_ADR_REDISPOSITION
+STATUS=OPERATOR_DISPOSITIONS_RECORDED — 10x ACCEPT, 2026-08-14
 ```
+
+## Operator dispositions — RECORDED 2026-08-14
+
+The operator returned **ACCEPT for all ten** against this worksheet. The dispositions below
+are theirs, not this session's.
+
+```text
+DISPOSITION_AUTHORITY              HUMAN_OPERATOR_EXPLICIT
+FACILITATOR_AUTHORED_DISPOSITIONS  false
+SILENCE_TREATED_AS_ACCEPT          false
+BLANK_DISPOSITION_TREATED_AS_ACCEPT false
+DISPOSITIONS_INHERITED_FROM_19fa74faa9  false
+RECORDED                           2026-08-14
+```
+
+Verbatim election, as supplied:
+
+> ```
+> ADR-SB-001 = ACCEPT
+> ADR-SB-002 = ACCEPT
+> ADR-SB-003 = ACCEPT
+> ADR-SB-004 = ACCEPT
+> ADR-SB-005 = ACCEPT
+> ADR-SB-006 = ACCEPT
+> ADR-SB-007 = ACCEPT
+> ADR-SB-008 = ACCEPT
+> ADR-SB-009 = ACCEPT
+> ADR-SB-010 = ACCEPT
+> ```
+
+Their stated reasoning, recorded because a disposition without a reason is a disposition
+that cannot be audited later:
+
+> The previous `10x DEFER` was driven by a concrete missing-evidence condition: the
+> required architecture-time machine contracts did not exist. That condition has now been
+> eliminated. […] The remaining items […] do **not** prevent ADR acceptance under the
+> amended AC#2. They remain later implementation/enablement gates.
+
+The operator supplied a per-ADR election rather than a bulk token: ten explicit rows, one
+per ADR. Each is recorded individually below.
 
 ## How to read this document
 
@@ -13,15 +53,17 @@ Every ADR below has two separate fields, and they are not the same thing:
 
 ```text
 FACILITATOR_RECOMMENDATION   what this session concluded from the evidence. Advisory. No authority.
-OPERATOR_DISPOSITION         PENDING_OPERATOR on every row. Only you fill these in.
+OPERATOR_DISPOSITION         the operator's own ruling. Was PENDING_OPERATOR when this
+                             worksheet was produced; filled from their election above.
 ```
 
 That separation is deliberate and is the same shape the prior docket used: a recommendation
-stated in the disposition field is a facilitator quietly deciding.
+stated in the disposition field is a facilitator quietly deciding. It is preserved here
+after the fact so a reader can still see which field carried authority.
 
-**The current dispositions remain 10× DEFER until you replace them.** Nothing in this
-packet changes them. `adr_acceptance_authorized` is `false` at
-`MA08_MAIN_SHA` and is unchanged by anything here.
+**Everything below the disposition line is as it stood when the worksheet was produced and
+audited.** The evidence, the recommendations, and the reasoning were not revised after the
+dispositions arrived — only the ten disposition fields and the summary table were filled.
 
 ## What changed since the DEFER, and what did not
 
@@ -90,7 +132,7 @@ no further traceability amendment required.
 
 ```text
 FACILITATOR_RECOMMENDATION: RECOMMEND_ACCEPT
-OPERATOR_DISPOSITION:       PENDING_OPERATOR
+OPERATOR_DISPOSITION:       ACCEPT
 OPERATOR_NOTE:
 ```
 
@@ -115,7 +157,7 @@ posture is enforced structurally rather than by review.
 
 ```text
 FACILITATOR_RECOMMENDATION: RECOMMEND_ACCEPT
-OPERATOR_DISPOSITION:       PENDING_OPERATOR
+OPERATOR_DISPOSITION:       ACCEPT
 OPERATOR_NOTE:
 ```
 
@@ -142,7 +184,7 @@ someone remembering.
 
 ```text
 FACILITATOR_RECOMMENDATION: RECOMMEND_ACCEPT
-OPERATOR_DISPOSITION:       PENDING_OPERATOR
+OPERATOR_DISPOSITION:       ACCEPT
 OPERATOR_NOTE:
 ```
 
@@ -169,7 +211,7 @@ consequence "No confidential/restricted semantic indexing in v1" is encoded, not
 
 ```text
 FACILITATOR_RECOMMENDATION: RECOMMEND_ACCEPT
-OPERATOR_DISPOSITION:       PENDING_OPERATOR
+OPERATOR_DISPOSITION:       ACCEPT
 OPERATOR_NOTE:
 ```
 
@@ -189,7 +231,7 @@ Remaining implementation-time requirements: the standard seven.
 
 ```text
 FACILITATOR_RECOMMENDATION: RECOMMEND_ACCEPT
-OPERATOR_DISPOSITION:       PENDING_OPERATOR
+OPERATOR_DISPOSITION:       ACCEPT
 OPERATOR_NOTE:
 ```
 
@@ -220,7 +262,7 @@ implementation slice.
 
 ```text
 FACILITATOR_RECOMMENDATION: RECOMMEND_ACCEPT
-OPERATOR_DISPOSITION:       PENDING_OPERATOR
+OPERATOR_DISPOSITION:       ACCEPT
 OPERATOR_NOTE:
 ```
 
@@ -248,7 +290,7 @@ labels, and closed sets are checked bidirectionally.
 
 ```text
 FACILITATOR_RECOMMENDATION: RECOMMEND_ACCEPT
-OPERATOR_DISPOSITION:       PENDING_OPERATOR
+OPERATOR_DISPOSITION:       ACCEPT
 OPERATOR_NOTE:
 ```
 
@@ -280,7 +322,7 @@ authority.
 
 ```text
 FACILITATOR_RECOMMENDATION: RECOMMEND_ACCEPT
-OPERATOR_DISPOSITION:       PENDING_OPERATOR
+OPERATOR_DISPOSITION:       ACCEPT
 OPERATOR_NOTE:
 ```
 
@@ -317,7 +359,7 @@ acceptance-time evidence, requiring interface review before implementation.
 
 ```text
 FACILITATOR_RECOMMENDATION: RECOMMEND_ACCEPT
-OPERATOR_DISPOSITION:       PENDING_OPERATOR
+OPERATOR_DISPOSITION:       ACCEPT
 OPERATOR_NOTE:
 ```
 
@@ -342,7 +384,7 @@ inventory, so they hold even if the denominator pin were edited.
 
 ```text
 FACILITATOR_RECOMMENDATION: RECOMMEND_ACCEPT
-OPERATOR_DISPOSITION:       PENDING_OPERATOR
+OPERATOR_DISPOSITION:       ACCEPT
 OPERATOR_NOTE:
 ```
 
@@ -352,16 +394,16 @@ OPERATOR_NOTE:
 
 | ADR | Clauses | Typed artifacts | Coverage | MA-08 | Audit | Recommendation | Your disposition |
 |---|---:|---:|---|---|---|---|---|
-| ADR-SB-001 Extension Boundary and Non-Authority | 11 | 0 | 11/11 | NO_NEW_MATERIAL_DRIFT | PASS 0/0 | RECOMMEND_ACCEPT | `PENDING_OPERATOR` |
-| ADR-SB-002 Capture, Candidate, Review, Promotion | 14 | 0 | 14/14 | NO_NEW_MATERIAL_DRIFT | PASS 0/0 | RECOMMEND_ACCEPT | `PENDING_OPERATOR` |
-| ADR-SB-003 Recall Fusion and Provenance | 13 | 0 | 13/13 | NO_NEW_MATERIAL_DRIFT | PASS 0/0 | RECOMMEND_ACCEPT | `PENDING_OPERATOR` |
-| ADR-SB-004 Domain, Classification, Provider Policy | 11 | 0 | 11/11 | NO_NEW_MATERIAL_DRIFT | PASS 0/0 | RECOMMEND_ACCEPT | `PENDING_OPERATOR` |
-| ADR-SB-005 Markdown Projection Contract | 14 | 0 | 14/14 | NO_NEW_MATERIAL_DRIFT | PASS 0/0 | RECOMMEND_ACCEPT | `PENDING_OPERATOR` |
-| ADR-SB-006 Local Spool and Custody Interface | 17 | 2 | 17/17 | NO_NEW_MATERIAL_DRIFT | PASS 0/0 | RECOMMEND_ACCEPT | `PENDING_OPERATOR` |
-| ADR-SB-007 Forget, Purge, Residual Verification | 17 | 0 | 17/17 | NO_NEW_MATERIAL_DRIFT | PASS 0/0 | RECOMMEND_ACCEPT | `PENDING_OPERATOR` |
-| ADR-SB-008 Open Loop and Task Proposal Boundary | 36 | 3 | 36/36 | NO_NEW_MATERIAL_DRIFT | PASS 0/0 | RECOMMEND_ACCEPT | `PENDING_OPERATOR` |
-| ADR-SB-009 Single-Project Safety and Identity | 12 | 2 | 12/12 | NO_NEW_MATERIAL_DRIFT + re-gate | PASS 0/0 | RECOMMEND_ACCEPT | `PENDING_OPERATOR` |
-| ADR-SB-010 UX Contract | 15 | 0 | 15/15 | NO_NEW_MATERIAL_DRIFT | PASS 0/0 | RECOMMEND_ACCEPT | `PENDING_OPERATOR` |
+| ADR-SB-001 Extension Boundary and Non-Authority | 11 | 0 | 11/11 | NO_NEW_MATERIAL_DRIFT | PASS 0/0 | RECOMMEND_ACCEPT | **ACCEPT** |
+| ADR-SB-002 Capture, Candidate, Review, Promotion | 14 | 0 | 14/14 | NO_NEW_MATERIAL_DRIFT | PASS 0/0 | RECOMMEND_ACCEPT | **ACCEPT** |
+| ADR-SB-003 Recall Fusion and Provenance | 13 | 0 | 13/13 | NO_NEW_MATERIAL_DRIFT | PASS 0/0 | RECOMMEND_ACCEPT | **ACCEPT** |
+| ADR-SB-004 Domain, Classification, Provider Policy | 11 | 0 | 11/11 | NO_NEW_MATERIAL_DRIFT | PASS 0/0 | RECOMMEND_ACCEPT | **ACCEPT** |
+| ADR-SB-005 Markdown Projection Contract | 14 | 0 | 14/14 | NO_NEW_MATERIAL_DRIFT | PASS 0/0 | RECOMMEND_ACCEPT | **ACCEPT** |
+| ADR-SB-006 Local Spool and Custody Interface | 17 | 2 | 17/17 | NO_NEW_MATERIAL_DRIFT | PASS 0/0 | RECOMMEND_ACCEPT | **ACCEPT** |
+| ADR-SB-007 Forget, Purge, Residual Verification | 17 | 0 | 17/17 | NO_NEW_MATERIAL_DRIFT | PASS 0/0 | RECOMMEND_ACCEPT | **ACCEPT** |
+| ADR-SB-008 Open Loop and Task Proposal Boundary | 36 | 3 | 36/36 | NO_NEW_MATERIAL_DRIFT | PASS 0/0 | RECOMMEND_ACCEPT | **ACCEPT** |
+| ADR-SB-009 Single-Project Safety and Identity | 12 | 2 | 12/12 | NO_NEW_MATERIAL_DRIFT + re-gate | PASS 0/0 | RECOMMEND_ACCEPT | **ACCEPT** |
+| ADR-SB-010 UX Contract | 15 | 0 | 15/15 | NO_NEW_MATERIAL_DRIFT | PASS 0/0 | RECOMMEND_ACCEPT | **ACCEPT** |
 | **Total** | **160** | **7** | **160/160** | | | | |
 
 ## The uncomfortable thing about this recommendation, said plainly
@@ -433,15 +475,34 @@ scope pinned per ADR, doing it before acceptance is cheaper than after.
 
 ## Terminal state
 
+As produced and audited (2026-08-13):
+
 ```text
 READY_FOR_OPERATOR_ADR_REDISPOSITION
 AWAITING_OPERATOR_ADR_DISPOSITIONS
 
 ADR_ACCEPTANCE_AUTHORIZED = false
 ADR_DISPOSITIONS          = 10x DEFER  (unchanged; current until you replace them)
+```
+
+After the operator's election (2026-08-14):
+
+```text
+HUMAN_GATE                = PASSED
+ADR-SB-001..010           = ACCEPTED_BY_OPERATOR
+ADR_DISPOSITIONS          = 10x ACCEPT
+ARCHITECTURE_ACCEPTANCE   = AUTHORIZED_FOR_PERSISTENCE
+
 IMPLEMENTATION_EXECUTION  = NOT_AUTHORIZED
+RUNTIME_ENABLEMENT        = NOT_AUTHORIZED
 RUNTIME_MUTATION          = FORBIDDEN
 DENIAL_FIXTURES           = NOT_IMPLEMENTED
 ```
 
-No further work proceeds without your dispositions.
+Acceptance is architecture law, not implementation evidence. The seven implementation-time
+gates listed against every ADR above remain exactly where they were: `NOT_RUN`,
+`NOT_IMPLEMENTED`, or `ABSENT`.
+
+The dispositions are recorded here. **Persisting them into repository authority is a
+separate, narrow step** — see `05_ACCEPTANCE_PERSISTENCE_CONSTRAINTS.md` in this bundle for
+what that step may and may not touch, and why.

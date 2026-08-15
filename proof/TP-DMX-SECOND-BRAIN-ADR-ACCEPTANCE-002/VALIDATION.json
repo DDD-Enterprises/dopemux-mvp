@@ -10,7 +10,7 @@
     "3_fresh_MA08": "PASS \u2014 NO_NEW_MATERIAL_DRIFT",
     "4_fresh_post_merge_acceptance_integrity_audit": "PASS \u2014 BLOCKERS 0, MUST_FIX 0 (round 2, controlling)",
     "5_fresh_ten_ADR_disposition_worksheet": "PASS \u2014 04_ADR_DISPOSITION_WORKSHEET.md, all ten dispositions PENDING_OPERATOR",
-    "6_stop_at_terminal_state": "READY_FOR_OPERATOR_ADR_REDISPOSITION / AWAITING_OPERATOR_ADR_DISPOSITIONS"
+    "6_stop_at_terminal_state": "READY_FOR_OPERATOR_ADR_REDISPOSITION reached 2026-08-13 and reported; operator returned 10x ACCEPT on 2026-08-14. HUMAN_GATE=PASSED. ARCHITECTURE_ACCEPTANCE=AUTHORIZED_FOR_PERSISTENCE."
   },
   "operator_required_values": {
     "validator_result": "PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE",
@@ -53,17 +53,33 @@
     ]
   },
   "gates_still_closed": {
-    "adr_acceptance": "CLOSED \u2014 adr_acceptance_authorized false",
+    "adr_acceptance": "PASSED \u2014 operator dispositioned 10x ACCEPT on 2026-08-14",
     "implementation_execution": "NOT_AUTHORIZED",
     "slice_execution": "NOT_AUTHORIZED",
     "runtime_mutation": "FORBIDDEN",
     "deployment": "NOT_AUTHORIZED",
     "merge": "NOT_AUTHORIZED",
-    "push": "NOT_AUTHORIZED"
+    "push": "NOT_AUTHORIZED",
+    "runtime_enablement": "NOT_AUTHORIZED"
   },
   "dispositions": {
-    "current": "10x DEFER \u2014 a single blanket operator directive, unchanged by this packet",
-    "recorded_by_this_packet": "NONE",
-    "worksheet_field_values": "PENDING_OPERATOR on all ten"
+    "current": "10x ACCEPT (operator, 2026-08-14) \u2014 replaces the prior blanket 10x DEFER",
+    "recorded_by_this_packet": "The operator's own election, transcribed verbatim into the worksheet's disposition fields.",
+    "worksheet_field_values": "ACCEPT on all ten"
+  },
+  "operator_dispositions_recorded": {
+    "recorded": "2026-08-14",
+    "authority": "HUMAN_OPERATOR_EXPLICIT",
+    "dispositions": "ADR-SB-001..010 = ACCEPT (ten explicit per-ADR rows, not a bulk token)",
+    "facilitator_authored": false,
+    "inherited_from_superseded_election": false,
+    "recorded_in": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/04_ADR_DISPOSITION_WORKSHEET.md",
+    "worksheet_evidence_revised_after_dispositions_arrived": false
+  },
+  "post_disposition_additions": {
+    "R2_AUDITOR_IDENTITY_REASONING_CORRECTION.json": "Operator-authorized append-only correction, written as a sibling in the CONTRACT-EVIDENCE-001 bundle. The record it corrects was re-hashed after writing and is byte-identical (27c6c14ac617310e5d55986be82f770f0ce8da1d8a0c9a66426de1de1b8d21bc).",
+    "05_ACCEPTANCE_PERSISTENCE_CONSTRAINTS.md": "Analysis of what the merged validator permits an acceptance-persistence step to touch. Persists nothing.",
+    "audited": false,
+    "audited_note": "These three artifacts postdate the controlling audit at f7326b18. They record an operator ruling and an analysis of source; neither revises anything the auditor evaluated. The audited evidence set is unchanged."
   }
 }
