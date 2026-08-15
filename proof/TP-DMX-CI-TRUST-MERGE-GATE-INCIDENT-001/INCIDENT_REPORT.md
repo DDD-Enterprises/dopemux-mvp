@@ -85,11 +85,24 @@ No mutating action has been taken against `main`, branch protection, or rulesets
 
 ## 10. Independent second read
 
-Not yet performed. Required before any Phase B action per the authorization ("one independent different-family/runtime L3 audit"). Recommend routing to a different model family than the one that produced this report (e.g., via `pal-stdio` consensus/codereview or Grok route) before requesting the branch-protection change gate.
+**Performed 2026-08-15.** Runner: `agy` CLI (Antigravity) v1.1.13, `--model gemini-3.1-pro-high --effort high --sandbox`, proven-selected (no silent fallback — see `evidence/AGY_VERSION.txt` for exact invocation, `evidence/AGY_AUDIT_GEMINI31_PHASE_A_RAW.json` for raw transcript/usage). Run in an isolated `git worktree` pinned at this branch's exact head `4cb2b1f5916ed9dc05c4d17b11709455a193cfe3` (draft PR #1233), independent from the Claude Sonnet 5 session that authored §1–9.
 
-## 11. Requested next step
+**Verdict: PASS_WITH_RISKS.** Full text: `evidence/AGY_AUDIT_GEMINI31_PHASE_A.md`. The auditor re-derived every claim in §1–9 from live `gh api`/`git` calls rather than trusting this document, and:
+- Independently confirmed the #1227 chronology, the current classic-protection and ruleset configuration, the absence of both gates from either enforcement surface, and that no admin/ruleset bypass was exercised (the merge was fully compliant under the as-configured rules).
+- Confirmed `TP-DMX-PR-STEWARD-HARDEN-010`'s "No branch protection mutation" PASS line and that its diff never touched protection config.
+- **Softened §5's "advisory-only for every PR since" claim**: only provable back to the ruleset's `updated_at` (`2026-04-21T12:30:04.081-07:00`); classic branch-protection has no exposed mutation history via this API, so the claim should be read as "at least since the ruleset's last update" rather than an unbounded historical guarantee.
+- Confirmed no PR-Steward self-referential deadlock risk (`ddd-release-gate.yml` explicitly filters the Steward self-status out of its own readiness evaluation).
+- Flagged two **non-blocking** residual risks, both already named in §9/§8 of this report: (a) `PR Steward / final readiness` is a legacy commit status with no GitHub-App identity binding, so any actor with repo write access could POST a spoofed green status for that exact context string — a real gap, but orthogonal to this incident (closing it means migrating Steward off the Status API, out of scope here); (b) `enforce_admins=false` plus the ruleset's always-bypass actors mean privileged bypass remains possible after this fix — explicitly already deferred to a separate authority-policy decision per this packet's scope.
 
-1. Operator reviews this report.
-2. If root cause accepted: operator explicitly authorizes Phase B (branch-protection/ruleset mutation to add the two missing required contexts) as its own gated action — separate from this investigation.
-3. Independent second-family audit of this report's conclusion, per the authorization's requirement, before that mutation is made.
-4. #1224 stays parked at `READY_FOR_OPERATOR_MERGE_DECISION`, unaffected.
+**Correction to the auditor's output — do not use as-is:** the auditor's "Proposed Exact Mutation" JSON snippet sets `"strict": false`. This is wrong and contradicts both the verified live configuration (`evidence/branch_protection_main.json` shows `strict: true`) and the operator's explicit instruction to preserve `strict=true`. Phase B execution uses the verified real value (`strict: true`, 8 existing contexts unchanged, 2 new contexts appended) and disregards this line of the auditor's snippet. Flagging this discrepancy rather than silently correcting it, since it's evidence that even an independent auditor's structured output must be checked against primary sources, not trusted verbatim — consistent with why this audit was required in the first place.
+
+## 11. Phase B execution
+
+See `evidence/PHASE_B_MUTATION.md` for the exact PATCH payload, before/after read-back, and canary validation (PR #1224 not used as canary, per instruction).
+
+## 12. Requested next step (superseded — see §11)
+
+1. ~~Operator reviews this report.~~ Done — conditional authorization received.
+2. ~~Independent second-family audit~~ — done, PASS_WITH_RISKS, §10.
+3. Operator reviews Phase B execution record (§11) and the canary result.
+4. #1224 stays parked at `READY_FOR_OPERATOR_MERGE_DECISION`, unaffected throughout.

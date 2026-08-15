@@ -1,0 +1,2 @@
+1.1.13
+invocation: agy --print <audit_prompt> --model gemini-3.1-pro-high --effort high --sandbox --output-format json --print-timeout 18m, run from worktree pinned at 4cb2b1f5916ed9dc05c4d17b11709455a193cfe3
