@@ -55,6 +55,19 @@ code is only ever read as git blobs — never checked out or executed.
 Trust model (documented, deliberate): a valid signature proves that a holder
 of an allow-listed private key attested this exact code was audited. It is an
 operator attestation, not an independent third-party audit.
+
+LIMITATION (attested, not proven): the field this module calls ``head_sha`` on
+the signed proof — internally ``ATTESTED_AUDITED_SHA`` — is a claim the signer
+makes, not a cryptographic binding to an external auditor's actual execution.
+This module enforces a real, useful guarantee: every commit between
+``ATTESTED_AUDITED_SHA`` and the enforced PR head is restricted to the two
+authorized proof trees, so nothing added *after* the attested commit can smuggle
+code past this gate. It does NOT and cannot verify that the content actually
+present *at* ``ATTESTED_AUDITED_SHA`` is what an auditor genuinely examined —
+that still rests entirely on the signer's honesty, same as any operator
+attestation. Binding the attested SHA to independently-verifiable evidence of
+the auditor's own execution (e.g. auditor-signed output, not producer-signed)
+is a separate, harder trust problem and out of scope for this module.
 """
 
 from __future__ import annotations
@@ -130,8 +143,26 @@ def _ensure_objects(repo_root: Path, head_sha: str, audited_sha: str) -> str | N
     )
 
 
+def _tree_type(repo_root: Path, rev: str, path: str) -> str | None:
+    """Return the git object type of the exact tree entry at ``rev:path``.
+
+    Deliberately exact — ``git ls-tree -r`` matches any path with ``path`` as a
+    *prefix* (e.g. a directory ``foo`` incorrectly "containing" ``foo.txt``
+    would never trip this, but a *file* accidentally named ``foo`` and a
+    *directory* also reachable via a descendant path both need to be told
+    apart before callers can require "must be a directory", not "must have
+    some descendant somewhere under this string prefix").
+    """
+    result = _run_git(repo_root, "cat-file", "-t", f"{rev}:{path}")
+    if result.returncode != 0:
+        return None
+    return result.stdout.decode("utf-8", "replace").strip()
+
+
 def _tree_has_entries(repo_root: Path, rev: str, path: str) -> bool:
-    """True if ``path`` exists at ``rev`` and contains at least one blob."""
+    """True if ``path`` is a directory (git tree) at ``rev`` with >=1 blob."""
+    if _tree_type(repo_root, rev, path) != "tree":
+        return False
     result = _run_git(repo_root, "ls-tree", "-r", "--name-only", rev, "--", path)
     if result.returncode != 0:
         return False
@@ -409,6 +440,8 @@ def evaluate_local_audit(
             f"local_proof_pr_mismatch: {proof.get('pr_number')!r} expected {pr_number}"
         )
 
+    # ATTESTED_AUDITED_SHA (see module LIMITATION docstring): the signer's
+    # claim of which commit was audited, not an independently-verified fact.
     audited_sha = str(proof.get("head_sha") or "")
     if not _SHA_RE.match(audited_sha):
         reasons.append(f"local_proof_audited_sha_malformed: {audited_sha!r}")
@@ -478,8 +511,10 @@ def evaluate_local_audit(
     if packet_proof_bytes is None:
         reasons.append(f"packet_proof_absent: {packet_proof_path} not present at PR head")
         return attestation
-    if not _tree_has_entries(repo_root, head_sha, report_path):
-        reasons.append(f"packet_report_absent: {report_path} not present at PR head")
+    if _tree_type(repo_root, head_sha, report_path) != "blob":
+        reasons.append(
+            f"packet_report_absent: {report_path} is not a file (blob) at PR head"
+        )
         return attestation
     review_bundle_dir = f"{packet_dir}/review_bundle"
     if not _tree_has_entries(repo_root, head_sha, review_bundle_dir):
@@ -504,6 +539,21 @@ def evaluate_local_audit(
             "packet_proof_head_sha_mismatch: packet PROOF.json head_sha "
             f"{packet_audited_sha!r} does not agree with signed PR proof's "
             f"audited head_sha {audited_sha!r}"
+        )
+        return attestation
+
+    # packet_proof lives at proof/<packet_id>/PROOF.json purely by path
+    # convention; nothing above enforces that ITS OWN declared packet_id
+    # agrees with the directory it was read from / the PACKET_ID the signed
+    # report_path derived. Without this, a stale or misdirected bundle whose
+    # internal packet_id names something else could still satisfy every
+    # other check by sheer path placement.
+    packet_declared_id = packet_proof.get("packet_id")
+    if packet_declared_id != packet_id:
+        reasons.append(
+            "packet_proof_packet_id_mismatch: packet PROOF.json packet_id "
+            f"{packet_declared_id!r} does not match PACKET_ID {packet_id!r} "
+            "derived from the signed report_path"
         )
         return attestation
 

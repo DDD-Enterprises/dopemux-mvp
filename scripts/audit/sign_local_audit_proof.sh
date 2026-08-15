@@ -53,6 +53,7 @@ embedded = proof.get("embedded_audit") or {}
 if embedded.get("status") not in ("PASS", "PASS_WITH_RISKS"):
     errors.append(f"embedded_audit.status={embedded.get('status')!r} is not passing")
 schema_path = Path("schemas/proof/embedded_audit.schema.json")
+schema = None
 if schema_path.is_file():
     schema = json.loads(schema_path.read_text(encoding="utf-8"))
     props = schema.get("properties", {})
@@ -62,6 +63,56 @@ if schema_path.is_file():
             errors.append(
                 f"embedded_audit.{field}={embedded.get(field)!r} not in schema enum {enum}"
             )
+
+# Mirror local_audit_acceptance.py's canonical packet-bundle gate (AGENTS.md
+# 9.1) here too, so a mismatched/missing bundle fails at signing time, not
+# only after CI runs the real check against the pushed commit.
+report_path = str(embedded.get("report_path") or "")
+pattern = (schema or {}).get("properties", {}).get("report_path", {}).get("pattern")
+packet_id = None
+if isinstance(pattern, str) and re.match(pattern, report_path):
+    segments = report_path.split("/")
+    if len(segments) == 3 and segments[0] == "proof" and segments[1]:
+        packet_id = segments[1]
+if packet_id is None:
+    errors.append(f"embedded_audit.report_path={report_path!r} does not yield a PACKET_ID")
+else:
+    packet_dir = Path("proof") / packet_id
+    packet_proof_path = packet_dir / "PROOF.json"
+    report_file = Path(report_path)
+    review_bundle_dir = packet_dir / "review_bundle"
+    if not report_file.is_file():
+        errors.append(f"{report_path} is not a file")
+    if not review_bundle_dir.is_dir() or not any(
+        p.is_file() for p in review_bundle_dir.rglob("*")
+    ):
+        errors.append(f"{review_bundle_dir}/ missing or empty")
+    if not packet_proof_path.is_file():
+        errors.append(f"{packet_proof_path} not present")
+    else:
+        try:
+            packet_proof = json.loads(packet_proof_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+            errors.append(f"{packet_proof_path} is malformed JSON: {exc}")
+            packet_proof = {}
+        if packet_proof.get("packet_id") != packet_id:
+            errors.append(
+                f"{packet_proof_path} packet_id={packet_proof.get('packet_id')!r} "
+                f"!= derived PACKET_ID {packet_id!r}"
+            )
+        if packet_proof.get("head_sha") != proof.get("head_sha"):
+            errors.append(
+                f"{packet_proof_path} head_sha={packet_proof.get('head_sha')!r} "
+                f"!= PR proof head_sha {proof.get('head_sha')!r}"
+            )
+        packet_embedded = packet_proof.get("embedded_audit") or {}
+        for field in ("status", "auditor_tool", "auditor_model"):
+            if packet_embedded.get(field) != embedded.get(field):
+                errors.append(
+                    f"{packet_proof_path} embedded_audit.{field}="
+                    f"{packet_embedded.get(field)!r} != PR proof's {embedded.get(field)!r}"
+                )
+
 if errors:
     print("proof will be REJECTED by CI:", file=sys.stderr)
     for err in errors:

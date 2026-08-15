@@ -535,6 +535,74 @@ def test_packet_proof_malformed_json_is_rejected(tmp_path: Path) -> None:
     assert any(r.startswith("packet_proof_malformed") for r in attestation["reasons"])
 
 
+def test_report_path_resolving_to_directory_is_rejected(tmp_path: Path) -> None:
+    """AUDITOR_REPORT.md must be a real file (blob), not a directory that
+    merely has some descendant blob under that string prefix.
+
+    Regression for the R2 review finding: the prior check used
+    ``git ls-tree -r`` name-prefix matching, so a directory named
+    ``AUDITOR_REPORT.md`` containing e.g. ``evidence.txt`` would satisfy
+    "has at least one descendant blob" while the required file itself never
+    existed.
+    """
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(include_report=False)
+    report_as_dir = fixture.packet_dir / "AUDITOR_REPORT.md"
+    report_as_dir.mkdir()
+    (report_as_dir / "evidence.txt").write_text("not the report\n", encoding="utf-8")
+    _git(fixture.repo, "add", str(fixture.packet_dir.relative_to(fixture.repo)))
+    _git(fixture.repo, "commit", "--quiet", "-m", "report path is a directory")
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(r.startswith("packet_report_absent") for r in attestation["reasons"])
+
+
+def test_review_bundle_as_a_file_is_rejected(tmp_path: Path) -> None:
+    """review_bundle must be an actual directory (git tree), not a file or
+    symlink whose name happens to match.
+
+    Regression for the R2 review finding: the prior check accepted any path
+    whose exact string appeared in ``git ls-tree -r --name-only`` output,
+    which a regular file (blob) at that exact path also satisfies.
+    """
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(include_review_bundle=False)
+    bundle_as_file = fixture.packet_dir / "review_bundle"
+    bundle_as_file.write_text("not a directory\n", encoding="utf-8")
+    _git(fixture.repo, "add", str(fixture.packet_dir.relative_to(fixture.repo)))
+    _git(fixture.repo, "commit", "--quiet", "-m", "review_bundle is a file")
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("packet_review_bundle_missing_or_empty")
+        for r in attestation["reasons"]
+    )
+
+
+def test_packet_proof_packet_id_mismatch_is_rejected(tmp_path: Path) -> None:
+    """The packet PROOF.json's own declared packet_id must equal the
+    PACKET_ID derived from the signed report_path -- path placement alone is
+    not identity. Regression for the Copilot review finding on this PR."""
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle()
+    packet_proof_path = fixture.packet_dir / "PROOF.json"
+    packet_proof = json.loads(packet_proof_path.read_text(encoding="utf-8"))
+    packet_proof["packet_id"] = "TP-DMX-SOME-OTHER-PACKET"
+    packet_proof_path.write_text(
+        json.dumps(packet_proof, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    _git(fixture.repo, "add", str(fixture.packet_dir.relative_to(fixture.repo)))
+    _git(fixture.repo, "commit", "--quiet", "--amend", "-m", "proof(audit): packet bundle")
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("packet_proof_packet_id_mismatch") for r in attestation["reasons"]
+    )
+
+
 def test_extract_packet_id_returns_none_for_non_matching_report_path() -> None:
     """Direct unit coverage of the defensive branch: a report_path that does
     not match the trusted schema's pattern yields no PACKET_ID at all. Once

@@ -9,7 +9,11 @@
     "PACKET_ID MUST BE SCHEMA-DERIVED: the allowed second directory (proof/<PACKET_ID>/) must be derived from the trusted schemas/proof/embedded_audit.schema.json report_path pattern -- never from a separate, independently-trusted field an attacker could point anywhere.",
     "TWO PROOFS MUST AGREE, NOT MERELY COEXIST: requiring the canonical packet bundle to exist is not sufficient by itself -- its own PROOF.json must declare the same audited head_sha and the same status/auditor_tool/auditor_model as the signed PR proof, or a packet bundle for an unrelated audit could sit alongside a false signed proof.",
     "SINGLE POLICY ENGINE: schemas/proof/embedded_audit.schema.json remains the only authority on embedded_audit shape. The packet-proof's embedded_audit object is validated against the same schema+policy path as the signed PR proof's, not a second hand-written check.",
-    "NO RETROACTIVE HISTORY REWRITE: existing merged proofs (e.g. PR #1224) are not amended by this packet. Any consequence for them is a separate, explicitly-scoped follow-up."
+    "NO RETROACTIVE HISTORY REWRITE: existing merged proofs (e.g. PR #1224) are not amended by this packet. Any consequence for them is a separate, explicitly-scoped follow-up.",
+    "R2 (round-2 review repair): existing-path checks that treated 'has a descendant blob under this string prefix' as equivalent to 'is this exact required file/directory' are structural bugs, not just style -- a file misnamed to collide with a required directory path, or a directory nested under a required file path, must not be treated as satisfying that requirement. report_path must resolve to an exact blob; review_bundle must resolve to an exact tree (git object type checked, not string-prefix matching) containing >=1 blob.",
+    "R2: the packet PROOF.json's own declared packet_id must equal the PACKET_ID this module derives from the signed report_path -- path placement under proof/<PACKET_ID>/ is not itself proof of identity; the bundle's own content must self-declare and agree.",
+    "R2: ATTESTED_AUDITED_SHA, not PROVEN_AUDITED_SHA -- the signed proof's head_sha is documented as an operator's claim about which commit was audited, never a cryptographic binding to an external auditor's actual execution. This module's real, enforceable guarantee is that no commit after the attested SHA can smuggle code past the gate; it cannot and does not verify the content AT the attested SHA was truly what an auditor examined. That harder problem (binding to auditor-signed evidence, not producer-signed) is explicitly out of scope here.",
+    "R2: scripts/audit/sign_local_audit_proof.sh must mirror the canonical-packet-bundle checks this module enforces, so a malformed/missing/disagreeing bundle is caught at signing time locally, not only after CI evaluates the pushed commit."
   ],
   "depends_on": [],
   "repo_binding": {
@@ -29,6 +33,7 @@
     "allowlist": [
       "task-packets/TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001.json",
       "scripts/audit/local_audit_acceptance.py",
+      "scripts/audit/sign_local_audit_proof.sh",
       "tests/audit/test_local_audit_acceptance.py",
       "proof/TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001/**"
     ],
@@ -48,27 +53,38 @@
     {
       "id": "S01",
       "task": "Repair scripts/audit/local_audit_acceptance.py: derive PACKET_ID fail-closed from the schema-validated report_path; widen the diff-scope allow-list to proof/pr_merge/embedded-audit/pr-<N>/ and proof/<PACKET_ID>/; require proof/<PACKET_ID>/PROOF.json, the report_path file, and a non-empty proof/<PACKET_ID>/review_bundle/ to exist at the enforced PR head; require the packet PROOF.json's head_sha and embedded_audit status/auditor_tool/auditor_model to agree with the signed PR proof.",
-      "status": "DONE"
+      "validation": [
+        "python -m pytest tests/audit/test_local_audit_acceptance.py -q"
+      ]
     },
     {
       "id": "S02",
       "task": "Update tests/audit/test_local_audit_acceptance.py fixture to build a canonical packet bundle by default, and add regression coverage: evidence-head masquerading as audited SHA -> FAIL; canonical packet proof successor + PR proof successor -> PASS; missing packet PROOF.json -> FAIL; missing/empty review_bundle -> FAIL; missing packet report -> FAIL; post-audit non-proof path -> FAIL; wrong packet directory -> FAIL; packet/PR proof head_sha or verdict-identity mismatch -> FAIL; head mismatch -> FAIL.",
-      "status": "DONE"
+      "validation": [
+        "python -m pytest tests/audit -q"
+      ]
     },
     {
       "id": "S03",
       "task": "Independent different-family/runtime L3 audit against the exact substantive head (code + tests only, no post-audit proof artifacts).",
-      "status": "PENDING"
+      "validation": [
+        "test -s proof/TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001/AUDITOR_REPORT.md"
+      ]
     },
     {
       "id": "S04",
       "task": "Canonical packet proof bundle (proof/TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001/{PROOF.json,AUDITOR_REPORT.md,review_bundle/}) as a proof-only successor, then signed pr_merge PROOF.json with head_sha = the actual audited commit.",
-      "status": "PENDING"
+      "validation": [
+        "python -m json.tool proof/TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001/PROOF.json",
+        "python -m json.tool proof/pr_merge/embedded-audit/pr-1236/PROOF.json"
+      ]
     },
     {
       "id": "S05",
       "task": "Fresh exact-head CI + PR Steward. Stop for operator merge decision -- do not merge.",
-      "status": "PENDING"
+      "validation": [
+        "gh pr checks 1236 --repo DDD-Enterprises/dopemux-mvp"
+      ]
     }
   ]
 }
