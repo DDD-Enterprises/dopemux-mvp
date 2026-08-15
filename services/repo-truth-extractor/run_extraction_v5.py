@@ -23267,208 +23267,6 @@ def main() -> None:
                 cost_profile_name,
             )
 
-    if args.phase == "S_INT":
-        from s_int.models import ladder_for_step
-        from s_int.run_s_int import run_s_int
-        from s_int.schema_validate import validate_payload
-
-        run_id = (
-            args.run_id.strip()
-            if args.run_id
-            else datetime.now(timezone.utc).strftime("s_int_%Y%m%dT%H%M%SZ")
-        )
-        cfg = RunnerConfig(
-            dry_run=args.dry_run,
-            max_files_docs=args.max_files_docs,
-            max_files_code=args.max_files_code,
-            max_chars=args.max_chars,
-            max_request_bytes=args.max_request_bytes,
-            file_truncate_chars=args.file_truncate_chars,
-            home_scan_mode=args.home_scan_mode,
-            resume=args.resume,
-            fail_fast_auth=args.fail_fast_auth,
-            gemini_auth_mode=args.gemini_auth_mode,
-            gemini_transport=args.gemini_transport,
-            openai_transport=args.openai_transport,
-            xai_transport=args.xai_transport,
-            retry_policy=args.retry_policy,
-            retry_max_attempts=max(1, args.retry_max_attempts),
-            retry_base_seconds=max(0.0, args.retry_base_seconds),
-            retry_max_seconds=max(0.0, args.retry_max_seconds),
-            phase_auth_fail_threshold=max(1, args.phase_auth_fail_threshold),
-            partition_workers=args.partition_workers,
-            executor=args.executor,
-            debug_phase_inputs=args.debug_phase_inputs,
-            fail_fast_missing_inputs=args.fail_fast_missing_inputs,
-            routing_policy=args.routing_policy,
-            disable_escalation=bool(args.disable_escalation),
-            escalation_max_hops=args.escalation_max_hops,
-            batch_mode=bool(args.batch_mode),
-            batch_provider=args.batch_provider,
-            batch_poll_seconds=args.batch_poll_seconds,
-            batch_wait_timeout_seconds=args.batch_wait_timeout_seconds,
-            batch_max_requests_per_job=args.batch_max_requests_per_job,
-            batch_submit_only=bool(args.batch_submit_only),
-            webhook_url=os.getenv(DPMX_WEBHOOK_URL_ENV, "").strip(),
-            webhook_secret=os.getenv(DPMX_WEBHOOK_SECRET_ENV, "").strip(),
-            webhook_timeout_seconds=_int_env(
-                DPMX_WEBHOOK_TIMEOUT_SECONDS_ENV, 5, minimum=1
-            ),
-            webhook_required=_env_is_truthy(DPMX_WEBHOOK_REQUIRED_ENV),
-            webhook_auto_continue=_env_is_truthy(DPMX_WEBHOOK_AUTO_CONTINUE_ENV),
-            live_ok=_env_is_truthy(DPMX_LIVE_OK_ENV),
-            allow_online_llm=args.allow_online_llm,
-            max_cost_usd=args.max_cost_usd,
-            selected_execution_step=selected_execution_step,
-            prescan_dir=args.prescan_dir,
-            prescan_skip=bool(args.skip_prescan),
-            prescan_online=bool(args.prescan_online),
-            prescan_import_dir=args.prescan_import_dir,
-            prescan_import_validation=prescan_import_validation,
-            prescan_allow_scope_reduction=bool(args.prescan_allow_scope_reduction),
-            d0_max_files=args.d0_max_files,
-            d1_max_files=args.d1_max_files,
-            router=router,
-        )
-
-        def _prompt_executor(step, rendered_prompt, schema, _prior_outputs):  # type: ignore[no-untyped-def]
-            ladder = ladder_for_step(step)
-
-            def _execute_attempt(route, _hop_index):  # type: ignore[no-untyped-def]
-                provider, model_id, api_key_env = route
-                route_token = f"{provider}/{model_id}"
-                projected_input_tokens = _estimate_text_tokens(
-                    "Return JSON only.", rendered_prompt
-                )
-                projected_output_tokens = _project_output_tokens(
-                    projected_input_tokens
-                )
-                _check_projected_cost_limit(
-                    cfg,
-                    phase=step.phase,
-                    step_id=step.step_id,
-                    partition_id=step.step_id,
-                    provider=provider,
-                    model_id=model_id,
-                    input_tokens=projected_input_tokens,
-                    output_tokens=projected_output_tokens,
-                    execution_mode="s_int_sync",
-                    route=route_token,
-                )
-
-                result = call_llm(
-                    provider=provider,
-                    model_id=model_id,
-                    api_key_env=api_key_env,
-                    system_prompt="Return JSON only.",
-                    user_content=rendered_prompt,
-                    cfg=cfg,
-                )
-
-                meta = dict(result.get("meta") or {})
-                response_text = str(result.get("text") or "")
-                if meta.get("response_received") or result.get("ok"):
-                    spend_record = _accumulate_runtime_spend(
-                        cfg,
-                        phase=step.phase,
-                        step_id=step.step_id,
-                        partition_id=step.step_id,
-                        provider=provider,
-                        model_id=model_id,
-                        execution_mode="s_int_sync",
-                        response_summary=(
-                            meta.get("response_summary")
-                            if isinstance(meta.get("response_summary"), dict)
-                            else None
-                        ),
-                        response_text=response_text,
-                        fallback_input_tokens=_estimate_text_tokens(
-                            "Return JSON only.", rendered_prompt
-                        ),
-                        fallback_output_tokens=projected_output_tokens,
-                        route=route_token,
-                    )
-                    if spend_record is not None:
-                        meta["spend_usage"] = spend_record
-                payload = None
-                schema_errors: List[str] = []
-                escalation_trigger = str(meta.get("failure_type") or "").strip() or None
-                if not escalation_trigger:
-                    try:
-                        payload = json.loads(response_text)
-                    except Exception:
-                        meta["failure_type"] = "invalid_json"
-                        escalation_trigger = "invalid_json"
-                    else:
-                        schema_errors = validate_payload(payload, schema)
-                        if schema_errors:
-                            meta["failure_type"] = "schema_invalid"
-                            meta["schema_errors"] = list(schema_errors)
-                            if any(
-                                "missing required key" in row for row in schema_errors
-                            ):
-                                escalation_trigger = "schema_missing_key"
-                            else:
-                                escalation_trigger = "format_violation"
-                return {
-                    "response_text": response_text,
-                    "request_meta": meta,
-                    "artifacts": [payload] if isinstance(payload, dict) else [],
-                    "route": route,
-                    "artifacts_ok": isinstance(payload, dict) and not schema_errors,
-                    "escalation_trigger": escalation_trigger,
-                }
-
-            ladder_result = call_llm_with_ladder(
-                phase="S_INT",
-                step_id=step.step_id,
-                partition_id=step.step_id,
-                routing_policy=cfg.routing_policy,
-                routing_tier=step.routing_tier,
-                ladder=ladder,
-                cfg=cfg,
-                execute_attempt=_execute_attempt,
-                ui=None,
-            )
-            payload = None
-            artifacts = ladder_result.get("artifacts")
-            if isinstance(artifacts, list) and artifacts:
-                candidate = artifacts[0]
-                if isinstance(candidate, dict):
-                    payload = candidate
-            if payload is None:
-                try:
-                    payload = json.loads(str(ladder_result.get("response_text") or ""))
-                except Exception as exc:
-                    raise RuntimeError(
-                        f"S_INT step {step.step_id} returned invalid JSON."
-                    ) from exc
-            errors = validate_payload(payload, schema)
-            if errors:
-                raise RuntimeError(
-                    f"S_INT step {step.step_id} failed schema validation: {'; '.join(errors[:5])}"
-                )
-            return {
-                "payload": payload,
-                "request_meta": dict(ladder_result.get("request_meta") or {}),
-            }
-
-        try:
-            summary = run_s_int(
-                root,
-                run_id,
-                dry_run=bool(args.dry_run),
-                prompt_executor=None if args.dry_run else _prompt_executor,
-            )
-        except CostLimitExceededError as exc:
-            logger.error("S_INT cost cap exceeded: %s", exc)
-            sys.exit(1)
-        except Exception as exc:
-            logger.error("S_INT failed: %s", exc)
-            sys.exit(1)
-        print(sanitized_json_text(summary, indent=2 if args.pretty else None, sort_keys=True, ensure_ascii=True))
-        sys.exit(0)
-
     try:
         allow_create_if_missing = bool(
             args.promptgen_scan or args.run_id or args.gemini_list_models
@@ -23723,10 +23521,12 @@ def main() -> None:
     # certification result) must not be accepted as authoritative unless
     # source identity is positively proven -- and no live/provider-mutating
     # dispatch (Stage 0 online prescan, async submit, finalize, batch watch,
-    # batch retrieve, ordinary phase execution) may run before this gate.
-    # Every CLI path that writes RUN_MANIFEST/RUNNER_IDENTITY or dispatches
-    # to a provider falls through this single point; only the pure
-    # read-only/introspection early exits above (print-*, doctor_auth,
+    # batch retrieve, S_INT synchronous execution, ordinary phase execution)
+    # may run before this gate. Every CLI path that writes
+    # RUN_MANIFEST/RUNNER_IDENTITY or dispatches to a provider -- including
+    # --phase S_INT, which used to dispatch and exit before this point ever
+    # ran -- falls through this single point; only the pure read-only/
+    # introspection early exits above (print-*, doctor_auth,
     # preflight_providers, print_promptpack, coverage_report/verify_phase_output
     # with persist=False, doctor with persist=False) return before reaching it.
     try:
@@ -23741,6 +23541,208 @@ def main() -> None:
             "Source identity unproven; blocking canonical execution: %s", exc
         )
         sys.exit(1)
+
+    if args.phase == "S_INT":
+        from s_int.models import ladder_for_step
+        from s_int.run_s_int import run_s_int
+        from s_int.schema_validate import validate_payload
+
+        run_id = (
+            args.run_id.strip()
+            if args.run_id
+            else datetime.now(timezone.utc).strftime("s_int_%Y%m%dT%H%M%SZ")
+        )
+        cfg = RunnerConfig(
+            dry_run=args.dry_run,
+            max_files_docs=args.max_files_docs,
+            max_files_code=args.max_files_code,
+            max_chars=args.max_chars,
+            max_request_bytes=args.max_request_bytes,
+            file_truncate_chars=args.file_truncate_chars,
+            home_scan_mode=args.home_scan_mode,
+            resume=args.resume,
+            fail_fast_auth=args.fail_fast_auth,
+            gemini_auth_mode=args.gemini_auth_mode,
+            gemini_transport=args.gemini_transport,
+            openai_transport=args.openai_transport,
+            xai_transport=args.xai_transport,
+            retry_policy=args.retry_policy,
+            retry_max_attempts=max(1, args.retry_max_attempts),
+            retry_base_seconds=max(0.0, args.retry_base_seconds),
+            retry_max_seconds=max(0.0, args.retry_max_seconds),
+            phase_auth_fail_threshold=max(1, args.phase_auth_fail_threshold),
+            partition_workers=args.partition_workers,
+            executor=args.executor,
+            debug_phase_inputs=args.debug_phase_inputs,
+            fail_fast_missing_inputs=args.fail_fast_missing_inputs,
+            routing_policy=args.routing_policy,
+            disable_escalation=bool(args.disable_escalation),
+            escalation_max_hops=args.escalation_max_hops,
+            batch_mode=bool(args.batch_mode),
+            batch_provider=args.batch_provider,
+            batch_poll_seconds=args.batch_poll_seconds,
+            batch_wait_timeout_seconds=args.batch_wait_timeout_seconds,
+            batch_max_requests_per_job=args.batch_max_requests_per_job,
+            batch_submit_only=bool(args.batch_submit_only),
+            webhook_url=os.getenv(DPMX_WEBHOOK_URL_ENV, "").strip(),
+            webhook_secret=os.getenv(DPMX_WEBHOOK_SECRET_ENV, "").strip(),
+            webhook_timeout_seconds=_int_env(
+                DPMX_WEBHOOK_TIMEOUT_SECONDS_ENV, 5, minimum=1
+            ),
+            webhook_required=_env_is_truthy(DPMX_WEBHOOK_REQUIRED_ENV),
+            webhook_auto_continue=_env_is_truthy(DPMX_WEBHOOK_AUTO_CONTINUE_ENV),
+            live_ok=_env_is_truthy(DPMX_LIVE_OK_ENV),
+            allow_online_llm=args.allow_online_llm,
+            max_cost_usd=args.max_cost_usd,
+            selected_execution_step=selected_execution_step,
+            prescan_dir=args.prescan_dir,
+            prescan_skip=bool(args.skip_prescan),
+            prescan_online=bool(args.prescan_online),
+            prescan_import_dir=args.prescan_import_dir,
+            prescan_import_validation=prescan_import_validation,
+            prescan_allow_scope_reduction=bool(args.prescan_allow_scope_reduction),
+            d0_max_files=args.d0_max_files,
+            d1_max_files=args.d1_max_files,
+            router=router,
+        )
+
+        def _prompt_executor(step, rendered_prompt, schema, _prior_outputs):  # type: ignore[no-untyped-def]
+            ladder = ladder_for_step(step)
+
+            def _execute_attempt(route, _hop_index):  # type: ignore[no-untyped-def]
+                provider, model_id, api_key_env = route
+                route_token = f"{provider}/{model_id}"
+                projected_input_tokens = _estimate_text_tokens(
+                    "Return JSON only.", rendered_prompt
+                )
+                projected_output_tokens = _project_output_tokens(
+                    projected_input_tokens
+                )
+                _check_projected_cost_limit(
+                    cfg,
+                    phase=step.phase,
+                    step_id=step.step_id,
+                    partition_id=step.step_id,
+                    provider=provider,
+                    model_id=model_id,
+                    input_tokens=projected_input_tokens,
+                    output_tokens=projected_output_tokens,
+                    execution_mode="s_int_sync",
+                    route=route_token,
+                )
+
+                result = call_llm(
+                    provider=provider,
+                    model_id=model_id,
+                    api_key_env=api_key_env,
+                    system_prompt="Return JSON only.",
+                    user_content=rendered_prompt,
+                    cfg=cfg,
+                )
+
+                meta = dict(result.get("meta") or {})
+                response_text = str(result.get("text") or "")
+                if meta.get("response_received") or result.get("ok"):
+                    spend_record = _accumulate_runtime_spend(
+                        cfg,
+                        phase=step.phase,
+                        step_id=step.step_id,
+                        partition_id=step.step_id,
+                        provider=provider,
+                        model_id=model_id,
+                        execution_mode="s_int_sync",
+                        response_summary=(
+                            meta.get("response_summary")
+                            if isinstance(meta.get("response_summary"), dict)
+                            else None
+                        ),
+                        response_text=response_text,
+                        fallback_input_tokens=_estimate_text_tokens(
+                            "Return JSON only.", rendered_prompt
+                        ),
+                        fallback_output_tokens=projected_output_tokens,
+                        route=route_token,
+                    )
+                    if spend_record is not None:
+                        meta["spend_usage"] = spend_record
+                payload = None
+                schema_errors: List[str] = []
+                escalation_trigger = str(meta.get("failure_type") or "").strip() or None
+                if not escalation_trigger:
+                    try:
+                        payload = json.loads(response_text)
+                    except Exception:
+                        meta["failure_type"] = "invalid_json"
+                        escalation_trigger = "invalid_json"
+                    else:
+                        schema_errors = validate_payload(payload, schema)
+                        if schema_errors:
+                            meta["failure_type"] = "schema_invalid"
+                            meta["schema_errors"] = list(schema_errors)
+                            if any(
+                                "missing required key" in row for row in schema_errors
+                            ):
+                                escalation_trigger = "schema_missing_key"
+                            else:
+                                escalation_trigger = "format_violation"
+                return {
+                    "response_text": response_text,
+                    "request_meta": meta,
+                    "artifacts": [payload] if isinstance(payload, dict) else [],
+                    "route": route,
+                    "artifacts_ok": isinstance(payload, dict) and not schema_errors,
+                    "escalation_trigger": escalation_trigger,
+                }
+
+            ladder_result = call_llm_with_ladder(
+                phase="S_INT",
+                step_id=step.step_id,
+                partition_id=step.step_id,
+                routing_policy=cfg.routing_policy,
+                routing_tier=step.routing_tier,
+                ladder=ladder,
+                cfg=cfg,
+                execute_attempt=_execute_attempt,
+                ui=None,
+            )
+            payload = None
+            artifacts = ladder_result.get("artifacts")
+            if isinstance(artifacts, list) and artifacts:
+                candidate = artifacts[0]
+                if isinstance(candidate, dict):
+                    payload = candidate
+            if payload is None:
+                try:
+                    payload = json.loads(str(ladder_result.get("response_text") or ""))
+                except Exception as exc:
+                    raise RuntimeError(
+                        f"S_INT step {step.step_id} returned invalid JSON."
+                    ) from exc
+            errors = validate_payload(payload, schema)
+            if errors:
+                raise RuntimeError(
+                    f"S_INT step {step.step_id} failed schema validation: {'; '.join(errors[:5])}"
+                )
+            return {
+                "payload": payload,
+                "request_meta": dict(ladder_result.get("request_meta") or {}),
+            }
+
+        try:
+            summary = run_s_int(
+                root,
+                run_id,
+                dry_run=bool(args.dry_run),
+                prompt_executor=None if args.dry_run else _prompt_executor,
+            )
+        except CostLimitExceededError as exc:
+            logger.error("S_INT cost cap exceeded: %s", exc)
+            sys.exit(1)
+        except Exception as exc:
+            logger.error("S_INT failed: %s", exc)
+            sys.exit(1)
+        print(sanitized_json_text(summary, indent=2 if args.pretty else None, sort_keys=True, ensure_ascii=True))
+        sys.exit(0)
 
     if SpendLedger is not None:
         cfg = replace(

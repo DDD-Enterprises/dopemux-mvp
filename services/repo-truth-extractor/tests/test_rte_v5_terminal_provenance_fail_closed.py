@@ -366,6 +366,7 @@ def test_s7_required_execution_source_identity_gate_is_a_single_call_site() -> N
         "n = run_phase_R_finalize(",
         "watch_result = run_batch_watch(",
         "outcome = run_batch_retrieval_and_integration_detailed(",
+        'if args.phase == "S_INT":',  # C1R2: S_INT synchronous dispatch (RTE-W1-010 residual gap)
     ):
         marker_idx = source.index(marker)
         assert gate_idx < marker_idx, f"{marker!r} must run after the identity gate"
@@ -1034,6 +1035,49 @@ def test_s10_batch_retrieve_blocked_before_dispatch(monkeypatch, tmp_path: Path)
         tmp_path,
         ["--batch-retrieve", "--batch-ids", "b1", "--run-id", "s10-retrieve"],
     )
+    assert exit_code == 1
+
+
+def test_s10_s_int_blocked_before_dispatch(monkeypatch, tmp_path: Path) -> None:
+    """C1R2 regression: --phase S_INT used to dispatch to run_s_int() (and,
+    via its prompt_executor, to call_llm()) and sys.exit() entirely before
+    main() ever reached the (then textually-later) identity gate -- an
+    UNKNOWN identity never blocked it. required_execution_source_identity()
+    must now dominate S_INT the same way it dominates every other dispatch
+    path.
+
+    Deliberately does NOT rely on exit_code alone: the pre-fix S_INT branch
+    wraps run_s_int() in a bare ``except Exception: ... sys.exit(1)``, so a
+    stub that merely raises would be swallowed into the *same* exit(1) a
+    correctly-gated run produces, masking the bug. A call-recording side
+    channel makes the assertion mutation-sensitive regardless of exit code.
+    """
+    runner = _load_runner_module()
+    # NOTE: `import s_int.run_s_int as m` would bind `m` to the *function*
+    # s_int.run_s_int (s_int/__init__.py's `from .run_s_int import run_s_int`
+    # overwrites the package attribute of that name), not the submodule.
+    # The local `from s_int.run_s_int import run_s_int` inside main() resolves
+    # via sys.modules, so patch the true submodule object directly.
+    s_int_run_s_int_module = importlib.import_module("s_int.run_s_int")
+
+    calls: list = []
+
+    def _record_and_raise(*_a, **_k):
+        calls.append("run_s_int")
+        raise AssertionError("run_s_int must not be called with unproven source identity")
+
+    monkeypatch.setattr(s_int_run_s_int_module, "run_s_int", _record_and_raise)
+
+    def _call_llm_record_and_raise(*_a, **_k):
+        calls.append("call_llm")
+        raise AssertionError("call_llm must not be called with unproven source identity")
+
+    monkeypatch.setattr(runner, "call_llm", _call_llm_record_and_raise)
+
+    exit_code = _run_main_with_argv(
+        runner, monkeypatch, tmp_path, ["--phase", "S_INT", "--dry-run", "--run-id", "s10-s-int"]
+    )
+    assert calls == [], f"unproven-identity dispatch reached: {calls!r}"
     assert exit_code == 1
 
 
