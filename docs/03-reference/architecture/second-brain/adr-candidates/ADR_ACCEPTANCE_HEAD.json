@@ -1,0 +1,103 @@
+{
+  "schema_version": "1.0.0",
+  "record_kind": "ADR_ACCEPTANCE_HEAD",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001",
+  "acceptance_date": "2026-08-14",
+  "authority": "HUMAN_OPERATOR_EXPLICIT",
+  "accepted_adr_count": 10,
+  "candidate_document": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+  "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+  "candidate_document_status": "CANDIDATE",
+  "candidate_document_modified_by_acceptance": false,
+  "candidate_document_note": "The candidate remains a candidate and is untouched. Acceptance is persisted as ten NEW accepted records under docs/90-adr/, not by promoting the candidate. The candidate is frozen authority pinned by sha256 in the validator and in all ten machine contracts.",
+  "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "clause_inventory_sha256": "b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439",
+  "ma08_main_sha": "75b4cfc581786a53445e412bfc8e25a6e0fdb978",
+  "adrs": [
+    {
+      "adr_id": "ADR-SB-001",
+      "title": "Extension Boundary and Non-Authority",
+      "path": "docs/90-adr/adr-sb-001-extension-boundary-and-non-authority.md",
+      "sha256": "6969ce475087980feb3f6a8ab8ef0da7baf9d60cef953679407cc9cca840229b",
+      "machine_contract": "schemas/second_brain/contracts/ADR-SB-001.contract.json",
+      "operator_disposition": "ACCEPT"
+    },
+    {
+      "adr_id": "ADR-SB-002",
+      "title": "Capture, Candidate, Review, and Promotion",
+      "path": "docs/90-adr/adr-sb-002-capture-candidate-review-and-promotion.md",
+      "sha256": "5edcc5089aaf3feb3de877192947051c750ca10a4aad61dfba899f7dc30e87d0",
+      "machine_contract": "schemas/second_brain/contracts/ADR-SB-002.contract.json",
+      "operator_disposition": "ACCEPT"
+    },
+    {
+      "adr_id": "ADR-SB-003",
+      "title": "Recall Fusion and Provenance",
+      "path": "docs/90-adr/adr-sb-003-recall-fusion-and-provenance.md",
+      "sha256": "d12401abecddb6e0a7c54da63aa5dd3ab613eba3245c1b42980395f89ccb8eca",
+      "machine_contract": "schemas/second_brain/contracts/ADR-SB-003.contract.json",
+      "operator_disposition": "ACCEPT"
+    },
+    {
+      "adr_id": "ADR-SB-004",
+      "title": "Domain, Classification, and Provider Policy",
+      "path": "docs/90-adr/adr-sb-004-domain-classification-and-provider-policy.md",
+      "sha256": "6fc77800273074c09d6d4fe7d1335a03e89418d9b1d15b8badf59be027e877fe",
+      "machine_contract": "schemas/second_brain/contracts/ADR-SB-004.contract.json",
+      "operator_disposition": "ACCEPT"
+    },
+    {
+      "adr_id": "ADR-SB-005",
+      "title": "Markdown Projection Contract",
+      "path": "docs/90-adr/adr-sb-005-markdown-projection-contract.md",
+      "sha256": "44636da0727be96de66fc6a23f9888cf0e2360b1c4e45041394d87abb28a6a30",
+      "machine_contract": "schemas/second_brain/contracts/ADR-SB-005.contract.json",
+      "operator_disposition": "ACCEPT"
+    },
+    {
+      "adr_id": "ADR-SB-006",
+      "title": "Local Spool and Custody Interface",
+      "path": "docs/90-adr/adr-sb-006-local-spool-and-custody-interface.md",
+      "sha256": "1294a460696a3d5f4e74ee75d61e222b5f5588267c75715195b795d0cbb86d9e",
+      "machine_contract": "schemas/second_brain/contracts/ADR-SB-006.contract.json",
+      "operator_disposition": "ACCEPT"
+    },
+    {
+      "adr_id": "ADR-SB-007",
+      "title": "Forget, Purge, and Residual Verification",
+      "path": "docs/90-adr/adr-sb-007-forget-purge-and-residual-verification.md",
+      "sha256": "abfbb74ab2e85f8627e17dfb8266363e7a65c28a210df6477d1e251d70c4f49f",
+      "machine_contract": "schemas/second_brain/contracts/ADR-SB-007.contract.json",
+      "operator_disposition": "ACCEPT"
+    },
+    {
+      "adr_id": "ADR-SB-008",
+      "title": "Open Loop and Task Proposal Boundary",
+      "path": "docs/90-adr/adr-sb-008-open-loop-and-task-proposal-boundary.md",
+      "sha256": "beaeb832421063fe4e0afe64e8da958a43b83fe421d27467c8a201e833fe3592",
+      "machine_contract": "schemas/second_brain/contracts/ADR-SB-008.contract.json",
+      "operator_disposition": "ACCEPT"
+    },
+    {
+      "adr_id": "ADR-SB-009",
+      "title": "Single-Project Safety and Identity Dependencies",
+      "path": "docs/90-adr/adr-sb-009-single-project-safety-and-identity-dependencies.md",
+      "sha256": "764efcf4e414fc45a786805a3110040f189c6da7640fa06abe4ea6e535f31300",
+      "machine_contract": "schemas/second_brain/contracts/ADR-SB-009.contract.json",
+      "operator_disposition": "ACCEPT"
+    },
+    {
+      "adr_id": "ADR-SB-010",
+      "title": "UX Contract",
+      "path": "docs/90-adr/adr-sb-010-ux-contract.md",
+      "sha256": "328f4a398f781647de721a0d604b7edc14704ff6bd751f9e9ec5c4f1e5a7094f",
+      "machine_contract": "schemas/second_brain/contracts/ADR-SB-010.contract.json",
+      "operator_disposition": "ACCEPT"
+    }
+  ],
+  "confers": [],
+  "confers_note": "Acceptance confers architecture-record status only. It confers no implementation, runtime, production or enablement authority.",
+  "implementation_execution": "NOT_AUTHORIZED",
+  "runtime_enablement": "NOT_AUTHORIZED",
+  "denial_fixtures": "NOT_IMPLEMENTED"
+}

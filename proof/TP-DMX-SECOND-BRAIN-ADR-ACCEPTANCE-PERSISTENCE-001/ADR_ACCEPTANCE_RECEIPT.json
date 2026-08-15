@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0.0",
+  "record_kind": "ADR_ACCEPTANCE_RECEIPT",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001",
+  "acceptance_date": "2026-08-14",
+  "authority": "HUMAN_OPERATOR_EXPLICIT",
+  "human_gate": "PASSED",
+  "adr_dispositions": "10x ACCEPT",
+  "accepted_adr_count": 10,
+  "deferred": 0,
+  "rejected": 0,
+  "architecture_acceptance": "PERSISTED",
+  "accepts_any_adr": true,
+  "adr_acceptance_authorized": true,
+  "adr_acceptance_authorized_scope": "This receipt records that the human operator authorized ADR acceptance on 2026-08-14 and that it has been persisted as ten accepted records. It is scoped to ADR acceptance and to nothing else.",
+  "binding": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/ADR_ACCEPTANCE_BINDING.json",
+  "binding_sha256": "898481b4b2e049f0e67d96f29fe169d24a077fa3bcd8ef32079b3021b7369d6b",
+  "ledger": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/ADR_OPERATOR_DECISION_LEDGER.yaml",
+  "ledger_sha256": "edc939e137e7bef6972eed3ad8521592e796bffd2b59009f137de3e793ce9604",
+  "acceptance_head": "docs/03-reference/architecture/second-brain/adr-candidates/ADR_ACCEPTANCE_HEAD.json",
+  "supersedes_disposition_state": "10x DEFER (blanket operator directive, 2026-08-10)",
+  "does_not_supersede": "The superseded pre-amendment acceptance attempt at 19fa74faa9 remains SUPERSEDED and is not revived, inherited, or salvaged by this persistence.",
+  "what_this_receipt_does_NOT_authorize": [
+    "Implementation execution of any kind.",
+    "Slice 0 or any implementation slice.",
+    "Runtime enablement, runtime mutation, or deployment.",
+    "Any claim that denial fixtures exist. They remain NOT_IMPLEMENTED and are an enablement-time gate under the amended AC#2.",
+    "Any claim of runtime conformance, retrieval benchmarks, purge completeness, multi-project isolation, or split-brain proof. All remain NOT_RUN.",
+    "Any claim that encryption exists. It remains ABSENT.",
+    "Push, pull request, or merge of this branch."
+  ],
+  "merge_authorized": false,
+  "implementation_execution": "NOT_AUTHORIZED",
+  "runtime_enablement": "NOT_AUTHORIZED",
+  "denial_fixtures": "NOT_IMPLEMENTED",
+  "carried_obligations": [
+    "ADR-SB-009: the ConPort project wall is directionally aligned but establishes no registry-backed identity. Any implementation slice must re-gate against what it actually guarantees.",
+    "The seven typed artifacts are acceptance-time evidence that the named types exist and are grounded in decision text. They are not implementation-ready interface definitions and require interface review before implementation.",
+    "'Required denial fixtures' is not enumerated per ADR. Pinning that scope per ADR is cheaper before implementation than after.",
+    "Three fields in fo-01-repair-status.json are now stale. See ADR_ACCEPTANCE_BINDING.json declared_stale_records_created_by_this_persistence. Reconciling them requires a separate packet with its own audit and is NOT authorized."
+  ]
+}

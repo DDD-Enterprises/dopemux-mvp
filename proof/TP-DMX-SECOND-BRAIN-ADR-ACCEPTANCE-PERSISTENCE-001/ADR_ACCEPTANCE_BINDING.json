@@ -1,0 +1,138 @@
+{
+  "schema_version": "1.0.0",
+  "record_kind": "ADR_ACCEPTANCE_BINDING",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001",
+  "acceptance_date": "2026-08-14",
+  "ma08_main_sha": "75b4cfc581786a53445e412bfc8e25a6e0fdb978",
+  "ma08_main_sha_reverified_immediately_before_persisting": true,
+  "binds": {
+    "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+    "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+    "clause_inventory_sha256": "b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439",
+    "traceability_matrix_sha256": "7ce481011a2da98d6840d0c300fcd27f1f52e4b0713f4e073d628de00337c9cc",
+    "fo01_receipt_sha256": "d2325fa27a6541fa9b1cbce3032c7f2af31f7a448e81eb80e3b69e57a58705cd",
+    "acceptance_head_sha256": "08ff5b8222596e38b9db381b9361f2ccc87967ec643e3a87f9575cfa173e93f8",
+    "ledger_sha256": "edc939e137e7bef6972eed3ad8521592e796bffd2b59009f137de3e793ce9604",
+    "worksheet_sha256": "86cf6534957c6512ce6bd5cedefbb9e854edebc0e7288d5c5bddce3ee450abe7"
+  },
+  "accepted_records": [
+    {
+      "path": "docs/90-adr/adr-sb-001-extension-boundary-and-non-authority.md",
+      "sha256": "6969ce475087980feb3f6a8ab8ef0da7baf9d60cef953679407cc9cca840229b",
+      "adr_id": "ADR-SB-001",
+      "machine_contract": "schemas/second_brain/contracts/ADR-SB-001.contract.json"
+    },
+    {
+      "path": "docs/90-adr/adr-sb-002-capture-candidate-review-and-promotion.md",
+      "sha256": "5edcc5089aaf3feb3de877192947051c750ca10a4aad61dfba899f7dc30e87d0",
+      "adr_id": "ADR-SB-002",
+      "machine_contract": "schemas/second_brain/contracts/ADR-SB-002.contract.json"
+    },
+    {
+      "path": "docs/90-adr/adr-sb-003-recall-fusion-and-provenance.md",
+      "sha256": "d12401abecddb6e0a7c54da63aa5dd3ab613eba3245c1b42980395f89ccb8eca",
+      "adr_id": "ADR-SB-003",
+      "machine_contract": "schemas/second_brain/contracts/ADR-SB-003.contract.json"
+    },
+    {
+      "path": "docs/90-adr/adr-sb-004-domain-classification-and-provider-policy.md",
+      "sha256": "6fc77800273074c09d6d4fe7d1335a03e89418d9b1d15b8badf59be027e877fe",
+      "adr_id": "ADR-SB-004",
+      "machine_contract": "schemas/second_brain/contracts/ADR-SB-004.contract.json"
+    },
+    {
+      "path": "docs/90-adr/adr-sb-005-markdown-projection-contract.md",
+      "sha256": "44636da0727be96de66fc6a23f9888cf0e2360b1c4e45041394d87abb28a6a30",
+      "adr_id": "ADR-SB-005",
+      "machine_contract": "schemas/second_brain/contracts/ADR-SB-005.contract.json"
+    },
+    {
+      "path": "docs/90-adr/adr-sb-006-local-spool-and-custody-interface.md",
+      "sha256": "1294a460696a3d5f4e74ee75d61e222b5f5588267c75715195b795d0cbb86d9e",
+      "adr_id": "ADR-SB-006",
+      "machine_contract": "schemas/second_brain/contracts/ADR-SB-006.contract.json"
+    },
+    {
+      "path": "docs/90-adr/adr-sb-007-forget-purge-and-residual-verification.md",
+      "sha256": "abfbb74ab2e85f8627e17dfb8266363e7a65c28a210df6477d1e251d70c4f49f",
+      "adr_id": "ADR-SB-007",
+      "machine_contract": "schemas/second_brain/contracts/ADR-SB-007.contract.json"
+    },
+    {
+      "path": "docs/90-adr/adr-sb-008-open-loop-and-task-proposal-boundary.md",
+      "sha256": "beaeb832421063fe4e0afe64e8da958a43b83fe421d27467c8a201e833fe3592",
+      "adr_id": "ADR-SB-008",
+      "machine_contract": "schemas/second_brain/contracts/ADR-SB-008.contract.json"
+    },
+    {
+      "path": "docs/90-adr/adr-sb-009-single-project-safety-and-identity-dependencies.md",
+      "sha256": "764efcf4e414fc45a786805a3110040f189c6da7640fa06abe4ea6e535f31300",
+      "adr_id": "ADR-SB-009",
+      "machine_contract": "schemas/second_brain/contracts/ADR-SB-009.contract.json"
+    },
+    {
+      "path": "docs/90-adr/adr-sb-010-ux-contract.md",
+      "sha256": "328f4a398f781647de721a0d604b7edc14704ff6bd751f9e9ec5c4f1e5a7094f",
+      "adr_id": "ADR-SB-010",
+      "machine_contract": "schemas/second_brain/contracts/ADR-SB-010.contract.json"
+    }
+  ],
+  "accepted_record_count": 10,
+  "generated_not_salvaged": {
+    "generator": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/generators/gen_accepted_adrs.py",
+    "generator_sha256": "aa5b9947a120d6a15f8a40c90cd007dff1b6006a24bcfe2a2415c8e58b954437",
+    "source": "the amended candidate bytes at candidate_sha256",
+    "salvaged_from_19fa74faa9": false,
+    "why": "The superseded attempt's ADR files carry the pre-amendment AC#2, which is the substantive ground on which the operator superseded them. The generator refuses to run if that wording is present, and refuses to run unless the amended AC#2 appears exactly ten times.",
+    "every_decision_section_is_a_candidate_byte_slice": true
+  },
+  "surfaces_deliberately_not_touched": {
+    "docs/.../second-brain-adr-candidates.md": "Frozen authority, pinned by sha256 in the validator and in all ten contracts. Validator check A35 requires it to remain CANDIDATE. Acceptance is persisted as new records, not by promoting the candidate.",
+    "docs/.../fo-01-repair-status.json": "Validator checks B02, B03, B05, B06, B07.",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/FO01_RESOLUTION_RECEIPT.json": "Another packet's historical audit record; validator checks B05 and B07.",
+    "schemas/second_brain/contracts/**": "Validator checks A34, A36, A37.",
+    "scripts/governance/validate_second_brain_adr_contracts.py": "Merged, audited, contract-sensitive governance tooling. Changing it requires its own independent audit.",
+    "docs/.../authority/**": "Heads the SB-DEC ratification, not ADR acceptance. Untouched."
+  },
+  "declared_stale_records_created_by_this_persistence": {
+    "why_declared": "Additive persistence is the only shape that does not break the merged validator or rewrite another packet's history. It leaves three fields in fo-01-repair-status.json describing a world that has changed. They are named here rather than left to be discovered.",
+    "file": "docs/03-reference/architecture/second-brain/adr-candidates/fo-01-repair-status.json",
+    "stale_fields": [
+      {
+        "field": "adr_acceptance_authorized",
+        "value": false,
+        "why_stale": "Its own gate_field_semantics glosses this as 'Only the human operator may authorize ADR acceptance.' The operator has now authorized it."
+      },
+      {
+        "field": "gates.adr_acceptance",
+        "value": "CLOSED",
+        "why_stale": "Glossed as closed because the other acceptance conditions were still outstanding. They are not."
+      },
+      {
+        "field": "adr_statuses.promoted_to_accepted",
+        "value": 0,
+        "why_stale": "Ten ADRs are now promoted to accepted."
+      }
+    ],
+    "not_stale_and_why": [
+      {
+        "field": "adr_statuses.document_status",
+        "value": "CANDIDATE",
+        "why": "The candidate document remains a candidate and is untouched. Correct."
+      },
+      {
+        "field": "FO01_RESOLUTION_RECEIPT.accepts_any_adr",
+        "value": false,
+        "why": "That receipt accepts no ADR. Permanently true of that record."
+      }
+    ],
+    "why_not_fixed_here": "B02 requires the status file to be an exact whole projection of a historical receipt belonging to another packet. It cannot express post-acceptance state without either falsifying its own projection or rewriting audited history. Reconciling it requires changing the validator invariant from 'no ADR is accepted' to 'acceptance matches the operator ledger', which is a separate packet with its own independent audit.",
+    "follow_up_required": true,
+    "follow_up_authorized": false
+  },
+  "confers": [],
+  "implementation_execution": "NOT_AUTHORIZED",
+  "runtime_enablement": "NOT_AUTHORIZED",
+  "slice_0": "NOT_AUTHORIZED",
+  "denial_fixtures": "NOT_IMPLEMENTED"
+}
