@@ -1,0 +1,27 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1236,
+  "head_sha": "05c41b3e6bebaa6b8854af5da0dbad9207ac5227",
+  "generated_at": "2026-08-15T09:56:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --print <PR-1236 local-audit-proof-binding verifier-repair audit prompt> --model gemini-3.1-pro-high --effort high --sandbox --mode plan --output-format json --print-timeout 18m",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "Bound signed local-attestation head_sha to the actually-audited commit; widened the diff-scope allow-list to include proof/<PACKET_ID>/ derived fail-closed from the schema-validated report_path; required the canonical AGENTS.md 9.1 packet proof bundle to exist at the enforced PR head and agree with the signed PR proof on audited head_sha and controlling verdict identity (status, auditor_tool, auditor_model).",
+      "Follow-up commit 05c41b3e6bebaa6b8854af5da0dbad9207ac5227 (independently audited, PASS, test-only diff verified via git diff ab57983171..05c41b3e6b) added two regression tests for edge cases the first audit flagged as non-blocking coverage gaps."
+    ],
+    "remaining_risks": [
+      "AUDIT_TOPOLOGY, NAMED NOT CONFLATED. This signed PR proof's head_sha, 05c41b3e6bebaa6b8854af5da0dbad9207ac5227, IS the audited commit itself -- not an evidence-head successor. This is the doctrine-correct shape this packet establishes: no evidence-head indirection was needed because both the main audit and the narrow follow-up audit each examined a real commit on this branch directly.",
+      "Backwards incompatibility (named non-blocking by the independent audit): any currently-open PR using the prior evidence-head-as-head_sha pattern (e.g. PR #1224) will now fail this stricter check if re-evaluated. Not touched by this packet -- separate, explicitly-scoped follow-up.",
+      "Self-attested local signing for the verifier repair itself -- mitigated by two independent AGY/gemini-3.1-pro-high audit passes, both PASS, both re-deriving evidence from live git/pytest execution.",
+      "Merge is NOT authorized by this proof. Only readiness-check progression (exact-head CI + PR Steward) is authorized. Per operator instruction: stop for an explicit operator merge decision."
+    ],
+    "skip_reason": null
+  }
+}
