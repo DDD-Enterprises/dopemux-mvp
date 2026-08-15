@@ -1,20 +1,23 @@
 {
   "packet_id": "TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001",
-  "proof_bundle_files": [
-    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/PROOF.json",
-    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/VALIDATION.json",
-    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/MANIFEST.json",
-    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/COMMAND_LOG.md",
-    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/CHANGED_FILES.txt",
-    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/HANDOFF.md",
-    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/AUDITOR_REPORT.md",
-    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/OPEN_PR_CARRY_FORWARD.md",
-    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/GROK_AUDIT_PROMPT.md",
-    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/GROK_AUDIT_OUTPUT.json",
-    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/scratch_notes.md",
-    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/review_bundle/"
-  ],
   "content_head_c1": "67f22b4829b0e3e98ba59fcb609f42c5af213ffc",
   "execution_base": "6626aa9a58dd82e62226cfca63498cc3f711bb75",
-  "note": "content_head_c1 is the last commit touching source/test bytes. This proof bundle (and the earlier merge of unrelated upstream schema movement, needed for the audit-schema pairing to validate) is added after it, per packet Section 18 S8 -- no source/test byte changes after 67f22b4829."
+  "checksum_algorithm": "sha256",
+  "proof_bundle_files": {
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/PROOF.json": "4fdd8207ea7f6b93c10ac64cf256674c6945605d29e2dbff008ad7a5031d0ec1",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/VALIDATION.json": "99f8db3073c434c6a7ccbf51602195c1ac80f1fa5e95413716ab82ae663e4b16",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/COMMAND_LOG.md": "e0e774364f4dfa22fd3035cdc33de4097343c4ddf89820b1e3e95183f805fc29",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/CHANGED_FILES.txt": "43498f7ec080b35608abc380e66ebebdc10bbd07f01a8d49a03fa1bf5b8ff63b",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/HANDOFF.md": "9b159950e3f4b096ed852e6723bc10a310a9168059a587b2d2248ff40232d908",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/AUDITOR_REPORT.md": "aa7f988c5165136e80f8dbccf09948bb51db9e4ab4083f67b36d377854aee030",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/OPEN_PR_CARRY_FORWARD.md": "7c845950a2655208690404d0ea2b2e7a5e7cc7dae4b0863383a2ad242283841f",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/GROK_AUDIT_PROMPT.md": "d3840fd8b572e47e2af0574c57be1a85716331964861a73d313905dbb663c591",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/GROK_AUDIT_OUTPUT.json": "5d532504c2aa1166e2db7eb3c37fe5795f9f188cd1d613b89579406064c3b774",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/scratch_notes.md": "577b671ea4ba92d6434cdbcdd8e735610a14d3fc7d4ece1d2e3db9a6a7ba8b96",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/review_bundle/AUDITOR_REPORT.md": "aa7f988c5165136e80f8dbccf09948bb51db9e4ab4083f67b36d377854aee030",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/review_bundle/GROK_AUDIT_OUTPUT.json": "5d532504c2aa1166e2db7eb3c37fe5795f9f188cd1d613b89579406064c3b774",
+    "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/review_bundle/source_diff.patch": "2a16ef6cf58ab7e24026081cf823dfb5c67aea460313914c143a8eb1371d1536",
+    "task-packets/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001.json": "c4f385a59ed21010317e553033008433df25072d7a54b9c982197ab1a396b762"
+  },
+  "note": "content_head_c1 is the last commit touching source/test bytes. This proof bundle (and the earlier merge of unrelated upstream schema movement, needed for the audit-schema pairing to validate) is added after it, per packet Section 18 S8 -- no source/test byte changes after 67f22b4829. task-packets/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001.json was revised after the initial proof-closure commit to conform to docs/03-reference/spec/dopetask/dopetask-canonical-spec.json (the optional execution object was omitted rather than populated with a mislabeled execution.agent value; actual implementer identity is recorded in PROOF.json's controlling_audit_identity/implementer_identity blocks and in HANDOFF.md)."
 }

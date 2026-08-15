@@ -13,6 +13,7 @@
     "Open PR 1136 and 1183 unique payload is preserved",
     "No live provider or production mutation"
   ],
+  "depends_on": [],
   "repo_binding": {
     "project_id": "dopemux-mvp",
     "repo_marker": ".dopemux",
@@ -25,24 +26,79 @@
     "parent_tp_id": null,
     "final_packet": false
   },
-  "execution": {
-    "execution_base": "6626aa9a58dd82e62226cfca63498cc3f711bb75",
-    "worktree": "/Users/hue/code/dopemux-mvp/.worktrees/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001",
-    "branch": "tp/DMX-RTE-V5-TERMINAL-PROVENANCE-001",
-    "content_head_c1": "67f22b4829b0e3e98ba59fcb609f42c5af213ffc"
+  "commit": {
+    "message": "fix(rte): fail closed on terminal status, batch outcome, and source identity",
+    "allowlist": [
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/reporting.py",
+      "services/repo-truth-extractor/rte_reports.py",
+      "services/repo-truth-extractor/validate_pre_live_gate_v25.py",
+      "services/repo-truth-extractor/lib/batch_retriever.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_live_gate_terminality.py",
+      "services/repo-truth-extractor/tests/test_pre_live_gate_v25.py",
+      "services/repo-truth-extractor/tests/test_batch_retriever.py",
+      "services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py",
+      "services/repo-truth-extractor/tests/test_rte_v5_terminal_provenance_fail_closed.py",
+      "task-packets/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001.json",
+      "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/**"
+    ],
+    "verify": [
+      "python -m pytest -q services/repo-truth-extractor/tests",
+      "python -m compileall -q services/repo-truth-extractor",
+      "git diff --check",
+      "python scripts/audit/validate_audit_proof.py proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/PROOF.json"
+    ]
   },
-  "commit": "67f22b4829b0e3e98ba59fcb609f42c5af213ffc",
-  "pr": null,
-  "pal_chain": null,
+  "pr": {
+    "title": "fix(rte): fail closed on terminal status and source identity",
+    "body": "Task Packet: TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001 / Campaign: DMX-REPO-DEEP-AUDIT-001 / Risk: L2. Repairs RTE-W1-001, RTE-W1-006 canonical-v5 terminal outcome, RTE-W1-010. Residuals: RTE-W1-006 legacy v3 status, original submission provenance (both DEFERRED, disclosed not fabricated). See proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/HANDOFF.md for execution base, C1, proof head, test results, independent audit identity/verdict, #1136/#1183 carry-forward classification, residual risks, and rollback. NOT YET AUTHORIZED FOR PUBLICATION -- this pr block is descriptive metadata only, no draft PR has been opened.",
+    "base": "main"
+  },
   "steps": [
-    "S0: custody/drift/overlap characterization -- COMPLETE",
-    "S1: reproduce RTE-001/006/010 defects offline -- COMPLETE",
-    "S2: write failing regression tests -- COMPLETE",
-    "S3: implement minimal repair -- COMPLETE (two rounds: initial fix at 250e46bd6b, self-repair of the --doctor persist=True gap at 67f22b4829)",
-    "S4: deterministic validation gates -- COMPLETE (all PASS)",
-    "S5: open-PR carry-forward simulation -- COMPLETE (#1136 and #1183 both COMPATIBLE)",
-    "S6: freeze C1 -- COMPLETE (67f22b4829)",
-    "S7: independent final audit -- COMPLETE (grok-cli/grok-4.5, PASS_WITH_RISKS)",
-    "S8: proof-only closure -- IN_PROGRESS"
+    {
+      "id": "S0",
+      "task": "Custody, drift, overlap, and authority characterization (read-only)",
+      "validation": ["repo/origin identity confirmed", "PR #1136/#1183 heads refreshed and unchanged from authoring time"]
+    },
+    {
+      "id": "S1",
+      "task": "Reproduce RTE-W1-001/006/010 target behavior offline, no provider calls",
+      "validation": ["semantic-FAIL exits 0 pre-fix (confirmed via git stash)", "batch integer-zero conflation pre-fix (confirmed via git stash)", "UNKNOWN git_sha unblocked pre-fix (confirmed via code trace)"]
+    },
+    {
+      "id": "S2",
+      "task": "Add failing regression tests for the T/B/S-series matrix before implementing the repair",
+      "validation": ["new tests fail for the correct reason pre-fix"]
+    },
+    {
+      "id": "S3",
+      "task": "Implement minimal repair: resolve_final_run_terminal_exit_code, BatchRetrievalIntegrationOutcome, required_execution_source_identity",
+      "validation": ["python -m pytest -q services/repo-truth-extractor/tests/test_rte_v5_terminal_provenance_fail_closed.py"]
+    },
+    {
+      "id": "S4",
+      "task": "Deterministic validation gates",
+      "validation": ["python -m pytest -q services/repo-truth-extractor/tests", "python -m compileall -q services/repo-truth-extractor", "git diff --check"]
+    },
+    {
+      "id": "S5",
+      "task": "Open-PR carry-forward simulation against current #1136/#1183 heads",
+      "validation": ["proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/OPEN_PR_CARRY_FORWARD.md written with COMPATIBLE classification for both PRs"]
+    },
+    {
+      "id": "S6",
+      "task": "Freeze substantive content head C1",
+      "validation": ["C1=67f22b4829b0e3e98ba59fcb609f42c5af213ffc recorded"]
+    },
+    {
+      "id": "S7",
+      "task": "Independent controlling audit of exact C1",
+      "validation": ["python scripts/audit/validate_audit_proof.py proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/PROOF.json"]
+    },
+    {
+      "id": "S8",
+      "task": "Proof-only closure -- C1..C2 touches only proof/** and this file",
+      "validation": ["git diff --name-only 67f22b4829...HEAD contains only proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/** and task-packets/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001.json"]
+    }
   ]
 }
