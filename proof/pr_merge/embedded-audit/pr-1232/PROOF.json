@@ -1,0 +1,64 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1232,
+  "head_sha": "7acc0623440345bfc2915909413a26189d78f2ff",
+  "commit_sha": "7acc0623440345bfc2915909413a26189d78f2ff",
+  "generated_at": "2026-08-15T06:00:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "~/.grok/bin/grok --prompt-file proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/GROK_AUDIT_PROMPT.md --output-format json --permission-mode dontAsk --model grok-4.5, headless single-turn, direct filesystem access to the worktree, run by the operator at the orchestrating session's request",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "R1",
+        "severity": "LOW",
+        "title": "RUN_MANIFEST.json / RUNNER_IDENTITY.json written via ungated get_git_sha before the identity gate",
+        "status": "ACCEPTED_RISK",
+        "body": "write_run_manifest and write_runner_identity execute before required_execution_source_identity() in main()'s phase-execution path. A failed identity check still leaves git_sha:\"UNKNOWN\" on those two files, though RUN_MANIFEST.json's run_status is subsequently overwritten to FAILED/source_identity_unproven. Same nuance the implementer self-disclosed (satisfies invariant 9's 'accepted as authoritative' reading, not a stricter 'before any write' reading); independently rediscovered by the auditor, not new."
+      },
+      {
+        "id": "R2",
+        "severity": "LOW",
+        "title": "Preset write_confidence_ramp_artifacts can write CERTIFICATION_RESULT.json before the phase-loop identity gate",
+        "status": "ACCEPTED_RISK",
+        "body": "Reached via --preset before the RTE-W1-010 gate. Lower severity than the closed doctor gap: the auditor verified write_certification_result's payload for this call path does not itself embed a git_sha field (only the doctor-full topology_payload does, and that path is now gated)."
+      },
+      {
+        "id": "R3",
+        "severity": "INFO",
+        "title": "Audit-prompt wording overstated the implementation's guarantee",
+        "status": "ACCEPTED_RISK",
+        "body": "The audit prompt's checklist item 3 said 'before any canonical evidence write'; the actual guarantee is 'before phase-execution completes and before doctor-persist writes.' A description-precision issue, not an additional code defect beyond R1/R2."
+      },
+      {
+        "id": "R4",
+        "severity": "INFO",
+        "title": "origin/main advanced past the packet's recorded execution base during the session",
+        "status": "ACCEPTED_RISK",
+        "body": "At audit time the repo's origin/main tip had moved to 75b4cfc581 from the packet's execution_base 6626aa9a58 due to normal upstream activity during this long session. The RTE branch was correctly created from 6626aa9a58 and is unaffected; expected drift per packet Section 23, not a defect in this packet's work."
+      },
+      {
+        "id": "R5",
+        "severity": "INFO",
+        "title": "Some new regression tests are source-order structural guards, not full runtime end-to-end",
+        "status": "ACCEPTED_RISK",
+        "body": "main() is several thousand lines; true e2e simulation offline is impractical. Disclosed limitation, already acknowledged by the implementer. One persist=False test checks outcomes (no cert files written, correct exit code) but does not spy that required_execution_source_identity is never called -- the code path (if persist:) makes this trivially true by construction."
+      }
+    ],
+    "fixes_applied": [
+      "run_doctor_full persist=True path gated with required_execution_source_identity before any DOCTOR_FULL.json / CERTIFICATION_RESULT.json write (commit 67f22b4829, closing the gap the supporting GPT-5-pro audit found)"
+    ],
+    "remaining_risks": [
+      "R1: RUN_MANIFEST.json/RUNNER_IDENTITY.json can transiently contain git_sha:UNKNOWN before the identity-failure status overwrite",
+      "R2: preset CERTIFICATION_RESULT.json write is not identity-gated (payload does not embed git_sha for this call path)",
+      "R3: audit-prompt wording overstatement, not a code defect",
+      "R4: unrelated origin/main drift during the session",
+      "R5: some tests are structural rather than full e2e"
+    ],
+    "skip_reason": null
+  }
+}
