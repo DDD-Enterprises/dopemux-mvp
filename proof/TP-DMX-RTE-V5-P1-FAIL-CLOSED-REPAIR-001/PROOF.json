@@ -252,10 +252,10 @@
       },
       {
         "id": "F-D-NONBLOCKING-OUT-OF-SCOPE",
-        "severity": "LOW",
+        "severity": "MEDIUM",
         "title": "run_extraction_v3.py contains the same S_INT dispatch block and has no identity gate at all (same genus as F-001)",
-        "status": "OPEN",
-        "body": "STATUS=OPEN (not ACCEPTED_RISK): flagged for explicit supervisor disposition, not yet accepted. v3 is not reachable from the v4 CLI wrapper (which targets v5) and carries its own separate live-consent gate (--execute + DPMX_LIVE_OK=1, added in a prior PR/#605), so live v3 S_INT is still consent-gated, just not identity-gated. Outside this packet's allowlist and scope (v3 runtime changes were explicitly excluded). Auditor recommends a supervisor ruling: either a follow-up packet extending the identity gate to v3, or an explicit acceptance that v3's consent gate is the controlling mitigation there. Not fixed here -- v3 is out of this packet's scope by design."
+        "status": "ACCEPTED_RISK",
+        "body": "SUPERVISOR DISPOSITION (2026-08-15, post-audit): F-D=ACCEPT_FOLLOWUP_REQUIRED, SEVERITY=MEDIUM (raised from auditor's initial LOW), LIKELY_RISK_LANE=L2, BLOCKS_CURRENT_V5_PR=NO, CONSENT_GATE_SUFFICIENT=NO. Supervisor explicitly rejected treating v3's live-execution consent gate (--execute + DPMX_LIVE_OK=1, added in a prior PR/#605) as a substitute for source-identity proof: consent proves an operator authorized live/provider execution, not that the resulting evidence is bound to a known source revision -- these are separate authority dimensions. v3 is confirmed not dead code: the canonical `dopemux rte` CLI defaults to v5 but still explicitly permits v3 via `--pipeline-version v3` plus a hidden legacy engine selector, and prior Wave 1 evidence shows v3 has other unresolved provenance/terminal defects (resume-identity divergence, batch false-success). Supervisor ruling: do NOT spin a micro-packet solely for v3 S_INT. Bundle with the already-deferred v3 authority debt into one follow-up packet, TP-DMX-RTE-V3-LEGACY-AUTHORITY-FAIL-CLOSED-001, targeting F-D (v3 S_INT source-identity gate), RTE-W1-006 v3 batch terminal semantics, and RTE-W1-004 v3 resume/run identity together -- giving one coherent later choice: harden v3's execution authority properly, or structurally retire it. This finding is an explicit nonblocking residual for PR #1232's eventual readiness, not a blocker for this packet (TP-DMX-RTE-V5-P1-FAIL-CLOSED-REPAIR-001) or for C1R2 signing."
       }
     ],
     "fixes_applied": [
@@ -267,7 +267,7 @@
     ],
     "remaining_risks": [
       "F-B-NONBLOCKING: the relocation moves S_INT's execution point relative to run-dir/context resolution and read-only early exits; probed benign for the highest-risk shape but not exhaustively fuzzed across every CLI flag combination",
-      "F-D-NONBLOCKING-OUT-OF-SCOPE: run_extraction_v3.py's S_INT path has no identity gate (only a separate consent gate); same genus of gap as F-001, out of this packet's scope, awaiting supervisor disposition on whether a follow-up packet is warranted"
+      "F-D-NONBLOCKING-OUT-OF-SCOPE (ACCEPTED_RISK, MEDIUM, follow-up required): run_extraction_v3.py's S_INT path has no identity gate, only a separate live-consent gate which is explicitly ruled insufficient (consent != source-identity proof). Nonblocking for this packet and for PR #1232's eventual readiness; tracked for a mandatory follow-up packet TP-DMX-RTE-V3-LEGACY-AUTHORITY-FAIL-CLOSED-001 bundling v3's S_INT gate, RTE-W1-006 v3 batch terminal semantics, and RTE-W1-004 v3 resume/run identity"
     ],
     "skip_reason": null,
     "instruction_like_content": {
@@ -277,9 +277,60 @@
       "matches": []
     }
   },
+  "topology_verification": {
+    "gate": "VERIFY C1R2 EXACT-HEAD TOPOLOGY BEFORE SIGN/PUSH (supervisor-issued, read-only)",
+    "performed_at": "2026-08-15T11:10:00Z",
+    "commits": [
+      {
+        "sha": "8ce48664707a89f39960a603e658c4cf5a39a30d",
+        "short": "8ce4866470",
+        "parent": "366e6fdd4f0c51de4a432d70888df06069bc385d",
+        "subject": "fix(rte): close S_INT identity-gate bypass (RTE-W1-010 residual, F-001)",
+        "changed_files": [
+          "services/repo-truth-extractor/run_extraction_v5.py",
+          "services/repo-truth-extractor/tests/test_rte_v5_terminal_provenance_fail_closed.py",
+          "services/repo-truth-extractor/tests/test_s_int_runner.py"
+        ],
+        "rte_source_or_test_bytes_changed": true,
+        "proof_or_packet_metadata_only": false
+      },
+      {
+        "sha": "d1a832f1a4b2c984aa94c4cf883c0559729e11c8",
+        "short": "d1a832f1a4",
+        "parent": "8ce48664707a89f39960a603e658c4cf5a39a30d",
+        "subject": "proof(rte): PASS_WITH_RISKS embedded audit (Claude Opus, independent) for C1R2 8ce4866470",
+        "changed_files": [
+          "proof/TP-DMX-RTE-V5-P1-FAIL-CLOSED-REPAIR-001/AUDITOR_REPAIR_REPORT.md",
+          "proof/TP-DMX-RTE-V5-P1-FAIL-CLOSED-REPAIR-001/PROOF.json",
+          "proof/TP-DMX-RTE-V5-P1-FAIL-CLOSED-REPAIR-001/review_bundle/AUDITOR_RAW_RESPONSE_C1R2.md",
+          "proof/TP-DMX-RTE-V5-P1-FAIL-CLOSED-REPAIR-001/review_bundle/AUDIT_PROMPT_C1R2.md"
+        ],
+        "rte_source_or_test_bytes_changed": false,
+        "proof_or_packet_metadata_only": true
+      }
+    ],
+    "fresh_audit_recorded_audited_head": "8ce48664707a89f39960a603e658c4cf5a39a30d",
+    "proof_json_head_sha": "8ce48664707a89f39960a603e658c4cf5a39a30d",
+    "diff_8ce4866470_to_d1a832f1a4_name_only": [
+      "proof/TP-DMX-RTE-V5-P1-FAIL-CLOSED-REPAIR-001/AUDITOR_REPAIR_REPORT.md",
+      "proof/TP-DMX-RTE-V5-P1-FAIL-CLOSED-REPAIR-001/PROOF.json",
+      "proof/TP-DMX-RTE-V5-P1-FAIL-CLOSED-REPAIR-001/review_bundle/AUDITOR_RAW_RESPONSE_C1R2.md",
+      "proof/TP-DMX-RTE-V5-P1-FAIL-CLOSED-REPAIR-001/review_bundle/AUDIT_PROMPT_C1R2.md"
+    ],
+    "492208f4_is_ancestor_of_8ce4866470": true,
+    "result": "PASS_TOPOLOGY_A",
+    "conclusion": "8ce4866470 is the substantive C1R2 head (all source/test bytes); d1a832f1a4 is a proof-only successor touching only proof/TP-DMX-RTE-V5-P1-FAIL-CLOSED-REPAIR-001/**. The fresh independent Opus audit's recorded audited_head and PROOF.json's head_sha both equal 8ce4866470, matching the substantive head exactly. STOP=STALE_AUDIT does not trigger. The prior handoff summary's commit-parent phrasing was inverted/sloppy wording, not an actual chronology defect -- 8ce4866470 has never had any commit as its parent, it is always the parent of d1a832f1a4."
+  },
+  "pr_1232_draft_restoration": {
+    "authorized_by": "supervisor, same turn as the topology-verification gate and F-D disposition",
+    "performed_at": "2026-08-15T11:12:00Z",
+    "precondition_verified": "gh pr view 1232 --json headRefOid,isDraft returned headRefOid=492208f4684f1b7660be26deda7c29161ea50070, isDraft=false, matching the supervisor's expected current remote state exactly before mutation",
+    "mutation_performed": "gh pr ready 1232 --undo (metadata-only, no branch/code/proof change, no push, no merge, no thread resolution, no re-marking ready)",
+    "postcondition_verified": "gh pr view 1232 --json headRefOid,isDraft returned headRefOid=492208f4684f1b7660be26deda7c29161ea50070 (unchanged), isDraft=true"
+  },
   "signing": {
     "signed": false,
-    "note": "Per supervisor instruction: do NOT sign a replacement PR bridge yet. This proof bundle is committed as a proof-only delta on top of the audited head_sha (8ce48664707a89f39960a603e658c4cf5a39a30d, C1R2) and awaits a fresh one-use signing authorization before push. Open item for the signing decision: F-D-NONBLOCKING-OUT-OF-SCOPE (v3's ungated S_INT path) is flagged NEEDS_SUPERVISOR_DISPOSITION, not blocking for this packet's own scope."
+    "note": "HELD pending explicit sign/push authorization from the supervisor. Topology verification above confirms C1R2's exact-head binding is correct (8ce4866470 substantive, d1a832f1a4 proof-only, fresh audit's audited_head matches head_sha exactly) -- STOP=STALE_AUDIT did not trigger. Per supervisor instruction, the trusted local-attestation mechanism is a detached OpenSSH signature over canonical PROOF.json followed by a proof-only commit; the already-audited commits (8ce4866470, d1a832f1a4) must NOT be amended to add a Git signature, since that would change their SHAs and invalidate the exact-head audit binding. F-D-NONBLOCKING-OUT-OF-SCOPE has received an explicit supervisor disposition (ACCEPTED_RISK, follow-up required via TP-DMX-RTE-V3-LEGACY-AUTHORITY-FAIL-CLOSED-001) and is confirmed nonblocking for this packet and for C1R2 signing."
   },
   "rollback": "git reset to parent_head 492208f4684f1b7660be26deda7c29161ea50070 discards both repair commits (C1R, C1R2) and both proof commits; all are additive and were never pushed",
   "implementation_commit": "8ce48664707a89f39960a603e658c4cf5a39a30d",
