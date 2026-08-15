@@ -17,7 +17,8 @@
     "The three fo-01-repair-status.json fields that this persistence makes stale are DECLARED BY NAME in ADR_ACCEPTANCE_BINDING.json. Silently leaving them, or silently editing them, are both packet failures.",
     "SB-DEC-001..032 are not reopened; SB-DEC-026 remains A_LEAVE_UNLINKED; the ratification binding and the 32-decision operator ledger are unmodified.",
     "MERGE=NOT_AUTHORIZED. PUSH=NOT_AUTHORIZED. PR=NOT_AUTHORIZED. FORCE_PUSH=FORBIDDEN. REBASE=FORBIDDEN.",
-    "Per the merged supersession lineage, only an independently audited rebuilt acceptance chain may become authoritative. This packet is therefore not complete until a fresh independent audit of its own frozen head returns 0 blockers and 0 must-fix."
+    "Per the merged supersession lineage, only an independently audited rebuilt acceptance chain may become authoritative. This packet is therefore not complete until a fresh independent audit of its own frozen head returns 0 blockers and 0 must-fix.",
+    "ALLOWLIST NOTE (moved here because the packet schema forbids extra keys on the commit object): the entry proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/R2_AUDITOR_IDENTITY_REASONING_CORRECTION.json is an operator-authorized append-only correction record, written as a sibling to the merged record whose reasoning it corrects. It is listed in the allowlist so that changed-paths remains a subset of the allowlist union; without it the correction would be an uncovered path, which is exactly what a commit allowlist exists to catch. The record it corrects was re-hashed after writing and is byte-identical."
   ],
   "depends_on": [
     "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002",
@@ -183,7 +184,6 @@
       "task-packets/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001.json",
       "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/R2_AUDITOR_IDENTITY_REASONING_CORRECTION.json"
     ],
-    "allowlist_note": "The last entry is an operator-authorized append-only correction record, written as a sibling to the merged record whose reasoning it corrects. It is listed here so that changed-paths remains a subset of the allowlist union; without it the correction would be an uncovered path, which is exactly what a commit allowlist exists to catch. The record it corrects was re-hashed after writing and is byte-identical.",
     "verify": [
       "python3 scripts/governance/validate_second_brain_adr_contracts.py",
       "python3 -m pytest -q tests/governance/test_second_brain_adr_contracts.py",
