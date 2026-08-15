@@ -1,63 +1,59 @@
-# Auditor Report — TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001 (controlling: R3)
+# Auditor Report — TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001 (controlling: R4)
 
-**Audited commit**: `a26474698c09dd0cfdfde737135dbaa821aba234`
+**Audited commit**: `8e9b802729a1e273221b9d217239fbcca657a5ad`
 **Auditor**: `agy` / `gemini-3.1-pro-high`, `--mode plan`, read-only git worktree audit
 
-This is the CONTROLLING report. It supersedes the R1 (`ab57983171` /
-`05c41b3e6b`) and R2 (`cdc83dda65`) audits preserved in `review_bundle/` as
-non-controlling historical evidence — each examined an earlier state of
-this branch before further rounds of live PR review surfaced more findings.
+This is the CONTROLLING report. It supersedes the R1 (`ab57983171`/`05c41b3e6b`),
+R2 (`cdc83dda65`), and R3 (`a26474698c`) audits preserved in `review_bundle/`
+as non-controlling historical evidence.
 
 ## Verdict: PASS
 
-Independent verification of the R3 commit `a26474698c` on
-`feat/local-audit-proof-binding-001`, addressing 4 fresh findings from live
-review on PR #1236 (a 5th, a re-flagged ancestry finding, was independently
-confirmed not applicable to real branch history).
+Independent verification of the R4 commit `8e9b802729` on
+`feat/local-audit-proof-binding-001`, addressing a fresh finding from live
+review on PR #1236.
 
-### Itemized findings disposition
+### Finding disposition
 
-1. **P1 (ancestry re-flagged against a squash-merge preview)**:
-   **RESOLVED / not applicable**. `git merge-base --is-ancestor
-   cdc83dda65cf6cf0337f5c4a88b76d048e2854f1 HEAD` returns ANCESTOR against
-   the real branch, with exactly the two expected proof-only successor
-   commits between them. The finding was anchored to a synthetic
-   squash-merge-preview SHA that never exists as a real commit in this
-   repository's history.
-2. **P1 (task-packet allowlist omission)**: **RESOLVED**. The packet's
-   `commit.allowlist` now includes `proof/pr_merge/embedded-audit/pr-1236/**`
-   alongside the canonical packet-bundle path, matching what step S04
-   actually commits.
-3. **P2 (signer preflight schema/policy parity)**: **RESOLVED**.
-   `scripts/audit/sign_local_audit_proof.sh` now imports and runs
-   `schema_validation_errors`/`policy_errors` from
-   `scripts.audit.local_audit_acceptance` against both the PR proof's own
-   `embedded_audit` object and the packet proof's, closing the
-   local-success/CI-failure gap. Confirmed by running
-   `test_signer_preflight_rejects_packet_object_failing_policy_despite_matching_identity`
-   directly (1 passed).
-4. **P2 (gitlink smuggling in review_bundle)**: **RESOLVED**.
-   `_tree_has_entries` now inspects each recursive `git ls-tree -r` entry's
-   own object type and requires at least one real `blob` — a
-   gitlink/submodule entry (object type `commit`) no longer satisfies the
-   check. Confirmed by running `test_review_bundle_gitlink_only_is_rejected`
-   directly (1 passed), which constructs a real gitlink via
-   `git update-index --add --cacheinfo 160000,...`.
+**P2 (PACKET_ID colliding with the reserved `pr_merge` namespace)**:
+**RESOLVED**. Pre-fix vulnerability independently reproduced: the trusted
+schema's `report_path` pattern's `[^/]+` wildcard matches
+`proof/pr_merge/AUDITOR_REPORT.md`, deriving `packet_id = "pr_merge"` prior
+to R4 — which would widen the diff-scope allow-list to `proof/pr_merge/`,
+the SHARED root every PR's own signed proof lives under, letting a proof
+successor touch or delete any other PR's attestation while the
+proof-only-delta check still passed. `_extract_packet_id` now explicitly
+rejects a derived segment equal to `RESERVED_PACKET_NAMESPACE`, itself
+derived from `PROOF_DIR_TEMPLATE` (the same constant the PR-scoped proof
+path uses) so it cannot silently drift out of sync. Confirmed by directly
+running both new regression tests (2 passed).
+
+### Adversarial analysis (independently performed)
+Checked for residual bypasses of the same shape: path traversal is
+structurally impossible (`[^/]+` forbids `/`), and substring/prefix tricks
+against the `path.startswith(f"{packet_dir}/")` check fail because git diff
+paths are normalized and the literal trailing-slash comparison rejects any
+partial match (e.g. `pr` vs `pr_merge`, or a trailing space). No residual
+widening vector found.
 
 ### Pytest counts (real execution, not summarized)
-- `tests/audit`: **399 passed, 1 skipped**
+- `tests/audit`: **400 passed, 1 skipped**
 
-### Newly-introduced risks / regressions vs R1/R2
-None identified. `git diff cdc83dda65..a26474698c` confirmed no unrequested
-logic changes or weakened conditionals.
+### Newly-introduced risks / regressions vs R1-R3
+None identified. The R4 diff is minimal and purely additive — a single
+explicit rejection condition inside `_extract_packet_id`, preserving all
+prior schema/policy, signer-preflight, and object-type checks.
 
 ### Bottom line
-Commit `a26474698c` fully remediates all legitimate R3 reviewer findings
-without regressions or newly introduced bypasses, and is ready to be
-treated as the controlling audited head for this canonical proof bundle.
+Commit `8e9b802729` closes the final scope-widening bypass and is ready to
+be treated as the controlling audited head for this canonical proof bundle.
 
 ---
 
-Full raw transcript and prompt: `review_bundle/AGY_AUDIT_R3_RAW.json`,
-`review_bundle/AGY_AUDIT_R3_PROMPT.md`. R1 and R2 audits remain in
+Full raw transcript and prompt: `review_bundle/AGY_AUDIT_R4_RAW.json`,
+`review_bundle/AGY_AUDIT_R4_PROMPT.md`. One prior invocation attempt for
+this round was killed externally before producing output (empty response,
+"timeout waiting for response") — preserved as
+`review_bundle/AGY_AUDIT_R4_ATTEMPT1_KILLED_NONCONTROLLING.json` and
+explicitly NOT promoted to any verdict. R1, R2, and R3 audits remain in
 `review_bundle/` as superseded historical evidence, not controlling.
