@@ -47,7 +47,7 @@ schema/config/workflow paths are touched. Full report:
 | Term | Meaning | SHA |
 |---|---|---|
 | `AUDITED_TREE` | commit examined by the independent audit | `bbcd474a0fb81a160e68537eb56c5b195133072b` |
-| `AUDIT_EVIDENCE_HEAD` | proof-only successor adding only the audit report/transcript/prompt | `a4c9aef0158e1f8bf13c7cfb8ce54c0b4dcb02f0` |
+| `AUDIT_EVIDENCE_HEAD` | proof-only successor adding only the audit report/transcript/prompt | `a4c9aef0150c7e900ab3f91e1bfe4c658d59bc3e` |
 | this bridge commit | adds only `proof/pr_merge/embedded-audit/pr-1235/**` on top of `AUDIT_EVIDENCE_HEAD` | (this commit) |
 
 `AUDITED_TREE` is an ancestor of `AUDIT_EVIDENCE_HEAD`; no substantive byte
@@ -65,6 +65,17 @@ that already-independent evidence when its own auditor cannot execute.
 Authorized under a fresh, narrowly-scoped operator decision specific to
 PR #1235 ("Authorize signed local attestation") — not inferred from any
 earlier, broader authorization in this incident.
+
+## Correction
+
+The first signed PROOF.json committed for this PR (b601969da9) contained a
+transcription error: `head_sha` was written as `a4c9aef0158e1f8bf13c7cfb8ce54c0b4dcb02f0`,
+a similar-looking but incorrect SHA (diverges from the real
+AUDIT_EVIDENCE_HEAD after the 9th hex digit). The trusted CI acceptance
+check correctly rejected it (`objects_unreachable`), exactly as the
+fail-closed design intends. This PROOF.json corrects `head_sha` to the
+real AUDIT_EVIDENCE_HEAD, `a4c9aef0150c7e900ab3f91e1bfe4c658d59bc3e`, and
+is re-signed accordingly.
 
 ## What this proof authorizes
 
