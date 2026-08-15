@@ -1,26 +1,25 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1236,
-  "head_sha": "a26474698c09dd0cfdfde737135dbaa821aba234",
-  "generated_at": "2026-08-16T00:15:00Z",
+  "head_sha": "8e9b802729a1e273221b9d217239fbcca657a5ad",
+  "generated_at": "2026-08-16T00:50:00Z",
   "embedded_audit": {
     "required": true,
     "status": "PASS",
     "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "agy --print <PR-1236 R3 verifier-repair audit prompt covering 4 fresh live review findings> --model gemini-3.1-pro-high --effort high --sandbox --mode plan --output-format json --print-timeout 18m",
+    "invocation": "agy --print <PR-1236 R4 verifier-repair audit prompt covering the pr_merge namespace-collision finding> --model gemini-3.1-pro-high --effort high --sandbox --mode plan --output-format json --print-timeout 18m",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001/AUDITOR_REPORT.md",
     "findings": [],
     "fixes_applied": [
-      "R1 (superseded): bound signed local-attestation head_sha to the actually-audited commit; widened the diff-scope allow-list to include proof/<PACKET_ID>/.",
-      "R2 (superseded): repaired 7 findings from live review -- exact blob/tree object-type checks, packet_id identity check, signer preflight parity, ATTESTED_AUDITED_SHA documentation, schema-valid task packet steps.",
-      "R3 (this commit, a26474698c09dd0cfdfde737135dbaa821aba234): added proof/pr_merge/embedded-audit/pr-1236/** to the task packet's commit allowlist; signer preflight now runs the canonical schema_validation_errors/policy_errors against BOTH proof objects, not just a 3-field identity comparison; review_bundle presence now requires an actual git blob entry, closing a gitlink/submodule smuggling path. A re-flagged ancestry finding (against a synthetic squash-merge-preview SHA) was confirmed not applicable to real branch history."
+      "R1-R3 (superseded): bound head_sha to the actually-audited commit; exact blob/tree object-type checks; packet_id identity check; signer preflight schema/policy parity; ATTESTED_AUDITED_SHA documentation; schema-valid task packet; commit allowlist coverage; gitlink smuggling closed.",
+      "R4 (this commit, 8e9b802729a1e273221b9d217239fbcca657a5ad): rejected PACKET_ID collision with the reserved 'pr_merge' namespace -- report_path 'proof/pr_merge/AUDITOR_REPORT.md' previously schema-matched and would have widened the diff-scope allow-list to the shared root every PR's signed proof lives under. Independent adversarial analysis found no residual bypass of the same shape."
     ],
     "remaining_risks": [
-      "AUDIT_TOPOLOGY, NAMED NOT CONFLATED. This signed PR proof's head_sha, a26474698c09dd0cfdfde737135dbaa821aba234, IS the audited commit itself -- not an evidence-head successor.",
-      "Backwards incompatibility (named non-blocking by all independent audits across R1-R3): any currently-open PR using the prior evidence-head-as-head_sha pattern (e.g. PR #1224) will now fail this stricter check if re-evaluated. Not touched by this packet -- separate, explicitly-scoped follow-up.",
-      "Self-attested local signing for the verifier repair itself -- mitigated by four independent AGY/gemini-3.1-pro-high audit passes across R1-R3, all PASS, all re-deriving evidence from live git/pytest execution.",
+      "AUDIT_TOPOLOGY, NAMED NOT CONFLATED. This signed PR proof's head_sha, 8e9b802729a1e273221b9d217239fbcca657a5ad, IS the audited commit itself -- not an evidence-head successor.",
+      "Backwards incompatibility (named non-blocking by all independent audits across R1-R4): any currently-open PR using the prior evidence-head-as-head_sha pattern (e.g. PR #1224) will now fail this stricter check if re-evaluated. Not touched by this packet -- separate, explicitly-scoped follow-up.",
+      "Self-attested local signing for the verifier repair itself -- mitigated by five independent AGY/gemini-3.1-pro-high audit passes across R1-R4, all PASS, all re-deriving evidence from live git/pytest execution.",
       "ATTESTED_AUDITED_SHA is a signer claim bounded by structural enforcement (no post-attested-SHA commit can smuggle code outside the two proof trees), not an independent cryptographic proof of what the auditor examined at that SHA. See module LIMITATION docstring.",
       "Merge is NOT authorized by this proof. Only readiness-check progression (exact-head CI + PR Steward) is authorized. Per operator instruction: stop for an explicit operator merge decision."
     ],
