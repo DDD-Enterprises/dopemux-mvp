@@ -742,6 +742,40 @@ def test_extract_packet_id_returns_none_for_non_matching_report_path() -> None:
     )
 
 
+def test_extract_packet_id_rejects_reserved_pr_merge_namespace() -> None:
+    """A report_path of proof/pr_merge/AUDITOR_REPORT.md schema-matches the
+    generic [^/]+ wildcard, deriving PACKET_ID="pr_merge" -- but proof/pr_merge/
+    is the RESERVED root every PR's signed proof lives under
+    (proof/pr_merge/embedded-audit/pr-<N>/), not one packet's own directory.
+    Accepting it would widen the diff-scope allow-list to that whole shared
+    namespace, letting a proof successor touch any other PR's signed
+    attestation while still passing the proof-only-delta check. Regression
+    for the R4 review finding."""
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    assert (
+        local_audit_acceptance._extract_packet_id(
+            "proof/pr_merge/AUDITOR_REPORT.md", schema
+        )
+        is None
+    )
+
+
+def test_report_path_colliding_with_reserved_namespace_is_rejected_end_to_end(
+    tmp_path: Path,
+) -> None:
+    """End-to-end: a signed proof whose report_path derives PACKET_ID="pr_merge"
+    must fail closed via evaluate_local_audit, not merely at the unit level."""
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_and_sign_proof(
+        embedded=_local_embedded_audit()
+        | {"report_path": "proof/pr_merge/AUDITOR_REPORT.md"},
+        write_packet_bundle=False,
+    )
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(r.startswith("packet_id_undecidable") for r in attestation["reasons"])
+
+
 # ---------------------------------------------------------------------------
 # Emitter integration: attestation feeding build_embedded_audit_proof
 # ---------------------------------------------------------------------------

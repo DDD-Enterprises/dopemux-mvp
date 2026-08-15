@@ -95,6 +95,13 @@ SIGNATURE_NAMESPACE = "dopemux-embedded-audit"
 DEFAULT_ALLOWED_SIGNERS = Path("config/audit/embedded-audit-allowed-signers")
 DEFAULT_SCHEMA_PATH = Path("schemas/proof/embedded_audit.schema.json")
 PROOF_DIR_TEMPLATE = "proof/pr_merge/embedded-audit/pr-{pr_number}"
+# The reserved top-level segment under proof/ that holds EVERY PR's signed
+# proof (proof/pr_merge/embedded-audit/pr-<N>/), not just this packet's. A
+# PACKET_ID that collided with it would widen the diff-scope allow-list to
+# the whole shared namespace, letting a proof successor touch any other PR's
+# signed attestation. Derived from PROOF_DIR_TEMPLATE itself so it can never
+# drift out of sync with the actual reserved path.
+RESERVED_PACKET_NAMESPACE = PROOF_DIR_TEMPLATE.split("/")[1]
 PASSING_AUDIT_STATUSES = frozenset({"PASS", "PASS_WITH_RISKS"})
 _SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 
@@ -191,7 +198,12 @@ def _extract_packet_id(report_path: str, schema: Mapping[str, Any]) -> str | Non
     packet segment, so once the whole-string pattern match confirms the
     fixed three-segment shape (``proof/<packet_id>/AUDITOR..._REPORT.md``),
     the packet segment is taken by position, not by group. Returns ``None``
-    if the schema has no usable pattern or the string does not match it.
+    if the schema has no usable pattern, the string does not match it, or
+    the derived segment collides with RESERVED_PACKET_NAMESPACE (``pr_merge``)
+    -- the schema's ``[^/]+`` wildcard has no way to know that segment is
+    reserved, so this function must reject it explicitly: accepting it would
+    widen the diff-scope allow-list to ``proof/pr_merge/``, the shared root
+    every PR's signed proof lives under, not just this one packet's.
     """
     pattern = schema.get("properties", {}).get("report_path", {}).get("pattern")
     if not isinstance(pattern, str):
@@ -200,6 +212,8 @@ def _extract_packet_id(report_path: str, schema: Mapping[str, Any]) -> str | Non
         return None
     segments = report_path.split("/")
     if len(segments) != 3 or segments[0] != "proof" or not segments[1]:
+        return None
+    if segments[1] == RESERVED_PACKET_NAMESPACE:
         return None
     return segments[1]
 
