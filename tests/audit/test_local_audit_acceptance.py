@@ -43,7 +43,8 @@ def _git(repo: Path, *args: str) -> str:
 # This fixture previously carried a two-directory pr_merge path, which the
 # canonical validator rejects. The old hand-rolled acceptance validator
 # exempted report_path, so the fixture passed and the exemption looked safe.
-REPORT_PATH = "proof/TP-DMX-TEST-LOCAL-AUDIT-ACCEPTANCE/AUDITOR_REPORT.md"
+PACKET_ID = "TP-DMX-TEST-LOCAL-AUDIT-ACCEPTANCE"
+REPORT_PATH = f"proof/{PACKET_ID}/AUDITOR_REPORT.md"
 
 
 def _local_embedded_audit(status: str = "PASS", tool: str = "pal-mcp-clink") -> dict:
@@ -90,6 +91,44 @@ class LocalAuditFixture:
         )
 
         self.proof_dir = self.repo / f"proof/pr_merge/embedded-audit/pr-{PR_NUMBER}"
+        self.packet_dir = self.repo / f"proof/{PACKET_ID}"
+
+    def write_packet_bundle(
+        self,
+        *,
+        packet_embedded: dict | None = None,
+        packet_audited_sha: str | None = None,
+        include_report: bool = True,
+        include_review_bundle: bool = True,
+        commit: bool = True,
+    ) -> None:
+        """Write the canonical AGENTS.md 9.1 packet proof bundle.
+
+        Separate from ``write_and_sign_proof`` so tests can omit or corrupt
+        individual pieces (report, review_bundle, packet PROOF.json fields)
+        to exercise each new fail-closed check independently.
+        """
+        self.packet_dir.mkdir(parents=True, exist_ok=True)
+        packet_proof = {
+            "packet_id": PACKET_ID,
+            "repo": REPO,
+            "head_sha": packet_audited_sha or self.audited_sha,
+            "embedded_audit": packet_embedded or _local_embedded_audit(),
+        }
+        (self.packet_dir / "PROOF.json").write_text(
+            json.dumps(packet_proof, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+        if include_report:
+            (self.packet_dir / "AUDITOR_REPORT.md").write_text(
+                "# Auditor report\n\nPASS.\n", encoding="utf-8"
+            )
+        if include_review_bundle:
+            bundle_dir = self.packet_dir / "review_bundle"
+            bundle_dir.mkdir(parents=True, exist_ok=True)
+            (bundle_dir / "evidence.txt").write_text("raw transcript\n", encoding="utf-8")
+        if commit:
+            _git(self.repo, "add", str(self.packet_dir.relative_to(self.repo)))
+            _git(self.repo, "commit", "--quiet", "-m", "proof(audit): packet bundle")
 
     def write_and_sign_proof(
         self,
@@ -100,7 +139,10 @@ class LocalAuditFixture:
         namespace: str = SIGNATURE_NAMESPACE,
         key: Path | None = None,
         tamper_after_signing: bool = False,
+        write_packet_bundle: bool = True,
     ) -> None:
+        if write_packet_bundle and not (self.packet_dir / "PROOF.json").exists():
+            self.write_packet_bundle(packet_audited_sha=audited_sha or self.audited_sha)
         self.proof_dir.mkdir(parents=True, exist_ok=True)
         proof = {
             "packet_id": f"PR-MERGE-STEWARD-{pr_number}",
@@ -285,6 +327,194 @@ def test_rejects_auditor_tool_outside_schema_enum(tmp_path: Path) -> None:
         r.startswith("local_audit_schema_invalid: /auditor_tool")
         for r in attestation["reasons"]
     )
+
+
+# ---------------------------------------------------------------------------
+# head_sha <-> PACKET_ID binding (TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001)
+#
+# These prove the repair for the gap PR #1235's review caught: a signed
+# proof's head_sha must be the commit an auditor actually examined, not a
+# later "evidence head" that only adds report files, and the canonical
+# packet proof bundle (AGENTS.md 9.1) must exist at the PR head and agree
+# with the signed proof on the audited commit and controlling verdict.
+# ---------------------------------------------------------------------------
+
+
+def test_evidence_head_masquerading_as_audited_sha_is_rejected(tmp_path: Path) -> None:
+    """head_sha pointing at a report-adding successor, not the real audited
+    commit, must fail -- this is the exact defect the review caught on
+    PR #1235's first signed proof."""
+    fixture = LocalAuditFixture(tmp_path)
+    real_audited_sha = fixture.audited_sha
+    # Evidence-head commit: adds only the packet bundle on top of the real
+    # audited commit, mirroring the two-commit bridge pattern.
+    fixture.write_packet_bundle(packet_audited_sha=real_audited_sha)
+    evidence_head_sha = fixture.head()
+    # Sign with head_sha pointing at the evidence head, not real_audited_sha.
+    fixture.write_and_sign_proof(
+        audited_sha=evidence_head_sha, write_packet_bundle=False
+    )
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    # The evidence-head commit itself only added proof/<PACKET_ID>/**, so the
+    # diff-scope check alone would not catch this -- the packet PROOF.json's
+    # own head_sha (real_audited_sha) disagreeing with the signed proof's
+    # head_sha (evidence_head_sha) is what catches it.
+    assert any(
+        r.startswith("packet_proof_head_sha_mismatch") for r in attestation["reasons"]
+    )
+
+
+def test_canonical_packet_proof_successor_plus_pr_proof_successor_passes(
+    tmp_path: Path,
+) -> None:
+    """The doctrine-correct shape: head_sha = the real audited commit, packet
+    bundle and PR proof both land as proof-only deltas after it, agreeing on
+    audited SHA and verdict identity."""
+    fixture = LocalAuditFixture(tmp_path)
+    real_audited_sha = fixture.audited_sha
+    fixture.write_packet_bundle(packet_audited_sha=real_audited_sha)
+    fixture.write_and_sign_proof(
+        audited_sha=real_audited_sha, write_packet_bundle=False
+    )
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is True, attestation["reasons"]
+    assert attestation["packet_id"] == PACKET_ID
+
+
+def test_missing_packet_proof_json_is_rejected(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(r.startswith("packet_proof_absent") for r in attestation["reasons"])
+
+
+def test_missing_or_empty_review_bundle_is_rejected(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(include_review_bundle=False)
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("packet_review_bundle_missing_or_empty")
+        for r in attestation["reasons"]
+    )
+
+
+def test_missing_packet_report_is_rejected(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(include_report=False)
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(r.startswith("packet_report_absent") for r in attestation["reasons"])
+
+
+def test_post_audit_non_proof_path_still_fails(tmp_path: Path) -> None:
+    """The widened allow-list (proof dir + packet dir) must not become a
+    general escape hatch -- any path outside both still fails closed."""
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle()
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    (fixture.repo / "app.py").write_text("VALUE = 2\n", encoding="utf-8")
+    _git(fixture.repo, "add", "app.py")
+    _git(fixture.repo, "commit", "--quiet", "-m", "sneak in code after audit+proof")
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(r.startswith("delta_touches_code") for r in attestation["reasons"])
+
+
+def test_wrong_packet_directory_is_rejected(tmp_path: Path) -> None:
+    """report_path names one PACKET_ID but the packet bundle lives under a
+    different directory -- must fail, not silently pass by coincidence."""
+    fixture = LocalAuditFixture(tmp_path)
+    # Packet bundle at a directory that does NOT match REPORT_PATH's packet id.
+    wrong_dir = fixture.repo / "proof/TP-DMX-WRONG-PACKET"
+    wrong_dir.mkdir(parents=True)
+    (wrong_dir / "PROOF.json").write_text(
+        json.dumps(
+            {
+                "packet_id": "TP-DMX-WRONG-PACKET",
+                "repo": REPO,
+                "head_sha": fixture.audited_sha,
+                "embedded_audit": _local_embedded_audit(),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (wrong_dir / "AUDITOR_REPORT.md").write_text("PASS.\n", encoding="utf-8")
+    (wrong_dir / "review_bundle").mkdir()
+    (wrong_dir / "review_bundle" / "evidence.txt").write_text("x\n", encoding="utf-8")
+    _git(fixture.repo, "add", "proof/TP-DMX-WRONG-PACKET")
+    _git(fixture.repo, "commit", "--quiet", "-m", "wrong packet dir")
+    fixture.write_and_sign_proof(write_packet_bundle=False)  # report_path still PACKET_ID
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    # The wrong-directory commit isn't under either allowed prefix, so the
+    # diff-scope check catches it before packet-bundle presence is even
+    # checked -- still fail-closed, just via the earlier gate.
+    assert any(
+        r.startswith(("delta_touches_code", "packet_proof_absent"))
+        for r in attestation["reasons"]
+    )
+
+
+def test_packet_proof_head_sha_mismatch_is_rejected(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    other_sha = "f" * 40
+    fixture.write_packet_bundle(packet_audited_sha=other_sha)
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("packet_proof_head_sha_mismatch") for r in attestation["reasons"]
+    )
+
+
+def test_packet_proof_verdict_identity_mismatch_is_rejected(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(
+        packet_embedded=_local_embedded_audit(tool="claude-code-cli")
+    )
+    fixture.write_and_sign_proof(
+        embedded=_local_embedded_audit(tool="pal-mcp-clink"), write_packet_bundle=False
+    )
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("packet_proof_verdict_identity_mismatch")
+        for r in attestation["reasons"]
+    )
+
+
+def test_packet_proof_itself_schema_invalid_is_rejected(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(
+        packet_embedded=_local_embedded_audit(tool="not_a_real_tool")
+    )
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(r.startswith("packet_proof_local_audit_schema_invalid") for r in attestation["reasons"])
+
+
+def test_head_mismatch_between_evaluate_arg_and_actual_head_still_fails(
+    tmp_path: Path,
+) -> None:
+    """Sanity check that the pre-existing head-binding behaviour survives the
+    refactor: evaluating against a stale head still fails closed."""
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle()
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    real_head = fixture.head()
+    stale_head = fixture.audited_sha
+    attestation = fixture.evaluate(head_sha=stale_head)
+    assert attestation["accepted"] is False
+    assert real_head != stale_head
 
 
 # ---------------------------------------------------------------------------
@@ -548,6 +778,7 @@ def test_exact_model_with_wrong_tool_is_rejected_end_to_end(tmp_path: Path) -> N
 
 def test_exact_model_bound_to_agy_is_accepted_end_to_end(tmp_path: Path) -> None:
     fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(packet_embedded=_exact_model_audit())
     fixture.write_and_sign_proof(embedded=_exact_model_audit())
     attestation = fixture.evaluate()
     assert attestation["accepted"] is True, attestation["reasons"]

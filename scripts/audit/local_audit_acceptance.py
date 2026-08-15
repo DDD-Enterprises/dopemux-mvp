@@ -13,11 +13,16 @@ strict, fail-closed contract:
    (``ssh-keygen -Y sign -n dopemux-embedded-audit``).
 2. The signature must verify against the allowed-signers file taken from the
    TRUSTED ref (never from the PR branch).
-3. The signed payload must name this repo and this PR number, and its
-   ``head_sha`` (the audited commit A) must be an ancestor of the enforced PR
-   head H where ``git diff A..H`` touches ONLY the proof directory itself
-   (exact-head, proof-only delta — committing the proof is the sole change
-   allowed on top of the audited code).
+3. The signed payload's ``head_sha`` must be the ACTUAL AUDITED COMMIT (the
+   commit whose diff a human/AI auditor examined) — not a later "evidence"
+   commit that merely adds report artifacts on top. That audited commit must
+   be an ancestor of the enforced PR head H, and ``git diff audited..H`` must
+   touch ONLY two directories: ``proof/pr_merge/embedded-audit/pr-<N>/`` (the
+   signed attestation itself) and ``proof/<PACKET_ID>/`` (the canonical
+   packet proof bundle, AGENTS.md section 9.1), where ``PACKET_ID`` is derived
+   fail-closed from the signed ``embedded_audit.report_path`` field using the
+   trusted schema's own ``report_path`` pattern — never trusted verbatim from
+   a separate field an attacker could point anywhere.
 4. The local ``embedded_audit`` object must be a passing verdict and must be
    valid against the trusted ``schemas/proof/embedded_audit.schema.json``
    under full Draft 7 semantics — the canonical schema is the single policy
@@ -25,6 +30,23 @@ strict, fail-closed contract:
    ``additionalProperties``, and ``report_path`` are all enforced. A signed
    payload the canonical validator rejects is never accepted, even when a
    downstream trusted emitter would later replace a field of its own.
+5. The canonical packet proof bundle named by ``PACKET_ID`` must actually
+   exist at the enforced PR head: ``proof/<PACKET_ID>/PROOF.json``, the
+   report file named by ``report_path``, and a non-empty
+   ``proof/<PACKET_ID>/review_bundle/``. The packet ``PROOF.json`` must
+   itself declare the SAME audited commit (``head_sha``) and the SAME
+   controlling ``embedded_audit`` verdict/identity (``status``,
+   ``auditor_tool``, ``auditor_model``) as the signed PR proof — the two
+   proofs must agree, not merely both exist.
+
+This closes a gap where a signed proof could name an "evidence head" (a
+commit that only adds report files) as ``head_sha`` instead of the commit an
+auditor actually examined: the diff-scope check would then never see the
+report-adding commit's own contents, so nothing verified that commit didn't
+smuggle in more than "just the report." Binding ``head_sha`` to the true
+audited commit removes that blind spot; the packet-directory allowance
+still lets the report land in the same delta, but now inside the window the
+diff-scope check actually inspects.
 
 Every failure produces ``accepted=false`` with explicit reasons; the caller
 (workflow) then falls through to today's SKIPPED/red behaviour. Candidate PR
@@ -106,6 +128,37 @@ def _ensure_objects(repo_root: Path, head_sha: str, audited_sha: str) -> str | N
         f"objects_unreachable: audited commit {audited_sha} not reachable from "
         f"head {head_sha} within fetch depth {FETCH_DEPTHS[-1]}"
     )
+
+
+def _tree_has_entries(repo_root: Path, rev: str, path: str) -> bool:
+    """True if ``path`` exists at ``rev`` and contains at least one blob."""
+    result = _run_git(repo_root, "ls-tree", "-r", "--name-only", rev, "--", path)
+    if result.returncode != 0:
+        return False
+    return bool(result.stdout.decode("utf-8", "replace").strip())
+
+
+def _extract_packet_id(report_path: str, schema: Mapping[str, Any]) -> str | None:
+    """Derive PACKET_ID from a schema-valid ``report_path``.
+
+    Deliberately re-reads the pattern from the trusted schema itself rather
+    than hard-coding a parallel regex, so a ``report_path`` this rejects is
+    exactly one the canonical validator would also reject. The schema's own
+    capture groups are around the optional ``_REPAIR_N`` suffix, not the
+    packet segment, so once the whole-string pattern match confirms the
+    fixed three-segment shape (``proof/<packet_id>/AUDITOR..._REPORT.md``),
+    the packet segment is taken by position, not by group. Returns ``None``
+    if the schema has no usable pattern or the string does not match it.
+    """
+    pattern = schema.get("properties", {}).get("report_path", {}).get("pattern")
+    if not isinstance(pattern, str):
+        return None
+    if re.match(pattern, report_path) is None:
+        return None
+    segments = report_path.split("/")
+    if len(segments) != 3 or segments[0] != "proof" or not segments[1]:
+        return None
+    return segments[1]
 
 
 def _is_ancestor(repo_root: Path, ancestor: str, descendant: str) -> bool:
@@ -306,6 +359,7 @@ def evaluate_local_audit(
         "principal": None,
         "proof_path": proof_path,
         "signature_namespace": SIGNATURE_NAMESPACE,
+        "packet_id": None,
         "embedded_audit": None,
     }
     reasons: list[str] = attestation["reasons"]
@@ -373,19 +427,9 @@ def evaluate_local_audit(
         )
         return attestation
 
-    changed = _changed_paths(repo_root, audited_sha, head_sha)
-    if changed is None:
-        reasons.append("delta_unavailable: git diff between audited and head failed")
-        return attestation
-    offending = [path for path in changed if not path.startswith(f"{proof_dir}/")]
-    if offending:
-        preview = ", ".join(sorted(offending)[:5])
-        reasons.append(
-            "delta_touches_code: commits after the audited SHA modify paths outside "
-            f"{proof_dir}/ ({preview})"
-        )
-        return attestation
-
+    # embedded_audit must be validated BEFORE the diff-scope check: the
+    # packet-directory allowance in that check is derived from report_path,
+    # which only exists once the object is schema-valid.
     embedded = proof.get("embedded_audit")
     if not isinstance(embedded, dict):
         reasons.append("local_audit_missing: embedded_audit object required")
@@ -397,6 +441,92 @@ def evaluate_local_audit(
     schema_errors = _validate_embedded_audit(embedded, schema)
     if schema_errors:
         reasons.extend(schema_errors)
+        return attestation
+
+    report_path = str(embedded.get("report_path") or "")
+    packet_id = _extract_packet_id(report_path, schema)
+    if packet_id is None:
+        reasons.append(
+            f"packet_id_undecidable: report_path {report_path!r} did not yield a "
+            "PACKET_ID under the trusted schema's report_path pattern"
+        )
+        return attestation
+    packet_dir = f"proof/{packet_id}"
+    attestation["packet_id"] = packet_id
+
+    changed = _changed_paths(repo_root, audited_sha, head_sha)
+    if changed is None:
+        reasons.append("delta_unavailable: git diff between audited and head failed")
+        return attestation
+    allowed_prefixes = (f"{proof_dir}/", f"{packet_dir}/")
+    offending = [path for path in changed if not path.startswith(allowed_prefixes)]
+    if offending:
+        preview = ", ".join(sorted(offending)[:5])
+        reasons.append(
+            "delta_touches_code: commits after the audited SHA modify paths outside "
+            f"{proof_dir}/ and {packet_dir}/ ({preview})"
+        )
+        return attestation
+
+    # The canonical packet proof bundle (AGENTS.md section 9.1) must actually exist
+    # at the enforced PR head, and must agree with the signed PR proof on the
+    # audited commit and the controlling verdict/identity — two proofs that
+    # merely coexist without agreeing would let one attest what the other
+    # never examined.
+    packet_proof_path = f"{packet_dir}/PROOF.json"
+    packet_proof_bytes = _read_blob(repo_root, head_sha, packet_proof_path)
+    if packet_proof_bytes is None:
+        reasons.append(f"packet_proof_absent: {packet_proof_path} not present at PR head")
+        return attestation
+    if not _tree_has_entries(repo_root, head_sha, report_path):
+        reasons.append(f"packet_report_absent: {report_path} not present at PR head")
+        return attestation
+    review_bundle_dir = f"{packet_dir}/review_bundle"
+    if not _tree_has_entries(repo_root, head_sha, review_bundle_dir):
+        reasons.append(
+            f"packet_review_bundle_missing_or_empty: {review_bundle_dir}/ not present "
+            "or empty at PR head"
+        )
+        return attestation
+
+    try:
+        packet_proof = json.loads(packet_proof_bytes.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError) as exc:
+        reasons.append(f"packet_proof_malformed: {exc}")
+        return attestation
+    if not isinstance(packet_proof, dict):
+        reasons.append("packet_proof_malformed: root is not an object")
+        return attestation
+
+    packet_audited_sha = str(packet_proof.get("head_sha") or "")
+    if packet_audited_sha != audited_sha:
+        reasons.append(
+            "packet_proof_head_sha_mismatch: packet PROOF.json head_sha "
+            f"{packet_audited_sha!r} does not agree with signed PR proof's "
+            f"audited head_sha {audited_sha!r}"
+        )
+        return attestation
+
+    packet_embedded = packet_proof.get("embedded_audit")
+    if not isinstance(packet_embedded, dict):
+        reasons.append("packet_proof_embedded_audit_missing: embedded_audit object required")
+        return attestation
+    packet_schema_errors = _validate_embedded_audit(packet_embedded, schema)
+    if packet_schema_errors:
+        reasons.extend(f"packet_proof_{err}" for err in packet_schema_errors)
+        return attestation
+
+    identity_fields = ("status", "auditor_tool", "auditor_model")
+    mismatched = [
+        field
+        for field in identity_fields
+        if packet_embedded.get(field) != embedded.get(field)
+    ]
+    if mismatched:
+        reasons.append(
+            "packet_proof_verdict_identity_mismatch: packet PROOF.json disagrees with "
+            f"signed PR proof on {', '.join(mismatched)}"
+        )
         return attestation
 
     attestation["embedded_audit"] = embedded
