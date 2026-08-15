@@ -172,3 +172,29 @@ def test_integrate_batch_results_uses_provider_argument(monkeypatch) -> None:
     assert store.insert_calls[0]["provider"] == "xai"
     payload = json.loads(store.insert_calls[0]["payload_json"])
     assert payload["provider"] == "xai"
+
+
+def test_terminal_success_and_failure_states_partition_terminal_batch_states() -> None:
+    """RTE-W1-006 (V5 terminal): TERMINAL_SUCCESS_STATES and
+    TERMINAL_FAILURE_STATES must be disjoint and together account for
+    exactly TERMINAL_BATCH_STATES -- the outcome-level material-failure
+    check in run_extraction_v5.py's run_batch_retrieval_and_integration_detailed
+    keys off TERMINAL_FAILURE_STATES, so any status added to
+    TERMINAL_BATCH_STATES that isn't classified into one of these two sets
+    would silently escape both the success and the failure accounting."""
+    module = _load_module()
+
+    assert module.TERMINAL_SUCCESS_STATES.isdisjoint(module.TERMINAL_FAILURE_STATES)
+    assert module.TERMINAL_SUCCESS_STATES | module.TERMINAL_FAILURE_STATES == module.TERMINAL_BATCH_STATES
+    assert module.TERMINAL_FAILURE_STATES == {"failed", "expired", "cancelled", "canceled", "timeout"}
+    assert module.TERMINAL_SUCCESS_STATES == {"completed", "succeeded", "done"}
+
+
+def test_batch_retrieval_integration_outcome_reports_terminal_failure_batches() -> None:
+    module = _load_module()
+
+    outcome = module.BatchRetrievalIntegrationOutcome(
+        attempted=1, retrieved=1, terminal=1, integrated=1, terminal_failure_batches=1, success=False, exit_code=1
+    )
+
+    assert outcome.as_dict()["terminal_failure_batches"] == 1

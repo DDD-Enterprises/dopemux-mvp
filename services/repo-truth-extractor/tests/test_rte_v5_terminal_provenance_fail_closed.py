@@ -320,9 +320,24 @@ def test_s7_read_only_best_effort_identity_never_raises(monkeypatch, tmp_path: P
 
 def test_s7_required_execution_source_identity_gate_is_a_single_call_site() -> None:
     """Guardrail: the fail-closed identity gate must only appear once in the
-    main() phase-execution path, immediately before phase execution begins,
-    so that read-only introspection commands (which exit before this point)
-    are never subject to it.
+    main() phase-execution path, so that read-only introspection commands
+    (which exit before this point) are never subject to it, while every
+    evidence-producing write and live/provider dispatch runs after it.
+
+    RTE-W1-010 P1 (found during the post-ready-for-review Codex/Copilot
+    review of PR #1232, head 492208f4): the gate previously sat immediately
+    before ``runners = {`` -- textually after write_run_manifest/
+    write_runner_identity/write_confidence_ramp_artifacts *and* after the
+    --async-provider/--finalize/--batch-watch/--batch-retrieve CLI dispatch
+    blocks, all of which ``sys.exit()`` on their own before ever reaching
+    the gate. An UNKNOWN/unproven source identity therefore never blocked
+    those paths -- they dispatched to providers and/or wrote canonical
+    RUN_MANIFEST.json / RUNNER_IDENTITY.json evidence regardless. The gate
+    is now positioned immediately after the last pure read-only/
+    introspection early exit (persist=False --doctor) and before every
+    write/dispatch branch, so this test additionally pins that ordering
+    structurally (source-order assertions, per test_t6's rationale: driving
+    the full multi-thousand-line main() end-to-end offline is impractical).
     """
     runner = _load_runner_module()
     source = inspect.getsource(runner.main)
@@ -331,8 +346,29 @@ def test_s7_required_execution_source_identity_gate_is_a_single_call_site() -> N
     assert call_count == 1
 
     gate_idx = source.index("required_execution_source_identity(root)")
-    runners_dict_idx = source.index('runners = {')
+    runners_dict_idx = source.index("runners = {")
     assert gate_idx < runners_dict_idx
+
+    # Last pure read-only/introspection early exit (persist=False --doctor)
+    # must remain reachable and unaffected -- it returns before the gate.
+    readonly_doctor_idx = source.index(
+        "sys.exit(run_doctor_full(root, dirs, run_id, targets, cfg, persist=False))"
+    )
+    assert readonly_doctor_idx < gate_idx
+
+    # Every canonical-evidence write and every live/provider dispatch branch
+    # discovered during the P1 review must fall after the gate.
+    for marker in (
+        'run_integrated_prescan_stage(root, dirs["root"], cfg)',  # Stage 0 online prescan
+        "prompt_report = write_run_manifest(",
+        "write_runner_identity(root, dirs[\"root\"], run_id)",
+        "n = run_phase_R_async_submit(",
+        "n = run_phase_R_finalize(",
+        "watch_result = run_batch_watch(",
+        "outcome = run_batch_retrieval_and_integration_detailed(",
+    ):
+        marker_idx = source.index(marker)
+        assert gate_idx < marker_idx, f"{marker!r} must run after the identity gate"
 
 
 def test_s8_no_alternate_non_git_execution_identity_contract_exists() -> None:
@@ -669,6 +705,121 @@ def test_b8_idempotent_duplicate_end_to_end_is_success(monkeypatch) -> None:
     assert "idempotent_replay_only" in outcome.reason_codes
 
 
+# ---------------------------------------------------------------------------
+# B10-series (RTE-W1-006 V5 terminal repair): a provider terminal-failure
+# batch (failed/expired/cancelled/canceled/timeout) must be material failure
+# even when its batch.failed webhook event integrates cleanly. Regression
+# for PR #1232 head 492208f4: integrate_batch_results_with_webhook_detailed
+# only reports ``failed`` when the insert itself raises or has no
+# idempotency evidence, so a successfully-inserted batch.failed event was
+# previously counted as ``integrated`` with outcome.failed staying 0.
+# ---------------------------------------------------------------------------
+
+
+def test_b10_terminal_failure_batch_with_successful_webhook_integration_is_reported_as_failure(
+    monkeypatch,
+) -> None:
+    runner = _load_runner_module()
+    batch_results = {"b1": {"status": "failed", "completed_at": "t"}}
+    store = _FakeEventStore(insert_returns=True)
+    _fake_run_batch_retrieval_deps(runner, monkeypatch, batch_results=batch_results, event_store=store)
+
+    outcome = runner.run_batch_retrieval_and_integration_detailed(
+        run_id="rid", batch_ids=["b1"], cfg=SimpleNamespace(), provider="openai"
+    )
+
+    # The webhook event integration itself succeeded -- this is not a
+    # failure of integrate_batch_results_with_webhook_detailed.
+    assert outcome.integrated == 1
+    assert outcome.failed == 0
+    # But the batch's own provider-terminal status was a failure, and that
+    # must still surface as material failure.
+    assert outcome.terminal_failure_batches == 1
+    assert outcome.success is False
+    assert outcome.exit_code != 0
+    assert "provider_terminal_batch_failure" in outcome.reason_codes
+
+
+@pytest.mark.parametrize(
+    "failure_status", ["failed", "expired", "cancelled", "canceled", "timeout"]
+)
+def test_b11_each_terminal_failure_status_is_material_failure(monkeypatch, failure_status) -> None:
+    runner = _load_runner_module()
+    batch_results = {"b1": {"status": failure_status, "completed_at": "t"}}
+    store = _FakeEventStore(insert_returns=True)
+    _fake_run_batch_retrieval_deps(runner, monkeypatch, batch_results=batch_results, event_store=store)
+
+    outcome = runner.run_batch_retrieval_and_integration_detailed(
+        run_id="rid", batch_ids=["b1"], cfg=SimpleNamespace(), provider="openai"
+    )
+
+    assert outcome.terminal_failure_batches == 1
+    assert outcome.success is False
+    assert outcome.exit_code != 0
+
+
+def test_b12_mixed_successful_and_terminal_failure_batches_is_material_failure(monkeypatch) -> None:
+    runner = _load_runner_module()
+    batch_results = {
+        "b1": {"status": "completed", "completed_at": "t"},
+        "b2": {"status": "failed", "completed_at": "t"},
+    }
+    store = _FakeEventStore(insert_returns=True)
+    _fake_run_batch_retrieval_deps(runner, monkeypatch, batch_results=batch_results, event_store=store)
+
+    outcome = runner.run_batch_retrieval_and_integration_detailed(
+        run_id="rid", batch_ids=["b1", "b2"], cfg=SimpleNamespace(), provider="openai"
+    )
+
+    assert outcome.terminal == 2
+    assert outcome.integrated == 2  # both webhook inserts succeeded
+    assert outcome.failed == 0
+    assert outcome.terminal_failure_batches == 1
+    assert outcome.success is False
+    assert outcome.exit_code != 0
+
+
+def test_b13_idempotent_replay_of_terminal_failure_batch_remains_failure(monkeypatch) -> None:
+    """Idempotency is about the webhook event, not a pardon for the batch's
+    own terminal-failure status -- a replayed batch.failed event must still
+    surface the underlying provider failure."""
+    runner = _load_runner_module()
+    batch_results = {"b1": {"status": "failed", "completed_at": "t"}}
+    store = _FakeEventStore(insert_returns=False, fetch_returns="openai:batch_b1")
+    _fake_run_batch_retrieval_deps(runner, monkeypatch, batch_results=batch_results, event_store=store)
+
+    outcome = runner.run_batch_retrieval_and_integration_detailed(
+        run_id="rid", batch_ids=["b1"], cfg=SimpleNamespace(), provider="openai"
+    )
+
+    assert outcome.idempotent_duplicates == 1
+    assert outcome.terminal_failure_batches == 1
+    assert outcome.success is False
+    assert outcome.exit_code != 0
+
+
+def test_b14_fully_successful_terminal_set_still_exits_zero(monkeypatch) -> None:
+    """Non-regression: a terminal set with zero failure-status batches must
+    remain unaffected by the terminal_failure_batches check."""
+    runner = _load_runner_module()
+    batch_results = {
+        "b1": {"status": "completed", "completed_at": "t"},
+        "b2": {"status": "succeeded", "completed_at": "t"},
+        "b3": {"status": "done", "completed_at": "t"},
+    }
+    store = _FakeEventStore(insert_returns=True)
+    _fake_run_batch_retrieval_deps(runner, monkeypatch, batch_results=batch_results, event_store=store)
+
+    outcome = runner.run_batch_retrieval_and_integration_detailed(
+        run_id="rid", batch_ids=["b1", "b2", "b3"], cfg=SimpleNamespace(), provider="openai"
+    )
+
+    assert outcome.terminal_failure_batches == 0
+    assert outcome.success is True
+    assert outcome.exit_code == 0
+    assert "fully_integrated" in outcome.reason_codes
+
+
 def test_b_legitimate_zero_work_pending_batches_is_not_a_failure(monkeypatch) -> None:
     runner = _load_runner_module()
     batch_results = {"b1": {"status": "in_progress", "completed_at": ""}}
@@ -781,3 +932,183 @@ def test_s9_doctor_full_persist_false_is_unaffected_by_identity_gate(
     assert exit_code == 1
     assert not (run_root / "CERTIFICATION_RESULT.json").exists()
     assert not (runner.current_doctor_root(tmp_path) / "DOCTOR_FULL.json").exists()
+
+
+# ---------------------------------------------------------------------------
+# S10-series (RTE-W1-010 P1 repair): main() CLI dispatch is actually blocked,
+# end to end, when source identity is unproven -- not just textually ordered
+# ahead of the gate. Regression-repair for PR #1232 head 492208f4: the
+# --async-provider/--finalize/--batch-watch/--batch-retrieve dispatch blocks
+# each called sys.exit() on their own before main() ever reached the (then
+# textually-later) identity gate, so an UNKNOWN identity never blocked them.
+# ---------------------------------------------------------------------------
+
+
+def _run_main_with_argv(runner, monkeypatch, tmp_path: Path, argv_tail: list) -> int:
+    """Drive runner.main() to completion (it always sys.exit()s) with a
+    controlled cwd/output-root and an UNKNOWN source identity, returning the
+    process exit code. All provider-mutating dispatch points reachable after
+    the identity gate are stubbed to raise -- if the gate is bypassed for a
+    given CLI shape, the corresponding stub raising surfaces as a test
+    failure (pytest.fail via the stub) rather than a silent false pass.
+
+    DPMX_LIVE_OK=1 is set so the pre-existing, unrelated
+    enforce_live_operation_consent() gate (batch-watch/batch-retrieve/
+    async-provider always require this env var, independent of source
+    identity) doesn't short-circuit before we ever reach the identity gate
+    under test.
+    """
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    output_root = tmp_path / "artifacts"
+    monkeypatch.chdir(repo_root)
+    monkeypatch.setenv("DPMX_LIVE_OK", "1")
+    monkeypatch.setattr(sys, "argv", ["run_extraction_v5.py", *argv_tail, "--output-root", str(output_root)])
+    monkeypatch.setattr(runner, "get_git_sha", lambda root: "UNKNOWN")
+
+    def _must_not_be_called(name):
+        def _raise(*_a, **_k):
+            raise AssertionError(f"{name} must not be called with unproven source identity")
+
+        return _raise
+
+    for name in (
+        "run_integrated_prescan_stage",
+        "write_run_manifest",
+        "write_runner_identity",
+        "write_confidence_ramp_artifacts",
+        "run_phase_R_async_submit",
+        "run_phase_R_finalize",
+        "run_batch_watch",
+        "run_batch_retrieval_and_integration_detailed",
+        "run_phase_A",
+        "run_phase_R",
+    ):
+        monkeypatch.setattr(runner, name, _must_not_be_called(name))
+
+    with pytest.raises(SystemExit) as exc_info:
+        runner.main()
+    return exc_info.value.code
+
+
+def test_s10_ordinary_phase_execution_blocked_before_dispatch(monkeypatch, tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    exit_code = _run_main_with_argv(
+        runner, monkeypatch, tmp_path, ["--phase", "A", "--dry-run", "--run-id", "s10-phase"]
+    )
+    assert exit_code == 1
+
+
+def test_s10_async_provider_submit_blocked_before_dispatch(monkeypatch, tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    exit_code = _run_main_with_argv(
+        runner,
+        monkeypatch,
+        tmp_path,
+        ["--phase", "R", "--async-provider", "openai", "--run-id", "s10-async"],
+    )
+    assert exit_code == 1
+
+
+def test_s10_finalize_blocked_before_dispatch(monkeypatch, tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    exit_code = _run_main_with_argv(
+        runner, monkeypatch, tmp_path, ["--phase", "R", "--finalize", "--run-id", "s10-finalize"]
+    )
+    assert exit_code == 1
+
+
+def test_s10_batch_watch_blocked_before_dispatch(monkeypatch, tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    exit_code = _run_main_with_argv(
+        runner, monkeypatch, tmp_path, ["--phase", "R", "--batch-watch", "--run-id", "s10-watch"]
+    )
+    assert exit_code == 1
+
+
+def test_s10_batch_retrieve_blocked_before_dispatch(monkeypatch, tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    exit_code = _run_main_with_argv(
+        runner,
+        monkeypatch,
+        tmp_path,
+        ["--batch-retrieve", "--batch-ids", "b1", "--run-id", "s10-retrieve"],
+    )
+    assert exit_code == 1
+
+
+def test_s10_manifest_and_runner_identity_files_are_never_written(monkeypatch, tmp_path: Path) -> None:
+    """Direct file-evidence proof (not just a mocked-call proof) for an
+    unproven identity: RUNNER_IDENTITY.json is never written at all (there
+    is no failure-record variant of it), and if a RUN_MANIFEST.json exists
+    it is only the non-authoritative startup-failure record written by
+    update_run_manifest_startup_failure (same shape already used for
+    cost_cap_setup_failed/launch_provider_preflight_failed) -- never a
+    manifest claiming a runnable canonical execution."""
+    runner = _load_runner_module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    output_root = tmp_path / "artifacts"
+    monkeypatch.chdir(repo_root)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "run_extraction_v5.py",
+            "--phase",
+            "A",
+            "--dry-run",
+            "--run-id",
+            "s10-evidence",
+            "--output-root",
+            str(output_root),
+        ],
+    )
+    monkeypatch.setattr(runner, "get_git_sha", lambda root: "UNKNOWN")
+
+    with pytest.raises(SystemExit) as exc_info:
+        runner.main()
+
+    assert exc_info.value.code == 1
+    identities = list(output_root.rglob("RUNNER_IDENTITY.json"))
+    assert identities == []
+
+    manifests = list(output_root.rglob("RUN_MANIFEST.json"))
+    for manifest_path in manifests:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        assert payload.get("run_status") == "FAILED"
+        assert payload.get("failure_reason") == "source_identity_unproven"
+        # Never the shape of a run that claims to have executed phases.
+        assert "phases" not in payload
+        assert "prompt_set_integrity" not in payload
+
+
+def test_s10_read_only_print_config_is_unaffected_by_unproven_identity(monkeypatch, tmp_path: Path) -> None:
+    """Preservation guard: a pure read-only introspection command must keep
+    working (and keep exiting 0) even with an unproven source identity,
+    since it returns before the gate is ever reached."""
+    runner = _load_runner_module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    output_root = tmp_path / "artifacts"
+    monkeypatch.chdir(repo_root)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "run_extraction_v5.py",
+            "--phase",
+            "A",
+            "--print-config",
+            "--run-id",
+            "s10-readonly",
+            "--output-root",
+            str(output_root),
+        ],
+    )
+    monkeypatch.setattr(runner, "get_git_sha", lambda root: "UNKNOWN")
+
+    with pytest.raises(SystemExit) as exc_info:
+        runner.main()
+
+    assert exc_info.value.code == 0

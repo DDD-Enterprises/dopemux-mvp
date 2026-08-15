@@ -41,16 +41,9 @@ logger = logging.getLogger(__name__)
 
 OPENAI_COMPATIBLE_PROVIDERS = {"openai", "xai"}
 SUPPORTED_RETRIEVAL_PROVIDERS = OPENAI_COMPATIBLE_PROVIDERS | {"gemini"}
-TERMINAL_BATCH_STATES = {
-    "completed",
-    "succeeded",
-    "done",
-    "failed",
-    "expired",
-    "cancelled",
-    "canceled",
-    "timeout",
-}
+TERMINAL_SUCCESS_STATES = {"completed", "succeeded", "done"}
+TERMINAL_FAILURE_STATES = {"failed", "expired", "cancelled", "canceled", "timeout"}
+TERMINAL_BATCH_STATES = TERMINAL_SUCCESS_STATES | TERMINAL_FAILURE_STATES
 
 # RTE-W1-006: typed batch retrieval/integration outcome reason codes.
 # These are machine-stable tokens; do not rename without updating callers.
@@ -63,6 +56,7 @@ REASON_PARTIAL_FAILURE = "partial_failure"
 REASON_NO_TERMINAL_BATCHES_YET = "no_terminal_batches_yet"
 REASON_FULLY_INTEGRATED = "fully_integrated"
 REASON_IDEMPOTENT_REPLAY_ONLY = "idempotent_replay_only"
+REASON_PROVIDER_TERMINAL_BATCH_FAILURE = "provider_terminal_batch_failure"
 
 # RTE-W1-006-V3-LEGACY / original submission provenance: this module has never
 # truthfully tracked which submission phase/step/partition a retrieved batch
@@ -90,6 +84,7 @@ class BatchRetrievalIntegrationOutcome:
     idempotent_duplicates: int = 0
     failed: int = 0
     unmapped: int = 0
+    terminal_failure_batches: int = 0
     success: bool = False
     exit_code: int = 1
     reason_codes: List[str] = field(default_factory=list)
@@ -104,6 +99,7 @@ class BatchRetrievalIntegrationOutcome:
             "idempotent_duplicates": self.idempotent_duplicates,
             "failed": self.failed,
             "unmapped": self.unmapped,
+            "terminal_failure_batches": self.terminal_failure_batches,
             "success": self.success,
             "exit_code": self.exit_code,
             "reason_codes": list(self.reason_codes),

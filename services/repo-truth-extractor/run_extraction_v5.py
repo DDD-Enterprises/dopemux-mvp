@@ -23718,6 +23718,30 @@ def main() -> None:
         targets = phase_sequence if phase_sequence else PHASES
         sys.exit(run_doctor_full(root, dirs, run_id, targets, cfg, persist=False))
 
+    # RTE-W1-010: canonical execution evidence (RUN_MANIFEST.json,
+    # RUNNER_IDENTITY.json, confidence-ramp artifacts, coverage rollup,
+    # certification result) must not be accepted as authoritative unless
+    # source identity is positively proven -- and no live/provider-mutating
+    # dispatch (Stage 0 online prescan, async submit, finalize, batch watch,
+    # batch retrieve, ordinary phase execution) may run before this gate.
+    # Every CLI path that writes RUN_MANIFEST/RUNNER_IDENTITY or dispatches
+    # to a provider falls through this single point; only the pure
+    # read-only/introspection early exits above (print-*, doctor_auth,
+    # preflight_providers, print_promptpack, coverage_report/verify_phase_output
+    # with persist=False, doctor with persist=False) return before reaching it.
+    try:
+        required_execution_source_identity(root)
+    except SourceIdentityUnprovenError as exc:
+        update_run_manifest_startup_failure(
+            dirs["root"],
+            failure_reason="source_identity_unproven",
+            failure_message=str(exc),
+        )
+        logger.error(
+            "Source identity unproven; blocking canonical execution: %s", exc
+        )
+        sys.exit(1)
+
     if SpendLedger is not None:
         cfg = replace(
             cfg,
@@ -24149,24 +24173,6 @@ def main() -> None:
         logger.error("Launch provider preflight failed: %s", exc)
         sys.exit(1)
 
-    # RTE-W1-010: canonical execution evidence (RUN_MANIFEST.json,
-    # RUNNER_IDENTITY.json, coverage rollup, certification result) must not
-    # be accepted as authoritative unless source identity is positively
-    # proven. Gate here, immediately before phase execution begins and
-    # before any terminal/certification evidence is written for this run.
-    try:
-        required_execution_source_identity(root)
-    except SourceIdentityUnprovenError as exc:
-        update_run_manifest_startup_failure(
-            dirs["root"],
-            failure_reason="source_identity_unproven",
-            failure_message=str(exc),
-        )
-        logger.error(
-            "Source identity unproven; blocking canonical execution: %s", exc
-        )
-        sys.exit(1)
-
     runners = {
         "A": run_phase_A,
         "H": run_phase_H,
@@ -24477,6 +24483,7 @@ def run_batch_retrieval_and_integration_detailed(
     try:
         from lib.batch_retriever import (
             BatchRetrievalIntegrationOutcome,
+            TERMINAL_FAILURE_STATES,
             retrieve_openai_batches,
             retrieve_gemini_batches,
             integrate_batch_results_with_webhook_detailed,
@@ -24495,6 +24502,7 @@ def run_batch_retrieval_and_integration_detailed(
             idempotent_duplicates=0,
             failed=attempted,
             unmapped=0,
+            terminal_failure_batches=0,
             success=False,
             exit_code=1,
             reason_codes=["retriever_module_unavailable"],
@@ -24560,8 +24568,17 @@ def run_batch_retrieval_and_integration_detailed(
     integrated_total = 0
     idempotent_total = 0
     integration_failed_total = 0
+    terminal_failure_batches_total = 0
     for batch_id in terminal_ids:
         result = batch_results[batch_id]
+        # RTE-W1-006 (V5 terminal): a provider terminal-failure status
+        # (failed/expired/cancelled/canceled/timeout) is material failure of
+        # the batch itself, independent of whether the batch.failed webhook
+        # event was successfully integrated below. Do not let a clean
+        # webhook insert of "batch.failed" launder a provider failure into
+        # ``integrated`` with no failure signal anywhere in the outcome.
+        if str(result.get("status") or "").strip().lower() in TERMINAL_FAILURE_STATES:
+            terminal_failure_batches_total += 1
         try:
             integration_result = integrate_batch_results_with_webhook_detailed(
                 batch_results={batch_id: result},
@@ -24585,20 +24602,23 @@ def run_batch_retrieval_and_integration_detailed(
     outcome.integrated = integrated_total
     outcome.idempotent_duplicates = idempotent_total
     outcome.failed += integration_failed_total
+    outcome.terminal_failure_batches = terminal_failure_batches_total
     accounted_for = integrated_total + idempotent_total + integration_failed_total
     outcome.unmapped = max(0, len(terminal_ids) - accounted_for)
 
     logger.info(
         "Batch retrieval integration complete: integrated=%s idempotent_duplicates=%s "
-        "failed=%s unmapped=%s",
+        "failed=%s unmapped=%s terminal_failure_batches=%s",
         integrated_total,
         idempotent_total,
         integration_failed_total,
         outcome.unmapped,
+        terminal_failure_batches_total,
     )
 
-    if outcome.failed > 0 or outcome.unmapped > 0:
-        # Any material failure -- including partial failure -- defaults to
+    if outcome.failed > 0 or outcome.unmapped > 0 or outcome.terminal_failure_batches > 0:
+        # Any material failure -- including partial failure and a
+        # provider-reported terminal-failure batch -- defaults to
         # success=false (system invariant 16; no evidence in this repo of an
         # existing warning-only partial-success policy for batch retrieval).
         outcome.success = False
@@ -24607,6 +24627,8 @@ def run_batch_retrieval_and_integration_detailed(
             outcome.reason_codes.append("all_integrations_failed")
         elif outcome.retrieved < outcome.attempted:
             outcome.reason_codes.append("retrieval_failed")
+        elif outcome.terminal_failure_batches > 0:
+            outcome.reason_codes.append("provider_terminal_batch_failure")
         else:
             outcome.reason_codes.append("partial_failure")
     elif outcome.terminal == 0:
