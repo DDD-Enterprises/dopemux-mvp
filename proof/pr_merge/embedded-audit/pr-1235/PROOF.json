@@ -1,0 +1,23 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1235,
+  "head_sha": "a4c9aef0158e1f8bf13c7cfb8ce54c0b4dcb02f0",
+  "generated_at": "2026-08-15T08:20:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --print <PR-1235 revert-safety audit prompt> --model gemini-3.1-pro-high --effort high --sandbox --mode plan --output-format json --print-timeout 18m",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001-REVERT-1235/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "This PR (#1235) is itself corrective: it reverts an unauthorized main write (e84d62caee, TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001 canary-validation error) back to the exact pre-incident tip 75b4cfc581786a53445e412bfc8e25a6e0fdb978, verified byte-identical via empty git diff. No new substantive content is introduced.",
+      "AUDIT_TOPOLOGY, NAMED NOT CONFLATED. AUDITED_TREE (examined by the audit) = bbcd474a0fb81a160e68537eb56c5b195133072b. This PROOF.json's head_sha, a4c9aef0158e1f8bf13c7cfb8ce54c0b4dcb02f0, is the AUDIT_EVIDENCE_HEAD: a proof-only successor adding only proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001-REVERT-1235/** on top of AUDITED_TREE. This bridge commit adds only proof/pr_merge/embedded-audit/pr-1235/** on top of AUDIT_EVIDENCE_HEAD -- a second proof-only delta, not a re-audit.",
+      "Self-attestation: this proof is signed by the same operator/session that authored the PR under a fresh, narrowly-scoped operator authorization specific to PR #1235 (see SIGNING_DISCLOSURE.md). It is an operator attestation, not a third-party audit -- the independent audit content itself is the AGY run, not the signature."
+    ],
+    "skip_reason": null
+  }
+}
