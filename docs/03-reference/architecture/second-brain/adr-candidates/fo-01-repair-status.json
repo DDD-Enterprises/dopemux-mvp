@@ -1,9 +1,18 @@
 {
-  "fo01_status": "REPAIR_COMPLETE_PENDING_INDEPENDENT_VERIFICATION",
+  "fo01_status": "TRACEABILITY_REPAIRED_AND_INDEPENDENTLY_REVERIFIED",
   "architecture_semantics_modified": false,
   "adr_semantics_modified": false,
   "decision_references_modified": true,
   "adr_acceptance_authorized": false,
+  "adr_acceptance_gate_eligible": true,
+  "fo01_gate_condition": "CLOSED",
+  "other_adr_acceptance_conditions": "STILL_REQUIRED",
+  "gate_field_semantics": {
+    "fo01_gate_condition": "Refers to the FO-01 blocker itself. CLOSED means the traceability defect is repaired and independently re-verified, so FO-01 no longer blocks ADR acceptance.",
+    "adr_acceptance_gate_eligible": "FO-01 specifically is satisfied. Scoped deliberately: eligibility is not authorization.",
+    "gates.adr_acceptance": "Unchanged and still CLOSED. The overall ADR-acceptance gate remains shut because the other acceptance conditions listed in other_adr_acceptance_conditions are still outstanding. Closing FO-01 does not open it.",
+    "adr_acceptance_authorized": "Unchanged and still false. Only the human operator may authorize ADR acceptance."
+  },
   "schema_version": "1.0.0",
   "task_id": "TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001",
   "required_resolution": "REPAIR_AND_REVERIFY_TRACEABILITY_BEFORE_ANY_ADR_ACCEPTANCE",
@@ -66,9 +75,48 @@
     "operator_adjudication_required": false
   },
   "independent_verification": {
-    "performed": false,
-    "verdict": null,
-    "note": "Not claimed. Bound only after the independent non-implementer audit of the exact C1 content head."
+    "performed": true,
+    "verdict": "PASS_FO01_TRACEABILITY_REPAIR_WITH_NONBLOCKING_OBSERVATIONS",
+    "audited_content_head": "25b50f019765263d1abf21fd5bc3ae9c6e522c7a",
+    "auditor_report_sha256": "6bc2785455644b40ca860cb8fb996d116b433a2b324babebf422d69677567384",
+    "blockers": 0,
+    "must_fix": 0,
+    "nonblocking_observations": 3,
+    "known_mappings_verified": "5/5",
+    "matrix_independently_reproduced": "10/10",
+    "auditor": {
+      "runner": "OpenCode CLI 1.18.14",
+      "model": "openrouter/moonshotai/kimi-k3",
+      "variant": "max",
+      "independent_of_producer": true,
+      "read_only": true,
+      "separate_process": true,
+      "separate_clone": true
+    },
+    "evidence": "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/FO01_RESOLUTION_RECEIPT.json",
+    "note": "Reconciled from the later independent-verification receipt. Every value here is copied from that receipt; none was inferred or re-derived by the producer."
+  },
+  "stale_record_reconciliation": {
+    "task_id": "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+    "change_class": "STALE_STATUS_RECORD_RECONCILIATION",
+    "defect": "This file asserted REPAIR_COMPLETE_PENDING_INDEPENDENT_VERIFICATION with independent_verification.performed=false, while FO01_RESOLUTION_RECEIPT.json — written later, after the audit — asserted TRACEABILITY_REPAIRED_AND_INDEPENDENTLY_REVERIFIED. Two records on main disagreed about whether FO-01 still blocked ADR acceptance, and this copy lives in the authority tree so it surfaced first. The finding was the disagreement, not an absence of verification.",
+    "resolution": "The receipt is later in time and supersedes this record. This file now mirrors it.",
+    "evidence_source": "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/FO01_RESOLUTION_RECEIPT.json",
+    "semantics_unchanged": {
+      "adr_semantics_modified": false,
+      "architecture_semantics_modified": false,
+      "candidate_document_modified": false,
+      "sb_dec_dispositions_modified": false,
+      "adr_statuses_modified": false,
+      "note": "Only the status/verification fields were reconciled. No ADR, SB-DEC, coverage, or source-hash value was touched."
+    },
+    "still_forbidden": [
+      "ADR acceptance",
+      "implementation execution",
+      "runtime enablement",
+      "merge authorization"
+    ],
+    "verified_by": "scripts/governance/validate_second_brain_adr_contracts.py (check group B)"
   },
   "preserved_not_run": {
     "runtime_conformance": "NOT_RUN",

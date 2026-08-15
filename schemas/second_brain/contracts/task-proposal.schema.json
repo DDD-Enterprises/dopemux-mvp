@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/second_brain/contracts/task-proposal.schema.json",
+  "title": "TaskProposal",
+  "description": "A task-shaped suggestion held strictly separate from OpenLoopCandidate (ADR-SB-008). Separateness is the decision; everything else about a proposal's shape is implementation-time.",
+  "type": "object",
+  "required": [
+    "separate_candidate"
+  ],
+  "properties": {
+    "separate_candidate": {
+      "const": true,
+      "description": "Task proposals are separate candidates. A TaskProposal is never an OpenLoopCandidate with extra fields."
+    }
+  },
+  "x-unspecified-in-candidate": "The candidate states that task proposals are separate candidates and that task-shaped behaviour must be represented as a TaskProposal. It specifies no proposal field, state or lifecycle, so none is asserted.",
+  "x-grounding": {
+    "/required/0": {
+      "clause_id": "ADR-SB-008-C23",
+      "term": "separate candidate"
+    },
+    "/properties/separate_candidate": {
+      "clause_id": "ADR-SB-008-C23",
+      "term": "separate candidate"
+    }
+  },
+  "x-machine-invariants": {
+    "ADR-SB-008-C02": {
+      "subject": "second_brain.task_proposal",
+      "rule_type": "INTERFACE_REQUIREMENT",
+      "operator": "MUST_EXIST",
+      "machine_value": "TaskProposal"
+    },
+    "ADR-SB-008-C23": {
+      "subject": "second_brain.task_proposal.separate_from_open_loop",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true
+    },
+    "ADR-SB-008-C27": {
+      "subject": "second_brain.task_shaped_behavior.represented_as_task_proposal",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true
+    }
+  }
+}

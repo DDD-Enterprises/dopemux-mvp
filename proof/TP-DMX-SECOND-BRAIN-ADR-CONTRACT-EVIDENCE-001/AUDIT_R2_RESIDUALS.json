@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+  "record_kind": "AUDIT_R2_RESIDUAL_OBSERVATIONS",
+  "audited_content_head": "6e1b4472ba626df2a5d7724e87c5ec77c9c46043",
+  "verdict": "PASS (0 blockers, 0 must-fix)",
+  "purpose": "The round-2 audit passed and raised two residual observations and three things it could not verify. None is a MUST_FIX and none was disputed. They are recorded here with the producer's own verification, because a PASS that quietly drops the auditor's caveats is worth less than the caveats.",
+  "residual_observations": [
+    {
+      "id": "R2-OBS-1",
+      "auditor_statement": "DENOMINATOR_CENSUS_WORKSHEET.json marks 25 clauses UNCHANGED that DENOMINATOR_REFREEZE_RECEIPT.json correctly lists as modified (shape renames REQUIRE->BOOLEAN/CONSTANT etc.). Receipt/inventory authority; census bookkeeping drift only.",
+      "producer_verification": "CONFIRMED",
+      "producer_evidence": "Exactly 25 clauses carry the worksheet label UNCHANGED while the receipt's computed diff lists them as modified. In all 25, machine_value is byte-identical and operator is identical; the only difference is rule_type, renamed by the new taxonomy: REQUIRE->CONSTANT (8), REQUIRE->BOOLEAN (4), CAPABILITY_GATE->CONSTANT (3), FORBID->BOOLEAN (3), MAXIMUM->NUMERIC (3), CAPABILITY_GATE->BOOLEAN (2), FAIL_CLOSED->NUMERIC (1), LIFECYCLE->CONSTANT (1). One of the 25, ADR-SB-006-C08, also has a subject rename (flush.idempotency -> flush.idempotent). No architecture semantics move in any of them.",
+      "cause": "The two fields answer different questions. The worksheet's change_vs_superseded is a hand annotation meaning 'the requirement is unchanged'; the receipt's classification is computed by comparing subject, rule_type, operator and machine_value, so a taxonomy rename counts as modified. Both are true under their own definition and the worksheet's was left unstated.",
+      "disposition": "ACCEPTED_NOT_CORRECTED_IN_PLACE",
+      "why_not_corrected": "The census worksheet is audited content. Editing it after the audit would mean the artifact the auditor read is no longer the artifact at HEAD, which is the exact recursion the post-C1 mutation boundary exists to prevent. The computed record in DENOMINATOR_REFREEZE_RECEIPT.json is authoritative and is the one to read; this entry states the worksheet label's intended meaning so it cannot mislead."
+    },
+    {
+      "id": "R2-OBS-2",
+      "auditor_statement": "Under intentional rewrite of FROZEN_INVENTORY_SHA256 plus the receipt pin and the contract pins, non-S booleans can still flip while the validator exits 0 — same class as rewriting Group S literals; documented in the validator header. Quiet bilateral without a pin change does not.",
+      "producer_verification": "CONFIRMED_AND_EXPECTED",
+      "producer_evidence": "This is the honest limit written into the validator header before the audit ran. Group S independently pins 37 clause IDs; the remaining booleans are held by the freeze alone. The auditor confirmed the distinction that matters: a consistent bilateral edit with the pin left alone fails at A09, so the false-green that produced round 1's BLOCKER 1 is closed. Opening the residual requires editing the validator's own constants, which is the same trust class as editing the Group S literals and is visible in review.",
+      "disposition": "ACCEPTED_DOCUMENTED_LIMIT",
+      "not_closable_by_more_checking": "A checker cannot defend its own constants. Beyond this point the protection is that the pin, the supersession receipt and the operator's verbatim ruling move together, so the change is a governance-visible act rather than a quiet one."
+    }
+  ],
+  "auditor_could_not_verify": [
+    {
+      "item": "Live pre-commit hook execution on the audit host.",
+      "producer_response": "pre-commit was executed by the producer on the round-2 changed slice and the output is recorded verbatim in COMMAND_LOG.md: one hook of one applicable hook failed, proof-embedded-audit-schema. The auditor independently re-ran validate_change_contract.py and found the same single cause, which is the cross-check that matters."
+    },
+    {
+      "item": "Whether the operator ruling text cryptographically binds to the inventory bytes; A11 checks presence and size, not a content hash linking ruling to inventory.",
+      "producer_response": "Accurate, and not fully closable. The ruling was written before the new inventory existed, so it cannot contain the new hash. It does name the superseded hash f073ca28…, and A11 already requires the receipt to record that same predecessor, so the chain is bound at the predecessor end and not at the successor end. Strengthening A11 to check the ruling text for the superseded hash would require changing the validator, which would move the audited head and restart the audit; it is recorded here as the next available strengthening rather than applied after a PASS."
+    },
+    {
+      "item": "Provider-side attestation that the audit process is independent of the producer; only process and worktree independence were shown.",
+      "producer_response": "Accurate and inherent. What is verifiable from the repository is that the audit ran in a separate process, in a throwaway detached worktree at the frozen head, with no producer conversation history, under a different runner. Anything stronger would need attestation this repository cannot produce."
+    },
+    {
+      "item": "Denial fixtures and runtime conformance.",
+      "producer_response": "Correctly out of scope. They remain NOT_IMPLEMENTED and NOT_RUN and are an implementation-time gate; no contract claims otherwise."
+    }
+  ]
+}

@@ -1,0 +1,1612 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+  "record_kind": "DENOMINATOR_REFREEZE_RECEIPT",
+  "supersedes_freeze_commit": "a9397e5630577ac5a2b0c8f89ad7d62d8ff7b296",
+  "supersedes_inventory_sha256": "f073ca28802e6b140dd5789d5fad5839962635f7b287cac589ec704efc663288",
+  "supersedes_clause_total": 97,
+  "supersession_reason": "INCOMPLETE_MATERIAL_DECISION_DENOMINATOR",
+  "supersession_evidence": "Independent audit of frozen head 7955ef33d7 returned FAIL with 3 blockers and 5 must-fix findings. MUST_FIX 1 established that the denominator, derived from the task packet's §5 minimum, omitted material decision content. BLOCKER 2 established that 'dopeTask' entered the authority set from the packet rather than the candidate.",
+  "old_freeze_disposition": "The superseded freeze remains in history and is NOT described as valid in hindsight. It is the historical denominator that the first independent audit proved incomplete.",
+  "candidate_document": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+  "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+  "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "new_inventory_path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/ADR_CLAUSE_INVENTORY.json",
+  "new_inventory_sha256": "b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439",
+  "new_clause_count": 160,
+  "added_clause_ids": [
+    "ADR-SB-001-C07",
+    "ADR-SB-001-C08",
+    "ADR-SB-001-C09",
+    "ADR-SB-001-C10",
+    "ADR-SB-001-C11",
+    "ADR-SB-002-C09",
+    "ADR-SB-002-C10",
+    "ADR-SB-002-C11",
+    "ADR-SB-002-C12",
+    "ADR-SB-002-C13",
+    "ADR-SB-002-C14",
+    "ADR-SB-003-C09",
+    "ADR-SB-003-C10",
+    "ADR-SB-003-C11",
+    "ADR-SB-003-C12",
+    "ADR-SB-003-C13",
+    "ADR-SB-004-C08",
+    "ADR-SB-004-C09",
+    "ADR-SB-004-C10",
+    "ADR-SB-004-C11",
+    "ADR-SB-005-C10",
+    "ADR-SB-005-C11",
+    "ADR-SB-005-C12",
+    "ADR-SB-005-C13",
+    "ADR-SB-005-C14",
+    "ADR-SB-006-C15",
+    "ADR-SB-006-C16",
+    "ADR-SB-006-C17",
+    "ADR-SB-007-C12",
+    "ADR-SB-007-C13",
+    "ADR-SB-007-C14",
+    "ADR-SB-007-C15",
+    "ADR-SB-007-C16",
+    "ADR-SB-007-C17",
+    "ADR-SB-008-C17",
+    "ADR-SB-008-C18",
+    "ADR-SB-008-C19",
+    "ADR-SB-008-C20",
+    "ADR-SB-008-C21",
+    "ADR-SB-008-C22",
+    "ADR-SB-008-C23",
+    "ADR-SB-008-C24",
+    "ADR-SB-008-C25",
+    "ADR-SB-008-C26",
+    "ADR-SB-008-C27",
+    "ADR-SB-008-C28",
+    "ADR-SB-008-C29",
+    "ADR-SB-008-C30",
+    "ADR-SB-008-C31",
+    "ADR-SB-008-C32",
+    "ADR-SB-008-C33",
+    "ADR-SB-008-C34",
+    "ADR-SB-008-C35",
+    "ADR-SB-008-C36",
+    "ADR-SB-009-C09",
+    "ADR-SB-009-C10",
+    "ADR-SB-009-C11",
+    "ADR-SB-009-C12",
+    "ADR-SB-010-C11",
+    "ADR-SB-010-C12",
+    "ADR-SB-010-C13",
+    "ADR-SB-010-C14",
+    "ADR-SB-010-C15"
+  ],
+  "removed_clause_ids": [],
+  "modified_clauses": [
+    {
+      "clause_id": "ADR-SB-001-C01",
+      "prior_clause_id": "ADR-SB-001-C01",
+      "prior": {
+        "subject": "second_brain.role",
+        "rule_type": "CONSTANT",
+        "operator": "EQUALS",
+        "machine_value": "EXTENSION_CONTROL_PLANE"
+      },
+      "current": {
+        "subject": "second_brain.form",
+        "rule_type": "CONSTANT",
+        "operator": "EQUALS",
+        "machine_value": "EXTENSION"
+      }
+    },
+    {
+      "clause_id": "ADR-SB-001-C02",
+      "prior_clause_id": "ADR-SB-001-C02",
+      "prior": {
+        "subject": "second_brain.canonical_database",
+        "rule_type": "FORBID",
+        "operator": "MUST_NOT_EXIST",
+        "machine_value": "SECOND_BRAIN_CANONICAL_DATABASE"
+      },
+      "current": {
+        "subject": "second_brain.canonical_database.exists",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-001-C03",
+      "prior_clause_id": "ADR-SB-001-C03",
+      "prior": {
+        "subject": "second_brain.canonical_write.target",
+        "rule_type": "AUTHORITY_TARGET",
+        "operator": "IN",
+        "machine_value": [
+          "ConPort",
+          "Dope-Memory",
+          "Leantime",
+          "Task Orchestrator",
+          "dopeTask"
+        ]
+      },
+      "current": {
+        "subject": "second_brain.canonical_write.target_is_existing_authority",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-001-C04",
+      "prior_clause_id": "ADR-SB-001-C04",
+      "prior": {
+        "subject": "second_brain.derived_read_model.canonicality",
+        "rule_type": "FORBID",
+        "operator": "NOT_EQUALS",
+        "machine_value": "CANONICAL"
+      },
+      "current": {
+        "subject": "second_brain.derived_read_model.canonical",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-001-C05",
+      "prior_clause_id": "ADR-SB-001-C05",
+      "prior": {
+        "subject": "second_brain.coordination.confers_authority",
+        "rule_type": "FORBID",
+        "operator": "EQUALS",
+        "machine_value": false
+      },
+      "current": {
+        "subject": "second_brain.coordination.confers_authority",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-001-C06",
+      "prior_clause_id": "ADR-SB-001-C06",
+      "prior": {
+        "subject": "second_brain.disable.requires_canonical_store_migration",
+        "rule_type": "REQUIRE",
+        "operator": "EQUALS",
+        "machine_value": false
+      },
+      "current": {
+        "subject": "second_brain.disable.requires_canonical_store_change",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-002-C03",
+      "prior_clause_id": "ADR-SB-002-C03",
+      "prior": {
+        "subject": "second_brain.review.read_model.canonicality",
+        "rule_type": "FORBID",
+        "operator": "NOT_EQUALS",
+        "machine_value": "CANONICAL"
+      },
+      "current": {
+        "subject": "second_brain.review.read_model.canonical",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-002-C04",
+      "prior_clause_id": "ADR-SB-002-C04",
+      "prior": {
+        "subject": "second_brain.review.affirmative.digest_binding",
+        "rule_type": "REQUIRE",
+        "operator": "MUST_EXIST",
+        "machine_value": "REVIEW_DIGEST_SHA256"
+      },
+      "current": {
+        "subject": "second_brain.review.digest_bound",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-002-C05",
+      "prior_clause_id": "ADR-SB-002-C05",
+      "prior": {
+        "subject": "second_brain.review.default_disposition",
+        "rule_type": "FAIL_CLOSED",
+        "operator": "DEFAULTS_TO",
+        "machine_value": "DEFER_NO_MUTATION"
+      },
+      "current": {
+        "subject": "second_brain.review.default_disposition",
+        "rule_type": "CONSTANT",
+        "operator": "EQUALS",
+        "machine_value": "DEFER"
+      }
+    },
+    {
+      "clause_id": "ADR-SB-002-C06",
+      "prior_clause_id": "ADR-SB-002-C06",
+      "prior": {
+        "subject": "second_brain.promotion.approved_action.canonical_target",
+        "rule_type": "AUTHORITY_TARGET",
+        "operator": "IN",
+        "machine_value": [
+          "ConPort",
+          "Dope-Memory",
+          "Leantime",
+          "Task Orchestrator",
+          "dopeTask"
+        ]
+      },
+      "current": {
+        "subject": "second_brain.approved_action.routes_to_exact_canonical_target",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-002-C08",
+      "prior_clause_id": "ADR-SB-002-C08",
+      "prior": {
+        "subject": "second_brain.promotion.cross_authority_transaction",
+        "rule_type": "FORBID",
+        "operator": "MUST_NOT_EXIST",
+        "machine_value": "CROSS_AUTHORITY_ATOMIC_TRANSACTION"
+      },
+      "current": {
+        "subject": "second_brain.promotion.cross_authority_transaction",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-003-C01",
+      "prior_clause_id": "ADR-SB-003-C01",
+      "prior": {
+        "subject": "second_brain.recall.fusion.order",
+        "rule_type": "ORDERING",
+        "operator": "PRECEDES",
+        "machine_value": [
+          "AUTHORITY",
+          "CHRONOLOGY",
+          "SOURCE_NATIVE",
+          "ADVISORY_RETRIEVAL"
+        ]
+      },
+      "current": {
+        "subject": "second_brain.recall.fusion.authority_first",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-003-C02",
+      "prior_clause_id": "ADR-SB-003-C02",
+      "prior": {
+        "subject": "second_brain.recall.policy_filter.stage",
+        "rule_type": "ORDERING",
+        "operator": "PRECEDES",
+        "machine_value": [
+          "POLICY_FILTER",
+          "MODEL_CONTEXT_ASSEMBLY"
+        ]
+      },
+      "current": {
+        "subject": "second_brain.recall.policy_filtering.occurs_before_model_context",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-003-C03",
+      "prior_clause_id": "ADR-SB-003-C03",
+      "prior": {
+        "subject": "second_brain.recall.response.freshness",
+        "rule_type": "REQUIRE",
+        "operator": "MUST_EXIST",
+        "machine_value": "FRESHNESS_METADATA"
+      },
+      "current": {
+        "subject": "second_brain.recall.freshness_detection.required",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-003-C04",
+      "prior_clause_id": "ADR-SB-003-C04",
+      "prior": {
+        "subject": "second_brain.recall.response.contradictions",
+        "rule_type": "REQUIRE",
+        "operator": "MUST_EXIST",
+        "machine_value": "CONTRADICTION_SET"
+      },
+      "current": {
+        "subject": "second_brain.recall.contradiction_detection.required",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-003-C05",
+      "prior_clause_id": "ADR-SB-003-C05",
+      "prior": {
+        "subject": "second_brain.recall.advisory_retrieval.canonicality",
+        "rule_type": "FORBID",
+        "operator": "NOT_EQUALS",
+        "machine_value": "CANONICAL"
+      },
+      "current": {
+        "subject": "second_brain.recall.advisory_retrieval.bounded",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-003-C06",
+      "prior_clause_id": "ADR-SB-003-C06",
+      "prior": {
+        "subject": "second_brain.recall.response.required_metadata",
+        "rule_type": "REQUIRE",
+        "operator": "SUPERSET_OF",
+        "machine_value": [
+          "evidence",
+          "access",
+          "uncertainty"
+        ]
+      },
+      "current": {
+        "subject": "second_brain.recall.response.required_metadata",
+        "rule_type": "ENUM",
+        "operator": "SET_EQUALS",
+        "machine_value": [
+          "EVIDENCE",
+          "ACCESS",
+          "UNCERTAINTY"
+        ]
+      }
+    },
+    {
+      "clause_id": "ADR-SB-003-C07",
+      "prior_clause_id": "ADR-SB-003-C07",
+      "prior": {
+        "subject": "second_brain.recall.partial_outage.disclosure",
+        "rule_type": "FAIL_CLOSED",
+        "operator": "EQUALS",
+        "machine_value": "EXPLICIT"
+      },
+      "current": {
+        "subject": "second_brain.recall.partial_outage.explicit",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-003-C08",
+      "prior_clause_id": "ADR-SB-003-C08",
+      "prior": {
+        "subject": "second_brain.recall.search_rank.authority",
+        "rule_type": "FORBID",
+        "operator": "EQUALS",
+        "machine_value": false
+      },
+      "current": {
+        "subject": "second_brain.recall.search_rank_is_truth",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-004-C01",
+      "prior_clause_id": "ADR-SB-004-C01",
+      "prior": {
+        "subject": "second_brain.policy.domain",
+        "rule_type": "ENUM",
+        "operator": "SET_EQUALS",
+        "machine_value": [
+          "project",
+          "hue",
+          "dom",
+          "shared"
+        ]
+      },
+      "current": {
+        "subject": "second_brain.policy.domain",
+        "rule_type": "ENUM",
+        "operator": "SET_EQUALS",
+        "machine_value": [
+          "PROJECT",
+          "HUE",
+          "DOM",
+          "SHARED"
+        ]
+      }
+    },
+    {
+      "clause_id": "ADR-SB-004-C02",
+      "prior_clause_id": "ADR-SB-004-C02",
+      "prior": {
+        "subject": "second_brain.policy.classification",
+        "rule_type": "ENUM",
+        "operator": "SET_EQUALS",
+        "machine_value": [
+          "public",
+          "internal",
+          "confidential",
+          "restricted"
+        ]
+      },
+      "current": {
+        "subject": "second_brain.policy.classification",
+        "rule_type": "ENUM",
+        "operator": "SET_EQUALS",
+        "machine_value": [
+          "PUBLIC",
+          "INTERNAL",
+          "CONFIDENTIAL",
+          "RESTRICTED"
+        ]
+      }
+    },
+    {
+      "clause_id": "ADR-SB-004-C03",
+      "prior_clause_id": "ADR-SB-004-C03",
+      "prior": {
+        "subject": "second_brain.policy.evaluation.stage",
+        "rule_type": "ORDERING",
+        "operator": "PRECEDES",
+        "machine_value": [
+          "POLICY_EVALUATION",
+          "RETRIEVAL_DISCLOSURE",
+          "MODEL_CONTEXT_ASSEMBLY"
+        ]
+      },
+      "current": {
+        "subject": "second_brain.policy.evaluation.occurs_before_retrieval_disclosure",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-004-C04",
+      "prior_clause_id": "ADR-SB-004-C04",
+      "prior": {
+        "subject": "second_brain.policy.eligibility.unknown",
+        "rule_type": "FAIL_CLOSED",
+        "operator": "EQUALS",
+        "machine_value": "DENY"
+      },
+      "current": {
+        "subject": "second_brain.policy.eligibility.unknown_denies",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-004-C05",
+      "prior_clause_id": "ADR-SB-004-C05",
+      "prior": {
+        "subject": "second_brain.policy.domain.dom.data_path",
+        "rule_type": "CAPABILITY_GATE",
+        "operator": "EQUALS",
+        "machine_value": "SYNTHETIC_ONLY"
+      },
+      "current": {
+        "subject": "second_brain.policy.domain.dom.data_path",
+        "rule_type": "CONSTANT",
+        "operator": "EQUALS",
+        "machine_value": "SYNTHETIC_ONLY"
+      }
+    },
+    {
+      "clause_id": "ADR-SB-004-C06",
+      "prior_clause_id": "ADR-SB-004-C06",
+      "prior": {
+        "subject": "second_brain.policy.domain.shared.requires_grant",
+        "rule_type": "REQUIRE",
+        "operator": "EQUALS",
+        "machine_value": true
+      },
+      "current": {
+        "subject": "second_brain.policy.domain.shared.requires_grant",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-004-C07",
+      "prior_clause_id": "ADR-SB-004-C07",
+      "prior": {
+        "subject": "second_brain.policy.semantic_indexing.enabled_classifications",
+        "rule_type": "CAPABILITY_GATE",
+        "operator": "SET_EQUALS",
+        "machine_value": [
+          "public",
+          "internal"
+        ]
+      },
+      "current": {
+        "subject": "second_brain.policy.semantic_indexing.confidential_restricted_enabled",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-005-C01",
+      "prior_clause_id": "ADR-SB-005-C01",
+      "prior": {
+        "subject": "second_brain.projection.source",
+        "rule_type": "REQUIRE",
+        "operator": "EQUALS",
+        "machine_value": "CANONICAL_SNAPSHOT_REVISION"
+      },
+      "current": {
+        "subject": "second_brain.projection.source",
+        "rule_type": "CONSTANT",
+        "operator": "EQUALS",
+        "machine_value": "CANONICAL_SNAPSHOT_REVISION"
+      }
+    },
+    {
+      "clause_id": "ADR-SB-005-C02",
+      "prior_clause_id": "ADR-SB-005-C02",
+      "prior": {
+        "subject": "second_brain.projection.path_stability",
+        "rule_type": "REQUIRE",
+        "operator": "EQUALS",
+        "machine_value": "STABLE"
+      },
+      "current": {
+        "subject": "second_brain.projection.path_stability",
+        "rule_type": "CONSTANT",
+        "operator": "EQUALS",
+        "machine_value": "STABLE"
+      }
+    },
+    {
+      "clause_id": "ADR-SB-005-C03",
+      "prior_clause_id": "ADR-SB-005-C03",
+      "prior": {
+        "subject": "second_brain.projection.region_kinds",
+        "rule_type": "ENUM",
+        "operator": "SET_EQUALS",
+        "machine_value": [
+          "managed",
+          "manual"
+        ]
+      },
+      "current": {
+        "subject": "second_brain.projection.region_kinds",
+        "rule_type": "ENUM",
+        "operator": "SET_EQUALS",
+        "machine_value": [
+          "MANAGED",
+          "MANUAL"
+        ]
+      }
+    },
+    {
+      "clause_id": "ADR-SB-005-C04",
+      "prior_clause_id": "ADR-SB-005-C04",
+      "prior": {
+        "subject": "second_brain.projection.freshness_visibility",
+        "rule_type": "REQUIRE",
+        "operator": "EQUALS",
+        "machine_value": "VISIBLE"
+      },
+      "current": {
+        "subject": "second_brain.projection.freshness_visibility",
+        "rule_type": "CONSTANT",
+        "operator": "EQUALS",
+        "machine_value": "VISIBLE"
+      }
+    },
+    {
+      "clause_id": "ADR-SB-005-C05",
+      "prior_clause_id": "ADR-SB-005-C05",
+      "prior": {
+        "subject": "second_brain.projection.content_hash",
+        "rule_type": "REQUIRE",
+        "operator": "MUST_EXIST",
+        "machine_value": "PROJECTION_CONTENT_SHA256"
+      },
+      "current": {
+        "subject": "second_brain.projection.content_hash.required",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-005-C06",
+      "prior_clause_id": "ADR-SB-005-C06",
+      "prior": {
+        "subject": "second_brain.projection.purge_propagation",
+        "rule_type": "REQUIRE",
+        "operator": "EQUALS",
+        "machine_value": true
+      },
+      "current": {
+        "subject": "second_brain.projection.purge_propagation",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-005-C07",
+      "prior_clause_id": "ADR-SB-005-C07",
+      "prior": {
+        "subject": "second_brain.projection.write_back",
+        "rule_type": "FORBID",
+        "operator": "MUST_NOT_EXIST",
+        "machine_value": "SILENT_WRITE_BACK"
+      },
+      "current": {
+        "subject": "second_brain.projection.silent_write_back",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-005-C08",
+      "prior_clause_id": "ADR-SB-005-C08",
+      "prior": {
+        "subject": "second_brain.projection.conflict_resolution",
+        "rule_type": "REQUIRE",
+        "operator": "EQUALS",
+        "machine_value": "CANONICAL_SOURCE_WINS"
+      },
+      "current": {
+        "subject": "second_brain.projection.conflict.canonical_source_wins",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-005-C09",
+      "prior_clause_id": "ADR-SB-005-C09",
+      "prior": {
+        "subject": "second_brain.projection.obsidian.role",
+        "rule_type": "FORBID",
+        "operator": "EQUALS",
+        "machine_value": "OPTIONAL_OPENER_NEVER_AUTHORITY"
+      },
+      "current": {
+        "subject": "second_brain.projection.obsidian.required",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-006-C03",
+      "prior_clause_id": "ADR-SB-006-C03",
+      "prior": {
+        "subject": "second_brain.local_spool.record.canonicality",
+        "rule_type": "FORBID",
+        "operator": "NOT_EQUALS",
+        "machine_value": "CANONICAL"
+      },
+      "current": {
+        "subject": "second_brain.local_spool.record.canonical",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-006-C04",
+      "prior_clause_id": "ADR-SB-006-C04",
+      "prior": {
+        "subject": "second_brain.local_spool.record.scope_keys",
+        "rule_type": "REQUIRE",
+        "operator": "SUPERSET_OF",
+        "machine_value": [
+          "identity",
+          "domain",
+          "classification"
+        ]
+      },
+      "current": {
+        "subject": "second_brain.local_spool.record.scope_keys",
+        "rule_type": "ENUM",
+        "operator": "SET_EQUALS",
+        "machine_value": [
+          "IDENTITY",
+          "DOMAIN",
+          "CLASS"
+        ]
+      }
+    },
+    {
+      "clause_id": "ADR-SB-006-C05",
+      "prior_clause_id": "ADR-SB-006-C05",
+      "prior": {
+        "subject": "second_brain.local_spool.record.determinism",
+        "rule_type": "REQUIRE",
+        "operator": "EQUALS",
+        "machine_value": "DETERMINISTIC"
+      },
+      "current": {
+        "subject": "second_brain.local_spool.record.determinism",
+        "rule_type": "CONSTANT",
+        "operator": "EQUALS",
+        "machine_value": "DETERMINISTIC"
+      }
+    },
+    {
+      "clause_id": "ADR-SB-006-C06",
+      "prior_clause_id": "ADR-SB-006-C06",
+      "prior": {
+        "subject": "second_brain.local_spool.record.integrity",
+        "rule_type": "REQUIRE",
+        "operator": "MUST_EXIST",
+        "machine_value": "INTEGRITY_DIGEST"
+      },
+      "current": {
+        "subject": "second_brain.local_spool.record.integrity_protected",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-006-C07",
+      "prior_clause_id": "ADR-SB-006-C07",
+      "prior": {
+        "subject": "second_brain.local_spool.record.retention",
+        "rule_type": "LIFECYCLE",
+        "operator": "EQUALS",
+        "machine_value": "SHORT_LIVED_BOUNDED_TTL"
+      },
+      "current": {
+        "subject": "second_brain.local_spool.record.short_lived",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-006-C08",
+      "prior_clause_id": "ADR-SB-006-C08",
+      "prior": {
+        "subject": "second_brain.local_spool.flush.idempotency",
+        "rule_type": "REQUIRE",
+        "operator": "EQUALS",
+        "machine_value": true
+      },
+      "current": {
+        "subject": "second_brain.local_spool.flush.idempotent",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-006-C09",
+      "prior_clause_id": "ADR-SB-006-C09",
+      "prior": {
+        "subject": "second_brain.local_spool.purge_participation",
+        "rule_type": "REQUIRE",
+        "operator": "EQUALS",
+        "machine_value": true
+      },
+      "current": {
+        "subject": "second_brain.local_spool.purge_aware",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-006-C10",
+      "prior_clause_id": "ADR-SB-006-C10",
+      "prior": {
+        "subject": "second_brain.local_spool.remote_backup",
+        "rule_type": "FORBID",
+        "operator": "EQUALS",
+        "machine_value": false
+      },
+      "current": {
+        "subject": "second_brain.local_spool.remote_backup",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-006-C11",
+      "prior_clause_id": "ADR-SB-006-C11",
+      "prior": {
+        "subject": "second_brain.local_spool.classification.public",
+        "rule_type": "CAPABILITY_GATE",
+        "operator": "EQUALS",
+        "machine_value": "ALLOWED"
+      },
+      "current": {
+        "subject": "second_brain.local_spool.classification.public",
+        "rule_type": "CONSTANT",
+        "operator": "EQUALS",
+        "machine_value": "ALLOWED"
+      }
+    },
+    {
+      "clause_id": "ADR-SB-006-C12",
+      "prior_clause_id": "ADR-SB-006-C12",
+      "prior": {
+        "subject": "second_brain.local_spool.classification.internal",
+        "rule_type": "CAPABILITY_GATE",
+        "operator": "EQUALS",
+        "machine_value": "ALLOWED_REQUIRES_OS_PROTECTED_STORAGE"
+      },
+      "current": {
+        "subject": "second_brain.local_spool.classification.internal",
+        "rule_type": "CONSTANT",
+        "operator": "EQUALS",
+        "machine_value": "REQUIRES_OS_PROTECTED_STORAGE"
+      }
+    },
+    {
+      "clause_id": "ADR-SB-006-C13",
+      "prior_clause_id": "ADR-SB-006-C13",
+      "prior": {
+        "subject": "second_brain.local_spool.classification.confidential_restricted",
+        "rule_type": "CAPABILITY_GATE",
+        "operator": "EQUALS",
+        "machine_value": "DISABLED_UNTIL_VERIFIED_ENCRYPTION_AND_KEY_OWNERSHIP"
+      },
+      "current": {
+        "subject": "second_brain.local_spool.classification.confidential_restricted",
+        "rule_type": "CONSTANT",
+        "operator": "EQUALS",
+        "machine_value": "DISABLED_UNTIL_VERIFIED_ENCRYPTION_AND_KEY_OWNERSHIP"
+      }
+    },
+    {
+      "clause_id": "ADR-SB-006-C14",
+      "prior_clause_id": "ADR-SB-006-C14",
+      "prior": {
+        "subject": "second_brain.local_spool.classification.unknown",
+        "rule_type": "FAIL_CLOSED",
+        "operator": "EQUALS",
+        "machine_value": "DENY"
+      },
+      "current": {
+        "subject": "second_brain.local_spool.classification.unknown.spooling_permitted",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-007-C02",
+      "prior_clause_id": "ADR-SB-007-C02",
+      "prior": {
+        "subject": "second_brain.purge.dependency_graph",
+        "rule_type": "REQUIRE",
+        "operator": "MUST_EXIST",
+        "machine_value": "PURGE_DEPENDENCY_GRAPH"
+      },
+      "current": {
+        "subject": "second_brain.purge.dependency_graph.required",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-007-C03",
+      "prior_clause_id": "ADR-SB-007-C03",
+      "prior": {
+        "subject": "second_brain.purge.impact_preview",
+        "rule_type": "REQUIRE",
+        "operator": "MUST_EXIST",
+        "machine_value": "PURGE_IMPACT_PREVIEW"
+      },
+      "current": {
+        "subject": "second_brain.purge.impact_preview.required",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-007-C04",
+      "prior_clause_id": "ADR-SB-007-C04",
+      "prior": {
+        "subject": "second_brain.purge.approval",
+        "rule_type": "REQUIRE",
+        "operator": "EQUALS",
+        "machine_value": "EXPLICIT_OPERATOR_APPROVAL"
+      },
+      "current": {
+        "subject": "second_brain.purge.approval.explicit_required",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-007-C05",
+      "prior_clause_id": "ADR-SB-007-C05",
+      "prior": {
+        "subject": "second_brain.purge.receipts.granularity",
+        "rule_type": "REQUIRE",
+        "operator": "EQUALS",
+        "machine_value": "PER_SURFACE"
+      },
+      "current": {
+        "subject": "second_brain.purge.receipts.granularity",
+        "rule_type": "CONSTANT",
+        "operator": "EQUALS",
+        "machine_value": "PER_SURFACE"
+      }
+    },
+    {
+      "clause_id": "ADR-SB-007-C06",
+      "prior_clause_id": "ADR-SB-007-C06",
+      "prior": {
+        "subject": "second_brain.purge.residual_scan",
+        "rule_type": "REQUIRE",
+        "operator": "MUST_EXIST",
+        "machine_value": "RESIDUAL_SCAN"
+      },
+      "current": {
+        "subject": "second_brain.purge.residual_scan.required",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-007-C07",
+      "prior_clause_id": "ADR-SB-007-C07",
+      "prior": {
+        "subject": "second_brain.purge.searchable_residual_count",
+        "rule_type": "FAIL_CLOSED",
+        "operator": "EQUALS",
+        "machine_value": 0
+      },
+      "current": {
+        "subject": "second_brain.purge.searchable_residual_count",
+        "rule_type": "NUMERIC",
+        "operator": "EQUALS",
+        "machine_value": 0
+      }
+    },
+    {
+      "clause_id": "ADR-SB-007-C08",
+      "prior_clause_id": "ADR-SB-007-C08",
+      "prior": {
+        "subject": "second_brain.purge.physical_deletion_impossible.disposition",
+        "rule_type": "STATE_TRANSITION",
+        "operator": "EQUALS",
+        "machine_value": "EXPLICIT_TOMBSTONE_AND_RETRIEVAL_DENIAL"
+      },
+      "current": {
+        "subject": "second_brain.purge.physical_deletion_impossible.explicit_tombstone_required",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-007-C09",
+      "prior_clause_id": "ADR-SB-007-C09",
+      "prior": {
+        "subject": "second_brain.purge.backup_expiry.state",
+        "rule_type": "LIFECYCLE",
+        "operator": "EQUALS",
+        "machine_value": "PENDING_BACKUP_EXPIRY"
+      },
+      "current": {
+        "subject": "second_brain.purge.backup_expiry.state",
+        "rule_type": "CONSTANT",
+        "operator": "EQUALS",
+        "machine_value": "PENDING_BACKUP_EXPIRY"
+      }
+    },
+    {
+      "clause_id": "ADR-SB-007-C10",
+      "prior_clause_id": "ADR-SB-007-C10",
+      "prior": {
+        "subject": "second_brain.purge.irreversible_step.confirmation",
+        "rule_type": "REQUIRE",
+        "operator": "EQUALS",
+        "machine_value": "IMMEDIATE"
+      },
+      "current": {
+        "subject": "second_brain.purge.irreversible_step.confirmation",
+        "rule_type": "CONSTANT",
+        "operator": "EQUALS",
+        "machine_value": "IMMEDIATE"
+      }
+    },
+    {
+      "clause_id": "ADR-SB-007-C11",
+      "prior_clause_id": "ADR-SB-007-C11",
+      "prior": {
+        "subject": "second_brain.purge.derived_representations.participate",
+        "rule_type": "REQUIRE",
+        "operator": "EQUALS",
+        "machine_value": true
+      },
+      "current": {
+        "subject": "second_brain.purge.derived_representations.participate",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-008-C05",
+      "prior_clause_id": "ADR-SB-008-C05",
+      "prior": {
+        "subject": "second_brain.open_loop.active_list.canonicality",
+        "rule_type": "FORBID",
+        "operator": "NOT_EQUALS",
+        "machine_value": "CANONICAL"
+      },
+      "current": {
+        "subject": "second_brain.open_loop.active_list.derived",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-008-C06",
+      "prior_clause_id": "ADR-SB-008-C06",
+      "prior": {
+        "subject": "second_brain.task_mutation.preconditions",
+        "rule_type": "CAPABILITY_GATE",
+        "operator": "SET_EQUALS",
+        "machine_value": [
+          "LEANTIME_PROOF",
+          "TASK_ORCHESTRATOR_PROOF",
+          "EXPLICIT_OPERATOR_APPROVAL"
+        ]
+      },
+      "current": {
+        "subject": "second_brain.task_creation.requires_leantime_proof",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-008-C07",
+      "prior_clause_id": "ADR-SB-008-C07",
+      "prior": {
+        "subject": "second_brain.task_promotion.enabled",
+        "rule_type": "CAPABILITY_GATE",
+        "operator": "EQUALS",
+        "machine_value": false
+      },
+      "current": {
+        "subject": "second_brain.task_promotion.enabled",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-008-C08",
+      "prior_clause_id": "ADR-SB-008-C08",
+      "prior": {
+        "subject": "second_brain.open_loop.field.assignee",
+        "rule_type": "FORBID",
+        "operator": "MUST_NOT_EXIST",
+        "machine_value": "assignee"
+      },
+      "current": {
+        "subject": "second_brain.open_loop.field.assignee.permitted",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-008-C09",
+      "prior_clause_id": "ADR-SB-008-C09",
+      "prior": {
+        "subject": "second_brain.open_loop.field.pm_priority",
+        "rule_type": "FORBID",
+        "operator": "MUST_NOT_EXIST",
+        "machine_value": "pm_priority"
+      },
+      "current": {
+        "subject": "second_brain.open_loop.field.pm_priority.permitted",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-008-C10",
+      "prior_clause_id": "ADR-SB-008-C10",
+      "prior": {
+        "subject": "second_brain.open_loop.field.workflow_status",
+        "rule_type": "FORBID",
+        "operator": "MUST_NOT_EXIST",
+        "machine_value": "workflow_status"
+      },
+      "current": {
+        "subject": "second_brain.open_loop.field.workflow_status.permitted",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-008-C11",
+      "prior_clause_id": "ADR-SB-008-C11",
+      "prior": {
+        "subject": "second_brain.open_loop.field.sprint_state",
+        "rule_type": "FORBID",
+        "operator": "MUST_NOT_EXIST",
+        "machine_value": "sprint_state"
+      },
+      "current": {
+        "subject": "second_brain.open_loop.field.sprint_state.permitted",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-008-C12",
+      "prior_clause_id": "ADR-SB-008-C12",
+      "prior": {
+        "subject": "second_brain.open_loop.field.ownership",
+        "rule_type": "FORBID",
+        "operator": "MUST_NOT_EXIST",
+        "machine_value": "ownership"
+      },
+      "current": {
+        "subject": "second_brain.open_loop.field.ownership_assignment.permitted",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-008-C13",
+      "prior_clause_id": "ADR-SB-008-C13",
+      "prior": {
+        "subject": "second_brain.open_loop.due_driven_escalation",
+        "rule_type": "FORBID",
+        "operator": "EQUALS",
+        "machine_value": false
+      },
+      "current": {
+        "subject": "second_brain.open_loop.field.due_driven_escalation.permitted",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-008-C14",
+      "prior_clause_id": "ADR-SB-008-C14",
+      "prior": {
+        "subject": "second_brain.open_loop.automatic_scheduling",
+        "rule_type": "FORBID",
+        "operator": "EQUALS",
+        "machine_value": false
+      },
+      "current": {
+        "subject": "second_brain.open_loop.field.automatic_scheduling.permitted",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-008-C15",
+      "prior_clause_id": "ADR-SB-008-C15",
+      "prior": {
+        "subject": "second_brain.open_loop.field.task_completion_state",
+        "rule_type": "FORBID",
+        "operator": "MUST_NOT_EXIST",
+        "machine_value": "task_completion_state"
+      },
+      "current": {
+        "subject": "second_brain.open_loop.field.task_completion_state.permitted",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-009-C01",
+      "prior_clause_id": "ADR-SB-009-C01",
+      "prior": {
+        "subject": "second_brain.project_identity_envelope",
+        "rule_type": "INTERFACE_REQUIREMENT",
+        "operator": "MUST_EXIST",
+        "machine_value": "ProjectIdentityEnvelope"
+      },
+      "current": {
+        "subject": "second_brain.authority_operation.requires_registry_backed_identity_envelope",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-009-C02",
+      "prior_clause_id": "ADR-SB-009-C02",
+      "prior": {
+        "subject": "second_brain.service_capability_receipt",
+        "rule_type": "INTERFACE_REQUIREMENT",
+        "operator": "MUST_EXIST",
+        "machine_value": "ServiceCapabilityReceipt"
+      },
+      "current": {
+        "subject": "second_brain.authority_operation.requires_current_service_capability_receipt",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-009-C03",
+      "prior_clause_id": "ADR-SB-009-C03",
+      "prior": {
+        "subject": "second_brain.automatic_capture.active_project_count",
+        "rule_type": "MAXIMUM",
+        "operator": "LESS_THAN_OR_EQUAL",
+        "machine_value": 1
+      },
+      "current": {
+        "subject": "second_brain.automatic_capture.active_project_count",
+        "rule_type": "NUMERIC",
+        "operator": "LESS_THAN_OR_EQUAL",
+        "machine_value": 1
+      }
+    },
+    {
+      "clause_id": "ADR-SB-009-C04",
+      "prior_clause_id": "ADR-SB-009-C04",
+      "prior": {
+        "subject": "second_brain.project_switch.mode",
+        "rule_type": "REQUIRE",
+        "operator": "EQUALS",
+        "machine_value": "EXPLICIT"
+      },
+      "current": {
+        "subject": "second_brain.project_switch.mode",
+        "rule_type": "CONSTANT",
+        "operator": "EQUALS",
+        "machine_value": "EXPLICIT"
+      }
+    },
+    {
+      "clause_id": "ADR-SB-009-C05",
+      "prior_clause_id": "ADR-SB-009-C05",
+      "prior": {
+        "subject": "second_brain.writer_epoch",
+        "rule_type": "REQUIRE",
+        "operator": "MUST_EXIST",
+        "machine_value": "WRITER_EPOCH"
+      },
+      "current": {
+        "subject": "second_brain.writer_epoch.required",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-009-C06",
+      "prior_clause_id": "ADR-SB-009-C06",
+      "prior": {
+        "subject": "second_brain.write.wrong_project",
+        "rule_type": "FAIL_CLOSED",
+        "operator": "EQUALS",
+        "machine_value": "DENY"
+      },
+      "current": {
+        "subject": "second_brain.write.wrong_project.denied",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-009-C07",
+      "prior_clause_id": "ADR-SB-009-C07",
+      "prior": {
+        "subject": "second_brain.write_authority.rejected_identity_sources",
+        "rule_type": "FORBID",
+        "operator": "SUPERSET_OF",
+        "machine_value": [
+          "PORT",
+          "PATH_HASH",
+          "CURRENT_DIRECTORY",
+          "SINGLETON_EVENT_STREAM"
+        ]
+      },
+      "current": {
+        "subject": "second_brain.identity.rejected_sources",
+        "rule_type": "ENUM",
+        "operator": "SET_EQUALS",
+        "machine_value": [
+          "PATH_HASHES",
+          "PORTS",
+          "SINGLETON_EVENT_STREAMS"
+        ]
+      }
+    },
+    {
+      "clause_id": "ADR-SB-009-C08",
+      "prior_clause_id": "ADR-SB-009-C08",
+      "prior": {
+        "subject": "second_brain.multi_project_background_capture.enabled",
+        "rule_type": "CAPABILITY_GATE",
+        "operator": "EQUALS",
+        "machine_value": false
+      },
+      "current": {
+        "subject": "second_brain.multi_project_background_capture.enabled",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-010-C01",
+      "prior_clause_id": "ADR-SB-010-C01",
+      "prior": {
+        "subject": "second_brain.ux.operations",
+        "rule_type": "ENUM",
+        "operator": "SET_EQUALS",
+        "machine_value": [
+          "Capture",
+          "Recall",
+          "Review"
+        ]
+      },
+      "current": {
+        "subject": "second_brain.ux.operations",
+        "rule_type": "ENUM",
+        "operator": "SET_EQUALS",
+        "machine_value": [
+          "CAPTURE",
+          "RECALL",
+          "REVIEW"
+        ]
+      }
+    },
+    {
+      "clause_id": "ADR-SB-010-C02",
+      "prior_clause_id": "ADR-SB-010-C02",
+      "prior": {
+        "subject": "second_brain.ux.dominant_next_action_count",
+        "rule_type": "MAXIMUM",
+        "operator": "LESS_THAN_OR_EQUAL",
+        "machine_value": 1
+      },
+      "current": {
+        "subject": "second_brain.ux.dominant_next_action_count",
+        "rule_type": "NUMERIC",
+        "operator": "EQUALS",
+        "machine_value": 1
+      }
+    },
+    {
+      "clause_id": "ADR-SB-010-C03",
+      "prior_clause_id": "ADR-SB-010-C03",
+      "prior": {
+        "subject": "second_brain.ux.visible_queue_max",
+        "rule_type": "MAXIMUM",
+        "operator": "LESS_THAN_OR_EQUAL",
+        "machine_value": 7
+      },
+      "current": {
+        "subject": "second_brain.ux.visible_queue_max",
+        "rule_type": "NUMERIC",
+        "operator": "LESS_THAN_OR_EQUAL",
+        "machine_value": 7
+      }
+    },
+    {
+      "clause_id": "ADR-SB-010-C04",
+      "prior_clause_id": "ADR-SB-010-C04",
+      "prior": {
+        "subject": "second_brain.ux.recall.presentation",
+        "rule_type": "ORDERING",
+        "operator": "PRECEDES",
+        "machine_value": [
+          "ANSWER",
+          "EVIDENCE"
+        ]
+      },
+      "current": {
+        "subject": "second_brain.ux.recall.answer_first",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": true
+      }
+    },
+    {
+      "clause_id": "ADR-SB-010-C05",
+      "prior_clause_id": "ADR-SB-010-C05",
+      "prior": {
+        "subject": "second_brain.ux.evidence.max_actions_away",
+        "rule_type": "MAXIMUM",
+        "operator": "LESS_THAN_OR_EQUAL",
+        "machine_value": 1
+      },
+      "current": {
+        "subject": "second_brain.ux.evidence.max_actions_away",
+        "rule_type": "NUMERIC",
+        "operator": "LESS_THAN_OR_EQUAL",
+        "machine_value": 1
+      }
+    },
+    {
+      "clause_id": "ADR-SB-010-C06",
+      "prior_clause_id": "ADR-SB-010-C06",
+      "prior": {
+        "subject": "second_brain.ux.notification.batching",
+        "rule_type": "REQUIRE",
+        "operator": "EQUALS",
+        "machine_value": "SESSION_END"
+      },
+      "current": {
+        "subject": "second_brain.ux.notification.batching",
+        "rule_type": "CONSTANT",
+        "operator": "EQUALS",
+        "machine_value": "SESSION_END"
+      }
+    },
+    {
+      "clause_id": "ADR-SB-010-C07",
+      "prior_clause_id": "ADR-SB-010-C07",
+      "prior": {
+        "subject": "second_brain.ux.immediate_interruption.allowed_conditions",
+        "rule_type": "ENUM",
+        "operator": "SET_EQUALS",
+        "machine_value": [
+          "privacy",
+          "identity",
+          "data-loss",
+          "irreversible-action",
+          "authority-conflict"
+        ]
+      },
+      "current": {
+        "subject": "second_brain.ux.immediate_interruption.allowed_conditions",
+        "rule_type": "ENUM",
+        "operator": "SET_EQUALS",
+        "machine_value": [
+          "PRIVACY",
+          "IDENTITY",
+          "DATA_LOSS",
+          "IRREVERSIBLE_ACTION",
+          "AUTHORITY_CONFLICT"
+        ]
+      }
+    },
+    {
+      "clause_id": "ADR-SB-010-C08",
+      "prior_clause_id": "ADR-SB-010-C08",
+      "prior": {
+        "subject": "second_brain.ux.consequential_default",
+        "rule_type": "FAIL_CLOSED",
+        "operator": "IN",
+        "machine_value": [
+          "DEFER",
+          "CANCEL"
+        ]
+      },
+      "current": {
+        "subject": "second_brain.ux.consequential_default",
+        "rule_type": "ENUM",
+        "operator": "SET_EQUALS",
+        "machine_value": [
+          "DEFER",
+          "CANCEL"
+        ]
+      }
+    },
+    {
+      "clause_id": "ADR-SB-010-C09",
+      "prior_clause_id": "ADR-SB-010-C09",
+      "prior": {
+        "subject": "second_brain.ux.productivity_scoring",
+        "rule_type": "FORBID",
+        "operator": "EQUALS",
+        "machine_value": false
+      },
+      "current": {
+        "subject": "second_brain.ux.productivity_scoring",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    },
+    {
+      "clause_id": "ADR-SB-010-C10",
+      "prior_clause_id": "ADR-SB-010-C10",
+      "prior": {
+        "subject": "second_brain.ux.surprise_writes",
+        "rule_type": "FORBID",
+        "operator": "EQUALS",
+        "machine_value": false
+      },
+      "current": {
+        "subject": "second_brain.ux.surprise_writes",
+        "rule_type": "BOOLEAN",
+        "operator": "EQUALS",
+        "machine_value": false
+      }
+    }
+  ],
+  "unchanged_clauses": [
+    "ADR-SB-002-C01",
+    "ADR-SB-002-C02",
+    "ADR-SB-002-C07",
+    "ADR-SB-006-C01",
+    "ADR-SB-006-C02",
+    "ADR-SB-007-C01",
+    "ADR-SB-008-C01",
+    "ADR-SB-008-C02",
+    "ADR-SB-008-C03",
+    "ADR-SB-008-C04",
+    "ADR-SB-008-C16"
+  ],
+  "removal_note": "removed_clause_ids is empty because every superseded requirement still has a home. The invented content the audit identified was removed at value level, not by deleting the requirement that carried it, and each such change is recorded in modified_clauses with its prior and current value. The clearest cases: ADR-SB-003-C01 kept 'authority-first fusion' but dropped the invented four-way total ordering (MUST_FIX 3); ADR-SB-001-C03 and ADR-SB-002-C06 dropped the 'dopeTask' authority member (BLOCKER 2); ADR-SB-009-C07 dropped CURRENT_DIRECTORY, which was grounded only in a rejected alternative; ADR-SB-006-C04 narrowed 'classification' to the candidate's own word 'class'. Two clauses were split rather than widened: ADR-SB-007-C08 into C08 + C12, and ADR-SB-008-C06 into C06 + C17 + C18.",
+  "counts": {
+    "added": 63,
+    "removed": 0,
+    "modified": 86,
+    "unchanged": 11
+  },
+  "operator_mandated_additions_present": {
+    "ADR-SB-003 historical/current distinct": "ADR-SB-003-C12",
+    "ADR-SB-004 policy evaluation dimensions": "ADR-SB-004-C09",
+    "ADR-SB-007 purge completion receipt": "ADR-SB-007-C13",
+    "ADR-SB-008 ConPort never owns task state": "ADR-SB-008-C34",
+    "ADR-SB-008 Dope-Memory no PM authority": "ADR-SB-008-C30",
+    "ADR-SB-008 confirmed loop event kinds": "ADR-SB-008-C22"
+  },
+  "architecture_semantics_changed": false,
+  "adr_dispositions_changed": false,
+  "implementation_execution": "NOT_AUTHORIZED",
+  "authorization": {
+    "granted_by": "HUMAN_OPERATOR",
+    "granted_at_session": "2026-08-12",
+    "channel": "direct operator instruction in the producing session",
+    "verification_class": "OPERATOR_INSTRUCTION_RECORDED_IN_REPOSITORY",
+    "verification_note": "The ruling was delivered in-session and is reproduced verbatim below so that the const-pinned inventory hash in the validator has an on-repository authorization record an auditor can read. The transcript itself is off-repository and unverifiable from these bytes.",
+    "ruling_verbatim": "## Decision: **authorize the denominator re-freeze and class-level remediation**\n\n**Yes. MUST_FIX 1 should be absorbed into a new denominator.** The auditor's missing items are not new architecture. They are already present in the ratified candidate's Proposed Decision / Consequences, so excluding them would knowingly preserve an incomplete acceptance denominator. The controlling audit explicitly identifies those omissions and returns `FAIL` with 3 blockers and 5 must-fix findings.\n\nPR #1227 should remain a draft at the current published head `8321bb2943887a9ec71847f9ead2ebd9fa7025b2` while this is repaired.\n\n### Operator ruling\n\n```text\nMUST_FIX_1_DISPOSITION=\nAUTHORIZED_DENOMINATOR_REFREEZE\n\nOLD_FREEZE_COMMIT=\na9397e5630...\n\nOLD_INVENTORY_SHA256=\nf073ca28802e6b140dd5789d5fad5839962635f7b287cac589ec704efc663288\n\nOLD_FREEZE_STATUS=\nSUPERSEDED_INCOMPLETE_DENOMINATOR\n\nARCHITECTURE_SEMANTICS_CHANGED=\nfalse\n\nADR_DISPOSITIONS_CHANGED=\nfalse\n\nIMPLEMENTATION_EXECUTION=\nNOT_AUTHORIZED\n```\n\nThe old 97-clause freeze must **not** be rewritten out of history or described as valid-in-hindsight. It remains the historical denominator that the first independent audit proved incomplete. The handoff itself correctly identifies §5 as a *minimum*, which is why the 97-clause derivation missed material candidate content.\n\n## How to re-freeze it\n\nDo **not** merely add the auditor's five rows and declare victory. That risks another denominator carousel.\n\nThe replacement denominator must be produced by a fresh exhaustive census of the candidate using this rule:\n\n```text\nINCLUDE:\n- every atomic normative assertion in each ADR Proposed decision;\n- every Consequence that constrains authority, safety, state semantics,\n  privacy, write behavior, enablement, or canonical ownership;\n- every normative amendment/firewall embedded in an ADR, including MA-06;\n- exact closed sets, limits, defaults, deny rules, authority targets,\n  state distinctions, required receipts, and required interfaces.\n\nDO NOT INCLUDE AS CONTRACT REQUIREMENTS:\n- Context-only narrative unless it establishes a normative invariant;\n- Evidence/traceability references;\n- the acceptance-condition boilerplate itself;\n- MA-08 process mechanics;\n- packaging observations that do not constrain architecture;\n- rejected alternatives unless the accepted decision independently\n  expresses the corresponding prohibition.\n\nREJECTED ALTERNATIVES MAY BE USED:\n- as adversarial oracles proving that a mutation crosses into an\n  explicitly rejected design.\n```\n\nAt minimum the new denominator must add the omissions already established by the independent auditor:\n\n```text\nADR-SB-003\n  historical state and current state remain distinct\n\nADR-SB-004\n  policy evaluation dimensions exactly cover:\n  identity\n  grants\n  provider\n  embedding\n  custody\n  backup\n  operation\n\nADR-SB-007\n  purge completion receipt\n\nADR-SB-008\n  ConPort never owns task state\n  Dope-Memory is not granted PM authority\n  confirmed loop event kinds = open / close / cancel\n```\n\nThose are **source recovery**, not architecture expansion.\n\n### Freeze sequence\n\nUse a dedicated denominator-only commit **before modifying contracts again**:\n\n```text\nC0_REFREEZE\n  ADR_CLAUSE_INVENTORY.json\n  denominator-generation logic if required\n  DENOMINATOR_REFREEZE_RECEIPT.json\n\nNO schemas/second_brain/contracts/** changes in C0_REFREEZE\nNO validator semantic repair in C0_REFREEZE\n```\n\nThe receipt must bind:\n\n```text\nsupersedes_freeze_commit = a9397e5630...\nsupersedes_inventory_sha256 = f073ca2880...\nsupersession_reason = INCOMPLETE_MATERIAL_DECISION_DENOMINATOR\ncandidate_sha256 = e4b28946...b66c\nnew_inventory_sha256 = <recomputed>\nnew_clause_count = <actual>\nadded_clause_ids = [...]\nremoved_clause_ids = [...]\n```\n\n`removed_clause_ids` should normally be empty unless a prior clause is proven to encode invented semantics rather than candidate law.\n\n## Authorize the whole repair class now\n\nI also authorize the producer to fix **all 3 blockers + all 5 must-fix classes in one remediation wave**. Do not return after every individual mechanical repair.\n\nUse the existing packet allowlist only.\n\nThe repair must satisfy these controlling rules:\n\n```text\nB1 — bilateral semantic false-green\n-----------------------------------\nConst-pin the NEW frozen inventory SHA256 in the validator.\n\nValidator must require:\ncandidate SHA == frozen candidate\ninventory SHA == operator-authorized refreeze\ninventory source fragments resolve exactly\ncontract rule == frozen inventory rule\n\nChanging inventory + contract together must FAIL.\n\n\nB2 — invented dopeTask authority\n---------------------------------\nRemove dopeTask from all canonical-authority sets and affected rules.\n\nDo not substitute another authority absent from candidate law.\n\n\nB3 — one-way set grounding\n--------------------------\nFor a closed set, source-grounding must be BIDIRECTIONAL.\n\ncontract set == exact source-derived set\n\nNot:\ncontract set ⊆ source set\n\n\nMUST_FIX 2 — invented typed/API surface\n---------------------------------------\nRemove invented operations/properties/enums unless an exact candidate\nclause supports them.\n\nFor LocalSpoolPort/CustodyPort:\ndo not invent an API operation catalogue merely because a port exists.\n\nFor OpenLoop/TaskProposal/capability schemas:\ndo not invent lifecycle states, freshness enums, or fields absent from\ncandidate law.\n\n\nMUST_FIX 3 — invented recall total ordering\n-------------------------------------------\nRemove the four-way ranking.\n\nMachine contract may encode:\nAUTHORITY_FIRST = true\n\nIt may encode participation of chronology/source-native/advisory sources.\n\nIt may NOT invent relative order among those three unless the candidate\nstates one.\n\n\nMUST_FIX 4 — token-label pseudo-contracts\n-----------------------------------------\nA string like PURGE_DEPENDENCY_GRAPH or FRESHNESS_METADATA is not enough\nto prove machine coverage.\n\nFor every required artifact:\neither provide minimal checkable machine structure grounded in candidate\nlaw,\nor encode the underlying decision as an actually testable primitive rule.\n\nNo label-only COVERED result.\n\n\nMUST_FIX 5 — FO-01 partial receipt lock\n---------------------------------------\nExpand FO-01 reconciliation validation so every receipt-derived field\npresented as authoritative is checked against the receipt.\n\nNo partial projection may PASS while another receipt-derived status field\nhas drifted.\n```\n\nThis matches the handoff's recommended class-level repair rather than another series of narrow patches.\n\n## Stronger false-green requirement\n\nBefore another audit, the producer must deliberately prove these mutations fail:\n\n```text\ninventory + contract bilateral change                  FAIL\nauthority-first → vector-first                         FAIL\nDEFER/NO MUTATION → auto-apply                         FAIL\ndrop PURGE from a closed set                           FAIL\ndrop Review from UX operations                         FAIL\nadd dopeTask as canonical authority                    FAIL\nadd cloud_offload to CustodyPort                       FAIL\ninvent unsupported schema enum/property                FAIL\nremove each newly-added MUST_FIX-1 denominator clause  FAIL\nalter FO-01 receipt-derived field                      FAIL\n```\n\nA mutation may count only if the **intended guard** is what fails. An unrelated parse error cannot take credit.\n\n## Fresh audit\n\nThe existing Grok `FAIL` report is now historical controlling evidence for **why remediation was required**. Do not edit it.\n\nAfter the repair:\n\n```text\nfreeze final substantive head\n→ generate a fresh audit prompt naming that exact head\n→ fresh independent read-only session\n→ audit the exact frozen bytes\n```\n\nRequire:\n\n```text\nVERDICT=PASS\nBLOCKERS=0\nMUST_FIX=0\n```\n\nThe fresh auditor must explicitly attack:\n\n```text\ndenominator completeness\nbilateral inventory+contract mutation\nclosed-set shrinking and widening\ninvented authority values\ninvented typed surface\nlabel-only pseudo-contracts\nFO-01 receipt lock\n```\n\nDo not reuse the current failed audit as acceptance evidence.\n\n## Authority granted now\n\n```text\nDENOMINATOR REFREEZE:          AUTHORIZED\nCLASS-LEVEL CONTRACT REPAIR:   AUTHORIZED\nVALIDATOR/TEST REPAIR:         AUTHORIZED\nFO-01 VALIDATION REPAIR:       AUTHORIZED\nPROOF REGENERATION:            AUTHORIZED\nFRESH INDEPENDENT AUDIT:       AUTHORIZED\nFAST-FORWARD PUSH TO #1227:    AUTHORIZED\n\nMARK READY:                    NOT_AUTHORIZED\nMERGE:                         NOT_AUTHORIZED\nADR ACCEPTANCE:                NOT_AUTHORIZED\nADR REDISPOSITION:             NOT YET\nRUNTIME IMPLEMENTATION:        NOT_AUTHORIZED\nDENIAL FIXTURES:               NOT_AUTHORIZED\nFORCE PUSH:                    FORBIDDEN\nREBASE:                        FORBIDDEN\n```\n\nThe next legitimate terminal state remains:\n\n```text\nREADY_FOR_OPERATOR_CONTRACT_EVIDENCE_MERGE_DECISION\n```\n\nand it is reachable only after a fresh independent `PASS / 0 / 0`.\n\nSo the answer to the producer's specific question is **yes: re-freeze the denominator, preserve the old freeze as superseded evidence, then repair the entire audit finding class in one pass.**\n",
+    "ruling_sha256": "ecedac8631715716f4264587fa6a4e7c89b915df861e725750d262da2e6837b8"
+  }
+}
