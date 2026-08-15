@@ -1,0 +1,163 @@
+{
+  "packet_id": "TP-DMX-RTE-V5-P1-FAIL-CLOSED-REPAIR-001",
+  "title": "RTE v5 fail-closed repair: source identity bypass + terminal batch-failure laundering (review-triggered repair of PR #1232)",
+  "status": "AUDIT_ACCEPTED_AWAITING_SIGNING_AUTHORIZATION",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "tp/DMX-RTE-V5-TERMINAL-PROVENANCE-001",
+  "base_branch": "main",
+  "pr": {
+    "number": 1232,
+    "note": "This packet repairs two P1 findings surfaced after PR #1232 was marked ready for review at frozen content head 492208f4684f1b7660be26deda7c29161ea50070. The prior Grok audit and signed embedded-audit bridge for that head are STALE_FOR_C1R."
+  },
+  "parent_head": "492208f4684f1b7660be26deda7c29161ea50070",
+  "head_sha": "1c59dafd19817d7af7033245d3e1342927c38af5",
+  "generated_at": "2026-08-15T09:37:41Z",
+  "allowlist": {
+    "original": [
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/test_rte_v5_terminal_provenance_fail_closed.py"
+    ],
+    "amended_by_supervisor": [
+      "services/repo-truth-extractor/lib/batch_retriever.py"
+    ],
+    "amendment_reason": "BatchRetrievalIntegrationOutcome and its machine-stable outcome/reason-code authority live in batch_retriever.py, so the terminal-failure accounting belongs at that boundary.",
+    "amended_and_accepted": true
+  },
+  "scope": "Repair exactly two blocking findings on PR #1232 head 492208f4: RTE-W1-010 (source-identity gate reachable-before dispatch/writes) and RTE-W1-006 V5 terminal (provider terminal-failure batch laundered into success via a clean webhook integration). No v3/v4, CLI routing, schemas, workflows, or proof/pr_merge/embedded-audit/pr-1232/** changes.",
+  "files_changed": [
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/lib/batch_retriever.py",
+    "services/repo-truth-extractor/tests/test_rte_v5_terminal_provenance_fail_closed.py",
+    "services/repo-truth-extractor/tests/test_batch_retriever.py"
+  ],
+  "validation": {
+    "PASS": [
+      {
+        "command": "python3 -m pytest tests/ -q (services/repo-truth-extractor, implementer run)",
+        "exit_code": 0,
+        "result": "full suite green; 1 skipped (requires real OPENROUTER_API_KEY), 8 xfailed (pre-existing, unrelated deferrals to TP-RTE-WALKER-006 / 2026-05-22 audit series)"
+      },
+      {
+        "command": "python3 -m pytest tests/test_rte_v5_terminal_provenance_fail_closed.py tests/test_batch_retriever.py tests/test_rte_live_cert_characterization.py tests/test_pre_live_gate_v25.py -q (implementer run)",
+        "exit_code": 0,
+        "result": "all passed"
+      },
+      {
+        "command": "python3 -m compileall -q run_extraction_v5.py lib/batch_retriever.py tests/test_rte_v5_terminal_provenance_fail_closed.py tests/test_batch_retriever.py",
+        "exit_code": 0,
+        "result": "compiled clean"
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0,
+        "result": "no whitespace errors"
+      },
+      {
+        "command": "manual allowlist check via git status/diff --stat",
+        "exit_code": 0,
+        "result": "exactly the 4 allowed files touched; no packet-format allowlist gate command was invoked, this was a manual diff-vs-allowlist comparison"
+      },
+      {
+        "command": "pre-commit run --files <4 touched files>",
+        "exit_code": 0,
+        "result": "all applicable hooks passed (repo's pre-commit config has no python-specific lint/format hooks; docs/root-hygiene hooks passed or were skipped as not-applicable)"
+      },
+      {
+        "command": "git diff -- <4 touched files> | gitleaks detect --pipe",
+        "exit_code": 0,
+        "result": "no leaks found"
+      },
+      {
+        "command": "python3 -m pytest tests/test_rte_v5_terminal_provenance_fail_closed.py tests/test_batch_retriever.py -q (independent Opus auditor re-run)",
+        "exit_code": 0,
+        "result": "73 passed in 9.13s"
+      },
+      {
+        "command": "python3 -m pytest tests/ -q (independent Opus auditor full-suite re-run, isolated worktree)",
+        "exit_code": 0,
+        "result": "1304 passed, 1 skipped, 8 xfailed in 186.92s"
+      },
+      {
+        "command": "independent Opus auditor mutation probe: required_execution_source_identity neutralized to no-op via a pytest plugin held OUTSIDE the audited worktree, -k s10",
+        "exit_code": 1,
+        "result": "5 of 7 s10 tests failed under mutation (gate proven load-bearing; log showed PHASE_DONE phase=A status=PASS, i.e. phase A actually executed with the gate neutralized); worktree confirmed unmodified by the probe (git status --short empty before/after)"
+      }
+    ],
+    "FAIL": [],
+    "NOT_RUN": []
+  },
+  "audit_route_evidence": {
+    "route_order_followed": "docs/ops/embedded-audit.md Tier 1: (1) AGY/gemini-3.1-pro-high, (2) Claude Code CLI Sonnet, (3) Claude Code CLI Opus, (4) Gemini CLI",
+    "agy_attempts": [
+      {
+        "agy_version": "1.1.13",
+        "requested_selector": "gemini-3.1-pro-high",
+        "model_list_confirms_selector_present": true,
+        "fail_closed_rejection_reproven": "agy --model gemini-3.1-pro-preview --print ... exits 1 with 'model ... is not recognized as a known model', full model list printed, no silent fallback",
+        "attempt_1_result": "Error: timeout waiting for response (exit 1)",
+        "attempt_2_result_authorized_retry": "Error: timeout waiting for response (exit 1), identical to attempt 1",
+        "diagnostic_probe": "agy --model gemini-3.1-pro-high --print 'Reply with exactly: PONG' hung with zero response for 3 minutes until killed, while `agy --version` responded in 0.4s -- isolates the failure to the inference path, not the CLI/auth",
+        "disposition": "AGY_ROUTE=UNAVAILABLE_THIS_AUDIT_WINDOW per supervisor ruling; retries exhausted (1 authorized retry + 1 diagnostic, no further attempts made)"
+      }
+    ],
+    "fallback_route_selected": "Claude Code CLI, Opus tier",
+    "fallback_routing_rationale": "Implementer session that authored commit 1c59dafd19 ran on Claude Sonnet 5 (see commit trailer). Supervisor ruling: auditor must not be the same tier as the implementer, so Sonnet was skipped in favor of Opus -- the only other Claude Code tier available via this session's Agent tool (model options: sonnet, opus, haiku, fable), live-discovered from the tool schema rather than assumed.",
+    "auditor_worktree": "isolated git worktree, detached HEAD, created fresh for this audit and verified pinned to head_sha before the auditor was invoked and again by the auditor itself as its first action (STOP-on-mismatch precondition, not triggered)"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "opus",
+    "invocation": "Agent tool (general-purpose subagent, model=opus, isolation=worktree) given a bounded read-only audit prompt covering 13 explicit control-flow claims plus 2 implementer-disclosed residual concerns, against a git worktree pinned to head_sha 1c59dafd19817d7af7033245d3e1342927c38af5; the subagent independently re-derived control flow via git show/diff and source reading, ran the full offline pytest suite, and built an out-of-tree mutation-testing plugin to empirically prove the gate is load-bearing",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-RTE-V5-P1-FAIL-CLOSED-REPAIR-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-001-MEDIUM-1",
+        "severity": "MEDIUM",
+        "title": "Pre-existing pre-gate live-execution path (--phase S_INT) not covered by this repair; new comment overclaims universal dispatch coverage",
+        "status": "ACCEPTED_RISK",
+        "body": "run_extraction_v5.py's --phase S_INT branch runs a live LLM call and persists per-step JSON/machine_summary artifacts entirely before the relocated identity gate. Confirmed pre-existing (identical position at parent head 492208f4684f1b7660be26deda7c29161ea50070; not introduced or moved by this commit) and out of scope for both original P1 findings. It does not write the canonical RUN_MANIFEST/RUNNER_IDENTITY/certification triple, so it cannot forge top-level provenance evidence -- blast radius is S_INT-local artifacts only. However, the new code comment at the gate's relocated call site states no live/provider-mutating dispatch may run before the gate and enumerates only print-*/doctor_auth/preflight_providers/print_promptpack/coverage_report/verify_phase_output/doctor as pre-gate exits; that enumeration omits S_INT (and --promptgen-scan, --gemini-list-models, and the unconditional write_phase_contract_map call, all also pre-existing and pre-gate). Auditor recommendation: correct the comment for truthfulness and open a follow-up packet to relocate or duplicate the gate for S_INT specifically (not a one-line fix -- S_INT builds its own run_id/RunnerConfig before dirs/resolve_run_context exist, so update_run_manifest_startup_failure has no dirs to write to at that point). Not fixed in this repair to avoid reopening the just-audited C1R head; deferred by design per the packet's single-attempt/frozen-head discipline."
+      },
+      {
+        "id": "F-002-LOW-1",
+        "severity": "LOW",
+        "title": "Disclosed concern A (async/finalize test swallowing) was real but wrongly attributed; mitigated by structural coverage",
+        "status": "ACCEPTED_RISK",
+        "body": "Auditor empirically tested (mutation probe) that test_s10_finalize_blocked_before_dispatch IS mutation-sensitive (the implementer's disclosure was overcautious there -- finalize's write_run_manifest/prescan stubs are not wrapped in except Exception, so an AssertionError propagates correctly). test_s10_async_provider_submit_blocked_before_dispatch, however, is confirmed mutation-insensitive, but not for the disclosed reason: under a neutralized gate it exits 1 via a different, unrelated pre-existing fail-closed gate (enforce_pre_live_validator_for_execution, ~575 lines before the identity gate) rather than via the except Exception swallow the implementer suspected. It therefore proves nothing about the identity gate specifically for that one path. The gap is adequately closed for merge by test_s7_required_execution_source_identity_gate_is_a_single_call_site's strict source-order assertion (gate_idx before the async dispatch marker) combined with 5 sibling mutation-sensitive s10 tests proving the gate is live elsewhere in the same straight-line function. Follow-up hardening suggested: have the async stub raise a BaseException subclass, or assert on the startup-failure manifest's failure_reason field rather than on exit code alone."
+      },
+      {
+        "id": "F-003-LOW-2",
+        "severity": "LOW",
+        "title": "Minor accounting/telemetry nuances in the terminal-failure fix, none affecting the verdict",
+        "status": "ACCEPTED_RISK",
+        "body": "(1) A provider terminal-failure batch whose webhook event integrates cleanly still increments outcome.integrated (semantically defensible -- integrated counts webhook events, not successful batches -- but a consumer reading integrated alone without terminal_failure_batches could misread it; success=False/exit_code=1 prevent any actual laundering). (2) Reason-code precedence: a run with both a retrieval failure and a terminal-failure batch emits only retrieval_failed, not provider_terminal_batch_failure -- verdict unaffected, telemetry slightly lossy. (3) test_s7's marker tuple omits write_confidence_ramp_artifacts despite the docstring citing it; the actual ordering is correct (verified) but not structurally pinned against future regressions. (4) update_run_manifest_startup_failure merges into an existing RUN_MANIFEST.json rather than replacing it, pre-existing behavior shared with cost_cap_setup_failed/launch_provider_preflight_failed -- a reused run directory could retain stale phases/prompt_set_integrity keys under an overlaid run_status: FAILED. run_status: FAILED still dominates for any correct consumer."
+      }
+    ],
+    "fixes_applied": [
+      "RTE-W1-010: relocated the single required_execution_source_identity(root) call site in main() from immediately-before-runners-dict to immediately-after the last pure read-only introspection exit (persist=False --doctor), ahead of Stage 0 online prescan, write_run_manifest/write_runner_identity/write_confidence_ramp_artifacts, and the --async-provider/--finalize/--batch-watch/--batch-retrieve dispatch blocks",
+      "RTE-W1-006 (V5 terminal): added terminal_failure_batches accounting to BatchRetrievalIntegrationOutcome (lib/batch_retriever.py) and run_batch_retrieval_and_integration_detailed, folding provider terminal-failure status into the material-failure determination without suppressing webhook-event integration",
+      "Added TERMINAL_SUCCESS_STATES/TERMINAL_FAILURE_STATES named constants in lib/batch_retriever.py",
+      "Structural + behavioral regression tests: gate source-order pinning (test_s7, extended with per-marker assertions), end-to-end main() drives proving 5 of 7 dispatch paths are mutation-sensitive to the gate, file-evidence proof that RUNNER_IDENTITY.json is never written and RUN_MANIFEST.json is only ever a non-authoritative failure record on unproven identity, and a full terminal-batch-status test matrix (b10-b14) in both test files"
+    ],
+    "remaining_risks": [
+      "F-001-MEDIUM-1: --phase S_INT remains a pre-existing, pre-gate live-execution path outside this repair's scope; the relocated gate's comment overclaims universal coverage and should be corrected in a follow-up",
+      "F-002-LOW-1: the async-submit s10 test does not exercise the identity gate at all (blocked earlier by an unrelated pre-live validator gate); coverage for that one dispatch path rests on structural source-order pinning plus sibling mutation evidence, not a dedicated runtime proof",
+      "F-003-LOW-2: minor telemetry/reason-code precedence and count-semantics nuances in the batch outcome accounting, none of which affect success/exit_code correctness"
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  },
+  "signing": {
+    "signed": false,
+    "note": "Per supervisor instruction: do NOT sign a replacement PR bridge yet. This proof bundle is committed as a proof-only delta on top of the audited head_sha (1c59dafd19817d7af7033245d3e1342927c38af5) and awaits a fresh one-use signing authorization before push."
+  },
+  "rollback": "git reset to parent_head 492208f4684f1b7660be26deda7c29161ea50070 discards the repair commit and this proof commit; both are additive and were never pushed",
+  "implementation_commit": "1c59dafd19817d7af7033245d3e1342927c38af5"
+}
