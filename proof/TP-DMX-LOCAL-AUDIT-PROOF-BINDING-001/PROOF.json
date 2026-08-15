@@ -1,0 +1,26 @@
+{
+  "packet_id": "TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "head_sha": "05c41b3e6bebaa6b8854af5da0dbad9207ac5227",
+  "generated_at": "2026-08-15T09:55:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --print <PR-1236 local-audit-proof-binding verifier-repair audit prompt> --model gemini-3.1-pro-high --effort high --sandbox --mode plan --output-format json --print-timeout 18m",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "Bound signed local-attestation head_sha to the actually-audited commit; widened the diff-scope allow-list to include proof/<PACKET_ID>/ derived fail-closed from the schema-validated report_path; required the canonical AGENTS.md 9.1 packet proof bundle to exist at the enforced PR head and agree with the signed PR proof on audited head_sha and controlling verdict identity (status, auditor_tool, auditor_model).",
+      "Follow-up commit 05c41b3e6bebaa6b8854af5da0dbad9207ac5227 (independently audited, PASS, test-only diff verified via git diff ab57983171..05c41b3e6b) added two regression tests for edge cases the first audit flagged as non-blocking coverage gaps: packet_proof_malformed (invalid JSON in the packet PROOF.json) and the _extract_packet_id defensive branch for a report_path that does not match the trusted schema pattern."
+    ],
+    "remaining_risks": [
+      "Backwards incompatibility (named non-blocking by the independent audit): any currently-open PR using the prior evidence-head-as-head_sha pattern (e.g. PR #1224's existing signed proof, head_sha=3fa5c8e97b998734205a2dbd42a282ff82625ce6, which the R7 report says examined 488e6b89773255ac08b915a2bc6ba6e489a33ce2) will now fail this stricter check if re-evaluated. This packet does not touch or invalidate that proof -- PR #1224's proof-binding refresh is a separate, explicitly-scoped follow-up per operator instruction.",
+      "This is a self-attested local signing (producer-signs-own-proof) for the verifier repair itself -- mitigated by two independent AGY/gemini-3.1-pro-high audit passes (main + narrow follow-up), both PASS, both re-deriving evidence from live git/pytest execution rather than trusting prose.",
+      "Merge is NOT authorized by this proof. Per operator instruction, this packet stops at exact-head CI + PR Steward for an explicit operator merge decision."
+    ],
+    "skip_reason": null
+  }
+}

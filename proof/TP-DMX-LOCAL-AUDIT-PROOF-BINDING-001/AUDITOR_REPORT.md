@@ -1,0 +1,34 @@
+## Audit Report for `ab57983171`
+
+**Verdict**: **PASS**
+
+### Blocking Findings
+None. The code and tests conform exactly to the task packet invariants and securely implement the described checks without weakening existing protections.
+
+### Non-Blocking Risks
+1. **Backwards Incompatibility (Operational Risk)**: If re-evaluated, older merged proofs (such as PR #1224) or any currently open PRs using the old `evidence-head-as-head_sha` pattern will **FAIL** this stricter check. The script offers no backwards-compatible exemptions. For merged PRs, this is a non-issue since the script only runs on candidate PRs, but any active PRs using the old workflow will need to be refreshed to pass.
+2. **Missing Canonical Malformed Packet Coverage**: The code gracefully handles cases where the packet `PROOF.json` itself is malformed JSON (`json.decoder.JSONDecodeError`), missing, or undecidable, but there are no explicit tests asserting `packet_proof_malformed` or `packet_id_undecidable` behavior directly. These are handled properly in the code, so this is just a minor coverage gap.
+
+### Real Test Suite Confirmation
+I bypassed the sandbox, fetched `origin/main`, read the tree diff, and ran the real test suite in the working tree.
+* Ran `python3 -m pytest tests/audit/test_local_audit_acceptance.py -q` — **59 passed** (100%).
+* Ran `python3 -m pytest tests/audit/ -q` — **391 passed, 1 skipped** (100%).
+
+### Explicit Answers to Specific Questions
+
+**Does this fix genuinely close the `head_sha`/evidence-head gap, or only partially?**
+It genuinely closes the gap in full.
+By mandating that the PR proof `head_sha` equals the canonical packet proof `head_sha` and then evaluating the diff scope between that `head_sha` and the PR head, the diff-scope check spans the *entire* range from the actually-audited commit through the evidence-head. Consequently, any modifications made by the evidence-head commit are explicitly scrutinized by the allow-list (restricting changes to only `proof/<PACKET_ID>/` or `proof/pr_merge/...`). The evidence-head commit can no longer silently smuggle code.
+
+**Does this introduce any new smuggling/bypass vector?**
+No.
+1. The new `PACKET_ID` directory allow-list prefix `proof/<PACKET_ID>/` is derived directly from the trusted schema's pattern via `_extract_packet_id`.
+2. The `_extract_packet_id` function fails closed on invalid string structures or segment lengths. Even if an attacker uses path traversal like `../` in the `report_path`, the resulting `packet_id` would never match paths surfaced by `git diff` (which are normalized from the repo root and never start with `proof/../`).
+3. The diff check uses `--no-renames` to prevent attackers from renaming files into the proof directory to hide deletions.
+
+**Test Coverage Gaps**
+All substantive claims from the task packet are tested. However, two edge cases lack explicit individual tests:
+1. `packet_id_undecidable`: What happens when `report_path` passes schema regex but fails `_extract_packet_id` structural split checks (e.g. `proof//AUDITOR_REPORT.md`).
+2. `packet_proof_malformed`: What happens if the `proof/<PACKET_ID>/PROOF.json` file is present but contains invalid JSON syntax.
+
+*(Both cases correctly fail-closed in the code, but simply lack targeted unit tests).*
