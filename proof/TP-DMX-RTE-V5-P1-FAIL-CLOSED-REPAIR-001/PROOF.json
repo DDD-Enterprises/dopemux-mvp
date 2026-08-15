@@ -10,25 +10,35 @@
     "note": "This packet repairs two P1 findings surfaced after PR #1232 was marked ready for review at frozen content head 492208f4684f1b7660be26deda7c29161ea50070. The prior Grok audit and signed embedded-audit bridge for that head are STALE_FOR_C1R."
   },
   "parent_head": "492208f4684f1b7660be26deda7c29161ea50070",
-  "head_sha": "1c59dafd19817d7af7033245d3e1342927c38af5",
+  "head_sha": "8ce48664707a89f39960a603e658c4cf5a39a30d",
   "generated_at": "2026-08-15T09:37:41Z",
+  "c1r2_generated_at": "2026-08-15T10:35:41Z",
+  "head_history": {
+    "c1r_head_sha": "1c59dafd19817d7af7033245d3e1342927c38af5",
+    "c1r_proof_commit_sha": "366e6fdd4f",
+    "c1r2_head_sha": "8ce48664707a89f39960a603e658c4cf5a39a30d",
+    "c1r2_parent": "366e6fdd4f",
+    "note": "C1R2 continues this same packet after the C1R audit (embedded_audit_c1r below) surfaced F-001-MEDIUM-1 as an accepted-but-supervisor-escalated risk. Supervisor rejected leaving F-001 as documentation-only and required an actual code fix (S_INT identity-gate closure) plus a fresh focused audit against the new head. head_sha above and the top-level embedded_audit object now refer to C1R2, the controlling head for signing purposes; embedded_audit_c1r is retained for history."
+  },
   "allowlist": {
     "original": [
       "services/repo-truth-extractor/run_extraction_v5.py",
       "services/repo-truth-extractor/tests/test_rte_v5_terminal_provenance_fail_closed.py"
     ],
     "amended_by_supervisor": [
-      "services/repo-truth-extractor/lib/batch_retriever.py"
+      "services/repo-truth-extractor/lib/batch_retriever.py",
+      "services/repo-truth-extractor/tests/test_s_int_runner.py"
     ],
-    "amendment_reason": "BatchRetrievalIntegrationOutcome and its machine-stable outcome/reason-code authority live in batch_retriever.py, so the terminal-failure accounting belongs at that boundary.",
+    "amendment_reason": "batch_retriever.py: BatchRetrievalIntegrationOutcome and its machine-stable outcome/reason-code authority live there, so the terminal-failure accounting (RTE-W1-006) belongs at that boundary. test_s_int_runner.py (C1R2): adapting the pre-existing v4-CLI S_INT dry-run regression test to execute under proven git/source identity after closure of the S_INT identity-gate bypass (F-001) -- the test's old bare-tmp_path fixture only passed because S_INT bypassed the gate, i.e. it exercised the exact bug C1R2 closes; fixture-only change, no runtime scope change, no test-expectation change.",
     "amended_and_accepted": true
   },
-  "scope": "Repair exactly two blocking findings on PR #1232 head 492208f4: RTE-W1-010 (source-identity gate reachable-before dispatch/writes) and RTE-W1-006 V5 terminal (provider terminal-failure batch laundered into success via a clean webhook integration). No v3/v4, CLI routing, schemas, workflows, or proof/pr_merge/embedded-audit/pr-1232/** changes.",
+  "scope": "Repair exactly two blocking findings on PR #1232 head 492208f4: RTE-W1-010 (source-identity gate reachable-before dispatch/writes) and RTE-W1-006 V5 terminal (provider terminal-failure batch laundered into success via a clean webhook integration). No v3/v4 runtime changes, CLI routing, schemas, workflows, or proof/pr_merge/embedded-audit/pr-1232/** changes. C1R2 extends the RTE-W1-010 repair to close finding F-001-MEDIUM-1 (--phase S_INT dispatch reachable before the identity gate), surfaced by the C1R audit and escalated by the supervisor to a required code fix rather than a documentation-only disclosure.",
   "files_changed": [
     "services/repo-truth-extractor/run_extraction_v5.py",
     "services/repo-truth-extractor/lib/batch_retriever.py",
     "services/repo-truth-extractor/tests/test_rte_v5_terminal_provenance_fail_closed.py",
-    "services/repo-truth-extractor/tests/test_batch_retriever.py"
+    "services/repo-truth-extractor/tests/test_batch_retriever.py",
+    "services/repo-truth-extractor/tests/test_s_int_runner.py"
   ],
   "validation": {
     "PASS": [
@@ -81,6 +91,56 @@
         "command": "independent Opus auditor mutation probe: required_execution_source_identity neutralized to no-op via a pytest plugin held OUTSIDE the audited worktree, -k s10",
         "exit_code": 1,
         "result": "5 of 7 s10 tests failed under mutation (gate proven load-bearing; log showed PHASE_DONE phase=A status=PASS, i.e. phase A actually executed with the gate neutralized); worktree confirmed unmodified by the probe (git status --short empty before/after)"
+      },
+      {
+        "command": "C1R2: python3 -m py_compile run_extraction_v5.py tests/test_rte_v5_terminal_provenance_fail_closed.py tests/test_s_int_runner.py (implementer run)",
+        "exit_code": 0,
+        "result": "compiled clean"
+      },
+      {
+        "command": "C1R2: python3 -m pytest tests/test_rte_v5_terminal_provenance_fail_closed.py tests/test_batch_retriever.py tests/test_s_int_runner.py -q (implementer run)",
+        "exit_code": 0,
+        "result": "76 passed"
+      },
+      {
+        "command": "C1R2: python3 -m pytest tests/ -q (services/repo-truth-extractor, implementer run)",
+        "exit_code": 0,
+        "result": "1308 passed, 1 skipped, 8 xfailed (implementer's checkout; independent auditor's isolated-worktree rerun measured 1305 passed/1 skipped/8 xfailed -- a 3-test collection-count delta flagged non-blocking as F-C, zero failures in either run)"
+      },
+      {
+        "command": "C1R2: git diff --check (whitespace)",
+        "exit_code": 0,
+        "result": "clean"
+      },
+      {
+        "command": "C1R2: manual allowlist check via git diff --name-only",
+        "exit_code": 0,
+        "result": "exactly the 3 amended-allowlist files touched (run_extraction_v5.py, test_rte_v5_terminal_provenance_fail_closed.py, test_s_int_runner.py); lib/batch_retriever.py and test_batch_retriever.py confirmed untouched by this commit"
+      },
+      {
+        "command": "C1R2: pre-commit run --files <3 touched files>",
+        "exit_code": 0,
+        "result": "all applicable hooks passed"
+      },
+      {
+        "command": "C1R2: gitleaks detect --no-git --source <each of the 3 touched files>",
+        "exit_code": 0,
+        "result": "no leaks found (run per-file since C1R2 was not yet committed at scan time)"
+      },
+      {
+        "command": "C1R2: independent Opus auditor mutation probe -- reverted run_extraction_v5.py to pre-fix source (git checkout 366e6fdd4f --), reran test_s10_s_int_blocked_before_dispatch and test_s7_..., restored",
+        "exit_code": 1,
+        "result": "both tests fail on pre-fix source (call-recording side channel proves run_s_int was actually invoked despite an identical exit code of 1 on both pre-fix and post-fix runs, confirming exit-code-only assertions would have been blind to this bug), both pass on post-fix source; worktree confirmed clean after restore"
+      },
+      {
+        "command": "C1R2: python3 -m pytest tests/test_rte_v5_terminal_provenance_fail_closed.py tests/test_batch_retriever.py tests/test_s_int_runner.py -q (independent Opus auditor re-run, isolated worktree pinned to 8ce4866470)",
+        "exit_code": 0,
+        "result": "76 passed in 10.84s"
+      },
+      {
+        "command": "C1R2: python3 -m pytest tests/ -q (independent Opus auditor full-suite re-run, isolated worktree)",
+        "exit_code": 0,
+        "result": "1305 passed, 1 skipped, 8 xfailed in 226.08s -- same baseline as C1R's audit (1 skip requires real OPENROUTER_API_KEY, 8 pre-existing unrelated xfails), zero new failures"
       }
     ],
     "FAIL": [],
@@ -104,7 +164,8 @@
     "fallback_routing_rationale": "Implementer session that authored commit 1c59dafd19 ran on Claude Sonnet 5 (see commit trailer). Supervisor ruling: auditor must not be the same tier as the implementer, so Sonnet was skipped in favor of Opus -- the only other Claude Code tier available via this session's Agent tool (model options: sonnet, opus, haiku, fable), live-discovered from the tool schema rather than assumed.",
     "auditor_worktree": "isolated git worktree, detached HEAD, created fresh for this audit and verified pinned to head_sha before the auditor was invoked and again by the auditor itself as its first action (STOP-on-mismatch precondition, not triggered)"
   },
-  "embedded_audit": {
+  "embedded_audit_c1r": {
+    "_note": "HISTORY ONLY -- this was the controlling audit for C1R (1c59dafd19). Superseded for signing purposes by embedded_audit below, which is C1R2's (8ce4866470) controlling audit. Retained verbatim for provenance.",
     "required": true,
     "status": "PASS_WITH_RISKS",
     "auditor_tool": "claude-code-cli",
@@ -154,10 +215,73 @@
       "matches": []
     }
   },
+  "audit_route_evidence_c1r2": {
+    "route_order_followed": "docs/ops/embedded-audit.md Tier 1. Per supervisor instruction, AGY was not re-attempted for C1R2 (\"no need to resurrect AGY\"); the same Claude Code CLI / Opus fallback route used for C1R's audit was reused, since its independence (different tier than the Sonnet implementer) still holds.",
+    "session_interruption": "The audit agent's first invocation was terminated mid-run by a host session/quota limit (\"You've hit your session limit\"), a transient non-route failure distinct from AGY's transport-level unavailability. Resumed once from the agent's own transcript per the standing one-transient-retry rule; the resumed run completed normally with no further interruptions.",
+    "auditor_worktree": "isolated git worktree, detached HEAD, created fresh for this audit and verified pinned to head_sha 8ce48664707a89f39960a603e658c4cf5a39a30d before the auditor was invoked and again by the auditor itself as its first action (C1R2_HEAD_MISMATCH stop condition, not triggered)"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "opus",
+    "invocation": "Agent tool (general-purpose subagent, model=opus, isolation=worktree) given a bounded read-only audit prompt covering 6 explicit claims targeting F-001 closure specifically, against a git worktree pinned to head_sha 8ce48664707a89f39960a603e658c4cf5a39a30d; the subagent independently re-derived control flow via git show/diff and source reading, ran the full offline pytest suite, reproduced the implementer's mutation probe itself against the pre-fix source, and probed the one identified behavioral side effect of the relocation live in a fresh git repo",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-RTE-V5-P1-FAIL-CLOSED-REPAIR-001/AUDITOR_REPAIR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-A-NONBLOCKING",
+        "severity": "LOW",
+        "title": "Audit prompt mis-stated C1R2's parent commit as 1c59dafd19; actual parent is 366e6fdd4f (C1R's proof-only commit)",
+        "status": "ACCEPTED_RISK",
+        "body": "Prompt error only, caught and self-corrected by the auditor via git rev-list --parents; no code impact. Against the true parent, the diff is exactly the 3 amended-allowlist files as expected."
+      },
+      {
+        "id": "F-B-NONBLOCKING",
+        "severity": "LOW",
+        "title": "The S_INT relocation is textually a pure move but has one real behavioral consequence: S_INT now runs after run-dir/context resolution and the read-only early exits",
+        "status": "ACCEPTED_RISK",
+        "body": "S_INT now executes after resolve_run_context/get_run_dirs, write_phase_contract_map, UI(...) construction, and the read-only early exits, so e.g. --phase S_INT --status now takes precedence, and a run-dir side effect now occurs for S_INT that did not before. Highest-risk shape (S_INT with no --run-id, where allow_create_if_missing evaluates False) was probed live by the auditor in a fresh git repo and confirmed benign: exit 0, correct DRY_RUN payload."
+      },
+      {
+        "id": "F-C-NONBLOCKING",
+        "severity": "LOW",
+        "title": "Full-suite passed-count mismatch between implementer's checkout (1308) and auditor's isolated worktree (1305)",
+        "status": "ACCEPTED_RISK",
+        "body": "Zero failures in either run; a 3-test collection-count delta, most likely environment-dependent test collection between checkouts. Flagged only because the numbers should reconcile, not a correctness finding."
+      },
+      {
+        "id": "F-D-NONBLOCKING-OUT-OF-SCOPE",
+        "severity": "LOW",
+        "title": "run_extraction_v3.py contains the same S_INT dispatch block and has no identity gate at all (same genus as F-001)",
+        "status": "OPEN",
+        "body": "STATUS=OPEN (not ACCEPTED_RISK): flagged for explicit supervisor disposition, not yet accepted. v3 is not reachable from the v4 CLI wrapper (which targets v5) and carries its own separate live-consent gate (--execute + DPMX_LIVE_OK=1, added in a prior PR/#605), so live v3 S_INT is still consent-gated, just not identity-gated. Outside this packet's allowlist and scope (v3 runtime changes were explicitly excluded). Auditor recommends a supervisor ruling: either a follow-up packet extending the identity gate to v3, or an explicit acceptance that v3's consent gate is the controlling mitigation there. Not fixed here -- v3 is out of this packet's scope by design."
+      }
+    ],
+    "fixes_applied": [
+      "F-001-MEDIUM-1 closure: relocated the --phase S_INT dispatch block (pure cut/paste, no logic changes) to run after required_execution_source_identity(root) instead of before it, so an unproven git identity now blocks S_INT the same way it already blocked every other live/provider dispatch path repaired in C1R",
+      "Corrected the gate's guarding comment, which previously overclaimed that no live/provider-mutating dispatch could precede it; S_INT was the one documented exception and is now named explicitly as closed",
+      "Added test_s10_s_int_blocked_before_dispatch: proves rejection, non-invocation of run_s_int and call_llm, via a call-recording side channel rather than exit-code assertions alone (the S_INT branch's own except Exception: sys.exit(1) swallows a raising stub into the same exit code a correctly-gated run produces -- verified mutation-sensitive by both the implementer and, independently, the auditor)",
+      "Added the S_INT dispatch marker to the existing structural source-order guardrail (test_s7)",
+      "Fixed tests/test_s_int_runner.py::test_run_s_int_dry_run_via_v4_cli's fixture (bare tmp_path with no .git, which only worked because S_INT bypassed the gate) to give the subprocess a real, minimal git identity via git init + one commit, so it now exercises the newly-enforced invariant instead of the bug being closed"
+    ],
+    "remaining_risks": [
+      "F-B-NONBLOCKING: the relocation moves S_INT's execution point relative to run-dir/context resolution and read-only early exits; probed benign for the highest-risk shape but not exhaustively fuzzed across every CLI flag combination",
+      "F-D-NONBLOCKING-OUT-OF-SCOPE: run_extraction_v3.py's S_INT path has no identity gate (only a separate consent gate); same genus of gap as F-001, out of this packet's scope, awaiting supervisor disposition on whether a follow-up packet is warranted"
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  },
   "signing": {
     "signed": false,
-    "note": "Per supervisor instruction: do NOT sign a replacement PR bridge yet. This proof bundle is committed as a proof-only delta on top of the audited head_sha (1c59dafd19817d7af7033245d3e1342927c38af5) and awaits a fresh one-use signing authorization before push."
+    "note": "Per supervisor instruction: do NOT sign a replacement PR bridge yet. This proof bundle is committed as a proof-only delta on top of the audited head_sha (8ce48664707a89f39960a603e658c4cf5a39a30d, C1R2) and awaits a fresh one-use signing authorization before push. Open item for the signing decision: F-D-NONBLOCKING-OUT-OF-SCOPE (v3's ungated S_INT path) is flagged NEEDS_SUPERVISOR_DISPOSITION, not blocking for this packet's own scope."
   },
-  "rollback": "git reset to parent_head 492208f4684f1b7660be26deda7c29161ea50070 discards the repair commit and this proof commit; both are additive and were never pushed",
-  "implementation_commit": "1c59dafd19817d7af7033245d3e1342927c38af5"
+  "rollback": "git reset to parent_head 492208f4684f1b7660be26deda7c29161ea50070 discards both repair commits (C1R, C1R2) and both proof commits; all are additive and were never pushed",
+  "implementation_commit": "8ce48664707a89f39960a603e658c4cf5a39a30d",
+  "implementation_commit_c1r": "1c59dafd19817d7af7033245d3e1342927c38af5"
 }
