@@ -581,6 +581,120 @@ def test_review_bundle_as_a_file_is_rejected(tmp_path: Path) -> None:
     )
 
 
+SIGN_SCRIPT = ROOT / "scripts" / "audit" / "sign_local_audit_proof.sh"
+
+
+def test_signer_preflight_rejects_packet_object_failing_policy_despite_matching_identity(
+    tmp_path: Path,
+) -> None:
+    """The signer's preflight must run the packet embedded_audit object
+    through the SAME canonical schema+policy validation the trusted
+    acceptance engine runs, not merely compare status/auditor_tool/
+    auditor_model. A packet object that agrees with the PR proof on those
+    three fields but fails policy elsewhere (here: required=false) must be
+    rejected at signing time, not silently signed and only caught later by
+    CI. Regression for the R3 review finding."""
+    import shutil
+
+    scratch = tmp_path / "scratch"
+    shutil.copytree(ROOT / "schemas", scratch / "schemas")
+
+    packet_id = "TP-DMX-TEST-SIGNER-PREFLIGHT"
+    packet_dir = scratch / "proof" / packet_id
+    packet_dir.mkdir(parents=True)
+    (packet_dir / "AUDITOR_REPORT.md").write_text("PASS\n", encoding="utf-8")
+    bundle_dir = packet_dir / "review_bundle"
+    bundle_dir.mkdir()
+    (bundle_dir / "evidence.txt").write_text("x\n", encoding="utf-8")
+
+    shared = {
+        "status": "PASS",
+        "auditor_tool": "agy",
+        "auditor_model": "gemini-3.1-pro-high",
+        "invocation": "agy --model gemini-3.1-pro-high",
+        "exit_code": 0,
+        "report_path": f"proof/{packet_id}/AUDITOR_REPORT.md",
+        "findings": [],
+        "fixes_applied": [],
+        "remaining_risks": [],
+        "skip_reason": None,
+    }
+    # Packet object agrees on status/auditor_tool/auditor_model but declares
+    # required=false -- schema-valid, policy-invalid.
+    packet_embedded = dict(shared, required=False)
+    (packet_dir / "PROOF.json").write_text(
+        json.dumps(
+            {
+                "packet_id": packet_id,
+                "repo": REPO,
+                "head_sha": "a" * 40,
+                "embedded_audit": packet_embedded,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    pr_dir = scratch / "proof" / "pr_merge" / "embedded-audit" / "pr-9999"
+    pr_dir.mkdir(parents=True)
+    pr_embedded = dict(shared, required=True)
+    (pr_dir / "PROOF.json").write_text(
+        json.dumps(
+            {"repo": REPO, "pr_number": 9999, "head_sha": "a" * 40, "embedded_audit": pr_embedded}
+        ),
+        encoding="utf-8",
+    )
+
+    # A dummy key file only needs to exist -- the script's own file-existence
+    # precheck runs before the Python preflight this test targets, and the
+    # rejected preflight exits before ever invoking ssh-keygen.
+    fake_key = tmp_path / "unused_key"
+    fake_key.write_text("not a real key\n", encoding="utf-8")
+
+    result = subprocess.run(
+        ["bash", str(SIGN_SCRIPT), "9999", str(fake_key)],
+        cwd=str(scratch),
+        capture_output=True,
+        text=True,
+        env={"PATH": "/usr/bin:/bin:/usr/local/bin", "PYTHONPATH": str(ROOT)},
+    )
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "required" in result.stderr
+    assert "REJECTED by CI" in result.stderr
+
+
+def test_review_bundle_gitlink_only_is_rejected(tmp_path: Path) -> None:
+    """review_bundle must contain a real blob, not merely any named entry.
+
+    Regression for the R3 review finding: a gitlink/submodule entry (git
+    object type ``commit``) is a pointer to another repository's history,
+    not in-repo evidence, but a bare ``ls-tree -r --name-only`` listing
+    would print its path just like a real file, satisfying a presence-only
+    check without any actual audit evidence existing in this repo.
+    """
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(include_review_bundle=False)
+    bundle_dir = fixture.packet_dir / "review_bundle"
+    bundle_dir.mkdir(parents=True, exist_ok=True)
+    fake_submodule_sha = "a" * 40
+    _git(
+        fixture.repo,
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "160000",
+        fake_submodule_sha,
+        str((bundle_dir / "fake-submodule").relative_to(fixture.repo)),
+    )
+    _git(fixture.repo, "commit", "--quiet", "-m", "gitlink-only review_bundle")
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("packet_review_bundle_missing_or_empty")
+        for r in attestation["reasons"]
+    )
+
+
 def test_packet_proof_packet_id_mismatch_is_rejected(tmp_path: Path) -> None:
     """The packet PROOF.json's own declared packet_id must equal the
     PACKET_ID derived from the signed report_path -- path placement alone is

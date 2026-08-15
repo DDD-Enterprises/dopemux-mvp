@@ -13,7 +13,10 @@
     "R2 (round-2 review repair): existing-path checks that treated 'has a descendant blob under this string prefix' as equivalent to 'is this exact required file/directory' are structural bugs, not just style -- a file misnamed to collide with a required directory path, or a directory nested under a required file path, must not be treated as satisfying that requirement. report_path must resolve to an exact blob; review_bundle must resolve to an exact tree (git object type checked, not string-prefix matching) containing >=1 blob.",
     "R2: the packet PROOF.json's own declared packet_id must equal the PACKET_ID this module derives from the signed report_path -- path placement under proof/<PACKET_ID>/ is not itself proof of identity; the bundle's own content must self-declare and agree.",
     "R2: ATTESTED_AUDITED_SHA, not PROVEN_AUDITED_SHA -- the signed proof's head_sha is documented as an operator's claim about which commit was audited, never a cryptographic binding to an external auditor's actual execution. This module's real, enforceable guarantee is that no commit after the attested SHA can smuggle code past the gate; it cannot and does not verify the content AT the attested SHA was truly what an auditor examined. That harder problem (binding to auditor-signed evidence, not producer-signed) is explicitly out of scope here.",
-    "R2: scripts/audit/sign_local_audit_proof.sh must mirror the canonical-packet-bundle checks this module enforces, so a malformed/missing/disagreeing bundle is caught at signing time locally, not only after CI evaluates the pushed commit."
+    "R2: scripts/audit/sign_local_audit_proof.sh must mirror the canonical-packet-bundle checks this module enforces, so a malformed/missing/disagreeing bundle is caught at signing time locally, not only after CI evaluates the pushed commit.",
+    "R3 (round-3 review repair): the commit allowlist itself is a contract-sensitive surface -- it must name every path the packet's own steps commit, including the PR-scoped signed proof (proof/pr_merge/embedded-audit/pr-<N>/**), not only the canonical packet bundle. An allowlist that omits a path its own steps require does not actually authorize the committed change set.",
+    "R3: signer preflight must run the packet embedded_audit object through the SAME canonical schema+policy validation the trusted acceptance engine runs (_validate_embedded_audit against the trusted schema, plus the passing-status policy check), not merely compare three identity fields -- a packet object that agrees on status/auditor_tool/auditor_model but fails schema/policy elsewhere (e.g. required:false, missing invocation) must not be signed as 'proof shape OK'.",
+    "R3: 'review_bundle has >=1 entry' must mean an actual blob, not any git object type ls-tree happens to print at that path -- a gitlink/submodule entry satisfies a bare name-only listing without providing any real in-repository audit evidence. Object type must be checked, not merely presence."
   ],
   "depends_on": [],
   "repo_binding": {
@@ -35,7 +38,8 @@
       "scripts/audit/local_audit_acceptance.py",
       "scripts/audit/sign_local_audit_proof.sh",
       "tests/audit/test_local_audit_acceptance.py",
-      "proof/TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001/**"
+      "proof/TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001/**",
+      "proof/pr_merge/embedded-audit/pr-1236/**"
     ],
     "verify": [
       "python -m pytest tests/audit -q",

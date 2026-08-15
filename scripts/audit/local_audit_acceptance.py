@@ -160,13 +160,25 @@ def _tree_type(repo_root: Path, rev: str, path: str) -> str | None:
 
 
 def _tree_has_entries(repo_root: Path, rev: str, path: str) -> bool:
-    """True if ``path`` is a directory (git tree) at ``rev`` with >=1 blob."""
+    """True if ``path`` is a directory (git tree) at ``rev`` with >=1 real blob.
+
+    Deliberately checks each recursive entry's OWN object type, not just that
+    ``ls-tree`` printed a line under this path: a gitlink/submodule entry
+    (object type ``commit``) is a pointer to another repository's history,
+    not in-repo evidence, but a bare name-only listing would print its path
+    just like a real file and satisfy a presence-only check.
+    """
     if _tree_type(repo_root, rev, path) != "tree":
         return False
-    result = _run_git(repo_root, "ls-tree", "-r", "--name-only", rev, "--", path)
+    result = _run_git(repo_root, "ls-tree", "-r", rev, "--", path)
     if result.returncode != 0:
         return False
-    return bool(result.stdout.decode("utf-8", "replace").strip())
+    for line in result.stdout.decode("utf-8", "replace").splitlines():
+        # ls-tree line format: "<mode> <type> <sha>\t<path>"
+        fields = line.split("\t", 1)[0].split()
+        if len(fields) >= 2 and fields[1] == "blob":
+            return True
+    return False
 
 
 def _extract_packet_id(report_path: str, schema: Mapping[str, Any]) -> str | None:

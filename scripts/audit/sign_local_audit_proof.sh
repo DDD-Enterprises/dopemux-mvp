@@ -36,9 +36,18 @@ if [ ! -f "$KEY_PATH" ]; then
 fi
 
 # Pre-flight the proof shape locally so rejections surface here, not in CI.
+# Imports the SAME schema_validation_errors/policy_errors the trusted
+# acceptance engine runs (scripts/audit/local_audit_acceptance.py), rather
+# than hand-mirroring a subset of its checks -- a packet embedded_audit
+# object that agrees on status/auditor_tool/auditor_model but fails schema
+# or policy elsewhere (required:false, missing invocation, etc.) must not be
+# signed as "proof shape OK" only to be rejected later by CI's full check.
 python3 - "$PROOF_FILE" "$PR_NUMBER" <<'PY'
 import json, re, sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path.cwd()))
+from scripts.audit.local_audit_acceptance import policy_errors, schema_validation_errors
 
 proof_file, pr_number = Path(sys.argv[1]), int(sys.argv[2])
 proof = json.loads(proof_file.read_text(encoding="utf-8"))
@@ -49,20 +58,15 @@ if not proof.get("repo"):
     errors.append("repo missing")
 if not re.match(r"^[0-9a-f]{40}$", str(proof.get("head_sha") or "")):
     errors.append("head_sha missing or not a full 40-char sha")
-embedded = proof.get("embedded_audit") or {}
-if embedded.get("status") not in ("PASS", "PASS_WITH_RISKS"):
-    errors.append(f"embedded_audit.status={embedded.get('status')!r} is not passing")
+
 schema_path = Path("schemas/proof/embedded_audit.schema.json")
-schema = None
-if schema_path.is_file():
-    schema = json.loads(schema_path.read_text(encoding="utf-8"))
-    props = schema.get("properties", {})
-    for field in ("auditor_tool", "auditor_model"):
-        enum = props.get(field, {}).get("enum", [])
-        if embedded.get(field) not in enum:
-            errors.append(
-                f"embedded_audit.{field}={embedded.get(field)!r} not in schema enum {enum}"
-            )
+schema = json.loads(schema_path.read_text(encoding="utf-8")) if schema_path.is_file() else None
+embedded = proof.get("embedded_audit") or {}
+if schema is None:
+    errors.append(f"schema_unreadable: {schema_path}")
+else:
+    errors.extend(f"embedded_audit.{e}" for e in schema_validation_errors(embedded, schema))
+    errors.extend(f"embedded_audit.{e}" for e in policy_errors(embedded))
 
 # Mirror local_audit_acceptance.py's canonical packet-bundle gate (AGENTS.md
 # 9.1) here too, so a mismatched/missing bundle fails at signing time, not
@@ -84,9 +88,9 @@ else:
     if not report_file.is_file():
         errors.append(f"{report_path} is not a file")
     if not review_bundle_dir.is_dir() or not any(
-        p.is_file() for p in review_bundle_dir.rglob("*")
+        p.is_file() and not p.is_symlink() for p in review_bundle_dir.rglob("*")
     ):
-        errors.append(f"{review_bundle_dir}/ missing or empty")
+        errors.append(f"{review_bundle_dir}/ missing or empty (no real file entries)")
     if not packet_proof_path.is_file():
         errors.append(f"{packet_proof_path} not present")
     else:
@@ -112,6 +116,15 @@ else:
                     f"{packet_proof_path} embedded_audit.{field}="
                     f"{packet_embedded.get(field)!r} != PR proof's {embedded.get(field)!r}"
                 )
+        if schema is not None:
+            errors.extend(
+                f"{packet_proof_path} embedded_audit.{e}"
+                for e in schema_validation_errors(packet_embedded, schema)
+            )
+            errors.extend(
+                f"{packet_proof_path} embedded_audit.{e}"
+                for e in policy_errors(packet_embedded)
+            )
 
 if errors:
     print("proof will be REJECTED by CI:", file=sys.stderr)
