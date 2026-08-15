@@ -1,24 +1,25 @@
 {
   "packet_id": "TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001",
   "repo": "DDD-Enterprises/dopemux-mvp",
-  "head_sha": "05c41b3e6bebaa6b8854af5da0dbad9207ac5227",
-  "generated_at": "2026-08-15T09:55:00Z",
+  "head_sha": "cdc83dda65cf6cf0337f5c4a88b76d048e2854f1",
+  "generated_at": "2026-08-15T10:45:00Z",
   "embedded_audit": {
     "required": true,
     "status": "PASS",
     "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "agy --print <PR-1236 local-audit-proof-binding verifier-repair audit prompt> --model gemini-3.1-pro-high --effort high --sandbox --mode plan --output-format json --print-timeout 18m",
+    "invocation": "agy --print <PR-1236 R2 verifier-repair audit prompt covering 7 live review findings> --model gemini-3.1-pro-high --effort high --sandbox --mode plan --output-format json --print-timeout 18m",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001/AUDITOR_REPORT.md",
     "findings": [],
     "fixes_applied": [
-      "Bound signed local-attestation head_sha to the actually-audited commit; widened the diff-scope allow-list to include proof/<PACKET_ID>/ derived fail-closed from the schema-validated report_path; required the canonical AGENTS.md 9.1 packet proof bundle to exist at the enforced PR head and agree with the signed PR proof on audited head_sha and controlling verdict identity (status, auditor_tool, auditor_model).",
-      "Follow-up commit 05c41b3e6bebaa6b8854af5da0dbad9207ac5227 (independently audited, PASS, test-only diff verified via git diff ab57983171..05c41b3e6b) added two regression tests for edge cases the first audit flagged as non-blocking coverage gaps: packet_proof_malformed (invalid JSON in the packet PROOF.json) and the _extract_packet_id defensive branch for a report_path that does not match the trusted schema pattern."
+      "R1 (superseded, see review_bundle/): bound signed local-attestation head_sha to the actually-audited commit; widened the diff-scope allow-list to include proof/<PACKET_ID>/ derived fail-closed from the schema-validated report_path; required the canonical AGENTS.md 9.1 packet proof bundle to exist at the enforced PR head and agree with the signed PR proof on audited head_sha and controlling verdict identity.",
+      "R2 (this commit, cdc83dda65cf6cf0337f5c4a88b76d048e2854f1): repaired 7 findings from live automated review on PR #1236 -- exact git-blob check for report_path (was: ls-tree string-prefix match a same-named directory could spoof); exact git-tree check for review_bundle (same class of bug); packet PROOF.json's own packet_id must now agree with the PACKET_ID derived from report_path; scripts/audit/sign_local_audit_proof.sh mirrors the full packet-bundle preflight locally; documented the ATTESTED_AUDITED_SHA vs PROVEN_AUDITED_SHA trust-model limitation explicitly; task packet steps repaired to be schema-valid (validation arrays, not an undeclared status field); confirmed the 7th finding (ancestor check) was a false alarm anchored to a stale squash-merge preview, not the real branch history (05c41b3e6b IS an ancestor of the live head)."
     ],
     "remaining_risks": [
-      "Backwards incompatibility (named non-blocking by the independent audit): any currently-open PR using the prior evidence-head-as-head_sha pattern (e.g. PR #1224's existing signed proof, head_sha=3fa5c8e97b998734205a2dbd42a282ff82625ce6, which the R7 report says examined 488e6b89773255ac08b915a2bc6ba6e489a33ce2) will now fail this stricter check if re-evaluated. This packet does not touch or invalidate that proof -- PR #1224's proof-binding refresh is a separate, explicitly-scoped follow-up per operator instruction.",
-      "This is a self-attested local signing (producer-signs-own-proof) for the verifier repair itself -- mitigated by two independent AGY/gemini-3.1-pro-high audit passes (main + narrow follow-up), both PASS, both re-deriving evidence from live git/pytest execution rather than trusting prose.",
+      "Backwards incompatibility (named non-blocking by both R1 and R2 independent audits): any currently-open PR using the prior evidence-head-as-head_sha pattern (e.g. PR #1224's existing signed proof, head_sha=3fa5c8e97b998734205a2dbd42a282ff82625ce6, which the R7 report says examined 488e6b89773255ac08b915a2bc6ba6e489a33ce2) will now fail this stricter check if re-evaluated. This packet does not touch or invalidate that proof -- PR #1224's proof-binding refresh is a separate, explicitly-scoped follow-up per operator instruction.",
+      "This is a self-attested local signing (producer-signs-own-proof) for the verifier repair itself -- mitigated by three independent AGY/gemini-3.1-pro-high audit passes across R1 and R2 (main, narrow follow-up, R2 repair), all PASS, all re-deriving evidence from live git/pytest execution rather than trusting prose.",
+      "ATTESTED_AUDITED_SHA is a signer claim, not a cryptographic binding to an external auditor's actual execution (see module LIMITATION docstring). This module enforces that no commit after the attested SHA can smuggle code past the gate; it cannot verify the content AT that SHA was truly what an auditor examined. Binding to auditor-signed (not producer-signed) evidence is a separate, harder problem, explicitly out of scope for this packet.",
       "Merge is NOT authorized by this proof. Per operator instruction, this packet stops at exact-head CI + PR Steward for an explicit operator merge decision."
     ],
     "skip_reason": null
