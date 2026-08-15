@@ -14,7 +14,7 @@
   "adr_acceptance_authorized": true,
   "adr_acceptance_authorized_scope": "This receipt records that the human operator authorized ADR acceptance on 2026-08-14 and that it has been persisted as ten accepted records. It is scoped to ADR acceptance and to nothing else.",
   "binding": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/ADR_ACCEPTANCE_BINDING.json",
-  "binding_sha256": "898481b4b2e049f0e67d96f29fe169d24a077fa3bcd8ef32079b3021b7369d6b",
+  "binding_sha256": "74ca713e56e12b6f5bebf33b53d7a04ebf8c6cc1b0354d0480c5b596bf3dc3da",
   "ledger": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/ADR_OPERATOR_DECISION_LEDGER.yaml",
   "ledger_sha256": "edc939e137e7bef6972eed3ad8521592e796bffd2b59009f137de3e793ce9604",
   "acceptance_head": "docs/03-reference/architecture/second-brain/adr-candidates/ADR_ACCEPTANCE_HEAD.json",
@@ -37,6 +37,8 @@
     "ADR-SB-009: the ConPort project wall is directionally aligned but establishes no registry-backed identity. Any implementation slice must re-gate against what it actually guarantees.",
     "The seven typed artifacts are acceptance-time evidence that the named types exist and are grounded in decision text. They are not implementation-ready interface definitions and require interface review before implementation.",
     "'Required denial fixtures' is not enumerated per ADR. Pinning that scope per ADR is cheaper before implementation than after.",
-    "Three fields in fo-01-repair-status.json are now stale. See ADR_ACCEPTANCE_BINDING.json declared_stale_records_created_by_this_persistence. Reconciling them requires a separate packet with its own audit and is NOT authorized."
-  ]
+    "Seven fields in fo-01-repair-status.json are now stale, enumerated and individually reasoned in FO01_STALENESS_DECLARATION.json. Reconciling them requires changing the validator invariant and has its own audit; it is NOT authorized."
+  ],
+  "staleness_declaration": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/FO01_STALENESS_DECLARATION.json",
+  "staleness_declaration_sha256": "495eb5096a3653a4f601387fab75a3b6bbbf52b47cda1a7548fd151f403599c8"
 }

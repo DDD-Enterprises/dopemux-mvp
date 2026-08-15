@@ -1,0 +1,26 @@
+{
+  "info": {
+    "id": "01a00417-345b-7492-afdd-d8c8d3cc8a4a",
+    "cwd": "/private/tmp/sb-persist-audit-r1"
+  },
+  "session_summary": "Independent ADR Acceptance Persistence Audit",
+  "created_at": "2026-08-15T06:23:45.088448Z",
+  "updated_at": "2026-08-15T06:28:41.597666Z",
+  "num_messages": 164,
+  "num_chat_messages": 51,
+  "current_model_id": "grok-4.5",
+  "next_trace_turn": 1,
+  "chat_format_version": 1,
+  "git_root_dir": "/private/tmp/sb-persist-audit-r1/",
+  "git_remotes": [
+    "https://github.com/DDD-Enterprises/dopemux-mvp.git"
+  ],
+  "head_commit": "5f9f38acd465ea9a30df0a6251b6e4960704f5cc",
+  "request_id": "e56d4359-4e34-4975-ad44-5be8bb4eb752",
+  "grok_home": "/Users/hue/.grok",
+  "last_active_at": "2026-08-15T06:28:41.597666Z",
+  "generated_title": "Independent ADR Acceptance Persistence Audit",
+  "agent_name": "grok-build-plan",
+  "sandbox_profile": "off",
+  "reasoning_effort": "high"
+}

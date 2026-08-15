@@ -95,35 +95,38 @@
     "docs/.../authority/**": "Heads the SB-DEC ratification, not ADR acceptance. Untouched."
   },
   "declared_stale_records_created_by_this_persistence": {
-    "why_declared": "Additive persistence is the only shape that does not break the merged validator or rewrite another packet's history. It leaves three fields in fo-01-repair-status.json describing a world that has changed. They are named here rather than left to be discovered.",
-    "file": "docs/03-reference/architecture/second-brain/adr-candidates/fo-01-repair-status.json",
+    "authoritative_record": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/FO01_STALENESS_DECLARATION.json",
+    "authoritative_record_sha256": "495eb5096a3653a4f601387fab75a3b6bbbf52b47cda1a7548fd151f403599c8",
+    "stale_count": 7,
     "stale_fields": [
-      {
-        "field": "adr_acceptance_authorized",
-        "value": false,
-        "why_stale": "Its own gate_field_semantics glosses this as 'Only the human operator may authorize ADR acceptance.' The operator has now authorized it."
-      },
-      {
-        "field": "gates.adr_acceptance",
-        "value": "CLOSED",
-        "why_stale": "Glossed as closed because the other acceptance conditions were still outstanding. They are not."
-      },
-      {
-        "field": "adr_statuses.promoted_to_accepted",
-        "value": 0,
-        "why_stale": "Ten ADRs are now promoted to accepted."
-      }
+      "/adr_acceptance_authorized",
+      "/other_adr_acceptance_conditions",
+      "/gates/adr_acceptance",
+      "/adr_statuses/promoted_to_accepted",
+      "/stale_record_reconciliation/still_forbidden/[0]",
+      "/gate_field_semantics/gates.adr_acceptance",
+      "/gate_field_semantics/adr_acceptance_authorized"
     ],
-    "not_stale_and_why": [
+    "file": "docs/03-reference/architecture/second-brain/adr-candidates/fo-01-repair-status.json",
+    "history_of_this_declaration": {
+      "round_1_hand_written_list": 3,
+      "round_1_verdict": "MUST_FIX from the independent audit: an incomplete list presented as complete, which is the defect class this programme exists to prevent.",
+      "found_by_the_auditor": [
+        "/other_adr_acceptance_conditions",
+        "/stale_record_reconciliation/still_forbidden/[0]"
+      ],
+      "found_by_the_derivation_and_missed_by_the_auditor_too": [
+        "/gate_field_semantics/gates.adr_acceptance",
+        "/gate_field_semantics/adr_acceptance_authorized"
+      ],
+      "why_the_first_repair_was_also_wrong": "The first repair enumerated the validator's PINNED table instead of hand-listing, and still missed still_forbidden, which lives in NARRATIVE_PREFIXES rather than PINNED. Enumerating one collection inside the validator is not the same as enumerating the universe.",
+      "what_finally_worked": "Enumerate every leaf of the status record itself (103), require each to be classified, and forbid a category default from covering any leaf whose path or value mentions acceptance. That last rule is what caught the two prose glosses: they carry no machine-checkable assertion for the validator, but they do assert, in words, that the gate is shut and that authorization is still false."
+    },
+    "not_stale_but_arguable": [
       {
-        "field": "adr_statuses.document_status",
-        "value": "CANDIDATE",
-        "why": "The candidate document remains a candidate and is untouched. Correct."
-      },
-      {
-        "field": "FO01_RESOLUTION_RECEIPT.accepts_any_adr",
-        "value": false,
-        "why": "That receipt accepts no ADR. Permanently true of that record."
+        "field": "/adr_statuses/all_remain",
+        "value": "PROPOSED (candidate)",
+        "note": "True of the candidate document, which is untouched. Would be false if read as a claim about the repository as a whole. Recorded rather than resolved in our own favour."
       }
     ],
     "why_not_fixed_here": "B02 requires the status file to be an exact whole projection of a historical receipt belonging to another packet. It cannot express post-acceptance state without either falsifying its own projection or rewriting audited history. Reconciling it requires changing the validator invariant from 'no ADR is accepted' to 'acceptance matches the operator ledger', which is a separate packet with its own independent audit.",
