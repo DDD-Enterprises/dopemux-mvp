@@ -1,25 +1,25 @@
 {
   "packet_id": "TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001",
   "repo": "DDD-Enterprises/dopemux-mvp",
-  "head_sha": "8e9b802729a1e273221b9d217239fbcca657a5ad",
-  "generated_at": "2026-08-16T00:45:00Z",
+  "head_sha": "5adc090065aae3c9d88a32022787a42d6c7b26c4",
+  "generated_at": "2026-08-16T01:15:00Z",
   "embedded_audit": {
     "required": true,
     "status": "PASS",
     "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "agy --print <PR-1236 R4 verifier-repair audit prompt covering the pr_merge namespace-collision finding> --model gemini-3.1-pro-high --effort high --sandbox --mode plan --output-format json --print-timeout 18m",
+    "invocation": "agy --print <PR-1236 R5 verifier-repair audit prompt covering symlink-evidence and signer-drift findings> --model gemini-3.1-pro-high --effort high --sandbox --mode plan --output-format json --print-timeout 18m",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001/AUDITOR_REPORT.md",
     "findings": [],
     "fixes_applied": [
-      "R1-R3 (superseded, see review_bundle/): bound head_sha to the actually-audited commit; exact blob/tree object-type checks; packet_id identity check; signer preflight schema/policy parity; ATTESTED_AUDITED_SHA documentation; schema-valid task packet; commit allowlist coverage; gitlink smuggling closed.",
-      "R4 (this commit, 8e9b802729a1e273221b9d217239fbcca657a5ad): report_path 'proof/pr_merge/AUDITOR_REPORT.md' schema-matched the generic [^/]+ wildcard, deriving PACKET_ID='pr_merge' -- the RESERVED root every PR's signed proof lives under, not one packet's own directory. Accepting it would have widened the diff-scope allow-list to the entire shared proof/pr_merge/ namespace, letting a proof successor touch or delete any OTHER PR's signed attestation. _extract_packet_id now explicitly rejects a derived segment equal to RESERVED_PACKET_NAMESPACE (derived from the same PROOF_DIR_TEMPLATE constant, so it cannot drift). Independent adversarial analysis found no residual bypass of the same shape (path traversal structurally impossible; substring/prefix tricks fail the literal startswith(prefix + '/') comparison)."
+      "R1-R4 (superseded): bound head_sha to the actually-audited commit; exact blob/tree object-type checks; packet_id identity check; signer preflight schema/policy parity; ATTESTED_AUDITED_SHA documentation; schema-valid task packet; commit allowlist coverage; gitlink smuggling closed; reserved pr_merge namespace collision closed.",
+      "R5 (this commit, 5adc090065aae3c9d88a32022787a42d6c7b26c4): a symlink also reports git object TYPE 'blob' (content is a target path string, not stored evidence) -- the R3 gitlink fix's type-only check didn't catch it. Added _REGULAR_FILE_MODES ({100644, 100755}) and _is_regular_file, checking git MODE not merely type, applied to both review_bundle and report_path. Also closed a signer-parity drift: sign_local_audit_proof.sh had re-derived packet_id via its own inline logic instead of calling the actual _extract_packet_id, so it never learned about R4's pr_merge rejection -- now imports and calls the real function, guaranteeing parity going forward."
     ],
     "remaining_risks": [
-      "AUDIT_TOPOLOGY, NAMED NOT CONFLATED. This signed PR proof's head_sha, 8e9b802729a1e273221b9d217239fbcca657a5ad, IS the audited commit itself -- not an evidence-head successor.",
-      "Backwards incompatibility (named non-blocking by all independent audits across R1-R4): any currently-open PR using the prior evidence-head-as-head_sha pattern (e.g. PR #1224) will now fail this stricter check if re-evaluated. Not touched by this packet -- separate, explicitly-scoped follow-up.",
-      "Self-attested local signing for the verifier repair itself -- mitigated by five independent AGY/gemini-3.1-pro-high audit passes across R1-R4, all PASS, all re-deriving evidence from live git/pytest execution.",
+      "AUDIT_TOPOLOGY, NAMED NOT CONFLATED. This signed PR proof's head_sha, 5adc090065aae3c9d88a32022787a42d6c7b26c4, IS the audited commit itself -- not an evidence-head successor.",
+      "Backwards incompatibility (named non-blocking by all independent audits across R1-R5): any currently-open PR using the prior evidence-head-as-head_sha pattern (e.g. PR #1224) will now fail this stricter check if re-evaluated. Not touched by this packet -- separate, explicitly-scoped follow-up.",
+      "Self-attested local signing for the verifier repair itself -- mitigated by six independent AGY/gemini-3.1-pro-high audit passes across R1-R5 (one non-controlling ERROR-status attempt discarded), all controlling runs PASS, all re-deriving evidence from live git/pytest execution.",
       "ATTESTED_AUDITED_SHA is a signer claim bounded by structural enforcement (no post-attested-SHA commit can smuggle code outside the two proof trees), not an independent cryptographic proof of what the auditor examined at that SHA. See module LIMITATION docstring.",
       "Merge is NOT authorized by this proof. Only readiness-check progression (exact-head CI + PR Steward) is authorized. Per operator instruction: stop for an explicit operator merge decision."
     ],
