@@ -112,37 +112,50 @@ else:
     packet_proof_path = packet_dir / "PROOF.json"
     report_file = Path(report_path)
     review_bundle_dir = packet_dir / "review_bundle"
+    # is_symlink() only inspects the FINAL path component -- it says nothing
+    # about ANCESTOR directories. A symlinked packet_dir itself (proof/
+    # <PACKET_ID> pointing elsewhere) would make report_file.is_symlink(),
+    # review_bundle_dir.is_symlink(), and packet_proof_path.is_symlink()
+    # ALL return False (each only checks the leaf at the resolved location),
+    # silently bypassing every leaf-level symlink check below. Guard once,
+    # up front, and skip every downstream packet_dir-based check on failure
+    # rather than threading the same condition through each one.
+    packet_dir_ok = not packet_dir.is_symlink()
+    if not packet_dir_ok:
+        errors.append(f"{packet_dir}/ is a symlink, not a real directory")
+
     # Explicit is_symlink() checks: Path.is_file()/is_dir() FOLLOW symlinks,
     # so a symlinked report file or a review_bundle/ that is itself a
     # symlink would otherwise pass here even though the eventual committed
     # blob has mode 120000 and the trusted acceptance engine rejects it.
-    if report_file.is_symlink() or not report_file.is_file():
+    if packet_dir_ok and (report_file.is_symlink() or not report_file.is_file()):
         errors.append(f"{report_path} is not a regular file (symlink or absent)")
-    if review_bundle_dir.is_symlink() or not review_bundle_dir.is_dir():
+    if packet_dir_ok and (review_bundle_dir.is_symlink() or not review_bundle_dir.is_dir()):
         errors.append(f"{review_bundle_dir}/ is not a real directory (symlink or absent)")
-    elif not any(
+    elif packet_dir_ok and not any(
         p.is_file() and not p.is_symlink() for p in review_bundle_dir.rglob("*")
     ):
         errors.append(f"{review_bundle_dir}/ missing or empty (no real file entries)")
-    dirty = _git_dirty(packet_dir)
-    if dirty:
-        errors.append(
-            f"{packet_dir}/ has uncommitted changes -- commit the canonical packet "
-            "proof bundle BEFORE signing, since the trusted acceptance engine reads "
-            "it from committed git blobs, not the working tree: "
-            + "; ".join(dirty[:5])
-        )
+    if packet_dir_ok:
+        dirty = _git_dirty(packet_dir)
+        if dirty:
+            errors.append(
+                f"{packet_dir}/ has uncommitted changes -- commit the canonical packet "
+                "proof bundle BEFORE signing, since the trusted acceptance engine reads "
+                "it from committed git blobs, not the working tree: "
+                + "; ".join(dirty[:5])
+            )
     # Same class of bug as report_file/review_bundle_dir above: a TRACKED
     # symlink at packet_proof_path can be clean per git status (the symlink
     # itself is committed) while is_file()/read_text() follow it to valid
     # JSON elsewhere on disk -- but CI reads the committed blob bytes, which
     # for a symlink is the target PATH STRING, not JSON, and rejects it as
     # malformed. Must reject the symlink here too, independent of dirty-check.
-    if packet_proof_path.is_symlink():
+    if packet_dir_ok and packet_proof_path.is_symlink():
         errors.append(f"{packet_proof_path} is a symlink, not a real file")
-    elif not packet_proof_path.is_file():
+    elif packet_dir_ok and not packet_proof_path.is_file():
         errors.append(f"{packet_proof_path} not present")
-    else:
+    elif packet_dir_ok:
         try:
             packet_proof = json.loads(packet_proof_path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, UnicodeDecodeError) as exc:

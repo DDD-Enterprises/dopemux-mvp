@@ -1024,6 +1024,54 @@ def test_signer_preflight_rejects_symlinked_packet_proof(tmp_path: Path) -> None
     assert "REJECTED by CI" in result.stderr
 
 
+def test_signer_preflight_rejects_symlinked_packet_dir(tmp_path: Path) -> None:
+    """Path.is_symlink() only inspects the FINAL path component -- it says
+    nothing about ancestor directories. A symlinked packet_dir itself
+    (proof/<PACKET_ID> pointing elsewhere) would make every leaf-level
+    is_symlink() check on report_file/review_bundle_dir/packet_proof_path
+    return False (each only sees the leaf at the resolved location),
+    silently bypassing every check R5-R7 added. Regression for the R8
+    review finding, surfaced by the R7 independent audit's own adversarial
+    analysis rather than a live GitHub review comment."""
+    import os
+
+    packet_id = "TP-DMX-TEST-SIGNER-PACKET-DIR-SYMLINK"
+    scratch = _build_signer_scratch_repo(tmp_path, packet_id=packet_id)
+    report_path = f"proof/{packet_id}/AUDITOR_REPORT.md"
+
+    # Build a REAL packet bundle elsewhere, then make proof/<PACKET_ID>
+    # itself a symlink pointing at it.
+    real_packet_dir = scratch / "real_packet_dir"
+    shared = _write_packet_bundle(real_packet_dir, packet_id, report_path)
+    (scratch / "proof").mkdir(parents=True, exist_ok=True)
+    os.symlink(real_packet_dir, scratch / "proof" / packet_id)
+    _git(scratch, "add", "-A")
+    _git(scratch, "commit", "--quiet", "-m", "packet_dir itself is a symlink")
+
+    pr_dir = scratch / "proof" / "pr_merge" / "embedded-audit" / "pr-9999"
+    pr_dir.mkdir(parents=True)
+    (pr_dir / "PROOF.json").write_text(
+        json.dumps(
+            {"repo": REPO, "pr_number": 9999, "head_sha": "a" * 40, "embedded_audit": shared}
+        ),
+        encoding="utf-8",
+    )
+
+    fake_key = tmp_path / "unused_key"
+    fake_key.write_text("not a real key\n", encoding="utf-8")
+
+    result = subprocess.run(
+        ["bash", str(SIGN_SCRIPT), "9999", str(fake_key)],
+        cwd=str(scratch),
+        capture_output=True,
+        text=True,
+        env={"PATH": "/usr/bin:/bin:/usr/local/bin", "PYTHONPATH": str(ROOT)},
+    )
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "is a symlink, not a real directory" in result.stderr
+    assert "REJECTED by CI" in result.stderr
+
+
 def test_packet_proof_packet_id_mismatch_is_rejected(tmp_path: Path) -> None:
     """The packet PROOF.json's own declared packet_id must equal the
     PACKET_ID derived from the signed report_path -- path placement alone is
