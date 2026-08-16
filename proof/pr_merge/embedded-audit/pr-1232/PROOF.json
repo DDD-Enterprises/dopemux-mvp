@@ -1,64 +1,57 @@
 {
-  "repo": "DDD-Enterprises/dopemux-mvp",
-  "pr_number": 1232,
-  "head_sha": "7acc0623440345bfc2915909413a26189d78f2ff",
-  "commit_sha": "7acc0623440345bfc2915909413a26189d78f2ff",
-  "generated_at": "2026-08-15T06:00:00Z",
-  "embedded_audit": {
-    "required": true,
-    "status": "PASS_WITH_RISKS",
-    "auditor_tool": "grok-cli",
-    "auditor_model": "grok-4.5",
-    "invocation": "~/.grok/bin/grok --prompt-file proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/GROK_AUDIT_PROMPT.md --output-format json --permission-mode dontAsk --model grok-4.5, headless single-turn, direct filesystem access to the worktree, run by the operator at the orchestrating session's request",
-    "exit_code": 0,
-    "report_path": "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/AUDITOR_REPORT.md",
-    "findings": [
-      {
-        "id": "R1",
-        "severity": "LOW",
-        "title": "RUN_MANIFEST.json / RUNNER_IDENTITY.json written via ungated get_git_sha before the identity gate",
-        "status": "ACCEPTED_RISK",
-        "body": "write_run_manifest and write_runner_identity execute before required_execution_source_identity() in main()'s phase-execution path. A failed identity check still leaves git_sha:\"UNKNOWN\" on those two files, though RUN_MANIFEST.json's run_status is subsequently overwritten to FAILED/source_identity_unproven. Same nuance the implementer self-disclosed (satisfies invariant 9's 'accepted as authoritative' reading, not a stricter 'before any write' reading); independently rediscovered by the auditor, not new."
-      },
-      {
-        "id": "R2",
-        "severity": "LOW",
-        "title": "Preset write_confidence_ramp_artifacts can write CERTIFICATION_RESULT.json before the phase-loop identity gate",
-        "status": "ACCEPTED_RISK",
-        "body": "Reached via --preset before the RTE-W1-010 gate. Lower severity than the closed doctor gap: the auditor verified write_certification_result's payload for this call path does not itself embed a git_sha field (only the doctor-full topology_payload does, and that path is now gated)."
-      },
-      {
-        "id": "R3",
-        "severity": "INFO",
-        "title": "Audit-prompt wording overstated the implementation's guarantee",
-        "status": "ACCEPTED_RISK",
-        "body": "The audit prompt's checklist item 3 said 'before any canonical evidence write'; the actual guarantee is 'before phase-execution completes and before doctor-persist writes.' A description-precision issue, not an additional code defect beyond R1/R2."
-      },
-      {
-        "id": "R4",
-        "severity": "INFO",
-        "title": "origin/main advanced past the packet's recorded execution base during the session",
-        "status": "ACCEPTED_RISK",
-        "body": "At audit time the repo's origin/main tip had moved to 75b4cfc581 from the packet's execution_base 6626aa9a58 due to normal upstream activity during this long session. The RTE branch was correctly created from 6626aa9a58 and is unaffected; expected drift per packet Section 23, not a defect in this packet's work."
-      },
-      {
-        "id": "R5",
-        "severity": "INFO",
-        "title": "Some new regression tests are source-order structural guards, not full runtime end-to-end",
-        "status": "ACCEPTED_RISK",
-        "body": "main() is several thousand lines; true e2e simulation offline is impractical. Disclosed limitation, already acknowledged by the implementer. One persist=False test checks outcomes (no cert files written, correct exit code) but does not spy that required_execution_source_identity is never called -- the code path (if persist:) makes this trivially true by construction."
-      }
-    ],
-    "fixes_applied": [
-      "run_doctor_full persist=True path gated with required_execution_source_identity before any DOCTOR_FULL.json / CERTIFICATION_RESULT.json write (commit 67f22b4829, closing the gap the supporting GPT-5-pro audit found)"
-    ],
-    "remaining_risks": [
-      "R1: RUN_MANIFEST.json/RUNNER_IDENTITY.json can transiently contain git_sha:UNKNOWN before the identity-failure status overwrite",
-      "R2: preset CERTIFICATION_RESULT.json write is not identity-gated (payload does not embed git_sha for this call path)",
-      "R3: audit-prompt wording overstatement, not a code defect",
-      "R4: unrelated origin/main drift during the session",
-      "R5: some tests are structural rather than full e2e"
-    ],
-    "skip_reason": null
-  }
+    "repo": "DDD-Enterprises/dopemux-mvp",
+    "pr_number": 1232,
+    "head_sha": "e0a292c06ec05f538dde019d288fad9243abae15",
+    "commit_sha": "e0a292c06ec05f538dde019d288fad9243abae15",
+    "generated_at": "2026-08-16T00:00:00Z",
+    "embedded_audit": {
+        "required": true,
+        "status": "PASS_WITH_RISKS",
+        "auditor_tool": "claude-code-cli",
+        "auditor_model": "opus",
+        "invocation": "Agent tool (general-purpose subagent, model=opus, isolation=worktree) given a bounded read-only audit prompt covering 6 explicit claims targeting F-001 closure specifically, against a git worktree pinned to head_sha 8ce48664707a89f39960a603e658c4cf5a39a30d; the subagent independently re-derived control flow via git show/diff and source reading, ran the full offline pytest suite, reproduced the implementer's mutation probe itself against the pre-fix source, and probed the one identified behavioral side effect of the relocation live in a fresh git repo",
+        "exit_code": 0,
+        "report_path": "proof/TP-DMX-RTE-V5-P1-FAIL-CLOSED-REPAIR-001/AUDITOR_REPAIR_REPORT.md",
+        "findings": [
+            {
+                "id": "F-A-NONBLOCKING",
+                "severity": "LOW",
+                "title": "Audit prompt mis-stated C1R2's parent commit as 1c59dafd19; actual parent is 366e6fdd4f (C1R's proof-only commit)",
+                "status": "ACCEPTED_RISK",
+                "body": "Prompt error only, caught and self-corrected by the auditor via git rev-list --parents; no code impact. Against the true parent, the diff is exactly the 3 amended-allowlist files as expected."
+            },
+            {
+                "id": "F-B-NONBLOCKING",
+                "severity": "LOW",
+                "title": "The S_INT relocation is textually a pure move but has one real behavioral consequence: S_INT now runs after run-dir/context resolution and the read-only early exits",
+                "status": "ACCEPTED_RISK",
+                "body": "S_INT now executes after resolve_run_context/get_run_dirs, write_phase_contract_map, UI(...) construction, and the read-only early exits, so e.g. --phase S_INT --status now takes precedence, and a run-dir side effect now occurs for S_INT that did not before. Highest-risk shape (S_INT with no --run-id, where allow_create_if_missing evaluates False) was probed live by the auditor in a fresh git repo and confirmed benign: exit 0, correct DRY_RUN payload."
+            },
+            {
+                "id": "F-C-NONBLOCKING",
+                "severity": "LOW",
+                "title": "Full-suite passed-count mismatch between implementer's checkout (1308) and auditor's isolated worktree (1305)",
+                "status": "ACCEPTED_RISK",
+                "body": "Zero failures in either run; a 3-test collection-count delta, most likely environment-dependent test collection between checkouts. Flagged only because the numbers should reconcile, not a correctness finding."
+            },
+            {
+                "id": "F-D-NONBLOCKING-OUT-OF-SCOPE",
+                "severity": "MEDIUM",
+                "title": "run_extraction_v3.py contains the same S_INT dispatch block and has no identity gate at all (same genus as F-001)",
+                "status": "ACCEPTED_RISK",
+                "body": "SUPERVISOR DISPOSITION (2026-08-15, post-audit): F-D=ACCEPT_FOLLOWUP_REQUIRED, SEVERITY=MEDIUM, LIKELY_RISK_LANE=L2, BLOCKS_CURRENT_V5_PR=NO, CONSENT_GATE_SUFFICIENT=NO. v3's existing live-execution consent gate (--execute + DPMX_LIVE_OK=1) proves an operator authorized live/provider execution, not that the resulting evidence is bound to a known source revision -- separate authority dimensions. v3 is confirmed not dead code: the canonical `dopemux rte` CLI defaults to v5 but still permits v3 via `--pipeline-version v3` plus a hidden legacy engine selector. Tracked for a mandatory follow-up packet, TP-DMX-RTE-V3-LEGACY-AUTHORITY-FAIL-CLOSED-001, bundling v3's S_INT gate, RTE-W1-006 v3 batch terminal semantics, and RTE-W1-004 v3 resume/run identity together. Nonblocking for this PR and for this bridge."
+            }
+        ],
+        "fixes_applied": [
+            "RTE-W1-010: relocated the single required_execution_source_identity(root) call site in main() from immediately-before-runners-dict to immediately-after the last pure read-only introspection exit (persist=False --doctor), ahead of Stage 0 online prescan, write_run_manifest/write_runner_identity/write_confidence_ramp_artifacts, and the --async-provider/--finalize/--batch-watch/--batch-retrieve/S_INT dispatch blocks (commits 1c59dafd19 then 8ce4866470 for the S_INT residual closure, F-001)",
+            "RTE-W1-006 (V5 terminal): added terminal_failure_batches accounting to BatchRetrievalIntegrationOutcome (lib/batch_retriever.py) and run_batch_retrieval_and_integration_detailed, folding provider terminal-failure status into the material-failure determination without suppressing webhook-event integration (commit 1c59dafd19)",
+            "F-001-MEDIUM-1 closure (commit 8ce4866470): relocated the --phase S_INT dispatch block (pure cut/paste, no logic changes) to run after required_execution_source_identity(root) instead of before it -- S_INT was the one path that still bypassed the gate after the first repair round -- plus a call-recording regression test proven mutation-sensitive by both the implementer and, independently, this audit",
+            "Fixed tests/test_s_int_runner.py::test_run_s_int_dry_run_via_v4_cli's fixture (bare tmp_path with no .git, which only worked because S_INT bypassed the gate) to give the subprocess a real, minimal git identity via git init + one commit"
+        ],
+        "remaining_risks": [
+            "F-B-NONBLOCKING: the S_INT relocation moves its execution point relative to run-dir/context resolution and read-only early exits; probed benign for the highest-risk shape but not exhaustively fuzzed across every CLI flag combination",
+            "F-D-NONBLOCKING-OUT-OF-SCOPE: run_extraction_v3.py's S_INT path has no identity gate (only a separate consent gate); same genus of gap as F-001, out of this PR's scope, tracked as ACCEPTED_RISK with a mandatory follow-up packet (TP-DMX-RTE-V3-LEGACY-AUTHORITY-FAIL-CLOSED-001)"
+        ],
+        "skip_reason": null
+    }
 }
