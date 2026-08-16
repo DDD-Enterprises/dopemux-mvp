@@ -1,0 +1,42 @@
+{
+  "packet_id": "TP-DMX-PR-PREP-SPECIALIST-V2-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "head_sha": "3fa5c8e97b998734205a2dbd42a282ff82625ce6",
+  "generated_at": "2026-08-17T00:30:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --print \"<S4 independent audit R7 prompt for TP-DMX-PR-PREP-SPECIALIST-V2-001, targeting merge head 488e6b89773255ac08b915a2bc6ba6e489a33ce2, narrowly scoped to confirm the drift-closure merge is inert with respect to this packet's owned content -- not a re-derivation of R1-R6 substance>\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/AUDITOR_REPAIR_3_REPORT.md",
+    "findings": [
+      {
+        "id": "R5-WHOLE-TREE-CONFLICT-MARKERS",
+        "severity": "LOW",
+        "title": "Pre-existing, out-of-scope repository conflict-marker debt (not introduced by this packet)",
+        "status": "ACCEPTED_RISK",
+        "body": "Carried forward from R5, unaltered. The initial R5 audit (whole-tree scope) found real, unresolved git conflict markers in docs/pr_merge/usage-patterns.md, docs/planes/pm/write-boundaries.md, docs/planes/pm/pm-implementation-ledger.md, and further hits under docs/archive/ and proof/. Deterministically proven byte-identical on both parents of the C1-R5 merge commit (88c3cc73cd, 6626aa9a58) before that merge; traces to unrelated commit 09b648f176 (2026-03-30, #361); outside this packet's owned paths. Operator-adjudicated out of scope for TP-DMX-PR-PREP-SPECIALIST-V2-001 (see proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/AUDIT_R5_SCOPE_ADJUDICATION.md); requires its own bounded repository-hygiene packet, tracked separately. Not waived as a real defect."
+      },
+      {
+        "id": "R6-FALSE-NEGATIVE-CENSUS",
+        "severity": "HIGH",
+        "title": "R3/R4 terminal semantic census was a false negative for 6 adapter families -- repaired and closed at R6",
+        "status": "RESOLVED",
+        "body": "The R3/R4 census scanned for fixed-artifact/risk-hint/GO_* vocabulary but never for TP-PRPS-000 or 7-step. Six adapter README families (claude, cursor, gemini, jules, copilot, vibe -- codex was already correctly repaired at R4) still actively declared Contract: TP-PRPS-000-1.0.0, a 7-step canonical workflow, and Status: IMPLEMENTED AND COMPLIANT, in both canonical and compatibility form, at the R5 head. R6 ran an expanded census, classified all 32 pattern hits by direct read (20 RETIRED_PROSE left unedited, 12 ACTIVE_CONTRADICTION frozen and repaired), separately fixed a 6-file broken-relative-link defect in the R4 compat-stub template, and added regression tests. Independently re-audited PASS at R6 with explicit instruction not to trust the claimed file list; independently re-confirmed still-clean at R7 (see fixes_applied)."
+      }
+    ],
+    "fixes_applied": [
+      "R5-R6: see prior PROOF.json history and findings above for full detail -- merged origin/main (R5), then repaired the false-negative census and broken links (R6), reaching C1-R6=ecab6aba71e204fc47337bee13b37e1b715dc37d, independently audited PASS.",
+      "R7: narrow, operator-scoped compatible-drift closure. Since R6's audit, main advanced 16 commits (base f0a0e839b456eab05aa6b3592fdebb31c488fa5b -> tip 75b4cfc581786a53445e412bfc8e25a6e0fdb978), entirely Second Brain ADR contract/evidence work with zero path overlap against this packet's owned surfaces (verified via comm -12 before merging: 58 files touched by main, 0 overlap with the 105 files this branch had changed). Merged as a normal merge commit (not rebase/squash/force-push), C1-R7=488e6b89773255ac08b915a2bc6ba6e489a33ce2, two parents (R6 head f4fa9c2555, main tip 75b4cfc581). Verified: R6's substantive PR-Prep content byte-unchanged (git diff --exit-code over the full owned-surface set = 0), zero conflict markers in the owned universe, semantic census still clean, zero broken links, 220/220 governance tests (PR-Prep-specific count unchanged; total rose only because main's own merge added unrelated Second Brain tests), schema-valid, 0 commits behind main. Independently re-audited PASS, explicitly scoped narrower than R6 -- confirms the merge is inert with respect to this packet rather than re-deriving R1-R6 substance."
+    ],
+    "remaining_risks": [
+      "AUDIT_TOPOLOGY, NAMED NOT CONFLATED. AUDITED_TREE (the substantive content examined by the R7 audit) = C1-R7 = 488e6b89773255ac08b915a2bc6ba6e489a33ce2. This PROOF.json's head_sha, 3fa5c8e97b998734205a2dbd42a282ff82625ce6, is the AUDIT_EVIDENCE_HEAD: a proof-only successor that adds only proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/{AUDITOR_REPAIR_3_REPORT.md,AGY_AUDIT_RAW_R7.txt,S4_AUDIT_PROMPT_R7.md} on top of C1-R7. C1-R7 is an ancestor of AUDIT_EVIDENCE_HEAD; no substantive byte changed after C1-R7. This bridge commit itself adds only proof/pr_merge/embedded-audit/pr-1224/** on top of AUDIT_EVIDENCE_HEAD -- a second proof-only delta, not a re-audit.",
+      "This PROOF.json supersedes the prior R6 proof at the same path (R6 audited C1-R6=ecab6aba71e204fc47337bee13b37e1b715dc37d, AUDIT_EVIDENCE_HEAD=514b8d8c38daf564e9bd95ce9a9f8519ce9b4b95); superseded solely by ordinary main-drift movement requiring the branch to stay up to date, NOT by any reopened R6 finding -- R6's substantive content is confirmed byte-unchanged (see fixes_applied). R1-R6 evidence remain on record unaltered at proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/, including the R5-initial whole-tree FAIL, the R5-scoped PASS, and the R6 false-negative-census repair.",
+      "R7 deliberately does not re-audit R1-R6 substance; it verifies only that R6's content is unchanged and main's drift is disjoint. If a future round needs to re-verify R1-R6 substance from scratch, that is a separate, explicitly-scoped decision, not implied by this proof.",
+      "Merge is NOT authorized by this proof. Only readiness-check progression (exact-head CI and PR Steward) is authorized. Per the operator's explicit instruction: stop at a fresh READY_FOR_OPERATOR_MERGE_DECISION -- do not merge #1224."
+    ],
+    "skip_reason": null
+  }
+}
