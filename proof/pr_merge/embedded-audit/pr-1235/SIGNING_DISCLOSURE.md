@@ -47,7 +47,7 @@ schema/config/workflow paths are touched. Full report:
 | Term | Meaning | SHA |
 |---|---|---|
 | `AUDITED_TREE` | commit examined by the independent audit | `bbcd474a0fb81a160e68537eb56c5b195133072b` |
-| `AUDIT_EVIDENCE_HEAD` | proof-only successor adding only the audit report/transcript/prompt | `a4c9aef0150c7e900ab3f91e1bfe4c658d59bc3e` |
+| `AUDIT_EVIDENCE_HEAD` | proof-only successor adding only the audit report/transcript/prompt | `fce3af6492cdc2c88c9b5894b4e8e07afb7545e9` |
 | this bridge commit | adds only `proof/pr_merge/embedded-audit/pr-1235/**` on top of `AUDIT_EVIDENCE_HEAD` | (this commit) |
 
 `AUDITED_TREE` is an ancestor of `AUDIT_EVIDENCE_HEAD`; no substantive byte
@@ -76,6 +76,19 @@ check correctly rejected it (`objects_unreachable`), exactly as the
 fail-closed design intends. This PROOF.json corrects `head_sha` to the
 real AUDIT_EVIDENCE_HEAD, `a4c9aef0150c7e900ab3f91e1bfe4c658d59bc3e`, and
 is re-signed accordingly.
+
+## Second correction
+
+The original `AUDIT_EVIDENCE_HEAD`, `a4c9aef0150c7e900ab3f91e1bfe4c658d59bc3e`, carried
+packet evidence (`AUDITOR_REPORT.md`, `AGY_AUDIT_RAW.json`) from an AGY invocation that
+returned `status: "ERROR"` (a cascade code-action charset-decoding failure), not `SUCCESS` --
+despite plausible-looking PASS content in its response body, which had been mistakenly
+promoted into `embedded_audit.status: "PASS"` in the first two signed proofs. A live review
+comment correctly flagged this. The audit was re-run against the exact same `AUDITED_TREE`
+with the same prompt, returning a genuine `status: "SUCCESS"`, verdict PASS (substance
+unchanged -- the underlying facts were always a trivial, independently reverifiable
+single-file revert). The new evidence lives in commit `fce3af6492cdc2c88c9b5894b4e8e07afb7545e9`,
+now the `AUDIT_EVIDENCE_HEAD`, and this PROOF.json is re-signed against it.
 
 ## What this proof authorizes
 
