@@ -11,6 +11,12 @@
 #       repo, pr_number, head_sha (the audited commit), and a PASSING,
 #       schema-valid embedded_audit object (auditor_tool/auditor_model must be
 #       values from schemas/proof/embedded_audit.schema.json).
+#   - The canonical AGENTS.md 9.1 packet proof bundle (proof/<PACKET_ID>/
+#     {PROOF.json,<report>,review_bundle/}) is ALREADY COMMITTED (as its own
+#     proof-only successor commit) before running this script -- the
+#     trusted acceptance engine reads it from committed git blobs at the
+#     final PR head, never the working tree, so this script fails closed if
+#     that directory has any uncommitted changes.
 #   - Your PUBLIC key is listed in config/audit/embedded-audit-allowed-signers
 #     on main (one-time setup; instructions in that file).
 #
@@ -43,7 +49,7 @@ fi
 # or policy elsewhere (required:false, missing invocation, etc.) must not be
 # signed as "proof shape OK" only to be rejected later by CI's full check.
 python3 - "$PROOF_FILE" "$PR_NUMBER" <<'PY'
-import json, re, sys
+import json, re, subprocess, sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path.cwd()))
@@ -52,6 +58,24 @@ from scripts.audit.local_audit_acceptance import (
     policy_errors,
     schema_validation_errors,
 )
+
+
+def _git_dirty(path: Path) -> list[str]:
+    """Uncommitted (untracked/modified/staged) changes under ``path``.
+
+    The trusted acceptance engine reads the packet bundle from committed git
+    BLOBS at the final PR head -- never the working tree. A filesystem-only
+    preflight (Path.is_file()/is_dir()/rglob()) can report "OK" for a bundle
+    that exists on disk but was never actually committed, or was modified
+    after the last commit; CI would then see a stale or absent bundle and
+    reject with packet_proof_absent/packet_report_absent/etc. even though
+    signing "succeeded" locally.
+    """
+    result = subprocess.run(
+        ["git", "status", "--porcelain", "--", str(path)],
+        capture_output=True, text=True, check=False,
+    )
+    return [line for line in result.stdout.splitlines() if line.strip()]
 
 proof_file, pr_number = Path(sys.argv[1]), int(sys.argv[2])
 proof = json.loads(proof_file.read_text(encoding="utf-8"))
@@ -88,12 +112,26 @@ else:
     packet_proof_path = packet_dir / "PROOF.json"
     report_file = Path(report_path)
     review_bundle_dir = packet_dir / "review_bundle"
-    if not report_file.is_file():
-        errors.append(f"{report_path} is not a file")
-    if not review_bundle_dir.is_dir() or not any(
+    # Explicit is_symlink() checks: Path.is_file()/is_dir() FOLLOW symlinks,
+    # so a symlinked report file or a review_bundle/ that is itself a
+    # symlink would otherwise pass here even though the eventual committed
+    # blob has mode 120000 and the trusted acceptance engine rejects it.
+    if report_file.is_symlink() or not report_file.is_file():
+        errors.append(f"{report_path} is not a regular file (symlink or absent)")
+    if review_bundle_dir.is_symlink() or not review_bundle_dir.is_dir():
+        errors.append(f"{review_bundle_dir}/ is not a real directory (symlink or absent)")
+    elif not any(
         p.is_file() and not p.is_symlink() for p in review_bundle_dir.rglob("*")
     ):
         errors.append(f"{review_bundle_dir}/ missing or empty (no real file entries)")
+    dirty = _git_dirty(packet_dir)
+    if dirty:
+        errors.append(
+            f"{packet_dir}/ has uncommitted changes -- commit the canonical packet "
+            "proof bundle BEFORE signing, since the trusted acceptance engine reads "
+            "it from committed git blobs, not the working tree: "
+            + "; ".join(dirty[:5])
+        )
     if not packet_proof_path.is_file():
         errors.append(f"{packet_proof_path} not present")
     else:

@@ -806,6 +806,156 @@ def test_signer_preflight_rejects_reserved_pr_merge_packet_id(tmp_path: Path) ->
     assert "REJECTED by CI" in result.stderr
 
 
+def _build_signer_scratch_repo(tmp_path: Path, *, packet_id: str = "TP-DMX-TEST-SIGNER") -> Path:
+    """A real git repo (not a bare filesystem scratch dir) for signer tests
+    that need to exercise git-state-aware checks (uncommitted-bundle
+    detection), which a non-repo scratch dir can't."""
+    import shutil
+
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    _git(scratch, "init", "--quiet", "--initial-branch=main")
+    _git(scratch, "config", "user.email", "tester@example.invalid")
+    _git(scratch, "config", "user.name", "Tester")
+    shutil.copytree(ROOT / "schemas", scratch / "schemas")
+    _git(scratch, "add", "schemas")
+    _git(scratch, "commit", "--quiet", "-m", "schemas")
+    return scratch
+
+
+def _write_packet_bundle(packet_dir: Path, packet_id: str, report_path: str) -> dict:
+    packet_dir.mkdir(parents=True)
+    (packet_dir / "AUDITOR_REPORT.md").write_text("PASS\n", encoding="utf-8")
+    bundle_dir = packet_dir / "review_bundle"
+    bundle_dir.mkdir()
+    (bundle_dir / "evidence.txt").write_text("x\n", encoding="utf-8")
+    shared = {
+        "status": "PASS",
+        "auditor_tool": "agy",
+        "auditor_model": "gemini-3.1-pro-high",
+        "invocation": "agy --model gemini-3.1-pro-high",
+        "exit_code": 0,
+        "report_path": report_path,
+        "findings": [],
+        "fixes_applied": [],
+        "remaining_risks": [],
+        "skip_reason": None,
+    }
+    (packet_dir / "PROOF.json").write_text(
+        json.dumps(
+            {"packet_id": packet_id, "repo": REPO, "head_sha": "a" * 40, "embedded_audit": shared}
+        ),
+        encoding="utf-8",
+    )
+    return shared
+
+
+def test_signer_preflight_rejects_uncommitted_packet_bundle(tmp_path: Path) -> None:
+    """The trusted acceptance engine reads the packet bundle from COMMITTED
+    git blobs at the final PR head, never the working tree. A packet bundle
+    that exists on disk but was never committed (or was modified since)
+    must be rejected at signing time -- otherwise the signer reports "proof
+    shape OK" for a bundle CI will never actually see at the pushed head.
+    Regression for the R6 review finding."""
+    packet_id = "TP-DMX-TEST-SIGNER-UNCOMMITTED"
+    scratch = _build_signer_scratch_repo(tmp_path, packet_id=packet_id)
+    report_path = f"proof/{packet_id}/AUDITOR_REPORT.md"
+    packet_dir = scratch / "proof" / packet_id
+    shared = _write_packet_bundle(packet_dir, packet_id, report_path)
+    # Deliberately NOT committing the packet bundle -- it exists only in the
+    # untracked working tree, exactly the scenario the finding describes.
+
+    pr_dir = scratch / "proof" / "pr_merge" / "embedded-audit" / "pr-9999"
+    pr_dir.mkdir(parents=True)
+    (pr_dir / "PROOF.json").write_text(
+        json.dumps(
+            {"repo": REPO, "pr_number": 9999, "head_sha": "a" * 40, "embedded_audit": shared}
+        ),
+        encoding="utf-8",
+    )
+
+    fake_key = tmp_path / "unused_key"
+    fake_key.write_text("not a real key\n", encoding="utf-8")
+
+    result = subprocess.run(
+        ["bash", str(SIGN_SCRIPT), "9999", str(fake_key)],
+        cwd=str(scratch),
+        capture_output=True,
+        text=True,
+        env={"PATH": "/usr/bin:/bin:/usr/local/bin", "PYTHONPATH": str(ROOT)},
+    )
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "uncommitted changes" in result.stderr
+    assert "REJECTED by CI" in result.stderr
+
+
+def test_signer_preflight_rejects_symlinked_report_and_bundle_root(tmp_path: Path) -> None:
+    """Path.is_file()/is_dir() FOLLOW symlinks, so a symlinked report file
+    or a review_bundle/ that is itself a symlink would otherwise pass the
+    signer's filesystem-based preflight even though the eventual committed
+    blob (mode 120000) is rejected by the trusted acceptance engine.
+    Regression for the R6 review finding -- distinct from the R5 fix, which
+    covered symlinked ENTRIES inside review_bundle, not the report file or
+    the bundle root itself."""
+    import os
+
+    packet_id = "TP-DMX-TEST-SIGNER-SYMLINK"
+    scratch = _build_signer_scratch_repo(tmp_path, packet_id=packet_id)
+    report_path = f"proof/{packet_id}/AUDITOR_REPORT.md"
+    packet_dir = scratch / "proof" / packet_id
+    packet_dir.mkdir(parents=True)
+    # report_path itself is a symlink, not a real file.
+    real_report = scratch / "real_report.md"
+    real_report.write_text("PASS\n", encoding="utf-8")
+    os.symlink(real_report, packet_dir / "AUDITOR_REPORT.md")
+    bundle_dir = packet_dir / "review_bundle"
+    bundle_dir.mkdir()
+    (bundle_dir / "evidence.txt").write_text("x\n", encoding="utf-8")
+    shared = {
+        "status": "PASS",
+        "auditor_tool": "agy",
+        "auditor_model": "gemini-3.1-pro-high",
+        "invocation": "agy --model gemini-3.1-pro-high",
+        "exit_code": 0,
+        "report_path": report_path,
+        "findings": [],
+        "fixes_applied": [],
+        "remaining_risks": [],
+        "skip_reason": None,
+    }
+    (packet_dir / "PROOF.json").write_text(
+        json.dumps(
+            {"packet_id": packet_id, "repo": REPO, "head_sha": "a" * 40, "embedded_audit": shared}
+        ),
+        encoding="utf-8",
+    )
+    _git(scratch, "add", "-A")
+    _git(scratch, "commit", "--quiet", "-m", "packet bundle with symlinked report")
+
+    pr_dir = scratch / "proof" / "pr_merge" / "embedded-audit" / "pr-9999"
+    pr_dir.mkdir(parents=True)
+    (pr_dir / "PROOF.json").write_text(
+        json.dumps(
+            {"repo": REPO, "pr_number": 9999, "head_sha": "a" * 40, "embedded_audit": shared}
+        ),
+        encoding="utf-8",
+    )
+
+    fake_key = tmp_path / "unused_key"
+    fake_key.write_text("not a real key\n", encoding="utf-8")
+
+    result = subprocess.run(
+        ["bash", str(SIGN_SCRIPT), "9999", str(fake_key)],
+        cwd=str(scratch),
+        capture_output=True,
+        text=True,
+        env={"PATH": "/usr/bin:/bin:/usr/local/bin", "PYTHONPATH": str(ROOT)},
+    )
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "not a regular file" in result.stderr
+    assert "REJECTED by CI" in result.stderr
+
+
 def test_packet_proof_packet_id_mismatch_is_rejected(tmp_path: Path) -> None:
     """The packet PROOF.json's own declared packet_id must equal the
     PACKET_ID derived from the signed report_path -- path placement alone is
