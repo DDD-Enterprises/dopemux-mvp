@@ -695,6 +695,117 @@ def test_review_bundle_gitlink_only_is_rejected(tmp_path: Path) -> None:
     )
 
 
+def test_review_bundle_symlink_only_is_rejected(tmp_path: Path) -> None:
+    """review_bundle must contain a real regular-file blob, not a symlink.
+
+    Regression for the R5 review finding: git reports a symlink's mode as
+    ``120000`` but its object TYPE is still ``blob`` (the blob content is the
+    target path string, not stored audit evidence) -- the R3 gitlink fix
+    checked object type alone, which a symlink-only review_bundle would
+    still satisfy despite containing no real in-repository evidence.
+    """
+    import os
+
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(include_review_bundle=False)
+    bundle_dir = fixture.packet_dir / "review_bundle"
+    bundle_dir.mkdir(parents=True, exist_ok=True)
+    os.symlink("/etc/passwd", bundle_dir / "evidence.txt")
+    _git(fixture.repo, "add", str(bundle_dir.relative_to(fixture.repo)))
+    _git(fixture.repo, "commit", "--quiet", "-m", "symlink-only review_bundle")
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("packet_review_bundle_missing_or_empty")
+        for r in attestation["reasons"]
+    )
+
+
+def test_report_path_as_symlink_is_rejected(tmp_path: Path) -> None:
+    """AUDITOR_REPORT.md must be a real regular-file blob, not a symlink.
+
+    Same class of bug as the review_bundle symlink case, applied to the
+    exact-file check for report_path.
+    """
+    import os
+
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(include_report=False)
+    os.symlink(
+        "/etc/passwd", fixture.packet_dir / "AUDITOR_REPORT.md"
+    )
+    _git(fixture.repo, "add", str(fixture.packet_dir.relative_to(fixture.repo)))
+    _git(fixture.repo, "commit", "--quiet", "-m", "report path is a symlink")
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(r.startswith("packet_report_absent") for r in attestation["reasons"])
+
+
+def test_signer_preflight_rejects_reserved_pr_merge_packet_id(tmp_path: Path) -> None:
+    """The signer must reuse the ACTUAL _extract_packet_id, not a
+    re-implemented parallel derivation, so it can never independently drift
+    out of sync with the trusted acceptance engine's reserved-namespace
+    rejection. Regression for the R5 review finding: after acceptance
+    started rejecting PACKET_ID="pr_merge", the signer still derived it
+    independently and would have signed "proof shape OK" for a proof that
+    evaluate_local_audit() would then reject with packet_id_undecidable."""
+    import shutil
+
+    scratch = tmp_path / "scratch"
+    shutil.copytree(ROOT / "schemas", scratch / "schemas")
+
+    packet_dir = scratch / "proof" / "pr_merge"
+    packet_dir.mkdir(parents=True)
+    (packet_dir / "AUDITOR_REPORT.md").write_text("PASS\n", encoding="utf-8")
+    bundle_dir = packet_dir / "review_bundle"
+    bundle_dir.mkdir()
+    (bundle_dir / "evidence.txt").write_text("x\n", encoding="utf-8")
+
+    shared = {
+        "status": "PASS",
+        "auditor_tool": "agy",
+        "auditor_model": "gemini-3.1-pro-high",
+        "invocation": "agy --model gemini-3.1-pro-high",
+        "exit_code": 0,
+        "report_path": "proof/pr_merge/AUDITOR_REPORT.md",
+        "findings": [],
+        "fixes_applied": [],
+        "remaining_risks": [],
+        "skip_reason": None,
+    }
+    (packet_dir / "PROOF.json").write_text(
+        json.dumps(
+            {"packet_id": "pr_merge", "repo": REPO, "head_sha": "a" * 40, "embedded_audit": shared}
+        ),
+        encoding="utf-8",
+    )
+
+    pr_dir = scratch / "proof" / "pr_merge" / "embedded-audit" / "pr-9999"
+    pr_dir.mkdir(parents=True)
+    (pr_dir / "PROOF.json").write_text(
+        json.dumps(
+            {"repo": REPO, "pr_number": 9999, "head_sha": "a" * 40, "embedded_audit": shared}
+        ),
+        encoding="utf-8",
+    )
+
+    fake_key = tmp_path / "unused_key"
+    fake_key.write_text("not a real key\n", encoding="utf-8")
+
+    result = subprocess.run(
+        ["bash", str(SIGN_SCRIPT), "9999", str(fake_key)],
+        cwd=str(scratch),
+        capture_output=True,
+        text=True,
+        env={"PATH": "/usr/bin:/bin:/usr/local/bin", "PYTHONPATH": str(ROOT)},
+    )
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "PACKET_ID" in result.stderr
+    assert "REJECTED by CI" in result.stderr
+
+
 def test_packet_proof_packet_id_mismatch_is_rejected(tmp_path: Path) -> None:
     """The packet PROOF.json's own declared packet_id must equal the
     PACKET_ID derived from the signed report_path -- path placement alone is

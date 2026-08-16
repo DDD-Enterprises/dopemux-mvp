@@ -47,7 +47,11 @@ import json, re, sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path.cwd()))
-from scripts.audit.local_audit_acceptance import policy_errors, schema_validation_errors
+from scripts.audit.local_audit_acceptance import (
+    _extract_packet_id,
+    policy_errors,
+    schema_validation_errors,
+)
 
 proof_file, pr_number = Path(sys.argv[1]), int(sys.argv[2])
 proof = json.loads(proof_file.read_text(encoding="utf-8"))
@@ -70,14 +74,13 @@ else:
 
 # Mirror local_audit_acceptance.py's canonical packet-bundle gate (AGENTS.md
 # 9.1) here too, so a mismatched/missing bundle fails at signing time, not
-# only after CI runs the real check against the pushed commit.
+# only after CI runs the real check against the pushed commit. Reuses the
+# ACTUAL _extract_packet_id -- not a re-implemented parallel derivation --
+# so this can never independently drift out of sync with what the trusted
+# acceptance engine accepts (e.g. by forgetting the reserved-namespace
+# rejection when that gets added there).
 report_path = str(embedded.get("report_path") or "")
-pattern = (schema or {}).get("properties", {}).get("report_path", {}).get("pattern")
-packet_id = None
-if isinstance(pattern, str) and re.match(pattern, report_path):
-    segments = report_path.split("/")
-    if len(segments) == 3 and segments[0] == "proof" and segments[1]:
-        packet_id = segments[1]
+packet_id = _extract_packet_id(report_path, schema) if schema is not None else None
 if packet_id is None:
     errors.append(f"embedded_audit.report_path={report_path!r} does not yield a PACKET_ID")
 else:

@@ -166,14 +166,38 @@ def _tree_type(repo_root: Path, rev: str, path: str) -> str | None:
     return result.stdout.decode("utf-8", "replace").strip()
 
 
-def _tree_has_entries(repo_root: Path, rev: str, path: str) -> bool:
-    """True if ``path`` is a directory (git tree) at ``rev`` with >=1 real blob.
+# Regular-file git modes only -- a symlink (120000) is also object type
+# "blob" but its content is a target path string, not stored audit evidence;
+# a gitlink/submodule (160000) is object type "commit", already excluded by
+# requiring one of these exact modes.
+_REGULAR_FILE_MODES = frozenset({"100644", "100755"})
 
-    Deliberately checks each recursive entry's OWN object type, not just that
-    ``ls-tree`` printed a line under this path: a gitlink/submodule entry
-    (object type ``commit``) is a pointer to another repository's history,
-    not in-repo evidence, but a bare name-only listing would print its path
-    just like a real file and satisfy a presence-only check.
+
+def _is_regular_file(repo_root: Path, rev: str, path: str) -> bool:
+    """True if ``path`` is a real regular-file blob at ``rev`` -- not a
+    symlink (mode 120000, object type "blob" but content is a target path
+    string) and not a gitlink/submodule (object type "commit")."""
+    result = _run_git(repo_root, "ls-tree", rev, "--", path)
+    if result.returncode != 0:
+        return False
+    for line in result.stdout.decode("utf-8", "replace").splitlines():
+        fields = line.split("\t", 1)[0].split()
+        if len(fields) >= 2 and fields[0] in _REGULAR_FILE_MODES and fields[1] == "blob":
+            return True
+    return False
+
+
+def _tree_has_entries(repo_root: Path, rev: str, path: str) -> bool:
+    """True if ``path`` is a directory (git tree) at ``rev`` with >=1 real
+    regular-file blob.
+
+    Deliberately checks each recursive entry's OWN mode, not just its object
+    type: a gitlink/submodule entry (object type ``commit``) is a pointer to
+    another repository's history, and a symlink entry (mode ``120000``,
+    object type ``blob``) points at a path string rather than storing actual
+    audit evidence in this repository -- neither satisfies ">=1 real blob"
+    even though a bare name-only listing would print their path just like a
+    real file.
     """
     if _tree_type(repo_root, rev, path) != "tree":
         return False
@@ -183,7 +207,7 @@ def _tree_has_entries(repo_root: Path, rev: str, path: str) -> bool:
     for line in result.stdout.decode("utf-8", "replace").splitlines():
         # ls-tree line format: "<mode> <type> <sha>\t<path>"
         fields = line.split("\t", 1)[0].split()
-        if len(fields) >= 2 and fields[1] == "blob":
+        if len(fields) >= 2 and fields[0] in _REGULAR_FILE_MODES and fields[1] == "blob":
             return True
     return False
 
@@ -537,9 +561,9 @@ def evaluate_local_audit(
     if packet_proof_bytes is None:
         reasons.append(f"packet_proof_absent: {packet_proof_path} not present at PR head")
         return attestation
-    if _tree_type(repo_root, head_sha, report_path) != "blob":
+    if not _is_regular_file(repo_root, head_sha, report_path):
         reasons.append(
-            f"packet_report_absent: {report_path} is not a file (blob) at PR head"
+            f"packet_report_absent: {report_path} is not a regular file at PR head"
         )
         return attestation
     review_bundle_dir = f"{packet_dir}/review_bundle"
