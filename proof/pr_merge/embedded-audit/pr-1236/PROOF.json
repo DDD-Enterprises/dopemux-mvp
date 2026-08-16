@@ -1,26 +1,27 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1236,
-  "head_sha": "5adc090065aae3c9d88a32022787a42d6c7b26c4",
-  "generated_at": "2026-08-16T01:20:00Z",
+  "head_sha": "5224218c67c9f31b854ab6c9fd60c75222ecbd0e",
+  "generated_at": "2026-08-16T01:50:00Z",
   "embedded_audit": {
     "required": true,
-    "status": "PASS",
+    "status": "PASS_WITH_RISKS",
     "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "agy --print <PR-1236 R5 verifier-repair audit prompt covering symlink-evidence and signer-drift findings> --model gemini-3.1-pro-high --effort high --sandbox --mode plan --output-format json --print-timeout 18m",
+    "invocation": "agy --print <PR-1236 R6 verifier-repair audit prompt covering signer symlink-root and uncommitted-bundle findings> --model gemini-3.1-pro-high --effort high --sandbox --mode plan --output-format json --print-timeout 18m",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001/AUDITOR_REPORT.md",
     "findings": [],
     "fixes_applied": [
-      "R1-R4 (superseded): bound head_sha to the actually-audited commit; exact blob/tree object-type checks; packet_id identity check; signer preflight schema/policy parity; ATTESTED_AUDITED_SHA documentation; schema-valid task packet; commit allowlist coverage; gitlink smuggling closed; reserved pr_merge namespace collision closed.",
-      "R5 (this commit, 5adc090065aae3c9d88a32022787a42d6c7b26c4): symlinks report git object type 'blob' too -- added mode-based checking (_REGULAR_FILE_MODES) applied to both review_bundle and report_path. Also closed a signer-parity drift: sign_local_audit_proof.sh now imports and calls the actual _extract_packet_id instead of a separately re-implemented derivation, guaranteeing it can never independently drift out of sync with the acceptance engine again."
+      "R1-R5 (superseded): bound head_sha to the actually-audited commit; exact blob/tree object-type and mode checks; packet_id identity check; signer preflight schema/policy parity; ATTESTED_AUDITED_SHA documentation; schema-valid task packet; commit allowlist coverage; gitlink and symlink-entry smuggling closed; reserved pr_merge namespace collision closed; signer reuses the actual _extract_packet_id.",
+      "R6 (this commit, 5224218c67c9f31b854ab6c9fd60c75222ecbd0e): signer preflight now explicitly rejects symlinks at the report file and review_bundle root (distinct from R5's entries-inside-the-bundle fix), and requires the packet bundle directory to have zero uncommitted git changes before signing. Dogfooded against the real committed PR #1236 bundle -- no false-positive rejection."
     ],
     "remaining_risks": [
-      "AUDIT_TOPOLOGY, NAMED NOT CONFLATED. This signed PR proof's head_sha, 5adc090065aae3c9d88a32022787a42d6c7b26c4, IS the audited commit itself -- not an evidence-head successor.",
-      "Backwards incompatibility (named non-blocking by all independent audits across R1-R5): any currently-open PR using the prior evidence-head-as-head_sha pattern (e.g. PR #1224) will now fail this stricter check if re-evaluated. Not touched by this packet -- separate, explicitly-scoped follow-up.",
-      "Self-attested local signing for the verifier repair itself -- mitigated by six independent AGY/gemini-3.1-pro-high audit passes across R1-R5 (one non-controlling ERROR-status attempt discarded), all controlling runs PASS, all re-deriving evidence from live git/pytest execution.",
-      "ATTESTED_AUDITED_SHA is a signer claim bounded by structural enforcement (no post-attested-SHA commit can smuggle code outside the two proof trees), not an independent cryptographic proof of what the auditor examined at that SHA. See module LIMITATION docstring.",
+      "AUDIT_TOPOLOGY, NAMED NOT CONFLATED. This signed PR proof's head_sha, 5224218c67c9f31b854ab6c9fd60c75222ecbd0e, IS the audited commit itself -- not an evidence-head successor.",
+      "Non-blocking (named by the R6 independent audit's own adversarial pass): a review_bundle/ containing only .gitignore'd files would pass the signer's local preflight but would not actually exist in the committed git tree, so the trusted acceptance engine would still correctly reject it in CI. Fail-closed either way, not an acceptance bypass.",
+      "Backwards incompatibility (named non-blocking by all independent audits across R1-R6): any currently-open PR using the prior evidence-head-as-head_sha pattern (e.g. PR #1224) will now fail this stricter check if re-evaluated. Not touched by this packet -- separate, explicitly-scoped follow-up.",
+      "Self-attested local signing for the verifier repair itself -- mitigated by seven independent AGY/gemini-3.1-pro-high audit passes across R1-R6, all controlling runs PASS or PASS_WITH_RISKS, all re-deriving evidence from live git/pytest execution.",
+      "ATTESTED_AUDITED_SHA is a signer claim bounded by structural enforcement, not an independent cryptographic proof of what the auditor examined at that SHA. See module LIMITATION docstring.",
       "Merge is NOT authorized by this proof. Only readiness-check progression (exact-head CI + PR Steward) is authorized. Per operator instruction: stop for an explicit operator merge decision."
     ],
     "skip_reason": null
