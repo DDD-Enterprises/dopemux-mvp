@@ -132,7 +132,15 @@ else:
             "it from committed git blobs, not the working tree: "
             + "; ".join(dirty[:5])
         )
-    if not packet_proof_path.is_file():
+    # Same class of bug as report_file/review_bundle_dir above: a TRACKED
+    # symlink at packet_proof_path can be clean per git status (the symlink
+    # itself is committed) while is_file()/read_text() follow it to valid
+    # JSON elsewhere on disk -- but CI reads the committed blob bytes, which
+    # for a symlink is the target PATH STRING, not JSON, and rejects it as
+    # malformed. Must reject the symlink here too, independent of dirty-check.
+    if packet_proof_path.is_symlink():
+        errors.append(f"{packet_proof_path} is a symlink, not a real file")
+    elif not packet_proof_path.is_file():
         errors.append(f"{packet_proof_path} not present")
     else:
         try:

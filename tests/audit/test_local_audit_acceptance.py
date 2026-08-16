@@ -956,6 +956,74 @@ def test_signer_preflight_rejects_symlinked_report_and_bundle_root(tmp_path: Pat
     assert "REJECTED by CI" in result.stderr
 
 
+def test_signer_preflight_rejects_symlinked_packet_proof(tmp_path: Path) -> None:
+    """A TRACKED symlink at proof/<PACKET_ID>/PROOF.json can be clean per
+    ``git status`` (the symlink itself is committed) while is_file()/
+    read_text() follow it to valid JSON elsewhere on disk -- but CI reads
+    the committed blob bytes, which for a symlink is the target PATH
+    STRING, not JSON, and rejects it as malformed. Regression for the R7
+    review finding -- distinct from R6, which covered the report file and
+    review_bundle root, not packet_proof_path itself."""
+    import os
+
+    packet_id = "TP-DMX-TEST-SIGNER-PROOF-SYMLINK"
+    scratch = _build_signer_scratch_repo(tmp_path, packet_id=packet_id)
+    report_path = f"proof/{packet_id}/AUDITOR_REPORT.md"
+    packet_dir = scratch / "proof" / packet_id
+    packet_dir.mkdir(parents=True)
+    (packet_dir / "AUDITOR_REPORT.md").write_text("PASS\n", encoding="utf-8")
+    bundle_dir = packet_dir / "review_bundle"
+    bundle_dir.mkdir()
+    (bundle_dir / "evidence.txt").write_text("x\n", encoding="utf-8")
+
+    shared = {
+        "status": "PASS",
+        "auditor_tool": "agy",
+        "auditor_model": "gemini-3.1-pro-high",
+        "invocation": "agy --model gemini-3.1-pro-high",
+        "exit_code": 0,
+        "report_path": report_path,
+        "findings": [],
+        "fixes_applied": [],
+        "remaining_risks": [],
+        "skip_reason": None,
+    }
+    # PROOF.json itself is a symlink to real, valid JSON elsewhere.
+    real_proof = scratch / "real_proof.json"
+    real_proof.write_text(
+        json.dumps(
+            {"packet_id": packet_id, "repo": REPO, "head_sha": "a" * 40, "embedded_audit": shared}
+        ),
+        encoding="utf-8",
+    )
+    os.symlink(real_proof, packet_dir / "PROOF.json")
+    _git(scratch, "add", "-A")
+    _git(scratch, "commit", "--quiet", "-m", "packet bundle with symlinked PROOF.json")
+
+    pr_dir = scratch / "proof" / "pr_merge" / "embedded-audit" / "pr-9999"
+    pr_dir.mkdir(parents=True)
+    (pr_dir / "PROOF.json").write_text(
+        json.dumps(
+            {"repo": REPO, "pr_number": 9999, "head_sha": "a" * 40, "embedded_audit": shared}
+        ),
+        encoding="utf-8",
+    )
+
+    fake_key = tmp_path / "unused_key"
+    fake_key.write_text("not a real key\n", encoding="utf-8")
+
+    result = subprocess.run(
+        ["bash", str(SIGN_SCRIPT), "9999", str(fake_key)],
+        cwd=str(scratch),
+        capture_output=True,
+        text=True,
+        env={"PATH": "/usr/bin:/bin:/usr/local/bin", "PYTHONPATH": str(ROOT)},
+    )
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "is a symlink" in result.stderr
+    assert "REJECTED by CI" in result.stderr
+
+
 def test_packet_proof_packet_id_mismatch_is_rejected(tmp_path: Path) -> None:
     """The packet PROOF.json's own declared packet_id must equal the
     PACKET_ID derived from the signed report_path -- path placement alone is
