@@ -175,6 +175,9 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   // Verify start button tooltip
   expect(content).toMatch(/<Tooltip\s+title=\{\s*`Start task and switch active focus to: \$\{task\.title\}`\s*\}\s*arrow\s*>/);
 
+  // Verify disableTypography on ListItemText to prevent DOM nesting validation warning
+  expect(content).toContain('disableTypography');
+
   // Verify Predictive Skip and Soft Confirmation
   expect(content).toContain('const [isSkipConfirming, setIsSkipConfirming] = useState(false);');
   expect(content).toContain('const skipConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);');
