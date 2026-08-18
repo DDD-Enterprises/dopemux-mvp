@@ -1,0 +1,204 @@
+{
+  "id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001",
+  "project": "dopemux-mvp",
+  "target": "Publish the already-completed and independently audited Second Brain ADR acceptance/persistence work from local branch tp/DMX-SB-ADR-ACCEPTANCE-002 (10x operator ACCEPT, persisted and audited PASS 0/0 by TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001) to origin and a PR against main, without re-performing ADR acceptance, changing any accepted architectural decision, or authorizing implementation, runtime, or production mutation.",
+  "invariants": [
+    "TYPE=GOVERNANCE_AUTHORITY_PUBLICATION. RISK=L2. MODE=SUPERVISED_PUBLICATION.",
+    "ADR_DISPOSITIONS=10x_ACCEPT. ACCEPTANCE_PERSISTENCE=COMPLETE_LOCAL (inherited, not re-derived).",
+    "IMPLEMENTATION_EXECUTION=NOT_AUTHORIZED. RUNTIME_MUTATION=FORBIDDEN. PRODUCTION_MUTATION=FORBIDDEN. SLICE_0=FORBIDDEN.",
+    "REBASE=FORBIDDEN. FORCE_PUSH=FORBIDDEN. ADMIN_OVERRIDE=FORBIDDEN. MERGE=OPERATOR_ONLY. BRANCH_DELETE=NO.",
+    "Does not redisposition any ADR inside this packet; does not edit accepted ADR substance to resolve merge conflicts.",
+    "Does not touch the unrelated active checkout feat/local-audit-proof-binding-001; all work performed in an isolated worktree.",
+    "The publication-time drift guard (discovery base 72af781e42e0702d9047946e0f5a250e7dff0fa5 through the execution-time origin/main) must return NO_NEW_MATERIAL_DRIFT, or MATERIAL_DRIFT_CONTAINED_NO_ACCEPTANCE_IMPACT with explicit path/class evidence, before any merge of current main into the acceptance branch.",
+    "A safe update-by-merge (git merge --no-ff, no rebase/squash/force) is the only permitted way to incorporate current main; conflicts touching accepted-authority paths (docs/90-adr/**, ADR_ACCEPTANCE_HEAD.json, ledger/binding/receipt, Second Brain machine contracts) stop the packet.",
+    "Post-merge, every accepted-authority file must be reconstructed and hashed and shown byte-identical to its pre-merge state.",
+    "A fresh independent publication-integrity audit is required before push; PASS_ADR_ACCEPTANCE_PUBLICATION_INTEGRITY with BLOCKERS=0 and MUST_FIX=0. Preferred route AGY/gemini-3.1-pro-high; alternative grok-cli -m grok-4.5 (explicit model flag, no fallback within one run) when the preferred route cannot complete.",
+    "If the preferred audit route fails to produce a verdict, every failed attempt is disclosed in custody rather than silently dropped; none may contribute to the controlling verdict.",
+    "Merge-method requirement for a later operator merge decision: plain MERGE COMMIT only (no squash, no rebase, no force-push, no --admin) so the audited acceptance lineage stays reachable as real ancestors of main.",
+    "This packet authorizes push and a draft-then-ready PR only. It never authorizes merge."
+  ],
+  "depends_on": [
+    "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001",
+    "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002",
+    "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001",
+    "final_packet": false
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Resolve and verify the exact local acceptance branch and audit lineage against the packet's stated inputs, in an isolated worktree, without touching the unrelated active checkout.",
+      "requirements": [
+        "Local tip of tp/DMX-SB-ADR-ACCEPTANCE-002 matches the expected prefix d38ec2f871.",
+        "The audited head 0defe1cab4 is a confirmed ancestor of the local tip.",
+        "feat/local-audit-proof-binding-001 (the unrelated active checkout) is never entered or mutated."
+      ],
+      "commands": [
+        "git worktree add /Users/hue/code/dopemux-mvp__sb-adr-acceptance-002 tp/DMX-SB-ADR-ACCEPTANCE-002",
+        "git rev-parse tp/DMX-SB-ADR-ACCEPTANCE-002",
+        "git merge-base --is-ancestor 0defe1cab4 tp/DMX-SB-ADR-ACCEPTANCE-002"
+      ],
+      "expected_files": [],
+      "validation": [
+        "LOCAL_TIP starts_with d38ec2f871.",
+        "AUDITED_HEAD_IS_ANCESTOR_OF_LOCAL_TIP=true.",
+        "WORKTREE_CLEAN=true."
+      ]
+    },
+    {
+      "id": "S1_S2",
+      "task": "Independently verify the persisted 10x ACCEPT dispositions and the historical audit lineage between the audited head and the local tip.",
+      "requirements": [
+        "ADR_ACCEPTANCE_HEAD.json reports accepted_adr_count=10, all ten operator_disposition=ACCEPT, no eleventh Second Brain ADR record.",
+        "R2_AUDITOR_IDENTITY_REASONING_CORRECTION.json is present, append-only, and the original #1227 custody record it corrects is byte-identical to its state on main.",
+        "Every commit between the audited head and the local tip is classified (AUDITED_SUBSTANCE / PROOF_ONLY / RECEIPT_ONLY / OPERATOR_DISPOSITION_PERSISTENCE / OTHER) with no unexplained post-audit substantive mutation."
+      ],
+      "commands": [
+        "python3 -c \"import json; d=json.load(open('docs/03-reference/architecture/second-brain/adr-candidates/ADR_ACCEPTANCE_HEAD.json')); ...\"",
+        "git diff 75b4cfc581:proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/R2_AUDITOR_IDENTITY_RECONCILIATION.json <worktree copy>",
+        "git log --oneline 0defe1cab4..d38ec2f871"
+      ],
+      "expected_files": [],
+      "validation": [
+        "10x ACCEPT, 0x other.",
+        "Historical #1227 custody record diff is empty.",
+        "The single post-audit commit (d38ec2f871) classifies PROOF_ONLY."
+      ]
+    },
+    {
+      "id": "S3_S4",
+      "task": "Refresh origin/main and run a fresh publication-time drift guard from the discovery base through the execution-time main.",
+      "requirements": [
+        "origin/main confirmed unchanged since packet issue (57b239e76b).",
+        "Remote branch and PR for tp/DMX-SB-ADR-ACCEPTANCE-002 confirmed absent before push.",
+        "Composed drift verdict across all discovery segments is NO_NEW_MATERIAL_DRIFT.",
+        "Zero same-path overlap between the acceptance branch's own changed files and main's delta since the prior audited MA-08 SHA."
+      ],
+      "commands": [
+        "git fetch origin --prune && git rev-parse origin/main",
+        "git merge-base tp/DMX-SB-ADR-ACCEPTANCE-002 origin/main",
+        "git diff --name-only 75b4cfc581 origin/main",
+        "comm -12 <(sort acceptance_branch_files.txt) <(sort main_delta_files.txt)"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/PUBLICATION_DRIFT_RECHECK.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/CURRENT_MAIN_DELTA.json"
+      ],
+      "validation": [
+        "PUBLICATION_DRIFT_VERDICT=NO_NEW_MATERIAL_DRIFT.",
+        "Path-overlap intersection empty."
+      ]
+    },
+    {
+      "id": "S5_S6_S7",
+      "task": "Merge current origin/main (no-ff), reconstruct and hash every accepted-authority file before/after, and run all applicable repo validation gates.",
+      "requirements": [
+        "Merge is conflict-free (predicted by the zero-overlap check).",
+        "Every accepted-authority file (10x docs/90-adr records, ADR_ACCEPTANCE_HEAD.json, ledger/binding/receipt, R2 reasoning correction, R2 original reconciliation) is byte-identical pre/post merge.",
+        "Second Brain contract validator, pytest governance suite, and pre-commit on the changed slice all PASS."
+      ],
+      "commands": [
+        "git merge --no-ff origin/main",
+        "git diff <pre-merge> <post-merge> -- <each accepted-authority path>",
+        "python3 scripts/governance/validate_second_brain_adr_contracts.py --json",
+        "python3 -m pytest -q tests/governance/test_second_brain_adr_contracts.py",
+        "pre-commit run --files <changed slice>"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/POST_MAIN_SYNC_ACCEPTANCE_INTEGRITY.json",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/VALIDATION.json"
+      ],
+      "validation": [
+        "0 merge conflicts.",
+        "0 diff lines on every accepted-authority path.",
+        "94/0 contract validator; 63/63 pytest; 0 failing pre-commit hooks."
+      ]
+    },
+    {
+      "id": "S8_S9",
+      "task": "Obtain a fresh independent publication-integrity audit and close bounded publication proof.",
+      "requirements": [
+        "Preferred route AGY/gemini-3.1-pro-high attempted first; every failed attempt disclosed in custody.",
+        "Controlling audit returns PASS_ADR_ACCEPTANCE_PUBLICATION_INTEGRITY, BLOCKERS=0, MUST_FIX=0.",
+        "PROOF.json for this packet includes a schema-valid embedded_audit object per schemas/proof/embedded_audit.schema.json."
+      ],
+      "commands": [
+        "agy --model gemini-3.1-pro-high --mode plan --effort high --output-format json --print \"$(cat AUDIT_PROMPT.md)\"",
+        "grok --cwd <this worktree> -m grok-4.5 --always-approve --max-turns 80 --output-format plain -p \"$(cat AUDIT_PROMPT.md)\"",
+        "python3 scripts/audit/validate_audit_proof.py proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/PROOF.json"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/AUDIT_PROMPT.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/AUDITOR_REPORT.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/AUDIT_CUSTODY.json",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/COMMAND_LOG.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/HANDOFF.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/PROOF.json"
+      ],
+      "validation": [
+        "3 AGY attempts disclosed (quota exhaustion, then 2 timeouts), none contributing to the verdict.",
+        "grok-4.5 verdict PASS, 0 blockers, 0 must-fix.",
+        "validate_audit_proof.py PASS."
+      ]
+    },
+    {
+      "id": "S10_S11",
+      "task": "Push the acceptance branch and open a draft PR against main; satisfy the repo's standing embedded-audit CI gate via an operator-authorized, per-PR signed local attestation when the trusted CI auditor path cannot execute; mark ready once required checks are green and no material review threads remain unresolved.",
+      "requirements": [
+        "Push is a normal, non-force push; the remote branch was confirmed absent beforehand.",
+        "PR opened as draft against main, base current at push time.",
+        "If the repo's independent embedded audit CI gate reports NEEDS_SUPERVISOR, a signed local attestation (proof/pr_merge/embedded-audit/pr-<N>/{PROOF.json,PROOF.json.sig,SIGNING_DISCLOSURE.md}) is added only after fresh, narrowly-scoped operator authorization specific to this PR, following the established AUDITED_TREE / AUDIT_EVIDENCE_HEAD / bridge-commit topology.",
+        "PR is marked ready only once all required CI contexts are green and no material unresolved review thread remains; merge is never performed by this packet."
+      ],
+      "commands": [
+        "git push -u origin tp/DMX-SB-ADR-ACCEPTANCE-002",
+        "gh pr create --draft --base main --head tp/DMX-SB-ADR-ACCEPTANCE-002 ...",
+        "ssh-keygen -Y sign -n dopemux-embedded-audit -f ~/.ssh/dopemux_audit_signing PROOF.json",
+        "gh pr checks 1242 --repo DDD-Enterprises/dopemux-mvp",
+        "gh pr ready 1242 --repo DDD-Enterprises/dopemux-mvp"
+      ],
+      "expected_files": [
+        "proof/pr_merge/embedded-audit/pr-1242/PROOF.json",
+        "proof/pr_merge/embedded-audit/pr-1242/PROOF.json.sig",
+        "proof/pr_merge/embedded-audit/pr-1242/SIGNING_DISCLOSURE.md",
+        "task-packets/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001.json"
+      ],
+      "validation": [
+        "PR #1242 opened, later required 10/10 CI green.",
+        "0 material unresolved review threads before marking ready.",
+        "PR marked ready for review; not merged."
+      ]
+    }
+  ],
+  "commit": {
+    "message": "docs(second-brain): publish accepted ADR authority",
+    "allowlist": [
+      "docs/90-adr/adr-sb-*.md",
+      "docs/90-adr/adr-index.md",
+      "docs/03-reference/architecture/second-brain/adr-candidates/ADR_ACCEPTANCE_HEAD.json",
+      "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/**",
+      "proof/pr_merge/embedded-audit/pr-1242/**",
+      "task-packets/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001.json"
+    ],
+    "verify": [
+      "python3 scripts/governance/validate_second_brain_adr_contracts.py",
+      "python3 -m pytest -q tests/governance/test_second_brain_adr_contracts.py",
+      "python3 scripts/audit/validate_audit_proof.py --all proof"
+    ]
+  },
+  "pr": {
+    "title": "docs(second-brain): publish accepted ADR authority",
+    "base": "main",
+    "body": "Publishes an already-operator-accepted (10x ACCEPT, 2026-08-14) and independently audited Second Brain ADR persistence to main. Makes no new ADR election and authorizes no implementation, runtime, or production mutation. See PR #1242."
+  }
+}
