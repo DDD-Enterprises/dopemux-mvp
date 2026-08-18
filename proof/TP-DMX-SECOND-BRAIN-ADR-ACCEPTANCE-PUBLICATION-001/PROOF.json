@@ -50,6 +50,23 @@
       {"check": "S8_publication_integrity_audit", "status": "PASS", "detail": "PASS_ADR_ACCEPTANCE_PUBLICATION_INTEGRITY, BLOCKERS=0, MUST_FIX=0 (grok-4.5, after 3 failed AGY/gemini attempts)"}
     ]
   },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "grok --cwd /Users/hue/code/dopemux-mvp__sb-adr-acceptance-002 -m grok-4.5 --always-approve --max-turns 80 --output-format plain -p \"$(cat proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/AUDIT_PROMPT.md)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Preferred route AGY/gemini-3.1-pro-high failed 3x before this grok-4.5 run succeeded (quota exhaustion, then two timeouts after substantial but incomplete generation). Full disclosure of all 3 failed attempts, none contributing to this verdict, in AUDIT_CUSTODY.json.",
+      "This audit verifies publication integrity (drift, byte-identity, lineage, authority-flag preservation) of an already-operator-accepted and already-independently-audited ADR persistence branch. It is not a new ADR election and does not audit Second Brain implementation, which does not exist yet.",
+      "provider_attestation remains UNKNOWN for this route, consistent with every prior audit in this program."
+    ],
+    "skip_reason": null
+  },
   "authority_state": {
     "ADR_DISPOSITIONS": "10x_ACCEPT",
     "ACCEPTANCE_PERSISTENCE": "COMPLETE_LOCAL",
