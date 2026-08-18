@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0.0",
+  "record_kind": "AUDIT_CUSTODY",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001",
+  "step": "S8",
+  "audited_content_head": "9e819f38c5f8c9da44cd396abe740d378f035d1a",
+  "audit_prompt_authored_after_freeze": true,
+  "audit_prompt_names_the_head_it_audits": true,
+  "controlling_audit": {
+    "route": "grok-cli",
+    "attempt": 4,
+    "model": "grok-4.5",
+    "model_flag_explicit": true,
+    "command": "grok --cwd /Users/hue/code/dopemux-mvp__sb-adr-acceptance-002 -m grok-4.5 --always-approve --max-turns 80 --output-format plain -p \"$(cat proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/AUDIT_PROMPT.md)\"",
+    "exit_code": 0,
+    "verdict": "PASS_ADR_ACCEPTANCE_PUBLICATION_INTEGRITY",
+    "blockers": 0,
+    "must_fix": 0,
+    "output_captured": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/AUDITOR_REPORT.md"
+  },
+  "preferred_route_killed_attempts": [
+    {
+      "attempt": 1,
+      "route": "agy",
+      "model": "gemini-3.1-pro-high",
+      "command": "agy --model gemini-3.1-pro-high --mode plan --effort high --output-format json --print \"$(cat AUDIT_PROMPT.md)\"",
+      "status": "ERROR",
+      "error": "Eligibility check failed: failed to get load code assist response: RESOURCE_EXHAUSTED (code 429): Resource has been exhausted (e.g. check quota).",
+      "duration_seconds": 0,
+      "num_turns": 0,
+      "disposition": "PROVIDER_QUOTA_EXHAUSTED, no audit content produced, discarded"
+    },
+    {
+      "attempt": 2,
+      "route": "agy",
+      "model": "gemini-3.1-pro-high",
+      "command": "agy --model gemini-3.1-pro-high --mode plan --effort high --output-format json --print \"$(cat AUDIT_PROMPT.md)\"",
+      "status": "ERROR",
+      "error": "timeout waiting for response",
+      "duration_seconds": 116.357729,
+      "num_turns": 1,
+      "usage": {"input_tokens": 99737, "output_tokens": 8819, "thinking_tokens": 7042, "cache_read_tokens": 446628, "total_tokens": 108556},
+      "disposition": "TIMED_OUT_BEFORE_RESPONSE (harness-side 2-minute Bash tool timeout, not the agy print-timeout), no audit content produced, discarded"
+    },
+    {
+      "attempt": 3,
+      "route": "agy",
+      "model": "gemini-3.1-pro-high",
+      "command": "agy --model gemini-3.1-pro-high --mode plan --effort high --print-timeout 9m --output-format json --print \"$(cat AUDIT_PROMPT.md)\"",
+      "status": "ERROR",
+      "error": "timeout waiting for response",
+      "duration_seconds": 179.93759,
+      "num_turns": null,
+      "usage": {"input_tokens": 130169, "output_tokens": 16983, "thinking_tokens": 13444, "cache_read_tokens": 853888, "total_tokens": 147152},
+      "disposition": "TIMED_OUT_BEFORE_RESPONSE despite an explicit 9-minute print-timeout and run_in_background (no harness-side truncation this time); agy's own eligibility/response path did not complete. No audit content produced, discarded."
+    }
+  ],
+  "route_switch_justification": "Packet section 11 names AGY/gemini-3.1-pro-high as the preferred already-supported independent route and grok-cli -m grok-4.5 as the alternative. Preferred route failed to produce any usable response across 3 attempts (1 quota exhaustion at 0 turns, 2 timeouts after substantial but incomplete generation). This is a route switch after the preferred route provably could not complete an audit, not model-switching mid-audit-run: no attempt on either route produced a partial or discarded verdict that was blended with another attempt's output. Exactly ONE model (grok-4.5, explicit -m flag) served the controlling audit that produced VERDICT/BLOCKERS/MUST_FIX.",
+  "no_fallback_within_one_run": true,
+  "no_model_switching_within_one_run": true,
+  "killed_audit_disclosure": "Per program custody habit (see project_sb_adr_contract_evidence_2026_08_12 memory: 'record a killed audit, don't drop it'), all 3 failed AGY attempts are disclosed above rather than silently omitted. None produced a verdict; none is cited as evidence for or against the controlling PASS verdict.",
+  "worktree_state_during_audit": "clean checkout at C_PUB except untracked AUDIT_PROMPT.md (present, read by the auditor) and .claude/.dopemux-advisor-cache.json (unrelated harness cache, not read); no commit, branch switch, or file modification performed by any audit attempt.",
+  "session_metadata_verification": "not performed for this audit — grok-4.5 was invoked with an explicit -m flag (unlike the historical #1227 R2 audit, which had none), so runner-default ambiguity does not apply here; provider-side cryptographic attestation remains UNKNOWN as for all prior audits in this program."
+}

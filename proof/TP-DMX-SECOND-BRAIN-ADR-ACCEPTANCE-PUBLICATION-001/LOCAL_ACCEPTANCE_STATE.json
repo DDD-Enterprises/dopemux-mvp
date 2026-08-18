@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "record_kind": "LOCAL_ACCEPTANCE_STATE",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001",
+  "step": "S0/S1/S2",
+  "local_branch": "tp/DMX-SB-ADR-ACCEPTANCE-002",
+  "local_tip_pre_publication": "d38ec2f8715c6f4e594145e4d271b40e2d86bb69",
+  "expected_local_tip_prefix": "d38ec2f871",
+  "local_tip_prefix_match": true,
+  "audited_head": "0defe1cab46a9e6d02e88d3aa94a9edf195b4b84",
+  "expected_audited_head_prefix": "0defe1cab4",
+  "audited_head_prefix_match": true,
+  "audited_head_is_ancestor_of_local_tip": true,
+  "worktree_clean_at_start": true,
+  "isolated_worktree_created": "/Users/hue/code/dopemux-mvp__sb-adr-acceptance-002",
+  "unrelated_active_checkout": {
+    "branch": "feat/local-audit-proof-binding-001",
+    "worktree": "/Users/hue/code/dopemux-mvp",
+    "modified": false,
+    "note": "Never entered; publication work performed entirely in the isolated worktree."
+  },
+  "s1_disposition_verification": {
+    "adr_acceptance_head_json": "docs/03-reference/architecture/second-brain/adr-candidates/ADR_ACCEPTANCE_HEAD.json",
+    "accepted_adr_count": 10,
+    "dispositions": {
+      "ADR-SB-001": "ACCEPT", "ADR-SB-002": "ACCEPT", "ADR-SB-003": "ACCEPT",
+      "ADR-SB-004": "ACCEPT", "ADR-SB-005": "ACCEPT", "ADR-SB-006": "ACCEPT",
+      "ADR-SB-007": "ACCEPT", "ADR-SB-008": "ACCEPT", "ADR-SB-009": "ACCEPT",
+      "ADR-SB-010": "ACCEPT"
+    },
+    "eleventh_adr_present": false,
+    "docs_90_adr_sb_files_count": 10,
+    "r2_auditor_identity_reasoning_correction_present": true,
+    "r2_auditor_identity_reasoning_correction_path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/R2_AUDITOR_IDENTITY_REASONING_CORRECTION.json",
+    "original_1227_custody_record_rewritten": false,
+    "original_1227_custody_record_path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/R2_AUDITOR_IDENTITY_RECONCILIATION.json",
+    "original_1227_custody_record_diff_vs_main_at_75b4cfc581": "identical (diff empty)",
+    "implementation_execution": "NOT_AUTHORIZED",
+    "runtime_production_authority": "ABSENT"
+  },
+  "s2_audit_lineage_verification": {
+    "controlling_audit": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/AUDITOR_REPAIR_REPORT.md",
+    "verdict": "PASS_ADR_ACCEPTANCE_PERSISTENCE_FAITHFUL_AND_ADDITIVE",
+    "blockers": 0,
+    "must_fix": 0,
+    "audited_head": "0defe1cab46a9e6d02e88d3aa94a9edf195b4b84",
+    "commits_between_audited_head_and_local_tip": 1,
+    "commit_classification": [
+      {"sha": "d38ec2f871", "class": "PROOF_ONLY", "note": "audit round 2 close; touches only proof/ namespace, C1_CONTENT_HEAD.txt pointer, and task-packet status field"}
+    ],
+    "unexplained_post_audit_substantive_mutation": false
+  }
+}
