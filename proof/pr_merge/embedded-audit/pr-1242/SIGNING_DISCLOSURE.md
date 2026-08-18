@@ -48,15 +48,33 @@ that same directory).
 | Term | Meaning | SHA |
 |---|---|---|
 | `AUDITED_TREE` (`C_PUB`) | commit examined by the independent grok-4.5 audit | `9e819f38c5f8c9da44cd396abe740d378f035d1a` |
-| `AUDIT_EVIDENCE_HEAD` | proof-only successor adding the audit's own report/custody/prompt/command-log evidence, plus one schema-conformance fix to that same packet's own `PROOF.json` (added the required `embedded_audit` field) | `2d4e679b02c996ab8dbea1cec01b3a27b998edb6` |
+| `AUDIT_EVIDENCE_HEAD` | proof-only + packet-metadata successor: the audit's own report/custody/prompt/command-log evidence, one schema-conformance fix to that same packet's own `PROOF.json` (added the required `embedded_audit` field), and the `task-packets/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001.json` record added in response to a PR review finding (see amendment below) | `804147bfb269303c0ee7d307766e34a2de41e5ce` |
 | this bridge commit | adds only `proof/pr_merge/embedded-audit/pr-1242/**` on top of `AUDIT_EVIDENCE_HEAD` | (this commit) |
 
-Verified via `git diff --name-only 9e819f38c5 2d4e679b02`: every changed path
-is confined to `proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/**`
-— no code, schema, ADR, or authority file touched between `AUDITED_TREE` and
-`AUDIT_EVIDENCE_HEAD`. `AUDITED_TREE` is an ancestor of `AUDIT_EVIDENCE_HEAD`.
-This bridge commit is itself a second proof-only delta, not a re-audit — the
-same pattern already disclosed identically for PR #1235, #1226, and #1224.
+Verified via `git diff --name-only 9e819f38c5 804147bfb2`: every changed path
+is confined to `proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/**`,
+`proof/pr_merge/embedded-audit/pr-1242/**`, or the single new
+`task-packets/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001.json` file —
+no code, schema, ADR, or accepted-authority file touched between
+`AUDITED_TREE` and `AUDIT_EVIDENCE_HEAD`. `AUDITED_TREE` is an ancestor of
+`AUDIT_EVIDENCE_HEAD`. This bridge commit is itself a second proof-only
+delta, not a re-audit — the same pattern already disclosed identically for
+PR #1235, #1226, and #1224.
+
+## Amendment: re-signed against a later AUDIT_EVIDENCE_HEAD
+
+The first signed attestation for this PR named `head_sha =
+2d4e679b02c996ab8dbea1cec01b3a27b998edb6`. Between that commit and the push
+of this bridge, a PR review (Codex/Copilot automated reviewers) found this
+packet's own `PROOF.json` referenced a `tp_id` with no corresponding
+`task-packets/*.json` file — a real gap, fixed in
+`804147bfb269303c0ee7d307766e34a2de41e5ce` by adding that record (validated
+against `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json`). That
+fix is not part of the audited code or accepted ADR authority, so the
+underlying `grok-4.5` audit evidence is unchanged and still applies; this
+`PROOF.json` is re-signed with `head_sha` advanced to the new tip, following
+the same acceptance-fails-closed / re-sign-on-legitimate-advance pattern
+already used and disclosed for PR #1235.
 
 ## Trust model, stated plainly
 
