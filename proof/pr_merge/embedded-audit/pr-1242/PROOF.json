@@ -1,0 +1,26 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1242,
+  "head_sha": "2d4e679b02c996ab8dbea1cec01b3a27b998edb6",
+  "generated_at": "2026-08-18T09:35:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "grok --cwd /Users/hue/code/dopemux-mvp__sb-adr-acceptance-002 -m grok-4.5 --always-approve --max-turns 80 --output-format plain -p \"$(cat proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/AUDIT_PROMPT.md)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "Post-audit repair (unrelated to the audited content): the audited commit's PROOF.json (proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/PROOF.json) omitted the top-level embedded_audit object required for TP-DMX-* proof bundles under DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED. Added it, describing this same grok-4.5 audit. No audited content changed; verified via git diff --name-only between the audited commit and this proof's head_sha (proof-only, confined to the packet's own proof/ directory)."
+    ],
+    "remaining_risks": [
+      "Preferred route AGY/gemini-3.1-pro-high failed 3x before this grok-4.5 run succeeded (provider quota exhaustion, then two timeouts after substantial but incomplete generation). Full disclosure of all 3 failed attempts, none contributing to this verdict, in proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/AUDIT_CUSTODY.json.",
+      "This audit verifies publication integrity (drift, byte-identity, lineage, authority-flag preservation) of an already-operator-accepted and already-independently-audited Second Brain ADR persistence branch. It is not a new ADR election and does not audit Second Brain implementation, which does not exist yet.",
+      "AUDIT_TOPOLOGY, NAMED NOT CONFLATED. AUDITED_TREE (the commit examined by the grok-4.5 run, cited throughout AUDIT_PROMPT.md/AUDITOR_REPORT.md as C_PUB) = 9e819f38c5f8c9da44cd396abe740d378f035d1a. This PROOF.json's head_sha, 2d4e679b02c996ab8dbea1cec01b3a27b998edb6, is the AUDIT_EVIDENCE_HEAD: a proof-only successor adding only the audit's own report/custody/command-log evidence and one schema-conformance fix to that same packet's PROOF.json, all confined to proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/** -- verified via git diff --name-only, no code/schema/ADR/authority file touched. See SIGNING_DISCLOSURE.md.",
+      "Self-attestation: this proof is signed by the same operator/session that authored the PR under a fresh, narrowly-scoped operator authorization specific to PR #1242 (see SIGNING_DISCLOSURE.md). It is an operator attestation, not a third-party audit -- the independent audit content itself is the grok-4.5 run, not the signature."
+    ],
+    "skip_reason": null
+  }
+}
