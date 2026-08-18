@@ -118,6 +118,54 @@ def test_reserved_singleton_collision_for_dnh_hash_path():
         assert any(f["code"] == "PORT_RESERVED_COLLISION" for f in forced.findings)
 
 
+def test_formula_reserved_is_warn_when_configured_safe():
+    catalog = _catalog()
+    path = "/Users/hue/code/dNh_CRM"
+    formula = pd.formula_ports_only(path, ["conport", "dope-memory"], catalog)
+    configured = {
+        "CONPORT_HTTP_PORT": 3040,
+        "CONPORT_MCP_PORT": 3041,
+        "CONPORT_INFO_PORT": 4040,
+        "DOPE_MEMORY_PORT": 3024,
+    }
+    report = pd.diagnose_ports(
+        path,
+        ["conport", "dope-memory"],
+        catalog,
+        configured_ports=configured,
+    )
+    reserved = [f for f in report.findings if f["code"] == "PORT_RESERVED_COLLISION"]
+    formula_hits = [f for f in reserved if "source=formula" in f["evidence"]]
+    assert any(
+        formula.get(var) in (3009, 3010)
+        for var in ("CONPORT_MCP_PORT", "CONPORT_HTTP_PORT")
+    ), f"dNh_CRM hash no longer hits reserved singletons: {formula}"
+    assert formula_hits, "expected formula reserved collision for dNh_CRM hash"
+    assert all(f["severity"] == "WARN" for f in formula_hits)
+    assert all("neutralized=configured" in f["evidence"] for f in formula_hits)
+    assert all(
+        f["severity"] != "FAIL" or "source=configured" in f["evidence"]
+        for f in reserved
+    )
+
+
+def test_configured_reserved_collision_still_fail():
+    catalog = _catalog()
+    report = pd.diagnose_ports(
+        "/tmp/wt-safe-unique-path-zzzz",
+        ["conport"],
+        catalog,
+        configured_ports={"CONPORT_MCP_PORT": 3010, "CONPORT_HTTP_PORT": 3040},
+    )
+    configured_hits = [
+        f
+        for f in report.findings
+        if f["code"] == "PORT_RESERVED_COLLISION" and "source=configured" in f["evidence"]
+    ]
+    assert configured_hits
+    assert all(f["severity"] == "FAIL" for f in configured_hits)
+
+
 def test_intra_config_collision():
     catalog = _catalog()
     report = pd.diagnose_ports(

@@ -1,0 +1,98 @@
+{
+  "id": "TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001",
+  "project": "dopemux-mvp",
+  "target": "Stop MCP doctor from hard-failing remapped peer-project envrcs on hash-formula reserved-port collisions, ignore foreign cwd compose.yml, and let repo-aware/legacy compose parse without a live DOPECON_BRIDGE_TOKEN when not starting compose task-orchestrator",
+  "invariants": [
+    "Configured envrc ports that land on a reserved singleton remain FAIL.",
+    "Pure-formula diagnosis (no envrc ports) still FAILs reserved singleton collisions.",
+    "compose.yml still requires ${DOPECON_BRIDGE_TOKEN:?...} for the compose task-orchestrator service.",
+    "Explicit `dopemux mcp up --services task-orchestrator` without DOPECON_BRIDGE_TOKEN remains fail-closed.",
+    "Task Orchestrator wrapper-singleton stays on fixed port 7890.",
+    "Doctor remains read-only with respect to containers and runtime state.",
+    "No secrets, tokens, or .env values are written into mcp.env."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-DOCTOR-FORMULA-RESERVED",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "vibe",
+    "branch": "fix/mcp-doctor-formula-reserved",
+    "base_branch": "origin/main",
+    "stacked_because": "Operator bring-up of dNh_CRM MCP is blocked by doctor FAIL on neutralized formula ports and by compose interpolation requiring DOPECON_BRIDGE_TOKEN for sidecar start."
+  },
+  "commit": {
+    "message": "fix(mcp): neutralize formula reserved-port doctor FAIL and compose parse token",
+    "allowlist": [
+      "src/dopemux/mcp/port_diagnostics.py",
+      "src/dopemux/mcp/doctor.py",
+      "src/dopemux/mcp/lifecycle.py",
+      "src/dopemux/mcp/docker_runtime.py",
+      "src/dopemux/commands/mcp_commands.py",
+      "tests/unit/test_mcp_port_diagnostics.py",
+      "tests/unit/test_mcp_doctor_repo_aware.py",
+      "tests/unit/test_mcp_runtime_launcher.py",
+      "task-packets/TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001.json"
+    ],
+    "verify": [
+      "python3 -m jsonschema -i task-packets/TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "uv run --extra test pytest tests/unit/test_mcp_port_diagnostics.py tests/unit/test_mcp_doctor_repo_aware.py tests/unit/test_mcp_runtime_launcher.py tests/arch/test_task_orchestrator_conport_persistence_contract.py -q",
+      "rg -n \"\\$\\{DOPECON_BRIDGE_TOKEN:\\?\" compose.yml",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(mcp): doctor must not FAIL remapped formula reserved ports",
+    "body": "## Summary\n- formula-only PORT_RESERVED_COLLISION is WARN when envrc ports already avoid reserved singletons\n- configured reserved collisions stay FAIL\n- doctor does not inspect a foreign cwd compose.yml when --repo is another path\n- repo-aware start and default `mcp up` can interpolate compose.yml without a live bridge JWT when not starting compose task-orchestrator\n- explicit `mcp up --services task-orchestrator` without DOPECON_BRIDGE_TOKEN stays fail-closed\n\n## Authority\n- TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001\n- Observed dNh_CRM doctor FAIL + compose interpolation block\n\n## Validation\n- focused unit tests + compose token arch contract\n- git diff --check",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "inspect",
+      "task": "Confirm formula reserved collisions are FAIL even when configured ports are remapped, and that compose.yml interpolates DOPECON_BRIDGE_TOKEN for every compose invocation.",
+      "validation": [
+        "Root cause documented: diagnose_ports FAILs source=formula independently of remapped envrc; generate_mcp_env strips TOKEN keys so sidecar start cannot parse compose.yml without a process-env JWT."
+      ],
+      "context_files": [
+        "src/dopemux/mcp/port_diagnostics.py",
+        "src/dopemux/mcp/doctor.py",
+        "src/dopemux/mcp/docker_runtime.py",
+        "src/dopemux/mcp/lifecycle.py",
+        "compose.yml"
+      ]
+    },
+    {
+      "id": "implement",
+      "task": "Downgrade neutralized formula reserved collisions to WARN; ignore foreign cwd compose; inject compose-interpolation placeholder when not starting compose task-orchestrator.",
+      "validation": [
+        "Allowlisted files only.",
+        "compose.yml required-token expression unchanged."
+      ]
+    },
+    {
+      "id": "verify",
+      "task": "Run packet verify commands and report exit codes.",
+      "validation": [
+        "All packet verify commands recorded with exit codes."
+      ]
+    }
+  ]
+}
