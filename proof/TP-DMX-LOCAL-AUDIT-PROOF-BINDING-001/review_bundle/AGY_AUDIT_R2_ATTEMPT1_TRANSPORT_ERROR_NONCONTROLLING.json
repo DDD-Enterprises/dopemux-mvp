@@ -1,0 +1,1 @@
+{"conversation_id":"a77c6be1-43c4-4c47-ade5-4d29fee9635a","status":"ERROR","response":"","error":"timeout waiting for response","duration_seconds":67.198336,"num_turns":1,"usage":{"input_tokens":62057,"output_tokens":5714,"thinking_tokens":4366,"cache_read_tokens":223083,"total_tokens":67771}}
