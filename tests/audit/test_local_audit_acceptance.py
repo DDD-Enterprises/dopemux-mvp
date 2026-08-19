@@ -43,7 +43,8 @@ def _git(repo: Path, *args: str) -> str:
 # This fixture previously carried a two-directory pr_merge path, which the
 # canonical validator rejects. The old hand-rolled acceptance validator
 # exempted report_path, so the fixture passed and the exemption looked safe.
-REPORT_PATH = "proof/TP-DMX-TEST-LOCAL-AUDIT-ACCEPTANCE/AUDITOR_REPORT.md"
+PACKET_ID = "TP-DMX-TEST-LOCAL-AUDIT-ACCEPTANCE"
+REPORT_PATH = f"proof/{PACKET_ID}/AUDITOR_REPORT.md"
 
 
 def _local_embedded_audit(status: str = "PASS", tool: str = "pal-mcp-clink") -> dict:
@@ -90,6 +91,44 @@ class LocalAuditFixture:
         )
 
         self.proof_dir = self.repo / f"proof/pr_merge/embedded-audit/pr-{PR_NUMBER}"
+        self.packet_dir = self.repo / f"proof/{PACKET_ID}"
+
+    def write_packet_bundle(
+        self,
+        *,
+        packet_embedded: dict | None = None,
+        packet_audited_sha: str | None = None,
+        include_report: bool = True,
+        include_review_bundle: bool = True,
+        commit: bool = True,
+    ) -> None:
+        """Write the canonical AGENTS.md 9.1 packet proof bundle.
+
+        Separate from ``write_and_sign_proof`` so tests can omit or corrupt
+        individual pieces (report, review_bundle, packet PROOF.json fields)
+        to exercise each new fail-closed check independently.
+        """
+        self.packet_dir.mkdir(parents=True, exist_ok=True)
+        packet_proof = {
+            "packet_id": PACKET_ID,
+            "repo": REPO,
+            "head_sha": packet_audited_sha or self.audited_sha,
+            "embedded_audit": packet_embedded or _local_embedded_audit(),
+        }
+        (self.packet_dir / "PROOF.json").write_text(
+            json.dumps(packet_proof, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+        if include_report:
+            (self.packet_dir / "AUDITOR_REPORT.md").write_text(
+                "# Auditor report\n\nPASS.\n", encoding="utf-8"
+            )
+        if include_review_bundle:
+            bundle_dir = self.packet_dir / "review_bundle"
+            bundle_dir.mkdir(parents=True, exist_ok=True)
+            (bundle_dir / "evidence.txt").write_text("raw transcript\n", encoding="utf-8")
+        if commit:
+            _git(self.repo, "add", str(self.packet_dir.relative_to(self.repo)))
+            _git(self.repo, "commit", "--quiet", "-m", "proof(audit): packet bundle")
 
     def write_and_sign_proof(
         self,
@@ -100,7 +139,10 @@ class LocalAuditFixture:
         namespace: str = SIGNATURE_NAMESPACE,
         key: Path | None = None,
         tamper_after_signing: bool = False,
+        write_packet_bundle: bool = True,
     ) -> None:
+        if write_packet_bundle and not (self.packet_dir / "PROOF.json").exists():
+            self.write_packet_bundle(packet_audited_sha=audited_sha or self.audited_sha)
         self.proof_dir.mkdir(parents=True, exist_ok=True)
         proof = {
             "packet_id": f"PR-MERGE-STEWARD-{pr_number}",
@@ -285,6 +327,830 @@ def test_rejects_auditor_tool_outside_schema_enum(tmp_path: Path) -> None:
         r.startswith("local_audit_schema_invalid: /auditor_tool")
         for r in attestation["reasons"]
     )
+
+
+# ---------------------------------------------------------------------------
+# head_sha <-> PACKET_ID binding (TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001)
+#
+# These prove the repair for the gap PR #1235's review caught: a signed
+# proof's head_sha must be the commit an auditor actually examined, not a
+# later "evidence head" that only adds report files, and the canonical
+# packet proof bundle (AGENTS.md 9.1) must exist at the PR head and agree
+# with the signed proof on the audited commit and controlling verdict.
+# ---------------------------------------------------------------------------
+
+
+def test_evidence_head_masquerading_as_audited_sha_is_rejected(tmp_path: Path) -> None:
+    """head_sha pointing at a report-adding successor, not the real audited
+    commit, must fail -- this is the exact defect the review caught on
+    PR #1235's first signed proof."""
+    fixture = LocalAuditFixture(tmp_path)
+    real_audited_sha = fixture.audited_sha
+    # Evidence-head commit: adds only the packet bundle on top of the real
+    # audited commit, mirroring the two-commit bridge pattern.
+    fixture.write_packet_bundle(packet_audited_sha=real_audited_sha)
+    evidence_head_sha = fixture.head()
+    # Sign with head_sha pointing at the evidence head, not real_audited_sha.
+    fixture.write_and_sign_proof(
+        audited_sha=evidence_head_sha, write_packet_bundle=False
+    )
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    # The evidence-head commit itself only added proof/<PACKET_ID>/**, so the
+    # diff-scope check alone would not catch this -- the packet PROOF.json's
+    # own head_sha (real_audited_sha) disagreeing with the signed proof's
+    # head_sha (evidence_head_sha) is what catches it.
+    assert any(
+        r.startswith("packet_proof_head_sha_mismatch") for r in attestation["reasons"]
+    )
+
+
+def test_canonical_packet_proof_successor_plus_pr_proof_successor_passes(
+    tmp_path: Path,
+) -> None:
+    """The doctrine-correct shape: head_sha = the real audited commit, packet
+    bundle and PR proof both land as proof-only deltas after it, agreeing on
+    audited SHA and verdict identity."""
+    fixture = LocalAuditFixture(tmp_path)
+    real_audited_sha = fixture.audited_sha
+    fixture.write_packet_bundle(packet_audited_sha=real_audited_sha)
+    fixture.write_and_sign_proof(
+        audited_sha=real_audited_sha, write_packet_bundle=False
+    )
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is True, attestation["reasons"]
+    assert attestation["packet_id"] == PACKET_ID
+
+
+def test_missing_packet_proof_json_is_rejected(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(r.startswith("packet_proof_absent") for r in attestation["reasons"])
+
+
+def test_missing_or_empty_review_bundle_is_rejected(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(include_review_bundle=False)
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("packet_review_bundle_missing_or_empty")
+        for r in attestation["reasons"]
+    )
+
+
+def test_missing_packet_report_is_rejected(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(include_report=False)
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(r.startswith("packet_report_absent") for r in attestation["reasons"])
+
+
+def test_post_audit_non_proof_path_still_fails(tmp_path: Path) -> None:
+    """The widened allow-list (proof dir + packet dir) must not become a
+    general escape hatch -- any path outside both still fails closed."""
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle()
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    (fixture.repo / "app.py").write_text("VALUE = 2\n", encoding="utf-8")
+    _git(fixture.repo, "add", "app.py")
+    _git(fixture.repo, "commit", "--quiet", "-m", "sneak in code after audit+proof")
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(r.startswith("delta_touches_code") for r in attestation["reasons"])
+
+
+def test_wrong_packet_directory_is_rejected(tmp_path: Path) -> None:
+    """report_path names one PACKET_ID but the packet bundle lives under a
+    different directory -- must fail, not silently pass by coincidence."""
+    fixture = LocalAuditFixture(tmp_path)
+    # Packet bundle at a directory that does NOT match REPORT_PATH's packet id.
+    wrong_dir = fixture.repo / "proof/TP-DMX-WRONG-PACKET"
+    wrong_dir.mkdir(parents=True)
+    (wrong_dir / "PROOF.json").write_text(
+        json.dumps(
+            {
+                "packet_id": "TP-DMX-WRONG-PACKET",
+                "repo": REPO,
+                "head_sha": fixture.audited_sha,
+                "embedded_audit": _local_embedded_audit(),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (wrong_dir / "AUDITOR_REPORT.md").write_text("PASS.\n", encoding="utf-8")
+    (wrong_dir / "review_bundle").mkdir()
+    (wrong_dir / "review_bundle" / "evidence.txt").write_text("x\n", encoding="utf-8")
+    _git(fixture.repo, "add", "proof/TP-DMX-WRONG-PACKET")
+    _git(fixture.repo, "commit", "--quiet", "-m", "wrong packet dir")
+    fixture.write_and_sign_proof(write_packet_bundle=False)  # report_path still PACKET_ID
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    # The wrong-directory commit isn't under either allowed prefix, so the
+    # diff-scope check catches it before packet-bundle presence is even
+    # checked -- still fail-closed, just via the earlier gate.
+    assert any(
+        r.startswith(("delta_touches_code", "packet_proof_absent"))
+        for r in attestation["reasons"]
+    )
+
+
+def test_packet_proof_head_sha_mismatch_is_rejected(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    other_sha = "f" * 40
+    fixture.write_packet_bundle(packet_audited_sha=other_sha)
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("packet_proof_head_sha_mismatch") for r in attestation["reasons"]
+    )
+
+
+def test_packet_proof_verdict_identity_mismatch_is_rejected(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(
+        packet_embedded=_local_embedded_audit(tool="claude-code-cli")
+    )
+    fixture.write_and_sign_proof(
+        embedded=_local_embedded_audit(tool="pal-mcp-clink"), write_packet_bundle=False
+    )
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("packet_proof_verdict_identity_mismatch")
+        for r in attestation["reasons"]
+    )
+
+
+def test_packet_proof_itself_schema_invalid_is_rejected(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(
+        packet_embedded=_local_embedded_audit(tool="not_a_real_tool")
+    )
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(r.startswith("packet_proof_local_audit_schema_invalid") for r in attestation["reasons"])
+
+
+def test_head_mismatch_between_evaluate_arg_and_actual_head_still_fails(
+    tmp_path: Path,
+) -> None:
+    """Sanity check that the pre-existing head-binding behaviour survives the
+    refactor: evaluating against a stale head still fails closed."""
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle()
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    real_head = fixture.head()
+    stale_head = fixture.audited_sha
+    attestation = fixture.evaluate(head_sha=stale_head)
+    assert attestation["accepted"] is False
+    assert real_head != stale_head
+
+
+def test_packet_proof_malformed_json_is_rejected(tmp_path: Path) -> None:
+    """proof/<PACKET_ID>/PROOF.json present but not valid JSON must fail
+    closed, not raise or pass through as absent."""
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.packet_dir.mkdir(parents=True, exist_ok=True)
+    (fixture.packet_dir / "PROOF.json").write_text("{not valid json", encoding="utf-8")
+    (fixture.packet_dir / "AUDITOR_REPORT.md").write_text("PASS.\n", encoding="utf-8")
+    bundle_dir = fixture.packet_dir / "review_bundle"
+    bundle_dir.mkdir()
+    (bundle_dir / "evidence.txt").write_text("x\n", encoding="utf-8")
+    _git(fixture.repo, "add", str(fixture.packet_dir.relative_to(fixture.repo)))
+    _git(fixture.repo, "commit", "--quiet", "-m", "malformed packet proof")
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(r.startswith("packet_proof_malformed") for r in attestation["reasons"])
+
+
+def test_report_path_resolving_to_directory_is_rejected(tmp_path: Path) -> None:
+    """AUDITOR_REPORT.md must be a real file (blob), not a directory that
+    merely has some descendant blob under that string prefix.
+
+    Regression for the R2 review finding: the prior check used
+    ``git ls-tree -r`` name-prefix matching, so a directory named
+    ``AUDITOR_REPORT.md`` containing e.g. ``evidence.txt`` would satisfy
+    "has at least one descendant blob" while the required file itself never
+    existed.
+    """
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(include_report=False)
+    report_as_dir = fixture.packet_dir / "AUDITOR_REPORT.md"
+    report_as_dir.mkdir()
+    (report_as_dir / "evidence.txt").write_text("not the report\n", encoding="utf-8")
+    _git(fixture.repo, "add", str(fixture.packet_dir.relative_to(fixture.repo)))
+    _git(fixture.repo, "commit", "--quiet", "-m", "report path is a directory")
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(r.startswith("packet_report_absent") for r in attestation["reasons"])
+
+
+def test_review_bundle_as_a_file_is_rejected(tmp_path: Path) -> None:
+    """review_bundle must be an actual directory (git tree), not a file or
+    symlink whose name happens to match.
+
+    Regression for the R2 review finding: the prior check accepted any path
+    whose exact string appeared in ``git ls-tree -r --name-only`` output,
+    which a regular file (blob) at that exact path also satisfies.
+    """
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(include_review_bundle=False)
+    bundle_as_file = fixture.packet_dir / "review_bundle"
+    bundle_as_file.write_text("not a directory\n", encoding="utf-8")
+    _git(fixture.repo, "add", str(fixture.packet_dir.relative_to(fixture.repo)))
+    _git(fixture.repo, "commit", "--quiet", "-m", "review_bundle is a file")
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("packet_review_bundle_missing_or_empty")
+        for r in attestation["reasons"]
+    )
+
+
+SIGN_SCRIPT = ROOT / "scripts" / "audit" / "sign_local_audit_proof.sh"
+
+
+def test_signer_preflight_rejects_packet_object_failing_policy_despite_matching_identity(
+    tmp_path: Path,
+) -> None:
+    """The signer's preflight must run the packet embedded_audit object
+    through the SAME canonical schema+policy validation the trusted
+    acceptance engine runs, not merely compare status/auditor_tool/
+    auditor_model. A packet object that agrees with the PR proof on those
+    three fields but fails policy elsewhere (here: required=false) must be
+    rejected at signing time, not silently signed and only caught later by
+    CI. Regression for the R3 review finding."""
+    import shutil
+
+    scratch = tmp_path / "scratch"
+    shutil.copytree(ROOT / "schemas", scratch / "schemas")
+
+    packet_id = "TP-DMX-TEST-SIGNER-PREFLIGHT"
+    packet_dir = scratch / "proof" / packet_id
+    packet_dir.mkdir(parents=True)
+    (packet_dir / "AUDITOR_REPORT.md").write_text("PASS\n", encoding="utf-8")
+    bundle_dir = packet_dir / "review_bundle"
+    bundle_dir.mkdir()
+    (bundle_dir / "evidence.txt").write_text("x\n", encoding="utf-8")
+
+    shared = {
+        "status": "PASS",
+        "auditor_tool": "agy",
+        "auditor_model": "gemini-3.1-pro-high",
+        "invocation": "agy --model gemini-3.1-pro-high",
+        "exit_code": 0,
+        "report_path": f"proof/{packet_id}/AUDITOR_REPORT.md",
+        "findings": [],
+        "fixes_applied": [],
+        "remaining_risks": [],
+        "skip_reason": None,
+    }
+    # Packet object agrees on status/auditor_tool/auditor_model but declares
+    # required=false -- schema-valid, policy-invalid.
+    packet_embedded = dict(shared, required=False)
+    (packet_dir / "PROOF.json").write_text(
+        json.dumps(
+            {
+                "packet_id": packet_id,
+                "repo": REPO,
+                "head_sha": "a" * 40,
+                "embedded_audit": packet_embedded,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    pr_dir = scratch / "proof" / "pr_merge" / "embedded-audit" / "pr-9999"
+    pr_dir.mkdir(parents=True)
+    pr_embedded = dict(shared, required=True)
+    (pr_dir / "PROOF.json").write_text(
+        json.dumps(
+            {"repo": REPO, "pr_number": 9999, "head_sha": "a" * 40, "embedded_audit": pr_embedded}
+        ),
+        encoding="utf-8",
+    )
+
+    # A dummy key file only needs to exist -- the script's own file-existence
+    # precheck runs before the Python preflight this test targets, and the
+    # rejected preflight exits before ever invoking ssh-keygen.
+    fake_key = tmp_path / "unused_key"
+    fake_key.write_text("not a real key\n", encoding="utf-8")
+
+    result = subprocess.run(
+        ["bash", str(SIGN_SCRIPT), "9999", str(fake_key)],
+        cwd=str(scratch),
+        capture_output=True,
+        text=True,
+        env={"PATH": "/usr/bin:/bin:/usr/local/bin", "PYTHONPATH": str(ROOT)},
+    )
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "required" in result.stderr
+    assert "REJECTED by CI" in result.stderr
+
+
+def test_review_bundle_gitlink_only_is_rejected(tmp_path: Path) -> None:
+    """review_bundle must contain a real blob, not merely any named entry.
+
+    Regression for the R3 review finding: a gitlink/submodule entry (git
+    object type ``commit``) is a pointer to another repository's history,
+    not in-repo evidence, but a bare ``ls-tree -r --name-only`` listing
+    would print its path just like a real file, satisfying a presence-only
+    check without any actual audit evidence existing in this repo.
+    """
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(include_review_bundle=False)
+    bundle_dir = fixture.packet_dir / "review_bundle"
+    bundle_dir.mkdir(parents=True, exist_ok=True)
+    fake_submodule_sha = "a" * 40
+    _git(
+        fixture.repo,
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "160000",
+        fake_submodule_sha,
+        str((bundle_dir / "fake-submodule").relative_to(fixture.repo)),
+    )
+    _git(fixture.repo, "commit", "--quiet", "-m", "gitlink-only review_bundle")
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("packet_review_bundle_missing_or_empty")
+        for r in attestation["reasons"]
+    )
+
+
+def test_review_bundle_symlink_only_is_rejected(tmp_path: Path) -> None:
+    """review_bundle must contain a real regular-file blob, not a symlink.
+
+    Regression for the R5 review finding: git reports a symlink's mode as
+    ``120000`` but its object TYPE is still ``blob`` (the blob content is the
+    target path string, not stored audit evidence) -- the R3 gitlink fix
+    checked object type alone, which a symlink-only review_bundle would
+    still satisfy despite containing no real in-repository evidence.
+    """
+    import os
+
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(include_review_bundle=False)
+    bundle_dir = fixture.packet_dir / "review_bundle"
+    bundle_dir.mkdir(parents=True, exist_ok=True)
+    os.symlink("/etc/passwd", bundle_dir / "evidence.txt")
+    _git(fixture.repo, "add", str(bundle_dir.relative_to(fixture.repo)))
+    _git(fixture.repo, "commit", "--quiet", "-m", "symlink-only review_bundle")
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("packet_review_bundle_missing_or_empty")
+        for r in attestation["reasons"]
+    )
+
+
+def test_report_path_as_symlink_is_rejected(tmp_path: Path) -> None:
+    """AUDITOR_REPORT.md must be a real regular-file blob, not a symlink.
+
+    Same class of bug as the review_bundle symlink case, applied to the
+    exact-file check for report_path.
+    """
+    import os
+
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(include_report=False)
+    os.symlink(
+        "/etc/passwd", fixture.packet_dir / "AUDITOR_REPORT.md"
+    )
+    _git(fixture.repo, "add", str(fixture.packet_dir.relative_to(fixture.repo)))
+    _git(fixture.repo, "commit", "--quiet", "-m", "report path is a symlink")
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(r.startswith("packet_report_absent") for r in attestation["reasons"])
+
+
+def test_signer_preflight_rejects_reserved_pr_merge_packet_id(tmp_path: Path) -> None:
+    """The signer must reuse the ACTUAL _extract_packet_id, not a
+    re-implemented parallel derivation, so it can never independently drift
+    out of sync with the trusted acceptance engine's reserved-namespace
+    rejection. Regression for the R5 review finding: after acceptance
+    started rejecting PACKET_ID="pr_merge", the signer still derived it
+    independently and would have signed "proof shape OK" for a proof that
+    evaluate_local_audit() would then reject with packet_id_undecidable."""
+    import shutil
+
+    scratch = tmp_path / "scratch"
+    shutil.copytree(ROOT / "schemas", scratch / "schemas")
+
+    packet_dir = scratch / "proof" / "pr_merge"
+    packet_dir.mkdir(parents=True)
+    (packet_dir / "AUDITOR_REPORT.md").write_text("PASS\n", encoding="utf-8")
+    bundle_dir = packet_dir / "review_bundle"
+    bundle_dir.mkdir()
+    (bundle_dir / "evidence.txt").write_text("x\n", encoding="utf-8")
+
+    shared = {
+        "status": "PASS",
+        "auditor_tool": "agy",
+        "auditor_model": "gemini-3.1-pro-high",
+        "invocation": "agy --model gemini-3.1-pro-high",
+        "exit_code": 0,
+        "report_path": "proof/pr_merge/AUDITOR_REPORT.md",
+        "findings": [],
+        "fixes_applied": [],
+        "remaining_risks": [],
+        "skip_reason": None,
+    }
+    (packet_dir / "PROOF.json").write_text(
+        json.dumps(
+            {"packet_id": "pr_merge", "repo": REPO, "head_sha": "a" * 40, "embedded_audit": shared}
+        ),
+        encoding="utf-8",
+    )
+
+    pr_dir = scratch / "proof" / "pr_merge" / "embedded-audit" / "pr-9999"
+    pr_dir.mkdir(parents=True)
+    (pr_dir / "PROOF.json").write_text(
+        json.dumps(
+            {"repo": REPO, "pr_number": 9999, "head_sha": "a" * 40, "embedded_audit": shared}
+        ),
+        encoding="utf-8",
+    )
+
+    fake_key = tmp_path / "unused_key"
+    fake_key.write_text("not a real key\n", encoding="utf-8")
+
+    result = subprocess.run(
+        ["bash", str(SIGN_SCRIPT), "9999", str(fake_key)],
+        cwd=str(scratch),
+        capture_output=True,
+        text=True,
+        env={"PATH": "/usr/bin:/bin:/usr/local/bin", "PYTHONPATH": str(ROOT)},
+    )
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "PACKET_ID" in result.stderr
+    assert "REJECTED by CI" in result.stderr
+
+
+def _build_signer_scratch_repo(tmp_path: Path, *, packet_id: str = "TP-DMX-TEST-SIGNER") -> Path:
+    """A real git repo (not a bare filesystem scratch dir) for signer tests
+    that need to exercise git-state-aware checks (uncommitted-bundle
+    detection), which a non-repo scratch dir can't."""
+    import shutil
+
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    _git(scratch, "init", "--quiet", "--initial-branch=main")
+    _git(scratch, "config", "user.email", "tester@example.invalid")
+    _git(scratch, "config", "user.name", "Tester")
+    shutil.copytree(ROOT / "schemas", scratch / "schemas")
+    _git(scratch, "add", "schemas")
+    _git(scratch, "commit", "--quiet", "-m", "schemas")
+    return scratch
+
+
+def _write_packet_bundle(packet_dir: Path, packet_id: str, report_path: str) -> dict:
+    packet_dir.mkdir(parents=True)
+    (packet_dir / "AUDITOR_REPORT.md").write_text("PASS\n", encoding="utf-8")
+    bundle_dir = packet_dir / "review_bundle"
+    bundle_dir.mkdir()
+    (bundle_dir / "evidence.txt").write_text("x\n", encoding="utf-8")
+    shared = {
+        "status": "PASS",
+        "auditor_tool": "agy",
+        "auditor_model": "gemini-3.1-pro-high",
+        "invocation": "agy --model gemini-3.1-pro-high",
+        "exit_code": 0,
+        "report_path": report_path,
+        "findings": [],
+        "fixes_applied": [],
+        "remaining_risks": [],
+        "skip_reason": None,
+    }
+    (packet_dir / "PROOF.json").write_text(
+        json.dumps(
+            {"packet_id": packet_id, "repo": REPO, "head_sha": "a" * 40, "embedded_audit": shared}
+        ),
+        encoding="utf-8",
+    )
+    return shared
+
+
+def test_signer_preflight_rejects_uncommitted_packet_bundle(tmp_path: Path) -> None:
+    """The trusted acceptance engine reads the packet bundle from COMMITTED
+    git blobs at the final PR head, never the working tree. A packet bundle
+    that exists on disk but was never committed (or was modified since)
+    must be rejected at signing time -- otherwise the signer reports "proof
+    shape OK" for a bundle CI will never actually see at the pushed head.
+    Regression for the R6 review finding."""
+    packet_id = "TP-DMX-TEST-SIGNER-UNCOMMITTED"
+    scratch = _build_signer_scratch_repo(tmp_path, packet_id=packet_id)
+    report_path = f"proof/{packet_id}/AUDITOR_REPORT.md"
+    packet_dir = scratch / "proof" / packet_id
+    shared = _write_packet_bundle(packet_dir, packet_id, report_path)
+    # Deliberately NOT committing the packet bundle -- it exists only in the
+    # untracked working tree, exactly the scenario the finding describes.
+
+    pr_dir = scratch / "proof" / "pr_merge" / "embedded-audit" / "pr-9999"
+    pr_dir.mkdir(parents=True)
+    (pr_dir / "PROOF.json").write_text(
+        json.dumps(
+            {"repo": REPO, "pr_number": 9999, "head_sha": "a" * 40, "embedded_audit": shared}
+        ),
+        encoding="utf-8",
+    )
+
+    fake_key = tmp_path / "unused_key"
+    fake_key.write_text("not a real key\n", encoding="utf-8")
+
+    result = subprocess.run(
+        ["bash", str(SIGN_SCRIPT), "9999", str(fake_key)],
+        cwd=str(scratch),
+        capture_output=True,
+        text=True,
+        env={"PATH": "/usr/bin:/bin:/usr/local/bin", "PYTHONPATH": str(ROOT)},
+    )
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "uncommitted changes" in result.stderr
+    assert "REJECTED by CI" in result.stderr
+
+
+def test_signer_preflight_rejects_symlinked_report_and_bundle_root(tmp_path: Path) -> None:
+    """Path.is_file()/is_dir() FOLLOW symlinks, so a symlinked report file
+    or a review_bundle/ that is itself a symlink would otherwise pass the
+    signer's filesystem-based preflight even though the eventual committed
+    blob (mode 120000) is rejected by the trusted acceptance engine.
+    Regression for the R6 review finding -- distinct from the R5 fix, which
+    covered symlinked ENTRIES inside review_bundle, not the report file or
+    the bundle root itself."""
+    import os
+
+    packet_id = "TP-DMX-TEST-SIGNER-SYMLINK"
+    scratch = _build_signer_scratch_repo(tmp_path, packet_id=packet_id)
+    report_path = f"proof/{packet_id}/AUDITOR_REPORT.md"
+    packet_dir = scratch / "proof" / packet_id
+    packet_dir.mkdir(parents=True)
+    # report_path itself is a symlink, not a real file.
+    real_report = scratch / "real_report.md"
+    real_report.write_text("PASS\n", encoding="utf-8")
+    os.symlink(real_report, packet_dir / "AUDITOR_REPORT.md")
+    bundle_dir = packet_dir / "review_bundle"
+    bundle_dir.mkdir()
+    (bundle_dir / "evidence.txt").write_text("x\n", encoding="utf-8")
+    shared = {
+        "status": "PASS",
+        "auditor_tool": "agy",
+        "auditor_model": "gemini-3.1-pro-high",
+        "invocation": "agy --model gemini-3.1-pro-high",
+        "exit_code": 0,
+        "report_path": report_path,
+        "findings": [],
+        "fixes_applied": [],
+        "remaining_risks": [],
+        "skip_reason": None,
+    }
+    (packet_dir / "PROOF.json").write_text(
+        json.dumps(
+            {"packet_id": packet_id, "repo": REPO, "head_sha": "a" * 40, "embedded_audit": shared}
+        ),
+        encoding="utf-8",
+    )
+    _git(scratch, "add", "-A")
+    _git(scratch, "commit", "--quiet", "-m", "packet bundle with symlinked report")
+
+    pr_dir = scratch / "proof" / "pr_merge" / "embedded-audit" / "pr-9999"
+    pr_dir.mkdir(parents=True)
+    (pr_dir / "PROOF.json").write_text(
+        json.dumps(
+            {"repo": REPO, "pr_number": 9999, "head_sha": "a" * 40, "embedded_audit": shared}
+        ),
+        encoding="utf-8",
+    )
+
+    fake_key = tmp_path / "unused_key"
+    fake_key.write_text("not a real key\n", encoding="utf-8")
+
+    result = subprocess.run(
+        ["bash", str(SIGN_SCRIPT), "9999", str(fake_key)],
+        cwd=str(scratch),
+        capture_output=True,
+        text=True,
+        env={"PATH": "/usr/bin:/bin:/usr/local/bin", "PYTHONPATH": str(ROOT)},
+    )
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "not a regular file" in result.stderr
+    assert "REJECTED by CI" in result.stderr
+
+
+def test_signer_preflight_rejects_symlinked_packet_proof(tmp_path: Path) -> None:
+    """A TRACKED symlink at proof/<PACKET_ID>/PROOF.json can be clean per
+    ``git status`` (the symlink itself is committed) while is_file()/
+    read_text() follow it to valid JSON elsewhere on disk -- but CI reads
+    the committed blob bytes, which for a symlink is the target PATH
+    STRING, not JSON, and rejects it as malformed. Regression for the R7
+    review finding -- distinct from R6, which covered the report file and
+    review_bundle root, not packet_proof_path itself."""
+    import os
+
+    packet_id = "TP-DMX-TEST-SIGNER-PROOF-SYMLINK"
+    scratch = _build_signer_scratch_repo(tmp_path, packet_id=packet_id)
+    report_path = f"proof/{packet_id}/AUDITOR_REPORT.md"
+    packet_dir = scratch / "proof" / packet_id
+    packet_dir.mkdir(parents=True)
+    (packet_dir / "AUDITOR_REPORT.md").write_text("PASS\n", encoding="utf-8")
+    bundle_dir = packet_dir / "review_bundle"
+    bundle_dir.mkdir()
+    (bundle_dir / "evidence.txt").write_text("x\n", encoding="utf-8")
+
+    shared = {
+        "status": "PASS",
+        "auditor_tool": "agy",
+        "auditor_model": "gemini-3.1-pro-high",
+        "invocation": "agy --model gemini-3.1-pro-high",
+        "exit_code": 0,
+        "report_path": report_path,
+        "findings": [],
+        "fixes_applied": [],
+        "remaining_risks": [],
+        "skip_reason": None,
+    }
+    # PROOF.json itself is a symlink to real, valid JSON elsewhere.
+    real_proof = scratch / "real_proof.json"
+    real_proof.write_text(
+        json.dumps(
+            {"packet_id": packet_id, "repo": REPO, "head_sha": "a" * 40, "embedded_audit": shared}
+        ),
+        encoding="utf-8",
+    )
+    os.symlink(real_proof, packet_dir / "PROOF.json")
+    _git(scratch, "add", "-A")
+    _git(scratch, "commit", "--quiet", "-m", "packet bundle with symlinked PROOF.json")
+
+    pr_dir = scratch / "proof" / "pr_merge" / "embedded-audit" / "pr-9999"
+    pr_dir.mkdir(parents=True)
+    (pr_dir / "PROOF.json").write_text(
+        json.dumps(
+            {"repo": REPO, "pr_number": 9999, "head_sha": "a" * 40, "embedded_audit": shared}
+        ),
+        encoding="utf-8",
+    )
+
+    fake_key = tmp_path / "unused_key"
+    fake_key.write_text("not a real key\n", encoding="utf-8")
+
+    result = subprocess.run(
+        ["bash", str(SIGN_SCRIPT), "9999", str(fake_key)],
+        cwd=str(scratch),
+        capture_output=True,
+        text=True,
+        env={"PATH": "/usr/bin:/bin:/usr/local/bin", "PYTHONPATH": str(ROOT)},
+    )
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "is a symlink" in result.stderr
+    assert "REJECTED by CI" in result.stderr
+
+
+def test_signer_preflight_rejects_symlinked_packet_dir(tmp_path: Path) -> None:
+    """Path.is_symlink() only inspects the FINAL path component -- it says
+    nothing about ancestor directories. A symlinked packet_dir itself
+    (proof/<PACKET_ID> pointing elsewhere) would make every leaf-level
+    is_symlink() check on report_file/review_bundle_dir/packet_proof_path
+    return False (each only sees the leaf at the resolved location),
+    silently bypassing every check R5-R7 added. Regression for the R8
+    review finding, surfaced by the R7 independent audit's own adversarial
+    analysis rather than a live GitHub review comment."""
+    import os
+
+    packet_id = "TP-DMX-TEST-SIGNER-PACKET-DIR-SYMLINK"
+    scratch = _build_signer_scratch_repo(tmp_path, packet_id=packet_id)
+    report_path = f"proof/{packet_id}/AUDITOR_REPORT.md"
+
+    # Build a REAL packet bundle elsewhere, then make proof/<PACKET_ID>
+    # itself a symlink pointing at it.
+    real_packet_dir = scratch / "real_packet_dir"
+    shared = _write_packet_bundle(real_packet_dir, packet_id, report_path)
+    (scratch / "proof").mkdir(parents=True, exist_ok=True)
+    os.symlink(real_packet_dir, scratch / "proof" / packet_id)
+    _git(scratch, "add", "-A")
+    _git(scratch, "commit", "--quiet", "-m", "packet_dir itself is a symlink")
+
+    pr_dir = scratch / "proof" / "pr_merge" / "embedded-audit" / "pr-9999"
+    pr_dir.mkdir(parents=True)
+    (pr_dir / "PROOF.json").write_text(
+        json.dumps(
+            {"repo": REPO, "pr_number": 9999, "head_sha": "a" * 40, "embedded_audit": shared}
+        ),
+        encoding="utf-8",
+    )
+
+    fake_key = tmp_path / "unused_key"
+    fake_key.write_text("not a real key\n", encoding="utf-8")
+
+    result = subprocess.run(
+        ["bash", str(SIGN_SCRIPT), "9999", str(fake_key)],
+        cwd=str(scratch),
+        capture_output=True,
+        text=True,
+        env={"PATH": "/usr/bin:/bin:/usr/local/bin", "PYTHONPATH": str(ROOT)},
+    )
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "is a symlink, not a real directory" in result.stderr
+    assert "REJECTED by CI" in result.stderr
+
+
+def test_packet_proof_packet_id_mismatch_is_rejected(tmp_path: Path) -> None:
+    """The packet PROOF.json's own declared packet_id must equal the
+    PACKET_ID derived from the signed report_path -- path placement alone is
+    not identity. Regression for the Copilot review finding on this PR."""
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle()
+    packet_proof_path = fixture.packet_dir / "PROOF.json"
+    packet_proof = json.loads(packet_proof_path.read_text(encoding="utf-8"))
+    packet_proof["packet_id"] = "TP-DMX-SOME-OTHER-PACKET"
+    packet_proof_path.write_text(
+        json.dumps(packet_proof, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    _git(fixture.repo, "add", str(fixture.packet_dir.relative_to(fixture.repo)))
+    _git(fixture.repo, "commit", "--quiet", "--amend", "-m", "proof(audit): packet bundle")
+    fixture.write_and_sign_proof(write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("packet_proof_packet_id_mismatch") for r in attestation["reasons"]
+    )
+
+
+def test_extract_packet_id_returns_none_for_non_matching_report_path() -> None:
+    """Direct unit coverage of the defensive branch: a report_path that does
+    not match the trusted schema's pattern yields no PACKET_ID at all. Once
+    schema validation has already passed, the pattern's fixed 3-segment
+    shape makes this unreachable through evaluate_local_audit -- covered
+    here directly so the fail-closed branch itself is exercised."""
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    assert (
+        local_audit_acceptance._extract_packet_id(
+            "docs/not-a-proof-path.md", schema
+        )
+        is None
+    )
+    assert (
+        local_audit_acceptance._extract_packet_id(
+            "proof/too/many/segments/AUDITOR_REPORT.md", schema
+        )
+        is None
+    )
+    assert (
+        local_audit_acceptance._extract_packet_id("proof/PKT/AUDITOR_REPORT.md", schema)
+        == "PKT"
+    )
+
+
+def test_extract_packet_id_rejects_reserved_pr_merge_namespace() -> None:
+    """A report_path of proof/pr_merge/AUDITOR_REPORT.md schema-matches the
+    generic [^/]+ wildcard, deriving PACKET_ID="pr_merge" -- but proof/pr_merge/
+    is the RESERVED root every PR's signed proof lives under
+    (proof/pr_merge/embedded-audit/pr-<N>/), not one packet's own directory.
+    Accepting it would widen the diff-scope allow-list to that whole shared
+    namespace, letting a proof successor touch any other PR's signed
+    attestation while still passing the proof-only-delta check. Regression
+    for the R4 review finding."""
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    assert (
+        local_audit_acceptance._extract_packet_id(
+            "proof/pr_merge/AUDITOR_REPORT.md", schema
+        )
+        is None
+    )
+
+
+def test_report_path_colliding_with_reserved_namespace_is_rejected_end_to_end(
+    tmp_path: Path,
+) -> None:
+    """End-to-end: a signed proof whose report_path derives PACKET_ID="pr_merge"
+    must fail closed via evaluate_local_audit, not merely at the unit level."""
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_and_sign_proof(
+        embedded=_local_embedded_audit()
+        | {"report_path": "proof/pr_merge/AUDITOR_REPORT.md"},
+        write_packet_bundle=False,
+    )
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(r.startswith("packet_id_undecidable") for r in attestation["reasons"])
 
 
 # ---------------------------------------------------------------------------
@@ -548,6 +1414,7 @@ def test_exact_model_with_wrong_tool_is_rejected_end_to_end(tmp_path: Path) -> N
 
 def test_exact_model_bound_to_agy_is_accepted_end_to_end(tmp_path: Path) -> None:
     fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(packet_embedded=_exact_model_audit())
     fixture.write_and_sign_proof(embedded=_exact_model_audit())
     attestation = fixture.evaluate()
     assert attestation["accepted"] is True, attestation["reasons"]

@@ -1,0 +1,35 @@
+You are an independent auditor. This working tree is a git worktree pinned at exact commit a26474698c (originally on branch feat/local-audit-proof-binding-001, draft PR #1236, base main). First run `git rev-parse HEAD` and confirm it starts with a26474698c.
+
+## Background
+
+This is round 3 (R3) of TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001, a repair to `scripts/audit/local_audit_acceptance.py` (the fail-closed acceptance engine for signed local embedded-audit proofs) and `scripts/audit/sign_local_audit_proof.sh` (its local signer). Two prior rounds (R1, audited `ab57983171`/`05c41b3e6b`, both PASS; R2, audited `cdc83dda65`, PASS, resolved 7 live review findings) preceded this one. After R2 was pushed, automated review on live PR #1236 raised 5 MORE findings on the same head. This round's commit `a26474698c` (message: "fix(audit): R3 repair — allowlist gap, signer schema/policy parity, gitlink smuggling") claims to close them. Verify that claim independently — do not trust the commit message or my characterization below.
+
+The 5 fresh findings, verbatim:
+
+1. **P1** (proof/pr_merge/embedded-audit/pr-1236/PROOF.json:4, chatgpt-codex-connector): "Re-pin proof to an ancestor of proposed head" — claims evaluating a squash-preview commit `f474c2ce613912ad2be9543d48b57088fb4f7cd8` as proposed head rejects the attestation because the declared audited SHA `cdc83dda65...` is not an ancestor of that squash-preview commit (whose sole parent is `e84d62ca...`, an unrelated earlier canary incident commit). I (the operator's assistant) independently checked this against the LIVE branch (not the squash preview) using `git merge-base --is-ancestor cdc83dda65... <live-PR-head>` and `gh api .../compare/cdc83dda65...<live-PR-head>`, both confirming `cdc83dda65` IS an ancestor with exactly 2 proof-only successor commits. Please independently re-verify this yourself against this worktree's actual history (`git log --oneline -10`, `git merge-base --is-ancestor cdc83dda65cf6cf0337f5c4a88b76d048e2854f1 HEAD`) and state whether this finding is applicable to the real branch or is another instance of a reviewer bot reasoning from a synthetic GitHub squash-merge-preview SHA that never exists as a real commit in this repository's history.
+2. **P1** (task-packets/TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001.json:38): "Add PR-scoped proof files to packet allowlist" — the task packet's `commit.allowlist` omitted `proof/pr_merge/embedded-audit/pr-1236/PROOF.json` and its `.sig`, even though step S04 explicitly commits them, so the packet did not actually authorize its own committed change set.
+3. **P2** (scripts/audit/sign_local_audit_proof.sh:110): "Validate full packet audit object before signing" — after an earlier repair round added identity-field comparison (status/auditor_tool/auditor_model) between the PR proof and packet proof, this finding notes a packet object could still match those 3 fields while having `required: false`, a missing `invocation`, or another schema/policy violation, and would still be signed as "proof shape OK" — only to be rejected later by `evaluate_local_audit()`'s full schema+policy check. Requested: run the same canonical validation logic against the packet's embedded_audit object before signing, not just field-by-field identity comparison.
+4. **P2** (scripts/audit/local_audit_acceptance.py:169): "Require review bundle to contain an actual blob" — when `review_bundle` contains only a gitlink/submodule entry (git object type `commit`, e.g. a pointer to another repository via a fake/real submodule reference), `git ls-tree -r --name-only` still prints that path, so the old "has any descendant line" check returned true despite no actual in-repository audit evidence existing. Requested: inspect each recursive entry's actual git object type/mode and require at least one real `blob`.
+
+## Scope — verify each independently, do not take my summary on faith
+
+1. Run `git log --oneline -10` and `git show a26474698c --stat` for the R3 diff.
+2. For finding #1 (ancestry): run `git merge-base --is-ancestor cdc83dda65cf6cf0337f5c4a88b76d048e2854f1 HEAD && echo ANCESTOR || echo NOT_ANCESTOR` and `git log --oneline cdc83dda65cf6cf0337f5c4a88b76d048e2854f1..HEAD`. State the real result. Is this finding applicable to this branch's actual history, or anchored to a synthetic/unreachable commit?
+3. For finding #2 (allowlist): read `task-packets/TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001.json`'s `commit.allowlist` array and confirm it now includes a path covering `proof/pr_merge/embedded-audit/pr-1236/**`. Cross-check against `commit.verify`/`steps` to confirm S04 does commit files under that path.
+4. For finding #3 (signer preflight): read the diff to `scripts/audit/sign_local_audit_proof.sh`. Does it now import and call `schema_validation_errors`/`policy_errors` from `scripts.audit.local_audit_acceptance` against BOTH the PR proof's own `embedded_audit` and the packet proof's `embedded_audit`, not merely comparing 3 fields? Read `tests/audit/test_local_audit_acceptance.py`'s `test_signer_preflight_rejects_packet_object_failing_policy_despite_matching_identity` test and actually RUN it (`python3 -m pytest tests/audit/test_local_audit_acceptance.py::test_signer_preflight_rejects_packet_object_failing_policy_despite_matching_identity -v`) to confirm it passes and genuinely exercises this.
+5. For finding #4 (gitlink): find the fixed `_tree_has_entries` in `scripts/audit/local_audit_acceptance.py` — it should now use `git ls-tree -r <rev> -- <path>` (without `--name-only`, so object types are visible) and check each entry's type field for `blob`. Read and RUN `tests/audit/test_local_audit_acceptance.py::test_review_bundle_gitlink_only_is_rejected` (`python3 -m pytest tests/audit/test_local_audit_acceptance.py::test_review_bundle_gitlink_only_is_rejected -v`) and confirm it passes and genuinely constructs a gitlink entry (mode 160000) via `git update-index --add --cacheinfo`, not just a differently-named file.
+6. Run `python3 -m pytest tests/audit -q` and report exact pass/fail/skip counts.
+7. Run `python3 -c "import json,jsonschema; jsonschema.validate(json.load(open('task-packets/TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001.json')), json.load(open('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json')))"` and confirm no error.
+8. Run `bash -n scripts/audit/sign_local_audit_proof.sh` to confirm valid syntax.
+9. Anything ELSE wrong, fragile, incomplete, or newly introduced by this R3 diff that these 4 findings didn't already name — including any NEW smuggling/bypass vector, or any regression in R1/R2 protections.
+
+## Required output
+
+Markdown with:
+- Verdict: PASS / PASS_WITH_RISKS / FAIL / NEEDS_SUPERVISOR
+- For EACH of the 4 findings above: state explicitly RESOLVED / PARTIALLY RESOLVED (why) / STILL PRESENT (why) — with the actual commands you ran and their real output, not a paraphrase.
+- The real pytest counts.
+- Any newly-introduced risk or regression versus R1/R2.
+- One-paragraph bottom line: is this R3 commit ready to be treated as the controlling audited head for a fresh canonical proof bundle?
+
+Do not edit files. Read-only audit.

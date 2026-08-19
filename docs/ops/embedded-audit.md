@@ -219,13 +219,23 @@ ssh-keygen -t ed25519 -N '' -f ~/.ssh/dopemux_audit_signing \
 # via a reviewed PR to main (instructions in that file)
 ```
 
-Per-PR flow (after the local pr-merge audit writes the proof):
+Per-PR flow (after the local pr-merge audit writes the proof). The canonical
+AGENTS.md 9.1 packet proof bundle (`proof/<PACKET_ID>/{PROOF.json,<report>,
+review_bundle/}`) must be committed FIRST, as its own proof-only successor
+commit — `scripts/audit/sign_local_audit_proof.sh` reads it from committed
+git blobs (via `git status --porcelain`), not the working tree, and fails
+closed with `uncommitted changes` if it isn't already committed:
 
 ```bash
+# 1. Commit the canonical packet proof bundle first (separate commit).
+git add proof/<PACKET_ID>/
+git commit -m "proof(audit): canonical packet proof bundle for <PACKET_ID>"
+
+# 2. Then sign and commit the PR-scoped proof.
 scripts/audit/sign_local_audit_proof.sh <pr-number>   # validates + signs
 git add proof/pr_merge/embedded-audit/pr-<N>/
 git commit -m "proof(audit): signed local embedded-audit attestation for PR <N>"
-git push   # must be the only change on top of the audited head_sha
+git push   # both commits together must be the only changes on top of the audited head_sha
 ```
 
 

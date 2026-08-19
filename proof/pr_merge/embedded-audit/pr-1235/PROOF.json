@@ -1,0 +1,28 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1235,
+  "head_sha": "fce3af6492cdc2c88c9b5894b4e8e07afb7545e9",
+  "generated_at": "2026-08-17T00:40:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --print <PR-1235 revert-safety audit prompt, refreshed re-run after the original invocation returned status: ERROR> --model gemini-3.1-pro-high --effort high --sandbox --mode plan --output-format json --print-timeout 18m",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001-REVERT-1235/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "Replaced the original packet evidence, which came from an AGY invocation that returned status: \"ERROR\" (a cascade code-action charset-decoding failure) despite plausible-looking PASS content in its response body -- that content had been mistakenly promoted into this proof's embedded_audit.status: \"PASS\". Re-ran the audit against the exact same audited commit with the same prompt; genuine status: \"SUCCESS\", verdict PASS. Substance unchanged (single-file, byte-identical revert, independently reverifiable), but the verdict is now backed by a completed run, not an errored one.",
+      "Strengthened the AUDIT_TOPOLOGY disclosure in response to a live review finding questioning why head_sha does not equal the literally-audited commit: the report now explicitly states and cites the verified, packet-dir-confined delta between the audited commit and this evidence-head, mirroring the same disclosed pattern already used and accepted for PR #1224 and PR #1236."
+    ],
+    "remaining_risks": [
+      "This PR (#1235) is itself corrective: it reverts an unauthorized main write (e84d62caee, TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001 canary-validation error) back to the exact pre-incident tip 75b4cfc581786a53445e412bfc8e25a6e0fdb978, verified byte-identical via empty git diff. No new substantive content is introduced.",
+      "AUDIT_TOPOLOGY, NAMED NOT CONFLATED. AUDITED_TREE (examined by the audit) = bbcd474a0fb81a160e68537eb56c5b195133072b. This PROOF.json's head_sha, fce3af6492cdc2c88c9b5894b4e8e07afb7545e9, is the AUDIT_EVIDENCE_HEAD: a proof-only successor adding only proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001-REVERT-1235/** on top of AUDITED_TREE -- verified via git diff --stat, confined entirely to that packet directory, no code/schema/governance file touched. This bridge commit adds only proof/pr_merge/embedded-audit/pr-1235/** on top of AUDIT_EVIDENCE_HEAD -- a second proof-only delta, not a re-audit. This is the same evidence-head pattern, disclosed identically, already used and accepted for PR #1224 and PR #1236's own packet proofs.",
+      "ATTESTED_AUDITED_SHA is a signer claim bounded by structural enforcement (ancestor check + diff-scope allowlist), not an independent cryptographic proof of what the auditor examined at that SHA. Same documented limitation carried throughout this packet family.",
+      "Self-attestation: this proof is signed by the same operator/session that authored the PR under a fresh, narrowly-scoped operator authorization specific to PR #1235 (see SIGNING_DISCLOSURE.md). It is an operator attestation, not a third-party audit -- the independent audit content itself is the AGY run, not the signature.",
+      "The canonical AGENTS.md 9.1 packet proof bundle (proof/<PACKET_ID>/{PROOF.json,review_bundle/}) required by the NEW verifier (TP-DMX-LOCAL-AUDIT-PROOF-BINDING-001, unmerged) is deliberately NOT added here: the currently-live verifier only permits proof/pr_merge/embedded-audit/pr-1235/ in the post-audit delta, so adding that bundle now would trigger delta_touches_code and flip this PR red. Deferred until after the new verifier's own bootstrap decision lands, consistent with the same deferral applied to PR #1224."
+    ],
+    "skip_reason": null
+  }
+}
