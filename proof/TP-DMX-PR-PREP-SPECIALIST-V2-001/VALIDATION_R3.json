@@ -1,0 +1,17 @@
+{
+  "repo_worktree_branch_identity": "PASS (feat/pr-prep-specialist-v2-contract, ahead 6 of origin/main)",
+  "origin_main_drift": "PASS (origin/main = 3e8fcc1c70c5b859dd651a1cd33c85eab837c93e, unchanged since R2)",
+  "changed_file_allowlist": "PASS (13 files staged, all within R3-amended allowlist: task-packets JSON + 6 canonical + 6 compat)",
+  "git_diff_check": "PASS",
+  "task_packet_schema_validation": "PASS (0 missing required fields, 0 extra fields, 0 step errors)",
+  "focused_governance_tests": "PASS (tests/governance/test_pr_prep_contract_v2.py, 31 passed -- unchanged count; no new R3-specific assertions added this round, see LEGACY_SEMANTICS_SCAN_R3.md disclosure)",
+  "relevant_complete_governance_suite": "PASS (tests/governance/, 54 passed)",
+  "changed_file_precommit": "PASS (all hooks Passed or Skipped, zero file modifications)",
+  "secret_scan": "PASS (no secret-shaped strings in staged diff)",
+  "terminal_semantic_census": "FAIL -- ACTIVE_CONTRADICTION_COUNT (outside R1+R2+R3 allowlist) = 19 files; see LEGACY_SEMANTICS_SCAN_R3.md",
+  "freeze_gate": "NOT_MET -- terminal_semantic_census must be ACTIVE_CONTRADICTION_COUNT=0 before C1-R3 may be frozen, per R3 ruling",
+  "content_head_frozen": "NO -- no CONTENT_HEAD_R3.txt written; prior C1 and C1-R2 remain SUPERSEDED_NOT_AUDITED and no new head supersedes them",
+  "action_taken": "Committed the 13-file R3-allowlisted repair (6 canonical pointer/deprecation stubs + 6 compat pointer stubs + packet JSON) since it is fully within scope and gates pass on it in isolation. Did NOT touch any of the 19 out-of-allowlist ACTIVE_CONTRADICTION files. Did NOT freeze a content head.",
+  "terminal_state": "PREP_V2_NEEDS_SUPERVISOR",
+  "overall": "STOP -- census gate failed; awaiting supervisor decision on the 19-file finding before any further repair or freeze"
+}

@@ -1,0 +1,12 @@
+docs/03-reference/pr-pipeline/prep/adapters/claude/readme.md
+docs/03-reference/pr-pipeline/prep/adapters/cursor/readme.md
+docs/03-reference/pr-pipeline/prep/adapters/gemini/readme.md
+docs/03-reference/pr-pipeline/prep/adapters/jules/readme.md
+docs/03-reference/pr-pipeline/prep/adapters/copilot/readme.md
+docs/03-reference/pr-pipeline/prep/adapters/vibe/readme.md
+docs/pr_prep/adapters/claude/readme-2.md
+docs/pr_prep/adapters/cursor/readme-2.md
+docs/pr_prep/adapters/gemini/readme-2.md
+docs/pr_prep/adapters/jules/readme-2.md
+docs/pr_prep/adapters/copilot/readme-2.md
+docs/pr_prep/adapters/vibe/readme-2.md

@@ -4,28 +4,17 @@ title: PR Creation Policy
 type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-03-14'
-last_review: '2026-03-14'
-next_review: '2026-06-12'
+date: '2026-08-11'
+last_review: '2026-08-11'
+next_review: '2026-11-09'
 prelude: PR Creation Policy for pr-prep-specialist.
 ---
 # PR Creation Policy
 
-## Final PR Creation Allowed Only When:
-- Final prep decision is `CREATE_READY`.
-- Deterministic blockers are absent.
-- Docs/changelog obligations are satisfied (or policy explicitly waives them).
-- No high-risk pre-creation block remains.
-- Local creation policy (`allow_live_creation`) allows final PRs.
+`docs/pr_prep/**` is a compatibility surface only, by ruling of
+TP-DMX-PR-PREP-SPECIALIST-V2-001-R1. This file must not carry independent
+behavioral authority.
 
-## Draft PR Creation Allowed When:
-- Final prep decision is `DRAFT_RECOMMENDED`.
-- High-risk review needs a visible draft artifact.
-- Adjacent-work ambiguity is medium but non-blocking by policy.
+Canonical: [`../03-reference/pr-pipeline/prep/operator-contract.md`](../03-reference/pr-pipeline/prep/operator-contract.md) §5 (S4 - Draft or verify PR metadata)
 
-## No Creation Allowed When (Fallback to PACKAGE_ONLY or BLOCKED):
-- Prep decision is any `BLOCKED_*` state.
-- Branch truth is insufficient (e.g., detached HEAD).
-- Adjacent-work ambiguity is too high.
-- Required obligations are `REQUIRED_MISSING`.
-- Creation transport (e.g., `gh cli`) is unavailable (fallback to `PACKAGE_ONLY`).
+This stub is kept only so existing links into this filename keep resolving.

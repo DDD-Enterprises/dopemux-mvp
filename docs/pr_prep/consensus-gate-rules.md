@@ -4,23 +4,20 @@ title: Consensus Gate Rules
 type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-03-14'
-last_review: '2026-03-14'
-next_review: '2026-06-12'
+date: '2026-08-11'
+last_review: '2026-08-11'
+next_review: '2026-11-09'
 prelude: Consensus Gate Rules (explanation) for dopemux documentation and developer
   workflows.
 ---
 # Consensus Gate Rules
 
-## Trigger Conditions
-The consensus gate is NOT a default validator. It is only invoked when:
-1. `risk_hint` is `HIGH` or `CRITICAL`.
-2. `ambiguity_level` is `MEDIUM` or `HIGH`.
-3. `change_profile` is `DIRTY_OR_AMBIGUOUS`.
+`docs/pr_prep/**` is a compatibility surface only, by ruling of
+TP-DMX-PR-PREP-SPECIALIST-V2-001-R1. This file must not carry independent
+behavioral authority.
 
-## Consensus Operation
-When triggered, the gate evaluates the overlapping code (e.g., between the current branch and a stash) or the high-risk migration logic to determine if PR creation is safe.
+Canonical: [`../03-reference/pr-pipeline/prep/consensus-gate-rules.md`](../03-reference/pr-pipeline/prep/consensus-gate-rules.md),
+which points to [`operator-contract.md`](../03-reference/pr-pipeline/prep/operator-contract.md)
+§6 (Independent audit when required).
 
-## Outcomes
-- **PASS**: The high-risk elements are deemed safe or intentional. Posture upgrades from `BLOCKED` to `DRAFT_RECOMMENDED`.
-- **FAIL**: The risk is confirmed. Posture remains `BLOCKED` or downgrades to `HIGH_RISK_HANDOFF_REQUIRED`.
+This stub is kept only so existing links into this filename keep resolving.

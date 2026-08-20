@@ -4,41 +4,19 @@ title: Handoff Contract
 type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-03-14'
-last_review: '2026-03-14'
-next_review: '2026-06-12'
+date: '2026-08-11'
+last_review: '2026-08-11'
+next_review: '2026-11-09'
 prelude: Handoff Contract for pr-prep-specialist to pr-merge-specialist handoff.
 ---
 # Handoff Contract
 
-This document defines the exact payload that `pr-prep-specialist` delivers to `pr-merge-specialist`.
+`docs/pr_prep/**` is a compatibility surface only, by ruling of
+TP-DMX-PR-PREP-SPECIALIST-V2-001-R1. This file must not carry independent
+behavioral authority.
 
-## PR_HANDOFF_BUNDLE.json Requirements
+Canonical: [`../03-reference/pr-pipeline/prep/handoff-contract.md`](../03-reference/pr-pipeline/prep/handoff-contract.md),
+which points to [`operator-contract.md`](../03-reference/pr-pipeline/prep/operator-contract.md)
+§9 (Handoff V2) and [`handoff-to-prms-contract.md`](../03-reference/pr-pipeline/prep/handoff-to-prms-contract.md).
 
-The bundle must guarantee that `pr-merge-specialist` receives:
-
-### Required Identity
-- `repo`: Repository name.
-- `current_branch`: The head branch being merged.
-- `base_branch`: The target branch.
-- `pr_id` / `pr_url`: Populated if created.
-
-### Required Content
-- `title`: Final chosen title.
-- `body_path`: Path to the generated body markdown.
-- `final_prep_decision`: The synthesized validation decision.
-- `validation_summary`: A sub-object detailing deterministic/consensus outcomes.
-
-### Required Risk/Context
-- `risk_hint`: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`.
-- `high_risk_handoff_required`: Boolean flag.
-- `adjacent_work_decision`: Context on uncommitted local overlaps.
-- `obligation_summary`: Status of docs, changelogs, migrations.
-- `warnings`: Array of explicit warnings.
-
-### Required Next Step
-Must be exactly one of:
-- `MERGE_SPECIALIST_NORMAL_FLOW`
-- `MERGE_SPECIALIST_DRAFT_FLOW`
-- `MERGE_SPECIALIST_HIGH_RISK_AWARE_FLOW`
-- `NO_HANDOFF_BLOCKED`
+This stub is kept only so existing links into this filename keep resolving.

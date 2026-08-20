@@ -4,45 +4,24 @@ title: Go/No-Go Criteria
 type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-03-14'
-last_review: '2026-03-14'
-next_review: '2026-06-12'
+date: '2026-08-11'
+last_review: '2026-08-11'
+next_review: '2026-11-09'
 prelude: Criteria for determining the operational posture of pr-prep-specialist.
 ---
 # Go/No-Go Criteria
 
-The final governance decision for the `pr-prep-specialist` depends on the aggregated quality bands across all evaluation domains.
+Superseded by [`operator-contract.md`](./operator-contract.md) §6 (Prep states) and §5 (S6 - Independent audit when required).
 
-## Allowed Decisions
+The `GO_SUPERVISED_FINAL_CREATION` / `GO_DRAFT_FIRST` / `GO_PACKAGE_ONLY` /
+`NO_GO_LIMIT_TO_ARTIFACTS_ONLY` / `ROLLBACK_TO_HUMAN_PREP` decision bands
+previously documented here — each keyed to quality-band aggregates like
+`TRUSTWORTHY`, `READY_FOR_DOWNSTREAM_USE`, `HIGHLY_USEFUL` — have been
+replaced by the eight prep states (`PREP_BLOCKED` through
+`PREP_READY_FOR_OPERATOR_DECISION`) and the S6 audit-verdict gate
+(`PASS`/`PASS_WITH_RISKS`/`FAIL`/`NEEDS_SUPERVISOR`/`SKIPPED`) in the
+canonical contract. There is no autonomous "supervised final creation"
+state — PR creation defaults to `DRAFT_ONLY` (§S4) and any escalation to
+non-draft creation requires explicit operator/Task Packet authorization.
 
-### `GO_SUPERVISED_FINAL_CREATION`
-- **Criteria**:
-  - Branch Truth: `TRUSTWORTHY`
-  - Handoff Quality: `READY_FOR_DOWNSTREAM_USE`
-  - Validation: `CORRECT`
-  - No domain is `UNSAFE`, `UNRELIABLE`, or `MISLEADING`.
-- **Meaning**: The skill is highly trusted to create final PRs autonomously when conditions permit.
-
-### `GO_DRAFT_FIRST`
-- **Criteria**:
-  - PR Draft Quality: `HIGHLY_USEFUL` or `USEFUL_WITH_CAVEATS`
-  - Adjacent-Work/Obligations: `CONSERVATIVE_USEFUL` or `CONSERVATIVE`
-  - Validation: `CORRECT` or `CONSERVATIVE`
-- **Meaning**: The skill provides strong value but retains enough ambiguity or noise to require a human reviewer to inspect the draft before it becomes a final PR.
-
-### `GO_PACKAGE_ONLY`
-- **Criteria**:
-  - Handoff Quality: `SUFFICIENT_WITH_GAPS` or `READY_FOR_DOWNSTREAM_USE`
-  - PR Draft Quality is at least `LIMITED`.
-  - Some evidence is thin or testing samples are too small to trust live API interactions.
-- **Meaning**: The logic is sound enough to generate useful artifacts, but live creation via Git/GitHub should remain disabled pending further observation.
-
-### `NO_GO_LIMIT_TO_ARTIFACTS_ONLY`
-- **Criteria**:
-  - Handoff Quality is `INSUFFICIENT` or Validation is `INCONSISTENT`.
-- **Meaning**: The skill fails to assemble a coherent package. It should only emit intermediate artifacts for debugging.
-
-### `ROLLBACK_TO_HUMAN_PREP`
-- **Criteria**:
-  - Any domain evaluates to `UNSAFE`, `UNRELIABLE`, or `MISLEADING`.
-- **Meaning**: The skill hallucinates evidence or creates dangerous integrations. Do not use.
+This stub is kept only so existing links into this filename keep resolving.
