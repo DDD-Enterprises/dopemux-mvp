@@ -515,13 +515,12 @@ def integrate_batch_results_with_webhook_detailed(
 ) -> Dict[str, Any]:
     """Typed companion to :func:`integrate_batch_results_with_webhook`.
 
-    Performs the identical integration work (same webhook events, same
-    idempotency key derivation, same event-store calls) but classifies each
-    terminal batch as one of: newly integrated, idempotent duplicate (already
-    integrated -- distinguished via the event store's own idempotency
-    evidence, ``fetch_webhook_event_id``, per RTE-W1-006 invariant 19), or
-    materially failed (insert/append raised, or the event store reported a
-    non-insert with no discoverable prior event id).
+    Uses the same event shapes and idempotency key derivation while classifying
+    each terminal batch as one of: newly integrated, idempotent duplicate
+    (existing webhook verified via ``fetch_webhook_event_id`` and run-event
+    append completed, per RTE-W1-006 invariant 19), or materially failed
+    (insert/append raised, or the event store reported a non-insert with no
+    discoverable prior event id).
 
     Does not fabricate original submission phase/step/partition provenance;
     the caller-supplied ``phase``/``step_id``/``partition_id`` are recorded
@@ -575,35 +574,7 @@ def integrate_batch_results_with_webhook_detailed(
             if hasattr(event_store, "fetch_webhook_event_id"):
                 webhook_event_id = event_store.fetch_webhook_event_id(provider_id, f"batch_{batch_id}")
 
-            if inserted:
-                from ledger.interface import RunEventInsert
-
-                event_store.append_run_event(
-                    RunEventInsert(
-                        run_id=run_id,
-                        phase=phase,
-                        step_id=step_id,
-                        partition_id=partition_id,
-                        provider=provider_id,
-                        event_type=event_type,
-                        event_id=f"batch_{batch_id}",
-                        provider_ref=batch_id,
-                        webhook_event_id=webhook_event_id,
-                        dedupe_key=f"batch_{batch_id}_{run_id}_{phase}_{step_id}_{partition_id}",
-                        orphaned=False,
-                    )
-                )
-                integrated += 1
-                logger.info("Integrated batch %s as webhook event", batch_id)
-                details.append({"batch_id": batch_id, "outcome": "integrated"})
-            elif webhook_event_id:
-                # Not a new insert, but the event store has prior idempotency
-                # evidence for this exact key -- this is a legitimate
-                # duplicate/idempotent replay, not a failure (invariant 19).
-                idempotent_duplicates += 1
-                logger.info("Batch %s already integrated (idempotent replay)", batch_id)
-                details.append({"batch_id": batch_id, "outcome": "idempotent_duplicate"})
-            else:
+            if not inserted and not webhook_event_id:
                 # Not inserted and no discoverable prior event id: the event
                 # store gave us no idempotency evidence to justify treating
                 # this as a duplicate. Fail closed.
@@ -619,6 +590,36 @@ def integrate_batch_results_with_webhook_detailed(
                         "error": "not_inserted_no_idempotency_evidence",
                     }
                 )
+                continue
+
+            from ledger.interface import RunEventInsert
+
+            run_event = RunEventInsert(
+                run_id=run_id,
+                phase=phase,
+                step_id=step_id,
+                partition_id=partition_id,
+                provider=provider_id,
+                event_type=event_type,
+                event_id=f"batch_{batch_id}",
+                provider_ref=batch_id,
+                webhook_event_id=webhook_event_id,
+                dedupe_key=f"batch_{batch_id}_{run_id}_{phase}_{step_id}_{partition_id}",
+                orphaned=False,
+            )
+            event_store.append_run_event(run_event)
+
+            if inserted:
+                integrated += 1
+                logger.info("Integrated batch %s as webhook event", batch_id)
+                details.append({"batch_id": batch_id, "outcome": "integrated"})
+            else:
+                # Not a new insert, but the event store has prior idempotency
+                # evidence for this exact key -- this is a legitimate
+                # duplicate/idempotent replay, not a failure (invariant 19).
+                idempotent_duplicates += 1
+                logger.info("Batch %s already integrated (idempotent replay)", batch_id)
+                details.append({"batch_id": batch_id, "outcome": "idempotent_duplicate"})
         except Exception as exc:
             failed += 1
             logger.error("Failed to integrate batch %s: %s", batch_id, exc)

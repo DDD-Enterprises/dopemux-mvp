@@ -395,12 +395,21 @@ def test_s8_no_alternate_non_git_execution_identity_contract_exists() -> None:
 
 
 class _FakeEventStore:
-    def __init__(self, *, insert_returns=True, fetch_returns=None, raise_on_insert=False):
+    def __init__(
+        self,
+        *,
+        insert_returns=True,
+        fetch_returns=None,
+        raise_on_insert=False,
+        append_side_effects=None,
+    ):
         self.insert_calls = []
+        self.append_calls = []
         self.run_events = []
         self._insert_returns = insert_returns
         self._fetch_returns = fetch_returns
         self._raise_on_insert = raise_on_insert
+        self._append_side_effects = list(append_side_effects or [])
 
     def insert_webhook_event_if_absent(self, event):
         if not isinstance(event, _WebhookEventInsert):
@@ -408,6 +417,8 @@ class _FakeEventStore:
         self.insert_calls.append(event)
         if self._raise_on_insert:
             raise RuntimeError("insert failed")
+        if isinstance(self._insert_returns, list):
+            return self._insert_returns.pop(0)
         if isinstance(self._insert_returns, dict):
             return self._insert_returns.get(event.idempotency_key, True)
         return self._insert_returns
@@ -418,6 +429,16 @@ class _FakeEventStore:
         return self._fetch_returns
 
     def append_run_event(self, row):
+        self.append_calls.append(row)
+        if self._append_side_effects:
+            side_effect = self._append_side_effects.pop(0)
+            if side_effect is not None:
+                raise side_effect
+        if any(
+            existing.kwargs["dedupe_key"] == row.kwargs["dedupe_key"]
+            for existing in self.run_events
+        ):
+            return
         self.run_events.append(row)
 
 
@@ -546,6 +567,127 @@ def test_b8_idempotent_duplicate_is_not_misclassified_as_failure() -> None:
     assert result["integrated"] == 0
     assert result["idempotent_duplicates"] == 1
     assert result["failed"] == 0
+    assert len(store.append_calls) == 1
+
+
+def test_b_duplicate_retry_repairs_run_event_after_initial_append_failure() -> None:
+    store = _FakeEventStore(
+        insert_returns=[True, False],
+        fetch_returns="openai:batch_batch-1",
+        append_side_effects=[RuntimeError("append failed"), None],
+    )
+    batch_results = {
+        "batch-1": {
+            "status": "completed",
+            "completed_at": "2026-01-01T00:00:00Z",
+        }
+    }
+
+    first = batch_retriever_module.integrate_batch_results_with_webhook_detailed(
+        batch_results=batch_results,
+        event_store=store,
+        run_id="rid",
+        phase="R",
+        step_id="batch_retrieval",
+        partition_id="p",
+        provider="openai",
+    )
+    retry = batch_retriever_module.integrate_batch_results_with_webhook_detailed(
+        batch_results=batch_results,
+        event_store=store,
+        run_id="rid",
+        phase="R",
+        step_id="batch_retrieval",
+        partition_id="p",
+        provider="openai",
+    )
+
+    assert first["integrated"] == 0
+    assert first["idempotent_duplicates"] == 0
+    assert first["failed"] == 1
+    assert retry["integrated"] == 0
+    assert retry["idempotent_duplicates"] == 1
+    assert retry["failed"] == 0
+    assert len(store.append_calls) == 2
+    assert len(store.run_events) == 1
+
+
+def test_b_already_complete_duplicate_remains_idempotent() -> None:
+    existing = _RunEventInsert(
+        run_id="rid",
+        phase="R",
+        step_id="batch_retrieval",
+        partition_id="p",
+        provider="openai",
+        event_type="batch.completed",
+        event_id="batch_batch-1",
+        provider_ref="batch-1",
+        webhook_event_id="openai:batch_batch-1",
+        dedupe_key="batch_batch-1_rid_R_batch_retrieval_p",
+        orphaned=False,
+    )
+    store = _FakeEventStore(
+        insert_returns=False,
+        fetch_returns="openai:batch_batch-1",
+    )
+    store.run_events.append(existing)
+
+    result = batch_retriever_module.integrate_batch_results_with_webhook_detailed(
+        batch_results={
+            "batch-1": {
+                "status": "completed",
+                "completed_at": "2026-01-01T00:00:00Z",
+            }
+        },
+        event_store=store,
+        run_id="rid",
+        phase="R",
+        step_id="batch_retrieval",
+        partition_id="p",
+        provider="openai",
+    )
+
+    assert result["integrated"] == 0
+    assert result["idempotent_duplicates"] == 1
+    assert result["failed"] == 0
+    assert len(store.append_calls) == 1
+    assert store.run_events == [existing]
+
+
+def test_b_duplicate_retry_append_failure_fails_closed() -> None:
+    store = _FakeEventStore(
+        insert_returns=False,
+        fetch_returns="openai:batch_batch-1",
+        append_side_effects=[RuntimeError("retry append failed")],
+    )
+
+    result = batch_retriever_module.integrate_batch_results_with_webhook_detailed(
+        batch_results={
+            "batch-1": {
+                "status": "completed",
+                "completed_at": "2026-01-01T00:00:00Z",
+            }
+        },
+        event_store=store,
+        run_id="rid",
+        phase="R",
+        step_id="batch_retrieval",
+        partition_id="p",
+        provider="openai",
+    )
+
+    assert result["integrated"] == 0
+    assert result["idempotent_duplicates"] == 0
+    assert result["failed"] == 1
+    assert result["details"] == [
+        {
+            "batch_id": "batch-1",
+            "outcome": "failed",
+            "error": "retry append failed",
+        }
+    ]
+    assert len(store.append_calls) == 1
+    assert store.run_events == []
 
 
 def test_b_not_inserted_with_no_idempotency_evidence_fails_closed() -> None:
@@ -567,6 +709,7 @@ def test_b_not_inserted_with_no_idempotency_evidence_fails_closed() -> None:
     assert result["integrated"] == 0
     assert result["idempotent_duplicates"] == 0
     assert result["failed"] == 1
+    assert store.append_calls == []
 
 
 def test_b5_all_integrations_raise_is_reported_as_all_failed() -> None:
@@ -1152,6 +1295,110 @@ def test_s10_s_int_blocked_before_dispatch(monkeypatch, tmp_path: Path) -> None:
     )
     assert calls == [], f"unproven-identity dispatch reached: {calls!r}"
     assert exit_code == 1
+
+
+def _run_s_int_main_with_resolved_id(
+    runner,
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+    *,
+    resolved_run_id: str,
+    argv_tail: list,
+):
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    output_root = tmp_path / "artifacts"
+    (output_root / "runs" / resolved_run_id).mkdir(parents=True)
+    observed = {}
+
+    def _resolve_run_context(_root, args, **_kwargs):
+        observed["resolver_input"] = args.run_id
+        return SimpleNamespace(run_id=resolved_run_id)
+
+    def _run_s_int(_root, run_id, **_kwargs):
+        observed["run_s_int_run_id"] = run_id
+        return {"status": "DRY_RUN", "run_id": run_id}
+
+    def _forbid_provider_call(*_args, **_kwargs):
+        raise AssertionError("provider call forbidden in S_INT run-id regression")
+
+    s_int_run_s_int_module = importlib.import_module("s_int.run_s_int")
+    monkeypatch.chdir(repo_root)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "run_extraction_v5.py",
+            "--phase",
+            "S_INT",
+            "--dry-run",
+            *argv_tail,
+            "--output-root",
+            str(output_root),
+        ],
+    )
+    monkeypatch.setattr(runner, "resolve_run_context", _resolve_run_context)
+    monkeypatch.setattr(
+        runner,
+        "required_execution_source_identity",
+        lambda _root: VALID_SHA1,
+    )
+    monkeypatch.setattr(runner, "call_llm", _forbid_provider_call)
+    monkeypatch.setattr(s_int_run_s_int_module, "run_s_int", _run_s_int)
+
+    with pytest.raises(SystemExit) as exc_info:
+        runner.main()
+
+    assert exc_info.value.code == 0
+    output = json.loads(capsys.readouterr().out.strip().splitlines()[-1])
+    return observed, output
+
+
+def test_s_int_omitted_run_id_uses_existing_resolved_identity(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    runner = _load_runner_module()
+
+    observed, output = _run_s_int_main_with_resolved_id(
+        runner,
+        monkeypatch,
+        tmp_path,
+        capsys,
+        resolved_run_id="resolved-omitted-run",
+        argv_tail=[],
+    )
+
+    assert observed == {
+        "resolver_input": None,
+        "run_s_int_run_id": "resolved-omitted-run",
+    }
+    assert output["run_id"] == "resolved-omitted-run"
+
+
+def test_s_int_explicit_run_id_remains_resolved_identity(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    runner = _load_runner_module()
+
+    observed, output = _run_s_int_main_with_resolved_id(
+        runner,
+        monkeypatch,
+        tmp_path,
+        capsys,
+        resolved_run_id="explicit-run",
+        argv_tail=["--run-id", "explicit-run"],
+    )
+
+    assert observed == {
+        "resolver_input": "explicit-run",
+        "run_s_int_run_id": "explicit-run",
+    }
+    assert output["run_id"] == "explicit-run"
 
 
 def test_s10_manifest_and_runner_identity_files_are_never_written(monkeypatch, tmp_path: Path) -> None:

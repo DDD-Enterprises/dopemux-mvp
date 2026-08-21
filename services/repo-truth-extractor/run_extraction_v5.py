@@ -23556,11 +23556,6 @@ def main() -> None:
         from s_int.run_s_int import run_s_int
         from s_int.schema_validate import validate_payload
 
-        run_id = (
-            args.run_id.strip()
-            if args.run_id
-            else datetime.now(timezone.utc).strftime("s_int_%Y%m%dT%H%M%SZ")
-        )
         cfg = RunnerConfig(
             dry_run=args.dry_run,
             max_files_docs=args.max_files_docs,
