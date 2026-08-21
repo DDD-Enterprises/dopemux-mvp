@@ -9043,7 +9043,14 @@ def _normalize_gemini_model(row: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def run_gemini_list_models(root: Path, run_id: str, dirs: Dict[str, Path]) -> int:
-    del root
+    try:
+        required_execution_source_identity(root)
+    except SourceIdentityUnprovenError as exc:
+        logger.error(
+            "Source identity unproven; blocking Gemini model listing: %s", exc
+        )
+        return 1
+
     out_dir = dirs["root"] / "00_inputs"
     output_path = out_dir / GEMINI_MODELS_FILENAME
     failed_path = out_dir / GEMINI_MODELS_FAILED_FILENAME
@@ -23522,7 +23529,9 @@ def main() -> None:
     # source identity is positively proven -- and no live/provider-mutating
     # dispatch (Stage 0 online prescan, async submit, finalize, batch watch,
     # batch retrieve, S_INT synchronous execution, ordinary phase execution)
-    # may run before this gate. Every CLI path that writes
+    # may run before this gate. The --gemini-list-models early exit proves
+    # source identity inside run_gemini_list_models before provider access or
+    # Gemini-model evidence writes; every remaining CLI path that writes
     # RUN_MANIFEST/RUNNER_IDENTITY or dispatches to a provider -- including
     # --phase S_INT, which used to dispatch and exit before this point ever
     # ran -- falls through this single point; only the pure read-only/

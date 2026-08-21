@@ -93,8 +93,10 @@ class _EventStore:
         self.insert_calls = []
         self.run_events = []
 
-    def insert_webhook_event_if_absent(self, **kwargs):
-        self.insert_calls.append(kwargs)
+    def insert_webhook_event_if_absent(self, event):
+        if not isinstance(event, _WebhookEventInsert):
+            raise TypeError("expected one WebhookEventInsert object")
+        self.insert_calls.append(event)
         return True
 
     def fetch_webhook_event_id(self, provider: str, event_id: str):
@@ -102,6 +104,34 @@ class _EventStore:
 
     def append_run_event(self, row):
         self.run_events.append(row)
+
+
+class _WebhookEventInsert:
+    def __init__(
+        self,
+        *,
+        provider,
+        idempotency_key,
+        event_type,
+        event_id,
+        received_at_utc,
+        payload_json,
+        headers_json,
+        signature_valid,
+    ) -> None:
+        self.provider = provider
+        self.idempotency_key = idempotency_key
+        self.event_type = event_type
+        self.event_id = event_id
+        self.received_at_utc = received_at_utc
+        self.payload_json = payload_json
+        self.headers_json = headers_json
+        self.signature_valid = signature_valid
+
+
+class _RunEventInsert:
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
 
 def test_retrieve_batches_dispatches_openai_and_xai(monkeypatch, tmp_path: Path) -> None:
@@ -147,11 +177,18 @@ def test_integrate_batch_results_uses_provider_argument(monkeypatch) -> None:
     module = _load_module()
     store = _EventStore()
 
-    class _RunEventInsert:
-        def __init__(self, **kwargs):
-            self.kwargs = kwargs
-
-    monkeypatch.setitem(sys.modules, "ledger.interface", type("_LedgerModule", (), {"RunEventInsert": _RunEventInsert})())
+    monkeypatch.setitem(
+        sys.modules,
+        "ledger.interface",
+        type(
+            "_LedgerModule",
+            (),
+            {
+                "WebhookEventInsert": _WebhookEventInsert,
+                "RunEventInsert": _RunEventInsert,
+            },
+        )(),
+    )
 
     integrated = module.integrate_batch_results_with_webhook(
         batch_results={
@@ -169,9 +206,10 @@ def test_integrate_batch_results_uses_provider_argument(monkeypatch) -> None:
     )
 
     assert integrated == 1
-    assert store.insert_calls[0]["provider"] == "xai"
-    payload = json.loads(store.insert_calls[0]["payload_json"])
+    assert store.insert_calls[0].provider == "xai"
+    payload = json.loads(store.insert_calls[0].payload_json)
     assert payload["provider"] == "xai"
+    assert len(store.run_events) == 1
 
 
 def test_terminal_success_and_failure_states_partition_terminal_batch_states() -> None:

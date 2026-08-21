@@ -462,15 +462,19 @@ def integrate_batch_results_with_webhook(
         }
 
         try:
+            from ledger.interface import WebhookEventInsert
+
             inserted = event_store.insert_webhook_event_if_absent(
-                provider=provider_id,
-                idempotency_key=f"batch_{batch_id}",
-                event_type=event_type,
-                event_id=f"batch_{batch_id}",
-                received_at_utc=result.get("completed_at", ""),
-                payload_json=json.dumps(payload, ensure_ascii=True),
-                headers_json="{}",
-                signature_valid=True,
+                WebhookEventInsert(
+                    provider=provider_id,
+                    idempotency_key=f"batch_{batch_id}",
+                    event_type=event_type,
+                    event_id=f"batch_{batch_id}",
+                    received_at_utc=result.get("completed_at", ""),
+                    payload_json=json.dumps(payload, ensure_ascii=True),
+                    headers_json="{}",
+                    signature_valid=True,
+                )
             )
             if inserted:
                 from ledger.interface import RunEventInsert
@@ -553,15 +557,19 @@ def integrate_batch_results_with_webhook_detailed(
         }
 
         try:
+            from ledger.interface import WebhookEventInsert
+
             inserted = event_store.insert_webhook_event_if_absent(
-                provider=provider_id,
-                idempotency_key=f"batch_{batch_id}",
-                event_type=event_type,
-                event_id=f"batch_{batch_id}",
-                received_at_utc=result.get("completed_at", ""),
-                payload_json=json.dumps(payload, ensure_ascii=True),
-                headers_json="{}",
-                signature_valid=True,
+                WebhookEventInsert(
+                    provider=provider_id,
+                    idempotency_key=f"batch_{batch_id}",
+                    event_type=event_type,
+                    event_id=f"batch_{batch_id}",
+                    received_at_utc=result.get("completed_at", ""),
+                    payload_json=json.dumps(payload, ensure_ascii=True),
+                    headers_json="{}",
+                    signature_valid=True,
+                )
             )
             webhook_event_id = None
             if hasattr(event_store, "fetch_webhook_event_id"):

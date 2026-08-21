@@ -402,12 +402,14 @@ class _FakeEventStore:
         self._fetch_returns = fetch_returns
         self._raise_on_insert = raise_on_insert
 
-    def insert_webhook_event_if_absent(self, **kwargs):
-        self.insert_calls.append(kwargs)
+    def insert_webhook_event_if_absent(self, event):
+        if not isinstance(event, _WebhookEventInsert):
+            raise TypeError("expected one WebhookEventInsert object")
+        self.insert_calls.append(event)
         if self._raise_on_insert:
             raise RuntimeError("insert failed")
         if isinstance(self._insert_returns, dict):
-            return self._insert_returns.get(kwargs["idempotency_key"], True)
+            return self._insert_returns.get(event.idempotency_key, True)
         return self._insert_returns
 
     def fetch_webhook_event_id(self, provider: str, event_id: str):
@@ -419,16 +421,47 @@ class _FakeEventStore:
         self.run_events.append(row)
 
 
+class _WebhookEventInsert:
+    def __init__(
+        self,
+        *,
+        provider,
+        idempotency_key,
+        event_type,
+        event_id,
+        received_at_utc,
+        payload_json,
+        headers_json,
+        signature_valid,
+    ) -> None:
+        self.provider = provider
+        self.idempotency_key = idempotency_key
+        self.event_type = event_type
+        self.event_id = event_id
+        self.received_at_utc = received_at_utc
+        self.payload_json = payload_json
+        self.headers_json = headers_json
+        self.signature_valid = signature_valid
+
+
+class _RunEventInsert:
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
+
 @pytest.fixture(autouse=True)
 def _fake_ledger_module(monkeypatch):
-    class _RunEventInsert:
-        def __init__(self, **kwargs):
-            self.kwargs = kwargs
-
     monkeypatch.setitem(
         sys.modules,
         "ledger.interface",
-        type("_LedgerModule", (), {"RunEventInsert": _RunEventInsert})(),
+        type(
+            "_LedgerModule",
+            (),
+            {
+                "WebhookEventInsert": _WebhookEventInsert,
+                "RunEventInsert": _RunEventInsert,
+            },
+        )(),
     )
 
 
@@ -452,6 +485,46 @@ def test_b7_fully_successful_batch_is_reported_as_such() -> None:
     assert result["integrated"] == 2
     assert result["idempotent_duplicates"] == 0
     assert result["failed"] == 0
+    assert len(store.insert_calls) == 2
+    assert len(store.run_events) == 2
+
+    webhook_event = store.insert_calls[0]
+    assert webhook_event.provider == "openai"
+    assert webhook_event.idempotency_key == "batch_batch-1"
+    assert webhook_event.event_type == "batch.completed"
+    assert webhook_event.event_id == "batch_batch-1"
+    assert webhook_event.received_at_utc == "2026-01-01T00:00:00Z"
+    assert webhook_event.headers_json == "{}"
+    assert webhook_event.signature_valid is True
+    assert json.loads(webhook_event.payload_json) == {
+        "schema": "DPMX_WEBHOOK_V1",
+        "event": "batch.completed",
+        "event_id": "batch_batch-1",
+        "run_id": "rid",
+        "phase": "R",
+        "step_id": "batch_retrieval",
+        "partition_id": "p",
+        "batch_id": "batch-1",
+        "status": "completed",
+        "generated_at_utc": "2026-01-01T00:00:00Z",
+        "provider": "openai",
+        "provider_ref": "batch-1",
+    }
+
+    run_event = store.run_events[0]
+    assert run_event.kwargs == {
+        "run_id": "rid",
+        "phase": "R",
+        "step_id": "batch_retrieval",
+        "partition_id": "p",
+        "provider": "openai",
+        "event_type": "batch.completed",
+        "event_id": "batch_batch-1",
+        "provider_ref": "batch-1",
+        "webhook_event_id": None,
+        "dedupe_key": "batch_batch-1_rid_R_batch_retrieval_p",
+        "orphaned": False,
+    }
 
 
 def test_b8_idempotent_duplicate_is_not_misclassified_as_failure() -> None:
