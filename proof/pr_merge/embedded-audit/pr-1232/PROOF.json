@@ -1,80 +1,22 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1232,
-  "head_sha": "ec464f793ca5187864af7671104f27be00047311",
-  "commit_sha": "ec464f793ca5187864af7671104f27be00047311",
-  "generated_at": "2026-08-21T05:27:32Z",
+  "head_sha": "9e3d2623f2cc0ba6e65e9b39ce68843a5c51a11f",
+  "commit_sha": "9e3d2623f2cc0ba6e65e9b39ce68843a5c51a11f",
+  "generated_at": "2026-08-21T06:56:17Z",
   "embedded_audit": {
     "required": true,
-    "status": "PASS_WITH_RISKS",
+    "status": "PASS",
     "auditor_tool": "claude-code-cli",
     "auditor_model": "opus",
-    "invocation": "claude --print --model opus --effort high --permission-mode plan --safe-mode --strict-mcp-config --no-session-persistence --disable-slash-commands --output-format text; independent read-only audit in detached worktree at ec464f793ca5187864af7671104f27be00047311",
+    "invocation": "claude --print --model opus --effort high --permission-mode plan --safe-mode --strict-mcp-config --no-session-persistence --disable-slash-commands --output-format text",
     "exit_code": 0,
-    "report_path": "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/AUDITOR_REPORT.md",
-    "findings": [
-      {
-        "id": "R1",
-        "severity": "LOW",
-        "title": "Reason-code selection retains only the first simultaneous material failure",
-        "status": "ACCEPTED_RISK",
-        "body": "No false-success path is reachable; numeric counters retain each simultaneous material failure mode."
-      },
-      {
-        "id": "R2",
-        "severity": "LOW",
-        "title": "fully_integrated label can include still-pending batches",
-        "status": "ACCEPTED_RISK",
-        "body": "Attempted, retrieved, and terminal counters disclose pending work; this is not the repaired terminal-failure path."
-      },
-      {
-        "id": "R3",
-        "severity": "LOW",
-        "title": "Pre-live validator identity layer remains verdict-gating rather than dispatch-gating",
-        "status": "ACCEPTED_RISK",
-        "body": "A consent-gated online preflight probe can precede the NO_GO verdict, produces no canonical execution evidence, and is explicitly non-blocking."
-      },
-      {
-        "id": "R4",
-        "severity": "LOW",
-        "title": "Run manifest and runner identity write-ordering nuance remains",
-        "status": "ACCEPTED_RISK",
-        "body": "Two startup metadata files can transiently carry UNKNOWN before failure status overwrite."
-      },
-      {
-        "id": "R5",
-        "severity": "INFO",
-        "title": "One async-provider test is covered structurally rather than mutation-sensitively",
-        "status": "ACCEPTED_RISK",
-        "body": "Source-order coverage and five sibling mutation-sensitive tests cover the gate placement."
-      },
-      {
-        "id": "R6",
-        "severity": "MEDIUM",
-        "title": "V3 legacy behavior and original submission provenance remain deferred",
-        "status": "ACCEPTED_RISK",
-        "body": "Both are truthfully disclosed residuals routed to TP-DMX-RTE-V3-LEGACY-AUTHORITY-FAIL-CLOSED-001."
-      },
-      {
-        "id": "R7",
-        "severity": "INFO",
-        "title": "Historical full-suite xfail count differs from C1 inventory",
-        "status": "ACCEPTED_RISK",
-        "body": "C1 reconciles to one skip and eight xfails; older proof covered a different head."
-      }
-    ],
+    "report_path": "proof/TP-DMX-RTE-V5-PR1232-P1-FOLLOWUP-001/AUDITOR_REPORT.md",
+    "findings": [],
     "fixes_applied": [
-      "No code changes in the audit-only successor; C1 preserves the repaired RTE findings."
+      "Constructed canonical WebhookEventInsert objects for batch integration and added a fail-closed Gemini model-list source-identity guard."
     ],
-    "remaining_risks": [
-      "NON-BLOCKING R1: reason-code selection reports one simultaneous material failure token while preserving failure exit semantics.",
-      "NON-BLOCKING R2: fully_integrated can label a terminal-and-pending non-failure set; counters disclose pending work.",
-      "NON-BLOCKING R3: pre-live source identity is verdict-gating before NO_GO, not dispatch-gating for consented online preflight.",
-      "NON-BLOCKING R4: two startup metadata files can transiently carry UNKNOWN before failure status overwrite.",
-      "NON-BLOCKING R5: one async-provider path relies on source-order and sibling mutation-sensitive coverage.",
-      "NON-BLOCKING R6: V3 legacy and original submission provenance remain deferred residuals.",
-      "NON-BLOCKING R7: C1 has one skip and eight xfails while an older proof recorded seven xfails for an earlier head."
-    ],
+    "remaining_risks": [],
     "skip_reason": null
   }
 }
