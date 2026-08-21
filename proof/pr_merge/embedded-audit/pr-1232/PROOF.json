@@ -1,57 +1,80 @@
 {
-    "repo": "DDD-Enterprises/dopemux-mvp",
-    "pr_number": 1232,
-    "head_sha": "e0a292c06ec05f538dde019d288fad9243abae15",
-    "commit_sha": "e0a292c06ec05f538dde019d288fad9243abae15",
-    "generated_at": "2026-08-16T00:00:00Z",
-    "embedded_audit": {
-        "required": true,
-        "status": "PASS_WITH_RISKS",
-        "auditor_tool": "claude-code-cli",
-        "auditor_model": "opus",
-        "invocation": "Agent tool (general-purpose subagent, model=opus, isolation=worktree) given a bounded read-only audit prompt covering 6 explicit claims targeting F-001 closure specifically, against a git worktree pinned to head_sha 8ce48664707a89f39960a603e658c4cf5a39a30d; the subagent independently re-derived control flow via git show/diff and source reading, ran the full offline pytest suite, reproduced the implementer's mutation probe itself against the pre-fix source, and probed the one identified behavioral side effect of the relocation live in a fresh git repo",
-        "exit_code": 0,
-        "report_path": "proof/TP-DMX-RTE-V5-P1-FAIL-CLOSED-REPAIR-001/AUDITOR_REPAIR_REPORT.md",
-        "findings": [
-            {
-                "id": "F-A-NONBLOCKING",
-                "severity": "LOW",
-                "title": "Audit prompt mis-stated C1R2's parent commit as 1c59dafd19; actual parent is 366e6fdd4f (C1R's proof-only commit)",
-                "status": "ACCEPTED_RISK",
-                "body": "Prompt error only, caught and self-corrected by the auditor via git rev-list --parents; no code impact. Against the true parent, the diff is exactly the 3 amended-allowlist files as expected."
-            },
-            {
-                "id": "F-B-NONBLOCKING",
-                "severity": "LOW",
-                "title": "The S_INT relocation is textually a pure move but has one real behavioral consequence: S_INT now runs after run-dir/context resolution and the read-only early exits",
-                "status": "ACCEPTED_RISK",
-                "body": "S_INT now executes after resolve_run_context/get_run_dirs, write_phase_contract_map, UI(...) construction, and the read-only early exits, so e.g. --phase S_INT --status now takes precedence, and a run-dir side effect now occurs for S_INT that did not before. Highest-risk shape (S_INT with no --run-id, where allow_create_if_missing evaluates False) was probed live by the auditor in a fresh git repo and confirmed benign: exit 0, correct DRY_RUN payload."
-            },
-            {
-                "id": "F-C-NONBLOCKING",
-                "severity": "LOW",
-                "title": "Full-suite passed-count mismatch between implementer's checkout (1308) and auditor's isolated worktree (1305)",
-                "status": "ACCEPTED_RISK",
-                "body": "Zero failures in either run; a 3-test collection-count delta, most likely environment-dependent test collection between checkouts. Flagged only because the numbers should reconcile, not a correctness finding."
-            },
-            {
-                "id": "F-D-NONBLOCKING-OUT-OF-SCOPE",
-                "severity": "MEDIUM",
-                "title": "run_extraction_v3.py contains the same S_INT dispatch block and has no identity gate at all (same genus as F-001)",
-                "status": "ACCEPTED_RISK",
-                "body": "SUPERVISOR DISPOSITION (2026-08-15, post-audit): F-D=ACCEPT_FOLLOWUP_REQUIRED, SEVERITY=MEDIUM, LIKELY_RISK_LANE=L2, BLOCKS_CURRENT_V5_PR=NO, CONSENT_GATE_SUFFICIENT=NO. v3's existing live-execution consent gate (--execute + DPMX_LIVE_OK=1) proves an operator authorized live/provider execution, not that the resulting evidence is bound to a known source revision -- separate authority dimensions. v3 is confirmed not dead code: the canonical `dopemux rte` CLI defaults to v5 but still permits v3 via `--pipeline-version v3` plus a hidden legacy engine selector. Tracked for a mandatory follow-up packet, TP-DMX-RTE-V3-LEGACY-AUTHORITY-FAIL-CLOSED-001, bundling v3's S_INT gate, RTE-W1-006 v3 batch terminal semantics, and RTE-W1-004 v3 resume/run identity together. Nonblocking for this PR and for this bridge."
-            }
-        ],
-        "fixes_applied": [
-            "RTE-W1-010: relocated the single required_execution_source_identity(root) call site in main() from immediately-before-runners-dict to immediately-after the last pure read-only introspection exit (persist=False --doctor), ahead of Stage 0 online prescan, write_run_manifest/write_runner_identity/write_confidence_ramp_artifacts, and the --async-provider/--finalize/--batch-watch/--batch-retrieve/S_INT dispatch blocks (commits 1c59dafd19 then 8ce4866470 for the S_INT residual closure, F-001)",
-            "RTE-W1-006 (V5 terminal): added terminal_failure_batches accounting to BatchRetrievalIntegrationOutcome (lib/batch_retriever.py) and run_batch_retrieval_and_integration_detailed, folding provider terminal-failure status into the material-failure determination without suppressing webhook-event integration (commit 1c59dafd19)",
-            "F-001-MEDIUM-1 closure (commit 8ce4866470): relocated the --phase S_INT dispatch block (pure cut/paste, no logic changes) to run after required_execution_source_identity(root) instead of before it -- S_INT was the one path that still bypassed the gate after the first repair round -- plus a call-recording regression test proven mutation-sensitive by both the implementer and, independently, this audit",
-            "Fixed tests/test_s_int_runner.py::test_run_s_int_dry_run_via_v4_cli's fixture (bare tmp_path with no .git, which only worked because S_INT bypassed the gate) to give the subprocess a real, minimal git identity via git init + one commit"
-        ],
-        "remaining_risks": [
-            "F-B-NONBLOCKING: the S_INT relocation moves its execution point relative to run-dir/context resolution and read-only early exits; probed benign for the highest-risk shape but not exhaustively fuzzed across every CLI flag combination",
-            "F-D-NONBLOCKING-OUT-OF-SCOPE: run_extraction_v3.py's S_INT path has no identity gate (only a separate consent gate); same genus of gap as F-001, out of this PR's scope, tracked as ACCEPTED_RISK with a mandatory follow-up packet (TP-DMX-RTE-V3-LEGACY-AUTHORITY-FAIL-CLOSED-001)"
-        ],
-        "skip_reason": null
-    }
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1232,
+  "head_sha": "ec464f793ca5187864af7671104f27be00047311",
+  "commit_sha": "ec464f793ca5187864af7671104f27be00047311",
+  "generated_at": "2026-08-21T05:27:32Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "opus",
+    "invocation": "claude --print --model opus --effort high --permission-mode plan --safe-mode --strict-mcp-config --no-session-persistence --disable-slash-commands --output-format text; independent read-only audit in detached worktree at ec464f793ca5187864af7671104f27be00047311",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "R1",
+        "severity": "LOW",
+        "title": "Reason-code selection retains only the first simultaneous material failure",
+        "status": "ACCEPTED_RISK",
+        "body": "No false-success path is reachable; numeric counters retain each simultaneous material failure mode."
+      },
+      {
+        "id": "R2",
+        "severity": "LOW",
+        "title": "fully_integrated label can include still-pending batches",
+        "status": "ACCEPTED_RISK",
+        "body": "Attempted, retrieved, and terminal counters disclose pending work; this is not the repaired terminal-failure path."
+      },
+      {
+        "id": "R3",
+        "severity": "LOW",
+        "title": "Pre-live validator identity layer remains verdict-gating rather than dispatch-gating",
+        "status": "ACCEPTED_RISK",
+        "body": "A consent-gated online preflight probe can precede the NO_GO verdict, produces no canonical execution evidence, and is explicitly non-blocking."
+      },
+      {
+        "id": "R4",
+        "severity": "LOW",
+        "title": "Run manifest and runner identity write-ordering nuance remains",
+        "status": "ACCEPTED_RISK",
+        "body": "Two startup metadata files can transiently carry UNKNOWN before failure status overwrite."
+      },
+      {
+        "id": "R5",
+        "severity": "INFO",
+        "title": "One async-provider test is covered structurally rather than mutation-sensitively",
+        "status": "ACCEPTED_RISK",
+        "body": "Source-order coverage and five sibling mutation-sensitive tests cover the gate placement."
+      },
+      {
+        "id": "R6",
+        "severity": "MEDIUM",
+        "title": "V3 legacy behavior and original submission provenance remain deferred",
+        "status": "ACCEPTED_RISK",
+        "body": "Both are truthfully disclosed residuals routed to TP-DMX-RTE-V3-LEGACY-AUTHORITY-FAIL-CLOSED-001."
+      },
+      {
+        "id": "R7",
+        "severity": "INFO",
+        "title": "Historical full-suite xfail count differs from C1 inventory",
+        "status": "ACCEPTED_RISK",
+        "body": "C1 reconciles to one skip and eight xfails; older proof covered a different head."
+      }
+    ],
+    "fixes_applied": [
+      "No code changes in the audit-only successor; C1 preserves the repaired RTE findings."
+    ],
+    "remaining_risks": [
+      "NON-BLOCKING R1: reason-code selection reports one simultaneous material failure token while preserving failure exit semantics.",
+      "NON-BLOCKING R2: fully_integrated can label a terminal-and-pending non-failure set; counters disclose pending work.",
+      "NON-BLOCKING R3: pre-live source identity is verdict-gating before NO_GO, not dispatch-gating for consented online preflight.",
+      "NON-BLOCKING R4: two startup metadata files can transiently carry UNKNOWN before failure status overwrite.",
+      "NON-BLOCKING R5: one async-provider path relies on source-order and sibling mutation-sensitive coverage.",
+      "NON-BLOCKING R6: V3 legacy and original submission provenance remain deferred residuals.",
+      "NON-BLOCKING R7: C1 has one skip and eight xfails while an older proof recorded seven xfails for an earlier head."
+    ],
+    "skip_reason": null
+  }
 }
