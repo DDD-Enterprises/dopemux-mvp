@@ -1,0 +1,31 @@
+{
+  "packet_id": "TP-DMX-RTE-V5-PR1232-P1-FOLLOWUP-001",
+  "project_id": "dopemux-mvp",
+  "repo_binding": {"repo": "DDD-Enterprises/dopemux-mvp"},
+  "head_sha": "9e3d2623f2cc0ba6e65e9b39ce68843a5c51a11f",
+  "parent_head_r0": "d33d39df7392b4891e1c54a42d2faed9013c36d4",
+  "changed_files": [
+    "services/repo-truth-extractor/lib/batch_retriever.py",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/tests/test_batch_retriever.py",
+    "services/repo-truth-extractor/tests/test_rte_v5_terminal_provenance_fail_closed.py",
+    "services/repo-truth-extractor/tests/test_run_extraction_v5_live_gate_terminality.py"
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "opus",
+    "invocation": "claude --print --model opus --effort high --permission-mode plan --safe-mode --strict-mcp-config --no-session-persistence --disable-slash-commands --output-format text",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-RTE-V5-PR1232-P1-FOLLOWUP-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": ["Constructed canonical WebhookEventInsert objects for batch integration and added a fail-closed Gemini model-list source-identity guard."],
+    "remaining_risks": [],
+    "skip_reason": null
+  },
+  "validation": {"focused_tests": "PASS: 115", "complete_rte_suite": "PASS: 1316 tests, zero failures/errors, nine expected skip-or-xfail results", "mutation_controls": "PASS: legacy kwargs and bypassed Gemini guard each failed their strict regression"},
+  "audit_result_path": "proof/TP-DMX-RTE-V5-PR1232-P1-FOLLOWUP-001/review_bundle/CLAUDE_OPUS_AUDIT_RESULT.json",
+  "audit_result_sha256": "d3d71a526121fff598e0bb4f353af332d5ef354e1024599ee0af45cae725f67d",
+  "merge_authority": "NONE"
+}
