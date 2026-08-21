@@ -1,21 +1,17 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1232,
-  "head_sha": "9e3d2623f2cc0ba6e65e9b39ce68843a5c51a11f",
-  "commit_sha": "9e3d2623f2cc0ba6e65e9b39ce68843a5c51a11f",
-  "generated_at": "2026-08-21T06:56:17Z",
+  "head_sha": "b2c7143e439df819f39ede09956f0353694cf62f",
   "embedded_audit": {
     "required": true,
     "status": "PASS",
-    "auditor_tool": "claude-code-cli",
-    "auditor_model": "opus",
-    "invocation": "claude --print --model opus --effort high --permission-mode plan --safe-mode --strict-mcp-config --no-session-persistence --disable-slash-commands --output-format text",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy run",
     "exit_code": 0,
-    "report_path": "proof/TP-DMX-RTE-V5-PR1232-P1-FOLLOWUP-001/AUDITOR_REPORT.md",
+    "report_path": "proof/TP-DMX-RTE-V5-PR1232-P1-FOLLOWUP-002/AUDITOR_REPORT.md",
     "findings": [],
-    "fixes_applied": [
-      "Constructed canonical WebhookEventInsert objects for batch integration and added a fail-closed Gemini model-list source-identity guard."
-    ],
+    "fixes_applied": [],
     "remaining_risks": [],
     "skip_reason": null
   }
