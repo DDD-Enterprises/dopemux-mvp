@@ -1,0 +1,29 @@
+{
+  "packet_id": "TP-DMX-RTE-V5-PR1232-P1-FOLLOWUP-002",
+  "project": "dopemux-mvp",
+  "target": "b2c7143e439df819f39ede09956f0353694cf62f",
+  "repo_binding": "DDD-Enterprises/dopemux-mvp",
+  "series": "PR1232",
+  "head_sha": "b2c7143e439df819f39ede09956f0353694cf62f",
+  "pr": 1232,
+  "steps": [
+    {
+      "id": "audit-recovery",
+      "task": "L2 Final Audit",
+      "validation": "PASS"
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy run",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-RTE-V5-PR1232-P1-FOLLOWUP-002/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null
+  }
+}
