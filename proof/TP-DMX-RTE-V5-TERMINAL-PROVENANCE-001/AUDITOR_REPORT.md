@@ -1,42 +1,49 @@
-# Controlling Audit Report — TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001
+# Finalization Audit Report - TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001
 
-**Auditor tool**: `grok-cli` (`~/.grok/bin/grok`, headless single-turn, `--permission-mode dontAsk`)
-**Auditor model (API-reported, authoritative)**: `grok-4.5-build` → represented in the embedded-audit proof as `grok-4.5` per the admitted schema pairing (PR #1228; `-build` is a usage/telemetry label, not a requestable model id).
-**Auditor model (self-reported in transcript)**: inconsistent — "Grok 4.6", "Grok-2", "Grok 4.5" at different points. Per packet §15, runtime/provider-reported identity outranks model prose self-report; `grok-4.5-build` (API telemetry) is treated as authoritative.
-**Commit audited (C1)**: `67f22b4829` on `tp/DMX-RTE-V5-TERMINAL-PROVENANCE-001`
-**Independence**: genuinely independent — different vendor/family/runtime from the implementer (Claude Code / Sonnet 5) and from the prior supporting review (GPT-5-pro / OpenAI).
-**Method**: direct filesystem read of the actual worktree (no paraphrase relay) — the auditor ran its own `git diff`, `grep`, and file reads inside `/Users/hue/code/dopemux-mvp/.worktrees/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001` and self-corrected twice mid-session after finding evidence that contradicted an earlier draft verdict.
-**Cost**: $0.5735, 15 turns, 91,461 input tokens / 14,375 output tokens.
+## Verdict
 
-## Verdict: PASS_WITH_RISKS
+`PASS_WITH_RISKS` for audited head `ec464f793ca5187864af7671104f27be00047311`.
 
-## Claim-by-claim result
+## Auditor Identity
 
-| Claim | Result |
-|---|---|
-| Terminal exit solely from rollup `run_status`; only `OK` → 0 | **Confirmed** |
-| Batch outcome cannot report success for listed material failures | **Confirmed** |
-| Identity gate before phase loop + doctor persist + pre-live blocker | **Confirmed** |
-| Identity gate before *any* canonical evidence write | **Not fully true** (see residual risk 1) |
-| Legacy int-returning `integrate_batch_results_with_webhook` untouched | **Confirmed** (byte-identical body vs `origin/main`) |
-| `--doctor` persist=True gap (found by the prior GPT-5-pro review) closed in C1 | **Confirmed**, verified in source + the two new `test_s9_*` tests |
-| No secret/credential leakage in new code/tests | **Confirmed** |
-| New tests assert real behavior, not tautological | **Mostly yes**; two noted as weaker (structural/source-order guards, and one persist=False test that checks outcomes but doesn't spy that the identity function is never called) |
+- Runner: Claude Code `2.1.238`
+- Requested selector: `opus`
+- Response-claimed model: `claude-opus-5`
+- Isolation: detached successor audit worktree, read-only plan-mode invocation
+- Raw result: `review_bundle/FINAL_AUDIT_SUCCESSOR_RESULT.json`
+- Raw result SHA-256: `2da980cda07dde5527d42a991ee2ce732140572d4fce8c5c6b246e4a3c860b65`
 
-## Explicit residual risks (all classified non-blocking by the auditor)
+## Verified Topology
 
-1. **`RUN_MANIFEST.json` / `RUNNER_IDENTITY.json` are written via the ungated `get_git_sha()` before `required_execution_source_identity()` runs** in `main()`'s phase-execution path (`write_run_manifest` ~line 23798, `write_runner_identity` ~line 23803, gate ~line 24158). A failed identity check still leaves `git_sha: "UNKNOWN"` on those two files on disk, even though `RUN_MANIFEST.json`'s `run_status` is subsequently overwritten to `FAILED`/`source_identity_unproven` by `update_run_manifest_startup_failure`. This is the same nuance the implementer self-disclosed in their original report (satisfies invariant 9's "identity resolved before terminal evidence is *accepted as authoritative*" reading, not a stricter "before any write" reading) — independently rediscovered here, not new.
-2. **`write_confidence_ramp_artifacts` (triggered by `--preset`) can write `CERTIFICATION_RESULT.json` before the phase-loop identity gate.** Lower severity than the closed doctor gap: the auditor verified `write_certification_result`'s payload does not itself embed a `git_sha` field for this call path (it embeds `topology_payload` — the doctor-full payload's `runner.git_sha` — only when called from the now-gated doctor path).
-3. **The audit-prompt's own wording ("before any canonical evidence write") overstates the implementation** — the actual guarantee is "before phase-execution completes and before doctor-persist writes," not "before every run-root file write." A wording/scope precision issue in how the fix was described to the auditor, not a code defect beyond risks 1–2.
-4. **Base-SHA note**: at audit time this worktree's `origin/main` ref had moved past the packet's recorded execution base (`6626aa9a58`) to a newer tip (`75b4cfc581`) due to normal upstream repo activity during this session. The RTE branch itself was correctly created from `6626aa9a58` and is unaffected; this is expected drift per packet §23, not a defect.
-5. **Structural (`inspect.getsource`) tests for `main()`'s control flow are source-order guards, not full runtime end-to-end execution** — a known, disclosed limitation (main() is several thousand lines; true e2e simulation is impractical offline), already acknowledged in the implementer's own report.
+- C1: `ec464f793ca5187864af7671104f27be00047311`
+- Parent 1 / B0: `e439fdecc16ae4165c917d093a2cc43239eeb1c4`
+- Parent 2 / M_EXEC: `951332d7750adde24dc5617613edb9f21153bd28`
+- Merge base: `75b4cfc581786a53445e412bfc8e25a6e0fdb978`
+- Owned manifest: 34 paths, SHA-256 `edeb6b33384759e6f716f75669da0a16ac7233b4a29b8048b8bc39c1fc9e2105`
+- Owned/main overlap: 0 paths
+- B0-to-C1 owned-path drift: 0 paths
 
-The auditor's own summary: *"None of these re-open the original 'shell exit 0 on semantic FAIL', 'batch bare-int always ≥0 → exit 0', or 'doctor persist certifies with unproven identity' defects."*
+The auditor found C1 is the exact clean union of B0 and M_EXEC, with no manual conflict resolution or extra C1 content.
 
-## Recommended (non-blocking) follow-on
+## Closure Evidence
 
-Move `required_execution_source_identity()` earlier — before `write_run_manifest` / `write_runner_identity` / the preset confidence-ramp writes — or rewrite/delete those artifacts on identity failure, to fully satisfy a strict "before any write" reading. Not required for this packet's PASS_WITH_RISKS disposition.
+- RTE-W1-001: terminal exit derives from authoritative run status and fails closed for absent, malformed, blocked, aborted, or unknown status.
+- RTE-W1-006 V5 terminal: failed, expired, cancelled, canceled, and timeout batches force `success=false` and exit `1` even when webhook integration succeeds.
+- RTE-W1-010: source identity gate precedes S_INT, prescan, doctor persistence, async submit, finalize, batch watch, and batch retrieve; source-identity failure exits `1`.
+- Resolved review findings were verified in source and matching regression tests, not only through thread state.
+- RTE-W1-006 V3 legacy and original submission provenance remain truthfully classified as deferred residuals.
 
-## Raw transcript
+## Deterministic Evidence
 
-Full raw JSON output (including the auditor's self-correcting reasoning trace) preserved at `proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/GROK_AUDIT_OUTPUT.json`. Audit prompt at `proof/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-001/GROK_AUDIT_PROMPT.md`.
+- `git diff --check`: PASS
+- Specified Python compilation: PASS
+- Focused RTE tests: PASS
+- Complete `services/repo-truth-extractor/tests`: PASS, zero failures, one expected skip, eight expected xfails
+
+## Non-Blocking Risks
+
+Seven risks are accepted and explicitly non-blocking. They cover reason-code fidelity, a legacy completion label, pre-live validator ordering, startup metadata ordering, one structural test, deferred V3/provenance scope, and historical xfail-count drift. Full evidence and wording remain in the raw JSON result.
+
+## Historical Evidence
+
+The preceding Grok audit report and raw output remain preserved in `review_bundle/`; this report supersedes only the canonical finalization-audit report for C1.
