@@ -1,0 +1,36 @@
+{
+  "canonical_tree": "docs/03-reference/pr-pipeline/prep",
+  "compatibility_tree": "docs/pr_prep",
+  "canonical_merge_tree": "docs/03-reference/pr-pipeline/merge",
+  "compatibility_merge_tree": "docs/pr_merge",
+  "ruling_authority": "TP-DMX-PR-PREP-SPECIALIST-V2-001-R1 supervisor ruling (explicit, not inferred from repo history)",
+  "file_count_canonical_prep": 46,
+  "file_count_compatibility_prep_pre_repair": 47,
+  "diff_note": "content-identical except cosmetic kebab-case filename differences (e.g. readme-2.md vs readme.md, guardrails-2.md vs guardrails.md) and one file (adapters/vibe/template-agent.md) present only in the compatibility tree",
+  "in_scope_files_this_packet": [
+    "docs/03-reference/pr-pipeline/prep/skill-model.md",
+    "docs/03-reference/pr-pipeline/prep/operator-contract.md",
+    "docs/03-reference/pr-pipeline/prep/workflow-sequence.md",
+    "docs/03-reference/pr-pipeline/prep/deterministic-gate-rules.md",
+    "docs/03-reference/pr-pipeline/prep/go-no-go-criteria.md",
+    "docs/03-reference/pr-pipeline/prep/handoff-to-prms-contract.md",
+    "docs/03-reference/pr-pipeline/prep/pr-creation-policy.md",
+    "docs/03-reference/pr-pipeline/prep/high-risk-handoff-rules.md",
+    "docs/03-reference/pr-pipeline/merge/handoff-from-prps-contract.md",
+    "docs/pr_merge/handoff-from-prps-contract.md",
+    "docs/pr_prep/skill-model.md",
+    "docs/pr_prep/operator-contract.md",
+    "docs/pr_prep/workflow-sequence.md",
+    "docs/pr_prep/deterministic-gate-rules.md",
+    "docs/pr_prep/go-no-go-criteria.md",
+    "docs/pr_prep/handoff-to-prms-contract.md",
+    "docs/pr_prep/pr-creation-policy.md",
+    "docs/pr_prep/high-risk-handoff-rules.md"
+  ],
+  "out_of_scope_files_left_unchanged": [
+    "docs/pr_prep/branch-state-schema.md (field-level fix already applied in prior commit f66be72522, remains as-is; not in R1 allowlist so no further edit this packet)",
+    "docs/pr_prep/consensus-gate-rules.md (field-level fix already applied in prior commit f66be72522, remains as-is; not in R1 allowlist so no further edit this packet)",
+    "docs/pr_prep/handoff-contract.md (pointer stub already applied in prior commit f66be72522, remains as-is; not in R1 allowlist so no further edit this packet)",
+    "docs/03-reference/pr-pipeline/prep/branch-state-schema.md and consensus-gate-rules.md and handoff-contract.md (mirror originals, still carry legacy risk_hint/consensus semantics; NOT in R1 allowlist, left untouched by explicit scope boundary)"
+  ]
+}

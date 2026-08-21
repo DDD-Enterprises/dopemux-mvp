@@ -4,25 +4,18 @@ title: Readme
 type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-03-17'
-last_review: '2026-03-17'
-next_review: '2026-06-15'
+date: '2026-08-13'
+last_review: '2026-08-13'
+next_review: '2026-11-11'
 prelude: Readme (explanation) for dopemux documentation and developer workflows.
 ---
-# Cursor Adapter for PR-PREP-SPECIALIST
+# Cursor Adapter for PR-Prep-Specialist
 
-**Status**: ✅ IMPLEMENTED
-**Contract**: TP-PRPS-000-1.0.0
-**Compliance**: 100%
+`docs/pr_prep/**` is a compatibility surface only, by ruling of
+TP-DMX-PR-PREP-SPECIALIST-V2-001-R1. This file must not carry independent
+behavioral authority.
 
-## Files
-- `.cursor/rules/pr-prep-specialist.mdc`
-- `docs/pr_prep/adapters/cursor/readme-2.md`
+Canonical: [`../../../03-reference/pr-pipeline/prep/adapters/cursor/readme.md`](../../../03-reference/pr-pipeline/prep/adapters/cursor/readme.md),
+which points to [`operator-contract.md`](../../../03-reference/pr-pipeline/prep/operator-contract.md).
 
-## Compliance
-- ✅ Workflow: Exact 7-step sequence
-- ✅ Decisions: Identical logic
-- ✅ Handoff: Uniform structure
-- ✅ Governance: TP-GOV-001 compliant
-
-**Status**: ✅ IMPLEMENTED AND COMPLIANT
+This stub is kept only so existing links into this filename keep resolving.
