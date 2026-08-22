@@ -1,16 +1,25 @@
 ---
+id: repository-merge-planner-rfc
 title: "Interactive Repository Merge Planner"
 type: rfc
 status: draft
+owner: "@hu3mann"
+author: "@codex"
+date: "2026-08-22"
+last_review: "2026-08-22"
+next_review: "2026-11-20"
 prelude: "Read-only Control Tower projection for cross-repository merge planning."
 tags: [control-tower, governance, github, merge-planning]
 ---
 
 # Interactive Repository Merge Planner
 
-**Host:** `DDD-Enterprises/dopemux-mvp`  
-**Contract source:** `DDD-Enterprises/dnh-crm` governance kernel  
-**AdOps integration:** repo-local adapter/export  
+**Host:** `DDD-Enterprises/dopemux-mvp`
+
+**Contract source:** `DDD-Enterprises/dnh-crm` governance kernel
+
+**AdOps integration:** repo-local adapter/export
+
 **Mode:** read-only, fail-closed portfolio projection
 
 ## 1. Outcome
