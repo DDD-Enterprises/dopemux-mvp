@@ -33,6 +33,7 @@ A packet is superseded by another packet
 
 | Packet ID | Subsystem | Title | Status | Related ADR |
 | --- | --- | --- | --- | --- |
+| TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001 | Control Tower / Planner | Design read-only interactive repository merge planner | Active (design only) | docs/91-rfc/repository-merge-planner.md |
 | DMX-MCPINT-HRD-REPORT-001 | MCP Fleet (P7/HRD) | Consolidated fleet reconciliation report 2026-07-18 (P7 anchor) | Active | claudedocs/mcp-fleet-reconciliation-2026-07-18.md |
 | DMX-MCPINT-HRD-CONSENSUS-VEC-002 | MCP Fleet (P7/HRD) | G6 ConPort vector-search boundary via PAL consensus | Ready | adr-mcpint-006 (to be authored) |
 | DMX-MCPINT-HRD-CONSENSUS-CPLX-003 | MCP Fleet (P7/HRD) | G7 complexity federation — ratify/challenge G5 via PAL consensus | Ready | adr-mcpint-001 (G5) |
