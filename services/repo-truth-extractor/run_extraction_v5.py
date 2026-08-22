@@ -7140,19 +7140,32 @@ def write_run_manifest(
     args: argparse.Namespace,
     run_context: RunContext,
     phases: List[str],
+    *,
+    source_identity: Optional[str] = None,
 ) -> Dict[str, Any]:
+    if source_identity is None:
+        return reporting_write_run_manifest(
+            _reporting_deps(), root, dirs, run_id, args, run_context, phases
+        )
     return reporting_write_run_manifest(
-        _reporting_deps(), root, dirs, run_id, args, run_context, phases
+        _reporting_deps(), root, dirs, run_id, args, run_context, phases,
+        source_identity=source_identity,
     )
 
 
-def write_runner_identity(root: Path, run_root: Path, run_id: str) -> None:
+def write_runner_identity(
+    root: Path,
+    run_root: Path,
+    run_id: str,
+    *,
+    source_identity: Optional[str] = None,
+) -> None:
     rte_write_runner_identity(
         root,
         run_root,
         run_id,
         now_iso=now_iso,
-        get_git_sha=get_git_sha,
+        get_git_sha=(lambda _root: source_identity) if source_identity is not None else get_git_sha,
         runner_script=RUNNER_SCRIPT,
         sha256_text=sha256_text,
         python_executable=sys.executable,
@@ -11448,6 +11461,7 @@ def _persist_cost_abort(
     exc: CostLimitExceededError,
     ui: Optional["UI"] = None,
     source: str = "cost_abort",
+    source_identity: Optional[str] = None,
 ) -> Dict[str, Any]:
     cost_abort = {
         **dict(exc.details),
@@ -11499,7 +11513,7 @@ def _persist_cost_abort(
     )
     linked_artifacts["cost_abort"] = str(cost_abort_path.resolve())
     proof["run_id"] = run_id
-    proof["git_sha"] = proof.get("git_sha") or get_git_sha(root)
+    proof["git_sha"] = proof.get("git_sha") or source_identity or get_git_sha(root)
     proof["runner_sha256"] = proof.get("runner_sha256") or sha256_text(RUNNER_SCRIPT)
     proof["argv"] = proof.get("argv") or sys.argv
     proof["python_version"] = proof.get("python_version") or platform.python_version()
@@ -20155,6 +20169,8 @@ def apply_promptset_preflight_block(
     phases: List[str],
     prompt_report: Dict[str, Any],
     run_started_at: str,
+    *,
+    source_identity: Optional[str] = None,
 ) -> None:
     for phase in phases:
         phase_report = _prompt_hash_report_for_phase(phase, get_phase_prompts(phase))
@@ -20163,7 +20179,13 @@ def apply_promptset_preflight_block(
     write_coverage_rollup(root, dirs, run_id, prompt_report)
     write_resume_proof(dirs, run_id, phases, promptset_report=prompt_report)
     write_blocked_promptset_proof_pack(
-        root, dirs, run_id, run_started_at, phases, prompt_report
+        root,
+        dirs,
+        run_id,
+        run_started_at,
+        phases,
+        prompt_report,
+        source_identity=source_identity,
     )
 
 
@@ -20350,6 +20372,8 @@ def update_proof_pack(
     phase_counts: Dict[str, Any],
     phase_started_at: str,
     phase_finished_at: str,
+    *,
+    source_identity: Optional[str] = None,
 ) -> None:
     rte_update_proof_pack(
         _reporting_deps(),
@@ -20361,6 +20385,7 @@ def update_proof_pack(
         phase_counts,
         phase_started_at,
         phase_finished_at,
+        source_identity=source_identity,
     )
 
 
@@ -20371,9 +20396,18 @@ def write_blocked_promptset_proof_pack(
     run_started_at: str,
     phases: List[str],
     prompt_report: Dict[str, Any],
+    *,
+    source_identity: Optional[str] = None,
 ) -> None:
     rte_write_blocked_promptset_proof_pack(
-        _reporting_deps(), root, dirs, run_id, run_started_at, phases, prompt_report
+        _reporting_deps(),
+        root,
+        dirs,
+        run_id,
+        run_started_at,
+        phases,
+        prompt_report,
+        source_identity=source_identity,
     )
 
 
@@ -23154,17 +23188,6 @@ def main() -> None:
             home_scan_mode=args.home_scan_mode,
             phase_sequence=phase_sequence,
         )
-    if should_enforce_pre_live_validator(args, phase_sequence):
-        try:
-            enforce_pre_live_validator_for_execution(
-                root=Path.cwd(),
-                args=args,
-                phase_sequence=phase_sequence,
-            )
-        except Exception as exc:
-            logger.error("%s", exc)
-            sys.exit(1)
-
     # ------------------------------------------------------------------
     # Cost-profile resolution (May 2026 Phase E6).
     #
@@ -23539,7 +23562,7 @@ def main() -> None:
     # preflight_providers, print_promptpack, coverage_report/verify_phase_output
     # with persist=False, doctor with persist=False) return before reaching it.
     try:
-        required_execution_source_identity(root)
+        execution_source_identity = required_execution_source_identity(root)
     except SourceIdentityUnprovenError as exc:
         update_run_manifest_startup_failure(
             dirs["root"],
@@ -23550,6 +23573,17 @@ def main() -> None:
             "Source identity unproven; blocking canonical execution: %s", exc
         )
         sys.exit(1)
+
+    if should_enforce_pre_live_validator(args, phase_sequence):
+        try:
+            enforce_pre_live_validator_for_execution(
+                root=root,
+                args=args,
+                phase_sequence=phase_sequence,
+            )
+        except Exception as exc:
+            logger.error("%s", exc)
+            sys.exit(1)
 
     if args.phase == "S_INT":
         from s_int.models import ladder_for_step
@@ -23826,11 +23860,22 @@ def main() -> None:
         print_preset_preview(preset_preview)
 
     prompt_report = write_run_manifest(
-        root, dirs, run_id, args, run_context, phase_sequence or PHASES
+        root,
+        dirs,
+        run_id,
+        args,
+        run_context,
+        phase_sequence or PHASES,
+        source_identity=execution_source_identity,
     )
     configure_run_file_logger(dirs["root"])
     update_run_manifest_contract_map(dirs["root"], phase_contract_map_path)
-    write_runner_identity(root, dirs["root"], run_id)
+    write_runner_identity(
+        root,
+        dirs["root"],
+        run_id,
+        source_identity=execution_source_identity,
+    )
     if phase_sequence:
         write_run_routing_fingerprint(dirs["root"], run_id, cfg, phase_sequence)
     run_started_at = now_iso()
@@ -23884,6 +23929,7 @@ def main() -> None:
             phases=phase_sequence,
             prompt_report=prompt_report,
             run_started_at=run_started_at,
+            source_identity=execution_source_identity,
         )
         logger.error(
             "Run blocked before execution: reason=%s prompt_failures=%s",
@@ -23981,6 +24027,7 @@ def main() -> None:
                 exc=exc,
                 ui=ui,
                 source="async_submit:cost_abort",
+                source_identity=execution_source_identity,
             )
             sys.exit(1)
         except Exception as exc:
@@ -24003,6 +24050,7 @@ def main() -> None:
                 exc=exc,
                 ui=ui,
                 source="async_finalize:cost_abort",
+                source_identity=execution_source_identity,
             )
             sys.exit(1)
         except Exception as exc:
@@ -24033,6 +24081,7 @@ def main() -> None:
                 exc=exc,
                 ui=ui,
                 source="batch_watch:cost_abort",
+                source_identity=execution_source_identity,
             )
             sys.exit(1)
         if watch_result.exit_code != 0:
@@ -24217,6 +24266,7 @@ def main() -> None:
                 exc=exc,
                 ui=ui,
                 source=f"phase:{phase}:cost_abort",
+                source_identity=execution_source_identity,
             )
             sys.exit(1)
         except Exception as exc:
@@ -24319,6 +24369,7 @@ def main() -> None:
             counts,
             phase_started_at,
             phase_finished_at,
+            source_identity=execution_source_identity,
         )
     final_status_payload = emit_run_dashboard_snapshot(
         run_id=run_id,

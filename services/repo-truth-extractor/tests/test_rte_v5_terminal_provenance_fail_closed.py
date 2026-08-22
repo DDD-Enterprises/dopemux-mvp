@@ -361,7 +361,8 @@ def test_s7_required_execution_source_identity_gate_is_a_single_call_site() -> N
     for marker in (
         'run_integrated_prescan_stage(root, dirs["root"], cfg)',  # Stage 0 online prescan
         "prompt_report = write_run_manifest(",
-        "write_runner_identity(root, dirs[\"root\"], run_id)",
+        "write_runner_identity(",
+        "enforce_pre_live_validator_for_execution(",
         "n = run_phase_R_async_submit(",
         "n = run_phase_R_finalize(",
         "watch_result = run_batch_watch(",
@@ -1445,6 +1446,220 @@ def test_s10_manifest_and_runner_identity_files_are_never_written(monkeypatch, t
         # Never the shape of a run that claims to have executed phases.
         assert "phases" not in payload
         assert "prompt_set_integrity" not in payload
+
+
+def test_s10_unproven_identity_blocks_pre_live_validation_before_provider_boundary(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """Execution identity failure must dominate the validator's online boundary."""
+    runner = _load_runner_module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    output_root = tmp_path / "artifacts"
+    validator_calls: list[object] = []
+
+    monkeypatch.chdir(repo_root)
+    monkeypatch.setenv(runner.DPMX_LIVE_OK_ENV, "1")
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "run_extraction_v5.py",
+            "--phase",
+            "A",
+            "--execute",
+            "--run-id",
+            "s10-validator-boundary",
+            "--output-root",
+            str(output_root),
+        ],
+    )
+    monkeypatch.setattr(runner, "get_git_sha", lambda _root: "UNKNOWN")
+    monkeypatch.setattr(
+        runner,
+        "enforce_pre_live_validator_for_execution",
+        lambda **kwargs: validator_calls.append(kwargs),
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        runner.main()
+
+    assert exc_info.value.code == 1
+    assert validator_calls == []
+    assert list(output_root.rglob("RUNNER_IDENTITY.json")) == []
+
+
+def test_s10_valid_identity_reaches_pre_live_validator(monkeypatch, tmp_path: Path) -> None:
+    """Moving the identity gate must preserve valid execution validation."""
+    runner = _load_runner_module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    output_root = tmp_path / "artifacts"
+    validator_calls: list[object] = []
+
+    monkeypatch.chdir(repo_root)
+    monkeypatch.setenv(runner.DPMX_LIVE_OK_ENV, "1")
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "run_extraction_v5.py",
+            "--phase",
+            "A",
+            "--execute",
+            "--run-id",
+            "s10-validator-valid",
+            "--output-root",
+            str(output_root),
+        ],
+    )
+    monkeypatch.setattr(runner, "required_execution_source_identity", lambda _root: VALID_SHA1)
+    monkeypatch.setattr(
+        runner,
+        "enforce_pre_live_validator_for_execution",
+        lambda **kwargs: validator_calls.append(kwargs),
+    )
+    monkeypatch.setattr(
+        runner,
+        "run_integrated_prescan_stage",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("stop_after_validator")),
+    )
+
+    with pytest.raises(RuntimeError, match="stop_after_validator"):
+        runner.main()
+
+    assert len(validator_calls) == 1
+
+
+def test_s10_execution_artifacts_pin_validated_source_identity(monkeypatch, tmp_path: Path) -> None:
+    """Canonical execution evidence must not re-query mutable Git state."""
+    runner = _load_runner_module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    output_root = tmp_path / "artifacts"
+    git_calls: list[Path] = []
+
+    def _git_sha(root: Path) -> str:
+        git_calls.append(root)
+        return VALID_SHA1 if len(git_calls) == 1 else "UNKNOWN"
+
+    monkeypatch.chdir(repo_root)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "run_extraction_v5.py",
+            "--phase",
+            "A",
+            "--dry-run",
+            "--run-id",
+            "s10-pinned-identity",
+            "--output-root",
+            str(output_root),
+        ],
+    )
+    monkeypatch.setattr(runner, "get_git_sha", _git_sha)
+    monkeypatch.setattr(runner, "run_integrated_prescan_stage", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        runner,
+        "write_run_routing_fingerprint",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("stop_after_evidence")),
+    )
+
+    with pytest.raises(RuntimeError, match="stop_after_evidence"):
+        runner.main()
+
+    run_root = output_root / "runs" / "s10-pinned-identity"
+    manifest = json.loads((run_root / "RUN_MANIFEST.json").read_text(encoding="utf-8"))
+    identity = json.loads((run_root / "RUNNER_IDENTITY.json").read_text(encoding="utf-8"))
+    assert manifest["git_sha"] == VALID_SHA1
+    assert identity["git_sha"] == VALID_SHA1
+    assert len(git_calls) == 1
+
+
+def test_s10_proof_pack_writers_pin_supplied_source_identity(monkeypatch, tmp_path: Path) -> None:
+    """Normal and blocked proof paths use supplied custody, never a fallback."""
+    runner = _load_runner_module()
+    dirs = {"root": tmp_path / "run"}
+    dirs["root"].mkdir(parents=True)
+    monkeypatch.setattr(
+        runner,
+        "get_git_sha",
+        lambda _root: (_ for _ in ()).throw(AssertionError("git must not be re-queried")),
+    )
+
+    runner.update_proof_pack(
+        tmp_path,
+        dirs,
+        "run-1",
+        "2026-01-01T00:00:00Z",
+        "A",
+        {},
+        "2026-01-01T00:00:00Z",
+        "2026-01-01T00:00:01Z",
+        source_identity=VALID_SHA1,
+    )
+    normal = json.loads((dirs["root"] / "PROOF_PACK.json").read_text(encoding="utf-8"))
+    assert normal["git_sha"] == VALID_SHA1
+
+    runner.write_blocked_promptset_proof_pack(
+        tmp_path,
+        dirs,
+        "run-1",
+        "2026-01-01T00:00:00Z",
+        ["A"],
+        {"blocked_promptset": True},
+        source_identity=VALID_SHA256,
+    )
+    blocked = json.loads((dirs["root"] / "PROOF_PACK.json").read_text(encoding="utf-8"))
+    assert blocked["git_sha"] == VALID_SHA256
+
+
+def test_s10_cost_abort_proof_pins_supplied_source_identity(monkeypatch, tmp_path: Path) -> None:
+    """Cost-abort proof creation cannot re-resolve execution identity."""
+    runner = _load_runner_module()
+    dirs = {"root": tmp_path / "run"}
+    dirs["root"].mkdir(parents=True)
+    monkeypatch.setattr(
+        runner,
+        "get_git_sha",
+        lambda _root: (_ for _ in ()).throw(AssertionError("git must not be re-queried")),
+    )
+    monkeypatch.setattr(runner, "phase_status_snapshot", lambda *_args, **_kwargs: {})
+
+    runner._persist_cost_abort(
+        root=tmp_path,
+        dirs=dirs,
+        run_id="run-1",
+        phases=["A"],
+        run_started_at="2026-01-01T00:00:00Z",
+        exc=runner.CostLimitExceededError("cap", {"phase": "A"}),
+        source_identity=VALID_SHA1,
+    )
+
+    proof = json.loads((dirs["root"] / "PROOF_PACK.json").read_text(encoding="utf-8"))
+    assert proof["git_sha"] == VALID_SHA1
+
+
+def test_s10_separate_evidence_write_cannot_inherit_prior_pinned_identity(tmp_path: Path) -> None:
+    """Pinned identity is explicit per call, not retained in process state."""
+    runner = _load_runner_module()
+    first_root = tmp_path / "first"
+    second_root = tmp_path / "second"
+    first_root.mkdir()
+    second_root.mkdir()
+
+    runner.write_runner_identity(
+        tmp_path, first_root, "first", source_identity=VALID_SHA1
+    )
+    runner.write_runner_identity(
+        tmp_path, second_root, "second", source_identity=VALID_SHA256
+    )
+
+    first = json.loads((first_root / "RUNNER_IDENTITY.json").read_text(encoding="utf-8"))
+    second = json.loads((second_root / "RUNNER_IDENTITY.json").read_text(encoding="utf-8"))
+    assert first["git_sha"] == VALID_SHA1
+    assert second["git_sha"] == VALID_SHA256
 
 
 def test_s10_read_only_print_config_is_unaffected_by_unproven_identity(monkeypatch, tmp_path: Path) -> None:

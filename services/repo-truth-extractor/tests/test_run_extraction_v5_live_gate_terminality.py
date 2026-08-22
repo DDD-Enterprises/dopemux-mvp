@@ -321,8 +321,9 @@ def test_execute_with_live_ok_passes_consent_gate_without_provider_call(
         runner.main()
 
     assert excinfo.value.code == 1
-    assert len(gate_calls) == 1
-    assert gate_calls[0]["phase_sequence"] == ["A"]
+    # Setup now precedes the execution-only validator so source identity can
+    # dominate its provider-facing boundary. A setup failure reaches neither.
+    assert gate_calls == []
 
 
 def test_preset_phases_are_applied_before_live_consent_gate(
