@@ -1,7 +1,13 @@
 ---
+id: repository-merge-planner-implementation-plan
 title: "Repository Merge Planner Implementation Plan"
 type: explanation
 status: draft
+owner: "@hu3mann"
+author: "@codex"
+date: "2026-08-22"
+last_review: "2026-08-22"
+next_review: "2026-11-20"
 prelude: "Fixture-first implementation sequence for the read-only merge planner."
 tags: [implementation-plan, control-tower, repository-planner]
 ---
