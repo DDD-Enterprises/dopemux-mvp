@@ -1,0 +1,132 @@
+{
+  "id": "TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001",
+  "project": "dopemux-mvp",
+  "target": "Install the source-backed RFC and implementation plan for a read-only interactive repository merge planner spanning Dopemux, dNh CRM, and AdOps.",
+  "invariants": [
+    "Dopemux hosts the planner but does not become canonical project authority.",
+    "dNh CRM tools/gov is the governance-contract source; AdOps adapts it rather than rebuilding a second kernel.",
+    "Task Orchestrator is queue, dependency, and workflow projection only.",
+    "The release-one architecture exposes no project, GitHub, or Task Orchestrator write authority.",
+    "UNKNOWN, stale evidence, missing remote candidates, and material conflicts fail closed.",
+    "Raw conversations are not executable authority; only approved normalized decisions are canonical.",
+    "Do not modify runtime code, schemas, services, UI, workflows, or repository configuration under this design packet.",
+    "Do not call a model or external paid API under this design packet.",
+    "Do not merge, accept, activate, label, score, deploy, or authorize Commit 6."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "repository-merge-planner",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/repository-merge-planner-design-001",
+    "base_branch": "main",
+    "stacked_because": "Design-only precursor to a separately authorized implementation packet."
+  },
+  "commit": {
+    "message": "docs(planner): design read-only repository merge planner",
+    "allowlist": [
+      "docs/91-rfc/repository-merge-planner.md",
+      "docs/04-explanation/implementation-plans/repository-merge-planner.md",
+      "task-packets/TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001.json",
+      "task-packets/INDEX.md"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python scripts/docs_validator.py",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(planner): design read-only repository merge planner",
+    "body": "## Outcome\nDefines the Dopemux-hosted, read-only Control Tower planner for Dopemux, dNh CRM, and AdOps.\n\n## Architecture\n- dNh tools/gov is the contract source\n- AdOps exports repo-local governance evidence\n- Dopemux renders the cross-repo projection\n- Task Orchestrator remains non-authoritative\n- fixture-first, then GitHub GET/HEAD refresh\n\n## Safety\nDesign-only draft. No runtime changes, model calls, merge authority, or terminal actions. Embedded audit remains required after content freeze.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Verify Dopemux, dNh CRM, and AdOps authority and existing architecture seams using read-only repository evidence.",
+      "requirements": [
+        "Confirm Dopemux truth order and control-plane boundaries.",
+        "Confirm dNh tools/gov modules and proof schema exist.",
+        "Confirm AdOps PR #277 review findings and current authority files.",
+        "Mark missing facts UNKNOWN."
+      ],
+      "commands": [],
+      "expected_files": [],
+      "validation": [
+        "The RFC cites only observed repository surfaces.",
+        "The planner/producer ownership split matches all three repositories."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "src/dopemux/pcp/",
+        "services/dcp-readonly-facade/",
+        "ui-dashboard/"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write the fixture-first planner RFC and implementation plan.",
+      "requirements": [
+        "Keep the DCP nine-family facade unchanged.",
+        "Require authority NONE on planner outputs.",
+        "Define automatic GitHub evidence refresh, approved conversation decisions, visible conflicts, and deterministic merge simulation.",
+        "Retain explicit model/audit exclusions."
+      ],
+      "commands": [],
+      "expected_files": [
+        "docs/91-rfc/repository-merge-planner.md",
+        "docs/04-explanation/implementation-plans/repository-merge-planner.md"
+      ],
+      "validation": [
+        "Both documents have valid frontmatter.",
+        "The plan begins with a canonical implementation packet and frozen fixtures."
+      ],
+      "context_files": [
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "docs/03-reference/governance/evidence-economy.md",
+        "docs/ops/embedded-audit.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Validate the task packet and documentation, update the Task Packet index, and open a draft PR.",
+      "requirements": [
+        "Modify only the commit allowlist.",
+        "Keep the PR draft and unmerged.",
+        "Record deterministic validation results honestly.",
+        "Do not run the final embedded audit under this packet."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "python scripts/docs_validator.py",
+        "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001.json",
+        "task-packets/INDEX.md"
+      ],
+      "validation": [
+        "Task Packet schema validation passes.",
+        "Documentation validation passes or the exact blocker is reported.",
+        "Draft PR targets main and is not merged.",
+        "No model invocation or external spend occurs."
+      ],
+      "context_files": [
+        "task-packets/INDEX.md"
+      ]
+    }
+  ]
+}
