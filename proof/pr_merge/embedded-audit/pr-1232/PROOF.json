@@ -1,0 +1,19 @@
+{
+  "repo": "dopemux-mvp",
+  "pr_number": 1232,
+  "head_sha": "3525c24dd01ba6dc73b8b58ba0ef45a1aa760fff",
+  "generated_at": "2026-08-22T07:32:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-RTE-V5-PR1232-SOURCE-IDENTITY-FINAL-CLOSURE-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null
+  }
+}
