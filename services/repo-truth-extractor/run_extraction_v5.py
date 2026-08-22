@@ -6642,6 +6642,7 @@ def build_webhook_payload(
     detail: str,
     artifacts_written: List[str],
     artifacts_missing: List[str],
+    source_identity: Optional[str] = None,
 ) -> Dict[str, Any]:
     event_id = _webhook_event_id(run_id, phase_id, step_id, job_id, state)
     emitted_at = now_iso()
@@ -6653,7 +6654,7 @@ def build_webhook_payload(
         "run": {
             "run_id": run_id,
             "run_root": str(root.resolve()),
-            "git_sha": get_git_sha(root),
+            "git_sha": source_identity if source_identity is not None else get_git_sha(root),
             "runner_sha256": sha256_text(RUNNER_SCRIPT),
         },
         "phase": {
@@ -6733,6 +6734,7 @@ def maybe_send_batch_webhook(
     detail: str,
     artifacts_written: List[str],
     artifacts_missing: List[str],
+    source_identity: Optional[str] = None,
 ) -> bool:
     if not cfg.webhook_url.strip():
         return True
@@ -6749,6 +6751,7 @@ def maybe_send_batch_webhook(
         detail=detail,
         artifacts_written=artifacts_written,
         artifacts_missing=artifacts_missing,
+        source_identity=source_identity,
     )
     ok, status_code, err = send_webhook(
         payload,
@@ -19075,6 +19078,7 @@ def emit_run_dashboard_snapshot(
     dirs: Dict[str, Path],
     ui: Optional[UI] = None,
     source: str = "phase",
+    source_identity: Optional[str] = None,
 ) -> Dict[str, Any]:
     payload = phase_status_snapshot(run_id, dirs, PHASES)
     write_run_dashboard_snapshot(dirs["root"], payload, source=source)
@@ -19083,7 +19087,7 @@ def emit_run_dashboard_snapshot(
             run_id=run_id,
             run_root=dirs["root"],
             repo_root=REPO_ROOT,
-            git_sha=get_git_sha(REPO_ROOT),
+            git_sha=source_identity if source_identity is not None else get_git_sha(REPO_ROOT),
             run_dashboard=payload,
         )
         risk_dashboard = build_rte_risk_dashboard(risk_inputs)
@@ -20085,6 +20089,7 @@ def generate_coverage_report(
     phases: List[str],
     *,
     persist: bool = True,
+    source_identity: Optional[str] = None,
 ) -> int:
     phase_rows = [_coverage_for_phase(phase, dirs[phase]) for phase in phases]
     required_status = get_required_artifact_status(dirs, R_REQUIRED_INPUT_PHASES)
@@ -20092,7 +20097,7 @@ def generate_coverage_report(
         "generated_at": now_iso(),
         "run_id": run_id,
         "runner_sha256": sha256_text(RUNNER_SCRIPT),
-        "git_sha": get_git_sha(root),
+        "git_sha": source_identity if persist and source_identity is not None else get_git_sha(root),
         "phases": {row["phase"]: row for row in phase_rows},
         "required_artifact_coverage": required_status,
     }
@@ -20747,6 +20752,7 @@ def run_batch_watch(
     dirs: Dict[str, Path],
     cfg: RunnerConfig,
     ui: Optional[UI] = None,
+    source_identity: Optional[str] = None,
 ) -> BatchWatchResult:
     phase_id = str(phase or "").upper()
     if phase_id not in PHASES:
@@ -21141,6 +21147,7 @@ def run_batch_watch(
             detail=event_detail,
             artifacts_written=artifacts_written,
             artifacts_missing=artifacts_missing,
+            source_identity=source_identity,
         )
         if not webhook_ok:
             webhook_failures += 1
@@ -23952,7 +23959,7 @@ def main() -> None:
             )
         write_coverage_rollup(root, dirs, run_id)
         write_resume_proof(dirs, run_id, targets)
-        sys.exit(generate_coverage_report(root, dirs, run_id, targets))
+        sys.exit(generate_coverage_report(root, dirs, run_id, targets, source_identity=execution_source_identity))
 
     if args.verify_phase_output:
         verify_targets = (
@@ -24069,6 +24076,7 @@ def main() -> None:
                 dirs=dirs,
                 cfg=cfg,
                 ui=ui,
+                source_identity=execution_source_identity,
             )
         except CostLimitExceededError as exc:
             logger.error("Batch watch cost-aborted: %s", exc)
@@ -24297,6 +24305,7 @@ def main() -> None:
                 dirs=dirs,
                 ui=ui,
                 source=f"phase:{phase}:fail",
+                source_identity=execution_source_identity,
             )
             write_phase_coverage_manifest(
                 phase,
@@ -24352,6 +24361,7 @@ def main() -> None:
             dirs=dirs,
             ui=ui,
             source=f"phase:{phase}:{phase_status.lower()}",
+            source_identity=execution_source_identity,
         )
         write_phase_coverage_manifest(
             phase,
@@ -24376,6 +24386,7 @@ def main() -> None:
         dirs=dirs,
         ui=ui,
         source="run_complete",
+        source_identity=execution_source_identity,
     )
     write_certification_result(
         dirs["root"],

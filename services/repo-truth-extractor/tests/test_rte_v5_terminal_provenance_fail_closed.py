@@ -1580,7 +1580,7 @@ def test_s10_execution_artifacts_pin_validated_source_identity(monkeypatch, tmp_
 def test_s10_proof_pack_writers_pin_supplied_source_identity(monkeypatch, tmp_path: Path) -> None:
     """Normal and blocked proof paths use supplied custody, never a fallback."""
     runner = _load_runner_module()
-    dirs = {"root": tmp_path / "run"}
+    dirs = {"root": tmp_path / "run", "A": tmp_path / "run" / "A"}
     dirs["root"].mkdir(parents=True)
     monkeypatch.setattr(
         runner,
@@ -1618,7 +1618,7 @@ def test_s10_proof_pack_writers_pin_supplied_source_identity(monkeypatch, tmp_pa
 def test_s10_cost_abort_proof_pins_supplied_source_identity(monkeypatch, tmp_path: Path) -> None:
     """Cost-abort proof creation cannot re-resolve execution identity."""
     runner = _load_runner_module()
-    dirs = {"root": tmp_path / "run"}
+    dirs = {"root": tmp_path / "run", "A": tmp_path / "run" / "A"}
     dirs["root"].mkdir(parents=True)
     monkeypatch.setattr(
         runner,
@@ -1691,3 +1691,105 @@ def test_s10_read_only_print_config_is_unaffected_by_unproven_identity(monkeypat
         runner.main()
 
     assert exc_info.value.code == 0
+
+def test_s10_persisted_coverage_report_pins_supplied_source_identity(monkeypatch, tmp_path: Path) -> None:
+    """Coverage report creation cannot re-resolve execution identity."""
+    runner = _load_runner_module()
+    dirs = {"root": tmp_path / "run", "A": tmp_path / "run" / "A"}
+    dirs["root"].mkdir(parents=True)
+    monkeypatch.setattr(
+        runner,
+        "get_git_sha",
+        lambda _root: "UNKNOWN",
+    )
+    monkeypatch.setattr(runner, "_coverage_for_phase", lambda *args, **kwargs: {"phase": "A", "status": "ok"})
+    monkeypatch.setattr(runner, "get_required_artifact_status", lambda *args, **kwargs: {})
+
+    runner.generate_coverage_report(
+        root=tmp_path,
+        dirs=dirs,
+        run_id="run-1",
+        phases=["A"],
+        persist=True,
+        source_identity=VALID_SHA1,
+    )
+
+    import json
+    report = json.loads((dirs["root"] / "COVERAGE_REPORT.json").read_text(encoding="utf-8"))
+    assert report["git_sha"] == VALID_SHA1
+
+
+def test_s10_webhook_payload_pins_supplied_source_identity(monkeypatch, tmp_path: Path) -> None:
+    """Webhook payload creation cannot re-resolve execution identity."""
+    runner = _load_runner_module()
+    monkeypatch.setattr(
+        runner,
+        "get_git_sha",
+        lambda _root: "UNKNOWN",
+    )
+
+    payload = runner.build_webhook_payload(
+        root=tmp_path,
+        run_id="run-1",
+        phase_id="A",
+        phase_dir=tmp_path / "A",
+        step_id="step-1",
+        provider_id="provider-1",
+        model_id="model-1",
+        job_id="job-1",
+        state="success",
+        detail="detail",
+        artifacts_written=[],
+        artifacts_missing=[],
+        source_identity=VALID_SHA1,
+    )
+
+    assert payload["run"]["git_sha"] == VALID_SHA1
+
+
+def test_s10_dashboard_snapshot_pins_supplied_source_identity(monkeypatch, tmp_path: Path) -> None:
+    """Dashboard snapshot creation cannot re-resolve execution identity."""
+    runner = _load_runner_module()
+    dirs = {"root": tmp_path / "run", "A": tmp_path / "run" / "A"}
+    dirs["root"].mkdir(parents=True)
+    monkeypatch.setattr(
+        runner,
+        "get_git_sha",
+        lambda _root: "UNKNOWN",
+    )
+    monkeypatch.setattr(runner, "phase_status_snapshot", lambda *args, **kwargs: {})
+    monkeypatch.setattr(runner, "collect_rte_risk_dashboard_inputs", lambda *args, **kwargs: {})
+    monkeypatch.setattr(runner, "build_rte_risk_dashboard", lambda *args, **kwargs: {})
+
+    runner.emit_run_dashboard_snapshot(
+        run_id="run-1",
+        dirs=dirs,
+        ui=None,
+        source="phase",
+        source_identity=VALID_SHA1,
+    )
+
+    import json
+    # It writes to RUN_DASHBOARD_SNAPSHOT.json and RTE_RISK_DASHBOARD.json. Wait, does it?
+    # Actually, we can check if it passed source_identity to get_git_sha logic, but let's just
+    # check if collect_rte_risk_dashboard_inputs received the correct git_sha.
+    # The simplest is to mock collect_rte_risk_dashboard_inputs and assert on it.
+
+    collected_git_sha = None
+
+    def mock_collect(*args, **kwargs):
+        nonlocal collected_git_sha
+        collected_git_sha = kwargs.get("git_sha")
+        return {}
+
+    monkeypatch.setattr(runner, "collect_rte_risk_dashboard_inputs", mock_collect)
+
+    runner.emit_run_dashboard_snapshot(
+        run_id="run-1",
+        dirs=dirs,
+        ui=None,
+        source="phase",
+        source_identity=VALID_SHA1,
+    )
+
+    assert collected_git_sha == VALID_SHA1
