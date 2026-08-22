@@ -8,300 +8,119 @@ author: "@codex"
 date: "2026-08-22"
 last_review: "2026-08-22"
 next_review: "2026-11-20"
-prelude: "Fixture-first implementation sequence for the read-only merge planner."
-tags: [implementation-plan, control-tower, repository-planner]
+prelude: "Five dependency-ordered PCP implementation packets."
+tags: [implementation-plan, pcp, control-tower, repository-planner]
 ---
 
 # Repository Merge Planner Implementation Plan
 
-> **Execution gate:** Create and validate a canonical Dopemux Task Packet before
-> implementation. Governance/authority-boundary changes require one independent
-> embedded audit only after the content head is frozen.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use
+> `superpowers:subagent-driven-development` or `superpowers:executing-plans`
+> to implement the active packet task-by-task. Track steps with checkboxes.
 
-**Goal:** Deliver a read-only, source-backed vertical slice across Dopemux,
-dNh CRM, and AdOps, then enable automatic GitHub evidence refresh and approved
-conversation-decision intake.
+**Goal:** Deliver a read-only interactive merge planner across Dopemux, dNh
+CRM, and AdOps without creating a new authority plane.
 
-**Architecture:** Pure projection core under
-`src/dopemux/repository_planner/`, loopback service under
-`services/repository-planner/`, and React/MUI feature under
-`ui-dashboard/src/features/repository-planner/`. Existing DCP nine-family
-facade remains unchanged.
+**Architecture:** PCP Core remains generic. Dopemux-owned additive adapters
+consume AdOps authority surfaces and existing dNh RDCP artifacts, then build a
+deterministic portfolio projection for a loopback service and React UI. Live
+GitHub refresh and conversation proposals are isolated in later L3 packets.
 
-## Constraints
+**Tech Stack:** Python 3, JSON Schema 2020-12, pytest, FastAPI-compatible
+loopback patterns, TypeScript, React, MUI, Vite, Vitest.
 
-- `authority = NONE`; no project/TO/GitHub mutation.
-- GitHub transport supports allowlisted `GET`/`HEAD` only.
-- dNh `tools/gov` semantics are the producer-contract source.
-- AdOps uses an adapter/export, not a second greenfield kernel.
-- Runtime/source truth outranks this plan.
-- Missing evidence remains `UNKNOWN`.
-- Frozen fixture first; live network second.
-- No OpenRouter/OpenCode/custom proxy route.
-- No model call until the packet's single final embedded-audit stage.
+**Spec:** `docs/91-rfc/repository-merge-planner.md`
 
-## Task 0: Create the canonical implementation packet
+## Global constraints
 
-**Files:**
+- Planner records always use `authority=NONE` and `surface_class=PROJECTION`.
+- No repository, GitHub, Task Orchestrator, CRM, or conversation-source writes.
+- Preserve PCP Core generic behavior and the DCP nine-family facade.
+- Missing, stale, malformed, or conflicting evidence fails closed.
+- No raw transcript persistence by default.
+- No OpenRouter, OpenCode, custom proxy, or unapproved external spend.
+- One frozen-head independent audit for each L2/L3 packet; no model-call rituals.
 
-- Create: `task-packets/TP-DMX-REPOSITORY-MERGE-PLANNER-001.json`
-- Modify: `task-packets/INDEX.md`
-- Later create: `proof/TP-DMX-REPOSITORY-MERGE-PLANNER-001/**`
+## File and packet decomposition
 
-The JSON must validate against
-`docs/03-reference/spec/dopetask/dopetask-canonical-spec.json` and pin:
+| Packet | Working software produced | Dependency |
+|---|---|---|
+| Foundation 001 | fixture-backed portfolio model, deterministic planner, first UI | design PR merged |
+| AdOps 002 | source-backed AdOps PROJECT adapter and conformance fixtures | 001 accepted |
+| dNh RDCP 003 | source-backed dNh RDCP bridge and conformance fixtures | 001 accepted |
+| GitHub 004 | loopback read service and allowlisted live refresh | 002 + 003 accepted |
+| Conversations 005 | allowlisted proposal intake and reconciliation UI | 004 accepted |
 
-- repo identity/marker and base branch/commit;
-- L2 governance/authority-boundary risk;
-- exact code, schema, service, UI, fixture, docs, and proof allowlist;
-- no-write invariants;
-- validation and embedded-audit obligations;
-- stop conditions for credentials, unexpected runtime wiring, or scope drift.
+Each packet contains exact files, public interfaces, failing tests, commands,
+proof requirements, and stop conditions. Packets 2 and 3 write only Dopemux;
+the source repositories are read-only evidence providers.
 
-First validation:
+## Execution order
 
-```bash
-python -m jsonschema -i task-packets/TP-DMX-REPOSITORY-MERGE-PLANNER-001.json +  docs/03-reference/spec/dopetask/dopetask-canonical-spec.json
+- [ ] Merge or otherwise accept the design contract on PR #1247.
+- [ ] Activate and execute `TP-DMX-PCP-PLANNER-FOUNDATION-001`.
+- [ ] Freeze its portfolio/source contracts and record the accepted head.
+- [ ] Execute `TP-DMX-PCP-ADOPS-EXTENSION-002`.
+- [ ] Execute `TP-DMX-PCP-DNH-RDCP-BRIDGE-003`.
+- [ ] Reconcile both adapters against the same foundation contract.
+- [ ] Execute `TP-DMX-PCP-GITHUB-REFRESH-004`.
+- [ ] Execute `TP-DMX-PCP-CONVERSATION-DECISIONS-005`.
+- [ ] Run end-to-end fixture and read-only live validation.
+- [ ] Leave merge, acceptance, and activation to Control Tower/human authority.
+
+## Cross-packet interfaces
+
+Foundation 001 produces:
+
+```python
+def load_source_snapshot(payload: Mapping[str, object]) -> SourceSnapshot: ...
+def build_portfolio(sources: Sequence[SourceSnapshot]) -> PortfolioProjection: ...
+def classify_conflicts(claims: Sequence[Claim]) -> tuple[Conflict, ...]: ...
+def plan_merge_order(portfolio: PortfolioProjection) -> tuple[Recommendation, ...]: ...
+def canonical_portfolio_bytes(portfolio: PortfolioProjection) -> bytes: ...
 ```
 
-## Task 1: Freeze the source-backed vertical-slice fixture
+Extension packets produce:
 
-**Files:**
+```python
+class ProjectExtensionAdapter(Protocol):
+    extension_id: str
+    def matches(self, generic_export: Mapping[str, object]) -> bool: ...
+    def enrich(self, generic_export: Mapping[str, object], source_root: Path) -> SourceSnapshot: ...
+```
 
-- Create: `tests/fixtures/repository_planner/portfolio_v1/`
-- Create: `tests/fixtures/repository_planner/portfolio_v1/SOURCES.json`
-- Create: `tests/repository_planner/test_fixture_integrity.py`
+GitHub 004 produces:
 
-Capture one read-only snapshot for each repository:
+```python
+class GitHubReadTransport(Protocol):
+    def request(self, method: Literal["GET", "HEAD"], url: str,
+                *, headers: Mapping[str, str]) -> ReadResponse: ...
 
-- Dopemux: a current packet/proof/PR example;
-- dNh CRM: a `tools/gov` proof/readiness example;
-- AdOps: PR `#277` plus the local-only legacy candidate represented as
-  blocked evidence context, never as ready.
+async def refresh_portfolio(project_ids: Sequence[str]) -> RefreshResult: ...
+```
 
-`SOURCES.json` records repository, ref/commit, GitHub URL/path, fetched time,
-content SHA-256, license/privacy classification, and redaction notes.
+Conversation 005 produces:
 
-Tests first:
+```python
+def propose_decision(source: DecisionSource, normalized_text: str,
+                     target: DecisionTarget) -> DecisionProposal: ...
+def reconcile_proposal(proposal: DecisionProposal,
+                       portfolio: PortfolioProjection) -> tuple[Conflict, ...]: ...
+```
 
-- every fixture file is listed and hashed;
-- no secrets/tokens/local absolute paths;
-- local-only candidate -> `REMOTE_COMMIT_ABSENT`;
-- at least one blocking conflict and one unknown are present;
-- fixture bytes validate independently of network.
+Later packets must consume these interfaces exactly or amend the active packet
+before implementation. They may not silently fork the contract.
 
-## Task 2: Define strict models and schemas
+## Validation ladder
 
-**Files:**
-
-- Create: `src/dopemux/repository_planner/__init__.py`
-- Create: `src/dopemux/repository_planner/models.py`
-- Create: `schemas/project_control_plane/repository-planner-source.v1.schema.json`
-- Create: `schemas/project_control_plane/repository-planner-portfolio.v1.schema.json`
-- Create: `tests/repository_planner/test_models.py`
-
-Model:
-
-- source/provenance references;
-- freshness and source errors;
-- repository/lane/candidate/audit/decision evidence;
-- dNh-compatible readiness;
-- lifecycle facts separately;
-- conflicts with materiality;
-- unknowns;
-- recommendations and simulation marker.
-
-Use strict canonical objects. Reject unknown top-level fields. Require
-`authority: NONE` and `surface_class: PROJECTION`.
-
-## Task 3: Implement adapters
-
-**Files:**
-
-- Create: `src/dopemux/repository_planner/adapters/base.py`
-- Create: `src/dopemux/repository_planner/adapters/dnh_v1.py`
-- Create: `src/dopemux/repository_planner/adapters/adops_v1.py`
-- Create: `src/dopemux/repository_planner/adapters/dopemux.py`
-- Create: `tests/repository_planner/test_adapters.py`
-
-Adapters accept verified bytes plus source locator and return normalized
-evidence. They do not fetch, repair, mutate, or infer readiness from absence.
-
-Tests cover:
-
-- dNh readiness vocabulary preserved;
-- AdOps malformed/missing export isolated;
-- Dopemux runtime truth and packet scope kept distinct;
-- Task Orchestrator state has `authority: NONE`;
-- unapproved conversation context cannot become a decision;
-- unknown producer fields do not leak into canonical fields.
-
-## Task 4: Render the first useful screen from fixtures
-
-**Files:**
-
-- Create: `ui-dashboard/src/features/repository-planner/types.ts`
-- Create: `ui-dashboard/src/features/repository-planner/RepositoryPlannerPage.tsx`
-- Create: `ui-dashboard/src/features/repository-planner/PortfolioTable.tsx`
-- Create: `ui-dashboard/src/features/repository-planner/LaneDetails.tsx`
-- Create: `ui-dashboard/src/features/repository-planner/ConflictPanel.tsx`
-- Create: `ui-dashboard/src/features/repository-planner/ProvenancePanel.tsx`
-- Create: `ui-dashboard/src/features/repository-planner/__tests__/`
-
-The initial UI loads a checked-in generated fixture module. It must show all
-three repositories, ready/blocked/unknown states, a conflict comparison, and
-claim-level provenance before any service exists.
-
-Tests cover keyboard navigation, semantic status text, focus return, error
-states, and reduced-motion behavior.
-
-## Task 5: Add deterministic conflict and merge-order logic
-
-**Files:**
-
-- Create: `src/dopemux/repository_planner/conflicts.py`
-- Create: `src/dopemux/repository_planner/planner.py`
-- Create: `tests/repository_planner/test_conflicts.py`
-- Create: `tests/repository_planner/test_planner.py`
-
-Tests first:
-
-- blocking conflict -> `DEFER`;
-- non-blocking conflict remains visible;
-- missing dependency -> `WAIT_DEPENDENCY`;
-- cycles produce explicit blockers;
-- stale source -> `DEFER`;
-- failed/missing audit cannot become ready;
-- explicit override remains `CONTROL_TOWER_REVIEW`, never auto-merge;
-- tie-breaker is project ID, lane ID, candidate SHA;
-- randomized input ordering yields byte-identical recommendation ordering;
-- simulation never changes source snapshot.
-
-## Task 6: Add the loopback read API and refresh cache
-
-**Files:**
-
-- Create: `services/repository-planner/app.py`
-- Create: `services/repository-planner/config.py`
-- Create: `services/repository-planner/refresh.py`
-- Create: `services/repository-planner/pyproject.toml`
-- Create: `services/repository-planner/tests/`
-
-Endpoints:
-
-- `GET /health`
-- `GET /v1/portfolio`
-- `GET /v1/projects/{project_id}/lanes/{lane_id}`
-- `POST /v1/refresh` only if implemented as a loopback operator trigger that
-  performs read-only collection; name and docs must state it mutates cache only.
-
-Prefer `POST /v1/refresh` for honest cache mutation, while proving it has no
-external write capability. If the no-mutating-route acceptance rule is retained,
-replace it with a UI client-side refresh request to a `GET` endpoint using
-cache-control semantics; choose one contract in the Task Packet and test it.
-
-The cache retains last-known data as stale/degraded. One source failure does not
-erase others.
-
-## Task 7: Add the allowlisted GitHub reader
-
-**Files:**
-
-- Create: `src/dopemux/repository_planner/github_reader.py`
-- Create: `config/repository-planner.sources.yaml`
-- Create: `tests/repository_planner/test_github_reader.py`
-
-Use a transport interface whose method enum is only `GET`/`HEAD`. Validate
-repository/ref/path against configuration before constructing URLs. Enforce
-api.github.com host and reject redirects elsewhere.
-
-Tests cover:
-
-- POST/PATCH/PUT/DELETE impossible or rejected before transport;
-- arbitrary repo/URL/ref rejected;
-- token absent from logs/errors/models;
-- ETag/304 flow;
-- rate limit and auth errors sanitized;
-- bounded concurrency/timeouts;
-- stale fallback;
-- submodule/archive/path traversal rejected.
-
-No real network call is required for unit tests.
-
-## Task 8: Wire live refresh into the UI
-
-**Files:**
-
-- Create: `ui-dashboard/src/features/repository-planner/api.ts`
-- Create: `ui-dashboard/src/features/repository-planner/hooks.ts`
-- Modify: the verified dashboard route/navigation files named by Task 0 inventory
-- Modify: `services/registry.yaml` only if the service is actually launched
-
-Feature flag defaults off until the service health contract passes. Fixture mode
-remains available. Show last success, age, next refresh, current/stale/degraded,
-sanitized source errors, and manual cache refresh progress.
-
-Do not invent a port. Inventory `services/registry.yaml` and active entrypoints
-in Task 0, then pin the chosen port and launch wiring in the packet.
-
-## Task 9: Add approved conversation-decision proposals
-
-**Files:**
-
-- Create: `src/dopemux/repository_planner/decision_proposals.py`
-- Create: `ui-dashboard/src/features/repository-planner/DecisionProposal.tsx`
-- Create: corresponding Python/TypeScript tests
-
-The service accepts an allowlisted thread locator or manual text and produces a
-local proposal with normalized text, scope, source hash, and target repository.
-It does not approve or commit.
-
-Tests prove:
-
-- non-allowlisted sources rejected;
-- raw transcripts not persisted by default;
-- proposal has `authority: NONE`;
-- approval cannot be performed through planner API;
-- manual fallback is marked manual;
-- conflicting decision becomes visible reconciliation input.
-
-Actual repository commit/promotion remains a separate project-authority action.
-
-## Task 10: Verification and proof
-
-Run the exact packet-pinned commands, including:
+Every packet runs its targeted Python and UI tests first, then:
 
 ```bash
-pytest -q tests/repository_planner services/repository-planner/tests
-npm --prefix ui-dashboard test -- repository-planner
-python3 scripts/governance/validate_change_contract.py +  --base origin/main --head HEAD --format text
 python scripts/docs_validator.py
+python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text
 git diff --check
 ```
 
-Also verify:
-
-- OpenAPI/request router has no project/GitHub/TO write path;
-- network mock saw only allowlisted GitHub `GET`/`HEAD`;
-- source fixtures still match `SOURCES.json`;
-- repeated fixture projection is byte-identical;
-- DCP nine-family registry is unchanged;
-- Task Orchestrator remains non-authoritative;
-- feature flag defaults safe.
-
-Freeze the content head. Then perform exactly one independent embedded audit
-using the repository-authorized route and bind proof to the exact head. Do not
-use OpenRouter, OpenCode, or a custom proxy. If auditor identity, credentials, or
-route evidence is unavailable, record `SKIPPED`/`NEEDS_SUPERVISOR` and keep
-the PR blocked.
-
-## Delivery checkpoints
-
-1. **Checkpoint A:** Task Packet + frozen fixtures + strict schemas.
-2. **Checkpoint B:** fixture-backed interactive UI with provenance/conflicts.
-3. **Checkpoint C:** deterministic planner + loopback API.
-4. **Checkpoint D:** authenticated GET/HEAD refresh.
-5. **Checkpoint E:** local decision proposals + final proof/audit.
-
-Each checkpoint is independently reviewable. No checkpoint grants terminal
-authority.
+L2/L3 packets then freeze the content head and undergo one independent audit
+bound to that exact SHA. Proof-only successors use deterministic validation;
+unchanged content is not re-audited.

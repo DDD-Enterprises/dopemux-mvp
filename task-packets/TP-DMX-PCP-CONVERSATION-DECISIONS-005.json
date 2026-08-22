@@ -1,0 +1,193 @@
+{
+  "id": "TP-DMX-PCP-CONVERSATION-DECISIONS-005",
+  "project": "dopemux-mvp",
+  "target": "Import allowlisted, human-approved conversation decision capsules plus a marked manual fallback as non-authoritative planner proposals and visible reconciliation input.",
+  "invariants": [
+    "Risk lane is L3 because private conversation provenance and authority interpretation are introduced.",
+    "TP-DMX-PCP-GITHUB-REFRESH-004 must be accepted before activation.",
+    "There is no assumed API for reading a user's existing ChatGPT history from repository runtime.",
+    "OpenAI Conversations API identifiers apply only to conversations created in the API project and are not treated as ChatGPT-history identifiers.",
+    "Initial supported inputs are approved decision capsule files and manual fallback; unsupported direct thread locators fail closed.",
+    "A proposal always has authority NONE and cannot approve, commit, merge, accept, or activate anything.",
+    "Raw transcripts are not persisted by default."
+  ],
+  "depends_on": ["TP-DMX-PCP-GITHUB-REFRESH-004"],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "repository-merge-planner",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-PCP-GITHUB-REFRESH-004",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "feat/pcp-conversation-decisions-005",
+    "base_branch": "main",
+    "stacked_because": "Final release packet; consumes the accepted portfolio and loopback service contracts."
+  },
+  "commit": {
+    "message": "feat(planner): add governed conversation decision proposals",
+    "allowlist": [
+      "src/dopemux/repository_planner/decision_capsules.py",
+      "src/dopemux/repository_planner/decision_proposals.py",
+      "schemas/project_control_plane/decision_capsule.schema.json",
+      "schemas/project_control_plane/decision_proposal.schema.json",
+      "config/repository-planner.conversations.yaml",
+      "services/repository-planner/app.py",
+      "services/repository-planner/decision_store.py",
+      "services/repository-planner/tests/test_decisions.py",
+      "ui-dashboard/src/features/repository-planner/DecisionProposal.tsx",
+      "ui-dashboard/src/features/repository-planner/ConflictPanel.tsx",
+      "ui-dashboard/src/features/repository-planner/__tests__/DecisionProposal.test.tsx",
+      "tests/repository_planner/test_decision_proposals.py",
+      "proof/TP-DMX-PCP-CONVERSATION-DECISIONS-005/**",
+      "task-packets/TP-DMX-PCP-CONVERSATION-DECISIONS-005.json"
+    ],
+    "verify": [
+      "pytest -q tests/repository_planner/test_decision_proposals.py services/repository-planner/tests/test_decisions.py",
+      "npm --prefix ui-dashboard test -- repository-planner",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(planner): add governed conversation decision proposals",
+    "body": "L3 import of allowlisted, human-approved decision capsules with marked manual fallback. Proposals are non-authoritative, raw transcripts are not retained, conflicts remain visible, and no approval or repository write endpoint exists.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Define strict decision capsule and proposal schemas plus an explicit source allowlist.",
+      "requirements": [
+        "Decision capsule requires capsule_id, source_kind, canonical_thread_locator, normalized_text, target repository and scope, human approver identity, approved_at, source_content_sha256, and capsule_sha256.",
+        "Allowed source kinds are APPROVED_CAPSULE and MANUAL_FALLBACK; every other kind is rejected.",
+        "Manual fallback requires a reason and is visibly marked manual.",
+        "Proposal schema requires authority NONE, surface_class PROJECTION, is_proof false, import timestamp, and source provenance."
+      ],
+      "commands": [
+        "pytest -q tests/repository_planner/test_decision_proposals.py -k schema"
+      ],
+      "expected_files": [
+        "schemas/project_control_plane/decision_capsule.schema.json",
+        "schemas/project_control_plane/decision_proposal.schema.json",
+        "config/repository-planner.conversations.yaml",
+        "tests/repository_planner/test_decision_proposals.py"
+      ],
+      "validation": [
+        "Non-allowlisted locator, absent approver, mismatched hash, raw transcript field, and unsupported source kind fail validation.",
+        "Configuration stores locators and hashes, never conversation credentials or transcript bodies."
+      ],
+      "context_files": [
+        "docs/91-rfc/repository-merge-planner.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement deterministic capsule verification, proposal creation, and portfolio reconciliation.",
+      "requirements": [
+        "Implement verify_capsule(payload: Mapping[str, object], allowlist: CapsuleAllowlist) -> DecisionCapsule.",
+        "Implement propose_decision(source: DecisionCapsule, normalized_text: str, target: DecisionTarget) -> DecisionProposal.",
+        "Implement reconcile_proposal(proposal: DecisionProposal, portfolio: PortfolioProjection) -> tuple[Conflict, ...].",
+        "Normalize line endings and Unicode before hashing; canonical JSON uses sorted keys and one trailing LF.",
+        "Conflicting proposal creates an OPEN conflict and never overwrites source evidence."
+      ],
+      "commands": [
+        "pytest -q tests/repository_planner/test_decision_proposals.py"
+      ],
+      "expected_files": [
+        "src/dopemux/repository_planner/decision_capsules.py",
+        "src/dopemux/repository_planner/decision_proposals.py",
+        "tests/repository_planner/test_decision_proposals.py"
+      ],
+      "validation": [
+        "Repeated import of the same capsule is idempotent.",
+        "Changed normalized text with the old hash is rejected.",
+        "Proposal cannot alter SourceSnapshot, readiness, audit, acceptance, or merge facts."
+      ],
+      "context_files": [
+        "src/dopemux/repository_planner/models.py",
+        "src/dopemux/repository_planner/conflicts.py"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Expose capsule import and proposal listing through the loopback service without an approval endpoint.",
+      "requirements": [
+        "Expose POST /v1/decision-proposals/import for a bounded capsule body and GET /v1/decision-proposals.",
+        "The import route writes only to a local non-authoritative proposal store with bounded retention and explicit delete-on-expiry behavior.",
+        "Route census must contain no approve, accept, commit, merge, activate, repository-write, or source-fetch endpoint.",
+        "Reject oversized bodies and scrub rejected content from logs."
+      ],
+      "commands": [
+        "pytest -q services/repository-planner/tests/test_decisions.py"
+      ],
+      "expected_files": [
+        "services/repository-planner/app.py",
+        "services/repository-planner/decision_store.py",
+        "services/repository-planner/tests/test_decisions.py"
+      ],
+      "validation": [
+        "Tests prove proposal storage cannot call GitHub, Task Orchestrator, repository, or project-authority writers.",
+        "Raw transcript-shaped input and credentials are rejected and not logged."
+      ],
+      "context_files": [
+        "services/repository-planner/app.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Render proposals and their disagreements in the planner UI.",
+      "requirements": [
+        "Show source kind, canonical locator, human approver, approval time, target, hash, manual-fallback marker, and import state.",
+        "Display competing repository evidence side by side with blocking materiality and named resolution authority.",
+        "Provide no button or mutation path for approval, merge, acceptance, or repository commitment."
+      ],
+      "commands": [
+        "npm --prefix ui-dashboard test -- repository-planner"
+      ],
+      "expected_files": [
+        "ui-dashboard/src/features/repository-planner/DecisionProposal.tsx",
+        "ui-dashboard/src/features/repository-planner/ConflictPanel.tsx",
+        "ui-dashboard/src/features/repository-planner/__tests__/DecisionProposal.test.tsx"
+      ],
+      "validation": [
+        "Manual fallback and canonical capsule are visually and semantically distinguishable.",
+        "Keyboard and screen-reader tests cover proposal details and conflict comparison."
+      ],
+      "context_files": [
+        "ui-dashboard/src/features/repository-planner/"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Freeze the content head and complete one independent L3 privacy and authority audit.",
+      "requirements": [
+        "Audit source allowlisting, approver binding, hash normalization, transcript minimization, log scrubbing, retention, conflict visibility, and absence of approval/write routes.",
+        "Do not claim direct ChatGPT-history retrieval; official OpenAI API Conversations are a separate API-created state surface.",
+        "Any head mismatch or non-passing verdict blocks readiness."
+      ],
+      "commands": [
+        "pytest -q tests/repository_planner/test_decision_proposals.py services/repository-planner/tests/test_decisions.py",
+        "npm --prefix ui-dashboard test -- repository-planner",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PCP-CONVERSATION-DECISIONS-005/PROOF.json",
+        "proof/TP-DMX-PCP-CONVERSATION-DECISIONS-005/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "Proof binds the exact audited head and contains no raw conversation text.",
+        "PR remains unmerged pending Control Tower disposition."
+      ],
+      "context_files": [
+        "docs/ops/embedded-audit.md"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+{
+  "id": "TP-DMX-PCP-ADOPS-EXTENSION-002",
+  "project": "dopemux-mvp",
+  "target": "Add a Dopemux-owned PCP PROJECT extension for AdOps using explicit source-backed authority, packet, proof, audit, candidate, and readiness mappings without modifying AdOps.",
+  "invariants": [
+    "Risk lane is L2 because repository authority semantics are mapped into a planner projection.",
+    "TP-DMX-PCP-PLANNER-FOUNDATION-001 must be accepted and its interfaces frozen before activation.",
+    "DDD-Enterprises/adOps is read-only under this packet.",
+    "Do not copy, vendor, or port dNh tools/gov into AdOps or Dopemux.",
+    "The extension cannot override PCP fail-closed, proof, audit, or non-authority invariants.",
+    "Local-only commits and Downloads or temporary-worktree artifacts cannot become published candidates."
+  ],
+  "depends_on": ["TP-DMX-PCP-PLANNER-FOUNDATION-001"],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "repository-merge-planner",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-PCP-PLANNER-FOUNDATION-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "feat/pcp-adops-extension-002",
+    "base_branch": "main",
+    "stacked_because": "Consumes the accepted foundation adapter protocol; never stacks on an unaccepted implementation head."
+  },
+  "commit": {
+    "message": "feat(pcp): add AdOps project extension",
+    "allowlist": [
+      "src/dopemux/repository_planner/adapters/adops.py",
+      "schemas/adops_extension/**",
+      "reports/project-control-plane/fixtures/adops_fixture/**",
+      "tests/repository_planner/test_adops_adapter.py",
+      "proof/TP-DMX-PCP-ADOPS-EXTENSION-002/**",
+      "task-packets/TP-DMX-PCP-ADOPS-EXTENSION-002.json"
+    ],
+    "verify": [
+      "pytest -q tests/repository_planner/test_adops_adapter.py",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(pcp): add read-only AdOps extension",
+    "body": "Adds a source-backed AdOps PROJECT extension to the accepted PCP planner contract. AdOps remains read-only; no dNh governance code is copied. L2 final independent audit required.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Freeze the AdOps source inventory at commit 864915b9cc8ff254eaa877627df1e510dc49dbec and record every imported byte.",
+      "requirements": [
+        "Read PROJECT_INSTRUCTIONS.md, applicable overlays, task packet pointers, selected proof and audit records, and Git identity only from explicit allowlisted paths.",
+        "Create SOURCES.json with GitHub blob URLs, blob SHAs, SHA-256, fetched_at, privacy class, and redaction notes.",
+        "Represent PR #277 as design evidence, not implementation acceptance.",
+        "Represent legacy commit 4ce6b644afa72231c24b3cdac58f251e1ca03321 as REMOTE_COMMIT_ABSENT unless a named remote ref independently proves otherwise."
+      ],
+      "commands": [
+        "pytest -q tests/repository_planner/test_adops_adapter.py -k fixture"
+      ],
+      "expected_files": [
+        "reports/project-control-plane/fixtures/adops_fixture/SOURCES.json",
+        "reports/project-control-plane/fixtures/adops_fixture/project_profile.json",
+        "reports/project-control-plane/fixtures/adops_fixture/evidence_export.json"
+      ],
+      "validation": [
+        "All fixture bytes resolve to the pinned Git commit or are marked operator-supplied with a hash.",
+        "No local absolute path, secret, raw conversation, or inferred acceptance appears."
+      ],
+      "context_files": [
+        "schemas/project_control_plane/project_profile.schema.json",
+        "schemas/project_control_plane/project_evidence_export.schema.json"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Declare and validate the additive AdOps extension manifest and authority mappings.",
+      "requirements": [
+        "Use extension_kind PROJECT and status PROPOSED until Control Tower activation.",
+        "Map PROJECT_INSTRUCTIONS.md before Copilot and optional agent overlays.",
+        "Map active packet, proof roots, audit records, acceptance records, remote candidate identity, and AdOps red lanes without defining new authority.",
+        "Set all five PCP extension invariants to true."
+      ],
+      "commands": [
+        "python -m jsonschema -i schemas/adops_extension/extension_manifest.adops.json schemas/project_control_plane/extension_manifest.schema.json"
+      ],
+      "expected_files": [
+        "schemas/adops_extension/extension_manifest.adops.json",
+        "schemas/adops_extension/authority_map.adops.json",
+        "schemas/adops_extension/red_lanes.adops.json"
+      ],
+      "validation": [
+        "Manifest validates against the accepted PCP extension schema.",
+        "No mapping promotes GitHub, Task Orchestrator, planner, or conversation context to terminal authority."
+      ],
+      "context_files": [
+        "schemas/project_control_plane/extension_manifest.schema.json"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement and register the AdOps adapter against the frozen foundation protocol.",
+      "requirements": [
+        "Implement AdOpsExtensionAdapter.matches(generic_export: Mapping[str, object]) -> bool.",
+        "Implement AdOpsExtensionAdapter.enrich(generic_export: Mapping[str, object], source_root: Path) -> SourceSnapshot.",
+        "The adapter reads verified bytes only and does not fetch, repair, mutate, or infer readiness from absence.",
+        "Unknown proof layout, missing packet, stale audit, failed audit, source conflict, and absent remote candidate fail closed."
+      ],
+      "commands": [
+        "pytest -q tests/repository_planner/test_adops_adapter.py"
+      ],
+      "expected_files": [
+        "src/dopemux/repository_planner/adapters/adops.py",
+        "tests/repository_planner/test_adops_adapter.py"
+      ],
+      "validation": [
+        "Generic PCP exports for non-AdOps repositories are byte-equivalent before and after registration.",
+        "Malformed AdOps data is isolated to AdOps and does not erase other portfolio projects.",
+        "No dNh tools/gov file is added or modified."
+      ],
+      "context_files": [
+        "src/dopemux/pcp/exporter.py",
+        "src/dopemux/pcp/dcp_extension_export.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Freeze the exact content head and complete one independent L2 audit.",
+      "requirements": [
+        "Audit authority precedence, provenance, fail-closed mappings, generic PCP non-regression, and source-repository inertness.",
+        "Any head mismatch or non-passing audit blocks readiness."
+      ],
+      "commands": [
+        "pytest -q tests/repository_planner/test_adops_adapter.py",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PCP-ADOPS-EXTENSION-002/PROOF.json",
+        "proof/TP-DMX-PCP-ADOPS-EXTENSION-002/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "Proof binds the exact head and confirms DDD-Enterprises/adOps was not mutated.",
+        "PR remains unmerged pending Control Tower disposition."
+      ],
+      "context_files": [
+        "docs/ops/embedded-audit.md"
+      ]
+    }
+  ]
+}

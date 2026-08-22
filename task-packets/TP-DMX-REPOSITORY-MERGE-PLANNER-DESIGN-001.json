@@ -1,16 +1,17 @@
 {
   "id": "TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001",
   "project": "dopemux-mvp",
-  "target": "Install the source-backed RFC and implementation plan for a read-only interactive repository merge planner spanning Dopemux, dNh CRM, and AdOps.",
+  "target": "Install the corrected PCP-first RFC, implementation plan, and five dependency-ordered draft task packets for the interactive repository merge planner.",
   "invariants": [
-    "Dopemux hosts the planner but does not become canonical project authority.",
-    "dNh CRM tools/gov is the governance-contract source; AdOps adapts it rather than rebuilding a second kernel.",
-    "Task Orchestrator is queue, dependency, and workflow projection only.",
-    "The release-one architecture exposes no project, GitHub, or Task Orchestrator write authority.",
+    "PCP Core is the only generic cross-repository substrate.",
+    "DCP, dNh RDCP, and AdOps attach through additive extensions and cannot weaken PCP invariants.",
+    "No dNh governance kernel is copied into AdOps.",
+    "Dopemux hosts the planner without becoming canonical project authority.",
+    "Task Orchestrator remains queue, dependency, and workflow projection only.",
+    "The planner exposes no project, GitHub, conversation-source, or Task Orchestrator write authority.",
     "UNKNOWN, stale evidence, missing remote candidates, and material conflicts fail closed.",
-    "Raw conversations are not executable authority; only approved normalized decisions are canonical.",
     "Do not modify runtime code, schemas, services, UI, workflows, or repository configuration under this design packet.",
-    "Do not call a model or external paid API under this design packet.",
+    "Do not invoke a model until the exact content head is frozen for one independent Pro architecture audit.",
     "Do not merge, accept, activate, label, score, deploy, or authorize Commit 6."
   ],
   "depends_on": [],
@@ -30,68 +31,83 @@
     "agent": "codex",
     "branch": "codex/repository-merge-planner-design-001",
     "base_branch": "main",
-    "stacked_because": "Design-only precursor to a separately authorized implementation packet."
+    "stacked_because": "Design-only precursor. Implementation packets remain inactive until this design is accepted."
   },
   "commit": {
-    "message": "docs(planner): design read-only repository merge planner",
+    "message": "docs(planner): adopt PCP-first repository planner design",
     "allowlist": [
       "docs/91-rfc/repository-merge-planner.md",
       "docs/04-explanation/implementation-plans/repository-merge-planner.md",
       "task-packets/TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001.json",
+      "task-packets/TP-DMX-PCP-PLANNER-FOUNDATION-001.json",
+      "task-packets/TP-DMX-PCP-ADOPS-EXTENSION-002.json",
+      "task-packets/TP-DMX-PCP-DNH-RDCP-BRIDGE-003.json",
+      "task-packets/TP-DMX-PCP-GITHUB-REFRESH-004.json",
+      "task-packets/TP-DMX-PCP-CONVERSATION-DECISIONS-005.json",
       "task-packets/INDEX.md"
     ],
     "verify": [
       "python -m jsonschema -i task-packets/TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m jsonschema -i task-packets/TP-DMX-PCP-PLANNER-FOUNDATION-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m jsonschema -i task-packets/TP-DMX-PCP-ADOPS-EXTENSION-002.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m jsonschema -i task-packets/TP-DMX-PCP-DNH-RDCP-BRIDGE-003.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m jsonschema -i task-packets/TP-DMX-PCP-GITHUB-REFRESH-004.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m jsonschema -i task-packets/TP-DMX-PCP-CONVERSATION-DECISIONS-005.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
       "python scripts/docs_validator.py",
       "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
       "git diff --check"
     ]
   },
   "pr": {
-    "title": "docs(planner): design read-only repository merge planner",
-    "body": "## Outcome\nDefines the Dopemux-hosted, read-only Control Tower planner for Dopemux, dNh CRM, and AdOps.\n\n## Architecture\n- dNh tools/gov is the contract source\n- AdOps exports repo-local governance evidence\n- Dopemux renders the cross-repo projection\n- Task Orchestrator remains non-authoritative\n- fixture-first, then GitHub GET/HEAD refresh\n\n## Safety\nDesign-only draft. No runtime changes, model calls, merge authority, or terminal actions. Embedded audit remains required after content freeze.",
+    "title": "docs(planner): design PCP-first repository merge planner",
+    "body": "Corrects the planner architecture to reuse merged PCP Core and existing dNh RDCP evidence machinery. Adds five inactive, dependency-ordered implementation packets. Design-only draft: no runtime changes, authority mutation, model call before head freeze, or merge authority.",
     "base": "main"
   },
   "steps": [
     {
       "id": "S1",
-      "task": "Verify Dopemux, dNh CRM, and AdOps authority and existing architecture seams using read-only repository evidence.",
+      "task": "Reconcile the existing design against current Dopemux PCP, dNh RDCP, and AdOps authority evidence.",
       "requirements": [
-        "Confirm Dopemux truth order and control-plane boundaries.",
-        "Confirm dNh tools/gov modules and proof schema exist.",
-        "Confirm AdOps PR #277 review findings and current authority files.",
-        "Mark missing facts UNKNOWN."
+        "Treat current source and accepted schemas as higher authority than the earlier design.",
+        "Remove the proposed repository-planner-export.v1 parallel contract.",
+        "Remove the proposed dNh tools/gov port into AdOps.",
+        "Mark unsupported conversation-history API access as unavailable rather than inferred."
       ],
       "commands": [],
-      "expected_files": [],
+      "expected_files": [
+        "docs/91-rfc/repository-merge-planner.md"
+      ],
       "validation": [
-        "The RFC cites only observed repository surfaces.",
-        "The planner/producer ownership split matches all three repositories."
+        "The RFC names PCP Core as the generic substrate and RDCP as an extension source.",
+        "The RFC preserves repository-local terminal authority."
       ],
       "context_files": [
         "AGENTS.md",
         "src/dopemux/pcp/",
-        "services/dcp-readonly-facade/",
-        "ui-dashboard/"
+        "schemas/project_control_plane/",
+        "schemas/dnh_extension/"
       ]
     },
     {
       "id": "S2",
-      "task": "Write the fixture-first planner RFC and implementation plan.",
+      "task": "Write five independently testable implementation packets with explicit dependencies and risk boundaries.",
       "requirements": [
-        "Keep the DCP nine-family facade unchanged.",
-        "Require authority NONE on planner outputs.",
-        "Define automatic GitHub evidence refresh, approved conversation decisions, visible conflicts, and deterministic merge simulation.",
-        "Retain explicit model/audit exclusions."
+        "Foundation is fixture-first and network-free.",
+        "AdOps and dNh packets mutate Dopemux only; source repositories stay read-only.",
+        "GitHub and conversation connectors remain separate L3 boundaries.",
+        "Every packet names exact interfaces, tests, verification, proof, and stop conditions."
       ],
       "commands": [],
       "expected_files": [
-        "docs/91-rfc/repository-merge-planner.md",
-        "docs/04-explanation/implementation-plans/repository-merge-planner.md"
+        "task-packets/TP-DMX-PCP-PLANNER-FOUNDATION-001.json",
+        "task-packets/TP-DMX-PCP-ADOPS-EXTENSION-002.json",
+        "task-packets/TP-DMX-PCP-DNH-RDCP-BRIDGE-003.json",
+        "task-packets/TP-DMX-PCP-GITHUB-REFRESH-004.json",
+        "task-packets/TP-DMX-PCP-CONVERSATION-DECISIONS-005.json"
       ],
       "validation": [
-        "Both documents have valid frontmatter.",
-        "The plan begins with a canonical implementation packet and frozen fixtures."
+        "All packets validate against the canonical dopeTask schema.",
+        "No packet is represented as active, accepted, or dispatchable before its dependencies."
       ],
       "context_files": [
         "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
@@ -101,28 +117,24 @@
     },
     {
       "id": "S3",
-      "task": "Validate the task packet and documentation, update the Task Packet index, and open a draft PR.",
+      "task": "Validate the complete design diff, freeze one content head, and prepare one independent Pro architecture audit.",
       "requirements": [
-        "Modify only the commit allowlist.",
-        "Keep the PR draft and unmerged.",
-        "Record deterministic validation results honestly.",
-        "Do not run the final embedded audit under this packet."
+        "Run every deterministic command in commit.verify.",
+        "Audit the exact frozen head once for PCP/RDCP reuse, authority leakage, dependency correctness, testability, and duplication.",
+        "Keep the PR draft and unmerged until audit disposition and Control Tower review."
       ],
       "commands": [
-        "python -m jsonschema -i task-packets/TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
         "python scripts/docs_validator.py",
         "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
         "git diff --check"
       ],
       "expected_files": [
-        "task-packets/TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001.json",
         "task-packets/INDEX.md"
       ],
       "validation": [
-        "Task Packet schema validation passes.",
-        "Documentation validation passes or the exact blocker is reported.",
-        "Draft PR targets main and is not merged.",
-        "No model invocation or external spend occurs."
+        "Deterministic validation results are recorded honestly.",
+        "The independent audit is bound to the exact final content head or readiness remains blocked.",
+        "No implementation or terminal action occurs."
       ],
       "context_files": [
         "task-packets/INDEX.md"

@@ -1,0 +1,197 @@
+{
+  "id": "TP-DMX-PCP-GITHUB-REFRESH-004",
+  "project": "dopemux-mvp",
+  "target": "Add a loopback planner service and allowlisted GitHub GET/HEAD evidence refresh with ETag caching, freshness, degraded-state retention, and zero external write capability.",
+  "invariants": [
+    "Risk lane is L3 because network, credentials, and external evidence freshness are introduced.",
+    "Both AdOps and dNh extension packets must be accepted before activation.",
+    "GitHub transport permits only GET and HEAD to api.github.com for configured repositories and resources.",
+    "The service binds loopback port 3030, selected as unused in services/registry.yaml at design time; dispatch must stop if inventory has changed.",
+    "Tokens never enter logs, errors, models, fixtures, proof, cache payloads, or API responses.",
+    "Refresh mutates only an ephemeral planner cache and never external state."
+  ],
+  "depends_on": [
+    "TP-DMX-PCP-ADOPS-EXTENSION-002",
+    "TP-DMX-PCP-DNH-RDCP-BRIDGE-003"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "repository-merge-planner",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-PCP-DNH-RDCP-BRIDGE-003",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "feat/pcp-github-refresh-004",
+    "base_branch": "main",
+    "stacked_because": "Consumes accepted source adapters and introduces the separate live-read boundary."
+  },
+  "commit": {
+    "message": "feat(planner): add read-only GitHub evidence refresh",
+    "allowlist": [
+      "src/dopemux/repository_planner/github_reader.py",
+      "src/dopemux/repository_planner/github_models.py",
+      "services/repository-planner/**",
+      "config/repository-planner.sources.yaml",
+      "services/registry.yaml",
+      "ui-dashboard/src/features/repository-planner/api.ts",
+      "ui-dashboard/src/features/repository-planner/hooks.ts",
+      "ui-dashboard/src/features/repository-planner/RepositoryPlannerPage.tsx",
+      "ui-dashboard/src/features/repository-planner/__tests__/**",
+      "tests/repository_planner/test_github_reader.py",
+      "proof/TP-DMX-PCP-GITHUB-REFRESH-004/**",
+      "task-packets/TP-DMX-PCP-GITHUB-REFRESH-004.json"
+    ],
+    "verify": [
+      "pytest -q tests/repository_planner/test_github_reader.py services/repository-planner/tests",
+      "npm --prefix ui-dashboard test -- repository-planner",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(planner): add allowlisted GitHub evidence refresh",
+    "body": "L3 read-only GitHub collector and loopback cache service for the accepted planner contracts. GET/HEAD only, ETag-aware, fail-closed, credential-safe, and externally non-mutating. One final independent security/authority audit required.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Define a closed GitHub transport and source configuration contract.",
+      "requirements": [
+        "Define GitHubReadTransport.request(method: Literal[GET, HEAD], url: str, headers: Mapping[str, str]) -> ReadResponse.",
+        "Allow only DDD-Enterprises/dopemux-mvp, DDD-Enterprises/adOps, and DDD-Enterprises/dnh-crm plus explicit refs, paths, PRs, commits, checks, reviews, and review threads.",
+        "Reject unknown methods, hosts, redirects, repository aliases, ref injection, path traversal, archive URLs, and submodule escapes before transport.",
+        "Write failing tests for every forbidden method and locator."
+      ],
+      "commands": [
+        "pytest -q tests/repository_planner/test_github_reader.py -k transport"
+      ],
+      "expected_files": [
+        "src/dopemux/repository_planner/github_reader.py",
+        "src/dopemux/repository_planner/github_models.py",
+        "config/repository-planner.sources.yaml",
+        "tests/repository_planner/test_github_reader.py"
+      ],
+      "validation": [
+        "POST, PATCH, PUT, DELETE, GraphQL mutation, and unknown methods are structurally impossible or rejected before I/O.",
+        "Sanitized exceptions contain no authorization header or token substring."
+      ],
+      "context_files": [
+        "services/dcp-readonly-facade/",
+        "services/registry.yaml"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement ETag-aware evidence collection and stale/degraded cache semantics using mock transport first.",
+      "requirements": [
+        "Collect repository head, configured blobs, PR metadata, changed files, commits, checks, reviews, review threads, and issue comments required by the readiness contract.",
+        "Support If-None-Match and 304 without rewriting unchanged canonical payload bytes.",
+        "Use bounded concurrency, connection and total timeouts, rate-limit backoff without automatic retry storms, and one retained last-known-good snapshot per source.",
+        "One source failure must mark that source stale/degraded without erasing other projects."
+      ],
+      "commands": [
+        "pytest -q tests/repository_planner/test_github_reader.py"
+      ],
+      "expected_files": [
+        "src/dopemux/repository_planner/github_reader.py",
+        "tests/repository_planner/test_github_reader.py"
+      ],
+      "validation": [
+        "Mock transport observes only allowlisted GET/HEAD requests.",
+        "Tests cover 200, 304, 401, 403, 404, 429, timeout, redirect, malformed JSON, and partial-source failure.",
+        "Repeated 304 refresh retains byte-identical portfolio content."
+      ],
+      "context_files": [
+        "schemas/project_control_plane/merge_readiness.schema.json"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Expose the loopback-only planner API and register port 3030 after collision preflight.",
+      "requirements": [
+        "Stop if current services/registry.yaml or socket inspection shows port 3030 occupied; amend the packet before selecting another port.",
+        "Expose GET /health, GET /v1/portfolio, GET /v1/projects/{project_id}/lanes/{lane_id}, and POST /v1/refresh.",
+        "POST /v1/refresh may mutate cache only; it cannot accept arbitrary URLs, repositories, refs, methods, or credentials.",
+        "Bind 127.0.0.1 by default and require explicit configuration for any wider bind.",
+        "Feature flag defaults off; fixture mode remains available."
+      ],
+      "commands": [
+        "pytest -q services/repository-planner/tests"
+      ],
+      "expected_files": [
+        "services/repository-planner/app.py",
+        "services/repository-planner/config.py",
+        "services/repository-planner/cache.py",
+        "services/repository-planner/refresh.py",
+        "services/repository-planner/tests/test_api.py",
+        "services/registry.yaml"
+      ],
+      "validation": [
+        "Route census contains no repository, GitHub, Task Orchestrator, acceptance, or merge write endpoint.",
+        "Non-loopback default bind test fails closed.",
+        "Refresh input cannot widen configured source scope."
+      ],
+      "context_files": [
+        "services/registry.yaml",
+        "services/dcp-readonly-facade/"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Wire live freshness and manual cache refresh into the existing planner UI.",
+      "requirements": [
+        "Show last success, source age, current/stale/degraded status, sanitized errors, and refresh progress.",
+        "Refresh control must say cache refresh and cannot imply source mutation.",
+        "Preserve fixture mode and all provenance/conflict views."
+      ],
+      "commands": [
+        "npm --prefix ui-dashboard test -- repository-planner"
+      ],
+      "expected_files": [
+        "ui-dashboard/src/features/repository-planner/api.ts",
+        "ui-dashboard/src/features/repository-planner/hooks.ts",
+        "ui-dashboard/src/features/repository-planner/RepositoryPlannerPage.tsx"
+      ],
+      "validation": [
+        "UI clearly distinguishes cached observation time from source event time.",
+        "Errors expose no credentials or raw provider response bodies."
+      ],
+      "context_files": [
+        "ui-dashboard/src/features/repository-planner/"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Freeze the content head and complete one independent L3 security and authority audit.",
+      "requirements": [
+        "Audit method closure, URL validation, redirect behavior, token handling, cache-only mutation, loopback binding, fail-closed readiness, and source-repository inertness.",
+        "A live smoke test is NOT_RUN unless the operator separately authorizes credentials and exact GET/HEAD scope.",
+        "Any audit mismatch or non-passing verdict blocks readiness."
+      ],
+      "commands": [
+        "pytest -q tests/repository_planner/test_github_reader.py services/repository-planner/tests",
+        "npm --prefix ui-dashboard test -- repository-planner",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PCP-GITHUB-REFRESH-004/PROOF.json",
+        "proof/TP-DMX-PCP-GITHUB-REFRESH-004/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "Proof binds the exact audited head and records live smoke as PASS or NOT_RUN without bluffing.",
+        "PR remains unmerged pending Control Tower disposition."
+      ],
+      "context_files": [
+        "docs/ops/embedded-audit.md"
+      ]
+    }
+  ]
+}
