@@ -1,0 +1,1 @@
+- `diff.patch`: Excluded because it is already tracked in git history and fails pre-commit whitespace checks.
