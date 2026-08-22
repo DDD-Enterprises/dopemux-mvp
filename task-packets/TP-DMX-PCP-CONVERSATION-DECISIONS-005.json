@@ -9,7 +9,8 @@
     "OpenAI Conversations API identifiers apply only to conversations created in the API project and are not treated as ChatGPT-history identifiers.",
     "Initial supported inputs are approved decision capsule files and manual fallback; unsupported direct thread locators fail closed.",
     "A proposal always has authority NONE and cannot approve, commit, merge, accept, or activate anything.",
-    "Raw transcripts are not persisted by default."
+    "Raw transcripts are not persisted by default.",
+    "Conversation routes run only on the structurally loopback-only service inherited from TP-DMX-PCP-GITHUB-REFRESH-004; this packet cannot widen its bind."
   ],
   "depends_on": ["TP-DMX-PCP-GITHUB-REFRESH-004"],
   "repo_binding": {
@@ -38,11 +39,11 @@
       "schemas/project_control_plane/decision_capsule.schema.json",
       "schemas/project_control_plane/decision_proposal.schema.json",
       "config/repository-planner.conversations.yaml",
-      "services/repository-planner/app.py",
       "services/repository-planner/decision_store.py",
+      "services/repository-planner/routers/decision_proposals.py",
       "services/repository-planner/tests/test_decisions.py",
       "ui-dashboard/src/features/repository-planner/DecisionProposal.tsx",
-      "ui-dashboard/src/features/repository-planner/ConflictPanel.tsx",
+      "ui-dashboard/src/features/repository-planner/extensions/DecisionProposalExtension.tsx",
       "ui-dashboard/src/features/repository-planner/__tests__/DecisionProposal.test.tsx",
       "tests/repository_planner/test_decision_proposals.py",
       "proof/TP-DMX-PCP-CONVERSATION-DECISIONS-005/**",
@@ -50,6 +51,7 @@
     ],
     "verify": [
       "pytest -q tests/repository_planner/test_decision_proposals.py services/repository-planner/tests/test_decisions.py",
+      "pytest -q tests/project_control_plane",
       "npm --prefix ui-dashboard test -- repository-planner",
       "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
       "git diff --check"
@@ -117,9 +119,10 @@
     },
     {
       "id": "S3",
-      "task": "Expose capsule import and proposal listing through the loopback service without an approval endpoint.",
+      "task": "Add capsule import and proposal listing through the accepted loopback router seam without an approval endpoint.",
       "requirements": [
         "Expose POST /v1/decision-proposals/import for a bounded capsule body and GET /v1/decision-proposals.",
+        "Implement the routes only in routers/decision_proposals.py for deterministic discovery by the accepted router loader; do not modify app.py, config.py, router_loader.py, or the host bind.",
         "The import route writes only to a local non-authoritative proposal store with bounded retention and explicit delete-on-expiry behavior.",
         "Route census must contain no approve, accept, commit, merge, activate, repository-write, or source-fetch endpoint.",
         "Reject oversized bodies and scrub rejected content from logs."
@@ -128,12 +131,13 @@
         "pytest -q services/repository-planner/tests/test_decisions.py"
       ],
       "expected_files": [
-        "services/repository-planner/app.py",
         "services/repository-planner/decision_store.py",
+        "services/repository-planner/routers/decision_proposals.py",
         "services/repository-planner/tests/test_decisions.py"
       ],
       "validation": [
         "Tests prove proposal storage cannot call GitHub, Task Orchestrator, repository, or project-authority writers.",
+        "Tests prove the inherited service host remains exactly 127.0.0.1 and cannot be widened by this router or its configuration.",
         "Raw transcript-shaped input and credentials are rejected and not logged."
       ],
       "context_files": [
@@ -142,10 +146,11 @@
     },
     {
       "id": "S4",
-      "task": "Render proposals and their disagreements in the planner UI.",
+      "task": "Render proposals and their disagreements through the foundation UI extension seam.",
       "requirements": [
         "Show source kind, canonical locator, human approver, approval time, target, hash, manual-fallback marker, and import state.",
         "Display competing repository evidence side by side with blocking materiality and named resolution authority.",
+        "Implement DecisionProposalExtension through the frozen extension contract; do not modify RepositoryPlannerPage, ConflictPanel, or the extension registry.",
         "Provide no button or mutation path for approval, merge, acceptance, or repository commitment."
       ],
       "commands": [
@@ -153,7 +158,7 @@
       ],
       "expected_files": [
         "ui-dashboard/src/features/repository-planner/DecisionProposal.tsx",
-        "ui-dashboard/src/features/repository-planner/ConflictPanel.tsx",
+        "ui-dashboard/src/features/repository-planner/extensions/DecisionProposalExtension.tsx",
         "ui-dashboard/src/features/repository-planner/__tests__/DecisionProposal.test.tsx"
       ],
       "validation": [
@@ -174,6 +179,7 @@
       ],
       "commands": [
         "pytest -q tests/repository_planner/test_decision_proposals.py services/repository-planner/tests/test_decisions.py",
+        "pytest -q tests/project_control_plane",
         "npm --prefix ui-dashboard test -- repository-planner",
         "git diff --check"
       ],

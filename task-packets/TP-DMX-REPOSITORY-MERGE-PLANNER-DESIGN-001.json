@@ -10,6 +10,9 @@
     "Task Orchestrator remains queue, dependency, and workflow projection only.",
     "The planner exposes no project, GitHub, conversation-source, or Task Orchestrator write authority.",
     "UNKNOWN, stale evidence, missing remote candidates, and material conflicts fail closed.",
+    "The five implementation commit allowlists are pairwise disjoint and later integration uses frozen additive seams.",
+    "Every implementation packet runs the existing tests/project_control_plane regression suite.",
+    "The planner service host is structurally fixed to loopback and cannot be widened by runtime configuration.",
     "Do not modify runtime code, schemas, services, UI, workflows, or repository configuration under this design packet.",
     "Do not invoke a model until the exact content head is frozen for one independent Pro architecture audit.",
     "Do not merge, accept, activate, label, score, deploy, or authorize Commit 6."
@@ -95,6 +98,9 @@
         "Foundation is fixture-first and network-free.",
         "AdOps and dNh packets mutate Dopemux only; source repositories stay read-only.",
         "GitHub and conversation connectors remain separate L3 boundaries.",
+        "Commit allowlists are pairwise disjoint; UI and service integration use frozen extension and router seams instead of reopening earlier packet files.",
+        "Every packet includes pytest -q tests/project_control_plane in both commit.verify and its final audit step.",
+        "The GitHub packet fixes the host to 127.0.0.1 in code and exposes no environment, configuration, or CLI widening path.",
         "Every packet names exact interfaces, tests, verification, proof, and stop conditions."
       ],
       "commands": [],
@@ -107,6 +113,8 @@
       ],
       "validation": [
         "All packets validate against the canonical dopeTask schema.",
+        "Pairwise allowlist comparison finds no exact or ancestor-glob collision across the five implementation packets.",
+        "All five validation ladders contain the PCP Core regression suite.",
         "No packet is represented as active, accepted, or dispatchable before its dependencies."
       ],
       "context_files": [

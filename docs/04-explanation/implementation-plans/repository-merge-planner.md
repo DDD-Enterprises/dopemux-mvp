@@ -55,6 +55,13 @@ Each packet contains exact files, public interfaces, failing tests, commands,
 proof requirements, and stop conditions. Packets 2 and 3 write only Dopemux;
 the source repositories are read-only evidence providers.
 
+Commit allowlists are pairwise disjoint. Foundation 001 owns the shared models,
+planner components, UI extension registry, and adapter protocol. GitHub 004
+adds a UI extension plus the loopback service and deterministic router loader.
+Conversation 005 adds only a router module, proposal store, and UI extension;
+it does not reopen the service app, host configuration, foundation page, or
+conflict panel.
+
 ## Execution order
 
 - [ ] Merge or otherwise accept the design contract on PR #1247.
@@ -97,6 +104,8 @@ class GitHubReadTransport(Protocol):
                 *, headers: Mapping[str, str]) -> ReadResponse: ...
 
 async def refresh_portfolio(project_ids: Sequence[str]) -> RefreshResult: ...
+
+def load_local_routers(router_root: Path) -> tuple[APIRouter, ...]: ...
 ```
 
 Conversation 005 produces:
@@ -116,6 +125,7 @@ before implementation. They may not silently fork the contract.
 Every packet runs its targeted Python and UI tests first, then:
 
 ```bash
+pytest -q tests/project_control_plane
 python scripts/docs_validator.py
 python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text
 git diff --check
@@ -124,3 +134,18 @@ git diff --check
 L2/L3 packets then freeze the content head and undergo one independent audit
 bound to that exact SHA. Proof-only successors use deterministic validation;
 unchanged content is not re-audited.
+
+## Pro audit reconciliation
+
+The audit of Dopemux head `840353cffd61d5751e6d2291676189a2b75097e2`
+returned three blockers. This revision:
+
+1. replaces cross-packet directory globs with pairwise-disjoint exact files and
+   frozen UI/router extension seams;
+2. adds `pytest -q tests/project_control_plane` to every packet's commit and
+   final-audit validation ladder;
+3. removes the wider-bind configuration escape and fixes the service host to
+   `127.0.0.1` in code.
+
+The repaired head remains blocked until the same review scope returns
+`PASS_TO_IMPLEMENT` against the new exact SHA.

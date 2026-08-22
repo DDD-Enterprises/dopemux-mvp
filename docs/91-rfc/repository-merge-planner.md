@@ -176,6 +176,17 @@ The foundation release may load a checked-in generated snapshot before the
 service exists. Live wiring must use an inventoried port from
 `services/registry.yaml`; no packet may invent one.
 
+The service host is structurally fixed to `127.0.0.1`. Environment variables,
+configuration files, and CLI arguments cannot widen the bind. Any non-loopback
+deployment requires a separate architecture packet and code change; it is not
+a runtime option.
+
+Cross-packet integration uses frozen additive seams. The foundation UI loads
+byte-sorted modules from a closed local extension directory. The GitHub packet
+creates a deterministic local router loader; the conversation packet adds a
+router module without modifying the service app or bind. Duplicate extension
+IDs, router prefixes, or method/path pairs fail before startup.
+
 Cache mutation is local and non-authoritative. A refresh route may mutate only
 the planner cache and must be named and documented honestly. Source failure
 must retain last-known data as stale/degraded rather than erase it.
@@ -215,6 +226,10 @@ on both extension adapters. Packet 5 depends on the live read service. Only
 one packet is active at a time unless Control Tower explicitly authorizes
 independent worktrees with non-overlapping files.
 
+All five commit allowlists are pairwise disjoint. Later packets integrate only
+through the frozen adapter, UI-extension, and service-router seams; they do not
+reopen files owned by earlier packets.
+
 ## 13. Acceptance criteria
 
 The architecture is satisfied only when:
@@ -231,6 +246,9 @@ The architecture is satisfied only when:
 10. GitHub and conversation connectors expose no write operation;
 11. Task Orchestrator remains non-authoritative;
 12. Control Tower/human authority remains terminal.
+13. the service cannot bind beyond loopback through runtime configuration;
+14. every implementation packet runs the existing PCP Core regression suite;
+15. packet commit allowlists remain pairwise disjoint.
 
 ## 14. Audit economy
 
@@ -242,3 +260,9 @@ five packets are frozen on one exact PR head. Implementation packets use their
 repo risk lanes: L2 for foundation and extension boundaries; L3 for network,
 credential, and conversation-intake boundaries. No OpenRouter, OpenCode, or
 custom proxy route is authorized.
+
+The first Pro audit at Dopemux head
+`840353cffd61d5751e6d2291676189a2b75097e2` returned `CHANGES_REQUIRED` with
+three blockers: overlapping allowlists, missing PCP Core regression gates, and
+a configurable non-loopback bind. This revision repairs all three and requires
+a fresh exact-head re-audit; the prior audit is evidence, not a pass.

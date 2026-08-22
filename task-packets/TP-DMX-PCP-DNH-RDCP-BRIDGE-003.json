@@ -33,14 +33,18 @@
     "message": "feat(pcp): bridge dNh RDCP evidence",
     "allowlist": [
       "src/dopemux/repository_planner/adapters/dnh_rdcp.py",
-      "schemas/dnh_extension/**",
-      "reports/project-control-plane/fixtures/dnh_crm_fixture/**",
+      "schemas/dnh_extension/extension_manifest.dnh.json",
+      "schemas/dnh_extension/rdcp_source_map.dnh.json",
+      "reports/project-control-plane/fixtures/dnh_crm_fixture/SOURCES.json",
+      "reports/project-control-plane/fixtures/dnh_crm_fixture/project_profile.json",
+      "reports/project-control-plane/fixtures/dnh_crm_fixture/evidence_export.json",
       "tests/repository_planner/test_dnh_rdcp_adapter.py",
       "proof/TP-DMX-PCP-DNH-RDCP-BRIDGE-003/**",
       "task-packets/TP-DMX-PCP-DNH-RDCP-BRIDGE-003.json"
     ],
     "verify": [
       "pytest -q tests/repository_planner/test_dnh_rdcp_adapter.py",
+      "pytest -q tests/project_control_plane",
       "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
       "git diff --check"
     ]
@@ -137,6 +141,7 @@
       ],
       "commands": [
         "pytest -q tests/repository_planner/test_dnh_rdcp_adapter.py",
+        "pytest -q tests/project_control_plane",
         "git diff --check"
       ],
       "expected_files": [

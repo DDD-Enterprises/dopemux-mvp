@@ -32,18 +32,40 @@
   "commit": {
     "message": "feat(pcp): add fixture-backed repository planner foundation",
     "allowlist": [
-      "src/dopemux/repository_planner/**",
+      "src/dopemux/repository_planner/__init__.py",
+      "src/dopemux/repository_planner/adapters/__init__.py",
+      "src/dopemux/repository_planner/models.py",
+      "src/dopemux/repository_planner/snapshot.py",
+      "src/dopemux/repository_planner/extensions.py",
+      "src/dopemux/repository_planner/conflicts.py",
+      "src/dopemux/repository_planner/planner.py",
+      "src/dopemux/repository_planner/canonical.py",
       "schemas/project_control_plane/repository_planner_source.schema.json",
       "schemas/project_control_plane/repository_planner_portfolio.schema.json",
-      "tests/repository_planner/**",
-      "tests/fixtures/repository_planner/foundation/**",
-      "ui-dashboard/src/features/repository-planner/**",
+      "tests/repository_planner/test_fixture_integrity.py",
+      "tests/repository_planner/test_models.py",
+      "tests/repository_planner/test_extensions.py",
+      "tests/repository_planner/test_conflicts.py",
+      "tests/repository_planner/test_planner.py",
+      "tests/fixtures/repository_planner/foundation/SOURCES.json",
+      "tests/fixtures/repository_planner/foundation/dopemux.json",
+      "tests/fixtures/repository_planner/foundation/adops.json",
+      "tests/fixtures/repository_planner/foundation/dnh_crm.json",
+      "ui-dashboard/src/features/repository-planner/RepositoryPlannerPage.tsx",
+      "ui-dashboard/src/features/repository-planner/PortfolioTable.tsx",
+      "ui-dashboard/src/features/repository-planner/LaneDetails.tsx",
+      "ui-dashboard/src/features/repository-planner/ConflictPanel.tsx",
+      "ui-dashboard/src/features/repository-planner/ProvenancePanel.tsx",
+      "ui-dashboard/src/features/repository-planner/extensionRegistry.ts",
+      "ui-dashboard/src/features/repository-planner/extensionTypes.ts",
+      "ui-dashboard/src/features/repository-planner/__tests__/RepositoryPlannerPage.test.tsx",
       "ui-dashboard/src/App.tsx",
       "proof/TP-DMX-PCP-PLANNER-FOUNDATION-001/**",
       "task-packets/TP-DMX-PCP-PLANNER-FOUNDATION-001.json"
     ],
     "verify": [
       "pytest -q tests/repository_planner",
+      "pytest -q tests/project_control_plane",
       "npm --prefix ui-dashboard test -- repository-planner",
       "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
       "python scripts/docs_validator.py",
@@ -70,6 +92,9 @@
       ],
       "expected_files": [
         "tests/fixtures/repository_planner/foundation/SOURCES.json",
+        "tests/fixtures/repository_planner/foundation/dopemux.json",
+        "tests/fixtures/repository_planner/foundation/adops.json",
+        "tests/fixtures/repository_planner/foundation/dnh_crm.json",
         "tests/repository_planner/test_fixture_integrity.py"
       ],
       "validation": [
@@ -149,6 +174,8 @@
       "task": "Render the first interactive planner screen from the generated foundation snapshot.",
       "requirements": [
         "Create RepositoryPlannerPage, PortfolioTable, LaneDetails, ConflictPanel, and ProvenancePanel.",
+        "Create extensionTypes.ts and an extensionRegistry.ts that uses a closed import.meta.glob over ./extensions/*.tsx; later packets add extension modules without modifying foundation components.",
+        "Reject duplicate extension IDs and malformed extension exports; extension loading order is the byte-sorted extension ID.",
         "Show all three repositories with ready-for-review, blocked, stale, unknown, and conflicting states.",
         "Every material claim links to source locator, observed head, hash, and freshness.",
         "Provide keyboard navigation, semantic status text, focus return, loading/error states, and reduced-motion behavior.",
@@ -162,7 +189,10 @@
         "ui-dashboard/src/features/repository-planner/PortfolioTable.tsx",
         "ui-dashboard/src/features/repository-planner/LaneDetails.tsx",
         "ui-dashboard/src/features/repository-planner/ConflictPanel.tsx",
-        "ui-dashboard/src/features/repository-planner/ProvenancePanel.tsx"
+        "ui-dashboard/src/features/repository-planner/ProvenancePanel.tsx",
+        "ui-dashboard/src/features/repository-planner/extensionRegistry.ts",
+        "ui-dashboard/src/features/repository-planner/extensionTypes.ts",
+        "ui-dashboard/src/features/repository-planner/__tests__/RepositoryPlannerPage.test.tsx"
       ],
       "validation": [
         "UI tests assert status text rather than color alone.",
@@ -184,6 +214,7 @@
       ],
       "commands": [
         "pytest -q tests/repository_planner",
+        "pytest -q tests/project_control_plane",
         "npm --prefix ui-dashboard test -- repository-planner",
         "git diff --check"
       ],
