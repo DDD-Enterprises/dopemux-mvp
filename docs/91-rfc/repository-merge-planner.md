@@ -3,6 +3,7 @@ id: repository-merge-planner-rfc
 title: "Interactive Repository Merge Planner"
 type: rfc
 status: draft
+derived_from: []
 owner: "@hu3mann"
 author: "@codex"
 date: "2026-08-22"
