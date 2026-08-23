@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "summary": "The single-row addition to task-packets/INDEX.md registers TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001 with Status=Active and Related-ADR='Discovered via PR #1165'. The prior finding F-1253-1 (Related-ADR said 'Landed via PR #1165' while Status=Active, implying a contradictory landed-but-active state) is resolved: 'Discovered via' does not assert the ADR/change has landed, only that the packet's need was discovered via that PR, which is consistent with an Active packet. Row is well-formed, table structure intact, no other changes in the diff.",
+  "findings": [
+    {
+      "id": "F-1253-1",
+      "severity": "LOW",
+      "title": "Related-ADR cell phrasing vs Status",
+      "status": "RESOLVED",
+      "body": "Previous head used 'Landed via PR #1165' alongside Status=Active, which read as contradictory (landed implies done, Active implies in-progress). Current head changes the cell to 'Discovered via PR #1165', which only claims provenance of discovery, not landing status. This is consistent with Status=Active and no longer misleading."
+    }
+  ],
+  "remaining_risks": [],
+  "fixes_applied": []
+}

@@ -1,0 +1,26 @@
+{
+  "packet_id": "TP-DMX-INDEX-VALIDATOR-SCOPE-ROW-001",
+  "head_sha": "488f5c27d9e18a4fe3ac5030b40ce63ac4accc4d",
+  "generated_at": "2026-08-23T10:53:31Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude -p --model sonnet --output-format json --allowedTools Read,Grep (stdin prompt; session_id=d3871417-e2d0-4bd6-9fe1-0538636d8a13)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-INDEX-VALIDATOR-SCOPE-ROW-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-1253-1",
+        "severity": "LOW",
+        "title": "Related-ADR cell phrasing vs Status",
+        "status": "RESOLVED",
+        "body": "Previous head used 'Landed via PR #1165' alongside Status=Active, which read as contradictory (landed implies done, Active implies in-progress). Current head changes the cell to 'Discovered via PR #1165', which only claims provenance of discovery, not landing status. This is consistent with Status=Active and no longer misleading."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null
+  }
+}

@@ -1,0 +1,12 @@
+diff --git a/task-packets/INDEX.md b/task-packets/INDEX.md
+index 06623360bf..d74429c035 100644
+--- a/task-packets/INDEX.md
++++ b/task-packets/INDEX.md
+@@ -68,6 +68,7 @@ A packet is superseded by another packet
+ | TP-SIA-EXEC-0007 | Workflow Plane | Manual Handoff + Operator Resume Semantics | Ready | SIA Packet Execution ADR |
+ | TP-SIA-EXEC-0008 | Workflow Plane | Replay Repro Suite + Projection Hardening | Ready | SIA Packet Execution ADR |
+ | TP-DMX-PROOF-SCHEMA-LOCAL-VALIDATION-001 | Governance / CI | Local Proof Schema Validation Before Push | Active | N/A |
++| TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001 | Governance / CI | Bring proof/pr_merge embedded-audit proofs into deterministic validation scope (sweep + pre-commit) | Active | Discovered via PR #1165 |
+ | TP-DMX-AIG-001 | Adaptive Ingress Plane | Service Census + Ingress Map + First Safe Slice | Ready | ADR — Adopt a Dopemux Adaptive Ingress Plane with Local Runtime Shims |
+ | TP-DMX-REPOHYG-001 | Repo Hygiene | Branch and worktree audit with deterministic cleanup plan | Ready | N/A |
+ | TP-DMX-REPOHYG-002 | Repo Hygiene | Execute phase2 safe archive cleanup | Ready | N/A |
