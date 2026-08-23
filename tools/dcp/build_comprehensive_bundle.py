@@ -3,10 +3,8 @@
 
 from __future__ import annotations
 
-import fnmatch
 import hashlib
 import json
-import os
 import re
 import shutil
 import subprocess
@@ -15,7 +13,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / "out" / "dcp-comprehensive-evidence-bundle-20260823"
+OUT = ROOT / "out" / f"dcp-comprehensive-evidence-bundle-{datetime.now(timezone.utc).strftime('%Y%m%d')}"
 UPLOAD = OUT / "CHATGPT_UPLOAD_BUNDLE"
 AUDIT = OUT / "ENGINEERING_AUDIT_BUNDLE"
 
@@ -23,8 +21,11 @@ REDACTIONS = [
     (re.compile(r"(?i)(api[_-]?key|token|secret|password)\s*[:=]\s*[^\s,}\"']+"), r"\1: [REDACTED]"),
     (re.compile(r"(?i)\b(?:sk|ghp|github_pat)[_-][A-Za-z0-9_-]{12,}\b"), "[CREDENTIAL_SHAPED_VALUE_REDACTED]"),
     (re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._-]{12,}\b"), "Bearer [REDACTED]"),
+    (re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----"), "[PEM_PRIVATE_KEY_REDACTED]"),
     (re.compile(r"/Users/[^\s`'\"]+"), "[LOCAL_PATH_REDACTED]"),
+    (re.compile(r"/home/[^\s`'\"]+"), "[LOCAL_PATH_REDACTED]"),
     (re.compile(r"/private/tmp/[^\s`'\"]+"), "[TEMP_PATH_REDACTED]"),
+    (re.compile(r"(?i)[A-Za-z]:\\Users\\[^\s`'\"]+"), "[LOCAL_PATH_REDACTED]"),
 ]
 
 TEXT_EXTS = {".md", ".json", ".yaml", ".yml", ".toml", ".txt", ".py", ".sh", ".ini", ".cfg"}
@@ -84,7 +85,7 @@ def safe_copy(src: Path, dest: Path) -> tuple[bool, str]:
     elif src.suffix.lower() in TEXT_EXTS:
         dest.write_text(normalize_text(redact(src.read_text(errors="replace"))), encoding="utf-8")
     else:
-        shutil.copy2(src, dest)
+        return False, "excluded non-text artifact (no redaction path)"
     return True, "included"
 
 
@@ -190,12 +191,12 @@ def github_state() -> dict[str, object]:
 def task_orchestrator_state() -> dict[str, object]:
     return {
         "observed_at": now(),
-        "status": "PASS_WITH_UNKNOWN_DCP_MATCHES",
-        "source": "Task Orchestrator MCP read-only get_context + DCP item/note search",
-        "dcp_item_search_hits": 0,
-        "dcp_note_search_hits": 0,
-        "health_check": {"active_items": 8, "blocked_items": 6, "stalled_items": 0, "active_claims": 0, "expired_claims": 2},
-        "interpretation": "No DCP-specific live item was returned; this is not proof that no historical or differently titled DCP item exists.",
+        "status": "UNKNOWN",
+        "source": "NOT_RUN",
+        "dcp_item_search_hits": "UNKNOWN",
+        "dcp_note_search_hits": "UNKNOWN",
+        "health_check": "UNKNOWN",
+        "interpretation": "This generator does not query Task Orchestrator. Do not treat these fields as live runtime truth.",
         "mutations_performed": False,
     }
 
@@ -323,15 +324,15 @@ def build() -> None:
         "non_authority": ["external synthesis", "historical docs", "runtime registries as consent", "Task Orchestrator titles without live evidence"],
     })
     write_json(AUDIT / "READINESS_MATRIX.json", {
-        "dcp_core_contracts": {"implemented": True, "merged": "UNKNOWN_UNTIL_HEAD_CHECK", "callable": False, "verified": "repo evidence present"},
-        "model_routing": {"implemented": True, "merged": "PARTIAL", "callable": False, "verified": "merged base plus open draft continuation PRs"},
-        "mcp_readonly_facade": {"implemented": True, "merged": "PARTIAL", "callable": "LOCAL_ONLY", "verified": "fail-closed contract and acceptance artifacts"},
-        "openclaw_routing": {"implemented": True, "merged": "MERGED_CONTRACT_LINE", "callable": False, "verified": "canonical contract tree"},
-        "live_write": {"implemented": False, "merged": "N/A", "callable": False, "verified": "DCP v1 hard block"},
+        "dcp_core_contracts": {"implemented": "UNKNOWN", "merged": "UNKNOWN", "callable": "UNKNOWN", "verified": "NOT_COMPUTED_FROM_THIS_GENERATOR"},
+        "model_routing": {"implemented": "UNKNOWN", "merged": "UNKNOWN", "callable": "UNKNOWN", "verified": "NOT_COMPUTED_FROM_THIS_GENERATOR"},
+        "mcp_readonly_facade": {"implemented": "UNKNOWN", "merged": "UNKNOWN", "callable": "UNKNOWN", "verified": "NOT_COMPUTED_FROM_THIS_GENERATOR"},
+        "openclaw_routing": {"implemented": "UNKNOWN", "merged": "UNKNOWN", "callable": "UNKNOWN", "verified": "NOT_COMPUTED_FROM_THIS_GENERATOR"},
+        "live_write": {"implemented": False, "merged": "N/A", "callable": False, "verified": "DCP v1 hard block remains the declared posture; not re-proven here"},
     })
     write_json(AUDIT / "PACKET_PROOF_INDEX.json", {
         "packet_roots": sorted({m["source"] for m in audit_manifest if str(m["source"]).startswith("task-packets/")}),
-        "proof_roots": sorted({str(p).split("/")[1] for p in paths if str(p).startswith("proof/")}),
+        "proof_roots": sorted({rel(p).split("/")[1] for p in paths if rel(p).startswith("proof/")}),
         "note": "Index is path-based; each proof remains subordinate to its packet and exact audited head.",
     })
     invalid_json = [
@@ -353,7 +354,7 @@ def build() -> None:
         "invalid_json_evidence": invalid_json,
         "invalid_json_is_residual_risk": bool(invalid_json),
         "schema_self_checks": schema_checks,
-        "secret_scan": "PASS_FOR_TOKEN_AND_PRIVATE_KEY_PATTERNS; intentional source regex literals may contain generic path prefixes",
+        "secret_scan": "PATTERN_REDACTION_ONLY; not a full generated-bundle secret scan; PASS is not claimed",
         "task_orchestrator_mutations": "NOT_RUN / none performed",
         "provider_live_checks": "NOT_RUN",
     })
