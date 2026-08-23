@@ -937,9 +937,10 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                   )}
                 </ListItemIcon>
                 <ListItemText
+                  disableTypography
                   primary={
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant="body2" sx={{ flexGrow: 1 }}>
+                      <Typography variant="body2" sx={{ flexGrow: 1, color: brandTokens.text.primary }}>
                         {task.title}
                       </Typography>
                       <Tooltip title={`Complexity: ${Math.round(task.complexity * 100)}% - used for ritual sequencing`} arrow>
@@ -977,7 +978,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                             }}
                           >
                             <Clock size={12} color={brandTokens.colors.ritualCyan} aria-hidden="true" />
-                            <Typography variant="caption">{task.estimatedMinutes}m</Typography>
+                            <Typography variant="caption" sx={{ color: brandTokens.text.secondary }}>{task.estimatedMinutes}m</Typography>
                           </Box>
                         </Tooltip>
                         <Tooltip title={`Energy requirement: ${task.energyRequired}`} arrow>
@@ -1010,6 +1011,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                               aria-label={`Estimated finish time: ${taskFinishTimes[task.id]}`}
                               sx={{
                                 opacity: 0.8,
+                                color: brandTokens.text.secondary,
                                 cursor: 'help',
                                 outline: 'none',
                                 borderRadius: 1,
@@ -1024,7 +1026,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                           </Tooltip>
                         )}
                       </Box>
-                      <Typography variant="caption">#{index + 1}</Typography>
+                      <Typography variant="caption" sx={{ color: brandTokens.text.secondary }}>#{index + 1}</Typography>
                     </Box>
                   }
                 />
