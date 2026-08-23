@@ -97,6 +97,23 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
   const [isSkipConfirming, setIsSkipConfirming] = useState(false);
   const skipConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const primaryActionRef = useRef<HTMLButtonElement>(null);
+  const previousTaskIdRef = useRef(currentTaskId);
+
+  // Restore keyboard focus only when currentTaskId actually changes. Comparing
+  // against the previous id is StrictMode-safe: React 18 dev double-invokes
+  // mount effects on the same instance, which would flip an isInitialMount
+  // guard and steal focus on page load.
+  useEffect(() => {
+    if (previousTaskIdRef.current === currentTaskId) {
+      return;
+    }
+    previousTaskIdRef.current = currentTaskId;
+    if (currentTaskId && primaryActionRef.current) {
+      primaryActionRef.current.focus();
+    }
+  }, [currentTaskId]);
+
   // Clear skip confirmation when the current task changes so a second click
   // cannot skip a different task after arming confirm on another task.
   useEffect(() => {
@@ -238,6 +255,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
 
     const freshTasks = INITIAL_TASKS.map((task) => ({ ...task }));
     setTasks(freshTasks);
+    // Align previous id before state update so the focus-restore effect does
+    // not steal heading focus after a completed-ritual reset (null -> first id).
+    previousTaskIdRef.current = freshTasks[0].id;
     setCurrentTaskId(freshTasks[0].id);
     setTaskTimer(0);
     setIsTimerRunning(false);
@@ -652,6 +672,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Tooltip title={isTimerRunning ? 'Pause Ritual' : 'Start Ritual'} arrow>
               <Button
+                ref={primaryActionRef}
                 size="small"
                 variant="contained"
                 startIcon={isTimerRunning ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
