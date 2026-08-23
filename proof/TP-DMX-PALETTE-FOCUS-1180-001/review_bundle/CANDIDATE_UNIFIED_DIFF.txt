@@ -1,0 +1,16 @@
+ .Jules/palette.md                                  |  4 ++
+ .../AUDITOR_REPORT.md                              | 19 ++++++
+ proof/TP-DMX-PALETTE-FOCUS-1180-001/PROOF.json     | 40 +++++++++++++
+ .../review_bundle/AGY_RAW_OUTPUT.json              |  1 +
+ .../review_bundle/AUDITOR_VERDICT.json             | 30 ++++++++++
+ .../review_bundle/CANDIDATE_UNIFIED_DIFF.txt       | 16 +++++
+ .../review_bundle/DIFF_NAME_STATUS.txt             | 15 +++++
+ .../review_bundle/EXCLUDED_ARTIFACTS.md            |  1 +
+ .../review_bundle/MODEL_IDENTITY.json              |  1 +
+ proof/pr_merge/embedded-audit/pr-1255/PROOF.json   | 41 +++++++++++++
+ .../pr_merge/embedded-audit/pr-1255/PROOF.json.sig |  6 ++
+ task-packets/INDEX.md                              |  1 +
+ task-packets/TP-DMX-PALETTE-FOCUS-1180-001.json    | 70 ++++++++++++++++++++++
+ ui-dashboard/src/components/TaskSequencer.tsx      | 21 +++++++
+ .../TaskSequencer.focusPreservation.test.tsx       | 57 ++++++++++++++++++
+ 15 files changed, 323 insertions(+)

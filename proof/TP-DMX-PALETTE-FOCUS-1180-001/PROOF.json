@@ -1,0 +1,40 @@
+{
+  "packet_id": "TP-DMX-PALETTE-FOCUS-1180-001",
+  "head_sha": "340ed4ad1895c03d67482bb64132607e61412990",
+  "generated_at": "2026-08-23T13:56:22Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --mode plan --effort high --print-timeout 20m --sandbox; conversation_id=a4306e04-7e4e-4eeb-91c9-152699aa2bea; display=Gemini 3.1 Pro (High); no fallback",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PALETTE-FOCUS-1180-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "FINDING-1",
+        "severity": "INFO",
+        "title": "StrictMode Safety Verified",
+        "status": "RESOLVED",
+        "body": "The focus preservation logic uses previousTaskIdRef in a useEffect to compare against currentTaskId, which safely prevents focus stealing during React 18 StrictMode double-invokes, rather than relying on a brittle isInitialMount boolean."
+      },
+      {
+        "id": "FINDING-2",
+        "severity": "INFO",
+        "title": "Reset Header Focus Preserved",
+        "status": "RESOLVED",
+        "body": "When the task sequence is reset, previousTaskIdRef.current is updated synchronously with the state update to freshTasks[0].id. This ensures the useEffect for focus restoration returns early and does not steal focus away from the header, which is correctly focused via headerRef.current?.focus()."
+      },
+      {
+        "id": "FINDING-3",
+        "severity": "INFO",
+        "title": "Scope and Secrets Check Passed",
+        "status": "RESOLVED",
+        "body": "Changes are strictly scoped to TaskSequencer.tsx, a test file, the TP packet, INDEX.md, and palette.md. No modifications were made to ListItemText or brandTokens, preserving the landing of #1251. No secrets or credentials were included in the diff."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null
+  }
+}
