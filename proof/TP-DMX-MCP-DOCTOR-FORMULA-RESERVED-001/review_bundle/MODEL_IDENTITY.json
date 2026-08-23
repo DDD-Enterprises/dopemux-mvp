@@ -1,1 +1,1 @@
-{"requested_model":"gemini-3.1-pro-high","canonical_model":"gemini-3.1-pro-high","auditor_tool":"agy","session_id":"0f6e6c46-52be-4d0e-abcb-ca832d81ca89","implementer":"Grok 4.6","independent_of_implementer":true,"fallback":false}
+{"requested_model":"gemini-3.1-pro-high","canonical_model":"gemini-3.1-pro-high","display_model":"Gemini 3.1 Pro (High)","auditor_tool":"agy","session_id":"cc11f380-fd73-4701-a267-40970954d78f","implementer":"Grok 4.6","fallback":false}

@@ -1,30 +1,66 @@
 {
   "findings": [
     {
-      "body": "Formula reserved-port collisions are safely neutralized to WARN if explicit configured envrc overrides do not collide. Configured collisions remain FAIL.",
-      "id": "F1",
+      "body": "The `_owned_compose` helper correctly ensures that explicit `compose_path` resolves to a child of `repo_path`. Foreign `compose.yml` files are correctly ignored, preventing product-compose convention hazards.",
+      "id": "p1-compose-ignore",
       "severity": "INFO",
       "status": "RESOLVED",
-      "title": "Severity matrix applied correctly to port collisions"
+      "title": "P1: doctor/CLI ignore compose.yml not owned by the target repo"
     },
     {
-      "body": "The DOPECON_BRIDGE_TOKEN dummy placeholder allows compose parse but is excluded from runtime mcp.env generation. Explicit task-orchestrator start strictly requires a real token.",
-      "id": "F2",
+      "body": "If `task-orchestrator` is removed due to a missing `DOPECON_BRIDGE_TOKEN` and the `svc_list` becomes empty, the CLI correctly returns early with a warning rather than running an empty `docker compose up`. ",
+      "id": "p2-empty-service-list",
       "severity": "INFO",
       "status": "RESOLVED",
-      "title": "Compose placeholder correctly isolated"
+      "title": "P2: mcp up returns without docker compose up if empty service list"
     },
     {
-      "body": "Foreign compose.yml files are properly ignored by doctor when --repo specifies a different path, preventing false alarms.",
-      "id": "F3",
+      "body": "Safe-guard logic added to check `configured_ports is not None` before querying it, preventing potential TypeErrors/KeyErrors during diagnostic generation.",
+      "id": "p3-none-narrowing",
       "severity": "INFO",
       "status": "RESOLVED",
-      "title": "Foreign compose parsing hazard bypassed"
+      "title": "P3: configured_ports None-narrowing"
+    },
+    {
+      "body": "Test line wrap formatting fixes implemented, tests pass.",
+      "id": "p4-test-line-wrap",
+      "severity": "INFO",
+      "status": "RESOLVED",
+      "title": "P4: test line wrap"
+    },
+    {
+      "body": "Formula collisions correctly downgrade from `FAIL` to `WARN` if `source_label == \"formula\"` and the user has safely overridden the collision with a non-reserved port via `.envrc`. Configured reserved collisions remain `FAIL`.",
+      "id": "formula-reserved-warn",
+      "severity": "INFO",
+      "status": "RESOLVED",
+      "title": "Original Formula-Reserved WARN Behavior"
+    },
+    {
+      "body": "No secrets are written to `.mcp.json` or `.env`. The fix for compose interpolation injects a dummy string `dopemux-compose-interpolation-only` which is safe.",
+      "id": "secrets-check",
+      "severity": "INFO",
+      "status": "RESOLVED",
+      "title": "Secrets handling"
+    },
+    {
+      "body": "All changes were restricted to the allowlist provided in TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001.json.",
+      "id": "scope-check",
+      "severity": "INFO",
+      "status": "RESOLVED",
+      "title": "Scope constraint validation"
     }
   ],
-  "fixes_applied": [],
-  "model_used": "gemini-3.1-pro-high",
-  "remaining_risks": [],
+  "fixes_applied": [
+    "doctor/CLI ignores foreign compose.yml",
+    "mcp up returns gracefully on empty service list",
+    "configured_ports None-narrowing safe-guarded",
+    "test line wrap corrected"
+  ],
+  "model_used": "Gemini 3.1 Pro (High)",
+  "remaining_risks": [
+    "If a user bypasses dopemux and directly invokes `docker compose up task-orchestrator` with the fake token `dopemux-compose-interpolation-only`, it could parse successfully but fail at runtime. This is an expected side effect of the fix.",
+    "The `_owned_compose` check relies on `repo_path` being accurate. Symlinked worktrees could potentially cause edge cases."
+  ],
   "status": "PASS",
-  "summary": "The embedded audit verified the implementation of TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001. The reserved port severity rules correctly distinguish between pure-formula and configured ports. The DOPECON_BRIDGE_TOKEN interpolation placeholder is properly used and safely excluded from mcp.env. Foreign compose.yml parsing hazards are successfully bypassed when explicitly setting the repo path. Explicit compose boot for task-orchestrator correctly fails closed without a true token. The unit tests provide full coverage for these intent criteria. No secrets, scope creep, or out-of-scope changes were identified."
+  "summary": "Embedded independent audit completed successfully. All fixes implemented by Grok for PR #1256 (TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001) meet the packet's invariants and are verified working. No secrets leaked. Remaining risks are acceptable."
 }

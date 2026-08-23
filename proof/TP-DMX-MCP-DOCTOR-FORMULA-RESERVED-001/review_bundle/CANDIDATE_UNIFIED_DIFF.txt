@@ -1,11 +1,21 @@
- src/dopemux/commands/mcp_commands.py               |  20 +++-
- src/dopemux/mcp/docker_runtime.py                  |  16 ++++
- src/dopemux/mcp/doctor.py                          |  11 ++-
+ .../AUDITOR_REPORT.md                              |  28 ++++++
+ .../PROOF.json                                     |  40 ++++++++
+ .../review_bundle/AGY_RAW_OUTPUT.json              |   1 +
+ .../review_bundle/AUDITOR_VERDICT.json             |  30 ++++++
+ .../review_bundle/CANDIDATE_UNIFIED_DIFF.txt       |  11 ++
+ .../review_bundle/DIFF_NAME_STATUS.txt             |  10 ++
+ .../review_bundle/EXCLUDED_ARTIFACTS.md            |   1 +
+ .../review_bundle/MODEL_IDENTITY.json              |   1 +
+ proof/pr_merge/embedded-audit/pr-1256/PROOF.json   |  41 ++++++++
+ .../pr_merge/embedded-audit/pr-1256/PROOF.json.sig |   6 ++
+ src/dopemux/commands/mcp_commands.py               |  33 +++++-
+ src/dopemux/mcp/docker_runtime.py                  |  16 +++
+ src/dopemux/mcp/doctor.py                          |  25 +++--
  src/dopemux/mcp/lifecycle.py                       |   1 +
- src/dopemux/mcp/port_diagnostics.py                |  34 ++++++-
- .../TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001.json    | 101 +++++++++++++++++++++
- tests/unit/test_cli_audit_remediations.py          |  37 ++++----
- tests/unit/test_mcp_doctor_repo_aware.py           |  84 +++++++++++++++++
- tests/unit/test_mcp_port_diagnostics.py            |  48 ++++++++++
+ src/dopemux/mcp/port_diagnostics.py                |  33 +++++-
+ .../TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001.json    | 101 +++++++++++++++++++
+ tests/unit/test_cli_audit_remediations.py          |  62 ++++++++----
+ tests/unit/test_mcp_doctor_repo_aware.py           | 111 +++++++++++++++++++++
+ tests/unit/test_mcp_port_diagnostics.py            |  51 ++++++++++
  tests/unit/test_mcp_runtime_launcher.py            |  10 ++
- 10 files changed, 334 insertions(+), 28 deletions(-)
+ 20 files changed, 573 insertions(+), 39 deletions(-)

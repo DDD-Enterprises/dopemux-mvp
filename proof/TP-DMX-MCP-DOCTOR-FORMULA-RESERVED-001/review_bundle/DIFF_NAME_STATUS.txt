@@ -1,3 +1,13 @@
+A	proof/TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001/AUDITOR_REPORT.md
+A	proof/TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001/PROOF.json
+A	proof/TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001/review_bundle/AGY_RAW_OUTPUT.json
+A	proof/TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001/review_bundle/AUDITOR_VERDICT.json
+A	proof/TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001/review_bundle/CANDIDATE_UNIFIED_DIFF.txt
+A	proof/TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001/review_bundle/DIFF_NAME_STATUS.txt
+A	proof/TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001/review_bundle/EXCLUDED_ARTIFACTS.md
+A	proof/TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001/review_bundle/MODEL_IDENTITY.json
+A	proof/pr_merge/embedded-audit/pr-1256/PROOF.json
+A	proof/pr_merge/embedded-audit/pr-1256/PROOF.json.sig
 M	src/dopemux/commands/mcp_commands.py
 M	src/dopemux/mcp/docker_runtime.py
 M	src/dopemux/mcp/doctor.py
