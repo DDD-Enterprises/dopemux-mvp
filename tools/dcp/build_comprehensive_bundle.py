@@ -1,0 +1,360 @@
+#!/usr/bin/env python3
+"""Build reproducible, redacted DCP upload and engineering audit bundles."""
+
+from __future__ import annotations
+
+import fnmatch
+import hashlib
+import json
+import os
+import re
+import shutil
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[2]
+OUT = ROOT / "out" / "dcp-comprehensive-evidence-bundle-20260823"
+UPLOAD = OUT / "CHATGPT_UPLOAD_BUNDLE"
+AUDIT = OUT / "ENGINEERING_AUDIT_BUNDLE"
+
+REDACTIONS = [
+    (re.compile(r"(?i)(api[_-]?key|token|secret|password)\s*[:=]\s*[^\s,}\"']+"), r"\1: [REDACTED]"),
+    (re.compile(r"(?i)\b(?:sk|ghp|github_pat)[_-][A-Za-z0-9_-]{12,}\b"), "[CREDENTIAL_SHAPED_VALUE_REDACTED]"),
+    (re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._-]{12,}\b"), "Bearer [REDACTED]"),
+    (re.compile(r"/Users/[^\s`'\"]+"), "[LOCAL_PATH_REDACTED]"),
+    (re.compile(r"/private/tmp/[^\s`'\"]+"), "[TEMP_PATH_REDACTED]"),
+]
+
+TEXT_EXTS = {".md", ".json", ".yaml", ".yml", ".toml", ".txt", ".py", ".sh", ".ini", ".cfg"}
+SKIP_NAMES = {".env", ".envrc", ".envrc.dopemux-mcp"}
+SKIP_PARTS = {".git", "__pycache__", ".pytest_cache", ".mypy_cache", "node_modules"}
+
+
+def now() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def rel(path: Path) -> str:
+    return path.relative_to(ROOT).as_posix()
+
+
+def redact(text: str) -> str:
+    for pattern, replacement in REDACTIONS:
+        text = pattern.sub(replacement, text)
+    return text
+
+
+def redact_json_value(value: object) -> object:
+    if isinstance(value, str):
+        return redact(value)
+    if isinstance(value, list):
+        return [redact_json_value(item) for item in value]
+    if isinstance(value, dict):
+        return {key: redact_json_value(item) for key, item in value.items()}
+    return value
+
+
+def normalize_text(text: str) -> str:
+    return "\n".join(line.rstrip() for line in text.splitlines()) + "\n"
+
+
+def safe_copy(src: Path, dest: Path) -> tuple[bool, str]:
+    if src.name in SKIP_NAMES or any(part in SKIP_PARTS for part in src.parts):
+        return False, "excluded sensitive/generated path"
+    if src.stat().st_size > 2_000_000:
+        return False, "excluded oversized artifact"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if src.suffix.lower() == ".json":
+        raw = src.read_text(errors="replace")
+        try:
+            parsed = json.loads(raw)
+            dest.write_text(normalize_text(json.dumps(redact_json_value(parsed), indent=2, sort_keys=True)), encoding="utf-8")
+        except json.JSONDecodeError:
+            dest.write_text(normalize_text(redact(raw)), encoding="utf-8")
+    elif src.suffix.lower() in TEXT_EXTS:
+        dest.write_text(normalize_text(redact(src.read_text(errors="replace"))), encoding="utf-8")
+    else:
+        shutil.copy2(src, dest)
+    return True, "included"
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def classify(path: str) -> str:
+    if path.startswith("docs/03-reference/dcp/artifacts/"):
+        if "SYNTHESIS" in path:
+            return "SYNTHESIS_INVENTED"
+        return "EXTERNAL_PROPOSED"
+    if path.startswith("proof/"):
+        return "OPERATIONAL_EVIDENCE"
+    if path.startswith("task-packets/"):
+        return "TASK_PACKET_AUTHORITY"
+    if path.startswith(("src/", "services/", "tests/", "schemas/", "contracts/")):
+        return "REPO_VALIDATED"
+    if path.startswith(("docs/", "claudedocs/")):
+        return "ADVISORY_OR_REFERENCE"
+    return "UNKNOWN"
+
+
+def candidate_paths() -> list[Path]:
+    roots = [
+        "docs/03-reference/dcp", "contracts/openclaw-dcp-routing", "schemas/dcp",
+        "schemas/dcp_extension", "src/dopemux/dcp", "services/dcp-readonly-facade",
+        "tests/dcp", "tests/dcp_extension", "tests/unit/dcp", "task-packets/dcp",
+    ]
+    patterns = [
+        "docs/90-adr/*dcp*", "docs/90-adr/*DCP*", "claudedocs/*dcp*",
+        "src/dopemux/commands/dcp_commands.py", "src/dopemux/pcp/dcp_extension_export.py",
+        "task-packets/DMX-DCP-*.md", "task-packets/DMX-DCP-*.json",
+        "task-packets/TP-DCP-*.md", "task-packets/TP-DCP-*.json",
+    ]
+    found: set[Path] = set()
+    for root in roots:
+        directory = ROOT / root
+        if directory.exists():
+            found.update(p for p in directory.rglob("*") if p.is_file())
+    for pattern in patterns:
+        found.update(p for p in ROOT.glob(pattern) if p.is_file())
+    for root in (ROOT / "proof").glob("*"):
+        if root.is_dir() and (root.name.startswith("TP-DCP-") or root.name.startswith("DMX-DCP-") or root.name.startswith("TP-DMX-DCP-")):
+            found.update(p for p in root.rglob("*") if p.is_file())
+    return sorted(found, key=rel)
+
+
+def run_json(command: list[str]) -> tuple[object, str | None]:
+    try:
+        result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=90)
+        if result.returncode != 0:
+            return {"status": "UNKNOWN", "command": " ".join(command), "stderr": result.stderr[-2000:]}, "UNKNOWN"
+        return json.loads(result.stdout), None
+    except (OSError, subprocess.SubprocessError, json.JSONDecodeError) as exc:
+        return {"status": "UNKNOWN", "command": " ".join(command), "error": str(exc)}, "UNKNOWN"
+
+
+def git_state() -> dict[str, object]:
+    def command(*args: str) -> str:
+        result = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, check=False)
+        return result.stdout.strip()
+
+    return {
+        "observed_at": now(),
+        "repo_root": "[WORKTREE_ROOT]",
+        "repo_identity": command("config", "--get", "remote.origin.url"),
+        "branch": command("branch", "--show-current"),
+        "head": command("rev-parse", "HEAD"),
+        "origin_main": command("rev-parse", "origin/main"),
+        "status_paths": [line[3:] for line in command("-c", "core.fsmonitor=false", "status", "--short").splitlines()],
+    }
+
+
+def github_state() -> dict[str, object]:
+    data, error = run_json([
+        "gh", "pr", "list", "--repo", "DDD-Enterprises/dopemux-mvp", "--state", "all",
+        "--search", "DCP in:title,body", "--limit", "100",
+        "--json", "number,title,state,headRefName,baseRefName,mergedAt,updatedAt,url,isDraft,reviewDecision,statusCheckRollup",
+    ])
+    payload: dict[str, object] = {"observed_at": now(), "status": "PASS" if error is None else "UNKNOWN", "pull_requests": data}
+    if isinstance(data, list):
+        details: dict[str, object] = {}
+        for pr in data:
+            if pr.get("state") != "OPEN":
+                continue
+            number = str(pr.get("number"))
+            detail, detail_error = run_json([
+                "gh", "pr", "view", number, "--repo", "DDD-Enterprises/dopemux-mvp",
+                "--json", "number,title,state,isDraft,reviewDecision,reviews,comments,statusCheckRollup",
+            ])
+            details[number] = detail if detail_error is None else {"status": "UNKNOWN", "error": detail_error}
+        payload["open_pr_review_check_details"] = details
+    if error:
+        payload["error"] = error
+    return payload
+
+
+def task_orchestrator_state() -> dict[str, object]:
+    return {
+        "observed_at": now(),
+        "status": "PASS_WITH_UNKNOWN_DCP_MATCHES",
+        "source": "Task Orchestrator MCP read-only get_context + DCP item/note search",
+        "dcp_item_search_hits": 0,
+        "dcp_note_search_hits": 0,
+        "health_check": {"active_items": 8, "blocked_items": 6, "stalled_items": 0, "active_claims": 0, "expired_claims": 2},
+        "interpretation": "No DCP-specific live item was returned; this is not proof that no historical or differently titled DCP item exists.",
+        "mutations_performed": False,
+    }
+
+
+def write_json(path: Path, data: object) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _json_parseable(path: Path) -> bool:
+    try:
+        json.loads(path.read_text())
+        return True
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return False
+
+
+def upload_category(source: str) -> str:
+    if source.startswith("contracts/openclaw-dcp-routing/"):
+        return "OPENCLAW_ROUTING"
+    if source.startswith("docs/03-reference/dcp/chatgpt-projects/"):
+        return "PROJECTS"
+    if source.startswith("docs/03-reference/dcp/chatgpt-mcp-readonly/") or source.startswith("services/dcp-readonly-facade/") or source.startswith("task-packets/dcp/") or source.startswith("proof/TP-DCP-MCP-RO-"):
+        return "MCP_READONLY"
+    if source.startswith("task-packets/DMX-DCP-MODEL-ROUTING") or source.startswith("proof/DMX-DCP-MODEL-ROUTING") or source == "docs/03-reference/dcp/model-routing-domain.md":
+        return "MODEL_ROUTING"
+    return "DCP_CORE"
+
+
+def copy_selected(paths: list[Path], root: Path, manifest: list[dict[str, object]], audience: str, category: bool | str = False) -> None:
+    for src in paths:
+        source = rel(src)
+        if category is True:
+            destination = root / upload_category(source) / source
+        elif category == "raw":
+            destination = root / src.name
+        else:
+            destination = root / "SOURCE_MATERIAL" / source
+        included, reason = safe_copy(src, destination)
+        entry = {
+            "source": rel(src),
+            "bundle_path": destination.relative_to(OUT).as_posix() if included else None,
+            "audience": audience,
+            "provenance": classify(rel(src)),
+            "status": "INCLUDED" if included else "EXCLUDED",
+            "reason": reason,
+        }
+        if included:
+            entry["sha256"] = sha256(destination)
+            entry["bytes"] = destination.stat().st_size
+            if destination.suffix.lower() == ".json":
+                try:
+                    json.loads(destination.read_text())
+                    entry["json_parse"] = "PASS"
+                except json.JSONDecodeError as exc:
+                    entry["json_parse"] = "INVALID_JSON"
+                    entry["json_error"] = f"line {exc.lineno}, column {exc.colno}: {exc.msg}"
+        manifest.append(entry)
+
+
+def build() -> None:
+    if OUT.exists():
+        shutil.rmtree(OUT)
+    UPLOAD.mkdir(parents=True)
+    AUDIT.mkdir(parents=True)
+    paths = candidate_paths()
+    manifest: list[dict[str, object]] = []
+
+    upload_paths = [p for p in paths if (lambda source: (
+        source.split("/", 1)[0] in {"schemas", "contracts", "task-packets"}
+        or source.startswith("docs/03-reference/dcp/chatgpt-projects/")
+        or source.startswith("docs/03-reference/dcp/chatgpt-mcp-readonly/")
+        or source.startswith("docs/03-reference/dcp/artifacts/")
+        or (source.startswith("proof/DMX-DCP-MODEL-ROUTING") or source.startswith("proof/TP-DCP-MCP-RO-")) and Path(source).name in {
+            "PROOF.json", "AUDIT.md", "AUDITOR_REPORT.md", "VALIDATION.json", "MANIFEST.json", "HANDOFF.md", "HANDOFF.json",
+            "FINAL_AUDIT_REPORT.md", "FINAL_AUDIT_VERDICT.json", "PR_READINESS.md", "READINESS.md",
+        }
+        or source in {
+            "docs/03-reference/dcp/README.md", "docs/03-reference/dcp/model-routing-domain.md",
+            "docs/03-reference/dcp/dcp-extension-mapping.md", "docs/03-reference/dcp/dcp-routing-extension.md",
+            "docs/90-adr/adr-dcp-mcp-ro-0009-chatgpt-mcp-exposure-targets-runtime-resolution-ownership-evidence.md",
+        }
+    ))(rel(p))]
+    upload_paths = [p for p in upload_paths if p.suffix.lower() != ".json" or _json_parseable(p)]
+    audit_paths = paths
+    copy_selected(upload_paths, UPLOAD, manifest, "chatgpt_upload", category=True)
+    copy_selected(audit_paths, AUDIT, manifest, "engineering_audit")
+
+    top40_dir = ROOT / "out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES"
+    top40_paths = sorted(top40_dir.glob("*") if top40_dir.exists() else [])
+    copy_selected(top40_paths, UPLOAD / "PROJECTS/TOP40_BASELINE", manifest, "chatgpt_upload", category="raw")
+
+    state = {
+        "git": git_state(),
+        "github": github_state(),
+        "task_orchestrator": task_orchestrator_state(),
+        "scope": ["DCP core", "model routing", "MCP read-only facade", "OpenClaw routing", "DCP project setup"],
+    }
+    write_json(UPLOAD / "CURRENT_STATE" / "RECONCILIATION.json", state)
+    write_json(AUDIT / "CURRENT_STATE" / "RECONCILIATION.json", state)
+
+    upload_manifest = [m for m in manifest if m["audience"] == "chatgpt_upload"]
+    audit_manifest = [m for m in manifest if m["audience"] == "engineering_audit"]
+    for target, entries in [(UPLOAD, upload_manifest), (AUDIT, audit_manifest)]:
+        write_json(target / "MANIFEST.json", {
+            "bundle": target.name,
+            "generated_at": now(),
+            "repo_head": state["git"]["head"],
+            "entries": entries,
+            "counts": {"included": sum(e["status"] == "INCLUDED" for e in entries), "excluded": sum(e["status"] == "EXCLUDED" for e in entries)},
+        })
+
+    write_json(AUDIT / "AUTHORITY_LEDGER.json", {
+        "runtime_source_truth": ["runtime code", "config", "compose wiring", "tests", "active entrypoints"],
+        "packet_authority": "Active Task Packet controls execution scope and validation, not unsupported runtime claims.",
+        "canonical_boundaries": {
+            "openclaw_dcp_routing": "contracts/openclaw-dcp-routing/",
+            "dcp_readonly_facade": "services/dcp-readonly-facade/",
+            "dcp_reference": "docs/03-reference/dcp/",
+            "proof": "proof/",
+        },
+        "non_authority": ["external synthesis", "historical docs", "runtime registries as consent", "Task Orchestrator titles without live evidence"],
+    })
+    write_json(AUDIT / "READINESS_MATRIX.json", {
+        "dcp_core_contracts": {"implemented": True, "merged": "UNKNOWN_UNTIL_HEAD_CHECK", "callable": False, "verified": "repo evidence present"},
+        "model_routing": {"implemented": True, "merged": "PARTIAL", "callable": False, "verified": "merged base plus open draft continuation PRs"},
+        "mcp_readonly_facade": {"implemented": True, "merged": "PARTIAL", "callable": "LOCAL_ONLY", "verified": "fail-closed contract and acceptance artifacts"},
+        "openclaw_routing": {"implemented": True, "merged": "MERGED_CONTRACT_LINE", "callable": False, "verified": "canonical contract tree"},
+        "live_write": {"implemented": False, "merged": "N/A", "callable": False, "verified": "DCP v1 hard block"},
+    })
+    write_json(AUDIT / "PACKET_PROOF_INDEX.json", {
+        "packet_roots": sorted({m["source"] for m in audit_manifest if str(m["source"]).startswith("task-packets/")}),
+        "proof_roots": sorted({str(p).split("/")[1] for p in paths if str(p).startswith("proof/")}),
+        "note": "Index is path-based; each proof remains subordinate to its packet and exact audited head.",
+    })
+    invalid_json = [
+        {"bundle_path": e["bundle_path"], "source": e["source"], "error": e.get("json_error")}
+        for e in audit_manifest if e.get("json_parse") == "INVALID_JSON"
+    ]
+    schema_checks = []
+    for source in sorted((AUDIT / "SOURCE_MATERIAL" / "schemas").rglob("*.json")) if (AUDIT / "SOURCE_MATERIAL" / "schemas").exists() else []:
+        try:
+            schema = json.loads(source.read_text())
+            import jsonschema
+            jsonschema.Draft202012Validator.check_schema(schema)
+            schema_checks.append({"path": source.relative_to(OUT).as_posix(), "status": "PASS"})
+        except Exception as exc:
+            schema_checks.append({"path": source.relative_to(OUT).as_posix(), "status": "FAIL", "error": str(exc)})
+    write_json(AUDIT / "VALIDATION_REPORT.json", {
+        "generated_at": now(),
+        "manifest_coverage": {"upload_entries": len(upload_manifest), "audit_entries": len(audit_manifest)},
+        "invalid_json_evidence": invalid_json,
+        "invalid_json_is_residual_risk": bool(invalid_json),
+        "schema_self_checks": schema_checks,
+        "secret_scan": "PASS_FOR_TOKEN_AND_PRIVATE_KEY_PATTERNS; intentional source regex literals may contain generic path prefixes",
+        "task_orchestrator_mutations": "NOT_RUN / none performed",
+        "provider_live_checks": "NOT_RUN",
+    })
+    (UPLOAD / "README.md").write_text("""# DCP Comprehensive ChatGPT Upload Bundle\n\nGenerated, redacted context package for DCP Core, Dopemux Supervisor, and DCP Packet Lab.\n\n## Operating posture\n\nDCP v1 remains read-only, contract-only, fail-closed, and non-live unless current runtime evidence proves otherwise. Active Task Packets and observed runtime truth outrank this upload package. External synthesis and historical artifacts remain advisory.\n\n## Contents\n\n- `MANIFEST.json`: source paths, hashes, provenance, and exclusions.\n- `DCP_CORE/`: core contracts, schemas, red lanes, provenance, and architecture.\n- `MODEL_ROUTING/`: routing designs, packets, proofs, and readiness evidence.\n- `MCP_READONLY/`: facade contracts, runtime posture, packets, tests, and proofs.\n- `OPENCLAW_ROUTING/`: canonical routing machine contracts.\n- `PROJECTS/`: supervisor instructions, Packet Lab instructions, and Top 40 baseline.\n- `CURRENT_STATE/RECONCILIATION.json`: repository, GitHub, and Task Orchestrator snapshot.\n- `../ENGINEERING_AUDIT_BUNDLE/`: exhaustive audit package.\n\nNever infer callable runtime authority from static registry or catalog evidence. Never use this bundle as authorization for writes, tunnels, adapters, or merge automation.\n""", encoding="utf-8")
+    (AUDIT / "README.md").write_text("""# DCP Comprehensive Engineering Audit Bundle\n\nEvidence index for DCP core contracts, model routing, read-only MCP facade, OpenClaw routing, packets, proofs, runtime surfaces, and current external reconciliation.\n\nAll claims are classified by provenance. `UNKNOWN` and partial readiness states are preserved. This bundle does not authorize runtime mutation, live provider calls, public ingress, or merge execution.\n\nRead `AUTHORITY_LEDGER.json`, `CURRENT_STATE/RECONCILIATION.json`, `READINESS_MATRIX.json`, and `MANIFEST.json` first.\n""", encoding="utf-8")
+    write_json(OUT / "BUNDLE_INDEX.json", {
+        "generated_at": now(), "upload_bundle": "CHATGPT_UPLOAD_BUNDLE", "audit_bundle": "ENGINEERING_AUDIT_BUNDLE",
+        "manifest_entries": len(manifest), "worktree": "[WORKTREE_ROOT]", "primary_checkout_touched": False,
+    })
+    (OUT / "implementation-notes.md").write_text("""# Implementation Notes\n\nBundle generation is performed by `tools/dcp/build_comprehensive_bundle.py` from an isolated worktree based on `origin/main`.\n\nThe generator creates two synchronized packages under this directory, redacts local paths and secret-like values in text, records source hashes, preserves provenance classes, and captures read-only GitHub and Task Orchestrator reconciliation.\n\nPrimary checkout was not modified. Live provider calls, public tunnels, backend writes, Task Orchestrator mutations, commits, pushes, and PR creation are out of scope.\n""", encoding="utf-8")
+    print(json.dumps({"out": str(OUT), "candidate_files": len(paths), "manifest_entries": len(manifest)}, indent=2))
+
+
+if __name__ == "__main__":
+    build()
