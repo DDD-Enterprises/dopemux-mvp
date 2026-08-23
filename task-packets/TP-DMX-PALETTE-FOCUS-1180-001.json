@@ -4,8 +4,8 @@
   "target": "Risk lane L1. Transplant unique PR #1180 focus preservation onto current main after #1251 ListItemText landing. Restore keyboard focus to the new current task Start/Pause control after a task transition; skip initial mount. Do not change ListItemText, brand tokens, or skip-confirm reset already on main.",
   "invariants": [
     "Do not modify ListItemText disableTypography or brandTokens colors landed by #1251.",
-    "Do not steal focus on initial mount.",
-    "Focus restoration runs only when currentTaskId changes after mount.",
+    "Do not steal focus on initial mount, including React 18 StrictMode double-invoke in development.",
+    "Focus restoration runs only when currentTaskId actually changes.",
     "No schema, workflow, MCP, or runtime service change."
   ],
   "depends_on": [],

@@ -16,7 +16,11 @@ const cognitiveState = {
 };
 
 test('TaskSequencer does not steal focus on initial mount', () => {
-  render(<TaskSequencer cognitiveState={cognitiveState} />);
+  render(
+    <React.StrictMode>
+      <TaskSequencer cognitiveState={cognitiveState} />
+    </React.StrictMode>,
+  );
 
   const ritualStart = screen.getByRole('button', {
     name: 'Start task: Implement LSTM cognitive predictor',
@@ -48,6 +52,6 @@ test('TaskSequencer keeps primaryActionRef on the ritual Start/Pause button', ()
   );
 
   expect(source).toContain('primaryActionRef');
-  expect(source).toContain('isInitialMount');
+  expect(source).toContain('previousTaskIdRef');
   expect(source).toMatch(/<Button[\s\S]*ref=\{primaryActionRef\}/);
 });

@@ -98,15 +98,17 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
   const skipConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const primaryActionRef = useRef<HTMLButtonElement>(null);
-  const isInitialMount = useRef(true);
+  const previousTaskIdRef = useRef(currentTaskId);
 
-  // Restore keyboard focus to the new current task's Start/Pause control after
-  // a task transition. Skip the initial mount so page load does not steal focus.
+  // Restore keyboard focus only when currentTaskId actually changes. Comparing
+  // against the previous id is StrictMode-safe: React 18 dev double-invokes
+  // mount effects on the same instance, which would flip an isInitialMount
+  // guard and steal focus on page load.
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
+    if (previousTaskIdRef.current === currentTaskId) {
       return;
     }
+    previousTaskIdRef.current = currentTaskId;
     if (currentTaskId && primaryActionRef.current) {
       primaryActionRef.current.focus();
     }
