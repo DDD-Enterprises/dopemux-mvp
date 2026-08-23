@@ -1,0 +1,10 @@
+M	src/dopemux/commands/mcp_commands.py
+M	src/dopemux/mcp/docker_runtime.py
+M	src/dopemux/mcp/doctor.py
+M	src/dopemux/mcp/lifecycle.py
+M	src/dopemux/mcp/port_diagnostics.py
+A	task-packets/TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001.json
+M	tests/unit/test_cli_audit_remediations.py
+M	tests/unit/test_mcp_doctor_repo_aware.py
+M	tests/unit/test_mcp_port_diagnostics.py
+M	tests/unit/test_mcp_runtime_launcher.py

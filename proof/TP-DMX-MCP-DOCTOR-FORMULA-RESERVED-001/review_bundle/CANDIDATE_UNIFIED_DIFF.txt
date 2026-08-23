@@ -1,0 +1,11 @@
+ src/dopemux/commands/mcp_commands.py               |  20 +++-
+ src/dopemux/mcp/docker_runtime.py                  |  16 ++++
+ src/dopemux/mcp/doctor.py                          |  11 ++-
+ src/dopemux/mcp/lifecycle.py                       |   1 +
+ src/dopemux/mcp/port_diagnostics.py                |  34 ++++++-
+ .../TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001.json    | 101 +++++++++++++++++++++
+ tests/unit/test_cli_audit_remediations.py          |  37 ++++----
+ tests/unit/test_mcp_doctor_repo_aware.py           |  84 +++++++++++++++++
+ tests/unit/test_mcp_port_diagnostics.py            |  48 ++++++++++
+ tests/unit/test_mcp_runtime_launcher.py            |  10 ++
+ 10 files changed, 334 insertions(+), 28 deletions(-)
