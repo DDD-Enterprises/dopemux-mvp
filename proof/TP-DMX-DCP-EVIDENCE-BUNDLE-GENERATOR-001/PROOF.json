@@ -1,44 +1,57 @@
 {
   "packet_id": "TP-DMX-DCP-EVIDENCE-BUNDLE-GENERATOR-001",
-  "head_sha": "a7b3c92841ad2fa569ce18fdbe8007481db7019f",
-  "generated_at": "2026-08-23T11:37:44Z",
+  "head_sha": "c7375b9cb8cf913bbf1b66067b1873114518dd35",
+  "generated_at": "2026-08-23T11:45:10Z",
   "embedded_audit": {
     "required": true,
     "status": "PASS_WITH_RISKS",
     "auditor_tool": "claude-code-cli",
     "auditor_model": "sonnet",
-    "invocation": "claude -p --model sonnet --output-format json --allowedTools Read,Grep (stdin; session_id=10198fe2-ebb1-4ae4-9f28-f1133a3a0173); reused on merge a7b3c92841ad2fa569ce18fdbe8007481db7019f because generator blob unchanged vs 86d2f32871",
+    "invocation": "claude -p --model sonnet --output-format json --allowedTools Read,Grep (stdin; session_id=e475a3b4-4513-4435-b6c2-e4b0a51ab385)",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-DCP-EVIDENCE-BUNDLE-GENERATOR-001/AUDITOR_REPORT.md",
     "findings": [
       {
         "id": "F1",
-        "severity": "LOW",
-        "title": "Key context is lost when a list under a secret-shaped key contains dicts",
-        "status": "ACCEPTED_RISK",
-        "body": "redact_json_value only forwards parent `key` to list *items*; when an item is itself a dict, the recursive dict branch immediately overwrites `key` with the dict's own keys (redact_json_value(item, key=str(k)) for k,item in value.items()). So e.g. {\"secrets\": [{\"value\": \"<realsecret>\"}]} would NOT be redacted, because once inside the dict, only \"value\" is checked against _SECRET_JSON_KEY, not \"secrets\". Confirmed via direct execution of the current redact_json_value against a synthetic sample. However, a scan of all 2080 JSON files under the tool's actual scan roots (docs/03-reference/dcp, contracts/openclaw-dcp-routing, schemas/dcp*, src/dopemux/dcp, services/dcp-readonly-facade, tests/dcp*, task-packets/dcp, proof/) found zero instances of this shape today, so it is a latent gap, not an active leak in this bundle's current inputs."
+        "severity": "MEDIUM",
+        "title": "No automated tests accompany a redaction/bundling script",
+        "status": "OPEN",
+        "body": "tools/dcp/build_comprehensive_bundle.py is 372 lines including secret-pattern redaction, JSON key-based redaction, path classification, and manifest generation, but the diff contains no test file. This is exactly the kind of logic (regex-based secret redaction, inclusion/exclusion boundaries) where a silent regression would leak a local path or credential-shaped value into a bundle intended for external upload. Recommend at least unit tests for redact()/redact_json_value()/safe_copy() extension gating."
       },
       {
         "id": "F2",
         "severity": "LOW",
-        "title": "Key-based redaction threshold silently exempts short values",
-        "status": "ACCEPTED_RISK",
-        "body": "The `len(value) > 8` guard in redact_json_value means a field like {\"token\": \"abcd\"} is left untouched even though the key is secret-shaped. Low real-world impact (short strings are unlikely to be live credentials) but is an unremarked edge in the redaction contract."
+        "title": "Schema self-check conflates missing jsonschema dependency with real schema failure",
+        "status": "OPEN",
+        "body": "In build(), `import jsonschema` runs inside the per-file loop and any exception (including ImportError if jsonschema isn't installed in the execution environment) is caught by the broad `except Exception` and recorded as `{\"status\": \"FAIL\", \"error\": str(exc)}` in VALIDATION_REPORT.json's schema_self_checks. A reader of the audit bundle could misread an environment/dependency gap as an actual invalid schema in the repo."
       },
       {
         "id": "F3",
         "severity": "LOW",
-        "title": "No automated regression test for the bundle generator or its redaction behavior",
+        "title": "Local-path redaction misses macOS's actual default TMPDIR pattern",
+        "status": "ACCEPTED_RISK",
+        "body": "REDACTIONS covers /Users/, /home/, /private/tmp/, and Windows C:\\Users\\, but not macOS's real per-user temp root /var/folders/... (what $TMPDIR actually resolves to on macOS, as opposed to /private/tmp/). Given the bundle already labels secret_scan as PATTERN_REDACTION_ONLY and the candidate file roots are curated docs/contracts/schemas/proof directories rather than arbitrary temp output, this is a narrow, already-disclosed gap rather than a live leak vector."
+      },
+      {
+        "id": "F4",
+        "severity": "LOW",
+        "title": "safe_copy() creates destination directories even for excluded non-text files",
         "status": "OPEN",
-        "body": "tools/dcp/build_comprehensive_bundle.py has no corresponding test file (checked tests/dcp, tests/dcp_extension, tests/unit/dcp). The list-redaction fix that prompted this re-audit was verified only by manual/ad hoc execution here, not by CI-enforced tests, so a future refactor could silently regress it."
+        "body": "safe_copy() calls dest.parent.mkdir(parents=True, exist_ok=True) before checking whether the file's extension is copyable. For files that fall into the final `else: return False, \"excluded non-text artifact\"` branch, this leaves empty directories in the audit bundle tree. Cosmetic only \u2014 MANIFEST.json still correctly marks these EXCLUDED."
+      },
+      {
+        "id": "F5",
+        "severity": "INFO",
+        "title": "PACKET_PROOF_INDEX.packet_roots is file-level, not deduplicated packet identifiers",
+        "status": "OPEN",
+        "body": "packet_roots is built from full manifest source paths under task-packets/ (e.g. both the .md and .json for the same packet appear as two separate entries), so despite the key name it is not a deduplicated list of packet roots. Naming nit only; proof_roots in the same object is correctly deduplicated via rel(p).split(\"/\")[1]."
       }
     ],
     "fixes_applied": [],
     "remaining_risks": [
-      "Regex-based secret detection (REDACTIONS list) is inherently incomplete for credential shapes not matching its patterns.",
-      "Non-text-extension files are copied via shutil.copy2 with no content scanning at all.",
-      "List-of-dicts nested under a secret-shaped key bypasses key-based redaction (F1) \u2014 dormant today, not structurally prevented.",
-      "Key names themselves are never redacted, only values."
+      "No test coverage exists for the redaction/inclusion logic in this diff.",
+      "Schema self-check false-FAILs are possible if jsonschema is absent from the execution environment.",
+      "Pattern-based secret/path redaction is explicitly non-exhaustive (macOS /var/folders/ temp paths uncovered); acceptable given the narrow, curated source-root scope and the bundle's own disclaimer."
     ],
     "skip_reason": null
   }
