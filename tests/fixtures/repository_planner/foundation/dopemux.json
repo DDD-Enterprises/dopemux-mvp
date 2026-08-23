@@ -1,0 +1,41 @@
+{
+  "schema_version": "pcp.repository_planner_source.v1",
+  "project_id": "dopemux-mvp",
+  "authority": "NONE",
+  "surface_class": "PROJECTION",
+  "is_proof": false,
+  "evidence_class": "SOURCE_BACKED_TEST_FIXTURE",
+  "observed_head": "7accb2aab3423f32e751640af2b3de130c68567a",
+  "fetched_at": "2026-08-23T00:00:00Z",
+  "freshness": "CURRENT",
+  "claims": [
+    {
+      "claim_id": "dopemux:foundation:design-acceptance",
+      "lane_id": "pcp-planner-foundation",
+      "field": "acceptance_state",
+      "value": "DESIGN_ACCEPTED",
+      "materiality": "BLOCKING",
+      "source_locator": "task-packets/TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001.json",
+      "source_sha256": "a9a7263d779d879b06e39b012136697eac2b52ad34e11cf8496357b0e3d6358d"
+    },
+    {
+      "claim_id": "dopemux:foundation:gate",
+      "lane_id": "pcp-planner-foundation",
+      "field": "gate_state",
+      "value": "PASS",
+      "materiality": "BLOCKING",
+      "source_locator": "task-packets/TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001.json",
+      "source_sha256": "a9a7263d779d879b06e39b012136697eac2b52ad34e11cf8496357b0e3d6358d"
+    }
+  ],
+  "lanes": [
+    {
+      "lane_id": "pcp-planner-foundation",
+      "candidate_sha": "7accb2aab3423f32e751640af2b3de130c68567a",
+      "dependencies": [],
+      "gate_status": "PASS",
+      "audit_status": "PASS",
+      "lifecycle_state": "DESIGN_ACCEPTED"
+    }
+  ]
+}

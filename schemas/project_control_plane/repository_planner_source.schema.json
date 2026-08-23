@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.dev/schemas/project_control_plane/repository_planner_source.schema.json",
+  "title": "Repository Planner Source Snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "project_id", "authority", "surface_class", "is_proof",
+    "evidence_class", "observed_head", "fetched_at", "freshness", "claims", "lanes"
+  ],
+  "properties": {
+    "schema_version": {"const": "pcp.repository_planner_source.v1"},
+    "project_id": {"type": "string", "minLength": 1},
+    "authority": {"const": "NONE"},
+    "surface_class": {"const": "PROJECTION"},
+    "is_proof": {"const": false},
+    "evidence_class": {"type": "string", "minLength": 1},
+    "observed_head": {"type": "string", "pattern": "^[0-9a-f]{40}([0-9a-f]{24})?$"},
+    "fetched_at": {"type": "string", "format": "date-time"},
+    "freshness": {"enum": ["CURRENT", "STALE", "UNKNOWN"]},
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claim_id", "lane_id", "field", "value", "materiality", "source_locator", "source_sha256"],
+        "properties": {
+          "claim_id": {"type": "string", "minLength": 1},
+          "lane_id": {"type": "string", "minLength": 1},
+          "field": {"type": "string", "minLength": 1},
+          "value": {"type": "string", "minLength": 1},
+          "materiality": {"enum": ["BLOCKING", "NON_BLOCKING"]},
+          "source_locator": {"type": "string", "minLength": 1},
+          "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "lanes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["lane_id", "candidate_sha", "dependencies", "gate_status", "audit_status", "lifecycle_state"],
+        "properties": {
+          "lane_id": {"type": "string", "minLength": 1},
+          "candidate_sha": {"type": "string", "pattern": "^[0-9a-f]{40}([0-9a-f]{24})?$"},
+          "dependencies": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+          "gate_status": {"enum": ["PASS", "FAIL", "UNKNOWN"]},
+          "audit_status": {"enum": ["PASS", "FAIL", "UNKNOWN"]},
+          "lifecycle_state": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

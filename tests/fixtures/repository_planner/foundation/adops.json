@@ -1,0 +1,50 @@
+{
+  "schema_version": "pcp.repository_planner_source.v1",
+  "project_id": "adOps",
+  "authority": "NONE",
+  "surface_class": "PROJECTION",
+  "is_proof": false,
+  "evidence_class": "BOUNDED_TEST_SCENARIO",
+  "observed_head": "864915b9cc8ff254eaa877627df1e510dc49dbec",
+  "fetched_at": "2026-08-23T00:00:00Z",
+  "freshness": "CURRENT",
+  "claims": [
+    {
+      "claim_id": "adops:legacy-corpus:acceptance-authority",
+      "lane_id": "legacy-corpus-rating-002",
+      "field": "acceptance_state",
+      "value": "DRAFT_NOT_ACCEPTED",
+      "materiality": "BLOCKING",
+      "source_locator": "PROJECT_INSTRUCTIONS.md",
+      "source_sha256": "f85f1003500f16b754424afa0c0aa6a83af291d7ca9ec2f2749f1deda1276437"
+    },
+    {
+      "claim_id": "adops:legacy-corpus:acceptance-conflict",
+      "lane_id": "legacy-corpus-rating-002",
+      "field": "acceptance_state",
+      "value": "FINALITY_EVIDENCE_PRESENT",
+      "materiality": "BLOCKING",
+      "source_locator": "bounded-scenario://prior-finality-receipt",
+      "source_sha256": "f85f1003500f16b754424afa0c0aa6a83af291d7ca9ec2f2749f1deda1276437"
+    },
+    {
+      "claim_id": "adops:legacy-corpus:remote-candidate",
+      "lane_id": "legacy-corpus-rating-002",
+      "field": "remote_candidate_state",
+      "value": "REMOTE_COMMIT_ABSENT",
+      "materiality": "BLOCKING",
+      "source_locator": "bounded-scenario://remote-ref-check",
+      "source_sha256": "f85f1003500f16b754424afa0c0aa6a83af291d7ca9ec2f2749f1deda1276437"
+    }
+  ],
+  "lanes": [
+    {
+      "lane_id": "legacy-corpus-rating-002",
+      "candidate_sha": "4ce6b644afa72231c24b3cdac58f251e1ca03321",
+      "dependencies": ["dopemux-mvp:pcp-planner-foundation"],
+      "gate_status": "UNKNOWN",
+      "audit_status": "UNKNOWN",
+      "lifecycle_state": "REMOTE_COMMIT_ABSENT"
+    }
+  ]
+}

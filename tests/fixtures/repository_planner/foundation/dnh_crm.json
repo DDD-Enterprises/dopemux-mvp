@@ -1,0 +1,41 @@
+{
+  "schema_version": "pcp.repository_planner_source.v1",
+  "project_id": "dnh-crm",
+  "authority": "NONE",
+  "surface_class": "PROJECTION",
+  "is_proof": false,
+  "evidence_class": "BOUNDED_TEST_SCENARIO",
+  "observed_head": "92eb632bb07426ae5159c02bf9da549888e7caf1",
+  "fetched_at": "2026-08-23T00:00:00Z",
+  "freshness": "STALE",
+  "claims": [
+    {
+      "claim_id": "dnh:rdcp:proof-freshness",
+      "lane_id": "rdcp-evidence-bridge",
+      "field": "proof_freshness",
+      "value": "STALE",
+      "materiality": "BLOCKING",
+      "source_locator": "AGENTS.md",
+      "source_sha256": "6f8703ec09fc3e593edd5e9b878483fd889ae46977e0780e6b3139a3c8035e8d"
+    },
+    {
+      "claim_id": "dnh:rdcp:audit-state",
+      "lane_id": "rdcp-evidence-bridge",
+      "field": "audit_state",
+      "value": "UNKNOWN",
+      "materiality": "BLOCKING",
+      "source_locator": "bounded-scenario://missing-auditor-record",
+      "source_sha256": "6f8703ec09fc3e593edd5e9b878483fd889ae46977e0780e6b3139a3c8035e8d"
+    }
+  ],
+  "lanes": [
+    {
+      "lane_id": "rdcp-evidence-bridge",
+      "candidate_sha": "92eb632bb07426ae5159c02bf9da549888e7caf1",
+      "dependencies": ["dopemux-mvp:pcp-planner-foundation"],
+      "gate_status": "PASS",
+      "audit_status": "UNKNOWN",
+      "lifecycle_state": "STALE_EVIDENCE"
+    }
+  ]
+}
