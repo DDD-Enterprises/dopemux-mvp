@@ -1,0 +1,108 @@
+diff --git a/ui-dashboard/src/components/TaskSequencer.tsx b/ui-dashboard/src/components/TaskSequencer.tsx
+index eec1028e43..602e64494e 100644
+--- a/ui-dashboard/src/components/TaskSequencer.tsx
++++ b/ui-dashboard/src/components/TaskSequencer.tsx
+@@ -937,9 +937,10 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
+                   )}
+                 </ListItemIcon>
+                 <ListItemText
++                  disableTypography
+                   primary={
+                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+-                      <Typography variant="body2" sx={{ flexGrow: 1 }}>
++                      <Typography variant="body2" sx={{ flexGrow: 1, color: brandTokens.text.primary }}>
+                         {task.title}
+                       </Typography>
+                       <Tooltip title={`Complexity: ${Math.round(task.complexity * 100)}% - used for ritual sequencing`} arrow>
+@@ -977,7 +978,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
+                             }}
+                           >
+                             <Clock size={12} color={brandTokens.colors.ritualCyan} aria-hidden="true" />
+-                            <Typography variant="caption">{task.estimatedMinutes}m</Typography>
++                            <Typography variant="caption" sx={{ color: brandTokens.text.secondary }}>{task.estimatedMinutes}m</Typography>
+                           </Box>
+                         </Tooltip>
+                         <Tooltip title={`Energy requirement: ${task.energyRequired}`} arrow>
+@@ -1010,6 +1011,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
+                               aria-label={`Estimated finish time: ${taskFinishTimes[task.id]}`}
+                               sx={{
+                                 opacity: 0.8,
++                                color: brandTokens.text.secondary,
+                                 cursor: 'help',
+                                 outline: 'none',
+                                 borderRadius: 1,
+@@ -1024,7 +1026,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
+                           </Tooltip>
+                         )}
+                       </Box>
+-                      <Typography variant="caption">#{index + 1}</Typography>
++                      <Typography variant="caption" sx={{ color: brandTokens.text.secondary }}>#{index + 1}</Typography>
+                     </Box>
+                   }
+                 />
+diff --git a/ui-dashboard/src/components/__tests__/TaskSequencer.listItemText.test.tsx b/ui-dashboard/src/components/__tests__/TaskSequencer.listItemText.test.tsx
+new file mode 100644
+index 0000000000..cbd08db99b
+--- /dev/null
++++ b/ui-dashboard/src/components/__tests__/TaskSequencer.listItemText.test.tsx
+@@ -0,0 +1,60 @@
++// @vitest-environment jsdom
++import { expect, test } from 'vitest';
++import { render, screen } from '@testing-library/react';
++import '@testing-library/jest-dom/vitest';
++import React from 'react';
++import fs from 'fs';
++import path from 'path';
++import TaskSequencer from '../TaskSequencer';
++import { brandTokens } from '../../theme';
++
++const cognitiveState = {
++  energy: 80,
++  attention: 70,
++  load: 40,
++  status: 'optimal' as const,
++  recommendation: 'Stay focused.',
++};
++
++test('TaskSequencer ListItemText does not nest a div under a p', () => {
++  const { container } = render(<TaskSequencer cognitiveState={cognitiveState} />);
++
++  expect(container.querySelectorAll('p div').length).toBe(0);
++  expect(container.querySelectorAll('p p').length).toBe(0);
++  expect(container.querySelectorAll('.MuiTypography-root .MuiBox-root').length).toBe(0);
++});
++
++test('TaskSequencer preserves secondary caption tokens after disableTypography', () => {
++  render(<TaskSequencer cognitiveState={cognitiveState} />);
++
++  const durationHosts = screen.getAllByLabelText('Estimated duration: 90 minutes');
++  expect(durationHosts.length).toBeGreaterThan(0);
++  for (const host of durationHosts) {
++    const durationCaption = host.querySelector('.MuiTypography-caption');
++    expect(durationCaption).not.toBeNull();
++    expect(durationCaption).toHaveStyle({ color: brandTokens.text.secondary });
++  }
++
++  const indexCaptions = screen.getAllByText('#2');
++  expect(indexCaptions.length).toBeGreaterThan(0);
++  for (const indexCaption of indexCaptions) {
++    expect(indexCaption).toHaveStyle({ color: brandTokens.text.secondary });
++  }
++
++  const titles = screen.getAllByText('Create UI dashboard components');
++  expect(titles.length).toBeGreaterThan(0);
++  for (const title of titles) {
++    expect(title).toHaveStyle({ color: brandTokens.text.primary });
++  }
++});
++
++test('TaskSequencer ListItemText keeps disableTypography and explicit token colors', () => {
++  const source = fs.readFileSync(
++    path.resolve(__dirname, '..', 'TaskSequencer.tsx'),
++    'utf8',
++  );
++
++  expect(source).toMatch(/<ListItemText[\s\S]*disableTypography/);
++  expect(source).toContain('color: brandTokens.text.primary');
++  expect(source).toContain('color: brandTokens.text.secondary');
++});

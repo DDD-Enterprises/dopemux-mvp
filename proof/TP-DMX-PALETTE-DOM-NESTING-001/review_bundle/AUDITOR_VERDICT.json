@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "summary": "The fix is technically correct and verified against MUI 5.18.0 source: ListItemText's `secondary` prop defaults to a Typography with variant=\"body2\" and no component override, which resolves to a <p> tag (MUI's default variant->tag mapping), while `primary` defaults to an explicit component=\"span\" \u2014 so the invalid-nesting bug was specifically the secondary Box (flex row of tooltips/captions) being wrapped in a <p>. Adding disableTypography removes both auto-wraps entirely, and the diff correctly compensates by adding explicit brandTokens.text.primary/secondary colors to all five Typography nodes that previously inherited color via CSS inheritance from the now-removed wrapper Typography (verified every Typography inside the primary/secondary trees was covered; the energyRequired caption correctly keeps its own semantic energyColor() instead of secondary). The new test file was executed locally (not just read) \u2014 all 3 tests pass, including a real rendered-DOM assertion (querySelectorAll('p div'/'p p') === 0) and computed-style assertions (toHaveStyle) proving the fix works in practice, not just in source text. The Start-button Tooltip and its accessibility wiring are untouched and outside the diff. Diff is scoped to exactly the two declared files (65 lines, no scope creep) with no secrets. One minor, non-blocking observation: disableTypography also removes the `.MuiListItemText-primary`/`.MuiListItemText-secondary` CSS class hooks MUI normally attaches to the wrapper Typography \u2014 grepped the repo and confirmed nothing depends on those classes, so this is a theoretical risk only.",
+  "findings": [
+    {
+      "id": "F-1251-1",
+      "severity": "LOW",
+      "title": "disableTypography drops MuiListItemText-primary/secondary class hooks",
+      "status": "ACCEPTED_RISK",
+      "body": "MUI's ListItemText normally applies classes.primary/classes.secondary (rendered as .MuiListItemText-primary/.MuiListItemText-secondary) via the auto-generated Typography wrapper. With disableTypography=true these wrapper elements \u2014 and their classes \u2014 no longer exist; the raw Box trees are rendered directly. Grepped ui-dashboard for 'MuiListItemText' with zero matches, so nothing in this repo (styles, e2e selectors, snapshot tests) currently depends on those classes. Flagging only so a future contributor doesn't add a global theme override or e2e selector targeting those classes and silently have it no-op for this component."
+    },
+    {
+      "id": "F-1251-2",
+      "severity": "INFO",
+      "title": "Third test's source-text assertion is weakly scoped",
+      "status": "ACCEPTED_RISK",
+      "body": "The third test's regex /<ListItemText[\\s\\S]*disableTypography/ matches from the first <ListItemText occurrence to the end of the file (there's only one usage, so it's not currently a false-positive risk), and the two toContain(...) checks for 'color: brandTokens.text.primary'/'color: brandTokens.text.secondary' are unscoped substring checks anywhere in the file, not tied specifically to the ListItemText JSX block. This test adds little beyond tests 1 and 2 (which already prove rendered behavior via real DOM/computed-style assertions) and could pass even if disableTypography or a color token moved to unrelated code. Not blocking since the first two tests already provide the real regression coverage."
+    }
+  ],
+  "remaining_risks": [
+    "No visual/screenshot regression check was run (or requested) to confirm exact pixel-level parity beyond the token-level color assertions already covered by the new tests.",
+    "Only the touched ListItemText instance in TaskSequencer.tsx was audited; other components using ListItemText elsewhere in the codebase (if any) were not in scope and were not checked for the same class-of-bug."
+  ],
+  "fixes_applied": []
+}
