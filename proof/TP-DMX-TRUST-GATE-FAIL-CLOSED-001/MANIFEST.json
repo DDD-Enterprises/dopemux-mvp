@@ -1,0 +1,27 @@
+{
+  "packet_id": "TP-DMX-TRUST-GATE-FAIL-CLOSED-001",
+  "artifacts": [
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/PROOF.json",
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/VALIDATION.json",
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/COMMAND_LOG.md",
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/CHANGED_FILES.txt",
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/MANIFEST.json",
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/HANDOFF.md",
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/AUDITOR_REPORT.md",
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/AUDITOR_REPAIR_REPORT.md",
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/review_bundle/DEFECT_REPRODUCTION_BEFORE_AFTER.txt",
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/review_bundle/FINAL_VALIDATION_LOG.txt",
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/review_bundle/AUDIT_ROUTE_DISCOVERY.md",
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/review_bundle/INDEPENDENT_AUDIT_FINAL_REPORT.md",
+    "proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/review_bundle/INDEPENDENT_AUDIT_TOOL_TRANSCRIPT.txt"
+  ],
+  "content_head_c1": "352a3d888d1ce5116b9af65d696fe62373728a7c",
+  "proof_head_c2": "1777213d436a528c12906ca0ca55132971e69392",
+  "proof_head_c3": null,
+  "c1_ancestor_of_c2": true,
+  "c1_ancestor_of_c3": null,
+  "c2_status": "historical/limited-audit proof snapshot, retained unmodified",
+  "c3_status": "adds the supervisor-directed controlling independent audit (AUDITOR_REPAIR_REPORT.md + route discovery + transcripts) and updates PROOF.json/VALIDATION.json/HANDOFF.md/MANIFEST.json to reference it; no substantive tree changes vs C2",
+  "controlling_audit_binding": "AUDITOR_REPAIR_REPORT.md is bound to C1 (352a3d888d1ce5116b9af65d696fe62373728a7c), not C2 or C3",
+  "note": "This MANIFEST.json is itself part of the C3 commit. C3's diff vs C2 is proof-only (proof/TP-DMX-TRUST-GATE-FAIL-CLOSED-001/** exclusively)."
+}

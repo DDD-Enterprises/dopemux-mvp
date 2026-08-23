@@ -1,0 +1,40 @@
+**Verdict: FAIL**
+
+Here are the findings per numbered scope item. All steps were executed independently and verified without taking claims on faith:
+
+1. **Merge is a real, non-fast-forward merge commit:** PASS
+   - **Executed:** `git log --pretty=%P -1 a89c11dbfd9d132797575118f3f7b8c4f819a2ab`
+   - **Finding:** Confirmed two distinct parent hashes (`88c3cc73cdcd7c5373beae41a17c5c8a1c76f56c` and `6626aa9a58dd82e62226cfca63498cc3f711bb75`). It is a true merge commit, not a squash or rebase.
+
+2. **No conflict markers, no content collision on this packet's own files:** FAIL
+   - **Executed:** `git diff 6f32ac97dfd64f4386182fdd24380b2817551303..a89c11dbfd9d132797575118f3f7b8c4f819a2ab -- ...` (Verified output was EMPTY; no content collision on the packet's own files).
+   - **Executed:** `git grep -E '^(<<<<<<<|=======|>>>>>>>)' -- '*.md' '*.json' '*.py'` (used native git grep to properly ignore `.git` and massive untracked caches).
+   - **Finding:** Found **REAL unresolved conflict markers** in the tree. Examples include:
+     - `docs/pr_merge/usage-patterns.md` contains multiple `=======` and `>>>>>>>` markers (e.g., `>>>>>>> codex/pr-merge-queue-unblockers` and `>>>>>>> wt-collect-dopemux-pr321-20260330023335`).
+     - `docs/planes/pm/write-boundaries.md` contains `>>>>>>> fix/pr-279-frontmatter`.
+     - `docs/planes/pm/pm-implementation-ledger.md` contains `>>>>>>> codex/pm-jules-000-baseline-ledger`.
+     - Multiple other files in `docs/archive/` and `proof/` contain similar markers. This is a clear violation of the "confirm no real hits" requirement for the whole tree.
+
+3. **Main-drift content is what it claims to be:** PASS
+   - **Executed:** `git diff 88c3cc73cdcd7c5373beae41a17c5c8a1c76f56c...6626aa9a58dd82e62226cfca63498cc3f711bb75 --stat` (using `...` to correctly assess main's isolated drift from the merge base).
+   - **Finding:** Confirmed that main's drift does not touch `docs/03-reference/pr-pipeline/**`, `docs/pr_prep/**`, `tests/governance/**`, or `task-packets/TP-DMX-PR-PREP-SPECIALIST-V2-001.*`. Main's changes are disjoint from this packet's owned files.
+
+4. **Governance tests pass post-merge:** PASS
+   - **Executed:** `python -m pytest tests/governance/test_pr_prep_contract_v2.py tests/governance/`
+   - **Finding:** Verified 92 tests passed with no failures.
+
+5. **Task packet still schema-valid:** PASS
+   - **Executed:** Provided python validation script.
+   - **Finding:** Verified `status='PASS', valid=True, errors=[]`.
+
+6. **The known pre-existing docs-prohibited-patterns false positive is now resolved:** PASS
+   - **Executed:** `pre-commit run --files docs/pr_prep/adapters/vibe/template-agent.md`
+   - **Finding:** Verified that the "Block prohibited documentation patterns" hook and all other hooks passed successfully.
+
+7. **origin/main drift:** PASS
+   - **Executed:** `git fetch --prune origin` and `git rev-list --left-right --count HEAD...origin/main`
+   - **Finding:** Returned `12 0`, confirming the branch is 0 commits behind `origin/main` (fully up to date).
+
+8. **Overall coherence:** FAIL
+   - While the merge successfully integrated main without touching this packet's owned files, and all governance/schema checks pass, there are significant unresolved conflict markers polluting the repository tree. Per your explicit instructions, this violates the scope constraints. Treat as a blocking finding.
+exit=0

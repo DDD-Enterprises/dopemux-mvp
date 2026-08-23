@@ -1,0 +1,6 @@
+export_sha256 cfb4f18a0488b2661ad9b17695f96ff2df4b5be0daf5463e5399e08191e952e6
+export_bytes 1471
+row_count 2
+ROW 2e40de0a-b6f9-4227-937b-71355cbadded,/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/tmpjyip7fl9/test_project,instance_state,A,"{""status"": ""active"", ""port_base"": 3000, ""created_at"": "
+ROW 8f586440-edce-42e1-8c3f-4d5b507b1354,/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-309/test_start_basic_environment0/project,instance_state,A,"{""status"": ""active"",
+PROVENANCE_OK

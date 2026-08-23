@@ -1,0 +1,135 @@
+{
+  "schema_version": "1.0.0",
+  "record_class": "AUTHORITY_METADATA_COMPLETION",
+  "record_class_note": "This record is NOT a PROOF_ONLY_SUCCESSOR. It completes the machine-readable authority metadata for an amendment whose document bytes were already persisted and independently audited. It introduces no new substantive interpretation of the amendment.",
+  "amendment_id": "AC2-CLARIFICATION-001",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001",
+  "phase": "AC2_ACCEPTANCE_CONDITION_AMENDMENT",
+  "scope": "ADR-SB-001..ADR-SB-010 acceptance condition #2 only",
+
+  "candidate_document": {
+    "path": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+    "base_candidate_sha256": "946054a4675271856e0214dbf1ce0aa9b1ec17e71e79a82711ad3ca0d9df9c22",
+    "amended_candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+    "base_bytes": 13920,
+    "amended_bytes": 17140
+  },
+
+  "replacement_count": 10,
+  "line_count_before": 375,
+  "line_count_after": 375,
+  "observed_byte_delta": 3220,
+  "per_replacement_byte_delta": 322,
+  "pure_line_replacement": true,
+  "round_trip_forward_verified": true,
+  "round_trip_reverse_verified": true,
+  "wording_verbatim_to_operator_directive": true,
+
+  "architecture_semantics_modified": false,
+  "sb_dec_modified": false,
+  "traceability_modified": false,
+  "adr_dispositions_recorded": false,
+  "adr_acceptance_authorized": false,
+  "implementation_execution_authorized": false,
+
+  "invariants_held": {
+    "frontmatter_identical": true,
+    "context_sections_identical": true,
+    "proposed_decision_sections_identical": true,
+    "consequences_sections_identical": true,
+    "rejected_alternatives_sections_identical": true,
+    "evidence_and_traceability_sections_identical": true,
+    "adr_headings_identical": true,
+    "all_adrs_status_proposed": true,
+    "adr_status_proposed_count": 10,
+    "token_ACCEPTED_present": false,
+    "sb_dec_reference_count": 28,
+    "sb_dec_reference_sequence_identical": true,
+    "document_status": "CANDIDATE"
+  },
+
+  "amended_acceptance_condition_2_text": "Machine contracts required by this ADR MUST parse and cover the decision at ADR acceptance. Required denial fixtures MUST be implemented, executed, and pass before the affected implementation capability is authorized for enablement. Absence of not-yet-implemented denial fixtures does not constitute implementation evidence and does not permit any runtime, production, or enablement claim.",
+
+  "authority": {
+    "operator_authority": "HUMAN_OPERATOR_EXPLICIT",
+    "operator_directive": "narrow AC#2 amendment across ADR-SB-001..010; do not reopen SB-DEC-001..032, ADR decision text, consequences, rejected alternatives, or repaired traceability",
+    "r2_candidate_sha256": "94b735c72ff3533f0cd73bed18fd3fb64b164530f7ef360f37584c73504a4e8e",
+    "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+    "fo01_repair_merge_commit": "cfa4927a883b469c06f37343c18e6582f23d1443",
+    "amendment_content_commit": "cc2f49ccad3d7c39d6b9f0a9fb044616069585a7"
+  },
+
+  "independent_audit": {
+    "provider": "xAI",
+    "model": "grok-4.5",
+    "requested_model": "grok-4.5",
+    "observed_model_usage_key": "grok-4.5-build",
+    "observed_model_note": "grok-4.5-build is a runner-internal usage/telemetry label, not a requestable API model id; recorded truthfully rather than normalised. See proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/GROK_AUDIT_ROUTE_CUSTODY.json.",
+    "runner": "Grok CLI",
+    "session": "fresh",
+    "fallback_enabled": false,
+    "model_switching": false,
+    "read_only": true,
+    "producer_is_not_auditor": true,
+    "audited_base_sha256": "946054a4675271856e0214dbf1ce0aa9b1ec17e71e79a82711ad3ca0d9df9c22",
+    "audited_amended_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+    "audited_bytes_equal_persisted_bytes": true,
+    "verdict": "PASS_ADR_ACCEPTANCE_CONDITION_AMENDMENT",
+    "blockers": 0,
+    "must_fix": 0,
+    "nonblocking_observations": 1,
+    "nonblocking_N1": "scope of 'required denial fixtures' is not enumerated per ADR; this is the operator's own authorized wording, not a producer edit, and sentence 3 plus AC#3 prevent it becoming an enablement loophole",
+
+    "sealed_audit_bundle_sha256": "7954e23823006b651bb6b65d8248722028b8f0a02d42535f167625312bee9695",
+    "sealed_audit_bundle_filename": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT.zip",
+
+    "audit_report_path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT_AMENDMENT.md",
+    "audit_report_byte_identities": {
+      "note": "Two distinct byte identities exist for the same audit report and are deliberately NOT collapsed into a single value.",
+      "original_emitted_sha256": "6157b5874a6ec8a6716d578ed94f3ed35db27361a3440caf707f9a539c1a187e",
+      "original_emitted_location": "sealed bundle TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT.zip -> AUDITOR_REPORT_AMENDMENT.md",
+      "committed_normalized_sha256": "e766ddc26e8a5667da6b72b1d39bade19ec331965fff04885e368ae6a2d121d1",
+      "committed_normalized_location": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/AUDITOR_REPORT_AMENDMENT.md",
+      "transformation": "TRAILING_WHITESPACE_NORMALIZATION_ONLY",
+      "transformation_detail": "Trailing whitespace stripped from 4 markdown hard-line-break lines to satisfy git diff --check and pre-commit hooks.",
+      "substantive_content_changed": false,
+      "verdict_changed": false,
+      "transformation_independently_verified": true,
+      "transformation_verification_method": "Byte comparison of the sealed-bundle report against the committed report after stripping trailing whitespace from both: files are identical, establishing the delta is whitespace-only."
+    }
+  },
+
+  "audit_reuse": {
+    "candidate_document_audit_reuse_allowed": true,
+    "fresh_audit_required_for_candidate_document": false,
+    "fresh_audit_required_before_readiness_claims_depending_on_post_audit_authority_metadata": true,
+    "basis": "The persisted candidate bytes (e4b28946...b66c) are byte-identical to the candidate bytes audited by Grok. This record adds deterministic authority-head metadata only; it does not change the candidate, traceability, or any disposition.",
+    "scope_note": "The three fields above deliberately replace a single unscoped fresh_audit_required boolean, which stated a scoped truth as a flat fact. Reuse of the bound Grok audit is permitted for the candidate document alone, whose audited bytes are unchanged. The bound audit does NOT cover ADR_CANDIDATE_AMENDMENT_HEAD.json or this record: both were added at 48098c8178, after the audited content head cc2f49ccad. A fresh audit of the final frozen head is therefore required before any readiness claim that depends on those two records. This is the same statement already carried in proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/PROOF.json (embedded_audit.remaining_risks, head_binding_note), now made machine-readable here instead of contradicted by an unscoped boolean.",
+    "clarification_classification": "NON_SUBSTANTIVE_METADATA_CLARIFICATION",
+    "clarification_classification_basis": "Operator-classified. Replacing the unscoped boolean with the scoped fields above introduces no new policy; it reconciles two facts already published in this pull request — the candidate bytes were audited and remain byte-identical, and the later authority metadata was not covered by that audit and needs fresh review before readiness claims depend on it. It therefore does not meet the 'any new substantive interpretation introduced by metadata' trigger enumerated below, and does not recursively require an audit of itself.",
+    "fresh_audit_trigger_conditions": [
+      "any change to the candidate document bytes",
+      "any change to traceability",
+      "any recorded ADR disposition",
+      "any new substantive interpretation introduced by metadata"
+    ]
+  },
+
+  "superseded_acceptance_attempt": {
+    "commit": "19fa74faa935dfcf86c41c2aaa40f4b257652756",
+    "classification": "SUPERSEDED_PRE_AMENDMENT_ACCEPTANCE_ATTEMPT",
+    "operator_provenance": "UNKNOWN",
+    "operator_provenance_note": "Downgraded from GENUINE to UNKNOWN on operator direction after PR #1214 review. The commit is unpushed and exists only in the producer's local worktree, so no consumer of this repository can inspect the referenced operator ledger or independently verify the provenance claim. UNKNOWN records the limit of externally verifiable evidence; it is NOT an allegation of fabrication, and no fabrication was alleged or found. The claim was downgraded rather than substantiated because the operator directed that the superseded commit not be pushed or otherwise promoted.",
+    "operator_provenance_audit_note": "The independent Grok audits bound content head cc2f49ccad and therefore describe the pre-correction bytes, in which this field read GENUINE. Those auditor reports (AUDITOR_REPORT.md, AUDITOR_REPORT_AMENDMENT.md, AUDITOR_REPORT_PR1214.md) are preserved verbatim as historical audit records and were deliberately NOT edited to match this correction. Their observation was accurate as to the bytes they audited.",
+    "authoritative": false,
+    "pushed": false,
+    "merged": false,
+    "carried_forward": false
+  },
+
+  "sb_dec_026_posture": "A_LEAVE_UNLINKED",
+
+  "native_embedded_audit_lane": "GROK_AUDIT_VALID_SCHEMA_REPRESENTATION_UNSUPPORTED — recorded truthfully as failing; no attestation fabricated. Tracked as a separate governance issue and deliberately NOT repaired within PR #1214. See proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/GROK_SCHEMA_REPRESENTATION_GAP.md.",
+
+  "status": "AMENDED_AND_INDEPENDENTLY_VERIFIED_PENDING_MERGE_AND_DISPOSITIONS"
+}

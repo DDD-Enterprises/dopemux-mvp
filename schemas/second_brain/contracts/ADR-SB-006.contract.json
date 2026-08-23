@@ -1,0 +1,331 @@
+{
+  "$schema": "./adr-machine-contract.schema.json",
+  "contract_version": "2.0.0",
+  "adr_id": "ADR-SB-006",
+  "adr_title": "Local Spool and Custody Interface",
+  "contract_kind": "ARCHITECTURE_DECISION_CONTRACT",
+  "candidate_document": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+  "candidate_sha256": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c",
+  "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "clause_inventory_sha256": "b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439",
+  "adr_status_at_contract_authoring": "PROPOSED",
+  "sb_dec_references": [
+    "SB-DEC-014",
+    "SB-DEC-015"
+  ],
+  "required_artifacts": [
+    "schemas/second_brain/contracts/custody-port.contract.json",
+    "schemas/second_brain/contracts/local-spool-port.contract.json"
+  ],
+  "implementation_deferred": [
+    "DENIAL_FIXTURES",
+    "RUNTIME_CONFORMANCE",
+    "RETRIEVAL_BENCHMARKS",
+    "PURGE_COMPLETENESS",
+    "MULTI_PROJECT_ISOLATION",
+    "SPLIT_BRAIN_PROOF",
+    "ENCRYPTION_IMPLEMENTATION"
+  ],
+  "runtime_claims_permitted": false,
+  "denial_fixtures": "NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE",
+  "decision_clauses": [
+    {
+      "clause_id": "ADR-SB-006-C01",
+      "requirement_text": "LocalSpoolPort exists as a machine interface contract",
+      "subject": "second_brain.local_spool_port",
+      "rule_type": "INTERFACE_REQUIREMENT",
+      "operator": "MUST_EXIST",
+      "machine_value": "LocalSpoolPort",
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Define `LocalSpoolPort` and `CustodyPort`."
+      ],
+      "source_decision_text_hash": "d49861a0f0bfecb388315617a345394f76bb88a72cd5735a258b61f0068453a0",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/0",
+        "schemas/second_brain/contracts/local-spool-port.contract.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C02",
+      "requirement_text": "CustodyPort exists as a machine interface contract",
+      "subject": "second_brain.custody_port",
+      "rule_type": "INTERFACE_REQUIREMENT",
+      "operator": "MUST_EXIST",
+      "machine_value": "CustodyPort",
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Define `LocalSpoolPort` and `CustodyPort`."
+      ],
+      "source_decision_text_hash": "d49861a0f0bfecb388315617a345394f76bb88a72cd5735a258b61f0068453a0",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/1",
+        "schemas/second_brain/contracts/custody-port.contract.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C03",
+      "requirement_text": "spool records are not canonical",
+      "subject": "second_brain.local_spool.record.canonical",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Spool records are non-canonical, identity/domain/class scoped, deterministic, integrity-protected, short-lived, idempotently flushed, purge-aware, and never remote backed up."
+      ],
+      "source_decision_text_hash": "0699b26d0b04831f12d003446ba8f2ac20f7a8362164cf6da0ee6be9e3e94f59",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/2",
+        "schemas/second_brain/contracts/local-spool-port.contract.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C04",
+      "requirement_text": "spool record scope = identity / domain / class",
+      "subject": "second_brain.local_spool.record.scope_keys",
+      "rule_type": "ENUM",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "IDENTITY",
+        "DOMAIN",
+        "CLASS"
+      ],
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Spool records are non-canonical, identity/domain/class scoped, deterministic, integrity-protected, short-lived, idempotently flushed, purge-aware, and never remote backed up."
+      ],
+      "source_decision_text_hash": "0699b26d0b04831f12d003446ba8f2ac20f7a8362164cf6da0ee6be9e3e94f59",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/3",
+        "schemas/second_brain/contracts/local-spool-port.contract.json"
+      ],
+      "source_enumeration": "identity/domain/class"
+    },
+    {
+      "clause_id": "ADR-SB-006-C05",
+      "requirement_text": "spool records are deterministic",
+      "subject": "second_brain.local_spool.record.determinism",
+      "rule_type": "CONSTANT",
+      "operator": "EQUALS",
+      "machine_value": "DETERMINISTIC",
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Spool records are non-canonical, identity/domain/class scoped, deterministic, integrity-protected, short-lived, idempotently flushed, purge-aware, and never remote backed up."
+      ],
+      "source_decision_text_hash": "0699b26d0b04831f12d003446ba8f2ac20f7a8362164cf6da0ee6be9e3e94f59",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/4",
+        "schemas/second_brain/contracts/local-spool-port.contract.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C06",
+      "requirement_text": "spool records are integrity-protected",
+      "subject": "second_brain.local_spool.record.integrity_protected",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Spool records are non-canonical, identity/domain/class scoped, deterministic, integrity-protected, short-lived, idempotently flushed, purge-aware, and never remote backed up."
+      ],
+      "source_decision_text_hash": "0699b26d0b04831f12d003446ba8f2ac20f7a8362164cf6da0ee6be9e3e94f59",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/5",
+        "schemas/second_brain/contracts/local-spool-port.contract.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C07",
+      "requirement_text": "spool records are short-lived",
+      "subject": "second_brain.local_spool.record.short_lived",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Spool records are non-canonical, identity/domain/class scoped, deterministic, integrity-protected, short-lived, idempotently flushed, purge-aware, and never remote backed up."
+      ],
+      "source_decision_text_hash": "0699b26d0b04831f12d003446ba8f2ac20f7a8362164cf6da0ee6be9e3e94f59",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/6",
+        "schemas/second_brain/contracts/local-spool-port.contract.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C08",
+      "requirement_text": "spool flush is idempotent",
+      "subject": "second_brain.local_spool.flush.idempotent",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Spool records are non-canonical, identity/domain/class scoped, deterministic, integrity-protected, short-lived, idempotently flushed, purge-aware, and never remote backed up."
+      ],
+      "source_decision_text_hash": "0699b26d0b04831f12d003446ba8f2ac20f7a8362164cf6da0ee6be9e3e94f59",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/7",
+        "schemas/second_brain/contracts/local-spool-port.contract.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C09",
+      "requirement_text": "the spool participates in purge",
+      "subject": "second_brain.local_spool.purge_aware",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Spool records are non-canonical, identity/domain/class scoped, deterministic, integrity-protected, short-lived, idempotently flushed, purge-aware, and never remote backed up."
+      ],
+      "source_decision_text_hash": "0699b26d0b04831f12d003446ba8f2ac20f7a8362164cf6da0ee6be9e3e94f59",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/8",
+        "schemas/second_brain/contracts/local-spool-port.contract.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C10",
+      "requirement_text": "spool records are never remote backed up",
+      "subject": "second_brain.local_spool.remote_backup",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Spool records are non-canonical, identity/domain/class scoped, deterministic, integrity-protected, short-lived, idempotently flushed, purge-aware, and never remote backed up."
+      ],
+      "source_decision_text_hash": "0699b26d0b04831f12d003446ba8f2ac20f7a8362164cf6da0ee6be9e3e94f59",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/9",
+        "schemas/second_brain/contracts/local-spool-port.contract.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C11",
+      "requirement_text": "public classification is allowed to spool",
+      "subject": "second_brain.local_spool.classification.public",
+      "rule_type": "CONSTANT",
+      "operator": "EQUALS",
+      "machine_value": "ALLOWED",
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Public is allowed; internal requires OS-protected storage; confidential/restricted remain disabled until verified encryption and key ownership."
+      ],
+      "source_decision_text_hash": "a4fa5fad5ac14ad4a626e86c167ff779f3a6418f7dc7199641e8c888b1c54527",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/10",
+        "schemas/second_brain/contracts/local-spool-port.contract.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C12",
+      "requirement_text": "internal classification requires OS-protected storage",
+      "subject": "second_brain.local_spool.classification.internal",
+      "rule_type": "CONSTANT",
+      "operator": "EQUALS",
+      "machine_value": "REQUIRES_OS_PROTECTED_STORAGE",
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Public is allowed; internal requires OS-protected storage; confidential/restricted remain disabled until verified encryption and key ownership."
+      ],
+      "source_decision_text_hash": "a4fa5fad5ac14ad4a626e86c167ff779f3a6418f7dc7199641e8c888b1c54527",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/11",
+        "schemas/second_brain/contracts/local-spool-port.contract.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C13",
+      "requirement_text": "confidential/restricted spooling is disabled until verified encryption and key ownership",
+      "subject": "second_brain.local_spool.classification.confidential_restricted",
+      "rule_type": "CONSTANT",
+      "operator": "EQUALS",
+      "machine_value": "DISABLED_UNTIL_VERIFIED_ENCRYPTION_AND_KEY_OWNERSHIP",
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Public is allowed; internal requires OS-protected storage; confidential/restricted remain disabled until verified encryption and key ownership."
+      ],
+      "source_decision_text_hash": "a4fa5fad5ac14ad4a626e86c167ff779f3a6418f7dc7199641e8c888b1c54527",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/12",
+        "schemas/second_brain/contracts/local-spool-port.contract.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C14",
+      "requirement_text": "unknown-class spooling is not permitted",
+      "subject": "second_brain.local_spool.classification.unknown.spooling_permitted",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false,
+      "section": "CONSEQUENCES",
+      "source_fragments": [
+        "No unknown-class spooling"
+      ],
+      "source_decision_text_hash": "21bc46ff059b7c5b1144f2402d6767d00bbc53e6f89eb24cbe300b9fbadd72bb",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/13",
+        "schemas/second_brain/contracts/local-spool-port.contract.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C15",
+      "requirement_text": "eligible capture is crash-safe",
+      "subject": "second_brain.local_spool.capture.crash_safe",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "CONSEQUENCES",
+      "source_fragments": [
+        "Crash-safe eligible capture"
+      ],
+      "source_decision_text_hash": "836031b1f7cfd5f36992ebc7ec52cd9eb18637ef683d60a3f45075ddc6855308",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/14",
+        "schemas/second_brain/contracts/local-spool-port.contract.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C16",
+      "requirement_text": "the custody product remains replaceable",
+      "subject": "second_brain.custody.product.replaceable",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true,
+      "section": "CONSEQUENCES",
+      "source_fragments": [
+        "Custody product remains replaceable"
+      ],
+      "source_decision_text_hash": "442de0ddeef2a4a9d1da4c1d3a2f157319cac6b2cb5652c80396bc3e5b58e719",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/15",
+        "schemas/second_brain/contracts/custody-port.contract.json"
+      ]
+    },
+    {
+      "clause_id": "ADR-SB-006-C17",
+      "requirement_text": "closed set of confidential/restricted enablement preconditions",
+      "subject": "second_brain.local_spool.classification.confidential_restricted.enablement_preconditions",
+      "rule_type": "ENUM",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "VERIFIED_ENCRYPTION",
+        "KEY_OWNERSHIP"
+      ],
+      "section": "PROPOSED_DECISION",
+      "source_fragments": [
+        "Public is allowed; internal requires OS-protected storage; confidential/restricted remain disabled until verified encryption and key ownership."
+      ],
+      "source_decision_text_hash": "a4fa5fad5ac14ad4a626e86c167ff779f3a6418f7dc7199641e8c888b1c54527",
+      "covered_by": [
+        "schemas/second_brain/contracts/ADR-SB-006.contract.json#/decision_clauses/16",
+        "schemas/second_brain/contracts/local-spool-port.contract.json"
+      ],
+      "source_enumeration": "verified encryption and key ownership"
+    }
+  ]
+}

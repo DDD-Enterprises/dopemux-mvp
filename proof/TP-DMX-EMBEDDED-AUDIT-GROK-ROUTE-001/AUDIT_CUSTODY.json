@@ -1,0 +1,143 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001",
+  "record_kind": "AUDIT_PROMPT_CUSTODY",
+  "controlling_audit": {
+    "round": 5,
+    "audited_content_head": "aadb4ed32831bacf5720b94888fbfd94f3eb6b73",
+    "verdict": "PASS",
+    "blockers": 0,
+    "must_fix": 0,
+    "counts_auditor_stated": true,
+    "report": "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDITOR_REPAIR_3_REPORT.md"
+  },
+  "base": "6626aa9a58dd82e62226cfca63498cc3f711bb75",
+  "prompt_file": "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDIT_PROMPT.md",
+  "prompt_names_the_head_it_audited": true,
+  "prompt_is_not_part_of_the_audited_tree": {
+    "fact": true,
+    "why": "The prompt names the frozen head, so it cannot live inside that head's own commit. It is committed as a successor. This bit briefly: a `git commit --amend` moved the content head after the prompt had been updated, leaving the prompt naming a hash that no longer existed. Caught before the audit ran and fixed by committing the corrected prompt as a successor rather than amending again."
+  },
+  "why_five_rounds": "Each round found something real. Rounds 3 and 4 returned FAIL and both findings were accepted and repaired rather than argued down. The FAIL reports are kept as controlling evidence for why the repairs exist; they are not superseded out of the record.",
+  "rounds": [
+    {
+      "n": 1,
+      "head": "8290d7bd8e8b67a8197c1c33ac1af7fdf2f9a946",
+      "route": "agy --model gemini-3.1-pro-high --sandbox --mode plan",
+      "outcome": "NO_VERDICT_WRONG_MODE",
+      "bytes": 638,
+      "detail": "Returned an audit plan and asked for approval instead of auditing. `--mode plan` gates execution behind interactive approval, unusable in print mode. The precedent packet used plan mode for read-only safety; on AGY 1.1.12 it also blocks the read-only commands an audit needs.",
+      "recorded_because": "A route attempt that produced no verdict is not a skipped audit."
+    },
+    {
+      "n": null,
+      "head": "8290d7bd8e8b67a8197c1c33ac1af7fdf2f9a946",
+      "route": "agy ... --dangerously-skip-permissions",
+      "outcome": "NOT_ATTEMPTED",
+      "detail": "Blocked by the harness permission classifier before execution. No audit ran under this route."
+    },
+    {
+      "n": 2,
+      "head": "8290d7bd8e8b67a8197c1c33ac1af7fdf2f9a946",
+      "route": "agy --model gemini-3.1-pro-high --effort high --sandbox --mode accept-edits --print-timeout 25m",
+      "outcome": "PASS",
+      "findings": "None",
+      "report": "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDITOR_REPORT.md",
+      "raw_sha256": "2722c16c2a9d75e74f7c5b17b6d768f9c9e1371d22c0d6314ad5480aeac3ef74",
+      "superseded_because": "The content head moved afterwards in response to code review. A PASS bound to a head that no longer exists cannot govern a later head. Kept in the record; not treated as the controlling audit.",
+      "format_deviation": "Reported VERDICT and Findings but omitted the explicit BLOCKERS/MUST_FIX counters and the 'what I could not verify' section. Not rewritten to fit the requested shape."
+    },
+    {
+      "n": 3,
+      "head": "d95b48a52af332afc1c25c162033cb1b372ed26e",
+      "route": "agy ... --print-timeout 25m",
+      "outcome": "NO_VERDICT_TIMEOUT",
+      "detail": "Exceeded the 25-minute print timeout and returned 'Error: timeout waiting for response' with no verdict. Not a FAIL and not recorded as one.",
+      "response": "Re-run at 45m rather than treated as a result."
+    },
+    {
+      "n": 4,
+      "head": "d95b48a52af332afc1c25c162033cb1b372ed26e",
+      "route": "agy ... --print-timeout 45m",
+      "outcome": "FAIL",
+      "blockers": 1,
+      "must_fix": 2,
+      "report": "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDITOR_REPAIR_REPORT.md",
+      "raw_sha256": "bcd5cbb97f143cbd6717129fcaafc823ec3aa45f0a5a625f7e8af0889bcb2359",
+      "finding": "CONSUMER_INVENTORY.json claimed a deterministic inventory of every consumer while documenting a bounded directory search that excluded docker/, where a grok-4.5 string exists.",
+      "producer_response": "Accepted on method, disputed on consequence, and both halves recorded. The search was re-run repository-wide with no directory allowlist. The docker/ hit was dispositioned by name as a string coincidence rather than reclassified as a compatibility site to agree with the auditor: pal-mcp-server/providers/xai.py selects grok-4.5 as a preferred model for PAL reasoning calls, and auditor_tool / auditor_model / embedded_audit have zero occurrences anywhere under docker/. The next round independently re-ran that zero-occurrence check and corroborated it."
+    },
+    {
+      "n": 5,
+      "head": "29a6fb54d032b1f501ed6d29ecaf87a2150c0515",
+      "route": "agy ... --print-timeout 40m",
+      "outcome": "FAIL",
+      "blockers": 1,
+      "must_fix": 0,
+      "report": "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDITOR_REPAIR_2_REPORT.md",
+      "raw_sha256": "d3a6c1d5cb1397c133d0ccd93e7e2409ded52dcd1368814ee389fe83c08c3cd9",
+      "finding": "Commit allowlist violation: tests/audit/fixtures/embedded_audit.schema.pre_grok.json was committed without being covered by the packet's declared commit allowlist.",
+      "producer_response": "Accepted without qualification. The fixture was added to the allowlist, and coverage is now checked programmatically rather than by eye: all 20 paths changed between base and HEAD are covered, 0 uncovered. This is exactly what an allowlist exists to catch."
+    },
+    {
+      "n": 6,
+      "head": "aadb4ed32831bacf5720b94888fbfd94f3eb6b73",
+      "route": "agy --model gemini-3.1-pro-high --effort high --sandbox --mode accept-edits --print-timeout 40m --print \"$(cat AUDIT_PROMPT.md)\"",
+      "outcome": "PASS",
+      "blockers": 0,
+      "must_fix": 0,
+      "controlling": true,
+      "report": "proof/TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001/AUDITOR_REPAIR_3_REPORT.md",
+      "raw_sha256": "7bdbeb3a180390a0875b61c44d96dbb25ae97bfffbef5b982ea5922b756127ea",
+      "report_byte_identical_to_raw": true,
+      "independent_checks_of_interest": [
+        "Extracted the pre-change schema from trusted main and confirmed it matches the vendored fixture exactly.",
+        "Tampered with the vendored fixture and confirmed test_pre_change_fixture_is_the_real_pre_change_contract failed -- the hash pin was verified by an independent party, not only by the producer.",
+        "Re-ran the docker/ zero-occurrence check and corroborated the round-4 disposition.",
+        "Re-checked allowlist coverage against the changed-path set."
+      ]
+    }
+  ],
+  "bootstrap_rule": {
+    "rule": "The packet that admits the Grok route may not be approved by Grok as its controlling audit, or the route would bootstrap its own admission.",
+    "satisfied": true,
+    "how": "Every round was run by AGY on gemini-3.1-pro-high. That pair is representable under the PRE-change schema, whose allOf already binds gemini-3.1-pro-high to agy. No Grok runner was invoked for any round of this packet's audit.",
+    "mechanical_proof": "This bundle's own PROOF.json validates against the PRE-change schema as well as the new one. The auditor identity did not require the route being admitted.",
+    "additional_property": "Different model family from the producer (Claude), verified functional rather than assumed -- see auditor_functionality_probe."
+  },
+  "auditor_functionality_probe": {
+    "why": "TP-DMX-TRUST-GATE-FAIL-CLOSED-001, earlier the same day, recorded AGY gemini-3.1-pro-high as REJECTED_NONFUNCTIONAL: selecting the model correctly but returning a fixed canned response regardless of prompt content. Accepting a canned responder as an auditor would be worse than having no auditor, so the finding was re-tested rather than inherited.",
+    "agy_version": "1.1.12",
+    "probes": [
+      {"prompt": "Reply with only the result of 7919 multiplied by 13. No other words.", "response": "102947", "assessment": "correct"},
+      {"prompt": "Reply with only the third word of this sentence: alpha bravo charlie delta.", "response": "only", "assessment": "prompt-appropriate under a literal reading of 'this sentence' as the instruction sentence, whose third word is 'only'"}
+    ],
+    "conclusion": "Two distinct, prompt-dependent answers. Not a canned responder on 1.1.12. The earlier finding is not disputed for the version it described.",
+    "corroborated_by_behaviour": "Rounds 4 and 5 returned different, specific, independently reproducible blockers. A canned responder does not do that."
+  },
+  "auditor": {
+    "tool": "agy",
+    "version": "1.1.12",
+    "model_selector": "gemini-3.1-pro-high",
+    "effort": "high",
+    "sandbox": true,
+    "independent_of_producer": true,
+    "producer_conversation_history": false,
+    "separate_process": true,
+    "separate_worktree": true,
+    "worktree": "/private/tmp/grok-route-audit (throwaway, git worktree add --detach)",
+    "different_model_family_from_producer": true
+  },
+  "auditor_inaccuracy_noted": {
+    "what": "The round-6 report states the allOf conditional count 'bumped from 4 to 5'. It went from 3 to 5; the pinned test constant moved 3 -> 5.",
+    "materiality": "None for the verdict. The count the auditor verified in the test (5) is correct, and the two added conditionals are correct. Recorded because an inaccuracy in an auditor's evidence should be visible rather than silently inherited."
+  },
+  "audited_tree_unmodified": {
+    "verified": true,
+    "method": "After each completed run, `git status --porcelain` in the audit worktree returned zero lines and `git rev-parse HEAD` still resolved to the frozen head for that round.",
+    "note": "The auditor ran under --mode accept-edits, which permits edits, so this check is load-bearing rather than ceremonial. It states it sandboxed its mutations under /tmp and on copies; the worktree confirms nothing tracked changed. Read-only compliance is proven by the tree, not by the instruction."
+  },
+  "round_1_and_2_artifacts_untouched": {
+    "AUDITOR_REPORT.md": "The round-2 PASS on head 8290d7bd8e. Left unedited. Later rounds use new filenames rather than overwriting, so a superseded verdict stays legible."
+  }
+}

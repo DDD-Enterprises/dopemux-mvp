@@ -2,7 +2,8 @@
 
 This path exists only for repositories whose trusted security-release roster on
 the trusted main ref contains exactly one human approver who is also the PR
-author/owner, and who cannot post a GitHub APPROVED review on their own PR.
+author (semantic solo release authority), and who cannot post a GitHub APPROVED
+review on their own PR.
 
 It never:
 - counts as an ordinary GitHub APPROVED review;
@@ -13,6 +14,14 @@ It never:
 Activation requires an exact operator phrase harvested from PR issue comments:
 
   AUTHORIZE SOLO-OWNER SECURITY RELEASE FOR PR #<N> AT HEAD <40-char-sha>
+
+Operator association policy (org-repo compatible):
+  GitHub emits ``OWNER`` only for personal-repo ownership. On organization-owned
+  repositories the sole trusted operator typically appears as ``MEMBER`` or
+  ``COLLABORATOR``. Those associations are accepted when the login matches the
+  sole trusted roster entry, aligned with ordinary human security-release
+  approval associations (``OWNER`` / ``MEMBER`` / ``COLLABORATOR``).
+  ``CONTRIBUTOR``, ``NONE``, and other associations remain fail-closed.
 """
 
 from __future__ import annotations
@@ -30,11 +39,21 @@ SOLO_OWNER_PHRASE_RE = re.compile(
 RECEIPT_CODE = "SOLO_OWNER_SECURITY_RELEASE_OVERRIDE_USED"
 AUTHORIZATION_SCOPE = "security_release_only"
 
-# Associations that prove owner/operator authority for the solo path.
-_OWNER_ASSOCIATIONS = frozenset({"OWNER"})
+# Trusted operator associations for the solo path. Align with
+# tools.pr_steward.security_release_approval._TRUSTED_HUMAN_ASSOCIATIONS so the
+# solo path does not invent a stricter GitHub enum than ordinary human approval.
+# "Solo-owner" means sole trusted roster identity, not GitHub authorAssociation=OWNER.
+_TRUSTED_OPERATOR_ASSOCIATIONS = frozenset({"OWNER", "MEMBER", "COLLABORATOR"})
 
 # Audit statuses that may accompany a solo-owner override.
 _PASSING_AUDITS = frozenset({"PASS", "PASS_WITH_RISKS"})
+
+
+def _association_trusted(association: str | None) -> bool:
+    """True when *association* is a non-empty trusted operator association."""
+    if not association:
+        return False
+    return str(association).upper() in _TRUSTED_OPERATOR_ASSOCIATIONS
 
 @dataclass(frozen=True)
 class SoloOwnerEvaluation:
@@ -225,10 +244,11 @@ def evaluate_solo_owner_security_release(
         )
 
     assoc = str(pr_author_association or "").upper()
-    # If association is present and not OWNER, refuse. Missing association is
-    # allowed only when the authorizing issue comment itself carries OWNER.
-    if assoc and assoc not in _OWNER_ASSOCIATIONS:
-        diagnostics.append("SOLO_OWNER_AUTHOR_NOT_OWNER")
+    # If association is present and untrusted, refuse. Missing association is
+    # allowed only when the authorizing issue comment itself carries a trusted
+    # operator association (OWNER / MEMBER / COLLABORATOR).
+    if assoc and not _association_trusted(assoc):
+        diagnostics.append("SOLO_OWNER_AUTHOR_ASSOCIATION_UNTRUSTED")
         return SoloOwnerEvaluation(False, None, tuple(diagnostics))
 
     if unclassified_review_item_count:
@@ -264,14 +284,16 @@ def evaluate_solo_owner_security_release(
         diagnostics.append("SOLO_OWNER_PHRASE_MISSING_OR_MISMATCH")
         return SoloOwnerEvaluation(False, None, tuple(diagnostics))
 
-    # Operator association on the phrase comment must be OWNER (fail-closed when
-    # both PR author association and comment association are missing/untrusted).
+    # Phrase-comment association must be trusted when present. Fail closed when
+    # both PR author association and comment association are missing/untrusted.
+    # OWNER remains valid; MEMBER/COLLABORATOR are required for org-owned repos
+    # where GitHub never emits OWNER for human org members.
     comment_assoc = str(auth.get("operator_association") or "").upper()
-    if comment_assoc not in _OWNER_ASSOCIATIONS and assoc not in _OWNER_ASSOCIATIONS:
-        diagnostics.append("SOLO_OWNER_PHRASE_OPERATOR_NOT_OWNER")
+    if not _association_trusted(comment_assoc) and not _association_trusted(assoc):
+        diagnostics.append("SOLO_OWNER_PHRASE_OPERATOR_ASSOCIATION_UNTRUSTED")
         return SoloOwnerEvaluation(False, None, tuple(diagnostics))
-    if comment_assoc and comment_assoc not in _OWNER_ASSOCIATIONS:
-        diagnostics.append("SOLO_OWNER_PHRASE_OPERATOR_NOT_OWNER")
+    if comment_assoc and not _association_trusted(comment_assoc):
+        diagnostics.append("SOLO_OWNER_PHRASE_OPERATOR_ASSOCIATION_UNTRUSTED")
         return SoloOwnerEvaluation(False, None, tuple(diagnostics))
 
     meta = dict(audit_meta or {})

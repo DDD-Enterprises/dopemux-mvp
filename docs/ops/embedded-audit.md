@@ -5,8 +5,8 @@ type: reference
 owner: '@hu3mann'
 author: '@codex'
 date: '2026-05-25'
-last_review: '2026-07-20'
-next_review: '2026-10-18'
+last_review: '2026-07-29'
+next_review: '2026-10-27'
 prelude: Embedded audit policy and proof contract for governance/process/schema packets.
 ---
 # Embedded Audit
@@ -15,11 +15,13 @@ prelude: Embedded audit policy and proof contract for governance/process/schema 
 
 Governance, process, schema, prompt, proof, and authority-boundary packets require embedded audit unless the packet explicitly says otherwise and records why.
 
+**Evidence economy (L0–L3):** Independent model audit runs **once** after the content head is frozen for L2/L3 (and for packets that require embedded audit by policy). L0 deterministic metadata and proof-only successors do **not** require a second content audit — validate schema, signature, ancestry, and path closure with `scripts/governance/validate_change_contract.py` (and `scripts/audit/validate_audit_proof.py` / signing checks as applicable). Do not audit intermediate implementer commits.
+
 ## Route Order
 
 Tier 1 direct CLI routes:
 
-1. AGY / Google Antigravity with Sonnet, if local help proves both invocation and model selection.
+1. AGY / Google Antigravity with either Sonnet or the exact model `gemini-3.1-pro-high`, if local help or model-list evidence proves both invocation and model selection and the captured run proves no fallback.
 2. Claude Code CLI with Sonnet, if AGY is unavailable, unclear, or capacity-limited.
 3. Claude Code CLI with Opus, if Sonnet lacks depth or capacity.
 4. Gemini CLI for broad-context fallback.
@@ -33,6 +35,12 @@ Tier 3 explicit fallback:
 6. Copilot no-tools fallback only when the packet and command explicitly allow fallback. Copilot clink support remains deferred.
 
 Do not hardcode flags. Do not infer a model from branding. If model or invocation cannot be proven, use the next route or record `SKIPPED`.
+
+For AGY Gemini 3.1 audits, the proof must record `auditor_tool: "agy"`,
+`auditor_model: "gemini-3.1-pro-high"`, and the exact `agy --model
+gemini-3.1-pro-high --print ...` invocation. The generic `gemini` model value
+remains backward-compatible but is not a substitute for exact-model evidence in
+new post-approval proofs.
 
 Packet-specific supervisor-approved fallback auditors may be used only when the packet records the approval, bounded input, no-secret constraints, exact invocation, and resulting verdict in proof.
 
@@ -131,7 +139,10 @@ Procedure:
    must conform to `schemas/proof/embedded_audit.schema.json` (see "Required
    Proof Object"). For a Claude Code route use `auditor_tool: "claude-code-cli"`
    with `auditor_model: "opus"` or `"sonnet"`, a non-empty `invocation`, and a
-   `report_path` matching `^proof/<PACKET_ID>/AUDITOR_REPORT.md$`.
+   `report_path` matching `^proof/<PACKET_ID>/AUDITOR_REPORT.md$`. For a
+   post-approval AGY Gemini 3.1 route use `auditor_tool: "agy"` and
+   `auditor_model: "gemini-3.1-pro-high"`; record the exact explicit-model
+   invocation and evidence that the CLI did not fall back.
 3. **Include the top-level fields the PR Steward gate reads**
    (`src/dopemux_pr_merge_specialist/steward_gate.py`): `head_sha` and
    `generated_at`, alongside the `embedded_audit` object:
@@ -208,13 +219,23 @@ ssh-keygen -t ed25519 -N '' -f ~/.ssh/dopemux_audit_signing \
 # via a reviewed PR to main (instructions in that file)
 ```
 
-Per-PR flow (after the local pr-merge audit writes the proof):
+Per-PR flow (after the local pr-merge audit writes the proof). The canonical
+AGENTS.md 9.1 packet proof bundle (`proof/<PACKET_ID>/{PROOF.json,<report>,
+review_bundle/}`) must be committed FIRST, as its own proof-only successor
+commit — `scripts/audit/sign_local_audit_proof.sh` reads it from committed
+git blobs (via `git status --porcelain`), not the working tree, and fails
+closed with `uncommitted changes` if it isn't already committed:
 
 ```bash
+# 1. Commit the canonical packet proof bundle first (separate commit).
+git add proof/<PACKET_ID>/
+git commit -m "proof(audit): canonical packet proof bundle for <PACKET_ID>"
+
+# 2. Then sign and commit the PR-scoped proof.
 scripts/audit/sign_local_audit_proof.sh <pr-number>   # validates + signs
 git add proof/pr_merge/embedded-audit/pr-<N>/
 git commit -m "proof(audit): signed local embedded-audit attestation for PR <N>"
-git push   # must be the only change on top of the audited head_sha
+git push   # both commits together must be the only changes on top of the audited head_sha
 ```
 
 

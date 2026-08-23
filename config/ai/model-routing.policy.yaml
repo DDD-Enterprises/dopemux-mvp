@@ -47,12 +47,41 @@ owner: dopemux
 
 principles:
   - cheap_reads_are_not_cheap_decisions
+  - cost_first_risk_lanes_l0_l3
+  - one_implementer_default
+  - one_final_independent_audit_when_l2_l3
+  - no_intermediate_content_audits
+  - deterministic_metadata_no_model
   - direct_provider_wins_when_equivalent
   - openrouter_is_broker_not_model_family
   - strong_planning_before_non_trivial_implementation
   - independent_audit_before_readiness
   - actual_model_usage_must_be_proven
+  - live_selectors_only_unknown_when_unverified
   - repo_truth_beats_docs
+
+# Evidence-economy model-call budgets (advisory governance; not a runtime enforcer).
+# Companion: docs/03-reference/governance/evidence-economy.md
+evidence_economy:
+  lanes:
+    L0_deterministic:
+      implementer_model_calls: 0
+      auditor_model_calls: 0
+      notes: frontmatter hashes manifests packaging schema inventories proof-only closure
+    L1_bounded:
+      implementer_model_calls: 1
+      auditor_model_calls: 0
+      notes: optional audit only if packet/policy requires
+    L2_material:
+      implementer_model_calls: 1
+      auditor_model_calls: 1
+      notes: final audit only after frozen content head
+    L3_red_lane:
+      implementer_model_calls: 1
+      auditor_model_calls: 1
+      operator_gate_required: true
+      notes: different-family auditor preferred; explicit operator gate for destructive/authority actions
+  exceptions_require: recorded_reason
 
 # ----------------------------------------------------------------------------
 # Stages: the abstract pipeline that every tool follows.

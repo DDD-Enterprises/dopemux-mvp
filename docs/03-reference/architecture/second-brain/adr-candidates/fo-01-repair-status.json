@@ -1,0 +1,135 @@
+{
+  "fo01_status": "TRACEABILITY_REPAIRED_AND_INDEPENDENTLY_REVERIFIED",
+  "architecture_semantics_modified": false,
+  "adr_semantics_modified": false,
+  "decision_references_modified": true,
+  "adr_acceptance_authorized": false,
+  "adr_acceptance_gate_eligible": true,
+  "fo01_gate_condition": "CLOSED",
+  "other_adr_acceptance_conditions": "STILL_REQUIRED",
+  "gate_field_semantics": {
+    "fo01_gate_condition": "Refers to the FO-01 blocker itself. CLOSED means the traceability defect is repaired and independently re-verified, so FO-01 no longer blocks ADR acceptance.",
+    "adr_acceptance_gate_eligible": "FO-01 specifically is satisfied. Scoped deliberately: eligibility is not authorization.",
+    "gates.adr_acceptance": "Unchanged and still CLOSED. The overall ADR-acceptance gate remains shut because the other acceptance conditions listed in other_adr_acceptance_conditions are still outstanding. Closing FO-01 does not open it.",
+    "adr_acceptance_authorized": "Unchanged and still false. Only the human operator may authorize ADR acceptance."
+  },
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001",
+  "required_resolution": "REPAIR_AND_REVERIFY_TRACEABILITY_BEFORE_ANY_ADR_ACCEPTANCE",
+  "authority": {
+    "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+    "r2_candidate_sha256": "94b735c72ff3533f0cd73bed18fd3fb64b164530f7ef360f37584c73504a4e8e",
+    "authority_persistence_merge": "32cc788ad8babb4f51d234bbf2b6336162511ab9",
+    "architecture_accepted_as_law": true,
+    "sb_dec_dispositions": "32 ACCEPT / 0 DEFER / 0 REJECT",
+    "architecture_decisions_reopened": false
+  },
+  "source_hashes": {
+    "24_ADR_CANDIDATES.md": "9cff1e6c90c009ccc931676df14c838e6affafa7732fb11b5aecc0b8cf0858da",
+    "03_ARCHITECTURE_DECISION_REGISTER.yaml": "3a223be56a9df80bbe3141ebb892cbf908ed371c7d4c853eaae5d7f67959bf80",
+    "frozen_source_proof_copy": "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/source/24_ADR_CANDIDATES.md"
+  },
+  "repaired_candidate": {
+    "path": "docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md",
+    "sha256": "946054a4675271856e0214dbf1ce0aa9b1ec17e71e79a82711ad3ca0d9df9c22",
+    "body_non_reference_text_identical_to_source": true,
+    "authorized_change_class": "DECISION_REFERENCE_CHANGE",
+    "frontmatter_added_outside_source_body": true
+  },
+  "content_head": null,
+  "content_head_binding": "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/C1_HEAD.txt",
+  "content_head_note": "A file cannot contain its own commit sha; C1 is bound in the proof successor commit.",
+  "coverage": {
+    "adrs_inspected": 10,
+    "decisions_in_register": 32,
+    "decisions_linked": 26,
+    "decisions_intentionally_unlinked": 6,
+    "adrs_changed": 8,
+    "adrs_correct_as_written": 2,
+    "fo01_known_defective_adrs_repaired": 5,
+    "additional_defective_adrs_found": 3,
+    "ambiguous_mappings": 1,
+    "one_to_one_coverage_imposed": false
+  },
+  "adr_statuses": {
+    "all_remain": "PROPOSED (candidate)",
+    "document_status": "CANDIDATE",
+    "promoted_to_accepted": 0
+  },
+  "sb_dec_031": {
+    "decision_id": "SB-DEC-031",
+    "title": "Runtime and benchmark claims remain NOT_RUN",
+    "disposition": "INTENTIONALLY_UNLINKED_CROSS_CUTTING_CLAIMS_DISCIPLINE",
+    "rationale": "Claims/evidence discipline holding all runtime conformance, latency, retrieval quality, purge completeness, offline sync, and isolation measurements NOT_RUN. Already expressed uniformly in every ADR's acceptance condition 'No runtime, implementation, or production claim is inferred from acceptance', which is the discipline applied across all ten ADRs rather than a standalone architectural choice. Option B under the packet's SB-DEC-031 adjudication. No ADR cites it; none was broadened to.",
+    "adr_created": false,
+    "existing_adr_broadened": false,
+    "operator_adjudication_required": false
+  },
+  "sb_dec_032": {
+    "decision_id": "SB-DEC-032",
+    "title": "Observed remote drift is non-material to this candidate",
+    "disposition": "INTENTIONALLY_UNLINKED_HISTORICAL_EVIDENCE_OBSERVATION",
+    "rationale": "Historical evidence observation recording remote main 17ddf9aa716956af9cd07f738c08b646edfeabee as advanced from the discovery base, with web-observation evidence pointers. Not an architectural choice; no ADR created and none broadened.",
+    "adr_created": false,
+    "existing_adr_broadened": false,
+    "operator_adjudication_required": false
+  },
+  "independent_verification": {
+    "performed": true,
+    "verdict": "PASS_FO01_TRACEABILITY_REPAIR_WITH_NONBLOCKING_OBSERVATIONS",
+    "audited_content_head": "25b50f019765263d1abf21fd5bc3ae9c6e522c7a",
+    "auditor_report_sha256": "6bc2785455644b40ca860cb8fb996d116b433a2b324babebf422d69677567384",
+    "blockers": 0,
+    "must_fix": 0,
+    "nonblocking_observations": 3,
+    "known_mappings_verified": "5/5",
+    "matrix_independently_reproduced": "10/10",
+    "auditor": {
+      "runner": "OpenCode CLI 1.18.14",
+      "model": "openrouter/moonshotai/kimi-k3",
+      "variant": "max",
+      "independent_of_producer": true,
+      "read_only": true,
+      "separate_process": true,
+      "separate_clone": true
+    },
+    "evidence": "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/FO01_RESOLUTION_RECEIPT.json",
+    "note": "Reconciled from the later independent-verification receipt. Every value here is copied from that receipt; none was inferred or re-derived by the producer."
+  },
+  "stale_record_reconciliation": {
+    "task_id": "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+    "change_class": "STALE_STATUS_RECORD_RECONCILIATION",
+    "defect": "This file asserted REPAIR_COMPLETE_PENDING_INDEPENDENT_VERIFICATION with independent_verification.performed=false, while FO01_RESOLUTION_RECEIPT.json — written later, after the audit — asserted TRACEABILITY_REPAIRED_AND_INDEPENDENTLY_REVERIFIED. Two records on main disagreed about whether FO-01 still blocked ADR acceptance, and this copy lives in the authority tree so it surfaced first. The finding was the disagreement, not an absence of verification.",
+    "resolution": "The receipt is later in time and supersedes this record. This file now mirrors it.",
+    "evidence_source": "proof/TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001/FO01_RESOLUTION_RECEIPT.json",
+    "semantics_unchanged": {
+      "adr_semantics_modified": false,
+      "architecture_semantics_modified": false,
+      "candidate_document_modified": false,
+      "sb_dec_dispositions_modified": false,
+      "adr_statuses_modified": false,
+      "note": "Only the status/verification fields were reconciled. No ADR, SB-DEC, coverage, or source-hash value was touched."
+    },
+    "still_forbidden": [
+      "ADR acceptance",
+      "implementation execution",
+      "runtime enablement",
+      "merge authorization"
+    ],
+    "verified_by": "scripts/governance/validate_second_brain_adr_contracts.py (check group B)"
+  },
+  "preserved_not_run": {
+    "runtime_conformance": "NOT_RUN",
+    "retrieval_benchmarks": "NOT_RUN",
+    "purge_completeness": "NOT_RUN",
+    "multi_project_isolation": "NOT_RUN",
+    "split_brain_proof": "NOT_RUN",
+    "encryption_implementation": "ABSENT"
+  },
+  "gates": {
+    "adr_acceptance": "CLOSED",
+    "implementation_planning": "AUTHORIZED",
+    "implementation_execution": "NOT_AUTHORIZED",
+    "merge": "NOT_AUTHORIZED"
+  }
+}

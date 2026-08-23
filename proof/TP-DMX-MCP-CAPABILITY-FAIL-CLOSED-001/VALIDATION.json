@@ -1,0 +1,60 @@
+{
+  "gates": {
+    "focused_tests": {
+      "command": "python -m pytest -q tests/mcp/test_resolver.py tests/mcp/test_discovery_gate_strict.py",
+      "status": "PASS",
+      "result": "16 passed",
+      "evidence": "review_bundle/focused_tests_output.txt"
+    },
+    "relevant_complete_mcp_suite": {
+      "command": "python -m pytest -q tests/mcp",
+      "status": "PASS",
+      "result": "63 passed",
+      "evidence": "review_bundle/relevant_suite_output.txt"
+    },
+    "adjacent_mcp_smoke": {
+      "command": "python -m pytest -q tests/test_cli_mcp_startup.py tests/test_mcp_config_generation.py tests/test_mcp_health_probe.py tests/test_mcp_registry.py",
+      "status": "BASELINE_FAILURE_PROVEN_NONREGRESSION",
+      "result": "1 failed (test_mcp_health_probe.py::test_extract_port_default), remainder passed",
+      "baseline_proof": {
+        "method": "git stash on the same worktree, ran the identical single test against unmodified origin/main content (execution base), observed identical failure with identical assertion values (3007 == 3005), then git stash pop to restore changes.",
+        "root_cause": "Ambient CONPORT_MCP_PORT=3007 environment variable in the shell overrides the test's expected default of 3005 in a $-substitution port-extraction helper. Unrelated to resolver.py or gate.py -- the affected code path (_extract_port) is not part of this packet's changed files.",
+        "affected_path_independent_of_packet": true
+      },
+      "evidence": "review_bundle/adjacent_smoke_output.txt"
+    },
+    "diff_hygiene": {
+      "command": "git diff --check",
+      "status": "PASS",
+      "evidence": "review_bundle/diff_check.txt"
+    },
+    "changed_file_allowlist": {
+      "status": "PASS",
+      "note": "All 6 changed files (src/dopemux/mcp/resolver.py, src/dopemux/mcp/gate.py, tests/mcp/test_resolver.py, tests/mcp/test_discovery_gate_strict.py, task-packets/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001.json, task-packets/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001.md) are within the packet section 4 allowlist.",
+      "evidence": "CHANGED_FILES.txt"
+    },
+    "task_packet_schema": {
+      "command": "dopemux.orchestrator.validation.packets.validate_packet_file against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json (current checkout's canonical strict Task Packet schema, discovered via src/dopemux/orchestrator/validation/packets.py::default_packet_schema_path)",
+      "status": "PASS",
+      "evidence": "review_bundle/packet_schema_validation.txt"
+    },
+    "pre_commit": {
+      "command": "pre-commit run --files <allowlisted files>",
+      "status": "PASS",
+      "note": "docs-frontmatter-guard hook auto-inserted frontmatter into task-packets/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001.md on first run (files were modified by this hook); re-ran pre-commit on the mutated file and it passed clean; affected tests were re-run after the mutation and remained green.",
+      "evidence": "review_bundle/pre_commit_second_pass.txt"
+    },
+    "secret_scan": {
+      "command": "gitleaks protect (staged diff, then full working-tree diff after commit)",
+      "status": "PASS",
+      "result": "no leaks found",
+      "evidence": "review_bundle/secret_scan.txt"
+    },
+    "repo_commit_hook_preflight": {
+      "status": "PASS",
+      "note": "Repository's own commit-time preflight hook (repo_preflight) ran automatically on `git commit`: run-mode enforce OK, jq present, ledger present/valid JSON, diff whitespace clean, smoke-tests (syntax-ok across 964 files) OK.",
+      "evidence": "review_bundle/commit_hook_output.txt"
+    }
+  },
+  "overall_status": "PASS_WITH_NONBLOCKING_RISKS"
+}

@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+  "purpose": "Custody of the S7 independent-audit route. Records what was actually requested, what actually ran, and where each claim can be verified from.",
+  "verification_classes": {
+    "VERIFIED_REPOSITORY": "Provable from tracked repository bytes by any consumer.",
+    "PRODUCER_MACHINE_VERIFIED_OFF_REPO_UNVERIFIABLE": "Verified by the producer on the producer's machine, not provable to an off-machine consumer.",
+    "UNKNOWN": "Not established."
+  },
+  "audit_prompt": {
+    "path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/AUDIT_PROMPT.md",
+    "sha256": "090cdea2702a531763488b10f2f583c2e9bd7a5b339186c11d58c07e68501baf",
+    "verification_class": "VERIFIED_REPOSITORY",
+    "executed_verbatim": true
+  },
+  "prompt_head_discrepancy": {
+    "issue": "AUDIT_PROMPT.md names frozen content head 8a9b0ee53c72062a0a68738082e5a056fad38f27. The audit actually ran against 7955ef33d7c0ab29daecbab966bc6a9497dc69ce, which is one commit later (the A21 value-grounding fix).",
+    "cause": "The prompt was authored before a producer self-adversarial probe found a real validator false-green. Fixing it added a commit, moving the content head after the prompt text was written.",
+    "detected_by": "THE_AUDITOR_ITSELF",
+    "auditor_statement": "HEAD is `7955ef33`, not stated freeze `8a9b0ee`. Checking that, then reading ADR candidates, inventory, and contracts.",
+    "handling": "The prompt was NOT rewritten to match. It is the artifact that was actually executed, and editing it to name a head it did not name would be falsifying custody. The discrepancy is recorded here instead.",
+    "material_effect": "None on scope. The auditor read the worktree it was placed in, which is the later head, and it verified that head itself. The bytes audited are a strict superset improvement over the bytes named.",
+    "audited_head_is_authoritative": "7955ef33d7c0ab29daecbab966bc6a9497dc69ce",
+    "verification_class": "VERIFIED_REPOSITORY"
+  },
+  "route": {
+    "runner": "grok CLI 1.0.0 (3cd0d0cbcebe) [stable]",
+    "invocation": "grok --cwd /private/tmp/sb-audit-c1 --always-approve --max-turns 60 --output-format plain -p \"$(cat AUDIT_PROMPT.md)\"",
+    "session_id": "019ff54e-59b1-7a12-bc2a-1cc88f3e3189",
+    "session_transcript": "~/.grok/sessions/%2Fprivate%2Ftmp%2Fsb-audit-c1/019ff54e-59b1-7a12-bc2a-1cc88f3e3189/chat_history.jsonl",
+    "independent_of_producer": true,
+    "producer_conversation_history": false,
+    "separate_process": true,
+    "separate_worktree": true,
+    "worktree": "/private/tmp/sb-audit-c1 (detached at the audited head)",
+    "read_only_intent": "The prompt instructs no modification. The auditor was placed in a throwaway detached worktree so that command execution could be approved without any possibility of touching the reviewed artifacts.",
+    "verification_class": "PRODUCER_MACHINE_VERIFIED_OFF_REPO_UNVERIFIABLE",
+    "transcript_sha256": "4b3e0b1014da7f7e32d1cfd4d2ce841e6961f1507b780d54e0e7feb63365243e",
+    "transcript_lines": 52,
+    "model_reported_by_runner": "grok (runner default; the runner does not expose a provider-attested model id in plain output)",
+    "model_verification_class": "UNKNOWN"
+  },
+  "attempted_routes_before_this_one": [
+    {
+      "route": "pal-stdio codereview / gemini-2.5-pro",
+      "outcome": "FAILED \u2014 provider returned 429 RESOURCE_EXHAUSTED with quota_limit_value 0",
+      "verification_class": "PRODUCER_MACHINE_VERIFIED_OFF_REPO_UNVERIFIABLE"
+    },
+    {
+      "route": "pal-stdio chat / gpt-5-pro",
+      "outcome": "FAILED \u2014 the pal MCP containers have zero bind mounts, so the server cannot read any host file; every files[] attachment resolved to nothing",
+      "verification_class": "PRODUCER_MACHINE_VERIFIED_OFF_REPO_UNVERIFIABLE"
+    },
+    {
+      "route": "opencode run / openrouter ~openai/gpt-latest",
+      "outcome": "FAILED \u2014 headless run auto-rejected its own bash permission request and terminated after 224 bytes without a verdict",
+      "verification_class": "PRODUCER_MACHINE_VERIFIED_OFF_REPO_UNVERIFIABLE"
+    }
+  ],
+  "provider_attestation": {
+    "value": null,
+    "verification_class": "UNKNOWN",
+    "note": "No provider-side attestation of model identity was obtained. The model identity below is what the local runner reports, not what a provider attests."
+  },
+  "schema_representation_note": "This packet records the audit as a plain report plus this custody record. It does not emit the repository embedded-audit proof schema, whose auditor_model enum cannot represent this runner \u2014 a known separate governance issue that this packet is explicitly forbidden from repairing.",
+  "audit_result": {
+    "verdict": "FAIL",
+    "blockers": 3,
+    "must_fix": 5,
+    "report": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/AUDITOR_REPORT.md",
+    "report_sha256": "ec52c250af995d115827725cbc667cd01f155cde43016f03ecbdd45ce5c89e05",
+    "producer_disputes": 0,
+    "producer_independently_reverified": [
+      "BLOCKER_2_dopeTask_invention",
+      "BLOCKER_3_enum_shrink",
+      "BLOCKER_1_bilateral_edit_residual"
+    ]
+  }
+}

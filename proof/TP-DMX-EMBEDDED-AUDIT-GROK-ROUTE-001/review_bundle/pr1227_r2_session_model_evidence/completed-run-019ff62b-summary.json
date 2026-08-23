@@ -1,0 +1,26 @@
+{
+  "info": {
+    "id": "019ff62b-f270-7930-8d50-c95d094d1e3d",
+    "cwd": "/private/tmp/sb-audit-r2"
+  },
+  "session_summary": "Independent Audit ADR Contract Evidence Round 2",
+  "created_at": "2026-08-12T13:31:43.284326Z",
+  "updated_at": "2026-08-12T13:41:29.047414Z",
+  "num_messages": 319,
+  "num_chat_messages": 85,
+  "current_model_id": "grok-4.5",
+  "next_trace_turn": 1,
+  "chat_format_version": 1,
+  "git_root_dir": "/private/tmp/sb-audit-r2/",
+  "git_remotes": [
+    "https://github.com/DDD-Enterprises/dopemux-mvp.git"
+  ],
+  "head_commit": "6e1b4472ba626df2a5d7724e87c5ec77c9c46043",
+  "request_id": "842e3331-8939-4830-9f2d-8491cb141be6",
+  "grok_home": "/Users/hue/.grok",
+  "last_active_at": "2026-08-12T13:41:29.047414Z",
+  "generated_title": "Independent Audit ADR Contract Evidence Round 2",
+  "agent_name": "grok-build-plan",
+  "sandbox_profile": "off",
+  "reasoning_effort": "high"
+}

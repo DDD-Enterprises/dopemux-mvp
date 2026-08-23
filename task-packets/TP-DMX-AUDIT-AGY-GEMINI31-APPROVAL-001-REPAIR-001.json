@@ -1,0 +1,199 @@
+{
+  "id": "TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001",
+  "project": "dopemux-mvp",
+  "target": "Repair PR #1165 in place so it binds the proven exact AGY selector gemini-3.1-pro-high only to auditor_tool=agy, reconciles every stale gemini-3.1-pro-preview authority claim to that repaired truth, and satisfies the current-main governance contract including the change-contract-preflight gate.",
+  "invariants": [
+    "EXACT SELECTOR: gemini-3.1-pro-high is the canonical exact AGY selector admitted by this series.",
+    "REJECTED SELECTOR: gemini-3.1-pro-preview is not offered by AGY and must never be admitted to the auditor_model enum.",
+    "HISTORY (SUPERSEDED): the parent packet and the PR description originally named gemini-3.1-pro-preview as exact. That claim is superseded and must not appear as active authority anywhere in the branch.",
+    "PAIRING: the model-to-tool conditional must continue to require auditor_tool=agy whenever auditor_model=gemini-3.1-pro-high.",
+    "BACKWARD COMPATIBILITY: generic auditor_model=gemini remains valid.",
+    "BOOTSTRAP RULE: before the exact-model admission is trusted on main, this PR's bootstrap embedded-audit representation uses auditor_tool=agy and auditor_model=gemini, while exact invocation and selector evidence establish gemini-3.1-pro-high. The new exact enum must not bootstrap its own admission.",
+    "EVIDENCE FRESHNESS: AGY selector evidence must be re-verified against the AGY build actually present, not trusted from earlier proof. Recorded re-verification: AGY advanced v1.1.9 to v1.1.11 and the model list is byte-identical, so gemini-3.1-pro-high remains present and gemini-3.1-pro-preview remains absent.",
+    "NO-FALLBACK EVIDENCE: the audited AGY run must evidence that no silent model fallback occurred.",
+    "MUST NOT add hosted AGY credentials or expand workflow credentials.",
+    "MUST NOT weaken signer trust, exact-head binding, or proof-only closure.",
+    "MUST NOT weaken PR Steward readiness semantics or fabricate readiness metadata.",
+    "MUST NOT weaken audit verdict rules.",
+    "MUST NOT mutate PR #1150 or unrelated open work.",
+    "MUST NOT add Grok support in this packet; grok-runner, grok-4.5, Grok route custody, and Grok tests belong to TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001 after this lands.",
+    "BASE CURRENCY: the branch must be rebased onto current origin/main and re-validated. GitHub reporting MERGEABLE against a stale historical base is not evidence of gate conformance; the current-main change-contract-preflight gate did not exist at the original base.",
+    "PACKET CONTRACT: both packets in this series must validate against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json with zero schema errors and zero additional-property errors.",
+    "AUDIT BINDING: because this repair changes machine-readable authority documents, the final content head must be frozen and independently re-audited; the earlier audit must not be reused as final-head authority.",
+    "FAIL CLOSED: stop if the exact AGY high selector is absent from the AGY model list.",
+    "FAIL CLOSED: stop if gemini-3.1-pro-preview remains approved anywhere as active authority.",
+    "FAIL CLOSED: stop if current AGY evidence contradicts the recorded branch evidence.",
+    "FAIL CLOSED: stop if the independent audit verdict is FAIL.",
+    "FAIL CLOSED: stop if PR Steward is not READY.",
+    "COMMIT TOPOLOGY: C1 carries the repair content (schema, docs, tests, packets); C2 is a proof-only successor touching proof/pr_merge/embedded-audit/pr-1165/** so the signed local attestation binds an exact audited head.",
+    "REPORT PATH: the embedded-audit report_path must satisfy the trusted schema pattern ^proof/[^/]+/AUDITOR(_REPAIR(_[0-9]+)?)?_REPORT\\.md$. Because proof-only closure confines C2 to proof/pr_merge/embedded-audit/pr-1165/, the canonical auditor report must live in the audited content head at proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001/AUDITOR_REPORT.md and that file must actually exist there.",
+    "VALIDATOR SCOPE: a skip by proof/.validator_scope.json is not evidence of conformance. scripts/audit/validate_audit_proof.py must be run directly on the replacement proof and its result is controlling.",
+    "SCHEMA EVIDENCE BOUNDARY: ACCEPTED_DESIGN_BOUNDARY: SCHEMA_BINDS_DECLARED_TOOL_MODEL_PAIR; RUNTIME_SELECTOR_PROVEN_BY_EXECUTION_EVIDENCE. The model-to-tool conditional binds the declared pairing only. It must not be widened into invocation parsing, and schema validity must never be claimed as proof that the runner executed the exact selector.",
+    "SINGLE POLICY ENGINE: schemas/proof/embedded_audit.schema.json is the only authority on embedded_audit shape. Both validation routes execute it with real Draft 7 semantics (jsonschema.Draft7Validator). No route may mirror, summarise, or partially reimplement its rules in hand-written code; a conditional added to the schema must be enforced everywhere the day it lands.",
+    "LOCAL_ATTESTATION_ENFORCES_CANONICAL_JSON_SCHEMA_CONDITIONALS: scripts/audit/local_audit_acceptance.py must reject any signed embedded_audit that the canonical Draft7Validator rejects, including allOf conditionals, additionalProperties, and report_path. The controlling regression fixture is status=PASS with auditor_model=gemini-3.1-pro-high and auditor_tool=claude-code-cli: both validation paths must reject it.",
+    "FAIL CLOSED ON ABSENT ENGINE: when jsonschema is unavailable the acceptance route emits schema_validator_unavailable and rejects. It must never fall back to a partial structural check. The trusted workflow provisions the validator explicitly rather than relying on an undeclared runner-image package.",
+    "PRESERVED GATES: the enforcement repair must not weaken passing-verdict policy, repository identity, PR identity, signature verification, trusted principal, audited-head ancestry, or proof-only successor closure. Schema validity is added to those gates, never substituted for them.",
+    "AUDIT TOPOLOGY VOCABULARY: AUDITED_TREE is the exact substantive tree sent to the auditor; AUDIT_EVIDENCE_HEAD is the successor adding only the audit report, raw transcript, and deterministic runner evidence; SIGNED_PROOF_HEAD is the successor adding only permitted signed proof artefacts. An audit cannot audit its own output, and the ordering must be recorded explicitly rather than elided."
+  ],
+  "depends_on": [
+    "TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "AGY-GEMINI31-APPROVAL-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001",
+    "final_packet": true
+  },
+  "commit": {
+    "message": "fix(audit): bind AGY Gemini model authority to the proven exact selector",
+    "allowlist": [
+      "task-packets/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001.json",
+      "task-packets/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001.md",
+      "task-packets/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001.json",
+      "schemas/proof/embedded_audit.schema.json",
+      "docs/ops/embedded-audit.md",
+      "docs/ops/embedded-audit-proof.md",
+      "tests/audit/test_agy_gemini31_model.py",
+      "proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001/implementation-notes.md",
+      "proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001/**",
+      "proof/pr_merge/embedded-audit/pr-1165/**",
+      "scripts/audit/local_audit_acceptance.py",
+      "tests/audit/test_local_audit_acceptance.py",
+      ".github/workflows/embedded-audit.yml",
+      "task-packets/TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001.json"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001.json >/dev/null",
+      "python -m json.tool task-packets/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001.json >/dev/null",
+      "python -m pytest tests/audit/test_local_audit_acceptance.py -q",
+      "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "audit: approve AGY Gemini 3.1 Pro exact model",
+    "body": "Repairs PR #1165 so its stated authority matches its enacted bytes: the admitted exact AGY selector is gemini-3.1-pro-high, gemini-3.1-pro-preview is rejected, and generic gemini stays backward compatible. Rebased onto current main and migrated both series packets to the canonical dopetask spec so the change-contract-preflight gate passes. Adds no credentials and weakens no trust gate.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "R01",
+      "task": "Refresh origin/main and rebase the #1165 branch onto it, preserving reviewable history.",
+      "requirements": [
+        "Record the pre-rebase head as a safety ref before rewriting.",
+        "Drop any proof commit whose signed attestation binds a SHA that no longer exists after the rebase."
+      ],
+      "validation": [
+        "git rev-parse origin/main",
+        "git rev-list --left-right --count origin/main...HEAD"
+      ]
+    },
+    {
+      "id": "R02",
+      "task": "Re-verify AGY selector evidence against the AGY build actually installed, preserving the original captures alongside the new ones.",
+      "requirements": [
+        "Stop with BLOCKED_AGY_SELECTOR_DRIFT if current AGY evidence contradicts the recorded branch evidence."
+      ],
+      "commands": [
+        "agy --version",
+        "agy models"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001/review_bundle/AGY_VERSION_REVERIFY_20260810.txt",
+        "proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001/review_bundle/AGY_MODELS_REVERIFY_20260810.txt"
+      ],
+      "validation": [
+        "agy --version",
+        "agy models"
+      ]
+    },
+    {
+      "id": "R03",
+      "task": "Reconcile every stale gemini-3.1-pro-preview authority claim to gemini-3.1-pro-high, preserving rejection and absence references.",
+      "requirements": [
+        "Preserve gemini-3.1-pro-preview only as a rejected identifier, an absence observation, or explicit superseded history.",
+        "Do not globally replace unrelated historical text."
+      ],
+      "expected_files": [
+        "docs/ops/embedded-audit-proof.md",
+        "task-packets/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001.json",
+        "proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001/implementation-notes.md"
+      ],
+      "validation": [
+        "python scripts/docs_validator.py docs/ops/embedded-audit.md docs/ops/embedded-audit-proof.md"
+      ]
+    },
+    {
+      "id": "R04",
+      "task": "Migrate both series packets to the canonical dopetask spec without losing governance meaning, mapping noncanonical fields into canonical locations and marking superseded claims as history.",
+      "requirements": [
+        "Zero schema errors and zero additional-property errors for both packets.",
+        "Every removed noncanonical field accounted for as PRESERVED, SUPERSEDED, or CORRECTED.",
+        "No production scope expansion beyond what the parent and repair authority already permit."
+      ],
+      "expected_files": [
+        "task-packets/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001.json",
+        "task-packets/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001.json"
+      ],
+      "validation": [
+        "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
+      ]
+    },
+    {
+      "id": "R05",
+      "task": "Re-run the full current-main validation surface against the rebased head.",
+      "validation": [
+        "python -m pytest tests/audit/ tests/pr_merge_specialist/test_steward_gate.py tests/pr_steward/ tests/governance/test_validate_change_contract.py -q",
+        "python scripts/docs_validator.py docs/ops/embedded-audit.md docs/ops/embedded-audit-proof.md",
+        "git diff --check",
+        "pre-commit run --from-ref origin/main --to-ref HEAD"
+      ]
+    },
+    {
+      "id": "R06",
+      "task": "Freeze the final content head and obtain a fresh independent audit bound to it, then close with a proof-only successor and truthful PR Steward readiness.",
+      "requirements": [
+        "The earlier audit must not be reused as final-head authority.",
+        "The bootstrap proof records auditor_tool=agy and auditor_model=gemini while the invocation proves --model gemini-3.1-pro-high.",
+        "The proof commit must be the only change on top of the audited head.",
+        "Report PR Steward status truthfully; do not weaken it.",
+        "The canonical auditor report must exist in the audited content head at proof/TP-DMX-AUDIT-AGY-GEMINI31-APPROVAL-001-REPAIR-001/AUDITOR_REPORT.md and be referenced verbatim as report_path; C2 adds only the signed proof artefacts."
+      ],
+      "expected_files": [
+        "proof/pr_merge/embedded-audit/pr-1165/PROOF.json",
+        "proof/pr_merge/embedded-audit/pr-1165/PROOF.json.sig"
+      ],
+      "validation": [
+        "python scripts/audit/validate_audit_proof.py proof/pr_merge/embedded-audit/pr-1165/PROOF.json"
+      ]
+    },
+    {
+      "id": "R07",
+      "task": "Repair trusted local-attestation schema enforcement so the signed route cannot accept a proof the canonical schema rejects.",
+      "requirements": [
+        "Reproduce the defect before repairing it and record the reproduction as evidence.",
+        "Replace the partial structural check with canonical Draft 7 execution against the trusted schema; do not hand-copy the schema's conditionals into a second validator.",
+        "Validate the signed embedded_audit payload in full, including report_path; skipping it is how a canonical-schema failure was previously concealed.",
+        "Keep verdict policy separate from schema validity: the schema admits FAIL and SKIPPED, local attestation accepts passing verdicts only.",
+        "Prove parity with jsonschema over a fixture corpus, and fail the suite when a new schema conditional lacks coverage.",
+        "Provision the validator in the trusted workflow so the gate does not silently die fail-closed after merge."
+      ],
+      "expected_files": [
+        "scripts/audit/local_audit_acceptance.py",
+        "tests/audit/test_local_audit_acceptance.py",
+        ".github/workflows/embedded-audit.yml",
+        "docs/ops/embedded-audit-proof.md"
+      ],
+      "validation": [
+        "python -m pytest tests/audit/test_local_audit_acceptance.py -q",
+        "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
+      ]
+    }
+  ]
+}

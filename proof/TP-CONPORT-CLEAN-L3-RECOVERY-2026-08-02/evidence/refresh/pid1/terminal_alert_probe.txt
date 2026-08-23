@@ -1,0 +1,96 @@
+=== drive to terminal budget ===
+2026-08-03T01:39:58Z
+3
+1785721023 enhanced_server_rest 137
+1785721046 mcp_proxy_sse 137
+1785721053 info_server 137
+killed 16
+kill#4 recovered start=2026-08-03T01:40:00.398101546Z count=4 top=
+killed 16
+kill#5 recovered start=2026-08-03T01:40:07.385024257Z count=5 top=
+=== post-5 failures state ===
+5
+1785721023 enhanced_server_rest 137
+1785721046 mcp_proxy_sse 137
+1785721053 info_server 137
+1785721198 enhanced_server_rest 137
+1785721206 enhanced_server_rest 137
+total 20
+drwxr-xr-x 2 root root 4096 Aug  3 01:40 .
+drwxr-xr-x 1 root root 4096 Aug  2 23:51 ..
+-rw-r--r-- 1 root root  143 Aug  3 01:40 TERMINAL_ALERT
+-rw-r--r-- 1 root root    2 Aug  3 01:40 failure_count
+-rw-r--r-- 1 root root  164 Aug  3 01:40 failures.log
+failure_count=5
+budget reached; killing to enter terminal on next start
+t=1 running
+t=2 running
+t=3 running
+t=4 running
+t=5 running
+t=6 running
+t=7 running
+t=8 running
+t=9 running
+t=10 running
+t=11 running
+t=12 running
+t=13 running
+t=14 running
+t=15 running
+t=16 running
+t=17 running
+t=18 running
+t=19 running
+t=20 running
+t=21 running
+t=22 running
+t=23 running
+t=24 running
+t=25 running
+=== terminal probe ===
+PID                 CMD
+66965               bash start_with_info.sh
+67029               sleep 3600
+total 20
+drwxr-xr-x 2 root root 4096 Aug  3 01:40 .
+drwxr-xr-x 1 root root 4096 Aug  2 23:51 ..
+-rw-r--r-- 1 root root  143 Aug  3 01:40 TERMINAL_ALERT
+-rw-r--r-- 1 root root    2 Aug  3 01:40 failure_count
+-rw-r--r-- 1 root root  164 Aug  3 01:40 failures.log
+status=TERMINAL_ALERT
+reason=child_failure_budget_exhausted
+failures_in_window=5
+max_failures=5
+window_secs=600
+timestamp=2026-08-03T01:40:07Z
+1785721023 enhanced_server_rest 137
+1785721046 mcp_proxy_sse 137
+1785721053 info_server 137
+1785721198 enhanced_server_rest 137
+1785721206 enhanced_server_rest 137
+curl: (7) Failed to connect to 127.0.0.1 port 3004 after 0 ms: Could not connect to server
+ rest_rc=7
+curl: (7) Failed to connect to 127.0.0.1 port 4004 after 0 ms: Could not connect to server
+ info_rc=7
+INFO:     Started server process [17]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3005 (Press CTRL+C to quit)
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:40:05 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:     127.0.0.1:57540 - "GET /health HTTP/1.1" 200 OK
+start_with_info.sh: line 135:    16 Killed                  MCP_SERVER_PORT=3004 python enhanced_server.py
+[conport-supervisor] Required child died: name=enhanced_server_rest wait_status=137
+INFO:     Shutting down
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [17]
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [15]
+[conport-supervisor] Failure budget reached (5/5); next start enters terminal alert.
+[conport-supervisor] TERMINAL ALERT: 5 child failures within 600s (max 5).
+[conport-supervisor] Entering non-exit terminal sleep so restart:unless-stopped does not storm.
+[conport-supervisor] Operator must clear /var/lib/conport-supervision/TERMINAL_ALERT / failures.log after repair.
+Name=/mcp-conport Status=running RestartCount=9

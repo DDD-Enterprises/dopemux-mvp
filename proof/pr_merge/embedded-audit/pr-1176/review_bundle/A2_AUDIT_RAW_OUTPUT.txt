@@ -1,0 +1,51 @@
+# Independent Formal Audit — CCAR-002R-A2, PR #1176
+
+**Auditor**: Claude Opus 5 (claude-code-cli), read-only. Nothing was pushed, merged, or modified. Full record written to `/Users/hue/.claude/plans/independent-formal-audit-iridescent-cocke.md`.
+
+## Ground truth re-derived
+
+`git log -1` → `c8181389864bfc099bc24f7d689716057c3c8573` ✅ matches the stated head. `git diff --stat 899082ae..HEAD` → **29 files, 4686 insertions, 0 deletions**, and `--name-status` shows all 29 as `A` — a pure addition, which alone settles item 8.
+
+## Per-item results
+
+**1. A2 fixes present.** All four verified in the working tree, not just in commit messages: `worktree` key gone from `SOURCE_MANIFEST.json`; real timestamp replacing the `$(date …)` literal; `--check`-before-regenerate reorder; non-capturing group + `finditer(...).group(0)`.
+
+**2. Timestamp sync.** Report `**Generated**: 2026-08-03T07:37:00Z` == catalog `meta.generated_at: '2026-08-03T07:37:00Z'`. `--check --repo-root .` → exit 0, `CHECK_PASS`. `meta.source_commit 683b2411…` is a real ancestor of HEAD and matches the manifest `base_commit`.
+
+**3. Tests leave the tree clean.** 26 passed, 0 failed, 0 skipped. Catalog sha256 `ad69d42e8c68…` identical before and after; `git status --short` and `git diff --stat` both clean. The prior round's mutation bug is fixed.
+
+**4. Scanner.** I exercised `_scan_model_ids` directly — `claude-sonnet-4.5`, `Claude Opus 4.1`, `claude haiku 3`, `gpt-5.4-mini`, `gemini-3-pro`, `grok-4`, `CLAUDE-SONNET-5` all return the full token; no-match returns `[]`. `TestScanModelIds` is real, collected, and passing.
+
+**5. Stale "Claude" refs.** Clean. Every survivor is a `.claude/` path or a correct historical statement about the Sonnet R1 audit / REVIEW-001. The frontmatter prelude now names the OpenRouter route.
+
+**6. PROOF.json wording.** SHA-anchored to `b096551dfa` and `fd7afbe295`, with an explicit note on why a "current head" claim can't survive its own edit.
+
+**7. Scope.** `41bc6207..HEAD` = 5 commits / 23 files, all inside the A2 allowlist. No creep.
+
+**9. No runtime activation.** Repo-wide grep finds **zero** importers or consumers of the catalog or builder outside the audited directories. No hooks, `.mcp.json`, workflows, or `src/` changes. Independently re-derived: 9 agents, 43 personas, all four authority booleans `False` for all 43, zero model-ID tokens in the catalog.
+
+## Notable findings
+
+The one worth acting on: `test_generation_idempotent` **still writes the committed catalog** and relies on a `finally` block to restore it. That's a real improvement over no cleanup, but a SIGKILL, pytest timeout, or `-n auto` run can still leave committed evidence dirty. The builder already has `--stdout` — the regeneration leg could avoid touching the file entirely.
+
+Two truthfulness nits, given this packet's own standard: `PROOF.json` records "round 2 vs fd7afbe295 (kimi-k3): FAIL", but `COMMAND_LOG.md` correctly states kimi-k3 emitted no verdict at all and deepseek-v4-pro was the fallback whose PASS was overridden by inspection. And `NORMALIZATION_REPORT.md`'s Generator section still says `v1.0.0` while the catalog and the section below it say `1.0.1`.
+
+Also: `--check` calls `normalize_generated_at()` on both sides, so it structurally *cannot* detect `generated_at` drift — the exact class of defect A2 was repairing. The sync in item 2 is confirmed by direct byte comparison, not by `--check`. Worth knowing before leaning on `--check` as the evidence for it again.
+
+On item 10's spirit: I'm a Claude-family model, and `CCAR-002R-A2.md:115` specifies the R3 independent audit as OpenCode + OpenRouter, "Not Claude Sonnet — Claude Sonnet authored this repair and cannot audit its own work (REVIEW-001)." I did not author any of this and am a different model and session, so I read REVIEW-001 as satisfied — but the packet names a specific non-Claude route, so that's the operator's call to record honestly in the R4 proof.
+
+```
+VERDICT: PASS_WITH_RISKS
+HEAD_CONFIRMED: c8181389864bfc099bc24f7d689716057c3c8573
+FINDINGS:
+- [MEDIUM] Test still mutates committed catalog: `test_generation_idempotent` regenerates `config/commandcode/normalized_agent_persona_catalog.yaml` in place and restores it in a `finally` block; an aborted/killed/parallel (`-n auto`) run can leave committed evidence dirty. Non-blocking (verified clean on a normal run), but the builder's existing `--stdout` flag would remove the write entirely.
+- [LOW] `--check` cannot detect timestamp drift: `main()` applies `normalize_generated_at()` to both the committed and freshly-built YAML before comparing, so `--check` is blind to `generated_at` mismatch — the exact defect class A2 repaired. Timestamp sync was confirmed here by direct comparison instead.
+- [LOW] Audit-route attribution inconsistent between proof files: `proof/CCAR-002/PROOF.json` records "round 2 vs fd7afbe295 (kimi-k3): FAIL", but `proof/CCAR-002/COMMAND_LOG.md` states kimi-k3 emitted no verdict and deepseek-v4-pro returned PASS (overridden to FAIL by direct inspection). The FAIL was an operator determination, not kimi-k3's.
+- [LOW] Stale generator version in report: `proof/CCAR-002/NORMALIZATION_REPORT.md` "Generator" section says `build_normalized_catalog.py v1.0.0`, contradicting the catalog's `meta.generator_version: 1.0.1` and the R1 notes section of the same file.
+- [INFO] Manifest count label overcounts: `SOURCE_MANIFEST.json` reports `reference_only_src_personas: 11` because it includes `src/dopemux/personas/__init__.py`; the report's "10 fallback copies" counts only `.md` personas. Both defensible; the category label is the imprecise part.
+- [INFO] Canonical PR proof is stale by design: `proof/pr_merge/embedded-audit/pr-1176/PROOF.json` is bound to `head_sha=41bc62071ce4e152a3b2040e408eda0c830fb215` with `PASS_WITH_RISKS`, and `PROOF.json.sig` signs only that R1-bound content. R4 must regenerate and re-sign against the final head; correctly disclosed in `proof/CCAR-002/PROOF.json` `remaining_risks`.
+- [INFO] Committed instruction-like content: `proof/pr_merge/embedded-audit/pr-1176/review_bundle/AUDIT_INSTRUCTION.md` is a legitimate committed auditor prompt, but contains directives ("Return ONLY one JSON object", "Only PASS ... authorizes R2") and a pre-filled JSON template with every boolean set `true` and `"blocking_findings": false`. Benign by design; an anchoring hazard for future auditors reading the bundle. Not obeyed here.
+- [INFO] No dedicated drift gate: no `.github/workflows/**` or `.pre-commit-config.yaml` entry references the catalog or builder. Drift protection depends entirely on the pytest suite being collected in CI (`testpaths = ["tests"]`, so it is).
+- [INFO] REVIEW-001 route nuance: `task-packets/CCAR-002R-A2.md:115` names OpenCode + OpenRouter as the R3 independent-audit route. This audit was run by Claude Opus 5, which did not author any of this work — REVIEW-001's self-audit prohibition is satisfied, but the named route was not used and the R4 proof should record the actual route honestly.
+INSTRUCTION_LIKE_CONTENT_DETECTED: true (one committed auditor-prompt artifact, AUDIT_INSTRUCTION.md, described above; no adversarial or override-style text found anywhere in the diff)
+```

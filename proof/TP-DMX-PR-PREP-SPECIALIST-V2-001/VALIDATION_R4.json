@@ -1,0 +1,20 @@
+{
+  "repo_worktree_branch_identity": "PASS (DDD-Enterprises/dopemux-mvp, feat/pr-prep-specialist-v2-contract, worktree clean apart from unrelated pre-existing dirty/untracked files documented in COMMAND_LOG.md)",
+  "r4_scope_freeze": "PASS (LEGACY_SEMANTICS_SCAN_R3.md SHA256 f5cbac0bbffd19e5c04a25fc7bb817b2ffa464e9f5463f7dedc00ef9320d575a recorded; extracted ACTIVE_CONTRADICTION_COUNT=19, matches required count; R4_ACTIVE_CONTRADICTION_PATHS.txt frozen before any edit)",
+  "envelope_byte_unchanged_proof": "PASS (the 2 candidate-envelope paths outside the frozen 19 -- docs/03-reference/pr-pipeline/prep/adapters/vibe/readme.md and docs/pr_prep/adapters/vibe/readme-2.md -- proven unchanged via baseline SHA256 in R4_SCOPE_FREEZE.md and empty `git status --short`)",
+  "changed_file_allowlist": "PASS (21 files changed: 19 frozen-set docs + tests/governance/test_pr_prep_contract_v2.py + task-packets/TP-DMX-PR-PREP-SPECIALIST-V2-001.json, all within the R4-amended packet allowlist; proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/** additions also allowlisted)",
+  "r4_content_scope_check": "PASS (every path changed by the R4 content repair is present in R4_ACTIVE_CONTRADICTION_PATHS.txt; the only non-doc changes are tests/governance/test_pr_prep_contract_v2.py and task-packets/TP-DMX-PR-PREP-SPECIALIST-V2-001.json, both explicitly allowlisted transport/packet paths, not counted against the frozen 19-path content-membership check)",
+  "git_diff_check": "PASS",
+  "task_packet_schema_validation": "PASS (dopemux.orchestrator.validation.packets.validate_packet_file: status=PASS, 0 errors, 0 warnings, against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json)",
+  "task_packet_frontmatter_validation": "PASS (pre-commit 'Validate YAML frontmatter in docs' hook)",
+  "focused_tests": "PASS (tests/governance/test_pr_prep_contract_v2.py, 92 passed, up from 31 after R2; R4 adds parametrized coverage for the 9 repaired canonical + 10 repaired compat files, an ambiguity-decision-table regression test, a post-pilot-criteria heading regression test, and an explicit non-edit check for the 7 NON_BLOCKING_LOCAL_MEASUREMENT files)",
+  "relevant_complete_governance_docs_suite": "PASS (tests/governance/, 92 passed)",
+  "terminal_semantic_census": "PASS (ACTIVE_CONTRADICTION_COUNT=0; see LEGACY_SEMANTICS_SCAN_R4.md; all 7 R3 SUPERVISOR_JUDGMENT files independently re-adjudicated as NON_BLOCKING_LOCAL_MEASUREMENT against the R4 five-part test, none MISCLASSIFIED, none edited)",
+  "changed_file_precommit": "PASS with 1 known pre-existing unrelated failure (docs-prohibited-patterns hook flags docs/pr_prep/adapters/vibe/template-agent.md's basename against a `*temp*.md` glob; this is a filename-only check on a file renamed in commit 139944337a specifically to escape this glob and failed to do so -- the false positive predates R4, fires on any content change to this pre-existing filename regardless of content, and R4 did not rename or introduce the file; all other hooks Passed or Skipped with zero file modifications on this run)",
+  "secret_scan": "PASS (grep sweep over staged diff; only false-positive hit was the literal phrase 'secret scan' inside the packet's own gate-requirements text)",
+  "hook_reruns_required": 0,
+  "open_pr_overlap": "PASS (0 of 49 open PRs reference pr-prep-specialist scope, refreshed via gh pr list)",
+  "origin_main_drift": "PASS (git fetch --prune; origin/main == merge-base(HEAD, origin/main) == 3e8fcc1c70; branch is 7 commits ahead, 0 behind; no drift to reclassify)",
+  "docs_hygiene_check": "1 pre-existing violation unrelated to R4 semantics (see changed_file_precommit); not introduced by this packet, not newly discovered this round -- same category as the R2/R3-noted docs/runbooks/ddd-release-gate-app.md defect",
+  "overall": "PASS"
+}

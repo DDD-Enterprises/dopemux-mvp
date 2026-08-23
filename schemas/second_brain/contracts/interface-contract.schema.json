@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/second_brain/contracts/interface-contract.schema.json",
+  "title": "Second Brain interface (port) machine contract",
+  "description": "Machine-readable descriptor for a port the candidate names. It carries the obligations the candidate states and nothing else. There is deliberately no `operations` catalogue: the candidate defines these ports by name and by the properties of what they hold, so an operation list would be this repository's invention rather than the architecture's decision.",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "interface_id",
+    "interface_kind",
+    "source_adr",
+    "candidate_sha256",
+    "ratification_binding_sha256",
+    "clause_inventory_sha256",
+    "implementation_status",
+    "runtime_claims_permitted",
+    "denial_fixtures",
+    "assertions",
+    "x-grounding",
+    "x-machine-invariants"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "contract_version": {
+      "const": "2.0.0"
+    },
+    "interface_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "interface_kind": {
+      "enum": [
+        "PORT"
+      ]
+    },
+    "source_adr": {
+      "type": "string",
+      "pattern": "^ADR-SB-\\d{3}$"
+    },
+    "candidate_sha256": {
+      "const": "e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c"
+    },
+    "ratification_binding_sha256": {
+      "const": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34"
+    },
+    "clause_inventory_sha256": {
+      "const": "b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439"
+    },
+    "implementation_status": {
+      "const": "NOT_IMPLEMENTED"
+    },
+    "runtime_claims_permitted": {
+      "const": false
+    },
+    "denial_fixtures": {
+      "const": "NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE"
+    },
+    "assertions": {
+      "type": "object",
+      "minProperties": 1,
+      "description": "Every key and every string value here must be bound in x-grounding to a clause and a verbatim candidate phrase."
+    },
+    "x-unspecified-in-candidate": {
+      "type": "string"
+    },
+    "x-grounding": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "clause_id",
+          "term"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "clause_id": {
+            "type": "string"
+          },
+          "term": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "x-machine-invariants": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^ADR-SB-\\d{3}-C\\d{2}$"
+      }
+    }
+  }
+}

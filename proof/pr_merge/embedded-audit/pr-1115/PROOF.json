@@ -1,0 +1,21 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1115,
+  "head_sha": "0c306b2247886d450074ddf1faa54db7ecae9d54",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "copilot-cli",
+    "auditor_model": "sonnet",
+    "invocation": "copilot -p 'Audit frozen C1...' -s --no-ask-user",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PYASN1-SECURITY-W1-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "PAL lock openai specifier metadata updated from >=1.55.2 to >=1.66.0 (matching pyproject.toml on main; no SDK version change)",
+      "Pre-existing test failures on origin/main baseline"
+    ],
+    "skip_reason": null
+  }
+}

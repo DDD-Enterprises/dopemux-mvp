@@ -1,0 +1,11 @@
+{
+  "tp_preferred_runner": "codex",
+  "tp_preferred_selector": "UNKNOWN (packet instructed not to invent Codex selector)",
+  "actual_runner": "grok-build",
+  "actual_model": "grok-4.5",
+  "actual_family": "xai",
+  "host_codex_cli": "codex-cli 0.146.0",
+  "host_claude_cli": "2.1.220 (Claude Code)",
+  "note": "Repair executed by Grok Build (xAI). Independent audit preferred route: Claude Code CLI sonnet (different family).",
+  "recorded_at": "2026-08-02T22:18:33Z"
+}

@@ -1,0 +1,61 @@
+I have completed an independent S4 audit of the CI-trust-policy repair packet (TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001, round R2) by running the code, exploring edge cases, and verifying every claim.
+
+**VERDICT: PASS**
+R2 genuinely addresses the Codex-flagged gap without reopening the original R1 false-positive or introducing major false negatives. The logic is significantly sounder than R1.
+
+Here are my findings for each required scope item:
+
+### 1. Is the Codex finding real?
+**Verified.** I read and executed the R1 script (`fcb7d2a95fbcdfdce3ac7e15a29c940791848c1a`) using an older version of the script. The Codex finding was exactly right: because of the blanket `*template*) continue ;;` in R1, any filename containing `template` skipped all checks. A legitimately prohibited file like `docs/scratch/notes-template.md` (which explicitly violates the `notes` policy) incorrectly yielded an exit 0 under R1 logic. This was a real policy-loosening bug.
+
+### 2. Does R2 actually fix it?
+**Verified.** I executed the updated (R2) `./scripts/ci/docs_prohibited_patterns.sh` directly against all four filenames identified in the PR:
+- `docs/scratch/todo-template.md`
+- `docs/scratch/notes-template.md`
+- `docs/scratch/temp-template.md`
+- `docs/scratch/scratch-template.md`
+
+All four now correctly throw `❌ Found prohibited file pattern in changed file:` and cause the script to exit 1. By executing checks for `notes|todo|scratch` against the original `lbase` instead of the `detemplated` string, R2 effectively closes the policy gap.
+
+### 3. No regression on the original R1 fix
+**Verified.** I re-ran the script manually on the original allow-list:
+- `docs/pr_prep/adapters/vibe/template-agent.md`
+- `docs/03-reference/governance/task-packet-template.md`
+
+Both completed with exit 0 (`✅ No prohibited patterns found in changed docs`). The change safely retains the R1 fix.
+
+### 4. No regression on the original deny-lis
+**Verified.** I spot-checked multiple forbidden patterns to ensure they are still blocked. *(Note: Initially, I tested raw filenames like `temp.md`, which passed because the script wisely only operates on `docs/*` and `task-packets/*` paths. Retesting with directory prefixes correctly validated the block list).*
+- `docs/temp.md` -> ❌ exit 1
+- `docs/temp-foo.md` -> ❌ exit 1
+- `docs/my-temp-file.md` -> ❌ exit 1
+- `docs/temporary.md` -> ❌ exit 1
+- `docs/notes.md` -> ❌ exit 1
+- `docs/todo.md` -> ❌ exit 1
+- `docs/scratch.md` -> ❌ exit 1
+- `docs/foo-scratch-bar.md` -> ❌ exit 1
+
+### 5. Try to break it yourself
+I actively tried to break the detemplating substitution (`${lbase//template/}`) and found an interesting, albeit practically harmless, edge case:
+
+- **Edge Case 1: Accidental temp string creation (Blocked incorrectly):** I tested `docs/ttemplateemp.md`. The original string does not contain an isolated `temp` pattern. However, because it matches the prefix `t` and suffix `emp`, stripping `template` concatenates them to create `detemplated="temp.md"`. This filename matches the `temp*.md` glob and gets **blocked** (exit 1). Under R1, this file was correctly allowed. While this technically is a regression, `ttemplateemp` is gibberish and very unlikely to be used in production.
+- **Edge Case 2: Innocent words matching patterns (Pre-existing):** I tested `docs/attempt.md`. It matches `*temp*.md` and is blocked (exit 1). This is a known/pre-existing false-positive that wasn't introduced by R2 (R1 blocked it too), but serves as a reminder of glob limitations.
+- **Edge Case 3: Overlapping "template" keywords (Allowed correctly):** I ran `docs/templatemplate.md` in a bash environment. `bash`'s `${var//pattern/}` correctly matched the first non-overlapping sequence, yielding `mplate.md`, which did not falsely trigger `*temp*.md` rules.
+
+The logic is resilient for virtually any normal filename you would realistically see.
+
+### 6. Diff scope discipline
+**Verified.** I ran `git diff acffb54ba117b578277b7cd4361226ece8952609..HEAD --stat`. The only two files modified were precisely `scripts/ci/docs_prohibited_patterns.sh` (31 line insertions/deletions) and `tests/ci/test_docs_prohibited_patterns.py` (7 line insertions). No rogue JSON files or unrelated packet pollution.
+
+### 7. Test suite
+**Verified.** Executed `python3 -m pytest tests/ci/test_docs_prohibited_patterns.py -v`. Exactly 22 items were collected, and all 22 passed cleanly. The 4 new test cases under `FORBIDDEN_FILES` are fully asserted and execute effectively.
+
+### 8. Shell quality
+**Verified.** I ran both `bash -n scripts/ci/docs_prohibited_patterns.sh` and `shellcheck scripts/ci/docs_prohibited_patterns.sh`. Both came back 100% clean with no syntax warnings or formatting errors.
+
+### 9. Full-tree safety
+**Verified.** I ran `pre-commit run --all-files docs-prohibited-patterns`. The check passed across the entire repository without any unexpected failures or new flags.
+
+### 10. Overall coherence
+R2 successfully eliminates the broad exclusion loophole created by R1. The use of string manipulation to specifically isolate `temp` validation away from the `template` substring, while preserving the original string for other policy validations (`notes|todo|scratch`), accurately implements the intended security constraints.
+exit=0

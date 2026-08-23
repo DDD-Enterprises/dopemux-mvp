@@ -1,0 +1,10 @@
+proof shape OK (audited head 95bdf0015730ab3087cf71e07eca2d4425b214ac)
+Signing file proof/pr_merge/embedded-audit/pr-1188/PROOF.json
+Write signature to proof/pr_merge/embedded-audit/pr-1188/PROOF.json.sig
+signed: proof/pr_merge/embedded-audit/pr-1188/PROOF.json.sig
+
+Next steps:
+  git add proof/pr_merge/embedded-audit/pr-1188/
+  git commit -m 'proof(audit): signed local embedded-audit attestation for PR 1188'
+  git push
+(that commit must be the only change on top of the audited head_sha)

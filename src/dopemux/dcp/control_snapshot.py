@@ -488,6 +488,11 @@ def _readiness(
             status = "CONFLICTING"
         elif state["freshness"] == FreshnessStatus.STALE.value:
             blocking.append("stale proof artifact detected")
+        elif state["state"] in (AuthorityLabel.UNKNOWN.value, AuthorityLabel.CLAIMED.value):
+            blocking.append(
+                f"{state['packet_id']} evidence is incomplete or unproven "
+                f"(state={state['state']})"
+            )
 
     if blocking and status != "CONFLICTING":
         status = "BLOCKED"

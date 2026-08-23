@@ -1,0 +1,13 @@
+=== live CONNECT probes ===
+  current_database   |    current_user
+---------------------+---------------------
+ conport_dopemux_mvp | conport_dopemux_mvp
+(1 row)
+
+PASS mvp->mvp CONNECT
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  permission denied for database "conport_adops"
+DETAIL:  User does not have CONNECT privilege.
+PASS mvp->adops CONNECT denied
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  permission denied for database "dopemux_knowledge_graph"
+DETAIL:  User does not have CONNECT privilege.
+PASS mvp->legacy CONNECT denied

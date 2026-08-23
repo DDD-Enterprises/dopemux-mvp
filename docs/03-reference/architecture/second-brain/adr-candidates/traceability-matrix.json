@@ -1,0 +1,651 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-TRACEABILITY-REPAIR-001",
+  "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "r2_candidate_sha256": "94b735c72ff3533f0cd73bed18fd3fb64b164530f7ef360f37584c73504a4e8e",
+  "source_adr_candidates_sha256": "9cff1e6c90c009ccc931676df14c838e6affafa7732fb11b5aecc0b8cf0858da",
+  "decision_register_sha256": "3a223be56a9df80bbe3141ebb892cbf908ed371c7d4c853eaae5d7f67959bf80",
+  "repaired_candidate_sha256": "946054a4675271856e0214dbf1ce0aa9b1ec17e71e79a82711ad3ca0d9df9c22",
+  "coverage": {
+    "adrs_inspected": 10,
+    "decisions_in_register": 32,
+    "decisions_linked": 26,
+    "decisions_intentionally_unlinked": 6,
+    "adrs_changed": 8,
+    "adrs_correct_as_written": 2,
+    "fo01_known_defective_adrs_repaired": 5,
+    "additional_defective_adrs_found": 3,
+    "ambiguous_mappings": 1,
+    "one_to_one_coverage_imposed": false
+  },
+  "adrs": {
+    "ADR-SB-001": {
+      "adr_id": "ADR-SB-001",
+      "subject": "Extension Boundary and Non-Authority",
+      "existing_cited_decision_ids": [
+        "SB-DEC-001",
+        "SB-DEC-002",
+        "SB-DEC-027"
+      ],
+      "recommended_corrected_decision_ids": [
+        "SB-DEC-001",
+        "SB-DEC-002",
+        "SB-DEC-027"
+      ],
+      "classification": "CORRECT",
+      "fo01_known_defect": false,
+      "changed": false,
+      "removed": [],
+      "added": [],
+      "link_findings": [
+        {
+          "decision_id": "SB-DEC-001",
+          "decision_title": "Dopemux extension, not a fourth authority plane",
+          "classification": "CORRECT",
+          "semantic_relationship": "ADR decision text is a near-verbatim restatement of SB-DEC-001: PCP/DCP-compatible Dopemux extension owning only control state, derived read models, projections, spool and purge coordination, and receipts.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-001 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-001"
+        },
+        {
+          "decision_id": "SB-DEC-002",
+          "decision_title": "Small deployable footprint",
+          "classification": "CORRECT",
+          "semantic_relationship": "ADR consequence 'One package plus optional worker' restates SB-DEC-002 'one host-native extension package ... plus one optional worker process'.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-001 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-002"
+        },
+        {
+          "decision_id": "SB-DEC-027",
+          "decision_title": "Partial outage is explicit, not smoothed over",
+          "classification": "CORRECT",
+          "semantic_relationship": "SB-DEC-027 'No authority fallback' underwrites the ADR decision clause 'Canonical writes go to existing authorities' and the consequence 'Disable extension without changing canonical stores'.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-001 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-027"
+        }
+      ],
+      "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-001"
+    },
+    "ADR-SB-002": {
+      "adr_id": "ADR-SB-002",
+      "subject": "Capture, Candidate, Review, and Promotion",
+      "existing_cited_decision_ids": [
+        "SB-DEC-003",
+        "SB-DEC-004",
+        "SB-DEC-005",
+        "SB-DEC-029"
+      ],
+      "recommended_corrected_decision_ids": [
+        "SB-DEC-003",
+        "SB-DEC-004",
+        "SB-DEC-005",
+        "SB-DEC-006"
+      ],
+      "classification": "WRONG_DECISION_LINK",
+      "fo01_known_defect": false,
+      "changed": true,
+      "removed": [
+        "SB-DEC-029"
+      ],
+      "added": [
+        "SB-DEC-006"
+      ],
+      "link_findings": [
+        {
+          "decision_id": "SB-DEC-003",
+          "decision_title": "Dope-Memory is the canonical capture and candidate history",
+          "classification": "CORRECT",
+          "semantic_relationship": "ADR clause 'Append captured events and candidates to Dope-Memory' is SB-DEC-003 verbatim.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-002 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-003"
+        },
+        {
+          "decision_id": "SB-DEC-004",
+          "decision_title": "Derived review read model",
+          "classification": "CORRECT",
+          "semantic_relationship": "ADR clause 'build a non-canonical review read model' is SB-DEC-004 verbatim.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-002 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-004"
+        },
+        {
+          "decision_id": "SB-DEC-005",
+          "decision_title": "Digest-bound visible approval",
+          "classification": "CORRECT",
+          "semantic_relationship": "ADR clause 'require digest-bound affirmative review' is SB-DEC-005 verbatim; ADR consequence 'Default DEFER/NO MUTATION' matches SB-DEC-005.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-002 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-005"
+        },
+        {
+          "decision_id": "SB-DEC-006",
+          "decision_title": "Promotion router preserves canonical boundaries",
+          "classification": "MISSING_DECISION_LINK",
+          "semantic_relationship": "ADR clauses 'route approved actions to exact canonical targets' and 'append promotion receipts to Dope-Memory', plus consequence 'No cross-authority transaction fiction', are SB-DEC-006 (Promotion router preserves canonical boundaries) verbatim. The ADR is titled '... and Promotion' yet did not cite the promotion-router decision.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-002 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-006"
+        },
+        {
+          "decision_id": "SB-DEC-029",
+          "decision_title": "Forget differs from purge",
+          "classification": "EXTRANEOUS_DECISION_LINK",
+          "semantic_relationship": "SB-DEC-029 (Forget differs from purge) concerns archive/forget/purge semantics. ADR-SB-002 contains no forget, purge, or archive content. Its correct home is ADR-SB-007.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-002 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-029"
+        }
+      ],
+      "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-002"
+    },
+    "ADR-SB-003": {
+      "adr_id": "ADR-SB-003",
+      "subject": "Recall Fusion and Provenance",
+      "existing_cited_decision_ids": [
+        "SB-DEC-015",
+        "SB-DEC-016",
+        "SB-DEC-017"
+      ],
+      "recommended_corrected_decision_ids": [
+        "SB-DEC-016",
+        "SB-DEC-017"
+      ],
+      "classification": "EXTRANEOUS_DECISION_LINK",
+      "fo01_known_defect": true,
+      "changed": true,
+      "removed": [
+        "SB-DEC-015"
+      ],
+      "added": [],
+      "link_findings": [
+        {
+          "decision_id": "SB-DEC-016",
+          "decision_title": "Deterministic authority-first recall fusion",
+          "classification": "CORRECT",
+          "semantic_relationship": "ADR decision text is a near-verbatim restatement of SB-DEC-016 deterministic authority-first recall fusion, including the evidence/freshness/access/uncertainty metadata clause.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-003 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-016"
+        },
+        {
+          "decision_id": "SB-DEC-017",
+          "decision_title": "Contradictions are first-class outputs",
+          "classification": "CORRECT",
+          "semantic_relationship": "ADR clause 'contradiction detection' is SB-DEC-017 (Contradictions are first-class outputs).",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-003 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-017"
+        },
+        {
+          "decision_id": "SB-DEC-015",
+          "decision_title": "CustodyPort abstraction",
+          "classification": "EXTRANEOUS_DECISION_LINK",
+          "semantic_relationship": "SB-DEC-015 is CustodyPort abstraction (content-addressed blob storage, integrity verification, residual scanning, backup eligibility). It bears no relationship to recall fusion. Confirms the FO-01 known finding. Correct home is ADR-SB-006.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-003 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-015"
+        }
+      ],
+      "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-003"
+    },
+    "ADR-SB-004": {
+      "adr_id": "ADR-SB-004",
+      "subject": "Domain, Classification, and Provider Policy",
+      "existing_cited_decision_ids": [
+        "SB-DEC-011",
+        "SB-DEC-012",
+        "SB-DEC-013",
+        "SB-DEC-014",
+        "SB-DEC-030"
+      ],
+      "recommended_corrected_decision_ids": [
+        "SB-DEC-010",
+        "SB-DEC-011",
+        "SB-DEC-012"
+      ],
+      "classification": "WRONG_DECISION_LINK",
+      "fo01_known_defect": false,
+      "changed": true,
+      "removed": [
+        "SB-DEC-013",
+        "SB-DEC-014",
+        "SB-DEC-030"
+      ],
+      "added": [
+        "SB-DEC-010"
+      ],
+      "link_findings": [
+        {
+          "decision_id": "SB-DEC-010",
+          "decision_title": "Separate domain and classification policy dimensions",
+          "classification": "MISSING_DECISION_LINK",
+          "semantic_relationship": "ADR decision clause 'Use project/hue/dom/shared and public/internal/confidential/restricted' is SB-DEC-010 verbatim, as are ADR consequences 'Dom synthetic-only' and 'Shared disabled without grant'. SB-DEC-010 is the ADR's primary decision and was not cited.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-004 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-010"
+        },
+        {
+          "decision_id": "SB-DEC-011",
+          "decision_title": "Policy before retrieval and model context assembly",
+          "classification": "CORRECT",
+          "semantic_relationship": "ADR clause 'Evaluate ... policy before retrieval disclosure or model context assembly. Unknown denies' and rejected alternative 'Model self-policing' are SB-DEC-011 verbatim.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-004 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-011"
+        },
+        {
+          "decision_id": "SB-DEC-012",
+          "decision_title": "Conservative provider eligibility",
+          "classification": "CORRECT",
+          "semantic_relationship": "ADR consequence 'No confidential/restricted semantic indexing in v1' is SB-DEC-012 verbatim; provider eligibility is the ADR's third named dimension.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-004 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-012"
+        },
+        {
+          "decision_id": "SB-DEC-013",
+          "decision_title": "Single-project automatic capture",
+          "classification": "EXTRANEOUS_DECISION_LINK",
+          "semantic_relationship": "SB-DEC-013 is single-project automatic capture (one active capture project, explicit switching, Redis transport-only). Not a domain, classification, or provider decision. Correct home is ADR-SB-009, where the FO-01 known baseline places it.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-004 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-013"
+        },
+        {
+          "decision_id": "SB-DEC-014",
+          "decision_title": "Local spool is non-canonical and narrowly enabled",
+          "classification": "EXTRANEOUS_DECISION_LINK",
+          "semantic_relationship": "SB-DEC-014 is local spool custody. Not a domain/classification/provider decision. Correct home is ADR-SB-006, where the FO-01 known baseline places it.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-004 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-014"
+        },
+        {
+          "decision_id": "SB-DEC-030",
+          "decision_title": "Task promotion disabled in initial v1",
+          "classification": "EXTRANEOUS_DECISION_LINK",
+          "semantic_relationship": "SB-DEC-030 is task promotion disabled in initial v1. No relationship to domain/classification/provider policy. Correct home is ADR-SB-008.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-004 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-030"
+        }
+      ],
+      "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-004"
+    },
+    "ADR-SB-005": {
+      "adr_id": "ADR-SB-005",
+      "subject": "Markdown Projection Contract",
+      "existing_cited_decision_ids": [
+        "SB-DEC-018",
+        "SB-DEC-019"
+      ],
+      "recommended_corrected_decision_ids": [
+        "SB-DEC-018",
+        "SB-DEC-019"
+      ],
+      "classification": "CORRECT",
+      "fo01_known_defect": false,
+      "changed": false,
+      "removed": [],
+      "added": [],
+      "link_findings": [
+        {
+          "decision_id": "SB-DEC-018",
+          "decision_title": "Deterministic Markdown projections",
+          "classification": "CORRECT",
+          "semantic_relationship": "ADR decision text is a near-verbatim restatement of SB-DEC-018 deterministic Markdown projections, including managed/manual regions, staleness, no silent write-back, and Obsidian as opener only.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-005 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-018"
+        },
+        {
+          "decision_id": "SB-DEC-019",
+          "decision_title": "Purge is a graph with residual verification",
+          "classification": "CORRECT",
+          "semantic_relationship": "ADR decision clause 'purge propagation' is governed by SB-DEC-019; projections are derived representations that must participate in the purge graph. Retained as a legitimate cross-reference, not a defect.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-005 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-019"
+        }
+      ],
+      "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-005"
+    },
+    "ADR-SB-006": {
+      "adr_id": "ADR-SB-006",
+      "subject": "Local Spool and Custody Interface",
+      "existing_cited_decision_ids": [
+        "SB-DEC-020",
+        "SB-DEC-021",
+        "SB-DEC-022"
+      ],
+      "recommended_corrected_decision_ids": [
+        "SB-DEC-014",
+        "SB-DEC-015"
+      ],
+      "classification": "WRONG_DECISION_LINK",
+      "fo01_known_defect": true,
+      "changed": true,
+      "removed": [
+        "SB-DEC-020",
+        "SB-DEC-021",
+        "SB-DEC-022"
+      ],
+      "added": [
+        "SB-DEC-014",
+        "SB-DEC-015"
+      ],
+      "link_findings": [
+        {
+          "decision_id": "SB-DEC-014",
+          "decision_title": "Local spool is non-canonical and narrowly enabled",
+          "classification": "MISSING_DECISION_LINK",
+          "semantic_relationship": "ADR decision text (deterministic IDs, integrity protection, TTL, idempotent flush, domain separation, purge awareness; public allowed, internal OS-protected, confidential/restricted disabled) is SB-DEC-014 verbatim. Confirms the FO-01 known finding.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-006 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-014"
+        },
+        {
+          "decision_id": "SB-DEC-015",
+          "decision_title": "CustodyPort abstraction",
+          "classification": "MISSING_DECISION_LINK",
+          "semantic_relationship": "ADR decision clause 'Define LocalSpoolPort and CustodyPort' and consequence 'Custody product remains replaceable' are SB-DEC-015 verbatim. Confirms the FO-01 known finding.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-006 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-015"
+        },
+        {
+          "decision_id": "SB-DEC-020",
+          "decision_title": "Bounded session receipt",
+          "classification": "EXTRANEOUS_DECISION_LINK",
+          "semantic_relationship": "SB-DEC-020 is the bounded session receipt UX decision. No spool or custody content. Correct home is ADR-SB-010.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-006 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-020"
+        },
+        {
+          "decision_id": "SB-DEC-021",
+          "decision_title": "One unified review queue",
+          "classification": "EXTRANEOUS_DECISION_LINK",
+          "semantic_relationship": "SB-DEC-021 is the unified review queue UX decision. No spool or custody content. Correct home is ADR-SB-010.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-006 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-021"
+        },
+        {
+          "decision_id": "SB-DEC-022",
+          "decision_title": "Capability receipts gate runtime routes",
+          "classification": "EXTRANEOUS_DECISION_LINK",
+          "semantic_relationship": "SB-DEC-022 is ServiceCapabilityReceipt gating of runtime routes. No spool or custody content. Correct home is ADR-SB-009, whose decision text requires 'current service capability receipts'.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-006 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-022"
+        }
+      ],
+      "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-006"
+    },
+    "ADR-SB-007": {
+      "adr_id": "ADR-SB-007",
+      "subject": "Forget, Purge, and Residual Verification",
+      "existing_cited_decision_ids": [
+        "SB-DEC-023"
+      ],
+      "recommended_corrected_decision_ids": [
+        "SB-DEC-019",
+        "SB-DEC-029"
+      ],
+      "classification": "WRONG_DECISION_LINK",
+      "fo01_known_defect": true,
+      "changed": true,
+      "removed": [
+        "SB-DEC-023"
+      ],
+      "added": [
+        "SB-DEC-019",
+        "SB-DEC-029"
+      ],
+      "link_findings": [
+        {
+          "decision_id": "SB-DEC-019",
+          "decision_title": "Purge is a graph with residual verification",
+          "classification": "MISSING_DECISION_LINK",
+          "semantic_relationship": "ADR decision text (dependency graph, impact preview, explicit approval, per-surface receipts, residual scan, completion receipt, zero searchable residuals, tombstone/retrieval-denial/backup-expiry) is SB-DEC-019 verbatim. Confirms the FO-01 known finding.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-007 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-019"
+        },
+        {
+          "decision_id": "SB-DEC-029",
+          "decision_title": "Forget differs from purge",
+          "classification": "MISSING_DECISION_LINK",
+          "semantic_relationship": "ADR decision clause 'Model Archive, Forget, and Purge separately' and consequence 'Irreversible steps require immediate confirmation' are SB-DEC-029 verbatim. Confirms the FO-01 known finding.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-007 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-029"
+        },
+        {
+          "decision_id": "SB-DEC-023",
+          "decision_title": "MacBook correctness, Mac mini optional",
+          "classification": "EXTRANEOUS_DECISION_LINK",
+          "semantic_relationship": "SB-DEC-023 is MacBook correctness / Mac mini optional deployment topology. Zero relationship to forget, purge, or residual verification. Confirms the FO-01 known finding.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-007 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-023"
+        }
+      ],
+      "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-007"
+    },
+    "ADR-SB-008": {
+      "adr_id": "ADR-SB-008",
+      "subject": "Open Loop and Task Proposal Boundary",
+      "existing_cited_decision_ids": [
+        "SB-DEC-006",
+        "SB-DEC-007"
+      ],
+      "recommended_corrected_decision_ids": [
+        "SB-DEC-006",
+        "SB-DEC-007",
+        "SB-DEC-008",
+        "SB-DEC-030"
+      ],
+      "classification": "MISSING_DECISION_LINK",
+      "fo01_known_defect": false,
+      "changed": true,
+      "removed": [],
+      "added": [
+        "SB-DEC-008",
+        "SB-DEC-030"
+      ],
+      "link_findings": [
+        {
+          "decision_id": "SB-DEC-006",
+          "decision_title": "Promotion router preserves canonical boundaries",
+          "classification": "CORRECT",
+          "semantic_relationship": "SB-DEC-006 routes task creation and transitions to Leantime plus Task Orchestrator and yields 'No task state in ConPort', matching the ADR consequence 'ConPort never owns task state'. Retained.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-008 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-006"
+        },
+        {
+          "decision_id": "SB-DEC-007",
+          "decision_title": "Open loops are event-sourced attention markers",
+          "classification": "CORRECT",
+          "semantic_relationship": "ADR decision text and the MA-06 PM-semantics firewall paragraph are SB-DEC-007 verbatim.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-008 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-007"
+        },
+        {
+          "decision_id": "SB-DEC-008",
+          "decision_title": "Task proposals remain proposals",
+          "classification": "MISSING_DECISION_LINK",
+          "semantic_relationship": "ADR clause 'Task proposals are separate candidates. Actual task creation requires Leantime plus Task Orchestrator proof and explicit approval; it is disabled initially' is SB-DEC-008 (Task proposals remain proposals) verbatim. SB-DEC-008 was mis-filed under ADR-SB-009; removing it there without placing it here would orphan the decision that names this ADR's subject.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-008 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-008"
+        },
+        {
+          "decision_id": "SB-DEC-030",
+          "decision_title": "Task promotion disabled in initial v1",
+          "classification": "MISSING_DECISION_LINK",
+          "semantic_relationship": "ADR MA-06 firewall names the 'disabled TaskPromotionRequest path (Slice 6)'; SB-DEC-030 consequence is 'Slice 6 is an enablement gate'. SB-DEC-030 was mis-filed under ADR-SB-004.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-008 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-030"
+        }
+      ],
+      "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-008"
+    },
+    "ADR-SB-009": {
+      "adr_id": "ADR-SB-009",
+      "subject": "Single-Project Safety and Identity Dependencies",
+      "existing_cited_decision_ids": [
+        "SB-DEC-008",
+        "SB-DEC-009",
+        "SB-DEC-010",
+        "SB-DEC-028"
+      ],
+      "recommended_corrected_decision_ids": [
+        "SB-DEC-009",
+        "SB-DEC-013",
+        "SB-DEC-022",
+        "SB-DEC-024"
+      ],
+      "classification": "WRONG_DECISION_LINK",
+      "fo01_known_defect": true,
+      "changed": true,
+      "removed": [
+        "SB-DEC-008",
+        "SB-DEC-010",
+        "SB-DEC-028"
+      ],
+      "added": [
+        "SB-DEC-013",
+        "SB-DEC-022",
+        "SB-DEC-024"
+      ],
+      "link_findings": [
+        {
+          "decision_id": "SB-DEC-009",
+          "decision_title": "Typed native entity references",
+          "classification": "CORRECT",
+          "semantic_relationship": "SB-DEC-009 rationale 'Paths, ports, and aliases are not authority identity' matches the ADR context and rejected alternative 'Port-based identity'. Confirms the FO-01 known baseline.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-009 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-009"
+        },
+        {
+          "decision_id": "SB-DEC-013",
+          "decision_title": "Single-project automatic capture",
+          "classification": "MISSING_DECISION_LINK",
+          "semantic_relationship": "ADR clauses 'Permit one active automatic-capture project, explicit project switching' and 'Multi-project background capture remains disabled until isolation proof' are SB-DEC-013 verbatim; consequence 'No host-singleton routing authority' matches its Redis transport-only clause. Confirms the FO-01 known finding.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-009 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-013"
+        },
+        {
+          "decision_id": "SB-DEC-022",
+          "decision_title": "Capability receipts gate runtime routes",
+          "classification": "MISSING_DECISION_LINK",
+          "semantic_relationship": "ADR decision text requires 'current service capability receipts for authority operations' and 'wrong-project denial'; SB-DEC-022 is the ServiceCapabilityReceipt decision whose consequences include 'Wrong-project denial'. Two verbatim phrase matches. Additional repair beyond the FO-01 known baseline: SB-DEC-022 was mis-filed under ADR-SB-006 and would otherwise be orphaned by that removal.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-009 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-022"
+        },
+        {
+          "decision_id": "SB-DEC-024",
+          "decision_title": "Explicit writer role and idempotency prevent split brain",
+          "classification": "MISSING_DECISION_LINK",
+          "semantic_relationship": "ADR clause 'writer epochs' and consequence 'Fail-closed split-brain prevention' are SB-DEC-024 verbatim. Confirms the FO-01 known finding.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-009 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-024"
+        },
+        {
+          "decision_id": "SB-DEC-008",
+          "decision_title": "Task proposals remain proposals",
+          "classification": "EXTRANEOUS_DECISION_LINK",
+          "semantic_relationship": "SB-DEC-008 is task-proposal gating, not project identity or safety. Confirms the FO-01 known finding. Correct home is ADR-SB-008.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-009 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-008"
+        },
+        {
+          "decision_id": "SB-DEC-010",
+          "decision_title": "Separate domain and classification policy dimensions",
+          "classification": "EXTRANEOUS_DECISION_LINK",
+          "semantic_relationship": "SB-DEC-010 is the domain/classification taxonomy. No identity or single-project content. Confirms the FO-01 known finding. Correct home is ADR-SB-004.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-009 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-010"
+        },
+        {
+          "decision_id": "SB-DEC-028",
+          "decision_title": "Audit receipts are append-only and content-minimized",
+          "classification": "EXTRANEOUS_DECISION_LINK",
+          "semantic_relationship": "SB-DEC-028 is the cross-cutting audit-receipt minimization discipline, not a project-identity decision. Confirms the FO-01 known finding.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-009 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-028"
+        }
+      ],
+      "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-009"
+    },
+    "ADR-SB-010": {
+      "adr_id": "ADR-SB-010",
+      "subject": "UX Contract",
+      "existing_cited_decision_ids": [
+        "SB-DEC-024",
+        "SB-DEC-025",
+        "SB-DEC-026"
+      ],
+      "recommended_corrected_decision_ids": [
+        "SB-DEC-020",
+        "SB-DEC-021"
+      ],
+      "classification": "WRONG_DECISION_LINK",
+      "fo01_known_defect": true,
+      "changed": true,
+      "removed": [
+        "SB-DEC-024",
+        "SB-DEC-025",
+        "SB-DEC-026"
+      ],
+      "added": [
+        "SB-DEC-020",
+        "SB-DEC-021"
+      ],
+      "link_findings": [
+        {
+          "decision_id": "SB-DEC-020",
+          "decision_title": "Bounded session receipt",
+          "classification": "MISSING_DECISION_LINK",
+          "semantic_relationship": "ADR clauses 'one dominant next action' and 'session-end batching' and consequence 'No productivity scoring' are SB-DEC-020 verbatim ('one next action', 'Review deferred to session end', 'No guilt metrics'). Confirms the FO-01 known finding.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-010 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-020"
+        },
+        {
+          "decision_id": "SB-DEC-021",
+          "decision_title": "One unified review queue",
+          "classification": "MISSING_DECISION_LINK",
+          "semantic_relationship": "ADR clauses 'at most seven visible queue items' and 'evidence one action away' are SB-DEC-021 verbatim; consequence 'no surprise writes' matches 'No hidden default action'. Confirms the FO-01 known finding.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-010 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-021"
+        },
+        {
+          "decision_id": "SB-DEC-024",
+          "decision_title": "Explicit writer role and idempotency prevent split brain",
+          "classification": "EXTRANEOUS_DECISION_LINK",
+          "semantic_relationship": "SB-DEC-024 is writer-role and split-brain prevention. No UX content. Confirms the FO-01 known finding. Correct home is ADR-SB-009.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-010 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-024"
+        },
+        {
+          "decision_id": "SB-DEC-025",
+          "decision_title": "V1 exclusions are hard scope controls",
+          "classification": "EXTRANEOUS_DECISION_LINK",
+          "semantic_relationship": "SB-DEC-025 is the v1 exclusion scope-control decision. Two of its many exclusions ('web dashboard', 'productivity scoring') echo ADR consequences, but the decision governs v1 scope (external ingestion, mobile, vector DB, multi-project capture, real Dom data), not the UX contract. Citing it here would make the UX ADR appear to own v1 scope control. Confirms the FO-01 known finding.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-010 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-025"
+        },
+        {
+          "decision_id": "SB-DEC-026",
+          "decision_title": "DCP integration is read-first",
+          "classification": "EXTRANEOUS_DECISION_LINK",
+          "semantic_relationship": "SB-DEC-026 is DCP read-first integration and write-authority boundary, not a UX-contract decision. Confirms the FO-01 known finding.",
+          "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-010 <-> 03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-026"
+        }
+      ],
+      "evidence_pointer": "24_ADR_CANDIDATES.md#ADR-SB-010"
+    }
+  },
+  "unlinked_decisions": {
+    "SB-DEC-023": {
+      "decision_id": "SB-DEC-023",
+      "decision_title": "MacBook correctness, Mac mini optional",
+      "disposition": "INTENTIONALLY_UNLINKED_DEPLOYMENT_TOPOLOGY_CONSTRAINT",
+      "rationale": "Deployment-topology constraint (MacBook correctness, Mac mini optional). No ADR candidate covers node topology; R2 governs it in 18_RUNTIME_AND_DEPLOYMENT_TOPOLOGY.md. SB-DEC-002 already carries the deployable-footprint consequence cited by ADR-SB-001. No ADR was broadened to absorb it.",
+      "ambiguous_adjacency_recorded": false,
+      "adr_created": false,
+      "existing_adr_broadened": false,
+      "evidence_pointer": "03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-023"
+    },
+    "SB-DEC-025": {
+      "decision_id": "SB-DEC-025",
+      "decision_title": "V1 exclusions are hard scope controls",
+      "disposition": "INTENTIONALLY_UNLINKED_V1_SCOPE_CONTROL",
+      "rationale": "Hard v1 scope control spanning dashboards, visualization, external ingestion, mobile, vector DB, automation, productivity scoring, real Dom data, and multi-project capture. Scope-only decision per the no-one-to-one-coverage rule; attaching it to the UX ADR would misattribute v1 scope authority.",
+      "ambiguous_adjacency_recorded": false,
+      "adr_created": false,
+      "existing_adr_broadened": false,
+      "evidence_pointer": "03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-025"
+    },
+    "SB-DEC-026": {
+      "decision_id": "SB-DEC-026",
+      "decision_title": "DCP integration is read-first",
+      "disposition": "INTENTIONALLY_UNLINKED_INTEGRATION_BOUNDARY_AMBIGUOUS",
+      "rationale": "DCP read-first integration. Partially adjacent to ADR-SB-001 (extension boundary and non-authority), but ADR-SB-001 contains no facade, sanitized-recall, or identity-gate content. Linkage is AMBIGUOUS, so no ADR was broadened; recorded as an observation for the ADR-acceptance gate.",
+      "ambiguous_adjacency_recorded": true,
+      "adr_created": false,
+      "existing_adr_broadened": false,
+      "evidence_pointer": "03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-026"
+    },
+    "SB-DEC-028": {
+      "decision_id": "SB-DEC-028",
+      "decision_title": "Audit receipts are append-only and content-minimized",
+      "disposition": "INTENTIONALLY_UNLINKED_CROSS_CUTTING_RECEIPTS_DISCIPLINE",
+      "rationale": "Append-only, content-minimized receipts spanning capture, review, promotion, policy, projection, spool, and purge. Cross-cutting across ADR-SB-002/004/005/006/007; attaching it to any single ADR would be arbitrary and attaching it to all five would broaden five ADRs for coverage.",
+      "ambiguous_adjacency_recorded": false,
+      "adr_created": false,
+      "existing_adr_broadened": false,
+      "evidence_pointer": "03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-028"
+    },
+    "SB-DEC-031": {
+      "decision_id": "SB-DEC-031",
+      "decision_title": "Runtime and benchmark claims remain NOT_RUN",
+      "disposition": "INTENTIONALLY_UNLINKED_CROSS_CUTTING_CLAIMS_DISCIPLINE",
+      "rationale": "Claims/evidence discipline holding all runtime conformance, latency, retrieval quality, purge completeness, offline sync, and isolation measurements NOT_RUN. Already expressed uniformly in every ADR's acceptance condition 'No runtime, implementation, or production claim is inferred from acceptance', which is the discipline applied across all ten ADRs rather than a standalone architectural choice. Option B under the packet's SB-DEC-031 adjudication. No ADR cites it; none was broadened to.",
+      "ambiguous_adjacency_recorded": false,
+      "adr_created": false,
+      "existing_adr_broadened": false,
+      "evidence_pointer": "03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-031"
+    },
+    "SB-DEC-032": {
+      "decision_id": "SB-DEC-032",
+      "decision_title": "Observed remote drift is non-material to this candidate",
+      "disposition": "INTENTIONALLY_UNLINKED_HISTORICAL_EVIDENCE_OBSERVATION",
+      "rationale": "Historical evidence observation recording remote main 17ddf9aa716956af9cd07f738c08b646edfeabee as advanced from the discovery base, with web-observation evidence pointers. Not an architectural choice; no ADR created and none broadened.",
+      "ambiguous_adjacency_recorded": false,
+      "adr_created": false,
+      "existing_adr_broadened": false,
+      "evidence_pointer": "03_ARCHITECTURE_DECISION_REGISTER.yaml#SB-DEC-032"
+    }
+  },
+  "fo01": {
+    "repair_complete": true,
+    "independent_verification_required": true,
+    "adr_acceptance_authorized": false
+  }
+}

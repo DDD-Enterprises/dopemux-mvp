@@ -1,0 +1,103 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+  "record_kind": "BASE_SYNC_REVERIFY",
+  "authority": "operator instruction MERGE_AUTHORIZED_AFTER_BASE_SYNC_REVERIFY (2026-08-12)",
+  "issue_baseline_main": "6153bd4fb30ed3d038e51b371ad9ebfb4916bfac",
+  "synced_to_main": "6626aa9a58dd82e62226cfca63498cc3f711bb75",
+  "main_commits_absorbed": 16,
+  "merge_commit": "c80c62df91a5ae85aaf5abb307cd2135a81b48f1",
+  "method": "git merge --no-ff origin/main",
+  "why_merge_not_rebase": "The audit's meaning depends on 6e1b4472ba remaining a real ancestor of what is merged. A rebase would rewrite that commit and the audited head would no longer exist in the history being merged. Rebase and force-push are both forbidden by the operator's instruction for the same reason.",
+  "ancestry_preserved": {
+    "verified": true,
+    "command": "git merge-base --is-ancestor <c> HEAD",
+    "chain": [
+      {
+        "commit": "3e0d89815c66f8a42e3a2d349c3d0f18028bdf40",
+        "role": "C0_REFREEZE",
+        "is_ancestor": true
+      },
+      {
+        "commit": "6e1b4472ba626df2a5d7724e87c5ec77c9c46043",
+        "role": "C1-R2 audited head",
+        "is_ancestor": true
+      },
+      {
+        "commit": "3d4134441178201504766cbe05c49804136e60b8",
+        "role": "audit record",
+        "is_ancestor": true
+      },
+      {
+        "commit": "97edbae91ff7126f0fb02d5029ef2212288407a2",
+        "role": "command-log closure",
+        "is_ancestor": true
+      },
+      {
+        "commit": "6626aa9a58dd82e62226cfca63498cc3f711bb75",
+        "role": "origin/main at sync",
+        "is_ancestor": true
+      }
+    ]
+  },
+  "drift_analysis": {
+    "paths_changed_on_main": [
+      ".pre-commit-config.yaml",
+      "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/AGY_AUDIT_RAW.txt",
+      "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/AGY_AUDIT_RAW_R2.txt",
+      "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/AGY_AUDIT_RAW_R3.txt",
+      "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/AGY_AUDIT_RAW_R4.txt",
+      "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/AGY_AUDIT_RAW_R5.txt",
+      "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/AUDITOR_REPAIR_2_REPORT.md",
+      "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/AUDITOR_REPAIR_3_REPORT.md",
+      "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/AUDITOR_REPAIR_4_REPORT.md",
+      "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/AUDITOR_REPAIR_REPORT.md",
+      "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/AUDITOR_REPORT.md",
+      "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/PYTEST_OUTPUT.txt",
+      "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/S4_AUDIT_PROMPT.md",
+      "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/S4_AUDIT_PROMPT_R2.md",
+      "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/S4_AUDIT_PROMPT_R3.md",
+      "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/S4_AUDIT_PROMPT_R4.md",
+      "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/S4_AUDIT_PROMPT_R5.md",
+      "proof/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001/VALIDATION.md",
+      "proof/pr_merge/embedded-audit/pr-1225/PROOF.json",
+      "proof/pr_merge/embedded-audit/pr-1225/PROOF.json.sig",
+      "proof/pr_merge/embedded-audit/pr-1225/SIGNING_DISCLOSURE.md",
+      "scripts/ci/docs_prohibited_patterns.sh",
+      "task-packets/TP-DMX-DOCS-PROHIBITED-PATTERN-MATCHER-001.json",
+      "tests/ci/test_docs_prohibited_patterns.py"
+    ],
+    "audited_paths_touched_by_main": [],
+    "file_overlap_with_branch": [],
+    "conclusion": "origin/main advanced by PR #1225 (docs-prohibited-patterns CI fix), its proof bundle, and .pre-commit-config.yaml. It touches no file under schemas/second_brain/, docs/.../adr-candidates/, scripts/governance/, tests/governance/ or the FO-01 traceability-repair bundle, and shares no file with this branch. The sync cannot have altered audited content."
+  },
+  "audited_bytes_unchanged": {
+    "verified": true,
+    "files_checked": 36,
+    "drifted": [],
+    "method": "Every file under the audited trees was hashed at the merge result and compared to its content at the audited head 6e1b4472ba. Checking the diff alone would not have caught a same-path change arriving from main."
+  },
+  "gates_reverified_after_sync": {
+    "validator": "PASS (94 checks, 0 failed)",
+    "adversarial_suite": "PASS (63 passed)",
+    "false_green_matrix": "PASS (10/10 rows failed as intended, re-executed)",
+    "packet_schema": "PASS",
+    "diff_check": "PASS",
+    "change_contract": "FAIL (1 finding: embedded-audit representation gap)",
+    "pre_commit": "FAIL (2 hooks: proof-embedded-audit-schema, and change-contract-preflight which fails because it runs the same check; one underlying cause, re-run under main's updated .pre-commit-config.yaml)",
+    "note": "The two failures are the known embedded-audit representation gap, unchanged by the sync and out of lane per packet §1. Every other bucket was re-executed rather than carried forward."
+  },
+  "independent_audit_still_applies": {
+    "verdict": "PASS",
+    "blockers": 0,
+    "must_fix": 0,
+    "audited_head": "6e1b4472ba626df2a5d7724e87c5ec77c9c46043",
+    "reasoning": "The audit is a statement about the bytes at 6e1b4472ba. Those bytes are unchanged and that commit is still an ancestor, so the verdict carries to the merge result. Had main touched an audited path, it would not."
+  },
+  "what_this_does_not_do": [
+    "accepts no ADR — all ten remain PROPOSED",
+    "authorizes no implementation or runtime enablement",
+    "opens no acceptance gate; adr_acceptance_authorized remains false",
+    "starts no Phase B"
+  ]
+}

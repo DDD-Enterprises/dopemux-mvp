@@ -2,6 +2,26 @@ repos:
   # Knowledge Graph Documentation Enforcement
   - repo: local
     hooks:
+      # Evidence-economy: deterministic change-contract preflight (no auto-fix, offline)
+      # Uses PRE_COMMIT_FROM_REF/TO_REF when pre-commit runs --from-ref/--to-ref;
+      # falls back to origin/main...HEAD so the selected range is always assessed.
+      - id: change-contract-preflight
+        name: Evidence-economy change-contract preflight
+        entry: bash -c
+        args:
+          - |
+            set -euo pipefail
+            BASE="${PRE_COMMIT_FROM_REF:-${PRE_COMMIT_ORIGIN:-origin/main}}"
+            HEAD_REF="${PRE_COMMIT_TO_REF:-${PRE_COMMIT_SOURCE:-HEAD}}"
+            python3 scripts/governance/validate_change_contract.py \
+              --base "$BASE" \
+              --head "$HEAD_REF" \
+              --format text
+          - --
+        language: system
+        pass_filenames: false
+        always_run: true
+
       # Frontmatter validation (enable existing)
       - id: docs-frontmatter-guard
         name: Validate YAML frontmatter in docs
@@ -36,40 +56,7 @@ repos:
       # Prohibited file pattern check
       - id: docs-prohibited-patterns
         name: Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)
-        entry: bash -c
-        args:
-          - |
-            set -e
-            prohibited_found=false
-            # Evaluate only the changed docs files passed by pre-commit.
-            for file in "$@"; do
-              case "$file" in
-                docs/*|task-packets/*)
-                  # Skip quarantined files
-                  if [[ "$file" =~ ^docs/04-explanation/history/sourceFiles/ ]]; then
-                    continue
-                  fi
-                  base="$(basename "$file")"
-                  lbase="$(echo "$base" | tr '[:upper:]' '[:lower:]')"
-                  if [[ "$lbase" =~ ^template[-_].*\.md$ ]]; then
-                    continue
-                  fi
-                  case "$lbase" in
-                    notes*.md|todo*.md|temp*.md|*temp*.md|*scratch*.md)
-                      echo "❌ Found prohibited file pattern in changed file:"
-                      echo "  $file"
-                      prohibited_found=true
-                      ;;
-                  esac
-                  ;;
-              esac
-            done
-            if [ "$prohibited_found" = true ]; then
-              echo "Use structured workflow: RFC->ADR->arc42 for documentation"
-              exit 1
-            fi
-            echo "✅ No prohibited patterns found in changed docs"
-          - --
+        entry: scripts/ci/docs_prohibited_patterns.sh
         language: system
         files: ^(docs/|task-packets/).*\.md$
         exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)

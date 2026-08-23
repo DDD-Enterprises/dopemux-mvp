@@ -1,0 +1,174 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/second_brain/contracts/project-identity-envelope.schema.json",
+  "title": "ProjectIdentityEnvelope",
+  "description": "Registry-backed project identity for authority operations (ADR-SB-009). Note on naming: the candidate does not use the name 'ProjectIdentityEnvelope'. It requires 'registry-backed identity envelopes', and this file is this repository's name for that. The corresponding clauses are therefore stated as the obligation the candidate expresses, not as a named-type requirement.",
+  "type": "object",
+  "required": [
+    "registry_backed",
+    "writer_epochs",
+    "explicit_project_switching",
+    "wrong_project_denial"
+  ],
+  "properties": {
+    "registry_backed": {
+      "const": true
+    },
+    "writer_epochs": {
+      "const": true
+    },
+    "explicit_project_switching": {
+      "const": true
+    },
+    "wrong_project_denial": {
+      "const": true
+    },
+    "active_automatic_capture_project": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "multi_project_background_capture": {
+      "const": false,
+      "description": "Disabled until isolation proof, which is NOT_RUN."
+    },
+    "isolation_proof": {
+      "const": false,
+      "description": "No isolation proof exists at architecture time. Enabling multi-project background capture requires one."
+    }
+  },
+  "not": {
+    "anyOf": [
+      {
+        "required": [
+          "path_hashes"
+        ]
+      },
+      {
+        "required": [
+          "ports"
+        ]
+      },
+      {
+        "required": [
+          "singleton_event_streams"
+        ]
+      }
+    ],
+    "description": "Identity may not be established from any of these. Exactly the three the candidate names — 'current directory' appears only as a rejected alternative and is therefore not a member of this machine set; the prohibition on implicit selection is carried instead by the explicit-project-switching requirement."
+  },
+  "x-unspecified-in-candidate": "No envelope identifier, project identifier, registry reference or issuance timestamp is asserted. The candidate names none of them.",
+  "x-grounding": {
+    "/required/0": {
+      "clause_id": "ADR-SB-009-C01",
+      "term": "registry-backed"
+    },
+    "/required/1": {
+      "clause_id": "ADR-SB-009-C05",
+      "term": "writer epochs"
+    },
+    "/required/2": {
+      "clause_id": "ADR-SB-009-C04",
+      "term": "explicit project switching"
+    },
+    "/required/3": {
+      "clause_id": "ADR-SB-009-C06",
+      "term": "wrong-project denial"
+    },
+    "/properties/registry_backed": {
+      "clause_id": "ADR-SB-009-C01",
+      "term": "registry-backed"
+    },
+    "/properties/writer_epochs": {
+      "clause_id": "ADR-SB-009-C05",
+      "term": "writer epochs"
+    },
+    "/properties/explicit_project_switching": {
+      "clause_id": "ADR-SB-009-C04",
+      "term": "explicit project switching"
+    },
+    "/properties/wrong_project_denial": {
+      "clause_id": "ADR-SB-009-C06",
+      "term": "wrong-project denial"
+    },
+    "/properties/active_automatic_capture_project": {
+      "clause_id": "ADR-SB-009-C03",
+      "term": "active automatic-capture project"
+    },
+    "/properties/multi_project_background_capture": {
+      "clause_id": "ADR-SB-009-C08",
+      "term": "Multi-project background capture"
+    },
+    "/properties/isolation_proof": {
+      "clause_id": "ADR-SB-009-C09",
+      "term": "isolation proof"
+    },
+    "/not/anyOf/0/required/0": {
+      "clause_id": "ADR-SB-009-C07",
+      "term": "Path hashes"
+    },
+    "/not/anyOf/1/required/0": {
+      "clause_id": "ADR-SB-009-C07",
+      "term": "ports"
+    },
+    "/not/anyOf/2/required/0": {
+      "clause_id": "ADR-SB-009-C07",
+      "term": "singleton event streams"
+    }
+  },
+  "x-machine-invariants": {
+    "ADR-SB-009-C01": {
+      "subject": "second_brain.authority_operation.requires_registry_backed_identity_envelope",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true
+    },
+    "ADR-SB-009-C03": {
+      "subject": "second_brain.automatic_capture.active_project_count",
+      "rule_type": "NUMERIC",
+      "operator": "LESS_THAN_OR_EQUAL",
+      "machine_value": 1
+    },
+    "ADR-SB-009-C04": {
+      "subject": "second_brain.project_switch.mode",
+      "rule_type": "CONSTANT",
+      "operator": "EQUALS",
+      "machine_value": "EXPLICIT"
+    },
+    "ADR-SB-009-C05": {
+      "subject": "second_brain.writer_epoch.required",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true
+    },
+    "ADR-SB-009-C06": {
+      "subject": "second_brain.write.wrong_project.denied",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true
+    },
+    "ADR-SB-009-C07": {
+      "subject": "second_brain.identity.rejected_sources",
+      "rule_type": "ENUM",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "PATH_HASHES",
+        "PORTS",
+        "SINGLETON_EVENT_STREAMS"
+      ],
+      "source_enumeration": "Path hashes, ports, and singleton event streams"
+    },
+    "ADR-SB-009-C08": {
+      "subject": "second_brain.multi_project_background_capture.enabled",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false
+    },
+    "ADR-SB-009-C09": {
+      "subject": "second_brain.multi_project_background_capture.enablement_requires_isolation_proof",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true
+    }
+  }
+}

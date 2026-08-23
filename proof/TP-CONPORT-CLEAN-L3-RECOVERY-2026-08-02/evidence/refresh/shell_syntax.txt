@@ -1,0 +1,4 @@
+syntax_ok scripts/migration/lock_legacy_conport_archive.sh
+syntax_ok scripts/migration/provision_conport_project_db.sh
+syntax_ok scripts/migration/rehome_conport_rows.sh
+syntax_ok docker/mcp-servers-source/conport/start_with_info.sh

@@ -4,15 +4,21 @@ title: Ambiguity Scoring
 type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-03-14'
-last_review: '2026-03-14'
-next_review: '2026-06-12'
+date: '2026-08-11'
+last_review: '2026-08-11'
+next_review: '2026-11-09'
 prelude: Ambiguity Scoring (explanation) for dopemux documentation and developer workflows.
 ---
 # Ambiguity Scoring
 
 ## Overview
-Ambiguity scoring quantifies the risk that a PR is incomplete based on local git state. The score ranges from 0 to 100.
+
+Ambiguity scoring quantifies, from local git state (sibling-branch overlap,
+stash overlap, dirty-worktree overlap, and overlap in high-signal paths
+such as migrations/config/docs), the risk that a PR is missing related work.
+The score ranges from 0 to 100 and remains a useful evidence/uncertainty
+signal that feeds the S1/S2 scope-and-obligations steps of
+[`operator-contract.md`](./operator-contract.md) §5.
 
 ## Score Components
 
@@ -23,14 +29,17 @@ Ambiguity scoring quantifies the risk that a PR is incomplete based on local git
 | **Dirty Worktree** | `+20` | Any uncommitted work that overlaps with current branch changes. |
 | **High Signal** | `+10` | Any overlap occurring in migrations, config, or documentation. |
 
-## Interpretation
+## What this score is not
 
-| Score | Level | Decision |
-|---|---|---|
-| **0–19** | `NONE` | `PROCEED` |
-| **20–39** | `LOW` | `PROCEED_WITH_CAUTION` |
-| **40–69** | `MEDIUM` | `DRAFT_ONLY` |
-| **70–100** | `HIGH` | `BLOCK_PENDING_REVIEW` |
+Superseded: this file previously mapped `LOW`/`MEDIUM`/`HIGH` ambiguity
+bands directly to `PROCEED`/`PROCEED_WITH_CAUTION`/`DRAFT_ONLY`/
+`BLOCK_PENDING_REVIEW` decisions, as a standalone risk-classification table
+competing with the PR risk lane. That decision table is retired.
 
-## Hard Blockers
-The `BLOCK_PENDING_REVIEW` decision is triggered for any score over 70, indicating high confidence that significant related work is missing from the branch.
+The ambiguity score is evidence recorded during S1/S2 (`operator-contract.md`
+§5); it does not itself set `risk_lane`, gate PR creation, or determine
+whether independent audit is required. Current PR risk uses the `L0-L3`
+risk lanes (§4) exclusively, and current creation posture defaults to
+`DRAFT_ONLY` (§S4) regardless of ambiguity score. A high ambiguity score is
+reported as an obligation/warning for the operator, not as an autonomous
+`BLOCK_PENDING_REVIEW` decision.

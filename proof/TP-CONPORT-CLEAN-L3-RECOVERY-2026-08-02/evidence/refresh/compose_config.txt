@@ -1,0 +1,12 @@
+time="2026-08-02T18:27:41-07:00" level=warning msg="The \"ANTHROPIC_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-08-02T18:27:41-07:00" level=warning msg="The \"OPENAI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-08-02T18:27:41-07:00" level=warning msg="The \"XAI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-08-02T18:27:41-07:00" level=warning msg="The \"OPENROUTER_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-08-02T18:27:41-07:00" level=warning msg="The \"GEMINI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-08-02T18:27:41-07:00" level=warning msg="The \"LITELLM_MASTER_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-08-02T18:27:41-07:00" level=warning msg="The \"OPENAI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-08-02T18:27:41-07:00" level=warning msg="The \"XAI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-08-02T18:27:41-07:00" level=warning msg="The \"OPENROUTER_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-08-02T18:27:41-07:00" level=warning msg="The \"GEMINI_API_KEY\" variable is not set. Defaulting to a blank string."
+time="2026-08-02T18:27:41-07:00" level=warning msg="The \"LEANTIME_TOKEN\" variable is not set. Defaulting to a blank string."
+error while interpolating services.task-orchestrator.environment.[]: required variable DOPECON_BRIDGE_TOKEN is missing a value: DOPECON_BRIDGE_TOKEN must be set to an authenticated bridge JWT

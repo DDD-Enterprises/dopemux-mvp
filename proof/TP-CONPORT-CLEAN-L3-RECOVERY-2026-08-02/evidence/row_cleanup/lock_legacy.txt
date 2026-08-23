@@ -1,0 +1,30 @@
+[INFO] Creating archive role conport_archive_ro (login optional; no superuser)
+DO
+[INFO] Revoking CONNECT from PUBLIC and project roles on dopemux_knowledge_graph
+ ?column?
+----------
+        1
+(1 row)
+
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+[INFO] Verification matrix
+         datname         | mvp_connect | adops_connect | public_connect | public_create | archive_connect
+-------------------------+-------------+---------------+----------------+---------------+-----------------
+ conport_adops           | f           | t             | f              | f             | f
+ conport_dopemux_mvp     | t           | f             | f              | f             | f
+ dopemux_knowledge_graph | f           | f             | f              | f             | t
+ postgres                | t           | t             | t              | f             | t
+(4 rows)
+
+✅ Legacy archive CONNECT locked for project roles

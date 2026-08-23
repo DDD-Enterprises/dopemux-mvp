@@ -38,6 +38,7 @@
         "claude-code-cli",
         "copilot-cli",
         "gemini-cli",
+        "grok-cli",
         "pal-mcp-clink",
         "none"
       ]
@@ -49,6 +50,8 @@
         "claude-sonnet-4.6",
         "opus",
         "gemini",
+        "gemini-3.1-pro-high",
+        "grok-4.5",
         "unknown"
       ]
     },
@@ -243,6 +246,72 @@
             "type": "null"
           }
         }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "auditor_model": {
+            "const": "gemini-3.1-pro-high"
+          }
+        },
+        "required": [
+          "auditor_model"
+        ]
+      },
+      "then": {
+        "properties": {
+          "auditor_tool": {
+            "const": "agy"
+          }
+        },
+        "required": [
+          "auditor_tool"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "auditor_model": {
+            "const": "grok-4.5"
+          }
+        },
+        "required": [
+          "auditor_model"
+        ]
+      },
+      "then": {
+        "properties": {
+          "auditor_tool": {
+            "const": "grok-cli"
+          }
+        },
+        "required": [
+          "auditor_tool"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "auditor_tool": {
+            "const": "grok-cli"
+          }
+        },
+        "required": [
+          "auditor_tool"
+        ]
+      },
+      "then": {
+        "properties": {
+          "auditor_model": {
+            "const": "grok-4.5"
+          }
+        },
+        "required": [
+          "auditor_model"
+        ]
       }
     }
   ],

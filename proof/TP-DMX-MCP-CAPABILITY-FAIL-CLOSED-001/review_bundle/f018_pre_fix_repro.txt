@@ -1,0 +1,15 @@
+F018 reproduction, run against execution-base source (origin/main 9dce8ffaec489f486d0356d300f0e8ea5aefa3d2, before any packet changes).
+
+Setup: temporary repo profile declaring conport as a repo_profile service with
+required_tool_globs=["needed_*"], then DOPMUX_CONPORT_URL env var set to override
+the URL.
+
+$ python3 repro_f018.py
+url: http://env-url:4000
+provenance: env_var
+required_tool_globs preserved: ['needed_*']
+F018 DEFECT CONFIRMED: repo-profile authority silently downgraded to env_var
+
+Result: the env URL override silently replaced provenance="repo_profile" with
+provenance="env_var", even though the service was originally declared by the
+repo profile. Confirms F018 exactly as specified in the task packet.

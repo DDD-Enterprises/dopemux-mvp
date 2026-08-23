@@ -1,0 +1,16 @@
+=== live CONNECT probes adops (temp password) ===
+ current_database | current_user
+------------------+---------------
+ conport_adops    | conport_adops
+(1 row)
+
+PASS adops->adops CONNECT
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  permission denied for database "conport_dopemux_mvp"
+DETAIL:  User does not have CONNECT privilege.
+PASS adops->mvp CONNECT denied
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  permission denied for database "dopemux_knowledge_graph"
+DETAIL:  User does not have CONNECT privilege.
+PASS adops->legacy CONNECT denied
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  role "conport_archive_ro" is not permitted to log in
+PASS archive_ro cannot login
+adops password rotated after probe

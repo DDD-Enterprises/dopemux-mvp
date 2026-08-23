@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/second_brain/contracts/task-promotion-request.schema.json",
+  "title": "TaskPromotionRequest",
+  "description": "The only path by which a TaskProposal could become a real task (ADR-SB-008, Slice 6). `disabled` is const-pinned true: the disabled state is structural, not a default a caller can override. Both proofs and explicit approval are required even so, because the preconditions are part of the decision and not merely of a future enablement.",
+  "type": "object",
+  "required": [
+    "disabled",
+    "leantime_plus_task_orchestrator_proof",
+    "explicit_approval"
+  ],
+  "properties": {
+    "disabled": {
+      "const": true
+    },
+    "leantime_plus_task_orchestrator_proof": {
+      "const": true
+    },
+    "explicit_approval": {
+      "const": true
+    }
+  },
+  "x-unspecified-in-candidate": "No request identifier, timestamp, digest or disposition vocabulary is asserted: the candidate names none. Property names are the candidate's own phrases rather than conventional API names, so that each one is traceable to the sentence that authorises it.",
+  "x-grounding": {
+    "/required/0": {
+      "clause_id": "ADR-SB-008-C07",
+      "term": "disabled"
+    },
+    "/required/1": {
+      "clause_id": "ADR-SB-008-C06",
+      "term": "Leantime plus Task Orchestrator proof"
+    },
+    "/required/2": {
+      "clause_id": "ADR-SB-008-C18",
+      "term": "explicit approval"
+    },
+    "/properties/disabled": {
+      "clause_id": "ADR-SB-008-C07",
+      "term": "disabled"
+    },
+    "/properties/leantime_plus_task_orchestrator_proof": {
+      "clause_id": "ADR-SB-008-C06",
+      "term": "Leantime plus Task Orchestrator proof"
+    },
+    "/properties/explicit_approval": {
+      "clause_id": "ADR-SB-008-C18",
+      "term": "explicit approval"
+    }
+  },
+  "x-machine-invariants": {
+    "ADR-SB-008-C03": {
+      "subject": "second_brain.task_promotion_request",
+      "rule_type": "INTERFACE_REQUIREMENT",
+      "operator": "MUST_EXIST",
+      "machine_value": "TaskPromotionRequest"
+    },
+    "ADR-SB-008-C06": {
+      "subject": "second_brain.task_creation.requires_leantime_proof",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true
+    },
+    "ADR-SB-008-C07": {
+      "subject": "second_brain.task_promotion.enabled",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": false
+    },
+    "ADR-SB-008-C17": {
+      "subject": "second_brain.task_creation.requires_task_orchestrator_proof",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true
+    },
+    "ADR-SB-008-C18": {
+      "subject": "second_brain.task_creation.requires_explicit_approval",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true
+    },
+    "ADR-SB-008-C28": {
+      "subject": "second_brain.task_mutation.only_through_task_promotion_request",
+      "rule_type": "BOOLEAN",
+      "operator": "EQUALS",
+      "machine_value": true
+    },
+    "ADR-SB-008-C29": {
+      "subject": "second_brain.pm_workflow.sole_authorities",
+      "rule_type": "AUTHORITY_TARGET",
+      "operator": "SET_EQUALS",
+      "machine_value": [
+        "Leantime",
+        "Task Orchestrator"
+      ],
+      "source_enumeration": "Leantime and Task Orchestrator"
+    }
+  }
+}

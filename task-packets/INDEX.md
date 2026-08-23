@@ -33,6 +33,12 @@ A packet is superseded by another packet
 
 | Packet ID | Subsystem | Title | Status | Related ADR |
 | --- | --- | --- | --- | --- |
+| TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001 | Control Tower / Planner | Design read-only interactive repository merge planner | Active (design only) | docs/91-rfc/repository-merge-planner.md |
+| TP-DMX-PCP-PLANNER-FOUNDATION-001 | Control Tower / Planner | Fixture-backed deterministic PCP planner foundation | Draft / blocked on design acceptance | TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001 |
+| TP-DMX-PCP-ADOPS-EXTENSION-002 | Control Tower / Planner | Read-only AdOps PROJECT extension | Draft / blocked on foundation | TP-DMX-PCP-PLANNER-FOUNDATION-001 |
+| TP-DMX-PCP-DNH-RDCP-BRIDGE-003 | Control Tower / Planner | Read-only dNh RDCP extension bridge | Draft / blocked on foundation | TP-DMX-PCP-PLANNER-FOUNDATION-001 |
+| TP-DMX-PCP-GITHUB-REFRESH-004 | Control Tower / Planner | Allowlisted GitHub GET/HEAD evidence refresh | Draft / blocked on AdOps+dNh adapters | TP-DMX-PCP-ADOPS-EXTENSION-002, TP-DMX-PCP-DNH-RDCP-BRIDGE-003 |
+| TP-DMX-PCP-CONVERSATION-DECISIONS-005 | Control Tower / Planner | Approved decision-capsule intake and reconciliation | Draft / blocked on live refresh | TP-DMX-PCP-GITHUB-REFRESH-004 |
 | DMX-MCPINT-HRD-REPORT-001 | MCP Fleet (P7/HRD) | Consolidated fleet reconciliation report 2026-07-18 (P7 anchor) | Active | claudedocs/mcp-fleet-reconciliation-2026-07-18.md |
 | DMX-MCPINT-HRD-CONSENSUS-VEC-002 | MCP Fleet (P7/HRD) | G6 ConPort vector-search boundary via PAL consensus | Ready | adr-mcpint-006 (to be authored) |
 | DMX-MCPINT-HRD-CONSENSUS-CPLX-003 | MCP Fleet (P7/HRD) | G7 complexity federation — ratify/challenge G5 via PAL consensus | Ready | adr-mcpint-001 (G5) |

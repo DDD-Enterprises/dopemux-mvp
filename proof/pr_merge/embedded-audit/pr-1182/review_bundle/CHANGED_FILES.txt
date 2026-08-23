@@ -1,0 +1,15 @@
+claudedocs/orchestrator-replan-2026-08-02/MASTER-PLAN.md
+claudedocs/orchestrator-replan-2026-08-02/routing-table.json
+docs/03-reference/orchestrator-integration/db-defragmentation-2026-08-01.md
+docs/03-reference/orchestrator-integration/index.md
+docs/ops/load-plans/load_plan-DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED.json
+docs/ops/load-plans/load_plan-TO-CANON.json
+proof/pr_merge/embedded-audit/pr-1182/AUDITOR_REPORT.md
+proof/pr_merge/embedded-audit/pr-1182/PROOF.json
+proof/pr_merge/embedded-audit/pr-1182/PROOF.json.sig
+proof/pr_merge/embedded-audit/pr-1182/review_bundle/CHANGED_FILES.txt
+proof/pr_merge/embedded-audit/pr-1182/review_bundle/CODEX_IDENTITY_PREFLIGHT.txt
+proof/pr_merge/embedded-audit/pr-1182/review_bundle/CODEX_REVIEW_RAW.txt
+proof/pr_merge/embedded-audit/pr-1182/review_bundle/CODEX_REVIEW_RAW_R2.txt
+proof/pr_merge/embedded-audit/pr-1182/review_bundle/DETERMINISTIC_VALIDATION.json
+proof/pr_merge/embedded-audit/pr-1182/review_bundle/DIFF_STAT.txt

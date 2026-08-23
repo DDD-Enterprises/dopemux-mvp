@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.0.0",
+  "tp_id": "TP-DMX-PYASN1-SECURITY-W1-001",
+  "series_id": "DMX-PORTFOLIO-RECOVERY-W1-PY-SAFETY",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "fix/security-pyasn1-0.6.4-current-main",
+  "base_branch": "main",
+  "head_before": "396c32013ea91552d08677b245c1b5739b2d2264",
+  "head_after": "PENDING_C1_COMMIT",
+  "mutation_performed": false,
+  "github_mutation_performed": false,
+  "secret_values_recorded": false,
+  "operator_authorization_used": [],
+  "forbidden_surfaces_touched": false,
+  "files_changed": [
+    "uv.lock",
+    "docker/mcp-servers-source/pal/pal-mcp-server/uv.lock",
+    "task-packets/TP-DMX-PYASN1-SECURITY-W1-001.json",
+    "proof/TP-DMX-PYASN1-SECURITY-W1-001/PROOF.json",
+    "proof/TP-DMX-PYASN1-SECURITY-W1-001/VALIDATION.md",
+    "proof/TP-DMX-PYASN1-SECURITY-W1-001/ROLLBACK.md",
+    "proof/TP-DMX-PYASN1-SECURITY-W1-001/closure_receipts/PR_1178_PRESERVATION.json",
+    "proof/TP-DMX-PYASN1-SECURITY-W1-001/closure_receipts/PR_1179_PRESERVATION.json"
+  ],
+  "commands": [
+    {
+      "cmd": "uv sync --frozen",
+      "exit_code": 0,
+      "result": "Root frozen sync success"
+    },
+    {
+      "cmd": "uv run python -c 'import pyasn1; assert pyasn1.__version__ == \"0.6.4\"'",
+      "exit_code": 0,
+      "result": "Root pyasn1 0.6.4 import success"
+    },
+    {
+      "cmd": "cd docker/mcp-servers-source/pal/pal-mcp-server && uv sync --frozen",
+      "exit_code": 0,
+      "result": "PAL frozen sync success"
+    },
+    {
+      "cmd": "cd docker/mcp-servers-source/pal/pal-mcp-server && uv run python -c 'import pyasn1; assert pyasn1.__version__ == \"0.6.4\"'",
+      "exit_code": 0,
+      "result": "PAL pyasn1 0.6.4 import success"
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "details": [
+      {"check": "root_lock_pyasn1_version", "status": "PASS", "detail": "uv.lock resolves pyasn1 0.6.4"},
+      {"check": "pal_lock_pyasn1_version", "status": "PASS", "detail": "docker/mcp-servers-source/pal/pal-mcp-server/uv.lock resolves pyasn1 0.6.4"},
+      {"check": "solver_conservation", "status": "PASS", "detail": "No unrelated package records changed in root or PAL locks; PAL lock openai specifier normalization proven"},
+      {"check": "pr_1178_preservation", "status": "PASS", "detail": "PR 1178 PAL lock pyasn1 delta preserved"},
+      {"check": "pr_1179_preservation", "status": "PASS", "detail": "PR 1179 root lock pyasn1 delta preserved"},
+      {"check": "diff_check", "status": "PASS", "detail": "git diff --check passes cleanly"}
+    ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-PYASN1-SECURITY-W1-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": "Pending canonical independent audit in S6"
+  },
+  "embedded_audit_status": "SKIPPED",
+  "governance": {
+    "branch_protection_changed": false,
+    "required_checks_changed": false,
+    "pull_request_target_introduced": false,
+    "secrets_touched": false,
+    "codeowners_changed": false,
+    "mutation_surfaces_added": false
+  },
+  "stop_conditions_hit": [],
+  "remaining_risks": [
+    "Pre-existing test failures on origin/main baseline"
+  ],
+  "next_recommended_action": "Freeze C1 commit and perform S6 canonical independent audit."
+}

@@ -1,0 +1,109 @@
+{
+  "id": "TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001",
+  "project": "dopemux-mvp",
+  "target": "Repair DMX-W1-04-F018 and F019 in MCP resolver/gate authority and capability evidence semantics",
+  "invariants": [
+    "An environment URL override cannot erase repo-profile authority classification",
+    "An env-only service does not gain repo-profile authority",
+    "Transport reachability is not proof of required tool capability",
+    "Mandatory unmatched required tool globs block",
+    "Handshake-required discovery cannot silently suppress required tool checks",
+    "Optional service policy remains warning/pass by default and blocking under strict_optional",
+    "Positive matching-tool behavior remains functional",
+    "No changes outside the explicit allowlist",
+    "No deployment, merge, signing, or production authority"
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopemux",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-REPO-DEEP-AUDIT-001-REMEDIATION",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "fix(mcp): fail closed on downgraded authority and unproven required tools",
+    "allowlist": [
+      "src/dopemux/mcp/resolver.py",
+      "src/dopemux/mcp/gate.py",
+      "tests/mcp/test_resolver.py",
+      "tests/mcp/test_discovery_gate_strict.py",
+      "task-packets/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001.md",
+      "task-packets/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001.json",
+      "proof/TP-DMX-MCP-CAPABILITY-FAIL-CLOSED-001/**"
+    ],
+    "verify": [
+      "git diff --check",
+      "python -m pytest -q tests/mcp/test_resolver.py tests/mcp/test_discovery_gate_strict.py",
+      "python -m pytest -q tests/mcp",
+      "python -m pytest -q tests/test_cli_mcp_startup.py tests/test_mcp_config_generation.py tests/test_mcp_health_probe.py tests/test_mcp_registry.py"
+    ]
+  },
+  "pr": {
+    "title": "fix(mcp): fail closed on downgraded authority and unproven required tools",
+    "body": "L3 repair for DMX-W1-04-F018 and F019. Merge is not authorized by this packet.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Establish custody, consumer characterization, scoped drift, and open-PR overlap without mutation.",
+      "validation": [
+        "Repository identity matches",
+        "Relevant provenance consumers are inventoried",
+        "Scoped drift is classified",
+        "Relevant PR overlap is not CONFLICTING"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Reproduce F018 and F019 deterministically against execution-base source.",
+      "validation": [
+        "Env URL override demonstrates repo-profile authority downgrade before fix",
+        "Handshake-required discovery demonstrates mandatory required-glob bypass before fix",
+        "No external service or provider is required"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add deterministic failing regressions and implement the minimum resolver/gate repair.",
+      "validation": [
+        "Repo-profile authority survives URL override",
+        "Env-only service remains env_var",
+        "Mandatory unproven required glob blocks",
+        "Optional policy remains compatible",
+        "Positive matching-tool case passes",
+        "Changed files remain allowlisted"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Run deterministic validation and freeze substantive head C1.",
+      "validation": [
+        "Focused tests pass",
+        "Relevant MCP suite passes or baseline exception is proven",
+        "Adjacent MCP smoke passes or is evidenced NOT_REQUIRED",
+        "git diff --check passes",
+        "pre-commit passes",
+        "secret scan passes",
+        "C1 is frozen"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run one final independent L3 audit against exact C1 and create proof-only closure.",
+      "validation": [
+        "Auditor independence is proven against implementer",
+        "Audit is bound to C1",
+        "PASS or explicitly non-blocking PASS_WITH_RISKS is required to advance",
+        "Proof successor does not alter substantive content",
+        "Publication and merge remain separately gated"
+      ]
+    }
+  ]
+}

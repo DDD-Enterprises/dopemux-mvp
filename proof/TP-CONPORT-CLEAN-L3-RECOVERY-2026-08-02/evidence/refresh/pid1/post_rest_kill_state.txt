@@ -1,0 +1,55 @@
+=== post-kill state ===
+2026-08-03T01:37:11Z
+Name=/mcp-conport Status=running RestartCount=5 StartedAt=2026-08-03T01:37:05.154906339Z ExitCode=0
+PID                 PPID                CMD
+59987               59963               bash start_with_info.sh
+60050               59987               python info_server.py
+60051               59987               python enhanced_server.py
+60052               59987               python server.py sse
+{"status": "healthy", "service": "conport-enhanced", "port": 3004, "database": "healthy", "redis": "healthy", "timestamp": 42097.7934167}
+{"status":"healthy","service":"conport","port":3004}
+mcp_ok
+count=1
+1785721023 enhanced_server_rest 137
+mcp-conport Up 6 seconds (healthy) dopemux-conport:pid1-l3
+mcp-conport-pre-pid1-l3 Exited (137) 2 hours ago dopemux-conport
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:37:03 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:     127.0.0.1:51246 - "GET /health HTTP/1.1" 200 OK
+start_with_info.sh: line 135:    16 Killed                  MCP_SERVER_PORT=3004 python enhanced_server.py
+[conport-supervisor] Required child died: name=enhanced_server_rest wait_status=137
+INFO:     Shutting down
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [17]
+INFO:     Application shutdown complete.
+INFO:     Finished server process [15]
+[conport-supervisor] Starting ConPort required children (info, rest:3004, mcp:3005)...
+[conport-supervisor] info_server.py pid=14 (info on 4004)
+[conport-supervisor] enhanced_server.py (REST) pid=15
+[conport-supervisor] server.py sse (MCP) pid=16
+INFO:__main__:✅ Monitoring initialized
+INFO:__main__:🚀 Starting Enhanced ConPort Server on 0.0.0.0:3004
+INFO:__main__:✅ PostgreSQL connection pool established
+INFO:__main__:✅ Database schema present (workspace_contexts found)
+INFO:__main__:✅ Redis connection established
+INFO:integration_bridge_client:✅ DopeconBridge client initialized
+INFO:__main__:✅ F-NEW-7 Unified Query API initialized
+INFO:__main__:🔄 Auto-save loop started (every 30s)
+INFO:__main__:✅ Enhanced ConPort API available at http://0.0.0.0:3004
+INFO:__main__:📋 Features: Real PostgreSQL persistence + Redis caching + ADHD optimization
+INFO:__main__:Starting ConPort info server on port 4004
+INFO:__main__:MCP server accessible at port 3004
+INFO:     Started server process [14]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:4004 (Press CTRL+C to quit)
+INFO:     Started server process [16]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:3005 (Press CTRL+C to quit)
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:37:10 +0000] "GET /health HTTP/1.1" 200 299 "-" "curl/8.14.1"
+INFO:     127.0.0.1:46468 - "GET /health HTTP/1.1" 200 OK
+INFO:aiohttp.access:127.0.0.1 [03/Aug/2026:01:37:11 +0000] "GET /health HTTP/1.1" 200 297 "-" "curl/8.14.1"
+INFO:     127.0.0.1:46482 - "GET /health HTTP/1.1" 200 OK

@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0.0",
+  "packet_id": "TP-DMX-SECOND-BRAIN-ARCHITECTURE-AUTHORITY-PERSISTENCE-CI-REPAIR-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1206,
+  "pr_branch": "tp/DMX-SB-ARCH-AUTHORITY-PERSIST-001",
+  "original_pr_head": "16e8596410de9bbdef3db5993c5eaf3f60d8d4b6",
+  "audited_content_head": "3cf129b127c07e2fbfb3571c8de6c42b22ed688c",
+  "base_sha_used": "e9945786efaaf2994bda32bf2419c391d23ce686",
+  "ratification_baseline": "33d6c353023ecc3aa6331ab39f4f076ae3ca1fda",
+  "ma08_drift": {
+    "baseline_to_repair_base_commit_count": 1,
+    "disposition": "NEW_DRIFT_CONTAINED",
+    "touched_paths": [
+      "proof/TP-DMX-PYASN1-SECURITY-W1-001/PROOF.json",
+      "proof/TP-DMX-PYASN1-SECURITY-W1-001/ROLLBACK.md",
+      "proof/TP-DMX-PYASN1-SECURITY-W1-001/VALIDATION.md",
+      "proof/pr_merge/embedded-audit/closure_receipts/PR_1178_PRESERVATION.json",
+      "proof/pr_merge/embedded-audit/closure_receipts/PR_1179_PRESERVATION.json",
+      "proof/pr_merge/embedded-audit/pr-1115/PROOF.json",
+      "proof/pr_merge/embedded-audit/pr-1115/PROOF.json.sig"
+    ],
+    "authority_path_overlap": false,
+    "master_index_overlap": false
+  },
+  "open_pr_overlap": {
+    "checked_open_pr_count": 50,
+    "authority_path_overlap": false,
+    "master_index_overlap": false,
+    "proof_path_conflict": false
+  },
+  "local_validation": {
+    "change_contract_preflight": {
+      "status": "PASS",
+      "max_lane": "L2",
+      "model_audit_required": true,
+      "paths_evaluated": 14
+    },
+    "docs_frontmatter_guard_fix": {
+      "changed_files": 0,
+      "result": "All docs have valid frontmatter."
+    },
+    "docs_filename_hygiene_check": {
+      "violations": 0,
+      "total": 5198,
+      "active": 3830,
+      "quarantine": 1368,
+      "exempt": 2306
+    },
+    "pre_commit_full_run": "all hooks PASS or Skipped (no-files-to-check); working tree unchanged"
+  },
+  "source_byte_equivalence": {
+    "machine_records_byte_identical": "3/3",
+    "markdown_records_byte_identical": "3/3",
+    "total": "6/6"
+  },
+  "projection_body_equivalence": "3/3",
+  "operator_dispositions": {
+    "accept": 32,
+    "defer": 0,
+    "reject": 0
+  },
+  "ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "ratification_package_sha256": "fe336eb871b19896fd77d553a46d88ef1c03e1f7af5818d0c7c11085d7beac72",
+  "architecture_candidate_sha256": "94b735c72ff3533f0cd73bed18fd3fb64b164530f7ef360f37584c73504a4e8e",
+  "independent_audit": {
+    "runner": "OpenCode CLI",
+    "model": "openrouter/moonshotai/kimi-k3",
+    "variant": "max",
+    "session_independence": "separate process/tool from repair producer; no shared conversation context; own git/sha256/script invocations",
+    "verdict": "PASS_WITH_NONBLOCKING_OBSERVATIONS",
+    "satisfies_repo_embedded_audit_ci_gate": false,
+    "satisfies_repo_embedded_audit_ci_gate_reason": "The repo's embedded-audit CI job only turns green via a CI-provisioned model credential (outside this repair's control) or a locally-signed operator attestation using the repo-registered hue@local SSH key, which is a personal sign-off the repair producer did not fabricate on the operator's behalf. See HANDOFF.md."
+  },
+  "architecture_semantics_modified": false,
+  "runtime_mutation": false,
+  "implementation_execution_authorized": false,
+  "adr_acceptance_authorized": false
+}

@@ -1,0 +1,36 @@
+{
+  "commit_sha": "1b80fc6f11681baebdb00acc7f756ce8471a24b0",
+  "decision": "PR_1182_MERGED_CONTENT_LANDED_EXACT_HEAD_AUDIT_NOT_PROVEN",
+  "embedded_audit": {
+    "auditor_model": "unknown",
+    "auditor_tool": "none",
+    "exit_code": null,
+    "findings": [],
+    "fixes_applied": [
+      "Replaced false PASS_WITH_RISKS main proof with fail-closed SKIPPED",
+      "Removed PROOF.json.sig over non-truthful attestation",
+      "Removed Claude schema-carrier formal identity claims from canonical package",
+      "Preserved Copilot and Kimi reports as HISTORICAL_* corroboration only"
+    ],
+    "invocation": null,
+    "remaining_risks": [
+      "Exact-head independent audit of merged content NOT_PROVEN",
+      "Wave 0 remains unauthorized by this evidence package",
+      "Historical proofs must not be treated as PR Steward READY"
+    ],
+    "report_path": "proof/TP-REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": "PR #1182 merged at fb710ef40500695882a5b421a3325150176fffa1 from head 1b80fc6f11681baebdb00acc7f756ce8471a24b0 without an exact-head independent audit of the landed content. Intermediate commits after any partial audits changed substantive routing-table content. Prior main proof bound b7387429 and used claude-code-cli/sonnet schema carriers while stating real auditor was Codex \u2014 quarantined as non-truthful formal evidence. Formal status is SKIPPED / EXACT_HEAD_AUDIT=NOT_PROVEN.",
+    "status": "SKIPPED"
+  },
+  "exact_head_audit": "NOT_PROVEN",
+  "generated_at": "2026-08-03T04:42:38Z",
+  "head_sha": "1b80fc6f11681baebdb00acc7f756ce8471a24b0",
+  "merge_commit_sha": "fb710ef40500695882a5b421a3325150176fffa1",
+  "model_calls_required": 0,
+  "note": "Post-merge quarantine: PR #1182 implementation is merged and authoritative. No exact-head independent audit attests the landed content. Prior main proof used Claude schema carriers while stating Codex as real auditor and is not truthful READY evidence. Copilot/Kimi reports preserved only as historical corroboration under review_bundle/HISTORICAL_*.",
+  "packet_id": "TP-REPLAN-BASELINE-1182-POSTMERGE-QUARANTINE",
+  "pr_number": 1182,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "wave_0_authorized": false
+}

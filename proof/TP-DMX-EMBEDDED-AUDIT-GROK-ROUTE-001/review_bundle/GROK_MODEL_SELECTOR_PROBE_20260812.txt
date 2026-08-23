@@ -1,0 +1,6 @@
+$ grok -m grok-4.5-build -p 'reply with OK'
+Couldn't set model 'grok-4.5-build': Invalid params: "unknown model id". Run 'grok models' to see available models.
+Error: Couldn't set model 'grok-4.5-build': Invalid params: "unknown model id". Run 'grok models' to see available models.
+
+$ grok -m grok-4.5 -p 'Reply with exactly: MODEL_SELECT_OK'
+MODEL_SELECT_OK

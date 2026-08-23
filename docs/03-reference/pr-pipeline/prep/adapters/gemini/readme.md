@@ -4,30 +4,37 @@ title: Readme
 type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-03-17'
-last_review: '2026-03-17'
-next_review: '2026-06-15'
+date: '2026-08-13'
+last_review: '2026-08-13'
+next_review: '2026-11-11'
 prelude: Readme (explanation) for dopemux documentation and developer workflows.
 ---
-# Gemini Adapter for PR-PREP-SPECIALIST
+# Gemini Adapter for PR-Prep-Specialist
 
-**Status**: ✅ IMPLEMENTED
-**Contract**: TP-PRPS-000-1.0.0
-**Compliance**: 100%
+Superseded by [`../../operator-contract.md`](../../operator-contract.md).
 
-## Implementation
+This file previously claimed `Contract: TP-PRPS-000-1.0.0`, a "7-step
+canonical workflow", "Identical decision logic", a "Uniform handoff
+structure", and `IMPLEMENTED AND COMPLIANT` status via
+`platform: gemini, method: task_templates`. That contract, its seven-step
+ceremony, and its compliance claim are retired.
 
-- ✅ 7-step canonical workflow
-- ✅ Identical decision logic
-- ✅ Uniform handoff structure
-- ✅ Governance compliance
+## Current behavior
 
-## Integration
+Gemini invokes `pr-prep-specialist` via task templates. All prep behavior
+— the conditional S0-S8 workflow, `L0-L3` risk lanes, prep states, and the
+V2 handoff schema — is defined once, canonically, in
+[`operator-contract.md`](../../operator-contract.md). This adapter does
+not define its own workflow steps, decision logic, or handoff structure;
+it does not claim compliance against a retired contract, and it never
+grants non-draft or merge-ready PR creation authority independent of the
+operator contract's `DRAFT_ONLY` default (§S4) and explicit
+operator/Task Packet authorization.
 
-```yaml
-platform: gemini
-method: task_templates
-contract: TP-PRPS-000-1.0.0
-```
+## Platform-specific notes
 
-**Status**: ✅ IMPLEMENTED AND COMPLIANT
+- **Invocation**: task templates (`platform: gemini, method: task_templates`).
+- **Docs**: [`../../../../../pr_prep/adapters/gemini/readme-2.md`](../../../../../pr_prep/adapters/gemini/readme-2.md)
+  (compatibility pointer only).
+
+This stub is kept only so existing links into this filename keep resolving.

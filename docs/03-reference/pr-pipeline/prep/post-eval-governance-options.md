@@ -4,25 +4,25 @@ title: Post-Evaluation Governance Options
 type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-03-14'
-last_review: '2026-03-14'
-next_review: '2026-06-12'
+date: '2026-08-11'
+last_review: '2026-08-11'
+next_review: '2026-11-09'
 prelude: Next steps and governance options following the evaluation of pr-prep-specialist.
 ---
 # Post-Evaluation Governance Options
 
-After running the evaluation (TP-PRPS-007) and receiving a final `GO_NO_GO_DECISION`, operators should proceed with one of the following governance paths based on the outcome.
+Superseded by [`operator-contract.md`](./operator-contract.md).
 
-## 1. Favorable Outcomes (`GO_SUPERVISED_FINAL_CREATION`, `GO_DRAFT_FIRST`, `GO_PACKAGE_ONLY`)
+This file previously routed next-step governance decisions off a historical
+TP-PRPS-007 evaluation's `GO_SUPERVISED_FINAL_CREATION` / `GO_DRAFT_FIRST` /
+`GO_PACKAGE_ONLY` / `NO_GO_LIMIT_TO_ARTIFACTS_ONLY` / `ROLLBACK_TO_HUMAN_PREP`
+outcome. Those outcome codes are retired as current governing states; see
+[`post-pilot-go-no-go-criteria.md`](./post-pilot-go-no-go-criteria.md).
 
-### TP-PRPS-008-PREP-SKILL-LIVE-PILOT
-If the evaluation demonstrates that the skill is truthful, conservative, and useful, it should be tested in a controlled live environment.
-- **Action**: Run the skill against a curated set of real, active branches.
-- **Focus**: Measure actual time-saved, reviewer feedback on draft quality, and true-positive rates for missing adjacent work.
+Current PR-creation posture, prep states, and audit/proof requirements come
+from `operator-contract.md` — default `DRAFT_ONLY` creation (§S4), the
+eight prep states (§6), and the `L0-L3`-scaled independent-audit
+requirement (§4, §S6). There is no separate post-evaluation governance
+branch outside that contract.
 
-## 2. Restrictive Outcomes (`NO_GO_LIMIT_TO_ARTIFACTS_ONLY`, `ROLLBACK_TO_HUMAN_PREP`)
-
-### TP-PRPS-008-PREP-SKILL-HARDENING-AND-RESTRICTION
-If the evaluation exposes hallucinated verification, erratic draft quality, or missing critical evidence in the handoff bundle, operational use must be blocked.
-- **Action**: Revisit specific pipeline phases (e.g., improve the deterministic gate strictness, fix the adjacent-work heuristic).
-- **Focus**: Eliminate `UNSAFE` or `MISLEADING` behaviors before re-evaluating. Trust must be earned sequentially.
+This stub is kept only so existing links into this filename keep resolving.

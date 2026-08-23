@@ -1,0 +1,32 @@
+{
+  "schema_version": "2.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ARCHITECTURE-AUTHORITY-PERSISTENCE-001",
+  "repository": "DDD-Enterprises/dopemux-mvp",
+  "source_ratification_binding_sha256": "a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34",
+  "source_ratification_package_sha256": "fe336eb871b19896fd77d553a46d88ef1c03e1f7af5818d0c7c11085d7beac72",
+  "repository_base_sha": "33d6c353023ecc3aa6331ab39f4f076ae3ca1fda",
+  "destination_directory": "docs/03-reference/architecture/second-brain/authority",
+  "architecture_semantics_modified": false,
+  "exact_byte_authority_members_verified": true,
+  "implementation_authorized": false,
+  "adr_acceptance_authorized": false,
+  "runtime_mutation": false,
+  "r2a01": "CORRECTED_BY_EXTERNAL_RATIFICATION_RECORD",
+  "fo01": {
+    "architecture_ratification_blocker": false,
+    "ADR_acceptance_blocker": true,
+    "required_resolution": "REPAIR_AND_REVERIFY_TRACEABILITY_BEFORE_ANY_ADR_ACCEPTANCE"
+  },
+  "ma08_standing": true,
+  "ci_representation_repair": {
+    "packet_id": "TP-DMX-SECOND-BRAIN-ARCHITECTURE-AUTHORITY-PERSISTENCE-CI-REPAIR-001",
+    "architecture_semantics_modified": false,
+    "immutable_authority_source_preserved": true,
+    "exact_byte_authority_members_verified": true,
+    "source_authority_members": 6,
+    "repo_native_markdown_projections": 4,
+    "original_persistence_commit": "16e8596410de9bbdef3db5993c5eaf3f60d8d4b6",
+    "repair_content_head": null,
+    "repair_content_head_note": "Recorded in proof/TP-DMX-SECOND-BRAIN-ARCHITECTURE-AUTHORITY-PERSISTENCE-CI-REPAIR-001/C1_HEAD.txt after the independent audit binds this content head; not self-embeddable here."
+  }
+}

@@ -1,0 +1,393 @@
+{
+  "id": "TP-DMX-PR-PREP-SPECIALIST-V2-001",
+  "project": "dopemux-mvp",
+  "target": "Migrate the active pr-prep-specialist governance contract from the stale March seven-step/LOW-MEDIUM-HIGH/MERGE_READY model to the current Dopemux L0-L3, resilient-drift, frozen-content-audit, proof-only-successor, CI, PR Steward, and explicit-operator-gate model. Do not merge.",
+  "invariants": [
+    "Live repository/GitHub state and current governance beat historical PR-prep documentation.",
+    "Execution refreshes origin/main; the authoring SHA is an observation, not an exact-SHA stop gate.",
+    "Ordinary main movement is not a blocker; recompute only affected ancestry, path overlap, semantic overlap, tests, and proof freshness.",
+    "Relevant overlap is classified IDENTICAL, SUBSET, SUPERSET, COMPATIBLE, CONFLICTING, or UNKNOWN.",
+    "Open PR content is future state until merged.",
+    "PR Prep never grants merge authority and never substitutes its own verdict for current PR Steward READY.",
+    "L2/L3 audit occurs once on the final frozen substantive content head.",
+    "A proof-only successor with unchanged substantive content does not require another model audit.",
+    "No platform adapter may weaken Task Packet scope, operator gates, audit independence, proof freshness, or PR Steward requirements.",
+    "Legacy duplicate docs may be updated only after their live consumer/compatibility role is proven; archive material remains historical.",
+    "No merge, close, mark-ready, force push, history rewrite, branch deletion, permission change, credential change, release, migration, or production mutation is authorized.",
+    "For this packet, docs/03-reference/pr-pipeline/prep/** and docs/03-reference/pr-pipeline/merge/** are the canonical PR-pipeline reference-contract surfaces; docs/pr_prep/** and docs/pr_merge/** are compatibility surfaces only and must not carry independent behavioral authority.",
+    "R2 is a narrow closure amendment only: the six newly allowlisted residual PR-prep documentation paths may be changed solely to remove dangling contract-v2 references and legacy V1 behavioral semantics or convert them to compatibility/canonical pointers.",
+    "R3 is the terminal semantic-census closure before audit: the twelve newly allowlisted PR-prep documentation paths may be changed only to retire contradictory V1 behavioral authority or convert compatibility copies to canonical pointers. Any additional non-archive authority-bearing contradiction discovered outside the amended allowlist is a stop condition, not an automatic scope expansion.",
+    "R4 is the final semantic closure before audit. The R3 census artifact proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/LEGACY_SEMANTICS_SCAN_R3.md is the frozen source for the exact 19 ACTIVE_CONTRADICTION paths. Before editing, record its SHA256 and extract a sorted exact path list. If the extracted ACTIVE_CONTRADICTION count is not exactly 19, stop with PREP_V2_NEEDS_SUPERVISOR.",
+    "The 21 R4 candidate paths are a transport envelope only. The R4 substantive repair commit may modify only paths that are both in that 21-path envelope and in the exact frozen 19-path ACTIVE_CONTRADICTION set from the R3 census. Candidate paths not classified ACTIVE_CONTRADICTION must remain byte-unchanged.",
+    "R3 supervisor-judgment files using LOW/MEDIUM/HIGH as a clearly namespaced local measurement such as obligation severity, override severity, evidence confidence, quality, or signal level are NON_BLOCKING_LOCAL_MEASUREMENT and must not be changed solely to rename those values. Such scales become blocking only if they act as the PR risk lane, creation posture, audit trigger, proof acceptance rule, or readiness state.",
+    "No additional scope expansion follows R4. Any non-archive ACTIVE_CONTRADICTION outside the frozen 19-path R3 set is a genuine stop condition requiring a new supervisor decision, not automatic mutation."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PR-PREP-V2",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "feat/pr-prep-specialist-v2-contract",
+    "base_branch": "main",
+    "stacked_because": "Create a fresh dedicated worktree from live origin/main at execution. Do not stack on an open PR. Preserve compatible main movement and stop only on conflicting or materially unknown overlap."
+  },
+  "commit": {
+    "message": "docs(pr-prep): align specialist with current governance",
+    "allowlist": [
+      "task-packets/TP-DMX-PR-PREP-SPECIALIST-V2-001.json",
+      "task-packets/TP-DMX-PR-PREP-SPECIALIST-V2-001.md",
+      "docs/03-reference/pr-pipeline/prep/skill-model.md",
+      "docs/03-reference/pr-pipeline/prep/operator-contract.md",
+      "docs/03-reference/pr-pipeline/prep/workflow-sequence.md",
+      "docs/03-reference/pr-pipeline/prep/deterministic-gate-rules.md",
+      "docs/03-reference/pr-pipeline/prep/go-no-go-criteria.md",
+      "docs/03-reference/pr-pipeline/prep/handoff-to-prms-contract.md",
+      "docs/03-reference/pr-pipeline/prep/pr-creation-policy.md",
+      "docs/03-reference/pr-pipeline/prep/high-risk-handoff-rules.md",
+      "docs/03-reference/pr-pipeline/merge/handoff-from-prps-contract.md",
+      "docs/pr_merge/handoff-from-prps-contract.md",
+      "docs/pr_prep/skill-model.md",
+      "docs/pr_prep/operator-contract.md",
+      "docs/pr_prep/workflow-sequence.md",
+      "docs/pr_prep/deterministic-gate-rules.md",
+      "docs/pr_prep/go-no-go-criteria.md",
+      "docs/pr_prep/handoff-to-prms-contract.md",
+      "docs/pr_prep/pr-creation-policy.md",
+      "docs/pr_prep/high-risk-handoff-rules.md",
+      "tests/governance/test_pr_prep_contract_v2.py",
+      "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/**",
+      "proof/pr_merge/embedded-audit/pr-<ACTUAL_PR>/**",
+      "docs/03-reference/pr-pipeline/prep/branch-state-schema.md",
+      "docs/03-reference/pr-pipeline/prep/consensus-gate-rules.md",
+      "docs/03-reference/pr-pipeline/prep/handoff-contract.md",
+      "docs/pr_prep/branch-state-schema.md",
+      "docs/pr_prep/consensus-gate-rules.md",
+      "docs/pr_prep/handoff-contract.md",
+      "docs/03-reference/pr-pipeline/prep/operational-posture-options.md",
+      "docs/03-reference/pr-pipeline/prep/layered-validation-model.md",
+      "docs/03-reference/pr-pipeline/prep/creation-mode-rules.md",
+      "docs/03-reference/pr-pipeline/prep/pr-drafting-rules.md",
+      "docs/03-reference/pr-pipeline/prep/live-pilot-protocol.md",
+      "docs/03-reference/pr-pipeline/prep/stash-and-branch-safety-rules.md",
+      "docs/pr_prep/operational-posture-options.md",
+      "docs/pr_prep/layered-validation-model.md",
+      "docs/pr_prep/creation-mode-rules.md",
+      "docs/pr_prep/pr-drafting-rules.md",
+      "docs/pr_prep/live-pilot-protocol.md",
+      "docs/pr_prep/stash-and-branch-safety-rules.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/codex/readme.md",
+      "docs/pr_prep/adapters/codex/readme-2.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/vibe/agent-spec.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/vibe/checkpoint-sequence.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/vibe/guardrails.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/vibe/operator-review-form.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/vibe/readme.md",
+      "docs/pr_prep/adapters/vibe/agent-blueprint.md",
+      "docs/pr_prep/adapters/vibe/checkpoint-sequence.md",
+      "docs/pr_prep/adapters/vibe/guardrails-2.md",
+      "docs/pr_prep/adapters/vibe/operator-review-form.md",
+      "docs/pr_prep/adapters/vibe/readme-2.md",
+      "docs/pr_prep/adapters/vibe/template-agent.md",
+      "docs/03-reference/pr-pipeline/prep/final-prep-decision-model.md",
+      "docs/pr_prep/final-prep-decision-model.md",
+      "docs/03-reference/pr-pipeline/prep/post-pilot-go-no-go-criteria.md",
+      "docs/pr_prep/post-pilot-go-no-go-criteria.md",
+      "docs/03-reference/pr-pipeline/prep/post-eval-governance-options.md",
+      "docs/pr_prep/post-eval-governance-options.md",
+      "docs/03-reference/pr-pipeline/prep/ambiguity-scoring.md",
+      "docs/pr_prep/ambiguity-scoring.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/claude/readme.md",
+      "docs/pr_prep/adapters/claude/readme-2.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/cursor/readme.md",
+      "docs/pr_prep/adapters/cursor/readme-2.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/gemini/readme.md",
+      "docs/pr_prep/adapters/gemini/readme-2.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/jules/readme.md",
+      "docs/pr_prep/adapters/jules/readme-2.md",
+      "docs/03-reference/pr-pipeline/prep/adapters/copilot/readme.md",
+      "docs/pr_prep/adapters/copilot/readme-2.md"
+    ],
+    "verify": [
+      "Every changed path is in the allowlist.",
+      "No archive path is rewritten.",
+      "No active contract still grants PR Prep independent MERGE_READY authority.",
+      "L0-L3, resilient drift, frozen-content audit, proof-only successor, and PR Steward semantics agree across changed active contracts.",
+      "Pre-push gates pass before the first push.",
+      "Final audit is independent and bound to the frozen substantive content head.",
+      "Proof-only successor changes only authorized proof paths.",
+      "Current-head CI and PR Steward are successful before PREP_READY_FOR_OPERATOR_DECISION is claimed.",
+      "Canonical PR-pipeline behavior lives under docs/03-reference/pr-pipeline/**; docs/pr_prep/** and docs/pr_merge/** are compatibility-only and do not define competing semantics.",
+      "docs/pr_prep/contract-v2.md is absent from the final base-to-head changed-file set.",
+      "The six R2 residual paths contain no link to docs/pr_prep/contract-v2.md.",
+      "The three canonical R2 paths do not independently encode legacy PR-prep LOW/MEDIUM/HIGH risk_hint semantics or obsolete V1 readiness authority.",
+      "The three docs/pr_prep R2 paths are compatibility-only and point to canonical docs/03-reference/pr-pipeline/prep counterparts.",
+      "The prior C1 1ab5d6c1cc56e85557776b37b0ffa0594858aa02 is not used as the audit target; audit must bind only to the new frozen C1-R2.",
+      "The six R3 canonical files contain no current V1 authority that contradicts operator-contract.md V2 semantics.",
+      "The six R3 docs/pr_prep counterparts are compatibility-only pointers and contain no independent behavioral contract.",
+      "No current PR-prep document authorizes PR Prep to create a non-draft or merge-ready PR without the V2 operator/mutation boundaries.",
+      "No current PR-prep document emits CREATE_READY, CLEAN_CREATE_READY, HIGH_RISK_ESCALATE, DRAFT_RECOMMENDED, GO_SUPERVISED_FINAL_CREATION, or SUPERVISED_FINAL_CREATION as governing V2 states.",
+      "A full non-archive semantic census of docs/03-reference/pr-pipeline/prep/** and docs/pr_prep/** reports zero ACTIVE_CONTRADICTION items.",
+      "C1-R2 f0877721059c30d611db44521d0020603806076e is SUPERSEDED_NOT_AUDITED and S4 binds only C1-R3.",
+      "The SHA256 and exact sorted 19-path R3 ACTIVE_CONTRADICTION set are frozen before R4 edits.",
+      "The R4 substantive repair modifies only paths in the frozen 19-path set; the two extra candidate-envelope paths, if not active in the R3 census, remain unchanged.",
+      "The final non-archive PR-prep semantic census reports ACTIVE_CONTRADICTION_COUNT=0.",
+      "Namespaced local severity/confidence/quality/signal scales are not misclassified as V2 risk lanes and remain unchanged unless they directly control creation, audit, proof acceptance, or readiness.",
+      "No active adapter claims the legacy seven-step workflow or fixed seven-artifact bundle as the current V2 contract.",
+      "No active PR-prep document grants non-draft, merge-ready, CREATE_READY, GO_SUPERVISED_FINAL_CREATION, SUPERVISED_FINAL_CREATION, or MERGE_READY authority to PR Prep.",
+      "C1-R4 is the only audit target, and the final independent audit is bound to its exact SHA."
+    ]
+  },
+  "pr": {
+    "title": "docs(pr-prep): align specialist with current governance",
+    "body": "L2 governance refresh for pr-prep-specialist. Replaces stale seven-step and LOW/MEDIUM/HIGH semantics with current L0-L3 risk lanes, resilient drift/overlap classification, deterministic pre-push gates, frozen-content final audit, proof-only successor handling, and exact-head PR Steward handoff. Draft first. No merge authority.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0_LIVE_CUSTODY_AND_CONSUMER_INVENTORY",
+      "task": "Establish live repository custody, current main, active PR-prep consumers, duplicate-doc relationships, and current open-PR overlap before editing.",
+      "requirements": [
+        "Verify repo marker, origin, worktree, branch, cleanliness, and current origin/main.",
+        "Inventory every active reference to pr-prep-specialist, its seven-step artifacts, old postures, old risk bands, and MERGE_READY handoff semantics across docs, adapters, scripts, tools, tests, and workflows.",
+        "Compare docs/03-reference/pr-pipeline/prep files with docs/pr_prep compatibility copies.",
+        "Inventory open PRs and inspect complete changed paths only for PRs that overlap the allowed or consuming surfaces.",
+        "Record ordinary compatible main movement rather than stopping on authoring-SHA mismatch."
+      ],
+      "commands": [
+        "git fetch --prune origin",
+        "git rev-parse --show-toplevel",
+        "git remote get-url origin",
+        "git status --short --branch",
+        "git rev-parse origin/main",
+        "git worktree list --porcelain",
+        "rg -n \"pr-prep-specialist|PR-PREP-SPECIALIST|INSPECT_BRANCH_STATE|GO_DRAFT_FIRST|GO_DIRECT|MERGE_READY|LOW|MEDIUM|HIGH|BRANCH_STATE.json|PR_HANDOFF_BUNDLE.json\" docs .claude .github src tools scripts tests -S",
+        "git ls-files 'docs/03-reference/pr-pipeline/prep/**' 'docs/pr_prep/**' 'docs/03-reference/pr-pipeline/merge/**' 'docs/pr_merge/**'",
+        "gh pr list --repo DDD-Enterprises/dopemux-mvp --state open --limit 200 --json number,title,baseRefName,headRefName,headRefOid,isDraft,updatedAt"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/BASELINE.json",
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/CONSUMER_INVENTORY.md",
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/DUPLICATE_PATH_MAP.json",
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/OPEN_PR_OVERLAP.json"
+      ],
+      "validation": [
+        "Repository identity is proven.",
+        "Current main is recorded without using the authoring SHA as an exact drift gate.",
+        "Every active consumer found by the search is classified as canonical, compatibility, adapter, downstream, historical, or unknown.",
+        "Relevant open-PR overlap is classified and no CONFLICTING or materially UNKNOWN overlap remains."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/governance/rules.md",
+        "docs/ops/pr-steward.md",
+        "docs/ops/embedded-audit.md",
+        "docs/03-reference/pr-pipeline/prep/operator-contract.md",
+        "docs/03-reference/pr-pipeline/merge/handoff-from-prps-contract.md"
+      ]
+    },
+    {
+      "id": "S1_FREEZE_V2_CONTRACT",
+      "task": "Freeze one coherent V2 behavior contract before broad editing.",
+      "requirements": [
+        "Make docs/03-reference/pr-pipeline/prep/operator-contract.md the behavioral source of truth. This is the supervisor ruling for this packet; repository history did not independently prove pre-existing exclusive canonicality.",
+        "Replace the exact seven-step artifact ceremony with the conditional S0-S8 lifecycle.",
+        "Replace LOW/MEDIUM/HIGH with L0-L3.",
+        "Separate PREP state from PR Steward READY and operator merge authority.",
+        "Define deterministic evidence reuse, ordinary-main drift behavior, frozen-content audit, proof-only successor behavior, and minimal V2 handoff.",
+        "Keep current repository-wide handoff minimums compatible.",
+        "Treat docs/pr_prep/** and docs/pr_merge/** as compatibility surfaces only; they may contain pointer stubs or deterministic mirrors but no independent behavioral contract."
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/CONTRACT_DECISIONS.md"
+      ],
+      "validation": [
+        "The frozen contract has one authority for prep state and does not duplicate PR Steward authority.",
+        "No V2 rule weakens current Task Packet, audit, proof, or operator gates."
+      ],
+      "context_files": [
+        "docs/03-reference/pr-pipeline/prep/operator-contract.md",
+        "docs/03-reference/pr-pipeline/prep/workflow-sequence.md",
+        "docs/03-reference/pr-pipeline/prep/handoff-to-prms-contract.md",
+        "docs/03-reference/pr-pipeline/merge/handoff-from-prps-contract.md"
+      ]
+    },
+    {
+      "id": "S2_IMPLEMENT_ACTIVE_CONTRACTS_AND_COMPATIBILITY",
+      "task": "Update the active PR-prep contract family and receiving handoff contract, then repair only proven compatibility mirrors/adapters.",
+      "requirements": [
+        "Update skill model, operator contract, workflow, deterministic gates, go/no-go states, PR creation policy, high-risk rules, outgoing handoff, and receiving handoff.",
+        "Treat docs/pr_prep files as compatibility surfaces. Prefer explicit pointer stubs to the canonical docs/03-reference/pr-pipeline/prep counterparts; do not maintain independently hand-edited copies.",
+        "Do not edit archive copies.",
+        "Do not touch unrelated PR-merge behavior.",
+        "Add a narrow governance contract test if no existing test proves forbidden legacy semantics are absent from active governing surfaces.",
+        "Treat docs/pr_merge/handoff-from-prps-contract.md as the compatibility receiver for docs/03-reference/pr-pipeline/merge/handoff-from-prps-contract.md.",
+        "Remove docs/pr_prep/contract-v2.md from the final base-to-head diff; its creation was outside the original allowlist and the canonical V2 contract belongs in docs/03-reference/pr-pipeline/prep/operator-contract.md.",
+        "R2 closure: update docs/03-reference/pr-pipeline/prep/branch-state-schema.md, consensus-gate-rules.md, and handoff-contract.md so they do not independently encode legacy LOW/MEDIUM/HIGH or V1 seven-step semantics. Prefer concise canonical pointers where their former standalone schema/rule text is superseded by operator-contract.md or handoff-to-prms-contract.md.",
+        "R2 closure: update docs/pr_prep/branch-state-schema.md, consensus-gate-rules.md, and handoff-contract.md as compatibility-only pointer stubs to their canonical docs/03-reference/pr-pipeline/prep counterparts.",
+        "Remove every live link to docs/pr_prep/contract-v2.md from the six R2 paths.",
+        "Do not edit archive copies and do not broaden the migration to unrelated occurrences of LOW/MEDIUM/HIGH that belong to other domains.",
+        "R3 closure: retire contradictory V1 behavior in the six newly allowlisted canonical files under docs/03-reference/pr-pipeline/prep/. Prefer concise pointer/deprecation stubs to operator-contract.md and the specific V2 contract files rather than rewriting parallel policy bodies.",
+        "R3 closure: convert the six corresponding docs/pr_prep/ files to compatibility-only pointer stubs to their canonical docs/03-reference/pr-pipeline/prep/ counterparts.",
+        "The canonical operational-posture and creation-mode files must not authorize non-draft or merge-ready PR creation by PR Prep; draft creation remains mutation-gated and PR Prep never grants merge readiness.",
+        "The canonical layered-validation and drafting files must not emit obsolete CREATE_READY, CLEAN_CREATE_READY, HIGH_RISK_ESCALATE, DRAFT_RECOMMENDED, or legacy LOW/MEDIUM/HIGH risk semantics as current V2 states.",
+        "The canonical live-pilot file must not retain SUPERVISED_FINAL_CREATION as a current PR-prep capability.",
+        "The canonical stash/branch safety file may preserve useful read-only discovery constraints but must express risk/posture decisions using V2 states and L0-L3 semantics or defer to operator-contract.md.",
+        "Run a terminal semantic census over every non-archive file under docs/03-reference/pr-pipeline/prep/** and docs/pr_prep/**. Classify every legacy-token match as RETIRED_PROSE, NON_PR_PREP_DOMAIN, or ACTIVE_CONTRADICTION. ACTIVE_CONTRADICTION outside the R3 allowlist stops execution.",
+        "R4 pre-edit scope freeze: hash LEGACY_SEMANTICS_SCAN_R3.md and emit proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/R4_ACTIVE_CONTRADICTION_PATHS.txt containing the sorted exact 19 paths classified ACTIVE_CONTRADICTION. The file is immutable for the remainder of R4.",
+        "Repair only the frozen 19 active paths. For canonical files under docs/03-reference/pr-pipeline/prep/**, replace obsolete V1 behavioral authority with concise V2 pointers/deprecation language unless useful non-conflicting descriptive content can be preserved safely.",
+        "For docs/pr_prep/** compatibility copies in the frozen 19-path set, prefer short pointer stubs to the corresponding canonical docs/03-reference/pr-pipeline/prep/** path. They must not independently specify artifacts, risk lanes, creation modes, audit triggers, or readiness.",
+        "Adapter repair rule: adapter docs may describe platform invocation format but must defer behavior to the V2 operator contract. They must not require the legacy seven-step workflow, fixed seven-artifact bundle, BRANCH_STATE.json or PR_HANDOFF_BUNDLE.json as mandatory V2 outputs, legacy LOW/MEDIUM/HIGH PR risk hints, CREATE_READY, or merge-ready/non-draft PR creation authority.",
+        "State-model repair rule: final-prep, post-pilot, and post-eval documents must not emit CREATE_READY, CLEAN_CREATE_READY, DRAFT_RECOMMENDED, GO_SUPERVISED_FINAL_CREATION, SUPERVISED_FINAL_CREATION, GO_DIRECT, or MERGE_READY as current governing V2 states. Current prep states and operator boundaries come from operator-contract.md.",
+        "Ambiguity repair rule: ambiguity may remain an evidence/uncertainty signal, but LOW/MEDIUM/HIGH ambiguity must not become a competing PR risk lane or direct creation/readiness decision table. V2 risk remains L0-L3 and overlap classification remains IDENTICAL/SUBSET/SUPERSET/COMPATIBLE/CONFLICTING/UNKNOWN.",
+        "Adjudicate every R3 supervisor-judgment item read-only. Mark it NON_BLOCKING_LOCAL_MEASUREMENT when its scale is explicitly namespaced to severity/confidence/quality/signal and cannot itself grant or block PR creation, audit, proof acceptance, or readiness. Do not edit those files."
+      ],
+      "commands": [
+        "git diff --name-only",
+        "git diff --no-ext-diff"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/CHANGED_FILES.txt",
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/LEGACY_SEMANTICS_SCAN.txt"
+      ],
+      "validation": [
+        "Changed files remain allowlisted.",
+        "Active governing surfaces no longer require the legacy seven artifacts or allow PR Prep to emit independent MERGE_READY.",
+        "Adapters or compatibility copies do not contradict V2."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "S3_PRE_PUSH_AND_FREEZE_CONTENT",
+      "task": "After R4 repairs the frozen 19-path active contradiction set, rerun every deterministic gate, prove the R4 repair commit touched no non-frozen candidate path, and freeze the final substantive content head C1-R4.",
+      "requirements": [
+        "Run repo/worktree/branch identity, changed-file allowlist, git diff --check, Task Packet/frontmatter validation, proof/audit schema validation for present artifacts, focused tests, relevant complete governance/docs suite, changed-file pre-commit, and secret scan.",
+        "If pre-commit modifies a file, rerun it to a clean pass before commit.",
+        "Do not push known-failing metadata.",
+        "Freeze exactly one substantive content head C1.",
+        "Open a draft PR. Do not mark ready.",
+        "Run a targeted scan proving the six R2 files contain no dangling contract-v2 link and no legacy PR-prep LOW/MEDIUM/HIGH risk_hint values.",
+        "Record the prior C1 as SUPERSEDED_NOT_AUDITED and bind all subsequent audit instructions only to C1-R2.",
+        "Record C1-R2 f0877721059c30d611db44521d0020603806076e as SUPERSEDED_NOT_AUDITED.",
+        "Run the terminal semantic census across the complete non-archive canonical and compatibility PR-prep documentation trees and require zero ACTIVE_CONTRADICTION findings.",
+        "Bind all subsequent S4 instructions only to the new exact C1-R3.",
+        "Record C1 1ab5d6c1cc56e85557776b37b0ffa0594858aa02 and C1-R2 f0877721059c30d611db44521d0020603806076e as SUPERSEDED_NOT_AUDITED. C1-R3 does not exist.",
+        "Require the post-repair terminal semantic census across every non-archive file under docs/03-reference/pr-pipeline/prep/** and docs/pr_prep/** to report ACTIVE_CONTRADICTION_COUNT=0.",
+        "Require a deterministic R4 scope check proving every path changed by the R4 content repair is present in R4_ACTIVE_CONTRADICTION_PATHS.txt, and every candidate-envelope path absent from that file is byte-unchanged from the R4 parent.",
+        "Borderline local-measurement matches are not failures when classified NON_BLOCKING_LOCAL_MEASUREMENT under the R4 supervisor rule. Preserve the classification evidence in the terminal scan.",
+        "If all gates pass, freeze C1-R4 as the sole substantive audit target. Do not create an extra proof-record commit before the auditor has been given the exact C1-R4 identity unless existing repository tooling requires one; if a proof-record commit is used, prove it changes proof-only paths."
+      ],
+      "commands": [
+        "git diff --check",
+        "git diff --name-only",
+        "git status --short",
+        "pre-commit run --files $(git diff --name-only origin/main...HEAD)",
+        "python -m pytest -q tests/governance/test_pr_prep_contract_v2.py",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/VALIDATION.json",
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/COMMAND_LOG.md",
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/CONTENT_HEAD.txt"
+      ],
+      "validation": [
+        "All eight pre-push classes pass or a repository-proven NOT_CONFIGURED status is recorded where policy permits it.",
+        "The substantive content head is frozen and exact.",
+        "The PR is draft and unmerged."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "S4_FINAL_INDEPENDENT_AUDIT",
+      "task": "Conditionally proceed directly to one final independent L2 audit after C1-R4 is frozen, provided every R4 deterministic gate passes and ACTIVE_CONTRADICTION_COUNT=0. No additional supervisor round is required.",
+      "requirements": [
+        "Discover the live approved auditor route and exact selector at execution; do not invent a model ID.",
+        "Auditor must be independent of the implementer.",
+        "Review the complete active contract diff, downstream handoff, legacy-consumer scan, risk-lane semantics, drift rules, operator boundaries, proof-only reuse, and PR Steward authority separation.",
+        "Record requested, configured, response-claimed, proxy-reported, and provider-attested identities separately when available.",
+        "Accept PASS or explicitly non-blocking PASS_WITH_RISKS only.",
+        "One substantive repair attempt maximum; any repair creates a new frozen content head and requires a fresh audit.",
+        "Audit exact C1-R4 only. Prior C1/C1-R2 and the nonexistent C1-R3 are invalid audit targets.",
+        "The audit scope must include the canonical V2 operator contract, outgoing and receiving handoff semantics, the complete canonical/compatibility PR-prep tree census, adapter deferral behavior, L0-L3 risk semantics, drift/overlap semantics, operator mutation boundaries, proof-only successor rule, and PR Steward authority separation.",
+        "The auditor must explicitly review the R4 frozen 19-path manifest and the terminal semantic census, including the NON_BLOCKING_LOCAL_MEASUREMENT adjudications, for false negatives or accidental over-normalization.",
+        "If the auditor returns PASS or PASS_WITH_RISKS with only explicit non-blocking risks, stop and report the audit result. Do not create a PR or proof-only PR-number-bound successor without separate operator authorization for draft PR creation."
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/AUDITOR_REPORT.md",
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/MODEL_ROUTE.json"
+      ],
+      "validation": [
+        "Audit is bound to exact C1.",
+        "Auditor independence is proven.",
+        "Verdict is acceptable and no blocking finding remains."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "S5_PROOF_ONLY_SUCCESSOR",
+      "task": "Bind the accepted audit in canonical proof and create a proof-only successor C2 without changing substantive content.",
+      "requirements": [
+        "Use the actual PR number in canonical embedded-audit proof paths.",
+        "Validate proof schema and signature according to current repo contracts.",
+        "Prove C1 is an ancestor of C2.",
+        "Prove C1..C2 changes only authorized proof/handoff paths.",
+        "Do not re-audit unchanged substantive content."
+      ],
+      "commands": [
+        "git diff --check"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/PROOF.json",
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/HANDOFF.md",
+        "proof/pr_merge/embedded-audit/pr-<ACTUAL_PR>/PROOF.json",
+        "proof/pr_merge/embedded-audit/pr-<ACTUAL_PR>/PROOF.json.sig"
+      ],
+      "validation": [
+        "Proof validates and is bound to the audited C1.",
+        "C2 is a proof-only descendant with no substantive content change."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "S6_CI_STEWARD_AND_OPERATOR_HANDOFF",
+      "task": "Harvest exact-C2 CI, reviews, current PR Steward output, and stop at the operator merge decision.",
+      "requirements": [
+        "Require all repository-required current-head checks to be terminal and successful.",
+        "Require current accepted audit proof on the exact head lineage.",
+        "Require PR Steward READY on the current PR head.",
+        "Classify every review item, bot, and blocking thread.",
+        "Do not merge, close, mark ready, force push, or delete the branch.",
+        "Return PREP_READY_FOR_OPERATOR_DECISION only when current evidence supports it."
+      ],
+      "commands": [
+        "gh pr checks <ACTUAL_PR> --repo DDD-Enterprises/dopemux-mvp",
+        "python -m dopemux.cli pr-steward --help"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/PR_STATE_FINAL.json",
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/MERGE_READINESS.json",
+        "proof/TP-DMX-PR-PREP-SPECIALIST-V2-001/HANDOFF.md"
+      ],
+      "validation": [
+        "Current-head required checks pass.",
+        "PR Steward is READY on the current head.",
+        "No blocking review/thread/bot/unknown remains.",
+        "PR is open and unmerged.",
+        "Final handoff grants no merge authority."
+      ],
+      "context_files": [
+        "docs/ops/pr-steward.md",
+        "schemas/pr_steward/merge_readiness.schema.json"
+      ]
+    }
+  ]
+}

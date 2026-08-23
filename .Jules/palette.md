@@ -168,7 +168,3 @@
 ## 2026-07-16 - [Task Transition Confirmation Reset]
 **Learning:** When implementing 'Soft Confirmation' patterns (like a two-step skip action) in stateful components, failing to reset the confirmation state when the target item changes (e.g., when the active task is switched or completes) can leave the confirmation state 'stuck'. This means the next item immediately renders in the confirm state, leading to potential accidental actions on the wrong item.
 **Action:** Always reset any active confirmation state (e.g., `isSkipConfirming`) and clear any associated timeout refs within the effect or logic that triggers on item/task transitions.
-
-## 2026-07-18 - [Dynamic Focus Preservation on List Transitions]
-**Learning:** In highly interactive, stateful sequences (such as list-based task runners), transitioning to a new active item dynamically re-renders action controls. If keyboard focus is left on the previous item's controls, it can be dropped entirely when those controls are disabled or removed, resetting focus to the document body. Automatically restoring and advancing focus to the newly active item's primary action button preserves the user's navigational momentum and prevents tab-stop disorientation for screen reader and keyboard users.
-**Action:** When list elements transition states and modify interactive components, use a `useEffect` hook with a ref (bypassing the initial mount) to programmatically move focus to the primary interactive action of the newly active item.

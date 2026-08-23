@@ -1,0 +1,16 @@
+{
+  "checks": {
+    "config_schema": {
+      "message": "config/pr_steward/policy.json validates against schemas/pr_steward/config.schema.json.",
+      "status": "PASS"
+    },
+    "scaffold_skew": {
+      "message": "config/pr_steward/policy.json matches packaged scaffold policy.",
+      "status": "PASS"
+    }
+  },
+  "contract_version": "1.0.0",
+  "reason_code": "PASS",
+  "status": "PASS",
+  "workspace": "/Users/hue/code/dopemux-mvp/.worktrees/TP-PR-STEWARD-POLICY-RESTORE-001"
+}
