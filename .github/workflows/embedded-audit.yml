@@ -132,7 +132,7 @@ jobs:
 
       - name: Setup trusted Claude audit runner
         if: always() && steps.head_integrity.outputs.verified == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
 
