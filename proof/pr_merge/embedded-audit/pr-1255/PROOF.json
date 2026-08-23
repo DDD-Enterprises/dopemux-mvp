@@ -1,0 +1,57 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1255,
+  "head_sha": "d604788a2b7a130bcf19bb0955c3d992931a01e6",
+  "generated_at": "2026-08-23T13:19:52Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --json-schema audit-verdict.schema.json --mode plan --effort high --print-timeout 20m --sandbox --add-dir <worktree> --print=<prompt>; conversation_id=7e504f58-b6df-45b3-a2e0-5c58bc130558; model_used=gemini-3.1-pro-high (no fallback)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PALETTE-FOCUS-1180-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "focus-restore-mount",
+        "severity": "INFO",
+        "title": "Effect restores focus and skips initial mount",
+        "status": "RESOLVED",
+        "body": "The implementation uses a `useEffect` hook tied to `currentTaskId` to trigger `.focus()` on `primaryActionRef`. It accurately skips the initial render using an `isInitialMount` ref, preventing unwanted focus stealing on page load."
+      },
+      {
+        "id": "header-focus-conflict",
+        "severity": "INFO",
+        "title": "No conflict with headerRef focus on completeTask",
+        "status": "RESOLVED",
+        "body": "The focus restoration is guarded by `if (currentTaskId && primaryActionRef.current)`. When there is no next task, `currentTaskId` becomes null, correctly preventing this effect from stealing focus away from the `headerRef`."
+      },
+      {
+        "id": "tests-rendered-behavior",
+        "severity": "INFO",
+        "title": "Tests prove rendered DOM focus behavior",
+        "status": "RESOLVED",
+        "body": "The vitest file uses JSDOM to interact with the DOM via `fireEvent.click` and validates focus visually with `.toHaveFocus()`. This proves the actual rendered behavior rather than just matching source strings (though a regex test exists for the ref)."
+      },
+      {
+        "id": "scope-creep-check",
+        "severity": "INFO",
+        "title": "No scope creep and ListItemText untouched",
+        "status": "RESOLVED",
+        "body": "Only the TP, INDEX, palette doc, TaskSequencer, and its specific test file were modified. `ListItemText disableTypography` remains safely intact."
+      },
+      {
+        "id": "secrets-check",
+        "severity": "INFO",
+        "title": "No secrets found",
+        "status": "RESOLVED",
+        "body": "No secrets or unauthorized credentials were introduced in this diff."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Rapid task transitions could theoretically cause a race condition with focus, but this is largely mitigated by the existing `isSkipConfirming` guard."
+    ],
+    "skip_reason": null
+  }
+}
