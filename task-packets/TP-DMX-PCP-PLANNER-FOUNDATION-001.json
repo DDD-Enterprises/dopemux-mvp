@@ -1,0 +1,234 @@
+{
+  "id": "TP-DMX-PCP-PLANNER-FOUNDATION-001",
+  "project": "dopemux-mvp",
+  "target": "Build a network-free, fixture-backed interactive repository planner foundation on PCP Core with deterministic conflicts and merge-order recommendations.",
+  "invariants": [
+    "Risk lane is L2 because portfolio schemas and authority-boundary projections are introduced.",
+    "This packet is inactive until TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001 is accepted on main.",
+    "PCP Core generic export behavior remains unchanged for arbitrary Git repositories.",
+    "All planner outputs declare authority NONE, surface class PROJECTION, and is_proof false.",
+    "No network, credentials, source-repository writes, Task Orchestrator writes, merge, acceptance, or activation.",
+    "Byte-identical input produces byte-identical canonical portfolio output."
+  ],
+  "depends_on": ["TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001"],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "repository-merge-planner",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "feat/pcp-planner-foundation-001",
+    "base_branch": "main",
+    "stacked_because": "First executable vertical slice; freezes contracts consumed by all later packets."
+  },
+  "commit": {
+    "message": "feat(pcp): add fixture-backed repository planner foundation",
+    "allowlist": [
+      "src/dopemux/repository_planner/__init__.py",
+      "src/dopemux/repository_planner/adapters/__init__.py",
+      "src/dopemux/repository_planner/models.py",
+      "src/dopemux/repository_planner/snapshot.py",
+      "src/dopemux/repository_planner/extensions.py",
+      "src/dopemux/repository_planner/conflicts.py",
+      "src/dopemux/repository_planner/planner.py",
+      "src/dopemux/repository_planner/canonical.py",
+      "schemas/project_control_plane/repository_planner_source.schema.json",
+      "schemas/project_control_plane/repository_planner_portfolio.schema.json",
+      "tests/repository_planner/test_fixture_integrity.py",
+      "tests/repository_planner/test_models.py",
+      "tests/repository_planner/test_extensions.py",
+      "tests/repository_planner/test_conflicts.py",
+      "tests/repository_planner/test_planner.py",
+      "tests/fixtures/repository_planner/foundation/SOURCES.json",
+      "tests/fixtures/repository_planner/foundation/dopemux.json",
+      "tests/fixtures/repository_planner/foundation/adops.json",
+      "tests/fixtures/repository_planner/foundation/dnh_crm.json",
+      "ui-dashboard/src/features/repository-planner/RepositoryPlannerPage.tsx",
+      "ui-dashboard/src/features/repository-planner/PortfolioTable.tsx",
+      "ui-dashboard/src/features/repository-planner/LaneDetails.tsx",
+      "ui-dashboard/src/features/repository-planner/ConflictPanel.tsx",
+      "ui-dashboard/src/features/repository-planner/ProvenancePanel.tsx",
+      "ui-dashboard/src/features/repository-planner/extensionRegistry.ts",
+      "ui-dashboard/src/features/repository-planner/extensionTypes.ts",
+      "ui-dashboard/src/features/repository-planner/__tests__/RepositoryPlannerPage.test.tsx",
+      "ui-dashboard/src/App.tsx",
+      "proof/TP-DMX-PCP-PLANNER-FOUNDATION-001/**",
+      "task-packets/TP-DMX-PCP-PLANNER-FOUNDATION-001.json"
+    ],
+    "verify": [
+      "pytest -q tests/repository_planner",
+      "pytest -q tests/project_control_plane",
+      "npm --prefix ui-dashboard test -- repository-planner",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "python scripts/docs_validator.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(pcp): add repository planner foundation",
+    "body": "Fixture-backed, network-free PCP planner foundation with strict schemas, deterministic conflicts and recommendations, provenance, and an interactive read-only UI. L2; one final independent audit required after head freeze.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Freeze source-backed, redacted foundation fixtures and integrity metadata.",
+      "requirements": [
+        "Create SOURCES.json entries with repository, exact ref, path or URL, fetched_at, SHA-256, privacy class, and redaction reason.",
+        "Represent current Dopemux evidence plus bounded illustrative AdOps and dNh cases; do not treat the existing sha256:PLACEHOLDER dNh fixture as live evidence.",
+        "Include one blocking conflict, one stale fact, one unknown, one dependency, and one local-only candidate blocked as REMOTE_COMMIT_ABSENT.",
+        "Write failing integrity tests before fixture transformation code."
+      ],
+      "commands": [
+        "pytest -q tests/repository_planner/test_fixture_integrity.py"
+      ],
+      "expected_files": [
+        "tests/fixtures/repository_planner/foundation/SOURCES.json",
+        "tests/fixtures/repository_planner/foundation/dopemux.json",
+        "tests/fixtures/repository_planner/foundation/adops.json",
+        "tests/fixtures/repository_planner/foundation/dnh_crm.json",
+        "tests/repository_planner/test_fixture_integrity.py"
+      ],
+      "validation": [
+        "Every fixture byte is listed and hashed.",
+        "Fixture scan contains no token, credential, raw transcript, or user-local absolute path.",
+        "Tests fail before the fixture loader exists and pass after implementation."
+      ],
+      "context_files": [
+        "src/dopemux/pcp/exporter.py",
+        "schemas/project_control_plane/project_evidence_export.schema.json"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Define strict source and portfolio schemas plus immutable Python models.",
+      "requirements": [
+        "Implement SourceRef, Claim, SourceSnapshot, Conflict, LaneProjection, PortfolioProjection, and Recommendation as frozen dataclasses or equivalent immutable models.",
+        "Define ProjectExtensionAdapter with matches(generic_export: Mapping[str, object]) -> bool and enrich(generic_export: Mapping[str, object], source_root: Path) -> SourceSnapshot.",
+        "Expose load_extension_adapters(manifest_paths: Sequence[Path]) -> tuple[ProjectExtensionAdapter, ...] using manifest adapter_mappings; unknown modules and duplicate extension IDs fail closed.",
+        "Expose load_source_snapshot(payload: Mapping[str, object]) -> SourceSnapshot.",
+        "Reject unknown top-level fields and require authority NONE, surface_class PROJECTION, and is_proof false.",
+        "Keep lifecycle facts distinct from readiness recommendations."
+      ],
+      "commands": [
+        "pytest -q tests/repository_planner/test_models.py"
+      ],
+      "expected_files": [
+        "src/dopemux/repository_planner/models.py",
+        "src/dopemux/repository_planner/snapshot.py",
+        "src/dopemux/repository_planner/extensions.py",
+        "schemas/project_control_plane/repository_planner_source.schema.json",
+        "schemas/project_control_plane/repository_planner_portfolio.schema.json",
+        "tests/repository_planner/test_models.py",
+        "tests/repository_planner/test_extensions.py"
+      ],
+      "validation": [
+        "Schema and model tests cover valid, unknown-field, missing-provenance, authority-promotion, and malformed-hash cases.",
+        "No model mutates its input mapping or sequence."
+      ],
+      "context_files": [
+        "schemas/project_control_plane/extension_manifest.schema.json",
+        "schemas/project_control_plane/merge_readiness.schema.json"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement deterministic conflict classification and merge-order recommendations.",
+      "requirements": [
+        "Expose classify_conflicts(claims: Sequence[Claim]) -> tuple[Conflict, ...].",
+        "Expose build_portfolio(sources: Sequence[SourceSnapshot]) -> PortfolioProjection.",
+        "Expose plan_merge_order(portfolio: PortfolioProjection) -> tuple[Recommendation, ...].",
+        "Expose canonical_portfolio_bytes(portfolio: PortfolioProjection) -> bytes using UTF-8, sorted keys, compact separators, and one trailing LF.",
+        "Open blocking conflict, stale proof, missing audit, failed gate, missing dependency, and cycle must withhold readiness.",
+        "Stable topological tie-breaker is project_id, lane_id, candidate_sha."
+      ],
+      "commands": [
+        "pytest -q tests/repository_planner/test_conflicts.py tests/repository_planner/test_planner.py"
+      ],
+      "expected_files": [
+        "src/dopemux/repository_planner/conflicts.py",
+        "src/dopemux/repository_planner/planner.py",
+        "src/dopemux/repository_planner/canonical.py",
+        "tests/repository_planner/test_conflicts.py",
+        "tests/repository_planner/test_planner.py"
+      ],
+      "validation": [
+        "Randomized input ordering produces byte-identical output ordering.",
+        "Simulation never changes any SourceSnapshot or fixture byte.",
+        "Overrides route to Control Tower review and never auto-merge."
+      ],
+      "context_files": [
+        "schemas/project_control_plane/merge_readiness.schema.json"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Render the first interactive planner screen from the generated foundation snapshot.",
+      "requirements": [
+        "Create RepositoryPlannerPage, PortfolioTable, LaneDetails, ConflictPanel, and ProvenancePanel.",
+        "Create extensionTypes.ts and an extensionRegistry.ts that uses a closed import.meta.glob over ./extensions/*.tsx; later packets add extension modules without modifying foundation components.",
+        "Reject duplicate extension IDs and malformed extension exports; extension loading order is the byte-sorted extension ID.",
+        "Show all three repositories with ready-for-review, blocked, stale, unknown, and conflicting states.",
+        "Every material claim links to source locator, observed head, hash, and freshness.",
+        "Provide keyboard navigation, semantic status text, focus return, loading/error states, and reduced-motion behavior.",
+        "Do not add a service, network call, refresh action, or approval control."
+      ],
+      "commands": [
+        "npm --prefix ui-dashboard test -- repository-planner"
+      ],
+      "expected_files": [
+        "ui-dashboard/src/features/repository-planner/RepositoryPlannerPage.tsx",
+        "ui-dashboard/src/features/repository-planner/PortfolioTable.tsx",
+        "ui-dashboard/src/features/repository-planner/LaneDetails.tsx",
+        "ui-dashboard/src/features/repository-planner/ConflictPanel.tsx",
+        "ui-dashboard/src/features/repository-planner/ProvenancePanel.tsx",
+        "ui-dashboard/src/features/repository-planner/extensionRegistry.ts",
+        "ui-dashboard/src/features/repository-planner/extensionTypes.ts",
+        "ui-dashboard/src/features/repository-planner/__tests__/RepositoryPlannerPage.test.tsx"
+      ],
+      "validation": [
+        "UI tests assert status text rather than color alone.",
+        "No component exposes merge, acceptance, activation, or source-write controls.",
+        "The DCP nine-family facade is byte-unchanged."
+      ],
+      "context_files": [
+        "ui-dashboard/src/App.tsx",
+        "ui-dashboard/package.json"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Freeze the content head, run deterministic gates, and obtain one independent L2 audit.",
+      "requirements": [
+        "Generate proof from real commands and exact Git state.",
+        "Audit PCP genericity, non-authority, determinism, provenance, accessibility, and forbidden-path absence at the exact frozen head.",
+        "Any audit mismatch, SKIPPED, FAIL, or NEEDS_SUPERVISOR blocks readiness."
+      ],
+      "commands": [
+        "pytest -q tests/repository_planner",
+        "pytest -q tests/project_control_plane",
+        "npm --prefix ui-dashboard test -- repository-planner",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PCP-PLANNER-FOUNDATION-001/PROOF.json",
+        "proof/TP-DMX-PCP-PLANNER-FOUNDATION-001/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "Proof and audit bind the exact final content head.",
+        "PR remains unmerged pending Control Tower disposition."
+      ],
+      "context_files": [
+        "docs/ops/embedded-audit.md"
+      ]
+    }
+  ]
+}
