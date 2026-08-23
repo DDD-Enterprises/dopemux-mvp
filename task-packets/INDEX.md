@@ -68,6 +68,7 @@ A packet is superseded by another packet
 | TP-SIA-EXEC-0007 | Workflow Plane | Manual Handoff + Operator Resume Semantics | Ready | SIA Packet Execution ADR |
 | TP-SIA-EXEC-0008 | Workflow Plane | Replay Repro Suite + Projection Hardening | Ready | SIA Packet Execution ADR |
 | TP-DMX-PROOF-SCHEMA-LOCAL-VALIDATION-001 | Governance / CI | Local Proof Schema Validation Before Push | Active | N/A |
+| TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-HARDENING-002 | Governance / CI | Fail-closed local signing wrapper (VSH-001) and canonical report_path in changed-contract preflight (VSH-002) | Active | Separated from PR #1165 thread #8 |
 | TP-DMX-AIG-001 | Adaptive Ingress Plane | Service Census + Ingress Map + First Safe Slice | Ready | ADR — Adopt a Dopemux Adaptive Ingress Plane with Local Runtime Shims |
 | TP-DMX-REPOHYG-001 | Repo Hygiene | Branch and worktree audit with deterministic cleanup plan | Ready | N/A |
 | TP-DMX-REPOHYG-002 | Repo Hygiene | Execute phase2 safe archive cleanup | Ready | N/A |
