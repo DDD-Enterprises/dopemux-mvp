@@ -1,0 +1,20 @@
+{
+  "packet_id": "TP-DMX-INDEX-VALIDATOR-SCOPE-ROW-001",
+  "head_sha": "70057088a43285a769be40526e2566ec34885732",
+  "generated_at": "2026-08-23T11:27:16Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude -p --model sonnet --output-format json --allowedTools Read,Grep (stdin; session_id=9a1f2a6c-3350-4a31-8d48-8e967d73d2d4)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-INDEX-VALIDATOR-SCOPE-ROW-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "INDEX.md is still missing rows for many other existing task-packets/*.json files (146 files vs 114 rows) \u2014 pre-existing condition, out of scope for this L0 packet and not introduced by this change."
+    ],
+    "skip_reason": null
+  }
+}

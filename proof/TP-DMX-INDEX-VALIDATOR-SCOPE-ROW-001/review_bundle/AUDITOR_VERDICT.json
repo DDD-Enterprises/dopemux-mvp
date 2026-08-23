@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "summary": "L0 docs-only change adds exactly one INDEX.md row for the already-existing TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001 packet and a new authorizing packet TP-DMX-INDEX-VALIDATOR-SCOPE-ROW-001.json. Verified: new packet JSON validates against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json (all required fields present, jsonschema.validate passes); INDEX row uses correct 5-column format matching the table header; no duplicate rows introduced; the packet_id in proof/TP-DMX-INDEX-VALIDATOR-SCOPE-ROW-001/PROOF.json now correctly resolves to a real file in task-packets/, closing prior F-1253-1; the proof's recorded head_sha (7cee18324c) is a confirmed ancestor of the audited HEAD; scripts/governance/validate_change_contract.py --base origin/main --head HEAD reports status=PASS/max_lane=L0 matching the declared risk lane; git diff --check clean. No scope creep \u2014 the packet correctly does not implement S01-S03 of the parent packet and does not self-register in INDEX.md, consistent with its stated invariants.",
+  "findings": [],
+  "remaining_risks": [
+    "INDEX.md is still missing rows for many other existing task-packets/*.json files (146 files vs 114 rows) \u2014 pre-existing condition, out of scope for this L0 packet and not introduced by this change."
+  ],
+  "fixes_applied": []
+}
