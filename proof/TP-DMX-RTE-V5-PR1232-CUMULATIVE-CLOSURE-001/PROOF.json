@@ -1,7 +1,6 @@
 {
-  "repo": "DDD-Enterprises/dopemux-mvp",
-  "pr_number": 1232,
   "head_sha": "a0ccfd3e6dce298ff8651eed6e053710d0bc9ce0",
+  "generated_at": "2026-08-23T02:31:34Z",
   "embedded_audit": {
     "required": true,
     "status": "PASS",
@@ -14,5 +13,6 @@
     "fixes_applied": [],
     "remaining_risks": [],
     "skip_reason": null
-  }
+  },
+  "packet_id": "TP-DMX-RTE-V5-PR1232-CUMULATIVE-CLOSURE-001"
 }
