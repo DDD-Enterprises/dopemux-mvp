@@ -1,0 +1,37 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1251,
+  "head_sha": "03b393a0af90d183716112247653930ba9ba335c",
+  "generated_at": "2026-08-23T10:37:09Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude -p --model sonnet --output-format json --allowedTools Read,Grep --add-dir /Users/hue/code/dopemux-mvp/.worktrees/DMX-PORTFOLIO-COMPLETION-GROK-001 (prompt via stdin; session_id=0aa2667a-d581-4861-aa47-f02be14a976e)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PALETTE-DOM-NESTING-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-1251-1",
+        "severity": "LOW",
+        "title": "disableTypography drops MuiListItemText-primary/secondary class hooks",
+        "status": "ACCEPTED_RISK",
+        "body": "MUI ListItemText normally applies .MuiListItemText-primary/.MuiListItemText-secondary via the auto-generated Typography wrapper. disableTypography removes those wrappers. Repo grep of ui-dashboard for MuiListItemText returned zero dependents. Accepted: theoretical future-theme/e2e risk only."
+      },
+      {
+        "id": "F-1251-2",
+        "severity": "INFO",
+        "title": "Third test's source-text assertion is weakly scoped",
+        "status": "ACCEPTED_RISK",
+        "body": "Source-text disableTypography/token substring checks are unscoped. Rendered-DOM and computed-style tests already provide the real regression coverage. Not blocking."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "No visual/screenshot regression check was run beyond token-level computed-style assertions.",
+      "Only the touched ListItemText instance in TaskSequencer.tsx was audited; other ListItemText usages were out of scope."
+    ],
+    "skip_reason": null
+  }
+}

@@ -1,0 +1,2 @@
+M	ui-dashboard/src/components/TaskSequencer.tsx
+A	ui-dashboard/src/components/__tests__/TaskSequencer.listItemText.test.tsx
