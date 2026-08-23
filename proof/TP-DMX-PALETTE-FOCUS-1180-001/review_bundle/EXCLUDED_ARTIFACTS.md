@@ -1,1 +1,1 @@
-Supersedes earlier 1255 bundles.
+Prior proof bundles superseded by this exact-head audit.

@@ -1,30 +1,30 @@
 {
   "findings": [
     {
-      "body": "Assignment `previousTaskIdRef.current = freshTasks[0].id` before `setCurrentTaskId` successfully preempts `useEffect` from stealing focus back to `primaryActionRef`.",
+      "body": "The focus preservation logic uses previousTaskIdRef in a useEffect to compare against currentTaskId, which safely prevents focus stealing during React 18 StrictMode double-invokes, rather than relying on a brittle isInitialMount boolean.",
       "id": "FINDING-1",
       "severity": "INFO",
       "status": "RESOLVED",
-      "title": "Header Focus Fix Verified"
+      "title": "StrictMode Safety Verified"
     },
     {
-      "body": "Previous-id compare `if (previousTaskIdRef.current === currentTaskId)` remains intact. React 18 StrictMode dev double-invokes will not steal focus on mount.",
+      "body": "When the task sequence is reset, previousTaskIdRef.current is updated synchronously with the state update to freshTasks[0].id. This ensures the useEffect for focus restoration returns early and does not steal focus away from the header, which is correctly focused via headerRef.current?.focus().",
       "id": "FINDING-2",
       "severity": "INFO",
       "status": "RESOLVED",
-      "title": "StrictMode Compatibility Verified"
+      "title": "Reset Header Focus Preserved"
     },
     {
-      "body": "No secrets introduced. Diff tightly scoped to focus logic. Task transitions unaffected.",
+      "body": "Changes are strictly scoped to TaskSequencer.tsx, a test file, the TP packet, INDEX.md, and palette.md. No modifications were made to ListItemText or brandTokens, preserving the landing of #1251. No secrets or credentials were included in the diff.",
       "id": "FINDING-3",
       "severity": "INFO",
       "status": "RESOLVED",
-      "title": "Security and Scope Check"
+      "title": "Scope and Secrets Check Passed"
     }
   ],
   "fixes_applied": [],
   "model_used": "Gemini 3.1 Pro (High)",
   "remaining_risks": [],
   "status": "PASS",
-  "summary": "Audit complete. Focus logic fixed. `previousTaskIdRef` assignment prevents `useEffect` focus steal during reset. StrictMode safe. Scope tight. No secrets exposed."
+  "summary": "Audit complete. Verified PR #1255 against origin/main. The focus preservation for TaskSequencer is correctly implemented, strictly avoiding focus stealing on StrictMode and preserving header focus during ritual resets. The scope is tight and no secrets were found. All tests and validators pass successfully."
 }
