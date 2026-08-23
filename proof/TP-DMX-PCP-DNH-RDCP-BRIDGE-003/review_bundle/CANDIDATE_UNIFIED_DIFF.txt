@@ -1,0 +1,9 @@
+ .../fixtures/dnh_crm_fixture/SOURCES.json          | 220 ++++++++
+ .../fixtures/dnh_crm_fixture/evidence_export.json  | 102 +---
+ .../fixtures/dnh_crm_fixture/project_profile.json  |  55 +-
+ schemas/dnh_extension/extension_manifest.dnh.json  |  50 +-
+ schemas/dnh_extension/rdcp_source_map.dnh.json     |  50 ++
+ .../repository_planner/adapters/dnh_rdcp.py        | 617 +++++++++++++++++++++
+ task-packets/TP-DMX-PCP-DNH-RDCP-BRIDGE-003.json   | 141 +----
+ tests/repository_planner/test_dnh_rdcp_adapter.py  | 331 +++++++++++
+ 8 files changed, 1296 insertions(+), 270 deletions(-)

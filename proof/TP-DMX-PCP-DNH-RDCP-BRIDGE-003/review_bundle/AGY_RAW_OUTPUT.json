@@ -1,0 +1,121 @@
+{
+  "conversation_id": "25b51d7f-f89f-4360-a09b-23a0e8cbae6c",
+  "status": "SUCCESS",
+  "response": "{\"findings\":[{\"body\":\"The DnhRdcpExtensionAdapter correctly enforces read-only access and does not perform any CRM mutations. Test coverage ensures no local paths, placeholder data, or secrets are leaked.\",\"id\":\"F-001\",\"severity\":\"INFO\",\"status\":\"RESOLVED\",\"title\":\"Read-only constraints and secret leak checks verified\"},{\"body\":\"The implementation projects the required four lanes and correctly preserves the Task Orchestrator authority as NONE, is_proof as false, and ARTIFACT_ONLY mode. Tests assert that proof and source head disagreements correctly manifest as blocking planner conflicts.\",\"id\":\"F-002\",\"severity\":\"INFO\",\"status\":\"RESOLVED\",\"title\":\"Four independent fail-closed lanes and invariants verified\"}],\"fixes_applied\":[],\"model_used\":\"gemini-3.1-pro-high\",\"remaining_risks\":[],\"status\":\"PASS\",\"summary\":\"Audited PR #1264 (feat(pcp): bridge existing dNh RDCP evidence) successfully. The implementation adheres strictly to the read-only constraints, projecting the RDCP evidence into four independent fail-closed lanes while preserving Task Orchestrator authority as NONE. The test suite provides excellent coverage (all 13 tests passed) and asserts all invariants, including no secret leaks and no write operations. No scope creep or unintended modifications were detected.\",\"toolAction\":\"Finishing audit\",\"toolSummary\":\"Finish audit\"}\n",
+  "duration_seconds": 75.150558,
+  "num_turns": 1,
+  "structured_output": {
+    "findings": [
+      {
+        "body": "The DnhRdcpExtensionAdapter correctly enforces read-only access and does not perform any CRM mutations. Test coverage ensures no local paths, placeholder data, or secrets are leaked.",
+        "id": "F-001",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Read-only constraints and secret leak checks verified"
+      },
+      {
+        "body": "The implementation projects the required four lanes and correctly preserves the Task Orchestrator authority as NONE, is_proof as false, and ARTIFACT_ONLY mode. Tests assert that proof and source head disagreements correctly manifest as blocking planner conflicts.",
+        "id": "F-002",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Four independent fail-closed lanes and invariants verified"
+      }
+    ],
+    "fixes_applied": [],
+    "model_used": "gemini-3.1-pro-high",
+    "remaining_risks": [],
+    "status": "PASS",
+    "summary": "Audited PR #1264 (feat(pcp): bridge existing dNh RDCP evidence) successfully. The implementation adheres strictly to the read-only constraints, projecting the RDCP evidence into four independent fail-closed lanes while preserving Task Orchestrator authority as NONE. The test suite provides excellent coverage (all 13 tests passed) and asserts all invariants, including no secret leaks and no write operations. No scope creep or unintended modifications were detected."
+  },
+  "json_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "status",
+      "summary",
+      "findings",
+      "remaining_risks",
+      "fixes_applied",
+      "model_used"
+    ],
+    "properties": {
+      "status": {
+        "type": "string",
+        "enum": [
+          "PASS",
+          "PASS_WITH_RISKS",
+          "FAIL",
+          "NEEDS_SUPERVISOR"
+        ]
+      },
+      "summary": {
+        "type": "string"
+      },
+      "findings": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "severity",
+            "title",
+            "status",
+            "body"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "severity": {
+              "type": "string",
+              "enum": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "BLOCKING",
+                "INFO"
+              ]
+            },
+            "title": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "OPEN",
+                "RESOLVED",
+                "ACCEPTED_RISK"
+              ]
+            },
+            "body": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "remaining_risks": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "fixes_applied": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "model_used": {
+        "type": "string"
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 91587,
+    "output_tokens": 5167,
+    "thinking_tokens": 4149,
+    "cache_read_tokens": 533966,
+    "total_tokens": 96754
+  }
+}
