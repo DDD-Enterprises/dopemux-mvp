@@ -7,8 +7,20 @@ def test_normalize_bot_login_strips_bot_suffix():
     assert _normalize_bot_login("chatgpt-codex-connector[bot]") == "chatgpt-codex-connector"
 
 
+def test_normalize_bot_login_strips_app_prefix():
+    assert _normalize_bot_login("app/dependabot") == "dependabot"
+    assert _normalize_bot_login("app/dependabot[bot]") == "dependabot"
+
+
 def test_normalize_bot_login_is_noop_for_non_bot_login():
     assert _normalize_bot_login("hu3mann") == "hu3mann"
+
+
+def test_known_author_matches_app_prefixed_variant_of_roster_entry():
+    known_reviewers = {"dependabot[bot]", "dependabot"}
+    assert _known_author(
+        "app/dependabot", None, known_reviewers, set()
+    )
 
 
 def test_known_author_matches_bot_suffixed_variant_of_roster_entry():
@@ -35,3 +47,8 @@ def test_known_author_matches_bot_suffixed_roster_entry_exactly():
 def test_known_author_still_rejects_unknown_login():
     known_reviewers = {"chatgpt-codex-connector"}
     assert not _known_author("random-user[bot]", None, known_reviewers, set())
+
+
+def test_known_author_rejects_unknown_app_prefixed_login():
+    known_reviewers = {"dependabot"}
+    assert not _known_author("app/malicious-app", None, known_reviewers, set())
