@@ -1,0 +1,18 @@
+{
+  "findings": [
+    {
+      "body": "The task packet invariants section claims 'Risk lane is L0 deterministic CI configuration', but modifying .github/workflows/containers.yml is evaluated as an L3 change by validate_change_contract.py. The invariant should be updated to L3.",
+      "id": "RISK_LANE_MISMATCH",
+      "severity": "MEDIUM",
+      "status": "OPEN",
+      "title": "Task Packet Risk Lane Mismatch"
+    }
+  ],
+  "fixes_applied": [],
+  "model_used": "gemini-3.1-pro-high",
+  "remaining_risks": [
+    "Task packet invariant specifies L0 but the change is evaluated as L3."
+  ],
+  "status": "PASS_WITH_RISKS",
+  "summary": "The matrix definition for adhd-dashboard is correctly implemented and the target Dockerfile exists. The diff is clean with no scope creep or secret leaks. However, there is a mismatch between the risk lane specified in the Task Packet invariants (L0) and the actual evaluated lane of the changed files (L3)."
+}
