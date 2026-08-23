@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.dev/schemas/project_control_plane/repository_planner_portfolio.schema.json",
+  "title": "Repository Planner Portfolio Projection",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "authority", "surface_class", "is_proof", "sources", "lanes", "conflicts", "recommendations"],
+  "properties": {
+    "schema_version": {"const": "pcp.repository_planner_portfolio.v1"},
+    "authority": {"const": "NONE"},
+    "surface_class": {"const": "PROJECTION"},
+    "is_proof": {"const": false},
+    "sources": {"type": "array", "items": {"$ref": "#/$defs/source"}},
+    "lanes": {"type": "array", "items": {"$ref": "#/$defs/lane"}},
+    "conflicts": {"type": "array", "items": {"$ref": "#/$defs/conflict"}},
+    "recommendations": {"type": "array", "items": {"$ref": "#/$defs/recommendation"}}
+  },
+  "$defs": {
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{40}([0-9a-f]{24})?$"},
+    "utcTimestamp": {"type": "string", "format": "date-time", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z$"},
+    "dependency": {"type": "object", "additionalProperties": false, "required": ["project_id", "lane_id", "candidate_sha"], "properties": {"project_id": {"type": "string", "minLength": 1}, "lane_id": {"type": "string", "minLength": 1}, "candidate_sha": {"$ref": "#/$defs/sha"}}},
+    "sourceRef": {"type": "object", "additionalProperties": false, "required": ["locator", "sha256", "observed_head", "fetched_at"], "properties": {"locator": {"type": "string", "minLength": 1}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "observed_head": {"$ref": "#/$defs/sha"}, "fetched_at": {"$ref": "#/$defs/utcTimestamp"}}},
+    "claim": {"type": "object", "additionalProperties": false, "required": ["claim_id", "project_id", "lane_id", "field", "value", "materiality", "freshness", "transformation_id", "source"], "properties": {"claim_id": {"type": "string", "minLength": 1}, "project_id": {"type": "string", "minLength": 1}, "lane_id": {"type": "string", "minLength": 1}, "field": {"type": "string", "minLength": 1}, "value": {"type": "string", "minLength": 1}, "materiality": {"enum": ["BLOCKING", "NON_BLOCKING"]}, "freshness": {"enum": ["CURRENT", "STALE", "UNKNOWN"]}, "transformation_id": {"type": "string", "minLength": 1}, "source": {"$ref": "#/$defs/sourceRef"}}},
+    "sourceLane": {"type": "object", "additionalProperties": false, "required": ["project_id", "lane_id", "candidate_sha", "dependencies", "gate_status", "audit_status", "lifecycle_state"], "properties": {"project_id": {"type": "string", "minLength": 1}, "lane_id": {"type": "string", "minLength": 1}, "candidate_sha": {"$ref": "#/$defs/sha"}, "dependencies": {"type": "array", "items": {"$ref": "#/$defs/dependency"}, "uniqueItems": true}, "gate_status": {"enum": ["PASS", "FAIL", "UNKNOWN"]}, "audit_status": {"enum": ["PASS", "FAIL", "UNKNOWN"]}, "lifecycle_state": {"type": "string", "minLength": 1}}},
+    "source": {"type": "object", "additionalProperties": false, "required": ["schema_version", "project_id", "authority", "surface_class", "is_proof", "evidence_class", "observed_head", "fetched_at", "freshness", "claims", "lanes"], "properties": {"schema_version": {"const": "pcp.repository_planner_source.v1"}, "project_id": {"type": "string", "minLength": 1}, "authority": {"const": "NONE"}, "surface_class": {"const": "PROJECTION"}, "is_proof": {"const": false}, "evidence_class": {"type": "string", "minLength": 1}, "observed_head": {"$ref": "#/$defs/sha"}, "fetched_at": {"$ref": "#/$defs/utcTimestamp"}, "freshness": {"enum": ["CURRENT", "STALE", "UNKNOWN"]}, "claims": {"type": "array", "items": {"$ref": "#/$defs/claim"}}, "lanes": {"type": "array", "items": {"$ref": "#/$defs/sourceLane"}}}},
+    "lane": {"type": "object", "additionalProperties": false, "required": ["project_id", "lane_id", "candidate_sha", "dependencies", "gate_status", "audit_status", "lifecycle_state", "freshness"], "properties": {"project_id": {"type": "string", "minLength": 1}, "lane_id": {"type": "string", "minLength": 1}, "candidate_sha": {"$ref": "#/$defs/sha"}, "dependencies": {"type": "array", "items": {"$ref": "#/$defs/dependency"}, "uniqueItems": true}, "gate_status": {"enum": ["PASS", "FAIL", "UNKNOWN"]}, "audit_status": {"enum": ["PASS", "FAIL", "UNKNOWN"]}, "lifecycle_state": {"type": "string", "minLength": 1}, "freshness": {"enum": ["CURRENT", "STALE", "UNKNOWN"]}}},
+    "conflict": {"type": "object", "additionalProperties": false, "required": ["conflict_id", "project_id", "lane_id", "field", "values", "sources", "materiality", "status", "resolution_authority"], "properties": {"conflict_id": {"type": "string", "pattern": "^conflict:[0-9a-f]{64}$"}, "project_id": {"type": "string", "minLength": 1}, "lane_id": {"type": "string", "minLength": 1}, "field": {"type": "string", "minLength": 1}, "values": {"type": "array", "minItems": 2, "uniqueItems": true, "items": {"type": "string"}}, "sources": {"type": "array", "items": {"$ref": "#/$defs/sourceRef"}}, "materiality": {"enum": ["BLOCKING", "NON_BLOCKING"]}, "status": {"const": "OPEN"}, "resolution_authority": {"const": "SOURCE_REPOSITORY"}}},
+    "recommendation": {"type": "object", "additionalProperties": false, "required": ["project_id", "lane_id", "candidate_sha", "disposition", "reasons"], "properties": {"project_id": {"type": "string", "minLength": 1}, "lane_id": {"type": "string", "minLength": 1}, "candidate_sha": {"$ref": "#/$defs/sha"}, "disposition": {"enum": ["READY_FOR_CONTROL_TOWER_REVIEW", "DEFER_BLOCKING_CONFLICT", "DEFER_STALE_EVIDENCE", "DEFER_FAILED_GATE", "UNKNOWN", "WAIT_DEPENDENCY"]}, "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}}}}
+  }
+}

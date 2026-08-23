@@ -1,0 +1,35 @@
+{
+  "schema_version": "pcp.repository_planner_fixture_sources.v1",
+  "sources": [
+    {
+      "path": "dopemux.json",
+      "repository": "DDD-Enterprises/dopemux-mvp",
+      "ref": "7accb2aab3423f32e751640af2b3de130c68567a",
+      "source_locator": "task-packets/TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001.json",
+      "fetched_at": "2026-08-23T00:00:00Z",
+      "sha256": "f13173ed60cdc108ad44c7736b7e2f69fb0b1d8770e0139da5d943514f24edbc",
+      "privacy_class": "PUBLIC_REPOSITORY_EVIDENCE",
+      "redaction_reason": "No credentials, raw conversations, or user-local paths retained."
+    },
+    {
+      "path": "adops.json",
+      "repository": "DDD-Enterprises/adOps",
+      "ref": "864915b9cc8ff254eaa877627df1e510dc49dbec",
+      "source_locator": "PROJECT_INSTRUCTIONS.md",
+      "fetched_at": "2026-08-23T00:00:00Z",
+      "sha256": "76e0a2e5c724469ab56fa2ade5d7ab55c205e46ca77b5171ae984d62f36bd14d",
+      "privacy_class": "PUBLIC_REPOSITORY_EVIDENCE",
+      "redaction_reason": "Bounded fail-closed scenario only; no audit receipt body or local candidate bytes retained."
+    },
+    {
+      "path": "dnh_crm.json",
+      "repository": "DDD-Enterprises/dnh-crm",
+      "ref": "92eb632bb07426ae5159c02bf9da549888e7caf1",
+      "source_locator": "AGENTS.md",
+      "fetched_at": "2026-08-23T00:00:00Z",
+      "sha256": "8de9798c5520b68df924b74276c1ba7418348750fd133a14a6f4f8fbad325766",
+      "privacy_class": "PUBLIC_REPOSITORY_EVIDENCE",
+      "redaction_reason": "Bounded RDCP freshness scenario only; no CRM data, raw messages, tokens, or runtime databases retained."
+    }
+  ]
+}
