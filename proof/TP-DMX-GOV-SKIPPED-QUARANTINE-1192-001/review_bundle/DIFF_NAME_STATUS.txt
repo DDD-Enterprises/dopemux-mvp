@@ -1,0 +1,3 @@
+M	scripts/governance/validate_change_contract.py
+A	task-packets/TP-DMX-GOV-SKIPPED-QUARANTINE-1192-001.json
+M	tests/governance/test_validate_change_contract.py

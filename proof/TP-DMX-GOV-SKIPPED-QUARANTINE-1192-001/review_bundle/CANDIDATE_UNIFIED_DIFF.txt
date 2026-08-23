@@ -1,0 +1,4 @@
+ scripts/governance/validate_change_contract.py     | 247 ++++++++++++++++++---
+ .../TP-DMX-GOV-SKIPPED-QUARANTINE-1192-001.json    |  53 +++++
+ tests/governance/test_validate_change_contract.py  | 167 +++++++++++++-
+ 3 files changed, 427 insertions(+), 40 deletions(-)
