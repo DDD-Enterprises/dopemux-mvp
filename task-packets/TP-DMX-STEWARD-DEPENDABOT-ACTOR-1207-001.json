@@ -1,0 +1,196 @@
+{
+  "id": "TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001",
+  "project": "dopemux-mvp",
+  "target": "pr-1207-dependabot-actor-classification-finalization",
+  "invariants": [
+    "Risk lane is L2 because this changes PR Steward author classification and therefore merge-readiness governance behavior.",
+    "Existing PR #1207 is the only substantive target. Authorized product paths are tools/pr_steward/classifier.py, tools/pr_steward/known_reviewers.json, and tests/pr_steward/test_known_author_bot_normalization.py.",
+    "Preserve the narrow intent: normalize GitHub App actor form app/dependabot to dependabot and recognize Dependabot aliases without widening trust to unknown actors.",
+    "Do not change PR Steward readiness rules, risk tiers, audit requirements, branch protection, signer policy, proof schema, review classification, or unrelated known reviewers.",
+    "Current live #1207 code is already implemented and ordinary CI is green. Default action is validation and proof finalization, not rewriting code.",
+    "Ordinary main movement is not a stop. If main moves without touching the three substantive paths, retain the frozen substantive delta and do not create churn merely to match a new main SHA.",
+    "If main moves onto any of the three substantive paths, classify overlap before changing anything; CONFLICTING or UNKNOWN overlap stops execution.",
+    "Final independent audit is required on the exact frozen substantive head because governance behavior is L2.",
+    "Preferred final auditor is claude-code-cli/sonnet, independent from any implementer/model used earlier on #1207.",
+    "After the audit head is frozen, successors may modify proof/audit custody paths only.",
+    "Use the trusted signed local attestation path proof/pr_merge/embedded-audit/pr-1207 when the registered signer is available. Never expose private key material.",
+    "Do not merge, mark ready, force-push, rewrite history, modify branch protection, or change permissions under this packet."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PORTFOLIO-RECOVERY-GOVERNANCE",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "fix/pr-steward-dependabot-actor-classification",
+    "base_branch": "main",
+    "stacked_because": "Standalone L2 governance closure that unlocks Dependabot-authored PR Steward evaluation, especially PR #1113."
+  },
+  "commit": {
+    "message": "proof(steward): finalize Dependabot actor classification",
+    "allowlist": [
+      "tools/pr_steward/classifier.py",
+      "tools/pr_steward/known_reviewers.json",
+      "tests/pr_steward/test_known_author_bot_normalization.py",
+      "task-packets/TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001.json",
+      "proof/TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001/**",
+      "proof/pr_merge/embedded-audit/pr-1207/**"
+    ],
+    "verify": [
+      "Substantive code remains limited to the three existing #1207 paths.",
+      "app/dependabot and app/dependabot[bot] normalize to dependabot.",
+      "Unknown app-prefixed identities do not become known unless their normalized login is already explicitly trusted.",
+      "Focused and complete PR Steward tests pass.",
+      "Final substantive head is audited once; any successor is proof-only.",
+      "Remote push is fast-forward only."
+    ]
+  },
+  "pr": {
+    "title": "fix(steward): recognize app/dependabot actor login",
+    "body": "Finalize existing PR #1207 as the narrow Dependabot actor-classification governance fix. No readiness-rule expansion, branch-protection change, merge, mark-ready, force-push, or history rewrite is authorized.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Refresh repository, main, PR #1207, and changed-path identity without mutating the branch.",
+      "requirements": [
+        "Verify DDD-Enterprises/dopemux-mvp and a clean isolated worktree.",
+        "Verify #1207 remains open and mergeable.",
+        "Verify its current substantive diff is confined to the three expected paths.",
+        "Record live main and #1207 head as observations, not brittle stop SHAs."
+      ],
+      "commands": [
+        "git rev-parse --show-toplevel",
+        "git remote get-url origin",
+        "git status --short --branch",
+        "git fetch --prune origin",
+        "git rev-parse origin/main",
+        "gh pr view 1207 --json number,state,isDraft,baseRefName,headRefName,headRefOid,mergeable,url",
+        "gh pr diff 1207 --name-only"
+      ],
+      "validation": [
+        "Repository identity matches.",
+        "Starting tree is clean.",
+        "#1207 is open and mergeable.",
+        "Substantive changed paths are exactly classifier.py, known_reviewers.json, and the focused normalization test file."
+      ],
+      "context_files": [
+        "RULES.md",
+        "AGENTS.md",
+        "tools/pr_steward/classifier.py",
+        "tools/pr_steward/known_reviewers.json",
+        "tests/pr_steward/test_known_author_bot_normalization.py",
+        "schemas/proof/embedded_audit.schema.json",
+        "scripts/audit/local_audit_acceptance.py"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Validate the normalization semantics and prove no unintended trust expansion.",
+      "requirements": [
+        "Validate known_reviewers.json syntax.",
+        "Run focused normalization tests.",
+        "Run the complete tests/pr_steward suite.",
+        "Add a focused negative regression test only if no existing test proves that an unknown app/<login> remains unknown.",
+        "Do not alter production code unless a test exposes a substantive defect."
+      ],
+      "commands": [
+        "python3 -m json.tool tools/pr_steward/known_reviewers.json >/dev/null",
+        "pytest -q tests/pr_steward/test_known_author_bot_normalization.py",
+        "pytest -q tests/pr_steward",
+        "git diff --check"
+      ],
+      "validation": [
+        "Known-reviewer JSON is valid.",
+        "Focused tests pass.",
+        "Complete PR Steward tests pass.",
+        "Unknown actor behavior remains fail-closed.",
+        "No unrelated governance semantics changed."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write the packet/provisional proof, run deterministic pre-push gates, and freeze substantive C1.",
+      "requirements": [
+        "If no substantive repair is needed, preserve the current #1207 code bytes and add only packet/proof custody files.",
+        "If main moved but did not touch the substantive paths, do not merge main merely for freshness.",
+        "Run schema validation, allowlist checks, pre-commit, diff check, and secret scan.",
+        "Freeze C1 before independent audit and do not push it."
+      ],
+      "commands": [
+        "python3 -m json.tool task-packets/TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001.json >/dev/null",
+        "python3 -c \"import json,jsonschema; jsonschema.validate(json.load(open('task-packets/TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001.json')),json.load(open('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json')))\"",
+        "git diff --check",
+        "pre-commit run --files tools/pr_steward/classifier.py tools/pr_steward/known_reviewers.json tests/pr_steward/test_known_author_bot_normalization.py task-packets/TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001.json",
+        "git diff --name-only origin/main...HEAD",
+        "git add tools/pr_steward/classifier.py tools/pr_steward/known_reviewers.json tests/pr_steward/test_known_author_bot_normalization.py task-packets/TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001.json proof/TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001",
+        "git commit -m \"proof(steward): finalize Dependabot actor classification\"",
+        "git rev-parse HEAD"
+      ],
+      "validation": [
+        "Task Packet schema passes.",
+        "All changed files are allowlisted.",
+        "Pre-commit and diff-check pass.",
+        "C1 is frozen and unpushed."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Run one independent L2 audit on exact C1.",
+      "requirements": [
+        "Use claude-code-cli/sonnet if live-proven, with no silent fallback.",
+        "Audit classification semantics, negative trust cases, tests, proof, and the specific #1113 unblock rationale.",
+        "Require PASS or non-blocking PASS_WITH_RISKS.",
+        "Do not change substantive files after audit."
+      ],
+      "commands": [
+        "claude --version",
+        "claude -p \"Audit exact frozen C1 for TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001. Verify the Dependabot app/ normalization is narrow, fail-closed for unknown actors, fully tested, and does not widen PR Steward authority. Return PASS, PASS_WITH_RISKS, FAIL, or NEEDS_SUPERVISOR.\" --print --safe-mode --no-session-persistence --permission-mode plan --tools \"\" --strict-mcp-config --model sonnet"
+      ],
+      "validation": [
+        "Auditor identity is claude-code-cli/sonnet.",
+        "Audit is bound to exact C1.",
+        "Verdict is passing.",
+        "No substantive post-audit changes occurred."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Create signed proof-only C2, verify local acceptance, push fast-forward, and harvest exact-head GitHub readiness.",
+      "requirements": [
+        "Create canonical proof under proof/pr_merge/embedded-audit/pr-1207 bound to C1.",
+        "Sign exact PROOF.json bytes using the registered signer and namespace dopemux-embedded-audit.",
+        "Commit proof-only C2 before local acceptance.",
+        "Push fast-forward only after local acceptance passes.",
+        "Do not merge or mark ready."
+      ],
+      "commands": [
+        "mkdir -p proof/pr_merge/embedded-audit/pr-1207",
+        "ssh-keygen -Y sign -f ~/.ssh/dopemux_audit_signing -n dopemux-embedded-audit proof/pr_merge/embedded-audit/pr-1207/PROOF.json",
+        "git add proof/pr_merge/embedded-audit/pr-1207",
+        "git commit -m \"proof: bind signed local audit for PR 1207\"",
+        "C2=\"$(git rev-parse HEAD)\"; python3 scripts/audit/local_audit_acceptance.py --repo DDD-Enterprises/dopemux-mvp --pr 1207 --head-sha \"$C2\" --allowed-signers config/audit/embedded-audit-allowed-signers --schema schemas/proof/embedded_audit.schema.json --out /tmp/pr1207-local-attestation.json",
+        "HEAD_REF=\"$(gh pr view 1207 --json headRefName -q .headRefName)\"; git push origin \"HEAD:$HEAD_REF\"",
+        "gh pr checks 1207"
+      ],
+      "validation": [
+        "Local signed audit acceptance passes.",
+        "C1 to C2 is proof-only.",
+        "Remote head equals C2.",
+        "Embedded audit and PR Steward evaluate the exact C2.",
+        "OPERATOR_READY is true only if current-head gates are green.",
+        "MERGE_AUTHORIZATION remains NOT_GRANTED."
+      ]
+    }
+  ]
+}

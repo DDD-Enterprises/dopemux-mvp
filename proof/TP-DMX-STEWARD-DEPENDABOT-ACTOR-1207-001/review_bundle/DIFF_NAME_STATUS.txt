@@ -1,0 +1,13 @@
+A	proof/TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001/AUDITOR_REPORT.md
+A	proof/TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001/PROOF.json
+A	proof/TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001/review_bundle/AGY_RAW_OUTPUT.json
+A	proof/TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001/review_bundle/AUDITOR_VERDICT.json
+A	proof/TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001/review_bundle/CANDIDATE_UNIFIED_DIFF.txt
+A	proof/TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001/review_bundle/DIFF_NAME_STATUS.txt
+A	proof/TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001/review_bundle/MODEL_IDENTITY.json
+A	proof/pr_merge/embedded-audit/pr-1258/PROOF.json
+A	proof/pr_merge/embedded-audit/pr-1258/PROOF.json.sig
+A	task-packets/TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001.json
+M	tests/pr_steward/test_known_author_bot_normalization.py
+M	tools/pr_steward/classifier.py
+M	tools/pr_steward/known_reviewers.json

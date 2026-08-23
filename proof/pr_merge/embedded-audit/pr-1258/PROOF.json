@@ -1,0 +1,29 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1258,
+  "head_sha": "c70d442d697642a1606f58eb4130cf83ebc25815",
+  "generated_at": "2026-08-23T14:35:26Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --mode plan --effort high --print-timeout 20m --sandbox; conversation_id=dd3a62b2-8586-48aa-b691-cf6c4ace6c89; display=Gemini 3.1 Pro (High); verdict=PASS",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "body": "The implementation strictly hardcodes 'app/dependabot', meaning any future legitimate GitHub apps will require explicit code changes in _normalize_bot_login rather than just roster additions. This is an intended consequence of the fail-closed security posture.",
+        "id": "hardcoded-app-prefix",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Strict app prefix matching requires code changes for new apps"
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Future GitHub Apps with the 'app/' prefix will fail-closed and require manual PRs to update the _normalize_bot_login strict checking."
+    ],
+    "skip_reason": null
+  }
+}

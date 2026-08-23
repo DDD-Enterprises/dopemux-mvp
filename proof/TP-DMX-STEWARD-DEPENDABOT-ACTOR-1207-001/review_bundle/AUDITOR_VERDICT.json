@@ -1,0 +1,18 @@
+{
+  "findings": [
+    {
+      "body": "The implementation strictly hardcodes 'app/dependabot', meaning any future legitimate GitHub apps will require explicit code changes in _normalize_bot_login rather than just roster additions. This is an intended consequence of the fail-closed security posture.",
+      "id": "hardcoded-app-prefix",
+      "severity": "INFO",
+      "status": "ACCEPTED_RISK",
+      "title": "Strict app prefix matching requires code changes for new apps"
+    }
+  ],
+  "fixes_applied": [],
+  "model_used": "gemini-3.1-pro-high",
+  "remaining_risks": [
+    "Future GitHub Apps with the 'app/' prefix will fail-closed and require manual PRs to update the _normalize_bot_login strict checking."
+  ],
+  "status": "PASS",
+  "summary": "The PR correctly restricts the 'app/' prefix normalization exclusively for 'dependabot' variants ('app/dependabot' and 'app/dependabot[bot]') while leaving any other login untouched. This correctly prevents spoofing of human accounts (e.g. 'app/hu3mann'). The tests prove both positive normalization for dependabot and rejection of app-prefixed human/unknown logins. The change is safe, has no scope creep, and leaks no secrets."
+}

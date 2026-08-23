@@ -1,0 +1,116 @@
+{
+  "conversation_id": "dd3a62b2-8586-48aa-b691-cf6c4ace6c89",
+  "status": "SUCCESS",
+  "response": "{\"findings\":[{\"body\":\"The implementation strictly hardcodes 'app/dependabot', meaning any future legitimate GitHub apps will require explicit code changes in _normalize_bot_login rather than just roster additions. This is an intended consequence of the fail-closed security posture.\",\"id\":\"hardcoded-app-prefix\",\"severity\":\"INFO\",\"status\":\"ACCEPTED_RISK\",\"title\":\"Strict app prefix matching requires code changes for new apps\"}],\"fixes_applied\":[],\"model_used\":\"gemini-3.1-pro-high\",\"remaining_risks\":[\"Future GitHub Apps with the 'app/' prefix will fail-closed and require manual PRs to update the _normalize_bot_login strict checking.\"],\"status\":\"PASS\",\"summary\":\"The PR correctly restricts the 'app/' prefix normalization exclusively for 'dependabot' variants ('app/dependabot' and 'app/dependabot[bot]') while leaving any other login untouched. This correctly prevents spoofing of human accounts (e.g. 'app/hu3mann'). The tests prove both positive normalization for dependabot and rejection of app-prefixed human/unknown logins. The change is safe, has no scope creep, and leaks no secrets.\",\"toolAction\":\"Submitting the final audit report\",\"toolSummary\":\"Submit audit\"}\n",
+  "duration_seconds": 57.271383,
+  "num_turns": 1,
+  "structured_output": {
+    "findings": [
+      {
+        "body": "The implementation strictly hardcodes 'app/dependabot', meaning any future legitimate GitHub apps will require explicit code changes in _normalize_bot_login rather than just roster additions. This is an intended consequence of the fail-closed security posture.",
+        "id": "hardcoded-app-prefix",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Strict app prefix matching requires code changes for new apps"
+      }
+    ],
+    "fixes_applied": [],
+    "model_used": "gemini-3.1-pro-high",
+    "remaining_risks": [
+      "Future GitHub Apps with the 'app/' prefix will fail-closed and require manual PRs to update the _normalize_bot_login strict checking."
+    ],
+    "status": "PASS",
+    "summary": "The PR correctly restricts the 'app/' prefix normalization exclusively for 'dependabot' variants ('app/dependabot' and 'app/dependabot[bot]') while leaving any other login untouched. This correctly prevents spoofing of human accounts (e.g. 'app/hu3mann'). The tests prove both positive normalization for dependabot and rejection of app-prefixed human/unknown logins. The change is safe, has no scope creep, and leaks no secrets."
+  },
+  "json_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "status",
+      "summary",
+      "findings",
+      "remaining_risks",
+      "fixes_applied",
+      "model_used"
+    ],
+    "properties": {
+      "status": {
+        "type": "string",
+        "enum": [
+          "PASS",
+          "PASS_WITH_RISKS",
+          "FAIL",
+          "NEEDS_SUPERVISOR"
+        ]
+      },
+      "summary": {
+        "type": "string"
+      },
+      "findings": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "severity",
+            "title",
+            "status",
+            "body"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "severity": {
+              "type": "string",
+              "enum": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "BLOCKING",
+                "INFO"
+              ]
+            },
+            "title": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "OPEN",
+                "RESOLVED",
+                "ACCEPTED_RISK"
+              ]
+            },
+            "body": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "remaining_risks": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "fixes_applied": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "model_used": {
+        "type": "string"
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 61979,
+    "output_tokens": 3947,
+    "thinking_tokens": 2959,
+    "cache_read_tokens": 211409,
+    "total_tokens": 65926
+  }
+}
