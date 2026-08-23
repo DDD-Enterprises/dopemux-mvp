@@ -1,0 +1,41 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1265,
+  "head_sha": "519052d1cf0b4de90837bd61a1de7c20ec612404",
+  "generated_at": "2026-08-23T23:20:27Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --mode plan --effort high --print-timeout 20m --sandbox; conversation_id=f6445b81-dcbf-450f-b6ba-93276dc56292; display=Gemini 3.1 Pro (High); verdict=PASS",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-DEPENDABOT-JS-MINOR-PATCH-1147-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "body": "The syntax of package.json is valid and dependencies were updated according to the intent.",
+        "id": "package-json-valid",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "package.json is valid"
+      },
+      {
+        "body": "The syntax of package-lock.json is valid.",
+        "id": "package-lock-valid",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "package-lock.json is valid"
+      },
+      {
+        "body": "The task packet was verified and matches the PR intent exactly. No scope creep, unintended modifications, or secret leaks were detected in the changed files.",
+        "id": "no-scope-creep-secrets",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "No Scope Creep or Secret Leaks"
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null
+  }
+}
