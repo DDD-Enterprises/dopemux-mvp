@@ -351,10 +351,10 @@ def test_s7_required_execution_source_identity_gate_is_a_single_call_site() -> N
 
     # Last pure read-only/introspection early exit (persist=False --doctor)
     # must remain reachable and unaffected -- it returns before the gate.
-    readonly_doctor_idx = source.index(
-        "sys.exit(run_doctor_full(root, dirs, run_id, targets, cfg, persist=False))"
-    )
-    assert readonly_doctor_idx < gate_idx
+    # The gate is now placed *before* get_run_dirs and write_phase_contract_map
+    # to ensure no run-scoped evidence is written.
+    contract_map_idx = source.index("write_phase_contract_map(")
+    assert gate_idx < contract_map_idx
 
     # Every canonical-evidence write and every live/provider dispatch branch
     # discovered during the P1 review must fall after the gate.
@@ -1793,3 +1793,41 @@ def test_s10_dashboard_snapshot_pins_supplied_source_identity(monkeypatch, tmp_p
     )
 
     assert collected_git_sha == VALID_SHA1
+
+def test_s8_early_exits_respect_identity_gate(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Regression: unresolved execution identity => zero provider-call count for
+    every provider-live early command. Unresolved execution identity =>
+    PHASE_CONTRACT_MAP.json absent."""
+    import sys
+    runner = _load_runner_module()
+
+    def mock_required_identity(root):
+        raise runner.SourceIdentityUnprovenError("mocked failure")
+
+    monkeypatch.setattr(runner, "required_execution_source_identity", mock_required_identity)
+
+    monkeypatch.setattr(runner, "configure_output_layout", lambda root, output_root: None)
+    monkeypatch.setattr(runner, "get_run_dirs", lambda *args, **kwargs: {"root": tmp_path})
+    monkeypatch.setattr(runner, "resolve_run_context", lambda *args, **kwargs: runner.RunContext("test-run", "test-run"))
+
+    # We must mock the env to pass argparse live gate
+    monkeypatch.setenv("DPMX_LIVE_OK", "1")
+
+    commands = [
+        ["--doctor-auth"],
+        ["--preflight-providers"],
+        ["--doctor"],
+        ["--gemini-list-models"],
+        ["--promptgen-scan", "--promptgen-output-dir", "foo"],
+        ["--execute", "--phase", "S_INT"],
+        ["--batch-mode", "--execute", "--phase", "ALL"]
+    ]
+
+    for cmd in commands:
+        monkeypatch.setattr(sys, "argv", ["run_extraction_v5.py"] + cmd)
+        with pytest.raises(SystemExit) as exc_info:
+            runner.main()
+        assert exc_info.value.code == 1
+
+        # Also check PHASE_CONTRACT_MAP.json is absent
+        assert not (tmp_path / "PHASE_CONTRACT_MAP.json").exists()

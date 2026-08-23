@@ -23120,12 +23120,9 @@ def main() -> None:
         or args.print_run_order
         or args.print_phase_routing
         or args.print_phase_prompts is not None
-        or args.doctor_auth
-        or args.preflight_providers
         or args.print_promptpack
         or args.coverage_report
         or args.verify_phase_output
-        or args.doctor
     )
     if args.batch_mode and args.execute and args.batch_wait_timeout_seconds >= 86400:
         logger.warning(
@@ -23303,6 +23300,17 @@ def main() -> None:
                 args.max_cost_usd,
                 cost_profile_name,
             )
+
+    if not readonly_introspection:
+        try:
+            execution_source_identity = required_execution_source_identity(root)
+        except SourceIdentityUnprovenError as exc:
+            # Note: dirs is not defined yet here.
+            # We will just print the error and exit.
+            logger.error(
+                "Source identity unproven; blocking canonical execution: %s", exc
+            )
+            sys.exit(1)
 
     try:
         allow_create_if_missing = bool(
@@ -23553,33 +23561,6 @@ def main() -> None:
         targets = phase_sequence if phase_sequence else PHASES
         sys.exit(run_doctor_full(root, dirs, run_id, targets, cfg, persist=False))
 
-    # RTE-W1-010: canonical execution evidence (RUN_MANIFEST.json,
-    # RUNNER_IDENTITY.json, confidence-ramp artifacts, coverage rollup,
-    # certification result) must not be accepted as authoritative unless
-    # source identity is positively proven -- and no live/provider-mutating
-    # dispatch (Stage 0 online prescan, async submit, finalize, batch watch,
-    # batch retrieve, S_INT synchronous execution, ordinary phase execution)
-    # may run before this gate. The --gemini-list-models early exit proves
-    # source identity inside run_gemini_list_models before provider access or
-    # Gemini-model evidence writes; every remaining CLI path that writes
-    # RUN_MANIFEST/RUNNER_IDENTITY or dispatches to a provider -- including
-    # --phase S_INT, which used to dispatch and exit before this point ever
-    # ran -- falls through this single point; only the pure read-only/
-    # introspection early exits above (print-*, doctor_auth,
-    # preflight_providers, print_promptpack, coverage_report/verify_phase_output
-    # with persist=False, doctor with persist=False) return before reaching it.
-    try:
-        execution_source_identity = required_execution_source_identity(root)
-    except SourceIdentityUnprovenError as exc:
-        update_run_manifest_startup_failure(
-            dirs["root"],
-            failure_reason="source_identity_unproven",
-            failure_message=str(exc),
-        )
-        logger.error(
-            "Source identity unproven; blocking canonical execution: %s", exc
-        )
-        sys.exit(1)
 
     if should_enforce_pre_live_validator(args, phase_sequence):
         try:

@@ -1,0 +1,70 @@
+{
+  "id": "TP-DMX-RTE-V5-PR1232-CUMULATIVE-CLOSURE-001",
+  "project": "dopemux-mvp",
+  "target": "Close provider-live and contract-map source identity gaps",
+  "invariants": [
+    "Provider-live diagnostic commands must not execute before source custody.",
+    "No run-scoped canonical evidence may be written before source custody.",
+    "Purely local/read-only commands remain ungated."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopemux",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE_V5_PR1232_CLOSURE",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "commit": {
+    "message": "fix(rte): close provider-live and contract-map source identity gaps",
+    "allowlist": [
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/test_rte_v5_terminal_provenance_fail_closed.py",
+      "task-packets/TP-DMX-RTE-V5-PR1232-CUMULATIVE-CLOSURE-001.json",
+      "proof/TP-DMX-RTE-V5-PR1232-CUMULATIVE-CLOSURE-001/**",
+      "proof/pr_merge/embedded-audit/pr-1232/**"
+    ],
+    "verify": [
+      "python -m pytest -q services/repo-truth-extractor/tests",
+      "python -m compileall -q services/repo-truth-extractor",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): close provider-live and contract-map source identity gaps",
+    "body": "Cumulative closure packet for PR 1232.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S10_RUNTIME_REPAIR_A",
+      "task": "Close the provider-live diagnostic identity gap.",
+      "validation": ["Zero provider-call count for every provider-live early command when execution identity is unresolved."]
+    },
+    {
+      "id": "S20_RUNTIME_REPAIR_B",
+      "task": "Close the pre-gate PHASE_CONTRACT_MAP evidence write.",
+      "validation": ["PHASE_CONTRACT_MAP.json absent when execution identity is unresolved."]
+    },
+    {
+      "id": "S30_CENSUS_AND_TESTS",
+      "task": "Perform terminal census and add regression tests.",
+      "validation": ["Zero unclassified provider paths, zero unclassified pre-custody writes, zero unclassified source identity emitters, zero undeclared changed paths."]
+    },
+    {
+      "id": "S40_FINAL_AUDIT",
+      "task": "Produce one final independent L2 audit.",
+      "validation": ["Auditor verdict is PASS or explicitly accepted PASS_WITH_RISKS."]
+    },
+    {
+      "id": "S50_PROOF_PUBLICATION",
+      "task": "Generate canonical proof and local acceptance.",
+      "validation": ["Local audit acceptance is ACCEPTED."]
+    }
+  ]
+}
