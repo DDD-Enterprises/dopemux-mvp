@@ -1,1 +1,2 @@
 M	task-packets/INDEX.md
+A	task-packets/TP-DMX-INDEX-VALIDATOR-SCOPE-ROW-001.json
