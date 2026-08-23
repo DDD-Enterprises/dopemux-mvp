@@ -1,0 +1,129 @@
+{
+  "schema_version": "adops.source_inventory.v1",
+  "repository": "DDD-Enterprises/adOps",
+  "pinned_head": "864915b9cc8ff254eaa877627df1e510dc49dbec",
+  "fetched_at": "2026-08-23T13:45:04Z",
+  "sources": [
+    {
+      "path": "PROJECT_INSTRUCTIONS.md",
+      "state": "PRESENT",
+      "url": "https://github.com/DDD-Enterprises/adOps/blob/864915b9cc8ff254eaa877627df1e510dc49dbec/PROJECT_INSTRUCTIONS.md",
+      "blob_sha": "f91238c23f5dc63ad872844b1c15569b7a514113",
+      "sha256": "f85f1003500f16b754424afa0c0aa6a83af291d7ca9ec2f2749f1deda1276437",
+      "size": 2193,
+      "fetched_at": "2026-08-23T13:45:04Z",
+      "privacy_class": "PUBLIC_REPOSITORY",
+      "redaction_notes": "Only governance mappings are projected; source bytes are not copied."
+    },
+    {
+      "path": ".claude/PROJECT_INSTRUCTIONS.md",
+      "state": "PRESENT",
+      "url": "https://github.com/DDD-Enterprises/adOps/blob/864915b9cc8ff254eaa877627df1e510dc49dbec/.claude/PROJECT_INSTRUCTIONS.md",
+      "blob_sha": "ba3b038c4d70769c75a97b1ef7ef2a01273e17ff",
+      "sha256": "331690e44f4901529dfef442ba86024b58dbb0bc51427d10e14eb2871768b642",
+      "size": 800,
+      "fetched_at": "2026-08-23T13:45:04Z",
+      "privacy_class": "PUBLIC_REPOSITORY",
+      "redaction_notes": "Optional Claude mirror recorded after root instructions and Copilot overlay."
+    },
+    {
+      "path": ".github/copilot-instructions.md",
+      "state": "PRESENT",
+      "url": "https://github.com/DDD-Enterprises/adOps/blob/864915b9cc8ff254eaa877627df1e510dc49dbec/.github/copilot-instructions.md",
+      "blob_sha": "2ed6882d45692249be9a0f76f09a972842184c65",
+      "sha256": "99e71fa2ed639f76a968327f17fb2352a4efcafcd583d128872dfa8d2a458c04",
+      "size": 8144,
+      "fetched_at": "2026-08-23T13:45:04Z",
+      "privacy_class": "PUBLIC_REPOSITORY",
+      "redaction_notes": "Non-governance product and operator facts are excluded from the projection."
+    },
+    {
+      "path": "task-packets/ACTIVE.md",
+      "state": "PRESENT",
+      "url": "https://github.com/DDD-Enterprises/adOps/blob/864915b9cc8ff254eaa877627df1e510dc49dbec/task-packets/ACTIVE.md",
+      "blob_sha": "90b5ee6be2c24e8dc0fad5988d306b79d556ede6",
+      "sha256": "4b35575f2535d4356543a202f4cb67826051d44f9321eb9f343c6a3432a6db79",
+      "size": 556,
+      "fetched_at": "2026-08-23T13:45:04Z",
+      "privacy_class": "PUBLIC_REPOSITORY",
+      "redaction_notes": "Active packet pointer only."
+    },
+    {
+      "path": "task-packets/TP-ADOPS-ELITELUXE24-MODE-V1.md",
+      "state": "PRESENT",
+      "url": "https://github.com/DDD-Enterprises/adOps/blob/864915b9cc8ff254eaa877627df1e510dc49dbec/task-packets/TP-ADOPS-ELITELUXE24-MODE-V1.md",
+      "blob_sha": "dcc97c1c881f281847ac17e5c0b10a0ce42101d3",
+      "sha256": "eb72e358ab582778d1ebc8e3a4af2be1068891001d840268ef390692dddf2e1b",
+      "size": 55612,
+      "fetched_at": "2026-08-23T13:45:04Z",
+      "privacy_class": "PUBLIC_REPOSITORY",
+      "redaction_notes": "Packet identity and gates only; domain content is not copied."
+    },
+    {
+      "path": "proof/TP-ADOPS-ELITELUXE24-MODE-V1/01_head_binding.txt",
+      "state": "PRESENT",
+      "url": "https://github.com/DDD-Enterprises/adOps/blob/864915b9cc8ff254eaa877627df1e510dc49dbec/proof/TP-ADOPS-ELITELUXE24-MODE-V1/01_head_binding.txt",
+      "blob_sha": "ac7db8438cee08180685fe53709e57524c7abafe",
+      "sha256": "aa3f84b4f06583cebe00a304f60087d4b5d0c2012843cada447377eec72f45a3",
+      "size": 243,
+      "fetched_at": "2026-08-23T13:45:04Z",
+      "privacy_class": "PUBLIC_REPOSITORY",
+      "redaction_notes": "Binding records a9c6647cd35684ae3da86533b1c0f2fefa32624c, older than pinned head."
+    },
+    {
+      "path": "proof/TP-ADOPS-ELITELUXE24-MODE-V1/IMPLEMENTER_REPORT.md",
+      "state": "PRESENT",
+      "url": "https://github.com/DDD-Enterprises/adOps/blob/864915b9cc8ff254eaa877627df1e510dc49dbec/proof/TP-ADOPS-ELITELUXE24-MODE-V1/IMPLEMENTER_REPORT.md",
+      "blob_sha": "57269e213fd5db5f4224c04d92218f54f0106509",
+      "sha256": "f0edbc8af7ffea79393dc8c782dbcdb03908a31805b76e82a7f97e4b9b426459",
+      "size": 23578,
+      "fetched_at": "2026-08-23T13:45:04Z",
+      "privacy_class": "PUBLIC_REPOSITORY",
+      "redaction_notes": "Proof presence recorded; no acceptance is inferred from implementer claims."
+    },
+    {
+      "path": "proof/TP-ADOPS-ELITELUXE24-MODE-V1/AUDITOR_REPORT.md",
+      "state": "ABSENT",
+      "url": null,
+      "blob_sha": null,
+      "sha256": null,
+      "size": null,
+      "fetched_at": "2026-08-23T13:45:04Z",
+      "privacy_class": "PUBLIC_REPOSITORY",
+      "redaction_notes": "Exact expected audit record absent at pinned head; audit status remains UNKNOWN."
+    },
+    {
+      "path": "acceptance/TP-ADOPS-ELITELUXE24-MODE-V1.json",
+      "state": "ABSENT",
+      "url": null,
+      "blob_sha": null,
+      "sha256": null,
+      "size": null,
+      "fetched_at": "2026-08-23T13:45:04Z",
+      "privacy_class": "PUBLIC_REPOSITORY",
+      "redaction_notes": "No named acceptance record supplied; lifecycle cannot advance to accepted."
+    }
+  ],
+  "github_observations": [
+    {
+      "kind": "PULL_REQUEST",
+      "locator": "https://github.com/DDD-Enterprises/adOps/pull/277",
+      "number": 277,
+      "title": "docs(governance): define AdOps PCP extension boundary",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "base_sha": "864915b9cc8ff254eaa877627df1e510dc49dbec",
+      "head_sha": "cbb7a9a43bc2cbd0e38b01588908aa69a91fdbd1",
+      "updated_at": "2026-08-22T08:04:05Z",
+      "canonical_metadata_sha256": "1ab6784917e812516f1338df758528adc4a8b901f1f482b315e65e02b2620ee9",
+      "classification": "DESIGN_EVIDENCE_ONLY",
+      "implementation_acceptance": false
+    }
+  ],
+  "legacy_candidate": {
+    "commit_sha": "4ce6b644afa72231c24b3cdac58f251e1ca03321",
+    "status": "REMOTE_COMMIT_ABSENT",
+    "verification": "GitHub commits API returned no commit for the exact SHA"
+  }
+}
