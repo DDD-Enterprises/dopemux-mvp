@@ -1,0 +1,9 @@
+ .github/workflows/ddd-release-gate.yml             |  2 +-
+ .github/workflows/gemini-dispatch.yml              |  4 +-
+ .github/workflows/gemini-invoke.yml                |  2 +-
+ .github/workflows/gemini-plan-execute.yml          |  2 +-
+ .github/workflows/gemini-review.yml                |  2 +-
+ .github/workflows/gemini-scheduled-triage.yml      |  2 +-
+ .github/workflows/gemini-triage.yml                |  2 +-
+ .../TP-DMX-DEPENDABOT-ACTIONS-TOKEN-1169-001.json  | 58 ++++++++++++++++++++++
+ 8 files changed, 66 insertions(+), 8 deletions(-)

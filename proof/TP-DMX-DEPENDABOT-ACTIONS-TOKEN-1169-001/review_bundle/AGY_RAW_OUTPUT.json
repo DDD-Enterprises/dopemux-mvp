@@ -1,0 +1,114 @@
+{
+  "conversation_id": "40fbe81f-41ee-4f01-9aeb-23aa7a09dd52",
+  "status": "SUCCESS",
+  "response": "{\"findings\":[{\"body\":\"Verified that commit hash bcd2ba49218906704ab6c1aa796996da409d3eb1 corresponds to actions/create-github-app-token release v3.2.0. YAML syntax is valid and no secret leaks or unintended modifications were found.\",\"id\":\"AUDIT-001\",\"severity\":\"INFO\",\"status\":\"RESOLVED\",\"title\":\"Clean PR Update\"}],\"fixes_applied\":[],\"model_used\":\"gemini-3.1-pro-high\",\"remaining_risks\":[],\"status\":\"PASS\",\"summary\":\"All checks passed. The commit hash belongs to actions/create-github-app-token v3.2.0, YAML syntax is valid, and there are no secret leaks or scope creep in the modified files.\",\"toolAction\":\"Finishing audit\",\"toolSummary\":\"Audit complete\"}\n",
+  "duration_seconds": 81.585004,
+  "num_turns": 1,
+  "structured_output": {
+    "findings": [
+      {
+        "body": "Verified that commit hash bcd2ba49218906704ab6c1aa796996da409d3eb1 corresponds to actions/create-github-app-token release v3.2.0. YAML syntax is valid and no secret leaks or unintended modifications were found.",
+        "id": "AUDIT-001",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Clean PR Update"
+      }
+    ],
+    "fixes_applied": [],
+    "model_used": "gemini-3.1-pro-high",
+    "remaining_risks": [],
+    "status": "PASS",
+    "summary": "All checks passed. The commit hash belongs to actions/create-github-app-token v3.2.0, YAML syntax is valid, and there are no secret leaks or scope creep in the modified files."
+  },
+  "json_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "status",
+      "summary",
+      "findings",
+      "remaining_risks",
+      "fixes_applied",
+      "model_used"
+    ],
+    "properties": {
+      "status": {
+        "type": "string",
+        "enum": [
+          "PASS",
+          "PASS_WITH_RISKS",
+          "FAIL",
+          "NEEDS_SUPERVISOR"
+        ]
+      },
+      "summary": {
+        "type": "string"
+      },
+      "findings": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "severity",
+            "title",
+            "status",
+            "body"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "severity": {
+              "type": "string",
+              "enum": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "BLOCKING",
+                "INFO"
+              ]
+            },
+            "title": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "OPEN",
+                "RESOLVED",
+                "ACCEPTED_RISK"
+              ]
+            },
+            "body": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "remaining_risks": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "fixes_applied": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "model_used": {
+        "type": "string"
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 71847,
+    "output_tokens": 5772,
+    "thinking_tokens": 4024,
+    "cache_read_tokens": 308928,
+    "total_tokens": 77619
+  }
+}
