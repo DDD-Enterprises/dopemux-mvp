@@ -359,7 +359,7 @@ jobs:
 
       - name: Upload PR Steward artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           # Attributable name from validated independent-audit proof identity
           # (not a stale steps.pr.outputs.number reference).

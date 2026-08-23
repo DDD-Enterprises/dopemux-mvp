@@ -460,7 +460,7 @@ jobs:
 
       - name: Upload embedded audit artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           # Collision-resistant identity: purpose + PR + exact head SHA.
           name: embedded-audit-pr-${{ steps.pr.outputs.number }}-head-${{ steps.pr.outputs.head_sha }}-proof
