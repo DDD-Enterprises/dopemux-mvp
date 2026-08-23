@@ -1,0 +1,220 @@
+{
+  "schema_version": "dnh.rdcp_source_inventory.v1",
+  "repository": "DDD-Enterprises/dnh-crm",
+  "pinned_head": "92eb632bb07426ae5159c02bf9da549888e7caf1",
+  "fetched_at": "2026-08-23T23:50:00Z",
+  "collection_mode": "READ_ONLY_GITHUB_CONTENTS_API",
+  "sources": [
+    {
+      "role": "authority",
+      "path": "AGENTS.md",
+      "state": "PRESENT",
+      "blob_sha": "e1bc0b07411aa79872fca9b283b58e289bd542ed",
+      "sha256": "6f8703ec09fc3e593edd5e9b878483fd889ae46977e0780e6b3139a3c8035e8d",
+      "url": "https://github.com/DDD-Enterprises/dnh-crm/blob/92eb632bb07426ae5159c02bf9da549888e7caf1/AGENTS.md",
+      "privacy_class": "PRIVATE_REPOSITORY_METADATA",
+      "redaction_notes": "Stored as a pinned locator and digest only; no repository instructions copied into the fixture."
+    },
+    {
+      "role": "active_packet",
+      "path": "task-packets/ACTIVE.md",
+      "state": "PRESENT",
+      "blob_sha": "fba1b369825cab2bdbdf65dff4713571375a81b7",
+      "sha256": "715e0db54e8068f1373a069c8da7c531762c879839773bf64f6b23620c32a7c3",
+      "url": "https://github.com/DDD-Enterprises/dnh-crm/blob/92eb632bb07426ae5159c02bf9da549888e7caf1/task-packets/ACTIVE.md",
+      "privacy_class": "PRIVATE_REPOSITORY_METADATA",
+      "redaction_notes": "Only the resolved packet id TP-IDLE-0000 is projected."
+    },
+    {
+      "role": "rdcp_architecture",
+      "path": "artifacts/rdcp/architecture/ARCHITECTURE_SYNTHESIS.md",
+      "state": "PRESENT",
+      "blob_sha": "3ab261fa87859bf45adaa47d3d39d2cd5841c308",
+      "sha256": "28d91184625d8cad00309aa1caa5c5f84e2db726e5e6e74f5ebebba4fe8ec3e7",
+      "url": "https://github.com/DDD-Enterprises/dnh-crm/blob/92eb632bb07426ae5159c02bf9da549888e7caf1/artifacts/rdcp/architecture/ARCHITECTURE_SYNTHESIS.md",
+      "privacy_class": "PRIVATE_REPOSITORY_METADATA",
+      "redaction_notes": "Digest and locator only."
+    },
+    {
+      "role": "proof_pointer_schema",
+      "path": "schemas/rdcp/proof_pointer.schema.json",
+      "state": "PRESENT",
+      "blob_sha": "43d8799ed4ac4e86d54d6a3ef4d8c9ce61e7c858",
+      "sha256": "2d98cddcbf09843054c0c74b4262279d594bcac55076ecb27330c03ffc92304c",
+      "url": "https://github.com/DDD-Enterprises/dnh-crm/blob/92eb632bb07426ae5159c02bf9da549888e7caf1/schemas/rdcp/proof_pointer.schema.json",
+      "privacy_class": "PRIVATE_REPOSITORY_METADATA",
+      "redaction_notes": "Digest and schema version only."
+    },
+    {
+      "role": "proof_pointer",
+      "path": "artifacts/rdcp/proof_adapter/PROOF_POINTER.json",
+      "state": "PRESENT",
+      "blob_sha": "1722ff8a8eaec37d9e0834a18fe17e37cfadfb41",
+      "sha256": "7ff6bc6557754ca16ae1c19ee243bb2c9095484369c57e346d2aebfba6b04e5b",
+      "url": "https://github.com/DDD-Enterprises/dnh-crm/blob/92eb632bb07426ae5159c02bf9da549888e7caf1/artifacts/rdcp/proof_adapter/PROOF_POINTER.json",
+      "privacy_class": "PRIVATE_REPOSITORY_METADATA",
+      "redaction_notes": "The local repo.root value is replaced with a redaction marker in normalized_artifacts."
+    },
+    {
+      "role": "proof_pointer_manifest",
+      "path": "artifacts/rdcp/proof_adapter/EVIDENCE_MANIFEST.json",
+      "state": "PRESENT",
+      "blob_sha": "f62aad0703b3a11ffcaed4a4fbc59a2606da656a",
+      "sha256": "de11d97469a72c32eeefe31f904ec94f25d19cda32599debe373a8191b4894ff",
+      "url": "https://github.com/DDD-Enterprises/dnh-crm/blob/92eb632bb07426ae5159c02bf9da549888e7caf1/artifacts/rdcp/proof_adapter/EVIDENCE_MANIFEST.json",
+      "privacy_class": "PRIVATE_REPOSITORY_METADATA",
+      "redaction_notes": "Normalized JSON is retained because it contains no client or runtime data."
+    },
+    {
+      "role": "source_ledger_schema",
+      "path": "schemas/rdcp/source_ledger.schema.json",
+      "state": "PRESENT",
+      "blob_sha": "5465e7d505497dcaeb366dc7a0ae0b69c5ec151f",
+      "sha256": "fa28c9caa94c2b87fecc5bfb12c0a2b1a3a247b3babc165c6ee047825951d79b",
+      "url": "https://github.com/DDD-Enterprises/dnh-crm/blob/92eb632bb07426ae5159c02bf9da549888e7caf1/schemas/rdcp/source_ledger.schema.json",
+      "privacy_class": "PRIVATE_REPOSITORY_METADATA",
+      "redaction_notes": "Digest and schema version only."
+    },
+    {
+      "role": "source_ledger",
+      "path": "artifacts/rdcp/source_ledger/SOURCE_LEDGER.json",
+      "state": "PRESENT",
+      "blob_sha": "bf16714a3e5a32660c8b95480952a8e6a0869ecb",
+      "sha256": "c45431bd4feb260ca836794e849481b152cd0c6a86589dc1c42314ba8fbba342",
+      "url": "https://github.com/DDD-Enterprises/dnh-crm/blob/92eb632bb07426ae5159c02bf9da549888e7caf1/artifacts/rdcp/source_ledger/SOURCE_LEDGER.json",
+      "privacy_class": "PRIVATE_REPOSITORY_METADATA",
+      "redaction_notes": "Only a summary of historical head, dirty state, and the observed AGENTS hash is retained; local paths and status listings are omitted."
+    },
+    {
+      "role": "review_item_schema",
+      "path": "schemas/rdcp/review_sensor/review_item_ledger.schema.json",
+      "state": "PRESENT",
+      "blob_sha": "8d225c762f6a5d0dbadc6ad7c9722cd865431121",
+      "sha256": "44da0c170a8a6864f7901d8e5c9765a7344ed0e79f92862c89b3e9e1af3aa5e9",
+      "url": "https://github.com/DDD-Enterprises/dnh-crm/blob/92eb632bb07426ae5159c02bf9da549888e7caf1/schemas/rdcp/review_sensor/review_item_ledger.schema.json",
+      "privacy_class": "PRIVATE_REPOSITORY_METADATA",
+      "redaction_notes": "Digest and schema version only."
+    },
+    {
+      "role": "thread_dispositions_schema",
+      "path": "schemas/rdcp/review_sensor/thread_dispositions.schema.json",
+      "state": "PRESENT",
+      "blob_sha": "8af5969b2b4f798011e834aa9f47c6ee5e02d3a3",
+      "sha256": "947c02be723fc14ac4ee4fc8cb1f9c50a1dafa92ea57a56923261623d449d0c3",
+      "url": "https://github.com/DDD-Enterprises/dnh-crm/blob/92eb632bb07426ae5159c02bf9da549888e7caf1/schemas/rdcp/review_sensor/thread_dispositions.schema.json",
+      "privacy_class": "PRIVATE_REPOSITORY_METADATA",
+      "redaction_notes": "Digest and schema version only."
+    },
+    {
+      "role": "review_sensor_receipt",
+      "path": "proof/TP-DNH-RDCP-0016/PROOF.json",
+      "state": "PRESENT",
+      "blob_sha": "17516984ff3c75b8c18c1db29acba29874b633f8",
+      "sha256": "ded75b3062aead796cb8a616d27496ba03354e7be3bd2e92dd311ff8dca2ed72",
+      "url": "https://github.com/DDD-Enterprises/dnh-crm/blob/92eb632bb07426ae5159c02bf9da549888e7caf1/proof/TP-DNH-RDCP-0016/PROOF.json",
+      "privacy_class": "PRIVATE_REPOSITORY_METADATA",
+      "redaction_notes": "Used only to establish that generated review outputs were not committed; historical auditor metadata is not promoted to current identity."
+    },
+    {
+      "role": "review_item_output",
+      "path": "artifacts/rdcp/review_sensor/REVIEW_ITEM_LEDGER.json",
+      "state": "MISSING",
+      "blob_sha": null,
+      "sha256": null,
+      "url": "https://github.com/DDD-Enterprises/dnh-crm/blob/92eb632bb07426ae5159c02bf9da549888e7caf1/artifacts/rdcp/review_sensor/REVIEW_ITEM_LEDGER.json",
+      "privacy_class": "PRIVATE_REPOSITORY_METADATA",
+      "redaction_notes": "Path was checked at the pinned revision and is absent."
+    },
+    {
+      "role": "thread_dispositions_output",
+      "path": "artifacts/rdcp/review_sensor/THREAD_DISPOSITIONS.json",
+      "state": "MISSING",
+      "blob_sha": null,
+      "sha256": null,
+      "url": "https://github.com/DDD-Enterprises/dnh-crm/blob/92eb632bb07426ae5159c02bf9da549888e7caf1/artifacts/rdcp/review_sensor/THREAD_DISPOSITIONS.json",
+      "privacy_class": "PRIVATE_REPOSITORY_METADATA",
+      "redaction_notes": "Path was checked at the pinned revision and is absent."
+    },
+    {
+      "role": "task_orchestrator_export_schema",
+      "path": "schemas/task_orchestrator/dnh_rdcp_export.schema.json",
+      "state": "PRESENT",
+      "blob_sha": "e808e38673218a8597b3caf359f82944f7da74ef",
+      "sha256": "47e7d4c462ae73054a43bbdd68372f9e16c17171e6ea338e84980af08a904fbd",
+      "url": "https://github.com/DDD-Enterprises/dnh-crm/blob/92eb632bb07426ae5159c02bf9da549888e7caf1/schemas/task_orchestrator/dnh_rdcp_export.schema.json",
+      "privacy_class": "PRIVATE_REPOSITORY_METADATA",
+      "redaction_notes": "Digest and schema version only."
+    },
+    {
+      "role": "task_orchestrator_export",
+      "path": "artifacts/task-orchestrator/dnh-rdcp-export/latest.json",
+      "state": "PRESENT",
+      "blob_sha": "ab5c2a0c76693d373db5217cb5635c1f815fb7c6",
+      "sha256": "f60fecec49b8052681352cf8849cbb040a5cf0875c2c2574bab869ca12fb40cc",
+      "url": "https://github.com/DDD-Enterprises/dnh-crm/blob/92eb632bb07426ae5159c02bf9da549888e7caf1/artifacts/task-orchestrator/dnh-rdcp-export/latest.json",
+      "privacy_class": "PRIVATE_REPOSITORY_METADATA",
+      "redaction_notes": "Only artifact-only recommendation, forbidden-action confirmations, historical head, and dirty flag are retained."
+    }
+  ],
+  "normalized_artifacts": {
+    "proof_pointer": {
+      "canonicalization": "UTF-8 JSON with sorted keys and separators comma/colon, no trailing newline",
+      "sha256": "7d1eb4559ea362521a4c2c936a92bc4a1e3ea7b0c252f2e10990c4adc2f6c212",
+      "content": {
+        "adapter": {"expected_head_sha": "c0818fe8e29bdeb8d14986f2500592f3acdb5cc8", "mutation_performed": false},
+        "proof": {
+          "freshness_state": "CURRENT",
+          "head_sha": "c0818fe8e29bdeb8d14986f2500592f3acdb5cc8",
+          "packet_id": "TP-DNH-RDCP-0012",
+          "path": "proof/TP-DNH-RDCP-0012/PROOF.json",
+          "sha256": "55d50404492e5b0300abc4ca883ae03ce76339e3cd66cfb3490e4554e3ca5781",
+          "validation_status": "PASS"
+        },
+        "repo": {"branch": "rdcp/bootstrap-evidence", "head_sha": "e50c3f406fefc46234d2a9435097d9fee30ec46f", "root": "[REDACTED_LOCAL_PATH]"},
+        "schema_version": "1.0.0"
+      }
+    },
+    "proof_pointer_manifest": {
+      "canonicalization": "UTF-8 JSON with sorted keys and separators comma/colon, no trailing newline",
+      "sha256": "525ab8f14e4f24197ce5e47aed6fbf1731a573181ae9bea0a3d4e0fda0458dbe",
+      "content": {
+        "artifacts": [
+          {"path": "artifacts/rdcp/proof_adapter/PROOF_POINTER.json", "sha256": "7ff6bc6557754ca16ae1c19ee243bb2c9095484369c57e346d2aebfba6b04e5b"},
+          {"path": "proof/TP-DNH-RDCP-0012/PROOF.json", "sha256": "55d50404492e5b0300abc4ca883ae03ce76339e3cd66cfb3490e4554e3ca5781"}
+        ],
+        "freshness_state": "CURRENT",
+        "schema_version": "1.0.0"
+      }
+    }
+  },
+  "observations": {
+    "active_packet_id": "TP-IDLE-0000",
+    "proof_pointer": {
+      "candidate_head": "92eb632bb07426ae5159c02bf9da549888e7caf1",
+      "proof_head": "c0818fe8e29bdeb8d14986f2500592f3acdb5cc8",
+      "current_auditor_identity": "UNKNOWN"
+    },
+    "source_ledger": {
+      "generated_at": "2026-05-27T00:56:23-07:00",
+      "artifact_head": "300fae3bdf77124a7a0ed9e64feb9a65bc84f111",
+      "artifact_dirty": true,
+      "ledger_agents_sha256": "b3ea876aa9a4a351d08a2d608903818665c88f3d93af3fc08e5f2aa339bf4726",
+      "pinned_agents_sha256": "6f8703ec09fc3e593edd5e9b878483fd889ae46977e0780e6b3139a3c8035e8d"
+    },
+    "review_sensor": {
+      "review_item_output": "MISSING",
+      "thread_dispositions_output": "MISSING",
+      "historical_receipt_verdict": "PASS_WITH_DEFECTS",
+      "historical_receipt_is_current_audit": false
+    },
+    "task_orchestrator": {
+      "generated_at": "2026-05-27T06:09:10-07:00",
+      "artifact_head": "c4ae094956d1e420182d7ac2991da24a78300f54",
+      "artifact_dirty": true,
+      "authority": "NONE",
+      "is_proof": false,
+      "export_mode": "ARTIFACT_ONLY",
+      "forbidden_actions_performed": false
+    }
+  }
+}

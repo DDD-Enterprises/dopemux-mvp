@@ -1,66 +1,37 @@
 {
   "schema_version": "pcp.project_profile.v0",
-  "project_id": "dnh-crm-fixture",
+  "project_id": "DDD-Enterprises/dnh-crm",
   "project_kind": "DNH_CRM",
   "repo": {
-    "name": "dNh_CRM",
+    "name": "dnh-crm",
     "root_marker": "AGENTS.md",
-    "allowed_worktrees": [
-      "/Users/hue/.codex/worktrees/*/dNh_CRM"
-    ],
-    "forbidden_worktrees": [
-      "/Users/hue/code/dNh_CRM"
-    ],
+    "allowed_worktrees": ["operator-selected-isolated-worktree"],
+    "forbidden_worktrees": ["canonical-working-copy"],
     "runtime_imports_allowed": false
   },
   "authority_docs": [
-    {
-      "path": "AGENTS.md",
-      "required": true,
-      "state": "PRESENT"
-    },
-    {
-      "path": "docs/governance/macro-packet-operating-model.md",
-      "required": true,
-      "state": "PRESENT"
-    }
+    {"path": "AGENTS.md", "required": true, "state": "PRESENT"},
+    {"path": "artifacts/rdcp/architecture/ARCHITECTURE_SYNTHESIS.md", "required": true, "state": "PRESENT"}
   ],
   "packet": {
-    "active_packet_paths": [
-      "task-packets/TP-DNH-RDCP-FIXTURE-0000.json"
-    ],
+    "active_packet_paths": ["task-packets/ACTIVE.md"],
     "required": true,
     "unknown_code": "BLOCKED_UNKNOWN_ACTIVE_PACKET"
   },
   "proof": {
-    "proof_roots": [
-      "proof/TP-DNH-RDCP-FIXTURE-0000"
-    ],
+    "proof_roots": ["artifacts/rdcp/proof_adapter", "proof"],
     "freshness_required": true,
     "unknown_code": "NEEDS_EVIDENCE_REFRESH"
   },
   "red_lane_policy": {
-    "policy_ref": "red_lanes.json",
+    "policy_ref": null,
     "default_on_unknown": "BLOCK",
-    "lanes": [
-      "crm-write",
-      "telegram-send",
-      "calendar-write",
-      "runtime-db",
-      "forbidden-worktree"
-    ]
+    "lanes": ["rdcp-proof-pointer", "rdcp-source-ledger", "rdcp-review-sensor", "rdcp-task-orchestrator"]
   },
   "forbidden_paths": [
-    {
-      "glob": "data/*.sqlite3",
-      "reason": "runtime database file",
-      "result": "BLOCKED_RUNTIME_DB"
-    },
-    {
-      "glob": "src/dnh_crm/runtime/**",
-      "reason": "runtime plane not authorized",
-      "result": "NEEDS_SUPERVISOR"
-    }
+    {"glob": "data/**", "reason": "runtime and client data are outside the artifact-only bridge", "result": "BLOCKED_RUNTIME_DB"},
+    {"glob": "src/dnh_crm/runtime/**", "reason": "runtime service plane is not authorized", "result": "NEEDS_SUPERVISOR"},
+    {"glob": "**/*token*", "reason": "credentials and tokens are never planner evidence", "result": "BLOCKED_NO_WRITE_CONTRACT"}
   ],
   "export_mode": "ARTIFACT_ONLY",
   "unknown_policy": "FAIL_CLOSED"

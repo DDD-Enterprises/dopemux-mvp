@@ -1,0 +1,50 @@
+{
+  "schema_version": "dnh.rdcp_source_map.v1",
+  "repository": "DDD-Enterprises/dnh-crm",
+  "pinned_head": "92eb632bb07426ae5159c02bf9da549888e7caf1",
+  "freshness_states": [
+    "CURRENT", "STALE", "MISSING", "UNREADABLE", "UNPARSEABLE", "MIXED_SHA", "UNKNOWN"
+  ],
+  "sources": {
+    "proof_pointer_schema": {"path": "schemas/rdcp/proof_pointer.schema.json", "expected_schema_version": "1.0.0"},
+    "proof_pointer": {"path": "artifacts/rdcp/proof_adapter/PROOF_POINTER.json", "expected_schema_version": "1.0.0"},
+    "proof_pointer_manifest": {"path": "artifacts/rdcp/proof_adapter/EVIDENCE_MANIFEST.json", "expected_schema_version": "1.0.0"},
+    "source_ledger_schema": {"path": "schemas/rdcp/source_ledger.schema.json", "expected_schema_version": "1.0.0"},
+    "source_ledger": {"path": "artifacts/rdcp/source_ledger/SOURCE_LEDGER.json", "expected_schema_version": "1.0.0"},
+    "review_item_schema": {"path": "schemas/rdcp/review_sensor/review_item_ledger.schema.json", "expected_schema_version": "1.0.0"},
+    "thread_dispositions_schema": {"path": "schemas/rdcp/review_sensor/thread_dispositions.schema.json", "expected_schema_version": "1.0.0"},
+    "review_sensor_receipt": {"path": "proof/TP-DNH-RDCP-0016/PROOF.json", "expected_schema_version": "dnh-proof-v1"},
+    "review_item_output": {"path": "artifacts/rdcp/review_sensor/REVIEW_ITEM_LEDGER.json", "expected_schema_version": "1.0.0"},
+    "thread_dispositions_output": {"path": "artifacts/rdcp/review_sensor/THREAD_DISPOSITIONS.json", "expected_schema_version": "1.0.0"},
+    "task_orchestrator_export_schema": {"path": "schemas/task_orchestrator/dnh_rdcp_export.schema.json", "expected_schema_version": "1.0.0"},
+    "task_orchestrator_export": {"path": "artifacts/task-orchestrator/dnh-rdcp-export/latest.json", "expected_schema_version": "1.0.0"}
+  },
+  "lanes": [
+    {
+      "lane_id": "rdcp-proof-pointer",
+      "observed_state": "STALE",
+      "source_roles": ["proof_pointer_schema", "proof_pointer", "proof_pointer_manifest"],
+      "reason": "The pointer validates an earlier proof head, not the pinned candidate head."
+    },
+    {
+      "lane_id": "rdcp-source-ledger",
+      "observed_state": "MIXED_SHA",
+      "source_roles": ["source_ledger_schema", "source_ledger"],
+      "reason": "The ledger is source-backed but records a historical dirty head and an AGENTS hash that differs from the pinned candidate."
+    },
+    {
+      "lane_id": "rdcp-review-sensor",
+      "observed_state": "MISSING",
+      "source_roles": ["review_item_schema", "thread_dispositions_schema", "review_sensor_receipt", "review_item_output", "thread_dispositions_output"],
+      "reason": "The producer and schemas exist, but the two review-sensor outputs were intentionally not committed."
+    },
+    {
+      "lane_id": "rdcp-task-orchestrator",
+      "observed_state": "UNKNOWN",
+      "source_roles": ["task_orchestrator_export_schema", "task_orchestrator_export"],
+      "reason": "The checked-in export is historical, dirty at generation, and artifact-only."
+    }
+  ],
+  "task_orchestrator": {"authority": "NONE", "is_proof": false, "export_mode": "ARTIFACT_ONLY"},
+  "forbidden_actions": ["gov accept", "CRM write", "GitHub write", "runtime service", "Task Orchestrator write"]
+}
