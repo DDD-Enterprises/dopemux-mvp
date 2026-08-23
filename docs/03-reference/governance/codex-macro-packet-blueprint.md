@@ -17,7 +17,7 @@ Use this blueprint for a bounded Codex macro-packet when one meaningful outcome 
 
 The live dopeTask schema controls packet shape. Runtime code, config, tests, compose wiring, and active entrypoints control behavior claims. Docs can guide wording, but they cannot prove runtime behavior.
 
-`execution.agent` currently supports only these schema enum values: `gemini`, `codex`, `vibe`, and `shell`. Do not add new execution agents in a packet unless the canonical schema is changed by a separately authorized schema packet.
+`execution.agent` currently supports only these schema enum values: `gemini`, `codex`, `claude`, `vibe`, and `shell`. Do not add new execution agents in a packet unless the canonical schema is changed by a separately authorized schema packet.
 
 ## Macro-Packet Sizing Rules
 
