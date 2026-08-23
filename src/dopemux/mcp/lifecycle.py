@@ -1375,6 +1375,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
                 commands[0],
                 runner=cmd_runner,
                 cwd=product,
+                env=dr.env_with_compose_interpolation(),
                 dry_run=False,
             )
             action = "started" if result.exit_code == 0 else "failed"

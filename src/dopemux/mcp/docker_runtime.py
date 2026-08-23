@@ -22,6 +22,22 @@ Runner = Callable[..., subprocess.CompletedProcess]
 LABEL_MANAGED = "dopemux.managed"
 LABEL_CREATED_BY = "dopemux.created_by"
 
+# Product compose.yml interpolates DOPECON_BRIDGE_TOKEN for the compose
+# task-orchestrator service. Sidecar start uses --no-deps and never starts
+# that service; this placeholder exists only so `docker compose` can parse
+# the file. It is not a credential and must never be treated as one.
+COMPOSE_INTERPOLATION_PLACEHOLDER = "dopemux-compose-interpolation-only"
+
+
+def env_with_compose_interpolation(
+    base: Optional[Mapping[str, str]] = None,
+) -> Dict[str, str]:
+    """Copy *base* (or os.environ) and set a parse-only bridge token if unset."""
+    env = dict(os.environ if base is None else base)
+    if not str(env.get("DOPECON_BRIDGE_TOKEN") or "").strip():
+        env["DOPECON_BRIDGE_TOKEN"] = COMPOSE_INTERPOLATION_PLACEHOLDER
+    return env
+
 
 def product_root() -> Path:
     """Locate dopemux-mvp product root (compose.yml + scripts)."""
