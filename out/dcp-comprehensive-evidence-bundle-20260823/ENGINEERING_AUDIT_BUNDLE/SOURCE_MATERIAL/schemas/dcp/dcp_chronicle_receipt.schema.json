@@ -1,0 +1,126 @@
+{
+  "$id": "https://dopemux.dev/schemas/dcp/dcp_chronicle_receipt.v0.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "EXTERNAL_PROPOSED (DR-016) / PROVISIONAL_UNVERIFIED_ENFORCEMENT. Envelope only; other 22 candidate fields are CANDIDATE until repo-local vocab reconciliation. Separate from proof bundles; not runtime state. schema_version .v0 = unstable, not authority.",
+  "properties": {
+    "artifact_refs": {
+      "description": "References to artifacts associated with this receipt.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "authority_label": {
+      "description": "Authority label for the event source in DCP authority order.",
+      "type": "string"
+    },
+    "field_provenance": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Per-field provenance tags. DR-016 field vocab is EXTERNAL_PROPOSED; envelope fields may lock but candidate fields may not exit .v0 without reconciliation.",
+      "type": "object"
+    },
+    "project_id": {
+      "description": "Project identifier.",
+      "type": "string"
+    },
+    "proof_refs": {
+      "description": "References to proof bundles associated with this receipt.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "provenance": {
+      "additionalProperties": false,
+      "description": "Contract-level provenance per REV1 \u00a76.0 meta-contract. EXTERNAL_PROPOSED: shape seeded by DR-016; not derived from repo artifact.",
+      "properties": {
+        "source_ref": {
+          "type": "string"
+        },
+        "tag": {
+          "enum": [
+            "REPO_VALIDATED",
+            "EXTERNAL_PROPOSED",
+            "SYNTHESIS_INVENTED"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "tag",
+        "source_ref"
+      ],
+      "type": "object"
+    },
+    "receipt_id": {
+      "description": "Unique identifier for this chronicle receipt.",
+      "type": "string"
+    },
+    "receipt_type": {
+      "description": "Type of chronicle event being receipted (e.g. packet-accepted, red-lane-triggered, audit-completed).",
+      "type": "string"
+    },
+    "red_lanes": {
+      "description": "Red lane IDs that were evaluated or triggered in connection with this receipt.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "dcp-chronicle-receipt.v0",
+      "description": ".v0 suffix per K-27; unstable version marker, not an authority claim.",
+      "type": "string"
+    },
+    "timestamp_utc": {
+      "description": "ISO 8601 UTC timestamp of the chronicled event.",
+      "type": "string"
+    },
+    "validation": {
+      "additionalProperties": false,
+      "description": "Validation status per REV1 \u00a76.0. PROVISIONAL_UNVERIFIED_ENFORCEMENT: DR-016 envelope not cross-checked against repo artifact; 22 candidate fields not locked.",
+      "properties": {
+        "notes": {
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "REPO_CROSS_CHECKED",
+            "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+            "DEFERRED"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "notes"
+      ],
+      "type": "object"
+    },
+    "validation_state": {
+      "const": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "description": "Const-pinned for .v0 EXTERNAL_PROPOSED schemas. May not exit .v0 until repo-local vocab reconciliation promotes to REPO_CROSS_CHECKED via a subsequent packet."
+    }
+  },
+  "required": [
+    "schema_version",
+    "provenance",
+    "validation",
+    "receipt_id",
+    "receipt_type",
+    "project_id",
+    "timestamp_utc",
+    "artifact_refs",
+    "proof_refs",
+    "authority_label",
+    "red_lanes",
+    "field_provenance",
+    "validation_state"
+  ],
+  "title": "DCP Chronicle Receipt (Envelope Only)",
+  "type": "object"
+}

@@ -1,0 +1,83 @@
+{
+  "audit": "proof/TP-DCP-MCP-RO-0002/AUDIT.md",
+  "base_sha": "62d16375119c8c7fac2fc3280152c4095c5898ac",
+  "branch": "dcp/chatgpt-mcp-ro-0002-architecture-doc-and-multi-proje",
+  "command_log": "proof/TP-DCP-MCP-RO-0002/COMMAND_LOG.md",
+  "deviation": {
+    "after_lines": 431,
+    "artifact": "docs/03-reference/dcp/chatgpt-mcp-readonly/READ_ONLY_SURFACE_INVENTORY.json",
+    "before_lines": 53,
+    "reason": "Prior commit 78b04fb33 shipped generate_docs.py which overwrote the canonical discovery inventory with a hardcoded stub; restored verbatim from discovery commit and removed the script.",
+    "removed_file": "docs/03-reference/dcp/chatgpt-mcp-readonly/generate_docs.py",
+    "source_packet": "TP-DCP-MCP-RO-0001",
+    "source_sha": "7c9ac6a45",
+    "type": "restored_clobbered_artifact"
+  },
+  "docs_finalized": [
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/ARCHITECTURE.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/MULTI_PROJECT_REGISTRY_CONTRACT.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/RESPONSE_ENVELOPE_SCHEMA.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/SECURITY_MODEL.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/DECISIONS.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/TASK_ORCHESTRATOR_LOAD.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/READ_ONLY_SURFACE_INVENTORY.json"
+  ],
+  "embedded_audit": "PASS_WITH_RISKS",
+  "head_sha": "fab87ae7d37ce1bc7cb936a420bd173dc40d58e6",
+  "other_changes": [
+    "task-packets/INDEX.md (corrected drifted titles for 0003-0008 to canonical)",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/generate_docs.py (deleted)"
+  ],
+  "packet_id": "TP-DCP-MCP-RO-0002",
+  "residual_risks": [
+    "8/7 phase-1 split reconciled to inventory summary; identity of 2 deferred reads inferred (no per-surface phase_1 flag) \u2014 flagged inline, resolved in 0004/0005.",
+    "RESPONSE_ENVELOPE_SCHEMA introduces 'OK' success token not named in load pack \u2014 flagged inline, reconcile in 0004.",
+    "dopemux init marker contract UNKNOWN \u2014 deferred to 0003.",
+    "get_index_status named in 0006 load-pack scope has no inventory surface \u2014 relabeled PROPOSED + must be inventoried-with-evidence or deferred before 0006 exposes it.",
+    "task-orchestrator GET /workflow/state is an OBSERVED read route missing from the 0001 inventory; get_workflow_status_snapshot is incomplete without it \u2014 deferred to 0006 for inventory+classification."
+  ],
+  "review_feedback_round": {
+    "P1_packet_schema": "FIXED \u2014 converted 7 DCP-MCP-RO packets to dopetask canonical schema; all pass jsonschema.validate.",
+    "P2_command_log_final_snapshot": "FIXED \u2014 appended final clean post-commit status/head/diff to COMMAND_LOG.md.",
+    "P2_get_index_status": "FIXED \u2014 relabeled PROPOSED (not in inventory) in TOOL_CONTRACT.md \u00a71c with deferral note.",
+    "P2_grep_post_routes": "FIXED \u2014 dropped bare POST from RO-0005/0008 write-hazard regex; named mutating routes still caught.",
+    "P2_proof_sha": "NOTED \u2014 reviewed SHA was GitHub ephemeral merge ref; head_sha tracks branch tip.",
+    "P2_workflow_state_route": "FIXED \u2014 documented OBSERVED /workflow/state (project_workflow.py:385) as UNCLASSIFIED/deferred in TOOL_CONTRACT \u00a71c + ARCHITECTURE \u00a713/\u00a720; must be inventoried+classified in 0006 before exposure.",
+    "ci_frontmatter": "FIXED \u2014 frontmatter added to 7 packet .md stubs + TASK_ORCHESTRATOR_LOAD.md.",
+    "ci_markdownlint": "FIXED \u2014 INDEX.md MD055 (blank line before divider).",
+    "pr": "#826"
+  },
+  "risk": "MEDIUM",
+  "task_class": "architecture/documentation-sensitive/security-sensitive",
+  "title": "Architecture Doc And Multi Project Contract",
+  "validation": {
+    "all_8_md_docs_present": "PASS",
+    "denylist_reconciles_8_plus_7_eq_15": "PASS",
+    "diff_within_allowlist": "PASS",
+    "inventory_restored_to_431_lines": "PASS",
+    "json_inventory_validates": "PASS",
+    "no_python_in_docs_dir": "PASS",
+    "no_runtime_service_config_files_touched": "PASS",
+    "no_secrets_in_docs": "PASS",
+    "packets_conform_to_canonical_schema": "PASS",
+    "precommit_hooks_pass_local": "PASS"
+  },
+  "validation_commands": {
+    "denylist reconciliation (summary 8+7==15)": {
+      "exit": 0
+    },
+    "find docs/03-reference/dcp/chatgpt-mcp-readonly -name '*.py'": {
+      "exit": 0,
+      "expect": "empty"
+    },
+    "ls docs/03-reference/dcp/chatgpt-mcp-readonly/*.md | wc -l": {
+      "exit": 0,
+      "expect": 8
+    },
+    "python3 -m json.tool READ_ONLY_SURFACE_INVENTORY.json": {
+      "exit": 0
+    }
+  }
+}

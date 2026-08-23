@@ -1,0 +1,32 @@
+{
+  "dcp_core_contracts": {
+    "callable": false,
+    "implemented": true,
+    "merged": "UNKNOWN_UNTIL_HEAD_CHECK",
+    "verified": "repo evidence present"
+  },
+  "live_write": {
+    "callable": false,
+    "implemented": false,
+    "merged": "N/A",
+    "verified": "DCP v1 hard block"
+  },
+  "mcp_readonly_facade": {
+    "callable": "LOCAL_ONLY",
+    "implemented": true,
+    "merged": "PARTIAL",
+    "verified": "fail-closed contract and acceptance artifacts"
+  },
+  "model_routing": {
+    "callable": false,
+    "implemented": true,
+    "merged": "PARTIAL",
+    "verified": "merged base plus open draft continuation PRs"
+  },
+  "openclaw_routing": {
+    "callable": false,
+    "implemented": true,
+    "merged": "MERGED_CONTRACT_LINE",
+    "verified": "canonical contract tree"
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "$id": "https://github.com/DDD-Enterprises/dopemux-mvp/schemas/dcp/dcp_routing_classification.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "Classification of a routing task by risk class and automation safety",
+  "properties": {
+    "classification_id": {
+      "description": "Unique classification identifier",
+      "pattern": "^DCP-CLS-[0-9A-Z]{8}$",
+      "type": "string"
+    },
+    "decision_status": {
+      "description": "Current decision status",
+      "enum": [
+        "PROPOSED",
+        "READY_DESIGN_ONLY",
+        "READY_DRY_RUN_ONLY",
+        "BLOCKED",
+        "NEEDS_SUPERVISOR",
+        "FORBIDDEN"
+      ],
+      "type": "string"
+    },
+    "evidence_quality": {
+      "description": "Quality of supporting evidence",
+      "enum": [
+        "observed_clean_origin_main",
+        "observed_current_branch",
+        "observed_config_only",
+        "observed_runtime_healthy",
+        "observed_runtime_unhealthy",
+        "vendor_only",
+        "claimed_only",
+        "conflicting",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "notes": {
+      "description": "Optional classification notes",
+      "maxLength": 2000,
+      "type": "string"
+    },
+    "risk_class": {
+      "description": "Risk classification level",
+      "enum": [
+        "R0_READ",
+        "R1_DOCS",
+        "R2_TESTS",
+        "R3_CODE",
+        "R4_CROSS_BOUNDARY",
+        "R5_SECURITY_AUTH_CI",
+        "R6_LIVE_WRITE",
+        "R7_FORBIDDEN"
+      ],
+      "type": "string"
+    },
+    "safe_automation": {
+      "description": "Automation safety classification",
+      "enum": [
+        "safe_read",
+        "safe_projection",
+        "requires_operator",
+        "unsafe_until_proven",
+        "forbidden",
+        "unknown"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "classification_id",
+    "risk_class",
+    "safe_automation",
+    "evidence_quality",
+    "decision_status"
+  ],
+  "title": "DcpRoutingClassification",
+  "type": "object"
+}

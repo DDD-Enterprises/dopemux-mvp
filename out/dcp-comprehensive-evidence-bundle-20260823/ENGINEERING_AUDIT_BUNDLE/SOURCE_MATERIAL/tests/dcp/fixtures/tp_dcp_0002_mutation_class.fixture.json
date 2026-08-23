@@ -1,0 +1,355 @@
+{
+  "authority_notes": "Tier vocabulary derived from config/orchestrator/approval_policy.yaml (schema_version 1, id: task-orchestrator-approval-policy) and src/dopemux/orchestrator/policy.py (REQUIRED_TIERS, WRITE_MODES, T4_PLUS, REFUSAL_TIERS constants). MC-MERGE-SEAM-FORBIDDEN is repo-validated by DCP-RED-MERGE-SEAM-0001 audit of queue_drain.py:2402 (execute=True). LIVE_WRITE_READY remains undefined and must not be introduced.",
+  "classes": [
+    {
+      "allowed_in_v1": true,
+      "approval_tier": "T0",
+      "canonical_writer_required": null,
+      "class_id": "MC-READ-ONLY",
+      "description": "No mutation of any kind. Read-only status checks, queue reads, PR status, git status, and other read-only views. Maps to T0 tier in approval_policy.yaml.",
+      "display_name": "Read-Only Status",
+      "dry_run_required": false,
+      "known_unknowns": [],
+      "live_write_ready_required": false,
+      "mutation_surface": "none",
+      "proof_required": false,
+      "provenance": "REPO_VALIDATED",
+      "red_lane_triggers": [],
+      "side_effect_posture": "none"
+    },
+    {
+      "allowed_in_v1": true,
+      "approval_tier": "T1",
+      "canonical_writer_required": null,
+      "class_id": "MC-ANALYSIS",
+      "description": "Local analysis operations: packet validation, proof validation, diff inspection, decision-affecting local analysis. No write side effects. Maps to T1 tier. Receipt required.",
+      "display_name": "Local Analysis",
+      "dry_run_required": false,
+      "known_unknowns": [],
+      "live_write_ready_required": false,
+      "mutation_surface": "none",
+      "proof_required": false,
+      "provenance": "REPO_VALIDATED",
+      "red_lane_triggers": [],
+      "side_effect_posture": "none"
+    },
+    {
+      "allowed_in_v1": true,
+      "approval_tier": "T2",
+      "canonical_writer_required": null,
+      "class_id": "MC-LOCAL-ARTIFACT-DRAFT",
+      "description": "Draft artifact writes: draft plans, draft proof, temporary markdown, non-authoritative draft artifacts. Maps to T2 tier. Approval required; not a canonical write.",
+      "display_name": "Draft Artifact Write",
+      "dry_run_required": false,
+      "known_unknowns": [],
+      "live_write_ready_required": true,
+      "mutation_surface": "local draft artifacts",
+      "proof_required": true,
+      "provenance": "REPO_VALIDATED",
+      "red_lane_triggers": [],
+      "side_effect_posture": "local_only"
+    },
+    {
+      "allowed_in_v1": true,
+      "approval_tier": "T3",
+      "canonical_writer_required": "dopemux",
+      "class_id": "MC-REPO-DOCS",
+      "description": "Documentation updates and command documentation under an active Task Packet. Maps to T3 tier. Approval required; gated decision.",
+      "display_name": "Repo-Local Docs Edit",
+      "dry_run_required": false,
+      "known_unknowns": [],
+      "live_write_ready_required": true,
+      "mutation_surface": "repo documentation files",
+      "proof_required": true,
+      "provenance": "REPO_VALIDATED",
+      "red_lane_triggers": [
+        "DCP-RED-PROOF-CONTRACT-SCHEMA-MUTATION"
+      ],
+      "side_effect_posture": "repo_write"
+    },
+    {
+      "allowed_in_v1": true,
+      "approval_tier": "T4",
+      "canonical_writer_required": "proof-bundle-governance",
+      "class_id": "MC-SCHEMA-CONTRACT",
+      "description": "Schema and contract file writes (schemas/dcp/, schemas/pr_steward/, etc.). Maps to T4 tier with canonical_writer=proof-bundle-governance. Requires approval, receipt, and proof artifact.",
+      "display_name": "Schema / Contract Write",
+      "dry_run_required": true,
+      "known_unknowns": [
+        "promotion path from PROVISIONAL to REPO_CROSS_CHECKED for schema contracts not yet defined"
+      ],
+      "live_write_ready_required": true,
+      "mutation_surface": "schemas/ contract files",
+      "proof_required": true,
+      "provenance": "REPO_VALIDATED",
+      "red_lane_triggers": [
+        "DCP-RED-PROOF-CONTRACT-SCHEMA-MUTATION"
+      ],
+      "side_effect_posture": "repo_write"
+    },
+    {
+      "allowed_in_v1": true,
+      "approval_tier": "T4",
+      "canonical_writer_required": "proof-bundle-governance",
+      "class_id": "MC-PROOF-ARTIFACT",
+      "description": "Proof bundle writes to proof/ directory. Maps to T4 tier with canonical_writer=proof-bundle-governance. Proof freshness statuses from proof.py ALLOWED_PROOF_STATUSES apply.",
+      "display_name": "Proof Artifact Write",
+      "dry_run_required": false,
+      "known_unknowns": [
+        "proof/ is gitignored; git add -f required per TP-DCP-0001 convention"
+      ],
+      "live_write_ready_required": true,
+      "mutation_surface": "proof/ bundle artifacts",
+      "proof_required": true,
+      "provenance": "REPO_VALIDATED",
+      "red_lane_triggers": [],
+      "side_effect_posture": "repo_write"
+    },
+    {
+      "allowed_in_v1": true,
+      "approval_tier": "T4",
+      "canonical_writer_required": null,
+      "class_id": "MC-SOURCE-CONFIG",
+      "description": "Code edits, config edits, ConPort writes, workflow transitions, and index sync. Maps to T4 tier (mode=write). Approval, receipt, and gated decision required.",
+      "display_name": "Repo Source / Config Write",
+      "dry_run_required": true,
+      "known_unknowns": [],
+      "live_write_ready_required": true,
+      "mutation_surface": "src/ and config/ source and config files",
+      "proof_required": true,
+      "provenance": "REPO_VALIDATED",
+      "red_lane_triggers": [
+        "DCP-RED-PROOF-CONTRACT-SCHEMA-MUTATION"
+      ],
+      "side_effect_posture": "repo_write"
+    },
+    {
+      "allowed_in_v1": true,
+      "approval_tier": "T4",
+      "canonical_writer_required": null,
+      "class_id": "MC-CI-WORKFLOW",
+      "description": "CI workflow file edits (.github/workflows/), config mutations, and related build/deployment config. Maps to T4 tier (config edits). Approval required. Potential T6 escalation for deploy/release configs.",
+      "display_name": "CI / Workflow / Config Mutation",
+      "dry_run_required": true,
+      "known_unknowns": [
+        "CI-specific sub-capabilities not enumerated in approval_policy.yaml; tier boundary between T4 and T6 for deploy configs is PROVISIONAL"
+      ],
+      "live_write_ready_required": true,
+      "mutation_surface": ".github/workflows/ and build/deploy config files",
+      "proof_required": true,
+      "provenance": "REPO_VALIDATED",
+      "red_lane_triggers": [
+        "DCP-RED-WORKFLOW-PERMISSION-ESCALATION"
+      ],
+      "side_effect_posture": "repo_write"
+    },
+    {
+      "allowed_in_v1": true,
+      "approval_tier": "T4",
+      "canonical_writer_required": "ConPort",
+      "class_id": "MC-CONPORT-WRITE",
+      "description": "Writes to ConPort structured context, decisions, progress, and custom data. Maps to T4 tier with canonical_writer=ConPort (from orchestrator.memory.record_decision and orchestrator.memory.record_progress capabilities).",
+      "display_name": "ConPort Authority Write",
+      "dry_run_required": true,
+      "known_unknowns": [
+        "ConPort deployed-primary endpoint binding PROVISIONAL (port 5455 from MCP docs, not runtime-proven)"
+      ],
+      "live_write_ready_required": true,
+      "mutation_surface": "ConPort knowledge graph (decisions, progress, context)",
+      "proof_required": true,
+      "provenance": "REPO_VALIDATED",
+      "red_lane_triggers": [],
+      "side_effect_posture": "external_write"
+    },
+    {
+      "allowed_in_v1": true,
+      "approval_tier": "T4",
+      "canonical_writer_required": "task-orchestrator",
+      "class_id": "MC-ORCHESTRATOR-WRITE",
+      "description": "Writes to task-orchestrator workflow state (transitions, item advances). Maps to T4 tier with canonical_writer=task-orchestrator (orchestrator.transition.apply capability). Task-Orchestrator is not DCP authority.",
+      "display_name": "Task-Orchestrator Write",
+      "dry_run_required": true,
+      "known_unknowns": [
+        "task-orchestrator runtime authority partially conflicted per ARCHITECTURE.md \u00a74 note on app/main.py vs Docker startup wiring"
+      ],
+      "live_write_ready_required": true,
+      "mutation_surface": "task-orchestrator workflow state",
+      "proof_required": true,
+      "provenance": "REPO_VALIDATED",
+      "red_lane_triggers": [],
+      "side_effect_posture": "external_write"
+    },
+    {
+      "allowed_in_v1": true,
+      "approval_tier": "T4",
+      "canonical_writer_required": "ConPort",
+      "class_id": "MC-MEMORY-WRITE",
+      "description": "Writes to dope-memory chronicle, working-memory-assistant, or dope-context index. Maps to T4 tier. dope-memory is mirror_writer (ConPort is canonical) per policy.py orchestrator.memory.record_progress capability.",
+      "display_name": "Memory / Context / Chronicle Write",
+      "dry_run_required": true,
+      "known_unknowns": [
+        "dope-memory vs ConPort split authority not resolved per ARCHITECTURE.md \u00a73.4; durable ledger authority and snapshot/recovery support are distinct concerns"
+      ],
+      "live_write_ready_required": true,
+      "mutation_surface": "dope-memory chronicle; dope-context index; working-memory-assistant",
+      "proof_required": true,
+      "provenance": "REPO_VALIDATED",
+      "red_lane_triggers": [],
+      "side_effect_posture": "external_write"
+    },
+    {
+      "allowed_in_v1": true,
+      "approval_tier": "T5",
+      "canonical_writer_required": "GitHub",
+      "class_id": "MC-GITHUB-MUTATION",
+      "description": "PR comments, labels, merges, pushes, and related GitHub mutations. Maps to T5 tier with canonical_writer=GitHub. orchestrator.github.merge requires typed_confirmation_required=true.",
+      "display_name": "GitHub Mutation",
+      "dry_run_required": true,
+      "known_unknowns": [
+        "typed_confirmation_required varies by sub-action (merge=true, comment=false per approval_policy.yaml capabilities)"
+      ],
+      "live_write_ready_required": true,
+      "mutation_surface": "GitHub PR/issue/branch state",
+      "proof_required": true,
+      "provenance": "REPO_VALIDATED",
+      "red_lane_triggers": [
+        "DCP-RED-MERGE-SEAM-0001",
+        "DCP-RED-AGENT-APPROVED-MERGE-WITHOUT-SUPERVISOR"
+      ],
+      "side_effect_posture": "github_write"
+    },
+    {
+      "allowed_in_v1": false,
+      "approval_tier": "T6",
+      "canonical_writer_required": null,
+      "class_id": "MC-DESTRUCTIVE",
+      "description": "Index clearing, deploys, force pushes, record deletes, and release operations. Maps to T6 tier (mode=destructive). typed_confirmation_required=true. orchestrator.destructive.clear_index uses decision=block.",
+      "display_name": "Destructive / Deploy / Release",
+      "dry_run_required": true,
+      "known_unknowns": [],
+      "live_write_ready_required": true,
+      "mutation_surface": "dope-context indexes; deployment targets; release artifacts",
+      "proof_required": true,
+      "provenance": "REPO_VALIDATED",
+      "red_lane_triggers": [
+        "DCP-RED-IDENTITY-CONTACT-MERGE-DESTRUCTIVE-EXTERNAL-WRITE"
+      ],
+      "side_effect_posture": "destructive"
+    },
+    {
+      "allowed_in_v1": false,
+      "approval_tier": "PROVISIONAL",
+      "canonical_writer_required": null,
+      "class_id": "MC-DOPETASK-EXEC",
+      "description": "External Dopetask execution via scripts/taskx \u2192 scripts/dopetask \u2192 external dopetask. No explicit tier in approval_policy.yaml. Execution plane owned by wrapper path only (ARCHITECTURE.md \u00a73.2). DCP may describe this class but must not execute Dopetask.",
+      "display_name": "Dopetask Execution",
+      "dry_run_required": true,
+      "known_unknowns": [
+        "No approval_policy.yaml capability for Dopetask execution \u2014 tier is PROVISIONAL",
+        "Wrapper path observed (scripts/taskx, scripts/dopetask) but external dopetask implementation out of scope",
+        "DCP must not execute Dopetask per TP-DCP-0002 \u00a75 OUT scope"
+      ],
+      "live_write_ready_required": true,
+      "mutation_surface": "external dopetask runtime (out of scope for DCP .v0)",
+      "proof_required": true,
+      "provenance": "PROVISIONAL",
+      "red_lane_triggers": [],
+      "side_effect_posture": "external_write"
+    },
+    {
+      "allowed_in_v1": false,
+      "approval_tier": "PROVISIONAL",
+      "canonical_writer_required": null,
+      "class_id": "MC-BRIDGE-MEDIATED",
+      "description": "Writes mediated through dopecon-bridge or another proxy. The bridge_mediated=true field exists in policy.py CapabilityPolicy. orchestrator.route.pm is TX (refuse) with bridge_mediated=true. Bridge-mediated writes are refused by default until explicitly classified.",
+      "display_name": "Bridge / Proxy-Mediated Write",
+      "dry_run_required": true,
+      "known_unknowns": [
+        "orchestrator.route.pm is TX (refuse); bridge-mediated writes have no automatic tier classification",
+        "upstream_canonical_writer required per policy.py for bridge-mediated writes but not currently resolvable",
+        "dopecon-bridge runtime explicitly denies domain authority (ARCHITECTURE.md \u00a73.6)"
+      ],
+      "live_write_ready_required": true,
+      "mutation_surface": "dopecon-bridge routing targets",
+      "proof_required": true,
+      "provenance": "PROVISIONAL",
+      "red_lane_triggers": [],
+      "side_effect_posture": "external_write"
+    },
+    {
+      "allowed_in_v1": false,
+      "approval_tier": "PROVISIONAL",
+      "canonical_writer_required": null,
+      "class_id": "MC-EXTERNAL-WRITE",
+      "description": "CRM, channel, or external service writes. No explicit capability in approval_policy.yaml. Tier inferred as T5/T6 by analogy to GitHub mutation posture. DCP-RED-IDENTITY-CONTACT-MERGE-DESTRUCTIVE-EXTERNAL-WRITE applies.",
+      "display_name": "CRM / Channel / External Write",
+      "dry_run_required": true,
+      "known_unknowns": [
+        "No explicit capability in approval_policy.yaml for CRM/channel writes",
+        "Tier inferred from T5/T6 external mutation posture \u2014 PROVISIONAL until capability registered"
+      ],
+      "live_write_ready_required": true,
+      "mutation_surface": "external CRM/channel services",
+      "proof_required": true,
+      "provenance": "PROVISIONAL",
+      "red_lane_triggers": [
+        "DCP-RED-IDENTITY-CONTACT-MERGE-DESTRUCTIVE-EXTERNAL-WRITE"
+      ],
+      "side_effect_posture": "external_write"
+    },
+    {
+      "allowed_in_v1": false,
+      "approval_tier": "HARD_BLOCK",
+      "canonical_writer_required": null,
+      "class_id": "MC-MERGE-SEAM-FORBIDDEN",
+      "description": "HARD BLOCK. DCP must NEVER import, call, wrap, or wire src/dopemux_pr_merge_specialist/queue_drain.py (execute=True seam at line 2402) or scripts/batch_resolve_and_merge.py. This is DCP-RED-MERGE-SEAM-0001 \u2014 an absolute universal red line. steward_gate.py now present on main but does not remove this hard block.",
+      "display_name": "Forbidden Merge Automation Seam",
+      "dry_run_required": false,
+      "known_unknowns": [
+        "steward_gate.py now present on main (was absent at TP-DCP-0001 audit time) \u2014 gate enforcement status for queue_drain.py not fully verified; hard block remains regardless"
+      ],
+      "live_write_ready_required": false,
+      "mutation_surface": "src/dopemux_pr_merge_specialist/queue_drain.py (execute=True); scripts/batch_resolve_and_merge.py",
+      "proof_required": false,
+      "provenance": "REPO_VALIDATED_BY_AUDIT",
+      "red_lane_triggers": [
+        "DCP-RED-MERGE-SEAM-0001"
+      ],
+      "side_effect_posture": "hard_block"
+    }
+  ],
+  "contract_id": "dcp-mutation-class-registry-v0-seed",
+  "contract_status": "PROVISIONAL",
+  "field_provenance": {
+    "authority_notes": "REPO_VALIDATED",
+    "classes": "REPO_VALIDATED",
+    "contract_id": "SYNTHESIS_INVENTED",
+    "contract_status": "SYNTHESIS_INVENTED",
+    "known_unknowns": "REPO_VALIDATED",
+    "red_lines": "REPO_VALIDATED_BY_AUDIT",
+    "supersedes": "SYNTHESIS_INVENTED",
+    "validation_state": "REPO_VALIDATED"
+  },
+  "known_unknowns": [
+    "MC-DOPETASK-EXEC: no approval_policy.yaml capability maps to Dopetask execution; tier is PROVISIONAL",
+    "MC-BRIDGE-MEDIATED: orchestrator.route.pm is TX (refuse); no upgrade path for bridge-mediated writes currently classified in policy",
+    "MC-EXTERNAL-WRITE: no explicit CRM/channel capability in approval_policy.yaml; tier inferred from T5/T6 mutation posture",
+    "LIVE_WRITE_READY: undefined and blocking \u2014 no mutation class may be executed live until this gate is defined in a subsequent packet",
+    "steward_gate.py now present on main (absent at TP-DCP-0001 audit) \u2014 red lane DCP-RED-MERGE-SEAM-0001 remains active regardless of gate state"
+  ],
+  "provenance": {
+    "source_ref": "config/orchestrator/approval_policy.yaml tiers T0-T6/TX/TU; src/dopemux/orchestrator/policy.py REQUIRED_TIERS; TP-DCP-0002 derivation",
+    "tag": "REPO_VALIDATED"
+  },
+  "red_lines": [
+    "DCP-RED-MERGE-SEAM-0001",
+    "DCP-RED-SELF-CERTIFYING-LOOP"
+  ],
+  "schema_version": "dcp-mutation-class.v0",
+  "supersedes": null,
+  "validation": {
+    "notes": "Tier ID vocabulary (T0-T6, TX, TU) directly verified against approval_policy.yaml and policy.py REQUIRED_TIERS constant. PROVISIONAL classes (MC-DOPETASK-EXEC, MC-BRIDGE-MEDIATED, MC-EXTERNAL-WRITE) carry per-class PROVISIONAL provenance. MC-MERGE-SEAM-FORBIDDEN is REPO_VALIDATED_BY_AUDIT.",
+    "state": "REPO_CROSS_CHECKED"
+  },
+  "validation_state": "REPO_CROSS_CHECKED"
+}

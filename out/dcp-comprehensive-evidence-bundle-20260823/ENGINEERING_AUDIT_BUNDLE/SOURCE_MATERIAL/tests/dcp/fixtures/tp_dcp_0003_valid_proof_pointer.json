@@ -1,0 +1,23 @@
+{
+  "auditor_verdict": "PASS_WITH_RISKS",
+  "authority_tier": "local-proof",
+  "confidence": "HIGH",
+  "derived": false,
+  "field_provenance": {
+    "source_artifact_ref": "OBSERVED",
+    "source_head_sha": "OBSERVED"
+  },
+  "freshness_state": "CURRENT",
+  "pointer_id": "ptr-tp-dcp-0003-valid",
+  "project_id": "dopemux-mvp",
+  "repo_id": "dopemux-mvp",
+  "schema_version": "dcp-proof-pointer.v0",
+  "source_artifact_ref": "proof/TP-DCP-0002/PROOF.json",
+  "source_family": "task-packet-proof",
+  "source_head_sha": {
+    "provenance_tag": "REPO_VALIDATED",
+    "validation_state": "REPO_CROSS_CHECKED",
+    "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "validation_state": "REPO_CROSS_CHECKED"
+}

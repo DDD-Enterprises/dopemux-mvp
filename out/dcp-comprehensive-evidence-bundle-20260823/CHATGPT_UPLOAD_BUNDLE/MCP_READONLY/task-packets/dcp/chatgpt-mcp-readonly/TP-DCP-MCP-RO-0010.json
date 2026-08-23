@@ -1,0 +1,167 @@
+{
+  "commit": {
+    "allowlist": [
+      "services/dcp-readonly-facade/**",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/**",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0010.json",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0010.md",
+      "proof/TP-DCP-MCP-RO-0010/**"
+    ],
+    "message": "feat(dcp): registry v2 parsing and pure resolver core",
+    "verify": [
+      "python -m pytest -q services/dcp-readonly-facade/tests",
+      "python -m compileall -q services/dcp-readonly-facade",
+      "rg -n \"write_text|open\\(.*['\\\"]w|mkdir|unlink|remove|rmtree|PUT|PATCH|DELETE|requests\\.|httpx\\.|socket\\.|subprocess|os.system|shell=True\" services/dcp-readonly-facade/src/dcp_facade/registry_v2.py services/dcp-readonly-facade/src/dcp_facade/resolver_core.py || true",
+      "rg -n \"OPENAI_API_KEY|ANTHROPIC_API_KEY|GEMINI_API_KEY|sk-|Bearer |TOKEN: [REDACTED]\" services/dcp-readonly-facade docs/03-reference/dcp/chatgpt-mcp-readonly || true",
+      "git diff --stat",
+      "git status --short --branch"
+    ]
+  },
+  "depends_on": [
+    "TP-DCP-MCP-RO-0009"
+  ],
+  "id": "TP-DCP-MCP-RO-0010",
+  "invariants": [
+    "target_id is the ONLY caller-facing handle; no caller-supplied path, URL, host, port, backend route, workspace_id, instance id, lease id, or runtime selector is ever accepted.",
+    "The exposure registry is read-only to the facade; this packet performs no writes to it and no writes to any backend.",
+    "Eligibility is not exposure: only targets with enabled:true resolve; unknown or disabled targets fail closed with a block reason (never a path or partial result).",
+    "The bare family name 'task-orchestrator' is FORBIDDEN in registry v2; the allowed service families are exactly: conport, dope_memory, to_compose_rest, to_mcp_wrapper, dope_context, serena, pal, docker_mcp_gateway, desktop_commander.",
+    "Default worktree binding mode is PRIMARY_CHECKOUT_ONLY; the resolver binds to exactly one operator-approved workspace and NEVER enumerates, scans, or auto-selects sibling/newest/most-recent worktrees.",
+    "workspace_path is canonicalized (realpath, symlink-followed) BEFORE the approved-roots containment check; escape from all approved roots fails closed.",
+    "Identity is enforced against the workspace .repo_id: project must equal the target's identity.project (required); owner must equal identity.owner ONLY when the registry declares it.",
+    "project_root and worktree_root are derived deterministically from local .git metadata (dir vs gitfile) without invoking a network or backend service.",
+    "Configured capability (family present + policy-enabled in the registry) is reported SEPARATELY from live capability; configured/declared NEVER implies discovered, live, or callable. Live capability is reported as UNKNOWN in this packet.",
+    "Registry load itself fails closed: a malformed target entry is dropped (recorded in warnings) rather than exposed loosely; enabled defaults to false.",
+    "OUT OF SCOPE: runtime instance registry join, canonical MCP catalog join, candidate discovery, Docker/container inspection, port leases, TCP probes, MCP initialize/REST fingerprints, ownership adjudication, backend calls, tunnel, and authentication.",
+    "OUT OF SCOPE: determining whether any runtime is live, owned, or reachable.",
+    "STOP IF: correct resolution would require a live service call, socket, container inspection, or network I/O.",
+    "STOP IF: a determinism/testability requirement cannot be met using only local filesystem + git metadata reads.",
+    "STOP IF: any change would weaken an existing facade denylist or read-only boundary.",
+    "STOP IF: the embedded auditor returns FAIL or NEEDS_SUPERVISOR.",
+    "FORBIDDEN FILE: src/**",
+    "FORBIDDEN FILE: services/** outside services/dcp-readonly-facade/**",
+    "FORBIDDEN FILE: docker/**",
+    "FORBIDDEN FILE: .env*",
+    "FORBIDDEN FILE: .dopemux/**"
+  ],
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "pr": {
+    "base": "main",
+    "body": "Implements TP-DCP-MCP-RO-0010: exposure-target registry v2 parsing and a pure deterministic resolver core for the DCP read-only facade, per ADR-DCP-MCP-RO-0009.\n\nRequired PR sections: Objective, Scope, Evidence, Validation, Embedded audit, Risks and unknowns, Rollback, Proof bundle links.",
+    "title": "feat(dcp): registry v2 + pure resolver core (target_id, worktree scope, service-family policy)"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "DCP-MCP-RO",
+    "parent_tp_id": "TP-DCP-MCP-RO-0009"
+  },
+  "steps": [
+    {
+      "context_files": [
+        "docs/90-adr/adr-dcp-mcp-ro-0009-chatgpt-mcp-exposure-targets-runtime-resolution-ownership-evidence.md",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/MULTI_PROJECT_REGISTRY_CONTRACT.md",
+        "services/dcp-readonly-facade/src/dcp_facade/registry.py",
+        "services/dcp-readonly-facade/registry.example.yaml"
+      ],
+      "expected_files": [
+        "services/dcp-readonly-facade/src/dcp_facade/registry_v2.py",
+        "services/dcp-readonly-facade/schema/registry_v2.schema.json"
+      ],
+      "id": "S1",
+      "requirements": [
+        "ExposureTarget + RegistryV2 dataclasses (frozen where practical).",
+        "Service-family allowlist enforced; bare 'task-orchestrator' rejected with a warning.",
+        "Fail-closed parse with warnings list; enabled defaults false; duplicate target_id dropped.",
+        "Deterministic registry generation id derived from content (no timestamps/randomness).",
+        "Documented v1->v2 migration behavior."
+      ],
+      "task": "Author registry v2 loader/parser (services/dcp-readonly-facade/src/dcp_facade/registry_v2.py). Parse the exposure-target registry v2 into an ExposureTarget model (target_id, workspace_path, enabled, binding_mode default PRIMARY_CHECKOUT_ONLY, identity{project, owner?}, service_policies{family->policy}). Enforce the 9-family allowlist and reject the bare 'task-orchestrator' name. Fail-closed parsing: malformed entries dropped into warnings; enabled defaults false. Carry a registry generation id. Provide v1->v2 migration: accept a v1 project_id document with an explicit deprecation warning mapping project_id->target_id, OR reject with actionable guidance (choose the fail-closed option and document it).",
+      "validation": [
+        "registry_v2 parses a valid v2 doc into enabled targets and rejects each invalid fixture with a recorded warning.",
+        "Bare 'task-orchestrator' family is rejected; only the 9 ADR families are accepted.",
+        "No network/socket/subprocess/file-write primitives appear in registry_v2.py."
+      ]
+    },
+    {
+      "context_files": [
+        "services/dcp-readonly-facade/src/dcp_facade/resolver.py",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/MULTI_PROJECT_REGISTRY_CONTRACT.md"
+      ],
+      "expected_files": [
+        "services/dcp-readonly-facade/src/dcp_facade/resolver_core.py",
+        "services/dcp-readonly-facade/src/dcp_facade/capability.py"
+      ],
+      "id": "S2",
+      "requirements": [
+        "Deterministic; no network/socket/container/backend calls.",
+        "project_root vs worktree_root derivation from .git dir/gitfile with fixtures for both.",
+        "Static family policy table encoding the ADR resolution classes and ChatGPT postures.",
+        "Block reasons are opaque (no leaked absolute paths/ports/urls in the reason strings returned to callers)."
+      ],
+      "task": "Author the pure resolver core (services/dcp-readonly-facade/src/dcp_facade/resolver_core.py). Resolve target_id -> ResolvedTarget via: lookup -> enabled -> realpath -> approved-roots containment -> eligibility (.dopemux present + validate_workspace) -> identity (.repo_id project + conditional owner) -> derive project_root and worktree_root from local .git metadata (.git dir = primary checkout so project_root == worktree_root; .git gitfile = linked worktree, parse gitdir/commondir to derive the repository/project root) -> bind per-family service policies from a static ADR policy table (resolution_class + chatgpt_posture + port_policy) -> return ResolvedTarget. Every failure returns a block reason string, never a path or partial result. Reuse dopemux.workspace_detection.validate_workspace when importable with a conservative fallback (as in resolver.py).",
+      "validation": [
+        "Resolver returns ResolvedTarget for a valid enabled target and a block reason for each negative case (unknown, disabled, escape-root, missing .dopemux, identity mismatch).",
+        "project_root and worktree_root are correct for both a primary checkout and a linked worktree fixture.",
+        "Configured capability is reported separately from live capability (live == UNKNOWN in this packet)."
+      ]
+    },
+    {
+      "context_files": [
+        "services/dcp-readonly-facade/tests/test_registry.py",
+        "services/dcp-readonly-facade/tests/test_resolver.py"
+      ],
+      "expected_files": [
+        "services/dcp-readonly-facade/tests/test_registry_v2.py",
+        "services/dcp-readonly-facade/tests/test_resolver_core.py",
+        "services/dcp-readonly-facade/tests/fixtures/registry_v2/",
+        "services/dcp-readonly-facade/registry.example.yaml",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/REGISTRY_V2_CONTRACT.md"
+      ],
+      "id": "S3",
+      "requirements": [
+        "JSON Schema contract tests (valid accepted, each invalid rejected).",
+        "Resolver unit tests for all positive/negative branches including worktree derivation.",
+        "registry.example.yaml updated to v2 (no secrets, no real paths).",
+        "Migration + registry v2 contract documented under docs/03-reference/dcp/chatgpt-mcp-readonly/."
+      ],
+      "task": "Add fixtures and contract tests (TDD). Provide valid and invalid registry v2 fixtures (bare task-orchestrator family, unknown family, missing identity, disabled target, root escape, duplicate target_id, v1 project_id doc) and JSON-Schema contract tests plus resolver unit tests covering primary-checkout and linked-worktree derivation. Update the example registry to v2 and document v1->v2 migration in the contract docs.",
+      "validation": [
+        "Full facade test suite passes (python -m pytest -q services/dcp-readonly-facade/tests).",
+        "Every invalid fixture is rejected with a recorded reason; the valid fixture resolves.",
+        "No files outside commit.allowlist are modified."
+      ]
+    },
+    {
+      "id": "S4",
+      "requirements": [
+        "PROOF.json with validations, exit codes, and executor provenance.",
+        "COMMAND_LOG.md with command outputs.",
+        "AUDIT.md with embedded audit verdict (PASS or PASS_WITH_RISKS, non-blocking risks).",
+        "Full diff and diff stat."
+      ],
+      "task": "Run packet validation commands, inspect the diff, and produce the proof bundle under proof/TP-DCP-MCP-RO-0010/ (PROOF.json, COMMAND_LOG.md, AUDIT.md) recording true executor provenance (Opus-orchestrated Claude Code Sonnet subagent) and the embedded audit verdict.",
+      "validation": [
+        "Proof bundle present with command outputs and exit codes.",
+        "Embedded audit verdict recorded; no runtime/backend/network code introduced.",
+        "Determinism confirmed: tests pass without any backend service running."
+      ]
+    }
+  ],
+  "target": "Implement exposure-target registry v2 parsing and a pure, deterministic filesystem/repository identity resolver core for the DCP read-only facade. Parse registry v2, validate approved roots, resolve workspace realpaths, validate init/identity markers, derive project and worktree roots, bind per-service-family policies, expose the opaque target_id as the only caller handle, and report configured capability separately from live capability. All behavior is deterministic and testable without running any backend service, socket, container, or network call."
+}

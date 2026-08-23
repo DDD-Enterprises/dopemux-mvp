@@ -1,0 +1,323 @@
+{
+  "$id": "https://dopemux.com/schemas/dcp_red_lane_report.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "findings": {
+      "items": {
+        "properties": {
+          "authority_label": {
+            "enum": [
+              "OBSERVED",
+              "CLAIMED",
+              "INFERRED",
+              "UNKNOWN",
+              "CONFLICTING"
+            ]
+          },
+          "category": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "line": {
+            "type": "integer"
+          },
+          "match": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "path": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "recommended_action": {
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "INFO",
+              "WARNING",
+              "BLOCKER",
+              "CRITICAL"
+            ]
+          },
+          "status": {
+            "enum": [
+              "PASS",
+              "BLOCKED",
+              "UNKNOWN",
+              "CONFLICTING"
+            ]
+          }
+        },
+        "required": [
+          "category",
+          "severity",
+          "status",
+          "authority_label",
+          "evidence",
+          "recommended_action"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "guards": {
+      "properties": {
+        "dopetask_execution_status": {
+          "enum": [
+            "NONE",
+            "DETECTED",
+            "UNKNOWN"
+          ]
+        },
+        "external_write_status": {
+          "enum": [
+            "NONE",
+            "DETECTED",
+            "UNKNOWN"
+          ]
+        },
+        "github_mutation_status": {
+          "enum": [
+            "NONE",
+            "DETECTED",
+            "UNKNOWN"
+          ]
+        },
+        "live_write_ready_status": {
+          "enum": [
+            "UNDEFINED_AND_BLOCKING",
+            "OPERATIONAL",
+            "UNKNOWN"
+          ]
+        },
+        "live_write_status": {
+          "enum": [
+            "NONE",
+            "DETECTED",
+            "UNKNOWN"
+          ]
+        },
+        "merge_seam_status": {
+          "enum": [
+            "PRESERVED",
+            "VIOLATED",
+            "UNKNOWN"
+          ]
+        },
+        "self_certification_status": {
+          "enum": [
+            "NONE",
+            "DETECTED",
+            "UNKNOWN"
+          ]
+        }
+      },
+      "required": [
+        "live_write_ready_status",
+        "live_write_status",
+        "merge_seam_status",
+        "dopetask_execution_status",
+        "github_mutation_status",
+        "external_write_status",
+        "self_certification_status"
+      ],
+      "type": "object"
+    },
+    "inputs": {
+      "properties": {
+        "audit_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "changed_files": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "control_snapshot_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "diff_text_supplied": {
+          "type": "boolean"
+        },
+        "merge_readiness_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "proof_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "changed_files",
+        "diff_text_supplied",
+        "control_snapshot_paths",
+        "proof_paths",
+        "audit_paths",
+        "merge_readiness_paths"
+      ],
+      "type": "object"
+    },
+    "packet_id": {
+      "type": "string"
+    },
+    "repo": {
+      "properties": {
+        "base_branch": {
+          "type": "string"
+        },
+        "base_sha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "head_sha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "worktree": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "base_branch"
+      ],
+      "type": "object"
+    },
+    "report_family": {
+      "const": "DCP_RED_LANE_REPORT"
+    },
+    "scanner": {
+      "properties": {
+        "dopetask_execution_used": {
+          "const": false
+        },
+        "external_writes_used": {
+          "const": false
+        },
+        "github_api_used": {
+          "const": false
+        },
+        "implementation": {
+          "const": "local"
+        },
+        "live_adapters_used": {
+          "const": false
+        },
+        "taxonomy_id": {
+          "type": "string"
+        },
+        "taxonomy_lane_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "taxonomy_path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "implementation",
+        "live_adapters_used",
+        "external_writes_used",
+        "dopetask_execution_used",
+        "github_api_used",
+        "taxonomy_id",
+        "taxonomy_path",
+        "taxonomy_lane_ids"
+      ],
+      "type": "object"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "PASS",
+        "BLOCKED",
+        "UNKNOWN",
+        "CONFLICTING"
+      ]
+    },
+    "summary": {
+      "properties": {
+        "blocker_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "conflicting_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "critical_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "recommended_next_action": {
+          "type": "string"
+        },
+        "unknown_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "warning_count": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "blocker_count",
+        "critical_count",
+        "warning_count",
+        "unknown_count",
+        "conflicting_count",
+        "recommended_next_action"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "report_family",
+    "schema_version",
+    "generated_at",
+    "packet_id",
+    "scanner",
+    "repo",
+    "inputs",
+    "status",
+    "findings",
+    "guards",
+    "summary"
+  ],
+  "title": "DCP Red Lane Report",
+  "type": "object"
+}

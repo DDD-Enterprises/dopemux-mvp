@@ -1,0 +1,1579 @@
+{
+  "$id": "https://dcp.local/schemas/route_decision.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "privacy_class": {
+            "const": "UNKNOWN"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "decision_status": {
+            "enum": [
+              "BLOCKED",
+              "ESCALATED",
+              "NEEDS_SUPERVISOR"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "risk_class": {
+            "const": "UNKNOWN"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "decision_status": {
+            "enum": [
+              "BLOCKED",
+              "ESCALATED",
+              "NEEDS_SUPERVISOR"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "BLOCKED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "blocked_reasons": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "human_gate_required": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "human_approval_ref"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "human_gate_required": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "human_approval_ref": {
+            "minLength": 1,
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "risk_class": {
+            "enum": [
+              "R5_SECURITY_OR_AUTHORITY",
+              "R6_RELEASE_OR_PRODUCTION"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "human_approval_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "human_gate_required": {
+            "const": true
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "role": {
+            "enum": [
+              "security_review",
+              "release_judgment"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "human_approval_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "human_gate_required": {
+            "const": true
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "blocked_reasons": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "selected_pool": {
+            "const": "cheap_read"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "risk_class": {
+            "enum": [
+              "R0_READ",
+              "R1_DRAFT",
+              "R2_TEST_ONLY"
+            ]
+          },
+          "role": {
+            "enum": [
+              "cheap_file_reading",
+              "issue_triage",
+              "task_intake"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "selected_pool": {
+            "const": "cheap_classifier"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "risk_class": {
+            "enum": [
+              "R0_READ",
+              "R1_DRAFT",
+              "R2_TEST_ONLY"
+            ]
+          },
+          "role": {
+            "enum": [
+              "task_classification",
+              "issue_triage",
+              "task_intake"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "selected_pool": {
+            "const": "repo_cartographer"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "risk_class": {
+            "enum": [
+              "R0_READ",
+              "R1_DRAFT",
+              "R2_TEST_ONLY",
+              "R3_LOCAL_EDIT",
+              "R4_MULTI_FILE_EDIT"
+            ]
+          },
+          "role": {
+            "enum": [
+              "repo_cartography",
+              "architecture_synthesis",
+              "planning"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "selected_pool": {
+            "const": "planner_default"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "risk_class": {
+            "enum": [
+              "R0_READ",
+              "R1_DRAFT",
+              "R2_TEST_ONLY",
+              "R3_LOCAL_EDIT",
+              "R4_MULTI_FILE_EDIT"
+            ]
+          },
+          "role": {
+            "enum": [
+              "planning",
+              "architecture_synthesis"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "selected_pool": {
+            "const": "planner_strong"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "risk_class": {
+            "enum": [
+              "R4_MULTI_FILE_EDIT",
+              "R5_SECURITY_OR_AUTHORITY",
+              "R6_RELEASE_OR_PRODUCTION"
+            ]
+          },
+          "role": {
+            "enum": [
+              "strong_planning",
+              "architecture_synthesis",
+              "final_supervisor_synthesis"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "selected_pool": {
+            "const": "implementer_default"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "risk_class": {
+            "enum": [
+              "R3_LOCAL_EDIT",
+              "R4_MULTI_FILE_EDIT"
+            ]
+          },
+          "role": {
+            "enum": [
+              "implementation",
+              "narrow_patch_generation",
+              "multi_file_refactor"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "selected_pool": {
+            "const": "implementer_alt"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "risk_class": {
+            "enum": [
+              "R2_TEST_ONLY",
+              "R3_LOCAL_EDIT",
+              "R4_MULTI_FILE_EDIT"
+            ]
+          },
+          "role": {
+            "enum": [
+              "narrow_patch_generation",
+              "test_generation",
+              "implementation"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "selected_pool": {
+            "const": "test_builder"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "risk_class": {
+            "enum": [
+              "R2_TEST_ONLY"
+            ]
+          },
+          "role": {
+            "enum": [
+              "test_generation"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "selected_pool": {
+            "const": "structured_packet"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "role": {
+            "enum": [
+              "structured_task_packet_generation",
+              "task_classification",
+              "proof_bundle_generation"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "selected_pool": {
+            "const": "proof_validator"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "risk_class": {
+            "enum": [
+              "R3_LOCAL_EDIT",
+              "R4_MULTI_FILE_EDIT",
+              "R5_SECURITY_OR_AUTHORITY",
+              "R6_RELEASE_OR_PRODUCTION"
+            ]
+          },
+          "role": {
+            "enum": [
+              "proof_validation",
+              "pr_review",
+              "final_supervisor_synthesis"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "selected_pool": {
+            "const": "auditor_default"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "risk_class": {
+            "enum": [
+              "R3_LOCAL_EDIT",
+              "R4_MULTI_FILE_EDIT",
+              "R5_SECURITY_OR_AUTHORITY"
+            ]
+          },
+          "role": {
+            "enum": [
+              "challenger_review",
+              "pr_review",
+              "proof_validation"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "selected_pool": {
+            "const": "auditor_deep"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "risk_class": {
+            "enum": [
+              "R5_SECURITY_OR_AUTHORITY",
+              "R6_RELEASE_OR_PRODUCTION"
+            ]
+          },
+          "role": {
+            "enum": [
+              "security_review",
+              "release_judgment",
+              "final_supervisor_synthesis"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "selected_pool": {
+            "const": "security_reviewer"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "risk_class": {
+            "enum": [
+              "R5_SECURITY_OR_AUTHORITY"
+            ]
+          },
+          "role": {
+            "enum": [
+              "security_review"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "selected_pool": {
+            "const": "release_judge"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "risk_class": {
+            "enum": [
+              "R6_RELEASE_OR_PRODUCTION"
+            ]
+          },
+          "role": {
+            "enum": [
+              "release_judgment"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "selected_pool": {
+            "const": "supervisor"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "risk_class": {
+            "enum": [
+              "R4_MULTI_FILE_EDIT",
+              "R5_SECURITY_OR_AUTHORITY",
+              "R6_RELEASE_OR_PRODUCTION"
+            ]
+          },
+          "role": {
+            "enum": [
+              "final_supervisor_synthesis",
+              "strong_planning",
+              "architecture_synthesis"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "selected_pool": {
+            "const": "openrouter_free_sandbox"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "risk_class": {
+            "enum": [
+              "R0_READ",
+              "R1_DRAFT",
+              "R2_TEST_ONLY"
+            ]
+          },
+          "role": {
+            "enum": [
+              "cheap_file_reading",
+              "issue_triage",
+              "test_generation"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "provider": {
+            "const": "openrouter"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "openrouter_profile": {
+            "enum": [
+              "or_free_sandbox",
+              "or_low_cost_public",
+              "or_paid_private_controlled",
+              "or_structured_noncritical",
+              "or_challenger",
+              "or_emergency_fallback"
+            ],
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "openrouter_profile": {
+            "type": "string"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "provider": {
+            "const": "openrouter"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "access_path": {
+            "const": "openrouter_paid"
+          },
+          "decision_status": {
+            "const": "SELECTED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "openrouter_profile": {
+            "enum": [
+              "or_free_sandbox",
+              "or_low_cost_public",
+              "or_paid_private_controlled",
+              "or_structured_noncritical",
+              "or_challenger",
+              "or_emergency_fallback"
+            ],
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "privacy_class": {
+            "enum": [
+              "PRIVATE_REPO_NO_SECRETS",
+              "PRIVATE_REPO_POSSIBLE_SECRETS",
+              "SECRET_BEARING",
+              "CLIENT_DATA",
+              "SECURITY_SENSITIVE",
+              "RELEASE_AUTHORITY"
+            ]
+          },
+          "provider": {
+            "const": "openrouter"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "human_approval_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "human_gate_required": {
+            "const": true
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "anyOf": [
+          {
+            "properties": {
+              "privacy_class": {
+                "enum": [
+                  "PRIVATE_REPO_NO_SECRETS",
+                  "PRIVATE_REPO_POSSIBLE_SECRETS",
+                  "SECRET_BEARING",
+                  "CLIENT_DATA",
+                  "SECURITY_SENSITIVE",
+                  "RELEASE_AUTHORITY"
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "risk_class": {
+                "enum": [
+                  "R4_MULTI_FILE_EDIT",
+                  "R5_SECURITY_OR_AUTHORITY",
+                  "R6_RELEASE_OR_PRODUCTION"
+                ]
+              }
+            }
+          }
+        ],
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "actual_model": {
+            "not": {
+              "const": "unknown"
+            }
+          },
+          "provider": {
+            "not": {
+              "const": "unknown"
+            }
+          },
+          "requested_model": {
+            "not": {
+              "const": "unknown"
+            }
+          },
+          "runner": {
+            "not": {
+              "const": "unknown"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "anyOf": [
+          {
+            "properties": {
+              "privacy_class": {
+                "enum": [
+                  "PRIVATE_REPO_NO_SECRETS",
+                  "PRIVATE_REPO_POSSIBLE_SECRETS",
+                  "SECRET_BEARING",
+                  "CLIENT_DATA",
+                  "SECURITY_SENSITIVE",
+                  "RELEASE_AUTHORITY"
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "risk_class": {
+                "enum": [
+                  "R4_MULTI_FILE_EDIT",
+                  "R5_SECURITY_OR_AUTHORITY",
+                  "R6_RELEASE_OR_PRODUCTION"
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "role": {
+                "enum": [
+                  "structured_task_packet_generation",
+                  "proof_bundle_generation",
+                  "proof_validation",
+                  "security_review",
+                  "release_judgment"
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "structured_output_mode": {
+                "enum": [
+                  "json_schema_strict",
+                  "tool_schema_strict"
+                ]
+              }
+            }
+          }
+        ],
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "benchmark_certification_ref": {
+            "minLength": 1,
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "access_path": {
+            "const": "openrouter_free"
+          },
+          "decision_status": {
+            "const": "SELECTED"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            {
+              "properties": {
+                "privacy_class": {
+                  "enum": [
+                    "PRIVATE_REPO_NO_SECRETS",
+                    "PRIVATE_REPO_POSSIBLE_SECRETS",
+                    "SECRET_BEARING",
+                    "CLIENT_DATA",
+                    "SECURITY_SENSITIVE",
+                    "RELEASE_AUTHORITY"
+                  ]
+                }
+              }
+            },
+            {
+              "properties": {
+                "risk_class": {
+                  "enum": [
+                    "R5_SECURITY_OR_AUTHORITY",
+                    "R6_RELEASE_OR_PRODUCTION"
+                  ]
+                }
+              }
+            },
+            {
+              "properties": {
+                "role": {
+                  "enum": [
+                    "security_review",
+                    "release_judgment",
+                    "proof_validation",
+                    "structured_task_packet_generation",
+                    "proof_bundle_generation"
+                  ]
+                }
+              }
+            },
+            {
+              "properties": {
+                "structured_output_mode": {
+                  "enum": [
+                    "json_schema_strict",
+                    "tool_schema_strict"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "openrouter_profile": {
+            "const": "or_free_sandbox"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "access_path": {
+            "const": "openrouter_free"
+          },
+          "privacy_class": {
+            "enum": [
+              "PUBLIC_SANDBOX",
+              "PUBLIC_REPO"
+            ]
+          },
+          "provider": {
+            "const": "openrouter"
+          },
+          "risk_class": {
+            "enum": [
+              "R0_READ",
+              "R1_DRAFT",
+              "R2_TEST_ONLY"
+            ]
+          },
+          "role": {
+            "enum": [
+              "cheap_file_reading",
+              "issue_triage",
+              "test_generation",
+              "task_intake"
+            ]
+          },
+          "selected_route": {
+            "properties": {
+              "route_profile": {
+                "const": "or_free_sandbox"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "openrouter_profile": {
+            "const": "or_low_cost_public"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "access_path": {
+            "const": "openrouter_paid"
+          },
+          "privacy_class": {
+            "enum": [
+              "PUBLIC_SANDBOX",
+              "PUBLIC_REPO"
+            ]
+          },
+          "provider": {
+            "const": "openrouter"
+          },
+          "risk_class": {
+            "enum": [
+              "R0_READ",
+              "R1_DRAFT",
+              "R2_TEST_ONLY",
+              "R3_LOCAL_EDIT"
+            ]
+          },
+          "role": {
+            "enum": [
+              "cheap_file_reading",
+              "issue_triage",
+              "repo_cartography",
+              "test_generation",
+              "narrow_patch_generation",
+              "challenger_review"
+            ]
+          },
+          "selected_route": {
+            "properties": {
+              "route_profile": {
+                "const": "or_low_cost_public"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "openrouter_profile": {
+            "const": "or_paid_private_controlled"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "access_path": {
+            "const": "openrouter_paid"
+          },
+          "human_approval_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "human_gate_required": {
+            "const": true
+          },
+          "privacy_class": {
+            "enum": [
+              "PRIVATE_REPO_NO_SECRETS"
+            ]
+          },
+          "provider": {
+            "const": "openrouter"
+          },
+          "risk_class": {
+            "enum": [
+              "R0_READ",
+              "R1_DRAFT",
+              "R2_TEST_ONLY",
+              "R3_LOCAL_EDIT"
+            ]
+          },
+          "role": {
+            "enum": [
+              "repo_cartography",
+              "issue_triage",
+              "test_generation",
+              "challenger_review"
+            ]
+          },
+          "selected_route": {
+            "properties": {
+              "route_profile": {
+                "const": "or_paid_private_controlled"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "openrouter_profile": {
+            "const": "or_structured_noncritical"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "access_path": {
+            "const": "openrouter_paid"
+          },
+          "privacy_class": {
+            "enum": [
+              "PUBLIC_SANDBOX",
+              "PUBLIC_REPO",
+              "PRIVATE_REPO_NO_SECRETS"
+            ]
+          },
+          "provider": {
+            "const": "openrouter"
+          },
+          "risk_class": {
+            "enum": [
+              "R0_READ",
+              "R1_DRAFT",
+              "R2_TEST_ONLY",
+              "R3_LOCAL_EDIT"
+            ]
+          },
+          "role": {
+            "enum": [
+              "task_classification",
+              "issue_triage",
+              "structured_task_packet_generation"
+            ]
+          },
+          "selected_route": {
+            "properties": {
+              "route_profile": {
+                "const": "or_structured_noncritical"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "openrouter_profile": {
+            "const": "or_challenger"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "access_path": {
+            "const": "openrouter_paid"
+          },
+          "privacy_class": {
+            "enum": [
+              "PUBLIC_SANDBOX",
+              "PUBLIC_REPO",
+              "PRIVATE_REPO_NO_SECRETS",
+              "SECURITY_SENSITIVE"
+            ]
+          },
+          "provider": {
+            "const": "openrouter"
+          },
+          "risk_class": {
+            "enum": [
+              "R1_DRAFT",
+              "R2_TEST_ONLY",
+              "R3_LOCAL_EDIT",
+              "R4_MULTI_FILE_EDIT",
+              "R5_SECURITY_OR_AUTHORITY"
+            ]
+          },
+          "role": {
+            "enum": [
+              "challenger_review",
+              "pr_review",
+              "architecture_synthesis"
+            ]
+          },
+          "selected_route": {
+            "properties": {
+              "route_profile": {
+                "const": "or_challenger"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "SELECTED"
+          },
+          "openrouter_profile": {
+            "const": "or_emergency_fallback"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "access_path": {
+            "const": "openrouter_paid"
+          },
+          "privacy_class": {
+            "enum": [
+              "PUBLIC_SANDBOX",
+              "PUBLIC_REPO",
+              "PRIVATE_REPO_NO_SECRETS"
+            ]
+          },
+          "provider": {
+            "const": "openrouter"
+          },
+          "risk_class": {
+            "enum": [
+              "R0_READ",
+              "R1_DRAFT",
+              "R2_TEST_ONLY",
+              "R3_LOCAL_EDIT",
+              "R4_MULTI_FILE_EDIT"
+            ]
+          },
+          "role": {
+            "enum": [
+              "cheap_file_reading",
+              "repo_cartography",
+              "planning",
+              "challenger_review"
+            ]
+          },
+          "selected_route": {
+            "properties": {
+              "route_profile": {
+                "const": "or_emergency_fallback"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "access_path": {
+      "enum": [
+        "chatgpt_app",
+        "claude_app",
+        "gemini_app",
+        "direct_api",
+        "openrouter_paid",
+        "openrouter_free",
+        "local_self_hosted",
+        "codex",
+        "claude_code",
+        "gemini_antigravity",
+        "manual_app",
+        "shell_local"
+      ],
+      "type": "string"
+    },
+    "blocked_reason": {
+      "enum": [
+        "UNKNOWN_PRIVACY_CLASS",
+        "UNKNOWN_RISK_CLASS",
+        "OPENROUTER_FREE_FORBIDDEN",
+        "CONSUMER_APP_AUTHORITY_FORBIDDEN",
+        "PREVIEW_SOLE_HIGH_RISK_AUTHORITY",
+        "MISSING_BENCHMARK_CERTIFICATION",
+        "MISSING_SCHEMA_VALIDATION",
+        "MISSING_PROOF_REQUIREMENT",
+        "MISSING_HUMAN_APPROVAL",
+        "AUDIT_INDEPENDENCE_VIOLATION",
+        "PROVIDER_MODEL_DRIFT",
+        "FALLBACK_WEAKENS_GUARD",
+        "COST_CEILING_EXCEEDED",
+        "PRIVACY_MISMATCH"
+      ],
+      "type": "string"
+    },
+    "pool": {
+      "enum": [
+        "cheap_read",
+        "cheap_classifier",
+        "repo_cartographer",
+        "planner_default",
+        "planner_strong",
+        "implementer_default",
+        "implementer_alt",
+        "test_builder",
+        "structured_packet",
+        "proof_validator",
+        "auditor_default",
+        "auditor_deep",
+        "security_reviewer",
+        "release_judge",
+        "supervisor",
+        "openrouter_free_sandbox"
+      ],
+      "type": "string"
+    },
+    "privacy_class": {
+      "enum": [
+        "PUBLIC_SANDBOX",
+        "PUBLIC_REPO",
+        "PRIVATE_REPO_NO_SECRETS",
+        "PRIVATE_REPO_POSSIBLE_SECRETS",
+        "SECRET_BEARING",
+        "CLIENT_DATA",
+        "SECURITY_SENSITIVE",
+        "RELEASE_AUTHORITY",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "provider": {
+      "enum": [
+        "openai",
+        "anthropic",
+        "google",
+        "openrouter",
+        "local",
+        "manual",
+        "multiple",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "risk_class": {
+      "enum": [
+        "R0_READ",
+        "R1_DRAFT",
+        "R2_TEST_ONLY",
+        "R3_LOCAL_EDIT",
+        "R4_MULTI_FILE_EDIT",
+        "R5_SECURITY_OR_AUTHORITY",
+        "R6_RELEASE_OR_PRODUCTION",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "role": {
+      "enum": [
+        "task_intake",
+        "task_classification",
+        "repo_cartography",
+        "cheap_file_reading",
+        "issue_triage",
+        "planning",
+        "strong_planning",
+        "architecture_synthesis",
+        "implementation",
+        "narrow_patch_generation",
+        "multi_file_refactor",
+        "test_generation",
+        "ui_design_audit",
+        "multimodal_audit",
+        "structured_task_packet_generation",
+        "proof_bundle_generation",
+        "proof_validation",
+        "challenger_review",
+        "pr_review",
+        "security_review",
+        "release_judgment",
+        "final_supervisor_synthesis"
+      ],
+      "type": "string"
+    },
+    "runner": {
+      "enum": [
+        "openclaw",
+        "codex",
+        "claude_code",
+        "gemini_antigravity",
+        "openrouter_generic",
+        "direct_api",
+        "manual_app",
+        "shell_local",
+        "dopetask",
+        "unknown"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "access_path": {
+      "$ref": "#/definitions/access_path"
+    },
+    "actual_model": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "api_route_used": {
+      "type": "boolean"
+    },
+    "audit_requirement": {
+      "enum": [
+        "none",
+        "light",
+        "embedded",
+        "independent",
+        "deep",
+        "security",
+        "release"
+      ],
+      "type": "string"
+    },
+    "benchmark_certification_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "blocked_reasons": {
+      "items": {
+        "$ref": "#/definitions/blocked_reason"
+      },
+      "type": "array"
+    },
+    "consumer_plan_used": {
+      "type": "boolean"
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "decision_status": {
+      "enum": [
+        "SELECTED",
+        "BLOCKED",
+        "ESCALATED",
+        "NEEDS_SUPERVISOR"
+      ],
+      "type": "string"
+    },
+    "evidence_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "human_approval_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "human_gate_required": {
+      "type": "boolean"
+    },
+    "openrouter_profile": {
+      "enum": [
+        "or_free_sandbox",
+        "or_low_cost_public",
+        "or_paid_private_controlled",
+        "or_structured_noncritical",
+        "or_challenger",
+        "or_emergency_fallback",
+        null
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "privacy_class": {
+      "$ref": "#/definitions/privacy_class"
+    },
+    "proof_requirement": {
+      "enum": [
+        "minimal",
+        "standard",
+        "implementation",
+        "security",
+        "release",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "provider": {
+      "$ref": "#/definitions/provider"
+    },
+    "requested_model": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "risk_class": {
+      "$ref": "#/definitions/risk_class"
+    },
+    "role": {
+      "$ref": "#/definitions/role"
+    },
+    "route_decision_id": {
+      "pattern": "^rd_[A-Za-z0-9_.:-]+$",
+      "type": "string"
+    },
+    "runner": {
+      "$ref": "#/definitions/runner"
+    },
+    "schema_version": {
+      "const": "1.0.0",
+      "type": "string"
+    },
+    "selected_pool": {
+      "$ref": "#/definitions/pool"
+    },
+    "selected_route": {
+      "additionalProperties": false,
+      "properties": {
+        "fallback_allowed": {
+          "type": "boolean"
+        },
+        "route_name": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "route_profile": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "selection_reason": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "route_name",
+        "route_profile",
+        "selection_reason",
+        "fallback_allowed"
+      ],
+      "type": "object"
+    },
+    "structured_output_mode": {
+      "enum": [
+        "none",
+        "json_schema_strict",
+        "tool_schema_strict",
+        "json_object",
+        "manual_capture"
+      ],
+      "type": "string"
+    },
+    "task_id": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "route_decision_id",
+    "task_id",
+    "role",
+    "privacy_class",
+    "risk_class",
+    "selected_pool",
+    "selected_route",
+    "provider",
+    "requested_model",
+    "actual_model",
+    "runner",
+    "access_path",
+    "consumer_plan_used",
+    "api_route_used",
+    "openrouter_profile",
+    "structured_output_mode",
+    "proof_requirement",
+    "audit_requirement",
+    "human_gate_required",
+    "human_approval_ref",
+    "benchmark_certification_ref",
+    "decision_status",
+    "blocked_reasons",
+    "evidence_refs",
+    "created_at"
+  ],
+  "title": "OpenClaw DCP Route Decision",
+  "type": "object"
+}

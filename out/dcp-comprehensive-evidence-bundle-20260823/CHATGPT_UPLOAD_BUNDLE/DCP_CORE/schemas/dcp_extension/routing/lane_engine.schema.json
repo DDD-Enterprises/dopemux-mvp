@@ -1,0 +1,174 @@
+{
+  "$defs": {
+    "access_path": {
+      "enum": [
+        "direct_api",
+        "openrouter_paid",
+        "openrouter_free",
+        "local_self_hosted",
+        "codex",
+        "claude_code",
+        "gemini_cli",
+        "manual_app"
+      ],
+      "type": "string"
+    },
+    "audit_requirement": {
+      "enum": [
+        "none",
+        "light",
+        "embedded",
+        "independent",
+        "deep",
+        "security",
+        "release"
+      ],
+      "type": "string"
+    },
+    "lane_id": {
+      "enum": [
+        "public_read",
+        "public_draft",
+        "test_only",
+        "local_edit",
+        "multi_file_edit",
+        "protected_authority",
+        "release_supervisor",
+        "unknown_fail_closed"
+      ],
+      "type": "string"
+    },
+    "privacy_class": {
+      "enum": [
+        "PUBLIC_SANDBOX",
+        "PUBLIC_REPO",
+        "PRIVATE_REPO_NO_SECRETS",
+        "PRIVATE_REPO_POSSIBLE_SECRETS",
+        "SECRET_BEARING",
+        "CLIENT_DATA",
+        "SECURITY_SENSITIVE",
+        "RELEASE_AUTHORITY",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "proof_requirement": {
+      "enum": [
+        "minimal",
+        "standard",
+        "implementation",
+        "security",
+        "release",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "risk_class": {
+      "enum": [
+        "R0_READ",
+        "R1_DRAFT",
+        "R2_TEST_ONLY",
+        "R3_LOCAL_EDIT",
+        "R4_MULTI_FILE_EDIT",
+        "R5_SECURITY_OR_AUTHORITY",
+        "R6_RELEASE_OR_PRODUCTION",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    }
+  },
+  "$id": "https://schemas.dopemux.local/dcp_extension/routing/lane_engine.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Contracts-only lane definitions for future route decision generation. This schema does not implement a lane engine.",
+  "properties": {
+    "default_unknown_behavior": {
+      "const": "BLOCK_OR_ESCALATE",
+      "type": "string"
+    },
+    "lanes": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "allowed_access_paths": {
+            "items": {
+              "$ref": "#/$defs/access_path"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "audit_requirement": {
+            "$ref": "#/$defs/audit_requirement"
+          },
+          "fail_closed_on_unknown": {
+            "const": true,
+            "type": "boolean"
+          },
+          "forbidden_access_paths": {
+            "items": {
+              "$ref": "#/$defs/access_path"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "lane_id": {
+            "$ref": "#/$defs/lane_id"
+          },
+          "privacy_classes": {
+            "items": {
+              "$ref": "#/$defs/privacy_class"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "proof_requirement": {
+            "$ref": "#/$defs/proof_requirement"
+          },
+          "requires_human_approval": {
+            "type": "boolean"
+          },
+          "risk_classes": {
+            "items": {
+              "$ref": "#/$defs/risk_class"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "lane_id",
+          "privacy_classes",
+          "risk_classes",
+          "allowed_access_paths",
+          "forbidden_access_paths",
+          "proof_requirement",
+          "audit_requirement",
+          "requires_human_approval",
+          "fail_closed_on_unknown"
+        ],
+        "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "live_write_runner_allowed": {
+      "const": false,
+      "type": "boolean"
+    },
+    "schema_version": {
+      "const": "dcp.routing.lane_engine.v0",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "default_unknown_behavior",
+    "live_write_runner_allowed",
+    "lanes"
+  ],
+  "title": "DCP Routing Extension Lane Engine Contract",
+  "type": "object"
+}

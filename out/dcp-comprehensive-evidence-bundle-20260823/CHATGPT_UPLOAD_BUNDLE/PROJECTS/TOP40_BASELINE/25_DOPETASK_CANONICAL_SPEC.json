@@ -1,0 +1,271 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "execution": {
+            "properties": {
+              "agent": {
+                "const": "gemini"
+              }
+            },
+            "required": [
+              "agent"
+            ]
+          }
+        },
+        "required": [
+          "execution"
+        ]
+      },
+      "then": {
+        "properties": {
+          "pal_chain": {
+            "properties": {
+              "enabled": {
+                "const": true
+              }
+            }
+          }
+        },
+        "required": [
+          "pal_chain"
+        ]
+      }
+    }
+  ],
+  "description": "Stricter Task Packet contract for repo-bound, series-driven execution with mandatory repo identity binding and Gemini PAL chaining.",
+  "properties": {
+    "commit": {
+      "additionalProperties": false,
+      "properties": {
+        "allowlist": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "message": {
+          "type": "string"
+        },
+        "verify": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "message",
+        "allowlist"
+      ],
+      "type": "object"
+    },
+    "depends_on": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "execution": {
+      "additionalProperties": false,
+      "properties": {
+        "agent": {
+          "enum": [
+            "gemini",
+            "codex",
+            "vibe",
+            "shell"
+          ],
+          "type": "string"
+        },
+        "base_branch": {
+          "type": "string"
+        },
+        "branch": {
+          "type": "string"
+        },
+        "stacked_because": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "agent"
+      ],
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "invariants": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "pal_chain": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "steps": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "enabled",
+        "steps"
+      ],
+      "type": "object"
+    },
+    "pr": {
+      "additionalProperties": false,
+      "properties": {
+        "base": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "body",
+        "base"
+      ],
+      "type": "object"
+    },
+    "project": {
+      "type": "string"
+    },
+    "repo_binding": {
+      "additionalProperties": false,
+      "properties": {
+        "origin_hint": {
+          "type": "string"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "repo_marker": {
+          "type": "string"
+        },
+        "require_identity_match": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "project_id",
+        "repo_marker",
+        "require_identity_match"
+      ],
+      "type": "object"
+    },
+    "series": {
+      "additionalProperties": false,
+      "properties": {
+        "base_branch": {
+          "type": "string"
+        },
+        "final_packet": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "string"
+        },
+        "parent_tp_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "base_branch",
+        "parent_tp_id",
+        "final_packet"
+      ],
+      "type": "object"
+    },
+    "steps": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "commands": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "context_files": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "expected_files": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "requirements": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "task": {
+            "type": "string"
+          },
+          "validation": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "task",
+          "validation"
+        ],
+        "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "target": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "project",
+    "target",
+    "repo_binding",
+    "series",
+    "commit",
+    "pr",
+    "steps"
+  ],
+  "title": "dopeTask TaskPacket - strict repo policy",
+  "type": "object"
+}

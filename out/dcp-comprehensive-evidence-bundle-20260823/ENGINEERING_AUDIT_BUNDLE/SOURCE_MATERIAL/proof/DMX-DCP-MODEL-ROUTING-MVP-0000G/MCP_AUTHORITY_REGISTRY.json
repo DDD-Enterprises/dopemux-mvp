@@ -1,0 +1,14 @@
+{
+  "generated": "2026-06-09",
+  "note": "Full classification deferred to 0000G execution. This seed confirms 189 surfaces exist and require classification before 0001 routing.",
+  "summary": {
+    "forbidden": 0,
+    "requires_operator": 0,
+    "safe_projection": 0,
+    "safe_read": 0,
+    "unknown": 189,
+    "unsafe_until_proven": 0
+  },
+  "surfaces": 189,
+  "version": "0.1"
+}

@@ -1,0 +1,42 @@
+{
+  "base_branch": "main",
+  "branch": "codex/dcp-docs-001",
+  "ending_head": "UNKNOWN_FINAL_COMMIT_SELF_REFERENCE",
+  "files_created": [
+    "task-packets/TP-DCP-DOCS-002.json",
+    "docs/03-reference/dcp/chatgpt-projects/README.md",
+    "docs/03-reference/dcp/chatgpt-projects/dcp-core-supervisor.md",
+    "docs/03-reference/dcp/chatgpt-projects/dopemux-supervisor.md",
+    "docs/03-reference/dcp/chatgpt-projects/dnh-crm-supervisor.md",
+    "docs/03-reference/dcp/chatgpt-projects/dcp-packet-lab.md",
+    "docs/03-reference/dcp/chatgpt-projects/upload-sets.md",
+    "docs/03-reference/dcp/chatgpt-projects/project-instructions.md",
+    "proof/TP-DCP-DOCS-002/PROOF.json"
+  ],
+  "files_modified": [],
+  "final_status": "VERIFIED",
+  "forbidden_files_touched": false,
+  "generated_artifact_hashes": {},
+  "packet_id": "TP-DCP-DOCS-002",
+  "repo_root": "[LOCAL_PATH_REDACTED]",
+  "residual_risks": [],
+  "skipped_unsafe_files": [],
+  "source_files_inspected": [
+    "AGENTS.md",
+    "PROJECT.md",
+    "ARCHITECTURE.md"
+  ],
+  "starting_head": "ff20d6b8d",
+  "unknowns": [],
+  "validation_commands": [
+    {
+      "command": "test -f docs/03-reference/dcp/chatgpt-projects/README.md",
+      "exit_code": 0
+    },
+    {
+      "command": "rg -n \"repo truth|runtime|UNKNOWN|CLAIMED_ONLY|LIVE_WRITE_READY|DCP-RED-MERGE-SEAM|secret\" docs/03-reference/dcp/chatgpt-projects",
+      "exit_code": 0
+    }
+  ],
+  "worktree_path": "[LOCAL_PATH_REDACTED]"
+}

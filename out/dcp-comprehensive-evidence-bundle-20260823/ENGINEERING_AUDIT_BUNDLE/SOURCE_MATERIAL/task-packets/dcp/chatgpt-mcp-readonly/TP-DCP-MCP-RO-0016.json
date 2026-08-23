@@ -1,0 +1,95 @@
+{
+  "commit": {
+    "allowlist": [
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/PROVIDER_SETUP.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/DISABLE_AND_ROLLBACK.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/PROVIDER_COMMAND_LEDGER.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/SOURCE_DATE_LEDGER.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+      "services/dcp-readonly-facade/tests/test_provider_docs_examples.py",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0016.json",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0016.md",
+      "task-packets/INDEX.md",
+      "proof/TP-DCP-MCP-RO-0016/**"
+    ],
+    "message": "docs(dcp): add multi-provider setup and rollback guides",
+    "verify": [
+      "uv run --frozen pytest -q services/dcp-readonly-facade/tests/test_provider_docs_examples.py",
+      "uv run --frozen pytest -q services/dcp-readonly-facade/tests",
+      "python -m jsonschema -i task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0016.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check",
+      "pre-commit run --files <changed-files>"
+    ]
+  },
+  "depends_on": [
+    "TP-DCP-MCP-RO-0015"
+  ],
+  "execution": {
+    "agent": "codex",
+    "base_branch": "main",
+    "branch": "codex/dcp-mcp-ro-0016-provider-docs",
+    "stacked_because": "TP-DCP-MCP-RO-0015 ownership/safe adapters are merged on main (PR #1061)."
+  },
+  "id": "TP-DCP-MCP-RO-0016",
+  "invariants": [
+    "Repository documentation contains only placeholders for secrets, tunnel IDs, hostnames, and private paths.",
+    "Connector policy examples remain examples_only with enabled false and schema-valid records.",
+    "Documented Dopemux CLI commands are verified against local --help where claimed PASS.",
+    "Vendor CLIs not present locally are marked NOT_RUN rather than invented as verified.",
+    "No live provider, tunnel, or credential creation is performed."
+  ],
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "docgen",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "pr": {
+    "base": "main",
+    "body": "Implements TP-DCP-MCP-RO-0016: provider setup, disable/rollback, command and source-date ledgers, and example validation tests. Placeholders only; no live provider or credential setup.",
+    "title": "docs(dcp): add multi-provider setup and rollback guides"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "DCP-MCP-RO",
+    "parent_tp_id": "TP-DCP-MCP-RO-0015"
+  },
+  "steps": [
+    {
+      "id": "provider-docs",
+      "task": "Author provider setup and disable/rollback guides using placeholders and verified Dopemux CLI surfaces from 0013-0015.",
+      "validation": [
+        "Required placeholders present.",
+        "No secret-like material in docs."
+      ]
+    },
+    {
+      "id": "ledgers-tests",
+      "task": "Add command/source-date ledgers and tests that schema-validate connector examples and scan for secrets.",
+      "validation": [
+        "Connector policy examples validate and remain disabled.",
+        "Focused docs tests pass."
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Run suite, packet schema validation, pre-commit, open PR without merge.",
+      "validation": [
+        "Proof records audit gap; merge readiness not claimed."
+      ]
+    }
+  ],
+  "target": "Add provider setup guides, non-secret connector examples, disable/rollback guidance, and source-date/command verification ledgers without real credentials or live provider setup."
+}

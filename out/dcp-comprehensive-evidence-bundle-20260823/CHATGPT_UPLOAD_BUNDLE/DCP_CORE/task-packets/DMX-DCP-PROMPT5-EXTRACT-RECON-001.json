@@ -1,0 +1,116 @@
+{
+  "commit": {
+    "allowlist": [
+      "docs/03-reference/dcp/README.md",
+      "docs/03-reference/dcp/artifacts/DCP_PROMPT5_CHAT_HISTORY_EXTRACT.md",
+      "docs/03-reference/dcp/DCP_PROMPT5_TASK_ORCHESTRATOR_RECONCILIATION.md",
+      "task-packets/DMX-DCP-PROMPT5-EXTRACT-RECON-001.json",
+      "task-packets/INDEX.md",
+      "proof/DMX-DCP-PROMPT5-EXTRACT-RECON-001/**"
+    ],
+    "message": "docs(dcp): extract prompt5 runway history and reconciliation",
+    "verify": [
+      "python -m json.tool task-packets/DMX-DCP-PROMPT5-EXTRACT-RECON-001.json >/dev/null",
+      "python - <<'PY'\nimport json\nfrom pathlib import Path\nfrom jsonschema import Draft7Validator\nschema = json.loads(Path('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json').read_text())\npayload = json.loads(Path('task-packets/DMX-DCP-PROMPT5-EXTRACT-RECON-001.json').read_text())\nerrors = sorted(Draft7Validator(schema).iter_errors(payload), key=lambda e: list(e.path))\nif errors:\n    raise SystemExit('\\n'.join(f\"{'.'.join(map(str, e.path)) or '<root>'}: {e.message}\" for e in errors))\nprint('PASS task packet schema validation')\nPY",
+      "rg -n \"EXTERNAL_CHAT_HISTORY_EXTRACT|Transport closed|#906|NOT_RUN|BLOCKED|UNKNOWN\" docs/03-reference/dcp/artifacts/DCP_PROMPT5_CHAT_HISTORY_EXTRACT.md docs/03-reference/dcp/DCP_PROMPT5_TASK_ORCHESTRATOR_RECONCILIATION.md",
+      "git diff --check"
+    ]
+  },
+  "depends_on": [
+    "DMX-DCP-MODEL-ROUTING-MVP-0002R",
+    "DMX-DCP-PRE-PROMPT6-0002"
+  ],
+  "execution": {
+    "agent": "codex",
+    "base_branch": "main",
+    "branch": "codex/dcp-prompt5-extract-reconcile"
+  },
+  "id": "DMX-DCP-PROMPT5-EXTRACT-RECON-001",
+  "invariants": [
+    "Extracted chat-history documents remain advisory and must not outrank runtime code, active task packets, tests, config, GitHub state, or Task Orchestrator state.",
+    "No runtime source, service, compose, MCP, or workflow-execution files may be edited.",
+    "No Task Orchestrator write is authorized by this packet.",
+    "Task Orchestrator live reconciliation must be marked NOT_RUN or BLOCKED if the MCP transport is unavailable.",
+    "Stale PR claims from the transcript must be reconciled against live GitHub before being recorded.",
+    "DCP live-write, raw MCP, Dopetask execution, runner execution, and Task Orchestrator writes remain unauthorized."
+  ],
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "tracer",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "pr": {
+    "base": "main",
+    "body": "Extract advisory Prompt 5 / pre-Prompt 6 DCP chat-history documents, reconcile stale task-packet and PR claims against live GitHub, and record Task Orchestrator MCP reconciliation as blocked by transport closure. No runtime code or Task Orchestrator writes.",
+    "title": "docs(dcp): extract Prompt 5 chat-history runway reconciliation"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "DMX-DCP-PROMPT5-EXTRACT",
+    "parent_tp_id": null
+  },
+  "steps": [
+    {
+      "commands": [
+        "git status --short --branch",
+        "sed -n '1,260p' AGENTS.md",
+        "sed -n '1,220p' task-packets/INDEX.md",
+        "sed -n '1,220p' docs/03-reference/dcp/README.md",
+        "gh pr view 906 --json number,state,isDraft,mergeable,headRefName,headRefOid,baseRefName,statusCheckRollup,reviewDecision,changedFiles,additions,deletions,url,title",
+        "gh api graphql ... reviewThreads for #906"
+      ],
+      "id": "S1",
+      "requirements": [
+        "Preserve pasted chat-history provenance as advisory only.",
+        "Verify stale PR claims against live GitHub before recording them.",
+        "Attempt Task Orchestrator read context; if unavailable, record BLOCKED/NOT_RUN."
+      ],
+      "task": "Inspect repo authority, task-packet index, existing DCP artifact shelf, pasted chat history, live GitHub PR state, and Task Orchestrator availability before editing.",
+      "validation": [
+        "Observed evidence distinguishes repo/GitHub truth from stale transcript claims."
+      ]
+    },
+    {
+      "expected_files": [
+        "docs/03-reference/dcp/artifacts/DCP_PROMPT5_CHAT_HISTORY_EXTRACT.md",
+        "docs/03-reference/dcp/DCP_PROMPT5_TASK_ORCHESTRATOR_RECONCILIATION.md"
+      ],
+      "id": "S2",
+      "task": "Author extracted advisory artifact and reconciliation ledger within the DCP docs shelf.",
+      "validation": [
+        "Docs label transcript provenance and live Task Orchestrator unknowns explicitly.",
+        "Docs do not claim Prompt 6 readiness or #906 merge readiness."
+      ]
+    },
+    {
+      "expected_files": [
+        "docs/03-reference/dcp/README.md",
+        "task-packets/INDEX.md",
+        "proof/DMX-DCP-PROMPT5-EXTRACT-RECON-001/PROOF.json"
+      ],
+      "id": "S3",
+      "task": "Update DCP README and task-packet index, then create proof bundle and run validation.",
+      "validation": [
+        "Task packet JSON validates against dopetask canonical schema.",
+        "git diff --check passes.",
+        "Diff stays inside commit allowlist."
+      ]
+    }
+  ],
+  "target": "Extract Prompt 5 / pre-Prompt 6 DCP chat-history documents into repo-tracked advisory docs and reconcile task-packet claims against live GitHub and Task Orchestrator availability."
+}

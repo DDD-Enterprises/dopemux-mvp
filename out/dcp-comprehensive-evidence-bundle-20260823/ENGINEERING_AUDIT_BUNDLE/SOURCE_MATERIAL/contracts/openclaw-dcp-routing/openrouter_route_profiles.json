@@ -1,0 +1,319 @@
+{
+  "artifact_id": "openrouter_route_profiles",
+  "profiles": {
+    "or_challenger": {
+      "allowed_privacy_classes": [
+        "PUBLIC_SANDBOX",
+        "PUBLIC_REPO",
+        "PRIVATE_REPO_NO_SECRETS",
+        "SECURITY_SENSITIVE"
+      ],
+      "allowed_risk_classes": [
+        "R1_DRAFT",
+        "R2_TEST_ONLY",
+        "R3_LOCAL_EDIT",
+        "R4_MULTI_FILE_EDIT",
+        "R5_SECURITY_OR_AUTHORITY"
+      ],
+      "allowed_roles": [
+        "challenger_review",
+        "pr_review",
+        "architecture_synthesis"
+      ],
+      "data_collection": "deny",
+      "failure_behavior": "NEEDS_SUPERVISOR_ON_CONFLICT",
+      "fallback_rules": "Escalate to direct API or human on disagreement.",
+      "forbidden_roles": [
+        "release_judgment_as_sole_authority",
+        "security_review_as_sole_authority"
+      ],
+      "max_price": {
+        "completion_per_million_usd": 10.0,
+        "prompt_per_million_usd": 3.0
+      },
+      "provider_pinning_order_rules": "Must differ from primary provider family where possible.",
+      "require_parameters": true,
+      "required_logging_fields": [
+        "primary_route_compared",
+        "requested_model",
+        "actual_model",
+        "actual_provider",
+        "findings",
+        "usage",
+        "cost_usd"
+      ],
+      "required_provider_settings": {
+        "allow_fallbacks": false,
+        "data_collection": "deny",
+        "provider_order": "pinned",
+        "require_parameters": true,
+        "zdr": "required_for_sensitive"
+      },
+      "zdr": "required_for_sensitive"
+    },
+    "or_emergency_fallback": {
+      "allowed_privacy_classes": [
+        "PUBLIC_SANDBOX",
+        "PUBLIC_REPO",
+        "PRIVATE_REPO_NO_SECRETS"
+      ],
+      "allowed_risk_classes": [
+        "R0_READ",
+        "R1_DRAFT",
+        "R2_TEST_ONLY",
+        "R3_LOCAL_EDIT",
+        "R4_MULTI_FILE_EDIT"
+      ],
+      "allowed_roles": [
+        "cheap_file_reading",
+        "repo_cartography",
+        "planning",
+        "challenger_review"
+      ],
+      "data_collection": "deny_for_private",
+      "failure_behavior": "BLOCK_IF_ANY_GUARD_WEAKENS",
+      "fallback_rules": "Cannot weaken original route privacy, schema, audit, or cost settings.",
+      "forbidden_roles": [
+        "security_review",
+        "release_judgment",
+        "proof_validation"
+      ],
+      "max_price": {
+        "completion_per_million_usd": 8.0,
+        "prompt_per_million_usd": 2.0
+      },
+      "provider_pinning_order_rules": "Use only pre-approved emergency route set.",
+      "require_parameters": true,
+      "required_logging_fields": [
+        "outage_reason",
+        "requested_model",
+        "actual_model",
+        "actual_provider",
+        "fallback_events",
+        "usage",
+        "latency_ms",
+        "cost_usd"
+      ],
+      "required_provider_settings": {
+        "allow_fallbacks": false,
+        "data_collection": "deny_for_private",
+        "metadata_header": "enabled_if_available",
+        "provider_order": "approved_emergency_order",
+        "require_parameters": true,
+        "zdr": "required_for_private"
+      },
+      "zdr": "required_for_private"
+    },
+    "or_free_sandbox": {
+      "allowed_privacy_classes": [
+        "PUBLIC_SANDBOX",
+        "PUBLIC_REPO"
+      ],
+      "allowed_risk_classes": [
+        "R0_READ",
+        "R1_DRAFT",
+        "R2_TEST_ONLY"
+      ],
+      "allowed_roles": [
+        "cheap_file_reading",
+        "issue_triage",
+        "test_generation",
+        "task_intake"
+      ],
+      "data_collection": "not_applicable_public_only",
+      "failure_behavior": "BLOCK_OR_ESCALATE_TO_PAID_OR_DIRECT",
+      "fallback_rules": "Fallback allowed only within free public sandbox scope.",
+      "forbidden_roles": [
+        "security_review",
+        "release_judgment",
+        "proof_validation",
+        "structured_task_packet_generation",
+        "proof_bundle_generation"
+      ],
+      "max_price": {
+        "completion": 0,
+        "prompt": 0
+      },
+      "provider_pinning_order_rules": "Use pinned :free model for reproducible tests; avoid openrouter/free for deterministic lanes.",
+      "require_parameters": false,
+      "required_logging_fields": [
+        "requested_model",
+        "actual_model",
+        "actual_provider",
+        "usage",
+        "latency_ms",
+        "fallback_events",
+        "route_decision_id"
+      ],
+      "required_provider_settings": {
+        "allow_fallbacks": true,
+        "data_collection": "no_sensitive_data_allowed",
+        "metadata_header": "recommended",
+        "provider_order": "pinned_free_variant_preferred",
+        "require_parameters": false,
+        "sort": "none",
+        "zdr": false
+      },
+      "zdr": false
+    },
+    "or_low_cost_public": {
+      "allowed_privacy_classes": [
+        "PUBLIC_SANDBOX",
+        "PUBLIC_REPO"
+      ],
+      "allowed_risk_classes": [
+        "R0_READ",
+        "R1_DRAFT",
+        "R2_TEST_ONLY",
+        "R3_LOCAL_EDIT"
+      ],
+      "allowed_roles": [
+        "cheap_file_reading",
+        "issue_triage",
+        "repo_cartography",
+        "test_generation",
+        "narrow_patch_generation",
+        "challenger_review"
+      ],
+      "data_collection": "deny_when_repo_content_present",
+      "failure_behavior": "FAIL_CLOSED_ON_SCHEMA_OR_PRIVACY_MISMATCH",
+      "fallback_rules": "No fallback to free, non-schema, or unbenchmarked routes.",
+      "forbidden_roles": [
+        "security_review",
+        "release_judgment"
+      ],
+      "max_price": {
+        "completion_per_million_usd": 2.0,
+        "prompt_per_million_usd": 0.5
+      },
+      "provider_pinning_order_rules": "Pin during certification; allow approved same-model fallbacks in production.",
+      "require_parameters": true,
+      "required_logging_fields": [
+        "requested_model",
+        "actual_model",
+        "actual_provider",
+        "usage",
+        "latency_ms",
+        "cost_usd",
+        "fallback_events",
+        "schema_validation_result"
+      ],
+      "required_provider_settings": {
+        "allow_fallbacks": true,
+        "data_collection": "deny_when_repo_content_present",
+        "metadata_header": "enabled_if_available",
+        "provider_order": "benchmarked_order_or_default_logged",
+        "require_parameters": true,
+        "sort": "price_or_throughput_after_benchmark",
+        "zdr": false
+      },
+      "zdr": false
+    },
+    "or_paid_private_controlled": {
+      "allowed_privacy_classes": [
+        "PRIVATE_REPO_NO_SECRETS"
+      ],
+      "allowed_risk_classes": [
+        "R0_READ",
+        "R1_DRAFT",
+        "R2_TEST_ONLY",
+        "R3_LOCAL_EDIT"
+      ],
+      "allowed_roles": [
+        "repo_cartography",
+        "issue_triage",
+        "test_generation",
+        "challenger_review"
+      ],
+      "data_collection": "deny",
+      "failure_behavior": "BLOCK",
+      "fallback_rules": "No fallback unless fallback provider has same privacy controls and certification.",
+      "forbidden_roles": [
+        "security_review",
+        "release_judgment",
+        "proof_validation"
+      ],
+      "max_price": {
+        "completion_per_million_usd": 5.0,
+        "prompt_per_million_usd": 1.0
+      },
+      "provider_pinning_order_rules": "Provider pinning required; provider drift blocks.",
+      "require_parameters": true,
+      "required_logging_fields": [
+        "requested_model",
+        "actual_model",
+        "actual_provider",
+        "data_collection",
+        "zdr",
+        "usage",
+        "latency_ms",
+        "cost_usd",
+        "schema_validation_result"
+      ],
+      "required_provider_settings": {
+        "allow_fallbacks": false,
+        "data_collection": "deny",
+        "metadata_header": "enabled_if_available",
+        "provider_order": "pinned",
+        "require_parameters": true,
+        "sort": "none",
+        "zdr": true
+      },
+      "zdr": true
+    },
+    "or_structured_noncritical": {
+      "allowed_privacy_classes": [
+        "PUBLIC_SANDBOX",
+        "PUBLIC_REPO",
+        "PRIVATE_REPO_NO_SECRETS"
+      ],
+      "allowed_risk_classes": [
+        "R0_READ",
+        "R1_DRAFT",
+        "R2_TEST_ONLY",
+        "R3_LOCAL_EDIT"
+      ],
+      "allowed_roles": [
+        "task_classification",
+        "issue_triage",
+        "structured_task_packet_generation"
+      ],
+      "data_collection": "deny_for_private",
+      "failure_behavior": "FAIL_CLOSED",
+      "fallback_rules": "On schema failure, retry once same route, then direct API.",
+      "forbidden_roles": [
+        "release_judgment",
+        "security_review",
+        "proof_validation"
+      ],
+      "max_price": {
+        "completion_per_million_usd": 3.0,
+        "prompt_per_million_usd": 1.0
+      },
+      "provider_pinning_order_rules": "Pin model/provider during certification.",
+      "require_parameters": true,
+      "required_logging_fields": [
+        "schema_id",
+        "schema_hash",
+        "requested_model",
+        "actual_model",
+        "actual_provider",
+        "validation_result",
+        "usage",
+        "cost_usd"
+      ],
+      "required_provider_settings": {
+        "allow_fallbacks": false,
+        "data_collection": "deny_for_private",
+        "provider_order": "pinned",
+        "require_parameters": true,
+        "response_format": "json_schema",
+        "strict": true,
+        "zdr": "required_for_private"
+      },
+      "zdr": "required_for_private"
+    }
+  },
+  "schema_version": "1.0.0",
+  "status": "PROPOSED"
+}

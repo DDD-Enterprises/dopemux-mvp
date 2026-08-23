@@ -1,0 +1,381 @@
+{
+  "$id": "https://dopemux.local/schemas/dcp-connector-policy-1.0.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "transport_class": {
+            "enum": [
+              "public_streamable_http",
+              "public_sse",
+              "openai_secure_mcp_tunnel"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "multi_target_authorized": {
+            "const": false
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "allowed_target_ids": {
+            "maxItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "provider": {
+            "const": "antigravity_managed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "provider_metadata": {
+            "required": [
+              "server_name"
+            ]
+          },
+          "transport_class": {
+            "const": "public_streamable_http"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "provider": {
+            "const": "gemini_cli"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "transport_class": {
+            "enum": [
+              "local_streamable_http",
+              "local_sse",
+              "local_stdio"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "description": "Strict non-secret policy for one authenticated provider or local MCP connector. Populated records live outside the repository.",
+  "properties": {
+    "allowed_target_ids": {
+      "items": {
+        "pattern": "^[a-z][a-z0-9-]{2,63}$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "allowed_tools": {
+      "items": {
+        "pattern": "^[A-Za-z0-9_.:-]{1,128}$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "audit_label": {
+      "pattern": "^[a-z][a-z0-9.-]{2,127}$",
+      "type": "string"
+    },
+    "connector_id": {
+      "pattern": "^[a-z][a-z0-9-]{2,63}$",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "created_by": {
+      "maxLength": 128,
+      "minLength": 1,
+      "type": "string"
+    },
+    "credential_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "environment",
+            "os_keychain",
+            "secret_manager",
+            "oauth_client",
+            "mtls_identity"
+          ],
+          "type": "string"
+        },
+        "reference": {
+          "description": "Non-secret locator only. Must not contain the credential value.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "rotation_group": {
+          "pattern": "^[a-z][a-z0-9-]{2,63}$",
+          "type": "string"
+        },
+        "verification_fingerprint": {
+          "description": "Non-reversible identifier used for audit correlation.",
+          "pattern": "^[A-Za-z0-9:_-]{8,128}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "reference",
+        "verification_fingerprint",
+        "rotation_group"
+      ],
+      "type": "object"
+    },
+    "default_target_id": {
+      "description": "When non-null, must also appear in allowed_target_ids. Enforce this semantic constraint in the loader.",
+      "pattern": "^[a-z][a-z0-9-]{2,63}$",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "denied_tools": {
+      "items": {
+        "pattern": "^[A-Za-z0-9_.:-]{1,128}$",
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "enabled": {
+      "type": "boolean"
+    },
+    "expires_at": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fail_closed": {
+      "additionalProperties": false,
+      "properties": {
+        "ambiguous_owner": {
+          "const": "BLOCK",
+          "type": "string"
+        },
+        "auth_failure": {
+          "const": "BLOCK",
+          "type": "string"
+        },
+        "denied_tool": {
+          "const": "BLOCK",
+          "type": "string"
+        },
+        "disabled_target": {
+          "const": "BLOCK",
+          "type": "string"
+        },
+        "expired_credential": {
+          "const": "BLOCK",
+          "type": "string"
+        },
+        "missing_rate_policy": {
+          "const": "BLOCK",
+          "type": "string"
+        },
+        "provider_drift": {
+          "const": "BLOCK",
+          "type": "string"
+        },
+        "stale_runtime": {
+          "const": "BLOCK",
+          "type": "string"
+        },
+        "unauthorized_target": {
+          "const": "BLOCK",
+          "type": "string"
+        },
+        "unknown_target": {
+          "const": "BLOCK",
+          "type": "string"
+        }
+      },
+      "required": [
+        "unknown_target",
+        "disabled_target",
+        "unauthorized_target",
+        "denied_tool",
+        "expired_credential",
+        "ambiguous_owner",
+        "stale_runtime",
+        "auth_failure",
+        "missing_rate_policy",
+        "provider_drift"
+      ],
+      "type": "object"
+    },
+    "last_verified_at": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "multi_target_authorized": {
+      "default": false,
+      "type": "boolean"
+    },
+    "provider": {
+      "enum": [
+        "chatgpt",
+        "openai_api",
+        "grok",
+        "xai_api",
+        "gemini_api",
+        "gemini_deep_research",
+        "gemini_cli",
+        "antigravity_managed"
+      ],
+      "type": "string"
+    },
+    "provider_account_class": {
+      "enum": [
+        "individual",
+        "pro",
+        "business",
+        "enterprise",
+        "education",
+        "api_project",
+        "local_operator",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "provider_metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "account_or_workspace_ref": {
+          "description": "Opaque non-secret reference.",
+          "maxLength": 128,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "public_hostname_label": {
+          "description": "Redacted or template hostname label only in repository examples.",
+          "pattern": "^[A-Za-z0-9.-]{1,253}$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "server_name": {
+          "pattern": "^[a-z0-9_-]{1,63}$",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "rate_limit": {
+      "additionalProperties": false,
+      "properties": {
+        "burst": {
+          "maximum": 1000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "deny_on_backend_unavailable": {
+          "const": true,
+          "type": "boolean"
+        },
+        "max_concurrent": {
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "requests_per_minute": {
+          "maximum": 10000,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "requests_per_minute",
+        "burst",
+        "max_concurrent",
+        "deny_on_backend_unavailable"
+      ],
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "1.0.0",
+      "type": "string"
+    },
+    "source_documentation_date": {
+      "format": "date",
+      "type": "string"
+    },
+    "transport_class": {
+      "enum": [
+        "openai_secure_mcp_tunnel",
+        "public_streamable_http",
+        "public_sse",
+        "local_streamable_http",
+        "local_sse",
+        "local_stdio"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "connector_id",
+    "provider",
+    "transport_class",
+    "credential_ref",
+    "default_target_id",
+    "allowed_target_ids",
+    "allowed_tools",
+    "denied_tools",
+    "enabled",
+    "rate_limit",
+    "audit_label",
+    "created_by",
+    "created_at",
+    "expires_at",
+    "last_verified_at",
+    "source_documentation_date",
+    "provider_account_class",
+    "fail_closed"
+  ],
+  "title": "Dopemux DCP Connector Policy Record",
+  "type": "object"
+}

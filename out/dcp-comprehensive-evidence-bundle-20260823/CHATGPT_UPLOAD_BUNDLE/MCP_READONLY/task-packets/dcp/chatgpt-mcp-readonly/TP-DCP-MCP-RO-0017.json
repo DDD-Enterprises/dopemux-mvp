@@ -1,0 +1,96 @@
+{
+  "commit": {
+    "allowlist": [
+      "services/dcp-readonly-facade/src/dcp_facade/acceptance.py",
+      "services/dcp-readonly-facade/tests/test_acceptance_harness.py",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/ACCEPTANCE_MATRIX.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0017.json",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0017.md",
+      "task-packets/INDEX.md",
+      "proof/TP-DCP-MCP-RO-0017/**"
+    ],
+    "message": "feat(dcp): add acceptance matrix and fail-closed harness",
+    "verify": [
+      "uv run --frozen pytest -q services/dcp-readonly-facade/tests/test_acceptance_harness.py",
+      "uv run --frozen pytest -q services/dcp-readonly-facade/tests",
+      "python -m jsonschema -i task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0017.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check",
+      "pre-commit run --files <changed-files>"
+    ]
+  },
+  "depends_on": [
+    "TP-DCP-MCP-RO-0016"
+  ],
+  "execution": {
+    "agent": "codex",
+    "base_branch": "main",
+    "branch": "codex/dcp-mcp-ro-0017-live-acceptance",
+    "stacked_because": "TP-DCP-MCP-RO-0016 provider docs are merged on main (PR #1064)."
+  },
+  "id": "TP-DCP-MCP-RO-0017",
+  "invariants": [
+    "A skipped live gate is never reported as PASS.",
+    "release_ready is false while any blocking live gate is NOT_RUN or any gate FAILs.",
+    "Live mode requires DCP_ACCEPTANCE_LIVE=1 and non-placeholder DCP_ACCEPTANCE_LIVE_TOKEN and DCP_ACCEPTANCE_LIVE_PROVIDERS.",
+    "No production credentials, unrestricted public exposure, real private data, or backend mutation.",
+    "Default local runs perform no tunnel, provider, or live network action."
+  ],
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "pr": {
+    "base": "main",
+    "body": "Implements TP-DCP-MCP-RO-0017 harness: deterministic acceptance gates + live gates fail-closed as NOT_RUN without dual consent env. Skipped live is never PASS; release_ready stays false until live evidence exists. No tunnels or provider credentials used.",
+    "title": "feat(dcp): add acceptance matrix and fail-closed harness"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "DCP-MCP-RO",
+    "parent_tp_id": "TP-DCP-MCP-RO-0016"
+  },
+  "steps": [
+    {
+      "id": "matrix",
+      "task": "Commit the acceptance matrix reference and classify deterministic vs live blocking gates.",
+      "validation": [
+        "Matrix document present under docs/03-reference/dcp/chatgpt-mcp-readonly/."
+      ]
+    },
+    {
+      "id": "harness",
+      "task": "Implement fail-closed acceptance harness with dual-consent live gate and deterministic pure-module checks.",
+      "validation": [
+        "Without live env, live gates NOT_RUN and release_ready false.",
+        "Deterministic gates PASS for release-one authz/ownership/rate negatives."
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Run tests, packet schema validation, pre-commit, open PR without merge or live claims.",
+      "validation": [
+        "Proof states live acceptance incomplete; no live secrets in artifacts."
+      ]
+    }
+  ],
+  "target": "Land the DCP multi-provider acceptance matrix and fail-closed harness that runs deterministic gates hermetically and keeps all live/provider/tunnel gates NOT_RUN unless dual live consent env is set; never treat skipped live as PASS."
+}

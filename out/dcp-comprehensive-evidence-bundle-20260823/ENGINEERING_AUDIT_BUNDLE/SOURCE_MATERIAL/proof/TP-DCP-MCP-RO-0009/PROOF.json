@@ -1,0 +1,90 @@
+{
+  "branch": "codex/dcp-mcp-ro-0009-exposure-target-contract",
+  "embedded_audit": {
+    "auditor_model": "opus",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "GitHub reports PR #1031 merged, but origin/main in this worktree does not contain the PR #1031 merge commit or branch head by ancestry. This packet therefore records the accepted contract only and leaves runtime/API migration to a later implementation base with the required stack present.",
+        "id": "F-0009-LOW-1",
+        "severity": "LOW",
+        "status": "ACCEPTED_RISK",
+        "title": "Runtime/API migration remains blocked on main-line ancestry"
+      },
+      {
+        "body": "ADR-DCP-MCP-RO-0009 accepts target_id as the new ChatGPT exposure identity. Existing docs and service code still contain earlier project_id terminology; this packet documents the contract and defers API migration.",
+        "id": "F-0009-INFO-1",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Existing facade terminology still includes project_id"
+      }
+    ],
+    "fixes_applied": [],
+    "invocation": "self-audit of TP-DCP-MCP-RO-0009 docs-only contract materialization against packet invariants and STOP-IFs",
+    "remaining_risks": [
+      "Runtime code did not change in this packet.",
+      "Existing facade API migration from project_id to target_id is a separate implementation slice.",
+      "Live multi-repository runtime tests were not run because this is a docs-only contract packet."
+    ],
+    "report_path": "proof/TP-DCP-MCP-RO-0009/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "files_changed_expected": [
+    "docs/90-adr/adr-dcp-mcp-ro-0009-chatgpt-mcp-exposure-targets-runtime-resolution-ownership-evidence.md",
+    "docs/90-adr/adr-index.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/DECISIONS.md",
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0009.json",
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0009.md",
+    "proof/TP-DCP-MCP-RO-0009/AUDIT.md",
+    "proof/TP-DCP-MCP-RO-0009/AUDITOR_REPORT.md",
+    "proof/TP-DCP-MCP-RO-0009/COMMAND_LOG.md",
+    "proof/TP-DCP-MCP-RO-0009/PROOF.json"
+  ],
+  "github_pr_1031": {
+    "base_ref": "codex/tp-dmx-mcp-runtime-005-to-project-identity-fixed-port",
+    "head_ref": "codex/tp-dmx-mcp-runtime-006r-remediation",
+    "merge_commit": "d170fa756c7708a0da98d51fe1aa0991ecfde9d2",
+    "merged_at": "2026-07-10T05:06:09Z",
+    "observed_state": "MERGED",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1031"
+  },
+  "main_line_runtime_stack_check": {
+    "origin_main_contains_pr_1031_branch_head": false,
+    "origin_main_contains_pr_1031_merge_commit": false,
+    "result": "RUNTIME_IMPLEMENTATION_BLOCKED_ON_MAIN_ANCESTRY"
+  },
+  "packet_id": "TP-DCP-MCP-RO-0009",
+  "runtime_code_changed": false,
+  "scope": "docs-only ADR, DCP contract docs, task packet, and proof bundle",
+  "validation": [
+    {
+      "command": "python -m json.tool task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0009.json >/tmp/tp-dcp-mcp-ro-0009.valid.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "python - <<'PY' ... Draft7Validator(dopetask-canonical-spec.json) ... PY",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "rg -n -P \"OPENAI_API_KEY|ANTHROPIC_API_KEY|GEMINI_API_KEY|(?<![A-Za-z])sk-[A-Za-z0-9_]|Bearer |TOKEN: [REDACTED]\" <changed markdown files only> || true",
+      "exit_code": 1,
+      "status": "PASS_NO_MATCHES"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "pre-commit run --files <changed files>",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ]
+}

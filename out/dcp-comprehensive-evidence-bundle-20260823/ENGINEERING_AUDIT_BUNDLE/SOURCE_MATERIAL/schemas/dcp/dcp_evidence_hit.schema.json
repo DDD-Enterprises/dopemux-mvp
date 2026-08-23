@@ -1,0 +1,122 @@
+{
+  "$id": "https://dopemux.dev/schemas/dcp/dcp_evidence_hit.v0.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "EXTERNAL_PROPOSED (DR-016) / PROVISIONAL_UNVERIFIED_ENFORCEMENT. 17-field DR-016 shape; field vocabulary not repo-validated; envelope may lock, per-field vocab may not. Pending repo-local reconciliation before exit from .v0. schema_version .v0 = unstable, not authority.",
+  "properties": {
+    "authority_tier": {
+      "description": "Authority tier of the source in DCP authority order.",
+      "type": "string"
+    },
+    "canonical_writer": {
+      "description": "The canonical authoritative writer for this evidence domain, if known.",
+      "type": "string"
+    },
+    "confidence": {
+      "description": "Confidence level in this evidence hit (e.g. HIGH, MEDIUM, LOW, UNKNOWN).",
+      "type": "string"
+    },
+    "derived": {
+      "description": "True if this hit is derived/projected from another source rather than directly observed.",
+      "type": "boolean"
+    },
+    "field_provenance": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Per-field provenance tags. DR-016 field vocab is EXTERNAL_PROPOSED; 13 repo-only UNKNOWNs remain pending reconciliation.",
+      "type": "object"
+    },
+    "freshness_state": {
+      "description": "Staleness status of this evidence (e.g. CURRENT, STALE, UNKNOWN).",
+      "type": "string"
+    },
+    "hit_id": {
+      "description": "Unique identifier for this evidence hit.",
+      "type": "string"
+    },
+    "provenance": {
+      "additionalProperties": false,
+      "description": "Contract-level provenance per REV1 \u00a76.0 meta-contract. EXTERNAL_PROPOSED: shape seeded by DR-016; not derived from repo artifact.",
+      "properties": {
+        "source_ref": {
+          "type": "string"
+        },
+        "tag": {
+          "enum": [
+            "REPO_VALIDATED",
+            "EXTERNAL_PROPOSED",
+            "SYNTHESIS_INVENTED"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "tag",
+        "source_ref"
+      ],
+      "type": "object"
+    },
+    "retrieved_at_utc": {
+      "description": "ISO 8601 UTC timestamp when this evidence was retrieved.",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "dcp-evidence-hit.v0",
+      "description": ".v0 suffix per K-27; unstable version marker, not an authority claim.",
+      "type": "string"
+    },
+    "source_ref": {
+      "description": "Reference to the source artifact, document, or query that produced this hit.",
+      "type": "string"
+    },
+    "source_system": {
+      "description": "System or tool that produced this evidence hit (e.g. dope-context, ConPort, git-log).",
+      "type": "string"
+    },
+    "validation": {
+      "additionalProperties": false,
+      "description": "Validation status per REV1 \u00a76.0. PROVISIONAL_UNVERIFIED_ENFORCEMENT: DR-016-seeded field vocab not cross-checked; 13 repo-only UNKNOWNs pending before exit from .v0.",
+      "properties": {
+        "notes": {
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "REPO_CROSS_CHECKED",
+            "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+            "DEFERRED"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "notes"
+      ],
+      "type": "object"
+    },
+    "validation_state": {
+      "const": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "description": "Const-pinned for .v0 EXTERNAL_PROPOSED schemas. May not exit .v0 until repo-local vocab reconciliation promotes to REPO_CROSS_CHECKED via a subsequent packet."
+    }
+  },
+  "required": [
+    "schema_version",
+    "provenance",
+    "validation",
+    "hit_id",
+    "source_system",
+    "source_ref",
+    "retrieved_at_utc",
+    "authority_tier",
+    "confidence",
+    "derived",
+    "canonical_writer",
+    "freshness_state",
+    "field_provenance",
+    "validation_state"
+  ],
+  "title": "DCP Evidence Hit (Envelope Only)",
+  "type": "object"
+}

@@ -1,0 +1,77 @@
+{
+  "authoritative_artifacts": [
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/READ_ONLY_SURFACE_INVENTORY.json",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/RUNTIME_SURFACE_INVENTORY.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/AUTHORITY_AND_RISK_REGISTER.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/PROPOSED_FACADE_TOOLS.md"
+  ],
+  "branch": "codex/gpt55-recon-chain",
+  "chain_of_custody": {
+    "branch": "codex/gpt55-recon-chain",
+    "head": "c313a5dd236e9ca044820401f0fb6e4086f0b630",
+    "source_file": "audit_inputs/gpt55_recon_source/CODEX_RECON_PACKS_SOURCE.md",
+    "worktree": "[LOCAL_PATH_REDACTED]"
+  },
+  "command_list": [
+    "see proof/TP-DCP-MCP-RO-0001/COMMAND_LOG_SUMMARY.md"
+  ],
+  "embedded_audit": {
+    "auditor_model": "unknown",
+    "auditor_tool": "none",
+    "exit_code": null,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": null,
+    "remaining_risks": [
+      "Runtime liveness not tested",
+      "No tunnel or facade implementation built",
+      "Task Orchestrator MCP transport was closed in this Codex session",
+      "Network-deny harness required before repo-wide runtime-test confidence"
+    ],
+    "report_path": "proof/TP-DCP-MCP-RO-0001/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": "No safe embedded auditor invocation was available within packet constraints.",
+    "status": "SKIPPED"
+  },
+  "generated_at_utc": "2026-06-16T06:14:59Z",
+  "head_sha": "c313a5dd236e9ca044820401f0fb6e4086f0b630",
+  "packet_id": "TP-DCP-MCP-RO-0001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "risk_summary": [
+    "Runtime liveness not tested",
+    "No tunnel or facade implementation built",
+    "Task Orchestrator MCP transport was closed in this Codex session",
+    "Network-deny harness required before repo-wide runtime-test confidence"
+  ],
+  "scope_flags": {
+    "commit": true,
+    "discovery_only": true,
+    "implementation": false,
+    "mcp_tool_invocation": false,
+    "service_start": false,
+    "tunnel_setup": false
+  },
+  "status": "COMPLETE",
+  "supporting_artifacts": [
+    "proof/TP-DCP-MCP-RO-0001/COMMAND_LOG_SUMMARY.md",
+    "proof/TP-DCP-MCP-RO-0001/AUDIT.md",
+    "proof/TP-DCP-MCP-RO-0001/AUDITOR_REPORT.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/PROOF_BUNDLE_AND_EVIDENCE_SOURCES.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/DCP_THREAD_HANDOFF.md"
+  ],
+  "surface_counts": {
+    "confirmed_read_only": 11,
+    "deny_for_phase_1": 5,
+    "mutating": 3,
+    "read_with_side_effect_risk": 1,
+    "recommended_for_phase_1": 10,
+    "total_surfaces": 15,
+    "unknown": 0
+  },
+  "validation_state": {
+    "json_inventory": "PASS",
+    "proof_json": "PASS",
+    "repo_wide_pytest": "NOT_RUN_NETWORK_STOP_CONDITION_FROM_PACK2",
+    "runtime_liveness": "NOT_TESTED"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "branch": "dcp/red-lane-scanner-tp-0005",
+  "failed_checks": false,
+  "has_unknown_bots": false,
+  "has_unknown_reviewers": false,
+  "has_unresolved_blocking_threads": false,
+  "head_sha": "57d4807b645fd456148ed69901e051a16fd83b2c",
+  "packet_id": "TP-DCP-0005",
+  "ready_for_merge": true,
+  "timestamp": "2026-06-04T18:20:00Z",
+  "undocumented_residual_risk": false
+}

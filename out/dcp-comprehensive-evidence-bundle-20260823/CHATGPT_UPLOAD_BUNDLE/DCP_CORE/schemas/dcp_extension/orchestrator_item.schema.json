@@ -1,0 +1,68 @@
+{
+  "$id": "https://dopemux.dev/schemas/dcp_extension/orchestrator_item.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "dry_run_only": {
+      "const": true,
+      "type": "boolean"
+    },
+    "handoff_contract": {
+      "type": "string"
+    },
+    "item_id": {
+      "type": "string"
+    },
+    "notes": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "body"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "pcp.orchestrator_item.v0",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "queue",
+        "work",
+        "review",
+        "terminal",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "item_id",
+    "project_id",
+    "title",
+    "status",
+    "dry_run_only",
+    "notes",
+    "handoff_contract"
+  ],
+  "title": "Task Orchestrator Item Dry Run",
+  "type": "object"
+}

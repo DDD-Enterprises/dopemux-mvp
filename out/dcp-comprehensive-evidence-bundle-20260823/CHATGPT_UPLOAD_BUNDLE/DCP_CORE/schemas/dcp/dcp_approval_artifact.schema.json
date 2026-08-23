@@ -1,0 +1,359 @@
+{
+  "$id": "https://dopemux.dev/schemas/dcp/dcp_approval_artifact.v0.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "SYNTHESIS_INVENTED envelope + REPO_VALIDATED tier/decision vocabulary / PROVISIONAL_UNVERIFIED_ENFORCEMENT. Represents a supervisor approval RECORD for a proposed mutation class. This artifact does NOT execute the mutation and must not become a write executor. INVARIANT: requester != approver (no self-certification). Draft-07 cannot express sibling-field inequality directly, so this cross-field rule is carried as a contract annotation and enforced by packet-level validation. LIVE_WRITE_READY must not be defined. schema_version .v0 = unstable, not authority.",
+  "properties": {
+    "approval_id": {
+      "description": "Unique identifier for this approval record.",
+      "type": "string"
+    },
+    "approval_tier": {
+      "description": "Approval tier from REQUIRED_TIERS in policy.py. REPO_VALIDATED vocabulary only.",
+      "enum": [
+        "T0",
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+        "TX",
+        "TU"
+      ],
+      "type": "string"
+    },
+    "approved_artifact_refs": {
+      "description": "References to artifacts approved by this record. Pattern from proof.py _validate_manifest generated_artifacts.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "approver": {
+      "description": "Identity of the approver. Cross-field invariant requester != approver is enforced by the packet-level contract linter/test_14; JSON Schema draft-07 cannot compare sibling fields directly.",
+      "type": "string"
+    },
+    "contract_id": {
+      "description": "Unique identifier for this contract instance.",
+      "type": "string"
+    },
+    "contract_status": {
+      "enum": [
+        "ACTIVE",
+        "PROVISIONAL",
+        "DEFERRED",
+        "SUPERSEDED"
+      ],
+      "type": "string"
+    },
+    "decision": {
+      "description": "Decision from CapabilityPolicy.decision field vocabulary in policy.py. REPO_VALIDATED vocabulary.",
+      "enum": [
+        "allow",
+        "draft_only",
+        "gated",
+        "refuse",
+        "block"
+      ],
+      "type": "string"
+    },
+    "decision_timestamp": {
+      "description": "ISO 8601 UTC timestamp of the decision, or null if pending.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "expiry_window": {
+      "additionalProperties": false,
+      "description": "Freshness/expiry window for this approval. SYNTHESIS_INVENTED: no proof freshness window defined in approval_policy.yaml.",
+      "properties": {
+        "provenance_tag": {
+          "enum": [
+            "REPO_VALIDATED",
+            "EXTERNAL_PROPOSED",
+            "SYNTHESIS_INVENTED"
+          ],
+          "type": "string"
+        },
+        "unit": {
+          "description": "Unit for expiry window.",
+          "enum": [
+            "hours",
+            "days",
+            "commits",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "value": {
+          "description": "Expiry window value, or null if no expiry.",
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "value",
+        "unit",
+        "provenance_tag"
+      ],
+      "type": "object"
+    },
+    "explicit_exclusions": {
+      "description": "Explicit exclusions from this approval scope. SYNTHESIS_INVENTED: no repo equivalent. Documents what is NOT approved.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "field_provenance": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Per-field provenance tags for all fields in this artifact instance.",
+      "type": "object"
+    },
+    "forbidden_paths_acknowledged": {
+      "description": "Forbidden paths explicitly acknowledged by the approver. DCP-RED-MERGE-SEAM-0001 paths must appear here when relevant.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "freshness_state": {
+      "description": "Freshness/status of the approved artifact. Vocabulary from proof.py ALLOWED_PROOF_STATUSES + UNKNOWN. REPO_VALIDATED vocabulary.",
+      "enum": [
+        "PLAN_ONLY",
+        "SPECIFICATION_COMPLETE",
+        "IMPLEMENTATION_STARTED",
+        "IMPLEMENTATION_COMPLETE",
+        "READY_FOR_REVIEW",
+        "VERIFIED",
+        "BLOCKED",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "head_sha_or_digest": {
+      "additionalProperties": false,
+      "description": "HEAD SHA or artifact digest under review. In .v0 fixtures: value must be an illustrative placeholder (no live SHA computation).",
+      "properties": {
+        "provenance_tag": {
+          "enum": [
+            "REPO_VALIDATED",
+            "EXTERNAL_PROPOSED",
+            "SYNTHESIS_INVENTED"
+          ],
+          "type": "string"
+        },
+        "value": {
+          "description": "Git SHA or digest. In .v0 fixtures: sha256:PLACEHOLDER-illustrative-not-computed.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "provenance_tag"
+      ],
+      "type": "object"
+    },
+    "known_unknowns": {
+      "description": "Explicit unresolved unknowns for this approval instance.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "mutation_class": {
+      "description": "Class ID from DCP_MUTATION_CLASS registry (e.g. MC-SOURCE-CONFIG, MC-GITHUB-MUTATION).",
+      "type": "string"
+    },
+    "project_id": {
+      "description": "Project identifier (e.g. dopemux-mvp).",
+      "type": "string"
+    },
+    "proof_refs": {
+      "description": "References to proof bundles associated with this approval.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "provenance": {
+      "additionalProperties": false,
+      "description": "Contract-level provenance. SYNTHESIS_INVENTED envelope; tier/decision vocabulary is REPO_VALIDATED from policy.py.",
+      "properties": {
+        "source_ref": {
+          "type": "string"
+        },
+        "tag": {
+          "enum": [
+            "REPO_VALIDATED",
+            "EXTERNAL_PROPOSED",
+            "SYNTHESIS_INVENTED"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "tag",
+        "source_ref"
+      ],
+      "type": "object"
+    },
+    "rationale": {
+      "description": "Human-readable rationale for the approval decision.",
+      "type": "string"
+    },
+    "red_lanes_present": {
+      "description": "Red lane IDs from DCP_RED_LANE_TAXONOMY that are present or triggered in this approval context.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "red_lines": {
+      "description": "Red line IDs that apply to this artifact. Must reference DCP-RED-MERGE-SEAM-0001 when applicable.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "repo_id": {
+      "description": "Repository identifier from .repo_id marker.",
+      "type": "string"
+    },
+    "requested_action_summary": {
+      "description": "Human-readable summary of the mutation action being approved. Corresponds to CapabilityPolicy.title pattern from policy.py.",
+      "type": "string"
+    },
+    "requester": {
+      "description": "Identity of the requester. Cross-field invariant requester != approver is enforced by the packet-level contract linter/test_14; JSON Schema draft-07 cannot compare sibling fields directly.",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "dcp-approval-artifact.v0",
+      "description": ".v0 suffix per K-27; unstable version marker, not an authority claim.",
+      "type": "string"
+    },
+    "supersedes": {
+      "description": "Contract ID(s) superseded, or null.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      ]
+    },
+    "supervisor_signoff": {
+      "additionalProperties": false,
+      "description": "Supervisor sign-off record. Required for T4+ mutations per policy.py T4_PLUS gate. PROVISIONAL: supervisor identity resolution not proven wired to runtime.",
+      "properties": {
+        "notes": {
+          "type": "string"
+        },
+        "provided": {
+          "description": "Whether supervisor signoff has been provided.",
+          "type": "boolean"
+        },
+        "required": {
+          "description": "Whether supervisor signoff is required (true for T4+ tiers per policy.py T4_PLUS).",
+          "type": "boolean"
+        },
+        "signoff_identity": {
+          "description": "Identity of the supervisor who signed off, or null if not yet provided.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "required",
+        "provided",
+        "signoff_identity",
+        "notes"
+      ],
+      "type": "object"
+    },
+    "validation": {
+      "additionalProperties": false,
+      "description": "Validation status per REV1 \u00a76.0.",
+      "properties": {
+        "notes": {
+          "type": "string"
+        },
+        "state": {
+          "const": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+          "description": "Const-pinned for .v0 SYNTHESIS_INVENTED envelope. May not exit .v0 until repo-local reconciliation."
+        }
+      },
+      "required": [
+        "state",
+        "notes"
+      ],
+      "type": "object"
+    },
+    "validation_state": {
+      "const": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "description": "Const-pinned for .v0 SYNTHESIS_INVENTED contract. The tier/decision vocabulary sub-fields are REPO_VALIDATED but the envelope itself is SYNTHESIS_INVENTED."
+    }
+  },
+  "required": [
+    "schema_version",
+    "contract_id",
+    "contract_status",
+    "provenance",
+    "validation",
+    "validation_state",
+    "field_provenance",
+    "approval_id",
+    "project_id",
+    "repo_id",
+    "requested_action_summary",
+    "mutation_class",
+    "approval_tier",
+    "requester",
+    "approver",
+    "supervisor_signoff",
+    "approved_artifact_refs",
+    "proof_refs",
+    "head_sha_or_digest",
+    "freshness_state",
+    "red_lanes_present",
+    "forbidden_paths_acknowledged",
+    "explicit_exclusions",
+    "expiry_window",
+    "decision",
+    "decision_timestamp",
+    "rationale",
+    "known_unknowns",
+    "red_lines",
+    "supersedes"
+  ],
+  "title": "DCP Approval Artifact (.v0)",
+  "type": "object",
+  "x-contract-invariants": [
+    {
+      "enforced_by": "tests/dcp/test_dcp_0002_contract_derivation.py::test_14",
+      "enforcement": "packet-level cross-field validation; JSON Schema draft-07 cannot compare sibling fields",
+      "expression": "requester != approver",
+      "rule_id": "DCP-RED-SELF-CERTIFYING-LOOP",
+      "status": "PROVISIONAL"
+    }
+  ]
+}

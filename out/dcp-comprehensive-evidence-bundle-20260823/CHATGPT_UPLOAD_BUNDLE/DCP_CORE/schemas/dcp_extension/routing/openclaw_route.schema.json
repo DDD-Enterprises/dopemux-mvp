@@ -1,0 +1,223 @@
+{
+  "$defs": {
+    "privacy_class": {
+      "enum": [
+        "PUBLIC_SANDBOX",
+        "PUBLIC_REPO",
+        "PRIVATE_REPO_NO_SECRETS",
+        "PRIVATE_REPO_POSSIBLE_SECRETS",
+        "SECRET_BEARING",
+        "CLIENT_DATA",
+        "SECURITY_SENSITIVE",
+        "RELEASE_AUTHORITY",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "risk_class": {
+      "enum": [
+        "R0_READ",
+        "R1_DRAFT",
+        "R2_TEST_ONLY",
+        "R3_LOCAL_EDIT",
+        "R4_MULTI_FILE_EDIT",
+        "R5_SECURITY_OR_AUTHORITY",
+        "R6_RELEASE_OR_PRODUCTION",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    }
+  },
+  "$id": "https://schemas.dopemux.local/dcp_extension/routing/openclaw_route.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "openrouter_free": {
+            "const": true
+          }
+        },
+        "required": [
+          "openrouter_free"
+        ]
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            {
+              "properties": {
+                "allowed_for_privacy_classes": {
+                  "contains": {
+                    "enum": [
+                      "PRIVATE_REPO_NO_SECRETS",
+                      "PRIVATE_REPO_POSSIBLE_SECRETS",
+                      "SECRET_BEARING",
+                      "CLIENT_DATA",
+                      "SECURITY_SENSITIVE",
+                      "RELEASE_AUTHORITY",
+                      "UNKNOWN"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "allowed_for_privacy_classes"
+              ]
+            },
+            {
+              "properties": {
+                "allowed_for_risk_classes": {
+                  "contains": {
+                    "enum": [
+                      "R5_SECURITY_OR_AUTHORITY",
+                      "R6_RELEASE_OR_PRODUCTION",
+                      "UNKNOWN"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "allowed_for_risk_classes"
+              ]
+            }
+          ]
+        },
+        "properties": {
+          "access_path": {
+            "const": "openrouter_free"
+          },
+          "provider": {
+            "const": "openrouter"
+          },
+          "route_kind": {
+            "const": "openrouter_free"
+          }
+        }
+      }
+    }
+  ],
+  "description": "Contracts-only route metadata for future OpenClaw routing integration. This schema does not enable OpenClaw runtime execution.",
+  "properties": {
+    "access_path": {
+      "enum": [
+        "direct_api",
+        "openrouter_paid",
+        "openrouter_free",
+        "local_self_hosted",
+        "codex",
+        "claude_code",
+        "gemini_cli",
+        "manual_app"
+      ],
+      "type": "string"
+    },
+    "allowed_for_privacy_classes": {
+      "items": {
+        "$ref": "#/$defs/privacy_class"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "allowed_for_risk_classes": {
+      "items": {
+        "$ref": "#/$defs/risk_class"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "benchmark_required": {
+      "type": "boolean"
+    },
+    "live_write_runner": {
+      "const": false,
+      "type": "boolean"
+    },
+    "may_be_sole_authority": {
+      "const": false,
+      "type": "boolean"
+    },
+    "openrouter_free": {
+      "type": "boolean"
+    },
+    "proof_capture_required": {
+      "type": "boolean"
+    },
+    "provider": {
+      "enum": [
+        "openai",
+        "anthropic",
+        "google",
+        "openrouter",
+        "local",
+        "manual",
+        "multiple",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "route_id": {
+      "pattern": "^route_[A-Za-z0-9_.:-]+$",
+      "type": "string"
+    },
+    "route_kind": {
+      "enum": [
+        "direct_api",
+        "openrouter_paid",
+        "openrouter_free",
+        "local_self_hosted",
+        "manual_app"
+      ],
+      "type": "string"
+    },
+    "runner": {
+      "enum": [
+        "openclaw",
+        "codex",
+        "claude_code",
+        "gemini_cli",
+        "manual_app",
+        "shell_local",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "dcp.routing.openclaw_route.v0",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "PROPOSED",
+        "BLOCKED",
+        "DEPRECATED"
+      ],
+      "type": "string"
+    },
+    "structured_output_required": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema_version",
+    "route_id",
+    "route_kind",
+    "provider",
+    "access_path",
+    "runner",
+    "allowed_for_privacy_classes",
+    "allowed_for_risk_classes",
+    "openrouter_free",
+    "benchmark_required",
+    "structured_output_required",
+    "proof_capture_required",
+    "may_be_sole_authority",
+    "live_write_runner",
+    "status"
+  ],
+  "title": "DCP Routing Extension OpenClaw Route Contract",
+  "type": "object"
+}

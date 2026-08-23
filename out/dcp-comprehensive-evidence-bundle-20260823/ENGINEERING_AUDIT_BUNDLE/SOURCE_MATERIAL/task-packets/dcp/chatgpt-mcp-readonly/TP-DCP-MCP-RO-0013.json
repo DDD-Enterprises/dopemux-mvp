@@ -1,0 +1,115 @@
+{
+  "commit": {
+    "allowlist": [
+      "services/dcp-readonly-facade/src/dcp_facade/connector_policy.py",
+      "services/dcp-readonly-facade/src/dcp_facade/auth_context.py",
+      "services/dcp-readonly-facade/schema/connector_policy.schema.json",
+      "services/dcp-readonly-facade/tests/test_connector_policy.py",
+      "services/dcp-readonly-facade/tests/test_auth_context.py",
+      "services/dcp-readonly-facade/tests/fixtures/connector_policy/**",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/CONNECTOR_POLICY_CONTRACT.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/CONNECTOR_POLICY_EXAMPLE.yaml",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0013.json",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0013.md",
+      "task-packets/INDEX.md",
+      "proof/TP-DCP-MCP-RO-0013/**"
+    ],
+    "message": "feat(dcp): add connector policy schema and auth context",
+    "verify": [
+      "uv run --frozen pytest -q services/dcp-readonly-facade/tests/test_connector_policy.py services/dcp-readonly-facade/tests/test_auth_context.py",
+      "uv run --frozen pytest -q services/dcp-readonly-facade/tests",
+      "uv run --frozen python -m compileall -q services/dcp-readonly-facade/src",
+      "python -m json.tool task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0013.json",
+      "python -m jsonschema -i task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0013.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check",
+      "pre-commit run --files <changed-files>"
+    ]
+  },
+  "depends_on": [
+    "TP-DCP-MCP-RO-0012"
+  ],
+  "execution": {
+    "agent": "codex",
+    "base_branch": "main",
+    "branch": "codex/dcp-mcp-ro-0013-connector-auth",
+    "stacked_because": "TP-DCP-MCP-RO-0012 public target contract is merged on main (PR #1057)."
+  },
+  "id": "TP-DCP-MCP-RO-0013",
+  "invariants": [
+    "Connector policy records store only non-secret credential references and fingerprints; raw secrets never enter the repository or auth context objects.",
+    "Authentication failures for missing, disabled, expired, wrong, or unknown connectors remain generic and do not reflect secrets or topology.",
+    "Trusted connector context is sealed and cannot be forged from inbound identity headers.",
+    "Target and tool authorization are deny-by-default from the authenticated connector policy only.",
+    "No public listener, tunnel, backend adapter, credential vault population, or runtime lifecycle mutation is introduced."
+  ],
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "secaudit",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "pr": {
+    "base": "main",
+    "body": "Implements TP-DCP-MCP-RO-0013: strict connector policy schema/loader and provider-neutral authentication context with sealed non-forgeable connector identity, target/tool authorization, header redaction, and rotation/revocation tests. No public ingress, tunnels, real credentials, or backend mutations.",
+    "title": "feat(dcp): add connector policy schema and auth context"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "DCP-MCP-RO",
+    "parent_tp_id": "TP-DCP-MCP-RO-0012"
+  },
+  "steps": [
+    {
+      "id": "policy-schema-loader",
+      "task": "Land the connector policy JSON Schema, fail-closed document loader, semantic constraints, and redacted repository example templates.",
+      "validation": [
+        "Schema self-validates and accepts the repository example records.",
+        "Loader rejects secret-like credential references, invalid default targets, and non-BLOCK fail_closed values."
+      ]
+    },
+    {
+      "id": "auth-context",
+      "task": "Implement provider-neutral Bearer [REDACTED], sealed connector context, target/tool authorization, and untrusted-header stripping without a public listener.",
+      "validation": [
+        "Missing, disabled, expired, and wrong credentials fail with generic authentication errors.",
+        "Forged context and connector-identity headers cannot authorize targets or tools.",
+        "Rotation invalidates old tokens while preserving independent connector identity."
+      ]
+    },
+    {
+      "id": "docs-packet-proof",
+      "task": "Document the contract, register the packet in the series index, and emit local proof with advisory AGY review only.",
+      "validation": [
+        "Packet validates against dopetask-canonical-spec.json.",
+        "Proof marks trusted embedded audit as SKIPPED/NOT_RUN and does not claim merge readiness."
+      ]
+    },
+    {
+      "id": "validate",
+      "task": "Run focused and full facade tests, compileall, diff hygiene, pre-commit on allowlisted files, and open a PR without merge.",
+      "validation": [
+        "All local validation outputs are captured in proof or marked NOT_RUN with the blocker.",
+        "No real credentials, tunnels, or public ingress changes appear in the diff."
+      ]
+    }
+  ],
+  "target": "Implement strict connector policy schema/loader and provider-neutral authentication context with independently revocable connector identities and target/tool authorization, without public ingress or real credentials."
+}

@@ -1,0 +1,53 @@
+{
+  "$id": "https://github.com/DDD-Enterprises/dopemux-mvp/schemas/dcp/dcp_audit_route.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "Audit route definition for proof chain",
+  "properties": {
+    "auditor_verdict_distinct": {
+      "description": "True if auditor_verdict must remain distinct from validation_state",
+      "type": "boolean"
+    },
+    "pal_chain_enabled": {
+      "description": "Whether PAL chain is enabled for this route",
+      "type": "boolean"
+    },
+    "route_id": {
+      "description": "Unique audit route identifier",
+      "pattern": "^DCP-AUD-[0-9A-Z]{6}$",
+      "type": "string"
+    },
+    "route_name": {
+      "description": "Audit route type",
+      "enum": [
+        "pal_minimum",
+        "pal_risky",
+        "dual_auditor",
+        "gpt55_supervisor",
+        "self_check_only",
+        "not_run"
+      ],
+      "type": "string"
+    },
+    "self_certification_blocked": {
+      "description": "True if self-certification is explicitly blocked",
+      "type": "boolean"
+    },
+    "stage_artifacts": {
+      "description": "Required stage artifacts for this route",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "route_id",
+    "route_name",
+    "pal_chain_enabled",
+    "self_certification_blocked",
+    "auditor_verdict_distinct"
+  ],
+  "title": "DcpAuditRoute",
+  "type": "object"
+}

@@ -1,0 +1,50 @@
+{
+  "artifacts": [
+    "PROOF.json",
+    "ORIGIN_MAIN_DELTA_VS_0000B.md",
+    "ROUTING_POLICY_ORIGIN_MAIN_LEDGER.md"
+  ],
+  "artifacts_listed_but_not_committed": [
+    "AUDIT.md",
+    "COMMAND_LOG.md",
+    "ORIGIN_MAIN_SURFACE_CENSUS.md",
+    "RED_LANE_ORIGIN_MAIN_LEDGER.md"
+  ],
+  "auditor_verdict": "COMPLETE \u2014 clean origin/main evidence bundle ready for 0001",
+  "branch": "detached (origin/main)",
+  "commands_run": 18,
+  "conflicts": [],
+  "dirty_worktree_after": "clean",
+  "dirty_worktree_before": "clean (detached HEAD)",
+  "embedded_audit": {
+    "auditor_model": "unknown",
+    "auditor_tool": "none",
+    "exit_code": null,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": null,
+    "remaining_risks": [],
+    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000C/AUDITOR_REPORT.md",
+    "required": false,
+    "skip_reason": "Planning/baseline analysis packet; no external audit toolchain invocation required for this series.",
+    "status": "SKIPPED"
+  },
+  "head_sha": "55a713be4c49c59f1d4fedeed6a1930477dd54fb",
+  "limitations": [
+    "Shallow clone used for speed",
+    "Full surface census truncated to routing-critical files only",
+    "No MCP sessions started"
+  ],
+  "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000C",
+  "red_lanes": [
+    ".github/workflows/gemini-review.yml (PRESENT and clean on origin/main)"
+  ],
+  "remaining_unknowns": [],
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "resolved_unknowns": [
+    "U-01 (model-routing.policy.yaml now OBSERVED on clean origin/main)"
+  ],
+  "routing_policy_status": "OBSERVED_ON_CLEAN_ORIGIN_MAIN",
+  "status": "COMPLETE",
+  "validation_state": "CLEAN_BASELINE_PROVEN"
+}

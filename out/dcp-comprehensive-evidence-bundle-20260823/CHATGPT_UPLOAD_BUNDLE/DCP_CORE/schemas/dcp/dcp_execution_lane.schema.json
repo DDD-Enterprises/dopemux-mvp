@@ -1,0 +1,71 @@
+{
+  "$id": "https://github.com/DDD-Enterprises/dopemux-mvp/schemas/dcp/dcp_execution_lane.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "Execution lane definition with backend authority constraints",
+  "properties": {
+    "allowed_risk_classes": {
+      "description": "Risk classes permitted in this lane",
+      "items": {
+        "enum": [
+          "R0_READ",
+          "R1_DOCS",
+          "R2_TESTS",
+          "R3_CODE",
+          "R4_CROSS_BOUNDARY",
+          "R5_SECURITY_AUTH_CI",
+          "R6_LIVE_WRITE",
+          "R7_FORBIDDEN"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "backend_authority": {
+      "description": "Backend authority level for this lane",
+      "enum": [
+        "backend_only",
+        "validation_only",
+        "read_only",
+        "adapter",
+        "advisory",
+        "forbidden",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "lane_id": {
+      "description": "Unique lane identifier",
+      "pattern": "^DCP-LANE-[0-9A-Z]{6}$",
+      "type": "string"
+    },
+    "lane_name": {
+      "description": "Human-readable lane name",
+      "enum": [
+        "design_only",
+        "dry_run",
+        "read_only",
+        "test_only",
+        "implementation",
+        "cross_boundary",
+        "security_auth_ci",
+        "live_write",
+        "forbidden"
+      ],
+      "type": "string"
+    },
+    "model_slot_evidence_required": {
+      "description": "Whether model slot evidence is required for this lane",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "lane_id",
+    "lane_name",
+    "backend_authority",
+    "allowed_risk_classes"
+  ],
+  "title": "DcpExecutionLane",
+  "type": "object"
+}

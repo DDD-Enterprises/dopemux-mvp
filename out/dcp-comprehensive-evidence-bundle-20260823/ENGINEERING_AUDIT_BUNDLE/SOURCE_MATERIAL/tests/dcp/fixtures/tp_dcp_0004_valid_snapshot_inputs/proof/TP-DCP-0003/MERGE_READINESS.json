@@ -1,0 +1,10 @@
+{
+  "checks_current": true,
+  "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "live_write_ready_status": "UNDEFINED_AND_BLOCKING",
+  "live_write_status": "NONE",
+  "merge_seam_status": "PRESERVED",
+  "packet_id": "TP-DCP-0003",
+  "proof_fresh": true,
+  "status": "READY"
+}

@@ -1,0 +1,149 @@
+{
+  "commit": {
+    "allowlist": [
+      "services/dcp-readonly-facade/src/dcp_facade/runtime_catalog_join.py",
+      "services/dcp-readonly-facade/tests/test_runtime_catalog_join.py",
+      "schemas/mcp/fleet-catalog.schema.json",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/RUNTIME_CATALOG_JOIN_CONTRACT.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/DECISIONS.md",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0011.json",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0011.md",
+      "proof/TP-DCP-MCP-RO-0011/**"
+    ],
+    "message": "feat(dcp): add read-only runtime catalog join",
+    "verify": [
+      "python -m pytest -q services/dcp-readonly-facade/tests/test_runtime_catalog_join.py",
+      "python -m pytest -q services/dcp-readonly-facade/tests",
+      "python -m pytest -q tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_runtime_registry.py",
+      "python -m compileall -q services/dcp-readonly-facade",
+      "git diff --check",
+      "pre-commit run --files <allowlisted-files>"
+    ]
+  },
+  "depends_on": [
+    "TP-DCP-MCP-RO-0009",
+    "TP-DCP-MCP-RO-0010"
+  ],
+  "execution": {
+    "agent": "codex",
+    "base_branch": "main",
+    "branch": "codex/dcp-mcp-ro-0011-runtime-catalog-join",
+    "stacked_because": "TP-0010 explicitly leaves runtime registry and canonical MCP catalog join out of scope."
+  },
+  "id": "TP-DCP-MCP-RO-0011",
+  "invariants": [
+    "target_id remains the only caller-facing handle; runtime IDs, paths, ports, URLs, container names, leases, and backend workspace IDs are never caller inputs or public output.",
+    "The exposure policy registry remains consent authority; the operational runtime registry and canonical MCP catalog are read-only operational/advisory inputs.",
+    "The join uses an explicit fixed mapping for all nine ADR service families; no hyphen/underscore heuristic and no bare task-orchestrator facade family is accepted.",
+    "Per-worktree candidates require canonical project_root and worktree_root equality with the already-resolved target; project name or hash alone never authorizes a match.",
+    "Zero candidates, malformed or missing operational inputs, and ambiguous candidates fail closed without selecting an endpoint.",
+    "to_mcp_wrapper and to_compose_rest remain BLOCKED; the join never makes Task Orchestrator callable.",
+    "Configured, discovered, live, ownership-verified, and callable remain separate states; callable is always false in this packet.",
+    "No socket, network, subprocess, Docker, backend, port-lease, tunnel, authentication, adapter, or facade API migration behavior is introduced.",
+    "Public serialization contains only service family, capability state, callable=false, and opaque reasons.",
+    "STOP IF: the required result would need live protocol verification, ownership adjudication, mount inspection, or backend I/O."
+  ],
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "pr": {
+    "base": "main",
+    "body": "Implements TP-DCP-MCP-RO-0011: join TP-0010 resolved exposure targets with the canonical MCP catalog and operational runtime registry using explicit family mappings and exact scope matching. The result remains internal, redacted, and non-callable; no probes, backend calls, adapter rewiring, or Task Orchestrator exposure are introduced.",
+    "title": "feat(dcp): add read-only runtime catalog join"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "DCP-MCP-RO",
+    "parent_tp_id": "TP-DCP-MCP-RO-0010"
+  },
+  "steps": [
+    {
+      "context_files": [
+        "services/dcp-readonly-facade/src/dcp_facade/registry_v2.py",
+        "services/dcp-readonly-facade/src/dcp_facade/resolver_core.py",
+        "src/dopemux/mcp/runtime_registry.py",
+        "mcp_catalog.yaml",
+        "docs/90-adr/adr-dcp-mcp-ro-0009-chatgpt-mcp-exposure-targets-runtime-resolution-ownership-evidence.md"
+      ],
+      "expected_files": [
+        "services/dcp-readonly-facade/src/dcp_facade/runtime_catalog_join.py"
+      ],
+      "id": "S1",
+      "requirements": [
+        "Expose join_runtime_catalog(resolved, catalog, runtime_registry) with dependency-injected mappings.",
+        "Map conport to conport and dope_memory to dope-memory explicitly; map blocked families only for contract validation.",
+        "Treat to_compose_rest as unresolved/blocked and to_mcp_wrapper as blocked even when task-orchestrator records exist.",
+        "Never select a candidate when the runtime registry is malformed, missing, or ambiguous."
+      ],
+      "task": "Implement the pure runtime/catalog join module with explicit nine-family mappings, exact project/worktree scope matching, internal candidate state, and redacted public serialization.",
+      "validation": [
+        "Focused join tests pass.",
+        "Purity scan finds no network, socket, subprocess, Docker, or write primitives in the new module.",
+        "Public serialization contains no infrastructure detail."
+      ]
+    },
+    {
+      "context_files": [
+        "services/dcp-readonly-facade/tests/test_registry_v2.py",
+        "services/dcp-readonly-facade/tests/test_resolver_core.py",
+        "services/dcp-readonly-facade/tests/test_capability.py"
+      ],
+      "expected_files": [
+        "services/dcp-readonly-facade/tests/test_runtime_catalog_join.py"
+      ],
+      "id": "S2",
+      "requirements": [
+        "Use real dataclasses and mapping fixtures rather than mocking the join implementation.",
+        "Cover candidate count zero, one, and multiple without endpoint selection.",
+        "Assert callable is false for every result."
+      ],
+      "task": "Add TDD coverage for exact matches, missing and malformed inputs, catalog drift, ambiguity, blocked Task Orchestrator families, and public redaction.",
+      "validation": [
+        "Every new test is observed failing before its production behavior is implemented.",
+        "The focused test file passes after implementation.",
+        "The full facade suite remains green with only the existing live-optional skip."
+      ]
+    },
+    {
+      "expected_files": [
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/RUNTIME_CATALOG_JOIN_CONTRACT.md",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/DECISIONS.md",
+        "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0011.json",
+        "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0011.md",
+        "proof/TP-DCP-MCP-RO-0011/PROOF.json",
+        "proof/TP-DCP-MCP-RO-0011/AUDIT.md",
+        "proof/TP-DCP-MCP-RO-0011/AUDITOR_REPORT.md",
+        "proof/TP-DCP-MCP-RO-0011/COMMAND_LOG.md"
+      ],
+      "id": "S3",
+      "requirements": [
+        "Document authority split, explicit mappings, exact scope checks, blocked families, and exclusions.",
+        "Record the implementation branch, commit, PR, commands, exit codes, audit status, risks, and unknowns.",
+        "Do not claim live ownership, liveness, protocol, mount, or backend verification."
+      ],
+      "task": "Document the runtime/catalog join contract and record packet proof with true validation results.",
+      "validation": [
+        "Packet JSON validates against dopetask-canonical-spec.json.",
+        "Proof JSON and embedded audit validate against their schemas.",
+        "Markdown, secret, diff, and pre-commit checks pass."
+      ]
+    }
+  ],
+  "target": "Join the TP-0010 resolved exposure target to the canonical MCP catalog and operational runtime registry using explicit service-family mappings and exact scope checks. Produce only internal non-callable candidate state; do not probe, call, expose, mutate, or rewire any backend."
+}

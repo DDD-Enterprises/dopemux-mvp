@@ -1,0 +1,24 @@
+{
+  "audit_verdict": "PASS_WITH_RISKS",
+  "base_branch": "main",
+  "base_sha": "1111111111111111111111111111111111111111",
+  "branch": "dcp/proof-family-dispatch-tp-0003",
+  "changed_files": [
+    "src/dopemux/dcp/proof_family.py"
+  ],
+  "commit_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "live_write_ready_status": "UNDEFINED_AND_BLOCKING",
+  "live_write_status": "NONE",
+  "merge_seam_status": "PRESERVED",
+  "packet_id": "TP-DCP-0003",
+  "pr_steward_readiness_result": "NOT_RUN",
+  "pr_url": null,
+  "proof_freshness": {
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "head_sha_current": true,
+    "proof_commit_matches_head": true,
+    "stale": false
+  },
+  "residual_risks": []
+}

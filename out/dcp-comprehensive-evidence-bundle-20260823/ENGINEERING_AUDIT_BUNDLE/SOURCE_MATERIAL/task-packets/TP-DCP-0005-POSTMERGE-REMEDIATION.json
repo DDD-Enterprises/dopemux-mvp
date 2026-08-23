@@ -1,0 +1,83 @@
+{
+  "commit": {
+    "allowlist": [
+      "task-packets/TP-DCP-0005-POSTMERGE-REMEDIATION.json",
+      "proof/TP-DCP-0005/POST_MERGE_RECONCILIATION.json",
+      "proof/TP-DCP-0005/AUDIT.md",
+      "docs/ops/pr-steward-readiness.md",
+      "src/dopemux/dcp/red_lane_scanner.py"
+    ],
+    "message": "chore(dcp): downgrade TP-DCP-0005 remediation to documented reconciliation",
+    "verify": [
+      "python3 -m pytest tests/dcp/test_dcp_0005_red_lane_scanner.py -q",
+      "python3 -m pytest tests/dcp -q",
+      "python3 -m compileall -q src tests",
+      "git diff --check"
+    ]
+  },
+  "depends_on": [],
+  "execution": {
+    "agent": "gemini"
+  },
+  "id": "TP-DCP-0005-POSTMERGE-REMEDIATION",
+  "invariants": [
+    "DCP series is frozen until this post-merge remediation lands.",
+    "Do not revert the merge of PR #820.",
+    "Reconcile proof freshness discrepancies via POST_MERGE_RECONCILIATION.json.",
+    "No live write operations or network calls are allowed."
+  ],
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "implement",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "pr": {
+    "base": "main",
+    "body": "This PR documents the TP-DCP-0005 post-merge proof freshness discrepancy after PR #820. It does not unfreeze the DCP series and does not change scanner behavior. A follow-up packet is required if the scanner should consume POST_MERGE_RECONCILIATION.json.",
+    "title": "chore(dcp): document TP-DCP-0005 post-merge proof reconciliation"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "SERIES-DCP-RED-LANE-001",
+    "parent_tp_id": "TP-DCP-0005"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Generate proof/TP-DCP-0005/POST_MERGE_RECONCILIATION.json with the required audit fields and status.",
+      "validation": [
+        "test -f proof/TP-DCP-0005/POST_MERGE_RECONCILIATION.json",
+        "python3 -m json.tool proof/TP-DCP-0005/POST_MERGE_RECONCILIATION.json >/dev/null"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Update proof/TP-DCP-0005/AUDIT.md to reflect post-merge remediation and verification results.",
+      "validation": [
+        "test -f proof/TP-DCP-0005/AUDIT.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Neutralize scanner comment and governance doc: remove self-reference exception prose; replace with governance-record-only note. DCP series stays FROZEN.",
+      "validation": [
+        "grep -q \"governance records only\" docs/ops/pr-steward-readiness.md",
+        "grep -q \"governance records only\" src/dopemux/dcp/red_lane_scanner.py"
+      ]
+    }
+  ],
+  "target": "Post-merge proof discrepancy documentation for TP-DCP-0005 red-lane scanner (governance record only; series remains FROZEN)"
+}

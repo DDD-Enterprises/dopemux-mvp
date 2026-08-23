@@ -1,0 +1,145 @@
+{
+  "commit": {
+    "allowlist": [
+      "services/dcp-readonly-facade/**",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/**",
+      "proof/TP-DCP-MCP-RO-0006/**"
+    ],
+    "message": "feat(dcp): add dope-context and task-orchestrator readonly adapters",
+    "verify": [
+      "rg -n \"search_all|index_workspace|index_docs|clear_index|sync_workspace|sync_docs|start_autonomous|stop_autonomous|transition|/api/pm|/api/workflow/ideas|/api/workflow/epics|promote|/kg/|/ddg/|/route/pm\" services/dcp-readonly-facade || true",
+      "git diff --stat",
+      "git diff -- services/dcp-readonly-facade docs/03-reference/dcp/chatgpt-mcp-readonly proof/TP-DCP-MCP-RO-0006",
+      "git status --short --branch"
+    ]
+  },
+  "depends_on": [
+    "TP-DCP-MCP-RO-0005"
+  ],
+  "execution": {
+    "agent": "codex",
+    "base_branch": "main",
+    "branch": "dcp/chatgpt-mcp-ro-0006-dope-context-and-task-orchestrat"
+  },
+  "id": "TP-DCP-MCP-RO-0006",
+  "invariants": [
+    "dope-context hits are DERIVED unless fetching exact source is implemented later.",
+    "Task-orchestrator status is workflow-view only, not PM metadata truth.",
+    "Caller cannot provide backend route or workflow project ID unless registry-bound.",
+    "Unavailable backend returns PARTIAL/BLOCKED.",
+    "OUT OF SCOPE: No search_all in Phase 1.",
+    "OUT OF SCOPE: No dope-context indexing/sync/clear/autonomous controls.",
+    "OUT OF SCOPE: No task-orchestrator transition, PM write routes, workflow idea/epic mutation, promotion, or WebSocket command surfaces.",
+    "OUT OF SCOPE: No bridge routing.",
+    "OUT OF SCOPE: No generic search/fetch.",
+    "STOP IF: dope-context requires search_all to produce useful results.",
+    "STOP IF: task-orchestrator project mapping is unresolved.",
+    "STOP IF: Adapter needs to touch target service code.",
+    "STOP IF: Denied routes appear in implementation outside tests/docs.",
+    "FORBIDDEN FILE: services/dope-context/**",
+    "FORBIDDEN FILE: services/task-orchestrator/**",
+    "FORBIDDEN FILE: services/dopecon-bridge/**",
+    "FORBIDDEN FILE: src/**",
+    "FORBIDDEN FILE: compose*.yml",
+    "FORBIDDEN FILE: services/registry.yaml"
+  ],
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "pr": {
+    "base": "main",
+    "body": "Add project-scoped dope-context and task-orchestrator read adapters while denying indexing, search_all, sync, transitions, PM write routes, and bridge/proxy access.\n\nRequired PR sections: Objective, Scope, Evidence, Validation, Embedded audit, Risks and unknowns, Rollback, Proof bundle links",
+    "title": "Add dope-context and task-orchestrator read adapters to readonly facade"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "DCP-MCP-RO",
+    "parent_tp_id": "TP-DCP-MCP-RO-0005"
+  },
+  "steps": [
+    {
+      "context_files": [
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/READ_ONLY_SURFACE_INVENTORY.json",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/ARCHITECTURE.md",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md"
+      ],
+      "expected_files": [
+        "dope-context adapter",
+        "task-orchestrator adapter",
+        "Three new tools",
+        "Denied route tests",
+        "Proof bundle for packet 0006"
+      ],
+      "id": "S1",
+      "requirements": [
+        "Implement dope-context adapter for search_code, docs_search, get_index_status.",
+        "Implement task-orchestrator adapter for queue, blockers, state.",
+        "Add tools search_code_docs, get_index_status, get_workflow_status_snapshot.",
+        "Add tests for denial of search_all, indexing/sync/clear, transitions, PM routes.",
+        "Add docs for capability fallback when backend unavailable."
+      ],
+      "task": "Implement per objective: Add project-scoped dope-context and task-orchestrator read adapters while denying indexing, search_all, sync, transitions, PM write routes, and bridge/proxy access. In-scope work: Implement dope-context adapter for search_code, docs_search, get_index_status. Implement task-orchestrator adapter for queue, blockers, state. Add tools search_code_docs, get_index_status, get_workflow_status_snapshot. Add tests for denial of search_all, indexing/sync/clear, transitions, PM routes. Add docs for capability fallback when backend unavailable.",
+      "validation": [
+        "No files outside commit.allowlist are modified; change matches the stated scope."
+      ]
+    },
+    {
+      "commands": [
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "git remote -v",
+        "git branch --show-current",
+        "git rev-parse HEAD",
+        "git status --short --branch",
+        "python -m pytest -q services/dcp-readonly-facade/tests",
+        "python -m compileall -q services/dcp-readonly-facade",
+        "rg -n \"search_all|index_workspace|index_docs|clear_index|sync_workspace|sync_docs|start_autonomous|stop_autonomous|transition|/api/pm|/api/workflow/ideas|/api/workflow/epics|promote|/kg/|/ddg/|/route/pm\" services/dcp-readonly-facade || true",
+        "git diff --stat",
+        "git diff -- services/dcp-readonly-facade docs/03-reference/dcp/chatgpt-mcp-readonly proof/TP-DCP-MCP-RO-0006",
+        "git status --short --branch"
+      ],
+      "id": "S2",
+      "task": "Run the packet validation commands and inspect the diff.",
+      "validation": [
+        "dope-context search_code/docs_search/get_index_status implemented.",
+        "search_all denied.",
+        "index/sync/clear/autonomous routes denied.",
+        "task-orchestrator queue/blockers/state implemented.",
+        "transition and PM routes denied.",
+        "Workflow status snapshot labels task-orchestrator as workflow-view authority only.",
+        "Tests pass."
+      ]
+    },
+    {
+      "id": "S3",
+      "requirements": [
+        "PROOF.json.",
+        "COMMAND_LOG.md.",
+        "AUDIT.md challenging dope-context derived labels and TO route boundaries.",
+        "Forbidden route grep outputs.",
+        "Test outputs.",
+        "Diff and diff stat."
+      ],
+      "task": "Produce the proof bundle under proof/TP-DCP-MCP-RO-0006/ (PROOF.json, COMMAND_LOG.md, AUDIT.md) and run the embedded audit.",
+      "validation": [
+        "Proof bundle present with command outputs and exit codes.",
+        "Embedded audit verdict recorded (PASS or PASS_WITH_RISKS with non-blocking risks)."
+      ]
+    }
+  ],
+  "target": "Add project-scoped dope-context and task-orchestrator read adapters while denying indexing, search_all, sync, transitions, PM write routes, and bridge/proxy access."
+}

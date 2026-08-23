@@ -1,0 +1,130 @@
+{
+  "$id": "https://dopemux.dev/schemas/dcp/dcp_helper_receipt.v0.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "EXTERNAL_PROPOSED (DR-016) / PROVISIONAL_UNVERIFIED_ENFORCEMENT. Advisory only; a helper receipt cannot certify readiness. No repo-runtime helper-receipt artifact exists to validate against. schema_version .v0 = unstable, not authority.",
+  "properties": {
+    "exit_code": {
+      "description": "Optional exit code from the helper invocation (null if not applicable).",
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "field_provenance": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Per-field provenance tags. DR-016 field vocab is EXTERNAL_PROPOSED; no repo-runtime analog exists for cross-check.",
+      "type": "object"
+    },
+    "helper_model": {
+      "description": "Model identifier of the helper (e.g. claude-sonnet-4-6, gpt-5).",
+      "type": "string"
+    },
+    "helper_receipt_id": {
+      "description": "Unique identifier for this helper receipt.",
+      "type": "string"
+    },
+    "helper_tool": {
+      "description": "Name of the helper tool or agent that produced this receipt.",
+      "type": "string"
+    },
+    "invocation_ref": {
+      "description": "Reference to the invocation record (e.g. session ID, task packet ID, conversation ref).",
+      "type": "string"
+    },
+    "mutation_performed": {
+      "description": "True if the helper performed a mutation. False for read-only analysis. Advisory: a helper receipt cannot self-certify readiness.",
+      "type": "boolean"
+    },
+    "output_ref": {
+      "description": "Reference to the output artifact produced by the helper.",
+      "type": "string"
+    },
+    "provenance": {
+      "additionalProperties": false,
+      "description": "Contract-level provenance per REV1 \u00a76.0 meta-contract. EXTERNAL_PROPOSED: shape seeded by DR-016; no repo-runtime helper-receipt exists.",
+      "properties": {
+        "source_ref": {
+          "type": "string"
+        },
+        "tag": {
+          "enum": [
+            "REPO_VALIDATED",
+            "EXTERNAL_PROPOSED",
+            "SYNTHESIS_INVENTED"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "tag",
+        "source_ref"
+      ],
+      "type": "object"
+    },
+    "red_lane_flags": {
+      "description": "Red lane IDs that were flagged by or relevant to this helper invocation.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "remaining_risks": {
+      "description": "Risks or uncertainties identified by the helper that remain unresolved.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "dcp-helper-receipt.v0",
+      "description": ".v0 suffix per K-27; unstable version marker, not an authority claim.",
+      "type": "string"
+    },
+    "validation": {
+      "additionalProperties": false,
+      "description": "Validation status per REV1 \u00a76.0. PROVISIONAL_UNVERIFIED_ENFORCEMENT: envelope not cross-checked; no repo-runtime analog exists.",
+      "properties": {
+        "notes": {
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "REPO_CROSS_CHECKED",
+            "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+            "DEFERRED"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "notes"
+      ],
+      "type": "object"
+    },
+    "validation_state": {
+      "const": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "description": "Const-pinned for .v0 EXTERNAL_PROPOSED schemas. May not exit .v0 until repo-local vocab reconciliation promotes to REPO_CROSS_CHECKED via a subsequent packet."
+    }
+  },
+  "required": [
+    "schema_version",
+    "provenance",
+    "validation",
+    "helper_receipt_id",
+    "helper_tool",
+    "helper_model",
+    "invocation_ref",
+    "output_ref",
+    "mutation_performed",
+    "red_lane_flags",
+    "remaining_risks",
+    "field_provenance",
+    "validation_state"
+  ],
+  "title": "DCP Helper Receipt (Envelope Only)",
+  "type": "object"
+}

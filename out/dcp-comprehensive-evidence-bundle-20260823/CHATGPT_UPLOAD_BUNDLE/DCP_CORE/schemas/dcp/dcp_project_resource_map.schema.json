@@ -1,0 +1,587 @@
+{
+  "$id": "https://dopemux.dev/schemas/dcp/dcp_project_resource_map.v0.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "REPO_VALIDATED path/root observations (ARCHITECTURE.md + policy.py canonical_writers + filesystem) / PROVISIONAL_UNVERIFIED_ENFORCEMENT for endpoint bindings. Maps project resources and authority surfaces WITHOUT binding DCP to live endpoints. Endpoint bindings are PROVISIONAL or UNKNOWN only \u2014 no live endpoint is encoded as resolved authority. schema_version .v0 = unstable, not authority.",
+  "properties": {
+    "bridge_proxy_surfaces": {
+      "description": "Bridge and proxy surfaces. REPO_VALIDATED from ARCHITECTURE.md \u00a73.6. These mediate routes but do NOT become domain authority.",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "authority_posture": {
+            "type": "string"
+          },
+          "path_or_service": {
+            "type": "string"
+          },
+          "provenance_tag": {
+            "enum": [
+              "REPO_VALIDATED",
+              "PROVISIONAL",
+              "UNKNOWN"
+            ],
+            "type": "string"
+          },
+          "surface_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "surface_id",
+          "path_or_service",
+          "authority_posture",
+          "provenance_tag"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "canonical_source_roots": {
+      "description": "Canonical source code roots observed in the repo. REPO_VALIDATED from ARCHITECTURE.md \u00a73 and filesystem.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "canonical_writers_map": {
+      "description": "Map of resource domains to canonical writers. REPO_VALIDATED from policy.py CapabilityPolicy.canonical_writer fields.",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "canonical_writer": {
+            "type": "string"
+          },
+          "provenance_tag": {
+            "enum": [
+              "REPO_VALIDATED",
+              "PROVISIONAL",
+              "UNKNOWN"
+            ],
+            "type": "string"
+          },
+          "resource_domain": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "resource_domain",
+          "canonical_writer",
+          "provenance_tag"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "config_roots": {
+      "description": "Configuration roots. REPO_VALIDATED from policy.py DEFAULT_POLICY_PATH and filesystem.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "contract_id": {
+      "description": "Unique identifier for this contract instance.",
+      "type": "string"
+    },
+    "contract_status": {
+      "enum": [
+        "ACTIVE",
+        "PROVISIONAL",
+        "DEFERRED",
+        "SUPERSEDED"
+      ],
+      "type": "string"
+    },
+    "dopetask_surfaces": {
+      "description": "Dopetask wrapper surfaces. REPO_VALIDATED wrapper paths from ARCHITECTURE.md \u00a73.2. External dopetask implementation is out of scope.",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "provenance_tag": {
+            "enum": [
+              "REPO_VALIDATED",
+              "PROVISIONAL"
+            ],
+            "type": "string"
+          },
+          "scope": {
+            "enum": [
+              "wrapper_only",
+              "external_out_of_scope"
+            ],
+            "type": "string"
+          },
+          "surface_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "surface_id",
+          "path",
+          "scope",
+          "provenance_tag"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "endpoint_bindings": {
+      "description": "Service endpoint bindings. ALL entries must be PROVISIONAL or UNKNOWN \u2014 no live endpoint is encoded as resolved authority per TP-DCP-0002 invariant \u00a711.",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "binding_status": {
+            "description": "Must be PROVISIONAL or UNKNOWN. Never REPO_CROSS_CHECKED for endpoint bindings in .v0.",
+            "enum": [
+              "PROVISIONAL",
+              "UNKNOWN"
+            ],
+            "type": "string"
+          },
+          "host_port_hint": {
+            "description": "Informational hint only \u2014 not verified as live authority.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "notes": {
+            "type": "string"
+          },
+          "provenance_tag": {
+            "enum": [
+              "PROVISIONAL",
+              "UNKNOWN"
+            ],
+            "type": "string"
+          },
+          "service_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "service_id",
+          "binding_status",
+          "provenance_tag"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "field_provenance": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Per-field provenance tags for all fields in this resource map instance.",
+      "type": "object"
+    },
+    "forbidden_paths": {
+      "description": "Paths that DCP must never import, call, wrap, or wire. Includes DCP-RED-MERGE-SEAM-0001 paths.",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "provenance_tag": {
+            "enum": [
+              "REPO_VALIDATED",
+              "REPO_VALIDATED_BY_AUDIT"
+            ],
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "red_lane_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "reason",
+          "red_lane_id",
+          "provenance_tag"
+        ],
+        "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "github_ci_surfaces": {
+      "description": "GitHub and CI surfaces. REPO_VALIDATED from T5 capabilities in approval_policy.yaml + .github/workflows/ observation.",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "canonical_writer": {
+            "type": "string"
+          },
+          "path_or_service": {
+            "type": "string"
+          },
+          "provenance_tag": {
+            "enum": [
+              "REPO_VALIDATED",
+              "PROVISIONAL"
+            ],
+            "type": "string"
+          },
+          "surface_id": {
+            "type": "string"
+          },
+          "tier": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "surface_id",
+          "path_or_service",
+          "tier",
+          "canonical_writer",
+          "provenance_tag"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "known_unknowns": {
+      "description": "Explicit unresolved unknowns for this resource map.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "memory_context_chronicle_surfaces": {
+      "description": "Memory, context, and chronicle surfaces. REPO_VALIDATED surface list from ARCHITECTURE.md \u00a73.4; endpoints PROVISIONAL.",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "endpoint_status": {
+            "description": "Endpoint binding status. Must be PROVISIONAL or UNKNOWN \u2014 no live endpoint is resolved as truth here.",
+            "enum": [
+              "PROVISIONAL",
+              "UNKNOWN"
+            ],
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "owns": {
+            "type": "string"
+          },
+          "provenance_tag": {
+            "enum": [
+              "REPO_VALIDATED",
+              "PROVISIONAL",
+              "UNKNOWN"
+            ],
+            "type": "string"
+          },
+          "service": {
+            "type": "string"
+          },
+          "surface_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "surface_id",
+          "service",
+          "owns",
+          "endpoint_status",
+          "provenance_tag"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "project_id": {
+      "description": "Project identifier.",
+      "type": "string"
+    },
+    "proof_roots": {
+      "description": "Proof artifact roots. REPO_VALIDATED from filesystem observation. Note: proof/ is gitignored; git add -f required.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "provenance": {
+      "additionalProperties": false,
+      "description": "Contract-level provenance. REPO_VALIDATED: path roots and surface list derived from ARCHITECTURE.md + policy.py + filesystem observation.",
+      "properties": {
+        "source_ref": {
+          "type": "string"
+        },
+        "tag": {
+          "enum": [
+            "REPO_VALIDATED",
+            "EXTERNAL_PROPOSED",
+            "SYNTHESIS_INVENTED"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "tag",
+        "source_ref"
+      ],
+      "type": "object"
+    },
+    "provisional_surfaces": {
+      "description": "Surfaces that are identified but not fully resolved as authority \u2014 endpoints, inferred paths, partially observed services.",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "provenance_tag": {
+            "enum": [
+              "PROVISIONAL",
+              "UNKNOWN"
+            ],
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "surface_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "surface_id",
+          "description",
+          "reason",
+          "provenance_tag"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "red_line_paths": {
+      "description": "Red line path IDs that apply to this resource map.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "red_lines": {
+      "description": "Red line IDs that apply to this resource map.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "repo_id": {
+      "description": "Repository identifier from .repo_id marker.",
+      "type": "string"
+    },
+    "repo_root_marker": {
+      "additionalProperties": false,
+      "description": "Expected repo root marker file(s). Both .repo_id and dopetaskroot markers observed in repo.",
+      "properties": {
+        "notes": {
+          "type": "string"
+        },
+        "primary": {
+          "type": "string"
+        },
+        "secondary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "primary",
+        "secondary",
+        "notes"
+      ],
+      "type": "object"
+    },
+    "runtime_authority_pointers": {
+      "description": "Pointers to runtime authority files/paths, per AGENTS.md \u00a72 truth order.",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "authority_name": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "provenance_tag": {
+            "enum": [
+              "REPO_VALIDATED",
+              "EXTERNAL_PROPOSED",
+              "SYNTHESIS_INVENTED",
+              "PROVISIONAL",
+              "MISSING"
+            ],
+            "type": "string"
+          },
+          "tier": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "authority_name",
+          "path",
+          "tier",
+          "provenance_tag"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "schema_roots": {
+      "description": "Schema roots. REPO_VALIDATED from filesystem observation.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "dcp-project-resource-map.v0",
+      "description": ".v0 suffix per K-27; unstable version marker, not an authority claim.",
+      "type": "string"
+    },
+    "supersedes": {
+      "description": "Contract ID(s) superseded, or null.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      ]
+    },
+    "task_orchestrator_surfaces": {
+      "description": "Task-orchestrator surfaces and capabilities. REPO_VALIDATED from approval_policy.yaml + policy.py. Task-Orchestrator is not DCP authority.",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "canonical_writer": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "provenance_tag": {
+            "enum": [
+              "REPO_VALIDATED",
+              "PROVISIONAL"
+            ],
+            "type": "string"
+          },
+          "surface_id": {
+            "type": "string"
+          },
+          "tier": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "surface_id",
+          "description",
+          "canonical_writer",
+          "tier",
+          "provenance_tag"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "task_packet_roots": {
+      "description": "Task packet roots. REPO_VALIDATED from filesystem observation.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "test_roots": {
+      "description": "Test roots. REPO_VALIDATED from filesystem observation.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "validation": {
+      "additionalProperties": false,
+      "description": "Validation status per REV1 \u00a76.0.",
+      "properties": {
+        "notes": {
+          "type": "string"
+        },
+        "state": {
+          "const": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+          "description": "Const-pinned for .v0. Path roots are REPO_VALIDATED but endpoint bindings are PROVISIONAL \u2014 the mixed state constrains the contract to PROVISIONAL at .v0."
+        }
+      },
+      "required": [
+        "state",
+        "notes"
+      ],
+      "type": "object"
+    },
+    "validation_state": {
+      "const": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "description": "Const-pinned for .v0. Endpoint bindings remain PROVISIONAL until runtime proof resolves them."
+    }
+  },
+  "required": [
+    "schema_version",
+    "contract_id",
+    "contract_status",
+    "provenance",
+    "validation",
+    "validation_state",
+    "field_provenance",
+    "project_id",
+    "repo_id",
+    "repo_root_marker",
+    "canonical_source_roots",
+    "schema_roots",
+    "test_roots",
+    "proof_roots",
+    "task_packet_roots",
+    "config_roots",
+    "runtime_authority_pointers",
+    "provisional_surfaces",
+    "forbidden_paths",
+    "red_line_paths",
+    "bridge_proxy_surfaces",
+    "memory_context_chronicle_surfaces",
+    "task_orchestrator_surfaces",
+    "dopetask_surfaces",
+    "github_ci_surfaces",
+    "endpoint_bindings",
+    "canonical_writers_map",
+    "known_unknowns",
+    "red_lines",
+    "supersedes"
+  ],
+  "title": "DCP Project Resource Map (.v0)",
+  "type": "object"
+}

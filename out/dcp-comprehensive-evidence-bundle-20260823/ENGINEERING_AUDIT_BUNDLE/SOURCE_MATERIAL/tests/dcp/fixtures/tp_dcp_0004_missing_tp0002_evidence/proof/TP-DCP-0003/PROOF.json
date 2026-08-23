@@ -1,0 +1,14 @@
+{
+  "changed_files": [],
+  "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "live_write_ready_status": "UNDEFINED_AND_BLOCKING",
+  "live_write_status": "NONE",
+  "merge_seam_status": "PRESERVED",
+  "packet_id": "TP-DCP-0003",
+  "residual_risks": [
+    "tp3 risk"
+  ],
+  "stop_conditions": [
+    "tp3 stop"
+  ]
+}

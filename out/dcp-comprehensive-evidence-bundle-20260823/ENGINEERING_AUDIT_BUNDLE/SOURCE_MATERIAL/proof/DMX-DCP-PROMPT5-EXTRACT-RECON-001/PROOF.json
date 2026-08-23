@@ -1,0 +1,135 @@
+{
+  "embedded_audit": {
+    "auditor_model": "unknown",
+    "auditor_tool": "none",
+    "exit_code": null,
+    "findings": [],
+    "fixes_applied": [
+      "Added explicit advisory provenance labels to extracted docs.",
+      "Recorded Task Orchestrator MCP transport closure as BLOCKED/NOT_RUN instead of inventing item state.",
+      "Reconciled pasted #906 readiness claims against live GitHub review-thread state and post-rebase merge state."
+    ],
+    "invocation": null,
+    "remaining_risks": [
+      "No independent model audit was run for this docs-only extraction.",
+      "Task Orchestrator item state remains UNKNOWN because get_context() failed with Transport closed.",
+      "Open GitHub PR status is time-sensitive and must be refreshed before action."
+    ],
+    "report_path": "proof/DMX-DCP-PROMPT5-EXTRACT-RECON-001/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": "Docs-only extraction and reconciliation packet. No runtime code, schemas, migrations, service config, or executable workflow state changed; embedded audit was not invoked.",
+    "status": "SKIPPED"
+  },
+  "files_created": [
+    "docs/03-reference/dcp/artifacts/DCP_PROMPT5_CHAT_HISTORY_EXTRACT.md",
+    "docs/03-reference/dcp/DCP_PROMPT5_TASK_ORCHESTRATOR_RECONCILIATION.md",
+    "task-packets/DMX-DCP-PROMPT5-EXTRACT-RECON-001.json",
+    "proof/DMX-DCP-PROMPT5-EXTRACT-RECON-001/PROOF.json"
+  ],
+  "files_modified": [
+    "docs/03-reference/dcp/README.md",
+    "task-packets/INDEX.md"
+  ],
+  "live_reconciliation": {
+    "github": {
+      "pr_906": {
+        "initial_head": "c24530b1c36bcfe6a01a716476b7e0ddb35c328a",
+        "initial_state": "OPEN",
+        "initial_unresolved_review_threads_observed": 2,
+        "merge_commit": "02fa9b30ac0af2a4f418b7c1aa3f16e5bebe89c8",
+        "merged_at": "2026-06-17T01:30:37Z",
+        "post_rebase_state": "MERGED",
+        "verdict": "MERGED_AFTER_REVIEW_THREAD_REMEDIATION"
+      },
+      "pr_907": {
+        "merged_at": null,
+        "state": "CLOSED",
+        "verdict": "CLOSED_WITHOUT_MERGE"
+      },
+      "pr_908": {
+        "merge_commit": "12b3793fe3944f7677132543d80ee31a4d2637b9",
+        "merged_at": "2026-06-16T23:37:32Z",
+        "state": "MERGED"
+      },
+      "pr_909": {
+        "merge_commit": "0c521642c0e5c6d63a7b719249e30f2a61ff9a74",
+        "merged_at": "2026-06-17T00:39:40Z",
+        "state": "MERGED"
+      },
+      "pr_915": {
+        "merge_commit": "556ffff1b31c3232306289211ee889ac9eb8862f",
+        "merged_at": "2026-06-17T01:42:05Z",
+        "state": "MERGED"
+      },
+      "pr_923": {
+        "merge_commit": "817d9d2275cd83d5fc0385828f64f46db2016523",
+        "merged_at": "2026-06-17T05:18:47Z",
+        "state": "MERGED",
+        "verdict": "CURRENT_ORIGIN_MAIN"
+      }
+    },
+    "task_orchestrator": {
+      "attempted_tool": "get_context()",
+      "items_mutated": false,
+      "items_queried": false,
+      "result": "Transport closed",
+      "status": "BLOCKED"
+    }
+  },
+  "not_run": [
+    {
+      "item": "Task Orchestrator live item reconciliation",
+      "reason": "MCP get_context() failed with Transport closed."
+    },
+    {
+      "item": "Runtime tests",
+      "reason": "Docs-only extraction and reconciliation; no runtime source changed."
+    }
+  ],
+  "packet_id": "DMX-DCP-PROMPT5-EXTRACT-RECON-001",
+  "remaining_uncertainty": [
+    "Live Task Orchestrator item state is UNKNOWN until MCP transport recovers or another approved read path is used.",
+    "Open PR check status is time-sensitive and must be refreshed before acting on remaining open DCP follow-up PRs.",
+    "The pasted transcript remains an advisory artifact, not runtime authority."
+  ],
+  "repo": {
+    "branch": "codex/dcp-prompt5-extract-reconcile",
+    "initial_base_head": "6c7f7e7b444c1f56a88a1231d7846404b1687910",
+    "post_rebase_origin_main": "817d9d2275cd83d5fc0385828f64f46db2016523",
+    "repo_marker": ".repo_id",
+    "worktree": "[LOCAL_PATH_REDACTED]"
+  },
+  "rollback": [
+    "git restore docs/03-reference/dcp/README.md task-packets/INDEX.md",
+    "git rm docs/03-reference/dcp/artifacts/DCP_PROMPT5_CHAT_HISTORY_EXTRACT.md docs/03-reference/dcp/DCP_PROMPT5_TASK_ORCHESTRATOR_RECONCILIATION.md task-packets/DMX-DCP-PROMPT5-EXTRACT-RECON-001.json proof/DMX-DCP-PROMPT5-EXTRACT-RECON-001/PROOF.json"
+  ],
+  "source_artifact": "[LOCAL_PATH_REDACTED]",
+  "status": "PASS_WITH_BLOCKED_TASK_ORCHESTRATOR_RECONCILIATION",
+  "validation": [
+    {
+      "command": "python -m json.tool task-packets/DMX-DCP-PROMPT5-EXTRACT-RECON-001.json >/dev/null",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python - <<'PY' ... Draft7Validator(dopetask-canonical-spec.json) ... PY",
+      "exit_code": 0,
+      "result": "PASS task packet schema validation"
+    },
+    {
+      "command": "rg -n \"EXTERNAL_CHAT_HISTORY_EXTRACT|Transport closed|#906|NOT_RUN|BLOCKED|UNKNOWN\" docs/03-reference/dcp/artifacts/DCP_PROMPT5_CHAT_HISTORY_EXTRACT.md docs/03-reference/dcp/DCP_PROMPT5_TASK_ORCHESTRATOR_RECONCILIATION.md",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "pre-commit run --files docs/03-reference/dcp/README.md docs/03-reference/dcp/artifacts/DCP_PROMPT5_CHAT_HISTORY_EXTRACT.md docs/03-reference/dcp/DCP_PROMPT5_TASK_ORCHESTRATOR_RECONCILIATION.md task-packets/INDEX.md task-packets/DMX-DCP-PROMPT5-EXTRACT-RECON-001.json proof/DMX-DCP-PROMPT5-EXTRACT-RECON-001/PROOF.json proof/DMX-DCP-PROMPT5-EXTRACT-RECON-001/AUDITOR_REPORT.md",
+      "exit_code": 0,
+      "result": "PASS"
+    }
+  ]
+}

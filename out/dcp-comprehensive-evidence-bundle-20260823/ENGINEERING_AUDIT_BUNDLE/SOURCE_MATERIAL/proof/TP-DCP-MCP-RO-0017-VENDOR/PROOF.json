@@ -1,0 +1,88 @@
+{
+  "base_branch": "main",
+  "base_sha": "0a2efa25138ff748948cea75d295fcd2afb3a7ce",
+  "branch": "codex/dcp-mcp-ro-0017-vendor-live",
+  "embedded_audit": {
+    "auditor_model": "unknown",
+    "auditor_tool": "none",
+    "exit_code": null,
+    "findings": [],
+    "fixes_applied": [
+      "vendor_preflight inventory",
+      "ACC-029 synthetic two-target isolation",
+      "vendor gate NOT_RUN with explicit missing list"
+    ],
+    "invocation": null,
+    "remaining_risks": [
+      "Vendor credentials still required for 024-026",
+      "release_ready remains false"
+    ],
+    "report_path": "proof/TP-DCP-MCP-RO-0017-VENDOR/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": "Local-only; AGY not used as trusted audit.",
+    "status": "SKIPPED"
+  },
+  "implementation_commit": "20e9dae3e3b7471b289a0c81a1e7b75dfac0f980",
+  "packet_id": "TP-DCP-MCP-RO-0017-VENDOR",
+  "pr": {
+    "blocker": "Vendor credentials missing; release_ready false; trusted audit SKIPPED",
+    "number": 1067,
+    "status": "OPEN_NOT_READY",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1067"
+  },
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "scope": "Vendor-live residual: preflight inventory, ACC-029 synthetic isolation PASS, ACC-024/025/026 NOT_RUN without credentials. No public tunnels opened.",
+  "status": "VALIDATED_WITH_AUDIT_GAP",
+  "title": "Vendor-Live Preflight And Two-Target Isolation",
+  "validation": {
+    "FAIL": [],
+    "NOT_RUN": [
+      {
+        "command": "ChatGPT tunnel-client live",
+        "mitigation": "see VENDOR_LIVE_PREFLIGHT.md",
+        "reason": "tunnel-client + OpenAI tunnel env missing"
+      },
+      {
+        "command": "Grok/Gemini public routes",
+        "mitigation": "operator supply",
+        "reason": "PUBLIC_*_HOSTNAME missing"
+      },
+      {
+        "command": "Trusted embedded audit",
+        "mitigation": "not claimed",
+        "reason": "local-only"
+      }
+    ],
+    "PASS": [
+      {
+        "command": "acceptance harness tests",
+        "exit_code": 0,
+        "result": "8 passed"
+      },
+      {
+        "command": "full facade suite",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "vendor-track acceptance report",
+        "exit_code": 0,
+        "result": "029 PASS; 024-026 NOT_RUN; release_ready false"
+      }
+    ]
+  },
+  "vendor_live": {
+    "acc024_025_026": "NOT_RUN",
+    "acc029": "PASS",
+    "blocking_failures": 0,
+    "blocking_live_not_run": 3,
+    "missing": [
+      "tunnel-client",
+      "CONTROL_PLANE_API_KEY",
+      "OPENAI_TUNNEL_ID",
+      "PUBLIC_GROK_HOSTNAME",
+      "PUBLIC_GEMINI_HOSTNAME"
+    ],
+    "release_ready": false
+  }
+}

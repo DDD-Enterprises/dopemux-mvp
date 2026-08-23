@@ -1,0 +1,94 @@
+{
+  "artifact_id": "structured_output_policy",
+  "fallback_policy": {
+    "fallback_actual_model_provider_logged": true,
+    "fallback_must_be_benchmark_certified": true,
+    "fallback_must_preserve_privacy_controls": true,
+    "fallback_must_preserve_require_parameters": true,
+    "never_downgrade_schema_mode": true,
+    "never_switch_to_json_object_for_authority": true
+  },
+  "forbidden_routes": [
+    "openrouter_free_for_schema_authority",
+    "consumer_app_output_as_machine_authority_without_capture",
+    "manual_paste_as_validated_json_without_local_validation",
+    "json_object_as_schema_authority_substitute",
+    "preview_model_as_sole_high_risk_schema_authority",
+    "openrouter_without_provider_require_parameters"
+  ],
+  "json_schema_validation_requirements": {
+    "additionalProperties": false,
+    "explicit_enums_for_decisions": true,
+    "local_validator_required": true,
+    "required_fields": true,
+    "schema_hash_required": true,
+    "schema_version_required": true,
+    "validation_must_precede_machine_consumption": true
+  },
+  "mandatory_when": [
+    "task_classification",
+    "route_decision",
+    "privacy_risk_classification",
+    "structured_task_packet_generation",
+    "tool_call_envelope",
+    "proof_bundle_generation",
+    "proof_validation",
+    "audit_verdict",
+    "pr_merge_readiness",
+    "security_findings_classification",
+    "release_judgment"
+  ],
+  "openrouter_required_settings": {
+    "json_object_allowed_for_authority": false,
+    "local_schema_validation": true,
+    "provider_require_parameters": true,
+    "response_format_type": "json_schema",
+    "response_healing_is_not_schema_validation": true,
+    "strict": true
+  },
+  "preferred_provider_order": [
+    "direct_openai_structured_outputs",
+    "direct_anthropic_structured_outputs",
+    "direct_gemini_structured_outputs",
+    "openrouter_paid_pinned_with_require_parameters",
+    "manual_app_with_capture_draft_only"
+  ],
+  "retry_policy": {
+    "malformed_json_non_authority": {
+      "max_retries": 1,
+      "repair_allowed": true,
+      "then": "validate_or_block"
+    },
+    "openrouter_429_or_503": {
+      "honor_retry_after": true,
+      "max_retries": 1,
+      "then": "fallback_only_inside_approved_profile"
+    },
+    "repeated_schema_failure": {
+      "then": "block_and_mark_route_uncertified"
+    },
+    "schema_invalid_authority": {
+      "max_retries": 1,
+      "repair_allowed": false,
+      "retry_prompt_must_include_validator_diff": true,
+      "then": "escalate_to_certified_schema_route"
+    },
+    "unsupported_parameter": {
+      "max_retries": 0,
+      "then": "select_route_supporting_required_parameters"
+    }
+  },
+  "schema_failure_classifications": [
+    "MALFORMED_JSON",
+    "SCHEMA_INVALID_MISSING_REQUIRED",
+    "SCHEMA_INVALID_ADDITIONAL_PROPERTIES",
+    "SCHEMA_INVALID_ENUM",
+    "SCHEMA_INVALID_TYPE",
+    "UNSUPPORTED_PARAMETERS",
+    "PROVIDER_IGNORED_SCHEMA",
+    "LOCAL_VALIDATION_UNAVAILABLE",
+    "SEMANTIC_EVIDENCE_MISMATCH"
+  ],
+  "schema_version": "1.0.0",
+  "status": "PROPOSED"
+}

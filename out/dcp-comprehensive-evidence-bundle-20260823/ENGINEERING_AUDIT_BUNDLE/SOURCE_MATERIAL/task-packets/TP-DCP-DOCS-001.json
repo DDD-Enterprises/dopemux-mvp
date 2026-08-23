@@ -1,0 +1,80 @@
+{
+  "commit": {
+    "allowlist": [
+      "docs/03-reference/dcp/README.md",
+      "docs/03-reference/dcp/artifacts/DCP_5_5_SYNTHESIS_INPUT_PACK.md",
+      "docs/03-reference/dcp/artifacts/DCP_PRE_SYNTHESIS_CONTRADICTION_LEDGER.md",
+      "docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_GPT55.md",
+      "docs/03-reference/dcp/artifacts/DCP_ADVERSARIAL_ARCHITECTURE_AUDIT.md",
+      "docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_REVISED_DELTA.md",
+      "docs/03-reference/dcp/artifacts/DCP_DR_EXTERNAL_CONSTRAINTS_LEDGER.md",
+      "task-packets/TP-DCP-DOCS-001.json",
+      "proof/TP-DCP-DOCS-001/PROOF.json"
+    ],
+    "message": "docs(dcp): land DCP decision/audit/revision docs (TP-DCP-DOCS-001)",
+    "verify": [
+      "test -d docs/03-reference/dcp/artifacts",
+      "test -f docs/03-reference/dcp/README.md",
+      "rg -n \"LIVE_WRITE_READY|CLAIMED_ONLY|UNKNOWN|DCP-RED-MERGE-SEAM|EXTERNAL_PROPOSED|SYNTHESIS_INVENTED|REPO_VALIDATED\" docs/03-reference/dcp",
+      "git diff --check"
+    ]
+  },
+  "depends_on": [],
+  "execution": {
+    "agent": "gemini"
+  },
+  "id": "TP-DCP-DOCS-001",
+  "invariants": [
+    "External DR remains lower authority than repo runtime evidence.",
+    "Open PRs/generated TP series remain CLAIMED_ONLY unless main-branch filesystem verified.",
+    "LIVE_WRITE_READY remains UNKNOWN/UNDEFINED.",
+    "DCP-RED-MERGE-SEAM-0001 must be preserved.",
+    "Contract fields from external/invented sources must not be labeled repo-validated."
+  ],
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "implement",
+      "docgen",
+      "challenge",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "pr": {
+    "base": "main",
+    "body": "Add the DCP architecture decision, Opus audit, revised delta, contradiction ledger, and external constraints ledger into Dopemux repo docs as preserved architecture artifacts.",
+    "title": "docs(dcp): land DCP decision/audit/revision docs (TP-DCP-DOCS-001)"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "SERIES-DCP-PROJECT-DOCS-001",
+    "parent_tp_id": null
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Create the DCP docs directory, land the copied decision/audit/revision/ledger artifacts, and add a README explaining authority order, artifact status, contradiction ledger risks, and that DCP v1 is read/export/pointer/dry-run only, including DCP-RED-MERGE-SEAM-0001.",
+      "validation": [
+        "test -f docs/03-reference/dcp/README.md",
+        "test -f docs/03-reference/dcp/artifacts/DCP_5_5_SYNTHESIS_INPUT_PACK.md",
+        "test -f docs/03-reference/dcp/artifacts/DCP_PRE_SYNTHESIS_CONTRADICTION_LEDGER.md",
+        "test -f docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_GPT55.md",
+        "test -f docs/03-reference/dcp/artifacts/DCP_ADVERSARIAL_ARCHITECTURE_AUDIT.md",
+        "test -f docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_REVISED_DELTA.md",
+        "test -f docs/03-reference/dcp/artifacts/DCP_DR_EXTERNAL_CONSTRAINTS_LEDGER.md"
+      ]
+    }
+  ],
+  "target": "Add the DCP architecture decision, Opus audit, revised delta, contradiction ledger, and external constraints ledger into Dopemux repo docs as preserved architecture artifacts."
+}

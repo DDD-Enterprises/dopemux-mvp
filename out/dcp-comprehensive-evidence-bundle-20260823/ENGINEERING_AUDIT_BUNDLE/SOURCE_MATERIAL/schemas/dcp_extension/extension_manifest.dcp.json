@@ -1,0 +1,70 @@
+{
+  "capabilities": {
+    "adapter_mappings": [
+      "task-orchestrator",
+      "conport",
+      "dope-memory",
+      "dope-context",
+      "dopecon-bridge",
+      "adhd-engine",
+      "repo-truth-extractor",
+      "dopetask",
+      "dopemux-cli",
+      "pr-steward",
+      "leantime"
+    ],
+    "authority_map_contributions": [
+      "schemas/dcp_extension/authority_map.dcp.json"
+    ],
+    "evidence_export_sections": [
+      "dcp_workflow",
+      "dcp_memory",
+      "dcp_retrieval"
+    ],
+    "proof_status_mappings": [
+      "schemas/dcp_extension/proof_status_map.dcp.json"
+    ],
+    "red_lane_contributions": [],
+    "runtime_mappings": []
+  },
+  "compatible_pcp_core_versions": [
+    "pcp.authority_map.v0",
+    "pcp.extension_manifest.v0",
+    "pcp.project_evidence_export.v0"
+  ],
+  "extension_id": "dopemux-dcp",
+  "extension_identity": {
+    "discovery_hints": [
+      "pyproject.toml [tool.dopemux]",
+      "src/dopemux/"
+    ],
+    "project_id_patterns": [
+      "DDD-Enterprises/dopemux-mvp"
+    ],
+    "repo_markers": [
+      ".dopetaskroot"
+    ]
+  },
+  "extension_kind": "DOPEMUX_DCP",
+  "invariants": {
+    "cannot_override_core_fail_closed": true,
+    "cannot_promote_adapter_to_authority": true,
+    "cannot_require_extension_for_baseline_core": true,
+    "cannot_weaken_audit_gates": true,
+    "cannot_weaken_proof_gates": true
+  },
+  "schema_version": "pcp.extension_manifest.v0",
+  "schemas": {
+    "core_schema_extensions": [],
+    "forbidden_core_overrides": [
+      "project_evidence_export.schema.json",
+      "authority_map.schema.json",
+      "extension_manifest.schema.json"
+    ],
+    "owned_schema_ids": [
+      "dcp_extension/dopetask_packet_mapping.schema.json",
+      "dcp_extension/orchestrator_item.schema.json"
+    ]
+  },
+  "status": "PROPOSED"
+}

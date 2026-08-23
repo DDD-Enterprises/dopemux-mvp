@@ -1,0 +1,22 @@
+{
+  "canonical_boundaries": {
+    "dcp_readonly_facade": "services/dcp-readonly-facade/",
+    "dcp_reference": "docs/03-reference/dcp/",
+    "openclaw_dcp_routing": "contracts/openclaw-dcp-routing/",
+    "proof": "proof/"
+  },
+  "non_authority": [
+    "external synthesis",
+    "historical docs",
+    "runtime registries as consent",
+    "Task Orchestrator titles without live evidence"
+  ],
+  "packet_authority": "Active Task Packet controls execution scope and validation, not unsupported runtime claims.",
+  "runtime_source_truth": [
+    "runtime code",
+    "config",
+    "compose wiring",
+    "tests",
+    "active entrypoints"
+  ]
+}

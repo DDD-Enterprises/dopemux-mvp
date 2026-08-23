@@ -1,0 +1,247 @@
+{
+  "$id": "https://dcp.local/schemas/route_decision_logger.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "provider": {
+      "enum": [
+        "openai",
+        "anthropic",
+        "google",
+        "openrouter",
+        "local",
+        "manual",
+        "multiple",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "runner": {
+      "enum": [
+        "openclaw",
+        "codex",
+        "claude_code",
+        "gemini_antigravity",
+        "openrouter_generic",
+        "direct_api",
+        "manual_app",
+        "shell_local",
+        "dopetask",
+        "unknown"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "access_path": {
+      "type": "string"
+    },
+    "actual_model": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "actual_provider": {
+      "$ref": "#/definitions/provider"
+    },
+    "blocked_route_reasons": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "cost": {
+      "additionalProperties": false,
+      "properties": {
+        "actual_usd": {
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "currency": {
+          "enum": [
+            "USD",
+            "UNKNOWN"
+          ],
+          "type": "string"
+        },
+        "estimated_usd": {
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "estimated_usd",
+        "actual_usd",
+        "currency"
+      ],
+      "type": "object"
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "fallback_events": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "from_route": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "to_route": {
+            "type": "string"
+          },
+          "weakened_policy": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "from_route",
+          "to_route",
+          "reason",
+          "weakened_policy"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "latency": {
+      "additionalProperties": false,
+      "properties": {
+        "completion_ms": {
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "ttfb_ms": {
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "ttft_ms": {
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "wall_ms": {
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "wall_ms",
+        "ttfb_ms",
+        "ttft_ms",
+        "completion_ms"
+      ],
+      "type": "object"
+    },
+    "log_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "policy_checks": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "check_id": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PASS",
+              "FAIL",
+              "SKIPPED"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "check_id",
+          "status",
+          "message"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "prompt_hash": {
+      "pattern": "^[a-fA-F0-9]{64}$",
+      "type": "string"
+    },
+    "provider_route_profile": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "requested_model": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "requested_provider": {
+      "$ref": "#/definitions/provider"
+    },
+    "response_hash": {
+      "pattern": "^[a-fA-F0-9]{64}$",
+      "type": "string"
+    },
+    "route_decision_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "runner": {
+      "$ref": "#/definitions/runner"
+    },
+    "schema_version": {
+      "const": "1.0.0",
+      "type": "string"
+    },
+    "task_id": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "log_id",
+    "route_decision_id",
+    "task_id",
+    "requested_model",
+    "actual_model",
+    "requested_provider",
+    "actual_provider",
+    "provider_route_profile",
+    "runner",
+    "access_path",
+    "prompt_hash",
+    "response_hash",
+    "cost",
+    "latency",
+    "fallback_events",
+    "policy_checks",
+    "blocked_route_reasons",
+    "created_at"
+  ],
+  "title": "Route Decision Log Entry",
+  "type": "object"
+}

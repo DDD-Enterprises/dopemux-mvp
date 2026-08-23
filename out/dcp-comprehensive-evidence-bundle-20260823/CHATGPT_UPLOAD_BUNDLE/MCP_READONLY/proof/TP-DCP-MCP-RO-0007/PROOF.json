@@ -1,0 +1,82 @@
+{
+  "agent": "claude-opus-4-8",
+  "base": "main",
+  "branch": "dcp/chatgpt-mcp-ro-0007-secure-mcp-tunnel-integration-do",
+  "diff_scope": {
+    "command": "git diff --cached --stat",
+    "forbidden_paths_touched": [],
+    "outside_allowlist": false,
+    "summary": "3 files changed, 431 insertions(+); all within commit.allowlist"
+  },
+  "embedded_audit": {
+    "auditor_model": "opus",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "FAILURE_RUNBOOK.md \u00a76/\u00a78 documents the literal secret-scan command so operators can copy it; this always matches the scan. Operator-usefulness tradeoff; commit.verify uses '|| true' (non-blocking) and the criterion is 'no real secrets', which holds.",
+        "id": "F-0007-LOW-1",
+        "severity": "LOW",
+        "status": "ACCEPTED_RISK",
+        "title": "Failure runbook self-triggers the secret scan by inlining the grep pattern"
+      },
+      {
+        "body": "Exact DCP_FACADE_TRANSPORT value and host/port env-var names depend on the installed fastmcp version. Docs flag these UNKNOWN/verify with a mandatory loopback bind-verification gate rather than asserting an unverified default.",
+        "id": "F-0007-LOW-2",
+        "severity": "LOW",
+        "status": "ACCEPTED_RISK",
+        "title": "Transport string and FastMCP host/port env names are runtime-version dependent"
+      }
+    ],
+    "fixes_applied": [],
+    "invocation": "self-audit of TP-DCP-MCP-RO-0007 docs challenging doc safety and secret leakage (S3)",
+    "remaining_risks": [
+      "Live tunnel-client connection, ChatGPT connector creation, and MCP inspector session are NOT_RUN (out of scope by packet invariant: no tunnel/connector in CI). The new MANUAL_VALIDATION.md exists to drive these manually.",
+      "Vendor-specific tunnel/connector UI and transport names may drift before an operator runs the manual checklist."
+    ],
+    "report_path": "proof/TP-DCP-MCP-RO-0007/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "files_changed": {
+    "created": [
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/TUNNEL_INTEGRATION.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/MANUAL_VALIDATION.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/FAILURE_RUNBOOK.md",
+      "proof/TP-DCP-MCP-RO-0007/PROOF.json",
+      "proof/TP-DCP-MCP-RO-0007/COMMAND_LOG.md",
+      "proof/TP-DCP-MCP-RO-0007/AUDIT.md",
+      "proof/TP-DCP-MCP-RO-0007/AUDITOR_REPORT.md"
+    ],
+    "modified": []
+  },
+  "head_sha": "1971da03211efce1190975042799ed98338aa939",
+  "kind": "docs-only",
+  "packet_id": "TP-DCP-MCP-RO-0007",
+  "secret_scan": {
+    "command": "rg -n 'CONTROL_PLANE_API_KEY|OPENAI_API_KEY|ANTHROPIC_API_KEY|GEMINI_API_KEY|sk-|Bearer |TOKEN: [REDACTED]' docs/03-reference/dcp/chatgpt-mcp-readonly services/dcp-readonly-facade",
+    "exit_code": 0,
+    "note": "All matches are false positives: documented scan command (FAILURE_RUNBOOK.md:108), 'sk-' substring of 'task-orchestrator', 'tunnel_s' substring of 'chatgpt_tunnel_suitability', and redaction.py/test_redaction.py regex literals. New files contain only <PLACEHOLDER> tokens. See COMMAND_LOG.md and AUDIT.md \u00a72.",
+    "verdict": "NO_REAL_SECRETS"
+  },
+  "series": "DCP-MCP-RO",
+  "test_results": {
+    "command": "python -m pytest -q services/dcp-readonly-facade/tests",
+    "exit_code": 0,
+    "summary": "108 passed, 1 skipped (live tests require DCP_FACADE_LIVE_TESTS=1)"
+  },
+  "timestamp": "2026-06-10T01:43:17-07:00",
+  "validations": {
+    "deliverable_failure_runbook_md": "PASS (docs/03-reference/dcp/chatgpt-mcp-readonly/FAILURE_RUNBOOK.md)",
+    "deliverable_manual_validation_md": "PASS (docs/03-reference/dcp/chatgpt-mcp-readonly/MANUAL_VALIDATION.md)",
+    "deliverable_tunnel_integration_md": "PASS (docs/03-reference/dcp/chatgpt-mcp-readonly/TUNNEL_INTEGRATION.md)",
+    "dev_mode_read_write_warning": "PASS (TUNNEL_INTEGRATION \u00a74, MANUAL_VALIDATION \u00a75.1, FAILURE_RUNBOOK \u00a73)",
+    "existing_tests_pass": "PASS (exit 0, 108 passed)",
+    "manual_checklist_covers_required_cases": "PASS (list_projects \u00a71, get_repo_state_snapshot \u00a72, denied-route tests \u00a75, stale-proof warning \u00a74)",
+    "no_real_credentials_in_docs": "PASS (placeholders only; secret scan classified)",
+    "secret_scan_no_real_secrets": "PASS (verdict NO_REAL_SECRETS)",
+    "tunnel_points_only_at_facade": "PASS (TUNNEL_INTEGRATION \u00a73 ingress facade-only + 404 catch-all; FAILURE_RUNBOOK \u00a72)",
+    "tunnel_topology_and_loopback_listener": "PASS (TUNNEL_INTEGRATION \u00a71-2; loopback bind documented as operator-enforced with verification gate)"
+  }
+}

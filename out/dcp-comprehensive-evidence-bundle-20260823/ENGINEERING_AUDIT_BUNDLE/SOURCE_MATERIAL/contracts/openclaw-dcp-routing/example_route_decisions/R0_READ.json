@@ -1,0 +1,35 @@
+{
+  "access_path": "openrouter_free",
+  "actual_model": "qwen/qwen3-coder:free",
+  "api_route_used": true,
+  "audit_requirement": "none",
+  "benchmark_certification_ref": "cert_or_free_sandbox_dev_001",
+  "blocked_reasons": [],
+  "consumer_plan_used": false,
+  "created_at": "2026-06-17T12:00:00Z",
+  "decision_status": "SELECTED",
+  "evidence_refs": [
+    "route_policy:or_free_sandbox"
+  ],
+  "human_approval_ref": null,
+  "human_gate_required": false,
+  "openrouter_profile": "or_free_sandbox",
+  "privacy_class": "PUBLIC_REPO",
+  "proof_requirement": "minimal",
+  "provider": "openrouter",
+  "requested_model": "qwen/qwen3-coder:free",
+  "risk_class": "R0_READ",
+  "role": "cheap_file_reading",
+  "route_decision_id": "rd_example_R0_READ",
+  "runner": "openrouter_generic",
+  "schema_version": "1.0.0",
+  "selected_pool": "cheap_read",
+  "selected_route": {
+    "fallback_allowed": true,
+    "route_name": "public-cheap-read",
+    "route_profile": "or_free_sandbox",
+    "selection_reason": "Public read-only task; no secrets; low risk."
+  },
+  "structured_output_mode": "none",
+  "task_id": "example-read-public-docs"
+}

@@ -1,0 +1,86 @@
+{
+  "agent": "claude-sonnet-4-6 (subagent)",
+  "base": "main",
+  "branch": "dcp/chatgpt-mcp-ro-0006-dope-context-and-task-orchestrat",
+  "compile_check": {
+    "command": "python -m compileall -q services/dcp-readonly-facade",
+    "exit_code": 0
+  },
+  "embedded_audit": {
+    "auditor_model": "claude-sonnet-4.6",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "search_code, docs_search, get_index_status always return BLOCKED. Intentional fail-closed pending Phase 2 MCP JSON-RPC bridge.",
+        "id": "EA-0006-R1",
+        "severity": "MEDIUM",
+        "status": "ACCEPTED_RISK",
+        "title": "dope-context tools BLOCKED in Phase 1 (transport gap)"
+      },
+      {
+        "body": "When registry profile omits task_orchestrator_project_id, facade falls back to facade project_id. Operators should set explicitly.",
+        "id": "EA-0006-R2",
+        "severity": "LOW",
+        "status": "ACCEPTED_RISK",
+        "title": "task-orchestrator project_id fallback may mismatch operator routing"
+      }
+    ],
+    "fixes_applied": [],
+    "invocation": "claude-code subagent audit (proof/TP-DCP-MCP-RO-0006/AUDITOR_REPORT.md)",
+    "remaining_risks": [
+      "dope-context BLOCKED until Phase 2 transport bridge",
+      "get_index_status PROPOSED-only (inventory gap not retroactively resolved)",
+      "/workflow/state classified CONFIRMED_READ_ONLY but absent from the TP-DCP-MCP-RO-0001 inventory; 0001 artifact not retroactively fixed (acceptable, committed artifact). A future packet or manifest refresh should reconcile (see AUDITOR_REPORT.md \u00a7C and ARCHITECTURE.md \u00a713/\u00a720).",
+      "task-orchestrator project_id fallback: when a registry profile omits task_orchestrator_project_id, the facade falls back to the facade project_id, which may not match the actual task-orchestrator project routing in all deployments. Operators should set task_orchestrator_project_id explicitly (AUDITOR_REPORT.md residual risk 3)."
+    ],
+    "report_path": "proof/TP-DCP-MCP-RO-0006/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "files_changed": {
+    "created": [
+      "services/dcp-readonly-facade/src/dcp_facade/dope_context.py",
+      "services/dcp-readonly-facade/src/dcp_facade/task_orchestrator.py",
+      "services/dcp-readonly-facade/tests/test_packet_0006.py",
+      "proof/TP-DCP-MCP-RO-0006/PROOF.json",
+      "proof/TP-DCP-MCP-RO-0006/COMMAND_LOG.md",
+      "proof/TP-DCP-MCP-RO-0006/AUDIT.md"
+    ],
+    "modified": [
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/ARCHITECTURE.md",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md",
+      "services/dcp-readonly-facade/src/dcp_facade/envelope.py",
+      "services/dcp-readonly-facade/src/dcp_facade/tools.py"
+    ]
+  },
+  "forbidden_route_grep": {
+    "command": "rg -n 'search_all|index_workspace|...' services/dcp-readonly-facade",
+    "exit_code": 0,
+    "verdict": "All hits are in: route_manifest.py (denylist definitions), dope_context.py (denial docstring), task_orchestrator.py:105 (allowed_transitions in docstring describing state response schema \u2014 not a route), tools.py (denial doc prose in docstring), tests/test_packet_0006.py (denial assertion tests). NO hits in executable call paths."
+  },
+  "head_sha": "257be952829e685e4a9b2da782bb3398197e43d7",
+  "packet_id": "TP-DCP-MCP-RO-0006",
+  "series": "DCP-MCP-RO",
+  "test_results": {
+    "command": "python -m pytest -q services/dcp-readonly-facade/tests/",
+    "exit_code": 0,
+    "summary": "108 passed, 1 skipped (live tests require DCP_FACADE_LIVE_TESTS=1)"
+  },
+  "timestamp": "2026-06-06T03:50:00Z",
+  "validations": {
+    "dope_context_docs_search_implemented": "PASS (fail-closed: same)",
+    "dope_context_get_index_status_implemented": "PASS (fail-closed: same + inventory note)",
+    "dope_context_search_code_implemented": "PASS (fail-closed: raises ReadOnlyHttpError with transport explanation)",
+    "index_sync_clear_autonomous_denied": "PASS (no callable invocations in adapter source)",
+    "pm_routes_denied": "PASS (/api/pm etc. not in task_orchestrator.py or tools.py)",
+    "search_all_denied": "PASS (not callable in adapter; search_all( not in source)",
+    "task_orchestrator_blockers_implemented": "PASS (GET /api/projects/{id}/workflow/blockers)",
+    "task_orchestrator_queue_implemented": "PASS (GET /api/projects/{id}/workflow/queue)",
+    "task_orchestrator_state_implemented": "PASS (GET /api/projects/{id}/workflow/state \u2014 OBSERVED runtime route, classified CONFIRMED_READ_ONLY in TP-0006)",
+    "tests_pass": "PASS (exit 0, 108 passed)",
+    "transition_denied": "PASS (/transition not in task_orchestrator.py source)",
+    "workflow_view_only_label": "PASS (permanent limitation in every task-orchestrator envelope)"
+  }
+}

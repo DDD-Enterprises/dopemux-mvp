@@ -1,0 +1,391 @@
+{
+  "authoritative": false,
+  "authority_label_summary": {
+    "packet_states": "OBSERVED",
+    "snapshot": "INFERRED",
+    "source_artifacts": "OBSERVED"
+  },
+  "authority_order_ref": "AGENTS.md",
+  "created_at_utc": "2026-06-04T12:00:00Z",
+  "derived": true,
+  "endpoint_certainty": {
+    "conport": "UNKNOWN",
+    "dope_context": "UNKNOWN",
+    "dope_memory": "UNKNOWN",
+    "dopecon_bridge": "PROXY_ONLY",
+    "task_orchestrator": "PROJECTION_ONLY"
+  },
+  "field_provenance": {
+    "authoritative": "INFERRED",
+    "authority_label_summary": "INFERRED",
+    "authority_order_ref": "INFERRED",
+    "created_at_utc": "INFERRED",
+    "derived": "INFERRED",
+    "endpoint_certainty": "INFERRED",
+    "generated_at": "INFERRED",
+    "generator": "INFERRED",
+    "guards": "INFERRED",
+    "packet_states": "INFERRED",
+    "project_id": "INFERRED",
+    "readiness": "INFERRED",
+    "repo": "INFERRED",
+    "residual_risks": "INFERRED",
+    "snapshot_contract_version": "INFERRED",
+    "snapshot_family": "INFERRED",
+    "snapshot_id": "INFERRED",
+    "source_artifacts": "INFERRED",
+    "source_pack_refs": "INFERRED",
+    "stop_condition_summary": "INFERRED",
+    "stop_conditions": "INFERRED",
+    "surfaces": "INFERRED"
+  },
+  "generated_at": "2026-06-04T12:00:00Z",
+  "generator": {
+    "external_writes_used": false,
+    "implementation": "local",
+    "live_adapters_used": false,
+    "packet_id": "TP-DCP-0004"
+  },
+  "guards": {
+    "dopetask_execution_status": "NONE",
+    "external_write_status": "NONE",
+    "live_write_ready_status": "UNDEFINED_AND_BLOCKING",
+    "live_write_status": "NONE",
+    "merge_seam_status": "PRESERVED"
+  },
+  "packet_states": [
+    {
+      "audit_path": "proof/TP-DCP-0001/AUDIT.md",
+      "errors": [],
+      "freshness": "UNKNOWN",
+      "merge_readiness_path": null,
+      "packet_id": "TP-DCP-0001",
+      "proof_path": "proof/TP-DCP-0001/PROOF.json",
+      "residual_risks": [
+        "C3 RESOLVED: validation_state const-pinned in 3 EXTERNAL_PROPOSED schemas (evidence_hit/chronicle_receipt/helper_receipt); validation.state const-pinned in 2 SYNTHESIS_INVENTED schemas (proof_pointer/control_snapshot); new test (c2) enforces schema-level const at pytest time",
+        "proof/ gitignored at .gitignore:362 \u2014 proof files committed with git add -f (matching repo convention for other proof bundles)",
+        "execution.agent enum lacks 'claude' option (documented repo gap from SCHEMA-0001) \u2014 execution omitted from TP, implementer/auditor identities recorded here instead",
+        "DCP_MUTATION_CLASS / DCP_APPROVAL_ARTIFACT / DCP_PROJECT_RESOURCE_MAP deferred \u2014 their source files (approval_policy.yaml, policy.py) exist; TP-DCP-0002 derives them"
+      ],
+      "state": "OBSERVED",
+      "stop_conditions": [],
+      "task_packet_path": "task-packets/TP-DCP-0001.json"
+    },
+    {
+      "audit_path": "proof/TP-DCP-0002/AUDIT.md",
+      "errors": [],
+      "freshness": "UNKNOWN",
+      "merge_readiness_path": null,
+      "packet_id": "TP-DCP-0002",
+      "proof_path": "proof/TP-DCP-0002/PROOF.json",
+      "residual_risks": [
+        "MC-DOPETASK-EXEC and MC-BRIDGE-MEDIATED are PROVISIONAL \u2014 tier not yet registered in approval_policy.yaml",
+        "MC-EXTERNAL-WRITE tier inferred from T5/T6 analogy \u2014 no explicit capability",
+        "DCP_APPROVAL_ARTIFACT expiry_window is SYNTHESIS_INVENTED \u2014 no repo equivalent",
+        "Endpoint bindings all PROVISIONAL \u2014 no live proof in checkout"
+      ],
+      "state": "OBSERVED",
+      "stop_conditions": [],
+      "task_packet_path": "task-packets/TP-DCP-0002.md"
+    },
+    {
+      "audit_path": "proof/TP-DCP-0003/AUDIT.md",
+      "errors": [],
+      "freshness": "STALE",
+      "merge_readiness_path": null,
+      "packet_id": "TP-DCP-0003",
+      "proof_path": "proof/TP-DCP-0003/PROOF.json",
+      "residual_risks": [
+        "Freshness classification is local-only and depends on a caller-supplied expected_head_sha.",
+        "No local PR Steward readiness artifact is committed; GitHub PR Steward must be rechecked on the pushed commit before merge.",
+        "Final commit SHA cannot be embedded in this same committed proof file without changing the commit hash.",
+        "Validation grep over tests/dcp reports pre-existing TP-DCP-0001/0002 red-line fixture references; no new DCP module forbidden import/call/wrap path was added."
+      ],
+      "state": "OBSERVED",
+      "stop_conditions": [],
+      "task_packet_path": "task-packets/TP-DCP-0003.md"
+    },
+    {
+      "audit_path": "proof/TP-DCP-0004/AUDIT.md",
+      "errors": [],
+      "freshness": "FRESH",
+      "merge_readiness_path": null,
+      "packet_id": "TP-DCP-0004",
+      "proof_path": "proof/TP-DCP-0004/PROOF.json",
+      "residual_risks": [
+        "Generated DCP_CONTROL_SNAPSHOT is BLOCKED because existing dependency proof artifacts are stale relative to current worktree HEAD.",
+        "PR Steward readiness is NOT_RUN because PR creation/GitHub API calls are disallowed by the local-only packet constraints in this run."
+      ],
+      "state": "OBSERVED",
+      "stop_conditions": [],
+      "task_packet_path": "task-packets/TP-DCP-0004.md"
+    }
+  ],
+  "project_id": "dopemux-mvp",
+  "provenance": {
+    "source_ref": "TP-DCP-0004 local control snapshot generator",
+    "tag": "SYNTHESIS_INVENTED"
+  },
+  "readiness": {
+    "blocking_reasons": [
+      "stale proof artifact detected"
+    ],
+    "recommended_next_action": "Resolve blocking local evidence before downstream use.",
+    "snapshot_status": "BLOCKED",
+    "warnings": []
+  },
+  "repo": {
+    "base_branch": "main",
+    "base_sha": "2f6f362236aa8429877664c675a5373cd9acf16e",
+    "head_sha": "2f6f362236aa8429877664c675a5373cd9acf16e",
+    "worktree": "[LOCAL_PATH_REDACTED]"
+  },
+  "residual_risks": [
+    "C3 RESOLVED: validation_state const-pinned in 3 EXTERNAL_PROPOSED schemas (evidence_hit/chronicle_receipt/helper_receipt); validation.state const-pinned in 2 SYNTHESIS_INVENTED schemas (proof_pointer/control_snapshot); new test (c2) enforces schema-level const at pytest time",
+    "DCP_APPROVAL_ARTIFACT expiry_window is SYNTHESIS_INVENTED \u2014 no repo equivalent",
+    "DCP_MUTATION_CLASS / DCP_APPROVAL_ARTIFACT / DCP_PROJECT_RESOURCE_MAP deferred \u2014 their source files (approval_policy.yaml, policy.py) exist; TP-DCP-0002 derives them",
+    "Endpoint bindings all PROVISIONAL \u2014 no live proof in checkout",
+    "Final commit SHA cannot be embedded in this same committed proof file without changing the commit hash.",
+    "Freshness classification is local-only and depends on a caller-supplied expected_head_sha.",
+    "Generated DCP_CONTROL_SNAPSHOT is BLOCKED because existing dependency proof artifacts are stale relative to current worktree HEAD.",
+    "MC-DOPETASK-EXEC and MC-BRIDGE-MEDIATED are PROVISIONAL \u2014 tier not yet registered in approval_policy.yaml",
+    "MC-EXTERNAL-WRITE tier inferred from T5/T6 analogy \u2014 no explicit capability",
+    "No local PR Steward readiness artifact is committed; GitHub PR Steward must be rechecked on the pushed commit before merge.",
+    "PR Steward readiness is NOT_RUN because PR creation/GitHub API calls are disallowed by the local-only packet constraints in this run.",
+    "Validation grep over tests/dcp reports pre-existing TP-DCP-0001/0002 red-line fixture references; no new DCP module forbidden import/call/wrap path was added.",
+    "execution.agent enum lacks 'claude' option (documented repo gap from SCHEMA-0001) \u2014 execution omitted from TP, implementer/auditor identities recorded here instead",
+    "proof/ gitignored at .gitignore:362 \u2014 proof files committed with git add -f (matching repo convention for other proof bundles)"
+  ],
+  "schema_version": "dcp-control-snapshot.v0",
+  "snapshot_contract_version": "0.1.0",
+  "snapshot_family": "DCP_CONTROL_SNAPSHOT",
+  "snapshot_id": "TP-DCP-0004-local-control-snapshot",
+  "source_artifacts": [
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_AUDIT_REPORT",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "proof/TP-DCP-0001/AUDIT.md"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_PROOF_BUNDLE",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "proof/TP-DCP-0001/PROOF.json"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_AUDIT_REPORT",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "proof/TP-DCP-0002/AUDIT.md"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_PROOF_BUNDLE",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "proof/TP-DCP-0002/PROOF.json"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_AUDIT_REPORT",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "proof/TP-DCP-0003/AUDIT.md"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_PROOF_BUNDLE",
+      "freshness": "STALE",
+      "notes": [],
+      "path": "proof/TP-DCP-0003/PROOF.json"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_AUDIT_REPORT",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "proof/TP-DCP-0004/AUDIT.md"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_PROOF_BUNDLE",
+      "freshness": "FRESH",
+      "notes": [],
+      "path": "proof/TP-DCP-0004/PROOF.json"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_SCHEMA",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "schemas/dcp/README.md"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_SCHEMA",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "schemas/dcp/dcp_approval_artifact.schema.json"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_SCHEMA",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "schemas/dcp/dcp_chronicle_receipt.schema.json"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_SCHEMA",
+      "freshness": "UNKNOWN",
+      "notes": [
+        "existing repo schema convention"
+      ],
+      "path": "schemas/dcp/dcp_control_snapshot.schema.json"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_SCHEMA",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "schemas/dcp/dcp_evidence_hit.schema.json"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_SCHEMA",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "schemas/dcp/dcp_helper_receipt.schema.json"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_SCHEMA",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "schemas/dcp/dcp_mutation_class.schema.json"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_SCHEMA",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "schemas/dcp/dcp_project_resource_map.schema.json"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_SCHEMA",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "schemas/dcp/dcp_proof_pointer.schema.json"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_SCHEMA",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "schemas/dcp/dcp_red_lane_taxonomy.schema.json"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "TASK_PACKET",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "task-packets/TP-DCP-0001.json"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "TASK_PACKET",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "task-packets/TP-DCP-0002.md"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "TASK_PACKET",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "task-packets/TP-DCP-0003.md"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "TASK_PACKET",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "task-packets/TP-DCP-0004.md"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_TEST",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "tests/dcp/test_dcp_0002_contract_derivation.py"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_TEST",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "tests/dcp/test_dcp_0003_proof_family_dispatch.py"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_TEST",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "tests/dcp/test_dcp_0004_control_snapshot.py"
+    },
+    {
+      "authority_label": "OBSERVED",
+      "exists": true,
+      "family": "DCP_TEST",
+      "freshness": "UNKNOWN",
+      "notes": [],
+      "path": "tests/dcp/test_dcp_contracts.py"
+    }
+  ],
+  "source_pack_refs": [
+    "TP-DCP-0001",
+    "TP-DCP-0002",
+    "TP-DCP-0003",
+    "TP-DCP-0004"
+  ],
+  "stop_condition_summary": [],
+  "stop_conditions": [],
+  "surfaces": {
+    "note": "Source artifacts remain authoritative; this snapshot is a local derived view.",
+    "status": "DERIVED_NON_AUTHORITATIVE"
+  },
+  "validation": {
+    "notes": "Generated snapshot is derived local evidence, not source authority.",
+    "state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT"
+  }
+}

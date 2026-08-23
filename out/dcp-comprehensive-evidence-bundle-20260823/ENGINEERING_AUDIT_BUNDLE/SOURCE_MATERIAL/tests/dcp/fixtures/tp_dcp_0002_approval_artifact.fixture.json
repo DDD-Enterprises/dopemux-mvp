@@ -1,0 +1,110 @@
+{
+  "approval_id": "dcp-approval-artifact-seed-001",
+  "approval_tier": "T4",
+  "approved_artifact_refs": [
+    "schemas/dcp/dcp_mutation_class.schema.json",
+    "schemas/dcp/dcp_approval_artifact.schema.json",
+    "schemas/dcp/dcp_project_resource_map.schema.json",
+    "tests/dcp/fixtures/tp_dcp_0002_mutation_class.fixture.json",
+    "tests/dcp/fixtures/tp_dcp_0002_approval_artifact.fixture.json",
+    "tests/dcp/fixtures/tp_dcp_0002_project_resource_map.fixture.json",
+    "tests/dcp/test_dcp_0002_contract_derivation.py",
+    "task-packets/TP-DCP-0002.md"
+  ],
+  "approver": "claude-opus-auditor",
+  "contract_id": "dcp-approval-artifact-fixture-seed-v0",
+  "contract_status": "PROVISIONAL",
+  "decision": "gated",
+  "decision_timestamp": null,
+  "expiry_window": {
+    "provenance_tag": "SYNTHESIS_INVENTED",
+    "unit": null,
+    "value": null
+  },
+  "explicit_exclusions": [
+    "No live adapter writes",
+    "No dopemux dcp CLI behavior",
+    "No Task-Orchestrator writes",
+    "No GitHub writes beyond PR creation",
+    "No ConPort/dope-memory writes",
+    "LIVE_WRITE_READY not defined"
+  ],
+  "field_provenance": {
+    "approval_id": "SYNTHESIS_INVENTED",
+    "approval_tier": "REPO_VALIDATED",
+    "approved_artifact_refs": "REPO_VALIDATED",
+    "approver": "SYNTHESIS_INVENTED",
+    "contract_id": "SYNTHESIS_INVENTED",
+    "contract_status": "SYNTHESIS_INVENTED",
+    "decision": "REPO_VALIDATED",
+    "decision_timestamp": "SYNTHESIS_INVENTED",
+    "expiry_window": "SYNTHESIS_INVENTED",
+    "explicit_exclusions": "SYNTHESIS_INVENTED",
+    "forbidden_paths_acknowledged": "REPO_VALIDATED_BY_AUDIT",
+    "freshness_state": "REPO_VALIDATED",
+    "head_sha_or_digest": "REPO_VALIDATED",
+    "known_unknowns": "REPO_VALIDATED",
+    "mutation_class": "REPO_VALIDATED",
+    "project_id": "REPO_VALIDATED",
+    "proof_refs": "REPO_VALIDATED",
+    "rationale": "SYNTHESIS_INVENTED",
+    "red_lanes_present": "REPO_VALIDATED",
+    "red_lines": "REPO_VALIDATED_BY_AUDIT",
+    "repo_id": "REPO_VALIDATED",
+    "requested_action_summary": "REPO_VALIDATED",
+    "requester": "SYNTHESIS_INVENTED",
+    "supersedes": "SYNTHESIS_INVENTED",
+    "supervisor_signoff": "REPO_VALIDATED",
+    "validation_state": "PROVISIONAL"
+  },
+  "forbidden_paths_acknowledged": [
+    "src/dopemux_pr_merge_specialist/queue_drain.py",
+    "scripts/batch_resolve_and_merge.py"
+  ],
+  "freshness_state": "IMPLEMENTATION_COMPLETE",
+  "head_sha_or_digest": {
+    "provenance_tag": "SYNTHESIS_INVENTED",
+    "value": "sha256:PLACEHOLDER-illustrative-not-computed"
+  },
+  "known_unknowns": [
+    "Supervisor identity resolution not proven wired to runtime \u2014 supervisor_signoff.provided remains false",
+    "expiry_window semantics undefined in approval_policy.yaml \u2014 SYNTHESIS_INVENTED field",
+    "head_sha_or_digest is illustrative placeholder \u2014 no live SHA computed"
+  ],
+  "mutation_class": "MC-SCHEMA-CONTRACT",
+  "project_id": "dopemux-mvp",
+  "proof_refs": [
+    "proof/TP-DCP-0002/PROOF.json",
+    "proof/TP-DCP-0002/AUDIT.md",
+    "proof/TP-DCP-0002/DERIVATION_NOTES.md"
+  ],
+  "provenance": {
+    "source_ref": "TP-DCP-0002 derivation; tier/decision vocab from src/dopemux/orchestrator/policy.py + config/orchestrator/approval_policy.yaml",
+    "tag": "SYNTHESIS_INVENTED"
+  },
+  "rationale": "T4 schema/contract write under active Task Packet TP-DCP-0002. Requester (Sonnet implementer) is distinct from approver (Opus auditor). Supervisor sign-off pending. No live writes performed. All artifacts are read-only contract stubs.",
+  "red_lanes_present": [
+    "DCP-RED-MERGE-SEAM-0001",
+    "DCP-RED-SELF-CERTIFYING-LOOP"
+  ],
+  "red_lines": [
+    "DCP-RED-MERGE-SEAM-0001",
+    "DCP-RED-SELF-CERTIFYING-LOOP"
+  ],
+  "repo_id": "dopemux-mvp",
+  "requested_action_summary": "Add DCP mutation class, approval artifact, and project resource map schemas under schemas/dcp/ (TP-DCP-0002 MC-SCHEMA-CONTRACT posture)",
+  "requester": "claude-sonnet-implementer",
+  "schema_version": "dcp-approval-artifact.v0",
+  "supersedes": null,
+  "supervisor_signoff": {
+    "notes": "T4+ tier requires supervisor sign-off per policy.py T4_PLUS gate. Supervisor identity resolution is PROVISIONAL \u2014 not proven wired to runtime. Pending supervisor approval before any live write.",
+    "provided": false,
+    "required": true,
+    "signoff_identity": null
+  },
+  "validation": {
+    "notes": "SYNTHESIS_INVENTED envelope. Tier/decision vocabulary sub-fields are REPO_VALIDATED from policy.py. Envelope shape not cross-checked against a repo-runtime approval artifact.",
+    "state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT"
+  },
+  "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT"
+}

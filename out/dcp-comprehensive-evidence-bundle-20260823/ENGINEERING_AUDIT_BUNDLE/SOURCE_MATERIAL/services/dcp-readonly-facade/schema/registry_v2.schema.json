@@ -1,0 +1,119 @@
+{
+  "$id": "https://dopemux.dev/schemas/dcp/chatgpt-mcp-readonly/registry_v2.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "identity": {
+      "additionalProperties": false,
+      "properties": {
+        "owner": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "project": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "project"
+      ],
+      "type": "object"
+    },
+    "service_policies": {
+      "additionalProperties": false,
+      "description": "Keys are limited to exactly the 9 ADR-DCP-MCP-RO-0009 service families. The bare name 'task-orchestrator' is forbidden.",
+      "properties": {
+        "conport": {
+          "$ref": "#/definitions/service_policy"
+        },
+        "desktop_commander": {
+          "$ref": "#/definitions/service_policy"
+        },
+        "docker_mcp_gateway": {
+          "$ref": "#/definitions/service_policy"
+        },
+        "dope_context": {
+          "$ref": "#/definitions/service_policy"
+        },
+        "dope_memory": {
+          "$ref": "#/definitions/service_policy"
+        },
+        "pal": {
+          "$ref": "#/definitions/service_policy"
+        },
+        "serena": {
+          "$ref": "#/definitions/service_policy"
+        },
+        "to_compose_rest": {
+          "$ref": "#/definitions/service_policy"
+        },
+        "to_mcp_wrapper": {
+          "$ref": "#/definitions/service_policy"
+        }
+      },
+      "type": "object"
+    },
+    "service_policy": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "target": {
+      "additionalProperties": false,
+      "properties": {
+        "binding_mode": {
+          "enum": [
+            "PRIMARY_CHECKOUT_ONLY"
+          ],
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "identity": {
+          "$ref": "#/definitions/identity"
+        },
+        "service_policies": {
+          "$ref": "#/definitions/service_policies"
+        },
+        "target_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "workspace_path": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "target_id",
+        "workspace_path",
+        "identity"
+      ],
+      "type": "object"
+    }
+  },
+  "description": "Operator-authored, facade-read-only exposure target registry (ADR-DCP-MCP-RO-0009). target_id is the only caller-facing handle; this schema governs the registry FILE shape, not caller input. The bare family name 'task-orchestrator' and any family outside the 9 ADR-0009 families are rejected by additionalProperties:false under service_policies.",
+  "properties": {
+    "approved_roots": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "targets": {
+      "items": {
+        "$ref": "#/definitions/target"
+      },
+      "type": "array"
+    }
+  },
+  "title": "DCP Read-Only Facade \u2014 Exposure Target Registry v2",
+  "type": "object"
+}

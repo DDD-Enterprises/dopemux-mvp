@@ -1,0 +1,52 @@
+{
+  "$id": "https://github.com/DDD-Enterprises/dopemux-mvp/schemas/dcp/dcp_routing_decision.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "Routing decision with classification, lane, and stop conditions",
+  "properties": {
+    "audit_route": {
+      "$ref": "dcp_audit_route.schema.json",
+      "description": "Audit route for this decision"
+    },
+    "authority_surface": {
+      "$ref": "dcp_authority_surface.schema.json",
+      "description": "Authority surface for this decision"
+    },
+    "classification_id": {
+      "description": "Reference to classification",
+      "pattern": "^DCP-CLS-[0-9A-Z]{8}$",
+      "type": "string"
+    },
+    "decision_id": {
+      "description": "Unique decision identifier",
+      "pattern": "^DCP-DEC-[0-9A-Z]{8}$",
+      "type": "string"
+    },
+    "execution_lane": {
+      "$ref": "dcp_execution_lane.schema.json",
+      "description": "Assigned execution lane"
+    },
+    "routing_proof_extension": {
+      "$ref": "dcp_routing_proof_extension.schema.json",
+      "description": "Proof extension for routing evidence"
+    },
+    "stop_conditions": {
+      "description": "Active stop conditions",
+      "items": {
+        "$ref": "dcp_stop_condition.schema.json"
+      },
+      "minItems": 0,
+      "type": "array"
+    }
+  },
+  "required": [
+    "decision_id",
+    "classification_id",
+    "execution_lane",
+    "stop_conditions",
+    "authority_surface",
+    "audit_route"
+  ],
+  "title": "DcpRoutingDecision",
+  "type": "object"
+}

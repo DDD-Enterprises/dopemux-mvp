@@ -1,0 +1,146 @@
+{
+  "commit": {
+    "allowlist": [
+      "docs/90-adr/**",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/**",
+      "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0009.*",
+      "proof/TP-DCP-MCP-RO-0009/**"
+    ],
+    "message": "docs(dcp): record mcp exposure target contract",
+    "verify": [
+      "python -m json.tool task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0009.json >/tmp/tp-dcp-mcp-ro-0009.valid.json",
+      "python - <<'PY'\nimport json\nfrom jsonschema import Draft7Validator\nschema=json.load(open('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json'))\npacket=json.load(open('task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0009.json'))\nerrors=sorted(Draft7Validator(schema).iter_errors(packet), key=lambda e: e.path)\nassert not errors, '\\n'.join(f'{list(e.path)}: {e.message}' for e in errors)\nPY",
+      "rg -n -P \"OPENAI_API_KEY|ANTHROPIC_API_KEY|GEMINI_API_KEY|(?<![A-Za-z])sk-[A-Za-z0-9_]|Bearer |TOKEN: [REDACTED]\" docs/90-adr/adr-dcp-mcp-ro-0009-chatgpt-mcp-exposure-targets-runtime-resolution-ownership-evidence.md docs/90-adr/adr-index.md docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md docs/03-reference/dcp/chatgpt-mcp-readonly/DECISIONS.md task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0009.md proof/TP-DCP-MCP-RO-0009/AUDIT.md proof/TP-DCP-MCP-RO-0009/AUDITOR_REPORT.md proof/TP-DCP-MCP-RO-0009/COMMAND_LOG.md || true",
+      "git diff --check",
+      "git diff --stat",
+      "git status --short --branch"
+    ]
+  },
+  "depends_on": [
+    "TP-DCP-MCP-RO-0008"
+  ],
+  "execution": {
+    "agent": "codex",
+    "base_branch": "main",
+    "branch": "codex/dcp-mcp-ro-0009-exposure-target-contract"
+  },
+  "id": "TP-DCP-MCP-RO-0009",
+  "invariants": [
+    "Opaque target_id is the only ChatGPT-facing infrastructure identity for new exposure contracts.",
+    "Runtime discovery is not exposure consent.",
+    "Port leases are not ownership proof.",
+    "Heuristic discovery cannot authorize backend calls.",
+    "Task Orchestrator MCP remains blocked from ChatGPT Phase 1.",
+    "Task Orchestrator REST may only be considered through explicit GET-only adapters after route isolation is proven.",
+    "No runtime-dependent implementation in this packet.",
+    "No backend service code changes in this packet.",
+    "No tunnel, connector, secret, or public ingress changes in this packet.",
+    "STOP IF: Runtime code changes are required to make docs truthful.",
+    "STOP IF: Main-line ancestry does not contain the runtime stack needed for implementation.",
+    "FORBIDDEN FILE: services/**",
+    "FORBIDDEN FILE: src/**",
+    "FORBIDDEN FILE: docker/**",
+    "FORBIDDEN FILE: .env*",
+    "FORBIDDEN FILE: .dopemux/**"
+  ],
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "pr": {
+    "base": "main",
+    "body": "Materialize ADR-DCP-MCP-RO-0009 as the accepted ChatGPT MCP exposure-target contract and update the DCP read-only facade contract docs without changing runtime code.\n\nRequired PR sections: Objective, Scope, Evidence, Validation, Embedded audit, Risks and unknowns, Rollback, Proof bundle links",
+    "title": "Record ChatGPT MCP exposure target contract for DCP readonly facade"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "DCP-MCP-RO",
+    "parent_tp_id": "TP-DCP-MCP-RO-0008"
+  },
+  "steps": [
+    {
+      "context_files": [
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/ARCHITECTURE.md",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/MULTI_PROJECT_REGISTRY_CONTRACT.md",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md"
+      ],
+      "expected_files": [
+        "docs/90-adr/adr-dcp-mcp-ro-0009-chatgpt-mcp-exposure-targets-runtime-resolution-ownership-evidence.md",
+        "docs/90-adr/adr-index.md",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/DECISIONS.md",
+        "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0009.json",
+        "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0009.md"
+      ],
+      "id": "S1",
+      "requirements": [
+        "Add the accepted ADR under docs/90-adr.",
+        "Update the ADR index.",
+        "Update DCP read-only facade decisions/build-series docs.",
+        "Keep runtime implementation explicitly out of scope."
+      ],
+      "task": "Record ADR-DCP-MCP-RO-0009 and update DCP read-only facade contract references.",
+      "validation": [
+        "No files outside commit.allowlist are modified.",
+        "Docs distinguish target_id contract from existing runtime implementation state."
+      ]
+    },
+    {
+      "commands": [
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "git remote -v",
+        "git branch --show-current",
+        "git rev-parse HEAD",
+        "git status --short --branch",
+        "python -m json.tool task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0009.json >/tmp/tp-dcp-mcp-ro-0009.valid.json",
+        "python - <<'PY'\nimport json\nfrom jsonschema import Draft7Validator\nschema=json.load(open('docs/03-reference/spec/dopetask/dopetask-canonical-spec.json'))\npacket=json.load(open('task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0009.json'))\nerrors=sorted(Draft7Validator(schema).iter_errors(packet), key=lambda e: e.path)\nassert not errors, '\\n'.join(f'{list(e.path)}: {e.message}' for e in errors)\nPY",
+        "gh pr view 1031 --repo DDD-Enterprises/dopemux-mvp --json number,state,mergedAt,headRefName,baseRefName,mergeCommit,url,title",
+        "git merge-base --is-ancestor d170fa756c7708a0da98d51fe1aa0991ecfde9d2 origin/main; echo origin_main_contains_1031_merge:$?",
+        "git merge-base --is-ancestor b911e916c208109ecc862c8afa7365ad306d6cba origin/main; echo origin_main_contains_1031_branch_head:$?",
+        "rg -n -P \"OPENAI_API_KEY|ANTHROPIC_API_KEY|GEMINI_API_KEY|(?<![A-Za-z])sk-[A-Za-z0-9_]|Bearer |TOKEN: [REDACTED]\" docs/90-adr/adr-dcp-mcp-ro-0009-chatgpt-mcp-exposure-targets-runtime-resolution-ownership-evidence.md docs/90-adr/adr-index.md docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md docs/03-reference/dcp/chatgpt-mcp-readonly/DECISIONS.md task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0009.md proof/TP-DCP-MCP-RO-0009/AUDIT.md proof/TP-DCP-MCP-RO-0009/AUDITOR_REPORT.md proof/TP-DCP-MCP-RO-0009/COMMAND_LOG.md || true",
+        "git diff --check",
+        "git diff --stat",
+        "git status --short --branch"
+      ],
+      "id": "S2",
+      "task": "Validate the packet and docs-only diff.",
+      "validation": [
+        "Task packet JSON parses.",
+        "Task packet conforms to dopetask-canonical-spec.json.",
+        "GitHub PR #1031 state is recorded.",
+        "Main-line runtime implementation blocker is recorded if ancestry check fails.",
+        "Secret scan does not expose credentials.",
+        "Diff remains docs/packet/proof only."
+      ]
+    },
+    {
+      "id": "S3",
+      "requirements": [
+        "PROOF.json with validation commands and exit codes.",
+        "COMMAND_LOG.md with command evidence.",
+        "AUDIT.md challenging runtime/base-branch authority and scope.",
+        "AUDITOR_REPORT.md matching the embedded audit schema report path."
+      ],
+      "task": "Produce the proof bundle under proof/TP-DCP-MCP-RO-0009/.",
+      "validation": [
+        "Proof bundle present with command outputs and exit codes.",
+        "Embedded audit verdict recorded."
+      ]
+    }
+  ],
+  "target": "Materialize ADR-DCP-MCP-RO-0009 as the accepted ChatGPT MCP exposure-target contract and update the DCP read-only facade contract docs without changing runtime code."
+}

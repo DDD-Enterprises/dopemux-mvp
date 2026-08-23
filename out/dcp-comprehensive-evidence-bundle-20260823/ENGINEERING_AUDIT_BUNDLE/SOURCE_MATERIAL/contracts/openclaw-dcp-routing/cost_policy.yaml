@@ -1,0 +1,100 @@
+schema_version: "1.0.0"
+artifact_id: "cost_policy"
+status: "PROPOSED"
+currency: "USD"
+route_cost_tiers:
+  free:
+    max_usd_per_task: 0.0
+    allowed_pools: ["openrouter_free_sandbox"]
+    approval_required_above: 0.0
+  cheap:
+    max_usd_per_task: 0.25
+    allowed_pools: ["cheap_read", "cheap_classifier", "test_builder"]
+    approval_required_above: 0.25
+  standard:
+    max_usd_per_task: 3.0
+    allowed_pools: ["repo_cartographer", "planner_default", "implementer_default", "implementer_alt", "auditor_default", "structured_packet"]
+    approval_required_above: 3.0
+  premium:
+    max_usd_per_task: 25.0
+    allowed_pools: ["planner_strong", "proof_validator", "auditor_deep", "security_reviewer", "release_judge", "supervisor"]
+    approval_required_above: 10.0
+  emergency:
+    max_usd_per_task: 50.0
+    allowed_pools: ["supervisor", "release_judge"]
+    approval_required_above: 0.0
+pool_cost_ceilings:
+  cheap_read: { tier: cheap, max_usd: 0.10 }
+  cheap_classifier: { tier: cheap, max_usd: 0.05 }
+  repo_cartographer: { tier: standard, max_usd: 2.00 }
+  planner_default: { tier: standard, max_usd: 1.50 }
+  planner_strong: { tier: premium, max_usd: 10.00 }
+  implementer_default: { tier: standard, max_usd: 5.00 }
+  implementer_alt: { tier: standard, max_usd: 2.00 }
+  test_builder: { tier: cheap, max_usd: 0.50 }
+  structured_packet: { tier: standard, max_usd: 1.00 }
+  proof_validator: { tier: premium, max_usd: 8.00 }
+  auditor_default: { tier: standard, max_usd: 3.00 }
+  auditor_deep: { tier: premium, max_usd: 15.00 }
+  security_reviewer: { tier: premium, max_usd: 20.00 }
+  release_judge: { tier: premium, max_usd: 20.00 }
+  supervisor: { tier: premium, max_usd: 25.00 }
+  openrouter_free_sandbox: { tier: free, max_usd: 0.00 }
+retry_budget:
+  default_max_retries: 1
+  schema_authority_max_retries: 1
+  provider_outage_max_retries: 1
+  patch_failure_max_retries_before_escalation: 1
+  cost_multiplier_max: 1.5
+  retry_must_preserve_policy: true
+escalation_cost_gates:
+  to_planner_strong:
+    requires_reason: true
+    human_approval_if_above_usd: 10.0
+  to_auditor_deep:
+    requires_reason: true
+    human_approval_if_above_usd: 10.0
+  to_security_reviewer:
+    requires_human_approval: true
+  to_release_judge:
+    requires_human_approval: true
+  benchmark_bypass:
+    requires_human_approval: true
+    production_authority_allowed: false
+openrouter_max_price_behavior:
+  max_price_is_hard_filter: true
+  block_if_no_provider_satisfies_max_price: true
+  requested_model_is_not_cost_source_of_truth: true
+  cost_accounting_uses_actual_returned_model: true
+  log:
+    - max_price_requested
+    - actual_model
+    - actual_provider
+    - usage
+    - actual_cost_usd
+budget_override_approval:
+  required_fields:
+    - approval_id
+    - approver
+    - max_approved_usd
+    - route_decision_id
+    - reason
+    - expires_at
+  release_or_security_override_requires_explicit_scope: true
+cost_proof_fields:
+  - route_decision_id
+  - requested_model
+  - actual_model
+  - provider
+  - route_profile
+  - input_tokens
+  - output_tokens
+  - cache_tokens
+  - reasoning_tokens
+  - request_count
+  - estimated_usd
+  - actual_usd
+  - budget_ceiling_usd
+  - override_approval_ref
+
+validation_notes: Cost tiers are proposed defaults. Turn 5 should wire them into runtime config and update ceilings from actual pricing.

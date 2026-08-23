@@ -1,0 +1,59 @@
+# DCP read-only MCP facade — EXAMPLE registry v2 (no secrets).
+#
+# Copy this to a path OUTSIDE the repo and point $DCP_FACADE_REGISTRY_V2 at it
+# (default: ~/.dopemux/dcp-facade-registry-v2.yaml). NEVER commit a populated
+# registry with real workspace paths or service credentials.
+#
+# Contract: docs/03-reference/dcp/chatgpt-mcp-readonly/REGISTRY_V2_CONTRACT.md
+# (v1->v2 migration: docs/03-reference/dcp/chatgpt-mcp-readonly/REGISTRY_V2_CONTRACT.md#migration)
+#
+# ADR: docs/90-adr/adr-dcp-mcp-ro-0009-chatgpt-mcp-exposure-targets-runtime-resolution-ownership-evidence.md
+#
+# v1 (project_id / registry.py) remains supported for existing deployments —
+# see registry.py + MULTI_PROJECT_REGISTRY_CONTRACT.md. This file documents
+# the v2 shape only; a v1 document loaded through registry_v2.py fails closed
+# with an actionable migration warning rather than being silently coerced.
+
+# Optional: workspaces must resolve (symlink-followed) inside one of these.
+approved_roots:
+  - /abs/approved/root
+
+targets:
+  - target_id: "dopemux-main"            # opaque caller-facing handle (the ONLY handle ChatGPT may supply)
+    workspace_path: "/abs/approved/root/dopemux-mvp"
+    enabled: true                         # exposure switch; omit/false = NOT exposed
+    binding_mode: "PRIMARY_CHECKOUT_ONLY" # default and only supported mode; binds to exactly ONE workspace
+    identity:                             # matched against the workspace's .repo_id
+      project: "dopemux-mvp"              # REQUIRED; must equal .repo_id `project=`
+      owner: "hu3mann"                    # OPTIONAL; enforced only when present
+    service_policies:                     # family -> { enabled }; family MUST be one of the 9 ADR-0009 names
+      conport:
+        enabled: true                     # "configured" (declared + enabled); NOT proof of live/callable
+      dope_memory:
+        enabled: true
+      to_compose_rest:
+        enabled: false
+      to_mcp_wrapper:
+        enabled: false                    # blocked posture (ADR-0009); leave disabled
+      dope_context:
+        enabled: false                    # blocked-until-read-bridge posture (ADR-0009)
+      serena:
+        enabled: false                    # blocked-until-inventory posture (ADR-0009)
+      pal:
+        enabled: false                    # blocked posture (ADR-0009)
+      docker_mcp_gateway:
+        enabled: false                    # blocked posture (ADR-0009)
+      desktop_commander:
+        enabled: false                    # blocked posture (ADR-0009)
+
+  # Additional worktrees require distinct operator-created targets — the
+  # resolver NEVER auto-selects the newest/most-recent worktree.
+  - target_id: "dopemux-pr-1031"
+    workspace_path: "/abs/approved/root/dopemux-mvp-worktrees/pr-1031"
+    enabled: false
+    identity:
+      project: "dopemux-mvp"
+      owner: "hu3mann"
+    service_policies:
+      conport:
+        enabled: true

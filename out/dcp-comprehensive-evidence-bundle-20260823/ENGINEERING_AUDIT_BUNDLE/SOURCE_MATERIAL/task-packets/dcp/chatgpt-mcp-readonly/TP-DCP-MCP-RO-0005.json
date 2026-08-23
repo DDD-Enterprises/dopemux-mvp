@@ -1,0 +1,149 @@
+{
+  "commit": {
+    "allowlist": [
+      "services/dcp-readonly-facade/**",
+      "docs/03-reference/dcp/chatgpt-mcp-readonly/**",
+      "proof/TP-DCP-MCP-RO-0005/**"
+    ],
+    "message": "feat(dcp): add conport and dope-memory readonly adapters",
+    "verify": [
+      "rg -n \"PUT|PATCH|DELETE|/kg/|/ddg/|/route/pm|memory_correct|memory_generate_reflection|memory_store|memory_mark_issue|memory_link_resolution|log_decision|upsert|graph.link\" services/dcp-readonly-facade || true",
+      "git diff --stat",
+      "git diff -- services/dcp-readonly-facade docs/03-reference/dcp/chatgpt-mcp-readonly proof/TP-DCP-MCP-RO-0005",
+      "git status --short --branch"
+    ]
+  },
+  "depends_on": [
+    "TP-DCP-MCP-RO-0004"
+  ],
+  "execution": {
+    "agent": "codex",
+    "base_branch": "main",
+    "branch": "dcp/chatgpt-mcp-ro-0005-conport-and-dope-memory-read-ada"
+  },
+  "id": "TP-DCP-MCP-RO-0005",
+  "invariants": [
+    "Registry binds project to ConPort workspace_id and dope-memory profile.",
+    "Caller cannot select workspace_id, base_url, port, or route.",
+    "All service calls time out and fail closed.",
+    "POST is allowed only for explicitly classified dope-memory read tool routes.",
+    "Output carries authority labels and redaction metadata.",
+    "OUT OF SCOPE: No ConPort writes/upserts/deletes.",
+    "OUT OF SCOPE: No dope-memory correction, reflection generation, issue mutation, storage, or link routes.",
+    "OUT OF SCOPE: No dope-context/task-orchestrator adapters.",
+    "OUT OF SCOPE: No bridge routing.",
+    "OUT OF SCOPE: No generic search/fetch.",
+    "STOP IF: Backend read behavior cannot be bounded.",
+    "STOP IF: A route requires bridge access to work.",
+    "STOP IF: Caller-selected workspace_id/base_url is necessary.",
+    "STOP IF: Tests require live mutable services.",
+    "STOP IF: Denied route appears in implementation outside tests/docs.",
+    "FORBIDDEN FILE: services/dopecon-bridge/**",
+    "FORBIDDEN FILE: services/working-memory-assistant/**",
+    "FORBIDDEN FILE: docker/mcp-servers-source/conport/**",
+    "FORBIDDEN FILE: src/conport/**",
+    "FORBIDDEN FILE: src/dopemux/**",
+    "FORBIDDEN FILE: compose*.yml",
+    "FORBIDDEN FILE: services/registry.yaml"
+  ],
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "pr": {
+    "base": "main",
+    "body": "Add project-scoped ConPort and dope-memory read adapters with strict route allowlists, denylist tests, redaction, pagination, and canonical response envelopes.\n\nRequired PR sections: Objective, Scope, Evidence, Validation, Embedded audit, Risks and unknowns, Rollback, Proof bundle links",
+    "title": "Add ConPort and dope-memory read adapters to DCP readonly facade"
+  },
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "origin_hint": "github.com/DDD-Enterprises/dopemux-mvp",
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".repo_id",
+    "require_identity_match": true
+  },
+  "series": {
+    "base_branch": "main",
+    "final_packet": false,
+    "id": "DCP-MCP-RO",
+    "parent_tp_id": "TP-DCP-MCP-RO-0004"
+  },
+  "steps": [
+    {
+      "context_files": [
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/READ_ONLY_SURFACE_INVENTORY.json",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/ARCHITECTURE.md",
+        "docs/03-reference/dcp/chatgpt-mcp-readonly/TOOL_CONTRACT.md"
+      ],
+      "expected_files": [
+        "ConPort adapter",
+        "dope-memory adapter",
+        "Four new tools",
+        "Route tests",
+        "Proof bundle for packet 0005"
+      ],
+      "id": "S1",
+      "requirements": [
+        "Implement ConPort read adapter for GET /api/decisions, GET /api/progress, GET /api/search/{workspace_id}.",
+        "Implement dope-memory read adapter for /tools/memory_search and /tools/memory_replay_session.",
+        "Add tools search_decisions, search_progress, search_chronicle, replay_chronicle_session.",
+        "Add backend route manifest and tests.",
+        "Add mocked backend tests and optional live tests behind explicit env flag."
+      ],
+      "task": "Implement per objective: Add project-scoped ConPort and dope-memory read adapters with strict route allowlists, denylist tests, redaction, pagination, and canonical response envelopes. In-scope work: Implement ConPort read adapter for GET /api/decisions, GET /api/progress, GET /api/search/{workspace_id}. Implement dope-memory read adapter for /tools/memory_search and /tools/memory_replay_session. Add tools search_decisions, search_progress, search_chronicle, replay_chronicle_session. Add backend route manifest and tests. Add mocked backend tests and optional live tests behind explicit env flag.",
+      "validation": [
+        "No files outside commit.allowlist are modified; change matches the stated scope."
+      ]
+    },
+    {
+      "commands": [
+        "pwd",
+        "git rev-parse --show-toplevel",
+        "git remote -v",
+        "git branch --show-current",
+        "git rev-parse HEAD",
+        "git status --short --branch",
+        "python -m pytest -q services/dcp-readonly-facade/tests",
+        "python -m compileall -q services/dcp-readonly-facade",
+        "rg -n \"PUT|PATCH|DELETE|/kg/|/ddg/|/route/pm|memory_correct|memory_generate_reflection|memory_store|memory_mark_issue|memory_link_resolution|log_decision|upsert|graph.link\" services/dcp-readonly-facade || true",
+        "git diff --stat",
+        "git diff -- services/dcp-readonly-facade docs/03-reference/dcp/chatgpt-mcp-readonly proof/TP-DCP-MCP-RO-0005",
+        "git status --short --branch"
+      ],
+      "id": "S2",
+      "task": "Run the packet validation commands and inspect the diff.",
+      "validation": [
+        "ConPort GET decisions/progress/search allowed only through registry-bound service profile.",
+        "ConPort POST decisions/progress/custom_data denied.",
+        "dope-memory search/replay accepted only through explicit read exceptions.",
+        "dope-memory correction/generation/storage/link routes denied.",
+        "No bridge URL appears in adapter code except denylist tests/docs.",
+        "All service-backed tools enforce limit <=20.",
+        "Tests pass."
+      ]
+    },
+    {
+      "id": "S3",
+      "requirements": [
+        "PROOF.json.",
+        "COMMAND_LOG.md.",
+        "AUDIT.md challenging POST read exception and route allowlist.",
+        "Allowed/denied route manifest.",
+        "Test outputs.",
+        "Grep outputs for denied routes/methods.",
+        "Diff and diff stat."
+      ],
+      "task": "Produce the proof bundle under proof/TP-DCP-MCP-RO-0005/ (PROOF.json, COMMAND_LOG.md, AUDIT.md) and run the embedded audit.",
+      "validation": [
+        "Proof bundle present with command outputs and exit codes.",
+        "Embedded audit verdict recorded (PASS or PASS_WITH_RISKS with non-blocking risks)."
+      ]
+    }
+  ],
+  "target": "Add project-scoped ConPort and dope-memory read adapters with strict route allowlists, denylist tests, redaction, pagination, and canonical response envelopes."
+}

@@ -1,0 +1,136 @@
+{
+  "$id": "https://github.com/DDD-Enterprises/dopemux-mvp/schemas/dcp/dcp_routing_proof_extension.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "Additive proof extension for routing decisions (NOT replacement of existing proof families)",
+  "properties": {
+    "audit_route": {
+      "$ref": "dcp_audit_route.schema.json",
+      "description": "Audit route snapshot"
+    },
+    "backend": {
+      "$ref": "dcp_backend_runner.schema.json",
+      "description": "Backend runner snapshot"
+    },
+    "classification": {
+      "$ref": "dcp_routing_classification.schema.json",
+      "description": "Classification snapshot"
+    },
+    "execution_lane": {
+      "$ref": "dcp_execution_lane.schema.json",
+      "description": "Lane snapshot"
+    },
+    "extension_id": {
+      "description": "Unique proof extension identifier",
+      "pattern": "^DCP-PROOF-[0-9A-Z]{6}$",
+      "type": "string"
+    },
+    "model_slot": {
+      "$ref": "dcp_model_slot.schema.json",
+      "description": "Model slot evidence snapshot"
+    },
+    "operator_approval": {
+      "additionalProperties": false,
+      "description": "Operator approval record",
+      "properties": {
+        "approved": {
+          "description": "Whether operator approval was granted",
+          "type": "boolean"
+        },
+        "approver": {
+          "description": "Approver identity or reference",
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "timestamp": {
+          "description": "ISO8601 approval timestamp",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "approved",
+        "approver",
+        "timestamp"
+      ],
+      "type": "object"
+    },
+    "red_lane_flags": {
+      "description": "Red lane flags that must be addressed",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "routing_decision": {
+      "$ref": "dcp_routing_decision.schema.json",
+      "description": "Decision snapshot"
+    },
+    "runner_invocation": {
+      "additionalProperties": false,
+      "description": "Runner invocation record",
+      "properties": {
+        "authority": {
+          "description": "Authority posture of runner",
+          "enum": [
+            "backend_only",
+            "validation_only",
+            "read_only",
+            "adapter",
+            "advisory",
+            "forbidden",
+            "unknown"
+          ],
+          "type": "string"
+        },
+        "model": {
+          "description": "Model used (e.g., grok-4.3)",
+          "maxLength": 50,
+          "minLength": 1,
+          "type": "string"
+        },
+        "tool": {
+          "description": "Implementation tool used",
+          "enum": [
+            "opencode",
+            "claude_code",
+            "gemini_cli",
+            "codex_cli",
+            "validation_tool",
+            "none"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "tool",
+        "model",
+        "authority"
+      ],
+      "type": "object"
+    },
+    "stop_conditions": {
+      "description": "Stop conditions active for this proof extension",
+      "items": {
+        "$ref": "dcp_stop_condition.schema.json"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "extension_id",
+    "classification",
+    "routing_decision",
+    "execution_lane",
+    "model_slot",
+    "backend",
+    "runner_invocation",
+    "audit_route",
+    "operator_approval",
+    "red_lane_flags",
+    "stop_conditions"
+  ],
+  "title": "DcpRoutingProofExtension",
+  "type": "object"
+}

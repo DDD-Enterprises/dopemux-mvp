@@ -1,0 +1,743 @@
+{
+  "$id": "https://dcp.local/schemas/proof_requirements.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "task_execution_class": {
+            "enum": [
+              "write",
+              "security",
+              "release"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "files_changed": {
+            "minItems": 1
+          },
+          "git_diff": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "git_diff_stat": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "git_status_after": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "git_status_before": {
+            "minLength": 1,
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "risk_class": {
+            "enum": [
+              "R5_SECURITY_OR_AUTHORITY",
+              "R6_RELEASE_OR_PRODUCTION"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "approval_event": {
+            "type": "object"
+          },
+          "audit_decision": {
+            "properties": {
+              "auditor_verdict": {
+                "enum": [
+                  "PASS",
+                  "PASS_WITH_RISKS"
+                ]
+              }
+            },
+            "type": "object"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "task_execution_class": {
+            "const": "release"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "approval_event": {
+            "type": "object"
+          },
+          "head_sha": {
+            "minLength": 7,
+            "type": "string"
+          },
+          "pr_metadata": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "check_result": {
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "exit_code": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "output_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "skipped",
+            "not_run"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "command",
+        "status",
+        "exit_code",
+        "output_ref"
+      ],
+      "type": "object"
+    },
+    "command_output": {
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "exit_code": {
+          "type": "integer"
+        },
+        "stderr_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "stdout_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "command",
+        "stdout_ref",
+        "stderr_ref",
+        "exit_code"
+      ],
+      "type": "object"
+    },
+    "command_run": {
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "cwd": {
+          "type": "string"
+        },
+        "started_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "command",
+        "cwd",
+        "started_at"
+      ],
+      "type": "object"
+    },
+    "cost": {
+      "additionalProperties": false,
+      "properties": {
+        "ceiling_usd": {
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "estimated_usd": {
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "estimated_usd",
+        "ceiling_usd"
+      ],
+      "type": "object"
+    },
+    "file_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "privacy_class": {
+      "enum": [
+        "PUBLIC_SANDBOX",
+        "PUBLIC_REPO",
+        "PRIVATE_REPO_NO_SECRETS",
+        "PRIVATE_REPO_POSSIBLE_SECRETS",
+        "SECRET_BEARING",
+        "CLIENT_DATA",
+        "SECURITY_SENSITIVE",
+        "RELEASE_AUTHORITY",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "provider": {
+      "enum": [
+        "openai",
+        "anthropic",
+        "google",
+        "openrouter",
+        "local",
+        "manual",
+        "multiple",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "risk_class": {
+      "enum": [
+        "R0_READ",
+        "R1_DRAFT",
+        "R2_TEST_ONLY",
+        "R3_LOCAL_EDIT",
+        "R4_MULTI_FILE_EDIT",
+        "R5_SECURITY_OR_AUTHORITY",
+        "R6_RELEASE_OR_PRODUCTION",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "runner": {
+      "enum": [
+        "openclaw",
+        "codex",
+        "claude_code",
+        "gemini_antigravity",
+        "openrouter_generic",
+        "direct_api",
+        "manual_app",
+        "shell_local",
+        "dopetask",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "usage": {
+      "additionalProperties": false,
+      "properties": {
+        "actual_usd": {
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "input_tokens": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "output_tokens": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "input_tokens",
+        "output_tokens",
+        "actual_usd"
+      ],
+      "type": "object"
+    },
+    "validation_result": {
+      "additionalProperties": false,
+      "properties": {
+        "errors": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "schema_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "validated": {
+          "type": "boolean"
+        },
+        "validator": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "validated",
+        "validator",
+        "schema_id",
+        "errors"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "actual_model": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "actual_usage": {
+      "$ref": "#/definitions/usage"
+    },
+    "approval_event": {
+      "additionalProperties": false,
+      "properties": {
+        "approval_id": {
+          "type": "string"
+        },
+        "approval_scope": {
+          "enum": [
+            "privacy_route_override",
+            "write_or_destructive_execution",
+            "scope_expansion",
+            "budget_override",
+            "high_risk_execution",
+            "proof_gap_acceptance",
+            "audit_conflict_resolution",
+            "release_approval",
+            "consumer_plan_evidence_acceptance",
+            "openrouter_sensitive_route",
+            "preview_model_risk_acceptance",
+            "provider_drift_acceptance",
+            "benchmark_bypass"
+          ],
+          "type": "string"
+        },
+        "approved_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "approver": {
+          "type": "string"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "explicit_statement": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "privacy_class": {
+          "$ref": "#/definitions/privacy_class"
+        },
+        "risk_class": {
+          "$ref": "#/definitions/risk_class"
+        },
+        "route_decision_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "approval_id",
+        "approver",
+        "approval_scope",
+        "approved_at",
+        "expires_at",
+        "route_decision_id",
+        "risk_class",
+        "privacy_class",
+        "explicit_statement"
+      ],
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "audit_decision": {
+      "additionalProperties": false,
+      "properties": {
+        "audit_ref": {
+          "type": "string"
+        },
+        "auditor_model": {
+          "type": "string"
+        },
+        "auditor_provider": {
+          "$ref": "#/definitions/provider"
+        },
+        "auditor_runner": {
+          "$ref": "#/definitions/runner"
+        },
+        "auditor_verdict": {
+          "enum": [
+            "PASS",
+            "PASS_WITH_RISKS",
+            "FAIL",
+            "NEEDS_SUPERVISOR",
+            "SKIPPED"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "auditor_provider",
+        "auditor_model",
+        "auditor_runner",
+        "auditor_verdict",
+        "audit_ref"
+      ],
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "command_outputs": {
+      "items": {
+        "$ref": "#/definitions/command_output"
+      },
+      "type": "array"
+    },
+    "commands_run": {
+      "items": {
+        "$ref": "#/definitions/command_run"
+      },
+      "type": "array"
+    },
+    "cost_estimate": {
+      "$ref": "#/definitions/cost"
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "exit_codes": {
+      "items": {
+        "type": "integer"
+      },
+      "type": "array"
+    },
+    "files_changed": {
+      "items": {
+        "$ref": "#/definitions/file_ref"
+      },
+      "type": "array"
+    },
+    "files_read": {
+      "items": {
+        "$ref": "#/definitions/file_ref"
+      },
+      "type": "array"
+    },
+    "git_diff": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "git_diff_stat": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "git_status_after": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "git_status_before": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "head_sha": {
+      "pattern": "^[a-fA-F0-9]{7,40}$",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "model_provider_used": {
+      "$ref": "#/definitions/provider"
+    },
+    "openclaw_trajectory_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "packet_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pr_metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "base_branch": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "head_sha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pr_number": {
+          "minimum": 1,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "repo": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "repo",
+        "pr_number",
+        "head_sha",
+        "base_branch"
+      ],
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "privacy_class": {
+      "$ref": "#/definitions/privacy_class"
+    },
+    "prompt_body_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "prompt_hash": {
+      "pattern": "^[a-fA-F0-9]{64}$",
+      "type": "string"
+    },
+    "provider_endpoint_or_route_profile": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "redaction_report": {
+      "additionalProperties": false,
+      "properties": {
+        "notes": {
+          "type": "string"
+        },
+        "redaction_applied": {
+          "type": "boolean"
+        },
+        "secret_scan_state": {
+          "enum": [
+            "clean",
+            "possible_secrets",
+            "confirmed_secrets",
+            "not_scanned",
+            "unknown"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "redaction_applied",
+        "secret_scan_state",
+        "notes"
+      ],
+      "type": "object"
+    },
+    "remaining_risks": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "requested_model": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "response_body_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "response_hash": {
+      "pattern": "^[a-fA-F0-9]{64}$",
+      "type": "string"
+    },
+    "risk_class": {
+      "$ref": "#/definitions/risk_class"
+    },
+    "route_decision_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "route_decision_reason": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "runner_used": {
+      "$ref": "#/definitions/runner"
+    },
+    "schema_version": {
+      "const": "1.0.0",
+      "type": "string"
+    },
+    "structured_schema_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "structured_validation_result": {
+      "$ref": "#/definitions/validation_result"
+    },
+    "task_execution_class": {
+      "enum": [
+        "read_only",
+        "draft_only",
+        "test_only",
+        "write",
+        "security",
+        "release"
+      ],
+      "type": "string"
+    },
+    "task_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "test_lint_typecheck_results": {
+      "items": {
+        "$ref": "#/definitions/check_result"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "route_decision_id",
+    "task_id",
+    "packet_id",
+    "privacy_class",
+    "risk_class",
+    "task_execution_class",
+    "model_provider_used",
+    "runner_used",
+    "requested_model",
+    "actual_model",
+    "provider_endpoint_or_route_profile",
+    "prompt_hash",
+    "prompt_body_ref",
+    "response_hash",
+    "response_body_ref",
+    "files_read",
+    "files_changed",
+    "git_status_before",
+    "git_status_after",
+    "git_diff_stat",
+    "git_diff",
+    "commands_run",
+    "command_outputs",
+    "exit_codes",
+    "test_lint_typecheck_results",
+    "structured_schema_id",
+    "structured_validation_result",
+    "cost_estimate",
+    "actual_usage",
+    "route_decision_reason",
+    "audit_decision",
+    "approval_event",
+    "head_sha",
+    "pr_metadata",
+    "openclaw_trajectory_ref",
+    "redaction_report",
+    "remaining_risks",
+    "created_at"
+  ],
+  "title": "DCP Proof Requirements and Proof Bundle",
+  "type": "object"
+}

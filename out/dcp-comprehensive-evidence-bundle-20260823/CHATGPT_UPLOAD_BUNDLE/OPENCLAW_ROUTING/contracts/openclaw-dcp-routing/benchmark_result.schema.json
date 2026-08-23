@@ -1,0 +1,434 @@
+{
+  "$id": "https://dcp.local/schemas/benchmark_result.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "certification_recommendation": {
+            "enum": [
+              "CERTIFY",
+              "CERTIFY_WITH_LIMITS"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "contradiction_recall": {
+            "minimum": 0.9,
+            "type": "number"
+          },
+          "core_field_stability": {
+            "minimum": 0.95,
+            "type": "number"
+          },
+          "evidence_grounding": {
+            "properties": {
+              "precision": {
+                "minimum": 0.98
+              }
+            }
+          },
+          "hallucinated_files": {
+            "properties": {
+              "count": {
+                "const": 0
+              },
+              "paths": {
+                "maxItems": 0
+              }
+            }
+          },
+          "json_validity": {
+            "properties": {
+              "rate": {
+                "const": 1
+              },
+              "valid": {
+                "const": true
+              }
+            }
+          },
+          "pass_fail": {
+            "const": "PASS"
+          },
+          "privacy_violation": {
+            "properties": {
+              "detected": {
+                "const": false
+              }
+            }
+          },
+          "provider_drift": {
+            "properties": {
+              "detected": {
+                "const": false
+              }
+            }
+          },
+          "schema_validity": {
+            "properties": {
+              "errors": {
+                "maxItems": 0
+              },
+              "rate": {
+                "const": 1
+              },
+              "valid": {
+                "const": true
+              }
+            }
+          },
+          "unsupported_claims": {
+            "properties": {
+              "count": {
+                "const": 0
+              },
+              "rate": {
+                "maximum": 0.01
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "provider": {
+      "enum": [
+        "openai",
+        "anthropic",
+        "google",
+        "openrouter",
+        "local",
+        "manual",
+        "multiple",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "runner": {
+      "enum": [
+        "openclaw",
+        "codex",
+        "claude_code",
+        "gemini_antigravity",
+        "openrouter_generic",
+        "direct_api",
+        "manual_app",
+        "shell_local",
+        "dopetask",
+        "unknown"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "actual_model": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "benchmark_result_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "certification_recommendation": {
+      "enum": [
+        "CERTIFY",
+        "CERTIFY_WITH_LIMITS",
+        "DO_NOT_CERTIFY",
+        "NEEDS_MORE_DATA"
+      ],
+      "type": "string"
+    },
+    "contradiction_recall": {
+      "maximum": 1,
+      "minimum": 0,
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "core_field_stability": {
+      "maximum": 1,
+      "minimum": 0,
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "cost": {
+      "additionalProperties": false,
+      "properties": {
+        "actual_usd": {
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "estimated_usd": {
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "actual_usd",
+        "estimated_usd"
+      ],
+      "type": "object"
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "diff_applicability": {
+      "enum": [
+        "applies",
+        "does_not_apply",
+        "not_applicable",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "evidence_grounding": {
+      "additionalProperties": false,
+      "properties": {
+        "precision": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "sample_count": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "precision",
+        "sample_count"
+      ],
+      "type": "object"
+    },
+    "fixture_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "hallucinated_files": {
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "count",
+        "paths"
+      ],
+      "type": "object"
+    },
+    "json_validity": {
+      "additionalProperties": false,
+      "properties": {
+        "rate": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "valid": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "valid",
+        "rate"
+      ],
+      "type": "object"
+    },
+    "latency": {
+      "additionalProperties": false,
+      "properties": {
+        "ttfb_ms": {
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "ttft_ms": {
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "wall_ms": {
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "wall_ms",
+        "ttfb_ms",
+        "ttft_ms"
+      ],
+      "type": "object"
+    },
+    "pass_fail": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "PARTIAL",
+        "BLOCKED_EXPECTED"
+      ],
+      "type": "string"
+    },
+    "privacy_violation": {
+      "additionalProperties": false,
+      "properties": {
+        "details": {
+          "type": "string"
+        },
+        "detected": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "detected",
+        "details"
+      ],
+      "type": "object"
+    },
+    "provider": {
+      "$ref": "#/definitions/provider"
+    },
+    "provider_drift": {
+      "additionalProperties": false,
+      "properties": {
+        "details": {
+          "type": "string"
+        },
+        "detected": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "detected",
+        "details"
+      ],
+      "type": "object"
+    },
+    "requested_model": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "route_tested": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "runner": {
+      "$ref": "#/definitions/runner"
+    },
+    "schema_validity": {
+      "additionalProperties": false,
+      "properties": {
+        "errors": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "rate": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "valid": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "valid",
+        "rate",
+        "errors"
+      ],
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "1.0.0",
+      "type": "string"
+    },
+    "tests_result": {
+      "enum": [
+        "passed",
+        "failed",
+        "not_run",
+        "not_applicable",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "unsupported_claims": {
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "rate": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "count",
+        "rate"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "benchmark_result_id",
+    "fixture_id",
+    "route_tested",
+    "requested_model",
+    "actual_model",
+    "provider",
+    "runner",
+    "pass_fail",
+    "json_validity",
+    "schema_validity",
+    "evidence_grounding",
+    "unsupported_claims",
+    "hallucinated_files",
+    "contradiction_recall",
+    "core_field_stability",
+    "diff_applicability",
+    "tests_result",
+    "latency",
+    "cost",
+    "provider_drift",
+    "privacy_violation",
+    "certification_recommendation",
+    "created_at"
+  ],
+  "title": "DCP Route Benchmark Result",
+  "type": "object"
+}

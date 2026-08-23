@@ -1,0 +1,35 @@
+{
+  "access_path": "openrouter_paid",
+  "actual_model": "mistralai/codestral-2508",
+  "api_route_used": true,
+  "audit_requirement": "light",
+  "benchmark_certification_ref": "cert_test_builder_public_001",
+  "blocked_reasons": [],
+  "consumer_plan_used": false,
+  "created_at": "2026-06-17T12:02:00Z",
+  "decision_status": "SELECTED",
+  "evidence_refs": [
+    "fixture:BF-007-patch-generation"
+  ],
+  "human_approval_ref": null,
+  "human_gate_required": false,
+  "openrouter_profile": "or_low_cost_public",
+  "privacy_class": "PUBLIC_REPO",
+  "proof_requirement": "implementation",
+  "provider": "openrouter",
+  "requested_model": "mistralai/codestral-2508",
+  "risk_class": "R2_TEST_ONLY",
+  "role": "test_generation",
+  "route_decision_id": "rd_example_R2_TEST_ONLY",
+  "runner": "openrouter_generic",
+  "schema_version": "1.0.0",
+  "selected_pool": "test_builder",
+  "selected_route": {
+    "fallback_allowed": true,
+    "route_name": "cheap-test-builder",
+    "route_profile": "or_low_cost_public",
+    "selection_reason": "Non-sensitive test scaffold; generated tests are not final correctness proof."
+  },
+  "structured_output_mode": "none",
+  "task_id": "example-test-scaffold"
+}

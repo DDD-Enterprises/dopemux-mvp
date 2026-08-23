@@ -1,0 +1,195 @@
+{
+  "auditor_verdict": "PASS_WITH_RISKS",
+  "baseline_evidence": {
+    "gemini_review_present_on_origin_main": true,
+    "litellm_health": "UNHEALTHY_CARRIED_FROM_0000E",
+    "model_routing_policy_authority": "advisory_until_runtime_wiring_verified",
+    "model_routing_policy_observed_on_origin_main": true,
+    "pal_model_inventory": "NOT_LOCKED",
+    "stale_alias_contract": "UNRESOLVED_CARRIED_FORWARD"
+  },
+  "branch": "dcp/model-routing-0001",
+  "carried_risks": [
+    "LiteLLM unhealthy",
+    "stale routing alias contract",
+    "PAL model inventory not locked",
+    "MCP/slash/workflow registry not fully classified",
+    "OpenCode write/output controls under-proven",
+    "agent authority unknown",
+    "current branch WIP must not be normalized",
+    "0001 is design/domain-model only",
+    "auditors complete - N1-N5 non-blocking follow-on items"
+  ],
+  "commands": [
+    {
+      "exit_code": 0,
+      "step": "preflight"
+    },
+    {
+      "exit_code": 0,
+      "step": "schema_validation"
+    },
+    {
+      "exit_code": 0,
+      "step": "fixture_validation"
+    },
+    {
+      "exit_code": 0,
+      "step": "pytest"
+    },
+    {
+      "exit_code": 0,
+      "step": "diff_allowlist"
+    },
+    {
+      "exit_code": 0,
+      "step": "staged_diff_capture"
+    }
+  ],
+  "embedded_audit": {
+    "auditor_model": "unknown",
+    "auditor_tool": "none",
+    "exit_code": null,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": null,
+    "remaining_risks": [],
+    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/AUDITOR_REPORT.md",
+    "required": false,
+    "skip_reason": "Planning/baseline analysis packet (0001 domain model); no external/embedded audit toolchain invocation required for this series.",
+    "status": "SKIPPED"
+  },
+  "files_changed": [
+    ".gitignore",
+    "docs/03-reference/dcp/model-routing-domain.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/COMMAND_LOG.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/FINAL_STATUS_PORCELAIN.txt",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/GPT55_REVIEW_BRIEF.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/HANDOFF.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/IMPLEMENTER_NOTES.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/PAL_CHAIN.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/PROOF.json",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/STAGED_DIFF_NAME_ONLY.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/STAGED_DIFF_STAT.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/01_scout_prompt.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/02_planner_prompt.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/03_builder_prompt.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/04_self_check_prompt.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/05_auditor_a_prompt.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/06_auditor_b_prompt.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/agents/07_gpt55_review_prompt.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/audit/AUDITOR_A_REPORT.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/audit/AUDITOR_B_REPORT.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/audit/AUDIT_SUMMARY.md",
+    "task-packets/DMX-DCP-0001-CARVE-FROM-854.json",
+    "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0001.md"
+  ],
+  "gpt55_review": {
+    "brief": "proof/DMX-DCP-MODEL-ROUTING-MVP-0001/GPT55_REVIEW_BRIEF.md",
+    "reason": "final supervisor review in ChatGPT web",
+    "required": true
+  },
+  "head_sha_after": "3fb93ebfaf99206180ade3114ad6d034a4a71346",
+  "head_sha_before": "0d3db00efc47e938c6720f590d084a9f11eec9af",
+  "implementation_runner": {
+    "authority": "backend_only",
+    "model": "grok-4.3",
+    "tool": "opencode"
+  },
+  "manual_independent_audit": {
+    "auditors": [
+      {
+        "tool": "Claude Sonnet 4.6",
+        "verdict": "PASS_WITH_RISKS"
+      },
+      {
+        "tool": "Gemini 2.5 Pro",
+        "verdict": "PASS"
+      }
+    ],
+    "note": "Dual independent audit performed on the 0001 domain model content (see audit/ and GPT55_REVIEW_BRIEF.md). Embedded workflow audit is N/A for this planning packet.",
+    "status": "COMPLETE"
+  },
+  "merge_readiness": "BLOCKED_NOT_REQUESTED",
+  "origin_main_sha": "2ffcc2d48fef99ce73a0befe388de67463a25e00",
+  "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0001",
+  "pal_chain": {
+    "deviation": "Scout/planner/challenge prompts not run; GPT-5.5 Pro supervisor accepted deviation for design-only 0001 after independent Claude and Gemini audits.",
+    "enabled": true,
+    "executed": "partial",
+    "self_certification_blocked": true,
+    "supervisor_deviation_accepted": true
+  },
+  "pr_readiness": "DRAFT_PR_READY_AFTER_FINAL_CAPTURE",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "routing_proof_extension": {
+    "audit_route": {
+      "auditor_verdict_distinct": true,
+      "pal_chain_enabled": true,
+      "route_name": "dual_auditor",
+      "self_certification_blocked": true
+    },
+    "backend": {
+      "backend_authority": "backend_only",
+      "open_code_backend_only": true,
+      "runner_name": "opencode_grok"
+    },
+    "classification": {
+      "authority_class": [
+        "repo_write",
+        "proof_write"
+      ],
+      "decision_status": "READY_DESIGN_ONLY",
+      "evidence_quality": "observed_clean_origin_main",
+      "risk_class": "R2_TESTS",
+      "safe_automation": "requires_operator",
+      "task_type": [
+        "domain_model",
+        "docs",
+        "test",
+        "proof_validation"
+      ]
+    },
+    "execution_lane": {
+      "backend_authority": "backend_only",
+      "lane_name": "design_only"
+    },
+    "model_slot": {
+      "config_only": true,
+      "evidence_quality": "observed_runtime_unhealthy",
+      "runtime_healthy": false,
+      "slot_lock_status": "NOT_LOCKED"
+    },
+    "operator_approval": {
+      "approval_ref": "conversation/user-instruction: dual independent audit complete + staged diff proof captured",
+      "approved": true,
+      "approver": "human_operator",
+      "timestamp": "2026-06-09T20:10:00Z"
+    },
+    "red_lane_flags": [],
+    "routing_decision": {
+      "decision_status": "READY_DESIGN_ONLY"
+    },
+    "runner_invocation": {
+      "authority": "backend_only",
+      "model": "grok-4.3",
+      "tool": "opencode"
+    },
+    "stop_conditions": [
+      {
+        "condition_type": "litellm_unhealthy",
+        "triggered": true
+      },
+      {
+        "condition_type": "stale_alias_contract",
+        "triggered": true
+      }
+    ]
+  },
+  "source_reconstruction": {
+    "method": "Carved cleanly in dedicated worktree [LOCAL_PATH_REDACTED] from origin/main@0d3db00efc47e938c6720f590d084a9f11eec9af. Only 0001 packet allowed list + .gitignore hygiene materialized from 854 head 3fb93ebf. Prior swamp/PR#834 reconstructions superseded by this capture.",
+    "warning": "This is the final capture for the clean 0001 slice. Do not treat older PROOF.json copies in mixed branches as authoritative for merge readiness."
+  },
+  "status": "COMPLETE_ACCEPTED_WITH_RISKS",
+  "validation_state": "PASSED"
+}

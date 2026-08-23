@@ -1,0 +1,8 @@
+{
+  "changed_files": [],
+  "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "packet_id": "TP-DCP-9999",
+  "proof_freshness": {
+    "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  }
+}

@@ -1,0 +1,435 @@
+{
+  "generated_at_utc": "2026-06-12T00:54:17Z",
+  "head_sha": "ac3a26f746e472feb8a31f1b634d8c0432e08db6",
+  "packet_id": "TP-DCP-MCP-RO-0001",
+  "red_lane_findings": [
+    "Unregistered task-orchestrator routes: The endpoints in app/api/pm_tools.py (like /api/pm/work-items/{task_id}/update) are defined but never included in app/main.py. This is a case of OBSERVED code drift where mutating endpoints are not active in the running service."
+  ],
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "run_notes": [
+    "Recon run rebuilt from saved source audit_inputs/gpt55_recon_source/CODEX_RECON_PACKS_SOURCE.md.",
+    "No tunnel setup, local MCP invocation, service start, or implementation was performed."
+  ],
+  "summary": {
+    "confirmed_read_only": 11,
+    "deny_for_phase_1": 5,
+    "mutating": 3,
+    "read_with_side_effect_risk": 1,
+    "recommended_for_phase_1": 10,
+    "total_surfaces": 15,
+    "unknown": 0
+  },
+  "surfaces": [
+    {
+      "authority_domain": "memory_plane",
+      "authority_label": "CANONICAL",
+      "chatgpt_tunnel_suitability": "ALLOW_AFTER_WRAPPER",
+      "entrypoint_path": "docker/mcp-servers-source/conport/enhanced_server.py",
+      "evidence": [
+        {
+          "claim_label": "OBSERVED",
+          "finding": "Observed routing handler maps GET /api/decisions to get_decisions method which fetches from PG database.",
+          "line_or_pattern": "self.app.router.add_get('/api/decisions', self.get_decisions)",
+          "path": "docker/mcp-servers-source/conport/enhanced_server.py"
+        }
+      ],
+      "facade_recommendation": "Wrap with hard pagination limits (max 20) and workspace scope filtering.",
+      "handler_path": "docker/mcp-servers-source/conport/enhanced_server.py",
+      "method": "GET",
+      "operation_kind": "read",
+      "port_or_command": "3004",
+      "read_only_classification": "CONFIRMED_READ_ONLY",
+      "remaining_unknowns": [],
+      "security_notes": [
+        "Ensure workspace parameter is strictly sanitized to prevent query injection."
+      ],
+      "surface_id": "SRF-CONPORT-GET-DECISIONS",
+      "system": "conport",
+      "tool_or_route": "/api/decisions",
+      "transport": "HTTP"
+    },
+    {
+      "authority_domain": "memory_plane",
+      "authority_label": "CANONICAL",
+      "chatgpt_tunnel_suitability": "DENY",
+      "entrypoint_path": "docker/mcp-servers-source/conport/enhanced_server.py",
+      "evidence": [
+        {
+          "claim_label": "OBSERVED",
+          "finding": "POST endpoint that inserts decisions into the PG database and publishes events.",
+          "line_or_pattern": "self.app.router.add_post('/api/decisions', self.log_decision)",
+          "path": "docker/mcp-servers-source/conport/enhanced_server.py"
+        }
+      ],
+      "facade_recommendation": "Deny for Phase 1 read-only facade.",
+      "handler_path": "docker/mcp-servers-source/conport/enhanced_server.py",
+      "method": "POST",
+      "operation_kind": "write",
+      "port_or_command": "3004",
+      "read_only_classification": "MUTATING",
+      "remaining_unknowns": [],
+      "security_notes": [
+        "Allows direct write of decision records."
+      ],
+      "surface_id": "SRF-CONPORT-POST-DECISIONS",
+      "system": "conport",
+      "tool_or_route": "/api/decisions",
+      "transport": "HTTP"
+    },
+    {
+      "authority_domain": "memory_plane",
+      "authority_label": "CANONICAL",
+      "chatgpt_tunnel_suitability": "ALLOW_AFTER_WRAPPER",
+      "entrypoint_path": "docker/mcp-servers-source/conport/enhanced_server.py",
+      "evidence": [
+        {
+          "claim_label": "OBSERVED",
+          "finding": "Observed routing handler maps GET /api/progress to get_progress method.",
+          "line_or_pattern": "self.app.router.add_get('/api/progress', self.get_progress)",
+          "path": "docker/mcp-servers-source/conport/enhanced_server.py"
+        }
+      ],
+      "facade_recommendation": "Wrap with workspace filter and max page limits (max 50).",
+      "handler_path": "docker/mcp-servers-source/conport/enhanced_server.py",
+      "method": "GET",
+      "operation_kind": "read",
+      "port_or_command": "3004",
+      "read_only_classification": "CONFIRMED_READ_ONLY",
+      "remaining_unknowns": [],
+      "security_notes": [],
+      "surface_id": "SRF-CONPORT-GET-PROGRESS",
+      "system": "conport",
+      "tool_or_route": "/api/progress",
+      "transport": "HTTP"
+    },
+    {
+      "authority_domain": "memory_plane",
+      "authority_label": "CANONICAL",
+      "chatgpt_tunnel_suitability": "ALLOW",
+      "entrypoint_path": "docker/mcp-servers-source/conport/enhanced_server.py",
+      "evidence": [
+        {
+          "claim_label": "OBSERVED",
+          "finding": "Observed routing handler maps GET /api/search/{workspace_id} to search_content method.",
+          "line_or_pattern": "self.app.router.add_get('/api/search/{workspace_id}', self.search_content)",
+          "path": "docker/mcp-servers-source/conport/enhanced_server.py"
+        }
+      ],
+      "facade_recommendation": "Safe for wrapping decision searches.",
+      "handler_path": "docker/mcp-servers-source/conport/enhanced_server.py",
+      "method": "GET",
+      "operation_kind": "read",
+      "port_or_command": "3004",
+      "read_only_classification": "CONFIRMED_READ_ONLY",
+      "remaining_unknowns": [],
+      "security_notes": [],
+      "surface_id": "SRF-CONPORT-GET-SEARCH",
+      "system": "conport",
+      "tool_or_route": "/api/search/{workspace_id}",
+      "transport": "HTTP"
+    },
+    {
+      "authority_domain": "memory_plane",
+      "authority_label": "CANONICAL",
+      "chatgpt_tunnel_suitability": "ALLOW_AFTER_WRAPPER",
+      "entrypoint_path": "docker/mcp-servers-source/conport/enhanced_server.py",
+      "evidence": [
+        {
+          "claim_label": "OBSERVED",
+          "finding": "Observed routing handler maps GET /api/custom_data to get_custom_data method.",
+          "line_or_pattern": "self.app.router.add_get('/api/custom_data', self.get_custom_data)",
+          "path": "docker/mcp-servers-source/conport/enhanced_server.py"
+        }
+      ],
+      "facade_recommendation": "Restrict category/key access to avoid raw dump exposure.",
+      "handler_path": "docker/mcp-servers-source/conport/enhanced_server.py",
+      "method": "GET",
+      "operation_kind": "read",
+      "port_or_command": "3004",
+      "read_only_classification": "CONFIRMED_READ_ONLY",
+      "remaining_unknowns": [],
+      "security_notes": [
+        "Custom data may contain unstructured metadata; ensure sensitive items are redacted."
+      ],
+      "surface_id": "SRF-CONPORT-GET-CUSTOMDATA",
+      "system": "conport",
+      "tool_or_route": "/api/custom_data",
+      "transport": "HTTP"
+    },
+    {
+      "authority_domain": "dope-memory chronicle",
+      "authority_label": "CANONICAL",
+      "chatgpt_tunnel_suitability": "ALLOW_AFTER_WRAPPER",
+      "entrypoint_path": "services/working-memory-assistant/dope_memory_main.py",
+      "evidence": [
+        {
+          "claim_label": "OBSERVED",
+          "finding": "Maps POST /tools/memory_search to memory_search handler, calling self.memory_search.",
+          "line_or_pattern": "@app.post(\"/tools/memory_search\")",
+          "path": "services/working-memory-assistant/dope_memory_main.py"
+        }
+      ],
+      "facade_recommendation": "Expose search query mapping. Use hard constraint of top_k=3 to align with ADHD engine.",
+      "handler_path": "services/working-memory-assistant/dope_memory_main.py",
+      "method": "POST",
+      "operation_kind": "read",
+      "port_or_command": "3020",
+      "read_only_classification": "CONFIRMED_READ_ONLY",
+      "remaining_unknowns": [],
+      "security_notes": [
+        "Uses POST request but performs side-effect-free DB lookups with trajectory boost."
+      ],
+      "surface_id": "SRF-DOMEM-POST-SEARCH",
+      "system": "dope-memory",
+      "tool_or_route": "/tools/memory_search",
+      "transport": "HTTP"
+    },
+    {
+      "authority_domain": "dope-memory chronicle",
+      "authority_label": "CANONICAL",
+      "chatgpt_tunnel_suitability": "ALLOW_AFTER_WRAPPER",
+      "entrypoint_path": "services/working-memory-assistant/dope_memory_main.py",
+      "evidence": [
+        {
+          "claim_label": "OBSERVED",
+          "finding": "Replays session log entries chronologically from DB.",
+          "line_or_pattern": "@app.post(\"/tools/memory_replay_session\")",
+          "path": "services/working-memory-assistant/dope_memory_main.py"
+        }
+      ],
+      "facade_recommendation": "Wrap with session constraints. Prefer 'replay_current' mode to avoid superseded noise.",
+      "handler_path": "services/working-memory-assistant/dope_memory_main.py",
+      "method": "POST",
+      "operation_kind": "read",
+      "port_or_command": "3020",
+      "read_only_classification": "CONFIRMED_READ_ONLY",
+      "remaining_unknowns": [],
+      "security_notes": [],
+      "surface_id": "SRF-DOMEM-POST-REPLAY",
+      "system": "dope-memory",
+      "tool_or_route": "/tools/memory_replay_session",
+      "transport": "HTTP"
+    },
+    {
+      "authority_domain": "dope-memory chronicle",
+      "authority_label": "CANONICAL",
+      "chatgpt_tunnel_suitability": "DENY",
+      "entrypoint_path": "services/working-memory-assistant/dope_memory_main.py",
+      "evidence": [
+        {
+          "claim_label": "OBSERVED",
+          "finding": "Inserts corrected chronicle record, marking the previous entry superseded.",
+          "line_or_pattern": "@app.post(\"/tools/memory_correct\")",
+          "path": "services/working-memory-assistant/dope_memory_main.py"
+        }
+      ],
+      "facade_recommendation": "Deny for Phase 1 read-only facade.",
+      "handler_path": "services/working-memory-assistant/dope_memory_main.py",
+      "method": "POST",
+      "operation_kind": "write",
+      "port_or_command": "3020",
+      "read_only_classification": "MUTATING",
+      "remaining_unknowns": [],
+      "security_notes": [
+        "Inserts correction and retractions into chronicle ledger."
+      ],
+      "surface_id": "SRF-DOMEM-POST-CORRECT",
+      "system": "dope-memory",
+      "tool_or_route": "/tools/memory_correct",
+      "transport": "HTTP"
+    },
+    {
+      "authority_domain": "search_plane",
+      "authority_label": "CANONICAL",
+      "chatgpt_tunnel_suitability": "ALLOW",
+      "entrypoint_path": "services/dope-context/src/mcp/server.py",
+      "evidence": [
+        {
+          "claim_label": "OBSERVED",
+          "finding": "MCP tool performing dense/sparse hybrid search on qdrant and local codebase.",
+          "line_or_pattern": "async def search_code(",
+          "path": "services/dope-context/src/mcp/server.py"
+        }
+      ],
+      "facade_recommendation": "Safe to expose directly for code/symbol searches.",
+      "handler_path": "services/dope-context/src/mcp/server.py",
+      "method": "MCP_CALL",
+      "operation_kind": "read",
+      "port_or_command": "3010",
+      "read_only_classification": "CONFIRMED_READ_ONLY",
+      "remaining_unknowns": [],
+      "security_notes": [
+        "Ensure search query does not trigger file path traversal attacks."
+      ],
+      "surface_id": "SRF-CONTEXT-MCP-SEARCHCODE",
+      "system": "dope-context",
+      "tool_or_route": "search_code",
+      "transport": "MCP"
+    },
+    {
+      "authority_domain": "search_plane",
+      "authority_label": "CANONICAL",
+      "chatgpt_tunnel_suitability": "ALLOW",
+      "entrypoint_path": "services/dope-context/src/mcp/server.py",
+      "evidence": [
+        {
+          "claim_label": "OBSERVED",
+          "finding": "MCP tool for semantic markdown documentation search.",
+          "line_or_pattern": "async def docs_search(",
+          "path": "services/dope-context/src/mcp/server.py"
+        }
+      ],
+      "facade_recommendation": "Safe for indexing-based document search.",
+      "handler_path": "services/dope-context/src/mcp/server.py",
+      "method": "MCP_CALL",
+      "operation_kind": "read",
+      "port_or_command": "3010",
+      "read_only_classification": "CONFIRMED_READ_ONLY",
+      "remaining_unknowns": [],
+      "security_notes": [],
+      "surface_id": "SRF-CONTEXT-MCP-DOCSSEARCH",
+      "system": "dope-context",
+      "tool_or_route": "docs_search",
+      "transport": "MCP"
+    },
+    {
+      "authority_domain": "search_plane",
+      "authority_label": "DERIVED",
+      "chatgpt_tunnel_suitability": "DENY",
+      "entrypoint_path": "services/dope-context/src/mcp/server.py",
+      "evidence": [
+        {
+          "claim_label": "OBSERVED",
+          "finding": "Gathers code, docs, and bridge-proxy decisions search results in parallel.",
+          "line_or_pattern": "async def _search_all_impl(",
+          "path": "services/dope-context/src/mcp/server.py"
+        }
+      ],
+      "facade_recommendation": "Deny in Phase 1; use separate scoped code and docs search tools until side-effect isolation is proven.",
+      "handler_path": "services/dope-context/src/mcp/server.py",
+      "method": "MCP_CALL",
+      "operation_kind": "read",
+      "port_or_command": "3010",
+      "read_only_classification": "READ_WITH_SIDE_EFFECT_RISK",
+      "remaining_unknowns": [],
+      "security_notes": [
+        "Fuses code, docs, and decisions. Calls a external HTTP client that sends network request to dopecon-bridge, which triggers Redis operations."
+      ],
+      "surface_id": "SRF-CONTEXT-MCP-SEARCHALL",
+      "system": "dope-context",
+      "tool_or_route": "search_all",
+      "transport": "MCP"
+    },
+    {
+      "authority_domain": "cognitive_plane",
+      "authority_label": "CANONICAL",
+      "chatgpt_tunnel_suitability": "ALLOW_AFTER_WRAPPER",
+      "entrypoint_path": "services/task-orchestrator/app/main.py",
+      "evidence": [
+        {
+          "claim_label": "OBSERVED",
+          "finding": "Exposes project-scoped priority queue read view from local store.",
+          "line_or_pattern": "@router.get(\"/queue\", response_model=PriorityQueueResult)",
+          "path": "services/task-orchestrator/app/api/project_workflow.py"
+        }
+      ],
+      "facade_recommendation": "Needs project_id validation. Strip out user identities if present.",
+      "handler_path": "services/task-orchestrator/app/api/project_workflow.py",
+      "method": "GET",
+      "operation_kind": "read",
+      "port_or_command": "8000",
+      "read_only_classification": "CONFIRMED_READ_ONLY",
+      "remaining_unknowns": [],
+      "security_notes": [],
+      "surface_id": "SRF-ORCH-GET-QUEUE",
+      "system": "task-orchestrator",
+      "tool_or_route": "/api/projects/{project_id}/workflow/queue",
+      "transport": "HTTP"
+    },
+    {
+      "authority_domain": "cognitive_plane",
+      "authority_label": "CANONICAL",
+      "chatgpt_tunnel_suitability": "ALLOW",
+      "entrypoint_path": "services/task-orchestrator/app/main.py",
+      "evidence": [
+        {
+          "claim_label": "OBSERVED",
+          "finding": "Lists blockers blocking the active task items.",
+          "line_or_pattern": "@router.get(\"/blockers\", response_model=BlockersResult)",
+          "path": "services/task-orchestrator/app/api/project_workflow.py"
+        }
+      ],
+      "facade_recommendation": "Safe candidate for direct mapping.",
+      "handler_path": "services/task-orchestrator/app/api/project_workflow.py",
+      "method": "GET",
+      "operation_kind": "read",
+      "port_or_command": "8000",
+      "read_only_classification": "CONFIRMED_READ_ONLY",
+      "remaining_unknowns": [],
+      "security_notes": [],
+      "surface_id": "SRF-ORCH-GET-BLOCKERS",
+      "system": "task-orchestrator",
+      "tool_or_route": "/api/projects/{project_id}/workflow/blockers",
+      "transport": "HTTP"
+    },
+    {
+      "authority_domain": "cognitive_plane",
+      "authority_label": "CANONICAL",
+      "chatgpt_tunnel_suitability": "DENY",
+      "entrypoint_path": "services/task-orchestrator/app/main.py",
+      "evidence": [
+        {
+          "claim_label": "OBSERVED",
+          "finding": "Mutates task status within the active workflow.",
+          "line_or_pattern": "@router.post(\"/transition\", response_model=TransitionResult)",
+          "path": "services/task-orchestrator/app/api/project_workflow.py"
+        }
+      ],
+      "facade_recommendation": "Deny for Phase 1 read-only facade.",
+      "handler_path": "services/task-orchestrator/app/api/project_workflow.py",
+      "method": "POST",
+      "operation_kind": "write",
+      "port_or_command": "8000",
+      "read_only_classification": "MUTATING",
+      "remaining_unknowns": [],
+      "security_notes": [
+        "Triggers direct task transitions and updates active sprint metrics."
+      ],
+      "surface_id": "SRF-ORCH-POST-TRANSITION",
+      "system": "task-orchestrator",
+      "tool_or_route": "/api/projects/{project_id}/workflow/transition",
+      "transport": "HTTP"
+    },
+    {
+      "authority_domain": "ddg",
+      "authority_label": "PROXY",
+      "chatgpt_tunnel_suitability": "DENY",
+      "entrypoint_path": "services/dopecon-bridge/dopecon_bridge/app.py",
+      "evidence": [
+        {
+          "claim_label": "OBSERVED",
+          "finding": "Idempotent proxy decision list request to ConPort REST API.",
+          "line_or_pattern": "@ddg_router.get(\"/decisions\")",
+          "path": "services/dopecon-bridge/dopecon_bridge/routes.py"
+        }
+      ],
+      "facade_recommendation": "Deny in favor of direct ConPort GET /api/decisions to preserve authority boundaries.",
+      "handler_path": "services/dopecon-bridge/dopecon_bridge/routes.py",
+      "method": "GET",
+      "operation_kind": "read",
+      "port_or_command": "3016",
+      "read_only_classification": "CONFIRMED_READ_ONLY",
+      "remaining_unknowns": [],
+      "security_notes": [
+        "Proxy route that queries ConPort client. Introducing proxy layers in the tunnel increases transport confusion risks."
+      ],
+      "surface_id": "SRF-BRIDGE-GET-DDG-DECISIONS",
+      "system": "dopecon-bridge",
+      "tool_or_route": "/ddg/decisions",
+      "transport": "HTTP"
+    }
+  ],
+  "unresolved_questions": [
+    "DCP/5.5 Decision: Should dope-memory be queried directly, or should all chronicle reads be multiplexed through a facade wrapper to normalize the output for ChatGPT?"
+  ]
+}

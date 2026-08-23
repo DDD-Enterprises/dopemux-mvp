@@ -1,0 +1,115 @@
+{
+  "base_branch": "main",
+  "base_sha": "a14d7c509c03e4e4f7dc5ebfe1a5bdacf0c4ce8e",
+  "branch": "codex/dcp-mcp-ro-0016-provider-docs",
+  "depends_on_verified": {
+    "TP-DCP-MCP-RO-0015": {
+      "merge_commit": "a14d7c509c03e4e4f7dc5ebfe1a5bdacf0c4ce8e",
+      "pr": 1061,
+      "status": "MERGED"
+    }
+  },
+  "embedded_audit": {
+    "auditor_model": "unknown",
+    "auditor_tool": "none",
+    "exit_code": null,
+    "findings": [],
+    "fixes_applied": [
+      "Provider setup guide with verified Dopemux CLI surfaces",
+      "Disable/rollback guide",
+      "Command and source-date ledgers",
+      "Example schema validation and secret-scan tests"
+    ],
+    "invocation": null,
+    "remaining_risks": [
+      "Vendor CLI flags must be re-verified same-day before live use",
+      "Trusted embedded audit unavailable"
+    ],
+    "report_path": "proof/TP-DCP-MCP-RO-0016/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": "No trusted runner/Claude audit route; docs packet under local-only constraints.",
+    "status": "SKIPPED"
+  },
+  "files_changed": [
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/PROVIDER_SETUP.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/DISABLE_AND_ROLLBACK.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/PROVIDER_COMMAND_LEDGER.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/SOURCE_DATE_LEDGER.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/BUILD_SERIES.md",
+    "services/dcp-readonly-facade/tests/test_provider_docs_examples.py",
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0016.json",
+    "task-packets/dcp/chatgpt-mcp-readonly/TP-DCP-MCP-RO-0016.md",
+    "task-packets/INDEX.md",
+    "proof/TP-DCP-MCP-RO-0016/PROOF.json",
+    "proof/TP-DCP-MCP-RO-0016/AUDITOR_REPORT.md",
+    "proof/TP-DCP-MCP-RO-0016/AGY_AUDIT.md",
+    "proof/TP-DCP-MCP-RO-0016/COMMAND_LOG.md"
+  ],
+  "implementation_commit": "282319ac0",
+  "input_package": {
+    "authority": "advisory_only",
+    "sha256": "c0cb9d34f6ece116811c52cce0d1b517153dba0f8434c9abda9da6ff6d6a2447"
+  },
+  "local_agy_review": {
+    "ci_trust_status": "NOT_ACCEPTED",
+    "status": "NOT_RUN"
+  },
+  "packet_id": "TP-DCP-MCP-RO-0016",
+  "pr": {
+    "blocker": "Trusted embedded audit SKIPPED; merge readiness not claimed.",
+    "number": 1064,
+    "status": "OPEN_NOT_READY",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1064"
+  },
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "residual_risks": [
+    "Operator must keep secrets and tunnels outside the repository",
+    "Generated .claude/claude_config.json left unstaged"
+  ],
+  "rollback": "Revert TP-0016 docs/test commits only",
+  "scope": "Provider setup, disable/rollback, command/source-date ledgers, example validation tests. Placeholders only; no live provider setup.",
+  "status": "VALIDATED_WITH_AUDIT_GAP",
+  "title": "Multi-Provider Setup And Rollback Docs",
+  "validation": {
+    "FAIL": [],
+    "NOT_RUN": [
+      {
+        "command": "Trusted embedded audit / PR Steward",
+        "mitigation": "readiness not claimed",
+        "reason": "local-only docs packet"
+      },
+      {
+        "command": "Live provider/tunnel setup",
+        "mitigation": "placeholders only",
+        "reason": "forbidden by packet and user constraints"
+      }
+    ],
+    "PASS": [
+      {
+        "command": "focused provider docs tests",
+        "exit_code": 0,
+        "result": "5 passed"
+      },
+      {
+        "command": "full facade suite",
+        "exit_code": 0,
+        "result": "passed; 1 live skipped"
+      },
+      {
+        "command": "packet schema",
+        "exit_code": 0,
+        "result": "valid"
+      },
+      {
+        "command": "pre-commit allowlist",
+        "exit_code": 0,
+        "result": "ok"
+      },
+      {
+        "command": "dopemux mcp start/doctor --help",
+        "exit_code": 0,
+        "result": "verified for ledger"
+      }
+    ]
+  }
+}

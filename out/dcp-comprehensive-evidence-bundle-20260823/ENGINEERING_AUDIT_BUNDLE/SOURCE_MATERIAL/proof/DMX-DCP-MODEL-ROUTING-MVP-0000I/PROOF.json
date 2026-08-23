@@ -1,0 +1,23 @@
+{
+  "embedded_audit": {
+    "auditor_model": "unknown",
+    "auditor_tool": "none",
+    "exit_code": null,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": null,
+    "remaining_risks": [],
+    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000I/AUDITOR_REPORT.md",
+    "required": false,
+    "skip_reason": "Planning/baseline analysis packet; no external audit toolchain invocation required for this series.",
+    "status": "SKIPPED"
+  },
+  "fixtures_created": 1,
+  "fixtures_required": "15+",
+  "note": "SEED ONLY \u2014 incomplete. Only the corpus directory + README.md were created (fixtures_created: 1). The packet's full requirement of 15+ labeled JSON fixtures (safe_read, docs_only, domain_model, implementation_allowed, red_lane, forbidden, unknown) and per-fixture classification/stop-behavior validation is NOT met; it is deferred to follow-on packets. Downstream gates must not treat this corpus as evaluated/finished.",
+  "objective": "Golden evaluation corpus seed for routing classifier",
+  "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000I",
+  "path": "tests/fixtures/dcp/routing_corpus/",
+  "readme": "tests/fixtures/dcp/routing_corpus/README.md",
+  "status": "PARTIAL"
+}

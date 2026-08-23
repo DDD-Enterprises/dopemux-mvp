@@ -1,0 +1,287 @@
+{
+  "_comment": "DCP Core Fixture \u2014 TP-DCP-0001. One instance per contract. Populated from REV1/TP text ONLY. All SHA/hash/digest values are illustrative placeholders; no filesystem traversal of target repo was performed.",
+  "_sha_notice": "All values of the form 'sha256:PLACEHOLDER-illustrative-not-computed' are NOT real digests. Do not treat as computed values.",
+  "dcp_chronicle_receipt": {
+    "artifact_refs": [
+      "task-packets/TP-DCP-0001.json"
+    ],
+    "authority_label": "task-packet",
+    "field_provenance": {
+      "artifact_refs": "EXTERNAL_PROPOSED",
+      "authority_label": "EXTERNAL_PROPOSED",
+      "project_id": "EXTERNAL_PROPOSED",
+      "proof_refs": "EXTERNAL_PROPOSED",
+      "receipt_id": "EXTERNAL_PROPOSED",
+      "receipt_type": "EXTERNAL_PROPOSED",
+      "red_lanes": "EXTERNAL_PROPOSED",
+      "timestamp_utc": "EXTERNAL_PROPOSED",
+      "validation_state": "EXTERNAL_PROPOSED"
+    },
+    "project_id": "dopemux-mvp",
+    "proof_refs": [
+      "proof/TP-DCP-0001/PROOF.json"
+    ],
+    "provenance": {
+      "source_ref": "DR-016; DCP_ARCHITECTURE_SYNTHESIS_GPT55_REV1.md \u00a76.2; envelope only",
+      "tag": "EXTERNAL_PROPOSED"
+    },
+    "receipt_id": "dcp-chronicle-receipt-fixture-seed-v0",
+    "receipt_type": "packet-accepted",
+    "red_lanes": [
+      "DCP-RED-MERGE-SEAM-0001",
+      "DCP-RED-SELF-CERTIFYING-LOOP"
+    ],
+    "schema_version": "dcp-chronicle-receipt.v0",
+    "timestamp_utc": "2026-06-03T00:00:00Z",
+    "validation": {
+      "notes": "EXTERNAL_PROPOSED (DR-016). Envelope only; other 22 candidate fields are CANDIDATE until repo-local vocab reconciliation. Separate from proof bundles; not runtime state.",
+      "state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT"
+    },
+    "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT"
+  },
+  "dcp_control_snapshot": {
+    "authority_order_ref": "AGENTS.md",
+    "created_at_utc": "2026-06-03T00:00:00Z",
+    "field_provenance": {
+      "authority_order_ref": "SYNTHESIS_INVENTED",
+      "created_at_utc": "SYNTHESIS_INVENTED",
+      "project_id": "SYNTHESIS_INVENTED",
+      "snapshot_id": "SYNTHESIS_INVENTED",
+      "source_pack_refs": "SYNTHESIS_INVENTED",
+      "surfaces": "SYNTHESIS_INVENTED"
+    },
+    "project_id": "dopemux-mvp",
+    "provenance": {
+      "source_ref": "DCP_ARCHITECTURE_SYNTHESIS_GPT55_REV1.md \u00a76.5; envelope shape invented in GPT-5.5 REV1 synthesis",
+      "tag": "SYNTHESIS_INVENTED"
+    },
+    "schema_version": "dcp-control-snapshot.v0",
+    "snapshot_id": "dcp-control-snapshot-fixture-seed-v0",
+    "source_pack_refs": [
+      "TP-DCP-0001"
+    ],
+    "surfaces": {
+      "note": "Per-surface projection fields are DEFERRED from TP-DCP-0001. Pending DCP_PROJECT_RESOURCE_MAP + canonical-root reconciliation. Do not lock per-surface projection fields until resource map exists.",
+      "status": "PROVISIONAL"
+    },
+    "validation": {
+      "notes": "SYNTHESIS_INVENTED envelope. REV1 \u00a74 prose says PROVISIONAL; REV1 \u00a76.0 state enum has no bare PROVISIONAL \u2014 PROVISIONAL_UNVERIFIED_ENFORCEMENT is the correct mapping. Per-surface fields DEFERRED pending DCP_PROJECT_RESOURCE_MAP + canonical-root reconciliation.",
+      "state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT"
+    }
+  },
+  "dcp_evidence_hit": {
+    "authority_tier": "synthesis",
+    "canonical_writer": "UNKNOWN",
+    "confidence": "MEDIUM",
+    "derived": true,
+    "field_provenance": {
+      "authority_tier": "EXTERNAL_PROPOSED",
+      "canonical_writer": "EXTERNAL_PROPOSED",
+      "confidence": "EXTERNAL_PROPOSED",
+      "derived": "EXTERNAL_PROPOSED",
+      "freshness_state": "EXTERNAL_PROPOSED",
+      "hit_id": "EXTERNAL_PROPOSED",
+      "retrieved_at_utc": "EXTERNAL_PROPOSED",
+      "source_ref": "EXTERNAL_PROPOSED",
+      "source_system": "EXTERNAL_PROPOSED",
+      "validation_state": "EXTERNAL_PROPOSED"
+    },
+    "freshness_state": "CURRENT",
+    "hit_id": "dcp-evidence-hit-fixture-seed-v0",
+    "provenance": {
+      "source_ref": "DR-016; DCP_ARCHITECTURE_SYNTHESIS_GPT55_REV1.md \u00a76.3; 17-field DR-016 shape",
+      "tag": "EXTERNAL_PROPOSED"
+    },
+    "retrieved_at_utc": "2026-06-03T00:00:00Z",
+    "schema_version": "dcp-evidence-hit.v0",
+    "source_ref": "artifacts/dcp/synthesis/DCP_ARCHITECTURE_SYNTHESIS_GPT55_REV1.md",
+    "source_system": "dope-context",
+    "validation": {
+      "notes": "EXTERNAL_PROPOSED (DR-016). 17-field shape not repo-validated. 13 repo-only UNKNOWNs pending before exit from .v0. Envelope may lock; field vocab may not without reconciliation.",
+      "state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT"
+    },
+    "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT"
+  },
+  "dcp_helper_receipt": {
+    "exit_code": null,
+    "field_provenance": {
+      "exit_code": "EXTERNAL_PROPOSED",
+      "helper_model": "EXTERNAL_PROPOSED",
+      "helper_receipt_id": "EXTERNAL_PROPOSED",
+      "helper_tool": "EXTERNAL_PROPOSED",
+      "invocation_ref": "EXTERNAL_PROPOSED",
+      "mutation_performed": "EXTERNAL_PROPOSED",
+      "output_ref": "EXTERNAL_PROPOSED",
+      "red_lane_flags": "EXTERNAL_PROPOSED",
+      "remaining_risks": "EXTERNAL_PROPOSED",
+      "validation_state": "EXTERNAL_PROPOSED"
+    },
+    "helper_model": "claude-sonnet-4-6",
+    "helper_receipt_id": "dcp-helper-receipt-fixture-seed-v0",
+    "helper_tool": "claude-code",
+    "invocation_ref": "TP-DCP-0001/S1-S4",
+    "mutation_performed": false,
+    "output_ref": "schemas/dcp/",
+    "provenance": {
+      "source_ref": "DR-016; DCP_ARCHITECTURE_SYNTHESIS_GPT55_REV1.md \u00a76.4; envelope only; no repo-runtime helper-receipt exists",
+      "tag": "EXTERNAL_PROPOSED"
+    },
+    "red_lane_flags": [
+      "DCP-RED-MERGE-SEAM-0001",
+      "DCP-RED-SELF-CERTIFYING-LOOP"
+    ],
+    "remaining_risks": [
+      "auditor_verdict pending (auditor != implementer gate)",
+      "13 DR-016 UNKNOWNs pending repo-local vocab reconciliation",
+      "LIVE_WRITE_READY undefined and blocking"
+    ],
+    "schema_version": "dcp-helper-receipt.v0",
+    "validation": {
+      "notes": "EXTERNAL_PROPOSED (DR-016). No repo-runtime helper-receipt analog exists. Advisory only; cannot certify readiness.",
+      "state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT"
+    },
+    "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT"
+  },
+  "dcp_proof_pointer": {
+    "auditor_verdict": "PENDING",
+    "authority_tier": "task-packet",
+    "confidence": "LOW",
+    "derived": false,
+    "field_provenance": {
+      "auditor_verdict": "SYNTHESIS_INVENTED",
+      "authority_tier": "SYNTHESIS_INVENTED",
+      "confidence": "SYNTHESIS_INVENTED",
+      "derived": "SYNTHESIS_INVENTED",
+      "freshness_state": "SYNTHESIS_INVENTED",
+      "pointer_id": "SYNTHESIS_INVENTED",
+      "project_id": "SYNTHESIS_INVENTED",
+      "repo_id": "SYNTHESIS_INVENTED",
+      "source_artifact_digest": "SYNTHESIS_INVENTED",
+      "source_artifact_ref": "SYNTHESIS_INVENTED",
+      "source_family": "SYNTHESIS_INVENTED",
+      "source_head_sha": "SYNTHESIS_INVENTED",
+      "validation_state": "SYNTHESIS_INVENTED"
+    },
+    "freshness_state": "UNKNOWN",
+    "pointer_id": "dcp-proof-pointer-fixture-seed-v0",
+    "project_id": "dopemux-mvp",
+    "provenance": {
+      "source_ref": "DCP_ARCHITECTURE_SYNTHESIS_GPT55_REV1.md \u00a76.1; pointer shell invented in synthesis REV1",
+      "tag": "SYNTHESIS_INVENTED"
+    },
+    "repo_id": "dopemux-mvp",
+    "schema_version": "dcp-proof-pointer.v0",
+    "source_artifact_digest": {
+      "provenance_tag": "SYNTHESIS_INVENTED",
+      "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "value": "sha256:PLACEHOLDER-illustrative-not-computed"
+    },
+    "source_artifact_ref": "task-packets/TP-DCP-0001.json",
+    "source_family": "task-packet",
+    "source_head_sha": {
+      "provenance_tag": "SYNTHESIS_INVENTED",
+      "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+      "value": "sha256:PLACEHOLDER-illustrative-not-computed"
+    },
+    "validation": {
+      "notes": "SYNTHESIS_INVENTED pointer shell. No live SHA/hash computation in TP-DCP-0001. auditor_verdict and validation_state are DISTINCT fields per REV1 \u00a76.1 invariant.",
+      "state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT"
+    },
+    "validation_state": "PROVISIONAL_UNVERIFIED_ENFORCEMENT"
+  },
+  "dcp_red_lane_taxonomy": {
+    "lanes": [
+      {
+        "description": "DCP must NEVER import, call, wrap, or wire src/dopemux_pr_merge_specialist/queue_drain.py (execute=True seam) or scripts/batch_resolve_and_merge.py. Both paths verified present in origin/main; steward_gate.py absent. Universal hard block for TP-DCP-0001 and every later packet.",
+        "gate": "hard_block",
+        "id": "DCP-RED-MERGE-SEAM-0001",
+        "notes": "REV1 \u00a75.1: execute_or_dry_run(merge_cmd, execute=True) at queue_drain.py:617/2006/2017 IS in origin/main; steward_gate.py absent.",
+        "paths_forbidden": [
+          "src/dopemux_pr_merge_specialist/queue_drain.py",
+          "scripts/batch_resolve_and_merge.py"
+        ],
+        "provenance_tag": "REPO_VALIDATED_BY_AUDIT"
+      },
+      {
+        "description": "Branch-protection mutation is forbidden.",
+        "gate": "hard_block",
+        "id": "DCP-RED-BRANCH-PROTECTION-MUTATION",
+        "notes": "REV1 \u00a75.2 universal red lanes.",
+        "provenance_tag": "REPO_VALIDATED"
+      },
+      {
+        "description": "CODEOWNERS mutation is forbidden.",
+        "gate": "hard_block",
+        "id": "DCP-RED-CODEOWNERS-MUTATION",
+        "notes": "REV1 \u00a75.2 universal red lanes.",
+        "provenance_tag": "REPO_VALIDATED"
+      },
+      {
+        "description": "Workflow permission escalation is forbidden.",
+        "gate": "hard_block",
+        "id": "DCP-RED-WORKFLOW-PERMISSION-ESCALATION",
+        "notes": "REV1 \u00a75.2 universal red lanes.",
+        "provenance_tag": "REPO_VALIDATED"
+      },
+      {
+        "description": "Secrets in argv, cache, or logs are forbidden.",
+        "gate": "hard_block",
+        "id": "DCP-RED-SECRETS-IN-ARGV-CACHE-LOGS",
+        "notes": "REV1 \u00a75.2 universal red lanes.",
+        "provenance_tag": "REPO_VALIDATED"
+      },
+      {
+        "description": "Self-certifying loop is forbidden. The contract-locking packet must not self-certify. Auditor must be distinct from implementer.",
+        "gate": "hard_block",
+        "id": "DCP-RED-SELF-CERTIFYING-LOOP",
+        "notes": "REV1 \u00a75.2; invariant: auditor != implementer.",
+        "provenance_tag": "REPO_VALIDATED"
+      },
+      {
+        "description": "pull_request_target combined with untrusted checkout is forbidden.",
+        "gate": "hard_block",
+        "id": "DCP-RED-PULL-REQUEST-TARGET-UNTRUSTED-CHECKOUT",
+        "notes": "REV1 \u00a75.2 universal red lanes.",
+        "provenance_tag": "REPO_VALIDATED"
+      },
+      {
+        "description": "Proof contract/schema mutation is forbidden outside a sanctioned task packet with auditor approval.",
+        "gate": "hard_block",
+        "id": "DCP-RED-PROOF-CONTRACT-SCHEMA-MUTATION",
+        "notes": "REV1 \u00a75.2 universal red lanes.",
+        "provenance_tag": "REPO_VALIDATED"
+      },
+      {
+        "description": "Agent-approved merge without supervisor sign-off is forbidden.",
+        "gate": "hard_block",
+        "id": "DCP-RED-AGENT-APPROVED-MERGE-WITHOUT-SUPERVISOR",
+        "notes": "REV1 \u00a75.2 universal red lanes.",
+        "provenance_tag": "REPO_VALIDATED"
+      },
+      {
+        "description": "Identity/contact merge or destructive external write requires explicit project gate approval.",
+        "gate": "project_gate",
+        "id": "DCP-RED-IDENTITY-CONTACT-MERGE-DESTRUCTIVE-EXTERNAL-WRITE",
+        "notes": "REV1 \u00a75.2 universal red lanes.",
+        "provenance_tag": "REPO_VALIDATED"
+      },
+      {
+        "description": "AI-agent-authority-collapse is a hard block unless role separation is proven.",
+        "gate": "hard_block",
+        "id": "DCP-RED-AI-AGENT-AUTHORITY-COLLAPSE",
+        "notes": "REV1 \u00a75.2 universal red lanes.",
+        "provenance_tag": "REPO_VALIDATED"
+      }
+    ],
+    "provenance": {
+      "source_ref": "DCP_ARCHITECTURE_SYNTHESIS_GPT55_REV1.md \u00a75; ground-truth verification of origin/main paths",
+      "tag": "REPO_VALIDATED"
+    },
+    "schema_version": "dcp-red-lane-taxonomy.v0",
+    "taxonomy_id": "dcp-red-lane-taxonomy-v0-seed",
+    "validation": {
+      "notes": "Core lane taxonomy grounded in repo-verified paths per REV1 \u00a75.1 and \u00a75.2. Each lane carries its own provenance_tag.",
+      "state": "REPO_CROSS_CHECKED"
+    }
+  }
+}

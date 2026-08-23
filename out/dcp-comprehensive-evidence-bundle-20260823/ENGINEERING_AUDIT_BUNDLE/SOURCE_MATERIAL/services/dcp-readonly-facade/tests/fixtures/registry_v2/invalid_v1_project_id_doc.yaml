@@ -1,0 +1,15 @@
+# Invalid: v1-shaped document (projects/project_id). Registry v2 requires
+# targets/target_id. Must fail closed with an actionable migration warning,
+# never silently coerced. See REGISTRY_V2_CONTRACT.md.
+approved_roots:
+  - /abs/approved/root
+
+projects:
+  - project_id: "dopemux-mvp"
+    workspace_path: "/abs/approved/root/dopemux-mvp"
+    enabled: true
+    identity:
+      project: "dopemux-mvp"
+    service_profiles:
+      conport:
+        workspace_id: "abc"

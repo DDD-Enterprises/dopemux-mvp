@@ -1,0 +1,502 @@
+{
+  "$id": "https://dopemux.dev/schemas/dcp/dcp_control_snapshot.v0.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "SYNTHESIS_INVENTED / PROVISIONAL_UNVERIFIED_ENFORCEMENT. Envelope + authority-metadata wrapper only. Per-surface projection fields are DEFERRED pending DCP_PROJECT_RESOURCE_MAP + canonical-root reconciliation. schema_version .v0 = unstable, not authority.",
+  "properties": {
+    "authoritative": {
+      "const": false,
+      "type": "boolean"
+    },
+    "authority_label_summary": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "type": "object"
+    },
+    "authority_order_ref": {
+      "description": "Reference to the authority-order document governing this snapshot.",
+      "type": "string"
+    },
+    "created_at_utc": {
+      "description": "ISO 8601 UTC timestamp of snapshot creation.",
+      "type": "string"
+    },
+    "derived": {
+      "const": true,
+      "type": "boolean"
+    },
+    "endpoint_certainty": {
+      "additionalProperties": false,
+      "properties": {
+        "conport": {
+          "enum": [
+            "PROVISIONAL",
+            "UNKNOWN",
+            "LIVE_WRITE_READY"
+          ],
+          "type": "string"
+        },
+        "dope_context": {
+          "enum": [
+            "PROVISIONAL",
+            "UNKNOWN",
+            "LIVE_WRITE_READY"
+          ],
+          "type": "string"
+        },
+        "dope_memory": {
+          "enum": [
+            "PROVISIONAL",
+            "UNKNOWN",
+            "LIVE_WRITE_READY"
+          ],
+          "type": "string"
+        },
+        "dopecon_bridge": {
+          "enum": [
+            "PROXY_ONLY",
+            "PROVISIONAL",
+            "UNKNOWN",
+            "LIVE_WRITE_READY"
+          ],
+          "type": "string"
+        },
+        "task_orchestrator": {
+          "enum": [
+            "PROJECTION_ONLY",
+            "PROVISIONAL",
+            "UNKNOWN",
+            "LIVE_WRITE_READY"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "task_orchestrator",
+        "conport",
+        "dope_memory",
+        "dope_context",
+        "dopecon_bridge"
+      ],
+      "type": "object"
+    },
+    "field_provenance": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Per-field provenance tags for all fields in this contract instance. Keys are field names; values are provenance tags.",
+      "type": "object"
+    },
+    "generated_at": {
+      "description": "ISO 8601 timestamp for snapshot generation. This is the only expected nondeterministic field.",
+      "type": "string"
+    },
+    "generator": {
+      "additionalProperties": false,
+      "properties": {
+        "external_writes_used": {
+          "const": false,
+          "type": "boolean"
+        },
+        "implementation": {
+          "const": "local",
+          "type": "string"
+        },
+        "live_adapters_used": {
+          "const": false,
+          "type": "boolean"
+        },
+        "packet_id": {
+          "const": "TP-DCP-0004",
+          "type": "string"
+        }
+      },
+      "required": [
+        "packet_id",
+        "implementation",
+        "live_adapters_used",
+        "external_writes_used"
+      ],
+      "type": "object"
+    },
+    "guards": {
+      "additionalProperties": false,
+      "properties": {
+        "dopetask_execution_status": {
+          "enum": [
+            "NONE",
+            "DETECTED",
+            "UNKNOWN"
+          ],
+          "type": "string"
+        },
+        "external_write_status": {
+          "enum": [
+            "NONE",
+            "DETECTED",
+            "UNKNOWN"
+          ],
+          "type": "string"
+        },
+        "live_write_ready_status": {
+          "enum": [
+            "UNDEFINED_AND_BLOCKING",
+            "OPERATIONAL",
+            "UNKNOWN"
+          ],
+          "type": "string"
+        },
+        "live_write_status": {
+          "enum": [
+            "NONE",
+            "DETECTED",
+            "UNKNOWN"
+          ],
+          "type": "string"
+        },
+        "merge_seam_status": {
+          "enum": [
+            "PRESERVED",
+            "VIOLATED",
+            "UNKNOWN"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "live_write_ready_status",
+        "live_write_status",
+        "merge_seam_status",
+        "dopetask_execution_status",
+        "external_write_status"
+      ],
+      "type": "object"
+    },
+    "packet_states": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "audit_path": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "freshness": {
+            "enum": [
+              "FRESH",
+              "STALE",
+              "UNKNOWN",
+              "CONFLICTING"
+            ],
+            "type": "string"
+          },
+          "merge_readiness_path": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "packet_id": {
+            "type": "string"
+          },
+          "proof_path": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "residual_risks": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "state": {
+            "enum": [
+              "OBSERVED",
+              "CLAIMED",
+              "UNKNOWN",
+              "CONFLICTING"
+            ],
+            "type": "string"
+          },
+          "stop_conditions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "task_packet_path": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "packet_id",
+          "task_packet_path",
+          "proof_path",
+          "audit_path",
+          "merge_readiness_path",
+          "state",
+          "freshness",
+          "residual_risks",
+          "stop_conditions",
+          "errors"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "project_id": {
+      "description": "Project identifier.",
+      "type": "string"
+    },
+    "provenance": {
+      "additionalProperties": false,
+      "description": "Contract-level provenance per REV1 \u00a76.0 meta-contract. SYNTHESIS_INVENTED: envelope shape invented in GPT-5.5 REV1 synthesis; not derived from a repo artifact.",
+      "properties": {
+        "source_ref": {
+          "type": "string"
+        },
+        "tag": {
+          "enum": [
+            "REPO_VALIDATED",
+            "EXTERNAL_PROPOSED",
+            "SYNTHESIS_INVENTED"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "tag",
+        "source_ref"
+      ],
+      "type": "object"
+    },
+    "readiness": {
+      "additionalProperties": false,
+      "properties": {
+        "blocking_reasons": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "recommended_next_action": {
+          "type": "string"
+        },
+        "snapshot_status": {
+          "enum": [
+            "READY",
+            "BLOCKED",
+            "UNKNOWN",
+            "CONFLICTING"
+          ],
+          "type": "string"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "snapshot_status",
+        "blocking_reasons",
+        "warnings",
+        "recommended_next_action"
+      ],
+      "type": "object"
+    },
+    "repo": {
+      "additionalProperties": false,
+      "properties": {
+        "base_branch": {
+          "type": "string"
+        },
+        "base_sha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "head_sha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "worktree": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "base_branch",
+        "base_sha",
+        "head_sha",
+        "worktree"
+      ],
+      "type": "object"
+    },
+    "residual_risks": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "dcp-control-snapshot.v0",
+      "description": ".v0 suffix per K-27; unstable version marker, not an authority claim.",
+      "type": "string"
+    },
+    "snapshot_contract_version": {
+      "const": "0.1.0",
+      "description": "TP-DCP-0004 local snapshot body version. schema_version remains dcp-control-snapshot.v0 to preserve repo convention.",
+      "type": "string"
+    },
+    "snapshot_family": {
+      "const": "DCP_CONTROL_SNAPSHOT",
+      "description": "TP-DCP-0004 derived snapshot family marker. This is a generated view, not source authority.",
+      "type": "string"
+    },
+    "snapshot_id": {
+      "description": "Unique identifier for this control snapshot.",
+      "type": "string"
+    },
+    "source_artifacts": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "authority_label": {
+            "enum": [
+              "OBSERVED",
+              "CLAIMED",
+              "INFERRED",
+              "UNKNOWN",
+              "CONFLICTING"
+            ],
+            "type": "string"
+          },
+          "exists": {
+            "type": "boolean"
+          },
+          "family": {
+            "type": "string"
+          },
+          "freshness": {
+            "enum": [
+              "FRESH",
+              "STALE",
+              "UNKNOWN",
+              "CONFLICTING"
+            ],
+            "type": "string"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "family",
+          "exists",
+          "authority_label",
+          "freshness",
+          "notes"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "source_pack_refs": {
+      "description": "References to source task packets or evidence packs contributing to this snapshot.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "stop_condition_summary": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "stop_conditions": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "surfaces": {
+      "additionalProperties": false,
+      "description": "Per-surface projection fields are DEFERRED. Only status and note are locked in .v0.",
+      "properties": {
+        "note": {
+          "description": "Explanation of why per-surface fields are deferred.",
+          "type": "string"
+        },
+        "status": {
+          "description": "PROVISIONAL: per-surface fields not locked in .v0.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "note"
+      ],
+      "type": "object"
+    },
+    "validation": {
+      "additionalProperties": false,
+      "description": "Validation status per REV1 \u00a76.0. PROVISIONAL_UNVERIFIED_ENFORCEMENT: shape not cross-checked against repo artifact; enforcement not verified.",
+      "properties": {
+        "notes": {
+          "type": "string"
+        },
+        "state": {
+          "const": "PROVISIONAL_UNVERIFIED_ENFORCEMENT",
+          "description": "Const-pinned for .v0 SYNTHESIS_INVENTED schema. No top-level validation_state field; this nested state IS the schema's own meta-state."
+        }
+      },
+      "required": [
+        "state",
+        "notes"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "provenance",
+    "validation",
+    "snapshot_id",
+    "project_id",
+    "created_at_utc",
+    "source_pack_refs",
+    "authority_order_ref",
+    "surfaces",
+    "field_provenance"
+  ],
+  "title": "DCP Control Snapshot (Envelope Only)",
+  "type": "object"
+}
