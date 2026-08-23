@@ -1,0 +1,25 @@
+{
+  "accepted": true,
+  "audited_sha": "a0ccfd3e6dce298ff8651eed6e053710d0bc9ce0",
+  "embedded_audit": {
+    "auditor_model": "grok-4.5",
+    "auditor_tool": "grok-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": "grok -p \"audit prompt\" --model grok-4.6",
+    "remaining_risks": [],
+    "report_path": "proof/TP-DMX-RTE-V5-PR1232-CUMULATIVE-CLOSURE-001/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "head_sha": "c88838767040aad737300994bd4a18aecfd1f1a5",
+  "packet_id": "TP-DMX-RTE-V5-PR1232-CUMULATIVE-CLOSURE-001",
+  "pr_number": 1232,
+  "principal": "hue@local",
+  "proof_path": "proof/pr_merge/embedded-audit/pr-1232/PROOF.json",
+  "reasons": [],
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "signature_namespace": "dopemux-embedded-audit"
+}
