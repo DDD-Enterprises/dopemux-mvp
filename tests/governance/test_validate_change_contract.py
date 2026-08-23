@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from scripts.governance.validate_change_contract import (
+    _is_quarantine_skipped_proof,
     classify_path,
     evaluate,
     main,
@@ -260,6 +261,29 @@ def _skipped_quarantine_proof() -> str:
             },
         }
     )
+
+
+def test_malformed_skipped_does_not_activate_quarantine() -> None:
+    """Fail closed: SKIPPED+skip_reason without schema shape is not quarantine."""
+    text = json.dumps(
+        {"embedded_audit": {"status": "SKIPPED", "skip_reason": "not schema-shaped"}}
+    )
+    assert _is_quarantine_skipped_proof(text, cwd=ROOT) is False
+    assert _is_quarantine_skipped_proof(_skipped_quarantine_proof(), cwd=ROOT) is True
+
+
+def test_quarantine_not_detected_when_jsonschema_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    import builtins
+
+    real_import = builtins.__import__
+
+    def _fake_import(name, globals=None, locals=None, fromlist=(), level=0):
+        if name == "jsonschema":
+            raise ImportError("forced")
+        return real_import(name, globals, locals, fromlist, level)
+
+    monkeypatch.setattr(builtins, "__import__", _fake_import)
+    assert _is_quarantine_skipped_proof(_skipped_quarantine_proof(), cwd=ROOT) is False
 
 
 def test_quarantine_skipped_does_not_require_signature_or_audited_head() -> None:

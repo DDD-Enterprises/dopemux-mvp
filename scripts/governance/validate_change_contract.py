@@ -268,8 +268,12 @@ def _load_json_object(text: str) -> Optional[dict[str, Any]]:
     return data if isinstance(data, dict) else None
 
 
-def _is_quarantine_skipped_proof(text: str) -> bool:
-    """True when PROOF.json is a deliberate SKIPPED quarantine (not audited PASS)."""
+def _is_quarantine_skipped_proof(text: str, *, cwd: Path | None = None) -> bool:
+    """True when PROOF.json is a schema-valid SKIPPED quarantine (not audited PASS).
+
+    Fail closed: missing jsonschema, missing schema file, or schema-invalid
+    SKIPPED objects do not activate quarantine.
+    """
     data = _load_json_object(text)
     if not data:
         return False
@@ -278,7 +282,21 @@ def _is_quarantine_skipped_proof(text: str) -> bool:
         return False
     if embedded.get("status") != "SKIPPED":
         return False
-    return bool(str(embedded.get("skip_reason") or "").strip())
+    if not str(embedded.get("skip_reason") or "").strip():
+        return False
+    try:
+        import jsonschema  # type: ignore
+    except ImportError:
+        return False
+    schema_path = (cwd or REPO_ROOT) / "schemas/proof/embedded_audit.schema.json"
+    if not schema_path.is_file():
+        return False
+    try:
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        jsonschema.Draft7Validator(schema).validate(embedded)
+    except Exception:
+        return False
+    return True
 
 
 def _resolve_text(
@@ -342,7 +360,7 @@ def validate_proof_only_closure(
         if text is None:
             # deleted PROOF.json — neither audited-pass nor quarantine
             continue
-        if _is_quarantine_skipped_proof(text):
+        if _is_quarantine_skipped_proof(text, cwd=cwd):
             quarantine_hits.append(path)
         else:
             non_quarantine_proofs.append(path)
@@ -592,13 +610,22 @@ def evaluate(
                 text = _resolve_text(
                     npath, cwd=cwd, head=head, file_text=file_text
                 )
-                if text and _is_quarantine_skipped_proof(text):
+                if text and _is_quarantine_skipped_proof(text, cwd=cwd):
                     eff_quarantine = True
                     break
         if eff_quarantine:
             # Bind range refs only for quarantine — never invent audited_head.
+            # Prefer merge-base so a moved main does not inflate the proof-only delta.
             if not eff_content and range_base:
-                eff_content = range_base
+                mb = subprocess.run(
+                    ["git", "merge-base", range_base, head],
+                    cwd=cwd,
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                merged = (mb.stdout or "").strip()
+                eff_content = merged or range_base
             if not eff_proof:
                 eff_proof = head
         validate_proof_only_closure(
