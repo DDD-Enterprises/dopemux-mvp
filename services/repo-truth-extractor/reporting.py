@@ -479,6 +479,8 @@ def write_run_manifest(
     args: argparse.Namespace,
     run_context: Any,
     phases: List[str],
+    *,
+    source_identity: Optional[str] = None,
 ) -> Dict[str, Any]:
     prompt_report = deps.promptset_fingerprint(phases)
     run_blocked = bool(prompt_report.get("blocked_promptset"))
@@ -513,7 +515,7 @@ def write_run_manifest(
         "repo_root": str(root.resolve()),
         "artifact_root": str(layout.extraction_root.resolve()),
         "run_root": str(dirs["root"].resolve()),
-        "git_sha": deps.get_git_sha(root),
+        "git_sha": source_identity if source_identity is not None else deps.get_git_sha(root),
         "cli": {
             "phase": args.phase if args.phase else args.verify_phase_output,
             "preset": getattr(args, "preset", None),
@@ -1040,6 +1042,8 @@ def update_proof_pack(
     phase_counts: Dict[str, Any],
     phase_started_at: str,
     phase_finished_at: str,
+    *,
+    source_identity: Optional[str] = None,
 ) -> None:
     deps.refresh_run_manifest_artifacts(dirs["root"], dirs)
     proof_path = dirs["root"] / PROOF_PACK_FILENAME
@@ -1050,7 +1054,7 @@ def update_proof_pack(
         except Exception:
             proof = {}
     proof["run_id"] = run_id
-    proof["git_sha"] = deps.get_git_sha(root)
+    proof["git_sha"] = source_identity if source_identity is not None else deps.get_git_sha(root)
     proof["runner_sha256"] = deps.sha256_text(deps.runner_script)
     proof["argv"] = sys.argv
     proof["python_version"] = platform.python_version()
@@ -1087,6 +1091,8 @@ def write_blocked_promptset_proof_pack(
     run_started_at: str,
     phases: List[str],
     prompt_report: Dict[str, Any],
+    *,
+    source_identity: Optional[str] = None,
 ) -> None:
     deps.refresh_run_manifest_artifacts(dirs["root"], dirs)
     proof_path = dirs["root"] / PROOF_PACK_FILENAME
@@ -1101,7 +1107,7 @@ def write_blocked_promptset_proof_pack(
     resume_proof = dirs["root"] / RESUME_PROOF_FILENAME
     routing_fp = dirs["root"] / "RUN_ROUTING_FINGERPRINT.json"
     proof["run_id"] = run_id
-    proof["git_sha"] = deps.get_git_sha(root)
+    proof["git_sha"] = source_identity if source_identity is not None else deps.get_git_sha(root)
     proof["runner_sha256"] = deps.sha256_text(deps.runner_script)
     proof["argv"] = sys.argv
     proof["python_version"] = platform.python_version()

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import json
 from pathlib import Path
 import sys
 from types import SimpleNamespace
@@ -320,8 +321,9 @@ def test_execute_with_live_ok_passes_consent_gate_without_provider_call(
         runner.main()
 
     assert excinfo.value.code == 1
-    assert len(gate_calls) == 1
-    assert gate_calls[0]["phase_sequence"] == ["A"]
+    # Setup now precedes the execution-only validator so source identity can
+    # dominate its provider-facing boundary. A setup failure reaches neither.
+    assert gate_calls == []
 
 
 def test_preset_phases_are_applied_before_live_consent_gate(
@@ -360,3 +362,121 @@ def test_preset_phases_are_applied_before_live_consent_gate(
     stderr = capsys.readouterr().err
     assert "sync phase execution" in stderr
     assert "DPMX_LIVE_OK=1" in stderr
+
+
+def test_gemini_list_models_unproven_identity_blocks_before_key_request_or_artifact(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    runner = _load_runner_module()
+    run_root = tmp_path / "run"
+    inputs_dir = run_root / "00_inputs"
+    inputs_dir.mkdir(parents=True)
+    calls = []
+
+    def _reject_identity(root: Path) -> str:
+        calls.append("identity")
+        raise runner.SourceIdentityUnprovenError("source identity unavailable")
+
+    def _resolve_key(*_args, **_kwargs):
+        calls.append("key")
+        return None, "GEMINI_API_KEY"
+
+    def _forbid_session():
+        calls.append("session")
+        raise AssertionError("provider session must not resolve")
+
+    monkeypatch.setattr(runner, "required_execution_source_identity", _reject_identity)
+    monkeypatch.setattr(runner, "resolve_api_key", _resolve_key)
+    monkeypatch.setattr(runner, "_get_http_session", _forbid_session)
+
+    exit_code = runner.run_gemini_list_models(
+        tmp_path,
+        "run-identity-blocked",
+        {"root": run_root},
+    )
+
+    assert exit_code != 0
+    assert calls == ["identity"]
+    assert "source identity unavailable" in caplog.text
+    assert not (inputs_dir / runner.GEMINI_MODELS_FILENAME).exists()
+    assert not (inputs_dir / runner.GEMINI_MODELS_FAILED_FILENAME).exists()
+
+
+def test_gemini_list_models_valid_identity_preserves_mocked_listing_behavior(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = _load_runner_module()
+    run_root = tmp_path / "run"
+    (run_root / "00_inputs").mkdir(parents=True)
+    calls = []
+    response_payload = {
+        "models": [
+            {
+                "name": "models/gemini-test",
+                "displayName": "Gemini Test",
+                "inputTokenLimit": 1024,
+                "outputTokenLimit": 256,
+                "supportedGenerationMethods": ["generateContent"],
+            },
+            {
+                "name": "models/gemini-embed",
+                "supportedGenerationMethods": ["embedContent"],
+            },
+        ]
+    }
+    response_body = json.dumps(response_payload).encode("utf-8")
+
+    class _Response:
+        content = response_body
+
+        @staticmethod
+        def raise_for_status() -> None:
+            return None
+
+        @staticmethod
+        def json():
+            return response_payload
+
+    class _Session:
+        @staticmethod
+        def get(endpoint, *, params, timeout):
+            calls.append("request")
+            assert endpoint == runner.GEMINI_MODELS_ENDPOINT
+            assert params == {"key": "fake-key"}
+            assert timeout == 60
+            return _Response()
+
+    def _identity(root: Path) -> str:
+        calls.append("identity")
+        return "a" * 40
+
+    def _resolve_key(*_args, **_kwargs):
+        calls.append("key")
+        return "fake-key", "GEMINI_API_KEY"
+
+    monkeypatch.setattr(runner, "required_execution_source_identity", _identity)
+    monkeypatch.setattr(runner, "resolve_api_key", _resolve_key)
+    monkeypatch.setattr(runner, "_get_http_session", lambda: _Session())
+
+    exit_code = runner.run_gemini_list_models(
+        tmp_path,
+        "run-valid-identity",
+        {"root": run_root},
+    )
+
+    assert exit_code == 0
+    assert calls == ["identity", "key", "request"]
+    output = json.loads(
+        (run_root / "00_inputs" / runner.GEMINI_MODELS_FILENAME).read_text(
+            encoding="utf-8"
+        )
+    )
+    assert [row["model_id"] for row in output["models"]] == [
+        "models/gemini-test"
+    ]
+    assert not (
+        run_root / "00_inputs" / runner.GEMINI_MODELS_FAILED_FILENAME
+    ).exists()

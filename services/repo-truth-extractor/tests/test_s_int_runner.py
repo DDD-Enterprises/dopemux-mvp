@@ -53,9 +53,33 @@ def test_run_s_int_writes_outputs(tmp_path: Path) -> None:
     assert (run_root / "S_INT_FAIL_CLOSED.md").exists()
 
 
+def _init_minimal_git_repo(repo_dir: Path) -> None:
+    """Give ``repo_dir`` a real, positively-provable git identity (a plain
+    ``HEAD`` commit) so subprocess CLI invocations rooted there satisfy
+    ``required_execution_source_identity`` instead of resolving to
+    "UNKNOWN". Config values are passed via -c so this works even without
+    any global git user.name/user.email configured in the test environment.
+    """
+    git_env_args = ["-c", "user.name=RTE Test", "-c", "user.email=rte-test@example.invalid"]
+    subprocess.run(["git", *git_env_args, "init", "-q"], cwd=str(repo_dir), check=True)
+    (repo_dir / "README.md").write_text("s_int fixture repo\n", encoding="utf-8")
+    subprocess.run(["git", "add", "README.md"], cwd=str(repo_dir), check=True)
+    subprocess.run(
+        ["git", *git_env_args, "commit", "-q", "-m", "s_int fixture commit"],
+        cwd=str(repo_dir),
+        check=True,
+    )
+
+
 def test_run_s_int_dry_run_via_v4_cli(tmp_path: Path) -> None:
     root = Path(__file__).resolve().parents[3]
     script = root / "services" / "repo-truth-extractor" / "run_extraction_v4.py"
+    # RTE-W1-010 C1R2: --phase S_INT now falls behind
+    # required_execution_source_identity() the same as every other dispatch
+    # path, so this CLI invocation needs a proven git identity at cwd -- a
+    # bare tmp_path (no .git) used to work only because S_INT bypassed the
+    # gate, which was itself the bug this repair closes.
+    _init_minimal_git_repo(tmp_path)
     result = subprocess.run(
         [sys.executable, str(script), "--phase", "S_INT", "--dry-run", "--run-id", "sint_v4_dry"],
         cwd=str(tmp_path),

@@ -16,6 +16,11 @@ def _load_module():
     assert spec is not None
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
+    # Register in sys.modules before exec: the module now defines
+    # @dataclass BatchRetrievalIntegrationOutcome, and dataclasses' string
+    # annotation resolution looks the defining module up via
+    # sys.modules[cls.__module__] during class creation.
+    sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
 
@@ -88,8 +93,10 @@ class _EventStore:
         self.insert_calls = []
         self.run_events = []
 
-    def insert_webhook_event_if_absent(self, **kwargs):
-        self.insert_calls.append(kwargs)
+    def insert_webhook_event_if_absent(self, event):
+        if not isinstance(event, _WebhookEventInsert):
+            raise TypeError("expected one WebhookEventInsert object")
+        self.insert_calls.append(event)
         return True
 
     def fetch_webhook_event_id(self, provider: str, event_id: str):
@@ -97,6 +104,34 @@ class _EventStore:
 
     def append_run_event(self, row):
         self.run_events.append(row)
+
+
+class _WebhookEventInsert:
+    def __init__(
+        self,
+        *,
+        provider,
+        idempotency_key,
+        event_type,
+        event_id,
+        received_at_utc,
+        payload_json,
+        headers_json,
+        signature_valid,
+    ) -> None:
+        self.provider = provider
+        self.idempotency_key = idempotency_key
+        self.event_type = event_type
+        self.event_id = event_id
+        self.received_at_utc = received_at_utc
+        self.payload_json = payload_json
+        self.headers_json = headers_json
+        self.signature_valid = signature_valid
+
+
+class _RunEventInsert:
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
 
 def test_retrieve_batches_dispatches_openai_and_xai(monkeypatch, tmp_path: Path) -> None:
@@ -142,11 +177,18 @@ def test_integrate_batch_results_uses_provider_argument(monkeypatch) -> None:
     module = _load_module()
     store = _EventStore()
 
-    class _RunEventInsert:
-        def __init__(self, **kwargs):
-            self.kwargs = kwargs
-
-    monkeypatch.setitem(sys.modules, "ledger.interface", type("_LedgerModule", (), {"RunEventInsert": _RunEventInsert})())
+    monkeypatch.setitem(
+        sys.modules,
+        "ledger.interface",
+        type(
+            "_LedgerModule",
+            (),
+            {
+                "WebhookEventInsert": _WebhookEventInsert,
+                "RunEventInsert": _RunEventInsert,
+            },
+        )(),
+    )
 
     integrated = module.integrate_batch_results_with_webhook(
         batch_results={
@@ -164,6 +206,33 @@ def test_integrate_batch_results_uses_provider_argument(monkeypatch) -> None:
     )
 
     assert integrated == 1
-    assert store.insert_calls[0]["provider"] == "xai"
-    payload = json.loads(store.insert_calls[0]["payload_json"])
+    assert store.insert_calls[0].provider == "xai"
+    payload = json.loads(store.insert_calls[0].payload_json)
     assert payload["provider"] == "xai"
+    assert len(store.run_events) == 1
+
+
+def test_terminal_success_and_failure_states_partition_terminal_batch_states() -> None:
+    """RTE-W1-006 (V5 terminal): TERMINAL_SUCCESS_STATES and
+    TERMINAL_FAILURE_STATES must be disjoint and together account for
+    exactly TERMINAL_BATCH_STATES -- the outcome-level material-failure
+    check in run_extraction_v5.py's run_batch_retrieval_and_integration_detailed
+    keys off TERMINAL_FAILURE_STATES, so any status added to
+    TERMINAL_BATCH_STATES that isn't classified into one of these two sets
+    would silently escape both the success and the failure accounting."""
+    module = _load_module()
+
+    assert module.TERMINAL_SUCCESS_STATES.isdisjoint(module.TERMINAL_FAILURE_STATES)
+    assert module.TERMINAL_SUCCESS_STATES | module.TERMINAL_FAILURE_STATES == module.TERMINAL_BATCH_STATES
+    assert module.TERMINAL_FAILURE_STATES == {"failed", "expired", "cancelled", "canceled", "timeout"}
+    assert module.TERMINAL_SUCCESS_STATES == {"completed", "succeeded", "done"}
+
+
+def test_batch_retrieval_integration_outcome_reports_terminal_failure_batches() -> None:
+    module = _load_module()
+
+    outcome = module.BatchRetrievalIntegrationOutcome(
+        attempted=1, retrieved=1, terminal=1, integrated=1, terminal_failure_batches=1, success=False, exit_code=1
+    )
+
+    assert outcome.as_dict()["terminal_failure_batches"] == 1

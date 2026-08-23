@@ -167,7 +167,7 @@ def test_run_gate_applies_s_prompts_mode_before_scope_derivation(
 
     fake_scope = {
         "validation_started_at": "2026-03-12T00:00:00+00:00",
-        "git_sha": "abc123",
+        "git_sha": "abc123abc123abc123abc123abc123abc123abcd",
         "validator_host": "host",
         "validator_python": "3.11.0",
         "target_policy": "cost",
@@ -330,7 +330,7 @@ def test_run_gate_stays_offline_without_explicit_online_preflight(monkeypatch, t
 
     fake_scope = {
         "validation_started_at": "2026-03-12T00:00:00+00:00",
-        "git_sha": "abc123",
+        "git_sha": "abc123abc123abc123abc123abc123abc123abcd",
         "validator_host": "host",
         "validator_python": "3.11.0",
         "target_policy": "balanced_openrouter",
@@ -460,7 +460,7 @@ def test_run_gate_returns_conditional_go_when_only_conditions_remain(monkeypatch
 
     fake_scope = {
         "validation_started_at": "2026-03-12T00:00:00+00:00",
-        "git_sha": "abc123",
+        "git_sha": "abc123abc123abc123abc123abc123abc123abcd",
         "validator_host": "host",
         "validator_python": "3.11.0",
         "target_policy": "cost",

@@ -85,8 +85,13 @@ def write_run_manifest(
     args: Any,
     run_context: Any,
     phases: list[str],
+    *,
+    source_identity: Optional[str] = None,
 ) -> Dict[str, Any]:
-    return _write_run_manifest_impl(deps, root, dirs, run_id, args, run_context, phases)
+    return _write_run_manifest_impl(
+        deps, root, dirs, run_id, args, run_context, phases,
+        source_identity=source_identity,
+    )
 
 
 def write_phase_coverage_manifest(
@@ -141,6 +146,8 @@ def update_proof_pack(
     phase_counts: Dict[str, Any],
     phase_started_at: str,
     phase_finished_at: str,
+    *,
+    source_identity: Optional[str] = None,
 ) -> None:
     _update_proof_pack_impl(
         deps,
@@ -152,6 +159,7 @@ def update_proof_pack(
         phase_counts,
         phase_started_at,
         phase_finished_at,
+        source_identity=source_identity,
     )
 
 
@@ -163,6 +171,8 @@ def write_blocked_promptset_proof_pack(
     run_started_at: str,
     phases: list[str],
     prompt_report: Dict[str, Any],
+    *,
+    source_identity: Optional[str] = None,
 ) -> None:
     _write_blocked_promptset_proof_pack_impl(
         deps,
@@ -172,6 +182,7 @@ def write_blocked_promptset_proof_pack(
         run_started_at,
         phases,
         prompt_report,
+        source_identity=source_identity,
     )
 
 

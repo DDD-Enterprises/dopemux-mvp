@@ -28,6 +28,7 @@ import random
 import uuid
 from collections import Counter, defaultdict
 from dataclasses import dataclass, replace
+from types import SimpleNamespace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Set, Tuple
@@ -4709,6 +4710,15 @@ def record_request_cost(
     if meta.get("failure_type") == "cost_aborted":
         # Request was never sent due to existing cap breach; skip recording
         return meta
+    if meta.get("dry_run"):
+        # RTE-W1-001 fail-closed-exit fix side effect discovered in S4:
+        # dry-run partitions never send a real request, so there is no
+        # usage to record and no real spend to cap. Previously this fell
+        # through to the "usage unavailable" branch below, which
+        # incorrectly set cost_abort_triggered=True for every dry run
+        # (masked pre-fix because main() exited 0 regardless of run
+        # status). Dry-run cost tracking is a no-op, not a cap breach.
+        return meta
     with _SPEND_TRACKER_LOCK:
         state = _ACTIVE_SPEND_TRACKER
         if state is None:
@@ -5612,6 +5622,34 @@ def sha256_file_strict(path: Path) -> str:
     return sha256_bytes(read_bytes_strict(path))
 
 
+_TERMINAL_SUCCESS_STATUSES = {RUN_STATUS_OK}
+
+
+def resolve_final_run_terminal_exit_code(dirs_root: Path) -> Tuple[int, Optional[str]]:
+    """RTE-W1-001: shell exit code must match canonical semantic run status.
+
+    Reuses the existing coverage-rollup run_status (compute_run_status /
+    update_run_manifest_status machinery) rather than inventing a second
+    status authority (system invariant 6). Exit 0 only when run_status is
+    exactly RUN_STATUS_OK. Any other value -- RUN_STATUS_BLOCKED,
+    RUN_STATUS_COST_ABORTED, an unrecognized/injected value, or a missing/
+    unreadable rollup -- fails closed with a nonzero exit code.
+    """
+    rollup_path = dirs_root / COVERAGE_ROLLUP_FILENAME
+    if not rollup_path.exists():
+        return 1, None
+    try:
+        payload = _load_json(rollup_path)
+    except Exception:
+        return 1, None
+    if not isinstance(payload, dict):
+        return 1, None
+    run_status = payload.get("run_status")
+    if run_status in _TERMINAL_SUCCESS_STATUSES:
+        return 0, run_status
+    return 1, run_status
+
+
 def get_git_sha(root: Path) -> str:
     try:
         return subprocess.check_output(
@@ -5619,6 +5657,68 @@ def get_git_sha(root: Path) -> str:
         ).strip()
     except Exception:
         return "UNKNOWN"
+
+
+# RTE-W1-010: source identity provenance. ``get_git_sha`` above is
+# intentionally left unchanged (it is imported by run_extraction_v3.py and
+# monkeypatched in tests/test_prescan_import_staleness.py with non-shape
+# values such as "git-current") -- it remains a best-effort, never-raises
+# lookup. The functions below are the fail-closed layer: they call
+# ``get_git_sha`` and additionally validate that the result plausibly *is* a
+# git commit id before letting canonical execution evidence be produced.
+_PLAUSIBLE_GIT_SHA_RE = re.compile(r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$")
+
+
+class SourceIdentityUnprovenError(RuntimeError):
+    """Raised when canonical execution evidence requires a positively proven
+    git source identity and none could be obtained.
+
+    Read-only introspection commands (help/list/status/print-*) that do not
+    produce canonical execution evidence must never raise or catch this --
+    they should keep calling ``get_git_sha``/``best_effort_source_identity``
+    directly and tolerate "UNKNOWN".
+    """
+
+
+def _looks_like_plausible_git_sha(value: Any) -> bool:
+    if not isinstance(value, str):
+        return False
+    candidate = value.strip()
+    if not candidate or candidate.upper() == "UNKNOWN":
+        return False
+    return bool(_PLAUSIBLE_GIT_SHA_RE.match(candidate))
+
+
+def best_effort_source_identity(root: Path) -> str:
+    """Non-blocking git identity lookup for advisory/informational surfaces.
+
+    May return the literal string "UNKNOWN". Callers that need proven
+    identity for canonical execution evidence must use
+    ``required_execution_source_identity`` instead.
+    """
+    return get_git_sha(root)
+
+
+def required_execution_source_identity(root: Path) -> str:
+    """Git identity required before canonical execution evidence may be
+    accepted as authoritative (RTE-W1-010, system invariants 7-10).
+
+    Raises ``SourceIdentityUnprovenError`` when identity cannot be positively
+    proven: resolution exception, blank/None output, the literal "UNKNOWN",
+    or output that does not look like a plausible git commit id (40 hex
+    chars for SHA-1 repos, 64 for SHA-256 repos). Never returns "UNKNOWN".
+    """
+    try:
+        sha = get_git_sha(root)
+    except Exception as exc:  # pragma: no cover - get_git_sha already swallows
+        raise SourceIdentityUnprovenError(
+            f"git identity resolution raised: {type(exc).__name__}: {exc}"
+        ) from exc
+    if not _looks_like_plausible_git_sha(sha):
+        raise SourceIdentityUnprovenError(
+            f"git identity could not be positively proven (resolved={sha!r})"
+        )
+    return sha
 
 
 def collect_manifest_artifacts(dirs: Dict[str, Path]) -> List[Dict[str, Any]]:
@@ -6542,6 +6642,7 @@ def build_webhook_payload(
     detail: str,
     artifacts_written: List[str],
     artifacts_missing: List[str],
+    source_identity: Optional[str] = None,
 ) -> Dict[str, Any]:
     event_id = _webhook_event_id(run_id, phase_id, step_id, job_id, state)
     emitted_at = now_iso()
@@ -6553,7 +6654,7 @@ def build_webhook_payload(
         "run": {
             "run_id": run_id,
             "run_root": str(root.resolve()),
-            "git_sha": get_git_sha(root),
+            "git_sha": source_identity if source_identity is not None else get_git_sha(root),
             "runner_sha256": sha256_text(RUNNER_SCRIPT),
         },
         "phase": {
@@ -6633,6 +6734,7 @@ def maybe_send_batch_webhook(
     detail: str,
     artifacts_written: List[str],
     artifacts_missing: List[str],
+    source_identity: Optional[str] = None,
 ) -> bool:
     if not cfg.webhook_url.strip():
         return True
@@ -6649,6 +6751,7 @@ def maybe_send_batch_webhook(
         detail=detail,
         artifacts_written=artifacts_written,
         artifacts_missing=artifacts_missing,
+        source_identity=source_identity,
     )
     ok, status_code, err = send_webhook(
         payload,
@@ -7040,19 +7143,32 @@ def write_run_manifest(
     args: argparse.Namespace,
     run_context: RunContext,
     phases: List[str],
+    *,
+    source_identity: Optional[str] = None,
 ) -> Dict[str, Any]:
+    if source_identity is None:
+        return reporting_write_run_manifest(
+            _reporting_deps(), root, dirs, run_id, args, run_context, phases
+        )
     return reporting_write_run_manifest(
-        _reporting_deps(), root, dirs, run_id, args, run_context, phases
+        _reporting_deps(), root, dirs, run_id, args, run_context, phases,
+        source_identity=source_identity,
     )
 
 
-def write_runner_identity(root: Path, run_root: Path, run_id: str) -> None:
+def write_runner_identity(
+    root: Path,
+    run_root: Path,
+    run_id: str,
+    *,
+    source_identity: Optional[str] = None,
+) -> None:
     rte_write_runner_identity(
         root,
         run_root,
         run_id,
         now_iso=now_iso,
-        get_git_sha=get_git_sha,
+        get_git_sha=(lambda _root: source_identity) if source_identity is not None else get_git_sha,
         runner_script=RUNNER_SCRIPT,
         sha256_text=sha256_text,
         python_executable=sys.executable,
@@ -8943,7 +9059,14 @@ def _normalize_gemini_model(row: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def run_gemini_list_models(root: Path, run_id: str, dirs: Dict[str, Path]) -> int:
-    del root
+    try:
+        required_execution_source_identity(root)
+    except SourceIdentityUnprovenError as exc:
+        logger.error(
+            "Source identity unproven; blocking Gemini model listing: %s", exc
+        )
+        return 1
+
     out_dir = dirs["root"] / "00_inputs"
     output_path = out_dir / GEMINI_MODELS_FILENAME
     failed_path = out_dir / GEMINI_MODELS_FAILED_FILENAME
@@ -9168,15 +9291,36 @@ def run_doctor_full(
     }
     payload.update(_shared_doctor_advisory_fields("DOCTOR_FULL.json", run_id=run_id))
 
+    # RTE-W1-010: --doctor with persist=True writes DOCTOR_FULL.json and
+    # calls write_certification_result -- genuine canonical certification
+    # evidence for the current run, not a report of a historical one. It
+    # must not be persisted with an unproven source identity, even though
+    # it is reached via a different CLI dispatch than the main
+    # phase-execution path's identity gate. The persist=False variant
+    # (read-only doctor probe) is unaffected -- it never reaches this block.
+    identity_unproven_reason: Optional[str] = None
     if persist:
-        doctor_dir = current_doctor_root(root)
-        doctor_dir.mkdir(parents=True, exist_ok=True)
-        write_json(doctor_dir / "DOCTOR_FULL.json", payload)
-        write_certification_result(
-            dirs["root"],
-            topology_payload=payload,
-        )
+        try:
+            required_execution_source_identity(root)
+        except SourceIdentityUnprovenError as exc:
+            identity_unproven_reason = str(exc)
+            logger.error(
+                "Source identity unproven; refusing to persist certification "
+                "evidence: %s",
+                exc,
+            )
+        else:
+            doctor_dir = current_doctor_root(root)
+            doctor_dir.mkdir(parents=True, exist_ok=True)
+            write_json(doctor_dir / "DOCTOR_FULL.json", payload)
+            write_certification_result(
+                dirs["root"],
+                topology_payload=payload,
+            )
     print(sanitized_json_text(payload, indent=2, sort_keys=False, ensure_ascii=True))
+
+    if identity_unproven_reason is not None:
+        return 1
 
     has_missing = any(missing_steps.values())
     has_duplicates = bool(duplicates)
@@ -11320,6 +11464,7 @@ def _persist_cost_abort(
     exc: CostLimitExceededError,
     ui: Optional["UI"] = None,
     source: str = "cost_abort",
+    source_identity: Optional[str] = None,
 ) -> Dict[str, Any]:
     cost_abort = {
         **dict(exc.details),
@@ -11371,7 +11516,7 @@ def _persist_cost_abort(
     )
     linked_artifacts["cost_abort"] = str(cost_abort_path.resolve())
     proof["run_id"] = run_id
-    proof["git_sha"] = proof.get("git_sha") or get_git_sha(root)
+    proof["git_sha"] = proof.get("git_sha") or source_identity or get_git_sha(root)
     proof["runner_sha256"] = proof.get("runner_sha256") or sha256_text(RUNNER_SCRIPT)
     proof["argv"] = proof.get("argv") or sys.argv
     proof["python_version"] = proof.get("python_version") or platform.python_version()
@@ -15567,6 +15712,7 @@ else sdk_auth_present_flags(p_provider, True)
                 **endpoint_fingerprint(endpoint_url),
                 "status_code": None,
                 "failure_type": None,
+                "dry_run": True,
                 "request_payload_bytes": payload_bytes,
                 "request_payload_bytes_mode": (
                     "sdk_estimate"
@@ -18932,6 +19078,7 @@ def emit_run_dashboard_snapshot(
     dirs: Dict[str, Path],
     ui: Optional[UI] = None,
     source: str = "phase",
+    source_identity: Optional[str] = None,
 ) -> Dict[str, Any]:
     payload = phase_status_snapshot(run_id, dirs, PHASES)
     write_run_dashboard_snapshot(dirs["root"], payload, source=source)
@@ -18940,7 +19087,7 @@ def emit_run_dashboard_snapshot(
             run_id=run_id,
             run_root=dirs["root"],
             repo_root=REPO_ROOT,
-            git_sha=get_git_sha(REPO_ROOT),
+            git_sha=source_identity if source_identity is not None else get_git_sha(REPO_ROOT),
             run_dashboard=payload,
         )
         risk_dashboard = build_rte_risk_dashboard(risk_inputs)
@@ -19942,6 +20089,7 @@ def generate_coverage_report(
     phases: List[str],
     *,
     persist: bool = True,
+    source_identity: Optional[str] = None,
 ) -> int:
     phase_rows = [_coverage_for_phase(phase, dirs[phase]) for phase in phases]
     required_status = get_required_artifact_status(dirs, R_REQUIRED_INPUT_PHASES)
@@ -19949,7 +20097,7 @@ def generate_coverage_report(
         "generated_at": now_iso(),
         "run_id": run_id,
         "runner_sha256": sha256_text(RUNNER_SCRIPT),
-        "git_sha": get_git_sha(root),
+        "git_sha": source_identity if persist and source_identity is not None else get_git_sha(root),
         "phases": {row["phase"]: row for row in phase_rows},
         "required_artifact_coverage": required_status,
     }
@@ -20026,6 +20174,8 @@ def apply_promptset_preflight_block(
     phases: List[str],
     prompt_report: Dict[str, Any],
     run_started_at: str,
+    *,
+    source_identity: Optional[str] = None,
 ) -> None:
     for phase in phases:
         phase_report = _prompt_hash_report_for_phase(phase, get_phase_prompts(phase))
@@ -20034,7 +20184,13 @@ def apply_promptset_preflight_block(
     write_coverage_rollup(root, dirs, run_id, prompt_report)
     write_resume_proof(dirs, run_id, phases, promptset_report=prompt_report)
     write_blocked_promptset_proof_pack(
-        root, dirs, run_id, run_started_at, phases, prompt_report
+        root,
+        dirs,
+        run_id,
+        run_started_at,
+        phases,
+        prompt_report,
+        source_identity=source_identity,
     )
 
 
@@ -20221,6 +20377,8 @@ def update_proof_pack(
     phase_counts: Dict[str, Any],
     phase_started_at: str,
     phase_finished_at: str,
+    *,
+    source_identity: Optional[str] = None,
 ) -> None:
     rte_update_proof_pack(
         _reporting_deps(),
@@ -20232,6 +20390,7 @@ def update_proof_pack(
         phase_counts,
         phase_started_at,
         phase_finished_at,
+        source_identity=source_identity,
     )
 
 
@@ -20242,9 +20401,18 @@ def write_blocked_promptset_proof_pack(
     run_started_at: str,
     phases: List[str],
     prompt_report: Dict[str, Any],
+    *,
+    source_identity: Optional[str] = None,
 ) -> None:
     rte_write_blocked_promptset_proof_pack(
-        _reporting_deps(), root, dirs, run_id, run_started_at, phases, prompt_report
+        _reporting_deps(),
+        root,
+        dirs,
+        run_id,
+        run_started_at,
+        phases,
+        prompt_report,
+        source_identity=source_identity,
     )
 
 
@@ -20584,6 +20752,7 @@ def run_batch_watch(
     dirs: Dict[str, Path],
     cfg: RunnerConfig,
     ui: Optional[UI] = None,
+    source_identity: Optional[str] = None,
 ) -> BatchWatchResult:
     phase_id = str(phase or "").upper()
     if phase_id not in PHASES:
@@ -20978,6 +21147,7 @@ def run_batch_watch(
             detail=event_detail,
             artifacts_written=artifacts_written,
             artifacts_missing=artifacts_missing,
+            source_identity=source_identity,
         )
         if not webhook_ok:
             webhook_failures += 1
@@ -22950,12 +23120,9 @@ def main() -> None:
         or args.print_run_order
         or args.print_phase_routing
         or args.print_phase_prompts is not None
-        or args.doctor_auth
-        or args.preflight_providers
         or args.print_promptpack
         or args.coverage_report
         or args.verify_phase_output
-        or args.doctor
     )
     if args.batch_mode and args.execute and args.batch_wait_timeout_seconds >= 86400:
         logger.warning(
@@ -23025,17 +23192,6 @@ def main() -> None:
             home_scan_mode=args.home_scan_mode,
             phase_sequence=phase_sequence,
         )
-    if should_enforce_pre_live_validator(args, phase_sequence):
-        try:
-            enforce_pre_live_validator_for_execution(
-                root=Path.cwd(),
-                args=args,
-                phase_sequence=phase_sequence,
-            )
-        except Exception as exc:
-            logger.error("%s", exc)
-            sys.exit(1)
-
     # ------------------------------------------------------------------
     # Cost-profile resolution (May 2026 Phase E6).
     #
@@ -23145,207 +23301,16 @@ def main() -> None:
                 cost_profile_name,
             )
 
-    if args.phase == "S_INT":
-        from s_int.models import ladder_for_step
-        from s_int.run_s_int import run_s_int
-        from s_int.schema_validate import validate_payload
-
-        run_id = (
-            args.run_id.strip()
-            if args.run_id
-            else datetime.now(timezone.utc).strftime("s_int_%Y%m%dT%H%M%SZ")
-        )
-        cfg = RunnerConfig(
-            dry_run=args.dry_run,
-            max_files_docs=args.max_files_docs,
-            max_files_code=args.max_files_code,
-            max_chars=args.max_chars,
-            max_request_bytes=args.max_request_bytes,
-            file_truncate_chars=args.file_truncate_chars,
-            home_scan_mode=args.home_scan_mode,
-            resume=args.resume,
-            fail_fast_auth=args.fail_fast_auth,
-            gemini_auth_mode=args.gemini_auth_mode,
-            gemini_transport=args.gemini_transport,
-            openai_transport=args.openai_transport,
-            xai_transport=args.xai_transport,
-            retry_policy=args.retry_policy,
-            retry_max_attempts=max(1, args.retry_max_attempts),
-            retry_base_seconds=max(0.0, args.retry_base_seconds),
-            retry_max_seconds=max(0.0, args.retry_max_seconds),
-            phase_auth_fail_threshold=max(1, args.phase_auth_fail_threshold),
-            partition_workers=args.partition_workers,
-            executor=args.executor,
-            debug_phase_inputs=args.debug_phase_inputs,
-            fail_fast_missing_inputs=args.fail_fast_missing_inputs,
-            routing_policy=args.routing_policy,
-            disable_escalation=bool(args.disable_escalation),
-            escalation_max_hops=args.escalation_max_hops,
-            batch_mode=bool(args.batch_mode),
-            batch_provider=args.batch_provider,
-            batch_poll_seconds=args.batch_poll_seconds,
-            batch_wait_timeout_seconds=args.batch_wait_timeout_seconds,
-            batch_max_requests_per_job=args.batch_max_requests_per_job,
-            batch_submit_only=bool(args.batch_submit_only),
-            webhook_url=os.getenv(DPMX_WEBHOOK_URL_ENV, "").strip(),
-            webhook_secret=os.getenv(DPMX_WEBHOOK_SECRET_ENV, "").strip(),
-            webhook_timeout_seconds=_int_env(
-                DPMX_WEBHOOK_TIMEOUT_SECONDS_ENV, 5, minimum=1
-            ),
-            webhook_required=_env_is_truthy(DPMX_WEBHOOK_REQUIRED_ENV),
-            webhook_auto_continue=_env_is_truthy(DPMX_WEBHOOK_AUTO_CONTINUE_ENV),
-            live_ok=_env_is_truthy(DPMX_LIVE_OK_ENV),
-            allow_online_llm=args.allow_online_llm,
-            max_cost_usd=args.max_cost_usd,
-            selected_execution_step=selected_execution_step,
-            prescan_dir=args.prescan_dir,
-            prescan_skip=bool(args.skip_prescan),
-            prescan_online=bool(args.prescan_online),
-            prescan_import_dir=args.prescan_import_dir,
-            prescan_import_validation=prescan_import_validation,
-            prescan_allow_scope_reduction=bool(args.prescan_allow_scope_reduction),
-            d0_max_files=args.d0_max_files,
-            d1_max_files=args.d1_max_files,
-            router=router,
-        )
-
-        def _prompt_executor(step, rendered_prompt, schema, _prior_outputs):  # type: ignore[no-untyped-def]
-            ladder = ladder_for_step(step)
-
-            def _execute_attempt(route, _hop_index):  # type: ignore[no-untyped-def]
-                provider, model_id, api_key_env = route
-                route_token = f"{provider}/{model_id}"
-                projected_input_tokens = _estimate_text_tokens(
-                    "Return JSON only.", rendered_prompt
-                )
-                projected_output_tokens = _project_output_tokens(
-                    projected_input_tokens
-                )
-                _check_projected_cost_limit(
-                    cfg,
-                    phase=step.phase,
-                    step_id=step.step_id,
-                    partition_id=step.step_id,
-                    provider=provider,
-                    model_id=model_id,
-                    input_tokens=projected_input_tokens,
-                    output_tokens=projected_output_tokens,
-                    execution_mode="s_int_sync",
-                    route=route_token,
-                )
-
-                result = call_llm(
-                    provider=provider,
-                    model_id=model_id,
-                    api_key_env=api_key_env,
-                    system_prompt="Return JSON only.",
-                    user_content=rendered_prompt,
-                    cfg=cfg,
-                )
-
-                meta = dict(result.get("meta") or {})
-                response_text = str(result.get("text") or "")
-                if meta.get("response_received") or result.get("ok"):
-                    spend_record = _accumulate_runtime_spend(
-                        cfg,
-                        phase=step.phase,
-                        step_id=step.step_id,
-                        partition_id=step.step_id,
-                        provider=provider,
-                        model_id=model_id,
-                        execution_mode="s_int_sync",
-                        response_summary=(
-                            meta.get("response_summary")
-                            if isinstance(meta.get("response_summary"), dict)
-                            else None
-                        ),
-                        response_text=response_text,
-                        fallback_input_tokens=_estimate_text_tokens(
-                            "Return JSON only.", rendered_prompt
-                        ),
-                        fallback_output_tokens=projected_output_tokens,
-                        route=route_token,
-                    )
-                    if spend_record is not None:
-                        meta["spend_usage"] = spend_record
-                payload = None
-                schema_errors: List[str] = []
-                escalation_trigger = str(meta.get("failure_type") or "").strip() or None
-                if not escalation_trigger:
-                    try:
-                        payload = json.loads(response_text)
-                    except Exception:
-                        meta["failure_type"] = "invalid_json"
-                        escalation_trigger = "invalid_json"
-                    else:
-                        schema_errors = validate_payload(payload, schema)
-                        if schema_errors:
-                            meta["failure_type"] = "schema_invalid"
-                            meta["schema_errors"] = list(schema_errors)
-                            if any(
-                                "missing required key" in row for row in schema_errors
-                            ):
-                                escalation_trigger = "schema_missing_key"
-                            else:
-                                escalation_trigger = "format_violation"
-                return {
-                    "response_text": response_text,
-                    "request_meta": meta,
-                    "artifacts": [payload] if isinstance(payload, dict) else [],
-                    "route": route,
-                    "artifacts_ok": isinstance(payload, dict) and not schema_errors,
-                    "escalation_trigger": escalation_trigger,
-                }
-
-            ladder_result = call_llm_with_ladder(
-                phase="S_INT",
-                step_id=step.step_id,
-                partition_id=step.step_id,
-                routing_policy=cfg.routing_policy,
-                routing_tier=step.routing_tier,
-                ladder=ladder,
-                cfg=cfg,
-                execute_attempt=_execute_attempt,
-                ui=None,
-            )
-            payload = None
-            artifacts = ladder_result.get("artifacts")
-            if isinstance(artifacts, list) and artifacts:
-                candidate = artifacts[0]
-                if isinstance(candidate, dict):
-                    payload = candidate
-            if payload is None:
-                try:
-                    payload = json.loads(str(ladder_result.get("response_text") or ""))
-                except Exception as exc:
-                    raise RuntimeError(
-                        f"S_INT step {step.step_id} returned invalid JSON."
-                    ) from exc
-            errors = validate_payload(payload, schema)
-            if errors:
-                raise RuntimeError(
-                    f"S_INT step {step.step_id} failed schema validation: {'; '.join(errors[:5])}"
-                )
-            return {
-                "payload": payload,
-                "request_meta": dict(ladder_result.get("request_meta") or {}),
-            }
-
+    if not readonly_introspection:
         try:
-            summary = run_s_int(
-                root,
-                run_id,
-                dry_run=bool(args.dry_run),
-                prompt_executor=None if args.dry_run else _prompt_executor,
+            execution_source_identity = required_execution_source_identity(root)
+        except SourceIdentityUnprovenError as exc:
+            # Note: dirs is not defined yet here.
+            # We will just print the error and exit.
+            logger.error(
+                "Source identity unproven; blocking canonical execution: %s", exc
             )
-        except CostLimitExceededError as exc:
-            logger.error("S_INT cost cap exceeded: %s", exc)
             sys.exit(1)
-        except Exception as exc:
-            logger.error("S_INT failed: %s", exc)
-            sys.exit(1)
-        print(sanitized_json_text(summary, indent=2 if args.pretty else None, sort_keys=True, ensure_ascii=True))
-        sys.exit(0)
 
     try:
         allow_create_if_missing = bool(
@@ -23596,6 +23561,215 @@ def main() -> None:
         targets = phase_sequence if phase_sequence else PHASES
         sys.exit(run_doctor_full(root, dirs, run_id, targets, cfg, persist=False))
 
+
+    if should_enforce_pre_live_validator(args, phase_sequence):
+        try:
+            enforce_pre_live_validator_for_execution(
+                root=root,
+                args=args,
+                phase_sequence=phase_sequence,
+            )
+        except Exception as exc:
+            logger.error("%s", exc)
+            sys.exit(1)
+
+    if args.phase == "S_INT":
+        from s_int.models import ladder_for_step
+        from s_int.run_s_int import run_s_int
+        from s_int.schema_validate import validate_payload
+
+        cfg = RunnerConfig(
+            dry_run=args.dry_run,
+            max_files_docs=args.max_files_docs,
+            max_files_code=args.max_files_code,
+            max_chars=args.max_chars,
+            max_request_bytes=args.max_request_bytes,
+            file_truncate_chars=args.file_truncate_chars,
+            home_scan_mode=args.home_scan_mode,
+            resume=args.resume,
+            fail_fast_auth=args.fail_fast_auth,
+            gemini_auth_mode=args.gemini_auth_mode,
+            gemini_transport=args.gemini_transport,
+            openai_transport=args.openai_transport,
+            xai_transport=args.xai_transport,
+            retry_policy=args.retry_policy,
+            retry_max_attempts=max(1, args.retry_max_attempts),
+            retry_base_seconds=max(0.0, args.retry_base_seconds),
+            retry_max_seconds=max(0.0, args.retry_max_seconds),
+            phase_auth_fail_threshold=max(1, args.phase_auth_fail_threshold),
+            partition_workers=args.partition_workers,
+            executor=args.executor,
+            debug_phase_inputs=args.debug_phase_inputs,
+            fail_fast_missing_inputs=args.fail_fast_missing_inputs,
+            routing_policy=args.routing_policy,
+            disable_escalation=bool(args.disable_escalation),
+            escalation_max_hops=args.escalation_max_hops,
+            batch_mode=bool(args.batch_mode),
+            batch_provider=args.batch_provider,
+            batch_poll_seconds=args.batch_poll_seconds,
+            batch_wait_timeout_seconds=args.batch_wait_timeout_seconds,
+            batch_max_requests_per_job=args.batch_max_requests_per_job,
+            batch_submit_only=bool(args.batch_submit_only),
+            webhook_url=os.getenv(DPMX_WEBHOOK_URL_ENV, "").strip(),
+            webhook_secret=os.getenv(DPMX_WEBHOOK_SECRET_ENV, "").strip(),
+            webhook_timeout_seconds=_int_env(
+                DPMX_WEBHOOK_TIMEOUT_SECONDS_ENV, 5, minimum=1
+            ),
+            webhook_required=_env_is_truthy(DPMX_WEBHOOK_REQUIRED_ENV),
+            webhook_auto_continue=_env_is_truthy(DPMX_WEBHOOK_AUTO_CONTINUE_ENV),
+            live_ok=_env_is_truthy(DPMX_LIVE_OK_ENV),
+            allow_online_llm=args.allow_online_llm,
+            max_cost_usd=args.max_cost_usd,
+            selected_execution_step=selected_execution_step,
+            prescan_dir=args.prescan_dir,
+            prescan_skip=bool(args.skip_prescan),
+            prescan_online=bool(args.prescan_online),
+            prescan_import_dir=args.prescan_import_dir,
+            prescan_import_validation=prescan_import_validation,
+            prescan_allow_scope_reduction=bool(args.prescan_allow_scope_reduction),
+            d0_max_files=args.d0_max_files,
+            d1_max_files=args.d1_max_files,
+            router=router,
+        )
+
+        def _prompt_executor(step, rendered_prompt, schema, _prior_outputs):  # type: ignore[no-untyped-def]
+            ladder = ladder_for_step(step)
+
+            def _execute_attempt(route, _hop_index):  # type: ignore[no-untyped-def]
+                provider, model_id, api_key_env = route
+                route_token = f"{provider}/{model_id}"
+                projected_input_tokens = _estimate_text_tokens(
+                    "Return JSON only.", rendered_prompt
+                )
+                projected_output_tokens = _project_output_tokens(
+                    projected_input_tokens
+                )
+                _check_projected_cost_limit(
+                    cfg,
+                    phase=step.phase,
+                    step_id=step.step_id,
+                    partition_id=step.step_id,
+                    provider=provider,
+                    model_id=model_id,
+                    input_tokens=projected_input_tokens,
+                    output_tokens=projected_output_tokens,
+                    execution_mode="s_int_sync",
+                    route=route_token,
+                )
+
+                result = call_llm(
+                    provider=provider,
+                    model_id=model_id,
+                    api_key_env=api_key_env,
+                    system_prompt="Return JSON only.",
+                    user_content=rendered_prompt,
+                    cfg=cfg,
+                )
+
+                meta = dict(result.get("meta") or {})
+                response_text = str(result.get("text") or "")
+                if meta.get("response_received") or result.get("ok"):
+                    spend_record = _accumulate_runtime_spend(
+                        cfg,
+                        phase=step.phase,
+                        step_id=step.step_id,
+                        partition_id=step.step_id,
+                        provider=provider,
+                        model_id=model_id,
+                        execution_mode="s_int_sync",
+                        response_summary=(
+                            meta.get("response_summary")
+                            if isinstance(meta.get("response_summary"), dict)
+                            else None
+                        ),
+                        response_text=response_text,
+                        fallback_input_tokens=_estimate_text_tokens(
+                            "Return JSON only.", rendered_prompt
+                        ),
+                        fallback_output_tokens=projected_output_tokens,
+                        route=route_token,
+                    )
+                    if spend_record is not None:
+                        meta["spend_usage"] = spend_record
+                payload = None
+                schema_errors: List[str] = []
+                escalation_trigger = str(meta.get("failure_type") or "").strip() or None
+                if not escalation_trigger:
+                    try:
+                        payload = json.loads(response_text)
+                    except Exception:
+                        meta["failure_type"] = "invalid_json"
+                        escalation_trigger = "invalid_json"
+                    else:
+                        schema_errors = validate_payload(payload, schema)
+                        if schema_errors:
+                            meta["failure_type"] = "schema_invalid"
+                            meta["schema_errors"] = list(schema_errors)
+                            if any(
+                                "missing required key" in row for row in schema_errors
+                            ):
+                                escalation_trigger = "schema_missing_key"
+                            else:
+                                escalation_trigger = "format_violation"
+                return {
+                    "response_text": response_text,
+                    "request_meta": meta,
+                    "artifacts": [payload] if isinstance(payload, dict) else [],
+                    "route": route,
+                    "artifacts_ok": isinstance(payload, dict) and not schema_errors,
+                    "escalation_trigger": escalation_trigger,
+                }
+
+            ladder_result = call_llm_with_ladder(
+                phase="S_INT",
+                step_id=step.step_id,
+                partition_id=step.step_id,
+                routing_policy=cfg.routing_policy,
+                routing_tier=step.routing_tier,
+                ladder=ladder,
+                cfg=cfg,
+                execute_attempt=_execute_attempt,
+                ui=None,
+            )
+            payload = None
+            artifacts = ladder_result.get("artifacts")
+            if isinstance(artifacts, list) and artifacts:
+                candidate = artifacts[0]
+                if isinstance(candidate, dict):
+                    payload = candidate
+            if payload is None:
+                try:
+                    payload = json.loads(str(ladder_result.get("response_text") or ""))
+                except Exception as exc:
+                    raise RuntimeError(
+                        f"S_INT step {step.step_id} returned invalid JSON."
+                    ) from exc
+            errors = validate_payload(payload, schema)
+            if errors:
+                raise RuntimeError(
+                    f"S_INT step {step.step_id} failed schema validation: {'; '.join(errors[:5])}"
+                )
+            return {
+                "payload": payload,
+                "request_meta": dict(ladder_result.get("request_meta") or {}),
+            }
+
+        try:
+            summary = run_s_int(
+                root,
+                run_id,
+                dry_run=bool(args.dry_run),
+                prompt_executor=None if args.dry_run else _prompt_executor,
+            )
+        except CostLimitExceededError as exc:
+            logger.error("S_INT cost cap exceeded: %s", exc)
+            sys.exit(1)
+        except Exception as exc:
+            logger.error("S_INT failed: %s", exc)
+            sys.exit(1)
+        print(sanitized_json_text(summary, indent=2 if args.pretty else None, sort_keys=True, ensure_ascii=True))
+        sys.exit(0)
+
     if SpendLedger is not None:
         cfg = replace(
             cfg,
@@ -23674,11 +23848,22 @@ def main() -> None:
         print_preset_preview(preset_preview)
 
     prompt_report = write_run_manifest(
-        root, dirs, run_id, args, run_context, phase_sequence or PHASES
+        root,
+        dirs,
+        run_id,
+        args,
+        run_context,
+        phase_sequence or PHASES,
+        source_identity=execution_source_identity,
     )
     configure_run_file_logger(dirs["root"])
     update_run_manifest_contract_map(dirs["root"], phase_contract_map_path)
-    write_runner_identity(root, dirs["root"], run_id)
+    write_runner_identity(
+        root,
+        dirs["root"],
+        run_id,
+        source_identity=execution_source_identity,
+    )
     if phase_sequence:
         write_run_routing_fingerprint(dirs["root"], run_id, cfg, phase_sequence)
     run_started_at = now_iso()
@@ -23732,6 +23917,7 @@ def main() -> None:
             phases=phase_sequence,
             prompt_report=prompt_report,
             run_started_at=run_started_at,
+            source_identity=execution_source_identity,
         )
         logger.error(
             "Run blocked before execution: reason=%s prompt_failures=%s",
@@ -23754,7 +23940,7 @@ def main() -> None:
             )
         write_coverage_rollup(root, dirs, run_id)
         write_resume_proof(dirs, run_id, targets)
-        sys.exit(generate_coverage_report(root, dirs, run_id, targets))
+        sys.exit(generate_coverage_report(root, dirs, run_id, targets, source_identity=execution_source_identity))
 
     if args.verify_phase_output:
         verify_targets = (
@@ -23829,6 +24015,7 @@ def main() -> None:
                 exc=exc,
                 ui=ui,
                 source="async_submit:cost_abort",
+                source_identity=execution_source_identity,
             )
             sys.exit(1)
         except Exception as exc:
@@ -23851,6 +24038,7 @@ def main() -> None:
                 exc=exc,
                 ui=ui,
                 source="async_finalize:cost_abort",
+                source_identity=execution_source_identity,
             )
             sys.exit(1)
         except Exception as exc:
@@ -23869,6 +24057,7 @@ def main() -> None:
                 dirs=dirs,
                 cfg=cfg,
                 ui=ui,
+                source_identity=execution_source_identity,
             )
         except CostLimitExceededError as exc:
             logger.error("Batch watch cost-aborted: %s", exc)
@@ -23881,6 +24070,7 @@ def main() -> None:
                 exc=exc,
                 ui=ui,
                 source="batch_watch:cost_abort",
+                source_identity=execution_source_identity,
             )
             sys.exit(1)
         if watch_result.exit_code != 0:
@@ -23900,18 +24090,36 @@ def main() -> None:
             args.retrieve_provider,
             len(args.batch_ids),
         )
-        integrated = run_batch_retrieval_and_integration(
+        outcome = run_batch_retrieval_and_integration_detailed(
             run_id=run_id,
             batch_ids=args.batch_ids,
             cfg=cfg,
             provider=args.retrieve_provider,
         )
-        logger.info("Batch retrieval complete: %s events integrated", integrated)
-        if integrated > 0:
+        logger.info(
+            "Batch retrieval complete: attempted=%s retrieved=%s terminal=%s "
+            "integrated=%s idempotent_duplicates=%s failed=%s unmapped=%s "
+            "success=%s reason_codes=%s",
+            outcome.attempted,
+            outcome.retrieved,
+            outcome.terminal,
+            outcome.integrated,
+            outcome.idempotent_duplicates,
+            outcome.failed,
+            outcome.unmapped,
+            outcome.success,
+            outcome.reason_codes,
+        )
+        if outcome.integrated > 0:
             logger.info(
                 "You can now run --finalize to process the integrated batch results"
             )
-        sys.exit(0 if integrated >= 0 else 1)
+        if not outcome.success:
+            logger.error(
+                "Batch retrieval/integration reported material failure: %s",
+                outcome.reason_codes,
+            )
+        sys.exit(outcome.exit_code)
 
     try:
         selected_execution_step = _get_execution_step_filter(args)
@@ -24047,6 +24255,7 @@ def main() -> None:
                 exc=exc,
                 ui=ui,
                 source=f"phase:{phase}:cost_abort",
+                source_identity=execution_source_identity,
             )
             sys.exit(1)
         except Exception as exc:
@@ -24077,6 +24286,7 @@ def main() -> None:
                 dirs=dirs,
                 ui=ui,
                 source=f"phase:{phase}:fail",
+                source_identity=execution_source_identity,
             )
             write_phase_coverage_manifest(
                 phase,
@@ -24132,6 +24342,7 @@ def main() -> None:
             dirs=dirs,
             ui=ui,
             source=f"phase:{phase}:{phase_status.lower()}",
+            source_identity=execution_source_identity,
         )
         write_phase_coverage_manifest(
             phase,
@@ -24149,12 +24360,14 @@ def main() -> None:
             counts,
             phase_started_at,
             phase_finished_at,
+            source_identity=execution_source_identity,
         )
     final_status_payload = emit_run_dashboard_snapshot(
         run_id=run_id,
         dirs=dirs,
         ui=ui,
         source="run_complete",
+        source_identity=execution_source_identity,
     )
     write_certification_result(
         dirs["root"],
@@ -24187,6 +24400,20 @@ def main() -> None:
             float(preview_payload["summary"]["estimated_cost_usd"]), 6
         )
         print(sanitized_json_text(preview_payload, indent=2, sort_keys=True, ensure_ascii=True))
+
+    # RTE-W1-001: terminal truth. Every phase in this loop completed without
+    # raising (raising already exits nonzero above), but a phase can still
+    # be semantically FAIL/BLOCKED per its own coverage evidence without
+    # raising an exception. Shell exit code must match the canonical
+    # semantic run status recorded in the coverage rollup -- never fall off
+    # the end of main() with an implicit (and potentially false) exit 0.
+    exit_code, final_run_status = resolve_final_run_terminal_exit_code(dirs["root"])
+    if exit_code != 0:
+        logger.error(
+            "RUN_TERMINAL_STATUS_NOT_OK run_status=%s reason=fail_closed_exit",
+            final_run_status,
+        )
+    sys.exit(exit_code)
 
 
 def run_batch_retrieval_and_integration(
@@ -24280,6 +24507,195 @@ def run_batch_retrieval_and_integration(
         "Batch retrieval integration complete: %s events created", events_integrated
     )
     return events_integrated
+
+
+def run_batch_retrieval_and_integration_detailed(
+    run_id: str, batch_ids: List[str], cfg: RunnerConfig, provider: str = "openai"
+) -> "BatchRetrievalIntegrationOutcome":
+    """Typed companion to :func:`run_batch_retrieval_and_integration` (RTE-W1-006).
+
+    A bare integer count cannot distinguish "nothing was requested/is still
+    pending" from "everything failed" from "everything was already
+    integrated" -- all of which previously collapsed to a value that made
+    ``sys.exit(0 if integrated >= 0 else 1)`` always exit 0. This function
+    classifies each material failure mode explicitly and reports a single
+    ``success``/``exit_code`` the caller can trust.
+
+    Original submission phase/step/partition provenance is NOT recovered
+    here (this code has always hardcoded phase="R", step_id="batch_retrieval"
+    at retrieval time, independent of the batch's true submission context) --
+    ``original_submission_provenance`` is reported as ``DEFERRED_RESIDUAL``
+    rather than fabricated (system invariant 20).
+    """
+    attempted = len(batch_ids)
+
+    try:
+        from lib.batch_retriever import (
+            BatchRetrievalIntegrationOutcome,
+            TERMINAL_FAILURE_STATES,
+            retrieve_openai_batches,
+            retrieve_gemini_batches,
+            integrate_batch_results_with_webhook_detailed,
+        )
+    except ImportError as exc:
+        logger.error("Batch retriever module not available: %s", exc)
+        # The typed dataclass itself is what failed to import here, so build
+        # a duck-typed equivalent with the same attribute contract rather
+        # than crashing with an uncaught ImportError (that would defeat the
+        # entire point of a fail-closed typed outcome).
+        return SimpleNamespace(
+            attempted=attempted,
+            retrieved=0,
+            terminal=0,
+            integrated=0,
+            idempotent_duplicates=0,
+            failed=attempted,
+            unmapped=0,
+            terminal_failure_batches=0,
+            success=False,
+            exit_code=1,
+            reason_codes=["retriever_module_unavailable"],
+            original_submission_provenance="DEFERRED_RESIDUAL",
+        )
+
+    outcome = BatchRetrievalIntegrationOutcome(attempted=attempted)
+
+    if provider == "gemini":
+        api_key, _api_key_env = resolve_api_key("gemini", "GEMINI_API_KEY")
+        if not api_key:
+            logger.error("Gemini API key not available")
+            outcome.reason_codes.append("provider_credential_unavailable")
+            outcome.failed = attempted
+            outcome.success = False
+            outcome.exit_code = 1
+            return outcome
+    else:
+        api_key, _api_key_env = resolve_api_key("openai", "OPENAI_API_KEY")
+        if not api_key:
+            logger.error("OpenAI API key not available")
+            outcome.reason_codes.append("provider_credential_unavailable")
+            outcome.failed = attempted
+            outcome.success = False
+            outcome.exit_code = 1
+            return outcome
+
+    output_dir = Path("batch_downloads")
+    output_dir.mkdir(exist_ok=True)
+
+    logger.info("Retrieving %s %s batches...", len(batch_ids), provider)
+
+    if provider == "gemini":
+        batch_results = retrieve_gemini_batches(
+            api_key=api_key, batch_ids=batch_ids, output_dir=output_dir
+        )
+    else:
+        batch_results = retrieve_openai_batches(
+            api_key=api_key, batch_ids=batch_ids, output_dir=output_dir
+        )
+
+    terminal_states = ("completed", "failed", "expired", "succeeded", "done", "cancelled", "canceled", "timeout")
+    retrieved = sum(1 for result in batch_results.values() if not result.get("error"))
+    terminal_ids = [
+        batch_id
+        for batch_id, result in batch_results.items()
+        if str(result.get("status") or "").strip().lower() in terminal_states
+    ]
+    outcome.retrieved = retrieved
+    outcome.terminal = len(terminal_ids)
+    outcome.failed += attempted - retrieved
+
+    try:
+        event_store = _build_event_store_for_runner()
+    except Exception as exc:
+        logger.error("Failed to build event store: %s", exc)
+        outcome.reason_codes.append("event_store_unavailable")
+        outcome.failed = attempted
+        outcome.success = False
+        outcome.exit_code = 1
+        return outcome
+
+    integrated_total = 0
+    idempotent_total = 0
+    integration_failed_total = 0
+    terminal_failure_batches_total = 0
+    for batch_id in terminal_ids:
+        result = batch_results[batch_id]
+        # RTE-W1-006 (V5 terminal): a provider terminal-failure status
+        # (failed/expired/cancelled/canceled/timeout) is material failure of
+        # the batch itself, independent of whether the batch.failed webhook
+        # event was successfully integrated below. Do not let a clean
+        # webhook insert of "batch.failed" launder a provider failure into
+        # ``integrated`` with no failure signal anywhere in the outcome.
+        if str(result.get("status") or "").strip().lower() in TERMINAL_FAILURE_STATES:
+            terminal_failure_batches_total += 1
+        try:
+            integration_result = integrate_batch_results_with_webhook_detailed(
+                batch_results={batch_id: result},
+                event_store=event_store,
+                run_id=run_id,
+                phase="R",  # Default to phase R for batch processing; see
+                # ORIGINAL_SUBMISSION_PROVENANCE_DEFERRED -- true submission
+                # phase/step/partition is not recoverable here.
+                step_id="batch_retrieval",
+                partition_id=batch_id,
+                provider=provider,
+            )
+        except Exception as exc:
+            logger.error("Failed to integrate batch %s: %s", batch_id, exc)
+            integration_failed_total += 1
+            continue
+        integrated_total += integration_result["integrated"]
+        idempotent_total += integration_result["idempotent_duplicates"]
+        integration_failed_total += integration_result["failed"]
+
+    outcome.integrated = integrated_total
+    outcome.idempotent_duplicates = idempotent_total
+    outcome.failed += integration_failed_total
+    outcome.terminal_failure_batches = terminal_failure_batches_total
+    accounted_for = integrated_total + idempotent_total + integration_failed_total
+    outcome.unmapped = max(0, len(terminal_ids) - accounted_for)
+
+    logger.info(
+        "Batch retrieval integration complete: integrated=%s idempotent_duplicates=%s "
+        "failed=%s unmapped=%s terminal_failure_batches=%s",
+        integrated_total,
+        idempotent_total,
+        integration_failed_total,
+        outcome.unmapped,
+        terminal_failure_batches_total,
+    )
+
+    if outcome.failed > 0 or outcome.unmapped > 0 or outcome.terminal_failure_batches > 0:
+        # Any material failure -- including partial failure and a
+        # provider-reported terminal-failure batch -- defaults to
+        # success=false (system invariant 16; no evidence in this repo of an
+        # existing warning-only partial-success policy for batch retrieval).
+        outcome.success = False
+        outcome.exit_code = 1
+        if integration_failed_total > 0 and integrated_total == 0 and idempotent_total == 0 and len(terminal_ids) > 0:
+            outcome.reason_codes.append("all_integrations_failed")
+        elif outcome.retrieved < outcome.attempted:
+            outcome.reason_codes.append("retrieval_failed")
+        elif outcome.terminal_failure_batches > 0:
+            outcome.reason_codes.append("provider_terminal_batch_failure")
+        else:
+            outcome.reason_codes.append("partial_failure")
+    elif outcome.terminal == 0:
+        # Legitimate zero-work: batches were retrieved but none are terminal
+        # yet (still in-progress upstream). Not a failure (invariant 17).
+        outcome.success = True
+        outcome.exit_code = 0
+        outcome.reason_codes.append("no_terminal_batches_yet")
+    elif integrated_total == 0 and idempotent_total > 0:
+        outcome.success = True
+        outcome.exit_code = 0
+        outcome.reason_codes.append("idempotent_replay_only")
+    else:
+        outcome.success = True
+        outcome.exit_code = 0
+        outcome.reason_codes.append("fully_integrated")
+
+    return outcome
 
 
 if __name__ == "__main__":

@@ -1,0 +1,32 @@
+{
+  "findings": [
+    {
+      "body": "The runner now properly checks for a valid git identity via `required_execution_source_identity` and fails closed (raising `SourceIdentityUnprovenError`) prior to generating any canonical evidence if identity is 'UNKNOWN' or non-plausible.",
+      "id": "RTE-W1-010-IDENTITY",
+      "severity": "INFO",
+      "status": "RESOLVED",
+      "title": "Strict Git SHA Source Identity Verification"
+    },
+    {
+      "body": "Ensures that run execution strictly resolves to a non-zero exit code if the status is not `RUN_STATUS_OK`, matching semantic statuses reliably.",
+      "id": "RTE-W1-001-TERMINAL",
+      "severity": "INFO",
+      "status": "RESOLVED",
+      "title": "Terminal Status Exit Code"
+    },
+    {
+      "body": "In `integrate_batch_results_with_webhook_detailed`, batch insertion errors fallback to a fail-closed error mode when no idempotency evidence exists, rather than silently classifying it as an idempotent duplicate.",
+      "id": "RTE-W1-006-BATCH-IDEMPOTENCY",
+      "severity": "INFO",
+      "status": "RESOLVED",
+      "title": "Batch Retriever Fail-Closed on Unverified Idempotency"
+    }
+  ],
+  "fixes_applied": [],
+  "model_used": "gemini-3.1-pro-high",
+  "remaining_risks": [
+    "Run environments without a valid git binary or a `.git` directory will now hard-fail when attempting to generate canonical execution evidence. This is strictly correct per the new invariant but requires operators to ensure they run from a valid git checkout."
+  ],
+  "status": "PASS",
+  "summary": "Audited RTE v5 terminal provenance fail-closed PR (#1232). The code properly implements fail-closed invariants for terminal statuses, missing git source identity, and batch webhook idempotency verification. All required tests pass (verified deterministic, side-effect free, and properly mocked), and there are no secret leaks or scope creeps."
+}
