@@ -64,7 +64,7 @@ jobs:
 
       - name: Mint ddd-release-gate installation token
         id: app_token
-        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # ratchet:actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # ratchet:actions/create-github-app-token@v2
         with:
           app-id: ${{ secrets.DDD_RELEASE_GATE_APP_ID }}
           private-key: ${{ secrets.DDD_RELEASE_GATE_PRIVATE_KEY }}
