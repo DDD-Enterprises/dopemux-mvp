@@ -15,6 +15,7 @@
       "field": "acceptance_state",
       "value": "DESIGN_ACCEPTED",
       "materiality": "BLOCKING",
+      "transformation_id": "fixture-projection.v1",
       "source_locator": "task-packets/TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001.json",
       "source_sha256": "a9a7263d779d879b06e39b012136697eac2b52ad34e11cf8496357b0e3d6358d"
     },
@@ -24,6 +25,7 @@
       "field": "gate_state",
       "value": "PASS",
       "materiality": "BLOCKING",
+      "transformation_id": "fixture-projection.v1",
       "source_locator": "task-packets/TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001.json",
       "source_sha256": "a9a7263d779d879b06e39b012136697eac2b52ad34e11cf8496357b0e3d6358d"
     }

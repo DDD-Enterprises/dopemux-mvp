@@ -15,6 +15,7 @@
       "field": "proof_freshness",
       "value": "STALE",
       "materiality": "BLOCKING",
+      "transformation_id": "fixture-projection.v1",
       "source_locator": "AGENTS.md",
       "source_sha256": "6f8703ec09fc3e593edd5e9b878483fd889ae46977e0780e6b3139a3c8035e8d"
     },
@@ -24,6 +25,7 @@
       "field": "audit_state",
       "value": "UNKNOWN",
       "materiality": "BLOCKING",
+      "transformation_id": "fixture-projection.v1",
       "source_locator": "bounded-scenario://missing-auditor-record",
       "source_sha256": "6f8703ec09fc3e593edd5e9b878483fd889ae46977e0780e6b3139a3c8035e8d"
     }

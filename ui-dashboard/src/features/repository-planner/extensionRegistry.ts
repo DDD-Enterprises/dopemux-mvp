@@ -22,9 +22,16 @@ export function loadExtensions(modules: ModuleMap): readonly PlannerExtension[] 
     if (byId.has(extension.id)) throw new Error(`Duplicate planner extension id: ${extension.id}`);
     byId.set(extension.id, extension);
   }
-  return [...byId.values()].sort((left, right) =>
-    left.id < right.id ? -1 : left.id > right.id ? 1 : 0,
-  );
+  const encoder = new TextEncoder();
+  const compareBytes = (left: string, right: string) => {
+    const a = encoder.encode(left);
+    const b = encoder.encode(right);
+    for (let index = 0; index < Math.min(a.length, b.length); index += 1) {
+      if (a[index] !== b[index]) return a[index] - b[index];
+    }
+    return a.length - b.length;
+  };
+  return [...byId.values()].sort((left, right) => compareBytes(left.id, right.id));
 }
 
 const discoveredModules = import.meta.glob('./extensions/*.tsx', { eager: true });

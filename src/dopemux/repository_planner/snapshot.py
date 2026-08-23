@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import re
+from datetime import datetime, timezone
 from collections.abc import Mapping
 
 from .models import Claim, LaneEvidence, SourceRef, SourceSnapshot
-
 
 _HEAD_RE = re.compile(r"[0-9a-f]{40}|[0-9a-f]{64}")
 _SHA256_RE = re.compile(r"[0-9a-f]{64}")
@@ -27,6 +27,7 @@ _CLAIM_KEYS = {
     "field",
     "value",
     "materiality",
+    "transformation_id",
     "source_locator",
     "source_sha256",
 }
@@ -87,13 +88,18 @@ def load_source_snapshot(payload: Mapping[str, object]) -> SourceSnapshot:
     if _HEAD_RE.fullmatch(observed_head) is None:
         raise ValueError("observed_head must be a Git object id")
     fetched_at = _string(payload, "fetched_at")
-    if not fetched_at.endswith("Z"):
+    try:
+        parsed_at = datetime.fromisoformat(fetched_at.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError("fetched_at must be a valid date-time") from exc
+    if not fetched_at.endswith("Z") or parsed_at.tzinfo != timezone.utc:
         raise ValueError("fetched_at must be UTC")
     freshness = _string(payload, "freshness")
     if freshness not in {"CURRENT", "STALE", "UNKNOWN"}:
         raise ValueError("freshness is invalid")
 
     claims: list[Claim] = []
+    seen_claims: set[str] = set()
     for index, raw_claim in enumerate(_sequence(payload["claims"], "claims")):
         claim = _mapping(raw_claim, f"claims[{index}]")
         _exact_keys(claim, _CLAIM_KEYS, f"claims[{index}]")
@@ -103,6 +109,10 @@ def load_source_snapshot(payload: Mapping[str, object]) -> SourceSnapshot:
         materiality = _string(claim, "materiality")
         if materiality not in {"BLOCKING", "NON_BLOCKING"}:
             raise ValueError("materiality is invalid")
+        claim_id = _string(claim, "claim_id")
+        if claim_id in seen_claims:
+            raise ValueError(f"duplicate claim_id: {claim_id}")
+        seen_claims.add(claim_id)
         source = SourceRef(
             locator=_string(claim, "source_locator"),
             sha256=source_sha256,
@@ -111,13 +121,14 @@ def load_source_snapshot(payload: Mapping[str, object]) -> SourceSnapshot:
         )
         claims.append(
             Claim(
-                claim_id=_string(claim, "claim_id"),
+                claim_id=claim_id,
                 project_id=project_id,
                 lane_id=_string(claim, "lane_id"),
                 field=_string(claim, "field"),
                 value=_string(claim, "value"),
                 materiality=materiality,
                 freshness=freshness,
+                transformation_id=_string(claim, "transformation_id"),
                 source=source,
             )
         )
@@ -156,6 +167,11 @@ def load_source_snapshot(payload: Mapping[str, object]) -> SourceSnapshot:
                 lifecycle_state=_string(lane, "lifecycle_state"),
             )
         )
+
+    lane_ids = {lane.lane_id for lane in lanes}
+    orphan_lanes = sorted({claim.lane_id for claim in claims} - lane_ids)
+    if orphan_lanes:
+        raise ValueError(f"claim references unknown lane: {', '.join(orphan_lanes)}")
 
     return SourceSnapshot(
         schema_version="pcp.repository_planner_source.v1",

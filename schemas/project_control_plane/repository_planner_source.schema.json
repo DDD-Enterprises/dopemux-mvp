@@ -23,13 +23,14 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["claim_id", "lane_id", "field", "value", "materiality", "source_locator", "source_sha256"],
+        "required": ["claim_id", "lane_id", "field", "value", "materiality", "transformation_id", "source_locator", "source_sha256"],
         "properties": {
           "claim_id": {"type": "string", "minLength": 1},
           "lane_id": {"type": "string", "minLength": 1},
           "field": {"type": "string", "minLength": 1},
           "value": {"type": "string", "minLength": 1},
           "materiality": {"enum": ["BLOCKING", "NON_BLOCKING"]},
+          "transformation_id": {"type": "string", "minLength": 1},
           "source_locator": {"type": "string", "minLength": 1},
           "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
         }

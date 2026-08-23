@@ -1,12 +1,51 @@
 from __future__ import annotations
 
 import importlib
+import inspect
 import json
 from collections.abc import Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
 
-from .models import ProjectExtensionAdapter
+from jsonschema import Draft202012Validator
+
+from .models import ProjectExtensionAdapter, SourceSnapshot
+
+_ADAPTER_NAMESPACE = "dopemux.repository_planner.adapters."
+_MANIFEST_SCHEMA = (
+    Path(__file__).parents[3]
+    / "schemas"
+    / "project_control_plane"
+    / "extension_manifest.schema.json"
+)
+
+
+@dataclass(frozen=True, slots=True)
+class _ValidatedAdapter:
+    extension_id: str
+    delegate: object
+
+    def matches(self, generic_export) -> bool:
+        result = self.delegate.matches(generic_export)  # type: ignore[attr-defined]
+        if not isinstance(result, bool):
+            raise ValueError("adapter matches must return bool")
+        return result
+
+    def enrich(self, generic_export, source_root: Path) -> SourceSnapshot:
+        result = self.delegate.enrich(generic_export, source_root)  # type: ignore[attr-defined]
+        if not isinstance(result, SourceSnapshot):
+            raise ValueError("adapter enrich must return SourceSnapshot")
+        return result
+
+
+def _validate_method(adapter: object, name: str, parameter_count: int) -> None:
+    method = getattr(adapter, name, None)
+    if (
+        not callable(method)
+        or len(inspect.signature(method).parameters) != parameter_count
+    ):
+        raise ValueError(f"adapter {name} signature is invalid")
 
 
 def load_extension_adapters(
@@ -16,11 +55,25 @@ def load_extension_adapters(
 
     adapters: list[ProjectExtensionAdapter] = []
     seen: set[str] = set()
+    try:
+        schema = json.loads(_MANIFEST_SCHEMA.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError("extension manifest schema is unavailable") from exc
+    validator = Draft202012Validator(schema)
     for manifest_path in manifest_paths:
         try:
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            errors = sorted(
+                validator.iter_errors(manifest), key=lambda error: list(error.path)
+            )
+            if errors:
+                raise ValueError(
+                    f"manifest schema validation failed: {errors[0].message}"
+                )
             extension_id = manifest["extension_id"]
             mappings = manifest["capabilities"]["adapter_mappings"]
+        except ValueError:
+            raise
         except (OSError, json.JSONDecodeError, KeyError, TypeError) as exc:
             raise ValueError(f"invalid extension manifest: {manifest_path}") from exc
         if not isinstance(extension_id, str) or not extension_id:
@@ -33,6 +86,10 @@ def load_extension_adapters(
         if not isinstance(mapping, str) or mapping.count(":") != 1:
             raise ValueError("adapter mapping must use module:Class")
         module_name, class_name = mapping.split(":", 1)
+        if not module_name.startswith(_ADAPTER_NAMESPACE):
+            raise ValueError(
+                f"adapter module is outside closed namespace: {module_name}"
+            )
         try:
             module = importlib.import_module(module_name)
         except ImportError as exc:
@@ -43,8 +100,14 @@ def load_extension_adapters(
         adapter = adapter_class()
         if not isinstance(adapter, ProjectExtensionAdapter):
             raise ValueError(f"adapter class does not satisfy protocol: {mapping}")
+        _validate_method(adapter, "matches", 1)
+        _validate_method(adapter, "enrich", 2)
         if adapter.extension_id != extension_id:
             raise ValueError("adapter extension_id does not match manifest")
         seen.add(extension_id)
-        adapters.append(cast(ProjectExtensionAdapter, adapter))
-    return tuple(adapters)
+        adapters.append(
+            cast(ProjectExtensionAdapter, _ValidatedAdapter(extension_id, adapter))
+        )
+    return tuple(
+        sorted(adapters, key=lambda adapter: adapter.extension_id.encode("utf-8"))
+    )

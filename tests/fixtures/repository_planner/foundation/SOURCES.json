@@ -7,7 +7,7 @@
       "ref": "7accb2aab3423f32e751640af2b3de130c68567a",
       "source_locator": "task-packets/TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001.json",
       "fetched_at": "2026-08-23T00:00:00Z",
-      "sha256": "2402b9b0b2fae4b7c16d0f702300951163584acb2baf5fdd94fd6cc5a8eaddbe",
+      "sha256": "f13173ed60cdc108ad44c7736b7e2f69fb0b1d8770e0139da5d943514f24edbc",
       "privacy_class": "PUBLIC_REPOSITORY_EVIDENCE",
       "redaction_reason": "No credentials, raw conversations, or user-local paths retained."
     },
@@ -17,7 +17,7 @@
       "ref": "864915b9cc8ff254eaa877627df1e510dc49dbec",
       "source_locator": "PROJECT_INSTRUCTIONS.md",
       "fetched_at": "2026-08-23T00:00:00Z",
-      "sha256": "7b6055168484ec60084abc28312369635653fd1e5ed0715c18fe4c99dd25810d",
+      "sha256": "369388b78fffbc633ecbb813360341266d3f27d88130c59abd83fdab33fc93ed",
       "privacy_class": "PUBLIC_REPOSITORY_EVIDENCE",
       "redaction_reason": "Bounded fail-closed scenario only; no audit receipt body or local candidate bytes retained."
     },
@@ -27,7 +27,7 @@
       "ref": "92eb632bb07426ae5159c02bf9da549888e7caf1",
       "source_locator": "AGENTS.md",
       "fetched_at": "2026-08-23T00:00:00Z",
-      "sha256": "521e27824722b1658322554c0e4a403da7616b55b56578167aff1d4a1b9a9eb6",
+      "sha256": "73d4f2aa07cc6d281ea715246b29674ac5e20a3a9c206b432ccd4cc3f1bc774b",
       "privacy_class": "PUBLIC_REPOSITORY_EVIDENCE",
       "redaction_reason": "Bounded RDCP freshness scenario only; no CRM data, raw messages, tokens, or runtime databases retained."
     }

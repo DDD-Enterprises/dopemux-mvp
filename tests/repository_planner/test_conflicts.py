@@ -7,12 +7,15 @@ from pathlib import Path
 from dopemux.repository_planner.conflicts import classify_conflicts
 from dopemux.repository_planner.snapshot import load_source_snapshot
 
-
-FIXTURE_ROOT = Path(__file__).parents[1] / "fixtures" / "repository_planner" / "foundation"
+FIXTURE_ROOT = (
+    Path(__file__).parents[1] / "fixtures" / "repository_planner" / "foundation"
+)
 
 
 def _snapshot(name: str):
-    return load_source_snapshot(json.loads((FIXTURE_ROOT / name).read_text(encoding="utf-8")))
+    return load_source_snapshot(
+        json.loads((FIXTURE_ROOT / name).read_text(encoding="utf-8"))
+    )
 
 
 def test_blocking_source_disagreement_is_visible_and_stable() -> None:

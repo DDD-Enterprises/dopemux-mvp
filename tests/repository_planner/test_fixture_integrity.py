@@ -5,8 +5,9 @@ import json
 import re
 from pathlib import Path
 
-
-FIXTURE_ROOT = Path(__file__).parents[1] / "fixtures" / "repository_planner" / "foundation"
+FIXTURE_ROOT = (
+    Path(__file__).parents[1] / "fixtures" / "repository_planner" / "foundation"
+)
 DATA_FILES = ("dopemux.json", "adops.json", "dnh_crm.json")
 
 
@@ -46,9 +47,7 @@ def test_fixture_bytes_are_redacted_and_portable() -> None:
 def test_foundation_cases_cover_required_fail_closed_states() -> None:
     snapshots = [_read_json(FIXTURE_ROOT / name) for name in DATA_FILES]
     claim_values = {
-        claim["value"]
-        for snapshot in snapshots
-        for claim in snapshot["claims"]
+        claim["value"] for snapshot in snapshots for claim in snapshot["claims"]
     }
     freshness = {snapshot["freshness"] for snapshot in snapshots}
     dependencies = {
@@ -63,6 +62,13 @@ def test_foundation_cases_cover_required_fail_closed_states() -> None:
     assert "STALE" in freshness
     assert dependencies
     assert any(
-        len({claim["value"] for claim in snapshot["claims"] if claim["field"] == "acceptance_state"}) > 1
+        len(
+            {
+                claim["value"]
+                for claim in snapshot["claims"]
+                if claim["field"] == "acceptance_state"
+            }
+        )
+        > 1
         for snapshot in snapshots
     )

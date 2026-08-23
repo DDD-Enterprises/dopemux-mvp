@@ -15,6 +15,7 @@
       "field": "acceptance_state",
       "value": "DRAFT_NOT_ACCEPTED",
       "materiality": "BLOCKING",
+      "transformation_id": "fixture-projection.v1",
       "source_locator": "PROJECT_INSTRUCTIONS.md",
       "source_sha256": "f85f1003500f16b754424afa0c0aa6a83af291d7ca9ec2f2749f1deda1276437"
     },
@@ -24,6 +25,7 @@
       "field": "acceptance_state",
       "value": "FINALITY_EVIDENCE_PRESENT",
       "materiality": "BLOCKING",
+      "transformation_id": "fixture-projection.v1",
       "source_locator": "bounded-scenario://prior-finality-receipt",
       "source_sha256": "f85f1003500f16b754424afa0c0aa6a83af291d7ca9ec2f2749f1deda1276437"
     },
@@ -33,6 +35,7 @@
       "field": "remote_candidate_state",
       "value": "REMOTE_COMMIT_ABSENT",
       "materiality": "BLOCKING",
+      "transformation_id": "fixture-projection.v1",
       "source_locator": "bounded-scenario://remote-ref-check",
       "source_sha256": "f85f1003500f16b754424afa0c0aa6a83af291d7ca9ec2f2749f1deda1276437"
     }

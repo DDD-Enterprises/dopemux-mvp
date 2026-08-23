@@ -23,6 +23,7 @@ class Claim:
     value: str
     materiality: str
     freshness: str
+    transformation_id: str
     source: SourceRef
 
 
@@ -50,6 +51,14 @@ class SourceSnapshot:
     freshness: str
     claims: tuple[Claim, ...]
     lanes: tuple[LaneEvidence, ...]
+
+    def __post_init__(self) -> None:
+        if self.authority != "NONE":
+            raise ValueError("authority must be NONE")
+        if self.surface_class != "PROJECTION":
+            raise ValueError("surface_class must be PROJECTION")
+        if self.is_proof is not False:
+            raise ValueError("is_proof must be false")
 
 
 @dataclass(frozen=True, slots=True)
@@ -95,6 +104,14 @@ class PortfolioProjection:
     lanes: tuple[LaneProjection, ...]
     conflicts: tuple[Conflict, ...]
     recommendations: tuple[Recommendation, ...] = ()
+
+    def __post_init__(self) -> None:
+        if self.authority != "NONE":
+            raise ValueError("authority must be NONE")
+        if self.surface_class != "PROJECTION":
+            raise ValueError("surface_class must be PROJECTION")
+        if self.is_proof is not False:
+            raise ValueError("is_proof must be false")
 
 
 @runtime_checkable

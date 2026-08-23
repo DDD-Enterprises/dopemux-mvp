@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import dataclasses
 import json
 from dataclasses import FrozenInstanceError
 from pathlib import Path
@@ -10,10 +11,13 @@ from jsonschema import Draft202012Validator
 
 from dopemux.repository_planner.snapshot import load_source_snapshot
 
-
 ROOT = Path(__file__).parents[2]
-FIXTURE = ROOT / "tests" / "fixtures" / "repository_planner" / "foundation" / "dopemux.json"
-SCHEMA = ROOT / "schemas" / "project_control_plane" / "repository_planner_source.schema.json"
+FIXTURE = (
+    ROOT / "tests" / "fixtures" / "repository_planner" / "foundation" / "dopemux.json"
+)
+SCHEMA = (
+    ROOT / "schemas" / "project_control_plane" / "repository_planner_source.schema.json"
+)
 
 
 def _payload() -> dict[str, object]:
@@ -22,7 +26,9 @@ def _payload() -> dict[str, object]:
 
 def test_fixture_validates_and_loads_into_frozen_models() -> None:
     payload = _payload()
-    Draft202012Validator(json.loads(SCHEMA.read_text(encoding="utf-8"))).validate(payload)
+    Draft202012Validator(json.loads(SCHEMA.read_text(encoding="utf-8"))).validate(
+        payload
+    )
 
     snapshot = load_source_snapshot(payload)
 
@@ -41,12 +47,44 @@ def test_fixture_validates_and_loads_into_frozen_models() -> None:
     [
         (lambda payload: payload.update({"unexpected": True}), "unknown top-level"),
         (lambda payload: payload.update({"authority": "CONTROL_TOWER"}), "authority"),
-        (lambda payload: payload["claims"][0].update({"source_sha256": "bad"}), "sha256"),
+        (
+            lambda payload: payload["claims"][0].update({"source_sha256": "bad"}),
+            "sha256",
+        ),
         (lambda payload: payload["claims"][0].pop("source_locator"), "source_locator"),
-        (lambda payload: payload["lanes"][0].update({"gate_status": "SKIPPED"}), "gate_status"),
-        (lambda payload: payload["lanes"][0].update({"audit_status": "PENDING"}), "audit_status"),
-        (lambda payload: payload["lanes"].append(copy.deepcopy(payload["lanes"][0])), "duplicate lane"),
-        (lambda payload: payload["lanes"][0].update({"dependencies": ["a:b", "a:b"]}), "duplicate dependencies"),
+        (
+            lambda payload: payload["claims"][0].pop("transformation_id"),
+            "transformation_id",
+        ),
+        (
+            lambda payload: payload["lanes"][0].update({"gate_status": "SKIPPED"}),
+            "gate_status",
+        ),
+        (
+            lambda payload: payload["lanes"][0].update({"audit_status": "PENDING"}),
+            "audit_status",
+        ),
+        (
+            lambda payload: payload["lanes"].append(copy.deepcopy(payload["lanes"][0])),
+            "duplicate lane",
+        ),
+        (
+            lambda payload: payload["lanes"][0].update(
+                {"dependencies": ["a:b", "a:b"]}
+            ),
+            "duplicate dependencies",
+        ),
+        (lambda payload: payload.update({"fetched_at": "not-a-dateZ"}), "fetched_at"),
+        (
+            lambda payload: payload["claims"].append(
+                copy.deepcopy(payload["claims"][0])
+            ),
+            "duplicate claim_id",
+        ),
+        (
+            lambda payload: payload["claims"][0].update({"lane_id": "missing-lane"}),
+            "unknown lane",
+        ),
     ],
 )
 def test_loader_fails_closed_on_invalid_payload(mutation, message: str) -> None:
@@ -68,3 +106,10 @@ def test_lifecycle_facts_are_not_recommendations() -> None:
     lane = snapshot.lanes[0]
     assert lane.lifecycle_state == "DESIGN_ACCEPTED"
     assert not hasattr(lane, "recommendation")
+    assert snapshot.claims[0].transformation_id == "fixture-projection.v1"
+
+
+def test_direct_source_model_cannot_promote_authority() -> None:
+    snapshot = load_source_snapshot(_payload())
+    with pytest.raises(ValueError, match="authority"):
+        dataclasses.replace(snapshot, authority="CONTROL_TOWER")
