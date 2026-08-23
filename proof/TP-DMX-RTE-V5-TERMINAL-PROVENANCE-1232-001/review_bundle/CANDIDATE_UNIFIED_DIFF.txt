@@ -1,0 +1,15 @@
+ .../repo-truth-extractor/lib/batch_retriever.py    |  226 ++-
+ services/repo-truth-extractor/reporting.py         |   12 +-
+ services/repo-truth-extractor/rte_reports.py       |   13 +-
+ services/repo-truth-extractor/run_extraction_v5.py |  962 +++++++---
+ .../tests/test_batch_retriever.py                  |   87 +-
+ .../tests/test_pre_live_gate_v25.py                |    6 +-
+ .../tests/test_rte_live_cert_characterization.py   |    8 +-
+ .../test_rte_v5_terminal_provenance_fail_closed.py | 1833 ++++++++++++++++++++
+ ...test_run_extraction_v5_live_gate_terminality.py |  124 +-
+ .../tests/test_run_extraction_v5_validator.py      |    3 +-
+ ...un_extraction_v5_validator_repair_provenance.py |    3 +-
+ .../tests/test_s_int_runner.py                     |   24 +
+ .../validate_pre_live_gate_v25.py                  |   63 +
+ ...TP-DMX-RTE-V5-TERMINAL-PROVENANCE-1232-001.json |   67 +
+ 14 files changed, 3116 insertions(+), 315 deletions(-)

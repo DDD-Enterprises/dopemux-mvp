@@ -1,0 +1,14 @@
+M	services/repo-truth-extractor/lib/batch_retriever.py
+M	services/repo-truth-extractor/reporting.py
+M	services/repo-truth-extractor/rte_reports.py
+M	services/repo-truth-extractor/run_extraction_v5.py
+M	services/repo-truth-extractor/tests/test_batch_retriever.py
+M	services/repo-truth-extractor/tests/test_pre_live_gate_v25.py
+M	services/repo-truth-extractor/tests/test_rte_live_cert_characterization.py
+A	services/repo-truth-extractor/tests/test_rte_v5_terminal_provenance_fail_closed.py
+M	services/repo-truth-extractor/tests/test_run_extraction_v5_live_gate_terminality.py
+M	services/repo-truth-extractor/tests/test_run_extraction_v5_validator.py
+M	services/repo-truth-extractor/tests/test_run_extraction_v5_validator_repair_provenance.py
+M	services/repo-truth-extractor/tests/test_s_int_runner.py
+M	services/repo-truth-extractor/validate_pre_live_gate_v25.py
+A	task-packets/TP-DMX-RTE-V5-TERMINAL-PROVENANCE-1232-001.json
