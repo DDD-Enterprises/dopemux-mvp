@@ -46,6 +46,7 @@ import { getNotificationColor } from './notificationColors';
 import PredictionPanel from './components/PredictionPanel';
 import TaskSequencer from './components/TaskSequencer';
 import TeamDashboard from './components/TeamDashboard';
+import RepositoryPlannerPage from './features/repository-planner/RepositoryPlannerPage';
 import theme, { brandTokens, statusStyles, deriveStatus, getDynamicRoast, MetricLabel } from './theme';
 
 interface CognitiveState {
@@ -157,7 +158,7 @@ const getNotificationIcon = (type: string) => {
   }
 };
 
-function App() {
+function DashboardApp() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const feedHeadingRef = useRef<HTMLHeadingElement>(null);
   const [cognitiveState, setCognitiveState] = useState<CognitiveState>({
@@ -899,6 +900,10 @@ function App() {
       </Container>
     </ThemeProvider>
   );
+}
+
+function App() {
+  return window.location.pathname === '/repository-planner' ? <RepositoryPlannerPage /> : <DashboardApp />;
 }
 
 export default App;
