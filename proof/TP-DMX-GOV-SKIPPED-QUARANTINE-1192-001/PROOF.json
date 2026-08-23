@@ -1,0 +1,20 @@
+{
+  "packet_id": "TP-DMX-GOV-SKIPPED-QUARANTINE-1192-001",
+  "head_sha": "7e1106fa7e3012cf6aaf9e5156571c5e1c0ae9f0",
+  "generated_at": "2026-08-23T14:15:35Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --mode plan --effort high --print-timeout 20m --sandbox; conversation_id=4b986015-81ac-4b97-b7c2-4baa4f27e450; display=Gemini 3.1 Pro (High); envelope ERROR write_to_file blocked; structured PASS; no model fallback",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-GOV-SKIPPED-QUARANTINE-1192-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "AGY envelope ERROR was a sandbox write_to_file of proof artifacts; structured verdict PASS with no findings; implementer authored the repo proof bundle."
+    ],
+    "skip_reason": null
+  }
+}

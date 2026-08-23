@@ -1,0 +1,53 @@
+{
+  "id": "TP-DMX-GOV-SKIPPED-QUARANTINE-1192-001",
+  "project": "dopemux-mvp",
+  "target": "Risk lane L2. Transplant unique PR #1192 SKIPPED quarantine mode onto current main. Proof-only change-contract must accept schema-shaped SKIPPED PROOF.json packages without requiring audit-pass signatures, and must forbid mixing SKIPPED with PASS proofs in one delta.",
+  "invariants": [
+    "Audited proof-only successors still require bound content/audited/proof heads and signatures.",
+    "Quarantine mode forbids PROOF.json.sig.",
+    "Every PROOF.json in quarantine mode must be status=SKIPPED with non-empty skip_reason.",
+    "No workflow, schema, or runtime service change."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "GOV-SKIPPED-QUARANTINE-1192-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "commit": {
+    "message": "fix(governance): SKIPPED quarantine mode for proof-only contract",
+    "allowlist": [
+      "scripts/governance/validate_change_contract.py",
+      "tests/governance/test_validate_change_contract.py",
+      "task-packets/TP-DMX-GOV-SKIPPED-QUARANTINE-1192-001.json",
+      "proof/TP-DMX-GOV-SKIPPED-QUARANTINE-1192-001/**",
+      "proof/pr_merge/embedded-audit/pr-*/**"
+    ],
+    "verify": [
+      "git diff --check",
+      "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
+    ]
+  },
+  "pr": {
+    "title": "fix(governance): SKIPPED quarantine mode for proof-only contract",
+    "body": "L2 successor for unique payload in open PR #1192. Adds SKIPPED quarantine mode to the proof-only change-contract so NOT_PROVEN packages can land without fake PASS signatures. Closes #1192 after merge.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Detect SKIPPED quarantine PROOF.json and apply quarantine rules distinct from audited proof-only successors.",
+      "validation": [
+        "rg -n '_is_quarantine_skipped_proof' scripts/governance/validate_change_contract.py",
+        "uv run --extra test pytest tests/governance/test_validate_change_contract.py -q"
+      ]
+    }
+  ]
+}
