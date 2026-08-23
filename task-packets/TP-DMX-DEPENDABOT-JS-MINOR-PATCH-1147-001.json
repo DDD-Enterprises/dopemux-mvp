@@ -1,0 +1,53 @@
+{
+  "id": "TP-DMX-DEPENDABOT-JS-MINOR-PATCH-1147-001",
+  "project": "dopemux-mvp",
+  "target": "bump the javascript-minor-patch group across 1 directory with 9 updates",
+  "invariants": [
+    "Risk lane is L0 dependency update.",
+    "Update JS minor/patch dependencies and lockfile cleanly.",
+    "Align eslint-config-next with next 15 to resolve peer dependency conflicts."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PORTFOLIO-RECOVERY-DEPENDABOT",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "recovery/dependabot-javascript-minor-patch-1147",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "deps(deps): bump the javascript-minor-patch group across 1 directory with 9 updates",
+    "allowlist": [
+      "package.json",
+      "package-lock.json",
+      "task-packets/TP-DMX-DEPENDABOT-JS-MINOR-PATCH-1147-001.json"
+    ],
+    "verify": [
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "deps(deps): bump the javascript-minor-patch group across 1 directory with 9 updates",
+    "body": "Bumps the javascript-minor-patch group across 1 directory with 9 updates. Replaces #1147.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Update javascript dependencies and lockfile",
+      "validation": [
+        "git diff --check"
+      ]
+    }
+  ]
+}
