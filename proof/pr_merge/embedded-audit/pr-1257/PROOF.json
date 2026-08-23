@@ -1,42 +1,20 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1257,
-  "head_sha": "f844ac7dd5c7dba26270ad4fea68a498264eee91",
-  "generated_at": "2026-08-23T13:56:22Z",
+  "head_sha": "7e1106fa7e3012cf6aaf9e5156571c5e1c0ae9f0",
+  "generated_at": "2026-08-23T14:15:35Z",
   "embedded_audit": {
     "required": true,
-    "status": "PASS_WITH_RISKS",
+    "status": "PASS",
     "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "agy --model gemini-3.1-pro-high --output-format json --mode plan --effort high --print-timeout 20m --sandbox; conversation_id=b686b845-6bfc-4d56-99df-1c0ab41a7119; display=Gemini 3.1 Pro (High); no fallback",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --mode plan --effort high --print-timeout 20m --sandbox; conversation_id=4b986015-81ac-4b97-b7c2-4baa4f27e450; display=Gemini 3.1 Pro (High); envelope ERROR write_to_file blocked; structured PASS; no model fallback",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-GOV-SKIPPED-QUARANTINE-1192-001/AUDITOR_REPORT.md",
-    "findings": [
-      {
-        "id": "missing_test_merge_base",
-        "severity": "LOW",
-        "title": "Missing unit tests for merge-base logic",
-        "status": "OPEN",
-        "body": "The new logic in evaluate() that attempts to use 'git merge-base' to bind quarantine content_head when origin/main has moved lacks explicit unit tests. The implementation correctly handles errors by falling back to range_base, but a test is recommended to prevent future regressions."
-      },
-      {
-        "id": "jsonschema_fail_closed_verified",
-        "severity": "INFO",
-        "title": "jsonschema validation and fail-closed logic verified",
-        "status": "RESOLVED",
-        "body": "The fix correctly imports and uses jsonschema to validate embedded_audit objects claiming SKIPPED status. It successfully fails closed (returning False) when the library is missing, the schema file is absent, or the JSON object is schema-invalid. Validated via test_malformed_skipped_does_not_activate_quarantine and test_quarantine_not_detected_when_jsonschema_missing."
-      },
-      {
-        "id": "quarantine_vs_audited_modes_verified",
-        "severity": "INFO",
-        "title": "Quarantine vs Audited modes correctly handled",
-        "status": "RESOLVED",
-        "body": "The boundary between SKIPPED quarantine and audited modes is properly maintained and tested. Quarantine mode explicitly forbids signatures and ignores missing audited_heads, while ensuring content and proof heads bind correctly. No new secrets were introduced, and the scope of changes is cleanly bounded to governance validation scripts and tests."
-      }
-    ],
+    "findings": [],
     "fixes_applied": [],
     "remaining_risks": [
-      "Lack of explicit test coverage for the merge-base content_head binding could allow future changes to break the moved-main fallback logic silently."
+      "AGY envelope ERROR was a sandbox write_to_file of proof artifacts; structured verdict PASS with no findings; implementer authored the repo proof bundle."
     ],
     "skip_reason": null
   }
