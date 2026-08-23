@@ -1,1 +1,1 @@
-No artifacts excluded.
+Prior proof bundles superseded by this exact-head audit.

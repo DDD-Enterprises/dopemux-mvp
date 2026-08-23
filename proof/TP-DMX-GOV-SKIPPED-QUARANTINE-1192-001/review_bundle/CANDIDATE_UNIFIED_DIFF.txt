@@ -1,4 +1,14 @@
- scripts/governance/validate_change_contract.py     | 247 ++++++++++++++++++---
- .../TP-DMX-GOV-SKIPPED-QUARANTINE-1192-001.json    |  53 +++++
- tests/governance/test_validate_change_contract.py  | 167 +++++++++++++-
- 3 files changed, 427 insertions(+), 40 deletions(-)
+ .../AUDITOR_REPORT.md                              |  19 ++
+ .../PROOF.json                                     |  54 ++++
+ .../review_bundle/AGY_RAW_OUTPUT.json              |   1 +
+ .../review_bundle/AUDITOR_VERDICT.json             |  44 ++++
+ .../review_bundle/CANDIDATE_UNIFIED_DIFF.txt       |   4 +
+ .../review_bundle/DIFF_NAME_STATUS.txt             |   3 +
+ .../review_bundle/EXCLUDED_ARTIFACTS.md            |   1 +
+ .../review_bundle/MODEL_IDENTITY.json              |   1 +
+ proof/pr_merge/embedded-audit/pr-1257/PROOF.json   |  55 +++++
+ .../pr_merge/embedded-audit/pr-1257/PROOF.json.sig |   6 +
+ scripts/governance/validate_change_contract.py     | 274 ++++++++++++++++++---
+ .../TP-DMX-GOV-SKIPPED-QUARANTINE-1192-001.json    |  53 ++++
+ tests/governance/test_validate_change_contract.py  | 191 +++++++++++++-
+ 13 files changed, 666 insertions(+), 40 deletions(-)
