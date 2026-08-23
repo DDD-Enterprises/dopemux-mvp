@@ -465,7 +465,13 @@ def test_run_doctor_full_certification_stays_unknown_without_explicit_gate_statu
         "run_provider_doctor_probe",
         lambda **kwargs: {"provider": "openrouter", "status_code": 200, "ready": True},
     )
-    monkeypatch.setattr(runner, "get_git_sha", lambda root: "deadbeef")
+    # RTE-W1-010: run_doctor_full's persist=True path now requires a
+    # positively-proven (plausible 40/64-hex) git identity before it will
+    # persist certification evidence -- this test is about gate-status
+    # UNKNOWN characterization, not source identity, so use a shape-valid
+    # sha rather than the placeholder "deadbeef" (which would now trip the
+    # unrelated identity gate).
+    monkeypatch.setattr(runner, "get_git_sha", lambda root: "d" * 40)
 
     exit_code = runner.run_doctor_full(
         tmp_path,

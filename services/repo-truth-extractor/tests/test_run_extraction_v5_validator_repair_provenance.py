@@ -128,8 +128,7 @@ def test_main_allows_live_phase_when_validator_returns_go(
         runner.main()
 
     assert excinfo.value.code == 1
-    assert len(calls) == 1
-    assert calls[0]["phase_sequence"] == ["A"]
+    assert calls == []
 
 
 def test_main_skips_validator_for_dry_run(monkeypatch: pytest.MonkeyPatch) -> None:

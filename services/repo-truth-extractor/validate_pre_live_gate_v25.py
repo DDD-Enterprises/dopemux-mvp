@@ -113,6 +113,9 @@ ONLINE_PREFLIGHT_FAILURE = "ONLINE_PREFLIGHT_FAILURE"
 CRITICAL_TEST_FAILURE = "CRITICAL_TEST_FAILURE"
 MISSING_SMOKE_EVIDENCE = "MISSING_SMOKE_EVIDENCE"
 SMOKE_FAILURE = "SMOKE_FAILURE"
+# RTE-W1-010: source identity must be positively proven before this gate can
+# approve launch/evidence acceptance for an evidence-producing live path.
+SOURCE_IDENTITY_UNPROVEN = "SOURCE_IDENTITY_UNPROVEN"
 
 
 @dataclass(frozen=True)
@@ -253,6 +256,60 @@ def get_git_sha(repo_root: Path) -> str:
     if result.returncode != 0:
         return "UNKNOWN"
     return result.stdout.strip() or "UNKNOWN"
+
+
+# RTE-W1-010: this gate's own copy of get_git_sha (above) is left unchanged
+# and remains a best-effort, never-raises lookup -- it is used elsewhere in
+# this file (e.g. VALIDATION_SCOPE.json informational metadata) without
+# blocking. The plausibility check below is the fail-closed layer applied
+# specifically to gate the launch/evidence-approval verdict (S6).
+_PRE_LIVE_GATE_PLAUSIBLE_GIT_SHA_RE = None
+
+
+def _looks_like_plausible_git_sha(value: Any) -> bool:
+    import re as _re
+
+    global _PRE_LIVE_GATE_PLAUSIBLE_GIT_SHA_RE
+    if _PRE_LIVE_GATE_PLAUSIBLE_GIT_SHA_RE is None:
+        _PRE_LIVE_GATE_PLAUSIBLE_GIT_SHA_RE = _re.compile(r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$")
+    if not isinstance(value, str):
+        return False
+    candidate = value.strip()
+    if not candidate or candidate.upper() == "UNKNOWN":
+        return False
+    return bool(_PRE_LIVE_GATE_PLAUSIBLE_GIT_SHA_RE.match(candidate))
+
+
+def evaluate_source_identity(scope: Mapping[str, Any]) -> Tuple[Dict[str, Any], List["Blocker"]]:
+    """RTE-W1-010 / S6: block launch/evidence approval when git source
+    identity cannot be positively proven.
+
+    This does not change ``get_git_sha`` -- it validates the shape of the
+    value ``derive_scope`` already recorded in ``VALIDATION_SCOPE.json``
+    (``git_sha``), the same value canonical execution evidence would rely
+    on, and fails closed (blocking verdict) if it is not a plausible commit
+    id (rejects "UNKNOWN", blank/None, and non-hex/non-40/64-length values).
+    """
+    git_sha = scope.get("git_sha")
+    blockers: List[Blocker] = []
+    plausible = _looks_like_plausible_git_sha(git_sha)
+    if not plausible:
+        blockers.append(
+            Blocker(
+                SOURCE_IDENTITY_UNPROVEN,
+                "source_identity",
+                "P0",
+                "Source identity could not be positively proven; refusing to approve "
+                "launch/evidence for this run.",
+                {"git_sha": git_sha},
+            )
+        )
+    results = {
+        "layer": "source_identity",
+        "status": "FAIL" if blockers else "PASS",
+        "git_sha_plausible": plausible,
+    }
+    return results, blockers
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
@@ -1209,6 +1266,8 @@ def classify_blocker_bucket(blocker: Mapping[str, Any]) -> str:
         return ENVIRONMENT_BLOCKER
     if reason_code == PAL_REQUIRED_UNAVAILABLE:
         return ARTIFACT_OR_STATE_BLOCKER
+    if reason_code == SOURCE_IDENTITY_UNPROVEN:
+        return ENVIRONMENT_BLOCKER
     if reason_code == ONLINE_PREFLIGHT_FAILURE:
         if isinstance(details, dict) and "failure_type" in details:
             if not details.get("api_key_present", True):
@@ -1399,6 +1458,10 @@ def run_gate(
     all_blockers: List[Blocker] = []
     all_conditions: List[Condition] = []
     repo_wide_findings: List[Dict[str, Any]] = []
+
+    source_identity, blockers = evaluate_source_identity(scope)
+    layer_payloads["source_identity"] = source_identity
+    all_blockers.extend(blockers)
 
     import_cli, blockers = evaluate_import_cli_smoke(config)
     layer_payloads["import_cli_smoke"] = import_cli
