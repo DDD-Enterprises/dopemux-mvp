@@ -1,0 +1,44 @@
+{
+  "packet_id": "TP-DMX-LITELLM-PIN-CURRENT-MAIN-001",
+  "head_sha": "74191ca230dd8be413c5626ff6300f1a4cd526c7",
+  "generated_at": "2026-08-23T11:00:34Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude -p --model sonnet --output-format json --allowedTools Read,Grep (stdin; session_id=accbdb4b-b9d6-4749-8c54-2cca08f209ad); reused on merge-commit 74191ca230dd8be413c5626ff6300f1a4cd526c7 because Dockerfile blob c027f1156f identical to audited c3e45e201b",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-LITELLM-PIN-CURRENT-MAIN-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-1252-1",
+        "severity": "MEDIUM",
+        "title": "Prisma crash-loop claim not corroborated by prisma-client-python source",
+        "status": "OPEN",
+        "body": "Comment claims an unpinned install 'grabs latest prisma-client-python, whose generated prisma/types.py no longer exports DatasourceOverride, breaking prisma.client's own import.' Direct inspection of RobertCraigie/prisma-client-py tags v0.11.0 through v0.15.0 (latest on PyPI) shows DatasourceOverride is exported in every version checked \u2014 from v0.13.0 onward it's implemented as `DatasourceOverride = _types.DatasourceOverride` (an alias to a class in the static _types.py) rather than a locally-defined class, but the name and the `from .types import DatasourceOverride` import in client.py.jinja both still resolve correctly at v0.15.0. This doesn't mean the pin is wrong (0.11.0 is still a valid choice), but the specific mechanism cited as the crash cause does not hold up against the current released source \u2014 it's possible Grok observed a transient/dev-build breakage rather than something reproducible on any tagged release."
+      },
+      {
+        "id": "F-1252-2",
+        "severity": "MEDIUM",
+        "title": "Prisma comment misattributes an exact pin to the wrong upstream extras group",
+        "status": "OPEN",
+        "body": "Comment says the pin matches 'litellm[proxy]'s own `prisma==0.11.0` requirement (extra-proxy)'. Checked litellm's pyproject.toml at main and tags v1.84.0\u2192v1.98.0: prisma is not part of the `proxy` extra at all (only `fastapi` etc. live there); it's in a separate `extra_proxy` optional-dependency group, which in current/recent releases (\u2265~1.90, including 1.98.0 \u2014 the version this Dockerfile's unbounded `litellm[proxy]>=1.83.7` will actually resolve to) declares `prisma>=0.11.0,<1.0`, a range, not an exact pin. The literal `prisma==0.11.0` string only exists in litellm's `proxy-dev` PEP 735 [dependency-groups] entry \u2014 a dev/test-tooling group not installed by `pip install litellm[proxy]` at all. The comment conflates these two distinct, differently-scoped upstream declarations."
+      },
+      {
+        "id": "F-1252-3",
+        "severity": "LOW",
+        "title": "FastAPI crash-loop root cause already worked around upstream in the litellm version this pin actually targets",
+        "status": "OPEN",
+        "body": "The get_flat_dependant removal-in-0.141.0 claim is independently verified accurate (confirmed present in fastapi 0.140.0/0.140.1, absent from 0.141.0/0.141.1 via direct source diff). However, litellm's own source at 1.98.0 (the version actually installed today given the unbounded `litellm[proxy]>=1.83.7` floor) no longer calls `get_flat_dependant` anywhere \u2014 litellm/proxy/management_endpoints/management_v1/common.py switched to `fastapi.dependencies.utils.get_flat_params` specifically because 'fastapi>=0.140.7 removed get_flat_dependant()' (per litellm's own inline comment), and get_flat_params has been present since fastapi 0.136.3. So for the litellm version this Dockerfile will resolve today, the crash this pin guards against may already be moot upstream \u2014 the pin is still harmless (0.140.0 satisfies litellm's own fastapi>=0.136.3,<1.0 range and has get_flat_params), just possibly no longer load-bearing for its stated reason."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "No live container build/start was performed in this audit (out of stated scope) to directly confirm or refute the crash-loop scenarios described in the comments.",
+      "Both pins are hard `==` with no upper-bound flexibility; nothing in this diff schedules a revisit when litellm/fastapi/prisma move forward, so the image is frozen on these exact versions indefinitely unless someone manually bumps them.",
+      "Comment accuracy issues (F1/F2) suggest the investigation behind this PR may not have been fully validated against released upstream source \u2014 worth a quick confirmatory container build/run before treating this as fully closed."
+    ],
+    "skip_reason": null
+  }
+}
