@@ -1,0 +1,4 @@
+ package-lock.json                                  | 1201 ++++++--------------
+ package.json                                       |   18 +-
+ .../TP-DMX-DEPENDABOT-JS-MINOR-PATCH-1147-001.json |   53 +
+ 3 files changed, 391 insertions(+), 881 deletions(-)
