@@ -6,7 +6,14 @@ from dataclasses import asdict, replace
 import json
 
 from .conflicts import classify_conflicts
-from .models import LaneProjection, PortfolioProjection, Recommendation, SourceSnapshot
+from .models import (
+    LaneDependency,
+    LaneProjection,
+    PortfolioProjection,
+    Recommendation,
+    SourceSnapshot,
+    utf8_key,
+)
 
 LaneKey = tuple[str, str, str]
 
@@ -15,8 +22,20 @@ def _lane_key(lane: LaneProjection) -> LaneKey:
     return (lane.project_id, lane.lane_id, lane.candidate_sha)
 
 
+def _lane_sort_key(key: LaneKey) -> tuple[bytes, bytes, bytes]:
+    return tuple(utf8_key(part) for part in key)  # type: ignore[return-value]
+
+
+def _dependency_key(dependency: LaneDependency) -> LaneKey:
+    return (
+        dependency.project_id,
+        dependency.lane_id,
+        dependency.candidate_sha,
+    )
+
+
 def _lane_ref(key: LaneKey) -> str:
-    return f"{key[0]}:{key[1]}"
+    return f"{key[0]}/{key[1]}@{key[2]}"
 
 
 def _cycle_keys(edges: dict[LaneKey, set[LaneKey]]) -> set[LaneKey]:
@@ -33,7 +52,7 @@ def _cycle_keys(edges: dict[LaneKey, set[LaneKey]]) -> set[LaneKey]:
         index += 1
         stack.append(node)
         on_stack.add(node)
-        for dependency in sorted(edges[node]):
+        for dependency in sorted(edges[node], key=_lane_sort_key):
             if dependency not in indices:
                 visit(dependency)
                 lowlinks[node] = min(lowlinks[node], lowlinks[dependency])
@@ -51,7 +70,7 @@ def _cycle_keys(edges: dict[LaneKey, set[LaneKey]]) -> set[LaneKey]:
         if len(component) > 1 or node in edges[node]:
             cycles.update(component)
 
-    for node in sorted(edges):
+    for node in sorted(edges, key=_lane_sort_key):
         if node not in indices:
             visit(node)
     return cycles
@@ -60,14 +79,11 @@ def _cycle_keys(edges: dict[LaneKey, set[LaneKey]]) -> set[LaneKey]:
 def _ordered_lane_keys(
     lanes: dict[LaneKey, LaneProjection],
 ) -> tuple[tuple[LaneKey, ...], set[LaneKey]]:
-    by_ref: dict[str, set[LaneKey]] = defaultdict(set)
-    for key in lanes:
-        by_ref[_lane_ref(key)].add(key)
     edges = {
         key: {
-            candidate
+            _dependency_key(dependency)
             for dependency in lane.dependencies
-            for candidate in by_ref.get(dependency, set())
+            if _dependency_key(dependency) in lanes
         }
         for key, lane in lanes.items()
     }
@@ -79,19 +95,21 @@ def _ordered_lane_keys(
                 dependents[dependency].add(key)
                 indegree[key] += 1
 
-    ready = sorted(key for key, degree in indegree.items() if degree == 0)
+    ready = sorted(
+        (key for key, degree in indegree.items() if degree == 0), key=_lane_sort_key
+    )
     ordered: list[LaneKey] = []
     while ready:
         key = ready.pop(0)
         ordered.append(key)
-        for dependent in sorted(dependents[key]):
+        for dependent in sorted(dependents[key], key=_lane_sort_key):
             indegree[dependent] -= 1
             if indegree[dependent] == 0:
                 ready.append(dependent)
-                ready.sort()
+                ready.sort(key=_lane_sort_key)
 
     remaining = set(lanes) - set(ordered)
-    ordered.extend(sorted(remaining))
+    ordered.extend(sorted(remaining, key=_lane_sort_key))
     return tuple(ordered), _cycle_keys(edges)
 
 
@@ -101,9 +119,6 @@ def plan_merge_order(portfolio: PortfolioProjection) -> tuple[Recommendation, ..
     lanes = {_lane_key(lane): lane for lane in portfolio.lanes}
     if len(lanes) != len(portfolio.lanes):
         raise ValueError("duplicate project/lane/candidate identity")
-    by_ref: dict[str, set[LaneKey]] = defaultdict(set)
-    for lane_key in lanes:
-        by_ref[_lane_ref(lane_key)].add(lane_key)
     ordered_keys, cycle_keys = _ordered_lane_keys(lanes)
     blocking_conflicts = {
         (conflict.project_id, conflict.lane_id)
@@ -138,23 +153,34 @@ def plan_merge_order(portfolio: PortfolioProjection) -> tuple[Recommendation, ..
             disposition = "WAIT_DEPENDENCY"
             reasons.append("DEPENDENCY_CYCLE")
         else:
-            missing = sorted(dep for dep in lane.dependencies if dep not in by_ref)
+            missing = sorted(
+                (
+                    _dependency_key(dependency)
+                    for dependency in lane.dependencies
+                    if _dependency_key(dependency) not in lanes
+                ),
+                key=_lane_sort_key,
+            )
             if missing:
                 disposition = "WAIT_DEPENDENCY"
-                reasons.extend(f"MISSING_DEPENDENCY:{dep}" for dep in missing)
+                reasons.extend(
+                    f"MISSING_DEPENDENCY:{_lane_ref(dep)}" for dep in missing
+                )
             else:
                 waiting = sorted(
-                    candidate
-                    for dep in lane.dependencies
-                    for candidate in by_ref.get(dep, set())
-                    if candidate not in results
-                    or results[candidate].disposition
-                    != "READY_FOR_CONTROL_TOWER_REVIEW"
+                    (
+                        _dependency_key(dependency)
+                        for dependency in lane.dependencies
+                        if _dependency_key(dependency) not in results
+                        or results[_dependency_key(dependency)].disposition
+                        != "READY_FOR_CONTROL_TOWER_REVIEW"
+                    ),
+                    key=_lane_sort_key,
                 )
                 if waiting:
                     disposition = "WAIT_DEPENDENCY"
                     reasons.extend(
-                        f"DEPENDENCY_NOT_READY:{_lane_ref(candidate)}@{candidate[2]}"
+                        f"DEPENDENCY_NOT_READY:{_lane_ref(candidate)}"
                         for candidate in waiting
                     )
         results[key] = Recommendation(
@@ -174,8 +200,11 @@ def build_portfolio(sources: Sequence[SourceSnapshot]) -> PortfolioProjection:
         sorted(
             sources,
             key=lambda item: json.dumps(
-                asdict(item), sort_keys=True, separators=(",", ":")
-            ),
+                asdict(item),
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8"),
         )
     )
     claims = tuple(claim for source in ordered_sources for claim in source.claims)
@@ -186,7 +215,12 @@ def build_portfolio(sources: Sequence[SourceSnapshot]) -> PortfolioProjection:
                     project_id=lane.project_id,
                     lane_id=lane.lane_id,
                     candidate_sha=lane.candidate_sha,
-                    dependencies=tuple(sorted(lane.dependencies)),
+                    dependencies=tuple(
+                        sorted(
+                            lane.dependencies,
+                            key=lambda item: _lane_sort_key(_dependency_key(item)),
+                        )
+                    ),
                     gate_status=lane.gate_status,
                     audit_status=lane.audit_status,
                     lifecycle_state=lane.lifecycle_state,
@@ -195,7 +229,7 @@ def build_portfolio(sources: Sequence[SourceSnapshot]) -> PortfolioProjection:
                 for source in ordered_sources
                 for lane in source.lanes
             ),
-            key=lambda item: (item.project_id, item.lane_id, item.candidate_sha),
+            key=lambda item: _lane_sort_key(_lane_key(item)),
         )
     )
     lane_keys = [_lane_key(lane) for lane in lanes]

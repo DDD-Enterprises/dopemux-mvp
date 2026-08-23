@@ -5,7 +5,7 @@ from dataclasses import asdict
 from functools import lru_cache
 from pathlib import Path
 
-from jsonschema import Draft202012Validator
+from jsonschema import Draft202012Validator, FormatChecker
 
 from .models import PortfolioProjection
 
@@ -23,7 +23,7 @@ def _validator() -> Draft202012Validator:
         schema = json.loads(_PORTFOLIO_SCHEMA.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise ValueError("portfolio schema is unavailable") from exc
-    return Draft202012Validator(schema)
+    return Draft202012Validator(schema, format_checker=FormatChecker())
 
 
 def canonical_portfolio_bytes(portfolio: PortfolioProjection) -> bytes:
@@ -35,6 +35,16 @@ def canonical_portfolio_bytes(portfolio: PortfolioProjection) -> bytes:
         raise ValueError("portfolio surface_class must be PROJECTION")
     if portfolio.is_proof is not False:
         raise ValueError("portfolio is_proof must be false")
+
+    PortfolioProjection(
+        authority=portfolio.authority,
+        surface_class=portfolio.surface_class,
+        is_proof=portfolio.is_proof,
+        sources=portfolio.sources,
+        lanes=portfolio.lanes,
+        conflicts=portfolio.conflicts,
+        recommendations=portfolio.recommendations,
+    )
 
     payload = {
         "schema_version": "pcp.repository_planner_portfolio.v1",

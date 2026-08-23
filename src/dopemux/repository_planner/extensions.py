@@ -36,14 +36,37 @@ class _ValidatedAdapter:
         result = self.delegate.enrich(generic_export, source_root)  # type: ignore[attr-defined]
         if not isinstance(result, SourceSnapshot):
             raise ValueError("adapter enrich must return SourceSnapshot")
-        return result
+        return SourceSnapshot(
+            schema_version=result.schema_version,
+            project_id=result.project_id,
+            authority=result.authority,
+            surface_class=result.surface_class,
+            is_proof=result.is_proof,
+            evidence_class=result.evidence_class,
+            observed_head=result.observed_head,
+            fetched_at=result.fetched_at,
+            freshness=result.freshness,
+            claims=result.claims,
+            lanes=result.lanes,
+        )
 
 
-def _validate_method(adapter: object, name: str, parameter_count: int) -> None:
+def _validate_method(
+    adapter: object, name: str, parameter_names: tuple[str, ...]
+) -> None:
     method = getattr(adapter, name, None)
-    if (
-        not callable(method)
-        or len(inspect.signature(method).parameters) != parameter_count
+    if not callable(method):
+        raise ValueError(f"adapter {name} signature is invalid")
+    parameters = tuple(inspect.signature(method).parameters.values())
+    if len(parameters) != len(parameter_names) or any(
+        parameter.name != expected
+        or parameter.kind
+        not in {
+            inspect.Parameter.POSITIONAL_ONLY,
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+        }
+        or parameter.default is not inspect.Parameter.empty
+        for parameter, expected in zip(parameters, parameter_names)
     ):
         raise ValueError(f"adapter {name} signature is invalid")
 
@@ -100,8 +123,8 @@ def load_extension_adapters(
         adapter = adapter_class()
         if not isinstance(adapter, ProjectExtensionAdapter):
             raise ValueError(f"adapter class does not satisfy protocol: {mapping}")
-        _validate_method(adapter, "matches", 1)
-        _validate_method(adapter, "enrich", 2)
+        _validate_method(adapter, "matches", ("generic_export",))
+        _validate_method(adapter, "enrich", ("generic_export", "source_root"))
         if adapter.extension_id != extension_id:
             raise ValueError("adapter extension_id does not match manifest")
         seen.add(extension_id)

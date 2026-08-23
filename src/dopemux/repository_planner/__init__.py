@@ -3,6 +3,7 @@
 from .models import (
     Claim,
     Conflict,
+    LaneDependency,
     LaneEvidence,
     LaneProjection,
     PortfolioProjection,
@@ -14,6 +15,7 @@ from .models import (
 __all__ = [
     "Claim",
     "Conflict",
+    "LaneDependency",
     "LaneEvidence",
     "LaneProjection",
     "PortfolioProjection",

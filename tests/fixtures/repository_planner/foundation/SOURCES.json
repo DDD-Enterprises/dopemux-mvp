@@ -17,7 +17,7 @@
       "ref": "864915b9cc8ff254eaa877627df1e510dc49dbec",
       "source_locator": "PROJECT_INSTRUCTIONS.md",
       "fetched_at": "2026-08-23T00:00:00Z",
-      "sha256": "369388b78fffbc633ecbb813360341266d3f27d88130c59abd83fdab33fc93ed",
+      "sha256": "76e0a2e5c724469ab56fa2ade5d7ab55c205e46ca77b5171ae984d62f36bd14d",
       "privacy_class": "PUBLIC_REPOSITORY_EVIDENCE",
       "redaction_reason": "Bounded fail-closed scenario only; no audit receipt body or local candidate bytes retained."
     },
@@ -27,7 +27,7 @@
       "ref": "92eb632bb07426ae5159c02bf9da549888e7caf1",
       "source_locator": "AGENTS.md",
       "fetched_at": "2026-08-23T00:00:00Z",
-      "sha256": "73d4f2aa07cc6d281ea715246b29674ac5e20a3a9c206b432ccd4cc3f1bc774b",
+      "sha256": "8de9798c5520b68df924b74276c1ba7418348750fd133a14a6f4f8fbad325766",
       "privacy_class": "PUBLIC_REPOSITORY_EVIDENCE",
       "redaction_reason": "Bounded RDCP freshness scenario only; no CRM data, raw messages, tokens, or runtime databases retained."
     }

@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
 from collections.abc import Mapping
 
-from .models import Claim, LaneEvidence, SourceRef, SourceSnapshot
+from .models import Claim, LaneDependency, LaneEvidence, SourceRef, SourceSnapshot
 
 _HEAD_RE = re.compile(r"[0-9a-f]{40}|[0-9a-f]{64}")
 _SHA256_RE = re.compile(r"[0-9a-f]{64}")
@@ -88,12 +87,6 @@ def load_source_snapshot(payload: Mapping[str, object]) -> SourceSnapshot:
     if _HEAD_RE.fullmatch(observed_head) is None:
         raise ValueError("observed_head must be a Git object id")
     fetched_at = _string(payload, "fetched_at")
-    try:
-        parsed_at = datetime.fromisoformat(fetched_at.replace("Z", "+00:00"))
-    except ValueError as exc:
-        raise ValueError("fetched_at must be a valid date-time") from exc
-    if not fetched_at.endswith("Z") or parsed_at.tzinfo != timezone.utc:
-        raise ValueError("fetched_at must be UTC")
     freshness = _string(payload, "freshness")
     if freshness not in {"CURRENT", "STALE", "UNKNOWN"}:
         raise ValueError("freshness is invalid")
@@ -134,22 +127,42 @@ def load_source_snapshot(payload: Mapping[str, object]) -> SourceSnapshot:
         )
 
     lanes: list[LaneEvidence] = []
-    seen_lanes: set[str] = set()
+    seen_lanes: set[tuple[str, str]] = set()
     for index, raw_lane in enumerate(_sequence(payload["lanes"], "lanes")):
         lane = _mapping(raw_lane, f"lanes[{index}]")
         _exact_keys(lane, _LANE_KEYS, f"lanes[{index}]")
         candidate_sha = _string(lane, "candidate_sha")
         if _HEAD_RE.fullmatch(candidate_sha) is None:
             raise ValueError("candidate_sha must be a Git object id")
-        dependencies = _sequence(lane["dependencies"], "dependencies")
-        if not all(isinstance(item, str) and item for item in dependencies):
-            raise ValueError("dependencies must contain non-empty strings")
+        dependencies: list[LaneDependency] = []
+        for dependency_index, raw_dependency in enumerate(
+            _sequence(lane["dependencies"], "dependencies")
+        ):
+            if not isinstance(raw_dependency, Mapping):
+                raise ValueError("dependency must be an object")
+            dependency = _mapping(
+                raw_dependency,
+                f"lanes[{index}].dependencies[{dependency_index}]",
+            )
+            _exact_keys(
+                dependency,
+                {"project_id", "lane_id", "candidate_sha"},
+                f"lanes[{index}].dependencies[{dependency_index}]",
+            )
+            dependencies.append(
+                LaneDependency(
+                    project_id=_string(dependency, "project_id"),
+                    lane_id=_string(dependency, "lane_id"),
+                    candidate_sha=_string(dependency, "candidate_sha"),
+                )
+            )
         if len(dependencies) != len(set(dependencies)):
             raise ValueError("duplicate dependencies are not allowed")
         lane_id = _string(lane, "lane_id")
-        if lane_id in seen_lanes:
+        lane_identity = (lane_id, candidate_sha)
+        if lane_identity in seen_lanes:
             raise ValueError(f"duplicate lane: {lane_id}")
-        seen_lanes.add(lane_id)
+        seen_lanes.add(lane_identity)
         gate_status = _string(lane, "gate_status")
         if gate_status not in {"PASS", "FAIL", "UNKNOWN"}:
             raise ValueError("gate_status is invalid")

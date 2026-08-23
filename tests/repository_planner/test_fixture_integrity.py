@@ -51,7 +51,11 @@ def test_foundation_cases_cover_required_fail_closed_states() -> None:
     }
     freshness = {snapshot["freshness"] for snapshot in snapshots}
     dependencies = {
-        dependency
+        (
+            dependency["project_id"],
+            dependency["lane_id"],
+            dependency["candidate_sha"],
+        )
         for snapshot in snapshots
         for lane in snapshot["lanes"]
         for dependency in lane["dependencies"]

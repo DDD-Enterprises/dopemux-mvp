@@ -41,7 +41,7 @@ describe('RepositoryPlannerPage', () => {
     expect(screen.getAllByText(/fixture-projection.v1/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/bounded-scenario:\/\/prior-finality-receipt/).length).toBeGreaterThan(0);
     expect(screen.getByText(/bounded-scenario:\/\/remote-ref-check/)).toBeVisible();
-    expect(screen.getByRole('heading', { name: 'Blocking conflicts' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Evidence conflicts' })).toBeVisible();
 
     fireEvent.click(screen.getByRole('button', { name: 'Close lane details' }));
     expect(trigger).toHaveFocus();
@@ -72,7 +72,58 @@ describe('RepositoryPlannerPage', () => {
     const lane = buildFoundationLanes([adopsFixture as never])[0];
     expect(lane.claims).toHaveLength(adopsFixture.claims.length);
     expect(lane.claims.map((claim) => claim.sourceLocator)).toEqual(adopsFixture.claims.map((claim) => claim.source_locator));
+    expect(lane.claims.map((claim) => claim.materiality)).toEqual(adopsFixture.claims.map((claim) => claim.materiality));
+    expect(lane.claims.every((claim) => claim.freshness === adopsFixture.freshness)).toBe(true);
+    expect(lane.dependencies).toEqual(adopsFixture.lanes[0].dependencies);
+    expect(lane.gateStatus).toBe(adopsFixture.lanes[0].gate_status);
+    expect(lane.auditStatus).toBe(adopsFixture.lanes[0].audit_status);
     expect(lane.conflicts[0].claims).toHaveLength(2);
+  });
+
+  test.each([
+    ['candidate SHA', (fixture: any) => { fixture.lanes[0].candidate_sha = 'bad'; }],
+    ['gate status', (fixture: any) => { fixture.lanes[0].gate_status = 'SKIPPED'; }],
+    ['dependency', (fixture: any) => { fixture.lanes[0].dependencies = ['ambiguous:lane']; }],
+    ['materiality', (fixture: any) => { fixture.claims[0].materiality = 'MAYBE'; }],
+    ['timestamp', (fixture: any) => { fixture.fetched_at = '2026-08-23 00:00:00Z'; }],
+    ['calendar date', (fixture: any) => { fixture.fetched_at = '2026-02-30T00:00:00Z'; }],
+  ])('fails closed on malformed fixture %s', (_label, mutate) => {
+    const fixture = structuredClone(dopemuxFixture);
+    mutate(fixture);
+    expect(() => buildFoundationLanes([fixture as never])).toThrow(/fixture/i);
+  });
+
+  test('rejects global duplicate claim identities', () => {
+    const duplicate = structuredClone(adopsFixture);
+    duplicate.claims[0].claim_id = dopemuxFixture.claims[0].claim_id;
+    expect(() => buildFoundationLanes([dopemuxFixture as never, duplicate as never])).toThrow(/duplicate claim/i);
+  });
+
+  test('keeps non-blocking disagreement visible without forcing deferral', () => {
+    const fixture = structuredClone(dopemuxFixture);
+    fixture.claims.push({ ...fixture.claims[0], claim_id: 'non-blocking-alternate', value: 'ALTERNATE', materiality: 'NON_BLOCKING' });
+    fixture.claims[0].materiality = 'NON_BLOCKING';
+    const lane = buildFoundationLanes([fixture as never])[0];
+    expect(lane.conflicts[0].materiality).toBe('NON_BLOCKING');
+    expect(lane.states).toContain('conflicting');
+    expect(lane.recommendation).toBe('Ready for Control Tower review');
+  });
+
+  test('orders conflict values by UTF-8 bytes', () => {
+    const fixture = structuredClone(dopemuxFixture);
+    fixture.claims = [
+      { ...fixture.claims[0], claim_id: 'supplementary', value: '\u{10000}' },
+      { ...fixture.claims[0], claim_id: 'bmp', value: '\uE000' },
+    ];
+    expect(buildFoundationLanes([fixture as never])[0].conflicts[0].values).toEqual(['\uE000', '\u{10000}']);
+  });
+
+  test('renders candidate-complete row and inspect identities', () => {
+    const fixture = structuredClone(dopemuxFixture);
+    fixture.lanes.push({ ...fixture.lanes[0], candidate_sha: 'b'.repeat(40) });
+    render(<RepositoryPlannerPage sources={[fixture as never]} />);
+    expect(screen.getByRole('button', { name: new RegExp(`Inspect dopemux-mvp pcp-planner-foundation ${fixture.lanes[0].candidate_sha}`) })).toBeVisible();
+    expect(screen.getByRole('button', { name: /Inspect dopemux-mvp pcp-planner-foundation b{40}/ })).toBeVisible();
   });
 });
 

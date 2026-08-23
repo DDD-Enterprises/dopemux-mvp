@@ -5,7 +5,7 @@ import json
 from collections import defaultdict
 from collections.abc import Sequence
 
-from .models import Claim, Conflict
+from .models import Claim, Conflict, utf8_key
 
 
 def classify_conflicts(claims: Sequence[Claim]) -> tuple[Conflict, ...]:
@@ -16,18 +16,23 @@ def classify_conflicts(claims: Sequence[Claim]) -> tuple[Conflict, ...]:
         grouped[(claim.project_id, claim.lane_id, claim.field)].append(claim)
 
     conflicts: list[Conflict] = []
-    for (project_id, lane_id, field), group in sorted(grouped.items()):
-        values = tuple(sorted({claim.value for claim in group}))
+    for (project_id, lane_id, field), group in sorted(
+        grouped.items(), key=lambda item: tuple(utf8_key(part) for part in item[0])
+    ):
+        values = tuple(sorted({claim.value for claim in group}, key=utf8_key))
         if len(values) < 2:
             continue
         sources = tuple(
             sorted(
                 {claim.source for claim in group},
-                key=lambda item: (
-                    item.locator,
-                    item.sha256,
-                    item.observed_head,
-                    item.fetched_at,
+                key=lambda item: tuple(
+                    utf8_key(part)
+                    for part in (
+                        item.locator,
+                        item.sha256,
+                        item.observed_head,
+                        item.fetched_at,
+                    )
                 ),
             )
         )

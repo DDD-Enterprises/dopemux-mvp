@@ -161,3 +161,51 @@ def test_unknown_adapter_module_and_class_fail_closed(
     _write_manifest(missing_class, "missing-class", f"{module_name}:Missing")
     with pytest.raises(ValueError, match="adapter class"):
         load_extension_adapters([missing_class])
+
+
+def test_variadic_adapter_signatures_fail_closed(tmp_path: Path, monkeypatch) -> None:
+    module_name = "dopemux.repository_planner.adapters.variadic"
+    module = types.ModuleType(module_name)
+
+    class Adapter:
+        extension_id = "variadic"
+
+        def matches(self, *args):
+            return True
+
+        def enrich(self, *args, **kwargs):
+            return load_source_snapshot(json.loads(FIXTURE.read_text(encoding="utf-8")))
+
+    module.Adapter = Adapter
+    monkeypatch.setitem(sys.modules, module_name, module)
+    manifest = tmp_path / "variadic.json"
+    _write_manifest(manifest, "variadic", f"{module_name}:Adapter")
+    with pytest.raises(ValueError, match="signature"):
+        load_extension_adapters([manifest])
+
+
+def test_semantically_invalid_adapter_snapshot_fails_closed(
+    tmp_path: Path, monkeypatch
+) -> None:
+    module_name = "dopemux.repository_planner.adapters.malformed"
+    module = types.ModuleType(module_name)
+
+    class Adapter:
+        extension_id = "malformed"
+
+        def matches(self, generic_export):
+            return True
+
+        def enrich(self, generic_export, source_root):
+            valid = load_source_snapshot(generic_export)
+            object.__setattr__(valid, "fetched_at", "2026-08-23 00:00:00Z")
+            return valid
+
+    module.Adapter = Adapter
+    monkeypatch.setitem(sys.modules, module_name, module)
+    manifest = tmp_path / "malformed.json"
+    _write_manifest(manifest, "malformed", f"{module_name}:Adapter")
+    adapter = load_extension_adapters([manifest])[0]
+    payload = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    with pytest.raises(ValueError, match="RFC 3339 UTC"):
+        adapter.enrich(payload, tmp_path)

@@ -9,7 +9,7 @@ from jsonschema import Draft202012Validator
 import pytest
 
 from dopemux.repository_planner.canonical import canonical_portfolio_bytes
-from dopemux.repository_planner.models import LaneEvidence
+from dopemux.repository_planner.models import LaneDependency, LaneEvidence
 from dopemux.repository_planner.planner import build_portfolio, plan_merge_order
 from dopemux.repository_planner.snapshot import load_source_snapshot
 
@@ -65,6 +65,22 @@ def test_equal_primary_source_keys_and_multiple_candidates_remain_deterministic(
     ]
 
 
+def test_source_and_conflict_ordering_uses_utf8_bytes_for_non_bmp_text() -> None:
+    source = _snapshots()[0]
+    bmp = replace(source, evidence_class="\ue000", claims=(), lanes=())
+    supplementary = replace(source, evidence_class="\U00010000", claims=(), lanes=())
+    portfolio = build_portfolio((supplementary, bmp))
+    assert [item.evidence_class for item in portfolio.sources] == [
+        "\ue000",
+        "\U00010000",
+    ]
+
+    left = replace(source.claims[0], claim_id="left", value="\U00010000")
+    right = replace(source.claims[0], claim_id="right", value="\ue000")
+    conflict = build_portfolio((replace(source, claims=(left, right)),)).conflicts[0]
+    assert conflict.values == ("\ue000", "\U00010000")
+
+
 def test_canonical_portfolio_validates_against_strict_schema() -> None:
     validator = Draft202012Validator(
         json.loads(PORTFOLIO_SCHEMA.read_text(encoding="utf-8"))
@@ -98,11 +114,12 @@ def test_fail_closed_recommendations_preserve_source_states() -> None:
 
 def test_missing_dependency_waits_instead_of_inventing_readiness() -> None:
     snapshot = _snapshots()[0]
-    lane = replace(snapshot.lanes[0], dependencies=("missing:lane",))
+    dependency = LaneDependency("missing", "lane", "f" * 40)
+    lane = replace(snapshot.lanes[0], dependencies=(dependency,))
     portfolio = build_portfolio((replace(snapshot, lanes=(lane,)),))
     result = plan_merge_order(portfolio)[0]
     assert result.disposition == "WAIT_DEPENDENCY"
-    assert "MISSING_DEPENDENCY:missing:lane" in result.reasons
+    assert "MISSING_DEPENDENCY:missing/lane@" + "f" * 40 in result.reasons
 
 
 def test_failed_gate_and_missing_audit_withhold_readiness() -> None:
@@ -136,18 +153,44 @@ def test_canonical_boundary_rejects_authority_promotion() -> None:
 def test_canonical_boundary_rejects_structurally_invalid_models() -> None:
     portfolio = build_portfolio(_snapshots())
     object.__setattr__(portfolio.lanes[0], "candidate_sha", "not-a-sha")
-    with pytest.raises(ValueError, match="schema validation"):
+    with pytest.raises(ValueError, match="candidate_sha"):
+        canonical_portfolio_bytes(portfolio)
+
+
+def test_canonical_boundary_revalidates_nested_utc_timestamp() -> None:
+    portfolio = build_portfolio(_snapshots())
+    object.__setattr__(portfolio.sources[0], "fetched_at", "2026-08-23 00:00:00Z")
+    with pytest.raises(ValueError, match="RFC 3339 UTC"):
         canonical_portfolio_bytes(portfolio)
 
 
 def test_dependency_cycle_is_an_explicit_blocker_with_stable_order() -> None:
     source = _snapshots()[0]
     lanes = (
-        LaneEvidence("alpha", "a", "a" * 40, ("beta:b",), "PASS", "PASS", "READY"),
-        LaneEvidence("beta", "b", "b" * 40, ("alpha:a",), "PASS", "PASS", "READY"),
+        LaneEvidence(
+            "alpha",
+            "a",
+            "a" * 40,
+            (LaneDependency("beta", "b", "b" * 40),),
+            "PASS",
+            "PASS",
+            "READY",
+        ),
+        LaneEvidence(
+            "beta",
+            "b",
+            "b" * 40,
+            (LaneDependency("alpha", "a", "a" * 40),),
+            "PASS",
+            "PASS",
+            "READY",
+        ),
     )
     portfolio = build_portfolio(
-        (replace(source, project_id="cycle", lanes=lanes, claims=()),)
+        tuple(
+            replace(source, project_id=lane.project_id, lanes=(lane,), claims=())
+            for lane in lanes
+        )
     )
     results = plan_merge_order(portfolio)
     assert [(item.project_id, item.lane_id) for item in results] == [
@@ -161,14 +204,48 @@ def test_dependency_cycle_is_an_explicit_blocker_with_stable_order() -> None:
 def test_cycle_diagnostic_does_not_mislabel_downstream_lane() -> None:
     source = _snapshots()[0]
     lanes = (
-        LaneEvidence("alpha", "a", "a" * 40, ("beta:b",), "PASS", "PASS", "READY"),
-        LaneEvidence("beta", "b", "b" * 40, ("alpha:a",), "PASS", "PASS", "READY"),
-        LaneEvidence("gamma", "c", "c" * 40, ("alpha:a",), "PASS", "PASS", "READY"),
+        LaneEvidence(
+            "alpha",
+            "a",
+            "a" * 40,
+            (LaneDependency("beta", "b", "b" * 40),),
+            "PASS",
+            "PASS",
+            "READY",
+        ),
+        LaneEvidence(
+            "beta",
+            "b",
+            "b" * 40,
+            (LaneDependency("alpha", "a", "a" * 40),),
+            "PASS",
+            "PASS",
+            "READY",
+        ),
+        LaneEvidence(
+            "gamma",
+            "c",
+            "c" * 40,
+            (LaneDependency("alpha", "a", "a" * 40),),
+            "PASS",
+            "PASS",
+            "READY",
+        ),
     )
     results = build_portfolio(
-        (replace(source, project_id="cycle", lanes=lanes, claims=()),)
+        tuple(
+            replace(source, project_id=lane.project_id, lanes=(lane,), claims=())
+            for lane in lanes
+        )
     ).recommendations
     by_lane = {item.lane_id: item for item in results}
     assert "DEPENDENCY_CYCLE" in by_lane["a"].reasons
     assert "DEPENDENCY_CYCLE" in by_lane["b"].reasons
     assert "DEPENDENCY_CYCLE" not in by_lane["c"].reasons
+
+
+def test_portfolio_rejects_duplicate_claim_ids_across_sources() -> None:
+    first, second = _snapshots()[:2]
+    duplicate = replace(second.claims[0], claim_id=first.claims[0].claim_id)
+    with pytest.raises(ValueError, match="duplicate claim_id"):
+        build_portfolio((first, replace(second, claims=(duplicate,))))
