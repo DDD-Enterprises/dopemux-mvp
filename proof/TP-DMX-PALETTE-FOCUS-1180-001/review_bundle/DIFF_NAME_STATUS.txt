@@ -1,0 +1,5 @@
+M	.Jules/palette.md
+M	task-packets/INDEX.md
+A	task-packets/TP-DMX-PALETTE-FOCUS-1180-001.json
+M	ui-dashboard/src/components/TaskSequencer.tsx
+A	ui-dashboard/src/components/__tests__/TaskSequencer.focusPreservation.test.tsx
