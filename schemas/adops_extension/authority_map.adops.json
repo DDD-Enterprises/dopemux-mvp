@@ -1,0 +1,108 @@
+{
+  "schema_version": "pcp.authority_map.v0",
+  "project_id": "DDD-Enterprises/adOps",
+  "entries": [
+    {
+      "domain": "adops.repository_governance",
+      "action": "project",
+      "canonical_authority_owner": "adops-repository",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "Dopemux PCP AdOps adapter",
+      "source_truth_refs": [
+        "PROJECT_INSTRUCTIONS.md",
+        ".github/copilot-instructions.md",
+        ".claude/PROJECT_INSTRUCTIONS.md"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "adops.active_packet",
+      "action": "read",
+      "canonical_authority_owner": "adops-repository",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "Dopemux PCP AdOps packet projection",
+      "source_truth_refs": [
+        "task-packets/ACTIVE.md",
+        "task-packets/TP-ADOPS-ELITELUXE24-MODE-V1.md"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "adops.proof_and_audit",
+      "action": "read",
+      "canonical_authority_owner": "adops-repository",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "Dopemux PCP AdOps proof projection",
+      "source_truth_refs": [
+        "proof/TP-ADOPS-ELITELUXE24-MODE-V1/01_head_binding.txt",
+        "proof/TP-ADOPS-ELITELUXE24-MODE-V1/IMPLEMENTER_REPORT.md",
+        "proof/TP-ADOPS-ELITELUXE24-MODE-V1/AUDITOR_REPORT.md"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "adops.acceptance_and_merge",
+      "action": "project",
+      "canonical_authority_owner": "adops-control-tower",
+      "canonical_writer": null,
+      "surface_class": "PROJECTION",
+      "reader_or_projection_surface": "Dopemux repository planner",
+      "source_truth_refs": [
+        "acceptance/TP-ADOPS-ELITELUXE24-MODE-V1.json"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": true,
+      "rollback_required": true,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "adops.remote_candidate",
+      "action": "read",
+      "canonical_authority_owner": "adops-git-remote",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "Dopemux PCP Git evidence projection",
+      "source_truth_refs": [
+        "https://github.com/DDD-Enterprises/adOps/commit/864915b9cc8ff254eaa877627df1e510dc49dbec",
+        "reports/project-control-plane/fixtures/adops_fixture/SOURCES.json"
+      ],
+      "proof_required": true,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    },
+    {
+      "domain": "adops.governance_design",
+      "action": "read",
+      "canonical_authority_owner": "adops-repository",
+      "canonical_writer": null,
+      "surface_class": "ADAPTER",
+      "reader_or_projection_surface": "Dopemux PCP GitHub evidence projection",
+      "source_truth_refs": [
+        "https://github.com/DDD-Enterprises/adOps/pull/277"
+      ],
+      "proof_required": false,
+      "live_write_allowed": false,
+      "approval_required": false,
+      "rollback_required": false,
+      "unknown_behavior": "BLOCK_OR_ESCALATE"
+    }
+  ]
+}

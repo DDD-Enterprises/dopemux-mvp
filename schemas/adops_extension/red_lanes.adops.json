@@ -1,0 +1,49 @@
+{
+  "schema_version": "pcp.project_red_lanes.v0",
+  "project_id": "DDD-Enterprises/adOps",
+  "default_on_unknown": "BLOCK",
+  "classifications": [
+    {
+      "lane_id": "source-repository-write",
+      "scope": "PROJECT",
+      "match": "any AdOps file, ref, issue, pull request, workflow, label, or runtime mutation",
+      "result": "BLOCKED",
+      "reason": "TP-DMX-PCP-ADOPS-EXTENSION-002 authorizes read-only source evidence only"
+    },
+    {
+      "lane_id": "external-runner",
+      "scope": "PROJECT",
+      "match": "runner dispatch or external workflow execution",
+      "result": "BLOCKED",
+      "reason": "Planner projections have no execution authority"
+    },
+    {
+      "lane_id": "live-posting",
+      "scope": "PROJECT",
+      "match": "posting, purchase, or verification submission",
+      "result": "NEEDS_SUPERVISOR",
+      "reason": "AdOps source instructions keep these actions operator-confirmed"
+    },
+    {
+      "lane_id": "paid-provider-route",
+      "scope": "PROJECT",
+      "match": "provider or paid-route change",
+      "result": "NEEDS_SUPERVISOR",
+      "reason": "AdOps source instructions require operator authorization"
+    },
+    {
+      "lane_id": "acceptance-or-merge",
+      "scope": "PROJECT",
+      "match": "acceptance, activation, merge, or deployment",
+      "result": "BLOCKED",
+      "reason": "Control Tower and human authority remain terminal"
+    },
+    {
+      "lane_id": "unknown-governance-state",
+      "scope": "PROJECT",
+      "match": "missing, stale, malformed, conflicting, or unsupported source evidence",
+      "result": "BLOCKED",
+      "reason": "AdOps extension fails closed and never infers readiness from absence"
+    }
+  ]
+}

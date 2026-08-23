@@ -1,0 +1,16 @@
+{
+  "findings": [
+    {
+      "body": "The `AdOpsExtensionAdapter` correctly adheres to the read-only constraints, enforces fail-closed logic on missing/conflicting inputs, and hardcodes the authority level to NONE. The tests verify this behavior exhaustively.",
+      "id": "F-01",
+      "severity": "INFO",
+      "status": "OPEN",
+      "title": "AdOpsExtensionAdapter logic verified"
+    }
+  ],
+  "fixes_applied": [],
+  "model_used": "gemini-3.1-pro-high",
+  "remaining_risks": [],
+  "status": "PASS",
+  "summary": "Audited PR #1259 (TP-DMX-PCP-ADOPS-EXTENSION-002). Verified read-only AdOps extension logic in repository planner. Tests pass with code 0 and confirm that unproven evidence fails closed, and that planner/TO authority is kept at NONE. No secrets leaked, no scope creep."
+}

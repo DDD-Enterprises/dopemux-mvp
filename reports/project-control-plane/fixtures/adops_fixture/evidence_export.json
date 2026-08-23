@@ -1,0 +1,109 @@
+{
+  "schema_version": "pcp.project_evidence_export.v0",
+  "project_id": "DDD-Enterprises/adOps",
+  "generated_from_fixture": true,
+  "profile_ref": "reports/project-control-plane/fixtures/adops_fixture/project_profile.json",
+  "repo_state": {
+    "root_verified": true,
+    "worktree_state": "CLEAN",
+    "head_sha": "864915b9cc8ff254eaa877627df1e510dc49dbec",
+    "branch": "main"
+  },
+  "authority_docs": [
+    {
+      "path": "PROJECT_INSTRUCTIONS.md",
+      "state": "PRESENT"
+    },
+    {
+      "path": ".github/copilot-instructions.md",
+      "state": "PRESENT"
+    },
+    {
+      "path": ".claude/PROJECT_INSTRUCTIONS.md",
+      "state": "PRESENT"
+    }
+  ],
+  "active_packet": {
+    "state": "PRESENT",
+    "packet_id": "TP-ADOPS-ELITELUXE24-MODE-V1",
+    "path": "task-packets/TP-ADOPS-ELITELUXE24-MODE-V1.md"
+  },
+  "status_ledger": {
+    "state": "ABSENT",
+    "path": null,
+    "entries": []
+  },
+  "proof_manifest": {
+    "state": "PRESENT",
+    "path": "proof/TP-ADOPS-ELITELUXE24-MODE-V1/IMPLEMENTER_REPORT.md",
+    "freshness": "STALE"
+  },
+  "workflow_list": [
+    {
+      "id": "TP-ADOPS-ELITELUXE24-MODE-V1",
+      "status": "IMPLEMENTED_NOT_ACCEPTED",
+      "source": "task-packets/ACTIVE.md"
+    }
+  ],
+  "pr_review_state": {
+    "state": "PRESENT",
+    "authority_allowed": false,
+    "open_prs": [
+      "277:DESIGN_EVIDENCE_ONLY"
+    ]
+  },
+  "red_lane_results": [
+    {
+      "lane_id": "source-repository-write",
+      "result": "BLOCKED",
+      "evidence": "TP-DMX-PCP-ADOPS-EXTENSION-002 makes DDD-Enterprises/adOps read-only"
+    },
+    {
+      "lane_id": "external-runner",
+      "result": "BLOCKED",
+      "evidence": "Planner extension performs no runner dispatch"
+    },
+    {
+      "lane_id": "live-posting",
+      "result": "NEEDS_SUPERVISOR",
+      "evidence": ".github/copilot-instructions.md keeps posting operator-confirmed"
+    },
+    {
+      "lane_id": "paid-provider-route",
+      "result": "NEEDS_SUPERVISOR",
+      "evidence": ".github/copilot-instructions.md requires operator-authorized route changes"
+    },
+    {
+      "lane_id": "acceptance-or-merge",
+      "result": "BLOCKED",
+      "evidence": "No acceptance record exists and planner carries no terminal authority"
+    }
+  ],
+  "unknowns": [
+    {
+      "field": "audit_status",
+      "reason": "Expected independent audit record is absent at the pinned head",
+      "result": "UNKNOWN"
+    },
+    {
+      "field": "acceptance_status",
+      "reason": "No named source-repository acceptance record was supplied",
+      "result": "UNKNOWN"
+    },
+    {
+      "field": "legacy_candidate",
+      "reason": "Commit 4ce6b644afa72231c24b3cdac58f251e1ca03321 is absent from the GitHub commit endpoint",
+      "result": "BLOCKED"
+    }
+  ],
+  "dirty_state": {
+    "state": "CLEAN",
+    "paths": []
+  },
+  "forbidden_action_confirmation": {
+    "external_workflow_written": false,
+    "external_runner_executed": false,
+    "github_mutated": false,
+    "runtime_written": false
+  }
+}

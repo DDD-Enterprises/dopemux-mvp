@@ -1,0 +1,66 @@
+{
+  "schema_version": "pcp.extension_manifest.v0",
+  "status": "PROPOSED",
+  "extension_id": "adops-project",
+  "extension_kind": "PROJECT",
+  "compatible_pcp_core_versions": [
+    "pcp.authority_map.v0",
+    "pcp.extension_manifest.v0",
+    "pcp.project_evidence_export.v0",
+    "pcp.repository_planner_source.v1"
+  ],
+  "extension_identity": {
+    "project_id_patterns": [
+      "DDD-Enterprises/adOps"
+    ],
+    "repo_markers": [
+      "PROJECT_INSTRUCTIONS.md"
+    ],
+    "discovery_hints": [
+      "task-packets/ACTIVE.md",
+      "reports/project-control-plane/fixtures/adops_fixture/SOURCES.json"
+    ]
+  },
+  "capabilities": {
+    "authority_map_contributions": [
+      "schemas/adops_extension/authority_map.adops.json"
+    ],
+    "red_lane_contributions": [
+      "schemas/adops_extension/red_lanes.adops.json"
+    ],
+    "evidence_export_sections": [
+      "adops_authority",
+      "adops_packet",
+      "adops_proof",
+      "adops_audit",
+      "adops_acceptance",
+      "adops_remote_candidate"
+    ],
+    "proof_status_mappings": [
+      "proof_manifest.state",
+      "proof_manifest.freshness"
+    ],
+    "runtime_mappings": [],
+    "adapter_mappings": [
+      "dopemux.repository_planner.adapters.adops:AdOpsExtensionAdapter"
+    ]
+  },
+  "schemas": {
+    "owned_schema_ids": [],
+    "core_schema_extensions": [],
+    "forbidden_core_overrides": [
+      "project_evidence_export.schema.json",
+      "authority_map.schema.json",
+      "extension_manifest.schema.json",
+      "project_red_lanes.schema.json",
+      "project_profile.schema.json"
+    ]
+  },
+  "invariants": {
+    "cannot_override_core_fail_closed": true,
+    "cannot_weaken_proof_gates": true,
+    "cannot_weaken_audit_gates": true,
+    "cannot_promote_adapter_to_authority": true,
+    "cannot_require_extension_for_baseline_core": true
+  }
+}

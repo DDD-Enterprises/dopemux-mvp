@@ -1,0 +1,73 @@
+{
+  "schema_version": "pcp.project_profile.v0",
+  "project_id": "DDD-Enterprises/adOps",
+  "project_kind": "GENERIC",
+  "repo": {
+    "name": "adOps",
+    "root_marker": "PROJECT_INSTRUCTIONS.md",
+    "allowed_worktrees": [],
+    "forbidden_worktrees": [],
+    "runtime_imports_allowed": false
+  },
+  "authority_docs": [
+    {
+      "path": "PROJECT_INSTRUCTIONS.md",
+      "required": true,
+      "state": "PRESENT"
+    },
+    {
+      "path": ".github/copilot-instructions.md",
+      "required": true,
+      "state": "PRESENT"
+    },
+    {
+      "path": ".claude/PROJECT_INSTRUCTIONS.md",
+      "required": false,
+      "state": "PRESENT"
+    }
+  ],
+  "packet": {
+    "active_packet_paths": [
+      "task-packets/TP-ADOPS-ELITELUXE24-MODE-V1.md"
+    ],
+    "required": true,
+    "unknown_code": "BLOCKED_UNKNOWN_ACTIVE_PACKET"
+  },
+  "proof": {
+    "proof_roots": [
+      "proof/TP-ADOPS-ELITELUXE24-MODE-V1"
+    ],
+    "freshness_required": true,
+    "unknown_code": "NEEDS_EVIDENCE_REFRESH"
+  },
+  "red_lane_policy": {
+    "policy_ref": "schemas/adops_extension/red_lanes.adops.json",
+    "default_on_unknown": "BLOCK",
+    "lanes": [
+      "source-repository-write",
+      "external-runner",
+      "live-posting",
+      "paid-provider-route",
+      "acceptance-or-merge"
+    ]
+  },
+  "forbidden_paths": [
+    {
+      "glob": ".git/**",
+      "reason": "Source repository is read-only under the Dopemux extension packet",
+      "result": "BLOCKED_NO_WRITE_CONTRACT"
+    },
+    {
+      "glob": "data/*.sqlite3",
+      "reason": "Runtime database is not an evidence-export surface",
+      "result": "BLOCKED_RUNTIME_DB"
+    },
+    {
+      "glob": ".env*",
+      "reason": "Credential-bearing files are excluded from planner evidence",
+      "result": "NEEDS_SUPERVISOR"
+    }
+  ],
+  "export_mode": "ARTIFACT_ONLY",
+  "unknown_policy": "FAIL_CLOSED"
+}

@@ -1,0 +1,114 @@
+{
+  "conversation_id": "9f7544f3-341a-4654-9058-0f6112eec749",
+  "status": "SUCCESS",
+  "response": "{\"findings\":[{\"body\":\"The `AdOpsExtensionAdapter` correctly adheres to the read-only constraints, enforces fail-closed logic on missing/conflicting inputs, and hardcodes the authority level to NONE. The tests verify this behavior exhaustively.\",\"id\":\"F-01\",\"severity\":\"INFO\",\"status\":\"OPEN\",\"title\":\"AdOpsExtensionAdapter logic verified\"}],\"fixes_applied\":[],\"model_used\":\"gemini-3.1-pro-high\",\"remaining_risks\":[],\"status\":\"PASS\",\"summary\":\"Audited PR #1259 (TP-DMX-PCP-ADOPS-EXTENSION-002). Verified read-only AdOps extension logic in repository planner. Tests pass with code 0 and confirm that unproven evidence fails closed, and that planner/TO authority is kept at NONE. No secrets leaked, no scope creep.\",\"toolAction\":\"Running command\",\"toolSummary\":\"Complete audit\"}\n",
+  "duration_seconds": 40.452735,
+  "num_turns": 1,
+  "structured_output": {
+    "findings": [
+      {
+        "body": "The `AdOpsExtensionAdapter` correctly adheres to the read-only constraints, enforces fail-closed logic on missing/conflicting inputs, and hardcodes the authority level to NONE. The tests verify this behavior exhaustively.",
+        "id": "F-01",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "AdOpsExtensionAdapter logic verified"
+      }
+    ],
+    "fixes_applied": [],
+    "model_used": "gemini-3.1-pro-high",
+    "remaining_risks": [],
+    "status": "PASS",
+    "summary": "Audited PR #1259 (TP-DMX-PCP-ADOPS-EXTENSION-002). Verified read-only AdOps extension logic in repository planner. Tests pass with code 0 and confirm that unproven evidence fails closed, and that planner/TO authority is kept at NONE. No secrets leaked, no scope creep."
+  },
+  "json_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "status",
+      "summary",
+      "findings",
+      "remaining_risks",
+      "fixes_applied",
+      "model_used"
+    ],
+    "properties": {
+      "status": {
+        "type": "string",
+        "enum": [
+          "PASS",
+          "PASS_WITH_RISKS",
+          "FAIL",
+          "NEEDS_SUPERVISOR"
+        ]
+      },
+      "summary": {
+        "type": "string"
+      },
+      "findings": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "severity",
+            "title",
+            "status",
+            "body"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "severity": {
+              "type": "string",
+              "enum": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "BLOCKING",
+                "INFO"
+              ]
+            },
+            "title": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "OPEN",
+                "RESOLVED",
+                "ACCEPTED_RISK"
+              ]
+            },
+            "body": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "remaining_risks": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "fixes_applied": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "model_used": {
+        "type": "string"
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 48403,
+    "output_tokens": 2984,
+    "thinking_tokens": 2422,
+    "cache_read_tokens": 130353,
+    "total_tokens": 51387
+  }
+}

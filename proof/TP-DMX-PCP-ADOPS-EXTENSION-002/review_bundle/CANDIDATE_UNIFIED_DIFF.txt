@@ -1,0 +1,10 @@
+ .../fixtures/adops_fixture/SOURCES.json            | 129 +++++++
+ .../fixtures/adops_fixture/evidence_export.json    | 109 ++++++
+ .../fixtures/adops_fixture/project_profile.json    |  73 ++++
+ schemas/adops_extension/authority_map.adops.json   | 108 ++++++
+ .../adops_extension/extension_manifest.adops.json  |  66 ++++
+ schemas/adops_extension/red_lanes.adops.json       |  49 +++
+ src/dopemux/repository_planner/adapters/adops.py   | 404 +++++++++++++++++++++
+ task-packets/TP-DMX-PCP-ADOPS-EXTENSION-002.json   | 139 ++-----
+ tests/repository_planner/test_adops_adapter.py     | 338 +++++++++++++++++
+ 9 files changed, 1297 insertions(+), 118 deletions(-)

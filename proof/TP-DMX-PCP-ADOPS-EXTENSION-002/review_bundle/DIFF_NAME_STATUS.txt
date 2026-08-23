@@ -1,0 +1,9 @@
+A	reports/project-control-plane/fixtures/adops_fixture/SOURCES.json
+A	reports/project-control-plane/fixtures/adops_fixture/evidence_export.json
+A	reports/project-control-plane/fixtures/adops_fixture/project_profile.json
+A	schemas/adops_extension/authority_map.adops.json
+A	schemas/adops_extension/extension_manifest.adops.json
+A	schemas/adops_extension/red_lanes.adops.json
+A	src/dopemux/repository_planner/adapters/adops.py
+M	task-packets/TP-DMX-PCP-ADOPS-EXTENSION-002.json
+A	tests/repository_planner/test_adops_adapter.py
