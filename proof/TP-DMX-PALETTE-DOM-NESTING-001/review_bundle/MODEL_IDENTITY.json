@@ -1,0 +1,14 @@
+{
+  "requested_model": "sonnet",
+  "configured_flag": "--model sonnet",
+  "auditor_tool": "claude-code-cli",
+  "schema_auditor_model": "sonnet",
+  "provider_attested_usage_key": "claude-sonnet-5",
+  "canonical_model": "claude-sonnet-5",
+  "provider": "firstParty",
+  "session_id": "0aa2667a-d581-4861-aa47-f02be14a976e",
+  "exit_code": 0,
+  "is_error": false,
+  "implementer": "Grok 4.6",
+  "independent_of_implementer": true
+}
