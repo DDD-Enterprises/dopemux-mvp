@@ -1,0 +1,47 @@
+{
+  "status": "PASS_WITH_RISKS",
+  "summary": "The generator at content head c7375b9c genuinely resolves the eight named threads: unused imports are gone (hashlib/json/re/shutil/subprocess/datetime/timezone/Path are all referenced), the date-folder is UTC-computed and regenerated idempotently via rmtree, Linux/Windows/macOS home-path redaction covers /Users, /home, /private/tmp, and C:\\Users\\, non-text files are excluded by an explicit extension allowlist (fail-closed default for unknown types), Task-Orchestrator and readiness fields are hard-coded UNKNOWN/NOT_COMPUTED with an honest interpretation note instead of fabricated status, proof_roots is derived from rel(p) consistently with the rest of the module, and secret_scan is explicitly labeled 'PATTERN_REDACTION_ONLY ... PASS is not claimed'. No BLOCKING or HIGH correctness bugs found on independent re-read. Residual items are cosmetic/low-severity and one coverage gap.",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "MEDIUM",
+      "title": "No automated tests accompany a redaction/bundling script",
+      "status": "OPEN",
+      "body": "tools/dcp/build_comprehensive_bundle.py is 372 lines including secret-pattern redaction, JSON key-based redaction, path classification, and manifest generation, but the diff contains no test file. This is exactly the kind of logic (regex-based secret redaction, inclusion/exclusion boundaries) where a silent regression would leak a local path or credential-shaped value into a bundle intended for external upload. Recommend at least unit tests for redact()/redact_json_value()/safe_copy() extension gating."
+    },
+    {
+      "id": "F2",
+      "severity": "LOW",
+      "title": "Schema self-check conflates missing jsonschema dependency with real schema failure",
+      "status": "OPEN",
+      "body": "In build(), `import jsonschema` runs inside the per-file loop and any exception (including ImportError if jsonschema isn't installed in the execution environment) is caught by the broad `except Exception` and recorded as `{\"status\": \"FAIL\", \"error\": str(exc)}` in VALIDATION_REPORT.json's schema_self_checks. A reader of the audit bundle could misread an environment/dependency gap as an actual invalid schema in the repo."
+    },
+    {
+      "id": "F3",
+      "severity": "LOW",
+      "title": "Local-path redaction misses macOS's actual default TMPDIR pattern",
+      "status": "ACCEPTED_RISK",
+      "body": "REDACTIONS covers /Users/, /home/, /private/tmp/, and Windows C:\\Users\\, but not macOS's real per-user temp root /var/folders/... (what $TMPDIR actually resolves to on macOS, as opposed to /private/tmp/). Given the bundle already labels secret_scan as PATTERN_REDACTION_ONLY and the candidate file roots are curated docs/contracts/schemas/proof directories rather than arbitrary temp output, this is a narrow, already-disclosed gap rather than a live leak vector."
+    },
+    {
+      "id": "F4",
+      "severity": "LOW",
+      "title": "safe_copy() creates destination directories even for excluded non-text files",
+      "status": "OPEN",
+      "body": "safe_copy() calls dest.parent.mkdir(parents=True, exist_ok=True) before checking whether the file's extension is copyable. For files that fall into the final `else: return False, \"excluded non-text artifact\"` branch, this leaves empty directories in the audit bundle tree. Cosmetic only \u2014 MANIFEST.json still correctly marks these EXCLUDED."
+    },
+    {
+      "id": "F5",
+      "severity": "INFO",
+      "title": "PACKET_PROOF_INDEX.packet_roots is file-level, not deduplicated packet identifiers",
+      "status": "OPEN",
+      "body": "packet_roots is built from full manifest source paths under task-packets/ (e.g. both the .md and .json for the same packet appear as two separate entries), so despite the key name it is not a deduplicated list of packet roots. Naming nit only; proof_roots in the same object is correctly deduplicated via rel(p).split(\"/\")[1]."
+    }
+  ],
+  "remaining_risks": [
+    "No test coverage exists for the redaction/inclusion logic in this diff.",
+    "Schema self-check false-FAILs are possible if jsonschema is absent from the execution environment.",
+    "Pattern-based secret/path redaction is explicitly non-exhaustive (macOS /var/folders/ temp paths uncovered); acceptable given the narrow, curated source-root scope and the bundle's own disclaimer."
+  ],
+  "fixes_applied": []
+}
