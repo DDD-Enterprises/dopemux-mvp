@@ -1,0 +1,55 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1257,
+  "head_sha": "6326666d13a9724d418be2d0a273461879eb6a6d",
+  "generated_at": "2026-08-23T13:43:19Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --mode plan --effort high --print-timeout 20m --sandbox; conversation_id=10dd399a-ae43-4e04-8fdd-85374c2480be; display=Gemini 3.1 Pro (High); no fallback",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-GOV-SKIPPED-QUARANTINE-1192-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F01",
+        "severity": "INFO",
+        "title": "Correctly identifies SKIPPED quarantine proof",
+        "status": "RESOLVED",
+        "body": "The script uses a robust JSON parser to check for 'SKIPPED' status and non-empty 'skip_reason', correctly differentiating between audited proofs and quarantine proofs."
+      },
+      {
+        "id": "F02",
+        "severity": "INFO",
+        "title": "Enforces exclusive SKIPPED mode",
+        "status": "RESOLVED",
+        "body": "Properly detects and fails if a package contains both quarantine SKIPPED proofs and standard audited PASS proofs in the same PR delta."
+      },
+      {
+        "id": "F03",
+        "severity": "INFO",
+        "title": "Properly adjusts required heads for quarantine mode",
+        "status": "RESOLVED",
+        "body": "Exempts quarantine mode from requiring an 'audited_head', while still ensuring that 'content_head' and 'proof_head' are bound."
+      },
+      {
+        "id": "F04",
+        "severity": "INFO",
+        "title": "Forbids PROOF.json.sig in quarantine mode",
+        "status": "RESOLVED",
+        "body": "Correctly triggers an error if an audit-pass signature is found alongside a SKIPPED proof package."
+      }
+    ],
+    "fixes_applied": [
+      "Added _is_quarantine_skipped_proof helper to identify quarantine packages based on JSON shape.",
+      "Updated validate_proof_only_closure to branch logic based on quarantine_mode.",
+      "Modified validation to relax audited_head requirement and enforce signature absence in quarantine mode.",
+      "Added comprehensive unit tests covering missing signatures, missing heads, and forbidden signatures in quarantine mode."
+    ],
+    "remaining_risks": [
+      "Minor risk of PROOF.json.sig being incorrectly handled if it's introduced as a directory rather than a file, though highly unlikely."
+    ],
+    "skip_reason": null
+  }
+}
