@@ -1,0 +1,30 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1249,
+  "head_sha": "a302796482d45167fb0073fd42ae3794e75c44a7",
+  "generated_at": "2026-08-23T12:09:30Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude -p --model sonnet --output-format json --allowedTools Read,Grep (stdin; session_id=6ec3eb3c-fd63-4179-8f8f-0b39b11f0b3e)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PCP-PLANNER-FOUNDATION-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "MEDIUM",
+        "title": "UI reimplements planner semantics in TS without dependency/cycle logic, diverging from Python planner.py",
+        "status": "OPEN",
+        "body": "RepositoryPlannerPage.tsx's buildFoundationLanes() independently derives conflicts and per-lane readiness state purely from a single source's own freshness/gate_status/audit_status/lifecycle_state/conflicts. It never consults lane.dependencies, so it has no equivalent of planner.py's WAIT_DEPENDENCY, MISSING_DEPENDENCY, or DEPENDENCY_CYCLE handling (Tarjan SCC + Kahn topological order in planner.py plan_merge_order). For the current 3 foundation fixtures this happens to converge \u2014 adops.json's legacy-corpus-rating-002 lane declares a real cross-project dependency on dopemux-mvp/pcp-planner-foundation, but is separately classified DEFER_BLOCKING_CONFLICT by both algorithms via its own acceptance_state conflict, masking the gap. If a future fixture has a lane whose only readiness problem is an unready/cyclic dependency (no local conflict/fail/stale of its own), the Python planner would correctly emit WAIT_DEPENDENCY while the UI would show 'Ready for Control Tower review'. Not exploitable for authority escalation (UI has no merge/approve controls and is hardcoded authority:NONE), but it is a truth-divergence risk between the canonical engine and its own read surface that the packet doesn't call out."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "UI and Python planner are two independently maintained implementations of readiness/conflict semantics with no shared golden-output test tying them together; drift is only caught if someone notices visually.",
+      "No CI/schema link currently enforces that ui-dashboard fixture imports and src/dopemux/repository_planner schemas stay byte-identical beyond the manual triplicate JSON files under tests/fixtures \u2014 acceptable for foundation scope but should be revisited once a real read API replaces static fixture imports."
+    ],
+    "skip_reason": null
+  }
+}
