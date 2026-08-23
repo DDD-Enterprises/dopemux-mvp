@@ -28,14 +28,27 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
 #                             the scanner flags setuptools._vendor.wheel 0.45.1,
 #                             so bumping standalone wheel alone does not clear it)
 #   mcp>=1.23.0              (high CVE)
+# prisma is pinned to 0.11.0 to match litellm[proxy]'s own
+# `prisma==0.11.0` requirement (extra-proxy) — an unpinned install grabs
+# latest prisma-client-python, whose generated `prisma/types.py` no longer
+# exports `DatasourceOverride`, breaking `prisma.client`'s own import and
+# crash-looping the container on every start.
+# fastapi is pinned to 0.140.0 because litellm's proxy server imports the
+# private `fastapi.dependencies.utils.get_flat_dependant` helper directly;
+# fastapi removed it in 0.141.0 (confirmed absent in 0.141.0 and 0.141.1),
+# which crash-loops the container the same way once prisma resolves.
+# 0.140.0 is the newest version confirmed to still export it.
+# litellm[proxy]'s own range (fastapi<1.0,>=0.136.3) is wide enough to let
+# pip resolve this exact version instead of drifting past the removal.
 RUN pip install --no-cache-dir \
     "litellm[proxy]>=1.83.7" \
+    "fastapi==0.140.0" \
     "starlette>=0.49.1" \
     "python-multipart>=0.0.27" \
     "wheel>=0.46.2" \
     "setuptools>=80.10.2" \
     "mcp>=1.23.0" \
-    prisma \
+    "prisma==0.11.0" \
     pyyaml
 
 # cryptography>=48.0.1 fixes GHSA-537c-gmf6-5ccf (OOB read in statically-linked
