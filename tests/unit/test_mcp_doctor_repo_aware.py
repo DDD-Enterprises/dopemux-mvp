@@ -266,6 +266,33 @@ services:
     assert report.compose_lifecycle_diagnostics.get("compose_present") is False
 
 
+def test_doctor_rejects_explicit_foreign_compose_path(tmp_path: Path):
+    repo = _write_fixture_repo(tmp_path)
+    foreign_compose = tmp_path / "dopemux-mvp" / "compose.yml"
+    foreign_compose.parent.mkdir()
+    foreign_compose.write_text(
+        """
+services:
+  conport:
+    container_name: ${CONPORT_CONTAINER_NAME:-mcp-conport}
+"""
+    )
+    report = run_mcp_doctor(
+        repo,
+        catalog=_catalog(),
+        compose_path=foreign_compose,
+        skip_docker=True,
+        skip_port_probe=True,
+        process_env={},
+    )
+    assert report.compose_lifecycle_diagnostics.get("compose_present") is False
+    assert all(
+        f["severity"] != "FAIL"
+        for f in report.findings
+        if f["code"] == "COMPOSE_CONTAINER_NAME_DEFAULT_COLLISION_RISK"
+    )
+
+
 def test_doctor_formula_reserved_does_not_fail_remapped_dnh(tmp_path: Path):
     """dNh_CRM-shaped remapped envrc must not doctor-FAIL on hash-formula reserved ports."""
     repo = tmp_path / "dNh_CRM"

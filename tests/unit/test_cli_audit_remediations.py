@@ -55,6 +55,31 @@ def test_mcp_up_uses_argv_and_validates_services(monkeypatch):
     assert str(compose_kwargs["env"].get("DOPECON_BRIDGE_TOKEN") or "").strip()
 
 
+def test_mcp_up_does_not_compose_up_when_only_task_orchestrator_filtered(
+    monkeypatch,
+):
+    runner = CliRunner()
+    recorded = []
+
+    monkeypatch.delenv("DOPECON_BRIDGE_TOKEN", raising=False)
+    monkeypatch.setattr(
+        mcp_commands, "_compose_services", lambda *_: {"task-orchestrator"}
+    )
+    monkeypatch.setattr(mcp_commands, "DEFAULT_MCP_SERVICES", {"task-orchestrator"})
+
+    def fake_run(cmd, **kwargs):
+        recorded.append((list(cmd), kwargs))
+        return subprocess.CompletedProcess(cmd, 0)
+
+    monkeypatch.setattr(mcp_commands.subprocess, "run", fake_run)
+
+    result = runner.invoke(mcp_commands.mcp, ["up"])
+
+    assert result.exit_code == 0, result.output
+    assert not any(cmd[:2] == ["docker", "compose"] for cmd, _ in recorded)
+    assert "No compose services left to start" in result.output
+
+
 def test_mcp_rejects_invalid_service_before_subprocess(monkeypatch):
     runner = CliRunner()
 

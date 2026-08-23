@@ -136,10 +136,13 @@ def test_formula_reserved_is_warn_when_configured_safe():
     )
     reserved = [f for f in report.findings if f["code"] == "PORT_RESERVED_COLLISION"]
     formula_hits = [f for f in reserved if "source=formula" in f["evidence"]]
-    assert any(
+    formula_hits_reserved = any(
         formula.get(var) in (3009, 3010)
         for var in ("CONPORT_MCP_PORT", "CONPORT_HTTP_PORT")
-    ), f"dNh_CRM hash no longer hits reserved singletons: {formula}"
+    )
+    assert formula_hits_reserved, (
+        f"dNh_CRM hash no longer hits reserved singletons: {formula}"
+    )
     assert formula_hits, "expected formula reserved collision for dNh_CRM hash"
     assert all(f["severity"] == "WARN" for f in formula_hits)
     assert all("neutralized=configured" in f["evidence"] for f in formula_hits)

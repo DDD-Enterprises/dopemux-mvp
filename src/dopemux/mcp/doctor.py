@@ -693,22 +693,22 @@ def run_mcp_doctor(
                     pass
 
     # --- Compose lifecycle ---
-    # Prefer explicit compose_path; else the target repo's compose.yml.
+    # Prefer explicit compose_path only when it belongs to the target repo.
     # Never inspect a foreign cwd compose.yml (e.g. doctoring dNh_CRM from
     # dopemux-mvp) — that escalates product-compose convention hazards to FAIL.
-    effective_compose = compose_path
+    def _owned_compose(candidate: Path | None) -> Path | None:
+        if candidate is None:
+            return None
+        try:
+            if candidate.is_file() and candidate.resolve().parent == repo_path.resolve():
+                return candidate
+        except OSError:
+            return None
+        return None
+
+    effective_compose = _owned_compose(compose_path)
     if effective_compose is None:
-        candidate = repo_path / "compose.yml"
-        if candidate.is_file():
-            effective_compose = candidate
-        else:
-            cwd_compose = Path.cwd() / "compose.yml"
-            if cwd_compose.is_file():
-                try:
-                    if cwd_compose.resolve().parent == repo_path.resolve():
-                        effective_compose = cwd_compose
-                except OSError:
-                    pass
+        effective_compose = _owned_compose(repo_path / "compose.yml")
 
     compose_diag = compose_lifecycle_diagnostics(
         effective_compose,

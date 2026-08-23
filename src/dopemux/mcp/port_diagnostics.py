@@ -197,7 +197,6 @@ def diagnose_ports(
     )
 
     # --- Reserved singleton collisions (formula + configured) ---
-    explicit_configured = configured_ports is not None
     for source_label, port_map in (("formula", formula), ("configured", configured)):
         for var, port in port_map.items():
             if port in reserved:
@@ -223,7 +222,7 @@ def diagnose_ports(
                 neutralized = False
                 if (
                     source_label == "formula"
-                    and explicit_configured
+                    and configured_ports is not None
                     and var in configured_ports
                     and int(configured_ports[var]) not in reserved
                 ):

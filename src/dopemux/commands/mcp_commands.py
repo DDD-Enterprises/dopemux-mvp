@@ -271,6 +271,12 @@ def mcp_up_cmd(
                 "is unset. Use `dopemux mcp start --repo .` for the "
                 "wrapper-singleton on :7890.[/warning]"
             )
+        if not svc_list:
+            console.logger.info(
+                "[warning]No compose services left to start after skipping "
+                "task-orchestrator. Not invoking `docker compose up`.[/warning]"
+            )
+            return
         from ..mcp.docker_runtime import env_with_compose_interpolation
 
         ensure_docker_networks(["dopemux-network"], runner=subprocess.run)
@@ -1618,12 +1624,11 @@ def mcp_doctor_cmd(
 
     from dopemux.mcp.doctor import format_human_summary, run_mcp_doctor
 
-    # Prefer compose hazards from dopemux product compose when target has none.
+    # Only the target repo's compose.yml. Never pass a foreign cwd compose.yml
+    # as compose_path — that bypasses run_mcp_doctor's repo-owned compose guard.
     compose_candidate = Path(repo) / "compose.yml"
     if not compose_candidate.is_file():
-        # Read-only: may use current cwd compose for hazard text only
-        cwd_compose = Path.cwd() / "compose.yml"
-        compose_candidate = cwd_compose if cwd_compose.is_file() else None
+        compose_candidate = None
 
     report = run_mcp_doctor(
         repo,
