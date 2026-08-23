@@ -1,46 +1,30 @@
 {
   "findings": [
     {
-      "body": "previousTaskIdRef tracks the previous task ID and prevents focus changes unless the ID explicitly changes, safely handling React 18 StrictMode double-invokes.",
-      "id": "F1",
+      "body": "Assignment `previousTaskIdRef.current = freshTasks[0].id` before `setCurrentTaskId` successfully preempts `useEffect` from stealing focus back to `primaryActionRef`.",
+      "id": "FINDING-1",
       "severity": "INFO",
       "status": "RESOLVED",
-      "title": "Focus preservation"
+      "title": "Header Focus Fix Verified"
     },
     {
-      "body": "Focus is reliably moved to the ritual Start/Pause button using primaryActionRef when the active task changes.",
-      "id": "F2",
+      "body": "Previous-id compare `if (previousTaskIdRef.current === currentTaskId)` remains intact. React 18 StrictMode dev double-invokes will not steal focus on mount.",
+      "id": "FINDING-2",
       "severity": "INFO",
       "status": "RESOLVED",
-      "title": "Focus transitions"
+      "title": "StrictMode Compatibility Verified"
     },
     {
-      "body": "The effect safely skips focus calls when currentTaskId is null, preventing fights with completeTask's headerRef.current?.focus().",
-      "id": "F3",
+      "body": "No secrets introduced. Diff tightly scoped to focus logic. Task transitions unaffected.",
+      "id": "FINDING-3",
       "severity": "INFO",
       "status": "RESOLVED",
-      "title": "HeaderRef conflict avoidance"
-    },
-    {
-      "body": "The TaskSequencer.focusPreservation.test.tsx correctly uses <React.StrictMode> to prove focus isn't stolen on initial mount.",
-      "id": "F4",
-      "severity": "INFO",
-      "status": "RESOLVED",
-      "title": "Test coverage"
-    },
-    {
-      "body": "Changes are tightly scoped to the focus preservation requirements. No secrets or scope creep detected.",
-      "id": "F5",
-      "severity": "INFO",
-      "status": "RESOLVED",
-      "title": "Scope check"
+      "title": "Security and Scope Check"
     }
   ],
   "fixes_applied": [],
   "model_used": "Gemini 3.1 Pro (High)",
-  "remaining_risks": [
-    "The implementation depends on standard synchronous React state updates for focus. Rapid, concurrent task transitions could potentially cause a race condition, though unlikely in normal user interaction."
-  ],
+  "remaining_risks": [],
   "status": "PASS",
-  "summary": "The implementation correctly uses previousTaskIdRef to prevent focus stealing during StrictMode double-invokes. Task transitions appropriately move focus to the ritual Start/Pause button. The completeTask function handles a null currentTaskId without conflicting with headerRef. Tests validate this behavior. No scope creep or secrets were introduced."
+  "summary": "Audit complete. Focus logic fixed. `previousTaskIdRef` assignment prevents `useEffect` focus steal during reset. StrictMode safe. Scope tight. No secrets exposed."
 }

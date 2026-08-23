@@ -1,56 +1,40 @@
 {
   "packet_id": "TP-DMX-PALETTE-FOCUS-1180-001",
-  "head_sha": "9c8272f4a9609bbbf72fa66978d704f873b8cc4e",
-  "generated_at": "2026-08-23T13:29:48Z",
+  "head_sha": "1e28f49b6b1a38020af7ee9f0fab3752e5cafa51",
+  "generated_at": "2026-08-23T13:42:31Z",
   "embedded_audit": {
     "required": true,
     "status": "PASS",
     "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "agy --model gemini-3.1-pro-high --output-format json --json-schema audit-verdict.schema.json --mode plan --effort high --print-timeout 20m --sandbox --add-dir <worktree> --print=<prompt>; conversation_id=1b3874f1-700b-488e-b703-b279fabb94ec; structured model_used=\"Gemini 3.1 Pro (High)\"; CLI flag gemini-3.1-pro-high; no fallback",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --mode plan --effort high --print-timeout 20m --sandbox; conversation_id=83586cf5-59ae-4e86-b6e7-c6cb18088595; display=Gemini 3.1 Pro (High); no fallback",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-PALETTE-FOCUS-1180-001/AUDITOR_REPORT.md",
     "findings": [
       {
-        "id": "F1",
+        "id": "FINDING-1",
         "severity": "INFO",
-        "title": "Focus preservation",
+        "title": "Header Focus Fix Verified",
         "status": "RESOLVED",
-        "body": "previousTaskIdRef tracks the previous task ID and prevents focus changes unless the ID explicitly changes, safely handling React 18 StrictMode double-invokes."
+        "body": "Assignment `previousTaskIdRef.current = freshTasks[0].id` before `setCurrentTaskId` successfully preempts `useEffect` from stealing focus back to `primaryActionRef`."
       },
       {
-        "id": "F2",
+        "id": "FINDING-2",
         "severity": "INFO",
-        "title": "Focus transitions",
+        "title": "StrictMode Compatibility Verified",
         "status": "RESOLVED",
-        "body": "Focus is reliably moved to the ritual Start/Pause button using primaryActionRef when the active task changes."
+        "body": "Previous-id compare `if (previousTaskIdRef.current === currentTaskId)` remains intact. React 18 StrictMode dev double-invokes will not steal focus on mount."
       },
       {
-        "id": "F3",
+        "id": "FINDING-3",
         "severity": "INFO",
-        "title": "HeaderRef conflict avoidance",
+        "title": "Security and Scope Check",
         "status": "RESOLVED",
-        "body": "The effect safely skips focus calls when currentTaskId is null, preventing fights with completeTask's headerRef.current?.focus()."
-      },
-      {
-        "id": "F4",
-        "severity": "INFO",
-        "title": "Test coverage",
-        "status": "RESOLVED",
-        "body": "The TaskSequencer.focusPreservation.test.tsx correctly uses <React.StrictMode> to prove focus isn't stolen on initial mount."
-      },
-      {
-        "id": "F5",
-        "severity": "INFO",
-        "title": "Scope check",
-        "status": "RESOLVED",
-        "body": "Changes are tightly scoped to the focus preservation requirements. No secrets or scope creep detected."
+        "body": "No secrets introduced. Diff tightly scoped to focus logic. Task transitions unaffected."
       }
     ],
     "fixes_applied": [],
-    "remaining_risks": [
-      "The implementation depends on standard synchronous React state updates for focus. Rapid, concurrent task transitions could potentially cause a race condition, though unlikely in normal user interaction."
-    ],
+    "remaining_risks": [],
     "skip_reason": null
   }
 }

@@ -1,1 +1,1 @@
-Prior AGY raw for d604788a2b superseded; this bundle is the StrictMode-safe head.
+Supersedes earlier 1255 bundles.
