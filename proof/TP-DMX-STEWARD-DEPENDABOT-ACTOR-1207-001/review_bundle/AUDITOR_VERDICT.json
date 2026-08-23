@@ -1,0 +1,32 @@
+{
+  "findings": [
+    {
+      "body": "_normalize_bot_login correctly strips 'app/' prefixes and '[bot]' suffixes. Unknown app-prefixed actors fail closed because normalization only strips the prefix, and checking the stripped string against known_reviewers.json correctly rejects untrusted names (e.g. app/malicious normalizes to malicious, which is not in known_reviewers).",
+      "id": "normalization-logic",
+      "severity": "INFO",
+      "status": "RESOLVED",
+      "title": "Normalization logic safely canonicalizes bot logins"
+    },
+    {
+      "body": "known_reviewers.json correctly lists dependabot, dependabot[bot], and app/dependabot. Although the aliases are slightly redundant due to the new normalization logic, this is benign and ensures backwards/forwards compatibility without widening the trust boundary.",
+      "id": "known-reviewers-aliases",
+      "severity": "INFO",
+      "status": "RESOLVED",
+      "title": "Redundant but safe known_reviewers entries"
+    },
+    {
+      "body": "Tests thoroughly cover normalization of app/ prefixes, [bot] suffixes, and explicitly assert that an unknown app-prefixed login (like app/malicious-app) is rejected.",
+      "id": "test-coverage",
+      "severity": "INFO",
+      "status": "RESOLVED",
+      "title": "Test coverage is comprehensive and includes negative test cases"
+    }
+  ],
+  "fixes_applied": [],
+  "model_used": "Gemini 3.1 Pro (High)",
+  "remaining_risks": [
+    "Redundant entries in known_reviewers.json could be cleaned up in the future, but pose no current security risk."
+  ],
+  "status": "PASS",
+  "summary": "The substantive changes to pr_steward safely and correctly implement GitHub App actor normalization. Stripping the 'app/' prefix prevents hardcoding every alias variant while ensuring that unknown apps like 'app/malicious' are securely rejected. Tests cover both positive and negative cases. No secret leaks, scope creep, or unintended trust widening were detected."
+}
