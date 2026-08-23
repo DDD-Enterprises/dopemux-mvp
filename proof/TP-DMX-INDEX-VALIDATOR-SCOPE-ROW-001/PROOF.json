@@ -1,6 +1,6 @@
 {
   "packet_id": "TP-DMX-INDEX-VALIDATOR-SCOPE-ROW-001",
-  "head_sha": "488f5c27d9e18a4fe3ac5030b40ce63ac4accc4d",
+  "head_sha": "7cee18324cb34b4e3dd775e089b90a3425cf4c5a",
   "generated_at": "2026-08-23T10:53:31Z",
   "embedded_audit": {
     "required": true,
