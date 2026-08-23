@@ -1,0 +1,3 @@
+M	docs/03-reference/governance/codex-macro-packet-blueprint.md
+M	docs/03-reference/spec/dopetask/dopetask-canonical-spec.json
+A	task-packets/TP-DMX-DOPETASK-CLAUDE-1159-001.json
