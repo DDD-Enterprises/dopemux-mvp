@@ -1,0 +1,70 @@
+diff --git a/task-packets/INDEX.md b/task-packets/INDEX.md
+index 06623360bf..d74429c035 100644
+--- a/task-packets/INDEX.md
++++ b/task-packets/INDEX.md
+@@ -68,6 +68,7 @@ A packet is superseded by another packet
+ | TP-SIA-EXEC-0007 | Workflow Plane | Manual Handoff + Operator Resume Semantics | Ready | SIA Packet Execution ADR |
+ | TP-SIA-EXEC-0008 | Workflow Plane | Replay Repro Suite + Projection Hardening | Ready | SIA Packet Execution ADR |
+ | TP-DMX-PROOF-SCHEMA-LOCAL-VALIDATION-001 | Governance / CI | Local Proof Schema Validation Before Push | Active | N/A |
++| TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001 | Governance / CI | Bring proof/pr_merge embedded-audit proofs into deterministic validation scope (sweep + pre-commit) | Active | Discovered via PR #1165 |
+ | TP-DMX-AIG-001 | Adaptive Ingress Plane | Service Census + Ingress Map + First Safe Slice | Ready | ADR — Adopt a Dopemux Adaptive Ingress Plane with Local Runtime Shims |
+ | TP-DMX-REPOHYG-001 | Repo Hygiene | Branch and worktree audit with deterministic cleanup plan | Ready | N/A |
+ | TP-DMX-REPOHYG-002 | Repo Hygiene | Execute phase2 safe archive cleanup | Ready | N/A |
+diff --git a/task-packets/TP-DMX-INDEX-VALIDATOR-SCOPE-ROW-001.json b/task-packets/TP-DMX-INDEX-VALIDATOR-SCOPE-ROW-001.json
+new file mode 100644
+index 0000000000..5a84c223a1
+--- /dev/null
++++ b/task-packets/TP-DMX-INDEX-VALIDATOR-SCOPE-ROW-001.json
+@@ -0,0 +1,52 @@
++{
++  "id": "TP-DMX-INDEX-VALIDATOR-SCOPE-ROW-001",
++  "project": "dopemux-mvp",
++  "target": "Risk lane L0. Register the already-present packet TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001 in task-packets/INDEX.md with Status=Active and Related-ADR provenance Discovered via PR #1165. Does not implement validator-scope widening.",
++  "invariants": [
++    "INDEX.md receives exactly one new row for TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001.",
++    "Do not implement S01-S03 of TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001 in this packet.",
++    "Related-ADR cell must not say Landed; the packet is still Active.",
++    "No runtime, schema, workflow, or validator-scope configuration change."
++  ],
++  "depends_on": [],
++  "repo_binding": {
++    "project_id": "dopemux-mvp",
++    "repo_marker": "AGENTS.md",
++    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
++    "require_identity_match": true
++  },
++  "series": {
++    "id": "INDEX-VALIDATOR-SCOPE-ROW-001",
++    "base_branch": "main",
++    "parent_tp_id": "TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001",
++    "final_packet": true
++  },
++  "commit": {
++    "message": "docs(governance): register validator-scope parity packet in INDEX",
++    "allowlist": [
++      "task-packets/INDEX.md",
++      "task-packets/TP-DMX-INDEX-VALIDATOR-SCOPE-ROW-001.json",
++      "proof/TP-DMX-INDEX-VALIDATOR-SCOPE-ROW-001/**",
++      "proof/pr_merge/embedded-audit/pr-1253/**"
++    ],
++    "verify": [
++      "git diff --check",
++      "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
++    ]
++  },
++  "pr": {
++    "title": "docs(governance): register validator-scope parity packet in INDEX",
++    "body": "L0 successor for PR #1221. Adds the missing canonical INDEX row for TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001. Packet JSON already exists on main.",
++    "base": "main"
++  },
++  "steps": [
++    {
++      "id": "S1",
++      "task": "Add one INDEX.md row for TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001 with Status Active and Related-ADR Discovered via PR #1165.",
++      "validation": [
++        "rg -n 'TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001' task-packets/INDEX.md",
++        "rg -n 'Discovered via PR #1165' task-packets/INDEX.md"
++      ]
++    }
++  ]
++}

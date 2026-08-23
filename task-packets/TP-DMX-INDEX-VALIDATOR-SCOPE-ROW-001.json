@@ -1,0 +1,52 @@
+{
+  "id": "TP-DMX-INDEX-VALIDATOR-SCOPE-ROW-001",
+  "project": "dopemux-mvp",
+  "target": "Risk lane L0. Register the already-present packet TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001 in task-packets/INDEX.md with Status=Active and Related-ADR provenance Discovered via PR #1165. Does not implement validator-scope widening.",
+  "invariants": [
+    "INDEX.md receives exactly one new row for TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001.",
+    "Do not implement S01-S03 of TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001 in this packet.",
+    "Related-ADR cell must not say Landed; the packet is still Active.",
+    "No runtime, schema, workflow, or validator-scope configuration change."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "INDEX-VALIDATOR-SCOPE-ROW-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001",
+    "final_packet": true
+  },
+  "commit": {
+    "message": "docs(governance): register validator-scope parity packet in INDEX",
+    "allowlist": [
+      "task-packets/INDEX.md",
+      "task-packets/TP-DMX-INDEX-VALIDATOR-SCOPE-ROW-001.json",
+      "proof/TP-DMX-INDEX-VALIDATOR-SCOPE-ROW-001/**",
+      "proof/pr_merge/embedded-audit/pr-1253/**"
+    ],
+    "verify": [
+      "git diff --check",
+      "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
+    ]
+  },
+  "pr": {
+    "title": "docs(governance): register validator-scope parity packet in INDEX",
+    "body": "L0 successor for PR #1221. Adds the missing canonical INDEX row for TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001. Packet JSON already exists on main.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Add one INDEX.md row for TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001 with Status Active and Related-ADR Discovered via PR #1165.",
+      "validation": [
+        "rg -n 'TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001' task-packets/INDEX.md",
+        "rg -n 'Discovered via PR #1165' task-packets/INDEX.md"
+      ]
+    }
+  ]
+}
