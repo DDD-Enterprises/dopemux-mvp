@@ -14,7 +14,7 @@
     "skip_reason": null,
     "status": "PASS"
   },
-  "head_sha": "c88838767040aad737300994bd4a18aecfd1f1a5",
+  "head_sha": "a0ccfd3e6dce298ff8651eed6e053710d0bc9ce0",
   "packet_id": "TP-DMX-RTE-V5-PR1232-CUMULATIVE-CLOSURE-001",
   "pr_number": 1232,
   "principal": "hue@local",
