@@ -97,6 +97,21 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
   const [isSkipConfirming, setIsSkipConfirming] = useState(false);
   const skipConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const primaryActionRef = useRef<HTMLButtonElement>(null);
+  const isInitialMount = useRef(true);
+
+  // Restore keyboard focus to the new current task's Start/Pause control after
+  // a task transition. Skip the initial mount so page load does not steal focus.
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    if (currentTaskId && primaryActionRef.current) {
+      primaryActionRef.current.focus();
+    }
+  }, [currentTaskId]);
+
   // Clear skip confirmation when the current task changes so a second click
   // cannot skip a different task after arming confirm on another task.
   useEffect(() => {
@@ -652,6 +667,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Tooltip title={isTimerRunning ? 'Pause Ritual' : 'Start Ritual'} arrow>
               <Button
+                ref={primaryActionRef}
                 size="small"
                 variant="contained"
                 startIcon={isTimerRunning ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}

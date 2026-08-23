@@ -1,0 +1,70 @@
+{
+  "id": "TP-DMX-PALETTE-FOCUS-1180-001",
+  "project": "dopemux-mvp",
+  "target": "Risk lane L1. Transplant unique PR #1180 focus preservation onto current main after #1251 ListItemText landing. Restore keyboard focus to the new current task Start/Pause control after a task transition; skip initial mount. Do not change ListItemText, brand tokens, or skip-confirm reset already on main.",
+  "invariants": [
+    "Do not modify ListItemText disableTypography or brandTokens colors landed by #1251.",
+    "Do not steal focus on initial mount.",
+    "Focus restoration runs only when currentTaskId changes after mount.",
+    "No schema, workflow, MCP, or runtime service change."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "PALETTE-FOCUS-1180-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "commit": {
+    "message": "fix(ui): preserve TaskSequencer focus across task transitions",
+    "allowlist": [
+      "ui-dashboard/src/components/TaskSequencer.tsx",
+      "ui-dashboard/src/components/__tests__/TaskSequencer.focusPreservation.test.tsx",
+      ".Jules/palette.md",
+      "task-packets/TP-DMX-PALETTE-FOCUS-1180-001.json",
+      "task-packets/INDEX.md",
+      "proof/TP-DMX-PALETTE-FOCUS-1180-001/**",
+      "proof/pr_merge/embedded-audit/pr-*/**"
+    ],
+    "verify": [
+      "git diff --check",
+      "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
+    ]
+  },
+  "pr": {
+    "title": "fix(ui): preserve TaskSequencer focus across task transitions",
+    "body": "L1 successor for unique payload in open PR #1180 after #1251 landed ListItemText disableTypography. Restores keyboard focus to the new current task Start/Pause control after a list transition. Skips initial mount. Closes #1180 after merge.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Add primaryActionRef and post-mount currentTaskId effect to restore focus on the ritual Start/Pause button.",
+      "validation": [
+        "rg -n 'primaryActionRef' ui-dashboard/src/components/TaskSequencer.tsx",
+        "rg -n 'isInitialMount' ui-dashboard/src/components/TaskSequencer.tsx"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add vitest coverage that initial mount does not steal focus and a list Start click moves focus to the new current-task control.",
+      "validation": [
+        "cd ui-dashboard && npx vitest run src/components/__tests__/TaskSequencer.focusPreservation.test.tsx src/components/__tests__/TaskSequencer.listItemText.test.tsx"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Record the Palette learning and register this packet in INDEX.md.",
+      "validation": [
+        "rg -n 'Dynamic Focus Preservation on List Transitions' .Jules/palette.md",
+        "rg -n 'TP-DMX-PALETTE-FOCUS-1180-001' task-packets/INDEX.md"
+      ]
+    }
+  ]
+}
