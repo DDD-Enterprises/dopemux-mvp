@@ -1,0 +1,4 @@
+ .../governance/codex-macro-packet-blueprint.md     |  2 +-
+ .../spec/dopetask/dopetask-canonical-spec.json     |  1 +
+ task-packets/TP-DMX-DOPETASK-CLAUDE-1159-001.json  | 56 ++++++++++++++++++++++
+ 3 files changed, 58 insertions(+), 1 deletion(-)
