@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0.0",
+  "record_kind": "CURRENT_MAIN_DELTA",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001",
+  "step": "S3/S4",
+  "issue_baseline_remote_main": "57b239e76b8fbb0016ba497bc4a34ec0abee51bb",
+  "execution_remote_main": "57b239e76b8fbb0016ba497bc4a34ec0abee51bb",
+  "remote_main_advanced_since_issue": false,
+  "remote_branch_tp_DMX_SB_ADR_ACCEPTANCE_002_at_S3": "ABSENT",
+  "remote_pr_at_S3": "ABSENT",
+  "prior_ma08_main_sha": "75b4cfc581786a53445e412bfc8e25a6e0fdb978",
+  "merge_base_acceptance_branch_vs_execution_remote_main": "75b4cfc581786a53445e412bfc8e25a6e0fdb978",
+  "merge_base_matches_prior_ma08_main_sha": true,
+  "delta_prior_ma08_main_sha_to_execution_remote_main": {
+    "file_count": 6,
+    "files": [
+      "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001-REVERT-1235/AGY_AUDIT_RAW.json",
+      "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001-REVERT-1235/AUDITOR_REPORT.md",
+      "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001-REVERT-1235/AUDIT_PROMPT.md",
+      "proof/pr_merge/embedded-audit/pr-1235/PROOF.json",
+      "proof/pr_merge/embedded-audit/pr-1235/PROOF.json.sig",
+      "proof/pr_merge/embedded-audit/pr-1235/SIGNING_DISCLOSURE.md"
+    ],
+    "classification": "unrelated CI-trust merge-gate incident revert (PR #1235) proof/audit records",
+    "second_brain_adr_authority_paths_touched": 0
+  },
+  "acceptance_branch_own_changed_files_vs_prior_ma08_main_sha": {
+    "file_count": 58,
+    "note": "docs/90-adr/**, ADR_ACCEPTANCE_HEAD.json, proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-{001,002,PERSISTENCE-001}/**, R2_AUDITOR_IDENTITY_REASONING_CORRECTION.json, task-packets/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-*"
+  },
+  "path_overlap_check": {
+    "method": "comm -12 <(sort acceptance_branch_files) <(sort main_delta_files)",
+    "result": "empty intersection",
+    "same_path_overlap": false
+  },
+  "verdict": "NO_NEW_MATERIAL_DRIFT",
+  "detail_ref": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/PUBLICATION_DRIFT_RECHECK.md"
+}

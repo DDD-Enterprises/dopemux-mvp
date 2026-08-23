@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0.0",
+  "record_kind": "AUDIT_CUSTODY",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001",
+  "why_an_audit_was_required": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT/SUPERSESSION_LINEAGE.md is merged operator instruction. Its replacement chain says at step 5 that a fresh independent audit runs against the exact new acceptance content head, and at step 6 that only the audited rebuilt chain may become authoritative. The Phase B audit covered acceptance-readiness evidence; the ten ADR files did not exist at that head.",
+  "producer_is_not_auditor": true,
+  "aborted_round": {
+    "why": "A first round was started and killed after about 30 seconds. Its prompt instructed the auditor to diff the disposition worksheet against head f7326b18397a4381df88ec4dc933eeb3f0011288, where the worksheet does not exist -- it was first committed at fa48fcd201, because the operator's own sequence put the worksheet after the Phase B audit.",
+    "output_produced": "106 bytes, no verdict",
+    "disposition": "Killed rather than allowed to produce findings from a false premise. A prompt naming a head where the file does not exist is the stale-head defect this series has already paid a round for. Recorded rather than quietly restarted.",
+    "prompt_corrected_to": "fa48fcd201058599fb69ef86a4e3397e21b739a7, plus an explicit statement that the worksheet was never covered by the Phase B audit and must be treated as unaudited claims to check."
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "audited_content_head": "5f9f38acd465ea9a30df0a6251b6e4960704f5cc",
+      "prompt_path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/AUDIT_PROMPT.md",
+      "prompt_sha256": "3d14b007f4fa3d7d0ead30b9dc8adff306da236cd290fa9fedcde8c9f65116d9",
+      "prompt_authored_after_freeze": true,
+      "invocation": "grok --cwd /private/tmp/sb-persist-audit-r1 -m grok-4.5 --always-approve --max-turns 120 --output-format plain -p \"$(cat proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/AUDIT_PROMPT.md)\"",
+      "model_pinned": "grok-4.5",
+      "exit_code": 0,
+      "verdict": "PASS_ADR_ACCEPTANCE_PERSISTENCE_FAITHFUL_AND_ADDITIVE (clearance not granted)",
+      "blockers": 0,
+      "must_fix": 1,
+      "must_fix_summary": "MF-1: the staleness declaration named three stale fo-01 fields and presented that list as complete. It missed other_adr_acceptance_conditions and the 'ADR acceptance' element of stale_record_reconciliation.still_forbidden, both validator-pinned.",
+      "disposition": "ACCEPTED WITHOUT QUALIFICATION, and repaired structurally rather than by adding the two named fields.",
+      "report_path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/AUDITOR_REPORT.md",
+      "report_raw_sha256": "3401265cd301f09f0922a1da45af44624e88bdb9c7cd2190dee8d7c5aa37e799",
+      "report_committed_sha256": "3421dda6d48aebe3ce73be52bebca371a24b1f340c37f1d7166dd32e369e6674",
+      "report_transformation": "TRAILING_WHITESPACE_NORMALIZATION_ONLY",
+      "controlling": false
+    },
+    {
+      "round": 2,
+      "audited_content_head": "0defe1cab46a9e6d02e88d3aa94a9edf195b4b84",
+      "prompt_path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/AUDIT_PROMPT_REPAIR.md",
+      "prompt_sha256": "b0b7cfc5e32b969dd3bd2903f7e0624f6db845fdd74c8af2e97cab187cf61f24",
+      "prompt_authored_after_freeze": true,
+      "prompt_note": "Carries the round-1 prompt verbatim plus a repair preamble that names the defect, states that the producer did NOT simply add the two missed fields, and explicitly invites the auditor to find an eighth stale leaf or to argue one of the seven is not stale.",
+      "invocation": "grok --cwd /private/tmp/sb-persist-audit-r2 -m grok-4.5 --always-approve --max-turns 120 --output-format plain -p \"$(cat proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/AUDIT_PROMPT_REPAIR.md)\"",
+      "model_pinned": "grok-4.5",
+      "exit_code": 0,
+      "verdict": "PASS_ADR_ACCEPTANCE_PERSISTENCE_FAITHFUL_AND_ADDITIVE",
+      "blockers": 0,
+      "must_fix": 0,
+      "result_note": "Independently re-derived the staleness set and matched the declared seven. No eighth found. Confirmed the repair did not widen scope and that fo-01-repair-status.json is still unmodified against MA08_MAIN_SHA.",
+      "report_path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/AUDITOR_REPAIR_REPORT.md",
+      "report_raw_sha256": "5792509e965a53f69c4093ba8ab350d349c2254436ebc1553786739a09417a96",
+      "report_committed_sha256": "4b52e087874dccb02cb2c6d9a248576a0f180d4106a4a879b001ec6f6e11d1a5",
+      "report_transformation": "TRAILING_WHITESPACE_NORMALIZATION_ONLY",
+      "controlling": true
+    }
+  ],
+  "auditor_model_identity": {
+    "established": "grok-4.5",
+    "established_from": "events.jsonl turn_started.model_id and summary.json current_model_id, both rounds",
+    "note": "signals.json primaryModelId is NOT cited as corroboration. See proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/R2_AUDITOR_IDENTITY_REASONING_CORRECTION.json for why that field tracks the runner default rather than the served model.",
+    "provider_attestation": "UNKNOWN"
+  },
+  "what_the_producer_found_that_the_auditor_did_not": {
+    "fields": [
+      "/gate_field_semantics/gates.adr_acceptance",
+      "/gate_field_semantics/adr_acceptance_authorized"
+    ],
+    "how": "The derived declaration's rule 2 -- an acceptance-touching leaf may not be covered by a category default -- forced individual reasoning on two prose glosses. They carry no machine-checkable assertion, so neither the validator nor the auditor flagged them, but in words they assert that the gate is shut and that authorization is still false.",
+    "recorded_because": "A repair that finds more than the finding did should say so plainly, so the count in the record (seven) is not mistaken for the auditor's number (five)."
+  },
+  "residual_risks": [
+    "Auditor identity rests on the runner's own session store, not provider-side cryptographic attestation.",
+    "Round 2 read round 1's report as input; it was instructed to recheck rather than inherit, but it was not a blind re-audit. Both rounds used the same model and runner.",
+    "The seven declared stale fo-01 fields remain stale on the branch. That is the deliberate outcome of additive persistence, not an oversight, and reconciling them is a separate unauthorized packet."
+  ]
+}

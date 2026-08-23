@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "record_kind": "VALIDATION",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001",
+  "step": "S7",
+  "content_head": "f6680c0290ab32b8246bed4b065961c85a80c416",
+  "checks": [
+    {"check": "git diff --check (whitespace, d38ec2f871..HEAD)", "status": "PASS", "detail": "exit 0, no whitespace errors"},
+    {"check": "second_brain_adr_contract_validator", "status": "PASS", "detail": "PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE, checks_total=94, checks_failed=0, frozen_inventory_sha256=b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439 (unchanged pin)"},
+    {"check": "pytest tests/governance/test_second_brain_adr_contracts.py", "status": "PASS", "detail": "63/63, exit 0"},
+    {"check": "pre-commit (changed slice, 7 files: publication proof records + merge commit's imported files)", "status": "PASS", "detail": "Evidence-economy change-contract preflight: Passed; markdown location/hygiene: Passed; root hygiene: Passed; all doc/frontmatter/skill hooks: no files to check (proof/JSON/YAML only)"}
+  ],
+  "preserved_not_run_evidence": {
+    "denial_fixtures": "NOT_IMPLEMENTED",
+    "runtime_conformance": "NOT_RUN",
+    "retrieval_benchmarks": "NOT_RUN",
+    "purge_completeness": "NOT_RUN",
+    "multi_project_isolation": "NOT_RUN",
+    "split_brain_proof": "NOT_RUN",
+    "encryption_implementation": "ABSENT",
+    "note": "Unchanged by this publication packet. No NOT_RUN was converted to PASS. Verified by byte-identity of the accepted ADR records themselves (see POST_MAIN_SYNC_ACCEPTANCE_INTEGRITY.json)."
+  },
+  "result": "PASS"
+}

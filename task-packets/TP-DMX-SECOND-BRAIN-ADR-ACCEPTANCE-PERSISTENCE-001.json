@@ -1,0 +1,198 @@
+{
+  "id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001",
+  "project": "dopemux-mvp",
+  "target": "Persist the human operator's 2026-08-14 ten-ADR ACCEPT dispositions into repository authority as ten new accepted ADR records under docs/90-adr/, an acceptance head, an operator decision ledger, an acceptance binding and an acceptance receipt. Purely additive: it touches nothing the merged Second Brain contract validator reads, so that validator stays at 94 checks / 0 failed. It starts no implementation, authorizes no runtime, and creates no enablement claim.",
+  "invariants": [
+    "PROGRAM=SECOND_BRAIN. PHASE=ADR_ACCEPTANCE_PERSISTENCE.",
+    "RISK_LANE=L2. Authority persistence only; no runtime, no implementation.",
+    "HUMAN_GATE=PASSED. ADR-SB-001..010 = ACCEPTED_BY_OPERATOR, ten explicit per-ADR rows supplied 2026-08-14, not a bulk token and not inherited.",
+    "ARCHITECTURE_ACCEPTANCE=AUTHORIZED_FOR_PERSISTENCE. IMPLEMENTATION_EXECUTION=NOT_AUTHORIZED. RUNTIME_ENABLEMENT=NOT_AUTHORIZED. RUNTIME_MUTATION=FORBIDDEN. SLICE_0=NOT_AUTHORIZED.",
+    "MA08_MAIN_SHA=75b4cfc581786a53445e412bfc8e25a6e0fdb978, re-verified unmoved immediately before persisting. The Phase B MA-08 result NO_NEW_MATERIAL_DRIFT therefore still binds.",
+    "PERSISTENCE IS ADDITIVE. The following are READ-ONLY and any write to them fails the packet: the candidate document (validator A35, and it is sha-pinned authority), fo-01-repair-status.json (B02/B03/B05/B06/B07), FO01_RESOLUTION_RECEIPT.json (B05/B07, and another packet's historical audit record), schemas/second_brain/contracts/** (A34/A36/A37), scripts/governance/validate_second_brain_adr_contracts.py, and docs/03-reference/architecture/second-brain/authority/**.",
+    "The validator must report PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE with 94 checks and 0 failures BOTH before and after persistence. A drop is a packet failure, not an expected consequence of acceptance.",
+    "The ten accepted records are GENERATED from the amended candidate bytes at CANDIDATE_SHA256 by a committed generator. Nothing is salvaged from the superseded attempt at 19fa74faa9, whose records carry the pre-amendment AC#2.",
+    "The generator fails closed: it refuses to run unless the candidate hash matches, the amended AC#2 appears exactly ten times, the pre-amendment AC#2 appears nowhere, and the candidate is still CANDIDATE.",
+    "Every decision section in every accepted record is a byte-slice of the candidate. No section is paraphrased.",
+    "Each accepted record states on its face that acceptance confers no implementation, runtime, production or enablement authority, preserving acceptance condition #3 into the accepted form.",
+    "The three fo-01-repair-status.json fields that this persistence makes stale are DECLARED BY NAME in ADR_ACCEPTANCE_BINDING.json. Silently leaving them, or silently editing them, are both packet failures.",
+    "SB-DEC-001..032 are not reopened; SB-DEC-026 remains A_LEAVE_UNLINKED; the ratification binding and the 32-decision operator ledger are unmodified.",
+    "MERGE=NOT_AUTHORIZED. PUSH=NOT_AUTHORIZED. PR=NOT_AUTHORIZED. FORCE_PUSH=FORBIDDEN. REBASE=FORBIDDEN.",
+    "Per the merged supersession lineage, only an independently audited rebuilt acceptance chain may become authoritative. This packet is therefore not complete until a fresh independent audit of its own frozen head returns 0 blockers and 0 must-fix.",
+    "ALLOWLIST NOTE (moved here because the packet schema forbids extra keys on the commit object): the entry proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/R2_AUDITOR_IDENTITY_REASONING_CORRECTION.json is an operator-authorized append-only correction record, written as a sibling to the merged record whose reasoning it corrects. It is listed in the allowlist so that changed-paths remains a subset of the allowlist union; without it the correction would be an uncovered path, which is exactly what a commit allowlist exists to catch. The record it corrects was re-hashed after writing and is byte-identical."
+  ],
+  "depends_on": [
+    "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002",
+    "TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001",
+    "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001-AC2-AMENDMENT"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002",
+    "final_packet": false
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Re-verify origin/main is unmoved and map the validator's constraints before writing anything.",
+      "requirements": [
+        "origin/main is re-read from a fresh fetch and must still equal MA08_MAIN_SHA, or an MA-08 delta addendum is required first.",
+        "Every validator guard that enforces 'no ADR is accepted' is read from source and recorded, so the additive design is deliberate rather than lucky."
+      ],
+      "commands": [
+        "git fetch origin --prune && git rev-parse origin/main",
+        "grep -nE 'A34|A35|A36|A37|B05|B06|B07' scripts/governance/validate_second_brain_adr_contracts.py"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/05_ACCEPTANCE_PERSISTENCE_CONSTRAINTS.md"
+      ],
+      "validation": [
+        "origin/main equals 75b4cfc581786a53445e412bfc8e25a6e0fdb978.",
+        "The validator's full read surface is enumerated and shown not to include docs/90-adr/."
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Generate the ten accepted ADR records from the amended candidate bytes.",
+      "requirements": [
+        "The generator is committed and deterministic.",
+        "It fails closed on candidate hash mismatch, on the pre-amendment AC#2 being present, on the amended AC#2 not appearing exactly ten times, and on the candidate no longer being CANDIDATE.",
+        "One documented slug rule is applied to all ten; no slug is hand-shortened.",
+        "Every emitted decision section is verified to be a substring of the candidate after writing."
+      ],
+      "commands": [
+        "python3 proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/generators/gen_accepted_adrs.py"
+      ],
+      "expected_files": [
+        "docs/90-adr/adr-sb-001-extension-boundary-and-non-authority.md",
+        "docs/90-adr/adr-sb-010-ux-contract.md"
+      ],
+      "validation": [
+        "Ten files emitted, each status: accepted.",
+        "Each carries the amended AC#2 and none carries the pre-amendment wording.",
+        "Each decision body is a candidate byte-slice.",
+        "The full docs hook gauntlet passes on all ten."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Emit the acceptance records and index rows.",
+      "requirements": [
+        "The index generator is idempotent and never double-appends a row.",
+        "The ledger carries the operator's verbatim election and stated reasoning, with facilitator_authored_dispositions false and inheritance from 19fa74faa9 explicitly false.",
+        "The binding declares by name every fo-01-repair-status.json field this persistence makes stale, and states why it is not fixed here."
+      ],
+      "commands": [
+        "python3 proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/generators/gen_acceptance_records.py"
+      ],
+      "expected_files": [
+        "docs/90-adr/adr-index.md",
+        "docs/03-reference/architecture/second-brain/adr-candidates/ADR_ACCEPTANCE_HEAD.json",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/ADR_OPERATOR_DECISION_LEDGER.yaml",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/ADR_ACCEPTANCE_BINDING.json",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/ADR_ACCEPTANCE_RECEIPT.json"
+      ],
+      "validation": [
+        "Ten index rows added on first run, zero on re-run.",
+        "Ledger parses and records ten ACCEPT dispositions.",
+        "Binding names three stale fields and two that are not stale."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Prove the persistence was additive, then freeze.",
+      "requirements": [
+        "The validator reports 94/0 after persistence, as it did before.",
+        "Every changed path is inside the union of this packet's allowlist and its predecessors', verified programmatically.",
+        "No read-only surface appears in the diff."
+      ],
+      "commands": [
+        "python3 scripts/governance/validate_second_brain_adr_contracts.py --json",
+        "python3 -m pytest -q tests/governance/test_second_brain_adr_contracts.py",
+        "git diff --name-only 75b4cfc581786a53445e412bfc8e25a6e0fdb978..HEAD"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/C1_CONTENT_HEAD.txt"
+      ],
+      "validation": [
+        "validator 94/0 after persistence.",
+        "adversarial suite 63/63.",
+        "zero changed paths outside the allowlist union.",
+        "zero read-only surfaces in the diff."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Fresh independent audit of the frozen persistence head.",
+      "requirements": [
+        "Required by the merged supersession lineage, which states that only an independently audited rebuilt acceptance chain may become authoritative.",
+        "The prompt is authored after the freeze and names the head it audits.",
+        "Any Grok invocation pins -m grok-4.5.",
+        "The verdict is recorded verbatim; a FAIL or a remaining must-fix stops the packet."
+      ],
+      "commands": [
+        "grok --cwd <throwaway worktree at the frozen head> -m grok-4.5 --always-approve --output-format plain -p \"$(cat <the audit prompt>)\""
+      ],
+      "expected_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/AUDIT_PROMPT.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/AUDITOR_REPORT.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/AUDIT_CUSTODY.json"
+      ],
+      "validation": [
+        "BLOCKERS 0 and MUST_FIX 0 on the controlling round.",
+        "The auditor confirms no read-only surface was written.",
+        "The auditor confirms the accepted records derive from the amended candidate and not from 19fa74faa9."
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Close the packet and stop.",
+      "requirements": [
+        "The proof bundle validates.",
+        "Nothing is pushed, no PR is opened, no implementation begins."
+      ],
+      "commands": [
+        "python3 scripts/audit/validate_audit_proof.py --all proof",
+        "pre-commit run --files <staged>"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/PROOF.json",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/VALIDATION.json",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/HANDOFF.md",
+        "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/COMMAND_LOG.md"
+      ],
+      "validation": [
+        "validate_audit_proof.py accepts this bundle.",
+        "0 failing pre-commit hooks.",
+        "branch remains local and unpushed."
+      ]
+    }
+  ],
+  "commit": {
+    "message": "docs(second-brain): persist operator-accepted ADR-SB-001..010",
+    "allowlist": [
+      "docs/90-adr/adr-sb-*.md",
+      "docs/90-adr/adr-index.md",
+      "docs/03-reference/architecture/second-brain/adr-candidates/ADR_ACCEPTANCE_HEAD.json",
+      "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/**",
+      "task-packets/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001.json",
+      "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/R2_AUDITOR_IDENTITY_REASONING_CORRECTION.json"
+    ],
+    "verify": [
+      "python3 scripts/governance/validate_second_brain_adr_contracts.py",
+      "python3 -m pytest -q tests/governance/test_second_brain_adr_contracts.py",
+      "python3 scripts/audit/validate_audit_proof.py --all proof"
+    ]
+  },
+  "pr": {
+    "title": "docs(second-brain): persist operator-accepted ADR-SB-001..010",
+    "base": "main",
+    "body": "NOT AUTHORIZED. This packet stops with its branch local and unpushed. No pull request is opened and none may be opened without a fresh operator instruction. The field is present because the packet schema requires it."
+  }
+}

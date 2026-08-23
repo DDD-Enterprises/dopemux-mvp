@@ -1,0 +1,26 @@
+{
+  "info": {
+    "id": "01a00421-6b0e-79b1-a336-35a8d6a3ebbd",
+    "cwd": "/private/tmp/sb-persist-audit-r2"
+  },
+  "session_summary": "ADR Acceptance Persistence Repair Audit Round 2",
+  "created_at": "2026-08-15T06:34:54.228493Z",
+  "updated_at": "2026-08-15T06:41:25.184691Z",
+  "num_messages": 139,
+  "num_chat_messages": 49,
+  "current_model_id": "grok-4.5",
+  "next_trace_turn": 1,
+  "chat_format_version": 1,
+  "git_root_dir": "/private/tmp/sb-persist-audit-r2/",
+  "git_remotes": [
+    "https://github.com/DDD-Enterprises/dopemux-mvp.git"
+  ],
+  "head_commit": "0defe1cab46a9e6d02e88d3aa94a9edf195b4b84",
+  "request_id": "1b5aa41a-d484-486d-8711-cbd20654d248",
+  "grok_home": "/Users/hue/.grok",
+  "last_active_at": "2026-08-15T06:41:25.184691Z",
+  "generated_title": "ADR Acceptance Persistence Repair Audit Round 2",
+  "agent_name": "grok-build-plan",
+  "sandbox_profile": "off",
+  "reasoning_effort": "high"
+}

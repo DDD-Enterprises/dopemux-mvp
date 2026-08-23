@@ -1,0 +1,144 @@
+{
+  "schema_version": "1.0.0",
+  "tp_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002",
+  "series_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "tp/DMX-SB-ADR-ACCEPTANCE-002",
+  "base_branch": "main",
+  "head_before": "75b4cfc581786a53445e412bfc8e25a6e0fdb978",
+  "head_after": "f7326b18397a4381df88ec4dc933eeb3f0011288",
+  "audited_content_head": "f7326b18397a4381df88ec4dc933eeb3f0011288",
+  "mutation_performed": false,
+  "github_mutation_performed": false,
+  "secret_values_recorded": false,
+  "operator_authorization_used": [
+    "Phase B authorized: PROGRAM=SECOND_BRAIN, PHASE=POST_MERGE_ACCEPTANCE_READINESS, keep it read-only with respect to Second Brain architecture and runtime.",
+    "Resolve the actual current origin/main at execution time, then verify the merged contract family from clean main.",
+    "Run a fresh MA-08 from discovery base 72af781e42 through the then-current remote main; only NO_NEW_MATERIAL_DRIFT may advance.",
+    "Run a fresh post-merge acceptance-integrity audit against the exact main SHA used by MA-08; required outcome PASS_ADR_ACCEPTANCE_EVIDENCE_READY_FOR_OPERATOR_REDISPOSITION with BLOCKERS=0 and MUST_FIX=0; if Grok is used, explicitly invoke -m grok-4.5.",
+    "Prepare the fresh 10-ADR disposition worksheet, then stop at READY_FOR_OPERATOR_ADR_REDISPOSITION.",
+    "Preserve da2523aafb in the Phase B chronology as UNEXPECTED_CONCURRENT_BRANCH_WRITE / IMPACT=PROOF_METADATA_ONLY / FINAL_HEAD_REVALIDATED=true.",
+    "ADR_ACCEPTANCE_AUTHORIZED=false; IMPLEMENTATION_EXECUTION=NOT_AUTHORIZED; RUNTIME_MUTATION=FORBIDDEN. Do not inherit the old 10x DEFER mechanically."
+  ],
+  "forbidden_surfaces_touched": false,
+  "forbidden_surfaces_note": "No write occurred under docs/03-reference/architecture/second-brain/**, schemas/second_brain/**, scripts/governance/**, tests/governance/**, or proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001/**. Verified: git diff --name-only 75b4cfc581..HEAD lists only this packet's proof directory and its task packet.",
+  "files_changed": [
+    "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/**",
+    "task-packets/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002.json"
+  ],
+  "commands": [
+    {
+      "cmd": "git fetch origin --prune && git rev-parse origin/main",
+      "exit_code": 0,
+      "result": "75b4cfc581786a53445e412bfc8e25a6e0fdb978 \u2014 matches the operator-stated contract-evidence merge commit; pinned as MA08_MAIN_SHA"
+    },
+    {
+      "cmd": "python3 scripts/governance/validate_second_brain_adr_contracts.py --json",
+      "exit_code": 0,
+      "result": "PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE \u2014 94 checks, 0 failed; coverage_group PASS; fo01_group PASS"
+    },
+    {
+      "cmd": "python3 -m pytest -q tests/governance/test_second_brain_adr_contracts.py",
+      "exit_code": 0,
+      "result": "63 collected, 63 passed"
+    },
+    {
+      "cmd": "independent recomputation of coverage from ADR_CLAUSE_INVENTORY.json + ADR_CONTRACT_COVERAGE.json",
+      "exit_code": 0,
+      "result": "160 inventory clause ids, 160 coverage entries, COVERED=160, MISSING=0, AMBIGUOUS=0, zero duplicates, zero set differences either way, per-ADR counts agree with per-ADR contract decision_clauses"
+    },
+    {
+      "cmd": "git rev-list --count 72af781e42..75b4cfc581 ; git diff --shortstat",
+      "exit_code": 0,
+      "result": "94 commits, 823 files, +144356 / -2636; segments 22 + 5 + 67 = 94"
+    },
+    {
+      "cmd": "segment C classification with sum assertion",
+      "exit_code": 0,
+      "result": "239 files classified into 14 classes; class counts sum to 239"
+    },
+    {
+      "cmd": "grok -m grok-4.5 ... (audit round 1, head 1939640e4d)",
+      "exit_code": 0,
+      "result": "PASS_ADR_ACCEPTANCE_EVIDENCE_READY_FOR_OPERATOR_REDISPOSITION \u2014 BLOCKERS 0, MUST_FIX 1"
+    },
+    {
+      "cmd": "grok -m grok-4.5 ... (audit round 2, head f7326b1839)",
+      "exit_code": 0,
+      "result": "PASS_ADR_ACCEPTANCE_EVIDENCE_READY_FOR_OPERATOR_REDISPOSITION \u2014 BLOCKERS 0, MUST_FIX 0 (controlling)"
+    }
+  ],
+  "validation": {
+    "status": "PASS",
+    "details": [
+      {
+        "check": "origin_main_resolved_at_execution_time",
+        "status": "PASS",
+        "detail": "Fresh fetch, not a cached ref. Resolved 75b4cfc581 and pinned it as MA08_MAIN_SHA for the whole phase."
+      },
+      {
+        "check": "contract_family_operator_required_values",
+        "status": "PASS",
+        "detail": "result PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE; ADR coverage 10/10; clause coverage 160/160; MISSING 0; AMBIGUOUS 0. Recomputed independently of the producer-authored coverage receipt."
+      },
+      {
+        "check": "ma08_fresh_not_inherited",
+        "status": "PASS",
+        "detail": "Three-segment decomposition summing to the window commit count. Segments A and B re-reviewed rather than inherited; segment A's two architecturally-adjacent claims re-verified from bytes. Result NO_NEW_MATERIAL_DRIFT."
+      },
+      {
+        "check": "ma08_enumerations_complete",
+        "status": "PASS",
+        "detail": "Segment C class counts sum to the actual file count (239). Runtime (4) and schema/contract (21) files enumerated by name rather than reported as zero, which is where the prior run's template would have produced a false line."
+      },
+      {
+        "check": "independent_audit",
+        "status": "PASS",
+        "detail": "Two rounds, both grok-4.5 pinned explicitly, both in throwaway detached worktrees with no producer conversation history. Round 1 PASS with 1 must-fix; accepted and repaired. Round 2 PASS with 0 blockers and 0 must-fix, controlling."
+      },
+      {
+        "check": "read_only_boundary",
+        "status": "PASS",
+        "detail": "Diff from MA08_MAIN_SHA touches only this packet's proof directory and its task packet. No Second Brain architecture, schema, validator, test, or prior-packet file was written."
+      },
+      {
+        "check": "no_disposition_recorded",
+        "status": "PASS",
+        "detail": "Every worksheet disposition field reads PENDING_OPERATOR; recommendations are carried in a separate field. adr_acceptance_authorized remains false and the 10x DEFER stands until the operator replaces it."
+      },
+      {
+        "check": "superseded_election_not_inherited",
+        "status": "PASS",
+        "detail": "The 10x ACCEPT ledger at unpushed 19fa74faa9 was read once, read-only, solely to establish it is not the controlling prior disposition. Its recommendations were not consulted in forming this worksheet's recommendations. The auditor independently checked for ACCEPT-election smuggling and found none."
+      },
+      {
+        "check": "auditor_model_identity",
+        "status": "PASS_WITH_RECORDED_DIVERGENCE",
+        "detail": "grok-4.5 established from events.jsonl turn_started.model_id and chat_history.jsonl per-message model_id for both rounds. signals.json primaryModelId reads grok-4.6 on CLI 1.0.3 and is recorded as a non-independent field rather than omitted. See AUDITOR_MODEL_IDENTITY_EVIDENCE.json."
+      }
+    ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "grok --cwd /private/tmp/sb-accept-002-audit-r2 -m grok-4.5 --always-approve --max-turns 120 --output-format plain -p \"$(cat proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/AUDIT_PROMPT_REPAIR.md)\" \u2014 throwaway detached worktree pinned to f7326b18397a4381df88ec4dc933eeb3f0011288, no producer conversation history",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/AUDITOR_REPAIR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "MF-1 (round 1): the fourth-canonical-DB hard-gate row supported a correct answer with a false number. Recounted per compose section at both ends of the window (services 24 -> 24, volumes 15 -> 16, networks 1 -> 1) and recorded the defect in a named repair subsection rather than silently correcting it."
+    ],
+    "remaining_risks": [
+      "Auditor identity rests on the runner's own session store, not on provider-side cryptographic attestation. This route has carried that residual since PR #1214.",
+      "signals.json primaryModelId reads grok-4.6 for both rounds while every per-turn and per-message record reads grok-4.5. The field tracks the runner default rather than the served model. Recorded in full in AUDITOR_MODEL_IDENTITY_EVIDENCE.json, including the consequence that PR #1227's merged identity reconciliation cites that field as corroboration when it is not independent. That merged record's conclusion is unchanged and is in fact better supported by turn-level and message-level evidence it did not cite; no edit was made to it, because this phase is read-only with respect to it.",
+      "Round 2 read round 1's report as input. It was instructed to treat those findings as prior claims to recheck and did recompute them, but it was not a blind re-audit. Both rounds also ran on the same model and runner; no model diversity was attempted.",
+      "In round 2 the auditor wrote its report into its own throwaway worktree, overwriting round 1's copy there. The producer branch was untouched and the committed round-1 report was re-hashed afterwards and is byte-identical. Recorded in AUDIT_CUSTODY.json rather than omitted.",
+      "The independent auditor's own nonblocking observation: the surface-grounding rule (A31) is substring-based and theoretically defeatable by a future invented property built from incidental fragment text. No such property exists in the present seven typed artifacts.",
+      "The hard-gate parenthetical 'zero classification/privacy policy paths in the window' is overbroad if read as a raw path-name grep, since the full window contains files with 'policy' or 'classification' in their names. The substantive answer holds and the segment A table classifies those files explicitly. Recorded rather than rewritten, because the round-2 auditor judged it a wording issue and not a false-integer defect."
+    ],
+    "skip_reason": null
+  },
+  "head_after_note": "This is the audited content head, and it is what C1_CONTENT_HEAD.txt records. Commits after it on this branch are proof records, PLUS one schema-compliance fix to this packet's own task-packet file at de52443a08c0517617314cfd2b7d77973fcb18b0. That file was inside the audited 11-path delta, so the edit is a post-audit mutation of an audited file and is declared as such rather than left for a reader to find. Its exact scope and why it does not disturb the verdict are recorded in AUDIT_CUSTODY.json under post_audit_mutation. By construction no commit can name its own sha; the branch is local and unpushed, and git log on tp/DMX-SB-ADR-ACCEPTANCE-002 is the authority for the tip."
+}

@@ -1,0 +1,181 @@
+schema_version: "1.0.0"
+
+task_id: TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001
+record_kind: ADR_OPERATOR_DECISION_LEDGER
+recorded: "2026-08-14"
+
+subject:
+  candidate_document: docs/03-reference/architecture/second-brain/adr-candidates/second-brain-adr-candidates.md
+  candidate_sha256: e4b28946156096319557fd25e0289c5de4b593b6239cc5c7af9b3efed259b66c
+  candidate_is_the_AMENDED_document: true
+  amended_by: PR #1214, AC#2 clarification, merged as dc279256fe
+  ratification_binding_sha256: a23efdc676c499cc56b76c5fe321acd0bcf60871be18a33c7539e2350ba07b34
+  clause_inventory_sha256: b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439
+  ma08_main_sha: 75b4cfc581786a53445e412bfc8e25a6e0fdb978
+
+disposition_provenance:
+  authority: HUMAN_OPERATOR_EXPLICIT
+  facilitator_authored_dispositions: false
+  disposition_confirmed: true
+  form: >-
+    Explicit human election against proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/
+    04_ADR_DISPOSITION_WORKSHEET.md, which stated facilitator recommendations in a field
+    separate from the disposition field. The operator supplied ten individual per-ADR rows,
+    not a bulk token.
+  facilitator_recommendation_is_not_operator_authority: true
+  silence_treated_as_accept: false
+  blank_disposition_treated_as_accept: false
+  bulk_token_supplied_by_operator: false
+  per_adr_rows_supplied_by_operator: true
+
+  inherited_from_superseded_attempt: false
+  superseded_attempt:
+    commit: 19fa74faa935dfcf86c41c2aaa40f4b257652756
+    classification: SUPERSEDED_PRE_AMENDMENT_ACCEPTANCE_ATTEMPT
+    operator_provenance: UNKNOWN
+    note: >-
+      That attempt's ledger also recorded ten ACCEPT dispositions. Nothing here is copied
+      from it, and its ADR files are not salvaged: they carry the pre-amendment AC#2, which
+      is the substantive ground on which the operator superseded them. The ten records in
+      this packet are generated from the amended candidate bytes by a committed generator,
+      and the generator refuses to run if the pre-amendment wording is present.
+
+  operator_stated_reasoning: >-
+    The previous 10x DEFER was driven by a concrete missing-evidence condition: the required
+    architecture-time machine contracts did not exist. That condition has now been
+    eliminated. The merged contract family carries 160 grounded clauses, and the fresh
+    Phase B audit independently found the acceptance evidence ready for operator
+    redisposition. The remaining implementation-time items do not prevent ADR acceptance
+    under the amended AC#2; they remain later implementation and enablement gates.
+
+evidence_relied_on:
+  validator_result: PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE
+  validator_checks: "94 total / 0 failed"
+  adr_coverage: "10/10"
+  clause_coverage: "160/160"
+  missing: 0
+  ambiguous: 0
+  adversarial_tests: "63/63"
+  ma08_result: NO_NEW_MATERIAL_DRIFT
+  acceptance_integrity_audit: PASS_ADR_ACCEPTANCE_EVIDENCE_READY_FOR_OPERATOR_REDISPOSITION
+  audit_blockers: 0
+  audit_must_fix: 0
+  audit_rounds: 2
+  audit_round_1_must_fix: 1
+  audit_round_1_note: >-
+    Round 1 returned PASS with one must-fix against a false supporting number in the drift
+    recheck. It was accepted, repaired and re-audited to 0/0. Recorded because a clean
+    verdict that concealed a prior finding would misrepresent how it was reached.
+
+adrs:
+  - adr_id: ADR-SB-001
+    title: Extension Boundary and Non-Authority
+    source_status: PROPOSED
+    facilitator_recommendation: RECOMMEND_ACCEPT
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - adr_id: ADR-SB-002
+    title: Capture, Candidate, Review, and Promotion
+    source_status: PROPOSED
+    facilitator_recommendation: RECOMMEND_ACCEPT
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - adr_id: ADR-SB-003
+    title: Recall Fusion and Provenance
+    source_status: PROPOSED
+    facilitator_recommendation: RECOMMEND_ACCEPT
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - adr_id: ADR-SB-004
+    title: Domain, Classification, and Provider Policy
+    source_status: PROPOSED
+    facilitator_recommendation: RECOMMEND_ACCEPT
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - adr_id: ADR-SB-005
+    title: Markdown Projection Contract
+    source_status: PROPOSED
+    facilitator_recommendation: RECOMMEND_ACCEPT
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - adr_id: ADR-SB-006
+    title: Local Spool and Custody Interface
+    source_status: PROPOSED
+    facilitator_recommendation: RECOMMEND_ACCEPT
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - adr_id: ADR-SB-007
+    title: Forget, Purge, and Residual Verification
+    source_status: PROPOSED
+    facilitator_recommendation: RECOMMEND_ACCEPT
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - adr_id: ADR-SB-008
+    title: Open Loop and Task Proposal Boundary
+    source_status: PROPOSED
+    facilitator_recommendation: RECOMMEND_ACCEPT
+    operator_disposition: ACCEPT
+    operator_note: ""
+  - adr_id: ADR-SB-009
+    title: Single-Project Safety and Identity Dependencies
+    source_status: PROPOSED
+    facilitator_recommendation: RECOMMEND_ACCEPT
+    operator_disposition: ACCEPT
+    operator_note: >-
+      Carries the MA-08 re-gate obligation: the ConPort project wall is directionally
+      aligned but establishes no registry, so any implementation slice must re-gate against
+      what it actually guarantees.
+  - adr_id: ADR-SB-010
+    title: UX Contract
+    source_status: PROPOSED
+    facilitator_recommendation: RECOMMEND_ACCEPT
+    operator_disposition: ACCEPT
+    operator_note: ""
+
+counts:
+  total: 10
+  accepted: 10
+  deferred: 0
+  rejected: 0
+
+sb_dec_026_posture:
+  decision_id: SB-DEC-026
+  operator_choice: A_LEAVE_UNLINKED
+  changed_by_this_acceptance: false
+
+architecture_authority_unchanged:
+  sb_dec_001_to_032_reopened: false
+  sb_dec_dispositions_modified: false
+  ratification_binding_modified: false
+  operator_decision_ledger_modified: false
+  candidate_document_modified: false
+  machine_contracts_modified: false
+  validator_modified: false
+  note: >-
+    ADR acceptance determines whether the ADR representation is an accepted architectural
+    record. It does not change the 32 ratified architecture decisions, which remain
+    32 ACCEPT / 0 DEFER / 0 REJECT.
+
+preserved_not_run:
+  denial_fixtures: NOT_IMPLEMENTED
+  runtime_conformance: NOT_RUN
+  retrieval_benchmarks: NOT_RUN
+  purge_completeness: NOT_RUN
+  multi_project_isolation: NOT_RUN
+  split_brain_proof: NOT_RUN
+  encryption_implementation: ABSENT
+
+authority_still_closed:
+  implementation_execution: NOT_AUTHORIZED
+  slice_execution: NOT_AUTHORIZED
+  runtime_enablement: NOT_AUTHORIZED
+  runtime_mutation: FORBIDDEN
+  deployment: NOT_AUTHORIZED
+  push: NOT_AUTHORIZED
+  merge: NOT_AUTHORIZED
+
+authority_open:
+  architecture_law: true
+  adr_authority: true
+  implementation_planning: true
+  implementation_packet_design: true

@@ -1,0 +1,111 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002",
+  "record_kind": "CONTRACT_FAMILY_VERIFICATION",
+  "phase": "POST_MERGE_ACCEPTANCE_READINESS",
+  "ma08_main_sha": "75b4cfc581786a53445e412bfc8e25a6e0fdb978",
+  "executed_from": "clean detached worktree created fresh at ma08_main_sha; no producer branch state",
+  "operator_required_values": {
+    "result": "PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE",
+    "adr_coverage": "10/10",
+    "clause_coverage": "160/160",
+    "missing": 0,
+    "ambiguous": 0
+  },
+  "all_four_operator_values_met": true,
+  "validator": {
+    "path": "scripts/governance/validate_second_brain_adr_contracts.py",
+    "sha256": "3777d33dc02048ef3587bd0324c7fe7acbba979054f6de2946c5a7ce5f58161e",
+    "invocation": "python3 scripts/governance/validate_second_brain_adr_contracts.py [--json]",
+    "exit_code": 0,
+    "checks_total": 94,
+    "checks_failed": 0,
+    "coverage_group": "PASS",
+    "fo01_group": "PASS",
+    "failures": [],
+    "frozen_inventory_sha256": "b164fc0b44597a5805aaa7a3f0c6eee047404121bc13bc7a2dcd58af7f78a439",
+    "trailing_status_lines": [
+      "PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE",
+      "FO01_STALE_RECORD_RECONCILED"
+    ]
+  },
+  "independent_recomputation": {
+    "method": "Coverage was recomputed from the frozen inventory and the coverage index directly, rather than read from CONTRACT_COVERAGE_RECEIPT.json. The receipt is a producer-authored file; it corroborates, it does not establish.",
+    "inventory_declared_clause_total": 160,
+    "inventory_actual_clause_ids": 160,
+    "coverage_entry_count": 160,
+    "coverage_status_counts": {
+      "COVERED": 160
+    },
+    "duplicate_clause_ids_in_coverage": [],
+    "clause_ids_in_inventory_but_not_covered": [],
+    "clause_ids_covered_but_not_in_inventory": [],
+    "per_adr_clause_counts": {
+      "ADR-SB-001": 11,
+      "ADR-SB-002": 14,
+      "ADR-SB-003": 13,
+      "ADR-SB-004": 11,
+      "ADR-SB-005": 14,
+      "ADR-SB-006": 17,
+      "ADR-SB-007": 17,
+      "ADR-SB-008": 36,
+      "ADR-SB-009": 12,
+      "ADR-SB-010": 15
+    },
+    "per_adr_contract_rule_counts": {
+      "ADR-SB-001": 11,
+      "ADR-SB-002": 14,
+      "ADR-SB-003": 13,
+      "ADR-SB-004": 11,
+      "ADR-SB-005": 14,
+      "ADR-SB-006": 17,
+      "ADR-SB-007": 17,
+      "ADR-SB-008": 36,
+      "ADR-SB-009": 12,
+      "ADR-SB-010": 15
+    },
+    "per_adr_counts_agree": true,
+    "sum_of_per_adr_clause_counts": 160
+  },
+  "adversarial_suite": {
+    "path": "tests/governance/test_second_brain_adr_contracts.py",
+    "collected": 63,
+    "passed": 63,
+    "failed": 0,
+    "exit_code": 0,
+    "note": "Re-run this phase from the clean worktree at ma08_main_sha, not inherited from PR #1227's record."
+  },
+  "false_green_matrix": {
+    "path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/FALSE_GREEN_MATRIX.json",
+    "rows": 10,
+    "all_rows": "FAILED_AS_INTENDED"
+  },
+  "contract_artifacts": [
+    "ADR-SB-001.contract.json",
+    "ADR-SB-002.contract.json",
+    "ADR-SB-003.contract.json",
+    "ADR-SB-004.contract.json",
+    "ADR-SB-005.contract.json",
+    "ADR-SB-006.contract.json",
+    "ADR-SB-007.contract.json",
+    "ADR-SB-008.contract.json",
+    "ADR-SB-009.contract.json",
+    "ADR-SB-010.contract.json",
+    "ADR_CONTRACT_COVERAGE.json",
+    "adr-machine-contract.schema.json",
+    "custody-port.contract.json",
+    "interface-contract.schema.json",
+    "local-spool-port.contract.json",
+    "open-loop-candidate.schema.json",
+    "project-identity-envelope.schema.json",
+    "service-capability-receipt.schema.json",
+    "task-promotion-request.schema.json",
+    "task-proposal.schema.json"
+  ],
+  "contract_artifact_count": 20,
+  "what_this_does_not_establish": [
+    "That any ADR is accepted. All ten remain PROPOSED and the document remains CANDIDATE.",
+    "That any runtime behaviour exists. The contracts are declarative JSON with no consumer in src/ or services/.",
+    "That denial fixtures exist. They are NOT_IMPLEMENTED_IMPLEMENTATION_TIME_GATE by the amended AC#2's own terms."
+  ]
+}

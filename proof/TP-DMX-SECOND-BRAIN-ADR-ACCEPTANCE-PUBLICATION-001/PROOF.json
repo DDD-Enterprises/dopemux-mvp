@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0.0",
+  "tp_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001",
+  "series_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "tp/DMX-SB-ADR-ACCEPTANCE-002",
+  "base_branch": "main",
+  "local_tip_before_publication": "d38ec2f8715c6f4e594145e4d271b40e2d86bb69",
+  "audited_head_of_local_acceptance": "0defe1cab46a9e6d02e88d3aa94a9edf195b4b84",
+  "issue_baseline_remote_main": "57b239e76b8fbb0016ba497bc4a34ec0abee51bb",
+  "execution_remote_main": "57b239e76b8fbb0016ba497bc4a34ec0abee51bb",
+  "publication_content_head": "9e819f38c5f8c9da44cd396abe740d378f035d1a",
+  "head_after_s9_closure": null,
+  "mutation_performed": true,
+  "mutation_note": "Merged current origin/main into the acceptance branch (no-ff), then added bounded publication proof under proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/**. No accepted-authority file (docs/90-adr/**, ADR_ACCEPTANCE_HEAD.json, ledger/binding/receipt, R2 reasoning correction) was touched; all confirmed byte-identical pre/post merge.",
+  "github_mutation_performed": false,
+  "secret_values_recorded": false,
+  "operator_authorization_used": [
+    "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001 packet text, verbatim, this conversation: publish the already-completed and independently audited acceptance/persistence work without re-performing ADR acceptance, changing any accepted decision, or authorizing implementation.",
+    "IMPLEMENTATION_EXECUTION=NOT_AUTHORIZED; RUNTIME_MUTATION=FORBIDDEN; PRODUCTION_MUTATION=FORBIDDEN; SLICE_0=FORBIDDEN (packet header).",
+    "MERGE=OPERATOR_ONLY; this packet authorizes push + draft PR only, not merge (packet header + §16-17)."
+  ],
+  "forbidden_surfaces_touched": false,
+  "forbidden_surfaces_note": "Verified: no ADR-SB-001..010 substance changed; no accepted-authority file touched by the merge or by this packet's own commits; no runtime/service/application code added; unrelated active checkout (feat/local-audit-proof-binding-001) never entered.",
+  "files_changed": [
+    "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/PUBLICATION_DRIFT_RECHECK.md (new)",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/POST_MAIN_SYNC_ACCEPTANCE_INTEGRITY.json (new)",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/VALIDATION.json (new)",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/LOCAL_ACCEPTANCE_STATE.json (new)",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/CURRENT_MAIN_DELTA.json (new)",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/AUDIT_PROMPT.md (new)",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/AUDITOR_REPORT.md (new)",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/AUDIT_CUSTODY.json (new)",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/COMMAND_LOG.md (new)",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/HANDOFF.md (new)",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/PROOF.json (new, this file)",
+    "6 files imported unmodified via the origin/main merge, all under proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001-REVERT-1235/** and proof/pr_merge/embedded-audit/pr-1235/** (unrelated to Second Brain)"
+  ],
+  "validation": {
+    "status": "PASS",
+    "details": [
+      {"check": "S0_local_acceptance_state_match", "status": "PASS"},
+      {"check": "S1_disposition_verification_10x_accept", "status": "PASS"},
+      {"check": "S2_audit_lineage_no_unexplained_mutation", "status": "PASS"},
+      {"check": "S3_remote_refresh", "status": "PASS", "detail": "origin/main unchanged since packet issue"},
+      {"check": "S4_publication_drift_guard", "status": "PASS", "detail": "NO_NEW_MATERIAL_DRIFT"},
+      {"check": "S5_safe_merge", "status": "PASS", "detail": "conflict-free no-ff merge"},
+      {"check": "S6_post_merge_byte_integrity", "status": "PASS", "detail": "all accepted-authority files byte-identical"},
+      {"check": "S7_repository_validation", "status": "PASS", "detail": "94/0 contract validator, 63/63 pytest, pre-commit clean"},
+      {"check": "S8_publication_integrity_audit", "status": "PASS", "detail": "PASS_ADR_ACCEPTANCE_PUBLICATION_INTEGRITY, BLOCKERS=0, MUST_FIX=0 (grok-4.5, after 3 failed AGY/gemini attempts)"}
+    ]
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "grok --cwd /Users/hue/code/dopemux-mvp__sb-adr-acceptance-002 -m grok-4.5 --always-approve --max-turns 80 --output-format plain -p \"$(cat proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/AUDIT_PROMPT.md)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Preferred route AGY/gemini-3.1-pro-high failed 3x before this grok-4.5 run succeeded (quota exhaustion, then two timeouts after substantial but incomplete generation). Full disclosure of all 3 failed attempts, none contributing to this verdict, in AUDIT_CUSTODY.json.",
+      "This audit verifies publication integrity (drift, byte-identity, lineage, authority-flag preservation) of an already-operator-accepted and already-independently-audited ADR persistence branch. It is not a new ADR election and does not audit Second Brain implementation, which does not exist yet.",
+      "provider_attestation remains UNKNOWN for this route, consistent with every prior audit in this program."
+    ],
+    "skip_reason": null
+  },
+  "authority_state": {
+    "ADR_DISPOSITIONS": "10x_ACCEPT",
+    "ACCEPTANCE_PERSISTENCE": "COMPLETE_LOCAL",
+    "IMPLEMENTATION_EXECUTION": "NOT_AUTHORIZED",
+    "RUNTIME_MUTATION": "FORBIDDEN",
+    "PRODUCTION_MUTATION": "FORBIDDEN",
+    "SLICE_0": "FORBIDDEN"
+  },
+  "next_required_operator_action": "MERGE_DECISION (after S10 push, S11 draft PR, and S12 required CI/review all complete)"
+}

@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0.0",
+  "record_kind": "POST_MAIN_SYNC_ACCEPTANCE_INTEGRITY",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001",
+  "step": "S6",
+  "pre_merge_content_head": "d38ec2f8715c6f4e594145e4d271b40e2d86bb69",
+  "post_merge_head": "f6680c0290ab32b8246bed4b065961c85a80c416",
+  "merged_origin_main": "57b239e76b8fbb0016ba497bc4a34ec0abee51bb",
+  "merge_conflicts": 0,
+  "byte_diff_check": {
+    "method": "git diff <pre_merge_content_head> <post_merge_head> -- <path>, line count of output; 0 == byte-identical",
+    "results": [
+      {"path": "docs/03-reference/architecture/second-brain/adr-candidates/ADR_ACCEPTANCE_HEAD.json", "diff_lines": 0},
+      {"path": "docs/90-adr/adr-sb-*.md (all 10)", "diff_lines": 0},
+      {"path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/R2_AUDITOR_IDENTITY_REASONING_CORRECTION.json", "diff_lines": 0},
+      {"path": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/R2_AUDITOR_IDENTITY_RECONCILIATION.json", "diff_lines": 0},
+      {"path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/ADR_OPERATOR_DECISION_LEDGER.yaml", "diff_lines": 0},
+      {"path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/ADR_ACCEPTANCE_BINDING.json", "diff_lines": 0},
+      {"path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/ADR_ACCEPTANCE_RECEIPT.json", "diff_lines": 0}
+    ],
+    "all_unchanged": true
+  },
+  "sha256_post_merge": {
+    "docs/90-adr/adr-sb-001-extension-boundary-and-non-authority.md": "6969ce475087980feb3f6a8ab8ef0da7baf9d60cef953679407cc9cca840229b",
+    "docs/90-adr/adr-sb-002-capture-candidate-review-and-promotion.md": "5edcc5089aaf3feb3de877192947051c750ca10a4aad61dfba899f7dc30e87d0",
+    "docs/90-adr/adr-sb-003-recall-fusion-and-provenance.md": "d12401abecddb6e0a7c54da63aa5dd3ab613eba3245c1b42980395f89ccb8eca",
+    "docs/90-adr/adr-sb-004-domain-classification-and-provider-policy.md": "6fc77800273074c09d6d4fe7d1335a03e89418d9b1d15b8badf59be027e877fe",
+    "docs/90-adr/adr-sb-005-markdown-projection-contract.md": "44636da0727be96de66fc6a23f9888cf0e2360b1c4e45041394d87abb28a6a30",
+    "docs/90-adr/adr-sb-006-local-spool-and-custody-interface.md": "1294a460696a3d5f4e74ee75d61e222b5f5588267c75715195b795d0cbb86d9e",
+    "docs/90-adr/adr-sb-007-forget-purge-and-residual-verification.md": "abfbb74ab2e85f8627e17dfb8266363e7a65c28a210df6477d1e251d70c4f49f",
+    "docs/90-adr/adr-sb-008-open-loop-and-task-proposal-boundary.md": "beaeb832421063fe4e0afe64e8da958a43b83fe421d27467c8a201e833fe3592",
+    "docs/90-adr/adr-sb-009-single-project-safety-and-identity-dependencies.md": "764efcf4e414fc45a786805a3110040f189c6da7640fa06abe4ea6e535f31300",
+    "docs/90-adr/adr-sb-010-ux-contract.md": "328f4a398f781647de721a0d604b7edc14704ff6bd751f9e9ec5c4f1e5a7094f",
+    "docs/03-reference/architecture/second-brain/adr-candidates/ADR_ACCEPTANCE_HEAD.json": "08ff5b8222596e38b9db381b9361f2ccc87967ec643e3a87f9575cfa173e93f8",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/ADR_OPERATOR_DECISION_LEDGER.yaml": "edc939e137e7bef6972eed3ad8521592e796bffd2b59009f137de3e793ce9604",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/ADR_ACCEPTANCE_BINDING.json": "74ca713e56e12b6f5bebf33b53d7a04ebf8c6cc1b0354d0480c5b596bf3dc3da",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PERSISTENCE-001/ADR_ACCEPTANCE_RECEIPT.json": "09f32ff2223a12ca1fae5fe13058a8c55d8ee5ecc44885c9866b02402a13988a",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/R2_AUDITOR_IDENTITY_REASONING_CORRECTION.json": "41c85686fd43fa13e0a395e3992b3396c646d229ecbcdce90d6940429c31816e",
+    "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/R2_AUDITOR_IDENTITY_RECONCILIATION.json": "27c6c14ac617310e5d55986be82f770f0ce8da1d8a0c9a66426de1de1b8d21bc"
+  },
+  "cross_check": {
+    "note": "R2_AUDITOR_IDENTITY_RECONCILIATION.json post-merge sha256 matches record_sha256_at_time_of_correction recorded inside R2_AUDITOR_IDENTITY_REASONING_CORRECTION.json (27c6c14a...b21bc), independently confirming the historical #1227 custody record was never rewritten, before or after this merge."
+  },
+  "disposition_recount": {
+    "accepted_adr_count_field": 10,
+    "adrs_with_disposition_ACCEPT": 10,
+    "adrs_with_other_disposition": 0,
+    "eleventh_second_brain_adr_present": false
+  },
+  "authority_flags": {
+    "IMPLEMENTATION_EXECUTION": "NOT_AUTHORIZED",
+    "RUNTIME_ENABLEMENT": "NOT_AUTHORIZED",
+    "RUNTIME_MUTATION": "FORBIDDEN"
+  },
+  "verdict": "PASS_POST_MAIN_SYNC_ACCEPTANCE_INTEGRITY"
+}

@@ -1,0 +1,27 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1242,
+  "head_sha": "804147bfb269303c0ee7d307766e34a2de41e5ce",
+  "generated_at": "2026-08-18T09:35:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "grok --cwd /Users/hue/code/dopemux-mvp__sb-adr-acceptance-002 -m grok-4.5 --always-approve --max-turns 80 --output-format plain -p \"$(cat proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/AUDIT_PROMPT.md)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "Post-audit repair (unrelated to the audited content): the audited commit's PROOF.json (proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/PROOF.json) omitted the top-level embedded_audit object required for TP-DMX-* proof bundles under DMX-EMBEDDED-AUDIT-PR-CLEANUP-RECONCILED. Added it, describing this same grok-4.5 audit. No audited content changed; verified via git diff --name-only between the audited commit and this proof's head_sha (proof-only, confined to the packet's own proof/ directory)."
+    ],
+    "remaining_risks": [
+      "Preferred route AGY/gemini-3.1-pro-high failed 3x before this grok-4.5 run succeeded (provider quota exhaustion, then two timeouts after substantial but incomplete generation). Full disclosure of all 3 failed attempts, none contributing to this verdict, in proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/AUDIT_CUSTODY.json.",
+      "This audit verifies publication integrity (drift, byte-identity, lineage, authority-flag preservation) of an already-operator-accepted and already-independently-audited Second Brain ADR persistence branch. It is not a new ADR election and does not audit Second Brain implementation, which does not exist yet.",
+      "AUDIT_TOPOLOGY, NAMED NOT CONFLATED. AUDITED_TREE (the commit examined by the grok-4.5 run, cited throughout AUDIT_PROMPT.md/AUDITOR_REPORT.md as C_PUB) = 9e819f38c5f8c9da44cd396abe740d378f035d1a. This PROOF.json's head_sha, 804147bfb269303c0ee7d307766e34a2de41e5ce, is the AUDIT_EVIDENCE_HEAD: a proof-only + packet-metadata successor adding the audit's own report/custody/command-log evidence, one schema-conformance fix to that same packet's PROOF.json, and task-packets/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001.json (added in response to a separate review finding; declares no new authority -- see amendment in SIGNING_DISCLOSURE.md), all confined to proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001/**, proof/pr_merge/embedded-audit/pr-1242/**, or that single task-packets file -- verified via git diff --name-only, no code/schema/ADR/accepted-authority file touched. See SIGNING_DISCLOSURE.md.",
+      "Self-attestation: this proof is signed by the same operator/session that authored the PR under a fresh, narrowly-scoped operator authorization specific to PR #1242 (see SIGNING_DISCLOSURE.md). It is an operator attestation, not a third-party audit -- the independent audit content itself is the grok-4.5 run, not the signature.",
+      "Review finding (r3803293973): task-packets/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-PUBLICATION-001.json was added after the grok-4.5 audit ran, so the audit did not read that file's bytes directly. Judged non-blocking because the task-packet grants no authority beyond what the audited accepted-authority bytes (ADR records, ADR_ACCEPTANCE_HEAD.json, ledger/binding/receipt) already establish and the audit already verified -- it is retrospective documentation of already-completed, already-audited work, not a new authority grant. Disclosed rather than silently treated as covered; operator may request a supplementary audit pass over this specific file before merge if they judge that necessary."
+    ],
+    "skip_reason": null
+  }
+}

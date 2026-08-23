@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002",
+  "phase": "POST_MERGE_ACCEPTANCE_READINESS",
+  "ma08_main_sha": "75b4cfc581786a53445e412bfc8e25a6e0fdb978",
+  "audited_content_head": "f7326b18397a4381df88ec4dc933eeb3f0011288",
+  "operator_step_results": {
+    "1_resolve_origin_main_at_execution_time": "PASS \u2014 75b4cfc581786a53445e412bfc8e25a6e0fdb978",
+    "2_verify_merged_contract_family_from_clean_main": "PASS",
+    "3_fresh_MA08": "PASS \u2014 NO_NEW_MATERIAL_DRIFT",
+    "4_fresh_post_merge_acceptance_integrity_audit": "PASS \u2014 BLOCKERS 0, MUST_FIX 0 (round 2, controlling)",
+    "5_fresh_ten_ADR_disposition_worksheet": "PASS \u2014 04_ADR_DISPOSITION_WORKSHEET.md, all ten dispositions PENDING_OPERATOR",
+    "6_stop_at_terminal_state": "READY_FOR_OPERATOR_ADR_REDISPOSITION reached 2026-08-13 and reported; operator returned 10x ACCEPT on 2026-08-14. HUMAN_GATE=PASSED. ARCHITECTURE_ACCEPTANCE=AUTHORIZED_FOR_PERSISTENCE."
+  },
+  "operator_required_values": {
+    "validator_result": "PASS_SECOND_BRAIN_ADR_MACHINE_CONTRACT_COVERAGE",
+    "adr_coverage": "10/10",
+    "clause_coverage": "160/160",
+    "missing": 0,
+    "ambiguous": 0,
+    "ma08_result": "NO_NEW_MATERIAL_DRIFT",
+    "audit_verdict": "PASS_ADR_ACCEPTANCE_EVIDENCE_READY_FOR_OPERATOR_REDISPOSITION",
+    "blockers": 0,
+    "must_fix": 0,
+    "all_required_values_met": true
+  },
+  "buckets": {
+    "PASS": [
+      "origin/main resolved at execution time from a fresh fetch and pinned",
+      "validate_second_brain_adr_contracts.py exit 0, 94 checks, 0 failed",
+      "coverage recomputed independently: 160/160 COVERED, 0 MISSING, 0 AMBIGUOUS, 0 duplicates, 0 set differences",
+      "tests/governance/test_second_brain_adr_contracts.py 63/63",
+      "MA-08 window arithmetic reproduces: 94 commits, 823 files, segments 22+5+67",
+      "segment C class table sums to 239",
+      "segment A and B re-reviewed rather than inherited",
+      "13 custody hashes recomputed at MA08_MAIN_SHA and cross-checked against the prior run's record",
+      "independent audit round 2: BLOCKERS 0, MUST_FIX 0",
+      "read-only boundary held: diff from MA08_MAIN_SHA is this packet's proof dir plus its task packet",
+      "no ADR disposition recorded; adr_acceptance_authorized remains false",
+      "python3 scripts/audit/validate_audit_proof.py --all proof \u2014 77/77 PASS, including this bundle",
+      "pre-commit run --files <staged> \u2014 0 failing hooks (after the task-packet schema fix recorded in AUDIT_CUSTODY.json post_audit_mutation)"
+    ],
+    "FAIL": [],
+    "NOT_RUN": [
+      "runtime conformance \u2014 implementation-time gate, not attempted",
+      "retrieval benchmarks \u2014 implementation-time gate, not attempted",
+      "purge completeness \u2014 implementation-time gate, not attempted",
+      "multi-project isolation \u2014 implementation-time gate, not attempted",
+      "split-brain proof \u2014 implementation-time gate, not attempted",
+      "denial fixtures \u2014 NOT_IMPLEMENTED by the amended AC#2's own terms; implementing them is forbidden by this packet",
+      "encryption implementation \u2014 ABSENT",
+      "live CI \u2014 this packet is unpushed and has no PR; no CI has run against it"
+    ]
+  },
+  "gates_still_closed": {
+    "adr_acceptance": "PASSED \u2014 operator dispositioned 10x ACCEPT on 2026-08-14",
+    "implementation_execution": "NOT_AUTHORIZED",
+    "slice_execution": "NOT_AUTHORIZED",
+    "runtime_mutation": "FORBIDDEN",
+    "deployment": "NOT_AUTHORIZED",
+    "merge": "NOT_AUTHORIZED",
+    "push": "NOT_AUTHORIZED",
+    "runtime_enablement": "NOT_AUTHORIZED"
+  },
+  "dispositions": {
+    "current": "10x ACCEPT (operator, 2026-08-14) \u2014 replaces the prior blanket 10x DEFER",
+    "recorded_by_this_packet": "The operator's own election, transcribed verbatim into the worksheet's disposition fields.",
+    "worksheet_field_values": "ACCEPT on all ten"
+  },
+  "operator_dispositions_recorded": {
+    "recorded": "2026-08-14",
+    "authority": "HUMAN_OPERATOR_EXPLICIT",
+    "dispositions": "ADR-SB-001..010 = ACCEPT (ten explicit per-ADR rows, not a bulk token)",
+    "facilitator_authored": false,
+    "inherited_from_superseded_election": false,
+    "recorded_in": "proof/TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002/04_ADR_DISPOSITION_WORKSHEET.md",
+    "worksheet_evidence_revised_after_dispositions_arrived": false
+  },
+  "post_disposition_additions": {
+    "R2_AUDITOR_IDENTITY_REASONING_CORRECTION.json": "Operator-authorized append-only correction, written as a sibling in the CONTRACT-EVIDENCE-001 bundle. The record it corrects was re-hashed after writing and is byte-identical (27c6c14ac617310e5d55986be82f770f0ce8da1d8a0c9a66426de1de1b8d21bc).",
+    "05_ACCEPTANCE_PERSISTENCE_CONSTRAINTS.md": "Analysis of what the merged validator permits an acceptance-persistence step to touch. Persists nothing.",
+    "audited": false,
+    "audited_note": "These three artifacts postdate the controlling audit at f7326b18. They record an operator ruling and an analysis of source; neither revises anything the auditor evaluated. The audited evidence set is unchanged."
+  }
+}

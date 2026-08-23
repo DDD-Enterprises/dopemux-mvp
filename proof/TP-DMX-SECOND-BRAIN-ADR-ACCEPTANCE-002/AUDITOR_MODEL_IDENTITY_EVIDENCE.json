@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "TP-DMX-SECOND-BRAIN-ADR-ACCEPTANCE-002",
+  "record_kind": "AUDITOR_MODEL_IDENTITY_EVIDENCE",
+  "why_this_record_exists": "The independent auditor observed that this packet's own round-1 session metadata disagrees with itself about the model: summary.json says grok-4.5 while signals.json says primaryModelId grok-4.6. The invocation pinned -m grok-4.5 explicitly. Rather than pick the convenient field, every model-bearing field in the runner's own session store was enumerated for both rounds, and the same enumeration was run against PR #1227's round-2 session for comparison.",
+  "invocation_pinned_model": "grok-4.5",
+  "runner": "grok 1.0.3 (1a29d5bc12d4) [stable]",
+  "runner_default_model_at_this_version": "grok-4.6",
+  "sessions": {
+    "phase_b_round_1": {
+      "session_id": "019ffd2a-4777-7ac1-bc85-ff096f5479d6",
+      "summary_current_model_id": "grok-4.5",
+      "signals_primaryModelId": "grok-4.6",
+      "signals_modelsUsed": [
+        "grok-4.6",
+        "grok-4.5"
+      ],
+      "events_turn_started_model_id": {
+        "grok-4.5": 2
+      },
+      "chat_history_model_id": {
+        "grok-4.5-build": 19
+      }
+    },
+    "phase_b_round_2": {
+      "session_id": "019ffd36-0c17-7633-b305-5cff7efb7f9e",
+      "summary_current_model_id": "grok-4.5",
+      "signals_primaryModelId": "grok-4.6",
+      "signals_modelsUsed": [
+        "grok-4.6",
+        "grok-4.5"
+      ],
+      "events_turn_started_model_id": {
+        "grok-4.5": 1
+      },
+      "chat_history_model_id": {
+        "grok-4.5-build": 15
+      }
+    },
+    "pr1227_r2_completed_run_for_comparison": {
+      "session_id": "019ff62b-f270-7930-8d50-c95d094d1e3d",
+      "summary_current_model_id": "grok-4.5",
+      "signals_primaryModelId": "grok-4.5",
+      "signals_modelsUsed": [
+        "grok-4.5"
+      ],
+      "events_turn_started_model_id": {
+        "grok-4.5": 1
+      },
+      "chat_history_model_id": {
+        "grok-4.5-build": 18
+      }
+    },
+    "pr1227_r2_killed_precursor_for_comparison": {
+      "session_id": "019ff628-f3a8-79b3-8bb9-6c9fec672e53",
+      "summary_current_model_id": "grok-4.5",
+      "events_turn_started_model_id": {
+        "grok-4.5": 1
+      },
+      "chat_history_model_id": {
+        "grok-4.5-build": 6
+      }
+    }
+  },
+  "finding": {
+    "turn_and_message_level_records_are_unanimous": "grok-4.5",
+    "detail": "events.jsonl turn_started.model_id reads grok-4.5 in all four sessions examined. chat_history.jsonl per-message model_id reads grok-4.5-build in all four, which prior repository evidence (GROK_AUDIT_ROUTE_CUSTODY.json, PR #1214) already established as the runner-internal usage/telemetry label for grok-4.5 and not a requestable model id. summary.json current_model_id reads grok-4.5 in all four.",
+    "the_single_divergent_field": "signals.json primaryModelId",
+    "divergence": "On grok CLI 1.0.3 it reads grok-4.6 with modelsUsed [grok-4.6, grok-4.5], even though -m grok-4.5 was pinned and every per-turn and per-message record says grok-4.5. On CLI 1.0.0 (PR #1227's round-2 session) the same field reads grok-4.5 with modelsUsed [grok-4.5].",
+    "interpretation": "signals.json primaryModelId tracks the runner's default/aggregate model rather than the model that served the audited turns. It agreed with the served model on 1.0.0 only because grok-4.5 was also the default there. It is therefore NOT an independent corroborator of the served model, and it must not be read as one.",
+    "consequence_for_this_packet": "The auditor identity for both Phase B rounds is grok-4.5, established from turn-level and message-level records rather than from the aggregate field. The divergent field is recorded here rather than omitted."
+  },
+  "correction_owed_to_a_merged_record": {
+    "record": "proof/TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001/R2_AUDITOR_IDENTITY_RECONCILIATION.json (merged in PR #1227 at 75b4cfc581)",
+    "what_it_says": "It cites summary.json current_model_id AND signals.json primaryModelId as two agreeing sources for grok-4.5.",
+    "what_is_now_known": "Those two fields were not independent. primaryModelId echoes the runner default, which on CLI 1.0.0 happened to be grok-4.5. The agreement was therefore weaker evidence than it appeared.",
+    "does_the_conclusion_change": "No. It is strengthened. The same session's events.jsonl turn_started.model_id reads grok-4.5, and chat_history.jsonl carries 18 per-message model_id entries of grok-4.5-build. Both are evidence classes that record what actually served the turns, and neither was cited in the original reconciliation.",
+    "action_taken_here": "None to the merged record. This phase is read-only with respect to it, and the merged record's conclusion is correct. The reasoning correction is recorded here and surfaced to the operator; whether to amend the merged record is the operator's call.",
+    "forward_rule": "Future auditor-identity reconciliation should cite events.jsonl turn_started.model_id and chat_history.jsonl model_id. signals.json primaryModelId may be recorded but must not be presented as independent corroboration."
+  }
+}
