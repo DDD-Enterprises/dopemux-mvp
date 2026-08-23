@@ -52,3 +52,8 @@ def test_known_author_still_rejects_unknown_login():
 def test_known_author_rejects_unknown_app_prefixed_login():
     known_reviewers = {"dependabot"}
     assert not _known_author("app/malicious-app", None, known_reviewers, set())
+
+
+def test_known_author_rejects_app_prefixed_human_roster_entry():
+    known_reviewers = {"hu3mann"}
+    assert not _known_author("app/hu3mann", None, known_reviewers, set())

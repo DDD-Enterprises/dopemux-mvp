@@ -1334,14 +1334,14 @@ def _review_item(
 
 
 def _normalize_bot_login(login: str) -> str:
-    """Canonicalize a GitHub bot login by dropping app/ prefix or [bot] suffix.
+    """Canonicalize a GitHub bot login by dropping app/ prefix for dependabot or [bot] suffix.
 
     GitHub renders the same bot identity inconsistently across APIs/UI
     (``app/dependabot`` vs ``dependabot`` vs ``dependabot[bot]``); comparing
     on the normalized form avoids needing a literal roster entry per variant.
     """
-    if login.startswith("app/"):
-        login = login[4:]
+    if login in ("app/dependabot", "app/dependabot[bot]"):
+        return "dependabot"
     return login[: -len("[bot]")] if login.endswith("[bot]") else login
 
 
