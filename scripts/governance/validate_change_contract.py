@@ -352,11 +352,14 @@ def validate_proof_only_closure(
     result.notes.append("All changed paths are within proof-only allowlist")
 
     # Detect quarantine from PROOF.json bodies (or explicit flag).
+    # Prefer bound proof_head blob over working-tree HEAD so a dirty SKIPPED
+    # copy cannot relax signature checks for committed PASS bytes.
+    blob_ref = proof_head if proof_head and proof_head not in {"HEAD", ""} else head
     proof_json_paths = [p for p in norm_paths if p.endswith("PROOF.json")]
     quarantine_hits: list[str] = []
     non_quarantine_proofs: list[str] = []
     for path in proof_json_paths:
-        text = _resolve_text(path, cwd=cwd, head=head, file_text=file_text)
+        text = _resolve_text(path, cwd=cwd, head=blob_ref, file_text=file_text)
         if text is None:
             # deleted PROOF.json — neither audited-pass nor quarantine
             continue
