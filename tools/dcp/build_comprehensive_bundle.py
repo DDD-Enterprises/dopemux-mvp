@@ -46,13 +46,21 @@ def redact(text: str) -> str:
     return text
 
 
-def redact_json_value(value: object) -> object:
+_SECRET_JSON_KEY = re.compile(
+    r"(?i)(api[_-]?key|token|secret|password|authorization|credential|repo_identity)"
+)
+
+
+def redact_json_value(value: object, key: str | None = None) -> object:
     if isinstance(value, str):
-        return redact(value)
+        text = redact(value)
+        if key and _SECRET_JSON_KEY.search(str(key)) and text == value and len(value) > 8:
+            return "[REDACTED]"
+        return text
     if isinstance(value, list):
         return [redact_json_value(item) for item in value]
     if isinstance(value, dict):
-        return {key: redact_json_value(item) for key, item in value.items()}
+        return {k: redact_json_value(item, key=str(k)) for k, item in value.items()}
     return value
 
 
@@ -194,7 +202,10 @@ def task_orchestrator_state() -> dict[str, object]:
 
 def write_json(path: Path, data: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(redact_json_value(data), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
 
 def _json_parseable(path: Path) -> bool:
