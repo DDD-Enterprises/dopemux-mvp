@@ -34,26 +34,25 @@ def test_mcp_up_uses_argv_and_validates_services(monkeypatch):
     result = runner.invoke(mcp_commands.mcp, ["up", "--services", "conport,pal"])
 
     assert result.exit_code == 0, result.output
-    assert recorded == [
-        (
-            ["docker", "network", "ls", "--format", "{{.Name}}"],
-            {"capture_output": True, "text": True, "check": False},
-        ),
-        (
-            [
-                "docker",
-                "compose",
-                "-f",
-                "compose.yml",
-                "up",
-                "-d",
-                "--build",
-                "conport",
-                "pal",
-            ],
-            {"check": True},
-        )
+    assert recorded[0] == (
+        ["docker", "network", "ls", "--format", "{{.Name}}"],
+        {"capture_output": True, "text": True, "check": False},
+    )
+    compose_cmd, compose_kwargs = recorded[1]
+    assert compose_cmd == [
+        "docker",
+        "compose",
+        "-f",
+        "compose.yml",
+        "up",
+        "-d",
+        "--build",
+        "conport",
+        "pal",
     ]
+    assert compose_kwargs["check"] is True
+    assert "env" in compose_kwargs
+    assert str(compose_kwargs["env"].get("DOPECON_BRIDGE_TOKEN") or "").strip()
 
 
 def test_mcp_rejects_invalid_service_before_subprocess(monkeypatch):

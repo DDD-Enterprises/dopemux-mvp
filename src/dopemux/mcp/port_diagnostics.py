@@ -197,6 +197,7 @@ def diagnose_ports(
     )
 
     # --- Reserved singleton collisions (formula + configured) ---
+    explicit_configured = configured_ports is not None
     for source_label, port_map in (("formula", formula), ("configured", configured)):
         for var, port in port_map.items():
             if port in reserved:
@@ -216,17 +217,40 @@ def diagnose_ports(
                     for c in report.collisions
                 ):
                     report.collisions.append(col)
+                # Formula reserved ports are informational once envrc supplies a
+                # different non-reserved value for the same var. Configured
+                # reserved collisions stay FAIL. Pure-formula (no envrc) stays FAIL.
+                neutralized = False
+                if (
+                    source_label == "formula"
+                    and explicit_configured
+                    and var in configured_ports
+                    and int(configured_ports[var]) not in reserved
+                ):
+                    neutralized = True
                 report.findings.append(
                     {
                         "code": "PORT_RESERVED_COLLISION",
-                        "severity": "FAIL",
+                        "severity": "WARN" if neutralized else "FAIL",
                         "service": _service_for_var(var, catalog),
                         "message": col.message,
-                        "evidence": [f"port={port}", f"var={var}", f"singleton={owner}", f"source={source_label}"],
+                        "evidence": [
+                            f"port={port}",
+                            f"var={var}",
+                            f"singleton={owner}",
+                            f"source={source_label}",
+                            *(["neutralized=configured"] if neutralized else []),
+                        ],
                         "recommendation": (
-                            "Adjust default_port_base spacing in mcp_catalog.yaml, "
-                            "or implement preferred-port + lease allocation in a later packet. "
-                            "Do not start services on reserved singleton ports."
+                            "Configured envrc ports already avoid this reserved singleton. "
+                            "Formula collision is informational. Run `dopemux mcp start` "
+                            "if services are down."
+                            if neutralized
+                            else (
+                                "Adjust default_port_base spacing in mcp_catalog.yaml, "
+                                "or implement preferred-port + lease allocation in a later packet. "
+                                "Do not start services on reserved singleton ports."
+                            )
                         ),
                     }
                 )

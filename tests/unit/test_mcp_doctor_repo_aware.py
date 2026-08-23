@@ -234,6 +234,90 @@ def test_resolve_identity_forces_repo_over_ambient(tmp_path: Path):
     assert any("forced identity" in e for e in view.evidence)
 
 
+def test_doctor_ignores_foreign_cwd_compose(tmp_path: Path, monkeypatch):
+    repo = _write_fixture_repo(tmp_path)
+    foreign = tmp_path / "dopemux-mvp"
+    foreign.mkdir()
+    (foreign / "compose.yml").write_text(
+        """
+services:
+  conport:
+    container_name: ${CONPORT_CONTAINER_NAME:-mcp-conport}
+  dope-memory:
+    volumes:
+      - ./.dopemux:/data
+"""
+    )
+    monkeypatch.chdir(foreign)
+    report = run_mcp_doctor(
+        repo,
+        catalog=_catalog(),
+        skip_docker=True,
+        skip_port_probe=True,
+        process_env={},
+    )
+    compose_name = [
+        f
+        for f in report.findings
+        if f["code"] == "COMPOSE_CONTAINER_NAME_DEFAULT_COLLISION_RISK"
+    ]
+    assert compose_name
+    assert all(f["severity"] != "FAIL" for f in compose_name)
+    assert report.compose_lifecycle_diagnostics.get("compose_present") is False
+
+
+def test_doctor_formula_reserved_does_not_fail_remapped_dnh(tmp_path: Path):
+    """dNh_CRM-shaped remapped envrc must not doctor-FAIL on hash-formula reserved ports."""
+    repo = tmp_path / "dNh_CRM"
+    repo.mkdir()
+    (repo / ".git").mkdir()
+    (repo / ".mcp.json").write_text(
+        json.dumps(
+            {
+                "mcpServers": {
+                    "conport": {
+                        "type": "sse",
+                        "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/sse",
+                    },
+                    "dope-memory": {
+                        "type": "http",
+                        "url": "http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp",
+                    },
+                    "task-orchestrator": {
+                        "type": "http",
+                        "url": "http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp",
+                    },
+                }
+            }
+        )
+    )
+    (repo / ".envrc.dopemux-mcp").write_text(
+        f"""export DOPEMUX_WORKSPACE_ID={repo}
+export DOPEMUX_WORKSPACE_ROOT={repo}
+export DOPEMUX_PROJECT_ROOT={repo}
+export TASK_ORCHESTRATOR_PROJECT_ROOT={repo}
+export DOPEMUX_INSTANCE_ID=8d6d
+export DOPE_MEMORY_WORKSPACE_ID=dNh_CRM
+export DOPE_MEMORY_INSTANCE_ID=8d6d
+export CONPORT_MCP_PORT=3041
+export CONPORT_HTTP_PORT=3040
+export CONPORT_INFO_PORT=4040
+export DOPE_MEMORY_PORT=3024
+export TASK_ORCHESTRATOR_HTTP_PORT=7890
+"""
+    )
+    report = run_mcp_doctor(
+        repo,
+        catalog=_catalog(),
+        skip_docker=True,
+        skip_port_probe=True,
+        process_env={},
+    )
+    reserved = [f for f in report.findings if f["code"] == "PORT_RESERVED_COLLISION"]
+    assert not any(f["severity"] == "FAIL" for f in reserved)
+    assert report.status != "FAIL"
+
+
 def test_compose_no_hazard_minimal():
     # Even empty compose still flags dual allocator / cwd requirement (architectural)
     diag = compose_lifecycle_diagnostics(None)
