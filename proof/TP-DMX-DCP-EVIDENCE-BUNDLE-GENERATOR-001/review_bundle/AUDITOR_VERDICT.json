@@ -1,0 +1,34 @@
+{
+  "status": "PASS_WITH_RISKS",
+  "summary": "Verified fix: redact_json_value now threads the parent key into list items (redact_json_value(item, key=key) for item in value), so a list of plain strings under a secret-shaped key (e.g. \"tokens\": [\"abc123...\", ...]) is now redacted where it previously was not. Empirically confirmed against the live implementation with a synthetic sample. Scanned all 2080 JSON files under the tool's actual candidate scan roots (docs/03-reference/dcp, contracts/openclaw-dcp-routing, schemas/dcp*, src/dopemux/dcp, services/dcp-readonly-facade, tests/dcp*, task-packets/dcp, proof/) for the one remaining structural gap in the fix (list-of-dicts nested under a secret-shaped key, where the dict's own keys override and discard the parent's key context) \u2014 zero real occurrences found, so the gap is real but currently dormant in this corpus. No automated test file exists for this script (tools/dcp/build_comprehensive_bundle.py has no counterpart under tests/).",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "LOW",
+      "title": "Key context is lost when a list under a secret-shaped key contains dicts",
+      "status": "ACCEPTED_RISK",
+      "body": "redact_json_value only forwards parent `key` to list *items*; when an item is itself a dict, the recursive dict branch immediately overwrites `key` with the dict's own keys (redact_json_value(item, key=str(k)) for k,item in value.items()). So e.g. {\"secrets\": [{\"value\": \"<realsecret>\"}]} would NOT be redacted, because once inside the dict, only \"value\" is checked against _SECRET_JSON_KEY, not \"secrets\". Confirmed via direct execution of the current redact_json_value against a synthetic sample. However, a scan of all 2080 JSON files under the tool's actual scan roots (docs/03-reference/dcp, contracts/openclaw-dcp-routing, schemas/dcp*, src/dopemux/dcp, services/dcp-readonly-facade, tests/dcp*, task-packets/dcp, proof/) found zero instances of this shape today, so it is a latent gap, not an active leak in this bundle's current inputs."
+    },
+    {
+      "id": "F2",
+      "severity": "LOW",
+      "title": "Key-based redaction threshold silently exempts short values",
+      "status": "ACCEPTED_RISK",
+      "body": "The `len(value) > 8` guard in redact_json_value means a field like {\"token\": \"abcd\"} is left untouched even though the key is secret-shaped. Low real-world impact (short strings are unlikely to be live credentials) but is an unremarked edge in the redaction contract."
+    },
+    {
+      "id": "F3",
+      "severity": "LOW",
+      "title": "No automated regression test for the bundle generator or its redaction behavior",
+      "status": "OPEN",
+      "body": "tools/dcp/build_comprehensive_bundle.py has no corresponding test file (checked tests/dcp, tests/dcp_extension, tests/unit/dcp). The list-redaction fix that prompted this re-audit was verified only by manual/ad hoc execution here, not by CI-enforced tests, so a future refactor could silently regress it."
+    }
+  ],
+  "remaining_risks": [
+    "Regex-based secret detection (REDACTIONS list) is inherently incomplete for credential shapes not matching its patterns.",
+    "Non-text-extension files are copied via shutil.copy2 with no content scanning at all.",
+    "List-of-dicts nested under a secret-shaped key bypasses key-based redaction (F1) \u2014 dormant today, not structurally prevented.",
+    "Key names themselves are never redacted, only values."
+  ],
+  "fixes_applied": []
+}
