@@ -4,37 +4,28 @@
 
 - Packet: `TP-DMX-PALETTE-FOCUS-1180-001`
 - PR: 1255
-- Audited content head: `d604788a2b7a130bcf19bb0955c3d992931a01e6`
+- Audited content head: `9c8272f4a9609bbbf72fa66978d704f873b8cc4e`
 - Implementer: Grok 4.6 (not the auditor)
 - Requested auditor model: `gemini-3.1-pro-high`
-- Provider-attested model: `gemini-3.1-pro-high` (`model_used` in structured output; envelope status SUCCESS; no fallback)
+- Provider-attested display: `Gemini 3.1 Pro (High)` (structured `model_used`)
 - Schema `auditor_model`: `gemini-3.1-pro-high`
 - Auditor tool: `agy`
-- Session/conversation: `7e504f58-b6df-45b3-a2e0-5c58bc130558`
+- Session/conversation: `1b3874f1-700b-488e-b703-b279fabb94ec`
 - Verdict: **PASS**
-
-## Scope
-
-Changed files vs `origin/main`:
-
-- `ui-dashboard/src/components/TaskSequencer.tsx`
-- `ui-dashboard/src/components/__tests__/TaskSequencer.focusPreservation.test.tsx`
-- `.Jules/palette.md`
-- `task-packets/TP-DMX-PALETTE-FOCUS-1180-001.json`
-- `task-packets/INDEX.md`
+- Note: this proof supersedes the earlier AGY PASS on `d604788a2b` after the StrictMode P2 fix.
 
 ## Findings
 
-1. **focus-restore-mount INFO RESOLVED** — Effect restores focus and skips initial mount. The implementation uses a `useEffect` hook tied to `currentTaskId` to trigger `.focus()` on `primaryActionRef`. It accurately skips the initial render using an `isInitialMount` ref, preventing unwanted focus stealing on page load.
-1. **header-focus-conflict INFO RESOLVED** — No conflict with headerRef focus on completeTask. The focus restoration is guarded by `if (currentTaskId && primaryActionRef.current)`. When there is no next task, `currentTaskId` becomes null, correctly preventing this effect from stealing focus away from the `headerRef`.
-1. **tests-rendered-behavior INFO RESOLVED** — Tests prove rendered DOM focus behavior. The vitest file uses JSDOM to interact with the DOM via `fireEvent.click` and validates focus visually with `.toHaveFocus()`. This proves the actual rendered behavior rather than just matching source strings (though a regex test exists for the ref).
-1. **scope-creep-check INFO RESOLVED** — No scope creep and ListItemText untouched. Only the TP, INDEX, palette doc, TaskSequencer, and its specific test file were modified. `ListItemText disableTypography` remains safely intact.
-1. **secrets-check INFO RESOLVED** — No secrets found. No secrets or unauthorized credentials were introduced in this diff.
+1. **F1 INFO RESOLVED** — Focus preservation. previousTaskIdRef tracks the previous task ID and prevents focus changes unless the ID explicitly changes, safely handling React 18 StrictMode double-invokes.
+1. **F2 INFO RESOLVED** — Focus transitions. Focus is reliably moved to the ritual Start/Pause button using primaryActionRef when the active task changes.
+1. **F3 INFO RESOLVED** — HeaderRef conflict avoidance. The effect safely skips focus calls when currentTaskId is null, preventing fights with completeTask's headerRef.current?.focus().
+1. **F4 INFO RESOLVED** — Test coverage. The TaskSequencer.focusPreservation.test.tsx correctly uses <React.StrictMode> to prove focus isn't stolen on initial mount.
+1. **F5 INFO RESOLVED** — Scope check. Changes are tightly scoped to the focus preservation requirements. No secrets or scope creep detected.
 
 ## Remaining risks
 
-- Rapid task transitions could theoretically cause a race condition with focus, but this is largely mitigated by the existing `isSkipConfirming` guard.
+- The implementation depends on standard synchronous React state updates for focus. Rapid, concurrent task transitions could potentially cause a race condition, though unlikely in normal user interaction.
 
 ## Summary
 
-Read-only audit of PR #1180 focus preservation implementation. The changes correctly implement the requested focus management using an `isInitialMount` ref and effect hooked to `currentTaskId`, avoiding conflicts with `headerRef` and initial load. Vitest coverage proves the DOM-level behavior. No scope creep or secrets detected. `ListItemText disableTypography` remains untouched.
+The implementation correctly uses previousTaskIdRef to prevent focus stealing during StrictMode double-invokes. Task transitions appropriately move focus to the ritual Start/Pause button. The completeTask function handles a null currentTaskId without conflicting with headerRef. Tests validate this behavior. No scope creep or secrets were introduced.

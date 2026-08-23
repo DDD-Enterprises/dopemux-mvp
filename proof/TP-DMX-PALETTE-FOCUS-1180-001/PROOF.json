@@ -1,55 +1,55 @@
 {
   "packet_id": "TP-DMX-PALETTE-FOCUS-1180-001",
-  "head_sha": "d604788a2b7a130bcf19bb0955c3d992931a01e6",
-  "generated_at": "2026-08-23T13:19:52Z",
+  "head_sha": "9c8272f4a9609bbbf72fa66978d704f873b8cc4e",
+  "generated_at": "2026-08-23T13:29:48Z",
   "embedded_audit": {
     "required": true,
     "status": "PASS",
     "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "agy --model gemini-3.1-pro-high --output-format json --json-schema audit-verdict.schema.json --mode plan --effort high --print-timeout 20m --sandbox --add-dir <worktree> --print=<prompt>; conversation_id=7e504f58-b6df-45b3-a2e0-5c58bc130558; model_used=gemini-3.1-pro-high (no fallback)",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --json-schema audit-verdict.schema.json --mode plan --effort high --print-timeout 20m --sandbox --add-dir <worktree> --print=<prompt>; conversation_id=1b3874f1-700b-488e-b703-b279fabb94ec; structured model_used=\"Gemini 3.1 Pro (High)\"; CLI flag gemini-3.1-pro-high; no fallback",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-PALETTE-FOCUS-1180-001/AUDITOR_REPORT.md",
     "findings": [
       {
-        "id": "focus-restore-mount",
+        "id": "F1",
         "severity": "INFO",
-        "title": "Effect restores focus and skips initial mount",
+        "title": "Focus preservation",
         "status": "RESOLVED",
-        "body": "The implementation uses a `useEffect` hook tied to `currentTaskId` to trigger `.focus()` on `primaryActionRef`. It accurately skips the initial render using an `isInitialMount` ref, preventing unwanted focus stealing on page load."
+        "body": "previousTaskIdRef tracks the previous task ID and prevents focus changes unless the ID explicitly changes, safely handling React 18 StrictMode double-invokes."
       },
       {
-        "id": "header-focus-conflict",
+        "id": "F2",
         "severity": "INFO",
-        "title": "No conflict with headerRef focus on completeTask",
+        "title": "Focus transitions",
         "status": "RESOLVED",
-        "body": "The focus restoration is guarded by `if (currentTaskId && primaryActionRef.current)`. When there is no next task, `currentTaskId` becomes null, correctly preventing this effect from stealing focus away from the `headerRef`."
+        "body": "Focus is reliably moved to the ritual Start/Pause button using primaryActionRef when the active task changes."
       },
       {
-        "id": "tests-rendered-behavior",
+        "id": "F3",
         "severity": "INFO",
-        "title": "Tests prove rendered DOM focus behavior",
+        "title": "HeaderRef conflict avoidance",
         "status": "RESOLVED",
-        "body": "The vitest file uses JSDOM to interact with the DOM via `fireEvent.click` and validates focus visually with `.toHaveFocus()`. This proves the actual rendered behavior rather than just matching source strings (though a regex test exists for the ref)."
+        "body": "The effect safely skips focus calls when currentTaskId is null, preventing fights with completeTask's headerRef.current?.focus()."
       },
       {
-        "id": "scope-creep-check",
+        "id": "F4",
         "severity": "INFO",
-        "title": "No scope creep and ListItemText untouched",
+        "title": "Test coverage",
         "status": "RESOLVED",
-        "body": "Only the TP, INDEX, palette doc, TaskSequencer, and its specific test file were modified. `ListItemText disableTypography` remains safely intact."
+        "body": "The TaskSequencer.focusPreservation.test.tsx correctly uses <React.StrictMode> to prove focus isn't stolen on initial mount."
       },
       {
-        "id": "secrets-check",
+        "id": "F5",
         "severity": "INFO",
-        "title": "No secrets found",
+        "title": "Scope check",
         "status": "RESOLVED",
-        "body": "No secrets or unauthorized credentials were introduced in this diff."
+        "body": "Changes are tightly scoped to the focus preservation requirements. No secrets or scope creep detected."
       }
     ],
     "fixes_applied": [],
     "remaining_risks": [
-      "Rapid task transitions could theoretically cause a race condition with focus, but this is largely mitigated by the existing `isSkipConfirming` guard."
+      "The implementation depends on standard synchronous React state updates for focus. Rapid, concurrent task transitions could potentially cause a race condition, though unlikely in normal user interaction."
     ],
     "skip_reason": null
   }

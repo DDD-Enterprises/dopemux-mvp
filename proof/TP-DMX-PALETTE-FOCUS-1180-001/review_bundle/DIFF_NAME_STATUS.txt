@@ -1,4 +1,14 @@
 M	.Jules/palette.md
+A	proof/TP-DMX-PALETTE-FOCUS-1180-001/AUDITOR_REPORT.md
+A	proof/TP-DMX-PALETTE-FOCUS-1180-001/PROOF.json
+A	proof/TP-DMX-PALETTE-FOCUS-1180-001/review_bundle/AGY_RAW_OUTPUT.json
+A	proof/TP-DMX-PALETTE-FOCUS-1180-001/review_bundle/AUDITOR_VERDICT.json
+A	proof/TP-DMX-PALETTE-FOCUS-1180-001/review_bundle/CANDIDATE_UNIFIED_DIFF.txt
+A	proof/TP-DMX-PALETTE-FOCUS-1180-001/review_bundle/DIFF_NAME_STATUS.txt
+A	proof/TP-DMX-PALETTE-FOCUS-1180-001/review_bundle/EXCLUDED_ARTIFACTS.md
+A	proof/TP-DMX-PALETTE-FOCUS-1180-001/review_bundle/MODEL_IDENTITY.json
+A	proof/pr_merge/embedded-audit/pr-1255/PROOF.json
+A	proof/pr_merge/embedded-audit/pr-1255/PROOF.json.sig
 M	task-packets/INDEX.md
 A	task-packets/TP-DMX-PALETTE-FOCUS-1180-001.json
 M	ui-dashboard/src/components/TaskSequencer.tsx
