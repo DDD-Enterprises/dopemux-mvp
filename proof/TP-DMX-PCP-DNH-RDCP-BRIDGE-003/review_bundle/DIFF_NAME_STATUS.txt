@@ -1,0 +1,8 @@
+A	reports/project-control-plane/fixtures/dnh_crm_fixture/SOURCES.json
+M	reports/project-control-plane/fixtures/dnh_crm_fixture/evidence_export.json
+M	reports/project-control-plane/fixtures/dnh_crm_fixture/project_profile.json
+M	schemas/dnh_extension/extension_manifest.dnh.json
+A	schemas/dnh_extension/rdcp_source_map.dnh.json
+A	src/dopemux/repository_planner/adapters/dnh_rdcp.py
+M	task-packets/TP-DMX-PCP-DNH-RDCP-BRIDGE-003.json
+A	tests/repository_planner/test_dnh_rdcp_adapter.py

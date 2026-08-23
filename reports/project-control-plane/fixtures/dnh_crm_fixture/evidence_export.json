@@ -1,94 +1,40 @@
 {
   "schema_version": "pcp.project_evidence_export.v0",
-  "project_id": "dnh-crm-fixture",
+  "project_id": "DDD-Enterprises/dnh-crm",
   "generated_from_fixture": true,
   "profile_ref": "reports/project-control-plane/fixtures/dnh_crm_fixture/project_profile.json",
-  "repo_state": {
-    "root_verified": true,
-    "worktree_state": "CLEAN",
-    "head_sha": "sha256:PLACEHOLDER-illustrative-not-computed",
-    "branch": "fixture-branch"
-  },
+  "repo_state": {"root_verified": true, "worktree_state": "CLEAN", "head_sha": "92eb632bb07426ae5159c02bf9da549888e7caf1", "branch": null},
   "authority_docs": [
-    {
-      "path": "AGENTS.md",
-      "state": "PRESENT"
-    },
-    {
-      "path": "docs/governance/macro-packet-operating-model.md",
-      "state": "PRESENT"
-    }
+    {"path": "AGENTS.md", "state": "PRESENT"},
+    {"path": "artifacts/rdcp/architecture/ARCHITECTURE_SYNTHESIS.md", "state": "PRESENT"}
   ],
-  "active_packet": {
-    "state": "PRESENT",
-    "packet_id": "TP-DNH-RDCP-FIXTURE-0000",
-    "path": "task-packets/TP-DNH-RDCP-FIXTURE-0000.json"
-  },
+  "active_packet": {"state": "PRESENT", "packet_id": "TP-IDLE-0000", "path": "task-packets/TP-IDLE-0000.md"},
   "status_ledger": {
     "state": "PRESENT",
-    "path": "status/ledger.json",
+    "path": "artifacts/rdcp/source_ledger/SOURCE_LEDGER.json",
     "entries": [
-      {
-        "id": "fixture-entry-001",
-        "status": "READY_FOR_REVIEW"
-      }
+      {"id": "rdcp-proof-pointer", "status": "STALE"},
+      {"id": "rdcp-source-ledger", "status": "MIXED_SHA"},
+      {"id": "rdcp-review-sensor", "status": "MISSING"},
+      {"id": "rdcp-task-orchestrator", "status": "UNKNOWN"}
     ]
   },
-  "proof_manifest": {
-    "state": "PRESENT",
-    "path": "proof/TP-DNH-RDCP-FIXTURE-0000/PROOF.json",
-    "freshness": "CURRENT"
-  },
+  "proof_manifest": {"state": "PRESENT", "path": "artifacts/rdcp/proof_adapter/EVIDENCE_MANIFEST.json", "freshness": "STALE"},
   "workflow_list": [
-    {
-      "id": "workflow-fixture-001",
-      "status": "DRY_RUN_ONLY",
-      "source": "fixture"
-    }
+    {"id": "rdcp-review-sensor", "status": "MISSING", "source": "proof/TP-DNH-RDCP-0016/PROOF.json"},
+    {"id": "task-orchestrator-rdcp-export", "status": "ARTIFACT_ONLY", "source": "artifacts/task-orchestrator/dnh-rdcp-export/latest.json"}
   ],
-  "pr_review_state": {
-    "state": "PRESENT",
-    "authority_allowed": false,
-    "open_prs": [
-      "PR-FIXTURE-OPEN-NOT-AUTHORITY"
-    ]
-  },
+  "pr_review_state": {"state": "UNKNOWN", "authority_allowed": false, "open_prs": []},
   "red_lane_results": [
-    {
-      "lane_id": "crm-write",
-      "result": "PASS",
-      "evidence": "fixture profile declared lane and no matching forbidden fixture path"
-    },
-    {
-      "lane_id": "telegram-send",
-      "result": "PASS",
-      "evidence": "fixture profile declared lane and no matching forbidden fixture path"
-    },
-    {
-      "lane_id": "calendar-write",
-      "result": "PASS",
-      "evidence": "fixture profile declared lane and no matching forbidden fixture path"
-    },
-    {
-      "lane_id": "runtime-db",
-      "result": "PASS",
-      "evidence": "fixture profile declared lane and no matching forbidden fixture path"
-    },
-    {
-      "lane_id": "forbidden-worktree",
-      "result": "PASS",
-      "evidence": "fixture profile declared lane and no matching forbidden fixture path"
-    }
+    {"lane_id": "rdcp-proof-pointer", "result": "NEEDS_EVIDENCE_REFRESH", "evidence": "proof pointer binds an earlier head"},
+    {"lane_id": "rdcp-source-ledger", "result": "BLOCKED", "evidence": "source ledger records mixed SHA evidence"},
+    {"lane_id": "rdcp-review-sensor", "result": "BLOCKED", "evidence": "review-sensor outputs are absent at the pinned revision"},
+    {"lane_id": "rdcp-task-orchestrator", "result": "UNKNOWN", "evidence": "historical artifact-only export is not proof or authority"}
   ],
-  "unknowns": [],
-  "dirty_state": {
-    "state": "CLEAN",
-    "paths": []
-  },
-  "forbidden_action_confirmation": {
-    "external_workflow_written": false,
-    "external_runner_executed": false,
-    "github_mutated": false,
-    "runtime_written": false
-  }
+  "unknowns": [
+    {"field": "current_auditor_identity", "reason": "no auditor identity is bound to the pinned candidate", "result": "NEEDS_EVIDENCE_REFRESH"},
+    {"field": "review_sensor_outputs", "reason": "expected review ledger and thread disposition outputs are missing", "result": "BLOCKED"}
+  ],
+  "dirty_state": {"state": "CLEAN", "paths": []},
+  "forbidden_action_confirmation": {"external_workflow_written": false, "external_runner_executed": false, "github_mutated": false, "runtime_written": false}
 }

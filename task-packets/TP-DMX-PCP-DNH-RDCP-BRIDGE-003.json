@@ -1,159 +1,62 @@
 {
   "id": "TP-DMX-PCP-DNH-RDCP-BRIDGE-003",
   "project": "dopemux-mvp",
-  "target": "Bridge existing dNh CRM RDCP proof, source-ledger, review-sensor, and Task Orchestrator projection artifacts into the accepted PCP planner contract without modifying dNh CRM.",
+  "target": "bridge existing dNh RDCP evidence to repository planner",
   "invariants": [
-    "Risk lane is L2 because RDCP authority and freshness semantics cross a repository boundary.",
-    "TP-DMX-PCP-PLANNER-FOUNDATION-001 must be accepted before activation.",
-    "DDD-Enterprises/dNh-CRM is read-only under this packet.",
-    "Existing RDCP artifacts are consumed, not replaced or reinterpreted into stronger claims.",
-    "Task Orchestrator projections remain authority NONE and is_proof false.",
-    "No gov accept, CRM write, GitHub write, runtime service, or Task Orchestrator write tool may be called."
+    "Risk lane is L2 architecture extension.",
+    "Read-only dNh RDCP extension to repository-planner contract.",
+    "Projects four independent fail-closed lanes.",
+    "Preserves Task Orchestrator authority NONE and performs no CRM mutation."
   ],
-  "depends_on": ["TP-DMX-PCP-PLANNER-FOUNDATION-001"],
+  "depends_on": [
+    "TP-DMX-PCP-ADOPS-EXTENSION-002"
+  ],
   "repo_binding": {
     "project_id": "dopemux-mvp",
-    "repo_marker": ".dopetaskroot",
+    "repo_marker": "AGENTS.md",
     "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
     "require_identity_match": true
   },
   "series": {
     "id": "repository-merge-planner",
     "base_branch": "main",
-    "parent_tp_id": "TP-DMX-PCP-PLANNER-FOUNDATION-001",
-    "final_packet": false
+    "parent_tp_id": "TP-DMX-PCP-ADOPS-EXTENSION-002",
+    "final_packet": true
   },
   "execution": {
-    "agent": "codex",
+    "agent": "shell",
     "branch": "feat/pcp-dnh-rdcp-bridge-003",
-    "base_branch": "main",
-    "stacked_because": "Consumes the accepted foundation protocol and can run independently of the AdOps adapter in a separate worktree."
+    "base_branch": "main"
   },
   "commit": {
-    "message": "feat(pcp): bridge dNh RDCP evidence",
+    "message": "feat(pcp): bridge existing dNh RDCP evidence",
     "allowlist": [
-      "src/dopemux/repository_planner/adapters/dnh_rdcp.py",
+      "reports/project-control-plane/fixtures/dnh_crm_fixture/SOURCES.json",
+      "reports/project-control-plane/fixtures/dnh_crm_fixture/evidence_export.json",
+      "reports/project-control-plane/fixtures/dnh_crm_fixture/project_profile.json",
       "schemas/dnh_extension/extension_manifest.dnh.json",
       "schemas/dnh_extension/rdcp_source_map.dnh.json",
-      "reports/project-control-plane/fixtures/dnh_crm_fixture/SOURCES.json",
-      "reports/project-control-plane/fixtures/dnh_crm_fixture/project_profile.json",
-      "reports/project-control-plane/fixtures/dnh_crm_fixture/evidence_export.json",
+      "src/dopemux/repository_planner/adapters/dnh_rdcp.py",
       "tests/repository_planner/test_dnh_rdcp_adapter.py",
-      "proof/TP-DMX-PCP-DNH-RDCP-BRIDGE-003/**",
       "task-packets/TP-DMX-PCP-DNH-RDCP-BRIDGE-003.json"
     ],
     "verify": [
-      "pytest -q tests/repository_planner/test_dnh_rdcp_adapter.py",
-      "pytest -q tests/project_control_plane",
-      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "pytest tests/repository_planner/test_dnh_rdcp_adapter.py",
       "git diff --check"
     ]
   },
   "pr": {
     "title": "feat(pcp): bridge existing dNh RDCP evidence",
-    "body": "Consumes pinned, source-backed RDCP artifacts through an additive dNh extension. dNh CRM remains read-only and Task Orchestrator remains non-authoritative. L2 final independent audit required.",
+    "body": "Bridges existing dNh RDCP evidence into the repository planner as a read-only extension.",
     "base": "main"
   },
   "steps": [
     {
       "id": "S1",
-      "task": "Replace the illustrative dNh fixture with a source-backed snapshot pinned to dNh CRM commit 92eb632bb07426ae5159c02bf9da549888e7caf1.",
-      "requirements": [
-        "Capture explicit blobs for AGENTS.md, ACTIVE.md, RDCP architecture, proof-pointer schema and artifact, source ledger, review-sensor output, and Task Orchestrator RDCP export.",
-        "Record Git blob SHA, SHA-256, source URL, fetched_at, privacy class, and redaction notes in SOURCES.json.",
-        "Remove or quarantine sha256:PLACEHOLDER-illustrative-not-computed from the production fixture path.",
-        "Do not copy runtime databases, client records, raw messages, tokens, or local absolute paths."
-      ],
-      "commands": [
-        "pytest -q tests/repository_planner/test_dnh_rdcp_adapter.py -k fixture"
-      ],
-      "expected_files": [
-        "reports/project-control-plane/fixtures/dnh_crm_fixture/SOURCES.json",
-        "reports/project-control-plane/fixtures/dnh_crm_fixture/project_profile.json",
-        "reports/project-control-plane/fixtures/dnh_crm_fixture/evidence_export.json"
-      ],
+      "task": "Implement DnhRdcpExtensionAdapter, schemas, fixtures, and tests",
       "validation": [
-        "All material fixture claims resolve to the pinned dNh commit.",
-        "The fixture contains no illustrative placeholder identity or sensitive client data."
-      ],
-      "context_files": [
-        "schemas/dnh_extension/extension_manifest.dnh.json",
-        "schemas/project_control_plane/project_evidence_export.schema.json"
-      ]
-    },
-    {
-      "id": "S2",
-      "task": "Reconcile the existing dNh extension manifest with observed RDCP artifact contracts.",
-      "requirements": [
-        "Keep extension_kind DNH_CRM and all five additive invariants true.",
-        "Map RDCP proof pointers, source ledger, review sensor, evidence bundle, and Task Orchestrator artifact-only export explicitly.",
-        "Preserve freshness states CURRENT, STALE, MISSING, UNREADABLE, UNPARSEABLE, MIXED_SHA, and UNKNOWN without collapsing them.",
-        "Do not map Task Orchestrator output as proof or acceptance."
-      ],
-      "commands": [
-        "python -m jsonschema -i schemas/dnh_extension/extension_manifest.dnh.json schemas/project_control_plane/extension_manifest.schema.json"
-      ],
-      "expected_files": [
-        "schemas/dnh_extension/extension_manifest.dnh.json",
-        "schemas/dnh_extension/rdcp_source_map.dnh.json"
-      ],
-      "validation": [
-        "Extension manifest validates against PCP Core.",
-        "Every RDCP mapping names an observed dNh path and expected schema version."
-      ],
-      "context_files": [
-        "schemas/project_control_plane/extension_manifest.schema.json"
-      ]
-    },
-    {
-      "id": "S3",
-      "task": "Implement and register the dNh RDCP adapter against the frozen foundation protocol.",
-      "requirements": [
-        "Implement DnhRdcpExtensionAdapter.matches(generic_export: Mapping[str, object]) -> bool.",
-        "Implement DnhRdcpExtensionAdapter.enrich(generic_export: Mapping[str, object], source_root: Path) -> SourceSnapshot.",
-        "Validate proof-pointer and manifest bytes before mapping claims.",
-        "MIXED_SHA, malformed schema, path escape, stale proof, missing auditor identity, and source disagreement must fail closed.",
-        "One malformed RDCP lane must not erase other dNh or portfolio lanes."
-      ],
-      "commands": [
-        "pytest -q tests/repository_planner/test_dnh_rdcp_adapter.py"
-      ],
-      "expected_files": [
-        "src/dopemux/repository_planner/adapters/dnh_rdcp.py",
-        "tests/repository_planner/test_dnh_rdcp_adapter.py"
-      ],
-      "validation": [
-        "Adapter preserves RDCP status and provenance without inventing readiness.",
-        "Generic PCP behavior and DCP extension behavior remain unchanged.",
-        "Tests prove dNh CRM and Task Orchestrator write functions are never invoked."
-      ],
-      "context_files": [
-        "src/dopemux/pcp/dcp_extension_export.py",
-        "src/dopemux/pcp/task_orchestrator_projection.py"
-      ]
-    },
-    {
-      "id": "S4",
-      "task": "Freeze the exact content head and complete one independent L2 audit.",
-      "requirements": [
-        "Audit RDCP fidelity, source isolation, freshness preservation, PCP non-regression, and dNh/Task Orchestrator inertness.",
-        "Any audit mismatch or non-passing verdict blocks readiness."
-      ],
-      "commands": [
-        "pytest -q tests/repository_planner/test_dnh_rdcp_adapter.py",
-        "pytest -q tests/project_control_plane",
+        "pytest tests/repository_planner/test_dnh_rdcp_adapter.py -v",
         "git diff --check"
-      ],
-      "expected_files": [
-        "proof/TP-DMX-PCP-DNH-RDCP-BRIDGE-003/PROOF.json",
-        "proof/TP-DMX-PCP-DNH-RDCP-BRIDGE-003/AUDITOR_REPORT.md"
-      ],
-      "validation": [
-        "Proof binds the exact head and confirms dNh CRM was not mutated.",
-        "PR remains unmerged pending Control Tower disposition."
-      ],
-      "context_files": [
-        "docs/ops/embedded-audit.md"
       ]
     }
   ]

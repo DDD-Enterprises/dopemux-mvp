@@ -1,56 +1,44 @@
 {
   "schema_version": "pcp.extension_manifest.v0",
   "status": "PROPOSED",
-  "extension_id": "dnh-crm",
+  "extension_id": "dnh-crm-rdcp",
   "extension_kind": "DNH_CRM",
   "compatible_pcp_core_versions": [
-    "pcp.authority_map.v0",
+    "pcp.repository_planner_source.v1",
     "pcp.extension_manifest.v0",
     "pcp.project_evidence_export.v0"
   ],
   "extension_identity": {
-    "project_id_patterns": [
-      "dnh-crm",
-      "dnh-crm-fixture"
-    ],
-    "repo_markers": [
-      ".dnhroot"
-    ],
+    "project_id_patterns": ["DDD-Enterprises/dnh-crm"],
+    "repo_markers": ["AGENTS.md"],
     "discovery_hints": [
-      "dNh CRM project profile",
-      "reports/project-control-plane/fixtures/dnh_crm_fixture/"
+      "RDCP proof pointer and source ledger",
+      "reports/project-control-plane/fixtures/dnh_crm_fixture/SOURCES.json"
     ]
   },
   "capabilities": {
-    "authority_map_contributions": [
-      "schemas/dnh_extension/authority_map.dnh.json"
-    ],
+    "authority_map_contributions": ["schemas/dnh_extension/authority_map.dnh.json"],
     "red_lane_contributions": [
-      "reports/project-control-plane/fixtures/dnh_crm_fixture/red_lanes.json"
+      "rdcp-proof-pointer",
+      "rdcp-source-ledger",
+      "rdcp-review-sensor",
+      "rdcp-task-orchestrator"
     ],
     "evidence_export_sections": [
-      "dnh_profile",
-      "dnh_authority_docs",
-      "dnh_proof_roots"
+      "rdcp.proof_pointer",
+      "rdcp.source_ledger",
+      "rdcp.review_sensor",
+      "rdcp.task_orchestrator_artifact"
     ],
-    "proof_status_mappings": [],
+    "proof_status_mappings": ["schemas/dnh_extension/rdcp_source_map.dnh.json"],
     "runtime_mappings": [],
     "adapter_mappings": [
-      "dnh-project-profile",
-      "dnh-authority-docs",
-      "dnh-proof-roots",
-      "dnh-crm",
-      "dnh-telegram",
-      "dnh-calendar",
-      "dnh-identity",
-      "dnh-policy",
-      "dnh-event-store",
-      "dnh-runtime-db"
+      "dopemux.repository_planner.adapters.dnh_rdcp:DnhRdcpExtensionAdapter"
     ]
   },
   "schemas": {
-    "owned_schema_ids": [],
-    "core_schema_extensions": [],
+    "owned_schema_ids": ["dnh.rdcp_source_map.v1"],
+    "core_schema_extensions": ["pcp.repository_planner_source.v1"],
     "forbidden_core_overrides": [
       "project_evidence_export.schema.json",
       "authority_map.schema.json",
