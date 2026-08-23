@@ -1,0 +1,77 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1256,
+  "head_sha": "f40fe398a3502b103ae7cab16b4f015b66d26a4f",
+  "generated_at": "2026-08-23T13:38:40Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --mode plan --effort high --print-timeout 20m --sandbox; conversation_id=cc11f380-fd73-4701-a267-40970954d78f; display=Gemini 3.1 Pro (High); no fallback",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "p1-compose-ignore",
+        "severity": "INFO",
+        "title": "P1: doctor/CLI ignore compose.yml not owned by the target repo",
+        "status": "RESOLVED",
+        "body": "The `_owned_compose` helper correctly ensures that explicit `compose_path` resolves to a child of `repo_path`. Foreign `compose.yml` files are correctly ignored, preventing product-compose convention hazards."
+      },
+      {
+        "id": "p2-empty-service-list",
+        "severity": "INFO",
+        "title": "P2: mcp up returns without docker compose up if empty service list",
+        "status": "RESOLVED",
+        "body": "If `task-orchestrator` is removed due to a missing `DOPECON_BRIDGE_TOKEN` and the `svc_list` becomes empty, the CLI correctly returns early with a warning rather than running an empty `docker compose up`. "
+      },
+      {
+        "id": "p3-none-narrowing",
+        "severity": "INFO",
+        "title": "P3: configured_ports None-narrowing",
+        "status": "RESOLVED",
+        "body": "Safe-guard logic added to check `configured_ports is not None` before querying it, preventing potential TypeErrors/KeyErrors during diagnostic generation."
+      },
+      {
+        "id": "p4-test-line-wrap",
+        "severity": "INFO",
+        "title": "P4: test line wrap",
+        "status": "RESOLVED",
+        "body": "Test line wrap formatting fixes implemented, tests pass."
+      },
+      {
+        "id": "formula-reserved-warn",
+        "severity": "INFO",
+        "title": "Original Formula-Reserved WARN Behavior",
+        "status": "RESOLVED",
+        "body": "Formula collisions correctly downgrade from `FAIL` to `WARN` if `source_label == \"formula\"` and the user has safely overridden the collision with a non-reserved port via `.envrc`. Configured reserved collisions remain `FAIL`."
+      },
+      {
+        "id": "secrets-check",
+        "severity": "INFO",
+        "title": "Secrets handling",
+        "status": "RESOLVED",
+        "body": "No secrets are written to `.mcp.json` or `.env`. The fix for compose interpolation injects a dummy string `dopemux-compose-interpolation-only` which is safe."
+      },
+      {
+        "id": "scope-check",
+        "severity": "INFO",
+        "title": "Scope constraint validation",
+        "status": "RESOLVED",
+        "body": "All changes were restricted to the allowlist provided in TP-DMX-MCP-DOCTOR-FORMULA-RESERVED-001.json."
+      }
+    ],
+    "fixes_applied": [
+      "doctor/CLI ignores foreign compose.yml",
+      "mcp up returns gracefully on empty service list",
+      "configured_ports None-narrowing safe-guarded",
+      "test line wrap corrected"
+    ],
+    "remaining_risks": [
+      "If a user bypasses dopemux and directly invokes `docker compose up task-orchestrator` with the fake token `dopemux-compose-interpolation-only`, it could parse successfully but fail at runtime. This is an expected side effect of the fix.",
+      "The `_owned_compose` check relies on `repo_path` being accurate. Symlinked worktrees could potentially cause edge cases."
+    ],
+    "skip_reason": null
+  }
+}

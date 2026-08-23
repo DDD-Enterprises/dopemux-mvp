@@ -56,6 +56,16 @@ def test_write_runtime_artifacts_writes(tmp_path: Path):
     assert Path(paths["compose.override.yml"]).is_file()
 
 
+def test_env_with_compose_interpolation_sets_placeholder(monkeypatch):
+    monkeypatch.delenv("DOPECON_BRIDGE_TOKEN", raising=False)
+    env = dr.env_with_compose_interpolation({"PATH": "/bin"})
+    assert env["DOPECON_BRIDGE_TOKEN"] == dr.COMPOSE_INTERPOLATION_PLACEHOLDER
+    kept = dr.env_with_compose_interpolation(
+        {"PATH": "/bin", "DOPECON_BRIDGE_TOKEN": "real-jwt"}
+    )
+    assert kept["DOPECON_BRIDGE_TOKEN"] == "real-jwt"
+
+
 def test_mcp_env_skips_secrets():
     text = dr.generate_mcp_env(
         {

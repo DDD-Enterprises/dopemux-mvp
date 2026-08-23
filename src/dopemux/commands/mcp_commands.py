@@ -255,10 +255,34 @@ def mcp_up_cmd(
                 svc_list = sorted(DEFAULT_MCP_SERVICES)
         else:
             svc_list = _parse_services(services)
+        explicit_services = bool(services) and not all_services
+        token_set = bool(str(os.environ.get("DOPECON_BRIDGE_TOKEN") or "").strip())
+        if "task-orchestrator" in svc_list and not token_set:
+            if explicit_services:
+                console.logger.error(
+                    "[error]DOPECON_BRIDGE_TOKEN is required to start compose "
+                    "task-orchestrator. For the wrapper-singleton on :7890 use "
+                    "`dopemux mcp start --repo .` instead.[/error]"
+                )
+                sys.exit(1)
+            svc_list = [s for s in svc_list if s != "task-orchestrator"]
+            console.logger.info(
+                "[warning]Skipping compose task-orchestrator: DOPECON_BRIDGE_TOKEN "
+                "is unset. Use `dopemux mcp start --repo .` for the "
+                "wrapper-singleton on :7890.[/warning]"
+            )
+        if not svc_list:
+            console.logger.info(
+                "[warning]No compose services left to start after skipping "
+                "task-orchestrator. Not invoking `docker compose up`.[/warning]"
+            )
+            return
+        from ..mcp.docker_runtime import env_with_compose_interpolation
+
         ensure_docker_networks(["dopemux-network"], runner=subprocess.run)
         cmd = ["docker", "compose", "-f", "compose.yml", "up", "-d", "--build"] + svc_list
         console.logger.info(f"[info]{' '.join(cmd)}[/info]")
-        subprocess.run(cmd, check=True)
+        subprocess.run(cmd, check=True, env=env_with_compose_interpolation())
         console.logger.info("[success]MCP servers started[/success]")
     except (CalledProcessError, FileNotFoundError, RuntimeError) as exc:
         console.logger.error(f"[error]Failed to start MCP servers: {exc}[/error]")
@@ -1600,12 +1624,11 @@ def mcp_doctor_cmd(
 
     from dopemux.mcp.doctor import format_human_summary, run_mcp_doctor
 
-    # Prefer compose hazards from dopemux product compose when target has none.
+    # Only the target repo's compose.yml. Never pass a foreign cwd compose.yml
+    # as compose_path — that bypasses run_mcp_doctor's repo-owned compose guard.
     compose_candidate = Path(repo) / "compose.yml"
     if not compose_candidate.is_file():
-        # Read-only: may use current cwd compose for hazard text only
-        cwd_compose = Path.cwd() / "compose.yml"
-        compose_candidate = cwd_compose if cwd_compose.is_file() else None
+        compose_candidate = None
 
     report = run_mcp_doctor(
         repo,
