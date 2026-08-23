@@ -1,40 +1,26 @@
 {
-  "conversation_id": "cb6356d4-a515-4bee-8c08-e62f674f2b47",
+  "conversation_id": "dd3a62b2-8586-48aa-b691-cf6c4ace6c89",
   "status": "SUCCESS",
-  "response": "{\"findings\":[{\"body\":\"_normalize_bot_login correctly strips 'app/' prefixes and '[bot]' suffixes. Unknown app-prefixed actors fail closed because normalization only strips the prefix, and checking the stripped string against known_reviewers.json correctly rejects untrusted names (e.g. app/malicious normalizes to malicious, which is not in known_reviewers).\",\"id\":\"normalization-logic\",\"severity\":\"INFO\",\"status\":\"RESOLVED\",\"title\":\"Normalization logic safely canonicalizes bot logins\"},{\"body\":\"known_reviewers.json correctly lists dependabot, dependabot[bot], and app/dependabot. Although the aliases are slightly redundant due to the new normalization logic, this is benign and ensures backwards/forwards compatibility without widening the trust boundary.\",\"id\":\"known-reviewers-aliases\",\"severity\":\"INFO\",\"status\":\"RESOLVED\",\"title\":\"Redundant but safe known_reviewers entries\"},{\"body\":\"Tests thoroughly cover normalization of app/ prefixes, [bot] suffixes, and explicitly assert that an unknown app-prefixed login (like app/malicious-app) is rejected.\",\"id\":\"test-coverage\",\"severity\":\"INFO\",\"status\":\"RESOLVED\",\"title\":\"Test coverage is comprehensive and includes negative test cases\"}],\"fixes_applied\":[],\"model_used\":\"Gemini 3.1 Pro (High)\",\"remaining_risks\":[\"Redundant entries in known_reviewers.json could be cleaned up in the future, but pose no current security risk.\"],\"status\":\"PASS\",\"summary\":\"The substantive changes to pr_steward safely and correctly implement GitHub App actor normalization. Stripping the 'app/' prefix prevents hardcoding every alias variant while ensuring that unknown apps like 'app/malicious' are securely rejected. Tests cover both positive and negative cases. No secret leaks, scope creep, or unintended trust widening were detected.\",\"toolAction\":\"Finishing audit with PASS\",\"toolSummary\":\"Finish audit\"}\n",
-  "duration_seconds": 74.362804,
+  "response": "{\"findings\":[{\"body\":\"The implementation strictly hardcodes 'app/dependabot', meaning any future legitimate GitHub apps will require explicit code changes in _normalize_bot_login rather than just roster additions. This is an intended consequence of the fail-closed security posture.\",\"id\":\"hardcoded-app-prefix\",\"severity\":\"INFO\",\"status\":\"ACCEPTED_RISK\",\"title\":\"Strict app prefix matching requires code changes for new apps\"}],\"fixes_applied\":[],\"model_used\":\"gemini-3.1-pro-high\",\"remaining_risks\":[\"Future GitHub Apps with the 'app/' prefix will fail-closed and require manual PRs to update the _normalize_bot_login strict checking.\"],\"status\":\"PASS\",\"summary\":\"The PR correctly restricts the 'app/' prefix normalization exclusively for 'dependabot' variants ('app/dependabot' and 'app/dependabot[bot]') while leaving any other login untouched. This correctly prevents spoofing of human accounts (e.g. 'app/hu3mann'). The tests prove both positive normalization for dependabot and rejection of app-prefixed human/unknown logins. The change is safe, has no scope creep, and leaks no secrets.\",\"toolAction\":\"Submitting the final audit report\",\"toolSummary\":\"Submit audit\"}\n",
+  "duration_seconds": 57.271383,
   "num_turns": 1,
   "structured_output": {
     "findings": [
       {
-        "body": "_normalize_bot_login correctly strips 'app/' prefixes and '[bot]' suffixes. Unknown app-prefixed actors fail closed because normalization only strips the prefix, and checking the stripped string against known_reviewers.json correctly rejects untrusted names (e.g. app/malicious normalizes to malicious, which is not in known_reviewers).",
-        "id": "normalization-logic",
+        "body": "The implementation strictly hardcodes 'app/dependabot', meaning any future legitimate GitHub apps will require explicit code changes in _normalize_bot_login rather than just roster additions. This is an intended consequence of the fail-closed security posture.",
+        "id": "hardcoded-app-prefix",
         "severity": "INFO",
-        "status": "RESOLVED",
-        "title": "Normalization logic safely canonicalizes bot logins"
-      },
-      {
-        "body": "known_reviewers.json correctly lists dependabot, dependabot[bot], and app/dependabot. Although the aliases are slightly redundant due to the new normalization logic, this is benign and ensures backwards/forwards compatibility without widening the trust boundary.",
-        "id": "known-reviewers-aliases",
-        "severity": "INFO",
-        "status": "RESOLVED",
-        "title": "Redundant but safe known_reviewers entries"
-      },
-      {
-        "body": "Tests thoroughly cover normalization of app/ prefixes, [bot] suffixes, and explicitly assert that an unknown app-prefixed login (like app/malicious-app) is rejected.",
-        "id": "test-coverage",
-        "severity": "INFO",
-        "status": "RESOLVED",
-        "title": "Test coverage is comprehensive and includes negative test cases"
+        "status": "ACCEPTED_RISK",
+        "title": "Strict app prefix matching requires code changes for new apps"
       }
     ],
     "fixes_applied": [],
-    "model_used": "Gemini 3.1 Pro (High)",
+    "model_used": "gemini-3.1-pro-high",
     "remaining_risks": [
-      "Redundant entries in known_reviewers.json could be cleaned up in the future, but pose no current security risk."
+      "Future GitHub Apps with the 'app/' prefix will fail-closed and require manual PRs to update the _normalize_bot_login strict checking."
     ],
     "status": "PASS",
-    "summary": "The substantive changes to pr_steward safely and correctly implement GitHub App actor normalization. Stripping the 'app/' prefix prevents hardcoding every alias variant while ensuring that unknown apps like 'app/malicious' are securely rejected. Tests cover both positive and negative cases. No secret leaks, scope creep, or unintended trust widening were detected."
+    "summary": "The PR correctly restricts the 'app/' prefix normalization exclusively for 'dependabot' variants ('app/dependabot' and 'app/dependabot[bot]') while leaving any other login untouched. This correctly prevents spoofing of human accounts (e.g. 'app/hu3mann'). The tests prove both positive normalization for dependabot and rejection of app-prefixed human/unknown logins. The change is safe, has no scope creep, and leaks no secrets."
   },
   "json_schema": {
     "type": "object",
@@ -121,10 +107,10 @@
     }
   },
   "usage": {
-    "input_tokens": 80708,
-    "output_tokens": 4876,
-    "thinking_tokens": 3595,
-    "cache_read_tokens": 321519,
-    "total_tokens": 85584
+    "input_tokens": 61979,
+    "output_tokens": 3947,
+    "thinking_tokens": 2959,
+    "cache_read_tokens": 211409,
+    "total_tokens": 65926
   }
 }

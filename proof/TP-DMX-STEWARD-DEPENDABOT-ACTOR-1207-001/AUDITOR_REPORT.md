@@ -1,17 +1,15 @@
 # Embedded Audit Report
 
-- Packet: `TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001` PR 1207
-- Audited content head: `c68e37dc09b5a7f8241f415072538d21e5540874`
-- Auditor: agy gemini-3.1-pro-high / session `cb6356d4-a515-4bee-8c08-e62f674f2b47`
+- Packet: `TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001` PR 1258
+- Audited content head: `c70d442d697642a1606f58eb4130cf83ebc25815`
+- Auditor: agy gemini-3.1-pro-high / session `dd3a62b2-8586-48aa-b691-cf6c4ace6c89`
 - Verdict: **PASS**
 
 ## Summary
-The substantive changes to pr_steward safely and correctly implement GitHub App actor normalization. Stripping the 'app/' prefix prevents hardcoding every alias variant while ensuring that unknown apps like 'app/malicious' are securely rejected. Tests cover both positive and negative cases. No secret leaks, scope creep, or unintended trust widening were detected.
+The PR correctly restricts the 'app/' prefix normalization exclusively for 'dependabot' variants ('app/dependabot' and 'app/dependabot[bot]') while leaving any other login untouched. This correctly prevents spoofing of human accounts (e.g. 'app/hu3mann'). The tests prove both positive normalization for dependabot and rejection of app-prefixed human/unknown logins. The change is safe, has no scope creep, and leaks no secrets.
 
 ## Findings
-- **Normalization logic safely canonicalizes bot logins** (`normalization-logic`, INFO, RESOLVED): _normalize_bot_login correctly strips 'app/' prefixes and '[bot]' suffixes. Unknown app-prefixed actors fail closed because normalization only strips the prefix, and checking the stripped string against known_reviewers.json correctly rejects untrusted names (e.g. app/malicious normalizes to malicious, which is not in known_reviewers).
-- **Redundant but safe known_reviewers entries** (`known-reviewers-aliases`, INFO, RESOLVED): known_reviewers.json correctly lists dependabot, dependabot[bot], and app/dependabot. Although the aliases are slightly redundant due to the new normalization logic, this is benign and ensures backwards/forwards compatibility without widening the trust boundary.
-- **Test coverage is comprehensive and includes negative test cases** (`test-coverage`, INFO, RESOLVED): Tests thoroughly cover normalization of app/ prefixes, [bot] suffixes, and explicitly assert that an unknown app-prefixed login (like app/malicious-app) is rejected.
+- **Strict app prefix matching requires code changes for new apps** (`hardcoded-app-prefix`, INFO, ACCEPTED_RISK): The implementation strictly hardcodes 'app/dependabot', meaning any future legitimate GitHub apps will require explicit code changes in _normalize_bot_login rather than just roster additions. This is an intended consequence of the fail-closed security posture.
 
 ## Remaining risks
-- Redundant entries in known_reviewers.json could be cleaned up in the future, but pose no current security risk.
+- Future GitHub Apps with the 'app/' prefix will fail-closed and require manual PRs to update the _normalize_bot_login strict checking.
