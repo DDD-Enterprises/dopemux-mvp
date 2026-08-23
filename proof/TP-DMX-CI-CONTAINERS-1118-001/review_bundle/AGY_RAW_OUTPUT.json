@@ -1,0 +1,116 @@
+{
+  "conversation_id": "6110b9e6-c3cf-485e-9c85-748886a87fc3",
+  "status": "SUCCESS",
+  "response": "{\"findings\":[{\"body\":\"The task packet invariants section claims 'Risk lane is L0 deterministic CI configuration', but modifying .github/workflows/containers.yml is evaluated as an L3 change by validate_change_contract.py. The invariant should be updated to L3.\",\"id\":\"RISK_LANE_MISMATCH\",\"severity\":\"MEDIUM\",\"status\":\"OPEN\",\"title\":\"Task Packet Risk Lane Mismatch\"}],\"fixes_applied\":[],\"model_used\":\"gemini-3.1-pro-high\",\"remaining_risks\":[\"Task packet invariant specifies L0 but the change is evaluated as L3.\"],\"status\":\"PASS_WITH_RISKS\",\"summary\":\"The matrix definition for adhd-dashboard is correctly implemented and the target Dockerfile exists. The diff is clean with no scope creep or secret leaks. However, there is a mismatch between the risk lane specified in the Task Packet invariants (L0) and the actual evaluated lane of the changed files (L3).\",\"toolAction\":\"Completing the audit\",\"toolSummary\":\"Complete audit\"}\n",
+  "duration_seconds": 93.770779,
+  "num_turns": 1,
+  "structured_output": {
+    "findings": [
+      {
+        "body": "The task packet invariants section claims 'Risk lane is L0 deterministic CI configuration', but modifying .github/workflows/containers.yml is evaluated as an L3 change by validate_change_contract.py. The invariant should be updated to L3.",
+        "id": "RISK_LANE_MISMATCH",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "title": "Task Packet Risk Lane Mismatch"
+      }
+    ],
+    "fixes_applied": [],
+    "model_used": "gemini-3.1-pro-high",
+    "remaining_risks": [
+      "Task packet invariant specifies L0 but the change is evaluated as L3."
+    ],
+    "status": "PASS_WITH_RISKS",
+    "summary": "The matrix definition for adhd-dashboard is correctly implemented and the target Dockerfile exists. The diff is clean with no scope creep or secret leaks. However, there is a mismatch between the risk lane specified in the Task Packet invariants (L0) and the actual evaluated lane of the changed files (L3)."
+  },
+  "json_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "status",
+      "summary",
+      "findings",
+      "remaining_risks",
+      "fixes_applied",
+      "model_used"
+    ],
+    "properties": {
+      "status": {
+        "type": "string",
+        "enum": [
+          "PASS",
+          "PASS_WITH_RISKS",
+          "FAIL",
+          "NEEDS_SUPERVISOR"
+        ]
+      },
+      "summary": {
+        "type": "string"
+      },
+      "findings": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "severity",
+            "title",
+            "status",
+            "body"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "severity": {
+              "type": "string",
+              "enum": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "BLOCKING",
+                "INFO"
+              ]
+            },
+            "title": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "OPEN",
+                "RESOLVED",
+                "ACCEPTED_RISK"
+              ]
+            },
+            "body": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "remaining_risks": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "fixes_applied": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "model_used": {
+        "type": "string"
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 80338,
+    "output_tokens": 6949,
+    "thinking_tokens": 5177,
+    "cache_read_tokens": 378005,
+    "total_tokens": 87287
+  }
+}

@@ -82,6 +82,13 @@ jobs:
             smoke_port: "8095"
             smoke_path: "/health"
 
+          # -- Cognitive: ADHD Dashboard
+          - service: adhd-dashboard
+            dockerfile: services/adhd-dashboard/Dockerfile
+            context: .
+            smoke_test: "false"
+
+
           # -- Coordination: DopeconBridge
           - service: dopecon-bridge
             dockerfile: services/dopecon-bridge/Dockerfile
