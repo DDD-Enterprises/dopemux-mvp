@@ -1,7 +1,6 @@
 {
-  "repo": "DDD-Enterprises/dopemux-mvp",
-  "pr_number": 1232,
   "head_sha": "a2340e86e93b4700188a30405aa5be9964958b41",
+  "generated_at": "2026-08-23T01:01:14Z",
   "embedded_audit": {
     "required": true,
     "status": "PASS_WITH_RISKS",
@@ -18,5 +17,6 @@
       "run_doctor_full persist=True still embeds get_git_sha(root) into DOCTOR_FULL.json. CLI --doctor takes the persist=False early exit before custody"
     ],
     "skip_reason": null
-  }
+  },
+  "packet_id": "TP-DMX-RTE-V5-PR1232-SOURCE-IDENTITY-FINAL-CLOSURE-001-A1"
 }
