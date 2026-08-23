@@ -58,7 +58,7 @@ def redact_json_value(value: object, key: str | None = None) -> object:
             return "[REDACTED]"
         return text
     if isinstance(value, list):
-        return [redact_json_value(item) for item in value]
+        return [redact_json_value(item, key=key) for item in value]
     if isinstance(value, dict):
         return {k: redact_json_value(item, key=str(k)) for k, item in value.items()}
     return value
