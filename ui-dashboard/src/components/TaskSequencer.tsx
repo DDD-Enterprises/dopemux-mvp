@@ -255,6 +255,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
 
     const freshTasks = INITIAL_TASKS.map((task) => ({ ...task }));
     setTasks(freshTasks);
+    // Align previous id before state update so the focus-restore effect does
+    // not steal heading focus after a completed-ritual reset (null -> first id).
+    previousTaskIdRef.current = freshTasks[0].id;
     setCurrentTaskId(freshTasks[0].id);
     setTaskTimer(0);
     setIsTimerRunning(false);
