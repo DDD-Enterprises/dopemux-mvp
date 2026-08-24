@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/governed_delivery/content-audit-binding.v1.schema.json",
+  "title": "ContentAuditBinding v1",
+  "description": "Binds an independent auditor's judgment to an immutable subject. This object only represents a supplied audit result: no governed-delivery runtime may invoke an auditor. The five auditor identity layers are recorded separately and never collapsed, so an UNKNOWN provider attestation stays visible instead of being upgraded to a proven identity.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "audit_id", "packet_ref",
+    "audited_head", "audited_tree", "audited_content_digest", "base_policy_ref",
+    "auditor_requested_identity", "auditor_configured_identity",
+    "auditor_response_claimed_identity", "auditor_proxy_reported_identity",
+    "auditor_provider_attested_identity", "independence", "verdict",
+    "finding_refs", "risk_refs", "audit_result_digest", "observed_at"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "governed-delivery.content-audit-binding.v1" },
+    "audit_id": { "type": "string", "minLength": 1 },
+    "packet_ref": { "type": "string", "minLength": 1 },
+    "packet_digest": { "type": ["string", "null"] },
+    "policy_digest": { "type": ["string", "null"] },
+    "audited_head": { "type": "string", "minLength": 1 },
+    "audited_tree": { "type": "string", "minLength": 1 },
+    "audited_content_digest": { "type": "string", "minLength": 1 },
+    "included_paths_digest": {
+      "type": ["string", "null"],
+      "description": "Digest over the sorted list of paths in scope for audited_content_digest."
+    },
+    "excluded_proof_only_paths": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Proof-only paths excluded from audited_content_digest, consumed by ProofOnlySuccessorEquivalence."
+    },
+    "base_policy_ref": { "type": "string", "minLength": 1 },
+    "auditor_requested_identity": { "type": "string", "minLength": 1 },
+    "auditor_configured_identity": { "type": "string", "minLength": 1 },
+    "auditor_response_claimed_identity": { "type": "string", "minLength": 1 },
+    "auditor_proxy_reported_identity": { "type": "string", "minLength": 1 },
+    "auditor_provider_attested_identity": {
+      "type": "string",
+      "minLength": 1,
+      "description": "UNKNOWN is a legitimate recorded value and must never be silently upgraded."
+    },
+    "independence": { "type": "string", "enum": ["PROVEN", "LIMITED", "NONE", "UNKNOWN"] },
+    "verdict": {
+      "type": "string",
+      "enum": ["PASS", "PASS_WITH_RISKS", "FAIL", "NEEDS_SUPERVISOR", "SKIPPED", "MALFORMED", "UNKNOWN"]
+    },
+    "finding_refs": { "type": "array", "items": { "type": "string" } },
+    "risk_refs": { "type": "array", "items": { "type": "string" } },
+    "audit_result_digest": { "type": "string", "minLength": 1 },
+    "observed_at": { "type": "string" }
+  }
+}

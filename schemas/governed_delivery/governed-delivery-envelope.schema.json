@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/governed_delivery/governed-delivery-envelope.v1.schema.json",
+  "title": "GovernedDeliveryEnvelope v1",
+  "description": "One transport wrapper for exactly five payload kinds. The DMX-GOV-WORKFLOW-OPT-001 census found 39 semantic message classes; they share producer, consumer, binding, idempotency, evidence-reference and retention mechanics, so they are carried by five kinds rather than 39 standalone schemas. Transport never adds authority: authority_effect defaults to NONE and mutation_authorized is structurally false.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "envelope_id", "kind", "event_type",
+    "project_id", "repository_id", "producer", "consumer", "created_at",
+    "subject_ref", "evidence_refs", "idempotency_key", "payload_schema", "payload"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "governed-delivery.envelope.v1" },
+    "envelope_id": { "type": "string", "minLength": 1 },
+    "kind": {
+      "type": "string",
+      "description": "Exactly five kinds. A sixth kind is a contract change, not an extension point.",
+      "enum": ["FACT", "REQUEST", "FINDING", "DECISION", "RECEIPT"]
+    },
+    "event_type": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The census message class carried, e.g. AuditRequest. Semantic identity lives here; transport identity lives in kind."
+    },
+    "project_id": { "type": "string", "minLength": 1 },
+    "repository_id": { "type": "string", "minLength": 1 },
+    "work_item_id": { "type": ["string", "null"] },
+    "packet_id": { "type": ["string", "null"] },
+    "producer": { "type": "string", "minLength": 1 },
+    "consumer": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Declared consumer. An unknown consumer policy fails closed at the reducer."
+    },
+    "created_at": { "type": "string" },
+    "subject_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The exact subject this message is about. Cross-project subject or evidence mismatch is denied."
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": { "$ref": "https://dopemux.dev/schemas/governed_delivery/evidence-reference.v1.schema.json" }
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Duplicate key with an identical payload is an accepted duplicate; duplicate key with a different payload is denied."
+    },
+    "payload_schema": { "type": "string", "minLength": 1 },
+    "payload": { "type": "object" },
+    "authority_effect": {
+      "type": "string",
+      "default": "NONE",
+      "enum": ["NONE", "ADVISORY", "GATE_INPUT", "CANONICAL_DECISION", "TRANSITION_RECEIPT"]
+    },
+    "mutation_authorized": {
+      "type": "boolean",
+      "const": false,
+      "description": "Structurally false. A message cannot carry mutation permission."
+    }
+  }
+}

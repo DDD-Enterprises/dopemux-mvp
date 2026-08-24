@@ -1,0 +1,261 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/governed_delivery/proof-only-successor-equivalence.v1.schema.json",
+  "title": "ProofOnlySuccessorEquivalence v1",
+  "description": "Receipt proving a successor head differs from an audited head only in genuinely inert ways. Closes GOV-AUD-F1: a path allowlist alone is insufficient, because governance-relevant content (known risks, unknowns, evidence-ref lists, verdicts) lives inside allowed proof-only paths and is consumed downstream by PR Steward and the operator merge card. Governance fields are compared as a path-independent aggregate, so a byte-identical relocation passes while semantic drift fails regardless of which file carries it. Every compared field is enumerated, so a vacuous pass is detectable rather than indistinguishable from a real one.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "equivalence_id",
+    "result",
+    "audited_head",
+    "successor_head",
+    "ancestry_basis",
+    "ancestry_established",
+    "allowed_paths",
+    "actual_changed_paths",
+    "non_allowed_diff_count",
+    "raw_diff_digest",
+    "raw_diff_contains_no_substantive_source_change",
+    "content_digest_exclusion_definition",
+    "content_tree_equivalent_under_exclusion",
+    "packet_digest_unchanged",
+    "policy_digest_unchanged",
+    "audit_result_digest_unchanged",
+    "compared_fields",
+    "compared_field_count",
+    "mismatched_fields",
+    "unclassified_fields",
+    "failures",
+    "validator_version",
+    "receipt_digest"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "governed-delivery.proof-only-successor-equivalence.v1"
+    },
+    "equivalence_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FAIL"
+      ]
+    },
+    "audited_head": {
+      "type": "string",
+      "minLength": 1
+    },
+    "successor_head": {
+      "type": "string",
+      "minLength": 1
+    },
+    "merge_base": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ancestry_basis": {
+      "type": "string",
+      "description": "How ancestry was determined. The evaluator performs no I/O, so the caller supplies this; UNKNOWN fails closed.",
+      "enum": [
+        "OBSERVED_GIT",
+        "CLAIMED_INPUT",
+        "UNKNOWN"
+      ]
+    },
+    "ancestry_established": {
+      "type": "boolean",
+      "description": "True only when the successor is a proven descendant of, or patch-equivalent to, the audited head."
+    },
+    "allowed_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The exact proof-only path allowlist applied for this evaluation."
+    },
+    "actual_changed_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "non_allowed_diff_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "raw_diff_digest": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Digest over the full raw diff, retained so any laundered change stays detectable post hoc."
+    },
+    "raw_diff_contains_no_substantive_source_change": {
+      "type": "boolean",
+      "description": "Caller attestation that the raw diff carries no substantive source change. Architecture section 08 states this as its own conjunct."
+    },
+    "content_digest_exclusion_definition": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The deterministic rule used to compute equivalence under exclusion, recorded so the comparison is reproducible."
+    },
+    "content_tree_equivalent_under_exclusion": {
+      "type": "boolean"
+    },
+    "packet_digest_unchanged": {
+      "type": "boolean"
+    },
+    "policy_digest_unchanged": {
+      "type": "boolean"
+    },
+    "audit_result_digest_unchanged": {
+      "type": "boolean"
+    },
+    "compared_fields": {
+      "type": "array",
+      "description": "Every semantic field compared, with classification and outcome. Enumerated so anti-vacuity is testable.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "field",
+          "classification",
+          "changed",
+          "outcome"
+        ],
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "classification": {
+            "type": "string",
+            "enum": [
+              "INERT",
+              "GOVERNANCE_RELEVANT",
+              "UNKNOWN"
+            ]
+          },
+          "changed": {
+            "type": "boolean"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "UNCHANGED",
+              "INERT_CHANGE_ALLOWED",
+              "GOVERNANCE_CHANGE_REJECTED",
+              "UNCLASSIFIED_REJECTED"
+            ]
+          }
+        }
+      }
+    },
+    "compared_field_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Non-vacuity counter. Zero while proof content exists is itself a failure."
+    },
+    "mismatched_fields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "unclassified_fields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Fields the classifier could not place. Treated as governance-relevant and rejected, and listed here for transparency."
+    },
+    "failures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "detail"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Empty only when result is PASS."
+    },
+    "validator_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "receipt_digest": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "result": {
+            "const": "PASS"
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "then": {
+        "properties": {
+          "failures": {
+            "type": "array",
+            "maxItems": 0
+          },
+          "ancestry_established": {
+            "const": true
+          },
+          "content_tree_equivalent_under_exclusion": {
+            "const": true
+          },
+          "non_allowed_diff_count": {
+            "const": 0
+          },
+          "packet_digest_unchanged": {
+            "const": true
+          },
+          "policy_digest_unchanged": {
+            "const": true
+          },
+          "audit_result_digest_unchanged": {
+            "const": true
+          },
+          "compared_field_count": {
+            "minimum": 1
+          },
+          "mismatched_fields": {
+            "type": "array",
+            "maxItems": 0
+          },
+          "unclassified_fields": {
+            "type": "array",
+            "maxItems": 0
+          },
+          "raw_diff_contains_no_substantive_source_change": {
+            "const": true
+          }
+        }
+      }
+    }
+  ]
+}

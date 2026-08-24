@@ -1,0 +1,108 @@
+{
+  "id": "TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-001",
+  "project": "dopemux-mvp",
+  "target": "L2 governed-delivery G0. Implement a read-only typed evidence spine, GateLedger, WorkItemProjection, five-kind transport envelope, content-audit binding, proof-only successor equivalence with semantic anti-vacuity protection, operator decision request, deterministic snapshot library, and inspection CLI. No Task Orchestrator mutation, automatic dispatch, audit dispatch, merge, activation, or authority reassignment.",
+  "invariants": [
+    "All governed-delivery outputs are derived and non-authoritative.",
+    "No Task Orchestrator, DCP, PM, GitHub workflow-state, runner, or production mutation is permitted by runtime code.",
+    "Unknown or mismatched project, repository, workspace, worktree, packet, or required subject identity fails closed.",
+    "All 39 observed message classes are representable by exactly five envelope kinds.",
+    "All 44 observed failure branches map to the normalized failure classes without creating a global workflow mega-enum.",
+    "Gate satisfaction never implies execution, merge, activation, or other authority.",
+    "dispatch_eligible remains false throughout G0.",
+    "Proof-only successor equivalence must inspect governance-relevant semantics and must reject semantic change even inside allowed proof paths.",
+    "No new database, service, daemon, MCP server, persistent cache, credential store, or network listener is introduced."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-GOV-GOVERNED-DELIVERY-001-007",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "feat(governance): add governed-delivery evidence spine",
+    "allowlist": [
+      "task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-001.json",
+      "docs/03-reference/governance/governed-delivery/contract.md",
+      "schemas/governed_delivery/evidence-reference.schema.json",
+      "schemas/governed_delivery/governed-delivery-envelope.schema.json",
+      "schemas/governed_delivery/gate-ledger.schema.json",
+      "schemas/governed_delivery/work-item-projection.schema.json",
+      "schemas/governed_delivery/content-audit-binding.schema.json",
+      "schemas/governed_delivery/proof-only-successor-equivalence.schema.json",
+      "schemas/governed_delivery/operator-decision-request.schema.json",
+      "src/dopemux/governed_delivery/__init__.py",
+      "src/dopemux/governed_delivery/models.py",
+      "src/dopemux/governed_delivery/receipts.py",
+      "src/dopemux/governed_delivery/equivalence.py",
+      "src/dopemux/governed_delivery/snapshot.py",
+      "src/dopemux/governed_delivery/cli.py",
+      "tests/unit/governed_delivery/__init__.py",
+      "tests/unit/governed_delivery/test_models.py",
+      "tests/unit/governed_delivery/test_receipts.py",
+      "tests/unit/governed_delivery/test_snapshot.py",
+      "tests/unit/governed_delivery/test_cross_project_denial.py",
+      "tests/unit/governed_delivery/test_proof_only_equivalence.py",
+      "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-001/**"
+    ],
+    "verify": [
+      "git diff --check",
+      "uv run ruff check src/dopemux/governed_delivery tests/unit/governed_delivery",
+      "uv run --extra test pytest tests/unit/governed_delivery -q",
+      "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
+    ]
+  },
+  "pr": {
+    "title": "feat(governance): add governed-delivery evidence spine",
+    "body": "G0 of the ratified governed-delivery optimization. Adds only read-only evidence/reference contracts and derived delivery projections. No Task Orchestrator mutation, dispatch automation, GitHub command plane, merge authority, or activation. Includes the independent architecture audit F1 semantic anti-vacuity requirement for proof-only successor equivalence.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Implement closed versioned governed-delivery schemas and contract documentation without changing any existing authority owner.",
+      "validation": [
+        "Validate every new schema using the repository-supported JSON Schema draft.",
+        "Verify unknown major versions and missing identity bindings fail closed."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement pure typed models, evidence-reference freshness, GateLedger, WorkItemProjection, and five-kind GovernedDeliveryEnvelope.",
+      "validation": [
+        "uv run --extra test pytest tests/unit/governed_delivery/test_models.py tests/unit/governed_delivery/test_receipts.py -q"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement semantic ProofOnlySuccessorEquivalence and close GOV-AUD-F1 with anti-vacuity and governance-semantic negative fixtures.",
+      "validation": [
+        "uv run --extra test pytest tests/unit/governed_delivery/test_proof_only_equivalence.py -q"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Implement deterministic read-only governed-delivery snapshot and inspection CLI with no network or mutation behavior.",
+      "validation": [
+        "uv run --extra test pytest tests/unit/governed_delivery/test_snapshot.py tests/unit/governed_delivery/test_cross_project_denial.py -q"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run complete G0 validation, pre-push gates, draft-PR flow, final frozen-content independent audit, proof-only closure when applicable, and exact-head PR Steward.",
+      "validation": [
+        "git diff --check",
+        "uv run ruff check src/dopemux/governed_delivery tests/unit/governed_delivery",
+        "uv run --extra test pytest tests/unit/governed_delivery -q",
+        "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
+      ]
+    }
+  ]
+}
