@@ -8,6 +8,7 @@ import fs from 'fs';
 import path from 'path';
 import PredictionPanel from '../PredictionPanel';
 import TaskSequencer from '../TaskSequencer';
+import TeamDashboard from '../TeamDashboard';
 
 const componentsDir = path.resolve(__dirname, '..');
 
@@ -111,12 +112,42 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   // Verify Member Card consolidation
   expect(content).toMatch(/aria-label=\{\s*`\$\{member\.name\}: \$\{statusStyles\[member\.status\]\.label\}, \$\{member\.load\}% load, \$\{member\.energy\}% energy, \$\{member\.attention\}% attention`\s*\}/);
 
-  // Verify AI Insight Copyable Surface
+  // Verify AI Insight Copyable Surface & Global Error Propagation
   expect(content).toMatch(/<Tooltip title=\{isCopied \? 'Copied!' : 'Copy team insight'\} arrow>/);
   expect(content).toMatch(/aria-label=\{\s*isCopied \? `Team insight: \$\{teamInsight\} \(Copied\)` : `Copy team insight: \$\{teamInsight\}`\s*\}/);
   expect(content).toContain('role="button"');
   expect(content).toContain('onKeyDown=');
   expect(content).toContain("animation: 'insight-copy-pulse 0.4s ease-out'");
+  expect(content).toContain('interface TeamDashboardProps {');
+  expect(content).toContain('onError?: (message: string) => void;');
+  expect(content).toContain("onError?.('Clipboard API is not supported in this browser or context.');");
+});
+
+test('TeamDashboard propagates clipboard copy error via onError prop', async () => {
+  let errorMessage: string | null = null;
+  const handleError = (msg: string) => {
+    errorMessage = msg;
+  };
+
+  const originalClipboard = navigator.clipboard;
+  // Temporarily remove writeText to simulate unsupported browser/context
+  Object.defineProperty(navigator, 'clipboard', {
+    value: undefined,
+    configurable: true,
+  });
+
+  try {
+    render(<TeamDashboard onError={handleError} />);
+    const copyButton = screen.getByRole('button', { name: /Copy team insight:/i });
+    fireEvent.click(copyButton);
+
+    expect(errorMessage).toBe('Clipboard API is not supported in this browser or context.');
+  } finally {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: originalClipboard,
+      configurable: true,
+    });
+  }
 });
 
 test('App.tsx exposes metric card tooltips with focus indicators and labels', () => {
