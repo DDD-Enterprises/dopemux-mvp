@@ -77,7 +77,7 @@ test = [
     # ruff check`, but ruff was declared nowhere in this project, so the job had
     # never once succeeded ("Failed to spawn: ruff"). It lives in `test` rather
     # than `dev` because extractor-lint syncs `--extra test --extra services`.
-    "ruff>=0.14.14,<0.15",
+    "ruff>=0.14.14,<0.17",
 ]
 dev = [
     "jsonschema>=4.20.0",
@@ -94,17 +94,17 @@ dev = [
     "pip-audit>=2.7.0",
     "bandit>=1.7.0",
     "semgrep>=1.90.0",
-    "dopetask==0.5.1",
+    "dopetask==0.5.7",
 ]
 services = [
     "asyncpg>=0.29.0",
     "sqlalchemy[asyncio]>=2.0.0",
     "tree-sitter>=0.25.2",
-    "tree-sitter-python==0.23.0",
-    "tree-sitter-javascript==0.23.0",
-    "tree-sitter-typescript==0.23.0",
-    "tree-sitter-go==0.23.0",
-    "tree-sitter-rust==0.23.0",
+    "tree-sitter-python==0.25.0",
+    "tree-sitter-javascript==0.25.0",
+    "tree-sitter-typescript==0.23.2",
+    "tree-sitter-go==0.25.0",
+    "tree-sitter-rust==0.24.2",
     "fastmcp>=3.2.0,<4",  # >=3.2.0: GHSA critical SSRF/path-traversal + OAuth fixes; <4: transport API contract-sensitive
     "httpx>=0.28.1",
     "pydantic-settings>=2.14.2",
