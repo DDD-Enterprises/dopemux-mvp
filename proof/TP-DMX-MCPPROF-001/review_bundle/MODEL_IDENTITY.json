@@ -1,0 +1,8 @@
+{
+  "requested_model": "gemini-3.1-pro-high",
+  "canonical_model": "gemini-3.1-pro-high",
+  "display_model": "Gemini 3.1 Pro (High)",
+  "auditor_tool": "agy",
+  "session_id": "8df0f334-1d7b-484d-ac10-c11c4536f232",
+  "fallback": false
+}
