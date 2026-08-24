@@ -1,0 +1,164 @@
+{
+  "packet_id": "TP-RTE-TRUTH-R1-003",
+  "packet_path": "task-packets/generated/TP-RTE-TRUTH-R1-003.json",
+  "tree_item_id": "4ffff1d5-ed79-488a-b759-22052a5fe295",
+  "worktree": "/Users/hue/code/dopemux-mvp/.claude/worktrees/focused-mahavira-5bd29b",
+  "branch": "claude/rte-audit-improvement-f4beb7",
+  "base_head": "d20a8190b1293c2e0bd8e251b5cfc13e3f4a4fce",
+  "commit_sha": null,
+  "recommended_execution": {
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "xhigh"
+  },
+  "repo_identity": {
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot",
+    "marker_present": true
+  },
+  "authority_used": [
+    "AGENTS.md",
+    "task-packets/generated/TP-RTE-TRUTH-R1-003.json",
+    "claudedocs/rte-truth-program-2026-07/A1-architecture.md",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/extractor/phases/a.py",
+    "services/repo-truth-extractor/extractor/phases/base.py",
+    "services/repo-truth-extractor/tests/test_truth_harness_goldens.py"
+  ],
+  "scope": {
+    "dry_run_only": true,
+    "live_provider_calls": false,
+    "dpmx_live_ok_set": false,
+    "execute_commands_run": false
+  },
+  "changes": [
+    {
+      "file": "services/repo-truth-extractor/extractor/phases/base.py",
+      "summary": "Extended PhaseRunnerDeps with only the injected repo-scan and X planning callables needed by C/D/X."
+    },
+    {
+      "file": "services/repo-truth-extractor/extractor/phases/c.py",
+      "summary": "Extracted the C planner and runner call with the exact ten-target inventory and existing C selected-step forwarding."
+    },
+    {
+      "file": "services/repo-truth-extractor/extractor/phases/d.py",
+      "summary": "Extracted the D docs-only planner and runner call with existing selected-step forwarding."
+    },
+    {
+      "file": "services/repo-truth-extractor/extractor/phases/x.py",
+      "summary": "Extracted the X planner and runner call through the injected X wrapper."
+    },
+    {
+      "file": "services/repo-truth-extractor/run_extraction_v5.py",
+      "summary": "Bound the two planning callables and retained C/D/X legacy facade functions as direct delegators."
+    },
+    {
+      "file": "services/repo-truth-extractor/tests/test_phase_runner_seam.py",
+      "summary": "Added direct C/D/X facade and planner parity coverage; updated A/Z fixtures for the explicit dependency extension."
+    }
+  ],
+  "golden_diff_itemized": [],
+  "validation": [
+    {
+      "status": "FAIL",
+      "exit_code": 2,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_phase_runner_seam.py services/repo-truth-extractor/tests/test_phase_interaction.py -q",
+      "purpose": "RED verification before extraction",
+      "summary": "Collection failed because extractor.phases.c did not yet exist."
+    },
+    {
+      "status": "FAIL",
+      "exit_code": 1,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_phase_runner_seam.py services/repo-truth-extractor/tests/test_phase_execution_step_filter.py services/repo-truth-extractor/tests/test_phase_interaction.py -q",
+      "purpose": "Initial green verification",
+      "summary": "Existing A/Z test fixtures lacked the two new explicit dependency fields, and X's source-shape assertion still named the monolith Collector rather than injected collector_cls; both test fixtures were corrected."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_phase_runner_seam.py services/repo-truth-extractor/tests/test_phase_execution_step_filter.py services/repo-truth-extractor/tests/test_phase_interaction.py -q",
+      "summary": "Focused seam, D selected-step, and C/X interaction coverage passed."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_phase_*.py services/repo-truth-extractor/tests/test_phases_seam.py -q --basetemp=/tmp/rte-r1-003-phase-tests",
+      "summary": "Broad phase test suite passed."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q",
+      "summary": "27 passed, 1 documented slow capture skipped; no golden files changed."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "C/D/X target and phase identifier source comparison against git show HEAD:services/repo-truth-extractor/run_extraction_v5.py",
+      "summary": "C and D target inventories and all C/D/X phase identifiers match the pre-extraction monolith. X wrapper wiring is covered by direct dependency-injection tests."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- ruff check extractor phases and focused phase tests",
+      "summary": "Scoped lint passed."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m py_compile extracted phases and run_extraction_v5.py",
+      "summary": "Changed Python modules compiled."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "git diff --check",
+      "summary": "No whitespace errors."
+    }
+  ],
+  "codereview": {
+    "status": "completed_findings_resolved",
+    "reviewer": "dmx_reviewer",
+    "agent_id": "019f5600-12e4-7372-ac57-a8d000204cdf",
+    "findings": [
+      {
+        "severity": "HIGH",
+        "summary": "The runner imports the new C/D/X modules, so omitting their untracked files from the commit would make the runner fail at import time.",
+        "resolution": "All three new modules were explicitly staged with base.py, the runner facade, focused tests, and this proof. The staged file inventory confirms the complete C/D/X seam is packaged together."
+      }
+    ]
+  },
+  "embedded_audit": {
+    "required": false,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-RTE-TRUTH-R1-003/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "The embedded-audit schema does not represent the dmx_reviewer result; its outcome is recorded in codereview."
+    ],
+    "skip_reason": "TP-RTE-TRUTH-R1-003 did not require a legacy embedded-audit tool. Independent code review is recorded separately."
+  },
+  "precommit_status": "PASS",
+  "residual_risks": [
+    "The documented slow cost-preview golden capture remains skipped unless RTE_TRUTH_SLOW_GOLDENS=1 is explicitly enabled.",
+    "No live extraction, provider call, --execute path, or DPMX_LIVE_OK=1 path was exercised."
+  ],
+  "unknowns": [],
+  "rollback": {
+    "strategy": "Revert the eventual TP-RTE-TRUTH-R1-003 commit.",
+    "files": [
+      "services/repo-truth-extractor/extractor/phases/base.py",
+      "services/repo-truth-extractor/extractor/phases/c.py",
+      "services/repo-truth-extractor/extractor/phases/d.py",
+      "services/repo-truth-extractor/extractor/phases/x.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/test_phase_runner_seam.py",
+      "services/repo-truth-extractor/tests/test_phase_interaction.py",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R1-003/PROOF.json"
+    ]
+  }
+}

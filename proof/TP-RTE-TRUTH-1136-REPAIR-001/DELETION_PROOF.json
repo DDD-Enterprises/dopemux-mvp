@@ -1,0 +1,27 @@
+{
+  "packet_id": "TP-RTE-TRUTH-1136-REPAIR-001",
+  "pr": 1136,
+  "head_at_proof": "5f52cad52275c563567201d6377a750b8475baa3",
+  "timestamp_utc": "2026-08-02T23:00:19.572353+00:00",
+  "deletion": {
+    "path": "docs/04-explanation/root-relocated/user-journey.md",
+    "retained_canonical": "docs/archive/root-relocated/user-journey.md",
+    "sha256_main_copy": "8d6990604d9d4a3dea49a5458c1e976249bbec948c6b686cd654eed5bcf15801",
+    "sha256_retained": "8d6990604d9d4a3dea49a5458c1e976249bbec948c6b686cd654eed5bcf15801",
+    "byte_identical": true,
+    "retained_exists": true,
+    "deleted_path_absent_on_head": true,
+    "nonexistent_command_documented": "dopemux upgrades apply",
+    "nonexistent_command_evidence_line": 69,
+    "live_inbound_refs_requiring_deleted_path": [],
+    "historical_or_advisory_mentions": [
+      "claudedocs/rte-truth-program-2026-07/A4-cli-ux-docs.md (program note recommending delete)",
+      "reports/docs-hygiene/* inventory snapshots",
+      "audit_inputs/* historical find listings",
+      "docs/**/history/sourceFiles/* (different user-journeys.md link)"
+    ],
+    "removal_count": 1,
+    "remaining_deletions_accounted_as": "refactor movement inside services/repo-truth-extractor and dead-code removals in src/dopemux (not path deletions)"
+  },
+  "verdict": "DELETION_PROOF_PASS"
+}

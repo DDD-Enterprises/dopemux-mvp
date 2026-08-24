@@ -343,7 +343,37 @@ jobs:
             services/repo-truth-extractor/tests/ \
             -n auto --dist worksteal \
             -q --tb=short --disable-warnings --no-cov \
-            --durations=40 --durations-min=0.05
+            --durations=40 --durations-min=0.05 \
+            --timeout=120 --timeout-method=thread
+
+  extractor-lint:
+    name: "🔍 Extractor Lint"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: ⚡ Setup uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: 📦 Sync extractor lint environment
+        run: uv sync --frozen --extra test --extra services
+
+      - name: ▶️ Run extractor lint check
+        run: uv run --frozen ruff check services/repo-truth-extractor
+
 
   auditor-router:
     name: "🧪 Auditor Router"
@@ -463,7 +493,7 @@ jobs:
   ci-summary:
     name: "📊 CI Pipeline Summary"
     runs-on: ubuntu-latest
-    needs: [code-quality, security, docs, tests, extractor-smoke, audit-validator, routing-consistency, extractor-full, auditor-router, installer-smoke, scoped-coverage, integration]
+    needs: [code-quality, security, docs, tests, extractor-smoke, audit-validator, routing-consistency, extractor-full, extractor-lint, auditor-router, installer-smoke, scoped-coverage, integration]
     if: always()
 
 
@@ -520,6 +550,12 @@ jobs:
             echo "✅ **Extractor Full:** Passing - broader RTE suite is clean." >> $GITHUB_STEP_SUMMARY
           else
             echo "🧪 **Extractor Full:** Failing - fix broader RTE regressions before merge." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.extractor-lint.result }}" == "success" ]; then
+            echo "✅ **Extractor Lint:** Passing - service lint baseline is clean." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "🔍 **Extractor Lint:** Failing - run 'ruff check services/repo-truth-extractor' locally." >> $GITHUB_STEP_SUMMARY
           fi
 
           if [ "${{ needs.auditor-router.result }}" == "success" ]; then
@@ -579,7 +615,7 @@ jobs:
           # ── PR Gate ────────────────────────────────────────────────────────
           # Required blocking jobs (always run on PRs, never structurally skipped):
           #   code-quality, tests, extractor-smoke, audit-validator,
-          #   routing-consistency, extractor-full, auditor-router
+          #   routing-consistency, extractor-full, auditor-router, extractor-lint
           # Advisory jobs (skipped on PRs via `if: github.event_name != 'pull_request'`
           #   or structurally always-exit-0): security, docs, installer-smoke,
           #   scoped-coverage, integration
@@ -590,6 +626,7 @@ jobs:
           extractor_smoke="${{ needs.extractor-smoke.result || 'missing' }}"
           audit_validator="${{ needs.audit-validator.result || 'missing' }}"
           extractor_full="${{ needs.extractor-full.result || 'missing' }}"
+          extractor_lint="${{ needs.extractor-lint.result || 'missing' }}"
           auditor_router="${{ needs.auditor-router.result || 'missing' }}"
           routing_consistency="${{ needs.routing-consistency.result || 'missing' }}"
           gate_ok=true
@@ -599,11 +636,12 @@ jobs:
           [ "$audit_validator"    != "success" ] && gate_ok=false
           [ "$routing_consistency" != "success" ] && gate_ok=false
           [ "$extractor_full"     != "success" ] && gate_ok=false
+          [ "$extractor_lint"     != "success" ] && gate_ok=false
           [ "$auditor_router"     != "success" ] && gate_ok=false
           echo "" >> $GITHUB_STEP_SUMMARY
           if [ "$gate_ok" = "false" ]; then
             echo "### ❌ PR Gate: BLOCKED" >> $GITHUB_STEP_SUMMARY
-            echo "Required checks failed: code-quality=$code_quality tests=$gate_tests extractor-smoke=$extractor_smoke audit-validator=$audit_validator routing-consistency=$routing_consistency extractor-full=$extractor_full auditor-router=$auditor_router" >> $GITHUB_STEP_SUMMARY
+            echo "Required checks failed: code-quality=$code_quality tests=$gate_tests extractor-smoke=$extractor_smoke audit-validator=$audit_validator routing-consistency=$routing_consistency extractor-full=$extractor_full extractor-lint=$extractor_lint auditor-router=$auditor_router" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
           echo "### ✅ PR Gate: CLEAR" >> $GITHUB_STEP_SUMMARY

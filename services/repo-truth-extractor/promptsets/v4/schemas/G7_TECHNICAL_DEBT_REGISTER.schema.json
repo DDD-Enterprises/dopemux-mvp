@@ -3,24 +3,103 @@
   "$id": "promptsets/v4/schemas/G7_TECHNICAL_DEBT_REGISTER.schema.json",
   "title": "TECHNICAL_DEBT_REGISTER@v1",
   "type": "object",
-  "required": ["schema", "items"],
+  "required": [
+    "schema",
+    "items"
+  ],
   "properties": {
-    "schema": { "const": "TECHNICAL_DEBT_REGISTER@v1" },
+    "schema": {
+      "const": "TECHNICAL_DEBT_REGISTER@v1"
+    },
     "items": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "debt_type", "description", "path", "line_range", "evidence"],
+        "required": [
+          "id",
+          "debt_type",
+          "description",
+          "path",
+          "line_range",
+          "evidence"
+        ],
         "properties": {
-          "id": { "type": "string" },
+          "id": {
+            "type": "string"
+          },
           "debt_type": {
             "type": "string",
-            "enum": ["todo_marker", "fixme_marker", "hack_marker", "deprecated_surface", "placeholder_marker", "commented_out_code"]
+            "enum": [
+              "todo_marker",
+              "fixme_marker",
+              "hack_marker",
+              "deprecated_surface",
+              "placeholder_marker",
+              "commented_out_code"
+            ]
           },
-          "description": { "type": "string" },
-          "path": { "type": "string" },
-          "line_range": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 },
-          "evidence": { "type": "array", "minItems": 1 }
+          "description": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "line_range": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "integer",
+                "minimum": 1
+              }
+            ],
+            "items": false,
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "evidence": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": [
+                "path",
+                "line_range",
+                "excerpt"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "line_range": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "excerpt": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                }
+              },
+              "additionalProperties": false
+            }
+          }
         },
         "additionalProperties": true
       }

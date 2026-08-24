@@ -381,11 +381,22 @@ phases:
       coverage_targets:
       - phase_scope
       outputs:
-      - CODE_SURFACES_QA.json
-      - SERVICE_CATALOG.json
+      - SERVICE_ENTRYPOINTS.json
+      - EVENTBUS_SURFACE.json
+      - EVENT_PRODUCERS.json
+      - EVENT_CONSUMERS.json
+      - DOPE_MEMORY_CODE_SURFACE.json
+      - TRINITY_ENFORCEMENT_SURFACE.json
+      - REFUSAL_AND_GUARDRAILS_SURFACE.json
+      - TASKX_INTEGRATION_SURFACE.json
+      - WORKFLOW_RUNNER_SURFACE.json
+      - DETERMINISM_RISK_LOCATIONS.json
+      - IDEMPOTENCY_RISK_LOCATIONS.json
+      - CONCURRENCY_RISK_LOCATIONS.json
       - PYTHON_API_SURFACE.json
       - SERVICE_ENDPOINT_SURFACE.json
-      - COGNITIVE_FEATURES_SURFACE.json
+      - SERVICE_CATALOG.json
+      - CODE_SURFACES_QA.json
     - step_id: C10
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C10_SERVICE_CATALOG_DEEP.md
       coverage_targets:

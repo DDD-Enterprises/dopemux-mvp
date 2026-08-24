@@ -1,0 +1,120 @@
+{
+  "id": "TP-RTE-TRUTH-R3-004",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / anti-fabrication regime wiring (redaction binding, section validator, RULES injection)",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "C8 SECRETS excerpts get a BINDING redaction rule (mask secret spans) \u2014 security CRIT; H1 redaction promoted from legacy to binding.",
+    "Wire the existing template_renderer section validator to the v4 promptset; PROMPTSET_RULES verifiably in runner context; strip determinism-violating legacy keys (run_id/generated_at).",
+    "Findings covered: F-23, F-27, F-31, F-33, F-08."
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R3-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R3",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "fix(rte): TP-RTE-TRUTH-R3-004 \u2014 binding redaction + section-validator wiring",
+    "allowlist": [
+      "services/repo-truth-extractor/promptsets/v4/",
+      "services/repo-truth-extractor/lib/promptgen/",
+      "services/repo-truth-extractor/run_extraction_v4.py",
+      "services/repo-truth-extractor/tests/",
+      "task-packets/generated/TP-RTE-TRUTH-R3-004.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R3-004/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'promptset'"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): anti-fabrication regime actually enforced",
+    "body": "F-23 (CRIT sec)/F-27/F-31/F-33/F-08.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Implement the bindings + wiring; add redaction unit test with a fake secret.",
+      "requirements": [],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'promptset or redact or section'"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/promptsets/v4/prompts/",
+        "services/repo-truth-extractor/lib/promptgen/template_renderer.py",
+        "services/repo-truth-extractor/run_extraction_v4.py"
+      ],
+      "validation": [
+        "Redaction masks the fake secret in rendered output; section validator enforces required_prompt_sections."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A3b-prompts-DEGHM.md",
+        "claudedocs/rte-truth-program-2026-07/A3a-prompts-ABC.md"
+      ]
+    }
+  ],
+  "routing": {
+    "stage": "planner_strong",
+    "tier": "strong",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml is ADVISORY governance, not a runtime router. If a runtime path disagrees, runtime wins.",
+    "runners": {
+      "preferred": [
+        "claude_code",
+        "codex"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": [
+        "grok"
+      ]
+    },
+    "models": {
+      "claude_code": "claude-opus-5 (effort high|xhigh)",
+      "codex": "gpt-5.6-sol (reasoning xhigh|max)",
+      "opencode": "anthropic/claude-sonnet-4-5 via .opencode/agents/pal-planner.md",
+      "grok": "NOT AS SOLE AUTHOR \u2014 grok-code-fast-1 is a fast coding tier, not a strong-reasoning tier",
+      "gemini_cli": "Pro-high tier \u2014 VERIFY_WITH_VENDOR_DOCS",
+      "copilot": "Claude Sonnet 4.5 (.github/agents/dopemux-planner.agent.md) \u2014 below strong tier; acceptable only under an approved plan"
+    },
+    "rationale": "SECURITY CRIT: binding secret redaction + fail-closed validator. DONE \u2014 PAL NOT_RUN, see REVIEW-001.",
+    "notes": [
+      "grok forbidden as SOLE AUTHOR at this tier (grok-code-fast-1 is a fast coding tier, not strong-reasoning); acceptable as implementer executing an already-approved strong plan."
+    ],
+    "evidence": "Model ids OBSERVED from this machine: ~/.codex/config.toml (gpt-5.6-sol/xhigh), ~/.config/opencode/opencode.jsonc (claude-sonnet-4-5 + claude-haiku-4-5), ~/.grok/config.toml, .github/agents/*.agent.md (Sonnet 4.5). Per-vendor selector-string validity beyond these files remains VERIFY_WITH_VENDOR_DOCS."
+  }
+}

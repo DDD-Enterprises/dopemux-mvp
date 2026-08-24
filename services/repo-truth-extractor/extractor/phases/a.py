@@ -49,7 +49,6 @@ def run_phase(
         "pyproject.toml",
         "dopemux.toml",
         "compose.yml",
-        "compose.yml",
         "Makefile",
         ".claude.json",
         ".taskxroot",

@@ -22,9 +22,22 @@ class CodePrescan:
         self.config = config
         self.parsers: Dict[str, Parser] = {}
         self.languages: Dict[str, Language] = {}
-        
+        # F-05 / TP-RTE-TRUTH-R0-005: tree-sitter import/init failures used to
+        # be silently swallowed (analyze_file returned {} with no signal).
+        # Track degraded state explicitly so callers/artifacts can see it.
+        self.tree_sitter_degraded: bool = not TREE_SITTER_AVAILABLE
+        self.tree_sitter_degraded_reason: Optional[str] = (
+            None if TREE_SITTER_AVAILABLE else "tree_sitter_import_failed"
+        )
+
         if TREE_SITTER_AVAILABLE:
             self._init_tree_sitter()
+        else:
+            logger.warning(
+                "Tree-sitter packages not importable; code prescan running in "
+                "degraded mode (no symbols/imports/api_surfaces will be extracted "
+                "for any code file)."
+            )
 
     def _init_tree_sitter(self):
         try:
@@ -54,6 +67,8 @@ class CodePrescan:
             logger.info(f"Tree-sitter initialized for {len(self.languages)} languages")
         except Exception as e:
             logger.warning(f"Failed to initialize Tree-sitter: {e}")
+            self.tree_sitter_degraded = True
+            self.tree_sitter_degraded_reason = f"tree_sitter_init_failed: {e}"
 
     def analyze_file(self, entry: FileEntry, repo_root: Path) -> Dict[str, Any]:
         """Analyze a single code file and return intelligence dict."""
@@ -62,7 +77,18 @@ class CodePrescan:
 
         lang = entry.extension.lstrip(".")
         if lang not in self.parsers:
-            return {}
+            # F-05 / TP-RTE-TRUTH-R0-005: previously returned {} here with no
+            # signal, so a tree-sitter import/init failure silently degraded
+            # every code file's intelligence to nothing. Surface it instead.
+            return {
+                "rel_path": entry.rel_path,
+                "language": lang,
+                "degraded": True,
+                "degraded_reason": self.tree_sitter_degraded_reason or "unsupported_language",
+                "symbols": [],
+                "imports": [],
+                "api_surfaces": [],
+            }
 
         file_path = repo_root / entry.rel_path
         try:

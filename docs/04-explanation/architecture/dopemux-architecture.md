@@ -79,8 +79,9 @@ actual authority.
 
 Repo Truth Extractor runs repo analysis and emits artifacts. Its outputs are
 evidence artifacts, not runtime truth. The current canonical operator command
-family is `dopemux rte`; `dopemux upgrades` is compatibility, and older
-`dopemux truth` style paths are drift/refusal surfaces.
+family is `dopemux rte`; `dopemux upgrades` is a hidden, deprecated
+compatibility alias (still functional), and older `dopemux truth` style
+paths are drift/refusal surfaces.
 
 ## Known Architecture Drift
 

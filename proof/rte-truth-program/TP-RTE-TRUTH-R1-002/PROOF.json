@@ -1,0 +1,155 @@
+{
+  "packet_id": "TP-RTE-TRUTH-R1-002",
+  "packet_path": "task-packets/generated/TP-RTE-TRUTH-R1-002.json",
+  "tree_item_id": "4199933b-7644-461b-af9d-11ca072d9b31",
+  "worktree": "/Users/hue/code/dopemux-mvp/.claude/worktrees/focused-mahavira-5bd29b",
+  "branch": "claude/rte-audit-improvement-f4beb7",
+  "base_head": "c6a2b51a2da6ca4f63f830d45050ee7b0c622a63",
+  "commit_sha": null,
+  "recommended_execution": {
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "xhigh"
+  },
+  "repo_identity": {
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot",
+    "marker_present": true
+  },
+  "authority_used": [
+    "AGENTS.md",
+    "task-packets/generated/TP-RTE-TRUTH-R1-002.json",
+    "claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md",
+    "claudedocs/rte-truth-program-2026-07/A1-architecture.md",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/tests/test_truth_harness_goldens.py"
+  ],
+  "scope": {
+    "dry_run_only": true,
+    "live_provider_calls": false,
+    "dpmx_live_ok_set": false,
+    "execute_commands_run": false
+  },
+  "changes": [
+    {
+      "file": "services/repo-truth-extractor/extractor/cli_args.py",
+      "summary": "Extracted OperatorArgumentParser and complete parser construction into build_parser(ParserContext). The module is runner-independent and receives monolith-owned values through an immutable context."
+    },
+    {
+      "file": "services/repo-truth-extractor/run_extraction_v5.py",
+      "summary": "Retained a build_parser facade and OperatorArgumentParser re-export, replaced literal profile-override comparisons with shared defaults, and removed the proven unreachable duplicate introspection dispatch."
+    },
+    {
+      "file": "services/repo-truth-extractor/tests/test_cli_args_seam.py",
+      "summary": "Added facade, parser-default, profile-budget override, and duplicate-dispatch regression coverage."
+    }
+  ],
+  "golden_diff_itemized": [],
+  "validation": [
+    {
+      "status": "FAIL",
+      "exit_code": 2,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_cli_args_seam.py -q",
+      "purpose": "RED verification before extraction",
+      "summary": "Collection failed because extractor.cli_args did not yet exist."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_cli_args_seam.py -q",
+      "summary": "4 passed, including a dry-run-only main-path profile budget override check."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q",
+      "summary": "27 passed, 1 documented slow capture skipped; no golden files changed."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_cost_profiles.py -q",
+      "summary": "Cost-profile CLI coverage passed."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_operator_safety.py -q",
+      "summary": "Operator-safety coverage passed."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "AST parser argument inventory comparison against git show HEAD:services/repo-truth-extractor/run_extraction_v5.py",
+      "summary": "All 105 observed parser options exactly match the pre-extraction inventory. A1's historical count of 106 is stale; no option was added or removed."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- ruff check services/repo-truth-extractor/extractor/cli_args.py services/repo-truth-extractor/tests/test_cli_args_seam.py",
+      "summary": "Scoped new module and test lint passed."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m py_compile services/repo-truth-extractor/extractor/cli_args.py services/repo-truth-extractor/run_extraction_v5.py",
+      "summary": "Changed Python modules compiled."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python services/repo-truth-extractor/run_extraction_v5.py --phase NOT_A_PHASE --dry-run",
+      "summary": "Exited 2 with preserved invalid-phase operator guidance; no provider path was reached."
+    },
+    {
+      "status": "FAIL",
+      "exit_code": 1,
+      "command": "mise exec -- ruff check services/repo-truth-extractor/extractor/cli_args.py services/repo-truth-extractor/run_extraction_v5.py services/repo-truth-extractor/tests/test_cli_args_seam.py",
+      "summary": "The monolith has 35 pre-existing lint findings outside this packet's changes. Scoped cli_args.py and test lint passed."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "git diff --check",
+      "summary": "No whitespace errors."
+    }
+  ],
+  "codereview": {
+    "status": "completed_no_findings",
+    "reviewer": "dmx_reviewer",
+    "agent_id": "019f548e-cb6a-7880-92a9-66db5536e65b",
+    "summary": "Reviewed argparse parity, context completeness, circular imports, parser.error compatibility, default coupling, and duplicate-dispatch deletion; no findings."
+  },
+  "embedded_audit": {
+    "required": false,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-RTE-TRUTH-R1-002/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "The embedded-audit schema does not represent the completed dmx_reviewer code review; its result is recorded in codereview."
+    ],
+    "skip_reason": "TP-RTE-TRUTH-R1-002 did not require a legacy embedded-audit tool. An independent dmx_reviewer review completed with no findings and is recorded separately."
+  },
+  "precommit_status": "PASS",
+  "residual_risks": [
+    "The documented slow cost-preview golden capture remains skipped unless RTE_TRUTH_SLOW_GOLDENS=1 is explicitly enabled.",
+    "The monolith retains 35 pre-existing Ruff findings outside this packet's changes.",
+    "No live extraction, provider call, --execute path, or DPMX_LIVE_OK=1 path was exercised."
+  ],
+  "unknowns": [
+    "Why A1 recorded 106 parser arguments when the pre-extraction AST inventory contains 105."
+  ],
+  "rollback": {
+    "strategy": "Revert the eventual TP-RTE-TRUTH-R1-002 commit.",
+    "files": [
+      "services/repo-truth-extractor/extractor/cli_args.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/test_cli_args_seam.py",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R1-002/PROOF.json"
+    ]
+  }
+}

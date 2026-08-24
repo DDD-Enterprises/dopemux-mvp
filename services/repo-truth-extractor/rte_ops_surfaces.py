@@ -229,16 +229,15 @@ def preview_partition_usage(
     measure_payload_bytes_from_body: Callable[[Any], int],
     estimate_text_tokens: Callable[[str, str], int],
     apply_file_cap: Callable[..., Tuple[List[str], Any]],
+    build_extraction_prompt_prefix: Callable[[str, str], str],
 ) -> Dict[str, int]:
     output_instructions = build_output_envelope_instructions(output_artifacts)
     context_brief = str(partition.get("context_brief") or "")
     brief_section = f"\n{context_brief}\n" if context_brief else ""
-    prompt_prefix = (
-        "Extract from the files below.\n"
-        f"{output_instructions}\n"
-        f"{brief_section}"
-        "\nFILES:\n"
-    )
+    # F-30 residual (TP-RTE-TRUTH-R3-009): do not re-derive the extraction
+    # prefix here. Route through the shared helper so the untrusted-content
+    # preamble cannot drop out of the cost-preview / operator-safety surface.
+    prompt_prefix = build_extraction_prompt_prefix(output_instructions, brief_section)
     reserved_chars = len(prompt_prefix)
     current_budget = max(cfg.max_chars - reserved_chars, 2048)
     partition_paths = [str(path) for path in partition.get("paths", [])]

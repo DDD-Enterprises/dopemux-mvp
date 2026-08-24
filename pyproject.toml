@@ -72,6 +72,12 @@ test = [
     "pytest-cov>=4.0.0",
     "pytest-mock>=3.12.0",
     "pytest-xdist>=3.6.1",
+    "pytest-timeout>=2.1.0",
+    # TP-RTE-TRUTH-R0-009 / F-57: the extractor-lint CI job runs `uv run --frozen
+    # ruff check`, but ruff was declared nowhere in this project, so the job had
+    # never once succeeded ("Failed to spawn: ruff"). It lives in `test` rather
+    # than `dev` because extractor-lint syncs `--extra test --extra services`.
+    "ruff>=0.14.14,<0.15",
 ]
 dev = [
     "jsonschema>=4.20.0",

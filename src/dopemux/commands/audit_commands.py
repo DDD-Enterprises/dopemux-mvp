@@ -13,6 +13,18 @@ from ..console import console
 from ..ui.theme import styled_panel, styled_table, error_panel, Glyphs, StatusChip
 
 
+_ROUTING_POLICY_CHOICES = [
+    "cost",
+    "balanced",
+    "balanced_openrouter",
+    "balanced_grok_openrouter",
+    "quality",
+    "openrouter",
+    "gemini_primary",
+    "optimal",
+]
+
+
 @click.group()
 @click.pass_context
 def audit(ctx):
@@ -89,6 +101,8 @@ def prescan(ctx, verbose: bool, force: bool, config: Optional[str]):
 )
 @click.option(
     "--routing-policy",
+    type=click.Choice(_ROUTING_POLICY_CHOICES),
+    metavar="TEXT",
     default="cost",
     show_default=True,
     help="🧠 Cognitive Routing: LLM policy for the extraction ritual. Use cost for the bounded first-run lane.",

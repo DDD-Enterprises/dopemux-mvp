@@ -14,3 +14,5 @@ class PhaseRunnerDeps:
     run_phase_inner: Callable[..., None]
     selected_execution_step_ids_for_phase: Callable[[Any, str], Optional[list[str]]]
     collect_phase_artifacts: Callable[[Dict[str, Path], Sequence[str], Sequence[str]], list[Dict[str, Any]]]
+    plan_repo_scan_phase: Callable[..., Any]
+    plan_x_phase: Callable[..., Any]

@@ -1,0 +1,130 @@
+{
+ "id": "TP-RTE-TRUTH-R4-004",
+ "project": "dopemux-mvp",
+ "target": "repo-truth-extractor / flag standardization + status/trace/promptset-audit cleanup",
+ "invariants": [
+  "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+  "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+  "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+  "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+  "Single --workers/-w (--partition-workers hidden alias); routing-policy consistent Choice everywhere; wizard estimate reads lib/pricing_surface (kill static ROUTING_LADDERS drift); reconcile 3 status impls; rte trace live-mode documented or removed; scan phase list includes S.",
+  "Findings covered: F-43, F-44.",
+  "F-59 (added 2026-07-27, reviewer-confirmed at runtime): bare `dopemux rte status` is NOT read-only and reports a run that does not exist. Fix it as part of the F-44 status reconciliation."
+ ],
+ "depends_on": [
+  "TP-RTE-TRUTH-R4-002"
+ ],
+ "repo_binding": {
+  "project_id": "dopemux-mvp",
+  "repo_marker": ".dopetaskroot",
+  "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+  "require_identity_match": true
+ },
+ "series": {
+  "id": "RTE-TRUTH-R4",
+  "base_branch": "claude/rte-audit-improvement-f4beb7",
+  "parent_tp_id": null,
+  "final_packet": false
+ },
+ "execution": {
+  "agent": "grok",
+  "model": "grok-code-fast-1",
+  "branch": "claude/rte-audit-improvement-f4beb7",
+  "base_branch": "claude/rte-audit-improvement-f4beb7",
+  "estimated_diff": "M"
+ },
+ "commit": {
+  "message": "fix(rte): TP-RTE-TRUTH-R4-004 \u2014 flag standardization + surface cleanup",
+  "allowlist": [
+   "src/dopemux/",
+   "services/repo-truth-extractor/tests/goldens/",
+   "tests/",
+   "task-packets/generated/TP-RTE-TRUTH-R4-004.json",
+   "proof/rte-truth-program/TP-RTE-TRUTH-R4-004/PROOF.json"
+  ],
+  "verify": [
+   "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+  ]
+ },
+ "pr": {
+  "title": "fix(rte): consistent flags across RTE surfaces",
+  "body": "F-43/F-44.",
+  "base": "claude/rte-audit-improvement-f4beb7"
+ },
+ "pal_chain": {
+  "enabled": true,
+  "steps": [
+   "analyze",
+   "planner",
+   "codereview",
+   "precommit"
+  ]
+ },
+ "steps": [
+  {
+   "id": "S1",
+   "task": "Implement standardization; regenerate help goldens deliberately.",
+   "requirements": [],
+   "commands": [
+    "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+   ],
+   "expected_files": [
+    "src/dopemux/cli.py",
+    "src/dopemux/commands/audit_commands.py"
+   ],
+   "validation": [
+    "Consistent flags across surfaces; goldens updated + itemized."
+   ],
+   "context_files": [
+    "claudedocs/rte-truth-program-2026-07/A4-cli-ux-docs.md"
+   ]
+  }
+ ],
+ "routing": {
+  "stage": "implementer_standard",
+  "tier": "balanced",
+  "authority": "advisory \u2014 config/ai/model-routing.policy.yaml is ADVISORY governance, not a runtime router. If a runtime path disagrees, runtime wins.",
+  "runners": {
+   "preferred": [
+    "claude_code",
+    "codex",
+    "grok"
+   ],
+   "acceptable": [
+    "claude_code",
+    "codex",
+    "opencode",
+    "grok",
+    "copilot",
+    "gemini_cli"
+   ],
+   "forbidden": []
+  },
+  "models": {
+   "claude_code": "claude-sonnet-5",
+   "codex": "gpt-5.6-terra (reasoning xhigh)",
+   "opencode": "anthropic/claude-sonnet-4-5",
+   "grok": "grok-code-fast-1 (effort high)",
+   "gemini_cli": "VERIFY_WITH_VENDOR_DOCS",
+   "copilot": "Claude Sonnet 4.5 (.github/agents/dopemux-implementer.agent.md)"
+  },
+  "rationale": "Flag standardization across surfaces.",
+  "notes": [],
+  "evidence": "Model ids OBSERVED from this machine: ~/.codex/config.toml (gpt-5.6-sol/xhigh), ~/.config/opencode/opencode.jsonc (claude-sonnet-4-5 + claude-haiku-4-5), ~/.grok/config.toml, .github/agents/*.agent.md (Sonnet 4.5). Per-vendor selector-string validity beyond these files remains VERIFY_WITH_VENDOR_DOCS."
+ },
+ "findings_added": [
+  {
+   "id": "F-59",
+   "severity": "HIGH",
+   "title": "bare `rte status` fabricates a new run and reports its emptiness as the answer",
+   "confirmed_by": "reviewer, reproduced twice at runtime 2026-07-27",
+   "repro": "PYTHONPATH=src python -m dopemux.cli rte status  # with no --run-id",
+   "observed": "Run-dir count under extraction/repo-truth-extractor/v5/runs/ goes up by one on every invocation. The command then prints every phase as NOT_STARTED with all counters 0 \u2014 because it is describing the empty run it just created, not the operator's actual run.",
+   "why_it_matters": "This is a truthfulness defect, not merely an unexpected write. An operator running `rte status` to check on a real extraction is shown a confident, well-formatted report of a run that never happened, and the real run's status is never surfaced. It also litters the repo tree, the same class R0-006/F-06 just fixed for the pre-live gate.",
+   "root_cause": "NOT get_run_dirs(): that already honours readonly=True and skips mkdir, and args.status is correctly included in v5's readonly_introspection set (run_extraction_v5.py:21468). Two separate causes: (1) run-id resolution \u2014 reporting.py's build_run_id_resolution_precedence() resolves the latest-run file ONLY when resume=True; for status without --run-id it falls through to 'generated(new timestamp run id)'. (2) the created directory contains exactly one artifact, telemetry/TERMINAL_TIMELINE.jsonl, so a telemetry writer materialises the run dir even on the readonly path.",
+   "suggested_fix": "Bare `status` should resolve to the latest run (or exit non-zero with a clear message when no run exists), and must not write telemetry on an introspection path. Do not merely suppress the mkdir \u2014 that would leave it reporting a fabricated run id.",
+   "allowlist_note": "The fix spans src/dopemux/ AND services/repo-truth-extractor/{run_extraction_v5.py,reporting.py}. This packet's allowlist currently covers only src/dopemux/, goldens and tests \u2014 extend it before implementing, or split the runner-side change into its own packet.",
+   "discovered_via": "TP-RTE-TRUTH-R4-005 docs sweep (agent flagged as out-of-boundary rather than fixing it)"
+  }
+ ]
+}

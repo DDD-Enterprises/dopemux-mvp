@@ -1,0 +1,55 @@
+Usage: python -m dopemux rte validate-live [OPTIONS]
+
+  Run the fail-closed v5 live validation workflow.
+
+  Examples:
+    dopemux rte validate-live --promptset-root /tmp/promptset
+    dopemux rte validate-live --stage provider_probe --promptset-root /tmp/promptset
+    dopemux rte validate-live --stage phase_slice --promptset-root /tmp/promptset --pricing-manifest pricing.json
+    dopemux rte validate-live --stage full_phased --promptset-root /tmp/promptset --pricing-manifest pricing.json
+
+Options:
+  --promptset-root DIRECTORY      External generated promptset directory to
+                                  validate and use for paid stages.
+                                  [required]
+  --stage [preflight|provider_probe|batch_pilot|phase_slice|full_phased]
+                                  Validation stage to run. Paid stages include
+                                  all earlier gates automatically.  [default:
+                                  preflight]
+  --run-id TEXT                   Validation run ID.
+  --report-root DIRECTORY         Directory where validation ledgers, logs,
+                                  and reports are written.  [default:
+                                  reports/repo-truth-extractor/validation]
+  --routing-policy [cost|balanced|balanced_openrouter|balanced_grok_openrouter|quality|openrouter|gemini_primary|optimal]
+                                  Routing policy used for v5 dry-runs, canary,
+                                  and full execution.  [default:
+                                  balanced_openrouter]
+  --tp008-map FILE                Optional canonical TP-008 mapping file.
+  --pricing-manifest FILE         Required for paid slice/full stages. JSON
+                                  file with route_call_upper_bounds for spend
+                                  caps.
+  --provider [openai|gemini|xai]  Preferred provider for paid probe and batch
+                                  stages.
+  --ui [auto|rich|plain]          [default: auto]
+  --provider-probe-phase [D|C|Q]  [default: D]
+  --provider-probe-step TEXT      Optional concrete step for the provider
+                                  probe stage.
+  --provider-probe-max-usd FLOAT  [default: 0.1]
+  --provider-probe-max-minutes FLOAT
+                                  [default: 5.0]
+  --batch-pilot-phase [D|C|Q]     [default: D]
+  --batch-pilot-step TEXT         Optional concrete step for the batch pilot
+                                  stage.
+  --batch-pilot-max-usd FLOAT     [default: 1.0]
+  --batch-pilot-max-minutes FLOAT
+                                  [default: 15.0]
+  --phase-slice-docs-phase [D]    [default: D]
+  --phase-slice-code-phase [C|Q]  [default: C]
+  --phase-slice-synth-phase [R|S]
+                                  [default: R]
+  --phase-slice-max-usd FLOAT     [default: 5.0]
+  --phase-slice-max-minutes FLOAT
+                                  [default: 45.0]
+  --full-max-usd FLOAT            [default: 75.0]
+  --full-max-minutes FLOAT        [default: 240.0]
+  --help                          Show this message and exit.

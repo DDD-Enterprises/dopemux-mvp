@@ -1,0 +1,64 @@
+{
+  "packet_id": "TP-RTE-TRUTH-R0-001",
+  "title": "Service-anchored gitignore rules",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED",
+  "outcome": "IMPLEMENTED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/focused-mahavira-5bd29b",
+  "branch": "claude/rte-audit-improvement-f4beb7",
+  "head_sha_before": "85371b4dff0cd8e9f2345456d31f5be46d1166ad",
+  "authority_input": "claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md §4 R0-001; A5-ops-gates-proof.md §5.1 (F-01)",
+  "files_modified": [
+    ".gitignore"
+  ],
+  "files_created": [
+    "task-packets/generated/TP-RTE-TRUTH-R0-001.json",
+    "proof/rte-truth-program/TP-RTE-TRUTH-R0-001/PROOF.json"
+  ],
+  "files_not_modified": [
+    "services/repo-truth-extractor/extraction/** (no git rm --cached; sweep is TP-RTE-TRUTH-R0-008, blocked)"
+  ],
+  "commands_run": [
+    {
+      "command": "git check-ignore -v services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_TESTPROBE/spend_ledger.json",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "matched new rule at .gitignore:325"
+    },
+    {
+      "command": "git check-ignore -v services/repo-truth-extractor/extraction/repo-truth-extractor/v5/doctor/NEW_PROBE_FILE.json",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "matched new rule at .gitignore:328"
+    },
+    {
+      "command": "git status --porcelain services/repo-truth-extractor/extraction/",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "empty output; no existing tracked files were untracked or modified"
+    },
+    {
+      "command": "git ls-files services/repo-truth-extractor/extraction/ | wc -l",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "119 (unchanged before/after)"
+    }
+  ],
+  "before_after": {
+    "before": "git check-ignore against services/repo-truth-extractor/extraction/repo-truth-extractor/v5/{runs,doctor}/... exits 1 (no match); root-anchored rules only matched <repo>/extraction/",
+    "after": "same paths now match new service-anchored rules; 119 already-tracked files untouched"
+  },
+  "scope_check": {
+    "git_rm_cached_run": false,
+    "reason": "F-01's sweep half is TP-RTE-TRUTH-R0-008, explicitly blocked pending an operator decision on load-bearing fixture runs; not bundled with this mechanical ignore-rule packet per CONSOLIDATED-FINDINGS §4 wave-dependency note."
+  },
+  "runtime_code_changed": false,
+  "docs_changed": [],
+  "residual_risks": [
+    "The 119 files already committed under services/repo-truth-extractor/extraction/repo-truth-extractor/v5/{runs,doctor}/ remain tracked and will keep growing git history until R0-008 is unblocked.",
+    "Root-level extraction/ tree (1,313 files, committed before root ignore rules landed) is untouched — separate, larger decision per A5 §5.1."
+  ],
+  "cleanup_status": "no_temp_files_created",
+  "next_recommended_packet": "TP-RTE-TRUTH-R0-008 (blocked — needs operator fixtures decision)"
+}

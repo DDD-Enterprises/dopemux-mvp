@@ -7,7 +7,9 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from click.testing import CliRunner
 
+import dopemux.cli as dopemux_cli
 import dopemux.ux.questionary_support as questionary_support
 import dopemux.ux.interactive_prompts as interactive_prompts
 import dopemux.ux.wizard.corpus as wizard_corpus
@@ -22,9 +24,9 @@ from dopemux.ux.questionary_support import (
 from dopemux.ux.interactive_prompts import InteractivePrompts
 from dopemux.ux.wizard.corpus import run_corpus_audit
 from dopemux.ux.wizard.cost_profiles import run_cost_selection
-from dopemux.ux.wizard.extraction import run_extraction
+from dopemux.ux.wizard.extraction import _build_wizard_phase_command, run_extraction
 from dopemux.ux.wizard.provider_overrides import run_provider_overrides
-from dopemux.ux.wizard.stages import StageStatus, WizardState
+from dopemux.ux.wizard.stages import PHASES, StageStatus, WizardState
 
 
 def test_interactive_modules_import_without_questionary() -> None:
@@ -116,7 +118,7 @@ def test_action_selection_limits_to_three_then_expands(
     ]
 
 
-def test_run_extraction_uses_v5_upgrades_wrapper_with_resume_and_rich_ui(
+def test_run_extraction_uses_v5_rte_wrapper_with_imported_prescan_and_consent(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     recorded: dict[str, object] = {}
@@ -150,6 +152,7 @@ def test_run_extraction_uses_v5_upgrades_wrapper_with_resume_and_rich_ui(
     )
     monkeypatch.setattr(wizard_extraction, "PHASES", ["A"])
     monkeypatch.setenv("PYTHONPATH", "")
+    monkeypatch.setenv("DPMX_LIVE_OK", "1")
     monkeypatch.setattr(
         wizard_extraction.subprocess,
         "Popen",
@@ -174,7 +177,7 @@ def test_run_extraction_uses_v5_upgrades_wrapper_with_resume_and_rich_ui(
         sys.executable,
         "-m",
         "dopemux.cli",
-        "upgrades",
+        "rte",
         "run",
         "--pipeline-version",
         "v5",
@@ -189,12 +192,92 @@ def test_run_extraction_uses_v5_upgrades_wrapper_with_resume_and_rich_ui(
         "--ui",
         "rich",
         "--resume",
-        "--prescan-dir",
+        "--prescan-import-dir",
         str(tmp_path / "prescan"),
-        "--skip-prescan",
         "--execute",
     ]
     assert recorded["env"]["PYTHONPATH"] == str(tmp_path / "src")
+    assert "--skip-prescan" not in recorded["cmd"]
+
+
+def test_run_extraction_execute_mode_requires_live_ok_before_phase_prompt(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    phase_prompted = False
+
+    class _Prompt:
+        def ask(self) -> str:
+            nonlocal phase_prompted
+            phase_prompted = True
+            return "Run"
+
+    fake_questionary = SimpleNamespace(
+        Style=lambda styles: styles,
+        select=lambda *args, **kwargs: _Prompt(),
+        confirm=lambda *args, **kwargs: _Prompt(),
+    )
+
+    monkeypatch.setattr(
+        wizard_extraction,
+        "require_questionary",
+        lambda: fake_questionary,
+    )
+    monkeypatch.delenv("DPMX_LIVE_OK", raising=False)
+    monkeypatch.setattr(
+        wizard_extraction.subprocess,
+        "Popen",
+        lambda *_args, **_kwargs: pytest.fail("phase subprocess must not run"),
+    )
+
+    result = run_extraction(
+        WizardState(
+            repo_root=tmp_path,
+            execute_mode=True,
+            educate_mode=False,
+            selected_policy="cost",
+            workers=1,
+            run_id="RUN-20260415T120000",
+            prescan_dir=str(tmp_path / "prescan"),
+        )
+    )
+
+    assert result.status is StageStatus.FAILED
+    assert "DPMX_LIVE_OK=1" in result.message
+    assert phase_prompted is False
+
+
+def test_wizard_phase_commands_parse_for_all_phases(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    parsed: list[list[str]] = []
+    prescan_dir = tmp_path / "prescan"
+    prescan_dir.mkdir()
+    state = WizardState(
+        repo_root=tmp_path,
+        execute_mode=True,
+        educate_mode=False,
+        selected_policy="cost",
+        workers=1,
+        run_id="RUN-20260415T120000",
+        prescan_dir=str(prescan_dir),
+    )
+
+    def _record_runner(*, pipeline_version: str, args: list[str]) -> None:
+        parsed.append([pipeline_version, *args])
+
+    monkeypatch.setattr(dopemux_cli, "_run_extractor_runner", _record_runner)
+
+    for phase in PHASES:
+        cmd = _build_wizard_phase_command(state, phase)
+        assert "--prescan-import-dir" in cmd
+        assert "--skip-prescan" not in cmd
+        result = CliRunner().invoke(dopemux_cli.cli, cmd[3:])
+
+        assert result.exit_code == 0, result.output
+
+    assert [args[args.index("--phase") + 1] for args in parsed] == PHASES
+    assert all("--prescan-import-dir" in args for args in parsed)
+    assert all("--skip-prescan" not in args for args in parsed)
 
 
 def test_run_corpus_audit_uses_integrated_v5_prescan_outputs(

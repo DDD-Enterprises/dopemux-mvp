@@ -196,7 +196,8 @@ def test_dry_run_meta_never_trips_cost_abort(monkeypatch, tmp_path: Path) -> Non
         abort_reason=None,
         entries=[],
     )
-    monkeypatch.setattr(runner, "_ACTIVE_SPEND_TRACKER", state)
+    from extractor.costing import get_registry
+    monkeypatch.setattr(get_registry(), "_active_tracker", state)
 
     result = runner.record_request_cost(
         {"dry_run": True, "status_code": None},

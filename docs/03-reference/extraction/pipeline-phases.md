@@ -40,12 +40,12 @@ Run-time controls:
 - `--batch-mode`
 - `--batch-provider {auto,openai,gemini,xai}`
 
-CLI examples (canonical `upgrades`):
+CLI examples (canonical `rte`; `dopemux upgrades` is now a hidden, deprecated alias for the same commands):
 
 ```bash
-dopemux upgrades run --pipeline-version v4 --phase A --routing-policy cost --dry-run --resume
+dopemux rte run --pipeline-version v4 --phase A --routing-policy cost --dry-run --resume
 ```
 
 ```bash
-dopemux upgrades run --pipeline-version v4 --phase C --batch-mode --batch-provider openai --ui rich --execute
+dopemux rte run --pipeline-version v4 --phase C --batch-mode --batch-provider openai --ui rich --execute
 ```

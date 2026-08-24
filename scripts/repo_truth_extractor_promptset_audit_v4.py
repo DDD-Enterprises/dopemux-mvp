@@ -358,6 +358,83 @@ def _artifact_output_cross_check(
     return issues
 
 
+# F-29 (TP-RTE-TRUTH-R3-006): R7/R8/S4/S5/S6 aggregate many upstream normalized artifacts
+# with no per-claim upstream-artifact attribution. PROMPTSET_RULES.md gains a "Synthesis
+# Evidence Rules" section defining a synthesis-tier evidence object
+# ({upstream_artifact,item_id,excerpt}, modeled on PROMPT_R11's `<- ARTIFACT:item_id`
+# citation pattern) and it is mandated for exactly these five steps.
+SYNTHESIS_TIER_STEP_IDS: Tuple[str, ...] = ("R7", "R8", "S4", "S5", "S6")
+SYNTHESIS_EVIDENCE_HEADING = "Synthesis Evidence Rules"
+SYNTHESIS_EVIDENCE_OBJECT_KEYS: Tuple[str, ...] = ("upstream_artifact", "item_id", "excerpt")
+
+
+def _synthesis_evidence_issues(
+    repo_root: Path,
+    promptset_path: Path,
+    promptset_payload: Dict[str, Any],
+) -> List[str]:
+    """Enforce the F-29 synthesis-tier evidence citation shape.
+
+    Two things must both hold, or the citation shape does not actually reach the model:
+      1. PROMPTSET_RULES.md declares the `{upstream_artifact,item_id,excerpt}` object under
+         a "## Synthesis Evidence Rules" heading.
+      2. Each mandated step's own prompt text (R7, R8, S4, S5, S6) names that heading
+         explicitly, so the requirement is visible on the exact steps the finding calls
+         out -- not merely present somewhere on disk that no declared step points at.
+
+    Steps not present in the given promptset (e.g. a minimal synthetic promptset used by a
+    unit test) are skipped rather than failed -- this check only binds the real v4
+    promptset.
+    """
+    issues: List[str] = []
+    rules_path = promptset_path.parent / "PROMPTSET_RULES.md"
+    if not rules_path.exists():
+        issues.append(f"synthesis_evidence: PROMPTSET_RULES.md not found at {rules_path}")
+    else:
+        rules_text = rules_path.read_text(encoding="utf-8", errors="replace")
+        if SYNTHESIS_EVIDENCE_HEADING not in rules_text:
+            issues.append(
+                f"synthesis_evidence: PROMPTSET_RULES.md missing '## {SYNTHESIS_EVIDENCE_HEADING}' section"
+            )
+        else:
+            missing_keys = [key for key in SYNTHESIS_EVIDENCE_OBJECT_KEYS if key not in rules_text]
+            if missing_keys:
+                issues.append(
+                    "synthesis_evidence: PROMPTSET_RULES.md "
+                    f"{SYNTHESIS_EVIDENCE_HEADING} missing object key(s): {', '.join(missing_keys)}"
+                )
+
+    phases = promptset_payload.get("phases") or {}
+    prompt_index: Dict[str, Path] = {}
+    for phase_payload in phases.values() if isinstance(phases, dict) else []:
+        if not isinstance(phase_payload, dict):
+            continue
+        for step in phase_payload.get("steps", []) or []:
+            if not isinstance(step, dict):
+                continue
+            step_id = str(step.get("step_id", "")).strip()
+            prompt_file = str(step.get("prompt_file", "")).strip()
+            if step_id and prompt_file:
+                prompt_index[step_id] = repo_root / prompt_file
+
+    for step_id in SYNTHESIS_TIER_STEP_IDS:
+        prompt_path = prompt_index.get(step_id)
+        if prompt_path is None:
+            continue
+        if not prompt_path.exists():
+            issues.append(
+                f"synthesis_evidence: {step_id} declared prompt_file does not exist: {prompt_path}"
+            )
+            continue
+        prompt_text = prompt_path.read_text(encoding="utf-8", errors="replace")
+        if SYNTHESIS_EVIDENCE_HEADING not in prompt_text:
+            issues.append(
+                f"synthesis_evidence: {step_id} ({prompt_path.name}) does not reference "
+                f"'{SYNTHESIS_EVIDENCE_HEADING}' -- F-29 citation shape not mandated on this step"
+            )
+    return issues
+
+
 def _prompt_file_existence_check(
     repo_root: Path,
     promptset_payload: Dict[str, Any],
@@ -868,6 +945,7 @@ def run_audit(
     global_issues.extend(_prompt_file_coverage_issues(repo_root, promptset_payload))
     global_issues.extend(_prompt_file_existence_check(repo_root, promptset_payload))
     global_issues.extend(_artifact_output_cross_check(promptset_payload, artifact_index))
+    global_issues.extend(_synthesis_evidence_issues(repo_root, promptset_path, promptset_payload))
 
     if model_map_path and model_map_path.exists():
         model_map_payload = _read_yaml(model_map_path)

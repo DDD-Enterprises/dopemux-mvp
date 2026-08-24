@@ -1,0 +1,23 @@
+Usage: python -m dopemux rte scan [OPTIONS] [ARGS]...
+
+  Delegate a deterministic repo scan to the legacy v3 RepoScan route.
+
+  This command wraps `run_repscan.py`, which is part of the legacy v3
+  extraction chain. It is disabled by default and requires explicit `--allow-
+  legacy-v3-scan` opt-in. A v5-native scan replacement is not yet implemented;
+  live delegated execution additionally requires the v3 consent posture
+  (`--execute` and `DPMX_LIVE_OK=1`).
+
+Options:
+  --phase [ALL|A|H|D|C|E|W|B|G|Q|R|X|T|Z]
+                                  Phase code or ALL for the legacy repo scan.
+  --run-id TEXT                   Scan run identifier.
+  --promptgen [off|v1|v2|auto]    Prompt generation mode.
+  --promptpack TEXT               Prompt package to use.
+  --promptgen-only                Run only the prompt generation phase.
+  --prompt-root TEXT              Root directory for prompts.
+  --profiles-dir TEXT             Prompt profile directory.
+  --legacy-runner TEXT            Path to the legacy v3 runner.
+  --allow-legacy-v3-scan          Explicitly permit the legacy v3 RepoScan
+                                  route.
+  --help                          Show this message and exit.

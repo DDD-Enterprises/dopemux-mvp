@@ -9,14 +9,14 @@ tags:
   - cost-estimation
   - routing
 created: 2026-03-14
-updated: 2026-03-14
+updated: 2026-07-27
 date: 2026-03-14
 author: Dopemux Team
 id: extraction-wizard-reference
 type: reference
 owner: '@hu3mann'
-last_review: '2026-03-14'
-next_review: '2026-06-14'
+last_review: '2026-07-27'
+next_review: '2026-10-27'
 prelude: >
   Complete reference for the dopemux audit wizard — an interactive CLI that
   guides users through repository health checks, corpus classification, cost
@@ -73,7 +73,7 @@ No options. Shows latest run ID, directory, phases completed, and total size.
 | 4 | Provider Overrides | 🔑 | `provider_overrides.py` | Optional session-local provider key overrides before cost selection |
 | 5 | Cost Profile | 💰 | `cost_profiles.py` | Interactive routing policy browsing, per-profile detail, and final selection |
 | 6 | Partition Preview | 🧩 | `partitions.py` | File→phase mapping and partition estimates |
-| 7 | Extraction | 🚀 | `extraction.py` | Per-phase v5 upgrades-run delegation with confirmation |
+| 7 | Extraction | 🚀 | `extraction.py` | Per-phase `dopemux rte run` (v5) delegation with confirmation |
 | 8 | Summary | 🏆 | `summary.py` | Telemetry parsing and completion display |
 
 ---
@@ -194,7 +194,7 @@ src/dopemux/ux/wizard/
 - **Session-local provider overrides** — provider keys entered in stage 4 override shell defaults only for wizard-launched subprocesses.
 - **Static routing snapshot** — `ROUTING_LADDERS` is defined as a static snapshot inside the wizard to avoid importing `run_extraction_v5.py`, which has import-time side effects.
 - **Canonical integrated prescan** — Stage 2 now uses the v5 Stage 0 prescan authority and stores its output under `extraction/repo-truth-extractor/v5/runs/<run_id>/prescan`.
-- **No direct v5 phase execution** — phase extraction is delegated through `dopemux upgrades run --pipeline-version v5 --ui rich --resume`, with the wizard passing `--prescan-dir` and `--skip-prescan` after Stage 2 succeeds.
+- **No direct v5 phase execution** — phase extraction is delegated through `dopemux rte run --pipeline-version v5 --ui rich --resume` (`dopemux upgrades run ...` is the same command via a hidden, deprecated alias), with the wizard passing `--prescan-import-dir` after Stage 2 succeeds.
 - ⚠️ **CRITICAL:** Accidental direct execution of v5 can cost **$10+** in provider preflight probes. See the workspace safety instructions for details.
 
 ---

@@ -324,7 +324,15 @@ class TestT3PhaseASubcommandsRegression:
                     f"CLI_COMMAND_SURFACE.json missing subcommands in allow_empty_array_fields: {allow_empty}"
                 )
                 return
-        pytest.skip("CLI_COMMAND_SURFACE.json not found in compiled contract map")
+        # F-08 (TP-RTE-TRUTH-R3-004): this was pytest.skip(), which reported green
+        # while checking nothing if CLI_COMMAND_SURFACE.json stopped being emitted --
+        # silently dropping the coverage this guard exists to provide. Fail loudly:
+        # a vanished contract-map entry is a regression, not a reason to opt out.
+        pytest.fail(
+            "CLI_COMMAND_SURFACE.json not found in the compiled contract map. "
+            "Either the artifact was removed from the phase contract map (a regression "
+            "this guard exists to catch) or this test now targets a stale artifact name."
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -378,7 +386,15 @@ class TestT4CrossPhaseRepoctrlQa:
                     f"REPOCTRL_QA.json missing issues in allow_empty_array_fields: {allow_empty}"
                 )
                 return
-        pytest.skip("REPOCTRL_QA.json not found in compiled contract map")
+        # F-08 (TP-RTE-TRUTH-R3-004): this was pytest.skip(), which reported green
+        # while checking nothing if REPOCTRL_QA.json stopped being emitted --
+        # silently dropping the coverage this guard exists to provide. Fail loudly:
+        # a vanished contract-map entry is a regression, not a reason to opt out.
+        pytest.fail(
+            "REPOCTRL_QA.json not found in the compiled contract map. "
+            "Either the artifact was removed from the phase contract map (a regression "
+            "this guard exists to catch) or this test now targets a stale artifact name."
+        )
 
     def test_phase_contract_map_includes_allow_empty_array_fields_for_homectrl_qa(self):
         """HOMECTRL_QA.json entry in phase_contract_map has allow_empty_array_fields."""
@@ -394,4 +410,12 @@ class TestT4CrossPhaseRepoctrlQa:
                     f"HOMECTRL_QA.json missing issues in allow_empty_array_fields: {allow_empty}"
                 )
                 return
-        pytest.skip("HOMECTRL_QA.json not found in compiled contract map")
+        # F-08 (TP-RTE-TRUTH-R3-004): this was pytest.skip(), which reported green
+        # while checking nothing if HOMECTRL_QA.json stopped being emitted --
+        # silently dropping the coverage this guard exists to provide. Fail loudly:
+        # a vanished contract-map entry is a regression, not a reason to opt out.
+        pytest.fail(
+            "HOMECTRL_QA.json not found in the compiled contract map. "
+            "Either the artifact was removed from the phase contract map (a regression "
+            "this guard exists to catch) or this test now targets a stale artifact name."
+        )

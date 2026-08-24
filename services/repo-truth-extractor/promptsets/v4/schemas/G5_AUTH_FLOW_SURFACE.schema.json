@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "promptsets/v4/schemas/G5_AUTH_FLOW_SURFACE.schema.json",
+  "title": "AUTH_FLOW_SURFACE@v1",
+  "type": "object",
+  "required": [
+    "schema",
+    "items"
+  ],
+  "properties": {
+    "schema": {
+      "const": "AUTH_FLOW_SURFACE@v1"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "auth_type",
+          "mechanism",
+          "protected_symbol",
+          "enforcement_point",
+          "path",
+          "line_range",
+          "evidence"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "auth_type": {
+            "type": "string",
+            "enum": [
+              "dependency_injection",
+              "decorator_guard",
+              "middleware",
+              "manual_check",
+              "token_validation",
+              "role_check",
+              "permission_check",
+              "session_management"
+            ]
+          },
+          "mechanism": {
+            "type": "string",
+            "enum": [
+              "fastapi_depends",
+              "oauth2_password_bearer",
+              "http_bearer",
+              "api_key_header",
+              "api_key_query",
+              "jwt_decode",
+              "custom_middleware",
+              "manual_if_check"
+            ]
+          },
+          "protected_symbol": {
+            "type": "string"
+          },
+          "enforcement_point": {
+            "type": "string",
+            "enum": [
+              "route_parameter",
+              "decorator",
+              "middleware_stack",
+              "manual_inline"
+            ]
+          },
+          "path": {
+            "type": "string"
+          },
+          "line_range": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "integer",
+                "minimum": 1
+              }
+            ],
+            "items": false,
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "evidence": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": [
+                "path",
+                "line_range",
+                "excerpt"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "line_range": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "excerpt": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

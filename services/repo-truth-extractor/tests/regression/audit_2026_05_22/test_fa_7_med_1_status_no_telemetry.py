@@ -55,11 +55,18 @@ def test_status_json_is_fully_readonly(tmp_path: Path) -> None:
     ), f"--status-json must not create runs/ dirs; got: {[str(p) for p in created]}"
 
 
-@pytest.mark.xfail(
-    reason="FA-7-MED-1: --status (text) writes telemetry/TERMINAL_TIMELINE.jsonl under typo'd run-id. PR #603 fixed phase dirs but missed the telemetry sidecar."
-)
 def test_status_text_should_be_fully_readonly(tmp_path: Path) -> None:
-    """xfail until --status (text) wraps telemetry writer in readonly_introspection."""
+    """FA-7-MED-1 / TP-RTE-TRUTH-R2-005: --status (text) must not write
+    telemetry/TERMINAL_TIMELINE.jsonl under a typo'd run-id.
+
+    Fixed by `UI._emit_event` honoring a `readonly` flag (threaded from
+    `main()`'s `readonly_introspection` through the `UI(...)` construction
+    at the --status/--status-json dispatch site), landed alongside F-59's
+    related `resolve_run_context(resolve_latest_when_readonly=...)` work in
+    run_extraction_v5.py / extractor/ui.py / rte_output_layout.py. Verified
+    by mutation: reverting those three files to HEAD reproduces the phantom
+    `runs/<typo'd-id>/telemetry/TERMINAL_TIMELINE.jsonl` write and fails this
+    assertion; restoring them makes it pass again."""
     output_root = tmp_path / "out"
     output_root.mkdir()
     result = _run_v5(

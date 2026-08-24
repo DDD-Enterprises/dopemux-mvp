@@ -1,0 +1,137 @@
+{
+ "id": "TP-RTE-TRUTH-R0-009",
+ "project": "dopemux-mvp",
+ "target": "repo-truth-extractor / repair ci-complete.yml — invalid Actions expression kills all 14 jobs; extractor-full timeout flags leak to shell",
+ "invariants": [
+  "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+  "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first — it is the authority for findings, acceptance criteria, and wave ordering.",
+  "GUARDED SURFACE: .github/workflows/ci-complete.yml is hard-blocked by red lane DCP-RED-MERGE-SEAM-0001. This packet IS the sanctioned lift; it must ship with its own ADR reference and touch no other guarded path.",
+  "Verification may NOT be a grep for inserted text. The two defects this packet repairs were both introduced by packets whose verify step was a substring grep, which passed while CI was dead.",
+  "Do not change which tests run, add jobs, or alter the required-gate list. Repair only.",
+  "Findings covered: F-55 (fatal expression), F-56 (dangling continuation)."
+ ],
+ "depends_on": [],
+ "repo_binding": {
+  "project_id": "dopemux-mvp",
+  "repo_marker": ".dopetaskroot",
+  "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+  "require_identity_match": true
+ },
+ "series": {
+  "id": "RTE-TRUTH-R0",
+  "base_branch": "claude/rte-truth-program",
+  "parent_tp_id": null,
+  "final_packet": false
+ },
+ "execution": {
+  "agent": "claude_code",
+  "model": "claude-opus-5 (effort high)",
+  "branch": "claude/rte-truth-program",
+  "base_branch": "claude/rte-truth-program",
+  "estimated_diff": "XS"
+ },
+ "routing": {
+  "stage": "implementer",
+  "tier": "balanced",
+  "runners": {
+   "preferred": ["claude_code"],
+   "acceptable": ["codex", "grok"],
+   "forbidden": []
+  },
+  "models": {
+   "claude_code": "claude-opus-5 (effort high)",
+   "codex": "gpt-5.6-sol (reasoning high)",
+   "grok": "grok-4.5 (frontier reasoning tier); grok-code-fast-1 is NOT acceptable — the two defects being repaired were authored at that tier"
+  }
+ },
+ "context": {
+  "severity": "CRITICAL — blocks MERGE-001",
+  "discovery": "Found 2026-07-27 while draining the R-wave backlog. `gh run view 30261672366` reports total_count=0 jobs and 'This run likely failed because of a workflow file issue.' The Complete CI Pipeline has therefore executed ZERO jobs on branch claude/rte-truth-program.",
+  "impact": "All 14 jobs — including every required PR gate (code-quality, tests, extractor-smoke, audit-validator, routing-consistency, extractor-full, extractor-lint, auditor-router) — are silently absent, not failing. PR #1136's check list looks largely green because the pipeline that would have gated it never started. This is a hollow green and would have carried straight through MERGE-001.",
+  "scope_note": "main is unaffected; both defects were introduced on this branch by this program's own R0 packets."
+ },
+ "defects": [
+  {
+   "id": "F-55",
+   "severity": "CRITICAL",
+   "file": ".github/workflows/ci-complete.yml",
+   "line": 629,
+   "introduced_by": "TP-RTE-TRUTH-R0-004 (commit 8b0c574766)",
+   "current": "extractor_lint=\"${{ needs.extractor-lint.result || \\'missing\\' }}\"",
+   "fix": "extractor_lint=\"${{ needs.extractor-lint.result || 'missing' }}\"",
+   "mechanism": "GitHub Actions expression string literals are single-quoted and escape an embedded quote by DOUBLING it (''). Backslash escaping is not supported, so \\'missing\\' is an expression syntax error. GitHub rejects the whole workflow file at parse time and runs no jobs at all. The seven sibling lines (624-628, 630-631) use the correct form; only this one is escaped, consistent with shell-escaping leaking out of a heredoc during authoring."
+  },
+  {
+   "id": "F-56",
+   "severity": "HIGH",
+   "file": ".github/workflows/ci-complete.yml",
+   "line": 346,
+   "introduced_by": "TP-RTE-TRUTH-R0-003 (commit cba867fd09)",
+   "current": "            --durations=40 --durations-min=0.05\\n            --timeout=120 --timeout-method=thread",
+   "fix": "add a trailing backslash to line 346 so the continuation reaches pytest",
+   "mechanism": "Inside `run: |`, line 346 ends without a line-continuation backslash, so the pytest invocation terminates there and `--timeout=120 --timeout-method=thread` is executed as a SEPARATE shell command. Under the Actions default shell (bash -e -o pipefail) this exits 127 'command not found', so extractor-full can never report success once F-55 is repaired and jobs actually run. Two consequences: the required gate is permanently red, AND the intended per-test timeout is never applied, so the full extractor suite runs unbounded. Latent today only because F-55 prevents the job from starting."
+  }
+ ],
+ "commit": {
+  "message": "fix(ci): TP-RTE-TRUTH-R0-009 — repair invalid Actions expression that disabled all CI jobs",
+  "allowlist": [
+   ".github/workflows/ci-complete.yml",
+   "task-packets/generated/TP-RTE-TRUTH-R0-009.json",
+   "proof/rte-truth-program/TP-RTE-TRUTH-R0-009/PROOF.json"
+  ],
+  "verify": [
+   "actionlint .github/workflows/ci-complete.yml",
+   "python -c \"import yaml,sys; d=yaml.safe_load(open('.github/workflows/ci-complete.yml')); assert len(d['jobs'])==14\"",
+   "grep -c \"|| \\\\\\\\'\" .github/workflows/ci-complete.yml  # must be 0 — no backslash-escaped expression literals remain",
+   "POST-PUSH RUNTIME PROOF (mandatory): gh run list --branch claude/rte-truth-program --workflow ci-complete.yml --limit 1, then gh api repos/DDD-Enterprises/dopemux-mvp/actions/runs/<id>/jobs and assert total_count == 14, NOT 0. A green-looking check list is not acceptable evidence; job count is."
+  ]
+ },
+ "acceptance_criteria": [
+  "actionlint reports no error on ci-complete.yml.",
+  "A real push produces a run whose jobs API returns total_count == 14 (was 0).",
+  "extractor-full's pytest invocation is a single command — proven by asserting the rendered run block contains no line that begins with '--' after a non-continued line.",
+  "No verification step in this packet is a substring grep for text this packet inserted."
+ ],
+ "pr": {
+  "title": "fix(ci): repair invalid Actions expression that silently disabled the entire CI pipeline",
+  "body": "The Complete CI Pipeline has run ZERO jobs on this branch. A backslash-escaped string literal in a GitHub Actions expression (line 629) makes the workflow file invalid, so every required gate was absent rather than failing. A second defect (line 346) would keep extractor-full permanently red once jobs resume. Both were introduced by this program's own R0 packets, whose verify steps were substring greps that could not detect a broken workflow.",
+  "base": "claude/rte-truth-program"
+ },
+ "pal_chain": {
+  "enabled": false,
+  "steps": ["analyze", "planner", "codereview", "precommit"]
+ },
+ "steps": [
+  {
+   "id": "S1",
+   "task": "Obtain operator authorization to lift DCP-RED-MERGE-SEAM-0001 for this single file, then apply both one-character/one-line repairs.",
+   "requirements": [
+    "Do not edit any other guarded path.",
+    "Diff must be exactly two lines changed."
+   ]
+  },
+  {
+   "id": "S2",
+   "task": "Validate with actionlint (or `gh workflow view` on a pushed branch), not with grep.",
+   "requirements": [
+    "Record actionlint's real output in PROOF.json."
+   ]
+  },
+  {
+   "id": "S3",
+   "task": "Push and capture the runtime proof: the jobs API must report 14 jobs.",
+   "requirements": [
+    "PROOF.json records the run id and the literal total_count.",
+    "If total_count is still 0, the packet is NOT complete regardless of local validation."
+   ]
+  },
+  {
+   "id": "S4",
+   "task": "Add a standing guard so a syntactically invalid workflow cannot pass unnoticed again.",
+   "requirements": [
+    "Prefer a pre-commit actionlint hook over a new CI job — a CI job cannot catch a defect that prevents CI from starting.",
+    "State plainly in PROOF.json that this is the reason the guard must live outside CI."
+   ]
+  }
+ ]
+}

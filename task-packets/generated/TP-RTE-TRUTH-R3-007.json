@@ -1,0 +1,151 @@
+{
+  "id": "TP-RTE-TRUTH-R3-007",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / write-time secret scrub \u2014 make F-23 leakage structurally impossible",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls.",
+    "CONTEXT: TP-RTE-TRUTH-R3-004 (commit 6aac1ef79) made redaction BINDING at the prompt layer, but redaction is an INSTRUCTION, not an ENFORCEMENT. A non-compliant model still writes real secrets into SECRETS_RISK_LOCATIONS.json and into downstream R11 security synthesis. R3-004's own author flagged this as the top follow-up and recommended it before F-23 is treated as closed.",
+    "VERIFIED PRECONDITION: output_safety.sanitize_payload_for_output IS already imported and called at run_extraction_v5.py:2624, but SECRETS_RISK_LOCATIONS is NOT referenced anywhere in output_safety.py or the artifact write path \u2014 confirm this trace yourself before designing.",
+    "Redaction regexes already exist (lib/truth_labels + output_safety _SECRET_PATTERNS) \u2014 REUSE them; do not author a third copy (see TP-RTE-TRUTH-D-004 which consolidates the existing two).",
+    "Fail-closed: if a secret pattern matches at write time, mask it. Do not drop the finding \u2014 the location is the value, the secret value is not.",
+    "Findings covered: F-23 (enforcement half)."
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R3-004"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R3",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": "TP-RTE-TRUTH-R3-004",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "fix(rte): TP-RTE-TRUTH-R3-007 \u2014 write-time secret scrub for SECRETS_RISK_LOCATIONS",
+    "allowlist": [
+      "services/repo-truth-extractor/output_safety.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/",
+      "task-packets/generated/TP-RTE-TRUTH-R3-007.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R3-007/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'redact or safety or secret'",
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): write-time secret scrub (F-23 enforcement)",
+    "body": "Closes the enforcement half of F-23: R3-004 made redaction binding in the prompt, this makes non-compliance structurally harmless by scrubbing secret spans at artifact write time.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Trace where SECRETS_RISK_LOCATIONS.json (and other C8/H1/H7/M safe-export artifacts) are written; determine why the existing sanitize_payload_for_output call at v5:2624 does not cover them.",
+      "requirements": [
+        "Report the actual write path; do not assume the 2624 call is the only one."
+      ],
+      "commands": [
+        "grep -rn 'SECRETS_RISK_LOCATIONS' services/repo-truth-extractor/ | head -20"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Write path identified and documented in PROOF.json."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/output_safety.py",
+        "claudedocs/rte-truth-program-2026-07/A3a-prompts-ABC.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Apply the existing secret-pattern scrub to the SECRETS artifact write path so a non-compliant model's raw secret is masked before it reaches disk or downstream synthesis.",
+      "requirements": [
+        "Reuse existing regexes. Preserve the finding (path/line/type); mask only the secret span."
+      ],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'redact or secret'"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/output_safety.py",
+        "services/repo-truth-extractor/run_extraction_v5.py"
+      ],
+      "validation": [
+        "A simulated non-compliant model payload containing a FAKE secret is masked at write time."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "S3",
+      "task": "MUTATION-CHECK the test: remove the scrub and confirm the test fails with the fake secret visible in the artifact. A test that passes without the scrub is vacuous.",
+      "requirements": [
+        "Never use a real secret in tests.",
+        "Document the mutation result in PROOF.json."
+      ],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Mutation check documented; goldens verified (not assumed) unchanged."
+      ],
+      "context_files": []
+    }
+  ],
+  "routing": {
+    "stage": "planner_strong",
+    "tier": "strong",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml is ADVISORY governance, not a runtime router. If a runtime path disagrees, runtime wins.",
+    "runners": {
+      "preferred": [
+        "claude_code",
+        "codex"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": [
+        "grok"
+      ]
+    },
+    "models": {
+      "claude_code": "claude-opus-5 (effort high|xhigh)",
+      "codex": "gpt-5.6-sol (reasoning xhigh|max)",
+      "opencode": "anthropic/claude-sonnet-4-5 via .opencode/agents/pal-planner.md",
+      "grok": "NOT AS SOLE AUTHOR \u2014 grok-code-fast-1 is a fast coding tier, not a strong-reasoning tier",
+      "gemini_cli": "Pro-high tier \u2014 VERIFY_WITH_VENDOR_DOCS",
+      "copilot": "Claude Sonnet 4.5 (.github/agents/dopemux-planner.agent.md) \u2014 below strong tier; acceptable only under an approved plan"
+    },
+    "rationale": "SECURITY CRIT enforcement half of F-23: write-time scrub must make leakage structurally impossible. IN PROGRESS.",
+    "notes": [
+      "grok forbidden as SOLE AUTHOR at this tier (grok-code-fast-1 is a fast coding tier, not strong-reasoning); acceptable as implementer executing an already-approved strong plan."
+    ],
+    "evidence": "Model ids OBSERVED from this machine: ~/.codex/config.toml (gpt-5.6-sol/xhigh), ~/.config/opencode/opencode.jsonc (claude-sonnet-4-5 + claude-haiku-4-5), ~/.grok/config.toml, .github/agents/*.agent.md (Sonnet 4.5). Per-vendor selector-string validity beyond these files remains VERIFY_WITH_VENDOR_DOCS."
+  }
+}

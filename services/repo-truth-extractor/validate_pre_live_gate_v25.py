@@ -38,6 +38,11 @@ DEFAULT_TARGET_POLICY = "cost"
 DEFAULT_TARGET_MODE = "direct"
 DEFAULT_TARGET_PROFILE = "P00_GENERIC"
 DEFAULT_RUN_ID_PREFIX = "pre_live_gate_v25"
+# F-06: the default report directory must live outside the repo worktree so gate
+# runs never risk landing tracked/untracked artifacts inside the repo tree.
+# ~/.dopemux is the existing dopemux user-home state-dir convention (see
+# lib/promptgen/feature_detector.py, run_extraction_v5.py home-scan handling).
+DEFAULT_OUTPUT_ROOT = Path.home() / ".dopemux" / "reports" / "repo-truth-extractor" / "pre_live_gate_v25"
 DEFAULT_MAX_FILES_DOCS = 35
 DEFAULT_MAX_FILES_CODE = 20
 DEFAULT_MAX_CHARS = 650000
@@ -130,6 +135,7 @@ class GateConfig:
     target_step: Optional[str] = None
     s_prompts_mode: str = "legacy"
     allow_online_preflight: bool = False
+    allow_conditional: bool = False
     pal_validation_file: Optional[Path] = None
     waiver_codes: Tuple[str, ...] = ()
     required_direct_providers: Tuple[str, ...] = ()
@@ -165,6 +171,12 @@ NO_GO_CODE = "NO_GO_CODE"
 NO_GO_ENV = "NO_GO_ENV"
 NO_GO_EXTERNAL = "NO_GO_EXTERNAL"
 NO_GO_ARTIFACT_STATE = "NO_GO_ARTIFACT_STATE"
+# TP-RTE-TRUTH-R2-004 / F-13b: un-opted-in Condition rows (skipped PAL /
+# online-preflight evaluators) are a hard stop unless the operator explicitly
+# passes --allow-conditional. This bucket lets derive_operator_verdict()
+# report *why* a condition-only run is NO_GO rather than silently reusing
+# GO_NOW.
+NO_GO_CONDITIONAL_NOT_ALLOWED = "NO_GO_CONDITIONAL_NOT_ALLOWED"
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -315,7 +327,16 @@ def evaluate_source_identity(scope: Mapping[str, Any]) -> Tuple[Dict[str, Any], 
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Validate the repo-truth-extractor v5 pre-live gate.")
     parser.add_argument("--run-id", type=str, default=None)
-    parser.add_argument("--output-dir", type=Path, default=None)
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=None,
+        help=(
+            "Directory for gate report artifacts. Defaults to "
+            f"{DEFAULT_OUTPUT_ROOT}/<run-id> (outside the repo tree, "
+            "never written into the worktree)."
+        ),
+    )
     parser.add_argument("--target-policy", type=str, default=DEFAULT_TARGET_POLICY)
     parser.add_argument("--target-mode", type=str, default=DEFAULT_TARGET_MODE)
     parser.add_argument("--target-profile", type=str, default=DEFAULT_TARGET_PROFILE)
@@ -349,6 +370,17 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Run the live provider preflight layer. Tests should not enable this.",
     )
     parser.add_argument(
+        "--allow-conditional",
+        action="store_true",
+        help=(
+            "Accept CONDITIONAL_GO when the only outstanding findings are "
+            "skipped-evaluator Conditions (PAL validation and/or online "
+            "preflight not run). Without this flag, any un-opted-in skip is "
+            "a hard NO_GO — the gate's default posture no longer softens "
+            "itself just because an evaluator was never asked to run."
+        ),
+    )
+    parser.add_argument(
         "--waiver-code",
         action="append",
         default=[],
@@ -371,9 +403,7 @@ def resolve_required_direct_providers(policy: str, configured: Optional[Sequence
 
 def build_config(args: argparse.Namespace) -> GateConfig:
     run_id = args.run_id or f"{DEFAULT_RUN_ID_PREFIX}_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
-    output_dir = args.output_dir or (
-        REPO_ROOT / "reports" / "repo-truth-extractor" / "pre_live_gate_v25" / run_id
-    )
+    output_dir = args.output_dir or (DEFAULT_OUTPUT_ROOT / run_id)
 
     pal_file = args.pal_validation_file
     if not pal_file:
@@ -392,6 +422,7 @@ def build_config(args: argparse.Namespace) -> GateConfig:
         target_step=args.step,
         s_prompts_mode=str(args.s_prompts).strip().lower(),
         allow_online_preflight=bool(args.allow_online_preflight),
+        allow_conditional=bool(args.allow_conditional),
         pal_validation_file=pal_file.resolve() if pal_file else None,
         waiver_codes=tuple(sorted({str(code).strip() for code in args.waiver_code if str(code).strip()})),
         required_direct_providers=resolve_required_direct_providers(
@@ -1340,6 +1371,8 @@ def derive_operator_verdict(
     blockers: Sequence[Mapping[str, Any]],
     conditions: Sequence[Mapping[str, Any]],
     repo_wide_findings: Sequence[Mapping[str, Any]],
+    *,
+    allow_conditional: bool = True,
 ) -> Tuple[str, Dict[str, List[Any]]]:
     classification = build_blocker_classification(blockers, repo_wide_findings)
     if classification["code_blockers"]:
@@ -1352,6 +1385,11 @@ def derive_operator_verdict(
         return NO_GO_ARTIFACT_STATE, classification
     if blockers:
         return NO_GO_CODE, classification
+    # TP-RTE-TRUTH-R2-004 / F-13b: no blockers survived waiver filtering, but
+    # un-opted-in Conditions (skipped PAL/online-preflight) remain. Without
+    # --allow-conditional this is a hard stop, not a silent GO_NOW.
+    if conditions and not allow_conditional:
+        return NO_GO_CONDITIONAL_NOT_ALLOWED, classification
     return GO_NOW, classification
 
 
@@ -1550,13 +1588,25 @@ def run_gate(
         set(config.waiver_codes),
     )
     reason_codes = sorted({row["reason_code"] for row in active_blockers})
+    # TP-RTE-TRUTH-R2-004 / F-13b: the gate's weakest posture must not be its
+    # default posture. Skipped PAL/online-preflight evaluators emit
+    # Conditions, never Blockers, so a run that does nothing about them used
+    # to fall through to CONDITIONAL_GO unconditionally. Now an un-opted-in
+    # skip is a hard NO_GO; --allow-conditional/config.allow_conditional is
+    # the explicit opt-in operators must set to accept the softer verdict.
     verdict = "NO_GO"
     if not active_blockers:
-        verdict = "CONDITIONAL_GO" if condition_rows else "GO"
+        if condition_rows and not config.allow_conditional:
+            verdict = "NO_GO"
+        elif condition_rows:
+            verdict = "CONDITIONAL_GO"
+        else:
+            verdict = "GO"
     operator_verdict, blocker_classification = derive_operator_verdict(
         active_blockers,
         condition_rows,
         repo_wide_findings,
+        allow_conditional=config.allow_conditional,
     )
 
     verdict_payload = {

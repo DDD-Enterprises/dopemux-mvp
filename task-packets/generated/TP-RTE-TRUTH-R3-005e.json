@@ -1,0 +1,114 @@
+{
+  "id": "TP-RTE-TRUTH-R3-005e",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / content fixes: graph-kind declarations + step numbering + W/X/Z nits",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "Per-phase dry-run promptset-truth tests must pass; determinism lints clean.",
+    "Findings covered: F-34, F-35, F-49."
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R3-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R3",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "fix(rte): TP-RTE-TRUTH-R3-005e \u2014 graph-kind declarations + step numbering + W/X/Z nits",
+    "allowlist": [
+      "services/repo-truth-extractor/promptsets/v4/",
+      "services/repo-truth-extractor/tests/",
+      "task-packets/generated/TP-RTE-TRUTH-R3-005e.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R3-005e/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'promptset'"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): prompt content \u2014 graph-kind declarations + step numbering + W/X/Z nits",
+    "body": "F-34, F-35, F-49.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Declare D3/E3/R5/X4 as graph kind with graph merge strategy; fix duplicate step numbering (E1-E6, G0, G4, R1-R8); W/X/Z template nits (DEF-1..7).",
+      "requirements": [],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'promptset'"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/promptsets/v4/prompts/"
+      ],
+      "validation": [
+        "Promptset tests pass."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A3b-prompts-DEGHM.md",
+        "claudedocs/rte-truth-program-2026-07/A3c-prompts-QRST.md",
+        "claudedocs/rte-truth-program-2026-07/A3d-prompts-WXZ-promptgen.md"
+      ]
+    }
+  ],
+  "routing": {
+    "stage": "implementer_standard",
+    "tier": "cheap",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml is ADVISORY governance, not a runtime router. If a runtime path disagrees, runtime wins.",
+    "runners": {
+      "preferred": [
+        "grok",
+        "codex",
+        "claude_code"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "grok",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": []
+    },
+    "models": {
+      "claude_code": "claude-haiku-4-5",
+      "codex": "gpt-5.6-luna (reasoning medium)",
+      "opencode": "anthropic/claude-haiku-4-5 (small_model)",
+      "grok": "grok-code-fast-1",
+      "gemini_cli": "Flash tier \u2014 VERIFY_WITH_VENDOR_DOCS",
+      "copilot": "Claude Sonnet 4.5 (.github/agents/dopemux-reader.agent.md)"
+    },
+    "rationale": "Mechanical: graph-kind declarations, step renumbering, template nits.",
+    "notes": [],
+    "evidence": "Model ids OBSERVED from this machine: ~/.codex/config.toml (gpt-5.6-sol/xhigh), ~/.config/opencode/opencode.jsonc (claude-sonnet-4-5 + claude-haiku-4-5), ~/.grok/config.toml, .github/agents/*.agent.md (Sonnet 4.5). Per-vendor selector-string validity beyond these files remains VERIFY_WITH_VENDOR_DOCS."
+  }
+}

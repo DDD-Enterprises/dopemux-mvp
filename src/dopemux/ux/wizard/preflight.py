@@ -44,7 +44,11 @@ def run_welcome(state: WizardState) -> StageResult:
 
     all_ok = all(passed for _, passed, _ in checks)
     return StageResult(
-        status=StageStatus.COMPLETED if all_ok else StageStatus.COMPLETED,
+        # F-07: both branches of the original ternary were StageStatus.COMPLETED.
+        # That is the intended behaviour — a failed system check is a warning
+        # here, never a stage failure — so the status is now stated once. Do not
+        # "repair" this into FAILED without deciding that deliberately.
+        status=StageStatus.COMPLETED,
         message="System checks passed" if all_ok else "Some checks had warnings",
         data={"checks": [(l, p, d) for l, p, d in checks]},
     )
@@ -120,9 +124,13 @@ def run_repo_health(state: WizardState) -> StageResult:
             "and the actual extraction. The wizard will continue with warnings if needed.",
         )
 
-    failures = [l for l, p, _ in checks if not p and l == "Repository root"]
     return StageResult(
-        status=StageStatus.FAILED if failures else StageStatus.COMPLETED,
+        # F-07: this previously computed `failures` by scanning `checks` for a
+        # failed "Repository root" entry. That list is always empty here: every
+        # path that records a failed repository root returns FAILED early, above,
+        # so control only reaches this point once the root check has passed.
+        # The branch was unreachable, not a safety net.
+        status=StageStatus.COMPLETED,
         message="Repository health verified",
         data={"branch": state.git_branch, "clean": state.git_clean},
     )

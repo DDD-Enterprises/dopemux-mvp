@@ -362,6 +362,124 @@ def test_status_for_missing_explicit_run_id_is_readonly_json(tmp_path: Path) -> 
     _assert_no_readonly_artifacts(output_root, run_id)
 
 
+def test_bare_status_with_no_existing_run_fails_closed_and_creates_nothing(
+    tmp_path: Path,
+) -> None:
+    """F-59: bare `--status` (no --run-id, no --resume) must not fabricate a
+    brand-new empty run and report its emptiness as if it were the
+    operator's real run. With zero runs on disk it must fail closed."""
+    output_root = tmp_path / "artifact-root"
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(_repo_root() / "services" / "repo-truth-extractor" / "run_extraction_v5.py"),
+            "--status",
+            "--output-root",
+            str(output_root),
+        ],
+        cwd=str(_repo_root()),
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert "No extraction run found" in result.stderr
+    assert not (output_root / "runs").exists()
+    assert not (output_root / "latest_run_id.txt").exists()
+
+
+def test_bare_status_resolves_to_latest_run_not_a_fabricated_one(
+    tmp_path: Path,
+) -> None:
+    """F-59: bare `--status` must resolve to the operator's latest run (per
+    latest_run_id.txt) instead of generating a fresh timestamped run id and
+    reporting that (empty) run as NOT_STARTED across every phase."""
+    output_root = tmp_path / "artifact-root"
+    runs_dir = output_root / "runs"
+    real_run_id = "real_operator_run_001"
+    (runs_dir / real_run_id).mkdir(parents=True)
+    (output_root / "latest_run_id.txt").write_text(real_run_id + "\n", encoding="utf-8")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(_repo_root() / "services" / "repo-truth-extractor" / "run_extraction_v5.py"),
+            "--status",
+            "--output-root",
+            str(output_root),
+        ],
+        cwd=str(_repo_root()),
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+
+    assert f"run={real_run_id} " in result.stdout
+    # Exactly the one real run directory must still exist afterward — no
+    # sibling fabricated run, and no telemetry/ materialised as a side
+    # effect of merely reporting on it.
+    assert [p.name for p in runs_dir.iterdir()] == [real_run_id]
+    assert list((runs_dir / real_run_id).iterdir()) == []
+
+
+def test_bare_tail_run_log_with_no_existing_run_fails_closed_and_creates_nothing(
+    tmp_path: Path,
+) -> None:
+    """Adjacent F-59 fix: --tail-run-log has no --phase requirement, so a
+    bare invocation previously fell outside readonly_introspection entirely
+    and fabricated a *fully populated* new run skeleton (00_inputs + every
+    phase's inputs/raw/norm/qa dirs) just to report that it found no log.
+    It must now fail closed like --status."""
+    output_root = tmp_path / "artifact-root"
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(_repo_root() / "services" / "repo-truth-extractor" / "run_extraction_v5.py"),
+            "--tail-run-log",
+            "--output-root",
+            str(output_root),
+        ],
+        cwd=str(_repo_root()),
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert not (output_root / "runs").exists()
+
+
+def test_bare_tail_run_log_resolves_to_latest_run(tmp_path: Path) -> None:
+    output_root = tmp_path / "artifact-root"
+    runs_dir = output_root / "runs"
+    real_run_id = "real_operator_run_002"
+    run_dir = runs_dir / real_run_id
+    run_dir.mkdir(parents=True)
+    (run_dir / "RUN.log").write_text(
+        "10:00:00 [INFO] STEP_START phase=A step=A0\n", encoding="utf-8"
+    )
+    (output_root / "latest_run_id.txt").write_text(real_run_id + "\n", encoding="utf-8")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(_repo_root() / "services" / "repo-truth-extractor" / "run_extraction_v5.py"),
+            "--tail-run-log",
+            "--output-root",
+            str(output_root),
+        ],
+        cwd=str(_repo_root()),
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+
+    assert "STEP_START phase=A step=A0" in result.stdout
+    assert [p.name for p in runs_dir.iterdir()] == [real_run_id]
+    assert sorted(p.name for p in run_dir.iterdir()) == ["RUN.log"]
+
+
 @pytest.mark.parametrize(
     ("args", "expected_code"),
     [

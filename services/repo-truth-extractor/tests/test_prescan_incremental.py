@@ -236,6 +236,15 @@ def _normalized_outputs(output_dir: Path) -> dict[str, Any]:
     report["generated_at"] = "normalized"
     graph["generated_at"] = "normalized"
 
+    # `source_identity.artifact_root` legitimately differs between a full run
+    # and an incremental run written to distinct output directories (that is
+    # how this test avoids the incremental run clobbering the full-run
+    # baseline it diffs against) — it is not a semantic-parity signal, so
+    # normalize it the same way `generated_at` is normalized above.
+    source_identity = intelligence.get("source_identity")
+    if isinstance(source_identity, dict) and "artifact_root" in source_identity:
+        source_identity["artifact_root"] = "normalized"
+
     return {
         "intelligence": intelligence,
         "report": report,
@@ -487,10 +496,6 @@ def test_incremental_corrupted_cache_warns_and_recomputes_fully(tmp_path: Path, 
     assert any("full recompute" in warning.lower() for warning in result.warnings)
 
 
-@pytest.mark.xfail(
-    reason="Deferred to TP-RTE-WALKER-006: prescan incremental/full semantic parity is outside CostProfile F repair scope.",
-    strict=True,
-)
 def test_incremental_outputs_match_full_run_semantically(tmp_path: Path, monkeypatch) -> None:
     _patch_code_report_builder(monkeypatch)
     files = {

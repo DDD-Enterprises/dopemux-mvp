@@ -1,0 +1,129 @@
+{
+  "id": "TP-RTE-TRUTH-D-001",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / run_extraction_v3.py deletion (POST-RELEASE ONLY)",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md \u00a75 (Deferred) first \u2014 it is the authority for scope and the deferral reason.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "DEFERRED-TIER packet: these were explicitly held OUT of the main R0-R5 waves. Do not start one without confirming the program has capacity; none of these gate PR #1043.",
+    "HARD BLOCK: do NOT execute until the v5-native rte scan (TP-RTE-TRUTH-R4-003) has survived one full release cycle.",
+    "A7 refgraph: v3 has 80 TEST + 10 RUNTIME refs \u2014 deleting 12k lines the same program that replaces its function is how regressions happen.",
+    "Prerequisite: re-run the A7-style refgraph and prove RUNTIME refs == 0 before any deletion.",
+    "Findings covered: Deferred #1."
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R4-003"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-D",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "L"
+  },
+  "commit": {
+    "message": "chore(rte): TP-RTE-TRUTH-D-001 \u2014 delete legacy run_extraction_v3.py",
+    "allowlist": [
+      "services/repo-truth-extractor/",
+      "tests/",
+      "task-packets/generated/TP-RTE-TRUTH-D-001.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-D-001/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q"
+    ]
+  },
+  "pr": {
+    "title": "chore(rte): retire run_extraction_v3.py",
+    "body": "Deferred #1. BLOCKED until v5-native scan ships + one release cycle.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Re-run refgraph for run_extraction_v3.py across runtime/tests/CI/docs/scripts/artifacts; only proceed if RUNTIME==0.",
+      "requirements": [
+        "Abort and report if any runtime ref remains."
+      ],
+      "commands": [
+        "rg -n 'run_extraction_v3' --glob '!.git' | wc -l"
+      ],
+      "expected_files": [],
+      "validation": [
+        "RUNTIME ref count == 0 documented in PROOF.json."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A7-legacy-refgraph.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Stage the deletion in a single revertable commit; run the full RTE suite.",
+      "requirements": [],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Suite green; rollback = single git revert."
+      ],
+      "context_files": []
+    }
+  ],
+  "routing": {
+    "stage": "planner_strong",
+    "tier": "strong",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml is ADVISORY governance, not a runtime router. If a runtime path disagrees, runtime wins.",
+    "runners": {
+      "preferred": [
+        "claude_code",
+        "codex"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": [
+        "grok"
+      ]
+    },
+    "models": {
+      "claude_code": "claude-opus-5 (effort high|xhigh)",
+      "codex": "gpt-5.6-sol (reasoning xhigh|max)",
+      "opencode": "anthropic/claude-sonnet-4-5 via .opencode/agents/pal-planner.md",
+      "grok": "NOT AS SOLE AUTHOR \u2014 grok-code-fast-1 is a fast coding tier, not a strong-reasoning tier",
+      "gemini_cli": "Pro-high tier \u2014 VERIFY_WITH_VENDOR_DOCS",
+      "copilot": "Claude Sonnet 4.5 (.github/agents/dopemux-planner.agent.md) \u2014 below strong tier; acceptable only under an approved plan"
+    },
+    "rationale": "Deleting 12k lines with 80 test refs. HARD-BLOCKED post-release. Strong + operator.",
+    "notes": [
+      "grok forbidden as SOLE AUTHOR at this tier (grok-code-fast-1 is a fast coding tier, not strong-reasoning); acceptable as implementer executing an already-approved strong plan."
+    ],
+    "evidence": "Model ids OBSERVED from this machine: ~/.codex/config.toml (gpt-5.6-sol/xhigh), ~/.config/opencode/opencode.jsonc (claude-sonnet-4-5 + claude-haiku-4-5), ~/.grok/config.toml, .github/agents/*.agent.md (Sonnet 4.5). Per-vendor selector-string validity beyond these files remains VERIFY_WITH_VENDOR_DOCS."
+  }
+}

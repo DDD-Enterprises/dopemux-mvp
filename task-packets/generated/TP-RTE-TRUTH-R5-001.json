@@ -1,0 +1,120 @@
+{
+  "id": "TP-RTE-TRUTH-R5-001",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / legacy surface retirement (v3 EXCLUDED)",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "v3 (run_extraction_v3.py) NOT deleted \u2014 80 test + 10 runtime refs; deferred post-release by program charter.",
+    "Retire: repscan/v4 external shims where A7 shows zero runtime refs; sp/ shadow-twin routing metadata; base_prompts/; archive/legacy_prompts + legacy_artifact_gates (0 runtime refs, DELETION-CANDIDATE per A7); the two orphan PipelineRunner classes.",
+    "Each deletion: re-run the A7-style refgraph grep first, single revertable commit, suite green after.",
+    "Findings covered: F-50."
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R4-003",
+    "TP-RTE-TRUTH-R4-005"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R5",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "chore(rte): TP-RTE-TRUTH-R5-001 \u2014 legacy surface retirement (v3 excluded)",
+    "allowlist": [
+      "services/repo-truth-extractor/",
+      "src/dopemux/",
+      "tests/",
+      "task-packets/generated/TP-RTE-TRUTH-R5-001.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R5-001/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+    ]
+  },
+  "pr": {
+    "title": "chore(rte): retire unreferenced legacy surfaces",
+    "body": "F-50.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Staged deletions per A7 hit lists with per-target refgraph re-verification.",
+      "requirements": [],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q",
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'not slow'"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/",
+        "src/dopemux/"
+      ],
+      "validation": [
+        "Zero RUNTIME refs to each retired target; suite green per deletion."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A7-legacy-refgraph.md"
+      ]
+    }
+  ],
+  "routing": {
+    "stage": "planner_strong",
+    "tier": "strong",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml is ADVISORY governance, not a runtime router. If a runtime path disagrees, runtime wins.",
+    "runners": {
+      "preferred": [
+        "claude_code",
+        "codex"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": [
+        "grok"
+      ]
+    },
+    "models": {
+      "claude_code": "claude-opus-5 (effort high|xhigh)",
+      "codex": "gpt-5.6-sol (reasoning xhigh|max)",
+      "opencode": "anthropic/claude-sonnet-4-5 via .opencode/agents/pal-planner.md",
+      "grok": "NOT AS SOLE AUTHOR \u2014 grok-code-fast-1 is a fast coding tier, not a strong-reasoning tier",
+      "gemini_cli": "Pro-high tier \u2014 VERIFY_WITH_VENDOR_DOCS",
+      "copilot": "Claude Sonnet 4.5 (.github/agents/dopemux-planner.agent.md) \u2014 below strong tier; acceptable only under an approved plan"
+    },
+    "rationale": "Deletions are the least reversible change class; requires refgraph evidence per target.",
+    "notes": [
+      "grok forbidden as SOLE AUTHOR at this tier (grok-code-fast-1 is a fast coding tier, not strong-reasoning); acceptable as implementer executing an already-approved strong plan."
+    ],
+    "evidence": "Model ids OBSERVED from this machine: ~/.codex/config.toml (gpt-5.6-sol/xhigh), ~/.config/opencode/opencode.jsonc (claude-sonnet-4-5 + claude-haiku-4-5), ~/.grok/config.toml, .github/agents/*.agent.md (Sonnet 4.5). Per-vendor selector-string validity beyond these files remains VERIFY_WITH_VENDOR_DOCS."
+  }
+}

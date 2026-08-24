@@ -3,9 +3,10 @@ from __future__ import annotations
 import os
 from unittest.mock import patch
 
+import click
 from click.testing import CliRunner
 
-from dopemux.cli import cli
+from dopemux.cli import cli, rte, upgrades
 
 
 def test_upgrades_run_forwards_pipeline_version_and_ui_flags() -> None:
@@ -572,3 +573,104 @@ def test_rte_run_help_lists_cost_profile_controls() -> None:
     assert result.exit_code == 0, result.output
     for flag in ("--cost-profile", "--model-alias", "--disable-provider", "--max-cost-usd"):
         assert flag in result.output
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# TP-RTE-TRUTH-R4-002 (F-42): definition-site inversion — `rte` is now the
+# canonical definition site; `upgrades` is a hidden, deprecated alias that
+# must remain fully functional. These tests assert against the *actual*
+# click.Group registry produced by importing dopemux.cli (the real wiring),
+# not against helper functions in isolation.
+# ─────────────────────────────────────────────────────────────────────────
+
+# Commands that were reachable as `dopemux upgrades <x>` before the
+# inversion (per claudedocs/rte-truth-program-2026-07/A4-cli-ux-docs.md
+# §1.2). Backward compatibility requires every one of these to still
+# resolve on the post-inversion `upgrades` group.
+_PRE_INVERSION_UPGRADES_COMMANDS = frozenset(
+    {"list", "run", "doctor", "status", "preflight", "validate-live", "trace", "promptset"}
+)
+
+
+def test_upgrades_is_hidden_and_rte_is_canonical_in_top_level_help() -> None:
+    """`rte` is the visible canonical group; `upgrades` must not appear in
+    top-level help (it is a deprecated alias, not a first-class surface)."""
+    runner = CliRunner()
+    result = runner.invoke(cli, ["--help"])
+
+    assert result.exit_code == 0, result.output
+    assert "rte" in result.output
+    # Match on a full CLI-token boundary so this can't accidentally match
+    # substrings like "upgradesomething" in unrelated help text.
+    assert not any(
+        line.strip().startswith("upgrades ") or line.strip() == "upgrades"
+        for line in result.output.splitlines()
+    )
+    assert upgrades.hidden is True
+
+
+def test_upgrades_alias_group_has_full_parity_with_rte_registry() -> None:
+    """Enumerate the *entire* alias group's command registry (not a
+    hand-picked sample) and assert each entry is the literal same
+    click.Command/click.Group object registered under `rte` — i.e. the
+    alias cannot silently drift from the canonical definition, and nothing
+    that used to be reachable under `upgrades` was dropped."""
+    # Nothing that was reachable pre-inversion may have disappeared.
+    assert _PRE_INVERSION_UPGRADES_COMMANDS <= set(upgrades.commands.keys())
+
+    # Every command currently registered on the alias group must be the
+    # identical object registered on the canonical group -- not a re-
+    # implementation, not a stale copy.
+    assert set(upgrades.commands.keys()) <= set(rte.commands.keys())
+    for name, alias_command in upgrades.commands.items():
+        canonical_command = rte.commands[name]
+        assert alias_command is canonical_command, (
+            f"`upgrades {name}` is not the same object as `rte {name}`; "
+            "the alias has drifted from the canonical definition."
+        )
+
+        if isinstance(alias_command, click.Group):
+            # Recurse: sub-groups (promptset) must have full parity too,
+            # not just a partial/legacy subset.
+            assert set(alias_command.commands.keys()) == set(
+                canonical_command.commands.keys()
+            ), (
+                f"`upgrades {name}` subcommands "
+                f"{sorted(alias_command.commands.keys())} do not match "
+                f"`rte {name}` subcommands "
+                f"{sorted(canonical_command.commands.keys())}."
+            )
+            for sub_name, sub_alias_command in alias_command.commands.items():
+                assert sub_alias_command is canonical_command.commands[sub_name]
+
+
+def test_upgrades_invoke_emits_deprecation_warning() -> None:
+    runner = CliRunner()
+    with patch("dopemux.cli._run_extractor_runner"):
+        result = runner.invoke(
+            cli, ["upgrades", "list", "--pipeline-version", "v5"]
+        )
+
+    assert result.exit_code == 0, result.output
+    assert "deprecated alias" in result.output
+    assert "dopemux rte" in result.output
+
+    # Paired same-process check: Click only invokes a group's callback when
+    # a subcommand actually runs, so `--help` on the bare group must stay
+    # quiet even though the callback (proven above to warn) is the same
+    # object for every invocation path.
+    help_result = runner.invoke(cli, ["upgrades", "--help"])
+    assert help_result.exit_code == 0, help_result.output
+    assert "deprecated alias" not in help_result.output
+
+
+def test_rte_invoke_does_not_leak_deprecation_warning() -> None:
+    """The deprecation warning lives on the `upgrades` group callback only;
+    invoking the same underlying command through the canonical `rte` group
+    must never surface it, even though the Command object is shared."""
+    runner = CliRunner()
+    with patch("dopemux.cli._run_extractor_runner"):
+        result = runner.invoke(cli, ["rte", "list", "--pipeline-version", "v5"])
+
+    assert result.exit_code == 0, result.output
+    assert "deprecated alias" not in result.output

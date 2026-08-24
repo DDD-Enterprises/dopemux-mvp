@@ -3,22 +3,36 @@ import logging
 import threading
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
-# Repo-local pricing authority is incomplete in this checkout. Keep the registry
-# explicit and deterministic, and make the fallback policy visible in the ledger
-# instead of inventing provider-billing truth.
+# --------------------------------------------------------------------------
+# TP-RTE-TRUTH-R2-001 (F-10 / F-11): this module used to keep its OWN
+# hardcoded $0.15/$0.60 baseline registry, silently overwritten by
+# benchmarking.pricing.catalog when importable and silently KEPT (fail-open)
+# whenever that import or load failed — meaning a broken catalog reprices
+# every model, including a true $5/$30 model, at 33-50x under cost while
+# still reporting itself "priced" (match_type exact, unknown_model False).
+# That entire fail-open path is deleted. There is now exactly ONE pricing
+# authority for this whole service: extractor.costing.load_pricing_registry
+# (reads config/pricing.yaml directly, raises on any load problem — fail
+# closed, never a silent reprice) + extractor.costing.resolve_model_rate
+# (the same candidate-matching lookup E3's accounting already used). SpendLedger
+# below is a thin, backward-compatible façade over that authority.
+# --------------------------------------------------------------------------
 PRICING_VERSION = "baseline_v1"
 UNKNOWN_MODEL_POLICY = "baseline_v1_fallback"
 BASELINE_INPUT_COST_PER_1M_USD = 0.15
 BASELINE_OUTPUT_COST_PER_1M_USD = 0.60
 
-try:
-    from benchmarking.pricing.catalog import load_pricing_catalog
-except ImportError:  # pragma: no cover - fallback only when imported out of tree
-    load_pricing_catalog = None
+from extractor.costing import (  # noqa: E402
+    compute_optimized_cost,
+    load_pricing_registry_cached,
+    make_projected_cost_check,
+    resolve_model_rate,
+)
+from rte_config import PRICING_CONFIG_PATH  # noqa: E402
 
 try:
     from lib.pricing_surface import pricing_surface_metadata
@@ -34,107 +48,6 @@ except ImportError:  # pragma: no cover - direct file imports in legacy tests
     _pricing_surface_module = importlib.util.module_from_spec(_pricing_surface_spec)
     _pricing_surface_spec.loader.exec_module(_pricing_surface_module)
     pricing_surface_metadata = _pricing_surface_module.pricing_surface_metadata
-
-
-def _baseline_rate(pricing_source: str = "route_registry_baseline") -> Dict[str, Any]:
-    return {
-        "input_cost_per_1m_usd": BASELINE_INPUT_COST_PER_1M_USD,
-        "output_cost_per_1m_usd": BASELINE_OUTPUT_COST_PER_1M_USD,
-        "pricing_source": pricing_source,
-    }
-
-
-MODEL_COST_RATES: Dict[str, Dict[str, Any]] = {
-    "openai/gpt-5-nano": _baseline_rate(),
-    "openai/gpt-5-mini": _baseline_rate(),
-    "openai/gpt-5.2": _baseline_rate(),
-    "openai/gpt-5.3-codex": _baseline_rate(),
-    "openai/gpt-5.4": _baseline_rate(),
-    "openai/gpt-5.4-mini": _baseline_rate(),
-    "openai/gpt-5.5": _baseline_rate(),
-    "gemini/gemini-2.5-flash": _baseline_rate(),
-    "gemini/gemini-2.5-pro": _baseline_rate(),
-    "gemini/gemini-3-flash-preview": _baseline_rate(),
-    "gemini/gemini-3.1-pro-preview": _baseline_rate(),
-    "xai/grok-code-fast-1": _baseline_rate(),
-    "xai/grok-4.20-beta": _baseline_rate(),
-    "xai/grok-4.20-beta-0309-reasoning": _baseline_rate(),
-    "xai/grok-4.3": _baseline_rate(),
-    "openrouter/openai/gpt-5-nano": _baseline_rate(),
-    "openrouter/openai/gpt-5-mini": _baseline_rate(),
-    "openrouter/openai/gpt-5.2": _baseline_rate(),
-    "openrouter/openai/gpt-5.3-codex": _baseline_rate(),
-    "openrouter/openai/gpt-5.4": _baseline_rate(),
-    "openrouter/anthropic/claude-opus-4-6": _baseline_rate(),
-}
-
-
-def _opt_float(value: Any) -> Optional[float]:
-    if value is None:
-        return None
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        return None
-
-
-def _opt_int(value: Any) -> Optional[int]:
-    if value is None:
-        return None
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return None
-
-
-def _catalog_rates() -> Dict[str, Dict[str, Any]]:
-    if load_pricing_catalog is None:
-        return {}
-    try:
-        catalog = load_pricing_catalog()
-    except Exception as exc:  # pragma: no cover - fail closed to legacy registry
-        logger.warning("Failed to load pricing catalog; using baseline spend registry: %s", exc)
-        return {}
-    rates: Dict[str, Dict[str, Any]] = {}
-    for model_key, row in catalog.models.items():
-        input_cost = row.get("input_cost_per_m")
-        output_cost = row.get("output_cost_per_m")
-        if input_cost is None or output_cost is None:
-            continue
-        rates[model_key] = {
-            "input_cost_per_1m_usd": float(input_cost),
-            "output_cost_per_1m_usd": float(output_cost),
-            "pricing_source": str(row.get("pricing_source_ref") or row.get("pricing_source_type") or "catalog"),
-            "pricing_source_type": str(row.get("pricing_source_type") or "unknown"),
-            "pricing_status": str(row.get("pricing_status") or "UNPRICED_UNKNOWN"),
-            "pricing_confidence": str(row.get("pricing_confidence") or "UNKNOWN"),
-            "pricing_currency": str(row.get("pricing_currency") or "USD"),
-            "surface_scope": str(row.get("surface_scope") or "unknown"),
-            # Optimizer fields (May 2026 schema extension; all optional).
-            "cached_input_cost_per_1m_usd": _opt_float(row.get("cached_input_cost")),
-            "batch_discount": _opt_float(row.get("batch_discount")),
-            "service_tier_flex_multiplier": _opt_float(row.get("service_tier_flex_multiplier")),
-            "service_tier_priority_multiplier": _opt_float(row.get("service_tier_priority_multiplier")),
-            "cache_read_multiplier": _opt_float(row.get("cache_read_multiplier")),
-            "cache_write_5m_multiplier": _opt_float(row.get("cache_write_5m_multiplier")),
-            "cache_write_1h_multiplier": _opt_float(row.get("cache_write_1h_multiplier")),
-            "prompt_cache_min_tokens": _opt_int(row.get("prompt_cache_min_tokens")),
-            "auto_cache_enabled": bool(row["auto_cache_enabled"]) if row.get("auto_cache_enabled") is not None else None,
-            "tiered_input_threshold_tokens": _opt_int(row.get("tiered_input_threshold_tokens")),
-            "tiered_input_above_cost_per_1m_usd": _opt_float(row.get("tiered_input_above_cost_per_m")),
-            "tiered_output_above_cost_per_1m_usd": _opt_float(row.get("tiered_output_above_cost_per_m")),
-            "tiered_cached_input_above_cost_per_1m_usd": _opt_float(row.get("tiered_cached_input_above_cost_per_m")),
-            "data_residency_us_multiplier": _opt_float(row.get("data_residency_us_multiplier")),
-            "context_window": _opt_int(row.get("context_window")),
-            "supports_json_schema_strict": bool(row["supports_json_schema_strict"]) if row.get("supports_json_schema_strict") is not None else None,
-            "supports_reasoning_toggle": bool(row["supports_reasoning_toggle"]) if row.get("supports_reasoning_toggle") is not None else None,
-            "alias_of": str(row["alias_of"]) if row.get("alias_of") else None,
-            "specialization": str(row["specialization"]) if row.get("specialization") else None,
-        }
-    return rates
-
-
-MODEL_COST_RATES.update(_catalog_rates())
 
 
 @dataclass
@@ -242,378 +155,39 @@ def _model_surface_from_payload(model_data: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _normalize_provider_model(
-    provider: Optional[str],
-    model_id: Optional[str],
-    route: Optional[str] = None,
-) -> Tuple[str, str]:
-    route_token = str(route or "").strip()
-    if route_token and (not provider or not model_id):
-        if "/" in route_token:
-            route_provider, route_model_id = route_token.split("/", 1)
-            provider = provider or route_provider
-            model_id = model_id or route_model_id
-    provider_token = str(provider or "").strip().lower()
-    model_token = str(model_id or "").strip()
-    if not provider_token and "/" in model_token:
-        first, rest = model_token.split("/", 1)
-        if first:
-            return first.strip().lower(), rest.strip()
-    return provider_token, model_token
-
-
-def _pricing_candidates(provider: str, model_id: str) -> list[str]:
-    provider_token, model_token = _normalize_provider_model(provider, model_id)
-    lower_model = model_token.lower()
-    candidates: list[str] = []
-
-    def _push(token: str) -> None:
-        normalized = str(token or "").strip().lower()
-        if normalized and normalized not in candidates:
-            candidates.append(normalized)
-
-    if provider_token and lower_model:
-        _push(f"{provider_token}/{lower_model}")
-    _push(lower_model)
-    if "/" in lower_model:
-        _push(lower_model.split("/", 1)[1])
-        parts = lower_model.split("/")
-        if len(parts) >= 2:
-            _push("/".join(parts[-2:]))
-    return candidates
-
-
-def _fallback_cost_rate() -> Dict[str, Any]:
-    max_input = max(
-        _safe_float(rate.get("input_cost_per_1m_usd"))
-        for rate in MODEL_COST_RATES.values()
-    )
-    max_output = max(
-        _safe_float(rate.get("output_cost_per_1m_usd"))
-        for rate in MODEL_COST_RATES.values()
-    )
-    return {
-        "input_cost_per_1m_usd": max_input,
-        "output_cost_per_1m_usd": max_output,
-        "pricing_source": f"unknown_model:{UNKNOWN_MODEL_POLICY}",
-    }
-
-
-_OPTIMIZER_PASSTHROUGH_KEYS = (
-    "cached_input_cost_per_1m_usd",
-    "batch_discount",
-    "service_tier_flex_multiplier",
-    "service_tier_priority_multiplier",
-    "cache_read_multiplier",
-    "cache_write_5m_multiplier",
-    "cache_write_1h_multiplier",
-    "prompt_cache_min_tokens",
-    "auto_cache_enabled",
-    "tiered_input_threshold_tokens",
-    "tiered_input_above_cost_per_1m_usd",
-    "tiered_output_above_cost_per_1m_usd",
-    "tiered_cached_input_above_cost_per_1m_usd",
-    "data_residency_us_multiplier",
-    "context_window",
-    "supports_json_schema_strict",
-    "supports_reasoning_toggle",
-    "alias_of",
-    "specialization",
-)
-
-
-def _optimizer_fields(rate: Dict[str, Any]) -> Dict[str, Any]:
-    """Extract optimizer fields from a registry rate row.
-
-    Missing fields are surfaced as None so callers can fall back to provider
-    defaults cleanly.
-    """
-    return {key: rate.get(key) for key in _OPTIMIZER_PASSTHROUGH_KEYS}
-
-
 def get_model_cost_rate(
     provider: Optional[str] = None,
     model_id: Optional[str] = None,
     route: Optional[str] = None,
 ) -> Dict[str, Any]:
-    provider_token, model_token = _normalize_provider_model(provider, model_id, route)
+    """Backward-compatible façade over the single pricing authority.
+
+    Loads config/pricing.yaml through extractor.costing.load_pricing_registry_cached
+    (raises RuntimeError on any catalog problem — fail closed, F-10 fix) and
+    resolves the route through extractor.costing.resolve_model_rate (the same
+    candidate-matching lookup E3's accounting uses). Callers that relied on
+    this function's exact return shape (lib/prescan/cost_estimator.py,
+    benchmarking/direct_model/spend.py, lib/prescan/provider_catalog.py's
+    mocked tests) keep working unchanged.
+
+    Raises RuntimeError if the pricing catalog itself cannot be loaded. Does
+    NOT raise for an unknown model — that returns unknown_model=True with
+    UNPRICED status and a $0.00 rate (no fabricated number); callers that
+    need "unknown model + cap set -> raise" apply that policy themselves
+    (see SpendLedger.price_usage below).
+    """
+    pricing_registry, _pricing_sha = load_pricing_registry_cached(PRICING_CONFIG_PATH)
+    resolved = resolve_model_rate(pricing_registry, provider, model_id, route)
     surface = pricing_surface_metadata(
-        provider=provider_token,
-        model_id=model_token,
+        provider=resolved["provider"],
+        model_id=resolved["model_id"],
         route=route,
     )
-    for index, candidate in enumerate(_pricing_candidates(provider_token, model_token)):
-        if candidate in MODEL_COST_RATES:
-            rate = MODEL_COST_RATES[candidate]
-            return {
-                "provider": provider_token,
-                "model_id": model_token,
-                "pricing_key": candidate,
-                "pricing_version": PRICING_VERSION,
-                "pricing_source": str(
-                    rate.get("pricing_source") or "route_registry_baseline"
-                ),
-                **surface,
-                "pricing_source_type": str(rate.get("pricing_source_type") or "legacy_baseline"),
-                "pricing_status": str(rate.get("pricing_status") or "PRICED_WITH_CAVEAT"),
-                "pricing_confidence": str(rate.get("pricing_confidence") or "LOW"),
-                "pricing_currency": str(rate.get("pricing_currency") or "USD"),
-                "surface_scope": str(rate.get("surface_scope") or "unknown"),
-                "match_type": "exact" if index == 0 else "fuzzy",
-                "unknown_model": False,
-                "input_cost_per_1m_usd": _safe_float(
-                    rate.get("input_cost_per_1m_usd", BASELINE_INPUT_COST_PER_1M_USD)
-                ),
-                "output_cost_per_1m_usd": _safe_float(
-                    rate.get(
-                        "output_cost_per_1m_usd", BASELINE_OUTPUT_COST_PER_1M_USD
-                    )
-                ),
-                **_optimizer_fields(rate),
-            }
-
-    fallback = _fallback_cost_rate()
-    fallback_key = (
-        f"{provider_token}/{model_token}".lower()
-        if provider_token and model_token
-        else (model_token.lower() if model_token else "unknown")
-    )
     return {
-        "provider": provider_token,
-        "model_id": model_token,
-        "pricing_key": fallback_key,
-        "pricing_version": PRICING_VERSION,
-        "pricing_source": str(fallback["pricing_source"]),
+        **resolved,
         **surface,
-        "pricing_source_type": "inferred_estimated_fallback",
-        "pricing_status": "UNPRICED_UNKNOWN",
-        "pricing_confidence": "UNKNOWN",
-        "pricing_currency": "USD",
-        "surface_scope": "unknown",
-        "match_type": "fallback",
-        "unknown_model": True,
-        "input_cost_per_1m_usd": _safe_float(fallback["input_cost_per_1m_usd"]),
-        "output_cost_per_1m_usd": _safe_float(fallback["output_cost_per_1m_usd"]),
-        **{key: None for key in _OPTIMIZER_PASSTHROUGH_KEYS},
+        "pricing_version": PRICING_VERSION,
     }
-
-
-# ---------------------------------------------------------------------------
-# Optimizer-aware pricing helpers (May 2026 schema extension).
-#
-# These functions take a resolved rate (from get_model_cost_rate) plus optional
-# request-time inputs (service_tier, cached_tokens, is_batch, prompt_token_count)
-# and return a breakdown:
-#
-#   {
-#     base_input_cost_usd, base_output_cost_usd, base_cost_usd,
-#     tier_multiplier, tier_adjusted_cost_usd,
-#     cached_input_cost_usd, cache_discount_usd,
-#     batch_discount_usd,
-#     final_cost_usd,
-#     applied_optimizers: [...],
-#   }
-#
-# Missing optimizer fields fall back to defaults (multiplier 1.0, no discount).
-# ---------------------------------------------------------------------------
-
-
-_VALID_SERVICE_TIERS = ("default", "flex", "priority", "auto", None)
-
-
-def _resolve_per_token_input_rate(
-    rate: Dict[str, Any], prompt_token_count: Optional[int]
-) -> float:
-    """Pick base input rate; honor tiered_input_above_cost_per_1m_usd if prompt
-    crosses the model's tier threshold (Gemini Pro >200K, grok-4-fast >128K)."""
-    base = _safe_float(rate.get("input_cost_per_1m_usd", BASELINE_INPUT_COST_PER_1M_USD))
-    threshold = rate.get("tiered_input_threshold_tokens")
-    if (
-        prompt_token_count is not None
-        and threshold is not None
-        and prompt_token_count > int(threshold)
-    ):
-        above = rate.get("tiered_input_above_cost_per_1m_usd")
-        if above is not None:
-            return float(above)
-    return base
-
-
-def _resolve_per_token_output_rate(
-    rate: Dict[str, Any], prompt_token_count: Optional[int]
-) -> float:
-    base = _safe_float(rate.get("output_cost_per_1m_usd", BASELINE_OUTPUT_COST_PER_1M_USD))
-    threshold = rate.get("tiered_input_threshold_tokens")
-    if (
-        prompt_token_count is not None
-        and threshold is not None
-        and prompt_token_count > int(threshold)
-    ):
-        above = rate.get("tiered_output_above_cost_per_1m_usd")
-        if above is not None:
-            return float(above)
-    return base
-
-
-def _resolve_cached_input_rate(rate: Dict[str, Any]) -> float:
-    """Cached input rate per million tokens.
-
-    Resolution order:
-      1. Explicit cached_input_cost_per_1m_usd from catalog.
-      2. cache_read_multiplier × input_cost_per_1m_usd.
-      3. 0.10 × input_cost_per_1m_usd (industry-standard 90% discount fallback).
-    """
-    explicit = rate.get("cached_input_cost_per_1m_usd")
-    if explicit is not None:
-        return float(explicit)
-    input_rate = _safe_float(rate.get("input_cost_per_1m_usd", BASELINE_INPUT_COST_PER_1M_USD))
-    multiplier = rate.get("cache_read_multiplier")
-    if multiplier is not None:
-        return input_rate * float(multiplier)
-    return input_rate * 0.10
-
-
-def _tier_multiplier(rate: Dict[str, Any], service_tier: Optional[str]) -> Tuple[float, str]:
-    if service_tier is None or service_tier in ("default", "auto"):
-        return 1.0, service_tier or "default"
-    if service_tier == "flex":
-        m = rate.get("service_tier_flex_multiplier")
-        return (float(m) if m is not None else 1.0), "flex"
-    if service_tier == "priority":
-        m = rate.get("service_tier_priority_multiplier")
-        return (float(m) if m is not None else 1.0), "priority"
-    return 1.0, service_tier or "default"
-
-
-def _batch_multiplier(rate: Dict[str, Any], is_batch: bool) -> float:
-    if not is_batch:
-        return 1.0
-    discount = rate.get("batch_discount")
-    if discount is None:
-        return 1.0
-    # Catalog stores discount as a multiplier (0.5 = 50% off → pay 0.5x).
-    return float(discount)
-
-
-def compute_optimized_cost(
-    rate: Dict[str, Any],
-    *,
-    input_tokens: int,
-    output_tokens: int,
-    cached_input_tokens: int = 0,
-    service_tier: Optional[str] = None,
-    is_batch: bool = False,
-    prompt_token_count: Optional[int] = None,
-    data_residency: str = "global",
-) -> Dict[str, Any]:
-    """Compute cost breakdown with optimizer multipliers.
-
-    `cached_input_tokens` should be the count of input tokens that hit the
-    provider's cache (from response usage.cached_tokens). The remaining
-    `input_tokens - cached_input_tokens` are billed at full input rate.
-    """
-    input_tokens = _safe_int(input_tokens)
-    output_tokens = _safe_int(output_tokens)
-    cached_input_tokens = max(0, min(_safe_int(cached_input_tokens), input_tokens))
-    uncached_input_tokens = input_tokens - cached_input_tokens
-
-    input_rate = _resolve_per_token_input_rate(rate, prompt_token_count)
-    output_rate = _resolve_per_token_output_rate(rate, prompt_token_count)
-    cached_rate = _resolve_cached_input_rate(rate)
-
-    base_input_cost = (uncached_input_tokens / 1_000_000.0) * input_rate
-    cached_input_cost = (cached_input_tokens / 1_000_000.0) * cached_rate
-    base_output_cost = (output_tokens / 1_000_000.0) * output_rate
-    base_cost = base_input_cost + cached_input_cost + base_output_cost
-    # What the cost would have been without caching (for cache_discount accounting)
-    no_cache_input_cost = (input_tokens / 1_000_000.0) * input_rate
-    cache_discount = max(0.0, no_cache_input_cost - (base_input_cost + cached_input_cost))
-
-    tier_mult, tier_label = _tier_multiplier(rate, service_tier)
-    batch_mult = _batch_multiplier(rate, is_batch)
-
-    residency_mult = 1.0
-    if data_residency == "us":
-        rd = rate.get("data_residency_us_multiplier")
-        if rd is not None:
-            residency_mult = float(rd)
-
-    combined_mult = tier_mult * batch_mult * residency_mult
-    final_cost = base_cost * combined_mult
-
-    applied: list = []
-    if tier_label != "default":
-        applied.append(f"service_tier:{tier_label}({tier_mult:.2f}x)")
-    if is_batch and batch_mult != 1.0:
-        applied.append(f"batch({batch_mult:.2f}x)")
-    if cached_input_tokens > 0:
-        applied.append(f"cache({cached_input_tokens}/{input_tokens}tok)")
-    if residency_mult != 1.0:
-        applied.append(f"residency:us({residency_mult:.2f}x)")
-
-    return {
-        "input_tokens": input_tokens,
-        "output_tokens": output_tokens,
-        "cached_input_tokens": cached_input_tokens,
-        "uncached_input_tokens": uncached_input_tokens,
-        "input_rate_per_1m_usd": input_rate,
-        "output_rate_per_1m_usd": output_rate,
-        "cached_input_rate_per_1m_usd": cached_rate,
-        "base_input_cost_usd": base_input_cost,
-        "cached_input_cost_usd": cached_input_cost,
-        "base_output_cost_usd": base_output_cost,
-        "base_cost_usd": base_cost,
-        "no_cache_input_cost_usd": no_cache_input_cost,
-        "cache_discount_usd": cache_discount,
-        "service_tier": tier_label,
-        "tier_multiplier": tier_mult,
-        "is_batch": bool(is_batch),
-        "batch_multiplier": batch_mult,
-        "data_residency": data_residency,
-        "data_residency_multiplier": residency_mult,
-        "combined_multiplier": combined_mult,
-        "final_cost_usd": final_cost,
-        "applied_optimizers": applied,
-    }
-
-
-def make_projected_cost_check(
-    *,
-    rate: Dict[str, Any],
-    current_total_cost_usd: float,
-    max_cost_usd: Optional[float],
-) -> Callable[..., bool]:
-    """Return a callable that previews whether one more LLM call would breach
-    the spend cap, BEFORE the call is made. This is the preventive-cap helper
-    that closes audit finding F2-MED-1 (post-hoc check)."""
-    if max_cost_usd is None:
-        def _always_ok(**_kwargs: Any) -> bool:
-            return True
-        return _always_ok
-
-    def _check(
-        *,
-        input_tokens: int,
-        output_tokens: int,
-        cached_input_tokens: int = 0,
-        service_tier: Optional[str] = None,
-        is_batch: bool = False,
-        prompt_token_count: Optional[int] = None,
-        data_residency: str = "global",
-    ) -> bool:
-        priced = compute_optimized_cost(
-            rate,
-            input_tokens=input_tokens,
-            output_tokens=output_tokens,
-            cached_input_tokens=cached_input_tokens,
-            service_tier=service_tier,
-            is_batch=is_batch,
-            prompt_token_count=prompt_token_count,
-            data_residency=data_residency,
-        )
-        return current_total_cost_usd + priced["final_cost_usd"] <= max_cost_usd
-
-    return _check
 
 
 class SpendLedger:
@@ -793,8 +367,28 @@ class SpendLedger:
         legacy `estimated_cost_usd` field. The legacy field becomes the
         optimizer-adjusted final cost so existing callers (accumulate, etc.)
         record the *effective* price they paid, not the headline rate.
+
+        Unknown-model policy (TP-RTE-TRUTH-R2-001, F-10/F-11): when this
+        ledger has a spend cap (`global_max_cost_usd is not None` — the exact
+        same condition run_extraction_v5.py uses to decide a cap is active),
+        an unknown model raises RuntimeError instead of silently pricing at
+        $0.00/UNPRICED. A cap means the operator is relying on cost figures
+        to make a stop/go decision; pricing an unpriced model at $0 would
+        silently understate real spend and let it slip past the cap
+        undetected — worse than the old $0.15/$0.60 baseline bug, not
+        better. Without a cap, the call proceeds and the returned dict
+        carries unknown_model=True / pricing_status=UNPRICED_UNKNOWN with a
+        $0.00 rate — never a fabricated dollar figure.
         """
         resolved = get_model_cost_rate(provider=provider, model_id=model_id, route=route)
+        if resolved.get("unknown_model") and self.record.global_max_cost_usd is not None:
+            raise RuntimeError(
+                "Unknown model pricing with a spend cap set "
+                f"(max_cost_usd={self.record.global_max_cost_usd}): "
+                f"provider={provider!r} model_id={model_id!r} route={route!r}. "
+                "Add a priced row to config/pricing.yaml before running this "
+                "route under a cost cap."
+            )
         breakdown = compute_optimized_cost(
             resolved,
             input_tokens=input_tokens,

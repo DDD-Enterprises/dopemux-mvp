@@ -1,0 +1,185 @@
+{
+  "packet_id": "TP-RTE-TRUTH-R1-001",
+  "packet_path": "task-packets/generated/TP-RTE-TRUTH-R1-001.json",
+  "tree_item_id": "bcdbfb29-e4d9-4d4f-b0d3-f3763841f930",
+  "worktree": "/Users/hue/code/dopemux-mvp/.claude/worktrees/focused-mahavira-5bd29b",
+  "branch": "claude/rte-audit-improvement-f4beb7",
+  "base_head": "707895f34bc7857538fb7ccc9558b7199ba1944a",
+  "commit_sha": null,
+  "repo_identity": {
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot",
+    "marker_present": true
+  },
+  "authority_used": [
+    "AGENTS.md",
+    "task-packets/generated/TP-RTE-TRUTH-R1-001.json",
+    "task-packets/generated/TP-RTE-TRUTH-LOAD-PLAN.md",
+    "claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md",
+    "claudedocs/rte-truth-program-2026-07/A1-architecture.md",
+    "services/repo-truth-extractor/run_extraction_v5.py",
+    "services/repo-truth-extractor/tests/test_truth_harness_goldens.py"
+  ],
+  "scope": {
+    "dry_run_only": true,
+    "live_provider_calls": false,
+    "dpmx_live_ok_set": false,
+    "execute_commands_run": false
+  },
+  "changes": [
+    {
+      "file": "services/repo-truth-extractor/extractor/ui.py",
+      "summary": "Extracted UiConfig and the complete 28-method UI implementation. UI event persistence now accepts an injected append_jsonl callable; timestamp, trace, and component helpers are also injectable."
+    },
+    {
+      "file": "services/repo-truth-extractor/run_extraction_v5.py",
+      "summary": "Removed the moved bodies and retained a small compatibility UI facade that injects this runner module's existing lock-protected JSONL writer and helper functions. UiConfig remains importable at the legacy path."
+    },
+    {
+      "file": "services/repo-truth-extractor/tests/test_run_extraction_v5_ui_events.py",
+      "summary": "Added direct extracted-module coverage, legacy facade coverage, and a two-dynamic-runner regression proving each facade binds its own writer and _JSONL_WRITE_LOCK."
+    }
+  ],
+  "golden_diff_itemized": [],
+  "validation": [
+    {
+      "status": "FAIL",
+      "exit_code": 2,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_ui_events.py -q",
+      "purpose": "RED verification before production edits",
+      "summary": "Collection failed with ModuleNotFoundError for extractor.ui, proving the extraction contract did not already exist."
+    },
+    {
+      "status": "FAIL",
+      "exit_code": 1,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_ui_events.py::test_v5_facade_keeps_each_dynamic_runner_bound_to_its_own_writer -q",
+      "purpose": "RED verification for codereview-discovered cross-loader hazard",
+      "summary": "The first runner facade incorrectly selected the second dynamically loaded runner's writer, reproducing module-global default-writer cross-binding."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_ui_events.py -q --basetemp=/tmp/rte-r1-001-ui-tests",
+      "summary": "4 passed after replacing global writer registration with runner-local compatibility injection and strengthening lock/write assertions."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_run_extraction_v5_ui_events.py services/repo-truth-extractor/tests/test_output_safety.py services/repo-truth-extractor/tests/test_run_extraction_v5_soft_gate_logging.py services/repo-truth-extractor/tests/test_truth_run_cli.py services/repo-truth-extractor/tests/test_rte_v5_characterization.py -q",
+      "summary": "49 passed."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests -q -k 'ui or truth_run_cli or rte_v5_characterization'",
+      "summary": "146 selected tests passed."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q",
+      "summary": "27 passed, 1 documented slow capture skipped. No golden files changed."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- ruff check services/repo-truth-extractor/extractor/ui.py services/repo-truth-extractor/tests/test_run_extraction_v5_ui_events.py",
+      "summary": "Scoped new module and regression test lint passed."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m py_compile services/repo-truth-extractor/extractor/ui.py services/repo-truth-extractor/run_extraction_v5.py",
+      "summary": "Both changed Python modules compiled."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "UI AST method inventory comparison against git show HEAD:run_extraction_v5.py",
+      "summary": "All 28 pre-extraction UI methods remain present in extractor/ui.py."
+    },
+    {
+      "status": "FAIL",
+      "exit_code": 1,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests -q",
+      "summary": "Full-directory attempt became invalid when the host volume reached 100% and pytest could not create numbered tmp_path directories; setup errors cascaded across unrelated v3/v4/v5 tests. Targeted and golden reruns remained green."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python -m pytest <five focused UI/CLI modules> services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q --basetemp=/tmp/rte-r1-001-final-tests",
+      "summary": "Final post-review rerun: 76 passed, 1 documented slow golden capture skipped."
+    },
+    {
+      "status": "FAIL",
+      "exit_code": 1,
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests -q --basetemp=/tmp/rte-r1-001-full-tests",
+      "summary": "Fresh full-directory run completed without temp errors. The only failure was strict XPASS for deferred prescan incremental smoke (TP-RTE-WALKER-006); this packet does not touch prescan runtime or that test."
+    },
+    {
+      "status": "FAIL",
+      "exit_code": 1,
+      "command": "mise exec -- pre-commit run --files <changed files>",
+      "summary": "Aggregate pre-commit failed only in docs-filename-hygiene because its system python3 lacks PyYAML. Root hygiene passed."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python scripts/check_docs_filename_hygiene.py --audit --all-files --audit-out /tmp/dopemux-r1-001-filename-audit.json",
+      "summary": "Direct hook logic passed under project Python: total=5157 active=3789 quarantine=1368 exempt=2292 violations=0."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mise exec -- python scripts/check_docs_filename_hygiene.py --check",
+      "summary": "Docs filename check passed under project Python."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "git diff --check",
+      "summary": "No whitespace errors."
+    }
+  ],
+  "codereview": {
+    "status": "completed_findings_resolved",
+    "reviewer": "gpt-5.6-luna",
+    "agent_id": "019f5394-580b-7061-92e6-09c4dc7b903e",
+    "findings": [
+      {
+        "severity": "IMPORTANT",
+        "summary": "Module-global default writer could cross-bind independently loaded runner modules to another runner's lock.",
+        "resolution": "Reproduced with a failing test, then replaced global registration with a runner-local compatibility subclass that injects its own writer and lock-bound function."
+      },
+      {
+        "severity": "IMPORTANT",
+        "summary": "Pre-existing .claude changes are outside the packet allowlist.",
+        "resolution": "They are preserved in the worktree and excluded from staging and commit."
+      },
+      {
+        "severity": "MINOR",
+        "summary": "Initial cross-loader test checked function module names but did not exercise event writes or lock identity.",
+        "resolution": "Test now asserts _JSONL_WRITE_LOCK identity and writes one event through each independently loaded runner."
+      }
+    ]
+  },
+  "precommit_status": "PARTIAL_ENV_BLOCKED",
+  "residual_risks": [
+    "The full Repo Truth Extractor suite has one unrelated strict XPASS in deferred TP-RTE-WALKER-006 prescan incremental smoke.",
+    "Aggregate pre-commit remains blocked by its system python3 lacking PyYAML, although the same docs hygiene logic passed under project Python.",
+    "The documented slow golden capture remains skipped unless RTE_TRUTH_SLOW_GOLDENS=1 is explicitly enabled.",
+    "No live extraction, provider call, or DPMX_LIVE_OK=1 path was exercised."
+  ],
+  "unknowns": [
+    "Whether TP-RTE-WALKER-006 should remove or update the strict xfail now that prescan incremental smoke XPASSes."
+  ],
+  "rollback": {
+    "strategy": "Revert the eventual TP-RTE-TRUTH-R1-001 commit.",
+    "files": [
+      "services/repo-truth-extractor/extractor/ui.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/test_run_extraction_v5_ui_events.py",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R1-001/PROOF.json"
+    ]
+  }
+}

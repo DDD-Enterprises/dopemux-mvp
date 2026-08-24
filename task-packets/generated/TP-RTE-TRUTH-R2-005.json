@@ -1,0 +1,135 @@
+{
+  "id": "TP-RTE-TRUTH-R2-005",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / walker/prescan repairs (TP-RTE-WALKER-006 scope)",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "Incremental normalized outputs == full recompute; optimize payload flat schema + str-serialized to _call_grok; --status writes NO telemetry for unknown run-ids (fixes the P0-observed phantom-dir/telemetry regression); wire retention/log rotation; drop darwin xfails XPASS-clean.",
+    "Findings covered: F-16, F-17, F-18, F-19, F-05 (drop markers)."
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R0-005"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R2",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "L"
+  },
+  "commit": {
+    "message": "fix(rte): TP-RTE-TRUTH-R2-005 \u2014 walker/prescan parity + readonly status + retention",
+    "allowlist": [
+      "services/repo-truth-extractor/lib/prescan/",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/rte_output_layout.py",
+      "services/repo-truth-extractor/extraction_hygiene.py",
+      "services/repo-truth-extractor/tests/",
+      "task-packets/generated/TP-RTE-TRUTH-R2-005.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R2-005/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): prescan parity, readonly status, retention",
+    "body": "F-16/F-17/F-18/F-19 + marker retirement.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Fix incremental/full parity (incremental_cache) + optimize payload contract (grok_passes.py:506-521); flip Cluster D xfails.",
+      "requirements": [],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'prescan'"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/lib/prescan/incremental_cache.py",
+        "services/repo-truth-extractor/lib/prescan/grok_passes.py"
+      ],
+      "validation": [
+        "Cluster D tests pass without markers."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A5-ops-gates-proof.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Make --status strictly read-only (FA-7 + P0 live finding: unknown run-id must create NOTHING on disk); wire extraction_hygiene retention.",
+      "requirements": [
+        "Reproduce P0's observation first; root-cause why readonly_introspection did not prevent dir creation."
+      ],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/regression -q"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py",
+        "services/repo-truth-extractor/rte_output_layout.py",
+        "services/repo-truth-extractor/extraction_hygiene.py"
+      ],
+      "validation": [
+        "FA-7 green; status on bogus run-id leaves zero new paths (asserted)."
+      ],
+      "context_files": []
+    }
+  ],
+  "routing": {
+    "stage": "implementer_standard",
+    "tier": "balanced",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml is ADVISORY governance, not a runtime router. If a runtime path disagrees, runtime wins.",
+    "runners": {
+      "preferred": [
+        "claude_code",
+        "codex",
+        "grok"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "grok",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": []
+    },
+    "models": {
+      "claude_code": "claude-sonnet-5",
+      "codex": "gpt-5.6-terra (reasoning xhigh)",
+      "opencode": "anthropic/claude-sonnet-4-5",
+      "grok": "grok-code-fast-1 (effort high)",
+      "gemini_cli": "VERIFY_WITH_VENDOR_DOCS",
+      "copilot": "Claude Sonnet 4.5 (.github/agents/dopemux-implementer.agent.md)"
+    },
+    "rationale": "Walker/prescan parity + readonly status + retention.",
+    "notes": [],
+    "evidence": "Model ids OBSERVED from this machine: ~/.codex/config.toml (gpt-5.6-sol/xhigh), ~/.config/opencode/opencode.jsonc (claude-sonnet-4-5 + claude-haiku-4-5), ~/.grok/config.toml, .github/agents/*.agent.md (Sonnet 4.5). Per-vendor selector-string validity beyond these files remains VERIFY_WITH_VENDOR_DOCS."
+  }
+}

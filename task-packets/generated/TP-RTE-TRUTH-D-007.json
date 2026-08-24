@@ -1,0 +1,108 @@
+{
+  "id": "TP-RTE-TRUTH-D-007",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / benchmarking deep dives (orchestration/registry/rollups/scoring/synthesis)",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md \u00a75 (Deferred) first \u2014 it is the authority for scope and the deferral reason.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "DEFERRED-TIER packet: these were explicitly held OUT of the main R0-R5 waves. Do not start one without confirming the program has capacity; none of these gate PR #1043.",
+    "A6 surveyed these structurally and found NO red flags \u2014 this packet is optional depth, not a known defect.",
+    "Audit-only; produce a report. Escalate to a real packet only if a money/security/correctness issue surfaces.",
+    "Findings covered: Deferred #7."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-D",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "docs(rte): TP-RTE-TRUTH-D-007 \u2014 benchmarking deep dive",
+    "allowlist": [
+      "claudedocs/rte-truth-program-2026-07/",
+      "task-packets/generated/TP-RTE-TRUTH-D-007.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-D-007/PROOF.json"
+    ],
+    "verify": []
+  },
+  "pr": {
+    "title": "docs(rte): benchmarking subsystem deep dive",
+    "body": "Deferred #7. Optional depth; A6 found no red flags.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Deep-dive the 5 un-audited benchmarking subsystems; report findings or an explicit CLEAN verdict.",
+      "requirements": [
+        "Read-only; write to claudedocs/rte-truth-program-2026-07/D007-benchmarking-deep-dive.md."
+      ],
+      "commands": [],
+      "expected_files": [
+        "claudedocs/rte-truth-program-2026-07/D007-benchmarking-deep-dive.md"
+      ],
+      "validation": [
+        "Per-subsystem verdict (CLEAN / FINDINGS) with evidence."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A6-fresh-eyes.md"
+      ]
+    }
+  ],
+  "routing": {
+    "stage": "investigation",
+    "tier": "balanced",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml is ADVISORY governance, not a runtime router. If a runtime path disagrees, runtime wins.",
+    "runners": {
+      "preferred": [
+        "claude_code",
+        "codex",
+        "grok"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "grok",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": []
+    },
+    "models": {
+      "claude_code": "claude-sonnet-5",
+      "codex": "gpt-5.6-terra (reasoning xhigh)",
+      "opencode": "anthropic/claude-sonnet-4-5",
+      "grok": "grok-code-fast-1 (effort high)",
+      "gemini_cli": "VERIFY_WITH_VENDOR_DOCS",
+      "copilot": "Claude Sonnet 4.5 (.github/agents/dopemux-implementer.agent.md)"
+    },
+    "rationale": "Optional-depth survey; escalate only if money/security surfaces.",
+    "notes": [],
+    "evidence": "Model ids OBSERVED from this machine: ~/.codex/config.toml (gpt-5.6-sol/xhigh), ~/.config/opencode/opencode.jsonc (claude-sonnet-4-5 + claude-haiku-4-5), ~/.grok/config.toml, .github/agents/*.agent.md (Sonnet 4.5). Per-vendor selector-string validity beyond these files remains VERIFY_WITH_VENDOR_DOCS."
+  }
+}

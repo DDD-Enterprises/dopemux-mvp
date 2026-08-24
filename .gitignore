@@ -313,6 +313,28 @@ extraction/repo-truth-extractor/v4/latest_run_id.txt
 extraction/repo-truth-extractor/v5/latest_run_id.txt
 extraction/repo-truth-extractor/quarantine/
 
+# Service-anchored mirror of the above (TP-RTE-TRUTH-R0-001 / F-01):
+# services/repo-truth-extractor writes its own extraction/ tree relative to
+# the service dir, not the repo root, so the root-anchored rules above never
+# match it. Does NOT untrack the 119 files already committed under this path
+# (see TP-RTE-TRUTH-R0-008, blocked on an operator fixtures decision).
+services/repo-truth-extractor/extraction/runs/
+services/repo-truth-extractor/extraction/latest_run_id.txt
+services/repo-truth-extractor/extraction/repo-truth-extractor/v3/runs/
+services/repo-truth-extractor/extraction/repo-truth-extractor/v4/runs/
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/
+services/repo-truth-extractor/extraction/repo-truth-extractor/v3/doctor/
+services/repo-truth-extractor/extraction/repo-truth-extractor/v4/doctor/
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/doctor/
+services/repo-truth-extractor/extraction/repo-truth-extractor/v3/latest_run_id.txt
+services/repo-truth-extractor/extraction/repo-truth-extractor/v4/latest_run_id.txt
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/latest_run_id.txt
+services/repo-truth-extractor/extraction/repo-truth-extractor/quarantine/
+services/repo-truth-extractor/extraction/prescan/
+services/repo-truth-extractor/extraction/v*/
+services/repo-truth-extractor/extraction/prescan*/
+services/repo-truth-extractor/extraction/doctor/
+
 # Artifact and report hygiene
 .claude/*.backup
 services/working-memory-assistant/*.backup
