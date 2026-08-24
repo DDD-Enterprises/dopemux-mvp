@@ -108,7 +108,6 @@ def test_start_skips_when_flag_set():
 def test_start_uses_resolved_dir(mock_mcp_stack):
     """Verify that the start script execution uses the resolved directory."""
     resolved_path = mock_mcp_stack
-    script_path = resolved_path / "README.md"
     project_path = Path("/tmp/mock_project")
     
     # Ensure environment is clean

@@ -1,0 +1,64 @@
+{
+  "id": "TP-DMX-MCP-FLEET-FOLLOWUPS-1161-001",
+  "project": "dopemux-mvp",
+  "target": "MCP fleet follow-ups: LOW audit findings, M11 consumer sweep, P-24 ADR",
+  "invariants": [
+    "Risk lane is L2 architecture authority definition.",
+    "Proposes project-scoped Kotlin task-orchestrator on leased ports (P-24 ADR).",
+    "Documents M11 workflow-api rename consumer sweep evidence.",
+    "Closes PR #1150 LOW audit findings B1-B4."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "mcp-fleet-multi-instance",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "claude/mcp-fleet-followups",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(mcp): fleet follow-ups: LOW audit findings, M11 consumer sweep, P-24 ADR (#1161)",
+    "allowlist": [
+      ".claude/skills/pr-docgen-sync/scripts/pr_docgen_sync_workflow.py",
+      ".github/copilot-instructions.md",
+      ".github/skills/pr-docgen-sync/scripts/pr_docgen_sync_workflow.py",
+      "claudedocs/m11-workflow-api-rename-consumer-sweep-2026-07-29.md",
+      "docs/03-reference/planes/pm/task-orchestrator-leantime-followups.md",
+      "docs/90-adr/adr-dmx-mcp-project-scoped-task-orchestrator-001.md",
+      "docs/planes/pm/task-orchestrator-leantime-followups.md",
+      "templates/skills/pr-docgen-sync/scripts/pr_docgen_sync_workflow.py",
+      "tests/test_cli_mcp_startup.py",
+      "tests/test_mcp_health_probe.py",
+      "task-packets/TP-DMX-MCP-FLEET-FOLLOWUPS-1161-001.json"
+    ],
+    "verify": [
+      "pytest tests/test_mcp_health_probe.py tests/test_cli_mcp_startup.py tests/arch/test_mcp_fleet_catalog_contract.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "MCP fleet follow-ups: LOW audit findings, M11 consumer sweep, P-24 ADR",
+    "body": "Closes LOW audit findings from PR #1150, documents M11 consumer sweep, and proposes P-24 ADR.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Close PR #1150 LOW audit findings B1-B4, document M11 consumer sweep, and propose P-24 ADR",
+      "validation": [
+        "pytest tests/test_mcp_health_probe.py tests/test_cli_mcp_startup.py tests/arch/test_mcp_fleet_catalog_contract.py",
+        "git diff --check"
+      ]
+    }
+  ]
+}

@@ -23,7 +23,8 @@ from mcp_health_probe import (  # noqa: E402
 # Port extraction
 # ---------------------------------------------------------------------------
 
-def test_extract_port_default():
+def test_extract_port_default(monkeypatch):
+    monkeypatch.delenv("CONPORT_MCP_PORT", raising=False)
     assert _extract_port("http://localhost:${CONPORT_MCP_PORT:-3005}/mcp") == 3005
 
 
@@ -128,6 +129,60 @@ def test_one_leaked_container_no_warn():
     result = _format_health(health)
     # No problem if only 1 container — that's normal
     assert result is None or "⚠️" not in result
+
+
+def test_repo_aware_remediation_includes_repo_flag():
+    """A project_root should surface --repo <path> before --services in the
+    generic remediation line (PR1150-B1: the --repo emission branch was
+    implemented but never exercised by tests)."""
+    health = {
+        "servers": {"conport": {"up": False, "port": 3005}},
+        "leaked_containers": 0,
+    }
+    result = _format_health(health, project_root=Path("/some/repo"))
+    assert result is not None
+    assert "dopemux mcp start --repo /some/repo --services conport" in result
+
+
+def test_no_project_root_omits_repo_flag():
+    """Without a project_root, the generic remediation must fall back to the
+    bare (no --repo) form — never silently insert a stale/None path."""
+    health = {
+        "servers": {"conport": {"up": False, "port": 3005}},
+        "leaked_containers": 0,
+    }
+    result = _format_health(health, project_root=None)
+    assert result is not None
+    assert "dopemux mcp start --services conport" in result
+    assert "--repo" not in result
+
+
+def test_task_orchestrator_down_keeps_dedicated_remediation_even_with_repo():
+    """task-orchestrator is an intentional exception to --repo emission: it
+    always gets its dedicated wrapper-script remediation, never the generic
+    `dopemux mcp start --repo ... --services task-orchestrator` line, even
+    when a project_root is supplied."""
+    health = {
+        "servers": {"task-orchestrator": {"up": False, "port": 7890}},
+        "leaked_containers": 0,
+    }
+    result = _format_health(health, project_root=Path("/some/repo"))
+    assert result is not None
+    assert "scripts/mcp-wrappers/task-orchestrator-http-singleton.sh" in result
+    assert "--repo" not in result
+    assert "dopemux mcp start --services task-orchestrator" not in result
+
+
+def test_emit_mcp_health_passes_project_root_into_repo_flag(tmp_path):
+    """Integration-style: emit_mcp_health's public entrypoint must forward its
+    project_root argument through to _format_health so the injected
+    SessionStart line carries --repo <project_root>."""
+    _make_mcp_json(tmp_path, port=3005)
+    with patch("mcp_health_probe._probe_port", return_value=False), \
+         patch("mcp_health_probe._count_leaked_containers", return_value=0):
+        result = emit_mcp_health(tmp_path)
+    assert result is not None
+    assert f"--repo {tmp_path} --services conport" in result
 
 
 def test_max_3_problems_shown():
