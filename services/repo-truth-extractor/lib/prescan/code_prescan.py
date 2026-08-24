@@ -68,7 +68,17 @@ class CodePrescan:
         except Exception as e:
             logger.warning(f"Failed to initialize Tree-sitter: {e}")
             self.tree_sitter_degraded = True
-            self.tree_sitter_degraded_reason = f"tree_sitter_init_failed: {e}"
+            self.tree_sitter_degraded_reason = "tree_sitter_init_failed"
+            self.languages.clear()
+            self.parsers.clear()
+
+    def tree_sitter_status(self) -> Dict[str, Any]:
+        """Return stable capability metadata for prescan artifacts."""
+        return {
+            "available": not self.tree_sitter_degraded,
+            "degraded": self.tree_sitter_degraded,
+            "degraded_reason": self.tree_sitter_degraded_reason,
+        }
 
     def analyze_file(self, entry: FileEntry, repo_root: Path) -> Dict[str, Any]:
         """Analyze a single code file and return intelligence dict."""
@@ -77,14 +87,15 @@ class CodePrescan:
 
         lang = entry.extension.lstrip(".")
         if lang not in self.parsers:
-            # F-05 / TP-RTE-TRUTH-R0-005: previously returned {} here with no
-            # signal, so a tree-sitter import/init failure silently degraded
-            # every code file's intelligence to nothing. Surface it instead.
+            # F-05 / TP-RTE-TRUTH-R0-005: distinguish global tree-sitter degradation
+            # from an individually unsupported language when tree-sitter is available.
+            if not self.tree_sitter_degraded:
+                return {}
             return {
                 "rel_path": entry.rel_path,
                 "language": lang,
                 "degraded": True,
-                "degraded_reason": self.tree_sitter_degraded_reason or "unsupported_language",
+                "degraded_reason": self.tree_sitter_degraded_reason or "tree_sitter_import_failed",
                 "symbols": [],
                 "imports": [],
                 "api_surfaces": [],

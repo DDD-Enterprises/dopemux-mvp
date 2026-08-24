@@ -740,6 +740,11 @@ class PrescanEngine:
             ],
             "code_intelligence": {
                 "analyzed_files": len(code_intel or []),
+                "tree_sitter": (
+                    self.code_prescan.tree_sitter_status()
+                    if hasattr(self.code_prescan, "tree_sitter_status")
+                    else {"available": False, "degraded": False, "degraded_reason": None}
+                ),
                 "files": code_intel or [],
             },
             "compression_potential_files": compression_potential_files,

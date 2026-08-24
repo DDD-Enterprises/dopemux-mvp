@@ -1,0 +1,113 @@
+{
+  "id": "TP-RTE-TRUTH-R0-005",
+  "project": "dopemux-mvp",
+  "target": "Surface tree-sitter import or initialization degradation in prescan artifacts without changing dry-run or provider behavior.",
+  "invariants": [
+    "DRY-RUN ONLY: do not pass --execute, set DPMX_LIVE_OK, or make any provider call.",
+    "Preserve normal successful tree-sitter analysis and non-code-entry behavior.",
+    "Distinguish global tree-sitter degradation from an individually unsupported language.",
+    "Keep the change deterministic and limited to the allowlist.",
+    "The PAL service transport is unavailable in this session; record PAL gates as NOT_RUN rather than inventing results."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R0",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/tp-rte-truth-r0-005-tree-sitter-degraded",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(rte): surface tree-sitter degraded mode",
+    "allowlist": [
+      "services/repo-truth-extractor/lib/prescan/code_prescan.py",
+      "services/repo-truth-extractor/lib/prescan/code_intelligence_report.py",
+      "services/repo-truth-extractor/lib/prescan/engine.py",
+      "services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py",
+      "services/repo-truth-extractor/tests/test_prescan_incremental.py",
+      "task-packets/TP-RTE-TRUTH-R0-005.json",
+      "proof/TP-RTE-TRUTH-R0-005/AUDITOR_REPORT.md",
+      "proof/TP-RTE-TRUTH-R0-005/PROOF.json",
+      "proof/TP-RTE-TRUTH-R0-005/review_bundle/.gitkeep",
+      "proof/pr_merge/embedded-audit/pr-1155/PROOF.json",
+      "proof/pr_merge/embedded-audit/pr-1155/PROOF.json.sig"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-RTE-TRUTH-R0-005.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "mise exec -- python -m pytest -q services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py services/repo-truth-extractor/tests/test_prescan_contracts.py",
+      "mise exec -- python -m pytest -q services/repo-truth-extractor/tests/test_v5_golden_fixture_smoke.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): surface tree-sitter degraded mode",
+    "body": "Make tree-sitter import or initialization failure visible in both prescan artifacts and regression coverage. No live extraction or provider behavior changes.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Port the archived partial capability tracking and make global tree-sitter degradation observable in the primary intelligence artifact and code report.",
+      "requirements": [
+        "No parser availability must be distinguished from a supported parser that returned no symbols.",
+        "Unsupported-language metadata must not claim global tree-sitter degradation."
+      ],
+      "commands": [
+        "rg -n \"tree_sitter|analyze_file|code_intelligence\" services/repo-truth-extractor/lib/prescan"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/lib/prescan/code_prescan.py",
+        "services/repo-truth-extractor/lib/prescan/code_intelligence_report.py",
+        "services/repo-truth-extractor/lib/prescan/engine.py"
+      ],
+      "validation": [
+        "Both generated artifact payloads carry a stable global degraded state and reason when tree-sitter is unavailable."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/lib/prescan/code_prescan.py",
+        "services/repo-truth-extractor/lib/prescan/code_intelligence_report.py",
+        "services/repo-truth-extractor/lib/prescan/engine.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add focused deterministic regression coverage for unavailable tree-sitter and the two artifact writer paths.",
+      "requirements": [
+        "Simulate the unavailable capability without importing or calling a provider.",
+        "Retain existing normal-path coverage."
+      ],
+      "commands": [
+        "mise exec -- python -m pytest -q services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py services/repo-truth-extractor/tests/test_prescan_contracts.py"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py"
+      ],
+      "validation": [
+        "Focused regression tests pass and assert both artifact surfaces."
+      ],
+      "context_files": [
+        "services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py",
+        "services/repo-truth-extractor/tests/test_prescan_contracts.py"
+      ]
+    }
+  ]
+}

@@ -15,6 +15,7 @@ import lib.prescan.code_prescan as code_prescan_module
 from lib.prescan.code_intelligence_report import CodeIntelligenceBuilder
 from lib.prescan.code_prescan import CodePrescan
 from lib.prescan.dependency_graph import DependencyGraph
+from lib.prescan.engine import PrescanEngine
 from lib.prescan.models import FileEntry, PrescanConfig
 
 
@@ -202,3 +203,55 @@ def test_code_intelligence_report_uses_actual_repo_root(tmp_path: Path) -> None:
     report = builder.build(tmp_path)
 
     assert report["repo_root"] == str(tmp_path)
+
+
+def test_tree_sitter_degradation_is_visible_in_prescan_artifacts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(code_prescan_module, "TREE_SITTER_AVAILABLE", False)
+    config = _make_config(tmp_path)
+    prescan = CodePrescan(config)
+    entry = FileEntry(rel_path="pkg/module.py", size_bytes=1, extension=".py")
+
+    expected_status = {
+        "available": False,
+        "degraded": True,
+        "degraded_reason": "tree_sitter_import_failed",
+    }
+    assert prescan.tree_sitter_status() == expected_status
+    assert prescan.analyze_file(entry, tmp_path) == {
+        "rel_path": "pkg/module.py",
+        "language": "py",
+        "degraded": True,
+        "degraded_reason": "tree_sitter_import_failed",
+        "symbols": [],
+        "imports": [],
+        "api_surfaces": [],
+    }
+
+    builder = CodeIntelligenceBuilder(prescan, DependencyGraph(), [entry], [entry.to_dict()])
+    report = builder.build(tmp_path)
+    assert report["analysis_capabilities"]["tree_sitter"] == expected_status
+
+    engine = PrescanEngine(config)
+    intelligence = engine._build_intelligence_base([entry])
+    assert intelligence["code_intelligence"]["tree_sitter"] == expected_status
+
+
+def test_tree_sitter_init_failure_clears_parsers_and_marks_degraded(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def _raise_language(*args, **kwargs) -> None:
+        raise RuntimeError("simulated init error")
+
+    monkeypatch.setattr(code_prescan_module, "TREE_SITTER_AVAILABLE", True)
+    monkeypatch.setattr(code_prescan_module, "Language", _raise_language)
+    config = _make_config(tmp_path)
+    prescan = CodePrescan(config)
+    assert prescan.tree_sitter_status() == {
+        "available": False,
+        "degraded": True,
+        "degraded_reason": "tree_sitter_init_failed",
+    }
+    assert prescan.parsers == {}
+    assert prescan.languages == {}
