@@ -1,0 +1,11 @@
+M	.claude/skills/pr-docgen-sync/scripts/pr_docgen_sync_workflow.py
+M	.github/copilot-instructions.md
+M	.github/skills/pr-docgen-sync/scripts/pr_docgen_sync_workflow.py
+A	claudedocs/m11-workflow-api-rename-consumer-sweep-2026-07-29.md
+M	docs/03-reference/planes/pm/task-orchestrator-leantime-followups.md
+A	docs/90-adr/adr-dmx-mcp-project-scoped-task-orchestrator-001.md
+M	docs/planes/pm/task-orchestrator-leantime-followups.md
+A	task-packets/TP-DMX-MCP-FLEET-FOLLOWUPS-1161-001.json
+M	templates/skills/pr-docgen-sync/scripts/pr_docgen_sync_workflow.py
+M	tests/test_cli_mcp_startup.py
+M	tests/test_mcp_health_probe.py
