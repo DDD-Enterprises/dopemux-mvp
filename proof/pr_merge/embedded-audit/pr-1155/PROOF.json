@@ -1,0 +1,34 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1155,
+  "head_sha": "14cf5ce90af274499f0e862493db35985f29071f",
+  "generated_at": "2026-08-24T06:17:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --mode plan --effort high --print-timeout 20m --sandbox; conversation_id=8df0f334-1d7b-484d-ac10-c11c4536f232; display=Gemini 3.1 Pro (High); verdict=PASS",
+    "exit_code": 0,
+    "report_path": "proof/TP-RTE-TRUTH-R0-005/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F01",
+        "title": "Tree-Sitter Capability State Surfacing",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "body": "Surfaced global tree-sitter capability state via tree_sitter_status() in prescan engine and code intelligence report."
+      },
+      {
+        "id": "F02",
+        "title": "Deterministic Degradation Testing",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "body": "Verified regression test asserts capability dictionary correctly under simulated TREE_SITTER_AVAILABLE=False."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null
+  }
+}
