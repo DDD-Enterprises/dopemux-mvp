@@ -18,10 +18,16 @@ packet IDs so this disclosure cannot silently rot:
     _start_mcp_servers_with_progress` (the `dopemux init` default startup
     flow) builds its compose command as a Python list — see
     `_KNOWN_STRUCTURAL_GAPS` and the NOTE block in cli.py.
-  - P22-F3 · PRE-EXISTING, allowlisted with justification: Makefile
-    `pm-up`/webhook targets, `docker/leantime/configure_bridge.sh`,
-    `scripts/deploy/setup/setup_dopemux.sh` (out-of-worklist, flagged for
-    their own packet, not rewritten under the safe subset).
+  - P22-F3 · investigated and closed (2026-07-29 follow-up): the three
+    paths this ID used to cover split into three different dispositions —
+    Makefile `pm-up`/webhook targets are genuinely out of MCP-fleet scope
+    (Leantime's own DB/cache + the webhook sidecar, not fleet services;
+    allowlisted below with an affirmative reason, not a deferral);
+    `docker/leantime/configure_bridge.sh` was fixed to delegate to
+    `dopemux mcp up --services leantime-bridge` (allowlist entry removed);
+    `scripts/deploy/setup/setup_dopemux.sh` was dead code (no live caller,
+    referenced nonexistent scripts, invoked MCP tool names as shell
+    commands) and was deleted rather than rewritten.
 
 Mechanics: walks `git ls-files` (not the working tree) restricted to files
 that can actually *execute* something — shell scripts, Python, PowerShell,
@@ -140,13 +146,6 @@ _ALLOWLIST: tuple[tuple[str, str], ...] = (
         "docker-compose.age.yml; not a fleet-launch path",
     ),
     (
-        "scripts/deploy/setup/setup_dopemux.sh",
-        "legacy unscoped full-stack launcher discovered by this guard; not "
-        "in the P-22 worklist file list and no live caller was found — "
-        "flagged for a follow-up packet rather than deleted unilaterally "
-        "here (see task report)",
-    ),
-    (
         "scripts/dev/testing/validate-mcp-setup.sh",
         "prints a manual start suggestion on failure; not executed",
     ),
@@ -172,16 +171,13 @@ _ALLOWLIST: tuple[tuple[str, str], ...] = (
     ),
     (
         "Makefile",
-        "pre-existing pm-up / webhook_receiver targets invoke docker "
-        "compose directly; outside the P-22 legacy-launch-path worklist "
-        "file list — flagged for a follow-up packet rather than rewritten "
-        "here (see task report)",
-    ),
-    (
-        "docker/leantime/configure_bridge.sh",
-        "pre-existing leantime-bridge --force-recreate call; outside the "
-        "P-22 worklist file list — flagged for a follow-up packet (see "
-        "task report)",
+        "pm-up/pm-down/pm-logs target leantime + mysql_leantime + "
+        "redis_leantime (Leantime's own PM-app DB/cache, compose.yml:108,"
+        "133,156) and webhook-up/down/logs/db-* target webhook-receiver "
+        "(the webhook sidecar, compose.yml:678) — none of these are MCP "
+        "fleet services (see DEFAULT_MCP_SERVICES, src/dopemux/commands/"
+        "mcp_commands.py:41-53); genuinely out of MCP-fleet scope, not a "
+        "raw fleet-start bypass (P22-F3 investigation, 2026-07-29)",
     ),
     # --- discovered by the widened A1 regex (previously invisible to the "
     # narrower -f-only pattern) ---

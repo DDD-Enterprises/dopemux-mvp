@@ -113,29 +113,33 @@ def test_start_uses_resolved_dir(mock_mcp_stack):
     # Ensure environment is clean
     with patch.dict(os.environ, {"DOPEMUX_SKIP_MCP_START": "0"}):
         with patch("dopemux.cli._resolve_mcp_dir", return_value=resolved_path):
-            with patch("dopemux.cli.subprocess.Popen") as mock_popen:
-                process_mock = Mock()
-                process_mock.stdout = iter(["Starting...", ""])
-                process_mock.poll.return_value = 0
-                process_mock.wait.return_value = 0
-                process_mock.returncode = 0
-                mock_popen.return_value = process_mock
+            with patch("dopemux.coldstart.network.ensure_docker_networks") as mock_ensure_net:
+                with patch("dopemux.cli.subprocess.Popen") as mock_popen:
+                    process_mock = Mock()
+                    process_mock.stdout = iter(["Starting...", ""])
+                    process_mock.poll.return_value = 0
+                    process_mock.wait.return_value = 0
+                    process_mock.returncode = 0
+                    mock_popen.return_value = process_mock
 
-                fake_asyncio = Mock()
-                fake_asyncio.run.return_value = True
-                with patch.dict("sys.modules", {"asyncio": fake_asyncio}):
-                    setattr(sys.modules["dopemux.cli"], "asyncio", fake_asyncio)
-                    with patch("requests.get") as mock_get:
-                        mock_get.return_value.status_code = 200
+                    fake_asyncio = Mock()
+                    fake_asyncio.run.return_value = True
+                    with patch.dict("sys.modules", {"asyncio": fake_asyncio}):
+                        setattr(sys.modules["dopemux.cli"], "asyncio", fake_asyncio)
+                        with patch("requests.get") as mock_get:
+                            mock_get.return_value.status_code = 200
 
-                        try:
-                            _start_mcp_servers_with_progress(project_path)
-                        except Exception as e:
-                            import traceback
-                            traceback.print_exc()
-                            raise e
+                            try:
+                                _start_mcp_servers_with_progress(project_path)
+                            except Exception as e:
+                                import traceback
+                                traceback.print_exc()
+                                raise e
 
-                assert mock_popen.called, "subprocess.Popen was not called"
+                    assert mock_popen.called, "subprocess.Popen was not called"
+                    # PR #1150 follow-up: network-ensure preflight runs before
+                    # the compose-up subprocess (same fix as `dopemux mcp up`).
+                    mock_ensure_net.assert_called_once_with(["dopemux-network"])
 
 
 def test_trigger_dope_context_autoindex_startup_calls_endpoint(tmp_path):

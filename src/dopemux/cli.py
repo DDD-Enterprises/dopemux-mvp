@@ -3818,6 +3818,13 @@ def _start_mcp_servers_with_progress(
         "up", "-d", "--remove-orphans",
     ]
 
+    # compose.yml declares dopemux-network external:true; ensure it exists
+    # before compose reaches a clean host (same class of bug fixed for
+    # `dopemux mcp up`/`start-all` — PR #1150 follow-up, reuses the same
+    # helper rather than duplicating the check-then-create logic).
+    from .coldstart.network import ensure_docker_networks
+    ensure_docker_networks(["dopemux-network"])
+
     startup_successful = False
     output_lines = []
 

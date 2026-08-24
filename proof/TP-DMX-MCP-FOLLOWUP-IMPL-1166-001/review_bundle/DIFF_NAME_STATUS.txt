@@ -1,0 +1,15 @@
+M	Makefile
+A	claudedocs/m11-red-lane-blocker-2026-07-29.md
+M	docker/leantime/configure_bridge.sh
+M	docs/02-how-to/pr-merge-flight-dashboard.md
+M	docs/planes/pm/pm-implementation-ledger.md
+M	docs/planes/pm/write-boundaries.md
+M	docs/pr_merge/usage-patterns.md
+M	scripts/ai_startup.sh
+D	scripts/deploy/setup/setup_dopemux.sh
+M	src/dopemux/cli.py
+M	src/dopemux/commands/mcp_commands.py
+M	tests/mcp/test_p22_safe_subset_guard.py
+M	tests/test_cli_mcp_startup.py
+A	tests/unit/test_ai_startup_network_preflight.py
+M	tests/unit/test_mcp_commands_lifecycle.py

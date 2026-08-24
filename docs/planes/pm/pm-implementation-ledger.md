@@ -126,4 +126,3 @@ The duplicate legacy entrypoints `src/dopemux/pm/read.py` and `src/dopemux/pm/wr
 
 ### CLI Orphan-State Gaps
 - **Local Task Records:** The CLI creates tasks with a local `TaskRecord` representation that risks being orphaned if not synced cleanly back to ConPort/Leantime. (Evidence: `src/dopemux/adhd/task_decomposer.py:L40-L81`)
->>>>>>> codex/pm-jules-000-baseline-ledger

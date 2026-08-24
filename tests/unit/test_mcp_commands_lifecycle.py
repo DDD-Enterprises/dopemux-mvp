@@ -217,6 +217,39 @@ def test_cli_up_creates_missing_external_network_before_compose(monkeypatch):
     ]
 
 
+def test_cli_start_all_fallback_creates_missing_external_network_before_compose(monkeypatch):
+    """start-all's manual fallback must not reach compose on a clean host without
+    the network preflight (same class of bug `mcp up` already had fixed)."""
+    calls: list[list[str]] = []
+
+    def fake_run(cmd, **kwargs):  # noqa: ARG001
+        calls.append(list(cmd))
+        if cmd == ["docker", "network", "ls", "--format", "{{.Name}}"]:
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(mcp_commands.subprocess, "run", fake_run)
+    monkeypatch.setattr(mcp_commands.Path, "exists", lambda self: False)
+
+    result = CliRunner().invoke(mcp_commands.mcp, ["start-all"])
+
+    assert result.exit_code == 0, result.output
+    assert calls[0] == ["docker", "network", "ls", "--format", "{{.Name}}"]
+    assert calls[1] == ["docker", "network", "create", "dopemux-network"]
+    assert calls[2] == ["docker", "compose", "-f", "compose.yml", "up", "-d"]
+    assert calls[3] == [
+        "docker",
+        "compose",
+        "-f",
+        "compose.yml",
+        "--profile",
+        "manual",
+        "up",
+        "-d",
+        "task-orchestrator",
+    ]
+
+
 def test_cli_down_dry_run_without_repo_stays_legacy(monkeypatch):
     """--dry-run/--json alone must not divert bare `mcp down` to the reconciler."""
     called = {"legacy": False, "lifecycle": False}

@@ -1,0 +1,128 @@
+{
+  "conversation_id": "4d5c4ab3-ba4a-476b-8f5b-311b5c11e811",
+  "status": "SUCCESS",
+  "response": "{\"findings\":[{\"body\":\"ensure_docker_networks(['dopemux-network']) is called properly before dopemux mcp ensure --full across scripts/ai_startup.sh, src/dopemux/cli.py, and src/dopemux/commands/mcp_commands.py. Test coverage in test_ai_startup_network_preflight.py and test_cli_mcp_startup.py correctly asserts this ordering.\",\"id\":\"network-preflight\",\"severity\":\"INFO\",\"status\":\"RESOLVED\",\"title\":\"Network preflight implemented correctly\"},{\"body\":\"configure_bridge.sh correctly delegates to `dopemux mcp up`. Makefile targets (`pm-up`, `webhook-up`) are justifiably allowlisted in tests/mcp/test_p22_safe_subset_guard.py as non-MCP target paths. setup_dopemux.sh was removed.\",\"id\":\"p22-f3-survivor-paths\",\"severity\":\"INFO\",\"status\":\"RESOLVED\",\"title\":\"P22-F3 survivor paths correctly closed\"},{\"body\":\"claudedocs/m11-red-lane-blocker-2026-07-29.md accurately outlines the M11 rename block and red lane constraints for services/task-orchestrator and dopecon-bridge.\",\"id\":\"m11-red-lane-blocker\",\"severity\":\"INFO\",\"status\":\"RESOLVED\",\"title\":\"M11 rename blocker accurately documented\"}],\"fixes_applied\":[],\"model_used\":\"gemini-3.1-pro-high\",\"remaining_risks\":[],\"status\":\"PASS\",\"summary\":\"The changes successfully implement TP-DMX-MCP-FOLLOWUP-IMPL-1166-001. Network preflight safety is verified with helper ordering explicitly checked in tests. P22-F3 survivor paths are closed via `configure_bridge.sh` delegation and `Makefile` safe-subset allowlisting. M11 blocker documentation is complete, and no conflict markers remain in the documentation files. No unauthorized scope creep or secret leaks were detected.\",\"toolAction\":\"Completing audit with PASS\",\"toolSummary\":\"Finish review\"}\n",
+  "duration_seconds": 144.660744,
+  "num_turns": 1,
+  "structured_output": {
+    "findings": [
+      {
+        "body": "ensure_docker_networks(['dopemux-network']) is called properly before dopemux mcp ensure --full across scripts/ai_startup.sh, src/dopemux/cli.py, and src/dopemux/commands/mcp_commands.py. Test coverage in test_ai_startup_network_preflight.py and test_cli_mcp_startup.py correctly asserts this ordering.",
+        "id": "network-preflight",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Network preflight implemented correctly"
+      },
+      {
+        "body": "configure_bridge.sh correctly delegates to `dopemux mcp up`. Makefile targets (`pm-up`, `webhook-up`) are justifiably allowlisted in tests/mcp/test_p22_safe_subset_guard.py as non-MCP target paths. setup_dopemux.sh was removed.",
+        "id": "p22-f3-survivor-paths",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "P22-F3 survivor paths correctly closed"
+      },
+      {
+        "body": "claudedocs/m11-red-lane-blocker-2026-07-29.md accurately outlines the M11 rename block and red lane constraints for services/task-orchestrator and dopecon-bridge.",
+        "id": "m11-red-lane-blocker",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "M11 rename blocker accurately documented"
+      }
+    ],
+    "fixes_applied": [],
+    "model_used": "gemini-3.1-pro-high",
+    "remaining_risks": [],
+    "status": "PASS",
+    "summary": "The changes successfully implement TP-DMX-MCP-FOLLOWUP-IMPL-1166-001. Network preflight safety is verified with helper ordering explicitly checked in tests. P22-F3 survivor paths are closed via `configure_bridge.sh` delegation and `Makefile` safe-subset allowlisting. M11 blocker documentation is complete, and no conflict markers remain in the documentation files. No unauthorized scope creep or secret leaks were detected."
+  },
+  "json_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "status",
+      "summary",
+      "findings",
+      "remaining_risks",
+      "fixes_applied",
+      "model_used"
+    ],
+    "properties": {
+      "status": {
+        "type": "string",
+        "enum": [
+          "PASS",
+          "PASS_WITH_RISKS",
+          "FAIL",
+          "NEEDS_SUPERVISOR"
+        ]
+      },
+      "summary": {
+        "type": "string"
+      },
+      "findings": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "severity",
+            "title",
+            "status",
+            "body"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "severity": {
+              "type": "string",
+              "enum": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "BLOCKING",
+                "INFO"
+              ]
+            },
+            "title": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "OPEN",
+                "RESOLVED",
+                "ACCEPTED_RISK"
+              ]
+            },
+            "body": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "remaining_risks": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "fixes_applied": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "model_used": {
+        "type": "string"
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 177542,
+    "output_tokens": 7613,
+    "thinking_tokens": 5275,
+    "cache_read_tokens": 1211409,
+    "total_tokens": 185155
+  }
+}

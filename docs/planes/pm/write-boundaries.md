@@ -137,5 +137,3 @@ The PM Bridge (\`dopecon-bridge\`) must implement a schema-aware filter. If a PA
 
 ### 2. The Taskmaster Constraint
 Taskmaster adapters must never update a task's \`status\` field directly in Leantime. They must call \`pm_transition_task\` which will update the status in the Orchestrator first, then sync to Leantime.
->>>>>>> fix/pr-279-frontmatter
->>>>>>> wt-collect-dopemux-pr321-20260330023335
