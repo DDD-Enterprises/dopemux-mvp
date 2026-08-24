@@ -1,0 +1,41 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1183,
+  "head_sha": "1d150515fd3c88e13be50a0d03adc1f42c006c9b",
+  "generated_at": "2026-08-24T06:10:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --mode plan --effort high --print-timeout 20m --sandbox; conversation_id=8df0f334-1d7b-484d-ac10-c11c4536f232; display=Gemini 3.1 Pro (High); verdict=PASS",
+    "exit_code": 0,
+    "report_path": "proof/TP-RTE-TRUTH-R4-004/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F01",
+        "title": "T-Phase Multi-Writer Split Verification",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "body": "Split ambiguous TP_BACKLOG_TOPN.json into single-writer artifacts (T0 draft, T5 ordered, T9 canonical merge) with runtime contract compiler verification."
+      },
+      {
+        "id": "F02",
+        "title": "S7 Overseer Synthesis Prompt Rewrite",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "body": "Rewrote S7 prompt from production stub to complete architectural synthesis prompt contract."
+      },
+      {
+        "id": "F03",
+        "title": "CLI Flag Standardization and Status Reconciliation",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "body": "Reconciled audit/rte status implementations, standardized --workers/-w, and ensured explicit live execution flags in rte trace."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null
+  }
+}
