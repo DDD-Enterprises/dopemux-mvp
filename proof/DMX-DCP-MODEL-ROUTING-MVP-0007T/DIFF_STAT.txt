@@ -1,0 +1,15 @@
+ .../ADVERSARIAL_CORPUS.md                          |  10 +
+ .../AUDITOR_REPORT.md                              |   4 +
+ .../DMX-DCP-MODEL-ROUTING-MVP-0007T/COMMAND_LOG.md |   2 +
+ .../EVIDENCE_LEDGER.md                             |   2 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/HANDOFF.json |   4 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/HANDOFF.md   |   2 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/PAL_CHAIN.md |   2 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/PROOF.json   |  43 +++
+ task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007T.md    | 416 +++++++++++++++++++++
+ .../dcp/trusted_input/boolean_string_coercion.json |   1 +
+ tests/fixtures/dcp/trusted_input/empty.json        |   1 +
+ .../dcp/trusted_input/forged_attested.json         |   1 +
+ .../dcp/trusted_input/forged_route_decision.json   |   1 +
+ tests/unit/dcp/test_input_adapters_adversarial.py  | 121 ++++++
+ 14 files changed, 610 insertions(+)

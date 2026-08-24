@@ -1,0 +1,2 @@
+# PAL
+DISCLOSED_SELF / NOT_RUN external

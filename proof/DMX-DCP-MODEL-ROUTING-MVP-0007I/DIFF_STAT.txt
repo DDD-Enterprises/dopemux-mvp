@@ -1,0 +1,15 @@
+ .../AUDITOR_REPORT.md                              |  19 +
+ .../DMX-DCP-MODEL-ROUTING-MVP-0007I/COMMAND_LOG.md |  10 +
+ .../EVIDENCE_LEDGER.md                             |  10 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/HANDOFF.json |  13 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/HANDOFF.md   |   5 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/PAL_CHAIN.md |  10 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/PROOF.json   |  84 +++++
+ .../SECURITY_BOUNDARY_REVIEW.md                    |  24 ++
+ .../TRUSTED_INPUT_DESIGN.md                        |  32 ++
+ .../TRUSTED_INPUT_TEST_MATRIX.json                 |  15 +
+ src/dopemux/dcp/__init__.py                        |  17 +
+ src/dopemux/dcp/input_adapters.py                  | 253 +++++++++++++
+ task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007I.md    | 416 +++++++++++++++++++++
+ tests/unit/dcp/test_input_adapters.py              | 178 +++++++++
+ 14 files changed, 1086 insertions(+)

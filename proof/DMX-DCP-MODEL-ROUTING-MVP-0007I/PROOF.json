@@ -1,0 +1,84 @@
+{
+  "bundle_id": "PROOF-DMX-DCP-MODEL-ROUTING-MVP-0007I-001",
+  "run_id": "dcp-0007i-20260729T000532Z",
+  "skill": "dcp-trusted-input-capability",
+  "status": "COMPLETE",
+  "validation_state": "PASS_WITH_RISKS",
+  "created_at": "2026-07-29T00:05:32Z",
+  "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0007I",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "dcp/model-routing-0007i-trusted-input",
+  "base_sha": "5f862d36f5417801b9fe148fccbb439731627234",
+  "subject_sha": "5f862d36f5417801b9fe148fccbb439731627234",
+  "authoritative_artifacts": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/TRUSTED_INPUT_DESIGN.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/TRUSTED_INPUT_TEST_MATRIX.json",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/SECURITY_BOUNDARY_REVIEW.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/PROOF.json",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/AUDITOR_REPORT.md"
+  ],
+  "supporting_artifacts": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/COMMAND_LOG.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/EVIDENCE_LEDGER.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/PAL_CHAIN.md",
+    "src/dopemux/dcp/input_adapters.py",
+    "tests/unit/dcp/test_input_adapters.py"
+  ],
+  "handoff_refs": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/HANDOFF.json"
+  ],
+  "parent_bundle_refs": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/PROOF.json",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/PROOF.json"
+  ],
+  "review_order_hint": [
+    "TRUSTED_INPUT_DESIGN.md",
+    "SECURITY_BOUNDARY_REVIEW.md",
+    "AUDITOR_REPORT.md",
+    "PROOF.json"
+  ],
+  "chain_of_custody": {
+    "primary_executor": "Grok-4.5 Build orchestrator (Claude Sonnet used earlier in tranche for 0000R)",
+    "embedded_auditor": "Opus NOT_RUN; PASS_WITH_RISKS completion audit",
+    "supervisor": "GPT-5.5 Pro pending end-of-tranche"
+  },
+  "commands": [
+    {
+      "name": "compileall",
+      "exit_code": 0
+    },
+    {
+      "name": "pytest test_input_adapters",
+      "exit_code": 0
+    },
+    {
+      "name": "pytest tests/unit/dcp",
+      "exit_code": 0
+    },
+    {
+      "name": "ruff",
+      "exit_code": 0
+    }
+  ],
+  "embedded_audit": {
+    "auditor_tool": "orchestrator completion audit",
+    "auditor_model": "grok-4.5-build (Opus NOT_RUN)",
+    "auditor_verdict": "PASS_WITH_RISKS",
+    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0007I/AUDITOR_REPORT.md"
+  },
+  "active_trusted_adapters": [],
+  "serialized_trust_supported": false,
+  "raw_input_execution_eligible": false,
+  "runtime_execution_added": false,
+  "remaining_risks": [
+    "RouteDecision.is_runnable forge via from_dict not closed (out of allowlist)",
+    "Opus independent auditor NOT_RUN",
+    "Python privacy is not cryptographic isolation"
+  ],
+  "merge_readiness": "BLOCKED_NOT_REQUESTED",
+  "hard_constraints_honored": {
+    "no_trusted_adapter_mutation_enabled": true,
+    "no_runner_invocation": true,
+    "no_mcp_dopetask_to_github_live_writes": true
+  }
+}

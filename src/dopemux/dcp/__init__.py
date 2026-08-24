@@ -50,6 +50,41 @@ from dopemux.dcp.lane_model import (
 from dopemux.dcp.lane_engine import (
     decide_lane,
 )
+from dopemux.dcp.runner_capability_registry import (
+    CapabilityRegistryError,
+    RunnerCapability,
+    RunnerCapabilityRegistry,
+    assert_no_invocation_authorized,
+    load_runner_capabilities,
+)
+from dopemux.dcp.runner_contract import (
+    RunnerContractDocument,
+    RunnerContractError,
+    RunnerInvocationPlan,
+    RunnerPlanStatus,
+    RunnerProofEnvelope,
+    RunnerResult,
+    build_blocked_plan,
+    document_plan,
+    execute_runner_plan,
+)
+from dopemux.dcp.trusted_adapter_registry import (
+    AdapterRecord,
+    RegistryError,
+    TrustedAdapterRegistry,
+    assert_no_mutation_adapters,
+    listed_adapter_ids,
+    load_registry,
+)
+from dopemux.dcp.input_adapters import (
+    TrustedInputCapability,
+    TrustedInputError,
+    active_trusted_adapters,
+    capability_from_any,
+    is_execution_eligible,
+    refuse_serialized_trust,
+    untrusted_classify_source,
+)
 
 __all__ = [
     # Proof artifact readers (pre-existing)
@@ -93,4 +128,35 @@ __all__ = [
     "LaneDecision",
     "LaneKind",
     "decide_lane",
+    # Trusted-input capability boundary (DMX-DCP-MODEL-ROUTING-MVP-0007I)
+    "TrustedInputCapability",
+    "TrustedInputError",
+    "active_trusted_adapters",
+    "capability_from_any",
+    "is_execution_eligible",
+    "refuse_serialized_trust",
+    "untrusted_classify_source",
+    # Trusted adapter registry (0007A)
+    "AdapterRecord",
+    "RegistryError",
+    "TrustedAdapterRegistry",
+    "assert_no_mutation_adapters",
+    "listed_adapter_ids",
+    "load_registry",
+    # Runner contract (0008)
+    "RunnerContractDocument",
+    "RunnerContractError",
+    "RunnerInvocationPlan",
+    "RunnerPlanStatus",
+    "RunnerProofEnvelope",
+    "RunnerResult",
+    "build_blocked_plan",
+    "document_plan",
+    "execute_runner_plan",
+    # Runner capability registry (0009)
+    "CapabilityRegistryError",
+    "RunnerCapability",
+    "RunnerCapabilityRegistry",
+    "assert_no_invocation_authorized",
+    "load_runner_capabilities",
 ]

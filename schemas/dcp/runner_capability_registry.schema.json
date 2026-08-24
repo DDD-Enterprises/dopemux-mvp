@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.local/schemas/dcp/runner_capability_registry.schema.json",
+  "title": "RunnerCapabilityRegistry",
+  "type": "object",
+  "required": ["schema_version", "global_invocation_authorized", "runners"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"type": "string"},
+    "global_invocation_authorized": {"type": "boolean", "const": false},
+    "global_mutation_authorized": {"type": "boolean", "const": false},
+    "global_paid_inference_authorized": {"type": "boolean", "const": false},
+    "description": {"type": "string"},
+    "runners": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["runner_id", "invocation_authorized", "mutation_authorized", "paid_inference_authorized"],
+        "additionalProperties": false,
+        "properties": {
+          "runner_id": {"type": "string"},
+          "installed": {"type": "boolean"},
+          "resolved_path": {"type": ["string", "null"]},
+          "version_text": {"type": ["string", "null"]},
+          "invocation_authorized": {"type": "boolean", "const": false},
+          "mutation_authorized": {"type": "boolean", "const": false},
+          "paid_inference_authorized": {"type": "boolean", "const": false},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

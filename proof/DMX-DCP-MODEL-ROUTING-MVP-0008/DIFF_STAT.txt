@@ -1,0 +1,15 @@
+ docs/03-reference/dcp/backend-runner-contract.md   |  18 +
+ .../AUDITOR_REPORT.md                              |   4 +
+ .../DMX-DCP-MODEL-ROUTING-MVP-0008/COMMAND_LOG.md  |   1 +
+ .../EVIDENCE_LEDGER.md                             |   2 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0008/HANDOFF.json  |   1 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0008/HANDOFF.md    |   2 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0008/PAL_CHAIN.md  |   2 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0008/PROOF.json    |  40 ++
+ .../RUNNER_CONTRACT.md                             |   2 +
+ schemas/dcp/runner_contract.schema.json            |  45 +++
+ src/dopemux/dcp/__init__.py                        |  21 ++
+ src/dopemux/dcp/runner_contract.py                 | 168 +++++++++
+ task-packets/DMX-DCP-MODEL-ROUTING-MVP-0008.md     | 420 +++++++++++++++++++++
+ tests/unit/dcp/test_runner_contract.py             |  58 +++
+ 14 files changed, 784 insertions(+)

@@ -1,0 +1,17 @@
+## dcp/model-routing-0007a-adapter-registry
+A  config/dcp/trusted_input_adapters.json
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/ADAPTER_REGISTRY_POLICY.md
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/AUDITOR_REPORT.md
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/COMMAND_LOG.md
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/EVIDENCE_LEDGER.md
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/HANDOFF.json
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/HANDOFF.md
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/PAL_CHAIN.md
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/PROOF.json
+A  schemas/dcp/trusted_input_adapter_registry.schema.json
+M  src/dopemux/dcp/__init__.py
+A  src/dopemux/dcp/trusted_adapter_registry.py
+A  task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007A.md
+A  tests/unit/dcp/test_trusted_adapter_registry.py
+?? proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/DIFF_NAME_ONLY.txt
+?? proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/FINAL_STATUS_PORCELAIN.txt

@@ -1,0 +1,15 @@
+{
+  "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0007I",
+  "cases": [
+    {"id": "raw_input", "expect": "not_eligible", "status": "PASS"},
+    {"id": "serialized_attested_true", "expect": "refuse_or_not_eligible", "status": "PASS"},
+    {"id": "from_dict_capability", "expect": "TrustedInputError", "status": "PASS"},
+    {"id": "public_constructor", "expect": "TrustedInputError", "status": "PASS"},
+    {"id": "capability_from_any", "expect": "TrustedInputError", "status": "PASS"},
+    {"id": "pickle_forged_dict", "expect": "not_eligible", "status": "PASS"},
+    {"id": "deepcopy_raw", "expect": "not_eligible", "status": "PASS"},
+    {"id": "route_decision_from_dict_forge", "expect": "is_execution_eligible_false", "status": "PASS"},
+    {"id": "classify_route_regression", "expect": "still_classifies", "status": "PASS"},
+    {"id": "active_adapters_empty", "expect": "[]", "status": "PASS"}
+  ]
+}

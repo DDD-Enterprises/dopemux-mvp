@@ -1,0 +1,39 @@
+{
+  "bundle_id": "PROOF-DMX-DCP-MODEL-ROUTING-MVP-0007A-001",
+  "status": "COMPLETE",
+  "validation_state": "PASS_WITH_RISKS",
+  "created_at": "2026-07-29T00:07:47Z",
+  "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0007A",
+  "branch": "dcp/model-routing-0007a-adapter-registry",
+  "base_sha": "dfa01bf12f01b924cd96d2ea483f166b81f73d1d",
+  "subject_sha": "dfa01bf12f01b924cd96d2ea483f166b81f73d1d",
+  "authoritative_artifacts": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/ADAPTER_REGISTRY_POLICY.md",
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0007A/PROOF.json"
+  ],
+  "embedded_audit": {
+    "auditor_verdict": "PASS_WITH_RISKS",
+    "auditor_model": "NOT_RUN"
+  },
+  "active_trusted_adapters": [],
+  "mutation_adapters_enabled": false,
+  "remaining_risks": [
+    "Opus NOT_RUN",
+    "is_runnable residual forge path"
+  ],
+  "merge_readiness": "BLOCKED_NOT_REQUESTED",
+  "chain_of_custody": {
+    "primary_executor": "grok-4.5-build"
+  },
+  "supporting_artifacts": [],
+  "handoff_refs": [],
+  "parent_bundle_refs": [
+    "proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/PROOF.json"
+  ],
+  "review_order_hint": [
+    "ADAPTER_REGISTRY_POLICY.md"
+  ],
+  "run_id": "0007a",
+  "skill": "dcp-adapter-registry",
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

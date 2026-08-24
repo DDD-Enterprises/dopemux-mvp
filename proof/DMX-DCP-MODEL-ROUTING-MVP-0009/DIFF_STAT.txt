@@ -1,0 +1,20 @@
+ config/dcp/runner_capabilities.json                |  69 +++
+ docs/03-reference/dcp/runner-capability-matrix.md  |  23 +
+ .../AUDITOR_REPORT.md                              |   5 +
+ .../CAPABILITY_MATRIX.md                           |   5 +
+ .../DMX-DCP-MODEL-ROUTING-MVP-0009/COMMAND_LOG.md  |   1 +
+ .../DIFF_NAME_ONLY.txt                             |  16 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0009/DIFF_STAT.txt |  17 +
+ .../EVIDENCE_LEDGER.md                             |   2 +
+ .../FINAL_STATUS_PORCELAIN.txt                     |  20 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0009/HANDOFF.json  |   6 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0009/HANDOFF.md    |   4 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0009/PAL_CHAIN.md  |   2 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0009/PROOF.json    |  54 +++
+ .../runner-cli-inventory.txt                       |  17 +
+ schemas/dcp/runner_capability_registry.schema.json |  33 ++
+ src/dopemux/dcp/__init__.py                        |  13 +
+ src/dopemux/dcp/runner_capability_registry.py      | 125 ++++++
+ task-packets/DMX-DCP-MODEL-ROUTING-MVP-0009.md     | 476 +++++++++++++++++++++
+ tests/unit/dcp/test_runner_capability_registry.py  |  58 +++
+ 19 files changed, 946 insertions(+)

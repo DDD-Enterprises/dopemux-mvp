@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0.0",
+  "global_invocation_authorized": false,
+  "global_mutation_authorized": false,
+  "global_paid_inference_authorized": false,
+  "description": "Non-authoritative runner capability registry. Evidence-backed install probes only; every invocation permission disabled.",
+  "runners": [
+    {
+      "runner_id": "codex",
+      "installed": true,
+      "resolved_path": "/Users/hue/.local/share/mise/shims/codex",
+      "version_text": "codex-cli 0.145.0",
+      "invocation_authorized": false,
+      "mutation_authorized": false,
+      "paid_inference_authorized": false,
+      "notes": "Static inventory only. All invocation permissions disabled (0009)."
+    },
+    {
+      "runner_id": "claude",
+      "installed": true,
+      "resolved_path": "/Users/hue/.local/bin/claude",
+      "version_text": "2.1.220 (Claude Code)",
+      "invocation_authorized": false,
+      "mutation_authorized": false,
+      "paid_inference_authorized": false,
+      "notes": "Static inventory only. All invocation permissions disabled (0009)."
+    },
+    {
+      "runner_id": "opencode",
+      "installed": true,
+      "resolved_path": "/Users/hue/.opencode/bin/opencode",
+      "version_text": "1.18.5",
+      "invocation_authorized": false,
+      "mutation_authorized": false,
+      "paid_inference_authorized": false,
+      "notes": "Static inventory only. All invocation permissions disabled (0009)."
+    },
+    {
+      "runner_id": "gemini",
+      "installed": true,
+      "resolved_path": "/opt/homebrew/bin/gemini",
+      "version_text": "0.46.0",
+      "invocation_authorized": false,
+      "mutation_authorized": false,
+      "paid_inference_authorized": false,
+      "notes": "Static inventory only. All invocation permissions disabled (0009)."
+    },
+    {
+      "runner_id": "agy",
+      "installed": true,
+      "resolved_path": "/Users/hue/.local/bin/agy",
+      "version_text": "1.1.8",
+      "invocation_authorized": false,
+      "mutation_authorized": false,
+      "paid_inference_authorized": false,
+      "notes": "Static inventory only. All invocation permissions disabled (0009)."
+    },
+    {
+      "runner_id": "grok",
+      "installed": true,
+      "resolved_path": "/Users/hue/.local/bin/grok",
+      "version_text": "grok 0.2.112 (9bbd559437aa) [stable]",
+      "invocation_authorized": false,
+      "mutation_authorized": false,
+      "paid_inference_authorized": false,
+      "notes": "Static inventory only. All invocation permissions disabled (0009)."
+    }
+  ]
+}

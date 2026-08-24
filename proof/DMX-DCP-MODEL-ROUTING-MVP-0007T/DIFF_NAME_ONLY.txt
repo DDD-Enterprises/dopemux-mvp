@@ -1,0 +1,14 @@
+proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/ADVERSARIAL_CORPUS.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/AUDITOR_REPORT.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/COMMAND_LOG.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/EVIDENCE_LEDGER.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/HANDOFF.json
+proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/HANDOFF.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/PAL_CHAIN.md
+proof/DMX-DCP-MODEL-ROUTING-MVP-0007T/PROOF.json
+task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007T.md
+tests/fixtures/dcp/trusted_input/boolean_string_coercion.json
+tests/fixtures/dcp/trusted_input/empty.json
+tests/fixtures/dcp/trusted_input/forged_attested.json
+tests/fixtures/dcp/trusted_input/forged_route_decision.json
+tests/unit/dcp/test_input_adapters_adversarial.py
