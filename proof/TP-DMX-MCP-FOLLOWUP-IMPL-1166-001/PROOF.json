@@ -1,0 +1,40 @@
+{
+  "packet_id": "TP-DMX-MCP-FOLLOWUP-IMPL-1166-001",
+  "head_sha": "df0b18597b74f3a24e71dabf4360f2d9b2cd6916",
+  "generated_at": "2026-08-24T00:24:04Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --mode plan --effort high --print-timeout 20m --sandbox; conversation_id=4d5c4ab3-ba4a-476b-8f5b-311b5c11e811; display=Gemini 3.1 Pro (High); verdict=PASS",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-MCP-FOLLOWUP-IMPL-1166-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "body": "ensure_docker_networks(['dopemux-network']) is called properly before dopemux mcp ensure --full across scripts/ai_startup.sh, src/dopemux/cli.py, and src/dopemux/commands/mcp_commands.py. Test coverage in test_ai_startup_network_preflight.py and test_cli_mcp_startup.py correctly asserts this ordering.",
+        "id": "network-preflight",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Network preflight implemented correctly"
+      },
+      {
+        "body": "configure_bridge.sh correctly delegates to `dopemux mcp up`. Makefile targets (`pm-up`, `webhook-up`) are justifiably allowlisted in tests/mcp/test_p22_safe_subset_guard.py as non-MCP target paths. setup_dopemux.sh was removed.",
+        "id": "p22-f3-survivor-paths",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "P22-F3 survivor paths correctly closed"
+      },
+      {
+        "body": "claudedocs/m11-red-lane-blocker-2026-07-29.md accurately outlines the M11 rename block and red lane constraints for services/task-orchestrator and dopecon-bridge.",
+        "id": "m11-red-lane-blocker",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "M11 rename blocker accurately documented"
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null
+  }
+}
