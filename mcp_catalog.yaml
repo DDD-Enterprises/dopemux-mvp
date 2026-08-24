@@ -43,10 +43,127 @@ version: 1
 
 defaults:
   # What `dopemux mcp init` scaffolds into a fresh worktree's .mcp.json by default.
+  # Profile-selected init (`dopemux mcp init --profile`) overrides this list from
+  # the named profile (ADR-DMX-MCPPROF-001). Compatibility profile: core-code.
   per_worktree:
     - conport
     - dope-memory
     - task-orchestrator
+
+# Profile-selected tool plane (ADR-DMX-MCPPROF-001). No implicit `all` profile.
+# Profiles are exposure projections; they do not change service authority.
+profiles:
+  core-code:
+    description: "Normal implementation and code navigation (GitHub read-only + memory/workflow + Serena)"
+    intended_use: "Day-to-day coding agents"
+    servers:
+      - github-official
+      - conport
+      - dope-memory
+      - task-orchestrator
+      - serena
+    github:
+      read_only: true
+      toolsets: [repos, issues, pull_requests, context]
+    inventory_baseline:
+      visible_tool_count: 51
+      rationale: "Seeded GitHub reads (8) + filtered conport/dope-memory/task-orchestrator/serena; writes/admin/shell excluded"
+
+  core-retrieval:
+    description: "Broad code/docs retrieval (GitHub read-only + memory/workflow + dope-context)"
+    intended_use: "Retrieval-heavy coding without Serena LSP surface"
+    servers:
+      - github-official
+      - conport
+      - dope-memory
+      - task-orchestrator
+      - dope-context
+    github:
+      read_only: true
+      toolsets: [repos, issues, pull_requests, context]
+    inventory_baseline:
+      visible_tool_count: 42
+      rationale: "Seeded GitHub reads + filtered conport/memory/orchestrator/dope-context (index/sync stripped)"
+
+  planning-audit:
+    description: "Planning, challenge, and audit (GitHub read-only + dope-context + PAL stdio)"
+    intended_use: "Planning/audit sessions; PAL HTTP is never selected"
+    servers:
+      - github-official
+      - dope-context
+      - pal-stdio
+    github:
+      read_only: true
+      toolsets: [repos, issues, pull_requests, context]
+    inventory_baseline:
+      visible_tool_count: 15
+      rationale: "GitHub reads + filtered dope-context; pal-stdio snapshot empty until live capture"
+
+  ui-audit:
+    description: "Exploratory UI and browser-state investigation (Playwright MCP + optional domain reads)"
+    intended_use: "Stateful UI diagnosis only — not routine coding CI"
+    servers:
+      - github-official
+      - playwright-mcp
+      - repo-domain-read
+    github:
+      read_only: true
+      toolsets: [repos, issues, pull_requests, context]
+    inventory_baseline:
+      visible_tool_count: 8
+      rationale: "GitHub reads only while Playwright snapshot empty and domain-read blocked without contract"
+
+  research-docs:
+    description: "Current library/vendor documentation (Context7)"
+    intended_use: "Docs lookup without deep web research"
+    servers:
+      - github-official
+      - context7
+    github:
+      read_only: true
+      toolsets: [repos, context]
+    inventory_baseline:
+      visible_tool_count: 8
+      rationale: "GitHub reads; Context7 tools planned until snapshot"
+
+  research-web:
+    description: "Multi-source public research (GPT Researcher)"
+    intended_use: "Deep research sessions"
+    servers:
+      - github-official
+      - gpt-researcher
+    github:
+      read_only: true
+      toolsets: [repos, context]
+    inventory_baseline:
+      visible_tool_count: 8
+      rationale: "GitHub reads; GPT Researcher tools planned until snapshot"
+
+  security:
+    description: "Security review (GitHub security toolsets + Semgrep)"
+    intended_use: "Security review only"
+    servers:
+      - github-official
+      - semgrep
+    github:
+      read_only: true
+      toolsets: [code_security, secret_protection, dependabot, repos]
+    inventory_baseline:
+      visible_tool_count: 8
+      rationale: "GitHub security reads seeded; Semgrep tools planned until snapshot"
+
+  pr-steward:
+    description: "PR evidence intake (GitHub PR/review/Actions reads + DCP/facade reads)"
+    intended_use: "PR Steward readiness and evidence harvest"
+    servers:
+      - github-official
+      - dcp-readonly-facade
+    github:
+      read_only: true
+      toolsets: [pull_requests, actions, repos, context]
+    inventory_baseline:
+      visible_tool_count: 8
+      rationale: "GitHub PR reads; facade tools planned-active until MCPINT-IMP-FACADE-001"
 
 servers:
 
@@ -315,7 +432,104 @@ servers:
       gemini: none
       copilot: none
       chatgpt: none
+    tools:
+      snapshot_key: context7
+      schema_version: 1
     description: "Host-level Context7 official-docs lookup. Not managed by this repo (PERIPH-CONTEXT7)."
+
+  # ---------- Profile-plane specialized surfaces (ADR-DMX-MCPPROF-001) ----------
+  # These are not default agent-matrix "all tools" surfaces. Profile selection
+  # projects them into task-selected configs. Normal GitHub exposure is read-only.
+
+  github-official:
+    # Official GitHub MCP (github/github-mcp-server). Read-only via --read-only /
+    # GITHUB_READ_ONLY=1. Toolsets allowlisted per profile (repos/issues/PRs/…).
+    # Writes require a later ADR; normal profiles deny write tools in profile_policy.
+    scope: singleton
+    transport: stdio
+    plane: vcs
+    authority_role: github-read
+    lifecycle: operator-managed
+    management_model: operator-managed
+    identity_scope: external-provider
+    follow_on_decision: none
+    command: docker
+    args:
+      - run
+      - -i
+      - --rm
+      - -e
+      - GITHUB_PERSONAL_ACCESS_TOKEN
+      - -e
+      - GITHUB_READ_ONLY=1
+      - ghcr.io/github/github-mcp-server
+      - ./github-mcp-server
+      - stdio
+      - --read-only
+    requires_env: ["GITHUB_PERSONAL_ACCESS_TOKEN"]
+    # agents: none — not part of agent-matrix full generate (parity). Profile
+    # plane (ADR-DMX-MCPPROF-001) is the sole exposure path for this server.
+    agents: none
+    tools:
+      snapshot_key: github-official
+      schema_version: 1
+    description: "Official GitHub MCP (read-only). Toolsets selected by profile; writes not authorized by ADR-DMX-MCPPROF-001."
+
+  playwright-mcp:
+    # Playwright MCP is specialized (ui-audit only). Routine coding/CI uses CLI
+    # and committed tests — not this server.
+    scope: singleton
+    transport: stdio
+    plane: automation
+    authority_role: browser-inspection
+    lifecycle: operator-managed
+    management_model: operator-managed
+    identity_scope: host-session
+    follow_on_decision: none
+    command: npx
+    args: ["-y", "@playwright/mcp@latest"]
+    agents: none
+    tools:
+      snapshot_key: playwright-mcp
+      schema_version: 1
+    description: "Playwright MCP for ui-audit only (persistent browser state / a11y tree). Not a posting or production-mutation authority."
+
+  semgrep:
+    scope: singleton
+    transport: stdio
+    plane: security
+    authority_role: security-scan
+    lifecycle: operator-managed
+    management_model: operator-managed
+    identity_scope: per-call-workspace
+    follow_on_decision: none
+    command: semgrep
+    args: ["mcp"]
+    agents: none
+    tools:
+      snapshot_key: semgrep
+      schema_version: 1
+    description: "Semgrep MCP for security profile scans. Not a generic write surface."
+
+  repo-domain-read:
+    # Fixed-path local stdio extension. Generator/profile_policy expose only when
+    # scripts/mcp/domain-read is a tracked regular file and mcp/domain-read-tools.json
+    # validates READ_ONLY_NO_DURABLE_SIDE_EFFECT for every tool.
+    scope: singleton
+    transport: stdio
+    plane: domain-read
+    authority_role: domain-read-facade
+    lifecycle: operator-managed
+    management_model: repo-local
+    identity_scope: per-repo
+    follow_on_decision: none
+    command: "${DOPEMUX_PROJECT_ROOT}/scripts/mcp/domain-read"
+    args: []
+    agents: none
+    tools:
+      snapshot_key: repo-domain-read
+      schema_version: 1
+    description: "Generic fixed-path repo-domain read facade (<repo>/scripts/mcp/domain-read). Blocked when contract fails."
 
   # ---------- Per-worktree (live in <worktree>/.mcp.json) ----------
 

@@ -1,7 +1,7 @@
 # MCP System Reference for Claude Code
 
 **Status**: Operational — see `AGENTS.md §12` for transport rules and debug sequence
-**Last Updated**: 2026-07-06
+**Last Updated**: 2026-07-26
 
 ---
 
@@ -13,6 +13,19 @@ This project uses a Docker-based MCP ecosystem with two tiers:
 - **Per-worktree servers** — isolated instances per workspace, declared in `.mcp.json`
 
 The canonical server registry is [`mcp_catalog.yaml`](../mcp_catalog.yaml).
+
+**Profiles (ADR-DMX-MCPPROF-001):** task-selected tool planes live under
+`mcp_catalog.yaml` `profiles:`. There is **no implicit `all` profile**. See
+[`docs/02-how-to/mcp-profiles.md`](../docs/02-how-to/mcp-profiles.md).
+
+```bash
+dopemux mcp profile list
+dopemux mcp profile show core-code
+dopemux mcp doctor --profile core-code
+dopemux mcp init --profile core-code
+```
+
+Compatibility default when a profile is required and none is given: **`core-code`**.
 
 ---
 
@@ -43,11 +56,29 @@ Then: log decisions, track progress, preserve context before interruptions.
 
 | Server | Transport | Port | Purpose |
 |---|---|---|---|
-| `pal` | `http` | `3003` | Multi-model reasoning (thinkdeep, planner, codereview) |
+| `pal` | `http` | `3003` | **Health/lifecycle only** — no MCP endpoint (`/mcp` 404). Do not use as PAL tools. |
+| `pal-stdio` | `stdio` | — | **Sole PAL MCP surface** (thinkdeep, planner, codereview, precommit, …) |
 | `serena` | `http` | `3006` | Semantic code intelligence (LSP + Tree-sitter) |
 | `dope-context` | `http` | `3010` | Code/docs semantic search |
-| `pal-stdio` | `stdio` | — | PAL via Docker exec (fallback) |
 | `gpt-researcher` | `stdio` | — | Deep multi-source research |
+
+> [!IMPORTANT]
+> **PAL transport truth:** `pal` HTTP is a health shim only. Profiles and agents
+> must use **`pal-stdio`** for PAL MCP tools. Planning/audit profile
+> (`planning-audit`) selects `pal-stdio`, never `pal`.
+
+### Profile-only specialized servers
+
+| Server | Profile(s) | Notes |
+|---|---|---|
+| `github-official` | core-*, research-*, security, pr-steward, ui-audit | Official GitHub MCP, **read-only** |
+| `playwright-mcp` | `ui-audit` only | Not for routine coding CI (use CLI) |
+| `semgrep` | `security` | Security scans |
+| `repo-domain-read` | `ui-audit` when contract ok | Fixed path `scripts/mcp/domain-read` |
+| `context7` | `research-docs` | Host external docs lookup |
+| `dcp-readonly-facade` | `pr-steward` | Planned-active until facade deploy |
+
+Desktop Commander is **not** in any normal profile.
 
 ---
 
@@ -69,12 +100,14 @@ Then: log decisions, track progress, preserve context before interruptions.
 
 ```bash
 cd ~/code/target-repo        # must be a git repo
-dopemux mcp init             # scaffolds .mcp.json + .envrc.dopemux-mcp
+dopemux mcp init --profile core-code   # or omit --profile for same compatibility default
 source .envrc.dopemux-mcp    # load port variables
 dopemux mcp doctor           # verify env + reachability
+dopemux mcp doctor --profile core-code  # profile inventory overlay
 ```
 
 Full guide: [`docs/02-how-to/mcp-setup-other-repos.md`](../docs/02-how-to/mcp-setup-other-repos.md)
+Profiles: [`docs/02-how-to/mcp-profiles.md`](../docs/02-how-to/mcp-profiles.md)
 
 ---
 

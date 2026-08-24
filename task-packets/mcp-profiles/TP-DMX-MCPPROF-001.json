@@ -1,0 +1,168 @@
+{
+  "id": "TP-DMX-MCPPROF-001",
+  "project": "dopemux-mvp",
+  "target": "Implement accepted profile-selected MCP tool plane and generic repo-domain read contract",
+  "invariants": [
+    "mcp_catalog.yaml remains catalog authority",
+    "No implicit all profile",
+    "Normal GitHub profiles are read-only",
+    "PAL MCP uses stdio only",
+    "Profiles do not alter domain authority",
+    "Unknown side effects fail closed",
+    "Proof is current to final head"
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "pyproject.toml",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "SER-DMX-MCPPROF-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "feat/TP-DMX-MCPPROF-001-profiled-tool-plane"
+  },
+  "commit": {
+    "message": "feat(mcp): TP-DMX-MCPPROF-001 governed profile/facade implementation",
+    "allowlist": [
+      "docs/90-adr/adr-mcpprof-001-profiled-tool-plane-and-domain-facades.md",
+      "docs/90-adr/adr-index.md",
+      "mcp_catalog.yaml",
+      "src/dopemux/mcp/fleet_catalog.py",
+      "src/dopemux/commands/mcp_commands.py",
+      "src/dopemux/mcp/profile_policy.py",
+      "schemas/mcp-profile.schema.json",
+      "tests/unit/test_mcp_profile_policy.py",
+      "tests/unit/test_mcp_profile_rendering.py",
+      "tests/unit/test_mcp_profile_doctor.py",
+      "docs/02-how-to/mcp-profiles.md",
+      ".claude/mcp-system.md",
+      "task-packets/mcp-profiles/TP-DMX-MCPPROF-001.md",
+      "task-packets/mcp-profiles/TP-DMX-MCPPROF-001.json",
+      "proof/TP-DMX-MCPPROF-001/**"
+    ],
+    "verify": [
+      "git status --short",
+      "git diff --stat",
+      "git diff",
+      "packet-specific tests, lint, type checks, proof, embedded audit, and PR Steward"
+    ]
+  },
+  "pr": {
+    "title": "feat(mcp): profile-selected tool plane and repo-domain read contract",
+    "body": "Implements ADR-DMX-MCPPROF-001 after operator acceptance. Adds deterministic profile generation, locked inventories, official GitHub read profiles, specialized Playwright placement, and a fixed-path repo-domain read contract. No write-capable profile is authorized.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "apilookup",
+      "analyze",
+      "tracer",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "testgen",
+      "secaudit",
+      "docgen",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Add Proposed ADR and prove no accepted-ADR collision; stop for operator acceptance before code.",
+      "requirements": [
+        "No runtime/config change",
+        "ADR index consistent"
+      ],
+      "commands": [
+        "git diff --check"
+      ],
+      "expected_files": [
+        "docs/90-adr/adr-mcpprof-001-profiled-tool-plane-and-domain-facades.md"
+      ],
+      "validation": [
+        "ADR remains proposed",
+        "Accepted architecture is amended, not duplicated"
+      ],
+      "context_files": [
+        "docs/90-adr/adr-mcpint-001-catalog-v2-single-source.md",
+        "docs/90-adr/adr-mcpint-002-agent-exposure-and-read-plane.md"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Implement profile schema, deterministic inventory, renderer, CLI, and doctor.",
+      "requirements": [
+        "Explicit profile required",
+        "No implicit all",
+        "Inventory digests deterministic"
+      ],
+      "commands": [
+        "uv run pytest -q tests/unit/test_mcp_profile_policy.py tests/unit/test_mcp_profile_rendering.py tests/unit/test_mcp_profile_doctor.py"
+      ],
+      "expected_files": [
+        "mcp_catalog.yaml",
+        "src/dopemux/mcp/profile_policy.py",
+        "schemas/mcp-profile.schema.json"
+      ],
+      "validation": [
+        "Profile tests pass",
+        "Repeated generation byte-identical"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add official GitHub read profiles and specialized Playwright/research/security/PR Steward placement.",
+      "requirements": [
+        "GitHub writes absent",
+        "Playwright absent from core profiles",
+        "PAL stdio only"
+      ],
+      "commands": [
+        "uv run dopemux mcp profile show core-code",
+        "uv run dopemux mcp profile show ui-audit"
+      ],
+      "expected_files": [
+        "mcp_catalog.yaml",
+        "docs/02-how-to/mcp-profiles.md"
+      ],
+      "validation": [
+        "Negative exposure tests pass",
+        "Current vendor behavior sourced"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Implement fixed-path repo-domain-read validation, full proof, embedded audit, PR, and PR Steward.",
+      "requirements": [
+        "Tracked regular executable",
+        "No path escape",
+        "Manifest read-only classification"
+      ],
+      "commands": [
+        "pre-commit run --all-files",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-MCPPROF-001/PROOF.json",
+        "proof/TP-DMX-MCPPROF-001/MERGE_READINESS.json"
+      ],
+      "validation": [
+        "All negative tests pass",
+        "Auditor PASS or non-blocking PASS_WITH_RISKS",
+        "PR Steward READY"
+      ]
+    }
+  ]
+}

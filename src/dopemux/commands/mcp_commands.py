@@ -921,33 +921,102 @@ def _build_local_mcp_json(server_names: List[str], catalog: Dict[str, Any]) -> D
         "Refused by default until the ADR-MCPINT-002 G1 prerequisites land."
     ),
 )
-def mcp_generate_cmd(apply: bool, output_dir: Optional[Path], allow_sequenced: bool):
+@click.option(
+    "--profile",
+    "profile_name",
+    default=None,
+    help=(
+        "Named MCP profile (ADR-DMX-MCPPROF-001). When set, emit profile-selected "
+        "projections only (never all servers). Forbidden: all/*."
+    ),
+)
+@click.option(
+    "--agent-matrix",
+    "agent_matrix",
+    is_flag=True,
+    help=(
+        "Emit ADR-MCPINT-001 agent-matrix fleet fragments (opencode/codex/copilot "
+        "parity). Mutually exclusive with --profile. Without either flag, defaults "
+        "to compatibility profile core-code profile plane."
+    ),
+)
+def mcp_generate_cmd(
+    apply: bool,
+    output_dir: Optional[Path],
+    allow_sequenced: bool,
+    profile_name: Optional[str],
+    agent_matrix: bool,
+):
     """
     🧾 Project Fleet: Render catalog-backed MCP config fragments
 
-    Generates reviewable projections for local .mcp.json, Claude globals,
-    Codex config, OpenCode + Copilot agent configs, health probes, and MCP
-    doctrine docs. Dry-run is the default; writes require both --apply and
-    --output-dir. --apply also updates the in-repo agent config targets
-    (opencode.jsonc managed mcp section, mcp-proxy-config.copilot.yaml);
-    .codex/config.toml is additionally gated behind --allow-sequenced
-    (ADR-MCPINT-002 G1 sequencing).
+    Profile plane (ADR-DMX-MCPPROF-001): default resolves to explicit compatibility
+    profile ``core-code`` unless ``--profile`` or ``--agent-matrix`` is passed.
+    There is no implicit ``all`` profile.
+
+    Agent-matrix mode (``--agent-matrix``): ADR-MCPINT-001 projections for local
+    .mcp.json, Claude globals, Codex/OpenCode/Copilot fragments, health probes.
+    Dry-run is the default; writes require both --apply and --output-dir.
     """
     from dopemux.mcp import fleet_catalog
+    from dopemux.mcp import profile_policy
 
     catalog = _load_catalog()
-    outputs = fleet_catalog.generate_fleet_output_files(catalog)
+
+    if agent_matrix and profile_name:
+        raise click.ClickException("Pass only one of --profile or --agent-matrix.")
+
+    use_profile_plane = False
+    if profile_name is not None:
+        use_profile_plane = True
+    elif agent_matrix:
+        use_profile_plane = False
+    elif catalog.get("profiles"):
+        # Catalog declares profiles: default to explicit compatibility profile,
+        # never an implicit all-servers surface (ADR-DMX-MCPPROF-001).
+        use_profile_plane = True
+    else:
+        # Legacy catalog without profiles: agent-matrix projection.
+        use_profile_plane = False
+
+    if not use_profile_plane:
+        outputs = fleet_catalog.generate_fleet_output_files(catalog)
+        console.logger.info(
+            "[info]Agent-matrix fleet projection (ADR-MCPINT-001). "
+            "Not a profile=all surface. Use --profile <name> for task profiles.[/info]"
+        )
+    else:
+        try:
+            profile_policy.assert_no_implicit_all(profile_name)
+            resolved = profile_policy.resolve_default_profile(catalog, profile_name)
+        except profile_policy.ProfilePolicyError as exc:
+            raise click.ClickException(str(exc)) from exc
+        if profile_name is None:
+            console.logger.info(
+                f"[info]No --profile given; resolving compatibility profile "
+                f"`{resolved}` (never all servers). "
+                f"Pass --profile <name> or --agent-matrix explicitly.[/info]"
+            )
+        repo = get_repo_root(fallback_cwd=False)
+        repo_path = Path(repo) if repo else None
+        try:
+            outputs = fleet_catalog.generate_profile_output_files(
+                catalog, resolved, repo_root=repo_path
+            )
+        except profile_policy.ProfilePolicyError as exc:
+            raise click.ClickException(str(exc)) from exc
 
     if not apply:
         console.logger.info("[info]Dry-run only. No files were written.[/info]")
         for relative_path, content in outputs.items():
             line_count = len(content.splitlines())
             console.logger.info(f"[info]Would write {relative_path} ({line_count} lines)[/info]")
-        console.logger.info(
-            "[info]--apply also updates in-repo agent configs: opencode.jsonc (managed "
-            "mcp section), mcp-proxy-config.copilot.yaml, and — only with "
-            "--allow-sequenced — .codex/config.toml.[/info]"
-        )
+        if not use_profile_plane:
+            console.logger.info(
+                "[info]--apply also updates in-repo agent configs: opencode.jsonc (managed "
+                "mcp section), mcp-proxy-config.copilot.yaml, and — only with "
+                "--allow-sequenced — .codex/config.toml.[/info]"
+            )
         return
 
     if output_dir is None:
@@ -959,7 +1028,8 @@ def mcp_generate_cmd(apply: bool, output_dir: Optional[Path], allow_sequenced: b
         target.write_text(content, encoding="utf-8")
         console.logger.info(f"[success]Wrote {target}[/success]")
 
-    _apply_in_repo_agent_configs(catalog, output_dir, allow_sequenced)
+    if not use_profile_plane:
+        _apply_in_repo_agent_configs(catalog, output_dir, allow_sequenced)
 
 
 def _apply_in_repo_agent_configs(
@@ -1298,14 +1368,26 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
 @mcp.command("init")
 @click.option("--force", is_flag=True, help="Overwrite existing .mcp.json and env file without prompting.")
 @click.option("--with", "extra", multiple=True, help="Additional server name beyond catalog defaults (repeatable).")
-def mcp_init_cmd(force: bool, extra: Tuple[str, ...]):
+@click.option(
+    "--profile",
+    "profile_name",
+    default=None,
+    help=(
+        "Named MCP profile (ADR-DMX-MCPPROF-001). Defaults to compatibility "
+        "profile core-code when omitted. Never all servers."
+    ),
+)
+def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str]):
     """
     🌱 Bootstrap Worktree: Scaffold .mcp.json + per-worktree env file
 
-    Generates the per-worktree MCP config from the catalog defaults plus any
+    Generates the per-worktree MCP config from the selected profile's
+    per-worktree servers (default: compatibility profile ``core-code``) plus any
     `--with NAME` extras. Allocates ports deterministically from the worktree
     path so two worktrees never collide on the same host port.
     """
+    from dopemux.mcp import profile_policy
+
     repo = get_repo_root(fallback_cwd=False)
     if not repo:
         raise click.ClickException("Not inside a git repository.")
@@ -1319,7 +1401,40 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...]):
 
     catalog = _load_catalog()
 
-    server_names = list(catalog.get("defaults", {}).get("per_worktree", [])) + list(extra)
+    if catalog.get("profiles") or profile_name is not None:
+        try:
+            profile_policy.assert_no_implicit_all(profile_name)
+            resolved_profile = profile_policy.resolve_default_profile(
+                catalog, profile_name
+            )
+            inv = profile_policy.resolve_profile(
+                catalog,
+                resolved_profile,
+                repo_root=repo_path,
+                check_inventory_baseline=True,
+            )
+        except profile_policy.ProfilePolicyError as exc:
+            raise click.ClickException(str(exc)) from exc
+        servers_map = catalog.get("servers") or {}
+        profile_per_worktree = [
+            name
+            for name in inv.selected_servers
+            if isinstance(servers_map.get(name), dict)
+            and servers_map[name].get("scope") == "per-worktree"
+        ]
+        # Fallback: if profile has no per-worktree members, use catalog defaults
+        # (still an explicit named profile selection, not all servers).
+        base_names = profile_per_worktree or list(
+            catalog.get("defaults", {}).get("per_worktree", [])
+        )
+        console.logger.info(
+            f"[info]Profile `{resolved_profile}` "
+            f"(digest={inv.profile_digest[:12]}…) → per-worktree base: {base_names}[/info]"
+        )
+    else:
+        base_names = list(catalog.get("defaults", {}).get("per_worktree", []))
+
+    server_names = list(base_names) + list(extra)
     # de-dup while preserving order
     seen, ordered = set(), []
     for n in server_names:
@@ -1503,7 +1618,7 @@ def mcp_list_cmd():
         console.logger.info(f"  {name}  ({scope}, {transport})  — {spec.get('description', '')}")
 
     console.logger.info("")
-    console.logger.info(f"[info]== Global (~/.claude.json mcpServers) ==[/info]")
+    console.logger.info("[info]== Global (~/.claude.json mcpServers) ==[/info]")
     for name in sorted(global_servers):
         marker = "" if name in catalog["servers"] else "  [warning](not in catalog)[/warning]"
         console.logger.info(f"  {name}{marker}")
@@ -1587,12 +1702,22 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd:
     is_flag=True,
     help="Use the pre-Packet-001 problem-list doctor (cwd git root only).",
 )
+@click.option(
+    "--profile",
+    "profile_name",
+    default=None,
+    help=(
+        "When set, emit profile inventory/doctor overlay (ADR-DMX-MCPPROF-001) "
+        "instead of the full fleet doctor. Forbidden: all/*."
+    ),
+)
 def mcp_doctor_cmd(
     repo_arg: Optional[Path],
     json_output: bool,
     verbose: bool,
     skip_docker: bool,
     legacy: bool,
+    profile_name: Optional[str],
 ):
     """
     🩺 Health Sweep: Repo-aware MCP truth gate (read-only)
@@ -1601,11 +1726,20 @@ def mcp_doctor_cmd(
     detects port collision risks, compose lifecycle drift, and Docker ownership
     where labels exist. Does not start or stop containers.
 
+    With ``--profile``, runs the profile inventory overlay only (no Docker).
+
     Examples:
       dopemux mcp doctor
       dopemux mcp doctor --repo ~/code/other-project
       dopemux mcp doctor --repo ~/code/other-project --json
+      dopemux mcp doctor --profile core-code
     """
+    if profile_name is not None:
+        if legacy:
+            raise click.ClickException("--profile cannot be combined with --legacy.")
+        _mcp_doctor_profile(profile_name, repo_arg=repo_arg, json_output=json_output)
+        return
+
     if legacy:
         if repo_arg is not None:
             raise click.ClickException(
@@ -1728,6 +1862,123 @@ def _mcp_doctor_legacy() -> None:
     for p in problems:
         console.logger.info(f"  • {p}")
     sys.exit(1)
+
+
+def _mcp_doctor_profile(
+    profile_name: str,
+    *,
+    repo_arg: Optional[Path],
+    json_output: bool,
+) -> None:
+    """Profile inventory/doctor overlay (no Docker). Fail closed on unknown profile."""
+    from dopemux.mcp import profile_policy
+
+    catalog = _load_catalog()
+    if repo_arg is not None:
+        repo_path = Path(repo_arg).expanduser().resolve()
+    else:
+        repo = get_repo_root(fallback_cwd=False)
+        if not repo:
+            raise click.ClickException(
+                "Not inside a git repository. Pass --repo <path> with --profile."
+            )
+        repo_path = Path(repo).resolve()
+
+    try:
+        profile_policy.assert_no_implicit_all(profile_name)
+        resolved = profile_policy.resolve_default_profile(catalog, profile_name)
+        inventory = profile_policy.resolve_profile(
+            catalog,
+            resolved,
+            repo_root=repo_path,
+            check_inventory_baseline=True,
+        )
+    except profile_policy.ProfilePolicyError as exc:
+        raise click.ClickException(str(exc)) from exc
+
+    report = profile_policy.render_profile_doctor_report(inventory)
+    if json_output:
+        sys.stdout.write(json.dumps(report, indent=2, sort_keys=True) + "\n")
+        return
+    sys.stdout.write(profile_policy.format_profile_doctor_human(inventory))
+    inv = report.get("invariants") or {}
+    if inv.get("pal_http_selected") or inv.get("playwright_in_core") or inv.get(
+        "github_writes_visible"
+    ):
+        sys.exit(1)
+
+
+@mcp.group("profile")
+def mcp_profile_group():
+    """🎛️ MCP profiles: list/show task-selected tool planes (ADR-DMX-MCPPROF-001)."""
+
+
+@mcp_profile_group.command("list")
+@click.option("--json", "json_output", is_flag=True, help="Emit profile names as JSON.")
+def mcp_profile_list_cmd(json_output: bool):
+    """List declared profiles (no implicit all)."""
+    from dopemux.mcp import profile_policy
+
+    catalog = _load_catalog()
+    try:
+        names = profile_policy.list_profiles(catalog)
+    except profile_policy.ProfilePolicyError as exc:
+        raise click.ClickException(str(exc)) from exc
+    if json_output:
+        sys.stdout.write(json.dumps({"profiles": names}, indent=2) + "\n")
+        return
+    if not names:
+        console.logger.info("[warning]No profiles declared in catalog.[/warning]")
+        return
+    console.logger.info(f"[info]Profiles ({len(names)}):[/info]")
+    profiles = catalog.get("profiles") or {}
+    for name in names:
+        desc = ""
+        spec = profiles.get(name) or {}
+        if isinstance(spec, dict):
+            desc = str(spec.get("description") or "")
+        console.logger.info(f"  • {name}" + (f" — {desc}" if desc else ""))
+    console.logger.info(
+        f"[info]Compatibility default: {profile_policy.COMPATIBILITY_PROFILE}[/info]"
+    )
+
+
+@mcp_profile_group.command("show")
+@click.argument("name")
+@click.option("--json", "json_output", is_flag=True, help="Emit full inventory JSON.")
+@click.option(
+    "--repo",
+    "repo_arg",
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path),
+    default=None,
+    help="Repo root for domain-read validation (defaults to current git root).",
+)
+def mcp_profile_show_cmd(name: str, json_output: bool, repo_arg: Optional[Path]):
+    """Show selected servers, visible tools, and digests for a profile."""
+    from dopemux.mcp import profile_policy
+
+    catalog = _load_catalog()
+    if repo_arg is not None:
+        repo_path = Path(repo_arg).expanduser().resolve()
+    else:
+        repo = get_repo_root(fallback_cwd=False)
+        repo_path = Path(repo).resolve() if repo else None
+
+    try:
+        profile_policy.assert_no_implicit_all(name)
+        inventory = profile_policy.resolve_profile(
+            catalog,
+            name,
+            repo_root=repo_path,
+            check_inventory_baseline=True,
+        )
+    except profile_policy.ProfilePolicyError as exc:
+        raise click.ClickException(str(exc)) from exc
+
+    if json_output:
+        sys.stdout.write(json.dumps(inventory.to_dict(), indent=2, sort_keys=True) + "\n")
+        return
+    sys.stdout.write(profile_policy.format_profile_doctor_human(inventory))
 
 
 def _functional_subset(entry: Dict[str, Any]) -> Dict[str, Any]:

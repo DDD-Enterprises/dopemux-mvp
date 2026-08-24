@@ -1,0 +1,18 @@
+ .claude/mcp-system.md                              |  41 +-
+ docs/02-how-to/mcp-profiles.md                     | 106 ++++
+ docs/90-adr/adr-index.md                           |   2 +
+ ...f-001-profiled-tool-plane-and-domain-facades.md | 251 ++++++++
+ mcp_catalog.yaml                                   | 214 +++++++
+ mcp_tool_surfaces.json                             |  91 +++
+ schemas/mcp-profile.schema.json                    | 100 +++
+ schemas/mcp/fleet-catalog.schema.json              | 115 ++++
+ src/dopemux/commands/mcp_commands.py               | 289 ++++++++-
+ src/dopemux/mcp/default_catalog.yaml               | 214 +++++++
+ src/dopemux/mcp/fleet_catalog.py                   |  63 ++
+ src/dopemux/mcp/profile_policy.py                  | 673 +++++++++++++++++++++
+ task-packets/mcp-profiles/TP-DMX-MCPPROF-001.json  | 168 +++++
+ task-packets/mcp-profiles/TP-DMX-MCPPROF-001.md    | 396 ++++++++++++
+ tests/unit/test_mcp_profile_doctor.py              | 111 ++++
+ tests/unit/test_mcp_profile_policy.py              | 279 +++++++++
+ tests/unit/test_mcp_profile_rendering.py           |  71 +++
+ 17 files changed, 3161 insertions(+), 23 deletions(-)
