@@ -140,6 +140,13 @@ class CodeIntelligenceBuilder:
             "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
             "repo_root": str(repo_root),
             "git_depth": git_depth,
+            "analysis_capabilities": {
+                "tree_sitter": (
+                    self.code_prescan.tree_sitter_status()
+                    if hasattr(self.code_prescan, "tree_sitter_status")
+                    else {"available": False, "degraded": False, "degraded_reason": None}
+                ),
+            },
             "summary": {
                 "total_code_files": total_code,
                 "entry_points": len(entry_points),

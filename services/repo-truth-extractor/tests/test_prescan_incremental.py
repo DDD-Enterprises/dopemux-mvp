@@ -129,6 +129,9 @@ class FakeCodePrescan:
     def __init__(self) -> None:
         self.calls: list[str] = []
 
+    def tree_sitter_status(self) -> dict[str, Any]:
+        return {"available": False, "degraded": False, "degraded_reason": None}
+
     def analyze_file(self, entry: FileEntry, repo_root: Path) -> dict[str, Any]:
         self.calls.append(entry.rel_path)
         content = (repo_root / entry.rel_path).read_text(encoding="utf-8")
