@@ -2240,9 +2240,14 @@ OUTPUT_SECTION_STOP_PREFIXES = (
     "evidence hierarchy",
     "arbitration procedure",
 )
-DEFAULT_OUTPUT_BY_STEP = {
-    "T1": ("TP_BACKLOG_TOPN.json",),
-}
+# TP-RTE-TRUTH-R3-005c: the "T1" entry was removed deliberately. It mapped T1 to
+# TP_BACKLOG_TOPN.json, which is now canonically written by T9 alone (T0 writes
+# the _DRAFT, T5 the _ORDERED). Because this fallback fires whenever a step's
+# ## Outputs section parses to nothing, leaving it here would silently
+# reintroduce the exact multi-writer collision that packet closed — a
+# last-writer-wins race on norm_dir/TP_BACKLOG_TOPN.json. Do not re-add a step
+# here without checking artifacts.yaml's canonical_writer_step_id.
+DEFAULT_OUTPUT_BY_STEP: Dict[str, Tuple[str, ...]] = {}
 REPO_SCAN_EXCLUDES = [
     "extraction",
     "reports",

@@ -892,7 +892,7 @@ phases:
       - phase_scope
       outputs:
       - PROJECT_INSTRUCTIONS.md
-      - TP_BACKLOG_TOPN.json
+      - TP_BACKLOG_TOPN_DRAFT.json
       - TP_INDEX.json
     - step_id: T1
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T1_EMIT_TASK_PACKETS___TOP10.md
@@ -901,7 +901,6 @@ phases:
       outputs:
       - TP_PACKETS_TOP10.partX.md
       - TP_PACKET_IMPLEMENTATION_INDEX.json
-      - TP_BACKLOG_TOPN.json
     - step_id: T2
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T2_PACKET_SCHEMA___AUTHORITY_RULES.md
       coverage_targets:
@@ -929,7 +928,7 @@ phases:
       - phase_scope
       outputs:
       - TP_RUN_PLAN.json
-      - TP_BACKLOG_TOPN.json
+      - TP_BACKLOG_TOPN_ORDERED.json
     - step_id: T9
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T9_MERGE___QA.md
       coverage_targets:

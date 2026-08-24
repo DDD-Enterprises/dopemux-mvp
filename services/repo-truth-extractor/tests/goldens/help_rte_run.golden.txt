@@ -15,7 +15,8 @@ Options:
                                   v5 prompt resolution.
   --dry-run / --execute           [default: dry-run]
   --resume / --no-resume          [default: resume]
-  --partition-workers INTEGER     [default: 1]
+  -w, --workers INTEGER           Number of parallel extraction workers
+                                  (default: 1).
   --max-partitions-per-step INTEGER
                                   Cap the number of partitions executed for
                                   each step.

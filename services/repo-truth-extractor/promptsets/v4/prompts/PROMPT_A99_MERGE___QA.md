@@ -45,6 +45,10 @@ Focus on concrete, machine-verifiable implementation facts.
 - `REPO_LITELLM_SURFACE.json`
 - `REPO_TASKX_SURFACE.json`
 - `REPO_IMPLICIT_BEHAVIOR_HINTS.json`
+- `EDITOR_INTEGRATION_SURFACE.json`
+- `CLI_COMMAND_SURFACE.json`
+- `HOOK_CONTRACT_SURFACE.json`
+- `EVENT_FLOW_GRAPH.json`
 - Runner context artifacts:
   - `extraction/*/inputs/INVENTORY.json`
   - `extraction/*/inputs/PARTITIONS.json`
@@ -177,11 +181,12 @@ Focus on concrete, machine-verifiable implementation facts.
    - `REPO_TASKX_SURFACE.json`: merge all items from A8.
    - `REPO_IMPLICIT_BEHAVIOR_HINTS.json`: merge all items from A9.
    - `REPO_LEANTIME_SURFACE.json`: merge all items from A10.
+   - `EDITOR_INTEGRATION_SURFACE.json` (A11), `CLI_COMMAND_SURFACE.json` (A12), and `HOOK_CONTRACT_SURFACE.json`/`EVENT_FLOW_GRAPH.json` (A13) are self-canonical (`canonical_writer_step_id: A11/A12/A13` per `artifacts.yaml` — written directly by those steps, not re-merged into a different output name here); do not re-derive their items, but include them in the manifest and QA coverage checks below.
 3. Generate `REPOCTRL_NORM_MANIFEST.json`:
-   - Enumerate all merged artifacts.
-   - Record `artifact_name`, `sha256` hash of content, `item_count`, and `writer_step_id: A99`.
+   - Enumerate all merged artifacts, plus the self-canonical A11/A12/A13 artifacts (`EDITOR_INTEGRATION_SURFACE.json`, `CLI_COMMAND_SURFACE.json`, `HOOK_CONTRACT_SURFACE.json`, `EVENT_FLOW_GRAPH.json`).
+   - Record `artifact_name`, `sha256` hash of content, `item_count`, and `writer_step_id` (`A99` for merged artifacts; `A11`/`A12`/`A13` for the self-canonical ones).
 4. Generate `REPOCTRL_QA.json`:
-   - Perform "missing-artifact" checks: flag any expected output names not successfully merged.
+   - Perform "missing-artifact" checks: flag any expected output names not successfully merged, including the self-canonical A11/A12/A13 outputs (`EDITOR_INTEGRATION_SURFACE.json`, `CLI_COMMAND_SURFACE.json`, `HOOK_CONTRACT_SURFACE.json`, `EVENT_FLOW_GRAPH.json`).
    - Perform "shadow/collision" checks: identify items with identical IDs but conflicting fields.
    - Perform "evidence-gap" checks: identify items with `UNKNOWN` fields or missing evidence anchors.
    - Record `status`, `checks` (list of pass/fail), and `issues` (list of specific gaps).

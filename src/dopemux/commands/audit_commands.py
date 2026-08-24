@@ -11,18 +11,8 @@ import click
 
 from ..console import console
 from ..ui.theme import styled_panel, styled_table, error_panel, Glyphs, StatusChip
-
-
-_ROUTING_POLICY_CHOICES = [
-    "cost",
-    "balanced",
-    "balanced_openrouter",
-    "balanced_grok_openrouter",
-    "quality",
-    "openrouter",
-    "gemini_primary",
-    "optimal",
-]
+from .extractor_commands import _run_extractor_runner
+from .rte_shared import ROUTING_POLICY_CHOICES as _ROUTING_POLICY_CHOICES
 
 
 @click.group()
@@ -140,34 +130,15 @@ def status(ctx):
     """
     📋 Diagnostic HUD: Show telemetry from the latest ritual session
 
-    Retrieves current cockpit telemetry for the most recent repo-truth-extractor 
-    run, detailing phase progression and total payload size.
+    Delegates to the canonical `dopemux rte status` (v5) implementation
+    rather than re-reading run-pointer files directly. TP-RTE-TRUTH-R4-004
+    (F-44) retired the standalone reimplementation that lived here: it read
+    ``extraction/repo-truth-extractor/v5/latest_run_id.txt`` relative to the
+    process's current working directory with no repo-root search, so it
+    silently reported "No extraction runs found" whenever invoked from any
+    directory other than the repo root — even with a real run present. The
+    canonical path resolves the repo root the same way every other `rte`
+    subcommand does, so `dopemux audit status` now behaves identically from
+    any cwd.
     """
-    latest_file = Path("extraction/repo-truth-extractor/v5/latest_run_id.txt")
-    if not latest_file.exists():
-        console.print("[warning]No extraction runs found.[/warning]")
-        raise SystemExit(0)
-
-    run_id = latest_file.read_text().strip()
-    run_dir = Path(f"extraction/repo-truth-extractor/v5/runs/{run_id}")
-    console.print(f"[bold]Latest run:[/bold]  {run_id}")
-    console.print(f"[bold]Location:[/bold]   {run_dir}")
-
-    if run_dir.exists():
-        phase_dirs = sorted(
-            d.name for d in run_dir.iterdir() if d.is_dir() and len(d.name) == 1
-        )
-        if phase_dirs:
-            console.print(f"[bold]Phases:[/bold]     {', '.join(phase_dirs)}")
-        else:
-            console.print("[bold]Phases:[/bold]     [dim]none found[/dim]")
-
-        # Show directory sizes
-        total_size = sum(
-            f.stat().st_size
-            for f in run_dir.rglob("*")
-            if f.is_file()
-        )
-        console.print(f"[bold]Total size:[/bold] {total_size / (1024 * 1024):.1f} MB")
-    else:
-        console.print(f"[warning]Run directory not found: {run_dir}[/warning]")
+    _run_extractor_runner(pipeline_version="v5", args=["--status"])

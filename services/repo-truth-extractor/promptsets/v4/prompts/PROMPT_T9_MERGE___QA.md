@@ -12,7 +12,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - `docs/05-audit-reports/**`
 - Upstream normalized artifacts available to this step:
 - `PROJECT_INSTRUCTIONS.md`
-- `TP_BACKLOG_TOPN.json`
+- `TP_BACKLOG_TOPN_DRAFT.json` (T0's initial draft — RTE-TRUTH F-26)
+- `TP_BACKLOG_TOPN_ORDERED.json` (T5's dependency-ordered revision — RTE-TRUTH F-26)
 - `TP_INDEX.json`
 - `TP_PACKETS_TOP10.partX.md`
 - `TP_PACKET_IMPLEMENTATION_INDEX.json`
@@ -76,20 +77,26 @@ Focus on concrete, machine-verifiable implementation facts.
     - `id_rule`: `TP_BACKLOG_TOPN:<stable-hash(path|symbol|name)>`
     - `required_item_fields`: `id, evidence, path, line_range`
     - `required_registry_fields`: `path, line_range, id`
+    - Note (RTE-TRUTH F-26): T9 is the sole canonical writer of this filename. Build it by
+      merging `TP_BACKLOG_TOPN_DRAFT.json` (T0) and `TP_BACKLOG_TOPN_ORDERED.json` (T5)
+      using `itemlist_by_id` — union items by `id`, union evidence arrays, resolve scalar
+      conflicts by preferring the ordered (T5) revision. No other step may declare
+      `TP_BACKLOG_TOPN.json` as an output.
 
 ## Extraction Procedure
 1. Load all T-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging
 2. Merge all TASK_* artifacts into TASK_PACKETS_MERGED using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts
-3. Run QA checks: verify all T-Phase artifacts present, coverage complete, sort order deterministic; emit TASK_PACKETS_QA
-4. Cross-check coverage: verify every inventory item has corresponding extraction entries
-5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+3. Merge `TP_BACKLOG_TOPN_DRAFT.json` and `TP_BACKLOG_TOPN_ORDERED.json` into the canonical `TP_BACKLOG_TOPN.json` using the same `itemlist_by_id` strategy (RTE-TRUTH F-26)
+4. Run QA checks: verify all T-Phase artifacts present, coverage complete, sort order deterministic; emit TASK_PACKETS_QA
+5. Cross-check coverage: verify every inventory item has corresponding extraction entries
+6. For each output item, populate `id`, required fields, and `evidence` per schema contracts
+7. Legacy Context is intent guidance only and is never evidence.
+8. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+9. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+10. Attach evidence to every non-derived field and every relationship edge.
+11. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+13. Emit exactly the declared outputs and no additional files.
 
 ## Shared Rules
 Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols.

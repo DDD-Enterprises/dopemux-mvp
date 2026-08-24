@@ -12,7 +12,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - `docs/05-audit-reports/**`
 - Upstream normalized artifacts available to this step:
 - `PROJECT_INSTRUCTIONS.md`
-- `TP_BACKLOG_TOPN.json`
+- `TP_BACKLOG_TOPN_DRAFT.json` (T0's draft; canonical `TP_BACKLOG_TOPN.json` does not exist
+  yet at this point in the pipeline — see RTE-TRUTH F-26)
 - `TP_INDEX.json`
 - `TP_PACKETS_TOP10.partX.md`
 - `TP_PACKET_IMPLEMENTATION_INDEX.json`
@@ -31,7 +32,7 @@ Focus on concrete, machine-verifiable implementation facts.
 
 ## Outputs
 - `TP_RUN_PLAN.json`
-- `TP_BACKLOG_TOPN.json`
+- `TP_BACKLOG_TOPN_ORDERED.json`
 
 ## Schema
 - Use deterministic containers only:
@@ -45,13 +46,16 @@ Focus on concrete, machine-verifiable implementation facts.
     - `id_rule`: `TP_RUN_PLAN:<stable-hash(path|symbol|name)>`
     - `required_item_fields`: `id, evidence, path, line_range`
     - `required_registry_fields`: `path, line_range, id`
-  - `TP_BACKLOG_TOPN.json`
+  - `TP_BACKLOG_TOPN_ORDERED.json`
     - `kind`: `json_item_list`
     - `merge_strategy`: `itemlist_by_id`
-    - `canonical_writer_step_id`: `T9`
-    - `id_rule`: `TP_BACKLOG_TOPN:<stable-hash(path|symbol|name)>`
+    - `canonical_writer_step_id`: `T5`
+    - `id_rule`: `TP_BACKLOG_TOPN_ORDERED:<stable-hash(path|symbol|name)>`
     - `required_item_fields`: `id, evidence, path, line_range`
     - `required_registry_fields`: `path, line_range, id`
+    - Note (RTE-TRUTH F-26): named distinctly from the canonical `TP_BACKLOG_TOPN.json`
+      (T9's output) and from T0's `TP_BACKLOG_TOPN_DRAFT.json` so no two steps ever write
+      the same physical filename before T9's canonical merge.
 
 ## Extraction Procedure
 1. Load all upstream extraction artifacts and synthesis reports as input for packet ordering and run plan
@@ -78,7 +82,8 @@ TASK: Build the execution order for Task Packets using dependency-aware planning
 
 OUTPUTS:
 - TP_RUN_PLAN.json
-- TP_BACKLOG_TOPN.json
+- TP_BACKLOG_TOPN_ORDERED.json (RTE-TRUTH F-26: renamed from TP_BACKLOG_TOPN.json; T9
+  remains the sole canonical writer of TP_BACKLOG_TOPN.json)
 
 Rules:
 - Build a dependency graph across packets and topologically sort the plan.

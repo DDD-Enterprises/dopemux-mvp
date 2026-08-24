@@ -3283,6 +3283,7 @@ cli.add_command(
 )
 
 from .commands.audit_commands import audit
+from .commands.rte_shared import ROUTING_POLICY_CHOICES as _ROUTING_POLICY_CHOICES
 
 @cli.command()
 @click.argument("name", required=False)
@@ -4985,16 +4986,9 @@ def _build_repscan_args(
 
 
 _PIPELINE_VERSION_CHOICES = ["v5", "v4", "v3"]
-_ROUTING_POLICY_CHOICES = [
-    "cost",
-    "balanced",
-    "balanced_openrouter",
-    "balanced_grok_openrouter",
-    "quality",
-    "openrouter",
-    "gemini_primary",
-    "optimal",
-]
+# _ROUTING_POLICY_CHOICES: imported above from .commands.rte_shared (F-43 —
+# was duplicated verbatim in both cli.py and audit_commands.py; now a single
+# shared literal both modules import).
 _LEGACY_DEFAULT_ROUTING_POLICY = "cost"
 _V5_DEFAULT_ROUTING_POLICY = "balanced_openrouter"
 
@@ -5031,6 +5025,24 @@ def _resolved_pipeline_version(
             "available but is unsupported and may be removed."
         )
     return resolved
+
+
+def _resolved_partition_workers(
+    workers: Optional[int], partition_workers_legacy: Optional[int]
+) -> int:
+    """Resolve the canonical `--workers/-w` against the hidden legacy
+    `--partition-workers` alias (F-43: `rte run` used to have only
+    `--partition-workers`, no short flag, while `audit wizard` already used
+    `--workers/-w` as its canonical shape — this inverts `rte run` to match).
+    Mirrors `_resolved_pipeline_version`'s precedence: an explicitly passed
+    legacy flag wins (so old scripts pinning --partition-workers=N keep
+    getting exactly N), otherwise --workers is used, defaulting to 1.
+    """
+    if partition_workers_legacy is not None:
+        return partition_workers_legacy
+    if workers is not None:
+        return workers
+    return 1
 
 
 def _run_truth_v5_alias(
@@ -5173,7 +5185,21 @@ def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[s
 )
 @click.option("--dry-run/--execute", default=True, show_default=True)
 @click.option("--resume/--no-resume", default=True, show_default=True)
-@click.option("--partition-workers", type=int, default=1, show_default=True)
+@click.option(
+    "--workers",
+    "-w",
+    type=int,
+    default=None,
+    help="Number of parallel extraction workers (default: 1).",
+)
+@click.option(
+    "--partition-workers",
+    "partition_workers_legacy",
+    type=int,
+    default=None,
+    hidden=True,
+    help="Deprecated alias for --workers/-w; kept for backward compatibility.",
+)
 @click.option(
     "--max-partitions-per-step",
     type=int,
@@ -5274,7 +5300,8 @@ def extractor_run(
     promptset_root: Optional[str],
     dry_run: bool,
     resume: bool,
-    partition_workers: int,
+    workers: Optional[int],
+    partition_workers_legacy: Optional[int],
     max_partitions_per_step: Optional[int],
     routing_policy: Optional[str],
     cost_profile: Optional[str],
@@ -5331,6 +5358,7 @@ def extractor_run(
         if effective_version == "v5"
         else _LEGACY_DEFAULT_ROUTING_POLICY
     )
+    effective_workers = _resolved_partition_workers(workers, partition_workers_legacy)
     args: List[str] = []
     if phase:
         args.extend(["--phase", phase])
@@ -5348,7 +5376,7 @@ def extractor_run(
         args.append("--execute")
     if resume:
         args.append("--resume")
-    args.extend(["--partition-workers", str(partition_workers)])
+    args.extend(["--partition-workers", str(effective_workers)])
     if max_partitions_per_step is not None:
         args.extend(["--max-partitions-per-step", str(max(0, int(max_partitions_per_step)))])
     if routing_policy or not cost_profile:
@@ -5686,18 +5714,43 @@ def extractor_promptset_audit(
     help="Run the canonical v5 extractor in dry-run mode (default).",
 )
 @click.option(
-    "--execute", is_flag=True, help="Actually call LLM providers (if configured)."
+    "--execute",
+    is_flag=True,
+    help=(
+        "SPENDS MONEY. Runs the full multi-phase v5 extraction against live "
+        "providers, not a trace. Requires DPMX_LIVE_OK=1. Unlike `rte run` "
+        "there is no --max-cost-usd cap on this path -- prefer `rte run`."
+    ),
 )
 @click.option("--phase", help="Run only a specific phase (A, H, D, C, R, S, or ALL).")
 @click.pass_context
 def extractor_trace(ctx, dry_run: bool, execute: bool, phase: Optional[str]):
-    """Compatibility alias for canonical v5 dry-run extraction."""
+    """Compatibility alias for canonical v5 extraction (dry-run by default).
+
+    NOT trace-only: --execute performs a real, billable extraction run. It is
+    consent-gated by DPMX_LIVE_OK, but carries no per-command cost cap the way
+    `rte run --max-cost-usd` does. Use `rte run` for live work.
+    """
     del ctx
     if execute:
         dry_run = False
     args: List[str] = ["--phase", phase or "ALL"]
     if dry_run:
         args.append("--dry-run")
+    else:
+        # F-44: forward --execute explicitly, matching `rte run`'s pattern
+        # (cli.py extractor_run appends "--execute" when its own dry_run is
+        # False). Previously this branch omitted both flags and relied on
+        # run_extraction_v5.py's main() normalizing
+        # `args.execute = bool(args.execute or not args.dry_run)` to flip
+        # args.execute True whenever --dry-run is absent. That normalization
+        # still routes through the same DPMX_LIVE_OK consent gate `rte run`
+        # uses (main() line ~22329: "Live execution requires explicit
+        # consent... rerun with --execute and DPMX_LIVE_OK=1"), so no
+        # behavior changes here — but leaving the gate implicit made this
+        # command's safety property invisible at the call site and fragile
+        # to future refactors of that normalization line.
+        args.append("--execute")
     _run_extractor_runner(pipeline_version="v5", args=args)
 
 
@@ -5715,7 +5768,7 @@ def extractor_trace(ctx, dry_run: bool, execute: bool, phase: Optional[str]):
 )
 @click.option(
     "--routing-policy",
-    type=click.Choice(["cost", "balanced", "quality", "optimal"]),
+    type=click.Choice(_ROUTING_POLICY_CHOICES),
     default="cost",
     help="Routing policy for extraction (default: cost).",
 )

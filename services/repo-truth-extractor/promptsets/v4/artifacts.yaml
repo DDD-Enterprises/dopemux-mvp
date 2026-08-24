@@ -1278,6 +1278,28 @@ artifacts:
   - line_range
   - id
 - phase: T
+  artifact_name: TP_BACKLOG_TOPN_DRAFT.json
+  canonical_writer_step_id: T0
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - path
+  - line_range
+  - id
+- phase: T
+  artifact_name: TP_BACKLOG_TOPN_ORDERED.json
+  canonical_writer_step_id: T5
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - path
+  - line_range
+  - id
+- phase: T
   artifact_name: TP_BATCHED_PACKETS.partX.md
   canonical_writer_step_id: T3
   kind: markdown

@@ -1608,7 +1608,7 @@
       "prompt_declared": {
         "expected_artifacts": [
           "PROJECT_INSTRUCTIONS.md",
-          "TP_BACKLOG_TOPN.json",
+          "TP_BACKLOG_TOPN_DRAFT.json",
           "TP_INDEX.json"
         ],
         "required_item_keys": [
@@ -1625,8 +1625,7 @@
       "prompt_declared": {
         "expected_artifacts": [
           "TP_PACKETS_TOP10.partX.md",
-          "TP_PACKET_IMPLEMENTATION_INDEX.json",
-          "TP_BACKLOG_TOPN.json"
+          "TP_PACKET_IMPLEMENTATION_INDEX.json"
         ],
         "required_item_keys": [
           "id",
@@ -1690,7 +1689,7 @@
       "prompt_declared": {
         "expected_artifacts": [
           "TP_RUN_PLAN.json",
-          "TP_BACKLOG_TOPN.json"
+          "TP_BACKLOG_TOPN_ORDERED.json"
         ],
         "required_item_keys": [
           "id",

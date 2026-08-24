@@ -1,13 +1,30 @@
 """Stage 4: Cost profile selection with static routing policy data.
 
-Contains a **static snapshot** of ROUTING_LADDERS from run_extraction_v5.py.
-We do NOT import from v5 to avoid side effects and expensive provider probes.
+Contains a **static snapshot** of ROUTING_LADDERS from run_extraction_v5.py
+(which tier of a policy routes to which provider/model). We do NOT import
+run_extraction_v5.py itself here to avoid side effects and expensive
+provider probes at wizard-stage-4 time.
+
+Dollar pricing is a different story (TP-RTE-TRUTH-R4-004, F-43): this module
+used to *also* hardcode a static MODEL_PRICING $/1M-token table, "last
+synced 2026-07-12" -- exactly the kind of drift the RTE-TRUTH programme
+exists to kill (TP-RTE-TRUTH-R2-001 established config/pricing.yaml, read
+through services/repo-truth-extractor/extractor/costing.py, as THE single
+pricing authority for this service; comparing that authority against the
+old static table on 2026-07-28 found real, already-manifested drift, e.g.
+openai/gpt-5.2 priced here at $2.00/$8.00 vs $2.50/$15.00 in the live
+catalog). config/pricing.yaml is a plain data file with no side effects, so
+_load_live_pricing_registry() below reads it directly -- no v5-module exec
+needed for pricing, unlike the routing-ladder question above.
 """
 
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+import yaml
 
 from dopemux.console import console
 
@@ -16,80 +33,144 @@ from .display import render_cost_table, render_educational_panel, render_policy_
 from .stages import PROVIDER_COLORS, StageResult, StageStatus, WizardState
 
 # ── Static routing ladder snapshot ──────────────────────────────────────────
-# Last synced from run_extraction_v5.py on 2026-07-12.
+# Last synced from run_extraction_v5.py's ROUTING_LADDERS on 2026-07-28.
 # Each policy maps 4 tiers → list of (provider, model, env_var) tuples.
+#
+# This mapping (which provider/model serves which tier) is NOT read live --
+# only the dollar prices below are (see module docstring). Re-syncing this
+# table against run_extraction_v5.py's ROUTING_LADDERS still requires a
+# manual diff+copy; a fully dynamic fix would need either a shared data file
+# both v5 and the wizard load, or a `--print-routing-ladders-json` v5 flag,
+# neither of which exists yet and both are out of this packet's file
+# allowlist (services/repo-truth-extractor/run_extraction_v5.py is not
+# writable by TP-RTE-TRUTH-R4-004). Flagged as an OUT-OF-BOUNDARY follow-up.
 
 ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
     "cost": {
         "bulk": [("openai", "gpt-5-nano", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"), ("xai", "grok-code-fast-1", "XAI_API_KEY")],
-        "extract": [("openai", "gpt-5-mini", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"), ("xai", "grok-code-fast-1", "XAI_API_KEY")],
+        "extract": [("openai", "gpt-5.4-mini", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"), ("xai", "grok-code-fast-1", "XAI_API_KEY")],
         "synthesis": [("openai", "gpt-5.2", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"), ("xai", "grok-code-fast-1", "XAI_API_KEY")],
-        "qa": [("openai", "gpt-5-nano", "OPENAI_API_KEY"), ("openai", "gpt-5-mini", "OPENAI_API_KEY"), ("openai", "gpt-5.2", "OPENAI_API_KEY")],
+        "qa": [("openai", "gpt-5-nano", "OPENAI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"), ("openai", "gpt-5.2", "OPENAI_API_KEY")],
     },
     "balanced": {
-        "bulk": [("openai", "gpt-5-mini", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"), ("xai", "grok-code-fast-1", "XAI_API_KEY")],
-        "extract": [("openai", "gpt-5.1", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"), ("anthropic", "claude-sonnet-4-5", "ANTHROPIC_API_KEY")],
-        "synthesis": [("openai", "gpt-5.2", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"), ("anthropic", "claude-sonnet-4-5", "ANTHROPIC_API_KEY")],
-        "qa": [("openai", "gpt-5-mini", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"), ("xai", "grok-code-fast-1", "XAI_API_KEY")],
+        "bulk": [("openai", "gpt-5-nano", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
+        "extract": [("openai", "gpt-5.4-mini", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"), ("xai", "grok-code-fast-1", "XAI_API_KEY")],
+        "synthesis": [("openai", "gpt-5.2", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"), ("xai", "grok-code-fast-1", "XAI_API_KEY")],
+        "qa": [("openai", "gpt-5.4-mini", "OPENAI_API_KEY"), ("openai", "gpt-5-nano", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY")],
     },
     "balanced_openrouter": {
-        "bulk": [("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"), ("openrouter", "google/gemini-2.5-flash", "OPENROUTER_API_KEY"), ("xai", "grok-code-fast-1", "XAI_API_KEY")],
-        "extract": [("openrouter", "openai/gpt-5.1", "OPENROUTER_API_KEY"), ("openrouter", "google/gemini-2.5-pro", "OPENROUTER_API_KEY"), ("xai", "grok-code-fast-1", "XAI_API_KEY")],
-        "synthesis": [("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"), ("openrouter", "anthropic/claude-sonnet-4-5", "OPENROUTER_API_KEY"), ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY")],
-        "qa": [("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"), ("xai", "grok-code-fast-1", "XAI_API_KEY")],
+        "bulk": [("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
+        "extract": [("openai", "gpt-5.4-mini", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"), ("xai", "grok-code-fast-1", "XAI_API_KEY")],
+        "synthesis": [("openrouter", "openai/gpt-5.2-chat", "OPENROUTER_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"), ("xai", "grok-code-fast-1", "XAI_API_KEY")],
+        "qa": [("openai", "gpt-5.4-mini", "OPENAI_API_KEY"), ("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY")],
     },
     "balanced_grok_openrouter": {
-        "bulk": [("xai", "grok-code-fast-1", "XAI_API_KEY"), ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY")],
-        "extract": [("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"), ("openrouter", "openai/gpt-5.1", "OPENROUTER_API_KEY")],
-        "synthesis": [("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"), ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY")],
-        "qa": [("xai", "grok-code-fast-1", "XAI_API_KEY"), ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY")],
+        "bulk": [("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
+        "extract": [("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
+        "synthesis": [("openai", "gpt-5.3-codex", "OPENAI_API_KEY"), ("openai", "gpt-5.5", "OPENAI_API_KEY"), ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY")],
+        "qa": [("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
     },
     "quality": {
-        "bulk": [("openai", "gpt-5.1", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"), ("anthropic", "claude-sonnet-4-5", "ANTHROPIC_API_KEY")],
-        "extract": [("openai", "gpt-5.2", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"), ("anthropic", "claude-sonnet-4-5", "ANTHROPIC_API_KEY")],
-        "synthesis": [("openai", "gpt-5.2", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"), ("anthropic", "claude-sonnet-4-5", "ANTHROPIC_API_KEY")],
-        "qa": [("openai", "gpt-5.1", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY")],
+        "bulk": [("openai", "gpt-5.4-mini", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"), ("xai", "grok-code-fast-1", "XAI_API_KEY")],
+        "extract": [("openai", "gpt-5.2", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"), ("xai", "grok-code-fast-1", "XAI_API_KEY")],
+        "synthesis": [("openai", "gpt-5.2", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"), ("xai", "grok-code-fast-1", "XAI_API_KEY")],
+        "qa": [("openai", "gpt-5.4-mini", "OPENAI_API_KEY"), ("openai", "gpt-5.2", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY")],
     },
     "openrouter": {
-        "bulk": [("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"), ("openrouter", "google/gemini-2.5-flash", "OPENROUTER_API_KEY")],
-        "extract": [("openrouter", "openai/gpt-5.1", "OPENROUTER_API_KEY"), ("openrouter", "google/gemini-2.5-pro", "OPENROUTER_API_KEY")],
-        "synthesis": [("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"), ("openrouter", "anthropic/claude-sonnet-4-5", "OPENROUTER_API_KEY")],
-        "qa": [("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"), ("openrouter", "google/gemini-2.5-flash", "OPENROUTER_API_KEY")],
+        "bulk": [("openrouter", "openai/gpt-4.1-nano", "OPENROUTER_API_KEY"), ("openrouter", "openai/gpt-4o-mini", "OPENROUTER_API_KEY"), ("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY")],
+        "extract": [("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
+        "synthesis": [("openrouter", "openai/gpt-5.2-pro", "OPENROUTER_API_KEY"), ("openrouter", "openai/gpt-5.2-chat", "OPENROUTER_API_KEY"), ("openrouter", "openai/gpt-5-pro", "OPENROUTER_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY")],
+        "qa": [("openrouter", "openai/gpt-4.1-nano", "OPENROUTER_API_KEY"), ("openrouter", "openai/gpt-4o-mini", "OPENROUTER_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"), ("openai", "gpt-5-nano", "OPENAI_API_KEY")],
     },
     "gemini_primary": {
-        "bulk": [("gemini", "gemini-3-flash", "GEMINI_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY")],
-        "extract": [("gemini", "gemini-3-pro", "GEMINI_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY")],
-        "synthesis": [("gemini", "gemini-3-pro", "GEMINI_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY")],
-        "qa": [("gemini", "gemini-3-flash", "GEMINI_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY")],
+        "bulk": [("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
+        "extract": [("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
+        "synthesis": [("gemini", "gemini-3.1-pro-preview", "GEMINI_API_KEY"), ("openai", "gpt-5.5", "OPENAI_API_KEY"), ("openai", "gpt-5.3-codex", "OPENAI_API_KEY")],
+        "qa": [("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
     },
     "optimal": {
-        "bulk": [("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"), ("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY")],
-        "extract": [("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"), ("xai", "grok-4.20-beta-0309-reasoning", "XAI_API_KEY")],
-        "synthesis": [("xai", "grok-4.20-beta-0309-reasoning", "XAI_API_KEY"), ("openrouter", "openai/gpt-5.4", "OPENROUTER_API_KEY"), ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY")],
-        "qa": [("xai", "grok-4.20-beta-0309-non-reasoning", "XAI_API_KEY"), ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY")],
+        "bulk": [("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"), ("xai", "grok-4.3", "XAI_API_KEY")],
+        "extract": [("xai", "grok-4.3", "XAI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
+        "synthesis": [("xai", "grok-4.3", "XAI_API_KEY"), ("openai", "gpt-5.5", "OPENAI_API_KEY"), ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY")],
+        "qa": [("xai", "grok-4.3", "XAI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
     },
 }
 
 # ── Model pricing (USD per 1M tokens) ──────────────────────────────────────
-# (input_per_1m, output_per_1m) — last updated 2026-07-12
+# Read LIVE from config/pricing.yaml -- the single pricing authority TP-RTE-
+# TRUTH-R2-001 established (see services/repo-truth-extractor/extractor/
+# costing.py::load_pricing_registry). This is a plain YAML data file with no
+# import-time side effects, so it is safe to read directly from the wizard's
+# cost-selection stage without executing run_extraction_v5.py.
 
-MODEL_PRICING: Dict[str, Tuple[float, float]] = {
+_PRICING_CONFIG_PATH = Path(__file__).resolve().parents[4] / "config" / "pricing.yaml"
+
+# Last-resort fallback ONLY: used when config/pricing.yaml cannot be read at
+# all (missing file, unparsable YAML) or doesn't carry a given model. This
+# table is deliberately small and is NOT kept in sync with the live catalog
+# -- if you find yourself extending it to "fix" a pricing gap, add the model
+# to config/pricing.yaml instead, which is what every other pricing
+# consumer in the RTE service reads.
+_FALLBACK_MODEL_PRICING: Dict[str, Tuple[float, float]] = {
     "gpt-5-nano": (0.10, 0.40),
     "gpt-5-mini": (0.40, 1.60),
-    "gpt-5.1": (1.00, 4.00),
-    "gpt-5.2": (2.00, 8.00),
-    "gpt-5.4": (5.00, 20.00),
+    "gpt-5.4-mini": (0.75, 4.50),
+    "gpt-5.2": (2.50, 15.00),
+    "gpt-5.4": (2.50, 15.00),
     "gemini-2.5-flash": (0.15, 0.60),
     "gemini-2.5-pro": (1.25, 10.00),
-    "gemini-3-pro": (1.25, 10.00),
-    "gemini-3-flash": (0.10, 0.40),
     "grok-code-fast-1": (0.10, 0.40),
     "grok-4-1-fast-non-reasoning": (0.50, 2.00),
-    "grok-4.20-beta-0309-non-reasoning": (2.00, 8.00),
-    "grok-4.20-beta-0309-reasoning": (3.00, 15.00),
-    "claude-sonnet-4-5": (3.00, 15.00),
+    "grok-4.3": (2.00, 8.00),
     "claude-opus-4-6": (15.00, 75.00),
 }
+
+_pricing_registry_cache: Optional[Dict[str, Tuple[float, float]]] = None
+
+
+def _load_live_pricing_registry() -> Dict[str, Tuple[float, float]]:
+    """Read {pricing_key: (input_per_1m_usd, output_per_1m_usd)} from
+    config/pricing.yaml, keyed exactly as that file's `models` map (e.g.
+    "openai/gpt-5.2", "openrouter/anthropic/claude-opus-4-6"). Cached at
+    module scope for the lifetime of the process -- see
+    reset_pricing_cache() for the test-only invalidation hook. Never raises:
+    any load failure (missing file, bad YAML, missing models map) returns an
+    empty dict, and callers fall back to _FALLBACK_MODEL_PRICING for that
+    model rather than crashing the wizard's cost-preview stage.
+    """
+    global _pricing_registry_cache
+    if _pricing_registry_cache is not None:
+        return _pricing_registry_cache
+    registry: Dict[str, Tuple[float, float]] = {}
+    try:
+        payload = yaml.safe_load(_PRICING_CONFIG_PATH.read_text(encoding="utf-8"))
+        models = payload.get("models") if isinstance(payload, dict) else None
+        if isinstance(models, dict):
+            for key, row in models.items():
+                if not isinstance(row, dict):
+                    continue
+                input_cost = row.get("input_cost_per_m")
+                output_cost = row.get("output_cost_per_m")
+                if input_cost is None or output_cost is None:
+                    continue
+                try:
+                    registry[str(key).strip().lower()] = (
+                        float(input_cost),
+                        float(output_cost),
+                    )
+                except (TypeError, ValueError):
+                    continue
+    except Exception:
+        registry = {}
+    _pricing_registry_cache = registry
+    return registry
+
+
+def reset_pricing_cache() -> None:
+    """Test-only: force the next _load_live_pricing_registry() call to
+    re-read config/pricing.yaml instead of reusing the cached result."""
+    global _pricing_registry_cache
+    _pricing_registry_cache = None
 
 # ── Policy display metadata ────────────────────────────────────────────────
 
@@ -101,7 +182,7 @@ POLICY_DESCRIPTIONS: Dict[str, Dict[str, str]] = {
     "quality": {"label": "Quality", "emoji": "🟠", "tier": "high", "desc": "Premium models across all providers"},
     "openrouter": {"label": "OpenRouter", "emoji": "💛", "tier": "mid", "desc": "Pure OpenRouter routing"},
     "gemini_primary": {"label": "Gemini", "emoji": "💙", "tier": "mid", "desc": "Gemini 3-series primary"},
-    "optimal": {"label": "Optimal", "emoji": "🔴", "tier": "max", "desc": "Best quality — Grok 4.20 + GPT-5.4"},
+    "optimal": {"label": "Optimal", "emoji": "🔴", "tier": "max", "desc": "Best quality — Grok 4.3 + GPT-5.5"},
 }
 
 # Tier weight distribution for cost estimation
@@ -110,14 +191,45 @@ TIER_WEIGHTS = {"bulk": 0.50, "extract": 0.30, "synthesis": 0.15, "qa": 0.05}
 
 # ── Helper functions ────────────────────────────────────────────────────────
 
-def _model_price(model_id: str) -> Tuple[float, float]:
-    """Look up (input, output) price per 1M tokens. Strips provider prefix."""
-    # Strip OpenRouter-style prefixes (openai/gpt-5-mini → gpt-5-mini)
-    bare = model_id.split("/")[-1] if "/" in model_id else model_id
-    if bare in MODEL_PRICING:
-        return MODEL_PRICING[bare]
-    # Fuzzy match — try prefix matching
-    for key, price in MODEL_PRICING.items():
+def _model_price(provider: str, model_id: str) -> Tuple[float, float]:
+    """Look up (input, output) USD/1M-token price for a routed model.
+
+    Resolution order (F-43 fix — this used to look up ONLY a static,
+    already-drifted MODEL_PRICING table by bare model id):
+      1. Exact "{provider}/{model_id}" match in the live config/pricing.yaml
+         registry (matches that file's key format, including OpenRouter rows
+         like "openrouter/openai/gpt-5.2-chat").
+      2. Bare model_id match in that same live registry.
+      3. The small static _FALLBACK_MODEL_PRICING table (bare-id, then
+         prefix-fuzzy match) -- only reached if config/pricing.yaml is
+         missing/unreadable or doesn't (yet) carry this model.
+      4. A mid-range guess, same as the pre-fix behavior's final fallback.
+    """
+    registry = _load_live_pricing_registry()
+    provider_token = str(provider or "").strip().lower()
+    model_token = str(model_id or "").strip()
+    bare = model_token.split("/")[-1] if "/" in model_token else model_token
+
+    candidates: List[str] = []
+
+    def _push(token: str) -> None:
+        normalized = token.strip().lower()
+        if normalized and normalized not in candidates:
+            candidates.append(normalized)
+
+    if provider_token and model_token:
+        _push(f"{provider_token}/{model_token}")
+    _push(model_token)
+    if bare != model_token:
+        _push(bare)
+
+    for candidate in candidates:
+        if candidate in registry:
+            return registry[candidate]
+
+    if bare in _FALLBACK_MODEL_PRICING:
+        return _FALLBACK_MODEL_PRICING[bare]
+    for key, price in _FALLBACK_MODEL_PRICING.items():
         if bare.startswith(key.rsplit("-", 1)[0]):
             return price
     # Unknown model — assume mid-range
@@ -163,7 +275,7 @@ def estimate_cost(policy: str, corpus_size_bytes: int) -> Tuple[float, float]:
         if not routes:
             continue
 
-        prices = [_model_price(model) for _, model, _ in routes]
+        prices = [_model_price(provider, model) for provider, model, _ in routes]
         # Low = cheapest model in tier; High = most expensive
         tier_low_input = min(p[0] for p in prices)
         tier_low_output = min(p[1] for p in prices)
