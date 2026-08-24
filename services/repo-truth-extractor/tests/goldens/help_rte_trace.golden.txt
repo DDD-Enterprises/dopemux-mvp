@@ -1,9 +1,16 @@
 Usage: python -m dopemux rte trace [OPTIONS]
 
-  Compatibility alias for canonical v5 dry-run extraction.
+  Compatibility alias for canonical v5 extraction (dry-run by default).
+
+  NOT trace-only: --execute performs a real, billable extraction run. It is
+  consent-gated by DPMX_LIVE_OK, but carries no per-command cost cap the way
+  `rte run --max-cost-usd` does. Use `rte run` for live work.
 
 Options:
   --dry-run     Run the canonical v5 extractor in dry-run mode (default).
-  --execute     Actually call LLM providers (if configured).
+  --execute     SPENDS MONEY. Runs the full multi-phase v5 extraction against
+                live providers, not a trace. Requires DPMX_LIVE_OK=1. Unlike
+                `rte run` there is no --max-cost-usd cap on this path --
+                prefer `rte run`.
   --phase TEXT  Run only a specific phase (A, H, D, C, R, S, or ALL).
   --help        Show this message and exit.

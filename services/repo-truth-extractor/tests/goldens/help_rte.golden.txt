@@ -13,6 +13,6 @@ Commands:
   run            Run the Repo Truth Extractor.
   scan           Delegate a deterministic repo scan to the legacy v3...
   status         Show extraction run status.
-  trace          Compatibility alias for canonical v5 dry-run extraction.
+  trace          Compatibility alias for canonical v5 extraction (dry-run...
   validate-live  Run the fail-closed v5 live validation workflow.
   wizard         🧙 Ritual Guide: Guided extraction flight-deck walkthrough

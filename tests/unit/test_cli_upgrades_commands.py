@@ -374,6 +374,36 @@ def test_upgrades_trace_routes_to_v5_dry_run_alias() -> None:
     )
 
 
+def test_rte_trace_execute_forwards_execute_flag_explicitly() -> None:
+    """TP-RTE-TRUTH-R4-004 (F-44, item 5): `rte trace --execute` must forward
+    `--execute` explicitly to the v5 runner (mirroring `rte run`'s
+    `--dry-run/--execute` pattern), not merely omit `--dry-run` and rely on
+    run_extraction_v5.py's own `args.execute = bool(args.execute or not
+    args.dry_run)` normalization to imply it. Both paths reach the same
+    DPMX_LIVE_OK consent gate, but the explicit forward keeps the safety
+    property visible at this call site instead of depending on an
+    incidental downstream normalization line.
+    """
+    runner = CliRunner()
+    with patch("dopemux.cli._run_extractor_runner") as mocked:
+        result = runner.invoke(
+            cli,
+            [
+                "rte",
+                "trace",
+                "--execute",
+                "--phase",
+                "C",
+            ],
+        )
+
+    assert result.exit_code == 0, result.output
+    mocked.assert_called_once_with(
+        pipeline_version="v5",
+        args=["--phase", "C", "--execute"],
+    )
+
+
 def test_truth_command_is_deprecated() -> None:
     runner = CliRunner()
     result = runner.invoke(cli, ["truth"])

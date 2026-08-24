@@ -12,7 +12,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - `docs/05-audit-reports/**`
 - Upstream normalized artifacts available to this step:
 - `PROJECT_INSTRUCTIONS.md`
-- `TP_BACKLOG_TOPN.json`
+- `TP_BACKLOG_TOPN_DRAFT.json` (T0's draft; canonical `TP_BACKLOG_TOPN.json` does not exist
+  yet at this point in the pipeline — see RTE-TRUTH F-26)
 - `TP_INDEX.json`
 - `TP_PACKETS_TOP10.partX.md`
 - `TP_PACKET_IMPLEMENTATION_INDEX.json`

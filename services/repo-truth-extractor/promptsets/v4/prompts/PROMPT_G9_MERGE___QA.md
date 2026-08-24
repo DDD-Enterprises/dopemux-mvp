@@ -19,6 +19,9 @@ Focus on CI gates, policy enforcement, and governance drift risks.
 - `GOV_HYGIENE_POLICIES.json`
 - `GOV_POLICIES.json`
 - `GOV_SECRETS_SURFACE.json`
+- `AUTH_FLOW_SURFACE.json`
+- `DEPENDENCY_HEALTH_SURFACE.json`
+- `TECHNICAL_DEBT_REGISTER.json`
 - Runner context artifacts:
   - `extraction/*/inputs/INVENTORY.json`
   - `extraction/*/inputs/PARTITIONS.json`
@@ -51,10 +54,10 @@ Focus on CI gates, policy enforcement, and governance drift risks.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load all G-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging
-2. Merge all GOV_* artifacts into GOV_MERGED using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts
-3. Run QA checks: verify all G-Phase artifacts present, coverage complete, sort order deterministic; emit GOV_QA
-4. Cross-check coverage: verify every inventory item has corresponding extraction entries
+1. Load all G-Phase upstream artifacts, including the schema-backed `AUTH_FLOW_SURFACE.json` (G5), `DEPENDENCY_HEALTH_SURFACE.json` (G6), and `TECHNICAL_DEBT_REGISTER.json` (G7); verify schema compliance, required fields, and sort order before merging
+2. Merge all `GOV_*` artifacts plus `AUTH_FLOW_SURFACE.json`, `DEPENDENCY_HEALTH_SURFACE.json`, and `TECHNICAL_DEBT_REGISTER.json` into GOV_MERGED using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts. G5/G6/G7 items already satisfy GOV_MERGED's required fields (`id, evidence, path, line_range`); carry their domain-specific fields through unchanged.
+3. Run QA checks: verify all G-Phase artifacts present — including `AUTH_FLOW_SURFACE.json` (G5), `DEPENDENCY_HEALTH_SURFACE.json` (G6), and `TECHNICAL_DEBT_REGISTER.json` (G7) — coverage complete, sort order deterministic; emit GOV_QA
+4. Cross-check coverage: verify every inventory item has corresponding extraction entries, including G5/G6/G7 items
 5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
