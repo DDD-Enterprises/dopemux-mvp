@@ -1,0 +1,40 @@
+{
+  "packet_id": "TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A",
+  "head_sha": "b72a3b6ddf45139a19911bee7df298e13cef61b5",
+  "generated_at": "2026-08-24T05:23:55Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --mode plan --effort high --print-timeout 20m --sandbox; conversation_id=7e687163-d810-46f0-a15b-4ae3ebf07285; display=Gemini 3.1 Pro (High); verdict=PASS",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "body": "Successfully replaced the 3 superseded assertions. `test_proof_status_mapping_is_explicit_source_metadata` now enforces explicit source map metadata, and `test_adapter_mappings_contains_one_importable_mapping` along with `test_adapter_mapping_loads_and_matches_manifest_identity` enforce the new adapter mapping contract.",
+        "id": "MIG-001",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Foundation Extension Loader Contract Migrated"
+      },
+      {
+        "body": "The 10-domain scope lock and artifact-only non-authoritative guarantees (`ARTIFACT_ONLY`, `authority: NONE`) are explicitly checked and pass. `TestArtifactOnly` and `TestMutationDomainsReadOnly` classes remain fully intact.",
+        "id": "INV-001",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Artifact-Only Safety Invariants Maintained"
+      },
+      {
+        "body": "File modifications strictly target `tests/dnh_extension/test_dnh_artifact_only.py` and the task packet itself. No production files, manifests, or secrets were touched. Only standard formatting updates were additionally included in the diff.",
+        "id": "SEC-001",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "No Scope Creep or Secret Leaks"
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null
+  }
+}
