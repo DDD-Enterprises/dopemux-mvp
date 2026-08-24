@@ -38,7 +38,7 @@ This document tracks the immediate follow-up ticket set for PM-plane execution a
   - Validation covers both default and override behavior.
 
 ### PM-TO-004 - Rogue container remediation runbook
-- Scope: Document and verify non-canonical task-orchestrator cleanup behavior in `scripts/start.sh`.
+- Scope: Document and verify non-canonical task-orchestrator cleanup behavior when using `dopemux mcp start`.
 - Why: Prevent auto-restarting containers from old compose projects from shadowing the canonical stack.
 - Acceptance criteria:
   - Runbook includes detection and cleanup behavior.

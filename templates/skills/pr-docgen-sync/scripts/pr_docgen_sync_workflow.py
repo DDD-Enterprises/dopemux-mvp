@@ -53,7 +53,6 @@ SUBSYSTEM_RULES: List[Dict[str, Any]] = [
         "name": "runtime-compose",
         "prefixes": (
             "compose.yml",
-            "scripts/start.sh",
             "scripts/smoke_",
             "scripts/deploy/",
             "tools/smoke_",

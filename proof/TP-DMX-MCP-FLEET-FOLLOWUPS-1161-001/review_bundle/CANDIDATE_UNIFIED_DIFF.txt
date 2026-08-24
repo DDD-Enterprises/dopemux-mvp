@@ -1,0 +1,12 @@
+ .../scripts/pr_docgen_sync_workflow.py             |   1 -
+ .github/copilot-instructions.md                    |   3 +-
+ .../scripts/pr_docgen_sync_workflow.py             |   1 -
+ ...orkflow-api-rename-consumer-sweep-2026-07-29.md | 101 ++++++
+ .../pm/task-orchestrator-leantime-followups.md     |   2 +-
+ ...dmx-mcp-project-scoped-task-orchestrator-001.md | 343 +++++++++++++++++++++
+ .../pm/task-orchestrator-leantime-followups.md     |   2 +-
+ .../TP-DMX-MCP-FLEET-FOLLOWUPS-1161-001.json       |  64 ++++
+ .../scripts/pr_docgen_sync_workflow.py             |   1 -
+ tests/test_cli_mcp_startup.py                      |   1 -
+ tests/test_mcp_health_probe.py                     |  57 +++-
+ 11 files changed, 568 insertions(+), 8 deletions(-)

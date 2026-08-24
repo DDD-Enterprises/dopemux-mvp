@@ -1,0 +1,11 @@
+{
+  "findings": [],
+  "fixes_applied": [],
+  "model_used": "gemini-3.1-pro-high",
+  "remaining_risks": [
+    "Implementation of the P-24 ADR for project-scoped Kotlin task-orchestrator on leased ports is pending.",
+    "Implementation of the M11 rename (FastAPI task-orchestrator :8000 to dopemux-workflow-api) is pending based on the consumer sweep."
+  ],
+  "status": "PASS",
+  "summary": "The PR implements TP-DMX-MCP-FLEET-FOLLOWUPS-1161-001 completely and cleanly. All modified files are in the allowlist. ADR P-24 accurately defines the project-scoped Kotlin task-orchestrator on leased ports, explicitly forbidding `multi_project_singleton`. The M11 consumer sweep is comprehensive and well-documented. PR 1150 LOW findings B1-B4 are correctly addressed: `--repo` emission test coverage was added, dead `script_path` was removed, and deleted `scripts/start.sh` references were cleaned up. Tests were successfully executed and passed. No secrets were leaked and no scope creep was detected."
+}
