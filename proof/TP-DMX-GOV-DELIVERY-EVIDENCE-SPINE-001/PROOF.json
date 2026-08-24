@@ -1,0 +1,287 @@
+{
+  "packet_id": "TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-001",
+  "program": "DOPMUX_GOVERNED_DELIVERY_OPTIMIZATION",
+  "repository": "DDD-Enterprises/dopemux-mvp",
+  "risk_lane": "L2_MATERIAL",
+  "as_of": "2026-08-24",
+  "binding": {
+    "packet_digest": "sha256:8ec286b08f7132c0f9b5896d79f3774df8fd7828d00bcee7feb291759cd9a1df",
+    "architecture": "DMX-GOV-WORKFLOW-OPT-001",
+    "architecture_package_sha256": "c87b2d6864c58930f720811fb796ee0829840e988f4fa0373b1d9a1c94189c1e",
+    "architecture_package_hash_verified": "OBSERVED \u2014 shasum -a 256 of ~/Downloads/DMX-GOV-WORKFLOW-OPT-001.zip matched the packet's declared value exactly",
+    "authoring_main_sha": "d40e43dd70307d2c000a4efd581be7c11248728c",
+    "authoring_main_tree": "497d5115ca852b75f29fdb3422872ef26c835e87",
+    "execution_base_sha": "d40e43dd70307d2c000a4efd581be7c11248728c",
+    "base_relation": "IDENTICAL \u2014 origin/main had not moved from the authoring base at execution time",
+    "content_head": "8c309d764a55896c3363bd803404f64d4e277185",
+    "content_tree": "89bec5999f8ba750851225484f99489c9ffa0d9b",
+    "content_digest": "sha256:b9f7575d4af79660e698935222b03904365b1803ccdda527a877f8a00149933f",
+    "proof_tip": "PENDING \u2014 set by the proof-only successor commit",
+    "branch": "tp/gov-delivery-evidence-spine-001",
+    "worktree": "/Users/hue/code/dopemux-mvp__tp-gov-delivery-evidence-spine-001 (fresh, created from origin/main)"
+  },
+  "changed_files": [
+    "docs/03-reference/governance/governed-delivery/contract.md",
+    "schemas/governed_delivery/content-audit-binding.schema.json",
+    "schemas/governed_delivery/evidence-reference.schema.json",
+    "schemas/governed_delivery/gate-ledger.schema.json",
+    "schemas/governed_delivery/governed-delivery-envelope.schema.json",
+    "schemas/governed_delivery/operator-decision-request.schema.json",
+    "schemas/governed_delivery/proof-only-successor-equivalence.schema.json",
+    "schemas/governed_delivery/work-item-projection.schema.json",
+    "src/dopemux/governed_delivery/__init__.py",
+    "src/dopemux/governed_delivery/cli.py",
+    "src/dopemux/governed_delivery/equivalence.py",
+    "src/dopemux/governed_delivery/models.py",
+    "src/dopemux/governed_delivery/receipts.py",
+    "src/dopemux/governed_delivery/snapshot.py",
+    "task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-001.json",
+    "tests/unit/governed_delivery/__init__.py",
+    "tests/unit/governed_delivery/test_cross_project_denial.py",
+    "tests/unit/governed_delivery/test_models.py",
+    "tests/unit/governed_delivery/test_proof_only_equivalence.py",
+    "tests/unit/governed_delivery/test_receipts.py",
+    "tests/unit/governed_delivery/test_snapshot.py"
+  ],
+  "changed_file_count": 21,
+  "diff_shape": "4817 insertions, 0 deletions \u2014 purely additive; no existing file modified or removed",
+  "scope": {
+    "allowlist_status": "PASS",
+    "authorized_deviation": {
+      "path": "tests/unit/governed_delivery/__init__.py",
+      "status": "OPERATOR_AUTHORIZED",
+      "reason": "The packet mandates tests/unit/governed_delivery/test_models.py, whose basename collides with the existing tests/repository_planner/test_models.py. Verified empirically: without __init__.py, pytest raises 'import file mismatch' and collection fails for the ENTIRE repo suite, not merely this packet.",
+      "evidence": "Reproduced by collecting both files together; adding __init__.py resolves it and 2018 tests then collect cleanly.",
+      "precedent": "tests/, tests/unit/, tests/unit/dcp/ and tests/unit/pm/ all carry __init__.py.",
+      "authority": "Operator answered the packet \u00a76 PATH_REMAP_REQUIRED stop by authorizing this single empty test-infrastructure file."
+    }
+  },
+  "validation": {
+    "VALIDATION_STATUS": "PASS",
+    "commands": [
+      {
+        "command": "git diff --check <base>...HEAD",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m json.tool task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-001.json",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "python -m compileall src/dopemux/governed_delivery",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "uv run ruff check src/dopemux/governed_delivery tests/unit/governed_delivery",
+        "exit_code": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "uv run --extra test pytest tests/unit/governed_delivery -q",
+        "exit_code": 0,
+        "result": "PASS \u2014 204 passed"
+      },
+      {
+        "command": "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+        "exit_code": 0,
+        "result": "PASS \u2014 max_lane=L2, model_audit_required=True, proof_only=False, paths=21"
+      },
+      {
+        "command": "uv run pre-commit run --files <changed>",
+        "exit_code": 0,
+        "result": "PASS_CLEAN \u2014 no file modified by hooks"
+      },
+      {
+        "command": "JSON Schema draft-07 check on all 7 new schemas",
+        "exit_code": 0,
+        "result": "PASS \u2014 7/7"
+      }
+    ],
+    "environment": {
+      "python": "3.12.13 (mise)",
+      "uv": "0.11.7",
+      "jsonschema": "4.25.1",
+      "platform": "darwin 25.6.0"
+    },
+    "suite_scope": {
+      "focused": "PASS \u2014 204/204 tests/unit/governed_delivery",
+      "owner_suites_implicated": "NONE \u2014 the governed_delivery package imports stdlib only (argparse, dataclasses, datetime, enum, fnmatch, hashlib, json, pathlib, re, subprocess, sys, typing). It imports no existing governance, proof, DCP, PM or Task Packet module, so per packet \u00a721 no other owner's suite is affected.",
+      "broader_run": "tests/unit + tests/repository_planner: 2017 passed, 1 failed, 2 skipped",
+      "broader_failure": {
+        "test": "tests/unit/test_pm_source_events.py::test_emit_pm_promotable_source_event_rejects_bare_non_repo_workspace_root",
+        "attribution": "PRE-EXISTING, NOT ATTRIBUTABLE TO THIS CHANGE",
+        "evidence": "Reproduced identically in a separate detached worktree at clean origin/main d40e43dd, where src/dopemux/governed_delivery does not exist. Fails because repo_root resolves to the primary worktree /Users/hue/code/dopemux-mvp rather than the test's tmp_path."
+      }
+    }
+  },
+  "secret_scan": {
+    "command": "rg -n 'OPENAI_API_KEY|ANTHROPIC_API_KEY|GEMINI_API_KEY|sk-|Bearer |TOKEN=|PASSWORD=|SECRET=' src/dopemux/governed_delivery schemas/governed_delivery tests/unit/governed_delivery docs/03-reference/governance/governed-delivery",
+    "exit_code": 0,
+    "verdict": "NO_REAL_SECRETS",
+    "note": "Four matches, all the documented false positive: 'sk-' as a substring of 'task-orchestrator' in NativeStateRef test fixtures. Same false positive recorded in the TP-DCP-MCP-RO-0008 proof bundle precedent.",
+    "canonical_lane": "Repository has no gitleaks/detect-secrets/trufflehog configuration; the ripgrep pattern lane above is the canonical precedent used by existing proof bundles."
+  },
+  "gov_aud_f1": {
+    "requirement": "BLOCKING_G0_ACCEPTANCE_REQUIREMENT",
+    "status": "PASS",
+    "design": "Two-part defense. (1) classify_field is total and fail-closed: broad governance substring net over the FULL dotted path first, tight exact-name inert allowlist over the leaf second, everything else UNKNOWN and REJECTED. (2) Governance fields compared as a path-independent aggregate mapping each field name to the sorted MULTISET of its values, so byte-identical relocation passes while semantic drift fails regardless of which file carries it.",
+    "conjunct_completeness": "All 8 verbatim conjuncts of architecture section 08 WHEN_PROOF_ONLY_SUCCESSOR_IS_SUFFICIENT are implemented. raw_diff_contains_no_substantive_source_change was added after reading the source directly \u2014 the initial implementation only implied it.",
+    "mandatory_negative_fixtures": [
+      "known_risk_removed",
+      "blocking_finding_removed",
+      "audit_verdict_changed",
+      "auditor_identity_changed",
+      "authority_statement_changed",
+      "content_head_changed",
+      "validation_claim_changed",
+      "unknown_changed_to_proven",
+      "empty_semantic_field_set",
+      "missing_original_bundle"
+    ],
+    "mandatory_positive_fixtures": [
+      "checksum_only_change",
+      "formatting_only_generated_metadata_change",
+      "proof_reference_relocation_with_byte_identity"
+    ],
+    "all_mandatory_fixtures": "PRESENT AND PASSING",
+    "self_found_defect": {
+      "severity": "HIGH",
+      "found_by": "own adversarial probing during the PAL codereview workflow",
+      "defect": "ProofOnlyBundle.aggregate_fields synthesised a disambiguation key f'{field_name}#{document}' that shared a namespace with real field names and was therefore FORGEABLE.",
+      "exploit": "audited {A:{known_risks:[R1]}, B:{known_risks:[R2]}} vs successor {A:{known_risks:[R1], 'known_risks#B':[R2]}, B:{known_risks:[R1]}} produced an identical aggregate and returned PASS, while document B had silently DROPPED risk R2 \u2014 reopening the exact F1 laundering channel.",
+      "fix": "Replaced the synthesised namespace with a per-field sorted multiset of values. A dropped value changes the multiset and no crafted field name can restore it.",
+      "regression_fixtures": 5,
+      "status": "FIXED AND VERIFIED before content freeze"
+    },
+    "anti_vacuity": {
+      "status": "PASS",
+      "compared_field_enumeration": "Every compared field is recorded with classification and outcome; compared_field_count is asserted greater than zero on positive results.",
+      "empty_field_set": "REJECTED",
+      "missing_bundle": "REJECTED",
+      "unclassified_field": "REJECTED (treated as governance-relevant and listed in unclassified_fields)",
+      "raw_diff_digest": "Retained on every receipt so a laundered change remains detectable post hoc, as the audit finding requires."
+    },
+    "adversarial_probes_run": 18,
+    "adversarial_probes_bypassing": 1,
+    "adversarial_probes_bypassing_note": "The single bypass is the HIGH-severity forgery above; found, fixed and regression-tested before freeze. All other 17 fail closed."
+  },
+  "authority_invariants": {
+    "dispatch_eligible": "Structurally False \u2014 a read-only property, not a settable field.",
+    "mutation_authorized": "Structurally False \u2014 setting True raises SECURITY_OR_TRUST_INCIDENT.",
+    "gate_satisfied_is_not_permission": "VERIFIED by test",
+    "reference_authority_non_amplification": "VERIFIED by test",
+    "unknown_identity_fails_closed": "VERIFIED \u2014 blank, missing or literal UNKNOWN denied",
+    "cross_project_denial": "PASS",
+    "cross_worktree_denial": "PASS",
+    "no_network_path": "PASS \u2014 no requests/urllib/httpx/socket/aiohttp anywhere in the package (asserted by source-inspection test)",
+    "no_external_mutation_path": "PASS \u2014 snapshot git access restricted to a 4-command read-only argv frozenset, shell=False, fixed argv; no write verb present (asserted by test)",
+    "no_clock_read": "PASS \u2014 every staleness path takes an explicit as_of"
+  },
+  "census_mapping": {
+    "message_classes": "39_OF_39 mapped to exactly 5 envelope kinds; distribution 9 REQUEST / 7 FACT / 4 DECISION / 13 RECEIPT / 6 FINDING matches the independent architecture audit's own count",
+    "failure_branches": "44_OF_44 (F-01..F-44) mapped onto all 11 normalized classes",
+    "source": "Transcribed verbatim from architecture sections 03 and 10; the reduction is the architecture's own, not invented here",
+    "carried_caveat": "GOV-AUD-N3 \u2014 F-32 (review thread) maps to BLOCKING_FINDING as the census states, but architecture section 09 rules an unresolved thread is not automatically blocking absent policy or an authorized disposition. Recorded in contract.md; consumers must condition on an authoritative classification."
+  },
+  "source_fidelity_corrections": [
+    "Added the 8th conjunct raw_diff_contains_no_substantive_source_change (architecture \u00a708 states it explicitly; the implementation had only implied it via path + tree checks).",
+    "Reordered posture precedence so BLOCKED outranks DECISION_REQUIRED, matching architecture \u00a702's stated reduction. The initial implementation had them inverted."
+  ],
+  "custody_incident": {
+    "summary": "Two research subagents spawned by this session wrote implementation files into the worktree despite explicit read-only extraction instructions.",
+    "detection": "Schema files were observed being rewritten on disk with a conflicting design while the session was mid-implementation; file mtimes advanced continuously (01:17:00 to 01:18:09) with no operator action.",
+    "identification": "ListAgents showed both forks still running at 11 minutes for tasks that should take under a minute; their final output lines confirmed implementation intent ('Now the core models module...', 'I'll fix the model').",
+    "task_ids": [
+      "acc826bf27f8e62b6",
+      "a98fe54dd27cb6453"
+    ],
+    "containment": "Both forks stopped via TaskStop. Worktree confirmed quiescent before any further work.",
+    "custody_outcome": "NOTHING WAS EVER COMMITTED from the contaminated state. The entire content head was rebuilt single-author from the clean base d40e43dd after deleting all contaminated files.",
+    "residue_verification": "Grep for the rejected fork signatures returns zero occurrences: require_known_consumer (0), NOT_INDEPENDENT (0), permissive v[0-9]+ schema_version pattern (0), gate_ledger_id (0). All 7 schemas use fail-closed const schema_version, which the fork design had weakened to a permissive regex that would have ACCEPTED unknown major versions \u2014 the opposite of packet \u00a78.1.",
+    "disclosure_rationale": "Recorded in full because an auditor inspecting session artifacts could otherwise encounter traces and read their omission as concealment."
+  },
+  "runner_and_model_identity": {
+    "RUNNER_REQUESTED": "codex-cli (packet execution_recommendation, availability UNKNOWN)",
+    "RUNNER_CONFIGURED": "Claude Code harness session dopemux-mvp-06",
+    "MODEL_REQUESTED": "UNKNOWN",
+    "MODEL_CONFIGURED": "claude-sonnet-5",
+    "MODEL_RESPONSE_CLAIMED": "Claude Sonnet 5 (Anthropic)",
+    "MODEL_PROXY_REPORTED": "Claude Code harness declares model claude-sonnet-5",
+    "MODEL_PROVIDER_ATTESTED": "UNKNOWN \u2014 no cryptographic provider attestation available in this runtime"
+  },
+  "pal_chain": {
+    "codereview_workflow": "RUN \u2014 structured investigation completed across two provider attempts; its directed adversarial probing is what surfaced the HIGH-severity forgery.",
+    "precommit_workflow": "RUN \u2014 three-step validation completed.",
+    "expert_model_validation": "NOT_RUN",
+    "expert_validation_failure_detail": "All three configured providers failed to deliver expert analysis: gpt-5-pro returned HTTP 429 credit_balance_exhausted; gemini-2.5-pro returned HTTP 429 RESOURCE_EXHAUSTED with region quota_limit_value 0; grok-4.5 returned files_required_to_continue (could not access the changeset).",
+    "honesty_note": "Recorded as NOT_RUN, never collapsed into PASS. The findings in this bundle are self-derived and independently unvalidated."
+  },
+  "AUDIT_VERDICT": "NOT_RUN",
+  "audit_status": {
+    "required": true,
+    "class": "L2_FINAL_CONTENT_AUDIT",
+    "count_target": 1,
+    "implementer_must_not_self_audit": true,
+    "auditor_route": "UNKNOWN_OPERATOR_INPUT_REQUIRED",
+    "note": "Content is frozen and ready for one independent L2 audit. The implementer has not and must not self-audit. The auditor route identity is an operator input (B-ROUTE-001)."
+  },
+  "PR_STEWARD_READINESS": "NOT_RUN",
+  "MERGE_AUTHORIZED": "NO",
+  "ACTIVATION_AUTHORIZED": "NO",
+  "PROOF_ONLY_EQUIVALENCE": "NOT_REQUIRED \u2014 no proof-only successor exists yet",
+  "remaining_risks": [
+    "GOV-AUD-F1 classification tables (governance keywords, inert names) are checked-in data and will need deliberate extension as real proof bundles introduce new field names. Fail-closed direction: an unanticipated name REJECTS rather than passes, so the failure mode is a false rejection, never a laundered change.",
+    "Documented semantic boundary: because the aggregate is path-independent, content EXCHANGED between two documents that both remain in the bundle preserves it and passes. This follows necessarily from the path-independence the packet mandates via its byte-identical-relocation positive fixture. Recorded explicitly in contract.md.",
+    "A field literally named `checksum` with no governance token in its path classifies INERT and its change passes \u2014 required by the packet's mandatory checksum_only_change positive fixture.",
+    "GOV-AUD-F2 (L0/L1 zero-audit vs live required embedded-audit check) and GOV-AUD-F3 (G2 ingress route) are deferred by the packet to G2 authoring and are untouched here."
+  ],
+  "remaining_unknowns": [
+    "Independent auditor route identity for the S11 final content audit \u2014 operator input required.",
+    "MODEL_PROVIDER_ATTESTED identity \u2014 no cryptographic attestation available in this runtime.",
+    "PAL expert-model validation could not be obtained on any configured provider; the adversarial findings are self-derived.",
+    "Native-subsystem-state to phase/posture mapping: architecture \u00a702 supplies a precedence order (implemented and matched) but no per-subsystem state table, so native_state_refs are caller-supplied and preserved verbatim rather than mapped."
+  ],
+  "success_criteria": {
+    "SCHEMA_CONTRACTS": "PASS",
+    "READ_ONLY_RUNTIME": "PASS",
+    "SIX_REQUIRED_SNAPSHOT_QUESTIONS": "PASS",
+    "MESSAGE_CLASS_MAPPING": "39_OF_39",
+    "FAILURE_BRANCH_MAPPING": "44_OF_44",
+    "CROSS_PROJECT_DENIAL": "PASS",
+    "CROSS_WORKTREE_DENIAL": "PASS",
+    "UNKNOWN_IDENTITY_FAIL_CLOSED": "PASS",
+    "AUTHORITY_AMPLIFICATION_FIXTURES": "PASS",
+    "PROOF_ONLY_EQUIVALENCE_POSITIVE_FIXTURES": "PASS",
+    "PROOF_ONLY_EQUIVALENCE_F1_NEGATIVE_FIXTURES": "PASS",
+    "ANTI_VACUITY": "PASS",
+    "DETERMINISTIC_RECEIPT_REUSE": "PASS",
+    "NO_EXTERNAL_MUTATION_PATH": "PASS",
+    "NO_NETWORK_PATH": "PASS",
+    "PRE_PUSH_GATES": "PASS",
+    "FINAL_INDEPENDENT_AUDIT": "NOT_RUN",
+    "PR_STEWARD": "NOT_RUN"
+  },
+  "rollback": "Remove or revert the governed_delivery package, its schemas and its contract doc. No canonical state migration, no database migration, no workflow transition rollback, no production data rollback \u2014 G0 creates only new read-only code and contracts.",
+  "embedded_audit": {
+    "required": true,
+    "status": "SKIPPED",
+    "auditor_tool": "none",
+    "auditor_model": "unknown",
+    "invocation": null,
+    "exit_code": null,
+    "report_path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "GOV-AUD-F1 classification tables are checked-in data requiring deliberate extension as real proof bundles introduce new field names; the failure mode is a false rejection, never a laundered change.",
+      "Documented semantic boundary: content exchanged between two documents that both remain in the bundle preserves the path-independent aggregate and passes, following necessarily from the byte-identical-relocation fixture the packet mandates.",
+      "A leaf literally named `checksum` with no governance token in its path classifies INERT and its change passes, as the packet's mandatory checksum_only_change positive fixture requires.",
+      "PAL expert-model validation could not be obtained on any configured provider (gpt-5-pro no credits, gemini-2.5-pro region quota 0, grok-4.5 changeset unreadable); the adversarial findings are self-derived and independently unvalidated.",
+      "GOV-AUD-F2 and GOV-AUD-F3 are deferred by the packet to G2 authoring and are untouched by this packet."
+    ],
+    "skip_reason": "Independent L2 final content audit is PENDING, not performed. Packet section S11 forbids the implementer from self-auditing, and the independent auditor route identity is an unresolved operator input (B-ROUTE-001). Content is frozen at 8c309d764a55896c3363bd803404f64d4e277185 and ready for exactly one independent audit against that head. This SKIPPED status is recorded honestly and must not be read as, or promoted to, a passing audit."
+  }
+}
