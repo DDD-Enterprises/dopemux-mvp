@@ -906,7 +906,21 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
       </Box>
 
       <List sx={{ maxHeight: 300, overflow: 'auto' }}>
-        {optimizedTasks.map((task, index) => {
+        {optimizedTasks.length === 0 ? (
+          <ListItem sx={{ justifyContent: 'center', py: 2.5 }}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              role="status"
+              sx={{ textAlign: 'center', fontStyle: 'italic' }}
+            >
+              {isComplete
+                ? 'All tasks muzzled. Excellent work.'
+                : 'No tasks matching current cognitive state threshold.'}
+            </Typography>
+          </ListItem>
+        ) : (
+          optimizedTasks.map((task, index) => {
           const isCurrent = task.id === currentTaskId;
           const isCompleted = task.status === 'completed';
 
@@ -1070,7 +1084,8 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
               )}
             </React.Fragment>
           );
-        })}
+        })
+        )}
       </List>
 
       <Box

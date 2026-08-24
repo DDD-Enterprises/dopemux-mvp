@@ -1,0 +1,3 @@
+A	task-packets/TP-DMX-PALETTE-TASKSEQ-EMPTY-STATE-1266-001.json
+M	ui-dashboard/src/components/TaskSequencer.tsx
+M	ui-dashboard/src/components/__tests__/Accessibility.test.tsx
