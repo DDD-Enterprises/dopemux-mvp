@@ -414,6 +414,11 @@ def mcp_start_all_cmd(verify: bool):
             console.logger.info(f"[error]start-all.sh not found at {script_path}[/error]")
             console.logger.info("[warning]Falling back to manual startup...[/warning]")
 
+            # Same "network not found on a clean host" class of bug that
+            # `mcp up` already had fixed — ensure the external network exists
+            # before either compose invocation below (idempotent).
+            ensure_docker_networks(["dopemux-network"], runner=subprocess.run)
+
             console.logger.info("[info]Starting MCP servers...[/info]")
             subprocess.run(["docker", "compose", "-f", "compose.yml", "up", "-d"], check=True)
 
@@ -434,7 +439,7 @@ def mcp_start_all_cmd(verify: bool):
                 cmd.append("--verify")
             subprocess.run(cmd, check=True)
 
-    except CalledProcessError:
+    except (CalledProcessError, FileNotFoundError, RuntimeError):
         console.logger.error("[error]Failed to start all services[/error]")
         console.logger.info("[warning]Try: docker ps to see running containers[/warning]")
         sys.exit(1)

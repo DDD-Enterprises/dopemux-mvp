@@ -82,10 +82,16 @@ fi
 echo ""
 
 # Restart bridge
+# Delegated to the canonical CLI (P-22 follow-up, packet P22-F3) rather than
+# a raw compose invocation. Compose already recreates the container on a
+# config-hash change (the API key interpolates into leantime-bridge's
+# environment from root .env when the service starts), so the plain
+# canonical start matches --force-recreate's effect here without needing
+# a force-recreate passthrough flag.
 echo "Restarting Leantime MCP Bridge..."
 (
     cd "$PROJECT_ROOT"
-    docker compose up -d --force-recreate leantime-bridge
+    dopemux mcp up --services leantime-bridge
 )
 
 echo ""

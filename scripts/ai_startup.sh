@@ -86,7 +86,16 @@ fi
 # 4. Start MCP Servers
 echo
 echo "🔌 Starting MCP Servers (Copilot/Tools Integration)..."
-dopemux mcp start
+# Intentional behavior expansion: cloud bootstrap needs the full catalog-backed
+# singleton fleet, not only the project-scoped sidecars managed by `mcp start`.
+# compose.yml declares dopemux-network external:true, so establish that shared
+# network through the canonical helper before `ensure --full` reaches Compose.
+python3 - <<'PY'
+from dopemux.coldstart.network import ensure_docker_networks
+
+ensure_docker_networks(["dopemux-network"])
+PY
+dopemux mcp ensure --full
 
 # 5. Start Main Environment with Routing
 echo
@@ -113,4 +122,3 @@ echo "   Or run specific modes:"
 echo "   $ dopemux start --grok    (Force Grok)"
 echo "   $ dopemux start --codex   (Force Codex)"
 echo "   $ dopemux start --altp    (Tier-matched routing)"
-echo
