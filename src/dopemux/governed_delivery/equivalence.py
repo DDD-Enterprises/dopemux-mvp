@@ -1,4 +1,4 @@
-"""Semantic proof-only successor equivalence — closes GOV-AUD-F1.
+"""Semantic proof-only successor equivalence — closes GOV-AUD-F1 and F1's residue.
 
 The independent architecture audit constructed this attack against a
 path-membership predicate: a proof bundle's known-risks list, unknowns, or
@@ -7,19 +7,32 @@ downstream by PR Steward and the operator merge card. Hand-editing it passes
 every path and digest conjunct while laundering a governance-relevant change
 past re-audit. A path allowlist is therefore necessary but not sufficient.
 
-Two design choices answer that attack:
+Four design choices answer that attack and the follow-up audit's findings:
 
 1. Classification is total and fails closed. Every compared field resolves to
    GOVERNANCE_RELEVANT, INERT, or UNKNOWN, and UNKNOWN is rejected rather than
    waved through — so a field nobody anticipated cannot become a channel.
 
-2. Governance fields are compared as a path-independent aggregate. Byte-identical
-   relocation of a proof reference leaves the aggregate untouched and passes,
-   while semantic drift fails no matter which file happens to carry it.
+2. Governance fields are compared per *document role*, not per path and not
+   across the whole bundle. Relocating a document within its role is invisible;
+   moving an assertion from the audit result into the summary is not. GOV-AUD-001
+   showed that a bundle-wide aggregate lets a risk be removed from the document
+   the operator actually reads and re-encoded somewhere with no authority, which
+   reproduces GOV-AUD-F1 one level up.
 
-The receipt enumerates every compared field, so a vacuous evaluation is visibly
-different from a genuine one. No I/O: ancestry, digests, and bundle contents are
-supplied by the caller.
+3. Within a role, values are compared as a sorted multiset keyed by a *tuple*
+   ``(role, field)``. No key is synthesised by string concatenation, so no
+   crafted field name shares a namespace with a real one.
+
+4. Structural conjuncts carry the basis on which they were established, and only
+   ``OBSERVED_GIT`` supports a PASS. GOV-AUD-002 showed that accepting a caller's
+   boolean for ancestry, tree equality or raw-diff safety lets a caller
+   manufacture a PASS the evaluator never established. Facts come from
+   ``snapshot.observe_proof_only_facts``; a claim stays visible as a claim.
+
+The receipt enumerates every compared field and every conjunct's basis, so a
+vacuous evaluation is visibly different from a genuine one. This module performs
+no I/O: observation happens in ``snapshot``, judgement happens here.
 """
 
 from __future__ import annotations
@@ -30,16 +43,22 @@ from typing import Any, Iterable, Mapping, Sequence
 
 from .models import (
     SCHEMA_PROOF_ONLY_EQUIVALENCE,
+    STRUCTURAL_CONJUNCTS,
     Denial,
+    FactBasis,
     NormalizedFailureClass,
+    StructuralFacts,
     canonical_json,
     digest_of,
 )
 
-VALIDATOR_VERSION = "governed-delivery.equivalence.1"
+VALIDATOR_VERSION = "governed-delivery.equivalence.2"
 
 CONTENT_DIGEST_EXCLUSION_DEFINITION = (
-    "sha256 over sorted (path, sha256(bytes)) pairs for every file NOT matching allowed_paths"
+    "sha256 over the canonical JSON of sorted (path, 'mode type oid') pairs for "
+    "every tracked entry NOT matching allowed_paths, at each head. Mode and type "
+    "are included because a permission or symlink type change preserves the blob "
+    "object id while altering what the file is"
 )
 
 # Substring keywords marking a field as governance-relevant. Deliberately a
@@ -119,6 +138,68 @@ class FieldClassification(str):
     UNKNOWN = "UNKNOWN"
 
 
+# Basename-to-role table, derived from the file names the repository's proof
+# tooling actually emits. Two properties matter and both are deliberate.
+#
+# Derivation from the path, not declaration: a role the caller could simply
+# assert would be a relabelling channel, and an unlisted basename fails closed
+# rather than defaulting to a permissive role.
+#
+# Injective, not grouped: each distinct document kind gets its own role. An
+# earlier draft grouped AUDITOR_REPORT.md, AUDIT.md and AGY_AUDIT.md under one
+# AUDIT_RESULT role on the theory that same-role documents are interchangeable
+# carriers of one authority. They are not reliably interchangeable — a consumer
+# that reads only AUDITOR_REPORT.md would not see an assertion moved into
+# AUDIT.md — and that is GOV-AUD-001's own shape at finer grain. Architecture
+# section 08 rules that genuinely ambiguous semantic status is classified as
+# substantive, so grouping is refused. Splitting can only ever reject more; it
+# cannot admit a change that grouping would have caught.
+#
+# Relocation still passes, because relocation preserves the basename: moving
+# proof/A/PROOF.json to proof/B/PROOF.json keeps the PROOF_BUNDLE role. Renaming
+# the document that carries a verdict does not, and should not.
+_ROLE_BY_BASENAME: Mapping[str, str] = {
+    "proof.json": "PROOF_BUNDLE",
+    "proof-bundle.md": "PROOF_BUNDLE_NARRATIVE",
+    "summary.md": "SUMMARY",
+    "completion_report.md": "COMPLETION_REPORT",
+    "auditor_report.md": "AUDITOR_REPORT",
+    "auditor_repair_report.md": "AUDITOR_REPAIR_REPORT",
+    "audit.md": "AUDIT_RESULT",
+    "audit.json": "AUDIT_RESULT_JSON",
+    "agy_audit.md": "AGY_AUDIT",
+    "validation.json": "VALIDATION_RECEIPT",
+    "validation.md": "VALIDATION_REPORT",
+    "validation_output.md": "VALIDATION_OUTPUT",
+    "implementer_report.md": "IMPLEMENTER_REPORT",
+    "implementation-notes.md": "IMPLEMENTATION_NOTES",
+    "handoff.md": "HANDOFF",
+    "command_log.md": "COMMAND_LOG",
+    "git_state.md": "GIT_STATE",
+    "git_status_before.txt": "GIT_STATUS_BEFORE",
+    "changed_files.txt": "CHANGED_FILES",
+    "diff_stat.txt": "DIFF_STAT",
+    "manifest.json": "MANIFEST",
+    "run_manifest.json": "RUN_MANIFEST",
+    "merge_readiness.json": "MERGE_READINESS",
+}
+
+# The closed set of authority classes a proof-only document can hold.
+DOCUMENT_ROLES: tuple[str, ...] = tuple(sorted(set(_ROLE_BY_BASENAME.values())))
+
+UNKNOWN_DOCUMENT_ROLE = "UNKNOWN"
+
+
+def derive_document_role(path: str) -> str:
+    """Derive a document's authority class from its path. Fails closed.
+
+    Only the basename is consulted, which is exactly what makes a relocation
+    inside the proof tree role-preserving while an unrecognised file is refused.
+    """
+    basename = str(path).replace("\\", "/").rsplit("/", 1)[-1].strip().lower()
+    return _ROLE_BY_BASENAME.get(basename, UNKNOWN_DOCUMENT_ROLE)
+
+
 def classify_field(field_name: str) -> str:
     """Classify a semantic field. Total, ordered, and fail-closed.
 
@@ -165,34 +246,61 @@ def flatten(document: Any, prefix: str = "") -> dict[str, str]:
 class ProofOnlyBundle:
     """The governance-bearing content of one side of the comparison.
 
-    ``documents`` maps a logical document name to its parsed content. Path is
-    deliberately not part of the key, because relocation must not by itself
-    register as a semantic change.
+    ``documents`` maps a document's path to its parsed content. The path selects
+    a role; only the role enters the comparison key, so relocation within a role
+    is invisible while cross-role movement is not.
+
+    ``declared_roles`` is optional. When present it must agree with the derived
+    role — a declaration can corroborate, never override.
     """
 
     documents: Mapping[str, Any] = field(default_factory=dict)
+    declared_roles: Mapping[str, str] = field(default_factory=dict)
 
-    def aggregate_fields(self) -> dict[str, list[str]]:
-        """Path-independent aggregate: field name to its sorted multiset of values.
+    def resolved_roles(self) -> dict[str, str]:
+        return {path: derive_document_role(path) for path in sorted(self.documents)}
 
-        A multiset, not a single value per name. An earlier design disambiguated
-        repeated names by synthesising a ``field#document`` key, but that
-        separator lived in the same namespace as real field names and was
-        therefore forgeable: an edited bundle could drop a risk from one document
-        and re-encode it as a literal ``field#document`` key in another,
-        reproducing the original aggregate exactly. Counting values instead
-        removes the synthesised namespace, so no crafted field name can restore a
-        multiset that a dropped value has changed.
+    def role_conflicts(self) -> list[str]:
+        """Paths whose declared role contradicts the derived one."""
+        derived = self.resolved_roles()
+        return sorted(
+            path
+            for path, declared in self.declared_roles.items()
+            if path in derived and declared != derived[path]
+        )
+
+    def unclassified_documents(self) -> list[str]:
+        return sorted(
+            path
+            for path, role in self.resolved_roles().items()
+            if role == UNKNOWN_DOCUMENT_ROLE
+        )
+
+    def aggregate_fields(self) -> dict[tuple[str, str], list[str]]:
+        """Role-scoped aggregate: ``(role, field)`` to its sorted multiset of values.
+
+        The key is a tuple, never a concatenated string. An earlier design
+        disambiguated repeated names by synthesising a ``field#document`` key,
+        but that separator lived in the same namespace as real field names and
+        was therefore forgeable. A tuple has no textual namespace to collide
+        with, so no crafted field name can construct one.
+
+        The multiset is per role rather than per bundle. Counting values across
+        the whole bundle let a governance assertion move between documents of
+        different authority while the total stayed identical — GOV-AUD-001.
         """
-        aggregate: dict[str, list[str]] = {}
-        for name in sorted(self.documents):
-            for field_name, value in flatten(self.documents[name]).items():
-                aggregate.setdefault(field_name, []).append(value)
-        return {name: sorted(values) for name, values in aggregate.items()}
+        aggregate: dict[tuple[str, str], list[str]] = {}
+        roles = self.resolved_roles()
+        for path in sorted(self.documents):
+            role = roles[path]
+            for field_name, value in flatten(self.documents[path]).items():
+                aggregate.setdefault((role, field_name), []).append(value)
+        return {key: sorted(values) for key, values in aggregate.items()}
 
 
 @dataclass(frozen=True)
 class FieldComparison:
+    document_role: str
     field: str
     classification: str
     changed: bool
@@ -200,10 +308,34 @@ class FieldComparison:
 
     def as_dict(self) -> dict[str, Any]:
         return {
+            "document_role": self.document_role,
             "field": self.field,
             "classification": self.classification,
             "changed": self.changed,
             "outcome": self.outcome,
+        }
+
+
+@dataclass(frozen=True)
+class ConjunctResult:
+    """One structural conjunct, whether it holds, and how it was established."""
+
+    conjunct: str
+    holds: bool
+    basis: FactBasis
+    detail: str = ""
+
+    @property
+    def supports_pass(self) -> bool:
+        """Only an observed fact can carry a PASS. A claim never does."""
+        return self.holds and self.basis is FactBasis.OBSERVED_GIT
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "conjunct": self.conjunct,
+            "holds": self.holds,
+            "basis": self.basis.value,
+            "detail": self.detail,
         }
 
 
@@ -213,55 +345,73 @@ class EquivalenceResult:
     passed: bool
     audited_head: str
     successor_head: str
-    ancestry_basis: str
-    ancestry_established: bool
     allowed_paths: Sequence[str]
-    actual_changed_paths: Sequence[str]
-    non_allowed_diff_count: int
-    raw_diff_digest: str
-    raw_diff_contains_no_substantive_source_change: bool
-    content_tree_equivalent_under_exclusion: bool
-    packet_digest_unchanged: bool
-    policy_digest_unchanged: bool
-    audit_result_digest_unchanged: bool
+    facts: StructuralFacts
+    conjuncts: Sequence[ConjunctResult]
     compared_fields: Sequence[FieldComparison]
     failures: Sequence[Mapping[str, str]]
-    merge_base: str | None = None
+
+    def _conjunct(self, name: str) -> ConjunctResult | None:
+        for item in self.conjuncts:
+            if item.conjunct == name:
+                return item
+        return None
+
+    def holds(self, name: str) -> bool:
+        found = self._conjunct(name)
+        return bool(found and found.holds)
+
+    @property
+    def structural_basis_all_observed(self) -> bool:
+        return all(item.basis is FactBasis.OBSERVED_GIT for item in self.conjuncts)
 
     @property
     def mismatched_fields(self) -> list[str]:
-        return [
-            item.field
-            for item in self.compared_fields
-            if item.outcome == "GOVERNANCE_CHANGE_REJECTED"
-        ]
+        return sorted(
+            {
+                item.field
+                for item in self.compared_fields
+                if item.outcome == "GOVERNANCE_CHANGE_REJECTED"
+            }
+        )
 
     @property
     def unclassified_fields(self) -> list[str]:
-        return [
-            item.field for item in self.compared_fields if item.outcome == "UNCLASSIFIED_REJECTED"
-        ]
+        return sorted(
+            {
+                item.field
+                for item in self.compared_fields
+                if item.outcome == "UNCLASSIFIED_REJECTED"
+            }
+        )
 
     def as_dict(self) -> dict[str, Any]:
+        outside = _paths_outside_allowlist(self.facts.actual_changed_paths, self.allowed_paths)
         body = {
             "schema_version": SCHEMA_PROOF_ONLY_EQUIVALENCE,
             "equivalence_id": self.equivalence_id,
             "result": "PASS" if self.passed else "FAIL",
             "audited_head": self.audited_head,
             "successor_head": self.successor_head,
-            "merge_base": self.merge_base,
-            "ancestry_basis": self.ancestry_basis,
-            "ancestry_established": self.ancestry_established,
+            "merge_base": self.facts.merge_base,
+            "ancestry_established": self.facts.ancestry_established,
             "allowed_paths": list(self.allowed_paths),
-            "actual_changed_paths": list(self.actual_changed_paths),
-            "non_allowed_diff_count": self.non_allowed_diff_count,
-            "raw_diff_digest": self.raw_diff_digest,
-            "raw_diff_contains_no_substantive_source_change": self.raw_diff_contains_no_substantive_source_change,
+            "actual_changed_paths": list(self.facts.actual_changed_paths),
+            "non_allowed_diff_count": len(outside),
+            "raw_diff_digest": self.facts.raw_diff_digest,
+            "raw_diff_contains_no_substantive_source_change": self.holds(
+                "raw_diff_contains_no_substantive_source_change"
+            ),
             "content_digest_exclusion_definition": CONTENT_DIGEST_EXCLUSION_DEFINITION,
-            "content_tree_equivalent_under_exclusion": self.content_tree_equivalent_under_exclusion,
-            "packet_digest_unchanged": self.packet_digest_unchanged,
-            "policy_digest_unchanged": self.policy_digest_unchanged,
-            "audit_result_digest_unchanged": self.audit_result_digest_unchanged,
+            "content_tree_equivalent_under_exclusion": self.facts.content_tree_equivalent_under_exclusion,
+            "packet_and_policy_digests_unchanged": self.holds(
+                "packet_and_policy_digests_unchanged"
+            ),
+            "audit_result_digest_unchanged": self.holds("audit_result_bytes_unchanged"),
+            "structural_facts": [item.as_dict() for item in self.conjuncts],
+            "structural_basis_all_observed": self.structural_basis_all_observed,
+            "observer_version": self.facts.observer_version,
+            "observation_digest": self.facts.observation_digest,
             "compared_fields": [item.as_dict() for item in self.compared_fields],
             "compared_field_count": len(self.compared_fields),
             "mismatched_fields": self.mismatched_fields,
@@ -273,12 +423,104 @@ class EquivalenceResult:
         return body
 
 
-def _paths_within_allowlist(paths: Iterable[str], allowed: Sequence[str]) -> list[str]:
+def _paths_outside_allowlist(paths: Iterable[str], allowed: Sequence[str]) -> list[str]:
     outside: list[str] = []
     for path in paths:
         if not any(fnmatch(path, pattern) for pattern in allowed):
             outside.append(path)
     return outside
+
+
+def _weakest(*bases: FactBasis) -> FactBasis:
+    """Combine bases for a derived conjunct: observed only if every input was."""
+    if any(basis is FactBasis.UNKNOWN for basis in bases):
+        return FactBasis.UNKNOWN
+    if any(basis is FactBasis.CLAIMED_INPUT for basis in bases):
+        return FactBasis.CLAIMED_INPUT
+    return FactBasis.OBSERVED_GIT
+
+
+def _digest_pair_unchanged(audited: str | None, successor: str | None) -> tuple[bool, str]:
+    """Both digests must be present and equal.
+
+    Absent-on-both is not "unchanged": it is an unmade comparison, and treating
+    it as satisfied is the vacuity this evaluator exists to refuse.
+    """
+    if audited is None or successor is None:
+        return False, "digest absent on at least one side; equality was never established"
+    if audited != successor:
+        return False, f"digest changed: {audited} -> {successor}"
+    return True, "digests present and identical"
+
+
+def _evaluate_conjuncts(
+    facts: StructuralFacts, allowed_paths: Sequence[str]
+) -> list[ConjunctResult]:
+    """Evaluate the six structural conjuncts of architecture section 08."""
+    outside = _paths_outside_allowlist(facts.actual_changed_paths, allowed_paths)
+    paths_ok = not outside
+
+    ancestry_basis = facts.basis_for(
+        "current_head_descends_from_or_is_patch_equivalent_to_audited_head"
+    )
+    paths_basis = facts.basis_for("actual_changed_paths_subset_of_allowed_proof_only_paths")
+    tree_basis = facts.basis_for("audited_content_tree_equal_under_exclusion")
+    digest_basis = facts.basis_for("packet_and_policy_digests_unchanged")
+    audit_basis = facts.basis_for("audit_result_bytes_unchanged")
+
+    packet_ok, packet_detail = _digest_pair_unchanged(
+        facts.audited_packet_digest, facts.successor_packet_digest
+    )
+    policy_ok, policy_detail = _digest_pair_unchanged(
+        facts.audited_policy_digest, facts.successor_policy_digest
+    )
+    audit_ok, audit_detail = _digest_pair_unchanged(
+        facts.audited_audit_result_digest, facts.successor_audit_result_digest
+    )
+
+    return [
+        ConjunctResult(
+            "current_head_descends_from_or_is_patch_equivalent_to_audited_head",
+            facts.ancestry_established,
+            ancestry_basis,
+            f"merge_base={facts.merge_base}",
+        ),
+        ConjunctResult(
+            "actual_changed_paths_subset_of_allowed_proof_only_paths",
+            paths_ok,
+            paths_basis,
+            "all changed paths within allowlist"
+            if paths_ok
+            else f"outside allowlist: {', '.join(sorted(outside))}",
+        ),
+        # Derived, never attested: a raw diff that touches only allowed paths and
+        # leaves every excluded byte identical cannot carry a source change.
+        # GOV-AUD-002 removed the caller boolean that used to stand here.
+        ConjunctResult(
+            "raw_diff_contains_no_substantive_source_change",
+            paths_ok and facts.content_tree_equivalent_under_exclusion,
+            _weakest(paths_basis, tree_basis),
+            "derived from path membership and tree equality under exclusion",
+        ),
+        ConjunctResult(
+            "audited_content_tree_equal_under_exclusion",
+            facts.content_tree_equivalent_under_exclusion,
+            tree_basis,
+            CONTENT_DIGEST_EXCLUSION_DEFINITION,
+        ),
+        ConjunctResult(
+            "packet_and_policy_digests_unchanged",
+            packet_ok and policy_ok,
+            digest_basis,
+            f"packet: {packet_detail}; policy: {policy_detail}",
+        ),
+        ConjunctResult(
+            "audit_result_bytes_unchanged",
+            audit_ok,
+            audit_basis,
+            audit_detail,
+        ),
+    ]
 
 
 def evaluate_proof_only_equivalence(
@@ -289,25 +531,14 @@ def evaluate_proof_only_equivalence(
     audited_bundle: ProofOnlyBundle | None,
     successor_bundle: ProofOnlyBundle | None,
     allowed_paths: Sequence[str],
-    actual_changed_paths: Sequence[str],
-    raw_diff_digest: str,
-    ancestry_established: bool,
-    ancestry_basis: str = "UNKNOWN",
-    raw_diff_contains_no_substantive_source_change: bool = False,
-    content_tree_equivalent_under_exclusion: bool = False,
-    audited_packet_digest: str | None = None,
-    successor_packet_digest: str | None = None,
-    audited_policy_digest: str | None = None,
-    successor_policy_digest: str | None = None,
-    audited_audit_result_digest: str | None = None,
-    successor_audit_result_digest: str | None = None,
-    merge_base: str | None = None,
+    facts: StructuralFacts,
 ) -> EquivalenceResult:
     """Prove, or refuse to prove, that a successor head is proof-only.
 
-    Every applicable condition must hold. Structural conjuncts (ancestry, path
-    membership, tree equality under exclusion, frozen digests) are necessary;
-    the semantic aggregate comparison is what makes them sufficient.
+    Every applicable condition must hold *and* rest on an observed basis.
+    Structural conjuncts (ancestry, path membership, tree equality under
+    exclusion, frozen digests) are necessary; the role-scoped semantic
+    comparison is what makes them sufficient.
     """
     failures: list[dict[str, str]] = []
 
@@ -334,67 +565,72 @@ def evaluate_proof_only_equivalence(
             }
         )
 
-    if ancestry_basis not in {"OBSERVED_GIT", "CLAIMED_INPUT", "UNKNOWN"}:
-        raise Denial(
-            NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
-            f"unknown ancestry_basis {ancestry_basis!r}",
-        )
-    if ancestry_basis == "UNKNOWN" or not ancestry_established:
+    conjuncts = _evaluate_conjuncts(facts, allowed_paths)
+    for item in conjuncts:
+        if not item.holds:
+            failures.append(
+                {"code": f"conjunct_failed:{item.conjunct}", "detail": item.detail}
+            )
+        elif item.basis is not FactBasis.OBSERVED_GIT:
+            # GOV-AUD-002: the conjunct may well be true, but nothing here
+            # established it. A caller's word is not a proof of equivalence.
+            failures.append(
+                {
+                    "code": f"conjunct_not_observed:{item.conjunct}",
+                    "detail": f"basis is {item.basis.value}; only OBSERVED_GIT supports a PASS",
+                }
+            )
+
+    if facts.absent_named_paths:
         failures.append(
             {
-                "code": "ancestry_not_established",
-                "detail": f"ancestry_established={ancestry_established} basis={ancestry_basis}",
+                "code": "named_digest_path_absent",
+                "detail": "named digest paths missing at one or both heads: "
+                + ", ".join(sorted(facts.absent_named_paths)),
             }
         )
 
-    outside = _paths_within_allowlist(actual_changed_paths, allowed_paths)
-    if outside:
+    if not facts.raw_diff_digest:
         failures.append(
             {
-                "code": "path_outside_proof_only_allowlist",
-                "detail": f"changed paths outside allowlist: {', '.join(sorted(outside))}",
+                "code": "missing_raw_diff_digest",
+                "detail": "no raw diff digest was recorded; the diff cannot be re-checked later",
             }
         )
 
-    if not raw_diff_contains_no_substantive_source_change:
-        failures.append(
-            {
-                "code": "raw_diff_contains_substantive_source_change",
-                "detail": "the raw diff was not attested free of substantive source change",
-            }
-        )
-
-    if not content_tree_equivalent_under_exclusion:
-        failures.append(
-            {
-                "code": "content_tree_not_equivalent_under_exclusion",
-                "detail": "audited substantive bytes differ once proof-only paths are excluded",
-            }
-        )
-
-    packet_unchanged = audited_packet_digest == successor_packet_digest
-    policy_unchanged = audited_policy_digest == successor_policy_digest
-    audit_unchanged = audited_audit_result_digest == successor_audit_result_digest
-
-    if not packet_unchanged:
-        failures.append({"code": "packet_digest_changed", "detail": "packet digest is not identical"})
-    if not policy_unchanged:
-        failures.append({"code": "policy_digest_changed", "detail": "policy digest is not identical"})
-    if not audit_unchanged:
-        failures.append(
-            {"code": "audit_result_digest_changed", "detail": "audit result digest is not identical"}
-        )
+    for side, bundle in (("audited", audited_bundle), ("successor", successor_bundle)):
+        if bundle is None:
+            continue
+        unclassified = bundle.unclassified_documents()
+        if unclassified:
+            failures.append(
+                {
+                    "code": "unclassified_document_role",
+                    "detail": f"{side} bundle has documents with no known authority class: "
+                    + ", ".join(unclassified),
+                }
+            )
+        conflicts = bundle.role_conflicts()
+        if conflicts:
+            failures.append(
+                {
+                    "code": "document_role_declaration_conflict",
+                    "detail": f"{side} bundle declares a role contradicting the path-derived one: "
+                    + ", ".join(conflicts),
+                }
+            )
 
     comparisons: list[FieldComparison] = []
     if audited_bundle is not None and successor_bundle is not None:
         before = audited_bundle.aggregate_fields()
         after = successor_bundle.aggregate_fields()
 
-        for name in sorted(set(before) | set(after)):
-            old = before.get(name, [])
-            new = after.get(name, [])
-            # Multiset comparison: a value dropped from one document and added to
-            # another leaves the count unchanged, but dropping it outright does not.
+        for role, name in sorted(set(before) | set(after)):
+            old = before.get((role, name), [])
+            new = after.get((role, name), [])
+            # Multiset comparison within one role: relocating a document of the
+            # same role leaves this untouched, while moving an assertion to a
+            # document of different authority changes both roles' multisets.
             changed = old != new
             classification = classify_field(name)
 
@@ -407,7 +643,7 @@ def evaluate_proof_only_equivalence(
             else:
                 outcome = "GOVERNANCE_CHANGE_REJECTED"
 
-            comparisons.append(FieldComparison(name, classification, changed, outcome))
+            comparisons.append(FieldComparison(role, name, classification, changed, outcome))
 
         # Anti-vacuity: proof content exists, so a zero-field comparison means
         # the evaluator inspected nothing and must not report equivalence.
@@ -432,18 +668,26 @@ def evaluate_proof_only_equivalence(
             {
                 "code": "governance_relevant_field_changed",
                 "detail": "changed governance fields: "
-                + ", ".join(sorted(item.field for item in rejected)),
+                + ", ".join(sorted(f"{item.document_role}/{item.field}" for item in rejected)),
             }
         )
 
-    unclassified = [item for item in comparisons if item.outcome == "UNCLASSIFIED_REJECTED"]
-    if unclassified:
+    unclassified_fields = [item for item in comparisons if item.outcome == "UNCLASSIFIED_REJECTED"]
+    if unclassified_fields:
         failures.append(
             {
                 "code": "unclassified_semantic_field",
                 "detail": "unclassifiable fields treated as governance-relevant: "
-                + ", ".join(sorted(item.field for item in unclassified)),
+                + ", ".join(
+                    sorted(f"{item.document_role}/{item.field}" for item in unclassified_fields)
+                ),
             }
+        )
+
+    if set(item.conjunct for item in conjuncts) != set(STRUCTURAL_CONJUNCTS):
+        raise Denial(
+            NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
+            "structural conjunct set does not match the declared architecture predicate",
         )
 
     return EquivalenceResult(
@@ -451,18 +695,9 @@ def evaluate_proof_only_equivalence(
         passed=not failures,
         audited_head=audited_head,
         successor_head=successor_head,
-        ancestry_basis=ancestry_basis,
-        ancestry_established=ancestry_established,
         allowed_paths=list(allowed_paths),
-        actual_changed_paths=list(actual_changed_paths),
-        non_allowed_diff_count=len(outside),
-        raw_diff_digest=raw_diff_digest,
-        raw_diff_contains_no_substantive_source_change=raw_diff_contains_no_substantive_source_change,
-        content_tree_equivalent_under_exclusion=content_tree_equivalent_under_exclusion,
-        packet_digest_unchanged=packet_unchanged,
-        policy_digest_unchanged=policy_unchanged,
-        audit_result_digest_unchanged=audit_unchanged,
+        facts=facts,
+        conjuncts=conjuncts,
         compared_fields=comparisons,
         failures=failures,
-        merge_base=merge_base,
     )

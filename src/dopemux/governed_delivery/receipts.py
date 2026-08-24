@@ -16,6 +16,7 @@ from .models import (
     GovernedDeliveryEnvelope,
     Identity,
     NormalizedFailureClass,
+    applicable_dimensions,
     digest_of,
     parse_instant,
 )
@@ -193,10 +194,26 @@ def evaluate_receipt_reuse(
 
 
 def require_identity_match(
-    reference: EvidenceReference, expected: Identity, *, context: str
+    reference: EvidenceReference,
+    expected: Identity,
+    *,
+    context: str,
+    required_dimensions: Sequence[str] | None = None,
 ) -> None:
-    """Deny cross-project and cross-worktree reuse of a reference."""
-    expected.require_compatible(reference.identity, context=context)
+    """Deny cross-project and cross-worktree reuse of a reference.
+
+    Every dimension the expected identity binds must also be bound on the
+    reference: an unstated worktree is an unconstrained one, not a matching one.
+    """
+    expected.require_compatible(
+        reference.identity,
+        context=context,
+        required_dimensions=(
+            applicable_dimensions(expected)
+            if required_dimensions is None
+            else required_dimensions
+        ),
+    )
 
 
 def check_idempotency_batch(

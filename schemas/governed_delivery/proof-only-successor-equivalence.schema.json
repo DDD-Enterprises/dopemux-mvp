@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://dopemux.dev/schemas/governed_delivery/proof-only-successor-equivalence.v1.schema.json",
   "title": "ProofOnlySuccessorEquivalence v1",
-  "description": "Receipt proving a successor head differs from an audited head only in genuinely inert ways. Closes GOV-AUD-F1: a path allowlist alone is insufficient, because governance-relevant content (known risks, unknowns, evidence-ref lists, verdicts) lives inside allowed proof-only paths and is consumed downstream by PR Steward and the operator merge card. Governance fields are compared as a path-independent aggregate, so a byte-identical relocation passes while semantic drift fails regardless of which file carries it. Every compared field is enumerated, so a vacuous pass is detectable rather than indistinguishable from a real one.",
+  "description": "Receipt proving a successor head differs from an audited head only in genuinely inert ways. Closes GOV-AUD-F1: a path allowlist alone is insufficient, because governance-relevant content (known risks, unknowns, evidence-ref lists, verdicts) lives inside allowed proof-only paths and is consumed downstream by PR Steward and the operator merge card. Governance fields are compared per document role — the document's authority class, derived from its path — so relocating a document within its role passes while moving an assertion to a document of different authority fails (GOV-AUD-001). Every structural conjunct records the basis on which it was established, and only OBSERVED_GIT supports a PASS, so a caller cannot assert its way to equivalence (GOV-AUD-002). Every compared field is enumerated, so a vacuous pass is detectable rather than indistinguishable from a real one.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -11,7 +11,6 @@
     "result",
     "audited_head",
     "successor_head",
-    "ancestry_basis",
     "ancestry_established",
     "allowed_paths",
     "actual_changed_paths",
@@ -20,9 +19,10 @@
     "raw_diff_contains_no_substantive_source_change",
     "content_digest_exclusion_definition",
     "content_tree_equivalent_under_exclusion",
-    "packet_digest_unchanged",
-    "policy_digest_unchanged",
+    "packet_and_policy_digests_unchanged",
     "audit_result_digest_unchanged",
+    "structural_facts",
+    "structural_basis_all_observed",
     "compared_fields",
     "compared_field_count",
     "mismatched_fields",
@@ -61,18 +61,9 @@
         "null"
       ]
     },
-    "ancestry_basis": {
-      "type": "string",
-      "description": "How ancestry was determined. The evaluator performs no I/O, so the caller supplies this; UNKNOWN fails closed.",
-      "enum": [
-        "OBSERVED_GIT",
-        "CLAIMED_INPUT",
-        "UNKNOWN"
-      ]
-    },
     "ancestry_established": {
       "type": "boolean",
-      "description": "True only when the successor is a proven descendant of, or patch-equivalent to, the audited head."
+      "description": "True only when the successor was observed to descend from the audited head. The architecture also permits patch-equivalence, which the observer does not establish, so a non-descendant fails closed rather than being assumed equivalent."
     },
     "allowed_paths": {
       "type": "array",
@@ -93,12 +84,11 @@
     },
     "raw_diff_digest": {
       "type": "string",
-      "minLength": 1,
-      "description": "Digest over the full raw diff, retained so any laundered change stays detectable post hoc."
+      "description": "sha256 over the raw diff bytes between the two heads, retained so any laundered change stays detectable post hoc. Empty only on a FAIL where the diff could not be read."
     },
     "raw_diff_contains_no_substantive_source_change": {
       "type": "boolean",
-      "description": "Caller attestation that the raw diff carries no substantive source change. Architecture section 08 states this as its own conjunct."
+      "description": "Derived, never attested: true when every changed path is inside the allowlist AND the excluded content tree is identical at both heads. Architecture section 08 states this as its own conjunct; GOV-AUD-002 removed the caller boolean that used to satisfy it."
     },
     "content_digest_exclusion_definition": {
       "type": "string",
@@ -108,28 +98,120 @@
     "content_tree_equivalent_under_exclusion": {
       "type": "boolean"
     },
-    "packet_digest_unchanged": {
-      "type": "boolean"
-    },
-    "policy_digest_unchanged": {
-      "type": "boolean"
+    "packet_and_policy_digests_unchanged": {
+      "type": "boolean",
+      "description": "True only when both the packet and policy digests were present at both heads and identical. Absent-on-both is an unmade comparison, not an unchanged one."
     },
     "audit_result_digest_unchanged": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "True only when the audit result digest was present at both heads and identical."
     },
-    "compared_fields": {
+    "structural_facts": {
       "type": "array",
-      "description": "Every semantic field compared, with classification and outcome. Enumerated so anti-vacuity is testable.",
+      "description": "The six structural conjuncts of architecture section 08, each with whether it holds and the basis on which it was established. The seventh conjunct (no new finding or acceptance criterion) is the semantic field comparison; the eighth (validator passes) is the conjunction itself.",
+      "minItems": 6,
+      "maxItems": 6,
       "items": {
         "type": "object",
         "additionalProperties": false,
         "required": [
+          "conjunct",
+          "holds",
+          "basis",
+          "detail"
+        ],
+        "properties": {
+          "conjunct": {
+            "type": "string",
+            "enum": [
+              "current_head_descends_from_or_is_patch_equivalent_to_audited_head",
+              "actual_changed_paths_subset_of_allowed_proof_only_paths",
+              "raw_diff_contains_no_substantive_source_change",
+              "audited_content_tree_equal_under_exclusion",
+              "packet_and_policy_digests_unchanged",
+              "audit_result_bytes_unchanged"
+            ]
+          },
+          "holds": {
+            "type": "boolean"
+          },
+          "basis": {
+            "type": "string",
+            "description": "OBSERVED_GIT means the deterministic git observer established it. CLAIMED_INPUT means a caller asserted it and nothing verified it. UNKNOWN means it was never established at all. Only OBSERVED_GIT supports a PASS.",
+            "enum": [
+              "OBSERVED_GIT",
+              "CLAIMED_INPUT",
+              "UNKNOWN"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "structural_basis_all_observed": {
+      "type": "boolean",
+      "description": "True only when every structural conjunct rests on OBSERVED_GIT."
+    },
+    "observer_version": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Version of the git observer that produced the facts, or null when the facts were caller claims."
+    },
+    "observation_digest": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Digest over the observer's inputs and outputs, so a later auditor can re-run the observer and compare rather than take this receipt's word."
+    },
+    "compared_fields": {
+      "type": "array",
+      "description": "Every semantic field compared, with its document role, classification and outcome. Enumerated so anti-vacuity is testable.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "document_role",
           "field",
           "classification",
           "changed",
           "outcome"
         ],
         "properties": {
+          "document_role": {
+            "type": "string",
+            "description": "The authority class of the document carrying this field, derived from its path basename through a closed injective table. One role per distinct document kind: grouping several names under one role would let an assertion move between them unseen, which is GOV-AUD-001's shape at finer grain. UNKNOWN is refused rather than compared.",
+            "enum": [
+              "AGY_AUDIT",
+              "AUDITOR_REPAIR_REPORT",
+              "AUDITOR_REPORT",
+              "AUDIT_RESULT",
+              "AUDIT_RESULT_JSON",
+              "CHANGED_FILES",
+              "COMMAND_LOG",
+              "COMPLETION_REPORT",
+              "DIFF_STAT",
+              "GIT_STATE",
+              "GIT_STATUS_BEFORE",
+              "HANDOFF",
+              "IMPLEMENTATION_NOTES",
+              "IMPLEMENTER_REPORT",
+              "MANIFEST",
+              "MERGE_READINESS",
+              "PROOF_BUNDLE",
+              "PROOF_BUNDLE_NARRATIVE",
+              "RUN_MANIFEST",
+              "SUMMARY",
+              "VALIDATION_OUTPUT",
+              "VALIDATION_RECEIPT",
+              "VALIDATION_REPORT",
+              "UNKNOWN"
+            ]
+          },
           "field": {
             "type": "string"
           },
@@ -165,7 +247,8 @@
       "type": "array",
       "items": {
         "type": "string"
-      }
+      },
+      "description": "Display-only summary of rejected field names. The authoritative enumeration is compared_fields, which keeps role and field as separate values so no key is synthesised."
     },
     "unclassified_fields": {
       "type": "array",
@@ -217,6 +300,10 @@
         ]
       },
       "then": {
+        "required": [
+          "observer_version",
+          "observation_digest"
+        ],
         "properties": {
           "failures": {
             "type": "array",
@@ -231,10 +318,7 @@
           "non_allowed_diff_count": {
             "const": 0
           },
-          "packet_digest_unchanged": {
-            "const": true
-          },
-          "policy_digest_unchanged": {
+          "packet_and_policy_digests_unchanged": {
             "const": true
           },
           "audit_result_digest_unchanged": {
@@ -253,6 +337,45 @@
           },
           "raw_diff_contains_no_substantive_source_change": {
             "const": true
+          },
+          "raw_diff_digest": {
+            "minLength": 1
+          },
+          "structural_basis_all_observed": {
+            "const": true
+          },
+          "observer_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "observation_digest": {
+            "type": "string",
+            "minLength": 1
+          },
+          "structural_facts": {
+            "type": "array",
+            "items": {
+              "properties": {
+                "holds": {
+                  "const": true
+                },
+                "basis": {
+                  "const": "OBSERVED_GIT"
+                }
+              }
+            }
+          },
+          "compared_fields": {
+            "type": "array",
+            "items": {
+              "properties": {
+                "document_role": {
+                  "not": {
+                    "const": "UNKNOWN"
+                  }
+                }
+              }
+            }
           }
         }
       }

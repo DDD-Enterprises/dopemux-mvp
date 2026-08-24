@@ -213,8 +213,17 @@ class TestAuthorityNonAmplification:
                 )
             ],
         )
-        # A satisfied gate exposes no field that could authorize an action.
-        assert "authority" not in json.dumps(ledger.as_dict()).lower().replace("merge_authority", "")
+        # A satisfied gate exposes no field that could authorize an action. The
+        # policy block names gate *classes* (AUTHORITY, MERGE_AUTHORITY), which
+        # are requirements rather than grants, so the entry itself is what
+        # matters here.
+        entry = ledger.as_dict()["gates"][0]
+        assert entry["state"] == "SATISFIED"
+        assert "authority" not in json.dumps(entry).lower().replace("merge_authority", "")
+        assert not any(
+            key in entry
+            for key in ("authorized", "permitted", "may_merge", "mutation_authorized")
+        )
 
 
 class TestEnvelopeKinds:

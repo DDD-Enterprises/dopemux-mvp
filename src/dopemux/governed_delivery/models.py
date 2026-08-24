@@ -167,6 +167,56 @@ GATE_CLASSES: tuple[str, ...] = (
     "ACTIVATION",
 )
 
+# The default ``policy.required_gate_set`` of architecture section 05: every
+# gate class is required until policy says otherwise. Default-deny is the point
+# — GOV-AUD-003 was that an omitted gate silently read as "not a problem", so a
+# lane that genuinely does not need a gate must say so with an explicit
+# NOT_APPLICABLE entry rather than by leaving the ledger short.
+DEFAULT_REQUIRED_GATE_CLASSES: tuple[str, ...] = GATE_CLASSES
+
+# The isolation dimensions, in the order they are reported.
+IDENTITY_DIMENSIONS: tuple[str, ...] = (
+    "project_id",
+    "repository_id",
+    "workspace_id",
+    "worktree_id",
+    "instance_id",
+    "packet_id",
+)
+
+# Dimensions every reduction binds: without these there is no subject at all.
+BASE_REQUIRED_IDENTITY_DIMENSIONS: tuple[str, ...] = ("project_id", "repository_id")
+
+
+class FactBasis(str, Enum):
+    """How a structural fact came to be believed.
+
+    GOV-AUD-002: a caller-supplied boolean is an assertion, not evidence. Only
+    ``OBSERVED_GIT`` — computed by the deterministic observer from git objects —
+    may support a PASS. ``CLAIMED_INPUT`` is retained rather than rejected
+    outright so that a claim is visible in the receipt as a claim.
+    """
+
+    OBSERVED_GIT = "OBSERVED_GIT"
+    CLAIMED_INPUT = "CLAIMED_INPUT"
+    UNKNOWN = "UNKNOWN"
+
+
+# The six structural conjuncts of architecture section 08, verbatim. The seventh
+# (no_new_finding_or_acceptance_criterion) is the semantic field comparison and
+# the eighth (equivalence_validator_passes) is the conjunction itself, so
+# neither is a separately observed fact.
+STRUCTURAL_CONJUNCTS: tuple[str, ...] = (
+    "current_head_descends_from_or_is_patch_equivalent_to_audited_head",
+    "actual_changed_paths_subset_of_allowed_proof_only_paths",
+    "raw_diff_contains_no_substantive_source_change",
+    "audited_content_tree_equal_under_exclusion",
+    "packet_and_policy_digests_unchanged",
+    "audit_result_bytes_unchanged",
+)
+
+
+
 
 # The 39 census message classes, mapped to the five envelope kinds.
 # Transcribed from DMX-GOV-WORKFLOW-OPT-001 section 03; the reduction is the
@@ -358,6 +408,50 @@ def _require_schema_version(value: Any, expected: str) -> str:
 
 
 @dataclass(frozen=True)
+class StructuralFacts:
+    """The structural inputs to proof-only equivalence, each with its basis.
+
+    Produced by ``snapshot.observe_proof_only_facts`` from read-only git, or —
+    when a caller supplies raw values — carrying ``CLAIMED_INPUT`` bases that
+    can never reach PASS. ``observation_digest`` lets a later auditor re-run the
+    observer and compare rather than take the receipt's word.
+    """
+
+    ancestry_established: bool = False
+    actual_changed_paths: Sequence[str] = ()
+    raw_diff_digest: str = ""
+    content_tree_equivalent_under_exclusion: bool = False
+    audited_packet_digest: str | None = None
+    successor_packet_digest: str | None = None
+    audited_policy_digest: str | None = None
+    successor_policy_digest: str | None = None
+    audited_audit_result_digest: str | None = None
+    successor_audit_result_digest: str | None = None
+    basis: Mapping[str, FactBasis] = field(default_factory=dict)
+    merge_base: str | None = None
+    observer_version: str | None = None
+    observation_digest: str | None = None
+    absent_named_paths: Sequence[str] = ()
+
+    def __post_init__(self) -> None:
+        for name in self.basis:
+            if name not in STRUCTURAL_CONJUNCTS:
+                raise Denial(
+                    NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
+                    f"{name!r} is not a declared structural conjunct",
+                )
+
+    def basis_for(self, conjunct: str) -> FactBasis:
+        """An undeclared basis is UNKNOWN, never optimistically OBSERVED."""
+        return self.basis.get(conjunct, FactBasis.UNKNOWN)
+
+    @classmethod
+    def claimed(cls, **values: Any) -> "StructuralFacts":
+        """Caller-asserted facts. Every basis is CLAIMED_INPUT, so PASS is unreachable."""
+        return cls(**values, basis={name: FactBasis.CLAIMED_INPUT for name in STRUCTURAL_CONJUNCTS})
+
+
+@dataclass(frozen=True)
 class Identity:
     """The isolation dimensions every consequential reduction must bind."""
 
@@ -375,31 +469,59 @@ class Identity:
     def conflicts_with(self, other: "Identity") -> str | None:
         """Return the first conflicting dimension, or None when compatible.
 
-        A dimension present on both sides must match exactly. A dimension known
-        on one side and absent on the other is not itself a conflict; callers
-        that require presence enforce it separately.
+        A dimension present on both sides must match exactly. Absence is handled
+        by ``missing_dimensions`` rather than here: silently treating an absent
+        dimension as compatible is what GOV-AUD-004 identified as a wildcard, so
+        presence is a separate, explicitly required check.
         """
-        for name in (
-            "project_id",
-            "repository_id",
-            "workspace_id",
-            "worktree_id",
-            "instance_id",
-            "packet_id",
-        ):
+        for name in IDENTITY_DIMENSIONS:
             mine = getattr(self, name)
             theirs = getattr(other, name)
             if mine is not None and theirs is not None and mine != theirs:
                 return name
         return None
 
-    def require_compatible(self, other: "Identity", *, context: str) -> None:
+    def missing_dimensions(
+        self, other: "Identity", required: Sequence[str]
+    ) -> list[str]:
+        """Return the required dimensions not bound on *both* sides.
+
+        Absence is not compatibility. A reduction that declares a dimension
+        applicable must see it bound on both the expected and the offered
+        identity, otherwise the unbound side is an unconstrained wildcard.
+        """
+        missing: list[str] = []
+        for name in required:
+            if name not in IDENTITY_DIMENSIONS:
+                raise Denial(
+                    NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
+                    f"{name!r} is not a known identity dimension",
+                )
+            if getattr(self, name) is None or getattr(other, name) is None:
+                missing.append(name)
+        return missing
+
+    def require_compatible(
+        self,
+        other: "Identity",
+        *,
+        context: str,
+        required_dimensions: Sequence[str] = (),
+    ) -> None:
+        """Deny on a conflicting dimension, or on an unbound required dimension."""
         conflict = self.conflicts_with(other)
         if conflict is not None:
             raise Denial(
                 NormalizedFailureClass.SCOPE_OR_CONTAINMENT_VIOLATION,
                 f"{context}: {conflict} mismatch "
                 f"({getattr(self, conflict)!r} vs {getattr(other, conflict)!r})",
+            )
+        missing = self.missing_dimensions(other, required_dimensions)
+        if missing:
+            raise Denial(
+                NormalizedFailureClass.SCOPE_OR_CONTAINMENT_VIOLATION,
+                f"{context}: required identity dimension(s) {', '.join(missing)} "
+                "are not bound on both sides; absence is not compatibility",
             )
 
     def as_dict(self) -> dict[str, Any]:
@@ -411,6 +533,22 @@ class Identity:
             "instance_id": self.instance_id,
             "packet_id": self.packet_id,
         }
+
+
+def applicable_dimensions(identity: Identity) -> tuple[str, ...]:
+    """The dimensions a reduction against ``identity`` must see bound.
+
+    "Applicable" means the expected identity actually binds it. GOV-AUD-004: a
+    reduction that has committed to a worktree or instance must not accept
+    evidence that declines to say which one it came from.
+    """
+    required = list(BASE_REQUIRED_IDENTITY_DIMENSIONS)
+    for name in IDENTITY_DIMENSIONS:
+        if name in required:
+            continue
+        if getattr(identity, name) is not None:
+            required.append(name)
+    return tuple(required)
 
 
 @dataclass(frozen=True)
@@ -580,9 +718,12 @@ class GovernedDeliveryEnvelope:
                 NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
                 f"event_type {self.event_type!r} is a {expected.value} class, not {self.kind.value}",
             )
+        required = applicable_dimensions(self.identity)
         for ref in self.evidence_refs:
             self.identity.require_compatible(
-                ref.identity, context=f"envelope {self.envelope_id} evidence {ref.evidence_id}"
+                ref.identity,
+                context=f"envelope {self.envelope_id} evidence {ref.evidence_id}",
+                required_dimensions=required,
             )
 
     def as_dict(self) -> dict[str, Any]:
@@ -634,10 +775,10 @@ class GateEntry:
                 f"unknown gate_class {self.gate_class!r}",
             )
 
-    @property
-    def blocks_consequential_action(self) -> bool:
+    @staticmethod
+    def state_blocks(state: GateState) -> bool:
         """UNKNOWN and CONFLICTING fail closed alongside the overt blockers."""
-        return self.state in {
+        return state in {
             GateState.UNSATISFIED,
             GateState.STALE,
             GateState.BLOCKED,
@@ -645,6 +786,10 @@ class GateEntry:
             GateState.CONFLICTING,
             GateState.PENDING,
         }
+
+    @property
+    def blocks_consequential_action(self) -> bool:
+        return self.state_blocks(self.state)
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -669,9 +814,43 @@ class GateLedger:
     identity: Identity
     subject_digest_or_head: str
     gates: Sequence[GateEntry] = ()
+    # architecture section 05 `policy.required_gate_set`. Defaults to every gate
+    # class, so a ledger that simply omits a gate is short, not silently clean.
+    required_gate_classes: Sequence[str] = DEFAULT_REQUIRED_GATE_CLASSES
+    risk_lane: str | None = None
+    policy_digest: str | None = None
+
+    def __post_init__(self) -> None:
+        for gate_class in self.required_gate_classes:
+            if gate_class not in GATE_CLASSES:
+                raise Denial(
+                    NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
+                    f"required_gate_classes contains unknown gate_class {gate_class!r}",
+                )
 
     def blocking_gates(self) -> list[GateEntry]:
         return [gate for gate in self.gates if gate.blocks_consequential_action]
+
+    def states_by_class(self) -> dict[str, GateState]:
+        """Most-blocking state per gate class.
+
+        Two entries for one class must not let the satisfied one mask the other,
+        so the ledger reports the blocking state when the class carries both.
+        """
+        states: dict[str, GateState] = {}
+        for gate in self.gates:
+            existing = states.get(gate.gate_class)
+            if existing is None or (
+                gate.blocks_consequential_action
+                and not GateEntry.state_blocks(existing)
+            ):
+                states[gate.gate_class] = gate.state
+        return states
+
+    def missing_required_classes(self) -> list[str]:
+        """Required gate classes with no entry at all. GOV-AUD-003."""
+        present = {gate.gate_class for gate in self.gates}
+        return [name for name in self.required_gate_classes if name not in present]
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -680,6 +859,12 @@ class GateLedger:
             "project_id": self.identity.project_id,
             "repository_id": self.identity.repository_id,
             "subject_digest_or_head": self.subject_digest_or_head,
+            "policy": {
+                "risk_lane": self.risk_lane,
+                "policy_digest": self.policy_digest,
+                "required_gate_set": list(self.required_gate_classes),
+            },
+            "missing_required_gate_classes": self.missing_required_classes(),
             "gates": [gate.as_dict() for gate in self.gates],
         }
 

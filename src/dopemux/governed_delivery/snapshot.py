@@ -16,16 +16,23 @@ writes no workflow state, no proof and no cache.
 
 from __future__ import annotations
 
+import hashlib
+import re
 import subprocess
 from dataclasses import dataclass, field
+from fnmatch import fnmatch
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 from .models import (
+    GATE_CLASSES,
+    STRUCTURAL_CONJUNCTS,
     Blocker,
     Denial,
     EvidenceReference,
+    FactBasis,
     FreshnessState,
+    GateEntry,
     GateLedger,
     GateState,
     Identity,
@@ -34,50 +41,292 @@ from .models import (
     NormalizedFailureClass,
     Phase,
     Posture,
+    StructuralFacts,
     Subject,
     WorkItemProjection,
+    applicable_dimensions,
     digest_of,
 )
 from .receipts import assess_freshness
 
-# Read-only git subcommands. Anything not listed here is refused rather than
-# passed through, so this module cannot become a mutation path.
-_ALLOWED_GIT_READS: frozenset[tuple[str, ...]] = frozenset(
-    {
-        ("rev-parse", "HEAD"),
-        ("rev-parse", "--show-toplevel"),
-        ("rev-parse", "--abbrev-ref", "HEAD"),
-        ("config", "--get", "remote.origin.url"),
-    }
+OBSERVER_VERSION = "governed-delivery.git-observer.1"
+
+# Full object ids only. An abbreviated sha would let an ambiguous or
+# short-form head into a receipt whose whole purpose is exact-head binding
+# (architecture section 08: "valid for exact head pair and diff").
+_SHA_RE = re.compile(r"^([0-9a-f]{40}|[0-9a-f]{64})$")
+
+# Read-only git shapes. A shape is a fixed argv template; ``<sha>`` and
+# ``<blobspec>`` are the only parameterised positions and each is validated
+# before it reaches the process. Anything not matching a shape is refused, so
+# this module cannot become a mutation path and cannot be steered into one by a
+# crafted argument.
+_GIT_READ_SHAPES: tuple[tuple[str, ...], ...] = (
+    ("rev-parse", "HEAD"),
+    ("rev-parse", "--show-toplevel"),
+    ("rev-parse", "--abbrev-ref", "HEAD"),
+    ("config", "--get", "remote.origin.url"),
+    ("merge-base", "--is-ancestor", "<sha>", "<sha>"),
+    ("merge-base", "<sha>", "<sha>"),
+    ("diff", "--name-only", "<sha>", "<sha>"),
+    ("diff", "--no-color", "<sha>", "<sha>"),
+    ("ls-tree", "-r", "--full-tree", "<sha>"),
+    ("show", "<blobspec>"),
 )
 
 
-def read_git_fact(repo_root: Path, args: Sequence[str]) -> str | None:
-    """Run one allowlisted read-only git command. Returns None on failure.
+def _valid_sha(value: str) -> bool:
+    return bool(_SHA_RE.match(value))
 
-    Fixed argv and ``shell=False``: no interpolation, no shell, no write verbs.
+
+def _valid_blobspec(value: str) -> bool:
+    """``<sha>:<path>``, with the path constrained to stay inside the tree."""
+    sha, separator, path = value.partition(":")
+    if not separator or not _valid_sha(sha) or not path:
+        return False
+    if path.startswith("/") or "\0" in path:
+        return False
+    return ".." not in path.split("/")
+
+
+def _matches_shape(args: Sequence[str], shape: Sequence[str]) -> bool:
+    if len(args) != len(shape):
+        return False
+    for supplied, expected in zip(args, shape):
+        if expected == "<sha>":
+            if not _valid_sha(supplied):
+                return False
+        elif expected == "<blobspec>":
+            if not _valid_blobspec(supplied):
+                return False
+        elif supplied != expected:
+            return False
+    return True
+
+
+def run_git_read(
+    repo_root: Path, args: Sequence[str], *, binary: bool = False
+) -> tuple[int, Any]:
+    """Run one shape-allowlisted read-only git command.
+
+    Returns ``(returncode, output)``. Unlike :func:`read_git_fact` the return
+    code is preserved, because ``merge-base --is-ancestor`` reports its answer
+    that way and collapsing it to None would lose the distinction between "not
+    an ancestor" and "the command could not run".
     """
-    key = tuple(args)
-    if key not in _ALLOWED_GIT_READS:
+    argv = list(args)
+    if not any(_matches_shape(argv, shape) for shape in _GIT_READ_SHAPES):
         raise Denial(
             NormalizedFailureClass.SCOPE_OR_CONTAINMENT_VIOLATION,
-            f"git read {key!r} is not on the read-only allowlist",
+            f"git read {tuple(argv)!r} does not match a read-only allowlisted shape",
         )
     try:
         completed = subprocess.run(
-            ["git", *args],
+            ["git", *argv],
             cwd=str(repo_root),
             capture_output=True,
-            text=True,
+            text=not binary,
             shell=False,
-            timeout=10,
+            timeout=30,
             check=False,
         )
-    except (OSError, subprocess.SubprocessError):
+    except (OSError, subprocess.SubprocessError) as exc:
+        return 128, b"" if binary else f"{exc}"
+    return completed.returncode, completed.stdout
+
+
+def read_git_fact(repo_root: Path, args: Sequence[str]) -> str | None:
+    """Run one allowlisted read-only git command. Returns None on failure."""
+    returncode, output = run_git_read(repo_root, args)
+    if returncode != 0:
         return None
-    if completed.returncode != 0:
+    return str(output).strip() or None
+
+
+def _sha256_hex(payload: bytes) -> str:
+    return "sha256:" + hashlib.sha256(payload).hexdigest()
+
+
+def _tree_entries(repo_root: Path, head: str) -> dict[str, str] | None:
+    """path -> ``mode type oid`` for every tracked entry at ``head``.
+
+    Mode and type are kept, not just the object id. Two changes preserve the
+    blob oid exactly while altering what the file *is*: a permission change
+    (``100644`` to ``100755``, making a source file executable) and a type
+    change (``100644`` to ``120000``, turning a file whose content reads
+    ``/etc/passwd`` into a symlink pointing there). Digesting the oid alone
+    would call both trees equivalent. The path-membership conjunct also catches
+    them, but these are meant to be independent checks, and a conjunct that
+    silently agrees with its neighbour is not one.
+    """
+    returncode, output = run_git_read(repo_root, ["ls-tree", "-r", "--full-tree", head])
+    if returncode != 0:
         return None
-    return completed.stdout.strip() or None
+    entries: dict[str, str] = {}
+    for line in str(output).splitlines():
+        meta, _, path = line.partition("\t")
+        parts = meta.split()
+        if not path or len(parts) < 3:
+            continue
+        mode, kind, oid = parts[0], parts[1], parts[2]
+        entries[path] = f"{mode} {kind} {oid}"
+    return entries
+
+
+def _excluded_tree_digest(
+    entries: Mapping[str, str], allowed_paths: Sequence[str]
+) -> str:
+    """Digest every tracked file NOT matching ``allowed_paths``.
+
+    This is the concrete form of the receipt's
+    ``content_digest_exclusion_definition``: a later auditor can recompute it
+    from the same two heads and the same allowlist.
+    """
+    excluded = sorted(
+        (path, blob)
+        for path, blob in entries.items()
+        if not any(fnmatch(path, pattern) for pattern in allowed_paths)
+    )
+    return digest_of(excluded)
+
+
+def _blob_digest(repo_root: Path, head: str, path: str | None) -> str | None:
+    """sha256 of one file's bytes at one head, or None when it is absent."""
+    if not path:
+        return None
+    returncode, payload = run_git_read(repo_root, ["show", f"{head}:{path}"], binary=True)
+    if returncode != 0:
+        return None
+    return _sha256_hex(payload)
+
+
+def observe_proof_only_facts(
+    repo_root: Path,
+    *,
+    audited_head: str,
+    successor_head: str,
+    allowed_paths: Sequence[str],
+    packet_path: str | None = None,
+    policy_path: str | None = None,
+    audit_result_path: str | None = None,
+) -> StructuralFacts:
+    """Compute the structural conjuncts from git rather than accept them.
+
+    GOV-AUD-002: every fact returned here carries ``OBSERVED_GIT`` only when
+    this function actually established it from git objects. A step that could
+    not run leaves its fact false with an ``UNKNOWN`` basis, so a partial
+    observation degrades to a denial instead of a silent pass.
+    """
+    if not _valid_sha(audited_head) or not _valid_sha(successor_head):
+        raise Denial(
+            NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
+            "both heads must be resolved git object ids before observation",
+        )
+
+    # Only the directly observed conjuncts are seeded here.
+    # ``raw_diff_contains_no_substantive_source_change`` is deliberately absent:
+    # the evaluator derives it from path membership and tree equality rather
+    # than observing it, so claiming a basis for it here would be inventing one.
+    basis: dict[str, FactBasis] = {
+        name: FactBasis.UNKNOWN
+        for name in STRUCTURAL_CONJUNCTS
+        if name != "raw_diff_contains_no_substantive_source_change"
+    }
+
+    # 1. Ancestry. Only descent is tested; patch-equivalence is the architecture's
+    #    permitted alternative but is not established here, so a non-descendant
+    #    fails closed rather than being assumed equivalent.
+    ancestry_code, _ = run_git_read(
+        repo_root, ["merge-base", "--is-ancestor", audited_head, successor_head]
+    )
+    ancestry_established = ancestry_code == 0
+    if ancestry_code in (0, 1):
+        basis["current_head_descends_from_or_is_patch_equivalent_to_audited_head"] = (
+            FactBasis.OBSERVED_GIT
+        )
+
+    # 2. Changed paths.
+    paths_code, paths_out = run_git_read(
+        repo_root, ["diff", "--name-only", audited_head, successor_head]
+    )
+    changed_paths: tuple[str, ...] = ()
+    if paths_code == 0:
+        changed_paths = tuple(
+            line.strip() for line in str(paths_out).splitlines() if line.strip()
+        )
+        basis["actual_changed_paths_subset_of_allowed_proof_only_paths"] = (
+            FactBasis.OBSERVED_GIT
+        )
+
+    # 3. Raw diff digest, retained so a laundered change stays detectable later.
+    diff_code, diff_out = run_git_read(
+        repo_root, ["diff", "--no-color", audited_head, successor_head], binary=True
+    )
+    raw_diff_digest = _sha256_hex(diff_out) if diff_code == 0 else ""
+
+    # 4. Tree equality under exclusion.
+    audited_entries = _tree_entries(repo_root, audited_head)
+    successor_entries = _tree_entries(repo_root, successor_head)
+    tree_equivalent = False
+    if audited_entries is not None and successor_entries is not None:
+        tree_equivalent = _excluded_tree_digest(
+            audited_entries, allowed_paths
+        ) == _excluded_tree_digest(successor_entries, allowed_paths)
+        basis["audited_content_tree_equal_under_exclusion"] = FactBasis.OBSERVED_GIT
+
+    # 5/6. Frozen digests, hashed from the named files' bytes at each head.
+    absent: list[str] = []
+    digests: dict[str, str | None] = {}
+    for label, path in (
+        ("packet", packet_path),
+        ("policy", policy_path),
+        ("audit_result", audit_result_path),
+    ):
+        for side, head in (("audited", audited_head), ("successor", successor_head)):
+            value = _blob_digest(repo_root, head, path)
+            digests[f"{side}_{label}"] = value
+            if path and value is None:
+                absent.append(f"{path}@{side}")
+
+    if packet_path and policy_path:
+        basis["packet_and_policy_digests_unchanged"] = FactBasis.OBSERVED_GIT
+    if audit_result_path:
+        basis["audit_result_bytes_unchanged"] = FactBasis.OBSERVED_GIT
+
+    merge_base = read_git_fact(repo_root, ["merge-base", audited_head, successor_head])
+
+    observation_digest = digest_of(
+        {
+            "audited_head": audited_head,
+            "successor_head": successor_head,
+            "allowed_paths": sorted(allowed_paths),
+            "ancestry_established": ancestry_established,
+            "actual_changed_paths": sorted(changed_paths),
+            "raw_diff_digest": raw_diff_digest,
+            "content_tree_equivalent_under_exclusion": tree_equivalent,
+            "digests": {name: digests[name] for name in sorted(digests)},
+            "merge_base": merge_base,
+            "observer_version": OBSERVER_VERSION,
+        }
+    )
+
+    return StructuralFacts(
+        ancestry_established=ancestry_established,
+        actual_changed_paths=changed_paths,
+        raw_diff_digest=raw_diff_digest,
+        content_tree_equivalent_under_exclusion=tree_equivalent,
+        audited_packet_digest=digests.get("audited_packet"),
+        successor_packet_digest=digests.get("successor_packet"),
+        audited_policy_digest=digests.get("audited_policy"),
+        successor_policy_digest=digests.get("successor_policy"),
+        audited_audit_result_digest=digests.get("audited_audit_result"),
+        successor_audit_result_digest=digests.get("successor_audit_result"),
+        basis=basis,
+        merge_base=merge_base,
+        observer_version=OBSERVER_VERSION,
+        observation_digest=observation_digest,
+        absent_named_paths=tuple(sorted(set(absent))),
+    )
 
 
 @dataclass(frozen=True)
@@ -96,6 +345,20 @@ class SnapshotInput:
     merge_decision_present: bool = False
     activation_decision_present: bool = False
     terminal: bool = False
+    # None means "derive from the packet binding"; an explicit tuple lets an
+    # operator demand more. GOV-AUD-004: a dimension declared applicable must be
+    # bound on both sides, not treated as a wildcard when absent.
+    required_identity_dimensions: Sequence[str] | None = None
+
+    def identity_dimensions_required(self) -> tuple[str, ...]:
+        if self.required_identity_dimensions is not None:
+            return tuple(self.required_identity_dimensions)
+        required = list(applicable_dimensions(self.identity))
+        # A packet-scoped reduction has a packet, so packet_id is applicable and
+        # therefore required even when this side happens not to carry it.
+        if self.packet_ref and "packet_id" not in required:
+            required.append("packet_id")
+        return tuple(required)
 
 
 # Gate classes whose satisfaction advances the coarse phase, in order. The
@@ -120,8 +383,52 @@ _PHASE_SEQUENCE: tuple[tuple[str, Phase], ...] = (
 )
 
 
+def required_gate_classes(source: SnapshotInput) -> tuple[str, ...]:
+    """The policy's required gate set. Absent a ledger, every class is required."""
+    if source.gate_ledger is None:
+        return tuple(GATE_CLASSES)
+    return tuple(source.gate_ledger.required_gate_classes)
+
+
+def missing_required_gates(source: SnapshotInput) -> list[str]:
+    """Required gate classes with no ledger entry at all."""
+    present: set[str] = set()
+    if source.gate_ledger is not None:
+        present = {gate.gate_class for gate in source.gate_ledger.gates}
+    return [name for name in required_gate_classes(source) if name not in present]
+
+
+def _unknown_gate_for(source: SnapshotInput, gate_class: str) -> GateEntry:
+    """Materialize a missing required gate as UNKNOWN.
+
+    Architecture section 05 defines UNKNOWN as "required evidence is missing",
+    which is precisely this case. GOV-AUD-003 was that an omitted gate was
+    instead read as nothing at all, so an incomplete ledger could reach READY.
+    """
+    return GateEntry(
+        gate_id=f"missing:{gate_class.lower()}",
+        gate_class=gate_class,
+        state=GateState.UNKNOWN,
+        policy_owner="governed-delivery.required-gate-profile",
+        policy_version="v1",
+        subject_digest_or_head=source.subject.head_sha or source.subject.content_digest or "",
+        producer_identity="governed-delivery.snapshot",
+        observed_at=source.as_of,
+        reason=(
+            f"required gate class {gate_class} has no entry in the ledger; "
+            "required evidence is missing"
+        ),
+    )
+
+
 def derive_phase(source: SnapshotInput) -> Phase:
-    """Derive the coarse phase from satisfied gates and supplied decisions."""
+    """Derive the coarse phase from the longest satisfied prefix of the sequence.
+
+    GOV-AUD-003: taking the highest phase reached by *any* satisfied gate let a
+    ledger holding only a late gate claim a phase whose prerequisites were never
+    evidenced. Advancement now stops at the first required gate that is not
+    satisfied, so a phase implies everything before it.
+    """
     if source.terminal:
         return Phase.TERMINAL
     if source.activation_decision_present:
@@ -132,15 +439,28 @@ def derive_phase(source: SnapshotInput) -> Phase:
     if source.gate_ledger is None:
         return Phase.REQUEST
 
-    satisfied = {
-        gate.gate_class
-        for gate in source.gate_ledger.gates
-        if gate.state is GateState.SATISFIED
-    }
+    states = source.gate_ledger.states_by_class()
+    required = set(required_gate_classes(source))
+
     reached = Phase.REQUEST
     for gate_class, phase in _PHASE_SEQUENCE:
-        if gate_class in satisfied:
+        state = states.get(gate_class)
+        if state is GateState.SATISFIED:
             reached = phase
+            continue
+        if state is GateState.NOT_APPLICABLE:
+            # Policy declared this gate inapplicable: not a barrier, but not
+            # evidence of arrival either. Skip without advancing.
+            continue
+        if state is None and gate_class not in required:
+            # Absent and not required: nothing to evidence, nothing to fail.
+            continue
+        # Anything else stops advancement — including a gate the policy does not
+        # require but which is present and NOT satisfied. "Not required" excuses
+        # an absence, never a visible failure: stepping over a present
+        # UNSATISFIED or BLOCKED gate would let a later gate claim a phase whose
+        # prerequisite demonstrably did not hold.
+        break
     return reached
 
 
@@ -148,8 +468,11 @@ def collect_blockers(source: SnapshotInput) -> list[Blocker]:
     """Preserve every root blocker individually rather than aggregating."""
     blockers: list[Blocker] = []
 
-    if source.gate_ledger is not None:
-        for gate in source.gate_ledger.blocking_gates():
+    synthesized = [_unknown_gate_for(source, name) for name in missing_required_gates(source)]
+
+    if source.gate_ledger is not None or synthesized:
+        existing = source.gate_ledger.blocking_gates() if source.gate_ledger else []
+        for gate in [*existing, *synthesized]:
             if gate.state is GateState.UNKNOWN:
                 normalized = NormalizedFailureClass.STALE_OR_MISMATCHED_EVIDENCE
             elif gate.state is GateState.CONFLICTING:
@@ -278,9 +601,12 @@ def build_projection(source: SnapshotInput) -> WorkItemProjection:
     posture = derive_posture(source, blockers)
     action = derive_next_legal_action(source, phase, posture, blockers)
 
+    required_dimensions = source.identity_dimensions_required()
     for ref in source.evidence_refs:
         source.identity.require_compatible(
-            ref.identity, context=f"snapshot evidence {ref.evidence_id}"
+            ref.identity,
+            context=f"snapshot evidence {ref.evidence_id}",
+            required_dimensions=required_dimensions,
         )
 
     projection_id = digest_of(
@@ -319,6 +645,9 @@ def build_snapshot(source: SnapshotInput) -> dict[str, Any]:
     return {
         "projection": projection.as_dict(),
         "gate_ledger": source.gate_ledger.as_dict() if source.gate_ledger else None,
+        "required_gate_classes": list(required_gate_classes(source)),
+        "missing_required_gate_classes": missing_required_gates(source),
+        "required_identity_dimensions": list(source.identity_dimensions_required()),
         "answers": {
             "WHERE_IS_THIS_WORK": projection.phase.value,
             "WHAT_GATES_ARE_SATISFIED": sorted(

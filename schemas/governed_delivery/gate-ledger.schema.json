@@ -2,19 +2,47 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://dopemux.dev/schemas/governed_delivery/gate-ledger.v1.schema.json",
   "title": "GateLedger v1",
-  "description": "Derived projection of gate satisfaction against an exact subject. SATISFIED records that a gate's evidence is present and current; it never confers execution, merge or activation authority. UNKNOWN and CONFLICTING fail closed for consequential next actions.",
+  "description": "Derived projection of gate satisfaction against an exact subject. SATISFIED records that a gate's evidence is present and current; it never confers execution, merge or activation authority. UNKNOWN and CONFLICTING fail closed for consequential next actions. A required gate class with no entry is not silence but missing evidence: it is materialized as UNKNOWN (GOV-AUD-003), so an incomplete ledger cannot read as a clean one.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "ledger_id", "project_id", "repository_id", "subject_digest_or_head", "gates"],
+  "required": ["schema_version", "ledger_id", "project_id", "repository_id", "subject_digest_or_head", "policy", "missing_required_gate_classes", "gates"],
   "properties": {
     "schema_version": { "type": "string", "const": "governed-delivery.gate-ledger.v1" },
     "ledger_id": { "type": "string", "minLength": 1 },
     "project_id": { "type": "string", "minLength": 1 },
     "repository_id": { "type": "string", "minLength": 1 },
     "subject_digest_or_head": { "type": "string", "minLength": 1 },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_gate_set"],
+      "description": "Architecture section 05 policy block. required_gate_set defaults to every gate class: a lane that genuinely does not need a gate says so with an explicit NOT_APPLICABLE entry, never by omission.",
+      "properties": {
+        "risk_lane": { "type": ["string", "null"] },
+        "policy_digest": { "type": ["string", "null"] },
+        "required_gate_set": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/gate_class" }
+        }
+      }
+    },
+    "missing_required_gate_classes": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/gate_class" },
+      "description": "Required classes with no entry at all. Non-empty means the ledger is incomplete and cannot support READY or phase advancement."
+    },
     "gates": { "type": "array", "items": { "$ref": "#/definitions/gate_entry" } }
   },
   "definitions": {
+    "gate_class": {
+      "type": "string",
+      "description": "Gate classes enumerated by DMX-GOV-WORKFLOW-OPT-001 section 05.",
+      "enum": [
+        "IDENTITY", "AUTHORITY", "PACKET", "SCOPE", "VALIDATION", "FREEZE",
+        "AUDIT", "PROOF", "PR", "CI", "REVIEW", "PR_STEWARD",
+        "MERGE_AUTHORITY", "POST_MERGE", "ACTIVATION"
+      ]
+    },
     "gate_entry": {
       "type": "object",
       "additionalProperties": false,
@@ -25,15 +53,7 @@
       ],
       "properties": {
         "gate_id": { "type": "string", "minLength": 1 },
-        "gate_class": {
-          "type": "string",
-          "description": "Gate classes enumerated by DMX-GOV-WORKFLOW-OPT-001 section 05.",
-          "enum": [
-            "IDENTITY", "AUTHORITY", "PACKET", "SCOPE", "VALIDATION", "FREEZE",
-            "AUDIT", "PROOF", "PR", "CI", "REVIEW", "PR_STEWARD",
-            "MERGE_AUTHORITY", "POST_MERGE", "ACTIVATION"
-          ]
-        },
+        "gate_class": { "$ref": "#/definitions/gate_class" },
         "state": {
           "type": "string",
           "enum": ["NOT_APPLICABLE", "PENDING", "SATISFIED", "UNSATISFIED", "STALE", "BLOCKED", "UNKNOWN", "CONFLICTING"]

@@ -9,7 +9,12 @@ import pytest
 from dopemux.governed_delivery import models as m
 from dopemux.governed_delivery import snapshot as s
 
-IDENTITY = m.Identity(project_id="dopemux-mvp", repository_id="DDD-Enterprises/dopemux-mvp")
+PACKET = "TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-001"
+IDENTITY = m.Identity(
+    project_id="dopemux-mvp",
+    repository_id="DDD-Enterprises/dopemux-mvp",
+    packet_id=PACKET,
+)
 NOW = "2026-08-24T00:00:00Z"
 EARLIER = "2026-08-23T00:00:00Z"
 
@@ -44,22 +49,50 @@ def gate(gate_class="AUDIT", state=m.GateState.SATISFIED, gate_id=None):
     )
 
 
-def ledger(*gates):
+def ledger(*gates, required=None):
+    """A ledger holding exactly the supplied gates.
+
+    ``required`` defaults to the classes actually supplied, which makes this
+    helper useful for testing one gate's behaviour in isolation. Completeness is
+    exercised separately by :func:`complete_ledger` and by TestRequiredGates.
+    """
+    supplied = list(gates)
     return m.GateLedger(
         ledger_id="ledger-1",
         identity=IDENTITY,
         subject_digest_or_head="abc",
-        gates=list(gates),
+        gates=supplied,
+        required_gate_classes=(
+            tuple(dict.fromkeys(g.gate_class for g in supplied))
+            if required is None
+            else tuple(required)
+        ),
+    )
+
+
+def complete_ledger(*overrides):
+    """Every required gate class present and SATISFIED, save the overrides.
+
+    GOV-AUD-003: READY and phase advancement now require a complete ledger, so a
+    test that means "everything is fine except X" has to say so explicitly.
+    """
+    replaced = {g.gate_class: g for g in overrides}
+    gates = [replaced.get(name, gate(name)) for name in m.GATE_CLASSES]
+    return m.GateLedger(
+        ledger_id="ledger-complete",
+        identity=IDENTITY,
+        subject_digest_or_head="abc",
+        gates=gates,
     )
 
 
 def source(**overrides):
     kwargs = dict(
         identity=IDENTITY,
-        work_item_id="TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-001",
+        work_item_id=PACKET,
         as_of=NOW,
         subject=m.Subject(base_sha="base", head_sha="head"),
-        packet_ref="TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-001",
+        packet_ref=PACKET,
     )
     kwargs.update(overrides)
     return s.SnapshotInput(**kwargs)
@@ -96,7 +129,7 @@ class TestBlockerPreservation:
     def test_root_blockers_preserved_individually(self):
         snap = s.build_snapshot(
             source(
-                gate_ledger=ledger(
+                gate_ledger=complete_ledger(
                     gate("AUDIT", m.GateState.UNSATISFIED, "audit"),
                     gate("CI", m.GateState.BLOCKED, "ci"),
                 )
@@ -119,14 +152,19 @@ class TestBlockerPreservation:
 
     def test_stale_evidence_becomes_a_blocker(self):
         snap = s.build_snapshot(
-            source(evidence_refs=[reference(freshness_state=m.FreshnessState.STALE)])
+            source(
+                gate_ledger=complete_ledger(),
+                evidence_refs=[reference(freshness_state=m.FreshnessState.STALE)],
+            )
         )
-        classes = {b["normalized_class"] for b in snap["answers"]["WHAT_BLOCKS_IT"]}
-        assert "STALE_OR_MISMATCHED_EVIDENCE" in classes
+        blockers = {b["blocker_id"]: b for b in snap["answers"]["WHAT_BLOCKS_IT"]}
+        assert blockers["evidence:ev-1"]["normalized_class"] == "STALE_OR_MISMATCHED_EVIDENCE"
 
     def test_expired_evidence_becomes_a_blocker(self):
-        snap = s.build_snapshot(source(evidence_refs=[reference(valid_until=EARLIER)]))
-        assert snap["answers"]["WHAT_BLOCKS_IT"]
+        snap = s.build_snapshot(
+            source(gate_ledger=complete_ledger(), evidence_refs=[reference(valid_until=EARLIER)])
+        )
+        assert "evidence:ev-1" in {b["blocker_id"] for b in snap["answers"]["WHAT_BLOCKS_IT"]}
 
     def test_failed_audit_becomes_a_blocking_finding(self):
         snap = s.build_snapshot(source(audit_acceptable=False))
@@ -139,6 +177,7 @@ class TestPosture:
         projection = s.build_projection(
             source(
                 audit_acceptable=True,
+                gate_ledger=complete_ledger(),
                 evidence_refs=[reference(freshness_state=m.FreshnessState.STALE)],
             )
         )
@@ -157,11 +196,48 @@ class TestPosture:
         projection = s.build_projection(source(audit_acceptable=None))
         assert projection.posture is not m.Posture.READY
 
-    def test_ready_requires_clean_evidence_and_accepted_audit(self):
+    def test_ready_requires_a_complete_ledger_clean_evidence_and_accepted_audit(self):
         projection = s.build_projection(
             source(
                 audit_acceptable=True,
-                gate_ledger=ledger(gate("AUDIT"), gate("VALIDATION")),
+                gate_ledger=complete_ledger(),
+                evidence_refs=[reference()],
+            )
+        )
+        assert projection.posture is m.Posture.READY
+
+    def test_partial_ledger_cannot_reach_ready(self):
+        """GOV-AUD-003: AUDIT + VALIDATION alone used to be enough for READY.
+
+        Every other required gate is simply absent, which the previous reducer
+        read as "no problem" rather than "no evidence".
+        """
+        projection = s.build_projection(
+            source(
+                audit_acceptable=True,
+                gate_ledger=m.GateLedger(
+                    ledger_id="partial",
+                    identity=IDENTITY,
+                    subject_digest_or_head="abc",
+                    gates=[gate("AUDIT"), gate("VALIDATION")],
+                ),
+                evidence_refs=[reference()],
+            )
+        )
+        assert projection.posture is m.Posture.BLOCKED
+
+    def test_no_ledger_at_all_cannot_reach_ready(self):
+        projection = s.build_projection(source(audit_acceptable=True))
+        assert projection.posture is m.Posture.BLOCKED
+
+    def test_a_gate_marked_not_applicable_satisfies_the_requirement(self):
+        """Policy opts out explicitly with NOT_APPLICABLE, never by omission."""
+        projection = s.build_projection(
+            source(
+                audit_acceptable=True,
+                gate_ledger=complete_ledger(
+                    gate("ACTIVATION", m.GateState.NOT_APPLICABLE, "activation")
+                ),
                 evidence_refs=[reference()],
             )
         )
@@ -194,19 +270,173 @@ class TestPosture:
 
 
 class TestPhase:
-    def test_phase_advances_with_satisfied_gates(self):
-        early = s.build_projection(source(gate_ledger=ledger(gate("IDENTITY"))))
-        late = s.build_projection(
-            source(gate_ledger=ledger(gate("IDENTITY"), gate("VALIDATION"), gate("AUDIT")))
+    def _phase(self, *gates, required=None):
+        return s.build_projection(
+            source(gate_ledger=ledger(*gates, required=required))
+        ).phase
+
+    def test_phase_advances_through_a_satisfied_prefix(self):
+        assert self._phase(gate("IDENTITY")) is m.Phase.REQUEST
+        assert self._phase(gate("IDENTITY"), gate("AUTHORITY")) is m.Phase.AUTHORITY
+        assert (
+            self._phase(
+                gate("IDENTITY"),
+                gate("AUTHORITY"),
+                gate("PACKET"),
+                gate("SCOPE"),
+                gate("VALIDATION"),
+            )
+            is m.Phase.VERIFY
         )
-        assert early.phase is m.Phase.REQUEST
-        assert late.phase is m.Phase.REVIEW
+
+    def test_phase_stops_at_the_first_unsatisfied_required_gate(self):
+        """GOV-AUD-003: a late gate must not claim a phase whose prerequisites are unproven."""
+        phase = self._phase(
+            gate("IDENTITY"),
+            gate("SCOPE", m.GateState.UNSATISFIED, "scope"),
+            gate("AUDIT"),
+            required=("IDENTITY", "SCOPE", "AUDIT"),
+        )
+        assert phase is m.Phase.REQUEST
+
+    def test_a_missing_required_gate_halts_advancement(self):
+        phase = s.build_projection(
+            source(
+                gate_ledger=m.GateLedger(
+                    ledger_id="partial",
+                    identity=IDENTITY,
+                    subject_digest_or_head="abc",
+                    gates=[gate("VALIDATION"), gate("AUDIT")],
+                )
+            )
+        ).phase
+        assert phase is m.Phase.REQUEST
+
+    def test_a_complete_satisfied_ledger_reaches_the_last_phase(self):
+        assert s.build_projection(source(gate_ledger=complete_ledger())).phase is m.Phase.ACTIVATE
+
+    def test_not_required_class_is_skipped_without_advancing(self):
+        phase = self._phase(
+            gate("IDENTITY"), gate("AUTHORITY"), required=("IDENTITY", "AUTHORITY")
+        )
+        assert phase is m.Phase.AUTHORITY
+
+    def test_a_present_but_failed_gate_halts_even_when_policy_does_not_require_it(self):
+        """"Not required" excuses an absence, never a visible failure.
+
+        Found by adversarial probing during repair cycle 1: a gate present with
+        UNSATISFIED state but outside the required set was being stepped over,
+        letting a later gate claim a phase whose prerequisite demonstrably did
+        not hold — the same defect class as GOV-AUD-003 one level down.
+        """
+        phase = self._phase(
+            gate("IDENTITY"),
+            gate("SCOPE", m.GateState.UNSATISFIED, "scope"),
+            gate("AUDIT"),
+            required=("IDENTITY", "AUDIT"),
+        )
+        assert phase is m.Phase.REQUEST
+
+    @pytest.mark.parametrize(
+        "state",
+        [
+            m.GateState.UNSATISFIED,
+            m.GateState.BLOCKED,
+            m.GateState.STALE,
+            m.GateState.UNKNOWN,
+            m.GateState.CONFLICTING,
+            m.GateState.PENDING,
+        ],
+    )
+    def test_every_non_satisfied_present_state_halts_advancement(self, state):
+        phase = self._phase(
+            gate("IDENTITY"),
+            gate("SCOPE", state, "scope"),
+            gate("AUDIT"),
+            required=("IDENTITY", "AUDIT"),
+        )
+        assert phase is m.Phase.REQUEST
+
+    def test_not_applicable_is_the_only_state_that_may_be_stepped_over(self):
+        phase = self._phase(
+            gate("IDENTITY"),
+            gate("AUTHORITY"),
+            gate("PACKET"),
+            gate("SCOPE", m.GateState.NOT_APPLICABLE, "scope"),
+            gate("VALIDATION"),
+            required=("IDENTITY", "AUTHORITY", "PACKET", "SCOPE", "VALIDATION"),
+        )
+        assert phase is m.Phase.VERIFY
 
     def test_terminal_overrides(self):
         assert s.build_projection(source(terminal=True)).phase is m.Phase.TERMINAL
 
     def test_no_ledger_is_request_phase(self):
         assert s.build_projection(source()).phase is m.Phase.REQUEST
+
+
+class TestRequiredGates:
+    def test_missing_required_classes_are_reported(self):
+        snap = s.build_snapshot(
+            source(
+                gate_ledger=m.GateLedger(
+                    ledger_id="partial",
+                    identity=IDENTITY,
+                    subject_digest_or_head="abc",
+                    gates=[gate("AUDIT")],
+                )
+            )
+        )
+        missing = set(snap["missing_required_gate_classes"])
+        assert "AUDIT" not in missing
+        assert {"IDENTITY", "SCOPE", "CI", "MERGE_AUTHORITY"} <= missing
+
+    def test_missing_gate_materializes_as_unknown_not_as_silence(self):
+        blockers = s.collect_blockers(
+            source(
+                gate_ledger=m.GateLedger(
+                    ledger_id="partial",
+                    identity=IDENTITY,
+                    subject_digest_or_head="abc",
+                    gates=[gate("AUDIT")],
+                )
+            )
+        )
+        synthesized = [b for b in blockers if b.blocker_id.startswith("gate:missing:")]
+        assert synthesized
+        assert all(
+            b.normalized_class is m.NormalizedFailureClass.STALE_OR_MISMATCHED_EVIDENCE
+            for b in synthesized
+        )
+        assert all("required evidence is missing" in b.statement for b in synthesized)
+
+    def test_policy_may_narrow_the_required_set(self):
+        narrowed = m.GateLedger(
+            ledger_id="narrow",
+            identity=IDENTITY,
+            subject_digest_or_head="abc",
+            gates=[gate("AUDIT"), gate("VALIDATION")],
+            required_gate_classes=("AUDIT", "VALIDATION"),
+        )
+        assert narrowed.missing_required_classes() == []
+        projection = s.build_projection(source(audit_acceptable=True, gate_ledger=narrowed))
+        assert projection.posture is m.Posture.READY
+
+    def test_unknown_required_gate_class_is_denied(self):
+        with pytest.raises(m.Denial):
+            m.GateLedger(
+                ledger_id="bad",
+                identity=IDENTITY,
+                subject_digest_or_head="abc",
+                required_gate_classes=("NOT_A_GATE",),
+            )
+
+    def test_a_blocking_duplicate_is_not_masked_by_a_satisfied_one(self):
+        led = ledger(
+            gate("AUDIT", m.GateState.SATISFIED, "audit-ok"),
+            gate("AUDIT", m.GateState.UNSATISFIED, "audit-bad"),
+        )
+        assert led.states_by_class()["AUDIT"] is m.GateState.UNSATISFIED
 
 
 class TestNativeStatePreservation:
@@ -261,8 +491,15 @@ class TestReadOnlyContainment:
             "commit", "push", "checkout", "reset", "merge", "rebase",
             "clean", "rm", "add", "fetch", "pull", "tag", "branch",
         }
-        for command in s._ALLOWED_GIT_READS:
-            assert not (set(command) & write_verbs)
+        for shape in s._GIT_READ_SHAPES:
+            assert not (set(shape) & write_verbs)
+
+    def test_parameterized_positions_reject_non_sha_arguments(self):
+        from pathlib import Path
+
+        for injected in ("--upload-pack=touch /tmp/x", "HEAD", "main", "../etc", ""):
+            with pytest.raises(m.Denial):
+                s.run_git_read(Path("."), ["diff", "--name-only", injected, "a" * 40])
 
     def test_snapshot_module_opens_no_network_client(self):
         text = inspect.getsource(s)

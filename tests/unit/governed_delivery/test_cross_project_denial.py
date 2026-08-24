@@ -63,9 +63,93 @@ class TestIdentityConflictDetection:
         other = replace(HOME, **{dimension: value})
         assert HOME.conflicts_with(other) == dimension
 
-    def test_absent_dimension_is_not_a_conflict(self):
+    def test_absent_dimension_is_not_a_value_conflict(self):
+        """Absence is not a *mismatch*. Whether it is acceptable is a separate question."""
         partial = m.Identity(project_id=HOME.project_id, repository_id=HOME.repository_id)
         assert HOME.conflicts_with(partial) is None
+
+
+class TestRequiredIdentityDimensions:
+    """GOV-AUD-004: an unstated dimension is unconstrained, not matching."""
+
+    PARTIAL = m.Identity(
+        project_id=HOME.project_id, repository_id=HOME.repository_id
+    )
+
+    @pytest.mark.parametrize(
+        "dimension", ["workspace_id", "worktree_id", "instance_id", "packet_id"]
+    )
+    def test_required_but_unbound_dimension_denies(self, dimension):
+        with pytest.raises(m.Denial) as excinfo:
+            HOME.require_compatible(
+                self.PARTIAL, context="test", required_dimensions=[dimension]
+            )
+        assert dimension in excinfo.value.reason
+        assert excinfo.value.normalized_class is (
+            m.NormalizedFailureClass.SCOPE_OR_CONTAINMENT_VIOLATION
+        )
+
+    def test_fully_bound_identity_is_no_longer_compatible_with_a_partial_one(self):
+        """The exact case the previous suite blessed as compatible."""
+        with pytest.raises(m.Denial):
+            HOME.require_compatible(
+                self.PARTIAL,
+                context="test",
+                required_dimensions=m.applicable_dimensions(HOME),
+            )
+
+    def test_absence_on_the_expected_side_also_denies(self):
+        with pytest.raises(m.Denial):
+            self.PARTIAL.require_compatible(
+                HOME, context="test", required_dimensions=["worktree_id"]
+            )
+
+    def test_applicable_dimensions_track_what_the_identity_binds(self):
+        assert m.applicable_dimensions(self.PARTIAL) == ("project_id", "repository_id")
+        assert m.applicable_dimensions(HOME) == m.IDENTITY_DIMENSIONS
+
+    def test_both_sides_bound_and_equal_is_accepted(self):
+        HOME.require_compatible(
+            HOME, context="test", required_dimensions=m.applicable_dimensions(HOME)
+        )
+
+    def test_unknown_dimension_name_is_denied(self):
+        with pytest.raises(m.Denial):
+            HOME.missing_dimensions(HOME, ["not_a_dimension"])
+
+    def test_receipt_reuse_defaults_to_the_applicable_profile(self):
+        """A worktree-bound expectation refuses a reference that will not say which."""
+        with pytest.raises(m.Denial):
+            require_identity_match(reference(self.PARTIAL), HOME, context="reuse")
+
+    def test_envelope_refuses_evidence_that_declines_a_bound_dimension(self):
+        with pytest.raises(m.Denial):
+            m.GovernedDeliveryEnvelope(
+                envelope_id="env-partial",
+                kind=m.EnvelopeKind.FACT,
+                event_type="ProofBundleRef",
+                identity=HOME,
+                producer="tool",
+                consumer="tool",
+                created_at=NOW,
+                subject_ref="abc",
+                idempotency_key="k1",
+                payload_schema="schema",
+                payload={},
+                evidence_refs=[reference(self.PARTIAL)],
+            )
+
+    def test_snapshot_requires_the_packet_dimension_when_packet_scoped(self):
+        source = s.SnapshotInput(
+            identity=HOME,
+            work_item_id="TP-A",
+            as_of=NOW,
+            packet_ref="TP-A",
+            evidence_refs=[reference(self.PARTIAL)],
+        )
+        assert "packet_id" in source.identity_dimensions_required()
+        with pytest.raises(m.Denial):
+            s.build_projection(source)
 
 
 class TestCrossProjectDenial:

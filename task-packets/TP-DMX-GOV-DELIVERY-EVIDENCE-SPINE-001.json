@@ -9,8 +9,11 @@
     "All 39 observed message classes are representable by exactly five envelope kinds.",
     "All 44 observed failure branches map to the normalized failure classes without creating a global workflow mega-enum.",
     "Gate satisfaction never implies execution, merge, activation, or other authority.",
+    "A required gate class with no ledger entry is missing evidence, materialized as UNKNOWN; READY and phase advancement require a complete ledger.",
     "dispatch_eligible remains false throughout G0.",
     "Proof-only successor equivalence must inspect governance-relevant semantics and must reject semantic change even inside allowed proof paths.",
+    "Proof-only equivalence binds a governance assertion to its document authority class, so relocation within a role passes and movement between roles fails.",
+    "A structural equivalence conjunct may support PASS only on an OBSERVED_GIT basis; a caller attestation can never establish equivalence.",
     "No new database, service, daemon, MCP server, persistent cache, credential store, or network listener is introduced."
   ],
   "depends_on": [],
@@ -92,6 +95,13 @@
       "task": "Implement deterministic read-only governed-delivery snapshot and inspection CLI with no network or mutation behavior.",
       "validation": [
         "uv run --extra test pytest tests/unit/governed_delivery/test_snapshot.py tests/unit/governed_delivery/test_cross_project_denial.py -q"
+      ]
+    },
+    {
+      "id": "S4R",
+      "task": "Repair cycle 1: close the four blocking findings of the independent L2 audit of content head 8c309d76 — GOV-AUD-001 cross-role governance laundering, GOV-AUD-002 caller attestations satisfying PASS-bearing conjuncts, GOV-AUD-003 READY/phase advancement from an incomplete gate ledger, GOV-AUD-004 absent identity dimensions treated as wildcards. Narrow the blessed positive fixtures that required the unsafe behaviour and add adversarial fixtures for each finding.",
+      "validation": [
+        "uv run --extra test pytest tests/unit/governed_delivery -q"
       ]
     },
     {

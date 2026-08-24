@@ -1,28 +1,42 @@
-"""GOV-AUD-F1 adversarial suite for proof-only successor equivalence.
+"""GOV-AUD-F1 / GOV-AUD-001 / GOV-AUD-002 adversarial suite for proof-only equivalence.
 
-The independent architecture audit's finding is that a path-membership predicate
-cannot see a semantic change made *inside* an allowed proof-only path. Each
-negative fixture below performs exactly that laundering attempt and must fail
-closed; each positive fixture is a genuinely inert change and must pass.
+The independent architecture audit's original finding is that a path-membership
+predicate cannot see a semantic change made *inside* an allowed proof-only path.
+The follow-up audit found two survivors of the first repair: an assertion could
+still be laundered *between documents* of different authority, and every
+structural conjunct could be satisfied by a caller simply asserting it.
+
+Each negative fixture below performs exactly one of those laundering attempts
+and must fail closed; each positive fixture is a genuinely inert change and must
+pass.
 """
 
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
 from jsonschema import Draft7Validator
 
 from dopemux.governed_delivery.equivalence import (
+    UNKNOWN_DOCUMENT_ROLE,
     FieldClassification,
     ProofOnlyBundle,
     classify_field,
+    derive_document_role,
     evaluate_proof_only_equivalence,
     flatten,
 )
+from dopemux.governed_delivery.models import FactBasis, STRUCTURAL_CONJUNCTS, StructuralFacts
+from dopemux.governed_delivery.snapshot import observe_proof_only_facts, run_git_read
 
 SCHEMA_DIR = Path(__file__).resolve().parents[3] / "schemas" / "governed_delivery"
+
+PROOF_PATH = "proof/TP-X/PROOF.json"
+SUMMARY_PATH = "proof/TP-X/SUMMARY.md"
+AUDIT_PATH = "proof/TP-X/AUDITOR_REPORT.md"
 
 AUDITED_DOC = {
     "audit_verdict": "PASS_WITH_RISKS",
@@ -52,32 +66,49 @@ AUDITED_DOC = {
     "generator_version": "1.0.0",
 }
 
+
+def observed(**overrides) -> StructuralFacts:
+    """Structural facts as the git observer would report them: all OBSERVED_GIT.
+
+    Test scaffolding only. The observer itself is exercised against a real
+    repository in :class:`TestGitObserver`; these fixtures isolate the evaluator.
+    """
+    values = dict(
+        ancestry_established=True,
+        actual_changed_paths=[SUMMARY_PATH],
+        raw_diff_digest="sha256:rawdiff",
+        content_tree_equivalent_under_exclusion=True,
+        audited_packet_digest="sha256:packet",
+        successor_packet_digest="sha256:packet",
+        audited_policy_digest="sha256:policy",
+        successor_policy_digest="sha256:policy",
+        audited_audit_result_digest="sha256:audit",
+        successor_audit_result_digest="sha256:audit",
+        merge_base="a" * 40,
+        observer_version="governed-delivery.git-observer.1",
+        observation_digest="sha256:observation",
+    )
+    values.update(overrides)
+    return StructuralFacts(
+        **values, basis={name: FactBasis.OBSERVED_GIT for name in STRUCTURAL_CONJUNCTS}
+    )
+
+
 BASE_ARGS = dict(
     equivalence_id="eq-test",
     audited_head="a" * 40,
     successor_head="b" * 40,
     allowed_paths=["proof/**"],
-    actual_changed_paths=["proof/TP-X/PROOF.json"],
-    raw_diff_digest="sha256:rawdiff",
-    raw_diff_contains_no_substantive_source_change=True,
-    ancestry_established=True,
-    ancestry_basis="OBSERVED_GIT",
-    content_tree_equivalent_under_exclusion=True,
-    audited_packet_digest="sha256:packet",
-    successor_packet_digest="sha256:packet",
-    audited_policy_digest="sha256:policy",
-    successor_policy_digest="sha256:policy",
-    audited_audit_result_digest="sha256:audit",
-    successor_audit_result_digest="sha256:audit",
 )
 
 
-def evaluate(successor_doc, audited_doc=None, **overrides):
+def evaluate(successor_doc, audited_doc=None, *, facts=None, **overrides):
     """Compare one audited PROOF.json against one successor PROOF.json."""
     args = dict(BASE_ARGS)
     args.update(overrides)
-    args["audited_bundle"] = ProofOnlyBundle({"PROOF.json": audited_doc or dict(AUDITED_DOC)})
-    args["successor_bundle"] = ProofOnlyBundle({"PROOF.json": successor_doc})
+    args["audited_bundle"] = ProofOnlyBundle({PROOF_PATH: audited_doc or dict(AUDITED_DOC)})
+    args["successor_bundle"] = ProofOnlyBundle({PROOF_PATH: successor_doc})
+    args["facts"] = facts if facts is not None else observed()
     return evaluate_proof_only_equivalence(**args)
 
 
@@ -85,6 +116,10 @@ def mutated(**changes):
     doc = dict(AUDITED_DOC)
     doc.update(changes)
     return doc
+
+
+def codes(result) -> set[str]:
+    return {failure["code"] for failure in result.failures}
 
 
 class TestF1NegativeFixtures:
@@ -124,7 +159,7 @@ class TestF1NegativeFixtures:
     def test_validation_claim_changed(self):
         result = evaluate(mutated(validation_claims={"pytest": "NOT_RUN", "ruff": "PASS"}))
         assert not result.passed
-        assert any("validation_claims" in f for f in result.mismatched_fields)
+        assert any("validation_claims" in name for name in result.mismatched_fields)
 
     def test_unknown_changed_to_proven(self):
         result = evaluate(mutated(unknowns=[]))
@@ -132,25 +167,25 @@ class TestF1NegativeFixtures:
         assert "unknowns" in result.mismatched_fields
 
     def test_empty_semantic_field_set(self):
-        result = evaluate_proof_only_equivalence(
-            **BASE_ARGS,
-            audited_bundle=ProofOnlyBundle({}),
-            successor_bundle=ProofOnlyBundle({}),
-        )
+        args = dict(BASE_ARGS)
+        args["audited_bundle"] = ProofOnlyBundle({})
+        args["successor_bundle"] = ProofOnlyBundle({})
+        args["facts"] = observed()
+        result = evaluate_proof_only_equivalence(**args)
         assert not result.passed
-        assert "empty_semantic_field_set" in {f["code"] for f in result.failures}
+        assert "empty_semantic_field_set" in codes(result)
 
     def test_missing_original_bundle(self):
-        result = evaluate_proof_only_equivalence(
-            **BASE_ARGS,
-            audited_bundle=None,
-            successor_bundle=ProofOnlyBundle({"PROOF.json": dict(AUDITED_DOC)}),
-        )
+        args = dict(BASE_ARGS)
+        args["audited_bundle"] = None
+        args["successor_bundle"] = ProofOnlyBundle({PROOF_PATH: dict(AUDITED_DOC)})
+        args["facts"] = observed()
+        result = evaluate_proof_only_equivalence(**args)
         assert not result.passed
-        assert "missing_original_bundle" in {f["code"] for f in result.failures}
+        assert "missing_original_bundle" in codes(result)
 
     def test_independence_downgraded(self):
-        result = evaluate(mutated(independence="PROVEN"))
+        result = evaluate(mutated(independence="FULL"))
         assert not result.passed
 
     def test_evidence_ref_list_weakened(self):
@@ -159,36 +194,31 @@ class TestF1NegativeFixtures:
         assert "evidence_refs" in result.mismatched_fields
 
     def test_security_claim_changed(self):
-        result = evaluate(mutated(security_claims={"secret_scan": "SKIPPED"}))
+        result = evaluate(mutated(security_claims={"secret_scan": "NOT_RUN"}))
         assert not result.passed
 
     def test_acceptance_criteria_changed(self):
-        result = evaluate(mutated(acceptance_criteria=["some gates PASS"]))
+        result = evaluate(mutated(acceptance_criteria=["most gates PASS"]))
         assert not result.passed
+        assert "acceptance_criteria" in result.mismatched_fields
 
 
 class TestAggregateForgery:
-    """The aggregate must not be reproducible by crafting field names.
+    """A synthesised comparison key must not share a namespace with real names."""
 
-    An earlier design synthesised a ``field#document`` key to disambiguate a
-    field repeated across documents. That key shared a namespace with real field
-    names, so an edited bundle could drop a risk from one document and re-encode
-    it as a literal ``known_risks#B`` key in another, reproducing the original
-    aggregate byte for byte and passing equivalence.
-    """
+    AUDITED = {PROOF_PATH: {"known_risks": ["R1"]}, SUMMARY_PATH: {"known_risks": ["R2"]}}
 
-    AUDITED = {"A": {"known_risks": ["R1"]}, "B": {"known_risks": ["R2"]}}
-
-    def _evaluate(self, successor):
+    def _evaluate(self, successor, audited=None):
         args = dict(BASE_ARGS)
-        args["audited_bundle"] = ProofOnlyBundle(self.AUDITED)
+        args["audited_bundle"] = ProofOnlyBundle(audited or self.AUDITED)
         args["successor_bundle"] = ProofOnlyBundle(successor)
+        args["facts"] = observed()
         return evaluate_proof_only_equivalence(**args)
 
     def test_crafted_separator_key_cannot_restore_the_aggregate(self):
         forged = {
-            "A": {"known_risks": ["R1"], "known_risks#B": ["R2"]},
-            "B": {"known_risks": ["R1"]},
+            PROOF_PATH: {"known_risks": ["R1"], "known_risks#SUMMARY": ["R2"]},
+            SUMMARY_PATH: {"known_risks": ["R1"]},
         }
         result = self._evaluate(forged)
         assert not result.passed
@@ -196,31 +226,194 @@ class TestAggregateForgery:
 
     def test_crafted_separator_with_arbitrary_suffix_also_rejected(self):
         forged = {
-            "A": {"known_risks": ["R1"], "known_risks#ANYTHING": ["R2"]},
-            "B": {"known_risks": ["R1"]},
+            PROOF_PATH: {"known_risks": ["R1"], "known_risks#ANYTHING": ["R2"]},
+            SUMMARY_PATH: {"known_risks": ["R1"]},
         }
         assert not self._evaluate(forged).passed
 
     def test_value_dropped_from_one_of_several_documents_is_rejected(self):
-        assert not self._evaluate({"A": {"known_risks": ["R1"]}, "B": {}}).passed
+        assert not self._evaluate(
+            {PROOF_PATH: {"known_risks": ["R1"]}, SUMMARY_PATH: {}}
+        ).passed
 
-    def test_aggregate_counts_repeated_values(self):
-        """Two documents asserting the same value is not the same as one."""
-        one = ProofOnlyBundle({"A": {"known_risks": ["R1"]}}).aggregate_fields()
+    def test_aggregate_is_keyed_by_role_not_by_a_synthesised_string(self):
+        """The key is a tuple, so no field name can ever collide with it."""
+        aggregate = ProofOnlyBundle({PROOF_PATH: {"known_risks": ["R1"]}}).aggregate_fields()
+        assert list(aggregate) == [("PROOF_BUNDLE", "known_risks")]
+        assert all(isinstance(key, tuple) and len(key) == 2 for key in aggregate)
+
+    def test_aggregate_counts_repeated_values_within_one_role(self):
+        """Two documents of one role asserting the same value is not the same as one.
+
+        Same role means same basename in different directories, which is exactly
+        what a legitimate relocation produces.
+        """
+        one = ProofOnlyBundle({AUDIT_PATH: {"known_risks": ["R1"]}}).aggregate_fields()
         two = ProofOnlyBundle(
-            {"A": {"known_risks": ["R1"]}, "B": {"known_risks": ["R1"]}}
+            {
+                AUDIT_PATH: {"known_risks": ["R1"]},
+                "proof/TP-Y/AUDITOR_REPORT.md": {"known_risks": ["R1"]},
+            }
         ).aggregate_fields()
         assert one != two
+        assert all(role == "AUDITOR_REPORT" for role, _ in two)
 
-    def test_content_exchanged_between_documents_preserves_the_aggregate(self):
-        """Documented boundary: the bundle's set of assertions is unchanged.
+    def test_swapping_between_two_documents_of_the_same_role_is_visible_as_a_drop(self):
+        """The one remaining same-role case: identical basenames in two directories.
 
-        This contract asserts path-independence, which is what lets a
-        byte-identical relocation pass; it deliberately does not bind an
-        assertion to the particular document carrying it.
+        Their multisets merge, so a swap is invisible — but a DROP is not, which
+        is the property that matters. Recorded explicitly rather than left implicit.
         """
-        swapped = {"A": {"known_risks": ["R2"]}, "B": {"known_risks": ["R1"]}}
-        assert self._evaluate(swapped).passed
+        audited = ProofOnlyBundle(
+            {
+                "proof/A/AUDITOR_REPORT.md": {"known_risks": ["R1"]},
+                "proof/B/AUDITOR_REPORT.md": {"known_risks": ["R2"]},
+            }
+        )
+        dropped = ProofOnlyBundle(
+            {
+                "proof/A/AUDITOR_REPORT.md": {"known_risks": ["R1"]},
+                "proof/B/AUDITOR_REPORT.md": {"known_risks": ["R1"]},
+            }
+        )
+        assert audited.aggregate_fields() != dropped.aggregate_fields()
+
+
+class TestCrossRoleLaundering:
+    """GOV-AUD-001: an assertion must stay in the document class that carries it.
+
+    The previous implementation compared a bundle-wide aggregate, so a risk could
+    be removed from the document the operator and PR Steward actually read and
+    re-encoded in one with no authority. The totals matched and it passed. Each
+    fixture here is that move, and each must now fail.
+    """
+
+    AUDITED = {
+        AUDIT_PATH: {"known_risks": ["R1", "R2"], "audit_verdict": "PASS_WITH_RISKS"},
+        SUMMARY_PATH: {"known_risks": [], "audit_verdict": "PASS_WITH_RISKS"},
+    }
+
+    def _evaluate(self, successor):
+        args = dict(BASE_ARGS)
+        args["audited_bundle"] = ProofOnlyBundle(self.AUDITED)
+        args["successor_bundle"] = ProofOnlyBundle(successor)
+        args["facts"] = observed()
+        return evaluate_proof_only_equivalence(**args)
+
+    def test_risk_moved_from_audit_result_to_summary_is_rejected(self):
+        laundered = {
+            AUDIT_PATH: {"known_risks": ["R1"], "audit_verdict": "PASS_WITH_RISKS"},
+            SUMMARY_PATH: {"known_risks": ["R2"], "audit_verdict": "PASS_WITH_RISKS"},
+        }
+        result = self._evaluate(laundered)
+        assert not result.passed
+        assert "known_risks" in result.mismatched_fields
+
+    def test_swapping_values_between_roles_is_rejected(self):
+        """The bundle-wide multiset is identical; the per-role multisets are not."""
+        swapped = {
+            AUDIT_PATH: {"known_risks": [], "audit_verdict": "PASS_WITH_RISKS"},
+            SUMMARY_PATH: {"known_risks": ["R1", "R2"], "audit_verdict": "PASS_WITH_RISKS"},
+        }
+        result = self._evaluate(swapped)
+        assert not result.passed
+        assert "known_risks" in result.mismatched_fields
+
+    def test_verdict_moved_out_of_the_audit_result_is_rejected(self):
+        laundered = {
+            AUDIT_PATH: {"known_risks": ["R1", "R2"]},
+            SUMMARY_PATH: {
+                "known_risks": [],
+                "audit_verdict": "PASS_WITH_RISKS",
+                "audit_verdict_copy": "PASS_WITH_RISKS",
+            },
+        }
+        assert not self._evaluate(laundered).passed
+
+    def test_relocation_within_the_same_role_still_passes(self):
+        """Two paths, one role: the carrier changed, the assertions did not."""
+        relocated = {
+            "proof/TP-X-renamed/AUDITOR_REPORT.md": {
+                "known_risks": ["R1", "R2"],
+                "audit_verdict": "PASS_WITH_RISKS",
+            },
+            "proof/TP-X-renamed/SUMMARY.md": {
+                "known_risks": [],
+                "audit_verdict": "PASS_WITH_RISKS",
+            },
+        }
+        result = self._evaluate(relocated)
+        assert result.passed, result.failures
+
+    def test_document_with_no_known_role_fails_closed(self):
+        args = dict(BASE_ARGS)
+        args["audited_bundle"] = ProofOnlyBundle({"proof/TP-X/mystery.txt": {"known_risks": []}})
+        args["successor_bundle"] = ProofOnlyBundle({"proof/TP-X/mystery.txt": {"known_risks": []}})
+        args["facts"] = observed()
+        result = evaluate_proof_only_equivalence(**args)
+        assert not result.passed
+        assert "unclassified_document_role" in codes(result)
+
+    def test_declared_role_cannot_override_the_path_derived_one(self):
+        """A role the caller could simply declare would be a relabelling channel."""
+        args = dict(BASE_ARGS)
+        args["audited_bundle"] = ProofOnlyBundle(self.AUDITED)
+        args["successor_bundle"] = ProofOnlyBundle(
+            self.AUDITED, {SUMMARY_PATH: "AUDIT_RESULT"}
+        )
+        args["facts"] = observed()
+        result = evaluate_proof_only_equivalence(**args)
+        assert not result.passed
+        assert "document_role_declaration_conflict" in codes(result)
+
+
+class TestDocumentRoleDerivation:
+    @pytest.mark.parametrize(
+        "path,role",
+        [
+            ("proof/TP-X/PROOF.json", "PROOF_BUNDLE"),
+            ("proof/deeply/nested/PROOF.json", "PROOF_BUNDLE"),
+            ("proof/TP-X/SUMMARY.md", "SUMMARY"),
+            ("proof/TP-X/AUDITOR_REPORT.md", "AUDITOR_REPORT"),
+            ("proof/TP-X/AUDIT.md", "AUDIT_RESULT"),
+            ("proof/TP-X/VALIDATION.json", "VALIDATION_RECEIPT"),
+            ("proof/TP-X/COMMAND_LOG.md", "COMMAND_LOG"),
+            ("proof/TP-X/CHANGED_FILES.txt", "CHANGED_FILES"),
+        ],
+    )
+    def test_role_is_derived_from_the_basename(self, path, role):
+        assert derive_document_role(path) == role
+
+    def test_the_role_table_is_injective(self):
+        """One role per document kind.
+
+        Grouping several basenames under one role would let an assertion move
+        between them unseen — GOV-AUD-001's shape at finer grain.
+        """
+        from dopemux.governed_delivery.equivalence import (
+            DOCUMENT_ROLES,
+            _ROLE_BY_BASENAME,
+        )
+
+        assert len(DOCUMENT_ROLES) == len(_ROLE_BY_BASENAME)
+        assert len(set(_ROLE_BY_BASENAME.values())) == len(_ROLE_BY_BASENAME)
+
+    def test_differently_named_audit_documents_do_not_share_a_role(self):
+        names = ["AUDITOR_REPORT.md", "AUDIT.md", "AGY_AUDIT.md", "AUDITOR_REPAIR_REPORT.md"]
+        roles = [derive_document_role(f"proof/TP-X/{name}") for name in names]
+        assert len(set(roles)) == len(names)
+        assert UNKNOWN_DOCUMENT_ROLE not in roles
+
+    def test_relocation_preserves_the_role(self):
+        assert derive_document_role("proof/a/PROOF.json") == derive_document_role(
+            "proof/b/c/PROOF.json"
+        )
+
+    def test_unlisted_basename_is_unknown(self):
+        assert derive_document_role("proof/TP-X/notes.txt") == "UNKNOWN"
+
+    def test_case_and_separator_are_normalized(self):
+        assert derive_document_role("proof\\TP-X\\proof.JSON") == "PROOF_BUNDLE"
 
 
 class TestDottedKeyNamespace:
@@ -237,6 +430,7 @@ class TestDottedKeyNamespace:
         args = dict(BASE_ARGS)
         args["audited_bundle"] = ProofOnlyBundle(audited)
         args["successor_bundle"] = ProofOnlyBundle(successor)
+        args["facts"] = observed()
         return evaluate_proof_only_equivalence(**args)
 
     def test_literal_dotted_key_and_nesting_collide_to_one_entry(self):
@@ -244,74 +438,196 @@ class TestDottedKeyNamespace:
 
     def test_dotted_key_cannot_change_a_governance_value(self):
         result = self._evaluate(
-            {"P": {"audit": {"verdict": "PASS_WITH_RISKS"}}},
-            {"P": {"audit.verdict": "PASS"}},
+            {PROOF_PATH: {"audit": {"verdict": "PASS_WITH_RISKS"}}},
+            {PROOF_PATH: {"audit.verdict": "PASS"}},
         )
         assert not result.passed
         assert "audit.verdict" in result.mismatched_fields
 
     def test_dotted_key_cannot_inflate_a_count_to_disguise_a_drop(self):
-        """Doc B drops its assertion; a crafted literal key in A cannot restore it."""
+        """One document drops its assertion; a crafted literal key cannot restore it."""
         audited = {
-            "A": {"audit": {"verdict": "PASS_WITH_RISKS"}},
-            "B": {"audit": {"verdict": "PASS_WITH_RISKS"}},
+            AUDIT_PATH: {"audit": {"verdict": "PASS_WITH_RISKS"}},
+            "proof/TP-X/AUDIT.md": {"audit": {"verdict": "PASS_WITH_RISKS"}},
         }
         forged = {
-            "A": {"audit.verdict": "PASS_WITH_RISKS", "audit": {"verdict": "PASS_WITH_RISKS"}},
-            "B": {},
+            AUDIT_PATH: {
+                "audit.verdict": "PASS_WITH_RISKS",
+                "audit": {"verdict": "PASS_WITH_RISKS"},
+            },
+            "proof/TP-X/AUDIT.md": {},
         }
         assert not self._evaluate(audited, forged).passed
 
     def test_pure_reencoding_preserving_every_assertion_passes(self):
         """Semantically neutral: the same assertions, differently encoded."""
         result = self._evaluate(
-            {"P": {"audit": {"verdict": "PASS_WITH_RISKS", "risks": ["R1"]}}},
-            {"P": {"audit.verdict": "PASS_WITH_RISKS", "audit": {"risks": ["R1"]}}},
+            {PROOF_PATH: {"audit": {"verdict": "PASS_WITH_RISKS", "risks": ["R1"]}}},
+            {PROOF_PATH: {"audit.verdict": "PASS_WITH_RISKS", "audit": {"risks": ["R1"]}}},
         )
-        assert result.passed
+        assert result.passed, result.failures
+
+
+class TestClaimedFactsCannotPass:
+    """GOV-AUD-002: a caller's word is not evidence of equivalence."""
+
+    def _claimed(self, **overrides):
+        values = dict(
+            ancestry_established=True,
+            actual_changed_paths=[SUMMARY_PATH],
+            raw_diff_digest="sha256:rawdiff",
+            content_tree_equivalent_under_exclusion=True,
+            audited_packet_digest="sha256:packet",
+            successor_packet_digest="sha256:packet",
+            audited_policy_digest="sha256:policy",
+            successor_policy_digest="sha256:policy",
+            audited_audit_result_digest="sha256:audit",
+            successor_audit_result_digest="sha256:audit",
+        )
+        values.update(overrides)
+        return StructuralFacts.claimed(**values)
+
+    def test_every_structural_claim_true_still_fails(self):
+        """The identical bundle and every conjunct asserted true: still not a PASS."""
+        result = evaluate(dict(AUDITED_DOC), facts=self._claimed())
+        assert not result.passed
+        assert any(code.startswith("conjunct_not_observed:") for code in codes(result))
+
+    def test_each_conjunct_is_individually_reported_as_unobserved(self):
+        result = evaluate(dict(AUDITED_DOC), facts=self._claimed())
+        unobserved = {
+            code.split(":", 1)[1]
+            for code in codes(result)
+            if code.startswith("conjunct_not_observed:")
+        }
+        assert unobserved == set(STRUCTURAL_CONJUNCTS)
+
+    def test_unknown_basis_also_fails(self):
+        bare = StructuralFacts(
+            ancestry_established=True,
+            actual_changed_paths=[SUMMARY_PATH],
+            raw_diff_digest="sha256:rawdiff",
+            content_tree_equivalent_under_exclusion=True,
+            audited_packet_digest="sha256:p",
+            successor_packet_digest="sha256:p",
+            audited_policy_digest="sha256:q",
+            successor_policy_digest="sha256:q",
+            audited_audit_result_digest="sha256:a",
+            successor_audit_result_digest="sha256:a",
+        )
+        result = evaluate(dict(AUDITED_DOC), facts=bare)
+        assert not result.passed
+        assert not result.structural_basis_all_observed
+
+    def test_receipt_records_the_basis_of_every_conjunct(self):
+        result = evaluate(dict(AUDITED_DOC), facts=self._claimed())
+        recorded = {item["conjunct"]: item["basis"] for item in result.as_dict()["structural_facts"]}
+        assert set(recorded) == set(STRUCTURAL_CONJUNCTS)
+        assert set(recorded.values()) == {"CLAIMED_INPUT"}
+
+    def test_claimed_receipt_is_schema_valid_and_reports_fail(self):
+        payload = evaluate(dict(AUDITED_DOC), facts=self._claimed()).as_dict()
+        schema = json.loads(
+            (SCHEMA_DIR / "proof-only-successor-equivalence.schema.json").read_text()
+        )
+        Draft7Validator(schema).validate(payload)
+        assert payload["result"] == "FAIL"
+        assert payload["structural_basis_all_observed"] is False
+
+    def test_unknown_basis_key_is_denied(self):
+        with pytest.raises(Exception):
+            StructuralFacts(basis={"not_a_conjunct": FactBasis.OBSERVED_GIT})
 
 
 class TestStructuralConjuncts:
     def test_path_outside_allowlist_rejected(self):
-        result = evaluate(dict(AUDITED_DOC), actual_changed_paths=["src/dopemux/thing.py"])
+        result = evaluate(
+            dict(AUDITED_DOC),
+            facts=observed(actual_changed_paths=["src/dopemux/thing.py"]),
+        )
         assert not result.passed
-        assert "path_outside_proof_only_allowlist" in {f["code"] for f in result.failures}
-        assert result.non_allowed_diff_count == 1
+        assert (
+            "conjunct_failed:actual_changed_paths_subset_of_allowed_proof_only_paths"
+            in codes(result)
+        )
+        assert result.as_dict()["non_allowed_diff_count"] == 1
 
     def test_ancestry_not_established_rejected(self):
-        result = evaluate(dict(AUDITED_DOC), ancestry_established=False)
+        result = evaluate(dict(AUDITED_DOC), facts=observed(ancestry_established=False))
         assert not result.passed
-        assert "ancestry_not_established" in {f["code"] for f in result.failures}
-
-    def test_unknown_ancestry_basis_fails_closed(self):
-        result = evaluate(dict(AUDITED_DOC), ancestry_basis="UNKNOWN")
-        assert not result.passed
-
-    def test_substantive_source_change_in_raw_diff_rejected(self):
-        result = evaluate(dict(AUDITED_DOC), raw_diff_contains_no_substantive_source_change=False)
-        assert not result.passed
-        assert "raw_diff_contains_substantive_source_change" in {f["code"] for f in result.failures}
+        assert (
+            "conjunct_failed:current_head_descends_from_or_is_patch_equivalent_to_audited_head"
+            in codes(result)
+        )
 
     def test_tree_not_equivalent_under_exclusion_rejected(self):
-        result = evaluate(dict(AUDITED_DOC), content_tree_equivalent_under_exclusion=False)
+        result = evaluate(
+            dict(AUDITED_DOC), facts=observed(content_tree_equivalent_under_exclusion=False)
+        )
         assert not result.passed
+        assert "conjunct_failed:audited_content_tree_equal_under_exclusion" in codes(result)
+
+    def test_raw_diff_safety_is_derived_from_the_other_two_conjuncts(self):
+        """It is no longer attestable, so breaking either input must break it."""
+        result = evaluate(
+            dict(AUDITED_DOC), facts=observed(content_tree_equivalent_under_exclusion=False)
+        )
+        assert "conjunct_failed:raw_diff_contains_no_substantive_source_change" in codes(result)
 
     def test_packet_digest_change_rejected(self):
-        result = evaluate(dict(AUDITED_DOC), successor_packet_digest="sha256:different")
+        result = evaluate(
+            dict(AUDITED_DOC), facts=observed(successor_packet_digest="sha256:different")
+        )
         assert not result.passed
-        assert "packet_digest_changed" in {f["code"] for f in result.failures}
+        assert "conjunct_failed:packet_and_policy_digests_unchanged" in codes(result)
 
     def test_policy_digest_change_rejected(self):
-        result = evaluate(dict(AUDITED_DOC), successor_policy_digest="sha256:different")
+        result = evaluate(
+            dict(AUDITED_DOC), facts=observed(successor_policy_digest="sha256:different")
+        )
         assert not result.passed
 
     def test_audit_result_digest_change_rejected(self):
-        result = evaluate(dict(AUDITED_DOC), successor_audit_result_digest="sha256:different")
+        result = evaluate(
+            dict(AUDITED_DOC), facts=observed(successor_audit_result_digest="sha256:different")
+        )
         assert not result.passed
+        assert "conjunct_failed:audit_result_bytes_unchanged" in codes(result)
 
-    def test_invalid_ancestry_basis_denied(self):
-        with pytest.raises(Exception):
-            evaluate(dict(AUDITED_DOC), ancestry_basis="MADE_UP")
+    def test_absent_digest_on_both_sides_is_not_unchanged(self):
+        """An unmade comparison must never read as a satisfied one."""
+        result = evaluate(
+            dict(AUDITED_DOC),
+            facts=observed(audited_packet_digest=None, successor_packet_digest=None),
+        )
+        assert not result.passed
+        assert "conjunct_failed:packet_and_policy_digests_unchanged" in codes(result)
+
+    def test_named_path_absent_at_a_head_is_reported(self):
+        result = evaluate(
+            dict(AUDITED_DOC), facts=observed(absent_named_paths=["task-packets/TP-X.json@audited"])
+        )
+        assert not result.passed
+        assert "named_digest_path_absent" in codes(result)
+
+    def test_missing_raw_diff_digest_rejected(self):
+        result = evaluate(dict(AUDITED_DOC), facts=observed(raw_diff_digest=""))
+        assert not result.passed
+        assert "missing_raw_diff_digest" in codes(result)
+
+    def test_all_eight_architecture_conjuncts_are_accounted_for(self):
+        """Six observed conjuncts, plus the semantic comparison and the conjunction."""
+        result = evaluate(dict(AUDITED_DOC))
+        assert [item.conjunct for item in result.conjuncts] == [
+            "current_head_descends_from_or_is_patch_equivalent_to_audited_head",
+            "actual_changed_paths_subset_of_allowed_proof_only_paths",
+            "raw_diff_contains_no_substantive_source_change",
+            "audited_content_tree_equal_under_exclusion",
+            "packet_and_policy_digests_unchanged",
+            "audit_result_bytes_unchanged",
+        ]
+        assert result.compared_fields  # the seventh conjunct
+        assert result.passed is (not result.failures)  # the eighth
 
 
 class TestPositiveFixtures:
@@ -326,11 +642,13 @@ class TestPositiveFixtures:
         assert result.passed, result.failures
 
     def test_proof_reference_relocation_with_byte_identity(self):
-        """The document moves; its governance content is byte-identical."""
-        relocated = ProofOnlyBundle({"proof/relocated/PROOF.json": dict(AUDITED_DOC)})
+        """The document moves; its role and governance content are unchanged."""
         args = dict(BASE_ARGS)
-        args["audited_bundle"] = ProofOnlyBundle({"PROOF.json": dict(AUDITED_DOC)})
-        args["successor_bundle"] = relocated
+        args["audited_bundle"] = ProofOnlyBundle({PROOF_PATH: dict(AUDITED_DOC)})
+        args["successor_bundle"] = ProofOnlyBundle(
+            {"proof/relocated/PROOF.json": dict(AUDITED_DOC)}
+        )
+        args["facts"] = observed()
         result = evaluate_proof_only_equivalence(**args)
         assert result.passed, result.failures
 
@@ -341,66 +659,52 @@ class TestPositiveFixtures:
 
 class TestAntiVacuity:
     def test_positive_result_compared_a_nonzero_field_set(self):
-        result = evaluate(mutated(checksum="cafebabe"))
+        result = evaluate(dict(AUDITED_DOC))
         assert result.passed
-        assert len(result.compared_fields) > 0
+        assert len(result.compared_fields) > 20
 
     def test_every_compared_field_is_enumerated_with_an_outcome(self):
-        result = evaluate(mutated(checksum="cafebabe"))
-        for item in result.compared_fields:
-            assert item.outcome in {
+        payload = evaluate(mutated(checksum="cafebabe")).as_dict()
+        assert payload["compared_field_count"] == len(payload["compared_fields"])
+        for item in payload["compared_fields"]:
+            assert item["outcome"] in {
                 "UNCHANGED",
                 "INERT_CHANGE_ALLOWED",
                 "GOVERNANCE_CHANGE_REJECTED",
                 "UNCLASSIFIED_REJECTED",
             }
+            assert item["document_role"] == "PROOF_BUNDLE"
 
     def test_unclassified_field_fails_closed(self):
-        result = evaluate(mutated(some_entirely_novel_field="value"))
+        result = evaluate(mutated(mystery_attribute="whatever"))
         assert not result.passed
-        assert "some_entirely_novel_field" in result.unclassified_fields
+        assert "mystery_attribute" in result.unclassified_fields
 
     def test_receipt_records_raw_diff_digest(self):
-        result = evaluate(mutated(checksum="cafebabe"))
-        assert result.as_dict()["raw_diff_digest"] == "sha256:rawdiff"
+        assert evaluate(dict(AUDITED_DOC)).as_dict()["raw_diff_digest"] == "sha256:rawdiff"
 
     def test_receipt_validates_against_schema(self):
+        payload = evaluate(dict(AUDITED_DOC)).as_dict()
         schema = json.loads(
-            (SCHEMA_DIR / "proof-only-successor-equivalence.schema.json").read_text(encoding="utf-8")
+            (SCHEMA_DIR / "proof-only-successor-equivalence.schema.json").read_text()
         )
-        validator = Draft7Validator(schema)
-        validator.validate(evaluate(mutated(checksum="cafebabe")).as_dict())
-        validator.validate(evaluate(mutated(known_risks=[])).as_dict())
+        Draft7Validator(schema).validate(payload)
+        assert payload["result"] == "PASS"
 
     def test_failing_receipt_lists_failures(self):
-        result = evaluate(mutated(audit_verdict="PASS"))
-        assert result.as_dict()["result"] == "FAIL"
-        assert len(result.as_dict()["failures"]) > 0
+        payload = evaluate(mutated(known_risks=[])).as_dict()
+        schema = json.loads(
+            (SCHEMA_DIR / "proof-only-successor-equivalence.schema.json").read_text()
+        )
+        Draft7Validator(schema).validate(payload)
+        assert payload["result"] == "FAIL"
+        assert payload["failures"]
 
 
-class TestClassifier:
+class TestFieldClassification:
     @pytest.mark.parametrize(
         "field_name",
-        [
-            "known_risks",
-            "unknowns",
-            "blocking_findings",
-            "audit_verdict",
-            "auditor_identity",
-            "independence",
-            "authority_statements",
-            "scope_statements",
-            "acceptance_criteria",
-            "content_head",
-            "tree_digest",
-            "validation_claims",
-            "security_claims",
-            "merge_readiness_claims",
-            "activation_claims",
-            "evidence_refs",
-            "conflicts",
-            "operator_decision_refs",
-        ],
+        ["audit_verdict", "known_risks", "blocking_findings", "merge_readiness", "tree_digest"],
     )
     def test_governance_fields_classified(self, field_name):
         assert classify_field(field_name) == FieldClassification.GOVERNANCE_RELEVANT
@@ -413,7 +717,7 @@ class TestClassifier:
         assert classify_field("audit_result_checksum") == FieldClassification.GOVERNANCE_RELEVANT
 
     def test_unrecognized_field_is_unknown(self):
-        assert classify_field("wholly_unanticipated") == FieldClassification.UNKNOWN
+        assert classify_field("nonsense_attribute") == FieldClassification.UNKNOWN
 
     def test_empty_field_is_unknown(self):
         assert classify_field("   ") == FieldClassification.UNKNOWN
@@ -428,3 +732,197 @@ class TestFlatten:
 
     def test_list_reordering_is_a_change(self):
         assert flatten({"a": [1, 2]}) != flatten({"a": [2, 1]})
+
+
+def _git(repo: Path, *args: str) -> None:
+    subprocess.run(["git", *args], cwd=str(repo), check=True, capture_output=True)
+
+
+@pytest.fixture()
+def observer_repo(tmp_path: Path) -> tuple[Path, str, str]:
+    """A real two-commit repository: content head, then a proof-only successor."""
+    repo = tmp_path / "repo"
+    (repo / "proof" / "TP-X").mkdir(parents=True)
+    (repo / "src").mkdir()
+    (repo / "task-packets").mkdir()
+    _git(repo.parent, "init", "-q", str(repo))
+    _git(repo, "config", "user.email", "tester@example.com")
+    _git(repo, "config", "user.name", "Tester")
+    (repo / "src" / "a.py").write_text("print(1)\n")
+    (repo / "task-packets" / "TP-X.json").write_text('{"id": "TP-X"}\n')
+    (repo / "proof" / "TP-X" / "PROOF.json").write_text('{"audit_verdict": "PASS"}\n')
+    (repo / "proof" / "TP-X" / "AUDITOR_REPORT.md").write_text("verdict PASS\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "content")
+    audited = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=str(repo), capture_output=True, text=True
+    ).stdout.strip()
+    (repo / "proof" / "TP-X" / "SUMMARY.md").write_text("generated 2026-08-25\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "proof-only")
+    successor = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=str(repo), capture_output=True, text=True
+    ).stdout.strip()
+    return repo, audited, successor
+
+
+class TestGitObserver:
+    """The observer is what makes OBSERVED_GIT mean anything."""
+
+    def _observe(self, repo, audited, successor, **overrides):
+        kwargs = dict(
+            allowed_paths=["proof/**"],
+            packet_path="task-packets/TP-X.json",
+            policy_path="src/a.py",
+            audit_result_path="proof/TP-X/AUDITOR_REPORT.md",
+        )
+        kwargs.update(overrides)
+        return observe_proof_only_facts(
+            repo, audited_head=audited, successor_head=successor, **kwargs
+        )
+
+    def test_observes_a_genuine_proof_only_successor(self, observer_repo):
+        repo, audited, successor = observer_repo
+        facts = self._observe(repo, audited, successor)
+        assert facts.ancestry_established
+        assert list(facts.actual_changed_paths) == ["proof/TP-X/SUMMARY.md"]
+        assert facts.content_tree_equivalent_under_exclusion
+        assert facts.raw_diff_digest.startswith("sha256:")
+        assert facts.observation_digest and facts.observer_version
+
+    def test_observed_facts_reach_pass(self, observer_repo):
+        repo, audited, successor = observer_repo
+        facts = self._observe(repo, audited, successor)
+        doc = {"audit_verdict": "PASS"}
+        result = evaluate_proof_only_equivalence(
+            equivalence_id="eq",
+            audited_head=audited,
+            successor_head=successor,
+            audited_bundle=ProofOnlyBundle({PROOF_PATH: doc}),
+            successor_bundle=ProofOnlyBundle({PROOF_PATH: doc}),
+            allowed_paths=["proof/**"],
+            facts=facts,
+        )
+        assert result.passed, result.failures
+        assert result.structural_basis_all_observed
+
+    def test_source_change_is_observed_not_asserted(self, observer_repo):
+        repo, audited, successor = observer_repo
+        (repo / "src" / "a.py").write_text("print(2)\n")
+        _git(repo, "add", "-A")
+        _git(repo, "commit", "-q", "-m", "source change")
+        moved = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=str(repo), capture_output=True, text=True
+        ).stdout.strip()
+        facts = self._observe(repo, audited, moved)
+        assert not facts.content_tree_equivalent_under_exclusion
+        assert "src/a.py" in facts.actual_changed_paths
+
+    def test_non_descendant_is_not_established(self, observer_repo):
+        repo, audited, successor = observer_repo
+        facts = self._observe(repo, successor, audited)
+        assert not facts.ancestry_established
+        assert (
+            facts.basis_for("current_head_descends_from_or_is_patch_equivalent_to_audited_head")
+            is FactBasis.OBSERVED_GIT
+        )
+
+    def test_mode_only_change_breaks_tree_equivalence(self, observer_repo):
+        """A source file becoming executable preserves its blob oid exactly.
+
+        Digesting the oid alone would call the trees equivalent. The conjunct is
+        meant to be independent of the path check, so it must see this itself.
+        """
+        repo, audited, _ = observer_repo
+        (repo / "src" / "a.py").chmod(0o755)
+        _git(repo, "add", "-A")
+        _git(repo, "commit", "-q", "-m", "chmod +x")
+        moved = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=str(repo), capture_output=True, text=True
+        ).stdout.strip()
+        facts = self._observe(repo, audited, moved)
+        assert not facts.content_tree_equivalent_under_exclusion
+
+    def test_type_change_to_symlink_breaks_tree_equivalence(self, observer_repo):
+        """A regular file whose content is a path, retyped as a symlink to it.
+
+        Git stores a symlink's target as the blob body, so the oid is unchanged.
+        """
+        repo, _, _ = observer_repo
+        (repo / "src" / "link.txt").write_text("/etc/passwd")
+        _git(repo, "add", "-A")
+        _git(repo, "commit", "-q", "-m", "add regular file")
+        before = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=str(repo), capture_output=True, text=True
+        ).stdout.strip()
+        (repo / "src" / "link.txt").unlink()
+        (repo / "src" / "link.txt").symlink_to("/etc/passwd")
+        _git(repo, "add", "-A")
+        _git(repo, "commit", "-q", "-m", "retype as symlink")
+        after = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=str(repo), capture_output=True, text=True
+        ).stdout.strip()
+        oids = [
+            subprocess.run(
+                ["git", "ls-tree", "-r", head, "--", "src/link.txt"],
+                cwd=str(repo),
+                capture_output=True,
+                text=True,
+            ).stdout.split()[2]
+            for head in (before, after)
+        ]
+        assert oids[0] == oids[1], "precondition: the blob oid must be unchanged"
+        facts = self._observe(repo, before, after)
+        assert not facts.content_tree_equivalent_under_exclusion
+
+    def test_absent_named_path_is_reported(self, observer_repo):
+        repo, audited, successor = observer_repo
+        facts = self._observe(repo, audited, successor, packet_path="task-packets/NOPE.json")
+        assert facts.absent_named_paths
+
+    def test_observation_digest_changes_with_the_subject(self, observer_repo):
+        repo, audited, successor = observer_repo
+        first = self._observe(repo, audited, successor)
+        second = self._observe(repo, audited, successor, allowed_paths=["proof/TP-X/**"])
+        assert first.observation_digest != second.observation_digest
+
+    def test_unresolved_head_is_denied(self, observer_repo):
+        repo, audited, successor = observer_repo
+        with pytest.raises(Exception):
+            self._observe(repo, "HEAD~1", successor)
+
+    def test_abbreviated_head_is_denied(self, observer_repo):
+        """A receipt binds an exact head pair, so a short sha is not a head."""
+        repo, audited, successor = observer_repo
+        with pytest.raises(Exception):
+            self._observe(repo, audited[:12], successor)
+
+    def test_pass_receipt_without_observation_provenance_is_schema_invalid(self):
+        """A hand-written PASS must not be able to omit how it was observed."""
+        payload = evaluate(dict(AUDITED_DOC)).as_dict()
+        assert payload["result"] == "PASS"
+        schema = json.loads(
+            (SCHEMA_DIR / "proof-only-successor-equivalence.schema.json").read_text()
+        )
+        forged = {
+            key: value
+            for key, value in payload.items()
+            if key not in {"observer_version", "observation_digest"}
+        }
+        with pytest.raises(Exception):
+            Draft7Validator(schema).validate(forged)
+
+    def test_write_verbs_are_refused_even_with_valid_shas(self, observer_repo):
+        repo, audited, successor = observer_repo
+        for forbidden in (
+            ["reset", "--hard", audited],
+            ["checkout", audited],
+            ["push", "origin", audited],
+        ):
+            with pytest.raises(Exception):
+                run_git_read(repo, forbidden)
+
+    def test_path_traversal_in_a_blobspec_is_refused(self, observer_repo):
+        repo, audited, _ = observer_repo
+        with pytest.raises(Exception):
+            run_git_read(repo, ["show", f"{audited}:../outside"])
