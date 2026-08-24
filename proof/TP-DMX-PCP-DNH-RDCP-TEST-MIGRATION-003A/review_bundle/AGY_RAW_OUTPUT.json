@@ -1,0 +1,128 @@
+{
+  "conversation_id": "7e687163-d810-46f0-a15b-4ae3ebf07285",
+  "status": "SUCCESS",
+  "response": "{\"findings\":[{\"body\":\"Successfully replaced the 3 superseded assertions. `test_proof_status_mapping_is_explicit_source_metadata` now enforces explicit source map metadata, and `test_adapter_mappings_contains_one_importable_mapping` along with `test_adapter_mapping_loads_and_matches_manifest_identity` enforce the new adapter mapping contract.\",\"id\":\"MIG-001\",\"severity\":\"INFO\",\"status\":\"RESOLVED\",\"title\":\"Foundation Extension Loader Contract Migrated\"},{\"body\":\"The 10-domain scope lock and artifact-only non-authoritative guarantees (`ARTIFACT_ONLY`, `authority: NONE`) are explicitly checked and pass. `TestArtifactOnly` and `TestMutationDomainsReadOnly` classes remain fully intact.\",\"id\":\"INV-001\",\"severity\":\"INFO\",\"status\":\"RESOLVED\",\"title\":\"Artifact-Only Safety Invariants Maintained\"},{\"body\":\"File modifications strictly target `tests/dnh_extension/test_dnh_artifact_only.py` and the task packet itself. No production files, manifests, or secrets were touched. Only standard formatting updates were additionally included in the diff.\",\"id\":\"SEC-001\",\"severity\":\"INFO\",\"status\":\"RESOLVED\",\"title\":\"No Scope Creep or Secret Leaks\"}],\"fixes_applied\":[],\"model_used\":\"gemini-3.1-pro-high\",\"remaining_risks\":[],\"status\":\"PASS\",\"summary\":\"The PR correctly migrates the legacy dNh artifact-only test assertions to the accepted PCP Foundation extension-loader contract. It replaces exactly 3 superseded assertions, explicitly requires the RDCP source map as non-authoritative metadata, and verifies the 1 executable adapter mapping. The existing 10-domain safety invariants and artifact-only guarantees are fully preserved. No production code was changed and tests pass successfully.\",\"toolAction\":\"Finishing task\",\"toolSummary\":\"Report audit results\"}\n",
+  "duration_seconds": 73.731014,
+  "num_turns": 1,
+  "structured_output": {
+    "findings": [
+      {
+        "body": "Successfully replaced the 3 superseded assertions. `test_proof_status_mapping_is_explicit_source_metadata` now enforces explicit source map metadata, and `test_adapter_mappings_contains_one_importable_mapping` along with `test_adapter_mapping_loads_and_matches_manifest_identity` enforce the new adapter mapping contract.",
+        "id": "MIG-001",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Foundation Extension Loader Contract Migrated"
+      },
+      {
+        "body": "The 10-domain scope lock and artifact-only non-authoritative guarantees (`ARTIFACT_ONLY`, `authority: NONE`) are explicitly checked and pass. `TestArtifactOnly` and `TestMutationDomainsReadOnly` classes remain fully intact.",
+        "id": "INV-001",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Artifact-Only Safety Invariants Maintained"
+      },
+      {
+        "body": "File modifications strictly target `tests/dnh_extension/test_dnh_artifact_only.py` and the task packet itself. No production files, manifests, or secrets were touched. Only standard formatting updates were additionally included in the diff.",
+        "id": "SEC-001",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "No Scope Creep or Secret Leaks"
+      }
+    ],
+    "fixes_applied": [],
+    "model_used": "gemini-3.1-pro-high",
+    "remaining_risks": [],
+    "status": "PASS",
+    "summary": "The PR correctly migrates the legacy dNh artifact-only test assertions to the accepted PCP Foundation extension-loader contract. It replaces exactly 3 superseded assertions, explicitly requires the RDCP source map as non-authoritative metadata, and verifies the 1 executable adapter mapping. The existing 10-domain safety invariants and artifact-only guarantees are fully preserved. No production code was changed and tests pass successfully."
+  },
+  "json_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "status",
+      "summary",
+      "findings",
+      "remaining_risks",
+      "fixes_applied",
+      "model_used"
+    ],
+    "properties": {
+      "status": {
+        "type": "string",
+        "enum": [
+          "PASS",
+          "PASS_WITH_RISKS",
+          "FAIL",
+          "NEEDS_SUPERVISOR"
+        ]
+      },
+      "summary": {
+        "type": "string"
+      },
+      "findings": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "severity",
+            "title",
+            "status",
+            "body"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "severity": {
+              "type": "string",
+              "enum": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "BLOCKING",
+                "INFO"
+              ]
+            },
+            "title": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "OPEN",
+                "RESOLVED",
+                "ACCEPTED_RISK"
+              ]
+            },
+            "body": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "remaining_risks": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "fixes_applied": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "model_used": {
+        "type": "string"
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 73079,
+    "output_tokens": 5230,
+    "thinking_tokens": 3850,
+    "cache_read_tokens": 252155,
+    "total_tokens": 78309
+  }
+}
