@@ -1,0 +1,85 @@
+{
+  "id": "TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A",
+  "project": "dopemux-mvp",
+  "target": "Migrate the legacy dNh artifact-only test assertions to the accepted PCP Foundation extension-loader contract without rewriting current Bridge 003 evidence.",
+  "invariants": [
+    "This packet changes tests, task-packet metadata, and proof receipts only; production code and extension manifests are immutable.",
+    "The dNh authority map retains exactly ten artifact-only domains with no live writer.",
+    "The accepted Foundation loader contract remains exactly one importable module:Class adapter mapping.",
+    "The explicit RDCP source-map entry remains evidence metadata, not proof, acceptance, activation, or runtime authority.",
+    "DDD-Enterprises/dnh-crm remains read-only.",
+    "Planner and Task Orchestrator authority remain NONE; Task Orchestrator remains is_proof false.",
+    "No merge, acceptance, activation, GitHub merge, CRM write, runtime write, or Task Orchestrator write authority is granted."
+  ],
+  "depends_on": [
+    "TP-DMX-PCP-DNH-RDCP-BRIDGE-003"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "repository-merge-planner",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-PCP-DNH-RDCP-BRIDGE-003",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "test/pcp-dnh-rdcp-test-migration-003a",
+    "base_branch": "main",
+    "stacked_because": "Bridge 003 was merged by repository automation before the separately authorized legacy-test migration was published."
+  },
+  "commit": {
+    "message": "test(pcp): migrate dNh RDCP manifest assertions",
+    "allowlist": [
+      "tests/dnh_extension/test_dnh_artifact_only.py",
+      "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/**",
+      "task-packets/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A.json"
+    ],
+    "verify": [
+      "pytest -q tests/dnh_extension/test_dnh_artifact_only.py",
+      "pytest -q tests/repository_planner/test_dnh_rdcp_adapter.py",
+      "pytest -q tests/repository_planner tests/project_control_plane",
+      "python scripts/audit/validate_audit_proof.py proof/TP-DMX-PCP-DNH-RDCP-BRIDGE-003/PROOF.json",
+      "python scripts/governance/validate_change_contract.py --base 6fefa9c47ce3fc87a04bc325961a99fdd7cc07ba --head HEAD --format text",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "test(pcp): migrate dNh RDCP manifest assertions",
+    "body": "Replaces three superseded dNh manifest assertions with tests for the accepted executable adapter and explicit RDCP source-map contracts. Records the 66/3 red baseline in this packet's proof without rewriting current Bridge 003 evidence. No production or source-repository mutation.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Record the observed 66-passing, three-failing red baseline in this packet's own proof while preserving the current Bridge 003 proof bytes.",
+      "validation": [
+        "The migration receipt distinguishes the one proof-status mapping failure from the two adapter-list failures.",
+        "Current Bridge 003 audit and proof files remain byte-identical to main."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Replace only the three superseded assertions in tests/dnh_extension/test_dnh_artifact_only.py.",
+      "validation": [
+        "The source-map path is required in proof_status_mappings and resolves under schemas/dnh_extension.",
+        "adapter_mappings contains exactly one importable module:Class mapping.",
+        "load_extension_adapters loads the dNh adapter and its extension id matches the manifest.",
+        "The existing exact ten-domain authority-map assertions remain unchanged and passing."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Run the targeted migration suite plus repository-planner and PCP Core regressions, then freeze proof without claiming an independent model audit.",
+      "validation": [
+        "All 69 dNh artifact-only tests pass.",
+        "The dNh adapter, repository-planner, and PCP Core suites pass.",
+        "Any missing required audit remains visible and blocks readiness."
+      ]
+    }
+  ]
+}
