@@ -1,0 +1,4 @@
+ ...P-DMX-PALETTE-TASKSEQ-EMPTY-STATE-1266-001.json | 55 ++++++++++++++++++++++
+ ui-dashboard/src/components/TaskSequencer.tsx      | 19 +++++++-
+ .../components/__tests__/Accessibility.test.tsx    |  6 +++
+ 3 files changed, 78 insertions(+), 2 deletions(-)
