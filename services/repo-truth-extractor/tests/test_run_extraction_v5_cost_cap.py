@@ -9,6 +9,13 @@ import sys
 import pytest
 
 
+SERVICE_ROOT = Path(__file__).resolve().parents[1]
+if str(SERVICE_ROOT) not in sys.path:
+    sys.path.insert(0, str(SERVICE_ROOT))
+
+from extractor import costing  # noqa: E402
+
+
 def _load_runner_module():
     root = Path(__file__).resolve().parents[3]
     module_path = root / "services" / "repo-truth-extractor" / "run_extraction_v5.py"
@@ -22,6 +29,13 @@ def _load_runner_module():
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
+
+
+@pytest.fixture(autouse=True)
+def _reset_extracted_spend_tracker():
+    costing.reset_spend_tracker()
+    yield
+    costing.reset_spend_tracker()
 
 
 def _make_cfg(runner, **overrides):
@@ -52,6 +66,40 @@ def _make_cfg(runner, **overrides):
     }
     payload.update(overrides)
     return runner.RunnerConfig(**payload)
+
+
+def _initialize_test_spend_tracker(
+    runner,
+    tmp_path: Path,
+    *,
+    run_id: str,
+    max_cost_usd: Decimal,
+    pricing_registry: dict[str, dict[str, Decimal]],
+    **cfg_overrides,
+):
+    runner.reset_spend_tracker()
+    runner.load_pricing_registry = lambda path=runner.PRICING_CONFIG_PATH: (
+        pricing_registry,
+        "sha-test",
+    )
+    runner.collect_provider_routes = (
+        lambda phases, routing_policy, selected_step_ids_by_phase=None, cost_profile=None, **_kw: {
+            "openrouter:openai/gpt-5-mini:OPENROUTER_API_KEY": {
+                "provider": "openrouter",
+                "model_id": "openai/gpt-5-mini",
+                "api_key_env": "OPENROUTER_API_KEY",
+            }
+        }
+    )
+    runner.initialize_spend_tracker(
+        run_root=tmp_path,
+        run_id=run_id,
+        cfg=_make_cfg(runner, max_cost_usd=float(max_cost_usd), **cfg_overrides),
+        phases=["A"],
+    )
+    state = runner.get_active_spend_tracker()
+    assert state is not None
+    return state
 
 
 def test_initialize_spend_tracker_writes_empty_ledger_when_routes_are_priced(
@@ -219,26 +267,104 @@ def test_update_run_manifest_startup_failure_marks_manifest_failed(
     assert "openrouter/openai/gpt-5.3-codex" in payload["failure_message"]
 
 
-def test_record_request_cost_marks_breach_and_writes_ledger(tmp_path: Path) -> None:
+def test_record_request_cost_refuses_breach_before_recording_spend(
+    tmp_path: Path,
+) -> None:
+    """TP-RTE-TRUTH-R2-003 (F-13/A2-7): preventive cap enforcement checks a
+    call's cost against max_cost_usd BEFORE committing it to the running
+    total, not after. A single call whose actual cost would push the run
+    over the cap must be refused -- its cost is never added to
+    total_cost_usd and no ledger entry is written for it. This replaces the
+    pre-fix "record_request_cost_marks_breach_and_writes_ledger" test, which
+    asserted the OLD (buggy) record-then-compare behavior: entries_total==1
+    and a committed total > the cap. That is exactly the one-call overshoot
+    this fix closes -- see also test_record_request_cost_post_hoc_mode_still_
+    overshoots_like_the_legacy_behavior for the (opt-in only) legacy path
+    this default no longer takes.
+    """
     runner = _load_runner_module()
-    runner.reset_spend_tracker()
-    runner._ACTIVE_SPEND_TRACKER = runner.SpendTrackerState(
-        run_root=tmp_path,
+    _initialize_test_spend_tracker(
+        runner,
+        tmp_path,
         run_id="cost_cap_breach",
         max_cost_usd=Decimal("0.10"),
-        pricing_source="test",
-        pricing_sha256="sha",
         pricing_registry={
             "openrouter/openai/gpt-5-mini": {
                 "input_cost_per_m": Decimal("0.40"),
                 "output_cost_per_m": Decimal("1.60"),
             }
         },
-        total_cost_usd=Decimal("0"),
-        cost_abort_triggered=False,
-        abort_reason=None,
-        entries=[],
     )
+    state_before = runner.get_active_spend_tracker()
+    assert state_before is not None
+    assert state_before.cost_cap_mode == "preventive"
+    meta = {
+        "response_summary": {
+            "usage": {
+                "prompt_tokens": 100000,
+                "completion_tokens": 100000,
+                "total_tokens": 200000,
+            }
+        }
+    }
+
+    # This call's actual cost is (100000/1e6*0.40) + (100000/1e6*1.60) = $0.20,
+    # which alone exceeds the $0.10 cap -- the exact one-call-overshoot shape.
+    updated = runner.record_request_cost(
+        meta,
+        phase="A",
+        step_id="A1",
+        partition_id="A_P0001",
+        provider="openrouter",
+        model_id="openai/gpt-5-mini",
+    )
+
+    assert updated["failure_type"] == "cost_aborted"
+    assert updated["cost_cap"]["cost_abort_triggered"] is True
+    assert updated["spend_ledger_recorded"] is False
+    # The breaching call's cost must NOT have been committed: refused before
+    # spend, not recorded then noticed.
+    assert updated["cost_cap"]["total_cost_usd"] == 0.0
+
+    state_after = runner.get_active_spend_tracker()
+    assert state_after is not None
+    assert state_after.total_cost_usd == Decimal("0")
+    assert state_after.entries == []
+
+    ledger_path = tmp_path / runner.TELEMETRY_DIRNAME / runner.SPEND_LEDGER_FILENAME
+    payload = json.loads(ledger_path.read_text(encoding="utf-8"))
+    assert payload["entries_total"] == 0
+    assert payload["cost_abort_triggered"] is True
+    assert payload["total_cost_usd"] == 0.0
+    assert payload["totals_by_phase_usd"] == {}
+
+
+def test_record_request_cost_post_hoc_mode_still_overshoots_like_the_legacy_behavior(
+    tmp_path: Path,
+) -> None:
+    """TP-RTE-TRUTH-R2-003: cost_cap_mode="post_hoc" is the explicit,
+    opt-in-only legacy path (no shipped cost profile sets it) -- this test
+    proves the field is now WIRED to real behavior rather than decorative:
+    choosing "post_hoc" reproduces the pre-fix commit-then-compare overshoot,
+    while the default ("preventive", proven above) does not.
+    """
+    runner = _load_runner_module()
+    _initialize_test_spend_tracker(
+        runner,
+        tmp_path,
+        run_id="cost_cap_breach_post_hoc",
+        max_cost_usd=Decimal("0.10"),
+        pricing_registry={
+            "openrouter/openai/gpt-5-mini": {
+                "input_cost_per_m": Decimal("0.40"),
+                "output_cost_per_m": Decimal("1.60"),
+            }
+        },
+        cost_cap_mode="post_hoc",
+    )
+    state_before = runner.get_active_spend_tracker()
+    assert state_before is not None
+    assert state_before.cost_cap_mode == "post_hoc"
     meta = {
         "response_summary": {
             "usage": {
@@ -269,19 +395,21 @@ def test_record_request_cost_marks_breach_and_writes_ledger(tmp_path: Path) -> N
 
 def test_call_llm_blocks_after_cost_abort(monkeypatch, tmp_path: Path) -> None:
     runner = _load_runner_module()
-    runner.reset_spend_tracker()
-    runner._ACTIVE_SPEND_TRACKER = runner.SpendTrackerState(
-        run_root=tmp_path,
+    state = _initialize_test_spend_tracker(
+        runner,
+        tmp_path,
         run_id="already_aborted",
         max_cost_usd=Decimal("0.10"),
-        pricing_source="test",
-        pricing_sha256="sha",
-        pricing_registry={},
-        total_cost_usd=Decimal("0.11"),
-        cost_abort_triggered=True,
-        abort_reason="cost_cap_exceeded total_cost_usd=0.11 max_cost_usd=0.1",
-        entries=[],
+        pricing_registry={
+            "openrouter/openai/gpt-5-mini": {
+                "input_cost_per_m": Decimal("0.40"),
+                "output_cost_per_m": Decimal("1.60"),
+            }
+        },
     )
+    state.total_cost_usd = Decimal("0.11")
+    state.cost_abort_triggered = True
+    state.abort_reason = "cost_cap_exceeded total_cost_usd=0.11 max_cost_usd=0.1"
     cfg = _make_cfg(runner)
     monkeypatch.setattr(runner, "_live_llm_calls_blocked_for_tests", lambda: False)
     monkeypatch.setattr(runner, "resolve_api_key", lambda provider, env: ("key", env))

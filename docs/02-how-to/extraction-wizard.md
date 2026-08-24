@@ -8,14 +8,14 @@ tags:
   - documentation
   - cli
 created: 2026-03-14
-updated: 2026-03-14
+updated: 2026-07-27
 date: 2026-03-14
 author: Dopemux Team
 id: extraction-wizard
 type: how-to
 owner: '@hu3mann'
-last_review: '2026-03-14'
-next_review: '2026-06-14'
+last_review: '2026-07-27'
+next_review: '2026-10-27'
 prelude: >
   Use the dopemux audit wizard to walk through the complete extraction pipeline
   interactively — from repository health checks through corpus audit, cost
@@ -119,13 +119,15 @@ DPMX_LIVE_OK=1 dopemux audit wizard --execute --routing-policy quality --workers
   apply only to the spawned extraction subprocesses and do not modify local
   shell or repo config.
 - **Canonical prescan reuse** — Stage 2 writes v5 prescan artifacts under the
-  current run root, and Stage 7 reuses them with `--prescan-dir ... --skip-prescan`
+  current run root, and Stage 7 reuses them via `--prescan-import-dir`
   instead of recomputing Phase 0 for every phase launch.
 - **Per-phase confirmation** — before each extraction phase the wizard asks
   for interactive confirmation.
 - **No direct script execution** — the wizard never runs
   `run_extraction_v5.py` directly; it delegates to
-  `dopemux upgrades run --pipeline-version v5 --ui rich --resume`.
+  `dopemux rte run --pipeline-version v5 --ui rich --resume`
+  (`dopemux upgrades run ...` is the same command via a hidden, deprecated
+  alias).
 
 ## Troubleshooting
 

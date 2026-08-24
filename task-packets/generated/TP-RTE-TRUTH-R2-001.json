@@ -1,0 +1,139 @@
+{
+  "id": "TP-RTE-TRUTH-R2-001",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / single pricing authority; catalog-fail blocks costed ops",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "Preview (E2), preventive check, and abort authority (E3) must price identical usage identically (fixture table per A2 \u00a75.5).",
+    "Catalog load failure = startup blocker on costed operations (fail-closed), never silent $0.15/$0.60 repricing reported as 'priced'.",
+    "Unknown model: raise when a cap is set; mark UNPRICED when not.",
+    "Add coverage + stale_after CI gate tying COST_PROFILES cells + ladders to priced rows in config/pricing.yaml.",
+    "Findings covered: F-10, F-11, F-13 (part)."
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R1-004"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R2",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "L"
+  },
+  "commit": {
+    "message": "fix(rte): TP-RTE-TRUTH-R2-001 \u2014 single pricing authority, fail-closed catalog",
+    "allowlist": [
+      "services/repo-truth-extractor/extractor/costing.py",
+      "services/repo-truth-extractor/lib/spend_ledger.py",
+      "services/repo-truth-extractor/tests/",
+      ".github/workflows/ci-complete.yml",
+      "task-packets/generated/TP-RTE-TRUTH-R2-001.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R2-001/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): unify pricing authority; kill fail-open repricing",
+    "body": "F-10 + F-11 (CRIT).",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Unify pricing reads onto config/pricing.yaml via one loader (extractor/costing.py home); remove the spend_ledger.py $0.15/$0.60 fail-open path (spend_ledger.py:19,95-97,137,286-299).",
+      "requirements": [
+        "E2 == E3 pricing on identical usage; catalog-fail fixture raises."
+      ],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_cost_profiles.py services/repo-truth-extractor/tests/test_pricing_coverage.py -q"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/extractor/costing.py",
+        "services/repo-truth-extractor/lib/spend_ledger.py"
+      ],
+      "validation": [
+        "Fixture table asserts preview==preventive==accounting; failure fixture blocks."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A2-cost-truthfulness.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Cost previews change intentionally: regenerate affected goldens ONCE, include before/after preview diff in PROOF.json as the reviewed artifact.",
+      "requirements": [
+        "Golden updates allowed here (unlike R1) but must be itemized in proof."
+      ],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/tests/goldens/"
+      ],
+      "validation": [
+        "Harness green with new goldens; diff documented."
+      ],
+      "context_files": []
+    }
+  ],
+  "routing": {
+    "stage": "planner_strong",
+    "tier": "strong",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml is ADVISORY governance, not a runtime router. If a runtime path disagrees, runtime wins.",
+    "runners": {
+      "preferred": [
+        "claude_code",
+        "codex"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": [
+        "grok"
+      ]
+    },
+    "models": {
+      "claude_code": "claude-opus-5 (effort high|xhigh)",
+      "codex": "gpt-5.6-sol (reasoning xhigh|max)",
+      "opencode": "anthropic/claude-sonnet-4-5 via .opencode/agents/pal-planner.md",
+      "grok": "NOT AS SOLE AUTHOR \u2014 grok-code-fast-1 is a fast coding tier, not a strong-reasoning tier",
+      "gemini_cli": "Pro-high tier \u2014 VERIFY_WITH_VENDOR_DOCS",
+      "copilot": "Claude Sonnet 4.5 (.github/agents/dopemux-planner.agent.md) \u2014 below strong tier; acceptable only under an approved plan"
+    },
+    "rationale": "CRIT money path: single pricing authority + fail-closed catalog. Wrong call here mis-prices every run. Strong reasoning mandatory.",
+    "notes": [
+      "grok forbidden as SOLE AUTHOR at this tier (grok-code-fast-1 is a fast coding tier, not strong-reasoning); acceptable as implementer executing an already-approved strong plan."
+    ],
+    "evidence": "Model ids OBSERVED from this machine: ~/.codex/config.toml (gpt-5.6-sol/xhigh), ~/.config/opencode/opencode.jsonc (claude-sonnet-4-5 + claude-haiku-4-5), ~/.grok/config.toml, .github/agents/*.agent.md (Sonnet 4.5). Per-vendor selector-string validity beyond these files remains VERIFY_WITH_VENDOR_DOCS."
+  }
+}

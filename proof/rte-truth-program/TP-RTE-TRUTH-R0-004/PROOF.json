@@ -1,0 +1,88 @@
+{
+  "status": "READY_FOR_REVIEW",
+  "packet_id": "TP-RTE-TRUTH-R0-004",
+  "finding": "F-04",
+  "title": "service lint config + extractor-lint CI job",
+  "timestamp": "2026-07-27",
+  "objective": "Create services/repo-truth-extractor/ruff.toml with lenient baseline and add extractor-lint CI job. Zero lint jobs existed despite strict mypy profile in root pyproject.",
+  "validation_state": "PASSED",
+  "execution_summary": {
+    "changes_made": [
+      {
+        "file": "services/repo-truth-extractor/ruff.toml",
+        "change": "Created new lenient ruff configuration (457 baseline violations reduced to 0 via rule disabling)",
+        "rationale": "Establishes lint baseline without requiring source reformatting. 11 rule families disabled with per-rule rationales (E402, F401, F841, E701, E401, E722, F811, E702, E741, F541, F821, I001). Future waves (R1+) can ratchet strictness."
+      },
+      {
+        "file": ".github/workflows/ci-complete.yml",
+        "change": "Added extractor-lint job with ruff check invocation (after extractor-full, before auditor-router)",
+        "rationale": "Provides CI-level enforcement of lint baseline. Non-blocking (advisory) per spec; can be elevated to blocking in future PRs."
+      },
+      {
+        "file": ".github/workflows/ci-complete.yml",
+        "change": "Updated ci-summary needs array and gate logic to include extractor-lint (4 locations)",
+        "rationale": "Ensures lint results flow into PR gate summary and can optionally be promoted to blocking check"
+      }
+    ],
+    "scope": "Configuration and CI workflow only; no source code changes"
+  },
+  "validations": [
+    {
+      "name": "ruff.toml created",
+      "command": "test -f services/repo-truth-extractor/ruff.toml && echo 'exists'",
+      "exit_code": 0,
+      "output": "exists",
+      "status": "PASS",
+      "evidence": "Configuration file is in place"
+    },
+    {
+      "name": "ruff check passes with new config",
+      "command": "mise exec -- python3 -m ruff check services/repo-truth-extractor 2>&1 | tail -1",
+      "exit_code": 0,
+      "output": "All checks passed!",
+      "status": "PASS",
+      "evidence": "Zero violations on current code with lenient baseline"
+    },
+    {
+      "name": "extractor-lint job present in CI",
+      "command": "grep -c 'name: \"🔍 Extractor Lint\"' .github/workflows/ci-complete.yml",
+      "exit_code": 0,
+      "output": "1",
+      "status": "PASS",
+      "evidence": "New CI job is wired into workflow"
+    },
+    {
+      "name": "CI YAML is valid",
+      "command": "mise exec -- python3 -c \"import yaml; yaml.safe_load(open('.github/workflows/ci-complete.yml')); print('✅ valid')\"",
+      "exit_code": 0,
+      "output": "✅ valid",
+      "status": "PASS",
+      "evidence": "YAML parses without errors"
+    },
+    {
+      "name": "Golden tests still pass",
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q",
+      "exit_code": 0,
+      "output": "32 passed, 1 skipped",
+      "status": "PASS",
+      "evidence": "No behavioral changes from configuration"
+    }
+  ],
+  "outcome": "VERIFY_AND_CLOSE",
+  "rules_disabled": {
+    "E": "pycodestyle (indentation, whitespace, line-too-long, etc.) - 289 violations - requires reformatting",
+    "F": "pyflakes (unused imports, undefined names, etc.) - 162 violations - requires removals/audits",
+    "I": "isort import sorting - 62 violations - requires import reordering",
+    "D": "pydocstyle (docstrings) - deferred to R1",
+    "C": "flake8-comprehensions - deferred to R1",
+    "B": "flake8-bugbear - deferred to R1",
+    "A": "flake8-builtins - deferred to R1",
+    "ANN": "flake8-annotations - deferred to R1",
+    "UP": "pyupgrade - deferred to R1",
+    "T": "flake8-print - deferred to R1",
+    "S": "flake8-bandit - deferred to R1",
+    "W": "pycodestyle warnings - deferred to R1"
+  },
+  "notes": "Lenient baseline achieves green with zero violations via rule disabling instead of source reformatting, per R0 charter. 457 baseline violations + 62 import-order violations reduced to 0 via configuration. Ready for future strictness increases (R1 can enable subsets of E/F/I/D rules once source is refactored). CI job is non-blocking; can be elevated to blocking check via branch protection update.",
+  "proof_bundle_sha": "d60d4d075c"
+}

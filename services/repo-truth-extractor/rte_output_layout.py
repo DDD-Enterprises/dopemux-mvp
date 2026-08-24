@@ -190,6 +190,38 @@ def persist_latest_run_id(
     id_file.write_text(run_id + "\n", encoding="utf-8")
 
 
+def _resolve_latest_run_id(
+    repo_root: Path,
+    *,
+    extraction_root_rel: Path,
+    active_output_layout: Optional[OutputLayout],
+    latest_file: Path,
+    not_found_message: str,
+    missing_dir_message_fmt: str,
+) -> str:
+    """Resolve the most recent run id recorded in latest_run_id.txt.
+
+    Shared by the --resume path and the readonly run-report path (F-59):
+    both want "the run the operator is already working with", never a
+    fabricated new run id.
+    """
+    latest = load_run_id(
+        repo_root,
+        extraction_root_rel=extraction_root_rel,
+        active_output_layout=active_output_layout,
+    )
+    if not latest:
+        raise FileNotFoundError(not_found_message.format(latest_file=latest_file))
+    latest_dir = current_runs_root(
+        repo_root,
+        extraction_root_rel=extraction_root_rel,
+        active_output_layout=active_output_layout,
+    ) / latest
+    if not (latest_dir.exists() and latest_dir.is_dir()):
+        raise FileNotFoundError(missing_dir_message_fmt.format(latest_dir=latest_dir))
+    return latest
+
+
 def resolve_run_context(
     repo_root: Path,
     args: Any,
@@ -199,6 +231,7 @@ def resolve_run_context(
     active_output_layout: Optional[OutputLayout],
     logger: Any,
     readonly: bool = False,
+    resolve_latest_when_readonly: bool = False,
 ) -> RunContext:
     latest_file = latest_run_id_path(
         repo_root,
@@ -207,6 +240,18 @@ def resolve_run_context(
     )
     run_id_source = "generated"
     resume_requested = bool(getattr(args, "resume", False))
+    # F-59: commands that report ON a specific run (status, coverage-report,
+    # verify-phase-output, tail-run-log — but NOT config-printing introspection
+    # like --print-config) must resolve to the operator's latest run instead of
+    # fabricating a brand-new, empty one. Only takes effect when the caller
+    # opts in via resolve_latest_when_readonly AND the path is readonly AND
+    # neither --run-id nor --resume was given (those already have precedence).
+    resolve_latest_readonly = (
+        readonly
+        and resolve_latest_when_readonly
+        and not args.run_id
+        and not resume_requested
+    )
 
     if args.run_id:
         run_id = args.run_id
@@ -220,29 +265,34 @@ def resolve_run_context(
             )
         run_id_source = "explicit"
     elif resume_requested:
-        latest = load_run_id(
+        run_id = _resolve_latest_run_id(
             repo_root,
             extraction_root_rel=extraction_root_rel,
             active_output_layout=active_output_layout,
+            latest_file=latest_file,
+            not_found_message="Resume requested but no latest run id exists at {latest_file}.",
+            missing_dir_message_fmt=(
+                "Resume requested but latest_run_id.txt points to missing run "
+                "directory {latest_dir}."
+            ),
         )
-        if latest:
-            latest_dir = current_runs_root(
-                repo_root,
-                extraction_root_rel=extraction_root_rel,
-                active_output_layout=active_output_layout,
-            ) / latest
-            if latest_dir.exists() and latest_dir.is_dir():
-                run_id = latest
-                run_id_source = "latest_run_id"
-            else:
-                raise FileNotFoundError(
-                    "Resume requested but latest_run_id.txt points to missing run "
-                    f"directory {latest_dir}."
-                )
-        else:
-            raise FileNotFoundError(
-                f"Resume requested but no latest run id exists at {latest_file}."
-            )
+        run_id_source = "latest_run_id"
+    elif resolve_latest_readonly:
+        run_id = _resolve_latest_run_id(
+            repo_root,
+            extraction_root_rel=extraction_root_rel,
+            active_output_layout=active_output_layout,
+            latest_file=latest_file,
+            not_found_message=(
+                "No extraction run found (no {latest_file} and no --run-id given). "
+                "Start a run first with `rte run ...`, or pass --run-id explicitly."
+            ),
+            missing_dir_message_fmt=(
+                "latest_run_id.txt points to a missing run directory {latest_dir}. "
+                "Pass --run-id explicitly to query a specific run."
+            ),
+        )
+        run_id_source = "latest_run_id"
     else:
         run_id = generate_run_id(
             repo_root,

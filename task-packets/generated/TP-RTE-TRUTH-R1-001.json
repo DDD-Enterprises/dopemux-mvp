@@ -1,0 +1,120 @@
+{
+  "id": "TP-RTE-TRUTH-R1-001",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / extract extractor/ui.py (UI, UiConfig; injected jsonl writer)",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "SEAM RULE: golden hashes must be byte-identical pre/post; a seam PR that needs a golden update is not behavior-preserving and must be reworked, not re-goldened.",
+    "R1 owns run_extraction_v5.py exclusively; no other wave may touch it while R1 runs.",
+    "Facade re-exports in run_extraction_v5.py must keep every moved symbol importable at its old path.",
+    "Apply A1 seam corrections (r1 orchestrator note + A1-architecture.md \u00a72).",
+    "OperatorArgumentParser does NOT move here (goes to cli_args.py in R1-002).",
+    "Inject the JSONL writer callable \u2014 do not split _JSONL_WRITE_LOCK into two locks.",
+    "Findings covered: F-09."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R1",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "refactor(rte): TP-RTE-TRUTH-R1-001 \u2014 extract extractor/ui.py seam",
+    "allowlist": [
+      "services/repo-truth-extractor/extractor/ui.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/",
+      "task-packets/generated/TP-RTE-TRUTH-R1-001.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R1-001/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+    ]
+  },
+  "pr": {
+    "title": "refactor(rte): extract UI seam from v5 monolith",
+    "body": "Seam 1 per A1. Golden-hash verified.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Move class UI (v5:~2519) and UiConfig (~2404) to services/repo-truth-extractor/extractor/ui.py with an injected append_jsonl callable; leave facade re-exports.",
+      "requirements": [
+        "Read A1-architecture.md Seam 1 for the dependency list before cutting."
+      ],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q",
+        "mise exec -- python -c \"import sys; sys.path.insert(0,'services/repo-truth-extractor'); import run_extraction_v5\""
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/extractor/ui.py",
+        "services/repo-truth-extractor/run_extraction_v5.py"
+      ],
+      "validation": [
+        "Goldens byte-identical; import clean; no remaining in-monolith references to moved bodies (grep)."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A1-architecture.md"
+      ]
+    }
+  ],
+  "routing": {
+    "stage": "implementer_standard",
+    "tier": "balanced",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml is ADVISORY governance, not a runtime router. If a runtime path disagrees, runtime wins.",
+    "runners": {
+      "preferred": [
+        "claude_code",
+        "codex",
+        "grok"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "grok",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": []
+    },
+    "models": {
+      "claude_code": "claude-sonnet-5",
+      "codex": "gpt-5.6-terra (reasoning xhigh)",
+      "opencode": "anthropic/claude-sonnet-4-5",
+      "grok": "grok-code-fast-1 (effort high)",
+      "gemini_cli": "VERIFY_WITH_VENDOR_DOCS",
+      "copilot": "Claude Sonnet 4.5 (.github/agents/dopemux-implementer.agent.md)"
+    },
+    "rationale": "Behaviour-preserving seam extraction under golden-hash bar. DONE.",
+    "notes": [],
+    "evidence": "Model ids OBSERVED from this machine: ~/.codex/config.toml (gpt-5.6-sol/xhigh), ~/.config/opencode/opencode.jsonc (claude-sonnet-4-5 + claude-haiku-4-5), ~/.grok/config.toml, .github/agents/*.agent.md (Sonnet 4.5). Per-vendor selector-string validity beyond these files remains VERIFY_WITH_VENDOR_DOCS."
+  }
+}

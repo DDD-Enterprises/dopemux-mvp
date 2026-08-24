@@ -1,20 +1,40 @@
 {
   "schema": "PROMPT_SCHEMA_COVERAGE@v1",
   "schema_directory": "services/repo-truth-extractor/promptsets/v4/schemas",
-  "tracked_prompt_count": 6,
-  "tracked_prompt_step_ids": ["C18", "C19", "C20", "C21", "G6", "G7"],
-  "schema_file_count": 6,
+  "tracked_prompt_count": 16,
+  "tracked_prompt_step_ids": ["B3", "C1", "C2", "C7", "C8", "C14", "C18", "C19", "C20", "C21", "D1", "E2", "G1", "G5", "G6", "G7"],
+  "schema_file_count": 25,
   "schema_files": [
+    "B3_BOUNDARY_BYPASS_RISKS.schema.json",
+    "C14_CODE_HEALTH_SURFACE.schema.json",
     "C18_OBSERVABILITY_SURFACE.schema.json",
     "C19_ERROR_HANDLING_PATTERNS.schema.json",
+    "C1_SERVICE_ENTRYPOINTS.schema.json",
     "C20_STATE_MANAGEMENT_SURFACE.schema.json",
     "C21_PERFORMANCE_SURFACE.schema.json",
+    "C2_EVENTBUS_SURFACE.schema.json",
+    "C2_EVENT_CONSUMERS.schema.json",
+    "C2_EVENT_PRODUCERS.schema.json",
+    "C7_API_DASHBOARD_SURFACE.schema.json",
+    "C8_CONCURRENCY_RISK_LOCATIONS.schema.json",
+    "C8_DETERMINISM_RISK_LOCATIONS.schema.json",
+    "C8_IDEMPOTENCY_RISK_LOCATIONS.schema.json",
+    "C8_SECRETS_RISK_LOCATIONS.schema.json",
+    "D1_CAP_NOTICES.schema.json",
+    "D1_DOC_BOUNDARIES.schema.json",
+    "D1_DOC_CONTRACT_CLAIMS.schema.json",
+    "D1_DOC_INDEX.schema.json",
+    "D1_DOC_SUPERSESSION.schema.json",
+    "E2_EXEC_ENV_CHAIN.schema.json",
+    "G1_GOV_CI_GATES.schema.json",
+    "G5_AUTH_FLOW_SURFACE.schema.json",
     "G6_DEPENDENCY_HEALTH_SURFACE.schema.json",
     "G7_TECHNICAL_DEBT_REGISTER.schema.json"
   ],
-  "coverage_basis": "initial_packet_03_tranche",
+  "coverage_basis": "r3_003_schema_expansion_tranche",
   "coverage_notes": [
-    "Directory did not exist before this packet.",
-    "This manifest measures the initial schema rollout only; runner hookup remains a separate concern."
+    "R3-001 (packet 03 / C9 reconciliation) established this directory with the first 6 files (C18/C19/C20/C21/G6/G7).",
+    "R3-003 (this packet, F-39/F-36/F-38) adds 6 new steps (C1, C2, C7, C8, C14, G5; C2 and C8 each emit multiple artifacts, hence 11 new files for 6 steps), hardens the G6/G7 evidence-object subschema (fabricated `{note:...}` evidence now rejected), adds a severity enum to B3, and closes the `id,evidence`-only thin-contract gap for D1's four sub-artifacts and E2 by promoting fields the runtime/prompt already treats as load-bearing (D1: path+line_range, already enforced today via the RUNNER_MINIMUM_REQUIRED_KEYS fallback in lib/phase_contract_map.py; E2: `name`, the env-var name explicitly named in its own Extraction Procedure). G1's evidence subschema was hardened without adding a new required domain field: no single field name is unambiguously specified in PROMPT_G1's Extraction Procedure to transcribe without inventing vocabulary (see TP-RTE-TRUTH-R3-003 report).",
+    "This manifest measures schema-file rollout only; these .schema.json files are validated via jsonschema.Draft202012Validator in services/repo-truth-extractor/tests/ (self-validity, compliant-item acceptance, fabricated-evidence rejection). They are an offline/dry-run validation lane, not (yet) loaded by the OpenAI-request-time schema builder in lib/structured_output_contracts.py, which independently derives its own generic per-field schema from promptset.yaml + artifacts.yaml + each prompt's own `required_item_fields:` line (see TP-RTE-TRUTH-R3-003 report for the runtime-reachability analysis)."
   ]
 }

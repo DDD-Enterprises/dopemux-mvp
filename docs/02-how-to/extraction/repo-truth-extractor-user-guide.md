@@ -20,7 +20,7 @@ Current operator truth:
 
 - `dopemux rte` is the canonical operator command family.
 - `services/repo-truth-extractor/run_extraction_v5.py` is the strongest v5 extraction runtime authority.
-- `dopemux upgrades` remains a legacy compatibility alias for `dopemux rte`; do not use it as the canonical path in new operator guidance.
+- `dopemux upgrades` remains a hidden, deprecated alias for `dopemux rte`; do not use it as the canonical path in new operator guidance.
 - `dopemux extractor`, `dopemux extract truth-run`, and `dopemux truth` are legacy/refusal surfaces, not the v5 operator path.
 - Direct `python services/repo-truth-extractor/run_extraction_v5.py ...` invocation is an advanced/debug path for runner-level work, not the normal operator entrypoint.
 - RTE outputs, proof packs, and generated truth artifacts are evidence artifacts. They do not outrank runtime code, config, tests, and active entrypoints.

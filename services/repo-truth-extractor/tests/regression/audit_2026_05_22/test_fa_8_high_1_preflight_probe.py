@@ -39,7 +39,13 @@ if str(_SERVICE_ROOT) not in sys.path:
     reason="Requires real OPENROUTER_API_KEY in env (audit-only test)",
 )
 @pytest.mark.xfail(
-    reason="FA-8-HIGH-1: run_provider_doctor_probe returns failure_type=unknown / AMBIGUOUS_PROVIDER_BLOCK even with valid keys + live providers (direct curl succeeds). Root cause likely in call_llm payload construction (max_tokens? response_format?)."
+    reason="FA-8-HIGH-1: run_provider_doctor_probe returns failure_type=unknown / AMBIGUOUS_PROVIDER_BLOCK even with valid keys + live providers (direct curl succeeds). Root cause likely in call_llm payload construction (max_tokens? response_format?). "
+    "Owning packet: TP-RTE-TRUTH-R2-004 (go-live safety cluster). "
+    "TP-RTE-TRUTH-R0-002: left non-strict on purpose — this marker is CI-divergent "
+    "(skipif-gated on a live OPENROUTER_API_KEY not available this pass, so its "
+    "current xfail/XPASS state could not be re-verified without a live provider call, "
+    "which TP-RTE-TRUTH-R0-002 is dry-run-only and must not make). Do not flip to "
+    "strict=True without first exercising this test with real credentials."
 )
 def test_preflight_probe_succeeds_with_valid_keys() -> None:
     """xfail until the preflight probe bug is fixed."""

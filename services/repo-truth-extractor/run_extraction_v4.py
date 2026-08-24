@@ -29,6 +29,15 @@ import yaml
 APP = typer.Typer(help="Repo Truth Extractor v4 runner")
 
 SERVICE_ROOT = Path(__file__).resolve().parent
+
+# F-31 (TP-RTE-TRUTH-R3-004): the section validator lives in lib/promptgen and is imported
+# here so load_promptset() can enforce `required_prompt_sections`. The service root is on
+# sys.path when this module is run as a script, but not when a test loads it by file spec,
+# so make the path explicit rather than depend on the caller.
+if str(SERVICE_ROOT) not in sys.path:
+    sys.path.insert(0, str(SERVICE_ROOT))
+
+from lib.promptgen.template_renderer import validate_rendered_prompt  # noqa: E402
 ROOT = Path(__file__).resolve().parents[2]
 PROMPTSET_PATH = SERVICE_ROOT / "promptsets" / "v4" / "promptset.yaml"
 ARTIFACTS_PATH = SERVICE_ROOT / "promptsets" / "v4" / "artifacts.yaml"
@@ -100,15 +109,86 @@ def read_yaml(path: Path) -> Dict[str, Any]:
     return payload
 
 
-def load_promptset() -> Dict[str, Any]:
-    # S2 (audit), documented: promptset.yaml declares `required_prompt_sections`, but no
-    # runtime code enforces those sections against the prompt bodies (grep: zero readers).
-    # Relatedly, the "Legacy Context (for intent only; never as evidence)" line in the prompt
-    # templates is a defensive guardrail -- the runtime injects no block named "Legacy
-    # Context", so the guardrail is harmless-but-inert. Both are known gaps left as-is:
-    # enforcing sections is a behavior change, and stripping the guardrail would touch ~105
-    # prompt files (shifting many promptset hashes) for no functional gain.
-    return read_yaml(PROMPTSET_PATH)
+class PromptSectionContractError(RuntimeError):
+    """A declared prompt is missing sections its promptset requires."""
+
+
+def _iter_promptset_prompt_files(promptset: Dict[str, Any]) -> Iterable[Tuple[str, Path]]:
+    """Yield (step_id, absolute prompt path) for every step the promptset declares."""
+    phases = promptset.get("phases")
+    if not isinstance(phases, dict):
+        return
+    for phase_payload in phases.values():
+        if not isinstance(phase_payload, dict):
+            continue
+        for step in phase_payload.get("steps", []) or []:
+            if not isinstance(step, dict):
+                continue
+            step_id = str(step.get("step_id", "")).strip()
+            prompt_file = str(step.get("prompt_file", "")).strip()
+            if not step_id or not prompt_file:
+                continue
+            yield step_id, (ROOT / prompt_file)
+
+
+def validate_promptset_sections(promptset: Dict[str, Any]) -> List[str]:
+    """Enforce `required_prompt_sections` against the declared prompt bodies.
+
+    F-31 (TP-RTE-TRUTH-R3-004): `required_prompt_sections` previously had zero runtime
+    readers -- the anti-fabrication regime (Evidence / Determinism / Anti-Fabrication /
+    Failure Modes) was a contract nothing checked, so a prompt could silently lose its
+    Anti-Fabrication Rules and still run against a paid model. The section validator
+    already existed in lib/promptgen/template_renderer.py but was wired to nothing; this
+    connects it to the v4 promptset and fails closed.
+
+    A template satisfies the four shared sections either by inlining them or by carrying a
+    "## Shared Rules" pointer, which run_extraction_v5._inject_promptset_rules() resolves
+    by appending PROMPTSET_RULES.md before dispatch. Both forms genuinely deliver the
+    regime to the model, so both are accepted -- matching the offline linter's semantics
+    (scripts/repo_truth_extractor_promptset_audit_v4.py).
+
+    Returns a sorted list of human-readable issues (empty when the promptset is clean).
+    """
+    required_sections = [
+        str(name)
+        for name in (promptset.get("required_prompt_sections") or [])
+        if str(name).strip()
+    ]
+    if not required_sections:
+        return []
+
+    issues: List[str] = []
+    for step_id, prompt_path in _iter_promptset_prompt_files(promptset):
+        if not prompt_path.exists():
+            issues.append(f"{step_id}: declared prompt_file does not exist: {prompt_path}")
+            continue
+        result = validate_rendered_prompt(
+            prompt_path.read_text(encoding="utf-8"),
+            required_sections=required_sections,
+        )
+        for missing in result["sections_missing"]:
+            issues.append(f"{step_id} ({prompt_path.name}): missing required section '## {missing}'")
+    return sorted(issues)
+
+
+def load_promptset(*, enforce_sections: bool = True) -> Dict[str, Any]:
+    """Load the v4 promptset, enforcing its declared prompt-section contract.
+
+    Set enforce_sections=False only for tooling that must inspect a known-broken
+    promptset (e.g. the linter reporting on it) rather than execute against it.
+    """
+    promptset = read_yaml(PROMPTSET_PATH)
+    if enforce_sections:
+        issues = validate_promptset_sections(promptset)
+        if issues:
+            detail = "\n  - ".join(issues)
+            raise PromptSectionContractError(
+                f"{PROMPTSET_PATH} declares required_prompt_sections that "
+                f"{len(issues)} prompt(s) do not satisfy. The anti-fabrication regime "
+                f"(Evidence / Determinism / Anti-Fabrication / Failure Modes) would not "
+                f"reach the model for these steps. Refusing to run.\n  - {detail}"
+            )
+    return promptset
 
 
 def load_artifacts() -> Tuple[Dict[Tuple[str, str], ArtifactRule], List[str]]:

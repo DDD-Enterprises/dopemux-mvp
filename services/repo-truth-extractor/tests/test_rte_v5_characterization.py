@@ -96,7 +96,13 @@ def test_truth_cli_shows_deprecation_error(monkeypatch: pytest.MonkeyPatch) -> N
     result = CliRunner().invoke(cli, ["truth"])
 
     assert result.exit_code == 1
-    assert "`dopemux truth` is not a supported Repo Truth Extractor entrypoint" in result.output
+    # Rich/panel formatters wrap the message across box lines. Assert the
+    # deprecation contract via fragments that survive terminal-width wrapping.
+    out = result.output
+    assert "`dopemux truth`" in out
+    assert "not a supported Repo Truth Extractor" in out
+    assert "entrypoint" in out
+    assert "dopemux rte" in out
     assert captured == {}
 
 

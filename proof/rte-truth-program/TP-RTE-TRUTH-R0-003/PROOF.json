@@ -1,0 +1,61 @@
+{
+  "status": "READY_FOR_REVIEW",
+  "packet_id": "TP-RTE-TRUTH-R0-003",
+  "finding": "F-03",
+  "title": "pytest-timeout on extractor-full CI",
+  "timestamp": "2026-07-27",
+  "objective": "Add pytest-timeout dependency and wire --timeout=120 --timeout-method=thread into extractor-full CI job to prevent hung tests from burning entire 45-minute job.",
+  "validation_state": "PASSED",
+  "execution_summary": {
+    "changes_made": [
+      {
+        "file": "pyproject.toml",
+        "change": "Added pytest-timeout>=2.1.0 to [project.optional-dependencies] test",
+        "rationale": "pytest-timeout plugin required to enforce per-test timeouts"
+      },
+      {
+        "file": ".github/workflows/ci-complete.yml",
+        "change": "Added --timeout=120 --timeout-method=thread to extractor-full pytest invocation (line 346-347)",
+        "rationale": "Per-test 120-second timeout using thread-based mechanism to enforce hard limits on hung subprocess-spawning tests"
+      }
+    ],
+    "scope": "CI configuration and dependency declaration only; no source code changes"
+  },
+  "validations": [
+    {
+      "name": "pytest-timeout added to dependencies",
+      "command": "grep -c 'pytest-timeout' pyproject.toml",
+      "exit_code": 0,
+      "output": "1",
+      "status": "PASS",
+      "evidence": "Dependency declaration present in pyproject.toml test extras"
+    },
+    {
+      "name": "CI YAML contains timeout flags",
+      "command": "grep -c 'timeout=120' .github/workflows/ci-complete.yml",
+      "exit_code": 0,
+      "output": "1",
+      "status": "PASS",
+      "evidence": "Timeout flag added to extractor-full job"
+    },
+    {
+      "name": "CI YAML is valid",
+      "command": "mise exec -- python3 -c \"import yaml; yaml.safe_load(open('.github/workflows/ci-complete.yml')); print('✅ valid')\"",
+      "exit_code": 0,
+      "output": "✅ valid",
+      "status": "PASS",
+      "evidence": "YAML parses without errors"
+    },
+    {
+      "name": "Golden tests still pass",
+      "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q",
+      "exit_code": 0,
+      "output": "32 passed, 1 skipped",
+      "status": "PASS",
+      "evidence": "Extractor test contract unchanged by configuration-only change"
+    }
+  ],
+  "outcome": "VERIFY_AND_CLOSE",
+  "notes": "Timeout flags use thread-based mechanism per requirement. Implementation is configuration-only (no source changes). Timeout value (120 seconds) chosen to catch hung subprocess tests while allowing legitimate slow tests to add @pytest.mark.timeout(...) overrides if needed. Job remains at 45-minute GitHub Actions timeout as outer bound.",
+  "proof_bundle_sha": "d60d4d075c"
+}

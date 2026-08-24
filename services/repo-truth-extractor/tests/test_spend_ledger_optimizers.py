@@ -221,16 +221,24 @@ def test_tiered_pricing_applies_above_threshold() -> None:
 def test_unknown_model_returns_none_for_optimizer_fields() -> None:
     """A model not in the catalog should still resolve (via fallback) and have
     all optimizer fields as None — i.e., callers can detect "no optimizer
-    info available" without exception."""
+    info available" without exception.
+
+    TP-RTE-TRUTH-R2-001 (F-10): an unpriced model must price at exactly
+    $0.00, never a fabricated positive number (the old behavior invented a
+    $0.15/$0.60 baseline or a max-of-registry guess and reported it as if it
+    were a real rate). Callers must render "UNPRICED" using pricing_status,
+    not treat $0.00 as a confident real cost.
+    """
     rate = get_model_cost_rate(provider="unknown", model_id="frobozz-9000")
     assert rate["unknown_model"] is True
+    assert rate["pricing_status"] == "UNPRICED_UNKNOWN"
     assert rate["service_tier_flex_multiplier"] is None
     assert rate["service_tier_priority_multiplier"] is None
     assert rate["cache_read_multiplier"] is None
     assert rate["batch_discount"] is None
-    # And compute should still work, just with default multipliers
+    # Compute still works (no exception), but reports zero — not a guess.
     out = compute_optimized_cost(rate, input_tokens=1_000_000, output_tokens=0)
-    assert out["final_cost_usd"] > 0
+    assert out["final_cost_usd"] == 0.0
     assert out["tier_multiplier"] == 1.0
 
 

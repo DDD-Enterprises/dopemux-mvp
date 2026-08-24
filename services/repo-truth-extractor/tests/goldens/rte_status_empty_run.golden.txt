@@ -1,0 +1,17 @@
+run=golden_truth_status run_dir=$REPO/extraction/repo-truth-extractor/v5/runs/golden_truth_status PASS=0 FAIL=0 IN_PROGRESS=0 NOT_STARTED=15
+phase status inputs raw_ok raw_failed raw_total norm qa last_modified_utc phase_dir
+A NOT_STARTED 0 0 0 0 0 0 - $REPO/extraction/repo-truth-extractor/v5/runs/golden_truth_status/A_repo_control_plane
+H NOT_STARTED 0 0 0 0 0 0 - $REPO/extraction/repo-truth-extractor/v5/runs/golden_truth_status/H_home_control_plane
+D NOT_STARTED 0 0 0 0 0 0 - $REPO/extraction/repo-truth-extractor/v5/runs/golden_truth_status/D_docs_pipeline
+C NOT_STARTED 0 0 0 0 0 0 - $REPO/extraction/repo-truth-extractor/v5/runs/golden_truth_status/C_code_surfaces
+E NOT_STARTED 0 0 0 0 0 0 - $REPO/extraction/repo-truth-extractor/v5/runs/golden_truth_status/E_execution_plane
+W NOT_STARTED 0 0 0 0 0 0 - $REPO/extraction/repo-truth-extractor/v5/runs/golden_truth_status/W_workflow_plane
+B NOT_STARTED 0 0 0 0 0 0 - $REPO/extraction/repo-truth-extractor/v5/runs/golden_truth_status/B_boundary_plane
+G NOT_STARTED 0 0 0 0 0 0 - $REPO/extraction/repo-truth-extractor/v5/runs/golden_truth_status/G_governance_plane
+X NOT_STARTED 0 0 0 0 0 0 - $REPO/extraction/repo-truth-extractor/v5/runs/golden_truth_status/X_feature_index
+Q NOT_STARTED 0 0 0 0 0 0 - $REPO/extraction/repo-truth-extractor/v5/runs/golden_truth_status/Q_quality_assurance
+R NOT_STARTED 0 0 0 0 0 0 - $REPO/extraction/repo-truth-extractor/v5/runs/golden_truth_status/R_arbitration
+T NOT_STARTED 0 0 0 0 0 0 - $REPO/extraction/repo-truth-extractor/v5/runs/golden_truth_status/T_task_packets
+Z NOT_STARTED 0 0 0 0 0 0 - $REPO/extraction/repo-truth-extractor/v5/runs/golden_truth_status/Z_handoff_freeze
+S NOT_STARTED 0 0 0 0 0 0 - $REPO/extraction/repo-truth-extractor/v5/runs/golden_truth_status/S_synthesis
+SP NOT_STARTED 0 0 0 0 0 0 - $REPO/extraction/repo-truth-extractor/v5/runs/golden_truth_status/SP_synthesis_pipeline

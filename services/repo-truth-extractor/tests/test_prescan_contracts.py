@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import sys
 
@@ -126,52 +127,108 @@ def test_engine_intelligence_base_exposes_downstream_contract_fields(tmp_path: P
     assert isinstance(intelligence["corpus_summary"]["corpus_health_score"], int)
 
 
-@pytest.mark.xfail(
-    reason="Deferred to TP-RTE-WALKER-006: prescan summary payload schema drift is outside CostProfile F repair scope.",
-    strict=True,
-)
-def test_optimize_payload_includes_prior_pass_summaries(tmp_path: Path) -> None:
+def _make_prior_pass_results() -> dict:
+    return {
+        "dedup": {
+            "duplicate_assessments": [
+                {
+                    "group_id": "dup-1",
+                    "canonical_path": "docs/topic-v2.md",
+                    "superseded_paths": ["docs/topic-v1.md"],
+                }
+            ]
+        },
+        "discover": {
+            "hidden_features": [
+                {
+                    "path": "docs/hidden.md",
+                    "feature_name": "Hidden Feature",
+                }
+            ]
+        },
+        "feasibility": {
+            "planned_features": [
+                {
+                    "path": "docs/90-adr/ADR-001.md",
+                    "feature_name": "Feature ADR",
+                }
+            ]
+        },
+    }
+
+
+def test_optimize_payload_flattens_prior_pass_summaries_at_top_level(tmp_path: Path) -> None:
+    """F-17: prior-pass summaries must be flat top-level keys, not nested
+    under synthetic `dedup_results`/`discovery_results`/`feasibility_results`
+    wrapper keys that nothing downstream ever read."""
     runner = GrokPassRunner(_make_config(tmp_path))
     payload = runner._build_optimize_payload(
         {
             "corpus_summary": {"included_files": 4},
             "extraction_hints": {"skip_duplicates": ["docs/topic-v1.md"]},
         },
-        {
-            "dedup": {
-                "duplicate_assessments": [
-                    {
-                        "group_id": "dup-1",
-                        "canonical_path": "docs/topic-v2.md",
-                        "superseded_paths": ["docs/topic-v1.md"],
-                    }
-                ]
-            },
-            "discover": {
-                "hidden_features": [
-                    {
-                        "path": "docs/hidden.md",
-                        "feature_name": "Hidden Feature",
-                    }
-                ]
-            },
-            "feasibility": {
-                "planned_features": [
-                    {
-                        "path": "docs/90-adr/ADR-001.md",
-                        "feature_name": "Feature ADR",
-                    }
-                ]
-            },
-        },
+        _make_prior_pass_results(),
     )
 
-    assert "duplicate_assessments" in payload
-    assert "docs/topic-v2.md" in payload
-    assert "hidden_features" in payload
-    assert "Hidden Feature" in payload
-    assert "planned_features" in payload
-    assert "Feature ADR" in payload
+    assert "dedup_results" not in payload
+    assert "discovery_results" not in payload
+    assert "feasibility_results" not in payload
+
+    assert payload["duplicate_assessments"] == [
+        {
+            "group_id": "dup-1",
+            "canonical_path": "docs/topic-v2.md",
+            "superseded_paths": ["docs/topic-v1.md"],
+        }
+    ]
+    assert payload["hidden_features"] == [
+        {"path": "docs/hidden.md", "feature_name": "Hidden Feature"}
+    ]
+    assert payload["planned_features"] == [
+        {"path": "docs/90-adr/ADR-001.md", "feature_name": "Feature ADR"}
+    ]
+
+
+def test_optimize_payload_is_str_serialized_before_reaching_call_grok(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """F-17 (second half): the flat payload dict must be JSON-string-
+    serialized before `_call_grok` sees it — the same contract every other
+    pass already gets from `_execute_pass`."""
+    runner = GrokPassRunner(_make_config(tmp_path))
+    runner.config.allow_online_llm = True
+
+    captured: dict[str, object] = {}
+
+    def fake_call_grok(self, pass_id, payload, candidate, attempt_record, est_tokens=0):
+        captured["pass_id"] = pass_id
+        captured["payload"] = payload
+        attempt_record.status = "success"
+        return {"skip_list": []}
+
+    monkeypatch.setattr(GrokPassRunner, "_call_grok", fake_call_grok)
+
+    intelligence = {
+        "corpus_summary": {"included_files": 4},
+        "extraction_hints": {"skip_duplicates": ["docs/topic-v1.md"]},
+    }
+    result = runner._execute_pass("optimize", intelligence, _make_prior_pass_results(), routing_plan=None)
+
+    assert result == {"skip_list": []}
+    assert captured["pass_id"] == "optimize"
+    sent_payload = captured["payload"]
+    assert isinstance(sent_payload, str)
+
+    # Round-trips as JSON and carries the flattened prior-pass data through.
+    decoded = json.loads(sent_payload)
+    assert decoded["duplicate_assessments"][0]["canonical_path"] == "docs/topic-v2.md"
+    assert "dedup_results" not in decoded
+
+    # And it is textually present in what would be sent as message content,
+    # which is what "str-serialized to _call_grok" is actually guarding.
+    assert "docs/topic-v2.md" in sent_payload
+    assert "Hidden Feature" in sent_payload
+    assert "Feature ADR" in sent_payload
 
 
 def test_dependency_graph_resolves_python_relative_imports() -> None:

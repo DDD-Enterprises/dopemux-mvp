@@ -587,7 +587,13 @@ def write_run_manifest(
             "verify_phase_output": args.verify_phase_output,
             "print_config": args.print_config,
             "output_root": getattr(args, "output_root", None),
-            "dpmx_webhook_url": os.getenv(deps.dpmx_webhook_url_env, "").strip(),
+            # F-19d: dpmx_webhook_url is a bearer-equivalent capability URL
+            # (Slack/Discord-style) -- writing it verbatim into RUN_MANIFEST
+            # leaked a secret into an artifact that routinely lands in
+            # reports/ or gets attached to proof bundles. Store presence
+            # only, matching the treatment already applied to the adjacent
+            # webhook secret on the next line.
+            "dpmx_webhook_url_set": bool(os.getenv(deps.dpmx_webhook_url_env, "").strip()),
             "dpmx_webhook_secret_set": bool(os.getenv(deps.dpmx_webhook_secret_env, "").strip()),
             "dpmx_webhook_timeout_seconds": os.getenv(deps.dpmx_webhook_timeout_seconds_env, "").strip(),
             "dpmx_webhook_required": os.getenv(deps.dpmx_webhook_required_env, "").strip(),

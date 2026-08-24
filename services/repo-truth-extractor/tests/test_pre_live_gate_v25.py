@@ -524,6 +524,7 @@ def test_run_gate_returns_conditional_go_when_only_conditions_remain(monkeypatch
         target_profile="P00_GENERIC",
         target_phases=("A",),
         allow_online_preflight=False,
+        allow_conditional=True,
         pal_validation_file=None,
         waiver_codes=(),
         required_direct_providers=(),
@@ -535,6 +536,7 @@ def test_run_gate_returns_conditional_go_when_only_conditions_remain(monkeypatch
         gate.ONLINE_PREFLIGHT_FAILURE,
         gate.PAL_REQUIRED_UNAVAILABLE,
     ]
+    assert result["verdict"]["operator_verdict"] == gate.GO_NOW
     assert result["verdict"]["environment_summary"] == {
         "tooling_status": "CONDITIONAL_GO",
         "live_online_status": "environment_blocked_or_unverified",
@@ -543,6 +545,143 @@ def test_run_gate_returns_conditional_go_when_only_conditions_remain(monkeypatch
             "or unverified by current provider credentials, PAL evidence, or online preflight."
         ),
     }
+
+
+def test_run_gate_defaults_to_no_go_when_conditions_are_not_opted_in(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """TP-RTE-TRUTH-R2-004 / F-13b: an un-opted skip of PAL/online-preflight
+    must be a hard NO_GO, not the old default CONDITIONAL_GO. This is the
+    same fixture as test_run_gate_returns_conditional_go_when_only_conditions_remain
+    but WITHOUT --allow-conditional (the GateConfig default), proving the
+    gate's weakest posture is no longer its default posture."""
+    gate = _load_gate_module()
+
+    fake_scope = {
+        "validation_started_at": "2026-03-12T00:00:00+00:00",
+        "git_sha": "0123456789abcdef0123456789abcdef01234567",
+        "validator_host": "host",
+        "validator_python": "3.11.0",
+        "target_policy": "cost",
+        "target_mode": "direct",
+        "target_profile": "P00_GENERIC",
+        "target_phases": ["A"],
+        "target_runner_path": "/tmp/run_extraction_v5.py",
+        "target_runner_sha256": "runner",
+        "promptset_sha256": "promptset",
+        "artifacts_sha256": "artifacts",
+        "model_map_sha256": "modelmap",
+        "required_provider_routes": [],
+        "required_api_key_envs": [],
+        "fallback_api_key_envs": [],
+        "all_route_api_key_envs": [],
+        "routing_fingerprint_hash": "routing",
+        "phase_contract_map_hash": "contract",
+    }
+
+    class FakeRunner:
+        PHASES = ["A"]
+        REQUIRED_PROMPT_STEP_IDS = {"A": {"A0"}}
+
+        def get_phase_prompts(self, phase):
+            return []
+
+    monkeypatch.setattr(gate, "load_module", lambda path, name: FakeRunner() if "run_extraction" in str(path) else type("FakeContract", (), {"compile_phase_contract_map": lambda self=None: {"steps": {}}, "write_phase_contract_map": lambda self, root, run_id: root / "PHASE_CONTRACT_MAP.json"})())
+    monkeypatch.setattr(gate, "derive_scope", lambda runner, contract_module, config: fake_scope)
+    monkeypatch.setattr(gate, "evaluate_import_cli_smoke", lambda config: ({"status": "PASS"}, []))
+    monkeypatch.setattr(gate, "evaluate_prompt_integrity", lambda runner, config: ({"status": "PASS"}, []))
+    monkeypatch.setattr(gate, "collect_truth_split", lambda runner, config: ({"layer": "truth_split_audit", "status": "PASS", "rows": [], "target_phase_mismatch_count": 0, "repo_wide_mismatch_count": 0}, [], []))
+    monkeypatch.setattr(gate, "evaluate_contract_map", lambda runner, contract_module, config: ({"status": "PASS"}, []))
+    monkeypatch.setattr(gate, "evaluate_route_readiness", lambda runner, config, scope: ({"status": "PASS"}, []))
+    monkeypatch.setattr(gate, "evaluate_pytest_layer", lambda **kwargs: ({"status": "PASS"}, [], []))
+    monkeypatch.setattr(
+        gate,
+        "evaluate_pal_validation",
+        lambda config, scope: (
+            {"layer": "pal_provider_validation", "status": "SKIPPED", "routes": []},
+            [],
+            [gate.Condition(gate.PAL_REQUIRED_UNAVAILABLE, "pal_provider_validation", "PAL skipped")],
+        ),
+    )
+    monkeypatch.setattr(
+        gate,
+        "evaluate_online_preflight",
+        lambda runner, config: (
+            {"layer": "online_provider_preflight", "status": "SKIPPED", "allow_online_preflight": False, "payload": None},
+            [],
+            [gate.Condition(gate.ONLINE_PREFLIGHT_FAILURE, "online_provider_preflight", "preflight skipped")],
+        ),
+    )
+    monkeypatch.setattr(gate, "evaluate_smoke_tests", lambda config: ({"status": "PASS"}, []))
+
+    config = gate.GateConfig(
+        repo_root=Path("/tmp/repo"),
+        output_dir=tmp_path,
+        run_id="conditional_gate_not_allowed",
+        target_policy="cost",
+        target_mode="direct",
+        target_profile="P00_GENERIC",
+        target_phases=("A",),
+        allow_online_preflight=False,
+        # allow_conditional intentionally omitted -- must default to False.
+        pal_validation_file=None,
+        waiver_codes=(),
+        required_direct_providers=(),
+    )
+    assert config.allow_conditional is False
+    result = gate.run_gate(config)
+    assert result["verdict"]["verdict"] == "NO_GO"
+    assert result["verdict"]["reason_codes"] == []
+    assert sorted(row["reason_code"] for row in result["verdict"]["conditions"]) == [
+        gate.ONLINE_PREFLIGHT_FAILURE,
+        gate.PAL_REQUIRED_UNAVAILABLE,
+    ]
+    assert result["verdict"]["operator_verdict"] == gate.NO_GO_CONDITIONAL_NOT_ALLOWED
+    verdict_path = tmp_path / "VALIDATION_VERDICT.json"
+    payload = json.loads(verdict_path.read_text(encoding="utf-8"))
+    assert payload["verdict"] == "NO_GO"
+
+
+def test_allow_conditional_cli_flag_defaults_false_and_wires_through_config() -> None:
+    """--allow-conditional must default to False and build_config must
+    thread it into GateConfig.allow_conditional (no silent drop)."""
+    gate = _load_gate_module()
+    parser = gate.build_arg_parser()
+
+    default_args = parser.parse_args(["--target-phases", "A"])
+    assert default_args.allow_conditional is False
+    default_config = gate.build_config(default_args)
+    assert default_config.allow_conditional is False
+
+    opted_args = parser.parse_args(["--target-phases", "A", "--allow-conditional"])
+    assert opted_args.allow_conditional is True
+    opted_config = gate.build_config(opted_args)
+    assert opted_config.allow_conditional is True
+
+
+def test_derive_operator_verdict_no_go_conditional_not_allowed_when_unopted() -> None:
+    """Unit-level proof for derive_operator_verdict's new branch: no
+    blockers, but Conditions remain and allow_conditional=False -> the
+    operator-facing verdict must be NO_GO_CONDITIONAL_NOT_ALLOWED, not the
+    old GO_NOW fallthrough."""
+    gate = _load_gate_module()
+    conditions = [
+        {
+            "reason_code": gate.PAL_REQUIRED_UNAVAILABLE,
+            "layer": "pal_provider_validation",
+            "message": "PAL skipped",
+            "details": {},
+        }
+    ]
+    verdict, classification = gate.derive_operator_verdict(
+        [], conditions, [], allow_conditional=False
+    )
+    assert verdict == gate.NO_GO_CONDITIONAL_NOT_ALLOWED
+
+    verdict_allowed, _ = gate.derive_operator_verdict(
+        [], conditions, [], allow_conditional=True
+    )
+    assert verdict_allowed == gate.GO_NOW
 
 
 def test_collect_truth_split_fails_for_stale_drift_step(tmp_path: Path) -> None:
@@ -575,3 +714,40 @@ def test_collect_truth_split_fails_for_stale_drift_step(tmp_path: Path) -> None:
     assert any(b.reason_code == gate.TARGET_TRUTH_SPLIT_MISMATCH for b in blockers)
     assert payload["rows"][0]["classification"] == "STALE_MODEL_MAP"
     assert payload["target_phase_mismatch_count"] >= 1
+
+
+def test_build_config_default_output_dir_is_outside_repo_tree() -> None:
+    """F-06: an operator who never passes --output-dir must not get a report
+    directory inside the repo worktree. This exercises the real call site
+    (build_arg_parser -> build_config), not just the DEFAULT_OUTPUT_ROOT
+    constant, so it catches regressions in how the default is wired in."""
+    gate = _load_gate_module()
+
+    parser = gate.build_arg_parser()
+    args = parser.parse_args(["--run-id", "f06_default_dir_probe"])
+    assert args.output_dir is None  # confirm we are exercising the default path
+
+    config = gate.build_config(args)
+
+    repo_root = gate.REPO_ROOT.resolve()
+    resolved_output_dir = config.output_dir.resolve()
+    assert resolved_output_dir != repo_root
+    assert repo_root not in resolved_output_dir.parents, (
+        f"default output_dir {resolved_output_dir} lands inside repo tree {repo_root}"
+    )
+    assert resolved_output_dir == (gate.DEFAULT_OUTPUT_ROOT / "f06_default_dir_probe").resolve()
+
+
+def test_build_config_honors_explicit_output_dir_even_inside_repo() -> None:
+    """Explicit --output-dir must always be honored verbatim (packet invariant:
+    'Honor explicit --output-dir everywhere; only the DEFAULT moves out of the
+    worktree.')."""
+    gate = _load_gate_module()
+
+    parser = gate.build_arg_parser()
+    explicit_dir = gate.REPO_ROOT / "reports" / "repo-truth-extractor" / "pre_live_gate_v25" / "explicit_probe"
+    args = parser.parse_args(["--run-id", "explicit_probe", "--output-dir", str(explicit_dir)])
+
+    config = gate.build_config(args)
+
+    assert config.output_dir == explicit_dir.resolve()

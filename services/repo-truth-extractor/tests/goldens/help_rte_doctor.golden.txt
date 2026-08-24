@@ -1,0 +1,20 @@
+Usage: python -m dopemux rte doctor [OPTIONS]
+
+  Run extraction diagnostics and deterministic re-process planning.
+
+  Inspects an extraction run and prepares a deterministic plan for failed
+  partitions.
+
+Options:
+  --pipeline-version [v5|v4|v3]   [default: v5]
+  --run-id TEXT                   Extraction run identifier to diagnose.
+  --auto-reprocess / --no-auto-reprocess
+                                  Automatically re-process failed partitions
+                                  identified during the audit.  [default: no-
+                                  auto-reprocess]
+  --reprocess-dry-run / --no-reprocess-dry-run
+                                  Simulate re-processing without writing
+                                  changes.  [default: no-reprocess-dry-run]
+  --reprocess-phases TEXT         Comma-separated list of extraction phases to
+                                  audit.
+  --help                          Show this message and exit.

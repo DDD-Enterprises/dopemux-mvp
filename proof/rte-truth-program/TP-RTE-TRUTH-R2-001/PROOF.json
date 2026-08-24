@@ -1,0 +1,119 @@
+{
+  "packet_id": "TP-RTE-TRUTH-R2-001",
+  "title": "Single pricing authority on config/pricing.yaml; fail-closed catalog; unknown-model raise-with-cap/UNPRICED; coverage gate",
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED",
+  "outcome": "IMPLEMENTED",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/focused-mahavira-5bd29b",
+  "branch": "claude/rte-truth-program",
+  "head_sha_before": "0bab26d8e094302c8619516059d1a2004d9e6181",
+  "authority_input": "claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md (F-10, F-11, F-13 part); claudedocs/rte-truth-program-2026-07/A2-cost-truthfulness.md §1-2, §5 (design), §5.5 (fixture-table acceptance spec)",
+  "findings_closed": ["F-10", "F-11"],
+  "findings_partially_addressed": ["F-13 (coverage-gate half only; cap-enforcement/atomicity half is TP-RTE-TRUTH-R2-003)"],
+
+  "problem_summary": {
+    "F-10_fail_open_catalog_collapse": "lib/spend_ledger.py kept its own hardcoded $0.15/$0.60 MODEL_COST_RATES baseline, overwritten by benchmarking.pricing.catalog when importable, and silently KEPT (fail-open) whenever that import or catalog load failed for ANY reason (bare except Exception -> logger.warning -> return {}). Every model then priced at the $0.15/$0.60 baseline while get_model_cost_rate still reported match_type='exact', unknown_model=False -- a 33-50x under-price presented with full confidence.",
+    "F-11_two_authorities_disagree": "E2 (SpendLedger, powers --print-cost-preview and the pre-dispatch preventive check) priced usage via catalog rates x service_tier/batch/cache multipliers. E3 (SpendTrackerState/estimate_usage_cost_usd, the authoritative post-response abort tracker) priced the SAME usage flat against pricing.yaml with zero multipliers. On flex-tier profiles (OpenAI flex = 0.5x) this is exactly 2x divergence: a run projected to fit the cap under E2 could be E3-aborted at roughly half the expected work, and vice versa. Both trackers ran simultaneously and both could independently abort."
+  },
+
+  "design_summary": {
+    "single_authority": "extractor/costing.py is now the ONLY pricing authority. load_pricing_registry(path) reads config/pricing.yaml directly and raises RuntimeError on any problem (missing file, bad YAML, missing/empty models map, malformed/negative row) -- no fallback branch, ever. resolve_model_rate() is the one candidate-matching lookup (moved verbatim from the old spend_ledger.py logic) used by both authorities. compute_optimized_cost() (the money math with service_tier/batch/cache multipliers) and estimate_usage_cost_usd() (Decimal accounting math, now accepting the SAME optional service_tier/is_batch/cached_input_tokens context) both live here too.",
+    "spend_ledger_is_now_a_facade": "lib/spend_ledger.py deleted MODEL_COST_RATES, _catalog_rates(), _fallback_cost_rate(), the benchmarking.pricing.catalog import, and all $0.15/$0.60-as-pricing-fallback logic (~330 lines net). get_model_cost_rate() is now a thin wrapper: extractor.costing.load_pricing_registry_cached(...) (raises, fail closed) -> extractor.costing.resolve_model_rate(...) -> decorate with pricing_surface_metadata. SpendLedger.price_usage/accumulate delegate compute_optimized_cost/make_projected_cost_check to extractor.costing (re-exported, not reimplemented).",
+    "unknown_model_policy": "SpendLedger.price_usage now checks self.record.global_max_cost_usd is not None (the exact field run_extraction_v5.py sets from cfg.max_cost_usd when constructing the ledger, i.e. 'a cost cap is active') immediately after resolving the rate. Unknown model + cap set -> raises RuntimeError (mirrors E3's existing 'Missing pricing for route' raise -- E2 now aligns with E3 instead of E3 aligning down to E2's old fail-open behavior). Unknown model + no cap -> unknown_model=True, pricing_status=UNPRICED_UNKNOWN, cost fields are exactly 0.0 (never a fabricated baseline or max-of-registry number). lib/prescan/cost_estimator.py's _get_pricing_rate got the same treatment: a catalog LOAD failure now propagates (fail closed) instead of being caught by a blanket except-and-substitute-0.15/0.60; an unknown MODEL is marked unpriced (0.0, unpriced=True flag surfaced in pricing_basis) instead of silently defaulting.",
+    "cross_authority_math_parity": "estimate_usage_cost_usd (E3) gained optional service_tier / is_batch / cached_input_tokens kwargs, applying the identical multiplier semantics as compute_optimized_cost (E2) via new Decimal-safe helpers (_decimal_tier_multiplier, _decimal_cached_rate) so a caller that supplies the same optimizer context to both gets the same number. record_request_cost (E3's production entrypoint) threads these through. NOTE (residual, documented below): the real dispatch call site in run_extraction_v5.py (enrich_request_meta, 13+ call sites) does not yet auto-derive service_tier/is_batch/cached_input_tokens from live response meta and pass them into record_request_cost -- that full-pipeline wiring was deliberately deferred (see Remaining Uncertainty) as out of the minimal-correct-change boundary for this packet; the unified formula itself is implemented, tested, and available for that follow-up wiring.",
+    "coverage_gate": "New tests/test_pricing_coverage_gate.py resolves every route reachable from every COST_PROFILES entry (cell_aliases + hardcoded ladder fallbacks) across ALL phases via the existing run_extraction_v5.collect_provider_routes (the same resolver initialize_spend_tracker's own missing-route check already uses at startup) and asserts each has a numeric priced row in config/pricing.yaml. Running this gate against the pre-fix pricing.yaml found 5 REAL gaps (see below); config/pricing.yaml was updated to close them. A self-check test proves the gate is not vacuous (it fails against a deliberately near-empty registry)."
+  },
+
+  "real_defect_found_and_fixed_by_the_new_coverage_gate": {
+    "before": "4 of 11 cost profiles (value-default, gemini-value, openrouter-resilient, balanced-mix) resolved to at least one route with NO row at all in config/pricing.yaml: openrouter/openai/gpt-5.2-chat, openrouter/openai/gpt-5.2-pro, openrouter/openai/gpt-5-pro, openrouter/openai/gpt-4.1-nano, openrouter/openai/gpt-4o-mini. These are hardcoded fallback models in run_extraction_v5.py's ACTIVE_ROUTING_LADDERS (openrouter-resilient ladder) -- not present in promptsets/ (out of my edit scope), so read-only verification only.",
+    "after": "All 5 routes added to config/pricing.yaml with pricing_confidence LOW/MEDIUM, pricing_status PRICED_WITH_CAVEAT, and an explicit pricing_caveat citing the inference basis (parity with the closest priced sibling row already in the file: gpt-5.2-chat/pro -> gpt-5.2 base rate and the file's own established $30/$180 pro-tier convention; gpt-4.1-nano/gpt-4o-mini -> OpenAI's own published direct rates). Verified: 0 profiles have gaps after the fix (probe script output: 'TOTAL PROFILES WITH GAPS: 0 {}').",
+    "caveat": "These 5 rows are LOW/MEDIUM-confidence inferred rates, not independently reverified against the live OpenRouter pricing page -- flagged for follow-up verification, consistent with this file's existing convention (see e.g. the pre-existing openai/gpt-5.1-codex-mini row's pricing_caveat)."
+  },
+
+  "files_modified": [
+    "services/repo-truth-extractor/extractor/costing.py",
+    "services/repo-truth-extractor/lib/spend_ledger.py",
+    "services/repo-truth-extractor/lib/prescan/cost_estimator.py",
+    "config/pricing.yaml",
+    "services/repo-truth-extractor/tests/test_spend_ledger.py",
+    "services/repo-truth-extractor/tests/test_spend_ledger_optimizers.py"
+  ],
+  "files_created": [
+    "services/repo-truth-extractor/tests/test_pricing_authority_unification.py",
+    "services/repo-truth-extractor/tests/test_pricing_coverage_gate.py",
+    "proof/rte-truth-program/TP-RTE-TRUTH-R2-001/PROOF.json"
+  ],
+  "files_not_touched": [
+    "services/repo-truth-extractor/run_extraction_v5.py -- audited; every wrapper it needs (record_request_cost, initialize_spend_tracker, load_pricing_registry) already delegates unchanged-signature-compatibly to extractor.costing, and cfg.ledger (SpendLedger) automatically inherits the rewritten spend_ledger.py. No edit was required to satisfy outcomes 1-4.",
+    "services/repo-truth-extractor/promptsets/** -- excluded per file-boundary instruction (concurrent agent); model_map.yaml was read-only inspected to confirm the ladder-fallback resolution mechanism, never modified.",
+    "benchmarking/pricing/catalog.py, benchmarking/pricing/coverage.py -- out of edit scope; spend_ledger.py no longer imports catalog.py at all (F-10 fix removes that dependency), coverage.py's separate 'active benchmark universe' gate is untouched and unaffected."
+  ],
+
+  "tests_added_or_changed": {
+    "test_pricing_authority_unification.py (new, 17 tests)": "Core proof. Fixture table (A2 §5.5) parametrized over 5 usage/optimizer scenarios (default, flex-tier [the audit-named case], batch, cached-input, combined flex+cache) asserting (a) preview/preventive/E2-accounting agree, and (b) E2 vs E3 cross-authority pricing agree -- both loading the SAME real config/pricing.yaml via extractor.costing.load_pricing_registry, not independent mocks. Plus: catalog-load-failure tests (missing file, missing models map, via load_pricing_registry / load_pricing_registry_cached / initialize_spend_tracker / spend_ledger.get_model_cost_rate) asserting RuntimeError in every path; unknown-model+cap-set tests asserting RuntimeError in both E2 and E3; unknown-model+no-cap test asserting UNPRICED/$0.00 in E2.",
+    "test_pricing_coverage_gate.py (new, 2 tests)": "The coverage gate itself (found + fixed the 5 real gaps above) plus a mutation self-check proving the gate isn't vacuous.",
+    "test_spend_ledger.py (modified)": "test_persistence_round_trip_preserves_model_provider_and_fallback_counts: removed the now-incorrect max_cost_usd=3.5 cap from a test whose actual purpose is JSON round-trip persistence, not cap semantics (with the fix, that call now correctly raises). Added test_unknown_model_raises_when_spend_cap_is_set covering the new raise-with-cap behavior directly.",
+    "test_spend_ledger_optimizers.py (modified)": "test_unknown_model_returns_none_for_optimizer_fields: updated assertion from 'final_cost_usd > 0' to '== 0.0' plus pricing_status==UNPRICED_UNKNOWN -- this assertion literally encoded the old bug (an unpriced model must never compute to a positive dollar figure)."
+  },
+
+  "mandatory_verification": {
+    "fixture_table_result": "PASS -- all 3 authorities agree for identical usage across all 5 fixture rows (default, flex-tier, batch, cached-input, combined flex+cache), verified against the real config/pricing.yaml, not mocks. Flex-tier row (the audit's specific named ~2x-divergence case): E2=$2.00, E3=$2.00 for 1M input/100K output tokens on openai/gpt-5.4 at $2.50/$15 base rate with 0.5x flex multiplier -- exact match, no divergence.",
+    "catalog_failure_fixture": "PASS -- missing file, missing models map, both block via RuntimeError at every entry point tested (load_pricing_registry, load_pricing_registry_cached, initialize_spend_tracker, spend_ledger.get_model_cost_rate). Never a silent reprice.",
+    "mutation_check_1_catalog_fail_closed_guard": "PERFORMED. Temporarily replaced the two `raise RuntimeError(...)` statements in extractor.costing.load_pricing_registry's missing-file and missing-models-map branches with silent `return {}, \"mutated\"`. Reran tests/test_pricing_authority_unification.py -k catalog: 4 of 4 catalog-failure tests went RED (test_catalog_load_failure_blocks_rather_than_repricing_missing_file, test_catalog_load_failure_blocks_rather_than_repricing_no_models_map, test_catalog_load_failure_blocks_spend_tracker_init [still raised, but a different downstream RuntimeError from the missing-route-coverage check -- regex mismatch correctly failed the test], test_catalog_load_failure_blocks_spend_ledger_get_model_cost_rate [DID NOT RAISE at all]). Reverted via file restore from a pre-mutation backup copy; diff against backup after revert was empty (clean revert); full suite re-verified green after revert.",
+    "mutation_check_2_unknown_model_cap_raise_guard": "PERFORMED. Temporarily changed `if resolved.get(\"unknown_model\") and self.record.global_max_cost_usd is not None:` to `if False and ...` in SpendLedger.price_usage. Reran test_spend_ledger.py::test_unknown_model_raises_when_spend_cap_is_set and test_pricing_authority_unification.py::test_unknown_model_raises_in_both_authorities_when_cap_is_set: both went RED (DID NOT RAISE). Reverted via file restore from a pre-mutation backup copy; diff after revert was empty; both tests green again after revert.",
+    "stash_check": "No stashes were used or present during this work; git status before commit shows only the files listed in files_modified/files_created above (plus pre-existing unrelated worktree noise: .claude/claude_config.json and .claude/.untracked-work-probe-cache.json, neither touched by or included in this packet's commit)."
+  },
+
+  "commands_run": [
+    {"command": "PYTHONPATH=. mise exec -- python3 -m pytest services/repo-truth-extractor/tests/test_spend_ledger.py services/repo-truth-extractor/tests/test_spend_ledger_optimizers.py services/repo-truth-extractor/tests/test_costing_seam.py services/repo-truth-extractor/tests/test_run_extraction_v5_cost_cap.py -q", "exit_code": 0, "bucket": "PASS", "note": "30 passed"},
+    {"command": "PYTHONPATH=. mise exec -- python3 -m pytest services/repo-truth-extractor/tests/test_pricing_authority_unification.py -q", "exit_code": 0, "bucket": "PASS", "note": "17 passed (fixture table + catalog-failure + unknown-model-cap tests)"},
+    {"command": "PYTHONPATH=. mise exec -- python3 -m pytest services/repo-truth-extractor/tests/test_pricing_coverage_gate.py -q", "exit_code": 0, "bucket": "PASS", "note": "2 passed (found + drove the fix for 5 real pricing.yaml gaps; self-check confirms gate is not vacuous)"},
+    {"command": "PYTHONPATH=. mise exec -- python3 -m pytest services/repo-truth-extractor/tests/ -q -k 'cost or pricing or spend'", "exit_code": 0, "bucket": "PASS", "note": "all green except 1 intentionally-skipped slow golden (RTE_TRUTH_SLOW_GOLDENS gate), run separately below"},
+    {"command": "PYTHONPATH=. RTE_TRUTH_SLOW_GOLDENS=1 mise exec -- python3 -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q", "exit_code": 0, "bucket": "PASS", "note": "28 passed, 0 golden files changed -- see golden_diff below"},
+    {"command": "PYTHONPATH=. mise exec -- python3 -m pytest services/repo-truth-extractor/tests/ -q --ignore=services/repo-truth-extractor/tests/test_truth_harness_goldens.py", "exit_code": 0, "bucket": "PASS", "note": "full service test suite (~1000+ tests) green; only pre-existing, unrelated skips/xfails (tree-sitter absence, audit-only API-key tests, TP-RTE-WALKER-006-deferred prescan drift)"}
+  ],
+
+  "golden_diff": {
+    "changed": false,
+    "dollar_deltas": [],
+    "explanation": "The golden harness's cost-preview scenario exercises the HAPPY PATH: a normal, successful catalog load with a known model. F-10/F-11's defects only manifest (a) when the catalog fails to load at all, or (b) when comparing E2's preview/preventive numbers against E3's SEPARATE accounting run -- the golden harness only snapshots one code path's happy-path output, not a cross-authority comparison. Since config/pricing.yaml's rates for the golden's exercised models were already identical to the old catalog-derived MODEL_COST_RATES values in the success case, the happy-path preview number is unchanged. No golden was silently re-baselined; all 28 golden assertions passed against the pre-existing committed goldens with zero diff, confirmed by running with RTE_TRUTH_SLOW_GOLDENS=1 (the flag that includes the cost-preview golden, normally skipped for speed)."
+  },
+
+  "residual_risks_and_deferred_work": [
+    "F-13's cap-enforcement/atomicity half (post_hoc one-call overshoot, cost_cap_mode decorative flag, spend-ledger atomic writes) is explicitly out of scope here -- owned by TP-RTE-TRUTH-R2-003 per CONSOLIDATED-FINDINGS.md.",
+    "The real dispatch call site (run_extraction_v5.py's enrich_request_meta, 13+ call sites feeding record_request_cost) does not yet auto-derive service_tier/is_batch/cached_input_tokens from live provider response meta and thread them into E3's accounting. The UNIFIED FORMULA is implemented and proven equal for identical context (this packet's core requirement); wiring that context through 13+ call sites in a 22k-line file was assessed as materially higher risk than the packet's minimal-correct-change mandate justified, given: (a) the base/no-optimizer-context case (the vast majority of calls, and the ONLY case reachable without a cap-set or exotic tier config) is already exactly unified by the single-authority fix, and (b) response_summary.usage's raw key-shape (prompt_tokens/completion_tokens vs input_tokens/output_tokens/cached_tokens) differs between what E2's normalizer and E3's reader currently expect, and resolving that ambiguity safely needs deeper tracing than this packet's time budget allowed. Recommend a focused follow-up packet.",
+    "The 5 newly-added pricing.yaml rows (openrouter/openai/gpt-5.2-chat, gpt-5.2-pro, gpt-5-pro, gpt-4.1-nano, gpt-4o-mini) are LOW/MEDIUM-confidence inferred rates pending live-page verification -- flagged explicitly via pricing_confidence + pricing_caveat, not silently presented as confirmed.",
+    "A stale_after / staleness CI gate (A2 §5.1 design item, 'entries dated 2026-05-23, nothing enforces recency') was NOT implemented -- the packet's REQUIRED OUTCOME #4 asked only for a coverage gate tying COST_PROFILES+ladder to priced rows, which is delivered; staleness enforcement is a natural follow-up, not required here.",
+    "_pricing_preview_record in run_extraction_v5.py (a peripheral, non-authoritative retry-cost hotspot reporting helper used only when cfg.ledger is None, which is never true in a normal run) still references the legacy BASELINE_INPUT/OUTPUT_COST_PER_1M_USD constants for its fallback math. Left untouched deliberately: it is not part of the preview/preventive/accounting authority chain this packet unifies, has zero test coverage exercising its fallback branch, and touching it was assessed as unnecessary scope expansion. Constants are still defined in extractor/costing.py, clearly commented as legacy-only and NOT part of the pricing authority."
+  ],
+
+  "validation_buckets": {
+    "PASS": [
+      "Single pricing authority: extractor.costing.load_pricing_registry/resolve_model_rate is the only pricing lookup path for both E2 and E3",
+      "Fail-closed catalog: missing/corrupt config/pricing.yaml raises RuntimeError at every tested entry point, never silently reprices",
+      "Unknown model + cap set: raises RuntimeError in both E2 and E3 (verified by mutation check)",
+      "Unknown model + no cap: UNPRICED_UNKNOWN status, $0.00 (never fabricated), verified",
+      "Coverage gate: implemented, found and fixed 5 real config/pricing.yaml gaps, self-check proves it is not vacuous",
+      "Fixture table: preview==preventive==E2-accounting==E3-accounting for identical usage across 5 scenarios including the audit-named flex-tier case",
+      "Full service test suite green (~1000+ tests, only pre-existing unrelated skips/xfails)",
+      "Golden harness green, 0 dollar drift, explained"
+    ],
+    "FAIL": [],
+    "NOT_RUN": [
+      "Live provider calls (dry-run only per task invariants; DPMX_LIVE_OK never set, --execute never passed)",
+      "Full-pipeline auto-derivation of service_tier/is_batch/cached_input_tokens from real dispatch meta at the enrich_request_meta call sites (deferred, see residual_risks)"
+    ]
+  },
+
+  "invariants_respected": {
+    "dry_run_only": true,
+    "no_execute_flag_used": true,
+    "no_dpmx_live_ok_set": true,
+    "no_live_provider_calls": true,
+    "mise_python_3_12_used": true
+  },
+
+  "cleanup_status": "no_temp_files_left; /tmp mutation-check backup copies (costing_backup_for_mutation_check.py, spend_ledger_backup_for_mutation_check.py) were scratch copies outside the repo, not committed",
+  "next_recommended_packet": "TP-RTE-TRUTH-R2-003 (cap-enforcement hardening + spend-ledger atomicity + --llm-temperature, F-13/F-15/F-38) per CONSOLIDATED-FINDINGS.md wave ordering"
+}

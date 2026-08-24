@@ -1,0 +1,133 @@
+{
+  "id": "TP-RTE-TRUTH-R0-005",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / tree-sitter fail-closed / explicit degraded-mode",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "PARTIAL WORK ALREADY STAGED at commit e7fbd4a32 (CodePrescan degraded tracking + analyze_file degraded metadata) \u2014 finish it, do not redo it.",
+    "Remaining: unit test, propagate degraded flag into code-intelligence report/artifacts, decide fail-closed for LIVE prescan (degraded-metadata acceptable for dry-run).",
+    "Findings covered: F-05."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R0",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "S"
+  },
+  "commit": {
+    "message": "fix(rte): TP-RTE-TRUTH-R0-005 \u2014 tree-sitter degraded-mode surfaced, not silent",
+    "allowlist": [
+      "services/repo-truth-extractor/lib/prescan/code_prescan.py",
+      "services/repo-truth-extractor/lib/prescan/code_intelligence_report.py",
+      "services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py",
+      "task-packets/generated/TP-RTE-TRUTH-R0-005.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R0-005/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py -q"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): surface tree-sitter degradation in prescan",
+    "body": "F-05: import failure silently returned {} for every code file (masked by darwin xfails).",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Finish the staged fix: propagate tree_sitter_degraded into the code intelligence report and prescan artifacts so consumers can see degradation.",
+      "requirements": [
+        "Grep engine.py/code_intelligence_report.py for where analyze_file results aggregate."
+      ],
+      "commands": [
+        "grep -rn 'degraded' services/repo-truth-extractor/lib/prescan/"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/lib/prescan/code_prescan.py",
+        "services/repo-truth-extractor/lib/prescan/code_intelligence_report.py"
+      ],
+      "validation": [
+        "Degraded state visible in emitted artifacts."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A5-ops-gates-proof.md",
+        "claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Unit test: simulate TREE_SITTER_AVAILABLE=False and assert degraded metadata (not silent {}); run the prescan test files.",
+      "requirements": [
+        "Complete the import already added in test_code_prescan_truthfulness.py."
+      ],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py -q"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/tests/test_code_prescan_truthfulness.py"
+      ],
+      "validation": [
+        "Tests pass; degraded path asserted."
+      ],
+      "context_files": []
+    }
+  ],
+  "routing": {
+    "stage": "implementer_standard",
+    "tier": "balanced",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml is ADVISORY governance, not a runtime router. If a runtime path disagrees, runtime wins.",
+    "runners": {
+      "preferred": [
+        "claude_code",
+        "codex",
+        "grok"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "grok",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": []
+    },
+    "models": {
+      "claude_code": "claude-sonnet-5",
+      "codex": "gpt-5.6-terra (reasoning xhigh)",
+      "opencode": "anthropic/claude-sonnet-4-5",
+      "grok": "grok-code-fast-1 (effort high)",
+      "gemini_cli": "VERIFY_WITH_VENDOR_DOCS",
+      "copilot": "Claude Sonnet 4.5 (.github/agents/dopemux-implementer.agent.md)"
+    },
+    "rationale": "Correctness: fail-open tree-sitter silently degraded prescan. Partial WIP already committed.",
+    "notes": [],
+    "evidence": "Model ids OBSERVED from this machine: ~/.codex/config.toml (gpt-5.6-sol/xhigh), ~/.config/opencode/opencode.jsonc (claude-sonnet-4-5 + claude-haiku-4-5), ~/.grok/config.toml, .github/agents/*.agent.md (Sonnet 4.5). Per-vendor selector-string validity beyond these files remains VERIFY_WITH_VENDOR_DOCS."
+  }
+}

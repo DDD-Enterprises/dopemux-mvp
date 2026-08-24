@@ -1,0 +1,11 @@
+Usage: python -m dopemux rte promptset [OPTIONS] COMMAND [ARGS]...
+
+  Promptset utilities for Repo Truth Extractor.
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  audit     Audit promptset contract compliance.
+  sync      🧪 Ritual Daemon: Initialize the extraction cockpit —...
+  validate  ✅ Verify Integrity: Validate a generated promptset for...

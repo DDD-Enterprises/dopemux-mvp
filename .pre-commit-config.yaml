@@ -253,6 +253,18 @@ repos:
         additional_dependencies: ['jsonschema']
         files: ^proof/[^/]+/PROOF\.json$
         pass_filenames: true
+
+      # GitHub Actions workflow syntax guard (TP-RTE-TRUTH-R0-009)
+      # MUST be pre-commit, not a CI job: both defect classes it catches make
+      # GitHub reject the workflow file outright, so zero jobs run and no
+      # CI-side check is ever reached. On PR #1136 this presented as a check
+      # list that looked green while all 14 required gates were simply absent.
+      - id: workflow-syntax-guard
+        name: Validate GitHub Actions workflow syntax
+        entry: python3 scripts/check_workflow_syntax.py
+        language: system
+        files: ^\.github/workflows/.*\.ya?ml$
+        pass_filenames: true
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.41.0
     hooks:

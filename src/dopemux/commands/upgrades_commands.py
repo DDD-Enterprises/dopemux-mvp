@@ -23,11 +23,19 @@ def upgrades():
     """
     🧪 Ritual Advancement: Universal Repo-Truth-Extractor commands
 
-    Orchestrates the high-fidelity extraction of repository intelligence. 
-    This system synchronizes across multiple pipeline versions (v3, v4, v5) 
-    to harvest codebase patterns, synthesize promptsets, and maintain the 
+    Orchestrates the high-fidelity extraction of repository intelligence.
+    This system synchronizes across multiple pipeline versions (v3, v4, v5)
+    to harvest codebase patterns, synthesize promptsets, and maintain the
     integrity of the ritual knowledge graph.
     """
-    pass
+    # TP-RTE-TRUTH-R4-002 (F-42): `upgrades` is a deprecated, hidden alias.
+    # `rte` is now the canonical definition site for every subcommand
+    # attached here. This callback only fires when a subcommand is actually
+    # invoked (Click group-callback semantics), so `--help` on the bare
+    # group and canonical `rte` invocations never see this warning.
+    console.logger.warning(
+        "`dopemux upgrades` is a deprecated alias for `dopemux rte`. "
+        "Use `dopemux rte <command>` instead."
+    )
 
 

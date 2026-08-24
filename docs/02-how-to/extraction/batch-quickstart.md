@@ -21,7 +21,7 @@ next_review: '2026-05-22'
 Use this when you want lower-cost async execution for high-volume extraction steps.
 
 Batch is opt-in and live by default only when explicit consent is present.
-The canonical operator command family is `dopemux rte`; `dopemux upgrades` is only a legacy compatibility alias.
+The canonical operator command family is `dopemux rte`; `dopemux upgrades` is only a hidden, deprecated alias.
 The strongest v5 runtime authority remains `services/repo-truth-extractor/run_extraction_v5.py`.
 Batch request/response proof is safer after TP-RTE-BATCH-005, TP-RTE-BATCH-E2E-006, and TP-RTE-STRICT-ATTESTATION-007, but live provider and batch execution remain policy-gated.
 

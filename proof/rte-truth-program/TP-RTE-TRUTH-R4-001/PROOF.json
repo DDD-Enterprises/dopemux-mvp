@@ -1,0 +1,170 @@
+{
+  "packet_id": "TP-RTE-TRUTH-R4-001",
+  "packet_path": "task-packets/generated/TP-RTE-TRUTH-R4-001.json",
+  "tree_item_id": "2cfc1526-40b9-4ead-adde-84c55bb9c96d",
+  "worktree": "/Users/hue/code/dopemux-mvp/.claude/worktrees/focused-mahavira-5bd29b",
+  "branch": "claude/rte-truth-program",
+  "note_on_branch": "Packet field execution.branch/series.base_branch names the RETIRED claude/rte-audit-improvement-f4beb7 branch. Per explicit dispatch instruction this execution used claude/rte-truth-program instead; the underlying code fix (commit 90f8798195) already reached this branch via prior merge history and predates this session's HEAD.",
+  "base_head": "fce80c2aacd1cd71cbea22db84cb9d55847bc190",
+  "commit_sha": null,
+  "repo_identity": {
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot",
+    "marker_present": true
+  },
+  "authority_used": [
+    "AGENTS.md",
+    "task-packets/generated/TP-RTE-TRUTH-R4-001.json",
+    "task-packets/generated/TP-RTE-TRUTH-LOAD-PLAN.md",
+    "claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md",
+    "claudedocs/rte-truth-program-2026-07/A4-cli-ux-docs.md",
+    "src/dopemux/ux/wizard/extraction.py",
+    "src/dopemux/commands/audit_commands.py",
+    "src/dopemux/cli.py",
+    "services/repo-truth-extractor/tests/test_truth_harness_goldens.py"
+  ],
+  "scope": {
+    "dry_run_only": true,
+    "live_provider_calls": false,
+    "dpmx_live_ok_set_by_implementation": false,
+    "execute_commands_run_by_validation": false
+  },
+  "changes": [
+    {
+      "file": "src/dopemux/ux/wizard/extraction.py",
+      "summary": "Wizard phase commands now delegate to canonical `dopemux rte run`, pass prescan artifacts via `--prescan-import-dir` without `--skip-prescan`, and fail before phase prompts unless `DPMX_LIVE_OK=1` is already present.",
+      "status_this_session": "ALREADY PRESENT on HEAD d60d4d075c (landed via commit 90f8798195, ancestor of this branch's history). No code edit was needed; content re-verified byte-for-byte against the F-40 requirements."
+    },
+    {
+      "file": "src/dopemux/commands/audit_commands.py",
+      "summary": "`audit wizard --routing-policy` now uses the same eight-value Click choice set as the canonical RTE wrapper instead of accepting arbitrary text.",
+      "status_this_session": "ALREADY PRESENT on HEAD d60d4d075c. Re-verified: `_ROUTING_POLICY_CHOICES` list + `type=click.Choice(_ROUTING_POLICY_CHOICES)` at line ~104."
+    },
+    {
+      "file": "tests/unit/test_wizard_interactivity.py",
+      "summary": "Tests assert the corrected command shape, imported-prescan command parsing without `--skip-prescan`, consent preflight before prompts/subprocess, and Click parsing for every wizard phase.",
+      "status_this_session": "ALREADY PRESENT; independently re-run and mutation-checked this session (see validation + mutation_check below)."
+    },
+    {
+      "file": "tests/unit/test_cli_audit_remediations.py",
+      "summary": "Regression test asserts invalid routing policies are rejected before `WizardRunner` construction.",
+      "status_this_session": "ALREADY PRESENT; re-run this session as part of `-k wizard` selection is not applicable to this file by name filter, so it was checked separately for the routing-policy Choice requirement via source inspection (see flag_verification below)."
+    },
+    {
+      "file": "proof/rte-truth-program/TP-RTE-TRUTH-R4-001/PROOF.json",
+      "summary": "This file. Rewritten this session to add an independent re-verification record (real-flag confirmation, mutation-check, fresh test runs) on top of the original implementation record, per dispatch instruction that prior agents' claimed successes must be demonstrated, not assumed."
+    }
+  ],
+  "flag_verification": {
+    "claimed_bug": "extraction.py appended nonexistent --prescan-dir to `upgrades run`/`rte run`, which declares no such option and no ignore_unknown_options, so Click rejects every phase invocation.",
+    "real_option_confirmed_at": "src/dopemux/cli.py:5225 — `@click.option(\"--prescan-import-dir\", type=click.Path(exists=True, file_okay=False), help=\"Import external prescan artifacts.\")` on the `upgrades run` (aliased `rte run`) command.",
+    "context_settings_confirmed": "src/dopemux/cli.py:5136 `@upgrades.command(\"run\")` carries no `context_settings`/`ignore_unknown_options` — an unknown flag is still a hard Click failure, so the fix (using the real flag) is load-bearing, not incidental.",
+    "current_wizard_code_confirmed_at": "src/dopemux/ux/wizard/extraction.py:51-52 — `if state.prescan_dir: cmd.extend([\"--prescan-import-dir\", state.prescan_dir])` (no `--skip-prescan` paired with it)."
+  },
+  "consent_preflight_verification": {
+    "requirement": "Stage-0 DPMX_LIVE_OK consent preflight BEFORE the wizard walks the user through the 14 phase prompts.",
+    "confirmed_at": "src/dopemux/ux/wizard/extraction.py:106-115 — `_live_ok_enabled()` check runs immediately after the optional educate-mode panel and returns StageStatus.FAILED before the `for phase_key in PHASES:` loop (which contains the 14 Run/Skip/Abort prompts) is ever entered.",
+    "residual_scope_note": "This gate sits at the start of Stage 6 (run_extraction), before any per-phase prompt. It does not precede earlier wizard stages (corpus audit, cost-profile selection, provider overrides) that run prior to Stage 6 — those stages do not themselves execute phases or spend money, so this matches the packet's literal ask (\"BEFORE the wizard walks the user through 14 phase prompts\")."
+  },
+  "routing_policy_choice_verification": {
+    "requirement": "routing-policy becomes click.Choice instead of free text.",
+    "confirmed_at": "src/dopemux/commands/audit_commands.py:16-25 defines `_ROUTING_POLICY_CHOICES` (8 values matching `rte run`'s choice set); line 104 applies `type=click.Choice(_ROUTING_POLICY_CHOICES)` to the `audit wizard --routing-policy` option."
+  },
+  "journey_test_verification": {
+    "requirement": "Test constructs the wizard's command for EVERY phase and asserts each parses under Click.",
+    "test": "tests/unit/test_wizard_interactivity.py::test_wizard_phase_commands_parse_for_all_phases",
+    "phases_covered": ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z", "S"],
+    "phase_count": 14,
+    "mechanism": "Builds `_build_wizard_phase_command(state, phase)` for every entry in `PHASES` (src/dopemux/ux/wizard/stages.py:56, confirmed 14 entries), monkeypatches `dopemux_cli._run_extractor_runner` to a recorder (no live execution), then invokes `CliRunner().invoke(dopemux_cli.cli, cmd[3:])` for each and asserts `exit_code == 0` — i.e. Click actually parses and dispatches every phase's constructed command without error. Also asserts `--prescan-import-dir` present and `--skip-prescan` absent on every generated command."
+  },
+  "mutation_check": {
+    "performed_by": "this session, independently of the original implementer",
+    "method": "Temporarily reverted src/dopemux/ux/wizard/extraction.py:_build_wizard_phase_command's prescan branch from `cmd.extend([\"--prescan-import-dir\", state.prescan_dir])` back to the original bug: `cmd.extend([\"--prescan-dir\", state.prescan_dir, \"--skip-prescan\"])`. Ran the wizard test file, then restored the file exactly (confirmed via `git diff` showing zero diff afterward).",
+    "result": "FAILED AS EXPECTED — mutation confirmed the tests pin the fix",
+    "failing_tests_under_mutation": [
+      "tests/unit/test_wizard_interactivity.py::test_run_extraction_uses_v5_rte_wrapper_with_imported_prescan_and_consent (AssertionError: '--prescan-dir' != '--prescan-import-dir' at index 18)",
+      "tests/unit/test_wizard_interactivity.py::test_wizard_phase_commands_parse_for_all_phases (AssertionError: '--prescan-import-dir' not in constructed command)"
+    ],
+    "restore_verified": "git diff --stat -- src/dopemux/ux/wizard/extraction.py produced no output after restoring; full `-k wizard` suite re-run green post-restore.",
+    "conclusion": "The journey test and the wrapper-command test are load-bearing for F-40 — they do not pass vacuously. This directly answers the dispatch's demand that a prior claim of a pinning test be demonstrated, not asserted."
+  },
+  "golden_diff_itemized": [],
+  "validation": [
+    {
+      "status": "FAIL",
+      "exit_code": 1,
+      "command": "mise exec -- python -m pytest tests/unit/test_wizard_interactivity.py -q (original implementation session)",
+      "purpose": "RED verification before production edits (from original implementation, 90f8798195)",
+      "summary": "Failed on old `upgrades run --prescan-dir` command and missing preflight before phase subprocess, proving the new tests caught F-40."
+    },
+    {
+      "status": "FAIL",
+      "exit_code": 1,
+      "command": "mise exec -- python -m pytest tests/unit/test_cli_audit_remediations.py::test_audit_wizard_rejects_unknown_routing_policy_before_runner -q (original implementation session)",
+      "purpose": "RED verification before parser fix (from original implementation, 90f8798195)",
+      "summary": "Failed because `WizardRunner` was constructed with invalid `not-a-policy`, proving the parser test caught free-text routing policy behavior."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "PYTHONPATH=src mise exec -- python -m pytest tests/ -q -k 'wizard'",
+      "summary": "THIS SESSION, on HEAD d60d4d075c: 20 passed, 3 skipped (pre-existing quarantines unrelated to F-40), 1 Starlette/httpx deprecation warning."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "PYTHONPATH=src mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q",
+      "summary": "THIS SESSION, on HEAD d60d4d075c: 27 passed, 1 documented slow capture skipped (RTE_TRUTH_SLOW_GOLDENS gate). No golden files touched."
+    },
+    {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "mutation-check (see mutation_check block)",
+      "summary": "Reverting the --prescan-import-dir fix to the original --prescan-dir/--skip-prescan bug causes 2 tests to FAIL; restoring the fix returns the suite to green. Tests are load-bearing, not vacuous."
+    },
+    {
+      "status": "NOT_RUN",
+      "exit_code": null,
+      "command": "any --execute / DPMX_LIVE_OK=1 / live provider invocation",
+      "summary": "Explicitly out of scope per dry-run-only invariant. No live extraction was run in this session; not claimed as PASS."
+    }
+  ],
+  "codereview": {
+    "status": "completed_findings_resolved (original implementation session)",
+    "reviewer": "gpt-5.6-luna",
+    "agent_id": "019f5378-102b-7731-80a3-3f4f3ce41da6",
+    "findings": [
+      {
+        "severity": "P1",
+        "summary": "Wizard command paired `--prescan-import-dir` with `--skip-prescan`, causing v5 Stage 0 to skip before import.",
+        "resolution": "Removed `--skip-prescan` from wizard imported-prescan commands and added tests asserting the conflict is not generated or forwarded."
+      },
+      {
+        "severity": "P2",
+        "summary": "Requested stronger regression coverage for imported-prescan command behavior.",
+        "resolution": "All-phase Click parse test now asserts every generated command forwards `--prescan-import-dir` and omits `--skip-prescan`."
+      }
+    ]
+  },
+  "precommit_status": "PARTIAL_ENV_BLOCKED (carried over from original implementation; not re-run this session — no code changed)",
+  "residual_risks": [
+    "The aggregate pre-commit command remains blocked by the hook launcher using Homebrew `python3` without PyYAML, although the failing hook logic passed under the project Python (original session finding, not re-tested this session).",
+    "Consent preflight is implemented at the extraction phase before the phase prompts; earlier wizard stages still run before this check.",
+    "No live extraction, provider call, or `DPMX_LIVE_OK=1` execution path was exercised.",
+    "This session made no source-code changes: the F-40 fix was already present on claude/rte-truth-program's HEAD prior to this dispatch (commit 90f8798195, merged in ahead of d60d4d075c). This proof bundle documents an independent re-verification (real-flag confirmation + mutation-check), not a new implementation."
+  ],
+  "unknowns": [
+    "Whether CI invokes pre-commit with a Python environment that includes PyYAML for `language: system` hooks.",
+    "Whether R4-002 will later move the `rte run` definition site from the `upgrades` group; this packet only changes wizard delegation."
+  ],
+  "rollback": {
+    "strategy": "Revert the eventual TP-RTE-TRUTH-R4-001 commit(s). Note the code fix itself lives in ancestor commit 90f8798195; this session's commit only updates the proof bundle.",
+    "files": [
+      "src/dopemux/ux/wizard/extraction.py",
+      "src/dopemux/commands/audit_commands.py",
+      "tests/unit/test_wizard_interactivity.py",
+      "tests/unit/test_cli_audit_remediations.py",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R4-001/PROOF.json"
+    ]
+  }
+}

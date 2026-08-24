@@ -1,0 +1,175 @@
+{
+  "tp_id": "TP-RTE-TRUTH-R3-007",
+  "tp_path": "task-packets/generated/TP-RTE-TRUTH-R3-007.json",
+  "title": "Write-time secret scrub for SECRETS_RISK_LOCATIONS (F-23 enforcement half)",
+  "program": "RTE-TRUTH",
+  "wave": "R3",
+  "findings_covered": [
+    "F-23 (enforcement half)"
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R3-004 (commit 6aac1ef79)"
+  ],
+  "status": "READY_FOR_REVIEW",
+  "validation_state": "PASSED_WITH_KNOWN_PREEXISTING_FAILURE",
+  "confidence": "VERIFIED (static/dry-run scope only; see not_live_verified_ledger)",
+  "worktree": "/Users/hue/code/dopemux-mvp/.claude/worktrees/focused-mahavira-5bd29b",
+  "branch": "claude/rte-audit-improvement-f4beb7",
+  "base_commit": "ed665b5832",
+  "commit_sha": "6008c554ba",
+  "pushed": false,
+  "pr_url": null,
+  "pr_blocker": "Packet mandates no push / no PR. PR #1043 is the downstream consumer.",
+  "authority_used": [
+    "task-packets/generated/TP-RTE-TRUTH-R3-007.json (packet scope + invariants)",
+    "proof/rte-truth-program/TP-RTE-TRUTH-R3-004/PROOF.json (its author flagged this packet as the top follow-up)",
+    "git show 6aac1ef79 (sibling R3-004; its prompt-layer work is preserved, not undone)",
+    "claudedocs/rte-truth-program-2026-07/A3a-prompts-ABC.md (F3 = C8 secrets finding)",
+    "runtime code (outranks docs): services/repo-truth-extractor/run_extraction_v5.py, services/repo-truth-extractor/output_safety.py",
+    "services/repo-truth-extractor/promptsets/v4/promptset.yaml (authoritative artifact-name list per step; used instead of guessing the C8/H1/H7/M artifact set)"
+  ],
+  "write_path_trace": {
+    "question": "Where does SECRETS_RISK_LOCATIONS.json actually get written, and why does the existing sanitize_payload_for_output call at run_extraction_v5.py:2624 not cover it?",
+    "answer_summary": "The packet's premise was ALMOST right but not exactly right, and the correction matters. The write path IS covered by sanitize_payload_for_output. The real gap is that sanitize_payload_for_output is the WEAKER of the two existing scrubs.",
+    "trace": [
+      "STEP 1 - Where the artifact is written. C8's four RISK_LOCATIONS artifacts are model outputs, not prescan outputs. Each partition's raw LLM response lands at <phase_dir>/raw/<step_id>__<partition_id>.json. normalize_step() (run_extraction_v5.py, def at :8521) then reads every raw partition file, calls extract_artifacts_from_partition_payload() (:8332), buckets items by artifact_name, merges the per-partition chunks via merge_json_chunks(), and writes the merged artifact to <phase_dir>/norm/<artifact_name> at run_extraction_v5.py:8708-8712 (pre-change line numbers). That single site is the only write path for the non-.partX JSON norm artifacts; .partX artifacts take the adjacent branch a few lines above. Verified by grep: SECRETS_RISK_LOCATIONS is a data value flowing through artifact_name, never a literal in the runtime source - which is why 'grep SECRETS_RISK_LOCATIONS run_extraction_v5.py' returns nothing and made the gap look larger than it is.",
+      "STEP 2 - What already protects it. That write goes through write_json() (run_extraction_v5.py:2620-2637), which applies sanitize_payload_for_output() to EVERY artifact payload (and sanitize_payload_for_failed_sidecar for *.FAILED.json). So the claim in the packet invariant that 'SECRETS_RISK_LOCATIONS is NOT referenced anywhere in output_safety.py or the artifact write path' is literally true as a grep result but MISLEADING as a security conclusion: the artifact write path was never unprotected. Reported here plainly rather than quietly inventing work around it.",
+      "STEP 3 - The actual gap. output_safety.py ships two scrub strengths over the SAME regex set. sanitize_text_for_output() applies _PRIVATE_KEY_BLOCK_RE, _SECRET_QUERY_RE, _AUTH_HEADER_RE, _SECRET_ASSIGN_RE, _BEARER_INLINE_RE and _PROVIDER_TOKEN_RE. sanitize_text_for_provider_payload() applies all of those PLUS _LONG_TOKEN_CANDIDATE_RE (output_safety.py:37-39), the high-entropy catch-all for any 40+ char mixed-case-plus-digit token that is not a hex digest. So a secret survives the artifact write path iff it (a) carries no recognizable sensitive key name adjacent to it, and (b) has no known provider prefix. That is exactly a raw AWS secret ACCESS KEY VALUE - as opposed to its AKIA/ASIA-prefixed access key ID, which _PROVIDER_TOKEN_RE does catch. It is also exactly what a non-compliant model produces when it obeys C8's exact-<=200-char-excerpt Evidence Rule and ignores R3-004's redaction carve-out, because the excerpt it copies is a bare source line.",
+      "STEP 4 - Empirical confirmation (not assumed). For the fake bare secret 'TqZ8bKp3Vn6Ws0Ad5Ef2Gh7Rt8Yc3Lm2Kf9Qx4Mn6Op1Zr7' embedded in the excerpt 'credential_blob <SECRET>': sanitize_text_for_output returns it UNCHANGED; sanitize_text_for_provider_payload returns 'credential_blob [REDACTED]'. Reproduced directly in-process against the shipped module before any code was changed.",
+      "STEP 5 - Downstream blast radius. PROMPT_R11_SECURITY_RISK_SYNTHESIS.md:18,126,128 consumes SECRETS_RISK_LOCATIONS.json from C8 as an input artifact, so anything that lands in the norm artifact is re-sent to a paid provider during R11 synthesis. C9 (PROMPT_C9:38,188) also loads it read-only. That is the leak chain R3-004 named and could not close from the prompt layer."
+    ],
+    "verdict": "GENUINELY UNCOVERED - but narrower and more precise than the packet premise. Not a missing scrub; a scrub of insufficient strength for this specific artifact class. Fixed by selecting the stricter existing scrub for a named artifact set, with no new regexes."
+  },
+  "change_summary": {
+    "output_safety.py": [
+      "Added SECURITY_SENSITIVE_ARTIFACT_NAMES (frozenset) naming the seven artifacts whose contract forbids any secret value on disk: SECRETS_RISK_LOCATIONS.json (C8), HOME_KEYS_SURFACE.json + HOME_REFERENCES.json (H1), HOME_SQLITE_SCHEMA.json (H7), M3_CONPORT_EXPORT_SAFE.json, M4_DOPE_CONTEXT_EXPORT_SAFE.json, M5_MCP_HEALTH_EXPORT_SAFE.json (M safe-exports). The set is exactly the six prompts R3-004 made binding, expanded to their declared outputs; artifact names were read out of promptsets/v4/promptset.yaml rather than guessed.",
+      "Added is_security_sensitive_artifact(name) - basename-normalized membership test, so a path-qualified name resolves identically.",
+      "Added sanitize_payload_for_security_artifact(payload) - a thin delegation to the EXISTING sanitize_payload_for_provider. NO new regex was authored: this reuses _SECRET_PATTERNS as-is, per the packet invariant and so that TP-RTE-TRUTH-D-004 (which consolidates the existing two regex copies) is not made harder. The docstring states why the provider-grade scrub is the right one (it is strictly stronger, adding only _LONG_TOKEN_CANDIDATE_RE).",
+      "A block comment records the write-path trace above at the point of use, so the next reader does not have to re-derive why the generic scrub was insufficient."
+    ],
+    "run_extraction_v5.py": [
+      "Imported is_security_sensitive_artifact + sanitize_payload_for_security_artifact from output_safety (:44-53).",
+      "normalize_step(): at the single norm-artifact JSON write site, the merged payload is passed through sanitize_payload_for_security_artifact() when the artifact name is in the security set, BEFORE write_json(). write_json's generic scrub still runs afterwards, so the change is additive and strictly hardening - no artifact gets less scrubbing than before."
+    ],
+    "why_this_is_enforcement_and_not_instruction": "The scrub runs on the merged payload after the model has spoken and before any bytes reach disk. It is unconditional for the named artifacts, requires no model cooperation, and cannot be talked out of by prompt injection or jailbreak, because the model never gets a vote at this seam. R3-004's binding prompt rule is preserved and remains the first line of defense (it also keeps secrets out of the RAW partition files, which this change does not touch - see residual risks).",
+    "finding_preservation": "Masking is span-level, never row-level. path, line_range, risk_type, affected_symbol, exposure_vector, the evidence[].path/line_range, and the surrounding excerpt text all survive; only the secret literal becomes [REDACTED]. Asserted explicitly, including that the item count stays 1 - the location IS the value, and dropping a finding would be a worse outcome than the leak it prevents."
+  },
+  "files_changed": {
+    "runtime": [
+      "services/repo-truth-extractor/output_safety.py (+55)",
+      "services/repo-truth-extractor/run_extraction_v5.py (+15)"
+    ],
+    "tests_added": [
+      "services/repo-truth-extractor/tests/test_write_time_secret_scrub.py (292 lines, 11 tests)"
+    ],
+    "proof": [
+      "proof/rte-truth-program/TP-RTE-TRUTH-R3-007/PROOF.json"
+    ],
+    "diffstat": "2 runtime files changed, 70 insertions(+), 0 deletions(-), plus 1 new test file"
+  },
+  "validations": {
+    "PASS": [
+      {
+        "name": "new write-time scrub tests",
+        "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_write_time_secret_scrub.py -q -p no:randomly",
+        "result": "11 passed (4 unit + 7 parametrized write-site integration, one per security artifact)",
+        "exit_code": 0
+      },
+      {
+        "name": "packet-declared verify #1",
+        "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -p no:randomly -k 'redact or safety or secret'",
+        "result": "134 passed (includes R3-004's 11 binding-redaction tests - its prompt-layer work is intact, not undone)",
+        "exit_code": 0
+      },
+      {
+        "name": "packet-declared verify #2 - golden harness",
+        "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q -p no:randomly",
+        "result": "27 passed, 1 skipped (the skip is the harness's own slow-capture opt-out at goldens:60). NO GOLDEN MOVED - verified by the goldens passing unregenerated, not assumed.",
+        "exit_code": 0
+      },
+      {
+        "name": "full extractor suite",
+        "command": "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -p no:randomly",
+        "result": "1443 passed, 6 xfailed, 2 skipped, 1 failed. The pass count is exactly R3-004's 1432 + this packet's 11 new tests, i.e. no previously-passing test changed state.",
+        "exit_code": 1,
+        "sole_failure": "test_prescan_e2e_smoke::test_prescan_real_repo_full_and_incremental_smoke - XPASS(strict) under tree-sitter-degraded prescan. PROVEN PRE-EXISTING: re-ran that single test with ALL changes stashed (git stash push --include-untracked -- services/repo-truth-extractor/) and it failed identically. Not attributable to this packet."
+      }
+    ],
+    "FAIL": [],
+    "NOT_RUN": [
+      {
+        "name": "golden harness slow capture (cost_preview_value_default) with RTE_TRUTH_SLOW_GOLDENS=1",
+        "result": "NOT_RUN. Skipped by the harness's own opt-out gate. R3-004 proved this golden times out at its own 420s subprocess cap on this machine and proved that pre-existing at clean HEAD.",
+        "residual_risk": "LOW. This packet touches only output_safety.py's artifact-name predicate and one branch in normalize_step's norm-artifact write. Neither feeds cost-preview arithmetic, which runs before any model output exists.",
+        "exit_code": null
+      },
+      {
+        "name": "PAL chain (analyze -> planner -> codereview -> precommit)",
+        "result": "NOT_RUN. The packet declares pal_chain.enabled=true; PAL MCP was not loaded in this session. Same posture as siblings R3-002 and R3-004, which also recorded PAL as NOT_RUN.",
+        "residual_risk": "MEDIUM (process). No independent multi-model review of this diff.",
+        "exit_code": null
+      },
+      {
+        "name": "Any live provider execution",
+        "result": "NOT_RUN BY MANDATE. Packet invariant: DRY-RUN ONLY. No --execute, no DPMX_LIVE_OK, no live provider call was made at any point in this session.",
+        "exit_code": null
+      }
+    ]
+  },
+  "mutation_check": {
+    "mandated_by": "packet step S3 - 'a test that passes without your fix is vacuous'",
+    "method": "git stash push -- services/repo-truth-extractor/run_extraction_v5.py (reverts the write-site branch AND its import, leaving output_safety.py's new helpers and the new test file in place - i.e. the fix is present but never called), then re-run test_write_time_secret_scrub.py.",
+    "result": "NOT VACUOUS. All 7 write-site integration tests FAILED, each with the fake secret literally visible in the on-disk artifact. Verbatim failure text: \"M5_MCP_HEALTH_EXPORT_SAFE.json on disk still contains a secret literal (TqZ8bKp3Vn6W...) -- the write-time scrub did not run\", with the diff showing 'ENTIALS = TqZ8bKp3Vn6Ws0Ad5Ef2Gh7Rt8Yc3Lm2Kf9Qx4Mn6Op1Zr7' sitting in norm/. This reproduces the F-23 leak directly rather than merely asserting the fix's presence.",
+    "which_tests_correctly_survived": "The 4 non-write-site tests still passed under mutation, by design: they exercise the sanitizer helpers directly (which the mutation left installed) and pin the scrub's semantics, not its wiring. The wiring is what the 7 integration tests own.",
+    "restored": "git stash pop; re-ran the file: 11 passed. Working tree confirmed back in the fixed state before committing."
+  },
+  "goldens": {
+    "moved": false,
+    "evidence": "test_truth_harness_goldens.py: 27 passed / 1 skipped with no regeneration performed and no golden file touched (git status shows zero modified files under tests/goldens). Verified rather than assumed, per packet instruction."
+  },
+  "fake_secrets_only": {
+    "confirmed": true,
+    "note": "Every credential in test_write_time_secret_scrub.py is invented and inert: a bare high-entropy blob, xai-FAKE..., AIzaSyFAKE..., AKIAFAKEFAKEFAKEFAKE, sk-proj-FAKE.... No real secret was used, read, or written at any point. The test module says so in its docstring so a future editor does not 'improve' it with a live key."
+  },
+  "observed_not_fixed": [
+    {
+      "observation": "The C8 id_rule prefix is literally 'SECRETS_RISK_LOCATIONS:<stable-hash>'. Because _SECRET_ASSIGN_RE reads 'SECRETS...:<value>' as a sensitive key/value assignment, the id's hash is masked to 'SECRETS_RISK_LOCATIONS:[REDACTED]'.",
+      "status": "PRE-EXISTING, NOT INTRODUCED HERE, NOT FIXED HERE.",
+      "proof_it_is_pre-existing": "sanitize_payload_for_output({'id': 'SECRETS_RISK_LOCATIONS:7b19ad3c'}) already returns the masked form, and write_json has always applied it. The new stricter scrub produces the byte-identical id. A test asserts that equality, so this packet cannot be blamed for it and any future change to it will be caught.",
+      "impact": "Over-redaction, not leakage. Degrades C8 item identity/dedup (duplicate_ids detection in normalize_step compares ids that all collapse to the same masked string). Worth a follow-up packet; deliberately not expanded into here."
+    },
+    {
+      "observation": "The RAW partition files (<phase_dir>/raw/<step_id>__<partition>.json) still receive only the generic sanitize_payload_for_output scrub, since they are written by write_json via the _op_write_json write-op queue.",
+      "status": "OUT OF SCOPE, DELIBERATE.",
+      "impact": "A bare high-entropy secret can still land in raw/. It does NOT reach the norm artifact or R11 synthesis, which is what F-23 named as the leak chain. Raw is the model's verbatim response and is intentionally the least-transformed surface. Hardening it is a wider behavioral change (it would alter every phase's raw bytes and could move goldens) and belongs in its own packet."
+    }
+  ],
+  "not_done": [
+    {
+      "item": "Port the write-time scrub to legacy run_extraction_v3.py (2 occurrences of the same 'norm_dir / artifact_name' write site).",
+      "reason": "Outside the packet's commit allowlist, which names only output_safety.py, run_extraction_v5.py and tests/. Precedent: TP-RTE-TRUTH-D-008 exists specifically to port R3-002's delimiter to legacy v3, so the program already treats legacy-v3 ports as separate packets. run_extraction_v4.py has no such write site (checked: 0 occurrences)."
+    },
+    {
+      "item": "Consolidate the two existing secret-regex copies (output_safety._SECRET_PATTERNS and lib/truth_labels).",
+      "reason": "Explicitly owned by TP-RTE-TRUTH-D-004. This packet reuses the existing regexes and adds none, so it does not make that consolidation harder."
+    },
+    {
+      "item": "Live eval that a real model's non-compliant output is scrubbed end-to-end.",
+      "reason": "Forbidden by the packet's DRY-RUN ONLY invariant. Note that unlike R3-004's residual risk, this fix does not DEPEND on model behavior - that is the entire point - so the live eval would confirm the leak source, not the defense."
+    }
+  ],
+  "residual_risks": [
+    "COVERAGE IS BY ARTIFACT NAME, NOT BY CONTENT. A new secret-bearing artifact added to the promptset will not be scrubbed until its name is added to SECURITY_SENSITIVE_ARTIFACT_NAMES. This is a deliberate trade: content-based detection across all ~136 artifacts would risk mangling legitimate long identifiers repo-wide. Mitigation available to a follow-up: assert set membership against promptset.yaml so a rename or addition fails a test rather than silently losing protection.",
+    "THE SCRUB IS REGEX-BOUNDED. A secret shorter than 40 chars, with no provider prefix and no adjacent sensitive key name, still passes. That is a property of the existing shared regex set which this packet reuses by mandate, not a new weakness - and it is why R3-004's prompt-layer rule remains necessary rather than superseded.",
+    "OVER-REDACTION IS POSSIBLE IN PRINCIPLE. The provider-grade scrub can mask a legitimate 40+ char mixed-case identifier appearing inside one of the seven artifacts. Hex digests are explicitly exempted by _looks_like_hex_digest. Judged acceptable for exactly this artifact class: these seven exist to record credential LOCATIONS, so a masked long token there is far cheaper than a leaked one. Not applied to any other artifact.",
+    "NO INDEPENDENT REVIEW. PAL chain NOT_RUN (see validations.NOT_RUN)."
+  ],
+  "not_live_verified_ledger": [
+    "No live provider call was made. No --execute. No DPMX_LIVE_OK.",
+    "The claim 'a non-compliant model's secret is masked before disk' is proven against a SIMULATED non-compliant payload (a hand-written raw partition file containing unmasked fake secrets), fed through the real normalize_step. It is NOT proven against a live model's real output.",
+    "The claim 'this closes the R11 leak chain' is proven structurally (R11 reads the norm artifact; the norm artifact is now scrubbed) and by static reading of PROMPT_R11_SECURITY_RISK_SYNTHESIS.md:18,126,128. No R11 step was executed.",
+    "Goldens were verified unchanged by running them, not by inspecting file mtimes."
+  ],
+  "rollback_plan": "git revert <commit_sha>. The change is additive: one frozenset + two functions in output_safety.py, one import line and one guarded branch in run_extraction_v5.py, one new test file. Reverting restores the exact prior write behavior (generic sanitize_payload_for_output only) and removes no existing protection.",
+  "requested_next_step": "Independent review of this diff (PAL codereview or a human), then treat F-23 as closed on both halves - R3-004 the instruction, R3-007 the enforcement. Two follow-ups are worth filing but should not block: (1) the pre-existing C8 id over-redaction under observed_not_fixed, (2) pinning SECURITY_SENSITIVE_ARTIFACT_NAMES against promptset.yaml so the set cannot silently drift."
+}

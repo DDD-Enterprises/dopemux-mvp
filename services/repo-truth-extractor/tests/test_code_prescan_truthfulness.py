@@ -11,6 +11,7 @@ SERVICE_ROOT = ROOT / "services" / "repo-truth-extractor"
 if str(SERVICE_ROOT) not in sys.path:
     sys.path.insert(0, str(SERVICE_ROOT))
 
+import lib.prescan.code_prescan as code_prescan_module
 from lib.prescan.code_intelligence_report import CodeIntelligenceBuilder
 from lib.prescan.code_prescan import CodePrescan
 from lib.prescan.dependency_graph import DependencyGraph
@@ -26,10 +27,23 @@ def _make_config(tmp_path: Path) -> PrescanConfig:
     )
 
 
-@pytest.mark.xfail(
-    sys.platform == "darwin",
-    reason="Deferred to TP-RTE-WALKER-006: prescan schema/runtime drift is outside CostProfile F repair scope.",
-    strict=True,
+@pytest.mark.skipif(
+    not code_prescan_module.TREE_SITTER_AVAILABLE,
+    reason=(
+        "False attribution without tree-sitter, not a vacuous pass: this machine "
+        "has no tree-sitter (verified via `TREE_SITTER_AVAILABLE=False`), so "
+        "CodePrescan.analyze_file runs in degraded mode and unconditionally "
+        "returns imports=[]. The assertion still genuinely fails here "
+        "(`set([]) != {'.models', '..core', 'pkg.sub', 'os'}`) — but for the "
+        "wrong reason: a missing optional dependency, not the 'prescan "
+        "schema/runtime drift' this was previously xfailed for under "
+        "`sys.platform == 'darwin'`. That marker conflated an environment gap "
+        "with a real deferred bug and would silently stop firing (mislabeled, "
+        "not fixed) the moment tree-sitter is installed on a Mac. Skip on the "
+        "real cause instead so the TP-RTE-WALKER-006 deferral is honest; runs "
+        "for real in CI (ubuntu + `--extra services`, where tree-sitter is "
+        "installed and this must genuinely pass or fail on its own merits)."
+    ),
 )
 def test_code_prescan_emits_dotted_relative_python_imports(tmp_path: Path) -> None:
     pkg = tmp_path / "pkg"
@@ -69,10 +83,23 @@ def test_dependency_graph_uses_emitted_relative_python_imports(tmp_path: Path) -
     assert ("pkg/mod.py", "core.py") in graph.edges
 
 
-@pytest.mark.xfail(
-    sys.platform == "darwin",
-    reason="Deferred to TP-RTE-WALKER-006: prescan schema/runtime drift is outside CostProfile F repair scope.",
-    strict=True,
+@pytest.mark.skipif(
+    not code_prescan_module.TREE_SITTER_AVAILABLE,
+    reason=(
+        "False attribution without tree-sitter, not a vacuous pass: this machine "
+        "has no tree-sitter (verified via `TREE_SITTER_AVAILABLE=False`), so "
+        "CodePrescan.analyze_file runs in degraded mode and unconditionally "
+        "returns api_surfaces=[]. The comment-only half of this assertion holds "
+        "by coincidence (expected [] too), but the real-surfaces half genuinely "
+        "fails here (`set([]) != {'fastapi', 'cli', 'mcp'}`) — for the wrong "
+        "reason: a missing optional dependency, not the 'prescan schema/runtime "
+        "drift' this was previously xfailed for under `sys.platform == "
+        "'darwin'`. That marker conflated an environment gap with a real "
+        "deferred bug. Skip on the real cause instead so the TP-RTE-WALKER-006 "
+        "deferral is honest; runs for real in CI (ubuntu + `--extra services`, "
+        "where tree-sitter is installed and this must genuinely pass or fail on "
+        "its own merits)."
+    ),
 )
 def test_code_prescan_api_surface_detection_avoids_substring_false_positives(tmp_path: Path) -> None:
     comment_only = tmp_path / "comment_only.py"
@@ -118,10 +145,22 @@ def test_code_prescan_api_surface_detection_avoids_substring_false_positives(tmp
     }
 
 
-@pytest.mark.xfail(
-    sys.platform == "darwin",
-    reason="Deferred to TP-RTE-WALKER-006: prescan schema/runtime drift is outside CostProfile F repair scope.",
-    strict=True,
+@pytest.mark.skipif(
+    not code_prescan_module.TREE_SITTER_AVAILABLE,
+    reason=(
+        "False attribution without tree-sitter, not a vacuous pass: this machine "
+        "has no tree-sitter (verified via `TREE_SITTER_AVAILABLE=False`), so "
+        "CodePrescan.analyze_file/extract_signatures run in degraded mode and "
+        "unconditionally return symbols=[]/signatures=[]. The assertion "
+        "genuinely fails here (`symbol_names == set()`, exactly as observed "
+        "directly against this build) — but for the wrong reason: a missing "
+        "optional dependency, not the 'prescan schema/runtime drift' this was "
+        "previously xfailed for under `sys.platform == 'darwin'`. That marker "
+        "conflated an environment gap with a real deferred bug. Skip on the "
+        "real cause instead so the TP-RTE-WALKER-006 deferral is honest; runs "
+        "for real in CI (ubuntu + `--extra services`, where tree-sitter is "
+        "installed and this must genuinely pass or fail on its own merits)."
+    ),
 )
 def test_code_prescan_arrow_function_signatures_match_symbol_coverage(tmp_path: Path) -> None:
     handlers = tmp_path / "handlers.ts"

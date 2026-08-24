@@ -1,0 +1,78 @@
+{
+  "ticket_id": "TP-RTE-TRUTH-R3-005e",
+  "title": "Fix RTE v4 prompts: graph-kind declarations + step numbering + W/X/Z nits",
+  "description": "Mechanical fixes for three identified prompt defects: F-34 (graph output kind mismatches), F-35 (duplicate step numbering), and F-49 (W/X/Z template nits including missing required fields and stale references).",
+  "date": "2026-07-27",
+  "findings_fixed": [
+    "F-34: Graph outputs declared with wrong kind (D3, E3, R5, X4)",
+    "F-35: Duplicate/broken step numbering (E1–E6, G0, G4, R1–R8)",
+    "F-49: W/X/Z template nits (DEF-1 through DEF-7)"
+  ],
+  "changes": {
+    "graph_kind_declarations": {
+      "description": "Changed graph output declarations from json_item_list to json_graph with graph_merge strategy",
+      "affected_prompts": [
+        "PROMPT_D3_CITATION___REFERENCE_GRAPH.md",
+        "PROMPT_E3_SERVICE_STARTUP_GRAPH.md",
+        "PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md",
+        "PROMPT_X4_FEATURE_DEPENDENCY_GRAPH.md"
+      ],
+      "changes": [
+        "kind: json_item_list → kind: json_graph",
+        "merge_strategy: itemlist_by_id → merge_strategy: graph_merge"
+      ]
+    },
+    "step_numbering_fixes": {
+      "description": "Fixed duplicate/broken step numbering in extraction procedures",
+      "affected_prompts": [
+        "PROMPT_E1_BOOTSTRAP_COMMANDS_SURFACE.md",
+        "PROMPT_E2_ENV_LOADING___CONFIG_CHAIN.md",
+        "PROMPT_E3_SERVICE_STARTUP_GRAPH.md",
+        "PROMPT_E4_RUNTIME_MODES___DELTA_REPORT.md",
+        "PROMPT_E5_ARTIFACT_OUTPUTS___LOGS___STATE.md",
+        "PROMPT_E6_EXECUTION_RISKS___ORDERING___STATE_DEPENDENCY.md",
+        "PROMPT_G0_GOVERNANCE_INVENTORY___PARTITION_PLAN.md",
+        "PROMPT_G4_SECURITY___SECRETS___REDUCTION_FACTS.md",
+        "PROMPT_R1_DOPE_MEMORY_IMPLEMENTATION_TRUTH.md",
+        "PROMPT_R2_EVENTBUS_WIRING_TRUTH.md",
+        "PROMPT_R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md",
+        "PROMPT_R4_TASKX_INTEGRATION_TRUTH.md",
+        "PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md",
+        "PROMPT_R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md",
+        "PROMPT_R7_CONFLICT_LEDGER.md",
+        "PROMPT_R8_RISK_REGISTER_TOP20.md"
+      ],
+      "approach": "Renumbered generic tail steps sequentially without changing step content"
+    },
+    "w_x_z_template_nits": {
+      "description": "Fixed missing required fields and stale references in W/X/Z prompts",
+      "details": {
+        "DEF-1": "Added missing domain fields to required_item_fields (W4/W5)",
+        "DEF-2": "Replaced absolute line number references with section names (W4/W5)",
+        "DEF-4": "Fixed artifact name mismatches in procedures (X0, X1, Z0, Z2)",
+        "DEF-7": "Updated stale v3 path reference to v4 in Z9"
+      },
+      "affected_prompts": [
+        "PROMPT_W4_WORKFLOW_FAILURE_MODES___RECOVERY.md",
+        "PROMPT_W5_WORKFLOW_STATE_DEPENDENCIES___HOME_VS_REPO.md",
+        "PROMPT_X0_FEATURE_INDEX_INVENTORY___PARTITION_PLAN.md",
+        "PROMPT_X1_FEATURE_SURFACE_EXTRACT.md",
+        "PROMPT_Z0_FREEZE_INVENTORY___CHECKSUMS.md",
+        "PROMPT_Z2_OPUS_INPUT_BUNDLE___MANIFEST.md",
+        "PROMPT_Z9_FREEZE_MANIFEST___CHECKSUMS.md"
+      ]
+    }
+  },
+  "verification": {
+    "tests_run": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'promptset'",
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+    ],
+    "test_results": "PASS - All promptset tests pass (40 tests), golden harness tests pass (23 tests + 1 skipped slow test)",
+    "scope_discipline": "Only modified: services/repo-truth-extractor/promptsets/v4/prompts/ (no changes to extractor/, lib/, run_extraction_v5.py, or config/pricing.yaml)"
+  },
+  "commits": {
+    "total": 1,
+    "message": "fix(rte): TP-RTE-TRUTH-R3-005e — graph-kind declarations + step numbering + W/X/Z nits"
+  }
+}

@@ -43,10 +43,33 @@ def test_v4_schema_rollout_manifest_tracks_packet_03_tranche() -> None:
     tracked_steps = coverage["tracked_prompt_step_ids"]
     schema_files = coverage["schema_files"]
 
-    assert tracked_steps == ["C18", "C19", "C20", "C21", "G6", "G7"]
+    # R3-001 (packet 03) original tranche must remain covered.
+    assert {"C18", "C19", "C20", "C21", "G6", "G7"}.issubset(set(tracked_steps))
     assert coverage["tracked_prompt_count"] == len(tracked_steps)
     assert coverage["schema_file_count"] == len(schema_files)
     assert all((schema_dir / name).exists() for name in schema_files)
+
+
+def test_v4_schema_rollout_manifest_tracks_r3_003_tranche() -> None:
+    """TP-RTE-TRUTH-R3-003 (F-39/F-36/F-38): schema-expansion tranche.
+
+    Adds C1, C2, C7, C8, C14, G5 (F-39's explicit "post-C9, ready to
+    schematize" candidates) and B3/D1/E2/G1 (F-36/F-38 thin-contract and
+    enum-gap fixes) to the coverage manifest established by R3-001.
+    """
+    root = Path(__file__).resolve().parents[3]
+    schema_dir = root / "services" / "repo-truth-extractor" / "promptsets" / "v4" / "schemas"
+    coverage_path = schema_dir / "SCHEMA_COVERAGE.json"
+    coverage = __import__("json").loads(coverage_path.read_text(encoding="utf-8"))
+
+    tracked_steps = set(coverage["tracked_prompt_step_ids"])
+    r3_003_new_steps = {"B3", "C1", "C2", "C7", "C8", "C14", "D1", "E2", "G1", "G5"}
+    assert r3_003_new_steps.issubset(tracked_steps)
+    assert coverage["tracked_prompt_count"] == len(coverage["tracked_prompt_step_ids"])
+    assert coverage["schema_file_count"] == len(coverage["schema_files"])
+    assert all((schema_dir / name).exists() for name in coverage["schema_files"])
+    # No duplicate filenames.
+    assert len(coverage["schema_files"]) == len(set(coverage["schema_files"]))
 
 
 def test_v5_phase_sp_registry_and_step_controls_match_current_contract() -> None:

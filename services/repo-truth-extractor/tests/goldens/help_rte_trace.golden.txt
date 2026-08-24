@@ -1,0 +1,9 @@
+Usage: python -m dopemux rte trace [OPTIONS]
+
+  Compatibility alias for canonical v5 dry-run extraction.
+
+Options:
+  --dry-run     Run the canonical v5 extractor in dry-run mode (default).
+  --execute     Actually call LLM providers (if configured).
+  --phase TEXT  Run only a specific phase (A, H, D, C, R, S, or ALL).
+  --help        Show this message and exit.

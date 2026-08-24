@@ -16,6 +16,9 @@ from .display import render_educational_panel, render_stage_header
 from .stages import PHASE_INFO, PHASES, StageResult, StageStatus, WizardState
 
 
+DPMX_LIVE_OK_ENV = "DPMX_LIVE_OK"
+
+
 def _wizard_pythonpath(repo_root: Path) -> str:
     src_root = repo_root / "src"
     existing = os.environ.get("PYTHONPATH", "").strip()
@@ -29,7 +32,7 @@ def _build_wizard_phase_command(state: WizardState, phase_key: str) -> list[str]
         sys.executable,
         "-m",
         "dopemux.cli",
-        "upgrades",
+        "rte",
         "run",
         "--pipeline-version",
         "v5",
@@ -46,16 +49,21 @@ def _build_wizard_phase_command(state: WizardState, phase_key: str) -> list[str]
         "--resume",
     ]
     if state.prescan_dir:
-        cmd.extend(["--prescan-dir", state.prescan_dir, "--skip-prescan"])
+        cmd.extend(["--prescan-import-dir", state.prescan_dir])
     cmd.append("--execute")
     return cmd
+
+
+def _live_ok_enabled() -> bool:
+    value = os.environ.get(DPMX_LIVE_OK_ENV, "").strip().lower()
+    return value in {"1", "true", "yes", "on"}
 
 
 def run_extraction(state: WizardState) -> StageResult:
     """Stage 6 — Walk through extraction phases with interactive confirmation.
 
     In preview mode (default), shows what would run without executing.
-    With --execute, delegates each phase to the canonical v5 upgrades wrapper.
+    With --execute, delegates each phase to the canonical v5 RTE wrapper.
     """
     if not state.execute_mode:
         console.print(
@@ -87,13 +95,24 @@ def run_extraction(state: WizardState) -> StageResult:
     if state.educate_mode:
         render_educational_panel(
             "Phase-by-phase extraction",
-            "Each phase will be executed via 'dopemux upgrades run --pipeline-version v5'.\n"
+            "Each phase will be executed via 'dopemux rte run --pipeline-version v5'.\n"
             "You can Run, Skip, or Abort at each phase.\n\n"
-            "The v5 upgrades wrapper gives the wizard explicit control over\n"
+            "The v5 RTE wrapper gives the wizard explicit control over\n"
             "dry-run/live mode, rich UI, resume behavior, and current prescan flags.\n\n"
             "Completed phases write artifacts to:\n"
             f"  extraction/repo-truth-extractor/v5/runs/{state.run_id}/",
         )
+
+    if not _live_ok_enabled():
+        message = f"Live extraction requires {DPMX_LIVE_OK_ENV}=1 before phase prompts."
+        console.print(
+            Panel(
+                f"[red]{message}[/red]\n"
+                "Rerun with explicit operator approval before using --execute.",
+                border_style="red",
+            )
+        )
+        return StageResult(status=StageStatus.FAILED, message=message)
 
     try:
         questionary = require_questionary()

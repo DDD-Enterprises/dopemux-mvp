@@ -242,3 +242,177 @@ def test_all_populations_audit_passes() -> None:
     assert results["phase_s_int"]["prompt_count"] == 5
     assert results["phase_fl_int"]["prompt_count"] == 8
     assert results["prescan"]["prompt_count"] == 4
+
+
+# --- F-29 (TP-RTE-TRUTH-R3-006): synthesis-tier evidence citation shape -----------------
+#
+# R7/R8/S4/S5/S6 synthesize claims by aggregating many upstream normalized artifacts, with
+# no requirement to name the exact upstream artifact + item id a given claim derives from.
+# PROMPTSET_RULES.md now declares a synthesis-tier evidence object
+# ({upstream_artifact,item_id,excerpt}, modeled on PROMPT_R11's `<- ARTIFACT:item_id`
+# pattern) and these tests pin that the lint fails closed if either half of the contract
+# (the shared rules file, or the mandated step's own prompt text) drops the reference.
+
+
+def _write_stub_synthesis_prompt(path: Path, *, cite_synthesis_evidence: bool) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    shared_rules_body = "Refer to `PROMPTSET_RULES.md` for Evidence, Determinism, Anti-Fabrication, and Failure Mode protocols."
+    if cite_synthesis_evidence:
+        shared_rules_body += (
+            " This step synthesizes claims from multiple upstream normalized artifacts "
+            "(F-29): every claim additionally requires `PROMPTSET_RULES.md`'s Synthesis "
+            "Evidence Rules citation shape (`{upstream_artifact,item_id,excerpt}`)."
+        )
+    path.write_text(
+        "# PROMPT_STUB\n\n"
+        "## Goal\nStub synthesis step used only to exercise the F-29 lint check.\n\n"
+        "## Inputs\nConsumes upstream normalized artifacts UPSTREAM_ONE.json and UPSTREAM_TWO.json.\n\n"
+        "## Outputs\n- `STUB_SYNTHESIS_OUTPUT.md`\n\n"
+        "## Schema\nOutput is markdown with a deterministic section structure.\n\n"
+        "## Extraction Procedure\n1. Load upstream artifacts.\n2. Synthesize claims across them.\n\n"
+        f"## Shared Rules\n{shared_rules_body}\n",
+        encoding="utf-8",
+    )
+
+
+def _stub_synthesis_promptset(step_id: str, prompt_rel_path: str) -> dict:
+    phase = step_id[0]
+    return {
+        "version": "4.0",
+        "phases": {
+            phase: {
+                "required_steps": [step_id],
+                "steps": [
+                    {
+                        "step_id": step_id,
+                        "prompt_file": prompt_rel_path,
+                        "outputs": ["STUB_SYNTHESIS_OUTPUT.md"],
+                    }
+                ],
+            }
+        },
+    }
+
+
+def _write_promptset_rules(path: Path, *, declare_synthesis_evidence: bool) -> None:
+    body = "# STUB PROMPTSET RULES\n\n## Evidence Rules\n- stub\n"
+    if declare_synthesis_evidence:
+        body += (
+            "\n## Synthesis Evidence Rules\n"
+            "- Every synthesized claim carries `{upstream_artifact,item_id,excerpt}`.\n"
+        )
+    path.write_text(body, encoding="utf-8")
+
+
+def test_synthesis_evidence_lint_fails_when_rules_file_missing_heading(tmp_path: Path) -> None:
+    """PROMPTSET_RULES.md dropping the Synthesis Evidence Rules heading must fail closed."""
+    module = _load_linter_module()
+    prompt_rel = "prompts/PROMPT_R7_STUB.md"
+    _write_stub_synthesis_prompt(tmp_path / prompt_rel, cite_synthesis_evidence=True)
+    _write_promptset_rules(tmp_path / "PROMPTSET_RULES.md", declare_synthesis_evidence=False)
+
+    promptset_path = tmp_path / "promptset.yaml"
+    promptset_path.write_text(
+        yaml.safe_dump(_stub_synthesis_promptset("R7", prompt_rel), sort_keys=False), encoding="utf-8"
+    )
+
+    issues = module._synthesis_evidence_issues(
+        tmp_path, promptset_path, yaml.safe_load(promptset_path.read_text(encoding="utf-8"))
+    )
+    assert any(
+        "PROMPTSET_RULES.md missing '## Synthesis Evidence Rules' section" in issue for issue in issues
+    ), issues
+
+
+def test_synthesis_evidence_lint_fails_when_mandated_step_omits_reference(tmp_path: Path) -> None:
+    """R7 (a mandated F-29 step) must reference the Synthesis Evidence Rules by name."""
+    module = _load_linter_module()
+    prompt_rel = "prompts/PROMPT_R7_STUB.md"
+    _write_stub_synthesis_prompt(tmp_path / prompt_rel, cite_synthesis_evidence=False)
+    _write_promptset_rules(tmp_path / "PROMPTSET_RULES.md", declare_synthesis_evidence=True)
+
+    promptset_path = tmp_path / "promptset.yaml"
+    promptset_payload = _stub_synthesis_promptset("R7", prompt_rel)
+    promptset_path.write_text(yaml.safe_dump(promptset_payload, sort_keys=False), encoding="utf-8")
+
+    issues = module._synthesis_evidence_issues(tmp_path, promptset_path, promptset_payload)
+    assert any(
+        "R7 (PROMPT_R7_STUB.md) does not reference 'Synthesis Evidence Rules'" in issue for issue in issues
+    ), issues
+
+    # Also verify it surfaces through the full run_audit() global-issues path, not just the
+    # standalone helper.
+    artifacts_path = tmp_path / "artifacts.yaml"
+    artifacts_path.write_text(
+        yaml.safe_dump(
+            {
+                "version": "4.0",
+                "artifacts": [
+                    {
+                        "phase": "R",
+                        "artifact_name": "STUB_SYNTHESIS_OUTPUT.md",
+                        "canonical_writer_step_id": "R7",
+                        "kind": "markdown",
+                        "norm_artifact": False,
+                        "merge_strategy": "markdown_concat",
+                    }
+                ],
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    payload = module.run_audit(tmp_path, promptset_path, artifacts_path)
+    assert payload["summary"]["status"] == "FAIL"
+    assert any("synthesis_evidence" in issue for issue in payload["summary"]["global_issues"])
+
+
+def test_synthesis_evidence_lint_passes_when_mandated_step_cites_it(tmp_path: Path) -> None:
+    """Positive case: rules file + step both carry the citation shape reference -> no issue."""
+    module = _load_linter_module()
+    prompt_rel = "prompts/PROMPT_R8_STUB.md"
+    _write_stub_synthesis_prompt(tmp_path / prompt_rel, cite_synthesis_evidence=True)
+    _write_promptset_rules(tmp_path / "PROMPTSET_RULES.md", declare_synthesis_evidence=True)
+
+    promptset_path = tmp_path / "promptset.yaml"
+    promptset_payload = _stub_synthesis_promptset("R8", prompt_rel)
+    promptset_path.write_text(yaml.safe_dump(promptset_payload, sort_keys=False), encoding="utf-8")
+
+    issues = module._synthesis_evidence_issues(tmp_path, promptset_path, promptset_payload)
+    assert issues == []
+
+
+def test_synthesis_evidence_lint_ignores_non_mandated_steps(tmp_path: Path) -> None:
+    """A step outside {R7,R8,S4,S5,S6} (e.g. A9) is not required to cite the shape."""
+    module = _load_linter_module()
+    prompt_rel = "prompts/PROMPT_A9_STUB.md"
+    _write_stub_synthesis_prompt(tmp_path / prompt_rel, cite_synthesis_evidence=False)
+    _write_promptset_rules(tmp_path / "PROMPTSET_RULES.md", declare_synthesis_evidence=True)
+
+    promptset_path = tmp_path / "promptset.yaml"
+    promptset_payload = _stub_synthesis_promptset("A9", prompt_rel)
+    promptset_path.write_text(yaml.safe_dump(promptset_payload, sort_keys=False), encoding="utf-8")
+
+    issues = module._synthesis_evidence_issues(tmp_path, promptset_path, promptset_payload)
+    assert issues == []
+
+
+def test_real_v4_promptset_mandates_synthesis_evidence_on_all_five_f29_steps() -> None:
+    """Pin the real fix: R7/R8/S4/S5/S6 in the shipped promptset all cite the shape, and
+    PROMPTSET_RULES.md actually declares the object with all three required keys."""
+    root = Path(__file__).resolve().parents[3]
+    module = _load_linter_module()
+    promptset_path = (
+        root / "services" / "repo-truth-extractor" / "promptsets" / "v4" / "promptset.yaml"
+    )
+    promptset_payload = yaml.safe_load(promptset_path.read_text(encoding="utf-8"))
+
+    issues = module._synthesis_evidence_issues(root, promptset_path, promptset_payload)
+    assert issues == [], issues
+
+    rules_text = (
+        root / "services" / "repo-truth-extractor" / "promptsets" / "v4" / "PROMPTSET_RULES.md"
+    ).read_text(encoding="utf-8")
+    assert "## Synthesis Evidence Rules" in rules_text
+    for key in ("upstream_artifact", "item_id", "excerpt"):
+        assert key in rules_text

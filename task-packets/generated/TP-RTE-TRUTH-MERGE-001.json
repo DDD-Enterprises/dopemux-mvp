@@ -1,0 +1,138 @@
+{
+  "id": "TP-RTE-TRUTH-MERGE-001",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / PR #1043 finalization \u2014 disclosure sanitization + admin-merge",
+  "invariants": [
+    "OPERATOR-GATED: do NOT execute the admin-merge without an explicit operator go on the day-of. Option A (admin-merge with the two fail-closed audit-provenance gates red) was pre-chosen; the disclosure-sanitization sub-decision and the merge trigger still need a live confirm.",
+    "PRECONDITION (hard): both merge-gate CRITs must be genuinely closed first \u2014 F-30 (R3-002, DONE) AND F-23 including its enforcement half (R3-004 + R3-007). Do not merge with F-23 only half-closed; the whole point of the hold was not publishing a live exploit map.",
+    "PRECONDITION: TP-RTE-TRUTH-REVIEW-001 verdict is PASS or PASS_WITH_RISKS (not CHANGES_REQUIRED).",
+    "Sanitize the PR body: it must NOT enumerate exact exploit locations for any finding still open at merge time. Point to the in-repo CONSOLIDATED-FINDINGS.md instead of restating CRIT detail.",
+    "The two red checks (independent embedded audit, PR Steward/final readiness) are fail-closed-in-headless-CI provenance gates, NOT merge-blocking \u2014 precedent PR #1044 merged with them red. Use `gh pr merge 1043 --admin`.",
+    "After merge: delete the branch only if no queued executor still needs it as base (R2/R4/R5/D packets base off this branch \u2014 if any remain unstarted, KEEP the branch).",
+    "NOTE (2026-07-17): per reference_embedded_audit_gate_2026_07_17, PR #1068 adds an ssh-signed local-proof path for the embedded-audit gate (inert until a pubkey is added to the signers file) \u2014 check whether that changes the merge mechanics before falling back to --admin."
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R3-007",
+    "TP-RTE-TRUTH-REVIEW-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-GOV",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "S"
+  },
+  "commit": {
+    "message": "chore(rte): TP-RTE-TRUTH-MERGE-001 \u2014 PR #1043 finalization",
+    "allowlist": [
+      "task-packets/generated/TP-RTE-TRUTH-MERGE-001.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-MERGE-001/PROOF.json"
+    ],
+    "verify": []
+  },
+  "pr": {
+    "title": "chore(rte): finalize + merge PR #1043 (RTE-TRUTH)",
+    "body": "Sanitize disclosure + admin-merge PR #1043 once both merge-gate CRITs are closed and review passes.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Verify both merge-gate CRITs closed (F-30 + F-23 enforcement) and REVIEW-001 verdict acceptable; abort with a report if not.",
+      "requirements": [
+        "Fail closed: if F-23 enforcement (R3-007) has not landed, STOP and report \u2014 do not merge."
+      ],
+      "commands": [
+        "git log --oneline | grep -E 'R3-002|R3-004|R3-007'"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Both gates confirmed closed on the branch."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Rewrite the PR #1043 body to a neutral summary (no open-CRIT exploit detail); get operator confirm on the sanitized text.",
+      "requirements": [
+        "Operator confirm required before the body goes public-final."
+      ],
+      "commands": [],
+      "expected_files": [],
+      "validation": [
+        "Sanitized body drafted + confirmed."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "S3",
+      "task": "On operator go: `gh pr merge 1043 --admin`; record merge commit; decide branch retention per the queued-executor rule.",
+      "requirements": [
+        "Do NOT run without the day-of operator go."
+      ],
+      "commands": [],
+      "expected_files": [],
+      "validation": [
+        "Merge commit recorded; branch retention decided + documented."
+      ],
+      "context_files": []
+    }
+  ],
+  "routing": {
+    "stage": "judge_strong",
+    "tier": "strong",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml is ADVISORY governance, not a runtime router. If a runtime path disagrees, runtime wins.",
+    "runners": {
+      "preferred": [
+        "claude_code",
+        "codex"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": [
+        "grok"
+      ]
+    },
+    "models": {
+      "claude_code": "claude-opus-5 (effort high|xhigh)",
+      "codex": "gpt-5.6-sol (reasoning xhigh|max)",
+      "opencode": "anthropic/claude-sonnet-4-5 via .opencode/agents/pal-planner.md",
+      "grok": "NOT AS SOLE AUTHOR \u2014 grok-code-fast-1 is a fast coding tier, not a strong-reasoning tier",
+      "gemini_cli": "Pro-high tier \u2014 VERIFY_WITH_VENDOR_DOCS",
+      "copilot": "Claude Sonnet 4.5 (.github/agents/dopemux-planner.agent.md) \u2014 below strong tier; acceptable only under an approved plan"
+    },
+    "rationale": "Merge/readiness decision on a public repo with disclosure implications. OPERATOR-GATED trigger.",
+    "notes": [
+      "grok forbidden as SOLE AUTHOR at this tier (grok-code-fast-1 is a fast coding tier, not strong-reasoning); acceptable as implementer executing an already-approved strong plan.",
+      "Runner may prepare and verify; the merge trigger itself requires a day-of operator go."
+    ],
+    "evidence": "Model ids OBSERVED from this machine: ~/.codex/config.toml (gpt-5.6-sol/xhigh), ~/.config/opencode/opencode.jsonc (claude-sonnet-4-5 + claude-haiku-4-5), ~/.grok/config.toml, .github/agents/*.agent.md (Sonnet 4.5). Per-vendor selector-string validity beyond these files remains VERIFY_WITH_VENDOR_DOCS."
+  }
+}

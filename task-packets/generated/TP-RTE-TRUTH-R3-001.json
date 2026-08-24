@@ -1,0 +1,115 @@
+{
+  "id": "TP-RTE-TRUTH-R3-001",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / C9 merge reconciliation (gates all prompt schema work)",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "C9 Outputs == Schema == procedure; NO field downgrade of C1/C2/C7/C8 rich schemas; ordering coherent (C9 cannot own artifacts produced after it).",
+    "F-51 proof-bundle schema and expected-output namespacing is explicitly deferred to TP-RTE-TRUTH-R3-007.",
+    "Findings covered: F-20."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R3",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "fix(rte): TP-RTE-TRUTH-R3-001 \u2014 C9 merge reconciliation",
+    "allowlist": [
+      "services/repo-truth-extractor/promptsets/v4/",
+      "services/repo-truth-extractor/tests/",
+      "task-packets/generated/TP-RTE-TRUTH-R3-001.json",
+      "task-packets/generated/TP-RTE-TRUTH-R3-007.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R3-001/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'promptset'"
+    ]
+  },
+  "pr": {
+    "title": "fix(rte): C9 canonical merge no longer degrades Gen-2 schemas",
+    "body": "F-20 (CRIT). F-51 is tracked separately by TP-RTE-TRUTH-R3-007.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Rewrite PROMPT_C9 merge semantics per A3a F1/F2; align promptset.yaml step wiring; run promptset-truth tests.",
+      "requirements": [],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/ -q -k 'promptset'"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C9_*.md",
+        "services/repo-truth-extractor/promptsets/v4/promptset.yaml"
+      ],
+      "validation": [
+        "Promptset tests pass; C1/C2/C7/C8 field sets survive C9 output contract."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A3a-prompts-ABC.md"
+      ]
+    }
+  ],
+  "routing": {
+    "stage": "planner_strong",
+    "tier": "strong",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml is ADVISORY governance, not a runtime router. If a runtime path disagrees, runtime wins.",
+    "runners": {
+      "preferred": [
+        "claude_code",
+        "codex"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": [
+        "grok"
+      ]
+    },
+    "models": {
+      "claude_code": "claude-opus-5 (effort high|xhigh)",
+      "codex": "gpt-5.6-sol (reasoning xhigh|max)",
+      "opencode": "anthropic/claude-sonnet-4-5 via .opencode/agents/pal-planner.md",
+      "grok": "NOT AS SOLE AUTHOR \u2014 grok-code-fast-1 is a fast coding tier, not a strong-reasoning tier",
+      "gemini_cli": "Pro-high tier \u2014 VERIFY_WITH_VENDOR_DOCS",
+      "copilot": "Claude Sonnet 4.5 (.github/agents/dopemux-planner.agent.md) \u2014 below strong tier; acceptable only under an approved plan"
+    },
+    "rationale": "C9 merge semantics gate every downstream schema. DONE.",
+    "notes": [
+      "grok forbidden as SOLE AUTHOR at this tier (grok-code-fast-1 is a fast coding tier, not strong-reasoning); acceptable as implementer executing an already-approved strong plan."
+    ],
+    "evidence": "Model ids OBSERVED from this machine: ~/.codex/config.toml (gpt-5.6-sol/xhigh), ~/.config/opencode/opencode.jsonc (claude-sonnet-4-5 + claude-haiku-4-5), ~/.grok/config.toml, .github/agents/*.agent.md (Sonnet 4.5). Per-vendor selector-string validity beyond these files remains VERIFY_WITH_VENDOR_DOCS."
+  }
+}

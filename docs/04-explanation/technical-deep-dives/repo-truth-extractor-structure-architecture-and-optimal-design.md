@@ -25,9 +25,10 @@ The Repo Truth Extractor (RTE) is a multi-phase, multi-provider LLM-powered code
 │                                                                        │
 │  dopemux audit wizard ──────── 8-stage interactive wizard              │
 │  dopemux audit prescan ─────── corpus pre-scan (no LLM)               │
-│  dopemux upgrades run ──────── v4 runner facade                        │
+│  dopemux rte run ────────────── canonical v5/v4/v3 runner facade       │
 │  dopemux extract docs ──────── document entity extraction              │
-│  dopemux extractor [LEGACY] ── redirects to upgrades                   │
+│  dopemux extractor [LEGACY] ── redirects to rte                        │
+│  dopemux upgrades [HIDDEN, DEPRECATED] ── alias for `dopemux rte`      │
 │                                                                        │
 │  src/dopemux/ux/wizard/  (11 files, ~1,700 LOC)                       │
 │    runner.py → preflight → corpus → prompts → cost_profiles            │
@@ -177,16 +178,17 @@ Dependent:                    Q (requires all above)
 - Two-mode execution (preview default, `--execute` for real)
 - Educational panels (opt-in explanations)
 - Phase-by-phase confirmation
-- Subprocess delegation to `dopemux extract truth-run`
+- Subprocess delegation to `dopemux rte run --pipeline-version v5` (current code; `dopemux extract truth-run` is now a hidden command that raises "Legacy command disabled")
 
 ### 5. Dependencies & Integration
 
 **CLI entry points (4 command groups):**
 
-- `dopemux audit` — wizard + prescan + status [NEW, canonical]
-- `dopemux upgrades` — v4 runner facade [NEW]
+- `dopemux rte` — canonical operator entrypoint: run/list/doctor/status/preflight/validate-live/trace/wizard/promptset [CANONICAL]
+- `dopemux audit` — wizard + prescan + status [ACTIVE, `audit wizard` is the same command object as `rte wizard`]
 - `dopemux extract` — document/code extraction [ACTIVE]
-- `dopemux extractor` — legacy, redirects to upgrades [DEPRECATED]
+- `dopemux extractor` — legacy, redirects to `rte` [DEPRECATED]
+- `dopemux upgrades` — hidden, deprecated alias for `dopemux rte` (same Command objects; still works) [HIDDEN]
 
 **External dependencies:** OpenRouter, OpenAI, Anthropic, xAI/Grok, Google Gemini, GitHub Models
 **Internal dependencies:** LiteLLM proxy, Qdrant, PostgreSQL/AGE (optional), Redis (optional)
@@ -224,6 +226,14 @@ Dependent:                    Q (requires all above)
 | 10 | Feature detection — 99 built-in rules + interactive enrichment | `lib/promptgen/feature_detector.py` |
 
 ## Part III: Optimal Target Design
+
+> **Status note (added during the RTE-TRUTH R4 docs sweep):** this section is
+> the original design proposal as written on 2026-04-12. It was **not**
+> adopted as specified — the CLI consolidation that actually shipped made
+> `dopemux rte` (not the `dopemux extract` group envisioned below) the
+> canonical entrypoint, and `dopemux upgrades` was hidden and marked
+> deprecated rather than merged away. Read the command names below as
+> historical proposal, not current or planned CLI shape.
 
 ### 8. Proposed Architecture
 

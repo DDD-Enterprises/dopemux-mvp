@@ -39,7 +39,6 @@ from ..intelligence_router import (
 
 logger = logging.getLogger(__name__)
 
-PRESCAN_ARTIFACT_VERSION = "1.0"
 
 
 def _stable_json_hash(payload: Any) -> str:

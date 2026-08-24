@@ -1,0 +1,85 @@
+{
+  "task_packet": "TP-RTE-TRUTH-R3-010",
+  "title": "F-23 residual closure — raw path, short secrets, key fragments, token unification",
+  "summary": "Closed the audit pushback on the R3-007 'structurally impossible' claim for v5: expanded sensitive-key fragments (credential/passwd/access_key), documented short free-text secret residual honestly, scrubbed security-sensitive artifact payloads on raw partition writes and partX shards, and unified the redaction token to [REDACTED] across prompts and scrub.",
+  "security_judgment": {
+    "sensitive_key_fragments": {
+      "added": ["credential", "passwd", "access_key"],
+      "rationale": "DEFAULT_CREDENTIALS / credentials were not masked by field name; passwd is a common password alias without the full 'password' substring; access_key covers AWS-style access key material.",
+      "rejected": ["cred", "auth"],
+      "rejected_rationale": "Too many false positives (credit, accreditation, author, authority)."
+    },
+    "short_secret_residual": {
+      "decision": "ACCEPT as known residual",
+      "status": "DOCUMENTED_NOT_OVERCLAIMED",
+      "rationale": "Bare short secrets without a sensitive key name or provider prefix remain uncaught by both scrubs. Lowering _LONG_TOKEN (>=40) would false-positive on SHAs and normal identifiers. Mitigation is the expanded key-fragment path + provider-prefix regexes, not a shorter bare-token catch-all. Do not claim structural impossibility for this shape."
+    },
+    "redaction_token": {
+      "decision": "Unify on [REDACTED] (scrub was already this shape; prompts taught <REDACTED>)",
+      "constant": "output_safety.REDACTION_TOKEN"
+    }
+  },
+  "implementation": {
+    "changes_made": [
+      {
+        "file": "services/repo-truth-extractor/output_safety.py",
+        "description": "REDACTION_TOKEN constant; expanded _SENSITIVE_KEY_FRAGMENTS; short-secret residual docstring; part-shard canonicalization; scrub_security_sensitive_artifacts_in_partition_payload helper."
+      },
+      {
+        "file": "services/repo-truth-extractor/run_extraction_v5.py",
+        "description": "write_json: partition-payload security scrub + path-name security scrub; partX branch applies security scrub (symmetric)."
+      },
+      {
+        "file": "services/repo-truth-extractor/promptsets/v4/**",
+        "description": "All <REDACTED> instruction tokens replaced with [REDACTED]."
+      },
+      {
+        "file": "services/repo-truth-extractor/tests/test_write_time_secret_scrub.py",
+        "description": "R3-010 residual tests: key fragments, short residual honesty, token unify, part shards, raw write, partX write, write_json wiring pin."
+      },
+      {
+        "file": "services/repo-truth-extractor/tests/test_secrets_redaction_binding.py",
+        "description": "REDACTION_TOKEN updated to [REDACTED]."
+      }
+    ]
+  },
+  "validation": {
+    "tests_run": {
+      "test_write_time_secret_scrub.py": {"status": "PASS", "note": "1 intentional skip when generic scrub already catches bare long tokens via credential assignment path"},
+      "test_secrets_redaction_binding.py": {"status": "PASS"},
+      "test_output_safety.py": {"status": "PASS"},
+      "k_filter_redact_secret_safety_write_time": {"status": "PASS", "count": "139-ish including goldens suite members"},
+      "mutation_check_raw_write_json": {
+        "status": "PASS",
+        "evidence": "Real write_json masks FAKE bare secret in SECRETS_RISK_LOCATIONS raw payload; replacing scrub_security_sensitive_artifacts_in_partition_payload with identity + is_security_sensitive_artifact=False reopens the leak."
+      }
+    }
+  },
+  "scope": {
+    "v5_exclusive": true,
+    "files_touched": [
+      "services/repo-truth-extractor/output_safety.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/promptsets/v4/PROMPTSET_RULES.md",
+      "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C8_*.md",
+      "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H1_*.md",
+      "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H7_*.md",
+      "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M3_*.md",
+      "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M4_*.md",
+      "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M5_*.md",
+      "services/repo-truth-extractor/tests/test_write_time_secret_scrub.py",
+      "services/repo-truth-extractor/tests/test_secrets_redaction_binding.py",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R3-010/PROOF.json"
+    ]
+  },
+  "residual_risks": [
+    "Short free-text secrets without sensitive key name or provider prefix remain residual by explicit judgment.",
+    "ProcessPool worker _op_write_json path still dumps JSON without write_json() — pre-existing; live success path for the main executor uses write_json via _apply_write_ops. Flagged but not claimed closed here without a separate packet for the worker picklable path.",
+    "Does not prove live models obey redaction instructions — write-time enforcement only."
+  ],
+  "blocking_issues": {"count": 0, "issues": []},
+  "git_state": {
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "note": "SHA filled at commit time"
+  }
+}

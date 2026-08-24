@@ -1,0 +1,152 @@
+{
+  "id": "TP-RTE-TRUTH-REVIEW-001",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / independent codereview of landed security-critical prompt-assembly + seam changes",
+  "invariants": [
+    "REVIEW-ONLY packet: produce a review verdict + findings. Do NOT change runtime code here \u2014 any fix it surfaces becomes its own follow-up packet.",
+    "WHY: R3-002 (27b349dd3), R3-004 (6aac1ef79), and R3-007 all had PAL chain NOT_RUN (session-limit casualties). They touch a security-relevant shared choke point (build_partition_context / prompt assembly) and enforce secret redaction, in a 22k-line module, with zero independent review.",
+    "Also review the four R1 seam extractions (8bbf7624e ui, d20a8190b cli_args+dead-block, e7fea1ffc phases, fd68063c4 costing) for behaviour-preservation beyond the golden harness.",
+    "Run the full external PAL codereview chain (analyze -> codereview) per AGENTS.md; if PAL provider creds are unavailable this session, fall back to the /code-review skill or a claude codereview subagent and RECORD which was used.",
+    "Verdict must be one of PASS / PASS_WITH_RISKS / CHANGES_REQUIRED, with each finding tied to a commit + symbol."
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R3-007"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-GOV",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "S"
+  },
+  "commit": {
+    "message": "docs(rte): TP-RTE-TRUTH-REVIEW-001 \u2014 independent review of landed security-critical work",
+    "allowlist": [
+      "claudedocs/rte-truth-program-2026-07/",
+      "task-packets/generated/TP-RTE-TRUTH-REVIEW-001.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-REVIEW-001/PROOF.json"
+    ],
+    "verify": []
+  },
+  "pr": {
+    "title": "docs(rte): independent codereview of RTE-TRUTH security + seam commits",
+    "body": "Closes the NOT_RUN independent-review gap on R3-002/004/007 + R1 seams before PR #1043 merge.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Review the injection-separator change (R3-002 27b349dd3): delimiter-escape via a file body containing literal </repo_content>, coverage of every dispatch path, byte-accounting correctness post-wrap.",
+      "requirements": [
+        "Confirm or refute the delimiter-escape residual the author flagged."
+      ],
+      "commands": [
+        "git show 27b349dd3 --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Verdict + findings recorded."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A3d-prompts-WXZ-promptgen.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Review the redaction + section-validator change (R3-004 6aac1ef79 + R3-007 if landed): rule-conflict resolution, fail-closed load_promptset, the async-seam injection fix, and whether write-time scrub actually makes leakage structurally impossible.",
+      "requirements": [],
+      "commands": [
+        "git show 6aac1ef79 --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Verdict + findings recorded; F-23 residual status confirmed."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A3a-prompts-ABC.md"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Review the four R1 seams for hidden behaviour change beyond CLI-introspection goldens (global-state, import side-effects, facade completeness).",
+      "requirements": [],
+      "commands": [],
+      "expected_files": [],
+      "validation": [
+        "Per-seam verdict recorded."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A1-architecture.md"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Write proof/rte-truth-program/TP-RTE-TRUTH-REVIEW-001/PROOF.json + a REVIEW_REPORT.md under claudedocs/rte-truth-program-2026-07/ with the consolidated verdict; open follow-up packets for any CHANGES_REQUIRED item.",
+      "requirements": [
+        "Do not silently absorb a required change \u2014 packetize it."
+      ],
+      "commands": [],
+      "expected_files": [
+        "claudedocs/rte-truth-program-2026-07/REVIEW_REPORT.md"
+      ],
+      "validation": [
+        "Consolidated verdict + any follow-up packet IDs listed."
+      ],
+      "context_files": []
+    }
+  ],
+  "routing": {
+    "stage": "self_audit",
+    "tier": "strong",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml is ADVISORY governance, not a runtime router. If a runtime path disagrees, runtime wins.",
+    "runners": {
+      "preferred": [
+        "codex"
+      ],
+      "acceptable": [
+        "codex",
+        "opencode",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": [
+        "claude_code",
+        "grok"
+      ]
+    },
+    "models": {
+      "claude_code": "claude-opus-5 (effort high|xhigh)",
+      "codex": "gpt-5.6-sol (reasoning xhigh|max)",
+      "opencode": "anthropic/claude-sonnet-4-5 via .opencode/agents/pal-planner.md",
+      "grok": "NOT AS SOLE AUTHOR \u2014 grok-code-fast-1 is a fast coding tier, not a strong-reasoning tier",
+      "gemini_cli": "Pro-high tier \u2014 VERIFY_WITH_VENDOR_DOCS",
+      "copilot": "Claude Sonnet 4.5 (.github/agents/dopemux-planner.agent.md) \u2014 below strong tier; acceptable only under an approved plan"
+    },
+    "rationale": "INDEPENDENT AUDIT. claude_code is FORBIDDEN here: it authored R3-002/004/007 and the R1 seams, so it cannot be its own auditor. Policy principle: independent_audit_before_readiness.",
+    "notes": [
+      "grok forbidden as SOLE AUTHOR at this tier (grok-code-fast-1 is a fast coding tier, not strong-reasoning); acceptable as implementer executing an already-approved strong plan.",
+      "Auditor must differ from the implementer of the commits under review. Preferred: codex gpt-5.6-sol, or opencode via .opencode/agents/pal-reviewer.md."
+    ],
+    "evidence": "Model ids OBSERVED from this machine: ~/.codex/config.toml (gpt-5.6-sol/xhigh), ~/.config/opencode/opencode.jsonc (claude-sonnet-4-5 + claude-haiku-4-5), ~/.grok/config.toml, .github/agents/*.agent.md (Sonnet 4.5). Per-vendor selector-string validity beyond these files remains VERIFY_WITH_VENDOR_DOCS."
+  }
+}

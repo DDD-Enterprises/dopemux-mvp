@@ -46,7 +46,7 @@ class LLMRuntimeDeps:
     endpoint_fingerprint: Callable[[str], Dict[str, Any]]
     provider_signature: Callable[[str, str, str, Optional[str]], str]
     get_http_session: Callable[[], requests.Session]
-    get_gemini_client: Callable[[str], Any]
+    get_gemini_client: Callable[[str, Optional[int]], Any]
     extract_text_from_gemini_response: Callable[[Any], str]
     get_xai_client: Callable[[str], Any]
     get_openrouter_client: Callable[[str], Any]
@@ -362,6 +362,23 @@ def classify_route_identity(
     return {key: value for key, value in identity.items() if value is not None}
 
 
+def _model_family_rejects_custom_temperature(model_id: str) -> bool:
+    """F-19b/FA-8-HIGH-1: OpenAI gpt-5* models reject any non-default
+    ``temperature`` value. ``build_chat_payload``'s omission rule only
+    matched literal ``provider == "openai"``, so a gpt-5 model reached
+    through a routed provider (e.g. OpenRouter's ``openai/gpt-5.2`` slug)
+    still had ``temperature`` set on the payload. OpenRouter forwards that
+    to the upstream OpenAI model, which 400s; the 400 gets classified as
+    failure_type="payload" -> blocker_code="AMBIGUOUS_PROVIDER_BLOCK" even
+    though a bare curl (no ``temperature`` field) succeeds -- reproducing
+    the exact symptom in FA-8-HIGH-1. Match on the trailing model slug so
+    both ``gpt-5.2`` (direct) and ``openai/gpt-5.2`` (routed) are caught,
+    regardless of which provider name fronts the call.
+    """
+    trailing = str(model_id or "").strip().rsplit("/", 1)[-1]
+    return trailing.startswith("gpt-5")
+
+
 def call_llm(
     deps: LLMRuntimeDeps,
     provider: str,
@@ -416,7 +433,24 @@ def call_llm(
         response_format_override=response_format_override,
         max_completion_tokens=max_completion_tokens_override,
         request_options=request_options_override,
+        # TP-RTE-TRUTH-R2-003: thread the operator-facing --llm-temperature
+        # value through; build_chat_payload/resolve_temperature still owns
+        # the gpt-5 omission rule, so this is only the default when a
+        # temperature is actually sent.
+        default_temperature=getattr(cfg, "llm_temperature", 0.1),
     )
+    if (
+        isinstance(payload, dict)
+        and "temperature" in payload
+        and _model_family_rejects_custom_temperature(model_id)
+    ):
+        # F-19b/FA-8-HIGH-1: defense in depth at the payload boundary --
+        # build_chat_payload's omission rule is provider-name-gated and
+        # cannot see through routed provider prefixes (OpenRouter, etc.).
+        # Strip temperature here for any gpt-5-family model regardless of
+        # which provider name fronted the call.
+        payload = dict(payload)
+        del payload["temperature"]
     service_tier_requested: Optional[str] = service_tier
     if (
         isinstance(payload, dict)
@@ -730,9 +764,20 @@ def call_llm(
                 response_json = response.json()
                 response_text = response_json["choices"][0]["message"]["content"]
             elif provider == "gemini":
-                client = deps.get_gemini_client(api_key)
+                # F-19c: the SDK path previously called get_gemini_client
+                # without timeout_seconds, so the client-level HttpOptions
+                # deadline was never set and a hung Gemini call could stall
+                # this lane indefinitely -- the overall_timeout_seconds
+                # bookkeeping above never actually preempted it. Thread the
+                # same remaining-deadline budget used by the HTTP/SDK
+                # branches into the Gemini client construction.
+                client = deps.get_gemini_client(api_key, _remaining_timeout_seconds())
                 gemini_config: Dict[str, Any] = {
-                    "temperature": 0.1,
+                    # TP-RTE-TRUTH-R2-003: operator-facing --llm-temperature.
+                    # Gemini is never subject to the gpt-5 omission rule
+                    # (that only applies to provider == "openai"), so there
+                    # is no carve-out to preserve here.
+                    "temperature": getattr(cfg, "llm_temperature", 0.1),
                     "system_instruction": safe_system_prompt,
                 }
                 if using_structured_override:
@@ -1523,6 +1568,7 @@ def run_comparison_lane(
     finalize_response_parse_provenance: Callable[..., Dict[str, Any]],
     log_response_parse_repair: Callable[[Dict[str, Any]], None],
     contract_lane: str = "comparison",
+    untrusted_content_preamble: str = "",
 ) -> List[Dict[str, Any]]:
     compare_provider = str(getattr(cfg, "compare_provider", None) or "xai")
     compare_model = str(getattr(cfg, "compare_model", None) or "grok-4.20-beta")
@@ -1584,9 +1630,18 @@ def run_comparison_lane(
             route_token = f"{compare_provider}/{compare_model}"
             safe_prompt_text = sanitize_text_for_provider_payload(prompt_text)
             safe_context_text = sanitize_text_for_provider_payload(context_text)
+            # F-30 residual (TP-RTE-TRUTH-R3-009): comparison lane previously
+            # sent wrapped context without the untrusted-content preamble, so
+            # the model saw <repo_content> with no instruction-side framing.
+            # Prepend the shared preamble when provided by the caller (v5).
+            preamble = str(untrusted_content_preamble or "").strip()
+            if preamble and preamble not in safe_context_text:
+                safe_user_content = f"{preamble}\n\n{safe_context_text}"
+            else:
+                safe_user_content = safe_context_text
             projected_input_tokens = deps.estimate_text_tokens(
                 safe_prompt_text,
-                safe_context_text,
+                safe_user_content,
             )
             projected_output_tokens = deps.project_output_tokens(projected_input_tokens)
             deps.check_projected_cost_limit(
@@ -1607,7 +1662,7 @@ def run_comparison_lane(
                 model_id=compare_model,
                 api_key_env=deps.provider_api_key_env.get(compare_provider, ""),
                 system_prompt=safe_prompt_text,
-                user_content=safe_context_text,
+                user_content=safe_user_content,
                 cfg=cfg,
                 force_json_output=True,
             )

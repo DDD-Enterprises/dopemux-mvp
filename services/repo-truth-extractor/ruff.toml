@@ -1,0 +1,42 @@
+line-length = 88
+target-version = "py311"
+
+extend-exclude = [
+    "__pycache__",
+    "archive",
+    "extraction",
+    "benchmarking/node_modules",
+]
+
+[lint]
+# TP-RTE-TRUTH-R0-004 (F-04): the service had NO lint coverage in CI at all.
+#
+# The first attempt at this config used `select = []`, which made
+# `ruff check` pass vacuously — a green badge carrying zero signal. That
+# hid 5 genuine undefined names (F821) and a constant-shadowing bug in
+# lib/prescan/engine.py, all fixed in the same commit as this config.
+#
+# So: select the pyflakes real-bug family and keep it enforced. The
+# high-count cosmetic members (unused imports/variables, empty f-strings)
+# are ignored for now because clearing them means touching a 23k-line
+# monolith, which belongs to a refactor packet, not a CI-enablement one.
+# Everything left enabled is a correctness signal, not a style preference.
+select = ["F"]
+
+ignore = [
+    "F401",  # unused-import (133) — cleanup packet, not a correctness gate
+    "F841",  # unused-variable (22) — same
+    "F541",  # f-string-missing-placeholders (5) — cosmetic
+]
+
+# Still ENFORCED (do not add to ignore without a finding to justify it):
+#   F821 undefined-name          — real NameError risk
+#   F811 redefined-while-unused  — silent shadowing, e.g. the
+#                                  PRESCAN_ARTIFACT_VERSION drift trap
+#   F632 is-literal, F502/F522 format errors, and the rest of pyflakes.
+#
+# Ratchet plan: enable E/I once formatting is addressed, then B/UP.
+
+[lint.per-file-ignores]
+"tests/**" = ["F401", "F811"]
+"archive/**" = ["F"]

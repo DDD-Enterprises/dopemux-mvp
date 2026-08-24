@@ -1,0 +1,112 @@
+{
+  "id": "TP-RTE-TRUTH-R0-008",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / BLOCKED \u2014 run-artifact git rm --cached sweep",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "BLOCKED: requires operator decision on which committed extraction/ runs are load-bearing test fixtures.",
+    "Do not execute until the packet's blocked flag is lifted by the operator.",
+    "Findings covered: F-01 (sweep half)."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R0",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "chore(rte): TP-RTE-TRUTH-R0-008 \u2014 untrack non-fixture run artifacts",
+    "allowlist": [
+      ".gitignore",
+      "task-packets/generated/TP-RTE-TRUTH-R0-008.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R0-008/PROOF.json"
+    ],
+    "verify": [
+      "git ls-files services/repo-truth-extractor/extraction/ | wc -l"
+    ]
+  },
+  "pr": {
+    "title": "chore(rte): untrack non-fixture extraction run artifacts",
+    "body": "F-01 sweep half. BLOCKED on fixtures decision.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "After operator decision: git rm -r --cached non-fixture run dirs under services/repo-truth-extractor/extraction/; document history-size note.",
+      "requirements": [
+        "Fixture runs (per operator list) stay tracked."
+      ],
+      "commands": [
+        "git ls-files services/repo-truth-extractor/extraction/ | wc -l"
+      ],
+      "expected_files": [
+        ".gitignore"
+      ],
+      "validation": [
+        "Only non-fixture artifacts untracked; tests still pass."
+      ],
+      "context_files": []
+    }
+  ],
+  "routing": {
+    "stage": "planner_strong",
+    "tier": "strong",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml is ADVISORY governance, not a runtime router. If a runtime path disagrees, runtime wins.",
+    "runners": {
+      "preferred": [
+        "claude_code",
+        "codex"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": [
+        "grok"
+      ]
+    },
+    "models": {
+      "claude_code": "claude-opus-5 (effort high|xhigh)",
+      "codex": "gpt-5.6-sol (reasoning xhigh|max)",
+      "opencode": "anthropic/claude-sonnet-4-5 via .opencode/agents/pal-planner.md",
+      "grok": "NOT AS SOLE AUTHOR \u2014 grok-code-fast-1 is a fast coding tier, not a strong-reasoning tier",
+      "gemini_cli": "Pro-high tier \u2014 VERIFY_WITH_VENDOR_DOCS",
+      "copilot": "Claude Sonnet 4.5 (.github/agents/dopemux-planner.agent.md) \u2014 below strong tier; acceptable only under an approved plan"
+    },
+    "rationale": "Destructive git rm --cached over 119 tracked artifacts + BLOCKED on an operator fixtures decision. Irreversible-ish; decide strong, never cheap.",
+    "notes": [
+      "grok forbidden as SOLE AUTHOR at this tier (grok-code-fast-1 is a fast coding tier, not strong-reasoning); acceptable as implementer executing an already-approved strong plan."
+    ],
+    "evidence": "Model ids OBSERVED from this machine: ~/.codex/config.toml (gpt-5.6-sol/xhigh), ~/.config/opencode/opencode.jsonc (claude-sonnet-4-5 + claude-haiku-4-5), ~/.grok/config.toml, .github/agents/*.agent.md (Sonnet 4.5). Per-vendor selector-string validity beyond these files remains VERIFY_WITH_VENDOR_DOCS."
+  }
+}

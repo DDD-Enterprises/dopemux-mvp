@@ -28,7 +28,7 @@ Authoritative surfaces:
 - `config/pricing.yaml`
 
 Canonical operator CLI: `dopemux rte ...`.
-`dopemux upgrades ...` is a legacy compatibility alias, and
+`dopemux upgrades ...` is a hidden, deprecated alias, and
 `dopemux extractor ...` is a hidden legacy/refusal surface.
 
 ## Validated bounded target

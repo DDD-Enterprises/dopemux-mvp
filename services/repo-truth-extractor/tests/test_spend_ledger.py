@@ -143,8 +143,12 @@ def test_unknown_fallback_increments_legacy_and_new_counters(tmp_path: Path) -> 
 def test_persistence_round_trip_preserves_model_provider_and_fallback_counts(
     tmp_path: Path,
 ) -> None:
+    # Uncapped ledger: this test is about JSON persistence round-tripping the
+    # fallback/unknown-model counters, not cap enforcement. Cap-set + unknown
+    # model behavior (raise, TP-RTE-TRUTH-R2-001 F-10/F-11) is covered
+    # separately below.
     spend_ledger = _load_spend_ledger_module()
-    ledger = spend_ledger.SpendLedger(tmp_path, "round_trip", max_cost_usd=3.5)
+    ledger = spend_ledger.SpendLedger(tmp_path, "round_trip")
     ledger.accumulate(
         "R",
         1200,
@@ -167,6 +171,29 @@ def test_persistence_round_trip_preserves_model_provider_and_fallback_counts(
     assert "openrouter" in reloaded.record.providers
     assert reloaded.record.fallback_usage_count == 1
     assert reloaded.record.unknown_model_events == 1
+
+
+def test_unknown_model_raises_when_spend_cap_is_set(tmp_path: Path) -> None:
+    """TP-RTE-TRUTH-R2-001 (F-10/F-11): an unknown model must never silently
+    price at a fabricated rate once an operator has set a spend cap — it must
+    raise so the run stops loudly instead of the cap math running on an
+    understated (or zero) cost. Mirrors E3's existing "missing pricing"
+    RuntimeError (extractor.costing.estimate_usage_cost_usd)."""
+    spend_ledger = _load_spend_ledger_module()
+    ledger = spend_ledger.SpendLedger(tmp_path, "capped_unknown", max_cost_usd=3.5)
+
+    with pytest.raises(RuntimeError, match="Unknown model pricing with a spend cap set"):
+        ledger.accumulate(
+            "R",
+            300,
+            200,
+            provider="mystery",
+            model_id="weird-model",
+        )
+
+    # No partial/corrupt state should have been recorded for the rejected call.
+    assert ledger.record.total_cost_usd == 0.0
+    assert ledger.record.unknown_model_events == 0
 
 
 def test_retries_and_escalations_count_as_additional_model_usage(tmp_path: Path) -> None:

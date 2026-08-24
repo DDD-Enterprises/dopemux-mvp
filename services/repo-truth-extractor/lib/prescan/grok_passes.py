@@ -504,18 +504,32 @@ class GrokPassRunner:
         }
 
     def _build_optimize_payload(self, intelligence: dict[str, Any], prior_pass_results: dict[str, Any]) -> dict[str, Any]:
-        """Build payload for final extraction optimization synthesis."""
+        """Build payload for final extraction optimization synthesis.
+
+        F-17 fix: prior-pass results are merged flat at the top level (their
+        own keys, e.g. ``duplicate_assessments``/``hidden_features``/
+        ``planned_features``) instead of being nested under synthetic
+        ``dedup_results``/``discovery_results``/``feasibility_results``
+        wrapper keys. Nothing downstream (prompt text, schema, or a
+        consumer) ever read those wrapper keys — they were dead nesting that
+        just made the optimize payload harder to reason about and diverged
+        from the flat-schema contract the other three `_build_*_payload`
+        methods already follow. The dict returned here is serialized to a
+        JSON string by `_execute_pass` (`json.dumps(payload_data, ...)`)
+        before it reaches `_call_grok`, same as every other pass.
+        """
         payload: dict[str, Any] = {
             "corpus_summary": dict(intelligence.get("corpus_summary") or {}),
             "cost_estimate": dict(intelligence.get("cost_estimate") or {}),
-            "dedup_results": prior_pass_results.get("dedup", {}),
-            "discovery_results": prior_pass_results.get("discover", {}),
-            "feasibility_results": prior_pass_results.get("feasibility", {}),
             "pagerank_hotspots": [
                 {"path": h.get("rel_path"), "score": h.get("hotspot_score")}
                 for h in intelligence.get("code_intelligence", {}).get("hotspots", [])[:20]
-            ]
+            ],
         }
+        for prior_pass_id in ("dedup", "discover", "feasibility"):
+            prior_result = prior_pass_results.get(prior_pass_id)
+            if isinstance(prior_result, dict):
+                payload.update(prior_result)
         return payload
 
     def _call_grok(self, pass_id, payload, candidate, attempt_record, est_tokens=0):

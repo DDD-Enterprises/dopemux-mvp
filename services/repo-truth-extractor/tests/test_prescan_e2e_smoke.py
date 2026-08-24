@@ -15,6 +15,7 @@ if str(SERVICE_ROOT) not in sys.path:
 
 from lib.prescan.engine import PrescanEngine
 from lib.prescan.models import PrescanConfig
+from lib.prescan.code_prescan import TREE_SITTER_AVAILABLE
 
 
 def _git(repo: Path, *args: str) -> str:
@@ -66,6 +67,17 @@ def _load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+@pytest.mark.skipif(
+    not TREE_SITTER_AVAILABLE,
+    reason=(
+        "Vacuous without tree-sitter: full and incremental prescan both emit degraded "
+        "code intelligence, so the parity assertion holds trivially. TP-RTE-TRUTH-R0-005 "
+        "made the degraded payload *consistent*, which flipped this from XFAIL to "
+        "XPASS(strict) on machines lacking tree-sitter — a false pass, not a fix. "
+        "Skip rather than xfail so the deferral in TP-RTE-WALKER-006 is not silently "
+        "closed by an environment artifact."
+    ),
+)
 @pytest.mark.xfail(
     sys.platform == "darwin",
     reason="Deferred to TP-RTE-WALKER-006: prescan incremental cache semantics are outside CostProfile F repair scope.",

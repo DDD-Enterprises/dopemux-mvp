@@ -1,0 +1,11 @@
+Usage: python -m dopemux rte status [OPTIONS]
+
+  Show extraction run status.
+
+  Reports phase progression and partition status for an extraction run.
+
+Options:
+  --pipeline-version [v5|v4|v3]  [default: v5]
+  --run-id TEXT                  Extraction run identifier to query.
+  --json                         Emit status as machine-readable JSON.
+  --help                         Show this message and exit.

@@ -1,0 +1,20 @@
+Usage: python -m dopemux rte wizard [OPTIONS]
+
+  🧙 Ritual Guide: Guided extraction flight-deck walkthrough
+
+  Engages the interactive cockpit walkthrough for the extraction pipeline.
+  Synchronizes across ritual phases, from health assessment to  high-fidelity
+  materialization.
+
+Options:
+  --execute                 ⚡ Ignite Engines: Engage LLM providers for actual
+                            extraction (default: preview only).
+  --educate / --no-educate  🧠 Cognitive Overlay: Provide educational HUD tips
+                            at each ritual stage.
+  --routing-policy TEXT     🧠 Cognitive Routing: LLM policy for the extraction
+                            ritual. Use cost for the bounded first-run lane.
+                            [default: cost]
+  -w, --workers INTEGER     ⚡ Ritual Workers: Number of concurrent workers for
+                            partitioning. Keep this at 1 for deterministic
+                            first runs.  [default: 1]
+  --help                    Show this message and exit.

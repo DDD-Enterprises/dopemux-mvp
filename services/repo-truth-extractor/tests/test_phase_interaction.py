@@ -356,7 +356,7 @@ class TestPhaseTargetCoverage(unittest.TestCase):
         """C must scan docker/mcp-servers-source/ and components/."""
         import inspect
         v5 = _load_v5()
-        src = inspect.getsource(v5.run_phase_C)
+        src = inspect.getsource(v5.extracted_run_phase_C)
         self.assertIn('"docker/mcp-servers-source"', src)
         self.assertIn('"components"', src)
 
@@ -381,8 +381,8 @@ class TestPhaseTargetCoverage(unittest.TestCase):
         """X must do a direct repo scan, not consume R norm artifacts."""
         import inspect
         v5 = _load_v5()
-        src = inspect.getsource(v5.run_phase_X)
-        self.assertIn("Collector", src, "X should use Collector for direct repo scan")
+        src = inspect.getsource(v5.extracted_run_phase_X)
+        self.assertIn("collector_cls", src, "X should use the injected collector for direct repo scan")
         self.assertNotIn('dirs["R"]', src, "X should not read R artifacts")
 
     def test_phase_q_aggregates_x(self):

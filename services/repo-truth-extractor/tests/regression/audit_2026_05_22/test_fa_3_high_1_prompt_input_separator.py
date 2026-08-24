@@ -11,11 +11,17 @@ Runtime-confirmed in:
   (TRACE.md L178 contains the injection payload verbatim)
 
 Static-check: assert at least one common delimiter token is present in
-any prompt file. xfail until any of the prompts adds a delimiter marker.
+any prompt file.
+
+REMEDIATED by TP-RTE-TRUTH-R3-002 (F-30): every template in
+`promptsets/v4/prompts/*.md` now documents the `<repo_content>` convention
+in its `## Inputs` section, and `run_extraction_v5.build_partition_context`
+wraps the actual runtime-assembled context in `<repo_content>…</repo_content>`
+(single choke point, both the sync dispatch and async R dispatch paths).
+The xfail marker is removed; this test is expected to pass.
 """
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import pytest
@@ -44,11 +50,8 @@ DELIMITER_TOKENS = (
 )
 
 
-@pytest.mark.xfail(
-    reason="FA-3-HIGH-1: Zero of 138 prompts have an INPUT/INSTRUCTION delimiter. Add e.g. <repo_content>...</repo_content> tags in the prompt templates so the model can be trained to treat untrusted content."
-)
 def test_at_least_one_prompt_has_input_delimiter() -> None:
-    """xfail until prompts adopt a delimiter convention."""
+    """All 136 v4 templates document the <repo_content> convention (F-30 fix)."""
     if not _PROMPTS_DIR.exists():
         pytest.skip(f"Prompts dir not found: {_PROMPTS_DIR}")
     prompt_files = list(_PROMPTS_DIR.glob("*.md"))

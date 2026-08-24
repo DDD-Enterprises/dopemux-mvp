@@ -3256,6 +3256,7 @@ cli.add_command(orchestrator_group, "orchestrator")
 
 from .commands.upgrades_commands import upgrades
 upgrades.help = "Legacy compatibility alias for `dopemux rte`. Use `dopemux rte` for Repo Truth Extractor operations."
+upgrades.hidden = True
 
 cli.add_command(upgrades)
 
@@ -5125,7 +5126,7 @@ def rte_scan(
     )
 
 
-@upgrades.command("list")
+@rte.command("list")
 @_pipeline_version_options
 @click.pass_context
 def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[str]):
@@ -5158,7 +5159,7 @@ def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[s
     _run_extractor_runner(pipeline_version=effective_version, args=["--print-config"])
 
 
-@upgrades.command("run")
+@rte.command("run")
 @_pipeline_version_options
 @click.option("--phase", default="ALL", show_default=True, help="Phase code or ALL")
 @click.option("--step", default=None, help="Single concrete step to execute within the selected phase.")
@@ -5211,6 +5212,16 @@ def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[s
     type=float,
     default=None,
     help="Maximum spend in USD for this run (profile default applied when unset).",
+)
+@click.option(
+    "--llm-temperature",
+    type=click.FloatRange(0.0, 2.0),
+    default=None,
+    help=(
+        "Sampling temperature forwarded to provider chat/completion calls "
+        "(0.0-2.0, runner default 0.1). Ignored for OpenAI gpt-5* models, "
+        "which reject the temperature parameter entirely."
+    ),
 )
 @click.option("--disable-escalation", is_flag=True, default=False, show_default=True)
 @click.option("--escalation-max-hops", type=int, default=2, show_default=True)
@@ -5270,6 +5281,7 @@ def extractor_run(
     model_aliases: tuple[str, ...],
     disabled_providers: tuple[str, ...],
     max_cost_usd: Optional[float],
+    llm_temperature: Optional[float],
     disable_escalation: bool,
     escalation_max_hops: int,
     batch_mode: bool,
@@ -5349,6 +5361,8 @@ def extractor_run(
         args.extend(["--disable-provider", disabled_provider])
     if max_cost_usd is not None:
         args.extend(["--max-cost-usd", str(float(max_cost_usd))])
+    if llm_temperature is not None:
+        args.extend(["--llm-temperature", str(float(llm_temperature))])
     if disable_escalation:
         args.append("--disable-escalation")
     args.extend(["--escalation-max-hops", str(max(0, int(escalation_max_hops)))])
@@ -5395,7 +5409,7 @@ def extractor_run(
     _run_extractor_runner(pipeline_version=effective_version, args=args)
 
 
-@upgrades.command("doctor")
+@rte.command("doctor")
 @_pipeline_version_options
 @click.option("--run-id", default=None, help="Extraction run identifier to diagnose.")
 @click.option("--auto-reprocess/--no-auto-reprocess", default=False, show_default=True, help="Automatically re-process failed partitions identified during the audit.")
@@ -5434,7 +5448,7 @@ def extractor_doctor(
     _run_extractor_runner(pipeline_version=effective_version, args=args)
 
 
-@upgrades.command("status")
+@rte.command("status")
 @_pipeline_version_options
 @click.option("--run-id", default=None, help="Extraction run identifier to query.")
 @click.option("--json", "status_json", is_flag=True, help="Emit status as machine-readable JSON.")
@@ -5460,7 +5474,7 @@ def extractor_status(
     _run_extractor_runner(pipeline_version=effective_version, args=args)
 
 
-@upgrades.command("preflight")
+@rte.command("preflight")
 @_pipeline_version_options
 @click.option("--run-id", default=None, help="Run ID")
 @click.option(
@@ -5502,7 +5516,7 @@ def extractor_preflight(
         _run_extractor_runner(pipeline_version=effective_version, args=auth_args)
 
 
-@upgrades.command("validate-live")
+@rte.command("validate-live")
 @click.option(
     "--promptset-root",
     type=click.Path(exists=True, file_okay=False),
@@ -5626,13 +5640,13 @@ def extractor_validate_live(
         raise click.ClickException(f"{blockers[0]} See {report_path}.")
 
 
-@upgrades.group("promptset")
-def upgrades_promptset_group():
-    """Promptset utilities."""
+@rte.group("promptset")
+def rte_promptset_group():
+    """Promptset utilities for Repo Truth Extractor."""
     pass
 
 
-@upgrades_promptset_group.command("audit")
+@rte_promptset_group.command("audit")
 @_pipeline_version_options
 @click.option("--strict/--no-strict", default=True, show_default=True, help="Perform a strict structural audit of promptset artifacts.")
 @click.pass_context
@@ -5664,7 +5678,7 @@ def extractor_promptset_audit(
     raise click.ClickException("Promptset audit is implemented for v4 only.")
 
 
-@upgrades.command("trace")
+@rte.command("trace")
 @click.option(
     "--dry-run",
     is_flag=True,
@@ -5728,18 +5742,6 @@ def truth_command(
     )
 
 
-def _add_extractor_alias_if_missing(command, name: str) -> None:
-    if name not in extractor.commands:
-        extractor.add_command(command, name)
-
-
-rte.add_command(extractor_list, "list")
-rte.add_command(extractor_run, "run")
-rte.add_command(extractor_doctor, "doctor")
-rte.add_command(extractor_status, "status")
-rte.add_command(extractor_preflight, "preflight")
-rte.add_command(extractor_validate_live, "validate-live")
-rte.add_command(extractor_trace, "trace")
 rte.add_command(audit.commands["wizard"], "wizard")
 
 
@@ -5752,18 +5754,33 @@ def extractor_promptset_group():
 extractor_promptset_group.add_command(extractor_promptset_audit, "audit")
 
 
-@rte.group("promptset")
-def rte_promptset_group():
-    """Promptset utilities for Repo Truth Extractor."""
-    pass
-
-
-rte_promptset_group.add_command(extractor_promptset_audit, "audit")
 if "init" in extractor.commands:
     rte_promptset_group.add_command(extractor.commands["init"], "sync")
 if "validate" in extractor.commands:
     rte_promptset_group.add_command(extractor.commands["validate"], "validate")
 cli.add_command(rte, "rte")
+
+
+# ── Definition-site inversion (TP-RTE-TRUTH-R4-002 / F-42) ──────────────
+# `rte` is the canonical definition site for the commands above (`list`,
+# `run`, `doctor`, `status`, `preflight`, `validate-live`, `trace`, and the
+# `promptset` group). `upgrades` is a deprecated, hidden alias: attach the
+# *same* Command/Group objects so every path historically reachable as
+# `dopemux upgrades <x>` keeps working byte-for-byte. Click Command/Group
+# objects carry no parent pointer, so multi-group registration is safe and
+# already exercised elsewhere in this module (`rte`/`upgrades`/`extractor`
+# have long shared leaf commands).
+for _upgrades_alias_name in (
+    "list",
+    "run",
+    "doctor",
+    "status",
+    "preflight",
+    "validate-live",
+    "trace",
+):
+    upgrades.add_command(rte.commands[_upgrades_alias_name], _upgrades_alias_name)
+upgrades.add_command(rte_promptset_group, "promptset")
 
 
 # from src/dopemux/commands/memory_commands.py

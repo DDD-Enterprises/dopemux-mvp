@@ -23,10 +23,10 @@ graph_metadata:
 Canonical CLI command:
 
 ```bash
-dopemux upgrades doctor --pipeline-version v4 --run-id <RUN_ID>
+dopemux rte doctor --pipeline-version v4 --run-id <RUN_ID>
 ```
 
-Legacy alias: `dopemux extractor doctor ...`
+Legacy aliases: `dopemux upgrades doctor ...` (hidden, deprecated), `dopemux extractor doctor ...`
 
 Runner equivalent:
 

@@ -1,0 +1,69 @@
+Usage: python -m dopemux rte run [OPTIONS]
+
+  Run the Repo Truth Extractor.
+
+  Executes the selected extraction pipeline with the provided run controls.
+
+Options:
+  --pipeline-version [v5|v4|v3]   [default: v5]
+  --phase TEXT                    Phase code or ALL  [default: ALL]
+  --step TEXT                     Single concrete step to execute within the
+                                  selected phase.
+  --s-steps TEXT                  Comma-separated subset of Phase S steps.
+  --run-id TEXT                   Run ID
+  --promptset-root DIRECTORY      External generated promptset directory for
+                                  v5 prompt resolution.
+  --dry-run / --execute           [default: dry-run]
+  --resume / --no-resume          [default: resume]
+  --partition-workers INTEGER     [default: 1]
+  --max-partitions-per-step INTEGER
+                                  Cap the number of partitions executed for
+                                  each step.
+  --routing-policy [cost|balanced|balanced_openrouter|balanced_grok_openrouter|quality|openrouter|gemini_primary|optimal]
+                                  LLM routing policy for extraction. Defaults
+                                  to the model-map policy.
+  --cost-profile TEXT             RTE cost profile or logical rte-cost-* alias
+                                  (preferred over --routing-policy).
+  --model-alias KEY=ROUTE         Override a cell alias (e.g.
+                                  SYNTH_MODEL=openai/gpt-5.5). Repeatable.
+  --disable-provider PROVIDER     Disable a provider for this run (openai,
+                                  gemini, xai, openrouter, anthropic).
+  --max-cost-usd FLOAT            Maximum spend in USD for this run (profile
+                                  default applied when unset).
+  --llm-temperature FLOAT RANGE   Sampling temperature forwarded to provider
+                                  chat/completion calls (0.0-2.0, runner
+                                  default 0.1). Ignored for OpenAI gpt-5*
+                                  models, which reject the temperature
+                                  parameter entirely.  [0.0<=x<=2.0]
+  --disable-escalation
+  --escalation-max-hops INTEGER   [default: 2]
+  --batch-mode
+  --batch-submit-only
+  --batch-watch
+  --batch-retrieve
+  --batch-ids TEXT                Batch IDs to retrieve when using --batch-
+                                  retrieve.
+  --batch-provider [auto|openai|gemini|xai]
+                                  Provider for asynchronous batch processing.
+                                  [default: auto]
+  --retrieve-provider [openai|gemini|xai]
+                                  [default: openai]
+  --batch-poll-seconds INTEGER    [default: 30]
+  --batch-wait-timeout-seconds INTEGER
+                                  [default: 86400]
+  --batch-max-requests-per-job INTEGER
+                                  [default: 2000]
+  --allow-multi-phase-live-batch
+  --ui [auto|rich|plain]          [default: auto]
+  --pretty
+  --quiet
+  --jsonl-events
+  --sync / --no-sync              Sync local artifacts before the run (v4
+                                  only).  [default: sync]
+  --skip-prescan                  Skip integrated Stage 0 prescan.
+  --prescan-import-dir DIRECTORY  Import external prescan artifacts.
+  --prescan-online                Authorize online LLM passes in prescan.
+  --prescan-allow-scope-reduction
+                                  Allow scope reduction.
+  --allow-online-llm              Authorize online LLM spend for the run.
+  --help                          Show this message and exit.

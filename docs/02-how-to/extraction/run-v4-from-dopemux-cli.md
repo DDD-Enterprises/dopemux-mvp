@@ -17,7 +17,7 @@ graph_metadata:
 ---
 # Run v4 extraction from Dopemux CLI
 
-This guide uses `dopemux rte` as the canonical operator entrypoint. The v4 runner is a compatibility wrapper for v4 prompt/artifact contracts and delegates supported execution to v5. `dopemux upgrades` is a legacy compatibility alias for `dopemux rte`; `dopemux extractor` is a hidden legacy/refusal surface.
+This guide uses `dopemux rte` as the canonical operator entrypoint. The v4 runner is a compatibility wrapper for v4 prompt/artifact contracts and delegates supported execution to v5. `dopemux upgrades` is a hidden, deprecated alias for `dopemux rte`; `dopemux extractor` is a hidden legacy/refusal surface.
 
 For broader operator workflows, see:
 

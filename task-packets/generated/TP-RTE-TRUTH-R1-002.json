@@ -1,0 +1,137 @@
+{
+  "id": "TP-RTE-TRUTH-R1-002",
+  "project": "dopemux-mvp",
+  "target": "repo-truth-extractor / extract extractor/cli_args.py (parser + OperatorArgumentParser) + delete dead block",
+  "invariants": [
+    "DRY-RUN ONLY: never pass --execute; never set DPMX_LIVE_OK; no live provider calls anywhere.",
+    "Read claudedocs/rte-truth-program-2026-07/CONSOLIDATED-FINDINGS.md first \u2014 it is the authority for findings, acceptance criteria, and wave ordering.",
+    "Use mise python 3.12 (`mise exec -- python`); PYTHONPATH=src for dopemux imports.",
+    "Run services/repo-truth-extractor/tests/test_truth_harness_goldens.py after changes; goldens are the behavior contract.",
+    "SEAM RULE: golden hashes must be byte-identical pre/post; a seam PR that needs a golden update is not behavior-preserving and must be reworked, not re-goldened.",
+    "R1 owns run_extraction_v5.py exclusively; no other wave may touch it while R1 runs.",
+    "Facade re-exports in run_extraction_v5.py must keep every moved symbol importable at its old path.",
+    "Apply A1 seam corrections (r1 orchestrator note + A1-architecture.md \u00a72).",
+    "TRAP (A1): profile overrides compare against hardcoded default literals (e.g. args.max_files_docs == 35 @ ~:23641) \u2014 extract shared named constants so defaults and comparisons cannot drift.",
+    "build_parser must RETURN the parser (post-parse parser.error call sites need it).",
+    "Delete the unreachable duplicated introspection block (~:23692\u201323713) in the same PR.",
+    "Findings covered: F-09, F-07 (main-func part)."
+  ],
+  "depends_on": [
+    "TP-RTE-TRUTH-R1-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "RTE-TRUTH-R1",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "grok",
+    "model": "grok-code-fast-1",
+    "branch": "claude/rte-audit-improvement-f4beb7",
+    "base_branch": "claude/rte-audit-improvement-f4beb7",
+    "estimated_diff": "M"
+  },
+  "commit": {
+    "message": "refactor(rte): TP-RTE-TRUTH-R1-002 \u2014 extract cli_args seam + delete dead introspection block",
+    "allowlist": [
+      "services/repo-truth-extractor/extractor/cli_args.py",
+      "services/repo-truth-extractor/run_extraction_v5.py",
+      "services/repo-truth-extractor/tests/",
+      "task-packets/generated/TP-RTE-TRUTH-R1-002.json",
+      "proof/rte-truth-program/TP-RTE-TRUTH-R1-002/PROOF.json"
+    ],
+    "verify": [
+      "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+    ]
+  },
+  "pr": {
+    "title": "refactor(rte): extract argparse seam from v5 monolith",
+    "body": "Seam 3 per A1 + F-07 v5 part. Golden-hash verified.",
+    "base": "claude/rte-audit-improvement-f4beb7"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Move OperatorArgumentParser (~:2452) + main()'s parser construction (~:22377\u201322800) to extractor/cli_args.py as build_parser(); introduce named default constants shared by parser defaults and override comparisons.",
+      "requirements": [
+        "--help output must be byte-identical (golden)."
+      ],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/extractor/cli_args.py",
+        "services/repo-truth-extractor/run_extraction_v5.py"
+      ],
+      "validation": [
+        "Goldens byte-identical incl. all --help captures; profile budget overrides still fire (targeted test)."
+      ],
+      "context_files": [
+        "claudedocs/rte-truth-program-2026-07/A1-architecture.md"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Delete the dead introspection block; prove unreachability cited in A1 \u00a74.",
+      "requirements": [],
+      "commands": [
+        "mise exec -- python -m pytest services/repo-truth-extractor/tests/test_truth_harness_goldens.py -q"
+      ],
+      "expected_files": [
+        "services/repo-truth-extractor/run_extraction_v5.py"
+      ],
+      "validation": [
+        "Goldens unchanged."
+      ],
+      "context_files": []
+    }
+  ],
+  "routing": {
+    "stage": "implementer_standard",
+    "tier": "balanced",
+    "authority": "advisory \u2014 config/ai/model-routing.policy.yaml is ADVISORY governance, not a runtime router. If a runtime path disagrees, runtime wins.",
+    "runners": {
+      "preferred": [
+        "claude_code",
+        "codex",
+        "grok"
+      ],
+      "acceptable": [
+        "claude_code",
+        "codex",
+        "opencode",
+        "grok",
+        "copilot",
+        "gemini_cli"
+      ],
+      "forbidden": []
+    },
+    "models": {
+      "claude_code": "claude-sonnet-5",
+      "codex": "gpt-5.6-terra (reasoning xhigh)",
+      "opencode": "anthropic/claude-sonnet-4-5",
+      "grok": "grok-code-fast-1 (effort high)",
+      "gemini_cli": "VERIFY_WITH_VENDOR_DOCS",
+      "copilot": "Claude Sonnet 4.5 (.github/agents/dopemux-implementer.agent.md)"
+    },
+    "rationale": "Argparse seam + dead-block deletion; literal-coupling trap needs care. DONE.",
+    "notes": [],
+    "evidence": "Model ids OBSERVED from this machine: ~/.codex/config.toml (gpt-5.6-sol/xhigh), ~/.config/opencode/opencode.jsonc (claude-sonnet-4-5 + claude-haiku-4-5), ~/.grok/config.toml, .github/agents/*.agent.md (Sonnet 4.5). Per-vendor selector-string validity beyond these files remains VERIFY_WITH_VENDOR_DOCS."
+  }
+}

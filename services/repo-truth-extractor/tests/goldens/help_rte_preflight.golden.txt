@@ -1,0 +1,13 @@
+Usage: python -m dopemux rte preflight [OPTIONS]
+
+  Run preflight diagnostics for an extraction run.
+
+  Verifies promptset and provider readiness before extraction.
+
+Options:
+  --pipeline-version [v5|v4|v3]  [default: v5]
+  --run-id TEXT                  Run ID
+  --promptset-root DIRECTORY     External generated promptset directory for v5
+                                 prompt resolution.
+  --auth-doctor                  Also run auth diagnostics
+  --help                         Show this message and exit.
