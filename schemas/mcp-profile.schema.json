@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.local/schemas/mcp-profile.schema.json",
+  "title": "Dopemux MCP Profile",
+  "description": "Profile object for profile-selected MCP tool plane (ADR-DMX-MCPPROF-001). Profiles live under mcp_catalog.yaml `profiles:` and project exposure without changing service authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["description", "servers"],
+  "properties": {
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "intended_use": {
+      "type": "string",
+      "minLength": 1
+    },
+    "servers": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "not": {
+          "const": "all"
+        }
+      }
+    },
+    "github": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "read_only": {
+          "type": "boolean",
+          "const": true
+        },
+        "toolsets": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "repos",
+              "issues",
+              "pull_requests",
+              "code_security",
+              "secret_protection",
+              "dependabot",
+              "actions",
+              "discussions",
+              "notifications",
+              "users",
+              "orgs",
+              "context"
+            ]
+          }
+        }
+      }
+    },
+    "tool_exclude": {
+      "description": "Extra tool names to exclude beyond global admin/write denylists.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "tool_include": {
+      "description": "When set, only these tool names (per server snapshot) are visible after global exclusions.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "admin": {
+      "description": "When true, catalog admin_tools may appear. Default false.",
+      "type": "boolean",
+      "default": false
+    },
+    "inventory_baseline": {
+      "description": "Checked-in visible tool count budget for drift detection. Unexplained increase fails.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["visible_tool_count"],
+      "properties": {
+        "visible_tool_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rationale": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

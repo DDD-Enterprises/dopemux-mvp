@@ -41,6 +41,7 @@ graph_metadata:
 | [adr-dcp-mcp-ro-0009-chatgpt-mcp-exposure-targets-runtime-resolution-ownership-evidence.md](adr-dcp-mcp-ro-0009-chatgpt-mcp-exposure-targets-runtime-resolution-ownership-evidence.md) | ADR-DCP-MCP-RO-0009: ChatGPT MCP Exposure Targets, Runtime Resolution, and Ownership Evidence | Accepted, amended | Require opaque ChatGPT target IDs, explicit exposure consent, live ownership evidence, and fail-closed runtime resolution before backend calls. | DCP read-only facade, Memory Trinity, Task Orchestrator |
 | [adr-dmx-prsteward-soloowner-001.md](adr-dmx-prsteward-soloowner-001.md) | ADR-DMX-PRSTEWARD-SOLOOWNER-001: PR Steward Solo-Owner Security-Release Authorization | Accepted | Exact-head solo-owner security-release path when the trusted roster is a single author; org-repo associations OWNER/MEMBER/COLLABORATOR accepted (amendment 2026-08-03); preserves multi-reviewer enforcement otherwise. | PR Steward, security-release gate |
 | [adr-dmx-prsteward-org-app-001.md](adr-dmx-prsteward-org-app-001.md) | ADR-DMX-PRSTEWARD-ORG-APP-001: Org-Owned Release-Gate App Approval | Accepted | Allow a dedicated DDD-Enterprises GitHub App to satisfy security-release approval after exact-head audit and CI. | PR Steward, GitHub App, solo maintainer |
+| [adr-mcpprof-001-profiled-tool-plane-and-domain-facades.md](adr-mcpprof-001-profiled-tool-plane-and-domain-facades.md) | ADR-DMX-MCPPROF-001: Profile-Selected MCP Tool Plane and Repo-Domain Read Facades | Accepted | Profile-selected progressive disclosure, locked tool inventories, official GitHub read profiles, Playwright CLI/MCP split, and fixed-path repo-domain read contract. | ADR-MCPINT-001, ADR-MCPINT-002, ADR-DCP-MCP-RO-0009, Memory Trinity |
 
 ## Notes
 
@@ -65,6 +66,7 @@ graph_metadata:
 | `adr-208-mcp-config-drift-prevention.md` | Accepted, amended |
 | `adr-mcpint-001-catalog-v2-single-source.md` | Accepted, amended |
 | `adr-mcpint-002-agent-exposure-and-read-plane.md` | Accepted, amended |
+| `adr-mcpprof-001-profiled-tool-plane-and-domain-facades.md` | Accepted |
 | `adr-mcpint-004-event-ingress-contract.md` | Accepted, amended |
 | `adr-213-dual-capture-canonical-ledger.md` | Accepted, amended |
 | `adr-201-conport-kg-security-hardening.md` | Deprecated |

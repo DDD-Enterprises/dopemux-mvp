@@ -691,6 +691,10 @@ def render_mcp_doctrine_doc(catalog: dict[str, Any]) -> str:
 
 
 def generate_fleet_output_files(catalog: dict[str, Any]) -> dict[str, str]:
+    """Agent-matrix fleet projection (ADR-MCPINT-001). Not an implicit profile=all.
+
+    Profile-selected generation uses :func:`generate_profile_output_files`.
+    """
     defaults = catalog.get("defaults", {}).get("per_worktree") or []
     return {
         "local/.mcp.json": _json_dumps(render_per_worktree_mcp_json(defaults, catalog)),
@@ -702,6 +706,65 @@ def generate_fleet_output_files(catalog: dict[str, Any]) -> dict[str, str]:
         "copilot/mcp-proxy-config.copilot.yaml": render_copilot_proxy_config(catalog),
         "health/mcp-health-probes.json": _json_dumps(render_health_probe_list(catalog)),
         "docs/mcp-fleet.md": render_mcp_doctrine_doc(catalog),
+    }
+
+
+def generate_profile_output_files(
+    catalog: dict[str, Any],
+    profile_name: str,
+    *,
+    repo_root: Path | None = None,
+) -> dict[str, str]:
+    """Deterministic profile-selected projection (ADR-DMX-MCPPROF-001).
+
+    Emits inventory + filtered local mcpServers for the named profile only.
+    Never expands to all catalog servers.
+    """
+    from dopemux.mcp import profile_policy
+
+    inventory = profile_policy.resolve_profile(
+        catalog,
+        profile_name,
+        repo_root=repo_root,
+        check_inventory_baseline=True,
+    )
+    selected = list(inventory.selected_servers)
+    servers_map = catalog.get("servers") or {}
+    per_worktree = [
+        name
+        for name in selected
+        if isinstance(servers_map.get(name), dict)
+        and servers_map[name].get("scope") == "per-worktree"
+    ]
+    # Local .mcp.json: per-worktree members of the profile (may be empty).
+    local_payload = render_per_worktree_mcp_json(per_worktree, catalog)
+    # Profile mcpServers: startable selected servers only (skip external/managed false
+    # for executable config; still listed in inventory JSON).
+    profile_servers: dict[str, Any] = {}
+    for name in selected:
+        spec = servers_map.get(name)
+        if not isinstance(spec, dict):
+            continue
+        if spec.get("transport") == "external" or spec.get("managed") is False:
+            continue
+        if spec.get("lifecycle") in {"decision-required", "planned-active"}:
+            continue
+        if spec.get("scope") == "per-worktree":
+            profile_servers[name] = mcp_commands._render_local_entry(name, spec)
+        else:
+            profile_servers[name] = mcp_commands._render_global_entry(name, spec)
+
+    return {
+        f"profiles/{inventory.profile}/inventory.json": _json_dumps(inventory.to_dict()),
+        f"profiles/{inventory.profile}/.mcp.json": _json_dumps(local_payload),
+        f"profiles/{inventory.profile}/mcpServers.json": _json_dumps(
+            {
+                "profile": inventory.profile,
+                "profile_digest": inventory.profile_digest,
+                "tool_schema_digest": inventory.tool_schema_digest,
+                "mcpServers": profile_servers,
+            }
+        ),
     }
 
 

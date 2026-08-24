@@ -38,6 +38,24 @@
       },
       "transport": "sse"
     },
+    "context7": {
+      "captured_at": null,
+      "endpoint": null,
+      "reason": "Context7 external host tools planned; not managed by this repo",
+      "source": "planned",
+      "tool_count": 0,
+      "tools": {},
+      "transport": "external"
+    },
+    "dcp-readonly-facade": {
+      "captured_at": null,
+      "endpoint": null,
+      "reason": "Facade planned-active; tools land with MCPINT-IMP-FACADE-001",
+      "source": "planned",
+      "tool_count": 0,
+      "tools": {},
+      "transport": "http"
+    },
     "desktop-commander": {
       "captured_at": "2026-07-16T23:39:38Z",
       "endpoint": "http://localhost:3012/sse",
@@ -97,6 +115,52 @@
       },
       "transport": "http"
     },
+    "github-official": {
+      "captured_at": null,
+      "endpoint": null,
+      "reason": "Seeded official GitHub MCP read+write names for profile_policy filters (TP-DMX-MCPPROF-001); live capture not required",
+      "source": "seed",
+      "tool_count": 12,
+      "tools": {
+        "create_issue": {
+          "description": "WRITE \u2014 must be excluded from normal profiles"
+        },
+        "create_pull_request": {
+          "description": "WRITE \u2014 must be excluded"
+        },
+        "get_commit": {
+          "description": "Get a commit"
+        },
+        "get_file_contents": {
+          "description": "Read file contents from a repository"
+        },
+        "get_issue": {
+          "description": "Get an issue"
+        },
+        "get_pull_request": {
+          "description": "Get a pull request"
+        },
+        "list_issues": {
+          "description": "List issues"
+        },
+        "list_pull_requests": {
+          "description": "List pull requests"
+        },
+        "merge_pull_request": {
+          "description": "WRITE \u2014 must be excluded"
+        },
+        "push_files": {
+          "description": "WRITE \u2014 must be excluded"
+        },
+        "search_code": {
+          "description": "Search code"
+        },
+        "search_repositories": {
+          "description": "Search repositories"
+        }
+      },
+      "transport": "stdio"
+    },
     "gpt-researcher": {
       "captured_at": "2026-07-16T23:34:22Z",
       "endpoint": null,
@@ -120,6 +184,33 @@
       "endpoint": null,
       "reason": "stdio transport; capture via seed or session",
       "source": "unreachable",
+      "tool_count": 0,
+      "tools": {},
+      "transport": "stdio"
+    },
+    "playwright-mcp": {
+      "captured_at": null,
+      "endpoint": null,
+      "reason": "Playwright MCP tools planned; live capture optional for ui-audit profile (TP-DMX-MCPPROF-001)",
+      "source": "planned",
+      "tool_count": 0,
+      "tools": {},
+      "transport": "stdio"
+    },
+    "repo-domain-read": {
+      "captured_at": null,
+      "endpoint": null,
+      "reason": "Domain tools come from mcp/domain-read-tools.json per repo; empty fleet snapshot by design",
+      "source": "planned",
+      "tool_count": 0,
+      "tools": {},
+      "transport": "stdio"
+    },
+    "semgrep": {
+      "captured_at": null,
+      "endpoint": null,
+      "reason": "Semgrep MCP tools planned; live capture optional for security profile (TP-DMX-MCPPROF-001)",
+      "source": "planned",
       "tool_count": 0,
       "tools": {},
       "transport": "stdio"

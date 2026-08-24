@@ -24,6 +24,20 @@
         }
       }
     },
+    "profiles": {
+      "description": "Named MCP exposure profiles (ADR-DMX-MCPPROF-001). Values match schemas/mcp-profile.schema.json. No implicit `all` profile.",
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1,
+        "not": {
+          "enum": ["all", "*", "any", "full", "everything"]
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/profile"
+      }
+    },
     "servers": {
       "type": "object",
       "minProperties": 1,
@@ -33,6 +47,99 @@
     }
   },
   "$defs": {
+    "profile": {
+      "description": "MCP exposure profile (ADR-DMX-MCPPROF-001). Keep in sync with schemas/mcp-profile.schema.json.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description", "servers"],
+      "properties": {
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "intended_use": {
+          "type": "string",
+          "minLength": 1
+        },
+        "servers": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "not": {
+              "const": "all"
+            }
+          }
+        },
+        "github": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "read_only": {
+              "type": "boolean",
+              "const": true
+            },
+            "toolsets": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "repos",
+                  "issues",
+                  "pull_requests",
+                  "code_security",
+                  "secret_protection",
+                  "dependabot",
+                  "actions",
+                  "discussions",
+                  "notifications",
+                  "users",
+                  "orgs",
+                  "context"
+                ]
+              }
+            }
+          }
+        },
+        "tool_exclude": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "tool_include": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "admin": {
+          "type": "boolean",
+          "default": false
+        },
+        "inventory_baseline": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["visible_tool_count"],
+          "properties": {
+            "visible_tool_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rationale": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "envVar": {
       "type": "string",
       "pattern": "^[A-Z][A-Z0-9_]*$"
@@ -60,17 +167,21 @@
             "automation",
             "code-intelligence",
             "dcp-read",
+            "domain-read",
             "gateway",
             "memory",
             "pm",
             "reasoning",
             "research",
             "retrieval",
+            "security",
+            "vcs",
             "workflow"
           ]
         },
         "authority_role": {
           "enum": [
+            "browser-inspection",
             "chronicle-authority",
             "code-intelligence",
             "connector-discovery",
@@ -78,10 +189,13 @@
             "desktop-automation",
             "docker-gateway",
             "docs-lookup",
+            "domain-read-facade",
+            "github-read",
             "pm-adapter",
             "read-plane-projection",
             "reasoning-infrastructure",
             "retrieval-projection",
+            "security-scan",
             "structured-context-authority",
             "task-scheduler",
             "web-search",
@@ -98,6 +212,7 @@
             "docker-mcp-gateway",
             "external",
             "operator-managed",
+            "repo-local",
             "wrapper-singleton"
           ]
         },
