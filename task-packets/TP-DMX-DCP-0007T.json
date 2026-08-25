@@ -1,0 +1,88 @@
+{
+  "id": "TP-DMX-DCP-0007T",
+  "project": "dopemux-mvp",
+  "target": "Add adversarial and negative-path test corpus for trusted-input capability boundaries.",
+  "invariants": [
+    "DRY-RUN ONLY: do not pass --execute, set DPMX_LIVE_OK, or make any provider call.",
+    "Preserve pure classification behavior without granting execution eligibility.",
+    "Do not activate any live trusted adapter in this packet.",
+    "Keep the change deterministic and limited to the allowlist.",
+    "The PAL service transport is unavailable in this session; record PAL gates as NOT_RUN rather than inventing results."
+  ],
+  "depends_on": [
+    "TP-DMX-DCP-0007I"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-MODEL-ROUTING-NEXT-TRANCHE-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-DCP-0007I",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "dcp/model-routing-0007t-adversarial-tests",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "test(dcp): trusted-input adversarial corpus \u2014 0007T",
+    "allowlist": [
+      "tests/fixtures/dcp/trusted_input/boolean_string_coercion.json",
+      "tests/fixtures/dcp/trusted_input/empty.json",
+      "tests/fixtures/dcp/trusted_input/forged_attested.json",
+      "tests/fixtures/dcp/trusted_input/forged_route_decision.json",
+      "tests/unit/dcp/test_input_adapters_adversarial.py",
+      "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007T.md",
+      "task-packets/TP-DMX-DCP-0007T.json",
+      "proof/TP-DMX-DCP-0007T/AUDITOR_REPORT.md",
+      "proof/TP-DMX-DCP-0007T/PROOF.json",
+      "proof/TP-DMX-DCP-0007T/review_bundle/.gitkeep",
+      "proof/pr_merge/embedded-audit/pr-1153/PROOF.json",
+      "proof/pr_merge/embedded-audit/pr-1153/PROOF.json.sig"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-DCP-0007T.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "pytest -q tests/unit/dcp/test_input_adapters_adversarial.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "test(dcp): trusted-input adversarial corpus \u2014 0007T",
+    "body": "Adversarial corpus and negative-path tests for trusted input capability boundary. No adapters enabled.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "audit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Add adversarial fixtures and test suite for trusted input adapter boundaries.",
+      "validation": [
+        "pytest -q tests/unit/dcp/test_input_adapters_adversarial.py"
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Verify canonical schema compliance and allowlist containment.",
+      "validation": [
+        "python -m jsonschema -i task-packets/TP-DMX-DCP-0007T.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "git diff --check"
+      ]
+    }
+  ]
+}
