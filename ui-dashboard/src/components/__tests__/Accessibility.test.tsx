@@ -87,6 +87,7 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   expect(content).toContain('aria-label="Team Average Cognitive Load Percentage"');
   expect(content).toContain('aria-label={`${member.name}\'s Cognitive Load Percentage`}');
   expect(content).toContain('aria-label={`Profile picture of ${member.name}`}');
+  expect(content).toMatch(/aria-label=\{\s*`\$\{member\.name\}'s current status: \$\{statusStyles\[member\.status\]\.label\}`\s*\}[\s\S]*tabIndex=\{0\}/);
   expect(content).toContain('aria-label={`${member.name}\'s current status: ${statusStyles[member.status].label}`}');
   expect(content).toContain('aria-label={`${member.name}\'s current energy level: ${member.energy}%`}');
   expect(content).toContain('aria-label={`${member.name}\'s current attention focus: ${member.attention}%`}');
