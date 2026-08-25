@@ -75,7 +75,7 @@ workflows:
       - {server: pal-stdio, tool: precommit, note: diff-scope + rollback sanity}
       - {server: conport, tool: log_decision, note: verdict + rationale}
     owners: [/sc:analyze, /dx:review, AGENTS.md §5 chains]
-    note: PAL provider reality — only OpenRouter-backed models reliable (creds audit 2026-07-16)
+    note: "PAL provider reality — only OpenRouter-backed models reliable (creds audit 2026-07-16); 2026-08-24: PAL/zen migrated to its built-in custom provider via CUSTOM_API_URL/CUSTOM_API_KEY (cheaperinference.com), OpenRouter provider retired"
 
   memory-recall:
     intent: pull relevant prior context across all three Trinity planes

@@ -94,7 +94,7 @@ DOPECON_BRIDGE_URL=http://localhost:3016
 DEFAULT_WORKSPACE_PATH=/workspace
 
 # LLM Integration (optional)
-OPENROUTER_API_KEY=<your-key>
+CHEAPERINFERENCE_API_KEY=<your-key>
 ANTHROPIC_API_KEY=<your-key>
 XAI_API_KEY=<your-key>
 

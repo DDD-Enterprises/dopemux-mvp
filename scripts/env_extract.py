@@ -62,6 +62,7 @@ ENV_PREFIX_HINTS = (
     "CACHE_",
     "CALDAV_",
     "CCR_",
+    "CHEAPERINFERENCE_",
     "CLAUDE_",
     "CONPORT_",
     "CONTEXT7_",

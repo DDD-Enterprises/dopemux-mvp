@@ -5,7 +5,7 @@ currency: "USD"
 route_cost_tiers:
   free:
     max_usd_per_task: 0.0
-    allowed_pools: ["openrouter_free_sandbox"]
+    allowed_pools: ["openrouter_free_sandbox", "cheaperinference_free_sandbox"]
     approval_required_above: 0.0
   cheap:
     max_usd_per_task: 0.25
@@ -40,6 +40,7 @@ pool_cost_ceilings:
   release_judge: { tier: premium, max_usd: 20.00 }
   supervisor: { tier: premium, max_usd: 25.00 }
   openrouter_free_sandbox: { tier: free, max_usd: 0.00 }
+  cheaperinference_free_sandbox: { tier: free, max_usd: 0.00 }
 retry_budget:
   default_max_retries: 1
   schema_authority_max_retries: 1
@@ -70,6 +71,19 @@ openrouter_max_price_behavior:
     - max_price_requested
     - actual_model
     - actual_provider
+    - usage
+    - actual_cost_usd
+cheaperinference_max_price_behavior:
+  max_price_is_hard_filter: true
+  block_if_no_model_satisfies_max_price: true
+  requested_model_is_not_cost_source_of_truth: true
+  cost_accounting_uses_actual_returned_model: true
+  pricing_enforced_client_side: true
+  pricing_source: "config/pricing.yaml"
+  notes: "cheaperinference.com is a single upstream (no multi-provider routing fabric); max-price is enforced client-side against config/pricing.yaml before dispatch, not via a provider-selection filter."
+  log:
+    - max_price_requested
+    - actual_model
     - usage
     - actual_cost_usd
 budget_override_approval:

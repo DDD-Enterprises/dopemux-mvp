@@ -234,7 +234,7 @@
     },
     "provider": {
       "type": "string",
-      "enum": ["openai", "anthropic", "google", "openrouter", "local", "manual", "multiple", "unknown"]
+      "enum": ["openai", "anthropic", "google", "openrouter", "cheaperinference", "local", "manual", "multiple", "unknown"]
     },
     "runner": {
       "type": "string",

@@ -263,12 +263,14 @@ def create_server_configs():
         'args': ['/Users/hue/code/dopemux-mvp/docker/mcp-servers/zen/zen-mcp-server/server.py'],
         'env': {
             'OPENAI_API_KEY': os.getenv('OPENAI_API_KEY', ''),
-            'OPENROUTER_API_KEY': os.getenv('OPENROUTER_API_KEY', ''),
+            'CHEAPERINFERENCE_API_KEY': os.getenv('CHEAPERINFERENCE_API_KEY', ''),
+            'CUSTOM_API_URL': os.getenv('CUSTOM_API_URL', 'https://api.cheaperinference.com/v1'),
+            'CUSTOM_API_KEY': os.getenv('CUSTOM_API_KEY', os.getenv('CHEAPERINFERENCE_API_KEY', '')),
             'GEMINI_API_KEY': os.getenv('GEMINI_API_KEY', '<REDACTED_GEMINI_KEY>'),
             'XAI_API_KEY': os.getenv('XAI_API_KEY', '<REDACTED_XAI_KEY>'),
             'DISABLED_TOOLS': 'refactor,testgen,secaudit,docgen,tracer',
             'DEFAULT_MODEL': 'auto',
-            'ZEN_DEFAULT_PROVIDER': 'openrouter'
+            'ZEN_DEFAULT_PROVIDER': 'custom'
         }
     }
 

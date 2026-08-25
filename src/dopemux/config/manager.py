@@ -796,14 +796,16 @@ class ConfigManager:
             "dopemux-pal": {
                 "DISABLED_TOOLS": "refactor,testgen,secaudit,docgen,tracer",
                 "DEFAULT_MODEL": "auto",
-                "PAL_DEFAULT_PROVIDER": "openrouter",
+                "PAL_DEFAULT_PROVIDER": "custom",
+                "CUSTOM_API_URL": "https://api.cheaperinference.com/v1",
+                "CUSTOM_API_KEY": "${CHEAPERINFERENCE_API_KEY}",
             },
             "dopemux-zen": {
                 "OPENAI_API_KEY": "${OPENAI_API_KEY}",
                 "XAI_API_KEY": "${XAI_API_KEY}",
                 "GEMINI_API_KEY": "${GEMINI_API_KEY}",
                 "GROQ_API_KEY": "${GROQ_API_KEY}",
-                "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
+                "CHEAPERINFERENCE_API_KEY": "${CHEAPERINFERENCE_API_KEY}",
                 "ZEN_DISABLED_TOOLS": "chat,explain,translate,summarize",
                 "ZEN_DEFAULT_MODEL": os.getenv("ZEN_DEFAULT_MODEL", "openai/gpt-4o"),
                 "ZEN_FALLBACK_MODELS": os.getenv(

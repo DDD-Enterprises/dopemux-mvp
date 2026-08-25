@@ -59,7 +59,7 @@ Global routing is defined in `~/.dopemux/routing.yaml`.
 
 ### Key Sections:
 - `mode`: `api` or `subscription`
-- `providers`: Definitions for external LLM providers (Gemini, xAI, OpenAI, OpenRouter).
+- `providers`: Definitions for external LLM providers (Gemini, xAI, OpenAI, cheaperinference.com).
 - `models`: Specific model IDs and token limits.
 - `slots`: Mappings from Dopemux usage slots (e.g., `think`, `codex`, `arbiter`) to specific models.
 - `fallbacks`: Chain of resilience for when primary models are unavailable.

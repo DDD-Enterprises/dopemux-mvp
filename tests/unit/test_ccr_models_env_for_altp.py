@@ -75,7 +75,7 @@ def test_ccr_models_env_for_altp(
 
     runner = CliRunner()
     env = os.environ.copy()
-    env["OPENROUTER_API_KEY"] = "sk-openrouter"
+    env["CHEAPERINFERENCE_API_KEY"] = "sk-cheaperinference"
     env["XAI_API_KEY"] = "sk-xai"
     env["DOPEMUX_SKIP_SWITCH_ROLE_SCRIPT"] = "1"
  

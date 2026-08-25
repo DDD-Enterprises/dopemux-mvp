@@ -35,18 +35,18 @@ def _config() -> dict:
             {"name": "lmstudio", "auth_mode": "none", "api_key": "local"},
             {"name": "gemini", "api_key_env": "GEMINI_API_KEY"},
             {
-                "name": "openrouter_free",
-                "api_key_env": "OPENROUTER_API_KEY",
-                "base_url": "https://openrouter.ai/api/v1",
+                "name": "cheaperinference_free",
+                "api_key_env": "CHEAPERINFERENCE_API_KEY",
+                "base_url": "https://api.cheaperinference.com/v1",
             },
             {"name": "gemini_paid_cap", "api_key_env": "GEMINI_API_KEY"},
             {
-                "name": "openrouter_paid_cap",
-                "api_key_env": "OPENROUTER_API_KEY",
-                "base_url": "https://openrouter.ai/api/v1",
+                "name": "cheaperinference_paid_cap",
+                "api_key_env": "CHEAPERINFERENCE_API_KEY",
+                "base_url": "https://api.cheaperinference.com/v1",
             },
             {"name": "openai", "api_key_env": "OPENAI_API_KEY"},
-            {"name": "openrouter", "api_key_env": "OPENROUTER_API_KEY"},
+            {"name": "cheaperinference", "api_key_env": "CHEAPERINFERENCE_API_KEY"},
         ],
         "models": [
             {
@@ -65,9 +65,12 @@ def _config() -> dict:
                 "model_id": "gemini/gemini-2.5-flash-lite",
             },
             {
-                "name": "openrouter-free-router",
-                "provider": "openrouter_free",
-                "model_id": "openrouter/openrouter/free",
+                # exact litellm-style form used by templates/routing.yaml
+                # (openai/<cheaperinference-id>) — exercises the is_free_model
+                # prefix-normalization path, not just the bare id.
+                "name": "ox-alpha",
+                "provider": "cheaperinference_free",
+                "model_id": "openai/stealth/ox-alpha",
             },
             {
                 "name": "gemini-flash-lite-preview-paid-cap",
@@ -75,14 +78,16 @@ def _config() -> dict:
                 "model_id": "gemini/gemini-2.5-flash-lite-preview-09-2025",
             },
             {
-                "name": "openrouter-qwen3-coder-next-paid-cap",
-                "provider": "openrouter_paid_cap",
-                "model_id": "openrouter/qwen/qwen3-coder-next",
+                "name": "cheaperinference-qwen-3-8-max-paid-cap",
+                "provider": "cheaperinference_paid_cap",
+                "model_id": "openai/qwen-3-8-max",
             },
             {
-                "name": "openrouter-qwen3-coder-paid-cap",
-                "provider": "openrouter_paid_cap",
-                "model_id": "openrouter/qwen/qwen3-coder",
+                # not in paid_cap.allowed_models below — preserves the
+                # "non-allowlisted paid-cap model stays excluded" assertion.
+                "name": "cheaperinference-minimax-m2.7-paid-cap",
+                "provider": "cheaperinference_paid_cap",
+                "model_id": "openai/minimax-m2.7",
             },
             {
                 "name": "openai-paid",
@@ -90,15 +95,15 @@ def _config() -> dict:
                 "model_id": "openai/gpt-5-mini",
             },
             {
-                "name": "openrouter-paid",
-                "provider": "openrouter",
-                "model_id": "openrouter/openai/gpt-5",
+                "name": "cheaperinference-paid",
+                "provider": "cheaperinference",
+                "model_id": "openai/gpt-5.4-pro",
             },
         ],
         "slots": {"default": "openai-paid", "sonnet": "openai-paid"},
         "fallbacks": {
             "ollama-qwen3-coder": ["openai-paid", "gemini-2.5-flash-lite"],
-            "gemini-2.5-flash-lite": ["openrouter-paid", "openrouter-free-router"],
+            "gemini-2.5-flash-lite": ["cheaperinference-paid", "ox-alpha"],
         },
         "default_fallbacks": ["openai-paid", "gemini-2.5-flash-lite"],
         "aliases": {"claude-sonnet": "sonnet", "gpt-5": "sonnet"},
@@ -115,7 +120,7 @@ def _config() -> dict:
                 "lmstudio-local",
                 "ollama-qwen3-coder",
                 "gemini-2.5-flash-lite",
-                "openrouter-free-router",
+                "ox-alpha",
             ],
             "paid_cap": {
                 "enabled": False,
@@ -123,11 +128,11 @@ def _config() -> dict:
                 "monthly_usd": 5.0,
                 "allowed_models": [
                     "gemini-flash-lite-preview-paid-cap",
-                    "openrouter-qwen3-coder-next-paid-cap",
+                    "cheaperinference-qwen-3-8-max-paid-cap",
                 ],
                 "default_fallbacks": [
                     "gemini-flash-lite-preview-paid-cap",
-                    "openrouter-qwen3-coder-next-paid-cap",
+                    "cheaperinference-qwen-3-8-max-paid-cap",
                 ],
             },
         },
@@ -141,14 +146,14 @@ def test_provider_catalog_contains_required_freeflow_providers() -> None:
         "gemini",
         "groq",
         "cerebras",
-        "openrouter_free",
+        "cheaperinference_free",
         "cloudflare_workers_ai",
         "cohere_trial",
         "mistral_experiment",
         "github_models_poc",
         "hf_credits",
         "gemini_paid_cap",
-        "openrouter_paid_cap",
+        "cheaperinference_paid_cap",
     }.issubset(PROVIDER_CATALOG)
 
 
@@ -193,11 +198,11 @@ def test_strict_free_litellm_config_filters_paid_routes(tmp_path: Path) -> None:
     serialized = json.dumps(generated, sort_keys=True)
 
     assert "openai-paid" not in model_names
-    assert "openrouter-paid" not in model_names
+    assert "cheaperinference-paid" not in model_names
     assert "gemini-flash-lite-preview-paid-cap" not in model_names
-    assert "openrouter-qwen3-coder-next-paid-cap" not in model_names
+    assert "cheaperinference-qwen-3-8-max-paid-cap" not in model_names
     assert "openai/gpt-5-mini" not in serialized
-    assert "openrouter/openai/gpt-5" not in serialized
+    assert "openai/gpt-5.4-pro" not in serialized
     assert (
         generated["litellm_settings"]["model_alias_map"]["claude-sonnet"]
         == "ollama-qwen3-coder"
@@ -385,8 +390,8 @@ def test_paid_cap_enabled_adds_only_allowlisted_paid_routes(tmp_path: Path) -> N
     )
 
     assert "gemini-flash-lite-preview-paid-cap" in model_names
-    assert "openrouter-qwen3-coder-next-paid-cap" in model_names
-    assert "openrouter-qwen3-coder-paid-cap" not in model_names
+    assert "cheaperinference-qwen-3-8-max-paid-cap" in model_names
+    assert "cheaperinference-minimax-m2.7-paid-cap" not in model_names
     assert "openai-paid" not in model_names
     assert (
         preview["litellm_params"]["model"]
@@ -408,7 +413,7 @@ def test_paid_cap_route_selected_only_when_free_routes_disabled(
         "ollama-qwen3-coder",
         "lmstudio-local",
         "gemini-2.5-flash-lite",
-        "openrouter-free-router",
+        "ox-alpha",
     ]
     monkeypatch.setenv("GEMINI_API_KEY", "test")
     ledger = FreeflowQuotaLedger(tmp_path / "quota.sqlite")
@@ -432,7 +437,7 @@ def test_sensitive_requests_do_not_select_paid_cap_route(
         "ollama-qwen3-coder",
         "lmstudio-local",
         "gemini-2.5-flash-lite",
-        "openrouter-free-router",
+        "ox-alpha",
     ]
     monkeypatch.setenv("GEMINI_API_KEY", "test")
     ledger = FreeflowQuotaLedger(tmp_path / "quota.sqlite")

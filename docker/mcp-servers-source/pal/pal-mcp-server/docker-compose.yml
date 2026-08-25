@@ -28,10 +28,9 @@ services:
       - DIAL_API_KEY=${DIAL_API_KEY}
       - DIAL_API_HOST=${DIAL_API_HOST}
       - DIAL_API_VERSION=${DIAL_API_VERSION}
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - CUSTOM_API_URL=${CUSTOM_API_URL}
-      - CUSTOM_API_KEY=${CUSTOM_API_KEY}
-      - CUSTOM_MODEL_NAME=${CUSTOM_MODEL_NAME}
+      - CUSTOM_API_URL=https://api.cheaperinference.com/v1
+      - CUSTOM_API_KEY=${CHEAPERINFERENCE_API_KEY}
+      - CUSTOM_MODEL_NAME=glm-4.6
       
       # Logging configuration
       - LOG_LEVEL=${LOG_LEVEL:-INFO}

@@ -14,7 +14,7 @@ try:
 except ImportError:  # pragma: no cover - fallback only when imported out of tree
     get_model_cost_rate = None
 
-SANCTIONED_PROVIDERS = ("openai", "gemini", "xai", "openrouter")
+SANCTIONED_PROVIDERS = ("openai", "gemini", "xai", "openrouter", "cheaperinference")
 PRESCAN_PASS_ORDER = ("dedup", "discover", "feasibility", "optimize")
 PRESCAN_TIER_RANK = {
     "cheap_structured": 1,
@@ -135,6 +135,8 @@ def _route_identity(provider: str, model_id: str) -> dict[str, Any]:
     upstream_provider = normalized_provider
     provider_route_kind = "unknown"
     if normalized_provider == "openrouter":
+        # Legacy/inactive; kept for frozen-run replay. cheaperinference is
+        # the active runtime aggregator/proxy provider (see branch below).
         prefix, sep, _rest = normalized_model.partition("/")
         normalized_prefix = {"x-ai": "xai"}.get(prefix.lower(), prefix.lower())
         if sep and normalized_prefix == "xai":
@@ -146,9 +148,16 @@ def _route_identity(provider: str, model_id: str) -> dict[str, Any]:
         else:
             upstream_provider = "unknown"
             provider_route_kind = "openrouter_native_or_unknown"
+    elif normalized_provider == "cheaperinference":
+        # Aggregator/proxy provider, but its catalog uses flat (unprefixed)
+        # model ids, so there is no namespace to parse an upstream from.
+        upstream_provider = "unknown"
+        provider_route_kind = "cheaperinference_native"
     elif normalized_provider in {"openai", "gemini", "xai"}:
         provider_route_kind = "direct_provider"
-    dependency_class = "proxy" if normalized_provider == "openrouter" else "first_party"
+    dependency_class = (
+        "proxy" if normalized_provider in ("openrouter", "cheaperinference") else "first_party"
+    )
     if normalized_provider in {"ollama", "lmstudio", "vllm", "mock", "local"}:
         dependency_class = "local"
     economic_surface = {
@@ -156,6 +165,7 @@ def _route_identity(provider: str, model_id: str) -> dict[str, Any]:
         "openai": "openai_direct",
         "gemini": "gemini_direct",
         "openrouter": "openrouter",
+        "cheaperinference": "cheaperinference",
     }.get(normalized_provider, "unknown")
     return {
         "requested_provider": normalized_provider or "unknown",
@@ -165,12 +175,14 @@ def _route_identity(provider: str, model_id: str) -> dict[str, Any]:
         "economic_surface": economic_surface,
         "upstream_provider": upstream_provider,
         "billing_independent_from_upstream": bool(
-            normalized_provider == "openrouter" and upstream_provider != normalized_provider
+            normalized_provider in ("openrouter", "cheaperinference")
+            and upstream_provider != normalized_provider
         ),
         "execution_transport": _route_transport(normalized_provider),
         "live_validation_status": (
             "LIVE_VALIDATION_REQUIRED"
-            if normalized_provider in {"openai", "gemini", "xai", "openrouter"}
+            if normalized_provider
+            in {"openai", "gemini", "xai", "openrouter", "cheaperinference"}
             else "UNKNOWN"
         ),
     }

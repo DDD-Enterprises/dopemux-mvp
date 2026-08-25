@@ -90,8 +90,9 @@ PAL_DOC_SOURCE_TYPES = {"api_docs", "sdk_docs", "model_docs"}
 PAL_ALLOWED_HOSTS = {
     "openai": {"platform.openai.com", "developers.openai.com", "openai.com"},
     "gemini": {"ai.google.dev", "developers.googleblog.com", "cloud.google.com"},
-    "openrouter": {"openrouter.ai"},
+    "openrouter": {"openrouter.ai"},  # inactive/legacy: kept for frozen-run replay
     "xai": {"docs.x.ai", "x.ai"},
+    "cheaperinference": {"api.cheaperinference.com"},
 }
 DEFAULT_REQUIRED_DIRECT_PROVIDERS = {
     "balanced_openrouter": ("gemini", "xai"),

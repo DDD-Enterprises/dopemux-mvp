@@ -36,6 +36,7 @@ mcpServers:
     - server.py
     command: docker
     env:
+      CHEAPERINFERENCE_API_KEY: ${CHEAPERINFERENCE_API_KEY}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
     type: stdio

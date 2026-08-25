@@ -116,6 +116,6 @@ PROVIDER_COLORS: Dict[str, str] = {
     "anthropic": "bold magenta",
     "gemini": "bold blue",
     "xai": "bold yellow",
-    "openrouter": "bold cyan",
+    "cheaperinference": "bold cyan",
     "mistral": "bold orange3",
 }

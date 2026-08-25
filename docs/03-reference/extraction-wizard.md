@@ -129,7 +129,7 @@ Eight routing policies control which models handle each extraction tier. The wiz
 | balanced_openrouter | Default (v5) | gpt-5-mini | gpt-5.1 | gemini-2.5-pro | gpt-5.2 |
 | balanced_grok_openrouter | Grok primary | grok-code-fast-1 | grok-4-1-fast | gemini-2.5-pro | gpt-5.1 |
 | quality | Premium | gpt-5.1 | gpt-5.2 | gemini-3-pro | claude-sonnet-4-5 |
-| openrouter | Pure OR | gpt-5-mini | gpt-5.1 | gemini-2.5-pro | gpt-5.2 |
+| openrouter | Pure CI (cheaperinference.com) | gpt-5-mini | gpt-5.1 | gemini-2.5-pro | gpt-5.2 |
 | gemini_primary | Gemini-first | gemini-3-flash | gemini-3-pro | gemini-2.5-pro | gpt-5.1 |
 | optimal | Best | grok-4.20-beta | gpt-5.4 | gemini-3-pro | claude-sonnet-4-5 |
 

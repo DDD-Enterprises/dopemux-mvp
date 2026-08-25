@@ -470,7 +470,7 @@ def _build_router_overrides(
         (
             "gpt-5",
             "gpt-5-pro",
-            "openrouter-openai-gpt-5",
+            "gpt-5.4",
             "grok-4-fast",
             "grok-4",
             "grok-code-fast-1",
@@ -485,14 +485,14 @@ def _build_router_overrides(
             "grok-code-fast-1",
             "xai-grok-4-fast",
             "xai-grok-code-fast-1",
-            "openrouter-xai-grok-code-fast",
+            "grok-4.5",
         ),
     )
     _assign(
         "think",
         (
             "gpt-5-codex",
-            "openrouter-openai-gpt-5-codex",
+            "gpt-5.3-codex",
             "codex",
         ),
     )
@@ -500,11 +500,10 @@ def _build_router_overrides(
         "webSearch",
         (
             "gpt-5-mini",
-            "openrouter-openai-gpt-5-mini",
             "glm-4.6",
             "grok-code-fast-1",
             "xai-grok-code-fast-1",
-            "openrouter-google-gemini-2-flash",
+            "gemini-2.5-flash",
         ),
     )
 
@@ -876,7 +875,7 @@ def wire_conport(instance: Optional[str], project: Optional[str]):
     "--alt-routing",
     "use_alt_routing",
     is_flag=True,
-    help="🚀 Engage automatic alternative provider routing (OpenRouter, xAI, Minimax).",
+    help="🚀 Engage automatic alternative provider routing (CheaperInference, xAI, Minimax).",
 )
 @click.option(
     "--claude-router/--no-claude-router",
@@ -904,7 +903,7 @@ def wire_conport(instance: Optional[str], project: Optional[str]):
     "--codex",
     "use_codex",
     is_flag=True,
-    help="🎯 Direct all cognitive requests to OpenAI GPT-5 Codex via OpenRouter.",
+    help="🎯 Direct all cognitive requests to OpenAI GPT-5.3 Codex via CheaperInference.",
 )
 @click.option(
     "--altp",
@@ -2115,9 +2114,19 @@ def start(
                 )
     except Exception as e:
         logger.warning("DOPEMUX_FORCE_INSTANCE_ID override failed (best-effort): %s", e, exc_info=True)
-    # Check if we should use OpenRouter via LiteLLM (for tmux --happy mode)
-    if os.getenv("DOPEMUX_USE_OPENROUTER") == "1":
-        _configure_openrouter_litellm()
+    # Check if we should use CheaperInference via LiteLLM (for tmux --happy mode)
+    _use_cheaperinference_env = os.getenv("DOPEMUX_USE_CHEAPERINFERENCE") == "1"
+    _use_openrouter_legacy_env = (
+        not _use_cheaperinference_env and os.getenv("DOPEMUX_USE_OPENROUTER") == "1"
+    )
+    if _use_openrouter_legacy_env:
+        # Deprecated: DOPEMUX_USE_OPENROUTER is honored as a legacy alias for
+        # DOPEMUX_USE_CHEAPERINFERENCE now that routing has migrated off OpenRouter.
+        console.logger.info(
+            "[warning]⚠️  DOPEMUX_USE_OPENROUTER is deprecated; use DOPEMUX_USE_CHEAPERINFERENCE.[/warning]"
+        )
+    if _use_cheaperinference_env or _use_openrouter_legacy_env:
+        _configure_cheaperinference_litellm()
 
         # Force Claude Code to use LiteLLM proxy
         os.environ["ANTHROPIC_API_KEY"] = os.getenv("DOPEMUX_LITELLM_MASTER_KEY", "")
@@ -2194,11 +2203,11 @@ def start(
         and not _direct_provider_routing
         and not provider_proxy_started
     ):
-        # Require OpenRouter since LiteLLM proxy is configured to route through it
-        if not os.environ.get("OPENROUTER_API_KEY"):
-            console.logger.info("[error]❌ OPENROUTER_API_KEY is not set.[/error]")
+        # Require CheaperInference since LiteLLM proxy is configured to route through it
+        if not os.environ.get("CHEAPERINFERENCE_API_KEY"):
+            console.logger.info("[error]❌ CHEAPERINFERENCE_API_KEY is not set.[/error]")
             console.logger.info(
-                "[text.dim]Set OPENROUTER_API_KEY before using --litellm[/text.dim]"
+                "[text.dim]Set CHEAPERINFERENCE_API_KEY before using --litellm[/text.dim]"
             )
             sys.exit(1)
 
@@ -3676,27 +3685,27 @@ def _get_attention_emoji(state: Optional[str]) -> str:
     return emoji_map.get(state, "❓")
 
 
-def _configure_openrouter_litellm():
-    """Configure environment for OpenRouter via LiteLLM"""
-    # Set up OpenRouter models for LiteLLM
-    openrouter_models = [
-        "openrouter-xai-grok-code-fast",
-        "openrouter-openai-gpt-5",
-        "openrouter-openai-gpt-5-mini",
-        "openrouter-openai-gpt-5-codex",
-        "openrouter-google-gemini-2-flash",
-        "openrouter-meta-llama-3.1-405b",
+def _configure_cheaperinference_litellm():
+    """Configure environment for CheaperInference via LiteLLM"""
+    # Set up CheaperInference models for LiteLLM
+    cheaperinference_models = [
+        "grok-4.5",
+        "gpt-5.4",
+        "gpt-5-mini",
+        "gpt-5.3-codex",
+        "gemini-2.5-flash",
+        "gpt-oss-120b",
     ]
 
     # Update environment
     os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
     os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
-    os.environ["CLAUDE_CODE_ROUTER_MODELS"] = ",".join(openrouter_models)
+    os.environ["CLAUDE_CODE_ROUTER_MODELS"] = ",".join(cheaperinference_models)
 
     # Ensure Zen MCP uses LiteLLM
-    os.environ["ZEN_DEFAULT_MODEL"] = "litellm/openrouter-openai-gpt-5"
+    os.environ["ZEN_DEFAULT_MODEL"] = "litellm/gpt-5.4"
     os.environ["ZEN_FALLBACK_MODELS"] = (
-        "litellm/openrouter-xai-grok-code-fast,litellm/openrouter-google-gemini-2-flash"
+        "litellm/grok-4.5,litellm/gemini-2.5-flash"
     )
 
     # Set up LiteLLM proxy URL
@@ -3708,7 +3717,7 @@ def _configure_openrouter_litellm():
     os.environ["CLAUDE_CODE_LLM_API_KEY"] = os.getenv("DOPEMUX_LITELLM_MASTER_KEY", "")
 
     console.logger.info(
-        "[success]✅ OpenRouter via LiteLLM configuration applied[/success]"
+        "[success]✅ CheaperInference via LiteLLM configuration applied[/success]"
     )
 
 

@@ -288,6 +288,9 @@ def provider_schema_variant_label(provider: str, model_id: str) -> str:
     if normalized_provider == "gemini":
         return "gemini_relaxed_direct"
     if normalized_provider == "openrouter":
+        # Legacy/inactive: kept so frozen-run replay of openrouter routes
+        # still classifies correctly. cheaperinference is the active runtime
+        # provider and uses the plain openai-compatible path below.
         if normalized_model_id.startswith("x-ai/"):
             return "openrouter_proxy_xai_relaxed"
         if normalized_model_id.startswith("google/") or normalized_model_id.startswith(
@@ -295,7 +298,7 @@ def provider_schema_variant_label(provider: str, model_id: str) -> str:
         ):
             return "openrouter_proxy_gemini_relaxed"
         return "openrouter_proxy_canonical"
-    if normalized_provider == "openai":
+    if normalized_provider in ("openai", "cheaperinference"):
         return "canonical_direct"
     return "unknown"
 
@@ -807,7 +810,15 @@ def call_llm(
                 if provider == "xai":
                     client = deps.get_xai_client(api_key)
                 elif provider == "openrouter":
+                    # Legacy/inactive: kept for frozen-run replay.
                     client = deps.get_openrouter_client(api_key)
+                elif provider == "cheaperinference":
+                    # Active runtime provider: reuse the openai-compatible
+                    # client with the resolved cheaperinference base_url
+                    # (computed above via deps.llm_base_url). Passing None
+                    # here would silently fall through to the OpenAI SDK
+                    # default (api.openai.com).
+                    client = deps.get_openai_client(base_url, api_key)
                 else:
                     client = deps.get_openai_client(None, api_key)
                 chat_kwargs: Dict[str, Any] = {

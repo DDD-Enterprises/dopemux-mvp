@@ -25,6 +25,8 @@ graph_metadata:
 
 Accepted (2026-05-23). Implementation landed under [Plan: Research current LLM models + redesign RTE cost profiles & routing](/Users/hue/.claude/plans/use-gpt-researcher-to-research-parallel-nest.md).
 
+> **2026-08-24 addendum**: The machine-wide broker is migrating from OpenRouter to cheaperinference.com. As of this addendum the RTE runner (`services/repo-truth-extractor/`, `config/pricing.yaml`) has not been migrated — the `openrouter`/`balanced_openrouter` routing-policy names and OpenRouter dependency described below remain the current runtime contract until that code is migrated under its own packet.
+
 ## Context
 
 The Repo Truth Extractor (RTE) shipped 8 hardcoded routing policies (`cost`, `balanced`, `balanced_openrouter`, `balanced_grok_openrouter`, `quality`, `openrouter`, `gemini_primary`, `optimal`) and a flat-baseline pricing model. The 2026-05-09 audit flagged:

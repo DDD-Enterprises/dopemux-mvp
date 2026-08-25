@@ -90,9 +90,9 @@ def test_402_header_ingestion_marks_insufficient_credits(tmp_path: Path) -> None
     when = datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc)
 
     cooldown = ledger.ingest_response_headers(
-        provider="openrouter_free",
-        model_name="openrouter-free-router",
-        bucket_id="openrouter_free:openrouter-free-router",
+        provider="cheaperinference_free",
+        model_name="ox-alpha",
+        bucket_id="cheaperinference_free:ox-alpha",
         headers={"retry-after": "1"},
         status_code=402,
         now=when,
@@ -208,10 +208,10 @@ def test_paid_spend_summary_is_auditable(tmp_path: Path) -> None:
     when = datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc)
 
     event_id = ledger.record_spend(
-        provider="openrouter_paid_cap",
-        model_name="openrouter-qwen3-coder-next-paid-cap",
-        model_id="openrouter/qwen/qwen3-coder-next",
-        bucket_id="openrouter_paid_cap:openrouter-qwen3-coder-next-paid-cap",
+        provider="cheaperinference_paid_cap",
+        model_name="cheaperinference-qwen-3-8-max-paid-cap",
+        model_id="openai/qwen-3-8-max",
+        bucket_id="cheaperinference_paid_cap:cheaperinference-qwen-3-8-max-paid-cap",
         pricing={"input_usd_per_million": 0.12, "output_usd_per_million": 0.80},
         input_tokens=1_000,
         output_tokens=1_000,

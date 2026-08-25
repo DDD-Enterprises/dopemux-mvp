@@ -28,7 +28,7 @@ run_install_smoke() {
 AGE_PASSWORD=test_age_password
 ANTHROPIC_API_KEY=test_anthropic_key
 OPENAI_API_KEY=test_openai_key
-OPENROUTER_API_KEY=test_openrouter_key
+CHEAPERINFERENCE_API_KEY=test_cheaperinference_key
 GEMINI_API_KEY=test_gemini_key
 XAI_API_KEY=test_xai_key
 VOYAGE_API_KEY=test_voyage_key

@@ -10,6 +10,7 @@ PROVIDER_API_KEY_ENV: Dict[str, str] = {
     "gemini": "GEMINI_API_KEY",
     "xai": "XAI_API_KEY",
     "openrouter": "OPENROUTER_API_KEY",
+    "cheaperinference": "CHEAPERINFERENCE_API_KEY",
 }
 
 
@@ -59,6 +60,8 @@ def classify_static_route_identity(
     economic_surface = "unknown"
 
     if normalized_provider == "openrouter":
+        # Legacy/inactive economic surface; kept for frozen-run replay.
+        # cheaperinference is the active runtime aggregator/proxy surface.
         prefix, sep, _rest = normalized_model_id.partition("/")
         normalized_prefix = {"x-ai": "xai", "google": "gemini"}.get(prefix, prefix)
         economic_surface = "openrouter"
@@ -71,6 +74,13 @@ def classify_static_route_identity(
         else:
             provider_route_kind = "openrouter_native_or_unknown"
             upstream_provider = "unknown"
+    elif normalized_provider == "cheaperinference":
+        # Aggregator/proxy surface, same economic class as openrouter, but
+        # cheaperinference's catalog uses flat (unprefixed) model ids -- no
+        # openai/x-ai/google namespace to parse an upstream provider from.
+        provider_route_kind = "cheaperinference_native"
+        upstream_provider = "unknown"
+        economic_surface = "cheaperinference"
     elif normalized_provider in {"xai", "openai", "gemini"}:
         provider_route_kind = "direct_provider"
         upstream_provider = normalized_provider
@@ -93,12 +103,13 @@ def classify_static_route_identity(
         "api_key_env": resolved_api_key_env,
         "live_validation_status": (
             "LIVE_VALIDATION_REQUIRED"
-            if normalized_provider in {"xai", "openai", "gemini", "openrouter"}
+            if normalized_provider
+            in {"xai", "openai", "gemini", "openrouter", "cheaperinference"}
             else "UNKNOWN"
         ),
         "route_identity_authority": STATIC_PRICING_SURFACE_AUTHORITY,
         "direct_provider_guarantees_inherited": (
-            False if normalized_provider == "openrouter" else None
+            False if normalized_provider in ("openrouter", "cheaperinference") else None
         ),
     }
     return {key: value for key, value in identity.items() if value is not None}
@@ -143,6 +154,9 @@ def pricing_surface_metadata(
     if pricing_surface == "openrouter":
         pricing_authority = "openrouter_catalog_or_unknown"
         direct_provider_billing_inherited: Optional[bool] = False
+    elif pricing_surface == "cheaperinference":
+        pricing_authority = "cheaperinference_catalog_or_unknown"
+        direct_provider_billing_inherited = False
     elif provider_route_kind == "direct_provider" and upstream_provider in {
         "xai",
         "openai",

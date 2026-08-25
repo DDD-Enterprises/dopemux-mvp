@@ -10,15 +10,15 @@
         "DOPEMUX_INSTANCE_ID",
         "-e",
         "DOPEMUX_WORKSPACE_ID",
-        "mcp-conport_fix/dope-context-voyage4-repair-0002",
+        "mcp-conport_claude/migrate-cheaperinference-provider-5fa703",
         "uvx",
         "--from",
         "context-portal-mcp",
         "conport-mcp"
       ],
       "env": {
-        "DOPEMUX_INSTANCE_ID": "fix/dope-context-voyage4-repair-0002",
-        "DOPEMUX_WORKSPACE_ID": "/Users/hue/code/dopemux-mvp/.worktrees/PR-1126-MERGE"
+        "DOPEMUX_INSTANCE_ID": "claude/migrate-cheaperinference-provider-5fa703",
+        "DOPEMUX_WORKSPACE_ID": "/Users/hue/code/dopemux-mvp/.claude/worktrees/migrate-cheaperinference-provider-5fa703"
       }
     },
     "gpt-researcher_wrapped": {

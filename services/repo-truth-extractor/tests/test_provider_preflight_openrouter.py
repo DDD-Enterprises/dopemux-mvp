@@ -50,6 +50,10 @@ def _make_cfg():
 def test_phase_d_provider_preflight_blocks_on_openrouter_402(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    # Legacy/inactive: openrouter is retained in v3's ROUTING_LADDERS for
+    # frozen-run replay (see PROVIDER_BASE_URL comment in run_extraction_v3.py).
+    # cheaperinference is the active runtime provider; see the
+    # ..._cheaperinference test below for the equivalent coverage.
     probe_calls = []
 
     def fake_probe(provider, model_id, api_key_env, cfg):  # type: ignore[no-untyped-def]
@@ -119,4 +123,49 @@ def test_phase_d_provider_preflight_is_required_when_cost_routes_include_openrou
         "xai",
     }
     assert all(row["provider"] != "openrouter" for row in routes.values())
+    assert all(row["provider"] != "cheaperinference" for row in routes.values())
+    assert runner.phase_requires_provider_preflight("D", cfg) is False
+
+
+def test_phase_d_provider_preflight_is_required_when_cost_routes_include_cheaperinference(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # cheaperinference is the active runtime provider (migrated off
+    # OpenRouter); the fail-closed preflight gate must require preflight for
+    # it exactly like it does for the legacy openrouter proxy surface. v3's
+    # own routing ladders never resolve to cheaperinference by default
+    # (DEFAULT_ROUTING_POLICY="cost" is openai/xai/gemini-only, see the test
+    # above) -- this exercises phase_requires_provider_preflight's gate logic
+    # directly via a monkeypatched route table, the way a --model-alias-style
+    # operator override would surface a cheaperinference route.
+    monkeypatch.setattr(
+        runner,
+        "collect_provider_routes",
+        lambda phases, routing_policy: {
+            "D0": {
+                "provider": "cheaperinference",
+                "model_id": "gpt-5.4",
+                "api_key_env": "CHEAPERINFERENCE_API_KEY",
+            },
+        },
+    )
+    cfg = _make_cfg()
+    assert runner.phase_requires_provider_preflight("D", cfg) is True
+
+
+def test_phase_d_provider_preflight_not_required_without_openrouter_or_cheaperinference(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        runner,
+        "collect_provider_routes",
+        lambda phases, routing_policy: {
+            "D0": {
+                "provider": "openai",
+                "model_id": "gpt-5.5",
+                "api_key_env": "OPENAI_API_KEY",
+            },
+        },
+    )
+    cfg = _make_cfg()
     assert runner.phase_requires_provider_preflight("D", cfg) is False

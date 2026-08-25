@@ -771,3 +771,182 @@ def test_cost_policy_tier_membership_matches_pool_ceilings():
 
     assert "implementer_alt" in tiers["standard"]["allowed_pools"]
     assert "proof_validator" in tiers["premium"]["allowed_pools"]
+    assert "cheaperinference_free_sandbox" in tiers["free"]["allowed_pools"]
+
+
+# ---------------------------------------------------------------------------
+# cheaperinference migration (P8): additive provider/profile coverage.
+# OpenRouter stays named-but-inactive throughout; nothing above is deleted.
+# ---------------------------------------------------------------------------
+
+
+def _cheaperinference_selected_decision(**overrides) -> dict:
+    base = {
+        "schema_version": "1.0.0",
+        "route_decision_id": "rd_ci_free_test_001",
+        "task_id": "task-ci-test-001",
+        "role": "cheap_file_reading",
+        "privacy_class": "PUBLIC_SANDBOX",
+        "risk_class": "R0_READ",
+        "selected_pool": "cheaperinference_free_sandbox",
+        "selected_route": {
+            "route_name": "ci_free_route",
+            "route_profile": "ci_free_sandbox",
+            "selection_reason": "public sandbox free tier",
+            "fallback_allowed": False,
+        },
+        "provider": "cheaperinference",
+        "requested_model": "stealth/ox-alpha",
+        "actual_model": "stealth/ox-alpha",
+        "runner": "direct_api",
+        "access_path": "cheaperinference_free",
+        "consumer_plan_used": False,
+        "api_route_used": True,
+        "openrouter_profile": None,
+        "cheaperinference_profile": "ci_free_sandbox",
+        "structured_output_mode": "none",
+        "proof_requirement": "minimal",
+        "audit_requirement": "none",
+        "human_gate_required": False,
+        "human_approval_ref": None,
+        "benchmark_certification_ref": None,
+        "decision_status": "SELECTED",
+        "blocked_reasons": [],
+        "evidence_refs": ["docs/03-reference/dcp/dcp-routing-extension.md"],
+        "created_at": "2026-08-24T00:00:00Z",
+    }
+    base.update(overrides)
+    return base
+
+
+def test_selected_cheaperinference_free_sandbox_decision_validates():
+    schema = _json(CONTRACT_ROOT / "route_decision.schema.json")
+    decision = _cheaperinference_selected_decision()
+    validate(instance=decision, schema=schema)
+
+
+def test_selected_cheaperinference_low_cost_public_decision_validates():
+    schema = _json(CONTRACT_ROOT / "route_decision.schema.json")
+    decision = _cheaperinference_selected_decision(
+        route_decision_id="rd_ci_paid_test_001",
+        selected_pool="cheap_read",
+        selected_route={
+            "route_name": "ci_paid_route",
+            "route_profile": "ci_low_cost_public",
+            "selection_reason": "low cost public paid tier",
+            "fallback_allowed": False,
+        },
+        requested_model="glm-4.6",
+        actual_model="glm-4.6",
+        access_path="cheaperinference_paid",
+        cheaperinference_profile="ci_low_cost_public",
+        benchmark_certification_ref="cert_cheaperinference_low_cost_001",
+    )
+    validate(instance=decision, schema=schema)
+
+
+def test_cheaperinference_free_cannot_be_private_high_risk_or_schema_authority():
+    schema = _json(CONTRACT_ROOT / "route_decision.schema.json")
+    example = _cheaperinference_selected_decision()
+
+    forbidden_cases = [
+        {"privacy_class": "PRIVATE_REPO_NO_SECRETS"},
+        {"privacy_class": "SECRET_BEARING"},
+        {"privacy_class": "CLIENT_DATA"},
+        {"privacy_class": "SECURITY_SENSITIVE"},
+        {"privacy_class": "RELEASE_AUTHORITY"},
+        {"risk_class": "R5_SECURITY_OR_AUTHORITY"},
+        {"risk_class": "R6_RELEASE_OR_PRODUCTION"},
+        {"role": "proof_validation"},
+        {"role": "structured_task_packet_generation"},
+        {"role": "proof_bundle_generation"},
+        {"role": "security_review"},
+        {"role": "release_judgment"},
+        {"structured_output_mode": "json_schema_strict"},
+    ]
+
+    for patch in forbidden_cases:
+        candidate = {**example, **patch}
+        with pytest.raises(ValidationError):
+            validate(instance=candidate, schema=schema)
+
+
+def test_selected_cheaperinference_paid_access_path_requires_named_profile():
+    """cheaperinference analog of the OpenRouter Item-1 laundering regression:
+
+    a SELECTED decision whose ``access_path`` is ``cheaperinference_paid`` must carry a
+    named (non-null) ``cheaperinference_profile``, regardless of the ``provider`` field.
+    """
+    schema = _json(CONTRACT_ROOT / "route_decision.schema.json")
+    example = _cheaperinference_selected_decision(
+        route_decision_id="rd_ci_paid_test_002",
+        selected_pool="cheap_read",
+        selected_route={
+            "route_name": "ci_paid_route",
+            "route_profile": "ci_low_cost_public",
+            "selection_reason": "low cost public paid tier",
+            "fallback_allowed": False,
+        },
+        requested_model="glm-4.6",
+        actual_model="glm-4.6",
+        access_path="cheaperinference_paid",
+        cheaperinference_profile="ci_low_cost_public",
+        benchmark_certification_ref="cert_cheaperinference_low_cost_002",
+    )
+    validate(instance=example, schema=schema)
+
+    for provider in ["cheaperinference", "openai", "unknown"]:
+        candidate = copy.deepcopy(example)
+        candidate["provider"] = provider
+        candidate["cheaperinference_profile"] = None
+        with pytest.raises(ValidationError):
+            validate(instance=candidate, schema=schema)
+
+
+def test_cheaperinference_profiles_preserve_required_fail_closed_controls():
+    profiles = _json(CONTRACT_ROOT / "openrouter_route_profiles.json")["profiles"]
+
+    free = profiles["ci_free_sandbox"]
+    assert free["status"] == "active"
+    assert "security_review" in free["forbidden_roles"]
+    assert "release_judgment" in free["forbidden_roles"]
+    assert "proof_validation" in free["forbidden_roles"]
+    assert "structured_task_packet_generation" in free["forbidden_roles"]
+    assert "proof_bundle_generation" in free["forbidden_roles"]
+    assert free["max_price"] == {"prompt": 0, "completion": 0}
+
+    low_cost = profiles["ci_low_cost_public"]
+    assert low_cost["status"] == "active"
+    assert "security_review" in low_cost["forbidden_roles"]
+    assert "release_judgment" in low_cost["forbidden_roles"]
+
+
+def test_openrouter_profiles_remain_named_but_inactive_after_cheaperinference_migration():
+    """OpenRouter profiles are kept, not deleted; superseded ones are marked deprecated."""
+    profiles = _json(CONTRACT_ROOT / "openrouter_route_profiles.json")["profiles"]
+
+    assert profiles["or_free_sandbox"]["status"] == "deprecated"
+    assert profiles["or_low_cost_public"]["status"] == "deprecated"
+    # Forbidden-role fail-closed controls survive deprecation (still schema-checkable).
+    assert "security_review" in profiles["or_free_sandbox"]["forbidden_roles"]
+    assert profiles["or_paid_private_controlled"]["zdr"] is True
+
+
+def test_model_pool_registry_has_cheaperinference_free_sandbox_pool():
+    registry = _yaml(CONTRACT_ROOT / "model_pool_registry.yaml")
+    pools = registry["pools"]
+
+    assert "cheaperinference_free_sandbox" in pools
+    ci_pool = pools["cheaperinference_free_sandbox"]
+    assert ci_pool["forbidden_roles"] == pools["openrouter_free_sandbox"]["forbidden_roles"]
+    routes = {entry["route"] for entry in ci_pool["candidate_routes_models"]}
+    assert routes == {"cheaperinference_free"}
+
+
+def test_forbidden_routes_encode_cheaperinference_free_block():
+    forbidden = _yaml(CONTRACT_ROOT / "forbidden_routes.yaml")
+    block = next(item for item in forbidden["hard_blocks"] if item["id"] == "FR-013")
+    assert block["block_reason"] == "CHEAPERINFERENCE_FREE_FORBIDDEN"
+    assert block["match"]["access_path"] == "cheaperinference_free"
+    assert "SECURITY_SENSITIVE" in block["match"]["any_privacy_class"]
+    assert "R6_RELEASE_OR_PRODUCTION" in block["match"]["any_risk_class"]

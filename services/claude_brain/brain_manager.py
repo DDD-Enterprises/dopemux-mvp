@@ -8,6 +8,7 @@ including LiteLLM routing, multi-service integration, and cost optimization.
 import asyncio
 import json
 import logging
+import os
 import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -37,6 +38,8 @@ class ProviderProfile:
     max_context_length: int
     team_model_id: str
     agent_model_id: str
+    base_url: Optional[str] = None
+    api_key_env: Optional[str] = None
 
 
 @dataclass
@@ -110,16 +113,18 @@ class ClaudeBrainManager:
     def _initialize_providers(self) -> Dict[str, ProviderProfile]:
         """Initialize AI provider profiles with capabilities and costs."""
         return {
-            "openrouter": ProviderProfile(
-                name="openrouter",
+            "cheaperinference": ProviderProfile(
+                name="cheaperinference",
                 cost_tier="MEDIUM",
                 cost_per_1k_tokens=0.001,
                 avg_quality_score=0.90,
                 avg_response_time=3.0,
                 rate_limit_per_hour=1000,
                 max_context_length=200000,
-                team_model_id="anthropic/claude-3.5-sonnet",
-                agent_model_id="anthropic/claude-3.5-haiku"
+                team_model_id="claude-opus-5",
+                agent_model_id="claude-sonnet-5",
+                base_url="https://api.cheaperinference.com/v1",
+                api_key_env="CHEAPERINFERENCE_API_KEY"
             ),
             "anthropic": ProviderProfile(
                 name="anthropic",
@@ -239,8 +244,8 @@ class ClaudeBrainManager:
         if len(request.prompt) > 1000 or request.max_tokens > 2000:
             return "anthropic", self.providers["anthropic"].team_model_id
 
-        # Default to OpenRouter for balance
-        return "openrouter", self.providers["openrouter"].agent_model_id
+        # Default to cheaperinference for balance
+        return "cheaperinference", self.providers["cheaperinference"].agent_model_id
 
     async def _query_adhd_context(self, user_id: str, session_id: str) -> Dict[str, Any]:
         """Query ADHD Engine for user context and cognitive state."""
@@ -333,7 +338,7 @@ class ClaudeBrainManager:
             if not self.failure_handler.can_proceed(provider):
                 # Fallback to secondary provider
                 if provider == "anthropic":
-                    provider, model = "openrouter", self.providers["openrouter"].agent_model_id
+                    provider, model = "cheaperinference", self.providers["cheaperinference"].agent_model_id
                 else:
                     provider, model = "groq", self.providers["groq"].agent_model_id
 
@@ -382,14 +387,29 @@ class ClaudeBrainManager:
             temperature = self._optimize_temperature(request)
             max_tokens = self._optimize_max_tokens(request)
 
+            # Resolve provider profile: providers with a base_url are custom
+            # OpenAI-compatible endpoints (e.g. cheaperinference) and must be
+            # routed through litellm's openai-compatible path with an explicit
+            # api_base/api_key, matching src/dopemux/litellm_proxy.py's
+            # convention. Providers without a base_url use litellm's native
+            # provider routing (anthropic, groq, ...) unchanged.
+            profile = self.providers.get(provider)
+            completion_kwargs: Dict[str, Any] = {
+                "messages": messages,
+                "temperature": temperature,
+                "max_tokens": max_tokens,
+                "timeout": 60
+            }
+            if profile and profile.base_url:
+                completion_kwargs["model"] = f"openai/{model}"
+                completion_kwargs["api_base"] = profile.base_url
+                if profile.api_key_env:
+                    completion_kwargs["api_key"] = os.getenv(profile.api_key_env)
+            else:
+                completion_kwargs["model"] = f"{provider}/{model}"
+
             # Make the completion call
-            response = await completion(
-                model=f"{provider}/{model}",
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                timeout=60
-            )
+            response = await completion(**completion_kwargs)
 
             # Calculate cost
             cost = completion_cost(response)

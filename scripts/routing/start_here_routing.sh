@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ONE COMMAND TO START EVERYTHING
-# Run this after setting OPENROUTER_API_KEY
+# Run this after setting CHEAPERINFERENCE_API_KEY
 
 set -e
 
@@ -9,16 +9,18 @@ echo "║  Dopemux Alternative Provider Routing - One-Step Start    ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
 
-# Check OpenRouter key
-if [ -z "${OPENROUTER_API_KEY:-}" ] || [ "$OPENROUTER_API_KEY" = "your_openrouter_api_key_here" ]; then
-    echo "⚠️  OPENROUTER_API_KEY not set!"
+# Check CheaperInference key
+if [ -z "${CHEAPERINFERENCE_API_KEY:-}" ] || [ "$CHEAPERINFERENCE_API_KEY" = "your_cheaperinference_api_key_here" ]; then
+    echo "⚠️  CHEAPERINFERENCE_API_KEY not set!"
     echo ""
-    echo "Get your key: https://openrouter.ai/keys"
+    echo "Get your key: https://cheaperinference.com"
     echo ""
     echo "Then run ONE of these:"
-    echo "  export OPENROUTER_API_KEY='sk-or-v1-YOUR_KEY' && ./scripts/routing/start_here_routing.sh"
+    echo "  bash scripts/load_keychain_env.sh .env && source .env && ./scripts/routing/start_here_routing.sh"
     echo "  OR"
-    echo "  echo 'OPENROUTER_API_KEY=sk-or-v1-YOUR_KEY' >> .env && source .env && ./scripts/routing/start_here_routing.sh"
+    echo "  export CHEAPERINFERENCE_API_KEY='YOUR_KEY' && ./scripts/routing/start_here_routing.sh"
+    echo "  OR"
+    echo "  echo 'CHEAPERINFERENCE_API_KEY=YOUR_KEY' >> .env && source .env && ./scripts/routing/start_here_routing.sh"
     echo ""
     exit 1
 fi

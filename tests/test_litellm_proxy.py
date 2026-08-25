@@ -51,7 +51,7 @@ def test_ensure_started_writes_config_and_master_key(monkeypatch, tmp_path):
 
 
 def test_build_client_env_preserves_provider_key(monkeypatch, tmp_path):
-    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-provider")
+    monkeypatch.setenv("CHEAPERINFERENCE_API_KEY", "sk-provider")
 
     manager = LiteLLMProxyManager(tmp_path, "A", 3000)
     info = LiteLLMProxyInfo(
@@ -66,8 +66,8 @@ def test_build_client_env_preserves_provider_key(monkeypatch, tmp_path):
     updates = manager.build_client_env(info)
 
     assert updates["OPENAI_API_KEY"] == "master-key"
-    assert updates["OPENROUTER_API_KEY"] == "sk-provider"
-    assert updates["DOPEMUX_PROVIDER_OPENROUTER_API_KEY"] == "sk-provider"
+    assert updates["CHEAPERINFERENCE_API_KEY"] == "sk-provider"
+    assert updates["DOPEMUX_PROVIDER_CHEAPERINFERENCE_API_KEY"] == "sk-provider"
     assert updates["OPENAI_API_BASE"] == "http://127.0.0.1:4100"
 
 

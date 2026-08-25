@@ -65,7 +65,7 @@ educational panel explaining what is happening.
 | 1 | 🩺 | **Repo Health** | Checks git status, current branch, and working-tree cleanliness |
 | 2 | 📊 | **Corpus Audit** | Runs the canonical v5 integrated Phase 0 prescan and records reusable prescan artifacts for the current wizard run |
 | 3 | ⚙️ | **Prompt Setup** | Validates the promptset configuration used during extraction |
-| 4 | 🔑 | **Provider Overrides** | Optional session-local API key overrides for OpenAI, OpenRouter, Gemini, xAI, and Anthropic |
+| 4 | 🔑 | **Provider Overrides** | Optional session-local API key overrides for OpenAI, CheaperInference, Gemini, xAI, and Anthropic |
 | 5 | 💰 | **Cost Profile** | Interactive browsing and selection from 8 routing policies with per-policy cost estimates and tier-routing detail |
 | 6 | 🧩 | **Partition Preview** | Shows the file → phase mapping and partition estimates across 14 extraction phases |
 | 7 | 🚀 | **Extraction** | Phase-by-phase extraction with per-phase confirmation (requires the `--execute` flag) |

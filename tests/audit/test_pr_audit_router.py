@@ -120,8 +120,8 @@ class TestRiskTierRoutes:
     def test_xai_is_non_blocking(self) -> None:
         assert "xai-grok-audit" in _NON_BLOCKING_ROUTE_NAMES
 
-    def test_openrouter_is_non_blocking(self) -> None:
-        assert "openrouter-audit" in _NON_BLOCKING_ROUTE_NAMES
+    def test_cheaperinference_is_non_blocking(self) -> None:
+        assert "cheaperinference-audit" in _NON_BLOCKING_ROUTE_NAMES
 
     def test_claude_audit_is_blocking(self) -> None:
         assert "claude-audit" not in _NON_BLOCKING_ROUTE_NAMES
@@ -297,8 +297,8 @@ class TestSchemaFiles:
         cfg = AUDIT_EXTRA_CLINK_CONF_DIR / "xai-grok-audit.json"
         assert cfg.exists()
 
-    def test_openrouter_clink_config_exists(self) -> None:
-        cfg = AUDIT_EXTRA_CLINK_CONF_DIR / "openrouter-audit.json"
+    def test_cheaperinference_clink_config_exists(self) -> None:
+        cfg = AUDIT_EXTRA_CLINK_CONF_DIR / "cheaperinference-audit.json"
         assert cfg.exists()
 
     def test_xai_grok_clink_config_name_not_forbidden(self) -> None:
@@ -307,9 +307,9 @@ class TestSchemaFiles:
         data = json.loads(cfg_path.read_text())
         assert data["name"] not in FORBIDDEN_CLI_NAMES
 
-    def test_openrouter_clink_config_name_not_forbidden(self) -> None:
+    def test_cheaperinference_clink_config_name_not_forbidden(self) -> None:
         from scripts.audit.route_schema import FORBIDDEN_CLI_NAMES
-        cfg_path = AUDIT_EXTRA_CLINK_CONF_DIR / "openrouter-audit.json"
+        cfg_path = AUDIT_EXTRA_CLINK_CONF_DIR / "cheaperinference-audit.json"
         data = json.loads(cfg_path.read_text())
         assert data["name"] not in FORBIDDEN_CLI_NAMES
 

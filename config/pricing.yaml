@@ -348,7 +348,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2026-04-15"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 5.00
     output_cost_per_m: 30.00
@@ -368,7 +368,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2026-03-05"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 2.50
     output_cost_per_m: 15.00
@@ -386,7 +386,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2026-03-05"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 0.75
     output_cost_per_m: 4.50
@@ -404,7 +404,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2026-02-24"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 1.75
     output_cost_per_m: 14.00
@@ -423,7 +423,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2025-11-15"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_WITH_CAVEAT
     pricing_caveat: Verify against OR live pricing page.
     input_cost_per_m: 2.00
@@ -443,7 +443,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2025-11-15"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_WITH_CAVEAT
     pricing_caveat: Aggregator-priced; verify on OR page.
     input_cost_per_m: 0.50
@@ -463,7 +463,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2025-08-01"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 0.15
     output_cost_per_m: 0.60
@@ -481,7 +481,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2025-08-01"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 0.05
     output_cost_per_m: 0.20
@@ -512,7 +512,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2025-12-01"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_WITH_CAVEAT
     pricing_caveat: >-
       Chat-completions variant assumed at parity with openai/gpt-5.2 base rate
@@ -537,7 +537,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2025-12-01"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_WITH_CAVEAT
     pricing_caveat: >-
       Pro-tier variant assumed at parity with the established flat pro-tier
@@ -561,7 +561,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2025-08-01"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_WITH_CAVEAT
     pricing_caveat: >-
       Pro-tier variant assumed at parity with the established flat pro-tier
@@ -585,7 +585,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2025-04-14"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_WITH_CAVEAT
     pricing_caveat: >-
       OpenRouter aggregator rate assumed at parity with OpenAI's own
@@ -609,7 +609,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2024-07-18"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_WITH_CAVEAT
     pricing_caveat: >-
       Assumed parity with the direct openai/gpt-4o-mini rate already in this
@@ -636,7 +636,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2026-05-01"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 5.00
     output_cost_per_m: 25.00
@@ -658,7 +658,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2026-04-01"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 5.00
     output_cost_per_m: 25.00
@@ -679,7 +679,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2026-03-15"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 5.00
     output_cost_per_m: 25.00
@@ -700,7 +700,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2025-08-01"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 15.00
     output_cost_per_m: 75.00
@@ -722,7 +722,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2026-04-01"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 5.00
     output_cost_per_m: 25.00
@@ -745,7 +745,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2026-04-01"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 3.00
     output_cost_per_m: 15.00
@@ -766,7 +766,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2026-02-15"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 3.00
     output_cost_per_m: 15.00
@@ -787,7 +787,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2025-10-22"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 1.00
     output_cost_per_m: 5.00
@@ -809,7 +809,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2026-04-01"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_CONFIRMED
     input_cost_per_m: 5.00
     output_cost_per_m: 25.00
@@ -1309,7 +1309,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2026-04-10"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_WITH_CAVEAT
     pricing_caveat: "OR-priced; xAI direct now $1.25/$2.50 for grok-4.1-fast reasoning. Confirm OR variant maps to non-reasoning."
     input_cost_per_m: 0.20
@@ -1328,7 +1328,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2026-04-01"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_WITH_CAVEAT
     pricing_caveat: "Aggregator-priced; verify on OR page."
     input_cost_per_m: 1.25
@@ -1350,7 +1350,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2026-04-01"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_WITH_CAVEAT
     pricing_caveat: "OR passthrough; verify rate parity with Google direct on OR page."
     input_cost_per_m: 1.50
@@ -1369,7 +1369,7 @@ models:
     batch_discount: null
     surface_scope: aggregator_route
     effective_start_date: "2026-02-01"
-    effective_end_date: null
+    effective_end_date: "2026-08-24"
     pricing_status: PRICED_WITH_CAVEAT
     pricing_caveat: "OR passthrough; tiered pricing > 200K may not be exposed."
     input_cost_per_m: 2.00
@@ -1377,6 +1377,280 @@ models:
     context_window: 1000000
     supports_json_schema_strict: true
     auto_cache_enabled: false
+  # ===========================================================================
+  # CheaperInference (active aggregator/proxy provider, migrated off
+  # OpenRouter). Pricing transcribed verbatim from
+  # config/cheaperinference_models.snapshot.json (65-model catalog) for every
+  # model referenced by the migrated RTE/cost-profile runtime route tables.
+  # pricing_source_type uses this file's existing aggregator_pricing enum value.
+  # No context_window / supports_json_schema_strict / batch_discount data is
+  # published in the snapshot -- left unset rather than fabricated (both are
+  # optional fields; extractor/costing.py only requires input_cost_per_m and
+  # output_cost_per_m to price a route). cache_write_input_per_million exists
+  # in the snapshot for every model, but this schema's cache-write field
+  # (cache_write_5m_multiplier) is documented as Anthropic 5m/1h-TTL-specific
+  # (see optimizer_field_legend above) -- set only for claude-opus-5, the one
+  # genuinely Anthropic-family model here, where write/input divides exactly
+  # (4.375/3.5 = 1.25); omitted elsewhere rather than mislabeling a generic
+  # cache-write price as an "Anthropic TTL multiplier".
+  # ===========================================================================
+  cheaperinference/gpt-5.4:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://api.cheaperinference.com/v1/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.175
+    output_unit_cost: 7.05
+    cached_input_cost: 0.1175
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-08-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 1.175
+    output_cost_per_m: 7.05
+  cheaperinference/gpt-5.4-mini:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://api.cheaperinference.com/v1/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 0.3525
+    output_unit_cost: 2.115
+    cached_input_cost: 0.03525
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-08-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 0.3525
+    output_cost_per_m: 2.115
+  cheaperinference/gpt-5.4-nano:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://api.cheaperinference.com/v1/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 0.14
+    output_unit_cost: 0.875
+    cached_input_cost: 0.014
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-08-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 0.14
+    output_cost_per_m: 0.875
+  cheaperinference/gpt-5.3-codex:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://api.cheaperinference.com/v1/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.225
+    output_unit_cost: 9.8
+    cached_input_cost: 0.1225
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-08-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 1.225
+    output_cost_per_m: 9.8
+  cheaperinference/gpt-5.2-codex:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://api.cheaperinference.com/v1/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.225
+    output_unit_cost: 9.8
+    cached_input_cost: 0.1225
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-08-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 1.225
+    output_cost_per_m: 9.8
+  cheaperinference/gpt-5.5-pro:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://api.cheaperinference.com/v1/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 14.1
+    output_unit_cost: 84.6
+    cached_input_cost: 1.41
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-08-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 14.1
+    output_cost_per_m: 84.6
+  cheaperinference/gpt-5-mini:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://api.cheaperinference.com/v1/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 0.1175
+    output_unit_cost: 0.94
+    cached_input_cost: 0.01175
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-08-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 0.1175
+    output_cost_per_m: 0.94
+  cheaperinference/gpt-5-nano:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://api.cheaperinference.com/v1/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 0.0235
+    output_unit_cost: 0.188
+    cached_input_cost: 0.00235
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-08-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 0.0235
+    output_cost_per_m: 0.188
+  cheaperinference/grok-4.5:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://api.cheaperinference.com/v1/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.4
+    output_unit_cost: 4.2
+    cached_input_cost: 0.21
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-08-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 1.4
+    output_cost_per_m: 4.2
+  cheaperinference/glm-4.6:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://api.cheaperinference.com/v1/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 0.4042
+    output_unit_cost: 1.54
+    cached_input_cost: 0.0752
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-08-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 0.4042
+    output_cost_per_m: 1.54
+  cheaperinference/gemini-2.5-flash:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://api.cheaperinference.com/v1/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 0.141
+    output_unit_cost: 1.175
+    cached_input_cost: 0.0141
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-08-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 0.141
+    output_cost_per_m: 1.175
+  cheaperinference/gpt-oss-120b:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://api.cheaperinference.com/v1/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 0.0282
+    output_unit_cost: 0.1598
+    cached_input_cost: 0.0282
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-08-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 0.0282
+    output_cost_per_m: 0.1598
+  cheaperinference/minimax-m2.7:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://api.cheaperinference.com/v1/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 0.168
+    output_unit_cost: 0.672
+    cached_input_cost: 0.02256
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-08-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 0.168
+    output_cost_per_m: 0.672
+  cheaperinference/claude-opus-5:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://api.cheaperinference.com/v1/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 3.5
+    output_unit_cost: 17.5
+    cached_input_cost: 0.35
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-08-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 3.5
+    output_cost_per_m: 17.5
+    cache_write_5m_multiplier: 1.25
+  cheaperinference/deepseek-v4-pro:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://api.cheaperinference.com/v1/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 0.742889
+    output_unit_cost: 1.485779
+    cached_input_cost: 0.0308
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-08-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 0.742889
+    output_cost_per_m: 1.485779
+  cheaperinference/qwen-3-8-max:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://api.cheaperinference.com/v1/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 1.4
+    output_unit_cost: 4.2
+    cached_input_cost: 0.21875
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-08-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 1.4
+    output_cost_per_m: 4.2
+  cheaperinference/stealth/ox-alpha:
+    pricing_source_type: aggregator_pricing
+    pricing_source_ref: https://api.cheaperinference.com/v1/models
+    pricing_confidence: HIGH
+    pricing_currency: USD
+    input_unit_cost: 0.0
+    output_unit_cost: 0.0
+    cached_input_cost: 0.0
+    batch_discount: null
+    surface_scope: aggregator_route
+    effective_start_date: "2026-08-24"
+    effective_end_date: null
+    pricing_status: PRICED_CONFIRMED
+    input_cost_per_m: 0.0
+    output_cost_per_m: 0.0
+    note: "is_free=true in the cheaperinference catalog (100% discount_percent); $0.00 is a confirmed rate, not an unpriced fallback."
   # ===========================================================================
   # Local / fixture (kept for test harness)
   # ===========================================================================

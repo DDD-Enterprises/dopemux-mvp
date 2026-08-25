@@ -60,7 +60,7 @@ Create `.vibe/.env` for API keys:
 # Required API keys
 echo "MISTRAL_API_KEY=your_key" > .vibe/.env
 echo "OPENAI_API_KEY=your_key" >> .vibe/.env
-echo "OPENROUTER_API_KEY=your_key" >> .vibe/.env
+echo "CHEAPERINFERENCE_API_KEY=your_key" >> .vibe/.env
 ```
 
 ## 🔧 Customization

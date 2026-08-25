@@ -104,7 +104,7 @@ class LaunchdServiceManager:
         # Provider API keys to sync from environment
         provider_keys = [
             "XAI_API_KEY",
-            "OPENROUTER_API_KEY",
+            "CHEAPERINFERENCE_API_KEY",
             "OPENAI_API_KEY",
             "GEMINI_API_KEY",
             "DEEPSEEK_API_KEY",
@@ -794,7 +794,7 @@ exec "{ccr_bin}" start >> "$LOG_FILE" 2>&1
     environment:
       - LITELLM_MASTER_KEY=${{DOPEMUX_LITELLM_MASTER_KEY}}
       - XAI_API_KEY=${{XAI_API_KEY}}
-      - OPENROUTER_API_KEY=${{OPENROUTER_API_KEY}}
+      - CHEAPERINFERENCE_API_KEY=${{CHEAPERINFERENCE_API_KEY}}
     volumes:
       - ~/.dopemux/litellm/litellm.config.yaml:/app/config.yaml
     restart: unless-stopped

@@ -225,7 +225,7 @@ The Supervisor evaluates available runners in this order:
    *Rationale*: Already paid for; marginal cost is near zero.
 
 1. **Tier 2: Prepaid Credits / Low Cost API**
-- **OpenRouter (Route-to-Cheapest)**: For bulk/low-risk tasks.
+- **cheaperinference.com (Route-to-Cheapest)**: For bulk/low-risk tasks.
 - **DeepSeek V3 / Grok Beta**: High performant, lower cost points.
 
 1. **Tier 3: Premium API (Pay-as-you-go)**

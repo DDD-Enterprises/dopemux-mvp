@@ -4,6 +4,8 @@
   "status": "PROPOSED",
   "profiles": {
     "or_free_sandbox": {
+      "status": "deprecated",
+      "notes": "OpenRouter kept named but inactive; superseded by cheaperinference profile ci_free_sandbox.",
       "allowed_privacy_classes": ["PUBLIC_SANDBOX", "PUBLIC_REPO"],
       "allowed_risk_classes": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY"],
       "allowed_roles": ["cheap_file_reading", "issue_triage", "test_generation", "task_intake"],
@@ -26,7 +28,34 @@
       "fallback_rules": "Fallback allowed only within free public sandbox scope.",
       "failure_behavior": "BLOCK_OR_ESCALATE_TO_PAID_OR_DIRECT"
     },
+    "ci_free_sandbox": {
+      "status": "active",
+      "notes": "cheaperinference.com successor to or_free_sandbox. Single free model (stealth/ox-alpha). cheaperinference is a single upstream (no multi-provider routing fabric to filter or order), so zdr is honestly false (no ZDR filtering is configured or offered) and provider_order is 'pinned' (the single requested model is always the actual model, same literal already used by or_paid_private_controlled/or_structured_noncritical/or_challenger for deterministic single-route selection).",
+      "allowed_privacy_classes": ["PUBLIC_SANDBOX", "PUBLIC_REPO"],
+      "allowed_risk_classes": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY"],
+      "allowed_roles": ["cheap_file_reading", "issue_triage", "test_generation", "task_intake"],
+      "forbidden_roles": ["security_review", "release_judgment", "proof_validation", "structured_task_packet_generation", "proof_bundle_generation"],
+      "required_provider_settings": {
+        "require_parameters": false,
+        "data_collection": "no_sensitive_data_allowed",
+        "zdr": false,
+        "allow_fallbacks": false,
+        "provider_order": "pinned",
+        "sort": "none",
+        "metadata_header": "not_applicable"
+      },
+      "required_logging_fields": ["requested_model", "actual_model", "usage", "latency_ms", "route_decision_id"],
+      "require_parameters": false,
+      "data_collection": "not_applicable_public_only",
+      "zdr": false,
+      "max_price": { "prompt": 0, "completion": 0 },
+      "provider_pinning_order_rules": "Single upstream, single free model (stealth/ox-alpha); always pinned by construction.",
+      "fallback_rules": "No fallback (single free model, no alternate free variants).",
+      "failure_behavior": "BLOCK_OR_ESCALATE_TO_PAID_OR_DIRECT"
+    },
     "or_low_cost_public": {
+      "status": "deprecated",
+      "notes": "OpenRouter kept named but inactive; superseded by cheaperinference profile ci_low_cost_public.",
       "allowed_privacy_classes": ["PUBLIC_SANDBOX", "PUBLIC_REPO"],
       "allowed_risk_classes": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY", "R3_LOCAL_EDIT"],
       "allowed_roles": ["cheap_file_reading", "issue_triage", "repo_cartography", "test_generation", "narrow_patch_generation", "challenger_review"],
@@ -46,6 +75,31 @@
       "zdr": false,
       "max_price": { "prompt_per_million_usd": 0.5, "completion_per_million_usd": 2.0 },
       "provider_pinning_order_rules": "Pin during certification; allow approved same-model fallbacks in production.",
+      "fallback_rules": "No fallback to free, non-schema, or unbenchmarked routes.",
+      "failure_behavior": "FAIL_CLOSED_ON_SCHEMA_OR_PRIVACY_MISMATCH"
+    },
+    "ci_low_cost_public": {
+      "status": "active",
+      "notes": "cheaperinference.com successor to or_low_cost_public. Model choice: glm-4.6 or gpt-5-mini (low-cost public tier). Single upstream, pricing enforced client-side via config/pricing.yaml (see cost_policy.yaml cheaperinference_max_price_behavior). zdr false / provider_order 'pinned' for the same single-upstream reasons as ci_free_sandbox.",
+      "allowed_privacy_classes": ["PUBLIC_SANDBOX", "PUBLIC_REPO"],
+      "allowed_risk_classes": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY", "R3_LOCAL_EDIT"],
+      "allowed_roles": ["cheap_file_reading", "issue_triage", "repo_cartography", "test_generation", "narrow_patch_generation", "challenger_review"],
+      "forbidden_roles": ["security_review", "release_judgment"],
+      "required_provider_settings": {
+        "require_parameters": true,
+        "data_collection": "deny_when_repo_content_present",
+        "zdr": false,
+        "allow_fallbacks": false,
+        "provider_order": "pinned",
+        "sort": "none",
+        "metadata_header": "not_applicable"
+      },
+      "required_logging_fields": ["requested_model", "actual_model", "usage", "latency_ms", "cost_usd", "schema_validation_result"],
+      "require_parameters": true,
+      "data_collection": "deny_when_repo_content_present",
+      "zdr": false,
+      "max_price": { "prompt_per_million_usd": 0.5, "completion_per_million_usd": 2.0 },
+      "provider_pinning_order_rules": "Single upstream; model choice (glm-4.6 or gpt-5-mini) is pinned per certification.",
       "fallback_rules": "No fallback to free, non-schema, or unbenchmarked routes.",
       "failure_behavior": "FAIL_CLOSED_ON_SCHEMA_OR_PRIVACY_MISMATCH"
     },

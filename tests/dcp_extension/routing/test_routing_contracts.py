@@ -214,6 +214,52 @@ class TestOpenClawRouteContract:
         assert errs, "OpenClaw route contract must not define live-write runners"
 
 
+class TestCheaperinferenceProviderContract:
+    """cheaperinference migration (P8): provider enum widened additively.
+
+    OpenRouter provider/access_path values are unchanged and still validate;
+    these tests only assert the new provider value is expressible.
+    """
+
+    def test_selected_cheaperinference_decision_validates(self):
+        doc = valid_selected_route_decision()
+        doc["selected_provider"] = "cheaperinference"
+        doc["selected_model"] = "stealth/ox-alpha"
+        # dcp_extension access_path enum is untouched by this packet (provider-enum-only
+        # scope); use the existing direct_api value, which is honest for a
+        # single-vendor OpenAI-compatible upstream.
+        doc["access_path"] = "direct_api"
+        errs = errors(ROUTE_DECISION_SCHEMA, doc)
+        assert errs == [], f"selected cheaperinference route decision has schema errors: {errs}"
+
+    def test_selected_cheaperinference_decision_rejects_unknown_provider_like_openrouter(self):
+        doc = valid_selected_route_decision()
+        doc["selected_provider"] = "cheaperinference"
+        doc["access_path"] = "direct_api"
+        doc["selected_model"] = "stealth/ox-alpha"
+        assert errors(ROUTE_DECISION_SCHEMA, doc) == []
+
+        tampered = copy.deepcopy(doc)
+        tampered["selected_provider"] = "unknown"
+        assert errors(ROUTE_DECISION_SCHEMA, tampered), (
+            "SELECTED + selected_provider=='unknown' must remain schema-invalid for cheaperinference too"
+        )
+
+    def test_openclaw_route_accepts_cheaperinference_provider(self):
+        route = valid_openclaw_route()
+        route["provider"] = "cheaperinference"
+        route["route_id"] = "route_direct_cheaperinference_low_cost"
+        route["route_kind"] = "direct_api"
+        route["access_path"] = "direct_api"
+        errs = errors(OPENCLAW_ROUTE_SCHEMA, route)
+        assert errs == [], f"cheaperinference OpenClaw route has schema errors: {errs}"
+
+    def test_openrouter_provider_still_validates_after_cheaperinference_addition(self):
+        """OpenRouter stays named-but-inactive: existing provider value is unaffected."""
+        assert errors(ROUTE_DECISION_SCHEMA, valid_selected_route_decision()) == []
+        assert errors(OPENCLAW_ROUTE_SCHEMA, valid_openclaw_route()) == []
+
+
 class TestSelectedProviderResidual:
     """STRICT routing residual (#968/#967): a SELECTED route decision may not carry an
     unknown provider. A chosen route must name a real provider; 'unknown' was previously

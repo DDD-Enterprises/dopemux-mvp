@@ -166,7 +166,7 @@ class FailureHandler:
     def _initialize_circuit_breakers(self) -> None:
         """Initialize circuit breakers for common services."""
         services = {
-            "openrouter": CircuitBreakerConfig(failure_threshold=3, recovery_timeout=30),
+            "cheaperinference": CircuitBreakerConfig(failure_threshold=3, recovery_timeout=30),
             "anthropic": CircuitBreakerConfig(failure_threshold=5, recovery_timeout=60),
             "openai": CircuitBreakerConfig(failure_threshold=3, recovery_timeout=45),
             "groq": CircuitBreakerConfig(failure_threshold=2, recovery_timeout=15),
@@ -239,10 +239,10 @@ class FailureHandler:
     def get_fallback_service(self, primary_service: str) -> Optional[str]:
         """Get a fallback service when primary is failing."""
         fallbacks = {
-            "anthropic": "openrouter",
-            "openrouter": "groq",
+            "anthropic": "cheaperinference",
+            "cheaperinference": "groq",
             "openai": "groq",
-            "groq": "openrouter"
+            "groq": "cheaperinference"
         }
 
         fallback = fallbacks.get(primary_service)

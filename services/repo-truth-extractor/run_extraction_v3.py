@@ -600,7 +600,8 @@ PROVIDER_BASE_URL = {
     "xai": "https://api.x.ai/v1",
     "gemini": "https://generativelanguage.googleapis.com",
     "openai": "https://api.openai.com/v1",
-    "openrouter": "https://openrouter.ai/api/v1",
+    "openrouter": "https://openrouter.ai/api/v1",  # inactive/legacy: kept for frozen-run replay
+    "cheaperinference": "https://api.cheaperinference.com/v1",
 }
 
 GEMINI_OPENAI_COMPAT_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai"
@@ -870,6 +871,7 @@ PROVIDER_API_KEY_ENV: Dict[str, str] = {
     "gemini": "GEMINI_API_KEY",
     "xai": "XAI_API_KEY",
     "openrouter": "OPENROUTER_API_KEY",
+    "cheaperinference": "CHEAPERINFERENCE_API_KEY",
 }
 REQUIRED_PROMPT_STEP_IDS: Dict[str, Set[str]] = {
     "A": {"A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A99"},
@@ -4209,7 +4211,10 @@ def phase_requires_provider_preflight(phase: str, cfg: RunnerConfig) -> bool:
     if str(phase or "").upper() != "D" or cfg.dry_run:
         return False
     routes = collect_provider_routes(phases=["D"], routing_policy=cfg.routing_policy)
-    return any(str(row.get("provider")) == "openrouter" for row in routes.values())
+    return any(
+        str(row.get("provider")) in ("openrouter", "cheaperinference")
+        for row in routes.values()
+    )
 
 
 def prepare_phase_provider_preflight(
@@ -5550,7 +5555,13 @@ def call_llm(
                 if provider == "xai":
                     client = get_xai_client(api_key)
                 elif provider == "openrouter":
+                    # Legacy/inactive: kept for frozen-run replay.
                     client = get_openrouter_client(api_key)
+                elif provider == "cheaperinference":
+                    # Active runtime provider: pass the resolved
+                    # cheaperinference base_url explicitly -- None here would
+                    # silently fall through to the OpenAI SDK default.
+                    client = get_openai_client(base_url=PROVIDER_BASE_URL["cheaperinference"], api_key=api_key)
                 else:
                     client = get_openai_client(None, api_key)
                 chat_kwargs: Dict[str, Any] = {

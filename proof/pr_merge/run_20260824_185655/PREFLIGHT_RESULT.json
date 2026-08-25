@@ -1,0 +1,69 @@
+{
+  "ok": true,
+  "checks": [
+    {
+      "name": "binary:git",
+      "status": "passed",
+      "required": true,
+      "details": "/opt/homebrew/bin/git",
+      "remediation": "Install `git` and ensure it is on PATH."
+    },
+    {
+      "name": "binary:gh",
+      "status": "passed",
+      "required": true,
+      "details": "/opt/homebrew/bin/gh",
+      "remediation": "Install `gh` and ensure it is on PATH."
+    },
+    {
+      "name": "binary:python",
+      "status": "passed",
+      "required": true,
+      "details": "/Users/hue/.local/share/mise/installs/python/3.12.13/bin/python",
+      "remediation": "Install `python` and ensure it is on PATH."
+    },
+    {
+      "name": "binary:pre-commit",
+      "status": "passed",
+      "required": true,
+      "details": "/Users/hue/.local/share/mise/installs/python/3.12.13/bin/pre-commit",
+      "remediation": "Install `pre-commit` and ensure it is on PATH."
+    },
+    {
+      "name": "gh_auth",
+      "status": "passed",
+      "required": true,
+      "details": "github.com\n  ✓ Logged in to github.com account hu3mann (keyring)\n  - Active account: true\n  - Git operations protocol: ssh\n  - Token: gho_************************************\n  - Token scopes: 'gist', 'read:org', 'repo', 'workflow'",
+      "remediation": "Run `gh auth login` for the target repository."
+    },
+    {
+      "name": "git_remote",
+      "status": "passed",
+      "required": true,
+      "details": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+      "remediation": "Configure the `origin` remote."
+    },
+    {
+      "name": "git_worktree",
+      "status": "passed",
+      "required": true,
+      "details": "/Users/hue/code/dopemux-mvp                                                            0415b6549 [feat/local-audit-proof-binding-001]\n/private/tmp/dopemux-audit-commandcode-identity-5f8f821c                               5f8f821cf (detached HEAD)\n/private/tmp/dopemux-audit-sync-equivalence-71f3df7                                    71f3df7ce (detached HEAD)\n/private/tmp/dopemux-tp-dmx-embedded-audit-commandcode-identity-001                    5f8f821cf [tp/DMX-EMBEDDED-AUDIT-COMMANDCODE-IDENTITY-001]\n/private/tmp/dopemux-tp-dmx-embedded-audit-sync-equivalence-001                        71f3df7ce [tp/DMX-EMBEDDED-AUDIT-SYNC-EQUIVALENCE-001]\n/private/tmp/TP-DMX-RTE-V5-PR1232-FINAL-PROOF                                          049bcb751 (detached HEAD)\n/Users/hue/code/dopemux-mvp/.claude/worktrees/migrate-cheaperinference-provider-5fa703 d40e43dd7 [claude/migrate-cheaperinference-provider-5fa703]\n/Users/hue/code/dopemux-mvp__tp-gov-delivery-evidence-spine-001                        bc8c68dc1 [tp/gov-delivery-evidence-spine-001]",
+      "remediation": "Use a git version with worktree support."
+    },
+    {
+      "name": "git_ignorecase",
+      "status": "warning",
+      "required": false,
+      "details": "core.ignorecase=true",
+      "remediation": "Git case-insensitivity detected. Some renames might require `git mv` to be detected on this OS."
+    }
+  ],
+  "policy_resolution": {
+    "source": "repo",
+    "path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/migrate-cheaperinference-provider-5fa703/config/pr_merge_specialist/policy.yaml",
+    "fingerprint": "a19ef3f1fc8c56f5df4995c67df3e6f68aed19dc7d09724cc69b95c122090e4e",
+    "policy_schema_version": 1,
+    "overrides": []
+  },
+  "override_records": []
+}
