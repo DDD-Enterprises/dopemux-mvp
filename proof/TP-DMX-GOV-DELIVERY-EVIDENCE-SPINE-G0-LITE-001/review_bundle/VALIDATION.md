@@ -1,31 +1,39 @@
 # Validation ledger
 
-Audited content head: `eeebed83fc57621fb731c1d81acdb3a2412f6eef`
+Audited content head: `37de7769a2c5b749dcb377a414500e83ad7d67af`
+
+Audited parent: `ac0aa1a6c806819b6b9ce5a7d263f27ac396f724`
 
 ## PASS
 
 - `python -m jsonschema -i task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json` — exit `0`.
-- `python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text` — exit `0`; `status=PASS`, `max_lane=L0`, `paths=1`.
-- `pre-commit run --from-ref origin/main --to-ref HEAD` — exit `0` after sandbox retry with linked-worktree index access.
-- `git diff --check origin/main...HEAD` — exit `0`.
-- packet secret-shape scan — no matches.
-- ordinary CI workflow `32812797232` — completed `success` at audited head.
-- direct Claude Code CLI audit — exit `0`; `PASS_WITH_RISKS`.
+- packet correction assertions — exit `0`; no `rtk`, no one-sided `HEAD...source`, exactly seventeen planned payload paths in both symmetric diff commands, exact bounded fetch/SHA check, complete six-class vocabulary.
+- `python3 scripts/governance/validate_change_contract.py --base ac0aa1a6c806819b6b9ce5a7d263f27ac396f724 --head 37de7769a2c5b749dcb377a414500e83ad7d67af --format text` — exit `0`; `status=PASS`, `max_lane=L0`, `paths=1`.
+- `python3 scripts/governance/validate_change_contract.py --base origin/main --head 37de7769a2c5b749dcb377a414500e83ad7d67af --format text` — exit `0`; `status=PASS`, `max_lane=L0`, `paths=14` before proof regeneration.
+- `pre-commit run --from-ref ac0aa1a6c806819b6b9ce5a7d263f27ac396f724 --to-ref 37de7769a2c5b749dcb377a414500e83ad7d67af` — all non-exempt hooks passed; sandbox-only index denial was retried with linked-worktree index access.
+- `git diff --check ac0aa1a6c806819b6b9ce5a7d263f27ac396f724..37de7769a2c5b749dcb377a414500e83ad7d67af` — exit `0`.
+- exact changed-path inventory — one modified Task Packet path.
+- direct Claude Code CLI audit — exit `0`; `PASS_WITH_RISKS`; no blocking finding.
+- failed-source custody ref resolves exactly to `caa4ec2913d0463c7e38835029f3f7adeb915ac6`; PR `#1268` was not mutated.
+- implementation-authority path absent on observed `origin/main` `f0a01035832c02fc2c02b7a23a0f9c3517c69364`; implementation remains unauthorized.
+- canonical `validate_audit_proof.py` — exit `0`; `1/1 PASS`.
+- proof secret scan — `PASS`; eleven textual canonical bundle files scanned, detached signature excluded.
+- review-bundle changed-path inventory and unified diff are byte-identical to raw Git output for `ac0aa1a6...37de7769`.
+- structured Claude result validates against captured output schema; canonical projection preserves `PASS_WITH_RISKS`, three findings, three risks, exact head, and empty `fixes_applied`.
 
 ## FAIL
 
-- None in deterministic packet validation.
+- None in deterministic packet validation or independent audit.
 
-## NOT_RUN / blocked
+## NOT_RUN / pending
 
-- Auditor-side validators: `NOT_RUN` because direct Claude invocation had tools and MCP disabled.
-- Canonical proof validation: pending proof-only successor creation, then required.
-- Signed PR-scoped local attestation: `NOT_RUN`; operator signing authority not inferred.
-- PR Steward readiness: blocked until canonical proof is committed and an accepted exact-head PR audit route exists.
-- G0-Lite payload implementation: `NOT_RUN`; supervisor implementation authority record absent on `origin/main`.
+- Ordinary CI at corrected content head: `NOT_RUN`; head not pushed yet.
+- Canonical and PR-scoped signature verification: pending additive proof-only successors.
+- PR Steward at final signed proof head: `NOT_RUN`.
+- G0-Lite payload implementation: `NOT_RUN`; supervisor implementation authority remains withheld.
 
-## Noncontrolling prior route
+## Custody notes
 
-CI PAL/clink audit run `32812797276` returned `NEEDS_SUPERVISOR` because its
-runner reported `Credit balance is too low`. Operator directed use of direct
-Claude CLI instead. No PAL/clink verdict was reused.
+- No PAL/clink route was invoked.
+- Raw Claude CLI envelope was not file-captured; normalized structured result and full model/usage custody are tracked.
+- Instruction-like scanner: `NOT_RUN_DIRECT_CLAUDE_ROUTE`; auditor performed its own untrusted-content review and recorded F3.

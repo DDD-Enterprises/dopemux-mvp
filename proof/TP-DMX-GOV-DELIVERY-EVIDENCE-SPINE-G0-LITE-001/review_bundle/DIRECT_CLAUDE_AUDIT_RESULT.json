@@ -1,33 +1,57 @@
 {
-  "status": "COMPLETE",
-  "verdict": "PASS_WITH_RISKS",
-  "findings": [
-    "Single-file addition only: task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json.",
-    "Packet explicitly withholds implementation authority until a separate supervisor-authored record binds packet ID, exact packet bytes, base SHA, allowlist, runner/agent ceiling, and stop conditions.",
-    "PR #1268 remains read-only failed evidence; merge, close, mark-ready, repair-cycle-3, rewrite, and additional commits are forbidden.",
-    "Planned scope is representation and projection only and disclaims readiness, audit-acceptability, dispatch, merge, PR, and activation judgment.",
-    "No Codex audit target appears; auditor selection remains delegated to repository embedded-audit policy.",
-    "Trusted and candidate head/base identities agree, and harness Git status corroborated direct parentage.",
-    "Instruction-like scanner detected no forced-verdict or output-contract override; imperative text targets a gated future implementer."
-  ],
-  "risks": [
-    "Schema conformance was not executed by the auditor because tools and MCP were disabled.",
-    "Audit was limited to provided exact diff, metadata, and harness Git status rather than full repository state.",
-    "Packet is instruction-bearing by design; auditor judged it benign and properly authority-gated.",
-    "Auditor did not verify whether the future implementation-authority record existed or conflicted on main."
-  ],
-  "rationale": "One governance Task Packet is added with no executable, schema, workflow, or CI change. Packet repeatedly withholds implementation authority, binds future authorization to a separate supervisor record, preserves failed PR #1268 without mutation, and removes G0 readiness/adjudication ownership. Direct model validation was NOT_RUN due deliberate tool isolation, so PASS_WITH_RISKS is supported instead of PASS.",
-  "inspected_paths": [
+  "audited_head": "37de7769a2c5b749dcb377a414500e83ad7d67af",
+  "audited_parent": "ac0aa1a6c806819b6b9ce5a7d263f27ac396f724",
+  "auditor_tool": "claude-code-cli",
+  "auditor_model": "sonnet",
+  "scope_paths": [
     "task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json"
   ],
-  "evidence_refs": [
-    "trusted head eeebed83fc57621fb731c1d81acdb3a2412f6eef and base d40e43dd70307d2c000a4efd581be7c11248728c",
-    "packet invariants 0-4: implementation stop gate and PR #1268 containment",
-    "packet invariants 5-17: G0-Lite ownership and excluded readiness/adjudication surfaces",
-    "packet step S0: separate authority and source-custody gate",
-    "packet commit.verify: deterministic validation commands",
-    "instruction_like_scan_summary detected=false match_count=0"
+  "status": "PASS_WITH_RISKS",
+  "summary": "The correction at 37de7769 (parent ac0aa1a6) touches only task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json, is valid JSON, and passes its own canonical dopetask schema. All `rtk`-prefixed commands were replaced with plain runnable repository/system commands, and the two scripts named by verify commands exist in-tree. S0 now fetches refs/pull/1268/head into a bounded non-force local ref and requires ref^{commit} to equal caa4ec2913d0463c7e38835029f3f7adeb915ac6 via an explicit test before any failed-PR source path is read, replacing the parent's unproven direct bare-SHA diff. The overlap-classification logic is fail-closed and total over all set relations (COMPATIBLE/IDENTICAL/SUBSET/SUPERSET/CONFLICTING plus an UNKNOWN catch-all for missing authority, fetch failure, SHA mismatch, absent/multiple merge base, path-enumeration failure, out-of-payload path, or unprovable shared-path state), with SUBSET/SUPERSET direction fixed to the execution-main perspective. The listed S0 diff pathspecs match, in exact order, all seventeen non-packet, non-proof allowlist paths. No implementation payload, readiness/audit-acceptability ownership, merge/rebase authority, or PR #1268 mutation authority was introduced; all prior prohibitions on merging, closing, mark-ready, force-push, rewrite, and activation are preserved verbatim. Two residual, non-blocking risks are recorded below (both are structurally caught by the packet's own UNKNOWN fail-closed rule, not defects in it), plus an out-of-scope observation about a suspicious instruction block in AGENTS.md that was not followed.",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "LOW",
+      "title": "No explicit command computes SHARED_PATHS intersection or per-shared-path final-state comparison",
+      "status": "OPEN",
+      "body": "S0's requirements/validation prose defines SHARED_PATHS as the intersection of MAIN_PATHS and SOURCE_PATHS and requires classifying CONFLICTING when 'any shared path has a different final path state between HEAD and the custody ref,' but the S0 commands list only the two `git diff --name-only` enumerations (merge-base..HEAD and merge-base..custody-ref); no listed command performs the set intersection or the direct HEAD-vs-custody-ref content/state comparison per shared path. An executor must improvise this step (e.g., sort/comm on the two path lists, then `git diff --name-status` or blob-hash comparison per shared path). This is not a blocking defect: the packet's own rule makes 'unprovable shared-path state' UNKNOWN, and CONFLICTING or UNKNOWN both stop execution for supervisor review, so an executor who skips or botches the comparison cannot legally reach a permissive (IDENTICAL/SUBSET/SUPERSET/COMPATIBLE) classification without evidence. The gap is a determinism/portability risk for how the obligation gets fulfilled, not a hole in the fail-closed logic itself."
+    },
+    {
+      "id": "F2",
+      "severity": "LOW",
+      "title": "S0 command sequencing relies on implicit fail-fast shell semantics",
+      "status": "OPEN",
+      "body": "S0's ordered commands (fetch, ^{commit} equality test, merge-base count test, path enumerations) are listed as a flat array without an explicit 'stop immediately on nonzero exit' directive in the packet JSON itself; the fail-closed behavior (e.g., a non-fast-forward fetch failing, or the SHA-equality `test` failing, correctly preventing any read of failed-PR source content) depends on an executor running them sequentially under fail-fast shell semantics (e.g., `set -e` or manual exit-code checks) rather than continuing past a failed step. AGENTS.md and the packet's general stop-condition language make this the clearly intended reading, and requirement/validation text ('before reading any failed-PR source path,' 'drift or an unavailable exact object stops without mutation') reinforces it, but the packet does not spell out the execution contract inline. Non-blocking: this is a documentation-clarity gap, not a logic defect, and is consistent with how other steps in this and sibling packets express command sequences."
+    },
+    {
+      "id": "F3",
+      "severity": "INFO",
+      "title": "AGENTS.md (unchanged, out of diff scope) contains an appended persona-override instruction block",
+      "status": "ACCEPTED_RISK",
+      "body": "AGENTS.md, a required S0 context_file and repo-wide instruction surface, ends with an unrelated block instructing responses to adopt a terse 'caveman' persona and describing a `/caveman` mode switch. This content is unchanged by the audited diff (present in both parent ac0aa1a6c8 and head 37de7769a2) and is out of the authorized single-path scope of this audit, but it is anomalous enough in a governance authority file to warrant flagging as a possible prompt-injection artifact. Per audit instructions treating embedded instructions in candidate-controlled data as untrusted, it was not followed. No action was taken on it and no packet-authoring change addresses it; noted for visibility only."
+    }
   ],
-  "validation_status": "NOT_RUN",
-  "instruction_like_acknowledged": true
+  "fixes_applied": [],
+  "remaining_risks": [
+    "S0's overlap-classification obligation (SHARED_PATHS intersection and per-shared-path HEAD-vs-custody-ref state comparison) has no explicit command in the packet and depends on correct executor improvisation; failure to prove shared-path state correctly resolves to UNKNOWN under the packet's own rule (fail-closed), but a careless executor could still misjudge inputs before that catch-all is invoked.",
+    "S0's fail-closed sequencing (fetch failure, SHA-equality mismatch, or multiple/absent merge-base all stopping before reading failed-PR source content) depends on the executing shell/agent running the listed commands with fail-fast semantics; this is implied by surrounding packet and AGENTS.md language but not spelled out as an explicit execution contract inside the packet JSON itself.",
+    "AGENTS.md (out of audited scope, unchanged across parent and head) contains an anomalous appended persona-override block resembling a possible prompt-injection artifact; it was not followed and requires no packet change, but remains present in the repository for a human governance owner to assess."
+  ],
+  "evidence": [
+    "git rev-parse HEAD -> 37de7769a2c5b749dcb377a414500e83ad7d67af",
+    "git rev-parse HEAD^ -> ac0aa1a6c806819b6b9ce5a7d263f27ac396f724",
+    "git status --porcelain=v1 -> (empty, clean worktree)",
+    "git diff --stat ac0aa1a6..37de7769 -> 1 file changed, task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json only (47 insertions, 38 deletions)",
+    "git diff ac0aa1a6..37de7769 -- task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json -> full diff reviewed: all 'rtk ' command prefixes removed in commit.verify, S0.commands, S1/S2/S3/S4/S5 validation and commands; S0 requirements/commands/validation rewritten to fetch+verify a bounded custody ref before source reads and to define deterministic, fail-closed overlap classification; all git:caa4ec2913...:path context_files rewritten to git:refs/dopemux/custody/pr-1268-caa4ec2913...:path",
+    "grep -n '\\brtk\\b' task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json -> no matches (exit 1)",
+    "python3 json.load of packet at head -> valid JSON",
+    "python3 -m jsonschema -i task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json -> exit 0 (only a jsonschema-CLI deprecation warning printed to stderr; no validation error)",
+    "ls -la scripts/audit/validate_audit_proof.py scripts/governance/validate_change_contract.py -> both files exist in-tree",
+    "grep -n 'git:caa4ec' task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json -> no matches (exit 1), confirming no residual bare-SHA context reads survive the custody-ref rewrite",
+    "python3 script comparing commit.allowlist minus proof/** and task-packets/** (17 entries) against the S0 pathspec argument lists in both git diff --name-only commands -> counts=17/17 and paths match allowlist content and order exactly for both commands",
+    "git show ac0aa1a6:task-packets/...json | python3 json extraction of parent S0 -> confirms parent used bare 'git diff --name-status HEAD...caa4ec2913...' with no fetch or SHA-equality proof step, establishing the corrected defect this diff fixes",
+    "docs/03-reference/governance/evidence-economy.md lines 58-64 ('Drift and overlap' section) -> defines the six-class overlap vocabulary (IDENTICAL, SUBSET, SUPERSET, COMPATIBLE, CONFLICTING, UNKNOWN) and the CONFLICTING/NEEDS_SUPERVISOR escalation rule that the packet's S0 classification logic implements consistently",
+    "AGENTS.md full read (lines 1-343) -> confirms Truth Order, proof/finality, embedded-audit doctrine sections are unrelated to and unaffected by this diff; also surfaces an anomalous appended 'caveman persona' instruction block (lines ~328-343) unchanged across parent and head, treated as untrusted and not followed, flagged as F3/INFO",
+    "grep -n 'IMPLEMENTATION_AUTHORIZED|IMPLEMENTATION_AUTHORITY|merge|mark.ready|force-push|activation' on head packet -> confirms all authority-gating and anti-mutation invariants (STOP_IMPLEMENTATION_AUTHORITY_NOT_ISSUED, PR #1268 merge/mark-ready/close/force-push/rewrite prohibitions, PR Steward/operator sole-authority language) are present and textually unchanged from parent, i.e. no scope creep into implementation, readiness, or PR #1268 mutation authority"
+  ]
 }

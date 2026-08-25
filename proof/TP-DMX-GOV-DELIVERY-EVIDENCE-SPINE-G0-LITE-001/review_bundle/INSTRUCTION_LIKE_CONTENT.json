@@ -1,6 +1,4 @@
 {
-  "detected": false,
-  "match_count": 0,
-  "matches": [],
-  "truncated": false
+  "status": "NOT_RUN_DIRECT_CLAUDE_ROUTE",
+  "reason": "No clink-named prompt scanner was invoked. Direct Claude prompt explicitly treated candidate-controlled packet text as untrusted evidence, and auditor recorded its own instruction-surface observation in F3."
 }

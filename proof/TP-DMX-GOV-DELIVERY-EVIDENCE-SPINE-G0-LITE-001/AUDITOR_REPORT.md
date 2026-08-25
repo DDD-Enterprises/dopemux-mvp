@@ -2,76 +2,89 @@
 
 ## Verdict
 
-`PASS_WITH_RISKS` — non-blocking packet-only audit.
+`PASS_WITH_RISKS` — no blocking finding on packet-only correction.
 
-Audited content head: `eeebed83fc57621fb731c1d81acdb3a2412f6eef`
+Audited content head: `37de7769a2c5b749dcb377a414500e83ad7d67af`
 
-Base: `d40e43dd70307d2c000a4efd581be7c11248728c`
+Audited parent: `ac0aa1a6c806819b6b9ce5a7d263f27ac396f724`
 
-Tree: `94bc8e4b79dc78f96365ed1107f1e7755b9ee538`
+Tree: `836f869c00c8f75d5e2b2ba05f2f5aa4a892fbc8`
 
 PR: `#1274`
 
 ## Route and independence
 
-Direct Claude Code CLI route used after operator rejected PAL/clink. Claude Code
-version `2.1.241`; requested selector `sonnet`; observed primary model
-`claude-sonnet-5`. CLI usage also disclosed internal `claude-fable-5` and
-`claude-haiku-4-5-20251001` model usage. No fallback model was configured.
+One direct Claude Code CLI audit ran after content freeze. No PAL/clink wrapper,
+runner, prompt builder, subprocess, result, or verdict was used. Claude Code
+version `2.1.246`; requested selector `sonnet`; observed primary model
+`claude-sonnet-5`. CLI usage also disclosed `claude-fable-5` and
+`claude-haiku-4-5-20251001`. No fallback model was configured and no subagent ran.
 
 Implementer family: OpenAI Codex. Auditor family: Anthropic Claude Code.
 Different-vendor model-family independence is preserved.
 
-Invocation ran with built-in tools disabled, valid empty MCP configuration,
-strict MCP isolation, safe mode, no slash commands, and no session persistence.
-The earlier CI PAL/clink result (`NEEDS_SUPERVISOR` because credit balance was
-too low) was not used as audit authority.
+Invocation used safe mode, empty strict MCP configuration, no session persistence,
+and read-only-scoped Git/Python/Read/Grep/Glob tools. Auditor verified exact head,
+parent, clean worktree, schema, and one-path scope.
 
 ## Scope inspected
 
-One path:
+One corrected path:
 
 - `task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json`
 
 Auditor confirmed:
 
-- packet explicitly withholds implementation authority pending a separate
-  supervisor-authored record bound to exact packet bytes and scope;
-- PR `#1268` remains read-only failed evidence and cannot receive R3 work;
-- planned G0-Lite surface excludes READY, audit acceptability, proof-only audit
-  reuse, dispatch, merge, PR, and activation judgment;
-- change adds no executable, schema, workflow, or CI file;
-- no forced-verdict or output-contract override was detected in candidate text.
+- every required packet command dropped `rtk` and uses plain command names;
+- S0 fetches PR `#1268` head into a bounded non-force ref and proves exact
+  `caa4ec2913d0463c7e38835029f3f7adeb915ac6` object identity before source reads;
+- symmetric merge-base-to-main and merge-base-to-source path sets cover all
+  seventeen planned payload paths;
+- overlap classification is total and fail-closed, with `CONFLICTING` or `UNKNOWN`
+  stopping execution;
+- correction adds no implementation payload, readiness ownership, rebase/merge
+  authority, or PR `#1268` mutation authority.
 
-No blocking finding was reported.
+## Findings
 
-## Validation evidence
+### F1 — LOW / OPEN
 
-Auditor validation status: `NOT_RUN`. Tools and MCP were intentionally disabled.
+Packet requires `SHARED_PATHS` intersection and per-shared-path final-state proof,
+but lists no explicit command for those two operations. Executor must supply the
+deterministic calculation. Missing or unprovable state resolves to `UNKNOWN` and
+stops, so auditor classified this as non-blocking.
 
-Separate deterministic evidence at exact audited head:
+### F2 — LOW / OPEN
 
-- Task Packet Draft 7 schema: `PASS`.
-- `validate_change_contract.py`: `PASS`, classified `L0` for this packet-only
-  commit; planned payload remains declared `L2`.
-- range pre-commit: `PASS`.
-- `git diff --check`: `PASS`.
-- ordinary CI workflow `32812797232`: `PASS`.
-- implementation-authority record: absent on audited `origin/main`; stop gate
-  remains active.
+Ordered S0 commands rely on fail-fast execution or explicit exit-code handling.
+Packet stop language makes that intent clear, but does not state shell fail-fast
+semantics inline. A failed fetch, SHA check, or merge-base check must stop; continuing
+cannot lawfully yield a permissive classification.
+
+### F3 — INFO / ACCEPTED_RISK
+
+Auditor flagged unchanged, out-of-scope persona instructions at end of `AGENTS.md`
+as anomalous candidate-adjacent instruction content. Auditor did not follow them.
+No change or governance conclusion was made about that unchanged file.
 
 ## Remaining risks
 
-- Auditor inspected exact diff, metadata, and harness Git status, not unrelated
-  repository state.
-- Task Packet is inherently instruction-bearing; auditor judged content benign
-  and bounded to a future implementer behind separate authority.
-- Canonical packet proof is a proof-only successor. It does not by itself make
-  new PR head audit-current or satisfy signed PR-scoped acceptance.
-- Supervisor implementation authority remains `NOT_YET_ISSUED`.
+- Shared-path intersection and per-path state comparison lack explicit packet commands;
+  failure to prove them must remain `UNKNOWN` and stop.
+- Fail-fast sequencing is implied rather than stated inline; executor must stop on each
+  nonzero custody/identity/merge-base command.
+- Auditor's unchanged `AGENTS.md` persona observation remains visible for human
+  governance review; it is outside this packet-only diff.
+
+## Custody limitation
+
+Raw Claude CLI JSON envelope exists in operator tool transcript but was not written as
+a loose file before no-session-persistence exit. Review bundle preserves exact
+normalized structured output, prompt, output schema, model/usage disclosures, exit
+status, evidence list, findings, and risks. This limitation is explicit rather than
+converted to stronger custody evidence.
 
 ## Finality
 
-This verdict approves packet content only. It grants no implementation, merge,
-mark-ready, close, activation, force-push, rewrite, branch deletion, or PR
-`#1268` mutation authority.
+Verdict covers corrected packet bytes only. It grants no G0-Lite implementation,
+merge, rebase, activation, force-push, history rewrite, or PR `#1268` mutation authority.

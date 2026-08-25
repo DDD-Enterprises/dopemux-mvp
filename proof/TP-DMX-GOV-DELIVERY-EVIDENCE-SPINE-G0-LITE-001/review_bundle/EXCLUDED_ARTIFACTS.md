@@ -1,27 +1,21 @@
-# Excluded loose artifacts
+# Excluded and custody-limited artifacts
 
-Source directory: `/tmp/dmx-g0-lite-pr1274-audit`
+No PAL/clink wrapper, subprocess, prompt builder, result, or verdict was used for this audit.
 
-Included under direct-route names:
+Included in review bundle:
 
-- `PAL_CLINK_AUDIT_INPUT.md` as `DIRECT_CLAUDE_AUDIT_PROMPT.md`; prompt bytes
-  were reused by direct Claude Code CLI, while PAL/clink execution was not.
-- `CANDIDATE_UNIFIED_DIFF.txt`.
-- `CANDIDATE_CHANGED_FILES.txt`.
-- `INSTRUCTION_LIKE_CONTENT.json`.
+- exact direct-Claude prompt;
+- exact structured-output schema;
+- exact normalized structured verdict returned by Claude Code CLI;
+- exact candidate changed-path inventory and unified diff;
+- route/model custody and deterministic validation ledger.
 
-Excluded because they describe the rejected, noncontrolling CI PAL/clink route:
+Raw Claude CLI JSON envelope was captured in operator tool transcript but was not
+written as a loose file before the no-session-persistence process exited. Review
+bundle therefore preserves normalized structured output plus disclosed usage/model
+custody, not byte-for-byte raw stdout. No finding, risk, model disclosure, exit code,
+or exact-head binding was omitted from canonical evidence.
 
-- `AUDITOR_REPORT.md`.
-- `AUDITOR_ROUTE.json`.
-- `LOCAL_AUDIT_ATTESTATION.json`.
-- `PAL_CLINK_AUDIT_OUTPUT.json`.
-- `PAL_CLINK_AUDIT_RUNNER_OUTPUT.json`.
-- `PROOF.json`.
-- `ROUTE_PROBE_OUTPUTS.json`.
-
-Direct Claude stdout was not captured as a loose file. Its structured result,
-route custody, exact invocation, model disclosures, verdict, findings, and risks
-are preserved in `DIRECT_CLAUDE_AUDIT_RESULT.json`,
-`DIRECT_CLAUDE_AUDIT_CUSTODY.json`, canonical `PROOF.json`, and
-`AUDITOR_REPORT.md`.
+Instruction-like scanner is `NOT_RUN_DIRECT_CLAUDE_ROUTE`; no clink-named scanner
+module was invoked. Auditor independently treated candidate content as untrusted and
+recorded its observation as F3.
