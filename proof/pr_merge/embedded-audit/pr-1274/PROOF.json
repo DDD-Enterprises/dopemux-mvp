@@ -1,0 +1,30 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1274,
+  "head_sha": "eeebed83fc57621fb731c1d81acdb3a2412f6eef",
+  "generated_at": "2026-08-25T05:36:33Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "rtk claude --print --model sonnet --effort high --output-format json --tools \"\" --mcp-config '{\"mcpServers\":{}}' --strict-mcp-config --safe-mode --no-session-persistence --disable-slash-commands --permission-mode plan < /tmp/dmx-g0-lite-pr1274-audit/PAL_CLINK_AUDIT_INPUT.md",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Auditor tools and MCP were disabled, so the auditor recorded validation_status=NOT_RUN; deterministic local and CI validations are separate evidence.",
+      "Independent audit was limited to exact candidate diff, metadata, and harness Git status; it did not inspect unrelated repository state.",
+      "The Task Packet is instruction-bearing by design. Auditor judged its instructions benign and bounded to a future implementer behind a separate authority gate.",
+      "Required supervisor implementation-authority record is absent on audited origin/main; payload implementation remains unauthorized."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}
