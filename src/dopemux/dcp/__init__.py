@@ -50,6 +50,15 @@ from dopemux.dcp.lane_model import (
 from dopemux.dcp.lane_engine import (
     decide_lane,
 )
+from dopemux.dcp.input_adapters import (
+    TrustedInputCapability,
+    TrustedInputError,
+    active_trusted_adapters,
+    capability_from_any,
+    is_execution_eligible,
+    refuse_serialized_trust,
+    untrusted_classify_source,
+)
 
 __all__ = [
     # Proof artifact readers (pre-existing)
@@ -93,4 +102,12 @@ __all__ = [
     "LaneDecision",
     "LaneKind",
     "decide_lane",
+    # Trusted-input capability boundary (DMX-DCP-MODEL-ROUTING-MVP-0007I)
+    "TrustedInputCapability",
+    "TrustedInputError",
+    "active_trusted_adapters",
+    "capability_from_any",
+    "is_execution_eligible",
+    "refuse_serialized_trust",
+    "untrusted_classify_source",
 ]
