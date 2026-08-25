@@ -1,30 +1,45 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1274,
-  "head_sha": "eeebed83fc57621fb731c1d81acdb3a2412f6eef",
-  "generated_at": "2026-08-25T05:36:33Z",
+  "head_sha": "37de7769a2c5b749dcb377a414500e83ad7d67af",
+  "generated_at": "2026-08-25T22:42:53Z",
   "embedded_audit": {
     "required": true,
     "status": "PASS_WITH_RISKS",
     "auditor_tool": "claude-code-cli",
     "auditor_model": "sonnet",
-    "invocation": "rtk claude --print --model sonnet --effort high --output-format json --tools \"\" --mcp-config '{\"mcpServers\":{}}' --strict-mcp-config --safe-mode --no-session-persistence --disable-slash-commands --permission-mode plan < /tmp/dmx-g0-lite-pr1274-audit/PAL_CLINK_AUDIT_INPUT.md",
+    "invocation": "rtk claude --print --model sonnet --effort high --output-format json --json-schema '<DIRECT_CLAUDE_AUDIT_SCHEMA.json bytes>' --tools \"Bash,Read,Grep,Glob\" --allowedTools \"Bash(git *),Bash(python *),Read,Grep,Glob\" --mcp-config '{\"mcpServers\":{}}' --strict-mcp-config --safe-mode --no-session-persistence --disable-slash-commands --permission-mode plan < /private/tmp/g0-lite-packet-correction-audit-prompt.md",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/AUDITOR_REPORT.md",
-    "findings": [],
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "LOW",
+        "title": "No explicit command computes SHARED_PATHS intersection or per-shared-path final-state comparison",
+        "status": "OPEN",
+        "body": "S0 requirements and validation define the intersection and state proof, but no listed command performs them. Missing or unprovable shared-path state resolves to UNKNOWN and stops, so this remains non-blocking execution determinism risk."
+      },
+      {
+        "id": "F2",
+        "severity": "LOW",
+        "title": "S0 command sequencing relies on implicit fail-fast shell semantics",
+        "status": "OPEN",
+        "body": "Fetch, exact-SHA, merge-base, and path-set commands must stop on any nonzero exit. Packet stop language implies this, but does not spell out fail-fast shell semantics inline."
+      },
+      {
+        "id": "F3",
+        "severity": "INFO",
+        "title": "AGENTS.md unchanged persona block flagged outside diff scope",
+        "status": "ACCEPTED_RISK",
+        "body": "Auditor flagged an unchanged persona instruction block in AGENTS.md as anomalous, did not follow it, and made no change or governance conclusion about that out-of-scope file."
+      }
+    ],
     "fixes_applied": [],
     "remaining_risks": [
-      "Auditor tools and MCP were disabled, so the auditor recorded validation_status=NOT_RUN; deterministic local and CI validations are separate evidence.",
-      "Independent audit was limited to exact candidate diff, metadata, and harness Git status; it did not inspect unrelated repository state.",
-      "The Task Packet is instruction-bearing by design. Auditor judged its instructions benign and bounded to a future implementer behind a separate authority gate.",
-      "Required supervisor implementation-authority record is absent on audited origin/main; payload implementation remains unauthorized."
+      "S0's overlap-classification obligation (SHARED_PATHS intersection and per-shared-path HEAD-vs-custody-ref state comparison) has no explicit command in the packet and depends on correct executor improvisation; failure to prove shared-path state correctly resolves to UNKNOWN under the packet's own rule (fail-closed), but a careless executor could still misjudge inputs before that catch-all is invoked.",
+      "S0's fail-closed sequencing (fetch failure, SHA-equality mismatch, or multiple/absent merge-base all stopping before reading failed-PR source content) depends on the executing shell/agent running the listed commands with fail-fast semantics; this is implied by surrounding packet and AGENTS.md language but not spelled out as an explicit execution contract inside the packet JSON itself.",
+      "AGENTS.md (out of audited scope, unchanged across parent and head) contains an anomalous appended persona-override block resembling a possible prompt-injection artifact; it was not followed and requires no packet change, but remains present in the repository for a human governance owner to assess."
     ],
-    "skip_reason": null,
-    "instruction_like_content": {
-      "detected": false,
-      "match_count": 0,
-      "truncated": false,
-      "matches": []
-    }
+    "skip_reason": null
   }
 }
