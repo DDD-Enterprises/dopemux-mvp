@@ -2,6 +2,40 @@
   "packet_id": "TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A",
   "head_sha": "b72a3b6ddf45139a19911bee7df298e13cef61b5",
   "generated_at": "2026-08-24T05:23:55Z",
+  "validation": {
+    "status": "PASS",
+    "evidence_class": "RECORDED_PR_1267_EXECUTION_EVIDENCE",
+    "historical_red_baseline": {
+      "passed": 66,
+      "failed": 3,
+      "status": "EXPECTED_RED",
+      "note": "Recorded before the three superseded assertions were migrated; not rerun by the metadata reconciliation successor."
+    },
+    "green_suites": [
+      {
+        "scope": "tests/dnh_extension/test_dnh_artifact_only.py",
+        "passed": 69
+      },
+      {
+        "scope": "legacy dNh artifact-only plus dNh repository-planner adapter",
+        "passed": 82
+      },
+      {
+        "scope": "tests/repository_planner plus tests/project_control_plane",
+        "passed": 440
+      }
+    ]
+  },
+  "lineage": {
+    "pr_number": 1267,
+    "base_sha": "c8222f5d314c999dae45d9c0433227227a944d8b",
+    "audited_content_sha": "b72a3b6ddf45139a19911bee7df298e13cef61b5",
+    "canonical_proof_commit_sha": "e838a906de43471ee7d0be8f1cd38fb4411a67a8",
+    "signed_pr_proof_commit_sha": "dde2c33cb9baab0b16a3827ca9cc865df091e595",
+    "squash_merge_commit_sha": "61f9db6ced87344855fd2a9bf7a0757d30e9ea59",
+    "signed_pr_proof_path": "proof/pr_merge/embedded-audit/pr-1267/PROOF.json",
+    "proof_only_successors_preserve_audited_content": true
+  },
   "embedded_audit": {
     "required": true,
     "status": "PASS",
