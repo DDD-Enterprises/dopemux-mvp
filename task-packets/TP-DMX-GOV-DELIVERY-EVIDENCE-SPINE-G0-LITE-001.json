@@ -66,13 +66,13 @@
       "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/**"
     ],
     "verify": [
-      "rtk python -m jsonschema -i task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
-      "rtk uv run ruff check src/dopemux/governed_delivery tests/unit/governed_delivery",
-      "rtk uv run --extra test pytest tests/unit/governed_delivery -q",
-      "rtk python scripts/audit/validate_audit_proof.py proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/PROOF.json",
-      "rtk python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
-      "rtk pre-commit run --from-ref origin/main --to-ref HEAD",
-      "rtk git diff --check"
+      "python -m jsonschema -i task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "uv run ruff check src/dopemux/governed_delivery tests/unit/governed_delivery",
+      "uv run --extra test pytest tests/unit/governed_delivery -q",
+      "python scripts/audit/validate_audit_proof.py proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/PROOF.json",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "pre-commit run --from-ref origin/main --to-ref HEAD",
+      "git diff --check"
     ]
   },
   "pr": {
@@ -88,21 +88,30 @@
         "Start from a fresh dedicated worktree at the exact base named by the separate supervisor authority record, never from PR #1268 or this packet-authoring worktree.",
         "Require docs/03-reference/governance/governed-delivery/g0-lite-implementation-authority.md on current main with IMPLEMENTATION_AUTHORIZED=YES and exact bindings for packet ID, packet SHA-256, base SHA, allowlist, runner/agent ceiling, and stop conditions.",
         "Treat PR #1268 and caa4ec2913d0463c7e38835029f3f7adeb915ac6 as read-only evidence. Do not mutate, merge, close, mark ready, rebase, rewrite, or continue repair there.",
-        "Classify current-main overlap against every planned path. CONFLICTING or UNKNOWN governance semantics stop for supervisor review."
+        "Fetch refs/pull/1268/head into the bounded local ref refs/dopemux/custody/pr-1268-caa4ec2913d0463c7e38835029f3f7adeb915ac6 without force, then require that ref^{commit} to resolve exactly to caa4ec2913d0463c7e38835029f3f7adeb915ac6 before reading any failed-PR source path.",
+        "Define the planned G0-Lite payload as exactly the seventeen non-packet, non-proof paths in commit.allowlist. Require exactly one merge base between execution-main HEAD and the verified custody ref. Derive MAIN_PATHS from merge-base..HEAD and SOURCE_PATHS from merge-base..custody-ref using those exact pathspecs and --no-renames; derive SHARED_PATHS as their intersection.",
+        "Classify overlap deterministically: COMPATIBLE when SHARED_PATHS is empty; otherwise CONFLICTING when any shared path has a different final path state between HEAD and the custody ref; otherwise IDENTICAL when MAIN_PATHS equals SOURCE_PATHS, SUBSET when MAIN_PATHS is a proper subset of SOURCE_PATHS, SUPERSET when MAIN_PATHS is a proper superset of SOURCE_PATHS, and COMPATIBLE for all other equal-shared-state set relations. SUBSET and SUPERSET are always recorded from the execution-main perspective.",
+        "Any missing authority, fetch failure, exact-SHA mismatch, absent or multiple merge base, path-enumeration failure, path outside the planned payload, or unprovable shared-path state is UNKNOWN. CONFLICTING or UNKNOWN stops for supervisor review."
       ],
       "commands": [
-        "rtk git status --short --branch",
-        "rtk git rev-parse --show-toplevel",
-        "rtk git rev-parse HEAD",
-        "rtk git remote -v",
-        "rtk gh pr view 1268 --json state,isDraft,headRefOid,url",
-        "rtk git diff --name-status HEAD...caa4ec2913d0463c7e38835029f3f7adeb915ac6"
+        "git status --short --branch",
+        "git rev-parse --show-toplevel",
+        "git rev-parse HEAD",
+        "git remote -v",
+        "gh pr view 1268 --json state,isDraft,headRefOid,url",
+        "git fetch --no-tags origin refs/pull/1268/head:refs/dopemux/custody/pr-1268-caa4ec2913d0463c7e38835029f3f7adeb915ac6",
+        "test \"$(git rev-parse --verify 'refs/dopemux/custody/pr-1268-caa4ec2913d0463c7e38835029f3f7adeb915ac6^{commit}')\" = \"caa4ec2913d0463c7e38835029f3f7adeb915ac6\"",
+        "test \"$(git merge-base --all HEAD refs/dopemux/custody/pr-1268-caa4ec2913d0463c7e38835029f3f7adeb915ac6 | wc -l | tr -d '[:space:]')\" = \"1\"",
+        "git merge-base HEAD refs/dopemux/custody/pr-1268-caa4ec2913d0463c7e38835029f3f7adeb915ac6",
+        "git diff --name-only --no-renames \"$(git merge-base HEAD refs/dopemux/custody/pr-1268-caa4ec2913d0463c7e38835029f3f7adeb915ac6)..HEAD\" -- docs/03-reference/governance/governed-delivery/contract.md schemas/governed_delivery/evidence-reference.schema.json schemas/governed_delivery/governed-delivery-envelope.schema.json schemas/governed_delivery/gate-ledger.schema.json schemas/governed_delivery/work-item-projection.schema.json schemas/governed_delivery/content-audit-binding.schema.json src/dopemux/governed_delivery/__init__.py src/dopemux/governed_delivery/models.py src/dopemux/governed_delivery/receipts.py src/dopemux/governed_delivery/snapshot.py src/dopemux/governed_delivery/cli.py tests/unit/governed_delivery/__init__.py tests/unit/governed_delivery/test_models.py tests/unit/governed_delivery/test_receipts.py tests/unit/governed_delivery/test_snapshot.py tests/unit/governed_delivery/test_cross_project_denial.py tests/unit/governed_delivery/test_schema_conformance.py",
+        "git diff --name-only --no-renames \"$(git merge-base HEAD refs/dopemux/custody/pr-1268-caa4ec2913d0463c7e38835029f3f7adeb915ac6)..refs/dopemux/custody/pr-1268-caa4ec2913d0463c7e38835029f3f7adeb915ac6\" -- docs/03-reference/governance/governed-delivery/contract.md schemas/governed_delivery/evidence-reference.schema.json schemas/governed_delivery/governed-delivery-envelope.schema.json schemas/governed_delivery/gate-ledger.schema.json schemas/governed_delivery/work-item-projection.schema.json schemas/governed_delivery/content-audit-binding.schema.json src/dopemux/governed_delivery/__init__.py src/dopemux/governed_delivery/models.py src/dopemux/governed_delivery/receipts.py src/dopemux/governed_delivery/snapshot.py src/dopemux/governed_delivery/cli.py tests/unit/governed_delivery/__init__.py tests/unit/governed_delivery/test_models.py tests/unit/governed_delivery/test_receipts.py tests/unit/governed_delivery/test_snapshot.py tests/unit/governed_delivery/test_cross_project_denial.py tests/unit/governed_delivery/test_schema_conformance.py"
       ],
       "validation": [
         "Authority record exists on current main, is separately supervisor-authored/bound, names this exact packet digest and execution base, and explicitly says IMPLEMENTATION_AUTHORIZED=YES; otherwise STOP_IMPLEMENTATION_AUTHORITY_NOT_ISSUED.",
         "Worktree root, branch, remote, marker, clean status, and exact base match the authority record.",
-        "PR #1268 remains draft at the failed audited head or drift is reported without mutation.",
-        "Every candidate source path has an overlap classification; CONFLICTING or UNKNOWN authority semantics stop execution."
+        "PR #1268 remains draft and its fetched head resolves exactly to caa4ec2913d0463c7e38835029f3f7adeb915ac6; drift or an unavailable exact object stops without mutation.",
+        "Record execution-main SHA, custody-ref SHA, unique merge-base SHA, sorted MAIN_PATHS, sorted SOURCE_PATHS, sorted SHARED_PATHS, per-shared-path final-state comparison, classification, and direction. Every recorded path is in the seventeen-path planned payload.",
+        "Classification is exactly IDENTICAL, SUBSET, SUPERSET, COMPATIBLE, CONFLICTING, or UNKNOWN. CONFLICTING or UNKNOWN stops execution."
       ],
       "context_files": [
         "AGENTS.md",
@@ -110,7 +119,7 @@
         "docs/03-reference/governance/evidence-economy.md",
         "docs/ops/embedded-audit.md",
         "task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json",
-        "git:caa4ec2913d0463c7e38835029f3f7adeb915ac6:task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-001.json"
+        "git:refs/dopemux/custody/pr-1268-caa4ec2913d0463c7e38835029f3f7adeb915ac6:task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-001.json"
       ]
     },
     {
@@ -134,15 +143,15 @@
         "src/dopemux/governed_delivery/receipts.py"
       ],
       "validation": [
-        "rtk uv run --extra test pytest tests/unit/governed_delivery/test_models.py tests/unit/governed_delivery/test_receipts.py tests/unit/governed_delivery/test_schema_conformance.py -q",
-        "rtk rg -n 'READY|is_acceptable_for|audit_binding_acceptable|ProofOnly|audit_reuse_authorized|NextLegalAction|dispatch_eligible' src/dopemux/governed_delivery schemas/governed_delivery returns no matches.",
+        "uv run --extra test pytest tests/unit/governed_delivery/test_models.py tests/unit/governed_delivery/test_receipts.py tests/unit/governed_delivery/test_schema_conformance.py -q",
+        "rg -n 'READY|is_acceptable_for|audit_binding_acceptable|ProofOnly|audit_reuse_authorized|NextLegalAction|dispatch_eligible' src/dopemux/governed_delivery schemas/governed_delivery returns no matches.",
         "All five schemas meta-validate under the repository-supported JSON Schema draft and agree with runtime accept/reject fixtures.",
         "No proof-only-successor-equivalence or operator-decision-request schema or runtime module exists in the changed tree."
       ],
       "context_files": [
-        "git:caa4ec2913d0463c7e38835029f3f7adeb915ac6:src/dopemux/governed_delivery/models.py",
-        "git:caa4ec2913d0463c7e38835029f3f7adeb915ac6:src/dopemux/governed_delivery/receipts.py",
-        "git:caa4ec2913d0463c7e38835029f3f7adeb915ac6:schemas/governed_delivery/",
+        "git:refs/dopemux/custody/pr-1268-caa4ec2913d0463c7e38835029f3f7adeb915ac6:src/dopemux/governed_delivery/models.py",
+        "git:refs/dopemux/custody/pr-1268-caa4ec2913d0463c7e38835029f3f7adeb915ac6:src/dopemux/governed_delivery/receipts.py",
+        "git:refs/dopemux/custody/pr-1268-caa4ec2913d0463c7e38835029f3f7adeb915ac6:schemas/governed_delivery/",
         "schemas/proof/embedded_audit.schema.json"
       ]
     },
@@ -164,14 +173,14 @@
         "tests/unit/governed_delivery/test_cross_project_denial.py"
       ],
       "validation": [
-        "rtk uv run --extra test pytest tests/unit/governed_delivery/test_snapshot.py tests/unit/governed_delivery/test_cross_project_denial.py -q",
+        "uv run --extra test pytest tests/unit/governed_delivery/test_snapshot.py tests/unit/governed_delivery/test_cross_project_denial.py -q",
         "Regression fixtures prove fifteen NOT_APPLICABLE gates cannot emit READY because READY is unrepresentable.",
         "Regression fixtures prove PASS_WITH_RISKS without local risk interpretation, LIMITED independence, and partially known auditor identities remain represented data and never produce an acceptability or readiness result.",
         "Repeated snapshot construction from identical explicit inputs produces byte-identical canonical JSON and blocker ordering."
       ],
       "context_files": [
-        "git:caa4ec2913d0463c7e38835029f3f7adeb915ac6:src/dopemux/governed_delivery/snapshot.py",
-        "git:caa4ec2913d0463c7e38835029f3f7adeb915ac6:tests/unit/governed_delivery/"
+        "git:refs/dopemux/custody/pr-1268-caa4ec2913d0463c7e38835029f3f7adeb915ac6:src/dopemux/governed_delivery/snapshot.py",
+        "git:refs/dopemux/custody/pr-1268-caa4ec2913d0463c7e38835029f3f7adeb915ac6:tests/unit/governed_delivery/"
       ]
     },
     {
@@ -189,27 +198,27 @@
         "tests/unit/governed_delivery/test_cross_project_denial.py"
       ],
       "validation": [
-        "rtk uv run --extra test pytest tests/unit/governed_delivery/test_snapshot.py tests/unit/governed_delivery/test_cross_project_denial.py -q",
-        "rtk python -m dopemux.governed_delivery.cli --help lists only validate-ref, validate-envelope, and snapshot.",
+        "uv run --extra test pytest tests/unit/governed_delivery/test_snapshot.py tests/unit/governed_delivery/test_cross_project_denial.py -q",
+        "python -m dopemux.governed_delivery.cli --help lists only validate-ref, validate-envelope, and snapshot.",
         "Adversarial argv, traversal, option-shaped, malformed object-ID, cross-project, cross-repository, cross-worktree, and cross-packet inputs fail closed before subprocess execution or projection."
       ],
       "context_files": [
-        "git:caa4ec2913d0463c7e38835029f3f7adeb915ac6:src/dopemux/governed_delivery/cli.py",
-        "git:caa4ec2913d0463c7e38835029f3f7adeb915ac6:src/dopemux/governed_delivery/snapshot.py"
+        "git:refs/dopemux/custody/pr-1268-caa4ec2913d0463c7e38835029f3f7adeb915ac6:src/dopemux/governed_delivery/cli.py",
+        "git:refs/dopemux/custody/pr-1268-caa4ec2913d0463c7e38835029f3f7adeb915ac6:src/dopemux/governed_delivery/snapshot.py"
       ]
     },
     {
       "id": "S4",
       "task": "Run complete deterministic validation, inspect scope, and freeze one content head before independent audit.",
       "commands": [
-        "rtk python -m jsonschema -i task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
-        "rtk uv run ruff check src/dopemux/governed_delivery tests/unit/governed_delivery",
-        "rtk uv run --extra test pytest tests/unit/governed_delivery -q",
-        "rtk python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
-        "rtk pre-commit run --from-ref origin/main --to-ref HEAD",
-        "rtk git diff --check",
-        "rtk git status --short --branch",
-        "rtk git diff --name-status origin/main...HEAD"
+        "python -m jsonschema -i task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "uv run ruff check src/dopemux/governed_delivery tests/unit/governed_delivery",
+        "uv run --extra test pytest tests/unit/governed_delivery -q",
+        "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+        "pre-commit run --from-ref origin/main --to-ref HEAD",
+        "git diff --check",
+        "git status --short --branch",
+        "git diff --name-status origin/main...HEAD"
       ],
       "validation": [
         "All commands exit 0 after any hook mutation is reviewed and the full gate is rerun.",
@@ -230,7 +239,7 @@
         "PR Steward remains sole merge/PR-readiness classifier. Operator remains sole merge/activation authority."
       ],
       "validation": [
-        "rtk python scripts/audit/validate_audit_proof.py proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/PROOF.json",
+        "python scripts/audit/validate_audit_proof.py proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/PROOF.json",
         "Proof head, report path, findings, remaining risks, auditor tool/model/invocation, identity, independence, and exact content binding satisfy schemas/proof/embedded_audit.schema.json and docs/ops/embedded-audit.md.",
         "PR-scoped proof is regenerated or re-pinned to the exact PR head before FINALIZATION; pre-PR local proof is not presented as a passing PR Steward gate.",
         "No merge, mark-ready, close, activation, force-push, history rewrite, or branch deletion occurs without later explicit operator authority."
