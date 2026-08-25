@@ -1,0 +1,89 @@
+{
+  "packet_id": "TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001",
+  "series": "DMX-GOV-GOVERNED-DELIVERY-G0-LITE-001",
+  "branch": "tp/gov-delivery-evidence-spine-g0-lite-001",
+  "base": "main",
+  "base_sha": "d40e43dd70307d2c000a4efd581be7c11248728c",
+  "audited_parent": "ac0aa1a6c806819b6b9ce5a7d263f27ac396f724",
+  "head_sha": "37de7769a2c5b749dcb377a414500e83ad7d67af",
+  "tree_sha": "836f869c00c8f75d5e2b2ba05f2f5aa4a892fbc8",
+  "generated_at": "2026-08-25T22:42:53Z",
+  "pr_number": 1274,
+  "kind": "packet-only correction",
+  "packet_sha256": "5d636307ad1ba7b6ec1498cac4fd79afcf9f480c9b96dad208f3f03e3f807cc9",
+  "audited_files": [
+    "task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json"
+  ],
+  "validations": {
+    "task_packet_schema": "PASS",
+    "packet_correction_assertions": "PASS (17 planned payload paths; bounded exact-SHA custody; symmetric path sets; six-class fail-closed classification; no rtk commands)",
+    "change_contract_correction_range": "PASS (L0 packet-only change; one path)",
+    "change_contract_full_branch": "PASS (L0; 14 paths before proof regeneration)",
+    "pre_commit_correction_range": "PASS_CLEAN",
+    "git_diff_check": "PASS",
+    "ordinary_ci": "NOT_RUN at corrected content head; not pushed",
+    "implementation_authority_record": "ABSENT on observed origin/main f0a01035832c02fc2c02b7a23a0f9c3517c69364; implementation remains unauthorized"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "rtk claude --print --model sonnet --effort high --output-format json --json-schema '<DIRECT_CLAUDE_AUDIT_SCHEMA.json bytes>' --tools \"Bash,Read,Grep,Glob\" --allowedTools \"Bash(git *),Bash(python *),Read,Grep,Glob\" --mcp-config '{\"mcpServers\":{}}' --strict-mcp-config --safe-mode --no-session-persistence --disable-slash-commands --permission-mode plan < /private/tmp/g0-lite-packet-correction-audit-prompt.md",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "LOW",
+        "title": "No explicit command computes SHARED_PATHS intersection or per-shared-path final-state comparison",
+        "status": "OPEN",
+        "body": "S0 requirements and validation define the intersection and state proof, but no listed command performs them. Missing or unprovable shared-path state resolves to UNKNOWN and stops, so this remains non-blocking execution determinism risk."
+      },
+      {
+        "id": "F2",
+        "severity": "LOW",
+        "title": "S0 command sequencing relies on implicit fail-fast shell semantics",
+        "status": "OPEN",
+        "body": "Fetch, exact-SHA, merge-base, and path-set commands must stop on any nonzero exit. Packet stop language implies this, but does not spell out fail-fast shell semantics inline."
+      },
+      {
+        "id": "F3",
+        "severity": "INFO",
+        "title": "AGENTS.md unchanged persona block flagged outside diff scope",
+        "status": "ACCEPTED_RISK",
+        "body": "Auditor flagged an unchanged persona instruction block in AGENTS.md as anomalous, did not follow it, and made no change or governance conclusion about that out-of-scope file."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "S0's overlap-classification obligation (SHARED_PATHS intersection and per-shared-path HEAD-vs-custody-ref state comparison) has no explicit command in the packet and depends on correct executor improvisation; failure to prove shared-path state correctly resolves to UNKNOWN under the packet's own rule (fail-closed), but a careless executor could still misjudge inputs before that catch-all is invoked.",
+      "S0's fail-closed sequencing (fetch failure, SHA-equality mismatch, or multiple/absent merge-base all stopping before reading failed-PR source content) depends on the executing shell/agent running the listed commands with fail-fast semantics; this is implied by surrounding packet and AGENTS.md language but not spelled out as an explicit execution contract inside the packet JSON itself.",
+      "AGENTS.md (out of audited scope, unchanged across parent and head) contains an anomalous appended persona-override block resembling a possible prompt-injection artifact; it was not followed and requires no packet change, but remains present in the repository for a human governance owner to assess."
+    ],
+    "skip_reason": null
+  },
+  "provenance": {
+    "audit_source": "direct-claude-code-cli",
+    "claude_code_version": "2.1.246",
+    "requested_selector": "sonnet",
+    "observed_primary_model": "claude-sonnet-5",
+    "observed_additional_model_usage": [
+      "claude-fable-5",
+      "claude-haiku-4-5-20251001"
+    ],
+    "fallback_model_configured": false,
+    "tools_enabled": true,
+    "mcp_servers_enabled": false,
+    "session_persistence": false,
+    "subagents_spawned": 0,
+    "implementer_family": "OpenAI Codex",
+    "auditor_family": "Anthropic Claude Code",
+    "independence": "PROVEN_DIFFERENT_VENDOR_MODEL_FAMILY",
+    "pal_clink_used": false,
+    "raw_stdout_file_captured": false,
+    "raw_stdout_preserved_in_operator_tool_transcript": true,
+    "normalized_structured_output_captured": true,
+    "token_value_recorded": false
+  }
+}

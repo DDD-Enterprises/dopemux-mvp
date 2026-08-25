@@ -1,0 +1,55 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "summary",
+    "findings",
+    "fixes_applied",
+    "remaining_risks",
+    "evidence",
+    "auditor_tool",
+    "auditor_model",
+    "audited_head",
+    "audited_parent",
+    "scope_paths"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["PASS", "PASS_WITH_RISKS", "FAIL", "NEEDS_SUPERVISOR"]
+    },
+    "summary": {"type": "string", "minLength": 1},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "severity", "title", "status", "body"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "severity": {
+            "type": "string",
+            "enum": ["BLOCKING", "HIGH", "MEDIUM", "LOW", "INFO"]
+          },
+          "title": {"type": "string", "minLength": 1},
+          "status": {
+            "type": "string",
+            "enum": ["OPEN", "RESOLVED", "ACCEPTED_RISK"]
+          },
+          "body": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "fixes_applied": {"type": "array", "maxItems": 0, "items": {"type": "string"}},
+    "remaining_risks": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "evidence": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "auditor_tool": {"const": "claude-code-cli"},
+    "auditor_model": {"const": "sonnet"},
+    "audited_head": {"const": "37de7769a2c5b749dcb377a414500e83ad7d67af"},
+    "audited_parent": {"const": "ac0aa1a6c806819b6b9ce5a7d263f27ac396f724"},
+    "scope_paths": {
+      "const": ["task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json"]
+    }
+  }
+}
