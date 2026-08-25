@@ -1,0 +1,20 @@
+{
+  "packet_id": "TP-DMX-DCP-0007T",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1153,
+  "head_sha": "6c8482e040430dfd987423b36f8ee5d012c0d4dc",
+  "generated_at": "2026-08-25T06:14:16Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-DCP-0007T/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null
+  }
+}
