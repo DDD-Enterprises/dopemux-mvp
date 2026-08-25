@@ -1,0 +1,90 @@
+{
+  "id": "TP-DMX-DCP-0007I",
+  "project": "dopemux-mvp",
+  "target": "Implement fail-closed trusted-input capability boundary so raw or restored routing inputs cannot confer mutation eligibility.",
+  "invariants": [
+    "DRY-RUN ONLY: do not pass --execute, set DPMX_LIVE_OK, or make any provider call.",
+    "Preserve pure classification behavior without granting execution eligibility.",
+    "Do not activate any live trusted adapter in this packet.",
+    "Keep the change deterministic and limited to the allowlist.",
+    "The PAL service transport is unavailable in this session; record PAL gates as NOT_RUN rather than inventing results."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-MODEL-ROUTING-NEXT-TRANCHE-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "dcp/model-routing-0007i-trusted-input",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(dcp): trusted input capability boundary \u2014 DMX-DCP-MODEL-ROUTING-MVP-0007I",
+    "allowlist": [
+      "src/dopemux/dcp/__init__.py",
+      "src/dopemux/dcp/input_adapters.py",
+      "tests/unit/dcp/test_input_adapters.py",
+      "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007I.md",
+      "task-packets/TP-DMX-DCP-0007I.json",
+      "proof/TP-DMX-DCP-0007I/AUDITOR_REPORT.md",
+      "proof/TP-DMX-DCP-0007I/PROOF.json",
+      "proof/TP-DMX-DCP-0007I/review_bundle/.gitkeep",
+      "proof/pr_merge/embedded-audit/pr-1151/PROOF.json",
+      "proof/pr_merge/embedded-audit/pr-1151/PROOF.json.sig"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-DCP-0007I.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "pytest -q tests/unit/dcp/test_input_adapters.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): trusted input capability boundary \u2014 DMX-DCP-MODEL-ROUTING-MVP-0007I",
+    "body": "Implement fail-closed trusted-input capability boundary. No mutation enable or live runner execution.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "audit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Add input_adapters.py capability boundary and test coverage.",
+      "validation": [
+        "pytest -q tests/unit/dcp/test_input_adapters.py"
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Export capability surface from dopemux.dcp package.",
+      "validation": [
+        "pytest -q tests/unit/dcp/test_input_adapters.py -k test_package_exports_capability_surface"
+      ]
+    },
+    {
+      "id": "step-3",
+      "task": "Verify clean git diff and allowlist containment.",
+      "validation": [
+        "git diff --check"
+      ]
+    }
+  ]
+}
