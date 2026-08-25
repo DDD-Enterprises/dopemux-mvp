@@ -1,0 +1,30 @@
+{
+  "route": "direct-claude-code-cli",
+  "audited_repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1274,
+  "base_sha": "d40e43dd70307d2c000a4efd581be7c11248728c",
+  "head_sha": "eeebed83fc57621fb731c1d81acdb3a2412f6eef",
+  "tree_sha": "94bc8e4b79dc78f96365ed1107f1e7755b9ee538",
+  "packet_sha256": "a702a6620676d4cc605e381acba676cab37c67179b7a3e542d8db8acfe332c7d",
+  "prompt_sha256": "f1c11899be32edb3bb12744400ffee995c91d696286e93ff19eb62924aadd1e1",
+  "candidate_diff_sha256": "8c2478bcc2f22f61fafb017dd846c27bbec1078ba3e3b09a8186c7a9a8cc6700",
+  "changed_files_sha256": "0f68f97ca73c7f0ca3597a91ed326f41341ee5f7b657a5f4f195dd81dd72ae90",
+  "instruction_scan_sha256": "e486d7841c47d1a9f09e5ee37ba4da8784063d01f9c8eb917db3a6bc9157e960",
+  "claude_code_version": "2.1.241",
+  "invocation": "rtk claude --print --model sonnet --effort high --output-format json --tools \"\" --mcp-config '{\"mcpServers\":{}}' --strict-mcp-config --safe-mode --no-session-persistence --disable-slash-commands --permission-mode plan < /tmp/dmx-g0-lite-pr1274-audit/PAL_CLINK_AUDIT_INPUT.md",
+  "requested_model": "sonnet",
+  "observed_primary_model": "claude-sonnet-5",
+  "observed_additional_model_usage": [
+    "claude-fable-5",
+    "claude-haiku-4-5-20251001"
+  ],
+  "fallback_model_configured": false,
+  "exit_code": 0,
+  "tools_enabled": false,
+  "mcp_servers_enabled": false,
+  "safe_mode": true,
+  "session_persistence": false,
+  "prompt_origin": "Trusted CI prompt-builder artifact for exact PR head; PAL/clink execution output was excluded and was not audit authority.",
+  "auditor_validation_status": "NOT_RUN",
+  "verdict": "PASS_WITH_RISKS"
+}

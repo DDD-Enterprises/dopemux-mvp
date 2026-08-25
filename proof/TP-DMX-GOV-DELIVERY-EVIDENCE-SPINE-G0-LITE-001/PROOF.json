@@ -1,0 +1,67 @@
+{
+  "packet_id": "TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001",
+  "series": "DMX-GOV-GOVERNED-DELIVERY-G0-LITE-001",
+  "branch": "tp/gov-delivery-evidence-spine-g0-lite-001",
+  "base": "main",
+  "base_sha": "d40e43dd70307d2c000a4efd581be7c11248728c",
+  "head_sha": "eeebed83fc57621fb731c1d81acdb3a2412f6eef",
+  "tree_sha": "94bc8e4b79dc78f96365ed1107f1e7755b9ee538",
+  "generated_at": "2026-08-25T05:36:33Z",
+  "pr_number": 1274,
+  "kind": "packet-only scope proposal",
+  "packet_sha256": "a702a6620676d4cc605e381acba676cab37c67179b7a3e542d8db8acfe332c7d",
+  "audited_files": [
+    "task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json"
+  ],
+  "validations": {
+    "task_packet_schema": "PASS",
+    "change_contract": "PASS (L0 packet-only change; future payload declares L2)",
+    "pre_commit_range": "PASS",
+    "git_diff_check": "PASS",
+    "ordinary_ci": "PASS (workflow 32812797232 at audited head)",
+    "implementation_authority_record": "ABSENT on origin/main; implementation remains unauthorized"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "rtk claude --print --model sonnet --effort high --output-format json --tools \"\" --mcp-config '{\"mcpServers\":{}}' --strict-mcp-config --safe-mode --no-session-persistence --disable-slash-commands --permission-mode plan < /tmp/dmx-g0-lite-pr1274-audit/PAL_CLINK_AUDIT_INPUT.md",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Auditor tools and MCP were disabled, so the auditor recorded validation_status=NOT_RUN; deterministic local and CI validations are separate evidence.",
+      "Independent audit was limited to exact candidate diff, metadata, and harness Git status; it did not inspect unrelated repository state.",
+      "The Task Packet is instruction-bearing by design. Auditor judged its instructions benign and bounded to a future implementer behind a separate authority gate.",
+      "Required supervisor implementation-authority record is absent on audited origin/main; payload implementation remains unauthorized."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  },
+  "provenance": {
+    "audit_source": "direct-claude-code-cli",
+    "claude_code_version": "2.1.241",
+    "requested_selector": "sonnet",
+    "observed_primary_model": "claude-sonnet-5",
+    "observed_additional_model_usage": [
+      "claude-fable-5",
+      "claude-haiku-4-5-20251001"
+    ],
+    "fallback_model_configured": false,
+    "tools_enabled": false,
+    "mcp_servers_enabled": false,
+    "session_persistence": false,
+    "implementer_family": "OpenAI Codex",
+    "auditor_family": "Anthropic Claude Code",
+    "independence": "PROVEN_DIFFERENT_VENDOR_MODEL_FAMILY",
+    "prior_ci_clink_result_controlling": false,
+    "token_value_recorded": false
+  }
+}

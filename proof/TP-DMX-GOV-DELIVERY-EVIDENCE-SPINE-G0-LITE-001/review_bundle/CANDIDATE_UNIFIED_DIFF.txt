@@ -1,0 +1,253 @@
+diff --git a/task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json b/task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json
+new file mode 100644
+index 00000000..4251a2e8
+--- /dev/null
++++ b/task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json
+@@ -0,0 +1,247 @@
++{
++  "id": "TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001",
++  "project": "dopemux-mvp",
++  "target": "DRAFT L2 replacement proposal from authoring base d40e43dd70307d2c000a4efd581be7c11248728c. Selectively transplant and revalidate only the candidate representation, deterministic projection, freshness, normalization, and read-only inspection payload from failed PR #1268 head caa4ec2913d0463c7e38835029f3f7adeb915ac6. Remove every G0-owned readiness, audit-acceptability, audit-reuse, dispatch, merge, PR, and activation judgment. IMPLEMENTATION_AUTHORITY remains NOT_YET_ISSUED until a separate supervisor-authored authority record binds this packet's exact bytes and execution scope.",
++  "invariants": [
++    "This packet is a draft scope proposal, not implementation authority. No payload file may be created or modified until docs/03-reference/governance/governed-delivery/g0-lite-implementation-authority.md exists on current main and explicitly records IMPLEMENTATION_AUTHORIZED=YES.",
++    "The separate supervisor authority record must bind this exact packet ID, the SHA-256 digest of this packet's bytes, the exact implementation base SHA, the allowlist, the approved runner and agent ceiling, and the implementation stop conditions. Missing, stale, unsigned, ambiguous, or mismatched authority is STOP_IMPLEMENTATION_AUTHORITY_NOT_ISSUED.",
++    "After a supervisor authority record binds this packet digest, the implementer may not amend this packet. Any packet-byte change invalidates the authority binding and requires a new separate supervisor-authored record before work resumes.",
++    "PR #1268 remains OPEN, DRAFT, and BLOCKED_FAILED_R2 at caa4ec2913d0463c7e38835029f3f7adeb915ac6. Merge, mark-ready, close, repair-cycle-3, force-push, rewrite, branch deletion, and additional commits to PR #1268 remain unauthorized.",
++    "The failed PR and its commits are evidence sources only. This replacement is based on current main and must not be stacked on, merged from, or wholesale cherry-picked from PR #1268.",
++    "G0-Lite owns only EvidenceReference, GovernedDeliveryEnvelope, GateLedger evidence representation, native-state preservation, blocker representation, navigational phase/status projection, deterministic freshness, message/failure normalization, and read-only inspection.",
++    "G0-Lite does not own READY posture, audit acceptability, independence sufficiency, PASS_WITH_RISKS adjudication, proof-only audit reuse, next-action legality, dispatch eligibility, merge readiness, PR readiness, activation readiness, or any canonical workflow transition.",
++    "All G0-Lite outputs are derived, read-only, and non-authoritative. They never replace Task Packet, Task Orchestrator, embedded audit, proof, GitHub, PR Steward, or operator truth.",
++    "WorkItemProjection has no READY value, readiness flag, audit-acceptability flag, or readiness predicate. Status remains navigational and may represent only ACTIVE, BLOCKED, DECISION_REQUIRED, or TERMINAL.",
++    "Phase and status projection preserve concurrent native subsystem states verbatim and never authorize phase advancement, workflow mutation, merge, PR readiness, or activation.",
++    "GateLedger represents supplied gate evidence, including state, reason, policy owner/version, subject binding, evidence references, timestamps, and blocking actions. G0-Lite does not define a fixed required-gate completeness profile, synthesize readiness from missing or NOT_APPLICABLE gates, or emit a gate-profile-complete decision.",
++    "NOT_APPLICABLE remains a native represented state. It is never coerced to SATISFIED and never contributes readiness or permission.",
++    "ContentAuditBinding is representation-only. It preserves exact subject, digest, verdict, risk, finding, identity-layer, and independence claims without is_acceptable_for, audit_binding_acceptable, or any equivalent acceptance predicate.",
++    "PASS_WITH_RISKS and LIMITED independence are preserved as supplied audit-result claims but are neither accepted nor rejected by G0-Lite. Embedded audit and PR Steward remain their canonical adjudicators.",
++    "Requested, configured, response-claimed, proxy-reported, and provider-attested auditor identity layers remain separate fields. G0-Lite does not reconcile them or infer sufficiency.",
++    "ProofOnlySuccessorEquivalence, proof-only audit reuse, OperatorDecisionRequest, NextLegalAction, dispatch_eligible, equivalence CLI behavior, and their schemas/tests are excluded from G0-Lite.",
++    "Canonical packet proof remains proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/{PROOF.json,AUDITOR_REPORT.md,review_bundle/**}. One final independent audit runs only after content-head freeze; any proof-only successor follows docs/ops/embedded-audit.md and exact-head PR Steward checks.",
++    "Blockers remain individually represented with stable deterministic ordering. G0-Lite may surface explicit blocking gate states and deterministic stale-evidence results, but it may not synthesize an audit blocker by judging verdict, risk, identity, or independence sufficiency.",
++    "Evidence freshness uses explicit as_of input, stable serialization, and fail-closed UNKNOWN. Runtime code reads no clock and performs no hidden retry.",
++    "Five envelope kinds continue to represent the observed 39 message classes. Eleven normalized failure classes continue to map the observed 44 failure branches without creating workflow authority or a global workflow mega-enum.",
++    "Project, repository, worktree, and packet identity remain required for consequential cross-object comparison. Missing, UNKNOWN, or mismatched required identity fails closed.",
++    "Runtime and schema parsers remain closed to undeclared fields, unknown schema versions, malformed full Git object IDs, and malformed SHA-256 digests.",
++    "No new dependency, database, service, daemon, MCP server, persistent cache, credential store, network listener, provider call, auditor call, GitHub mutation, or Task Orchestrator mutation is introduced by G0-Lite runtime code.",
++    "Risk lane is L2 because planned work changes governance, schemas, and public data contracts. Budget is one bounded implementer after authority issuance plus one final independent auditor after content-head freeze; no intermediate model audits.",
++    "UNKNOWN authority, source drift with conflicting semantics, allowlist conflict, contract ambiguity, test failure, audit failure, proof staleness, or PR-head mismatch stops execution and remains explicit."
++  ],
++  "depends_on": [],
++  "repo_binding": {
++    "project_id": "dopemux-mvp",
++    "repo_marker": ".dopetaskroot",
++    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
++    "require_identity_match": true
++  },
++  "series": {
++    "id": "DMX-GOV-GOVERNED-DELIVERY-G0-LITE-001",
++    "base_branch": "main",
++    "parent_tp_id": "TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-001",
++    "final_packet": false
++  },
++  "commit": {
++    "message": "feat(governance): add G0-Lite evidence representation spine",
++    "allowlist": [
++      "task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json",
++      "docs/03-reference/governance/governed-delivery/contract.md",
++      "schemas/governed_delivery/evidence-reference.schema.json",
++      "schemas/governed_delivery/governed-delivery-envelope.schema.json",
++      "schemas/governed_delivery/gate-ledger.schema.json",
++      "schemas/governed_delivery/work-item-projection.schema.json",
++      "schemas/governed_delivery/content-audit-binding.schema.json",
++      "src/dopemux/governed_delivery/__init__.py",
++      "src/dopemux/governed_delivery/models.py",
++      "src/dopemux/governed_delivery/receipts.py",
++      "src/dopemux/governed_delivery/snapshot.py",
++      "src/dopemux/governed_delivery/cli.py",
++      "tests/unit/governed_delivery/__init__.py",
++      "tests/unit/governed_delivery/test_models.py",
++      "tests/unit/governed_delivery/test_receipts.py",
++      "tests/unit/governed_delivery/test_snapshot.py",
++      "tests/unit/governed_delivery/test_cross_project_denial.py",
++      "tests/unit/governed_delivery/test_schema_conformance.py",
++      "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/**"
++    ],
++    "verify": [
++      "rtk python -m jsonschema -i task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
++      "rtk uv run ruff check src/dopemux/governed_delivery tests/unit/governed_delivery",
++      "rtk uv run --extra test pytest tests/unit/governed_delivery -q",
++      "rtk python scripts/audit/validate_audit_proof.py proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/PROOF.json",
++      "rtk python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
++      "rtk pre-commit run --from-ref origin/main --to-ref HEAD",
++      "rtk git diff --check"
++    ]
++  },
++  "pr": {
++    "title": "feat(governance): add G0-Lite evidence representation spine",
++    "body": "## Summary\n- transplant only read-only governed-delivery representation and deterministic projection payload from failed PR #1268\n- remove READY and every audit/readiness/reuse/dispatch adjudication surface\n- preserve canonical embedded-audit and PR Steward ownership\n\n## Authority\nImplementation starts only after a separate supervisor-authored record on current main binds this packet digest and exact execution scope.\n\n## Safety\nNo Task Orchestrator mutation, GitHub mutation, audit invocation, merge, mark-ready, activation, network, database, service, daemon, or persistent cache behavior.\n\n## Validation\nL2: targeted deterministic tests, schema/runtime parity, frozen-head independent audit, canonical packet proof, and exact-head PR Steward.",
++    "base": "main"
++  },
++  "steps": [
++    {
++      "id": "S0",
++      "task": "Enforce separate implementation-authority and source-custody stop gates before any payload edit.",
++      "requirements": [
++        "Start from a fresh dedicated worktree at the exact base named by the separate supervisor authority record, never from PR #1268 or this packet-authoring worktree.",
++        "Require docs/03-reference/governance/governed-delivery/g0-lite-implementation-authority.md on current main with IMPLEMENTATION_AUTHORIZED=YES and exact bindings for packet ID, packet SHA-256, base SHA, allowlist, runner/agent ceiling, and stop conditions.",
++        "Treat PR #1268 and caa4ec2913d0463c7e38835029f3f7adeb915ac6 as read-only evidence. Do not mutate, merge, close, mark ready, rebase, rewrite, or continue repair there.",
++        "Classify current-main overlap against every planned path. CONFLICTING or UNKNOWN governance semantics stop for supervisor review."
++      ],
++      "commands": [
++        "rtk git status --short --branch",
++        "rtk git rev-parse --show-toplevel",
++        "rtk git rev-parse HEAD",
++        "rtk git remote -v",
++        "rtk gh pr view 1268 --json state,isDraft,headRefOid,url",
++        "rtk git diff --name-status HEAD...caa4ec2913d0463c7e38835029f3f7adeb915ac6"
++      ],
++      "validation": [
++        "Authority record exists on current main, is separately supervisor-authored/bound, names this exact packet digest and execution base, and explicitly says IMPLEMENTATION_AUTHORIZED=YES; otherwise STOP_IMPLEMENTATION_AUTHORITY_NOT_ISSUED.",
++        "Worktree root, branch, remote, marker, clean status, and exact base match the authority record.",
++        "PR #1268 remains draft at the failed audited head or drift is reported without mutation.",
++        "Every candidate source path has an overlap classification; CONFLICTING or UNKNOWN authority semantics stop execution."
++      ],
++      "context_files": [
++        "AGENTS.md",
++        "docs/03-reference/governance/governed-delivery/g0-lite-implementation-authority.md",
++        "docs/03-reference/governance/evidence-economy.md",
++        "docs/ops/embedded-audit.md",
++        "task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json",
++        "git:caa4ec2913d0463c7e38835029f3f7adeb915ac6:task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-001.json"
++      ]
++    },
++    {
++      "id": "S1",
++      "task": "Selectively transplant only five representation contracts and their pure typed runtime models from failed source head caa4ec2913d0463c7e38835029f3f7adeb915ac6.",
++      "requirements": [
++        "Implement EvidenceReference, GovernedDeliveryEnvelope, GateLedger, WorkItemProjection without READY, and representation-only ContentAuditBinding.",
++        "Remove ProofOnlySuccessorEquivalence, OperatorDecisionRequest, NextLegalAction, readiness flags/predicates, audit-acceptability predicates, and all proof-only reuse behavior instead of copying them and disabling them conditionally.",
++        "Preserve strict identity, full Git object ID, SHA-256, schema-version, unknown-field, deterministic serialization, five-kind message-census, and eleven-class failure-normalization validation.",
++        "Do not add a dependency or edit existing runtime wiring."
++      ],
++      "expected_files": [
++        "docs/03-reference/governance/governed-delivery/contract.md",
++        "schemas/governed_delivery/evidence-reference.schema.json",
++        "schemas/governed_delivery/governed-delivery-envelope.schema.json",
++        "schemas/governed_delivery/gate-ledger.schema.json",
++        "schemas/governed_delivery/work-item-projection.schema.json",
++        "schemas/governed_delivery/content-audit-binding.schema.json",
++        "src/dopemux/governed_delivery/__init__.py",
++        "src/dopemux/governed_delivery/models.py",
++        "src/dopemux/governed_delivery/receipts.py"
++      ],
++      "validation": [
++        "rtk uv run --extra test pytest tests/unit/governed_delivery/test_models.py tests/unit/governed_delivery/test_receipts.py tests/unit/governed_delivery/test_schema_conformance.py -q",
++        "rtk rg -n 'READY|is_acceptable_for|audit_binding_acceptable|ProofOnly|audit_reuse_authorized|NextLegalAction|dispatch_eligible' src/dopemux/governed_delivery schemas/governed_delivery returns no matches.",
++        "All five schemas meta-validate under the repository-supported JSON Schema draft and agree with runtime accept/reject fixtures.",
++        "No proof-only-successor-equivalence or operator-decision-request schema or runtime module exists in the changed tree."
++      ],
++      "context_files": [
++        "git:caa4ec2913d0463c7e38835029f3f7adeb915ac6:src/dopemux/governed_delivery/models.py",
++        "git:caa4ec2913d0463c7e38835029f3f7adeb915ac6:src/dopemux/governed_delivery/receipts.py",
++        "git:caa4ec2913d0463c7e38835029f3f7adeb915ac6:schemas/governed_delivery/",
++        "schemas/proof/embedded_audit.schema.json"
++      ]
++    },
++    {
++      "id": "S2",
++      "task": "Implement deterministic native-state, blocker, phase/status, and freshness projection without readiness or audit judgment.",
++      "requirements": [
++        "Preserve every native subsystem state verbatim and every root blocker individually.",
++        "Derive navigational phase from represented evidence with stable precedence and fail-closed handling of missing or non-satisfied prerequisites, but emit no permission, next action, or readiness conclusion.",
++        "Represent ACTIVE, BLOCKED, DECISION_REQUIRED, and TERMINAL only. Absence of blockers yields ACTIVE, never READY.",
++        "Assess evidence freshness using caller-supplied as_of and stable ordering; no clock reads, hidden retry, cache, or write.",
++        "Do not derive audit blockers or status by interpreting audit verdict, risk list, auditor identity layers, or independence."
++      ],
++      "expected_files": [
++        "src/dopemux/governed_delivery/snapshot.py",
++        "tests/unit/governed_delivery/test_models.py",
++        "tests/unit/governed_delivery/test_receipts.py",
++        "tests/unit/governed_delivery/test_snapshot.py",
++        "tests/unit/governed_delivery/test_cross_project_denial.py"
++      ],
++      "validation": [
++        "rtk uv run --extra test pytest tests/unit/governed_delivery/test_snapshot.py tests/unit/governed_delivery/test_cross_project_denial.py -q",
++        "Regression fixtures prove fifteen NOT_APPLICABLE gates cannot emit READY because READY is unrepresentable.",
++        "Regression fixtures prove PASS_WITH_RISKS without local risk interpretation, LIMITED independence, and partially known auditor identities remain represented data and never produce an acceptability or readiness result.",
++        "Repeated snapshot construction from identical explicit inputs produces byte-identical canonical JSON and blocker ordering."
++      ],
++      "context_files": [
++        "git:caa4ec2913d0463c7e38835029f3f7adeb915ac6:src/dopemux/governed_delivery/snapshot.py",
++        "git:caa4ec2913d0463c7e38835029f3f7adeb915ac6:tests/unit/governed_delivery/"
++      ]
++    },
++    {
++      "id": "S3",
++      "task": "Expose bounded read-only inspection for references, envelopes, and snapshots only.",
++      "requirements": [
++        "CLI supports validate-ref, validate-envelope, and snapshot only.",
++        "CLI has no equivalence, audit, readiness, dispatch, next-action, GitHub, Task Orchestrator, provider, or mutation command.",
++        "Local Git observation uses shell=False and a shape-validated read-only argv allowlist only where required for inspection.",
++        "Exit codes remain deterministic: accepted inspection, denied input, or usage error; exit zero never means workflow readiness."
++      ],
++      "expected_files": [
++        "src/dopemux/governed_delivery/cli.py",
++        "tests/unit/governed_delivery/test_snapshot.py",
++        "tests/unit/governed_delivery/test_cross_project_denial.py"
++      ],
++      "validation": [
++        "rtk uv run --extra test pytest tests/unit/governed_delivery/test_snapshot.py tests/unit/governed_delivery/test_cross_project_denial.py -q",
++        "rtk python -m dopemux.governed_delivery.cli --help lists only validate-ref, validate-envelope, and snapshot.",
++        "Adversarial argv, traversal, option-shaped, malformed object-ID, cross-project, cross-repository, cross-worktree, and cross-packet inputs fail closed before subprocess execution or projection."
++      ],
++      "context_files": [
++        "git:caa4ec2913d0463c7e38835029f3f7adeb915ac6:src/dopemux/governed_delivery/cli.py",
++        "git:caa4ec2913d0463c7e38835029f3f7adeb915ac6:src/dopemux/governed_delivery/snapshot.py"
++      ]
++    },
++    {
++      "id": "S4",
++      "task": "Run complete deterministic validation, inspect scope, and freeze one content head before independent audit.",
++      "commands": [
++        "rtk python -m jsonschema -i task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
++        "rtk uv run ruff check src/dopemux/governed_delivery tests/unit/governed_delivery",
++        "rtk uv run --extra test pytest tests/unit/governed_delivery -q",
++        "rtk python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
++        "rtk pre-commit run --from-ref origin/main --to-ref HEAD",
++        "rtk git diff --check",
++        "rtk git status --short --branch",
++        "rtk git diff --name-status origin/main...HEAD"
++      ],
++      "validation": [
++        "All commands exit 0 after any hook mutation is reviewed and the full gate is rerun.",
++        "Every changed path is in this packet allowlist and no excluded R2 file or readiness surface appears.",
++        "Content head, tree, parent, merge base, packet digest, changed-path inventory, and validation outputs are recorded before audit.",
++        "No model audit ran on an intermediate head."
++      ]
++    },
++    {
++      "id": "S5",
++      "task": "Run one final independent L2 audit against the frozen content head, then materialize canonical exact-head proof through repository-owned audit and PR Steward flows.",
++      "requirements": [
++        "Auditor must be independent from implementer under docs/ops/embedded-audit.md and inspect exact frozen content bytes.",
++        "Audit must challenge authority leakage, accidental readiness semantics, schema/runtime drift, blocker laundering, nondeterminism, cross-project isolation, read-only containment, and allowlist scope.",
++        "PASS_WITH_RISKS is usable only when canonical audit proof records explicit remaining risks. FAIL, NEEDS_SUPERVISOR, SKIPPED, malformed, stale, or head-mismatched proof blocks readiness.",
++        "Write canonical proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/PROOF.json, AUDITOR_REPORT.md, and review_bundle; validate them deterministically.",
++        "If proof is added after audit, use only the canonical signed exact-head proof-only successor flow. Do not change packet, source, schema, tests, or contract bytes after audit without invalidating the audit and stopping for supervisor direction.",
++        "PR Steward remains sole merge/PR-readiness classifier. Operator remains sole merge/activation authority."
++      ],
++      "validation": [
++        "rtk python scripts/audit/validate_audit_proof.py proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/PROOF.json",
++        "Proof head, report path, findings, remaining risks, auditor tool/model/invocation, identity, independence, and exact content binding satisfy schemas/proof/embedded_audit.schema.json and docs/ops/embedded-audit.md.",
++        "PR-scoped proof is regenerated or re-pinned to the exact PR head before FINALIZATION; pre-PR local proof is not presented as a passing PR Steward gate.",
++        "No merge, mark-ready, close, activation, force-push, history rewrite, or branch deletion occurs without later explicit operator authority."
++      ],
++      "context_files": [
++        "docs/ops/embedded-audit.md",
++        "docs/ops/embedded-audit-proof.md",
++        "schemas/proof/embedded_audit.schema.json",
++        "scripts/audit/validate_audit_proof.py",
++        "scripts/pr-steward"
++      ]
++    }
++  ]
++}

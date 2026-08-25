@@ -1,0 +1,33 @@
+{
+  "status": "COMPLETE",
+  "verdict": "PASS_WITH_RISKS",
+  "findings": [
+    "Single-file addition only: task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json.",
+    "Packet explicitly withholds implementation authority until a separate supervisor-authored record binds packet ID, exact packet bytes, base SHA, allowlist, runner/agent ceiling, and stop conditions.",
+    "PR #1268 remains read-only failed evidence; merge, close, mark-ready, repair-cycle-3, rewrite, and additional commits are forbidden.",
+    "Planned scope is representation and projection only and disclaims readiness, audit-acceptability, dispatch, merge, PR, and activation judgment.",
+    "No Codex audit target appears; auditor selection remains delegated to repository embedded-audit policy.",
+    "Trusted and candidate head/base identities agree, and harness Git status corroborated direct parentage.",
+    "Instruction-like scanner detected no forced-verdict or output-contract override; imperative text targets a gated future implementer."
+  ],
+  "risks": [
+    "Schema conformance was not executed by the auditor because tools and MCP were disabled.",
+    "Audit was limited to provided exact diff, metadata, and harness Git status rather than full repository state.",
+    "Packet is instruction-bearing by design; auditor judged it benign and properly authority-gated.",
+    "Auditor did not verify whether the future implementation-authority record existed or conflicted on main."
+  ],
+  "rationale": "One governance Task Packet is added with no executable, schema, workflow, or CI change. Packet repeatedly withholds implementation authority, binds future authorization to a separate supervisor record, preserves failed PR #1268 without mutation, and removes G0 readiness/adjudication ownership. Direct model validation was NOT_RUN due deliberate tool isolation, so PASS_WITH_RISKS is supported instead of PASS.",
+  "inspected_paths": [
+    "task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json"
+  ],
+  "evidence_refs": [
+    "trusted head eeebed83fc57621fb731c1d81acdb3a2412f6eef and base d40e43dd70307d2c000a4efd581be7c11248728c",
+    "packet invariants 0-4: implementation stop gate and PR #1268 containment",
+    "packet invariants 5-17: G0-Lite ownership and excluded readiness/adjudication surfaces",
+    "packet step S0: separate authority and source-custody gate",
+    "packet commit.verify: deterministic validation commands",
+    "instruction_like_scan_summary detected=false match_count=0"
+  ],
+  "validation_status": "NOT_RUN",
+  "instruction_like_acknowledged": true
+}
