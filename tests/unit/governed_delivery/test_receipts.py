@@ -12,7 +12,14 @@ from dopemux.governed_delivery.receipts import (
     evaluate_receipt_reuse,
 )
 
-IDENTITY = m.Identity(project_id="dopemux-mvp", repository_id="DDD-Enterprises/dopemux-mvp")
+IDENTITY = m.Identity(
+    project_id="dopemux-mvp",
+    repository_id="DDD-Enterprises/dopemux-mvp",
+    worktree_id="wt-receipts",
+    packet_id="TP-X",
+)
+SUBJECT_DIGEST = "sha256:" + "1" * 64
+DIFFERENT_DIGEST = "sha256:" + "2" * 64
 NOW = "2026-08-24T00:00:00Z"
 LATER = "2026-08-25T00:00:00Z"
 EARLIER = "2026-08-23T00:00:00Z"
@@ -29,7 +36,7 @@ def reference(**overrides):
         identity=IDENTITY,
         observed_at=EARLIER,
         freshness_state=m.FreshnessState.CURRENT,
-        subject=m.Subject(content_digest="sha256:subject"),
+        subject=m.Subject(content_digest=SUBJECT_DIGEST),
         policy_version="policy-1",
         schema_version_used="schema-1",
         tool_version="tool-1",
@@ -42,7 +49,7 @@ def reference(**overrides):
 def reuse(**overrides):
     kwargs = dict(
         candidate=reference(),
-        required_subject_digest="sha256:subject",
+        required_subject_digest=SUBJECT_DIGEST,
         as_of=NOW,
         required_policy_version="policy-1",
         required_schema_version="schema-1",
@@ -108,7 +115,7 @@ class TestReceiptReuse:
         assert set(reuse().conditions) == set(REUSE_CONDITIONS)
 
     def test_changed_subject_digest_blocks_reuse(self):
-        decision = reuse(required_subject_digest="sha256:different")
+        decision = reuse(required_subject_digest=DIFFERENT_DIGEST)
         assert not decision.eligible
         assert "same_subject_digest" in decision.failed_conditions
 
@@ -163,7 +170,7 @@ class TestReceiptReuse:
     def test_matching_path_alone_is_not_sufficient(self):
         """Same canonical_location, different subject: reuse must still fail."""
         decision = reuse(
-            candidate=reference(subject=m.Subject(content_digest="sha256:moved-on")),
+            candidate=reference(subject=m.Subject(content_digest=DIFFERENT_DIGEST)),
         )
         assert not decision.eligible
 

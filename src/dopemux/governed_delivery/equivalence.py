@@ -13,15 +13,12 @@ Four design choices answer that attack and the follow-up audit's findings:
    GOVERNANCE_RELEVANT, INERT, or UNKNOWN, and UNKNOWN is rejected rather than
    waved through — so a field nobody anticipated cannot become a channel.
 
-2. Governance fields are compared per *document role*, not per path and not
-   across the whole bundle. Relocating a document within its role is invisible;
-   moving an assertion from the audit result into the summary is not. GOV-AUD-001
-   showed that a bundle-wide aggregate lets a risk be removed from the document
-   the operator actually reads and re-encoded somewhere with no authority, which
-   reproduces GOV-AUD-F1 one level up.
+2. Governance fields are compared per exact document path and role. Relocation
+   therefore fails closed, and moving an assertion between same-basename files
+   cannot hide a risk or blocker swap.
 
-3. Within a role, values are compared as a sorted multiset keyed by a *tuple*
-   ``(role, field)``. No key is synthesised by string concatenation, so no
+3. Values are compared as a sorted multiset keyed by a *tuple*
+   ``(path, role, field)``. No key is synthesised by string concatenation, so no
    crafted field name shares a namespace with a real one.
 
 4. Structural conjuncts carry the basis on which they were established, and only
@@ -39,6 +36,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from fnmatch import fnmatch
+from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
 from .models import (
@@ -48,6 +46,11 @@ from .models import (
     FactBasis,
     NormalizedFailureClass,
     StructuralFacts,
+    _require_git_oid,
+    _require_keys,
+    _require_mapping,
+    _require_schema_version,
+    _require_sequence,
     canonical_json,
     digest_of,
 )
@@ -155,9 +158,8 @@ class FieldClassification(str):
 # substantive, so grouping is refused. Splitting can only ever reject more; it
 # cannot admit a change that grouping would have caught.
 #
-# Relocation still passes, because relocation preserves the basename: moving
-# proof/A/PROOF.json to proof/B/PROOF.json keeps the PROOF_BUNDLE role. Renaming
-# the document that carries a verdict does not, and should not.
+# Role is derived from basename, but comparison also binds exact path. Neither
+# relocation nor rename is diagnostic-equivalent in G0.
 _ROLE_BY_BASENAME: Mapping[str, str] = {
     "proof.json": "PROOF_BUNDLE",
     "proof-bundle.md": "PROOF_BUNDLE_NARRATIVE",
@@ -193,8 +195,7 @@ UNKNOWN_DOCUMENT_ROLE = "UNKNOWN"
 def derive_document_role(path: str) -> str:
     """Derive a document's authority class from its path. Fails closed.
 
-    Only the basename is consulted, which is exactly what makes a relocation
-    inside the proof tree role-preserving while an unrecognised file is refused.
+    Basename selects role; exact path remains a separate comparison key.
     """
     basename = str(path).replace("\\", "/").rsplit("/", 1)[-1].strip().lower()
     return _ROLE_BY_BASENAME.get(basename, UNKNOWN_DOCUMENT_ROLE)
@@ -226,8 +227,7 @@ def flatten(document: Any, prefix: str = "") -> dict[str, str]:
     """Flatten a document to dotted field paths with canonical scalar values.
 
     List indices are dropped from the field name and the list is canonicalized
-    as a whole, so reordering a governance list is a change while relocating the
-    document that carries it is not.
+    as a whole, so reordering a governance list is a change.
     """
     flat: dict[str, str] = {}
     if isinstance(document, Mapping):
@@ -246,9 +246,8 @@ def flatten(document: Any, prefix: str = "") -> dict[str, str]:
 class ProofOnlyBundle:
     """The governance-bearing content of one side of the comparison.
 
-    ``documents`` maps a document's path to its parsed content. The path selects
-    a role; only the role enters the comparison key, so relocation within a role
-    is invisible while cross-role movement is not.
+    ``documents`` maps exact path to parsed content. Path and derived role both
+    enter comparison key, so all carrier movement fails closed.
 
     ``declared_roles`` is optional. When present it must agree with the derived
     role — a declaration can corroborate, never override.
@@ -276,8 +275,8 @@ class ProofOnlyBundle:
             if role == UNKNOWN_DOCUMENT_ROLE
         )
 
-    def aggregate_fields(self) -> dict[tuple[str, str], list[str]]:
-        """Role-scoped aggregate: ``(role, field)`` to its sorted multiset of values.
+    def aggregate_fields(self) -> dict[tuple[str, str, str], list[str]]:
+        """Exact-path aggregate: ``(path, role, field)`` to sorted values.
 
         The key is a tuple, never a concatenated string. An earlier design
         disambiguated repeated names by synthesising a ``field#document`` key,
@@ -285,21 +284,22 @@ class ProofOnlyBundle:
         was therefore forgeable. A tuple has no textual namespace to collide
         with, so no crafted field name can construct one.
 
-        The multiset is per role rather than per bundle. Counting values across
-        the whole bundle let a governance assertion move between documents of
-        different authority while the total stayed identical — GOV-AUD-001.
+        Exact path remains part of key. Counting values across bundle or role
+        let governance assertions move between carriers while totals stayed
+        identical — GOV-AUD-001 and REPAIR-P3.
         """
-        aggregate: dict[tuple[str, str], list[str]] = {}
+        aggregate: dict[tuple[str, str, str], list[str]] = {}
         roles = self.resolved_roles()
         for path in sorted(self.documents):
             role = roles[path]
             for field_name, value in flatten(self.documents[path]).items():
-                aggregate.setdefault((role, field_name), []).append(value)
+                aggregate.setdefault((path, role, field_name), []).append(value)
         return {key: sorted(values) for key, values in aggregate.items()}
 
 
 @dataclass(frozen=True)
 class FieldComparison:
+    document_path: str
     document_role: str
     field: str
     classification: str
@@ -308,6 +308,7 @@ class FieldComparison:
 
     def as_dict(self) -> dict[str, Any]:
         return {
+            "document_path": self.document_path,
             "document_role": self.document_role,
             "field": self.field,
             "classification": self.classification,
@@ -391,6 +392,9 @@ class EquivalenceResult:
             "schema_version": SCHEMA_PROOF_ONLY_EQUIVALENCE,
             "equivalence_id": self.equivalence_id,
             "result": "PASS" if self.passed else "FAIL",
+            "diagnostic_only": True,
+            "authority_effect": "NONE",
+            "audit_reuse_authorized": False,
             "audited_head": self.audited_head,
             "successor_head": self.successor_head,
             "merge_base": self.facts.merge_base,
@@ -421,6 +425,84 @@ class EquivalenceResult:
         }
         body["receipt_digest"] = digest_of(body)
         return body
+
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Strictly validate a diagnostic receipt without granting authority."""
+        raw = _require_mapping(raw, "ProofOnlySuccessorEquivalence")
+        allowed = (
+            "schema_version",
+            "equivalence_id",
+            "result",
+            "diagnostic_only",
+            "authority_effect",
+            "audit_reuse_authorized",
+            "audited_head",
+            "successor_head",
+            "merge_base",
+            "ancestry_established",
+            "allowed_paths",
+            "actual_changed_paths",
+            "non_allowed_diff_count",
+            "raw_diff_digest",
+            "raw_diff_contains_no_substantive_source_change",
+            "content_digest_exclusion_definition",
+            "content_tree_equivalent_under_exclusion",
+            "packet_and_policy_digests_unchanged",
+            "audit_result_digest_unchanged",
+            "structural_facts",
+            "structural_basis_all_observed",
+            "observer_version",
+            "observation_digest",
+            "compared_fields",
+            "compared_field_count",
+            "mismatched_fields",
+            "unclassified_fields",
+            "failures",
+            "validator_version",
+            "receipt_digest",
+        )
+        _require_keys(
+            raw,
+            required=allowed,
+            allowed=allowed,
+            contract="ProofOnlySuccessorEquivalence",
+        )
+        _require_schema_version(raw["schema_version"], SCHEMA_PROOF_ONLY_EQUIVALENCE)
+        _require_git_oid(raw["audited_head"], "audited_head")
+        _require_git_oid(raw["successor_head"], "successor_head")
+        if raw["merge_base"] is not None:
+            _require_git_oid(raw["merge_base"], "merge_base")
+        if raw["diagnostic_only"] is not True:
+            raise Denial(
+                NormalizedFailureClass.SECURITY_OR_TRUST_INCIDENT,
+                "equivalence must remain diagnostic_only",
+            )
+        if raw["authority_effect"] != "NONE" or raw["audit_reuse_authorized"] is not False:
+            raise Denial(
+                NormalizedFailureClass.SECURITY_OR_TRUST_INCIDENT,
+                "G0 equivalence has no authority and cannot authorize audit reuse",
+            )
+        failures = _require_sequence(raw["failures"], "failures")
+        if raw["result"] == "PASS":
+            if failures or not raw["observer_version"] or not raw["observation_digest"]:
+                raise Denial(
+                    NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
+                    "diagnostic PASS requires observation provenance and no failures",
+                )
+        elif raw["result"] != "FAIL" or not failures:
+            raise Denial(
+                NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
+                "result must be PASS without failures or FAIL with failures",
+            )
+        body = dict(raw)
+        receipt_digest = body.pop("receipt_digest")
+        if receipt_digest != digest_of(body):
+            raise Denial(
+                NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
+                "receipt_digest does not match canonical diagnostic receipt",
+            )
+        return raw
 
 
 def _paths_outside_allowlist(paths: Iterable[str], allowed: Sequence[str]) -> list[str]:
@@ -542,11 +624,8 @@ def evaluate_proof_only_equivalence(
     """
     failures: list[dict[str, str]] = []
 
-    if not audited_head or not successor_head:
-        raise Denial(
-            NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
-            "both audited_head and successor_head are required",
-        )
+    _require_git_oid(audited_head, "audited_head")
+    _require_git_oid(successor_head, "successor_head")
 
     # Anti-vacuity: without the original bundle there is nothing to compare, and
     # an unopposed successor must never be accepted as equivalent.
@@ -625,12 +704,9 @@ def evaluate_proof_only_equivalence(
         before = audited_bundle.aggregate_fields()
         after = successor_bundle.aggregate_fields()
 
-        for role, name in sorted(set(before) | set(after)):
-            old = before.get((role, name), [])
-            new = after.get((role, name), [])
-            # Multiset comparison within one role: relocating a document of the
-            # same role leaves this untouched, while moving an assertion to a
-            # document of different authority changes both roles' multisets.
+        for path, role, name in sorted(set(before) | set(after)):
+            old = before.get((path, role, name), [])
+            new = after.get((path, role, name), [])
             changed = old != new
             classification = classify_field(name)
 
@@ -643,7 +719,9 @@ def evaluate_proof_only_equivalence(
             else:
                 outcome = "GOVERNANCE_CHANGE_REJECTED"
 
-            comparisons.append(FieldComparison(role, name, classification, changed, outcome))
+            comparisons.append(
+                FieldComparison(path, role, name, classification, changed, outcome)
+            )
 
         # Anti-vacuity: proof content exists, so a zero-field comparison means
         # the evaluator inspected nothing and must not report equivalence.
@@ -668,7 +746,12 @@ def evaluate_proof_only_equivalence(
             {
                 "code": "governance_relevant_field_changed",
                 "detail": "changed governance fields: "
-                + ", ".join(sorted(f"{item.document_role}/{item.field}" for item in rejected)),
+                + ", ".join(
+                    sorted(
+                        f"{item.document_path}:{item.document_role}/{item.field}"
+                        for item in rejected
+                    )
+                ),
             }
         )
 
@@ -679,7 +762,10 @@ def evaluate_proof_only_equivalence(
                 "code": "unclassified_semantic_field",
                 "detail": "unclassifiable fields treated as governance-relevant: "
                 + ", ".join(
-                    sorted(f"{item.document_role}/{item.field}" for item in unclassified_fields)
+                    sorted(
+                        f"{item.document_path}:{item.document_role}/{item.field}"
+                        for item in unclassified_fields
+                    )
                 ),
             }
         )
@@ -700,4 +786,45 @@ def evaluate_proof_only_equivalence(
         conjuncts=conjuncts,
         compared_fields=comparisons,
         failures=failures,
+    )
+
+
+def evaluate_observed_proof_only_equivalence(
+    *,
+    repo_root: Path,
+    equivalence_id: str,
+    audited_head: str,
+    successor_head: str,
+    audited_bundle: ProofOnlyBundle | None,
+    successor_bundle: ProofOnlyBundle | None,
+    allowed_paths: Sequence[str],
+    packet_path: str | None = None,
+    policy_path: str | None = None,
+    audit_result_path: str | None = None,
+) -> EquivalenceResult:
+    """Observe local Git facts, then return non-authoritative diagnostic result.
+
+    Caller cannot supply PASS-bearing structural facts through this public path.
+    Result always retains ``authority_effect=NONE`` and
+    ``audit_reuse_authorized=false`` when serialized.
+    """
+    from .snapshot import observe_proof_only_facts
+
+    facts = observe_proof_only_facts(
+        repo_root,
+        audited_head=audited_head,
+        successor_head=successor_head,
+        allowed_paths=allowed_paths,
+        packet_path=packet_path,
+        policy_path=policy_path,
+        audit_result_path=audit_result_path,
+    )
+    return evaluate_proof_only_equivalence(
+        equivalence_id=equivalence_id,
+        audited_head=audited_head,
+        successor_head=successor_head,
+        audited_bundle=audited_bundle,
+        successor_bundle=successor_bundle,
+        allowed_paths=allowed_paths,
+        facts=facts,
     )

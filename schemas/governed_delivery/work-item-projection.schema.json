@@ -7,28 +7,31 @@
   "additionalProperties": false,
   "required": [
     "schema_version", "projection_id", "work_item_id", "project_id", "repository_id",
+    "worktree_id", "packet_id", "packet_ref",
     "subject", "phase", "posture", "native_state_refs", "evidence_refs",
-    "blockers", "next_legal_action", "updated_at", "projection_digest"
+    "blockers", "next_legal_action", "gate_profile_complete",
+    "audit_binding_acceptable", "audit_binding_ref", "updated_at", "projection_digest"
   ],
   "properties": {
     "schema_version": { "type": "string", "const": "governed-delivery.work-item-projection.v1" },
     "projection_id": { "type": "string", "minLength": 1 },
     "work_item_id": { "type": "string", "minLength": 1 },
-    "project_id": { "type": "string", "minLength": 1 },
-    "repository_id": { "type": "string", "minLength": 1 },
-    "workspace_id": { "type": ["string", "null"] },
-    "worktree_id": { "type": ["string", "null"] },
-    "instance_id": { "type": ["string", "null"] },
-    "packet_ref": { "type": ["string", "null"] },
+    "project_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "repository_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "workspace_id": { "type": ["string", "null"], "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "worktree_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "instance_id": { "type": ["string", "null"], "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "packet_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "packet_ref": { "type": "string", "minLength": 1 },
     "subject": {
       "type": "object",
       "additionalProperties": false,
       "required": ["base_sha", "head_sha", "tree_sha", "content_digest"],
       "properties": {
-        "base_sha": { "type": ["string", "null"] },
-        "head_sha": { "type": ["string", "null"] },
-        "tree_sha": { "type": ["string", "null"] },
-        "content_digest": { "type": ["string", "null"] }
+        "base_sha": { "type": ["string", "null"], "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$" },
+        "head_sha": { "type": ["string", "null"], "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$" },
+        "tree_sha": { "type": ["string", "null"], "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$" },
+        "content_digest": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" }
       }
     },
     "phase": {
@@ -89,8 +92,8 @@
       "additionalProperties": false,
       "required": ["action_type", "actor_class", "authority_ref", "prerequisites", "dispatch_eligible"],
       "properties": {
-        "action_type": { "type": "string" },
-        "actor_class": { "type": "string" },
+        "action_type": { "type": "string", "minLength": 1 },
+        "actor_class": { "type": "string", "minLength": 1 },
         "authority_ref": {
           "type": ["string", "null"],
           "description": "Where authority for this action would come from. Null means no authority is identified and the action is not permitted."
@@ -103,7 +106,23 @@
         }
       }
     },
+    "gate_profile_complete": { "type": "boolean" },
+    "audit_binding_acceptable": { "type": "boolean" },
+    "audit_binding_ref": { "type": ["string", "null"], "minLength": 1 },
     "updated_at": { "type": "string" },
     "projection_digest": { "type": "string", "minLength": 1 }
-  }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "posture": { "const": "READY" } }, "required": ["posture"] },
+      "then": {
+        "properties": {
+          "gate_profile_complete": { "const": true },
+          "audit_binding_acceptable": { "const": true },
+          "audit_binding_ref": { "type": "string", "minLength": 1 },
+          "blockers": { "maxItems": 0 }
+        }
+      }
+    }
+  ]
 }

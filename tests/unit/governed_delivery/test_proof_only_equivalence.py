@@ -27,6 +27,7 @@ from dopemux.governed_delivery.equivalence import (
     classify_field,
     derive_document_role,
     evaluate_proof_only_equivalence,
+    evaluate_observed_proof_only_equivalence,
     flatten,
 )
 from dopemux.governed_delivery.models import FactBasis, STRUCTURAL_CONJUNCTS, StructuralFacts
@@ -89,7 +90,7 @@ def observed(**overrides) -> StructuralFacts:
         observation_digest="sha256:observation",
     )
     values.update(overrides)
-    return StructuralFacts(
+    return StructuralFacts._from_git_observer(
         **values, basis={name: FactBasis.OBSERVED_GIT for name in STRUCTURAL_CONJUNCTS}
     )
 
@@ -236,11 +237,11 @@ class TestAggregateForgery:
             {PROOF_PATH: {"known_risks": ["R1"]}, SUMMARY_PATH: {}}
         ).passed
 
-    def test_aggregate_is_keyed_by_role_not_by_a_synthesised_string(self):
+    def test_aggregate_is_keyed_by_path_role_and_field(self):
         """The key is a tuple, so no field name can ever collide with it."""
         aggregate = ProofOnlyBundle({PROOF_PATH: {"known_risks": ["R1"]}}).aggregate_fields()
-        assert list(aggregate) == [("PROOF_BUNDLE", "known_risks")]
-        assert all(isinstance(key, tuple) and len(key) == 2 for key in aggregate)
+        assert list(aggregate) == [(PROOF_PATH, "PROOF_BUNDLE", "known_risks")]
+        assert all(isinstance(key, tuple) and len(key) == 3 for key in aggregate)
 
     def test_aggregate_counts_repeated_values_within_one_role(self):
         """Two documents of one role asserting the same value is not the same as one.
@@ -256,7 +257,7 @@ class TestAggregateForgery:
             }
         ).aggregate_fields()
         assert one != two
-        assert all(role == "AUDITOR_REPORT" for role, _ in two)
+        assert all(role == "AUDITOR_REPORT" for _, role, _ in two)
 
     def test_swapping_between_two_documents_of_the_same_role_is_visible_as_a_drop(self):
         """The one remaining same-role case: identical basenames in two directories.
@@ -330,8 +331,8 @@ class TestCrossRoleLaundering:
         }
         assert not self._evaluate(laundered).passed
 
-    def test_relocation_within_the_same_role_still_passes(self):
-        """Two paths, one role: the carrier changed, the assertions did not."""
+    def test_relocation_within_the_same_role_fails_closed(self):
+        """Path identity is part of diagnostic comparison; relocation is substantive."""
         relocated = {
             "proof/TP-X-renamed/AUDITOR_REPORT.md": {
                 "known_risks": ["R1", "R2"],
@@ -343,7 +344,7 @@ class TestCrossRoleLaundering:
             },
         }
         result = self._evaluate(relocated)
-        assert result.passed, result.failures
+        assert not result.passed
 
     def test_document_with_no_known_role_fails_closed(self):
         args = dict(BASE_ARGS)
@@ -641,8 +642,8 @@ class TestPositiveFixtures:
         )
         assert result.passed, result.failures
 
-    def test_proof_reference_relocation_with_byte_identity(self):
-        """The document moves; its role and governance content are unchanged."""
+    def test_proof_reference_relocation_with_byte_identity_fails_closed(self):
+        """Exact document path prevents same-basename carrier swaps."""
         args = dict(BASE_ARGS)
         args["audited_bundle"] = ProofOnlyBundle({PROOF_PATH: dict(AUDITED_DOC)})
         args["successor_bundle"] = ProofOnlyBundle(
@@ -650,7 +651,7 @@ class TestPositiveFixtures:
         )
         args["facts"] = observed()
         result = evaluate_proof_only_equivalence(**args)
-        assert result.passed, result.failures
+        assert not result.passed
 
     def test_identical_bundle_passes(self):
         result = evaluate(dict(AUDITED_DOC))
@@ -734,6 +735,52 @@ class TestFlatten:
         assert flatten({"a": [1, 2]}) != flatten({"a": [2, 1]})
 
 
+class TestR2DiagnosticOnlyEquivalence:
+    def _same_basename_swap(self, field):
+        left = "proof/a/SUMMARY.md"
+        right = "proof/b/SUMMARY.md"
+        args = dict(BASE_ARGS)
+        args["audited_bundle"] = ProofOnlyBundle(
+            {left: {field: ["A"]}, right: {field: ["B"]}}
+        )
+        args["successor_bundle"] = ProofOnlyBundle(
+            {left: {field: ["B"]}, right: {field: ["A"]}}
+        )
+        args["facts"] = observed(actual_changed_paths=[left, right])
+        return evaluate_proof_only_equivalence(**args)
+
+    def test_same_basename_cross_directory_risk_swap_fails(self):
+        assert not self._same_basename_swap("known_risks").passed
+
+    def test_same_basename_cross_directory_blocker_swap_fails(self):
+        assert not self._same_basename_swap("blocking_findings").passed
+
+    def test_diagnostic_pass_has_no_governance_authority(self):
+        payload = evaluate(dict(AUDITED_DOC)).as_dict()
+        assert payload["result"] == "PASS"
+        assert payload["authority_effect"] == "NONE"
+        assert payload["audit_reuse_authorized"] is False
+        assert payload["diagnostic_only"] is True
+
+    @pytest.mark.parametrize("field", ["audited_head", "successor_head"])
+    @pytest.mark.parametrize("value", ["abc123", "HEAD", "f" * 39, "f" * 41])
+    def test_non_full_git_object_id_is_denied(self, field, value):
+        args = dict(BASE_ARGS)
+        args[field] = value
+        args["audited_bundle"] = ProofOnlyBundle({PROOF_PATH: dict(AUDITED_DOC)})
+        args["successor_bundle"] = ProofOnlyBundle({PROOF_PATH: dict(AUDITED_DOC)})
+        args["facts"] = observed()
+        with pytest.raises(Exception):
+            evaluate_proof_only_equivalence(**args)
+
+    def test_claimed_structural_facts_cannot_label_themselves_observed(self):
+        with pytest.raises(TypeError):
+            StructuralFacts(
+                ancestry_established=True,
+                basis={name: FactBasis.OBSERVED_GIT for name in STRUCTURAL_CONJUNCTS},
+            )
+
+
 def _git(repo: Path, *args: str) -> None:
     subprocess.run(["git", *args], cwd=str(repo), check=True, capture_output=True)
 
@@ -792,16 +839,18 @@ class TestGitObserver:
 
     def test_observed_facts_reach_pass(self, observer_repo):
         repo, audited, successor = observer_repo
-        facts = self._observe(repo, audited, successor)
         doc = {"audit_verdict": "PASS"}
-        result = evaluate_proof_only_equivalence(
+        result = evaluate_observed_proof_only_equivalence(
+            repo_root=repo,
             equivalence_id="eq",
             audited_head=audited,
             successor_head=successor,
             audited_bundle=ProofOnlyBundle({PROOF_PATH: doc}),
             successor_bundle=ProofOnlyBundle({PROOF_PATH: doc}),
             allowed_paths=["proof/**"],
-            facts=facts,
+            packet_path="task-packets/TP-X.json",
+            policy_path="src/a.py",
+            audit_result_path="proof/TP-X/AUDITOR_REPORT.md",
         )
         assert result.passed, result.failures
         assert result.structural_basis_all_observed

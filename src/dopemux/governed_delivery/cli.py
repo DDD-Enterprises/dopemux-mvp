@@ -17,20 +17,17 @@ import sys
 from pathlib import Path
 from typing import Any, Sequence
 
-from .equivalence import ProofOnlyBundle, evaluate_proof_only_equivalence
+from .equivalence import ProofOnlyBundle, evaluate_observed_proof_only_equivalence
 from .models import (
     Denial,
-    EnvelopeKind,
     EvidenceReference,
     GovernedDeliveryEnvelope,
     Identity,
-    StructuralFacts,
     Subject,
 )
 from .snapshot import (
     SnapshotInput,
     build_snapshot,
-    observe_proof_only_facts,
     read_git_fact,
 )
 
@@ -75,27 +72,7 @@ def _cmd_validate_ref(args: argparse.Namespace) -> int:
 def _cmd_validate_envelope(args: argparse.Namespace) -> int:
     raw = _load_json(args.document)
     try:
-        envelope = GovernedDeliveryEnvelope(
-            envelope_id=raw.get("envelope_id", ""),
-            kind=EnvelopeKind(raw.get("kind", "")),
-            event_type=raw.get("event_type", ""),
-            identity=Identity(
-                project_id=raw.get("project_id", ""),
-                repository_id=raw.get("repository_id", ""),
-                packet_id=raw.get("packet_id"),
-            ),
-            producer=raw.get("producer", ""),
-            consumer=raw.get("consumer", ""),
-            created_at=raw.get("created_at", ""),
-            subject_ref=raw.get("subject_ref", ""),
-            idempotency_key=raw.get("idempotency_key", ""),
-            payload_schema=raw.get("payload_schema", ""),
-            payload=raw.get("payload", {}),
-            evidence_refs=[
-                EvidenceReference.from_dict(item) for item in raw.get("evidence_refs", [])
-            ],
-            work_item_id=raw.get("work_item_id"),
-        )
+        envelope = GovernedDeliveryEnvelope.from_dict(raw)
     except (Denial, ValueError) as exc:
         reason = exc.reason if isinstance(exc, Denial) else str(exc)
         normalized = exc.normalized_class.value if isinstance(exc, Denial) else "INVALID_INPUT_OR_ARTIFACT"
@@ -113,37 +90,8 @@ def _cmd_equivalence(args: argparse.Namespace) -> int:
     audited_head = audited.get("head", "")
     successor_head = successor.get("head", "")
 
-    # GOV-AUD-002: the structural conjuncts are observed from git, never taken
-    # from the input documents. Without --repo-root there is nothing to observe
-    # from, so the facts are recorded as CLAIMED_INPUT and cannot reach PASS.
-    if args.repo_root:
-        facts = observe_proof_only_facts(
-            Path(args.repo_root),
-            audited_head=audited_head,
-            successor_head=successor_head,
-            allowed_paths=allowed_paths,
-            packet_path=args.packet_path,
-            policy_path=args.policy_path,
-            audit_result_path=args.audit_result_path,
-        )
-    else:
-        facts = StructuralFacts.claimed(
-            ancestry_established=bool(successor.get("ancestry_established", False)),
-            actual_changed_paths=successor.get("changed_paths", []),
-            raw_diff_digest=successor.get("raw_diff_digest", ""),
-            content_tree_equivalent_under_exclusion=bool(
-                successor.get("content_tree_equivalent_under_exclusion", False)
-            ),
-            audited_packet_digest=audited.get("packet_digest"),
-            successor_packet_digest=successor.get("packet_digest"),
-            audited_policy_digest=audited.get("policy_digest"),
-            successor_policy_digest=successor.get("policy_digest"),
-            audited_audit_result_digest=audited.get("audit_result_digest"),
-            successor_audit_result_digest=successor.get("audit_result_digest"),
-            merge_base=successor.get("merge_base"),
-        )
-
-    result = evaluate_proof_only_equivalence(
+    result = evaluate_observed_proof_only_equivalence(
+        repo_root=Path(args.repo_root),
         equivalence_id=args.equivalence_id,
         audited_head=audited_head,
         successor_head=successor_head,
@@ -154,7 +102,9 @@ def _cmd_equivalence(args: argparse.Namespace) -> int:
             successor.get("documents", {}), successor.get("declared_roles", {})
         ),
         allowed_paths=allowed_paths,
-        facts=facts,
+        packet_path=args.packet_path,
+        policy_path=args.policy_path,
+        audit_result_path=args.audit_result_path,
     )
     _emit(result.as_dict())
     return EXIT_OK if result.passed else EXIT_DENIED
@@ -163,12 +113,6 @@ def _cmd_equivalence(args: argparse.Namespace) -> int:
 def _cmd_snapshot(args: argparse.Namespace) -> int:
     packet = _load_json(args.packet)
     binding = packet.get("repo_binding", {})
-
-    # The packet is the authority on which isolation dimensions apply to its own
-    # work, so a declared profile outranks one inferred from whatever the
-    # expected identity happens to bind. Operator flags outrank both.
-    declared_dimensions = binding.get("required_identity_dimensions")
-    required_dimensions = args.require_identity_dimension or declared_dimensions
 
     evidence: list[EvidenceReference] = []
     if args.evidence:
@@ -192,6 +136,7 @@ def _cmd_snapshot(args: argparse.Namespace) -> int:
                 repository_id=args.repository_id
                 or read_git_fact(repo_root, ["config", "--get", "remote.origin.url"])
                 or binding.get("project_id", ""),
+                worktree_id=read_git_fact(repo_root, ["rev-parse", "--show-toplevel"]),
                 packet_id=packet.get("id"),
             ),
             work_item_id=packet.get("id", ""),
@@ -199,7 +144,6 @@ def _cmd_snapshot(args: argparse.Namespace) -> int:
             subject=Subject(base_sha=args.base_sha, head_sha=head_sha),
             evidence_refs=evidence,
             packet_ref=packet.get("id"),
-            required_identity_dimensions=required_dimensions or None,
         )
         payload = build_snapshot(source)
     except Denial as denial:
@@ -232,9 +176,8 @@ def build_parser() -> argparse.ArgumentParser:
     eq.add_argument("--equivalence-id", default="equivalence-cli")
     eq.add_argument(
         "--repo-root",
-        default=None,
-        help="observe the structural conjuncts from this repository; "
-        "without it they are recorded as caller claims and cannot pass",
+        required=True,
+        help="observe structural facts from this repository; caller facts are not accepted",
     )
     eq.add_argument("--packet-path", default=None, help="repo-relative packet path to digest")
     eq.add_argument("--policy-path", default=None, help="repo-relative policy path to digest")
@@ -251,13 +194,6 @@ def build_parser() -> argparse.ArgumentParser:
     snap.add_argument("--repository-id", default=None)
     snap.add_argument("--base-sha", default=None)
     snap.add_argument("--head-sha", default=None)
-    snap.add_argument(
-        "--require-identity-dimension",
-        action="append",
-        default=[],
-        help="identity dimension that must be bound on both sides; repeatable. "
-        "Defaults to the dimensions the packet binding makes applicable.",
-    )
     snap.set_defaults(func=_cmd_snapshot)
 
     return parser

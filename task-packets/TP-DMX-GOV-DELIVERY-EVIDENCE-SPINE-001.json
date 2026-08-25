@@ -1,19 +1,22 @@
 {
   "id": "TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-001",
   "project": "dopemux-mvp",
-  "target": "L2 governed-delivery G0. Implement a read-only typed evidence spine, GateLedger, WorkItemProjection, five-kind transport envelope, content-audit binding, proof-only successor equivalence with semantic anti-vacuity protection, operator decision request, deterministic snapshot library, and inspection CLI. No Task Orchestrator mutation, automatic dispatch, audit dispatch, merge, activation, or authority reassignment.",
+  "target": "L2 governed-delivery G0. Implement a read-only typed evidence spine, fixed-profile GateLedger and WorkItemProjection, five-kind transport envelope, exact-subject content-audit binding, non-authoritative proof-only diagnostic, operator decision request, deterministic snapshot library, and inspection CLI. Proof-only audit reuse is disabled. No Task Orchestrator mutation, automatic dispatch, audit dispatch, merge, activation, or authority reassignment.",
   "invariants": [
     "All governed-delivery outputs are derived and non-authoritative.",
     "No Task Orchestrator, DCP, PM, GitHub workflow-state, runner, or production mutation is permitted by runtime code.",
-    "Unknown or mismatched project, repository, workspace, worktree, packet, or required subject identity fails closed.",
+    "Project, repository, worktree, and packet identity are always required in G0; missing, unknown, or mismatched required identity fails closed, and optional workspace or instance identity must match when present on both sides.",
     "All 39 observed message classes are representable by exactly five envelope kinds.",
     "All 44 observed failure branches map to the normalized failure classes without creating a global workflow mega-enum.",
     "Gate satisfaction never implies execution, merge, activation, or other authority.",
-    "A required gate class with no ledger entry is missing evidence, materialized as UNKNOWN; READY and phase advancement require a complete ledger.",
+    "G0 has one immutable fifteen-class required gate profile; a missing class is materialized as UNKNOWN, and READY plus phase advancement require a complete contiguous valid evaluation.",
     "dispatch_eligible remains false throughout G0.",
-    "Proof-only successor equivalence must inspect governance-relevant semantics and must reject semantic change even inside allowed proof paths.",
-    "Proof-only equivalence binds a governance assertion to its document authority class, so relocation within a role passes and movement between roles fails.",
-    "A structural equivalence conjunct may support PASS only on an OBSERVED_GIT basis; a caller attestation can never establish equivalence.",
+    "Proof-only successor equivalence is diagnostic only; every result has authority_effect NONE and audit_reuse_authorized false, so diagnostic PASS never preserves audit or readiness.",
+    "Proof-only diagnostic comparison binds governance assertions to exact path and document role; relocation, same-basename risk swaps, and same-basename blocker swaps fail closed.",
+    "Only deterministic local Git observation may support a diagnostic PASS; caller-supplied StructuralFacts remain CLAIMED_INPUT and cannot establish observed provenance.",
+    "READY requires the complete fixed gate profile and a contextually acceptable ContentAuditBinding bound to exact full head, tree, content, packet, policy, and audit-result digests; no raw audit_acceptable boolean exists.",
+    "All runtime parsers and seven JSON schemas agree on security- and governance-relevant valid and invalid corpus objects.",
+    "Final independent audit remains external exact-head evidence; no tracked PROOF.json or SUMMARY.md post-audit mirror edit is permitted in R2.",
     "No new database, service, daemon, MCP server, persistent cache, credential store, or network listener is introduced."
   ],
   "depends_on": [],
@@ -30,7 +33,7 @@
     "final_packet": false
   },
   "commit": {
-    "message": "feat(governance): add governed-delivery evidence spine",
+    "message": "fix(governance): harden governed-delivery G0 contracts",
     "allowlist": [
       "task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-001.json",
       "docs/03-reference/governance/governed-delivery/contract.md",
@@ -53,18 +56,20 @@
       "tests/unit/governed_delivery/test_snapshot.py",
       "tests/unit/governed_delivery/test_cross_project_denial.py",
       "tests/unit/governed_delivery/test_proof_only_equivalence.py",
+      "tests/unit/governed_delivery/test_schema_conformance.py",
       "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-001/**"
     ],
     "verify": [
       "git diff --check",
       "uv run ruff check src/dopemux/governed_delivery tests/unit/governed_delivery",
       "uv run --extra test pytest tests/unit/governed_delivery -q",
+      "uv run --extra test pytest tests/unit/governed_delivery/test_schema_conformance.py -q",
       "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
     ]
   },
   "pr": {
     "title": "feat(governance): add governed-delivery evidence spine",
-    "body": "G0 of the ratified governed-delivery optimization. Adds only read-only evidence/reference contracts and derived delivery projections. No Task Orchestrator mutation, dispatch automation, GitHub command plane, merge authority, or activation. Includes the independent architecture audit F1 semantic anti-vacuity requirement for proof-only successor equivalence.",
+    "body": "G0 of the ratified governed-delivery optimization. Adds only read-only evidence/reference contracts and derived delivery projections. R2 disables proof-only audit reuse, fixes gate and identity profiles, requires exact-subject audit binding, and aligns seven schemas with runtime. No Task Orchestrator mutation, dispatch automation, GitHub command plane, merge authority, or activation.",
     "base": "main"
   },
   "steps": [
@@ -102,6 +107,16 @@
       "task": "Repair cycle 1: close the four blocking findings of the independent L2 audit of content head 8c309d76 — GOV-AUD-001 cross-role governance laundering, GOV-AUD-002 caller attestations satisfying PASS-bearing conjuncts, GOV-AUD-003 READY/phase advancement from an incomplete gate ledger, GOV-AUD-004 absent identity dimensions treated as wildcards. Narrow the blessed positive fixtures that required the unsafe behaviour and add adversarial fixtures for each finding.",
       "validation": [
         "uv run --extra test pytest tests/unit/governed_delivery -q"
+      ]
+    },
+    {
+      "id": "S4R2",
+      "task": "Repair cycle 2: disable proof-only audit reuse and all equivalence authority in G0; enforce exact 40- or 64-hex Git object IDs, exact-path diagnostic comparison, fixed fifteen-class gate profile, fixed four-dimension core identity, contextual ContentAuditBinding readiness, strict runtime parsing, and seven-contract schema/runtime parity. Preserve REPAIR-P1 phase halting and REPAIR-P2 tree mode/type/oid digesting. Do not edit tracked PROOF.json or SUMMARY.md after final audit.",
+      "validation": [
+        "uv run --extra test pytest tests/unit/governed_delivery -q",
+        "uv run --extra test pytest tests/unit/governed_delivery/test_schema_conformance.py -q",
+        "Verify every diagnostic result serializes authority_effect NONE and audit_reuse_authorized false.",
+        "Verify no caller-owned required gate profile, audit_acceptable boolean, or required identity removal path remains public."
       ]
     },
     {

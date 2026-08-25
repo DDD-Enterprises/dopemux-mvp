@@ -6,8 +6,9 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "schema_version", "audit_id", "packet_ref",
-    "audited_head", "audited_tree", "audited_content_digest", "base_policy_ref",
+    "schema_version", "audit_id", "packet_ref", "packet_digest", "policy_digest",
+    "audited_head", "audited_tree", "audited_content_digest", "included_paths_digest",
+    "excluded_proof_only_paths", "base_policy_ref",
     "auditor_requested_identity", "auditor_configured_identity",
     "auditor_response_claimed_identity", "auditor_proxy_reported_identity",
     "auditor_provider_attested_identity", "independence", "verdict",
@@ -17,13 +18,14 @@
     "schema_version": { "type": "string", "const": "governed-delivery.content-audit-binding.v1" },
     "audit_id": { "type": "string", "minLength": 1 },
     "packet_ref": { "type": "string", "minLength": 1 },
-    "packet_digest": { "type": ["string", "null"] },
-    "policy_digest": { "type": ["string", "null"] },
-    "audited_head": { "type": "string", "minLength": 1 },
-    "audited_tree": { "type": "string", "minLength": 1 },
-    "audited_content_digest": { "type": "string", "minLength": 1 },
+    "packet_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "policy_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "audited_head": { "type": "string", "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$" },
+    "audited_tree": { "type": "string", "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$" },
+    "audited_content_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
     "included_paths_digest": {
-      "type": ["string", "null"],
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
       "description": "Digest over the sorted list of paths in scope for audited_content_digest."
     },
     "excluded_proof_only_paths": {
@@ -48,7 +50,7 @@
     },
     "finding_refs": { "type": "array", "items": { "type": "string" } },
     "risk_refs": { "type": "array", "items": { "type": "string" } },
-    "audit_result_digest": { "type": "string", "minLength": 1 },
+    "audit_result_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
     "observed_at": { "type": "string" }
   }
 }

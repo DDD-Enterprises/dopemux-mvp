@@ -9,6 +9,9 @@
     "schema_version",
     "equivalence_id",
     "result",
+    "diagnostic_only",
+    "authority_effect",
+    "audit_reuse_authorized",
     "audited_head",
     "successor_head",
     "ancestry_established",
@@ -47,19 +50,32 @@
         "FAIL"
       ]
     },
+    "diagnostic_only": {
+      "type": "boolean",
+      "const": true
+    },
+    "authority_effect": {
+      "type": "string",
+      "const": "NONE"
+    },
+    "audit_reuse_authorized": {
+      "type": "boolean",
+      "const": false
+    },
     "audited_head": {
       "type": "string",
-      "minLength": 1
+      "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
     },
     "successor_head": {
       "type": "string",
-      "minLength": 1
+      "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
     },
     "merge_base": {
       "type": [
         "string",
         "null"
-      ]
+      ],
+      "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
     },
     "ancestry_established": {
       "type": "boolean",
@@ -175,6 +191,7 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
+          "document_path",
           "document_role",
           "field",
           "classification",
@@ -182,6 +199,10 @@
           "outcome"
         ],
         "properties": {
+          "document_path": {
+            "type": "string",
+            "minLength": 1
+          },
           "document_role": {
             "type": "string",
             "description": "The authority class of the document carrying this field, derived from its path basename through a closed injective table. One role per distinct document kind: grouping several names under one role would let an assertion move between them unseen, which is GOV-AUD-001's shape at finer grain. UNKNOWN is refused rather than compared.",

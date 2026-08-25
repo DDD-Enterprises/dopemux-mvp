@@ -7,7 +7,8 @@
   "additionalProperties": false,
   "required": [
     "schema_version", "decision_request_id", "decision_type",
-    "project_id", "repository_id", "work_item_id", "packet_ref", "exact_subject_ref",
+    "project_id", "repository_id", "worktree_id", "packet_id",
+    "work_item_id", "packet_ref", "exact_subject_ref",
     "decision_required_from", "current_state", "evidence_refs",
     "blockers", "risks", "unknowns",
     "recommended_action", "alternatives", "consequences", "stop_conditions"
@@ -23,8 +24,12 @@
         "ACTIVATION_DECISION_REQUIRED"
       ]
     },
-    "project_id": { "type": "string", "minLength": 1 },
-    "repository_id": { "type": "string", "minLength": 1 },
+    "project_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "repository_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "workspace_id": { "type": ["string", "null"], "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "worktree_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "instance_id": { "type": ["string", "null"], "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "packet_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
     "work_item_id": { "type": "string", "minLength": 1 },
     "packet_ref": { "type": "string", "minLength": 1 },
     "exact_subject_ref": { "type": "string", "minLength": 1 },

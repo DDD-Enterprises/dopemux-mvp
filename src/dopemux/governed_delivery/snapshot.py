@@ -28,6 +28,7 @@ from .models import (
     GATE_CLASSES,
     STRUCTURAL_CONJUNCTS,
     Blocker,
+    ContentAuditBinding,
     Denial,
     EvidenceReference,
     FactBasis,
@@ -310,7 +311,7 @@ def observe_proof_only_facts(
         }
     )
 
-    return StructuralFacts(
+    return StructuralFacts._from_git_observer(
         ancestry_established=ancestry_established,
         actual_changed_paths=changed_paths,
         raw_diff_digest=raw_diff_digest,
@@ -341,24 +342,32 @@ class SnapshotInput:
     evidence_refs: Sequence[EvidenceReference] = ()
     native_state_refs: Sequence[NativeStateRef] = ()
     packet_ref: str | None = None
-    audit_acceptable: bool | None = None
-    merge_decision_present: bool = False
-    activation_decision_present: bool = False
+    audit_binding: ContentAuditBinding | None = None
+    packet_digest: str | None = None
+    policy_digest: str | None = None
     terminal: bool = False
-    # None means "derive from the packet binding"; an explicit tuple lets an
-    # operator demand more. GOV-AUD-004: a dimension declared applicable must be
-    # bound on both sides, not treated as a wildcard when absent.
-    required_identity_dimensions: Sequence[str] | None = None
+
+    def __post_init__(self) -> None:
+        if self.packet_ref != self.identity.packet_id:
+            raise Denial(
+                NormalizedFailureClass.SCOPE_OR_CONTAINMENT_VIOLATION,
+                "snapshot packet_ref must match fixed G0 packet_id",
+            )
+        if self.gate_ledger is not None:
+            self.identity.require_compatible(
+                self.gate_ledger.identity,
+                context="snapshot gate ledger",
+                required_dimensions=applicable_dimensions(self.identity),
+            )
+            expected_subjects = {self.subject.head_sha, self.subject.content_digest}
+            if self.gate_ledger.subject_digest_or_head not in expected_subjects:
+                raise Denial(
+                    NormalizedFailureClass.STALE_OR_MISMATCHED_EVIDENCE,
+                    "gate ledger is not bound to snapshot head or content digest",
+                )
 
     def identity_dimensions_required(self) -> tuple[str, ...]:
-        if self.required_identity_dimensions is not None:
-            return tuple(self.required_identity_dimensions)
-        required = list(applicable_dimensions(self.identity))
-        # A packet-scoped reduction has a packet, so packet_id is applicable and
-        # therefore required even when this side happens not to carry it.
-        if self.packet_ref and "packet_id" not in required:
-            required.append("packet_id")
-        return tuple(required)
+        return applicable_dimensions(self.identity)
 
 
 # Gate classes whose satisfaction advances the coarse phase, in order. The
@@ -384,10 +393,8 @@ _PHASE_SEQUENCE: tuple[tuple[str, Phase], ...] = (
 
 
 def required_gate_classes(source: SnapshotInput) -> tuple[str, ...]:
-    """The policy's required gate set. Absent a ledger, every class is required."""
-    if source.gate_ledger is None:
-        return tuple(GATE_CLASSES)
-    return tuple(source.gate_ledger.required_gate_classes)
+    """Immutable G0 required gate set. No caller or JSON policy may narrow it."""
+    return tuple(GATE_CLASSES)
 
 
 def missing_required_gates(source: SnapshotInput) -> list[str]:
@@ -396,6 +403,27 @@ def missing_required_gates(source: SnapshotInput) -> list[str]:
     if source.gate_ledger is not None:
         present = {gate.gate_class for gate in source.gate_ledger.gates}
     return [name for name in required_gate_classes(source) if name not in present]
+
+
+def gate_profile_complete(source: SnapshotInput) -> bool:
+    if source.gate_ledger is None or missing_required_gates(source):
+        return False
+    states = source.gate_ledger.states_by_class()
+    return all(
+        states.get(name) in {GateState.SATISFIED, GateState.NOT_APPLICABLE}
+        for name in GATE_CLASSES
+    )
+
+
+def audit_binding_acceptable(source: SnapshotInput) -> bool:
+    if source.audit_binding is None:
+        return False
+    return source.audit_binding.is_acceptable_for(
+        subject=source.subject,
+        packet_ref=source.identity.packet_id or "",
+        packet_digest=source.packet_digest,
+        policy_digest=source.policy_digest,
+    )
 
 
 def _unknown_gate_for(source: SnapshotInput, gate_class: str) -> GateEntry:
@@ -411,7 +439,12 @@ def _unknown_gate_for(source: SnapshotInput, gate_class: str) -> GateEntry:
         state=GateState.UNKNOWN,
         policy_owner="governed-delivery.required-gate-profile",
         policy_version="v1",
-        subject_digest_or_head=source.subject.head_sha or source.subject.content_digest or "",
+        subject_digest_or_head=(
+            source.subject.head_sha
+            or source.subject.content_digest
+            or source.identity.packet_id
+            or source.work_item_id
+        ),
         producer_identity="governed-delivery.snapshot",
         observed_at=source.as_of,
         reason=(
@@ -431,10 +464,6 @@ def derive_phase(source: SnapshotInput) -> Phase:
     """
     if source.terminal:
         return Phase.TERMINAL
-    if source.activation_decision_present:
-        return Phase.ACTIVATE
-    if source.merge_decision_present:
-        return Phase.POST_MERGE
 
     if source.gate_ledger is None:
         return Phase.REQUEST
@@ -505,12 +534,23 @@ def collect_blockers(source: SnapshotInput) -> list[Blocker]:
                 )
             )
 
-    if source.audit_acceptable is False:
+    if source.audit_binding is None:
         blockers.append(
             Blocker(
-                blocker_id="audit:not-acceptable",
+                blocker_id="audit:no-binding",
+                normalized_class=NormalizedFailureClass.STALE_OR_MISMATCHED_EVIDENCE,
+                statement="no ContentAuditBinding supplied; AUDIT is UNKNOWN",
+            )
+        )
+    elif not audit_binding_acceptable(source):
+        blockers.append(
+            Blocker(
+                blocker_id="audit:binding-invalid",
                 normalized_class=NormalizedFailureClass.BLOCKING_FINDING,
-                statement="supplied audit verdict is not PASS or PASS_WITH_RISKS",
+                statement=(
+                    "ContentAuditBinding does not match exact head, tree, content, packet, "
+                    "policy, verdict, identity, and independence requirements"
+                ),
             )
         )
 
@@ -556,10 +596,6 @@ def derive_posture(source: SnapshotInput, blockers: Sequence[Blocker]) -> Postur
         return Posture.DECISION_REQUIRED
 
     if blockers:
-        return Posture.ACTIVE
-
-    if source.audit_acceptable is None:
-        # Audit outcome unknown: READY would overstate what the evidence shows.
         return Posture.ACTIVE
 
     return Posture.READY
@@ -632,6 +668,9 @@ def build_projection(source: SnapshotInput) -> WorkItemProjection:
         blockers=blockers,
         gate_ledger_ref=source.gate_ledger.ledger_id if source.gate_ledger else None,
         packet_ref=source.packet_ref,
+        gate_profile_complete=gate_profile_complete(source),
+        audit_binding_acceptable=audit_binding_acceptable(source),
+        audit_binding_ref=source.audit_binding.audit_id if source.audit_binding else None,
     )
 
 

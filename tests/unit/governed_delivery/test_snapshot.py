@@ -13,10 +13,18 @@ PACKET = "TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-001"
 IDENTITY = m.Identity(
     project_id="dopemux-mvp",
     repository_id="DDD-Enterprises/dopemux-mvp",
+    worktree_id="wt-governed-delivery-r2",
     packet_id=PACKET,
 )
 NOW = "2026-08-24T00:00:00Z"
 EARLIER = "2026-08-23T00:00:00Z"
+BASE_OID = "a" * 40
+HEAD_OID = "b" * 40
+TREE_OID = "c" * 40
+CONTENT_DIGEST = "sha256:" + "1" * 64
+PACKET_DIGEST = "sha256:" + "2" * 64
+POLICY_DIGEST = "sha256:" + "3" * 64
+AUDIT_DIGEST = "sha256:" + "4" * 64
 
 
 def reference(**overrides):
@@ -42,31 +50,21 @@ def gate(gate_class="AUDIT", state=m.GateState.SATISFIED, gate_id=None):
         state=state,
         policy_owner="governance",
         policy_version="v1",
-        subject_digest_or_head="abc",
+        subject_digest_or_head=HEAD_OID,
         producer_identity="tool",
         observed_at=NOW,
         reason=f"{gate_class} is {state.value}",
     )
 
 
-def ledger(*gates, required=None):
-    """A ledger holding exactly the supplied gates.
-
-    ``required`` defaults to the classes actually supplied, which makes this
-    helper useful for testing one gate's behaviour in isolation. Completeness is
-    exercised separately by :func:`complete_ledger` and by TestRequiredGates.
-    """
+def ledger(*gates):
+    """Ledger holding exactly supplied gates against fixed G0 profile."""
     supplied = list(gates)
     return m.GateLedger(
         ledger_id="ledger-1",
         identity=IDENTITY,
-        subject_digest_or_head="abc",
+        subject_digest_or_head=HEAD_OID,
         gates=supplied,
-        required_gate_classes=(
-            tuple(dict.fromkeys(g.gate_class for g in supplied))
-            if required is None
-            else tuple(required)
-        ),
     )
 
 
@@ -81,7 +79,7 @@ def complete_ledger(*overrides):
     return m.GateLedger(
         ledger_id="ledger-complete",
         identity=IDENTITY,
-        subject_digest_or_head="abc",
+        subject_digest_or_head=HEAD_OID,
         gates=gates,
     )
 
@@ -91,11 +89,43 @@ def source(**overrides):
         identity=IDENTITY,
         work_item_id=PACKET,
         as_of=NOW,
-        subject=m.Subject(base_sha="base", head_sha="head"),
+        subject=m.Subject(
+            base_sha=BASE_OID,
+            head_sha=HEAD_OID,
+            tree_sha=TREE_OID,
+            content_digest=CONTENT_DIGEST,
+        ),
         packet_ref=PACKET,
+        packet_digest=PACKET_DIGEST,
+        policy_digest=POLICY_DIGEST,
     )
     kwargs.update(overrides)
     return s.SnapshotInput(**kwargs)
+
+
+def audit_binding(**overrides):
+    values = dict(
+        audit_id="audit-r2",
+        packet_ref=PACKET,
+        packet_digest=PACKET_DIGEST,
+        policy_digest=POLICY_DIGEST,
+        audited_head=HEAD_OID,
+        audited_tree=TREE_OID,
+        audited_content_digest=CONTENT_DIGEST,
+        included_paths_digest="sha256:" + "5" * 64,
+        base_policy_ref="AGENTS.md",
+        auditor_requested_identity="claude-code-cli/opus",
+        auditor_configured_identity="claude-code-cli/opus",
+        auditor_response_claimed_identity="claude-opus",
+        auditor_proxy_reported_identity="direct-cli",
+        auditor_provider_attested_identity="UNKNOWN",
+        independence=m.Independence.LIMITED,
+        verdict=m.AuditVerdict.PASS,
+        audit_result_digest=AUDIT_DIGEST,
+        observed_at=NOW,
+    )
+    values.update(overrides)
+    return m.ContentAuditBinding(**values)
 
 
 class TestSixQuestions:
@@ -132,7 +162,8 @@ class TestBlockerPreservation:
                 gate_ledger=complete_ledger(
                     gate("AUDIT", m.GateState.UNSATISFIED, "audit"),
                     gate("CI", m.GateState.BLOCKED, "ci"),
-                )
+                ),
+                audit_binding=audit_binding(),
             )
         )
         ids = {b["blocker_id"] for b in snap["answers"]["WHAT_BLOCKS_IT"]}
@@ -167,7 +198,7 @@ class TestBlockerPreservation:
         assert "evidence:ev-1" in {b["blocker_id"] for b in snap["answers"]["WHAT_BLOCKS_IT"]}
 
     def test_failed_audit_becomes_a_blocking_finding(self):
-        snap = s.build_snapshot(source(audit_acceptable=False))
+        snap = s.build_snapshot(source(audit_binding=audit_binding(verdict=m.AuditVerdict.FAIL)))
         classes = {b["normalized_class"] for b in snap["answers"]["WHAT_BLOCKS_IT"]}
         assert "BLOCKING_FINDING" in classes
 
@@ -176,7 +207,7 @@ class TestPosture:
     def test_stale_evidence_prevents_ready(self):
         projection = s.build_projection(
             source(
-                audit_acceptable=True,
+                audit_binding=audit_binding(),
                 gate_ledger=complete_ledger(),
                 evidence_refs=[reference(freshness_state=m.FreshnessState.STALE)],
             )
@@ -186,20 +217,20 @@ class TestPosture:
     def test_unknown_gate_prevents_ready(self):
         projection = s.build_projection(
             source(
-                audit_acceptable=True,
+                audit_binding=audit_binding(),
                 gate_ledger=ledger(gate("AUDIT", m.GateState.UNKNOWN, "audit")),
             )
         )
         assert projection.posture is not m.Posture.READY
 
     def test_unknown_audit_outcome_prevents_ready(self):
-        projection = s.build_projection(source(audit_acceptable=None))
+        projection = s.build_projection(source())
         assert projection.posture is not m.Posture.READY
 
     def test_ready_requires_a_complete_ledger_clean_evidence_and_accepted_audit(self):
         projection = s.build_projection(
             source(
-                audit_acceptable=True,
+                audit_binding=audit_binding(),
                 gate_ledger=complete_ledger(),
                 evidence_refs=[reference()],
             )
@@ -214,11 +245,11 @@ class TestPosture:
         """
         projection = s.build_projection(
             source(
-                audit_acceptable=True,
+                audit_binding=audit_binding(),
                 gate_ledger=m.GateLedger(
                     ledger_id="partial",
                     identity=IDENTITY,
-                    subject_digest_or_head="abc",
+                    subject_digest_or_head=HEAD_OID,
                     gates=[gate("AUDIT"), gate("VALIDATION")],
                 ),
                 evidence_refs=[reference()],
@@ -227,14 +258,14 @@ class TestPosture:
         assert projection.posture is m.Posture.BLOCKED
 
     def test_no_ledger_at_all_cannot_reach_ready(self):
-        projection = s.build_projection(source(audit_acceptable=True))
+        projection = s.build_projection(source(audit_binding=audit_binding()))
         assert projection.posture is m.Posture.BLOCKED
 
     def test_a_gate_marked_not_applicable_satisfies_the_requirement(self):
         """Policy opts out explicitly with NOT_APPLICABLE, never by omission."""
         projection = s.build_projection(
             source(
-                audit_acceptable=True,
+                audit_binding=audit_binding(),
                 gate_ledger=complete_ledger(
                     gate("ACTIVATION", m.GateState.NOT_APPLICABLE, "activation")
                 ),
@@ -247,7 +278,7 @@ class TestPosture:
         """Architecture section 02 orders blocking gate/blocker above human decision."""
         projection = s.build_projection(
             source(
-                audit_acceptable=False,  # BLOCKING_FINDING
+                audit_binding=audit_binding(verdict=m.AuditVerdict.FAIL),
                 gate_ledger=ledger(gate("AUTHORITY", m.GateState.UNSATISFIED, "authority")),
             )
         )
@@ -264,16 +295,14 @@ class TestPosture:
 
     def test_ready_still_does_not_authorize_dispatch(self):
         projection = s.build_projection(
-            source(audit_acceptable=True, gate_ledger=ledger(gate("AUDIT")))
+            source(audit_binding=audit_binding(), gate_ledger=ledger(gate("AUDIT")))
         )
         assert projection.next_legal_action.dispatch_eligible is False
 
 
 class TestPhase:
-    def _phase(self, *gates, required=None):
-        return s.build_projection(
-            source(gate_ledger=ledger(*gates, required=required))
-        ).phase
+    def _phase(self, *gates):
+        return s.build_projection(source(gate_ledger=ledger(*gates))).phase
 
     def test_phase_advances_through_a_satisfied_prefix(self):
         assert self._phase(gate("IDENTITY")) is m.Phase.REQUEST
@@ -295,7 +324,6 @@ class TestPhase:
             gate("IDENTITY"),
             gate("SCOPE", m.GateState.UNSATISFIED, "scope"),
             gate("AUDIT"),
-            required=("IDENTITY", "SCOPE", "AUDIT"),
         )
         assert phase is m.Phase.REQUEST
 
@@ -305,7 +333,7 @@ class TestPhase:
                 gate_ledger=m.GateLedger(
                     ledger_id="partial",
                     identity=IDENTITY,
-                    subject_digest_or_head="abc",
+                    subject_digest_or_head=HEAD_OID,
                     gates=[gate("VALIDATION"), gate("AUDIT")],
                 )
             )
@@ -315,25 +343,11 @@ class TestPhase:
     def test_a_complete_satisfied_ledger_reaches_the_last_phase(self):
         assert s.build_projection(source(gate_ledger=complete_ledger())).phase is m.Phase.ACTIVATE
 
-    def test_not_required_class_is_skipped_without_advancing(self):
-        phase = self._phase(
-            gate("IDENTITY"), gate("AUTHORITY"), required=("IDENTITY", "AUTHORITY")
-        )
-        assert phase is m.Phase.AUTHORITY
-
-    def test_a_present_but_failed_gate_halts_even_when_policy_does_not_require_it(self):
-        """"Not required" excuses an absence, never a visible failure.
-
-        Found by adversarial probing during repair cycle 1: a gate present with
-        UNSATISFIED state but outside the required set was being stepped over,
-        letting a later gate claim a phase whose prerequisite demonstrably did
-        not hold — the same defect class as GOV-AUD-003 one level down.
-        """
+    def test_a_present_but_failed_gate_halts_advancement(self):
         phase = self._phase(
             gate("IDENTITY"),
             gate("SCOPE", m.GateState.UNSATISFIED, "scope"),
             gate("AUDIT"),
-            required=("IDENTITY", "AUDIT"),
         )
         assert phase is m.Phase.REQUEST
 
@@ -353,7 +367,6 @@ class TestPhase:
             gate("IDENTITY"),
             gate("SCOPE", state, "scope"),
             gate("AUDIT"),
-            required=("IDENTITY", "AUDIT"),
         )
         assert phase is m.Phase.REQUEST
 
@@ -364,7 +377,6 @@ class TestPhase:
             gate("PACKET"),
             gate("SCOPE", m.GateState.NOT_APPLICABLE, "scope"),
             gate("VALIDATION"),
-            required=("IDENTITY", "AUTHORITY", "PACKET", "SCOPE", "VALIDATION"),
         )
         assert phase is m.Phase.VERIFY
 
@@ -382,7 +394,7 @@ class TestRequiredGates:
                 gate_ledger=m.GateLedger(
                     ledger_id="partial",
                     identity=IDENTITY,
-                    subject_digest_or_head="abc",
+                    subject_digest_or_head=HEAD_OID,
                     gates=[gate("AUDIT")],
                 )
             )
@@ -397,7 +409,7 @@ class TestRequiredGates:
                 gate_ledger=m.GateLedger(
                     ledger_id="partial",
                     identity=IDENTITY,
-                    subject_digest_or_head="abc",
+                    subject_digest_or_head=HEAD_OID,
                     gates=[gate("AUDIT")],
                 )
             )
@@ -410,25 +422,13 @@ class TestRequiredGates:
         )
         assert all("required evidence is missing" in b.statement for b in synthesized)
 
-    def test_policy_may_narrow_the_required_set(self):
-        narrowed = m.GateLedger(
-            ledger_id="narrow",
-            identity=IDENTITY,
-            subject_digest_or_head="abc",
-            gates=[gate("AUDIT"), gate("VALIDATION")],
-            required_gate_classes=("AUDIT", "VALIDATION"),
-        )
-        assert narrowed.missing_required_classes() == []
-        projection = s.build_projection(source(audit_acceptable=True, gate_ledger=narrowed))
-        assert projection.posture is m.Posture.READY
-
-    def test_unknown_required_gate_class_is_denied(self):
-        with pytest.raises(m.Denial):
+    def test_caller_cannot_supply_a_required_gate_profile(self):
+        with pytest.raises(TypeError):
             m.GateLedger(
                 ledger_id="bad",
                 identity=IDENTITY,
-                subject_digest_or_head="abc",
-                required_gate_classes=("NOT_A_GATE",),
+                subject_digest_or_head=HEAD_OID,
+                required_gate_classes=("AUDIT",),
             )
 
     def test_a_blocking_duplicate_is_not_masked_by_a_satisfied_one(self):
@@ -510,3 +510,79 @@ class TestReadOnlyContainment:
         text = inspect.getsource(s)
         for forbidden in ("open(", "write_text", "mkdir", "unlink", "rmtree"):
             assert forbidden not in text
+
+
+class TestR2FixedGovernanceProfile:
+    def test_raw_audit_acceptable_boolean_is_not_public_input(self):
+        with pytest.raises(TypeError):
+            source(audit_acceptable=True)
+
+    def test_no_audit_binding_is_unknown_and_blocks_ready(self):
+        projection = s.build_projection(
+            source(
+                gate_ledger=complete_ledger(),
+                packet_digest=PACKET_DIGEST,
+                policy_digest=POLICY_DIGEST,
+            )
+        )
+        assert projection.posture is m.Posture.BLOCKED
+        assert "audit:no-binding" in {item.blocker_id for item in projection.blockers}
+
+    @pytest.mark.parametrize(
+        "binding_override",
+        [
+            {"audited_head": "d" * 40},
+            {"audited_tree": "e" * 40},
+            {"audited_content_digest": "sha256:" + "6" * 64},
+            {"independence": m.Independence.UNKNOWN},
+        ],
+    )
+    def test_pass_binding_with_wrong_subject_or_independence_blocks_ready(
+        self, binding_override
+    ):
+        projection = s.build_projection(
+            source(
+                gate_ledger=complete_ledger(),
+                audit_binding=audit_binding(**binding_override),
+                packet_digest=PACKET_DIGEST,
+                policy_digest=POLICY_DIGEST,
+            )
+        )
+        assert projection.posture is m.Posture.BLOCKED
+
+    def test_complete_fixed_gate_set_and_exact_audit_binding_can_derive_ready(self):
+        projection = s.build_projection(
+            source(
+                gate_ledger=complete_ledger(),
+                audit_binding=audit_binding(),
+                packet_digest=PACKET_DIGEST,
+                policy_digest=POLICY_DIGEST,
+            )
+        )
+        assert projection.posture is m.Posture.READY
+        payload = projection.as_dict()
+        assert payload["gate_profile_complete"] is True
+        assert payload["audit_binding_acceptable"] is True
+
+    def test_missing_any_fixed_gate_is_unknown_and_blocking(self):
+        partial = m.GateLedger(
+            ledger_id="partial",
+            identity=IDENTITY,
+            subject_digest_or_head=HEAD_OID,
+            gates=[gate("IDENTITY")],
+        )
+        snapshot = s.build_snapshot(
+            source(
+                gate_ledger=partial,
+                audit_binding=audit_binding(),
+                packet_digest=PACKET_DIGEST,
+                policy_digest=POLICY_DIGEST,
+            )
+        )
+        assert set(snapshot["required_gate_classes"]) == set(m.GATE_CLASSES)
+        assert "AUTHORITY" in snapshot["missing_required_gate_classes"]
+        assert snapshot["projection"]["posture"] == "BLOCKED"
+
+    def test_required_identity_profile_has_no_caller_override(self):
+        with pytest.raises(TypeError):
+            source(required_identity_dimensions=("project_id", "repository_id"))

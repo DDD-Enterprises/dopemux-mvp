@@ -5,25 +5,25 @@
   "description": "Derived projection of gate satisfaction against an exact subject. SATISFIED records that a gate's evidence is present and current; it never confers execution, merge or activation authority. UNKNOWN and CONFLICTING fail closed for consequential next actions. A required gate class with no entry is not silence but missing evidence: it is materialized as UNKNOWN (GOV-AUD-003), so an incomplete ledger cannot read as a clean one.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "ledger_id", "project_id", "repository_id", "subject_digest_or_head", "policy", "missing_required_gate_classes", "gates"],
+  "required": ["schema_version", "ledger_id", "project_id", "repository_id", "worktree_id", "packet_id", "subject_digest_or_head", "policy", "missing_required_gate_classes", "gates"],
   "properties": {
     "schema_version": { "type": "string", "const": "governed-delivery.gate-ledger.v1" },
     "ledger_id": { "type": "string", "minLength": 1 },
-    "project_id": { "type": "string", "minLength": 1 },
-    "repository_id": { "type": "string", "minLength": 1 },
+    "project_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "repository_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "workspace_id": { "type": ["string", "null"], "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "worktree_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "instance_id": { "type": ["string", "null"], "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "packet_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
     "subject_digest_or_head": { "type": "string", "minLength": 1 },
     "policy": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["required_gate_set"],
-      "description": "Architecture section 05 policy block. required_gate_set defaults to every gate class: a lane that genuinely does not need a gate says so with an explicit NOT_APPLICABLE entry, never by omission.",
+      "required": ["risk_lane", "policy_digest"],
+      "description": "G0 gate profile is immutable and therefore absent from caller input. Every gate class is required; inapplicability is one explicit NOT_APPLICABLE gate entry.",
       "properties": {
         "risk_lane": { "type": ["string", "null"] },
-        "policy_digest": { "type": ["string", "null"] },
-        "required_gate_set": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/gate_class" }
-        }
+        "policy_digest": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" }
       }
     },
     "missing_required_gate_classes": {

@@ -184,8 +184,13 @@ IDENTITY_DIMENSIONS: tuple[str, ...] = (
     "packet_id",
 )
 
-# Dimensions every reduction binds: without these there is no subject at all.
-BASE_REQUIRED_IDENTITY_DIMENSIONS: tuple[str, ...] = ("project_id", "repository_id")
+# Immutable G0 identity profile. Callers may not narrow it.
+G0_REQUIRED_IDENTITY_DIMENSIONS: tuple[str, ...] = (
+    "project_id",
+    "repository_id",
+    "worktree_id",
+    "packet_id",
+)
 
 
 class FactBasis(str, Enum):
@@ -325,7 +330,7 @@ class GovernedDeliveryError(Exception):
     """Base class for deterministic governed-delivery denials."""
 
 
-@dataclass(frozen=True)
+@dataclass
 class Denial(GovernedDeliveryError):
     """A fail-closed denial carrying its normalized class and reason."""
 
@@ -407,6 +412,76 @@ def _require_schema_version(value: Any, expected: str) -> str:
     return value
 
 
+_GIT_OID_RE = re.compile(r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$")
+_SHA256_DIGEST_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
+
+
+def _require_git_oid(value: Any, field_name: str) -> str:
+    if not isinstance(value, str) or not _GIT_OID_RE.fullmatch(value):
+        raise Denial(
+            NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
+            f"{field_name} must be a complete 40- or 64-hex git object id",
+        )
+    return value
+
+
+def _require_sha256_digest(value: Any, field_name: str) -> str:
+    if not isinstance(value, str) or not _SHA256_DIGEST_RE.fullmatch(value):
+        raise Denial(
+            NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
+            f"{field_name} must be a sha256 digest",
+        )
+    return value
+
+
+def _require_mapping(value: Any, field_name: str) -> Mapping[str, Any]:
+    if not isinstance(value, Mapping):
+        raise Denial(
+            NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
+            f"{field_name} must be an object",
+        )
+    return value
+
+
+def _require_sequence(value: Any, field_name: str) -> Sequence[Any]:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+        raise Denial(
+            NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
+            f"{field_name} must be an array",
+        )
+    return value
+
+
+def _require_text_sequence(value: Any, field_name: str) -> list[str]:
+    items = _require_sequence(value, field_name)
+    result: list[str] = []
+    for index, item in enumerate(items):
+        if not isinstance(item, str):
+            raise Denial(
+                NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
+                f"{field_name}[{index}] must be a string",
+            )
+        result.append(item)
+    return result
+
+
+def _require_keys(
+    raw: Mapping[str, Any], *, required: Sequence[str], allowed: Sequence[str], contract: str
+) -> None:
+    missing = sorted(set(required) - set(raw))
+    extra = sorted(set(raw) - set(allowed))
+    if missing or extra:
+        details = []
+        if missing:
+            details.append("missing=" + ",".join(missing))
+        if extra:
+            details.append("forbidden=" + ",".join(extra))
+        raise Denial(
+            NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
+            f"{contract} key contract violated: {'; '.join(details)}",
+        )
+
+
 @dataclass(frozen=True)
 class StructuralFacts:
     """The structural inputs to proof-only equivalence, each with its basis.
@@ -427,7 +502,7 @@ class StructuralFacts:
     successor_policy_digest: str | None = None
     audited_audit_result_digest: str | None = None
     successor_audit_result_digest: str | None = None
-    basis: Mapping[str, FactBasis] = field(default_factory=dict)
+    basis: Mapping[str, FactBasis] = field(default_factory=dict, init=False, repr=False)
     merge_base: str | None = None
     observer_version: str | None = None
     observation_digest: str | None = None
@@ -448,7 +523,22 @@ class StructuralFacts:
     @classmethod
     def claimed(cls, **values: Any) -> "StructuralFacts":
         """Caller-asserted facts. Every basis is CLAIMED_INPUT, so PASS is unreachable."""
-        return cls(**values, basis={name: FactBasis.CLAIMED_INPUT for name in STRUCTURAL_CONJUNCTS})
+        instance = cls(**values)
+        object.__setattr__(
+            instance,
+            "basis",
+            {name: FactBasis.CLAIMED_INPUT for name in STRUCTURAL_CONJUNCTS},
+        )
+        return instance
+
+    @classmethod
+    def _from_git_observer(cls, **values: Any) -> "StructuralFacts":
+        """Internal observer/test constructor; audit reuse remains disabled in G0."""
+        basis = values.pop("basis")
+        instance = cls(**values)
+        object.__setattr__(instance, "basis", dict(basis))
+        instance.__post_init__()
+        return instance
 
 
 @dataclass(frozen=True)
@@ -463,8 +553,12 @@ class Identity:
     packet_id: str | None = None
 
     def __post_init__(self) -> None:
-        _require_known_identity(self.project_id, "project_id")
-        _require_known_identity(self.repository_id, "repository_id")
+        for name in G0_REQUIRED_IDENTITY_DIMENSIONS:
+            _require_known_identity(getattr(self, name), name)
+        for name in ("workspace_id", "instance_id"):
+            value = getattr(self, name)
+            if value is not None:
+                _require_known_identity(value, name)
 
     def conflicts_with(self, other: "Identity") -> str | None:
         """Return the first conflicting dimension, or None when compatible.
@@ -536,19 +630,12 @@ class Identity:
 
 
 def applicable_dimensions(identity: Identity) -> tuple[str, ...]:
-    """The dimensions a reduction against ``identity`` must see bound.
+    """Immutable G0 required profile; optional dimensions never weaken it.
 
-    "Applicable" means the expected identity actually binds it. GOV-AUD-004: a
-    reduction that has committed to a worktree or instance must not accept
-    evidence that declines to say which one it came from.
+    ``workspace_id`` and ``instance_id`` remain optional. ``conflicts_with``
+    still denies either when both sides provide different values.
     """
-    required = list(BASE_REQUIRED_IDENTITY_DIMENSIONS)
-    for name in IDENTITY_DIMENSIONS:
-        if name in required:
-            continue
-        if getattr(identity, name) is not None:
-            required.append(name)
-    return tuple(required)
+    return G0_REQUIRED_IDENTITY_DIMENSIONS
 
 
 @dataclass(frozen=True)
@@ -560,6 +647,14 @@ class Subject:
     tree_sha: str | None = None
     content_digest: str | None = None
 
+    def __post_init__(self) -> None:
+        for name in ("base_sha", "head_sha", "tree_sha"):
+            value = getattr(self, name)
+            if value is not None:
+                _require_git_oid(value, name)
+        if self.content_digest is not None:
+            _require_sha256_digest(self.content_digest, "content_digest")
+
     def as_dict(self) -> dict[str, Any]:
         return {
             "base_sha": self.base_sha,
@@ -567,6 +662,22 @@ class Subject:
             "tree_sha": self.tree_sha,
             "content_digest": self.content_digest,
         }
+
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, Any]) -> "Subject":
+        raw = _require_mapping(raw, "subject")
+        _require_keys(
+            raw,
+            required=("base_sha", "head_sha", "tree_sha", "content_digest"),
+            allowed=("base_sha", "head_sha", "tree_sha", "content_digest"),
+            contract="Subject",
+        )
+        return cls(
+            base_sha=raw["base_sha"],
+            head_sha=raw["head_sha"],
+            tree_sha=raw["tree_sha"],
+            content_digest=raw["content_digest"],
+        )
 
 
 @dataclass(frozen=True)
@@ -606,6 +717,11 @@ class EvidenceReference:
         parse_instant(self.observed_at, field_name="observed_at")
         if self.valid_until is not None:
             parse_instant(self.valid_until, field_name="valid_until")
+        if self.tombstone is not None and not isinstance(self.tombstone, bool):
+            raise Denial(
+                NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
+                "tombstone must be boolean or null",
+            )
 
     @property
     def is_usable(self) -> bool:
@@ -637,6 +753,49 @@ class EvidenceReference:
 
     @classmethod
     def from_dict(cls, raw: Mapping[str, Any]) -> "EvidenceReference":
+        raw = _require_mapping(raw, "EvidenceReference")
+        allowed = (
+            "schema_version",
+            "evidence_id",
+            "evidence_class",
+            "owner_system",
+            "producer_identity",
+            "canonical_location",
+            "digest_or_signature",
+            *IDENTITY_DIMENSIONS,
+            "base_sha",
+            "head_sha",
+            "tree_sha",
+            "content_digest",
+            "schema_version_used",
+            "policy_version",
+            "tool_version",
+            "environment_digest",
+            "observed_at",
+            "valid_until",
+            "freshness_state",
+            "supersedes",
+            "tombstone",
+            "authority_effect",
+        )
+        _require_keys(
+            raw,
+            required=(
+                "schema_version",
+                "evidence_id",
+                "evidence_class",
+                "owner_system",
+                "producer_identity",
+                "canonical_location",
+                "digest_or_signature",
+                *G0_REQUIRED_IDENTITY_DIMENSIONS,
+                "observed_at",
+                "freshness_state",
+                "authority_effect",
+            ),
+            allowed=allowed,
+            contract="EvidenceReference",
+        )
         _require_schema_version(raw.get("schema_version"), SCHEMA_EVIDENCE_REFERENCE)
         return cls(
             evidence_id=raw.get("evidence_id", ""),
@@ -707,7 +866,7 @@ class GovernedDeliveryEnvelope:
         _require_text(self.idempotency_key, "idempotency_key")
         _require_text(self.payload_schema, "payload_schema")
         parse_instant(self.created_at, field_name="created_at")
-        if self.mutation_authorized:
+        if not isinstance(self.mutation_authorized, bool) or self.mutation_authorized:
             raise Denial(
                 NormalizedFailureClass.SECURITY_OR_TRUST_INCIDENT,
                 "mutation_authorized must remain false: transport cannot grant mutation",
@@ -734,6 +893,9 @@ class GovernedDeliveryEnvelope:
             "event_type": self.event_type,
             "project_id": self.identity.project_id,
             "repository_id": self.identity.repository_id,
+            "workspace_id": self.identity.workspace_id,
+            "worktree_id": self.identity.worktree_id,
+            "instance_id": self.identity.instance_id,
             "work_item_id": self.work_item_id,
             "packet_id": self.identity.packet_id,
             "producer": self.producer,
@@ -747,6 +909,77 @@ class GovernedDeliveryEnvelope:
             "authority_effect": self.authority_effect.value,
             "mutation_authorized": False,
         }
+
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, Any]) -> "GovernedDeliveryEnvelope":
+        raw = _require_mapping(raw, "GovernedDeliveryEnvelope")
+        allowed = (
+            "schema_version",
+            "envelope_id",
+            "kind",
+            "event_type",
+            *IDENTITY_DIMENSIONS,
+            "work_item_id",
+            "producer",
+            "consumer",
+            "created_at",
+            "subject_ref",
+            "evidence_refs",
+            "idempotency_key",
+            "payload_schema",
+            "payload",
+            "authority_effect",
+            "mutation_authorized",
+        )
+        _require_keys(
+            raw,
+            required=(
+                "schema_version",
+                "envelope_id",
+                "kind",
+                "event_type",
+                *G0_REQUIRED_IDENTITY_DIMENSIONS,
+                "producer",
+                "consumer",
+                "created_at",
+                "subject_ref",
+                "evidence_refs",
+                "idempotency_key",
+                "payload_schema",
+                "payload",
+            ),
+            allowed=allowed,
+            contract="GovernedDeliveryEnvelope",
+        )
+        _require_schema_version(raw["schema_version"], SCHEMA_ENVELOPE)
+        evidence_items = _require_sequence(raw["evidence_refs"], "evidence_refs")
+        payload = _require_mapping(raw["payload"], "payload")
+        return cls(
+            envelope_id=raw["envelope_id"],
+            kind=_require_enum(raw["kind"], EnvelopeKind, "kind"),
+            event_type=raw["event_type"],
+            identity=Identity(
+                project_id=raw["project_id"],
+                repository_id=raw["repository_id"],
+                workspace_id=raw.get("workspace_id"),
+                worktree_id=raw["worktree_id"],
+                instance_id=raw.get("instance_id"),
+                packet_id=raw["packet_id"],
+            ),
+            work_item_id=raw.get("work_item_id"),
+            producer=raw["producer"],
+            consumer=raw["consumer"],
+            created_at=raw["created_at"],
+            subject_ref=raw["subject_ref"],
+            evidence_refs=[EvidenceReference.from_dict(item) for item in evidence_items],
+            idempotency_key=raw["idempotency_key"],
+            payload_schema=raw["payload_schema"],
+            payload=payload,
+            authority_effect=_require_enum(
+                raw.get("authority_effect", "NONE"), AuthorityEffect, "authority_effect"
+            ),
+            mutation_authorized=raw.get("mutation_authorized", False),
+        )
 
 
 @dataclass(frozen=True)
@@ -768,7 +1001,12 @@ class GateEntry:
         _require_text(self.gate_id, "gate_id")
         _require_text(self.policy_owner, "policy_owner")
         _require_text(self.policy_version, "policy_version")
+        _require_text(self.subject_digest_or_head, "subject_digest_or_head")
+        _require_text(self.producer_identity, "producer_identity")
         _require_text(self.reason, "reason")
+        parse_instant(self.observed_at, field_name="observed_at")
+        if self.valid_until is not None:
+            parse_instant(self.valid_until, field_name="valid_until")
         if self.gate_class not in GATE_CLASSES:
             raise Denial(
                 NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
@@ -807,6 +1045,61 @@ class GateEntry:
             "reason": self.reason,
         }
 
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, Any]) -> "GateEntry":
+        raw = _require_mapping(raw, "GateEntry")
+        allowed = (
+            "gate_id",
+            "gate_class",
+            "state",
+            "policy_owner",
+            "policy_version",
+            "evidence_refs",
+            "subject_digest_or_head",
+            "producer_identity",
+            "observed_at",
+            "valid_until",
+            "blocking_actions",
+            "reason",
+        )
+        _require_keys(
+            raw,
+            required=(
+                "gate_id",
+                "gate_class",
+                "state",
+                "policy_owner",
+                "policy_version",
+                "evidence_refs",
+                "subject_digest_or_head",
+                "producer_identity",
+                "observed_at",
+                "blocking_actions",
+                "reason",
+            ),
+            allowed=allowed,
+            contract="GateEntry",
+        )
+        return cls(
+            gate_id=raw["gate_id"],
+            gate_class=raw["gate_class"],
+            state=_require_enum(raw["state"], GateState, "state"),
+            policy_owner=raw["policy_owner"],
+            policy_version=raw["policy_version"],
+            evidence_refs=[
+                EvidenceReference.from_dict(item)
+                for item in _require_sequence(raw["evidence_refs"], "evidence_refs")
+            ],
+            subject_digest_or_head=raw["subject_digest_or_head"],
+            producer_identity=raw["producer_identity"],
+            observed_at=raw["observed_at"],
+            valid_until=raw.get("valid_until"),
+            blocking_actions=_require_text_sequence(
+                raw["blocking_actions"], "blocking_actions"
+            ),
+            reason=raw["reason"],
+        )
+
 
 @dataclass(frozen=True)
 class GateLedger:
@@ -814,19 +1107,14 @@ class GateLedger:
     identity: Identity
     subject_digest_or_head: str
     gates: Sequence[GateEntry] = ()
-    # architecture section 05 `policy.required_gate_set`. Defaults to every gate
-    # class, so a ledger that simply omits a gate is short, not silently clean.
-    required_gate_classes: Sequence[str] = DEFAULT_REQUIRED_GATE_CLASSES
     risk_lane: str | None = None
     policy_digest: str | None = None
 
     def __post_init__(self) -> None:
-        for gate_class in self.required_gate_classes:
-            if gate_class not in GATE_CLASSES:
-                raise Denial(
-                    NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
-                    f"required_gate_classes contains unknown gate_class {gate_class!r}",
-                )
+        _require_text(self.ledger_id, "ledger_id")
+        _require_text(self.subject_digest_or_head, "subject_digest_or_head")
+        if self.policy_digest is not None:
+            _require_sha256_digest(self.policy_digest, "policy_digest")
 
     def blocking_gates(self) -> list[GateEntry]:
         return [gate for gate in self.gates if gate.blocks_consequential_action]
@@ -850,7 +1138,7 @@ class GateLedger:
     def missing_required_classes(self) -> list[str]:
         """Required gate classes with no entry at all. GOV-AUD-003."""
         present = {gate.gate_class for gate in self.gates}
-        return [name for name in self.required_gate_classes if name not in present]
+        return [name for name in GATE_CLASSES if name not in present]
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -858,15 +1146,80 @@ class GateLedger:
             "ledger_id": self.ledger_id,
             "project_id": self.identity.project_id,
             "repository_id": self.identity.repository_id,
+            "workspace_id": self.identity.workspace_id,
+            "worktree_id": self.identity.worktree_id,
+            "instance_id": self.identity.instance_id,
+            "packet_id": self.identity.packet_id,
             "subject_digest_or_head": self.subject_digest_or_head,
             "policy": {
                 "risk_lane": self.risk_lane,
                 "policy_digest": self.policy_digest,
-                "required_gate_set": list(self.required_gate_classes),
             },
             "missing_required_gate_classes": self.missing_required_classes(),
             "gates": [gate.as_dict() for gate in self.gates],
         }
+
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, Any]) -> "GateLedger":
+        raw = _require_mapping(raw, "GateLedger")
+        allowed = (
+            "schema_version",
+            "ledger_id",
+            *IDENTITY_DIMENSIONS,
+            "subject_digest_or_head",
+            "policy",
+            "missing_required_gate_classes",
+            "gates",
+        )
+        _require_keys(
+            raw,
+            required=(
+                "schema_version",
+                "ledger_id",
+                *G0_REQUIRED_IDENTITY_DIMENSIONS,
+                "subject_digest_or_head",
+                "policy",
+                "missing_required_gate_classes",
+                "gates",
+            ),
+            allowed=allowed,
+            contract="GateLedger",
+        )
+        _require_schema_version(raw["schema_version"], SCHEMA_GATE_LEDGER)
+        policy = _require_mapping(raw["policy"], "policy")
+        _require_keys(
+            policy,
+            required=("risk_lane", "policy_digest"),
+            allowed=("risk_lane", "policy_digest"),
+            contract="GateLedger.policy",
+        )
+        ledger = cls(
+            ledger_id=raw["ledger_id"],
+            identity=Identity(
+                project_id=raw["project_id"],
+                repository_id=raw["repository_id"],
+                workspace_id=raw.get("workspace_id"),
+                worktree_id=raw["worktree_id"],
+                instance_id=raw.get("instance_id"),
+                packet_id=raw["packet_id"],
+            ),
+            subject_digest_or_head=raw["subject_digest_or_head"],
+            gates=[
+                GateEntry.from_dict(item)
+                for item in _require_sequence(raw["gates"], "gates")
+            ],
+            risk_lane=policy.get("risk_lane"),
+            policy_digest=policy.get("policy_digest"),
+        )
+        declared_missing = _require_text_sequence(
+            raw["missing_required_gate_classes"], "missing_required_gate_classes"
+        )
+        if declared_missing != ledger.missing_required_classes():
+            raise Denial(
+                NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
+                "missing_required_gate_classes does not match fixed G0 gate evaluation",
+            )
+        return ledger
 
 
 @dataclass(frozen=True)
@@ -884,6 +1237,24 @@ class Blocker:
             "evidence_ref": self.evidence_ref,
         }
 
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, Any]) -> "Blocker":
+        raw = _require_mapping(raw, "Blocker")
+        _require_keys(
+            raw,
+            required=("blocker_id", "normalized_class", "statement"),
+            allowed=("blocker_id", "normalized_class", "statement", "evidence_ref"),
+            contract="Blocker",
+        )
+        return cls(
+            blocker_id=_require_text(raw["blocker_id"], "blocker_id"),
+            normalized_class=_require_enum(
+                raw["normalized_class"], NormalizedFailureClass, "normalized_class"
+            ),
+            statement=_require_text(raw["statement"], "statement"),
+            evidence_ref=raw.get("evidence_ref"),
+        )
+
 
 @dataclass(frozen=True)
 class NativeStateRef:
@@ -897,6 +1268,21 @@ class NativeStateRef:
             "native_state": self.native_state,
             "evidence_ref": self.evidence_ref,
         }
+
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, Any]) -> "NativeStateRef":
+        raw = _require_mapping(raw, "NativeStateRef")
+        _require_keys(
+            raw,
+            required=("subsystem", "native_state"),
+            allowed=("subsystem", "native_state", "evidence_ref"),
+            contract="NativeStateRef",
+        )
+        return cls(
+            subsystem=_require_text(raw["subsystem"], "subsystem"),
+            native_state=_require_text(raw["native_state"], "native_state"),
+            evidence_ref=raw.get("evidence_ref"),
+        )
 
 
 @dataclass(frozen=True)
@@ -922,6 +1308,39 @@ class NextLegalAction:
             "dispatch_eligible": False,
         }
 
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, Any]) -> "NextLegalAction":
+        raw = _require_mapping(raw, "NextLegalAction")
+        _require_keys(
+            raw,
+            required=(
+                "action_type",
+                "actor_class",
+                "authority_ref",
+                "prerequisites",
+                "dispatch_eligible",
+            ),
+            allowed=(
+                "action_type",
+                "actor_class",
+                "authority_ref",
+                "prerequisites",
+                "dispatch_eligible",
+            ),
+            contract="NextLegalAction",
+        )
+        if raw["dispatch_eligible"] is not False:
+            raise Denial(
+                NormalizedFailureClass.SECURITY_OR_TRUST_INCIDENT,
+                "dispatch_eligible must remain false in G0",
+            )
+        return cls(
+            action_type=_require_text(raw["action_type"], "action_type"),
+            actor_class=_require_text(raw["actor_class"], "actor_class"),
+            authority_ref=raw["authority_ref"],
+            prerequisites=_require_text_sequence(raw["prerequisites"], "prerequisites"),
+        )
+
 
 @dataclass(frozen=True)
 class WorkItemProjection:
@@ -938,6 +1357,38 @@ class WorkItemProjection:
     blockers: Sequence[Blocker] = ()
     gate_ledger_ref: str | None = None
     packet_ref: str | None = None
+    gate_profile_complete: bool = False
+    audit_binding_acceptable: bool = False
+    audit_binding_ref: str | None = None
+
+    def __post_init__(self) -> None:
+        _require_text(self.projection_id, "projection_id")
+        _require_text(self.work_item_id, "work_item_id")
+        parse_instant(self.updated_at, field_name="updated_at")
+        if not isinstance(self.gate_profile_complete, bool) or not isinstance(
+            self.audit_binding_acceptable, bool
+        ):
+            raise Denial(
+                NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
+                "readiness evidence flags must be booleans",
+            )
+        if self.packet_ref != self.identity.packet_id:
+            raise Denial(
+                NormalizedFailureClass.SCOPE_OR_CONTAINMENT_VIOLATION,
+                "packet_ref must match fixed G0 packet_id",
+            )
+        if self.posture is Posture.READY:
+            if self.blockers:
+                raise Denial(
+                    NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
+                    "READY projection cannot carry blockers",
+                )
+            if not self.gate_profile_complete or not self.audit_binding_acceptable:
+                raise Denial(
+                    NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
+                    "READY requires complete fixed gates and exact audit binding",
+                )
+            _require_text(self.audit_binding_ref, "audit_binding_ref")
 
     def as_dict(self) -> dict[str, Any]:
         body = {
@@ -949,7 +1400,8 @@ class WorkItemProjection:
             "workspace_id": self.identity.workspace_id,
             "worktree_id": self.identity.worktree_id,
             "instance_id": self.identity.instance_id,
-            "packet_ref": self.packet_ref or self.identity.packet_id,
+            "packet_id": self.identity.packet_id,
+            "packet_ref": self.packet_ref,
             "subject": self.subject.as_dict(),
             "phase": self.phase.value,
             "posture": self.posture.value,
@@ -958,10 +1410,102 @@ class WorkItemProjection:
             "evidence_refs": [ref.as_dict() for ref in self.evidence_refs],
             "blockers": [blocker.as_dict() for blocker in self.blockers],
             "next_legal_action": self.next_legal_action.as_dict(),
+            "gate_profile_complete": self.gate_profile_complete,
+            "audit_binding_acceptable": self.audit_binding_acceptable,
+            "audit_binding_ref": self.audit_binding_ref,
             "updated_at": self.updated_at,
         }
         body["projection_digest"] = digest_of(body)
         return body
+
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, Any]) -> "WorkItemProjection":
+        raw = _require_mapping(raw, "WorkItemProjection")
+        allowed = (
+            "schema_version",
+            "projection_id",
+            "work_item_id",
+            *IDENTITY_DIMENSIONS,
+            "packet_ref",
+            "subject",
+            "phase",
+            "posture",
+            "native_state_refs",
+            "gate_ledger_ref",
+            "evidence_refs",
+            "blockers",
+            "next_legal_action",
+            "gate_profile_complete",
+            "audit_binding_acceptable",
+            "audit_binding_ref",
+            "updated_at",
+            "projection_digest",
+        )
+        _require_keys(
+            raw,
+            required=(
+                "schema_version",
+                "projection_id",
+                "work_item_id",
+                *G0_REQUIRED_IDENTITY_DIMENSIONS,
+                "packet_ref",
+                "subject",
+                "phase",
+                "posture",
+                "native_state_refs",
+                "evidence_refs",
+                "blockers",
+                "next_legal_action",
+                "gate_profile_complete",
+                "audit_binding_acceptable",
+                "audit_binding_ref",
+                "updated_at",
+                "projection_digest",
+            ),
+            allowed=allowed,
+            contract="WorkItemProjection",
+        )
+        _require_schema_version(raw["schema_version"], SCHEMA_WORK_ITEM_PROJECTION)
+        projection = cls(
+            projection_id=raw["projection_id"],
+            work_item_id=raw["work_item_id"],
+            identity=Identity(
+                project_id=raw["project_id"],
+                repository_id=raw["repository_id"],
+                workspace_id=raw.get("workspace_id"),
+                worktree_id=raw["worktree_id"],
+                instance_id=raw.get("instance_id"),
+                packet_id=raw["packet_id"],
+            ),
+            subject=Subject.from_dict(raw["subject"]),
+            phase=_require_enum(raw["phase"], Phase, "phase"),
+            posture=_require_enum(raw["posture"], Posture, "posture"),
+            next_legal_action=NextLegalAction.from_dict(raw["next_legal_action"]),
+            updated_at=raw["updated_at"],
+            native_state_refs=[
+                NativeStateRef.from_dict(item)
+                for item in _require_sequence(raw["native_state_refs"], "native_state_refs")
+            ],
+            evidence_refs=[
+                EvidenceReference.from_dict(item)
+                for item in _require_sequence(raw["evidence_refs"], "evidence_refs")
+            ],
+            blockers=[
+                Blocker.from_dict(item)
+                for item in _require_sequence(raw["blockers"], "blockers")
+            ],
+            gate_ledger_ref=raw.get("gate_ledger_ref"),
+            packet_ref=raw["packet_ref"],
+            gate_profile_complete=raw["gate_profile_complete"],
+            audit_binding_acceptable=raw["audit_binding_acceptable"],
+            audit_binding_ref=raw["audit_binding_ref"],
+        )
+        if raw["projection_digest"] != projection.as_dict()["projection_digest"]:
+            raise Denial(
+                NormalizedFailureClass.INVALID_INPUT_OR_ARTIFACT,
+                "projection_digest does not match canonical projection bytes",
+            )
+        return projection
 
 
 @dataclass(frozen=True)
@@ -970,9 +1514,12 @@ class ContentAuditBinding:
 
     audit_id: str
     packet_ref: str
+    packet_digest: str
+    policy_digest: str
     audited_head: str
     audited_tree: str
     audited_content_digest: str
+    included_paths_digest: str
     base_policy_ref: str
     auditor_requested_identity: str
     auditor_configured_identity: str
@@ -985,21 +1532,53 @@ class ContentAuditBinding:
     observed_at: str
     finding_refs: Sequence[str] = ()
     risk_refs: Sequence[str] = ()
-    packet_digest: str | None = None
-    policy_digest: str | None = None
-    included_paths_digest: str | None = None
     excluded_proof_only_paths: Sequence[str] = ()
 
     def __post_init__(self) -> None:
         _require_text(self.audit_id, "audit_id")
-        _require_text(self.audited_head, "audited_head")
-        _require_text(self.audited_tree, "audited_tree")
-        _require_text(self.audited_content_digest, "audited_content_digest")
-        _require_text(self.audit_result_digest, "audit_result_digest")
+        _require_text(self.packet_ref, "packet_ref")
+        _require_git_oid(self.audited_head, "audited_head")
+        _require_git_oid(self.audited_tree, "audited_tree")
+        _require_sha256_digest(self.audited_content_digest, "audited_content_digest")
+        _require_sha256_digest(self.packet_digest, "packet_digest")
+        _require_sha256_digest(self.policy_digest, "policy_digest")
+        _require_sha256_digest(self.included_paths_digest, "included_paths_digest")
+        _require_sha256_digest(self.audit_result_digest, "audit_result_digest")
+        _require_text(self.base_policy_ref, "base_policy_ref")
+        for name in (
+            "auditor_requested_identity",
+            "auditor_configured_identity",
+            "auditor_response_claimed_identity",
+            "auditor_proxy_reported_identity",
+            "auditor_provider_attested_identity",
+        ):
+            _require_text(getattr(self, name), name)
+        parse_instant(self.observed_at, field_name="observed_at")
 
-    @property
-    def is_acceptable(self) -> bool:
-        return self.verdict in {AuditVerdict.PASS, AuditVerdict.PASS_WITH_RISKS}
+    def is_acceptable_for(
+        self,
+        *,
+        subject: Subject,
+        packet_ref: str,
+        packet_digest: str | None,
+        policy_digest: str | None,
+    ) -> bool:
+        """Exact-subject acceptance predicate; verdict alone carries no authority."""
+        return all(
+            (
+                self.verdict in {AuditVerdict.PASS, AuditVerdict.PASS_WITH_RISKS},
+                self.independence in {Independence.PROVEN, Independence.LIMITED},
+                self.audited_head == subject.head_sha,
+                self.audited_tree == subject.tree_sha,
+                self.audited_content_digest == subject.content_digest,
+                self.packet_ref == packet_ref,
+                packet_digest is not None and self.packet_digest == packet_digest,
+                policy_digest is not None and self.policy_digest == policy_digest,
+                self.auditor_configured_identity.strip().upper() != "UNKNOWN",
+                self.auditor_response_claimed_identity.strip().upper() != "UNKNOWN",
+                bool(self.audit_result_digest),
+            )
+        )
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -1027,6 +1606,66 @@ class ContentAuditBinding:
             "observed_at": self.observed_at,
         }
 
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, Any]) -> "ContentAuditBinding":
+        raw = _require_mapping(raw, "ContentAuditBinding")
+        allowed = (
+            "schema_version",
+            "audit_id",
+            "packet_ref",
+            "packet_digest",
+            "policy_digest",
+            "audited_head",
+            "audited_tree",
+            "audited_content_digest",
+            "included_paths_digest",
+            "excluded_proof_only_paths",
+            "base_policy_ref",
+            "auditor_requested_identity",
+            "auditor_configured_identity",
+            "auditor_response_claimed_identity",
+            "auditor_proxy_reported_identity",
+            "auditor_provider_attested_identity",
+            "independence",
+            "verdict",
+            "finding_refs",
+            "risk_refs",
+            "audit_result_digest",
+            "observed_at",
+        )
+        _require_keys(
+            raw,
+            required=allowed,
+            allowed=allowed,
+            contract="ContentAuditBinding",
+        )
+        _require_schema_version(raw["schema_version"], SCHEMA_CONTENT_AUDIT_BINDING)
+        return cls(
+            audit_id=raw["audit_id"],
+            packet_ref=raw["packet_ref"],
+            packet_digest=raw["packet_digest"],
+            policy_digest=raw["policy_digest"],
+            audited_head=raw["audited_head"],
+            audited_tree=raw["audited_tree"],
+            audited_content_digest=raw["audited_content_digest"],
+            included_paths_digest=raw["included_paths_digest"],
+            excluded_proof_only_paths=_require_text_sequence(
+                raw["excluded_proof_only_paths"], "excluded_proof_only_paths"
+            ),
+            base_policy_ref=raw["base_policy_ref"],
+            auditor_requested_identity=raw["auditor_requested_identity"],
+            auditor_configured_identity=raw["auditor_configured_identity"],
+            auditor_response_claimed_identity=raw["auditor_response_claimed_identity"],
+            auditor_proxy_reported_identity=raw["auditor_proxy_reported_identity"],
+            auditor_provider_attested_identity=raw["auditor_provider_attested_identity"],
+            independence=_require_enum(raw["independence"], Independence, "independence"),
+            verdict=_require_enum(raw["verdict"], AuditVerdict, "verdict"),
+            finding_refs=_require_text_sequence(raw["finding_refs"], "finding_refs"),
+            risk_refs=_require_text_sequence(raw["risk_refs"], "risk_refs"),
+            audit_result_digest=raw["audit_result_digest"],
+            observed_at=raw["observed_at"],
+        )
+
 
 @dataclass(frozen=True)
 class OperatorDecisionRequest:
@@ -1051,9 +1690,30 @@ class OperatorDecisionRequest:
     expires_at: str | None = None
 
     def __post_init__(self) -> None:
-        _require_text(self.decision_request_id, "decision_request_id")
-        _require_text(self.decision_required_from, "decision_required_from")
-        _require_text(self.recommended_action, "recommended_action")
+        for name in (
+            "decision_request_id",
+            "work_item_id",
+            "packet_ref",
+            "exact_subject_ref",
+            "decision_required_from",
+            "current_state",
+            "recommended_action",
+        ):
+            _require_text(getattr(self, name), name)
+        if self.packet_ref != self.identity.packet_id:
+            raise Denial(
+                NormalizedFailureClass.SCOPE_OR_CONTAINMENT_VIOLATION,
+                "packet_ref must match fixed G0 packet_id",
+            )
+        if self.expires_at is not None:
+            parse_instant(self.expires_at, field_name="expires_at")
+        required = applicable_dimensions(self.identity)
+        for ref in self.evidence_refs:
+            self.identity.require_compatible(
+                ref.identity,
+                context=f"operator decision {self.decision_request_id} evidence {ref.evidence_id}",
+                required_dimensions=required,
+            )
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -1062,6 +1722,10 @@ class OperatorDecisionRequest:
             "decision_type": self.decision_type.value,
             "project_id": self.identity.project_id,
             "repository_id": self.identity.repository_id,
+            "workspace_id": self.identity.workspace_id,
+            "worktree_id": self.identity.worktree_id,
+            "instance_id": self.identity.instance_id,
+            "packet_id": self.identity.packet_id,
             "work_item_id": self.work_item_id,
             "packet_ref": self.packet_ref,
             "exact_subject_ref": self.exact_subject_ref,
@@ -1077,6 +1741,67 @@ class OperatorDecisionRequest:
             "expires_at": self.expires_at,
             "stop_conditions": list(self.stop_conditions),
         }
+
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, Any]) -> "OperatorDecisionRequest":
+        raw = _require_mapping(raw, "OperatorDecisionRequest")
+        allowed = (
+            "schema_version",
+            "decision_request_id",
+            "decision_type",
+            *IDENTITY_DIMENSIONS,
+            "work_item_id",
+            "packet_ref",
+            "exact_subject_ref",
+            "decision_required_from",
+            "current_state",
+            "evidence_refs",
+            "blockers",
+            "risks",
+            "unknowns",
+            "recommended_action",
+            "alternatives",
+            "consequences",
+            "expires_at",
+            "stop_conditions",
+        )
+        required = tuple(name for name in allowed if name not in {"workspace_id", "instance_id", "expires_at"})
+        _require_keys(
+            raw,
+            required=required,
+            allowed=allowed,
+            contract="OperatorDecisionRequest",
+        )
+        _require_schema_version(raw["schema_version"], SCHEMA_OPERATOR_DECISION_REQUEST)
+        return cls(
+            decision_request_id=raw["decision_request_id"],
+            decision_type=_require_enum(raw["decision_type"], DecisionType, "decision_type"),
+            identity=Identity(
+                project_id=raw["project_id"],
+                repository_id=raw["repository_id"],
+                workspace_id=raw.get("workspace_id"),
+                worktree_id=raw["worktree_id"],
+                instance_id=raw.get("instance_id"),
+                packet_id=raw["packet_id"],
+            ),
+            work_item_id=raw["work_item_id"],
+            packet_ref=raw["packet_ref"],
+            exact_subject_ref=raw["exact_subject_ref"],
+            decision_required_from=raw["decision_required_from"],
+            current_state=raw["current_state"],
+            evidence_refs=[
+                EvidenceReference.from_dict(item)
+                for item in _require_sequence(raw["evidence_refs"], "evidence_refs")
+            ],
+            blockers=_require_text_sequence(raw["blockers"], "blockers"),
+            risks=_require_text_sequence(raw["risks"], "risks"),
+            unknowns=_require_text_sequence(raw["unknowns"], "unknowns"),
+            recommended_action=raw["recommended_action"],
+            alternatives=_require_text_sequence(raw["alternatives"], "alternatives"),
+            consequences=_require_text_sequence(raw["consequences"], "consequences"),
+            expires_at=raw.get("expires_at"),
+            stop_conditions=_require_text_sequence(raw["stop_conditions"], "stop_conditions"),
+        )
 
 
 def normalized_class_for_branch(branch_id: str) -> NormalizedFailureClass:

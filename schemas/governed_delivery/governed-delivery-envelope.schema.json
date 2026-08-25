@@ -7,7 +7,8 @@
   "additionalProperties": false,
   "required": [
     "schema_version", "envelope_id", "kind", "event_type",
-    "project_id", "repository_id", "producer", "consumer", "created_at",
+    "project_id", "repository_id", "worktree_id", "packet_id",
+    "producer", "consumer", "created_at",
     "subject_ref", "evidence_refs", "idempotency_key", "payload_schema", "payload"
   ],
   "properties": {
@@ -23,10 +24,13 @@
       "minLength": 1,
       "description": "The census message class carried, e.g. AuditRequest. Semantic identity lives here; transport identity lives in kind."
     },
-    "project_id": { "type": "string", "minLength": 1 },
-    "repository_id": { "type": "string", "minLength": 1 },
+    "project_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "repository_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "workspace_id": { "type": ["string", "null"], "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "worktree_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "instance_id": { "type": ["string", "null"], "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
     "work_item_id": { "type": ["string", "null"] },
-    "packet_id": { "type": ["string", "null"] },
+    "packet_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
     "producer": { "type": "string", "minLength": 1 },
     "consumer": {
       "type": "string",

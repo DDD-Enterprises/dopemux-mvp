@@ -22,7 +22,18 @@ def local_registry() -> Registry:
         resources.append((schema["$id"], Resource.from_contents(schema)))
     return Registry().with_resources(resources)
 
-IDENTITY = m.Identity(project_id="dopemux-mvp", repository_id="DDD-Enterprises/dopemux-mvp")
+PACKET = "TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-001"
+OID_A = "a" * 40
+OID_B = "b" * 40
+TREE_A = "c" * 40
+DIGEST_A = "sha256:" + "1" * 64
+DIGEST_B = "sha256:" + "2" * 64
+IDENTITY = m.Identity(
+    project_id="dopemux-mvp",
+    repository_id="DDD-Enterprises/dopemux-mvp",
+    worktree_id="wt-governed-delivery-r2",
+    packet_id=PACKET,
+)
 NOW = "2026-08-24T00:00:00Z"
 
 
@@ -263,6 +274,61 @@ class TestIdentityFailsClosed:
         with pytest.raises(m.Denial):
             _reference(observed_at="last tuesday")
 
+    @pytest.mark.parametrize("missing", ["project_id", "repository_id", "worktree_id", "packet_id"])
+    def test_g0_required_identity_dimension_missing_denied(self, missing):
+        values = {
+            "project_id": "dopemux-mvp",
+            "repository_id": "DDD-Enterprises/dopemux-mvp",
+            "worktree_id": "wt-governed-delivery-r2",
+            "packet_id": PACKET,
+        }
+        values[missing] = None
+        with pytest.raises(m.Denial):
+            m.Identity(**values)
+
+
+class TestStrictRuntimeParsing:
+    def test_evidence_reference_rejects_schema_forbidden_extra_field(self):
+        raw = _reference().as_dict()
+        raw["forbidden"] = "discard-me"
+        with pytest.raises(m.Denial):
+            m.EvidenceReference.from_dict(raw)
+
+    def test_envelope_rejects_unknown_schema_major(self):
+        raw = _envelope().as_dict()
+        raw["schema_version"] = "governed-delivery.envelope.v2"
+        with pytest.raises(m.Denial):
+            m.GovernedDeliveryEnvelope.from_dict(raw)
+
+    def test_envelope_rejects_schema_forbidden_extra_field(self):
+        raw = _envelope().as_dict()
+        raw["forbidden"] = True
+        with pytest.raises(m.Denial):
+            m.GovernedDeliveryEnvelope.from_dict(raw)
+
+
+class TestExactGitObjectIdentity:
+    @pytest.mark.parametrize("field", ["base_sha", "head_sha", "tree_sha"])
+    @pytest.mark.parametrize("value", ["abc123", "HEAD", "f" * 39, "f" * 41])
+    def test_subject_rejects_non_full_git_object_id(self, field, value):
+        with pytest.raises(m.Denial):
+            m.Subject(**{field: value})
+
+    def test_subject_accepts_sha1_and_sha256_object_ids(self):
+        assert m.Subject(head_sha="a" * 40).head_sha == "a" * 40
+        assert m.Subject(head_sha="b" * 64).head_sha == "b" * 64
+
+
+class TestFixedGateProfile:
+    def test_caller_cannot_narrow_required_gate_profile(self):
+        with pytest.raises(TypeError):
+            m.GateLedger(
+                ledger_id="ledger",
+                identity=IDENTITY,
+                subject_digest_or_head=OID_A,
+                required_gate_classes=(),
+            )
+
 
 class TestDeterminism:
     def test_canonical_json_is_key_order_independent(self):
@@ -318,7 +384,7 @@ class TestSchemaConformance:
             projection_id="p1",
             work_item_id="TP-X",
             identity=IDENTITY,
-            subject=m.Subject(head_sha="abc"),
+            subject=m.Subject(head_sha=OID_A),
             phase=m.Phase.VERIFY,
             posture=m.Posture.ACTIVE,
             next_legal_action=m.NextLegalAction("CONTINUE", "IMPLEMENTER"),
@@ -328,16 +394,20 @@ class TestSchemaConformance:
             blockers=[
                 m.Blocker("b1", m.NormalizedFailureClass.VALIDATION_FAILURE, "tests failing")
             ],
+            packet_ref=PACKET,
         )
         self._validator("work-item-projection.schema.json").validate(projection.as_dict())
 
     def test_content_audit_binding_document_validates(self):
         binding = m.ContentAuditBinding(
             audit_id="a1",
-            packet_ref="TP-X",
-            audited_head="abc",
-            audited_tree="def",
-            audited_content_digest="sha256:1",
+            packet_ref=PACKET,
+            packet_digest=DIGEST_A,
+            policy_digest=DIGEST_B,
+            audited_head=OID_A,
+            audited_tree=TREE_A,
+            audited_content_digest=DIGEST_A,
+            included_paths_digest=DIGEST_B,
             base_policy_ref="AGENTS.md",
             auditor_requested_identity="independent",
             auditor_configured_identity="model-x",
@@ -346,7 +416,7 @@ class TestSchemaConformance:
             auditor_provider_attested_identity="UNKNOWN",
             independence=m.Independence.LIMITED,
             verdict=m.AuditVerdict.PASS_WITH_RISKS,
-            audit_result_digest="sha256:2",
+            audit_result_digest=DIGEST_B,
             observed_at=NOW,
         )
         self._validator("content-audit-binding.schema.json").validate(binding.as_dict())
@@ -356,9 +426,9 @@ class TestSchemaConformance:
             decision_request_id="d1",
             decision_type=m.DecisionType.MERGE_DECISION_REQUIRED,
             identity=IDENTITY,
-            work_item_id="TP-X",
-            packet_ref="TP-X",
-            exact_subject_ref="head:abc",
+            work_item_id=PACKET,
+            packet_ref=PACKET,
+            exact_subject_ref=f"head:{OID_A}",
             decision_required_from="operator",
             current_state="awaiting merge decision",
             recommended_action="review and decide",
@@ -367,24 +437,83 @@ class TestSchemaConformance:
 
 
 class TestAuditBinding:
-    def test_provider_attested_unknown_is_preserved(self):
-        binding = m.ContentAuditBinding(
-            audit_id="a",
-            packet_ref="p",
-            audited_head="h",
-            audited_tree="t",
-            audited_content_digest="d",
-            base_policy_ref="b",
-            auditor_requested_identity="x",
-            auditor_configured_identity="y",
-            auditor_response_claimed_identity="z",
-            auditor_proxy_reported_identity="w",
+    @staticmethod
+    def binding(**overrides):
+        values = dict(
+            audit_id="audit-r2",
+            packet_ref=PACKET,
+            packet_digest=DIGEST_A,
+            policy_digest=DIGEST_B,
+            audited_head=OID_A,
+            audited_tree=TREE_A,
+            audited_content_digest=DIGEST_A,
+            included_paths_digest=DIGEST_B,
+            base_policy_ref="AGENTS.md",
+            auditor_requested_identity="claude-code-cli/opus",
+            auditor_configured_identity="claude-code-cli/opus",
+            auditor_response_claimed_identity="claude-opus",
+            auditor_proxy_reported_identity="direct-cli",
             auditor_provider_attested_identity="UNKNOWN",
             independence=m.Independence.LIMITED,
             verdict=m.AuditVerdict.PASS,
-            audit_result_digest="r",
+            audit_result_digest=DIGEST_B,
             observed_at=NOW,
         )
+        values.update(overrides)
+        return m.ContentAuditBinding(**values)
+
+    def test_binding_acceptance_requires_exact_subject_and_digests(self):
+        binding = self.binding()
+        assert binding.is_acceptable_for(
+            subject=m.Subject(head_sha=OID_A, tree_sha=TREE_A, content_digest=DIGEST_A),
+            packet_ref=PACKET,
+            packet_digest=DIGEST_A,
+            policy_digest=DIGEST_B,
+        )
+
+    @pytest.mark.parametrize(
+        "binding_override",
+        [
+            {"audited_head": OID_B},
+            {"audited_tree": OID_B},
+            {"audited_content_digest": DIGEST_B},
+            {"packet_digest": DIGEST_B},
+            {"policy_digest": DIGEST_A},
+            {"independence": m.Independence.UNKNOWN},
+            {"auditor_configured_identity": "UNKNOWN"},
+            {"auditor_response_claimed_identity": "UNKNOWN"},
+        ],
+    )
+    def test_pass_verdict_alone_never_makes_binding_acceptable(self, binding_override):
+        binding = self.binding(**binding_override)
+        assert not binding.is_acceptable_for(
+            subject=m.Subject(head_sha=OID_A, tree_sha=TREE_A, content_digest=DIGEST_A),
+            packet_ref=PACKET,
+            packet_digest=DIGEST_A,
+            policy_digest=DIGEST_B,
+        )
+
+    @pytest.mark.parametrize("field", ["audited_head", "audited_tree"])
+    def test_binding_rejects_short_git_object_ids(self, field):
+        with pytest.raises(m.Denial):
+            self.binding(**{field: "abc123"})
+
+    def test_runtime_enforces_operator_request_required_text(self):
+        with pytest.raises(m.Denial):
+            m.OperatorDecisionRequest(
+                decision_request_id="d1",
+                decision_type=m.DecisionType.MERGE_DECISION_REQUIRED,
+                identity=IDENTITY,
+                work_item_id="",
+                packet_ref=PACKET,
+                exact_subject_ref=f"head:{OID_A}",
+                decision_required_from="operator",
+                current_state="awaiting decision",
+                recommended_action="review",
+            )
+
+    def test_provider_attested_unknown_is_preserved(self):
+        binding = self.binding(auditor_provider_attested_identity="UNKNOWN")
         assert binding.as_dict()["auditor_provider_attested_identity"] == "UNKNOWN"
 
     @pytest.mark.parametrize(
@@ -399,22 +528,11 @@ class TestAuditBinding:
             (m.AuditVerdict.UNKNOWN, False),
         ],
     )
-    def test_only_pass_verdicts_are_acceptable(self, verdict, acceptable):
-        binding = m.ContentAuditBinding(
-            audit_id="a",
-            packet_ref="p",
-            audited_head="h",
-            audited_tree="t",
-            audited_content_digest="d",
-            base_policy_ref="b",
-            auditor_requested_identity="x",
-            auditor_configured_identity="y",
-            auditor_response_claimed_identity="z",
-            auditor_proxy_reported_identity="w",
-            auditor_provider_attested_identity="v",
-            independence=m.Independence.PROVEN,
-            verdict=verdict,
-            audit_result_digest="r",
-            observed_at=NOW,
-        )
-        assert binding.is_acceptable is acceptable
+    def test_verdict_is_only_one_part_of_contextual_acceptance(self, verdict, acceptable):
+        binding = self.binding(verdict=verdict)
+        assert binding.is_acceptable_for(
+            subject=m.Subject(head_sha=OID_A, tree_sha=TREE_A, content_digest=DIGEST_A),
+            packet_ref=PACKET,
+            packet_digest=DIGEST_A,
+            policy_digest=DIGEST_B,
+        ) is acceptable
