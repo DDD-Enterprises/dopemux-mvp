@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     # AI Provider API Keys
     anthropic_api_key: str = Field(default="", env="ANTHROPIC_API_KEY")
     openai_api_key: str = Field(default="", env="OPENAI_API_KEY")
-    openrouter_api_key: str = Field(default="", env="OPENROUTER_API_KEY")
+    cheaperinference_api_key: str = Field(default="", env="CHEAPERINFERENCE_API_KEY")
     groq_api_key: str = Field(default="", env="GROQ_API_KEY")
 
     # Integrated Services

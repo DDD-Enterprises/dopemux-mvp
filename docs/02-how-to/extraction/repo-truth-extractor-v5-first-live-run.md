@@ -19,6 +19,8 @@ next_review: '2026-07-06'
 
 Use this flow when you need the runner-level first-live preset path. The canonical operator command family is `dopemux rte`, but this specific runbook uses direct `python services/repo-truth-extractor/run_extraction_v5.py ...` invocation because the first-live preset and several inspection flags are runner-level controls.
 
+> **2026-08-24**: The machine-wide broker is migrating from OpenRouter to cheaperinference.com. The RTE runner's `openrouter` provider identifier, `OPENROUTER_API_KEY`, and `balanced_grok_openrouter`/`balanced_openrouter` routing-policy names below are runner-level (`services/repo-truth-extractor/`) code contracts and remain unchanged until that code is migrated; do not substitute `CHEAPERINFERENCE_API_KEY` for them here.
+
 ## What this guide reflects on the current branch
 
 This guide is aligned to the active v5 runner on this branch:

@@ -58,7 +58,7 @@ Consent gate for any live batch network call:
 DPMX_LIVE_OK=1
 ```
 
-OpenRouter is not supported for live batch in this workflow.
+cheaperinference.com is not supported for live batch in this workflow.
 
 Tuning flags:
 

@@ -116,7 +116,7 @@ FULL_STACK_ENV_VARS=(
     AGE_PASSWORD
     ANTHROPIC_API_KEY
     OPENAI_API_KEY
-    OPENROUTER_API_KEY
+    CHEAPERINFERENCE_API_KEY
     GEMINI_API_KEY
     XAI_API_KEY
     VOYAGE_API_KEY
@@ -300,7 +300,7 @@ env_prompt() {
         AGE_PASSWORD) echo "PostgreSQL AGE password (ConPort, LiteLLM, bridge)" ;;
         ANTHROPIC_API_KEY) echo "Anthropic Claude API key (sk-ant-...)" ;;
         OPENAI_API_KEY) echo "OpenAI API key (Zen/LiteLLM fallback)" ;;
-        OPENROUTER_API_KEY) echo "OpenRouter API key (Grok/GPT routing)" ;;
+        CHEAPERINFERENCE_API_KEY) echo "CheaperInference API key (Grok/GPT routing; get one at https://cheaperinference.com, or source from keychain via scripts/load_keychain_env.sh)" ;;
         GEMINI_API_KEY) echo "Google Gemini API key (optional)" ;;
         XAI_API_KEY) echo "xAI Grok API key (optional)" ;;
         VOYAGE_API_KEY) echo "Voyage API key (Dope-Context + GPT-Researcher embeddings)" ;;
@@ -361,7 +361,7 @@ env_is_placeholder_value() {
 
 env_is_sensitive() {
     case "$1" in
-        AGE_PASSWORD|ANTHROPIC_API_KEY|OPENAI_API_KEY|OPENROUTER_API_KEY|GEMINI_API_KEY|XAI_API_KEY|VOYAGE_API_KEY|TAVILY_API_KEY|EXA_API_KEY|LEANTIME_TOKEN|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY|LITELLM_MASTER_KEY|LITELLM_DATABASE_URL|OPENAI_WEBHOOK_SECRET)
+        AGE_PASSWORD|ANTHROPIC_API_KEY|OPENAI_API_KEY|CHEAPERINFERENCE_API_KEY|GEMINI_API_KEY|XAI_API_KEY|VOYAGE_API_KEY|TAVILY_API_KEY|EXA_API_KEY|LEANTIME_TOKEN|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY|LITELLM_MASTER_KEY|LITELLM_DATABASE_URL|OPENAI_WEBHOOK_SECRET)
             return 0
             ;;
         *)
@@ -383,7 +383,7 @@ env_policy() {
         AGE_PASSWORD|LEANTIME_URL|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY|LITELLM_MASTER_KEY|LITELLM_DATABASE_URL|HOST_CODE_PARENT_DIR|HOST_PROJECT_RELATIVE_PATH)
             echo "local-defaultable"
             ;;
-        ANTHROPIC_API_KEY|OPENAI_API_KEY|OPENROUTER_API_KEY|GEMINI_API_KEY|XAI_API_KEY|VOYAGE_API_KEY|TAVILY_API_KEY|EXA_API_KEY|LEANTIME_TOKEN|OPENAI_WEBHOOK_SECRET)
+        ANTHROPIC_API_KEY|OPENAI_API_KEY|CHEAPERINFERENCE_API_KEY|GEMINI_API_KEY|XAI_API_KEY|VOYAGE_API_KEY|TAVILY_API_KEY|EXA_API_KEY|LEANTIME_TOKEN|OPENAI_WEBHOOK_SECRET)
             echo "provider-optional"
             ;;
         *)
@@ -397,7 +397,7 @@ capability_label() {
         AGE_PASSWORD) echo "PostgreSQL AGE password" ;;
         ANTHROPIC_API_KEY) echo "Anthropic provider" ;;
         OPENAI_API_KEY) echo "OpenAI provider" ;;
-        OPENROUTER_API_KEY) echo "OpenRouter provider" ;;
+        CHEAPERINFERENCE_API_KEY) echo "CheaperInference provider" ;;
         GEMINI_API_KEY) echo "Gemini provider" ;;
         XAI_API_KEY) echo "xAI provider" ;;
         VOYAGE_API_KEY) echo "Voyage embeddings" ;;

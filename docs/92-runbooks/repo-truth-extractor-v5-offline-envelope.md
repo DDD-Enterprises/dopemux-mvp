@@ -12,6 +12,8 @@ prelude: Repo Truth Extractor V5 Offline Envelope (runbook) for dopemux document
 ---
 # Repo Truth Extractor v5 Offline Envelope
 
+> **2026-08-24**: The machine-wide broker is migrating from OpenRouter to cheaperinference.com. The RTE runner's `OPENROUTER_API_KEY` requirement below is a runner-level (`services/repo-truth-extractor/`) code contract and remains unchanged until that code is migrated; do not substitute `CHEAPERINFERENCE_API_KEY` for it here.
+
 ## Current truth
 
 - As of April 2, 2026, bounded online first-live readiness remains environment-blocked when the required OpenRouter models are not authorized in the current environment.

@@ -128,7 +128,8 @@ class EnvDriftScanner:
         acceptable_vars = {
             "DATABASE_URL", "REDIS_URL", "CONPORT_URL", "DOPECON_BRIDGE_URL",
             "MCP_SERVER_PORT", "TASK_ORCHESTRATOR_API_KEY", "WORKSPACE_ID",
-            "OPENROUTER_API_KEY", "ANTHROPIC_API_KEY", "OPENAI_API_KEY",
+            "OPENROUTER_API_KEY",  # deprecated (cheaperinference migration)
+            "CHEAPERINFERENCE_API_KEY", "ANTHROPIC_API_KEY", "OPENAI_API_KEY",
             "POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_DB", "POSTGRES_PORT",
         }
 

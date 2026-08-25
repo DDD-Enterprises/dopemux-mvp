@@ -298,6 +298,7 @@ try:
         BatchRequest,
         BatchResult,
         BatchRoute,
+        CheaperInferenceBatchClient,
         GeminiBatchClient,
         OpenAIBatchClient,
         OpenRouterBatchClient,
@@ -321,6 +322,7 @@ except ModuleNotFoundError:
     OpenAIBatchClient = batch_clients_module.OpenAIBatchClient
     XAIBatchClient = batch_clients_module.XAIBatchClient
     OpenRouterBatchClient = batch_clients_module.OpenRouterBatchClient
+    CheaperInferenceBatchClient = batch_clients_module.CheaperInferenceBatchClient
     classify_batch_terminal_status = batch_clients_module.classify_batch_terminal_status
 
 try:
@@ -656,7 +658,7 @@ COST_PROFILE_STRICT_CELL_KEYS: Tuple[str, ...] = ("CE_MODEL", "SYNTH_MODEL")
 # Providers permitted to serve STRICT cells. Closes the xai/gemini fail-open
 # hole: strict_capability_reason() treats xai as strict-capable, but xai/gemini
 # strict-JSON reliability on RTE cells is unproven (Phase D research).
-STRICT_ALLOWED_PROVIDERS: Tuple[str, ...] = ("openai", "openrouter")
+STRICT_ALLOWED_PROVIDERS: Tuple[str, ...] = ("openai", "openrouter", "cheaperinference")
 
 COST_PROFILES: Dict[str, Dict[str, Any]] = {
     "economy": {
@@ -1105,15 +1107,19 @@ def provider_surface_summary_from_aliases(aliases: Dict[str, str]) -> Dict[str, 
     summary = {
         "direct": False,
         "openrouter": False,
+        "cheaperinference": False,
         "free": False,
         "unknown": False,
     }
     for route in aliases.values():
         provider, model_id = _parse_alias_provider_model(str(route))
         if provider == "openrouter":
+            # Legacy/inactive surface; kept for frozen-run replay introspection.
             summary["openrouter"] = True
             if str(model_id).endswith(":free"):
                 summary["free"] = True
+        elif provider == "cheaperinference":
+            summary["cheaperinference"] = True
         elif provider in {"openai", "gemini", "xai"}:
             summary["direct"] = True
         elif provider:
@@ -1393,12 +1399,17 @@ def assert_strict_route_provider_allowed(
     """
     normalized = str(provider or "").strip().lower()
     model = str(model_id or "").strip().lower()
-    # Strict-JSON passthrough is only verified for OpenAI models — direct, or
-    # via OpenRouter's openai/* namespace. openrouter/anthropic, xai and gemini
-    # are NOT strict-capable here (see config/pricing.yaml supports_json_schema_strict
-    # + structured_output_contracts.strict_capability_reason).
-    allowed = normalized == "openai" or (
-        normalized == "openrouter" and model.startswith("openai/")
+    # Strict-JSON passthrough is only verified for OpenAI models — direct, via
+    # OpenRouter's openai/* namespace (legacy/inactive, kept for frozen-run
+    # replay), or via cheaperinference's flat openai-family model ids (no
+    # provider-namespace prefix in that catalog, so "gpt-" is the marker).
+    # openrouter/anthropic, xai and gemini are NOT strict-capable here (see
+    # config/pricing.yaml supports_json_schema_strict + structured_output_
+    # contracts.strict_capability_reason).
+    allowed = (
+        normalized == "openai"
+        or (normalized == "openrouter" and model.startswith("openai/"))
+        or (normalized == "cheaperinference" and model.startswith("gpt-"))
     )
     if not allowed:
         raise RuntimeError(
@@ -1542,8 +1553,11 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
         ],
     },
     "balanced_openrouter": {
+        # DEFAULT_ROUTING_POLICY: cheaperinference is the active runtime
+        # provider here (migrated off OpenRouter). Policy name kept for
+        # backward-compat surfaces/manifests; see PROVIDER_BASE_URL comment.
         "bulk": [
-            ("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"),
+            ("cheaperinference", "gpt-5-nano", "CHEAPERINFERENCE_API_KEY"),
             ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
             ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
         ],
@@ -1553,13 +1567,13 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "synthesis": [
-            ("openrouter", "openai/gpt-5.2-chat", "OPENROUTER_API_KEY"),
+            ("cheaperinference", "gpt-5.4", "CHEAPERINFERENCE_API_KEY"),
             ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "qa": [
             ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"),
-            ("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"),
+            ("cheaperinference", "gpt-5-nano", "CHEAPERINFERENCE_API_KEY"),
             ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
         ],
     },
@@ -1954,7 +1968,8 @@ PROVIDER_BASE_URL = {
     "xai": "https://api.x.ai/v1",
     "gemini": "https://generativelanguage.googleapis.com",
     "openai": "https://api.openai.com/v1",
-    "openrouter": "https://openrouter.ai/api/v1",
+    "openrouter": "https://openrouter.ai/api/v1",  # inactive/legacy: kept for frozen-run replay
+    "cheaperinference": "https://api.cheaperinference.com/v1",
 }
 
 GEMINI_OPENAI_COMPAT_BASE_URL = (
@@ -2273,6 +2288,7 @@ PROVIDER_API_KEY_ENV: Dict[str, str] = {
     "gemini": "GEMINI_API_KEY",
     "xai": "XAI_API_KEY",
     "openrouter": "OPENROUTER_API_KEY",
+    "cheaperinference": "CHEAPERINFERENCE_API_KEY",
 }
 STATIC_ROUTE_FINGERPRINT_AUTHORITY = "static_request_route_metadata"
 ROUTE_FINGERPRINT_INPUT_FIELDS: Tuple[str, ...] = (
@@ -9540,9 +9556,15 @@ def resolve_api_key(
             return "", api_key_env
         return key_value, api_key_env
     if provider == "openrouter" and api_key_env == "OPENROUTER_API_KEY":
+        # Legacy/inactive: retained so frozen-run replay of openrouter routes
+        # keeps working. cheaperinference is the active runtime provider.
         v5_override = os.getenv("V5_OPENROUTER_API_KEY", "")
         if v5_override:
             return v5_override, "V5_OPENROUTER_API_KEY"
+    if provider == "cheaperinference" and api_key_env == "CHEAPERINFERENCE_API_KEY":
+        v5_override = os.getenv("V5_CHEAPERINFERENCE_API_KEY", "")
+        if v5_override:
+            return v5_override, "V5_CHEAPERINFERENCE_API_KEY"
     value = os.getenv(api_key_env, "")
     return value, api_key_env
 
@@ -12489,7 +12511,19 @@ def build_batch_client(
     if provider == "xai":
         return XAIBatchClient(api_key=api_key, base_url=llm_base_url(provider, cfg))
     if provider == "openrouter":
+        # Legacy/inactive: kept for frozen-run replay.
         return OpenRouterBatchClient(
+            api_key=api_key, base_url=llm_base_url(provider, cfg)
+        )
+    if provider == "cheaperinference":
+        # Active runtime provider. Constructs successfully like
+        # OpenRouterBatchClient; .submit() fails closed with
+        # UnsupportedBatchProvider (batch-API support is unverified) instead
+        # of raising here -- callers submit() inside a try/except that
+        # already handles the legacy openrouter submit-time failure the same
+        # way, so this keeps that graceful degradation path intact instead
+        # of a hard RuntimeError at client construction.
+        return CheaperInferenceBatchClient(
             api_key=api_key, base_url=llm_base_url(provider, cfg)
         )
     raise RuntimeError(f"Unsupported batch provider: {provider}")
@@ -21840,7 +21874,7 @@ def main() -> None:
     args._resolved_model_alias_overrides = tuple(_model_alias_overrides)
     # Validate --disable-provider values; normalize to lowercase.
     _disabled_providers: List[str] = []
-    _valid_providers = {"openai", "anthropic", "gemini", "xai", "openrouter"}
+    _valid_providers = {"openai", "anthropic", "gemini", "xai", "openrouter", "cheaperinference"}
     for raw in getattr(args, "disable_provider", []) or []:
         token = str(raw).strip().lower()
         if token not in _valid_providers:

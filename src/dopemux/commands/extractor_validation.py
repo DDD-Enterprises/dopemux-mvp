@@ -32,7 +32,7 @@ DEFAULT_PROVIDER_ENV_VARS = (
     "OPENAI_API_KEY",
     "GEMINI_API_KEY",
     "XAI_API_KEY",
-    "OPENROUTER_API_KEY",
+    "CHEAPERINFERENCE_API_KEY",
 )
 DEFAULT_PAL_BASE_URL = "http://localhost:3003"
 DEFAULT_PAL_CONSENSUS_MODELS = (
@@ -888,7 +888,7 @@ class LiveValidationRunner:
     def _provider_model_inventory(self) -> Dict[str, List[str]]:
         model_map = _load_yaml(self.config.promptset_root / "model_map.yaml")
         steps = model_map.get("steps")
-        providers = ("openai", "gemini", "xai", "openrouter")
+        providers = ("openai", "gemini", "xai", "cheaperinference")
         inventory: Dict[str, Set[str]] = {provider: set() for provider in providers}
         if isinstance(steps, list):
             for row in steps:
@@ -973,7 +973,7 @@ class LiveValidationRunner:
             f"- OpenAI: {inventory.get('openai', [])}\n"
             f"- Gemini: {inventory.get('gemini', [])}\n"
             f"- xAI: {inventory.get('xai', [])}\n"
-            f"- OpenRouter: {inventory.get('openrouter', [])}\n"
+            f"- CheaperInference: {inventory.get('cheaperinference', [])}\n"
             "Call out any model IDs or auth assumptions that appear stale or risky."
         )
         try:

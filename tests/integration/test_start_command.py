@@ -61,7 +61,7 @@ class TestStartCommandIntegration:
         with patch("dopemux.cli.Path.cwd", return_value=mock_project), \
              patch("dopemux.cli.AttentionMonitor"), \
              patch("dopemux.cli.ContextManager"), \
-             patch.dict(os.environ, {"OPENROUTER_API_KEY": "sk-test-key"}, clear=True), \
+             patch.dict(os.environ, {"CHEAPERINFERENCE_API_KEY": "sk-test-key"}, clear=True), \
              patch("dopemux.cli.LiteLLMProxyManager") as mock_proxy_mgr, \
              patch("dopemux.cli.DopeBrainzRouterManager") as mock_router_mgr, \
              patch("dopemux.cli._load_litellm_models", return_value=["openrouter/anthropic/claude-sonnet-4"]):

@@ -117,7 +117,7 @@ class DopeBrainzRouterManager:
         router_config["background"] = (
             overrides.get("background")
             or router_config.get("background")
-            or f"{provider_name},openrouter-xai-grok-code-fast"
+            or f"{provider_name},grok-4.5"
         )
         router_config["think"] = (
             overrides.get("think")
@@ -156,8 +156,8 @@ class DopeBrainzRouterManager:
             self._process_env_overrides["XAI_API_KEY"] = os.environ["XAI_API_KEY"]
         if os.environ.get("OPENAI_API_KEY"):
             self._process_env_overrides["OPENAI_API_KEY"] = os.environ["OPENAI_API_KEY"]
-        if os.environ.get("OPENROUTER_API_KEY"):
-            self._process_env_overrides["OPENROUTER_API_KEY"] = os.environ["OPENROUTER_API_KEY"]
+        if os.environ.get("CHEAPERINFERENCE_API_KEY"):
+            self._process_env_overrides["CHEAPERINFERENCE_API_KEY"] = os.environ["CHEAPERINFERENCE_API_KEY"]
 
         self._api_key = api_key
         return self.config_path

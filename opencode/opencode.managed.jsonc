@@ -1,0 +1,26 @@
+{
+  // BEGIN dopemux-managed mcp — generated from mcp_catalog.yaml by `dopemux mcp generate --apply`. Do not hand-edit this section.
+  // Read-plane rows (ADR-MCPINT-002) render here only where a read-safe DIRECT
+  // config exists today; the universal read plane (dcp-readonly-facade) is
+  // planned-active with no endpoint until MCPINT-IMP-FACADE-001 deploys it.
+  // Deferred to the facade: conport, dcp-readonly-facade, dope-context, dope-memory, gpt-researcher, serena, task-orchestrator
+  "mcp": {
+    "pal-stdio": {
+      "command": [
+        "docker",
+        "exec",
+        "-i",
+        "mcp-pal-stdio",
+        "/app/.venv/bin/python",
+        "server.py"
+      ],
+      "enabled": true,
+      "environment": {
+        "GEMINI_API_KEY": "{env:GEMINI_API_KEY}",
+        "OPENAI_API_KEY": "{env:OPENAI_API_KEY}"
+      },
+      "type": "local"
+    }
+  }
+  // END dopemux-managed mcp
+}

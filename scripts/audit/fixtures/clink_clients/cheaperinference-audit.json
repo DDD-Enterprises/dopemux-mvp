@@ -1,13 +1,15 @@
 {
-  "name": "openrouter-audit",
-  "runner": "openrouter",
-  "command": "openrouter",
+  "name": "cheaperinference-audit",
+  "runner": "cheaperinference",
+  "command": "cheaperinference",
   "additional_args": [
     "--no-interactive",
     "--output-format",
     "json"
   ],
-  "env": {},
+  "env": {
+    "CHEAPERINFERENCE_BASE_URL": "https://api.cheaperinference.com/v1"
+  },
   "roles": {
     "codereviewer": {
       "prompt_path": "systemprompts/clink/default_codereviewer.txt",

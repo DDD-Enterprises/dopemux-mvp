@@ -131,5 +131,26 @@ hard_blocks:
         - agent_helper
       claims_canonical_authority: true
     block_reason: "PRIVACY_MISMATCH"
+  - id: "FR-013"
+    name: "cheaperinference_free_private_secret_security_release_schema"
+    match:
+      access_path: "cheaperinference_free"
+      any_privacy_class:
+        - PRIVATE_REPO_NO_SECRETS
+        - PRIVATE_REPO_POSSIBLE_SECRETS
+        - SECRET_BEARING
+        - CLIENT_DATA
+        - SECURITY_SENSITIVE
+        - RELEASE_AUTHORITY
+      any_risk_class:
+        - R5_SECURITY_OR_AUTHORITY
+        - R6_RELEASE_OR_PRODUCTION
+      any_role:
+        - structured_task_packet_generation
+        - proof_bundle_generation
+        - proof_validation
+        - security_review
+        - release_judgment
+    block_reason: "CHEAPERINFERENCE_FREE_FORBIDDEN"
 
-validation_notes: The artifact encodes hard-block patterns, not soft preferences. Runtime implementation must map observed route facts into these predicates.
+validation_notes: The artifact encodes hard-block patterns, not soft preferences. Runtime implementation must map observed route facts into these predicates. FR-013 mirrors FR-002 for cheaperinference's single free model (stealth/ox-alpha).

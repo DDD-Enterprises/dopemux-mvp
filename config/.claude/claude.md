@@ -60,7 +60,7 @@ class AppConfig(BaseSettings):
 ## Environment Variables
 
 Key variables (see `.env.example`):
-- `OPENROUTER_API_KEY` - LLM access
+- `CHEAPERINFERENCE_API_KEY` - LLM access
 - `DATABASE_URL` - PostgreSQL connection
 - `REDIS_URL` - Redis connection
 - `QDRANT_URL` - Vector database

@@ -59,15 +59,15 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
         "qa": [("openai", "gpt-5.4-mini", "OPENAI_API_KEY"), ("openai", "gpt-5-nano", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY")],
     },
     "balanced_openrouter": {
-        "bulk": [("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
+        "bulk": [("cheaperinference", "gpt-5-nano", "CHEAPERINFERENCE_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
         "extract": [("openai", "gpt-5.4-mini", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"), ("xai", "grok-code-fast-1", "XAI_API_KEY")],
-        "synthesis": [("openrouter", "openai/gpt-5.2-chat", "OPENROUTER_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"), ("xai", "grok-code-fast-1", "XAI_API_KEY")],
-        "qa": [("openai", "gpt-5.4-mini", "OPENAI_API_KEY"), ("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY")],
+        "synthesis": [("cheaperinference", "gpt-5.4", "CHEAPERINFERENCE_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"), ("xai", "grok-code-fast-1", "XAI_API_KEY")],
+        "qa": [("openai", "gpt-5.4-mini", "OPENAI_API_KEY"), ("cheaperinference", "gpt-5-nano", "CHEAPERINFERENCE_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY")],
     },
     "balanced_grok_openrouter": {
         "bulk": [("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
         "extract": [("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
-        "synthesis": [("openai", "gpt-5.3-codex", "OPENAI_API_KEY"), ("openai", "gpt-5.5", "OPENAI_API_KEY"), ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY")],
+        "synthesis": [("openai", "gpt-5.3-codex", "OPENAI_API_KEY"), ("openai", "gpt-5.5", "OPENAI_API_KEY"), ("cheaperinference", "claude-opus-5", "CHEAPERINFERENCE_API_KEY")],
         "qa": [("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
     },
     "quality": {
@@ -77,10 +77,10 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
         "qa": [("openai", "gpt-5.4-mini", "OPENAI_API_KEY"), ("openai", "gpt-5.2", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY")],
     },
     "openrouter": {
-        "bulk": [("openrouter", "openai/gpt-4.1-nano", "OPENROUTER_API_KEY"), ("openrouter", "openai/gpt-4o-mini", "OPENROUTER_API_KEY"), ("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY")],
-        "extract": [("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
-        "synthesis": [("openrouter", "openai/gpt-5.2-pro", "OPENROUTER_API_KEY"), ("openrouter", "openai/gpt-5.2-chat", "OPENROUTER_API_KEY"), ("openrouter", "openai/gpt-5-pro", "OPENROUTER_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY")],
-        "qa": [("openrouter", "openai/gpt-4.1-nano", "OPENROUTER_API_KEY"), ("openrouter", "openai/gpt-4o-mini", "OPENROUTER_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"), ("openai", "gpt-5-nano", "OPENAI_API_KEY")],
+        "bulk": [("cheaperinference", "gpt-5-nano", "CHEAPERINFERENCE_API_KEY"), ("cheaperinference", "gpt-5-mini", "CHEAPERINFERENCE_API_KEY"), ("cheaperinference", "gpt-5-nano", "CHEAPERINFERENCE_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY")],
+        "extract": [("cheaperinference", "gpt-5-nano", "CHEAPERINFERENCE_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
+        "synthesis": [("cheaperinference", "gpt-5.5-pro", "CHEAPERINFERENCE_API_KEY"), ("cheaperinference", "gpt-5.4", "CHEAPERINFERENCE_API_KEY"), ("cheaperinference", "gpt-5.5-pro", "CHEAPERINFERENCE_API_KEY"), ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY")],
+        "qa": [("cheaperinference", "gpt-5-nano", "CHEAPERINFERENCE_API_KEY"), ("cheaperinference", "gpt-5-mini", "CHEAPERINFERENCE_API_KEY"), ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"), ("openai", "gpt-5-nano", "OPENAI_API_KEY")],
     },
     "gemini_primary": {
         "bulk": [("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
@@ -91,7 +91,7 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
     "optimal": {
         "bulk": [("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"), ("xai", "grok-4.3", "XAI_API_KEY")],
         "extract": [("xai", "grok-4.3", "XAI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
-        "synthesis": [("xai", "grok-4.3", "XAI_API_KEY"), ("openai", "gpt-5.5", "OPENAI_API_KEY"), ("openrouter", "anthropic/claude-opus-4-6", "OPENROUTER_API_KEY")],
+        "synthesis": [("xai", "grok-4.3", "XAI_API_KEY"), ("openai", "gpt-5.5", "OPENAI_API_KEY"), ("cheaperinference", "claude-opus-5", "CHEAPERINFERENCE_API_KEY")],
         "qa": [("xai", "grok-4.3", "XAI_API_KEY"), ("openai", "gpt-5.4-mini", "OPENAI_API_KEY")],
     },
 }
@@ -177,10 +177,10 @@ def reset_pricing_cache() -> None:
 POLICY_DESCRIPTIONS: Dict[str, Dict[str, str]] = {
     "cost": {"label": "Budget", "emoji": "💚", "tier": "low", "desc": "Cheapest models — nano + flash"},
     "balanced": {"label": "Balanced", "emoji": "💛", "tier": "mid", "desc": "Mixed providers, good quality/cost ratio"},
-    "balanced_openrouter": {"label": "Balanced OR", "emoji": "💛", "tier": "mid", "desc": "OpenRouter primary — v5 default"},
-    "balanced_grok_openrouter": {"label": "Grok+OR", "emoji": "💛", "tier": "mid", "desc": "Grok primary with OpenRouter fallback"},
+    "balanced_openrouter": {"label": "Balanced CI", "emoji": "💛", "tier": "mid", "desc": "CheaperInference primary — v5 default"},
+    "balanced_grok_openrouter": {"label": "Grok+CI", "emoji": "💛", "tier": "mid", "desc": "Grok primary with CheaperInference fallback"},
     "quality": {"label": "Quality", "emoji": "🟠", "tier": "high", "desc": "Premium models across all providers"},
-    "openrouter": {"label": "OpenRouter", "emoji": "💛", "tier": "mid", "desc": "Pure OpenRouter routing"},
+    "openrouter": {"label": "CheaperInference", "emoji": "💛", "tier": "mid", "desc": "Pure CheaperInference routing"},
     "gemini_primary": {"label": "Gemini", "emoji": "💙", "tier": "mid", "desc": "Gemini 3-series primary"},
     "optimal": {"label": "Optimal", "emoji": "🔴", "tier": "max", "desc": "Best quality — Grok 4.3 + GPT-5.5"},
 }

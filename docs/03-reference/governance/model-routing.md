@@ -8,7 +8,7 @@ author: '@hu3mann'
 date: '2026-06-06'
 last_review: '2026-06-06'
 next_review: '2026-09-06'
-prelude: Repo-governed stage-routing policy for AI dev tools (Codex, Copilot, Claude Code, AGY, Gemini CLI, xAI, Moonshot, OpenRouter) — cheap reads, strong planning, scoped implementation, independent audit.
+prelude: Repo-governed stage-routing policy for AI dev tools (Codex, Copilot, Claude Code, AGY, Gemini CLI, xAI, Moonshot, cheaperinference.com; OpenRouter retired) — cheap reads, strong planning, scoped implementation, independent audit.
 tags: [governance, model-routing, agents, proof]
 ---
 # Model Routing Policy
@@ -30,7 +30,9 @@ does not dispatch model calls.
 This policy assigns a **stage slot** (cheap_read → investigation → planner_strong →
 implementer_standard → judge_strong → self_audit) and an appropriate model tier to
 each AI development tool (Codex, OpenCode, Copilot, Claude Code, AGY, Gemini CLI,
-xAI, Moonshot, OpenRouter) operating on this repo.
+xAI, Moonshot, cheaperinference.com) operating on this repo. OpenRouter is retained
+in the machine-readable policy as an inactive/historical broker block (packet P5,
+cheaperinference.com migration) — see `config/ai/model-routing.policy.yaml`.
 
 The goal is to ensure cheap models gather facts but never make architecture or
 security decisions, and that implementation and judgment always operate under approved
@@ -83,7 +85,8 @@ Verdict values for `self_audit`: `PASS` · `PASS_WITH_RISKS` · `FAIL` ·
 | Gemini CLI | VERIFY_WITH_VENDOR_DOCS (Flash tier) | VERIFY_WITH_VENDOR_DOCS (Pro-high tier) | VERIFY_WITH_VENDOR_DOCS (coding_balanced) | VERIFY_WITH_VENDOR_DOCS (Pro-high / audit_strong) |
 | xAI | VERIFY_WITH_VENDOR_DOCS (low-reasoning Grok) | VERIFY_WITH_VENDOR_DOCS (high-reasoning Grok) | VERIFY_WITH_VENDOR_DOCS (medium-reasoning Grok) | VERIFY_WITH_VENDOR_DOCS (high-reasoning Grok) |
 | Moonshot | VERIFY_WITH_VENDOR_DOCS (Kimi thinking=off) | VERIFY_WITH_VENDOR_DOCS (Kimi thinking=on) | VERIFY_WITH_VENDOR_DOCS (coding_balanced) | VERIFY_WITH_VENDOR_DOCS (Kimi thinking=on) |
-| OpenRouter | VERIFY_WITH_VENDOR_DOCS (broker, pinned cheap) | VERIFY_WITH_VENDOR_DOCS (broker, pinned strong) | VERIFY_WITH_VENDOR_DOCS (broker, pinned coding) | VERIFY_WITH_VENDOR_DOCS (broker, pinned strong + deterministic provider) |
+| OpenRouter (INACTIVE, packet P5) | VERIFY_WITH_VENDOR_DOCS (broker, pinned cheap) | VERIFY_WITH_VENDOR_DOCS (broker, pinned strong) | VERIFY_WITH_VENDOR_DOCS (broker, pinned coding) | VERIFY_WITH_VENDOR_DOCS (broker, pinned strong + deterministic provider) |
+| cheaperinference.com (ACTIVE broker, packet P5) | VERIFY_WITH_VENDOR_DOCS (broker, pinned cheap) | VERIFY_WITH_VENDOR_DOCS (broker, pinned strong) | VERIFY_WITH_VENDOR_DOCS (broker, pinned coding) | VERIFY_WITH_VENDOR_DOCS (broker, pinned strong + deterministic provider) |
 
 > **Copilot baseline (OBSERVED):** all routed agents (`reader`, `planner`,
 > `implementer`, `auditor`) pin `model: 'Claude Sonnet 4.5'`; lane separation is
@@ -197,13 +200,13 @@ Required fields per run:
 
 - `actual_tool` — which tool was used (e.g., `claude_code`, `codex`, `copilot`)
 - `actual_model` — the model that executed the stage
-- `provider` — direct provider or `openrouter` broker
+- `provider` — direct provider or `cheaperinference` broker (`openrouter` is INACTIVE, see §4)
 - `stage_slot` — which stage this run operated in
 - `requested_model` — what was requested (may differ from actual if fallback occurred)
 - `fallback_used` — `true` / `false`
 - `fallback_reason` — explanation if fallback occurred
 - `reasoning_effort_or_thinking_mode` — e.g., `high`, `thinking=enabled`, `n/a`
-- `data_policy_applied` — ZDR / data-collection policy if OpenRouter was used
+- `data_policy_applied` — ZDR / data-collection policy if a broker (cheaperinference.com; formerly OpenRouter) was used
 - `cost_policy_applied` — price cap or cost policy if relevant
 
 The embedded audit object (in `proof/…/PROOF.json`) is governed by

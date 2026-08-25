@@ -33,7 +33,7 @@ Zen is Dopemux's multi-model reasoning MCP server. It provides:
 - **zen/codereview** - Multi-domain code review
 - **zen/challenge** - Critical thinking validation
 
-**Model Support**: 70+ models via OpenAI, Gemini, Grok, Claude, OpenRouter
+**Model Support**: 70+ models via OpenAI, Gemini, Grok, Claude, and cheaperinference.com (custom provider via `CUSTOM_API_URL`/`CUSTOM_API_KEY`)
 
 ---
 

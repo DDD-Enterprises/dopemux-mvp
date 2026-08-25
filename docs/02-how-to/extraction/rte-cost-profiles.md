@@ -17,6 +17,8 @@ prelude: 'RTE cost profiles: pick the right --cost-profile and tune optimizers (
 ---
 # RTE cost profiles
 
+> **2026-08-24**: The machine-wide broker is migrating from OpenRouter to cheaperinference.com. The `openrouter-resilient` profile name and `openrouter/openai/*` model-route prefixes below are runner-level (`services/repo-truth-extractor/`, `config/pricing.yaml`) code contracts and remain unchanged until that code is migrated.
+
 The Repo Truth Extractor exposes 11 cost profiles via the `--cost-profile` CLI flag. Each profile selects, **per cell**, the concrete provider+model that runs — plus service_tier defaults, cached-input behavior, batch usage, escalation depth, and a default cost cap.
 
 ### How profile model-switching works (Plan B)

@@ -673,6 +673,8 @@ class XAIBatchClient(OpenAIBatchClient):
 
 
 class OpenRouterBatchClient(OpenAIBatchClient):
+    # Legacy/inactive: kept for frozen-run replay. cheaperinference is the
+    # active runtime provider; see CheaperInferenceBatchClient below.
     def __init__(self, api_key: str, base_url: str = "https://openrouter.ai/api/v1") -> None:
         super().__init__(api_key=api_key, base_url=base_url)
 
@@ -685,6 +687,25 @@ class OpenRouterBatchClient(OpenAIBatchClient):
         raise UnsupportedBatchProvider(
             "OpenRouter is not supported for live batch execution. Use openai, gemini, or xai. "
             "OpenRouter remains available for sync routing."
+        )
+
+
+class CheaperInferenceBatchClient(OpenAIBatchClient):
+    def __init__(self, api_key: str, base_url: str = "https://api.cheaperinference.com/v1") -> None:
+        super().__init__(api_key=api_key, base_url=base_url)
+
+    def submit(
+        self,
+        requests: Sequence[BatchRequest],
+        route: BatchRoute,
+        step_context: Dict[str, Any],
+    ) -> str:
+        # cheaperinference batch-API support is unverified (no confirmation
+        # in the migration packet); fail closed like the legacy OpenRouter
+        # path rather than silently assume OpenAI-compatible batch semantics.
+        raise UnsupportedBatchProvider(
+            "cheaperinference is not verified for live batch execution. Use openai, gemini, or xai. "
+            "cheaperinference remains available for sync routing."
         )
 
 

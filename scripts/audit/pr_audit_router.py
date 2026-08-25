@@ -75,9 +75,10 @@ def classify_pr_risk(diff_stats: PrDiffStats) -> PrRiskClass:
 # ---------------------------------------------------------------------------
 # Risk → route-name tier mapping
 #
-# Invariant: free OpenRouter model lists are advisory only — this table maps
-# to *named routes* (resolved from clink configs), not to free-tier model IDs.
-# xAI/Grok appears in HIGH tier but blocks only when configured as blocking.
+# Invariant: free CheaperInference model lists are advisory only — this table
+# maps to *named routes* (resolved from clink configs), not to free-tier model
+# IDs. xAI/Grok appears in HIGH tier but blocks only when configured as
+# blocking.
 # ---------------------------------------------------------------------------
 
 _RISK_TIER_ROUTES: dict[PrRiskClass, tuple[str, ...]] = {
@@ -88,7 +89,7 @@ _RISK_TIER_ROUTES: dict[PrRiskClass, tuple[str, ...]] = {
 
 # Names that may be loaded from clink config but are treated as non-blocking
 # (they add coverage but do not gate the audit result when unavailable).
-_NON_BLOCKING_ROUTE_NAMES: frozenset[str] = frozenset({"xai-grok-audit", "openrouter-audit"})
+_NON_BLOCKING_ROUTE_NAMES: frozenset[str] = frozenset({"xai-grok-audit", "cheaperinference-audit"})
 
 
 # ---------------------------------------------------------------------------

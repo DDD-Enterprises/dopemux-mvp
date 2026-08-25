@@ -376,7 +376,7 @@ class LiteLLMManager:
                 env_vars["DATABASE_URL"] = process_info.db_url
             
             # Preserve provider keys
-            provider_keys = ["ANTHROPIC_API_KEY", "XAI_API_KEY", "OPENROUTER_API_KEY", "OPENAI_API_KEY"]
+            provider_keys = ["ANTHROPIC_API_KEY", "XAI_API_KEY", "CHEAPERINFERENCE_API_KEY", "OPENAI_API_KEY"]
             for key in provider_keys:
                 if key in os.environ:
                     env_vars[f"DOPEMUX_PROVIDER_{key}"] = os.environ[key]

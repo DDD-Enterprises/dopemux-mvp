@@ -313,8 +313,10 @@ services:
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - XAI_API_KEY=${XAI_API_KEY}
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - CUSTOM_API_URL=https://api.cheaperinference.com/v1
+      - CUSTOM_API_KEY=${CHEAPERINFERENCE_API_KEY}
+      - CUSTOM_MODEL_NAME=glm-4.6
       - MCP_SERVER_PORT=${PAL_PORT:-3003}
     ports:
       - "${PAL_PORT:-3003}:3003"
@@ -342,8 +344,10 @@ services:
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - XAI_API_KEY=${XAI_API_KEY}
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - CUSTOM_API_URL=https://api.cheaperinference.com/v1
+      - CUSTOM_API_KEY=${CHEAPERINFERENCE_API_KEY}
+      - CUSTOM_MODEL_NAME=glm-4.6
     # No ports exposed - Docker MCP Toolkit execs into container for stdio transport
 
   # LiteLLM - Model Router
@@ -360,7 +364,7 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - XAI_API_KEY=${XAI_API_KEY}
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - CHEAPERINFERENCE_API_KEY=${CHEAPERINFERENCE_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - DATABASE_URL=${LITELLM_DATABASE_URL:-postgresql://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@dopemux-postgres-age:5432/litellm}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}

@@ -13,7 +13,7 @@ from dopemux.litellm_proxy import LiteLLMProxyInfo
 def test_altp_skips_openrouter_gate(mock_which, mock_routing_config_cls, mock_start_proxy, mock_router_cls, mock_litellm_cls):
     """
     Verify that ALTP routing works correctly when provider-based API keys
-    (OPENROUTER_API_KEY and XAI_API_KEY) are configured.
+    (CHEAPERINFERENCE_API_KEY and XAI_API_KEY) are configured.
     """
     mock_which.return_value = "/bin/claude"
     mock_routing_config_cls.load_default.return_value.get_mode.return_value = "api"
@@ -46,7 +46,7 @@ def test_altp_skips_openrouter_gate(mock_which, mock_routing_config_cls, mock_st
     env = os.environ.copy()
     env.pop("DOPEMUX_AGENT_ROLE", None)
     
-    env["OPENROUTER_API_KEY"] = "sk-openrouter"
+    env["CHEAPERINFERENCE_API_KEY"] = "sk-cheaperinference"
     env["XAI_API_KEY"] = "sk-xai"
 
     runner = CliRunner(env=env)
@@ -80,5 +80,5 @@ def test_altp_skips_openrouter_gate(mock_which, mock_routing_config_cls, mock_st
                  traceback.print_exception(type(result.exception), result.exception, result.exception.__traceback__)
 
         assert result.exit_code == 0
-        assert "OPENROUTER_API_KEY is not set" not in result.output
+        assert "CHEAPERINFERENCE_API_KEY is not set" not in result.output
         assert "Enabling Claude Code Router" in result.output

@@ -7,6 +7,16 @@
 # Use `dopemux routing edit` to safely modify and validate changes.
 #
 # Changes require `dopemux routing reload` to take effect.
+#
+# Regenerating ~/.dopemux/routing.yaml from this template:
+# - Alias-only drift: `dopemux routing repair-aliases --apply` (RoutingConfig.repair_alias_contract)
+#   merges only the top-level `aliases:` block from this template into the live file.
+# - Full regen (providers/models/freeflow sections, as changed by this migration):
+#   there is no diff-and-merge command yet. RoutingConfig._copy_template() only fires
+#   automatically when ~/.dopemux/routing.yaml is absent. To pick up this template's
+#   provider/model changes, back up and remove ~/.dopemux/routing.yaml, then run any
+#   `dopemux routing` command that calls RoutingConfig.load() (e.g. `dopemux routing status`)
+#   to recopy this template as the new live file.
 
 version: 1
 
@@ -36,25 +46,19 @@ providers:
     label: "OpenAI"
     api_key_env: "OPENAI_API_KEY"
 
-  - name: openrouter
-    label: "OpenRouter"
-    api_key_env: "OPENROUTER_API_KEY"
-    base_url: "https://openrouter.ai/api/v1"
-    extra_headers:
-      HTTP-Referer: "https://dopemux.local"
-      X-Title: "Dopemux LiteLLM Proxy"
+  - name: cheaperinference
+    label: "CheaperInference"
+    api_key_env: "CHEAPERINFERENCE_API_KEY"
+    base_url: "https://api.cheaperinference.com/v1"
 
   - name: gemini_paid_cap
     label: "Google Gemini Paid Cap"
     api_key_env: "GEMINI_API_KEY"
 
-  - name: openrouter_paid_cap
-    label: "OpenRouter Paid Cap"
-    api_key_env: "OPENROUTER_API_KEY"
-    base_url: "https://openrouter.ai/api/v1"
-    extra_headers:
-      HTTP-Referer: "https://dopemux.local"
-      X-Title: "Dopemux LiteLLM Proxy"
+  - name: cheaperinference_paid_cap
+    label: "CheaperInference Paid Cap"
+    api_key_env: "CHEAPERINFERENCE_API_KEY"
+    base_url: "https://api.cheaperinference.com/v1"
 
   - name: ollama
     label: "Ollama Local"
@@ -75,13 +79,10 @@ providers:
     label: "Cerebras Free Tier"
     api_key_env: "CEREBRAS_API_KEY"
 
-  - name: openrouter_free
-    label: "OpenRouter Free Models"
-    api_key_env: "OPENROUTER_API_KEY"
-    base_url: "https://openrouter.ai/api/v1"
-    extra_headers:
-      HTTP-Referer: "https://dopemux.local"
-      X-Title: "Dopemux LiteLLM Proxy"
+  - name: cheaperinference_free
+    label: "CheaperInference Free Models"
+    api_key_env: "CHEAPERINFERENCE_API_KEY"
+    base_url: "https://api.cheaperinference.com/v1"
 
   - name: cloudflare_workers_ai
     label: "Cloudflare Workers AI Free Allocation"
@@ -163,10 +164,10 @@ models:
     model_id: "openai/gpt-5.4-nano"
     max_tokens: 272000
 
-  # OPENROUTER (aggregator)
-  - name: openrouter-gpt-5.4-pro
-    provider: openrouter
-    model_id: "openrouter/openai/gpt-5.4-pro"
+  # CHEAPERINFERENCE (aggregator)
+  - name: cheaperinference-gpt-5.4-pro
+    provider: cheaperinference
+    model_id: "openai/gpt-5.4-pro"
     max_tokens: 272000
 
   # STRICT-FREE LOCAL / HOSTED-FREE ROUTES
@@ -190,15 +191,10 @@ models:
     model_id: "cerebras/llama3.1-8b"
     max_tokens: 8192
 
-  - name: openrouter-free-router
-    provider: openrouter_free
-    model_id: "openrouter/openrouter/free"
+  - name: ox-alpha
+    provider: cheaperinference_free
+    model_id: "openai/stealth/ox-alpha"
     max_tokens: 32768
-
-  - name: openrouter-minimax-m2-free
-    provider: openrouter_free
-    model_id: "openrouter/minimax/minimax-m2:free"
-    max_tokens: 100000
 
   - name: cloudflare-llama-3.2-3b
     provider: cloudflare_workers_ai
@@ -231,14 +227,9 @@ models:
     model_id: "gemini/gemini-2.5-flash-lite-preview-09-2025"
     max_tokens: 131072
 
-  - name: openrouter-qwen3-coder-next-paid-cap
-    provider: openrouter_paid_cap
-    model_id: "openrouter/qwen/qwen3-coder-next"
-    max_tokens: 262144
-
-  - name: openrouter-qwen3-coder-paid-cap
-    provider: openrouter_paid_cap
-    model_id: "openrouter/qwen/qwen3-coder"
+  - name: cheaperinference-qwen-3-8-max-paid-cap
+    provider: cheaperinference_paid_cap
+    model_id: "openai/qwen-3-8-max"
     max_tokens: 262144
 
 # Slot definitions - assign models to usage slots
@@ -318,7 +309,7 @@ freeflow:
     - gemini-2.5-flash-lite
     - groq-llama-3.1-8b-instant
     - cerebras-llama3.1-8b
-    - openrouter-free-router
+    - ox-alpha
   paid_cap:
     enabled: false
     daily_usd: 0.50
@@ -326,10 +317,10 @@ freeflow:
     day_reset: utc_midnight
     allowed_models:
       - gemini-flash-lite-preview-paid-cap
-      - openrouter-qwen3-coder-next-paid-cap
+      - cheaperinference-qwen-3-8-max-paid-cap
     default_fallbacks:
       - gemini-flash-lite-preview-paid-cap
-      - openrouter-qwen3-coder-next-paid-cap
+      - cheaperinference-qwen-3-8-max-paid-cap
 
 # Model alias map for compatibility
 # Maps common model names to Dopemux slot names

@@ -53,6 +53,12 @@ principles:
   - no_intermediate_content_audits
   - deterministic_metadata_no_model
   - direct_provider_wins_when_equivalent
+  # Key name kept as openrouter_is_broker_not_model_family: it is referenced
+  # by name in tests/test_model_routing_policy.py (grep-verified 2026-08-24).
+  # Meaning/target retargeted: the ACTIVE broker satisfying this invariant is
+  # now cheaperinference (see provider_routes.cheaperinference below);
+  # openrouter is named-but-INACTIVE (provider_routes.openrouter.active:
+  # false), retained for contract/history — not deleted.
   - openrouter_is_broker_not_model_family
   - strong_planning_before_non_trivial_implementation
   - independent_audit_before_readiness
@@ -312,6 +318,12 @@ provider_routes:
       - "Thinking mode configuration (enabled/disabled) syntax requires VERIFY_WITH_VENDOR_DOCS"
 
   openrouter:
+    # INACTIVE as of the cheaperinference.com migration (packet P5). Named
+    # but not the active broker: see provider_routes.cheaperinference below.
+    # Block retained (not deleted) — contract risk: enum value / block
+    # removal would break any consumer still matching on "openrouter".
+    active: false
+    role: broker
     cheap_read: VERIFY_WITH_VENDOR_DOCS      # broker: cheap or free non-sensitive lane; pin model
     investigation: VERIFY_WITH_VENDOR_DOCS    # broker: pinned model with explicit data policy
     planner_strong: VERIFY_WITH_VENDOR_DOCS   # broker: pinned strong model with ZDR/data policy
@@ -319,8 +331,35 @@ provider_routes:
     judge_strong: VERIFY_WITH_VENDOR_DOCS     # broker: pinned strong model; provider must be deterministic
     self_audit: VERIFY_WITH_VENDOR_DOCS       # broker: pinned audit model; provider must be deterministic
     notes:
+      - "INACTIVE (packet P5, cheaperinference.com migration): OpenRouter is no longer the active broker. Block kept for contract/history, not deleted."
       - "OpenRouter is a BROKER, not a model family — plumbing for fallback, quota overflow, price caps, ZDR filtering, provider diversity"
       - "Always pin model (avoid auto/unbounded fallback); set explicit provider/price/data policy; record fallback provenance"
       - "Avoid for sensitive repo data without explicit ZDR/data-collection policy"
       - "Avoid unbounded auto-fallback for audit/judge work: provider provenance must be deterministic"
       - "OpenRouter model selector strings (format: provider/model-name) require VERIFY_WITH_VENDOR_DOCS"
+
+  cheaperinference:
+    # ACTIVE broker as of the cheaperinference.com migration (packet P5).
+    # Multi-vendor, OpenAI-compatible; 65 models — catalog snapshot at
+    # config/cheaperinference_models.snapshot.json.
+    active: true
+    role: broker
+    base_url: https://api.cheaperinference.com/v1
+    api_key_env: CHEAPERINFERENCE_API_KEY
+    cheap_read: VERIFY_WITH_VENDOR_DOCS      # broker: cheap or free non-sensitive lane; pin model
+    investigation: VERIFY_WITH_VENDOR_DOCS    # broker: pinned model with explicit data policy
+    planner_strong: VERIFY_WITH_VENDOR_DOCS   # broker: pinned strong model with explicit data policy
+    implementer_standard: VERIFY_WITH_VENDOR_DOCS  # broker: pinned coding model
+    judge_strong: VERIFY_WITH_VENDOR_DOCS     # broker: pinned strong model; provider must be deterministic
+    self_audit: VERIFY_WITH_VENDOR_DOCS       # broker: pinned audit model; provider must be deterministic
+    capabilities:
+      fallback: supported          # multi-vendor broker; can pin a fallback model/vendor
+      quota_overflow: VERIFY_WITH_VENDOR_DOCS    # packet P5 dispositioned fallback/price_caps (YES) and zdr_filtering/provider_order (NO) only; quota_overflow behavior is unverified against vendor docs, not asserted either way
+      price_caps: supported        # published per-model pricing (see catalog snapshot) enables price-ceiling routing
+      zdr_filtering: not_supported     # single OpenAI-compatible upstream API — no per-request ZDR/data-policy *provider selector* across redundant vendors (unlike OpenRouter's provider filter). NOTE: the catalog snapshot's data_retention block exposes a broker-level zero-data-retention request (data_retention.mode=zero / X-Data-Retention header / provider.zdr), but that is a single-upstream retention flag, not multi-provider ZDR filtering — snapshot's zero_data_retention_enabled is currently false with zero_data_retention_providers: [] (config/cheaperinference_models.snapshot.json)
+      provider_order: not_supported    # single upstream broker — no exposed underlying-provider diversity/order control
+    notes:
+      - "cheaperinference.com is a multi-vendor BROKER, not a model family — OpenAI-compatible, base https://api.cheaperinference.com/v1"
+      - "Always pin model (avoid auto/unbounded fallback); record fallback provenance"
+      - "ZDR filtering and provider_order/provider-diversity controls (multi-provider selection, as OpenRouter offered) are NOT supported by this broker (single upstream) — treat as an unsupported capability, not a silent gap. A separate broker-level zero-data-retention request flag exists in the catalog (data_retention block) but is not a filtering/selection capability and is currently disabled fleet-wide per the snapshot."
+      - "cheaperinference.com model selector strings beyond the pinned catalog snapshot (config/cheaperinference_models.snapshot.json) require VERIFY_WITH_VENDOR_DOCS"

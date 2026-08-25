@@ -15,7 +15,7 @@ from .stages import StageResult, StageStatus, WizardState
 
 PROVIDER_KEY_FIELDS = [
     ("OpenAI", "OPENAI_API_KEY"),
-    ("OpenRouter", "OPENROUTER_API_KEY"),
+    ("CheaperInference", "CHEAPERINFERENCE_API_KEY"),
     ("Gemini", "GEMINI_API_KEY"),
     ("xAI", "XAI_API_KEY"),
     ("Anthropic", "ANTHROPIC_API_KEY"),

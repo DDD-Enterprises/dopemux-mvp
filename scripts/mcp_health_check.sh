@@ -116,7 +116,7 @@ echo "-----------"
 echo "Dope-Context and ConPort have MCP endpoints at /mcp (POST required)."
 echo "PAL runs two servers: HTTP :3003 (mcp-pal) and stdio (mcp-pal-stdio, exec-based)."
 echo "A healthy stdio probe means server+registry are OK; model calls still depend on"
-echo "provider credentials (OpenAI/Gemini/OpenRouter)."
+echo "provider credentials (OpenAI/Gemini/CheaperInference)."
 if [ "$FAILURES" -gt 0 ]; then
     echo "❌ $FAILURES check(s) failed"
     exit 1

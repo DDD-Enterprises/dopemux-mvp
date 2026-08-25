@@ -362,6 +362,7 @@ def test_opencode_renderer_honors_read_safe_direct_rule():
     assert entry["environment"] == {
         "GEMINI_API_KEY": "{env:GEMINI_API_KEY}",
         "OPENAI_API_KEY": "{env:OPENAI_API_KEY}",
+        "CHEAPERINFERENCE_API_KEY": "{env:CHEAPERINFERENCE_API_KEY}",
     }
 
 
@@ -440,6 +441,7 @@ def test_copilot_proxy_config_renders_catalog_transports_and_env():
     assert servers["pal-stdio"]["env"] == {
         "GEMINI_API_KEY": "${GEMINI_API_KEY}",
         "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+        "CHEAPERINFERENCE_API_KEY": "${CHEAPERINFERENCE_API_KEY}",
     }
     assert "dcp-readonly-facade" not in servers
     assert "dcp-readonly-facade" in rendered  # named in the deferred header comment

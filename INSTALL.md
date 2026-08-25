@@ -96,7 +96,7 @@ Full installs prompt for the secrets listed below and store them in a git-ignore
 
 - `AGE_PASSWORD`
 - `ANTHROPIC_API_KEY`
-- `OPENROUTER_API_KEY`
+- `CHEAPERINFERENCE_API_KEY`
 - `OPENAI_API_KEY` (optional but recommended)
 - `GEMINI_API_KEY` / `XAI_API_KEY` (optional)
 - `LEANTIME_URL` / `LEANTIME_TOKEN`
@@ -317,35 +317,24 @@ curl -H "x-api-key: $ANTHROPIC_API_KEY" -H "anthropic-version: 2023-06-01" \
   -d '{"model": "claude-3-haiku-20240307", "max_tokens": 10, "messages": [{"role": "user", "content": "Hello"}]}'
 ```
 
-### Step 2: OpenRouter API Key (Optional but Recommended)
+### Step 2: cheaperinference.com API Key (Optional but Recommended)
 
-**Purpose**: Cost-effective model access with fallback chains (Grok, GPT-4, etc.)
+**Purpose**: Cost-effective OpenAI-compatible model access with fallback chains (Grok, GPT-4, etc.)
 
 #### Create Account & Get API Key
-1. **Go to**: [openrouter.ai](https://openrouter.ai/)
-2. **Sign up**: Create account (can use same email as Anthropic)
-3. **Verify email**: Check inbox and verify
-4. **Go to Keys**: Click "Keys" in top navigation
-5. **Create key**: Click "Create" button
-6. **Name it**: "Dopemux LiteLLM" (or preferred name)
-7. **Copy key**: Save the key (usually starts with `sk-or-v1-`)
-
-#### Fund Your Account (Minimum $5)
-1. **Go to Billing**: Click "Billing" in top navigation
-2. **Add credits**: Click "Add Credits" or "Top Up"
-3. **Enter amount**: Start with $5-10
-4. **Payment**: Use card or crypto (crypto is often cheaper)
-5. **Confirm**: Complete the transaction
+1. **Go to**: [cheaperinference.com](https://cheaperinference.com/)
+2. **Sign up**: Create an account per their onboarding flow
+3. **Get a key**: Generate an API key from your account
+4. **Store the key**: Save it in the macOS keychain under service `cheaperinference` (see `scripts/load_keychain_env.sh`), or export it directly
 
 #### Set Environment Variable
 ```bash
 # Add to your shell profile
-export OPENROUTER_API_KEY="sk-or-v1-your-key-here"
+export CHEAPERINFERENCE_API_KEY="your-key-here"
 
-# Test it works
-curl -X POST https://openrouter.ai/api/v1/auth/key \
-  -H "Authorization: Bearer $OPENROUTER_API_KEY" \
-  -H "Content-Type: application/json"
+# Test it works (OpenAI-compatible endpoint)
+curl https://api.cheaperinference.com/v1/models \
+  -H "Authorization: Bearer $CHEAPERINFERENCE_API_KEY"
 ```
 
 ### Step 3: xAI Grok API Key (Optional but Recommended)
@@ -443,17 +432,17 @@ else
     echo "⚠️ Anthropic: Not set"
 fi
 
-# Test OpenRouter
-if [[ -n "$OPENROUTER_API_KEY" ]]; then
-    echo "Testing OpenRouter..."
-    if curl -s https://openrouter.ai/api/v1/auth/key \
-        -H "Authorization: Bearer $OPENROUTER_API_KEY" | grep -q "data"; then
-        echo "✅ OpenRouter: Working"
+# Test cheaperinference.com
+if [[ -n "$CHEAPERINFERENCE_API_KEY" ]]; then
+    echo "Testing cheaperinference.com..."
+    if curl -s https://api.cheaperinference.com/v1/models \
+        -H "Authorization: Bearer $CHEAPERINFERENCE_API_KEY" | grep -q "data"; then
+        echo "✅ cheaperinference.com: Working"
     else
-        echo "❌ OpenRouter: Failed"
+        echo "❌ cheaperinference.com: Failed"
     fi
 else
-    echo "⚠️ OpenRouter: Not set"
+    echo "⚠️ cheaperinference.com: Not set"
 fi
 
 # Test Voyage
@@ -479,12 +468,12 @@ echo "💡 Tip: Add these exports to ~/.bashrc or ~/.zshrc to persist across ses
 
 #### Recommended Key Priority (Cost-Effective)
 1. **Anthropic** (Primary): Claude Sonnet 3.5 - Best quality/cost ratio
-2. **OpenRouter** (Fallback): xAI Grok Code Fast - FREE for development
-3. **OpenRouter** (Heavy lifting): GPT-4 via OpenRouter - Cheaper than direct
+2. **cheaperinference.com** (Fallback, free): `stealth/ox-alpha` - the only free model on the broker
+3. **cheaperinference.com** (Heavy lifting): GPT-4 via cheaperinference.com - Cheaper than direct
 4. **xAI** (Free tier): Grok models - Good for experimentation
 
 #### Monthly Budget Guidelines
-- **Development**: $10-25/month (Anthropic + OpenRouter)
+- **Development**: $10-25/month (Anthropic + cheaperinference.com)
 - **Light production**: $25-50/month
 - **Full production**: $50-100+/month
 
@@ -492,7 +481,7 @@ echo "💡 Tip: Add these exports to ~/.bashrc or ~/.zshrc to persist across ses
 ```bash
 # Check usage (run periodically)
 dopemux status  # Shows current session costs
-openrouter.ai   # Usage dashboard
+cheaperinference.com   # Usage dashboard
 console.anthropic.com  # Billing dashboard
 ```
 
@@ -509,7 +498,7 @@ console.anthropic.com  # Billing dashboard
 # Create .env file (add to .gitignore)
 cat > .env << EOF
 ANTHROPIC_API_KEY=sk-ant-your-key
-OPENROUTER_API_KEY=sk-or-v1-your-key
+CHEAPERINFERENCE_API_KEY=your-cheaperinference-key
 XAI_API_KEY=xai-your-key
 OPENAI_API_KEY=sk-your-key
 VOYAGE_API_KEY=pa-your-key
@@ -520,7 +509,7 @@ source .env
 ```
 
 #### Troubleshooting API Issues
-- **Rate limits**: OpenRouter has generous limits, Anthropic has lower limits
+- **Rate limits**: cheaperinference.com has generous limits, Anthropic has lower limits
 - **Invalid keys**: Double-check key format and no extra spaces
 - **Network issues**: Try different regions or VPN
 - **Billing problems**: Check account status and payment method
@@ -679,7 +668,7 @@ source $ZSH/oh-my-zsh.sh
 
 # Dopemux environment variables
 export ANTHROPIC_API_KEY="your-anthropic-key"
-export OPENROUTER_API_KEY="your-openrouter-key"
+export CHEAPERINFERENCE_API_KEY="your-cheaperinference-key"
 export VOYAGE_API_KEY="your-voyage-key"
 export XAI_API_KEY="your-xai-key"
 export OPENAI_API_KEY="your-openai-key"

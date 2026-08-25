@@ -65,7 +65,7 @@ env_errors=0
 check_env_var "OPENAI_API_KEY" "Required for GPT models and most MCP servers" || ((env_errors++))
 check_env_var "ANTHROPIC_API_KEY" "Required for Claude models" || ((env_errors++))
 check_env_var "GEMINI_API_KEY" "Required for Google Gemini models" || ((env_errors++))
-check_env_var "OPENROUTER_API_KEY" "Required for OpenRouter models" || ((env_errors++))
+check_env_var "CHEAPERINFERENCE_API_KEY" "Required for CheaperInference models" || ((env_errors++))
 
 # Research and search APIs
 check_env_var "TAVILY_API_KEY" "Required for web search in research" || ((env_errors++))

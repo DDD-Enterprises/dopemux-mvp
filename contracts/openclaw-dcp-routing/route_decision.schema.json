@@ -70,6 +70,14 @@
         null
       ]
     },
+    "cheaperinference_profile": {
+      "type": ["string", "null"],
+      "enum": [
+        "ci_free_sandbox",
+        "ci_low_cost_public",
+        null
+      ]
+    },
     "structured_output_mode": {
       "type": "string",
       "enum": ["none", "json_schema_strict", "tool_schema_strict", "json_object", "manual_capture"]
@@ -317,6 +325,15 @@
       }
     },
     {
+      "if": { "properties": { "decision_status": { "const": "SELECTED" }, "selected_pool": { "const": "cheaperinference_free_sandbox" } } },
+      "then": {
+        "properties": {
+          "role": { "enum": ["cheap_file_reading", "issue_triage", "test_generation"] },
+          "risk_class": { "enum": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY"] }
+        }
+      }
+    },
+    {
       "if": {
         "properties": {
           "decision_status": { "const": "SELECTED" },
@@ -533,6 +550,132 @@
           "role": { "enum": ["cheap_file_reading", "repo_cartography", "planning", "challenger_review"] }
         }
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": { "const": "SELECTED" },
+          "provider": { "const": "cheaperinference" }
+        }
+      },
+      "then": {
+        "properties": {
+          "cheaperinference_profile": {
+            "type": "string",
+            "enum": [
+              "ci_free_sandbox",
+              "ci_low_cost_public"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": { "const": "SELECTED" },
+          "cheaperinference_profile": { "type": "string" }
+        },
+        "required": ["cheaperinference_profile"]
+      },
+      "then": {
+        "properties": {
+          "provider": { "const": "cheaperinference" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": { "const": "SELECTED" },
+          "access_path": { "const": "cheaperinference_paid" }
+        }
+      },
+      "then": {
+        "properties": {
+          "cheaperinference_profile": {
+            "type": "string",
+            "enum": [
+              "ci_free_sandbox",
+              "ci_low_cost_public"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": { "const": "SELECTED" },
+          "provider": { "const": "cheaperinference" },
+          "privacy_class": {
+            "enum": [
+              "PRIVATE_REPO_NO_SECRETS",
+              "PRIVATE_REPO_POSSIBLE_SECRETS",
+              "SECRET_BEARING",
+              "CLIENT_DATA",
+              "SECURITY_SENSITIVE",
+              "RELEASE_AUTHORITY"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "human_gate_required": { "const": true },
+          "human_approval_ref": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": { "const": "SELECTED" },
+          "access_path": { "const": "cheaperinference_free" }
+        }
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            { "properties": { "privacy_class": { "enum": ["PRIVATE_REPO_NO_SECRETS", "PRIVATE_REPO_POSSIBLE_SECRETS", "SECRET_BEARING", "CLIENT_DATA", "SECURITY_SENSITIVE", "RELEASE_AUTHORITY"] } } },
+            { "properties": { "risk_class": { "enum": ["R5_SECURITY_OR_AUTHORITY", "R6_RELEASE_OR_PRODUCTION"] } } },
+            { "properties": { "role": { "enum": ["security_review", "release_judgment", "proof_validation", "structured_task_packet_generation", "proof_bundle_generation"] } } },
+            { "properties": { "structured_output_mode": { "enum": ["json_schema_strict", "tool_schema_strict"] } } }
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "decision_status": { "const": "SELECTED" }, "cheaperinference_profile": { "const": "ci_free_sandbox" } },
+        "required": ["cheaperinference_profile"]
+      },
+      "then": {
+        "properties": {
+          "provider": { "const": "cheaperinference" },
+          "access_path": { "const": "cheaperinference_free" },
+          "selected_route": { "properties": { "route_profile": { "const": "ci_free_sandbox" } } },
+          "privacy_class": { "enum": ["PUBLIC_SANDBOX", "PUBLIC_REPO"] },
+          "risk_class": { "enum": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY"] },
+          "role": { "enum": ["cheap_file_reading", "issue_triage", "test_generation", "task_intake"] }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "decision_status": { "const": "SELECTED" }, "cheaperinference_profile": { "const": "ci_low_cost_public" } },
+        "required": ["cheaperinference_profile"]
+      },
+      "then": {
+        "properties": {
+          "provider": { "const": "cheaperinference" },
+          "access_path": { "const": "cheaperinference_paid" },
+          "selected_route": { "properties": { "route_profile": { "const": "ci_low_cost_public" } } },
+          "privacy_class": { "enum": ["PUBLIC_SANDBOX", "PUBLIC_REPO"] },
+          "risk_class": { "enum": ["R0_READ", "R1_DRAFT", "R2_TEST_ONLY", "R3_LOCAL_EDIT"] },
+          "role": { "enum": ["cheap_file_reading", "issue_triage", "repo_cartography", "test_generation", "narrow_patch_generation", "challenger_review"] }
+        }
+      }
     }
   ],
   "definitions": {
@@ -573,11 +716,11 @@
     },
     "pool": {
       "type": "string",
-      "enum": ["cheap_read", "cheap_classifier", "repo_cartographer", "planner_default", "planner_strong", "implementer_default", "implementer_alt", "test_builder", "structured_packet", "proof_validator", "auditor_default", "auditor_deep", "security_reviewer", "release_judge", "supervisor", "openrouter_free_sandbox"]
+      "enum": ["cheap_read", "cheap_classifier", "repo_cartographer", "planner_default", "planner_strong", "implementer_default", "implementer_alt", "test_builder", "structured_packet", "proof_validator", "auditor_default", "auditor_deep", "security_reviewer", "release_judge", "supervisor", "openrouter_free_sandbox", "cheaperinference_free_sandbox"]
     },
     "provider": {
       "type": "string",
-      "enum": ["openai", "anthropic", "google", "openrouter", "local", "manual", "multiple", "unknown"]
+      "enum": ["openai", "anthropic", "google", "openrouter", "cheaperinference", "local", "manual", "multiple", "unknown"]
     },
     "runner": {
       "type": "string",
@@ -585,7 +728,7 @@
     },
     "access_path": {
       "type": "string",
-      "enum": ["chatgpt_app", "claude_app", "gemini_app", "direct_api", "openrouter_paid", "openrouter_free", "local_self_hosted", "codex", "claude_code", "gemini_antigravity", "manual_app", "shell_local"]
+      "enum": ["chatgpt_app", "claude_app", "gemini_app", "direct_api", "openrouter_paid", "openrouter_free", "cheaperinference_paid", "cheaperinference_free", "local_self_hosted", "codex", "claude_code", "gemini_antigravity", "manual_app", "shell_local"]
     },
     "blocked_reason": {
       "type": "string",
@@ -593,6 +736,7 @@
         "UNKNOWN_PRIVACY_CLASS",
         "UNKNOWN_RISK_CLASS",
         "OPENROUTER_FREE_FORBIDDEN",
+        "CHEAPERINFERENCE_FREE_FORBIDDEN",
         "CONSUMER_APP_AUTHORITY_FORBIDDEN",
         "PREVIEW_SOLE_HIGH_RISK_AUTHORITY",
         "MISSING_BENCHMARK_CERTIFICATION",

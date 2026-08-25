@@ -79,25 +79,19 @@ DEFAULT_LITELLM_CONFIG = """model_list:
       api_key: os.environ/XAI_API_KEY
       max_tokens: 131072
 
-  - model_name: openrouter-gpt-5
+  - model_name: gpt-5.4
     litellm_params:
-      model: openrouter/openai/gpt-5
-      api_key: os.environ/OPENROUTER_API_KEY
-      api_base: https://openrouter.ai/api/v1
+      model: openai/gpt-5.4
+      api_key: os.environ/CHEAPERINFERENCE_API_KEY
+      api_base: https://api.cheaperinference.com/v1
       max_tokens: 32768
-      extra_headers:
-        HTTP-Referer: https://dopemux.local
-        X-Title: Dopemux LiteLLM Proxy
 
-  - model_name: openrouter-gpt-5-codex
+  - model_name: gpt-5.3-codex
     litellm_params:
-      model: openrouter/openai/gpt-5-codex
-      api_key: os.environ/OPENROUTER_API_KEY
-      api_base: https://openrouter.ai/api/v1
+      model: openai/gpt-5.3-codex
+      api_key: os.environ/CHEAPERINFERENCE_API_KEY
+      api_base: https://api.cheaperinference.com/v1
       max_tokens: 32768
-      extra_headers:
-        HTTP-Referer: https://dopemux.local
-        X-Title: Dopemux LiteLLM Proxy
 
 litellm_settings:
   timeout: 90
@@ -116,7 +110,7 @@ litellm_settings:
     claude-opus-4-20250514: xai-grok-code-fast
     claude-4: xai-grok-code-fast
     claude-4-sonnet: xai-grok-code-fast
-    claude-4-opus: openrouter-gpt-5-codex
+    claude-4-opus: gpt-5.3-codex
     claude-3.7: xai-grok-code-fast
     claude-3-7-sonnet-20250219: xai-grok-code-fast
     claude-3.5: xai-grok-code-fast
@@ -125,16 +119,18 @@ litellm_settings:
     xai/grok-code-fast: xai-grok-code-fast
     gpt-5: xai-grok-code-fast
     codex: xai-grok-code-fast
+    openrouter-gpt-5: gpt-5.4
+    openrouter-gpt-5-codex: gpt-5.3-codex
   fallbacks:
     grok-4-fast:
       - xai-grok-code-fast
     xai-grok-code-fast:
       - grok-4-fast
-    openrouter-gpt-5:
+    gpt-5.4:
       - grok-4-fast
-      - openrouter-gpt-5-codex
-    openrouter-gpt-5-codex:
-      - openrouter-gpt-5
+      - gpt-5.3-codex
+    gpt-5.3-codex:
+      - gpt-5.4
       - grok-4-fast
   default_fallbacks:
     - xai-grok-code-fast
@@ -230,36 +226,28 @@ GROK_PROVIDER = {
 
 CODEX_PROVIDER = {
     "name": "codex",
-    "model": "openrouter/openai/gpt-5-codex",
-    "api_key_env": "OPENROUTER_API_KEY",
+    "model": "openai/gpt-5.3-codex",
+    "api_key_env": "CHEAPERINFERENCE_API_KEY",
     "max_tokens": 32768,
-    "label": "OpenAI GPT-5 Codex (via OpenRouter)",
+    "label": "OpenAI GPT-5.3 Codex (via CheaperInference)",
     "extra_params": {
-        "api_base": "https://openrouter.ai/api/v1",
-        "extra_headers": {
-            "HTTP-Referer": "https://dopemux.local",
-            "X-Title": "Dopemux Codex Routing",
-        },
+        "api_base": "https://api.cheaperinference.com/v1",
     },
 }
 
-_OPENROUTER_PARAMS = {
-    "api_base": "https://openrouter.ai/api/v1",
-    "extra_headers": {
-        "HTTP-Referer": "https://dopemux.local",
-        "X-Title": "Dopemux ALTP Routing",
-    },
+_CHEAPERINFERENCE_PARAMS = {
+    "api_base": "https://api.cheaperinference.com/v1",
 }
 
 ALTP_TARGETS = [
     {
         "name": "altp-opus",
-        "model": "openrouter/openai/gpt-5.2-codex",
-        "api_key_env": "OPENROUTER_API_KEY",
+        "model": "openai/gpt-5.2-codex",
+        "api_key_env": "CHEAPERINFERENCE_API_KEY",
         "max_tokens": 32768,
         "aliases": CLAUDE_OPUS_ALIASES,
         "label": "GPT-5.2 Codex (High Thinking)",
-        "extra_litellm_params": _OPENROUTER_PARAMS,
+        "extra_litellm_params": _CHEAPERINFERENCE_PARAMS,
     },
     {
         "name": "altp-sonnet",
@@ -283,7 +271,7 @@ ALTP_PROVIDER = {
     "name": "altp",
     "label": "Alternative Provider Routing",
     "targets": ALTP_TARGETS,
-    "required_keys": ["OPENROUTER_API_KEY", "XAI_API_KEY"],
+    "required_keys": ["CHEAPERINFERENCE_API_KEY", "XAI_API_KEY"],
 }
 
 
@@ -715,10 +703,10 @@ class LiteLLMProxyManager:
             if value:
                 updates[dopemux_key] = value
 
-        openrouter_key = os.environ.get("OPENROUTER_API_KEY")
-        if openrouter_key:
-            updates["OPENROUTER_API_KEY"] = openrouter_key
-            updates["DOPEMUX_PROVIDER_OPENROUTER_API_KEY"] = openrouter_key
+        cheaperinference_key = os.environ.get("CHEAPERINFERENCE_API_KEY")
+        if cheaperinference_key:
+            updates["CHEAPERINFERENCE_API_KEY"] = cheaperinference_key
+            updates["DOPEMUX_PROVIDER_CHEAPERINFERENCE_API_KEY"] = cheaperinference_key
 
         return updates
 

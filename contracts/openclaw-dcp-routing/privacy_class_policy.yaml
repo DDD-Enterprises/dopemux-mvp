@@ -14,6 +14,8 @@ privacy_classes:
     direct_apis: allowed
     openrouter_paid: allowed
     openrouter_free: allowed
+    cheaperinference_paid: allowed
+    cheaperinference_free: allowed
     local_self_hosted: allowed
     human_approval: not_required
     notes: "No secrets, no private repo, no client data."
@@ -24,9 +26,11 @@ privacy_classes:
     direct_apis: allowed
     openrouter_paid: allowed
     openrouter_free: constrained
+    cheaperinference_paid: allowed
+    cheaperinference_free: constrained
     local_self_hosted: allowed
     human_approval: required_for_write_or_R4_plus
-    notes: "OpenRouter free only for low-risk non-authority work."
+    notes: "OpenRouter free and cheaperinference free (stealth/ox-alpha) only for low-risk non-authority work."
   PRIVATE_REPO_NO_SECRETS:
     chatgpt_app: constrained
     claude_app: constrained
@@ -34,6 +38,8 @@ privacy_classes:
     direct_apis: allowed
     openrouter_paid: constrained
     openrouter_free: blocked
+    cheaperinference_paid: constrained
+    cheaperinference_free: blocked
     local_self_hosted: allowed
     human_approval: required_for_external_non_direct_or_write
     required_controls:
@@ -42,6 +48,10 @@ privacy_classes:
         - data_collection_deny
         - actual_provider_logging
         - benchmark_certification
+      cheaperinference_paid:
+        - model_pinning
+        - actual_model_logging
+        - benchmark_certification
   PRIVATE_REPO_POSSIBLE_SECRETS:
     chatgpt_app: constrained_redacted_only
     claude_app: constrained_redacted_only
@@ -49,6 +59,8 @@ privacy_classes:
     direct_apis: allowed
     openrouter_paid: constrained_after_secret_scan_clean
     openrouter_free: blocked
+    cheaperinference_paid: constrained_after_secret_scan_clean
+    cheaperinference_free: blocked
     local_self_hosted: allowed
     human_approval: required
     required_controls:
@@ -63,6 +75,8 @@ privacy_classes:
     direct_apis: constrained_approved_only
     openrouter_paid: blocked_by_default
     openrouter_free: blocked
+    cheaperinference_paid: blocked_by_default
+    cheaperinference_free: blocked
     local_self_hosted: constrained
     human_approval: required_security_gate
     notes: "Do not send secrets to external routes without explicit approved policy."
@@ -73,6 +87,8 @@ privacy_classes:
     direct_apis: constrained_contract_approved
     openrouter_paid: constrained_contract_zdr_provider_approved
     openrouter_free: blocked
+    cheaperinference_paid: constrained_contract_zdr_provider_approved
+    cheaperinference_free: blocked
     local_self_hosted: allowed_if_client_approved
     human_approval: required
     required_controls:
@@ -87,6 +103,8 @@ privacy_classes:
     direct_apis: allowed
     openrouter_paid: constrained_challenger_only
     openrouter_free: blocked
+    cheaperinference_paid: constrained_challenger_only
+    cheaperinference_free: blocked
     local_self_hosted: allowed_if_benchmarked
     human_approval: required
     notes: "No free routes; direct API is primary."
@@ -97,6 +115,8 @@ privacy_classes:
     direct_apis: allowed
     openrouter_paid: constrained_challenger_only
     openrouter_free: blocked
+    cheaperinference_paid: constrained_challenger_only
+    cheaperinference_free: blocked
     local_self_hosted: constrained_if_benchmarked
     human_approval: required
     notes: "Release judgment requires independent audit or explicit human approval."
@@ -107,6 +127,8 @@ privacy_classes:
     direct_apis: blocked_until_classified
     openrouter_paid: blocked
     openrouter_free: blocked
+    cheaperinference_paid: blocked
+    cheaperinference_free: blocked
     local_self_hosted: constrained_readonly_if_needed
     human_approval: required
     default_action: fail_closed

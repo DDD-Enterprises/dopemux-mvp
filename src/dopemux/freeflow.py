@@ -20,7 +20,7 @@ HOSTED_FREE_PROVIDERS = {
     "gemini",
     "groq",
     "cerebras",
-    "openrouter_free",
+    "cheaperinference_free",
     "cloudflare_workers_ai",
     "cohere_trial",
     "mistral_experiment",
@@ -29,16 +29,17 @@ HOSTED_FREE_PROVIDERS = {
 }
 PAID_CAP_PROVIDERS = {
     "gemini_paid_cap",
-    "openrouter_paid_cap",
+    "cheaperinference_paid_cap",
 }
 BLOCKED_PAID_PROVIDERS = {
     "anthropic",
     "deepseek",
     "fireworks",
     "openai",
-    "openrouter_paid",
+    "openrouter_paid",  # historical: named-but-inactive OpenRouter paid access path
     "together",
     "xai",
+    "cheaperinference",  # strict-free must block the paid cheaperinference provider
 }
 SENSITIVE_CLASSES = {"sensitive", "memory", "context", "raw_memory", "private"}
 NON_SENSITIVE_CLASS = "non_sensitive"
@@ -100,10 +101,19 @@ PROVIDER_CATALOG: Dict[str, Dict[str, Any]] = {
     "openrouter_free": {
         "kind": "hosted_free_tier",
         "zero_cost": True,
+        "status": "historical",  # superseded by cheaperinference_free; retained for audit trail
         "source_url": "https://openrouter.ai/pricing",
         "last_verified": "2026-05-01",
         "limits": {"rpm": 20, "rpd": 50, "day_reset": "utc_midnight"},
         "score": 40,
+    },
+    "cheaperinference_free": {
+        "kind": "hosted_free_tier",
+        "zero_cost": True,
+        "source_url": "https://api.cheaperinference.com/v1/models",
+        "last_verified": "2026-08-24",
+        "limits": {},  # unverified: no published rate-limit docs at migration time
+        "score": 35,
     },
     "cohere_trial": {
         "kind": "trial",
@@ -157,6 +167,7 @@ PROVIDER_CATALOG: Dict[str, Dict[str, Any]] = {
     "openrouter_paid_cap": {
         "kind": "paid_cap",
         "zero_cost": False,
+        "status": "historical",  # superseded by cheaperinference_paid_cap; retained for audit trail
         "source_url": "https://openrouter.ai/qwen/qwen3-coder-next/pricing",
         "last_verified": "2026-05-01",
         "pricing": {
@@ -167,6 +178,19 @@ PROVIDER_CATALOG: Dict[str, Dict[str, Any]] = {
             "openrouter/qwen/qwen3-coder": {
                 "input_usd_per_million": 0.22,
                 "output_usd_per_million": 1.80,
+            },
+        },
+        "score": 10,
+    },
+    "cheaperinference_paid_cap": {
+        "kind": "paid_cap",
+        "zero_cost": False,
+        "source_url": "https://api.cheaperinference.com/v1/models",
+        "last_verified": "2026-08-24",
+        "pricing": {
+            "openai/qwen-3-8-max": {
+                "input_usd_per_million": 1.4,
+                "output_usd_per_million": 4.2,
             },
         },
         "score": 10,
@@ -259,12 +283,20 @@ def paid_cap_enabled(config: Dict[str, Any]) -> bool:
     return strict_free_enabled(config) and bool(paid_cap_policy(config).get("enabled"))
 
 
-def is_openrouter_free_model(model_id: str) -> bool:
-    token = str(model_id or "").lower()
-    return token.endswith(":free") or token in {
-        "openrouter/openrouter/free",
-        "openrouter/free",
-    }
+CHEAPERINFERENCE_FREE_MODELS = {"stealth/ox-alpha", "ox-alpha"}
+
+
+def is_free_model(model_id: str) -> bool:
+    """True when ``model_id`` is one of cheaperinference.com's free-tier models.
+
+    Handles both bare provider-local ids (``stealth/ox-alpha``) and the
+    litellm-style ``openai/<cheaperinference-id>`` form used by
+    templates/routing.yaml (``openai/stealth/ox-alpha``).
+    """
+    token = str(model_id or "").strip().lower()
+    if token.startswith("openai/"):
+        token = token[len("openai/") :]
+    return token in CHEAPERINFERENCE_FREE_MODELS
 
 
 def classify_route(provider: str, model_id: str) -> Dict[str, Any]:
@@ -272,26 +304,26 @@ def classify_route(provider: str, model_id: str) -> Dict[str, Any]:
     model_token = str(model_id or "").strip()
     if provider_token in LOCAL_PROVIDERS:
         return {"allowed": True, "local": True, "reason": "local_zero_cost"}
-    if provider_token == "openrouter":
-        if is_openrouter_free_model(model_token):
+    if provider_token == "cheaperinference":
+        if is_free_model(model_token):
             return {
                 "allowed": True,
                 "local": False,
-                "provider_alias": "openrouter_free",
-                "reason": "openrouter_free_variant",
+                "provider_alias": "cheaperinference_free",
+                "reason": "cheaperinference_free_variant",
             }
-        return {"allowed": False, "local": False, "reason": "paid_openrouter_blocked"}
-    if provider_token == "openrouter_free":
-        if is_openrouter_free_model(model_token):
+        return {"allowed": False, "local": False, "reason": "paid_cheaperinference_blocked"}
+    if provider_token == "cheaperinference_free":
+        if is_free_model(model_token):
             return {
                 "allowed": True,
                 "local": False,
-                "reason": "openrouter_free_variant",
+                "reason": "cheaperinference_free_variant",
             }
         return {
             "allowed": False,
             "local": False,
-            "reason": "openrouter_free_provider_requires_free_model",
+            "reason": "cheaperinference_free_provider_requires_free_model",
         }
     if provider_token in HOSTED_FREE_PROVIDERS:
         return {"allowed": True, "local": False, "reason": "hosted_free_tier"}

@@ -115,7 +115,7 @@ Dopemux is a **development platform designed specifically for developers with AD
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                      🌐 EXTERNAL SERVICES                               │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                  │
-│  │ Claude API   │  │ OpenRouter   │  │     XAI      │                  │
+│  │ Claude API   │  │CheaperInfer. │  │     XAI      │                  │
 │  │(Anthropic)   │  │(Multi-Model) │  │   (Grok)     │                  │
 │  └──────────────┘  └──────────────┘  └──────────────┘                  │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                  │
@@ -410,7 +410,7 @@ http://localhost:4000 (LiteLLM)
 └─────────────┘  • Is it available?
     ↓            • Any fallbacks?
     ├─→ Direct XAI (Grok)
-    ├─→ OpenRouter (GPT-5, O3, Minimax)
+    ├─→ cheaperinference.com (GPT-5.4, GPT-5.5-pro, stealth/ox-alpha)
     └─→ Anthropic (if API key present)
 ```
 

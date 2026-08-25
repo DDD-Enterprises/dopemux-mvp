@@ -61,9 +61,9 @@ mental map to stay oriented.
    ```
 6. **Use the sandbox pane** for quick experiments. `$DOPEMUX_SANDBOX_PANE`
    contains its pane id. All orchestrator and sandbox processes inherit
-   `DOPEMUX_DEFAULT_LITELLM=1`, forcing LiteLLM/OpenRouter routing (DeepSeek,
-   xAI Grok, OpenAI GPT-4o). Ensure `OPENROUTER_API_KEY` (and optional
-   `XAI_API_KEY`) are set before launching sessions.
+   `DOPEMUX_DEFAULT_LITELLM=1`, forcing LiteLLM/CheaperInference routing
+   (DeepSeek, xAI Grok, OpenAI GPT-4o). Ensure `CHEAPERINFERENCE_API_KEY`
+   (and optional `XAI_API_KEY`) are set before launching sessions.
 7. **Close panes safely** after completion:
    ```bash
    dopemux tmux close --pane agent:primary
@@ -76,13 +76,13 @@ mental map to stay oriented.
 
 - All `dopemux start` processes run with `DOPEMUX_DEFAULT_LITELLM=1`, so they
   automatically route through the local LiteLLM proxy.
-- LiteLLM is configured for OpenRouter:
+- LiteLLM is configured for CheaperInference:
   - Claude Sonnet/Haiku/Opus clones
   - DeepSeek Chat/Coder
   - xAI Grok Code Fast
-  - OpenAI GPT-4o/4o-mini via OpenRouter
-- If you must call an API manually, prefer the `openrouter/<provider>/<model>`
-  endpoints with the `OPENROUTER_API_KEY`.
+  - OpenAI GPT-4o/4o-mini via CheaperInference
+- If you must call an API manually, prefer the `cheaperinference/<model>`
+  endpoints with the `CHEAPERINFERENCE_API_KEY`.
 
 ---
 
@@ -138,7 +138,7 @@ mental map to stay oriented.
   color palette. *(create in your project if needed)*
 - `docs/ORCHESTRATOR_WORKFLOW.md` – deeper dive into orchestration patterns.
   *(create in your project if needed)*
-- `litellm.config.yaml` – OpenRouter/LiteLLM provider map.
+- `litellm.config.yaml` – CheaperInference/LiteLLM provider map.
 
 You are the conductor. Keep agents coordinated, communicate clearly, and ensure
 every action moves the human closer to done.

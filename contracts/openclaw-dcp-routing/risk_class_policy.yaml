@@ -7,6 +7,7 @@ risk_classes:
       - cheap_read
       - cheap_classifier
       - openrouter_free_sandbox_public_only
+      - cheaperinference_free_sandbox_public_only
       - direct_api
     forbidden_models_routes:
       - shell_write_enabled_without_need
@@ -25,6 +26,8 @@ risk_classes:
       - manual_app_with_capture
       - openrouter_paid_low_cost
       - openrouter_free_public_only
+      - cheaperinference_paid_low_cost
+      - cheaperinference_free_public_only
     forbidden_models_routes:
       - release_authority_claims
       - security_signoff
@@ -41,10 +44,12 @@ risk_classes:
       - test_builder
       - implementer_alt
       - openrouter_free_public_only
+      - cheaperinference_free_public_only
       - direct_api
     forbidden_models_routes:
       - treating_tests_as_correctness_proof
       - private_or_secret_on_openrouter_free
+      - private_or_secret_on_cheaperinference_free
     evidence_requirements:
       - tests_generated
       - commands_run
@@ -63,6 +68,7 @@ risk_classes:
       - direct_api
     forbidden_models_routes:
       - openrouter_free_private
+      - cheaperinference_free_private
       - implementer_as_sole_final_auditor
     evidence_requirements:
       - git_status_before
@@ -85,6 +91,7 @@ risk_classes:
       - auditor_default
     forbidden_models_routes:
       - openrouter_free
+      - cheaperinference_free
       - unbenchmarked_implementer_alt
       - cheap_model_primary
     evidence_requirements:
@@ -104,6 +111,7 @@ risk_classes:
       - local_self_hosted_benchmarked
     forbidden_models_routes:
       - openrouter_free
+      - cheaperinference_free
       - consumer_app_machine_authority
       - preview_sole_authority
       - implementer_sole_audit
@@ -126,6 +134,8 @@ risk_classes:
     forbidden_models_routes:
       - openrouter_free
       - openrouter_paid_sole_authority
+      - cheaperinference_free
+      - cheaperinference_paid_sole_authority
       - preview_sole_authority
       - consumer_app_sole_authority
       - implementer_sole_audit
@@ -145,6 +155,7 @@ risk_classes:
       - local_readonly_classification_only
     forbidden_models_routes:
       - openrouter_free
+      - cheaperinference_free
       - write_enabled_runner
       - release_judgment
       - security_review

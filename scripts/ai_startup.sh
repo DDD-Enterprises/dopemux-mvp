@@ -62,7 +62,7 @@ check_key() {
 
 check_key "ANTHROPIC_API_KEY"
 check_key "OPENAI_API_KEY"
-check_key "OPENROUTER_API_KEY"
+check_key "CHEAPERINFERENCE_API_KEY"
 check_key "GEMINI_API_KEY"
 check_key "XAI_API_KEY"
 

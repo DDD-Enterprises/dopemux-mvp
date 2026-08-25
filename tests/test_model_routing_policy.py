@@ -96,6 +96,42 @@ def test_openrouter_notes_identify_it_as_broker():
     )
 
 
+def test_openrouter_is_named_but_inactive():
+    # Contract risk: openrouter block/enum value must never be deleted, but
+    # it must be marked inactive now that cheaperinference is the live broker.
+    openrouter = _load_policy()["provider_routes"]["openrouter"]
+    assert openrouter.get("active") is False, (
+        "openrouter provider_routes entry must be marked active: false"
+    )
+    assert openrouter.get("role") == "broker"
+
+
+def test_cheaperinference_is_the_active_broker():
+    policy = _load_policy()
+    assert "cheaperinference" in policy["provider_routes"], (
+        "cheaperinference must be present as a provider_routes broker entry"
+    )
+    cheaperinference = policy["provider_routes"]["cheaperinference"]
+    assert cheaperinference.get("active") is True
+    assert cheaperinference.get("role") == "broker"
+    assert cheaperinference.get("base_url") == "https://api.cheaperinference.com/v1"
+    assert cheaperinference.get("api_key_env") == "CHEAPERINFERENCE_API_KEY"
+    notes = cheaperinference.get("notes", [])
+    assert any("broker" in note or "BROKER" in note for note in notes), (
+        "cheaperinference provider_routes entry must note it is a broker"
+    )
+
+
+def test_cheaperinference_capabilities_are_honestly_stated():
+    capabilities = _load_policy()["provider_routes"]["cheaperinference"]["capabilities"]
+    assert capabilities["fallback"] == "supported"
+    assert capabilities["price_caps"] == "supported"
+    # Single-upstream broker: no per-request ZDR/data-policy selector or
+    # underlying-provider diversity/order control, unlike OpenRouter.
+    assert capabilities["zdr_filtering"] == "not_supported"
+    assert capabilities["provider_order"] == "not_supported"
+
+
 def test_read_lanes_may_not_edit_or_decide():
     stages = _load_policy()["stages"]
     for stage in (

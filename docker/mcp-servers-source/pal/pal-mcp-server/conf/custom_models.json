@@ -36,6 +36,139 @@
       "max_image_size_mb": 0.0,
       "description": "Local Llama 3.2 model via custom endpoint (Ollama/vLLM) - 128K context window (text-only)",
       "intelligence_score": 6
+    },
+    {
+      "model_name": "claude-opus-5",
+      "aliases": [
+        "opus-5",
+        "claude-opus"
+      ],
+      "context_window": 32000,
+      "max_output_tokens": 16000,
+      "supports_extended_thinking": true,
+      "supports_json_mode": false,
+      "supports_function_calling": false,
+      "supports_images": true,
+      "max_image_size_mb": 40.0,
+      "description": "Claude Opus 5 via CheaperInference custom endpoint (api.cheaperinference.com/v1). Vision + reasoning per catalog snapshot; context window unassumed by upstream, conservative default used."
+    },
+    {
+      "model_name": "claude-sonnet-5",
+      "aliases": [
+        "sonnet-5",
+        "claude-sonnet"
+      ],
+      "context_window": 32000,
+      "max_output_tokens": 16000,
+      "supports_extended_thinking": true,
+      "supports_json_mode": false,
+      "supports_function_calling": false,
+      "supports_images": true,
+      "max_image_size_mb": 40.0,
+      "description": "Claude Sonnet 5 via CheaperInference custom endpoint (api.cheaperinference.com/v1). Vision + reasoning per catalog snapshot; context window not published by upstream, conservative default used."
+    },
+    {
+      "model_name": "gpt-5.4",
+      "aliases": [
+        "gpt5.4",
+        "gpt-5-4"
+      ],
+      "context_window": 32000,
+      "max_output_tokens": 16000,
+      "supports_extended_thinking": true,
+      "supports_json_mode": false,
+      "supports_function_calling": false,
+      "supports_images": true,
+      "max_image_size_mb": 40.0,
+      "description": "GPT-5.4 via CheaperInference custom endpoint (api.cheaperinference.com/v1). Vision + reasoning per catalog snapshot; context window not published by upstream, conservative default used."
+    },
+    {
+      "model_name": "gpt-5.3-codex",
+      "aliases": [
+        "gpt5.3-codex",
+        "codex-5.3"
+      ],
+      "context_window": 32000,
+      "max_output_tokens": 16000,
+      "supports_extended_thinking": true,
+      "supports_json_mode": false,
+      "supports_function_calling": false,
+      "supports_images": true,
+      "max_image_size_mb": 40.0,
+      "description": "GPT-5.3 Codex via CheaperInference custom endpoint (api.cheaperinference.com/v1). Vision + reasoning per catalog snapshot; context window not published by upstream, conservative default used."
+    },
+    {
+      "model_name": "gpt-5.5-pro",
+      "aliases": [
+        "gpt5.5-pro",
+        "gpt-5-5-pro"
+      ],
+      "context_window": 32000,
+      "max_output_tokens": 16000,
+      "supports_extended_thinking": true,
+      "supports_json_mode": false,
+      "supports_function_calling": false,
+      "supports_images": true,
+      "max_image_size_mb": 40.0,
+      "description": "GPT-5.5 Pro via CheaperInference custom endpoint (api.cheaperinference.com/v1). Vision + reasoning per catalog snapshot; context window not published by upstream, conservative default used."
+    },
+    {
+      "model_name": "glm-4.6",
+      "aliases": [
+        "glm4.6"
+      ],
+      "context_window": 32000,
+      "max_output_tokens": 16000,
+      "supports_extended_thinking": true,
+      "supports_json_mode": false,
+      "supports_function_calling": false,
+      "supports_images": false,
+      "max_image_size_mb": 0.0,
+      "description": "GLM-4.6 (Z.AI) via CheaperInference custom endpoint (api.cheaperinference.com/v1). Reasoning, text-only per catalog snapshot (no vision); context window not published by upstream, conservative default used. Also the CUSTOM_MODEL_NAME default for PAL's custom provider."
+    },
+    {
+      "model_name": "gemini-2.5-flash",
+      "aliases": [
+        "gemini-flash",
+        "flash-2.5"
+      ],
+      "context_window": 32000,
+      "max_output_tokens": 16000,
+      "supports_extended_thinking": true,
+      "supports_json_mode": false,
+      "supports_function_calling": false,
+      "supports_images": true,
+      "max_image_size_mb": 40.0,
+      "description": "Gemini 2.5 Flash via CheaperInference custom endpoint (api.cheaperinference.com/v1). Vision + reasoning per catalog snapshot; context window not published by upstream, conservative default used."
+    },
+    {
+      "model_name": "grok-4.5",
+      "aliases": [
+        "grok4.5"
+      ],
+      "context_window": 32000,
+      "max_output_tokens": 16000,
+      "supports_extended_thinking": true,
+      "supports_json_mode": false,
+      "supports_function_calling": false,
+      "supports_images": true,
+      "max_image_size_mb": 40.0,
+      "description": "Grok 4.5 (xAI) via CheaperInference custom endpoint (api.cheaperinference.com/v1). Vision + reasoning per catalog snapshot; context window not published by upstream, conservative default used."
+    },
+    {
+      "model_name": "stealth/ox-alpha",
+      "aliases": [
+        "ox-alpha",
+        "stealth"
+      ],
+      "context_window": 32000,
+      "max_output_tokens": 16000,
+      "supports_extended_thinking": true,
+      "supports_json_mode": false,
+      "supports_function_calling": false,
+      "supports_images": true,
+      "max_image_size_mb": 40.0,
+      "description": "Stealth ox-alpha via CheaperInference custom endpoint (api.cheaperinference.com/v1). Vision + reasoning per catalog snapshot (free/preview model); context window not published by upstream, conservative default used."
     }
   ]
 }

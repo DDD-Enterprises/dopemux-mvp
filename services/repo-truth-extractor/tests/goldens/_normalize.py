@@ -77,8 +77,11 @@ _SECRET_ENV_VARS = (
     "GEMINI_API_KEY",
     "GOOGLE_API_KEY",
     "XAI_API_KEY",
-    "OPENROUTER_API_KEY",
+    "OPENROUTER_API_KEY",  # legacy/inactive: kept for frozen-run replay
+    "V5_OPENROUTER_API_KEY",
     "ANTHROPIC_API_KEY",
+    "CHEAPERINFERENCE_API_KEY",
+    "V5_CHEAPERINFERENCE_API_KEY",
 )
 
 # --- Normalization rules (order matters) -----------------------------------
