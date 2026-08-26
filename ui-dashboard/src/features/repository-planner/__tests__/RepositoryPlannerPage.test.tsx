@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import RepositoryPlannerPage from '../RepositoryPlannerPage';
 import { buildFoundationLanes } from '../RepositoryPlannerPage';
@@ -45,6 +45,22 @@ describe('RepositoryPlannerPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Close lane details' }));
     expect(trigger).toHaveFocus();
+  });
+
+  test('copies candidate SHA on click with visual and ARIA feedback', async () => {
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: writeTextMock },
+      configurable: true,
+    });
+
+    render(<RepositoryPlannerPage />);
+    const shaChip = screen.getAllByRole('button', { name: /Candidate SHA .* click to copy full SHA/i })[0];
+    expect(shaChip).toBeVisible();
+
+    fireEvent.click(shaChip);
+    expect(writeTextMock).toHaveBeenCalled();
+    expect(await screen.findByRole('button', { name: /Candidate SHA .* copied/i })).toBeVisible();
   });
 
   test('contains no authority or network controls', () => {
