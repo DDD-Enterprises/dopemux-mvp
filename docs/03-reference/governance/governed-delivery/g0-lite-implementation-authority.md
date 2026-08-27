@@ -5,7 +5,7 @@ type: reference
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-08-26'
-last_review: '2026-08-26'
+last_review: '2026-08-27'
 next_review: '2026-11-24'
 prelude: G0 Lite Implementation Authority (reference) for dopemux documentation and developer workflows.
 ---
@@ -17,10 +17,11 @@ AUTHORITY_CLASS=SUPERVISOR_IMPLEMENTATION_AUTHORITY
 REPOSITORY=DDD-Enterprises/dopemux-mvp
 
 PACKET_ID=TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001
-PACKET_SHA256=5d636307ad1ba7b6ec1498cac4fd79afcf9f480c9b96dad208f3f03e3f807cc9
-PACKET_BLOB=cfbd08daad4e2b3c9550fc36fc287829eaffb01f
+PACKET_SHA256=cf3370d336b46157a690490a5b517dde198726e16e012486c1de2d38129197bb
+PACKET_BLOB=1cfc6890714f06f9ab4d0ae607647f96efd953c2
 
-IMPLEMENTATION_BASE=c7bc2fb479d7386825df73e028acdce723ee3388
+AUTHORITY_ANCHOR_BASE_SHA=c7bc2fb479d7386825df73e028acdce723ee3388
+EXECUTION_START_POLICY=CURRENT_MAIN_CONTAINING_MERGED_AUTHORITY_RECORD
 SOURCE_CUSTODY_PR=1268
 SOURCE_CUSTODY_SHA=caa4ec2913d0463c7e38835029f3f7adeb915ac6
 SOURCE_MERGE_BASE=d40e43dd70307d2c000a4efd581be7c11248728c
@@ -37,7 +38,9 @@ RUNNER=DIRECT_CODEX
 AGENT_CEILING=ONE_DELEGATED_CODEX_PRIMARY_NO_NESTED_SUBAGENTS
 DOPETASK_EXECUTION_ROUTE=FORBIDDEN_NOT_IMPLEMENTED
 
-FINAL_AUDITOR=DIRECT_CLAUDE_CODE
+FINAL_AUDIT_ROUTING_POLICY=DMX-AUDIT-ROUTING-ECONOMY-001
+FINAL_AUDIT_BILLING_MODE=PLAN_BACKED_REQUIRED
+API_BACKED_AUDIT_SPEND_AUTHORIZED=NO
 FINAL_AUDIT_COUNT=ONE
 FINAL_AUDITOR_SUBAGENTS=0
 FINAL_AUDITOR_INDEPENDENCE=DIFFERENT_MODEL_FAMILY_FROM_IMPLEMENTER_REQUIRED
@@ -80,23 +83,31 @@ This record binds the exact merged G0-Lite Task Packet:
 
 ```text
 PACKET_ID=TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001
-PACKET_SHA256=5d636307ad1ba7b6ec1498cac4fd79afcf9f480c9b96dad208f3f03e3f807cc9
-PACKET_BLOB=cfbd08daad4e2b3c9550fc36fc287829eaffb01f
+PACKET_SHA256=cf3370d336b46157a690490a5b517dde198726e16e012486c1de2d38129197bb
+PACKET_BLOB=1cfc6890714f06f9ab4d0ae607647f96efd953c2
 ```
 
-and the exact implementation base:
+and the provenance-bearing authority anchor plus execution-start policy:
 
 ```text
-IMPLEMENTATION_BASE=c7bc2fb479d7386825df73e028acdce723ee3388
+AUTHORITY_ANCHOR_BASE_SHA=c7bc2fb479d7386825df73e028acdce723ee3388
+EXECUTION_START_POLICY=CURRENT_MAIN_CONTAINING_MERGED_AUTHORITY_RECORD
 ```
 
-The implementation base is provenance-bearing for this authority grant.
+The authority anchor is provenance-bearing for this authority grant. It is not an
+execution-head equality requirement after publication.
 
-If the authority-record publication itself moves `main`, the implementation worktree
-must start from the authority-record merge commit on current `main`, while proving that
-the original bound base `c7bc2fb479d7386825df73e028acdce723ee3388` is its ancestor and that intervening
-changes are authority-record-only or otherwise non-overlapping with the substantive
-G0-Lite payload.
+The implementation worktree must start from current `main` containing the merged
+authority record. It must prove that
+`c7bc2fb479d7386825df73e028acdce723ee3388` is an ancestor of that execution-start
+commit and that intervening changes are authority-publication-only or otherwise
+compatible and non-overlapping with the substantive G0-Lite payload.
+
+After authority publication:
+
+```text
+EXECUTION_HEAD_EQUALS_c7bc2fb4=NOT_REQUIRED
+```
 
 A generic requirement that execution HEAD equal `c7bc2fb4...` after this authority
 record merges is forbidden because the act of publishing this record necessarily
@@ -314,13 +325,16 @@ Before mutation:
 3. Verify this authority record's bytes/digest against the independently validated
    authority subject.
 4. Verify the Task Packet SHA-256 is exactly
-   5d636307ad1ba7b6ec1498cac4fd79afcf9f480c9b96dad208f3f03e3f807cc9.
-5. Verify `c7bc2fb479d7386825df73e028acdce723ee3388` is an ancestor of execution main.
-6. Compute all changes from `c7bc2fb4...` to execution main.
-7. Require those intervening changes to be authority-publication-only or otherwise
+   cf3370d336b46157a690490a5b517dde198726e16e012486c1de2d38129197bb.
+5. Treat `c7bc2fb479d7386825df73e028acdce723ee3388` as
+   `AUTHORITY_ANCHOR_BASE_SHA`, not an execution-head equality target.
+6. Start from current main containing the merged authority record and verify the
+   authority anchor is its ancestor.
+7. Compute all changes from the authority anchor to execution-start main.
+8. Require those intervening changes to be authority-publication-only or otherwise
    non-overlapping/compatible with all 17 substantive payload paths.
-8. Create a fresh worktree from the reharvested current main.
-9. Verify clean status before first payload edit.
+9. Create a fresh worktree from the reharvested current main.
+10. Verify clean status before first payload edit.
 ```
 
 If publication introduces substantive overlap:
@@ -402,7 +416,7 @@ CONTENT_HEAD=
 CONTENT_TREE=
 CONTENT_DIGEST=
 CHANGED_PATHS=
-PACKET_SHA256=5d636307ad1ba7b6ec1498cac4fd79afcf9f480c9b96dad208f3f03e3f807cc9
+PACKET_SHA256=cf3370d336b46157a690490a5b517dde198726e16e012486c1de2d38129197bb
 AUTHORITY_RECORD_REF=
 ```
 
@@ -415,7 +429,7 @@ Any substantive repair after freeze creates a new subject.
 Exactly one final independent audit is authorized after content freeze.
 
 ```text
-AUDITOR_ROUTE=DIRECT_CLAUDE_CODE
+AUDITOR_ROUTE=LIVE_DISCOVERED_PLAN_BACKED
 AUDITOR_COUNT=ONE_FINAL_ONLY
 AUDITOR_SUBAGENTS=0
 IMPLEMENTER_INDEPENDENCE=REQUIRED
@@ -456,6 +470,12 @@ UNKNOWN_REQUIRED_AUDITOR_IDENTITY
 ```
 
 No auditor shopping after a substantive verdict.
+
+Runner installation or configuration does not prove plan capacity or spend authority.
+Before invocation, record runner, exact selector, billing mode, usage availability,
+independence, and frozen-subject access. If no sufficient plan-backed route is proven,
+stop `BLOCKED_AUDITOR_CAPACITY`; API-metered fallback requires separate explicit operator
+spend authorization.
 
 ## 13. Proof and PR finality
 
@@ -535,7 +555,7 @@ E4=the authority-record PR is merged to main under separate operator merge autho
 E5=current main is reharvested after merge
 E6=current main contains this authority record at the required path
 E7=current main contains the exact bound Task Packet bytes
-E8=c7bc2fb479d7386825df73e028acdce723ee3388 is an ancestor of current main
+E8=AUTHORITY_ANCHOR_BASE_SHA c7bc2fb479d7386825df73e028acdce723ee3388 is an ancestor of execution-start current main
 E9=intervening main movement is non-overlapping/compatible with the 17 payload paths
 E10=direct Codex remains available
 ```
@@ -582,15 +602,19 @@ Any semantic change to this authority record requires fresh supervisor approval.
 DECISION=AUTHORIZE_G0_LITE_IMPLEMENTATION_CONDITIONALLY
 
 PACKET_ID=TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001
-PACKET_SHA256=5d636307ad1ba7b6ec1498cac4fd79afcf9f480c9b96dad208f3f03e3f807cc9
-PACKET_BLOB=cfbd08daad4e2b3c9550fc36fc287829eaffb01f
+PACKET_SHA256=cf3370d336b46157a690490a5b517dde198726e16e012486c1de2d38129197bb
+PACKET_BLOB=1cfc6890714f06f9ab4d0ae607647f96efd953c2
 
-BOUND_BASE=c7bc2fb479d7386825df73e028acdce723ee3388
+AUTHORITY_ANCHOR_BASE_SHA=c7bc2fb479d7386825df73e028acdce723ee3388
+EXECUTION_START_POLICY=CURRENT_MAIN_CONTAINING_MERGED_AUTHORITY_RECORD
+EXECUTION_HEAD_EQUALS_c7bc2fb4=NOT_REQUIRED
 
 RUNNER=DIRECT_CODEX
 AGENT_CEILING=ONE_DELEGATED_CODEX_PRIMARY_NO_NESTED_SUBAGENTS
 
-FINAL_AUDITOR=DIRECT_CLAUDE_CODE
+FINAL_AUDIT_ROUTING_POLICY=DMX-AUDIT-ROUTING-ECONOMY-001
+FINAL_AUDIT_BILLING_MODE=PLAN_BACKED_REQUIRED
+API_BACKED_AUDIT_SPEND_AUTHORIZED=NO
 FINAL_AUDIT_COUNT=ONE
 
 AUTHORITY_RECORD_AUTHORING=AUTHORIZED
