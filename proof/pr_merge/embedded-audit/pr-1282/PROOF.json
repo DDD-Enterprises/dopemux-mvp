@@ -1,0 +1,38 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1282,
+  "head_sha": "0a35f53a8d569f2b08a4a165fd8aaf6bb2478f2e",
+  "generated_at": "2026-08-27T13:25:06Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "agy --model claude-sonnet-4-6 --sandbox --mode plan --disable-slash-commands --output-format json --print-timeout 20m --print <bounded-audit-prompt>",
+    "exit_code": 0,
+    "report_path": "proof/DMX-GOV-G0-LITE-IMPLEMENTATION-AUTHORITY-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "G0-F1",
+        "severity": "INFO",
+        "title": "PR 1268 contains four excluded donor paths",
+        "status": "ACCEPTED_RISK",
+        "body": "Auditor verified all 17 allowed donor paths plus four explicitly excluded paths. Main and donor path sets do not overlap; classification remains COMPATIBLE."
+      },
+      {
+        "id": "G0-F2",
+        "severity": "INFO",
+        "title": "Authority effectivity conditions remain unmet pre-merge",
+        "status": "ACCEPTED_RISK",
+        "body": "Expected publication state. G0 implementation authority stays ineffective until operator merge and exact merged-main reharvest."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Proxy-reported and provider-attested auditor model identity remain UNKNOWN.",
+      "Authority record publication does not implement G0-Lite payload.",
+      "Operator merge and merged-main reharvest remain mandatory before G0-Lite implementation."
+    ],
+    "skip_reason": null
+  }
+}
