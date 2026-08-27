@@ -1,0 +1,242 @@
+{
+  "id": "TP-DMX-MCP-DOPE-CONTEXT-QDRANT-COMPAT-001",
+  "project": "DDD-Enterprises/dopemux-mvp",
+  "target": "Materialize and close the supervisor-authorized dope-context Qdrant SDK compatibility repair without changing dependency policy, provider credentials, foreign-project services, or broader MCP architecture.",
+  "invariants": [
+    "Repository identity must match DDD-Enterprises/dopemux-mvp before any repo or runtime mutation.",
+    "Credential rotation is confirmed; secret values, full environment dumps, credential inspection, and provider calls remain forbidden.",
+    "The only authorized production-source behavior change is removal of the unused qdrant_client.http.models.SearchRequest import from services/dope-context/src/search/dense_search.py.",
+    "Regression coverage must import dense_search against the real installed Qdrant SDK in a subprocess and must leave the parent pytest process sys.modules binding unchanged.",
+    "pyproject.toml, uv.lock, compose.yml, and services/dope-context/Dockerfile must remain unchanged.",
+    "The historical TDD negative control is preserved, not repeated: qdrant-client 1.19.0 lacked SearchRequest and the pre-fix dense_search import failed on that exact symbol.",
+    "No provider-backed call, ConPort mutation, dope-memory mutation, Serena mutation, Task Orchestrator mutation, port 7890 rebinding, or dNh CRM mutation is authorized.",
+    "Only the dope-context service may be rebuilt or recreated, with existing data, logs, Qdrant state, and workspace mounts preserved.",
+    "This JSON is a late canonical materialization of supervisor-chat authority; proof must not claim that this repository packet existed before implementation began.",
+    "Final proof must bind supervisor amendments A1, A2, and A3, the exact substantive content subject, runtime validation receipts, and the replacement independent audit."
+  ],
+  "depends_on": [
+    "TP-DMX-MCP-FLEET-SECURE-RECOVERY-001"
+  ],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-FLEET-SECURE-RECOVERY",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-MCP-FLEET-SECURE-RECOVERY-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/dope-context-qdrant-compat-001",
+    "base_branch": "main",
+    "stacked_because": "Successor L3 repair discovered by the secure-recovery packet after dope-context diagnosis proved that a tracked source correction was required."
+  },
+  "commit": {
+    "message": "fix(dope-context): repair qdrant sdk import compatibility",
+    "allowlist": [
+      "services/dope-context/src/search/dense_search.py",
+      "services/dope-context/tests/test_qdrant_sdk_contract.py",
+      "task-packets/TP-DMX-MCP-DOPE-CONTEXT-QDRANT-COMPAT-001.json",
+      "task-packets/INDEX.md",
+      "proof/TP-DMX-MCP-DOPE-CONTEXT-QDRANT-COMPAT-001/**"
+    ],
+    "verify": [
+      "git diff --check",
+      "PYTHONPATH=services/dope-context uv run --frozen --extra services --extra test pytest services/dope-context/tests/test_qdrant_sdk_contract.py -q",
+      "PYTHONPATH=services/dope-context uv run --frozen --extra services --extra test --with 'qdrant-client==1.19.0' pytest services/dope-context/tests/test_qdrant_sdk_contract.py -q",
+      "PYTHONPATH=services/dope-context uv run --frozen --extra services --extra test pytest services/dope-context/tests -q",
+      "changed-file pre-commit lane",
+      "secret scan",
+      "dope-context image import probe",
+      "dope-context health and provider-free MCP initialize/tools-list"
+    ]
+  },
+  "pr": {
+    "title": "fix(dope-context): repair Qdrant SDK import compatibility",
+    "body": "Repairs the proven dope-context startup incompatibility by removing one unused SearchRequest import and adds subprocess-isolated real-SDK regression coverage. Dependency policy, lockfile, Compose, Dockerfile, provider behavior, foreign-project services, and Task Orchestrator remain unchanged. Merge and activation require separate operator authority.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Bind the late canonical packet materialization to the existing supervisor authority and verify repository/worktree custody without rewriting implementation history.",
+      "requirements": [
+        "Record that this packet was materialized after implementation work began.",
+        "Preserve supervisor amendments A1, A2, and A3 as prior authority lineage.",
+        "Do not claim a pre-existing repository Task Packet."
+      ],
+      "commands": [
+        "git rev-parse HEAD",
+        "git rev-parse HEAD^{tree}",
+        "git status --short --branch",
+        "git remote -v"
+      ],
+      "expected_files": [
+        "services/dope-context/src/search/dense_search.py",
+        "services/dope-context/tests/test_qdrant_sdk_contract.py"
+      ],
+      "validation": [
+        "Repository identity matches DDD-Enterprises/dopemux-mvp.",
+        "Substantive worktree contains only the two authorized modified implementation files before packet/proof materialization.",
+        "Primary checkout and foreign-project services remain untouched."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/governance/evidence-economy.md"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Preserve the already-observed TDD and SDK compatibility evidence without rerunning the historical negative control.",
+      "requirements": [
+        "Locked baseline qdrant-client 1.17.1 focused suite was 13 passed, 1 skipped.",
+        "Affected supported-version probe qdrant-client 1.19.0 reported SearchRequest absent.",
+        "Pre-fix dense_search import failed specifically on SearchRequest.",
+        "TDD_RED is accepted historical evidence and must not be repeated."
+      ],
+      "validation": [
+        "Historical negative-control receipts remain available in the review/proof bundle.",
+        "No additional SDK version hunting is performed."
+      ],
+      "context_files": [
+        "services/dope-context/tests/test_qdrant_sdk_contract.py",
+        "services/dope-context/src/search/dense_search.py"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Validate the final two-file substantive subject across locked and affected supported Qdrant SDK versions and the complete dope-context suite.",
+      "commands": [
+        "PYTHONPATH=services/dope-context uv run --frozen --extra services --extra test pytest services/dope-context/tests/test_qdrant_sdk_contract.py -q",
+        "PYTHONPATH=services/dope-context uv run --frozen --extra services --extra test --with 'qdrant-client==1.19.0' pytest services/dope-context/tests/test_qdrant_sdk_contract.py -q",
+        "PYTHONPATH=services/dope-context uv run --frozen --extra services --extra test pytest services/dope-context/tests -q",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "services/dope-context/src/search/dense_search.py",
+        "services/dope-context/tests/test_qdrant_sdk_contract.py"
+      ],
+      "validation": [
+        "Locked 1.17.1 focused suite passes.",
+        "Ephemeral 1.19.0 focused suite passes.",
+        "Complete locked dope-context suite passes with only previously expected skips/xfail.",
+        "Regression probe uses the real SDK in a subprocess.",
+        "Parent pytest sys.modules binding for src.search.dense_search is unchanged by the regression probe.",
+        "pyproject.toml and uv.lock remain unchanged.",
+        "Pre-commit, git diff --check, secret scan, and exact two-file allowlist pass."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Create an immutable substantive content commit containing only the validated two-file code/test subject.",
+      "requirements": [
+        "Before commit, the frozen substantive diff SHA-256 must equal 5dee0a6410608cdf310c1370941a778c8ccd3d5755ef1a438aef09b705ea7ad9.",
+        "Do not include Task Packet, INDEX, proof, cache, or unrelated files in the substantive content commit."
+      ],
+      "commands": [
+        "git diff --check",
+        "git status --short"
+      ],
+      "expected_files": [
+        "services/dope-context/src/search/dense_search.py",
+        "services/dope-context/tests/test_qdrant_sdk_contract.py"
+      ],
+      "validation": [
+        "Content commit contains exactly the two substantive files.",
+        "Content commit and tree SHAs are recorded.",
+        "Post-commit changed-contract validation runs against the actual base..content-head range rather than an uncommitted HEAD with paths=0."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Build and validate the dope-context image from the immutable substantive content head without provider execution.",
+      "commands": [
+        "docker compose build dope-context",
+        "docker compose run --rm --no-deps --entrypoint python dope-context -c 'import src.search.dense_search; print(\"IMAGE_IMPORT_PROBE=PASS\")'"
+      ],
+      "validation": [
+        "Image build passes.",
+        "Image import probe passes.",
+        "No provider-backed call is made.",
+        "No environment or secret values are printed."
+      ],
+      "context_files": [
+        "compose.yml",
+        "services/dope-context/Dockerfile"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Recreate only dope-context and perform provider-free runtime health, MCP, and workspace readback.",
+      "commands": [
+        "docker compose up -d --no-deps --force-recreate dope-context"
+      ],
+      "validation": [
+        "Only dope-context is recreated.",
+        "Container remains running and becomes healthy with stable restart count.",
+        "HTTP health check passes.",
+        "Provider-free MCP initialize passes.",
+        "Provider-free MCP tools/list passes.",
+        "/workspaces/dopemux-mvp exists inside the intended dope-context container.",
+        "Application-level workspace containment is verified if a provider-free operation exists; otherwise record NOT_RUN.",
+        "dNh CRM Task Orchestrator, ConPort, dope-memory, Serena, Qdrant state, and foreign-project services remain untouched."
+      ],
+      "context_files": [
+        "mcp_catalog.yaml",
+        "compose.yml"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run exactly one replacement independent AGY Claude audit against the immutable content subject with the repository explicitly mounted read-only and runtime receipts available.",
+      "requirements": [
+        "Use AGY with exact model selector claude-sonnet-4-6 unless live invocation proves that selector unavailable, in which case stop rather than silently switching.",
+        "Do not pass the previously rejected unsupported effort option.",
+        "Mount the dope-context repair worktree read-only into the AGY sandbox using AGY's live-discovered repository-mount mechanism.",
+        "Auditor must be able to read the repository, recompute Git identity, inspect the exact two-file diff, and read sanitized validation/runtime receipts.",
+        "Bind supplied substantive diff SHA-256 5dee0a6410608cdf310c1370941a778c8ccd3d5755ef1a438aef09b705ea7ad9 plus exact content commit/tree.",
+        "The prior AGY CHANGES_REQUIRED result caused solely by missing repository access is INVALID_AUDIT_ENVIRONMENT and is not a substantive audit judgment."
+      ],
+      "validation": [
+        "Auditor repository access is proven before substantive review.",
+        "Auditor verifies the one-line production change, subprocess test isolation, locked/1.19 compatibility, complete suite, image import, runtime health, provider-free MCP readback, and foreign-project non-mutation.",
+        "Auditor identity evidence records requested, configured, response-claimed, proxy-reported, and provider-attested values separately where available.",
+        "Final verdict is PASS, PASS_WITH_RISKS, FAIL, or NEEDS_SUPERVISOR.",
+        "FAIL or NEEDS_SUPERVISOR stops proof closure."
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "After an acceptable final audit, materialize this exact supervisor-issued Task Packet and deterministic registry entry as a proof-only metadata successor without changing substantive content.",
+      "expected_files": [
+        "task-packets/TP-DMX-MCP-DOPE-CONTEXT-QDRANT-COMPAT-001.json",
+        "task-packets/INDEX.md",
+        "proof/TP-DMX-MCP-DOPE-CONTEXT-QDRANT-COMPAT-001/**"
+      ],
+      "validation": [
+        "Materialized Task Packet bytes exactly match the supervisor-issued canonical JSON and its recorded SHA-256.",
+        "Task Packet validates against the current canonical Task Packet schema.",
+        "INDEX receives exactly one mechanical registration row with no unrelated cleanup.",
+        "Proof records that packet materialization was late and does not claim pre-implementation repository existence.",
+        "Proof binds A1, A2, A3, content commit/tree, substantive diff hash, deterministic validation, runtime receipts, and final AGY/Claude audit.",
+        "Proof schema, signature if required, ancestry, path closure, and secret scan pass.",
+        "No substantive code/test change occurs after the final audit."
+      ]
+    },
+    {
+      "id": "S8",
+      "task": "Push the exact audited/proven branch, open a draft PR, harvest exact-head CI and PR Steward, and stop before operator-only gates.",
+      "validation": [
+        "Push is fast-forward only.",
+        "Draft PR targets main.",
+        "Exact-head CI is harvested.",
+        "PR Steward final readiness is harvested.",
+        "No merge, activation, mark-ready action requiring operator authority, force-push, branch deletion, history rewrite, credential change, permission change, or production mutation occurs."
+      ]
+    }
+  ]
+}
