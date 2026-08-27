@@ -1,0 +1,89 @@
+{
+  "packet_id": "DMX-GOV-G0-LITE-IMPLEMENTATION-AUTHORITY-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "docs/g0-lite-implementation-authority-001",
+  "base_sha": "c7bc2fb479d7386825df73e028acdce723ee3388",
+  "head_sha": "0a35f53a8d569f2b08a4a165fd8aaf6bb2478f2e",
+  "content_head": "0a35f53a8d569f2b08a4a165fd8aaf6bb2478f2e",
+  "content_tree": "3186d378f693a10fe3dd10350cca227983a0a058",
+  "generated_at": "2026-08-27T13:07:18Z",
+  "proof_kind": "canonical_packet_proof_only_successor",
+  "subject": {
+    "path": "docs/03-reference/governance/governed-delivery/g0-lite-implementation-authority.md",
+    "sha256": "f470517441e3cb415637b977e4746db7314000a8d65b5898a1111d5c8f7fbc91",
+    "audited_state": "staged_exact_bytes_at_base_head",
+    "commit_binding": "Exact audited bytes became sole-file content commit without post-audit byte change."
+  },
+  "authority_bindings": {
+    "g0_packet_id": "TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001",
+    "g0_packet_sha256": "5d636307ad1ba7b6ec1498cac4fd79afcf9f480c9b96dad208f3f03e3f807cc9",
+    "g0_packet_blob": "cfbd08daad4e2b3c9550fc36fc287829eaffb01f",
+    "pr_1268_head": "caa4ec2913d0463c7e38835029f3f7adeb915ac6",
+    "pr_1268_merge_base": "d40e43dd70307d2c000a4efd581be7c11248728c",
+    "pr_1268_overlap": "COMPATIBLE",
+    "runner": "DIRECT_CODEX",
+    "agent_ceiling": "ONE_DELEGATED_CODEX_PRIMARY_NO_NESTED_SUBAGENTS",
+    "implementation_effective": "NO_PENDING_OPERATOR_MERGE_AND_MAIN_REHARVEST"
+  },
+  "auditor_identity": {
+    "runner": "agy",
+    "requested_model": "claude-sonnet-4-6",
+    "configured_model": "Claude Sonnet 4.6 (Thinking)",
+    "response_claimed_model": "Claude Sonnet 4.6 with extended thinking",
+    "proxy_reported_model": "UNKNOWN",
+    "provider_attested_model": "UNKNOWN",
+    "conversation_id": "8517926b-463d-4d2d-ad42-7d7cbad3a0be",
+    "independence": "STRONG_ANTHROPIC_AUDITOR_VS_OPENAI_SUPERVISOR"
+  },
+  "evidence_hashes": {
+    "auditor_report_sha256": "176d7de53b90ca1cdf13842f3042c8c744e060787326514e0a45f3d7c13b6297",
+    "audit_prompt_sha256": "83c140aa6cddab193addba2e18032df6dda107bca9aa35870f58dd431036531e",
+    "agy_receipt_sha256": "f369d5d5fa5d1431650a3d3f4ce13c108ab42e1586027f0fdd32a8e70ae83247",
+    "subject_binding_sha256": "95b412891c31582178cfefcee810d2731940ceddcf55c99ea14b058b4d9d3e7c"
+  },
+  "validation_summary": {
+    "docs_validator": "PASS",
+    "docs_frontmatter_guard": "PASS",
+    "pre_commit_changed_file": "PASS",
+    "git_diff_check": "PASS",
+    "post_audit_subject_sha256": "PASS",
+    "proof_schema": "PENDING",
+    "proof_only_closure": "PENDING",
+    "secret_scan": "PENDING",
+    "pr_scoped_steward": "NOT_RUN_PRE_PR"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "agy --model claude-sonnet-4-6 --sandbox --mode plan --disable-slash-commands --output-format json --print-timeout 20m --print <bounded-audit-prompt>",
+    "exit_code": 0,
+    "report_path": "proof/DMX-GOV-G0-LITE-IMPLEMENTATION-AUTHORITY-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "G0-F1",
+        "severity": "INFO",
+        "title": "PR 1268 contains four excluded donor paths",
+        "status": "ACCEPTED_RISK",
+        "body": "Auditor verified all 17 allowed donor paths plus four explicitly excluded paths. Main and donor path sets do not overlap; classification remains COMPATIBLE."
+      },
+      {
+        "id": "G0-F2",
+        "severity": "INFO",
+        "title": "Authority effectivity conditions remain unmet pre-merge",
+        "status": "ACCEPTED_RISK",
+        "body": "Expected publication state. G0 implementation authority stays ineffective until operator merge and exact merged-main reharvest."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Proxy-reported and provider-attested auditor model identity remain UNKNOWN.",
+      "Authority record publication does not implement G0-Lite payload.",
+      "Operator merge and merged-main reharvest remain mandatory before G0-Lite implementation."
+    ],
+    "skip_reason": null
+  },
+  "merge_authorized": false,
+  "activation_authorized": false
+}
