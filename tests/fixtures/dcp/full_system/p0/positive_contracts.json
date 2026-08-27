@@ -1,0 +1,294 @@
+[
+  {
+    "name": "capability_requirement_ref",
+    "schema": "schemas/dcp/capability_requirement_ref.schema.json",
+    "instance": {
+      "schema_version": "dcp-capability-requirement-ref.v0",
+      "requirement_id": "CAP-AUDIT-001",
+      "capability": "independent_audit",
+      "requested_identity": {"provider": "anthropic", "model": "claude-sonnet-5"},
+      "substitution_allowed": false,
+      "evidence_policy": {
+        "minimum_evidence_refs": 1,
+        "freshness": "CURRENT",
+        "required_identity_layers": ["requested", "configured", "response_claimed", "proxy_reported", "provider_attested"]
+      },
+      "state": "REQUIREMENT_ONLY",
+      "execution_authority": false
+    }
+  },
+  {
+    "name": "context_plan",
+    "schema": "schemas/dcp/context_plan.schema.json",
+    "instance": {
+      "schema_version": "dcp-context-plan.v0",
+      "plan_id": "CTX-PLAN-001",
+      "project_id": "dopemux-mvp",
+      "authority_order": ["RUNTIME_SOURCE", "ACCEPTED_AUTHORITY", "DERIVED_EVIDENCE"],
+      "capability_requirement_refs": ["CAP-AUDIT-001"],
+      "mandatory_evidence_refs": ["repo://AGENTS.md"],
+      "context_budget": {"max_bytes": 4096, "mandatory_evidence_truncation_allowed": false},
+      "retrieval_policy": {"dereference_required": true, "advisory_results_are_authority": false},
+      "state": "PLANNED",
+      "execution_authority": false,
+      "mutation_authority": false
+    }
+  },
+  {
+    "name": "run_context_packet",
+    "schema": "schemas/dcp/run_context_packet.schema.json",
+    "instance": {
+      "schema_version": "dcp-run-context-packet.v0",
+      "contract_id": "DCP_RUN_CONTEXT_PACKET_V1",
+      "packet_id": "RUN-CTX-001",
+      "plan_ref": "CTX-PLAN-001",
+      "subject": {"project_id": "dopemux-mvp", "head_sha": "c7bc2fb479d7386825df73e028acdce723ee3388"},
+      "produced_at": "2026-08-27T00:00:00Z",
+      "readiness": "READY",
+      "context_items": [
+        {
+          "ref": "repo://AGENTS.md",
+          "kind": "RUNTIME_SOURCE",
+          "freshness": "FRESH",
+          "dereferenced": true,
+          "mandatory": true,
+          "truncated": false,
+          "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "mandatory_evidence": {
+        "complete": true,
+        "bindings": [
+          {
+            "required_ref": "repo://AGENTS.md",
+            "context_item_ref": "repo://AGENTS.md",
+            "state": "SATISFIED",
+            "truncated": false
+          }
+        ]
+      },
+      "conflicts": [],
+      "execution_authority": false,
+      "mutation_authority": false
+    }
+  },
+  {
+    "name": "knowledge_compiler_input",
+    "schema": "schemas/second_brain/knowledge_compiler_input.schema.json",
+    "instance": {
+      "schema_version": "sb-knowledge-compiler-input.v0",
+      "input_id": "KC-IN-001",
+      "project_id": "dopemux-mvp",
+      "snapshots": [
+        {
+          "source_system": "ConPort",
+          "revision": "decision:1",
+          "digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "authority_label": "CANONICAL",
+          "dereferenced": true
+        }
+      ],
+      "policy": {"authority_first": true, "provider_policy_state": "ELIGIBLE", "unknown_denies": true},
+      "output_authority": "DERIVED_NON_CANONICAL",
+      "execution_authority": false
+    }
+  },
+  {
+    "name": "compiled_claim",
+    "schema": "schemas/second_brain/compiled_claim.schema.json",
+    "instance": {
+      "schema_version": "sb-compiled-claim.v0",
+      "claim_id": "CLAIM-001",
+      "input_ref": "KC-IN-001",
+      "claim_text": "Canonical source remains authoritative.",
+      "source_refs": ["ConPort:decision:1"],
+      "source_dereferenced": true,
+      "contradiction_state": "NONE",
+      "authority_label": "DERIVED_NON_CANONICAL",
+      "eligible_for_materialization": true
+    }
+  },
+  {
+    "name": "materialized_wiki_page",
+    "schema": "schemas/second_brain/materialized_wiki_page.schema.json",
+    "instance": {
+      "schema_version": "sb-materialized-wiki-page.v0",
+      "page_id": "WIKI-001",
+      "source_snapshot_revisions": ["ConPort:decision:1"],
+      "claim_refs": ["CLAIM-001"],
+      "regions": [{"kind": "MANAGED", "content": "Derived summary."}],
+      "freshness": "CURRENT",
+      "content_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "authority_label": "DERIVED_NON_CANONICAL",
+      "canonical_source_wins": true,
+      "write_back_authorized": false,
+      "purge_propagation_required": true
+    }
+  },
+  {
+    "name": "materialization_receipt",
+    "schema": "schemas/second_brain/materialization_receipt.schema.json",
+    "instance": {
+      "schema_version": "sb-materialization-receipt.v0",
+      "receipt_id": "MAT-REC-001",
+      "input_ref": "KC-IN-001",
+      "page_ref": "WIKI-001",
+      "input_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "output_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "result": "MATERIALIZED",
+      "purge_propagated": true,
+      "authority_label": "DERIVED_NON_CANONICAL",
+      "write_back_performed": false
+    }
+  },
+  {
+    "name": "auditor_capability_snapshot",
+    "schema": "schemas/audit_broker/auditor_capability_snapshot.schema.json",
+    "instance": {
+      "schema_version": "audit-broker-auditor-capability-snapshot.v0",
+      "snapshot_id": "AUD-CAP-001",
+      "observed_at": "2026-08-27T00:00:00Z",
+      "freshness": "CURRENT",
+      "capability_states": [{"capability": "independent_audit", "state": "AVAILABLE", "evidence_refs": ["proof://capability"]}],
+      "identities": {
+        "requested": {"state": "OBSERVED", "value": "claude-sonnet-5", "evidence_refs": ["request://1"]},
+        "configured": {"state": "OBSERVED", "value": "claude-sonnet-5", "evidence_refs": ["config://1"]},
+        "response_claimed": {"state": "UNKNOWN", "value": null, "evidence_refs": []},
+        "proxy_reported": {"state": "UNKNOWN", "value": null, "evidence_refs": []},
+        "provider_attested": {"state": "UNKNOWN", "value": null, "evidence_refs": []}
+      },
+      "execution_authority": false,
+      "repository_mutation_authorized": false,
+      "task_mutation_authorized": false
+    }
+  },
+  {
+    "name": "auditor_certification",
+    "schema": "schemas/audit_broker/auditor_certification.schema.json",
+    "instance": {
+      "schema_version": "audit-broker-auditor-certification.v0",
+      "certification_id": "AUD-CERT-001",
+      "snapshot_ref": "AUD-CAP-001",
+      "subject_scope": "AUDIT_ONLY",
+      "snapshot_freshness": "CURRENT",
+      "capability_state": "SATISFIED",
+      "identity_alignment": "MATCHED",
+      "independence": "VERIFIED",
+      "judgment_authorized": true,
+      "repository_mutation_authorized": false,
+      "task_mutation_authorized": false
+    }
+  },
+  {
+    "name": "audit_request",
+    "schema": "schemas/audit_broker/audit_request.schema.json",
+    "instance": {
+      "schema_version": "audit-broker-audit-request.v0",
+      "request_id": "AUD-REQ-001",
+      "subject": {
+        "packet_id": "TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001",
+        "head_sha": "c7bc2fb479d7386825df73e028acdce723ee3388",
+        "digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      "required_capabilities": ["independent_audit"],
+      "requested_identity": {"provider": "anthropic", "model": "claude-sonnet-5"},
+      "substitution_allowed": false,
+      "certification_ref": "AUD-CERT-001",
+      "mandatory_evidence_refs": ["bundle://review"],
+      "repository_mutation_authorized": false,
+      "task_mutation_authorized": false
+    }
+  },
+  {
+    "name": "audit_execution_receipt",
+    "schema": "schemas/audit_broker/audit_execution_receipt.schema.json",
+    "instance": {
+      "schema_version": "audit-broker-audit-execution-receipt.v0",
+      "receipt_id": "AUD-EXEC-001",
+      "request_ref": "AUD-REQ-001",
+      "subject_digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "started_at": "2026-08-27T00:00:00Z",
+      "completed_at": "2026-08-27T00:01:00Z",
+      "execution_state": "COMPLETED",
+      "identities": {
+        "requested": {"state": "OBSERVED", "value": "claude-sonnet-5", "evidence_refs": ["request://1"]},
+        "configured": {"state": "OBSERVED", "value": "claude-sonnet-5", "evidence_refs": ["config://1"]},
+        "response_claimed": {"state": "OBSERVED", "value": "claude-sonnet-5", "evidence_refs": ["response://1"]},
+        "proxy_reported": {"state": "UNKNOWN", "value": null, "evidence_refs": []},
+        "provider_attested": {"state": "UNKNOWN", "value": null, "evidence_refs": []}
+      },
+      "mandatory_evidence": {"complete": true, "truncated": false, "refs": ["bundle://review"]},
+      "result_ref": "AUD-RESULT-001",
+      "repository_mutation_authorized": false,
+      "task_mutation_authorized": false
+    }
+  },
+  {
+    "name": "audit_result",
+    "schema": "schemas/audit_broker/audit_result.schema.json",
+    "instance": {
+      "schema_version": "audit-broker-audit-result.v0",
+      "result_id": "AUD-RESULT-001",
+      "request_ref": "AUD-REQ-001",
+      "subject": {
+        "packet_id": "TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001",
+        "head_sha": "c7bc2fb479d7386825df73e028acdce723ee3388",
+        "tree_sha": "3afc447a3e8dc8e3bf232137373d3297a7c79cc4",
+        "digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      "outcome": {"class": "JUDGMENT", "status": "PASS", "substantive_judgment_rendered": true},
+      "identities": {
+        "requested": {"state": "OBSERVED", "value": "claude-sonnet-5", "evidence_refs": ["request://1"]},
+        "configured": {"state": "OBSERVED", "value": "claude-sonnet-5", "evidence_refs": ["config://1"]},
+        "response_claimed": {"state": "OBSERVED", "value": "claude-sonnet-5", "evidence_refs": ["response://1"]},
+        "proxy_reported": {"state": "OBSERVED", "value": "claude-sonnet-5", "evidence_refs": ["proxy://1"]},
+        "provider_attested": {"state": "OBSERVED", "value": "claude-sonnet-5", "evidence_refs": ["provider://1"]}
+      },
+      "identity_requirement": {
+        "requirement_ref": "CAP-AUDIT-001",
+        "required_layers": ["requested", "configured", "response_claimed", "proxy_reported", "provider_attested"],
+        "disposition": "SATISFIED",
+        "unresolved_layers": []
+      },
+      "findings": [],
+      "repository_mutation_authorized": false,
+      "task_mutation_authorized": false
+    }
+  },
+  {
+    "name": "audit_result_required_identity_unknown",
+    "schema": "schemas/audit_broker/audit_result.schema.json",
+    "instance": {
+      "schema_version": "audit-broker-audit-result.v0",
+      "result_id": "AUD-RESULT-IDENTITY-UNKNOWN-001",
+      "request_ref": "AUD-REQ-001",
+      "subject": {
+        "packet_id": "TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001",
+        "head_sha": "c7bc2fb479d7386825df73e028acdce723ee3388",
+        "tree_sha": "3afc447a3e8dc8e3bf232137373d3297a7c79cc4",
+        "digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      "outcome": {
+        "class": "TERMINAL_INTAKE_FAILURE",
+        "status": "REQUIRED_IDENTITY_UNKNOWN",
+        "substantive_judgment_rendered": false
+      },
+      "identities": {
+        "requested": {"state": "OBSERVED", "value": "claude-sonnet-5", "evidence_refs": ["request://1"]},
+        "configured": {"state": "OBSERVED", "value": "claude-sonnet-5", "evidence_refs": ["config://1"]},
+        "response_claimed": {"state": "OBSERVED", "value": "claude-sonnet-5", "evidence_refs": ["response://1"]},
+        "proxy_reported": {"state": "UNKNOWN", "value": null, "evidence_refs": []},
+        "provider_attested": {"state": "UNKNOWN", "value": null, "evidence_refs": []}
+      },
+      "identity_requirement": {
+        "requirement_ref": "CAP-AUDIT-001",
+        "required_layers": ["requested", "configured", "response_claimed", "proxy_reported", "provider_attested"],
+        "disposition": "REQUIRED_IDENTITY_UNKNOWN",
+        "unresolved_layers": ["proxy_reported", "provider_attested"]
+      },
+      "findings": ["Required identity evidence remains UNKNOWN."],
+      "repository_mutation_authorized": false,
+      "task_mutation_authorized": false
+    }
+  }
+]

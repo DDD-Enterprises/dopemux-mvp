@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/audit_broker/audit_execution_receipt.schema.json",
+  "title": "Audit Broker Audit Execution Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "receipt_id",
+    "request_ref",
+    "subject_digest",
+    "started_at",
+    "completed_at",
+    "execution_state",
+    "identities",
+    "mandatory_evidence",
+    "result_ref",
+    "repository_mutation_authorized",
+    "task_mutation_authorized"
+  ],
+  "properties": {
+    "schema_version": {"const": "audit-broker-audit-execution-receipt.v0"},
+    "receipt_id": {"type": "string", "minLength": 1},
+    "request_ref": {"type": "string", "minLength": 1},
+    "subject_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "started_at": {"type": "string", "format": "date-time"},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "execution_state": {"enum": ["COMPLETED", "PREJUDGMENT_FAILED"]},
+    "identities": {"$ref": "#/definitions/identity_layers"},
+    "mandatory_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["complete", "truncated", "refs"],
+      "properties": {
+        "complete": {"const": true},
+        "truncated": {"const": false},
+        "refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "result_ref": {"type": "string", "minLength": 1},
+    "repository_mutation_authorized": {"const": false},
+    "task_mutation_authorized": {"const": false}
+  },
+  "definitions": {
+    "identity_layer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "value", "evidence_refs"],
+      "properties": {
+        "state": {"enum": ["OBSERVED", "UNKNOWN"]},
+        "value": {"type": ["string", "null"]},
+        "evidence_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"state": {"const": "UNKNOWN"}}},
+          "then": {"properties": {"value": {"type": "null"}, "evidence_refs": {"maxItems": 0}}},
+          "else": {"properties": {"value": {"type": "string", "minLength": 1}, "evidence_refs": {"minItems": 1}}}
+        }
+      ]
+    },
+    "identity_layers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requested", "configured", "response_claimed", "proxy_reported", "provider_attested"],
+      "properties": {
+        "requested": {"$ref": "#/definitions/identity_layer"},
+        "configured": {"$ref": "#/definitions/identity_layer"},
+        "response_claimed": {"$ref": "#/definitions/identity_layer"},
+        "proxy_reported": {"$ref": "#/definitions/identity_layer"},
+        "provider_attested": {"$ref": "#/definitions/identity_layer"}
+      }
+    }
+  }
+}

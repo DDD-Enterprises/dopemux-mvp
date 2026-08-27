@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/audit_broker/auditor_certification.schema.json",
+  "title": "Audit Broker Auditor Certification",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "certification_id",
+    "snapshot_ref",
+    "subject_scope",
+    "snapshot_freshness",
+    "capability_state",
+    "identity_alignment",
+    "independence",
+    "judgment_authorized",
+    "repository_mutation_authorized",
+    "task_mutation_authorized"
+  ],
+  "properties": {
+    "schema_version": {"const": "audit-broker-auditor-certification.v0"},
+    "certification_id": {"type": "string", "minLength": 1},
+    "snapshot_ref": {"type": "string", "minLength": 1},
+    "subject_scope": {"const": "AUDIT_ONLY"},
+    "snapshot_freshness": {"const": "CURRENT"},
+    "capability_state": {"const": "SATISFIED"},
+    "identity_alignment": {"const": "MATCHED"},
+    "independence": {"const": "VERIFIED"},
+    "judgment_authorized": {"const": true},
+    "repository_mutation_authorized": {"const": false},
+    "task_mutation_authorized": {"const": false}
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/dcp/run_context_packet.schema.json",
+  "title": "DCP Run Context Packet",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contract_id",
+    "packet_id",
+    "plan_ref",
+    "subject",
+    "produced_at",
+    "readiness",
+    "context_items",
+    "mandatory_evidence",
+    "conflicts",
+    "execution_authority",
+    "mutation_authority"
+  ],
+  "properties": {
+    "schema_version": {"const": "dcp-run-context-packet.v0"},
+    "contract_id": {"const": "DCP_RUN_CONTEXT_PACKET_V1"},
+    "packet_id": {"type": "string", "minLength": 1},
+    "plan_ref": {"type": "string", "minLength": 1},
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_id", "head_sha"],
+      "properties": {
+        "project_id": {"type": "string", "minLength": 1},
+        "head_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+      }
+    },
+    "produced_at": {"type": "string", "format": "date-time"},
+    "readiness": {"enum": ["READY", "BLOCKED"]},
+    "context_items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/definitions/context_item"}
+    },
+    "mandatory_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["complete", "bindings"],
+      "properties": {
+        "complete": {"type": "boolean"},
+        "bindings": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/mandatory_evidence_binding"}
+        }
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "execution_authority": {"const": false},
+    "mutation_authority": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"readiness": {"const": "READY"}}},
+      "then": {
+        "properties": {
+          "conflicts": {"maxItems": 0},
+          "context_items": {
+            "contains": {
+              "type": "object",
+              "required": ["mandatory"],
+              "properties": {"mandatory": {"const": true}}
+            },
+            "items": {
+              "allOf": [
+                {"$ref": "#/definitions/context_item"},
+                {
+                  "properties": {
+                    "freshness": {"const": "FRESH"},
+                    "dereferenced": {"const": true},
+                    "truncated": {"const": false}
+                  }
+                }
+              ]
+            }
+          },
+          "mandatory_evidence": {
+            "properties": {
+              "complete": {"const": true},
+              "bindings": {
+                "minItems": 1,
+                "items": {
+                  "allOf": [
+                    {"$ref": "#/definitions/mandatory_evidence_binding"},
+                    {
+                      "properties": {
+                        "state": {"const": "SATISFIED"},
+                        "truncated": {"const": false}
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "mandatory_evidence_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_ref", "context_item_ref", "state", "truncated"],
+      "properties": {
+        "required_ref": {"type": "string", "minLength": 1},
+        "context_item_ref": {"type": "string", "minLength": 1},
+        "state": {"enum": ["SATISFIED", "MISSING", "UNKNOWN", "CONFLICTING"]},
+        "truncated": {"type": "boolean"}
+      }
+    },
+    "context_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "kind", "freshness", "dereferenced", "mandatory", "truncated", "digest"],
+      "properties": {
+        "ref": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["RUNTIME_SOURCE", "ACCEPTED_AUTHORITY", "DERIVED_EVIDENCE"]},
+        "freshness": {"enum": ["FRESH", "STALE", "UNKNOWN", "CONFLICTING"]},
+        "dereferenced": {"type": "boolean"},
+        "mandatory": {"type": "boolean"},
+        "truncated": {"type": "boolean"},
+        "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    }
+  }
+}

@@ -1,0 +1,135 @@
+{
+  "id": "TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001",
+  "project": "dopemux-mvp",
+  "target": "DCP full-system P0 authority and contract freeze",
+  "invariants": [
+    "Start from then-current main in a fresh dedicated worktree; ordinary main movement is reclassified by ancestry, merge-base, changed-path overlap, and authority/contract impact rather than treated as an automatic stop.",
+    "Current runtime source/config/tests and current authority outrank this issued packet when they conflict; preserve every CONFLICTING or UNKNOWN fact.",
+    "Packet issuance does not by itself authorize execution; all dependency, risk-lane, runner, credential, custody, and operator dispatch gates remain effective.",
+    "No merge, auto-merge, mark-ready, force-push, history rewrite, production enablement, or activation is authorized by this packet.",
+    "A substantive audit FAIL, NEEDS_SUPERVISOR, malformed result, required auditor-identity UNKNOWN, exact-subject mismatch, or unresolved blocking finding stops the packet.",
+    "Do not shop auditors after substantive judgment; transport/capacity failure before substantive judgment may be retried only under current policy.",
+    "Proof and handoff artifacts must omit or redact credentials, tokens, authorization headers, cookies, private keys, and sensitive user data.",
+    "RISK_LANE=L2_MATERIAL",
+    "One primary direct Codex implementer is recommended; no subagents unless an explicit packet amendment says otherwise.",
+    "One final direct Claude Code audit is recommended on the frozen substantive subject; actual requested/configured/claimed/provider identity layers must be recorded separately.",
+    "The direct Codex route is distinct from `dopetask tp exec --agent codex`; the latter is not an authorized substitute while its Codex runner remains unimplemented."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "pyproject.toml",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-FULL-SYSTEM-IMPLEMENTATION-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "docs(dcp): freeze DCP full-system authority and contracts",
+    "allowlist": [
+      "docs/90-adr/adr-dcp-full-system-v1-authority-and-contract-freeze.md",
+      "docs/90-adr/adr-index.md",
+      "docs/03-reference/architecture/dcp/full-system-v1-authority-topology.md",
+      "docs/03-reference/architecture/dcp/dcp-context-boundary-clarification-v1.md",
+      "docs/03-reference/architecture/dcp/context-economy-v1.md",
+      "docs/03-reference/architecture/dcp/capability-certification-boundary-v1.md",
+      "docs/03-reference/architecture/second-brain/knowledge-compiler-materialized-wiki-v1.md",
+      "docs/03-reference/architecture/universal-router/audit-broker-boundary-v1.md",
+      "docs/03-reference/architecture/gpt-facade/read-only-boundary-v1.md",
+      "schemas/dcp/context_plan.schema.json",
+      "schemas/dcp/run_context_packet.schema.json",
+      "schemas/dcp/capability_requirement_ref.schema.json",
+      "schemas/second_brain/knowledge_compiler_input.schema.json",
+      "schemas/second_brain/compiled_claim.schema.json",
+      "schemas/second_brain/materialized_wiki_page.schema.json",
+      "schemas/second_brain/materialization_receipt.schema.json",
+      "schemas/audit_broker/auditor_capability_snapshot.schema.json",
+      "schemas/audit_broker/auditor_certification.schema.json",
+      "schemas/audit_broker/audit_request.schema.json",
+      "schemas/audit_broker/audit_execution_receipt.schema.json",
+      "tests/contracts/test_dcp_full_system_p0_contracts.py",
+      "tests/fixtures/dcp/full_system/p0/**",
+      "task-packets/TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001.json",
+      "proof/TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001/**"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python3 -m pytest -q tests/contracts/test_dcp_full_system_p0_contracts.py",
+      "python3 -m pytest -q tests/unit/dcp tests/dcp",
+      "git diff --check \"$(git merge-base HEAD origin/main)\"...HEAD",
+      "pre-commit run --from-ref \"$(git merge-base HEAD origin/main)\" --to-ref HEAD",
+      "python3 scripts/audit/validate_audit_proof.py proof/TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001/PROOF.json"
+    ]
+  },
+  "pr": {
+    "title": "DCP full-system P0 authority and contract freeze",
+    "body": "Task Packet `TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001`. Risk `L2_MATERIAL`. Draft-first. Packet issuance is not merge or activation authority. Run one final independent audit on the frozen substantive subject before readiness.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Reharvest current main, branch protection, current Task Packet/Proof/Audit/Handoff/PR-Steward contracts, six-tool GPT facade inventory, accepted Second Brain authority, and overlapping work before mutation.",
+      "validation": [
+        "Repository identity and current authority are recorded.",
+        "PR #1242 current disposition is recorded rather than inherited from old evidence.",
+        "Any material overlap is classified before editing."
+      ],
+      "commands": [
+        "git fetch --prune origin main",
+        "git rev-parse origin/main",
+        "git show -s --format='%H %T %cI %s' origin/main",
+        "git merge-base HEAD origin/main"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Freeze the full-system authority topology, DCP context boundary, V1 exclusions, activation ladder, and explicit GPT-5.5 named-gate disposition without editing accepted SB decision bodies.",
+      "validation": [
+        "Every subsystem has exactly one authority slice.",
+        "Accepted SB decision bodies are unchanged.",
+        "GPT-5.5 gate is explicitly retained or superseded; silent model substitution is absent."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Create strict schemas for ContextPlan, RunContextPacket, capability requirements, Knowledge Compiler inputs/claims/Wiki receipts, and Audit Broker capability/certification/request/receipt contracts.",
+      "validation": [
+        "Unknown properties fail at authority boundaries.",
+        "RunContextPacket carries no execution authority.",
+        "ContextPlan contains requirements/policy, not fulfilled evidence.",
+        "AuditorCertification grants no repository/task mutation authority."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Create positive and adversarial contract fixtures for UNKNOWN, CONFLICTING, stale, downgrade, Wiki-as-authority, retrieval-without-dereference, model/provider substitution, and mandatory-evidence truncation.",
+      "validation": [
+        "Positive fixtures validate.",
+        "Authority promotion/downgrade fixtures fail closed.",
+        "Exactly one runtime context-envelope contract is accepted."
+      ],
+      "commands": [
+        "python3 -m pytest -q tests/contracts/test_dcp_full_system_p0_contracts.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run deterministic gates, freeze substantive content, obtain one final independent L2 audit, and prepare proof/handoff without marking ready or merging.",
+      "validation": [
+        "Focused and relevant DCP suites pass.",
+        "Pre-commit is clean after any auto-fix rerun.",
+        "Audit subject equals frozen head/tree.",
+        "Merge and activation remain operator-only."
+      ],
+      "commands": [
+        "python3 -m pytest -q tests/contracts/test_dcp_full_system_p0_contracts.py",
+        "python3 -m pytest -q tests/unit/dcp tests/dcp"
+      ]
+    }
+  ]
+}

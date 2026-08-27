@@ -1,0 +1,20 @@
+[
+  {"name": "unknown_property", "base": "context_plan", "mutations": [{"path": "fulfilled_evidence", "value": []}]},
+  {"name": "conflicting_ready_context", "base": "run_context_packet", "mutations": [{"path": "context_items.0.freshness", "value": "CONFLICTING"}]},
+  {"name": "unknown_ready_context", "base": "run_context_packet", "mutations": [{"path": "context_items.0.freshness", "value": "UNKNOWN"}]},
+  {"name": "ready_without_mandatory_evidence_binding", "base": "run_context_packet", "mutations": [{"operation": "remove", "path": "mandatory_evidence"}]},
+  {"name": "ready_with_incomplete_mandatory_evidence", "base": "run_context_packet", "mutations": [{"path": "mandatory_evidence.complete", "value": false}]},
+  {"name": "ready_with_truncated_mandatory_evidence", "base": "run_context_packet", "mutations": [{"path": "mandatory_evidence.bindings.0.truncated", "value": true}]},
+  {"name": "ready_with_only_optional_context", "base": "run_context_packet", "mutations": [{"path": "context_items.0.mandatory", "value": false}]},
+  {"name": "stale_auditor_certification", "base": "auditor_certification", "mutations": [{"path": "snapshot_freshness", "value": "STALE"}]},
+  {"name": "compiled_claim_authority_downgrade", "base": "compiled_claim", "mutations": [{"path": "authority_label", "value": "CANONICAL"}]},
+  {"name": "wiki_as_authority", "base": "materialized_wiki_page", "mutations": [{"path": "authority_label", "value": "CANONICAL"}]},
+  {"name": "retrieval_without_dereference", "base": "run_context_packet", "mutations": [{"path": "context_items.0.dereferenced", "value": false}]},
+  {"name": "model_provider_substitution", "base": "audit_request", "mutations": [{"path": "substitution_allowed", "value": true}]},
+  {"name": "mandatory_evidence_truncation", "base": "audit_execution_receipt", "mutations": [{"path": "mandatory_evidence.truncated", "value": true}]},
+  {"name": "missing_mandatory_evidence", "base": "audit_execution_receipt", "mutations": [{"path": "mandatory_evidence.refs", "value": []}]},
+  {"name": "context_execution_authority", "base": "run_context_packet", "mutations": [{"path": "execution_authority", "value": true}]},
+  {"name": "auditor_repository_mutation", "base": "auditor_certification", "mutations": [{"path": "repository_mutation_authorized", "value": true}]},
+  {"name": "judgment_with_required_identity_unknown", "base": "audit_result_required_identity_unknown", "mutations": [{"path": "outcome", "value": {"class": "JUDGMENT", "status": "PASS", "substantive_judgment_rendered": true}}]},
+  {"name": "available_capability_without_evidence", "base": "auditor_capability_snapshot", "mutations": [{"path": "capability_states.0.evidence_refs", "value": []}]}
+]
