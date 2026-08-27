@@ -1,0 +1,47 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1283,
+  "head_sha": "4268ea88b2406718ea8a98c6f888f11542099c6b",
+  "generated_at": "2026-08-27T13:25:06Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "agy --model claude-sonnet-4-6 --sandbox --mode plan --disable-slash-commands --output-format json --print-timeout 20m --print <bounded-audit-prompt>",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "P0-F1",
+        "severity": "MEDIUM",
+        "title": "PREJUDGMENT_FAILED receipt requires complete mandatory evidence",
+        "status": "ACCEPTED_RISK",
+        "body": "Design-only audit_execution_receipt.v0 forces mandatory_evidence.complete true even for PREJUDGMENT_FAILED. Resolve before runtime implementation."
+      },
+      {
+        "id": "P0-F2",
+        "severity": "LOW",
+        "title": "CompiledClaim lacks explicit execution_authority false field",
+        "status": "ACCEPTED_RISK",
+        "body": "DERIVED_NON_CANONICAL remains enforced. Align schema family before later promotion."
+      },
+      {
+        "id": "P0-F3",
+        "severity": "INFO",
+        "title": "Historical forbidden-files sentinel uses stale anchor",
+        "status": "ACCEPTED_RISK",
+        "body": "Full DCP command remains red. Auditor verified forbidden workflow files predate P0 base and P0 delta contains none; failure is not waived."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Historical test_16 stale anchor remains repository debt and full DCP command remains red.",
+      "PREJUDGMENT_FAILED and mandatory evidence completeness tension must be resolved before runtime implementation.",
+      "CompiledClaim schema-family authority field inconsistency should be resolved before promotion.",
+      "All P0 schemas remain .v0 DESIGN_ONLY with runtime producer and consumer validation NOT_RUN.",
+      "Proxy-reported and provider-attested auditor model identity remain UNKNOWN."
+    ],
+    "skip_reason": null
+  }
+}
