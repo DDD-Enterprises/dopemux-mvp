@@ -1,0 +1,135 @@
+{
+  "packet_id": "TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "tp/DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001",
+  "base_sha": "c7bc2fb479d7386825df73e028acdce723ee3388",
+  "head_sha": "4268ea88b2406718ea8a98c6f888f11542099c6b",
+  "content_head": "4268ea88b2406718ea8a98c6f888f11542099c6b",
+  "content_tree": "18846d601cd27d6c84820c85f8a7d96184990531",
+  "generated_at": "2026-08-27T13:07:18Z",
+  "proof_kind": "canonical_packet_proof_only_successor",
+  "packet_sha256": "27f4fb613942e84ea71bcb7c3d7ad2ad66388645d51546d5ce83664281eb4f8a",
+  "implementation": {
+    "worker_identity": "/root/p0_overlap_wave0",
+    "model_selector": "gpt-5.6-sol",
+    "reasoning_effort": "xhigh",
+    "nested_subagents_used": false,
+    "dispatch_gate": "AUTHORIZED_WITH_P0_A1_P0_A2_P0_A3"
+  },
+  "amendments": [
+    {
+      "id": "P0-A1",
+      "paths": [
+        "schemas/audit_broker/audit_result.schema.json"
+      ]
+    },
+    {
+      "id": "P0-A2",
+      "paths": [
+        "task-packets/INDEX.md"
+      ],
+      "scope": "exact packet registration only"
+    },
+    {
+      "id": "P0-A3",
+      "paths": [
+        "schemas/dcp/manifest.json",
+        "schemas/dcp/README.md"
+      ],
+      "scope": "register and document P0 schemas only"
+    }
+  ],
+  "rulings": {
+    "pr_1138": "STALE_NONAUTHORITATIVE_EVIDENCE_SUPERSEDED_FOR_IMPLEMENTATION_BY_CURRENT_MAIN",
+    "pr_1138_mutation_authorized": false,
+    "gpt_5_5_gate": "RETAIN_UNTIL_EXACT_SUPERSEDING_GATE_IS_PROVEN",
+    "gpt_5_6_silent_substitution": false
+  },
+  "auditor_identity": {
+    "runner": "agy",
+    "requested_model": "claude-sonnet-4-6",
+    "configured_model": "Claude Sonnet 4.6 (Thinking)",
+    "response_claimed_model": "Anthropic Claude self-identification, indirect",
+    "proxy_reported_model": "UNKNOWN",
+    "provider_attested_model": "UNKNOWN",
+    "conversation_id": "21c09d8a-1d9c-4b63-9893-5fd8298f562d",
+    "independence": "STRONG_ANTHROPIC_AUDITOR_VS_OPENAI_IMPLEMENTER"
+  },
+  "evidence_hashes": {
+    "auditor_report_sha256": "eb0b7c4036d82640252a08ad6e8a5f7ce415be3917401e2cf6552a38a254b6e3",
+    "audit_prompt_sha256": "e85409631ba362387784712a31ce0fa90616a39fbb70777a34c403c5f31553d9",
+    "agy_receipt_sha256": "7b07d078c1d31954f083081f3bafad93394579cfbfb78ec5183340156f1e9bd2",
+    "subject_binding_sha256": "8fdff53f7db05d33444c66766daf15a8db3a1d9792fa0c466b47364976b7bb3a"
+  },
+  "validation_summary": {
+    "exact_packet_bytes": "PASS",
+    "task_packet_schema": "PASS",
+    "supervisor_adversarial_probes": "PASS",
+    "focused_and_consistency_tests": "60_PASS",
+    "selected_dcp_tests": "446_PASS_1_DESELECTED",
+    "full_dcp_tests": "446_PASS_1_FAIL_STALE_SENTINEL",
+    "docs_validator": "PASS_WITH_PREEXISTING_WARNINGS",
+    "frontmatter": "PASS",
+    "changed_contract": "PASS_L2_29_PATHS",
+    "pre_commit": "PASS",
+    "git_diff_check": "PASS",
+    "post_audit_head_tree_status": "PASS",
+    "proof_schema": "PENDING",
+    "proof_only_closure": "PENDING",
+    "secret_scan": "PENDING",
+    "pr_scoped_steward": "NOT_RUN_PRE_PR"
+  },
+  "stale_sentinel": {
+    "test": "tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified",
+    "disposition": "PREEXISTING_STALE_ANCHOR_NOT_ATTRIBUTABLE_TO_P0_NOT_WAIVED",
+    "full_suite_status": "FAIL"
+  },
+  "audit_acceptance": {
+    "verdict": "PASS_WITH_RISKS",
+    "accepted_for_contract_freeze_closure": true,
+    "rationale": "Auditor passed all 35 P0 requirements and bounded substantive findings to future runtime implementation or promotion."
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "agy --model claude-sonnet-4-6 --sandbox --mode plan --disable-slash-commands --output-format json --print-timeout 20m --print <bounded-audit-prompt>",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "P0-F1",
+        "severity": "MEDIUM",
+        "title": "PREJUDGMENT_FAILED receipt requires complete mandatory evidence",
+        "status": "ACCEPTED_RISK",
+        "body": "Design-only audit_execution_receipt.v0 forces mandatory_evidence.complete true even for PREJUDGMENT_FAILED. Resolve before runtime implementation."
+      },
+      {
+        "id": "P0-F2",
+        "severity": "LOW",
+        "title": "CompiledClaim lacks explicit execution_authority false field",
+        "status": "ACCEPTED_RISK",
+        "body": "DERIVED_NON_CANONICAL remains enforced. Align schema family before later promotion."
+      },
+      {
+        "id": "P0-F3",
+        "severity": "INFO",
+        "title": "Historical forbidden-files sentinel uses stale anchor",
+        "status": "ACCEPTED_RISK",
+        "body": "Full DCP command remains red. Auditor verified forbidden workflow files predate P0 base and P0 delta contains none; failure is not waived."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Historical test_16 stale anchor remains repository debt and full DCP command remains red.",
+      "PREJUDGMENT_FAILED and mandatory evidence completeness tension must be resolved before runtime implementation.",
+      "CompiledClaim schema-family authority field inconsistency should be resolved before promotion.",
+      "All P0 schemas remain .v0 DESIGN_ONLY with runtime producer and consumer validation NOT_RUN.",
+      "Proxy-reported and provider-attested auditor model identity remain UNKNOWN."
+    ],
+    "skip_reason": null
+  },
+  "merge_authorized": false,
+  "activation_authorized": false
+}

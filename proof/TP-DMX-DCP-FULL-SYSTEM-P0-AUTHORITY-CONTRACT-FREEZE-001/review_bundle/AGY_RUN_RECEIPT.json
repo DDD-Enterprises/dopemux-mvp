@@ -1,0 +1,37 @@
+{
+  "audit_id": "TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001-FINAL-L2",
+  "runner": "agy",
+  "initial_noncontrolling_attempt": {
+    "status": "ERROR",
+    "error": "invalid model selection: effort is not supported for claude-sonnet-4-6",
+    "duration_seconds": 0,
+    "num_turns": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "substantive_judgment": false
+  },
+  "controlling_attempt": {
+    "conversation_id": "21c09d8a-1d9c-4b63-9893-5fd8298f562d",
+    "status": "SUCCESS",
+    "exit_code": 0,
+    "duration_seconds": 696.425623,
+    "num_turns": 1,
+    "usage": {
+      "input_tokens": 142668,
+      "output_tokens": 32633,
+      "thinking_tokens": 0,
+      "cache_read_tokens": 3312311,
+      "total_tokens": 175301
+    },
+    "verdict": "PASS_WITH_RISKS"
+  },
+  "invocation": "agy --model claude-sonnet-4-6 --sandbox --mode plan --disable-slash-commands --output-format json --print-timeout 20m --print <bounded-audit-prompt>",
+  "invocation_warning": "AGY reported that plan mode has no effect while slash command expansion is disabled; sandbox remained enabled and post-audit repository custody checks found no mutation.",
+  "identities": {
+    "requested_model": "claude-sonnet-4-6",
+    "configured_model": "Claude Sonnet 4.6 (Thinking)",
+    "response_claimed_model": "Anthropic Claude self-identification, indirect",
+    "proxy_reported_model": "UNKNOWN",
+    "provider_attested_model": "UNKNOWN"
+  }
+}
