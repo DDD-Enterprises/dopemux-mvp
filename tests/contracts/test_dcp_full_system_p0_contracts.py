@@ -3,17 +3,26 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import re
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 import pytest
-from jsonschema import Draft7Validator
+from jsonschema import Draft7Validator, FormatChecker
+
+from scripts.governance.validate_dcp_p0_contract_semantics import (
+    validate_p0_contract_semantics,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FIXTURE_ROOT = REPO_ROOT / "tests" / "fixtures" / "dcp" / "full_system" / "p0"
 PACKET_ID = "TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001"
 PACKET_SHA256 = "27f4fb613942e84ea71bcb7c3d7ad2ad66388645d51546d5ce83664281eb4f8a"
+RFC3339 = re.compile(
+    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$"
+)
 
 
 def _load_json(path: Path) -> Any:
@@ -28,10 +37,33 @@ def _case_map() -> dict[str, dict[str, Any]]:
     return {case["name"]: case for case in _positive_cases()}
 
 
+def _format_checker() -> FormatChecker:
+    checker = FormatChecker()
+
+    @checker.checks("date-time", raises=(TypeError, ValueError))
+    def is_rfc3339(value: object) -> bool:
+        if not isinstance(value, str) or RFC3339.fullmatch(value) is None:
+            return False
+        parsed = datetime.fromisoformat(
+            value.removesuffix("Z") + ("+00:00" if value.endswith("Z") else "")
+        )
+        return parsed.tzinfo is not None
+
+    return checker
+
+
 def _validator(case: dict[str, Any]) -> Draft7Validator:
     schema = _load_json(REPO_ROOT / case["schema"])
     Draft7Validator.check_schema(schema)
-    return Draft7Validator(schema)
+    return Draft7Validator(schema, format_checker=_format_checker())
+
+
+def _semantic_errors(case: dict[str, Any], instance: dict[str, Any]) -> list[str]:
+    return validate_p0_contract_semantics(case["schema"], instance)
+
+
+def _contract_is_valid(case: dict[str, Any], instance: dict[str, Any]) -> bool:
+    return _validator(case).is_valid(instance) and not _semantic_errors(case, instance)
 
 
 def _set_path(instance: dict[str, Any], path: str, value: Any) -> None:
@@ -73,6 +105,7 @@ def _mutated_instance(spec: dict[str, Any]) -> tuple[dict[str, Any], dict[str, A
 def test_positive_contracts_validate(case: dict[str, Any]) -> None:
     errors = list(_validator(case).iter_errors(case["instance"]))
     assert errors == [], [error.message for error in errors]
+    assert _semantic_errors(case, case["instance"]) == []
 
 
 @pytest.mark.parametrize("case", _positive_cases(), ids=lambda case: case["name"])
@@ -89,7 +122,7 @@ def test_unknown_root_properties_fail_closed(case: dict[str, Any]) -> None:
 )
 def test_adversarial_contracts_fail_closed(spec: dict[str, Any]) -> None:
     case, instance = _mutated_instance(spec)
-    assert not _validator(case).is_valid(instance), spec["name"]
+    assert not _contract_is_valid(case, instance), spec["name"]
 
 
 def test_exactly_one_runtime_context_envelope_contract_is_accepted() -> None:
@@ -97,7 +130,7 @@ def test_exactly_one_runtime_context_envelope_contract_is_accepted() -> None:
     accepted = 0
     for spec in specs:
         case, instance = _mutated_instance(spec)
-        accepted += int(_validator(case).is_valid(instance))
+        accepted += int(_contract_is_valid(case, instance))
     assert accepted == 1
 
 
@@ -160,6 +193,10 @@ def test_dcp_manifest_registers_only_three_p0_contracts_once() -> None:
         "schemas/dcp/run_context_packet.schema.json",
         "schemas/dcp/capability_requirement_ref.schema.json",
     }
-    registered = [entry["schema_file"] for entry in manifest["contracts"] if entry["schema_file"] in p0_files]
+    registered = [
+        entry["schema_file"]
+        for entry in manifest["contracts"]
+        if entry["schema_file"] in p0_files
+    ]
     assert sorted(registered) == sorted(p0_files)
     assert len(registered) == len(set(registered))

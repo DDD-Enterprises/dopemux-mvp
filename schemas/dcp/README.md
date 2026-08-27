@@ -1,3 +1,15 @@
+---
+id: dcp-core-contract-schemas
+title: DCP Core Contract Schemas
+type: reference
+owner: '@hu3mann'
+author: '@codex'
+date: '2026-08-27'
+last_review: '2026-08-27'
+next_review: '2026-11-25'
+prelude: Strict design-only DCP core contract schemas and validation boundary.
+---
+
 # DCP Core Contract Schemas — `schemas/dcp/`
 
 > Task Packet: `TP-DCP-0001` · Synthesis Authority: `DCP_ARCHITECTURE_SYNTHESIS_GPT55_REV1.md`
@@ -33,6 +45,16 @@ The three P0 full-system boundary schemas listed below use manifest-level
 records: source/evidence references live in the contract shape, while promotion
 state lives only in `manifest.json`. This exception does not promote `.v0` into
 runtime authority.
+
+P0 validation is the conjunction `JSON_SCHEMA + P0_SEMANTIC_VALIDATION`:
+
+- Execute Draft 7 with `jsonschema.FormatChecker`; declared `date-time` formats
+  are consequential contract constraints, not annotations.
+- Execute `scripts/governance/validate_dcp_p0_contract_semantics.py` for dynamic
+  relationships Draft 7 cannot compare: READY mandatory-evidence bindings must
+  resolve exactly to mandatory context items with matching references, and all
+  five SATISFIED audit identity values must exactly match requested identity.
+- Neither validator substitutes for the other. A pass requires both.
 
 ### Provenance Tag Meanings
 

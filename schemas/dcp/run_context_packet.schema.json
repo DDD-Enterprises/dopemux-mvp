@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://dopemux.dev/schemas/dcp/run_context_packet.schema.json",
   "title": "DCP Run Context Packet",
+  "$comment": "READY cross-reference integrity is enforced by JSON_SCHEMA + scripts/governance/validate_dcp_p0_contract_semantics.py because Draft 7 cannot compare dynamic array-member values.",
   "type": "object",
   "additionalProperties": false,
   "required": [

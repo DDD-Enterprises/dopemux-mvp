@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://dopemux.dev/schemas/audit_broker/audit_result.schema.json",
   "title": "Audit Broker Audit Result",
+  "$comment": "SATISFIED exact identity equality is enforced by JSON_SCHEMA + scripts/governance/validate_dcp_p0_contract_semantics.py because Draft 7 cannot compare dynamic sibling values.",
   "type": "object",
   "additionalProperties": false,
   "required": [

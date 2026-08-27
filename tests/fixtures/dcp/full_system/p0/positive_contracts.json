@@ -142,6 +142,22 @@
     }
   },
   {
+    "name": "materialization_receipt_purged",
+    "schema": "schemas/second_brain/materialization_receipt.schema.json",
+    "instance": {
+      "schema_version": "sb-materialization-receipt.v0",
+      "receipt_id": "MAT-REC-PURGED-001",
+      "input_ref": "KC-IN-001",
+      "page_ref": "WIKI-001",
+      "input_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "output_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "result": "PURGED",
+      "purge_propagated": true,
+      "authority_label": "DERIVED_NON_CANONICAL",
+      "write_back_performed": false
+    }
+  },
+  {
     "name": "auditor_capability_snapshot",
     "schema": "schemas/audit_broker/auditor_capability_snapshot.schema.json",
     "instance": {

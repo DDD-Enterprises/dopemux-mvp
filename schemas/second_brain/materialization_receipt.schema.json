@@ -27,5 +27,11 @@
     "purge_propagated": {"type": "boolean"},
     "authority_label": {"const": "DERIVED_NON_CANONICAL"},
     "write_back_performed": {"const": false}
-  }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"result": {"const": "PURGED"}}},
+      "then": {"properties": {"purge_propagated": {"const": true}}}
+    }
+  ]
 }
