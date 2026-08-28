@@ -432,6 +432,25 @@ def test_pr_steward_rechecks_shared_settlement_around_success_publication() -> N
     assert "SETTLEMENT_S3" in rendered
 
 
+def test_repository_steward_requires_manual_default_branch_audit_source() -> None:
+    workflow = yaml.safe_load(STEWARD_WORKFLOW_PATH.read_text(encoding="utf-8"))
+    steps = workflow["jobs"]["pr-steward"]["steps"]
+    identity = next(
+        step
+        for step in steps
+        if step.get("name") == "Validate audit workflow-run identity"
+    )
+    script = identity["run"]
+
+    assert identity["env"]["EXPECTED_DEFAULT_BRANCH"] == (
+        "${{ github.event.repository.default_branch }}"
+    )
+    assert 'event = str(run.get("event") or "")' in script
+    assert 'event != "workflow_dispatch"' in script
+    assert 'head_branch = str(run.get("head_branch") or "")' in script
+    assert "head_branch != default_branch" in script
+
+
 def test_review_settlement_preflight_imports_packaged_runtime_from_trusted_checkout() -> (
     None
 ):
