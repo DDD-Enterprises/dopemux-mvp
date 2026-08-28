@@ -68,9 +68,15 @@ Manual template audit dispatch binds repository, PR number, exact live head,
 base repository, base SHA, and proof path before reading `PROOF.json`. A valid
 run uploads exactly one artifact named
 `embedded-audit-pr-<PR>-head-<SHA>-proof`. Template Steward accepts that
-artifact only through a completed trusted `workflow_run`, revalidates live
-PR/head and canonical proof identity, and evaluates settlement through the
-installed package before publishing final readiness.
+artifact only through a completed manual `workflow_dispatch` run sourced from
+the repository default branch. It revalidates workflow repository, name, path,
+event, source branch, live PR/head, and canonical proof identity, then evaluates
+settlement through the installed package before publishing final readiness.
+
+Proof validation alone is not publication authority. GitHub restricts manual
+dispatch to repository writers, and Steward's trusted run/artifact checks bind
+the validated candidate bytes to that manual publisher before any readiness
+status can be written.
 
 API spend permission is unrelated to repository mutation authority. These
 template workflows invoke no provider and grant no merge authority.

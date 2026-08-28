@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 import jsonschema
@@ -427,6 +430,32 @@ def test_pr_steward_rechecks_shared_settlement_around_success_publication() -> N
     assert "SETTLEMENT_S1" in rendered
     assert "SETTLEMENT_S2" in rendered
     assert "SETTLEMENT_S3" in rendered
+
+
+def test_review_settlement_preflight_imports_packaged_runtime_from_trusted_checkout() -> (
+    None
+):
+    workflow = _workflow()
+    steps = workflow["jobs"]["embedded-audit"]["steps"]
+    preflight = next(
+        step for step in steps if step.get("name") == "Review settlement preflight"
+    )
+
+    assert preflight["env"]["PYTHONPATH"] == "trusted-source/src"
+
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(ROOT / "src")
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts/audit/review_settlement.py"), "--help"],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "fetch" in result.stdout
+    assert "compare" in result.stdout
 
 
 def test_pr_steward_post_publish_drift_restores_pending_and_fails() -> None:

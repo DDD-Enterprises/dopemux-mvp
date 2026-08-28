@@ -101,10 +101,16 @@ def test_init_scaffolds_pr_steward_workflows_and_policy(tmp_path: Path) -> None:
         == "git+https://github.com/DDD-Enterprises/dopemux-mvp.git"
     )
     rendered_steward = pr_steward_workflow.read_text(encoding="utf-8")
+    assert 'event = str(run.get("event") or "")' in rendered_steward
+    assert 'event != "workflow_dispatch"' in rendered_steward
+    assert 'head_branch = str(run.get("head_branch") or "")' in rendered_steward
+    assert "repository.default_branch" in rendered_steward
+    assert "head_branch != default_branch" in rendered_steward
     assert "pip install -e ." not in rendered_steward
     assert "python -m tools.pr_steward" not in rendered_steward
     assert "scripts.audit" not in rendered_steward
 
+    assert set(embedded_audit_yaml["on"]) == {"workflow_dispatch"}
     audit_inputs = embedded_audit_yaml["on"]["workflow_dispatch"]["inputs"]
     assert set(audit_inputs) == {"pr_number", "head_sha", "proof_path"}
     assert audit_inputs["pr_number"]["required"] is True

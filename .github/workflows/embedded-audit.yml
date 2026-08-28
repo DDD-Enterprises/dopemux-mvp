@@ -134,6 +134,7 @@ jobs:
           EXPECTED_REPO: ${{ github.repository }}
           PR_NUMBER: ${{ steps.pr.outputs.number }}
           EXPECTED_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          PYTHONPATH: trusted-source/src
         run: |
           set -euo pipefail
           python trusted-source/scripts/audit/review_settlement.py fetch \

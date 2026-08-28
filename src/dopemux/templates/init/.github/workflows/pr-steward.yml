@@ -71,6 +71,7 @@ jobs:
         env:
           AUDIT_RUN_ID: ${{ steps.audit_run.outputs.id }}
           EXPECTED_REPO: ${{ github.repository }}
+          EXPECTED_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           # Do not trust arbitrary PROOF.json until the Actions run itself is
           # proven to be the expected embedded-audit workflow in this repository.
@@ -84,6 +85,7 @@ jobs:
 
           run = json.loads(Path("/tmp/audit-run.json").read_text(encoding="utf-8"))
           expected_repo = os.environ["EXPECTED_REPO"]
+          default_branch = os.environ["EXPECTED_DEFAULT_BRANCH"]
           expected_id = int(os.environ["AUDIT_RUN_ID"])
           errors = []
 
@@ -103,6 +105,17 @@ jobs:
           # Require both display name and workflow path for fail-closed identity.
           if not (name == "embedded-audit" and path.endswith("embedded-audit.yml")):
               errors.append(f"workflow_mismatch: name={name!r} path={path!r}")
+
+          event = str(run.get("event") or "")
+          if event != "workflow_dispatch":
+              errors.append(f"workflow_event_mismatch: event={event!r}")
+
+          head_branch = str(run.get("head_branch") or "")
+          if head_branch != default_branch:
+              errors.append(
+                  f"workflow_source_branch_mismatch: "
+                  f"head_branch={head_branch!r} default_branch={default_branch!r}"
+              )
 
           status = str(run.get("status") or "")
           if status != "completed":
