@@ -6,12 +6,13 @@ permissions:
   issues: write         # For issue tracking
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-  push:
-    branches: [main]
-  merge_group:
-    types: [checks_requested]
+  workflow_dispatch:
+    inputs:
+      allow_api_spend:
+        description: "Execution mechanism only; requires separate explicit operator spend authorization."
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   security-review:
@@ -29,7 +30,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 2  # Get enough history for diff analysis
       - name: 🔐 ADHD-Optimized Security Review
-        if: ${{ env.ANTHROPIC_API_KEY != '' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.allow_api_spend == true && env.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-security-review@main
         with:
           comment-pr: true

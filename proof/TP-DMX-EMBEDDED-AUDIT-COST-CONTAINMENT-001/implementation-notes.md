@@ -2,12 +2,13 @@
 
 ## Status
 
-`LOCAL_GATES_COMPLETE_READY_TO_COMMIT`
+`A3_LOCAL_GATES_COMPLETE_READY_TO_COMMIT`
 
 Implementation authority resumed under amendments
 `TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001-A1` and
-`TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001-A2`. Merge, workflow re-enable,
-and metered model spend remain unauthorized.
+`TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001-A2`, then expanded under
+`TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001-A3`. Merge, permanent workflow
+re-enable, credential mutation, and metered model spend remain unauthorized.
 
 ## Implemented working-tree slice
 
@@ -22,6 +23,13 @@ and metered model spend remain unauthorized.
 - Updated trigger and PR-gate runbooks.
 - Updated A1-authorized audit workflow tests and added executable preflight
   fixtures plus structural policy tests.
+- Retained automatic non-model CI in `ci-complete.yml` while requiring explicit
+  manual dispatch, default-false `allow_api_spend`, and a nonempty Anthropic key
+  before its Claude security action can run.
+- Converted `security-review.yml` to manual dispatch only with the same
+  three-part spend guard.
+- Added structural A3 contracts in `tests/ci/test_ai_spend_containment.py` and
+  documented that the dispatch input never substitutes for operator authority.
 
 ## Validation evidence
 
@@ -63,20 +71,43 @@ Remaining local gates:
 - final `tests/ci`: `PASS_WITH_INHERITED_BASELINE_FAILURE`, 53 passed and
   the exact A2-adjudicated failure only
 
+A3 deterministic evidence:
+
+- Test-first RED: 10 expected failures and 1 pre-existing passing assertion.
+- A3 structural GREEN: PASS, 11 passed.
+- Embedded-audit authority tests: PASS, 61 passed.
+- Executable settlement fixtures: PASS, 5 passed and 7 deselected.
+- Complete `tests/ci`: `PASS_WITH_INHERITED_BASELINE_FAILURE`, 64 passed and
+  only the exact A2-adjudicated failure.
+- Workflow YAML/static parse: PASS, 6 workflow files.
+- Task Packet canonical schema: PASS.
+- Effective parent+A1+A3 changed-contract and allowlist: PASS, `max_lane=L3`,
+  14 paths.
+- Live census: embedded audit and both Gemini automatic callers remain
+  `disabled_manually`; no feature-branch push model route exists.
+- Exact changed-file pre-commit: PASS, all applicable hooks.
+- Staged gitleaks scan with redaction: PASS, no leaks found.
+- Committed-range, staged, and working-tree `git diff --check`: PASS.
+
 Before commit, `origin/main` advanced from the A2 baseline to
 `5900c27d3c38b515204bd5dc4baed8b5e14e2a8e`. The intervening DCP commit changes
 no hotfix path. Overlap is empty; no rebase or content refresh was performed.
 
-## Blocker
+## Adjudication and bootstrap boundary
 
 Amendment A2 classifies the single inherited failure as non-blocking after the
 clean-base reproduction above. `tests/ci/test_pr_gate.py` and
-`.github/workflows/ci-complete.yml` remain out of scope and unchanged.
+its stale 12-vs-13 assertion remain out of scope and unchanged.
+
+A3 authorizes feature-branch push only after final local gates. Draft PR
+creation requires immediate prior disable and live readback of exactly
+`embedded-audit.yml`, `security-review.yml`, and `ci-complete.yml`.
 
 ## Remaining work
 
-- commit
-- trusted-main automatic-spend census before push
-- push and draft PR only if census permits
+- changed-file pre-commit, staged secret scan, and final diff checks
+- commit A3 successor and push feature branch
+- temporarily disable exactly three authorized workflows and verify states
+- open draft PR
 - Codex/Copilot review
 - independent final audit and proof finality

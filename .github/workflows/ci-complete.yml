@@ -8,6 +8,12 @@ on:
   merge_group:
     types: [checks_requested]
   workflow_dispatch:
+    inputs:
+      allow_api_spend:
+        description: "Execution mechanism only; requires separate explicit operator spend authorization."
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -115,7 +121,7 @@ jobs:
           fetch-depth: 2
 
       - name: 🛡️ AI-Powered Security Analysis
-        if: ${{ env.ANTHROPIC_API_KEY != '' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.allow_api_spend == true && env.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-security-review@main
         with:
           comment-pr: true

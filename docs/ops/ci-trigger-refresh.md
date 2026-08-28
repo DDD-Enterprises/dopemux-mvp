@@ -18,7 +18,10 @@ Verified against runtime workflow YAML after
 `TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001`:
 
 - `.github/workflows/ci-complete.yml` handles `ready_for_review` and
-  `workflow_dispatch`.
+  `workflow_dispatch`; normal CI remains automatic, while its Claude security
+  action is manual-spend-gated.
+- `.github/workflows/security-review.yml` is `workflow_dispatch` only and its
+  Claude action is manual-spend-gated.
 - `.github/workflows/preflight.yml` handles `ready_for_review` and
   `workflow_dispatch`.
 - `.github/workflows/embedded-audit.yml` handles explicit
@@ -38,6 +41,19 @@ settlement, and explicitly dispatch embedded audit once for that exact head.
 Use supported deterministic trigger paths or GitHub's "Re-run jobs" control to
 refresh CI. Do not use empty commits as CI prods; they mutate branch history
 without changing the repo truth under test.
+
+## Provider Spend Boundary
+
+`pull_request`, `push`, and `merge_group` events cannot invoke either Claude
+security action. Ordinary `workflow_dispatch` also remains provider-free
+because `allow_api_spend` is a boolean input with default `false`.
+
+Setting `allow_api_spend=true` is only an execution mechanism. It does not
+grant spend authority. Separate explicit operator spend authorization remains
+required before any provider-backed dispatch.
+
+These invariants are enforced structurally by
+`tests/ci/test_ai_spend_containment.py`.
 
 ## Historical Trigger Change (TP-DMX-CI-TRIGGERS-008)
 
