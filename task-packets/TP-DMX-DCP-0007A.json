@@ -1,0 +1,90 @@
+{
+  "id": "TP-DMX-DCP-0007A",
+  "project": "dopemux-mvp",
+  "target": "Define static trusted-adapter registry schema and fail-closed loader with zero mutation adapters enabled.",
+  "invariants": [
+    "DRY-RUN ONLY: do not pass --execute, set DPMX_LIVE_OK, or make any provider call.",
+    "mutation_adapters_enabled must remain False at runtime.",
+    "No adapter may report enabled_for_mutation=True.",
+    "Active mutation adapter IDs list must always be empty.",
+    "Keep the change deterministic and limited to the allowlist.",
+    "The PAL service transport is unavailable in this session; record PAL gates as NOT_RUN rather than inventing results."
+  ],
+  "depends_on": [
+    "TP-DMX-DCP-0007T"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-MODEL-ROUTING-NEXT-TRANCHE-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-DCP-0007T",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "dcp/model-routing-0007a-adapter-registry",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(dcp): trusted adapter registry (disabled) \u2014 0007A",
+    "allowlist": [
+      "config/dcp/trusted_input_adapters.json",
+      "schemas/dcp/manifest.json",
+      "schemas/dcp/trusted_input_adapter_registry.schema.json",
+      "src/dopemux/dcp/__init__.py",
+      "src/dopemux/dcp/trusted_adapter_registry.py",
+      "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007A.md",
+      "task-packets/TP-DMX-DCP-0007A.json",
+      "tests/unit/dcp/test_trusted_adapter_registry.py",
+      "proof/TP-DMX-DCP-0007A/AUDITOR_REPORT.md",
+      "proof/TP-DMX-DCP-0007A/PROOF.json",
+      "proof/TP-DMX-DCP-0007A/review_bundle/.gitkeep",
+      "proof/pr_merge/embedded-audit/pr-1154/PROOF.json",
+      "proof/pr_merge/embedded-audit/pr-1154/PROOF.json.sig"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-DCP-0007A.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "pytest -q tests/unit/dcp/test_trusted_adapter_registry.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): trusted adapter registry (disabled) \u2014 0007A",
+    "body": "Trusted adapter registry and schema with zero mutation adapters enabled.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "audit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Add trusted adapter schema, registry loader, and unit test suite.",
+      "validation": [
+        "pytest -q tests/unit/dcp/test_trusted_adapter_registry.py"
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Verify canonical schema compliance and allowlist containment.",
+      "validation": [
+        "python -m jsonschema -i task-packets/TP-DMX-DCP-0007A.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "git diff --check"
+      ]
+    }
+  ]
+}

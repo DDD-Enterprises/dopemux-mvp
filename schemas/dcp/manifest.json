@@ -327,6 +327,25 @@
         "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
       ],
       "enforcement_side": "llm_advisory"
+    },
+    {
+      "contract_id": "DCP_TRUSTED_INPUT_ADAPTER_REGISTRY",
+      "schema_file": "schemas/dcp/trusted_input_adapter_registry.schema.json",
+      "schema_version": "trusted-input-adapter-registry.v0",
+      "contract_version": "0.1.0",
+      "validation_state": "REPO_CROSS_CHECKED",
+      "level": "L1",
+      "instance_files": [
+        "config/dcp/trusted_input_adapters.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [
+        "src/dopemux/dcp/trusted_adapter_registry.py"
+      ],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
     }
   ]
 }
