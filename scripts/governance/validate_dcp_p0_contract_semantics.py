@@ -128,7 +128,15 @@ def _related_matches(
 def _identity_provider_model(observation: Any) -> tuple[Any, Any]:
     if not isinstance(observation, dict):
         return None, None
-    return observation.get("provider"), observation.get("model", observation.get("value"))
+    return observation.get("provider"), observation.get("model")
+
+
+def _unique_string_refs(refs: Any) -> bool:
+    return (
+        isinstance(refs, list)
+        and all(isinstance(ref, str) for ref in refs)
+        and len(set(refs)) == len(refs)
+    )
 
 
 def _subject_errors(prefix: str, observed: Any, expected: Any) -> list[str]:
@@ -228,6 +236,31 @@ def _audit_execution_receipt_errors(
         errors.append("COMPLETED execution subject_digest must match AuditRequest")
     if instance.get("route") != request.get("requested_route"):
         errors.append("COMPLETED execution route must exactly match AuditRequest")
+    receipt_mandatory_evidence = instance.get("mandatory_evidence")
+    receipt_mandatory_refs = (
+        receipt_mandatory_evidence.get("refs")
+        if isinstance(receipt_mandatory_evidence, dict)
+        else None
+    )
+    request_mandatory_refs = request.get("mandatory_evidence_refs")
+    if (
+        not isinstance(receipt_mandatory_evidence, dict)
+        or receipt_mandatory_evidence.get("complete") is not True
+        or receipt_mandatory_evidence.get("truncated") is not False
+    ):
+        errors.append(
+            "COMPLETED execution mandatory_evidence must be complete and untruncated"
+        )
+    elif not _unique_string_refs(request_mandatory_refs) or not _unique_string_refs(
+        receipt_mandatory_refs
+    ):
+        errors.append(
+            "COMPLETED execution mandatory_evidence refs must be unique exact strings"
+        )
+    elif not set(request_mandatory_refs).issubset(set(receipt_mandatory_refs)):
+        errors.append(
+            "COMPLETED execution mandatory_evidence.refs must include every AuditRequest mandatory_evidence_ref"
+        )
 
     requirement = result.get("identity_requirement")
     required_layers = requirement.get("required_layers") if isinstance(requirement, dict) else None
@@ -288,18 +321,15 @@ def _audit_result_errors(instance: dict[str, Any], related_objects: list[dict[st
     result_subject = instance.get("subject")
     request_subject = request.get("subject")
     requested = identities.get("requested")
-    expected = requested.get("value") if isinstance(requested, dict) else None
-    if not isinstance(expected, str):
-        return []
+    expected_provider, expected_model = _identity_provider_model(requested)
 
     errors = _subject_errors("SATISFIED request/result", result_subject, request_subject)
-    if expected != request_model:
+    if expected_provider != request_provider or expected_model != request_model:
         errors.append("SATISFIED requested identity must exactly match resolved AuditRequest")
     for layer in IDENTITY_LAYERS:
         observation = identities.get(layer)
-        observed = observation.get("value") if isinstance(observation, dict) else None
-        provider = observation.get("provider") if isinstance(observation, dict) else None
-        if observed != request_model or provider != request_provider:
+        provider, model = _identity_provider_model(observation)
+        if model != request_model or provider != request_provider:
             errors.append(f"SATISFIED identity {layer} must exactly match resolved AuditRequest")
 
     requirement_errors, requirements, required_layers = _resolve_capability_requirements(

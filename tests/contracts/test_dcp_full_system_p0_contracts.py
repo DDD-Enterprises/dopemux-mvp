@@ -221,7 +221,7 @@ def test_satisfied_result_rejects_uniform_identity_substitution_from_request() -
     result_case = _case_map()["audit_result"]
     result = copy.deepcopy(result_case["instance"])
     for layer in result["identities"].values():
-        layer["value"] = "gpt-5.5"
+        layer["model"] = "gpt-5.5"
     request = copy.deepcopy(_case_map()["audit_request"]["instance"])
     request["requested_identity"] = {"provider": "anthropic", "model": "claude-sonnet-4-6"}
 
@@ -528,6 +528,93 @@ def test_satisfied_result_rejects_execution_receipt_mismatch(
     chain = _audit_chain_instances()
     _set_path(chain["audit_execution_receipt"], path, value)
     assert expected_error in _audit_chain_errors(chain)
+
+
+@pytest.mark.parametrize(
+    ("request_refs", "receipt_refs"),
+    [
+        (["bundle://review"], ["bundle://review"]),
+        (
+            ["bundle://review", "bundle://appendix"],
+            ["bundle://appendix", "bundle://review"],
+        ),
+        (
+            ["bundle://review", "bundle://appendix"],
+            ["bundle://appendix", "bundle://extra", "bundle://review"],
+        ),
+    ],
+)
+def test_completed_receipt_accepts_order_insensitive_required_evidence_superset(
+    request_refs: list[str], receipt_refs: list[str]
+) -> None:
+    chain = _audit_chain_instances()
+    chain["audit_request"]["mandatory_evidence_refs"] = request_refs
+    chain["audit_execution_receipt"]["mandatory_evidence"]["refs"] = receipt_refs
+
+    assert _audit_chain_errors(chain) == []
+
+
+@pytest.mark.parametrize(
+    ("request_refs", "receipt_refs"),
+    [
+        (["bundle://review"], ["bundle://other"]),
+        (["bundle://review", "bundle://appendix"], ["bundle://review"]),
+        (
+            ["bundle://review", "bundle://appendix"],
+            ["bundle://other", "bundle://extra"],
+        ),
+        (["request://current/review"], ["request://other/review"]),
+    ],
+)
+def test_completed_receipt_rejects_missing_required_evidence_refs(
+    request_refs: list[str], receipt_refs: list[str]
+) -> None:
+    chain = _audit_chain_instances()
+    chain["audit_request"]["mandatory_evidence_refs"] = request_refs
+    chain["audit_execution_receipt"]["mandatory_evidence"]["refs"] = receipt_refs
+
+    assert (
+        "COMPLETED execution mandatory_evidence.refs must include every AuditRequest mandatory_evidence_ref"
+        in _audit_chain_errors(chain)
+    )
+
+
+def test_audit_request_rejects_duplicate_mandatory_evidence_refs() -> None:
+    request_case = _case_map()["audit_request"]
+    request = copy.deepcopy(request_case["instance"])
+    request["mandatory_evidence_refs"].append(request["mandatory_evidence_refs"][0])
+    chain = _audit_chain_instances()
+    chain["audit_request"] = request
+
+    assert not _validator(request_case).is_valid(request)
+    assert (
+        "COMPLETED execution mandatory_evidence refs must be unique exact strings"
+        in _audit_chain_errors(chain)
+    )
+
+
+def test_audit_execution_receipt_rejects_duplicate_mandatory_evidence_refs() -> None:
+    receipt_case = _case_map()["audit_execution_receipt"]
+    receipt = copy.deepcopy(receipt_case["instance"])
+    receipt["mandatory_evidence"]["refs"].append(receipt["mandatory_evidence"]["refs"][0])
+    chain = _audit_chain_instances()
+    chain["audit_execution_receipt"] = receipt
+
+    assert not _validator(receipt_case).is_valid(receipt)
+    assert (
+        "COMPLETED execution mandatory_evidence refs must be unique exact strings"
+        in _audit_chain_errors(chain)
+    )
+
+
+def test_satisfied_result_model_field_mismatch_fails_closed() -> None:
+    chain = _audit_chain_instances()
+    chain["audit_result"]["identities"]["configured"]["model"] = "same-name-other-model"
+
+    assert (
+        "SATISFIED identity configured must exactly match resolved AuditRequest"
+        in _audit_chain_errors(chain)
+    )
 
 
 def test_ready_packet_allows_supplemental_derived_evidence_with_canonical_binding() -> None:

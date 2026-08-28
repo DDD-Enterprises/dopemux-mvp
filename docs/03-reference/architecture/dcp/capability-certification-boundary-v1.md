@@ -64,7 +64,12 @@ or task mutation authority.
 `AuditExecutionReceipt` records actual runner/tool and provider/model identity
 layers. A satisfied result requires request route, observed snapshot route, and
 execution route to agree exactly. Required identity layers must be observed and
-equal the request and resolved requirement identity.
+equal the request and resolved requirement identity. For substantive judgment,
+receipt mandatory evidence refs must be an order-insensitive superset of the
+resolved `AuditRequest.mandatory_evidence_refs`: every requested opaque ref must
+appear exactly once under `AuditExecutionReceipt.mandatory_evidence.refs`.
+Supplemental refs may be present, but they cannot substitute for missing
+requested refs. Ordering has no authority semantics.
 
 Before substantive judgment, deterministic validation resolves the complete
 request, capability requirement, certification, snapshot, execution receipt,

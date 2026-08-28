@@ -178,11 +178,11 @@
     "identity_layer": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["state", "provider", "value", "evidence_refs"],
+      "required": ["state", "provider", "model", "evidence_refs"],
       "properties": {
         "state": {"enum": ["OBSERVED", "UNKNOWN"]},
         "provider": {"type": ["string", "null"]},
-        "value": {"type": ["string", "null"]},
+        "model": {"type": ["string", "null"]},
         "evidence_refs": {
           "type": "array",
           "uniqueItems": true,
@@ -192,8 +192,8 @@
       "allOf": [
         {
           "if": {"properties": {"state": {"const": "UNKNOWN"}}},
-          "then": {"properties": {"provider": {"type": "null"}, "value": {"type": "null"}, "evidence_refs": {"maxItems": 0}}},
-          "else": {"properties": {"provider": {"type": "string", "minLength": 1}, "value": {"type": "string", "minLength": 1}, "evidence_refs": {"minItems": 1}}}
+          "then": {"properties": {"provider": {"type": "null"}, "model": {"type": "null"}, "evidence_refs": {"maxItems": 0}}},
+          "else": {"properties": {"provider": {"type": "string", "minLength": 1}, "model": {"type": "string", "minLength": 1}, "evidence_refs": {"minItems": 1}}}
         }
       ]
     },

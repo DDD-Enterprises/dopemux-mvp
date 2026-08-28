@@ -263,7 +263,7 @@
         "proxy_reported": {"state": "OBSERVED", "provider": "anthropic", "model": "claude-sonnet-5", "evidence_refs": ["proxy://1"]},
         "provider_attested": {"state": "OBSERVED", "provider": "anthropic", "model": "claude-sonnet-5", "evidence_refs": ["provider://1"]}
       },
-      "mandatory_evidence": {"complete": true, "truncated": false, "refs": ["bundle://review"]},
+      "mandatory_evidence": {"complete": true, "truncated": false, "refs": ["bundle://review", "bundle://supplemental"]},
       "result_ref": "AUD-RESULT-001",
       "repository_mutation_authorized": false,
       "task_mutation_authorized": false
@@ -284,11 +284,11 @@
       },
       "outcome": {"class": "JUDGMENT", "status": "PASS", "substantive_judgment_rendered": true},
       "identities": {
-        "requested": {"state": "OBSERVED", "provider": "anthropic", "value": "claude-sonnet-5", "evidence_refs": ["request://1"]},
-        "configured": {"state": "OBSERVED", "provider": "anthropic", "value": "claude-sonnet-5", "evidence_refs": ["config://1"]},
-        "response_claimed": {"state": "OBSERVED", "provider": "anthropic", "value": "claude-sonnet-5", "evidence_refs": ["response://1"]},
-        "proxy_reported": {"state": "OBSERVED", "provider": "anthropic", "value": "claude-sonnet-5", "evidence_refs": ["proxy://1"]},
-        "provider_attested": {"state": "OBSERVED", "provider": "anthropic", "value": "claude-sonnet-5", "evidence_refs": ["provider://1"]}
+        "requested": {"state": "OBSERVED", "provider": "anthropic", "model": "claude-sonnet-5", "evidence_refs": ["request://1"]},
+        "configured": {"state": "OBSERVED", "provider": "anthropic", "model": "claude-sonnet-5", "evidence_refs": ["config://1"]},
+        "response_claimed": {"state": "OBSERVED", "provider": "anthropic", "model": "claude-sonnet-5", "evidence_refs": ["response://1"]},
+        "proxy_reported": {"state": "OBSERVED", "provider": "anthropic", "model": "claude-sonnet-5", "evidence_refs": ["proxy://1"]},
+        "provider_attested": {"state": "OBSERVED", "provider": "anthropic", "model": "claude-sonnet-5", "evidence_refs": ["provider://1"]}
       },
       "identity_requirement": {
         "requirement_ref": "CAP-AUDIT-001",
@@ -320,11 +320,11 @@
         "substantive_judgment_rendered": false
       },
       "identities": {
-        "requested": {"state": "OBSERVED", "provider": "anthropic", "value": "claude-sonnet-5", "evidence_refs": ["request://1"]},
-        "configured": {"state": "OBSERVED", "provider": "anthropic", "value": "claude-sonnet-5", "evidence_refs": ["config://1"]},
-        "response_claimed": {"state": "OBSERVED", "provider": "anthropic", "value": "claude-sonnet-5", "evidence_refs": ["response://1"]},
-        "proxy_reported": {"state": "UNKNOWN", "provider": null, "value": null, "evidence_refs": []},
-        "provider_attested": {"state": "UNKNOWN", "provider": null, "value": null, "evidence_refs": []}
+        "requested": {"state": "OBSERVED", "provider": "anthropic", "model": "claude-sonnet-5", "evidence_refs": ["request://1"]},
+        "configured": {"state": "OBSERVED", "provider": "anthropic", "model": "claude-sonnet-5", "evidence_refs": ["config://1"]},
+        "response_claimed": {"state": "OBSERVED", "provider": "anthropic", "model": "claude-sonnet-5", "evidence_refs": ["response://1"]},
+        "proxy_reported": {"state": "UNKNOWN", "provider": null, "model": null, "evidence_refs": []},
+        "provider_attested": {"state": "UNKNOWN", "provider": null, "model": null, "evidence_refs": []}
       },
       "identity_requirement": {
         "requirement_ref": "CAP-AUDIT-001",

@@ -5,6 +5,7 @@
   "invariants": [
     "PARENT_PR=1283; STARTING_CONTENT_HEAD=da991971e9190d387651b8ded4848db7a7d6518e; STARTING_PROOF_HEAD=9bb6f1e64d3de5e6909e1cbd584dd4db7b8e316d.",
     "SUPERVISOR_AMENDMENT=TP-DMX-DCP-P0-PR1283-CROSS-AUTHORITY-CLOSURE-001-A1; CLASS=AUTHORITY_BOUNDARY_DEFINITION; RISK_LANE=L3; OPERATOR_GATE=GRANTED_FOR_THIS_BOUNDED_CONTRACT_REPAIR.",
+    "SUPERVISOR_AMENDMENT=TP-DMX-DCP-P0-PR1283-CROSS-AUTHORITY-CLOSURE-001-A2; SUBJECT=AuditRequest.mandatory_evidence_refs -> AuditExecutionReceipt.mandatory_evidence.refs; RULE=ORDER_INSENSITIVE_REQUIRED_SUBSET_OF_COMPLETED_RECEIPT_REFS; supplemental evidence allowed; duplicates forbidden by schema contract; missing requested refs block substantive judgment.",
     "One bounded direct Codex implementer; no subagents; no runtime producer, runtime consumer, provider call, Task Orchestrator mutation, workflow mutation, merge, or activation.",
     "CapabilityRequirementRef owns required capability, requested provider/model, substitution policy, minimum evidence policy, and required identity layers only.",
     "SATISFIED resolves the exact AuditRequest, capability requirements, AuditorCertification, AuditorCapabilitySnapshot, and AuditExecutionReceipt; missing, ambiguous, stale, UNKNOWN, unavailable, substituted, subject-mismatched, route-mismatched, identity-mismatched, or unverified records forbid judgment.",
