@@ -388,7 +388,9 @@ def test_pr_steward_workflow_uses_completed_independent_audit_artifact() -> None
     assert "conclusion_ok=" in text
     assert "publish failure status" in text or "Publish readiness status" in text
     assert "repository_missing" in text
-    assert 'name == "embedded-audit" and path.endswith("embedded-audit.yml")' in text
+    assert 'name == "embedded-audit"' in text
+    assert 'path == ".github/workflows/embedded-audit.yml"' in text
+    assert 'path.endswith("embedded-audit.yml")' not in text
     assert "embedded-audit-pr-" in text
     assert "Exactly one expected proof artifact is required" in text
     # Artifact name must use validated proof identity, not stale steps.pr.

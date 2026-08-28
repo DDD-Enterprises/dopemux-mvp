@@ -106,6 +106,8 @@ def test_init_scaffolds_pr_steward_workflows_and_policy(tmp_path: Path) -> None:
     assert 'head_branch = str(run.get("head_branch") or "")' in rendered_steward
     assert "repository.default_branch" in rendered_steward
     assert "head_branch != default_branch" in rendered_steward
+    assert 'path == ".github/workflows/embedded-audit.yml"' in rendered_steward
+    assert 'path.endswith("embedded-audit.yml")' not in rendered_steward
     assert "pip install -e ." not in rendered_steward
     assert "python -m tools.pr_steward" not in rendered_steward
     assert "scripts.audit" not in rendered_steward

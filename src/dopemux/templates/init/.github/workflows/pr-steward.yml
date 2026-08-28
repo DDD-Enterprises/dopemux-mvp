@@ -103,7 +103,10 @@ jobs:
           name = str(run.get("name") or "")
           path = str(run.get("path") or "")
           # Require both display name and workflow path for fail-closed identity.
-          if not (name == "embedded-audit" and path.endswith("embedded-audit.yml")):
+          if not (
+              name == "embedded-audit"
+              and path == ".github/workflows/embedded-audit.yml"
+          ):
               errors.append(f"workflow_mismatch: name={name!r} path={path!r}")
 
           event = str(run.get("event") or "")
