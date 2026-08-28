@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.local/schemas/dcp/trusted_input_adapter_registry.schema.json",
+  "title": "TrustedInputAdapterRegistry",
+  "type": "object",
+  "required": ["schema_version", "mutation_adapters_enabled", "adapters"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"type": "string"},
+    "mutation_adapters_enabled": {"type": "boolean", "const": false},
+    "description": {"type": "string"},
+    "adapters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["adapter_id", "enabled_for_mutation", "derives_only", "notes"],
+        "additionalProperties": false,
+        "properties": {
+          "adapter_id": {"type": "string", "minLength": 1},
+          "enabled_for_mutation": {"type": "boolean", "const": false},
+          "derives_only": {"type": "boolean", "const": true},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

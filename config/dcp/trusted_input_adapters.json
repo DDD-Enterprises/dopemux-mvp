@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "mutation_adapters_enabled": false,
+  "description": "Fail-closed registry. No adapter is authorized for mutating execution. 0007A defines structure only.",
+  "adapters": [
+    {
+      "adapter_id": "authenticated_operator",
+      "enabled_for_mutation": false,
+      "derives_only": true,
+      "notes": "Future reference adapter. NOT enabled. Must derive provenance; never accept trust-raising overrides."
+    },
+    {
+      "adapter_id": "github_pr_readonly",
+      "enabled_for_mutation": false,
+      "derives_only": true,
+      "notes": "Future read-only PR signal adapter. NOT enabled."
+    }
+  ]
+}
