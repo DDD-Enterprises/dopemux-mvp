@@ -166,10 +166,11 @@ def test_security_review_manual_gate_preserves_operator_authority_boundary() -> 
     assert "separate explicit operator spend authorization" in description
 
 
-def test_security_review_spend_route_is_advisory() -> None:
-    workflow = _load(SECURITY_REVIEW)
+@pytest.mark.parametrize("path", [CI_COMPLETE, SECURITY_REVIEW])
+def test_claude_spend_route_is_advisory(path: Path) -> None:
+    workflow = _load(path)
     permissions = workflow["permissions"]
-    claude_steps = _claude_steps(SECURITY_REVIEW)
+    claude_steps = _claude_steps(path)
 
     assert permissions["contents"] == "read"
     assert permissions["issues"] == "read"
