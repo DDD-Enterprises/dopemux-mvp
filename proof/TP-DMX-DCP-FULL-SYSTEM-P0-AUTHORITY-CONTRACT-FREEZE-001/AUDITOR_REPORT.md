@@ -1,175 +1,114 @@
-# AUDITOR REPORT
+# FINAL_L2 AUDITOR REPORT
 
-**AUDIT_ID:** `TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001-FINAL-L2`
-**Audit timestamp:** 2026-08-27T05:52–06:00 PDT (local clock)
-**Auditor family:** Anthropic Claude (Claude Sonnet 4.6 / Thinking variant) — satisfies Anthropic requirement
-**Implementer family (claimed):** OpenAI GPT-5.6 Sol (CLAIMED; not directly attested — see identity section)
+Audit ID: TP-DMX-DCP-P0-PR1283-REPAIR-001-FINAL-L2
 
----
+Auditor: GitHub Copilot CLI 1.0.81-9, model claude-sonnet-4.6.
+Billing: PLAN_BACKED; included usage availability proven before invocation.
+Session: c990b248-d4c2-4947-9fcd-95c72b19d1db.
 
-## 1. Subject Binding Verification
+## SUBJECT_IDENTITY
 
 | Check | Expected | Observed | Status |
-|---|---|---|---|
-| Worktree path | `/Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-dcp-full-system-p0-authority-contract-freeze-001` | EXISTS | OBSERVED |
-| HEAD commit | `4268ea88b2406718ea8a98c6f888f11542099c6b` | `4268ea88b2406718ea8a98c6f888f11542099c6b` | OBSERVED ✅ |
-| Commit tree | `18846d601cd27d6c84820c85f8a7d96184990531` | `18846d601cd27d6c84820c85f8a7d96184990531` | OBSERVED ✅ |
-| Base commit | `c7bc2fb479d7386825df73e028acdce723ee3388` | Reachable ancestor | OBSERVED ✅ |
-| Worktree status | CLEAN | Empty (no staged/unstaged changes) | OBSERVED ✅ |
-| Changed path count | exactly 29 | 29 | OBSERVED ✅ |
-| Repo marker | `pyproject.toml` | Present | OBSERVED ✅ |
-| Packet SHA256 | `27f4fb613942e84ea71bcb7c3d7ad2ad66388645d51546d5ce83664281eb4f8a` | Computed match via `sha256sum` | OBSERVED ✅ |
+| --- | --- | --- | --- |
+| HEAD | a414d5d2b08a707b8722608cd56a0c60115aee20 | same | PASS |
+| Tree | 479e382d71f6f304e7578abb65143024ebe357a3 | same | PASS |
+| Repair parent | b68d8e5faa316a2fdf70b5cecb8a0af6c8202d7e | same | PASS |
+| Main base | c7bc2fb479d7386825df73e028acdce723ee3388 | same, ancestor | PASS |
+| Content delta | 10 authorized paths | 10 authorized paths | PASS |
 
-> **Exact packet SHA256 note:** The SHA256 in the audit instruction matches the `sha256sum` output exactly. The test `test_p0_packet_bytes_match_immutable_issuance` would pass deterministically.
+Copilot startup changed only .claude/.untracked-work-probe-cache.json.
+Session shutdown recorded zero code changes. Exact committed cache bytes were
+restored before proof generation; HEAD and tree never changed.
 
----
+## SCOPE
 
-## 2. Auditor Identity Evidence
+Exactly 10 repair paths were inspected. No runtime producer or consumer path
+changed. Audit used local shell reads and tests only. No MCP tool call occurred;
+denied report-write attempt created no file.
 
-| Layer | Value | Status |
-|---|---|---|
-| `requested_model` | `claude-sonnet-4-6` (from audit instruction) | OBSERVED |
-| `configured_model` | Claude Sonnet 4.6 (Thinking) — confirmed by UI settings change in session metadata | OBSERVED |
-| `response_claimed_model` | Anthropic Claude (self-identified; no model ID API field available in this session) | OBSERVED (indirect) |
-| `proxy_reported_model` | UNKNOWN — no direct proxy receipt observable from this session | UNKNOWN |
-| `provider_attested_model` | UNKNOWN — no provider API attestation observable from this session | UNKNOWN |
+## P0_R1
 
-**Independence:** Auditor family is Anthropic Claude; implementer family is claimed OpenAI GPT-5.6 Sol. Families are distinct. Independence requirement: SATISFIED.
+PASS. scripts/governance/validate_dcp_p0_contract_semantics.py enforces:
 
-**Required UNKNOWN layers:** `proxy_reported` and `provider_attested` are UNKNOWN for the auditor's own session identity. The family check (Anthropic ≠ OpenAI) is SATISFIED. These UNKNOWN layers for the auditor session do not trigger `REQUIRED_IDENTITY_UNKNOWN` terminal failure because the operative identity requirement for this audit is auditor-family separation, which is satisfied.
+- required_ref equals context_item_ref;
+- referenced context item exists exactly once;
+- referenced item is mandatory;
+- every mandatory item is bound;
+- READY packets fail on missing, mismatched, unrelated, duplicate, or
+  incomplete evidence.
 
----
+Positive and adversarial fixtures cover each condition.
 
-## 3. Allowlist and Amendment Compliance
+## P0_R2
 
-**Base allowlist (packet.json `commit.allowlist`):** All 22 canonical paths PRESENT.
-**Wildcard expansion (`tests/fixtures/dcp/full_system/p0/**`):** 3 fixture files present — `adversarial_contracts.json`, `positive_contracts.json`, `runtime_context_envelopes.json` ✅
+PASS. SATISFIED audit results compare configured, response_claimed,
+proxy_reported, and provider_attested exactly with requested. UNKNOWN layers
+remain explicit through structural terminal-intake-failure rules.
 
-**Amendment P0-A1** (`schemas/audit_broker/audit_result.schema.json`): PRESENT ✅
-**Amendment P0-A2** (`task-packets/INDEX.md`): PRESENT; TP-DMX-DCP-FULL-SYSTEM-P0 registered in Active table ✅
-**Amendment P0-A3** (`schemas/dcp/manifest.json` + `schemas/dcp/README.md`): Both PRESENT ✅
+## P0_R3
 
-**Extra-allowlist files:** NONE. All 29 changed paths fall within the combined allowlist + amendments. ✅
+PASS. Draft 7 validation receives jsonschema.FormatChecker with an RFC3339
+date-time validator. Invalid text and impossible timestamps fail; valid
+timezone-bearing RFC3339 timestamps pass for applicable P0 surfaces.
 
----
+## P0_R4
 
-## 4. Findings (Ordered by Severity)
+PASS. result=PURGED structurally requires purge_propagated=true. Positive
+PURGED and adversarial false-propagation fixtures cover the rule.
 
-### FINDING-01 — MEDIUM — audit_execution_receipt.schema.json: PREJUDGMENT_FAILED + mandatory_evidence.complete tension
+## SEMANTIC_VALIDATOR_BOUNDARY
 
-**Path:** `schemas/audit_broker/audit_execution_receipt.schema.json`
-**Issue:** The `mandatory_evidence` object unconditionally requires `complete: { const: true }` and `truncated: { const: false }`. The `execution_state` enum permits `"PREJUDGMENT_FAILED"` but the schema forces mandatory evidence to be complete and untruncated even in that case. A pre-judgment failure by definition may have incomplete evidence collection. Future runtime implementations must either (a) only write receipts after complete evidence collection or (b) accommodate incomplete evidence paths.
-**Classification:** INFERRED design tension in `.v0` schema.
-**Severity:** MEDIUM — flagged for implementation awareness; does not block this design-only freeze.
+PASS. Validator is deterministic and pure, dispatches only for
+RunContextPacket and AuditResult schema paths, performs no I/O or runtime
+action, and grants no producer, consumer, mutation, or execution authority.
 
----
+## VALIDATION_EVIDENCE
 
-### FINDING-02 — LOW — compiled_claim.schema.json: missing explicit `execution_authority: false` const
+Focused and consistency command:
 
-**Path:** `schemas/second_brain/compiled_claim.schema.json`
-**Issue:** Sibling schemas (`knowledge_compiler_input`, `materialized_wiki_page`) carry an explicit `execution_authority: { const: false }` field. The compiled claim schema omits this, relying solely on `authority_label: const: "DERIVED_NON_CANONICAL"`. Inconsistency across the Second Brain schema family.
-**Severity:** LOW — authority label is enforced; no execution authority is implied. Design-only `.v0` scope.
+    74 passed in 0.18s
+    exit=0
 
----
+Relevant DCP command:
 
-### FINDING-03 — INFORMATIONAL — test_16_no_forbidden_files_modified: Pre-existing failure, NOT attributable to P0
+    446 passed, 1 failed in 0.84s
+    exit=1
+    FAILED tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified
 
-**Path:** `tests/dcp/test_dcp_0002_contract_derivation.py` line 503
-**Adjudication:** See Section 6 below.
-**Status:** NOT attributable to P0 subject.
+Second result exactly matches known unsuppressed historical stale-anchor
+sentinel. No .github/workflows path appears in repair-parent-to-content-HEAD
+delta.
 
----
+## RETAINED_FINDINGS
 
-### FINDING-04 — INFORMATIONAL — GPT-5.5 named gate: explicitly retained, GPT-5.6 correctly excluded
+- P0-F1, MEDIUM: PREJUDGMENT_FAILED receipt completeness tension remains.
+  Resolve before runtime implementation.
+- P0-F2, LOW: CompiledClaim lacks explicit execution_authority=false.
+  Align before promotion.
+- P0-F3, INFO: historical forbidden-files sentinel remains red and
+  unsuppressed.
 
-**Paths:** ADR line 97–99; topology doc lines 46–47; capability certification doc line 31
-**Observation:** Three separate introduced documents explicitly state the GPT-5.5 named gate is retained and GPT-5.6 does not satisfy it. No silent substitution. COMPLIANT ✅
+## NEW_FINDINGS
 
----
+- P0-NF1, INFO: materialization receipt conditional omits defensive required
+  result; outer schema already requires result, making this unreachable and
+  nonblocking.
+- P0-NF2, INFO: FormatChecker factory recreates checker per validator call;
+  behavior remains correct and deterministic.
 
-### FINDING-05 — INFORMATIONAL — PR #1138 stale nonauthoritative, no mutation committed
+No new HIGH or CRITICAL findings.
 
-**Path:** ADR lines 111–113
-**Observation:** PR #1138 is explicitly classified stale and nonauthoritative. Zero PR #1138 mutations in diff. COMPLIANT ✅
+## REMAINING_RISKS
 
----
+P0-F1 and P0-F2 remain future runtime/promotion gates. Historical sentinel
+remains repository debt. P0 contracts remain DESIGN_ONLY; runtime validation
+is NOT_RUN. Cache-residue cleanup is recorded separately and does not change
+audited content identity.
 
-### FINDING-06 — INFORMATIONAL — All P0 schemas at `.v0` / DESIGN_ONLY with no runtime wiring
+## VERDICT
 
-**Path:** `schemas/dcp/manifest.json` (all three P0 entries)
-**Observation:** `validation_state: "DESIGN_ONLY"`, `runtime_producers: []`, `runtime_consumers: []` on all three P0 DCP contracts. Schema README explicitly documents `.v0 = DRAFT/unstable`. Design-only schemas grant no runtime authority. COMPLIANT ✅
+P0-R1 through P0-R4 are correctly repaired. Semantic validation is bounded.
+Required test evidence matches. Retained risks remain explicit and nonblocking
+for this design-only repair closure.
 
----
-
-## 5. Requirements Checklist
-
-| Requirement | Status |
-|---|---|
-| HEAD / tree / base exact match | ✅ OBSERVED |
-| Packet SHA256 immutable match | ✅ OBSERVED |
-| Worktree clean | ✅ OBSERVED |
-| Exactly 29 changed paths, all within allowlist + amendments | ✅ OBSERVED |
-| P0-A1/A2/A3 amendment files present | ✅ OBSERVED |
-| Authority topology: one authority per subsystem | ✅ OBSERVED |
-| DCP authority ceiling: coordination only, no canonical write | ✅ OBSERVED |
-| ContextPlan: requirements/policy only; no evidence, no execution authority | ✅ OBSERVED |
-| RunContextPacket: derived evidence envelope, no execution/mutation authority | ✅ OBSERVED |
-| READY fails closed on STALE / UNKNOWN / CONFLICTING / truncated / undereferenced | ✅ OBSERVED |
-| Five-layer identity separation (requested / configured / response_claimed / proxy_reported / provider_attested) | ✅ OBSERVED |
-| AVAILABLE capability requires evidence_refs (minItems: 1) | ✅ OBSERVED |
-| Audit result outcome classes mechanically distinct (oneOf) | ✅ OBSERVED |
-| REQUIRED_IDENTITY_UNKNOWN is terminal intake failure, not judgment | ✅ OBSERVED |
-| No repo/task mutation authority from certification or audit result | ✅ OBSERVED |
-| Capability snapshot vs certification: separate schemas | ✅ OBSERVED |
-| Execution receipt vs judgment: distinct schemas, receipt carries only result_ref pointer | ✅ OBSERVED |
-| GPT-5.5 gate retained until exact supersession | ✅ OBSERVED |
-| No silent GPT-5.6 satisfaction of GPT-5.5 gate | ✅ OBSERVED |
-| PR #1138 stale nonauthoritative, no mutation | ✅ OBSERVED |
-| Knowledge Compiler: DERIVED_NON_CANONICAL, write-back disabled | ✅ OBSERVED |
-| Wiki: rebuildable non-canonical, `canonical_source_wins: true`, `write_back_authorized: false`, `purge_propagation_required: true` | ✅ OBSERVED |
-| dope-context retrieval: retrieval ≠ dereference ≠ authority (topology exclusion) | ✅ OBSERVED |
-| Accepted SB decision bodies unchanged (no SB ADR edits in diff) | ✅ OBSERVED |
-| Activation ladder: each rung explicit, no rung implies next, merge/activation operator-only | ✅ OBSERVED |
-| Packet issuance ≠ execution authority (invariant 3 of packet) | ✅ OBSERVED |
-| Positive contracts: 13 fixtures for all schemas including `audit_result_required_identity_unknown` | ✅ OBSERVED |
-| Adversarial contracts: 18 cases (UNKNOWN, CONFLICTING, stale, downgrade, Wiki-as-authority, retrieval-without-dereference, substitution, truncation, missing evidence, context execution authority, auditor repo mutation, judgment with identity unknown, AVAILABLE without evidence) | ✅ OBSERVED |
-| Exactly one runtime context envelope accepted (`accepted_v1`; legacy and executable rejected) | ✅ OBSERVED |
-| ADR registered in adr-index.md | ✅ OBSERVED |
-| TP-DMX-DCP-FULL-SYSTEM-P0 registered in INDEX.md Active table | ✅ OBSERVED |
-| Design-only schemas grant no runtime authority | ✅ OBSERVED |
-
----
-
-## 6. Known Test Failure Adjudication
-
-**`test_16_no_forbidden_files_modified`** (`tests/dcp/test_dcp_0002_contract_derivation.py:503`):
-
-**Mechanism:** The test reads base ref `68f7435f6` from `task-packets/TP-DCP-0002.md` and runs `git diff --name-only 68f7435f6...HEAD` from the worktree root (HEAD = `4268ea88`). This 6990-file diff includes 13 `.github/workflows/` files matching the forbidden prefix.
-
-**Attribution analysis:**
-- OBSERVED: All 13 `.github/workflows/` files were already present in `git diff --name-only 68f7435f6...c7bc2fb479d7` (the pre-P0 base commit).
-- OBSERVED: `git diff --name-only c7bc2fb..4268ea88` (P0 delta only) produces zero matches for any forbidden prefix.
-
-**Finding:** The test_16 failure is **pre-existing** relative to this P0 subject. The P0 commit introduces no forbidden-prefix files. The failure is attributable to the **stale TP-DCP-0002 anchor design** (anchor `68f7435f6` predates multiple legitimate main-branch merges that introduced workflow changes). This is a structural debt issue in the test, not a violation by the P0 subject.
-
-**NOT automatically waived.** Adjudication: **pre-existing failure, not attributable to P0.** The P0 subject is clean of forbidden-prefix file modifications.
-
----
-
-## 7. Residual Risks
-
-1. **test_16 stale anchor structural debt:** Will affect all future commits built on current main. A follow-on packet should repair the anchor or replace the test with commit-specific allowlist checking.
-
-2. **audit_execution_receipt PREJUDGMENT_FAILED + complete:true tension:** Must be resolved before runtime implementation. See Finding-01.
-
-3. **compiled_claim missing execution_authority field:** Minor schema inconsistency; address before L1 promotion. See Finding-02.
-
-4. **All P0 schemas at `.v0` / DESIGN_ONLY:** Runtime coupling, provider identity attestation, and independent runtime verification remain NOT_RUN. These are acknowledged V1 exclusions.
-
-5. **Proof artifact not committed:** `proof/TP-DMX-.../**` not in diff; `validate_audit_proof.py` NOT_RUN. Expected for a contract-freeze packet.
-
-6. **Implementer identity:** `author: '@codex'` in ADR frontmatter; commit author is `DDD-Enterprises (hu3mann)` (operator). OpenAI GPT-5.6 Sol is CLAIMED as implementer family. proxy_reported and provider_attested for the implementer are UNKNOWN from this auditor's perspective.
-
----
-
-**VERDICT: PASS_WITH_RISKS**
+VERDICT=PASS_WITH_RISKS

@@ -1,0 +1,33 @@
+{
+  "receipt_kind": "post_generation_proof_finality",
+  "generated_at": "2026-08-28T01:25:06Z",
+  "audited_content_head": "a414d5d2b08a707b8722608cd56a0c60115aee20",
+  "audited_content_tree": "479e382d71f6f304e7578abb65143024ebe357a3",
+  "canonical_proof": {
+    "path": "proof/TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001/PROOF.json",
+    "sha256": "0f5e57f6794bc438c2a1b058f454ce07642a9ed799faa289832210a432109605",
+    "schema_validation": "PASS",
+    "signature_sha256": "e9980db86e5eab5c0f6ed68f232d5bc6b318cac358b7b981907d79cb327f3666",
+    "signature_validation": "PASS"
+  },
+  "artifact_hashes": {
+    "auditor_report_sha256": "1cc3f0016b3f383ca60f0f8139b91d0694ce20e795e3fd47ec2caa7ebe4f6058",
+    "audit_prompt_sha256": "a4af5391bc8f790395410d7d3d529a4a35a46b42767737ae920e6d79f10c2bf0",
+    "copilot_run_receipt_sha256": "be5220654b413270ebc47ce977f26b73d528d7b4d34562742fa3e1ec3b68e287",
+    "subject_binding_sha256": "bc0957f8cf08c052cb8a4ebabd734928d57e83547a3d6ee9550e872c49220193"
+  },
+  "post_generation_checks": {
+    "proof_schema": "PASS",
+    "canonical_signature": "PASS",
+    "canonical_precommit": "PASS",
+    "canonical_secret_scan": "PASS_NO_LEAKS",
+    "canonical_diff_check": "PASS",
+    "canonical_allowlist": "PASS_CANONICAL_PROOF_PATH_ONLY",
+    "proof_only_closure": "PENDING_UNTIL_COMMIT",
+    "pr_scoped_signature": "PENDING_UNTIL_CANONICAL_COMMIT",
+    "exact_head_ci": "NOT_RUN",
+    "security_release_approval": "NOT_RUN",
+    "pr_steward": "NOT_RUN"
+  },
+  "self_reference_rule": "This receipt records checks performed after PROOF.json generation and is intentionally not hashed by PROOF.json."
+}

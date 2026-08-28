@@ -1,100 +1,81 @@
 {
   "packet_id": "TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001",
+  "repair_packet_id": "TP-DMX-DCP-P0-PR1283-REPAIR-001",
   "repo": "DDD-Enterprises/dopemux-mvp",
   "branch": "tp/DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001",
   "base_sha": "c7bc2fb479d7386825df73e028acdce723ee3388",
-  "head_sha": "4268ea88b2406718ea8a98c6f888f11542099c6b",
-  "content_head": "4268ea88b2406718ea8a98c6f888f11542099c6b",
-  "content_tree": "18846d601cd27d6c84820c85f8a7d96184990531",
-  "generated_at": "2026-08-27T13:07:18Z",
-  "proof_kind": "canonical_packet_proof_only_successor",
+  "repair_parent_sha": "b68d8e5faa316a2fdf70b5cecb8a0af6c8202d7e",
+  "head_sha": "a414d5d2b08a707b8722608cd56a0c60115aee20",
+  "content_head": "a414d5d2b08a707b8722608cd56a0c60115aee20",
+  "content_tree": "479e382d71f6f304e7578abb65143024ebe357a3",
+  "generated_at": "2026-08-28T01:25:06Z",
+  "proof_kind": "canonical_repaired_content_audit",
   "packet_sha256": "27f4fb613942e84ea71bcb7c3d7ad2ad66388645d51546d5ce83664281eb4f8a",
+  "repair_packet_sha256": "85e5143b67392ca6386e71222cd70260127669d823bd07cb890fd148b6df76bc",
   "implementation": {
-    "worker_identity": "/root/p0_overlap_wave0",
+    "worker_identity": "/root/pr1283_repair",
     "model_selector": "gpt-5.6-sol",
-    "reasoning_effort": "xhigh",
     "nested_subagents_used": false,
-    "dispatch_gate": "AUTHORIZED_WITH_P0_A1_P0_A2_P0_A3"
+    "runtime_producer_consumer_changes": false
   },
-  "amendments": [
-    {
-      "id": "P0-A1",
-      "paths": [
-        "schemas/audit_broker/audit_result.schema.json"
-      ]
-    },
-    {
-      "id": "P0-A2",
-      "paths": [
-        "task-packets/INDEX.md"
-      ],
-      "scope": "exact packet registration only"
-    },
-    {
-      "id": "P0-A3",
-      "paths": [
-        "schemas/dcp/manifest.json",
-        "schemas/dcp/README.md"
-      ],
-      "scope": "register and document P0 schemas only"
-    }
-  ],
-  "rulings": {
-    "pr_1138": "STALE_NONAUTHORITATIVE_EVIDENCE_SUPERSEDED_FOR_IMPLEMENTATION_BY_CURRENT_MAIN",
-    "pr_1138_mutation_authorized": false,
-    "gpt_5_5_gate": "RETAIN_UNTIL_EXACT_SUPERSEDING_GATE_IS_PROVEN",
-    "gpt_5_6_silent_substitution": false
+  "audit_lineage": {
+    "previous_agy_audit": "HISTORICAL_VALID_FOR_OLD_SUBJECT_NOT_FINAL_FOR_REPAIRED_SUBJECT",
+    "previous_security_approval_run": "33086203711",
+    "previous_security_approval": "STALE_FOR_REPAIRED_HEAD",
+    "controlling_audit_session": "c990b248-d4c2-4947-9fcd-95c72b19d1db"
   },
   "auditor_identity": {
-    "runner": "agy",
-    "requested_model": "claude-sonnet-4-6",
-    "configured_model": "Claude Sonnet 4.6 (Thinking)",
-    "response_claimed_model": "Anthropic Claude self-identification, indirect",
-    "proxy_reported_model": "UNKNOWN",
-    "provider_attested_model": "UNKNOWN",
-    "conversation_id": "21c09d8a-1d9c-4b63-9893-5fd8298f562d",
-    "independence": "STRONG_ANTHROPIC_AUDITOR_VS_OPENAI_IMPLEMENTER"
-  },
-  "evidence_hashes": {
-    "auditor_report_sha256": "eb0b7c4036d82640252a08ad6e8a5f7ce415be3917401e2cf6552a38a254b6e3",
-    "audit_prompt_sha256": "e85409631ba362387784712a31ce0fa90616a39fbb70777a34c403c5f31553d9",
-    "agy_receipt_sha256": "7b07d078c1d31954f083081f3bafad93394579cfbfb78ec5183340156f1e9bd2",
-    "subject_binding_sha256": "8fdff53f7db05d33444c66766daf15a8db3a1d9792fa0c466b47364976b7bb3a"
+    "runner": "copilot-cli",
+    "runner_version": "1.0.81-9",
+    "requested_model": "claude-sonnet-4.6",
+    "configured_model": "claude-sonnet-4.6",
+    "provider_family": "Anthropic",
+    "billing_mode": "PLAN_BACKED",
+    "usage_availability": "PROVEN",
+    "independence": "PROVEN_ANTHROPIC_AUDITOR_VS_OPENAI_IMPLEMENTER",
+    "session_id": "c990b248-d4c2-4947-9fcd-95c72b19d1db"
   },
   "validation_summary": {
-    "exact_packet_bytes": "PASS",
-    "task_packet_schema": "PASS",
-    "supervisor_adversarial_probes": "PASS",
-    "focused_and_consistency_tests": "60_PASS",
-    "selected_dcp_tests": "446_PASS_1_DESELECTED",
-    "full_dcp_tests": "446_PASS_1_FAIL_STALE_SENTINEL",
-    "docs_validator": "PASS_WITH_PREEXISTING_WARNINGS",
-    "frontmatter": "PASS",
-    "changed_contract": "PASS_L2_29_PATHS",
-    "pre_commit": "PASS",
-    "git_diff_check": "PASS",
-    "post_audit_head_tree_status": "PASS",
-    "proof_schema": "PENDING",
-    "proof_only_closure": "PENDING",
-    "secret_scan": "PENDING",
-    "pr_scoped_steward": "NOT_RUN_PRE_PR"
+    "known_before_proof_generation": {
+      "task_packet_schema": "PASS",
+      "focused_and_consistency_tests": "74_PASS",
+      "relevant_dcp_tests": "446_PASS_1_FAIL_HISTORICAL_STALE_SENTINEL",
+      "docs_validator": "PASS",
+      "frontmatter": "PASS",
+      "changed_contract": "PASS_L2_10_PATHS",
+      "pre_commit": "PASS",
+      "git_diff_check": "PASS",
+      "secret_scan": "PASS_NO_LEAKS",
+      "changed_allowlist": "PASS_10_PATHS",
+      "post_audit_head_tree_status": "PASS_CLEAN"
+    },
+    "performed_after_proof_generation": {
+      "receipt": "proof/TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001/review_bundle/PROOF_FINALITY_RECEIPT.json",
+      "proof_schema": "NOT_RUN_AT_PROOF_GENERATION",
+      "canonical_signature": "NOT_RUN_AT_PROOF_GENERATION",
+      "proof_only_closure": "NOT_RUN_AT_PROOF_GENERATION",
+      "pr_scoped_signature": "NOT_RUN_AT_PROOF_GENERATION",
+      "exact_head_ci": "NOT_RUN_AT_PROOF_GENERATION",
+      "security_release_approval": "NOT_RUN_AT_PROOF_GENERATION",
+      "pr_steward": "NOT_RUN_AT_PROOF_GENERATION"
+    }
   },
   "stale_sentinel": {
     "test": "tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified",
-    "disposition": "PREEXISTING_STALE_ANCHOR_NOT_ATTRIBUTABLE_TO_P0_NOT_WAIVED",
+    "disposition": "PREEXISTING_STALE_ANCHOR_NOT_ATTRIBUTABLE_TO_REPAIR_NOT_WAIVED",
     "full_suite_status": "FAIL"
   },
   "audit_acceptance": {
     "verdict": "PASS_WITH_RISKS",
-    "accepted_for_contract_freeze_closure": true,
-    "rationale": "Auditor passed all 35 P0 requirements and bounded substantive findings to future runtime implementation or promotion."
+    "accepted_for_repair_closure": true,
+    "rationale": "Independent auditor verified P0-R1 through P0-R4, bounded semantic validation, 74 focused and consistency tests, and the exact historical 446-pass plus one-failure DCP sentinel state."
   },
   "embedded_audit": {
     "required": true,
     "status": "PASS_WITH_RISKS",
-    "auditor_tool": "agy",
+    "auditor_tool": "copilot-cli",
     "auditor_model": "claude-sonnet-4.6",
-    "invocation": "agy --model claude-sonnet-4-6 --sandbox --mode plan --disable-slash-commands --output-format json --print-timeout 20m --print <bounded-audit-prompt>",
+    "invocation": "COPILOT_HOME=/private/tmp/copilot-wave0-audit-home copilot --mode plan --model claude-sonnet-4.6 --effort high --max-ai-credits 300 --disable-builtin-mcps --disable-mcp-server github-mcp-server --excluded-tools=github-mcp-server --deny-tool=github-mcp-server --deny-tool=write --deny-url=https://github.com --deny-url=https://api.github.com --no-custom-instructions --no-remote --no-remote-export --no-auto-update",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001/AUDITOR_REPORT.md",
     "findings": [
@@ -103,30 +84,50 @@
         "severity": "MEDIUM",
         "title": "PREJUDGMENT_FAILED receipt requires complete mandatory evidence",
         "status": "ACCEPTED_RISK",
-        "body": "Design-only audit_execution_receipt.v0 forces mandatory_evidence.complete true even for PREJUDGMENT_FAILED. Resolve before runtime implementation."
+        "body": "Retained from prior audit. Resolve before runtime implementation."
       },
       {
         "id": "P0-F2",
         "severity": "LOW",
         "title": "CompiledClaim lacks explicit execution_authority false field",
         "status": "ACCEPTED_RISK",
-        "body": "DERIVED_NON_CANONICAL remains enforced. Align schema family before later promotion."
+        "body": "Retained from prior audit. Align schema family before promotion."
       },
       {
         "id": "P0-F3",
         "severity": "INFO",
         "title": "Historical forbidden-files sentinel uses stale anchor",
         "status": "ACCEPTED_RISK",
-        "body": "Full DCP command remains red. Auditor verified forbidden workflow files predate P0 base and P0 delta contains none; failure is not waived."
+        "body": "Retained and reproduced unsuppressed: 446 tests pass and only the known sentinel fails."
+      },
+      {
+        "id": "P0-NF1",
+        "severity": "INFO",
+        "title": "Materialization receipt conditional omits defensive required result",
+        "status": "ACCEPTED_RISK",
+        "body": "Outer schema already requires result, so omission is unreachable and nonblocking."
+      },
+      {
+        "id": "P0-NF2",
+        "severity": "INFO",
+        "title": "FormatChecker factory recreates its checker per validator",
+        "status": "ACCEPTED_RISK",
+        "body": "Functionally correct, deterministic, and nonblocking."
       }
     ],
-    "fixes_applied": [],
+    "fixes_applied": [
+      "P0-R1 mandatory evidence reference integrity and coverage",
+      "P0-R2 SATISFIED exact auditor identity equality",
+      "P0-R3 Draft 7 RFC3339 format enforcement",
+      "P0-R4 PURGED implies purge_propagated true"
+    ],
     "remaining_risks": [
-      "Historical test_16 stale anchor remains repository debt and full DCP command remains red.",
-      "PREJUDGMENT_FAILED and mandatory evidence completeness tension must be resolved before runtime implementation.",
-      "CompiledClaim schema-family authority field inconsistency should be resolved before promotion.",
-      "All P0 schemas remain .v0 DESIGN_ONLY with runtime producer and consumer validation NOT_RUN.",
-      "Proxy-reported and provider-attested auditor model identity remain UNKNOWN."
+      "P0-F1 must be resolved before runtime implementation.",
+      "P0-F2 should be aligned before schema-family promotion.",
+      "P0-F3 historical stale sentinel remains red and unsuppressed.",
+      "P0-NF1 and P0-NF2 are nonblocking hygiene observations.",
+      "All P0 contracts remain design-only; runtime producer and consumer validation is NOT_RUN.",
+      "Copilot startup updated a tracked session-probe cache; exact committed bytes were restored before proof generation and content HEAD/tree remained unchanged."
     ],
     "skip_reason": null
   },

@@ -1,12 +1,44 @@
-# Final L2 audit prompt
+# PR1283 Repair Final L2 Audit Prompt
 
-AUDIT_ID=TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001-FINAL-L2
+You are the single independent FINAL_L2 auditor for Dopemux PR #1283 repair
+successor TP-DMX-DCP-P0-PR1283-REPAIR-001.
 
-Independent read-only final audit using AGY with exact selector claude-sonnet-4-6. Repository mutation, proof mutation, GitHub mutation, merge, activation, runtime changes, environment inspection, and credential exposure forbidden.
+Operate read-only. Do not edit or create repository files. Do not use MCP,
+GitHub/network tools, browser tools, subagents, fleet, delegation, remote
+sessions, or custom instructions. Use only local repository reads and
+read-only shell commands. If subject identity differs from any exact value
+below, stop with NEEDS_SUPERVISOR.
 
-Base: c7bc2fb479d7386825df73e028acdce723ee3388.
-Content head: 4268ea88b2406718ea8a98c6f888f11542099c6b.
-Content tree: 18846d601cd27d6c84820c85f8a7d96184990531.
-Packet SHA256: 27f4fb613942e84ea71bcb7c3d7ad2ad66388645d51546d5ce83664281eb4f8a.
+Frozen audit subject:
 
-Verify exact clean subject, 29-path allowlist plus P0-A1/A2/A3, authority topology, DCP ceiling, ContextPlan, RunContextPacket, capability requirements, Audit Broker ownership and identity separation, fail-closed READY and judgment semantics, certification limits, Knowledge Compiler and Wiki boundaries, dope-context boundary, GPT-5.5 ruling, PR 1138 ruling, design-only runtime ceiling, and known stale-sentinel attribution. Return only PASS, PASS_WITH_RISKS, FAIL, or NEEDS_SUPERVISOR.
+- worktree: /Users/hue/code/dopemux-mvp/.worktrees/tp-dmx-dcp-full-system-p0-authority-contract-freeze-001
+- branch: tp/DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001
+- content HEAD: a414d5d2b08a707b8722608cd56a0c60115aee20
+- tree: 479e382d71f6f304e7578abb65143024ebe357a3
+- repair parent: b68d8e5faa316a2fdf70b5cecb8a0af6c8202d7e
+- origin/main: c7bc2fb479d7386825df73e028acdce723ee3388
+- exact delta: 10 authorized paths only
+
+Verify HEAD, tree, clean preflight status, main ancestry, repair-parent delta,
+and exact 10-path allowlist. Inspect complete delta and relevant schemas,
+tests, fixtures, README, task packet, bounded semantic validator, and retained
+risks.
+
+Audit:
+
+1. P0-R1 mandatory-evidence reference existence, equality, relation,
+   mandatory coverage, duplicate ambiguity, and READY completeness.
+2. P0-R2 SATISFIED exact equality across all five identity layers, preserving
+   UNKNOWN rather than inference.
+3. P0-R3 real Draft 7 RFC3339 date-time enforcement using FormatChecker.
+4. P0-R4 PURGED implies purge_propagated true.
+
+Also verify deterministic bounded semantic validation, explicit structural
+plus semantic contract, positive/adversarial coverage, 74 focused/consistency
+tests, 446 DCP passes plus exact historical unsuppressed stale sentinel, and no
+runtime authority expansion.
+
+Re-adjudicate P0-F1 MEDIUM, P0-F2 LOW, and P0-F3 INFO. Return a complete report
+with SUBJECT_IDENTITY, SCOPE, P0_R1, P0_R2, P0_R3, P0_R4,
+SEMANTIC_VALIDATOR_BOUNDARY, VALIDATION_EVIDENCE, RETAINED_FINDINGS,
+NEW_FINDINGS, REMAINING_RISKS, and VERDICT headings.
