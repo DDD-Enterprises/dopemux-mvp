@@ -1,0 +1,121 @@
+{
+  "id": "TP-DMX-DCP-P0-PR1283-CROSS-AUTHORITY-CLOSURE-001",
+  "project": "dopemux-mvp",
+  "target": "Close PR #1283 P0 certification, execution identity, mandatory-source, and compiler-input authority relationships",
+  "invariants": [
+    "PARENT_PR=1283; STARTING_CONTENT_HEAD=da991971e9190d387651b8ded4848db7a7d6518e; STARTING_PROOF_HEAD=9bb6f1e64d3de5e6909e1cbd584dd4db7b8e316d.",
+    "SUPERVISOR_AMENDMENT=TP-DMX-DCP-P0-PR1283-CROSS-AUTHORITY-CLOSURE-001-A1; CLASS=AUTHORITY_BOUNDARY_DEFINITION; RISK_LANE=L3; OPERATOR_GATE=GRANTED_FOR_THIS_BOUNDED_CONTRACT_REPAIR.",
+    "One bounded direct Codex implementer; no subagents; no runtime producer, runtime consumer, provider call, Task Orchestrator mutation, workflow mutation, merge, or activation.",
+    "CapabilityRequirementRef owns required capability, requested provider/model, substitution policy, minimum evidence policy, and required identity layers only.",
+    "SATISFIED resolves the exact AuditRequest, capability requirements, AuditorCertification, AuditorCapabilitySnapshot, and AuditExecutionReceipt; missing, ambiguous, stale, UNKNOWN, unavailable, substituted, subject-mismatched, route-mismatched, identity-mismatched, or unverified records forbid judgment.",
+    "Mandatory ContextPlan evidence resolves only to RUNTIME_SOURCE or ACCEPTED_AUTHORITY; DERIVED_EVIDENCE remains supplemental.",
+    "CompiledClaim materialization eligibility resolves exactly one KnowledgeCompilerInput with provider_policy_state=ELIGIBLE; UNKNOWN, INELIGIBLE, missing, or ambiguous input denies eligibility.",
+    "Add four focused hand-derived RED regressions before production contract changes; partial repair is forbidden.",
+    "Push one substantive R3 head and obtain explicit early Codex and Copilot review before any independent final audit.",
+    "Prior audits, proof, CI, security approval, and PR Steward receipts are lineage after substantive bytes change.",
+    "API-metered spend, PAL clink spend, final audit, finality proof, security approval, readiness, merge, and activation are not authorized in this implementation slice."
+  ],
+  "depends_on": [
+    "TP-DMX-DCP-P0-PR1283-REPAIR-002"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-FULL-SYSTEM-IMPLEMENTATION-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-DCP-P0-PR1283-REPAIR-002",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "tp/DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001",
+    "base_branch": "main",
+    "stacked_because": "Operator authorized bounded in-place L3 contract repair on existing PR #1283 branch."
+  },
+  "commit": {
+    "message": "fix(dcp): close P0 cross-authority contracts",
+    "allowlist": [
+      "docs/03-reference/architecture/dcp/capability-certification-boundary-v1.md",
+      "schemas/audit_broker/audit_request.schema.json",
+      "schemas/audit_broker/audit_result.schema.json",
+      "schemas/audit_broker/audit_execution_receipt.schema.json",
+      "schemas/audit_broker/auditor_certification.schema.json",
+      "schemas/audit_broker/auditor_capability_snapshot.schema.json",
+      "schemas/dcp/capability_requirement_ref.schema.json",
+      "schemas/dcp/context_plan.schema.json",
+      "schemas/dcp/run_context_packet.schema.json",
+      "schemas/dcp/README.md",
+      "schemas/dcp/manifest.json",
+      "schemas/second_brain/compiled_claim.schema.json",
+      "schemas/second_brain/knowledge_compiler_input.schema.json",
+      "scripts/governance/validate_dcp_p0_contract_semantics.py",
+      "tests/contracts/test_dcp_full_system_p0_contracts.py",
+      "tests/fixtures/dcp/full_system/p0/**",
+      "task-packets/TP-DMX-DCP-P0-PR1283-CROSS-AUTHORITY-CLOSURE-001.json",
+      "task-packets/INDEX.md",
+      "proof/TP-DMX-DCP-P0-PR1283-CROSS-AUTHORITY-CLOSURE-001/**",
+      "proof/TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001/**",
+      "proof/pr_merge/embedded-audit/pr-1283/**"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-DCP-P0-PR1283-CROSS-AUTHORITY-CLOSURE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python3 -m pytest -q tests/contracts/test_dcp_full_system_p0_contracts.py tests/dcp/test_contracts_consistency.py",
+      "python3 scripts/governance/validate_dcp_p0_contract_semantics.py --fixtures tests/fixtures/dcp/full_system/p0/positive_contracts.json",
+      "python3 -m pytest -q tests/unit/dcp tests/dcp",
+      "ruff check scripts/governance/validate_dcp_p0_contract_semantics.py tests/contracts/test_dcp_full_system_p0_contracts.py",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "pre-commit run --from-ref origin/main --to-ref HEAD",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "DCP full-system P0 authority and contract freeze",
+    "body": "In-place PR #1283 R3 closure for certification, execution provider identity, mandatory source evidence, and compiler-input policy. Requires clean early Codex and Copilot review before one final independent audit. Stops before merge and activation.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "R3-0",
+      "task": "Record amendment A1 authority ownership and exact cross-object resolution boundaries before contract mutation.",
+      "validation": [
+        "Architecture reference names each canonical owner and fail-closed relationship.",
+        "No runtime or provider authority is introduced."
+      ]
+    },
+    {
+      "id": "R3-1",
+      "task": "Add four hand-derived adversarial regressions and capture intended RED failures against real schemas and semantic validation.",
+      "validation": [
+        "Certification chain absence, execution provider substitution, derived mandatory evidence, and ineligible compiler input each fail the new assertion before production repair."
+      ]
+    },
+    {
+      "id": "R3-2",
+      "task": "Implement the four cross-authority repairs coherently within design-only schemas and deterministic semantic validation.",
+      "validation": [
+        "All four RED regressions become GREEN for the intended reason.",
+        "UNKNOWN remains fail-closed and no identity is inferred."
+      ]
+    },
+    {
+      "id": "R3-3",
+      "task": "Run focused, consistency, relevant DCP, schema, semantic, manifest, Ruff, changed-contract, pre-commit, diff, secret, and allowlist gates.",
+      "validation": [
+        "Every gate records PASS, FAIL, or NOT_RUN with exit status.",
+        "Historical stale sentinel remains separate and unchanged."
+      ]
+    },
+    {
+      "id": "R3-4",
+      "task": "Commit and push the substantive R3 head, request explicit early Codex and Copilot reviews, and stop before final audit.",
+      "validation": [
+        "Remote PR head equals local R3 head.",
+        "Both early review requests bind the exact R3 head."
+      ]
+    }
+  ]
+}

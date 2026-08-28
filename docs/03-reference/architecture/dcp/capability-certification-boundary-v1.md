@@ -37,6 +37,41 @@ verified independence, and audit-only scope. Certification may authorize
 substantive judgment for its exact subject. It never grants repository or Task
 Orchestrator mutation.
 
+## Contract ownership and resolution
+
+`CapabilityRequirementRef` owns required capability, requested provider/model,
+substitution policy, minimum evidence policy, and required identity layers. It
+does not own exact audit subject, actual runner/tool, observed execution,
+certification judgment, or repository authority.
+
+`AuditRequest` owns exact packet/head/tree/digest subject, one or more exact
+capability-requirement references, requested runner/tool, requested
+provider/model, required independence, substitution policy, and certification
+reference. Its retained `required_capabilities` must equal capabilities from the
+resolved requirements. Resolved requirements must agree with request
+provider/model and forbid substitution.
+
+`AuditorCapabilitySnapshot` is observed state for one exact subject. It records
+observed or `UNKNOWN` route identity, all five provider/model identity layers,
+capability availability, and verified, unverified, or `UNKNOWN` independence.
+No missing observation is inferred.
+
+`AuditorCertification` binds one request to one current snapshot for the same
+exact subject and exact capability-requirement set. It retains audit-only scope,
+matched identity, verified independence, satisfied capability, and no repository
+or task mutation authority.
+
+`AuditExecutionReceipt` records actual runner/tool and provider/model identity
+layers. A satisfied result requires request route, observed snapshot route, and
+execution route to agree exactly. Required identity layers must be observed and
+equal the request and resolved requirement identity.
+
+Before substantive judgment, deterministic validation resolves the complete
+request, capability requirement, certification, snapshot, execution receipt,
+and result chain. Missing, ambiguous, stale, `UNKNOWN`, unavailable,
+substituted, subject-mismatched, route-mismatched, identity-mismatched, or
+unverified records cannot authorize judgment.
+
 ## Result classes
 
 Substantive judgment, terminal intake/binding failure, and pre-judgment

@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://dopemux.dev/schemas/second_brain/compiled_claim.schema.json",
   "title": "Second Brain Compiled Claim",
+  "$comment": "eligible_for_materialization input_ref resolution and provider-policy eligibility are enforced by JSON_SCHEMA + scripts/governance/validate_dcp_p0_contract_semantics.py.",
   "type": "object",
   "additionalProperties": false,
   "required": [

@@ -54,6 +54,15 @@
           "mandatory": true,
           "truncated": false,
           "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "ref": "derived://AGENTS-summary",
+          "kind": "DERIVED_EVIDENCE",
+          "freshness": "FRESH",
+          "dereferenced": true,
+          "mandatory": false,
+          "truncated": false,
+          "digest": "sha256:abababababababababababababababababababababababababababababababab"
         }
       ],
       "mandatory_evidence": {
@@ -163,16 +172,24 @@
     "instance": {
       "schema_version": "audit-broker-auditor-capability-snapshot.v0",
       "snapshot_id": "AUD-CAP-001",
+      "subject": {
+        "packet_id": "TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001",
+        "head_sha": "c7bc2fb479d7386825df73e028acdce723ee3388",
+        "tree_sha": "3afc447a3e8dc8e3bf232137373d3297a7c79cc4",
+        "digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
       "observed_at": "2026-08-27T00:00:00Z",
       "freshness": "CURRENT",
       "capability_states": [{"capability": "independent_audit", "state": "AVAILABLE", "evidence_refs": ["proof://capability"]}],
+      "route": {"state": "OBSERVED", "runner": "github-copilot", "tool": "copilot-cli", "evidence_refs": ["route://1"]},
       "identities": {
-        "requested": {"state": "OBSERVED", "value": "claude-sonnet-5", "evidence_refs": ["request://1"]},
-        "configured": {"state": "OBSERVED", "value": "claude-sonnet-5", "evidence_refs": ["config://1"]},
-        "response_claimed": {"state": "UNKNOWN", "value": null, "evidence_refs": []},
-        "proxy_reported": {"state": "UNKNOWN", "value": null, "evidence_refs": []},
-        "provider_attested": {"state": "UNKNOWN", "value": null, "evidence_refs": []}
+        "requested": {"state": "OBSERVED", "provider": "anthropic", "model": "claude-sonnet-5", "evidence_refs": ["request://1"]},
+        "configured": {"state": "OBSERVED", "provider": "anthropic", "model": "claude-sonnet-5", "evidence_refs": ["config://1"]},
+        "response_claimed": {"state": "OBSERVED", "provider": "anthropic", "model": "claude-sonnet-5", "evidence_refs": ["response://1"]},
+        "proxy_reported": {"state": "OBSERVED", "provider": "anthropic", "model": "claude-sonnet-5", "evidence_refs": ["proxy://1"]},
+        "provider_attested": {"state": "OBSERVED", "provider": "anthropic", "model": "claude-sonnet-5", "evidence_refs": ["provider://1"]}
       },
+      "independence": {"state": "VERIFIED", "evidence_refs": ["independence://1"]},
       "execution_authority": false,
       "repository_mutation_authorized": false,
       "task_mutation_authorized": false
@@ -184,7 +201,15 @@
     "instance": {
       "schema_version": "audit-broker-auditor-certification.v0",
       "certification_id": "AUD-CERT-001",
+      "request_ref": "AUD-REQ-001",
       "snapshot_ref": "AUD-CAP-001",
+      "subject": {
+        "packet_id": "TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001",
+        "head_sha": "c7bc2fb479d7386825df73e028acdce723ee3388",
+        "tree_sha": "3afc447a3e8dc8e3bf232137373d3297a7c79cc4",
+        "digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      "capability_requirement_refs": ["CAP-AUDIT-001"],
       "subject_scope": "AUDIT_ONLY",
       "snapshot_freshness": "CURRENT",
       "capability_state": "SATISFIED",
@@ -204,10 +229,14 @@
       "subject": {
         "packet_id": "TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001",
         "head_sha": "c7bc2fb479d7386825df73e028acdce723ee3388",
+        "tree_sha": "3afc447a3e8dc8e3bf232137373d3297a7c79cc4",
         "digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
       },
+      "capability_requirement_refs": ["CAP-AUDIT-001"],
       "required_capabilities": ["independent_audit"],
+      "requested_route": {"runner": "github-copilot", "tool": "copilot-cli"},
       "requested_identity": {"provider": "anthropic", "model": "claude-sonnet-5"},
+      "independence_required": true,
       "substitution_allowed": false,
       "certification_ref": "AUD-CERT-001",
       "mandatory_evidence_refs": ["bundle://review"],
@@ -226,12 +255,13 @@
       "started_at": "2026-08-27T00:00:00Z",
       "completed_at": "2026-08-27T00:01:00Z",
       "execution_state": "COMPLETED",
+      "route": {"runner": "github-copilot", "tool": "copilot-cli"},
       "identities": {
-        "requested": {"state": "OBSERVED", "value": "claude-sonnet-5", "evidence_refs": ["request://1"]},
-        "configured": {"state": "OBSERVED", "value": "claude-sonnet-5", "evidence_refs": ["config://1"]},
-        "response_claimed": {"state": "OBSERVED", "value": "claude-sonnet-5", "evidence_refs": ["response://1"]},
-        "proxy_reported": {"state": "UNKNOWN", "value": null, "evidence_refs": []},
-        "provider_attested": {"state": "UNKNOWN", "value": null, "evidence_refs": []}
+        "requested": {"state": "OBSERVED", "provider": "anthropic", "model": "claude-sonnet-5", "evidence_refs": ["request://1"]},
+        "configured": {"state": "OBSERVED", "provider": "anthropic", "model": "claude-sonnet-5", "evidence_refs": ["config://1"]},
+        "response_claimed": {"state": "OBSERVED", "provider": "anthropic", "model": "claude-sonnet-5", "evidence_refs": ["response://1"]},
+        "proxy_reported": {"state": "OBSERVED", "provider": "anthropic", "model": "claude-sonnet-5", "evidence_refs": ["proxy://1"]},
+        "provider_attested": {"state": "OBSERVED", "provider": "anthropic", "model": "claude-sonnet-5", "evidence_refs": ["provider://1"]}
       },
       "mandatory_evidence": {"complete": true, "truncated": false, "refs": ["bundle://review"]},
       "result_ref": "AUD-RESULT-001",

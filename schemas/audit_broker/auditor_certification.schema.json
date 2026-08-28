@@ -7,7 +7,10 @@
   "required": [
     "schema_version",
     "certification_id",
+    "request_ref",
     "snapshot_ref",
+    "subject",
+    "capability_requirement_refs",
     "subject_scope",
     "snapshot_freshness",
     "capability_state",
@@ -20,7 +23,25 @@
   "properties": {
     "schema_version": {"const": "audit-broker-auditor-certification.v0"},
     "certification_id": {"type": "string", "minLength": 1},
+    "request_ref": {"type": "string", "minLength": 1},
     "snapshot_ref": {"type": "string", "minLength": 1},
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["packet_id", "head_sha", "tree_sha", "digest"],
+      "properties": {
+        "packet_id": {"type": "string", "minLength": 1},
+        "head_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "tree_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    },
+    "capability_requirement_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
     "subject_scope": {"const": "AUDIT_ONLY"},
     "snapshot_freshness": {"const": "CURRENT"},
     "capability_state": {"const": "SATISFIED"},

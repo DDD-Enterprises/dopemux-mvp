@@ -37,6 +37,27 @@ def _case_map() -> dict[str, dict[str, Any]]:
     return {case["name"]: case for case in _positive_cases()}
 
 
+def _audit_chain_instances() -> dict[str, dict[str, Any]]:
+    cases = _case_map()
+    names = (
+        "capability_requirement_ref",
+        "auditor_capability_snapshot",
+        "auditor_certification",
+        "audit_request",
+        "audit_execution_receipt",
+        "audit_result",
+    )
+    return {name: copy.deepcopy(cases[name]["instance"]) for name in names}
+
+
+def _audit_chain_errors(chain: dict[str, dict[str, Any]]) -> list[str]:
+    return _semantic_errors(
+        _case_map()["audit_result"],
+        chain["audit_result"],
+        list(chain.values()),
+    )
+
+
 def _format_checker() -> FormatChecker:
     checker = FormatChecker()
 
@@ -228,6 +249,325 @@ def test_cross_object_resolution_rejects_duplicate_project_and_subject_mismatch(
     request = copy.deepcopy(_case_map()["audit_request"]["instance"])
     request["subject"]["head_sha"] = "a" * 40
     assert not _contract_is_valid(result_case, result_case["instance"], [request])
+
+
+def test_satisfied_result_requires_certification_snapshot_chain() -> None:
+    result_case = _case_map()["audit_result"]
+    request_case = _case_map()["audit_request"]
+    request = copy.deepcopy(request_case["instance"])
+    request["certification_ref"] = "AUD-CERT-MISSING"
+
+    assert _validator(request_case).is_valid(request)
+    assert _validator(result_case).is_valid(result_case["instance"])
+    assert (
+        "SATISFIED certification_ref must resolve to exactly one AuditorCertification"
+        in _semantic_errors(result_case, result_case["instance"], [request])
+    )
+
+
+def test_satisfied_result_rejects_same_model_execution_provider_substitution() -> None:
+    receipt_case = _case_map()["audit_execution_receipt"]
+    receipt = copy.deepcopy(receipt_case["instance"])
+    for layer in receipt["identities"].values():
+        layer["provider"] = "openrouter"
+
+    schema_errors = list(_validator(receipt_case).iter_errors(receipt))
+    assert schema_errors == [], [error.message for error in schema_errors]
+    assert (
+        "COMPLETED execution identity requested must exactly match resolved AuditRequest"
+        in _semantic_errors(
+            receipt_case,
+            receipt,
+            [
+                _case_map()["audit_request"]["instance"],
+                _case_map()["audit_result"]["instance"],
+            ],
+        )
+    )
+
+
+def test_ready_packet_rejects_derived_mandatory_source_evidence() -> None:
+    packet_case = _case_map()["run_context_packet"]
+    packet = copy.deepcopy(packet_case["instance"])
+    packet["context_items"][0]["kind"] = "DERIVED_EVIDENCE"
+
+    assert _validator(packet_case).is_valid(packet)
+    assert (
+        "READY mandatory evidence 'repo://AGENTS.md' cannot resolve to DERIVED_EVIDENCE"
+        in _semantic_errors(
+            packet_case,
+            packet,
+            [_case_map()["context_plan"]["instance"]],
+        )
+    )
+
+
+@pytest.mark.parametrize("provider_policy_state", ["UNKNOWN", "INELIGIBLE"])
+def test_eligible_compiled_claim_requires_eligible_input_policy(
+    provider_policy_state: str,
+) -> None:
+    claim_case = _case_map()["compiled_claim"]
+    compiler_input = copy.deepcopy(_case_map()["knowledge_compiler_input"]["instance"])
+    compiler_input["policy"]["provider_policy_state"] = provider_policy_state
+
+    assert _validator(claim_case).is_valid(claim_case["instance"])
+    assert (
+        "eligible CompiledClaim input_ref must resolve to exactly one ELIGIBLE KnowledgeCompilerInput"
+        in _semantic_errors(claim_case, claim_case["instance"], [compiler_input])
+    )
+
+
+@pytest.mark.parametrize(
+    ("target", "path", "value", "expected_error"),
+    [
+        (
+            "auditor_certification",
+            "request_ref",
+            "AUD-REQ-OTHER",
+            "SATISFIED AuditorCertification request_ref must match AuditRequest",
+        ),
+        (
+            "auditor_certification",
+            "capability_requirement_refs",
+            ["CAP-OTHER"],
+            "SATISFIED AuditorCertification capability_requirement_refs must match AuditRequest",
+        ),
+        (
+            "auditor_certification",
+            "subject.head_sha",
+            "a" * 40,
+            "SATISFIED certification/request subject head_sha must match",
+        ),
+        (
+            "auditor_certification",
+            "snapshot_ref",
+            "AUD-CAP-MISSING",
+            "SATISFIED snapshot_ref must resolve to exactly one AuditorCapabilitySnapshot",
+        ),
+        (
+            "auditor_certification",
+            "snapshot_freshness",
+            "STALE",
+            "SATISFIED AuditorCertification snapshot_freshness is invalid",
+        ),
+        (
+            "auditor_certification",
+            "judgment_authorized",
+            False,
+            "SATISFIED AuditorCertification judgment_authorized is invalid",
+        ),
+        (
+            "auditor_capability_snapshot",
+            "subject.digest",
+            "sha256:" + "a" * 64,
+            "SATISFIED snapshot/request subject digest must match",
+        ),
+        (
+            "auditor_capability_snapshot",
+            "freshness",
+            "UNKNOWN",
+            "SATISFIED AuditorCapabilitySnapshot freshness must be CURRENT",
+        ),
+        (
+            "auditor_capability_snapshot",
+            "route",
+            {"state": "UNKNOWN", "runner": None, "tool": None, "evidence_refs": []},
+            "SATISFIED snapshot route must be OBSERVED and match AuditRequest",
+        ),
+        (
+            "auditor_capability_snapshot",
+            "capability_states.0.capability",
+            "other_capability",
+            "SATISFIED capability 'independent_audit' must resolve to exactly one snapshot state",
+        ),
+        (
+            "auditor_capability_snapshot",
+            "capability_states.0.state",
+            "UNKNOWN",
+            "SATISFIED capability 'independent_audit' must be AVAILABLE with required evidence",
+        ),
+        (
+            "auditor_capability_snapshot",
+            "identities.requested.provider",
+            "openrouter",
+            "SATISFIED snapshot identity requested must be OBSERVED and match AuditRequest",
+        ),
+        (
+            "auditor_capability_snapshot",
+            "identities.configured.model",
+            "same-name-other-model",
+            "SATISFIED snapshot identity configured must be OBSERVED and match AuditRequest",
+        ),
+        (
+            "auditor_capability_snapshot",
+            "identities.provider_attested",
+            {"state": "UNKNOWN", "provider": None, "model": None, "evidence_refs": []},
+            "SATISFIED snapshot identity provider_attested must be OBSERVED and match AuditRequest",
+        ),
+        (
+            "auditor_capability_snapshot",
+            "independence",
+            {"state": "UNKNOWN", "evidence_refs": []},
+            "SATISFIED snapshot independence must be VERIFIED",
+        ),
+        (
+            "capability_requirement_ref",
+            "requested_identity.provider",
+            "openrouter",
+            "SATISFIED capability_requirement_ref 'CAP-AUDIT-001' identity must match AuditRequest",
+        ),
+        (
+            "audit_request",
+            "required_capabilities",
+            ["other_capability"],
+            "SATISFIED AuditRequest required_capabilities must equal resolved capability requirements",
+        ),
+    ],
+)
+def test_satisfied_result_rejects_invalid_certification_chain(
+    target: str, path: str, value: Any, expected_error: str
+) -> None:
+    chain = _audit_chain_instances()
+    _set_path(chain[target], path, value)
+    assert expected_error in _audit_chain_errors(chain)
+
+
+@pytest.mark.parametrize(
+    ("duplicated_object", "expected_error"),
+    [
+        ("audit_request", "SATISFIED request_ref must resolve to exactly one AuditRequest"),
+        (
+            "capability_requirement_ref",
+            "SATISFIED capability_requirement_ref 'CAP-AUDIT-001' must resolve to exactly one CapabilityRequirementRef",
+        ),
+        (
+            "auditor_certification",
+            "SATISFIED certification_ref must resolve to exactly one AuditorCertification",
+        ),
+        (
+            "auditor_capability_snapshot",
+            "SATISFIED snapshot_ref must resolve to exactly one AuditorCapabilitySnapshot",
+        ),
+        (
+            "audit_execution_receipt",
+            "SATISFIED result_ref must resolve from exactly one AuditExecutionReceipt",
+        ),
+    ],
+)
+def test_satisfied_result_rejects_ambiguous_chain_objects(
+    duplicated_object: str, expected_error: str
+) -> None:
+    chain = _audit_chain_instances()
+    related_objects = list(chain.values()) + [copy.deepcopy(chain[duplicated_object])]
+    assert expected_error in _semantic_errors(
+        _case_map()["audit_result"],
+        chain["audit_result"],
+        related_objects,
+    )
+
+
+def test_satisfied_result_resolves_every_compatible_capability_requirement() -> None:
+    chain = _audit_chain_instances()
+    second_requirement = copy.deepcopy(chain["capability_requirement_ref"])
+    second_requirement["requirement_id"] = "CAP-POLICY-001"
+    second_requirement["capability"] = "policy_audit"
+    chain["audit_request"]["capability_requirement_refs"].append("CAP-POLICY-001")
+    chain["audit_request"]["required_capabilities"].append("policy_audit")
+    chain["auditor_certification"]["capability_requirement_refs"].append(
+        "CAP-POLICY-001"
+    )
+    chain["auditor_capability_snapshot"]["capability_states"].append(
+        {
+            "capability": "policy_audit",
+            "state": "AVAILABLE",
+            "evidence_refs": ["proof://policy-capability"],
+        }
+    )
+    related_objects = list(chain.values()) + [second_requirement]
+    assert _semantic_errors(
+        _case_map()["audit_result"], chain["audit_result"], related_objects
+    ) == []
+
+    second_requirement["requested_identity"]["provider"] = "openrouter"
+    assert (
+        "SATISFIED capability_requirement_ref 'CAP-POLICY-001' identity must match AuditRequest"
+        in _semantic_errors(
+            _case_map()["audit_result"], chain["audit_result"], related_objects
+        )
+    )
+
+
+@pytest.mark.parametrize(
+    ("path", "value", "expected_error"),
+    [
+        (
+            "route.runner",
+            "other-runner",
+            "COMPLETED execution route must exactly match AuditRequest",
+        ),
+        (
+            "subject_digest",
+            "sha256:" + "a" * 64,
+            "COMPLETED execution subject_digest must match AuditRequest",
+        ),
+        (
+            "identities.configured",
+            {"state": "UNKNOWN", "provider": None, "model": None, "evidence_refs": []},
+            "COMPLETED execution identity configured must exactly match resolved AuditRequest",
+        ),
+        (
+            "execution_state",
+            "PREJUDGMENT_FAILED",
+            "SATISFIED AuditExecutionReceipt execution_state must be COMPLETED",
+        ),
+    ],
+)
+def test_satisfied_result_rejects_execution_receipt_mismatch(
+    path: str, value: Any, expected_error: str
+) -> None:
+    chain = _audit_chain_instances()
+    _set_path(chain["audit_execution_receipt"], path, value)
+    assert expected_error in _audit_chain_errors(chain)
+
+
+def test_ready_packet_allows_supplemental_derived_evidence_with_canonical_binding() -> None:
+    packet_case = _case_map()["run_context_packet"]
+    packet = packet_case["instance"]
+    assert any(
+        item["kind"] == "DERIVED_EVIDENCE" and item["mandatory"] is False
+        for item in packet["context_items"]
+    )
+    assert _contract_is_valid(
+        packet_case,
+        packet,
+        [_case_map()["context_plan"]["instance"]],
+    )
+
+
+def test_eligible_compiled_claim_requires_input_ref_structurally() -> None:
+    claim_case = _case_map()["compiled_claim"]
+    claim = copy.deepcopy(claim_case["instance"])
+    del claim["input_ref"]
+    assert not _validator(claim_case).is_valid(claim)
+
+
+@pytest.mark.parametrize("resolution", ["missing", "wrong", "ambiguous"])
+def test_eligible_compiled_claim_rejects_invalid_input_resolution(resolution: str) -> None:
+    claim_case = _case_map()["compiled_claim"]
+    claim = copy.deepcopy(claim_case["instance"])
+    compiler_input = copy.deepcopy(_case_map()["knowledge_compiler_input"]["instance"])
+    related_inputs: list[dict[str, Any]] = [compiler_input]
+    if resolution == "missing":
+        related_inputs = []
+    elif resolution == "wrong":
+        compiler_input["input_id"] = "KC-IN-OTHER"
+    else:
+        related_inputs.append(copy.deepcopy(compiler_input))
+
+    assert (
+        "eligible CompiledClaim input_ref must resolve to exactly one ELIGIBLE KnowledgeCompilerInput"
+        in _semantic_errors(claim_case, claim, related_inputs)
+    )
 
 
 def test_p0_packet_bytes_match_immutable_issuance() -> None:

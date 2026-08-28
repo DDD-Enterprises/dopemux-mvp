@@ -52,8 +52,15 @@ P0 validation is the conjunction `JSON_SCHEMA + P0_SEMANTIC_VALIDATION`:
   are consequential contract constraints, not annotations.
 - Execute `scripts/governance/validate_dcp_p0_contract_semantics.py` for dynamic
   relationships Draft 7 cannot compare: READY mandatory-evidence bindings must
-  resolve exactly to mandatory context items with matching references, and all
-  five SATISFIED audit identity values must exactly match requested identity.
+  resolve exactly to canonical-source context items with matching references;
+  eligible CompiledClaim inputs must resolve exactly to an ELIGIBLE
+  KnowledgeCompilerInput; and SATISFIED audit results must resolve the exact
+  capability requirement, request, certification, snapshot, execution receipt,
+  subject, route, independence, and provider/model identity chain.
+- `DERIVED_EVIDENCE` may remain optional supplemental context, but it cannot
+  satisfy a ContextPlan mandatory source reference.
+- Missing, ambiguous, stale, unavailable, substituted, mismatched, unverified,
+  or `UNKNOWN` audit-chain state forbids SATISFIED.
 - Neither validator substitutes for the other. A pass requires both.
 
 ### Provenance Tag Meanings
