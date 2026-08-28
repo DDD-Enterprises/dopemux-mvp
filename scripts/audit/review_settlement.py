@@ -15,6 +15,9 @@ from typing import Any, Callable
 
 
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
+FINAL_READINESS_CONTEXT = "PR Steward / final readiness"
+INVALIDATION_WRITER_NAME = "PR readiness invalidation writer"
+INVALIDATION_WRITER_PATH = ".github/workflows/pr-readiness-invalidation-writer.yml"
 
 
 def _parse_time(value: str) -> datetime:
@@ -79,6 +82,18 @@ def _canonical_facts(snapshot: dict[str, Any]) -> dict[str, Any]:
         )
     threads.sort(key=lambda item: str(item.get("id") or ""))
 
+    source = snapshot.get("latest_trusted_invalidation_source")
+    trusted_source = None
+    if isinstance(source, dict):
+        trusted_source = {
+            "repository": source.get("repository"),
+            "workflow_run_id": source.get("workflow_run_id"),
+            "workflow_name": source.get("workflow_name"),
+            "workflow_path": source.get("workflow_path"),
+            "status_context": source.get("status_context"),
+            "status_state": source.get("status_state"),
+        }
+
     return {
         "repository": snapshot.get("repository"),
         "pr_number": snapshot.get("pr_number"),
@@ -97,9 +112,36 @@ def _canonical_facts(snapshot: dict[str, Any]) -> dict[str, Any]:
         "ready_events": sorted(
             str(value) for value in snapshot.get("ready_events") or []
         ),
+        "latest_trusted_invalidation_at": snapshot.get(
+            "latest_trusted_invalidation_at"
+        ),
+        "latest_trusted_invalidation_source": trusted_source,
+        "trusted_invalidation_time_unknown": bool(
+            snapshot.get("trusted_invalidation_time_unknown")
+        ),
         "latest_reviews": latest_reviews,
         "threads": threads,
     }
+
+
+def _trusted_invalidation_source_valid(
+    facts: dict[str, Any],
+    *,
+    expected_repo: str,
+) -> bool:
+    source = facts.get("latest_trusted_invalidation_source")
+    if not isinstance(source, dict):
+        return False
+    return (
+        source.get("repository") == expected_repo
+        and isinstance(source.get("workflow_run_id"), int)
+        and not isinstance(source.get("workflow_run_id"), bool)
+        and source.get("workflow_run_id") > 0
+        and source.get("workflow_name") == INVALIDATION_WRITER_NAME
+        and source.get("workflow_path") == INVALIDATION_WRITER_PATH
+        and source.get("status_context") == FINAL_READINESS_CONTEXT
+        and source.get("status_state") == "pending"
+    )
 
 
 def evaluate_snapshot(
@@ -192,6 +234,22 @@ def evaluate_snapshot(
                     except (TypeError, ValueError):
                         reasons.append("review_comment_timestamp_invalid")
 
+    invalidation_at = facts.get("latest_trusted_invalidation_at")
+    invalidation_source = facts.get("latest_trusted_invalidation_source")
+    if facts["trusted_invalidation_time_unknown"]:
+        reasons.append("trusted_invalidation_time_unknown")
+    if invalidation_at or invalidation_source:
+        if not (
+            invalidation_at
+            and _trusted_invalidation_source_valid(facts, expected_repo=expected_repo)
+        ):
+            reasons.append("trusted_invalidation_time_unknown")
+        else:
+            try:
+                activity_times.append(_parse_time(str(invalidation_at)))
+            except (TypeError, ValueError):
+                reasons.append("trusted_invalidation_timestamp_invalid")
+
     activity_age = None
     if activity_times:
         activity_age = int((now - max(activity_times)).total_seconds())
@@ -234,6 +292,117 @@ def _graphql(query: str, **variables: object) -> dict[str, Any]:
             "graphql_errors: " + json.dumps(payload["errors"], sort_keys=True)
         )
     return payload
+
+
+def _gh_api_json(*args: str) -> Any:
+    completed = subprocess.run(
+        ["gh", "api", *args],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        raise RuntimeError(f"gh_api_failed: {completed.stderr.strip()}")
+    return json.loads(completed.stdout)
+
+
+def _status_history(repo: str, head_sha: str) -> list[dict[str, Any]]:
+    statuses: list[dict[str, Any]] = []
+    page = 1
+    while True:
+        payload = _gh_api_json(
+            f"repos/{repo}/commits/{head_sha}/statuses",
+            "--method",
+            "GET",
+            "-f",
+            "per_page=100",
+            "-f",
+            f"page={page}",
+        )
+        if not isinstance(payload, list):
+            raise RuntimeError("trusted_invalidation_status_payload_invalid")
+        statuses.extend(item for item in payload if isinstance(item, dict))
+        if len(payload) < 100:
+            return statuses
+        page += 1
+        if page > 20:
+            raise RuntimeError("trusted_invalidation_status_pagination_unknown")
+
+
+def _actions_run_id_from_target_url(repo: str, target_url: object) -> int | None:
+    if not isinstance(target_url, str):
+        return None
+    match = re.fullmatch(
+        rf"https://github\.com/{re.escape(repo)}/actions/runs/([1-9][0-9]*)",
+        target_url,
+    )
+    if not match:
+        return None
+    return int(match.group(1))
+
+
+def _validated_invalidation_source(
+    *,
+    repo: str,
+    run_id: int,
+    status: dict[str, Any],
+) -> dict[str, Any]:
+    run = _gh_api_json(f"repos/{repo}/actions/runs/{run_id}")
+    errors = []
+    if int(run.get("id") or 0) != run_id:
+        errors.append("invalidation_run_id_mismatch")
+    if (run.get("repository") or {}).get("full_name") != repo:
+        errors.append("invalidation_run_repository_mismatch")
+    if run.get("name") != INVALIDATION_WRITER_NAME:
+        errors.append("invalidation_workflow_name_mismatch")
+    if run.get("path") != INVALIDATION_WRITER_PATH:
+        errors.append("invalidation_workflow_path_mismatch")
+    if run.get("status") != "completed" or run.get("conclusion") != "success":
+        errors.append("invalidation_run_not_successfully_completed")
+    if run.get("event") != "workflow_run":
+        errors.append("invalidation_run_event_mismatch")
+    if errors:
+        raise RuntimeError("TRUSTED_INVALIDATION_TIME_UNKNOWN: " + ",".join(errors))
+
+    return {
+        "repository": repo,
+        "workflow_run_id": run_id,
+        "workflow_name": run.get("name"),
+        "workflow_path": run.get("path"),
+        "status_context": status.get("context"),
+        "status_state": status.get("state"),
+    }
+
+
+def fetch_latest_trusted_invalidation(
+    repo: str,
+    head_sha: str,
+) -> tuple[str | None, dict[str, Any] | None]:
+    pending_statuses = [
+        status
+        for status in _status_history(repo, head_sha)
+        if status.get("context") == FINAL_READINESS_CONTEXT
+        and status.get("state") == "pending"
+    ]
+    if not pending_statuses:
+        return None, None
+
+    pending_statuses.sort(key=lambda item: str(item.get("created_at") or ""), reverse=True)
+    latest = pending_statuses[0]
+    created_at = latest.get("created_at")
+    if not created_at:
+        raise RuntimeError("TRUSTED_INVALIDATION_TIME_UNKNOWN: status_created_at_missing")
+    try:
+        _parse_time(str(created_at))
+    except (TypeError, ValueError) as exc:
+        raise RuntimeError(
+            "TRUSTED_INVALIDATION_TIME_UNKNOWN: status_created_at_invalid"
+        ) from exc
+    run_id = _actions_run_id_from_target_url(repo, latest.get("target_url"))
+    if run_id is None:
+        raise RuntimeError("TRUSTED_INVALIDATION_TIME_UNKNOWN: status_target_url_unbound")
+    source = _validated_invalidation_source(repo=repo, run_id=run_id, status=latest)
+    return str(created_at), source
 
 
 def _collect_connection(
@@ -377,6 +546,10 @@ def fetch_snapshot(repo: str, pr_number: int) -> dict[str, Any]:
             }
         )
 
+    trusted_invalidation_at, trusted_invalidation_source = (
+        fetch_latest_trusted_invalidation(repo, str(pr.get("headRefOid") or ""))
+    )
+
     return {
         "repository": repository.get("nameWithOwner"),
         "pr_number": pr.get("number"),
@@ -391,6 +564,9 @@ def fetch_snapshot(repo: str, pr_number: int) -> dict[str, Any]:
         "thread_events_complete": True,
         "review_comment_events_complete": True,
         "ready_events": [node.get("createdAt") for node in ready_nodes],
+        "latest_trusted_invalidation_at": trusted_invalidation_at,
+        "latest_trusted_invalidation_source": trusted_invalidation_source,
+        "trusted_invalidation_time_unknown": False,
         "reviews": [
             {
                 "author": (node.get("author") or {}).get("login"),

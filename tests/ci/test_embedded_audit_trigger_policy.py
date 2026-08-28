@@ -125,6 +125,7 @@ def test_readiness_invalidator_is_zero_model_read_only_observer(path: Path) -> N
 
     assert set(triggers["pull_request"]["types"]) == {
         "opened",
+        "synchronize",
         "reopened",
         "ready_for_review",
     }

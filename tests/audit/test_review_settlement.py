@@ -60,6 +60,20 @@ def _snapshot() -> dict:
     }
 
 
+def _trusted_invalidation(at: str) -> dict:
+    return {
+        "latest_trusted_invalidation_at": at,
+        "latest_trusted_invalidation_source": {
+            "repository": "DDD-Enterprises/dopemux-mvp",
+            "workflow_run_id": 987,
+            "workflow_name": "PR readiness invalidation writer",
+            "workflow_path": ".github/workflows/pr-readiness-invalidation-writer.yml",
+            "status_context": "PR Steward / final readiness",
+            "status_state": "pending",
+        },
+    }
+
+
 def _evaluate(snapshot: dict) -> dict:
     return _module().evaluate_snapshot(
         snapshot,
@@ -143,3 +157,51 @@ def test_review_activity_changes_fingerprint_and_blocks_quiet_period() -> None:
 
     assert changed["fingerprint"] != settled["fingerprint"]
     assert "review_activity_too_recent" in changed["reasons"]
+
+
+def test_recent_thread_resolved_invalidation_blocks_quiet_period() -> None:
+    snapshot = _snapshot()
+    snapshot.update(_trusted_invalidation("2026-08-27T19:59:50Z"))
+    result = _evaluate(snapshot)
+
+    assert result["review_activity_age_seconds"] == 10
+    assert "review_activity_too_recent" in result["reasons"]
+    assert result["facts"]["latest_trusted_invalidation_at"] == "2026-08-27T19:59:50Z"
+
+
+def test_recent_thread_unresolved_invalidation_blocks_quiet_period() -> None:
+    snapshot = _snapshot()
+    snapshot["threads"][0]["is_resolved"] = False
+    snapshot.update(_trusted_invalidation("2026-08-27T19:59:50Z"))
+    result = _evaluate(snapshot)
+
+    assert "unresolved_review_threads" in result["reasons"]
+    assert "review_activity_too_recent" in result["reasons"]
+
+
+def test_trusted_invalidation_timestamp_changes_fingerprint() -> None:
+    settled = _evaluate(_snapshot())
+    changed_snapshot = _snapshot()
+    changed_snapshot.update(_trusted_invalidation("2026-08-27T19:57:30Z"))
+    changed = _evaluate(changed_snapshot)
+
+    assert changed["status"] == "SETTLED"
+    assert changed["fingerprint"] != settled["fingerprint"]
+
+
+def test_forged_unbound_invalidation_timestamp_cannot_satisfy_settlement() -> None:
+    snapshot = _snapshot()
+    snapshot["latest_trusted_invalidation_at"] = "2026-08-27T19:57:30Z"
+    result = _evaluate(snapshot)
+
+    assert result["status"] == "BLOCKED"
+    assert "trusted_invalidation_time_unknown" in result["reasons"]
+
+
+def test_quiet_period_passes_after_trusted_invalidation_duration() -> None:
+    snapshot = _snapshot()
+    snapshot.update(_trusted_invalidation("2026-08-27T19:57:30Z"))
+    result = _evaluate(snapshot)
+
+    assert result["status"] == "SETTLED"
+    assert result["review_activity_age_seconds"] == 150

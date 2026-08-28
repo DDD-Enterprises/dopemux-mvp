@@ -2,7 +2,7 @@ name: PR readiness invalidator
 
 "on":
   pull_request:
-    types: [opened, reopened, ready_for_review]
+    types: [opened, synchronize, reopened, ready_for_review]
   pull_request_review:
     types: [submitted, dismissed]
   pull_request_review_comment:
@@ -37,6 +37,7 @@ jobs:
           printf '%s' "$OBSERVED_HEAD_SHA" | grep -Eq '^[0-9a-f]{40}$'
           case "$EVENT_NAME:$EVENT_ACTION" in
             pull_request:opened|\
+            pull_request:synchronize|\
             pull_request:reopened|\
             pull_request:ready_for_review|\
             pull_request_review:submitted|\

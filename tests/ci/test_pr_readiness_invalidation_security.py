@@ -37,6 +37,7 @@ def test_observer_is_read_only_and_covers_all_invalidation_events(path: Path) ->
 
     assert set(triggers["pull_request"]["types"]) == {
         "opened",
+        "synchronize",
         "reopened",
         "ready_for_review",
     }
@@ -200,6 +201,30 @@ def test_writer_accepts_reopened_binding(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_writer_accepts_synchronize_binding(tmp_path: Path) -> None:
+    def mutate(_run, _artifacts, receipt, _live_pr):
+        receipt["event_action"] = "synchronize"
+
+    result = _run_binding(tmp_path, mutate)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert f"head_sha={'a' * 40}" in (tmp_path / "output").read_text(encoding="utf-8")
+
+
+def test_writer_rejects_synchronize_receipt_when_live_head_moved(
+    tmp_path: Path,
+) -> None:
+    def mutate(run, _artifacts, receipt, live_pr):
+        receipt["event_action"] = "synchronize"
+        run["pull_requests"][0]["head"]["sha"] = "b" * 40
+        live_pr["head"]["sha"] = "b" * 40
+
+    result = _run_binding(tmp_path, mutate)
+
+    assert result.returncode != 0
+    assert "receipt_head_mismatch" in result.stderr
+
+
 def test_writer_rejects_unrelated_pr_number_in_receipt(tmp_path: Path) -> None:
     def mutate(_run, _artifacts, receipt, _live_pr):
         receipt["pr_number"] = 999
@@ -255,3 +280,33 @@ def test_writer_rejects_review_thread_action_mismatch(tmp_path: Path) -> None:
 def test_templates_match_repository_workflows() -> None:
     assert TEMPLATE_OBSERVER.read_bytes() == OBSERVER.read_bytes()
     assert TEMPLATE_WRITER.read_bytes() == WRITER.read_bytes()
+
+
+def test_template_steward_has_trusted_final_readiness_recovery_path() -> None:
+    repository_steward = ROOT / ".github" / "workflows" / "pr-steward.yml"
+    template_steward = (
+        ROOT / "src/dopemux/templates/init/.github/workflows/pr-steward.yml"
+    )
+
+    assert template_steward.read_bytes() == repository_steward.read_bytes()
+
+    workflow = _load(template_steward)
+    text = template_steward.read_text(encoding="utf-8").lower()
+    assert workflow["on"] == {
+        "workflow_run": {"workflows": ["embedded-audit"], "types": ["completed"]},
+        "workflow_dispatch": {
+            "inputs": {
+                "audit_run_id": {
+                    "description": "Completed embedded-audit workflow run ID to inspect",
+                    "required": "true",
+                    "type": "string",
+                }
+            }
+        },
+    }
+    assert workflow["permissions"]["statuses"] == "write"
+    assert "pull_request:" not in text
+    assert "checkout trusted steward source" in text
+    assert "publish readiness status on candidate pr head" in text
+    assert "allow_api_spend" not in text
+    assert "run pal clink audit" not in text
