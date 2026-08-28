@@ -1,0 +1,22 @@
+# PR #1283 R2 audit subject binding
+
+- Repository: `DDD-Enterprises/dopemux-mvp`
+- PR: `1283`
+- Branch: `tp/DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001`
+- Main base: `c7bc2fb479d7386825df73e028acdce723ee3388`
+- R2 starting head: `b939d0a563fe77b04c87f1bd7ea262e52e772dc8`
+- Audited content head: `da991971e9190d387651b8ded4848db7a7d6518e`
+- Audited content tree: `7bea21727c34e4286f036b2252ea642e60bee825`
+- R2 packet SHA-256: `400812cdc72dc23c2744ef04464676142184afac51650896bad39b07045d44f3`
+- R2 content commits: `cfa3df9ab6555cbc5de5f7f50cddcc5978cd11ec`, `da991971e9190d387651b8ded4848db7a7d6518e`
+- R2 net changed paths: `6`, all packet-authorized.
+- Audit route: AGY, explicit selector `gemini-3.1-pro-high`, plan-backed.
+- Audit conversation: `7ae7094f-522a-4c1a-b0f1-cc0008361a0d`.
+- Audit verdict: `PASS_WITH_RISKS`; blocking findings: `0`.
+- Exact-head Codex result: no major issues.
+- Exact-head Copilot result: one diagnostic-only comment adjudicated; thread resolved.
+- Review threads: `14` total, `0` unresolved.
+- Previous security-release approval at `b68d8e5faa316a2fdf70b5cecb8a0af6c8202d7e` is stale.
+- Canonical proof commit: `NOT_RUN` at bundle generation.
+- PR-scoped signature: `NOT_RUN` pending canonical proof commit.
+- Finality review, security refresh, Steward, merge, activation: `NOT_RUN`.
