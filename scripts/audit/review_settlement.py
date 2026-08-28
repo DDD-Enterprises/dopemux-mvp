@@ -611,7 +611,17 @@ def _fetch_command(args: argparse.Namespace) -> int:
         min_activity_quiet_seconds=args.min_activity_quiet_seconds,
     )
     _write_result(args.output, result)
-    print(json.dumps(result, sort_keys=True, separators=(",", ":")))
+    safe_result = {
+        "marker": result.get("marker"),
+        "status": result.get("status"),
+        "repository": result.get("repository"),
+        "pr_number": result.get("pr_number"),
+        "expected_head_sha": result.get("expected_head_sha"),
+        "live_head_sha": result.get("live_head_sha"),
+        "fingerprint": result.get("fingerprint"),
+        "reasons": result.get("reasons"),
+    }
+    print(json.dumps(safe_result, sort_keys=True, separators=(",", ":")))
     return 0 if result["status"] == "SETTLED" else 1
 
 
