@@ -64,7 +64,9 @@ def _settled_payload() -> dict:
                     "state": "OPEN",
                     "isDraft": False,
                     "merged": False,
+                    "createdAt": "2026-08-27T19:45:00Z",
                     "headRefOid": "a" * 40,
+                    "reviewDecision": "REVIEW_REQUIRED",
                     "readyForReviewEvents": {
                         "pageInfo": {"hasPreviousPage": False},
                         "nodes": [{"createdAt": "2026-08-27T19:50:00Z"}],
@@ -73,6 +75,7 @@ def _settled_payload() -> dict:
                         "pageInfo": {"hasPreviousPage": False},
                         "nodes": [
                             {
+                                "author": {"login": "reviewer-a"},
                                 "submittedAt": "2026-08-27T19:53:00Z",
                                 "updatedAt": "2026-08-27T19:53:00Z",
                                 "state": "COMMENTED",
@@ -201,6 +204,9 @@ def test_review_settlement_preflight_precedes_every_model_stage() -> None:
     assert "reviewThreads" in script
     assert "hasNextPage" in script
     assert "readyForReviewEvents" in script
+    assert "createdAt" in script
+    assert "reviewDecision" in script
+    assert "author{login}" in script
 
 
 def test_review_settlement_gate_accepts_settled_exact_head(tmp_path: Path) -> None:
@@ -259,6 +265,57 @@ def test_review_settlement_gate_blocks_recent_review_activity(tmp_path: Path) ->
     assert "review_activity_too_recent" in json.loads(result.stdout)["reasons"]
 
 
+def test_review_settlement_gate_accepts_directly_opened_ready_pr(
+    tmp_path: Path,
+) -> None:
+    payload = copy.deepcopy(_settled_payload())
+    payload["data"]["repository"]["pullRequest"]["readyForReviewEvents"]["nodes"] = []
+
+    result = _run_review_gate(tmp_path, payload)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    summary = json.loads(result.stdout)
+    assert summary["status"] == "PASS"
+    assert summary["ready_age_seconds"] == 900
+
+
+def test_review_settlement_gate_blocks_aggregate_changes_requested(
+    tmp_path: Path,
+) -> None:
+    payload = copy.deepcopy(_settled_payload())
+    payload["data"]["repository"]["pullRequest"]["reviewDecision"] = "CHANGES_REQUESTED"
+
+    result = _run_review_gate(tmp_path, payload)
+
+    assert result.returncode == 1
+    assert "active_change_request_reviews" in json.loads(result.stdout)["reasons"]
+
+
+def test_review_settlement_gate_blocks_latest_reviewer_change_request(
+    tmp_path: Path,
+) -> None:
+    payload = copy.deepcopy(_settled_payload())
+    payload["data"]["repository"]["pullRequest"]["reviews"]["nodes"] = [
+        {
+            "author": {"login": "reviewer-a"},
+            "submittedAt": "2026-08-27T19:51:00Z",
+            "updatedAt": "2026-08-27T19:51:00Z",
+            "state": "APPROVED",
+        },
+        {
+            "author": {"login": "reviewer-a"},
+            "submittedAt": "2026-08-27T19:52:00Z",
+            "updatedAt": "2026-08-27T19:52:00Z",
+            "state": "CHANGES_REQUESTED",
+        },
+    ]
+
+    result = _run_review_gate(tmp_path, payload)
+
+    assert result.returncode == 1
+    assert "active_change_request_reviews" in json.loads(result.stdout)["reasons"]
+
+
 @pytest.mark.parametrize("path", [REPOSITORY_INVALIDATOR, TEMPLATE_INVALIDATOR])
 def test_readiness_invalidator_is_zero_model_and_status_only(path: Path) -> None:
     workflow = _load(path)
@@ -276,6 +333,10 @@ def test_readiness_invalidator_is_zero_model_and_status_only(path: Path) -> None
         "edited",
         "deleted",
     }
+    assert set(triggers["pull_request_review_thread"]["types"]) == {
+        "resolved",
+        "unresolved",
+    }
     assert permissions == {"contents": "read", "statuses": "write"}
     assert "actions/checkout" not in serialized
     assert "claude" not in serialized
@@ -284,6 +345,8 @@ def test_readiness_invalidator_is_zero_model_and_status_only(path: Path) -> None
     assert 'context="pr steward / final readiness"' in serialized
     assert 'state="pending"' in serialized
     assert "/statuses/${pr_head_sha}" in serialized
+    assert "pull_request_review_thread:resolved" in serialized
+    assert "pull_request_review_thread:unresolved" in serialized
 
 
 def test_init_template_packages_readiness_invalidator() -> None:

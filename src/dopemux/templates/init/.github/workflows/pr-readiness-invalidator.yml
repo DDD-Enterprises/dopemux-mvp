@@ -7,6 +7,8 @@ name: PR readiness invalidator
     types: [submitted, dismissed]
   pull_request_review_comment:
     types: [created, edited, deleted]
+  pull_request_review_thread:
+    types: [resolved, unresolved]
 
 permissions:
   contents: read
@@ -38,7 +40,9 @@ jobs:
             pull_request_review:dismissed|\
             pull_request_review_comment:created|\
             pull_request_review_comment:edited|\
-            pull_request_review_comment:deleted) ;;
+            pull_request_review_comment:deleted|\
+            pull_request_review_thread:resolved|\
+            pull_request_review_thread:unresolved) ;;
             *) exit 1 ;;
           esac
 

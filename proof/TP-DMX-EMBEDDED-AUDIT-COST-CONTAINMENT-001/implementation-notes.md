@@ -42,6 +42,22 @@ repository `embedded-audit.yml` could reach the PAL/Claude provider route from
 manual dispatch after review settlement without a default-false
 `allow_api_spend` input.
 
+External Codex review completed on stale head
+`b0be8994658da7f92a7849d21906fd3cafeb693f` after the first A4 successor was
+pushed. Finding classification:
+
+- `VALID_IN_SCOPE`: embedded-audit provider invocation lacks spend authority.
+  Repaired in successor `dca516f1eb898c321de0b5d2d216a3d674d2130c`.
+- `VALID_IN_SCOPE`: settlement preflight ignores active
+  `CHANGES_REQUESTED` reviews.
+- `VALID_IN_SCOPE`: directly opened ready PRs lack a
+  `READY_FOR_REVIEW_EVENT` and would be permanently blocked.
+- `VALID_IN_SCOPE`: readiness invalidator misses
+  `pull_request_review_thread` resolved/unresolved events.
+- `VALID_BUT_OUT_OF_SCOPE`: Gemini dispatch/scheduled automatic provider
+  routes are outside the 14 authorized changed paths. Disposition:
+  `STOP_SCOPE_GAP`; no Gemini workflow files were modified.
+
 Repair:
 
 - Added `allow_api_spend` to repository `embedded-audit.yml` as optional boolean
@@ -55,11 +71,17 @@ Repair:
 - Added structural tests proving the repository final-audit dispatch defaults
   spend to false and provider runner reachability is dominated by the manual
   spend authority gate.
+- Added settlement-gate blocking for aggregate and per-reviewer active
+  `CHANGES_REQUESTED` state.
+- Added direct-ready PR incubation fallback from PR `createdAt` when no
+  `READY_FOR_REVIEW_EVENT` exists.
+- Added repository and init-template invalidator triggers for review-thread
+  `resolved` and `unresolved` events.
 
 A4 targeted validation:
 
 - `pytest tests/ci/test_embedded_audit_trigger_policy.py tests/ci/test_ai_spend_containment.py -q`:
-  PASS, 25 passed.
+  PASS, 28 passed.
 
 ## Validation evidence
 

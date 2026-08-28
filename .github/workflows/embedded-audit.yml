@@ -66,7 +66,7 @@ jobs:
             -F owner="$owner" \
             -F name="$name" \
             -F number="$PR_NUMBER" \
-            -f query='query($owner:String!,$name:String!,$number:Int!){repository(owner:$owner,name:$name){pullRequest(number:$number){number state isDraft merged headRefOid readyForReviewEvents:timelineItems(last:100,itemTypes:[READY_FOR_REVIEW_EVENT]){pageInfo{hasPreviousPage}nodes{... on ReadyForReviewEvent{createdAt}}}reviews(last:100){pageInfo{hasPreviousPage}nodes{submittedAt updatedAt state}}reviewThreads(first:100){pageInfo{hasNextPage}nodes{isResolved comments(last:100){pageInfo{hasPreviousPage}nodes{createdAt updatedAt}}}}}}}' \
+            -f query='query($owner:String!,$name:String!,$number:Int!){repository(owner:$owner,name:$name){pullRequest(number:$number){number state isDraft merged createdAt headRefOid reviewDecision readyForReviewEvents:timelineItems(last:100,itemTypes:[READY_FOR_REVIEW_EVENT]){pageInfo{hasPreviousPage}nodes{... on ReadyForReviewEvent{createdAt}}}reviews(last:100){pageInfo{hasPreviousPage}nodes{author{login}submittedAt updatedAt state}}reviewThreads(first:100){pageInfo{hasNextPage}nodes{isResolved comments(last:100){pageInfo{hasPreviousPage}nodes{createdAt updatedAt}}}}}}}' \
             > "$REVIEW_SETTLEMENT_JSON"
 
           python - <<'PY'
@@ -106,6 +106,8 @@ jobs:
               reasons.append("pr_is_draft_or_unknown")
           if pr.get("merged") is not False:
               reasons.append("pr_merged_or_unknown")
+          if pr.get("reviewDecision") == "CHANGES_REQUESTED":
+              reasons.append("active_change_request_reviews")
 
           ready_events = pr.get("readyForReviewEvents") or {}
           reviews = pr.get("reviews") or {}
@@ -128,19 +130,45 @@ jobs:
                   ready_times.append(parse_time(created_at))
           ready_age = None
           if not ready_times:
-              reasons.append("ready_for_review_event_missing")
-          else:
+              created_at = pr.get("createdAt")
+              if not created_at:
+                  reasons.append("ready_for_review_event_missing")
+              else:
+                  ready_times.append(parse_time(created_at))
+          if ready_times:
               ready_age = int((now - max(ready_times)).total_seconds())
               if ready_age < int(os.environ["MIN_READY_AGE_SECONDS"]):
                   reasons.append("ready_for_review_too_recent")
 
           unresolved = 0
           activity_times = []
+          latest_review_state_by_author = {}
           for review in reviews.get("nodes") or []:
+              author = ((review or {}).get("author") or {}).get("login")
+              if author:
+                  previous = latest_review_state_by_author.get(author)
+                  review_time = None
+                  for field in ("updatedAt", "submittedAt"):
+                      value = (review or {}).get(field)
+                      if value:
+                          review_time = parse_time(value)
+                          break
+                  if review_time and (
+                      previous is None or review_time >= previous["time"]
+                  ):
+                      latest_review_state_by_author[author] = {
+                          "state": (review or {}).get("state"),
+                          "time": review_time,
+                      }
               for field in ("submittedAt", "updatedAt"):
                   value = (review or {}).get(field)
                   if value:
                       activity_times.append(parse_time(value))
+          if any(
+              review["state"] == "CHANGES_REQUESTED"
+              for review in latest_review_state_by_author.values()
+          ):
+              reasons.append("active_change_request_reviews")
           for thread in threads.get("nodes") or []:
               if (thread or {}).get("isResolved") is not True:
                   unresolved += 1
