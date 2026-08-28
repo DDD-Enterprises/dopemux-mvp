@@ -24,7 +24,7 @@ def _normalized_schema_path(schema_path: str) -> str:
     return PurePosixPath(schema_path.replace("\\", "/")).as_posix()
 
 
-def _run_context_errors(instance: dict[str, Any]) -> list[str]:
+def _run_context_errors(instance: dict[str, Any], related_objects: list[dict[str, Any]] | None) -> list[str]:
     if instance.get("readiness") != "READY":
         return []
 
@@ -47,6 +47,17 @@ def _run_context_errors(instance: dict[str, Any]) -> list[str]:
             mandatory_refs.append(ref)
 
     errors: list[str] = []
+    plans = [
+        candidate
+        for candidate in related_objects or []
+        if candidate.get("schema_version") == "dcp-context-plan.v0"
+        and candidate.get("plan_id") == instance.get("plan_ref")
+    ]
+    if len(plans) != 1:
+        return ["READY plan_ref must resolve to exactly one ContextPlan"]
+    plan_mandatory_refs = plans[0].get("mandatory_evidence_refs")
+    if not isinstance(plan_mandatory_refs, list):
+        return ["READY resolved ContextPlan mandatory_evidence_refs is invalid"]
     bound_context_refs: set[str] = set()
     for index, binding in enumerate(bindings):
         if not isinstance(binding, dict):
@@ -58,6 +69,10 @@ def _run_context_errors(instance: dict[str, Any]) -> list[str]:
         if required_ref != context_item_ref:
             errors.append(
                 f"mandatory_evidence.bindings[{index}] required_ref must equal context_item_ref"
+            )
+        if required_ref not in plan_mandatory_refs:
+            errors.append(
+                f"mandatory_evidence.bindings[{index}].required_ref must belong to resolved ContextPlan"
             )
         matches = items_by_ref.get(context_item_ref, [])
         if len(matches) != 1:
@@ -74,13 +89,17 @@ def _run_context_errors(instance: dict[str, Any]) -> list[str]:
             )
         bound_context_refs.add(context_item_ref)
 
+    for ref in plan_mandatory_refs:
+        if ref not in bound_context_refs:
+            errors.append(f"resolved ContextPlan mandatory evidence {ref!r} has no evidence binding")
+
     for ref in mandatory_refs:
         if ref not in bound_context_refs:
             errors.append(f"mandatory context item {ref!r} has no evidence binding")
     return errors
 
 
-def _audit_result_errors(instance: dict[str, Any]) -> list[str]:
+def _audit_result_errors(instance: dict[str, Any], related_objects: list[dict[str, Any]] | None) -> list[str]:
     requirement = instance.get("identity_requirement")
     identities = instance.get("identities")
     if not isinstance(requirement, dict) or not isinstance(identities, dict):
@@ -88,12 +107,26 @@ def _audit_result_errors(instance: dict[str, Any]) -> list[str]:
     if requirement.get("disposition") != "SATISFIED":
         return []
 
+    requests = [
+        candidate
+        for candidate in related_objects or []
+        if candidate.get("schema_version") == "audit-broker-audit-request.v0"
+        and candidate.get("request_id") == instance.get("request_ref")
+    ]
+    if len(requests) != 1:
+        return ["SATISFIED request_ref must resolve to exactly one AuditRequest"]
+    requested_identity = requests[0].get("requested_identity")
+    request_model = requested_identity.get("model") if isinstance(requested_identity, dict) else None
+    if not isinstance(request_model, str):
+        return ["SATISFIED resolved AuditRequest requested_identity is invalid"]
     requested = identities.get("requested")
     expected = requested.get("value") if isinstance(requested, dict) else None
     if not isinstance(expected, str):
         return []
 
     errors: list[str] = []
+    if expected != request_model:
+        errors.append("SATISFIED requested identity must exactly match resolved AuditRequest")
     for layer in IDENTITY_LAYERS[1:]:
         observation = identities.get(layer)
         observed = observation.get("value") if isinstance(observation, dict) else None
@@ -102,21 +135,24 @@ def _audit_result_errors(instance: dict[str, Any]) -> list[str]:
     return errors
 
 
-def validate_p0_contract_semantics(schema_path: str, instance: Any) -> list[str]:
+def validate_p0_contract_semantics(
+    schema_path: str, instance: Any, *, related_objects: list[dict[str, Any]] | None = None
+) -> list[str]:
     """Return stable semantic errors for one schema/instance pair."""
 
     if not isinstance(instance, dict):
         return ["instance must be an object"]
     normalized = _normalized_schema_path(schema_path)
     if normalized.endswith(RUN_CONTEXT_SCHEMA):
-        return _run_context_errors(instance)
+        return _run_context_errors(instance, related_objects)
     if normalized.endswith(AUDIT_RESULT_SCHEMA):
-        return _audit_result_errors(instance)
+        return _audit_result_errors(instance, related_objects)
     return []
 
 
 def _validate_fixture_file(path: Path) -> list[str]:
     fixtures = json.loads(path.read_text(encoding="utf-8"))
+    related_objects = [fixture.get("instance") for fixture in fixtures if isinstance(fixture.get("instance"), dict)]
     errors: list[str] = []
     for fixture in fixtures:
         name = fixture.get("name", "<unnamed>")
@@ -127,7 +163,7 @@ def _validate_fixture_file(path: Path) -> list[str]:
             continue
         errors.extend(
             f"{name}: {error}"
-            for error in validate_p0_contract_semantics(schema, instance)
+            for error in validate_p0_contract_semantics(schema, instance, related_objects=related_objects)
         )
     return errors
 

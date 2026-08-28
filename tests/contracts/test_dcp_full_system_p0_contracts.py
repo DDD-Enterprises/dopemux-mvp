@@ -58,12 +58,18 @@ def _validator(case: dict[str, Any]) -> Draft7Validator:
     return Draft7Validator(schema, format_checker=_format_checker())
 
 
-def _semantic_errors(case: dict[str, Any], instance: dict[str, Any]) -> list[str]:
-    return validate_p0_contract_semantics(case["schema"], instance)
+def _semantic_errors(
+    case: dict[str, Any], instance: dict[str, Any], related_objects: list[dict[str, Any]] | None = None
+) -> list[str]:
+    if related_objects is None:
+        related_objects = [case["instance"] for case in _positive_cases()]
+    return validate_p0_contract_semantics(case["schema"], instance, related_objects=related_objects)
 
 
-def _contract_is_valid(case: dict[str, Any], instance: dict[str, Any]) -> bool:
-    return _validator(case).is_valid(instance) and not _semantic_errors(case, instance)
+def _contract_is_valid(
+    case: dict[str, Any], instance: dict[str, Any], related_objects: list[dict[str, Any]] | None = None
+) -> bool:
+    return _validator(case).is_valid(instance) and not _semantic_errors(case, instance, related_objects)
 
 
 def _set_path(instance: dict[str, Any], path: str, value: Any) -> None:
@@ -181,17 +187,39 @@ def test_required_identity_unknown_is_terminal_not_judgment() -> None:
     assert not validator.is_valid(terminal)
 
 
+def test_ready_packet_rejects_self_consistent_evidence_from_wrong_plan() -> None:
+    packet_case = _case_map()["run_context_packet"]
+    wrong_plan = copy.deepcopy(_case_map()["context_plan"]["instance"])
+    wrong_plan["plan_id"] = "CTX-PLAN-OTHER"
+    wrong_plan["mandatory_evidence_refs"] = ["repo://OTHER.md"]
+
+    assert not _contract_is_valid(packet_case, packet_case["instance"], [wrong_plan])
+
+
+def test_satisfied_result_rejects_uniform_identity_substitution_from_request() -> None:
+    result_case = _case_map()["audit_result"]
+    result = copy.deepcopy(result_case["instance"])
+    for layer in result["identities"].values():
+        layer["value"] = "gpt-5.5"
+    request = copy.deepcopy(_case_map()["audit_request"]["instance"])
+    request["requested_identity"] = {"provider": "anthropic", "model": "claude-sonnet-4-6"}
+
+    assert not _contract_is_valid(result_case, result, [request])
+
+
 def test_p0_packet_bytes_match_immutable_issuance() -> None:
     packet = REPO_ROOT / "task-packets" / f"{PACKET_ID}.json"
     assert hashlib.sha256(packet.read_bytes()).hexdigest() == PACKET_SHA256
 
 
-def test_dcp_manifest_registers_only_three_p0_contracts_once() -> None:
+def test_dcp_manifest_registers_only_five_p0_contracts_once_with_schema_versions() -> None:
     manifest = _load_json(REPO_ROOT / "schemas" / "dcp" / "manifest.json")
     p0_files = {
         "schemas/dcp/context_plan.schema.json",
         "schemas/dcp/run_context_packet.schema.json",
         "schemas/dcp/capability_requirement_ref.schema.json",
+        "schemas/audit_broker/audit_request.schema.json",
+        "schemas/audit_broker/audit_result.schema.json",
     }
     registered = [
         entry["schema_file"]
@@ -200,3 +228,7 @@ def test_dcp_manifest_registers_only_three_p0_contracts_once() -> None:
     ]
     assert sorted(registered) == sorted(p0_files)
     assert len(registered) == len(set(registered))
+    for entry in manifest["contracts"]:
+        if entry["schema_file"] in p0_files:
+            schema = _load_json(REPO_ROOT / entry["schema_file"])
+            assert schema["properties"]["schema_version"]["const"] == entry["schema_version"]

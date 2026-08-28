@@ -307,6 +307,32 @@
       "enforcement_side": "deterministic"
     },
     {
+      "contract_id": "AUDIT_BROKER_AUDIT_REQUEST",
+      "schema_file": "schemas/audit_broker/audit_request.schema.json",
+      "schema_version": "audit-broker-audit-request.v0",
+      "contract_version": "0.1.0",
+      "validation_state": "DESIGN_ONLY",
+      "level": "L0",
+      "instance_files": ["tests/fixtures/dcp/full_system/p0/positive_contracts.json"],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": ["🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"],
+      "enforcement_side": "deterministic"
+    },
+    {
+      "contract_id": "AUDIT_BROKER_AUDIT_RESULT",
+      "schema_file": "schemas/audit_broker/audit_result.schema.json",
+      "schema_version": "audit-broker-audit-result.v0",
+      "contract_version": "0.1.0",
+      "validation_state": "DESIGN_ONLY",
+      "level": "L0",
+      "instance_files": ["tests/fixtures/dcp/full_system/p0/positive_contracts.json"],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": ["🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"],
+      "enforcement_side": "deterministic"
+    },
+    {
       "contract_id": "DCP_ROUTING_CLASSIFICATION",
       "schema_file": "schemas/dcp/dcp_routing_classification.schema.json",
       "schema_version": "UNKNOWN",
