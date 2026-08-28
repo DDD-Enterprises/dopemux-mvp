@@ -7,18 +7,27 @@
   "head_sha": "79404f3929c47fe09434ac07a36b936190282b56",
   "content_head": "79404f3929c47fe09434ac07a36b936190282b56",
   "content_tree": "324348b70013207d908e3f5af66302336dfd99e9",
-  "generated_at": "2026-08-28T03:26:42Z",
-  "proof_kind": "canonical_r2_audit_proof_only_successor",
+  "generated_at": "2026-08-28T06:11:35Z",
+  "proof_kind": "canonical_r2_audit_evidence_recovery_proof_only_successor",
   "subject": {
-    "kind": "frozen_pr1282_r2_content",
+    "kind": "frozen_pr1282_full_r2_substantive_subject",
     "paths": [
       "docs/03-reference/governance/governed-delivery/g0-lite-implementation-authority.md",
+      "proof/DMX-GOV-G0-LITE-IMPLEMENTATION-AUTHORITY-001/AUDITOR_REPORT.md",
+      "proof/DMX-GOV-G0-LITE-IMPLEMENTATION-AUTHORITY-001/PROOF.json",
+      "proof/DMX-GOV-G0-LITE-IMPLEMENTATION-AUTHORITY-001/PROOF.json.sig",
+      "proof/DMX-GOV-G0-LITE-IMPLEMENTATION-AUTHORITY-001/review_bundle/AUDIT_PROMPT.md",
+      "proof/DMX-GOV-G0-LITE-IMPLEMENTATION-AUTHORITY-001/review_bundle/COPILOT_RUN_RECEIPT.json",
+      "proof/DMX-GOV-G0-LITE-IMPLEMENTATION-AUTHORITY-001/review_bundle/SUBJECT_BINDING.md",
       "proof/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001/AUDITOR_REPORT.md",
       "proof/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001/PROOF.json",
       "proof/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001/review_bundle/SUBJECT_BINDING.md",
       "proof/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001/review_bundle/VALIDATION.md",
+      "proof/pr_merge/embedded-audit/pr-1282/PROOF.json",
+      "proof/pr_merge/embedded-audit/pr-1282/PROOF.json.sig",
       "task-packets/INDEX.md",
       "task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json",
+      "task-packets/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001.json",
       "task-packets/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002.json"
     ],
     "audit_binding": "Exact committed content head and tree above. Later proof-only successors may not alter these paths."
@@ -58,41 +67,98 @@
     "authority": "ADVISORY_ONLY_NO_MERGE_OR_AUDIT_AUTHORITY"
   },
   "audit_provenance": {
-    "audit_id": "TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002-FINAL-L2",
-    "conversation_id": "3dcabcf7-00c4-431d-9393-28fd53b659a3",
+    "audit_id": "TP-DMX-GOV-G0-LITE-PR1282-AUDIT-EVIDENCE-RECOVERY-001-A1-FINAL-L2",
+    "session_id": "12820000-0000-4000-8000-000000000004",
+    "runner": "copilot-cli",
+    "runner_version": "1.0.82-0",
     "billing_mode": "PLAN_BACKED",
     "transport_status": "SUCCESS",
-    "model_selector": "gemini-3.1-pro-high",
-    "fallback_claim": "No fallback is inferred beyond successful invocation with the exact retained --model selector; provider-level model attestation is UNKNOWN.",
+    "requested_model": "claude-sonnet-4.6",
+    "configured_model": "claude-sonnet-4.6",
+    "observed_execution_model": "claude-sonnet-4.6",
+    "observed_provider": "github",
+    "fallback_allowed": false,
+    "fallback_observed": false,
+    "response_claimed_model": "claude-sonnet-4.6",
+    "proxy_reported_model": "claude-sonnet-4.6",
+    "provider_attested_model": "UNKNOWN",
+    "inference_calls": 1,
+    "premium_requests": 1,
+    "aiu": 26.91945,
+    "tools_executed": 0,
+    "code_changes": 0,
     "raw_transcript_retained": false,
     "raw_cli_log_retained": false,
-    "exclusion_reason": "Raw CLI artifacts were deleted after unrelated local sensitive configuration appeared. This bundle retains only sanitized prompt, receipt, subject, validation, and review evidence and repeats no credential value."
+    "sanitized_receipt_retained": true,
+    "retention_boundary": "Only sanitized audit prompt, machine-readable audit result, runtime identity receipt, subject binding, validation, and review evidence are retained. Raw session events were deleted after redacted secret scan; no secret value was inspected or retained."
   },
   "validation_finality": {
-    "independent_audit_deterministic_checks": "PASS",
+    "audit_output_structure": "PASS_ONE_BARE_MACHINE_READABLE_OBJECT",
+    "runtime_identity": "PASS_EXACT_MODEL_AND_PROVIDER",
+    "no_fallback": "PASS_ONE_INFERENCE_NO_MODEL_CHANGE",
+    "no_tools": "PASS_ZERO_TOOL_CALLS",
     "canonical_proof_schema": "PASS_1_OF_1",
     "packet_schema": "PASS",
-    "binding_recomputation": "PASS",
-    "allowlist": "PASS_R2_RANGE_16_PATHS_AND_PROOF_ONLY_DELTA_8_PATHS",
-    "gitleaks_result": "PASS_NO_LEAKS",
-    "changed_contract": "PASS_L2_FULL_PR_RANGE_AND_L0_PROOF_ONLY_EXACT_HEADS",
-    "pre_commit": "PASS_ORIGIN_MAIN_RANGE",
-    "proof_only_hook_limit": "EXACT_COMMIT_PRECOMMIT_HOOK_LACKS_REQUIRED_HEAD_ARGUMENTS; DIRECT_PROOF_ONLY_VALIDATOR_PASS",
+    "binding_recomputation": "PASS_EXACT_SHA256_AND_GIT_BLOBS",
+    "allowlist": "PASS_CANONICAL_DELTA_7_PATHS_WITHIN_PACKET_PROOF_ROOT",
+    "gitleaks_result": "PASS_NO_RETAINED_LEAKS",
+    "changed_contract": "PASS_L0_PROOF_ONLY_EXACT_STAGED_TREE",
+    "pre_commit": "PASS_EXACT_CANONICAL_FILES",
     "canonical_signature": "PASS_ALLOWED_SIGNER_VERIFICATION",
     "git_diff_check": "PASS"
   },
   "embedded_audit": {
     "required": true,
-    "status": "PASS",
-    "auditor_tool": "agy",
-    "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "rtk agy --model gemini-3.1-pro-high --mode plan --sandbox --effort high --output-format json --print-timeout 15m --log-file /private/tmp/dopemux-pr-repair-r2-briefs/pr1282-agy-controlling.log --print \"Read /private/tmp/dopemux-pr-repair-r2-briefs/pr1282-final-audit-prompt.md completely, then perform that independent read-only audit in current worktree. Return only required audit report.\"",
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "copilot-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "copilot-cli 1.0.82-0 noninteractive prompt mode; exact --model claude-sonnet-4.6; JSON output; all MCP servers disabled; available-tools restricted to an impossible sentinel; one plan-backed inference against trusted control plus frozen base-to-content diff",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002/AUDITOR_REPORT.md",
-    "findings": [],
+    "findings": [
+      {
+        "id": "NB-01",
+        "severity": "LOW",
+        "title": "Historical G0 packet SHA split in R1 audit receipts",
+        "status": "ACCEPTED_RISK",
+        "body": "R1 audit bundle records g0_packet_sha256=cf3370d... while current authority record, TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001/PROOF.json, and SUBJECT_BINDING.md record 6d6e9d5e... Properly labeled as historical R1 audit lineage in AUDITOR_REPORT finding F1 (RESOLVED). Late-repair-closure framework explicitly acknowledges this split."
+      },
+      {
+        "id": "NB-02",
+        "severity": "LOW",
+        "title": "Authority record SHA split between R1 and R2 proof bundles",
+        "status": "ACCEPTED_RISK",
+        "body": "R1 receipts record authority_record_blob=d43488cb... (pre-repair); R2 proof records blob ae03821e... (current, matches diff). Consistent with late-repair lineage semantics."
+      },
+      {
+        "id": "NB-03",
+        "severity": "INFO",
+        "title": "R2 final independent audit deferred pending early review stabilization",
+        "status": "ACCEPTED_RISK",
+        "body": "remaining_risks explicitly states R2 substantive changes not covered by R1 receipt. TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002.json S2 requires early Codex and Copilot review routes to stabilize before final R2 audit. Not a defect for this audit-evidence-recovery subject. This describes the audited pre-replacement proof state; the replacement audit recorded here now supplies the final independent judgment."
+      },
+      {
+        "id": "NB-04",
+        "severity": "INFO",
+        "title": "Proxy-reported and provider-attested auditor model identities remain UNKNOWN",
+        "status": "ACCEPTED_RISK",
+        "body": "proxy_reported_model and provider_attested_model are UNKNOWN in the R1 audit receipt. Consistently recorded across PROOF.json, COPILOT_RUN_RECEIPT.json, and AUDITOR_REPORT. Governance accepts this when other identity layers are confirmed. This is historical R1 evidence only; the replacement audit proxy reports claude-sonnet-4.6 while provider attestation remains allowed UNKNOWN."
+      }
+    ],
     "fixes_applied": [],
-    "remaining_risks": [],
-    "skip_reason": null
+    "remaining_risks": [
+      "NB-01 ACCEPTED_RISK: Historical G0 packet SHA split in R1 audit receipts.",
+      "NB-02 ACCEPTED_RISK: Authority record SHA split between R1 and R2 proof bundles.",
+      "NB-03 ACCEPTED_RISK: Audited pre-replacement proof deferred final R2 audit; this replacement receipt supplies it.",
+      "NB-04 ACCEPTED_RISK: Historical R1 proxy/provider identities remain UNKNOWN; replacement proxy model is proven and provider attestation remains UNKNOWN."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
   },
   "mark_ready_authorized": false,
   "merge_authorized": false,

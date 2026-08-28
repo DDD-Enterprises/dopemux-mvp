@@ -1,29 +1,165 @@
 {
-  "audit_id": "TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002-FINAL-L2",
-  "conversation_id": "3dcabcf7-00c4-431d-9393-28fd53b659a3",
-  "runner": "AGY",
+  "audit_id": "TP-DMX-GOV-G0-LITE-PR1282-AUDIT-EVIDENCE-RECOVERY-001-A1-FINAL-L2",
+  "session_id": "12820000-0000-4000-8000-000000000004",
+  "runner": "copilot-cli",
+  "runner_version": "1.0.82-0",
   "billing_mode": "PLAN_BACKED",
-  "subject_head": "79404f3929c47fe09434ac07a36b936190282b56",
-  "subject_tree": "324348b70013207d908e3f5af66302336dfd99e9",
-  "model_evidence": {
-    "requested_model": "gemini-3.1-pro-high",
-    "exact_cli_selector": "--model gemini-3.1-pro-high",
-    "successful_exact_selector_invocation": true,
-    "response_claimed_model": "UNKNOWN_NOT_RETAINED",
+  "subject": {
+    "repo": "DDD-Enterprises/dopemux-mvp",
+    "pr_number": 1282,
+    "base": "c7bc2fb479d7386825df73e028acdce723ee3388",
+    "head": "79404f3929c47fe09434ac07a36b936190282b56",
+    "tree": "324348b70013207d908e3f5af66302336dfd99e9",
+    "expected_changed_paths": 17,
+    "observed_changed_paths": 17
+  },
+  "runtime_identity": {
+    "requested_model": "claude-sonnet-4.6",
+    "configured_model": "claude-sonnet-4.6",
+    "observed_execution_model": "claude-sonnet-4.6",
+    "observed_provider": "github",
+    "fallback_allowed": false,
+    "fallback_observed": false,
+    "response_claimed_model": "claude-sonnet-4.6",
+    "proxy_reported_model": "claude-sonnet-4.6",
     "provider_attested_model": "UNKNOWN",
-    "fallback_claim": "No fallback is inferred beyond successful invocation with the exact retained selector."
+    "inference_calls": 1,
+    "premium_requests": 1,
+    "aiu": 26.91945,
+    "tools_executed": 0,
+    "code_changes": 0,
+    "evidence_predicates": {
+      "assistant_message_count": 1,
+      "session_model_change_count": 0,
+      "tool_execution_event_count": 0,
+      "otel_chat_span_count": 1,
+      "otel_request_response_model_match": true,
+      "otel_tool_calls_sum": 0,
+      "routine_shutdown": true
+    }
   },
   "attempt": {
     "authorized_once": true,
     "exit_code": 0,
     "transport_status": "SUCCESS",
-    "verdict": "PASS"
+    "verdict": "PASS_WITH_RISKS",
+    "api_spend_authorized": false,
+    "api_spend_used": false,
+    "pal_clink_used": false,
+    "tools_used": false
   },
-  "invocation": "rtk agy --model gemini-3.1-pro-high --mode plan --sandbox --effort high --output-format json --print-timeout 15m --log-file /private/tmp/dopemux-pr-repair-r2-briefs/pr1282-agy-controlling.log --print \"Read /private/tmp/dopemux-pr-repair-r2-briefs/pr1282-final-audit-prompt.md completely, then perform that independent read-only audit in current worktree. Return only required audit report.\"",
-  "api_spend_authorized": false,
-  "api_spend_used": false,
-  "pal_clink_used": false,
-  "raw_transcript_retained": false,
-  "raw_cli_log_retained": false,
-  "raw_artifact_exclusion_reason": "Raw CLI artifacts were deleted after unrelated local sensitive configuration appeared. No credential value is retained or repeated in this bundle."
+  "invocation": "copilot-cli 1.0.82-0 noninteractive prompt mode; exact --model claude-sonnet-4.6; JSON output; all MCP servers disabled; available-tools restricted to an impossible sentinel; one plan-backed inference against trusted control plus frozen base-to-content diff",
+  "artifact_retention": {
+    "raw_transcript_retained": false,
+    "raw_cli_log_retained": false,
+    "raw_session_events_retained": false,
+    "sanitized_prompt_retained": true,
+    "sanitized_runtime_receipt_retained": true,
+    "machine_readable_audit_result_retained": true,
+    "retained_artifact_secret_scan": "PASS_NO_LEAKS",
+    "raw_session_disposition": "Exact raw events file deleted after redacted scan finding; secret value was not inspected or retained."
+  },
+  "strict_output_validation": {
+    "exactly_one_assistant_message": true,
+    "bare_json_object": true,
+    "required_shape_only": true,
+    "exact_subject_identity": true,
+    "exact_changed_path_count": true,
+    "no_fabricated_tool_or_filesystem_claim": true,
+    "admissible": true
+  },
+  "audit_result": {
+    "status": "COMPLETE",
+    "verdict": "PASS_WITH_RISKS",
+    "audited_head": "79404f3929c47fe09434ac07a36b936190282b56",
+    "audited_tree": "324348b70013207d908e3f5af66302336dfd99e9",
+    "expected_changed_paths": 17,
+    "changed_paths_count": 17,
+    "runner_identity": {
+      "runner": "copilot-cli",
+      "runner_version": "1.0.82-0",
+      "billing_mode": "PLAN_BACKED",
+      "requested_model": "claude-sonnet-4.6",
+      "configured_model": "claude-sonnet-4.6",
+      "observed_execution_model": "claude-sonnet-4.6",
+      "observed_provider": "github",
+      "fallback_allowed": false,
+      "fallback_observed": false,
+      "response_claimed_model": "claude-sonnet-4.6",
+      "proxy_reported_model": "claude-sonnet-4.6",
+      "provider_attested_model": "UNKNOWN",
+      "tools_executed": 0
+    },
+    "blocking_findings": [],
+    "non_blocking_risks": [
+      {
+        "id": "NB-01",
+        "severity": "LOW",
+        "title": "Historical G0 packet SHA split in R1 audit receipts",
+        "path": "proof/DMX-GOV-G0-LITE-IMPLEMENTATION-AUTHORITY-001/PROOF.json",
+        "detail": "R1 audit bundle records g0_packet_sha256=cf3370d... while current authority record, TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001/PROOF.json, and SUBJECT_BINDING.md record 6d6e9d5e... Properly labeled as historical R1 audit lineage in AUDITOR_REPORT finding F1 (RESOLVED). Late-repair-closure framework explicitly acknowledges this split."
+      },
+      {
+        "id": "NB-02",
+        "severity": "LOW",
+        "title": "Authority record SHA split between R1 and R2 proof bundles",
+        "path": "proof/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001/PROOF.json",
+        "detail": "R1 receipts record authority_record_blob=d43488cb... (pre-repair); R2 proof records blob ae03821e... (current, matches diff). Consistent with late-repair lineage semantics."
+      },
+      {
+        "id": "NB-03",
+        "severity": "INFO",
+        "title": "R2 final independent audit deferred pending early review stabilization",
+        "path": "proof/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001/PROOF.json",
+        "detail": "remaining_risks explicitly states R2 substantive changes not covered by R1 receipt. TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002.json S2 requires early Codex and Copilot review routes to stabilize before final R2 audit. Not a defect for this audit-evidence-recovery subject."
+      },
+      {
+        "id": "NB-04",
+        "severity": "INFO",
+        "title": "Proxy-reported and provider-attested auditor model identities remain UNKNOWN",
+        "path": "proof/DMX-GOV-G0-LITE-IMPLEMENTATION-AUTHORITY-001/PROOF.json",
+        "detail": "proxy_reported_model and provider_attested_model are UNKNOWN in the R1 audit receipt. Consistently recorded across PROOF.json, COPILOT_RUN_RECEIPT.json, and AUDITOR_REPORT. Governance accepts this when other identity layers are confirmed."
+      }
+    ],
+    "relationship_results": {
+      "g0_bindings": {
+        "status": "PASS",
+        "rationale": "Authority record binds PACKET_ID=TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001, PACKET_SHA256=6d6e9d5e..., PACKET_BLOB=aafe6fbcc... matching the diff-visible G0 packet blob. TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001/PROOF.json bindings section corroborates same values. AUTHORITY_ANCHOR_BASE_SHA=c7bc2fb4... consistently recorded. EXECUTION_START_POLICY=CURRENT_MAIN_CONTAINING_MERGED_AUTHORITY_RECORD present in authority record Section 2 and Section 18."
+      },
+      "superset_stop": {
+        "status": "PASS",
+        "rationale": "SUPERSET=STOP_FOR_SUPERVISOR_ADJUDICATION appears consistently in: authority record Section 9, repaired G0 packet S0 requirements and validation, TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001/PROOF.json overlap_action_semantics, TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002.json invariant, and AUDITOR_REPORT.md. No generic SUPERSET continuation path exists."
+      },
+      "late_r1_proof_root": {
+        "status": "PASS",
+        "rationale": "PROOF_MATERIALIZATION=LATE_REPAIR_CLOSURE present in TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001/PROOF.json. substantive_audit_subject.meaning explicitly states proof did not exist at audit time. Controller LATE_R1_PROOF_VALIDATOR=PASS (trusted). Historical byte identity (cf3370d... for R1 session) and current byte identity (6d6e9d5e... in authority record) are distinguished and labeled. No false completeness claim."
+      },
+      "authority_ceiling": {
+        "status": "PASS",
+        "rationale": "MERGE_AUTHORITY_FROM_THIS_RECORD=NONE, ACTIVATION_AUTHORITY_FROM_THIS_RECORD=NONE, AUTOMATIC_DISPATCH=FORBIDDEN in authority record header. merge_authorized=false and activation_authorized=false in PROOF.json. All three proof files repeat merge/activation prohibitions. Section 16 E-conditions gate effectiveness behind separate operator merge. Fail-closed: IMPLEMENTATION_AUTHORIZED=NO until all E1-E10 pass."
+      },
+      "no_ready_authority": {
+        "status": "PASS",
+        "rationale": "Authority record Section 5 explicitly excludes READY posture. Section 6 explicitly forbids MARK_READY_AUTHORIZED=NO for PR #1268. Section 17 does not grant mark-ready for implementation PR. TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001 commit allowlist does not include any readiness grant."
+      },
+      "no_dispatch_authority": {
+        "status": "PASS",
+        "rationale": "AUTOMATIC_DISPATCH=FORBIDDEN and DOPETASK_EXECUTION_ROUTE=FORBIDDEN_NOT_IMPLEMENTED in authority record header. Section 6 explicitly forbids automatic implementer dispatch and automatic auditor dispatch. Section 14 hard-stop conditions include automatic dispatch routes."
+      },
+      "no_merge_authority": {
+        "status": "PASS",
+        "rationale": "AUTHORITY_RECORD_PR_MERGE=NO in Section 17. IMPLEMENTATION_PR_MERGE_AUTHORIZED=NO in Sections 13 and 18. merge_authorized=false in both PROOF.json files. TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002 invariant explicitly prohibits merge. No merge trigger present in any changed path."
+      },
+      "no_activation_authority": {
+        "status": "PASS",
+        "rationale": "ACTIVATION_AUTHORITY=NONE in Section 18. ACTIVATION=NO in Section 17. activation_authorized=false in PROOF.json. TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002 invariant and SUBJECT_BINDING.md both state activation authority: NO."
+      }
+    },
+    "rationale": "All 17 changed paths match expected. Controller deterministic evidence fully passes (CHANGED_CONTRACT=L2_PASS, GIT_DIFF_CHECK=PASS, LATE_R1_PROOF_VALIDATOR=PASS, MODEL_VISIBLE_SECRET_SCAN=PASS, INSTRUCTION_LIKE_SCAN detected:false). Authority ceiling, fail-closed behavior, no-merge/no-dispatch/no-activation, and SUPERSET=STOP_FOR_SUPERVISOR_ADJUDICATION are consistently enforced across all changed paths. Late R1 proof root is properly labeled PROOF_MATERIALIZATION=LATE_REPAIR_CLOSURE with explicit historical-lineage disclaimers. G0 packet SHA split between R1 audit receipts and current records is correctly classified as historical lineage, not a defect. Combined REPAIR-001 and REPAIR-002 allowlists cover all 17 changed paths. Verdict: PASS_WITH_RISKS on basis of documented non-blocking risks only.",
+    "remaining_uncertainty": [
+      "R2 final independent audit has not been conducted; this PR is pre-stabilization governance repair, not final delivery.",
+      "Provider-attested model identity remains UNKNOWN for the R1 audit run; consistent with governance recording conventions.",
+      "Exact byte equivalence of authority record cannot be independently verified from diff alone; trusted controller PACKET_JSON_SCHEMA=PASS and DOCS_VALIDATOR=PASS provide partial coverage."
+    ]
+  }
 }
