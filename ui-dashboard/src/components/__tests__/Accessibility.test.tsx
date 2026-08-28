@@ -183,6 +183,9 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('{isSkipConfirming ? \'Confirm Skip?\' : \'Skip\'}');
   expect(content).toContain('<AlertTriangle aria-hidden="true" size={16} />');
 
+  // Verify Escape key cancellation handler for Skip button
+  expect(content).toContain("if (isSkipConfirming && e.key === 'Escape')");
+
   // Verify task sequence list empty state
   expect(content).toContain('optimizedTasks.length === 0 ? (');
   expect(content).toContain('role="status"');
@@ -348,4 +351,31 @@ test('TaskSequencer pending Start button renders tooltip on hover and keyboard f
   // Hover path — MUI Tooltip portals title text after enter delay.
   fireEvent.mouseOver(hoverStartButton);
   expect(await screen.findByRole('tooltip', {}, { timeout: 2000 })).toHaveTextContent(hoverExpected);
+});
+
+test('TaskSequencer soft confirmation state can be cancelled with Escape key', () => {
+  const cognitiveState = {
+    energy: 80,
+    attention: 70,
+    load: 40,
+    status: 'optimal' as const,
+    recommendation: 'Stay focused.',
+  };
+
+  render(<TaskSequencer cognitiveState={cognitiveState} />);
+
+  // 1. Click Skip to arm soft confirmation
+  const skipButton = screen.getAllByRole('button').find(btn => btn.textContent?.includes('Skip'));
+  expect(skipButton).toBeDefined();
+  expect(skipButton!).toHaveTextContent('Skip');
+  fireEvent.click(skipButton!);
+
+  // Soft confirmation state is active
+  expect(skipButton!).toHaveTextContent('Confirm Skip?');
+
+  // Press Escape on the Skip button to cancel confirmation
+  fireEvent.keyDown(skipButton!, { key: 'Escape' });
+
+  // Confirmation state is cancelled and reverted back to "Skip"
+  expect(skipButton!).toHaveTextContent('Skip');
 });
