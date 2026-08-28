@@ -18,6 +18,11 @@ SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 FINAL_READINESS_CONTEXT = "PR Steward / final readiness"
 INVALIDATION_WRITER_NAME = "PR readiness invalidation writer"
 INVALIDATION_WRITER_PATH = ".github/workflows/pr-readiness-invalidation-writer.yml"
+PR_STEWARD_NAME = "PR Steward"
+PR_STEWARD_PATH = ".github/workflows/pr-steward.yml"
+PR_STEWARD_PENDING_DESCRIPTION = (
+    "live head or review settlement changed after readiness publication"
+)
 
 
 def _parse_time(value: str) -> datetime:
@@ -90,8 +95,13 @@ def _canonical_facts(snapshot: dict[str, Any]) -> dict[str, Any]:
             "workflow_run_id": source.get("workflow_run_id"),
             "workflow_name": source.get("workflow_name"),
             "workflow_path": source.get("workflow_path"),
+            "workflow_event": source.get("workflow_event"),
+            "run_conclusion": source.get("run_conclusion"),
+            "publisher_kind": source.get("publisher_kind"),
             "status_context": source.get("status_context"),
             "status_state": source.get("status_state"),
+            "status_sha": source.get("status_sha"),
+            "status_description": source.get("status_description"),
         }
 
     return {
@@ -128,20 +138,38 @@ def _trusted_invalidation_source_valid(
     facts: dict[str, Any],
     *,
     expected_repo: str,
+    expected_head: str,
 ) -> bool:
     source = facts.get("latest_trusted_invalidation_source")
     if not isinstance(source, dict):
         return False
-    return (
+    common_valid = (
         source.get("repository") == expected_repo
         and isinstance(source.get("workflow_run_id"), int)
         and not isinstance(source.get("workflow_run_id"), bool)
         and source.get("workflow_run_id") > 0
-        and source.get("workflow_name") == INVALIDATION_WRITER_NAME
-        and source.get("workflow_path") == INVALIDATION_WRITER_PATH
         and source.get("status_context") == FINAL_READINESS_CONTEXT
         and source.get("status_state") == "pending"
+        and source.get("status_sha") == expected_head
     )
+    if not common_valid:
+        return False
+    if source.get("publisher_kind") == "invalidation_writer":
+        return (
+            source.get("workflow_name") == INVALIDATION_WRITER_NAME
+            and source.get("workflow_path") == INVALIDATION_WRITER_PATH
+            and source.get("workflow_event") == "workflow_run"
+            and source.get("run_conclusion") == "success"
+        )
+    if source.get("publisher_kind") == "pr_steward":
+        return (
+            source.get("workflow_name") == PR_STEWARD_NAME
+            and source.get("workflow_path") == PR_STEWARD_PATH
+            and source.get("workflow_event") in {"workflow_run", "workflow_dispatch"}
+            and source.get("run_conclusion") == "failure"
+            and source.get("status_description") == PR_STEWARD_PENDING_DESCRIPTION
+        )
+    return False
 
 
 def evaluate_snapshot(
@@ -241,7 +269,11 @@ def evaluate_snapshot(
     if invalidation_at or invalidation_source:
         if not (
             invalidation_at
-            and _trusted_invalidation_source_valid(facts, expected_repo=expected_repo)
+            and _trusted_invalidation_source_valid(
+                facts,
+                expected_repo=expected_repo,
+                expected_head=expected_head,
+            )
         ):
             reasons.append("trusted_invalidation_time_unknown")
         else:
@@ -344,6 +376,7 @@ def _actions_run_id_from_target_url(repo: str, target_url: object) -> int | None
 def _validated_invalidation_source(
     *,
     repo: str,
+    head_sha: str,
     run_id: int,
     status: dict[str, Any],
 ) -> dict[str, Any]:
@@ -352,15 +385,36 @@ def _validated_invalidation_source(
     if int(run.get("id") or 0) != run_id:
         errors.append("invalidation_run_id_mismatch")
     if (run.get("repository") or {}).get("full_name") != repo:
-        errors.append("invalidation_run_repository_mismatch")
-    if run.get("name") != INVALIDATION_WRITER_NAME:
-        errors.append("invalidation_workflow_name_mismatch")
-    if run.get("path") != INVALIDATION_WRITER_PATH:
-        errors.append("invalidation_workflow_path_mismatch")
-    if run.get("status") != "completed" or run.get("conclusion") != "success":
-        errors.append("invalidation_run_not_successfully_completed")
-    if run.get("event") != "workflow_run":
-        errors.append("invalidation_run_event_mismatch")
+        errors.append("pending_run_repository_mismatch")
+    if status.get("context") != FINAL_READINESS_CONTEXT:
+        errors.append("status_context_mismatch")
+    if status.get("state") != "pending":
+        errors.append("status_state_mismatch")
+    if status.get("sha") != head_sha:
+        errors.append("status_head_sha_mismatch")
+
+    publisher_kind = None
+    invalidation_writer = (
+        run.get("name") == INVALIDATION_WRITER_NAME
+        and run.get("path") == INVALIDATION_WRITER_PATH
+        and run.get("status") == "completed"
+        and run.get("conclusion") == "success"
+        and run.get("event") == "workflow_run"
+    )
+    pr_steward = (
+        run.get("name") == PR_STEWARD_NAME
+        and run.get("path") == PR_STEWARD_PATH
+        and run.get("status") == "completed"
+        and run.get("conclusion") == "failure"
+        and run.get("event") in {"workflow_run", "workflow_dispatch"}
+        and status.get("description") == PR_STEWARD_PENDING_DESCRIPTION
+    )
+    if invalidation_writer:
+        publisher_kind = "invalidation_writer"
+    elif pr_steward:
+        publisher_kind = "pr_steward"
+    else:
+        errors.append("pending_publisher_not_trusted")
     if errors:
         raise RuntimeError("TRUSTED_INVALIDATION_TIME_UNKNOWN: " + ",".join(errors))
 
@@ -369,8 +423,13 @@ def _validated_invalidation_source(
         "workflow_run_id": run_id,
         "workflow_name": run.get("name"),
         "workflow_path": run.get("path"),
+        "workflow_event": run.get("event"),
+        "run_conclusion": run.get("conclusion"),
+        "publisher_kind": publisher_kind,
         "status_context": status.get("context"),
         "status_state": status.get("state"),
+        "status_sha": status.get("sha"),
+        "status_description": status.get("description"),
     }
 
 
@@ -387,11 +446,15 @@ def fetch_latest_trusted_invalidation(
     if not pending_statuses:
         return None, None
 
-    pending_statuses.sort(key=lambda item: str(item.get("created_at") or ""), reverse=True)
+    pending_statuses.sort(
+        key=lambda item: str(item.get("created_at") or ""), reverse=True
+    )
     latest = pending_statuses[0]
     created_at = latest.get("created_at")
     if not created_at:
-        raise RuntimeError("TRUSTED_INVALIDATION_TIME_UNKNOWN: status_created_at_missing")
+        raise RuntimeError(
+            "TRUSTED_INVALIDATION_TIME_UNKNOWN: status_created_at_missing"
+        )
     try:
         _parse_time(str(created_at))
     except (TypeError, ValueError) as exc:
@@ -400,8 +463,15 @@ def fetch_latest_trusted_invalidation(
         ) from exc
     run_id = _actions_run_id_from_target_url(repo, latest.get("target_url"))
     if run_id is None:
-        raise RuntimeError("TRUSTED_INVALIDATION_TIME_UNKNOWN: status_target_url_unbound")
-    source = _validated_invalidation_source(repo=repo, run_id=run_id, status=latest)
+        raise RuntimeError(
+            "TRUSTED_INVALIDATION_TIME_UNKNOWN: status_target_url_unbound"
+        )
+    source = _validated_invalidation_source(
+        repo=repo,
+        head_sha=head_sha,
+        run_id=run_id,
+        status=latest,
+    )
     return str(created_at), source
 
 

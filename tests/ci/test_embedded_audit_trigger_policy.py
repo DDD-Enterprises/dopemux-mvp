@@ -1,4 +1,5 @@
 """Structural contracts for final-audit cost containment and readiness invalidation."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -19,9 +20,7 @@ TEMPLATE_AUDIT = (
     / "workflows"
     / "embedded-audit.yml"
 )
-REPOSITORY_INVALIDATOR = (
-    ROOT / ".github" / "workflows" / "pr-readiness-invalidator.yml"
-)
+REPOSITORY_INVALIDATOR = ROOT / ".github" / "workflows" / "pr-readiness-invalidator.yml"
 TEMPLATE_INVALIDATOR = (
     ROOT
     / "src"
@@ -40,7 +39,9 @@ def _load(path: Path) -> dict:
 
 def _review_gate_step() -> dict:
     steps = _load(REPOSITORY_AUDIT)["jobs"]["embedded-audit"]["steps"]
-    return next(step for step in steps if step.get("name") == "Review settlement preflight")
+    return next(
+        step for step in steps if step.get("name") == "Review settlement preflight"
+    )
 
 
 @pytest.mark.parametrize("path", [REPOSITORY_AUDIT, TEMPLATE_AUDIT])
@@ -76,10 +77,14 @@ def test_repository_audit_manual_dispatch_defaults_spend_false() -> None:
 def test_repository_audit_provider_runner_requires_manual_spend_authority() -> None:
     steps = _load(REPOSITORY_AUDIT)["jobs"]["embedded-audit"]["steps"]
     setup = next(
-        step for step in steps if step.get("name") == "Setup trusted Claude audit runner"
+        step
+        for step in steps
+        if step.get("name") == "Setup trusted Claude audit runner"
     )
     install = next(
-        step for step in steps if step.get("name") == "Install trusted Claude audit runner"
+        step
+        for step in steps
+        if step.get("name") == "Install trusted Claude audit runner"
     )
     runner = next(step for step in steps if step.get("name") == "Run PAL clink audit")
 
@@ -89,7 +94,7 @@ def test_repository_audit_provider_runner_requires_manual_spend_authority() -> N
         assert "inputs.allow_api_spend == true" in condition
 
     assert runner["env"]["ALLOW_API_SPEND"] == "${{ inputs.allow_api_spend }}"
-    assert "[ \"$ALLOW_API_SPEND\" != true ]" in runner["run"]
+    assert '[ "$ALLOW_API_SPEND" != true ]' in runner["run"]
     assert "Explicit operator API spend authority was not granted." in runner["run"]
 
 

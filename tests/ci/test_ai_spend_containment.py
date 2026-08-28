@@ -1,4 +1,5 @@
 """Structural contracts preventing automatic provider-backed CI spend."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -14,6 +15,12 @@ CI_COMPLETE = ROOT / ".github" / "workflows" / "ci-complete.yml"
 SECURITY_REVIEW = ROOT / ".github" / "workflows" / "security-review.yml"
 CLAUDE_ACTION_PREFIX = "anthropics/claude-code-security-review@"
 GEMINI_ACTION_PREFIX = "google-github-actions/run-gemini-cli@"
+GEMINI_REUSABLE = (
+    "gemini-review.yml",
+    "gemini-triage.yml",
+    "gemini-invoke.yml",
+    "gemini-plan-execute.yml",
+)
 
 
 def _load(path: Path) -> dict[str, Any]:
@@ -69,7 +76,10 @@ def _gemini_provider_workflows() -> set[str]:
     while changed:
         changed = False
         for name, workflow in parsed.items():
-            if name not in provider_backed and _workflow_calls(workflow) & provider_backed:
+            if (
+                name not in provider_backed
+                and _workflow_calls(workflow) & provider_backed
+            ):
                 provider_backed.add(name)
                 changed = True
     return provider_backed
@@ -81,7 +91,9 @@ def _assert_default_false_spend_input(path: Path) -> None:
     assert spend["type"] == "boolean"
     assert spend["default"] == "false"
     assert spend["required"] == "false"
-    assert "separate explicit operator spend authorization" in spend["description"].lower()
+    assert (
+        "separate explicit operator spend authorization" in spend["description"].lower()
+    )
 
 
 def test_ci_complete_retains_automatic_pull_request_ci() -> None:
@@ -147,6 +159,25 @@ def test_security_review_manual_gate_preserves_operator_authority_boundary() -> 
     assert "separate explicit operator spend authorization" in description
 
 
+def test_security_review_manual_summary_is_reachable() -> None:
+    workflow = _load(SECURITY_REVIEW)
+    security_job = workflow["jobs"]["security-review"]
+    summary = workflow["jobs"]["security-summary"]
+    condition = " ".join(str(summary.get("if", "")).split())
+    script = summary["steps"][0]["run"]
+
+    assert "github.event_name == 'workflow_dispatch'" in condition
+    assert "github.event_name == 'pull_request'" not in condition
+    assert security_job["outputs"]["provider_outcome"] == (
+        "${{ steps.claude_security_review.outcome }}"
+    )
+    assert summary["env"]["PROVIDER_OUTCOME"] == (
+        "${{ needs.security-review.outputs.provider_outcome }}"
+    )
+    assert "No security verdict was produced" in script
+    assert "Ready for merge" not in script
+
+
 @pytest.mark.parametrize("path", [CI_COMPLETE, SECURITY_REVIEW])
 def test_every_claude_security_action_is_dominated_by_manual_spend_gate(
     path: Path,
@@ -210,3 +241,137 @@ def test_gemini_manual_true_keeps_provider_routes_mechanically_reachable() -> No
 
     assert _workflow_calls(dispatch) & _gemini_provider_workflows()
     assert _has_direct_gemini_call(scheduled)
+
+
+def test_gemini_dispatch_validates_exact_target_before_routing() -> None:
+    workflow = _load(WORKFLOWS / "gemini-dispatch.yml")
+    inputs = workflow["on"]["workflow_dispatch"]["inputs"]
+    dispatch = workflow["jobs"]["dispatch"]
+    steps = dispatch["steps"]
+    validation = next(step for step in steps if step.get("id") == "validate_target")
+    script = validation["with"]["script"]
+
+    assert inputs["target_type"] == {
+        "description": "Exact target type for the selected route",
+        "required": "true",
+        "type": "choice",
+        "options": ["pull_request", "issue"],
+    }
+    assert inputs["target_head_sha"]["type"] == "string"
+    assert inputs["target_head_sha"]["required"] == "false"
+    assert dispatch["outputs"]["target_repository"] == (
+        "${{ steps.validate_target.outputs.target_repository }}"
+    )
+    assert dispatch["outputs"]["target_type"] == (
+        "${{ steps.validate_target.outputs.target_type }}"
+    )
+    assert dispatch["outputs"]["target_number"] == (
+        "${{ steps.validate_target.outputs.target_number }}"
+    )
+    assert dispatch["outputs"]["target_head_sha"] == (
+        "${{ steps.validate_target.outputs.target_head_sha }}"
+    )
+    assert "github.rest.repos.get" in script
+    assert "github.rest.pulls.get" in script
+    assert "github.rest.issues.get" in script
+    assert "DDD-Enterprises/dopemux-mvp" in str(validation["env"])
+    assert "Number.isSafeInteger" in script
+    assert "target_head_sha_mismatch" in script
+
+
+def test_gemini_dispatch_passes_validated_target_to_every_reusable() -> None:
+    workflow = _load(WORKFLOWS / "gemini-dispatch.yml")
+
+    for job_name in ("review", "triage", "invoke", "plan-execute"):
+        call = workflow["jobs"][job_name]
+        assert call["with"]["target_repository"] == (
+            "${{ needs.dispatch.outputs.target_repository }}"
+        )
+        assert call["with"]["target_type"] == (
+            "${{ needs.dispatch.outputs.target_type }}"
+        )
+        assert call["with"]["target_number"] == (
+            "${{ needs.dispatch.outputs.target_number }}"
+        )
+        assert call["with"]["target_head_sha"] == (
+            "${{ needs.dispatch.outputs.target_head_sha }}"
+        )
+
+
+@pytest.mark.parametrize("filename", GEMINI_REUSABLE)
+def test_gemini_reusable_revalidates_explicit_target_before_provider(
+    filename: str,
+) -> None:
+    workflow = _load(WORKFLOWS / filename)
+    inputs = workflow["on"]["workflow_call"]["inputs"]
+    serialized = (WORKFLOWS / filename).read_text(encoding="utf-8")
+    provider_jobs = [
+        job
+        for job in workflow["jobs"].values()
+        if any(
+            str(step.get("uses", "")).startswith(GEMINI_ACTION_PREFIX)
+            for step in job.get("steps", [])
+        )
+    ]
+
+    assert set(inputs) >= {
+        "target_repository",
+        "target_type",
+        "target_number",
+        "target_head_sha",
+        "additional_context",
+    }
+    assert inputs["target_repository"]["required"] == "true"
+    assert inputs["target_type"]["required"] == "true"
+    assert inputs["target_number"]["required"] == "true"
+    assert provider_jobs
+    assert "github.event.pull_request" not in serialized
+    assert "github.event.issue" not in serialized
+
+    for job in provider_jobs:
+        steps = job["steps"]
+        validation_index = next(
+            index
+            for index, step in enumerate(steps)
+            if step.get("id") == "validate_target"
+        )
+        provider_index = next(
+            index
+            for index, step in enumerate(steps)
+            if str(step.get("uses", "")).startswith(GEMINI_ACTION_PREFIX)
+        )
+        validation = steps[validation_index]
+        script = validation["with"]["script"]
+        assert validation_index < provider_index
+        assert "github.rest.repos.get" in script
+        assert "github.rest.pulls.get" in script
+        assert "github.rest.issues.get" in script
+        assert "Number.isSafeInteger" in script
+        assert "target_head_sha_mismatch" in script
+        assert "steps.validate_target.outputs.target_number" in serialized
+
+
+def test_gemini_approve_requires_separate_repository_mutation_authority() -> None:
+    dispatch = _load(WORKFLOWS / "gemini-dispatch.yml")
+    plan_call = dispatch["jobs"]["plan-execute"]
+    plan = _load(WORKFLOWS / "gemini-plan-execute.yml")
+    plan_inputs = plan["on"]["workflow_call"]["inputs"]
+
+    assert (
+        dispatch["jobs"]["dispatch"]["outputs"]["repository_mutation_authorized"]
+        == "false"
+    )
+    assert "needs.dispatch.outputs.repository_mutation_authorized == 'true'" in (
+        " ".join(str(plan_call.get("if", "")).split())
+    )
+    assert plan_call["with"]["repository_mutation_authorized"] == "false"
+    assert plan_call["permissions"]["contents"] == "read"
+    assert plan_inputs["repository_mutation_authorized"] == {
+        "description": "Separate repository mutation authority",
+        "required": "false",
+        "type": "boolean",
+        "default": "false",
+    }
+    assert "inputs.repository_mutation_authorized == true" in (
+        " ".join(str(plan["jobs"]["plan-execute"].get("if", "")).split())
+    )

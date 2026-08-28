@@ -7,6 +7,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from types import ModuleType
 
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[2]
 MODULE_PATH = ROOT / "scripts" / "audit" / "review_settlement.py"
@@ -68,8 +70,13 @@ def _trusted_invalidation(at: str) -> dict:
             "workflow_run_id": 987,
             "workflow_name": "PR readiness invalidation writer",
             "workflow_path": ".github/workflows/pr-readiness-invalidation-writer.yml",
+            "workflow_event": "workflow_run",
+            "run_conclusion": "success",
+            "publisher_kind": "invalidation_writer",
             "status_context": "PR Steward / final readiness",
             "status_state": "pending",
+            "status_sha": "a" * 40,
+            "status_description": "review activity invalidated final readiness",
         },
     }
 
@@ -205,3 +212,116 @@ def test_quiet_period_passes_after_trusted_invalidation_duration() -> None:
 
     assert result["status"] == "SETTLED"
     assert result["review_activity_age_seconds"] == 150
+
+
+def _pending_status(*, run_id: int, created_at: str, sha: str = "a" * 40) -> dict:
+    return {
+        "context": "PR Steward / final readiness",
+        "state": "pending",
+        "sha": sha,
+        "created_at": created_at,
+        "description": "live head or review settlement changed after readiness publication",
+        "target_url": (
+            f"https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/{run_id}"
+        ),
+    }
+
+
+def _workflow_run(
+    *,
+    run_id: int,
+    name: str,
+    path: str,
+    event: str,
+    conclusion: str,
+) -> dict:
+    return {
+        "id": run_id,
+        "repository": {"full_name": "DDD-Enterprises/dopemux-mvp"},
+        "name": name,
+        "path": path,
+        "status": "completed",
+        "conclusion": conclusion,
+        "event": event,
+    }
+
+
+@pytest.mark.parametrize("event", ["workflow_run", "workflow_dispatch"])
+def test_latest_steward_fail_closed_pending_is_trusted(monkeypatch, event: str) -> None:
+    module = _module()
+    status = _pending_status(run_id=222, created_at="2026-08-27T19:59:50Z")
+    run = _workflow_run(
+        run_id=222,
+        name="PR Steward",
+        path=".github/workflows/pr-steward.yml",
+        event=event,
+        conclusion="failure",
+    )
+    monkeypatch.setattr(module, "_status_history", lambda _repo, _head: [status])
+    monkeypatch.setattr(module, "_gh_api_json", lambda *_args: run)
+
+    created_at, source = module.fetch_latest_trusted_invalidation(
+        "DDD-Enterprises/dopemux-mvp", "a" * 40
+    )
+
+    assert created_at == "2026-08-27T19:59:50Z"
+    assert source == {
+        "repository": "DDD-Enterprises/dopemux-mvp",
+        "workflow_run_id": 222,
+        "workflow_name": "PR Steward",
+        "workflow_path": ".github/workflows/pr-steward.yml",
+        "workflow_event": event,
+        "run_conclusion": "failure",
+        "publisher_kind": "pr_steward",
+        "status_context": "PR Steward / final readiness",
+        "status_state": "pending",
+        "status_sha": "a" * 40,
+        "status_description": (
+            "live head or review settlement changed after readiness publication"
+        ),
+    }
+
+
+def test_newer_untrusted_pending_is_not_skipped(monkeypatch) -> None:
+    module = _module()
+    statuses = [
+        _pending_status(run_id=111, created_at="2026-08-27T19:58:00Z"),
+        _pending_status(run_id=222, created_at="2026-08-27T19:59:00Z"),
+    ]
+    untrusted_run = _workflow_run(
+        run_id=222,
+        name="Untrusted workflow",
+        path=".github/workflows/untrusted.yml",
+        event="workflow_dispatch",
+        conclusion="success",
+    )
+    monkeypatch.setattr(module, "_status_history", lambda _repo, _head: statuses)
+    monkeypatch.setattr(module, "_gh_api_json", lambda *_args: untrusted_run)
+
+    with pytest.raises(RuntimeError, match="TRUSTED_INVALIDATION_TIME_UNKNOWN"):
+        module.fetch_latest_trusted_invalidation(
+            "DDD-Enterprises/dopemux-mvp", "a" * 40
+        )
+
+
+def test_trusted_pending_status_must_match_exact_head(monkeypatch) -> None:
+    module = _module()
+    status = _pending_status(
+        run_id=111,
+        created_at="2026-08-27T19:58:00Z",
+        sha="b" * 40,
+    )
+    run = _workflow_run(
+        run_id=111,
+        name="PR readiness invalidation writer",
+        path=".github/workflows/pr-readiness-invalidation-writer.yml",
+        event="workflow_run",
+        conclusion="success",
+    )
+    monkeypatch.setattr(module, "_status_history", lambda _repo, _head: [status])
+    monkeypatch.setattr(module, "_gh_api_json", lambda *_args: run)
+
+    with pytest.raises(RuntimeError, match="status_head_sha_mismatch"):
+        module.fetch_latest_trusted_invalidation(
+            "DDD-Enterprises/dopemux-mvp", "a" * 40
+        )
