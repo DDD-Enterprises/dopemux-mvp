@@ -27,6 +27,9 @@ ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = ROOT / "schemas" / "proof" / "embedded_audit.schema.json"
 WORKFLOW_PATH = ROOT / ".github" / "workflows" / "embedded-audit.yml"
 STEWARD_WORKFLOW_PATH = ROOT / ".github" / "workflows" / "pr-steward.yml"
+TEMPLATE_STEWARD_WORKFLOW_PATH = (
+    ROOT / "src/dopemux/templates/init/.github/workflows/pr-steward.yml"
+)
 
 
 def _schema() -> dict:
@@ -412,6 +415,25 @@ def test_pr_steward_workflow_uses_completed_independent_audit_artifact() -> None
     assert "Publish readiness status on candidate PR head" in text
     assert 'context="PR Steward / final readiness"' in text
     assert "statuses: write" in text
+
+
+@pytest.mark.parametrize(
+    "workflow_path",
+    [STEWARD_WORKFLOW_PATH, TEMPLATE_STEWARD_WORKFLOW_PATH],
+    ids=["repository", "template"],
+)
+def test_pr_steward_rejects_missing_audit_run_id(workflow_path: Path) -> None:
+    workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
+    audit_run_step = next(
+        step
+        for step in workflow["jobs"]["pr-steward"]["steps"]
+        if step.get("name") == "Set audit run ID"
+    )
+    script = audit_run_step["run"]
+
+    assert 'if [ -z "$audit_run_id" ]; then' in script
+    assert "audit_run_id_missing" in script
+    assert script.index("audit_run_id_missing") < script.index("$GITHUB_OUTPUT")
 
 
 def test_pr_steward_rechecks_shared_settlement_around_success_publication() -> None:

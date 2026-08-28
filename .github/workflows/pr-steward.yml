@@ -63,7 +63,10 @@ jobs:
           else
             audit_run_id="$INPUT_AUDIT_RUN_ID"
           fi
-          test -n "$audit_run_id"
+          if [ -z "$audit_run_id" ]; then
+            echo "audit_run_id_missing" >&2
+            exit 1
+          fi
           printf 'id=%s\n' "$audit_run_id" >> "$GITHUB_OUTPUT"
 
       - name: Validate audit workflow-run identity

@@ -7,6 +7,7 @@ import tomllib
 import zipfile
 from pathlib import Path
 
+import pytest
 import yaml
 
 from dopemux.profile_manager import DopemuxProfile
@@ -203,6 +204,7 @@ def test_init_force_does_not_clobber_existing_pr_steward_files(tmp_path: Path) -
     assert merge_policy.read_text(encoding="utf-8") == "custom: true\n"
 
 
+@pytest.mark.slow
 def test_built_wheel_runs_pr_steward_and_materializes_templates_off_tree(
     tmp_path: Path,
 ) -> None:
