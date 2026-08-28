@@ -1,0 +1,29 @@
+{
+  "audit_id": "TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002-FINAL-L2",
+  "conversation_id": "3dcabcf7-00c4-431d-9393-28fd53b659a3",
+  "runner": "AGY",
+  "billing_mode": "PLAN_BACKED",
+  "subject_head": "79404f3929c47fe09434ac07a36b936190282b56",
+  "subject_tree": "324348b70013207d908e3f5af66302336dfd99e9",
+  "model_evidence": {
+    "requested_model": "gemini-3.1-pro-high",
+    "exact_cli_selector": "--model gemini-3.1-pro-high",
+    "successful_exact_selector_invocation": true,
+    "response_claimed_model": "UNKNOWN_NOT_RETAINED",
+    "provider_attested_model": "UNKNOWN",
+    "fallback_claim": "No fallback is inferred beyond successful invocation with the exact retained selector."
+  },
+  "attempt": {
+    "authorized_once": true,
+    "exit_code": 0,
+    "transport_status": "SUCCESS",
+    "verdict": "PASS"
+  },
+  "invocation": "rtk agy --model gemini-3.1-pro-high --mode plan --sandbox --effort high --output-format json --print-timeout 15m --log-file /private/tmp/dopemux-pr-repair-r2-briefs/pr1282-agy-controlling.log --print \"Read /private/tmp/dopemux-pr-repair-r2-briefs/pr1282-final-audit-prompt.md completely, then perform that independent read-only audit in current worktree. Return only required audit report.\"",
+  "api_spend_authorized": false,
+  "api_spend_used": false,
+  "pal_clink_used": false,
+  "raw_transcript_retained": false,
+  "raw_cli_log_retained": false,
+  "raw_artifact_exclusion_reason": "Raw CLI artifacts were deleted after unrelated local sensitive configuration appeared. No credential value is retained or repeated in this bundle."
+}

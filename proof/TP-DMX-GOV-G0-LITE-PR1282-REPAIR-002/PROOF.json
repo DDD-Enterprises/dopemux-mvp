@@ -1,0 +1,100 @@
+{
+  "packet_id": "TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "docs/g0-lite-implementation-authority-001",
+  "base_sha": "c7bc2fb479d7386825df73e028acdce723ee3388",
+  "r2_comparison_start": "1ede09aeb71d98a6f9464ec2725f9f5660c2b4b7",
+  "head_sha": "79404f3929c47fe09434ac07a36b936190282b56",
+  "content_head": "79404f3929c47fe09434ac07a36b936190282b56",
+  "content_tree": "324348b70013207d908e3f5af66302336dfd99e9",
+  "generated_at": "2026-08-28T03:26:42Z",
+  "proof_kind": "canonical_r2_audit_proof_only_successor",
+  "subject": {
+    "kind": "frozen_pr1282_r2_content",
+    "paths": [
+      "docs/03-reference/governance/governed-delivery/g0-lite-implementation-authority.md",
+      "proof/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001/AUDITOR_REPORT.md",
+      "proof/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001/PROOF.json",
+      "proof/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001/review_bundle/SUBJECT_BINDING.md",
+      "proof/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001/review_bundle/VALIDATION.md",
+      "task-packets/INDEX.md",
+      "task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json",
+      "task-packets/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002.json"
+    ],
+    "audit_binding": "Exact committed content head and tree above. Later proof-only successors may not alter these paths."
+  },
+  "bindings": {
+    "r2_packet_sha256": "4063e49b11c6acf68df762c90e73a3679541eb2c3e3f5c9cea9f8b0357d97a3d",
+    "r2_packet_blob": "dbc83426febe60eb8749ccac308826daf615d4d4",
+    "g0_packet_sha256": "6d6e9d5e2f93084a0738cd7cac57306299939df206bbeac5c3b4881329992856",
+    "g0_packet_blob": "aafe6fbcc3ce6321893722fefcf4121b35dd0d89",
+    "authority_record_sha256": "03d3f76a7249e7e05b9c431c74ff33d9d72219c81338d51a844efb22d8743879",
+    "authority_record_blob": "ae03821eac7c6295ea795a66220d03065e64e4f6",
+    "late_r1_proof_sha256": "c1128fe48d798b3e5891427ca9c28e568421c8a6c8c41db9cc4f28ab5ad33e0a",
+    "late_r1_proof_blob": "4bdd036dcd91ce07478a35c197dee3b5770f7b6c"
+  },
+  "overlap_action_semantics": {
+    "IDENTICAL": "CONTINUE",
+    "SUBSET": "CONTINUE_ONLY_IF_MISSING_PAYLOAD_EXPLICITLY_BOUNDED",
+    "COMPATIBLE": "CONTINUE",
+    "SUPERSET": "STOP_FOR_SUPERVISOR_ADJUDICATION",
+    "CONFLICTING": "STOP",
+    "UNKNOWN": "STOP"
+  },
+  "early_review": {
+    "reviewed_head": "79404f3929c47fe09434ac07a36b936190282b56",
+    "codex": {
+      "request_comment_node_id": "IC_kwDOPyIw988AAAABRLXnkA",
+      "result_comment_node_id": "IC_kwDOPyIw988AAAABRLYhJw",
+      "result": "NO_MAJOR_ISSUES"
+    },
+    "copilot": {
+      "review_node_id": "PRR_kwDOPyIw988AAAABLNr7SA",
+      "submitted_at": "2026-08-28T02:48:54Z",
+      "result": "COMMENTS_ADJUDICATED"
+    },
+    "review_thread_total": 15,
+    "unresolved_review_threads": 0,
+    "authority": "ADVISORY_ONLY_NO_MERGE_OR_AUDIT_AUTHORITY"
+  },
+  "audit_provenance": {
+    "audit_id": "TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002-FINAL-L2",
+    "conversation_id": "3dcabcf7-00c4-431d-9393-28fd53b659a3",
+    "billing_mode": "PLAN_BACKED",
+    "transport_status": "SUCCESS",
+    "model_selector": "gemini-3.1-pro-high",
+    "fallback_claim": "No fallback is inferred beyond successful invocation with the exact retained --model selector; provider-level model attestation is UNKNOWN.",
+    "raw_transcript_retained": false,
+    "raw_cli_log_retained": false,
+    "exclusion_reason": "Raw CLI artifacts were deleted after unrelated local sensitive configuration appeared. This bundle retains only sanitized prompt, receipt, subject, validation, and review evidence and repeats no credential value."
+  },
+  "validation_finality": {
+    "independent_audit_deterministic_checks": "PASS",
+    "canonical_proof_schema": "PASS_1_OF_1",
+    "packet_schema": "PASS",
+    "binding_recomputation": "PASS",
+    "allowlist": "PASS_R2_RANGE_16_PATHS_AND_PROOF_ONLY_DELTA_8_PATHS",
+    "gitleaks_result": "PASS_NO_LEAKS",
+    "changed_contract": "PASS_L2_FULL_PR_RANGE_AND_L0_PROOF_ONLY_EXACT_HEADS",
+    "pre_commit": "PASS_ORIGIN_MAIN_RANGE",
+    "proof_only_hook_limit": "EXACT_COMMIT_PRECOMMIT_HOOK_LACKS_REQUIRED_HEAD_ARGUMENTS; DIRECT_PROOF_ONLY_VALIDATOR_PASS",
+    "canonical_signature": "PASS_ALLOWED_SIGNER_VERIFICATION",
+    "git_diff_check": "PASS"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "rtk agy --model gemini-3.1-pro-high --mode plan --sandbox --effort high --output-format json --print-timeout 15m --log-file /private/tmp/dopemux-pr-repair-r2-briefs/pr1282-agy-controlling.log --print \"Read /private/tmp/dopemux-pr-repair-r2-briefs/pr1282-final-audit-prompt.md completely, then perform that independent read-only audit in current worktree. Return only required audit report.\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null
+  },
+  "mark_ready_authorized": false,
+  "merge_authorized": false,
+  "activation_authorized": false
+}
