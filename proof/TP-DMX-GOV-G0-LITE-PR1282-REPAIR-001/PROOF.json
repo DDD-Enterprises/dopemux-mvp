@@ -17,8 +17,8 @@
     "repair_packet_sha256": "f58c8e5f026329f0e7a3495adf5d1c99172d2da3328d43e243bfb8a2a21d4c4b",
     "repair_packet_blob": "21434e3da0368672d39920f4c7e8c578d037db6f",
     "authority_record_subject": "DMX-GOV-G0-LITE-IMPLEMENTATION-AUTHORITY-001",
-    "authority_record_sha256": "424f9d4c94697f35a1d2a2cc6e6b0914a183cd3690b19d474303eda242c563a6",
-    "authority_record_blob": "632bd1a34f57d5b3c28759ca19059b3d962f9770",
+    "authority_record_sha256": "03d3f76a7249e7e05b9c431c74ff33d9d72219c81338d51a844efb22d8743879",
+    "authority_record_blob": "ae03821eac7c6295ea795a66220d03065e64e4f6",
     "g0_packet_id": "TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001",
     "g0_packet_sha256": "6d6e9d5e2f93084a0738cd7cac57306299939df206bbeac5c3b4881329992856",
     "g0_packet_blob": "aafe6fbcc3ce6321893722fefcf4121b35dd0d89"

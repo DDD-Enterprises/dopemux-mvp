@@ -6,7 +6,7 @@
     "PR #1282 remains the only publication PR; no replacement PR, mark-ready, merge, activation, G0-Lite payload implementation, Task Orchestrator mutation, or PR #1268 mutation is authorized.",
     "Overlap classification is execution-main relative: IDENTICAL may continue; SUBSET may continue only when missing payload is explicitly bounded; COMPATIBLE may continue; SUPERSET stops for supervisor adjudication; CONFLICTING stops; UNKNOWN stops.",
     "The late R1 canonical proof records only historically observed R1-audit facts and explicitly labels PROOF_MATERIALIZATION=LATE_REPAIR_CLOSURE; it does not claim the proof existed earlier or provide final R2 audit closure.",
-    "No final independent audit runs before early Codex and Copilot review routes are requested and stabilized."
+    "No additional final independent audit for R2 runs before early Codex and Copilot review routes are requested and stabilized; the recorded R1 audit remains historical lineage only."
   ],
   "depends_on": [
     "TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001"
