@@ -122,13 +122,37 @@ re-run it via GitHub Actions → Re-run jobs → Re-run failed jobs.
 Do not use empty commits to refresh CI. Supported refresh paths are:
 
 - Push a real commit that changes tracked repo content.
-- Convert a draft PR to ready for review; `ready_for_review` is an explicit
-  trigger for the PR workflows.
+- Convert a draft PR to ready for review; `ready_for_review` starts review
+  incubation, deterministic CI, and pending final-readiness invalidation.
 - Use `workflow_dispatch` where the workflow supports it.
 - Use GitHub's "Re-run jobs" action for a completed workflow run.
 
 Empty commits are audit noise: they change branch history without changing the
 repo truth being validated.
+
+## Final Audit Conveyor
+
+Final embedded audit is explicit and exact-head-bound:
+
+1. Implement on a draft PR and run deterministic validation.
+2. Mark ready to start review incubation and automated review activity.
+3. Repair or adjudicate findings; resolve every review thread.
+4. Freeze substantive content head.
+5. Wait at least 300 seconds after the latest `ready_for_review` transition and
+   120 seconds after the latest review submission or thread-comment activity.
+6. Dispatch `embedded-audit.yml` once with exact `pr_number` and `head_sha`.
+7. Let PR Steward consume that completed audit and publish final readiness on
+   the same candidate head.
+8. Obtain separate operator merge authority.
+
+Early dispatch, head movement, draft/closed/merged state, unresolved review
+threads, pagination beyond bounded review coverage, or insufficient quiescence
+fails before model setup or invocation. Review activity also sets
+`PR Steward / final readiness` back to `pending`, superseding stale success.
+
+`ready_for_review`, `opened`, `synchronize`, and `reopened` never invoke final
+embedded audit. Deterministic `ci-complete.yml` and `preflight.yml` PR triggers
+remain unchanged.
 
 ---
 

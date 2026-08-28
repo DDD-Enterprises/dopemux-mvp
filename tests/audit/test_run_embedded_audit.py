@@ -6,6 +6,7 @@ from pathlib import Path
 
 import jsonschema
 import pytest
+import yaml
 
 from scripts.audit.run_embedded_audit import (
     build_diagnostic_failure_proof,
@@ -26,6 +27,10 @@ STEWARD_WORKFLOW_PATH = ROOT / ".github" / "workflows" / "pr-steward.yml"
 
 def _schema() -> dict:
     return json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+
+
+def _workflow() -> dict:
+    return yaml.load(WORKFLOW_PATH.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
 
 
 def _route() -> dict:
@@ -229,12 +234,17 @@ def test_run_cli_skips_when_supplied_pal_output_json_is_missing(
 
 def test_embedded_audit_workflow_uses_trusted_source_and_least_privilege() -> None:
     text = WORKFLOW_PATH.read_text(encoding="utf-8")
+    triggers = _workflow()["on"]
     permissions = text.split("permissions:\n", 1)[1].split("\njobs:", 1)[0]
 
-    assert "pull_request_target:" in text
-    # Trigger must not use untrusted pull_request alone; legacy name may appear
-    # only inside metadata shell equality checks.
-    assert "on:\n  pull_request_target:" in text or "on:\n  pull_request_target" in text
+    assert set(triggers) == {"workflow_dispatch"}
+    assert "pull_request_target" not in triggers
+    assert "pull_request" not in triggers
+    assert "ready_for_review" not in triggers
+    dispatch_inputs = triggers["workflow_dispatch"]["inputs"]
+    assert {"pr_number", "head_sha"} <= set(dispatch_inputs)
+    assert dispatch_inputs["pr_number"]["required"] == "true"
+    assert dispatch_inputs["head_sha"]["required"] == "true"
     assert "contents: read" in text
     assert "pull-requests: read" in text
     assert "checks: read" in text
@@ -276,18 +286,19 @@ def test_embedded_audit_workflow_provisions_authenticated_claude_runner() -> Non
     assert 'if [ -z "$ANTHROPIC_API_KEY" ]; then' in runner_step
 
 
-def test_embedded_audit_workflow_handles_pull_request_target_metadata() -> None:
-    """Regression: trigger is pull_request_target; shell must not only match pull_request."""
+def test_embedded_audit_workflow_accepts_only_manual_dispatch_metadata() -> None:
+    """Automatic PR event metadata must never reach paid audit execution."""
     text = WORKFLOW_PATH.read_text(encoding="utf-8")
-    assert 'EVENT_NAME" = "pull_request_target"' in text or \
-        "\"$EVENT_NAME\" = \"pull_request_target\"" in text or \
-        '[ "$EVENT_NAME" = "pull_request_target" ]' in text
-    assert '[ "$EVENT_NAME" = "pull_request" ] || [ "$EVENT_NAME" = "pull_request_target" ]' in text
-    assert '[ "$EVENT_NAME" = "workflow_dispatch" ]' in text
-    assert "EVENT_PR_NUMBER" in text
-    assert "EVENT_HEAD_SHA" in text
+    triggers = _workflow()["on"]
+
+    assert set(triggers) == {"workflow_dispatch"}
+    assert "EVENT_NAME" not in text
+    assert "EVENT_PR_NUMBER" not in text
+    assert "EVENT_HEAD_SHA" not in text
+    assert "EVENT_BASE_SHA" not in text
     assert "INPUT_PR_NUMBER" in text
     assert "INPUT_HEAD_SHA" in text
+    assert "TRUSTED_FALLBACK_REF" in text
 
 
 def test_embedded_audit_workflow_runs_emitter_from_trusted_source() -> None:

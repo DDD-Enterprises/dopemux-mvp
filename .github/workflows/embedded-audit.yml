@@ -1,8 +1,6 @@
 name: embedded-audit
 
 on:
-  pull_request_target:
-    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
     inputs:
       pr_number:
@@ -29,34 +27,156 @@ jobs:
       - name: Set PR metadata
         id: pr
         env:
-          EVENT_NAME: ${{ github.event_name }}
-          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
-          EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           INPUT_PR_NUMBER: ${{ inputs.pr_number }}
           INPUT_HEAD_SHA: ${{ inputs.head_sha }}
           TRUSTED_FALLBACK_REF: ${{ github.event.repository.default_branch }}
         run: |
-          # pull_request_target and legacy pull_request both carry pull_request
-          # event metadata. workflow_dispatch uses validated inputs only.
-          if [ "$EVENT_NAME" = "pull_request" ] || [ "$EVENT_NAME" = "pull_request_target" ]; then
-            printf 'number=%s\n' "$EVENT_PR_NUMBER" >> "$GITHUB_OUTPUT"
-            printf 'head_sha=%s\n' "$EVENT_HEAD_SHA" >> "$GITHUB_OUTPUT"
-            printf 'trusted_ref=%s\n' "$EVENT_BASE_SHA" >> "$GITHUB_OUTPUT"
-            test -n "$EVENT_PR_NUMBER"
-            test -n "$EVENT_HEAD_SHA"
-            test -n "$EVENT_BASE_SHA"
-          elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            printf 'number=%s\n' "$INPUT_PR_NUMBER" >> "$GITHUB_OUTPUT"
-            printf 'head_sha=%s\n' "$INPUT_HEAD_SHA" >> "$GITHUB_OUTPUT"
-            printf 'trusted_ref=%s\n' "$TRUSTED_FALLBACK_REF" >> "$GITHUB_OUTPUT"
-            test -n "$INPUT_PR_NUMBER"
-            test -n "$INPUT_HEAD_SHA"
-            test -n "$TRUSTED_FALLBACK_REF"
-          else
-            echo "Unsupported event: $EVENT_NAME" >&2
-            exit 1
-          fi
+          test -n "$INPUT_PR_NUMBER"
+          test -n "$INPUT_HEAD_SHA"
+          test -n "$TRUSTED_FALLBACK_REF"
+          printf 'number=%s\n' "$INPUT_PR_NUMBER" >> "$GITHUB_OUTPUT"
+          printf 'head_sha=%s\n' "$INPUT_HEAD_SHA" >> "$GITHUB_OUTPUT"
+          printf 'trusted_ref=%s\n' "$TRUSTED_FALLBACK_REF" >> "$GITHUB_OUTPUT"
+
+      - name: Review settlement preflight
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          EXPECTED_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          MIN_READY_AGE_SECONDS: "300"
+          MIN_ACTIVITY_QUIET_SECONDS: "120"
+          REVIEW_SETTLEMENT_JSON: /tmp/review-settlement.json
+        run: |
+          set -euo pipefail
+          owner="${EXPECTED_REPO%%/*}"
+          name="${EXPECTED_REPO#*/}"
+          test -n "$owner"
+          test -n "$name"
+          test "$owner/$name" = "$EXPECTED_REPO"
+          printf '%s' "$PR_NUMBER" | grep -Eq '^[1-9][0-9]*$'
+          printf '%s' "$EXPECTED_HEAD_SHA" | grep -Eq '^[0-9a-f]{40}$'
+
+          gh api graphql \
+            -F owner="$owner" \
+            -F name="$name" \
+            -F number="$PR_NUMBER" \
+            -f query='query($owner:String!,$name:String!,$number:Int!){repository(owner:$owner,name:$name){pullRequest(number:$number){number state isDraft merged headRefOid readyForReviewEvents:timelineItems(last:100,itemTypes:[READY_FOR_REVIEW_EVENT]){pageInfo{hasPreviousPage}nodes{... on ReadyForReviewEvent{createdAt}}}reviews(last:100){pageInfo{hasPreviousPage}nodes{submittedAt updatedAt state}}reviewThreads(first:100){pageInfo{hasNextPage}nodes{isResolved comments(last:100){pageInfo{hasPreviousPage}nodes{createdAt updatedAt}}}}}}}' \
+            > "$REVIEW_SETTLEMENT_JSON"
+
+          python - <<'PY'
+          import json
+          import os
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+
+          def parse_time(value: str) -> datetime:
+              return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+          payload = json.loads(
+              Path(os.environ["REVIEW_SETTLEMENT_JSON"]).read_text(encoding="utf-8")
+          )
+          errors = payload.get("errors") or []
+          repo = (payload.get("data") or {}).get("repository")
+          pr = (repo or {}).get("pullRequest")
+          reasons = []
+
+          if errors:
+              reasons.append("graphql_errors")
+          if not isinstance(pr, dict):
+              reasons.append("pull_request_missing")
+              pr = {}
+
+          expected_pr = int(os.environ["PR_NUMBER"])
+          expected_head = os.environ["EXPECTED_HEAD_SHA"]
+          if pr.get("number") != expected_pr:
+              reasons.append("pr_number_mismatch")
+          if pr.get("headRefOid") != expected_head:
+              reasons.append("head_sha_mismatch")
+          if pr.get("state") != "OPEN":
+              reasons.append("pr_not_open")
+          if pr.get("isDraft") is not False:
+              reasons.append("pr_is_draft_or_unknown")
+          if pr.get("merged") is not False:
+              reasons.append("pr_merged_or_unknown")
+
+          ready_events = pr.get("readyForReviewEvents") or {}
+          reviews = pr.get("reviews") or {}
+          threads = pr.get("reviewThreads") or {}
+          if (ready_events.get("pageInfo") or {}).get("hasPreviousPage") is not False:
+              reasons.append("ready_events_pagination_unknown")
+          if (reviews.get("pageInfo") or {}).get("hasPreviousPage") is not False:
+              reasons.append("reviews_pagination_unknown")
+          if (threads.get("pageInfo") or {}).get("hasNextPage") is not False:
+              reasons.append("review_threads_pagination_unknown")
+
+          now_value = os.environ.get("NOW_ISO")
+          now = parse_time(now_value) if now_value else datetime.now(timezone.utc)
+          ready_times = []
+          for node in ready_events.get("nodes") or []:
+              created_at = (node or {}).get("createdAt")
+              if not created_at:
+                  reasons.append("ready_event_timestamp_missing")
+              else:
+                  ready_times.append(parse_time(created_at))
+          ready_age = None
+          if not ready_times:
+              reasons.append("ready_for_review_event_missing")
+          else:
+              ready_age = int((now - max(ready_times)).total_seconds())
+              if ready_age < int(os.environ["MIN_READY_AGE_SECONDS"]):
+                  reasons.append("ready_for_review_too_recent")
+
+          unresolved = 0
+          activity_times = []
+          for review in reviews.get("nodes") or []:
+              for field in ("submittedAt", "updatedAt"):
+                  value = (review or {}).get(field)
+                  if value:
+                      activity_times.append(parse_time(value))
+          for thread in threads.get("nodes") or []:
+              if (thread or {}).get("isResolved") is not True:
+                  unresolved += 1
+              comments = (thread or {}).get("comments") or {}
+              if (comments.get("pageInfo") or {}).get("hasPreviousPage") is not False:
+                  reasons.append("review_comments_pagination_unknown")
+              for comment in comments.get("nodes") or []:
+                  for field in ("createdAt", "updatedAt"):
+                      value = (comment or {}).get(field)
+                      if value:
+                          activity_times.append(parse_time(value))
+          if unresolved:
+              reasons.append("unresolved_review_threads")
+
+          activity_age = None
+          if activity_times:
+              activity_age = int((now - max(activity_times)).total_seconds())
+              if activity_age < int(os.environ["MIN_ACTIVITY_QUIET_SECONDS"]):
+                  reasons.append("review_activity_too_recent")
+
+          result = {
+              "marker": "PRE_MODEL_REVIEW_GATE",
+              "status": "PASS" if not reasons else "BLOCKED",
+              "repo": os.environ["EXPECTED_REPO"],
+              "pr_number": expected_pr,
+              "expected_head_sha": expected_head,
+              "live_head_sha": pr.get("headRefOid"),
+              "ready_age_seconds": ready_age,
+              "review_activity_age_seconds": activity_age,
+              "unresolved_review_threads": unresolved,
+              "reasons": sorted(set(reasons)),
+          }
+          rendered = json.dumps(result, sort_keys=True, separators=(",", ":"))
+          print(rendered)
+          summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary_path:
+              with Path(summary_path).open("a", encoding="utf-8") as summary:
+                  summary.write(f"PRE_MODEL_REVIEW_GATE `{rendered}`\n")
+          if reasons:
+              raise SystemExit(1)
+          PY
 
       - name: Checkout trusted audit source
         uses: actions/checkout@v4

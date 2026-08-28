@@ -1,0 +1,51 @@
+name: PR readiness invalidator
+
+on:
+  pull_request:
+    types: [ready_for_review]
+  pull_request_review:
+    types: [submitted, dismissed]
+  pull_request_review_comment:
+    types: [created, edited, deleted]
+
+permissions:
+  contents: read
+  statuses: write
+
+jobs:
+  invalidate:
+    name: invalidate stale final readiness
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish pending readiness status
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_REPO: ${{ github.repository }}
+          EVENT_REPO: ${{ github.event.repository.full_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+        run: |
+          set -euo pipefail
+          test -n "$EXPECTED_REPO"
+          test "$EVENT_REPO" = "$EXPECTED_REPO"
+          printf '%s' "$PR_NUMBER" | grep -Eq '^[1-9][0-9]*$'
+          printf '%s' "$PR_HEAD_SHA" | grep -Eq '^[0-9a-f]{40}$'
+          case "$EVENT_NAME:$EVENT_ACTION" in
+            pull_request:ready_for_review|\
+            pull_request_review:submitted|\
+            pull_request_review:dismissed|\
+            pull_request_review_comment:created|\
+            pull_request_review_comment:edited|\
+            pull_request_review_comment:deleted) ;;
+            *) exit 1 ;;
+          esac
+
+          state="pending"
+          context="PR Steward / final readiness"
+          description="review incubation pending for PR ${PR_NUMBER} after ${EVENT_NAME}/${EVENT_ACTION}"
+          gh api "repos/${EXPECTED_REPO}/statuses/${PR_HEAD_SHA}" \
+            -f state="$state" \
+            -f context="$context" \
+            -f description="$description"
