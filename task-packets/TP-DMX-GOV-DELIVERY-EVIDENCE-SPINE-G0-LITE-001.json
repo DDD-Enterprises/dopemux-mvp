@@ -27,6 +27,7 @@
     "Runtime and schema parsers remain closed to undeclared fields, unknown schema versions, malformed full Git object IDs, and malformed SHA-256 digests.",
     "No new dependency, database, service, daemon, MCP server, persistent cache, credential store, network listener, provider call, auditor call, GitHub mutation, or Task Orchestrator mutation is introduced by G0-Lite runtime code.",
     "Risk lane is L2 because planned work changes governance, schemas, and public data contracts. Budget is one bounded implementer after authority issuance plus one final independent auditor after content-head freeze; no intermediate model audits.",
+    "Overlap actions are explicit: IDENTICAL may continue; SUBSET may continue only when missing payload is explicitly bounded; COMPATIBLE may continue; SUPERSET is STOP_FOR_SUPERVISOR_ADJUDICATION; CONFLICTING is STOP; UNKNOWN is STOP.",
     "UNKNOWN authority, source drift with conflicting semantics, allowlist conflict, contract ambiguity, test failure, audit failure, proof staleness, or PR-head mismatch stops execution and remains explicit."
   ],
   "depends_on": [],
@@ -92,7 +93,7 @@
         "Fetch refs/pull/1268/head into the bounded local ref refs/dopemux/custody/pr-1268-caa4ec2913d0463c7e38835029f3f7adeb915ac6 without force, then require that ref^{commit} to resolve exactly to caa4ec2913d0463c7e38835029f3f7adeb915ac6 before reading any failed-PR source path.",
         "Define the planned G0-Lite payload as exactly the seventeen non-packet, non-proof paths in commit.allowlist. Require exactly one merge base between execution-main HEAD and the verified custody ref. Derive MAIN_PATHS from merge-base..HEAD and SOURCE_PATHS from merge-base..custody-ref using those exact pathspecs and --no-renames; derive SHARED_PATHS as their intersection.",
         "Classify overlap deterministically: COMPATIBLE when SHARED_PATHS is empty; otherwise CONFLICTING when any shared path has a different final path state between HEAD and the custody ref; otherwise IDENTICAL when MAIN_PATHS equals SOURCE_PATHS, SUBSET when MAIN_PATHS is a proper subset of SOURCE_PATHS, SUPERSET when MAIN_PATHS is a proper superset of SOURCE_PATHS, and COMPATIBLE for all other equal-shared-state set relations. SUBSET and SUPERSET are always recorded from the execution-main perspective.",
-        "Any missing authority, fetch failure, exact-SHA mismatch, absent or multiple merge base, path-enumeration failure, path outside the planned payload, or unprovable shared-path state is UNKNOWN. CONFLICTING or UNKNOWN stops for supervisor review."
+        "IDENTICAL may continue. SUBSET may continue only when every missing source payload path is explicitly recorded as excluded or deferred. COMPATIBLE may continue. SUPERSET is STOP_FOR_SUPERVISOR_ADJUDICATION. CONFLICTING is STOP. Any missing authority, fetch failure, exact-SHA mismatch, absent or multiple merge base, path-enumeration failure, path outside the planned payload, or unprovable shared-path state is UNKNOWN and STOP."
       ],
       "commands": [
         "git status --short --branch",
@@ -113,7 +114,7 @@
         "The authority anchor is an ancestor of execution-start main, and every intervening change is authority-publication-only or proven compatible and non-overlapping with all seventeen payload paths.",
         "PR #1268 remains draft and its fetched head resolves exactly to caa4ec2913d0463c7e38835029f3f7adeb915ac6; drift or an unavailable exact object stops without mutation.",
         "Record execution-main SHA, custody-ref SHA, unique merge-base SHA, sorted MAIN_PATHS, sorted SOURCE_PATHS, sorted SHARED_PATHS, per-shared-path final-state comparison, classification, and direction. Every recorded path is in the seventeen-path planned payload.",
-        "Classification is exactly IDENTICAL, SUBSET, SUPERSET, COMPATIBLE, CONFLICTING, or UNKNOWN. CONFLICTING or UNKNOWN stops execution."
+        "Classification is exactly IDENTICAL, SUBSET, SUPERSET, COMPATIBLE, CONFLICTING, or UNKNOWN. IDENTICAL and COMPATIBLE may continue; SUBSET requires explicit missing-payload bounds; SUPERSET is STOP_FOR_SUPERVISOR_ADJUDICATION; CONFLICTING and UNKNOWN stop execution."
       ],
       "context_files": [
         "AGENTS.md",

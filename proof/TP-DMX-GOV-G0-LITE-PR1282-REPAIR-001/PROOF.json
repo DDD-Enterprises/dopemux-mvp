@@ -1,0 +1,67 @@
+{
+  "packet_id": "TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "docs/g0-lite-implementation-authority-001",
+  "proof_kind": "canonical_late_repair_closure",
+  "PROOF_MATERIALIZATION": "LATE_REPAIR_CLOSURE",
+  "generated_at": "2026-08-28T02:31:13Z",
+  "substantive_audit_subject": {
+    "head_sha": "e339c74239e3a3ec157eeaaf1aa6fa580fea1ee7",
+    "tree": "8c481613a467fe70c745455cca9af2828ba4faca",
+    "verdict": "PASS_WITH_RISKS",
+    "audit_id": "TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001-FINAL-L2",
+    "meaning": "Recorded historical R1 substantive-audit fact. This late proof did not exist at that audit time and is not a final R2 audit."
+  },
+  "bindings": {
+    "repair_packet_id": "TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001",
+    "repair_packet_sha256": "f58c8e5f026329f0e7a3495adf5d1c99172d2da3328d43e243bfb8a2a21d4c4b",
+    "repair_packet_blob": "21434e3da0368672d39920f4c7e8c578d037db6f",
+    "authority_record_subject": "DMX-GOV-G0-LITE-IMPLEMENTATION-AUTHORITY-001",
+    "authority_record_sha256": "424f9d4c94697f35a1d2a2cc6e6b0914a183cd3690b19d474303eda242c563a6",
+    "authority_record_blob": "632bd1a34f57d5b3c28759ca19059b3d962f9770",
+    "g0_packet_id": "TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001",
+    "g0_packet_sha256": "6d6e9d5e2f93084a0738cd7cac57306299939df206bbeac5c3b4881329992856",
+    "g0_packet_blob": "aafe6fbcc3ce6321893722fefcf4121b35dd0d89"
+  },
+  "overlap_action_semantics": {
+    "IDENTICAL": "CONTINUE",
+    "SUBSET": "CONTINUE_ONLY_IF_MISSING_PAYLOAD_EXPLICITLY_BOUNDED",
+    "COMPATIBLE": "CONTINUE",
+    "SUPERSET": "STOP_FOR_SUPERVISOR_ADJUDICATION",
+    "CONFLICTING": "STOP",
+    "UNKNOWN": "STOP"
+  },
+  "deterministic_receipts": [
+    "R2 packet schema validation passed before substantive repair.",
+    "R1 packet SHA-256 and Git blob recomputed from current bytes.",
+    "G0 packet SHA-256 and Git blob recomputed from current bytes.",
+    "Authority record SHA-256 and Git blob recomputed from current bytes.",
+    "Embedded-audit object below preserves the observed R1 final audit receipt."
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "copilot-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "COPILOT_HOME=<isolated-temp-home> copilot --prompt '' --mode plan --model claude-sonnet-4.6 --reasoning-effort high --disable-builtin-mcps --disable-mcp-server github-mcp-server --no-custom-instructions --no-remote --no-remote-export --no-auto-update --no-ask-user --available-tools=view --available-tools=grep --available-tools=glob --allow-all-tools --output-format text --silent < bounded-audit-prompt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "G0-R2-01",
+        "severity": "HIGH",
+        "title": "Canonical R1 proof root materialized late",
+        "status": "RESOLVED",
+        "body": "This bundle closes the missing canonical repair-proof root while preserving its late-materialization fact."
+      }
+    ],
+    "fixes_applied": [
+      "Materialized canonical R1 proof root with binding, audit-lineage, and deterministic-receipt records."
+    ],
+    "remaining_risks": [
+      "R2 substantive changes are not covered by this historical R1 audit receipt.",
+      "Final independent audit and exact-head finality remain pending after early-review stabilization."
+    ],
+    "skip_reason": null
+  }
+}
