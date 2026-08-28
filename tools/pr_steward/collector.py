@@ -42,7 +42,11 @@ def load_fixture(fixture_dir: Path) -> dict[str, Any]:
 
 
 def collect_from_github(
-    repo: str, pr_number: int, *, proof_path: Path | None = None
+    repo: str,
+    pr_number: int,
+    *,
+    proof_path: Path | None = None,
+    quiescence_path: Path | None = None,
 ) -> dict[str, Any]:
     errors: list[str] = []
     proof_state, initial_proof_errors = _proof_state(
@@ -92,13 +96,27 @@ def collect_from_github(
             proof_state=proof_state,
         )
 
+    pr_head_sha_val = str(pr_payload.get("headRefOid") or "")
     proof_state, proof_errors = _proof_state(
         proof_path=proof_path,
-        pr_head_sha=str(pr_payload.get("headRefOid") or ""),
+        pr_head_sha=pr_head_sha_val,
         expected_pr=pr_number,
         expected_repo=repo,
     )
     errors.extend(proof_errors)
+    effective_quiescence_path = quiescence_path
+    if effective_quiescence_path is None and proof_path is not None:
+        candidate_q = proof_path.parent / "REVIEW_QUIESCENCE.json"
+        if candidate_q.is_file():
+            effective_quiescence_path = candidate_q
+
+    quiescence_state, quiescence_errors = _quiescence_state(
+        quiescence_path=effective_quiescence_path,
+        pr_head_sha=pr_head_sha_val,
+        expected_pr=pr_number,
+        expected_repo=repo,
+    )
+    errors.extend(quiescence_errors)
     threads, thread_errors = _fetch_review_threads(repo=repo, pr_number=pr_number)
     errors.extend(thread_errors)
     reviews_raw, review_errors = _fetch_reviews_with_commit(repo=repo, pr_number=pr_number)
@@ -122,6 +140,7 @@ def collect_from_github(
         proof_state=proof_state,
         security_release_approval=security_release_approval,
         changed_files=changed_files,
+        review_quiescence=quiescence_state,
     )
 
 
@@ -133,6 +152,7 @@ def normalize_gh_payload(
     proof_state: dict[str, Any] | None = None,
     security_release_approval: dict[str, Any] | None = None,
     changed_files: list[dict[str, Any]] | None = None,
+    review_quiescence: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     review_comments = []
     for thread in review_threads:
@@ -143,6 +163,7 @@ def normalize_gh_payload(
         "harvest_complete": not harvest_errors,
         "harvest_errors": harvest_errors,
         "pr": pr_payload,
+        "review_quiescence": review_quiescence,
         "changed_files": changed_files if changed_files is not None else (pr_payload.get("files") or []),
         "commits": pr_payload.get("commits") or [],
         "reviews": pr_payload.get("reviews") or [],
@@ -847,3 +868,38 @@ def _run(args: list[str]) -> subprocess.CompletedProcess[str]:
         capture_output=True,
         check=False,
     )
+
+
+def _quiescence_state(
+    *,
+    quiescence_path: Path | None,
+    pr_head_sha: str | None,
+    expected_pr: int | None = None,
+    expected_repo: str | None = None,
+) -> tuple[dict[str, Any] | None, list[str]]:
+    if quiescence_path is None:
+        return None, []
+    try:
+        payload = json.loads(quiescence_path.read_text(encoding="utf-8"))
+    except OSError as exc:
+        return None, [f"quiescence_unreadable: {exc}"]
+    except json.JSONDecodeError as exc:
+        return None, [f"quiescence_unparseable: {exc}"]
+    if not isinstance(payload, dict):
+        return None, ["quiescence_unparseable: root is not an object"]
+
+    errors: list[str] = []
+    if expected_pr is not None:
+        try:
+            q_pr = int(payload.get("pr_number"))  # type: ignore[arg-type]
+        except (TypeError, ValueError):
+            q_pr = None
+        if q_pr != int(expected_pr):
+            errors.append(f"quiescence_pr_mismatch: proof pr_number={payload.get('pr_number')!r} expected={expected_pr}")
+    if pr_head_sha is not None and str(payload.get("head_sha") or "") != pr_head_sha:
+        errors.append(f"quiescence_head_mismatch: proof head_sha={payload.get('head_sha')!r} expected={pr_head_sha}")
+    if expected_repo is not None and str(payload.get("repository") or "").strip() != expected_repo:
+        errors.append(f"quiescence_repo_mismatch: proof repo={payload.get('repository')!r} expected={expected_repo}")
+    if payload.get("is_quiescent") is not True or payload.get("verdict") != "QUIESCENT":
+        errors.append(f"review_not_quiescent: verdict={payload.get('verdict')}")
+    return payload, errors

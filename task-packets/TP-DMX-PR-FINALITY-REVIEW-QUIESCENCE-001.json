@@ -1,0 +1,295 @@
+{
+  "id": "TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001",
+  "project": "DOPMUX_GOVERNED_DELIVERY",
+  "target": "L3 CI-trust repair: require exact-head review quiescence before independent embedded audit and PR Steward final readiness",
+  "invariants": [
+    "RISK_LANE=L3_RED",
+    "IMPLEMENTATION_AUTHORIZED=NO until a separate explicit operator L3 execution gate is given",
+    "MERGE_AUTHORIZED=NO",
+    "ACTIVATION_AUTHORIZED=NO",
+    "BRANCH_PROTECTION_MUTATION=FORBIDDEN in this packet",
+    "PR_1286_PRODUCT_REPAIR=OUT_OF_SCOPE; PR #1286 is a read-only regression fixture only",
+    "Expensive or provider-backed independent audit MUST NOT start until exact-head review quiescence is mechanically proven",
+    "PR Steward final readiness MUST NOT become READY unless the exact audited head also carries a valid exact-head review-quiescence receipt",
+    "Every mandatory automated review producer must have completion evidence bound to the current PR head; UNKNOWN completion fails closed",
+    "A new PR head invalidates all prior producer-completion and review-quiescence evidence",
+    "Any active unresolved blocking review thread prevents quiescence and prevents model audit",
+    "Known reviewer completion may be proven only by configured deterministic evidence such as an exact-head review submission, exact-head completed check run, or explicitly permitted bot reaction temporally bound to the unchanged head",
+    "No fixed sleep or quiet-window alone may constitute review completion authority",
+    "A bounded polling/settle window may be used only as transport coordination around deterministic completion evidence",
+    "No review, thread, audit, check, or status may be silently ignored to obtain READY",
+    "A stale prior PR Steward READY must be overwritten by failure when quiescence, audit, or exact-head binding is absent or stale",
+    "No automatic merge, auto-merge enablement, thread resolution, review dismissal, reviewer removal, or readiness transition is authorized",
+    "The implementation must not create a second merge-readiness authority; review quiescence is a prerequisite fact consumed by embedded audit and PR Steward",
+    "Current main movement is non-blocking unless it changes packet paths, workflow authority, branch-protection semantics, or the #1286 race facts materially",
+    "One final independent L3 audit is required on the frozen substantive content head using a different family/runtime from the implementer",
+    "Proof, audit, and readiness claims must bind the final exact content head"
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PR-FINALITY-RACE-REPAIR-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "commit": {
+    "message": "fix(governance): gate final audit on review quiescence",
+    "allowlist": [
+      ".github/workflows/embedded-audit.yml",
+      ".github/workflows/pr-steward.yml",
+      "tools/pr_steward/review_quiescence.py",
+      "tools/pr_steward/review_producers.json",
+      "tools/pr_steward/collector.py",
+      "tools/pr_steward/classifier.py",
+      "schemas/pr_steward/review_quiescence.schema.json",
+      "tests/project_control_plane/test_pr_steward.py",
+      "tests/project_control_plane/test_pr_steward_quiescence.py",
+      "docs/ops/pr-steward.md",
+      "task-packets/TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001.json",
+      "task-packets/INDEX.md",
+      "proof/TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001/PROOF.json",
+      "proof/TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001/PROOF.json.sig",
+      "proof/TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001/SUMMARY.md",
+      "proof/TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001/REVIEW_QUIESCENCE_REGRESSION.json",
+      "proof/TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001/AUDIT_INVOCATION.md",
+      "proof/TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001/AUDITOR_REPORT.md"
+    ],
+    "verify": [
+      "git diff --check",
+      "canonical Task Packet schema validation",
+      "review-quiescence schema validation",
+      "focused PR Steward/review-quiescence tests",
+      "relevant complete PR Steward/governance test suite",
+      "workflow syntax/static validation for changed GitHub Actions workflows",
+      "changed-file pre-commit lane",
+      "secret scan for proof/package output",
+      "changed-file allowlist closure"
+    ]
+  },
+  "pr": {
+    "title": "fix(governance): gate final audit on review quiescence",
+    "body": "L3 CI-trust/finality repair. Prevent independent embedded audit and PR Steward READY from outrunning late automated reviews. Adds deterministic exact-head review-quiescence evidence, gates provider-backed audit before invocation, and requires the same exact-head quiescence receipt at PR Steward finality. PR #1286 is a read-only regression fixture only. No branch-protection mutation, merge, activation, review dismissal, thread resolution, or auto-merge authority. One final independent L3 audit on the frozen content head is required before operator merge decision.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S00",
+      "task": "Preflight repository identity, authority, and explicit L3 execution gate.",
+      "requirements": [
+        "Verify repository is DDD-Enterprises/dopemux-mvp and base branch is main.",
+        "Record current main SHA/tree; authoring observation was main=5900c27d3c38b515204bd5dc4baed8b5e14e2a8e and tree=1c7376097b714bbea6ee42cc1c5abeda2e72bb1b.",
+        "Re-read current AGENTS.md, governance/rules, docs/ops/pr-steward.md, canonical Task Packet schema, current .github/workflows/embedded-audit.yml, and .github/workflows/pr-steward.yml.",
+        "Reharvest current branch protection/rulesets and confirm required finality checks.",
+        "STOP before any mutation unless explicit operator L3 implementation authority for this packet is present.",
+        "Do not silently change runner, model, network, credentials, mutation scope, or provenance."
+      ],
+      "validation": [
+        "repo identity PASS",
+        "authority files read",
+        "L3 operator gate explicitly recorded",
+        "current main/tree and branch-protection facts recorded"
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docs/ops/pr-steward.md",
+        ".github/workflows/embedded-audit.yml",
+        ".github/workflows/pr-steward.yml"
+      ]
+    },
+    {
+      "id": "S01",
+      "task": "Freeze the late-review race as a deterministic regression case and census review-producer evidence surfaces.",
+      "requirements": [
+        "Use PR #1286 only as read-only evidence; do not repair or mutate it.",
+        "Reconfirm exact live PR #1286 head before using the fixture.",
+        "Preserve the observed ordering from the accepted evidence: independent embedded audit completed before PR Steward READY, then Copilot and Codex exact-head reviews arrived later.",
+        "Record each automated review producer that can create a blocking review/thread after ready_for_review or synchronize.",
+        "For each producer, define deterministic completion evidence and fail closed if completion cannot be mechanically observed.",
+        "Do not infer completion from elapsed time alone."
+      ],
+      "validation": [
+        "#1286 race reproducer is exact-head bound",
+        "mandatory producer census is explicit",
+        "every mandatory producer has deterministic completion semantics or is UNKNOWN/blocking"
+      ]
+    },
+    {
+      "id": "S02",
+      "task": "Implement a deterministic exact-head review-quiescence evaluator and typed receipt.",
+      "requirements": [
+        "Create tools/pr_steward/review_quiescence.py and schemas/pr_steward/review_quiescence.schema.json.",
+        "Create tools/pr_steward/review_producers.json containing only explicitly supported producer identities and completion-evidence strategies.",
+        "Quiescence input must bind repository, PR number, exact current head SHA, producer identities, review submissions/check runs/reactions used as evidence, and unresolved-thread state.",
+        "A producer completion receipt from an older head is stale and cannot be reused.",
+        "A missing or ambiguous mandatory producer completion is UNKNOWN and blocks quiescence.",
+        "Any active unresolved blocking review thread yields NEEDS_IMPLEMENTER and blocks quiescence.",
+        "The evaluator may poll for bounded transport convergence, but timeout must return BLOCKED/UNKNOWN without invoking any model.",
+        "Emit REVIEW_QUIESCENCE.json with verdict QUIESCENT, NEEDS_IMPLEMENTER, BLOCKED, or UNKNOWN and exact evidence references.",
+        "The evaluator is read-only against GitHub."
+      ],
+      "expected_files": [
+        "tools/pr_steward/review_quiescence.py",
+        "tools/pr_steward/review_producers.json",
+        "schemas/pr_steward/review_quiescence.schema.json"
+      ],
+      "validation": [
+        "schema validates positive and negative fixtures",
+        "older-head producer evidence rejected",
+        "missing producer evidence fails closed",
+        "unresolved thread blocks",
+        "elapsed time alone never yields QUIESCENT"
+      ]
+    },
+    {
+      "id": "S03",
+      "task": "Gate embedded-audit before provider setup/invocation so premium audit usage occurs only after review quiescence.",
+      "requirements": [
+        "Modify .github/workflows/embedded-audit.yml so review-quiescence evaluation runs before setup/install/invocation of any model auditor.",
+        "Preserve trusted-base execution and candidate-as-data containment.",
+        "On NOT_QUIESCENT/NEEDS_IMPLEMENTER/BLOCKED/UNKNOWN, do not install or invoke the model auditor; emit/retain fail-closed diagnostic evidence sufficient to keep the required audit gate non-green.",
+        "Use concurrency/cancellation so superseded head runs cannot later publish authoritative evidence.",
+        "Exact-head change resets quiescence and audit eligibility.",
+        "Do not weaken current embedded-audit proof identity enforcement.",
+        "Do not remove or bypass the required independent embedded audit check."
+      ],
+      "expected_files": [
+        ".github/workflows/embedded-audit.yml"
+      ],
+      "validation": [
+        "#1286 timing fixture proves provider/model invocation count is zero before both mandatory reviewer completions and thread closure",
+        "head movement cancels/invalidates old run",
+        "quiescence failure leaves audit non-green",
+        "passing quiescence permits exactly one final audit attempt for the frozen head"
+      ]
+    },
+    {
+      "id": "S04",
+      "task": "Bind PR Steward READY to the same exact-head review-quiescence receipt and preserve fail-closed finality.",
+      "requirements": [
+        "Modify .github/workflows/pr-steward.yml to select and validate the exact-head REVIEW_QUIESCENCE.json associated with the embedded-audit subject before PR Steward can publish success.",
+        "If quiescence receipt is missing, malformed, non-QUIESCENT, wrong-repo, wrong-PR, or wrong-head, publish PR Steward / final readiness=failure.",
+        "Update collector/classifier only where required to expose and classify quiescence without creating a second readiness authority.",
+        "Prior green READY on the same head must be overwritten by failure when a later authoritative run proves quiescence/audit invalid.",
+        "Unknown reviewers or producer evidence remain blocking.",
+        "No PR mutation is added."
+      ],
+      "expected_files": [
+        ".github/workflows/pr-steward.yml",
+        "tools/pr_steward/collector.py",
+        "tools/pr_steward/classifier.py"
+      ],
+      "validation": [
+        "READY impossible without exact-head QUIESCENT receipt",
+        "stale prior READY overwritten on invalid finality",
+        "wrong-head receipt rejected",
+        "unresolved/unknown review state blocks READY"
+      ]
+    },
+    {
+      "id": "S05",
+      "task": "Add adversarial regression coverage for review/audit finality ordering.",
+      "requirements": [
+        "Add tests/project_control_plane/test_pr_steward_quiescence.py and minimally extend existing PR Steward tests.",
+        "Include a #1286-shaped fixture: audit finishes at T1, Steward would have become READY at T2, Copilot review at T3, Codex review at T4; corrected implementation must prevent any audit invocation before T4 completion evidence and must block on resulting unresolved threads.",
+        "Test exact-head review submission completion.",
+        "Test explicitly permitted no-finding completion fallback such as producer reaction/check evidence when configured.",
+        "Test stale previous-head review, reaction, check-run, quiescence, audit, and READY evidence rejection.",
+        "Test unknown/unconfigured review producer behavior.",
+        "Test duplicate/superseded workflow run cancellation and no double provider invocation.",
+        "Test no branch-protection or PR mutation route was introduced."
+      ],
+      "expected_files": [
+        "tests/project_control_plane/test_pr_steward.py",
+        "tests/project_control_plane/test_pr_steward_quiescence.py"
+      ],
+      "validation": [
+        "all positive and negative finality-order tests PASS",
+        "anti-race fixture proves zero premature audit calls",
+        "no success-shaped UNKNOWN state"
+      ]
+    },
+    {
+      "id": "S06",
+      "task": "Update PR Steward operating documentation to match current enforced topology.",
+      "requirements": [
+        "Update docs/ops/pr-steward.md to remove the stale statement that PR Steward must not be required until the pending-check race is solved, but only after this packet actually closes that race.",
+        "Document topology: review producers -> exact-head review quiescence -> independent audit -> PR Steward final readiness -> operator merge.",
+        "Document that quiescence is derived prerequisite evidence, not approval, audit, or merge authority.",
+        "Document UNKNOWN and timeout fail-closed behavior."
+      ],
+      "expected_files": [
+        "docs/ops/pr-steward.md"
+      ],
+      "validation": [
+        "documentation matches implemented workflow",
+        "no claim that merge or activation is automated"
+      ]
+    },
+    {
+      "id": "S07",
+      "task": "Run the full pre-push and CI-equivalent validation gate for changed paths.",
+      "requirements": [
+        "Validate repository/worktree/branch identity.",
+        "Validate changed-file allowlist.",
+        "Run git diff --check.",
+        "Validate canonical Task Packet and review-quiescence schemas.",
+        "Run focused tests plus the complete relevant PR Steward/governance suite.",
+        "Validate GitHub Actions workflow syntax/static semantics using the repo's existing tooling when available.",
+        "Run changed-file pre-commit lane; if hooks mutate files, rerun until clean.",
+        "Run secret scan for proof/package output.",
+        "Record exact content head/tree after substantive content freeze."
+      ],
+      "validation": [
+        "all applicable pre-push gates PASS",
+        "no unclassified failure",
+        "content head/tree frozen"
+      ]
+    },
+    {
+      "id": "S08",
+      "task": "Run one final independent L3 audit on the frozen substantive content head.",
+      "requirements": [
+        "Auditor must be independent of implementer and use a different family/runtime.",
+        "Audit exact frozen content head/tree, not an intermediate commit.",
+        "Challenge whether review completion can still arrive after audit eligibility, whether time alone can produce quiescence, whether head movement invalidates evidence, whether stale READY can survive, whether model audit can run prematurely, and whether any hidden PR/branch-protection mutation path was added.",
+        "Verdict FAIL, NEEDS_SUPERVISOR, stale/malformed evidence, or identity mismatch blocks advancement.",
+        "PASS_WITH_RISKS is acceptable only if every risk is explicit and non-blocking."
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001/AUDIT_INVOCATION.md",
+        "proof/TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "independent audit exact-head binding PASS",
+        "acceptable audit verdict present"
+      ]
+    },
+    {
+      "id": "S09",
+      "task": "Produce proof and hand back for operator merge decision without merging.",
+      "requirements": [
+        "Produce canonical proof and compact summary bound to final exact head/tree.",
+        "Include #1286 read-only regression evidence showing the old ordering and the new anti-race behavior.",
+        "Run current PR Steward final readiness on the implementation PR only after all review producers are quiescent and the final L3 audit is current.",
+        "Do not merge, enable auto-merge, activate, modify branch protection, resolve foreign review threads, or delete branches.",
+        "Return READY_FOR_OPERATOR_MERGE_DECISION only if every current required gate is green and exact-head bound."
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001/PROOF.json",
+        "proof/TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001/SUMMARY.md",
+        "proof/TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001/REVIEW_QUIESCENCE_REGRESSION.json"
+      ],
+      "validation": [
+        "proof schema/signature/ancestry/path closure PASS",
+        "current PR Steward exact-head readiness PASS",
+        "MERGE_AUTHORIZED remains NO"
+      ]
+    }
+  ]
+}

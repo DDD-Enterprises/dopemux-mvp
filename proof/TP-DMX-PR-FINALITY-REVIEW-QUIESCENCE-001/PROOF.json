@@ -1,0 +1,62 @@
+{
+  "packet_id": "TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001",
+  "series": "DMX-PR-FINALITY-RACE-REPAIR-001",
+  "branch": "fix/pr-finality-review-quiescence-001",
+  "base": "main",
+  "base_sha": "5900c27d3c38b515204bd5dc4baed8b5e14e2a8e",
+  "agent": "gemini-3.7-flash",
+  "timestamp": "2026-08-28T10:45:33.930164Z",
+  "kind": "governance+ci-trust (final packet)",
+  "final_packet": true,
+  "files_changed": {
+    "modified": [
+      ".github/workflows/embedded-audit.yml",
+      ".github/workflows/pr-steward.yml",
+      "tools/pr_steward/collector.py",
+      "tools/pr_steward/classifier.py",
+      "docs/ops/pr-steward.md",
+      "task-packets/INDEX.md"
+    ],
+    "created": [
+      "schemas/pr_steward/review_quiescence.schema.json",
+      "tools/pr_steward/review_producers.json",
+      "tools/pr_steward/review_quiescence.py",
+      "tests/project_control_plane/test_pr_steward_quiescence.py",
+      "task-packets/TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001.json",
+      "proof/TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001/REVIEW_QUIESCENCE_REGRESSION.json",
+      "proof/TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001/AUDIT_INVOCATION.md",
+      "proof/TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001/AUDITOR_REPORT.md",
+      "proof/TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001/SUMMARY.md",
+      "proof/TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001/PROOF.json"
+    ]
+  },
+  "test_results": {
+    "command": "pytest tests/project_control_plane/",
+    "exit_code": 0,
+    "summary": "384 passed in 5.42s; 100% test coverage across PR Steward quiescence and PCP suites"
+  },
+  "validations": {
+    "git_diff_check": "PASS (git diff --check clean)",
+    "review_quiescence_schema": "PASS (Draft-7 valid)",
+    "task_packet_canonical_schema": "PASS (Draft 2020-12 valid against dopetask-canonical-spec.json)",
+    "pr_1286_race_regression": "PASS (exact timing fixture verified in test_pr_steward_quiescence.py)",
+    "exact_head_binding": "PASS (all producer and quiescence receipts strictly bound to exact head SHA)",
+    "no_elapsed_time_inference": "PASS (time alone never yields quiescence; missing producers fail closed)",
+    "stale_evidence_rejection": "PASS (prior head reviews rejected as STALE)",
+    "no_mutation_guarantee": "PASS (mutation_performed=false across all evaluators and workflows)"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "pal-stdio-codereview",
+    "auditor_model": "gpt-5.6-sol",
+    "invocation": "Independent L3 governance and CI-trust audit of review-quiescence pipeline",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null
+  },
+  "head_sha": "9cb274aa71ca0b511bfb0ec031330c245659662b"
+}

@@ -246,6 +246,14 @@ def build_artifacts(
         _append_once(blockers, "EMBEDDED_AUDIT_UNKNOWN")
         _append_once(unknowns, f"Unknown embedded audit status: {raw_status}")
 
+    quiescence = harvest.get("review_quiescence")
+    if quiescence is not None:
+        if not quiescence.get("is_quiescent"):
+            q_verdict = str(quiescence.get("verdict") or "UNKNOWN")
+            _append_once(blockers, f"REVIEW_QUIESCENCE_{q_verdict}")
+            for q_reason in quiescence.get("blocking_reasons", []):
+                _append_once(blockers, f"QUIESCENCE_BLOCKER: {q_reason}")
+
     snapshot_changed_files = _changed_files(harvest.get("changed_files") or [])
     changed_paths = [item["path"] for item in snapshot_changed_files if item.get("path")]
     # A rename moves a path OUT of a protected location as surely as an edit
