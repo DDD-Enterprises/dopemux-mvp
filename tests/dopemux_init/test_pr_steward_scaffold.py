@@ -1,10 +1,41 @@
 import json
+import os
+import shutil
+import subprocess
+import sys
+import tomllib
+import zipfile
 from pathlib import Path
 
 import yaml
 
 from dopemux.profile_manager import DopemuxProfile
 from dopemux.project_init import ProjectInitializer
+
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def _run_checked(
+    command: list[str],
+    *,
+    cwd: Path,
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    result = subprocess.run(
+        command,
+        cwd=cwd,
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=300,
+        check=False,
+    )
+    assert result.returncode == 0, (
+        f"command failed ({result.returncode}): {' '.join(command)}\n"
+        f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    )
+    return result
 
 
 class _ProfileManager:
@@ -170,3 +201,198 @@ def test_init_force_does_not_clobber_existing_pr_steward_files(tmp_path: Path) -
 
     assert pr_steward_workflow.read_text(encoding="utf-8") == "name: custom\n"
     assert merge_policy.read_text(encoding="utf-8") == "custom: true\n"
+
+
+def test_built_wheel_runs_pr_steward_and_materializes_templates_off_tree(
+    tmp_path: Path,
+) -> None:
+    uv = shutil.which("uv")
+    assert uv is not None
+
+    dist_dir = tmp_path / "dist"
+    dist_dir.mkdir()
+    _run_checked(
+        [uv, "build", "--wheel", "--out-dir", str(dist_dir)],
+        cwd=ROOT,
+    )
+    wheels = list(dist_dir.glob("*.whl"))
+    assert len(wheels) == 1
+    wheel = wheels[0]
+
+    dcp_source = ROOT / "src" / "dopemux" / "dcp"
+    dcp_package_census = {
+        ".".join(path.parent.relative_to(ROOT / "src").parts)
+        for path in dcp_source.rglob("__init__.py")
+    }
+    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    declared_dcp_packages = {
+        package
+        for package in pyproject["tool"]["setuptools"]["packages"]
+        if package == "dopemux.dcp" or package.startswith("dopemux.dcp.")
+    }
+    assert declared_dcp_packages == dcp_package_census
+
+    required_dcp_members = {
+        path.relative_to(ROOT / "src").as_posix() for path in dcp_source.rglob("*.py")
+    }
+    with zipfile.ZipFile(wheel) as archive:
+        wheel_members = set(archive.namelist())
+    assert required_dcp_members <= wheel_members
+
+    required_wheel_members = {
+        "dopemux_pr_steward/review_settlement.py",
+        "dopemux/templates/init/.github/workflows/embedded-audit.yml",
+        "dopemux/templates/init/.github/workflows/pr-steward.yml",
+        "dopemux/templates/init/.github/workflows/pr-readiness-invalidator.yml",
+        "dopemux/templates/init/.github/workflows/pr-readiness-invalidation-writer.yml",
+    }
+    assert required_wheel_members <= wheel_members
+
+    venv_dir = tmp_path / "venv"
+    _run_checked([sys.executable, "-m", "venv", str(venv_dir)], cwd=tmp_path)
+    venv_python = venv_dir / "bin" / "python"
+
+    requirements = tmp_path / "requirements.txt"
+    _run_checked(
+        [
+            uv,
+            "export",
+            "--frozen",
+            "--no-dev",
+            "--no-emit-project",
+            "--format",
+            "requirements.txt",
+            "--output-file",
+            str(requirements),
+        ],
+        cwd=ROOT,
+    )
+    _run_checked(
+        [
+            uv,
+            "pip",
+            "install",
+            "--python",
+            str(venv_python),
+            "--requirements",
+            str(requirements),
+        ],
+        cwd=tmp_path,
+    )
+    _run_checked(
+        [
+            uv,
+            "pip",
+            "install",
+            "--python",
+            str(venv_python),
+            "--no-deps",
+            "--no-index",
+            str(wheel),
+        ],
+        cwd=tmp_path,
+    )
+
+    runtime_dir = tmp_path / "runtime"
+    runtime_dir.mkdir()
+    runtime_env = os.environ.copy()
+    runtime_env.pop("PYTHONPATH", None)
+    runtime_env["PYTHONNOUSERSITE"] = "1"
+    runtime_env["PYTHONDONTWRITEBYTECODE"] = "1"
+    runtime_env["LITELLM_LOCAL_MODEL_COST_MAP"] = "True"
+
+    probe = _run_checked(
+        [
+            str(venv_python),
+            "-I",
+            "-c",
+            (
+                "import json; import dopemux; import dopemux.dcp; "
+                "print(json.dumps({'dopemux': dopemux.__file__, "
+                "'dcp': dopemux.dcp.__file__}, sort_keys=True))"
+            ),
+        ],
+        cwd=runtime_dir,
+        env=runtime_env,
+    )
+    imported = json.loads(probe.stdout)
+    assert venv_dir.resolve() in Path(imported["dopemux"]).resolve().parents
+    assert venv_dir.resolve() in Path(imported["dcp"]).resolve().parents
+    assert "PYTHONPATH" not in runtime_env
+    assert ROOT.resolve() not in runtime_dir.resolve().parents
+
+    fetch_help = _run_checked(
+        [
+            str(venv_python),
+            "-I",
+            "-m",
+            "dopemux.cli",
+            "pr-steward",
+            "settlement",
+            "fetch",
+            "--help",
+        ],
+        cwd=runtime_dir,
+        env=runtime_env,
+    )
+    assert "ModuleNotFoundError" not in fetch_help.stderr
+
+    settled = {
+        "status": "SETTLED",
+        "fingerprint": "wheel-runtime-fixture",
+        "repository": "DDD-Enterprises/dopemux-mvp",
+        "pr_number": 1287,
+        "live_head_sha": "0f5ad8d384eafc156397d49aef5630f5d6be831b",
+    }
+    before = runtime_dir / "before.json"
+    after = runtime_dir / "after.json"
+    before.write_text(json.dumps(settled), encoding="utf-8")
+    after.write_text(json.dumps(settled), encoding="utf-8")
+    compare = _run_checked(
+        [
+            str(venv_python),
+            "-I",
+            "-m",
+            "dopemux.cli",
+            "pr-steward",
+            "settlement",
+            "compare",
+            "--before",
+            str(before),
+            "--after",
+            str(after),
+        ],
+        cwd=runtime_dir,
+        env=runtime_env,
+    )
+    assert json.loads(compare.stdout)["status"] == "MATCH"
+
+    materialized = runtime_dir / "materialized"
+    _run_checked(
+        [
+            str(venv_python),
+            "-I",
+            "-c",
+            (
+                "from pathlib import Path; "
+                "from dopemux.project_init import ProjectInitializer; "
+                f"target=Path({str(materialized)!r}); target.mkdir(); "
+                "initializer=object.__new__(ProjectInitializer); "
+                "initializer.workspace=target; initializer.install_templates()"
+            ),
+        ],
+        cwd=runtime_dir,
+        env=runtime_env,
+    )
+    required_workflows = {
+        "embedded-audit.yml",
+        "pr-steward.yml",
+        "pr-readiness-invalidator.yml",
+        "pr-readiness-invalidation-writer.yml",
+    }
+    materialized_workflows = {
+        path.name
+        for path in (materialized / ".github" / "workflows").iterdir()
+        if path.is_file()
+    }
+    assert required_workflows <= materialized_workflows

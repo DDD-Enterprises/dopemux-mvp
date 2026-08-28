@@ -170,6 +170,7 @@ packages = [
     "dopemux.config",
     "dopemux.conport",
     "dopemux.core_logging",
+    "dopemux.dcp",
     "dopemux.embeddings",
     "dopemux.embeddings.core",
     "dopemux.embeddings.enhancers",
