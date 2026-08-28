@@ -1,46 +1,26 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1282,
-  "head_sha": "e339c74239e3a3ec157eeaaf1aa6fa580fea1ee7",
-  "generated_at": "2026-08-27T19:32:58Z",
+  "head_sha": "79404f3929c47fe09434ac07a36b936190282b56",
+  "generated_at": "2026-08-28T03:50:53Z",
   "subject_identity": {
-    "audited_content_sha": "e339c74239e3a3ec157eeaaf1aa6fa580fea1ee7",
-    "audited_content_tree": "8c481613a467fe70c745455cca9af2828ba4faca",
+    "audited_content_sha": "79404f3929c47fe09434ac07a36b936190282b56",
+    "audited_content_tree": "324348b70013207d908e3f5af66302336dfd99e9",
+    "canonical_proof_commit": "76791517b5619e0adec57164321e270922f07247",
     "local_attestation_role": "Binds frozen substantive content before proof-only successors.",
     "trusted_finality_role": "Exact pushed PR head is bound by trusted CI output and PR Steward, retaining local audited_sha provenance."
   },
   "embedded_audit": {
     "required": true,
-    "status": "PASS_WITH_RISKS",
-    "auditor_tool": "copilot-cli",
-    "auditor_model": "claude-sonnet-4.6",
-    "invocation": "COPILOT_HOME=<isolated-temp-home> copilot --prompt '' --mode plan --model claude-sonnet-4.6 --reasoning-effort high --disable-builtin-mcps --disable-mcp-server github-mcp-server --no-custom-instructions --no-remote --no-remote-export --no-auto-update --no-ask-user --available-tools=view --available-tools=grep --available-tools=glob --allow-all-tools --output-format text --silent < bounded-audit-prompt",
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "rtk agy --model gemini-3.1-pro-high --mode plan --sandbox --effort high --output-format json --print-timeout 15m --log-file /private/tmp/dopemux-pr-repair-r2-briefs/pr1282-agy-controlling.log --print \"Read /private/tmp/dopemux-pr-repair-r2-briefs/pr1282-final-audit-prompt.md completely, then perform that independent read-only audit in current worktree. Return only required audit report.\"",
     "exit_code": 0,
-    "report_path": "proof/DMX-GOV-G0-LITE-IMPLEMENTATION-AUTHORITY-001/AUDITOR_REPORT.md",
-    "findings": [
-      {
-        "id": "G0-REPAIR-F1",
-        "severity": "LOW",
-        "title": "Historical proof bound pre-repair packet bytes",
-        "status": "RESOLVED",
-        "body": "Canonical proof regenerated for repaired packet bytes and frozen content head."
-      },
-      {
-        "id": "G0-REPAIR-F2",
-        "severity": "INFO",
-        "title": "Validation summary finality is script and CI enforced",
-        "status": "ACCEPTED_RISK",
-        "body": "Formal embedded-audit schema plus local acceptance, signature, proof-only diff, secret scan, exact-head CI, and PR Steward provide finality receipts."
-      }
-    ],
-    "fixes_applied": [
-      "Regenerated canonical and PR-scoped audit evidence for repaired frozen content."
-    ],
-    "remaining_risks": [
-      "Validation-summary finality fields are not themselves governed by embedded_audit.schema.json; deterministic scripts and trusted CI remain authoritative receipts.",
-      "Proxy-reported and provider-attested model identities remain UNKNOWN.",
-      "Merge, activation, and G0-Lite payload implementation remain unauthorized."
-    ],
+    "report_path": "proof/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
     "skip_reason": null
   }
 }
