@@ -41,8 +41,8 @@ jobs:
     permissions:
       contents: 'read'
       id-token: 'write'
-      issues: 'write'
-      pull-requests: 'write'
+      issues: 'read'
+      pull-requests: 'read'
     steps:
       - name: 'Validate exact target'
         id: 'validate_target'
@@ -123,8 +123,8 @@ jobs:
           app-id: '${{ vars.APP_ID }}'
           private-key: '${{ secrets.APP_PRIVATE_KEY }}'
           permission-contents: 'read'
-          permission-issues: 'write'
-          permission-pull-requests: 'write'
+          permission-issues: 'read'
+          permission-pull-requests: 'read'
 
       - name: 'Checkout Code'
         uses: 'actions/checkout@v4' # ratchet:exclude
@@ -180,7 +180,6 @@ jobs:
                     "ghcr.io/github/github-mcp-server:v0.27.0"
                   ],
                   "includeTools": [
-                    "add_issue_comment",
                     "issue_read",
                     "list_issues",
                     "search_issues",

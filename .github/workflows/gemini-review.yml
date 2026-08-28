@@ -44,8 +44,8 @@ jobs:
     permissions:
       contents: 'read'
       id-token: 'write'
-      issues: 'write'
-      pull-requests: 'write'
+      issues: 'read'
+      pull-requests: 'read'
     steps:
       - name: 'Validate exact target'
         id: 'validate_target'
@@ -126,8 +126,8 @@ jobs:
           app-id: '${{ vars.APP_ID }}'
           private-key: '${{ secrets.APP_PRIVATE_KEY }}'
           permission-contents: 'read'
-          permission-issues: 'write'
-          permission-pull-requests: 'write'
+          permission-issues: 'read'
+          permission-pull-requests: 'read'
 
       - name: 'Checkout repository'
         uses: 'actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8' # ratchet:actions/checkout@v6
@@ -182,9 +182,7 @@ jobs:
                     "ghcr.io/github/github-mcp-server:v0.27.0"
                   ],
                   "includeTools": [
-                    "add_comment_to_pending_review",
-                    "pull_request_read",
-                    "pull_request_review_write"
+                    "pull_request_read"
                   ],
                   "env": {
                     "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"

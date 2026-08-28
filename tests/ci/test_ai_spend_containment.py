@@ -21,6 +21,13 @@ GEMINI_REUSABLE = (
     "gemini-invoke.yml",
     "gemini-plan-execute.yml",
 )
+GEMINI_ADVISORY = (
+    "gemini-dispatch.yml",
+    "gemini-scheduled-triage.yml",
+    "gemini-review.yml",
+    "gemini-triage.yml",
+    "gemini-invoke.yml",
+)
 
 
 def _load(path: Path) -> dict[str, Any]:
@@ -375,3 +382,39 @@ def test_gemini_approve_requires_separate_repository_mutation_authority() -> Non
     assert "inputs.repository_mutation_authorized == true" in (
         " ".join(str(plan["jobs"]["plan-execute"].get("if", "")).split())
     )
+
+
+@pytest.mark.parametrize("filename", GEMINI_ADVISORY)
+def test_gemini_spend_only_routes_are_advisory(filename: str) -> None:
+    workflow = _load(WORKFLOWS / filename)
+    serialized = (WORKFLOWS / filename).read_text(encoding="utf-8")
+
+    for job_name, job in workflow["jobs"].items():
+        if filename == "gemini-dispatch.yml" and job_name == "plan-execute":
+            continue
+        permissions = job.get("permissions", {})
+        for scope in ("contents", "issues", "pull-requests"):
+            assert permissions.get(scope) != "write", f"{filename}:{job_name}:{scope}"
+        for step in job.get("steps", []):
+            inputs = step.get("with", {})
+            for permission in (
+                "permission-contents",
+                "permission-issues",
+                "permission-pull-requests",
+            ):
+                assert inputs.get(permission) != "write", (
+                    f"{filename}:{job_name}:{step.get('name')}:{permission}"
+                )
+
+    forbidden_mutations = {
+        "gemini-dispatch.yml": ("gh issue comment",),
+        "gemini-scheduled-triage.yml": ("github.rest.issues.setLabels",),
+        "gemini-review.yml": (
+            "add_comment_to_pending_review",
+            "pull_request_review_write",
+        ),
+        "gemini-triage.yml": ("github.rest.issues.setLabels",),
+        "gemini-invoke.yml": ("add_issue_comment",),
+    }
+    for mutation in forbidden_mutations[filename]:
+        assert mutation not in serialized
