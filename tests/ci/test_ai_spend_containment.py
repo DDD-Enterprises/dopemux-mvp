@@ -166,6 +166,19 @@ def test_security_review_manual_gate_preserves_operator_authority_boundary() -> 
     assert "separate explicit operator spend authorization" in description
 
 
+def test_security_review_spend_route_is_advisory() -> None:
+    workflow = _load(SECURITY_REVIEW)
+    permissions = workflow["permissions"]
+    claude_steps = _claude_steps(SECURITY_REVIEW)
+
+    assert permissions["contents"] == "read"
+    assert permissions["issues"] == "read"
+    assert permissions["pull-requests"] == "read"
+    assert claude_steps
+    for step in claude_steps:
+        assert step["with"]["comment-pr"] == "false"
+
+
 def test_security_review_manual_summary_is_reachable() -> None:
     workflow = _load(SECURITY_REVIEW)
     security_job = workflow["jobs"]["security-review"]

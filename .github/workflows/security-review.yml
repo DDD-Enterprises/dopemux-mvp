@@ -1,9 +1,9 @@
 name: 🔒 Security Review with Claude Code
 
 permissions:
-  pull-requests: write  # Needed for PR comments
   contents: read
-  issues: write         # For issue tracking
+  issues: read
+  pull-requests: read
 
 on:
   workflow_dispatch:
@@ -36,7 +36,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.allow_api_spend == true && env.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-security-review@main
         with:
-          comment-pr: true
+          comment-pr: false
           claude-api-key: ${{ env.ANTHROPIC_API_KEY }}
           upload-results: true
 
@@ -79,7 +79,7 @@ jobs:
             echo "✅ **Security provider completed successfully.**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "**What this means:**" >> $GITHUB_STEP_SUMMARY
-            echo "- Review output is available in workflow artifacts and comments" >> $GITHUB_STEP_SUMMARY
+            echo "- Review output is available in workflow artifacts" >> $GITHUB_STEP_SUMMARY
             echo "- This result grants no merge or readiness authority" >> $GITHUB_STEP_SUMMARY
           elif [ "${PROVIDER_OUTCOME}" == "skipped" ] || [ -z "${PROVIDER_OUTCOME}" ]; then
             echo "⏭️ **Security provider was not invoked.**" >> $GITHUB_STEP_SUMMARY
@@ -89,7 +89,7 @@ jobs:
             echo "⚠️ **Security items need attention**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "**Next steps:**" >> $GITHUB_STEP_SUMMARY
-            echo "1. Check the detailed findings in the PR comments above" >> $GITHUB_STEP_SUMMARY
+            echo "1. Check the detailed findings in the uploaded results" >> $GITHUB_STEP_SUMMARY
             echo "2. Address high-priority items first (marked 🔴)" >> $GITHUB_STEP_SUMMARY
             echo "3. Ask for help if anything is unclear" >> $GITHUB_STEP_SUMMARY
           fi
