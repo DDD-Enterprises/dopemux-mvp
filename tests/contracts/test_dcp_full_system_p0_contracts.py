@@ -207,19 +207,40 @@ def test_satisfied_result_rejects_uniform_identity_substitution_from_request() -
     assert not _contract_is_valid(result_case, result, [request])
 
 
+def test_satisfied_result_rejects_uniform_provider_substitution_from_request() -> None:
+    result_case = _case_map()["audit_result"]
+    result = copy.deepcopy(result_case["instance"])
+    for layer in result["identities"].values():
+        layer["provider"] = "openai"
+    request = copy.deepcopy(_case_map()["audit_request"]["instance"])
+    assert not _contract_is_valid(result_case, result, [request])
+
+
+def test_cross_object_resolution_rejects_duplicate_project_and_subject_mismatch() -> None:
+    packet_case = _case_map()["run_context_packet"]
+    plan = copy.deepcopy(_case_map()["context_plan"]["instance"])
+    duplicate = copy.deepcopy(packet_case["instance"])
+    duplicate["mandatory_evidence"]["bindings"].append(copy.deepcopy(duplicate["mandatory_evidence"]["bindings"][0]))
+    assert not _contract_is_valid(packet_case, duplicate, [plan])
+    plan["project_id"] = "other-project"
+    assert not _contract_is_valid(packet_case, packet_case["instance"], [plan])
+    result_case = _case_map()["audit_result"]
+    request = copy.deepcopy(_case_map()["audit_request"]["instance"])
+    request["subject"]["head_sha"] = "a" * 40
+    assert not _contract_is_valid(result_case, result_case["instance"], [request])
+
+
 def test_p0_packet_bytes_match_immutable_issuance() -> None:
     packet = REPO_ROOT / "task-packets" / f"{PACKET_ID}.json"
     assert hashlib.sha256(packet.read_bytes()).hexdigest() == PACKET_SHA256
 
 
-def test_dcp_manifest_registers_only_five_p0_contracts_once_with_schema_versions() -> None:
+def test_dcp_manifest_registers_only_three_p0_contracts_once_with_schema_versions() -> None:
     manifest = _load_json(REPO_ROOT / "schemas" / "dcp" / "manifest.json")
     p0_files = {
         "schemas/dcp/context_plan.schema.json",
         "schemas/dcp/run_context_packet.schema.json",
         "schemas/dcp/capability_requirement_ref.schema.json",
-        "schemas/audit_broker/audit_request.schema.json",
-        "schemas/audit_broker/audit_result.schema.json",
     }
     registered = [
         entry["schema_file"]

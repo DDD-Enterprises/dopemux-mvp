@@ -178,9 +178,10 @@
     "identity_layer": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["state", "value", "evidence_refs"],
+      "required": ["state", "provider", "value", "evidence_refs"],
       "properties": {
         "state": {"enum": ["OBSERVED", "UNKNOWN"]},
+        "provider": {"type": ["string", "null"]},
         "value": {"type": ["string", "null"]},
         "evidence_refs": {
           "type": "array",
@@ -191,8 +192,8 @@
       "allOf": [
         {
           "if": {"properties": {"state": {"const": "UNKNOWN"}}},
-          "then": {"properties": {"value": {"type": "null"}, "evidence_refs": {"maxItems": 0}}},
-          "else": {"properties": {"value": {"type": "string", "minLength": 1}, "evidence_refs": {"minItems": 1}}}
+          "then": {"properties": {"provider": {"type": "null"}, "value": {"type": "null"}, "evidence_refs": {"maxItems": 0}}},
+          "else": {"properties": {"provider": {"type": "string", "minLength": 1}, "value": {"type": "string", "minLength": 1}, "evidence_refs": {"minItems": 1}}}
         }
       ]
     },

@@ -55,6 +55,8 @@ def _run_context_errors(instance: dict[str, Any], related_objects: list[dict[str
     ]
     if len(plans) != 1:
         return ["READY plan_ref must resolve to exactly one ContextPlan"]
+    if plans[0].get("project_id") != instance.get("subject", {}).get("project_id"):
+        return ["READY resolved ContextPlan project_id must match packet subject"]
     plan_mandatory_refs = plans[0].get("mandatory_evidence_refs")
     if not isinstance(plan_mandatory_refs, list):
         return ["READY resolved ContextPlan mandatory_evidence_refs is invalid"]
@@ -66,6 +68,8 @@ def _run_context_errors(instance: dict[str, Any], related_objects: list[dict[str
         context_item_ref = binding.get("context_item_ref")
         if not isinstance(required_ref, str) or not isinstance(context_item_ref, str):
             continue
+        if required_ref in bound_context_refs:
+            errors.append(f"mandatory_evidence.bindings[{index}].required_ref must be unique")
         if required_ref != context_item_ref:
             errors.append(
                 f"mandatory_evidence.bindings[{index}] required_ref must equal context_item_ref"
@@ -117,21 +121,31 @@ def _audit_result_errors(instance: dict[str, Any], related_objects: list[dict[st
         return ["SATISFIED request_ref must resolve to exactly one AuditRequest"]
     requested_identity = requests[0].get("requested_identity")
     request_model = requested_identity.get("model") if isinstance(requested_identity, dict) else None
-    if not isinstance(request_model, str):
+    request_provider = requested_identity.get("provider") if isinstance(requested_identity, dict) else None
+    if not isinstance(request_model, str) or not isinstance(request_provider, str):
         return ["SATISFIED resolved AuditRequest requested_identity is invalid"]
+    result_subject = instance.get("subject")
+    request_subject = requests[0].get("subject")
     requested = identities.get("requested")
     expected = requested.get("value") if isinstance(requested, dict) else None
     if not isinstance(expected, str):
         return []
 
     errors: list[str] = []
+    if not isinstance(result_subject, dict) or not isinstance(request_subject, dict):
+        errors.append("SATISFIED request/result subject must be present")
+    else:
+        for field in ("packet_id", "head_sha", "digest"):
+            if result_subject.get(field) != request_subject.get(field):
+                errors.append(f"SATISFIED request/result subject {field} must match")
     if expected != request_model:
         errors.append("SATISFIED requested identity must exactly match resolved AuditRequest")
-    for layer in IDENTITY_LAYERS[1:]:
+    for layer in IDENTITY_LAYERS:
         observation = identities.get(layer)
         observed = observation.get("value") if isinstance(observation, dict) else None
-        if observed != expected:
-            errors.append(f"SATISFIED identity {layer} must exactly match requested")
+        provider = observation.get("provider") if isinstance(observation, dict) else None
+        if observed != request_model or provider != request_provider:
+            errors.append(f"SATISFIED identity {layer} must exactly match resolved AuditRequest")
     return errors
 
 
