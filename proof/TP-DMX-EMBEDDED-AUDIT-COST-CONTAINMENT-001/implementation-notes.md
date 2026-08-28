@@ -2,13 +2,16 @@
 
 ## Status
 
-`A3_LOCAL_GATES_COMPLETE_READY_TO_COMMIT`
+`A4_EARLY_REVIEW_REPAIR_IN_PROGRESS`
 
 Implementation authority resumed under amendments
 `TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001-A1` and
 `TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001-A2`, then expanded under
-`TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001-A3`. Merge, permanent workflow
-re-enable, credential mutation, and metered model spend remain unauthorized.
+`TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001-A3`. Early review repair was
+authorized under `TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001-A4`. Merge,
+permanent workflow re-enable, credential mutation, final audit, content freeze,
+Copilot review before Codex settlement, and metered model spend remain
+unauthorized.
 
 ## Implemented working-tree slice
 
@@ -30,6 +33,33 @@ re-enable, credential mutation, and metered model spend remain unauthorized.
   three-part spend guard.
 - Added structural A3 contracts in `tests/ci/test_ai_spend_containment.py` and
   documented that the dispatch input never substitutes for operator authority.
+
+## A4 early-review repair
+
+Local Codex review against PR head `b0be8994658da7f92a7849d21906fd3cafeb693f`
+classified one `VALID_IN_SCOPE` defect before external Codex review completion:
+repository `embedded-audit.yml` could reach the PAL/Claude provider route from
+manual dispatch after review settlement without a default-false
+`allow_api_spend` input.
+
+Repair:
+
+- Added `allow_api_spend` to repository `embedded-audit.yml` as optional boolean
+  defaulting to `false`, with the same separate-operator-authority language used
+  by the other Claude workflows.
+- Kept setup/install behind exact head verification and explicit
+  `inputs.allow_api_spend == true`.
+- Kept the runner executable for fail-closed proof emission, but it now writes a
+  non-provider error payload and exits through the existing hard enforcement path
+  when API spend authority is absent.
+- Added structural tests proving the repository final-audit dispatch defaults
+  spend to false and provider runner reachability is dominated by the manual
+  spend authority gate.
+
+A4 targeted validation:
+
+- `pytest tests/ci/test_embedded_audit_trigger_policy.py tests/ci/test_ai_spend_containment.py -q`:
+  PASS, 25 passed.
 
 ## Validation evidence
 

@@ -146,6 +146,39 @@ def test_repository_audit_keeps_exact_manual_identity_inputs() -> None:
     assert inputs["head_sha"]["required"] == "true"
 
 
+def test_repository_audit_manual_dispatch_defaults_spend_false() -> None:
+    inputs = _load(REPOSITORY_AUDIT)["on"]["workflow_dispatch"]["inputs"]
+    spend_input = inputs["allow_api_spend"]
+
+    assert spend_input["type"] == "boolean"
+    assert spend_input["default"] == "false"
+    assert spend_input["required"] == "false"
+    assert (
+        "separate explicit operator spend authorization"
+        in spend_input["description"].lower()
+    )
+
+
+def test_repository_audit_provider_runner_requires_manual_spend_authority() -> None:
+    steps = _load(REPOSITORY_AUDIT)["jobs"]["embedded-audit"]["steps"]
+    setup = next(
+        step for step in steps if step.get("name") == "Setup trusted Claude audit runner"
+    )
+    install = next(
+        step for step in steps if step.get("name") == "Install trusted Claude audit runner"
+    )
+    runner = next(step for step in steps if step.get("name") == "Run PAL clink audit")
+
+    for step in (setup, install):
+        condition = " ".join(str(step.get("if", "")).split())
+        assert "steps.head_integrity.outputs.verified == 'true'" in condition
+        assert "inputs.allow_api_spend == true" in condition
+
+    assert runner["env"]["ALLOW_API_SPEND"] == "${{ inputs.allow_api_spend }}"
+    assert "[ \"$ALLOW_API_SPEND\" != true ]" in runner["run"]
+    assert "Explicit operator API spend authority was not granted." in runner["run"]
+
+
 def test_review_settlement_preflight_precedes_every_model_stage() -> None:
     steps = _load(REPOSITORY_AUDIT)["jobs"]["embedded-audit"]["steps"]
     names = [step.get("name") for step in steps]

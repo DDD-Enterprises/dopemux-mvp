@@ -11,6 +11,11 @@ on:
         description: Expected pull request head SHA
         required: true
         type: string
+      allow_api_spend:
+        description: "Execution mechanism only; requires separate explicit operator spend authorization."
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -251,13 +256,13 @@ jobs:
           fi
 
       - name: Setup trusted Claude audit runner
-        if: always() && steps.head_integrity.outputs.verified == 'true'
+        if: always() && steps.head_integrity.outputs.verified == 'true' && inputs.allow_api_spend == true
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
       - name: Install trusted Claude audit runner
-        if: always() && steps.head_integrity.outputs.verified == 'true'
+        if: always() && steps.head_integrity.outputs.verified == 'true' && inputs.allow_api_spend == true
         run: npm install --global @anthropic-ai/claude-code@2.1.204
 
       - name: Run PAL clink audit
@@ -270,6 +275,7 @@ jobs:
         working-directory: trusted-source
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || secrets.CLAUDE_API_KEY }}
+          ALLOW_API_SPEND: ${{ inputs.allow_api_spend }}
         run: |
           base_sha="$(git rev-parse HEAD)"
           head_sha='${{ steps.pr.outputs.head_sha }}'
@@ -311,6 +317,10 @@ jobs:
           set +e
           if [ "$PROMPT_BUILDER_AVAILABLE" != true ]; then
             status=127
+          elif [ "$ALLOW_API_SPEND" != true ]; then
+            printf '%s\n' '{"status":"error","risks":["Explicit operator API spend authority was not granted."]}' \
+              > ../embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json
+            status=78
           elif [ -z "$ANTHROPIC_API_KEY" ]; then
             printf '%s\n' '{"status":"error","risks":["Trusted Claude provider credential is unavailable."]}' \
               > ../embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json
