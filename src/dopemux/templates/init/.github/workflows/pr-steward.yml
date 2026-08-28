@@ -34,6 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
+      DOPEMUX_INSTALL_SPEC: git+https://github.com/DDD-Enterprises/dopemux-mvp.git
     steps:
       - name: Checkout trusted Steward source
         uses: actions/checkout@v4
@@ -48,8 +49,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          pip install -e .
+          python -m pip install "$DOPEMUX_INSTALL_SPEC"
 
       - name: Set audit run ID
         id: audit_run
@@ -262,26 +262,12 @@ jobs:
             exit 2
           fi
 
-          export PROOF_PR="$proof_pr"
-          export EXPECTED_HEAD_SHA
-          python - <<'PY'
-          import json
-          import os
-          import sys
-          from pathlib import Path
-
-          sys.path.insert(0, str(Path.cwd()))
-          from scripts.audit.run_embedded_audit import enforce_independent_audit_proof
-
-          proof = json.loads(Path("independent-audit/PROOF.json").read_text(encoding="utf-8"))
-          enforce_independent_audit_proof(
-              proof,
-              expected_pr=int(os.environ["PROOF_PR"]),
-              expected_head_sha=os.environ["EXPECTED_HEAD_SHA"],
-              expected_repo=os.environ["EXPECTED_REPO"],
-          )
-          print("Independent audit proof identity enforcement: PASS")
-          PY
+          python -m dopemux.cli pr-steward audit \
+            --proof independent-audit/PROOF.json \
+            --repo "$EXPECTED_REPO" \
+            --pr "$proof_pr" \
+            --head "$EXPECTED_HEAD_SHA" \
+            --format json
 
       - name: Bind proof identity outputs
         id: proof
@@ -302,7 +288,7 @@ jobs:
           PR_NUMBER: ${{ steps.proof.outputs.pr_number }}
         run: |
           set -euo pipefail
-          python scripts/audit/review_settlement.py fetch \
+          python -m dopemux.cli pr-steward settlement fetch \
             --repo "$GITHUB_REPOSITORY" \
             --pr "$PR_NUMBER" \
             --head "$PR_HEAD_SHA" \
@@ -314,7 +300,7 @@ jobs:
         id: steward
         if: success()
         run: |
-          PYTHONPATH=. python -m tools.pr_steward.intake \
+          python -m dopemux.cli pr-steward intake \
             --repo "$GITHUB_REPOSITORY" \
             --pr "${{ steps.proof.outputs.pr_number }}" \
             --out pr-steward-artifacts \
@@ -332,14 +318,14 @@ jobs:
           PR_NUMBER: ${{ steps.proof.outputs.pr_number }}
         run: |
           set -euo pipefail
-          python scripts/audit/review_settlement.py fetch \
+          python -m dopemux.cli pr-steward settlement fetch \
             --repo "$GITHUB_REPOSITORY" \
             --pr "$PR_NUMBER" \
             --head "$PR_HEAD_SHA" \
             --min-ready-age-seconds 300 \
             --min-activity-quiet-seconds 120 \
             --output "$SETTLEMENT_S2"
-          python scripts/audit/review_settlement.py compare \
+          python -m dopemux.cli pr-steward settlement compare \
             --before "$SETTLEMENT_S1" \
             --after "$SETTLEMENT_S2"
 
@@ -392,7 +378,7 @@ jobs:
         run: |
           set -uo pipefail
           settlement_ok=true
-          python scripts/audit/review_settlement.py fetch \
+          python -m dopemux.cli pr-steward settlement fetch \
             --repo "$GITHUB_REPOSITORY" \
             --pr "$PR_NUMBER" \
             --head "$PR_HEAD_SHA" \
@@ -400,7 +386,7 @@ jobs:
             --min-activity-quiet-seconds 120 \
             --output "$SETTLEMENT_S3" || settlement_ok=false
           if [ "$settlement_ok" = true ]; then
-            python scripts/audit/review_settlement.py compare \
+            python -m dopemux.cli pr-steward settlement compare \
               --before "$SETTLEMENT_S2" \
               --after "$SETTLEMENT_S3" || settlement_ok=false
           fi

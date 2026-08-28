@@ -50,7 +50,9 @@ def test_init_scaffolds_pr_steward_workflows_and_policy(tmp_path: Path) -> None:
     assert merge_policy.exists()
 
     pr_steward_yaml = yaml.safe_load(pr_steward_workflow.read_text(encoding="utf-8"))
-    embedded_audit_yaml = yaml.safe_load(embedded_audit_workflow.read_text(encoding="utf-8"))
+    embedded_audit_yaml = yaml.safe_load(
+        embedded_audit_workflow.read_text(encoding="utf-8")
+    )
     pr_steward_config = json.loads(pr_steward_policy.read_text(encoding="utf-8"))
     merge_config = yaml.safe_load(merge_policy.read_text(encoding="utf-8"))
 
@@ -72,16 +74,22 @@ def test_init_scaffolds_pr_steward_workflows_and_policy(tmp_path: Path) -> None:
         "python -m dopemux.cli pr-steward audit" in run for run in embedded_audit_runs
     )
     assert any(
-        "--proof-path \"${{ steps.proof.outputs.path }}\"" in run
+        "python -m dopemux.cli pr-steward settlement fetch" in run
         for run in pr_steward_runs
     )
-    assert (
-        pr_steward_yaml["on"]["workflow_dispatch"]["inputs"]["proof_path"]["default"]
-        == "proof/PROOF.json"
-    )
-    assert any("python -m pip install \"$DOPEMUX_INSTALL_SPEC\"" in run for run in pr_steward_runs)
     assert any(
-        "python -m pip install \"$DOPEMUX_INSTALL_SPEC\"" in run
+        "python -m dopemux.cli pr-steward settlement compare" in run
+        for run in pr_steward_runs
+    )
+    assert any(
+        "--proof-path independent-audit/PROOF.json" in run for run in pr_steward_runs
+    )
+    assert any(
+        'python -m pip install "$DOPEMUX_INSTALL_SPEC"' in run
+        for run in pr_steward_runs
+    )
+    assert any(
+        'python -m pip install "$DOPEMUX_INSTALL_SPEC"' in run
         for run in embedded_audit_runs
     )
     assert (
@@ -92,6 +100,41 @@ def test_init_scaffolds_pr_steward_workflows_and_policy(tmp_path: Path) -> None:
         embedded_audit_yaml["jobs"]["embedded-audit"]["env"]["DOPEMUX_INSTALL_SPEC"]
         == "git+https://github.com/DDD-Enterprises/dopemux-mvp.git"
     )
+    rendered_steward = pr_steward_workflow.read_text(encoding="utf-8")
+    assert "pip install -e ." not in rendered_steward
+    assert "python -m tools.pr_steward" not in rendered_steward
+    assert "scripts.audit" not in rendered_steward
+
+    audit_inputs = embedded_audit_yaml["on"]["workflow_dispatch"]["inputs"]
+    assert set(audit_inputs) == {"pr_number", "head_sha", "proof_path"}
+    assert audit_inputs["pr_number"]["required"] is True
+    assert audit_inputs["head_sha"]["required"] is True
+    assert audit_inputs["proof_path"]["required"] is True
+
+    audit_steps = embedded_audit_yaml["jobs"]["embedded-audit"]["steps"]
+    upload_steps = [
+        step for step in audit_steps if step.get("uses") == "actions/upload-artifact@v4"
+    ]
+    assert len(upload_steps) == 1
+    upload = next(
+        step for step in audit_steps if step.get("name") == "Upload bound proof"
+    )
+    assert upload["with"]["name"] == (
+        "embedded-audit-pr-${{ steps.target.outputs.pr_number }}-"
+        "head-${{ steps.target.outputs.head_sha }}-proof"
+    )
+    assert upload["with"]["path"] == "independent-audit/PROOF.json"
+    assert upload["with"]["if-no-files-found"] == "error"
+
+    rendered_audit = embedded_audit_workflow.read_text(encoding="utf-8")
+    assert 'git show "${HEAD_SHA}:${PROOF_PATH}"' in rendered_audit
+    assert "live_pr_head_sha" in rendered_audit
+    assert "base.repo.full_name" in rendered_audit
+    assert "jq -e --argjson pr" in rendered_audit
+    assert "jq -e --arg head" in rendered_audit
+    assert "actions/checkout@v4" in rendered_audit
+    assert "ref: ${{ github.event.repository.default_branch }}" in rendered_audit
+    assert "ref: ${{ inputs.head_sha }}" not in rendered_audit
     assert pr_steward_config["mode"] == "check_only"
     assert pr_steward_config["mutates_github"] is False
     assert merge_config["governed_automerge"]["enabled"] is False

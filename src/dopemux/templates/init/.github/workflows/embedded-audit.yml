@@ -3,8 +3,16 @@ name: embedded-audit
 "on":
   workflow_dispatch:
     inputs:
+      pr_number:
+        description: Pull request number containing proof bytes
+        required: true
+        type: string
+      head_sha:
+        description: Exact live pull request head SHA
+        required: true
+        type: string
       proof_path:
-        description: Proof bundle path to inspect
+        description: Proof bundle path at exact pull request head
         required: true
         type: string
         default: proof/PROOF.json
@@ -23,33 +31,131 @@ jobs:
     env:
       DOPEMUX_INSTALL_SPEC: git+https://github.com/DDD-Enterprises/dopemux-mvp.git
     steps:
-      - name: Checkout
+      - name: Checkout trusted audit source
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
       - name: Install Dopemux
         run: |
           python -m pip install --upgrade pip
           python -m pip install "$DOPEMUX_INSTALL_SPEC"
 
-      - name: Set proof path
-        id: proof
+      - name: Bind live target and read proof bytes
+        id: target
         env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_REPO: ${{ github.repository }}
+          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
+          INPUT_HEAD_SHA: ${{ inputs.head_sha }}
           INPUT_PROOF_PATH: ${{ inputs.proof_path }}
         run: |
-          proof_path="${INPUT_PROOF_PATH:-proof/PROOF.json}"
-          printf 'path=%s\n' "$proof_path" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          printf '%s' "$INPUT_PR_NUMBER" | grep -Eq '^[1-9][0-9]*$'
+          printf '%s' "$INPUT_HEAD_SHA" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$INPUT_PROOF_PATH" | grep -Eq '^[A-Za-z0-9._/-]+$'
+          case "/${INPUT_PROOF_PATH}/" in
+            *"/../"*|*"/./"*|"//"*|*"//"*) exit 1 ;;
+          esac
 
-      - name: Run embedded audit proof check
+          gh api "repos/${EXPECTED_REPO}" > /tmp/expected-repository.json
+          gh api "repos/${EXPECTED_REPO}/pulls/${INPUT_PR_NUMBER}" > /tmp/target-pr.json
+          python - <<'PY'
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          sha_re = re.compile(r"^[0-9a-f]{40}$")
+          expected_repo = os.environ["EXPECTED_REPO"]
+          requested_pr = int(os.environ["INPUT_PR_NUMBER"])
+          requested_head = os.environ["INPUT_HEAD_SHA"]
+          repository = json.loads(
+              Path("/tmp/expected-repository.json").read_text(encoding="utf-8")
+          )
+          pull_request = json.loads(
+              Path("/tmp/target-pr.json").read_text(encoding="utf-8")
+          )
+          errors = []
+
+          if repository.get("full_name") != expected_repo:
+              errors.append("repository.full_name mismatch")
+          if pull_request.get("number") != requested_pr:
+              errors.append("pull_request.number mismatch")
+          if pull_request.get("state") != "open":
+              errors.append("pull_request.state is not open")
+
+          live_head = str((pull_request.get("head") or {}).get("sha") or "")
+          if not sha_re.fullmatch(live_head):
+              errors.append("head.sha invalid")
+          elif live_head != requested_head:
+              errors.append("head.sha mismatch")
+
+          base = pull_request.get("base") or {}
+          if (base.get("repo") or {}).get("full_name") != expected_repo:
+              errors.append("base.repo.full_name mismatch")
+          base_sha = str(base.get("sha") or "")
+          if not sha_re.fullmatch(base_sha):
+              errors.append("base.sha invalid")
+
+          if errors:
+              raise SystemExit("TARGET_PR_IDENTITY_UNKNOWN: " + ",".join(errors))
+
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as out:
+              out.write(f"pr_number={requested_pr}\n")
+              out.write(f"head_sha={live_head}\n")
+              out.write(f"live_pr_head_sha={live_head}\n")
+              out.write(f"base_sha={base_sha}\n")
+              out.write(f"proof_path={os.environ['INPUT_PROOF_PATH']}\n")
+          PY
+
+          git fetch --no-tags --depth=1 origin "$INPUT_HEAD_SHA"
+          test "$(git rev-parse FETCH_HEAD)" = "$INPUT_HEAD_SHA"
+          test "$(git ls-remote origin "refs/pull/${INPUT_PR_NUMBER}/head" | awk '{print $1}')" = "$INPUT_HEAD_SHA"
+          mkdir -p independent-audit
+          PROOF_PATH="$INPUT_PROOF_PATH"
+          HEAD_SHA="$INPUT_HEAD_SHA"
+          git show "${HEAD_SHA}:${PROOF_PATH}" > independent-audit/PROOF.json
+
+      - name: Validate bound proof
+        env:
+          EXPECTED_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.target.outputs.pr_number }}
+          HEAD_SHA: ${{ steps.target.outputs.head_sha }}
         run: |
+          set -euo pipefail
+          jq -e --argjson pr "$PR_NUMBER" '.pr_number == $pr' independent-audit/PROOF.json
+          jq -e --arg head "$HEAD_SHA" '.head_sha == $head' independent-audit/PROOF.json
           python -m dopemux.cli pr-steward audit \
-            --proof "${{ steps.proof.outputs.path }}" \
+            --proof independent-audit/PROOF.json \
+            --repo "$EXPECTED_REPO" \
+            --pr "$PR_NUMBER" \
+            --head "$HEAD_SHA" \
             --format json
+
+      - name: Upload bound proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: embedded-audit-pr-${{ steps.target.outputs.pr_number }}-head-${{ steps.target.outputs.head_sha }}-proof
+          path: independent-audit/PROOF.json
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Write job summary
         if: always()
         run: |
           {
             printf '## Embedded audit proof check\n\n'
-            printf -- '- proof_path: %s\n' '${{ steps.proof.outputs.path }}'
+            printf -- '- pr_number: %s\n' '${{ steps.target.outputs.pr_number }}'
+            printf -- '- live_pr_head_sha: %s\n' '${{ steps.target.outputs.live_pr_head_sha }}'
+            printf -- '- proof_path: %s\n' '${{ steps.target.outputs.proof_path }}'
+            printf -- '- candidate_code_executed: false\n'
             printf -- '- mutation_performed: false\n'
           } >> "$GITHUB_STEP_SUMMARY"

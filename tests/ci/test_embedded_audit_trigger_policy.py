@@ -136,6 +136,7 @@ def test_readiness_invalidator_is_zero_model_read_only_observer(path: Path) -> N
     }
     assert set(triggers["pull_request_review"]["types"]) == {
         "submitted",
+        "edited",
         "dismissed",
     }
     assert set(triggers["pull_request_review_comment"]["types"]) == {

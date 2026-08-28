@@ -36,12 +36,70 @@ jobs:
           INPUT_HEAD_SHA: ${{ inputs.head_sha }}
           TRUSTED_FALLBACK_REF: ${{ github.event.repository.default_branch }}
         run: |
-          test -n "$INPUT_PR_NUMBER"
-          test -n "$INPUT_HEAD_SHA"
+          printf '%s' "$INPUT_PR_NUMBER" | grep -Eq '^[1-9][0-9]*$'
+          printf '%s' "$INPUT_HEAD_SHA" | grep -Eq '^[0-9a-f]{40}$'
           test -n "$TRUSTED_FALLBACK_REF"
           printf 'number=%s\n' "$INPUT_PR_NUMBER" >> "$GITHUB_OUTPUT"
           printf 'head_sha=%s\n' "$INPUT_HEAD_SHA" >> "$GITHUB_OUTPUT"
           printf 'trusted_ref=%s\n' "$TRUSTED_FALLBACK_REF" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve exact target PR
+        id: target_pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_REPO: ${{ github.repository }}
+          INPUT_PR_NUMBER: ${{ steps.pr.outputs.number }}
+          INPUT_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+        run: |
+          set -euo pipefail
+          gh api "repos/${EXPECTED_REPO}" > /tmp/expected-repository.json
+          gh api "repos/${EXPECTED_REPO}/pulls/${INPUT_PR_NUMBER}" > /tmp/target-pr.json
+          python - <<'PY'
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          sha_re = re.compile(r"^[0-9a-f]{40}$")
+          expected_repo = os.environ["EXPECTED_REPO"]
+          requested_pr = int(os.environ["INPUT_PR_NUMBER"])
+          requested_head = os.environ["INPUT_HEAD_SHA"]
+          repository = json.loads(
+              Path("/tmp/expected-repository.json").read_text(encoding="utf-8")
+          )
+          pull_request = json.loads(
+              Path("/tmp/target-pr.json").read_text(encoding="utf-8")
+          )
+          errors = []
+
+          if repository.get("full_name") != expected_repo:
+              errors.append("repository.full_name mismatch")
+          if pull_request.get("number") != requested_pr:
+              errors.append("pull_request.number mismatch")
+
+          live_head = str((pull_request.get("head") or {}).get("sha") or "")
+          if not sha_re.fullmatch(live_head):
+              errors.append("head.sha invalid")
+          elif live_head != requested_head:
+              errors.append("head.sha mismatch")
+
+          base = pull_request.get("base") or {}
+          base_repo = (base.get("repo") or {}).get("full_name")
+          if base_repo != expected_repo:
+              errors.append("base.repo.full_name mismatch")
+          base_sha = str(base.get("sha") or "")
+          if not sha_re.fullmatch(base_sha):
+              errors.append("base.sha invalid")
+
+          if errors:
+              raise SystemExit("TARGET_PR_IDENTITY_UNKNOWN: " + ",".join(errors))
+
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as out:
+              out.write(f"pr_number={requested_pr}\n")
+              out.write(f"requested_head_sha={requested_head}\n")
+              out.write(f"live_head_sha={live_head}\n")
+              out.write(f"base_sha={base_sha}\n")
+          PY
 
       - name: Checkout trusted audit source
         uses: actions/checkout@v4
@@ -54,6 +112,7 @@ jobs:
           persist-credentials: false
 
       - name: Verify trusted audit source
+        id: trusted_source
         env:
           EXPECTED_TRUSTED_REF: ${{ steps.pr.outputs.trusted_ref }}
         run: |
@@ -63,6 +122,7 @@ jobs:
           else
             test -n "$actual_trusted_ref"
           fi
+          printf 'trusted_runner_source_sha=%s\n' "$actual_trusted_ref" >> "$GITHUB_OUTPUT"
           # Do not hard-fail here when run_embedded_audit.py is absent.
           # The emit step writes a schema-valid SKIPPED diagnostic PROOF so
           # artifact upload + Steward can still bind the head and overwrite a
@@ -86,25 +146,63 @@ jobs:
           printf 'PRE_MODEL_REVIEW_GATE `%s`\n' \
             "$(cat /tmp/review-settlement.json)" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Verify requested head SHA
+      - name: Verify requested audit commits
         id: head_integrity
         env:
           PR_NUMBER: ${{ steps.pr.outputs.number }}
           EXPECTED_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          TARGET_PR_BASE_SHA: ${{ steps.target_pr.outputs.base_sha }}
         run: |
-          # Candidate material is fetched as objects only (no candidate checkout,
-          # no candidate script execution, no credentials on candidate tree).
+          # Base and candidate material are fetched as objects only. Neither is
+          # checked out or executed under the trusted runner credential.
           if git -C trusted-source fetch --no-tags --depth=1 origin "$EXPECTED_HEAD_SHA"; then
             actual_head_sha="$(git -C trusted-source rev-parse FETCH_HEAD)"
           else
             actual_head_sha=""
           fi
+          if git -C trusted-source fetch --no-tags --depth=1 origin "$TARGET_PR_BASE_SHA"; then
+            actual_base_sha="$(git -C trusted-source rev-parse FETCH_HEAD)"
+          else
+            actual_base_sha=""
+          fi
           pr_head_sha="$(git -C trusted-source ls-remote origin "refs/pull/${PR_NUMBER}/head" | awk '{print $1}')"
-          if [ "$actual_head_sha" = "$EXPECTED_HEAD_SHA" ] && [ "$pr_head_sha" = "$EXPECTED_HEAD_SHA" ]; then
+          if [ "$actual_head_sha" = "$EXPECTED_HEAD_SHA" ] \
+            && [ "$pr_head_sha" = "$EXPECTED_HEAD_SHA" ] \
+            && [ "$actual_base_sha" = "$TARGET_PR_BASE_SHA" ]; then
             printf 'verified=true\n' >> "$GITHUB_OUTPUT"
           else
             printf 'verified=false\n' >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Write audit subject receipt
+        if: always() && steps.head_integrity.outputs.verified == 'true'
+        env:
+          REQUESTED_PR: ${{ steps.pr.outputs.number }}
+          REQUESTED_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          LIVE_PR_HEAD_SHA: ${{ steps.target_pr.outputs.live_head_sha }}
+          TARGET_PR_BASE_SHA: ${{ steps.target_pr.outputs.base_sha }}
+          TRUSTED_RUNNER_SOURCE_SHA: ${{ steps.trusted_source.outputs.trusted_runner_source_sha }}
+        run: |
+          mkdir -p embedded-audit-artifacts
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          receipt = {
+              "requested_pr": int(os.environ["REQUESTED_PR"]),
+              "requested_head_sha": os.environ["REQUESTED_HEAD_SHA"],
+              "live_pr_head_sha": os.environ["LIVE_PR_HEAD_SHA"],
+              "target_pr_base_sha": os.environ["TARGET_PR_BASE_SHA"],
+              "trusted_runner_source_sha": os.environ["TRUSTED_RUNNER_SOURCE_SHA"],
+          }
+          if receipt["target_pr_base_sha"] == receipt["trusted_runner_source_sha"]:
+              print("Audit base and trusted source happen to match; identities remain distinct.")
+          Path("embedded-audit-artifacts/AUDIT_SUBJECT_RECEIPT.json").write_text(
+              json.dumps(receipt, sort_keys=True, separators=(",", ":")) + "\n",
+              encoding="utf-8",
+          )
+          PY
 
       - name: Static auditor route preflight
         if: always() && steps.head_integrity.outputs.verified == 'true'
@@ -155,7 +253,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || secrets.CLAUDE_API_KEY }}
           ALLOW_API_SPEND: ${{ inputs.allow_api_spend }}
         run: |
-          base_sha="$(git rev-parse HEAD)"
+          base_sha='${{ steps.target_pr.outputs.base_sha }}'
           head_sha='${{ steps.pr.outputs.head_sha }}'
           if ! git cat-file -e "${head_sha}^{commit}"; then
             git fetch --no-tags --depth=1 origin "$head_sha"

@@ -41,7 +41,11 @@ def test_observer_is_read_only_and_covers_all_invalidation_events(path: Path) ->
         "reopened",
         "ready_for_review",
     }
-    assert set(triggers["pull_request_review"]["types"]) == {"submitted", "dismissed"}
+    assert set(triggers["pull_request_review"]["types"]) == {
+        "submitted",
+        "edited",
+        "dismissed",
+    }
     assert set(triggers["pull_request_review_comment"]["types"]) == {
         "created",
         "edited",
@@ -211,6 +215,18 @@ def test_writer_accepts_synchronize_binding(tmp_path: Path) -> None:
     assert f"head_sha={'a' * 40}" in (tmp_path / "output").read_text(encoding="utf-8")
 
 
+def test_writer_accepts_edited_review_binding(tmp_path: Path) -> None:
+    def mutate(run, _artifacts, receipt, _live_pr):
+        run["event"] = "pull_request_review"
+        receipt["event_name"] = "pull_request_review"
+        receipt["event_action"] = "edited"
+
+    result = _run_binding(tmp_path, mutate)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert f"head_sha={'a' * 40}" in (tmp_path / "output").read_text(encoding="utf-8")
+
+
 def test_writer_rejects_synchronize_receipt_when_live_head_moved(
     tmp_path: Path,
 ) -> None:
@@ -283,12 +299,9 @@ def test_templates_match_repository_workflows() -> None:
 
 
 def test_template_steward_has_trusted_final_readiness_recovery_path() -> None:
-    repository_steward = ROOT / ".github" / "workflows" / "pr-steward.yml"
     template_steward = (
         ROOT / "src/dopemux/templates/init/.github/workflows/pr-steward.yml"
     )
-
-    assert template_steward.read_bytes() == repository_steward.read_bytes()
 
     workflow = _load(template_steward)
     text = template_steward.read_text(encoding="utf-8").lower()
@@ -310,3 +323,10 @@ def test_template_steward_has_trusted_final_readiness_recovery_path() -> None:
     assert "publish readiness status on candidate pr head" in text
     assert "allow_api_spend" not in text
     assert "run pal clink audit" not in text
+    assert 'python -m pip install "$dopemux_install_spec"' in text
+    assert "pip install -e ." not in text
+    assert "python -m dopemux.cli pr-steward settlement fetch" in text
+    assert "python -m dopemux.cli pr-steward settlement compare" in text
+    assert "python -m dopemux.cli pr-steward intake" in text
+    assert "python -m tools.pr_steward" not in text
+    assert "scripts.audit" not in text

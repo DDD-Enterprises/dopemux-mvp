@@ -122,7 +122,7 @@ jobs:
 
           allowed = {
               "pull_request": {"opened", "synchronize", "reopened", "ready_for_review"},
-              "pull_request_review": {"submitted", "dismissed"},
+              "pull_request_review": {"submitted", "edited", "dismissed"},
               "pull_request_review_comment": {"created", "edited", "deleted"},
               "pull_request_review_thread": {"resolved", "unresolved"},
           }

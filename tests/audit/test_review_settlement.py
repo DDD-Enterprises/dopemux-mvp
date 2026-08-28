@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-import importlib.util
+import importlib
+import json
 from datetime import datetime, timezone
 from pathlib import Path
 from types import ModuleType
@@ -12,16 +13,12 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 MODULE_PATH = ROOT / "scripts" / "audit" / "review_settlement.py"
+PACKAGED_MODULE_PATH = ROOT / "src" / "dopemux_pr_steward" / "review_settlement.py"
 NOW = datetime(2026, 8, 27, 20, 0, tzinfo=timezone.utc)
 
 
 def _module() -> ModuleType:
-    assert MODULE_PATH.is_file(), "shared review settlement module must exist"
-    spec = importlib.util.spec_from_file_location("review_settlement", MODULE_PATH)
-    assert spec and spec.loader
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return importlib.import_module("dopemux_pr_steward.review_settlement")
 
 
 def _snapshot() -> dict:
@@ -325,3 +322,66 @@ def test_trusted_pending_status_must_match_exact_head(monkeypatch) -> None:
         module.fetch_latest_trusted_invalidation(
             "DDD-Enterprises/dopemux-mvp", "a" * 40
         )
+
+
+def test_repository_settlement_script_is_thin_package_wrapper() -> None:
+    assert PACKAGED_MODULE_PATH.is_file()
+    wrapper = MODULE_PATH.read_text(encoding="utf-8")
+
+    assert "from dopemux_pr_steward.review_settlement import main" in wrapper
+    assert "def evaluate_snapshot" not in wrapper
+    assert "def fetch_snapshot" not in wrapper
+
+
+def test_packaged_cli_settlement_fetch(monkeypatch, tmp_path: Path, capsys) -> None:
+    from dopemux_pr_steward.cli import main as steward_main
+
+    module = _module()
+    monkeypatch.setattr(module, "fetch_snapshot", lambda _repo, _pr: _snapshot())
+    output = tmp_path / "settlement.json"
+
+    rc = steward_main(
+        [
+            "settlement",
+            "fetch",
+            "--repo",
+            "DDD-Enterprises/dopemux-mvp",
+            "--pr",
+            "1287",
+            "--head",
+            "a" * 40,
+            "--output",
+            str(output),
+            "--now",
+            "2026-08-27T20:00:00Z",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert rc == 0, captured.err
+    assert json.loads(output.read_text(encoding="utf-8"))["status"] == "SETTLED"
+
+
+def test_packaged_cli_settlement_compare(tmp_path: Path, capsys) -> None:
+    from dopemux_pr_steward.cli import main as steward_main
+
+    result = _evaluate(_snapshot())
+    before = tmp_path / "before.json"
+    after = tmp_path / "after.json"
+    before.write_text(json.dumps(result), encoding="utf-8")
+    after.write_text(json.dumps(result), encoding="utf-8")
+
+    rc = steward_main(
+        [
+            "settlement",
+            "compare",
+            "--before",
+            str(before),
+            "--after",
+            str(after),
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert rc == 0, captured.err
+    assert json.loads(captured.out)["status"] == "MATCH"
