@@ -115,10 +115,31 @@ def test_review_settlement_preflight_precedes_every_model_stage() -> None:
     env = steps[preflight_index]["env"]
     assert "PRE_MODEL_REVIEW_GATE" in script
     assert "EXPECTED_HEAD_SHA" in env
-    assert "trusted-source/scripts/audit/review_settlement.py fetch" in script
+    assert env["SETTLEMENT_EVALUATOR"] == (
+        "trusted-source/scripts/audit/review_settlement.py"
+    )
+    assert 'python "$SETTLEMENT_EVALUATOR" fetch' in script
     assert "--min-ready-age-seconds 300" in script
     assert "--min-activity-quiet-seconds 120" in script
     assert names.index("Checkout trusted audit source") < preflight_index
+
+
+def test_missing_trusted_settlement_evaluator_fails_closed_with_diagnostic() -> None:
+    steps = _load(REPOSITORY_AUDIT)["jobs"]["embedded-audit"]["steps"]
+    preflight = next(
+        step for step in steps if step.get("name") == "Review settlement preflight"
+    )
+    unavailable = next(
+        step
+        for step in steps
+        if step.get("name") == "Emit unavailable independent audit proof"
+    )
+
+    assert 'if [ ! -f "$SETTLEMENT_EVALUATOR" ]; then' in preflight["run"]
+    assert "SETTLEMENT_PREFLIGHT_UNAVAILABLE.txt" in preflight["run"]
+    assert "Trusted review settlement evaluator" in preflight["run"]
+    assert "exit 1" in preflight["run"]
+    assert "SETTLEMENT_PREFLIGHT_UNAVAILABLE.txt" in unavailable["run"]
 
 
 @pytest.mark.parametrize("path", [REPOSITORY_INVALIDATOR, TEMPLATE_INVALIDATOR])

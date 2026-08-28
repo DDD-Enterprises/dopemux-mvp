@@ -135,9 +135,19 @@ jobs:
           PR_NUMBER: ${{ steps.pr.outputs.number }}
           EXPECTED_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
           PYTHONPATH: trusted-source/src
+          SETTLEMENT_EVALUATOR: trusted-source/scripts/audit/review_settlement.py
         run: |
           set -euo pipefail
-          python trusted-source/scripts/audit/review_settlement.py fetch \
+          if [ ! -f "$SETTLEMENT_EVALUATOR" ]; then
+            mkdir -p embedded-audit-artifacts
+            reason="Trusted review settlement evaluator ${SETTLEMENT_EVALUATOR} is missing on the trusted ref."
+            printf '%s\n' "$reason" \
+              > embedded-audit-artifacts/SETTLEMENT_PREFLIGHT_UNAVAILABLE.txt
+            printf 'PRE_MODEL_REVIEW_GATE `BLOCKED: %s`\n' "$reason" \
+              >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          python "$SETTLEMENT_EVALUATOR" fetch \
             --repo "$EXPECTED_REPO" \
             --pr "$PR_NUMBER" \
             --head "$EXPECTED_HEAD_SHA" \
@@ -455,8 +465,12 @@ jobs:
 
           # Inline diagnostic shape mirrors build_diagnostic_failure_proof:
           # executed=false, schema-valid SKIPPED (none/unknown), no trusted provenance.
-          reason = "Requested PR head SHA could not be fetched or no longer matches the PR head."
           artifact_dir = Path("embedded-audit-artifacts")
+          settlement_marker = artifact_dir / "SETTLEMENT_PREFLIGHT_UNAVAILABLE.txt"
+          if settlement_marker.is_file():
+              reason = settlement_marker.read_text(encoding="utf-8").strip()
+          else:
+              reason = "Requested PR head SHA could not be fetched or no longer matches the PR head."
           report_path = "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md"
           proof = {
               "packet_id": "TP-DMX-AUDIT-CI-PROVENANCE-104",

@@ -728,7 +728,7 @@ def test_diagnostic_failure_proof_has_no_trusted_provenance() -> None:
 def test_diagnostic_missing_emitter_workflow_shape_is_schema_valid_skipped() -> None:
     """Missing-emitter branch must emit SKIPPED+none/unknown (schema), not NEEDS_SUPERVISOR."""
     text = WORKFLOW_PATH.read_text(encoding="utf-8")
-    # Both diagnostic paths use schema-valid SKIPPED with none/unknown.
+    # All diagnostic paths use schema-valid SKIPPED with none/unknown.
     assert "missing on the trusted ref" in text
     assert "could not be fetched or no longer matches the PR head" in text
     assert '"status": "SKIPPED"' in text
@@ -736,9 +736,19 @@ def test_diagnostic_missing_emitter_workflow_shape_is_schema_valid_skipped() -> 
     assert '"auditor_model": "unknown"' in text
     # Invalid combo must not appear in diagnostic emission blocks.
     # (PASS_WITH_RISKS / NEEDS_SUPERVISOR may still appear elsewhere for other reasons.)
-    missing_emitter_block = text.split("is missing on the trusted ref.", 1)[1][:1200]
+    missing_emitter_block = text.split(
+        "Trusted audit emitter scripts/audit/run_embedded_audit.py "
+        '"\n              "is missing on the trusted ref.',
+        1,
+    )[1][:1200]
     assert '"status": "SKIPPED"' in missing_emitter_block
     assert '"status": "NEEDS_SUPERVISOR"' not in missing_emitter_block
+    missing_settlement_block = text.split(
+        'settlement_marker = artifact_dir / "SETTLEMENT_PREFLIGHT_UNAVAILABLE.txt"',
+        1,
+    )[1][:1600]
+    assert '"status": "SKIPPED"' in missing_settlement_block
+    assert '"status": "NEEDS_SUPERVISOR"' not in missing_settlement_block
     head_mismatch_block = text.split(
         "could not be fetched or no longer matches the PR head.", 1
     )[1][:1200]
