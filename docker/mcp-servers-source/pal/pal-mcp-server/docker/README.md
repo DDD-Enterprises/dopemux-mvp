@@ -1,4 +1,4 @@
-# Zen MCP Server - Docker Setup
+# PAL MCP Server - Docker Setup
 
 ## Quick Start
 
@@ -62,7 +62,7 @@ chmod +x docker/scripts/deploy.sh
 docker/scripts/deploy.ps1
 
 # Interactive stdio mode
-docker-compose exec zen-mcp python server.py
+docker-compose exec pal-mcp python server.py
 ```
 
 ## Service Management
@@ -76,7 +76,7 @@ docker ps
 # View logs from container
 docker logs <container_id>
 
-# Stop all zen-mcp containers
+# Stop all pal-mcp containers
 docker stop $(docker ps -q --filter "ancestor=pal-mcp-server:latest")
 
 # Remove old containers and images
@@ -88,20 +88,20 @@ docker image prune
 
 ```bash
 # View logs
-docker-compose logs -f zen-mcp
+docker-compose logs -f pal-mcp
 
 # Check status
 docker-compose ps
 
 # Restart service
-docker-compose restart zen-mcp
+docker-compose restart pal-mcp
 
 # Stop services
 docker-compose down
 
 # Rebuild and update
-docker-compose build --no-cache zen-mcp
-docker-compose up -d zen-mcp
+docker-compose build --no-cache pal-mcp
+docker-compose up -d pal-mcp
 ```
 
 ## Health Monitoring
@@ -117,19 +117,19 @@ The container includes health checks that verify:
 The Docker setup includes persistent volumes to preserve data between container runs:
 
 - **`./logs:/app/logs`** - Persistent log storage (local folder mount)
-- **`zen-mcp-config:/app/conf`** - Configuration persistence (named Docker volume)
+- **`pal-mcp-config:/app/conf`** - Configuration persistence (named Docker volume)
 - **`/etc/localtime:/etc/localtime:ro`** - Host timezone synchronization (read-only)
 
 ### How Persistent Volumes Work
 
-The `zen-mcp` service (used by `zen-docker-compose` and Docker Compose commands) mounts the named volume `zen-mcp-config` persistently. All data placed in `/app/conf` inside the container is preserved between runs thanks to this Docker volume.
+The `pal-mcp` service (used by `pal-docker-compose` and Docker Compose commands) mounts the named volume `pal-mcp-config` persistently. All data placed in `/app/conf` inside the container is preserved between runs thanks to this Docker volume.
 
 In the `docker-compose.yml` file, you will find:
 
 ```yaml
 volumes:
   - ./logs:/app/logs
-  - zen-mcp-config:/app/conf
+  - pal-mcp-config:/app/conf
   - /etc/localtime:/etc/localtime:ro
 ```
 
@@ -137,13 +137,13 @@ and the named volume definition:
 
 ```yaml
 volumes:
-  zen-mcp-config:
+  pal-mcp-config:
     driver: local
 ```
 
 ## Security
 
-- Runs as non-root user `zenuser`
+- Runs as non-root user `paluser`
 - Read-only filesystem with tmpfs for temporary files
 - No network ports exposed (stdio communication only)
 - Secrets managed via environment variables
@@ -218,7 +218,7 @@ docker run --rm -i --env-file .env pal-mcp-server:latest 2>&1 | tee docker.log
 ```json
 {
   "servers": {
-    "zen-docker": {
+    "pal-docker": {
       "command": "docker",
       "args": [
         "run",
@@ -240,7 +240,7 @@ docker run --rm -i --env-file .env pal-mcp-server:latest 2>&1 | tee docker.log
 ```json
 {
   "servers": {
-    "zen-docker": {
+    "pal-docker": {
       "command": "docker",
       "args": [
         "run",
@@ -262,14 +262,14 @@ docker run --rm -i --env-file .env pal-mcp-server:latest 2>&1 | tee docker.log
 ```json
 {
   "servers": {
-    "zen-docker": {
+    "pal-docker": {
       "command": "docker-compose",
       "args": [
         "-f",
         "/absolute/path/to/pal-mcp-server/docker-compose.yml",
         "run",
         "--rm",
-        "zen-mcp"
+        "pal-mcp"
       ]
     }
   }
@@ -330,7 +330,7 @@ python -m json.tool .vscode/mcp.json
 
 ## Available Tools
 
-The Zen MCP Server provides these tools when properly configured:
+The PAL MCP Server provides these tools when properly configured:
 
 - **chat** - General AI conversation and collaboration
 - **thinkdeep** - Multi-stage investigation and reasoning  

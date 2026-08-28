@@ -8,15 +8,11 @@
 #
 # Changes require `dopemux routing reload` to take effect.
 #
-# Regenerating ~/.dopemux/routing.yaml from this template:
+# Synchronizing ~/.dopemux/routing.yaml with this template:
 # - Alias-only drift: `dopemux routing repair-aliases --apply` (RoutingConfig.repair_alias_contract)
 #   merges only the top-level `aliases:` block from this template into the live file.
-# - Full regen (providers/models/freeflow sections, as changed by this migration):
-#   there is no diff-and-merge command yet. RoutingConfig._copy_template() only fires
-#   automatically when ~/.dopemux/routing.yaml is absent. To pick up this template's
-#   provider/model changes, back up and remove ~/.dopemux/routing.yaml, then run any
-#   `dopemux routing` command that calls RoutingConfig.load() (e.g. `dopemux routing status`)
-#   to recopy this template as the new live file.
+# - Full repo-owned catalog drift: `dopemux routing sync-catalog` previews an
+#   additive upsert. `--apply` creates a backup first and preserves user extras.
 
 version: 1
 
@@ -50,6 +46,25 @@ providers:
     label: "CheaperInference"
     api_key_env: "CHEAPERINFERENCE_API_KEY"
     base_url: "https://api.cheaperinference.com/v1"
+    enabled: true
+
+  # L2 candidates. Credentials and activation remain deferred to L3.
+  - name: openrouter
+    label: "OpenRouter"
+    api_key_env: "OPENROUTER_API_KEY"
+    base_url: "https://openrouter.ai/api/v1"
+    enabled: false
+
+  - name: moonshot
+    label: "Moonshot AI"
+    api_key_env: "MOONSHOT_API_KEY"
+    base_url: "https://api.moonshot.ai/v1"
+    enabled: false
+
+  - name: anthropic
+    label: "Anthropic"
+    api_key_env: "ANTHROPIC_API_KEY"
+    enabled: false
 
   - name: gemini_paid_cap
     label: "Google Gemini Paid Cap"
@@ -170,6 +185,90 @@ models:
     model_id: "openai/gpt-5.4-pro"
     max_tokens: 272000
 
+  # PROVIDER-QUALIFIED KIMI K3 / FABLE 5 ROUTES
+  # Active CI routes are catalog-only in L2: no slot/fallback promotion.
+  - name: kimi-k3-ci
+    provider: cheaperinference
+    model_id: "openai/kimi-k3"
+    enabled: true
+    pal:
+      direct_model_name: kimi-k3
+      context_window: 1000000
+      supports_extended_thinking: true
+      supports_images: true
+      supports_streaming: true
+      thinking_mode: always_on
+      reasoning_efforts: [low, high, max]
+
+  - name: fable-5-ci
+    provider: cheaperinference
+    model_id: "openai/claude-fable-5"
+    max_tokens: 128000
+    enabled: true
+    pal:
+      direct_model_name: claude-fable-5
+      context_window: 1000000
+      max_output_tokens: 128000
+      supports_extended_thinking: true
+      supports_images: true
+      supports_streaming: true
+      thinking_mode: adaptive_always_on
+
+  # Disabled L3 candidates. Raw provider model ids stay separate from route ids.
+  - name: kimi-k3-or
+    provider: openrouter
+    model_id: "openai/kimi-k3"
+    enabled: false
+    pal:
+      direct_model_name: kimi-k3
+      context_window: 1000000
+      supports_extended_thinking: true
+      supports_images: true
+      supports_streaming: true
+      thinking_mode: always_on
+      reasoning_efforts: [low, high, max]
+
+  - name: fable-5-or
+    provider: openrouter
+    model_id: "openai/claude-fable-5"
+    max_tokens: 128000
+    enabled: false
+    pal:
+      direct_model_name: claude-fable-5
+      context_window: 1000000
+      max_output_tokens: 128000
+      supports_extended_thinking: true
+      supports_images: true
+      supports_streaming: true
+      thinking_mode: adaptive_always_on
+
+  - name: kimi-k3-direct
+    provider: moonshot
+    model_id: "openai/kimi-k3"
+    enabled: false
+    pal:
+      direct_model_name: kimi-k3
+      context_window: 1000000
+      supports_extended_thinking: true
+      supports_images: true
+      supports_streaming: true
+      thinking_mode: always_on
+      reasoning_efforts: [low, high, max]
+
+  - name: fable-5-direct
+    provider: anthropic
+    model_id: "anthropic/claude-fable-5"
+    max_tokens: 128000
+    enabled: false
+    pal:
+      direct_model_name: claude-fable-5
+      context_window: 1000000
+      max_output_tokens: 128000
+      supports_extended_thinking: true
+      supports_images: true
+      supports_streaming: true
+      thinking_mode: adaptive_always_on
+
   # STRICT-FREE LOCAL / HOSTED-FREE ROUTES
   - name: ollama-qwen3-coder
     provider: ollama
@@ -231,6 +330,20 @@ models:
     provider: cheaperinference_paid_cap
     model_id: "openai/qwen-3-8-max"
     max_tokens: 262144
+
+# PAL packaged-default compatibility entries. Current Dopemux PAL services use
+# explicit direct-CI projection instead of this generic fallback catalog.
+pal_compatibility_models:
+  - model_name: llama3.2
+    aliases: [local-llama, ollama-llama]
+    context_window: 128000
+    max_output_tokens: 64000
+    supports_extended_thinking: false
+    supports_json_mode: false
+    supports_function_calling: false
+    supports_images: false
+    max_image_size_mb: 0.0
+    description: "PAL packaged-default local Llama compatibility entry."
 
 # Slot definitions - assign models to usage slots
 # These are exposed to Claude Code via CCR

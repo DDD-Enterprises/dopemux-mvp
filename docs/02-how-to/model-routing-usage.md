@@ -14,7 +14,7 @@ tags:
 - model-routing
 - how-to
 - operators
-last_review: '2026-06-06'
+last_review: '2026-08-27'
 next_review: '2026-09-04'
 ---
 # How to Use the Model Routing Policy
@@ -28,6 +28,45 @@ model tier to select, not which exact model string to use (those require
 
 > All claims in this guide are **PROPOSED** unless marked OBSERVED. Model ids and
 > tier names that are not in repo config are marked `VERIFY_WITH_VENDOR_DOCS`.
+
+## Runtime catalog maintenance
+
+`templates/routing.yaml` is repo authority for provider/model route definitions.
+Audit live catalog drift without writing:
+
+```bash
+dopemux routing audit-catalog
+dopemux routing sync-catalog
+```
+
+`sync-catalog` is dry-run by default. Explicit apply creates a timestamped backup,
+upserts repo-owned providers/models/routing sections, and preserves user-added
+provider/model entries:
+
+```bash
+dopemux routing sync-catalog --apply
+```
+
+Alias-only repair remains available through `dopemux routing repair-aliases`.
+Do not use either apply command when a Task Packet forbids live user-config writes.
+
+PAL custom-model manifests are generated from repo routing/catalog data:
+
+```bash
+uv run python scripts/generate_pal_model_manifest.py --check
+uv run python scripts/generate_pal_model_manifest.py
+```
+
+Generated projections:
+
+- `custom_models.direct-ci.json`: raw CheaperInference model ids for current direct endpoint.
+- `custom_models.gateway.json`: Dopemux route-qualified names for future LiteLLM cutover.
+- `custom_models.json`: compatibility copy of direct-CI projection.
+
+Current L2 catalog exposes `kimi-k3-ci` and `fable-5-ci` as active catalog routes,
+without slot/fallback promotion. OpenRouter/Moonshot/Anthropic-direct candidates
+remain disabled. Credentials, reload, PAL-to-LiteLLM auth cutover, and real provider
+probes require separate L3 authorization.
 
 ---
 
