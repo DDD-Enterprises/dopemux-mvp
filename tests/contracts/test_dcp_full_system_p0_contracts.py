@@ -497,6 +497,31 @@ def test_satisfied_result_resolves_every_compatible_capability_requirement() -> 
     )
 
 
+def test_satisfied_result_accepts_reordered_certification_requirement_refs() -> None:
+    chain = _audit_chain_instances()
+    second_requirement = copy.deepcopy(chain["capability_requirement_ref"])
+    second_requirement["requirement_id"] = "CAP-POLICY-001"
+    second_requirement["capability"] = "policy_audit"
+    chain["audit_request"]["capability_requirement_refs"].append("CAP-POLICY-001")
+    chain["audit_request"]["required_capabilities"].append("policy_audit")
+    chain["auditor_certification"]["capability_requirement_refs"] = [
+        "CAP-POLICY-001",
+        "CAP-AUDIT-001",
+    ]
+    chain["auditor_capability_snapshot"]["capability_states"].append(
+        {
+            "capability": "policy_audit",
+            "state": "AVAILABLE",
+            "evidence_refs": ["proof://policy-capability"],
+        }
+    )
+    related_objects = list(chain.values()) + [second_requirement]
+
+    assert _semantic_errors(
+        _case_map()["audit_result"], chain["audit_result"], related_objects
+    ) == []
+
+
 @pytest.mark.parametrize(
     ("path", "value", "expected_error"),
     [

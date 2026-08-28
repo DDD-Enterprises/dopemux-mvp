@@ -374,8 +374,12 @@ def _audit_result_errors(instance: dict[str, Any], related_objects: list[dict[st
     errors.extend(
         _subject_errors("SATISFIED certification/request", certification.get("subject"), request_subject)
     )
-    if certification.get("capability_requirement_refs") != request.get(
-        "capability_requirement_refs"
+    certification_requirement_refs = certification.get("capability_requirement_refs")
+    request_requirement_refs = request.get("capability_requirement_refs")
+    if (
+        not _unique_string_refs(certification_requirement_refs)
+        or not _unique_string_refs(request_requirement_refs)
+        or set(certification_requirement_refs) != set(request_requirement_refs)
     ):
         errors.append(
             "SATISFIED AuditorCertification capability_requirement_refs must match AuditRequest"
