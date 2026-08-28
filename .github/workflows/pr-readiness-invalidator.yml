@@ -1,8 +1,8 @@
 name: PR readiness invalidator
 
-on:
+"on":
   pull_request:
-    types: [ready_for_review]
+    types: [opened, reopened, ready_for_review]
   pull_request_review:
     types: [submitted, dismissed]
   pull_request_review_comment:
@@ -12,29 +12,32 @@ on:
 
 permissions:
   contents: read
-  statuses: write
+  pull-requests: read
 
 jobs:
-  invalidate:
-    name: invalidate stale final readiness
+  observe:
+    name: emit invalidation receipt
     runs-on: ubuntu-latest
     steps:
-      - name: Publish pending readiness status
+      - name: Write strict invalidation receipt
         env:
-          GH_TOKEN: ${{ github.token }}
           EXPECTED_REPO: ${{ github.repository }}
           EVENT_REPO: ${{ github.event.repository.full_name }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          OBSERVED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           EVENT_NAME: ${{ github.event_name }}
           EVENT_ACTION: ${{ github.event.action }}
         run: |
           set -euo pipefail
           test -n "$EXPECTED_REPO"
           test "$EVENT_REPO" = "$EXPECTED_REPO"
+          printf '%s' "$WORKFLOW_RUN_ID" | grep -Eq '^[1-9][0-9]*$'
           printf '%s' "$PR_NUMBER" | grep -Eq '^[1-9][0-9]*$'
-          printf '%s' "$PR_HEAD_SHA" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$OBSERVED_HEAD_SHA" | grep -Eq '^[0-9a-f]{40}$'
           case "$EVENT_NAME:$EVENT_ACTION" in
+            pull_request:opened|\
+            pull_request:reopened|\
             pull_request:ready_for_review|\
             pull_request_review:submitted|\
             pull_request_review:dismissed|\
@@ -45,11 +48,30 @@ jobs:
             pull_request_review_thread:unresolved) ;;
             *) exit 1 ;;
           esac
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
 
-          state="pending"
-          context="PR Steward / final readiness"
-          description="review incubation pending for PR ${PR_NUMBER} after ${EVENT_NAME}/${EVENT_ACTION}"
-          gh api "repos/${EXPECTED_REPO}/statuses/${PR_HEAD_SHA}" \
-            -f state="$state" \
-            -f context="$context" \
-            -f description="$description"
+          receipt = {
+              "schema_version": 1,
+              "repository": os.environ["EXPECTED_REPO"],
+              "workflow_run_id": int(os.environ["WORKFLOW_RUN_ID"]),
+              "event_name": os.environ["EVENT_NAME"],
+              "event_action": os.environ["EVENT_ACTION"],
+              "pr_number": int(os.environ["PR_NUMBER"]),
+              "observed_head_sha": os.environ["OBSERVED_HEAD_SHA"],
+          }
+          Path("invalidation-receipt.json").write_text(
+              json.dumps(receipt, sort_keys=True, separators=(",", ":")) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Upload invalidation receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-readiness-invalidation-receipt-${{ github.run_id }}
+          path: invalidation-receipt.json
+          if-no-files-found: error
+          retention-days: 1

@@ -401,6 +401,42 @@ def test_pr_steward_workflow_uses_completed_independent_audit_artifact() -> None
     assert "statuses: write" in text
 
 
+def test_pr_steward_rechecks_shared_settlement_around_success_publication() -> None:
+    workflow = yaml.safe_load(STEWARD_WORKFLOW_PATH.read_text(encoding="utf-8"))
+    steps = workflow["jobs"]["pr-steward"]["steps"]
+    names = [step.get("name") for step in steps]
+
+    s1 = names.index("Capture settlement before Steward")
+    steward = names.index("Run PR Steward")
+    s2 = names.index("Revalidate settlement before readiness publication")
+    publish = names.index("Publish readiness status on candidate PR head")
+    s3 = names.index("Verify settlement after readiness publication")
+    assert s1 < steward < s2 < publish < s3
+
+    rendered = STEWARD_WORKFLOW_PATH.read_text(encoding="utf-8")
+    assert rendered.count("scripts/audit/review_settlement.py fetch") >= 3
+    assert "scripts/audit/review_settlement.py compare" in rendered
+    assert "SETTLEMENT_S1" in rendered
+    assert "SETTLEMENT_S2" in rendered
+    assert "SETTLEMENT_S3" in rendered
+
+
+def test_pr_steward_post_publish_drift_restores_pending_and_fails() -> None:
+    workflow = yaml.safe_load(STEWARD_WORKFLOW_PATH.read_text(encoding="utf-8"))
+    steps = workflow["jobs"]["pr-steward"]["steps"]
+    post = next(
+        step
+        for step in steps
+        if step.get("name") == "Verify settlement after readiness publication"
+    )
+    script = post["run"]
+
+    assert 'state="pending"' in script
+    assert 'context="PR Steward / final readiness"' in script
+    assert "exit 1" in script
+    assert "live head or review settlement changed after readiness publication" in script
+
+
 def _passing_proof(**overrides: object) -> dict:
     proof: dict = {
         "packet_id": "TP-DMX-AUDIT-CI-PROVENANCE-104",

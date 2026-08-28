@@ -1,0 +1,206 @@
+name: PR readiness invalidation writer
+
+"on":
+  workflow_run:
+    workflows: [PR readiness invalidator]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+  statuses: write
+
+jobs:
+  invalidate:
+    name: publish trusted pending readiness
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Fetch workflow run and exact receipt artifact
+        env:
+          EXPECTED_REPO: ${{ github.repository }}
+          EXPECTED_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$EXPECTED_RUN_ID" | grep -Eq '^[1-9][0-9]*$'
+          gh api "repos/${EXPECTED_REPO}/actions/runs/${EXPECTED_RUN_ID}" > /tmp/invalidation-run.json
+          gh api "repos/${EXPECTED_REPO}/actions/runs/${EXPECTED_RUN_ID}/artifacts" \
+            --paginate \
+            | jq -s 'map(.artifacts // []) | add | {artifacts: .}' \
+            > /tmp/invalidation-artifacts.json
+          artifact_name="pr-readiness-invalidation-receipt-${EXPECTED_RUN_ID}"
+          artifact_count="$(jq --arg name "$artifact_name" '[.artifacts[] | select(.name == $name)] | length' /tmp/invalidation-artifacts.json)"
+          test "$artifact_count" = "1"
+          artifact_id="$(jq -er --arg name "$artifact_name" '.artifacts[] | select(.name == $name) | .id' /tmp/invalidation-artifacts.json)"
+          printf '%s' "$artifact_id" | grep -Eq '^[1-9][0-9]*$'
+          gh api "repos/${EXPECTED_REPO}/actions/artifacts/${artifact_id}/zip" > /tmp/invalidation-receipt.zip
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+
+          archive = Path("/tmp/invalidation-receipt.zip")
+          with ZipFile(archive) as bundle:
+              members = bundle.infolist()
+              if len(members) != 1 or members[0].filename != "invalidation-receipt.json":
+                  raise SystemExit("receipt archive must contain exactly invalidation-receipt.json")
+              if members[0].is_dir() or members[0].file_size > 4096:
+                  raise SystemExit("receipt archive member shape invalid")
+              payload = bundle.read(members[0])
+          Path("/tmp/invalidation-receipt.json").write_bytes(payload)
+          PY
+          pr_number="$(jq -er '.pull_requests | select(length == 1) | .[0].number' /tmp/invalidation-run.json)"
+          gh api "repos/${EXPECTED_REPO}/pulls/${pr_number}" > /tmp/invalidation-pr.json
+
+      - name: Validate trusted invalidation binding
+        id: binding
+        env:
+          EXPECTED_REPO: ${{ github.repository }}
+          EXPECTED_RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_JSON: /tmp/invalidation-run.json
+          ARTIFACTS_JSON: /tmp/invalidation-artifacts.json
+          RECEIPT_JSON: /tmp/invalidation-receipt.json
+          PR_JSON: /tmp/invalidation-pr.json
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import re
+          import sys
+          from pathlib import Path
+
+          expected_repo = os.environ["EXPECTED_REPO"]
+          expected_run_id = int(os.environ["EXPECTED_RUN_ID"])
+          run = json.loads(Path(os.environ["RUN_JSON"]).read_text(encoding="utf-8"))
+          artifacts = json.loads(Path(os.environ["ARTIFACTS_JSON"]).read_text(encoding="utf-8"))
+          receipt = json.loads(Path(os.environ["RECEIPT_JSON"]).read_text(encoding="utf-8"))
+          live_pr = json.loads(Path(os.environ["PR_JSON"]).read_text(encoding="utf-8"))
+          errors = []
+
+          if int(run.get("id") or 0) != expected_run_id:
+              errors.append("workflow_run_id_mismatch")
+          run_repository = run.get("repository") or {}
+          expected_repo_id = run_repository.get("id")
+          if run_repository.get("full_name") != expected_repo:
+              errors.append("workflow_run_repository_mismatch")
+          if not isinstance(expected_repo_id, int) or expected_repo_id <= 0:
+              errors.append("workflow_run_repository_id_missing")
+          if run.get("name") != "PR readiness invalidator":
+              errors.append("workflow_name_mismatch")
+          if run.get("path") != ".github/workflows/pr-readiness-invalidator.yml":
+              errors.append("workflow_path_mismatch")
+          if run.get("status") != "completed" or run.get("conclusion") != "success":
+              errors.append("workflow_run_not_successfully_completed")
+
+          associated = run.get("pull_requests") or []
+          if len(associated) != 1:
+              errors.append(f"associated_pr_count:{len(associated)}")
+              associated_pr = {}
+          else:
+              associated_pr = associated[0]
+
+          exact_keys = {
+              "schema_version",
+              "repository",
+              "workflow_run_id",
+              "event_name",
+              "event_action",
+              "pr_number",
+              "observed_head_sha",
+          }
+          if set(receipt) != exact_keys:
+              errors.append("receipt_keys_mismatch")
+          if receipt.get("schema_version") != 1:
+              errors.append("receipt_schema_version_mismatch")
+          if receipt.get("repository") != expected_repo:
+              errors.append("receipt_repository_mismatch")
+          if receipt.get("workflow_run_id") != expected_run_id:
+              errors.append("receipt_workflow_run_id_mismatch")
+          if receipt.get("event_name") != run.get("event"):
+              errors.append("receipt_event_name_mismatch")
+
+          allowed = {
+              "pull_request": {"opened", "reopened", "ready_for_review"},
+              "pull_request_review": {"submitted", "dismissed"},
+              "pull_request_review_comment": {"created", "edited", "deleted"},
+              "pull_request_review_thread": {"resolved", "unresolved"},
+          }
+          event_name = receipt.get("event_name")
+          event_action = receipt.get("event_action")
+          if event_action not in allowed.get(event_name, set()):
+              errors.append("event_action_not_allowed")
+
+          artifact_name = f"pr-readiness-invalidation-receipt-{expected_run_id}"
+          matching_artifacts = [
+              item
+              for item in artifacts.get("artifacts") or []
+              if item.get("name") == artifact_name
+          ]
+          if len(matching_artifacts) != 1:
+              errors.append(f"receipt_artifact_count:{len(matching_artifacts)}")
+
+          associated_number = associated_pr.get("number")
+          receipt_number = receipt.get("pr_number")
+          live_number = live_pr.get("number")
+          if receipt_number != associated_number:
+              errors.append("receipt_pr_mismatch")
+          if live_number != associated_number:
+              errors.append("live_pr_number_mismatch")
+          if live_pr.get("state") != "open":
+              errors.append("live_pr_not_open")
+          associated_base_repo = (associated_pr.get("base") or {}).get("repo") or {}
+          live_base_repo = (live_pr.get("base") or {}).get("repo") or {}
+          if associated_base_repo.get("id") != expected_repo_id:
+              errors.append("associated_pr_base_repository_mismatch")
+          if (
+              live_base_repo.get("id") != expected_repo_id
+              or live_base_repo.get("full_name") != expected_repo
+          ):
+              errors.append("live_pr_base_repository_mismatch")
+
+          associated_head = associated_pr.get("head") or {}
+          live_head = live_pr.get("head") or {}
+          receipt_head = receipt.get("observed_head_sha")
+          if not isinstance(receipt_head, str) or not re.fullmatch(r"[0-9a-f]{40}", receipt_head):
+              errors.append("receipt_head_invalid")
+          if receipt_head != associated_head.get("sha"):
+              errors.append("receipt_head_mismatch")
+          if live_head.get("sha") != associated_head.get("sha"):
+              errors.append("live_pr_head_mismatch")
+          associated_head_repo_id = (associated_head.get("repo") or {}).get("id")
+          live_head_repo_id = (live_head.get("repo") or {}).get("id")
+          if not isinstance(associated_head_repo_id, int) or associated_head_repo_id <= 0:
+              errors.append("associated_pr_head_repository_id_missing")
+          if live_head_repo_id != associated_head_repo_id:
+              errors.append("live_pr_head_repository_mismatch")
+
+          if errors:
+              print("TRUSTED_INVALIDATION_BINDING_UNKNOWN", file=sys.stderr)
+              for error in errors:
+                  print(f"  - {error}", file=sys.stderr)
+              raise SystemExit(1)
+
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as output:
+              output.write(f"pr_number={associated_number}\n")
+              output.write(f"head_sha={associated_head['sha']}\n")
+              output.write(f"event_name={event_name}\n")
+              output.write(f"event_action={event_action}\n")
+          PY
+
+      - name: Publish pending readiness status
+        env:
+          PR_NUMBER: ${{ steps.binding.outputs.pr_number }}
+          PR_HEAD_SHA: ${{ steps.binding.outputs.head_sha }}
+          EVENT_NAME: ${{ steps.binding.outputs.event_name }}
+          EVENT_ACTION: ${{ steps.binding.outputs.event_action }}
+        run: |
+          set -euo pipefail
+          state="pending"
+          context="PR Steward / final readiness"
+          description="review settlement pending for PR ${PR_NUMBER} after ${EVENT_NAME}/${EVENT_ACTION}"
+          gh api "repos/${GITHUB_REPOSITORY}/statuses/${PR_HEAD_SHA}" \
+            -f state="$state" \
+            -f context="$context" \
+            -f description="$description" \
+            -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"

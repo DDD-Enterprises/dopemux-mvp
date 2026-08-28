@@ -2,7 +2,7 @@
 
 ## Status
 
-`A4_EARLY_REVIEW_REPAIR_IN_PROGRESS`
+`A5_IMPLEMENTATION_IN_PROGRESS`
 
 Implementation authority resumed under amendments
 `TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001-A1` and
@@ -12,6 +12,12 @@ authorized under `TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001-A4`. Merge,
 permanent workflow re-enable, credential mutation, final audit, content freeze,
 Copilot review before Codex settlement, and metered model spend remain
 unauthorized.
+
+Amendment `TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001-A5` expands L3 scope to
+Gemini caller containment, trusted fork-safe readiness invalidation, shared
+review settlement, and Steward publication finality. Reusable Gemini provider
+workflows remain inspect-only. Branch protection, credentials, merge, workflow
+re-enable, PAL Clink spend, metered spend, and final audit remain unauthorized.
 
 ## Implemented working-tree slice
 
@@ -77,6 +83,62 @@ Repair:
   `READY_FOR_REVIEW_EVENT` exists.
 - Added repository and init-template invalidator triggers for review-thread
   `resolved` and `unresolved` events.
+
+## A5 review-finality and provider-containment repair
+
+Operational first action:
+
+- Live workflow readback found `gemini-dispatch.yml` and
+  `gemini-scheduled-triage.yml` already `disabled_manually`.
+- Explicit disable calls returned HTTP 403 because GitHub refuses to disable an
+  already-inactive workflow. Immediate readback reconfirmed both workflows as
+  `disabled_manually`; no workflow was re-enabled.
+
+Implementation:
+
+- Converted both provider-bearing Gemini entry workflows to
+  `workflow_dispatch` only with optional boolean `allow_api_spend` defaulting to
+  `false` and explicit separate-operator-authority language.
+- Added dominant `github.event_name == 'workflow_dispatch'` plus
+  `inputs.allow_api_spend == true` conditions to every provider-bearing Gemini
+  caller job. Reusable Gemini provider workflows were inspected but not edited.
+- Replaced direct status publication in `pr-readiness-invalidator.yml` with a
+  read-only observer covering opened, reopened, ready-for-review, review,
+  review-comment, and review-thread events. Observer emits only a seven-field
+  JSON receipt and never checks out or executes candidate content.
+- Added trusted `workflow_run` writer and init-template parity. Writer validates
+  exact run/repository/workflow/path/completion/event/artifact identity, exactly
+  one associated PR, live PR/base/head identity, and exact receipt
+  correspondence before publishing pending readiness.
+- Writer parses one size-bounded JSON artifact member without extracting or
+  executing artifact content. Fork head repositories bind by trusted repository
+  IDs from workflow-run and live PR API data; base repository binds to exact
+  expected repository ID and name.
+- Added `scripts/audit/review_settlement.py` as single deterministic settlement
+  implementation. It fully paginates ready events, reviews, review threads, and
+  thread comments; enforces exact repo/PR/head, open/non-draft/non-merged state,
+  direct-ready fallback, incubation, quiet period, latest effective reviewer
+  state, no active change requests, and zero unresolved threads; then emits a
+  stable identity/review-state fingerprint.
+- Embedded audit now invokes shared settlement from trusted default-branch
+  checkout before any model stage.
+- PR Steward now captures S1 before intake, re-fetches and compares S2 before
+  success publication, then captures and compares S3 immediately afterward.
+  Any post-publication drift overwrites final readiness to pending and fails.
+
+A5 test evidence:
+
+- Initial RED: 26 expected contract failures and 74 existing passes.
+- Shared settlement unit GREEN: 8 passed.
+- Focused A5 GREEN: 109 passed.
+- Live GitHub API challenge found `workflow_run.pull_requests[].head/base.repo`
+  supplies repository `id/name/url` rather than `full_name`. Realistic fixture
+  reproduced the fail-closed mismatch; writer and template were repaired to bind
+  associated/live repository IDs. Security suite then passed 12 tests.
+- Live shared settlement fetch against exact draft PR #1287 head
+  `012a8e8d9fee2309289ed8ce08fef9dcc8ae60ff` completed with full pagination and
+  correctly returned `BLOCKED` for observed draft state and 8 unresolved review
+  threads.
 
 A4 targeted validation:
 
@@ -157,9 +219,10 @@ creation requires immediate prior disable and live readback of exactly
 
 ## Remaining work
 
-- changed-file pre-commit, staged secret scan, and final diff checks
-- commit A3 successor and push feature branch
-- temporarily disable exactly three authorized workflows and verify states
-- open draft PR
-- Codex/Copilot review
-- independent final audit and proof finality
+- full targeted deterministic suite and inherited-baseline CI suite
+- changed-contract L3, effective allowlist, changed-file pre-commit, staged
+  secret scan, and final diff checks
+- commit and push A5 successor
+- reply to and resolve four repaired A4 threads with exact-head evidence
+- exact-head Codex review; Copilot only after Codex settlement
+- frozen-head L3 audit only after separate operator authorization

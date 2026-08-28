@@ -1,21 +1,13 @@
 name: '📋 Gemini Scheduled Issue Triage'
 
 on:
-  schedule:
-    - cron: '0 * * * *' # Runs every hour
-  pull_request:
-    branches:
-      - 'main'
-      - 'release/**/*'
-    paths:
-      - '.github/workflows/gemini-scheduled-triage.yml'
-  push:
-    branches:
-      - 'main'
-      - 'release/**/*'
-    paths:
-      - '.github/workflows/gemini-scheduled-triage.yml'
   workflow_dispatch:
+    inputs:
+      allow_api_spend:
+        description: 'Execution mechanism only; requires separate explicit operator spend authorization.'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: '${{ github.workflow }}'
@@ -27,6 +19,8 @@ defaults:
 
 jobs:
   triage:
+    if: |-
+      ${{ github.event_name == 'workflow_dispatch' && inputs.allow_api_spend == true }}
     runs-on: 'ubuntu-latest'
     timeout-minutes: 7
     env:
@@ -103,7 +97,10 @@ jobs:
       - name: 'Run Gemini Issue Analysis'
         id: 'gemini_issue_analysis'
         if: |-
-          steps.find_issues.outputs.issues_to_triage != '[]' && steps.detect_gemini_credentials.outputs.available == 'true'
+          github.event_name == 'workflow_dispatch' &&
+          inputs.allow_api_spend == true &&
+          steps.find_issues.outputs.issues_to_triage != '[]' &&
+          steps.detect_gemini_credentials.outputs.available == 'true'
         uses: 'google-github-actions/run-gemini-cli@v0' # ratchet:exclude
         env:
           GITHUB_TOKEN: '' # Do not pass any auth token here since this runs on untrusted inputs
