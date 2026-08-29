@@ -1,0 +1,23 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1287,
+  "base_sha": "5900c27d3c38b515204bd5dc4baed8b5e14e2a8e",
+  "head_sha": "6ea2cb89cb726302ae5b179b75a87a2bfe1849ce",
+  "prior_audited_head_sha": "b21e19dc261d3f6d327ada7efcc3f0559518d721",
+  "merge_base_sha": "c7bc2fb479d7386825df73e028acdce723ee3388",
+  "changed_files_count": 32,
+  "diff_sha256": "c1180b0d3da90a815964fddb61d5b8c5b3d09d7222f21a2c728554404c717841",
+  "changed_file_manifest_sha256": "5b0c6955280751bd1d057a9a628b279f66d86d904fda67b990f0960020ba4f58",
+  "runner": "claude (Claude Code CLI)",
+  "model_selector": "sonnet",
+  "auth_mode": "claude.ai OAuth (plan-backed, no ANTHROPIC_API_KEY)",
+  "fallback_used": false,
+  "tool_restriction": "Read,Grep only (--tools \"Read,Grep\" --restricted); no Bash/Edit/Write available",
+  "filesystem_scope": "--add-dir /tmp/pr1287-final-audit-a12 only; repo working tree not granted",
+  "permission_denials": [],
+  "total_cost_usd": 0.8945452,
+  "num_turns": 28,
+  "is_error": false,
+  "subtype": "success",
+  "exit_code": 0
+}
