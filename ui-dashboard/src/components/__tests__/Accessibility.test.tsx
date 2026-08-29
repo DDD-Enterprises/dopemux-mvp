@@ -255,7 +255,10 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain("onClick={connectionStatus === 'degraded' ? handleReconnect : undefined}");
   expect(appContent).toContain('action={');
   expect(appContent).toContain("connectionStatus === 'degraded' ? (");
-  expect(appContent).toContain('<Button color="inherit" size="small" onClick={handleReconnect}>');
+  expect(appContent).toContain('<Tooltip title="Attempt to re-establish connection to DØPEMÜX Ritual Daemon" arrow>');
+  expect(appContent).toContain('aria-label="Retry connection to daemon"');
+  expect(appContent).toContain('<Button');
+  expect(appContent).toContain('onClick={handleReconnect}');
   expect(appContent).toContain('RECONNECT');
 
   // Verify notification chips are focusable
