@@ -2,7 +2,13 @@
 
 ## Status
 
-`A5_IMPLEMENTATION_IN_PROGRESS`
+`HISTORICAL_IMPLEMENTATION_LEDGER_A1_A10`
+
+This document records implementation state as it stood through amendment A5.
+It is a historical ledger, not a description of current subject state; later
+authorized successors (through A10 and the frozen head) changed content this
+ledger does not reflect. See "A5 successor qualification" below for one
+specific, audit-identified correction.
 
 Implementation authority resumed under amendments
 `TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001-A1` and
@@ -102,6 +108,22 @@ Implementation:
 - Added dominant `github.event_name == 'workflow_dispatch'` plus
   `inputs.allow_api_spend == true` conditions to every provider-bearing Gemini
   caller job. Reusable Gemini provider workflows were inspected but not edited.
+
+### A5 successor qualification
+
+The statement above describes A5 state only. Later authorized A7/A9 successor
+repairs modified the reusable Gemini workflows
+(`gemini-review.yml`, `gemini-triage.yml`, `gemini-invoke.yml`,
+`gemini-plan-execute.yml`: new target-validation step, new `workflow_call`
+inputs, changed checkout ref, reduced MCP tool list in `gemini-review.yml`).
+Current final subject state at the frozen head therefore supersedes the A5
+"inspect-only" description above. This qualification was added following a
+BLOCKING/MEDIUM finding review of the independent R1 final audit
+(`TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001-A11-R1-FINAL-AUDIT`); the audit's
+companion wheel-completeness finding was independently rebuilt and disproven
+(see `TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001-A12-FINDING-ADJUDICATION`),
+so no `pyproject.toml` change accompanies this narrative correction.
+
 - Replaced direct status publication in `pr-readiness-invalidator.yml` with a
   read-only observer covering opened, reopened, ready-for-review, review,
   review-comment, and review-thread events. Observer emits only a seven-field
