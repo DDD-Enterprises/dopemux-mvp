@@ -263,7 +263,13 @@ jobs:
           proof_pr="$(jq -er '.pr_number' independent-audit/PROOF.json)"
           proof_head="$(jq -er '.head_sha' independent-audit/PROOF.json)"
           test "$proof_pr" = "$SELECTED_PR"
-          test "$proof_head" = "$EXPECTED_HEAD_SHA"
+          # proof_head (A, the audited content commit) is NOT required to
+          # equal EXPECTED_HEAD_SHA (H, the live PR head) here: the
+          # `pr-steward audit` hard gate below independently verifies
+          # A == H OR a proof-only successor from A to H. Every other
+          # identity binding in this job (settlement, readiness status,
+          # artifact naming) uses EXPECTED_HEAD_SHA (H) -- never A -- so
+          # readiness publishes on the commit branch protection watches.
 
           # Cross-check live PR head still matches the artifact-bound head.
           live_head="$(gh api "repos/${EXPECTED_REPO}/pulls/${SELECTED_PR}" --jq .head.sha)"
@@ -293,9 +299,14 @@ jobs:
         if: always() && hashFiles('independent-audit/PROOF.json') != ''
         run: |
           pr_number="$(jq -er '.pr_number' independent-audit/PROOF.json)"
-          head_sha="$(jq -er '.head_sha' independent-audit/PROOF.json)"
+          audited_head_sha="$(jq -er '.head_sha' independent-audit/PROOF.json)"
           printf 'pr_number=%s\n' "$pr_number" >> "$GITHUB_OUTPUT"
-          printf 'head_sha=%s\n' "$head_sha" >> "$GITHUB_OUTPUT"
+          # The audited content commit (A) -- NOT necessarily the live PR
+          # head. Never use this for status publication, settlement, or
+          # artifact naming; those must bind the live head (H), published
+          # by the "Select and download independent audit artifact" step
+          # as steps.audit.outputs.pr_head_sha.
+          printf 'audited_head_sha=%s\n' "$audited_head_sha" >> "$GITHUB_OUTPUT"
           printf 'proof_path=independent-audit/PROOF.json\n' >> "$GITHUB_OUTPUT"
 
       - name: Capture settlement before Steward
@@ -303,7 +314,7 @@ jobs:
         if: success()
         env:
           SETTLEMENT_S1: /tmp/review-settlement-s1.json
-          PR_HEAD_SHA: ${{ steps.proof.outputs.head_sha }}
+          PR_HEAD_SHA: ${{ steps.audit.outputs.pr_head_sha }}
           PR_NUMBER: ${{ steps.proof.outputs.pr_number }}
         run: |
           set -euo pipefail
@@ -333,7 +344,7 @@ jobs:
         env:
           SETTLEMENT_S1: /tmp/review-settlement-s1.json
           SETTLEMENT_S2: /tmp/review-settlement-s2.json
-          PR_HEAD_SHA: ${{ steps.proof.outputs.head_sha }}
+          PR_HEAD_SHA: ${{ steps.audit.outputs.pr_head_sha }}
           PR_NUMBER: ${{ steps.proof.outputs.pr_number }}
         run: |
           set -euo pipefail
@@ -350,9 +361,9 @@ jobs:
 
       - name: Publish readiness status on candidate PR head
         id: readiness
-        if: always() && steps.proof.outputs.head_sha != ''
+        if: always() && steps.audit.outputs.pr_head_sha != ''
         env:
-          PR_HEAD_SHA: ${{ steps.proof.outputs.head_sha }}
+          PR_HEAD_SHA: ${{ steps.audit.outputs.pr_head_sha }}
           PR_NUMBER: ${{ steps.proof.outputs.pr_number }}
           STEWARD_OUTCOME: ${{ steps.steward.outcome }}
           SETTLEMENT_OUTCOME: ${{ steps.settlement_s2.outcome }}
@@ -392,7 +403,7 @@ jobs:
         env:
           SETTLEMENT_S2: /tmp/review-settlement-s2.json
           SETTLEMENT_S3: /tmp/review-settlement-s3.json
-          PR_HEAD_SHA: ${{ steps.proof.outputs.head_sha }}
+          PR_HEAD_SHA: ${{ steps.audit.outputs.pr_head_sha }}
           PR_NUMBER: ${{ steps.proof.outputs.pr_number }}
         run: |
           set -uo pipefail
@@ -427,7 +438,8 @@ jobs:
           {
             printf '## PR Steward final readiness\n\n'
             printf -- '- audit_run_id: %s\n' '${{ steps.audit_run.outputs.id }}'
-            printf -- '- validated_head_sha: %s\n' '${{ steps.proof.outputs.head_sha }}'
+            printf -- '- validated_head_sha: %s\n' '${{ steps.audit.outputs.pr_head_sha }}'
+            printf -- '- audited_content_head_sha: %s\n' '${{ steps.proof.outputs.audited_head_sha }}'
             printf -- '- pr_number: %s\n' '${{ steps.proof.outputs.pr_number }}'
             printf -- '- candidate_head_status_context: PR Steward / final readiness\n'
             printf -- '- mutation_performed: false (read-only steward; status publish only)\n\n'
@@ -444,6 +456,6 @@ jobs:
         with:
           # Attributable name from validated independent-audit proof identity
           # (not a stale steps.pr.outputs.number reference).
-          name: pr-steward-pr-${{ steps.proof.outputs.pr_number }}-head-${{ steps.proof.outputs.head_sha }}-readiness
+          name: pr-steward-pr-${{ steps.proof.outputs.pr_number }}-head-${{ steps.audit.outputs.pr_head_sha }}-readiness
           path: pr-steward-artifacts/
           if-no-files-found: warn

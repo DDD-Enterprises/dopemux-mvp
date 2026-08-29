@@ -129,15 +129,22 @@ jobs:
           EXPECTED_REPO: ${{ github.repository }}
           PR_NUMBER: ${{ steps.target.outputs.pr_number }}
           HEAD_SHA: ${{ steps.target.outputs.head_sha }}
+          PROOF_PATH: ${{ steps.target.outputs.proof_path }}
         run: |
           set -euo pipefail
           jq -e --argjson pr "$PR_NUMBER" '.pr_number == $pr' independent-audit/PROOF.json
-          jq -e --arg head "$HEAD_SHA" '.head_sha == $head' independent-audit/PROOF.json
+          # head_sha equality is NOT enforced here: a committed proof's
+          # head_sha may legitimately name an earlier audited content commit
+          # (A) that this live PR head (H) descends from via a proof-only
+          # successor commit. The CLI verifies A == H OR (A is an ancestor of
+          # H with the A..H delta confined to the proof's own declared
+          # paths) -- never widened to "anything under proof/".
           python -m dopemux.cli pr-steward audit \
             --proof independent-audit/PROOF.json \
             --repo "$EXPECTED_REPO" \
             --pr "$PR_NUMBER" \
             --head "$HEAD_SHA" \
+            --proof-source-path "$PROOF_PATH" \
             --format json
 
       - name: Upload bound proof

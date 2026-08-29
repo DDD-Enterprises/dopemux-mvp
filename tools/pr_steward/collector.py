@@ -6,6 +6,8 @@ import textwrap
 from pathlib import Path
 from typing import Any
 
+from dopemux_pr_steward import proof_successor
+
 
 PR_VIEW_FIELDS = ",".join(
     [
@@ -813,6 +815,25 @@ def _proof_freshness(
             "pr_head_sha": pr_head_sha,
             "self_reference_exception": None,
         }
+    if pr_head_sha:
+        ok, reasons = proof_successor.verify_proof_successor(
+            Path("."),
+            live_head_sha=pr_head_sha,
+            audited_head_sha=proof_head_sha,
+            proof_payload=payload,
+        )
+        if ok:
+            return {
+                "status": "VERIFIED_SUCCESSOR",
+                "matches_pr_head": False,
+                "reason": (
+                    "Proof head SHA is a verified ancestor of PR head SHA "
+                    "with a proof-only successor delta."
+                ),
+                "proof_recorded_sha": proof_head_sha,
+                "pr_head_sha": pr_head_sha,
+                "self_reference_exception": None,
+            }
     return {
         "status": "STALE",
         "matches_pr_head": False,

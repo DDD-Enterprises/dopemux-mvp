@@ -609,6 +609,16 @@ def test_packaged_audit_cli_enforces_canonical_proof_identity(
 
 
 def test_packaged_audit_identity_errors_match_repository_validator() -> None:
+    """Parity between the canonical validator and the packaged mirror holds
+    for every identity dimension EXCEPT head_sha mismatch: the packaged
+    mirror (dopemux_pr_steward.cli._independent_audit_errors) is proof-only-
+    successor aware (TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001-A15) because
+    it serves the packaged template's committed-proof convention, while this
+    module feeds root .github/workflows/embedded-audit.yml, which mints a
+    fresh proof bound to the live head every run and has no successor case
+    to solve. See dopemux_pr_steward.proof_successor and the divergence note
+    on _independent_audit_errors' docstring.
+    """
     from dopemux_pr_steward.cli import _independent_audit_errors as packaged_errors
 
     proofs = [
@@ -616,7 +626,6 @@ def test_packaged_audit_identity_errors_match_repository_validator() -> None:
         _passing_proof(executed=False),
         _passing_proof(provenance=None),
         _passing_proof(repo="other/repo"),
-        _passing_proof(head_sha="b" * 40),
     ]
     for proof in proofs:
         expected = independent_audit_errors(
@@ -632,6 +641,27 @@ def test_packaged_audit_identity_errors_match_repository_validator() -> None:
             expected_repo="DDD-Enterprises/dopemux-mvp",
         )
         assert actual == expected
+
+    # Deliberately diverging case: both reject a head_sha mismatch that is
+    # not a verifiable proof-only successor (no git repo/ancestry evidence
+    # available here), but the packaged mirror's message carries additional
+    # successor-check diagnostics.
+    mismatched = _passing_proof(head_sha="b" * 40)
+    canonical = independent_audit_errors(
+        mismatched,
+        expected_pr=1042,
+        expected_head_sha="a" * 40,
+        expected_repo="DDD-Enterprises/dopemux-mvp",
+    )
+    packaged = packaged_errors(
+        mismatched,
+        expected_pr=1042,
+        expected_head_sha="a" * 40,
+        expected_repo="DDD-Enterprises/dopemux-mvp",
+    )
+    assert len(canonical) == len(packaged) == 1
+    assert canonical[0].startswith("audit_head_mismatch:")
+    assert packaged[0].startswith("audit_head_mismatch:")
 
 
 def test_enforce_accepts_passing_independent_audit() -> None:

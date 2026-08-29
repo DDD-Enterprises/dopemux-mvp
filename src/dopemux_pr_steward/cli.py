@@ -9,6 +9,7 @@ from typing import Any, Mapping, Sequence
 from dopemux_pr_merge_specialist.steward_gate import steward_gate
 
 from . import CONTRACT_VERSION
+from . import proof_successor
 from . import review_settlement
 from .doctor import format_result, run_doctor
 
@@ -89,7 +90,25 @@ def build_parser() -> argparse.ArgumentParser:
     audit.add_argument("--proof", required=True, type=Path)
     audit.add_argument("--repo", help="Expected GitHub repository owner/name.")
     audit.add_argument("--pr", type=int, help="Expected pull request number.")
-    audit.add_argument("--head", help="Expected pull request head SHA.")
+    audit.add_argument("--head", help="Expected pull request head SHA (live PR head).")
+    audit.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path("."),
+        help=(
+            "Git working tree used to verify a proof-only successor when "
+            "--head does not equal the proof's own head_sha."
+        ),
+    )
+    audit.add_argument(
+        "--proof-source-path",
+        default=proof_successor.DEFAULT_PROOF_PATH,
+        help=(
+            "Repository-relative path the proof was committed at (e.g. "
+            "'proof/PROOF.json'). Bounds the allowed proof-only successor "
+            "delta; never widened to a whole directory."
+        ),
+    )
     audit.add_argument("--format", choices=["json", "text"], default="text")
     audit.set_defaults(handler=_run_audit)
 
@@ -237,6 +256,8 @@ def _run_audit(args: argparse.Namespace) -> int:
                     expected_repo=str(args.repo),
                     expected_pr=int(args.pr),
                     expected_head_sha=str(args.head),
+                    repo_root=args.repo_root,
+                    proof_source_path=args.proof_source_path,
                 )
             )
     if status not in {"PASS", "PASS_WITH_RISKS"}:
@@ -263,8 +284,21 @@ def _independent_audit_errors(
     expected_repo: str | None = None,
     expected_pr: int | None = None,
     expected_head_sha: str | None = None,
+    repo_root: Path | None = None,
+    proof_source_path: str = proof_successor.DEFAULT_PROOF_PATH,
 ) -> list[str]:
-    """Mirror canonical independent-audit identity enforcement for packages."""
+    """Mirror canonical independent-audit identity enforcement for packages.
+
+    Deliberately diverges from ``scripts/audit/run_embedded_audit.py``'s
+    ``independent_audit_errors`` (out of A15's scope: that module feeds this
+    repository's own root ``.github/workflows/embedded-audit.yml``, which
+    mints a fresh proof bound to the live head every run and never consumes
+    a committed proof, so it has no proof-only-successor problem to solve).
+    This mirror serves the packaged template's committed-proof convention,
+    where ``expected_head_sha`` (the live PR head) may legitimately differ
+    from ``payload['head_sha']`` (the audited commit) under the proof-only
+    successor pattern -- see ``proof_successor.verify_proof_successor``.
+    """
     errors: list[str] = []
     if "dry_run" in payload:
         dry_run = payload.get("dry_run")
@@ -291,10 +325,19 @@ def _independent_audit_errors(
     if expected_head_sha is not None:
         proof_head = str(payload.get("head_sha") or "")
         if proof_head != expected_head_sha:
-            errors.append(
-                f"audit_head_mismatch: proof head_sha={proof_head!r} "
-                f"expected={expected_head_sha}"
+            ok, reasons = proof_successor.verify_proof_successor(
+                repo_root or Path("."),
+                live_head_sha=expected_head_sha,
+                audited_head_sha=proof_head,
+                proof_path=proof_source_path,
+                proof_payload=payload,
             )
+            if not ok:
+                errors.append(
+                    f"audit_head_mismatch: proof head_sha={proof_head!r} "
+                    f"expected={expected_head_sha} "
+                    f"successor_check_failed=[{'; '.join(reasons)}]"
+                )
     if expected_repo is not None:
         proof_repo = str(payload.get("repo") or "").strip()
         if not proof_repo:

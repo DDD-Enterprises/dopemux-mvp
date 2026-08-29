@@ -143,6 +143,13 @@ def test_init_scaffolds_pr_steward_workflows_and_policy(tmp_path: Path) -> None:
     assert "pip install -e ." not in rendered_steward
     assert "python -m tools.pr_steward" not in rendered_steward
     assert "scripts.audit" not in rendered_steward
+    # Identity split (TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001-A15): the
+    # live PR head (H) that status/settlement/artifact-naming bind to must
+    # come from the artifact-name-derived, live-head-cross-checked output,
+    # never from the proof's own (possibly earlier, ancestor) head_sha.
+    assert "steps.audit.outputs.pr_head_sha" in rendered_steward
+    assert "steps.proof.outputs.head_sha" not in rendered_steward
+    assert "steps.proof.outputs.audited_head_sha" in rendered_steward
 
     assert set(embedded_audit_yaml["on"]) == {"workflow_dispatch"}
     audit_inputs = embedded_audit_yaml["on"]["workflow_dispatch"]["inputs"]
@@ -171,7 +178,13 @@ def test_init_scaffolds_pr_steward_workflows_and_policy(tmp_path: Path) -> None:
     assert "live_pr_head_sha" in rendered_audit
     assert "base.repo.full_name" in rendered_audit
     assert "jq -e --argjson pr" in rendered_audit
-    assert "jq -e --arg head" in rendered_audit
+    # head_sha equality is intentionally NOT jq-enforced pre-CLI: a
+    # committed proof's head_sha may name an audited content commit that is
+    # an ancestor of the live head via a proof-only successor. See
+    # TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001-A15 and
+    # dopemux_pr_steward.proof_successor.
+    assert "jq -e --arg head" not in rendered_audit
+    assert "--proof-source-path" in rendered_audit
     assert "actions/checkout@v4" in rendered_audit
     assert "ref: ${{ github.event.repository.default_branch }}" in rendered_audit
     assert "ref: ${{ inputs.head_sha }}" not in rendered_audit
@@ -243,6 +256,7 @@ def test_built_wheel_runs_pr_steward_and_materializes_templates_off_tree(
 
     required_wheel_members = {
         "dopemux_pr_steward/review_settlement.py",
+        "dopemux_pr_steward/proof_successor.py",
         "dopemux/templates/init/.github/workflows/embedded-audit.yml",
         "dopemux/templates/init/.github/workflows/pr-steward.yml",
         "dopemux/templates/init/.github/workflows/pr-readiness-invalidator.yml",
@@ -398,3 +412,88 @@ def test_built_wheel_runs_pr_steward_and_materializes_templates_off_tree(
         if path.is_file()
     }
     assert required_workflows <= materialized_workflows
+
+    generated_embedded_audit = (
+        materialized / ".github" / "workflows" / "embedded-audit.yml"
+    ).read_text(encoding="utf-8")
+    assert "--proof-source-path" in generated_embedded_audit
+    assert "jq -e --arg head" not in generated_embedded_audit
+    generated_pr_steward = (
+        materialized / ".github" / "workflows" / "pr-steward.yml"
+    ).read_text(encoding="utf-8")
+    assert "steps.audit.outputs.pr_head_sha" in generated_pr_steward
+
+    # Proof-only-successor fixture through the INSTALLED wheel's packaged
+    # verifier -- proves proof_successor.py survives packaging, not just
+    # editable-tree behavior. No network/model call: both commits and the
+    # git objects they need are local.
+    successor_repo = runtime_dir / "successor-repo"
+    successor_repo.mkdir()
+    git_env = runtime_env.copy()
+
+    def _git(*args: str) -> None:
+        _run_checked(["git", "-C", str(successor_repo), *args], cwd=runtime_dir, env=git_env)
+
+    _git("init", "-q")
+    _git("config", "user.email", "test@example.com")
+    _git("config", "user.name", "Test")
+    (successor_repo / "src").mkdir()
+    (successor_repo / "src" / "app.py").write_text("print(1)\n", encoding="utf-8")
+    _git("add", "-A")
+    _git("commit", "-q", "-m", "audited content")
+    audited_sha = _run_checked(
+        ["git", "-C", str(successor_repo), "rev-parse", "HEAD"],
+        cwd=runtime_dir,
+        env=git_env,
+    ).stdout.strip()
+
+    (successor_repo / "proof").mkdir()
+    proof_payload = {
+        "repo": "DDD-Enterprises/dopemux-mvp",
+        "pr_number": 1287,
+        "head_sha": audited_sha,
+        "executed": True,
+        "provenance": {
+            "proof_author": "independent-embedded-audit",
+            "workflow": "embedded-audit.yml",
+        },
+        "embedded_audit": {"status": "PASS", "report_path": "proof/AUDITOR_REPORT.md"},
+    }
+    (successor_repo / "proof" / "PROOF.json").write_text(
+        json.dumps(proof_payload), encoding="utf-8"
+    )
+    _git("add", "-A")
+    _git("commit", "-q", "-m", "proof-only successor")
+    live_sha = _run_checked(
+        ["git", "-C", str(successor_repo), "rev-parse", "HEAD"],
+        cwd=runtime_dir,
+        env=git_env,
+    ).stdout.strip()
+
+    successor_audit = _run_checked(
+        [
+            str(venv_python),
+            "-I",
+            "-m",
+            "dopemux.cli",
+            "pr-steward",
+            "audit",
+            "--proof",
+            str(successor_repo / "proof" / "PROOF.json"),
+            "--repo",
+            "DDD-Enterprises/dopemux-mvp",
+            "--pr",
+            "1287",
+            "--head",
+            live_sha,
+            "--repo-root",
+            str(successor_repo),
+            "--proof-source-path",
+            "proof/PROOF.json",
+            "--format",
+            "json",
+        ],
+        cwd=runtime_dir,
+        env=runtime_env,
+    )
+    assert json.loads(successor_audit.stdout)["embedded_audit_status"] == "PASS"

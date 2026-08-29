@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from dopemux_pr_steward import proof_successor
 from tools.pr_steward.security_release_gate import classify_security_release_paths
 from tools.pr_steward.security_release_approval import (
     compute_app_gate_ok,
@@ -29,7 +30,12 @@ FAILED_CHECK_CONCLUSIONS = {
     "startup_failure",
 }
 PENDING_CHECK_STATUSES = {"queued", "in_progress", "requested", "waiting", "pending"}
-CURRENT_PROOF_STATUSES = {"CURRENT", "CURRENT_WITH_SELF_REFERENCE_EXCEPTION", "FRESH"}
+CURRENT_PROOF_STATUSES = {
+    "CURRENT",
+    "CURRENT_WITH_SELF_REFERENCE_EXCEPTION",
+    "VERIFIED_SUCCESSOR",
+    "FRESH",
+}
 STALE_PROOF_STATUSES = {"STALE"}
 MISSING_PROOF_STATUSES = {"MISSING"}
 # Exact context published by .github/workflows/pr-steward.yml against the
@@ -1090,6 +1096,29 @@ def _detect_mixed_sha_checks(checks: list[Any], *, pr_head_sha: str) -> bool:
     return False
 
 
+def _revalidate_proof_successor(
+    harvest: dict[str, Any], *, proof_head_sha: str, pr_head_sha: str
+) -> bool:
+    """Independently re-verify a proof-only successor from this surface's
+    own checkout, rather than trusting the collector's claim as-is. Fails
+    closed (False) on any error -- a re-check that cannot run is not a pass.
+    """
+    embedded_audit = harvest.get("embedded_audit")
+    proof_payload = {
+        "embedded_audit": embedded_audit if isinstance(embedded_audit, dict) else {}
+    }
+    try:
+        ok, _reasons = proof_successor.verify_proof_successor(
+            Path("."),
+            live_head_sha=pr_head_sha,
+            audited_head_sha=proof_head_sha,
+            proof_payload=proof_payload,
+        )
+    except Exception:
+        return False
+    return ok
+
+
 def _proof(harvest: dict[str, Any], *, pr_head_sha: str | None = None) -> dict[str, Any]:
     raw = harvest.get("proof") or {}
     proof_head_sha = raw.get("proof_head_sha")
@@ -1117,6 +1146,29 @@ def _proof(harvest: dict[str, Any], *, pr_head_sha: str | None = None) -> dict[s
                 reason="Proof freshness requires self-reference exception validation.",
             )
             freshness["self_reference_exception"] = self_reference_exception
+        elif (
+            raw_status == "VERIFIED_SUCCESSOR"
+            and not matches
+            and proof_head_sha
+            and pr_head_sha
+            and _revalidate_proof_successor(
+                harvest, proof_head_sha=proof_head_sha, pr_head_sha=pr_head_sha
+            )
+        ):
+            # Independent re-verification: never trust the collector's own
+            # claim without redoing the ancestor + proof-only-delta check
+            # from this surface's own checkout, per Steward's independent
+            # revalidation requirement.
+            freshness = _proof_freshness_payload(
+                status="VERIFIED_SUCCESSOR",
+                proof_head_sha=proof_head_sha,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason=(
+                    "Proof head SHA is a verified ancestor of PR head SHA "
+                    "with a proof-only successor delta."
+                ),
+            )
         elif not proof_head_sha and not proof_path:
             freshness = _proof_freshness_payload(
                 status="MISSING",
