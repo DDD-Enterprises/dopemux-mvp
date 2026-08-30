@@ -788,6 +788,16 @@ function DashboardApp() {
                     setNotifications([]);
                     feedHeadingRef.current?.focus();
                   }}
+                  onKeyDown={(e) => {
+                    if (isConfirmingClear && e.key === 'Escape') {
+                      e.stopPropagation();
+                      setIsConfirmingClear(false);
+                      if (clearConfirmTimeoutRef.current) {
+                        clearTimeout(clearConfirmTimeoutRef.current);
+                        clearConfirmTimeoutRef.current = null;
+                      }
+                    }
+                  }}
                   aria-label={isConfirmingClear ? 'Confirm clear all notifications' : 'Clear all notifications'}
                   sx={{
                     ml: isLoading ? 1 : 'auto',

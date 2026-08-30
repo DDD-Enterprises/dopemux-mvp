@@ -182,6 +182,8 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toMatch(/aria-label=\{\s*isSkipConfirming\s*[\s\S]*nextTaskAfterSkip\s*[\s\S]*`Confirm skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*[\s\S]*:\s*`Confirm skip task: \$\{currentTask\.title\}`\s*[\s\S]*:\s*nextTaskAfterSkip\s*[\s\S]*`Skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*[\s\S]*:\s*`Skip task: \$\{currentTask\.title\}`\s*\}/);
   expect(content).toContain('{isSkipConfirming ? \'Confirm Skip?\' : \'Skip\'}');
   expect(content).toContain('<AlertTriangle aria-hidden="true" size={16} />');
+  expect(content).toContain("isSkipConfirming && e.key === 'Escape'");
+  expect(content).toContain("isResetConfirming && e.key === 'Escape'");
 
   // Verify task sequence list empty state
   expect(content).toContain('optimizedTasks.length === 0 ? (');
@@ -278,6 +280,34 @@ test('App.tsx has accessible header chips and skip link', () => {
   // Verify focus-visible overrides for buttons and icon buttons in theme
   expect(themeContent).toContain('MuiIconButton');
   expect(themeContent).toContain('&:focus-visible');
+
+  // Verify Escape key cancellation on Clear notifications chip
+  expect(appContent).toContain("isConfirmingClear && e.key === 'Escape'");
+});
+
+test('TaskSequencer.tsx soft confirmation can be cancelled with Escape key', () => {
+  const cognitiveState = {
+    energy: 80,
+    attention: 70,
+    load: 40,
+    status: 'optimal' as const,
+    recommendation: 'Stay focused.',
+  };
+
+  render(<TaskSequencer cognitiveState={cognitiveState} />);
+
+  // 1. Arm skip confirmation
+  const skipBtn = screen.getByRole('button', { name: /Skip/i });
+  fireEvent.click(skipBtn);
+  expect(screen.getByRole('button', { name: /Confirm skip/i })).toBeDefined();
+
+  // 2. Press Escape key to cancel soft confirmation
+  const confirmSkipBtn = screen.getByRole('button', { name: /Confirm skip/i });
+  fireEvent.keyDown(confirmSkipBtn, { key: 'Escape' });
+
+  // 3. Verify it returned to non-confirming state
+  expect(screen.queryByRole('button', { name: /Confirm skip/i })).toBeNull();
+  expect(screen.getByRole('button', { name: /^Skip/i })).toBeDefined();
 });
 
 test('PredictionPanel.tsx has TrendIcon based on load and prediction', () => {
