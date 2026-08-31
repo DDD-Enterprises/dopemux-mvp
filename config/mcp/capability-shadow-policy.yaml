@@ -1,0 +1,37 @@
+schema_version: mcp-capability-policy.v1
+mode: shadow
+client_order:
+  - claude
+  - codex
+  - opencode
+  - gemini
+  - copilot
+
+lifecycle_decisions:
+  active: evaluate
+  operator-managed: evaluate
+  planned-active: deferred
+  decision-required: blocked
+
+transport_decisions:
+  http: evaluate
+  sse: evaluate
+  stdio: evaluate
+  external: deferred
+
+clients:
+  claude:
+    exposure_decisions: &exposure_decisions
+      full: direct
+      full-sequenced: sequenced
+      read-plane: facade
+      facade: facade
+      none: omitted
+  codex:
+    exposure_decisions: *exposure_decisions
+  opencode:
+    exposure_decisions: *exposure_decisions
+  gemini:
+    exposure_decisions: *exposure_decisions
+  copilot:
+    exposure_decisions: *exposure_decisions
