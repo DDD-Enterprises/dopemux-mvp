@@ -283,6 +283,53 @@ def test_carved_out_workflow_still_subject_to_text_rules(tmp_path):
 
 
 # ---------------------------------------------------------------------------
+# ADR-225 / TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R Phase B: narrow carve-out
+# extension for the two PR-readiness-invalidation workflow files
+# ---------------------------------------------------------------------------
+
+def test_phase_b_carved_out_workflow_paths_are_not_forbidden_path_findings(tmp_path):
+    repo_root = tmp_path / "tp_dcp_seam_lift_phase_b_carveout_clean"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    report = scanner.scan(
+        changed_files=[
+            ".github/workflows/pr-readiness-invalidator.yml",
+            ".github/workflows/pr-readiness-invalidation-writer.yml",
+        ]
+    )
+    assert not any(f.category == "FORBIDDEN_PATH" for f in report.findings)
+
+
+def test_other_workflow_paths_still_forbidden_path_blocked_after_phase_b(tmp_path):
+    """Phase B must not widen the exemption beyond the two named files."""
+    repo_root = tmp_path / "tp_dcp_seam_lift_phase_b_carveout_other"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    report = scanner.scan(changed_files=[".github/workflows/ci-complete.yml"])
+    assert report.status == Status.BLOCKED
+    assert any(f.category == "FORBIDDEN_PATH" for f in report.findings)
+
+
+def test_phase_b_carved_out_workflow_still_subject_to_text_rules(tmp_path):
+    """Path-level carve-out must not exempt content-level TEXT_RULES scanning."""
+    repo_root = tmp_path / "tp_dcp_seam_lift_phase_b_carveout_text_rules"
+    repo_root.mkdir()
+    wf_dir = repo_root / ".github" / "workflows"
+    wf_dir.mkdir(parents=True)
+    (wf_dir / "pr-readiness-invalidator.yml").write_text("run: gh pr merge --auto\n")
+
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+    report = scanner.scan(
+        changed_files=[".github/workflows/pr-readiness-invalidator.yml"]
+    )
+    assert report.status == Status.BLOCKED
+    assert not any(f.category == "FORBIDDEN_PATH" for f in report.findings)
+    assert any(f.category == "MERGE_SEAM_VIOLATION" for f in report.findings)
+
+
+# ---------------------------------------------------------------------------
 # TP-DMX-TRUST-GATE-FAIL-CLOSED-001: DMX-W1-04-F001 fail-closed completeness
 # ---------------------------------------------------------------------------
 
