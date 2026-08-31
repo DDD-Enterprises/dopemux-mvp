@@ -54,14 +54,14 @@ Task Packet: `TP-DMX-MCP-CAPABILITY-T0-SEMANTIC-COMPILATION-001`
 | Task Packet canonical schema | 0 | PASS; jsonschema CLI emitted deprecation warning |
 | Semantic contract JSON parse | 0 | PASS |
 | Focused capability compiler tests | 0 | PASS, 13 tests |
-| Existing fleet catalog unit and architecture tests | 0 | PASS, 70 tests |
+| Capability plus existing fleet catalog suites | 0 | PASS, 83 tests |
 | Compiler compileall | 0 | PASS |
 | Ruff lint | 0 | PASS |
 | Ruff format check | 1 then 0 after formatting | PASS after deterministic formatter repair |
-| `git diff --check` | NOT_RUN | Pending final content validation |
-| Changed-contract preflight | NOT_RUN | Pending final content validation |
-| Pre-commit | NOT_RUN | Pending final content validation |
-| Independent frozen-head audit | NOT_RUN | Forbidden until substantive head freeze |
+| `git diff --check` | 0 | PASS |
+| Changed-contract preflight | 0 | PASS at C1; L2, model audit required |
+| Pre-commit | 0 | PASS; no hook mutation |
+| Independent frozen-head audit | 0 | PASS at C1 via AGY `gemini-3.1-pro-high`; no fallback |
 
 ## Remaining Risk
 
@@ -69,7 +69,8 @@ Task Packet: `TP-DMX-MCP-CAPABILITY-T0-SEMANTIC-COMPILATION-001`
   configuration.
 - Five-client decisions are validated against current repository catalog, but no
   runtime/client/provider probe is part of T0.
-- Final independent audit and publication remain pending.
+- PR-scoped finalization proof remains `NOT_RUN` until a PR exists; this local
+  pre-PR audit is bound to C1 and does not authorize ready, merge, or activation.
 
 ## Rollback
 
