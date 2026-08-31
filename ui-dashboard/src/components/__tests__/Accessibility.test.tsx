@@ -242,6 +242,8 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('animation: \'listeningPulse 1.4s infinite ease-in-out both\'');
   expect(appContent).toContain('Waiting for signals...');
   expect(appContent).toContain('severity="error"');
+  expect(appContent).toContain('closeText="Dismiss error notification"');
+  expect(appContent).toContain("'aria-label': 'Dismiss error notification'");
   expect(themeContent).toContain('MuiChip');
   expect(themeContent).toContain('&:focus-visible');
   expect(appContent).toContain('ref={feedHeadingRef}');

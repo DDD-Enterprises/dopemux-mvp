@@ -635,6 +635,12 @@ function DashboardApp() {
             severity="error"
             icon={<AlertTriangle size={20} />}
             onClose={() => setErrorMessage(null)}
+            closeText="Dismiss error notification"
+            slotProps={{
+              closeButton: {
+                'aria-label': 'Dismiss error notification',
+              },
+            }}
             action={
               connectionStatus === 'degraded' ? (
                 <Button color="inherit" size="small" onClick={handleReconnect}>
