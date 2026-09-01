@@ -659,7 +659,7 @@ function DashboardApp() {
               <Tooltip title={metric.tooltip} arrow describeChild>
                 <Paper
                   tabIndex={0}
-                  aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : 'N/A'}%`}
+                  aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : 'N/A'}%. ${metric.roast}`}
                   sx={{
                     p: 2.5,
                     minHeight: 140,

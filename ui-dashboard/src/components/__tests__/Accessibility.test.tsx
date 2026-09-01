@@ -123,7 +123,7 @@ test('App.tsx exposes metric card tooltips with focus indicators and labels', ()
   const appContent = fs.readFileSync(path.join(componentsDir, '..', 'App.tsx'), 'utf8');
   expect(appContent).toContain('<Tooltip title={metric.tooltip} arrow describeChild>');
   expect(appContent).toMatch(/<Tooltip title=\{metric\.tooltip\} arrow describeChild>[\s\S]*tabIndex=\{0\}/);
-  expect(appContent).toContain('aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : \'N/A\'}%`}');
+  expect(appContent).toContain('aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : \'N/A\'}%. ${metric.roast}`}');
   expect(appContent).toContain('&:focus-visible');
 });
 
