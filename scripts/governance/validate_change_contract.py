@@ -71,10 +71,11 @@ _PROOF_ARTIFACT = (
     r"C\d+_HEAD\.txt|"
     r"review_bundle/[A-Za-z0-9][A-Za-z0-9._-]*\.(txt|json|md|diff))"
 )
+_PACKET_PROOF_ARTIFACT = rf"({_PROOF_ARTIFACT}|implementation-notes\.md)"
 _PROOF_ONLY_ALLOWED = re.compile(
     rf"^("
     rf"proof/pr_merge/embedded-audit/pr-\d+/{_PROOF_ARTIFACT}"
-    rf"|proof/[^/]+/{_PROOF_ARTIFACT}"
+    rf"|proof/[^/]+/{_PACKET_PROOF_ARTIFACT}"
     rf")$"
 )
 
