@@ -86,6 +86,22 @@ def _canonical_facts(snapshot: dict[str, Any]) -> dict[str, Any]:
         )
     threads.sort(key=lambda item: str(item.get("id") or ""))
 
+    issue_comments = [
+        {
+            "id": comment.get("id"),
+            "created_at": comment.get("created_at"),
+            "updated_at": comment.get("updated_at"),
+        }
+        for comment in snapshot.get("issue_comments") or []
+    ]
+    issue_comments.sort(
+        key=lambda item: (
+            str(item.get("created_at") or ""),
+            str(item.get("updated_at") or ""),
+            str(item.get("id") or ""),
+        )
+    )
+
     source = snapshot.get("latest_trusted_invalidation_source")
     trusted_source = None
     if isinstance(source, dict):
@@ -118,6 +134,10 @@ def _canonical_facts(snapshot: dict[str, Any]) -> dict[str, Any]:
         "review_comment_events_complete": snapshot.get(
             "review_comment_events_complete"
         ),
+        "issue_comment_events_complete": snapshot.get(
+            "issue_comment_events_complete"
+        ),
+        "issue_comments": issue_comments,
         "ready_events": sorted(
             str(value) for value in snapshot.get("ready_events") or []
         ),
@@ -203,6 +223,7 @@ def evaluate_snapshot(
         "review_events_complete": "reviews_pagination_unknown",
         "thread_events_complete": "review_threads_pagination_unknown",
         "review_comment_events_complete": "review_comments_pagination_unknown",
+        "issue_comment_events_complete": "issue_comments_pagination_unknown",
     }
     for field, reason in completeness.items():
         if facts[field] is not True:
@@ -260,6 +281,14 @@ def evaluate_snapshot(
                         activity_times.append(_parse_time(str(value)))
                     except (TypeError, ValueError):
                         reasons.append("review_comment_timestamp_invalid")
+    for comment in snapshot.get("issue_comments") or []:
+        for field in ("created_at", "updated_at"):
+            value = comment.get(field)
+            if value:
+                try:
+                    activity_times.append(_parse_time(str(value)))
+                except (TypeError, ValueError):
+                    reasons.append("issue_comment_timestamp_invalid")
 
     invalidation_at = facts.get("latest_trusted_invalidation_at")
     invalidation_source = facts.get("latest_trusted_invalidation_source")
@@ -615,6 +644,28 @@ def fetch_snapshot(repo: str, pr_number: int) -> dict[str, Any]:
             }
         )
 
+    issue_comments_query = """
+    query($owner:String!,$name:String!,$number:Int!,$cursor:String){
+      repository(owner:$owner,name:$name){pullRequest(number:$number){
+        items:comments(first:100,after:$cursor){pageInfo{hasNextPage endCursor}
+          nodes{id createdAt updatedAt}}
+      }}
+    }
+    """
+    issue_comment_nodes = _collect_connection(
+        lambda cursor: (
+            (
+                (
+                    _graphql(issue_comments_query, cursor=cursor, **common).get("data")
+                    or {}
+                ).get("repository")
+                or {}
+            ).get("pullRequest")
+            or {}
+        ).get("items")
+        or {}
+    )
+
     trusted_invalidation_at, trusted_invalidation_source = (
         fetch_latest_trusted_invalidation(repo, str(pr.get("headRefOid") or ""))
     )
@@ -632,6 +683,15 @@ def fetch_snapshot(repo: str, pr_number: int) -> dict[str, Any]:
         "review_events_complete": True,
         "thread_events_complete": True,
         "review_comment_events_complete": True,
+        "issue_comment_events_complete": True,
+        "issue_comments": [
+            {
+                "id": node.get("id"),
+                "created_at": node.get("createdAt"),
+                "updated_at": node.get("updatedAt"),
+            }
+            for node in issue_comment_nodes
+        ],
         "ready_events": [node.get("createdAt") for node in ready_nodes],
         "latest_trusted_invalidation_at": trusted_invalidation_at,
         "latest_trusted_invalidation_source": trusted_invalidation_source,

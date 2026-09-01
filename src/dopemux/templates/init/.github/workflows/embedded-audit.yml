@@ -124,6 +124,32 @@ jobs:
           HEAD_SHA="$INPUT_HEAD_SHA"
           git show "${HEAD_SHA}:${PROOF_PATH}" > independent-audit/PROOF.json
 
+          # Trusted binding receipt: carries the repository source path the
+          # proof was committed at (proof_source_path) from this producer to
+          # every downstream consumer (Steward, packaged CLI, intake).
+          # Without this, a consumer has no way to know a non-default
+          # proof_source_path was used and would incorrectly evaluate the
+          # proof-only-successor allow-list against the wrong path.
+          AUDITED_HEAD_SHA="$(jq -er '.head_sha' independent-audit/PROOF.json)"
+          PROOF_SHA256="$(sha256sum independent-audit/PROOF.json | awk '{print $1}')"
+          jq -n \
+            --arg schema "dopemux.pr_steward.proof_binding.v1" \
+            --arg repository "$EXPECTED_REPO" \
+            --argjson pr_number "$INPUT_PR_NUMBER" \
+            --arg live_head_sha "$INPUT_HEAD_SHA" \
+            --arg audited_head_sha "$AUDITED_HEAD_SHA" \
+            --arg proof_source_path "$PROOF_PATH" \
+            --arg proof_sha256 "$PROOF_SHA256" \
+            '{
+              schema: $schema,
+              repository: $repository,
+              pr_number: $pr_number,
+              live_head_sha: $live_head_sha,
+              audited_head_sha: $audited_head_sha,
+              proof_source_path: $proof_source_path,
+              proof_sha256: $proof_sha256
+            }' > independent-audit/PROOF_BINDING.json
+
       - name: Validate bound proof
         env:
           EXPECTED_REPO: ${{ github.repository }}
@@ -151,7 +177,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: embedded-audit-pr-${{ steps.target.outputs.pr_number }}-head-${{ steps.target.outputs.head_sha }}-proof
-          path: independent-audit/PROOF.json
+          path: |
+            independent-audit/PROOF.json
+            independent-audit/PROOF_BINDING.json
           if-no-files-found: error
           retention-days: 1
 

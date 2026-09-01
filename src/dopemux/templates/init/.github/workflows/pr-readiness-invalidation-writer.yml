@@ -50,7 +50,12 @@ jobs:
               payload = bundle.read(members[0])
           Path("/tmp/invalidation-receipt.json").write_bytes(payload)
           PY
-          pr_number="$(jq -er '.pull_requests | select(length == 1) | .[0].number' /tmp/invalidation-run.json)"
+          run_event="$(jq -r '.event' /tmp/invalidation-run.json)"
+          if [ "$run_event" = "issue_comment" ]; then
+            pr_number="$(jq -er '.pr_number' /tmp/invalidation-receipt.json)"
+          else
+            pr_number="$(jq -er '.pull_requests | select(length == 1) | .[0].number' /tmp/invalidation-run.json)"
+          fi
           gh api "repos/${EXPECTED_REPO}/pulls/${pr_number}" > /tmp/invalidation-pr.json
 
       - name: Validate trusted invalidation binding
@@ -93,13 +98,6 @@ jobs:
           if run.get("status") != "completed" or run.get("conclusion") != "success":
               errors.append("workflow_run_not_successfully_completed")
 
-          associated = run.get("pull_requests") or []
-          if len(associated) != 1:
-              errors.append(f"associated_pr_count:{len(associated)}")
-              associated_pr = {}
-          else:
-              associated_pr = associated[0]
-
           exact_keys = {
               "schema_version",
               "repository",
@@ -125,6 +123,7 @@ jobs:
               "pull_request_review": {"submitted", "edited", "dismissed"},
               "pull_request_review_comment": {"created", "edited", "deleted"},
               "pull_request_review_thread": {"resolved", "unresolved"},
+              "issue_comment": {"created", "edited", "deleted"},
           }
           event_name = receipt.get("event_name")
           event_action = receipt.get("event_action")
@@ -139,6 +138,19 @@ jobs:
           ]
           if len(matching_artifacts) != 1:
               errors.append(f"receipt_artifact_count:{len(matching_artifacts)}")
+
+          is_issue_comment = event_name == "issue_comment"
+          associated = run.get("pull_requests") or []
+          if is_issue_comment:
+              # issue_comment-triggered runs carry no reliable workflow_run.pull_requests
+              # association (no head-branch context at trigger time); identity resolves
+              # via the independently re-fetched live PR instead.
+              associated_pr = live_pr
+          elif len(associated) != 1:
+              errors.append(f"associated_pr_count:{len(associated)}")
+              associated_pr = {}
+          else:
+              associated_pr = associated[0]
 
           associated_number = associated_pr.get("number")
           receipt_number = receipt.get("pr_number")

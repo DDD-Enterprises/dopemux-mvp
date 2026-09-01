@@ -227,6 +227,114 @@ class TestProofOnlySuccessorAcceptance:
 
         assert rc == 2
 
+    def test_report_path_self_widening_is_rejected(self, tmp_path: Path) -> None:
+        """TP-DMX-...-A15-R1 F1 exploit: a successor commit must not be able
+        to widen its own allowed delta by naming a smuggled code file as the
+        proof's ``report_path`` in that same successor commit."""
+        repo = tmp_path / "repo"
+        _init_repo(repo)
+        (repo / "src").mkdir()
+        (repo / "src" / "app.py").write_text("print(1)\n", encoding="utf-8")
+        audited_sha = _commit(repo, "audited content")
+
+        (repo / "proof").mkdir()
+        proof_file = repo / "proof" / "PROOF.json"
+        payload = _proof_payload(head_sha=audited_sha)
+        payload["embedded_audit"]["report_path"] = "src/backdoor.py"
+        proof_file.write_text(json.dumps(payload), encoding="utf-8")
+        (repo / "src" / "backdoor.py").write_text("import os; os.system('evil')\n", encoding="utf-8")
+        live_sha = _commit(repo, "proof-only successor (claims report_path=src/backdoor.py)")
+
+        rc = _run_audit(repo, proof_file, head=live_sha)
+
+        assert rc == 2
+
+    def test_report_path_traversal_is_rejected(self, tmp_path: Path) -> None:
+        repo = tmp_path / "repo"
+        _init_repo(repo)
+        (repo / "src").mkdir()
+        (repo / "src" / "app.py").write_text("print(1)\n", encoding="utf-8")
+        audited_sha = _commit(repo, "audited content")
+
+        (repo / "proof").mkdir()
+        proof_file = repo / "proof" / "PROOF.json"
+        payload = _proof_payload(head_sha=audited_sha)
+        payload["embedded_audit"]["report_path"] = "proof/../src/backdoor.py"
+        proof_file.write_text(json.dumps(payload), encoding="utf-8")
+        (repo / "src" / "backdoor.py").write_text("evil\n", encoding="utf-8")
+        live_sha = _commit(repo, "proof-only successor (traversal report_path)")
+
+        rc = _run_audit(repo, proof_file, head=live_sha)
+
+        assert rc == 2
+
+    def test_valid_report_path_under_proof_namespace_still_passes(
+        self, tmp_path: Path
+    ) -> None:
+        repo = tmp_path / "repo"
+        _init_repo(repo)
+        (repo / "src").mkdir()
+        (repo / "src" / "app.py").write_text("print(1)\n", encoding="utf-8")
+        audited_sha = _commit(repo, "audited content")
+
+        (repo / "proof").mkdir()
+        proof_file = repo / "proof" / "PROOF.json"
+        payload = _proof_payload(head_sha=audited_sha)
+        payload["embedded_audit"]["report_path"] = "proof/AUDITOR_REPORT.md"
+        proof_file.write_text(json.dumps(payload), encoding="utf-8")
+        (repo / "proof" / "AUDITOR_REPORT.md").write_text("report\n", encoding="utf-8")
+        live_sha = _commit(repo, "proof-only successor with legitimate report")
+
+        rc = _run_audit(repo, proof_file, head=live_sha)
+
+        assert rc == 0
+
+    def test_custom_proof_source_path_successor_passes(self, tmp_path: Path) -> None:
+        """TP-DMX-...-A15-R1 F2: a non-default, nested proof source path
+        must still be correctly bound through --proof-source-path, not
+        silently assumed to be DEFAULT_PROOF_PATH."""
+        repo = tmp_path / "repo"
+        _init_repo(repo)
+        (repo / "src").mkdir()
+        (repo / "src" / "app.py").write_text("print(1)\n", encoding="utf-8")
+        audited_sha = _commit(repo, "audited content")
+
+        custom_dir = repo / "proof" / "TP-TEST"
+        custom_dir.mkdir(parents=True)
+        proof_file = custom_dir / "PROOF.json"
+        proof_file.write_text(
+            json.dumps(_proof_payload(head_sha=audited_sha)), encoding="utf-8"
+        )
+        live_sha = _commit(repo, "proof-only successor at custom path")
+
+        rc = _run_audit(
+            repo, proof_file, head=live_sha, proof_source_path="proof/TP-TEST/PROOF.json"
+        )
+
+        assert rc == 0
+
+    def test_custom_proof_source_path_mismatch_is_rejected(self, tmp_path: Path) -> None:
+        """If the caller passes the wrong --proof-source-path (e.g. still
+        assumes the default), a genuinely valid custom-path successor must
+        be rejected -- proving the binding is load-bearing, not cosmetic."""
+        repo = tmp_path / "repo"
+        _init_repo(repo)
+        (repo / "src").mkdir()
+        (repo / "src" / "app.py").write_text("print(1)\n", encoding="utf-8")
+        audited_sha = _commit(repo, "audited content")
+
+        custom_dir = repo / "proof" / "TP-TEST"
+        custom_dir.mkdir(parents=True)
+        proof_file = custom_dir / "PROOF.json"
+        proof_file.write_text(
+            json.dumps(_proof_payload(head_sha=audited_sha)), encoding="utf-8"
+        )
+        live_sha = _commit(repo, "proof-only successor at custom path")
+
+        rc = _run_audit(repo, proof_file, head=live_sha, proof_source_path="proof/PROOF.json")
+
+        assert rc == 2
+
     def test_nonpassing_audit_status_still_rejected(
         self, tmp_path: Path
     ) -> None:

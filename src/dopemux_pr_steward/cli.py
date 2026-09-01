@@ -46,6 +46,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="Proof JSON path used in live mode to verify audit status and PR head SHA.",
     )
     intake.add_argument(
+        "--proof-source-path",
+        help=(
+            "Repository-relative path the proof was committed at (e.g. "
+            "'proof/PROOF.json'). Distinct from --proof-path (the local "
+            "filesystem location of the downloaded proof file); bounds the "
+            "allowed proof-only successor delta. Defaults to "
+            "proof_successor.DEFAULT_PROOF_PATH when omitted."
+        ),
+    )
+    intake.add_argument(
         "--allow-closed",
         action="store_true",
         help="Allow closed or merged PRs to be reported without PR_CLOSED blocker.",
@@ -171,6 +181,8 @@ def _run_intake(args: argparse.Namespace) -> int:
         forwarded.extend(["--fixture-dir", str(args.fixture_dir)])
     if args.proof_path is not None:
         forwarded.extend(["--proof-path", str(args.proof_path)])
+    if args.proof_source_path is not None:
+        forwarded.extend(["--proof-source-path", str(args.proof_source_path)])
     if args.allow_closed:
         forwarded.append("--allow-closed")
     forwarded.extend(["--format", args.format])

@@ -1097,7 +1097,11 @@ def _detect_mixed_sha_checks(checks: list[Any], *, pr_head_sha: str) -> bool:
 
 
 def _revalidate_proof_successor(
-    harvest: dict[str, Any], *, proof_head_sha: str, pr_head_sha: str
+    harvest: dict[str, Any],
+    *,
+    proof_head_sha: str,
+    pr_head_sha: str,
+    proof_source_path: str | None = None,
 ) -> bool:
     """Independently re-verify a proof-only successor from this surface's
     own checkout, rather than trusting the collector's claim as-is. Fails
@@ -1112,6 +1116,7 @@ def _revalidate_proof_successor(
             Path("."),
             live_head_sha=pr_head_sha,
             audited_head_sha=proof_head_sha,
+            proof_path=proof_source_path or proof_successor.DEFAULT_PROOF_PATH,
             proof_payload=proof_payload,
         )
     except Exception:
@@ -1123,6 +1128,7 @@ def _proof(harvest: dict[str, Any], *, pr_head_sha: str | None = None) -> dict[s
     raw = harvest.get("proof") or {}
     proof_head_sha = raw.get("proof_head_sha")
     proof_path = str(raw.get("proof_path") or "")
+    proof_source_path = str(raw.get("proof_source_path") or "") or proof_successor.DEFAULT_PROOF_PATH
     matches = (
         bool(proof_head_sha and proof_head_sha == pr_head_sha)
         if pr_head_sha
@@ -1152,7 +1158,10 @@ def _proof(harvest: dict[str, Any], *, pr_head_sha: str | None = None) -> dict[s
             and proof_head_sha
             and pr_head_sha
             and _revalidate_proof_successor(
-                harvest, proof_head_sha=proof_head_sha, pr_head_sha=pr_head_sha
+                harvest,
+                proof_head_sha=proof_head_sha,
+                pr_head_sha=pr_head_sha,
+                proof_source_path=proof_source_path,
             )
         ):
             # Independent re-verification: never trust the collector's own

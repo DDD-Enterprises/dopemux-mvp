@@ -44,7 +44,11 @@ def load_fixture(fixture_dir: Path) -> dict[str, Any]:
 
 
 def collect_from_github(
-    repo: str, pr_number: int, *, proof_path: Path | None = None
+    repo: str,
+    pr_number: int,
+    *,
+    proof_path: Path | None = None,
+    proof_source_path: str | None = None,
 ) -> dict[str, Any]:
     errors: list[str] = []
     proof_state, initial_proof_errors = _proof_state(
@@ -52,6 +56,7 @@ def collect_from_github(
         pr_head_sha=None,
         expected_pr=pr_number,
         expected_repo=repo,
+        proof_source_path=proof_source_path,
     )
     auth = _run(["gh", "auth", "status"])
     if auth.returncode != 0:
@@ -99,6 +104,7 @@ def collect_from_github(
         pr_head_sha=str(pr_payload.get("headRefOid") or ""),
         expected_pr=pr_number,
         expected_repo=repo,
+        proof_source_path=proof_source_path,
     )
     errors.extend(proof_errors)
     threads, thread_errors = _fetch_review_threads(repo=repo, pr_number=pr_number)
@@ -680,17 +686,31 @@ def _proof_state(
     pr_head_sha: str | None,
     expected_pr: int | None = None,
     expected_repo: str | None = None,
+    proof_source_path: str | None = None,
 ) -> tuple[dict[str, Any], list[str]]:
+    resolved_source_path = proof_source_path or proof_successor.DEFAULT_PROOF_PATH
     if proof_path is None:
-        return _missing_proof_state(None), ["proof_missing: --proof-path not provided"]
+        return (
+            _missing_proof_state(None, proof_source_path=resolved_source_path),
+            ["proof_missing: --proof-path not provided"],
+        )
     try:
         payload = json.loads(proof_path.read_text(encoding="utf-8"))
     except OSError as exc:
-        return _missing_proof_state(proof_path), [f"proof_unreadable: {exc}"]
+        return (
+            _missing_proof_state(proof_path, proof_source_path=resolved_source_path),
+            [f"proof_unreadable: {exc}"],
+        )
     except json.JSONDecodeError as exc:
-        return _missing_proof_state(proof_path), [f"proof_unparseable: {exc}"]
+        return (
+            _missing_proof_state(proof_path, proof_source_path=resolved_source_path),
+            [f"proof_unparseable: {exc}"],
+        )
     if not isinstance(payload, dict):
-        return _missing_proof_state(proof_path), ["proof_unparseable: root is not an object"]
+        return (
+            _missing_proof_state(proof_path, proof_source_path=resolved_source_path),
+            ["proof_unparseable: root is not an object"],
+        )
 
     errors: list[str] = []
     embedded = payload.get("embedded_audit") or {}
@@ -702,12 +722,15 @@ def _proof_state(
         expected_pr=expected_pr,
         expected_head_sha=pr_head_sha,
         expected_repo=expected_repo,
+        proof_source_path=resolved_source_path,
     )
     if independent_errors:
         audit_status = "NEEDS_SUPERVISOR"
         errors.extend(independent_errors)
     proof_head_sha = _proof_head_sha(payload)
-    proof_freshness = _proof_freshness(payload, proof_head_sha, pr_head_sha)
+    proof_freshness = _proof_freshness(
+        payload, proof_head_sha, pr_head_sha, proof_source_path=resolved_source_path
+    )
     return {
         "embedded_audit": {
             "status": audit_status,
@@ -718,6 +741,7 @@ def _proof_state(
         },
         "proof": {
             "proof_path": proof_path.as_posix(),
+            "proof_source_path": resolved_source_path,
             "proof_head_sha": proof_head_sha,
             "matches_pr_head": bool(
                 proof_head_sha and pr_head_sha and proof_head_sha == pr_head_sha
@@ -733,12 +757,25 @@ def _independent_audit_errors(
     expected_pr: int | None = None,
     expected_head_sha: str | None = None,
     expected_repo: str | None = None,
+    proof_source_path: str | None = None,
+    repo_root: Path | None = None,
 ) -> list[str]:
     """Delegate to the shared independent-audit proof validator.
 
     Parity with the embedded-audit workflow hard gate is intentional: both
     surfaces must accept and reject the same proof shapes. When known, pass
     expected PR/repo/head so a proof from another PR cannot produce READY.
+
+    ``proof_source_path`` and ``repo_root`` are accepted (and dropped, not
+    forwarded) here so this default implementation's call signature stays
+    compatible with the packaged successor-aware mirror in
+    ``dopemux_pr_steward.cli._independent_audit_errors``, which
+    ``dopemux_pr_steward.cli._run_intake`` monkeypatches over this module
+    attribute at runtime. ``scripts/audit/run_embedded_audit.py`` (out of
+    A15's scope, deliberately untouched) feeds this repository's OWN root
+    embedded-audit workflow, which mints a fresh proof bound to the live
+    head every run and so has no proof-only-successor case to accept --
+    it never needs these two parameters.
     """
     # Local import keeps collector importable when scripts/ is unavailable in
     # tightly packaged test contexts, while remaining the single contract path.
@@ -752,7 +789,9 @@ def _independent_audit_errors(
     )
 
 
-def _missing_proof_state(proof_path: Path | None) -> dict[str, Any]:
+def _missing_proof_state(
+    proof_path: Path | None, *, proof_source_path: str | None = None
+) -> dict[str, Any]:
     return {
         "embedded_audit": {
             "status": "SKIPPED",
@@ -760,6 +799,7 @@ def _missing_proof_state(proof_path: Path | None) -> dict[str, Any]:
         },
         "proof": {
             "proof_path": proof_path.as_posix() if proof_path else "",
+            "proof_source_path": proof_source_path or proof_successor.DEFAULT_PROOF_PATH,
             "proof_head_sha": None,
             "matches_pr_head": False,
             "proof_freshness": {
@@ -775,7 +815,11 @@ def _missing_proof_state(proof_path: Path | None) -> dict[str, Any]:
 
 
 def _proof_freshness(
-    payload: dict[str, Any], proof_head_sha: str | None, pr_head_sha: str | None
+    payload: dict[str, Any],
+    proof_head_sha: str | None,
+    pr_head_sha: str | None,
+    *,
+    proof_source_path: str | None = None,
 ) -> dict[str, Any]:
     raw = payload.get("proof_freshness")
     if isinstance(raw, dict):
@@ -820,6 +864,7 @@ def _proof_freshness(
             Path("."),
             live_head_sha=pr_head_sha,
             audited_head_sha=proof_head_sha,
+            proof_path=proof_source_path or proof_successor.DEFAULT_PROOF_PATH,
             proof_payload=payload,
         )
         if ok:

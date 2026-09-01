@@ -275,9 +275,57 @@ jobs:
           live_head="$(gh api "repos/${EXPECTED_REPO}/pulls/${SELECTED_PR}" --jq .head.sha)"
           test "$live_head" = "$EXPECTED_HEAD_SHA"
 
+          # Trusted binding receipt: carries the repository source path the
+          # proof was committed at (proof_source_path) from the producer
+          # (embedded-audit.yml) to this consumer. Missing or tampered ->
+          # fail closed. Without this, a non-default proof_source_path
+          # would silently fall back to the default and either reject a
+          # legitimate successor or (worse) mis-evaluate the allow-list.
+          binding_path="$(find independent-audit-download -type f -name PROOF_BINDING.json -print -quit)"
+          if [ -z "$binding_path" ]; then
+            echo "proof_binding_receipt_missing: refusing READY without a validated proof_source_path binding" >&2
+            exit 2
+          fi
+          cp "$binding_path" independent-audit/PROOF_BINDING.json
+
+          jq -e '.schema == "dopemux.pr_steward.proof_binding.v1"' independent-audit/PROOF_BINDING.json >/dev/null
+          jq -e '.repository | strings' independent-audit/PROOF_BINDING.json >/dev/null
+          jq -e '.pr_number | numbers' independent-audit/PROOF_BINDING.json >/dev/null
+          jq -e '.live_head_sha | strings' independent-audit/PROOF_BINDING.json >/dev/null
+          jq -e '.audited_head_sha | strings' independent-audit/PROOF_BINDING.json >/dev/null
+          jq -e '.proof_source_path | strings' independent-audit/PROOF_BINDING.json >/dev/null
+          jq -e '.proof_sha256 | strings' independent-audit/PROOF_BINDING.json >/dev/null
+
+          binding_repo="$(jq -er '.repository' independent-audit/PROOF_BINDING.json)"
+          binding_pr="$(jq -er '.pr_number' independent-audit/PROOF_BINDING.json)"
+          binding_live_head="$(jq -er '.live_head_sha' independent-audit/PROOF_BINDING.json)"
+          binding_audited_head="$(jq -er '.audited_head_sha' independent-audit/PROOF_BINDING.json)"
+          binding_proof_source_path="$(jq -er '.proof_source_path' independent-audit/PROOF_BINDING.json)"
+          binding_proof_sha256="$(jq -er '.proof_sha256' independent-audit/PROOF_BINDING.json)"
+
+          test "$binding_repo" = "$EXPECTED_REPO"
+          test "$binding_pr" = "$SELECTED_PR"
+          test "$binding_live_head" = "$EXPECTED_HEAD_SHA"
+          test "$binding_audited_head" = "$proof_head"
+
+          # Tamper check: the receipt's own hash of PROOF.json must match
+          # the PROOF.json we actually downloaded, not one substituted after
+          # the receipt was signed off by embedded-audit.yml.
+          actual_proof_sha256="$(sha256sum independent-audit/PROOF.json | awk '{print $1}')"
+          test "$binding_proof_sha256" = "$actual_proof_sha256"
+
+          # Structural path safety, independent of the producer's own
+          # upstream validation (defense in depth): must be a normalized,
+          # traversal-free, repo-relative path.
+          printf '%s' "$binding_proof_source_path" | grep -Eq '^[A-Za-z0-9._/-]+$'
+          case "/${binding_proof_source_path}/" in
+            *"/../"*|*"/./"*|"//"*|*"//"*) exit 1 ;;
+          esac
+
           # Bind identity outputs BEFORE hard enforce so failure status can still
           # be published when the audit conclusion or proof is non-passing.
           printf 'proof_path=independent-audit/PROOF.json\n' >> "$GITHUB_OUTPUT"
+          printf 'proof_source_path=%s\n' "$binding_proof_source_path" >> "$GITHUB_OUTPUT"
           printf 'pr_head_sha=%s\n' "$EXPECTED_HEAD_SHA" >> "$GITHUB_OUTPUT"
           printf 'pr_number=%s\n' "$SELECTED_PR" >> "$GITHUB_OUTPUT"
 
@@ -292,6 +340,7 @@ jobs:
             --repo "$EXPECTED_REPO" \
             --pr "$proof_pr" \
             --head "$EXPECTED_HEAD_SHA" \
+            --proof-source-path "$binding_proof_source_path" \
             --format json
 
       - name: Bind proof identity outputs
@@ -336,7 +385,8 @@ jobs:
             --out pr-steward-artifacts \
             --strict \
             --format text \
-            --proof-path independent-audit/PROOF.json
+            --proof-path independent-audit/PROOF.json \
+            --proof-source-path "${{ steps.audit.outputs.proof_source_path }}"
 
       - name: Revalidate settlement before readiness publication
         id: settlement_s2
@@ -440,6 +490,7 @@ jobs:
             printf -- '- audit_run_id: %s\n' '${{ steps.audit_run.outputs.id }}'
             printf -- '- validated_head_sha: %s\n' '${{ steps.audit.outputs.pr_head_sha }}'
             printf -- '- audited_content_head_sha: %s\n' '${{ steps.proof.outputs.audited_head_sha }}'
+            printf -- '- proof_source_path: %s\n' '${{ steps.audit.outputs.proof_source_path }}'
             printf -- '- pr_number: %s\n' '${{ steps.proof.outputs.pr_number }}'
             printf -- '- candidate_head_status_context: PR Steward / final readiness\n'
             printf -- '- mutation_performed: false (read-only steward; status publish only)\n\n'

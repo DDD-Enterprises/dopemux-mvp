@@ -18,7 +18,18 @@ This module distinguishes:
 and accepts either ``A == H`` (the legacy/simple case) or:
 
     A is an ancestor of H
-    AND the A..H delta is confined to the proof's own declared paths
+    AND the A..H delta is confined to paths within the immutable
+        proof-evidence namespace (rooted at "proof/") that are also
+        declared by the proof itself (its own committed path, or a
+        report_path it names) -- see ``_is_safe_proof_namespace_path`` and
+        ``allowed_successor_paths``.
+
+A successor commit's own proof payload -- including any ``report_path`` it
+declares -- is untrusted content controlled by that same commit; it is
+never sufficient on its own to widen the allowed delta. A candidate path is
+only admitted after independently proving it lives inside the proof
+namespace, so a successor can never smuggle a code change past the
+proof-only check by relabelling it as "the report".
 
 It never rewrites or reinterprets ``head_sha`` to mean anything other than
 "the commit actually audited" -- callers that need the live head continue to
@@ -47,6 +58,20 @@ _SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 FETCH_DEPTHS = (100, 500)
 
 DEFAULT_PROOF_PATH = "proof/PROOF.json"
+
+# Every path admitted into allowed_successor_paths() must be rooted here.
+# This is the "immutable proof-evidence namespace": a successor commit's
+# own proof payload is untrusted (it fully controls that payload's
+# content), so any path *named inside* that payload -- e.g. report_path --
+# must still be independently confined to this namespace before it is
+# trusted, or a successor could smuggle a code change past the proof-only
+# check by simply relabelling it as "the report".
+_PROOF_NAMESPACE_ROOT = "proof"
+
+# Redundant with the proof/-root requirement today (anything rooted at
+# "proof" cannot also start with these prefixes), kept as explicit defense
+# in depth against a future relaxation of _PROOF_NAMESPACE_ROOT.
+_DENIED_PATH_PREFIXES = ("src/", ".github/", "tools/", "tests/")
 
 
 def _run_git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
@@ -100,25 +125,63 @@ def _changed_paths(repo_root: Path, base: str, head: str) -> list[str] | None:
     return [line for line in result.stdout.decode("utf-8", "replace").splitlines() if line]
 
 
+def _is_safe_proof_namespace_path(path: object) -> bool:
+    """Fail-closed structural check that ``path`` names a file confined to
+    the immutable proof-evidence namespace (``_PROOF_NAMESPACE_ROOT``).
+
+    Rejects: non-strings/empty strings, absolute paths, backslashes,
+    empty/``.``/``..`` path components (traversal), and anything not rooted
+    at ``proof/``. This is applied to every candidate path admitted into
+    ``allowed_successor_paths`` -- including a caller-supplied
+    ``proof_path`` and any ``report_path`` declared inside the proof
+    payload -- so a path cannot be trusted merely because it appears
+    somewhere in already-bound data; it must independently prove it lives
+    in the proof namespace.
+    """
+    if not isinstance(path, str) or not path:
+        return False
+    if path.startswith("/") or path.startswith("\\") or "\\" in path:
+        return False
+    parts = path.split("/")
+    if any(part in ("", ".", "..") for part in parts):
+        return False
+    if parts[0] != _PROOF_NAMESPACE_ROOT:
+        return False
+    if any(path.startswith(prefix) for prefix in _DENIED_PATH_PREFIXES):
+        return False
+    return True
+
+
 def allowed_successor_paths(
     proof_path: str, proof_payload: Mapping[str, Any]
 ) -> set[str]:
-    """Narrow allow-list derived only from data already bound to this proof.
+    """Narrow allow-list confined to the immutable proof-evidence namespace.
 
-    Deliberately NOT "anything under proof/" -- exactly the exact committed
-    proof file path (as supplied by the caller, e.g. the workflow_dispatch
-    ``proof_path`` input), plus the proof's own declared report path
-    (``embedded_audit.report_path``) when present. Both are attacker-
-    uncontrollable in context: ``proof_path`` is validated upstream (a
-    workflow input matched against a strict path regex before this module
-    ever runs), and ``report_path`` is read from the proof JSON blob at the
-    already-verified audited commit, not from the untrusted live head.
+    Deliberately NOT "anything under proof/" as a glob -- exactly the
+    committed proof file path (as supplied by the caller, e.g. the
+    workflow_dispatch ``proof_path`` input), plus the proof's own declared
+    report path (``embedded_audit.report_path``) when present. Neither is
+    trusted merely for appearing in already-bound data: both must
+    independently satisfy ``_is_safe_proof_namespace_path`` before being
+    admitted. This matters most for ``report_path``, which is read from the
+    proof payload as it exists wherever the caller loaded it from -- for a
+    successor commit that is fully attacker-controlled content in that same
+    commit, not data verified at an earlier, already-audited commit (the
+    proof file legitimately may not even exist at the audited commit A, so
+    there is nothing at A to re-fetch it from). A ``report_path`` that
+    fails the namespace check is simply never added to the allow-list --
+    it is NOT treated as a hard verification failure, since it may be
+    unused filler in an otherwise-legitimate proof. If a successor's diff
+    actually touches that path, it will then correctly show up as a
+    disallowed path in ``verify_proof_successor``.
     """
-    allowed = {proof_path}
+    allowed: set[str] = set()
+    if _is_safe_proof_namespace_path(proof_path):
+        allowed.add(proof_path)
     embedded = proof_payload.get("embedded_audit") if isinstance(proof_payload, Mapping) else None
     if isinstance(embedded, Mapping):
         report_path = embedded.get("report_path")
-        if isinstance(report_path, str) and report_path:
+        if _is_safe_proof_namespace_path(report_path):
             allowed.add(report_path)
     return allowed
 
@@ -148,6 +211,8 @@ def verify_proof_successor(
         return False, ["audited_head_sha_invalid"]
     if audited_head_sha == live_head_sha:
         return True, []
+    if not _is_safe_proof_namespace_path(proof_path):
+        return False, [f"proof_path_invalid: {proof_path!r} is outside the proof namespace"]
 
     err = _ensure_objects(repo_root, live_head_sha, audited_head_sha)
     if err:

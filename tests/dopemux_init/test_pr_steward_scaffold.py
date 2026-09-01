@@ -150,6 +150,18 @@ def test_init_scaffolds_pr_steward_workflows_and_policy(tmp_path: Path) -> None:
     assert "steps.audit.outputs.pr_head_sha" in rendered_steward
     assert "steps.proof.outputs.head_sha" not in rendered_steward
     assert "steps.proof.outputs.audited_head_sha" in rendered_steward
+    # Binding receipt custody (A15-R1 F2): the validated proof_source_path
+    # must flow from the receipt through to both the hard-gate audit call
+    # and the intake call, never silently assumed to be the default.
+    assert 'name PROOF_BINDING.json' in rendered_steward
+    assert "proof_binding_receipt_missing" in rendered_steward
+    assert "dopemux.pr_steward.proof_binding.v1" in rendered_steward
+    assert "binding_proof_sha256" in rendered_steward
+    assert '--proof-source-path "$binding_proof_source_path"' in rendered_steward
+    assert (
+        '--proof-source-path "${{ steps.audit.outputs.proof_source_path }}"'
+        in rendered_steward
+    )
 
     assert set(embedded_audit_yaml["on"]) == {"workflow_dispatch"}
     audit_inputs = embedded_audit_yaml["on"]["workflow_dispatch"]["inputs"]
@@ -170,7 +182,13 @@ def test_init_scaffolds_pr_steward_workflows_and_policy(tmp_path: Path) -> None:
         "embedded-audit-pr-${{ steps.target.outputs.pr_number }}-"
         "head-${{ steps.target.outputs.head_sha }}-proof"
     )
-    assert upload["with"]["path"] == "independent-audit/PROOF.json"
+    # TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001-A15-R1 F2: the trusted
+    # binding receipt travels alongside PROOF.json so downstream consumers
+    # learn the real repository proof_source_path instead of assuming the
+    # default.
+    assert upload["with"]["path"] == (
+        "independent-audit/PROOF.json\nindependent-audit/PROOF_BINDING.json\n"
+    )
     assert upload["with"]["if-no-files-found"] == "error"
 
     rendered_audit = embedded_audit_workflow.read_text(encoding="utf-8")
@@ -185,6 +203,10 @@ def test_init_scaffolds_pr_steward_workflows_and_policy(tmp_path: Path) -> None:
     # dopemux_pr_steward.proof_successor.
     assert "jq -e --arg head" not in rendered_audit
     assert "--proof-source-path" in rendered_audit
+    # Binding receipt production (A15-R1 F2).
+    assert "dopemux.pr_steward.proof_binding.v1" in rendered_audit
+    assert "PROOF_BINDING.json" in rendered_audit
+    assert "proof_sha256" in rendered_audit
     assert "actions/checkout@v4" in rendered_audit
     assert "ref: ${{ github.event.repository.default_branch }}" in rendered_audit
     assert "ref: ${{ inputs.head_sha }}" not in rendered_audit
@@ -418,10 +440,16 @@ def test_built_wheel_runs_pr_steward_and_materializes_templates_off_tree(
     ).read_text(encoding="utf-8")
     assert "--proof-source-path" in generated_embedded_audit
     assert "jq -e --arg head" not in generated_embedded_audit
+    assert "dopemux.pr_steward.proof_binding.v1" in generated_embedded_audit
     generated_pr_steward = (
         materialized / ".github" / "workflows" / "pr-steward.yml"
     ).read_text(encoding="utf-8")
     assert "steps.audit.outputs.pr_head_sha" in generated_pr_steward
+    assert "proof_binding_receipt_missing" in generated_pr_steward
+    assert (
+        '--proof-source-path "${{ steps.audit.outputs.proof_source_path }}"'
+        in generated_pr_steward
+    )
 
     # Proof-only-successor fixture through the INSTALLED wheel's packaged
     # verifier -- proves proof_successor.py survives packaging, not just

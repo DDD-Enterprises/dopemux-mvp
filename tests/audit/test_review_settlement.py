@@ -35,6 +35,8 @@ def _snapshot() -> dict:
         "review_events_complete": True,
         "thread_events_complete": True,
         "review_comment_events_complete": True,
+        "issue_comment_events_complete": True,
+        "issue_comments": [],
         "ready_events": ["2026-08-27T19:50:00Z"],
         "reviews": [
             {
@@ -151,6 +153,49 @@ def test_incomplete_pagination_forbids_success() -> None:
     snapshot["thread_events_complete"] = False
 
     assert "review_threads_pagination_unknown" in _evaluate(snapshot)["reasons"]
+
+
+def test_incomplete_issue_comment_pagination_forbids_success() -> None:
+    """TP-DMX-...-A15-R1 S3: pagination must fail closed for issue comments
+    the same way it already does for reviews/threads/review comments."""
+    snapshot = _snapshot()
+    snapshot["issue_comment_events_complete"] = False
+
+    assert "issue_comments_pagination_unknown" in _evaluate(snapshot)["reasons"]
+
+
+def test_issue_comment_changes_fingerprint_and_blocks_quiet_period() -> None:
+    """TP-DMX-...-A15-R1 S3: a new PR conversation comment must reset the
+    quiet clock and change the settlement fingerprint, mirroring review
+    activity and review-thread comment activity."""
+    settled = _evaluate(_snapshot())
+
+    with_comment = _snapshot()
+    with_comment["issue_comments"] = [
+        {
+            "id": "IC_1",
+            "created_at": "2026-08-27T19:59:00Z",
+            "updated_at": "2026-08-27T19:59:00Z",
+        }
+    ]
+    result = _evaluate(with_comment)
+
+    assert result["fingerprint"] != settled["fingerprint"]
+    assert result["status"] == "BLOCKED"
+    assert "review_activity_too_recent" in result["reasons"]
+
+
+def test_old_issue_comment_does_not_block_quiet_period() -> None:
+    snapshot = _snapshot()
+    snapshot["issue_comments"] = [
+        {
+            "id": "IC_1",
+            "created_at": "2026-08-27T19:00:00Z",
+            "updated_at": "2026-08-27T19:00:00Z",
+        }
+    ]
+
+    assert _evaluate(snapshot)["status"] == "SETTLED"
 
 
 def test_review_activity_changes_fingerprint_and_blocks_quiet_period() -> None:

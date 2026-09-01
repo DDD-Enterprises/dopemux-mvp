@@ -34,6 +34,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="Proof JSON path used in live mode to verify audit status and PR head SHA.",
     )
     parser.add_argument(
+        "--proof-source-path",
+        help=(
+            "Repository-relative path the proof was committed at (e.g. "
+            "'proof/PROOF.json'). Distinct from --proof-path (the local "
+            "filesystem location of the downloaded proof file): this bounds "
+            "the allowed proof-only successor delta. Defaults to "
+            "dopemux_pr_steward.proof_successor.DEFAULT_PROOF_PATH."
+        ),
+    )
+    parser.add_argument(
         "--allow-closed",
         action="store_true",
         help="Allow closed or merged PRs to be reported without PR_CLOSED blocker.",
@@ -55,7 +65,12 @@ def main(argv: list[str] | None = None) -> int:
         harvest = (
             load_fixture(args.fixture_dir)
             if args.fixture_dir
-            else collect_from_github(args.repo, args.pr, proof_path=args.proof_path)
+            else collect_from_github(
+                args.repo,
+                args.pr,
+                proof_path=args.proof_path,
+                proof_source_path=args.proof_source_path,
+            )
         )
         artifacts = build_artifacts(
             harvest,

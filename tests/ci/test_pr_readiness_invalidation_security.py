@@ -55,6 +55,11 @@ def test_observer_is_read_only_and_covers_all_invalidation_events(path: Path) ->
         "resolved",
         "unresolved",
     }
+    assert set(triggers["issue_comment"]["types"]) == {
+        "created",
+        "edited",
+        "deleted",
+    }
     assert workflow["permissions"] == {"contents": "read", "pull-requests": "read"}
     assert "statuses: write" not in text
     assert "actions/checkout" not in text
@@ -64,6 +69,11 @@ def test_observer_is_read_only_and_covers_all_invalidation_events(path: Path) ->
     assert "anthropic" not in text
     assert "comment.body" not in text
     assert "review.body" not in text
+    # issue_comment payloads carry no github.event.pull_request.* fields --
+    # identity must resolve via github.event.issue.* (webhook-supplied, not
+    # user content) plus a trusted API call, never the comment body.
+    assert "event.issue.number" in text
+    assert "event.issue.pull_request" in text
 
 
 @pytest.mark.parametrize("path", [WRITER, TEMPLATE_WRITER])
@@ -274,6 +284,98 @@ def test_writer_rejects_head_mismatch(tmp_path: Path) -> None:
 def test_writer_rejects_nonunique_associated_pr(tmp_path: Path) -> None:
     def mutate(run, _artifacts, _receipt, _live_pr):
         run["pull_requests"].append(run["pull_requests"][0].copy())
+
+    result = _run_binding(tmp_path, mutate)
+
+    assert result.returncode != 0
+    assert "associated_pr_count" in result.stderr
+
+
+def test_writer_accepts_issue_comment_binding_via_live_pr_resolution(
+    tmp_path: Path,
+) -> None:
+    """TP-DMX-...-A15-R1 S3: issue_comment-triggered runs carry no reliable
+    workflow_run.pull_requests association (no head-branch context at
+    trigger time), so identity must resolve via the independently
+    re-fetched live PR instead."""
+
+    def mutate(run, _artifacts, receipt, _live_pr):
+        run["event"] = "issue_comment"
+        run["pull_requests"] = []
+        receipt["event_name"] = "issue_comment"
+        receipt["event_action"] = "created"
+
+    result = _run_binding(tmp_path, mutate)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert f"head_sha={'a' * 40}" in (tmp_path / "output").read_text(encoding="utf-8")
+
+
+def test_writer_accepts_issue_comment_edited_and_deleted(tmp_path: Path) -> None:
+    for action in ("edited", "deleted"):
+
+        def mutate(run, _artifacts, receipt, _live_pr, action=action):
+            run["event"] = "issue_comment"
+            run["pull_requests"] = []
+            receipt["event_name"] = "issue_comment"
+            receipt["event_action"] = action
+
+        result = _run_binding(tmp_path, mutate)
+
+        assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_writer_rejects_issue_comment_receipt_when_live_head_moved(
+    tmp_path: Path,
+) -> None:
+    def mutate(run, _artifacts, receipt, live_pr):
+        run["event"] = "issue_comment"
+        run["pull_requests"] = []
+        receipt["event_name"] = "issue_comment"
+        receipt["event_action"] = "created"
+        live_pr["head"]["sha"] = "b" * 40
+
+    result = _run_binding(tmp_path, mutate)
+
+    assert result.returncode != 0
+    assert "receipt_head_mismatch" in result.stderr
+
+
+def test_writer_rejects_issue_comment_unrelated_pr_number(tmp_path: Path) -> None:
+    def mutate(run, _artifacts, receipt, _live_pr):
+        run["event"] = "issue_comment"
+        run["pull_requests"] = []
+        receipt["event_name"] = "issue_comment"
+        receipt["event_action"] = "created"
+        receipt["pr_number"] = 999
+
+    result = _run_binding(tmp_path, mutate)
+
+    assert result.returncode != 0
+    assert "receipt_pr_mismatch" in result.stderr
+
+
+def test_writer_rejects_issue_comment_action_not_allowed(tmp_path: Path) -> None:
+    def mutate(run, _artifacts, receipt, _live_pr):
+        run["event"] = "issue_comment"
+        run["pull_requests"] = []
+        receipt["event_name"] = "issue_comment"
+        receipt["event_action"] = "labeled"
+
+    result = _run_binding(tmp_path, mutate)
+
+    assert result.returncode != 0
+    assert "event_action_not_allowed" in result.stderr
+
+
+def test_writer_still_requires_associated_pr_for_non_issue_comment_events(
+    tmp_path: Path,
+) -> None:
+    """The issue_comment relaxation (skip workflow_run.pull_requests
+    association) must not weaken the pull_request*/review* event path."""
+
+    def mutate(run, _artifacts, _receipt, _live_pr):
+        run["pull_requests"] = []
 
     result = _run_binding(tmp_path, mutate)
 

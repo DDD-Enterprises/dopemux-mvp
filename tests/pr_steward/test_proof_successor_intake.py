@@ -149,6 +149,64 @@ class TestCollectorProofFreshnessSuccessor:
         assert freshness["status"] == "STALE"
 
 
+@pytest.fixture()
+def custom_path_successor_repo(tmp_path: Path) -> tuple[Path, str, str]:
+    """Same shape as ``successor_repo`` but with the proof committed at a
+    non-default, nested path -- TP-DMX-...-A15-R1 F2 regression coverage."""
+    repo = tmp_path / "repo"
+    _init_repo(repo)
+
+    (repo / "src").mkdir()
+    (repo / "src" / "app.py").write_text("print('hello')\n", encoding="utf-8")
+    audited_sha = _commit(repo, "audited content")
+
+    custom_dir = repo / "proof" / "TP-TEST"
+    custom_dir.mkdir(parents=True)
+    (custom_dir / "PROOF.json").write_text(
+        json.dumps(_proof_payload(head_sha=audited_sha)), encoding="utf-8"
+    )
+    live_sha = _commit(repo, "proof-only successor at custom path")
+
+    return repo, audited_sha, live_sha
+
+
+class TestCollectorCustomProofSourcePath:
+    def test_custom_proof_source_path_reports_verified_successor(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        custom_path_successor_repo: tuple[Path, str, str],
+    ) -> None:
+        repo, audited_sha, live_sha = custom_path_successor_repo
+        monkeypatch.chdir(repo)
+
+        proof_payload = _proof_payload(head_sha=audited_sha)
+        freshness = collector._proof_freshness(
+            proof_payload,
+            audited_sha,
+            live_sha,
+            proof_source_path="proof/TP-TEST/PROOF.json",
+        )
+
+        assert freshness["status"] == "VERIFIED_SUCCESSOR"
+
+    def test_default_proof_source_path_rejects_custom_path_successor(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        custom_path_successor_repo: tuple[Path, str, str],
+    ) -> None:
+        """Without the correct proof_source_path, the allow-list is built
+        from the wrong path and a genuinely valid custom-path successor is
+        incorrectly rejected as STALE -- proving the threading is
+        load-bearing, not cosmetic."""
+        repo, audited_sha, live_sha = custom_path_successor_repo
+        monkeypatch.chdir(repo)
+
+        proof_payload = _proof_payload(head_sha=audited_sha)
+        freshness = collector._proof_freshness(proof_payload, audited_sha, live_sha)
+
+        assert freshness["status"] == "STALE"
+
+
 class TestIntakeProofSuccessorReadiness:
     def test_verified_successor_no_proof_stale_blocker(
         self, monkeypatch: pytest.MonkeyPatch, successor_repo: tuple[Path, str, str]
@@ -207,6 +265,92 @@ class TestIntakeProofSuccessorReadiness:
                 "reason": "forged claim",
                 "proof_recorded_sha": "a" * 40,
                 "pr_head_sha": "f" * 40,
+                "self_reference_exception": None,
+            },
+        }
+
+        artifacts = build_artifacts(
+            harvest,
+            repo=REPO,
+            pr_number=PR_NUMBER,
+            strict=True,
+            allow_closed=False,
+        )
+        readiness = artifacts["MERGE_READINESS.json"]
+
+        assert readiness["proof"]["proof_freshness"] == "STALE"
+
+
+class TestClassifierCustomProofSourcePathRevalidation:
+    """TP-DMX-...-A15-R1 F2: classifier._revalidate_proof_successor must use
+    the harvest-carried proof_source_path, not silently assume the default,
+    when independently re-verifying a VERIFIED_SUCCESSOR claim."""
+
+    def test_custom_source_path_from_harvest_revalidates_successfully(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        custom_path_successor_repo: tuple[Path, str, str],
+    ) -> None:
+        repo, audited_sha, live_sha = custom_path_successor_repo
+        monkeypatch.chdir(repo)
+
+        harvest = _base_harvest(live_sha)
+        harvest["embedded_audit"] = {
+            "status": "PASS",
+            "report_path": "proof/TP-TEST/AUDITOR_REPORT.md",
+        }
+        harvest["proof"] = {
+            "proof_path": "proof/TP-TEST/PROOF.json",
+            "proof_source_path": "proof/TP-TEST/PROOF.json",
+            "proof_head_sha": audited_sha,
+            "matches_pr_head": False,
+            "proof_freshness": {
+                "status": "VERIFIED_SUCCESSOR",
+                "matches_pr_head": False,
+                "reason": "claimed",
+                "proof_recorded_sha": audited_sha,
+                "pr_head_sha": live_sha,
+                "self_reference_exception": None,
+            },
+        }
+
+        artifacts = build_artifacts(
+            harvest,
+            repo=REPO,
+            pr_number=PR_NUMBER,
+            strict=True,
+            allow_closed=False,
+        )
+        readiness = artifacts["MERGE_READINESS.json"]
+
+        assert readiness["proof"]["proof_freshness"] == "VERIFIED_SUCCESSOR"
+
+    def test_missing_source_path_in_harvest_falls_back_to_default_and_rejects(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        custom_path_successor_repo: tuple[Path, str, str],
+    ) -> None:
+        """If the harvest omits proof_source_path (e.g. an older collector
+        that never learned the custom path), revalidation must fail closed
+        -- not silently accept using the wrong default path."""
+        repo, audited_sha, live_sha = custom_path_successor_repo
+        monkeypatch.chdir(repo)
+
+        harvest = _base_harvest(live_sha)
+        harvest["embedded_audit"] = {
+            "status": "PASS",
+            "report_path": "proof/TP-TEST/AUDITOR_REPORT.md",
+        }
+        harvest["proof"] = {
+            "proof_path": "proof/TP-TEST/PROOF.json",
+            "proof_head_sha": audited_sha,
+            "matches_pr_head": False,
+            "proof_freshness": {
+                "status": "VERIFIED_SUCCESSOR",
+                "matches_pr_head": False,
+                "reason": "claimed",
+                "proof_recorded_sha": audited_sha,
+                "pr_head_sha": live_sha,
                 "self_reference_exception": None,
             },
         }
