@@ -294,7 +294,7 @@ def build_artifacts(
             for a in trusted_security_apps
         ],
     }
-    proof = _proof(harvest, pr_head_sha=pr["head_sha"])
+    proof = _proof(harvest, pr_head_sha=pr["head_sha"], repo=repo, pr_number=pr_number)
     proof_status = _proof_status(proof)
     if proof_status in STALE_PROOF_STATUSES:
         _append_once(blockers, "PROOF_STALE")
@@ -1102,6 +1102,8 @@ def _revalidate_proof_successor(
     proof_head_sha: str,
     pr_head_sha: str,
     proof_source_path: str | None = None,
+    repo: str | None = None,
+    pr_number: int | None = None,
 ) -> bool:
     """Independently re-verify a proof-only successor from this surface's
     own checkout, rather than trusting the collector's claim as-is. Fails
@@ -1109,8 +1111,11 @@ def _revalidate_proof_successor(
     """
     embedded_audit = harvest.get("embedded_audit")
     proof_payload = {
-        "embedded_audit": embedded_audit if isinstance(embedded_audit, dict) else {}
+        "embedded_audit": embedded_audit if isinstance(embedded_audit, dict) else {},
+        "repo": repo,
+        "pr_number": pr_number,
     }
+
     try:
         ok, _reasons = proof_successor.verify_proof_successor(
             Path("."),
@@ -1124,7 +1129,7 @@ def _revalidate_proof_successor(
     return ok
 
 
-def _proof(harvest: dict[str, Any], *, pr_head_sha: str | None = None) -> dict[str, Any]:
+def _proof(harvest: dict[str, Any], *, pr_head_sha: str | None = None, repo: str | None = None, pr_number: int | None = None) -> dict[str, Any]:
     raw = harvest.get("proof") or {}
     proof_head_sha = raw.get("proof_head_sha")
     proof_path = str(raw.get("proof_path") or "")
@@ -1162,6 +1167,8 @@ def _proof(harvest: dict[str, Any], *, pr_head_sha: str | None = None) -> dict[s
                 proof_head_sha=proof_head_sha,
                 pr_head_sha=pr_head_sha,
                 proof_source_path=proof_source_path,
+                repo=repo,
+                pr_number=pr_number,
             )
         ):
             # Independent re-verification: never trust the collector's own

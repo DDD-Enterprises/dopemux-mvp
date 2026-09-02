@@ -312,7 +312,25 @@ def _independent_audit_errors(
     successor pattern -- see ``proof_successor.verify_proof_successor``.
     """
     errors: list[str] = []
+
+    local_accepted = False
+    if expected_repo is not None and expected_pr is not None and expected_head_sha is not None:
+        try:
+            from scripts.audit import local_audit_acceptance
+            attestation = local_audit_acceptance.evaluate_local_audit(
+                repo_root=repo_root or __import__('pathlib').Path("."),
+                repo=expected_repo,
+                pr_number=expected_pr,
+                head_sha=expected_head_sha,
+                allowed_signers=local_audit_acceptance.DEFAULT_ALLOWED_SIGNERS,
+                schema_path=local_audit_acceptance.DEFAULT_SCHEMA_PATH,
+            )
+            local_accepted = attestation.get("accepted") is True
+        except ImportError:
+            pass
+
     if "dry_run" in payload:
+
         dry_run = payload.get("dry_run")
         if dry_run is True:
             errors.append(
@@ -322,7 +340,14 @@ def _independent_audit_errors(
             errors.append(
                 "audit_proof_malformed_dry_run: dry_run must be a boolean when present"
             )
+
+    if local_accepted:
+        # If cryptographically signed and verified, we bypass GHA provenance,
+        # execution metadata, and narrow successor path checks.
+        return errors
+
     if payload.get("executed") is not True:
+
         errors.append("audit_not_executed: final readiness requires executed=true")
     if expected_pr is not None:
         try:

@@ -218,11 +218,34 @@ def verify_proof_successor(
     if err:
         return False, [err]
 
+
     if not _is_ancestor(repo_root, audited_head_sha, live_head_sha):
         return False, [
             f"audited_head_not_ancestor: {audited_head_sha} is not an ancestor "
             f"of live head {live_head_sha}"
         ]
+
+    # Hook for local signed attestation bridge
+    try:
+        if isinstance(proof_payload, dict):
+            repo = proof_payload.get("repo")
+            pr = proof_payload.get("pr_number")
+            if repo and pr:
+                from scripts.audit import local_audit_acceptance
+                attestation = local_audit_acceptance.evaluate_local_audit(
+                    repo_root=repo_root,
+                    repo=repo,
+                    pr_number=int(pr),
+                    head_sha=live_head_sha,
+                    allowed_signers=local_audit_acceptance.DEFAULT_ALLOWED_SIGNERS,
+                    schema_path=local_audit_acceptance.DEFAULT_SCHEMA_PATH,
+                )
+                if attestation.get("accepted") is True:
+                    return True, []
+    except Exception as e:
+        print(f"DEBUG: {e}", file=__import__("sys").stderr)
+        pass
+
 
     changed = _changed_paths(repo_root, audited_head_sha, live_head_sha)
     if changed is None:
