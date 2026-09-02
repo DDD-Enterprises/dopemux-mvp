@@ -1,0 +1,87 @@
+{
+  "embedded_audit": {
+    "auditor_model": "sonnet",
+    "auditor_tool": "pal-mcp-clink",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "The three-file diff wires an existing, unmodified module (scripts/audit/local_audit_acceptance.py, not part of this diff) into two live audit-decision points: dopemux_pr_steward/cli.py's _independent_audit_errors (packaged-template independent-audit mirror) and src/dopemux_pr_steward/proof_successor.py's verify_proof_successor (this repo's own live PR-Steward gate via tools/pr_steward/classifier.py). When evaluate_local_audit() returns accepted=True, both call sites short-circuit and skip GHA provenance / executed / pr / head-sha / proof-successor diff-scope checks entirely.",
+        "id": "PAL-CLINK-FINDING",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "PAL clink finding"
+      },
+      {
+        "body": "The bypass's actual safety load-bearing logic (signature verification, schema validation, ancestor + diff-scope confinement, packet-proof agreement) lives entirely in local_audit_acceptance.py, which is unchanged in this diff and was not re-reviewed line-by-line as part of this PR's own change set; this PR's contribution is purely the wiring.",
+        "id": "PAL-CLINK-FINDING",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "PAL clink finding"
+      },
+      {
+        "body": "Trust-boundary correctness of the bypass depends entirely on an unenforced operational invariant: repo_root/allowed_signers must be read from a trusted checkout (e.g. main), never the candidate PR's own working tree, otherwise a PR could add its own key to config/audit/embedded-audit-allowed-signers plus a self-signed PROOF.json and trivially defeat all identity/provenance checks. For this repo's own live pipeline this invariant currently holds -- .github/workflows/pr-steward.yml's 'Checkout trusted Steward source' step checks out the default branch (no PR ref), and all PR content is fetched/read as git blobs only (git fetch + cat-file), never checked out -- but nothing in the new code asserts or enforces this; a future caller (including the packaged dopemux_pr_steward CLI used by downstream consumer repos with their own operational setup) that passes a PR-checkout repo_root would silently inherit the bypass.",
+        "id": "PAL-CLINK-FINDING",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "PAL clink finding"
+      },
+      {
+        "body": "No tests were added or modified for this diff (changed_files contains only cli.py, proof_successor.py, classifier.py -- no test files) despite introducing a full-bypass code path in two independent-audit enforcement functions. Existing tests (tests/pr_steward/test_proof_successor_intake.py, tests/pr_steward/test_intake.py, tests/dopemux_cli/test_pr_steward_audit_successor.py) were not updated to cover local_accepted=True/False branches.",
+        "id": "PAL-CLINK-FINDING",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "PAL clink finding"
+      },
+      {
+        "body": "The identical ~15-line 'call evaluate_local_audit and check accepted' block is duplicated between cli.py and proof_successor.py with inconsistent exception handling: cli.py catches only ImportError (any other exception, e.g. an AttributeError/TypeError bug inside evaluate_local_audit, propagates uncaught), while proof_successor.py catches bare Exception and silently continues after printing a leftover 'DEBUG: {e}' diagnostic to stderr. This is a code-quality/observability gap in a security-critical control, not a functional vulnerability (both fail closed on non-acceptance).",
+        "id": "PAL-CLINK-FINDING",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "PAL clink finding"
+      },
+      {
+        "body": "Minor dead-code/diff-hygiene issues: classifier.py's diff introduces a duplicated no-op line (`embedded_audit = harvest.get(\"embedded_audit\")` appears twice consecutively), and the diff is padded with many no-op blank-line insertions across all three files.",
+        "id": "PAL-CLINK-FINDING",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "PAL clink finding"
+      }
+    ],
+    "fixes_applied": [],
+    "invocation": "PAL MCP clink host handoff",
+    "remaining_risks": [
+      "Latent bypass risk if any current or future caller supplies a repo_root that is not a trusted, PR-content-isolated checkout (documented as an implicit contract in local_audit_acceptance.py's docstring but not asserted in code).",
+      "Zero automated regression coverage for the new bypass branches increases the chance that future refactors silently change accept/reject behavior undetected.",
+      "instruction_like_scan_summary reported detected=false and no instruction-like or prompt-injection content was found in the diff/metadata during manual review; frozen.diff and changed-files.txt were cross-checked and match the diff/metadata embedded in AUDIT_INPUT.md exactly."
+    ],
+    "report_path": "proof/TP-DMX-A15-R1-PR-STEWARD-LOCAL-ATTESTATION-BRIDGE-001/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "executed": true,
+  "generated_at": "2026-09-02T02:24:04Z",
+  "github_mutation_route_added": false,
+  "head_sha": "97f2b95b05d4dd6079ebf0e7b3eb06db67551279",
+  "mutation_performed": false,
+  "packet_id": "TP-DMX-A15-R1-PR-STEWARD-LOCAL-ATTESTATION-BRIDGE-001",
+  "pr_number": 1287,
+  "provenance": {
+    "audit_source": "ci-executed",
+    "engine_authored_proof": false,
+    "engine_requested_only": true,
+    "permissions": {
+      "actions": "read",
+      "checks": "read",
+      "contents": "read",
+      "pull-requests": "read",
+      "statuses": "read"
+    },
+    "proof_author": "independent-embedded-audit",
+    "token_source": "EMBEDDED_AUDIT_TOKEN",
+    "token_value_recorded": false,
+    "trusted_token_status": "AVAILABLE",
+    "workflow": "embedded-audit.yml"
+  },
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}
