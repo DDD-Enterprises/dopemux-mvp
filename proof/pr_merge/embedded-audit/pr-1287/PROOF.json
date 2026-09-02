@@ -1,55 +1,87 @@
 {
-  "repo": "DDD-Enterprises/dopemux-mvp",
-  "pr_number": 1287,
-  "head_sha": "e07ff3efc778fc600bddcfbcb12f5efcd4779f39",
-  "generated_at": "2026-08-29T09:03:14Z",
   "embedded_audit": {
-    "required": true,
-    "status": "PASS",
-    "auditor_tool": "agy",
-    "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "agy transcript cc13b5c7-8952-41f5-b88e-93b101edbe7b",
+    "auditor_model": "sonnet",
+    "auditor_tool": "pal-mcp-clink",
     "exit_code": 0,
-    "report_path": "proof/TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001/AUDITOR_REPORT.md",
     "findings": [
       {
-        "id": "IMPL-NOTES-A5-QUALIFICATION-INCOMPLETE-ENUMERATION",
-        "severity": "LOW",
-        "title": "Impl Notes A5 Qualification Incomplete Enumeration",
-        "status": "OPEN",
-        "body": "Location: proof/TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001/implementation-notes.md:2384. The 'A5 successor qualification' section correctly states that A7/A9 successors modified the reusable Gemini workflows (target-validation step, new workflow_call inputs, changed checkout ref, reduced MCP tool list in gemini-review.yml) and correctly supersedes the earlier 'inspect-only' claim. However the enumeration is not exhaustive: it omits that gemini-invoke.yml also lost an MCP tool (add_issue_comment), that gemini-triage.yml's entire label-application job (issues/pull-requests write permissions) was removed, and that permissions on issues/pull-requests were reduced from write to read across gemini-invoke.yml, gemini-plan-execute.yml, gemini-triage.yml, and gemini-review.yml. This does not misrepresent history (all omitted items make the workflows more restrictive, not less), but a reader relying on the qualification's list to gauge total change scope would undercount it. Required action: Optionally broaden the qualification's bullet list to reference the permission-scope reduction and the label-job removal, or state explicitly that the listed items are illustrative rather than exhaustive."
-      },
-      {
-        "id": "SETTLEMENT-PREFLIGHT-FALLBACK-REASON-MISLEADING",
-        "severity": "LOW",
-        "title": "Settlement Preflight Fallback Reason Misleading",
-        "status": "OPEN",
-        "body": "Location: .github/workflows/embedded-audit.yml:329. Carried over from the prior audit and independently re-confirmed as still present and unrelated to this diff's sole content change. When the 'Review settlement preflight' step fails because scripts/audit/review_settlement.py returns non-zero for a legitimate BLOCKED settlement (active changes-requested, unresolved threads, incomplete pagination, etc. -- not because the evaluator file is missing), no SETTLEMENT_PREFLIGHT_UNAVAILABLE.txt marker is written. The diagnostic-emission logic falls back to the generic reason 'Requested PR head SHA could not be fetched or no longer matches the PR head.', which misattributes a legitimate review-settlement block to a head-fetch/staleness problem. Required action: Capture and surface the actual review_settlement.py stdout/reasons (or its exit semantics) in the fallback diagnostic path instead of reusing the head-mismatch string for settlement-caused failures."
-      },
-      {
-        "id": "PYPROJECT-DCP-PACKAGE-SCOPE-NOTE",
+        "body": "The three-file diff wires an existing, unmodified module (scripts/audit/local_audit_acceptance.py, not part of this diff) into two live audit-decision points: dopemux_pr_steward/cli.py's _independent_audit_errors (packaged-template independent-audit mirror) and src/dopemux_pr_steward/proof_successor.py's verify_proof_successor (this repo's own live PR-Steward gate via tools/pr_steward/classifier.py). When evaluate_local_audit() returns accepted=True, both call sites short-circuit and skip GHA provenance / executed / pr / head-sha / proof-successor diff-scope checks entirely.",
+        "id": "PAL-CLINK-FINDING",
         "severity": "INFO",
-        "title": "Pyproject Dcp Package Scope Note",
-        "status": "ACCEPTED_RISK",
-        "body": "Location: pyproject.toml:173. Carried over from the prior audit and re-confirmed: pyproject.toml's sole change in this diff adds 'dopemux.dcp' to the packages list, a scope item unrelated to the embedded-audit/PR-steward/review-settlement feature this diff otherwise implements. It is now covered by test_built_wheel_runs_pr_steward_and_materializes_templates_off_tree, which asserts declared dcp packages exactly match the on-disk dcp package census. Required action: None required; note for traceability only."
+        "status": "OPEN",
+        "title": "PAL clink finding"
       },
       {
-        "id": "SUCCESSOR-SINGLE-COMMIT-CLAIM-UNVERIFIABLE",
+        "body": "The bypass's actual safety load-bearing logic (signature verification, schema validation, ancestor + diff-scope confinement, packet-proof agreement) lives entirely in local_audit_acceptance.py, which is unchanged in this diff and was not re-reviewed line-by-line as part of this PR's own change set; this PR's contribution is purely the wiring.",
+        "id": "PAL-CLINK-FINDING",
         "severity": "INFO",
-        "title": "Successor Single Commit Claim Unverifiable",
-        "status": "ACCEPTED_RISK",
-        "body": "successor_note asserts subject_head adds 'exactly one documentation-only commit' on top of prior_audited_head. frozen.diff is a base_at_freeze..subject_head diff (32 files, matching changed-files.txt), not a prior_audited_head..subject_head diff, and no commit log/per-commit diff was supplied. implementation-notes.md itself is 'new file mode 100644' against base_at_freeze, so this diff cannot show which lines within that file were introduced by which commit. The claim that only implementation-notes.md changed between prior_audited_head and subject_head cannot be independently confirmed from the supplied artifacts alone. Required action: If exact commit-boundary verification is required, supply `git log prior_audited_head..subject_head --stat` or an equivalent per-commit diff alongside frozen.diff in future audit packages."
+        "status": "OPEN",
+        "title": "PAL clink finding"
+      },
+      {
+        "body": "Trust-boundary correctness of the bypass depends entirely on an unenforced operational invariant: repo_root/allowed_signers must be read from a trusted checkout (e.g. main), never the candidate PR's own working tree, otherwise a PR could add its own key to config/audit/embedded-audit-allowed-signers plus a self-signed PROOF.json and trivially defeat all identity/provenance checks. For this repo's own live pipeline this invariant currently holds -- .github/workflows/pr-steward.yml's 'Checkout trusted Steward source' step checks out the default branch (no PR ref), and all PR content is fetched/read as git blobs only (git fetch + cat-file), never checked out -- but nothing in the new code asserts or enforces this; a future caller (including the packaged dopemux_pr_steward CLI used by downstream consumer repos with their own operational setup) that passes a PR-checkout repo_root would silently inherit the bypass.",
+        "id": "PAL-CLINK-FINDING",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "PAL clink finding"
+      },
+      {
+        "body": "No tests were added or modified for this diff (changed_files contains only cli.py, proof_successor.py, classifier.py -- no test files) despite introducing a full-bypass code path in two independent-audit enforcement functions. Existing tests (tests/pr_steward/test_proof_successor_intake.py, tests/pr_steward/test_intake.py, tests/dopemux_cli/test_pr_steward_audit_successor.py) were not updated to cover local_accepted=True/False branches.",
+        "id": "PAL-CLINK-FINDING",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "PAL clink finding"
+      },
+      {
+        "body": "The identical ~15-line 'call evaluate_local_audit and check accepted' block is duplicated between cli.py and proof_successor.py with inconsistent exception handling: cli.py catches only ImportError (any other exception, e.g. an AttributeError/TypeError bug inside evaluate_local_audit, propagates uncaught), while proof_successor.py catches bare Exception and silently continues after printing a leftover 'DEBUG: {e}' diagnostic to stderr. This is a code-quality/observability gap in a security-critical control, not a functional vulnerability (both fail closed on non-acceptance).",
+        "id": "PAL-CLINK-FINDING",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "PAL clink finding"
+      },
+      {
+        "body": "Minor dead-code/diff-hygiene issues: classifier.py's diff introduces a duplicated no-op line (`embedded_audit = harvest.get(\"embedded_audit\")` appears twice consecutively), and the diff is padded with many no-op blank-line insertions across all three files.",
+        "id": "PAL-CLINK-FINDING",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "PAL clink finding"
       }
     ],
-    "fixes_applied": [
-      "R1's BLOCKING wheel-completeness finding empirically disproven via real uv build --wheel + wheel-member inspection + pytest of test_built_wheel_runs_pr_steward_and_materializes_templates_off_tree (1 passed); no pyproject.toml change required or made.",
-      "R1's MEDIUM implementation-notes finding repaired: added an explicit A5 successor qualification and relabeled document status as a historical ledger, preserving original chronology."
-    ],
+    "fixes_applied": [],
+    "invocation": "PAL MCP clink host handoff",
     "remaining_risks": [
-      "Wheel completeness for the two new template workflow files (and other packaged non-.py assets) is supported by a new build-and-inspect regression test (test_built_wheel_runs_pr_steward_and_materializes_templates_off_tree) that builds a real wheel via `uv build --wheel` and asserts required members are present, but this audit session cannot execute candidate/build code, and MANIFEST.in plus the full tool.setuptools.include-package-data configuration are not visible anywhere in frozen.diff (unchanged, and not shown as context). The prior BLOCKING wheel-completeness finding is very likely resolved based on this structural test evidence, but that conclusion rests partly on the (unverified-in-session) claim that the build+test were run externally and passed.",
-      "The 'exactly one documentation-only commit' successor scoping claim rests on git history not provided to this audit; only the net base..head diff was reviewable.",
-      "Broad functional review (embedded-audit.yml, pr-steward.yml, review_settlement.py, readiness invalidator/writer, Gemini reusable workflows) was performed via targeted reading of a very large (6700+ line) diff rather than exhaustive line-by-line review of every unchanged-vs-prior-audit code path; spot checks found no defects, but full re-derivation of every branch was out of scope given this successor audit's narrow binding to a documentation-only change."
+      "Latent bypass risk if any current or future caller supplies a repo_root that is not a trusted, PR-content-isolated checkout (documented as an implicit contract in local_audit_acceptance.py's docstring but not asserted in code).",
+      "Zero automated regression coverage for the new bypass branches increases the chance that future refactors silently change accept/reject behavior undetected.",
+      "instruction_like_scan_summary reported detected=false and no instruction-like or prompt-injection content was found in the diff/metadata during manual review; frozen.diff and changed-files.txt were cross-checked and match the diff/metadata embedded in AUDIT_INPUT.md exactly."
     ],
-    "skip_reason": null
-  }
+    "report_path": "proof/TP-DMX-A15-R1-PR-STEWARD-LOCAL-ATTESTATION-BRIDGE-001/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "executed": true,
+  "generated_at": "2026-09-02T02:24:04Z",
+  "github_mutation_route_added": false,
+  "head_sha": "97f2b95b05d4dd6079ebf0e7b3eb06db67551279",
+  "mutation_performed": false,
+  "packet_id": "TP-DMX-A15-R1-PR-STEWARD-LOCAL-ATTESTATION-BRIDGE-001",
+  "pr_number": 1287,
+  "provenance": {
+    "audit_source": "ci-executed",
+    "engine_authored_proof": false,
+    "engine_requested_only": true,
+    "permissions": {
+      "actions": "read",
+      "checks": "read",
+      "contents": "read",
+      "pull-requests": "read",
+      "statuses": "read"
+    },
+    "proof_author": "independent-embedded-audit",
+    "token_source": "EMBEDDED_AUDIT_TOKEN",
+    "token_value_recorded": false,
+    "trusted_token_status": "AVAILABLE",
+    "workflow": "embedded-audit.yml"
+  },
+  "repo": "DDD-Enterprises/dopemux-mvp"
 }
