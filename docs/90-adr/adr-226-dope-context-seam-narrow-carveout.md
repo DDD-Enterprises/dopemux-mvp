@@ -127,8 +127,9 @@ Constraints:
   not resolve `..` — so a directory-scoped exemption must be paired with an
   explicit traversal guard. Since the independent audit (F-001, see
   "Independent audit" below) the block tier also evaluates a realpath
-  reading and a case-folded root match; the traversal guard stays as
-  defence-in-depth.
+  reading and — since round 2, F-001-A — a case-folded reading of the
+  whole repo-relative path, not just the root; the traversal guard stays
+  as defence-in-depth.
 * The change must not disturb the sibling service blankets or the
   fallback ⊆ live sync invariant.
 
@@ -283,8 +284,9 @@ head: **FAIL**, one BLOCKER.
   root all produced strings no `^`-anchored pattern matched — for every
   red-lane path, `queue_drain.py` included. Reproduced programmatically
   before the fix. Fix: `_repo_relative_candidates` evaluates the raw,
-  realpath and case-folded readings and the block tier denies if any
-  matches; the same candidates feed the warn tier. Seven tests pin the
+  realpath and case-folded-root readings and the block tier denies if any
+  matches; the same candidates feed the warn tier (the round-2 fix below
+  extends the fold to the intra-repo path). Seven tests pin the
   bypass forms plus the two things that must keep working (new file under
   `eval/`, paths outside the root).
 * **F-002 REJECTED.** Claimed the packet-0004 diff was absent from the PR;
@@ -297,6 +299,26 @@ head: **FAIL**, one BLOCKER.
   fix.
 * Auditor's one unverifiable claim (README's `--corpus` guard) is
   verified at `services/dope-context/eval/run_eval.py:662`.
+
+**Round 2 (delta re-audit of F-001, same route and model, head
+`1d87cb732`): `CLOSED_WITH_RISKS`, one HIGH residual, F-001-A.** The
+round-1 fix folded case only on the root prefix; on macOS's default
+filesystem `SERVICES/dope-context/src/search/hybrid_search.py` and
+`src/dopemux_pr_merge_specialist/QUEUE_DRAIN.py` are the protected files
+but matched no `^`-anchored, case-sensitive pattern. Reproduced at
+`1d87cb732`; fixed in `a4f86c48c`: `_repo_relative_candidates` now yields
+the exact-case reading first and a case-folded reading of the entire
+repo-relative path second, and any candidate matching the lane denies.
+`eval/**` still passes in exact case; a case-variant of the carve-out
+itself (`EVAL/run_eval.py`) is denied fail-closed. Eight further tests
+(37 total); scanner suite unchanged (32). Two errata in the round-2
+prompt are recorded in the bundle's `PROVENANCE.json` — the prompt
+misnamed the top-level `services/dope-context/README.md` as carved out
+(it is not; it was and is denied), and the auditor's example path
+`src/mcp/server.py` is not in the lane in this repo, so the class was
+reproduced with the two specimens above. The fix itself has **not** yet
+been re-audited (a round 3 would be required to move F-001-A from
+fixed-and-verified-locally to auditor-closed).
 
 The proof bundle, raw auditor output and the re-audit on the post-fix
 frozen head live under `proof/pr_merge/embedded-audit/pr-1304/`.

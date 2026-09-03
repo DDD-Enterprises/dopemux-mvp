@@ -1,0 +1,42 @@
+{
+ "finding": "F-001-A",
+ "source": "proof/pr_merge/embedded-audit/pr-1304/round2/VERDICT.json (AGY gemini-3.1-pro-high delta re-audit of F-001)",
+ "audited_head": "1d87cb73284b4019aff0d7cfe2525baa626cb7cf",
+ "fix_commit": "a4f86c48c3f6f153330a1554141bcfc7e4ee2490",
+ "files_changed": [
+  ".claude/hooks/dcp_surface_guard.py",
+  "tests/test_dcp_surface_guard.py"
+ ],
+ "change": "_repo_relative_candidates yields exact-case reading first and case-folded reading second; surface_guard_block denies if ANY candidate matches the red lane. Companion FORBIDDEN_PATHS regex in red_lane_rules.py unchanged.",
+ "reproduction_at_audited_head": {
+  "SERVICES/dope-context/src/search/hybrid_search.py": "allowed (bug)",
+  "src/dopemux_pr_merge_specialist/QUEUE_DRAIN.py": "allowed (bug)",
+  "services/dope-context/README.md": "denied (correct; top-level README is not carved out \u2014 see prompt_errata)",
+  "services/dope-context/src/mcp/server.py": "allowed in exact case \u2014 not in the red lane in this repo; auditor's example path was not a valid specimen"
+ },
+ "verification_at_fix_commit": {
+  "SERVICES/dope-context/src/search/hybrid_search.py": "denied",
+  "src/dopemux_pr_merge_specialist/QUEUE_DRAIN.py": "denied",
+  "services/dope-context/README.md": "denied",
+  "services/dope-context/eval/run_eval.py": "allowed (carve-out intact)",
+  "services/dope-context/EVAL/run_eval.py": "denied (fail-closed: exact-case reading hits the lane before the folded carve-out applies; accepted residual)"
+ },
+ "tests": {
+  "tests/test_dcp_surface_guard.py": "37 passed (8 new)",
+  "tests/dcp/test_dcp_0005_red_lane_scanner.py": "32 passed (unchanged)"
+ },
+ "validation_buckets": {
+  "PASS": [
+   "hook unit tests",
+   "scanner suite",
+   "in-process probe",
+   "commit preflight smoke (6 passed, syntax-ok 1000 files)"
+  ],
+  "NOT_RUN": [
+   "delta re-audit of the fix by AGY (round 3)",
+   "CI on PR #1304"
+  ]
+ },
+ "residual": "Case-folding is lexical (str.lower) not filesystem-aware; on a case-sensitive filesystem a SERVICES/... path would be a genuinely different file that is now (harmlessly) denied. Unicode case variants beyond ASCII lower() are not folded.",
+ "recorded_utc": "2026-09-03"
+}

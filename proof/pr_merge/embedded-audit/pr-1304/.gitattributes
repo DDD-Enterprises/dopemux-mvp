@@ -1,0 +1,3 @@
+# Verbatim auditor prompts: bytes as sent (trailing whitespace included). Not a gate bypass —
+# the files are evidence, not source; sha256 pinned in round*/PROVENANCE.json.
+round*/PROMPT.md -whitespace
