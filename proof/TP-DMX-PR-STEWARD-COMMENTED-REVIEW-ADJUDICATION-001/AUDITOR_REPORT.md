@@ -1,100 +1,73 @@
 # AUDITOR_REPORT — TP-DMX-PR-STEWARD-COMMENTED-REVIEW-ADJUDICATION-001
 
-**Auditor**: Claude Code CLI (Sonnet) — Tier-1 self-audit per AGENTS.md §9.1
+**Auditor**: AGY / Google Antigravity, model `gemini-3.1-pro-high` — Tier-1 route #1 per
+`docs/ops/embedded-audit.md`, independent of the implementer (Claude Sonnet 5 / Claude Code)
+by model family and runtime.
 **Audited head**: `af145c4b10b67fd9c4dbcd6ec44fb31cca73dfca`
-**Verdict**: PASS
+**Invocation**: `agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --print='<full audit prompt>'`, conversation id from the full audit run in `review_bundle/AGY_AUDIT_RAW.json`. Model selection proven with no fallback: `review_bundle/AGY_MODEL_SELFCHECK.md`, `review_bundle/AGY_VERSION.txt` (CLI 1.1.25), `review_bundle/AGY_MODELS.txt` (`gemini-3.1-pro-high` present, unambiguous). Full prompt in `review_bundle/AGY_AUDIT_PROMPT.txt` (self-contained: full diff + full post-fix `classifier.py` + full test file, no tool/filesystem access given to the auditor — pure prompt-based review).
+**Verdict**: **PASS_WITH_RISKS**
 
-## Scope
+A prior Claude Code self-audit (PASS) and two rounds of supplementary Codex red-team
+review (FAIL round 1, PASS round 2) preceded this run and are preserved in `AUDIT.md`.
+This AGY run is the **controlling** audit of record for `embedded_audit` in `PROOF.json`,
+per `docs/ops/embedded-audit.md` Tier-1 route #1 — it supersedes the Claude self-audit,
+which did not satisfy this repo's independence requirement ("independent of the
+implementer as long as the auditing session is not the one that wrote the diff").
 
-`tools/pr_steward/classifier.py`, `tests/pr_steward/test_commented_review_adjudication.py`,
-`docs/ops/pr-steward.md`. No other paths touched (verified via `git status --short` against
-the packet's FORBIDDEN list, and via `git diff --stat` against `main`).
+## Invariant-by-invariant verdict (verbatim from the AGY run, citations against `af145c4b1`)
 
-## Why Codex is not the auditor of record
+1. **CHANGES_REQUESTED never overridable** — HOLDS. `classifier.py:556-561`: `CHANGES_REQUESTED` is trapped in an `elif` that unconditionally sets `MUST_FIX`/`blocking=True`; never reaches the `else:` at line 565 where the receipt lookup happens.
+2. **Exact review_id + head_sha binding** — HOLDS. `classifier.py:1428-1429`: any mismatch on either field skips the receipt.
+3. **Only trusted logins eligible** — HOLDS. `classifier.py:1422-1423`: `if author not in trusted_approvers: continue`.
+4. **Malformed receipts don't clear** — HOLDS. `classifier.py:1381-1389`: subset-of-required-fields check, exact disposition string, non-empty values, strict `^[0-9a-f]{40}$` SHA match.
+5. **Conflict rule (raw-byte comparison; byte-identical = one)** — HOLDS. `classifier.py:1434-1441`: `distinct_bodies = {r["_body"] for r in eligible}` collapses byte-identical bodies regardless of author; `len(distinct_bodies) != 1` fails closed.
+6. **Unresolved threads / CI / audit / security-release unaffected** — HOLDS, structurally. `_classify_threads` (687-848), `_classify_checks` (880-977), embedded-audit (260-265), security-release (278-316) are distinct sequential blocks in `build_artifacts`; none invoke `_find_review_adjudication`.
+7. **Ledger item count unchanged** — HOLDS. `classifier.py:597`: `items.append(...)` executes exactly once per review regardless of receipt outcome.
+8. **Receipt comment itself nonblocking despite P1/P2 text** — HOLDS. `classifier.py:649-658`: trusted, well-formed issue-comment receipts intercept the ordinary P1/P2 heuristic.
+9. **No cross-PR / global state leakage** — HOLDS. `classifier.py:1428`: `_find_review_adjudication` is a pure function comparing only against the `pr_head_sha` passed from the current invocation's harvested PR payload.
+10. **`_body` bookkeeping field never leaks into output** — HOLDS. `classifier.py:1442`: `return {k: v for k, v in eligible[0].items() if k != "_body"}` strips it before return.
 
-Two rounds of adversarial red-team review were run via Codex (`codex:codex-rescue`) as the
-originating directive required a reviewer from a different model family than the
-implementer. Codex found a real bug in round 1; the fix was verified in round 2. That
-review is preserved in `AUDIT.md` as supplementary evidence because it materially improved
-the change. It is **not** recorded as the schema's `embedded_audit.auditor_tool` because
-(a) `codex` is not in the enum in `schemas/proof/embedded_audit.schema.json`, and
-(b) AGENTS.md §9.1 states plainly: "Codex is forbidden as a formal auditor." The formal
-embedded audit below is a Claude Code self-audit against the diff, per the AGENTS.md §9.1
-sanctioned route ("A Claude Code session may run the audit locally against the diff and
-author the proof" — precedent `proof/TP-DCP-MCP-RO-0008`).
+## New findings (neither Claude nor Codex documented these)
 
-## Invariant-by-invariant check (against the originating directive's MANDATORY_TESTS / NEVER OVERRIDABLE list)
+### F-ADJ001-AGY-INFO-1: unknown-author precedence blocks adjudication of unknown-reviewer P1/P2 reviews
 
-1. **No receipt → historical COMMENTED P1/P2 review stays MUST_FIX.** Confirmed:
-   `_classify_reviews` only reaches `_find_review_adjudication` inside the `else` branch
-   taken when the review is neither unknown-author nor `CHANGES_REQUESTED`; with no
-   matching receipt, `receipt is None` and the original `_body_disposition` result stands.
-   Test: `TestNoReceipt`.
-2. **Valid trusted exact-head receipt clears; ledger conserved; original preserved.**
-   Confirmed: `_review_item`'s `body` is built from the *original* review body, never the
-   receipt; only `disposition`/`blocking`/`rationale` change. Item count is unaffected —
-   the receipt logic never adds/removes ledger entries, only reclassifies an existing one.
-   Tests: `TestValidReceipt`, `TestLedgerConservation`.
-3. **Wrong head → no clearance.** `_find_review_adjudication` requires
-   `receipt["head_sha"] == pr_head_sha` exactly. Test: `TestWrongHead`.
-4. **Wrong review_id → no clearance.** Exact string equality required. Test:
-   `TestWrongReviewId`.
-5. **Untrusted author → no clearance.** `author not in trusted_approvers` skips the
-   comment before it is even parsed as a candidate. Test: `TestUntrustedAuthor`.
-6. **Malformed receipt → no clearance.** `_parse_review_adjudication_receipt` requires all
-   four fields, exact `disposition` value, non-empty `review_id`/`reason`, and a
-   40-lowercase-hex `head_sha`; any failure returns `None`, which
-   `_find_review_adjudication` skips. Tests: `TestMalformedReceipt` (missing field, short
-   SHA).
-7. **Two conflicting eligible receipts → no clearance.** Fixed in af145c4b1 to compare raw
-   comment bytes (see Finding F-ADJ001-HIGH-1 below). Tests: `TestConflictingReceipts`
-   (four cases: differing content, byte-identical from same author, byte-identical from
-   two different trusted authors, same parsed fields but different bytes).
-8. **CHANGES_REQUESTED + otherwise-valid receipt → still blocking.** The
-   `CHANGES_REQUESTED`/`REQUEST_CHANGES` branch in `_classify_reviews` returns before the
-   `else` branch that consults receipts is ever reached — structurally unreachable, not
-   just untested. Test: `TestChangesRequestedNeverOverridable`.
-9. **Unresolved inline thread remains blocking.** `_classify_threads` is a wholly separate
-   code path never touched by this change. Test: `TestUnresolvedThreadUnaffected`.
-10. **Valid receipt issue-comment itself is nonblocking**, even when its `reason=` text
-    contains "P1"/"P2" substrings. `_classify_comments` checks
-    `_parse_review_adjudication_receipt(body) is not None` for a trusted `issue_comment`
-    author *before* falling through to the ordinary `_body_disposition` P1/P2 heuristic.
-    Test: `TestReceiptCommentItselfIsNonblocking`.
-11. **Review-ledger conservation count remains exact.** Unaffected — no items added or
-    removed by this change, only reclassified. Test: `TestLedgerConservation`.
-12. **Existing review/comment/thread classification tests remain green.** Full
-    `tests/pr_steward/` suite: 286 passed (284 pre-existing + 2 new fix-regression tests),
-    0 failed, 0 errors, run via `mise exec python@3.12 -- python -m pytest tests/pr_steward/ -q`.
+If an unknown/untrusted reviewer posts a `COMMENTED` review containing a P1/P2 marker,
+`_classify_reviews`'s `_known_author` check (`classifier.py:552`) assigns
+`UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION` *before* the `else:` branch that would consult a
+receipt is ever reached. A trusted approver cannot use this mechanism to clear that
+specific review. This slightly narrows the mechanism's stated scope ("reclassify... from
+whatever blocking disposition it would otherwise get") but is safely fail-closed, not a
+vulnerability — it makes the mechanism strictly narrower than documented, never broader.
+Status: ACCEPTED_RISK (functional scope note, not a defect requiring a code change).
 
-## Finding
+### F-ADJ001-AGY-INFO-2: multiline `reason=` text is silently truncated to its first line
 
-### F-ADJ001-HIGH-1 (RESOLVED): conflict dedup used parsed fields + adjudicator, not raw bytes
+`_parse_review_adjudication_receipt` tokenizes via `body.splitlines()` and matches
+`^(review_id|head_sha|disposition|reason)=(.*)$` per line; the `(.*)` capture stops at the
+line break, so a multi-line reason keeps only its first line — later lines don't match the
+field regex and are dropped. The receipt still clears the review correctly; only the
+recorded rationale text loses trailing context. Status: ACCEPTED_RISK (UX limitation, not
+a correctness or security defect — no false clearance, no false denial).
 
-Identified by the round-1 Codex review. `_find_review_adjudication`'s original dedup
-signature was `(review_id, head_sha, disposition, reason, adjudicator)`. Two failure
-directions:
+## Additional adversarial checks performed (no issues found)
 
-- Two comments with different raw bytes (e.g. different surrounding commentary) but
-  identical parsed fields collapsed to one signature — a real difference was silently
-  ignored, and the review would clear even though, strictly, two distinct receipt texts
-  existed.
-- Two byte-identical receipts posted by two different trusted approvers produced two
-  distinct signatures (different `adjudicator`) and were therefore wrongly treated as
-  conflicting, denying a clearance the documented rule says should apply.
-
-Fixed by keying the dedup set on the raw `comment.get("body")` string itself (stored as
-`_body` internally, stripped before the receipt dict is returned — verified it never
-leaks into `rationale` or the ledger). `adjudicator` no longer participates in the
-conflict comparison, only in the resulting rationale text. Re-verified in round-2 Codex
-review that this does not create a piggyback path: the trusted-author gate
-(`author not in trusted_approvers: continue`) is applied per-comment *before* any body is
-added to the eligible set, so an untrusted comment can never enter the dedup comparison
-regardless of its content.
+- **Duplicate marker blocks in one comment**: `lines.index()` finds only the first marker
+  occurrence, and `if key not in fields` ignores duplicate field lines, so a comment can
+  only ever yield one deterministic receipt — cannot be used to smuggle a second, different
+  receipt in the same comment.
+- **Duplicate comment objects from GraphQL pagination overlap**: harmless — identical raw
+  bytes collapse into one element of the `distinct_bodies` set, avoiding a false conflict.
+- **Spot-checked 3 of the 15 regression tests by hand against the classifier logic**
+  (`test_byte_identical_body_from_two_different_trusted_authors_is_not_a_conflict`,
+  `test_same_parsed_fields_but_different_raw_bytes_is_a_conflict`,
+  `test_receipt_comment_is_nonblocking_even_when_reason_quotes_p2`) — all three exercise
+  exactly what they claim.
 
 ## Verdict
 
-**PASS.** All twelve invariants hold against the current diff (`af145c4b1`). The one real
-defect found by adversarial review has been fixed, is covered by regression tests, and was
-independently re-verified fixed. No unrelated files were touched. Test suite, ruff,
-`git diff --check`, pre-commit, and a diff-scoped gitleaks scan are all clean.
+**PASS_WITH_RISKS.** All ten invariants hold under adversarial review, including two
+attack surfaces (multi-marker comments, pagination duplication) that neither prior review
+round considered. The two findings are functional/UX narrowing effects with no
+false-clearance or false-denial security impact; per this run's own assessment, no code
+change is required to merge this onto trusted main. Both are recorded as `ACCEPTED_RISK`
+in `PROOF.json`.

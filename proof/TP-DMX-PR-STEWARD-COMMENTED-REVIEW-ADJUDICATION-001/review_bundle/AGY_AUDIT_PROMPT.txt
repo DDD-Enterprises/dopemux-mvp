@@ -1,0 +1,2915 @@
+You are performing the FORMAL, controlling, independent L3 security/correctness audit
+of a just-implemented feature in the repository DDD-Enterprises/dopemux-mvp, for a
+draft bootstrap PR onto trusted main. You are Gemini 3.1 Pro (High) via the AGY CLI,
+selected specifically because you are a different model family/runtime from the
+implementer (Claude Sonnet 5 / Claude Code), per this repo's Tier-1 audit route order
+(docs/ops/embedded-audit.md). Your verdict is the audit of record for this packet's
+proof bundle (a prior Codex red-team pass is supplementary evidence only, not the
+formal record, per AGENTS.md 9.1 which forbids Codex as a formal auditor tool).
+
+This is a READ-ONLY audit. You have no filesystem/tool access in this invocation — you
+must audit purely from the material embedded below. Do not assume anything not shown
+to you. If something needed to reach a verdict is missing from this prompt, say so
+explicitly as an UNKNOWN rather than guessing.
+
+## System under audit
+
+`tools/pr_steward/classifier.py` is a custom, check-only, non-mutating PR merge-gate
+classifier. It harvests GitHub PR reviews/comments/threads/checks and classifies each
+into a disposition (MUST_FIX, REJECTED_WITH_REASON, etc.) that determines whether a PR
+is "READY" to merge. Wired into `.github/workflows/pr-steward.yml`.
+
+## Feature added: TP-DMX-PR-STEWARD-COMMENTED-REVIEW-ADJUDICATION-001
+
+A mechanism letting a trusted human (GitHub login must be present in
+`trusted_security_release_approvers`, loaded from `tools/pr_steward/known_reviewers.json`)
+post a top-level PR issue/conversation comment shaped exactly like:
+
+```
+PR_STEWARD_REVIEW_ADJUDICATION_V1
+review_id=<exact GitHub review node id>
+head_sha=<full 40-char current PR head sha>
+disposition=REJECTED_WITH_REASON
+reason=<non-empty reason>
+```
+
+...to reclassify one specific GitHub PR review (identified by its exact GraphQL node
+id) that is in state exactly `COMMENTED` from whatever blocking disposition it would
+otherwise get (typically MUST_FIX from a P1/P2 marker in its body) to
+`REJECTED_WITH_REASON` / nonblocking — WITHOUT deleting or rewriting the original
+review's stored body/text in the ledger.
+
+## Required invariants (must hold under adversarial conditions)
+
+1. CHANGES_REQUESTED / REQUEST_CHANGES reviews must NEVER be overridable by this
+   mechanism, under any circumstances whatsoever.
+2. A receipt must bind to one exact review_id AND one exact current PR head_sha — a
+   receipt written for an old head must not apply once the head has moved, and a
+   receipt for the current head must not apply to a stale/different review.
+3. Only logins in `trusted_security_release_approvers` can produce an eligible receipt.
+   An untrusted author's comment, even if byte-identical to a trusted approver's valid
+   receipt, must never be admitted.
+4. Malformed receipts (missing fields, wrong disposition value, non-40-hex head_sha,
+   empty reason, empty review_id) must not clear anything.
+5. Conflict rule: if two or more eligible receipts target the same (review_id,
+   head_sha) and their RAW COMMENT BYTES differ, neither applies (fail closed).
+   Byte-identical duplicate receipt comments (regardless of which trusted approver
+   posted each one) should still count as one, not a conflict.
+6. Unresolved review threads, CI check failures, embedded-audit blockers, and
+   security-release-approval blockers must be completely unaffected by this mechanism
+   — verify these code paths are structurally independent, not just untested.
+7. The review-item ledger's item count (one ledger item per raw harvested
+   review/comment/thread entry) must not change because of this feature.
+8. The receipt's own issue-comment ledger item must itself be classified nonblocking
+   even when its `reason=` text happens to contain "P1" or "P2" substrings (must not
+   self-trigger the classifier's existing P1/P2 body-marker heuristic).
+9. This must not be reusable across PRs — a receipt is scoped to the classifier run's
+   own harvested `pr_head_sha`, which is per-PR-run; verify there is no global/cross-PR
+   state leakage.
+10. The internal `_body` bookkeeping field used for conflict comparison must never leak
+    into the returned receipt dict / rationale / ledger output.
+
+## History (for context only — verify independently, do not just trust this account)
+
+Round 1 of a supplementary Codex red-team review (informal, not the auditor of record)
+found that the original implementation's conflict-detection signature was
+`(review_id, head_sha, disposition, reason, adjudicator)` — built from parsed fields
+plus who posted the receipt, not from the raw comment bytes. This had two failure
+directions: (a) two receipts with different raw bytes but identical parsed fields
+wrongly deduped as one (potential false clearance), and (b) two byte-identical receipts
+from two different trusted approvers wrongly conflicted (false denial), contradicting
+invariant 5 above. The fix (shown in the diff below) changed the dedup key to the raw
+comment body string, dropping `adjudicator` from the comparison. Two regression tests
+were added. A second Codex round said the fix looked correct. YOUR JOB is to verify
+this claim independently, not accept it — re-derive whether the fix is actually
+correct and complete, and look for anything else, including issues neither Claude nor
+Codex found.
+
+## Full diff (base 5900c27d3c38b515204bd5dc4baed8b5e14e2a8e -> head af145c4b10b67fd9c4dbcd6ec44fb31cca73dfca)
+
+```diff
+diff --git a/docs/ops/pr-steward.md b/docs/ops/pr-steward.md
+index a5f43de27..939d08e5d 100644
+--- a/docs/ops/pr-steward.md
++++ b/docs/ops/pr-steward.md
+@@ -77,6 +77,56 @@ Resolved and outdated review threads are historical evidence, not active blocker
+
+ Proof freshness is fail-closed by default. A proof may be treated as current either by exact PR head match or by an explicit `CURRENT_WITH_SELF_REFERENCE_EXCEPTION` record that includes supervisor acceptance and proof-only changed-file evidence under `proof/`.
+
++## Review Adjudication Receipts
++
++TP-DMX-PR-STEWARD-COMMENTED-REVIEW-ADJUDICATION-001 adds one narrow,
++exact-head trusted-adjudication mechanism: a top-level PR issue/conversation
++comment, posted by a login in `trusted_security_release_approvers`
++(`tools/pr_steward/known_reviewers.json`), may reclassify one existing
++review's ledger disposition to `REJECTED_WITH_REASON` (nonblocking) using a
++literal receipt body:
++
++```text
++PR_STEWARD_REVIEW_ADJUDICATION_V1
++review_id=<exact GitHub review node id, e.g. PRR_...>
++head_sha=<full 40-character current PR head SHA>
++disposition=REJECTED_WITH_REASON
++reason=<non-empty reason>
++```
++
++A receipt only clears a review when **all** of the following hold; any
++failure fails closed and leaves the review's ordinary classification
++(including any `MUST_FIX` from a `P1`/`P2` body marker) active:
++
++- the review's own GitHub review state is exactly `COMMENTED` (never
++  `CHANGES_REQUESTED` / `REQUEST_CHANGES` — that state is classified before
++  a receipt is ever consulted, so it can never be adjudicated away);
++- `review_id` names that exact review;
++- `head_sha` exactly equals the PR's current head SHA (a receipt bound to a
++  stale head never clears a review at a newer head, and vice versa);
++- the comment author's login is in `trusted_security_release_approvers`;
++- the receipt is well-formed (all four fields present, `disposition` is
++  exactly `REJECTED_WITH_REASON`, `reason` non-empty, `head_sha` is a
++  40-character hex string);
++- exactly one distinct eligible receipt comment body exists for that
++  `(review_id, head_sha)` pair, regardless of which trusted approver posted
++  it — comparison is on the raw comment body byte-for-byte, not on the
++  parsed fields, so two comments that parse to the same fields but differ
++  in surrounding text still conflict, and clear nothing.
++
++A valid receipt preserves the original review's ledger entry (same `id`,
++unchanged `body`) and only changes `disposition`, `blocking`, and
++`rationale` — it never deletes or rewrites historical review text, and it
++never changes the review-item ledger's item count. The receipt comment
++itself is always classified `REJECTED_WITH_REASON` / nonblocking when it is
++well-formed and trusted, even when its `reason=` text quotes a `P1`/`P2`
++token from the review it adjudicates — a receipt can never manufacture a
++new blocker out of describing the finding it clears.
++
++This mechanism never touches `CHANGES_REQUESTED` reviews, unresolved review
++threads, CI, embedded-audit, proof, or security-release blockers — those
++gates are unaffected and remain independently fail-closed.
++
+ ## CLI
+
+ Repo-local invocation:
+diff --git a/tests/pr_steward/test_commented_review_adjudication.py b/tests/pr_steward/test_commented_review_adjudication.py
+new file mode 100644
+index 000000000..df0a5759d
+--- /dev/null
++++ b/tests/pr_steward/test_commented_review_adjudication.py
+@@ -0,0 +1,436 @@
++"""TP-DMX-PR-STEWARD-COMMENTED-REVIEW-ADJUDICATION-001.
++
++A trusted security-release approver may post a top-level issue comment
++formatted as a PR_STEWARD_REVIEW_ADJUDICATION_V1 receipt to reclassify one
++exact COMMENTED review, at one exact PR head, as REJECTED_WITH_REASON /
++nonblocking. Every other review state (CHANGES_REQUESTED above all),
++unresolved threads, CI, audit, and security-release blockers are untouched.
++"""
++
++from __future__ import annotations
++
++import json
++from pathlib import Path
++
++from tools.pr_steward.classifier import build_artifacts
++
++REPO = "DDD-Enterprises/dopemux-mvp"
++PR_NUMBER = 1287
++HEAD_SHA = "b69bf6cb1e47e8db9d071c5548d14462c0092a31"
++OTHER_HEAD_SHA = "0123456789abcdef0123456789abcdef01234567"
++REVIEW_ID = "PRR_kwDOPyIw988AAAABLPwIjQ"
++TRUSTED_APPROVER = "hu3mann"
++SECOND_TRUSTED_APPROVER = "second-trusted-approver"
++UNTRUSTED_APPROVER = "copilot-pull-request-reviewer"
++ROOT = Path(__file__).resolve().parents[2]
++REAL_KNOWN_REVIEWERS_PATH = ROOT / "tools" / "pr_steward" / "known_reviewers.json"
++
++
++def _known_reviewers_with_two_approvers(tmp_path: Path) -> Path:
++    path = tmp_path / "known_reviewers.json"
++    path.write_text(
++        json.dumps(
++            {
++                "known_reviewers": [
++                    "hu3mann",
++                    "chatgpt-codex-connector",
++                    SECOND_TRUSTED_APPROVER,
++                ],
++                "trusted_author_associations": ["OWNER", "MEMBER", "COLLABORATOR"],
++                "trusted_security_release_approvers": [
++                    TRUSTED_APPROVER,
++                    SECOND_TRUSTED_APPROVER,
++                ],
++            }
++        )
++        + "\n",
++        encoding="utf-8",
++    )
++    return path
++
++
++def _receipt_body(
++    *,
++    review_id: str = REVIEW_ID,
++    head_sha: str = HEAD_SHA,
++    disposition: str = "REJECTED_WITH_REASON",
++    reason: str = "Historical P2 finding already resolved by later commits.",
++) -> str:
++    return (
++        "PR_STEWARD_REVIEW_ADJUDICATION_V1\n"
++        f"review_id={review_id}\n"
++        f"head_sha={head_sha}\n"
++        f"disposition={disposition}\n"
++        f"reason={reason}\n"
++    )
++
++
++def _base_harvest(
++    *,
++    review_state: str = "COMMENTED",
++    review_body: str = "P2: flagging this for follow-up before merge.",
++    reviews: list[dict] | None = None,
++    issue_comments: list[dict] | None = None,
++) -> dict:
++    if reviews is None:
++        reviews = [
++            {
++                "id": REVIEW_ID,
++                "state": review_state,
++                "body": review_body,
++                "author": {"login": "chatgpt-codex-connector"},
++                "authorAssociation": None,
++                "submittedAt": "2026-08-28T09:15:45Z",
++                "commit": {"oid": "08395a7d17c2f66bf34794e6d01ea6b91074ecef"},
++            }
++        ]
++    return {
++        "harvest_complete": True,
++        "harvest_errors": [],
++        "pr": {
++            "number": PR_NUMBER,
++            "url": f"https://github.com/{REPO}/pull/{PR_NUMBER}",
++            "state": "OPEN",
++            "isDraft": True,
++            "mergeable": "MERGEABLE",
++            "mergeStateStatus": "BLOCKED",
++            "reviewDecision": "COMMENTED",
++            "baseRefName": "main",
++            "baseRefOid": "base000000000000000000000000000000000000",
++            "headRefName": "codex/pr-steward-followup",
++            "headRefOid": HEAD_SHA,
++            "author": {"login": "hu3mann", "authorAssociation": "OWNER"},
++            "createdAt": "2026-08-20T01:00:00Z",
++            "updatedAt": "2026-09-01T02:00:00Z",
++        },
++        "changed_files": [{"path": "tools/pr_steward/intake.py", "additions": 1}],
++        "commits": [{"oid": HEAD_SHA, "messageHeadline": "test"}],
++        "reviews": reviews,
++        "review_comments": [],
++        "review_threads": [],
++        "issue_comments": issue_comments or [],
++        "checks": [
++            {
++                "name": "unit",
++                "status": "COMPLETED",
++                "conclusion": "success",
++                "headSha": HEAD_SHA,
++            }
++        ],
++        "proof": {
++            "proof_path": "proof/PROOF.json",
++            "proof_head_sha": HEAD_SHA,
++            "matches_pr_head": True,
++        },
++        "embedded_audit": {
++            "status": "PASS",
++            "report_path": "proof/AUDITOR_REPORT.md",
++        },
++    }
++
++
++def _artifacts(
++    harvest: dict, known_reviewers_path: Path = REAL_KNOWN_REVIEWERS_PATH
++) -> dict:
++    return build_artifacts(
++        harvest,
++        repo=REPO,
++        pr_number=PR_NUMBER,
++        strict=True,
++        allow_closed=True,
++        known_reviewers_path=known_reviewers_path,
++    )
++
++
++def _review_item(ledger: dict, item_id: str = REVIEW_ID) -> dict:
++    matches = [item for item in ledger["items"] if item["id"] == item_id]
++    assert len(matches) == 1, f"expected exactly one ledger item for {item_id}"
++    return matches[0]
++
++
++class TestNoReceipt:
++    def test_commented_p2_review_with_no_receipt_is_must_fix(self) -> None:
++        harvest = _base_harvest()
++        artifacts = _artifacts(harvest)
++        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
++        assert item["disposition"] == "MUST_FIX"
++        assert item["blocking"] is True
++        assert "REVIEW_ITEM_MUST_FIX" in artifacts["MERGE_READINESS.json"]["blockers"]
++
++
++class TestValidReceipt:
++    def test_valid_trusted_exact_head_receipt_clears_the_review(self) -> None:
++        harvest = _base_harvest(
++            issue_comments=[
++                {
++                    "id": "ic-1",
++                    "body": _receipt_body(),
++                    "author": {"login": TRUSTED_APPROVER},
++                    "authorAssociation": "OWNER",
++                }
++            ]
++        )
++        artifacts = _artifacts(harvest)
++        ledger = artifacts["REVIEW_ITEM_LEDGER.json"]
++        item = _review_item(ledger, REVIEW_ID)
++        # Original review preserved: same id, unchanged body.
++        assert item["body"] == "P2: flagging this for follow-up before merge."
++        assert item["disposition"] == "REJECTED_WITH_REASON"
++        assert item["blocking"] is False
++        assert (
++            "REVIEW_ITEM_MUST_FIX" not in artifacts["MERGE_READINESS.json"]["blockers"]
++        )
++
++
++class TestWrongHead:
++    def test_receipt_bound_to_stale_head_does_not_clear(self) -> None:
++        harvest = _base_harvest(
++            issue_comments=[
++                {
++                    "id": "ic-1",
++                    "body": _receipt_body(head_sha=OTHER_HEAD_SHA),
++                    "author": {"login": TRUSTED_APPROVER},
++                }
++            ]
++        )
++        artifacts = _artifacts(harvest)
++        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
++        assert item["disposition"] == "MUST_FIX"
++        assert item["blocking"] is True
++
++
++class TestWrongReviewId:
++    def test_receipt_for_a_different_review_does_not_clear(self) -> None:
++        harvest = _base_harvest(
++            issue_comments=[
++                {
++                    "id": "ic-1",
++                    "body": _receipt_body(review_id="PRR_someOtherReviewNodeId"),
++                    "author": {"login": TRUSTED_APPROVER},
++                }
++            ]
++        )
++        artifacts = _artifacts(harvest)
++        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
++        assert item["disposition"] == "MUST_FIX"
++        assert item["blocking"] is True
++
++
++class TestUntrustedAuthor:
++    def test_receipt_from_untrusted_author_does_not_clear(self) -> None:
++        harvest = _base_harvest(
++            issue_comments=[
++                {
++                    "id": "ic-1",
++                    "body": _receipt_body(),
++                    "author": {"login": UNTRUSTED_APPROVER},
++                }
++            ]
++        )
++        artifacts = _artifacts(harvest)
++        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
++        assert item["disposition"] == "MUST_FIX"
++        assert item["blocking"] is True
++
++
++class TestMalformedReceipt:
++    def test_malformed_receipt_does_not_clear(self) -> None:
++        malformed = (
++            "PR_STEWARD_REVIEW_ADJUDICATION_V1\n"
++            f"review_id={REVIEW_ID}\n"
++            f"head_sha={HEAD_SHA}\n"
++            "disposition=REJECTED_WITH_REASON\n"
++            # reason= line omitted entirely -> malformed
++        )
++        harvest = _base_harvest(
++            issue_comments=[
++                {"id": "ic-1", "body": malformed, "author": {"login": TRUSTED_APPROVER}}
++            ]
++        )
++        artifacts = _artifacts(harvest)
++        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
++        assert item["disposition"] == "MUST_FIX"
++        assert item["blocking"] is True
++
++    def test_short_head_sha_does_not_clear(self) -> None:
++        malformed = _receipt_body(head_sha="b69bf6c")
++        harvest = _base_harvest(
++            issue_comments=[
++                {"id": "ic-1", "body": malformed, "author": {"login": TRUSTED_APPROVER}}
++            ]
++        )
++        artifacts = _artifacts(harvest)
++        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
++        assert item["disposition"] == "MUST_FIX"
++        assert item["blocking"] is True
++
++
++class TestConflictingReceipts:
++    def test_two_conflicting_eligible_receipts_do_not_clear(self) -> None:
++        harvest = _base_harvest(
++            issue_comments=[
++                {
++                    "id": "ic-1",
++                    "body": _receipt_body(reason="First adjudication reason."),
++                    "author": {"login": TRUSTED_APPROVER},
++                },
++                {
++                    "id": "ic-2",
++                    "body": _receipt_body(reason="Second, conflicting reason."),
++                    "author": {"login": TRUSTED_APPROVER},
++                },
++            ]
++        )
++        artifacts = _artifacts(harvest)
++        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
++        assert item["disposition"] == "MUST_FIX"
++        assert item["blocking"] is True
++
++    def test_duplicate_identical_receipts_are_not_a_conflict(self) -> None:
++        body = _receipt_body()
++        harvest = _base_harvest(
++            issue_comments=[
++                {"id": "ic-1", "body": body, "author": {"login": TRUSTED_APPROVER}},
++                {"id": "ic-2", "body": body, "author": {"login": TRUSTED_APPROVER}},
++            ]
++        )
++        artifacts = _artifacts(harvest)
++        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
++        assert item["disposition"] == "REJECTED_WITH_REASON"
++        assert item["blocking"] is False
++
++    def test_byte_identical_body_from_two_different_trusted_authors_is_not_a_conflict(
++        self, tmp_path: Path
++    ) -> None:
++        # Conflict detection compares raw comment bytes, not (fields, author)
++        # tuples: two different trusted approvers independently posting the
++        # exact same receipt text is corroboration, not a conflict.
++        known = _known_reviewers_with_two_approvers(tmp_path)
++        body = _receipt_body()
++        harvest = _base_harvest(
++            issue_comments=[
++                {"id": "ic-1", "body": body, "author": {"login": TRUSTED_APPROVER}},
++                {
++                    "id": "ic-2",
++                    "body": body,
++                    "author": {"login": SECOND_TRUSTED_APPROVER},
++                },
++            ]
++        )
++        artifacts = _artifacts(harvest, known_reviewers_path=known)
++        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
++        assert item["disposition"] == "REJECTED_WITH_REASON"
++        assert item["blocking"] is False
++
++    def test_same_parsed_fields_but_different_raw_bytes_is_a_conflict(self) -> None:
++        # Two comments that parse to identical review_id/head_sha/disposition/
++        # reason but differ in surrounding bytes are NOT the same receipt:
++        # parsing the same must not substitute for being the same comment.
++        first = _receipt_body()
++        second = first + "\n<!-- reposted via web UI -->\n"
++        assert first != second
++        harvest = _base_harvest(
++            issue_comments=[
++                {"id": "ic-1", "body": first, "author": {"login": TRUSTED_APPROVER}},
++                {"id": "ic-2", "body": second, "author": {"login": TRUSTED_APPROVER}},
++            ]
++        )
++        artifacts = _artifacts(harvest)
++        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
++        assert item["disposition"] == "MUST_FIX"
++        assert item["blocking"] is True
++
++
++class TestChangesRequestedNeverOverridable:
++    def test_changes_requested_stays_blocking_despite_valid_receipt(self) -> None:
++        harvest = _base_harvest(
++            review_state="CHANGES_REQUESTED",
++            issue_comments=[
++                {
++                    "id": "ic-1",
++                    "body": _receipt_body(),
++                    "author": {"login": TRUSTED_APPROVER},
++                }
++            ],
++        )
++        artifacts = _artifacts(harvest)
++        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
++        assert item["disposition"] == "MUST_FIX"
++        assert item["blocking"] is True
++        assert "REQUEST_CHANGES" in artifacts["MERGE_READINESS.json"]["blockers"]
++
++
++class TestUnresolvedThreadUnaffected:
++    def test_unresolved_thread_remains_blocking_alongside_a_cleared_review(
++        self,
++    ) -> None:
++        harvest = _base_harvest(
++            issue_comments=[
++                {
++                    "id": "ic-1",
++                    "body": _receipt_body(),
++                    "author": {"login": TRUSTED_APPROVER},
++                }
++            ],
++        )
++        harvest["review_threads"] = [
++            {
++                "id": "thread-1",
++                "isResolved": False,
++                "isOutdated": False,
++                "comments": {
++                    "nodes": [
++                        {
++                            "id": "rc-1",
++                            "body": "P1: unresolved concern.",
++                            "author": {"login": "chatgpt-codex-connector"},
++                        }
++                    ]
++                },
++            }
++        ]
++        artifacts = _artifacts(harvest)
++        merge_readiness = artifacts["MERGE_READINESS.json"]
++        review_item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
++        assert review_item["disposition"] == "REJECTED_WITH_REASON"
++        assert review_item["blocking"] is False
++        assert merge_readiness["readiness"] != "READY"
++
++
++class TestReceiptCommentItselfIsNonblocking:
++    def test_receipt_comment_is_nonblocking_even_when_reason_quotes_p2(self) -> None:
++        harvest = _base_harvest(
++            issue_comments=[
++                {
++                    "id": "ic-1",
++                    "body": _receipt_body(
++                        reason="The historical P2 finding no longer applies."
++                    ),
++                    "author": {"login": TRUSTED_APPROVER},
++                }
++            ]
++        )
++        artifacts = _artifacts(harvest)
++        comment_item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"], "ic-1")
++        assert comment_item["disposition"] == "REJECTED_WITH_REASON"
++        assert comment_item["blocking"] is False
++
++
++class TestLedgerConservation:
++    def test_ledger_item_count_matches_harvest_after_clearance(self) -> None:
++        harvest = _base_harvest(
++            issue_comments=[
++                {
++                    "id": "ic-1",
++                    "body": _receipt_body(),
++                    "author": {"login": TRUSTED_APPROVER},
++                }
++            ]
++        )
++        artifacts = _artifacts(harvest)
++        ledger = artifacts["REVIEW_ITEM_LEDGER.json"]
++        assert len(ledger["items"]) == len(harvest["reviews"]) + len(
++            harvest["issue_comments"]
++        )
++        assert ledger["unclassified_count"] == 0
++        assert "HARVEST_INCOMPLETE" not in artifacts["MERGE_READINESS.json"]["blockers"]
+diff --git a/tools/pr_steward/classifier.py b/tools/pr_steward/classifier.py
+index 84f9c4ea0..6b3e06b9e 100644
+--- a/tools/pr_steward/classifier.py
++++ b/tools/pr_steward/classifier.py
+@@ -54,6 +54,19 @@ RECOGNIZED_REVIEW_DISPOSITIONS = {
+ }
+ UNCLASSIFIED_ITEM_DISPOSITION = "UNCLASSIFIED_ITEM_SHAPE"
+
++# Marks a top-level issue/conversation comment as a formal, trusted
++# adjudication of one exact COMMENTED review at one exact PR head. See
++# docs/ops/pr-steward.md#review-adjudication-receipts.
++REVIEW_ADJUDICATION_RECEIPT_MARKER = "PR_STEWARD_REVIEW_ADJUDICATION_V1"
++_REVIEW_ADJUDICATION_FIELD_RE = re.compile(
++    r"^(review_id|head_sha|disposition|reason)=(.*)$"
++)
++_FULL_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
++# CHANGES_REQUESTED is handled by its own branch in _classify_reviews and
++# never reaches the receipt lookup; this set documents the review states a
++# receipt may adjudicate (currently: exactly COMMENTED).
++REVIEW_ADJUDICATION_ELIGIBLE_STATES = {"COMMENTED"}
++
+
+ class ProofFreshness(dict):
+     """Dict proof state with legacy string comparisons for older callers."""
+@@ -111,6 +124,7 @@ def build_artifacts(
+     generated = generated_at or utc_now()
+     known_path = known_reviewers_path or Path(__file__).with_name("known_reviewers.json")
+     known_reviewers, trusted_associations = load_known_reviewers(known_path)
++    trusted_security_approvers = load_trusted_security_approvers(known_path)
+
+     pr = _pr_payload(harvest, pr_number=pr_number)
+     pr_raw = harvest.get("pr") or {}
+@@ -172,6 +186,9 @@ def build_artifacts(
+             trusted_associations=trusted_associations,
+             blockers=blockers,
+             unknowns=unknowns,
++            issue_comments=issue_comments_in,
++            pr_head_sha=pr["head_sha"],
++            trusted_security_approvers=set(trusted_security_approvers),
+         )
+     )
+     resolved_review_comment_dispositions = _resolved_review_comment_dispositions(
+@@ -197,6 +214,7 @@ def build_artifacts(
+             trusted_associations=trusted_associations,
+             blockers=blockers,
+             unknowns=unknowns,
++            trusted_security_approvers=set(trusted_security_approvers),
+         )
+     )
+
+@@ -260,7 +278,6 @@ def build_artifacts(
+     security_classification = classify_security_release_paths(
+         changed_paths + renamed_from_paths
+     )
+-    trusted_security_approvers = load_trusted_security_approvers(known_path)
+     trusted_security_apps = load_trusted_security_release_apps(known_path)
+     # Human approvals evaluate fully here. App approvals require non-security
+     # gates first, so app_gate_ok=False until proof/audit/thread state is known.
+@@ -494,8 +511,13 @@ def _classify_reviews(
+     trusted_associations: set[str],
+     blockers: list[str],
+     unknowns: list[str],
++    issue_comments: list[Any] | None = None,
++    pr_head_sha: str | None = None,
++    trusted_security_approvers: set[str] | None = None,
+ ) -> list[dict[str, Any]]:
+     items = []
++    issue_comments = issue_comments or []
++    trusted_security_approvers = trusted_security_approvers or set()
+     for index, review in enumerate(reviews):
+         if not isinstance(review, dict):
+             item_id = f"review-{index}"
+@@ -540,7 +562,27 @@ def _classify_reviews(
+             _append_once(blockers, "REQUEST_CHANGES")
+         else:
+             disposition, blocking, rationale = _body_disposition(body)
+-            if blocking:
++            receipt = None
++            if (
++                blocking
++                and str(review.get("state") or "").upper()
++                in REVIEW_ADJUDICATION_ELIGIBLE_STATES
++            ):
++                receipt = _find_review_adjudication(
++                    review_id=review_id,
++                    issue_comments=issue_comments,
++                    pr_head_sha=str(pr_head_sha or ""),
++                    trusted_approvers=trusted_security_approvers,
++                    unknowns=unknowns,
++                )
++            if receipt is not None:
++                disposition = "REJECTED_WITH_REASON"
++                blocking = False
++                rationale = (
++                    f"Adjudicated nonblocking by {receipt['adjudicator']} at head "
++                    f"{receipt['head_sha']}: {receipt['reason']}"
++                )
++            elif blocking:
+                 if disposition == "NEEDS_SUPERVISOR":
+                     item_blockers.append("REVIEW_ITEM_NEEDS_SUPERVISOR")
+                 elif disposition == "MUST_FIX":
+@@ -571,9 +613,11 @@ def _classify_comments(
+     blockers: list[str],
+     unknowns: list[str],
+     resolved_review_comment_dispositions: dict[str, dict[str, str | bool]] | None = None,
++    trusted_security_approvers: set[str] | None = None,
+ ) -> list[dict[str, Any]]:
+     items = []
+     resolved_review_comment_dispositions = resolved_review_comment_dispositions or {}
++    trusted_security_approvers = trusted_security_approvers or set()
+     for index, comment in enumerate(comments):
+         if not isinstance(comment, dict):
+             item_id = f"{source}-{index}"
+@@ -605,6 +649,19 @@ def _classify_comments(
+             disposition = str(linked_resolution["disposition"])
+             blocking = bool(linked_resolution["blocking"])
+             rationale = str(linked_resolution["rationale"])
++        elif (
++            source == "issue_comment"
++            and author in trusted_security_approvers
++            and _parse_review_adjudication_receipt(body) is not None
++        ):
++            # A well-formed receipt from a trusted approver is nonblocking on
++            # its own, even when its reason= text quotes a P1/P2 finding from
++            # the review it adjudicates.
++            disposition = "REJECTED_WITH_REASON"
++            blocking = False
++            rationale = (
++                "Recognized review adjudication receipt; comment is nonblocking."
++            )
+         elif not _known_author(author, association, known_reviewers, trusted_associations):
+             disposition = "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION"
+             blocking = True
+@@ -1300,6 +1357,92 @@ def _body_disposition(body: str) -> tuple[str, bool, str]:
+     return "OPTIONAL_DEFERRED", False, "Known author comment is classified nonblocking."
+
+
++def _parse_review_adjudication_receipt(body: str) -> dict[str, str] | None:
++    """Parse a strict PR_STEWARD_REVIEW_ADJUDICATION_V1 receipt body.
++
++    Returns the parsed fields, or None if the body is not a well-formed
++    receipt. Malformed input must never raise and must never partially
++    apply — callers treat None as "no receipt here" and fall back to
++    ordinary classification.
++    """
++    lines = [line.strip() for line in body.splitlines()]
++    if REVIEW_ADJUDICATION_RECEIPT_MARKER not in lines:
++        return None
++    marker_index = lines.index(REVIEW_ADJUDICATION_RECEIPT_MARKER)
++    fields: dict[str, str] = {}
++    for line in lines[marker_index + 1 :]:
++        if not line:
++            continue
++        match = _REVIEW_ADJUDICATION_FIELD_RE.match(line)
++        if not match:
++            continue
++        key, value = match.group(1), match.group(2).strip()
++        if key not in fields:
++            fields[key] = value
++    required = {"review_id", "head_sha", "disposition", "reason"}
++    if not required.issubset(fields):
++        return None
++    if fields["disposition"] != "REJECTED_WITH_REASON":
++        return None
++    if not fields["review_id"] or not fields["reason"]:
++        return None
++    if not _FULL_SHA_RE.match(fields["head_sha"]):
++        return None
++    return fields
++
++
++def _find_review_adjudication(
++    *,
++    review_id: str,
++    issue_comments: list[Any],
++    pr_head_sha: str,
++    trusted_approvers: set[str],
++    unknowns: list[str],
++) -> dict[str, str] | None:
++    """Find exactly one eligible, non-conflicting adjudication receipt.
++
++    Eligibility (all required): the receipt lives in a top-level issue
++    comment; its author login is trusted; it names this review_id; its
++    head_sha exactly equals the current PR head; it is well-formed with a
++    non-empty reason. Zero matches or two-or-more conflicting matches both
++    fail closed to None so the review's normal classification stands.
++
++    "Conflicting" is judged on the raw comment body, not the parsed fields:
++    two receipts are the same decision only when their comment bodies are
++    byte-identical, regardless of which trusted approver posted each one.
++    Any byte-level difference between eligible bodies is a conflict, even
++    if the two happen to parse to identical review_id/head_sha/disposition/
++    reason values (e.g. one has extra surrounding text) — parsing the same
++    does not make them the same receipt.
++    """
++    eligible: list[dict[str, str]] = []
++    for comment in issue_comments:
++        if not isinstance(comment, dict):
++            continue
++        author = _author_login(comment)
++        if author not in trusted_approvers:
++            continue
++        body = str(comment.get("body") or "")
++        receipt = _parse_review_adjudication_receipt(body)
++        if receipt is None:
++            continue
++        if receipt["review_id"] != review_id or receipt["head_sha"] != pr_head_sha:
++            continue
++        eligible.append({**receipt, "adjudicator": author, "_body": body})
++
++    if not eligible:
++        return None
++    distinct_bodies = {r["_body"] for r in eligible}
++    if len(distinct_bodies) != 1:
++        _append_once(
++            unknowns,
++            f"Conflicting review adjudication receipts for review {review_id} at "
++            f"head {pr_head_sha}; original classification retained.",
++        )
++        return None
++    return {k: v for k, v in eligible[0].items() if k != "_body"}
++
++
+ def _append_disposition_blocker(blockers: list[str], disposition: str) -> None:
+     if disposition == "NEEDS_SUPERVISOR":
+         _append_once(blockers, "REVIEW_ITEM_NEEDS_SUPERVISOR")
+```
+
+## Full current state of tools/pr_steward/classifier.py (the audited file, post-fix, for full context beyond the diff hunks)
+
+```python
+from __future__ import annotations
+
+import json
+import re
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+from tools.pr_steward.security_release_gate import classify_security_release_paths
+from tools.pr_steward.security_release_approval import (
+    compute_app_gate_ok,
+    evaluate_security_release_approval,
+    load_trusted_security_apps,
+)
+from tools.pr_steward.solo_owner_security_release import (
+    evaluate_solo_owner_security_release,
+)
+
+
+SCHEMA_VERSION = "1.1.0"
+PASSING_AUDITS = {"PASS", "PASS_WITH_RISKS"}
+BLOCKING_AUDITS = {"FAIL", "NEEDS_SUPERVISOR", "SKIPPED"}
+FAILED_CHECK_CONCLUSIONS = {
+    "failure",
+    "cancelled",
+    "timed_out",
+    "action_required",
+    "stale",
+    "startup_failure",
+}
+PENDING_CHECK_STATUSES = {"queued", "in_progress", "requested", "waiting", "pending"}
+CURRENT_PROOF_STATUSES = {"CURRENT", "CURRENT_WITH_SELF_REFERENCE_EXCEPTION", "FRESH"}
+STALE_PROOF_STATUSES = {"STALE"}
+MISSING_PROOF_STATUSES = {"MISSING"}
+# Exact context published by .github/workflows/pr-steward.yml against the
+# candidate PR head. Must be excluded from readiness evaluation so a prior
+# failed self-status cannot sticky-red the next Steward run on the same head.
+# Raw harvest still retains the entry for evidence.
+STEWARD_SELF_STATUS_CONTEXT = "PR Steward / final readiness"
+
+# Sources that make up the review item ledger's conservation guarantee: every
+# raw harvest entry from these four inputs must yield exactly one ledger item.
+REVIEW_LEDGER_SOURCES = {"review", "review_comment", "issue_comment", "review_thread"}
+# Every disposition a well-formed item can receive. Anything outside this set
+# (currently only the malformed-shape sentinel below) counts as unclassified.
+RECOGNIZED_REVIEW_DISPOSITIONS = {
+    "MUST_FIX",
+    "NEEDS_SUPERVISOR",
+    "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION",
+    "OUT_OF_SCOPE_FOLLOWUP",
+    "REJECTED_WITH_REASON",
+    "OPTIONAL_DEFERRED",
+    "AUTO_APPLIED",
+}
+UNCLASSIFIED_ITEM_DISPOSITION = "UNCLASSIFIED_ITEM_SHAPE"
+
+# Marks a top-level issue/conversation comment as a formal, trusted
+# adjudication of one exact COMMENTED review at one exact PR head. See
+# docs/ops/pr-steward.md#review-adjudication-receipts.
+REVIEW_ADJUDICATION_RECEIPT_MARKER = "PR_STEWARD_REVIEW_ADJUDICATION_V1"
+_REVIEW_ADJUDICATION_FIELD_RE = re.compile(
+    r"^(review_id|head_sha|disposition|reason)=(.*)$"
+)
+_FULL_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
+# CHANGES_REQUESTED is handled by its own branch in _classify_reviews and
+# never reaches the receipt lookup; this set documents the review states a
+# receipt may adjudicate (currently: exactly COMMENTED).
+REVIEW_ADJUDICATION_ELIGIBLE_STATES = {"COMMENTED"}
+
+
+class ProofFreshness(dict):
+    """Dict proof state with legacy string comparisons for older callers."""
+
+    _LEGACY_EQUIVALENTS = {
+        "CURRENT": {"CURRENT", "FRESH"},
+        "CURRENT_WITH_SELF_REFERENCE_EXCEPTION": {
+            "CURRENT_WITH_SELF_REFERENCE_EXCEPTION",
+            "FRESH",
+        },
+        "STALE": {"STALE"},
+        "MISSING": {"MISSING"},
+    }
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, str):
+            status = str(self.get("status") or "")
+            return other in self._LEGACY_EQUIVALENTS.get(status, {status})
+        return super().__eq__(other)
+
+
+def utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def load_known_reviewers(path: Path) -> tuple[set[str], set[str]]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    reviewers = {str(item) for item in payload.get("known_reviewers", [])}
+    associations = {
+        str(item).upper() for item in payload.get("trusted_author_associations", [])
+    }
+    return reviewers, associations
+
+
+def load_trusted_security_approvers(path: Path) -> list[str]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    return [str(item) for item in payload.get("trusted_security_release_approvers", [])]
+
+
+def load_trusted_security_release_apps(path: Path) -> list[dict[str, str]]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    return load_trusted_security_apps(payload)
+
+
+def build_artifacts(
+    harvest: dict[str, Any],
+    *,
+    repo: str,
+    pr_number: int,
+    strict: bool,
+    allow_closed: bool,
+    generated_at: str | None = None,
+    known_reviewers_path: Path | None = None,
+) -> dict[str, dict[str, Any] | str]:
+    generated = generated_at or utc_now()
+    known_path = known_reviewers_path or Path(__file__).with_name("known_reviewers.json")
+    known_reviewers, trusted_associations = load_known_reviewers(known_path)
+    trusted_security_approvers = load_trusted_security_approvers(known_path)
+
+    pr = _pr_payload(harvest, pr_number=pr_number)
+    pr_raw = harvest.get("pr") or {}
+    review_items: list[dict[str, Any]] = []
+    thread_dispositions: list[dict[str, Any]] = []
+    blockers: list[str] = []
+    unknowns: list[str] = []
+    reviews_in = _ensure_list(
+        harvest.get("reviews"), label="reviews", blockers=blockers, unknowns=unknowns
+    )
+    review_comments_in = _ensure_list(
+        harvest.get("review_comments"),
+        label="review_comments",
+        blockers=blockers,
+        unknowns=unknowns,
+    )
+    issue_comments_in = _ensure_list(
+        harvest.get("issue_comments"),
+        label="issue_comments",
+        blockers=blockers,
+        unknowns=unknowns,
+    )
+    review_threads_in = _ensure_list(
+        harvest.get("review_threads"),
+        label="review_threads",
+        blockers=blockers,
+        unknowns=unknowns,
+    )
+    checks = _classify_checks(
+        harvest.get("checks") or [],
+        pr_head_sha=pr["head_sha"],
+        strict=strict,
+    )
+
+    _extend_once(blockers, checks["blockers"])
+    _extend_once(unknowns, checks["unknowns"])
+
+    if not harvest.get("harvest_complete", False):
+        _append_once(blockers, "HARVEST_INCOMPLETE")
+        for error in harvest.get("harvest_errors") or []:
+            _append_once(unknowns, str(error))
+
+    pr_assoc = _association(pr_raw)
+    if pr_assoc is None and isinstance(pr_raw.get("author"), dict):
+        pr_assoc = _association(pr_raw["author"])
+    if not _known_author(pr["author"], pr_assoc, known_reviewers, trusted_associations):
+        _append_once(blockers, "UNKNOWN_PR_AUTHOR")
+        _append_once(unknowns, f"Unknown PR author: {pr['author']}")
+
+    if pr["draft"]:
+        _append_once(blockers, "PR_IS_DRAFT")
+    if pr["state"].upper() != "OPEN" and not allow_closed:
+        _append_once(blockers, "PR_CLOSED")
+
+    review_items.extend(
+        _classify_reviews(
+            reviews_in,
+            known_reviewers=known_reviewers,
+            trusted_associations=trusted_associations,
+            blockers=blockers,
+            unknowns=unknowns,
+            issue_comments=issue_comments_in,
+            pr_head_sha=pr["head_sha"],
+            trusted_security_approvers=set(trusted_security_approvers),
+        )
+    )
+    resolved_review_comment_dispositions = _resolved_review_comment_dispositions(
+        review_threads_in
+    )
+
+    review_items.extend(
+        _classify_comments(
+            review_comments_in,
+            source="review_comment",
+            known_reviewers=known_reviewers,
+            trusted_associations=trusted_associations,
+            blockers=blockers,
+            unknowns=unknowns,
+            resolved_review_comment_dispositions=resolved_review_comment_dispositions,
+        )
+    )
+    review_items.extend(
+        _classify_comments(
+            issue_comments_in,
+            source="issue_comment",
+            known_reviewers=known_reviewers,
+            trusted_associations=trusted_associations,
+            blockers=blockers,
+            unknowns=unknowns,
+            trusted_security_approvers=set(trusted_security_approvers),
+        )
+    )
+
+    thread_result = _classify_threads(
+        review_threads_in,
+        known_reviewers=known_reviewers,
+        trusted_associations=trusted_associations,
+        blockers=blockers,
+        unknowns=unknowns,
+    )
+    review_items.extend(thread_result["items"])
+    thread_dispositions.extend(thread_result["threads"])
+
+    review_items.extend(checks["review_items"])
+
+    expected_review_item_count = _review_source_item_count(
+        reviews=reviews_in,
+        issue_comments=issue_comments_in,
+        review_comments=review_comments_in,
+        review_threads=review_threads_in,
+    )
+    review_ledger_items = [
+        item for item in review_items if item["source"] in REVIEW_LEDGER_SOURCES
+    ]
+    if len(review_ledger_items) != expected_review_item_count:
+        _append_once(blockers, "HARVEST_INCOMPLETE")
+        _append_once(
+            unknowns,
+            "Review item ledger conservation check failed: expected "
+            f"{expected_review_item_count} items, got {len(review_ledger_items)}.",
+        )
+    unclassified_count = sum(
+        1
+        for item in review_ledger_items
+        if item["disposition"] not in RECOGNIZED_REVIEW_DISPOSITIONS
+    )
+
+    if _detect_mixed_sha_checks(harvest.get("checks") or [], pr_head_sha=pr["head_sha"]):
+        _append_once(blockers, "MIXED_SHA_ARTIFACT_SET")
+
+    embedded_audit = _embedded_audit(harvest)
+    raw_status = embedded_audit.pop("_raw_status", "")
+    audit_status = embedded_audit["status"]
+    if audit_status in BLOCKING_AUDITS:
+        _append_once(blockers, f"EMBEDDED_AUDIT_{audit_status}")
+    if raw_status:
+        _append_once(blockers, "EMBEDDED_AUDIT_UNKNOWN")
+        _append_once(unknowns, f"Unknown embedded audit status: {raw_status}")
+
+    snapshot_changed_files = _changed_files(harvest.get("changed_files") or [])
+    changed_paths = [item["path"] for item in snapshot_changed_files if item.get("path")]
+    # A rename moves a path OUT of a protected location as surely as an edit
+    # moves content into one — classify the pre-rename path too, or a rename
+    # of e.g. tools/pr_steward/known_reviewers.json to an unprotected
+    # location would silently evade the trust-root/CI/CODEOWNERS gate.
+    renamed_from_paths = [
+        item["previous_path"]
+        for item in snapshot_changed_files
+        if item.get("status") == "renamed" and item.get("previous_path")
+    ]
+    security_classification = classify_security_release_paths(
+        changed_paths + renamed_from_paths
+    )
+    trusted_security_apps = load_trusted_security_release_apps(known_path)
+    # Human approvals evaluate fully here. App approvals require non-security
+    # gates first, so app_gate_ok=False until proof/audit/thread state is known.
+    security_release_errors = evaluate_security_release_approval(
+        harvest.get("security_release_approval"),
+        required=security_classification.required,
+        expected_repo=repo,
+        expected_pr=pr_number,
+        expected_head_sha=pr["head_sha"],
+        trusted_approvers=trusted_security_approvers,
+        trusted_apps=trusted_security_apps,
+        app_gate_ok=False,
+    )
+    for err in security_release_errors:
+        _append_once(blockers, err)
+    security_release = {
+        "required": security_classification.required,
+        "approved": security_classification.required and not security_release_errors,
+        "categories": list(security_classification.categories),
+        "approval": harvest.get("security_release_approval"),
+        "solo_owner_override": None,
+        "approval_kind": None,
+        "trusted_apps": [
+            {"login": a.get("login"), "owner": a.get("owner")}
+            for a in trusted_security_apps
+        ],
+    }
+    proof = _proof(harvest, pr_head_sha=pr["head_sha"])
+    proof_status = _proof_status(proof)
+    if proof_status in STALE_PROOF_STATUSES:
+        _append_once(blockers, "PROOF_STALE")
+    elif proof_status in MISSING_PROOF_STATUSES:
+        _append_once(blockers, "PROOF_MISSING")
+    elif (
+        proof_status == "CURRENT_WITH_SELF_REFERENCE_EXCEPTION"
+        and not _valid_self_reference_exception(
+            proof,
+            changed_files=snapshot_changed_files,
+            embedded_audit_status=audit_status,
+        )
+    ):
+        _append_once(blockers, "PROOF_STALE_OR_MISSING")
+    if not proof["proof_head_sha"]:
+        _append_once(unknowns, "Proof head SHA missing")
+
+    proof_status_str = str(
+        proof_status.get("status") if isinstance(proof_status, dict) else proof_status
+        or ""
+    )
+
+    # Org-owned GitHub App path: re-evaluate with full gate context.
+    if security_classification.required and any(
+        str(b).startswith("SECURITY_RELEASE_") for b in blockers
+    ):
+        app_gate_ok = compute_app_gate_ok(
+            audit_status=str(audit_status or ""),
+            proof_status=proof_status_str,
+            blockers=blockers,
+            unclassified_review_item_count=unclassified_count,
+        )
+        app_errors = evaluate_security_release_approval(
+            harvest.get("security_release_approval"),
+            required=True,
+            expected_repo=repo,
+            expected_pr=pr_number,
+            expected_head_sha=pr["head_sha"],
+            trusted_approvers=trusted_security_approvers,
+            trusted_apps=trusted_security_apps,
+            app_gate_ok=app_gate_ok,
+        )
+        if not app_errors:
+            blockers[:] = [
+                b for b in blockers if not str(b).startswith("SECURITY_RELEASE_")
+            ]
+            security_release_errors = []
+            security_release["approved"] = True
+            security_release["approval_kind"] = "github_app"
+            security_release["approval"] = harvest.get("security_release_approval")
+        else:
+            # Replace prior security blockers with latest evaluation (may include
+            # APP_GATES_NOT_MET / APP_UNKNOWN while preserving REQUIRED).
+            blockers[:] = [
+                b for b in blockers if not str(b).startswith("SECURITY_RELEASE_")
+            ]
+            for err in app_errors:
+                _append_once(blockers, err)
+            security_release_errors = list(app_errors)
+
+    # Solo-owner path (ADR-DMX-PRSTEWARD-SOLOOWNER-001): only after ordinary
+    # human/app approval failed, and only when every non-security gate is clean.
+    if security_classification.required and any(
+        str(b).startswith("SECURITY_RELEASE_") for b in blockers
+    ):
+        raw_audit = harvest.get("embedded_audit") or {}
+        audit_meta = {
+            "auditor_tool": raw_audit.get("auditor_tool"),
+            "auditor_model": raw_audit.get("auditor_model"),
+            "auditor_provider": raw_audit.get("auditor_provider"),
+            "auditor_runner": raw_audit.get("auditor_runner"),
+            "auditor_session": raw_audit.get("auditor_session"),
+            "invocation": raw_audit.get("invocation"),
+            "report_path": raw_audit.get("report_path")
+            or embedded_audit.get("report_path"),
+        }
+        solo = evaluate_solo_owner_security_release(
+            required=True,
+            trusted_approvers=trusted_security_approvers,
+            pr_author=str(pr["author"] or ""),
+            pr_author_association=pr_assoc,
+            expected_repo=repo,
+            expected_pr=pr_number,
+            expected_head_sha=str(pr["head_sha"] or ""),
+            issue_comments=issue_comments_in,
+            blockers=blockers,
+            unclassified_review_item_count=unclassified_count,
+            audit_status=str(audit_status or ""),
+            audit_meta=audit_meta,
+            proof_status=proof_status_str,
+        )
+        if solo.activated and solo.receipt is not None:
+            blockers[:] = [
+                b for b in blockers if not str(b).startswith("SECURITY_RELEASE_")
+            ]
+            security_release_errors = []
+            security_release["approved"] = True
+            security_release["solo_owner_override"] = solo.receipt
+            # Never fabricate a GitHub APPROVED review object.
+            security_release["approval"] = None
+            security_release["approval_kind"] = "solo_owner_phrase"
+            security_release["override_receipt_code"] = solo.receipt["receipt_code"]
+        elif solo.diagnostic_errors:
+            # Preserve ordinary SECURITY_RELEASE_* blockers; attach diagnostics as unknowns.
+            for diag in solo.diagnostic_errors:
+                if not str(diag).startswith("SECURITY_RELEASE_"):
+                    _append_once(unknowns, f"solo_owner:{diag}")
+
+    if security_release["approved"] and security_release.get("approval_kind") is None:
+        security_release["approval_kind"] = "human_review"
+
+    readiness = _readiness(blockers)
+    tier = _risk_tier(readiness)
+    review_item_ledger = {
+        "schema_version": SCHEMA_VERSION,
+        "generated_at": generated,
+        "pr_number": pr_number,
+        "items": review_items,
+        "unclassified_count": unclassified_count,
+        "mutation_performed": False,
+    }
+    thread_payload = {
+        "schema_version": SCHEMA_VERSION,
+        "generated_at": generated,
+        "pr_number": pr_number,
+        "threads": thread_dispositions,
+        "unresolved_blocking_count": sum(
+            1 for thread in thread_dispositions if thread["blocking"]
+        ),
+        "mutation_performed": False,
+    }
+    ci_triage = {
+        "schema_version": SCHEMA_VERSION,
+        "generated_at": generated,
+        "pr_number": pr_number,
+        "head_sha": pr["head_sha"],
+        "checks": checks["checks"],
+        "required_check_count": checks["required_check_count"],
+        "failed_required_count": checks["failed_required_count"],
+        "pending_required_count": checks["pending_required_count"],
+        "unknown_required_count": checks["unknown_required_count"],
+        "mutation_performed": False,
+    }
+    snapshot = {
+        "schema_version": SCHEMA_VERSION,
+        "generated_at": generated,
+        "repo": repo,
+        "pr_number": pr_number,
+        "harvest_complete": bool(harvest.get("harvest_complete", False)),
+        "harvest_errors": [str(item) for item in harvest.get("harvest_errors") or []],
+        "mutation_performed": False,
+        "pr": pr,
+        "changed_files": snapshot_changed_files,
+        "commits": _commits(harvest.get("commits") or []),
+        "reviews": _raw_list(harvest.get("reviews") or []),
+        "review_comments": _raw_list(harvest.get("review_comments") or []),
+        "review_threads": _raw_list(harvest.get("review_threads") or []),
+        "issue_comments": _raw_list(harvest.get("issue_comments") or []),
+        "checks": checks["checks"],
+        "embedded_audit": embedded_audit,
+        "proof": proof,
+        "blockers": blockers,
+    }
+    merge_readiness = {
+        "schema_version": SCHEMA_VERSION,
+        "generated_at": generated,
+        "pr": {
+            "number": pr["number"],
+            "url": pr["url"],
+            "base_ref": pr["base_ref"],
+            "head_ref": pr["head_ref"],
+            "head_sha": pr["head_sha"],
+            "changed_files": [item["path"] for item in snapshot["changed_files"]],
+            "commits": [item["sha"] for item in snapshot["commits"]],
+        },
+        "readiness": readiness,
+        "risk_tier": tier,
+        "review_item_ledger_path": "REVIEW_ITEM_LEDGER.json",
+        "thread_dispositions_path": "THREAD_DISPOSITIONS.json",
+        "ci_triage_path": "CI_TRIAGE.json",
+        "embedded_audit": embedded_audit,
+        "proof": proof,
+        "security_release": security_release,
+        "blockers": blockers,
+        "unknowns": unknowns,
+        "mutation_performed": False,
+    }
+    summary = _summary(merge_readiness)
+    return {
+        "PR_STATE_SNAPSHOT.json": snapshot,
+        "REVIEW_ITEM_LEDGER.json": review_item_ledger,
+        "THREAD_DISPOSITIONS.json": thread_payload,
+        "CI_TRIAGE.json": ci_triage,
+        "MERGE_READINESS.json": merge_readiness,
+        "PR_STEWARD_SUMMARY.md": summary,
+    }
+
+
+def _classify_reviews(
+    reviews: list[Any],
+    *,
+    known_reviewers: set[str],
+    trusted_associations: set[str],
+    blockers: list[str],
+    unknowns: list[str],
+    issue_comments: list[Any] | None = None,
+    pr_head_sha: str | None = None,
+    trusted_security_approvers: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    items = []
+    issue_comments = issue_comments or []
+    trusted_security_approvers = trusted_security_approvers or set()
+    for index, review in enumerate(reviews):
+        if not isinstance(review, dict):
+            item_id = f"review-{index}"
+            _append_once(blockers, "HARVEST_INCOMPLETE")
+            _append_once(
+                unknowns, f"Malformed review entry at index {index} (not a mapping)."
+            )
+            items.append(
+                _review_item(
+                    item_id=item_id,
+                    source="review",
+                    author="unknown",
+                    association=None,
+                    body="",
+                    disposition=UNCLASSIFIED_ITEM_DISPOSITION,
+                    blocking=True,
+                    blockers=["HARVEST_INCOMPLETE"],
+                    rationale="Review entry is not a mapping.",
+                )
+            )
+            continue
+        author = _author_login(review)
+        association = _association(review)
+        body = str(review.get("body") or "")
+        review_id = str(review.get("id") or f"review-{index}")
+        item_blockers: list[str] = []
+        if not _known_author(author, association, known_reviewers, trusted_associations):
+            disposition = "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION"
+            blocking = True
+            rationale = "Reviewer is not in known reviewer config."
+            item_blockers.append("UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION")
+            _append_once(blockers, "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION")
+            _append_once(unknowns, f"Unknown reviewer: {author}")
+        elif str(review.get("state") or "").upper() in {
+            "CHANGES_REQUESTED",
+            "REQUEST_CHANGES",
+        }:
+            disposition = "MUST_FIX"
+            blocking = True
+            rationale = "Review requested changes."
+            item_blockers.append("REQUEST_CHANGES")
+            _append_once(blockers, "REQUEST_CHANGES")
+        else:
+            disposition, blocking, rationale = _body_disposition(body)
+            receipt = None
+            if (
+                blocking
+                and str(review.get("state") or "").upper()
+                in REVIEW_ADJUDICATION_ELIGIBLE_STATES
+            ):
+                receipt = _find_review_adjudication(
+                    review_id=review_id,
+                    issue_comments=issue_comments,
+                    pr_head_sha=str(pr_head_sha or ""),
+                    trusted_approvers=trusted_security_approvers,
+                    unknowns=unknowns,
+                )
+            if receipt is not None:
+                disposition = "REJECTED_WITH_REASON"
+                blocking = False
+                rationale = (
+                    f"Adjudicated nonblocking by {receipt['adjudicator']} at head "
+                    f"{receipt['head_sha']}: {receipt['reason']}"
+                )
+            elif blocking:
+                if disposition == "NEEDS_SUPERVISOR":
+                    item_blockers.append("REVIEW_ITEM_NEEDS_SUPERVISOR")
+                elif disposition == "MUST_FIX":
+                    item_blockers.append("REVIEW_ITEM_MUST_FIX")
+                _append_disposition_blocker(blockers, disposition)
+        items.append(
+            _review_item(
+                item_id=review_id,
+                source="review",
+                author=author,
+                association=association,
+                body=body,
+                disposition=disposition,
+                blocking=blocking,
+                blockers=item_blockers,
+                rationale=rationale,
+            )
+        )
+    return items
+
+
+def _classify_comments(
+    comments: list[Any],
+    *,
+    source: str,
+    known_reviewers: set[str],
+    trusted_associations: set[str],
+    blockers: list[str],
+    unknowns: list[str],
+    resolved_review_comment_dispositions: dict[str, dict[str, str | bool]] | None = None,
+    trusted_security_approvers: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    items = []
+    resolved_review_comment_dispositions = resolved_review_comment_dispositions or {}
+    trusted_security_approvers = trusted_security_approvers or set()
+    for index, comment in enumerate(comments):
+        if not isinstance(comment, dict):
+            item_id = f"{source}-{index}"
+            _append_once(blockers, "HARVEST_INCOMPLETE")
+            _append_once(
+                unknowns, f"Malformed {source} entry at index {index} (not a mapping)."
+            )
+            items.append(
+                _review_item(
+                    item_id=item_id,
+                    source=source,
+                    author="unknown",
+                    association=None,
+                    body="",
+                    disposition=UNCLASSIFIED_ITEM_DISPOSITION,
+                    blocking=True,
+                    blockers=["HARVEST_INCOMPLETE"],
+                    rationale=f"{source} entry is not a mapping.",
+                )
+            )
+            continue
+        author = _author_login(comment)
+        association = _association(comment)
+        body = str(comment.get("body") or "")
+        item_id = str(comment.get("id") or f"{source}-{index}")
+        item_blockers: list[str] = []
+        linked_resolution = resolved_review_comment_dispositions.get(item_id)
+        if linked_resolution is not None:
+            disposition = str(linked_resolution["disposition"])
+            blocking = bool(linked_resolution["blocking"])
+            rationale = str(linked_resolution["rationale"])
+        elif (
+            source == "issue_comment"
+            and author in trusted_security_approvers
+            and _parse_review_adjudication_receipt(body) is not None
+        ):
+            # A well-formed receipt from a trusted approver is nonblocking on
+            # its own, even when its reason= text quotes a P1/P2 finding from
+            # the review it adjudicates.
+            disposition = "REJECTED_WITH_REASON"
+            blocking = False
+            rationale = (
+                "Recognized review adjudication receipt; comment is nonblocking."
+            )
+        elif not _known_author(author, association, known_reviewers, trusted_associations):
+            disposition = "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION"
+            blocking = True
+            rationale = "Comment author is not in known reviewer config."
+            item_blockers.append("UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION")
+            _append_once(blockers, "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION")
+            _append_once(unknowns, f"Unknown {source} author: {author}")
+        else:
+            disposition, blocking, rationale = _body_disposition(body)
+            if blocking:
+                if disposition == "NEEDS_SUPERVISOR":
+                    item_blockers.append("REVIEW_ITEM_NEEDS_SUPERVISOR")
+                elif disposition == "MUST_FIX":
+                    item_blockers.append("REVIEW_ITEM_MUST_FIX")
+                _append_disposition_blocker(blockers, disposition)
+        items.append(
+            _review_item(
+                item_id=item_id,
+                source=source,
+                author=author,
+                association=association,
+                body=body,
+                disposition=disposition,
+                blocking=blocking,
+                blockers=item_blockers,
+                rationale=rationale,
+            )
+        )
+    return items
+
+
+def _classify_threads(
+    threads: list[Any],
+    *,
+    known_reviewers: set[str],
+    trusted_associations: set[str],
+    blockers: list[str],
+    unknowns: list[str],
+) -> dict[str, list[dict[str, Any]]]:
+    items: list[dict[str, Any]] = []
+    dispositions: list[dict[str, Any]] = []
+    for thread_index, thread in enumerate(threads):
+        if not isinstance(thread, dict):
+            thread_id = f"thread-{thread_index}"
+            _append_once(blockers, "HARVEST_INCOMPLETE")
+            _append_once(
+                unknowns,
+                f"Malformed review_thread entry at index {thread_index} (not a mapping).",
+            )
+            items.append(
+                _review_item(
+                    item_id=thread_id,
+                    source="review_thread",
+                    author="unknown",
+                    association=None,
+                    body="",
+                    disposition=UNCLASSIFIED_ITEM_DISPOSITION,
+                    blocking=True,
+                    blockers=["HARVEST_INCOMPLETE"],
+                    rationale="Thread entry is not a mapping.",
+                )
+            )
+            dispositions.append(
+                {
+                    "thread_id": thread_id,
+                    "is_resolved": False,
+                    "review_item_ids": [thread_id],
+                    "disposition": UNCLASSIFIED_ITEM_DISPOSITION,
+                    "blocking": True,
+                    "rationale": "Thread entry is not a mapping.",
+                }
+            )
+            continue
+        thread_id = str(thread.get("id") or f"thread-{thread_index}")
+        is_resolved = bool(thread.get("isResolved", False))
+        is_outdated = bool(thread.get("isOutdated", False))
+        raw_comments = thread.get("comments")
+        if not isinstance(raw_comments, list):
+            item_id = f"{thread_id}-comments-malformed"
+            _append_once(blockers, "HARVEST_INCOMPLETE")
+            _append_once(
+                unknowns,
+                f"Malformed review_thread.comments for {thread_id} (not a list).",
+            )
+            items.append(
+                _review_item(
+                    item_id=item_id,
+                    source="review_thread",
+                    author="unknown",
+                    association=None,
+                    body="",
+                    disposition=UNCLASSIFIED_ITEM_DISPOSITION,
+                    blocking=True,
+                    blockers=["HARVEST_INCOMPLETE"],
+                    rationale="Thread comments container is not a list.",
+                )
+            )
+            dispositions.append(
+                {
+                    "thread_id": thread_id,
+                    "is_resolved": is_resolved,
+                    "review_item_ids": [item_id],
+                    "disposition": UNCLASSIFIED_ITEM_DISPOSITION,
+                    "blocking": True,
+                    "rationale": "Thread comments container is not a list.",
+                }
+            )
+            continue
+        comments = raw_comments
+        review_item_ids: list[str] = []
+        unknown_author = False
+        has_malformed_comment = False
+        for comment_index, comment in enumerate(comments):
+            if not isinstance(comment, dict):
+                item_id = f"{thread_id}-comment-{comment_index}"
+                review_item_ids.append(item_id)
+                has_malformed_comment = True
+                _append_once(blockers, "HARVEST_INCOMPLETE")
+                _append_once(
+                    unknowns,
+                    f"Malformed review_thread comment at {thread_id}[{comment_index}] "
+                    "(not a mapping).",
+                )
+                items.append(
+                    _review_item(
+                        item_id=item_id,
+                        source="review_thread",
+                        author="unknown",
+                        association=None,
+                        body="",
+                        disposition=UNCLASSIFIED_ITEM_DISPOSITION,
+                        blocking=True,
+                        blockers=["HARVEST_INCOMPLETE"],
+                        rationale="Thread comment is not a mapping.",
+                    )
+                )
+                continue
+            item_id = str(comment.get("id") or f"{thread_id}-comment-{comment_index}")
+            review_item_ids.append(item_id)
+            author = _author_login(comment)
+            association = _association(comment)
+            body = str(comment.get("body") or "")
+            if not _known_author(
+                author, association, known_reviewers, trusted_associations
+            ):
+                unknown_author = True
+                disposition = "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION"
+                blocking = True
+                rationale = "Thread author is not in known reviewer config."
+                _append_once(blockers, "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION")
+                _append_once(unknowns, f"Unknown review_thread author: {author}")
+            elif not is_resolved:
+                disposition = "MUST_FIX"
+                blocking = True
+                rationale = "Active unresolved review thread blocks readiness."
+                _append_once(blockers, "UNRESOLVED_REVIEW_THREAD")
+            elif is_outdated:
+                disposition = "AUTO_APPLIED"
+                blocking = False
+                rationale = "Resolved outdated thread is historical evidence only."
+            else:
+                disposition = "OPTIONAL_DEFERRED"
+                blocking = False
+                rationale = "Resolved thread has no active blocker."
+            items.append(
+                _review_item(
+                    item_id=item_id,
+                    source="review_thread",
+                    author=author,
+                    association=association,
+                    body=body,
+                    disposition=disposition,
+                    blocking=blocking,
+                    rationale=rationale,
+                )
+            )
+        if has_malformed_comment:
+            thread_disposition = UNCLASSIFIED_ITEM_DISPOSITION
+            thread_blocking = True
+            thread_rationale = "Thread contains a malformed comment entry."
+        elif unknown_author:
+            thread_disposition = "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION"
+            thread_blocking = True
+            thread_rationale = "Thread contains an unknown author."
+        elif not is_resolved:
+            thread_disposition = "MUST_FIX"
+            thread_blocking = True
+            thread_rationale = "Unresolved review thread blocks readiness."
+        elif is_outdated:
+            thread_disposition = "AUTO_APPLIED"
+            thread_blocking = False
+            thread_rationale = "Resolved outdated thread is nonblocking evidence."
+        else:
+            thread_disposition = "OPTIONAL_DEFERRED"
+            thread_blocking = False
+            thread_rationale = "Resolved review thread is nonblocking."
+        dispositions.append(
+            {
+                "thread_id": thread_id,
+                "is_resolved": is_resolved,
+                "review_item_ids": review_item_ids,
+                "disposition": thread_disposition,
+                "blocking": thread_blocking,
+                "rationale": thread_rationale,
+            }
+        )
+    return {"items": items, "threads": dispositions}
+
+
+def _resolved_review_comment_dispositions(
+    threads: list[Any],
+) -> dict[str, dict[str, str | bool]]:
+    dispositions: dict[str, dict[str, str | bool]] = {}
+    for thread in threads:
+        if not isinstance(thread, dict) or not bool(thread.get("isResolved", False)):
+            continue
+        raw_comments = thread.get("comments")
+        if not isinstance(raw_comments, list):
+            continue
+        for comment in raw_comments:
+            if not isinstance(comment, dict):
+                continue
+            comment_id = str(comment.get("id") or "")
+            if not comment_id:
+                continue
+            dispositions[comment_id] = {
+                "disposition": "AUTO_APPLIED",
+                "blocking": False,
+                "rationale": "Linked review thread is resolved.",
+            }
+    return dispositions
+
+
+def _is_steward_self_status(check: dict[str, Any] | Any) -> bool:
+    """True only for the exact Steward self-status context name."""
+    if not isinstance(check, dict):
+        return False
+    name = str(check.get("name") or check.get("context") or "")
+    return name == STEWARD_SELF_STATUS_CONTEXT
+
+
+def _classify_checks(
+    checks: list[Any], *, pr_head_sha: str, strict: bool
+) -> dict[str, Any]:
+    items = []
+    payload_checks = []
+    blockers: list[str] = []
+    unknowns: list[str] = []
+    required_count = 0
+    failed_count = 0
+    pending_count = 0
+    unknown_count = 0
+
+    for index, check in enumerate(checks):
+        if not isinstance(check, dict):
+            continue
+        name = str(check.get("name") or check.get("context") or f"check-{index}")
+        required = bool(check.get("isRequired") is True or check.get("required") is True)
+        status = _normalize_status(check.get("status") or check.get("state"))
+        conclusion = _normalize_conclusion(check.get("conclusion"))
+        if conclusion is None and check.get("state") == "FAILURE":
+            conclusion = "failure"
+        url = check.get("detailsUrl") or check.get("targetUrl") or check.get("url")
+        head_sha = str(check.get("headSha") or check.get("head_sha") or pr_head_sha)
+
+        # Preserve self-status in triage payload, but never let it block readiness.
+        # Otherwise a failed prior publish sticky-reds the next Steward run.
+        if _is_steward_self_status(check):
+            payload_checks.append(
+                {
+                    "name": name,
+                    "required": required,
+                    "status": status,
+                    "conclusion": conclusion,
+                    "url": url,
+                    "head_sha": head_sha,
+                    "blocking": False,
+                    "blockers": [],
+                    "rationale": (
+                        "Steward self-status "
+                        f"{STEWARD_SELF_STATUS_CONTEXT!r} retained as harvest "
+                        "evidence but excluded from readiness evaluation."
+                    ),
+                }
+            )
+            continue
+
+        if required:
+            required_count += 1
+
+        blocking = False
+        rationale = "Check is nonblocking or successful."
+        check_blockers: list[str] = []
+        if required and conclusion in FAILED_CHECK_CONCLUSIONS:
+            blocking = True
+            failed_count += 1
+            rationale = "Required check did not succeed."
+            check_blockers.append("FAILED_CHECK")
+            _append_once(blockers, "FAILED_CHECK")
+        elif required and strict and status in PENDING_CHECK_STATUSES:
+            blocking = True
+            pending_count += 1
+            rationale = "Strict mode requires final check state."
+            check_blockers.append("PENDING_CHECK")
+            _append_once(blockers, "PENDING_CHECK")
+        elif required and status == "unknown":
+            blocking = True
+            unknown_count += 1
+            rationale = "Check status is unknown."
+            check_blockers.append("UNKNOWN_CHECK")
+            _append_once(blockers, "UNKNOWN_CHECK")
+            _append_once(unknowns, f"Unknown check status: {name}")
+
+        payload_checks.append(
+            {
+                "name": name,
+                "required": required,
+                "status": status,
+                "conclusion": conclusion,
+                "url": url,
+                "head_sha": head_sha,
+                "blocking": blocking,
+                "blockers": check_blockers,
+                "rationale": rationale,
+            }
+        )
+        if blocking:
+            items.append(
+                _review_item(
+                    item_id=f"ci-{index}-{_slug(name)}",
+                    source="ci_annotation",
+                    author="github-actions[bot]",
+                    association=None,
+                    body=f"{name}: {status}/{conclusion}",
+                    disposition="MUST_FIX",
+                    blocking=True,
+                    blockers=check_blockers,
+                    rationale=rationale,
+                )
+            )
+    return {
+        "checks": payload_checks,
+        "review_items": items,
+        "required_check_count": required_count,
+        "failed_required_count": failed_count,
+        "pending_required_count": pending_count,
+        "unknown_required_count": unknown_count,
+        "blockers": blockers,
+        "unknowns": unknowns,
+    }
+
+
+_READINESS_TO_RISK: dict[str, str] = {
+    "BLOCKED": "CRITICAL",
+    "NEEDS_SUPERVISOR": "HIGH",
+    "NEEDS_IMPLEMENTER": "MEDIUM",
+    "NOT_READY": "LOW",
+    "READY": "CLEAR",
+}
+
+
+def _readiness(blockers: list[str]) -> str:
+    blocker_set = set(blockers)
+    if blocker_set & {"HARVEST_INCOMPLETE", "PR_IS_DRAFT", "PR_CLOSED", "MIXED_SHA_ARTIFACT_SET"}:
+        return "BLOCKED"
+    if any(
+        item.startswith("EMBEDDED_AUDIT_") or item.startswith("SECURITY_RELEASE_")
+        for item in blocker_set
+    ) or blocker_set & {
+        "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION",
+        "PROOF_STALE",
+        "PROOF_MISSING",
+        "PROOF_STALE_OR_MISSING",
+        "UNKNOWN_PR_AUTHOR",
+        "UNKNOWN_CHECK",
+        "REVIEW_ITEM_NEEDS_SUPERVISOR",
+    }:
+        return "NEEDS_SUPERVISOR"
+    if blocker_set & {
+        "UNRESOLVED_REVIEW_THREAD",
+        "FAILED_CHECK",
+        "REQUEST_CHANGES",
+        "REVIEW_ITEM_MUST_FIX",
+    }:
+        return "NEEDS_IMPLEMENTER"
+    if blocker_set & {"PENDING_CHECK"}:
+        return "NOT_READY"
+    return "READY"
+
+
+def _risk_tier(readiness: str) -> str:
+    return _READINESS_TO_RISK.get(readiness, "CRITICAL")
+
+
+def _pr_payload(harvest: dict[str, Any], *, pr_number: int) -> dict[str, Any]:
+    raw = harvest.get("pr") or {}
+    return {
+        "number": int(raw.get("number") or pr_number),
+        "url": str(raw.get("url") or ""),
+        "state": str(raw.get("state") or "UNKNOWN"),
+        "draft": bool(raw.get("isDraft", raw.get("draft", False))),
+        "mergeable": raw.get("mergeable"),
+        "merge_state_status": raw.get("mergeStateStatus"),
+        "review_decision": raw.get("reviewDecision"),
+        "base_ref": str(raw.get("baseRefName") or ""),
+        "base_sha": str(raw.get("baseRefOid") or ""),
+        "head_ref": str(raw.get("headRefName") or ""),
+        "head_sha": str(raw.get("headRefOid") or ""),
+        "author": _author_login(raw),
+        "created_at": raw.get("createdAt"),
+        "updated_at": raw.get("updatedAt"),
+    }
+
+
+def _changed_files(files: list[Any]) -> list[dict[str, Any]]:
+    payload = []
+    for item in files:
+        payload.append(
+            {
+                "path": str(item.get("path") or item.get("filename") or ""),
+                "additions": int(item.get("additions") or 0),
+                "deletions": int(item.get("deletions") or 0),
+                "status": item.get("status"),
+                "previous_path": item.get("previous_path"),
+            }
+        )
+    return payload
+
+
+def _commits(commits: list[Any]) -> list[dict[str, Any]]:
+    payload = []
+    for item in commits:
+        commit = item.get("commit") or item
+        payload.append(
+            {
+                "sha": str(
+                    commit.get("oid")
+                    or commit.get("sha")
+                    or item.get("oid")
+                    or item.get("sha")
+                    or ""
+                ),
+                "message": str(
+                    commit.get("messageHeadline")
+                    or commit.get("message")
+                    or item.get("messageHeadline")
+                    or ""
+                ),
+            }
+        )
+    return payload
+
+
+def _embedded_audit(harvest: dict[str, Any]) -> dict[str, str]:
+    raw = harvest.get("embedded_audit") or {}
+    raw_status = str(raw.get("status") or "").upper()
+    if raw_status in PASSING_AUDITS | BLOCKING_AUDITS:
+        normalized = raw_status
+        was_unknown = False
+    else:
+        normalized = "SKIPPED"
+        was_unknown = bool(raw_status)  # only "unknown" if upstream supplied a non-empty bad value
+    return {
+        "status": normalized,
+        "report_path": str(raw.get("report_path") or ""),
+        # `_raw_status` is internal; the caller uses it to add the
+        # EMBEDDED_AUDIT_UNKNOWN blocker, then strips it before serializing.
+        "_raw_status": raw_status if was_unknown else "",
+    }
+
+
+def _detect_mixed_sha_checks(checks: list[Any], *, pr_head_sha: str) -> bool:
+    for check in checks:
+        if not isinstance(check, dict):
+            continue
+        # Self-status is Steward-published evidence, not foreign SHA noise.
+        if _is_steward_self_status(check):
+            continue
+        raw_sha = check.get("headSha") or check.get("head_sha")
+        sha = (raw_sha or "").strip() if isinstance(raw_sha, str) else ""
+        if sha and sha != pr_head_sha:
+            return True
+    return False
+
+
+def _proof(harvest: dict[str, Any], *, pr_head_sha: str | None = None) -> dict[str, Any]:
+    raw = harvest.get("proof") or {}
+    proof_head_sha = raw.get("proof_head_sha")
+    proof_path = str(raw.get("proof_path") or "")
+    matches = (
+        bool(proof_head_sha and proof_head_sha == pr_head_sha)
+        if pr_head_sha
+        else bool(raw.get("matches_pr_head", False))
+    )
+    raw_freshness = raw.get("proof_freshness")
+    self_reference_exception = (
+        raw_freshness.get("self_reference_exception")
+        if isinstance(raw_freshness, dict)
+        and isinstance(raw_freshness.get("self_reference_exception"), dict)
+        else None
+    )
+    if isinstance(raw_freshness, dict):
+        raw_status = str(raw_freshness.get("status") or "UNKNOWN")
+        if raw_status == "CURRENT_WITH_SELF_REFERENCE_EXCEPTION" and not matches:
+            freshness = _proof_freshness_payload(
+                status=raw_status,
+                proof_head_sha=proof_head_sha,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason="Proof freshness requires self-reference exception validation.",
+            )
+            freshness["self_reference_exception"] = self_reference_exception
+        elif not proof_head_sha and not proof_path:
+            freshness = _proof_freshness_payload(
+                status="MISSING",
+                proof_head_sha=None,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason="Proof file was not provided.",
+            )
+        elif not proof_head_sha:
+            freshness = _proof_freshness_payload(
+                status="MISSING",
+                proof_head_sha=None,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason="Proof head SHA missing.",
+            )
+        elif matches:
+            freshness = _proof_freshness_payload(
+                status="CURRENT",
+                proof_head_sha=proof_head_sha,
+                pr_head_sha=pr_head_sha,
+                matches=True,
+                reason="Proof head SHA matches PR head SHA.",
+            )
+        else:
+            freshness = _proof_freshness_payload(
+                status="STALE",
+                proof_head_sha=proof_head_sha,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason="Proof head SHA does not match PR head SHA.",
+            )
+    elif isinstance(raw_freshness, str) and raw_freshness:
+        if not proof_head_sha and not proof_path:
+            freshness = _proof_freshness_payload(
+                status="MISSING",
+                proof_head_sha=None,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason="Proof file was not provided.",
+            )
+        elif not proof_head_sha:
+            freshness = _proof_freshness_payload(
+                status="MISSING",
+                proof_head_sha=None,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason="Proof head SHA missing.",
+            )
+        elif matches:
+            freshness = _proof_freshness_payload(
+                status="CURRENT",
+                proof_head_sha=proof_head_sha,
+                pr_head_sha=pr_head_sha,
+                matches=True,
+                reason="Proof head SHA matches PR head SHA.",
+            )
+        else:
+            freshness = _proof_freshness_payload(
+                status="STALE",
+                proof_head_sha=proof_head_sha,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason="Proof head SHA does not match PR head SHA.",
+            )
+    else:
+        if not proof_head_sha and not proof_path:
+            freshness = _proof_freshness_payload(
+                status="MISSING",
+                proof_head_sha=None,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason="Proof file was not provided.",
+            )
+        elif not proof_head_sha:
+            # proof_path present but no verifiable SHA — cannot confirm freshness, treat as MISSING.
+            freshness = _proof_freshness_payload(
+                status="MISSING",
+                proof_head_sha=None,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason="Proof head SHA missing.",
+            )
+        elif proof_head_sha and matches:
+            freshness = _proof_freshness_payload(
+                status="CURRENT",
+                proof_head_sha=proof_head_sha,
+                pr_head_sha=pr_head_sha,
+                matches=True,
+                reason="Proof head SHA matches PR head SHA.",
+            )
+        else:
+            freshness = _proof_freshness_payload(
+                status="STALE",
+                proof_head_sha=proof_head_sha,
+                pr_head_sha=pr_head_sha,
+                matches=False,
+                reason="Proof head SHA does not match PR head SHA.",
+            )
+    return {
+        "proof_path": proof_path,
+        "proof_head_sha": proof_head_sha,
+        "matches_pr_head": matches,
+        "proof_freshness": freshness,
+    }
+
+
+def _proof_freshness_payload(
+    *,
+    status: str,
+    proof_head_sha: str | None,
+    pr_head_sha: str | None,
+    matches: bool,
+    reason: str = "",
+) -> ProofFreshness:
+    normalized = "CURRENT" if status == "FRESH" else status
+    return ProofFreshness(
+        {
+            "status": normalized,
+            "matches_pr_head": matches,
+            "reason": reason,
+            "proof_recorded_sha": proof_head_sha,
+            "pr_head_sha": pr_head_sha,
+            "self_reference_exception": None,
+        }
+    )
+
+
+def _proof_status(proof: dict[str, Any]) -> str:
+    freshness = proof.get("proof_freshness")
+    if isinstance(freshness, dict):
+        return str(freshness.get("status") or "UNKNOWN")
+    if freshness == "FRESH":
+        return "CURRENT"
+    return str(freshness or "UNKNOWN")
+
+
+def _valid_self_reference_exception(
+    proof: dict[str, Any],
+    *,
+    changed_files: list[dict[str, Any]],
+    embedded_audit_status: str,
+) -> bool:
+    freshness = proof.get("proof_freshness")
+    if not isinstance(freshness, dict):
+        return False
+    exception = freshness.get("self_reference_exception")
+    if not isinstance(exception, dict):
+        return False
+    if exception.get("supervisor_accepted") is not True:
+        return False
+    if embedded_audit_status not in PASSING_AUDITS:
+        return False
+    changed_paths = sorted(
+        {str(item.get("path") or "") for item in changed_files if item.get("path")}
+    )
+    exception_paths = sorted(
+        {str(item) for item in exception.get("changed_files") or [] if item}
+    )
+    if not changed_paths or changed_paths != exception_paths:
+        return False
+    return all(path.startswith("proof/") for path in changed_paths)
+
+
+def _body_disposition(body: str) -> tuple[str, bool, str]:
+    lowered = body.lower()
+    if re.search(r"\bp1\b", lowered):
+        return "MUST_FIX", True, "P1 review item blocks readiness."
+    if re.search(r"\bp2\b", lowered):
+        return "MUST_FIX", True, "P2 review item blocks unless documented nonblocking."
+    if "needs supervisor" in lowered:
+        return "NEEDS_SUPERVISOR", True, "Comment requests supervisor review."
+    if "out of scope" in lowered or "follow-up" in lowered:
+        return (
+            "OUT_OF_SCOPE_FOLLOWUP",
+            False,
+            "Comment is explicitly documented as follow-up.",
+        )
+    if "rejected" in lowered and "reason" in lowered:
+        return "REJECTED_WITH_REASON", False, "Comment records a rejected item."
+    return "OPTIONAL_DEFERRED", False, "Known author comment is classified nonblocking."
+
+
+def _parse_review_adjudication_receipt(body: str) -> dict[str, str] | None:
+    """Parse a strict PR_STEWARD_REVIEW_ADJUDICATION_V1 receipt body.
+
+    Returns the parsed fields, or None if the body is not a well-formed
+    receipt. Malformed input must never raise and must never partially
+    apply — callers treat None as "no receipt here" and fall back to
+    ordinary classification.
+    """
+    lines = [line.strip() for line in body.splitlines()]
+    if REVIEW_ADJUDICATION_RECEIPT_MARKER not in lines:
+        return None
+    marker_index = lines.index(REVIEW_ADJUDICATION_RECEIPT_MARKER)
+    fields: dict[str, str] = {}
+    for line in lines[marker_index + 1 :]:
+        if not line:
+            continue
+        match = _REVIEW_ADJUDICATION_FIELD_RE.match(line)
+        if not match:
+            continue
+        key, value = match.group(1), match.group(2).strip()
+        if key not in fields:
+            fields[key] = value
+    required = {"review_id", "head_sha", "disposition", "reason"}
+    if not required.issubset(fields):
+        return None
+    if fields["disposition"] != "REJECTED_WITH_REASON":
+        return None
+    if not fields["review_id"] or not fields["reason"]:
+        return None
+    if not _FULL_SHA_RE.match(fields["head_sha"]):
+        return None
+    return fields
+
+
+def _find_review_adjudication(
+    *,
+    review_id: str,
+    issue_comments: list[Any],
+    pr_head_sha: str,
+    trusted_approvers: set[str],
+    unknowns: list[str],
+) -> dict[str, str] | None:
+    """Find exactly one eligible, non-conflicting adjudication receipt.
+
+    Eligibility (all required): the receipt lives in a top-level issue
+    comment; its author login is trusted; it names this review_id; its
+    head_sha exactly equals the current PR head; it is well-formed with a
+    non-empty reason. Zero matches or two-or-more conflicting matches both
+    fail closed to None so the review's normal classification stands.
+
+    "Conflicting" is judged on the raw comment body, not the parsed fields:
+    two receipts are the same decision only when their comment bodies are
+    byte-identical, regardless of which trusted approver posted each one.
+    Any byte-level difference between eligible bodies is a conflict, even
+    if the two happen to parse to identical review_id/head_sha/disposition/
+    reason values (e.g. one has extra surrounding text) — parsing the same
+    does not make them the same receipt.
+    """
+    eligible: list[dict[str, str]] = []
+    for comment in issue_comments:
+        if not isinstance(comment, dict):
+            continue
+        author = _author_login(comment)
+        if author not in trusted_approvers:
+            continue
+        body = str(comment.get("body") or "")
+        receipt = _parse_review_adjudication_receipt(body)
+        if receipt is None:
+            continue
+        if receipt["review_id"] != review_id or receipt["head_sha"] != pr_head_sha:
+            continue
+        eligible.append({**receipt, "adjudicator": author, "_body": body})
+
+    if not eligible:
+        return None
+    distinct_bodies = {r["_body"] for r in eligible}
+    if len(distinct_bodies) != 1:
+        _append_once(
+            unknowns,
+            f"Conflicting review adjudication receipts for review {review_id} at "
+            f"head {pr_head_sha}; original classification retained.",
+        )
+        return None
+    return {k: v for k, v in eligible[0].items() if k != "_body"}
+
+
+def _append_disposition_blocker(blockers: list[str], disposition: str) -> None:
+    if disposition == "NEEDS_SUPERVISOR":
+        _append_once(blockers, "REVIEW_ITEM_NEEDS_SUPERVISOR")
+    elif disposition == "MUST_FIX":
+        _append_once(blockers, "REVIEW_ITEM_MUST_FIX")
+
+
+def _review_item(
+    *,
+    item_id: str,
+    source: str,
+    author: str,
+    association: str | None,
+    body: str,
+    disposition: str,
+    blocking: bool,
+    rationale: str,
+    blockers: list[str] | None = None,
+) -> dict[str, Any]:
+    return {
+        "id": item_id,
+        "source": source,
+        "author": author,
+        "association": association,
+        "body": body,
+        "disposition": disposition,
+        "blocking": blocking,
+        "blockers": blockers or [],
+        "rationale": rationale,
+    }
+
+
+
+def _normalize_bot_login(login: str) -> str:
+    """Canonicalize a GitHub bot login by dropping app/ prefix for dependabot or [bot] suffix.
+
+    GitHub renders the same bot identity inconsistently across APIs/UI
+    (``app/dependabot`` vs ``dependabot`` vs ``dependabot[bot]``); comparing
+    on the normalized form avoids needing a literal roster entry per variant.
+    """
+    if login in ("app/dependabot", "app/dependabot[bot]"):
+        return "dependabot"
+    return login[: -len("[bot]")] if login.endswith("[bot]") else login
+
+
+def _known_author(
+    author: str,
+    association: str | None,
+    known_reviewers: set[str],
+    trusted_associations: set[str],
+) -> bool:
+    if str(association or "").upper() in trusted_associations:
+        return True
+    # Only the candidate login is normalized, never the roster: a roster entry
+    # stored as "foo[bot]" must not also match a bare human login "foo" that
+    # happens to reclaim the un-suffixed name.
+    # API variants that omit "[bot]" (e.g. ddd-release-gate review author) must
+    # be listed explicitly as bare logins in known_reviewers.json.
+    return author in known_reviewers or _normalize_bot_login(author) in known_reviewers
+
+
+def _author_login(payload: dict[str, Any]) -> str:
+    author = payload.get("author")
+    if isinstance(author, dict):
+        return str(author.get("login") or "unknown")
+    return str(payload.get("login") or "unknown")
+
+
+def _association(payload: dict[str, Any]) -> str | None:
+    value = payload.get("authorAssociation") or payload.get("author_association")
+    if value is None:
+        return None
+    return str(value)
+
+
+def _normalize_status(value: Any) -> str:
+    status = str(value or "unknown").lower()
+    return {
+        "completed": "completed",
+        "success": "completed",
+        "failure": "completed",
+        "queued": "queued",
+        "in_progress": "in_progress",
+        "requested": "requested",
+        "waiting": "waiting",
+        "pending": "pending",
+    }.get(status, "unknown")
+
+
+def _normalize_conclusion(value: Any) -> str | None:
+    if value is None:
+        return None
+    conclusion = str(value).lower()
+    if conclusion == "success":
+        return "success"
+    if conclusion == "failure":
+        return "failure"
+    return conclusion
+
+
+def _excerpt(body: str) -> str:
+    return re.sub(r"\s+", " ", body).strip()[:240]
+
+
+def _slug(value: str) -> str:
+    return re.sub(r"[^a-zA-Z0-9]+", "-", value).strip("-").lower() or "check"
+
+
+def _ensure_list(
+    value: Any, *, label: str, blockers: list[str], unknowns: list[str]
+) -> list[Any]:
+    """Normalize a harvest field to a list, blocking on a present-but-wrong type.
+
+    A missing field (None) is normal harvest shape and yields an empty list
+    silently; a field that is present but not a list is a malformed harvest
+    and must block readiness rather than crash or silently drop data.
+    """
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    _append_once(blockers, "HARVEST_INCOMPLETE")
+    _append_once(
+        unknowns, f"Harvest field {label!r} is not a list (got {type(value).__name__})."
+    )
+    return []
+
+
+def _review_source_item_count(
+    *,
+    reviews: list[Any],
+    issue_comments: list[Any],
+    review_comments: list[Any],
+    review_threads: list[Any],
+) -> int:
+    """Expected review-ledger item count, mirroring the classify_* item yield.
+
+    Each raw entry in reviews/issue_comments/review_comments yields exactly
+    one ledger item. Each review_thread yields one item per comment (or a
+    single unclassified item if the thread or its comments container is
+    malformed) — this must stay in lockstep with `_classify_threads`.
+    """
+    count = len(reviews) + len(issue_comments) + len(review_comments)
+    for thread in review_threads:
+        if not isinstance(thread, dict):
+            count += 1
+            continue
+        comments = thread.get("comments")
+        count += len(comments) if isinstance(comments, list) else 1
+    return count
+
+
+def _append_once(items: list[str], value: str) -> None:
+    if value not in items:
+        items.append(value)
+
+
+def _extend_once(items: list[str], values: list[str]) -> None:
+    for value in values:
+        _append_once(items, value)
+
+
+def _raw_list(items: list[Any]) -> list[dict[str, Any]]:
+    return [item for item in items if isinstance(item, dict)]
+
+
+def _summary(readiness: dict[str, Any]) -> str:
+    blockers = readiness["blockers"] or ["none"]
+    unknowns = readiness["unknowns"] or ["none"]
+    blocker_lines = "\n".join(f"- {item}" for item in blockers)
+    unknown_lines = "\n".join(f"- {item}" for item in unknowns)
+    return (
+        "# PR Steward Summary\n\n"
+        f"- PR: {readiness['pr']['number']}\n"
+        f"- readiness: {readiness['readiness']}\n"
+        f"- risk_tier: {readiness['risk_tier']}\n"
+        "- mutation_performed: false\n\n"
+        "## Blockers\n\n"
+        f"{blocker_lines}\n\n"
+        "## UNKNOWN\n\n"
+        f"{unknown_lines}\n"
+    )
+```
+
+## Full current state of tests/pr_steward/test_commented_review_adjudication.py
+
+```python
+"""TP-DMX-PR-STEWARD-COMMENTED-REVIEW-ADJUDICATION-001.
+
+A trusted security-release approver may post a top-level issue comment
+formatted as a PR_STEWARD_REVIEW_ADJUDICATION_V1 receipt to reclassify one
+exact COMMENTED review, at one exact PR head, as REJECTED_WITH_REASON /
+nonblocking. Every other review state (CHANGES_REQUESTED above all),
+unresolved threads, CI, audit, and security-release blockers are untouched.
+"""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from tools.pr_steward.classifier import build_artifacts
+
+REPO = "DDD-Enterprises/dopemux-mvp"
+PR_NUMBER = 1287
+HEAD_SHA = "b69bf6cb1e47e8db9d071c5548d14462c0092a31"
+OTHER_HEAD_SHA = "0123456789abcdef0123456789abcdef01234567"
+REVIEW_ID = "PRR_kwDOPyIw988AAAABLPwIjQ"
+TRUSTED_APPROVER = "hu3mann"
+SECOND_TRUSTED_APPROVER = "second-trusted-approver"
+UNTRUSTED_APPROVER = "copilot-pull-request-reviewer"
+ROOT = Path(__file__).resolve().parents[2]
+REAL_KNOWN_REVIEWERS_PATH = ROOT / "tools" / "pr_steward" / "known_reviewers.json"
+
+
+def _known_reviewers_with_two_approvers(tmp_path: Path) -> Path:
+    path = tmp_path / "known_reviewers.json"
+    path.write_text(
+        json.dumps(
+            {
+                "known_reviewers": [
+                    "hu3mann",
+                    "chatgpt-codex-connector",
+                    SECOND_TRUSTED_APPROVER,
+                ],
+                "trusted_author_associations": ["OWNER", "MEMBER", "COLLABORATOR"],
+                "trusted_security_release_approvers": [
+                    TRUSTED_APPROVER,
+                    SECOND_TRUSTED_APPROVER,
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def _receipt_body(
+    *,
+    review_id: str = REVIEW_ID,
+    head_sha: str = HEAD_SHA,
+    disposition: str = "REJECTED_WITH_REASON",
+    reason: str = "Historical P2 finding already resolved by later commits.",
+) -> str:
+    return (
+        "PR_STEWARD_REVIEW_ADJUDICATION_V1\n"
+        f"review_id={review_id}\n"
+        f"head_sha={head_sha}\n"
+        f"disposition={disposition}\n"
+        f"reason={reason}\n"
+    )
+
+
+def _base_harvest(
+    *,
+    review_state: str = "COMMENTED",
+    review_body: str = "P2: flagging this for follow-up before merge.",
+    reviews: list[dict] | None = None,
+    issue_comments: list[dict] | None = None,
+) -> dict:
+    if reviews is None:
+        reviews = [
+            {
+                "id": REVIEW_ID,
+                "state": review_state,
+                "body": review_body,
+                "author": {"login": "chatgpt-codex-connector"},
+                "authorAssociation": None,
+                "submittedAt": "2026-08-28T09:15:45Z",
+                "commit": {"oid": "08395a7d17c2f66bf34794e6d01ea6b91074ecef"},
+            }
+        ]
+    return {
+        "harvest_complete": True,
+        "harvest_errors": [],
+        "pr": {
+            "number": PR_NUMBER,
+            "url": f"https://github.com/{REPO}/pull/{PR_NUMBER}",
+            "state": "OPEN",
+            "isDraft": True,
+            "mergeable": "MERGEABLE",
+            "mergeStateStatus": "BLOCKED",
+            "reviewDecision": "COMMENTED",
+            "baseRefName": "main",
+            "baseRefOid": "base000000000000000000000000000000000000",
+            "headRefName": "codex/pr-steward-followup",
+            "headRefOid": HEAD_SHA,
+            "author": {"login": "hu3mann", "authorAssociation": "OWNER"},
+            "createdAt": "2026-08-20T01:00:00Z",
+            "updatedAt": "2026-09-01T02:00:00Z",
+        },
+        "changed_files": [{"path": "tools/pr_steward/intake.py", "additions": 1}],
+        "commits": [{"oid": HEAD_SHA, "messageHeadline": "test"}],
+        "reviews": reviews,
+        "review_comments": [],
+        "review_threads": [],
+        "issue_comments": issue_comments or [],
+        "checks": [
+            {
+                "name": "unit",
+                "status": "COMPLETED",
+                "conclusion": "success",
+                "headSha": HEAD_SHA,
+            }
+        ],
+        "proof": {
+            "proof_path": "proof/PROOF.json",
+            "proof_head_sha": HEAD_SHA,
+            "matches_pr_head": True,
+        },
+        "embedded_audit": {
+            "status": "PASS",
+            "report_path": "proof/AUDITOR_REPORT.md",
+        },
+    }
+
+
+def _artifacts(
+    harvest: dict, known_reviewers_path: Path = REAL_KNOWN_REVIEWERS_PATH
+) -> dict:
+    return build_artifacts(
+        harvest,
+        repo=REPO,
+        pr_number=PR_NUMBER,
+        strict=True,
+        allow_closed=True,
+        known_reviewers_path=known_reviewers_path,
+    )
+
+
+def _review_item(ledger: dict, item_id: str = REVIEW_ID) -> dict:
+    matches = [item for item in ledger["items"] if item["id"] == item_id]
+    assert len(matches) == 1, f"expected exactly one ledger item for {item_id}"
+    return matches[0]
+
+
+class TestNoReceipt:
+    def test_commented_p2_review_with_no_receipt_is_must_fix(self) -> None:
+        harvest = _base_harvest()
+        artifacts = _artifacts(harvest)
+        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
+        assert item["disposition"] == "MUST_FIX"
+        assert item["blocking"] is True
+        assert "REVIEW_ITEM_MUST_FIX" in artifacts["MERGE_READINESS.json"]["blockers"]
+
+
+class TestValidReceipt:
+    def test_valid_trusted_exact_head_receipt_clears_the_review(self) -> None:
+        harvest = _base_harvest(
+            issue_comments=[
+                {
+                    "id": "ic-1",
+                    "body": _receipt_body(),
+                    "author": {"login": TRUSTED_APPROVER},
+                    "authorAssociation": "OWNER",
+                }
+            ]
+        )
+        artifacts = _artifacts(harvest)
+        ledger = artifacts["REVIEW_ITEM_LEDGER.json"]
+        item = _review_item(ledger, REVIEW_ID)
+        # Original review preserved: same id, unchanged body.
+        assert item["body"] == "P2: flagging this for follow-up before merge."
+        assert item["disposition"] == "REJECTED_WITH_REASON"
+        assert item["blocking"] is False
+        assert (
+            "REVIEW_ITEM_MUST_FIX" not in artifacts["MERGE_READINESS.json"]["blockers"]
+        )
+
+
+class TestWrongHead:
+    def test_receipt_bound_to_stale_head_does_not_clear(self) -> None:
+        harvest = _base_harvest(
+            issue_comments=[
+                {
+                    "id": "ic-1",
+                    "body": _receipt_body(head_sha=OTHER_HEAD_SHA),
+                    "author": {"login": TRUSTED_APPROVER},
+                }
+            ]
+        )
+        artifacts = _artifacts(harvest)
+        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
+        assert item["disposition"] == "MUST_FIX"
+        assert item["blocking"] is True
+
+
+class TestWrongReviewId:
+    def test_receipt_for_a_different_review_does_not_clear(self) -> None:
+        harvest = _base_harvest(
+            issue_comments=[
+                {
+                    "id": "ic-1",
+                    "body": _receipt_body(review_id="PRR_someOtherReviewNodeId"),
+                    "author": {"login": TRUSTED_APPROVER},
+                }
+            ]
+        )
+        artifacts = _artifacts(harvest)
+        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
+        assert item["disposition"] == "MUST_FIX"
+        assert item["blocking"] is True
+
+
+class TestUntrustedAuthor:
+    def test_receipt_from_untrusted_author_does_not_clear(self) -> None:
+        harvest = _base_harvest(
+            issue_comments=[
+                {
+                    "id": "ic-1",
+                    "body": _receipt_body(),
+                    "author": {"login": UNTRUSTED_APPROVER},
+                }
+            ]
+        )
+        artifacts = _artifacts(harvest)
+        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
+        assert item["disposition"] == "MUST_FIX"
+        assert item["blocking"] is True
+
+
+class TestMalformedReceipt:
+    def test_malformed_receipt_does_not_clear(self) -> None:
+        malformed = (
+            "PR_STEWARD_REVIEW_ADJUDICATION_V1\n"
+            f"review_id={REVIEW_ID}\n"
+            f"head_sha={HEAD_SHA}\n"
+            "disposition=REJECTED_WITH_REASON\n"
+            # reason= line omitted entirely -> malformed
+        )
+        harvest = _base_harvest(
+            issue_comments=[
+                {"id": "ic-1", "body": malformed, "author": {"login": TRUSTED_APPROVER}}
+            ]
+        )
+        artifacts = _artifacts(harvest)
+        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
+        assert item["disposition"] == "MUST_FIX"
+        assert item["blocking"] is True
+
+    def test_short_head_sha_does_not_clear(self) -> None:
+        malformed = _receipt_body(head_sha="b69bf6c")
+        harvest = _base_harvest(
+            issue_comments=[
+                {"id": "ic-1", "body": malformed, "author": {"login": TRUSTED_APPROVER}}
+            ]
+        )
+        artifacts = _artifacts(harvest)
+        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
+        assert item["disposition"] == "MUST_FIX"
+        assert item["blocking"] is True
+
+
+class TestConflictingReceipts:
+    def test_two_conflicting_eligible_receipts_do_not_clear(self) -> None:
+        harvest = _base_harvest(
+            issue_comments=[
+                {
+                    "id": "ic-1",
+                    "body": _receipt_body(reason="First adjudication reason."),
+                    "author": {"login": TRUSTED_APPROVER},
+                },
+                {
+                    "id": "ic-2",
+                    "body": _receipt_body(reason="Second, conflicting reason."),
+                    "author": {"login": TRUSTED_APPROVER},
+                },
+            ]
+        )
+        artifacts = _artifacts(harvest)
+        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
+        assert item["disposition"] == "MUST_FIX"
+        assert item["blocking"] is True
+
+    def test_duplicate_identical_receipts_are_not_a_conflict(self) -> None:
+        body = _receipt_body()
+        harvest = _base_harvest(
+            issue_comments=[
+                {"id": "ic-1", "body": body, "author": {"login": TRUSTED_APPROVER}},
+                {"id": "ic-2", "body": body, "author": {"login": TRUSTED_APPROVER}},
+            ]
+        )
+        artifacts = _artifacts(harvest)
+        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
+        assert item["disposition"] == "REJECTED_WITH_REASON"
+        assert item["blocking"] is False
+
+    def test_byte_identical_body_from_two_different_trusted_authors_is_not_a_conflict(
+        self, tmp_path: Path
+    ) -> None:
+        # Conflict detection compares raw comment bytes, not (fields, author)
+        # tuples: two different trusted approvers independently posting the
+        # exact same receipt text is corroboration, not a conflict.
+        known = _known_reviewers_with_two_approvers(tmp_path)
+        body = _receipt_body()
+        harvest = _base_harvest(
+            issue_comments=[
+                {"id": "ic-1", "body": body, "author": {"login": TRUSTED_APPROVER}},
+                {
+                    "id": "ic-2",
+                    "body": body,
+                    "author": {"login": SECOND_TRUSTED_APPROVER},
+                },
+            ]
+        )
+        artifacts = _artifacts(harvest, known_reviewers_path=known)
+        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
+        assert item["disposition"] == "REJECTED_WITH_REASON"
+        assert item["blocking"] is False
+
+    def test_same_parsed_fields_but_different_raw_bytes_is_a_conflict(self) -> None:
+        # Two comments that parse to identical review_id/head_sha/disposition/
+        # reason but differ in surrounding bytes are NOT the same receipt:
+        # parsing the same must not substitute for being the same comment.
+        first = _receipt_body()
+        second = first + "\n<!-- reposted via web UI -->\n"
+        assert first != second
+        harvest = _base_harvest(
+            issue_comments=[
+                {"id": "ic-1", "body": first, "author": {"login": TRUSTED_APPROVER}},
+                {"id": "ic-2", "body": second, "author": {"login": TRUSTED_APPROVER}},
+            ]
+        )
+        artifacts = _artifacts(harvest)
+        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
+        assert item["disposition"] == "MUST_FIX"
+        assert item["blocking"] is True
+
+
+class TestChangesRequestedNeverOverridable:
+    def test_changes_requested_stays_blocking_despite_valid_receipt(self) -> None:
+        harvest = _base_harvest(
+            review_state="CHANGES_REQUESTED",
+            issue_comments=[
+                {
+                    "id": "ic-1",
+                    "body": _receipt_body(),
+                    "author": {"login": TRUSTED_APPROVER},
+                }
+            ],
+        )
+        artifacts = _artifacts(harvest)
+        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
+        assert item["disposition"] == "MUST_FIX"
+        assert item["blocking"] is True
+        assert "REQUEST_CHANGES" in artifacts["MERGE_READINESS.json"]["blockers"]
+
+
+class TestUnresolvedThreadUnaffected:
+    def test_unresolved_thread_remains_blocking_alongside_a_cleared_review(
+        self,
+    ) -> None:
+        harvest = _base_harvest(
+            issue_comments=[
+                {
+                    "id": "ic-1",
+                    "body": _receipt_body(),
+                    "author": {"login": TRUSTED_APPROVER},
+                }
+            ],
+        )
+        harvest["review_threads"] = [
+            {
+                "id": "thread-1",
+                "isResolved": False,
+                "isOutdated": False,
+                "comments": {
+                    "nodes": [
+                        {
+                            "id": "rc-1",
+                            "body": "P1: unresolved concern.",
+                            "author": {"login": "chatgpt-codex-connector"},
+                        }
+                    ]
+                },
+            }
+        ]
+        artifacts = _artifacts(harvest)
+        merge_readiness = artifacts["MERGE_READINESS.json"]
+        review_item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
+        assert review_item["disposition"] == "REJECTED_WITH_REASON"
+        assert review_item["blocking"] is False
+        assert merge_readiness["readiness"] != "READY"
+
+
+class TestReceiptCommentItselfIsNonblocking:
+    def test_receipt_comment_is_nonblocking_even_when_reason_quotes_p2(self) -> None:
+        harvest = _base_harvest(
+            issue_comments=[
+                {
+                    "id": "ic-1",
+                    "body": _receipt_body(
+                        reason="The historical P2 finding no longer applies."
+                    ),
+                    "author": {"login": TRUSTED_APPROVER},
+                }
+            ]
+        )
+        artifacts = _artifacts(harvest)
+        comment_item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"], "ic-1")
+        assert comment_item["disposition"] == "REJECTED_WITH_REASON"
+        assert comment_item["blocking"] is False
+
+
+class TestLedgerConservation:
+    def test_ledger_item_count_matches_harvest_after_clearance(self) -> None:
+        harvest = _base_harvest(
+            issue_comments=[
+                {
+                    "id": "ic-1",
+                    "body": _receipt_body(),
+                    "author": {"login": TRUSTED_APPROVER},
+                }
+            ]
+        )
+        artifacts = _artifacts(harvest)
+        ledger = artifacts["REVIEW_ITEM_LEDGER.json"]
+        assert len(ledger["items"]) == len(harvest["reviews"]) + len(
+            harvest["issue_comments"]
+        )
+        assert ledger["unclassified_count"] == 0
+        assert "HARVEST_INCOMPLETE" not in artifacts["MERGE_READINESS.json"]["blockers"]
+```
+
+## Your task
+
+1. Verify the diff and full file match what is described above.
+2. For EACH of the 10 invariants listed, state HOLDS or BROKEN with a concrete
+   file:line citation from the classifier.py content above. "BROKEN" requires a
+   concrete input/state that breaks it — not a hypothetical category of concern.
+3. Actively try to find something NEITHER prior review round found: consider unicode
+   edge cases in the receipt-line regex, multiple marker lines in one comment body,
+   case-sensitivity in disposition/head_sha comparison, whether `_author_login` can be
+   spoofed by a payload shape neither reviewer considered, whether the `_body` field
+   could leak through any path other than the direct return value, and whether the
+   fix's raw-byte comparison could be defeated by GitHub-side comment editing/History
+   or pagination duplicating a comment object.
+4. State whether the 15 tests in test_commented_review_adjudication.py actually
+   exercise what they claim to (spot-check at least 3 of them against the classifier
+   logic by hand).
+5. Give a final verdict: PASS, PASS_WITH_RISKS, FAIL, or NEEDS_SUPERVISOR. If FAIL or
+   NEEDS_SUPERVISOR, be precise about exactly what must change.
+
+Do not fabricate confidence. If you cannot fully verify something from the material
+given, say UNKNOWN explicitly rather than assuming it is fine.
