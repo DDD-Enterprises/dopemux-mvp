@@ -108,9 +108,11 @@ failure fails closed and leaves the review's ordinary classification
 - the receipt is well-formed (all four fields present, `disposition` is
   exactly `REJECTED_WITH_REASON`, `reason` non-empty, `head_sha` is a
   40-character hex string);
-- exactly one distinct eligible receipt exists for that `(review_id,
-  head_sha)` pair — byte-identical duplicates count once, but two or more
-  receipts with different content are a conflict and clear nothing.
+- exactly one distinct eligible receipt comment body exists for that
+  `(review_id, head_sha)` pair, regardless of which trusted approver posted
+  it — comparison is on the raw comment body byte-for-byte, not on the
+  parsed fields, so two comments that parse to the same fields but differ
+  in surrounding text still conflict, and clear nothing.
 
 A valid receipt preserves the original review's ledger entry (same `id`,
 unchanged `body`) and only changes `disposition`, `blocking`, and

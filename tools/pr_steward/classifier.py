@@ -1406,6 +1406,14 @@ def _find_review_adjudication(
     head_sha exactly equals the current PR head; it is well-formed with a
     non-empty reason. Zero matches or two-or-more conflicting matches both
     fail closed to None so the review's normal classification stands.
+
+    "Conflicting" is judged on the raw comment body, not the parsed fields:
+    two receipts are the same decision only when their comment bodies are
+    byte-identical, regardless of which trusted approver posted each one.
+    Any byte-level difference between eligible bodies is a conflict, even
+    if the two happen to parse to identical review_id/head_sha/disposition/
+    reason values (e.g. one has extra surrounding text) — parsing the same
+    does not make them the same receipt.
     """
     eligible: list[dict[str, str]] = []
     for comment in issue_comments:
@@ -1414,27 +1422,25 @@ def _find_review_adjudication(
         author = _author_login(comment)
         if author not in trusted_approvers:
             continue
-        receipt = _parse_review_adjudication_receipt(str(comment.get("body") or ""))
+        body = str(comment.get("body") or "")
+        receipt = _parse_review_adjudication_receipt(body)
         if receipt is None:
             continue
         if receipt["review_id"] != review_id or receipt["head_sha"] != pr_head_sha:
             continue
-        eligible.append({**receipt, "adjudicator": author})
+        eligible.append({**receipt, "adjudicator": author, "_body": body})
 
     if not eligible:
         return None
-    signatures = {
-        (r["review_id"], r["head_sha"], r["disposition"], r["reason"], r["adjudicator"])
-        for r in eligible
-    }
-    if len(signatures) != 1:
+    distinct_bodies = {r["_body"] for r in eligible}
+    if len(distinct_bodies) != 1:
         _append_once(
             unknowns,
             f"Conflicting review adjudication receipts for review {review_id} at "
             f"head {pr_head_sha}; original classification retained.",
         )
         return None
-    return eligible[0]
+    return {k: v for k, v in eligible[0].items() if k != "_body"}
 
 
 def _append_disposition_blocker(blockers: list[str], disposition: str) -> None:

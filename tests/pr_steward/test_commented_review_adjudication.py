@@ -9,6 +9,7 @@ unresolved threads, CI, audit, and security-release blockers are untouched.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from tools.pr_steward.classifier import build_artifacts
@@ -19,9 +20,33 @@ HEAD_SHA = "b69bf6cb1e47e8db9d071c5548d14462c0092a31"
 OTHER_HEAD_SHA = "0123456789abcdef0123456789abcdef01234567"
 REVIEW_ID = "PRR_kwDOPyIw988AAAABLPwIjQ"
 TRUSTED_APPROVER = "hu3mann"
+SECOND_TRUSTED_APPROVER = "second-trusted-approver"
 UNTRUSTED_APPROVER = "copilot-pull-request-reviewer"
 ROOT = Path(__file__).resolve().parents[2]
 REAL_KNOWN_REVIEWERS_PATH = ROOT / "tools" / "pr_steward" / "known_reviewers.json"
+
+
+def _known_reviewers_with_two_approvers(tmp_path: Path) -> Path:
+    path = tmp_path / "known_reviewers.json"
+    path.write_text(
+        json.dumps(
+            {
+                "known_reviewers": [
+                    "hu3mann",
+                    "chatgpt-codex-connector",
+                    SECOND_TRUSTED_APPROVER,
+                ],
+                "trusted_author_associations": ["OWNER", "MEMBER", "COLLABORATOR"],
+                "trusted_security_release_approvers": [
+                    TRUSTED_APPROVER,
+                    SECOND_TRUSTED_APPROVER,
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return path
 
 
 def _receipt_body(
@@ -273,6 +298,47 @@ class TestConflictingReceipts:
         item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
         assert item["disposition"] == "REJECTED_WITH_REASON"
         assert item["blocking"] is False
+
+    def test_byte_identical_body_from_two_different_trusted_authors_is_not_a_conflict(
+        self, tmp_path: Path
+    ) -> None:
+        # Conflict detection compares raw comment bytes, not (fields, author)
+        # tuples: two different trusted approvers independently posting the
+        # exact same receipt text is corroboration, not a conflict.
+        known = _known_reviewers_with_two_approvers(tmp_path)
+        body = _receipt_body()
+        harvest = _base_harvest(
+            issue_comments=[
+                {"id": "ic-1", "body": body, "author": {"login": TRUSTED_APPROVER}},
+                {
+                    "id": "ic-2",
+                    "body": body,
+                    "author": {"login": SECOND_TRUSTED_APPROVER},
+                },
+            ]
+        )
+        artifacts = _artifacts(harvest, known_reviewers_path=known)
+        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
+        assert item["disposition"] == "REJECTED_WITH_REASON"
+        assert item["blocking"] is False
+
+    def test_same_parsed_fields_but_different_raw_bytes_is_a_conflict(self) -> None:
+        # Two comments that parse to identical review_id/head_sha/disposition/
+        # reason but differ in surrounding bytes are NOT the same receipt:
+        # parsing the same must not substitute for being the same comment.
+        first = _receipt_body()
+        second = first + "\n<!-- reposted via web UI -->\n"
+        assert first != second
+        harvest = _base_harvest(
+            issue_comments=[
+                {"id": "ic-1", "body": first, "author": {"login": TRUSTED_APPROVER}},
+                {"id": "ic-2", "body": second, "author": {"login": TRUSTED_APPROVER}},
+            ]
+        )
+        artifacts = _artifacts(harvest)
+        item = _review_item(artifacts["REVIEW_ITEM_LEDGER.json"])
+        assert item["disposition"] == "MUST_FIX"
+        assert item["blocking"] is True
 
 
 class TestChangesRequestedNeverOverridable:
