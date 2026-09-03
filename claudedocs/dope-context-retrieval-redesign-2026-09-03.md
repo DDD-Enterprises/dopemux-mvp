@@ -2,7 +2,7 @@
 title: dope-context Retrieval Stack — Target Design and Implementation Plan
 date: 2026-09-03
 author: Claude (Fable 5.1), session 89799646
-status: PROPOSED — awaiting supervisor decisions D1–D3 (§8); Wave 0 executable without them
+status: PROPOSED — Revision 2 after adversarial review (APPROVE_WITH_CHANGES); awaiting supervisor decisions D1–D3 (§8) and packet amendment for eval/ (B12)
 base: origin/main 04be55535 (services/dope-context byte-identical to e07ff3efc)
 branch: claude/dope-context-retrieval-redesign-2026-09-03
 supersedes: nothing; extends claudedocs/dope-context-modernization-audit-2026-09-03.md
@@ -488,3 +488,82 @@ its cost.
 Remaining uncertainty (explicit): `voyage-code-4` per-request token limit and `binary` dtype (UNVERIFIED,
 not relied on); `rerank-3` limits (not used); whether B′ beats A on *this* corpus (Wave 0 exists to answer
 it); TurboQuant recall at 1024-d (config switch, not default).
+
+---
+
+## Revision 2 — 2026-09-03, after adversarial review (APPROVE_WITH_CHANGES, 13 blocking)
+
+Reviewer: fresh agent, adversarial persona, no session context. Where this revision conflicts with the numbered sections above, **this revision wins**. Each blocking finding was reproduced by the author before being accepted; three probe transcripts are in Appendix A.
+
+### R2.1 Reproduction results
+
+| # | Reviewer claim | Author verdict | Evidence |
+|---|---|---|---|
+| B1 | `git rev-parse --git-common-dir` fails inside the container for linked worktrees | **CONFIRMED** | `.git` file contains `gitdir: /Users/hue/code/dopemux-mvp/.git/worktrees/…` (host path) → `fatal: not a git repository` in `mcp-dope-context` (git 2.47.3). Main checkout resolves to `/workspaces/dopemux-mvp/.git`. |
+| B2 | common-dir is relative | CONFIRMED, trivially fixed | `--path-format=absolute` returns `/workspaces/dopemux-mvp/.git`. |
+| B3 | Fusion queries ignore the top-level filter → worktree isolation silently broken | **REFUTED on the live server** (holds only for the in-memory/local client the reviewer cited) | Qdrant 1.19.0, throwaway 2-point collection, RRF over two named vectors with top-level `query_filter` on `worktrees` → returned `[1]` only; per-prefetch filter → `[1]`. Design still puts the filter in *both* places (local-mode tests use `:memory:`). |
+| B4 | `fastembed` absent; `Qdrant/bm25` would also discard `code_aware_tokenizer` | **CONFIRMED** | `importlib.util.find_spec("fastembed")` → `None` in the container. Sparse encoder redesigned (§R2.2-4.5). |
+| B5 | Manifest bump in Wave 1 forces a full re-embed before any benefit lands | CONFIRMED on inspection | moved to Wave 2 (§R2.2-7). |
+| B6 | Waves not file-disjoint | CONFIRMED on inspection | re-cut (§R2.2-7). |
+| B7 | §2 defect IDs do not match the committed audit document | **CONFIRMED** | §2 cites the four *stage report* series (E/C/R/S) delivered in-session; the audit document uses its own M/E/C/I/R table. Crosswalk in Appendix B; §2 is to be read through it. |
+| B8 | `worktrees[]` array is a read-modify-write → lost update with two indexers | CONFIRMED on inspection | replaced by per-worktree keys (§R2.2-4.2). |
+| B9 | absolute `file_path` in payload leaks the indexing worktree's path | CONFIRMED on inspection | §R2.2-4.4. |
+| B10 | `profile_digest` dropped from manifest | CONFIRMED on inspection | restored (§R2.2-4.3). |
+| B11 | `docs_search` path not covered | CONFIRMED on inspection | §R2.2-4.6. |
+| B12 | Wave 0 lacks the packet's control profile; `eval/` not in Allowed Files | CONFIRMED | CTRL profile instruction sent to the Wave 0 runner (index `voyage-context-4`, query `voyage-code-3`). `eval/` needs a packet amendment → supervisor. |
+| B13 | Residue chunk after a 4.5×max split | CONFIRMED on inspection | §R2.2-4.7. |
+
+### R2.2 Amendments
+
+**4.1 Identity (supersedes).** Never depend on `git -C <worktree>` succeeding inside the container.
+1. Read `<wt>/.git`. Directory → `common_dir = <wt>/.git`. File `gitdir: <p>` → `common_dir = <p>` with a trailing `/worktrees/<name>` removed.
+2. Canonicalise: if the path starts with `$HOST_CODE_PARENT_DIR` (the container already receives it for its mounts) rewrite that prefix to `/workspaces`; if it already starts with `/workspaces`, keep it. Main checkout and linked worktrees therefore both canonicalise to `/workspaces/dopemux-mvp/.git`.
+3. `project_id = sha256(canonical common_dir)[:16]`; `worktree_id = sha256(canonical worktree path)[:16]`; human label = basename, stored in the manifest only.
+4. File universe: `GIT_DIR=<canonical gitdir> GIT_WORK_TREE=<wt> git ls-files -z --cached --others --exclude-standard` (with `GIT_DIR` set git does not consult the `.git` file). Wave 2 must carry a test that runs this against a linked worktree *with a host-path gitdir*.
+5. **Fail closed.** No prefix rule applies, `HOST_CODE_PARENT_DIR` unset, or git exits non-zero → `IdentityResolutionError`; the shared collection is never written under a guessed identity. Only with `DOPE_CONTEXT_ALLOW_UNSHARED_IDENTITY=1` does the service fall back to a per-path collection, and then `identity_mode: "path-fallback"` is written into the manifest and logged at WARNING on every run.
+
+**4.2 Membership (supersedes `worktrees[]`).** Membership is one payload key per worktree: `wt_<worktree_id>: true`. Add = `set_payload({"wt_<id>": true}, points=ids)` — a server-side key merge, no read-modify-write, so two indexers of different worktrees cannot clobber each other. Remove = `delete_payload(keys=["wt_<id>"], points=ids)`. Each key gets a `bool` payload index on first use (idempotent). Orphan sweep (points left with no `wt_*` key) runs only inside a project-level `fcntl.flock(LOCK_EX)` on `/workspaces/<project>/.dopemux/index.lock` (a shared mount, so it serialises across that project's containers); adds take `LOCK_SH`. Query filter: `must: [{key: "wt_<id>", match: {value: true}}]` — placed in **every prefetch and at top level** (B3).
+
+**4.3 Manifest.** Keeps `profile_digest` (B10) and adds `identity_version: 2`, `identity_mode`, `chunker_version`, `sparse_encoder_version`, `sparse_avg_len`. The bump lands in **Wave 2**, the only schema-changing wave (B5).
+
+**4.4 Payload.** `file_path` is stored **relative to the worktree root**; no absolute path is stored (B9). Results are rendered as `<querying worktree>/<rel>`, which is also what makes a cross-worktree hit usable.
+
+**4.5 Sparse vectors (supersedes).** No `fastembed`, no `models.Document` (B4). A client-side `SparseEncoder`: tokens from the existing `code_aware_tokenizer` (camelCase/snake_case split, lowercase, no stopwords); term id = 31-bit hash of the token; value = BM25 term-frequency saturation `tf·(k1+1) / (tf + k1·(1 − b + b·len/avg_len))`, k1 = 1.2, b = 0.75, `avg_len` from the manifest (recomputed on full index; drift tolerated on incremental runs). Qdrant applies IDF server-side (`Modifier.IDF`). Zero new dependencies; identifier matching behaves as today. `sparse_encoder_version` changes force a re-index.
+
+**4.6 Docs search (new).** `docs_search` applies the same `wt_*` filter and relative-path layout; the docs pipeline's deterministic ids make the membership keys reusable unchanged (B11).
+
+**4.7 Residue chunks (new).** After a symbol is split by `max_chunk_tokens`, a trailing piece < 25 % of the limit merges into the previous piece of the same parent symbol when the merged piece is ≤ 1.1× the limit; otherwise it stands alone. Test fixture: a 4.5× function (B13).
+
+**7 Waves (supersedes; file-disjoint).**
+- Wave 0 — eval only: `eval/*`, `benchmarks/*` (packet amendment for `eval/` required). Includes the CTRL profile. The 41-file run is a smoke test; the decision-grade run is the whole repo at the packet's measured **$6.82 ≤ $10 ceiling** — recommend authorising it before deciding D1 (reviewer Q2, B12).
+- Wave 1 — behaviour only, manifest-compatible: `voyage_embedder.py`, `voyage_reranker.py`, `token_budget.py`, `model_tokenizer.py`, `indexing_pipeline.py` (sleep/gather/RAM), `code_chunker.py`.
+- Wave 2 — schema + identity + sparse: `workspace.py`, `index_profile.py`, `dense_search.py`, `hybrid_search.py`, new `sparse_encoder.py`, Qdrant-facing handlers in `server.py`; manifest bump here.
+- Wave 3 — sync/autonomy: `autonomous/*`, `sync/*`, autonomy handlers in `server.py`. Shares `server.py` with Wave 2, so it **starts only after Wave 2 merges** (sequential, not parallel).
+- Wave 4 — context generation: `context/*`.
+
+### Appendix A — probe transcripts (verbatim, 2026-09-03, container `mcp-dope-context`, Qdrant 1.19.0)
+
+```
+fastembed: MISSING
+TOP-LEVEL filter, fusion -> ids: [1] (expect [1] if honoured)
+PER-PREFETCH filter, fusion -> ids: [1] (expect [1])
+Qdrant server: green | point 1 payload: {'worktrees': ['A']}
+cleaned up eval_filtertest_7097e9a6
+```
+```
+--- linked worktree in container ---
+gitdir: /Users/hue/code/dopemux-mvp/.git/worktrees/dope-context-retrieval-redesign-001
+fatal: not a git repository: /Users/hue/code/dopemux-mvp/.git/worktrees/dope-context-retrieval-redesign-001
+--- main checkout in container ---
+/workspaces/dopemux-mvp/.git
+--- git version ---
+git version 2.47.3
+```
+Vendor-model probes (Voyage `voyage-code-3` / `voyage-context-4` / `rerank-2.5` acceptance, voyageai 0.5.0 `contextualized_embed` signature) were run earlier in the authoring session; their raw output is **not** reproduced here and must be re-run and pasted in by Wave 0 before D1 is decided (reviewer Q3).
+
+### Appendix B — defect-ID crosswalk (stage report → committed audit table)
+
+Embeddings: E1→E1 · E2→R8 · E3→R9 · E4→R10 · E6→E2 · E7→E3 · E8→M1 · E9→M3 · E10→E9 · E11→M5 · E12→E5 · E14→E7 · E16→E4 · E17→(no audit row; stage-only) · E21→E10 · E22→E11.
+Chunking: C1→I1 · C2→C1 · C3→C2 · C4→I2 · C5→C6 · C6→I5 · C7→I6 · C8→I7 · C9→C3 · C10→C4 · C12→C5 · C13→C8 · C14→C7 · C23→C9 · C24→C10 · C25→C11 · C30→I15 · C31→C18.
+Retrieval: R1→R1 · R2→R2/R7 · R3→R3 · R7→≈R5 (topic-mapped, verify).
+Sync: S1→I4 · S2→I9/I3 · S5→I11 · S8→≈I3 · S9→I13 · **S15→UNKNOWN** (no such stage finding; treat as an authoring typo to be resolved in the edit pass).
