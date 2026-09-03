@@ -145,6 +145,68 @@ exceeds $10, stop and re-estimate rather than continuing.
 - `docs/03-reference/systems/dope-context/modernization-audit-2026-07-22.md`
 - `docs/03-reference/systems/dope-context/vector-space-benchmark-<date>.md`
 - `task-packets/dope-context/TP-DOPECONTEXT-VECTOR-SPACE-0004.md`
+- `services/dope-context/eval/**` — **amendment 2026-09-03** (operator-approved
+  in session, "Amend packet, commit here"): the offline benchmark harness,
+  query set, and per-run results live here. The harness reads
+  `services/dope-context/src/preprocessing/code_chunker.py` and
+  `src/search/hybrid_search.py` read-only and writes only throwaway Qdrant
+  collections prefixed `eval_`; nothing under `src/` or `tests/` is modified
+  by benchmark runs. Reason: the review of the Rev 2.1 design (finding B12)
+  found Wave 0 could not ship without a home for the harness.
+
+## Governance amendment — DCP-RED-MERGE-SEAM-0001 carve-out (2026-09-03)
+
+```text
+SEAM_CARVEOUT_ADR=ADR-226
+SEAM_CARVEOUT_STATUS=OPERATOR_APPROVED_2026-09-03_LANDED_WITH_ADR_226
+SEAM_CARVEOUT_SCOPE=services/dope-context/eval/** + the three services/dope-context files in Allowed Files
+SEAM_CARVEOUT_AUTHORIZES_CONTENT_EDITS=NO
+WAVES_1_4_SRC_LIFT=NOT_AUTHORIZED
+```
+
+**Finding (observed 2026-09-03).** `src/dopemux/dcp/red_lane_rules.py`
+carries a blanket `^services/dope-context/.*$` entry in `FORBIDDEN_PATHS`
+(added 2026-06-04, commit `4a120ff8d`, identical on `origin/main`, no
+recorded rationale for the `services/*` entries, no override path). Hook H1
+therefore hard-denies every Edit/Write under the service — including all
+four service paths in this packet's Allowed Files. The denial was observed
+live on an Edit under `services/dope-context/eval/` (the pre-commit
+trailing-whitespace fix; the hook keeps no denial log, so the exact file is
+reconstructed, not recorded) and confirmed by a programmatic
+`surface_guard_block` probe on `eval/run_eval.py` and `src/mcp/server.py`.
+No workaround was attempted. Note that H1 imports the rules from the
+checkout `CLAUDE_PROJECT_DIR` names: in a session rooted at a main checkout
+that predates ADR-226 the denial persists even after the carve-out is on
+this branch, so implementation must run in a session whose hook enforces
+ADR-226's rules (post-merge, or rooted at this branch).
+
+**Ruling.** Operator chose the ADR-224 pattern (narrow, ADR-anchored,
+negative-lookahead carve-out; approval required before it lands) over
+relocating the harness or stopping. See
+`docs/90-adr/adr-226-dope-context-seam-narrow-carveout.md` for scope,
+invariants, alternatives, and rollback.
+
+**Disclosure.** The harness files under `services/dope-context/eval/`
+pre-existed this amendment as untracked files, created earlier the same day
+by a delegated sub-agent via a path the hook does not guard (exact mechanism
+UNKNOWN). Under the M11 precedent that was a route-around; nothing under
+`services/dope-context/` has been committed and nothing will be until
+ADR-226 is approved and landed.
+
+**What this amendment does not do.** It does not lift the lane for
+`services/dope-context/src/**`. Waves 1–4 of the retrieval redesign
+(`claudedocs/dope-context-retrieval-redesign-2026-09-03.md`) must each
+enumerate exact files in their own packets and extend ADR-226's regex by
+amendment before implementation. It does not change this packet's
+`DECISION_REQUIRED` gate.
+
+**Stop conditions (in addition to the packet's own).** Stop and return to
+operator if: any path under `services/dope-context/` other than `eval/**`
+and the three named files becomes editable; a symlink appears under
+`services/dope-context/eval/`; `TEXT_RULES` stops firing on forbidden
+content inside a carved-out file; or the carve-out commit touches any
+semantic file beyond `red_lane_rules.py`, the two test files, ADR-226, and
+this packet.
 
 ## Required Chain
 

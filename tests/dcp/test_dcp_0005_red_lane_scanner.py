@@ -283,6 +283,60 @@ def test_carved_out_workflow_still_subject_to_text_rules(tmp_path):
 
 
 # ---------------------------------------------------------------------------
+# ADR-226 / TP-DOPECONTEXT-VECTOR-SPACE-0004 governance amendment (2026-09-03):
+# narrow services/dope-context carve-out
+# ---------------------------------------------------------------------------
+
+def test_carved_out_dope_context_paths_are_not_forbidden_path_findings(tmp_path):
+    repo_root = tmp_path / "tp_dopecontext_carveout_clean"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    report = scanner.scan(
+        changed_files=[
+            "services/dope-context/eval/run_eval.py",
+            "services/dope-context/eval/results/2026-09-03/run.md",
+            "services/dope-context/src/pipeline/indexing_pipeline.py",
+            "services/dope-context/src/mcp/server.py",
+            "services/dope-context/tests/test_vector_space_invariants.py",
+        ]
+    )
+    assert not any(f.category == "FORBIDDEN_PATH" for f in report.findings)
+
+
+def test_other_dope_context_paths_still_forbidden_path_blocked(tmp_path):
+    """Exact-file / single-directory carve-out — not a service-wide lift."""
+    repo_root = tmp_path / "tp_dopecontext_carveout_other"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    for rel in (
+        "services/dope-context/src/search/hybrid_search.py",
+        "services/dope-context/src/mcp/server.py.bak",
+        "services/dope-context/eval/../src/search/hybrid_search.py",
+        "services/task-orchestrator/app/main.py",
+    ):
+        report = scanner.scan(changed_files=[rel])
+        assert report.status == Status.BLOCKED, rel
+        assert any(f.category == "FORBIDDEN_PATH" for f in report.findings), rel
+
+
+def test_carved_out_dope_context_file_still_subject_to_text_rules(tmp_path):
+    """Path-level carve-out must not exempt content-level TEXT_RULES scanning."""
+    repo_root = tmp_path / "tp_dopecontext_carveout_text_rules"
+    repo_root.mkdir()
+    eval_dir = repo_root / "services" / "dope-context" / "eval"
+    eval_dir.mkdir(parents=True)
+    (eval_dir / "run_eval.py").write_text('os.system("gh pr merge --auto")\n')
+
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+    report = scanner.scan(changed_files=["services/dope-context/eval/run_eval.py"])
+    assert report.status == Status.BLOCKED
+    assert not any(f.category == "FORBIDDEN_PATH" for f in report.findings)
+    assert any(f.category == "MERGE_SEAM_VIOLATION" for f in report.findings)
+
+
+# ---------------------------------------------------------------------------
 # TP-DMX-TRUST-GATE-FAIL-CLOSED-001: DMX-W1-04-F001 fail-closed completeness
 # ---------------------------------------------------------------------------
 

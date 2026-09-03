@@ -117,6 +117,73 @@ def test_nested_carved_out_filename_remains_blocked():
 
 
 # ---------------------------------------------------------------------------
+# ADR-226 / TP-DOPECONTEXT-VECTOR-SPACE-0004 governance amendment (2026-09-03):
+# narrow services/dope-context carve-out — eval/ directory + three exact files
+# ---------------------------------------------------------------------------
+
+_DOPE_CONTEXT_CARVED_OUT = (
+    "services/dope-context/eval/run_eval.py",
+    "services/dope-context/eval/queries.jsonl",
+    "services/dope-context/eval/results/2026-09-03/run.md",
+    "services/dope-context/src/pipeline/indexing_pipeline.py",
+    "services/dope-context/src/mcp/server.py",
+    "services/dope-context/tests/test_vector_space_invariants.py",
+)
+
+_DOPE_CONTEXT_STILL_BLOCKED = (
+    "services/dope-context/src/search/hybrid_search.py",
+    "services/dope-context/src/preprocessing/code_chunker.py",
+    "services/dope-context/src/embeddings/model_registry.py",
+    "services/dope-context/tests/conftest.py",
+    "services/dope-context/Dockerfile",
+    "services/dope-context/evaluation.py",  # near-miss of the eval/ directory name
+    "services/dope-context/eval",  # bare name is not the directory
+    "services/dope-context/src/mcp/server.py.bak",  # near-miss filename
+    "services/dope-context/src/mcp/sub/server.py",  # nested same-named file
+    "services/dope-context/src/server.py",  # same name, other directory
+    "services/dope-context/eval/../src/mcp/server.py",  # traversal out of eval/
+    "services/dope-context/eval/sub/../../src/search/hybrid_search.py",
+    "services/dope-context/../dope-context/src/search/hybrid_search.py",
+)
+
+
+def test_dope_context_carved_out_paths_are_editable():
+    for rel in _DOPE_CONTEXT_CARVED_OUT:
+        for tool in ("Edit", "Write", "NotebookEdit"):
+            inp = {"file_path": str(_ROOT / rel)}
+            assert surface_guard_block(tool, inp, _ROOT) is None, (tool, rel)
+
+
+def test_dope_context_other_paths_remain_blocked():
+    """Exact-file / single-directory carve-out — not a service-wide lift."""
+    for rel in _DOPE_CONTEXT_STILL_BLOCKED:
+        result = surface_guard_block("Edit", {"file_path": str(_ROOT / rel)}, _ROOT)
+        assert result is not None, rel
+        assert RED_LANE_ID in result, rel
+
+
+def test_sibling_mcp_services_remain_fully_blocked():
+    """The carve-out is dope-context-only; sibling service blankets are untouched."""
+    for rel in (
+        "services/task-orchestrator/app/main.py",
+        "services/dopecon-bridge/eval/run_eval.py",
+        "services/working-memory-assistant/src/mcp/server.py",
+    ):
+        result = surface_guard_block("Edit", {"file_path": str(_ROOT / rel)}, _ROOT)
+        assert result is not None, rel
+        assert RED_LANE_ID in result, rel
+
+
+def test_no_symlinks_under_dope_context_eval():
+    """A symlink inside the exempted directory could write through to a blocked path."""
+    eval_dir = _ROOT / "services" / "dope-context" / "eval"
+    if not eval_dir.exists():
+        return
+    links = [p for p in eval_dir.rglob("*") if p.is_symlink()]
+    assert links == [], f"symlinks under carved-out eval/: {links}"
+
+
+# ---------------------------------------------------------------------------
 # Sync test: fallback ⊆ live FORBIDDEN_PATHS
 # ---------------------------------------------------------------------------
 
