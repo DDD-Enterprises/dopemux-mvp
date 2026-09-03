@@ -1,0 +1,90 @@
+{
+  "id": "TP-DMX-DCP-0008",
+  "project": "dopemux-mvp",
+  "target": "Define inert backend runner interface, invocation-plan model, result model, and proof envelope without execution.",
+  "invariants": [
+    "DRY-RUN ONLY: do not pass --execute, set DPMX_LIVE_OK, or make any provider call.",
+    "invocation_authorized must remain False at runtime.",
+    "No runner adapter may execute subprocess, network, model, MCP, or shell calls.",
+    "execute_runner_plan always returns NOT_RUN.",
+    "Keep the change deterministic and limited to the allowlist.",
+    "The PAL service transport is unavailable in this session; record PAL gates as NOT_RUN rather than inventing results."
+  ],
+  "depends_on": [
+    "TP-DMX-DCP-0007A"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-MODEL-ROUTING-NEXT-TRANCHE-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-DCP-0007A",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "dcp/model-routing-0008-runner-contract",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(dcp): inert backend runner contract \u2014 0008",
+    "allowlist": [
+      "docs/03-reference/dcp/backend-runner-contract.md",
+      "schemas/dcp/manifest.json",
+      "schemas/dcp/runner_contract.schema.json",
+      "src/dopemux/dcp/__init__.py",
+      "src/dopemux/dcp/runner_contract.py",
+      "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0008.md",
+      "task-packets/TP-DMX-DCP-0008.json",
+      "tests/unit/dcp/test_runner_contract.py",
+      "proof/TP-DMX-DCP-0008/AUDITOR_REPORT.md",
+      "proof/TP-DMX-DCP-0008/PROOF.json",
+      "proof/TP-DMX-DCP-0008/review_bundle/.gitkeep",
+      "proof/pr_merge/embedded-audit/pr-1156/PROOF.json",
+      "proof/pr_merge/embedded-audit/pr-1156/PROOF.json.sig"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-DCP-0008.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "pytest -q tests/unit/dcp/test_runner_contract.py",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(dcp): inert backend runner contract \u2014 0008",
+    "body": "Pure data models for runner invocation plans, results, and proof envelopes with execution disabled.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "audit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1",
+      "task": "Add inert backend runner models, schema, and unit test suite.",
+      "validation": [
+        "pytest -q tests/unit/dcp/test_runner_contract.py"
+      ]
+    },
+    {
+      "id": "step-2",
+      "task": "Verify canonical schema compliance and allowlist containment.",
+      "validation": [
+        "python -m jsonschema -i task-packets/TP-DMX-DCP-0008.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "git diff --check"
+      ]
+    }
+  ]
+}

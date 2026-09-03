@@ -346,6 +346,23 @@
         "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
       ],
       "enforcement_side": "deterministic"
+    },
+    {
+      "contract_id": "DCP_RUNNER_CONTRACT",
+      "schema_file": "schemas/dcp/runner_contract.schema.json",
+      "schema_version": "runner-contract.v0",
+      "contract_version": "0.1.0",
+      "validation_state": "REPO_CROSS_CHECKED",
+      "level": "L1",
+      "instance_files": [],
+      "runtime_producers": [],
+      "runtime_consumers": [
+        "src/dopemux/dcp/runner_contract.py"
+      ],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
     }
   ]
 }

@@ -68,6 +68,18 @@ from dopemux.dcp.input_adapters import (
     untrusted_classify_source,
 )
 
+from dopemux.dcp.runner_contract import (
+    RunnerContractDocument,
+    RunnerContractError,
+    RunnerInvocationPlan,
+    RunnerPlanStatus,
+    RunnerProofEnvelope,
+    RunnerResult,
+    build_blocked_plan,
+    document_plan,
+    execute_runner_plan,
+)
+
 __all__ = [
     # Proof artifact readers (pre-existing)
     "ArtifactInspection",
@@ -125,4 +137,14 @@ __all__ = [
     "assert_no_mutation_adapters",
     "listed_adapter_ids",
     "load_registry",
+    # Backend runner contract (0008)
+    "RunnerContractDocument",
+    "RunnerContractError",
+    "RunnerInvocationPlan",
+    "RunnerPlanStatus",
+    "RunnerProofEnvelope",
+    "RunnerResult",
+    "build_blocked_plan",
+    "document_plan",
+    "execute_runner_plan",
 ]
