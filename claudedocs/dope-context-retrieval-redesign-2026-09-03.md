@@ -391,7 +391,7 @@ be implemented by parallel agents without merge conflicts.
 
 **Setup.** 41 queries, 455 chunks from `services/dope-context/src`, Qdrant throwaway collections, harness
 at `services/dope-context/eval/run_eval.py` (untracked, pending packet amendment to Allowed Files per B12).
-Results in `services/dope-context/eval/results-2026-09-03.md`. Total cost: **$0.047747**.
+Results in `claudedocs/dope-context-eval-results-2026-09-03.md` (relocated from `eval/`: `markdown-location-guard` forbids `.md` there). Total cost: **$0.047747**.
 
 | Profile | Description | Recall@5 | Recall@20 | MRR | NDCG@10 | Cost (USD) |
 |---|---|---|---|---|---|---|

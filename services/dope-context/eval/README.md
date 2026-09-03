@@ -100,7 +100,9 @@ near-identical duplicate elsewhere in the corpus, which would make the
 
 The `mcp-dope-context` container mounts this worktree **read-only**, so the
 harness itself cannot write results back into the worktree — copy its
-stdout JSON into `results-<date>.md` by hand (or redirect it to a file
+stdout JSON into `claudedocs/dope-context-eval-results-<date>.md` by hand
+(not into this directory: the repo's `markdown-location-guard` hook rejects
+any `.md` outside the canonical docs roots) (or redirect it to a file
 outside the worktree and paste from there).
 
 ```bash
@@ -127,4 +129,4 @@ reuses `A`'s document embeddings (no marginal document cost) and only pays
 for ~40 query embeddings on `voyage-code-3` ($0.18/M tokens) — negligible.
 Exact, measured (not estimated) per-profile costs are reported in the
 harness's own JSON output (`cost_usd` field) and copied into
-`results-<date>.md`.
+`claudedocs/dope-context-eval-results-<date>.md`.

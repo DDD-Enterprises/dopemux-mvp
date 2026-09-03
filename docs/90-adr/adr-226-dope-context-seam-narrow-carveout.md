@@ -249,8 +249,19 @@ exception was made in the authoring session: with the carve-out already
 approved and landed on the branch, the operator explicitly authorized a
 single Bash-side line repair of `results-2026-09-03.md:49` (restoring the
 `OPENAI_API_KEY` token that a redaction pass had stripped) so that the
-carve-out commit would not ship known-wrong content. No other Bash-side
-edits under the seam were made.
+carve-out commit would not ship known-wrong content. One further
+operator-authorized Bash-side change under the seam followed in a successor
+commit: `git mv` of that results file out of `eval/` plus the matching
+convention update in `services/dope-context/eval/README.md` (see the
+relocation note below). No other Bash-side edits under the seam were made.
+
+Relocation note (2026-09-03): the results file now lives at
+`claudedocs/dope-context-eval-results-2026-09-03.md`. The repository's
+`markdown-location-guard` pre-commit hook (run in CI, not by the local
+`.githooks/pre-commit`, which only runs `scripts/preflight.sh`) rejects any
+`.md` outside the canonical docs roots, so eval result write-ups must live
+under `claudedocs/` or `docs/` regardless of this carve-out; the historical
+path references above are kept as written.
 
 ## Consequences
 
