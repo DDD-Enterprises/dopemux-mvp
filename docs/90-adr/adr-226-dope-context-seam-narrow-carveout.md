@@ -123,9 +123,12 @@ Constraints:
   carved-out paths.
 * Only paths already named in packet 0004's Allowed Files are exempted. No
   other file under `services/dope-context/` becomes editable.
-* The hook's path normalizer (`_repo_relative`) is lexical — it does not
-  resolve `..` — so a directory-scoped exemption must be paired with an
-  explicit traversal guard.
+* The hook's primary path reading (`_repo_relative`) is lexical — it does
+  not resolve `..` — so a directory-scoped exemption must be paired with an
+  explicit traversal guard. Since the independent audit (F-001, see
+  "Independent audit" below) the block tier also evaluates a realpath
+  reading and a case-folded root match; the traversal guard stays as
+  defence-in-depth.
 * The change must not disturb the sibling service blankets or the
   fallback ⊆ live sync invariant.
 
@@ -181,7 +184,9 @@ Invariants:
   continues to hold without modification.
 * No symlinks may exist under `services/dope-context/eval/` (a symlink
   inside the exempted directory could write through to a blocked path). A
-  filesystem test pins this.
+  filesystem test pins this, and since audit F-001 the hook also resolves
+  an existing symlink at edit time and blocks when its target is a blocked
+  path.
 
 Non-goals:
 
@@ -263,6 +268,39 @@ Relocation note (2026-09-03): the results file now lives at
 under `claudedocs/` or `docs/` regardless of this carve-out; the historical
 path references above are kept as written.
 
+## Independent audit (2026-09-03)
+
+Route: AGY (`agy --model gemini-3.1-pro-high --output-format json
+--print=...`), Tier-1 route #1, on frozen head `720991c41`; the CLI log
+records the requested model propagated to the backend
+(`promptLength=211583, model="gemini-3.1-pro-high"`). Verdict on that
+head: **FAIL**, one BLOCKER.
+
+* **F-001 CONFIRMED (pre-existing, fixed here).** `_repo_relative` in
+  `.claude/hooks/dcp_surface_guard.py` was purely lexical, so
+  `<root>/../<worktree>/<blocked>`, a case-variant root (`/USERS/...` is
+  the same file on macOS's default filesystem) and a symlink alias of the
+  root all produced strings no `^`-anchored pattern matched — for every
+  red-lane path, `queue_drain.py` included. Reproduced programmatically
+  before the fix. Fix: `_repo_relative_candidates` evaluates the raw,
+  realpath and case-folded readings and the block tier denies if any
+  matches; the same candidates feed the warn tier. Seven tests pin the
+  bypass forms plus the two things that must keep working (new file under
+  `eval/`, paths outside the root).
+* **F-002 REJECTED.** Claimed the packet-0004 diff was absent from the PR;
+  the prompt contained all 11 diff headers including
+  `task-packets/dope-context/TP-DOPECONTEXT-VECTOR-SPACE-0004.md`.
+* **F-003 REJECTED.** Claimed the traversal regex matches names ending in
+  `..`; it matches only an exact `..` segment (`something..`, `..foo`,
+  `a../b.py` do not match — verified).
+* **F-004** (test coverage for the bypass forms) is subsumed by the F-001
+  fix.
+* Auditor's one unverifiable claim (README's `--corpus` guard) is
+  verified at `services/dope-context/eval/run_eval.py:662`.
+
+The proof bundle, raw auditor output and the re-audit on the post-fix
+frozen head live under `proof/pr_merge/embedded-audit/pr-1304/`.
+
 ## Consequences
 
 * **Easier**: the benchmark harness can be committed and iterated, and
@@ -286,10 +324,12 @@ path references above are kept as written.
 * **Failure modes introduced**: one considered and closed. A directory
   exemption plus a lexical normalizer would have allowed
   `eval/../src/x.py`; the companion `..`-segment pattern and its tests
-  close it. Residual: a symlink placed under `eval/` after this lands
-  would be caught by the filesystem test only when the suite runs, not by
-  the hook at edit time. Accepted and pinned as a stop condition in the
-  packet amendment.
+  close it. The independent audit then found the pre-existing, wider
+  form of the same weakness (F-001) and it is fixed in this change — see
+  "Independent audit" below. Residual: a symlink created under `eval/`
+  between the hook check and the write (TOCTOU) is caught only by the
+  filesystem test. Accepted and pinned as a stop condition in the packet
+  amendment.
 
 ────────────────────────────────────────────────────────────
 
@@ -318,7 +358,8 @@ pushed at draft time, so no remote state to unwind.
 ## Verification
 
 * Tests added: `tests/test_dcp_surface_guard.py` (4 new functions,
-  table-driven) and `tests/dcp/test_dcp_0005_red_lane_scanner.py` (3 new).
+  table-driven, plus 7 F-001 bypass tests) and
+  `tests/dcp/test_dcp_0005_red_lane_scanner.py` (3 new).
 * Commands to run:
   `PYTHONPATH=src python -m pytest tests/test_dcp_surface_guard.py tests/dcp/test_dcp_0005_red_lane_scanner.py -v`
 * Expected signals: full pass, including the pre-existing ADR-224 tests

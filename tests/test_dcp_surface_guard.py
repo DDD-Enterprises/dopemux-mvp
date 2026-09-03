@@ -184,6 +184,82 @@ def test_no_symlinks_under_dope_context_eval():
 
 
 # ---------------------------------------------------------------------------
+# ADR-226 independent audit F-001 (2026-09-03): path-normalization bypasses.
+# A purely lexical `_repo_relative` let `<root>/../<root>/x`, a case-variant
+# root and a symlink alias of the root escape every `^`-anchored pattern.
+# ---------------------------------------------------------------------------
+
+_BYPASS_TARGETS = (
+    "src/dopemux_pr_merge_specialist/queue_drain.py",
+    "services/dope-context/src/search/hybrid_search.py",
+)
+
+
+def test_pre_prefix_traversal_is_blocked():
+    for rel in _BYPASS_TARGETS:
+        fp = f"{_ROOT}/../{_ROOT.name}/{rel}"
+        result = surface_guard_block("Edit", {"file_path": fp}, _ROOT)
+        assert result is not None, fp
+        assert RED_LANE_ID in result
+
+
+def test_case_variant_root_is_blocked():
+    """macOS's default filesystem is case-insensitive: /USERS/x/repo/f is /Users/x/repo/f."""
+    for rel in _BYPASS_TARGETS:
+        fp = f"{str(_ROOT).swapcase()}/{rel}"
+        result = surface_guard_block("Write", {"file_path": fp}, _ROOT)
+        assert result is not None, fp
+        assert RED_LANE_ID in result
+
+
+def _scaffold_repo(tmp_path):
+    root = tmp_path / "repo"
+    blocked = root / "services" / "dope-context" / "src" / "search" / "hybrid_search.py"
+    blocked.parent.mkdir(parents=True)
+    blocked.write_text("# blocked\n")
+    (root / "services" / "dope-context" / "eval").mkdir()
+    return root, blocked
+
+
+def test_symlink_alias_of_root_is_blocked(tmp_path):
+    root, blocked = _scaffold_repo(tmp_path)
+    alias = tmp_path / "alias"
+    alias.symlink_to(root, target_is_directory=True)
+    via_alias = alias / blocked.relative_to(root)
+    # alias path, real root
+    assert surface_guard_block("Edit", {"file_path": str(via_alias)}, root) is not None
+    # real path, alias root
+    assert surface_guard_block("Edit", {"file_path": str(blocked)}, alias) is not None
+
+
+def test_symlink_inside_exempt_dir_pointing_at_blocked_file_is_blocked(tmp_path):
+    root, blocked = _scaffold_repo(tmp_path)
+    link = root / "services" / "dope-context" / "eval" / "link.py"
+    link.symlink_to(Path("..") / "src" / "search" / "hybrid_search.py")
+    result = surface_guard_block("Edit", {"file_path": str(link)}, root)
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_new_file_under_exempt_dir_still_allowed(tmp_path):
+    root, _ = _scaffold_repo(tmp_path)
+    new = root / "services" / "dope-context" / "eval" / "new_probe.py"
+    assert not new.exists()
+    assert surface_guard_block("Write", {"file_path": str(new)}, root) is None
+
+
+def test_path_outside_root_is_not_a_repo_file(tmp_path):
+    root, _ = _scaffold_repo(tmp_path)
+    outside = tmp_path / "elsewhere" / "src" / "dopemux_pr_merge_specialist" / "queue_drain.py"
+    assert surface_guard_block("Edit", {"file_path": str(outside)}, root) is None
+
+
+def test_repo_relative_primary_reading_unchanged():
+    fp = str(_ROOT / "services" / "dope-context" / "eval" / "run_eval.py")
+    assert _repo_relative(fp, _ROOT) == "services/dope-context/eval/run_eval.py"
+
+
+# ---------------------------------------------------------------------------
 # Sync test: fallback ⊆ live FORBIDDEN_PATHS
 # ---------------------------------------------------------------------------
 

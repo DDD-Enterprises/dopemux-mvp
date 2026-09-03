@@ -47,10 +47,12 @@ FORBIDDEN_PATHS = [
         r"(?!tests/test_vector_space_invariants\.py$)"
         r".*$"
     ),
-    # Companion to the carve-out above. The hook's path normalizer is lexical (no `..`
-    # resolution), so a directory-scoped exemption must refuse any traversal segment or
-    # `services/dope-context/eval/../src/x.py` would escape the block. Applies to the
-    # whole service subtree; an exact `..` segment is the only thing it matches.
+    # Companion to the carve-out above. The hook's primary path reading is lexical (no
+    # `..` resolution); the realpath reading it also checks since the ADR-226 audit
+    # (F-001) is defence-in-depth, so a directory-scoped exemption must still refuse any
+    # traversal segment on its own or `services/dope-context/eval/../src/x.py` would
+    # escape the block. Applies to the whole service subtree; an exact `..` segment is
+    # the only thing it matches (`something..` or `..foo` are ordinary names).
     re.compile(r"^services/dope-context/(?:.*/)?\.\.(?:/|$)"),
     re.compile(r"^services/working-memory-assistant/.*$"),
     re.compile(r"^docker/mcp-servers-source/conport/.*$"),
