@@ -77,6 +77,56 @@ Resolved and outdated review threads are historical evidence, not active blocker
 
 Proof freshness is fail-closed by default. A proof may be treated as current either by exact PR head match or by an explicit `CURRENT_WITH_SELF_REFERENCE_EXCEPTION` record that includes supervisor acceptance and proof-only changed-file evidence under `proof/`.
 
+## Review Adjudication Receipts
+
+TP-DMX-PR-STEWARD-COMMENTED-REVIEW-ADJUDICATION-001 adds one narrow,
+exact-head trusted-adjudication mechanism: a top-level PR issue/conversation
+comment, posted by a login in `trusted_security_release_approvers`
+(`tools/pr_steward/known_reviewers.json`), may reclassify one existing
+review's ledger disposition to `REJECTED_WITH_REASON` (nonblocking) using a
+literal receipt body:
+
+```text
+PR_STEWARD_REVIEW_ADJUDICATION_V1
+review_id=<exact GitHub review node id, e.g. PRR_...>
+head_sha=<full 40-character current PR head SHA>
+disposition=REJECTED_WITH_REASON
+reason=<non-empty reason>
+```
+
+A receipt only clears a review when **all** of the following hold; any
+failure fails closed and leaves the review's ordinary classification
+(including any `MUST_FIX` from a `P1`/`P2` body marker) active:
+
+- the review's own GitHub review state is exactly `COMMENTED` (never
+  `CHANGES_REQUESTED` / `REQUEST_CHANGES` — that state is classified before
+  a receipt is ever consulted, so it can never be adjudicated away);
+- `review_id` names that exact review;
+- `head_sha` exactly equals the PR's current head SHA (a receipt bound to a
+  stale head never clears a review at a newer head, and vice versa);
+- the comment author's login is in `trusted_security_release_approvers`;
+- the receipt is well-formed (all four fields present, `disposition` is
+  exactly `REJECTED_WITH_REASON`, `reason` non-empty, `head_sha` is a
+  40-character hex string);
+- exactly one distinct eligible receipt comment body exists for that
+  `(review_id, head_sha)` pair, regardless of which trusted approver posted
+  it — comparison is on the raw comment body byte-for-byte, not on the
+  parsed fields, so two comments that parse to the same fields but differ
+  in surrounding text still conflict, and clear nothing.
+
+A valid receipt preserves the original review's ledger entry (same `id`,
+unchanged `body`) and only changes `disposition`, `blocking`, and
+`rationale` — it never deletes or rewrites historical review text, and it
+never changes the review-item ledger's item count. The receipt comment
+itself is always classified `REJECTED_WITH_REASON` / nonblocking when it is
+well-formed and trusted, even when its `reason=` text quotes a `P1`/`P2`
+token from the review it adjudicates — a receipt can never manufacture a
+new blocker out of describing the finding it clears.
+
+This mechanism never touches `CHANGES_REQUESTED` reviews, unresolved review
+threads, CI, embedded-audit, proof, or security-release blockers — those
+gates are unaffected and remain independently fail-closed.
+
 ## CLI
 
 Repo-local invocation:

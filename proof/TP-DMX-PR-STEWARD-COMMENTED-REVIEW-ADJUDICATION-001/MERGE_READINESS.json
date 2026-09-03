@@ -1,0 +1,72 @@
+{
+  "blockers": [
+    "HARVEST_INCOMPLETE",
+    "PR_IS_DRAFT",
+    "EMBEDDED_AUDIT_NEEDS_SUPERVISOR",
+    "SECURITY_RELEASE_APPROVAL_REQUIRED"
+  ],
+  "ci_triage_path": "CI_TRIAGE.json",
+  "embedded_audit": {
+    "report_path": "proof/TP-DMX-PR-STEWARD-COMMENTED-REVIEW-ADJUDICATION-001/AUDITOR_REPORT.md",
+    "status": "NEEDS_SUPERVISOR"
+  },
+  "generated_at": "2026-09-03T02:59:16.271196Z",
+  "mutation_performed": false,
+  "pr": {
+    "base_ref": "main",
+    "changed_files": [
+      "docs/ops/pr-steward.md",
+      "tests/pr_steward/test_commented_review_adjudication.py",
+      "tools/pr_steward/classifier.py"
+    ],
+    "commits": [
+      "c48554e291deb2d21f84808dc7c506a07bc63196",
+      "af145c4b10b67fd9c4dbcd6ec44fb31cca73dfca"
+    ],
+    "head_ref": "claude/pr-steward-review-adjudication-001",
+    "head_sha": "af145c4b10b67fd9c4dbcd6ec44fb31cca73dfca",
+    "number": 1303,
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1303"
+  },
+  "proof": {
+    "matches_pr_head": true,
+    "proof_freshness": {
+      "matches_pr_head": true,
+      "pr_head_sha": "af145c4b10b67fd9c4dbcd6ec44fb31cca73dfca",
+      "proof_recorded_sha": "af145c4b10b67fd9c4dbcd6ec44fb31cca73dfca",
+      "reason": "Proof head SHA matches PR head SHA.",
+      "self_reference_exception": null,
+      "status": "CURRENT"
+    },
+    "proof_head_sha": "af145c4b10b67fd9c4dbcd6ec44fb31cca73dfca",
+    "proof_path": "proof/TP-DMX-PR-STEWARD-COMMENTED-REVIEW-ADJUDICATION-001/PROOF.json"
+  },
+  "readiness": "BLOCKED",
+  "review_item_ledger_path": "REVIEW_ITEM_LEDGER.json",
+  "risk_tier": "CRITICAL",
+  "schema_version": "1.1.0",
+  "security_release": {
+    "approval": null,
+    "approval_kind": null,
+    "approved": false,
+    "categories": [
+      "pr_steward_trust_root"
+    ],
+    "required": true,
+    "solo_owner_override": null,
+    "trusted_apps": [
+      {
+        "login": "ddd-release-gate[bot]",
+        "owner": "DDD-Enterprises"
+      }
+    ]
+  },
+  "thread_dispositions_path": "THREAD_DISPOSITIONS.json",
+  "unknowns": [
+    "audit_not_executed: final readiness requires executed=true",
+    "audit_pr_mismatch: proof pr_number=None expected=1303",
+    "audit_repo_missing: final readiness requires proof.repo when expected_repo is provided",
+    "audit_provenance_missing: final readiness requires trusted provenance",
+    "solo_owner:SOLO_OWNER_AUDIT_NOT_PASSING"
+  ]
+}

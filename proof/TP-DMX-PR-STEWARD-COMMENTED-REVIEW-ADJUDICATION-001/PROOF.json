@@ -1,0 +1,162 @@
+{
+  "packet_id": "TP-DMX-PR-STEWARD-COMMENTED-REVIEW-ADJUDICATION-001",
+  "tp_path": "UNKNOWN",
+  "series": "PR-STEWARD-COMMENTED-REVIEW-ADJUDICATION",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/pr-steward-adjudication-001",
+  "branch": "claude/pr-steward-review-adjudication-001",
+  "base": "main",
+  "base_sha": "5900c27d3c38b515204bd5dc4baed8b5e14e2a8e",
+  "head_sha": "af145c4b10b67fd9c4dbcd6ec44fb31cca73dfca",
+  "repo_identity": "DDD-Enterprises/dopemux-mvp",
+  "agent": "claude-sonnet-5",
+  "timestamp": "2026-09-03T02:56:49Z",
+  "kind": "code+tests+docs (bootstrap PR onto main, does not touch PR #1287)",
+  "final_packet": true,
+  "slices": [
+    {
+      "commit": "c48554e29",
+      "summary": "Add exact-head trusted adjudication mechanism for COMMENTED reviews"
+    },
+    {
+      "commit": "af145c4b1",
+      "summary": "Fix conflict-detection to compare raw receipt bytes instead of parsed fields + adjudicator (independent-audit finding)"
+    }
+  ],
+  "files_changed": {
+    "modified": [
+      "tools/pr_steward/classifier.py",
+      "docs/ops/pr-steward.md"
+    ],
+    "created": [
+      "tests/pr_steward/test_commented_review_adjudication.py"
+    ]
+  },
+  "validations": [
+    {
+      "command": "mise exec python@3.12 -- python -m pytest tests/pr_steward/ -q",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "286 passed (284 pre-existing + 2 new after independent-audit fix); superset of the 13 originally-added tests plus 2 regression tests for the fix"
+    },
+    {
+      "command": "mise exec python@3.12 -- python -m ruff check tools/pr_steward/classifier.py tests/pr_steward/test_commented_review_adjudication.py",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "mise exec python@3.12 -- python -m ruff format --check tests/pr_steward/test_commented_review_adjudication.py",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "New file only; pre-existing classifier.py has unrelated baseline ruff-format debt not introduced by this change and not reformatted, per minimal-diff policy"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "pre-commit run --files tools/pr_steward/classifier.py tests/pr_steward/test_commented_review_adjudication.py docs/ops/pr-steward.md",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "gitleaks detect --no-git --source <diff of af145c4b1~1..af145c4b1 for the 3 changed files>",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "Scoped to this change's diff only; a repo-wide gitleaks scan surfaces 107 unrelated pre-existing findings in docs/planes/pm/_evidence/** that predate and are untouched by this branch"
+    },
+    {
+      "command": "git status --short (allowlist check)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "Only tools/pr_steward/classifier.py, tests/pr_steward/test_commented_review_adjudication.py, docs/ops/pr-steward.md touched; no FORBIDDEN paths (.github/**, tools/pr_steward/known_reviewers.json, security_release_approval.py, solo_owner_security_release.py, schemas/**, proof/**, task-packets/**, src/dopemux_pr_steward/**, PR #1287 branch content) were modified"
+    },
+    {
+      "command": "python -m tools.pr_steward.intake --repo DDD-Enterprises/dopemux-mvp --pr 1303 --strict --proof-path proof/TP-DMX-PR-STEWARD-COMMENTED-REVIEW-ADJUDICATION-001/PROOF.json",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "Dogfood run of PR Steward against this bootstrap PR itself, as directed. Tool ran cleanly (exit 0, non-mutating, mutation_performed=false) and reported readiness=BLOCKED / risk_tier=CRITICAL with blockers [HARVEST_INCOMPLETE, PR_IS_DRAFT, EMBEDDED_AUDIT_NEEDS_SUPERVISOR, SECURITY_RELEASE_APPROVAL_REQUIRED]. Expected and correct at this stage per AGENTS.md 9.1: 'a pre-PR local audit leaves the PR-scoped pr-steward gate --audit-proof NOT_RUN ... regenerate and re-pin the proof to the PR head before the FINALIZATION gate' -- that re-pin/finalization step is not requested here since mark-ready/merge are out of scope for this packet. PR_IS_DRAFT alone would block regardless. Raw output: MERGE_READINESS.json in this bundle."
+    },
+    {
+      "command": "independent adversarial audit (Codex, round 1)",
+      "exit_code": 1,
+      "bucket": "FAIL",
+      "note": "Round 1 verdict FAIL: found two real conflict-detection dedup bugs (see AUDIT.md). Both fixed in commit af145c4b1."
+    },
+    {
+      "command": "independent adversarial audit (Codex, round 2, post-fix)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "Round 2 verdict PASS after fix; all invariants confirmed HOLD; no unrelated changes; no piggyback bypass in the fixed dedup logic. Codex is not a canonical embedded_audit auditor_tool per AGENTS.md §9.1 / schemas/proof/embedded_audit.schema.json enum, so this round is recorded here as supplementary red-team evidence, not as the embedded_audit field of record."
+    },
+    {
+      "command": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --print='<full self-contained audit prompt>' (see proof/.../review_bundle/AGY_AUDIT_PROMPT.txt and AGY_AUDIT_RAW.json)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "FORMAL controlling embedded audit (Tier-1 route #1, docs/ops/embedded-audit.md), different model family/runtime from the implementer. Verdict PASS_WITH_RISKS: all 10 stated invariants HOLD with file:line citations against af145c4b1, plus 2 new non-security findings (unknown-author precedence narrows scope; multiline reason= truncated to first line) that neither the Claude self-audit nor Codex rounds documented. No false-clearance or false-denial found. Model selection proven with no fallback (review_bundle/AGY_MODEL_SELFCHECK.md). Supersedes the Claude self-audit as the embedded_audit field of record because that route requires the auditing session not be the one that wrote the diff (docs/ops/embedded-audit.md), which the self-audit did not satisfy."
+    }
+  ],
+  "codereview_status": "PASS_WITH_RISKS (AGY/Gemini 3.1 Pro High formal audit, controlling; superseded Claude self-audit + 2 rounds Codex supplementary review; see AUDIT.md)",
+  "precommit_status": "PASS",
+  "commit_sha": "af145c4b10b67fd9c4dbcd6ec44fb31cca73dfca",
+  "pr_url_or_blocker": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1303 (draft; merge/mark-ready intentionally NOT requested in this packet)",
+  "residual_risks": [
+    "No formal task-packet file exists under task-packets/ for this TP-ID; this packet originated as a supervisor execution directive rather than the normal PRD/task-packet flow. tp_path is UNKNOWN.",
+    "This PR lands the adjudication mechanism on trusted main only. It does not itself adjudicate PR #1287's stale COMMENTED review (PRR_kwDOPyIw988AAAABLPwIjQ, 29 commits behind #1287's current head) — that is an explicitly separate, HOLD-gated follow-up per the originating directive (POST_ADJUDICATION_TO_PR1287=HOLD), not performed as part of this proof.",
+    "Running `pytest tests/pr_steward/ -q .` (trailing dot / broadened rootdir) pulls in unrelated duplicate-basename test trees and fails at collection; this is a pre-existing repo-wide pytest-invocation hazard unrelated to this change, surfaced during the independent audit. The correct scoped invocation is `pytest tests/pr_steward/ -q`.",
+    "The dedup key for conflicting receipts is the raw comment body string (exact bytes). A trusted approver's receipt that is edited after posting (same GitHub comment id, different body on refetch) is evaluated against whatever body the harvest captured at run time; this mechanism does not track edit history, consistent with the rest of the classifier's real-time-snapshot design.",
+    "AGY finding F-ADJ001-AGY-INFO-1: a trusted approver cannot use this mechanism to clear a COMMENTED review from an unknown/untrusted reviewer, because the unknown-author check runs before the receipt lookup is ever reached. Narrows the mechanism's documented scope; fail-closed, not a vulnerability. ACCEPTED_RISK, no code change made.",
+    "AGY finding F-ADJ001-AGY-INFO-2: a multi-line reason= value in a receipt is silently truncated to its first line by the per-line field regex; the receipt still clears the review correctly, only the recorded rationale text loses trailing context. ACCEPTED_RISK, no code change made."
+  ],
+  "unknowns": [
+    "Whether any operator will exercise this mechanism against PR #1287 depends on a separate, explicitly authorized step this packet does not perform."
+  ],
+  "cleanup_status": "N/A - no temporary artifacts, no scaffold files left outside proof/ and the worktree; worktree intentionally retained at .worktrees/pr-steward-adjudication-001 pending merge decision",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --print='<full self-contained audit prompt: full diff af145c4b1 vs base, full post-fix classifier.py, full test file, invariant list>'; model selection proven with no fallback via two prior probe calls (see review_bundle/AGY_MODEL_SELFCHECK.md, AGY_VERSION.txt CLI 1.1.25, AGY_MODELS.txt). Full prompt and raw JSON transcript in review_bundle/AGY_AUDIT_PROMPT.txt and review_bundle/AGY_AUDIT_RAW.json. Auditor had no filesystem/tool access; audited purely from embedded material (pure prompt-based review, no ambient repo state to trust). Two prior passes preceded this one and are preserved as history in AUDIT.md: a Claude Code self-audit (PASS, superseded because that route requires the auditor not be the diff's author) and two rounds of supplementary Codex adversarial review (FAIL then PASS; Codex is excluded as auditor_tool of record because it is not in this schema's enum and AGENTS.md §9.1 forbids Codex as a formal auditor).",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR-STEWARD-COMMENTED-REVIEW-ADJUDICATION-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-ADJ001-HIGH-1",
+        "severity": "HIGH",
+        "title": "Conflict-detection dedup keyed on parsed fields + adjudicator, not raw bytes",
+        "status": "RESOLVED",
+        "body": "Found by the preceding Codex round-1 review, fixed in af145c4b1, independently re-verified fixed by this AGY run (invariant 5 in AUDITOR_REPORT.md: distinct_bodies set comprehension over raw comment bytes, classifier.py:1434-1441). Original _find_review_adjudication built its conflict-detection signature from (review_id, head_sha, disposition, reason, adjudicator), which let two receipts with different raw comment bytes but identical parsed fields wrongly dedupe as one (false clearance), and made two byte-identical receipts from two different trusted approvers wrongly conflict (false denial). Covered by test_byte_identical_body_from_two_different_trusted_authors_is_not_a_conflict and test_same_parsed_fields_but_different_raw_bytes_is_a_conflict, both spot-checked by this AGY run against the classifier logic by hand."
+      },
+      {
+        "id": "F-ADJ001-AGY-INFO-1",
+        "severity": "INFO",
+        "title": "Unknown-author precedence narrows the mechanism's usable scope",
+        "status": "ACCEPTED_RISK",
+        "body": "A trusted approver cannot adjudicate a COMMENTED review from an unknown/untrusted reviewer, because _classify_reviews's _known_author check (classifier.py:552) assigns UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION before the else branch that would consult a receipt (line 565) is ever reached. Narrower than the mechanism's stated scope, but fail-closed in the safe direction (no false clearance). No code change made."
+      },
+      {
+        "id": "F-ADJ001-AGY-INFO-2",
+        "severity": "INFO",
+        "title": "Multi-line reason= text silently truncated to its first line",
+        "status": "ACCEPTED_RISK",
+        "body": "_parse_review_adjudication_receipt tokenizes via body.splitlines() and matches ^(review_id|head_sha|disposition|reason)=(.*)$ per line, so a multi-line reason keeps only its first line. The receipt still correctly clears the review; only the recorded rationale text loses trailing context. No false clearance or false denial. No code change made."
+      },
+      {
+        "id": "F-ADJ001-INFO-1",
+        "severity": "INFO",
+        "title": "No formal task-packet file for this TP-ID",
+        "status": "ACCEPTED_RISK",
+        "body": "This packet was executed from a supervisor execution directive rather than a filed task-packets/*.md; tp_path recorded as UNKNOWN per AGENTS.md §9 guidance for unresolved authority fields."
+      }
+    ],
+    "fixes_applied": [
+      "af145c4b1: keyed _find_review_adjudication's conflict-detection dedup set on raw comment body bytes instead of (parsed fields, adjudicator); added 2 regression tests; updated docs/ops/pr-steward.md wording to match. Fixed prior to this AGY run; this run independently re-verified the fix rather than accepting the prior account."
+    ],
+    "remaining_risks": [
+      "Mechanism is net-new and has not yet been exercised against a live PR in production (dogfood run against PR #1303 itself is recorded separately in MERGE_READINESS.json / SUMMARY.md).",
+      "F-ADJ001-AGY-INFO-1 and F-ADJ001-AGY-INFO-2 above: both accepted as non-security UX limitations per the controlling auditor's own verdict."
+    ],
+    "skip_reason": null
+  }
+}
