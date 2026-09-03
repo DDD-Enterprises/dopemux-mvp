@@ -2,7 +2,7 @@
 title: dope-context Retrieval Stack — Target Design and Implementation Plan
 date: 2026-09-03
 author: Claude (Fable 5.1), session 89799646
-status: PROPOSED — Revision 2 after adversarial review (APPROVE_WITH_CHANGES); awaiting supervisor decisions D1–D3 (§8) and packet amendment for eval/ (B12)
+status: PROPOSED — Revision 2.2 after adversarial review (APPROVE_WITH_CHANGES) and Wave 0 smoke run; awaiting supervisor decisions D1–D3 (§8) and packet amendment for eval/ (B12)
 base: origin/main 04be55535 (services/dope-context byte-identical to e07ff3efc)
 branch: claude/dope-context-retrieval-redesign-2026-09-03
 supersedes: nothing; extends claudedocs/dope-context-modernization-audit-2026-09-03.md
@@ -387,6 +387,40 @@ be implemented by parallel agents without merge conflicts.
 - Gate to Wave 2: B′ ≥ A on Recall@20; otherwise D1 flips to keeping context-4 for code and the rest of the
   plan is unchanged.
 
+### Wave 0 smoke results (2026-09-03)
+
+**Setup.** 41 queries, 455 chunks from `services/dope-context/src`, Qdrant throwaway collections, harness
+at `services/dope-context/eval/run_eval.py` (untracked, pending packet amendment to Allowed Files per B12).
+Results in `services/dope-context/eval/results-2026-09-03.md`. Total cost: **$0.047747**.
+
+| Profile | Description | Recall@5 | Recall@20 | MRR | NDCG@10 | Cost (USD) |
+|---|---|---|---|---|---|---|
+| A | `voyage-context-4` contextual, both sides | 1.000 | 1.000 | 0.8537 | 0.8914 | $0.015421 |
+| B | `voyage-code-4` flat dense | 1.000 | 1.000 | 0.9187 | 0.9396 | $0.015369 |
+| Bh | B + scope-header prefix (file path + qualified symbol) | 1.000 | 1.000 | 0.7935 | 0.8461 | $0.016709 |
+| Bhl | Bh + LLM situating context | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN | $0.000000 |
+| CTRL | context-4 index queried with `voyage-code-3` (historical embedding-space mismatch) | 0.000 | 0.0244 | 0.0017 | 0.000 | $0.000248 |
+
+Bhl's status is `NOT_RUN` because `OPENAI_API_KEY` was not set in the container; the harness skipped it per
+its designed fallback rather than failing.
+
+**Findings, stated with their limits:**
+1. Recall is saturated on this 455-chunk corpus, so this run is **NOT decision-grade** — it is a
+   harness-correctness smoke, not a benchmark result.
+2. The only discriminating signal at this scale is MRR: **B > A > Bh**.
+3. The scope-header prefix **hurt** MRR (0.9187 → 0.7935) on this corpus. Do not adopt scope-header
+   prefixing (§4.3) without re-measuring on the whole-repo run.
+4. CTRL confirms the historical index/query mismatch is catastrophic (Recall@5 = 0), which justifies the
+   fingerprint gate already in this design (§3.1 cross-space rule, §4.2 fingerprint v2).
+5. The harness contains **no BM25 and no rerank path**. The hybrid + `rerank-3` layer proposed in §4.5
+   remains **UNMEASURED** and must be a profile in the whole-repo (~$6.82) run before it is adopted.
+6. A replicate of B/Bh reproduced MRR/NDCG identical to four decimals — Voyage embeddings are
+   deterministic across runs (replicate cost $0.032078; rows not kept).
+
+**Identifier-query subset**: n=2 — too small to draw a separate conclusion; both hits land in top-20 for
+A/B/Bh and both miss for CTRL, consistent with the whole-set pattern, but with n=2 this moves in lockstep
+rather than being independent evidence.
+
 ## Wave 1 — Correctness fixes with no schema impact (small, mergeable first) ∥-safe with Wave 0
 Owner files: `voyage_embedder.py`, `contextualized_embedder.py`, `voyage_reranker.py`, `model_tokenizer.py`,
 `token_budget.py`, `openai_generator.py`, `claude_generator.py`, `document_processor.py` (newline bug
@@ -459,7 +493,10 @@ loading Waves 0–5 as a work tree is available on request and not done here.
 **D1 — Code vector space.** Recommend **B′: `voyage-code-4` on both index and query**, gated by the Wave 0
 benchmark (B′ ≥ A on Recall@20). Fallback: keep `voyage-context-4` on code (today's A). Rationale: vendor's
 code-specific model, +27.5 % on agentic retrieval, 33 % cheaper than code-3, live-verified today; A stays
-available behind config.
+available behind config. Pricing is not a factor between B′ and A: both `voyage-code-4` and
+`voyage-context-4` are $0.12/M tokens (verified 2026-09-03, Revision 2.2) — price is no longer a
+differentiator. The Wave 0 smoke run (§7, 41 queries/455 chunks) shows B > A on MRR but is explicitly
+NOT decision-grade on this small corpus; D1 rests on the whole-repo benchmark, not on price.
 
 **D2 — Identity contract change.** Recommend **approve** project-scoped collections with worktree
 membership (§4.1). It changes collection naming and the manifest schema (canonical-writer surface) and
@@ -581,9 +618,14 @@ Trigger: reviewer Q3 (raw vendor transcripts). Re-running the probes from `mcp-d
    - rerank: `['rerank-lite-1', 'rerank-2-lite', 'rerank-2', 'rerank-3', 'rerank-3-lite', 'rerank-2.5', 'rerank-2.5-lite']`
    - contextualized: `['voyage-context-3', 'voyage-context-4']`
 4. Space sharing — single-sample cosines, indicative only, **not decision-grade**: `context-4[doc]` vs `voyage-4-large[doc]` 0.832 · vs `voyage-4[doc]` 0.748 · vs `voyage-code-4[doc]` 0.484 · vs `voyage-code-3[doc]` −0.021. Same-model `context-4` doc/query baseline 0.607; cross-model queries against a `context-4` document: `voyage-4` 0.564, `voyage-code-4` 0.508, `voyage-code-3` 0.015. Reading: the voyage-4 general family and `context-4` are partially interoperable (consistent with the vendor's shared-space claim), `voyage-code-4` is its own space, `voyage-code-3` is orthogonal (the historical R1 bug). Consequence: the manifest gate stays, and for `voyage-code-4` index and query model **must** be identical.
-5. **Pricing for `voyage-code-4`, `voyage-code-3.5`, `rerank-3`, `rerank-3-lite`: UNKNOWN in this session** (no vendor pricing page was fetched). Per audit M4, registry rows for these need `# verified <date> <url>` before any can become a default; cost columns for profiles D/Dh are therefore reported from `total_tokens` only until then.
-6. D1 option set becomes A / B / Bh / Bhl / CTRL / **D** (`voyage-code-4` dense, index+query) / **Dh** (D + hybrid BM25 + `rerank-3`, fallback `rerank-2.5` if rejected). The Wave 0 runner was instructed to add CTRL, D and Dh; results table pending.
-7. Wave 1 scope addition: `model_registry.py` entries for `voyage-code-4`, `rerank-3`, `rerank-3-lite` (and `voyage-code-3.5` if measured), dims and prices verified — the registry fails closed on unknown names, so no D-profile can run in the service without this.
+5. **Pricing verified 2026-09-03 — supersedes this point's original "UNKNOWN in this session" claim.**
+   See Revision 2.2 below for the full table and citation. `rerank-3` and `rerank-3-lite` were also
+   live-verified against the Voyage API on 2026-09-03 (both return results): neither their existence nor
+   their price is unknown any longer. Registry rows can now carry the `# verified <date> <url>` audit M4
+   required; cost columns no longer need the `total_tokens`-only fallback — see Wave 0 smoke results (§7)
+   for measured costs.
+6. D1 option set becomes A / B / Bh / Bhl / CTRL / **D** (`voyage-code-4` dense, index+query) / **Dh** (D + hybrid BM25 + `rerank-3`, fallback `rerank-2.5` if rejected). The Wave 0 runner was instructed to add CTRL, D and Dh; **the smoke run that actually executed (§7 Wave 0 smoke results, 2026-09-03) only covers A / B / Bh / Bhl / CTRL — B is this design's D (`voyage-code-4` dense, index+query). Dh (hybrid BM25 + `rerank-3`) was never run: the harness has no BM25/rerank path, so that layer stays UNMEASURED (Revision 2.2) until the whole-repo run.**
+7. Wave 1 scope addition: `model_registry.py` entries for `voyage-code-4`, `rerank-3`, `rerank-3-lite` (and `voyage-code-3.5` if measured), dims and prices verified (prices now verified 2026-09-03, Revision 2.2) — the registry fails closed on unknown names, so no D-profile can run in the service without this.
 
 ### Appendix A (continued) — vendor probe transcripts, verbatim
 
@@ -619,3 +661,38 @@ cos(ctx4[doc], voyage-code-4[doc]) = 0.4837 | cos(ctx4[doc], voyage-code-4[query
 cos(ctx4[doc], voyage-code-3[doc]) = -0.0206 | cos(ctx4[doc], voyage-code-3[query 'parse a manifest file']) = 0.0154
 cos(ctx4[doc], ctx4[query]) = 0.6074   (same-model baseline)
 ```
+
+---
+
+## Revision 2.2 — 2026-09-03, Voyage pricing verified + Wave 0 smoke results
+
+Rev 2.2 (2026-09-03): Voyage pricing verified from vendor page; Wave 0 smoke results added; hybrid/rerank
+layer marked UNMEASURED.
+
+**Pricing (supersedes Revision 2.1 §5's "UNKNOWN in this session").** Source:
+https://docs.voyageai.com/docs/pricing, read 2026-09-03.
+
+| Model | Price (USD / M tokens) |
+|---|---|
+| `voyage-code-4` | $0.12 |
+| `voyage-context-4` | $0.12 |
+| `voyage-4-large` | $0.12 |
+| `voyage-4` | $0.06 |
+| `voyage-4-lite` | $0.02 |
+| `voyage-code-3` | $0.18 |
+| `rerank-3` | $0.05 |
+| `rerank-3-lite` | $0.02 |
+| `rerank-2.5` | $0.05 |
+
+`rerank-3` and `rerank-3-lite` were also live-verified against the Voyage API on 2026-09-03 (both return
+results) — neither their existence nor their price is unknown any longer. `voyage-code-4` and
+`voyage-context-4` are priced identically ($0.12/M), so **price is not a differentiator for D1** (§8); the
+choice between them rests on the whole-repo benchmark (~$6.82, §7 Wave 0), not on cost. `voyage-code-3.5`
+pricing remains unmeasured (not used by this design).
+
+**Wave 0 smoke results**: see the new "Wave 0 smoke results (2026-09-03)" subsection under §7 "Wave 0 —
+Evaluation harness + model decision benchmark" for the full setup, results table, and findings. Headline:
+the 41-query/455-chunk run is a harness-correctness smoke, not decision-grade; the harness has no BM25 or
+rerank path, so the hybrid + `rerank-3` layer in §4.5 has **no coverage** here and remains **UNMEASURED**
+pending the whole-repo run. It also means the design's planned `Dh` profile (Revision 2.1 §6) was never
+executed — only A/B/Bh/Bhl/CTRL ran, with B standing in for `D`.
