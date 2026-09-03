@@ -18,6 +18,7 @@ from dcp_surface_guard import (  # noqa: E402
     RED_LANE_ID,
     _FALLBACK_COMPILED,
     _repo_relative,
+    _repo_relative_candidates,
     surface_guard_block,
     surface_guard_warnings,
 )
@@ -257,6 +258,58 @@ def test_path_outside_root_is_not_a_repo_file(tmp_path):
 def test_repo_relative_primary_reading_unchanged():
     fp = str(_ROOT / "services" / "dope-context" / "eval" / "run_eval.py")
     assert _repo_relative(fp, _ROOT) == "services/dope-context/eval/run_eval.py"
+
+
+# ---------------------------------------------------------------------------
+# ADR-226 re-audit residual F-001-A (2026-09-03, CONFIRMED live on macOS):
+# intra-repo case variants. `realpath` keeps the supplied case of existing
+# components, so `SERVICES/dope-context/src/x.py` matched nothing while the
+# OS wrote to the real file. The case-folded candidate is filesystem-independent,
+# so these tests are unconditional (they also hold on case-sensitive volumes,
+# where the fold is a deliberate fail-closed over-block).
+# ---------------------------------------------------------------------------
+
+_CASE_VARIANT_TARGETS = (
+    "SERVICES/dope-context/src/search/hybrid_search.py",
+    "services/DOPE-CONTEXT/src/search/hybrid_search.py",
+    "services/dope-context/src/search/HYBRID_SEARCH.py",
+    "src/dopemux_pr_merge_specialist/QUEUE_DRAIN.py",
+    "SRC/dopemux_pr_merge_specialist/queue_drain.py",
+)
+
+
+def test_intra_repo_case_variant_is_blocked():
+    for rel in _CASE_VARIANT_TARGETS:
+        fp = str(_ROOT / rel)
+        result = surface_guard_block("Edit", {"file_path": fp}, _ROOT)
+        assert result is not None, fp
+        assert RED_LANE_ID in result
+
+
+def test_case_variant_root_and_intra_repo_combined_is_blocked():
+    fp = f"{str(_ROOT).swapcase()}/SERVICES/dope-context/src/search/hybrid_search.py"
+    result = surface_guard_block("Write", {"file_path": fp}, _ROOT)
+    assert result is not None, fp
+    assert RED_LANE_ID in result
+
+
+def test_case_folded_candidate_is_present():
+    fp = str(_ROOT / "SERVICES" / "dope-context" / "src" / "search" / "hybrid_search.py")
+    cands = _repo_relative_candidates(fp, _ROOT)
+    assert "services/dope-context/src/search/hybrid_search.py" in cands
+    # primary (exact-case) reading is unchanged and still first
+    assert cands[0] == "SERVICES/dope-context/src/search/hybrid_search.py"
+
+
+def test_case_variant_of_exempt_dir_is_fail_closed():
+    """`EVAL/` is not the carve-out spelling; blocking it is the fail-closed choice."""
+    fp = str(_ROOT / "services" / "dope-context" / "EVAL" / "new_probe.py")
+    assert surface_guard_block("Write", {"file_path": fp}, _ROOT) is not None
+
+
+def test_exact_case_exempt_path_still_allowed_after_fold():
+    fp = str(_ROOT / "services" / "dope-context" / "eval" / "run_eval.py")
+    assert surface_guard_block("Edit", {"file_path": fp}, _ROOT) is None
 
 
 # ---------------------------------------------------------------------------

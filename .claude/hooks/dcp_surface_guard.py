@@ -57,7 +57,10 @@ def _repo_relative_candidates(file_path: str, project_root: Path) -> tuple[str, 
       2. ``os.path.realpath`` of the path relative to the root and to the
          root's own realpath (resolves ``..`` and symlinks, including a
          symlink placed inside an exempted directory);
-      3. a case-folded prefix match against those roots.
+      3. a case-folded prefix match against those roots;
+      4. the fully case-folded form of each of the above (re-audit residual
+         F-001-A: intra-repo case variants such as ``SERVICES/...`` on a
+         case-insensitive volume; ``realpath`` does not correct case).
 
     Paths that cannot be placed inside the root under any reading are not
     repo files (e.g. memory files under ``~/.claude``) and are returned as
@@ -99,6 +102,15 @@ def _repo_relative_candidates(file_path: str, project_root: Path) -> tuple[str, 
                     found.append(tail.as_posix())
     if not found:
         return (raw.as_posix(),)
+    # ADR-226 re-audit residual F-001-A: on a case-insensitive filesystem
+    # `SERVICES/dope-context/src/x.py` is the same file as the lower-case
+    # spelling, `os.path.realpath` does NOT correct the case of existing
+    # components on macOS, and the red-lane patterns are lower-case literals.
+    # Adding the case-folded reading of every candidate can only ADD denials
+    # (the carve-out is a negative lookahead inside a deny pattern, so a
+    # folded candidate never widens it) and needs no filesystem I/O, so it is
+    # applied unconditionally rather than only on case-insensitive volumes.
+    found.extend([f.lower() for f in found])
     return tuple(dict.fromkeys(found))
 
 
