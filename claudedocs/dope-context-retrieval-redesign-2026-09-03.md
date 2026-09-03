@@ -567,3 +567,55 @@ Embeddings: E1→E1 · E2→R8 · E3→R9 · E4→R10 · E6→E2 · E7→E3 · E
 Chunking: C1→I1 · C2→C1 · C3→C2 · C4→I2 · C5→C6 · C6→I5 · C7→I6 · C8→I7 · C9→C3 · C10→C4 · C12→C5 · C13→C8 · C14→C7 · C23→C9 · C24→C10 · C25→C11 · C30→I15 · C31→C18.
 Retrieval: R1→R1 · R2→R2/R7 · R3→R3 · R7→≈R5 (topic-mapped, verify).
 Sync: S1→I4 · S2→I9/I3 · S5→I11 · S8→≈I3 · S9→I13 · **S15→UNKNOWN** (no such stage finding; treat as an authoring typo to be resolved in the edit pass).
+
+---
+
+## Revision 2.1 — vendor probe corrections (2026-09-03, same session)
+
+Trigger: reviewer Q3 (raw vendor transcripts). Re-running the probes from `mcp-dope-context` (voyageai 0.5.0, live key) produced facts that **contradict §3** of this design; this section supersedes §3's model matrix and the Appendix A placeholder paragraph.
+
+1. **`voyage-code-4` exists** and is accepted (1024-dim). It is not an alias: cosine to `voyage-4` = 0.774, to `voyage-code-3` = −0.019 on the same text. §3's treatment of the code-4 line as unavailable was wrong.
+2. **`rerank-3` and `rerank-3-lite` exist.** `rerank-2.5` is not the newest reranker; the rerank choice is re-opened and goes to measurement (profile Dh).
+3. Supported lists, verbatim from the API's rejection of an unknown name (the API does reject unknowns — control `voyage-code-99`, `voyage-context-5`, `rerank-9` all → `InvalidRequestError`):
+   - embed: `['voyage-4-large', 'voyage-4', 'voyage-4-lite', 'voyage-code-4', 'voyage-3', 'voyage-3-lite', 'voyage-finance-2', 'voyage-large-2-instruct', 'voyage-law-2', 'voyage-code-2', 'voyage-02', 'voyage-2', 'voyage-01', 'voyage-lite-01', 'voyage-lite-01-instruct', 'voyage-lite-02-instruct', 'voyage-code-3', 'voyage-3-large', 'voyage-3-5', 'voyage-3-5-lite', 'voyage-code-3-5', 'voyage-multilingual-2', 'voyage-large-2', 'voyage-3.5', 'voyage-3.5-lite', 'voyage-code-3.5']`
+   - rerank: `['rerank-lite-1', 'rerank-2-lite', 'rerank-2', 'rerank-3', 'rerank-3-lite', 'rerank-2.5', 'rerank-2.5-lite']`
+   - contextualized: `['voyage-context-3', 'voyage-context-4']`
+4. Space sharing — single-sample cosines, indicative only, **not decision-grade**: `context-4[doc]` vs `voyage-4-large[doc]` 0.832 · vs `voyage-4[doc]` 0.748 · vs `voyage-code-4[doc]` 0.484 · vs `voyage-code-3[doc]` −0.021. Same-model `context-4` doc/query baseline 0.607; cross-model queries against a `context-4` document: `voyage-4` 0.564, `voyage-code-4` 0.508, `voyage-code-3` 0.015. Reading: the voyage-4 general family and `context-4` are partially interoperable (consistent with the vendor's shared-space claim), `voyage-code-4` is its own space, `voyage-code-3` is orthogonal (the historical R1 bug). Consequence: the manifest gate stays, and for `voyage-code-4` index and query model **must** be identical.
+5. **Pricing for `voyage-code-4`, `voyage-code-3.5`, `rerank-3`, `rerank-3-lite`: UNKNOWN in this session** (no vendor pricing page was fetched). Per audit M4, registry rows for these need `# verified <date> <url>` before any can become a default; cost columns for profiles D/Dh are therefore reported from `total_tokens` only until then.
+6. D1 option set becomes A / B / Bh / Bhl / CTRL / **D** (`voyage-code-4` dense, index+query) / **Dh** (D + hybrid BM25 + `rerank-3`, fallback `rerank-2.5` if rejected). The Wave 0 runner was instructed to add CTRL, D and Dh; results table pending.
+7. Wave 1 scope addition: `model_registry.py` entries for `voyage-code-4`, `rerank-3`, `rerank-3-lite` (and `voyage-code-3.5` if measured), dims and prices verified — the registry fails closed on unknown names, so no D-profile can run in the service without this.
+
+### Appendix A (continued) — vendor probe transcripts, verbatim
+
+```
+voyageai 0.5.0 | key present: True
+contextualized_embed sig: (inputs: Union[List[List[str]], List[str]], model: str, input_type: Optional[str] = None, output_dtype: Optional[str] = None, output_dimension: Optional[int] =
+embed voyage-code-3    OK dim=1024 tokens=9
+embed voyage-code-4    OK dim=1024 tokens=9
+embed voyage-3-large   OK dim=1024 tokens=9
+embed voyage-3.5       OK dim=1024 tokens=9
+embed voyage-4         OK dim=1024 tokens=9
+embed voyage-4-large   OK dim=1024 tokens=9
+embed voyage-4-lite    OK dim=1024 tokens=9
+ctx   voyage-context-3 OK dim=1024 n=2 tokens=20
+ctx   voyage-context-4 OK dim=1024 n=2 tokens=20
+rerank rerank-2.5      OK top=0 score=0.828 tokens=22
+rerank rerank-2.5-lite OK top=0 score=0.797 tokens=22
+rerank rerank-2        OK top=0 score=0.734 tokens=22
+```
+```
+CONTROL voyage-code-99   rejected: InvalidRequestError: Model voyage-code-99 is not supported. Supported models are [...]
+CONTROL voyage-context-5 rejected: InvalidRequestError: Model voyage-context-5 is not supported. Supported models are [...]
+CONTROL rerank-9         rejected: InvalidRequestError: Model rerank-9 is not supported. Supported models are [...]
+cos(voyage-code-4,voyage-4) = 0.7741
+cos(voyage-code-4,voyage-4-large) = 0.6951
+cos(voyage-code-4,voyage-4-lite) = 0.6949
+cos(voyage-code-4,voyage-code-3) = -0.0187
+cos(voyage-4,voyage-4-large) = 0.9262
+cos(voyage-4,voyage-3-large) = -0.0021
+cos(ctx4[doc], voyage-4[doc]) = 0.7479 | cos(ctx4[doc], voyage-4[query 'parse a manifest file']) = 0.5637
+cos(ctx4[doc], voyage-4-large[doc]) = 0.8323 | cos(ctx4[doc], voyage-4-large[query 'parse a manifest file']) = 0.5597
+cos(ctx4[doc], voyage-code-4[doc]) = 0.4837 | cos(ctx4[doc], voyage-code-4[query 'parse a manifest file']) = 0.5076
+cos(ctx4[doc], voyage-code-3[doc]) = -0.0206 | cos(ctx4[doc], voyage-code-3[query 'parse a manifest file']) = 0.0154
+cos(ctx4[doc], ctx4[query]) = 0.6074   (same-model baseline)
+```
