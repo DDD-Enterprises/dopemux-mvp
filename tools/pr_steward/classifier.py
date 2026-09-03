@@ -54,6 +54,19 @@ RECOGNIZED_REVIEW_DISPOSITIONS = {
 }
 UNCLASSIFIED_ITEM_DISPOSITION = "UNCLASSIFIED_ITEM_SHAPE"
 
+# Marks a top-level issue/conversation comment as a formal, trusted
+# adjudication of one exact COMMENTED review at one exact PR head. See
+# docs/ops/pr-steward.md#review-adjudication-receipts.
+REVIEW_ADJUDICATION_RECEIPT_MARKER = "PR_STEWARD_REVIEW_ADJUDICATION_V1"
+_REVIEW_ADJUDICATION_FIELD_RE = re.compile(
+    r"^(review_id|head_sha|disposition|reason)=(.*)$"
+)
+_FULL_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
+# CHANGES_REQUESTED is handled by its own branch in _classify_reviews and
+# never reaches the receipt lookup; this set documents the review states a
+# receipt may adjudicate (currently: exactly COMMENTED).
+REVIEW_ADJUDICATION_ELIGIBLE_STATES = {"COMMENTED"}
+
 
 class ProofFreshness(dict):
     """Dict proof state with legacy string comparisons for older callers."""
@@ -111,6 +124,7 @@ def build_artifacts(
     generated = generated_at or utc_now()
     known_path = known_reviewers_path or Path(__file__).with_name("known_reviewers.json")
     known_reviewers, trusted_associations = load_known_reviewers(known_path)
+    trusted_security_approvers = load_trusted_security_approvers(known_path)
 
     pr = _pr_payload(harvest, pr_number=pr_number)
     pr_raw = harvest.get("pr") or {}
@@ -172,6 +186,9 @@ def build_artifacts(
             trusted_associations=trusted_associations,
             blockers=blockers,
             unknowns=unknowns,
+            issue_comments=issue_comments_in,
+            pr_head_sha=pr["head_sha"],
+            trusted_security_approvers=set(trusted_security_approvers),
         )
     )
     resolved_review_comment_dispositions = _resolved_review_comment_dispositions(
@@ -197,6 +214,7 @@ def build_artifacts(
             trusted_associations=trusted_associations,
             blockers=blockers,
             unknowns=unknowns,
+            trusted_security_approvers=set(trusted_security_approvers),
         )
     )
 
@@ -260,7 +278,6 @@ def build_artifacts(
     security_classification = classify_security_release_paths(
         changed_paths + renamed_from_paths
     )
-    trusted_security_approvers = load_trusted_security_approvers(known_path)
     trusted_security_apps = load_trusted_security_release_apps(known_path)
     # Human approvals evaluate fully here. App approvals require non-security
     # gates first, so app_gate_ok=False until proof/audit/thread state is known.
@@ -494,8 +511,13 @@ def _classify_reviews(
     trusted_associations: set[str],
     blockers: list[str],
     unknowns: list[str],
+    issue_comments: list[Any] | None = None,
+    pr_head_sha: str | None = None,
+    trusted_security_approvers: set[str] | None = None,
 ) -> list[dict[str, Any]]:
     items = []
+    issue_comments = issue_comments or []
+    trusted_security_approvers = trusted_security_approvers or set()
     for index, review in enumerate(reviews):
         if not isinstance(review, dict):
             item_id = f"review-{index}"
@@ -540,7 +562,27 @@ def _classify_reviews(
             _append_once(blockers, "REQUEST_CHANGES")
         else:
             disposition, blocking, rationale = _body_disposition(body)
-            if blocking:
+            receipt = None
+            if (
+                blocking
+                and str(review.get("state") or "").upper()
+                in REVIEW_ADJUDICATION_ELIGIBLE_STATES
+            ):
+                receipt = _find_review_adjudication(
+                    review_id=review_id,
+                    issue_comments=issue_comments,
+                    pr_head_sha=str(pr_head_sha or ""),
+                    trusted_approvers=trusted_security_approvers,
+                    unknowns=unknowns,
+                )
+            if receipt is not None:
+                disposition = "REJECTED_WITH_REASON"
+                blocking = False
+                rationale = (
+                    f"Adjudicated nonblocking by {receipt['adjudicator']} at head "
+                    f"{receipt['head_sha']}: {receipt['reason']}"
+                )
+            elif blocking:
                 if disposition == "NEEDS_SUPERVISOR":
                     item_blockers.append("REVIEW_ITEM_NEEDS_SUPERVISOR")
                 elif disposition == "MUST_FIX":
@@ -571,9 +613,11 @@ def _classify_comments(
     blockers: list[str],
     unknowns: list[str],
     resolved_review_comment_dispositions: dict[str, dict[str, str | bool]] | None = None,
+    trusted_security_approvers: set[str] | None = None,
 ) -> list[dict[str, Any]]:
     items = []
     resolved_review_comment_dispositions = resolved_review_comment_dispositions or {}
+    trusted_security_approvers = trusted_security_approvers or set()
     for index, comment in enumerate(comments):
         if not isinstance(comment, dict):
             item_id = f"{source}-{index}"
@@ -605,6 +649,19 @@ def _classify_comments(
             disposition = str(linked_resolution["disposition"])
             blocking = bool(linked_resolution["blocking"])
             rationale = str(linked_resolution["rationale"])
+        elif (
+            source == "issue_comment"
+            and author in trusted_security_approvers
+            and _parse_review_adjudication_receipt(body) is not None
+        ):
+            # A well-formed receipt from a trusted approver is nonblocking on
+            # its own, even when its reason= text quotes a P1/P2 finding from
+            # the review it adjudicates.
+            disposition = "REJECTED_WITH_REASON"
+            blocking = False
+            rationale = (
+                "Recognized review adjudication receipt; comment is nonblocking."
+            )
         elif not _known_author(author, association, known_reviewers, trusted_associations):
             disposition = "UNKNOWN_REVIEWER_NEEDS_CLASSIFICATION"
             blocking = True
@@ -1298,6 +1355,86 @@ def _body_disposition(body: str) -> tuple[str, bool, str]:
     if "rejected" in lowered and "reason" in lowered:
         return "REJECTED_WITH_REASON", False, "Comment records a rejected item."
     return "OPTIONAL_DEFERRED", False, "Known author comment is classified nonblocking."
+
+
+def _parse_review_adjudication_receipt(body: str) -> dict[str, str] | None:
+    """Parse a strict PR_STEWARD_REVIEW_ADJUDICATION_V1 receipt body.
+
+    Returns the parsed fields, or None if the body is not a well-formed
+    receipt. Malformed input must never raise and must never partially
+    apply — callers treat None as "no receipt here" and fall back to
+    ordinary classification.
+    """
+    lines = [line.strip() for line in body.splitlines()]
+    if REVIEW_ADJUDICATION_RECEIPT_MARKER not in lines:
+        return None
+    marker_index = lines.index(REVIEW_ADJUDICATION_RECEIPT_MARKER)
+    fields: dict[str, str] = {}
+    for line in lines[marker_index + 1 :]:
+        if not line:
+            continue
+        match = _REVIEW_ADJUDICATION_FIELD_RE.match(line)
+        if not match:
+            continue
+        key, value = match.group(1), match.group(2).strip()
+        if key not in fields:
+            fields[key] = value
+    required = {"review_id", "head_sha", "disposition", "reason"}
+    if not required.issubset(fields):
+        return None
+    if fields["disposition"] != "REJECTED_WITH_REASON":
+        return None
+    if not fields["review_id"] or not fields["reason"]:
+        return None
+    if not _FULL_SHA_RE.match(fields["head_sha"]):
+        return None
+    return fields
+
+
+def _find_review_adjudication(
+    *,
+    review_id: str,
+    issue_comments: list[Any],
+    pr_head_sha: str,
+    trusted_approvers: set[str],
+    unknowns: list[str],
+) -> dict[str, str] | None:
+    """Find exactly one eligible, non-conflicting adjudication receipt.
+
+    Eligibility (all required): the receipt lives in a top-level issue
+    comment; its author login is trusted; it names this review_id; its
+    head_sha exactly equals the current PR head; it is well-formed with a
+    non-empty reason. Zero matches or two-or-more conflicting matches both
+    fail closed to None so the review's normal classification stands.
+    """
+    eligible: list[dict[str, str]] = []
+    for comment in issue_comments:
+        if not isinstance(comment, dict):
+            continue
+        author = _author_login(comment)
+        if author not in trusted_approvers:
+            continue
+        receipt = _parse_review_adjudication_receipt(str(comment.get("body") or ""))
+        if receipt is None:
+            continue
+        if receipt["review_id"] != review_id or receipt["head_sha"] != pr_head_sha:
+            continue
+        eligible.append({**receipt, "adjudicator": author})
+
+    if not eligible:
+        return None
+    signatures = {
+        (r["review_id"], r["head_sha"], r["disposition"], r["reason"], r["adjudicator"])
+        for r in eligible
+    }
+    if len(signatures) != 1:
+        _append_once(
+            unknowns,
+            f"Conflicting review adjudication receipts for review {review_id} at "
+            f"head {pr_head_sha}; original classification retained.",
+        )
+        return None
+    return eligible[0]
 
 
 def _append_disposition_blocker(blockers: list[str], disposition: str) -> None:
