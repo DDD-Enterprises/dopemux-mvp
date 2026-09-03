@@ -316,9 +316,19 @@ prompt are recorded in the bundle's `PROVENANCE.json` — the prompt
 misnamed the top-level `services/dope-context/README.md` as carved out
 (it is not; it was and is denied), and the auditor's example path
 `src/mcp/server.py` is not in the lane in this repo, so the class was
-reproduced with the two specimens above. The fix itself has **not** yet
-been re-audited (a round 3 would be required to move F-001-A from
-fixed-and-verified-locally to auditor-closed).
+reproduced with the two specimens above.
+
+**Round 3 (delta re-audit of F-001-A, same route and model, head
+`9ef316d1b` — hook, tests and rules byte-identical to `a4f86c48c`):
+`CLOSED`, zero residual risks, zero regressions.** The auditor confirmed
+the case-folded candidate closes the intra-repo case-variant class, that
+a case-variant of the carve-out (`EVAL/`) still denies because the
+exact-case candidate fails the negative lookahead, and enumerated
+thirteen bypass forms considered (unicode case, NFC/NFD, symlinks inside
+`eval/`, hard links, `./` and `//` segments, Windows separators, 8.3
+names, URL encoding, the empty-candidate fallback). F-001 is therefore
+auditor-closed as of round 3; the round-2 remediation record's only
+remaining `NOT_RUN` bucket is CI on PR #1304.
 
 The proof bundle, raw auditor output and the re-audit on the post-fix
 frozen head live under `proof/pr_merge/embedded-audit/pr-1304/`.

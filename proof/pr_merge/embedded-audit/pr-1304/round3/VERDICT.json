@@ -1,0 +1,26 @@
+{
+  "auditor_model": "Gemini 3.1 Pro (High)",
+  "target_commit": "9ef316d1b1327e201184e7bdf5dbf943f88b8fa3",
+  "finding": "F-001-A",
+  "verdict": "CLOSED",
+  "reasoning": "The fix successfully mitigates intra-repo case-variation bypasses by appending a `.lower()` case-folded reading for all path candidates. Since the red-lane patterns are strictly lowercase ASCII, this normalizes any case-variant path provided on case-insensitive filesystems (like macOS) to accurately match the deny patterns. The implementation correctly maintains fail-closed behavior for case variants of carved-out exceptions (e.g., `EVAL/`), because the exact-case candidate fails the negative lookahead and thus triggers the main block. The fix is robust, introduces no regressions, avoids additional filesystem I/O, and operates independently of locale.",
+  "residual_risks": [],
+  "regressions_introduced": [],
+  "bypass_attempts_considered": [
+    "mixed case in every segment",
+    "unicode case (ß, İ, K Kelvin sign)",
+    "NFC/NFD normalisation",
+    "symlinks inside eval/",
+    "hard links",
+    "trailing slash",
+    "./ segments",
+    "Windows separators",
+    "8.3 short names",
+    "absolute vs relative",
+    "the empty-candidate fallback branch",
+    "URL encoding",
+    "multiple slashes //"
+  ],
+  "auditor_model_requested": "gemini-3.1-pro-high",
+  "source": "AGY_AUDIT_RAW.json#response"
+}
