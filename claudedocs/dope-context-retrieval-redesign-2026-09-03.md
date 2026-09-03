@@ -2,7 +2,7 @@
 title: dope-context Retrieval Stack — Target Design and Implementation Plan
 date: 2026-09-03
 author: Claude (Fable 5.1), session 89799646
-status: PROPOSED — Revision 2.2 after adversarial review (APPROVE_WITH_CHANGES) and Wave 0 smoke run; awaiting supervisor decisions D1–D3 (§8) and packet amendment for eval/ (B12)
+status: PROPOSED — Revision 2.3; D1–D3 RULED by operator 2026-09-03 (see "Revision 2.3"); eval/ carve-out landed with ADR-226 (B12 closed); whole-repo benchmark NOT_RUN — blocked on OPENAI_API_KEY inside `mcp-dope-context` (empty) for the `Bhl` arm
 base: origin/main 04be55535 (services/dope-context byte-identical to e07ff3efc)
 branch: claude/dope-context-retrieval-redesign-2026-09-03
 supersedes: nothing; extends claudedocs/dope-context-modernization-audit-2026-09-03.md
@@ -696,3 +696,34 @@ the 41-query/455-chunk run is a harness-correctness smoke, not decision-grade; t
 rerank path, so the hybrid + `rerank-3` layer in §4.5 has **no coverage** here and remains **UNMEASURED**
 pending the whole-repo run. It also means the design's planned `Dh` profile (Revision 2.1 §6) was never
 executed — only A/B/Bh/Bhl/CTRL ran, with B standing in for `D`.
+
+## Revision 2.3 — 2026-09-03, operator rulings on D1–D3 + benchmark preconditions
+
+**Rulings (operator, this session, via the D1–D3 prompt; recorded as understood — correct here if misread):**
+
+| Decision | Ruling | Condition |
+|---|---|---|
+| D1 — code vector space | **B′ approved**: `voyage-code-4` on both index and query | Still gated: B′ ≥ A on Recall@20 in the **whole-repo** benchmark; smoke run is not decision-grade. Packet `TP-DOPECONTEXT-VECTOR-SPACE-0004` stays `DECISION_REQUIRED` until that result is filed. |
+| D2 — identity contract | **Approved**: project-scoped collections, worktree membership as payload (§4.1) | Wave 3 may be planned; canonical-writer inspection of the manifest schema remains required before any edit. `WAVES_1_4_SRC_LIFT=NOT_AUTHORIZED` (packet 0004) is unchanged — this ruling is a design decision, not a src/ lift authorization. |
+| D3 — LLM context layer for code | **Off by default** (scope header only); `gpt-5.6-luna` when enabled | `Bhl` arm of the benchmark measures whether it earns its cost. |
+
+**Packet amendment for `eval/` (B12): CLOSED.** Packet 0004 carries
+`SEAM_CARVEOUT_STATUS=OPERATOR_APPROVED_2026-09-03_LANDED_WITH_ADR_226`,
+`SEAM_CARVEOUT_SCOPE=services/dope-context/eval/**`, `SEAM_CARVEOUT_AUTHORIZES_CONTENT_EDITS=NO`
+(observed 2026-09-03 in the packet file).
+
+**Whole-repo benchmark (measured $6.82 ≤ $10 ceiling): NOT_RUN. Preconditions observed 2026-09-03:**
+
+- `docker inspect mcp-dope-context`: `VOYAGE_API_KEY` set; **`OPENAI_API_KEY` empty**; `ANTHROPIC_API_KEY` empty.
+  Arms A / B / Bh / CTRL can run; **`Bhl` (D3 measurement, `gpt-5.6-luna`) cannot** until the key reaches the
+  container.
+- `compose.yml:402` maps `OPENAI_API_KEY=${OPENAI_API_KEY}`; `/Users/hue/code/dopemux-mvp/.env` (compose
+  working_dir) has a non-empty `OPENAI_API_KEY` line but no `VOYAGE_API_KEY` line — the running container
+  predates the current `.env` or was started with a different env. Host shell: both keys unset.
+- The running container's compose config also includes
+  `.../dopemux-mcp-reset-recovery-001-r3/proof/TP-DMX-MCP-RESET-RECOVERY-001/runtime/dope-context-readonly.override.yml`
+  (read-only-facade variant). The harness writes to its own Qdrant collections via `--qdrant-url`, so this is
+  noted, not assessed as a blocker.
+- Options (operator choice, max 3): (a) `dopemux mcp stop/start dope-context` so the container re-reads `.env`,
+  then run all five arms; (b) run A/B/Bh/CTRL now, defer `Bhl`; (c) inject the key per-exec
+  (`docker exec -e OPENAI_API_KEY=… `) — not recommended (key in shell history / process list).
