@@ -804,6 +804,21 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                 )
               }
               onClick={resetTasks}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape' && isResetConfirming) {
+                  e.preventDefault();
+                  if (resetTimeoutRef.current) {
+                    clearTimeout(resetTimeoutRef.current);
+                    resetTimeoutRef.current = null;
+                  }
+                  setIsResetConfirming(false);
+                }
+              }}
+              aria-label={
+                isResetConfirming
+                  ? 'Confirm reset task sequence and clear all progress'
+                  : 'Reset task sequence'
+              }
               sx={{
                 borderColor: isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint,
                 color: isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint,
