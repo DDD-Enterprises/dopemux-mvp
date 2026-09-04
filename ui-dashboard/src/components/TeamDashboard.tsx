@@ -168,7 +168,18 @@ export default function TeamDashboard({ onError }: TeamDashboardProps = {}) {
                   size="small"
                   label={statusStyles[member.status].label}
                   aria-label={`${member.name}'s current status: ${statusStyles[member.status].label}`}
-                  sx={{ cursor: 'help' }}
+                  tabIndex={0}
+                  sx={{
+                    cursor: 'help',
+                    transition: 'all 0.2s ease',
+                    border: '1px solid transparent',
+                    '&:hover, &:focus-visible': {
+                      bgcolor: alpha(statusStyles[member.status].color, 0.12),
+                      borderColor: statusStyles[member.status].color,
+                      boxShadow: `0 0 12px ${alpha(statusStyles[member.status].color, 0.3)}`,
+                      transform: 'translateY(-1px)',
+                    },
+                  }}
                 />
               </Tooltip>
               <Box aria-hidden="true" sx={{ ml: 'auto', width: 6, height: 6, borderRadius: '50%', bgcolor: statusStyles[member.status].color }} />
