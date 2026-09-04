@@ -394,3 +394,68 @@ Stop if:
 - whether contextualized code content outperforms `voyage-code-3` enough to
   justify the extra endpoint and complexity
 - the cost of the benchmark itself
+
+## Governance amendment A3 — withdraw A2's "no edit needed" claim; one test file left (2026-09-04)
+
+```text
+AMENDMENT_ID=A3
+AMENDMENT_STATUS=PENDING_OPERATOR_APPROVAL
+AMENDMENT_ADDS_ALLOWED_FILES=services/dope-context/tests/test_vector_profiles_and_migration.py
+REQUIRES_COMPANION_ADR_226_AMENDMENT=YES (ADR-226 A3 regex extension)
+WITHDRAWS=A2's claim that indexing_pipeline.py and mcp/server.py "need no edit"
+WAVES_1_4_SRC_LIFT=STILL_NOT_AUTHORIZED
+```
+
+**Correction to A2.** A2 argued that `src/pipeline/indexing_pipeline.py` and
+`src/mcp/server.py` were "the wrong files" because neither sets `content_vec`'s
+model or endpoint. The first half was right — the canonical writer is
+`index_profile.py` — but the conclusion was wrong. Both files *consume*
+`content_profile` while hardcoding the **contextualized embedder object**, so
+neither dispatches on `content_profile.endpoint`. After D1 all three of these
+would send a flat code model to an endpoint that accepts only
+`voyage-context-*`:
+
+* `indexing_pipeline.py:300` (index-side content embedding)
+* `mcp/server.py:1235` (query-side content embedding)
+* `mcp/server.py:960` (constructs `ContextualizedEmbedder` from
+  `code_profile.content()`, failing at construction with
+  `ValueError: Voyage model 'voyage-code-4' uses endpoint 'embeddings', not
+  'contextualized_embeddings'`)
+
+Both files were already in Allowed Files, so fixing them needed no new
+authorization; A2's rationale is withdrawn so the record does not carry a
+false justification.
+
+**Ruling incorporated (operator, 2026-09-04).** `title_vec` and
+`breadcrumb_vec` move to `voyage-code-4` along with `content_vec`. A2 framed
+this as a "separate, unresolved question"; that was a false premise. All three
+already resolved through `resolve_code_embed_model()` → `DEFAULT_CODE_MODEL`,
+so they were never independent, and holding them back would have required
+inventing a new knob and preserving a multi-model code collection — the exact
+shape this packet exists to remove.
+
+**What A3 is for.** With the above fixed, the service suite is 115 passed,
+1 skipped, 4 failed, and all four failures are in one blocked file,
+`services/dope-context/tests/test_vector_profiles_and_migration.py`. Each
+asserts the pre-D1 contract and is supposed to change; the per-test detail and
+the required premise rewrites are enumerated in ADR-226 amendment A3. No other
+blocked test needs editing: the `120_000` assertions in
+`test_voyage_modernization.py` and `test_reliability_repairs.py` name
+`voyage-code-3` and `voyage-3-lite` literally, and those specs are unchanged.
+
+**Registry values recorded (live-measured 2026-09-04).** `voyage-code-4` is
+registered with `max_request_tokens=320_000`, **not** `voyage-code-3`'s
+`120_000`: the vendor's 120K-group sentence does not list `voyage-code-4`, the
+rate-limit tables group it with `voyage-4`/`voyage-3.5` (the 320K group), and a
+live 60-input batch of 300,000 tokens was accepted and billed in full
+(`total_tokens=299940`), which rules out a 120K ceiling empirically.
+
+`per_input_tokens=32_000` is recorded with a warning: the flat endpoint
+**silently truncates** rather than rejecting (a 320,000-token input returned
+success and billed `total_tokens=31993`), so an oversized chunk is
+half-embedded with no error. Upstream chunk-size enforcement is load-bearing.
+
+**Stop conditions (unchanged, plus).** Stop and return to operator if any path
+under `services/dope-context/` beyond `eval/**` and the six named files becomes
+editable, or if closing these four tests would require weakening the
+index/query agreement invariant rather than restating its premise.

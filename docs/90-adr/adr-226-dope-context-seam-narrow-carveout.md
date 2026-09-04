@@ -567,3 +567,107 @@ history and would need their own revert.
 * A new case asserting `src/embeddings/model_registry.py` is exempt while
   `src/embeddings/voyage_embedder.py` is still blocked — the two live in the
   same directory, which is exactly the near-miss this anchoring must survive.
+
+────────────────────────────────────────────────────────────
+
+## Amendment A3 — carve out the one blocked test file the landed D1 change invalidates (2026-09-04)
+
+```text
+AMENDMENT_ID=ADR-226-A3
+AMENDMENT_STATUS=PENDING_OPERATOR_APPROVAL
+COMPANION_PACKET_AMENDMENT=TP-DOPECONTEXT-VECTOR-SPACE-0004 amendment A3 (same date)
+ADDS_EXEMPTIONS=services/dope-context/tests/test_vector_profiles_and_migration.py
+AUTHORIZES_CONTENT_EDITS=NO (path-level only; TEXT_RULES scanning unchanged)
+WAVES_1_4_SRC_LIFT=STILL_NOT_AUTHORIZED
+```
+
+### Why
+
+A2 was written from a static reading and got one thing wrong, which the
+implementation then exposed empirically. A2 asserted that
+`src/pipeline/indexing_pipeline.py` and `src/mcp/server.py` "need no edit".
+That is false. Both pass `content_profile.model` but **hardcode the
+contextualized embedder object** rather than dispatching on
+`content_profile.endpoint`:
+
+* `indexing_pipeline.py:300` — `self.contextualized_embedder.embed_document(...)`
+* `mcp/server.py:1235` — `contextual_embedder.embed_document(...)`
+* `mcp/server.py:960` — constructs `ContextualizedEmbedder(default_model=code_profile.content().model, ...)`
+
+After D1 all three would hand `voyage-code-4` to the contextualized endpoint,
+which accepts only the `voyage-context-*` family. The third one fails at
+*construction* time and was caught by `test_mcp_server.py::test_index_workspace_tool`
+raising `ValueError: Voyage model 'voyage-code-4' uses endpoint 'embeddings',
+not 'contextualized_embeddings'`. Both files were already in Allowed Files, so
+correcting them required no new amendment — but A2's claim is withdrawn, and
+the record should say so rather than leave a wrong rationale standing.
+
+### What this amendment is actually for
+
+With those fixed, the suite is **115 passed, 1 skipped, 4 failed**, and every
+remaining failure is in a single **blocked** file,
+`services/dope-context/tests/test_vector_profiles_and_migration.py`. Each one
+asserts the pre-D1 contract, so each is *supposed* to change; none is a defect:
+
+1. `test_six_named_vector_index_query_profiles_identical` (L40-43) — asserts
+   `code.content().endpoint == "contextualized_embeddings"`,
+   `code.title().model == "voyage-code-3"`,
+   `code.breadcrumb().model == "voyage-code-3"`, and
+   `docs.content().model == code.content().model`. D1 falsifies all four by
+   design; docs stay contextualized while code goes flat, so the code and docs
+   content models are no longer equal.
+2. `test_profile_mutations_change_collection_identity[<lambda>0]` (L71) —
+   expects `build_code_collection_profile(contextual_model="voyage-context-3")`
+   to change the collection digest. `contextual_model` is now inert for code
+   profiles, so the digest correctly does not move. The parameter is retained
+   for signature compatibility; the mutation case must move to a parameter that
+   still participates in code identity (e.g. `code_model=`).
+3. `test_endpoint_change_changes_collection_identity` (L88-94) — its premise is
+   that the code profile carries *mixed* endpoints. D1 makes the code profile
+   uniform, which is the entire point.
+4. `test_context3_rollback_moves_all_contextual_paths_together` (L162, L167) —
+   asserts the contextual rollback env var also moves code `content_vec`, and
+   that `code.title().model` stays `voyage-code-3`. After D1 the contextual
+   rollback governs docs only; code has no contextualized vector for it to
+   move. This test needs its premise rewritten, not its literals swapped.
+
+### Exact regex change
+
+```python
+    re.compile(
+        r"^services/dope-context/"
+        r"(?!eval/)"
+        r"(?!src/pipeline/indexing_pipeline\.py$)"
+        r"(?!src/mcp/server\.py$)"
+        r"(?!src/index_profile\.py$)"
+        r"(?!src/embeddings/model_registry\.py$)"
+        r"(?!tests/test_vector_space_invariants\.py$)"
++       r"(?!tests/test_vector_profiles_and_migration\.py$)"
+        r".*$"
+    ),
+```
+
+### Invariants preserved
+
+Unchanged from A2: anchored `$` (so `.bak`/`.orig`/`.tmp` variants and
+same-named files elsewhere stay blocked), whole-path case folding, the
+traversal-refusal companion entry, and `TEXT_RULES` content scanning. Every
+other file under `services/dope-context/tests/` — `conftest.py`,
+`test_mcp_server.py`, `test_voyage_modernization.py`,
+`test_reliability_repairs.py` — remains hard-blocked, and none of them needs
+an edit: their `120_000` assertions name `voyage-code-3` and `voyage-3-lite`
+literally, and those specs are unchanged.
+
+### Rollback
+
+Revert the one lookahead line. Note that reverting A3 alone leaves the four
+tests failing; a full rollback of D1 means reverting the A2 implementation
+commit as well, which restores the old assertions' truth.
+
+### Verification before landing
+
+* The four named tests pass with their premises rewritten, not deleted.
+* `surface_guard_block` still denies `tests/conftest.py`,
+  `tests/test_mcp_server.py`, and
+  `tests/test_vector_profiles_and_migration.py.bak`.
+* Full suite returns to zero failures.

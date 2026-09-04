@@ -297,14 +297,28 @@ class IndexingPipeline:
             title_profile = self.collection_profile.title()
             breadcrumb_profile = self.collection_profile.breadcrumb()
 
-            content_response = await self.contextualized_embedder.embed_document(
-                chunks=content_texts,
-                model=content_profile.model,
-                input_type=content_profile.index_input_type,
-                output_dimension=content_profile.dimension,
-                output_dtype=content_profile.dtype,
-            )
-            content_embeddings = content_response.embeddings
+            # D1: content_vec is a flat-endpoint vector, same as title and
+            # breadcrumb. Dispatch on the profile's endpoint rather than
+            # assuming the contextualized embedder — passing a flat code model
+            # to contextualized_embed is a hard API rejection, since that
+            # endpoint only accepts voyage-context-3/4.
+            if content_profile.endpoint == "embeddings":
+                content_embeddings = await self.standard_embedder.embed_batch(
+                    texts=content_texts,
+                    model=content_profile.model,
+                    input_type=content_profile.index_input_type,
+                    output_dimension=content_profile.dimension,
+                    output_dtype=content_profile.dtype,
+                )
+            else:
+                content_response = await self.contextualized_embedder.embed_document(
+                    chunks=content_texts,
+                    model=content_profile.model,
+                    input_type=content_profile.index_input_type,
+                    output_dimension=content_profile.dimension,
+                    output_dtype=content_profile.dtype,
+                )
+                content_embeddings = content_response.embeddings
 
             title_embeddings = await self.standard_embedder.embed_batch(
                 texts=title_texts,
@@ -405,13 +419,17 @@ class IndexingPipeline:
 
         # 2. Ensure collection exists.
         # The manifest records the CONTENT vector's model: it determines the
-        # primary retrieval space and is the one that varies. title_vec and
-        # breadcrumb_vec are always voyage-code-3. If F-001 collapses code onto
-        # a single model, this becomes the only model in play.
+        # primary retrieval space. D1 collapsed code onto a single flat model,
+        # so this is now the only model in play for a code collection.
+        # Read it from the profile, not from an embedder instance — after D1
+        # the contextualized embedder is not the one that produces content_vec,
+        # and sourcing the manifest from it would record a model the collection
+        # does not actually contain.
+        content_profile = self.collection_profile.content()
         self.vector_search.manifest = build_collection_manifest(
-            model=self.contextualized_embedder.default_model,
-            output_dimension=self.contextualized_embedder.output_dimension,
-            output_dtype=self.contextualized_embedder.output_dtype,
+            model=content_profile.model,
+            output_dimension=content_profile.dimension,
+            output_dtype=content_profile.dtype,
             chunker_version=CODE_CHUNKER_VERSION,
         )
         await self.vector_search.create_collection()
@@ -614,7 +632,11 @@ if __name__ == "__main__":
             api_key=os.getenv("VOYAGE_API_KEY", "test"),
         )
 
-        # Contextualized embedder for content (14.24% better accuracy)
+        # Contextualized embedder: retained for docs and for a contextualized
+        # rollback. The "14.24% better accuracy" claim previously noted here was
+        # a vendor figure, not a measurement of this corpus; the Wave 0
+        # benchmark (2026-09-04) measured the opposite for code retrieval, which
+        # is why D1 moved code content_vec to the flat endpoint.
         contextualized_embedder = ContextualizedEmbedder(
             api_key=os.getenv("VOYAGE_API_KEY", "test"),
         )
