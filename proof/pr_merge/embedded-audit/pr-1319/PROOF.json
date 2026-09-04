@@ -1,0 +1,29 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1319,
+  "head_sha": "6de2f30309db11ea79713382932a4320776ff1d1",
+  "generated_at": "2026-09-04T13:20:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/integration-deps-2026-09 --add-dir /tmp/wave2b_audit --print=\"$(cat /tmp/wave2b_audit/PROMPT.txt)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-OPEN-PR-DRAIN-WAVE-2B-DEPS-001/AUDITOR_REPORT.md",
+    "findings": [
+      {"id": "F01", "severity": "INFO", "title": "Diff scope confined to uv.lock + package-lock.json only", "status": "RESOLVED", "body": "Verified via git diff --name-status."},
+      {"id": "F02", "severity": "INFO", "title": "uv.lock's only version change is pip 26.1.2->26.2", "status": "RESOLVED", "body": "Independently grepped."},
+      {"id": "F03", "severity": "INFO", "title": "package-lock.json's only version change is postcss-selector-parser 6.1.2->6.1.4", "status": "RESOLVED", "body": "Independently grepped."},
+      {"id": "F04", "severity": "INFO", "title": "FastAPI remains pinned at 0.135.2", "status": "RESOLVED", "body": "Regression confirmed excluded."},
+      {"id": "F05", "severity": "INFO", "title": "Route-contract test independently re-run", "status": "RESOLVED", "body": "3/3 passed."},
+      {"id": "F06", "severity": "INFO", "title": "No secrets, routine metadata only", "status": "RESOLVED", "body": "Version/hash/URL updates only."}
+    ],
+    "fixes_applied": [
+      "#1295 excluded from this batch after discovering the fastapi upgrade regression"
+    ],
+    "remaining_risks": [],
+    "skip_reason": null,
+    "instruction_like_content": {"detected": false, "match_count": 0, "truncated": false, "matches": []}
+  }
+}
