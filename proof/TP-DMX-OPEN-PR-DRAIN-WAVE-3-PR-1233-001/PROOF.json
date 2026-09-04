@@ -2,8 +2,8 @@
   "packet_id": "TP-DMX-OPEN-PR-DRAIN-WAVE-3-PR-1233-001",
   "status": "PASS",
   "risk_lane": "L0_DETERMINISTIC",
-  "head_sha": "9d1add1b119bbca46e37c1ef599d002e7cbe2af6",
-  "generated_at": "2026-09-04T12:30:00Z",
+  "head_sha": "a896968b42656e27081cf151a97906b67cb6cc37",
+  "generated_at": "2026-09-04T12:50:00Z",
   "repo_identity": {
     "project_id": "dopemux-mvp",
     "repo_marker": ".dopetaskroot",
@@ -17,10 +17,10 @@
     "branch": "redo/pr-1233-ci-trust-evidence",
     "base": "f7f0ed626b33e855ae87b3f7fb657e15a60542c1",
     "base_note": "current main at redo time",
-    "content_head": "9d1add1b119bbca46e37c1ef599d002e7cbe2af6",
-    "final_head": "9d1add1b119bbca46e37c1ef599d002e7cbe2af6"
+    "content_head": "a896968b42656e27081cf151a97906b67cb6cc37",
+    "final_head": "a896968b42656e27081cf151a97906b67cb6cc37"
   },
-  "background": "TP-DMX-OPEN-PR-DRAIN-MERGE-001 Wave 3 (§17). Redo of #1233 (closed, superseded): #1233's declared base.sha predates the packet_dir fix in local_audit_acceptance.py and can never pass independent embedded audit via the standard proof-bundle convention. Content cherry-picked byte-identical onto current main, zero conflicts. GitHub PR: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1316",
+  "background": "TP-DMX-OPEN-PR-DRAIN-MERGE-001 Wave 3 (§17). Redo of #1233 (closed, superseded): #1233's declared base.sha predates the packet_dir fix in local_audit_acceptance.py and can never pass independent embedded audit via the standard proof-bundle convention. Content cherry-picked byte-identical onto current main, zero conflicts. Commit a896968 fixes 4 documentation-quality issues flagged by automated (Copilot) review (header self-contradiction, an unbounded historical claim, a typo, and an unexplained ERROR status on evidence needing a clarifying note) -- independently re-verified in a round-2 audit. GitHub PR: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1316",
   "files_changed": [
     "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/INCIDENT_REPORT.md",
     "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/AGY_AUDIT_GEMINI31_PHASE_A.md",
@@ -51,14 +51,18 @@
     "status": "PASS",
     "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/pr-1233 --add-dir /tmp/audit_1233 --print=\"$(cat /tmp/audit_1233/PROMPT.txt)\"",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/pr-1233-redo --add-dir /tmp/audit_1316_followup --print=\"$(cat /tmp/audit_1316_followup/PROMPT.txt)\"",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-OPEN-PR-DRAIN-WAVE-3-PR-1233-001/AUDITOR_REPORT.md",
     "findings": [
-      {"id": "FINDING-1", "severity": "INFO", "title": "Diff confined to proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/**", "status": "RESOLVED", "body": "Verified: no runtime/workflow/schema files touched."},
-      {"id": "FINDING-2", "severity": "INFO", "title": "Evidence cross-checked and authentic", "status": "RESOLVED", "body": "branch_protection_main.json and pr1227_full.json spot-checked against INCIDENT_REPORT.md's claims; consistent."},
-      {"id": "FINDING-3", "severity": "INFO", "title": "Secret scan clean", "status": "RESOLVED", "body": "No exposed tokens/credentials found in evidence files."},
-      {"id": "FINDING-4", "severity": "INFO", "title": "Inert to runtime behavior", "status": "RESOLVED", "body": "Pure .md/.json/.txt documentation, no executable content."}
+      {"id": "FINDING-1", "severity": "INFO", "title": "Diff confined to proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/**", "status": "RESOLVED", "body": "Verified: no runtime/workflow/schema files touched. Round 1 audit."},
+      {"id": "FINDING-2", "severity": "INFO", "title": "Evidence cross-checked and authentic", "status": "RESOLVED", "body": "branch_protection_main.json and pr1227_full.json spot-checked against INCIDENT_REPORT.md's claims; consistent. Round 1 audit."},
+      {"id": "FINDING-3", "severity": "INFO", "title": "Secret scan clean", "status": "RESOLVED", "body": "No exposed tokens/credentials found in evidence files. Round 1 audit."},
+      {"id": "FINDING-4", "severity": "INFO", "title": "Inert to runtime behavior", "status": "RESOLVED", "body": "Pure .md/.json/.txt documentation, no executable content. Round 1 audit."},
+      {"id": "FINDING-5", "severity": "INFO", "title": "Header self-contradiction fixed and verified", "status": "RESOLVED", "body": "Round 2: header now accurately summarizes Phase B execution (§11) and canary results (§12)."},
+      {"id": "FINDING-6", "severity": "INFO", "title": "§5 unbounded historical claim softened and verified consistent with §10", "status": "RESOLVED", "body": "Round 2: independently confirmed §5 and §10 no longer contradict."},
+      {"id": "FINDING-7", "severity": "INFO", "title": "Typo fixed", "status": "RESOLVED", "body": "Round 2: 'Verdic' -> 'Verdict' confirmed."},
+      {"id": "FINDING-8", "severity": "INFO", "title": "AGY raw-output ERROR status clarifying note verified accurate", "status": "RESOLVED", "body": "Round 2: independently read the raw JSON, confirmed the ERROR is a trailing unrelated cascade-step failure, response field intact and matching the cited evidence file."}
     ],
     "fixes_applied": [],
     "remaining_risks": [],
