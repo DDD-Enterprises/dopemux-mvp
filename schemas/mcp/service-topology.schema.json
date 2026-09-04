@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "packet_id",
+    "generated_at_utc",
+    "sharing_classes",
+    "selected_architecture",
+    "services_count",
+    "services"
+  ],
+  "properties": {
+    "packet_id": { "type": "string" },
+    "generated_at_utc": { "type": "string" },
+    "sharing_classes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "selected_architecture": { "type": "string" },
+    "services_count": { "type": "integer" },
+    "services": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "SERVICE_ID",
+          "CURRENT_CLASS",
+          "TARGET_CLASS",
+          "CURRENT_RUNTIME",
+          "FLIP_GATE",
+          "CANONICAL_AUTHORITY",
+          "IDENTITY_SCOPE",
+          "STORAGE_SCOPE",
+          "PORT_POLICY",
+          "FAIL_CLOSED_RULE",
+          "EVIDENCE_REFS",
+          "DISPOSITION",
+          "ELIGIBLE_FOR_TARGET_NOW",
+          "DEFERRED_OPTION"
+        ],
+        "properties": {
+          "SERVICE_ID": { "type": "string" },
+          "CURRENT_CLASS": { "type": "string" },
+          "TARGET_CLASS": { "type": "string" },
+          "CURRENT_RUNTIME": { "type": "string" },
+          "FLIP_GATE": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "CANONICAL_AUTHORITY": { "type": "string" },
+          "IDENTITY_SCOPE": { "type": "string" },
+          "STORAGE_SCOPE": { "type": "string" },
+          "PORT_POLICY": { "type": "string" },
+          "FAIL_CLOSED_RULE": { "type": "string" },
+          "EVIDENCE_REFS": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "DISPOSITION": { "type": "string" },
+          "ELIGIBLE_FOR_TARGET_NOW": { "type": "boolean" },
+          "DEFERRED_OPTION": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

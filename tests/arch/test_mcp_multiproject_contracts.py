@@ -74,3 +74,51 @@ def test_alias_never_becomes_authority():
     bad["aliases"][0]["role"] = "AUTHORITY"
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate(bad, schema)
+
+
+def _v2_catalog() -> dict:
+    return {
+        "version": 2,
+        "defaults": {"worktree": ["serena"]},
+        "servers": {
+            "serena": {
+                "sharing_class": "WORKTREE_SCOPED",
+                "target_class": "WORKTREE_SCOPED",
+                "transport": "http",
+                "plane": "code-intelligence",
+                "authority_role": "code-intelligence",
+                "lifecycle": "active",
+                "management_model": "compose-service",
+                "identity_scope": "per-instance",
+                "state_authority": "derived",
+                "mutation_class": "scoped",
+                "endpoint_policy": "leased",
+                "probe": "mcp",
+                "idle_policy": "instance_idle",
+                "flip_gate": ["concurrency-safe per-request workspace implementation"],
+            }
+        },
+    }
+
+def test_topology_matches_schema():
+    schema = _load_schema("service-topology.schema.json")
+    topology = json.loads((REPO_ROOT / "docs/03-reference/mcp/multiproject-service-topology.json").read_text())
+    jsonschema.validate(topology, schema)
+
+def test_v2_catalog_matches_schema():
+    schema = _load_schema("fleet-catalog-v2.schema.json")
+    jsonschema.validate(_v2_catalog(), schema)
+
+def test_legacy_fields_rejected_by_v2_schema():
+    schema = _load_schema("fleet-catalog-v2.schema.json")
+    bad = _v2_catalog()
+    bad["servers"]["serena"]["scope"] = "worktree"
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(bad, schema)
+
+def test_multi_project_singleton_rejected():
+    schema = _load_schema("fleet-catalog-v2.schema.json")
+    bad = _v2_catalog()
+    bad["servers"]["serena"]["multi_project_singleton"] = True
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(bad, schema)
