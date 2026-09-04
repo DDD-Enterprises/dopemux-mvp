@@ -1,14 +1,14 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1283,
-  "head_sha": "a414d5d2b08a707b8722608cd56a0c60115aee20",
+  "head_sha": "bc7d96d539dac82c23caf67850742196dcc550c5",
   "generated_at": "2026-08-28T01:45:45Z",
   "embedded_audit": {
     "required": true,
     "status": "PASS_WITH_RISKS",
-    "auditor_tool": "copilot-cli",
-    "auditor_model": "claude-sonnet-4.6",
-    "invocation": "COPILOT_HOME=/private/tmp/copilot-wave0-audit-home copilot --mode plan --model claude-sonnet-4.6 --effort high --max-ai-credits 300 --disable-builtin-mcps --disable-mcp-server github-mcp-server --excluded-tools=github-mcp-server --deny-tool=github-mcp-server --deny-tool=write --deny-url=https://github.com --deny-url=https://api.github.com --no-custom-instructions --no-remote --no-remote-export --no-auto-update",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "Antigravity CLI / d8d91544-4731-49d4-b770-8fd8a05f223c",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001/AUDITOR_REPORT.md",
     "findings": [
