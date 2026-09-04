@@ -1,0 +1,45 @@
+Scoped follow-up independent audit for DDD-Enterprises/dopemux-mvp PR #1316
+(part of TP-DMX-OPEN-PR-DRAIN-MERGE-001 Wave 3). Your prior audit of this
+same content (as #1233) PASSED. Since then, GitHub's automated Copilot
+review left 4 comments and the operator applied 4 small documentation-only
+fixes in direct response. Verify ONLY these fixes, using real filesystem
+access via --add-dir to the actual worktree:
+
+1. Copilot flagged that INCIDENT_REPORT.md's header (**Stage**: line) said
+   "Phase B not started" while §11/§12 later in the SAME document record
+   Phase B execution and a canary validation — self-contradictory. Fix:
+   header updated to summarize what actually happened. Verify the new
+   header text is accurate against what §11/§12 actually say.
+2. Copilot flagged that §5 states the gate was "advisory-only for every PR
+   merged since" — an unbounded historical claim — even though §10 (the
+   independent audit section) already noted this should be scoped to the
+   ruleset's `updated_at` timestamp. Fix: §5's sentence was reworded to
+   include that scoping. Verify the reworded sentence in §5 is factually
+   consistent with what §10 already says (they should not contradict).
+3. Copilot flagged a typo: "### Verdic" should be "### Verdict" in
+   evidence/AGY_AUDIT_GEMINI31_PHASE_A.md. Verify it now reads "Verdict".
+4. Copilot flagged that evidence/AGY_AUDIT_GEMINI31_PHASE_A_RAW.json has a
+   top-level `status` of `ERROR` even though it's cited as primary PASS
+   evidence, with no explanation. Fix: a clarifying sentence was added in
+   §10 of INCIDENT_REPORT.md, near where that file is first cited,
+   explaining that the ERROR is a trailing unrelated internal cascade-step
+   failure that happened after the auditor had already written its
+   complete verdict, and that the `response` field is intact. VERIFY THIS
+   CLAIM YOURSELF: read the actual raw JSON file
+   (proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/AGY_AUDIT_GEMINI31_PHASE_A_RAW.json)
+   and confirm (a) status is indeed "ERROR", (b) the error message is about
+   an unrelated command-execution step (not the audit reasoning itself),
+   (c) the `response` field is present, non-empty, and its content matches
+   evidence/AGY_AUDIT_GEMINI31_PHASE_A.md's text (same verdict, same
+   findings). If the new clarifying sentence in §10 misrepresents any of
+   this, say so.
+
+Also confirm: no OTHER content changed (this should be a pure 2-file,
+documentation-only diff — INCIDENT_REPORT.md and
+AGY_AUDIT_GEMINI31_PHASE_A.md — nothing else touched, no runtime/schema
+changes).
+
+Return PASS / PASS_WITH_RISKS / FAIL / NEEDS_SUPERVISOR with findings.
+
+Worktree: /Users/hue/code/dopemux-mvp/.worktrees/pr-1233-redo
+Diff: /tmp/audit_1316_followup/DIFF.txt

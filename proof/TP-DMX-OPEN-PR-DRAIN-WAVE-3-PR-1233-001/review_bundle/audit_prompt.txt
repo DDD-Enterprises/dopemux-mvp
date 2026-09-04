@@ -1,0 +1,29 @@
+Independent embedded audit for DDD-Enterprises/dopemux-mvp PR #1233, part of a
+governed PR-drain packet (TP-DMX-OPEN-PR-DRAIN-MERGE-001, Wave 3: bounded
+governance/evidence PRs). This PR adds only evidence/documentation files
+under one proof directory: proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/**
+(an incident report + supporting evidence JSON/text files documenting a past
+CI-trust merge-gate incident). It does not touch any runtime code, schema,
+workflow, or config file.
+
+Verify, using your real filesystem access via --add-dir to the actual
+worktree:
+1. Confirm the changed files are exactly what's listed in
+   /tmp/audit_1233/DIFF.txt and are all under
+   proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/** — no runtime code, no
+   workflow files, no schema files touched.
+2. Read INCIDENT_REPORT.md and spot-check it against a couple of the
+   evidence JSON files it references (e.g. does branch_protection_main.json
+   plausibly support what the report claims about branch protection state;
+   does pr1227_full.json / pr1227_timeline.json exist and look like real
+   GitHub API captures, not fabricated).
+3. Scan for secrets, credentials, or tokens in the evidence JSON files (API
+   captures sometimes leak auth headers or tokens).
+4. Confirm nothing in this diff would silently change repository behavior
+   (it should be pure documentation/evidence, inert).
+
+Return PASS / PASS_WITH_RISKS / FAIL / NEEDS_SUPERVISOR with findings (id,
+severity, title, status, body). Be concrete about what you actually read.
+
+Worktree: /Users/hue/code/dopemux-mvp/.worktrees/pr-1233
+Diff file: /tmp/audit_1233/DIFF.txt
