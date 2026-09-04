@@ -5,7 +5,7 @@
   "base": "main",
   "base_sha": "649fe5e73496d76a54410dfa45a9d97b11634207",
   "head_sha": "f27b66f88986a928a2161576c2072049ea8f56ea",
-  "pr_number": null,
+  "pr_number": 1311,
   "kind": "post-merge closure successor: bounded test/governance-proof repair closing the merged P0 root-compose no-runtime-effect gap",
   "packet_sha256": "46533a559e28b158b47482f6491124b825df9dfeffae79862a26ec6d7fb0f43d",
   "audited_files": [
