@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.local/schemas/mcp/ownership-evidence.schema.json",
+  "title": "Dopemux MCP Ownership Evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "classification", "mutation_eligible"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "dopemux.mcp.ownership-evidence.v1"
+    },
+    "classification": {
+      "type": "string"
+    },
+    "mutation_eligible": {
+      "type": "boolean"
+    },
+    "registry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verified", "project_id", "registry_generation"],
+      "properties": {
+        "verified": { "type": "boolean" },
+        "project_id": { "type": "string" },
+        "registry_generation": { "type": "integer" }
+      }
+    },
+    "lease": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verified", "lease_id"],
+      "properties": {
+        "verified": { "type": "boolean" },
+        "lease_id": { "type": "string" }
+      }
+    },
+    "probe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verified", "service_family"],
+      "properties": {
+        "verified": { "type": "boolean" },
+        "service_family": { "type": "string" }
+      }
+    },
+    "storage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verified", "evidence"],
+      "properties": {
+        "verified": { "type": "boolean" },
+        "evidence": { "type": "string" }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "classification": { "const": "OWNED" },
+          "mutation_eligible": { "const": true }
+        },
+        "required": ["classification", "mutation_eligible"]
+      },
+      "then": {
+        "required": ["registry", "lease", "probe", "storage"],
+        "properties": {
+          "registry": {
+            "properties": { "verified": { "const": true } }
+          },
+          "lease": {
+            "properties": { "verified": { "const": true } }
+          },
+          "probe": {
+            "properties": { "verified": { "const": true } }
+          },
+          "storage": {
+            "properties": { "verified": { "const": true } }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "classification": { "not": { "const": "OWNED" } }
+        }
+      },
+      "then": {
+        "properties": {
+          "mutation_eligible": { "const": false }
+        }
+      }
+    }
+  ]
+}

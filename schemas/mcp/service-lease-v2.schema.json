@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.local/schemas/mcp/service-lease-v2.schema.json",
+  "title": "Dopemux MCP Service Lease v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sharing_class", "status"],
+  "properties": {
+    "sharing_class": {
+      "type": "string",
+      "enum": ["HOST_SINGLETON", "PROJECT_SCOPED", "WORKTREE_SCOPED", "RETIRED"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "stale", "released", "unknown", "conflicting"]
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "instance_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lease_id": {
+      "type": "string"
+    },
+    "endpoint_url": {
+      "type": "string"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "sharing_class": { "const": "PROJECT_SCOPED" } },
+        "required": ["sharing_class"]
+      },
+      "then": {
+        "required": ["project_id"]
+      }
+    },
+    {
+      "if": {
+        "properties": { "sharing_class": { "const": "WORKTREE_SCOPED" } },
+        "required": ["sharing_class"]
+      },
+      "then": {
+        "required": ["project_id", "instance_id"]
+      }
+    },
+    {
+      "if": {
+        "properties": { "sharing_class": { "const": "RETIRED" } },
+        "required": ["sharing_class"]
+      },
+      "then": {
+        "not": {}
+      }
+    }
+  ]
+}
