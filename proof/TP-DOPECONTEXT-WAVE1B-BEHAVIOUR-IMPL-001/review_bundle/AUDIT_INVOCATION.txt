@@ -1,0 +1,1 @@
+agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/adr226-a5a-wave1 --add-dir /tmp/adr226_a5a_audit --print="$(cat /tmp/adr226_a5a_audit/PROMPT.txt)"
