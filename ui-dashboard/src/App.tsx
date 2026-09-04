@@ -643,7 +643,7 @@ function DashboardApp() {
             }}
             action={
               connectionStatus === 'degraded' ? (
-                <Tooltip title="Attempt to re-establish connection to DØPEMÜX Ritual Daemon" arrow>
+                <Tooltip title="Attempt to re-establish connection to DØPEMÜX Ritual Daemon" arrow describeChild>
                   <Button
                     color="inherit"
                     size="small"
