@@ -2,7 +2,7 @@
 title: dope-context Retrieval Stack — Target Design and Implementation Plan
 date: 2026-09-03
 author: Claude (Fable 5.1), session 89799646
-status: PROPOSED — Revision 2.3; D1–D3 RULED by operator 2026-09-03 (see "Revision 2.3"); eval/ carve-out landed with ADR-226 (B12 closed); whole-repo benchmark NOT_RUN — blocked on OPENAI_API_KEY inside `mcp-dope-context` (empty) for the `Bhl` arm
+status: PROPOSED — Revision 3 (wave plan reconciled 2026-09-04 against merged PR #1304; see "Revision 3" and claudedocs/dope-context-wave-reconciliation-2026-09-04.md — the record wins over both wave plans here); Revision 2.3; D1–D3 RULED by operator 2026-09-03 (see "Revision 2.3"); eval/ carve-out landed with ADR-226 (B12 closed); whole-repo benchmark NOT_RUN — blocked on OPENAI_API_KEY inside `mcp-dope-context` (empty) for the `Bhl` arm
 base: origin/main 04be55535 (services/dope-context byte-identical to e07ff3efc)
 branch: claude/dope-context-retrieval-redesign-2026-09-03
 supersedes: nothing; extends claudedocs/dope-context-modernization-audit-2026-09-03.md
@@ -727,3 +727,46 @@ executed — only A/B/Bh/Bhl/CTRL ran, with B standing in for `D`.
 - Options (operator choice, max 3): (a) `dopemux mcp stop/start dope-context` so the container re-reads `.env`,
   then run all five arms; (b) run A/B/Bh/CTRL now, defer `Bhl`; (c) inject the key per-exec
   (`docker exec -e OPENAI_API_KEY=… `) — not recommended (key in shell history / process list).
+
+---
+
+## Revision 3 — 2026-09-04, wave-plan reconciliation after PR #1304 merged
+
+**This revision is a pointer, not a rewrite.** The waves in §7 and in Revision 2 §R2.2 have both been
+reconciled against what actually landed on `main`. The reconciliation record is
+`claudedocs/dope-context-wave-reconciliation-2026-09-04.md` and, where it conflicts with either wave
+plan in this document, **the record wins**.
+
+What the record settles, in one line each:
+
+1. **This document contains two Wave 1 definitions.** §7's and Revision 2 §R2.2's differ in six of
+   twelve owner files. Revision 2's header already says the later revision wins; the record applies
+   that consistently and adds Revision 2.1 §7's `model_registry.py`.
+2. **Revision 2's re-cut is itself defective in three ways** and is not inherited unchanged:
+   `code_chunker.py` cannot sit in a "manifest-compatible" wave (`CODE_CHUNKER_VERSION` is in
+   `fingerprint_payload()`); the re-cut silently deleted §7's Wave 2 (chunking v2) and orphaned
+   `document_processor.py`, `contextualized_embedder.py`, `docs_pipeline.py` and `bm25_index.py`;
+   and `server.py` carries C1/C13 while belonging to no Rev-2 Wave 1.
+3. **Wave 0 shipped Wave-2-class work.** D1 changed `content_vec`'s model *and* endpoint — two
+   `fingerprint_payload()` members — inside Wave 0's packet. §7 Wave 1's "no manifest bump"
+   guarantee is void, and §7 Wave 5's default switch is already half-consumed.
+4. **Manifest-boundary ruling.** Rev-2 Wave 2 (schema + identity + sparse) **stands as scoped** — D1
+   consumed none of it. What D1 voided is finding B5's *cost* rationale, which was already thin
+   (this document itself records a cold start with no live dopemux-mvp index). The
+   "manifest-compatible" constraint is retained on Wave 1 as a **reviewability** property instead:
+   a wave that cannot move `fingerprint_payload()` is a wave whose ADR-226 amendment is approvable
+   on the diff alone. That corollary is what evicts `code_chunker.py` and C12 from Wave 1.
+5. **Re-cut plan: six named waves** — BEHAVIOUR, CHUNKING, IDENTITY+RETRIEVAL, SYNC, CONTEXTGEN,
+   CLOSURE — with a crosswalk to both §7's and Revision 2's numbering, still file-disjoint, now with
+   file-disjointness doing double duty as a governance property.
+6. **Three Wave 1 items were already closed on `main`** and are struck rather than re-implemented:
+   E3 (F-014, rerank failure surfaced through `server.py`), E11 (F-012, bounded embedding cache),
+   E21 (request counted before the hit ratio).
+7. **Wave 1's governance cost is 5 new exemptions, not ~9**, split into two severable ADR-226
+   sub-amendments (A5a / A5b). The packet is
+   `task-packets/dope-context/TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007.md`.
+
+Unchanged by this revision: §3's vendor facts, §4's target design, Revision 2's amendments R2.2-4.1
+through 4.7, Revision 2.1's probe corrections, Revision 2.2's pricing, and Revision 2.3's D1–D3
+rulings. The whole-repo benchmark remains **NOT_RUN** and packet
+`TP-DOPECONTEXT-VECTOR-SPACE-0004` remains `DECISION_REQUIRED`.
