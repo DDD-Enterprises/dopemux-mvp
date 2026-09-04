@@ -1,0 +1,5 @@
+focused+relevant pytest (tests/arch/test_mcp_multiproject_contracts.py tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_runtime_registry.py): 129 passed (exit 0)
+focused pytest (test_mcp_multiproject_contracts.py): 76 passed (exit 0)
+packet canonical schema (jsonschema): PASS (exit 0)
+git diff --check: PASS (exit 0)
+pre-commit run --files (content diff): PASS (exit 0, no file modification)

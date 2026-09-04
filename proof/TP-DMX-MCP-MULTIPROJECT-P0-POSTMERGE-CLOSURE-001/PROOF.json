@@ -1,0 +1,66 @@
+{
+  "packet_id": "TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001",
+  "series": "DMX-MCP-MULTIPROJECT",
+  "branch": "codex/mcp-multiproject-p0-postmerge-closure",
+  "base": "main",
+  "base_sha": "649fe5e73496d76a54410dfa45a9d97b11634207",
+  "head_sha": "f27b66f88986a928a2161576c2072049ea8f56ea",
+  "pr_number": null,
+  "kind": "post-merge closure successor: bounded test/governance-proof repair closing the merged P0 root-compose no-runtime-effect gap",
+  "packet_sha256": "46533a559e28b158b47482f6491124b825df9dfeffae79862a26ec6d7fb0f43d",
+  "audited_files": [
+    "task-packets/INDEX.md",
+    "task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json",
+    "task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.md",
+    "tests/arch/test_mcp_multiproject_contracts.py",
+    "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/implementation-notes.md"
+  ],
+  "validations": {
+    "focused_tests": "PASS (76 passed: tests/arch/test_mcp_multiproject_contracts.py)",
+    "focused_relevant_tests": "PASS (129 passed: test_mcp_multiproject_contracts.py + test_mcp_fleet_catalog_contract.py + test_mcp_runtime_registry.py)",
+    "packet_canonical_schema": "PASS (jsonschema vs dopetask-canonical-spec.json; re-verified by auditor with check-jsonschema)",
+    "git_diff_check": "PASS (exit 0)",
+    "pre_commit": "PASS (exit 0, no file modification)",
+    "no_runtime_effect": "PASS (diff isolated to task-packets/, tests/arch/test_mcp_multiproject_contracts.py, proof/)",
+    "packet_json_byte_identity": "PASS (SHA256 46533a559e28b158b47482f6491124b825df9dfeffae79862a26ec6d7fb0f43d == authoring input)"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "gemini-cli",
+    "auditor_model": "gemini",
+    "invocation": "opencode run --auto -m cheaper-inference/gemini-3.1-pro (independent L2 audit of frozen content head f27b66f88986a928a2161576c2072049ea8f56ea; implementer was cheaper-inference/deepseek-v4-flash-0731; exact invocation in review_bundle/AUDIT_INVOCATION.txt; raw output review_bundle/AUDIT_OUTPUT.txt; closed-enum representational label matching parent proof precedent: auditor_tool=gemini-cli, auditor_model=gemini; real identity is opencode CLI 1.18.27 + Google Gemini 3.1 Pro via cheaper-inference provider)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-001",
+        "severity": "LOW",
+        "title": "Deprecated python -m jsonschema CLI tooling",
+        "status": "RESOLVED",
+        "body": "The packet verify command 'python -m jsonschema' emits a DeprecationWarning (CLI will be removed in future). Auditor re-verified the packet against dopetask-canonical-spec.json with check-jsonschema and it passed. No functional defect."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Audit verified the frozen content head by inspection, read-only deterministics, and a focused pytest rerun; it did not exercise a live MCP client against a running fleet (out of scope; change is test/governance-proof only with no runtime effect by design).",
+      "Pre-merge evidence for PR #1306's SECURITY_RELEASE_APPROVAL_REQUIRED gate remains UNKNOWN; recorded as such, not converted into retroactive proof."
+    ],
+    "skip_reason": null
+  },
+  "provenance": {
+    "audit_source": "fresh-independent-opencode-gemini",
+    "opencode_version": "1.18.27",
+    "requested_selector": "cheaper-inference/gemini-3.1-pro",
+    "observed_primary_model": "google-gemini-3.1-pro",
+    "tools_enabled": true,
+    "session_persistence": false,
+    "subagents_spawned": 0,
+    "implementer_family": "opencode (cheaper-inference/deepseek-v4-flash-0731)",
+    "auditor_family": "Google Gemini (via opencode cheaper-inference provider)",
+    "independence": "PROVEN_DIFFERENT_VENDOR_MODEL_FAMILY",
+    "pal_clink_used": false,
+    "raw_stdout_preserved": true,
+    "raw_stdout_file": "review_bundle/AUDIT_OUTPUT.txt"
+  }
+}
