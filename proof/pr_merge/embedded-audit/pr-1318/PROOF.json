@@ -1,0 +1,24 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1318,
+  "head_sha": "1f6af050aca60a21c10c280756f22358fc3596ec",
+  "generated_at": "2026-09-04T13:57:27Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 15m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/dope-context-wave-reconciliation-001 --print=\"$(cat proof/TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007/review_bundle/AUDIT_INPUT.md)\"; exact invocation record in review_bundle/AUDIT_INVOCATION.txt; raw transport JSON in review_bundle/AUDIT_OUTPUT_RAW.json; rendered verdict in review_bundle/AGY_AUDIT.md",
+    "exit_code": 0,
+    "report_path": "proof/TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "CI 'independent embedded audit' and 'PR Steward / final readiness' are red on this head for the standing structural reason (static auditor route preflights NEEDS_SUPERVISOR; PAL clink exits 127 with 'Trusted Claude provider credential is unavailable' -- run 33878654636, 24s, no provider call). This AGY round is the exact-subject audit imported through the local signed-attestation lane; it is not a claim that the CI route executed.",
+      "ADR-226 Amendment A5 is PROPOSED, not approved. src/dopemux/dcp/red_lane_rules.py is unchanged by this PR; the regex lands only on operator approval, as A2/A3/A4 each did. Nothing here opens the red lane.",
+      "The reconciliation record's finding R-6 (the pr-92 checkout carries no DCP red lane at all) was returned NOT_VERIFIABLE by the auditor because that checkout lies outside the mounted worktree. It rests on this session's own probe and was not independently reproduced. The in-scope half -- that this worktree does contain .claude/hooks/dcp_surface_guard.py and src/dopemux/dcp/red_lane_rules.py -- was verified.",
+      "The whole-repo dope-context benchmark remains NOT_RUN and TP-DOPECONTEXT-VECTOR-SPACE-0004 remains DECISION_REQUIRED. This PR changes neither."
+    ],
+    "skip_reason": null
+  }
+}
