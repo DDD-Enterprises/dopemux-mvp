@@ -71,6 +71,15 @@ FORBIDDEN_PATHS = [
         # unused SearchRequest import that qdrant-client 1.19 removed.
         r"(?!src/embeddings/voyage_embedder\.py\Z)"
         r"(?!src/search/dense_search\.py\Z)"
+        # A5a (2026-09-04, TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001
+        # follow-up): Wave 1 (BEHAVIOUR) exemptions approved by the operator
+        # -- a new behavioural test file plus two leaf src/utils/ modules.
+        # A5b (contextualized_embedder.py, voyage_reranker.py -- live paid
+        # Voyage API retry/billing behaviour) is explicitly NOT approved and
+        # stays hard-blocked pending a separate cost/runtime tranche.
+        r"(?!tests/test_wave1_behaviour\.py\Z)"
+        r"(?!src/utils/model_tokenizer\.py\Z)"
+        r"(?!src/utils/token_budget\.py\Z)"
         r".*\Z",
         re.DOTALL,
     ),

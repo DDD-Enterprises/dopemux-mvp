@@ -23,21 +23,46 @@ which move the manifest or sit outside the governing Wave 1 definition.
 
 ## Status
 
-`AWAITING_AMENDMENT_A5`
+`PARTIALLY_DELIVERED — WAVE_1B_DONE / WAVE_1A_OPEN / WAVE_1C_HOLD`
 
-Wave 1a's four source files — `voyage_embedder.py`, `indexing_pipeline.py`,
-`server.py`, `model_registry.py` — are already exempt under the base ADR-226
-carve-out, amendment A2, and amendment A4. But Wave 1a still cannot ship
-without one new test file, `tests/test_wave1_behaviour.py`, which is not yet
-exempt. Wave 1b needs two more files (`model_tokenizer.py`, `token_budget.py`)
-and Wave 1c needs two more (`contextualized_embedder.py`,
-`voyage_reranker.py`) — four additional files beyond the one Wave 1a needs, so
-five files total remain gated. No implementation may begin on Wave 1b or
-Wave 1c before ADR-226 amendment A5 is approved and its regex lands in
-`src/dopemux/dcp/red_lane_rules.py`. Wave 1a's own test file also requires A5
-(specifically the A5a sub-amendment) before it can be created; until then
-Wave 1a cannot ship either, because a change without a driving test is exactly
-the failure mode this programme has already paid for once.
+ADR-226 Amendment A5 was split by the operator on review: **A5a APPROVED**
+(2026-09-04), **A5b HOLD** (retry behaviour changes live paid Voyage API
+billing; needs its own cost/runtime tranche, not this cheap path-level
+authorization). The regex landed in the same PR as this Wave 1b delivery,
+using `\Z` + `re.DOTALL` rather than this document's originally-displayed
+`$` (see `docs/90-adr/adr-226-dope-context-seam-narrow-carveout.md`
+Amendment A5, "Exact regex change" — corrected 2026-09-04 per
+`TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001`, PR #1322).
+
+**Wave 1b — DELIVERED this PR.** `model_tokenizer.py` (E10 cache bound),
+`token_budget.py` (E2/E4 starvation flags, E17 token_count preference), and
+the new `tests/test_wave1_behaviour.py` driving both plus a
+`fingerprint_payload()` immutability pin. Suite 124→133 passed (+9), guard
+suites 69→76 passed (+7, from the red-lane hardening PR), all three fixes
+mutation-tested.
+
+**Wave 1a — OPEN, not delivered.** `voyage_embedder.py`,
+`indexing_pipeline.py`, `server.py`, `model_registry.py` are already exempt
+(base carve-out / A2 / A4) and were never gated on A5a at all, but their
+content items (R-5, E1, E16, C1, C6, C13, registry additions) were outside
+the operator's approved scope for this PR — the approval named "a dedicated
+behavioral test surface, bounded tokenizer cache repair, and correction of
+dead degradation flags/token-count preference" only. E1 and E16 in
+particular touch the same live-paid-API-behaviour class the operator parked
+A5b for, so they should not be assumed pre-authorized by A5a's approval
+even though the file itself is exempt. Needs its own tranche/authorization.
+
+**Wave 1c — HOLD, blocked on A5b.** `contextualized_embedder.py`,
+`voyage_reranker.py` remain hard-blocked; not editable.
+
+One small addition beyond this packet's original file list: `server.py`'s
+docs-search raw-results construction now passes `token_count` through from
+the Qdrant payload (base-carve-out file, already allowed; the packet's own
+scope note for Wave 1a already expected `server.py` edits for C1/C13). This
+was necessary for E17 to be observable rather than dead plumbing — without
+it, `token_budget.py` would never actually see a `token_count` key on any
+real item. The field is consumed and stripped before any item reaches
+`enriched_results`, so the MCP response shape is unchanged.
 
 ## Provenance and supersession
 
