@@ -1,0 +1,95 @@
+{
+  "id": "TP-DMX-EMBEDDED-AUDIT-OPENCODE-KIMI-001",
+  "project": "dopemux-mvp",
+  "target": "Risk lane L3 (mutates a CI-enforced proof contract; independent audit required before merge). Add truthful first-class opencode-cli / kimi-k3 representation to the trusted embedded-audit contract so a genuine opencode CLI audit running the cheaper-inference Kimi K3 model can be recorded as PASS without fabricating an auditor identity and without abusing SKIPPED semantics. Admits exactly one pair, opencode-cli / kimi-k3, bound fail-closed in both directions. This packet fixes the vocabulary; it does not audit, accept, or merge any other packet.",
+  "invariants": [
+    "Existing enum values and SKIPPED behaviour are unchanged: every tool/model pair valid under the pre-change schema stays valid, proven by a differential test against the pre-change schema read from git rather than a paraphrase of its rules.",
+    "The opencode/kimi pair is bound in both directions: auditor_model kimi-k3 requires auditor_tool opencode-cli, and auditor_tool opencode-cli requires auditor_model kimi-k3. Neither half may be borrowed by another runner.",
+    "kimi-k3 is the model id served by the cheaper-inference broker (https://api.cheaperinference.com/v1, opencode provider key 'cheaper-inference'), verified live reachable and selectable. It is the ONLY non-billing-blocked live auditor route in this environment as of authoring.",
+    "Only opencode-cli / kimi-k3 is admitted. Any other opencode model or Kimi selector (e.g. moonshotai/kimi-k3, kimi-k3.5, kimi-k2.6) is deliberately NOT admitted: the operator authorized kimi-k3 only, and admitting any further opencode/Kimi surface is a separate operator decision.",
+    "This packet's own controlling audit must NOT be performed by opencode-cli/kimi-k3. A route that bootstraps its own admission is not an independent audit. Use a pre-change-representable route (agy/antigravity/grok/claude/others), and if none is available due to external provider billing, stop and report BLOCKED_AUDITOR_BOOTSTRAP exactly as the grok precedent (TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001 S5) documents.",
+    "No runtime behaviour changes. No proof bundle other than this packet's is edited.",
+    "PR #1307 is NOT touched by this packet; this packet only admits the vocabulary so a later, separate run can audit #1307 with the opencode/kimi route."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-EMBEDDED-AUDIT-OPENCODE-KIMI",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "feat/TP-DMX-EMBEDDED-AUDIT-OPENCODE-KIMI-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(audit): admit the opencode-cli/kimi-k3 embedded-audit route (TP-DMX-EMBEDDED-AUDIT-OPENCODE-KIMI-001)",
+    "allowlist": [
+      "schemas/proof/embedded_audit.schema.json",
+      "tests/audit/test_embedded_audit_opencode_kimi_route.py",
+      "tests/audit/test_local_audit_acceptance.py",
+      "task-packets/TP-DMX-EMBEDDED-AUDIT-OPENCODE-KIMI-001.json",
+      "proof/TP-DMX-EMBEDDED-AUDIT-OPENCODE-KIMI-001/**"
+    ]
+  },
+  "pr": {
+    "title": "feat(audit): admit the opencode-cli/kimi-k3 embedded-audit route",
+    "body": "The trusted embedded-audit contract had no vocabulary for the opencode CLI runner: auditor_tool enumerated [agy, antigravity, claude-code-cli, copilot-cli, gemini-cli, grok-cli, pal-mcp-clink, none] and auditor_model enumerated [sonnet, claude-sonnet-4.6, opus, gemini, gemini-3.1-pro-high, grok-4.5, unknown], with zero opencode/kimi entries, additionalProperties false, and the allOf forbidding tool 'none' or model 'unknown' for any non-SKIPPED status. An opencode CLI audit over the cheaper-inference Kimi K3 route therefore had only two representable encodings, both false: claim SKIPPED (asserts no audit happened) or name a runner from the enum (fabricates an auditor identity).\n\nThis fixes the vocabulary instead of teaching the evidence to lie. It admits exactly one pair, opencode-cli / kimi-k3, bound fail-closed in both directions so neither half can be stated without the other, following the grok-cli/grok-4.5 precedent (TP-DMX-EMBEDDED-AUDIT-GROK-ROUTE-001) and matching its bidirectional fail-closed conditionals.\n\nBackward compatibility is proven at class level, not by sample: a differential test reads the pre-change schema from git and asserts old and new agree on the verdict for every pre-change tool/model pair across all five statuses. The proof corpus revalidates under the new schema.\n\nScope mirrors the grok precedent. scripts/audit/run_embedded_audit.py is deliberately NOT changed (it holds no auditor recognition table). scripts/audit/local_audit_acceptance.py is likewise unchanged, being tool-agnostic and delegating to Draft7. The one consumer that must change is the parity corpus in tests/audit/test_local_audit_acceptance.py, which pins the conditional count and demands a violating fixture per conditional.\n\nNo runtime behaviour changes and no other packet's proof bundle is edited. This packet does NOT audit PR #1307; it only admits the vocabulary so a later run can.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Perform a deterministic consumer inventory of the embedded-audit auditor_tool/auditor_model enums on current main before mutating the contract, and record which sites change and which are excluded with reasons.",
+      "validation": [
+        "test -f proof/TP-DMX-EMBEDDED-AUDIT-OPENCODE-KIMI-001/CONSUMER_INVENTORY.json"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Add opencode-cli to auditor_tool and kimi-k3 to auditor_model, plus the two fail-closed conditionals binding the pair in both directions, each self-contained via then.required.",
+      "validation": [
+        "python3 -c \"import json;json.load(open('schemas/proof/embedded_audit.schema.json'))\"",
+        "python3 -m pytest tests/audit/test_embedded_audit_opencode_kimi_route.py -q"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Extend the local-acceptance parity corpus with violating fixtures for both new conditionals and update the pinned conditional count.",
+      "validation": [
+        "python3 -m pytest tests/audit/test_local_audit_acceptance.py -q"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Prove no regression across the existing proof corpus under the new schema.",
+      "validation": [
+        "python3 scripts/audit/validate_audit_proof.py --all proof",
+        "python3 -m pytest tests/audit/ -q"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Obtain an independent controlling audit from a route representable by the PRE-change schema. opencode-cli/kimi-k3 is forbidden as this packet's auditor (bootstrap rule). If no representable independent route is available due to external provider billing, stop and report BLOCKED_AUDITOR_BOOTSTRAP.",
+      "validation": [
+        "test -f proof/TP-DMX-EMBEDDED-AUDIT-OPENCODE-KIMI-001/AUDITOR_REPORT.md",
+        "python3 scripts/audit/validate_audit_proof.py proof/TP-DMX-EMBEDDED-AUDIT-OPENCODE-KIMI-001/PROOF.json"
+      ]
+    }
+  ]
+}

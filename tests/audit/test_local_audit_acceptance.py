@@ -1334,6 +1334,15 @@ def _grok_audit(**overrides: Any) -> dict:
     return audit
 
 
+def _opencode_kimi_audit(**overrides: Any) -> dict:
+    audit = _local_embedded_audit()
+    audit["auditor_model"] = "kimi-k3"
+    audit["auditor_tool"] = "opencode-cli"
+    audit["invocation"] = "opencode run --model cheaper-inference/kimi-k3 -p '<prompt>'"
+    audit.update(overrides)
+    return audit
+
+
 def _skipped_audit(**overrides: Any) -> dict:
     audit = _local_embedded_audit(status="SKIPPED", tool="none")
     audit["auditor_model"] = "unknown"
@@ -1358,6 +1367,11 @@ PARITY_CORPUS: list[tuple[str, dict, bool]] = [
     ("grok model with wrong tool", _grok_audit(auditor_tool="claude-code-cli"), False),
     ("grok tool with wrong model", _grok_audit(auditor_model="gemini"), False),
     ("grok build label is not a model", _grok_audit(auditor_model="grok-4.5-build"), False),
+    ("opencode/kimi pair bound both ways", _opencode_kimi_audit(), True),
+    ("opencode/kimi model with wrong tool", _opencode_kimi_audit(auditor_tool="claude-code-cli"), False),
+    ("opencode/kimi tool with wrong model", _opencode_kimi_audit(auditor_model="gemini"), False),
+    ("opencode/kimi tool borrowed by grok", _opencode_kimi_audit(auditor_model="grok-4.5"), False),
+    ("kimi model borrowed by grok-cli", _opencode_kimi_audit(auditor_tool="grok-cli"), False),
     ("skipped diagnostic", _skipped_audit(), True),
     ("skipped without skip_reason", _skipped_audit(skip_reason=None), False),
     ("skipped with a live tool", _skipped_audit(auditor_tool="agy"), False),
@@ -1479,7 +1493,7 @@ def test_every_schema_conditional_is_exercised_by_the_corpus() -> None:
     the corpus is what proves the canonical engine is actually running.
     """
     conditionals = _schema().get("allOf", [])
-    assert len(conditionals) == 5, (
+    assert len(conditionals) == 7, (
         "The trusted schema's allOf set changed. Add parity fixtures covering the "
         "new conditional to PARITY_CORPUS, then update this count."
     )

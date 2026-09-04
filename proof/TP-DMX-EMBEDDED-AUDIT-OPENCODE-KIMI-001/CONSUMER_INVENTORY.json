@@ -1,0 +1,62 @@
+{
+  "packet_id": "TP-DMX-EMBEDDED-AUDIT-OPENCODE-KIMI-001",
+  "head": "c2c74d896",
+  "method": "grep of runtime/enforcement consumers of embedded_audit.schema.json auditor_tool/auditor_model enums over working tree at content head, plus the two files this packet itself introduces",
+  "changed": [
+    {
+      "path": "schemas/proof/embedded_audit.schema.json",
+      "reason": "Add opencode-cli to auditor_tool enum, kimi-k3 to auditor_model enum, and two fail-closed bidirectional allOf conditionals binding the pair."
+    },
+    {
+      "path": "tests/audit/test_embedded_audit_opencode_kimi_route.py",
+      "reason": "New differential and regression tests for the admitted pair (mirrors grok precedent)."
+    },
+    {
+      "path": "tests/audit/test_local_audit_acceptance.py",
+      "reason": "Parity corpus must pin the conditional count (5 to 7) and carry a violating fixture per new conditional."
+    }
+  ],
+  "unchanged": [
+    {
+      "path": "scripts/audit/local_audit_acceptance.py",
+      "behavior": "Loads schema from trusted ref and delegates verdicts to Draft7 iter_errors.",
+      "reason": "Tool-agnostic; new enum value and conditional inherited via the schema. No hardcoded tool/model table."
+    },
+    {
+      "path": "scripts/audit/run_embedded_audit.py",
+      "behavior": "Produces proofs; holds no auditor-recognition table.",
+      "reason": "No enum table to widen. Values come from normalize_pal_clink_audit_output (always pal-mcp-clink) or pass through from an accepted local attestation; _skipped_audit hardcodes none/unknown which remains valid."
+    },
+    {
+      "path": "scripts/audit/validate_audit_proof.py",
+      "behavior": "Recursively validates PROOF.json embedded_audit objects against the schema.",
+      "reason": "Read-only over schema; additive enum members cannot regress existing proofs (proven: 109/109 PASS)."
+    },
+    {
+      "path": "scripts/audit/route_schema.py",
+      "behavior": "FORBIDDEN_CLI_NAMES = {codex, codex-audit}.",
+      "reason": "opencode is not forbidden; no change required."
+    },
+    {
+      "path": "tools/auditor_router/pal_clink.py",
+      "behavior": "pal-mcp-clink normalizer; always emits auditor_tool pal-mcp-clink; coerces unattributable model to SKIPPED.",
+      "reason": "Emits a fixed existing tool; the opencode/kimi route is a separate future producer. No enum table to update."
+    },
+    {
+      "path": "tools/pr_steward/classifier.py",
+      "behavior": "Passes auditor_tool/auditor_model through as opaque values.",
+      "reason": "No hardcoded enum; passthrough only."
+    },
+    {
+      "path": "tools/pr_steward/solo_owner_security_release.py",
+      "behavior": "Passes auditor_tool/auditor_model through as opaque values.",
+      "reason": "No hardcoded enum; passthrough only."
+    },
+    {
+      "path": "config/ai/model-routing.policy.yaml",
+      "behavior": "References cheaperinference as ACTIVE broker and kimi tier intent placeholders (VERIFY_WITH_VENDOR_DOCS).",
+      "reason": "Advisory routing doc, not the proof schema; no change required for this packet."
+    }
+  ],
+  "bootstrap_note": "The admission packet's own controlling audit must use a pre-change-representable route. As of authoring all such routes are externally blocked in the operator environment (anthropic claude credit low, grok 402 usage exhausted, agy/gemini quota reached, OpenRouter 402). The only live route is the admitted one (opencode-cli / cheaper-inference kimi-k3). Per the grok precedent S5 this reports BLOCKED_AUDITOR_BOOTSTRAP unless the operator explicitly authorizes a merge despite it (admin merge)."
+}
