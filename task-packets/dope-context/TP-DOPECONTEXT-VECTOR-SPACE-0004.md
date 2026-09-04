@@ -459,3 +459,34 @@ half-embedded with no error. Upstream chunk-size enforcement is load-bearing.
 under `services/dope-context/` beyond `eval/**` and the six named files becomes
 editable, or if closing these four tests would require weakening the
 index/query agreement invariant rather than restating its premise.
+
+### Erratum to A3 — `max_request_tokens` provenance, verbatim re-check (2026-09-04)
+
+The `voyage-code-4` registry comment landed in `3e878cc8d` states that the
+vendor's 120K-group sentence omits `voyage-code-4`. That was written from a
+search snippet; it has since been confirmed against the page itself. The
+sentence reads, verbatim:
+
+> "The total number of tokens in the list is at most 1M for `voyage-4-lite`,
+> `voyage-3.5-lite`; 320K for `voyage-4`, `voyage-3.5`, and `voyage-2`; and
+> 120K for `voyage-4-large`, `voyage-3-large`, `voyage-code-3`,
+> `voyage-large-2-instruct`, `voyage-finance-2`, `voyage-multilingual-2`, and
+> `voyage-law-2`."
+
+`voyage-code-4` is absent from it — so the committed claim is accurate. But it
+is absent from **all three** groups, not just the 120K one: on that page it
+appears only in the model table (`32,000` context, `1024` default). The
+committed value of `320_000` is therefore an **inference** from the rate-limit
+tables (which group `voyage-code-4` with `voyage-4`/`voyage-3.5`) plus a
+measured `>=300,000` empirical floor — **not a vendor-documented figure**, and
+the source comment should not be read as claiming otherwise.
+
+Operational consequence: `max_request_tokens` sizes real batches
+(`voyage_embedder.py`, `max_tokens=spec.max_request_tokens`). Too low costs
+only extra round-trips; too high fails the request. **If indexing ever starts
+failing on batch size, drop this to `120_000` first.**
+
+This erratum lives here rather than in the source comment because the red-lane
+hook began denying edits to `services/dope-context/**` again partway through
+the session (see the note in the session record); the committed comment is
+accurate as written, so no source change is required to close this.
