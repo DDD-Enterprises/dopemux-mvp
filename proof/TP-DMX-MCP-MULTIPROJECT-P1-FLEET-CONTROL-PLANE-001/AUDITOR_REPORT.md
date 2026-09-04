@@ -1,8 +1,24 @@
 # Auditor Report — TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001
 
+> **SUPERSEDED FOR READINESS — historical round 0 record.**
+> This report describes the *pre-repair* content head
+> `86fcbd196cece01b3f4503b9778a4cebfaa51a19`. It is retained verbatim as the
+> round-0 audit of record and is **not** the audit that governs merge
+> authority for PR #1313.
+>
+> The governing final audit is the repair-round-1 AGY / Gemini 3.1 Pro (High)
+> audit of the repaired semantic head
+> `36620e6a50d0724ee22559eb7acc1a3186263245`, recorded in
+> [`AUDITOR_REPAIR_REPORT.md`](AUDITOR_REPAIR_REPORT.md) and bound by
+> `PROOF.json` (`head_sha` = `36620e6a5…`, `embedded_audit.report_path` =
+> `AUDITOR_REPAIR_REPORT.md`). Read that report for current readiness; read
+> this one only for the lineage of what was audited before the repair.
+
 ## Verdict
 
-**PASS** at frozen content head `86fcbd196cece01b3f4503b9778a4cebfaa51a19`.
+**PASS** at frozen content head `86fcbd196cece01b3f4503b9778a4cebfaa51a19`
+(round 0 — superseded for readiness by the repair-round-1 audit; see the
+banner above).
 0 blocking findings. `HEAD_MATCHES_CLAIMED=YES` (the auditor independently
 ran `git rev-parse HEAD` inside the mounted worktree and confirmed the exact
 SHA before evaluating anything else).
