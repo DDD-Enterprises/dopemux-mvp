@@ -1,0 +1,17 @@
+cd /Users/hue/code/_worktrees/dopemux-mcp-p0-postmerge-closure-001
+
+# Real invocation (inline message; the opencode 1.18.27 CLI consumes positional
+# message args as file attachments when -f is present, so the prompt was passed
+# as a single inline message argument instead):
+PROMPT="$(cat proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/AUDIT_INPUT.md)"
+PROMPT="$PROMPT"$'\n\n'"You are the independent L2 auditor. Read-only: never modify any repo file. Verify by reading files and running read-only commands (git diff/status, pytest on the focused test file, jsonschema). Reply with: (1) a findings ledger with severity/status/title/body per finding, (2) an explicit PASS/FAIL/BLOCKED verdict for EACH audit question 1-6, (3) a list of UNKNOWNs, (4) a final overall verdict and confidence. Then exit."
+
+opencode run --auto -m cheaper-inference/gemini-3.1-pro "$PROMPT" \
+  | tee proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/AUDIT_OUTPUT.txt
+
+# Auditor route: cheaper-inference/gemini-3.1-pro (Google Gemini model family)
+# Implementer family: opencode (cheaper-inference/deepseek-v4-flash-0731)
+# Independence: PROVEN_DIFFERENT_VENDOR_MODEL_FAMILY
+# opencode version: 1.18.27
+# Working dir: fresh dedicated worktree /Users/hue/code/_worktrees/dopemux-mcp-p0-postmerge-closure-001
+# Frozen audited head: f27b66f88986a928a2161576c2072049ea8f56ea

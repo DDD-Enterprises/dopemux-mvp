@@ -1,0 +1,180 @@
+{
+  "id": "TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001",
+  "project": "dopemux-mvp",
+  "target": "Close the merged P0 compose-file no-runtime-effect coverage gap and record PR #1306 merge-governance facts without runtime, schema, topology, or service changes.",
+  "invariants": [
+    "PR #1306 is already merged; do not rewrite or rebase its history.",
+    "Only the P0 no-runtime-effect test may change substantively.",
+    "No schema, ADR semantics, topology, runtime, catalog, compose file, service, database, Redis, or runner configuration may change.",
+    "The test must reject compose.yml, compose.yaml, compose.*.yml, and compose.*.yaml at repository root.",
+    "PR #1306 merged with six Copilot review threads unresolved; preserve this fact.",
+    "SECURITY_RELEASE_APPROVAL_REQUIRED was named by PR #1306; separate pre-merge approval evidence is UNKNOWN unless explicitly proven.",
+    "Do not claim PR Steward READY retroactively.",
+    "P1 remains blocked until this successor is merged and current main is reharvested."
+  ],
+  "depends_on": [
+    "TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-MULTIPROJECT",
+    "base_branch": "origin/main",
+    "parent_tp_id": "TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mcp-multiproject-p0-postmerge-closure",
+    "base_branch": "origin/main",
+    "stacked_because": "Not stacked; start from current main after PR #1306."
+  },
+  "commit": {
+    "message": "test(mcp): close P0 compose no-runtime-effect gate",
+    "allowlist": [
+      "task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json",
+      "task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.md",
+      "task-packets/INDEX.md",
+      "tests/arch/test_mcp_multiproject_contracts.py",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/PROOF.json",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/AUDITOR_REPORT.md",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/implementation-notes.md",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/AUDIT_INPUT.md",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/AUDIT_INVOCATION.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/AUDIT_OUTPUT.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/HEAD.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/DIFF_NAME_STATUS.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/VALIDATION.txt"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py",
+      "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_runtime_registry.py",
+      "git diff --check",
+      "pre-commit run --files $(git diff --name-only origin/main...HEAD)"
+    ]
+  },
+  "pr": {
+    "title": "test(mcp): close P0 post-merge compose guard",
+    "body": "Closes one residual P0 contract-test gap after PR #1306. No runtime/schema/topology changes. P1 remains unauthorized.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "preflight",
+      "task": "Reharvest current main and reproduce the missing compose guard.",
+      "requirements": [
+        "Authoring main=a8a7514b42107ce2d7eb017875f72911fbbbd96d; reharvest at dispatch.",
+        "Verify tests/arch/test_mcp_multiproject_contracts.py omits compose root patterns.",
+        "Stop if current main already fixes it."
+      ],
+      "commands": [
+        "git fetch origin main",
+        "git rev-parse origin/main",
+        "git status --short"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Residual defect reproduced before mutation."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "tests/arch/test_mcp_multiproject_contracts.py"
+      ]
+    },
+    {
+      "id": "repair",
+      "task": "Add deterministic root-compose rejection to the P0 no-runtime-effect test.",
+      "requirements": [
+        "Reject compose.yml and compose.yaml.",
+        "Reject root compose.*.yml and compose.*.yaml.",
+        "Add focused fixtures for compose.yml, compose.override.yml, and compose.dev.yaml.",
+        "Do not modify any compose file."
+      ],
+      "commands": [
+        "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py"
+      ],
+      "expected_files": [
+        "tests/arch/test_mcp_multiproject_contracts.py"
+      ],
+      "validation": [
+        "Existing P0 tests remain green and compose fixtures are rejected."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "receipt",
+      "task": "Record post-merge governance facts without retroactive approval claims.",
+      "requirements": [
+        "Record PR #1306 merge SHA, audited content head, final PR head, six unresolved review threads at post-merge inspection, and SECURITY_RELEASE_APPROVAL_REQUIRED=UNKNOWN unless proven.",
+        "Classify compose thread as the live defect closed here.",
+        "Do not claim retroactive PR Steward READY."
+      ],
+      "commands": [],
+      "expected_files": [
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/implementation-notes.md"
+      ],
+      "validation": [
+        "History is preserved explicitly."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "validate-audit",
+      "task": "Run deterministic gates, freeze content, obtain one independent L2 audit, and create proof-only closure.",
+      "requirements": [
+        "Exact allowlist only.",
+        "One final independent audit after freeze.",
+        "Audit failure/unknown identity blocks readiness."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_runtime_registry.py",
+        "git diff --check",
+        "pre-commit run --files $(git diff --name-only origin/main...HEAD)"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/PROOF.json",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/AUDITOR_REPORT.md",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/AUDIT_INPUT.md",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/AUDIT_INVOCATION.txt",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/AUDIT_OUTPUT.txt",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/HEAD.txt",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/DIFF_NAME_STATUS.txt",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/VALIDATION.txt"
+      ],
+      "validation": [
+        "Focused/relevant suites and proof validation pass."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "finality",
+      "task": "Run current finality/PR Steward and stop for operator merge decision.",
+      "requirements": [
+        "No automatic merge.",
+        "No P1 authorization.",
+        "After merge, reharvest main before P1."
+      ],
+      "commands": [],
+      "expected_files": [],
+      "validation": [
+        "Current blockers returned truthfully."
+      ],
+      "context_files": []
+    }
+  ]
+}

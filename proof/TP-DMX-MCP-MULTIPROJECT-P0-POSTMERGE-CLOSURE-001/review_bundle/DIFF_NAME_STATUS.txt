@@ -1,0 +1,5 @@
+A	proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/implementation-notes.md
+M	task-packets/INDEX.md
+A	task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json
+A	task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.md
+M	tests/arch/test_mcp_multiproject_contracts.py

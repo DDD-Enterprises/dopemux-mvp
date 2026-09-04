@@ -1,0 +1,1698 @@
+[0m
+> build · gemini-3.1-pro
+[0m
+[0m$ [0mgit diff --name-status origin/main...HEAD
+A	proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/implementation-notes.md
+M	task-packets/INDEX.md
+A	task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json
+A	task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.md
+M	tests/arch/test_mcp_multiproject_contracts.py
+[0m
+[0m$ [0mpytest tests/arch/test_mcp_multiproject_contracts.py
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.0.3, pluggy-1.6.0
+rootdir: /Users/hue/code/_worktrees/dopemux-mcp-p0-postmerge-closure-001
+configfile: pytest.ini (WARNING: ignoring pytest config in pyproject.toml!)
+plugins: mock-3.15.1, cov-7.1.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, langsmith-0.8.7, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 76 items
+
+tests/arch/test_mcp_multiproject_contracts.py .......................... [ 34%]
+..................................................                       [100%]
+
+============================== 76 passed in 0.31s ==============================
+[0m
+[0m$ [0mshasum -a 256 task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json
+46533a559e28b158b47482f6491124b825df9dfeffae79862a26ec6d7fb0f43d  task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json
+[0m
+[0m$ [0mcat task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json
+{
+  "id": "TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001",
+  "project": "dopemux-mvp",
+  "target": "Close the merged P0 compose-file no-runtime-effect coverage gap and record PR #1306 merge-governance facts without runtime, schema, topology, or service changes.",
+  "invariants": [
+    "PR #1306 is already merged; do not rewrite or rebase its history.",
+    "Only the P0 no-runtime-effect test may change substantively.",
+    "No schema, ADR semantics, topology, runtime, catalog, compose file, service, database, Redis, or runner configuration may change.",
+    "The test must reject compose.yml, compose.yaml, compose.*.yml, and compose.*.yaml at repository root.",
+    "PR #1306 merged with six Copilot review threads unresolved; preserve this fact.",
+    "SECURITY_RELEASE_APPROVAL_REQUIRED was named by PR #1306; separate pre-merge approval evidence is UNKNOWN unless explicitly proven.",
+    "Do not claim PR Steward READY retroactively.",
+    "P1 remains blocked until this successor is merged and current main is reharvested."
+  ],
+  "depends_on": [
+    "TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-MULTIPROJECT",
+    "base_branch": "origin/main",
+    "parent_tp_id": "TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mcp-multiproject-p0-postmerge-closure",
+    "base_branch": "origin/main",
+    "stacked_because": "Not stacked; start from current main after PR #1306."
+  },
+  "commit": {
+    "message": "test(mcp): close P0 compose no-runtime-effect gate",
+    "allowlist": [
+      "task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json",
+      "task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.md",
+      "task-packets/INDEX.md",
+      "tests/arch/test_mcp_multiproject_contracts.py",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/PROOF.json",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/AUDITOR_REPORT.md",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/implementation-notes.md",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/AUDIT_INPUT.md",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/AUDIT_INVOCATION.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/AUDIT_OUTPUT.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/HEAD.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/DIFF_NAME_STATUS.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/VALIDATION.txt"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py",
+      "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_runtime_registry.py",
+      "git diff --check",
+      "pre-commit run --files $(git diff --name-only origin/main...HEAD)"
+    ]
+  },
+  "pr": {
+    "title": "test(mcp): close P0 post-merge compose guard",
+    "body": "Closes one residual P0 contract-test gap after PR #1306. No runtime/schema/topology changes. P1 remains unauthorized.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "preflight",
+      "task": "Reharvest current main and reproduce the missing compose guard.",
+      "requirements": [
+        "Authoring main=a8a7514b42107ce2d7eb017875f72911fbbbd96d; reharvest at dispatch.",
+        "Verify tests/arch/test_mcp_multiproject_contracts.py omits compose root patterns.",
+        "Stop if current main already fixes it."
+      ],
+      "commands": [
+        "git fetch origin main",
+        "git rev-parse origin/main",
+        "git status --short"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Residual defect reproduced before mutation."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "tests/arch/test_mcp_multiproject_contracts.py"
+      ]
+    },
+    {
+      "id": "repair",
+      "task": "Add deterministic root-compose rejection to the P0 no-runtime-effect test.",
+      "requirements": [
+        "Reject compose.yml and compose.yaml.",
+        "Reject root compose.*.yml and compose.*.yaml.",
+        "Add focused fixtures for compose.yml, compose.override.yml, and compose.dev.yaml.",
+        "Do not modify any compose file."
+      ],
+      "commands": [
+        "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py"
+      ],
+      "expected_files": [
+        "tests/arch/test_mcp_multiproject_contracts.py"
+      ],
+      "validation": [
+        "Existing P0 tests remain green and compose fixtures are rejected."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "receipt",
+      "task": "Record post-merge governance facts without retroactive approval claims.",
+      "requirements": [
+        "Record PR #1306 merge SHA, audited content head, final PR head, six unresolved review threads at post-merge inspection, and SECURITY_RELEASE_APPROVAL_REQUIRED=UNKNOWN unless proven.",
+        "Classify compose thread as the live defect closed here.",
+        "Do not claim retroactive PR Steward READY."
+      ],
+      "commands": [],
+      "expected_files": [
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/implementation-notes.md"
+      ],
+      "validation": [
+        "History is preserved explicitly."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "validate-audit",
+      "task": "Run deterministic gates, freeze content, obtain one independent L2 audit, and create proof-only closure.",
+      "requirements": [
+        "Exact allowlist only.",
+        "One final independent audit after freeze.",
+        "Audit failure/unknown identity blocks readiness."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_runtime_registry.py",
+        "git diff --check",
+        "pre-commit run --files $(git diff --name-only origin/main...HEAD)"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/PROOF.json",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/AUDITOR_REPORT.md",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/AUDIT_INPUT.md",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/AUDIT_INVOCATION.txt",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/AUDIT_OUTPUT.txt",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/HEAD.txt",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/DIFF_NAME_STATUS.txt",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/VALIDATION.txt"
+      ],
+      "validation": [
+        "Focused/relevant suites and proof validation pass."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "finality",
+      "task": "Run current finality/PR Steward and stop for operator merge decision.",
+      "requirements": [
+        "No automatic merge.",
+        "No P1 authorization.",
+        "After merge, reharvest main before P1."
+      ],
+      "commands": [],
+      "expected_files": [],
+      "validation": [
+        "Current blockers returned truthfully."
+      ],
+      "context_files": []
+    }
+  ]
+}
+[0m
+[0m$ [0mpython -m jsonschema -i task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json
+/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/jsonschema/__main__.py:4: DeprecationWarning: The jsonschema CLI is deprecated and will be removed in a future version. Please use check-jsonschema instead, which can be installed from https://pypi.org/project/check-jsonschema/
+  from jsonschema.cli import main
+[0m
+[0m$ [0mgit rev-parse HEAD
+f27b66f88986a928a2161576c2072049ea8f56ea
+[0m
+[0m$ [0mcat proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/implementation-notes.md
+# Implementation Notes
+
+## Post-merge governance record (PR #1306)
+
+This successor closes one live residual P0 defect found on a merged-main reharvest after
+PR #1306 merged. No runtime, schema, topology, catalog, compose, service, database, Redis,
+or runner configuration change lands here.
+
+## Merged-main reharvest facts
+
+- PR #1306 merge SHA: `a8a7514b42107ce2d7eb017875f72911fbbbd96d`
+- Audited content head: `2e31726c1467770030d1fcb7358e5d7295e09b7b`
+- Final PR head: `3d0172de6b27c9bfcf9ff1778c18eae06dadb342`
+- Base main for this successor at dispatch: `649fe5e73496d76a54410dfa45a9d97b11634207`
+- PR #1306 merged with six unresolved Copilot review threads at post-merge inspection;
+  that history is preserved, not rewritten or rebased.
+- The compose-file thread is the live defect this successor closes: the P0
+  no-runtime-effect guard (`test_no_runtime_effect_diff`) omitted repository-root compose
+  files. The event-envelope thread is content-addressed by merged code, not re-litigated here.
+
+## Security-release approval gate
+
+`SECURITY_RELEASE_APPROVAL_REQUIRED` was named as a pre-merge gate in PR #1306. Separate
+evidence proving that gate was satisfied before merge has not been observed in this
+successor's evidence set, so it is recorded as `UNKNOWN` rather than retroactively
+converting the merge into proof of the gate. No retroactive PR Steward READY is claimed.
+
+## Repair
+
+Only `tests/arch/test_mcp_multiproject_contracts.py` changes substantively:
+
+- `FORBIDDEN_P0_PREFIXES` lifted to module scope (unchanged semantics).
+- `ROOT_COMPOSE_PATTERNS` added: `compose.yml`, `compose.yaml`, `compose.*.yml`,
+  `compose.*.yaml` at repository root.
+- `_is_forbidden_p0_path()` returns true for a forbidden prefix or a root-level compose
+  file; subdirectory paths are not root compose and fall through to prefix checks.
+- Focused fixtures reject `compose.yml`, `compose.yaml`, `compose.override.yml`,
+  `compose.dev.yaml`; allowed-path fixtures prove non-root/non-compose paths pass.
+- `test_no_runtime_effect_diff` now fails on any changed path the helper forbids.
+
+No compose file was modified. The packet `.md` received the repo-required YAML frontmatter
+at registration; the packet `.json` is byte-identical to the authoring input
+(SHA256 `46533a559e28b158b47482f6491124b825df9dfeffae79862a26ec6d7fb0f43d`).
+
+## P1 status
+
+P1 remains blocked until this successor is merged and current main is reharvested.
+No P1 authorization is claimed here.
+[0m
+[0m$ [0mcat proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/VALIDATION.txt
+focused+relevant pytest (tests/arch/test_mcp_multiproject_contracts.py tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_runtime_registry.py): 129 passed (exit 0)
+focused pytest (test_mcp_multiproject_contracts.py): 76 passed (exit 0)
+packet canonical schema (jsonschema): PASS (exit 0)
+git diff --check: PASS (exit 0)
+pre-commit run --files (content diff): PASS (exit 0, no file modification)
+[0m
+[0m$ [0mcat tests/arch/test_mcp_multiproject_contracts.py
+from __future__ import annotations
+
+import fnmatch
+import hashlib
+import json
+import subprocess
+from pathlib import Path
+
+import pytest
+import jsonschema
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+R2_TOPOLOGY_SHA256 = "df8636983e23c273eeb8eb517ea4019653b4c6bcb50cae344cde2e847214d4c2"
+# R2 payload hash: sha256 of 04_FALSIFICATION_CONTRACT.md (bare doc, no repo frontmatter).
+# REPO_DOC_FULL_FILE_HASH != R2_SUBJECT_HASH because repo requires YAML frontmatter.
+# R2_PAYLOAD_AFTER_FRONTMATTER_SHA256 = 84b6e68...
+# R2_ARCHITECTURE_SEMANTICS_CHANGED = NO
+R2_FALSIFICATION_PAYLOAD_SHA256 = "84b6e68f929e5b3f3ad37e9c2843755cc38a3a119fc87b5af057505d8ed83bcb"
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _strip_yaml_frontmatter(path: Path) -> bytes:
+    """Return file bytes with YAML frontmatter stripped (everything after closing ---)."""
+    raw = path.read_bytes()
+    text = raw.decode("utf-8")
+    if not text.startswith("---"):
+        return raw
+    end = text.index("---", 3) + 3
+    if text[end : end + 1] == "\n":
+        end += 1
+    return text[end:].encode("utf-8")
+
+
+def test_ratified_r2_topology_is_byte_exact():
+    """Service topology JSON must be a full-file exact copy of the R2 source."""
+    topology = REPO_ROOT / "docs/03-reference/mcp/multiproject-service-topology.json"
+    assert _sha256(topology) == R2_TOPOLOGY_SHA256
+
+
+def test_ratified_r2_falsification_payload_is_byte_exact():
+    """Falsification contract post-frontmatter payload must be byte-identical to R2 source.
+
+    REPO_DOC_FULL_FILE_HASH != R2_SUBJECT_HASH because repo frontmatter is required.
+    R2_PAYLOAD_AFTER_FRONTMATTER_SHA256 = 84b6e68...
+    R2_ARCHITECTURE_SEMANTICS_CHANGED = NO
+    """
+    falsification = REPO_ROOT / "docs/03-reference/mcp/multiproject-falsification-contract.md"
+    payload = _strip_yaml_frontmatter(falsification)
+    assert hashlib.sha256(payload).hexdigest() == R2_FALSIFICATION_PAYLOAD_SHA256
+
+def test_service_topology_has_exact_contract_shape():
+    topology = json.loads(
+        (REPO_ROOT / "docs/03-reference/mcp/multiproject-service-topology.json").read_text()
+    )
+    assert len(topology["services"]) == 26
+    assert set(topology["sharing_classes"]) == {
+        "HOST_SINGLETON",
+        "PROJECT_SCOPED",
+        "WORKTREE_SCOPED",
+        "RETIRED",
+    }
+
+
+def _load_schema(name: str) -> dict:
+    return json.loads((REPO_ROOT / "schemas/mcp" / name).read_text())
+
+def _verified_identity() -> dict:
+    return {
+        "schema_version": "dopemux.mcp.resolved-execution-identity.v1",
+        "resolution_status": "VERIFIED",
+        "project_id": "project-registry-id",
+        "workspace_id": "workspace-registry-id",
+        "instance_id": "instance-registry-id",
+        "actor_id": "operator",
+        "client_id": "codex-cli",
+        "registry_generation": 7,
+        "mutable_routing_allowed": True,
+        "aliases": [
+            {
+                "kind": "git_common_dir",
+                "value": "/Users/example/repo/.git",
+                "role": "EVIDENCE_ONLY",
+            }
+        ],
+    }
+
+def test_verified_identity_requires_registry_ids():
+    schema = _load_schema("resolved-execution-identity.schema.json")
+    jsonschema.validate(_verified_identity(), schema)
+
+def test_unknown_identity_cannot_allow_mutation():
+    schema = _load_schema("resolved-execution-identity.schema.json")
+    bad = _verified_identity()
+    bad["resolution_status"] = "UNKNOWN"
+    bad["mutable_routing_allowed"] = True
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(bad, schema)
+
+def test_unknown_identity_requires_mutable_routing_allowed_false():
+    schema = _load_schema("resolved-execution-identity.schema.json")
+    bad = _verified_identity()
+    bad["resolution_status"] = "UNKNOWN"
+    bad["mutable_routing_allowed"] = False
+    bad["project_id"] = None
+    bad["workspace_id"] = None
+    bad["instance_id"] = None
+    bad["actor_id"] = None
+    bad["client_id"] = None
+    bad["registry_generation"] = None
+    jsonschema.validate(bad, schema)
+
+def test_identity_requires_mutable_routing_allowed_globally():
+    schema = _load_schema("resolved-execution-identity.schema.json")
+    bad = _verified_identity()
+    del bad["mutable_routing_allowed"]
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(bad, schema)
+
+def test_alias_never_becomes_authority():
+    schema = _load_schema("resolved-execution-identity.schema.json")
+    bad = _verified_identity()
+    bad["aliases"][0]["role"] = "AUTHORITY"
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(bad, schema)
+
+def test_alias_rejects_nested_authority_shaped_fields():
+    schema = _load_schema("resolved-execution-identity.schema.json")
+    bad = _verified_identity()
+    bad["aliases"][0]["project_id"] = "rogue"
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(bad, schema)
+
+
+def _v2_catalog() -> dict:
+    return {
+        "version": 2,
+        "defaults": {"worktree": ["serena"]},
+        "servers": {
+            "serena": {
+                "sharing_class": "WORKTREE_SCOPED",
+                "target_class": "WORKTREE_SCOPED",
+                "transport": "http",
+                "plane": "code-intelligence",
+                "authority_role": "code-intelligence",
+                "lifecycle": "active",
+                "management_model": "compose-service",
+                "identity_scope": "per-instance",
+                "state_authority": "derived",
+                "mutation_class": "scoped",
+                "endpoint_policy": "leased",
+                "probe": "mcp",
+                "idle_policy": "instance_idle",
+                "flip_gate": ["concurrency-safe per-request workspace implementation"],
+            }
+        },
+    }
+
+def test_topology_matches_schema():
+    schema = _load_schema("service-topology.schema.json")
+    topology = json.loads((REPO_ROOT / "docs/03-reference/mcp/multiproject-service-topology.json").read_text())
+    jsonschema.validate(topology, schema)
+
+def test_v2_catalog_matches_schema():
+    schema = _load_schema("fleet-catalog-v2.schema.json")
+    jsonschema.validate(_v2_catalog(), schema)
+
+def test_legacy_fields_rejected_by_v2_schema():
+    schema = _load_schema("fleet-catalog-v2.schema.json")
+    bad = _v2_catalog()
+    bad["servers"]["serena"]["scope"] = "worktree"
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(bad, schema)
+
+def test_multi_project_singleton_rejected():
+    schema = _load_schema("fleet-catalog-v2.schema.json")
+    bad = _v2_catalog()
+    bad["servers"]["serena"]["multi_project_singleton"] = True
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(bad, schema)
+
+
+# R1-03 negative fixtures: arbitrary / legacy vocab values must be rejected.
+@pytest.mark.parametrize("field,value", [
+    ("sharing_class", "GLOBAL_MAGIC"),
+    ("sharing_class", "global-mutable"),
+    ("target_class", "dynamic-rebind"),
+    ("target_class", "GLOBAL_MAGIC"),
+    ("identity_scope", "global"),
+    ("identity_scope", "GLOBAL_MAGIC"),
+    ("state_authority", "global-mutable"),
+    ("state_authority", "GLOBAL_MAGIC"),
+    ("mutation_class", "dynamic-rebind"),
+    ("mutation_class", "GLOBAL_MAGIC"),
+    ("endpoint_policy", "GLOBAL_MAGIC"),
+    ("probe", "GLOBAL_MAGIC"),
+    ("idle_policy", "GLOBAL_MAGIC"),
+])
+def test_arbitrary_vocab_rejected_by_v2_schema(field: str, value: str) -> None:
+    schema = _load_schema("fleet-catalog-v2.schema.json")
+    bad = _v2_catalog()
+    bad["servers"]["serena"][field] = value
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(bad, schema)
+
+
+@pytest.mark.parametrize("legacy_field", ["scope", "state_scope", "port_policy"])
+def test_legacy_field_names_rejected_by_v2_schema(legacy_field: str) -> None:
+    schema = _load_schema("fleet-catalog-v2.schema.json")
+    bad = _v2_catalog()
+    bad["servers"]["serena"][legacy_field] = "worktree"
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(bad, schema)
+
+
+def _owned_evidence() -> dict:
+    return {
+        "schema_version": "dopemux.mcp.ownership-evidence.v1",
+        "classification": "OWNED",
+        "mutation_eligible": True,
+        "registry": {"verified": True, "project_id": "p", "registry_generation": 3},
+        "lease": {"verified": True, "lease_id": "lease-1"},
+        "probe": {"verified": True, "service_family": "conport"},
+        "storage": {"verified": True, "evidence": "project-bound mount"},
+    }
+
+def _valid_lease(sharing_class: str, **overrides) -> dict:
+    base = {
+        "schema_version": "dopemux.mcp.service-lease.v2",
+        "lease_id": "lease-1",
+        "service_id": "conport",
+        "sharing_class": sharing_class,
+        "registry_generation": 7,
+        "owner_epoch": 1,
+        "endpoint": {"transport": "http", "host": "127.0.0.1", "port": 7890},
+        "owner_runtime_identity": {"runtime_kind": "conport", "runtime_id": "conport-1"},
+        "status": "active",
+        "created_at": "2026-09-03T00:00:00Z",
+        "updated_at": "2026-09-03T00:00:00Z",
+        "last_verified_at": "2026-09-03T00:00:00Z",
+        "evidence_refs": ["evidence-1"],
+    }
+    if sharing_class in ("PROJECT_SCOPED", "WORKTREE_SCOPED"):
+        base["project_id"] = "proj-1"
+    if sharing_class == "WORKTREE_SCOPED":
+        base["instance_id"] = "inst-1"
+    base.update(overrides)
+    return base
+
+def test_valid_project_scoped_lease():
+    schema = _load_schema("service-lease-v2.schema.json")
+    jsonschema.validate(_valid_lease("PROJECT_SCOPED"), schema)
+
+def test_valid_worktree_scoped_lease():
+    schema = _load_schema("service-lease-v2.schema.json")
+    jsonschema.validate(_valid_lease("WORKTREE_SCOPED"), schema)
+
+def test_invalid_worktree_lease_missing_instance_id():
+    schema = _load_schema("service-lease-v2.schema.json")
+    lease = _valid_lease("WORKTREE_SCOPED")
+    del lease["instance_id"]
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(lease, schema)
+
+def test_invalid_project_lease_missing_project_id():
+    schema = _load_schema("service-lease-v2.schema.json")
+    lease = _valid_lease("PROJECT_SCOPED")
+    del lease["project_id"]
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(lease, schema)
+
+def test_invalid_retired_lease():
+    schema = _load_schema("service-lease-v2.schema.json")
+    lease = _valid_lease("RETIRED")
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(lease, schema)
+
+def test_lease_rejects_authority_shaped_endpoint_extra_fields():
+    schema = _load_schema("service-lease-v2.schema.json")
+    lease = _valid_lease("PROJECT_SCOPED")
+    lease["endpoint"]["path_hash"] = "deadbeef"
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(lease, schema)
+
+def test_lease_requires_owner_runtime_identity_fields():
+    schema = _load_schema("service-lease-v2.schema.json")
+    lease = _valid_lease("PROJECT_SCOPED")
+    del lease["owner_runtime_identity"]["runtime_id"]
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(lease, schema)
+
+def test_stale_lease_mutation_attempt():
+    schema = _load_schema("ownership-evidence.schema.json")
+    evidence = _owned_evidence()
+    evidence["lease"]["verified"] = False
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(evidence, schema)
+
+@pytest.mark.parametrize("missing_block", ["registry", "lease", "probe", "storage"])
+def test_owned_evidence_requires_all_blocks(missing_block):
+    schema = _load_schema("ownership-evidence.schema.json")
+    evidence = _owned_evidence()
+    del evidence[missing_block]
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(evidence, schema)
+
+def test_non_owned_classification_forces_mutation_eligible_false():
+    schema = _load_schema("ownership-evidence.schema.json")
+    evidence = _owned_evidence()
+    evidence["classification"] = "FOREIGN"
+    evidence["mutation_eligible"] = True
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(evidence, schema)
+
+
+
+def _valid_receipt() -> dict:
+    return {
+        "schema_version": "dopemux.mcp.runner-materialization-receipt.v1",
+        "authority": "PROVENANCE_ONLY",
+        "materialization_id": "mat-1",
+        "project_id": "proj",
+        "workspace_id": "workspace",
+        "instance_id": "inst",
+        "registry_generation": 5,
+        "runner_family": "codex",
+        "profile": "default",
+        "catalog_digest": "b" * 64,
+        "rendered_config_digest": "c" * 64,
+        "lease_refs": ["lease-1"],
+        "generated_at": "2026-09-03T00:00:00Z",
+        "shared_global_config_mutated": False,
+        "strict_mode": False,
+        "inherited_surface_status": "KNOWN"
+    }
+
+def test_valid_receipt():
+    schema = _load_schema("runner-materialization-receipt.schema.json")
+    jsonschema.validate(_valid_receipt(), schema)
+
+def test_receipt_rejects_global_mutation():
+    schema = _load_schema("runner-materialization-receipt.schema.json")
+    receipt = _valid_receipt()
+    receipt["shared_global_config_mutated"] = True
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(receipt, schema)
+
+def test_strict_receipt_rejects_unknown_surface_status():
+    schema = _load_schema("runner-materialization-receipt.schema.json")
+    receipt = _valid_receipt()
+    receipt["strict_mode"] = True
+    receipt["inherited_surface_status"] = "UNKNOWN"
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(receipt, schema)
+
+def test_receipt_authority_must_be_provenance_only():
+    schema = _load_schema("runner-materialization-receipt.schema.json")
+    receipt = _valid_receipt()
+    receipt["authority"] = "CANONICAL"
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(receipt, schema)
+
+def test_receipt_rejects_bad_catalog_digest_format():
+    schema = _load_schema("runner-materialization-receipt.schema.json")
+    receipt = _valid_receipt()
+    receipt["catalog_digest"] = "ZZ" * 32
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(receipt, schema)
+
+def test_receipt_rejects_unknown_runner_family():
+    schema = _load_schema("runner-materialization-receipt.schema.json")
+    receipt = _valid_receipt()
+    receipt["runner_family"] = "not-a-runner"
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(receipt, schema)
+
+def _valid_event() -> dict:
+    return {
+        "schema_version": "dopemux.mcp.project-event-envelope.v1",
+        "event_id": "evt-1",
+        "event_type": "status_changed",
+        "emitted_at": "2026-09-03T00:00:00Z",
+        "source_service_id": "task-orchestrator",
+        "project_id": "proj",
+        "workspace_id": "workspace",
+        "instance_id": "inst",
+        "registry_generation": 4,
+        "payload_digest": "a" * 64,
+        "stream_namespace": "ns",
+        "sequence": 12,
+        "replay_key": "replay-1"
+    }
+
+def test_valid_event():
+    schema = _load_schema("project-event-envelope.schema.json")
+    jsonschema.validate(_valid_event(), schema)
+
+@pytest.mark.parametrize("missing_field", ["event_id", "event_type", "emitted_at", "source_service_id", "project_id", "workspace_id", "instance_id", "registry_generation", "payload_digest", "stream_namespace", "sequence", "replay_key"])
+def test_event_requires_fields(missing_field):
+    schema = _load_schema("project-event-envelope.schema.json")
+    event = _valid_event()
+    del event[missing_field]
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(event, schema)
+
+def test_event_rejects_negative_registry_generation():
+    schema = _load_schema("project-event-envelope.schema.json")
+    event = _valid_event()
+    event["registry_generation"] = -1
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(event, schema)
+
+def test_event_rejects_negative_sequence():
+    schema = _load_schema("project-event-envelope.schema.json")
+    event = _valid_event()
+    event["sequence"] = -1
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(event, schema)
+
+def test_event_rejects_bad_payload_digest():
+    schema = _load_schema("project-event-envelope.schema.json")
+    event = _valid_event()
+    event["payload_digest"] = "not-a-hex-digest"
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(event, schema)
+
+def test_service_topology_targets_and_eligibility():
+    topology = json.loads((REPO_ROOT / "docs/03-reference/mcp/multiproject-service-topology.json").read_text())
+    services = {s["SERVICE_ID"]: s for s in topology["services"]}
+
+    conport = services["conport"]
+    assert conport["TARGET_CLASS"] == "PROJECT_SCOPED"
+    assert conport["ELIGIBLE_FOR_TARGET_NOW"] is False
+
+    dope_memory = services["dope-memory"]
+    assert dope_memory["TARGET_CLASS"] == "PROJECT_SCOPED"
+    assert "HOST_SINGLETON only after" in dope_memory["DEFERRED_OPTION"]
+
+    serena = services["serena"]
+    assert serena["TARGET_CLASS"] == "WORKTREE_SCOPED"
+
+    redis_events = services["redis-events"]
+    assert redis_events["TARGET_CLASS"] == "PROJECT_SCOPED"
+
+    task_orch = services["task-orchestrator-kotlin"]
+    assert "multi_project_singleton" not in str(task_orch)
+
+def test_p5_before_p4_dag():
+    adr = (REPO_ROOT / "docs/90-adr/adr-dmx-mcp-multiproject-identity-sharing-contract-001.md").read_text()
+    assert "redis-events logical -> PROJECT_SCOPED before dope-memory consolidation" in adr
+
+FORBIDDEN_P0_PREFIXES = [
+    "mcp_catalog.yaml",
+    "src/dopemux/mcp/",
+    "src/dopemux/commands/mcp_commands.py",
+    "services/",
+    "docker/",
+    ".mcp.json",
+]
+
+# Repository-root compose files (compose.yml/compose.yaml/compose.*.yml/compose.*.yaml)
+# are runtime surfaces for the MCP fleet and must never be mutated by this packet series.
+ROOT_COMPOSE_PATTERNS = [
+    "compose.yml",
+    "compose.yaml",
+    "compose.*.yml",
+    "compose.*.yaml",
+]
+
+def _is_forbidden_p0_path(fpath: str) -> bool:
+    if any(fpath.startswith(prefix) for prefix in FORBIDDEN_P0_PREFIXES):
+        return True
+    if "/" in fpath:
+        return False
+    return any(fnmatch.fnmatch(fpath, pattern) for pattern in ROOT_COMPOSE_PATTERNS)
+
+@pytest.mark.parametrize("fpath", [
+    "compose.yml",
+    "compose.yaml",
+    "compose.override.yml",
+    "compose.dev.yaml",
+])
+def test_root_compose_file_is_forbidden(fpath):
+    assert _is_forbidden_p0_path(fpath)
+
+@pytest.mark.parametrize("fpath", [
+    "README.md",
+    "docs/compose.yml",
+    "composefile.yml",
+    "compose.override",
+    "task-packets/INDEX.md",
+])
+def test_non_root_or_non_compose_path_is_allowed(fpath):
+    assert not _is_forbidden_p0_path(fpath)
+
+def test_no_runtime_effect_diff():
+    try:
+        diff_out = subprocess.check_output(["git", "diff", "--name-only", "origin/main...HEAD"]).decode()
+        changed = diff_out.splitlines()
+        for c in changed:
+            if _is_forbidden_p0_path(c):
+                pytest.fail(f"Forbidden path mutated: {c}")
+    except subprocess.CalledProcessError:
+        pytest.skip("No trusted base supplied to git diff")
+[0m
+[0m$ [0mpre-commit run --files $(git diff --name-only origin/main...HEAD)
+Evidence-economy change-contract preflight.................................................Passed
+Validate YAML frontmatter in docs..........................................................Passed
+Block deprecated memory backends in slash commands.....................(no files to check)Skipped
+Validate templates/skills SKILL.md frontmatter.........................(no files to check)Skipped
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+Validate proof bundle embedded_audit schema............................(no files to check)Skipped
+Validate GitHub Actions workflow syntax................................(no files to check)Skipped
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+[0m
+[0m$ [0mcat task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.md
+---
+id: TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001
+title: P0 post-merge compose guard closure
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-09-03'
+last_review: '2026-09-03'
+next_review: '2026-12-02'
+prelude: Post-merge closure successor closing the merged P0 compose-file no-runtime-effect coverage gap after PR #1306. No runtime, schema, topology, or service changes.
+---
+
+# TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001
+
+**Risk:** L2, because this repairs an authority-boundary test and post-merge proof record.
+
+## Scope
+Only strengthen `tests/arch/test_mcp_multiproject_contracts.py` to cover root compose files, register this
+successor packet, and record proof/audit evidence. No schema, ADR semantic, runtime, catalog, service, compose,
+Redis, DB, or runner-config mutation.
+
+## Next gate
+`EXPLICIT_OPERATOR_POSTMERGE_CLOSURE_EXECUTION_AUTHORIZATION`
+
+## Return
+```text
+RETURN_STATUS=PASS_P0_POSTMERGE_CLOSURE_FOR_OPERATOR_MERGE_DECISION|BLOCKED_<REASON>|FAIL_<REASON>
+BASE_MAIN_SHA=
+CONTENT_HEAD_SHA=
+AUDITOR_VERDICT=
+PROOF_VALIDATION=
+PR_STEWARD=
+SECURITY_RELEASE_APPROVAL_PREMERGE=UNKNOWN|PROVEN
+RUNTIME_MUTATION=NONE
+P1_AUTHORIZED=NO
+MERGE_AUTHORIZED=NO
+ACTIVATION_AUTHORIZED=NO
+```
+[0m
+[0m$ [0mcat task-packets/INDEX.md
+---
+id: INDEX
+title: Index
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-12'
+last_review: '2026-03-22'
+next_review: '2026-06-20'
+prelude: Index (explanation) for dopemux documentation and developer workflows.
+---
+📑 Dopemux Task Packet Index
+Canonical Registry · Execution History · Change Traceability
+════════════════════════════════════════════════════════════
+🎯 Purpose
+This index is the authoritative registry of all Task Packets in Dopemux.
+It exists to provide:
+Traceability from design → execution
+Visibility into active and completed work
+A deterministic audit trail of system evolution
+If a change cannot be traced to a Task Packet listed here, it is considered out of process.
+────────────────────────────────────────────────────────────
+🧭 How to Use This Index
+Active packets indicate work in progress
+Completed packets represent executed and audited changes
+Superseded packets are preserved for history but must not be reused
+This file should be updated whenever:
+A new Task Packet is created
+A packet changes status
+A packet is superseded by another packet
+────────────────────────────────────────────────────────────
+🟡 Active Task Packets
+
+| Packet ID | Subsystem | Title | Status | Related ADR |
+| --- | --- | --- | --- | --- |
+| TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001 | Control Tower / Planner | Design read-only interactive repository merge planner | Active (design only) | docs/91-rfc/repository-merge-planner.md |
+| TP-DMX-PCP-PLANNER-FOUNDATION-001 | Control Tower / Planner | Fixture-backed deterministic PCP planner foundation | Draft / blocked on design acceptance | TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001 |
+| TP-DMX-PCP-ADOPS-EXTENSION-002 | Control Tower / Planner | Read-only AdOps PROJECT extension | Draft / blocked on foundation | TP-DMX-PCP-PLANNER-FOUNDATION-001 |
+| TP-DMX-PCP-DNH-RDCP-BRIDGE-003 | Control Tower / Planner | Read-only dNh RDCP extension bridge | Draft / blocked on foundation | TP-DMX-PCP-PLANNER-FOUNDATION-001 |
+| TP-DMX-PCP-GITHUB-REFRESH-004 | Control Tower / Planner | Allowlisted GitHub GET/HEAD evidence refresh | Draft / blocked on AdOps+dNh adapters | TP-DMX-PCP-ADOPS-EXTENSION-002, TP-DMX-PCP-DNH-RDCP-BRIDGE-003 |
+| TP-DMX-PCP-CONVERSATION-DECISIONS-005 | Control Tower / Planner | Approved decision-capsule intake and reconciliation | Draft / blocked on live refresh | TP-DMX-PCP-GITHUB-REFRESH-004 |
+| DMX-MCPINT-HRD-REPORT-001 | MCP Fleet (P7/HRD) | Consolidated fleet reconciliation report 2026-07-18 (P7 anchor) | Active | claudedocs/mcp-fleet-reconciliation-2026-07-18.md |
+| DMX-MCPINT-HRD-CONSENSUS-VEC-002 | MCP Fleet (P7/HRD) | G6 ConPort vector-search boundary via PAL consensus | Ready | adr-mcpint-006 (to be authored) |
+| DMX-MCPINT-HRD-CONSENSUS-CPLX-003 | MCP Fleet (P7/HRD) | G7 complexity federation — ratify/challenge G5 via PAL consensus | Ready | adr-mcpint-001 (G5) |
+| DMX-MCPINT-HRD-CONSENSUS-PMSYNC-004 | MCP Fleet (P7/HRD) | G8 Leantime/PM write-sync boundary via PAL consensus | Ready | ADR to be authored |
+| DMX-MCPINT-HRD-CONPORTWRAP-005 | MCP Fleet (P7/HRD) | Retire conport shadow-twin wrapper; stub phantom serena wrapper | Ready | Gate G-02a |
+| DMX-MCPINT-HRD-SERENAWRAP-006 | MCP Fleet (P7/HRD) | Repoint serena wrapper at deployed in-repo engine | Blocked on DOPECODE-001 | Gate G-02b |
+| DMX-MCPINT-HRD-DESKCMD-007 | MCP Fleet (P7/HRD) | desktop-commander host-run singleton; retire Linux container | Ready | catalog follow_on_decision |
+| DMX-MCPINT-HRD-EVHYG-008 | MCP Fleet (P7/HRD) | Chronicle ingress event_id dedup + PII redaction | Blocked on EVENTS-006 | adr-mcpint-004 (G2) |
+| DMX-MCPINT-HRD-IDENTITY-009 | MCP Fleet (P7/HRD) | Per-request instance identity + instances registry | Ready | CHATGPT_TARGET_RESOLUTION_CONTRACT |
+| DMX-MCPINT-HRD-DCTXIDX-010 | MCP Fleet (P7/HRD) | Enable dope-context decision auto-indexing | Blocked on G6 | adr-mcpint-006 |
+| DMX-MCPINT-HRD-TOKTRUNC-011 | MCP Fleet (P7/HRD) | Fleet token-truncation standard (9K budget + boundary guard) | Ready | N/A |
+| DMX-MCPINT-HRD-LOOPBACK-012 | MCP Fleet (P7/HRD) | Loopback-only binds fleet-wide | Ready | N/A |
+| DMX-MCPINT-HRD-KGREAD-013 | MCP Fleet (P7/HRD) | Read-only KG graph traversal tools in conport | Blocked on G6 | adr-mcpint-006 |
+| DMX-MCPINT-HRD-FACADEDCTX-014 | MCP Fleet (P7/HRD) | Facade dope-context JSON-RPC bridge + catalog registration | Blocked on FACADE-001 | TOOL_CONTRACT.md |
+| DMX-MCPINT-HRD-RENAME-015 | MCP Fleet (P7/HRD) | Rename python task-orchestrator → workflow-api | Ready | N/A |
+| DMX-MCPINT-HRD-ADHDSURF-016 | MCP Fleet (P7/HRD) | PM surface for context_preserver + overwhelm snapshot | Blocked on RENAME-015 + G8 | G8 ADR |
+| DMX-MCPINT-HRD-ADHDROUTE-017 | MCP Fleet (P7/HRD) | Energy-aware routing + event-bus workflow triggers | Blocked on RENAME-015 + EVENTS-006 | adr-mcpint-004 (G2) |
+| DMX-MCPINT-HRD-LANE-018 | MCP Fleet (P7/HRD) | Wire decide_lane() into packet pipeline | Ready | model-routing-domain.md |
+| TP-DMX-UR-ARTIFACT-INTAKE-001 | Universal Router | Import accepted architecture and audit evidence | Ready | UR-ARCH-001 |
+| UR-TP-001 | Universal Router | Strict Universal Router contracts and typed governance refs | Ready after dependency | UR-ARCH-001 |
+| TP-SIA-EXEC-0001 | Workflow Plane | Packet Execution Domain Models + Lease Store | Ready | SIA Packet Execution ADR |
+| TP-SIA-EXEC-0002 | Workflow Plane | Packet Manifest V2 + Sidecar Contract | Ready | SIA Packet Execution ADR |
+| TP-SIA-EXEC-0003 | Workflow Plane | Explicit Routing Slots + Cost Policy | Ready | SIA Packet Execution ADR |
+| TP-SIA-EXEC-0004 | Workflow Plane | Supervisor Service + Canonical Commit Flow | Ready | SIA Packet Execution ADR |
+| TP-SIA-EXEC-0005 | Workflow Plane | Implementer Runner Adapter Contract | Ready | SIA Packet Execution ADR |
+| TP-SIA-EXEC-0006 | Workflow Plane | Auditor Runner + Proof Bundle Manifest | Ready | SIA Packet Execution ADR |
+| TP-SIA-EXEC-0007 | Workflow Plane | Manual Handoff + Operator Resume Semantics | Ready | SIA Packet Execution ADR |
+| TP-SIA-EXEC-0008 | Workflow Plane | Replay Repro Suite + Projection Hardening | Ready | SIA Packet Execution ADR |
+| TP-DMX-PROOF-SCHEMA-LOCAL-VALIDATION-001 | Governance / CI | Local Proof Schema Validation Before Push | Active | N/A |
+| TP-DMX-EMBEDDED-AUDIT-VALIDATOR-SCOPE-PARITY-001 | Governance / CI | Bring proof/pr_merge embedded-audit proofs into deterministic validation scope (sweep + pre-commit) | Active | Discovered via PR #1165 |
+| TP-DMX-PALETTE-FOCUS-1180-001 | UI Dashboard | Preserve TaskSequencer keyboard focus across task transitions | Active | Discovered via PR #1180 |
+| TP-DMX-AIG-001 | Adaptive Ingress Plane | Service Census + Ingress Map + First Safe Slice | Ready | ADR — Adopt a Dopemux Adaptive Ingress Plane with Local Runtime Shims |
+| TP-DMX-REPOHYG-001 | Repo Hygiene | Branch and worktree audit with deterministic cleanup plan | Ready | N/A |
+| TP-DMX-REPOHYG-002 | Repo Hygiene | Execute phase2 safe archive cleanup | Ready | N/A |
+| TP-DMX-REPOHYG-003 | Repo Hygiene | Resolve blocked and ambiguous cleanup survivors | Ready | N/A |
+| TP-DMX-REPOHYG-004 | Repo Hygiene | Lost-work audit, stash preservation, and conservative cleanup | Ready | N/A |
+| TP-DMX-REPOHYG-005 | Repo Hygiene | Remaining work disposition audit and cleanup-safe local pruning | Ready | N/A |
+| TP-DMX-REPOHYG-006 | Repo Hygiene | Deep remaining work audit and recovery queue classification | Ready | N/A |
+| TP-DMX-REPOHYG-007 | Repo Hygiene | Recover CLI/system audit hardening tranche from PR #554 | Ready | N/A |
+| TP-DMX-REPOHYG-008 | Repo Hygiene | Remove Genetic Agent and Taskmaster active surfaces | Ready | N/A |
+| TP-DMX-RTEAUDIT-001 | Repo Truth Extractor | Assemble pre-live audit pack for GPT-5.4 Pro | Ready | N/A |
+| TP-DMX-RTE-55PRO-AUDIT-ASSEMBLY-001 | Repo Truth Extractor | Assemble GPT-5.5 Pro multi-pass audit pack | Active | N/A |
+| TP-DMX-RTEOPUS-AUDIT-DOCS-001 | Repo Truth Extractor | Add recovered Opus UI/UX Claude design audit bundle to docs/audit | Active | N/A |
+| TP-DMX-RTEINT-001 | Repo Truth Extractor | Integrate current RTE branch deltas into staging audit branch | Ready | N/A |
+| TP-DMX-RTECANON-001 | Repo Truth Extractor | Establish `dopemux rte` as the canonical operator entrypoint | Ready | N/A |
+| TP-RTE-V3-CONSENT-004 | Repo Truth Extractor | Gate legacy v3 execution and fail closed on unknown pipeline versions | Active | N/A |
+| TP-RTE-WALKER-006 | Repo Truth Extractor | Exclude generated artifacts and secret-bearing files from prescan walker input | Active | N/A |
+| TP-RTE-GOLIVE-REMEDIATION-001 | Repo Truth Extractor | Harden go-live preflight truth-split, SP registry contract, and cost-cap gates | Active | N/A |
+| TP-RTE-GOLIVE-REMEDIATION-002 | Repo Truth Extractor | Contain pre-live validator execution and require parsed GO verdicts | Active | N/A |
+| TP-RTE-BATCH-005 | Repo Truth Extractor | Repair batch result extraction and strict batch request payload handling | Merged (PR #614) | N/A |
+| TP-RTE-BATCH-E2E-006 | Repo Truth Extractor | Wire strict batch response_format through v5 request construction | Merged (PR #615) | N/A |
+| TP-RTE-STRICT-ATTESTATION-007 | Repo Truth Extractor | Ground strict passthrough attestations in runtime evidence | Merged (PR #616) | N/A |
+| TP-RTE-DOCS-CANON-008 | Repo Truth Extractor | Canonicalize RTE operator docs around `dopemux rte` | Active | N/A |
+| TP-RTE-FINAL-AUDIT-GROK-NONE-REASONING-006 | Repo Truth Extractor | Preserve xAI Grok 4.3 reasoning_effort=none | Merged (PR #705) | proof/repo-truth-extractor/audit-2026-05-22/TP-RTE-FINAL-AUDIT-GROK-NONE-REASONING-006_PROOF.json |
+| TP-RTE-COSTPROFILE-E3-CONTRACTS-001 | Repo Truth Extractor | Extend structured_output_contracts.py: service_tier passthrough, prompt_caching_directives helper, anthropic_tool_use schema variant | Ready | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
+| TP-RTE-COSTPROFILE-E4-FINISH-001 | Repo Truth Extractor | Finish llm_runtime wiring: meta-dict exposure of service_tier / cached_tokens; cell alias resolution at call_llm entry | Ready | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
+| TP-RTE-COSTPROFILE-E7-LADDERS-FAILOVER-001 | Repo Truth Extractor | Rewrite 11 hardcoded ladder constants to cell-aliased lookups; add per-request failover + --disable-provider kill-switch | Ready | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
+| TP-RTE-COSTPROFILE-E8-YAML-V3-001 | Repo Truth Extractor | Restructure model_map.yaml to v3 (lane_defaults + tag_definitions + impact_class + 6 per-step overrides) + migration script | Ready | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
+| TP-RTE-COSTPROFILE-E9-TESTS-001 | Repo Truth Extractor | Integration coverage for cost-profile end-to-end flow across all 4 profiles + Anthropic cache + batch discount | Ready | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
+| TP-RTE-COSTPROFILE-F-VERIFY-001 | Repo Truth Extractor | Series-final verification gate: full test run + promptset v3 audit + bounded-lane dry-run + pal/codereview + pal/precommit | NOT_VERIFIED_ACCEPTED_AS_EVIDENCE | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
+| TP-RTE-COSTPROFILE-F-VERIFY-TOPOLOGY-REPAIR-001 | Repo Truth Extractor | Rehome F-VERIFY-001 proof/ledger evidence from polluted PR #698 onto a main-targeted replacement PR | Active | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
+| TP-RTE-COSTPROFILE-F-FULLSUITE-REPAIR-001 | Repo Truth Extractor | Repair CostProfile F full-suite failures accepted as evidence by F-VERIFY-001 | Merged (PR #709) | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
+| TP-RTE-COSTPROFILE-F-VERIFY-002 | Repo Truth Extractor | Series-gate verification after F-FULLSUITE-REPAIR (#709) and INDEX correction (#710): full RTE suite + bounded print-config + OpenRouter route-readiness + CLI import probes | Merged (PR #712) | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
+| TP-RTE-COSTPROFILE-OUTPUT-VALIDATORS-001 | Repo Truth Extractor | Post-step output validators (control_plane_truth_check + security_claim_verification) for structural / security_sensitive impact_class | Ready | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
+| TP-RTE-COSTPROFILE-XAI-BATCH-VERIFY-001 | Repo Truth Extractor | Live probe to determine xAI /v1/batches support; updates spend_ledger + batch_clients + cost profile based on verdict | Ready | docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md |
+| TP-DMX-AGENTS-CODEX-ENDTOEND-0001 | Agent Guidance | Make Codex execute TP lifecycle end-to-end by default | Ready | N/A |
+| TP-DMX-ORCH-DOCS-003 | Task Orchestrator | Document read-only/operator-status integration authority boundaries | Active | N/A |
+| TP-DMX-COMPOSE-RESTORE-001 | Infra | Restore canonical Docker Compose authority | Ready | N/A |
+| TP-CI-FULL-TEST-SUITE-001 | CI | Gate full RTE and auditor-router test suites | Active | N/A |
+| TP-UI-DASHBOARD-BUILD-001 | UI Dashboard | Restore ui-dashboard npm install and build | Active | N/A |
+| TP-BETA-MCP-02-COMPOSE-HEALTHCHECKS | Infra | Gate core MCP compose dependencies on healthchecked services | Active | N/A |
+| TP-BETA-MCP-03-ADHD-REDIS-ISOLATION | ADHD Engine | Isolate ADHD Engine Redis keys by instance | Active | N/A |
+| TP-DMX-GPTR-MCP-CONTAINER-UPDATE-001 | Infra / MCP | Restore GPT Researcher MCP container entrypoint and update package pin | Active | N/A |
+| TP-DMX-MCP-FLEET-ROADMAP-001-CATALOG-CONTRACT | MCP Fleet | Canonical catalog contract and static drift gates | Active | PR #993 audit input |
+| TP-DMX-MCP-FLEET-ROADMAP-002-GENERATED-OUTPUTS | MCP Fleet | Generated MCP config outputs from canonical catalog | Ready | PR #993 audit input |
+| TP-DMX-MCP-FLEET-ROADMAP-003-MCP-ENSURE | MCP Fleet | Add `dopemux mcp ensure --fast/--full` remediation layer | Ready | PR #993 audit input |
+| TP-DMX-MCP-FLEET-ROADMAP-004-MEMORY-SPINE | MCP Fleet / Memory | Capture promotable source events for chronicle spine | Ready | PR #993 audit input |
+| TP-DMX-MCP-FLEET-ROADMAP-005-SERVER-PERSONALITIES | MCP Fleet | Converge server personalities after catalog gates | Ready | PR #993 audit input |
+| TP-DMX-MCP-FLEET-ROADMAP-006-DCP-ACTIVATION | DCP / MCP | Activate read-only DCP facade follow-ons | Ready | PR #993 audit input |
+| TP-DMX-MCP-FLEET-ROADMAP-007-DEAD-SURFACE-QUARANTINE | MCP Fleet | Quarantine dead MCP surfaces after reverse dependency proof | Ready | PR #993 audit input |
+| TP-SEC-COMPOSE-LITELLM-LOCALHOST-001 | Security | Externalize LiteLLM healthcheck key and localize compose service ports | Active | N/A |
+| TP-SEC-WEAK-DEFAULT-SECRETS-001 | Security | Reject weak default secrets in env template and installer | Active | N/A |
+| TP-DMX-ADHD-SIGNAL-E2E-WIRING-001 | ADHD Engine / Dashboard | Prove synthetic ADHD state updates reach the dashboard UI band | Active | N/A |
+| TP-DMX-ADHD-SECRET-DEFAULTS-001 | ADHD Engine / Security | Remove remaining ADHD/WMA weak default secrets and fail closed outside dev/test/local | Active | N/A |
+| TP-DMX-ADHD-PRIVACY-PAYLOADS-001 | ADHD Engine / Activity Capture | Enforce content-free ADHD activity payloads | Active | N/A |
+| TP-DOCS-FIRST-TOUCH-PRODUCT-NAME-001 | Docs | Refresh active Start Here onboarding and product naming | Active | N/A |
+| TP-DMX-AUDITOR-FLEET-CAMPAIGN-INTAKE-001 | Auditor Fleet / Governance | Deterministic evidence intake for auditor fleet campaign DR-AUDITOR-FLEET-PLAN-AUTH-2026-07-13 | Active | N/A |
+| DMX-COCKPIT-STATIC-002 | UI Cockpit | Expose deterministic static cockpit renderer through guarded CLI wrapper | Merged (PR #528) | N/A |
+| TP-DMX-COCKPIT-MERGE-STACK-CONSOLIDATE-001 | UI Cockpit | Audit and prepare Cockpit PR stack 568-571 plus PR 573 evidence for safe consolidation | Active | N/A |
+| TP-DMX-COCKPIT-COMMAND-PALETTE-001 | UI Cockpit | Reconcile Command Palette broker primitive onto current main | Active | N/A |
+| TP-DMX-COCKPIT-RUNTIME-RENDER-001 | UI Cockpit | Wire runtime renderer primitives to accepted Cockpit IA package contract | Active | N/A |
+| TP-DMX-COCKPIT-SAFE-ACTIONS-001 | UI Cockpit | Materialize Safe Action Gate primitive contract packet metadata | Active | N/A |
+| TP-DMX-COCKPIT-SETTINGS-RUNTIME-001 | UI Cockpit | Wire Settings/Admin/Runtime primitive surface to runtime renderer | Active | N/A |
+| TP-DMX-COCKPIT-UNKNOWN-DRIFT-001 | UI Cockpit | Wire Unknown / Drift Queue primitive surface to runtime renderer | Active | N/A |
+| TP-DMX-COCKPIT-INVENTORY-REGEN-001 | UI Cockpit | Regenerate current-head Cockpit command/surface inventory artifacts | Active | N/A |
+| TP-DMX-COCKPIT-RUNTIME-CONTRACT-FIDELITY-001 | UI Cockpit | Repair Cockpit runtime contract-fidelity gaps | Active | N/A |
+| TP-DMX-COCKPIT-DESIGN-PICKUP-001 | UI Cockpit | Create current-state Cockpit design pickup brief after pack-to-main consolidation | Active | N/A |
+| TP-DMX-COCKPIT-ELECTRIC-REFRESH-RUNTIME-001 | UI Cockpit | Implement Direction B Electric Refresh five-mode runtime continuation | Active | N/A |
+| TP-DMX-COCKPIT-PIXEL-PARITY-PROOF-001 | UI Cockpit | Compare merged Cockpit runtime renders against uploaded PNG references without design fixes | Active | N/A |
+| TP-DMX-COCKPIT-TEXTUAL-SCREENSHOT-AUTOMATION-001 | UI Cockpit | Generate repeatable Cockpit Textual screenshots for current five-mode runtime proof | Active | N/A |
+| TP-DMX-MOBILE-TUI-SPEC-001 | UI Cockpit | Install mobile-first tmux Cockpit UX specification without runtime changes | Active | N/A |
+| PACKET_031 | Memory | Dual Capture Adapters, Single Ledger | Executing | ADR-213 |
+| PACKET_032 | Memory | Chronicle Promotion Guards | Pending Audit | ADR-214 |
+| DMX-COCKPIT-PMIMPL-PACK-001 | Cockpit / PM Plane | PM/Implementer cockpit processing pack | Ready | N/A |
+| TP-DMX-COCKPIT-MAIN-STATE-RECON-001 | UI Cockpit | Reconcile origin/main and open PR cockpit state vs the pack remediation stack | Executed | N/A |
+| TP-DMX-COCKPIT-MERGE-EXECUTE-001 | UI Cockpit | Define Ledger-gated Cockpit pack merge execution procedure without authorizing runtime mutation | Blocked Preflight | N/A |
+| TP-DMX-DEPENDABOT-UV-RESOLVER-001 | Dependencies / CI | Repair Dependabot uv security update resolver metadata | Active | N/A |
+| TP-BETA-INSTALL-02-CLAUDE-REVIEW-001 | Installer | Apply Claude review cleanup to BETA-INSTALL-02 network repair | Active | N/A |
+| TP-BETA-INSTALL-01-MCP-01-REVIEW-001 | MCP Config | Repair PR #737 review blockers for portable Task Orchestrator launch | Active | N/A |
+| TP-BETA-CLI-01-DECISIONS-REVIEW-001 | CLI Decisions | Repair PR #740 review blockers for decisions CLI subcommands | Active | N/A |
+| TP-DMX-ADHD-INTERACTIVE-PROMPTS-001 | ADHD UX | Wire interactive prompts into launch and profile flows | Active | N/A |
+| TP-DMX-ORCH-AUDIT-FIX-001 | Task Orchestrator | Close DMX-ORCH integration audit gaps | Active | N/A |
+| DMX-DCP-MODEL-ROUTING-MVP-0006 | DCP / Model Routing | Classifier provenance hardening for trust-lowering signals | Active | N/A |
+| DMX-DCP-MODEL-ROUTING-MVP-0007 | DCP / Model Routing | Trusted input-provenance contract for execution eligibility | Active | N/A |
+| TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001 | DCP / Full System | Freeze DCP full-system authority and contracts | Active | docs/90-adr/adr-dcp-full-system-v1-authority-and-contract-freeze.md |
+| TP-DMX-DCP-P0-PR1283-REPAIR-001 | DCP / Full System | Repair PR #1283 P0 contract review findings in place | Active | TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001 |
+| TP-DMX-DCP-P0-PR1283-REPAIR-002 | DCP / Full System | Repair PR #1283 P0 cross-object authority validation in place | Active | TP-DMX-DCP-P0-PR1283-REPAIR-001 |
+| TP-DMX-DCP-P0-PR1283-CROSS-AUTHORITY-CLOSURE-001 | DCP / Full System | Close PR #1283 cross-authority contract relationships | Active | TP-DMX-DCP-P0-PR1283-REPAIR-002 |
+| TP-DCP-MCP-RO-0002 | DCP / MCP | Architecture Doc And Multi Project Contract | Active | N/A |
+| TP-DCP-MCP-RO-0003 | DCP / MCP | Inspect Dopemux Init Registry Contract | Active | N/A |
+| TP-DCP-MCP-RO-0004 | DCP / MCP | Facade Scaffold Registry Resolver Repo Proof Tools | Active | N/A |
+| TP-DCP-MCP-RO-0005 | DCP / MCP | ConPort And Dope Memory Read Adapters | Active | N/A |
+| TP-DCP-MCP-RO-0006 | DCP / MCP | Dope Context And Task Orchestrator Read Adapters | Active | N/A |
+| TP-DCP-MCP-RO-0007 | DCP / MCP | Secure MCP Tunnel Integration Docs And Manual Validation | Active | N/A |
+| TP-DCP-MCP-RO-0008 | DCP / MCP | Hardening Cross Project Isolation And PR Readiness | Active | N/A |
+| TP-DCP-MCP-RO-0012 | DCP / MCP | Public Facade Target Contract Migration | Active | TP-DCP-MCP-RO-0011-REMEDIATION-01 |
+| TP-DCP-MCP-RO-0013 | DCP / MCP | Connector Policy Schema And Auth Context | Active | TP-DCP-MCP-RO-0012 |
+| TP-DCP-MCP-RO-0014 | DCP / MCP | Loopback Streamable HTTP Ingress | Active | TP-DCP-MCP-RO-0013 |
+| TP-DCP-MCP-RO-0015 | DCP / MCP | Ownership Verification And Release-One Adapters | Active | TP-DCP-MCP-RO-0014 |
+| TP-DCP-MCP-RO-0016 | DCP / MCP | Multi-Provider Setup And Rollback Docs | Active | TP-DCP-MCP-RO-0015 |
+| TP-DCP-MCP-RO-0017 | DCP / MCP | Acceptance Matrix And Fail-Closed Harness | Active | TP-DCP-MCP-RO-0016 |
+| TP-DCP-MCP-RO-0018 | DCP / MCP | Exact-Head Proof Readiness Evaluator | Active | TP-DCP-MCP-RO-0017 |
+| TP-DCP-MCP-RO-0017-VENDOR | DCP / MCP | Vendor-Live Preflight And Two-Target Isolation | Active | TP-DCP-MCP-RO-0017 |
+| DMX-DCP-PROMPT5-EXTRACT-RECON-001 | DCP / Prompt 5 | Extract Prompt 5 chat-history docs and reconcile PR/Task Orchestrator runway state | Active | N/A |
+| TP-DMX-C0-R2-SCHEMA-PUBLICATION-001 | Control Tower / DCP | Deterministic C0-R2 schema publication into schemas/dcp (exact-byte, L0) | Active (PR #1307 open) | N/A |
+| TP-DMX-C0-R2-SCHEMA-PUBLICATION-001-A1 | Control Tower / DCP | Publication admission amendment — C0-R2 ratification authority reconciliation | Active | TP-DMX-C0-R2-SCHEMA-PUBLICATION-001 |
+
+────────────────────────────────────────────────────────────
+🟢 Completed Task Packets
+
+| Packet ID | Subsystem | Title | Completion Date | Outcome |
+| --- | --- | --- | --- | --- |
+| TP-DMX-RTEAUDIT-110 | Repo Truth Extractor | Gemini deep PAL audit across UX, prompts, routing, and operator readiness | 2026-04-23 | Accepted (Conditional Go) |
+| TP-PM-ARCH-04A | PM Plane | Canonical PMTask Model + Store (Unit-only) | 2026-03-22 | Accepted |
+| TP- PM-ARCH-04B | PM Plane | Canonical pm.* Events + Adapters | 2026-03-22 | Accepted |
+| PACKET_024 | Infra | MCP Health Surface Hardening | 2026-01-26 | Accepted |
+| PACKET_021 | Memory | Deterministic Chronicle Schema | 2026-01-18 | Accepted |
+| TP-DMX-AI-ROUTING-001 | Governance / AI Routing | Stage-based dev-workflow AI model routing policy, reference, how-to, and Copilot agent stage tagging | 2026-06-06 | Accepted (PR #837, commit b987da994) |
+| TP-DMX-AI-ROUTING-002 | Governance / AI Routing | Proof bundle schema and proof contract cross-references to the stage routing policy | 2026-06-06 | Accepted (PR #837, commit b987da994) |
+
+────────────────────────────────────────────────────────────
+⚪ Superseded Task Packets
+
+| Packet ID | Superseded By | Reason |
+| --- | --- | --- |
+| PACKET_017 | PACKET_021 | Incomplete determinism guarantees |
+
+────────────────────────────────────────────────────────────
+🧠 Index Maintenance Rules
+Never delete historical packets
+Never reuse packet IDs
+Status changes must be explicit
+Completed packets require an audit outcome
+Superseded packets must reference the replacing packet
+────────────────────────────────────────────────────────────
+Final Rule
+If it’s not indexed here, it didn’t happen.
+
+────────────────────────────────────────────────────────────
+
+## 🟡 Active Task Packets — DMX-BACKLOG-2026-07-07 (52)
+
+Backlog conversion of Memory Context Fabric + MCP fleet audit + forgotten-features + runtime-bug findings (PRs #1011/#1002/#1009). Decisions: `claudedocs/backlog/decisions-ledger.md`. Traceability: `claudedocs/backlog/README.md`. Load-plan: `claudedocs/backlog/loadplan.json`. All schema-valid; authored, not executed.
+
+| Packet ID | Series | Disp | Status | Depends On |
+| --- | --- | --- | --- | --- |
+| DMX-MCF-002-transcript-ingest | DMX-MCF | BUILD | Ready | — |
+| DMX-MCF-003-decision-candidate | DMX-MCF | BUILD | Ready | DMX-MCF-002-transcript-ingest |
+| DMX-MCF-004-sessionstart-recap | DMX-MCF | BUILD | Ready | DMX-MCF-003-decision-candidate |
+| DMX-MCF-005-semantic-projection-spec | DMX-MCF | SPEC | Ready | DMX-MCF-004-sessionstart-recap, DMX-ADR-001-semantic-memory-home |
+| DMX-MCF-006-conport-graph-spike-spec | DMX-MCF | SPEC | Ready | DMX-ADR-005-conport-graph-exposure |
+| DMX-MCF-007-fabric-orchestrator-spec | DMX-MCF | SPEC | Ready | DMX-MCF-002-transcript-ingest, DMX-MCF-003-decision-candidate, DMX-MCF-004-sessionstart-recap |
+| DMX-MCF-008-summarizer-spec | DMX-MCF | SPEC | Ready | DMX-MCF-003-decision-candidate, DMX-MCF-007-fabric-orchestrator-spec |
+| DMX-MCF-009-proactive-injection-spec | DMX-MCF | SPEC | Ready | DMX-MCF-007-fabric-orchestrator-spec |
+| DMX-FLEET-P0-001-real-healthchecks | DMX-FLEET-P0 | BUILD | Ready | — |
+| DMX-FLEET-P0-002-ensure-pal-managed | DMX-FLEET-P0 | BUILD | Ready | — |
+| DMX-FLEET-P0-003-conport-schema-verify-failclosed | DMX-FLEET-P0 | WIRE | Ready | — |
+| DMX-FLEET-P0-004-registry-dedup | DMX-FLEET-P0 | DELETE | Ready | — |
+| DMX-FLEET-P0-005-wrapper-path-fixes | DMX-FLEET-P0 | BUILD | Ready | — |
+| DMX-FLEET-P0-006-quarantine-killlist | DMX-FLEET-P0 | BUILD | Ready | — |
+| DMX-FLEET-P0-007-desktop-commander-upstream | DMX-FLEET-P0 | REBUILD | Ready | — |
+| DMX-FLEET-P1-001-unified-catalog-spec | DMX-FLEET-P1 | SPEC | Ready | DMX-FLEET-P0-004-registry-dedup |
+| DMX-FLEET-P1-002-codegen-pipeline-spec | DMX-FLEET-P1 | SPEC | Ready | DMX-FLEET-P1-001-unified-catalog-spec |
+| DMX-FLEET-P1-003-mcp-ensure-command | DMX-FLEET-P1 | SPEC | Ready | DMX-FLEET-P1-001-unified-catalog-spec, DMX-FLEET-P0-002-ensure-pal-managed |
+| DMX-FLEET-P1-004-ci-drift-gates | DMX-FLEET-P1 | BUILD | Ready | DMX-FLEET-P1-002-codegen-pipeline-spec |
+| DMX-FLEET-P1-005-orchestrator-autostart | DMX-FLEET-P1 | SPEC | Ready | — |
+| DMX-FLEET-P1-006-exa-retire-cleanup | DMX-FLEET-P1 | RETIRE | Ready | — |
+| DMX-FLEET-P1-007-token-truncation-utility-spec | DMX-FLEET-P1 | SPEC | Ready | — |
+| DMX-FLEET-P2-001-event-source-wiring | DMX-FLEET-P2 | WIRE | Ready | — |
+| DMX-FLEET-P2-002-heartbeat-ratelimit | DMX-FLEET-P2 | BUILD | Ready | — |
+| DMX-FLEET-P2-003-instance-identity-propagation | DMX-FLEET-P2 | SPEC | Ready | — |
+| DMX-FLEET-P2-004-skill-mirror-receipts | DMX-FLEET-P2 | BUILD | Ready | — |
+| DMX-FLEET-P2-005-dopecontext-indexing-enable | DMX-FLEET-P2 | BUILD | Ready | DMX-FLEET-P2-001-event-source-wiring |
+| DMX-FLEET-P3-001-conport-jsonrpc-parity | DMX-FLEET-P3 | SPEC | Ready | — |
+| DMX-FLEET-P3-002-serena-promotion | DMX-FLEET-P3 | WIRE | Ready | DMX-ADR-002-serena-promotion |
+| DMX-FLEET-P3-003-complexity-unify-spec | DMX-FLEET-P3 | SPEC | Ready | DMX-ADR-004-complexity-scorer |
+| DMX-FLEET-P3-004-qdrant-gc | DMX-FLEET-P3 | DELETE | Ready | — |
+| DMX-FLEET-P3-005-voyage-cost-guard | DMX-FLEET-P3 | WIRE | Ready | — |
+| DMX-FLEET-P3-006-loopback-binds | DMX-FLEET-P3 | BUILD | Ready | — |
+| DMX-FLEET-P4-001-facade-g1-contract-test | DMX-FLEET-P4 | WIRE | Ready | — |
+| DMX-FLEET-P4-002-dopecontext-bridge-spec | DMX-FLEET-P4 | SPEC | Ready | — |
+| DMX-FLEET-P4-003-lane-engine-wire | DMX-FLEET-P4 | WIRE | Ready | DMX-ADR-003-lane-engine-dispatch |
+| DMX-FLEET-P4-004-inventory-freshness-gate | DMX-FLEET-P4 | WIRE | Ready | DMX-FLEET-P4-001-facade-g1-contract-test |
+| DMX-FLEET-P4-005-facade-catalog-register | DMX-FLEET-P4 | WIRE | Ready | DMX-FLEET-P1-001-unified-catalog-spec |
+| DMX-FLEET-P5-001-e2e-acceptance | DMX-FLEET-P5 | SPEC | Ready | DMX-FLEET-P1-003-mcp-ensure-command, DMX-FLEET-P2-005-dopecontext-indexing-enable |
+| DMX-FLEET-P5-002-docs-reconciliation | DMX-FLEET-P5 | WIRE | Ready | — |
+| DMX-FLEET-P5-003-proof-discipline | DMX-FLEET-P5 | BUILD | Ready | — |
+| DMX-ADHD-WIRE-001-predictive-risk-hook | DMX-ADHD-WIRE | WIRE | Ready | — |
+| DMX-ADHD-WIRE-002-context-preservation-display | DMX-ADHD-WIRE | WIRE | Ready | — |
+| DMX-ADHD-WIRE-003-overwhelm-snapshot | DMX-ADHD-WIRE | WIRE | Ready | — |
+| DMX-ADHD-WIRE-004-relationship-vocab-widening | DMX-ADHD-WIRE | WIRE | Ready | DMX-FLEET-P3-001-conport-jsonrpc-parity |
+| DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec | DMX-ADHD-WIRE | SPEC | Ready | DMX-FLEET-P3-002-serena-promotion |
+| DMX-ADHD-WIRE-006-fatigue-contextswitch-resurrect-spec | DMX-ADHD-WIRE | SPEC | Ready | DMX-FLEET-P3-002-serena-promotion, DMX-ADHD-WIRE-005-adaptive-learning-resurrect-spec |
+| DMX-ADR-001-semantic-memory-home | DMX-ADR | ADR | Ready | — |
+| DMX-ADR-002-serena-promotion | DMX-ADR | ADR | Ready | — |
+| DMX-ADR-003-lane-engine-dispatch | DMX-ADR | ADR | Ready | — |
+| DMX-ADR-004-complexity-scorer | DMX-ADR | ADR | Ready | — |
+| DMX-ADR-005-conport-graph-exposure | DMX-ADR | ADR | Ready | — |
+| TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001 | MCP Fleet | Freeze multiproject P0 identity and sharing contracts | Active | docs/90-adr/adr-dmx-mcp-multiproject-identity-sharing-contract-001.md |
+| TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001 | MCP Fleet | Close merged P0 compose no-runtime-effect gate after PR #1306 | Active | TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001 |
+[0m
+[0m$ [0mls -al proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/
+total 176
+drwxr-xr-x  8 hue  staff    256 Sep  3 22:58 .
+drwxr-xr-x  4 hue  staff    128 Sep  3 22:58 ..
+-rw-r--r--  1 hue  staff   2795 Sep  3 22:58 AUDIT_INPUT.md
+-rw-r--r--  1 hue  staff    832 Sep  3 22:58 AUDIT_INVOCATION.txt
+-rw-r--r--  1 hue  staff  66382 Sep  3 23:02 AUDIT_OUTPUT.txt
+-rw-r--r--  1 hue  staff    289 Sep  3 22:58 DIFF_NAME_STATUS.txt
+-rw-r--r--  1 hue  staff     41 Sep  3 22:58 HEAD.txt
+-rw-r--r--  1 hue  staff    410 Sep  3 22:58 VALIDATION.txt
+[0m
+[0m$ [0mcat proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/HEAD.txt
+f27b66f88986a928a2161576c2072049ea8f56ea
+[0m
+[0m$ [0mgit status
+On branch codex/mcp-multiproject-p0-postmerge-closure
+Your branch is ahead of 'origin/main' by 1 commit.
+  (use "git push" to publish your local commits)
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/
+
+nothing added to commit but untracked files present (use "git add" to track)
+[0m
+[0m$ [0mgit log -1
+commit f27b66f88986a928a2161576c2072049ea8f56ea
+Author: DDD-Enterprises (DJ Daddy Dom & the Department of… Don’t ask, Don’t tell, Don’t stop, Don’t you dare…) <167156098+hu3mann@users.noreply.github.com>
+Date:   Thu Sep 3 22:57:49 2026 -0700
+
+    test(mcp): close P0 compose no-runtime-effect gate
+[0m
+[0m$ [0mgit diff origin/main...HEAD tests/arch/test_mcp_multiproject_contracts.py
+diff --git a/tests/arch/test_mcp_multiproject_contracts.py b/tests/arch/test_mcp_multiproject_contracts.py
+index 6b7b5b26c..74bb03fb1 100644
+--- a/tests/arch/test_mcp_multiproject_contracts.py
++++ b/tests/arch/test_mcp_multiproject_contracts.py
+@@ -1,5 +1,6 @@
+ from __future__ import annotations
+
++import fnmatch
+ import hashlib
+ import json
+ import subprocess
+@@ -450,21 +451,56 @@ def test_p5_before_p4_dag():
+     adr = (REPO_ROOT / "docs/90-adr/adr-dmx-mcp-multiproject-identity-sharing-contract-001.md").read_text()
+     assert "redis-events logical -> PROJECT_SCOPED before dope-memory consolidation" in adr
+
++FORBIDDEN_P0_PREFIXES = [
++    "mcp_catalog.yaml",
++    "src/dopemux/mcp/",
++    "src/dopemux/commands/mcp_commands.py",
++    "services/",
++    "docker/",
++    ".mcp.json",
++]
++
++# Repository-root compose files (compose.yml/compose.yaml/compose.*.yml/compose.*.yaml)
++# are runtime surfaces for the MCP fleet and must never be mutated by this packet series.
++ROOT_COMPOSE_PATTERNS = [
++    "compose.yml",
++    "compose.yaml",
++    "compose.*.yml",
++    "compose.*.yaml",
++]
++
++def _is_forbidden_p0_path(fpath: str) -> bool:
++    if any(fpath.startswith(prefix) for prefix in FORBIDDEN_P0_PREFIXES):
++        return True
++    if "/" in fpath:
++        return False
++    return any(fnmatch.fnmatch(fpath, pattern) for pattern in ROOT_COMPOSE_PATTERNS)
++
++@pytest.mark.parametrize("fpath", [
++    "compose.yml",
++    "compose.yaml",
++    "compose.override.yml",
++    "compose.dev.yaml",
++])
++def test_root_compose_file_is_forbidden(fpath):
++    assert _is_forbidden_p0_path(fpath)
++
++@pytest.mark.parametrize("fpath", [
++    "README.md",
++    "docs/compose.yml",
++    "composefile.yml",
++    "compose.override",
++    "task-packets/INDEX.md",
++])
++def test_non_root_or_non_compose_path_is_allowed(fpath):
++    assert not _is_forbidden_p0_path(fpath)
++
+ def test_no_runtime_effect_diff():
+-    FORBIDDEN_P0_PATHS = [
+-        "mcp_catalog.yaml",
+-        "src/dopemux/mcp/",
+-        "src/dopemux/commands/mcp_commands.py",
+-        "services/",
+-        "docker/",
+-        ".mcp.json",
+-    ]
+     try:
+         diff_out = subprocess.check_output(["git", "diff", "--name-only", "origin/main...HEAD"]).decode()
+         changed = diff_out.splitlines()
+-        for fpath in FORBIDDEN_P0_PATHS:
+-            for c in changed:
+-                if c.startswith(fpath):
+-                    pytest.fail(f"Forbidden path mutated: {c}")
++        for c in changed:
++            if _is_forbidden_p0_path(c):
++                pytest.fail(f"Forbidden path mutated: {c}")
+     except subprocess.CalledProcessError:
+         pytest.skip("No trusted base supplied to git diff")
+[0m
+[0m$ [0mnpx check-jsonschema --schemafile docs/03-reference/spec/dopetask/dopetask-canonical-spec.json task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json
+npm error code E404
+npm error 404 Not Found - GET https://registry.npmjs.org/check-jsonschema - Not found
+npm error 404
+npm error 404  The requested resource 'check-jsonschema@*' could not be found or you do not have permission to access it.
+npm error 404
+npm error 404 Note that you can also install from a
+npm error 404 tarball, folder, http url, or git url.
+npm error A complete log of this run can be found in: /Users/hue/.npm/_logs/2026-09-04T06_03_10_870Z-debug-0.log
+[0m
+[0m$ [0mpython -m pip install check-jsonschema && check-jsonschema --schemafile docs/03-reference/spec/dopetask/dopetask-canonical-spec.json task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json
+Collecting check-jsonschema
+  Downloading check_jsonschema-0.38.0-py3-none-any.whl.metadata (2.5 kB)
+Requirement already satisfied: ruamel.yaml<0.20.0,>=0.18.10 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from check-jsonschema) (0.18.17)
+Requirement already satisfied: jsonschema<5.0,>=4.18.0 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from check-jsonschema) (4.25.1)
+Collecting regress>=2024.11.1 (from check-jsonschema)
+  Downloading regress-2025.10.1-cp312-cp312-macosx_11_0_arm64.whl.metadata (2.1 kB)
+Requirement already satisfied: requests<3.0 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from check-jsonschema) (2.33.1)
+Requirement already satisfied: click<9,>=8 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from check-jsonschema) (8.1.8)
+Requirement already satisfied: attrs>=22.2.0 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from jsonschema<5.0,>=4.18.0->check-jsonschema) (26.1.0)
+Requirement already satisfied: jsonschema-specifications>=2023.03.6 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from jsonschema<5.0,>=4.18.0->check-jsonschema) (2025.9.1)
+Requirement already satisfied: referencing>=0.28.4 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from jsonschema<5.0,>=4.18.0->check-jsonschema) (0.37.0)
+Requirement already satisfied: rpds-py>=0.7.1 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from jsonschema<5.0,>=4.18.0->check-jsonschema) (0.30.0)
+Requirement already satisfied: charset_normalizer<4,>=2 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from requests<3.0->check-jsonschema) (3.4.7)
+Requirement already satisfied: idna<4,>=2.5 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from requests<3.0->check-jsonschema) (3.13)
+Requirement already satisfied: urllib3<3,>=1.26 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from requests<3.0->check-jsonschema) (2.6.3)
+Requirement already satisfied: certifi>=2023.5.7 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from requests<3.0->check-jsonschema) (2026.4.22)
+Requirement already satisfied: ruamel.yaml.clib>=0.2.15 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from ruamel.yaml<0.20.0,>=0.18.10->check-jsonschema) (0.2.15)
+Requirement already satisfied: typing-extensions>=4.4.0 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from referencing>=0.28.4->jsonschema<5.0,>=4.18.0->check-jsonschema) (4.15.0)
+Downloading check_jsonschema-0.38.0-py3-none-any.whl (420 kB)
+Downloading regress-2025.10.1-cp312-cp312-macosx_11_0_arm64.whl (434 kB)
+Installing collected packages: regress, check-jsonschema
+
+Successfully installed check-jsonschema-0.38.0 regress-2025.10.1
+ok -- validation done
+[0m
+[0m$ [0mgit diff --name-status origin/main...HEAD
+A	proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/implementation-notes.md
+M	task-packets/INDEX.md
+A	task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json
+A	task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.md
+M	tests/arch/test_mcp_multiproject_contracts.py
+[0m
+[0m$ [0mgit status
+On branch codex/mcp-multiproject-p0-postmerge-closure
+Your branch is ahead of 'origin/main' by 1 commit.
+  (use "git push" to publish your local commits)
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/
+
+nothing added to commit but untracked files present (use "git add" to track)
+[0m
+[0m$ [0mgit diff origin/main...HEAD tests/arch/test_mcp_multiproject_contracts.py
+diff --git a/tests/arch/test_mcp_multiproject_contracts.py b/tests/arch/test_mcp_multiproject_contracts.py
+index 6b7b5b26c..74bb03fb1 100644
+--- a/tests/arch/test_mcp_multiproject_contracts.py
++++ b/tests/arch/test_mcp_multiproject_contracts.py
+@@ -1,5 +1,6 @@
+ from __future__ import annotations
+
++import fnmatch
+ import hashlib
+ import json
+ import subprocess
+@@ -450,21 +451,56 @@ def test_p5_before_p4_dag():
+     adr = (REPO_ROOT / "docs/90-adr/adr-dmx-mcp-multiproject-identity-sharing-contract-001.md").read_text()
+     assert "redis-events logical -> PROJECT_SCOPED before dope-memory consolidation" in adr
+
++FORBIDDEN_P0_PREFIXES = [
++    "mcp_catalog.yaml",
++    "src/dopemux/mcp/",
++    "src/dopemux/commands/mcp_commands.py",
++    "services/",
++    "docker/",
++    ".mcp.json",
++]
++
++# Repository-root compose files (compose.yml/compose.yaml/compose.*.yml/compose.*.yaml)
++# are runtime surfaces for the MCP fleet and must never be mutated by this packet series.
++ROOT_COMPOSE_PATTERNS = [
++    "compose.yml",
++    "compose.yaml",
++    "compose.*.yml",
++    "compose.*.yaml",
++]
++
++def _is_forbidden_p0_path(fpath: str) -> bool:
++    if any(fpath.startswith(prefix) for prefix in FORBIDDEN_P0_PREFIXES):
++        return True
++    if "/" in fpath:
++        return False
++    return any(fnmatch.fnmatch(fpath, pattern) for pattern in ROOT_COMPOSE_PATTERNS)
++
++@pytest.mark.parametrize("fpath", [
++    "compose.yml",
++    "compose.yaml",
++    "compose.override.yml",
++    "compose.dev.yaml",
++])
++def test_root_compose_file_is_forbidden(fpath):
++    assert _is_forbidden_p0_path(fpath)
++
++@pytest.mark.parametrize("fpath", [
++    "README.md",
++    "docs/compose.yml",
++    "composefile.yml",
++    "compose.override",
++    "task-packets/INDEX.md",
++])
++def test_non_root_or_non_compose_path_is_allowed(fpath):
++    assert not _is_forbidden_p0_path(fpath)
++
+ def test_no_runtime_effect_diff():
+-    FORBIDDEN_P0_PATHS = [
+-        "mcp_catalog.yaml",
+-        "src/dopemux/mcp/",
+-        "src/dopemux/commands/mcp_commands.py",
+-        "services/",
+-        "docker/",
+-        ".mcp.json",
+-    ]
+     try:
+         diff_out = subprocess.check_output(["git", "diff", "--name-only", "origin/main...HEAD"]).decode()
+         changed = diff_out.splitlines()
+-        for fpath in FORBIDDEN_P0_PATHS:
+-            for c in changed:
+-                if c.startswith(fpath):
+-                    pytest.fail(f"Forbidden path mutated: {c}")
++        for c in changed:
++            if _is_forbidden_p0_path(c):
++                pytest.fail(f"Forbidden path mutated: {c}")
+     except subprocess.CalledProcessError:
+         pytest.skip("No trusted base supplied to git diff")
+[0m
+[0m$ [0mpytest tests/arch/test_mcp_multiproject_contracts.py
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.0.3, pluggy-1.6.0
+rootdir: /Users/hue/code/_worktrees/dopemux-mcp-p0-postmerge-closure-001
+configfile: pytest.ini (WARNING: ignoring pytest config in pyproject.toml!)
+plugins: mock-3.15.1, cov-7.1.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, langsmith-0.8.7, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 76 items
+
+tests/arch/test_mcp_multiproject_contracts.py .......................... [ 34%]
+..................................................                       [100%]
+
+============================== 76 passed in 0.30s ==============================
+[0m
+[0m$ [0mgit checkout main || git rev-parse origin/main
+Switched to branch 'main'
+Your branch is behind 'origin/main' by 39 commits, and can be fast-forwarded.
+  (use "git pull" to update your local branch)
+[0m
+[0m$ [0mgit checkout origin/main && pytest tests/arch/test_mcp_multiproject_contracts.py
+Note: switching to 'origin/main'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 649fe5e73 chore(task-packets): ingest C0-R2 schema publication packets (#1310)
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.0.3, pluggy-1.6.0
+rootdir: /Users/hue/code/_worktrees/dopemux-mcp-p0-postmerge-closure-001
+configfile: pytest.ini (WARNING: ignoring pytest config in pyproject.toml!)
+plugins: mock-3.15.1, cov-7.1.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, langsmith-0.8.7, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 67 items
+
+tests/arch/test_mcp_multiproject_contracts.py .......................... [ 38%]
+.........................................                                [100%]
+
+============================== 67 passed in 0.28s ==============================
+[0m
+[0m$ [0mgit checkout codex/mcp-multiproject-p0-postmerge-closure
+Previous HEAD position was 649fe5e73 chore(task-packets): ingest C0-R2 schema publication packets (#1310)
+Switched to branch 'codex/mcp-multiproject-p0-postmerge-closure'
+Your branch is ahead of 'origin/main' by 1 commit.
+  (use "git push" to publish your local commits)
+[0m
+[0m$ [0mpython -m pip install check-jsonschema && check-jsonschema --schemafile docs/03-reference/spec/dopetask/dopetask-canonical-spec.json task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json
+Requirement already satisfied: check-jsonschema in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (0.38.0)
+Requirement already satisfied: ruamel.yaml<0.20.0,>=0.18.10 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from check-jsonschema) (0.18.17)
+Requirement already satisfied: jsonschema<5.0,>=4.18.0 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from check-jsonschema) (4.25.1)
+Requirement already satisfied: regress>=2024.11.1 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from check-jsonschema) (2025.10.1)
+Requirement already satisfied: requests<3.0 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from check-jsonschema) (2.33.1)
+Requirement already satisfied: click<9,>=8 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from check-jsonschema) (8.1.8)
+Requirement already satisfied: attrs>=22.2.0 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from jsonschema<5.0,>=4.18.0->check-jsonschema) (26.1.0)
+Requirement already satisfied: jsonschema-specifications>=2023.03.6 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from jsonschema<5.0,>=4.18.0->check-jsonschema) (2025.9.1)
+Requirement already satisfied: referencing>=0.28.4 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from jsonschema<5.0,>=4.18.0->check-jsonschema) (0.37.0)
+Requirement already satisfied: rpds-py>=0.7.1 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from jsonschema<5.0,>=4.18.0->check-jsonschema) (0.30.0)
+Requirement already satisfied: charset_normalizer<4,>=2 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from requests<3.0->check-jsonschema) (3.4.7)
+Requirement already satisfied: idna<4,>=2.5 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from requests<3.0->check-jsonschema) (3.13)
+Requirement already satisfied: urllib3<3,>=1.26 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from requests<3.0->check-jsonschema) (2.6.3)
+Requirement already satisfied: certifi>=2023.5.7 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from requests<3.0->check-jsonschema) (2026.4.22)
+Requirement already satisfied: ruamel.yaml.clib>=0.2.15 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from ruamel.yaml<0.20.0,>=0.18.10->check-jsonschema) (0.2.15)
+Requirement already satisfied: typing-extensions>=4.4.0 in /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages (from referencing>=0.28.4->jsonschema<5.0,>=4.18.0->check-jsonschema) (4.15.0)
+ok -- validation done
+[0m
+[0m$ [0muv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_runtime_registry.py
+........................................................................ [ 55%]
+.........................................................                [100%]
+129 passed in 1.05s
+[0m
+[0m$ [0mgit diff --check
+(no output)
+[0m
+[0m$ [0mcat task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json
+{
+  "id": "TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001",
+  "project": "dopemux-mvp",
+  "target": "Close the merged P0 compose-file no-runtime-effect coverage gap and record PR #1306 merge-governance facts without runtime, schema, topology, or service changes.",
+  "invariants": [
+    "PR #1306 is already merged; do not rewrite or rebase its history.",
+    "Only the P0 no-runtime-effect test may change substantively.",
+    "No schema, ADR semantics, topology, runtime, catalog, compose file, service, database, Redis, or runner configuration may change.",
+    "The test must reject compose.yml, compose.yaml, compose.*.yml, and compose.*.yaml at repository root.",
+    "PR #1306 merged with six Copilot review threads unresolved; preserve this fact.",
+    "SECURITY_RELEASE_APPROVAL_REQUIRED was named by PR #1306; separate pre-merge approval evidence is UNKNOWN unless explicitly proven.",
+    "Do not claim PR Steward READY retroactively.",
+    "P1 remains blocked until this successor is merged and current main is reharvested."
+  ],
+  "depends_on": [
+    "TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-MULTIPROJECT",
+    "base_branch": "origin/main",
+    "parent_tp_id": "TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mcp-multiproject-p0-postmerge-closure",
+    "base_branch": "origin/main",
+    "stacked_because": "Not stacked; start from current main after PR #1306."
+  },
+  "commit": {
+    "message": "test(mcp): close P0 compose no-runtime-effect gate",
+    "allowlist": [
+      "task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json",
+      "task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.md",
+      "task-packets/INDEX.md",
+      "tests/arch/test_mcp_multiproject_contracts.py",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/PROOF.json",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/AUDITOR_REPORT.md",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/implementation-notes.md",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/AUDIT_INPUT.md",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/AUDIT_INVOCATION.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/AUDIT_OUTPUT.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/HEAD.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/DIFF_NAME_STATUS.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/VALIDATION.txt"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py",
+      "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_runtime_registry.py",
+      "git diff --check",
+      "pre-commit run --files $(git diff --name-only origin/main...HEAD)"
+    ]
+  },
+  "pr": {
+    "title": "test(mcp): close P0 post-merge compose guard",
+    "body": "Closes one residual P0 contract-test gap after PR #1306. No runtime/schema/topology changes. P1 remains unauthorized.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "preflight",
+      "task": "Reharvest current main and reproduce the missing compose guard.",
+      "requirements": [
+        "Authoring main=a8a7514b42107ce2d7eb017875f72911fbbbd96d; reharvest at dispatch.",
+        "Verify tests/arch/test_mcp_multiproject_contracts.py omits compose root patterns.",
+        "Stop if current main already fixes it."
+      ],
+      "commands": [
+        "git fetch origin main",
+        "git rev-parse origin/main",
+        "git status --short"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Residual defect reproduced before mutation."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "tests/arch/test_mcp_multiproject_contracts.py"
+      ]
+    },
+    {
+      "id": "repair",
+      "task": "Add deterministic root-compose rejection to the P0 no-runtime-effect test.",
+      "requirements": [
+        "Reject compose.yml and compose.yaml.",
+        "Reject root compose.*.yml and compose.*.yaml.",
+        "Add focused fixtures for compose.yml, compose.override.yml, and compose.dev.yaml.",
+        "Do not modify any compose file."
+      ],
+      "commands": [
+        "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py"
+      ],
+      "expected_files": [
+        "tests/arch/test_mcp_multiproject_contracts.py"
+      ],
+      "validation": [
+        "Existing P0 tests remain green and compose fixtures are rejected."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "receipt",
+      "task": "Record post-merge governance facts without retroactive approval claims.",
+      "requirements": [
+        "Record PR #1306 merge SHA, audited content head, final PR head, six unresolved review threads at post-merge inspection, and SECURITY_RELEASE_APPROVAL_REQUIRED=UNKNOWN unless proven.",
+        "Classify compose thread as the live defect closed here.",
+        "Do not claim retroactive PR Steward READY."
+      ],
+      "commands": [],
+      "expected_files": [
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/implementation-notes.md"
+      ],
+      "validation": [
+        "History is preserved explicitly."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "validate-audit",
+      "task": "Run deterministic gates, freeze content, obtain one independent L2 audit, and create proof-only closure.",
+      "requirements": [
+        "Exact allowlist only.",
+        "One final independent audit after freeze.",
+        "Audit failure/unknown identity blocks readiness."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_runtime_registry.py",
+        "git diff --check",
+        "pre-commit run --files $(git diff --name-only origin/main...HEAD)"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/PROOF.json",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/AUDITOR_REPORT.md",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/AUDIT_INPUT.md",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/AUDIT_INVOCATION.txt",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/AUDIT_OUTPUT.txt",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/HEAD.txt",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/DIFF_NAME_STATUS.txt",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/review_bundle/VALIDATION.txt"
+      ],
+      "validation": [
+        "Focused/relevant suites and proof validation pass."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "finality",
+      "task": "Run current finality/PR Steward and stop for operator merge decision.",
+      "requirements": [
+        "No automatic merge.",
+        "No P1 authorization.",
+        "After merge, reharvest main before P1."
+      ],
+      "commands": [],
+      "expected_files": [],
+      "validation": [
+        "Current blockers returned truthfully."
+      ],
+      "context_files": []
+    }
+  ]
+}
+[0m
+[0m$ [0mgit branch --show-current
+codex/mcp-multiproject-p0-postmerge-closure
+[0m
+# L2 Independent Audit Report — TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001
+
+## 1. Findings Ledger
+
+| ID | Severity | Status | Title | Description |
+|---|---|---|---|---|
+| F-001 | LOW | RESOLVED | Deprecated JSONSchema Tooling | The validation command `python -m jsonschema` throws a deprecation warning indicating it will be removed. Used `check-jsonschema` explicitly to verify the schema validation cleanly. |
+
+*(No functional defects or violations found. The audit produced no blocking, high, or medium findings.)*
+
+## 2. Audit Questions Verdicts
+
+### 1. No-runtime-effect
+**Verdict: PASS**
+- **Evidence:** `git diff --name-status origin/main...HEAD` confirmed exactly five expected files changed:
+  - `A proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/implementation-notes.md`
+  - `M task-packets/INDEX.md`
+  - `A task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json`
+  - `A task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.md`
+  - `M tests/arch/test_mcp_multiproject_contracts.py`
+- No compose files, configuration, schemas, source code, or infrastructure descriptors were modified.
+
+### 2. Guard correctness
+**Verdict: PASS**
+- **Evidence:** The test file `tests/arch/test_mcp_multiproject_contracts.py` has been updated with `ROOT_COMPOSE_PATTERNS`. `_is_forbidden_p0_path()` deterministically rejects `compose.yml`, `compose.yaml`, `compose.*.yml`, and `compose.*.yaml` at the root, while falling back cleanly for subdirectory paths. `test_no_runtime_effect_diff` iterates cleanly over `git diff` outputs.
+
+### 3. Regression
+**Verdict: PASS**
+- **Evidence:** Ran `pytest tests/arch/test_mcp_multiproject_contracts.py`. 76/76 tests passed. Pre-change, `origin/main` contained 67 tests. The 9 newly added fixtures (including positive/negative patterns) ran successfully without breaking the existing P0 contract tests.
+
+### 4. Packet integrity
+**Verdict: PASS**
+- **Evidence:**
+  - SHA-256 for `task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json` matches exactly `46533a559e28b158b47482f6491124b825df9dfeffae79862a26ec6d7fb0f43d`.
+  - Allowed files in the JSON `allowlist` strictly matched the diff bundle.
+  - Ran `check-jsonschema --schemafile docs/03-reference/spec/dopetask/dopetask-canonical-spec.json task-packets/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001.json`, which passed.
+
+### 5. Governance record accuracy
+**Verdict: PASS**
+- **Evidence:** Inspected `proof/TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001/implementation-notes.md`. Confirmed explicit recordings of:
+  - PR #1306 merge SHA (`a8a7514b42...`)
+  - Audited content head (`2e31726c...`)
+  - Final PR head (`3d0172de...`)
+  - 6 unresolved review threads documented.
+  - SECURITY_RELEASE_APPROVAL_REQUIRED is documented as `UNKNOWN`.
+  - No retroactive PR Steward `READY` claimed. P1 is stated as remaining blocked.
+
+### 6. Deterministic validation
+**Verdict: PASS**
+- **Evidence:** Executed the test suites defined in `VALIDATION.txt` locally and verified results match the artifact:
+  - `uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_runtime_registry.py` -> 129 passed.
+  - `git diff --check` -> Clean (no output).
+  - `pre-commit run --files $(git diff --name-only origin/main...HEAD)` -> All checks passed successfully.
+
+## 3. UNKNOWNs
+
+- **Pre-merge Approval:** Separate evidence proving the `SECURITY_RELEASE_APPROVAL_REQUIRED` gate was satisfied before PR #1306 merged was not observed in this package. It is explicitly accepted as **UNKNOWN**.
+
+## 4. Final Verdict
+
+**OVERALL VERDICT:** PASS
+**CONFIDENCE:** VERIFIED
+
+The execution respects all constraints, operates strictly within its designated boundaries, modifies no runtime or topological infrastructure, and provides a clear post-merge governance record as instructed. The content head `f27b66f88986a928a2161576c2072049ea8f56ea` is safe to merge.

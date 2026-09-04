@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import fnmatch
 import hashlib
 import json
 import subprocess
@@ -450,21 +451,56 @@ def test_p5_before_p4_dag():
     adr = (REPO_ROOT / "docs/90-adr/adr-dmx-mcp-multiproject-identity-sharing-contract-001.md").read_text()
     assert "redis-events logical -> PROJECT_SCOPED before dope-memory consolidation" in adr
 
+FORBIDDEN_P0_PREFIXES = [
+    "mcp_catalog.yaml",
+    "src/dopemux/mcp/",
+    "src/dopemux/commands/mcp_commands.py",
+    "services/",
+    "docker/",
+    ".mcp.json",
+]
+
+# Repository-root compose files (compose.yml/compose.yaml/compose.*.yml/compose.*.yaml)
+# are runtime surfaces for the MCP fleet and must never be mutated by this packet series.
+ROOT_COMPOSE_PATTERNS = [
+    "compose.yml",
+    "compose.yaml",
+    "compose.*.yml",
+    "compose.*.yaml",
+]
+
+def _is_forbidden_p0_path(fpath: str) -> bool:
+    if any(fpath.startswith(prefix) for prefix in FORBIDDEN_P0_PREFIXES):
+        return True
+    if "/" in fpath:
+        return False
+    return any(fnmatch.fnmatch(fpath, pattern) for pattern in ROOT_COMPOSE_PATTERNS)
+
+@pytest.mark.parametrize("fpath", [
+    "compose.yml",
+    "compose.yaml",
+    "compose.override.yml",
+    "compose.dev.yaml",
+])
+def test_root_compose_file_is_forbidden(fpath):
+    assert _is_forbidden_p0_path(fpath)
+
+@pytest.mark.parametrize("fpath", [
+    "README.md",
+    "docs/compose.yml",
+    "composefile.yml",
+    "compose.override",
+    "task-packets/INDEX.md",
+])
+def test_non_root_or_non_compose_path_is_allowed(fpath):
+    assert not _is_forbidden_p0_path(fpath)
+
 def test_no_runtime_effect_diff():
-    FORBIDDEN_P0_PATHS = [
-        "mcp_catalog.yaml",
-        "src/dopemux/mcp/",
-        "src/dopemux/commands/mcp_commands.py",
-        "services/",
-        "docker/",
-        ".mcp.json",
-    ]
     try:
         diff_out = subprocess.check_output(["git", "diff", "--name-only", "origin/main...HEAD"]).decode()
         changed = diff_out.splitlines()
-        for fpath in FORBIDDEN_P0_PATHS:
-            for c in changed:
-                if c.startswith(fpath):
-                    pytest.fail(f"Forbidden path mutated: {c}")
+        for c in changed:
+            if _is_forbidden_p0_path(c):
+                pytest.fail(f"Forbidden path mutated: {c}")
     except subprocess.CalledProcessError:
         pytest.skip("No trusted base supplied to git diff")
