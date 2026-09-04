@@ -48,7 +48,7 @@ MODEL_SPECS: Dict[str, EmbeddingModelSpec] = {
     # yielding a vector that represents only its first ~32K tokens. Upstream
     # chunk-size enforcement is load-bearing; do not assume the API guards it.
     #
-    # max_request_tokens=320_000 rather than voyage-code-3's 120_000. Evidence:
+    # max_request_tokens is NOT voyage-code-3's 120_000. Evidence:
     # (a) the vendor's 120K-group sentence enumerates voyage-code-3,
     # voyage-4-large, voyage-3-large, voyage-large-2-instruct, voyage-finance-2,
     # voyage-multilingual-2 and voyage-law-2 — voyage-code-4 is absent from it;

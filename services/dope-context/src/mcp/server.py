@@ -1252,6 +1252,7 @@ async def _search_code_impl(
                     input_type=content_profile.query_input_type,
                     output_dimension=content_profile.dimension,
                     output_dtype=content_profile.dtype,
+                    truncation=False,
                 )
                 content_query_vector = content_query_response.embedding
             else:
@@ -1276,6 +1277,7 @@ async def _search_code_impl(
                 input_type=title_profile.query_input_type,
                 output_dimension=title_profile.dimension,
                 output_dtype=title_profile.dtype,
+                truncation=False,
             )
 
             query_breadcrumb = await standard_embedder.embed(
@@ -1284,6 +1286,7 @@ async def _search_code_impl(
                 input_type=breadcrumb_profile.query_input_type,
                 output_dimension=breadcrumb_profile.dimension,
                 output_dtype=breadcrumb_profile.dtype,
+                truncation=False,
             )
         except Exception as embed_error:
             logger.error(f"Embedding failed: {embed_error}")

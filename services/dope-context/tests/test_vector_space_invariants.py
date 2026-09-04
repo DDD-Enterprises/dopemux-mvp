@@ -6,6 +6,7 @@ voyage-context-4 and voyage-code-3 both emit 1024-dim vectors, so Qdrant
 accepts a cross-family mismatch silently (F-001).
 """
 
+import ast
 import sys
 import types
 from pathlib import Path
@@ -160,3 +161,68 @@ def test_code_content_vector_is_not_contextualized():
     content = build_code_collection_profile().content()
     assert content.endpoint != "contextualized_embeddings"
     assert not content.model.startswith("voyage-context-")
+
+
+def _flat_embed_calls(path: Path):
+    """Every ``.embed(...)`` / ``.embed_batch(...)`` call node in a module."""
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    return [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr in {"embed", "embed_batch"}
+    ]
+
+
+def test_flat_embeds_disable_truncation():
+    """Every flat embed must pass truncation=False, or oversize input is lost.
+
+    Round-5 audit finding SILENT_TRUNCATION. VoyageEmbedder's per-input guards
+    (voyage_embedder.py:293, :373) are both conditioned on ``not truncation``,
+    and ``truncation`` DEFAULTS TO TRUE (:273, :333). Relying on the default
+    therefore means an oversize chunk is silently truncated by the API and
+    embedded as a vector representing only its first ~32K tokens -- no error,
+    no log. The call sites must opt out explicitly.
+
+    Asserted over the AST, not by substring search: a grep for a literal can be
+    satisfied by an unrelated line elsewhere in the file, whereas this checks
+    the keyword on each actual call node.
+    """
+    src_root = Path(__file__).resolve().parents[1] / "src"
+    for rel in ("pipeline/indexing_pipeline.py", "mcp/server.py"):
+        path = src_root / rel
+        calls = _flat_embed_calls(path)
+        assert calls, f"{rel}: expected at least one flat embed call"
+        for call in calls:
+            kwargs = {kw.arg: kw.value for kw in call.keywords}
+            assert "truncation" in kwargs, (
+                f"{rel}:{call.lineno} embeds without an explicit truncation "
+                "argument; the default is True, which silently truncates"
+            )
+            value = kwargs["truncation"]
+            assert isinstance(value, ast.Constant) and value.value is False, (
+                f"{rel}:{call.lineno} must pass truncation=False"
+            )
+
+
+def test_flat_embed_models_are_read_from_the_profile():
+    """The content/title/breadcrumb model must be an attribute of a profile.
+
+    Stronger than the substring check it replaces: requiring the ``model=``
+    argument to be an attribute access ending in ``.model`` rejects both a
+    hard-coded string (model="voyage-code-4") and a module constant
+    (model=DEFAULT_CODE_MODEL), while still allowing an aliased profile
+    (cp = content_profile; cp.model), which is genuinely deriving from it.
+    """
+    src_root = Path(__file__).resolve().parents[1] / "src"
+    for rel in ("pipeline/indexing_pipeline.py", "mcp/server.py"):
+        path = src_root / rel
+        for call in _flat_embed_calls(path):
+            kwargs = {kw.arg: kw.value for kw in call.keywords}
+            model = kwargs.get("model")
+            assert model is not None, f"{rel}:{call.lineno} embeds without model="
+            assert isinstance(model, ast.Attribute) and model.attr == "model", (
+                f"{rel}:{call.lineno} must pass a profile's .model, not a "
+                "literal or a module-level constant"
+            )

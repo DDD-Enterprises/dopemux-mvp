@@ -309,6 +309,7 @@ class IndexingPipeline:
                     input_type=content_profile.index_input_type,
                     output_dimension=content_profile.dimension,
                     output_dtype=content_profile.dtype,
+                    truncation=False,
                 )
             else:
                 content_response = await self.contextualized_embedder.embed_document(
@@ -326,6 +327,7 @@ class IndexingPipeline:
                 input_type=title_profile.index_input_type,
                 output_dimension=title_profile.dimension,
                 output_dtype=title_profile.dtype,
+                truncation=False,
             )
 
             breadcrumb_embeddings = await self.standard_embedder.embed_batch(
@@ -334,6 +336,7 @@ class IndexingPipeline:
                 input_type=breadcrumb_profile.index_input_type,
                 output_dimension=breadcrumb_profile.dimension,
                 output_dtype=breadcrumb_profile.dtype,
+                truncation=False,
             )
 
             # Track embedding cost
