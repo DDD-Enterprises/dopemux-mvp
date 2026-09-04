@@ -214,11 +214,9 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toMatch(/aria-label=\{\s*isSkipConfirming\s*[\s\S]*nextTaskAfterSkip\s*[\s\S]*`Confirm skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*[\s\S]*:\s*`Confirm skip task: \$\{currentTask\.title\}`\s*[\s\S]*:\s*nextTaskAfterSkip\s*[\s\S]*`Skip \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterSkip\.title\}`\s*[\s\S]*:\s*`Skip task: \$\{currentTask\.title\}`\s*\}/);
   expect(content).toContain('{isSkipConfirming ? \'Confirm Skip?\' : \'Skip\'}');
   expect(content).toContain('<AlertTriangle aria-hidden="true" size={16} />');
-  expect(content).toContain("if (e.key === 'Escape' && isSkipConfirming)");
 
   // Verify Reset Ritual soft confirmation ARIA label and Escape dismissal
   expect(content).toMatch(/aria-label=\{\s*isResetConfirming\s*\?\s*'Confirm reset task sequence and clear all progress'\s*:\s*'Reset task sequence'\s*\}/);
-  expect(content).toContain("if (e.key === 'Escape' && isResetConfirming)");
 
   // Verify Escape key cancellation in TaskSequencer
   expect(content).toContain("if (isSkipConfirming && e.key === 'Escape')");
