@@ -447,3 +447,77 @@ def test_read_tool_never_warns():
         inp = {"file_path": str(_ROOT / "mcp_catalog.yaml")}
         warnings = surface_guard_warnings(tool, inp, _ROOT, "sess-6")
         assert warnings == [], f"Expected no warn for {tool}"
+
+
+# ---------------------------------------------------------------------------
+# TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001: newline / control-character
+# bypass of the wildcard subtree and exact-exemption matchers. Python `.`
+# (no DOTALL) does not cross a newline and `$` matches before a trailing
+# newline, not only true end-of-string — a path carrying an embedded or
+# trailing control character could evade a `.*$`-suffixed wildcard rule or be
+# mistaken for an exact exempt filename.
+# ---------------------------------------------------------------------------
+
+_NEWLINE_BYPASS_DENIAL_PROBES = (
+    "services/dope-context/src/\nsecret.py",
+    "services/dope-context/eval/\n/../../src/secret.py",
+    "services/dope-context/src/index_profile.py\n",
+    ".github/workflows/not-allowed/\nfoo.yml",
+    ".github/workflows/embedded-audit.yml\n",
+    "services/task-orchestrator/x/\ny",
+    "services/dopecon-bridge/x/\ny",
+    "services/working-memory-assistant/x/\ny",
+    "docker/mcp-servers-source/conport/x/\ny",
+    "src/conport/x/\ny",
+    # tab / carriage return, per packet section 9
+    "services/dope-context/src/\tsecret.py",
+    "services/dope-context/src/index_profile.py\t",
+    "services/dope-context/src/\rsecret.py",
+    "services/dope-context/src/index_profile.py\r",
+    # placement variants: middle / end / after otherwise-exempt name /
+    # before traversal / after traversal
+    "services/dope-context/eval/foo\n/bar.py",
+    "services/dope-context/eval/run_eval.py\n",
+    "services/dope-context/eval/\n../src/secret.py",
+    "services/dope-context/eval/..\n/src/secret.py",
+    "\nservices/dope-context/src/secret.py",
+)
+
+
+def test_newline_and_control_character_bypass_is_blocked():
+    for rel in _NEWLINE_BYPASS_DENIAL_PROBES:
+        fp = str(_ROOT) + "/" + rel
+        result = surface_guard_block("Edit", {"file_path": fp}, _ROOT)
+        assert result is not None, rel
+        assert RED_LANE_ID in result, rel
+
+
+def test_exact_exemption_is_not_spoofed_by_trailing_newline():
+    """A trailing newline must not let a path be treated as the exact exempt file."""
+    for exempt_rel in (
+        "services/dope-context/src/index_profile.py",
+        ".github/workflows/embedded-audit.yml",
+    ):
+        spoofed = str(_ROOT / exempt_rel) + "\n"
+        result = surface_guard_block("Edit", {"file_path": spoofed}, _ROOT)
+        assert result is not None, spoofed
+        assert RED_LANE_ID in result, spoofed
+
+
+def test_traversal_plus_newline_still_blocked():
+    for rel in (
+        "services/dope-context/eval/../src/secret.py",
+        "services/dope-context/eval/\n/../../src/secret.py",
+        "services/dope-context/eval/x/../src/secret.py",
+    ):
+        fp = str(_ROOT / rel) if "\n" not in rel else str(_ROOT) + "/" + rel
+        result = surface_guard_block("Edit", {"file_path": fp}, _ROOT)
+        assert result is not None, rel
+        assert RED_LANE_ID in result, rel
+
+
+def test_control_character_probes_do_not_widen_legitimate_exemptions():
+    """Every allow probe from the pre-existing carve-out suite must remain allowed."""
+    for rel in _DOPE_CONTEXT_CARVED_OUT:
+        inp = {"file_path": str(_ROOT / rel)}
+        assert surface_guard_block("Edit", inp, _ROOT) is None, rel
