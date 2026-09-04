@@ -169,3 +169,19 @@ def test_env_override(monkeypatch, tmp_path: Path):
     from dopemux.mcp import runtime_registry as rr
 
     assert rr.default_registry_path() == path.resolve()
+
+
+def test_p1_service_lease_store_is_independent_of_runtime_registry(monkeypatch, tmp_path: Path):
+    """P1's service-lease-v2 store (service_leases.py) must never share a
+    path or default env var with this v1 operational runtime registry -- the
+    two are independent stores with independent schemas."""
+
+    from dopemux.mcp import runtime_registry as rr
+    from dopemux.mcp import service_leases
+
+    assert service_leases.REGISTRY_ENV != rr.REGISTRY_ENV
+    assert service_leases.DEFAULT_RELATIVE != rr.DEFAULT_RELATIVE
+
+    monkeypatch.delenv(rr.REGISTRY_ENV, raising=False)
+    monkeypatch.delenv(service_leases.REGISTRY_ENV, raising=False)
+    assert rr.default_registry_path() != service_leases.default_registry_path()
