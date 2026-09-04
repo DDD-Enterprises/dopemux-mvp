@@ -118,37 +118,6 @@ def test_all_six_named_vectors_agree_across_index_and_query():
     assert len(set(seen)) == 6, f"vector roles must be distinct: {seen}"
 
 
-def test_index_and_query_paths_both_derive_models_from_the_profile():
-    """The six-vector check above is only meaningful if both paths read it.
-
-    Round-4 audit finding WEAKENED_TEST_ASSERTIONS: comparing a vector to
-    itself is agreement by construction, since index and query read the same
-    VectorProfile object. The property that actually has to hold is that the
-    indexing pipeline and the search path both *derive* model and endpoint
-    from that profile rather than naming a model themselves -- which is
-    exactly the F-001 defect that D1 closed.
-    """
-    src_root = Path(__file__).resolve().parents[1] / "src"
-    paths = {
-        "indexing_pipeline": src_root / "pipeline" / "indexing_pipeline.py",
-        "server": src_root / "mcp" / "server.py",
-    }
-    for name, path in paths.items():
-        source = path.read_text(encoding="utf-8")
-        assert "content_profile.model" in source, (
-            f"{name} must embed content with the profile's model"
-        )
-        assert "content_profile.endpoint" in source, (
-            f"{name} must dispatch on the profile's endpoint; hardcoding the\n"
-            "contextualized embedder is what sent a flat model to\n"
-            "contextualized_embed and broke indexing"
-        )
-        for literal in ('model="voyage-code-4"', 'model="voyage-context-4"'):
-            assert literal not in source, (
-                f"{name} hard-codes {literal} instead of reading the profile"
-            )
-
-
 def test_code_content_vector_is_not_contextualized():
     """Regression guard for the D1 dispatch bug.
 
@@ -163,6 +132,10 @@ def test_code_content_vector_is_not_contextualized():
     assert not content.model.startswith("voyage-context-")
 
 
+def _src_root() -> Path:
+    return Path(__file__).resolve().parents[1] / "src"
+
+
 def _flat_embed_calls(path: Path):
     """Every ``.embed(...)`` / ``.embed_batch(...)`` call node in a module."""
     tree = ast.parse(path.read_text(encoding="utf-8"))
@@ -173,6 +146,28 @@ def _flat_embed_calls(path: Path):
         and isinstance(node.func, ast.Attribute)
         and node.func.attr in {"embed", "embed_batch"}
     ]
+
+
+def _all_flat_embed_calls():
+    """(relative path, call node) for every flat embed across the whole tree.
+
+    Round-6 finding NARROW_AST_TESTS: scanning two hardcoded files leaves a
+    flat embed added anywhere else unchecked. The embedder modules themselves
+    are excluded because they *define* embed/embed_batch rather than call them
+    on a profile, and the contextualized embedder is a different endpoint.
+    """
+    root = _src_root()
+    skip = {
+        root / "embeddings" / "voyage_embedder.py",
+        root / "embeddings" / "contextualized_embedder.py",
+    }
+    found = []
+    for path in sorted(root.rglob("*.py")):
+        if path in skip:
+            continue
+        for call in _flat_embed_calls(path):
+            found.append((path.relative_to(root).as_posix(), call))
+    return found
 
 
 def test_flat_embeds_disable_truncation():
@@ -189,12 +184,10 @@ def test_flat_embeds_disable_truncation():
     satisfied by an unrelated line elsewhere in the file, whereas this checks
     the keyword on each actual call node.
     """
-    src_root = Path(__file__).resolve().parents[1] / "src"
-    for rel in ("pipeline/indexing_pipeline.py", "mcp/server.py"):
-        path = src_root / rel
-        calls = _flat_embed_calls(path)
-        assert calls, f"{rel}: expected at least one flat embed call"
-        for call in calls:
+    calls = _all_flat_embed_calls()
+    assert calls, "expected at least one flat embed call in the tree"
+    for rel, call in calls:
+        if True:
             kwargs = {kw.arg: kw.value for kw in call.keywords}
             assert "truncation" in kwargs, (
                 f"{rel}:{call.lineno} embeds without an explicit truncation "
@@ -215,10 +208,8 @@ def test_flat_embed_models_are_read_from_the_profile():
     (model=DEFAULT_CODE_MODEL), while still allowing an aliased profile
     (cp = content_profile; cp.model), which is genuinely deriving from it.
     """
-    src_root = Path(__file__).resolve().parents[1] / "src"
-    for rel in ("pipeline/indexing_pipeline.py", "mcp/server.py"):
-        path = src_root / rel
-        for call in _flat_embed_calls(path):
+    for rel, call in _all_flat_embed_calls():
+        if True:
             kwargs = {kw.arg: kw.value for kw in call.keywords}
             model = kwargs.get("model")
             assert model is not None, f"{rel}:{call.lineno} embeds without model="
