@@ -1,0 +1,50 @@
+{
+  "verdict": "OPEN",
+  "reasoning": "The implementer's refutation for SILENT_TRUNCATION is factually incorrect because VoyageEmbedder.embed() sets `truncation=True` by default, meaning the guard is never triggered (services/dope-context/src/embeddings/voyage_embedder.py:273). Additionally, the test for model dispatch in test_vector_space_invariants.py relies on weak static string matching that can survive a real regression.",
+  "subject_hash_recomputed": "fa65b336e63329d4ff2b3d20b5c8a75efca8d52616c20ccb1653f664e7f84b68",
+  "hash_algorithm": "SHA-256",
+  "round4_findings_adjudication": [
+    {
+      "id": "SILENT_TRUNCATION",
+      "implementer_disposition": "REFUTED",
+      "auditor_agrees": false,
+      "evidence": "services/dope-context/src/embeddings/voyage_embedder.py:273 and 333 define `truncation: bool = True` as the default. Because no caller passes `truncation=False`, the default applies to all requests. This bypasses the guards `if ... and not truncation:` at lines 293 and 373, resulting in silent truncation."
+    },
+    {
+      "id": "WEAKENED_TEST_ASSERTIONS",
+      "remediation_effective": false,
+      "can_the_new_tests_fail": "test_endpoint_change_changes_collection_identity isolates endpoint correctly and can fail if fingerprint logic is altered. However, test_index_and_query_paths_both_derive_models_from_the_profile uses weak static substring matching (assert 'content_profile.model' in source). A real regression could easily survive by aliasing the profile (e.g., cp = content_profile; cp.model) or omitting quotes in a hardcode (e.g., model=DEFAULT_CODE_MODEL). It fails to robustly prove dynamic dispatch."
+    },
+    {
+      "id": "INFERRED_MAX_TOKENS",
+      "remediation_effective": true,
+      "evidence": "services/dope-context/src/embeddings/model_registry.py:72 sets max_request_tokens to 300_000, aligning with the empirically proven limit and correctly avoiding batch rejections."
+    },
+    {
+      "id": "STRANDED_COLLECTIONS",
+      "characterisation_correct": true,
+      "evidence": "services/dope-context/src/embeddings/model_registry.py:308-325 strictly raises a CollectionCompatibilityError with an actionable message for mismatched parameters, correctly ensuring a loud fail-closed behavior rather than silent corruption."
+    }
+  ],
+  "residual_risks": [],
+  "regressions_introduced": [],
+  "f001_regression_check": "PASS. src/dopemux/dcp/red_lane_rules.py anchors carve-outs with (?!eval/) and correctly forbids directory traversals via a separate companion rule. .claude/hooks/dcp_surface_guard.py tests combinations of case-folding and realpath resolution, ensuring case-variant bypasses (F-001-A) and path traversals (F-001) remain completely blocked.",
+  "bypass_attempts_considered": [
+    "services/dope-context/eval/../src/embeddings/voyage_embedder.py",
+    "SERVICES/dope-context/src/search/hybrid_search.py",
+    "services/dope-context/eval_x.py"
+  ],
+  "files_actually_read": [
+    "services/dope-context/src/embeddings/voyage_embedder.py",
+    "services/dope-context/src/embeddings/contextualized_embedder.py",
+    "services/dope-context/src/embeddings/model_registry.py",
+    "services/dope-context/src/pipeline/indexing_pipeline.py",
+    "services/dope-context/src/mcp/server.py",
+    "services/dope-context/tests/test_vector_space_invariants.py",
+    "services/dope-context/tests/test_vector_profiles_and_migration.py",
+    "src/dopemux/dcp/red_lane_rules.py",
+    ".claude/hooks/dcp_surface_guard.py",
+    "tests/test_dcp_surface_guard.py",
+    "proof/round4/REMEDIATION.json"
+  ]
+}

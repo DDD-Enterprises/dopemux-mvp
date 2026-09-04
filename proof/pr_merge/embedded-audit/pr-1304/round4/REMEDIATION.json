@@ -8,11 +8,13 @@
     {
       "id": "SILENT_TRUNCATION",
       "auditor_severity": "HIGH",
-      "disposition": "REFUTED_WITH_EVIDENCE",
-      "status": "PASS",
+      "disposition": "REFUTATION_WITHDRAWN",
+      "status": "FAIL",
       "evidence": "The hazard is already guarded one layer below the diff. VoyageEmbedder.embed() raises ValueError when token_counts[0].count > spec.per_input_tokens unless truncation=True (src/embeddings/voyage_embedder.py:293-297), and embed_batch() raises for every oversize index under the same condition (:374-383). grep across services/dope-context/src shows no embedding caller passes truncation=True (only voyage_reranker.py:163, a different API). The registry's per_input_tokens=32_000 is what those guards read, so the new voyage-code-4 entry is covered by the same enforcement. The code fails closed before the API can silently truncate.",
       "why_auditor_missed_it": "voyage_embedder.py is not part of the audited delta and the round-4 prompt embedded the diff rather than mounting the repo, so the guard was not visible.",
-      "residual": "The registry comment remains accurate as documentation of vendor behaviour and is worth keeping."
+      "residual": "The registry comment remains accurate as documentation of vendor behaviour and is worth keeping.",
+      "superseded_by": "round5 VERDICT.json (2026-09-04)",
+      "correction": "The round-4 refutation was WRONG and is withdrawn. It asserted the guards at voyage_embedder.py:293 and :373-383 make the code fail closed. They do not: `truncation: bool = True` is the DEFAULT parameter value at voyage_embedder.py:273 (embed) and :333 (embed_batch), and both guards are conditioned on `not truncation`, so neither ever fires under normal calls. Line 386 confirms the design intent: `min(count, spec.per_input_tokens) if truncation else count` plans around truncation. METHOD ERROR: the refutation checked that no CALLER passes truncation=True and never checked the DEFAULT. Round 4 was right; SILENT_TRUNCATION is a live HIGH finding."
     },
     {
       "id": "WEAKENED_TEST_ASSERTIONS",
@@ -48,5 +50,6 @@
   ],
   "f001_regression_check": "PASS - auditor found no regression of F-001 or F-001-A; carve-out lookaheads correctly anchored, case-folding and traversal refusal intact.",
   "next_round_required": true,
-  "next_round_scope": "Re-audit after the three ACCEPTED findings are remediated. Prefer --add-dir over prompt-embedding so the auditor can read files outside the delta and recompute hashes; SILENT_TRUNCATION would not have been raised against a mounted repo."
+  "next_round_scope": "Re-audit after the three ACCEPTED findings are remediated. Prefer --add-dir over prompt-embedding so the auditor can read files outside the delta and recompute hashes; SILENT_TRUNCATION would not have been raised against a mounted repo.",
+  "superseded_note": "SILENT_TRUNCATION disposition corrected after round 5 read voyage_embedder.py directly. See round5/."
 }

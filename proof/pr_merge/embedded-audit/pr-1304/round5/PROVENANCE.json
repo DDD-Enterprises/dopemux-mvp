@@ -1,0 +1,46 @@
+{
+  "round": 5,
+  "audit_type": "delta re-audit with mounted repository",
+  "target_head": "982ecd107",
+  "previous_audited_head": "e80cda77d",
+  "delta_range": "e80cda77d..982ecd107",
+  "auditor_tool": "agy",
+  "auditor_model_requested": "gemini-3.1-pro-high",
+  "agy_version": "1.1.26",
+  "brain_conversation": "e6810f3f-56ed-494c-97b1-14f9fd00e404",
+  "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 15m --add-dir <mount> --print=\"$(cat round5_prompt.md)\"",
+  "prompt_sha256": "e0aff8727790db3f5f55f9960989c745358ddab087a5afd1c4f0c379084d30ad",
+  "launched_utc": "2026-09-04T07:05:51Z",
+  "finished_utc": "2026-09-04T07:17:57Z",
+  "duration_seconds": 723.718603,
+  "exit_code": 0,
+  "verdict": "OPEN",
+  "method_change_from_round4": "Repository subtree mounted via --add-dir instead of embedding a diff. Round 4's SILENT_TRUNCATION finding could not be adjudicated from a diff; this round the auditor read voyage_embedder.py directly and overturned the implementer's refutation.",
+  "subject_hash_recomputation": {
+    "status": "PASS",
+    "file": "services/dope-context/src/embeddings/model_registry.py",
+    "auditor_reported": "fa65b336e63329d4ff2b3d20b5c8a75efca8d52616c20ccb1653f664e7f84b68",
+    "local_ground_truth": "fa65b336e63329d4ff2b3d20b5c8a75efca8d52616c20ccb1653f664e7f84b68",
+    "algorithm": "SHA-256",
+    "match": true,
+    "note": "Closes the SUBJECT_HASH_RECOMPUTATION=NOT_RUN gap that prompt-embedded rounds could not satisfy. Capability was probed before the run: the probe returned a byte-exact digest and the correct max_request_tokens value."
+  },
+  "no_fallback_verification": {
+    "agy_models_lists_required_id": true,
+    "identity_probe_response": "Gemini 3.1 Pro",
+    "quota_error_encountered": false
+  },
+  "files_auditor_read": [
+    "services/dope-context/src/embeddings/voyage_embedder.py",
+    "services/dope-context/src/embeddings/contextualized_embedder.py",
+    "services/dope-context/src/embeddings/model_registry.py",
+    "services/dope-context/src/pipeline/indexing_pipeline.py",
+    "services/dope-context/src/mcp/server.py",
+    "services/dope-context/tests/test_vector_space_invariants.py",
+    "services/dope-context/tests/test_vector_profiles_and_migration.py",
+    "src/dopemux/dcp/red_lane_rules.py",
+    ".claude/hooks/dcp_surface_guard.py",
+    "tests/test_dcp_surface_guard.py",
+    "proof/round4/REMEDIATION.json"
+  ]
+}
