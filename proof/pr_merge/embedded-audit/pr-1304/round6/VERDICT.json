@@ -1,0 +1,69 @@
+{
+  "verdict": "OPEN",
+  "reasoning": "The PR introduces two BLOCKER regressions in indexing_pipeline.py (lines 344 and 360) that break code collection indexing: 'content_response' throws an UnboundLocalError when flat embeddings are used, and 'content_vector' is assigned an EmbeddingResponse object instead of a float list. Additionally, leaving truncation=True as the default in voyage_embedder.py leaves a live trap for future callers.",
+  "subject_hashes_recomputed": {
+    "indexing_pipeline.py": "a9c804a7fbadcb62992ef10b7fe9f2caf31995ca853c0aaf67b159a7912e7b84",
+    "voyage_embedder.py": "c0794681e085ab8bc29bcc83e346aeb4d1a779860efa00690574565a02733328",
+    "algorithm": "SHA-256"
+  },
+  "round5_findings_adjudication": [
+    {
+      "id": "SILENT_TRUNCATION",
+      "now_closed": false,
+      "fix_complete": true,
+      "evidence": "services/dope-context/src/embeddings/voyage_embedder.py:273",
+      "other_flat_embed_paths_found": [],
+      "assessment": "Guards now fire when truncation=False is passed. However, leaving the library default as True in voyage_embedder.py (lines 273 and 333) is NOT defensible. It leaves a highly dangerous live trap for future callers, causing silent truncation without warning."
+    },
+    {
+      "id": "WEAK_TEST_ASSERTION",
+      "now_closed": true,
+      "can_the_new_tests_fail": "Yes, but they are hardcoded to only check 'pipeline/indexing_pipeline.py' and 'mcp/server.py' at tests/test_vector_space_invariants.py:193 and :210. A source change introducing a flat embed call in any other file would bypass these tests completely.",
+      "retained_weak_test_assessment": "Retaining the original weak substring test is misleading, as it gives a false sense of security while masking the narrow scope of the new AST tests."
+    }
+  ],
+  "residual_risks": [
+    {
+      "id": "LIVE_TRAP_DEFAULT_TRUNCATION",
+      "severity": "HIGH",
+      "detail": "Leaving the library default as True in voyage_embedder.py is NOT defensible. It leaves a live trap for the next caller, silently truncating oversize input if they forget to pass truncation=False.",
+      "location": "services/dope-context/src/embeddings/voyage_embedder.py:273"
+    },
+    {
+      "id": "NARROW_AST_TESTS",
+      "severity": "MEDIUM",
+      "detail": "The AST tests for flat embeds are restricted to two hardcoded files, leaving the rest of the codebase unchecked.",
+      "location": "services/dope-context/tests/test_vector_space_invariants.py:193"
+    }
+  ],
+  "regressions_introduced": [
+    {
+      "id": "UNBOUND_LOCAL_ERROR_COST_TRACKING",
+      "severity": "BLOCKER",
+      "detail": "When content_profile.endpoint is 'embeddings', content_response is never defined, causing an UnboundLocalError when calculating embedding_cost.",
+      "location": "services/dope-context/src/pipeline/indexing_pipeline.py:344"
+    },
+    {
+      "id": "EMBEDDING_RESPONSE_SERIALIZATION",
+      "severity": "BLOCKER",
+      "detail": "When using flat embeddings, standard_embedder.embed_batch returns a list of EmbeddingResponse objects. Assigning content_embeddings[i] directly to content_vector passes the object instead of its .embedding float list, causing Qdrant insertion to fail.",
+      "location": "services/dope-context/src/pipeline/indexing_pipeline.py:360"
+    }
+  ],
+  "f001_regression_check": "F-001 and F-001-A remain closed. The regex in src/dopemux/dcp/red_lane_rules.py (line 45) excludes bypass strings like 'services/dope-context/eval/../src/index_profile.py' because the negative lookahead (?!eval/) is violated by the start of the path. A separate regex blocks any traversal (\\.\\.) inside dope-context. _FALLBACK_FORBIDDEN in dcp_surface_guard.py remains a subset of FORBIDDEN_PATHS.",
+  "new_findings_not_raised_in_prior_rounds": [],
+  "bypass_attempts_considered": [
+    "services/dope-context/eval/../src/index_profile.py",
+    "SERVICES/dope-context/src/mcp/server.py",
+    "services/dope-context/eval/../tests/test_vector_space_invariants.py"
+  ],
+  "files_actually_read": [
+    "services/dope-context/src/pipeline/indexing_pipeline.py",
+    "services/dope-context/src/embeddings/voyage_embedder.py",
+    "services/dope-context/src/embeddings/contextualized_embedder.py",
+    "services/dope-context/src/mcp/server.py",
+    "src/dopemux/dcp/red_lane_rules.py",
+    ".claude/hooks/dcp_surface_guard.py",
+    "services/dope-context/src/index_profile.py"
+  ]
+}
