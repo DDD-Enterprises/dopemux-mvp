@@ -1,0 +1,11 @@
+AUDITOR_TOOL=agy
+AUDITOR_CLI_VERSION=1.1.26
+AUDITOR_MODEL_REQUESTED=gemini-3.1-pro-high
+AUDITOR_MODEL_DISPLAY=Gemini 3.1 Pro (High)
+INDEPENDENCE=different model family (Gemini/Google Antigravity) and different runtime from the implementer (Claude Sonnet 5 / Claude Code)
+NO_FALLBACK_PROBE_1=echo/pong probe SUCCESS, response "PONG\nGemini 3.1 Pro (High)"
+NO_FALLBACK_PROBE_2=--add-dir git rev-parse HEAD probe SUCCESS, returned 86fcbd196cece01b3f4503b9778a4cebfaa51a19 (matches independently-recorded CONTENT_HEAD_SHA)
+INVOCATION_COMMAND=agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir <worktree-abs-path> --print="$(cat review_bundle/AUDIT_INPUT.md)"
+DISPATCHED_AT_UTC=2026-09-04T08:06:21Z
+COMPLETED_AT_UTC=2026-09-04T08:08:53Z
+DURATION_SECONDS=131.379258

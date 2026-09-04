@@ -1,0 +1,100 @@
+{
+  "packet_id": "TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001",
+  "series": "DMX-MCP-MULTIPROJECT",
+  "branch": "codex/mcp-multiproject-p1-fleet-control-plane",
+  "base": "main",
+  "base_sha": "328a31e9a48bc20c29f4d1cde79273f587d987ee",
+  "head_sha": "86fcbd196cece01b3f4503b9778a4cebfaa51a19",
+  "generated_at": "2026-09-04T08:10:00Z",
+  "kind": "L3 implementation, first independent audit, no repair applied",
+  "implementer": "Claude Sonnet 5 (Claude Code)",
+  "risk_lane": "L3 (packet-declared; scripts/governance/validate_change_contract.py classified max_lane=L2 on the touched paths -- recorded honestly as a discrepancy, packet's own L3 classification governs)",
+  "audited_files": [
+    "docs/03-reference/mcp/multiproject-control-plane.md",
+    "src/dopemux/commands/mcp_commands.py",
+    "src/dopemux/mcp/control_plane.py",
+    "src/dopemux/mcp/docker_inspect.py",
+    "src/dopemux/mcp/docker_runtime.py",
+    "src/dopemux/mcp/fleet_catalog.py",
+    "src/dopemux/mcp/identity.py",
+    "src/dopemux/mcp/identity_registry.py",
+    "src/dopemux/mcp/materialization.py",
+    "src/dopemux/mcp/ownership.py",
+    "src/dopemux/mcp/project_identity.py",
+    "src/dopemux/mcp/reconcile.py",
+    "src/dopemux/mcp/runtime_state.py",
+    "src/dopemux/mcp/service_leases.py",
+    "task-packets/INDEX.md",
+    "task-packets/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001.json",
+    "task-packets/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001.md",
+    "tests/arch/test_mcp_fleet_catalog_contract.py",
+    "tests/arch/test_mcp_multiproject_contracts.py",
+    "tests/mcp/test_control_plane_v2.py",
+    "tests/mcp/test_fleet_catalog_v2_runtime.py",
+    "tests/mcp/test_identity_registry_v2.py",
+    "tests/mcp/test_materialization_v2.py",
+    "tests/mcp/test_ownership_v2.py",
+    "tests/mcp/test_reconcile_v2.py",
+    "tests/mcp/test_service_leases_v2.py",
+    "tests/unit/test_mcp_commands_catalog.py",
+    "tests/unit/test_mcp_runtime_registry.py",
+    "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/implementation-notes.md"
+  ],
+  "validations": {
+    "packet_canonical_schema": "PASS (python -m jsonschema against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json)",
+    "focused_tests": "PASS (117 passed: tests/mcp/test_identity_registry_v2.py test_fleet_catalog_v2_runtime.py test_service_leases_v2.py test_ownership_v2.py test_materialization_v2.py test_reconcile_v2.py test_control_plane_v2.py)",
+    "relevant_suite": "PASS (190 passed: tests/arch/test_mcp_multiproject_contracts.py test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_commands_catalog.py test_mcp_doctor_repo_aware.py test_mcp_runtime_registry.py)",
+    "git_diff_check": "PASS",
+    "pre_commit": "PASS (all applicable hooks Passed; no-file-to-check hooks Skipped; see review_bundle/VALIDATION.txt)",
+    "change_contract": "PASS (scripts/governance/validate_change_contract.py; max_lane=L2, model_audit_required=True, proof_only=False)",
+    "secret_scan": "PASS (0 matches across curated high-signal patterns on the exact added-lines diff)",
+    "catalog_files_untouched": "PASS (mcp_catalog.yaml and src/dopemux/mcp/default_catalog.yaml byte-identical to origin/main)",
+    "no_live_runtime_mutation": "PASS (no ~/.dopemux/mcp/registry/* created; git status clean pre- and post-audit; no Docker/container command executed for real anywhere in implementation or tests)"
+  },
+  "catalog_v2_cutover": "BLOCKED_NOT_APPLIED",
+  "catalog_v2_cutover_reasoning": "compile_catalog_v2 + legacy_client_projection prove zero semantic drift against the real live catalog (tests/mcp/test_fleet_catalog_v2_runtime.py::test_fingerprint_equal_between_real_v1_and_legacy_projected_v2), but fleet_catalog.load_root_catalog (fleet_catalog.py:194) and mcp_commands._load_catalog (mcp_commands.py:576) both hard-raise on version != 1 and the latter backs every `dopemux mcp *` command; flipping the live file without making both loaders version-tolerant would be an immediate fleet-wide CLI outage, and widening that loader is outside this packet's mcp_commands.py grant. See proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/implementation-notes.md.",
+  "allowlist_amendment": {
+    "file_added": "tests/arch/test_mcp_multiproject_contracts.py",
+    "reason": "pre-existing P0 test defect (test_no_runtime_effect_diff asserted against the live origin/main...HEAD diff, which would fail for every future MCP tranche touching src/dopemux/mcp/**)",
+    "authorization": "operator, via explicit AskUserQuestion choice: 'Widen allowlist + pin to P0's historical range (Recommended)'",
+    "classification": "operator-authorized packet amendment for a pre-existing P0 governance-test defect, distinct from the packet's own one-bounded-substantive-repair budget"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir <worktree-abs-path> --print=\"$(cat review_bundle/AUDIT_INPUT.md)\"; exact timestamps and no-fallback probe results in review_bundle/AUDIT_INVOCATION.txt; raw output in review_bundle/AUDIT_OUTPUT.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-01",
+        "severity": "INFO",
+        "title": "Materialization all-or-nothing property verified",
+        "status": "RESOLVED",
+        "body": "Auditor independently traced materialize_atomic (materialization.py:271): a process death before or immediately after the directory rename leaves the current symlink unchanged; the flip itself is os.replace (atomic)."
+      },
+      {
+        "id": "F-02",
+        "severity": "INFO",
+        "title": "Catalog fingerprint comparator is load-bearing, not a no-op",
+        "status": "RESOLVED",
+        "body": "Auditor confirmed catalog_semantic_fingerprint (fleet_catalog.py:1526) compares profile membership, placement, endpoints, commands, env key names, and tool metadata, and that the divergence-detection tests (test_fleet_catalog_v2_runtime.py:108) prove it actually detects change."
+      },
+      {
+        "id": "F-03",
+        "severity": "INFO",
+        "title": "Live catalog files untouched",
+        "status": "RESOLVED",
+        "body": "Auditor independently confirmed mcp_catalog.yaml and src/dopemux/mcp/default_catalog.yaml are byte-for-byte identical to origin/main."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "CATALOG_V2_CUTOVER remains BLOCKED_NOT_APPLIED pending a future tranche making fleet_catalog.load_root_catalog and mcp_commands._load_catalog version-tolerant.",
+      "fleet.py integration was skipped (no strictly-additive insertion point found); a later tranche may still want FleetDoctorReport to surface canonical identity."
+    ],
+    "skip_reason": null
+  }
+}
