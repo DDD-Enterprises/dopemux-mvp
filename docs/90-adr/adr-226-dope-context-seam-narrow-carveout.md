@@ -847,8 +847,10 @@ sections, it wins; Revision 2.1 §7 then adds `model_registry.py` to Wave
 `document_processor.py`, `openai_generator.py` and `claude_generator.py`
 entirely, and adds `code_chunker.py` — which the reconciliation record then
 evicts again on manifest-boundary grounds (record §4, §2 R-2 item 1),
-because `CODE_CHUNKER_VERSION` (`index_profile.py:35`) is a member of
-`VectorProfile.fingerprint_payload()` (`index_profile.py:77-89`). Revision
+because `CODE_CHUNKER_VERSION`
+(`services/dope-context/src/index_profile.py:35`) is a member of
+`VectorProfile.fingerprint_payload()`
+(`services/dope-context/src/index_profile.py:77-89`). Revision
 2 also drops `mcp/server.py`; the record rules it back in (§2 R-2 item 3)
 for C1 and C13, which costs this amendment nothing because that file is
 already exempt under the base carve-out. Three

@@ -84,7 +84,7 @@ not wrong arithmetic; it is the right arithmetic on the wrong Wave 1. §5 and §
 
 1. **`code_chunker.py` sits inside a wave Rev 2 calls "behaviour only, manifest-compatible".** It
    cannot. `CODE_CHUNKER_VERSION` (`services/dope-context/src/index_profile.py:35`) is a member of
-   `VectorProfile.fingerprint_payload()` (`index_profile.py:77-89`), which feeds
+   `VectorProfile.fingerprint_payload()` (`services/dope-context/src/index_profile.py:77-89`), which feeds
    `fingerprint_profiles()` → `profile_digest` → the collection *name*. Any change to
    `code_chunker.py` that changes chunk output requires bumping that constant, which is
    manifest-affecting by construction. **Ruled: evicted from Wave 1** (§4, §6).
@@ -107,7 +107,7 @@ C12 is `"\\n\\n".join(...)` at `src/preprocessing/document_processor.py:143,154`
 `"\\n".join(...)` at `:173` — literal two-character `\n` sequences inserted into extracted
 PDF/DOCX/HTML text. Fixing it **changes the text that gets chunked and embedded** for every
 extracted document. That requires bumping `DOCS_CHUNKER_VERSION`
-(`index_profile.py:36`, currently `"document_processor.v2-voyage-token-accounting"`), which is in
+(`services/dope-context/src/index_profile.py:36`, currently `"document_processor.v2-voyage-token-accounting"`), which is in
 `fingerprint_payload()` and therefore strands every existing docs collection.
 
 D1 deliberately left docs collections alone (ADR-226, "Operational consequence of D1": *"Docs
@@ -399,7 +399,7 @@ Carried forward from the handoff and packet 0004, unchanged and still open:
 | DCP guard + red-lane scanner suites | **PASS** — 69 passed |
 | Carve-out regex on `main` matches the handoff's quoted text | **PASS** — `red_lane_rules.py:45-63`, verbatim |
 | Every §5 row verified against the file, not the plan | **PASS** |
-| `chunker_version` ∈ `fingerprint_payload()` (basis of the §4 corollary) | **PASS** — `index_profile.py:77-89` |
+| `chunker_version` ∈ `fingerprint_payload()` (basis of the §4 corollary) | **PASS** — `services/dope-context/src/index_profile.py:77-89` |
 | `pr-92` checkout lacks the guard (R-6) | **PASS** — both paths confirmed absent |
 | Whole-repo benchmark | **NOT_RUN** — unchanged; not this record's scope |
 | Independent audit of this record (AGY/Gemini) | **NOT_RUN** |

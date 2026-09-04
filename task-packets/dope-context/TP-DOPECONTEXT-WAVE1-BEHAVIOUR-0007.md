@@ -51,8 +51,9 @@ the failure mode this programme has already paid for once.
 - Three rulings from the reconciliation record are applied on top of Revision
   2's own scope:
   - `code_chunker.py` is **evicted**. `CODE_CHUNKER_VERSION`
-    (`index_profile.py:35`) is a member of
-    `VectorProfile.fingerprint_payload()` (`index_profile.py:77-89`), so any
+    (`services/dope-context/src/index_profile.py:35`) is a member of
+    `VectorProfile.fingerprint_payload()`
+    (`services/dope-context/src/index_profile.py:77-89`), so any
     change to that file that alters chunk output is manifest-affecting by
     construction and cannot sit in a wave defined as manifest-compatible.
   - `server.py` is **pulled in**, even though Revision 2 splits it across
@@ -180,14 +181,17 @@ rerank clients.
 ## Explicitly out of scope
 
 - `preprocessing/code_chunker.py` — manifest-affecting:
-  `CODE_CHUNKER_VERSION` (`index_profile.py:35`) is a member of
-  `fingerprint_payload()` (`index_profile.py:77-89`). Any behaviour change
-  here bumps the manifest. → CHUNKING wave.
+  `CODE_CHUNKER_VERSION`
+  (`services/dope-context/src/index_profile.py:35`) is a member of
+  `fingerprint_payload()`
+  (`services/dope-context/src/index_profile.py:77-89`). Any behaviour
+  change here bumps the manifest. → CHUNKING wave.
 - `preprocessing/document_processor.py` / C12 (`:143`, `:154`, `:173` emit
   literal `\n` two-character sequences instead of real newlines) — manifest-
   affecting for the same reason, via `DOCS_CHUNKER_VERSION`
-  (`index_profile.py:36`). Fixing it changes the extracted text, hence the
-  chunk content, hence the embeddings, and would strand every existing docs
+  (`services/dope-context/src/index_profile.py:36`). Fixing it changes the
+  extracted text, hence the chunk content, hence the embeddings, and would
+  strand every existing docs
   collection — the exact thing D1 deliberately left alone. → CHUNKING wave.
 - `context/openai_generator.py`, `context/claude_generator.py` (E7, E8, E9)
   — not in the governing Wave 1 definition; D3 ruled the LLM context layer
