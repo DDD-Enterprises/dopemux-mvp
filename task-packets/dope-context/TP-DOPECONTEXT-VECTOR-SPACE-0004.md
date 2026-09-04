@@ -399,7 +399,8 @@ Stop if:
 
 ```text
 AMENDMENT_ID=A3
-AMENDMENT_STATUS=PENDING_OPERATOR_APPROVAL
+AMENDMENT_STATUS=APPROVED
+APPROVED_BY=operator (session 3d420c77, 2026-09-04)
 AMENDMENT_ADDS_ALLOWED_FILES=services/dope-context/tests/test_vector_profiles_and_migration.py
 REQUIRES_COMPANION_ADR_226_AMENDMENT=YES (ADR-226 A3 regex extension)
 WITHDRAWS=A2's claim that indexing_pipeline.py and mcp/server.py "need no edit"

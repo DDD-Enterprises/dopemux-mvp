@@ -50,6 +50,11 @@ FORBIDDEN_PATHS = [
         r"(?!src/index_profile\.py$)"
         r"(?!src/embeddings/model_registry\.py$)"
         r"(?!tests/test_vector_space_invariants\.py$)"
+        # A3 (2026-09-04): the landed D1 change invalidates four assertions in
+        # this file, each of which pins the pre-D1 contract. They must be
+        # rewritten, not deleted, so the file needs the same path-level
+        # exemption. No other file under tests/ is exempted.
+        r"(?!tests/test_vector_profiles_and_migration\.py$)"
         r".*$"
     ),
     # Companion to the carve-out above. The hook's primary path reading is lexical (no

@@ -574,7 +574,8 @@ history and would need their own revert.
 
 ```text
 AMENDMENT_ID=ADR-226-A3
-AMENDMENT_STATUS=PENDING_OPERATOR_APPROVAL
+AMENDMENT_STATUS=APPROVED
+APPROVED_BY=operator (session 3d420c77, 2026-09-04)
 COMPANION_PACKET_AMENDMENT=TP-DOPECONTEXT-VECTOR-SPACE-0004 amendment A3 (same date)
 ADDS_EXEMPTIONS=services/dope-context/tests/test_vector_profiles_and_migration.py
 AUTHORIZES_CONTENT_EDITS=NO (path-level only; TEXT_RULES scanning unchanged)

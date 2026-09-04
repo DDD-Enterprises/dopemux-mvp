@@ -134,6 +134,7 @@ _DOPE_CONTEXT_CARVED_OUT = (
     "services/dope-context/src/index_profile.py",  # ADR-226 A2
     "services/dope-context/src/embeddings/model_registry.py",  # ADR-226 A2
     "services/dope-context/tests/test_vector_space_invariants.py",
+    "services/dope-context/tests/test_vector_profiles_and_migration.py",  # ADR-226 A3
 )
 
 _DOPE_CONTEXT_STILL_BLOCKED = (
@@ -161,6 +162,10 @@ _DOPE_CONTEXT_STILL_BLOCKED = (
     "services/dope-context/src/embeddings/sub/model_registry.py",  # nested same name
     "services/dope-context/eval/../src/index_profile.py",  # traversal out of eval/
     "services/dope-context/src/embeddings/../search/dense_search.py",
+    # ADR-226 A3 near-misses: exempting one test file must not open tests/.
+    "services/dope-context/tests/test_vector_profiles_and_migration.py.bak",
+    "services/dope-context/tests/sub/test_vector_profiles_and_migration.py",
+    "services/dope-context/tests/test_vector_profiles_and_migration.pyc",
 )
 
 
