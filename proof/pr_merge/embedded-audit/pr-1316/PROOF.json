@@ -1,0 +1,25 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1316,
+  "head_sha": "9d1add1b119bbca46e37c1ef599d002e7cbe2af6",
+  "generated_at": "2026-09-04T12:30:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/pr-1233 --add-dir /tmp/audit_1233 --print=\"$(cat /tmp/audit_1233/PROMPT.txt)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-OPEN-PR-DRAIN-WAVE-3-PR-1233-001/AUDITOR_REPORT.md",
+    "findings": [
+      {"id": "FINDING-1", "severity": "INFO", "title": "Diff confined to proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/**", "status": "RESOLVED", "body": "Verified: no runtime/workflow/schema files touched."},
+      {"id": "FINDING-2", "severity": "INFO", "title": "Evidence cross-checked and authentic", "status": "RESOLVED", "body": "branch_protection_main.json and pr1227_full.json spot-checked against INCIDENT_REPORT.md's claims; consistent."},
+      {"id": "FINDING-3", "severity": "INFO", "title": "Secret scan clean", "status": "RESOLVED", "body": "No exposed tokens/credentials found in evidence files."},
+      {"id": "FINDING-4", "severity": "INFO", "title": "Inert to runtime behavior", "status": "RESOLVED", "body": "Pure .md/.json/.txt documentation, no executable content."}
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null,
+    "instruction_like_content": {"detected": false, "match_count": 0, "truncated": false, "matches": []}
+  }
+}
