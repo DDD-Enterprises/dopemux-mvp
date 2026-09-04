@@ -1,0 +1,182 @@
+{
+  "schema_version": "1.0.0",
+  "surface": "external task-orchestrator v3 MCP",
+  "source_status": "TX_SOURCE_NOT_IN_REPO",
+  "live_load": "PENDING_LOAD",
+  "loaded": false,
+  "warning": "Tool names are observed in historical operator surfaces but their source and payload schemas are not repo-verifiable. Validate live tool schemas before any call.",
+  "intended_call_order": [
+    "create_work_tree(root)",
+    "manage_items(operation=create) for packet and task nodes",
+    "manage_dependencies for BLOCKS edges",
+    "manage_notes for gate briefs",
+    "query_items and query_dependencies for verification"
+  ],
+  "payload_source": "task_orchestrator_task_tree-LTAIP-H0.json",
+  "prohibited": [
+    "Do not guess payload field names.",
+    "Do not call manage_* before operator approval.",
+    "Do not treat external v3 state as canonical packet truth."
+  ],
+  "edges": [
+    {
+      "predecessor": "TP-LTAIP-H0-001",
+      "successor": "TP-LTAIP-H0-002"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-002",
+      "successor": "TP-LTAIP-H0-003"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-003",
+      "successor": "TP-LTAIP-H0-004"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-003",
+      "successor": "TP-LTAIP-H0-005"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-001",
+      "successor": "TP-LTAIP-H0-006"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-002",
+      "successor": "TP-LTAIP-H0-006"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-002",
+      "successor": "TP-LTAIP-H0-007"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-003",
+      "successor": "TP-LTAIP-H0-007"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-004",
+      "successor": "TP-LTAIP-H0-007"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-006",
+      "successor": "TP-LTAIP-H0-007"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-001",
+      "successor": "TP-LTAIP-H0-008"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-002",
+      "successor": "TP-LTAIP-H0-008"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-003",
+      "successor": "TP-LTAIP-H0-008"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-004",
+      "successor": "TP-LTAIP-H0-008"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-005",
+      "successor": "TP-LTAIP-H0-008"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-006",
+      "successor": "TP-LTAIP-H0-008"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-007",
+      "successor": "TP-LTAIP-H0-008"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-008",
+      "successor": "TP-LTAIP-POST-009"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-008",
+      "successor": "TP-LTAIP-POST-010"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-006",
+      "successor": "TP-LTAIP-POST-010"
+    },
+    {
+      "predecessor": "TP-LTAIP-POST-009",
+      "successor": "TP-LTAIP-POST-011"
+    },
+    {
+      "predecessor": "TP-LTAIP-POST-010",
+      "successor": "TP-LTAIP-POST-011"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-005",
+      "successor": "TP-LTAIP-POST-011"
+    },
+    {
+      "predecessor": "TP-LTAIP-H0-008",
+      "successor": "TP-LTAIP-POST-012"
+    }
+  ],
+  "root_id": null,
+  "node_ids": {
+    "LTAIP-SERIES-ROOT": null,
+    "TP-LTAIP-H0-001": null,
+    "TP-LTAIP-H0-001::step-1-preflight-and-protocol": null,
+    "TP-LTAIP-H0-001::step-2-ingest-qualified-evidence": null,
+    "TP-LTAIP-H0-001::step-3-lock-segment-personas-workflows": null,
+    "TP-LTAIP-H0-001::step-4-audit-proof-and-pr": null,
+    "TP-LTAIP-H0-002": null,
+    "TP-LTAIP-H0-002::step-1-lock-and-harness": null,
+    "TP-LTAIP-H0-002::step-2-fixtures-and-automation": null,
+    "TP-LTAIP-H0-002::step-3-equivalent-trial": null,
+    "TP-LTAIP-H0-002::step-4-audit-proof-and-pr": null,
+    "TP-LTAIP-H0-003": null,
+    "TP-LTAIP-H0-003::step-1-policy-and-source-custody": null,
+    "TP-LTAIP-H0-003::step-2-generate-fresh-and-upgraded-manifests": null,
+    "TP-LTAIP-H0-003::step-3-adversarial-authorization-matrix": null,
+    "TP-LTAIP-H0-003::step-4-security-disposition-audit-proof-pr": null,
+    "TP-LTAIP-H0-004": null,
+    "TP-LTAIP-H0-004::step-1-source-trace": null,
+    "TP-LTAIP-H0-004::step-2-plugin-failure-matrix": null,
+    "TP-LTAIP-H0-004::step-3-fallback-and-rebase": null,
+    "TP-LTAIP-H0-004::step-4-teardown-audit-proof": null,
+    "TP-LTAIP-H0-005": null,
+    "TP-LTAIP-H0-005::step-1-policy-corpus": null,
+    "TP-LTAIP-H0-005::step-2-index-acl-deletion": null,
+    "TP-LTAIP-H0-005::step-3-hostile-content": null,
+    "TP-LTAIP-H0-005::step-4-destroy-audit-proof": null,
+    "TP-LTAIP-H0-006": null,
+    "TP-LTAIP-H0-006::step-1-input-gate": null,
+    "TP-LTAIP-H0-006::step-2-static-review": null,
+    "TP-LTAIP-H0-006::step-3-runtime-matrix": null,
+    "TP-LTAIP-H0-006::step-4-teardown-audit-proof": null,
+    "TP-LTAIP-H0-007": null,
+    "TP-LTAIP-H0-007::step-1-evidence-model": null,
+    "TP-LTAIP-H0-007::step-2-simulation": null,
+    "TP-LTAIP-H0-007::step-3-team-model": null,
+    "TP-LTAIP-H0-007::step-4-audit-proof": null,
+    "TP-LTAIP-H0-008": null,
+    "TP-LTAIP-H0-008::step-1-harvest": null,
+    "TP-LTAIP-H0-008::step-2-vetoes-corrections": null,
+    "TP-LTAIP-H0-008::step-3-decision": null,
+    "TP-LTAIP-H0-008::step-4-independent-audit-proof": null,
+    "TP-LTAIP-POST-009": null,
+    "TP-LTAIP-POST-009::step-1-selected-base-contract": null,
+    "TP-LTAIP-POST-009::step-2-gateway": null,
+    "TP-LTAIP-POST-009::step-3-negative-upgrade": null,
+    "TP-LTAIP-POST-009::step-4-audit-proof": null,
+    "TP-LTAIP-POST-010": null,
+    "TP-LTAIP-POST-010::step-1-gap-selection": null,
+    "TP-LTAIP-POST-010::step-2-generate-child-packets": null,
+    "TP-LTAIP-POST-010::step-3-audit-proof": null,
+    "TP-LTAIP-POST-011": null,
+    "TP-LTAIP-POST-011::step-1-feature-contract": null,
+    "TP-LTAIP-POST-011::step-2-implement-pilot": null,
+    "TP-LTAIP-POST-011::step-3-evaluate": null,
+    "TP-LTAIP-POST-011::step-4-security-audit-proof": null,
+    "TP-LTAIP-POST-012": null,
+    "TP-LTAIP-POST-012::step-1-maintainer-alignment": null,
+    "TP-LTAIP-POST-012::step-2-build-bundles": null,
+    "TP-LTAIP-POST-012::step-3-compatibility": null,
+    "TP-LTAIP-POST-012::step-4-audit-proof-approval": null
+  }
+}
