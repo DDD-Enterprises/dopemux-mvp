@@ -63,7 +63,11 @@ class AttemptLineage:
         return AttemptLineage(records=self.records + (record,))
 
     def extend(self, records: Iterable[AttemptRecord]) -> "AttemptLineage":
-        return AttemptLineage(records=self.records + tuple(records))
+        validated = tuple(records)
+        for record in validated:
+            if not isinstance(record, AttemptRecord):
+                raise ValueError("extend() expects only AttemptRecord entries")
+        return AttemptLineage(records=self.records + validated)
 
     def latest(self) -> AttemptRecord | None:
         return self.records[-1] if self.records else None

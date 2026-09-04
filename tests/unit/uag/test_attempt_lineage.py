@@ -77,3 +77,9 @@ def test_non_acceptance_with_evidence_ref_ok():
         provider_non_acceptance_evidence_ref=DigestRef(id="ev-1", sha256="0" * 64),
     )
     assert record.provider_non_acceptance_evidence_ref.id == "ev-1"
+
+
+def test_extend_rejects_non_attempt_records():
+    lineage = AttemptLineage()
+    with pytest.raises(ValueError):
+        lineage.extend([_record("a1", AttemptSemanticState.NOT_SENT), object()])

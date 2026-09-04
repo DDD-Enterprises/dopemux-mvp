@@ -41,3 +41,28 @@ def test_receipt_is_frozen():
         semantic_state=AttemptSemanticState.COMPLETED,
     )
     assert r.exactly_once_claim == "FORBIDDEN"
+
+
+def test_receipt_rejects_non_forbidden_exactly_once_claim():
+    import pytest
+
+    with pytest.raises(ValueError):
+        Receipt(
+            receipt_id="r-1",
+            digest="0" * 64,
+            subject_ref="a1",
+            semantic_state=AttemptSemanticState.COMPLETED,
+            exactly_once_claim="exactly-once",
+        )
+
+
+def test_receipt_rejects_non_sha256_digest():
+    import pytest
+
+    with pytest.raises(ValueError):
+        Receipt(
+            receipt_id="r-1",
+            digest="not-a-hash",
+            subject_ref="a1",
+            semantic_state=AttemptSemanticState.COMPLETED,
+        )

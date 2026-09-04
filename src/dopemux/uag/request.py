@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from dopemux.uag.ir import RequestedOutputContract
 from dopemux.uag.primitives import canonical_digest
 
 
@@ -39,13 +40,15 @@ class LogicalRequest:
 
     logical_request_id: str
     binding: WorkspaceBinding
-    requested_output_contract: object
+    requested_output_contract: RequestedOutputContract
 
     def __post_init__(self) -> None:
         if not isinstance(self.logical_request_id, str) or not self.logical_request_id:
             raise ValueError("logical_request_id must be a non-empty string")
         if not isinstance(self.binding, WorkspaceBinding):
             raise ValueError("binding must be a WorkspaceBinding")
+        if not isinstance(self.requested_output_contract, RequestedOutputContract):
+            raise ValueError("requested_output_contract must be a RequestedOutputContract")
 
     @property
     def identity_digest(self) -> str:
@@ -57,8 +60,6 @@ class LogicalRequest:
                 "workspace_ref": self.binding.workspace_ref,
                 "request_id": self.binding.request_id,
                 "repository": self.binding.repository,
-                "output_class": getattr(
-                    self.requested_output_contract, "output_class", None
-                ),
+                "output_class": self.requested_output_contract.output_class,
             }
         )

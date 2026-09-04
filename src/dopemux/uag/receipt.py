@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from dopemux.uag.enums import AttemptSemanticState, ExecutionAuthority
-from dopemux.uag.primitives import canonical_digest
+from dopemux.uag.primitives import canonical_digest, is_sha256
 
 
 @dataclass(frozen=True)
@@ -20,7 +20,7 @@ class Receipt:
     """A deterministic receipt bound to a digest.
 
     ``execution_authority`` is always ``NONE``; ``exactly_once_claim`` is
-    always the literal ``FORBIDDEN`` string and never a claim.
+    enforced to the literal ``"FORBIDDEN"`` string and can never be a claim.
     """
 
     receipt_id: str
@@ -35,6 +35,12 @@ class Receipt:
             raise ValueError("receipt_id must be a non-empty string")
         if not isinstance(self.subject_ref, str) or not self.subject_ref:
             raise ValueError("subject_ref must be a non-empty string")
+        if not is_sha256(self.digest):
+            raise ValueError("digest must be a lowercase 64-char hex digest")
+        if not isinstance(self.semantic_state, AttemptSemanticState):
+            raise ValueError("semantic_state must be an AttemptSemanticState")
+        if self.exactly_once_claim != "FORBIDDEN":
+            raise ValueError("exactly_once_claim must be the literal FORBIDDEN")
 
 
 def deterministic_receipt(
