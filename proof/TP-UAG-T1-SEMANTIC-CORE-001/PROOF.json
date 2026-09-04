@@ -4,7 +4,6 @@
   "status": "PASS",
   "risk_lane": "L2_MATERIAL",
   "head_sha": "06d515dfd6c968d4a8a0c379f71f38998a62b49f",
-  "head_sha": "06d515dfd6c968d4a8a0c379f71f38998a62b49f",
   "generated_at": "2026-09-04T06:08:29Z",
   "repo_identity": {
     "project_id": "dopemux-mvp",
