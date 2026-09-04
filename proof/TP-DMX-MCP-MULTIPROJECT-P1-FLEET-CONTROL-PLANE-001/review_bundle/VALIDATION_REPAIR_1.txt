@@ -1,0 +1,29 @@
+=== jsonschema: packet canonical schema ===
+/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/site-packages/jsonschema/__main__.py:4: DeprecationWarning: The jsonschema CLI is deprecated and will be removed in a future version. Please use check-jsonschema instead, which can be installed from https://pypi.org/project/check-jsonschema/
+  from jsonschema.cli import main
+exit=0
+
+=== pytest: focused P1 suite (packet verify command 2) ===
+........................................................................ [ 60%]
+................................................                         [100%]
+120 passed in 0.60s
+
+=== pytest: relevant contract/regression suite (packet verify command 3) ===
+........................................................................ [ 37%]
+........................................................................ [ 75%]
+..............................................                           [100%]
+190 passed in 7.66s
+
+=== pytest: new repair regression test file ===
+....                                                                     [100%]
+4 passed in 0.07s
+
+=== git diff --check (origin/main...HEAD) ===
+exit=0
+
+=== validate_change_contract.py ===
+status=PASS
+max_lane=L2
+model_audit_required=True
+proof_only=False
+paths=44

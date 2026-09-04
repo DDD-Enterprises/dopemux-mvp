@@ -495,12 +495,31 @@ def test_root_compose_file_is_forbidden(fpath):
 def test_non_root_or_non_compose_path_is_allowed(fpath):
     assert not _is_forbidden_p0_path(fpath)
 
+# P0's own merge range (base parent -> merge commit of PR #1306, "freeze
+# multiproject P0 identity and sharing contracts"). This asserts a permanent,
+# historical fact about the P0 packet itself -- it must never have touched a
+# forbidden runtime path -- rather than gating the live branch diff.
+#
+# The original version of this test compared origin/main...HEAD, which meant
+# it would fail for every future MCP tranche (P1 through P8) the instant it
+# touched src/dopemux/mcp/** -- exactly what those tranches are chartered to
+# do. That made the test internally inconsistent with its own packet series:
+# discovered while implementing TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-
+# PLANE-001, whose verify command list includes this file. Operator-authorized
+# fix, recorded in that packet's implementation-notes.md.
+P0_MERGE_RANGE = ("2b00c648e", "a8a7514b4")
+
+
 def test_no_runtime_effect_diff():
     try:
-        diff_out = subprocess.check_output(["git", "diff", "--name-only", "origin/main...HEAD"]).decode()
+        diff_out = subprocess.check_output(
+            ["git", "diff", "--name-only", *P0_MERGE_RANGE]
+        ).decode()
         changed = diff_out.splitlines()
         for c in changed:
             if _is_forbidden_p0_path(c):
-                pytest.fail(f"Forbidden path mutated: {c}")
+                pytest.fail(f"Forbidden path mutated in P0's own merge range: {c}")
     except subprocess.CalledProcessError:
-        pytest.skip("No trusted base supplied to git diff")
+        pytest.skip("P0 merge range not available in this checkout")
+    except (FileNotFoundError, OSError):
+        pytest.skip("git binary not available in this environment")

@@ -1,0 +1,399 @@
+{
+  "id": "TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001",
+  "project": "dopemux-mvp",
+  "target": "Implement the ratified P1 MCP fleet control plane: registry-backed identity, v2 catalog compatibility/cutover, service leases, ownership evidence, generic atomic materialization, and read-only reconciliation without service topology flips.",
+  "invariants": [
+    "P1 is L3 fleet-control-plane implementation. It may change MCP control-plane code and the catalog representation, but it may not flip any service to its target topology.",
+    "Canonical project/workspace/instance identity is registry-issued. Filesystem path, git common-dir, origin, cwd, environment, port, container, MCP session/process identity, and clientInfo remain locator/evidence only.",
+    "UNKNOWN or CONFLICTING identity must force mutable_routing_allowed=false and must never authorize start/stop/adopt/reconcile mutation.",
+    "No registry record is auto-created from path, cwd, environment, port, container labels, MCP session, clientInfo, or probe result.",
+    "The identity registry is operational control-plane authority only; it does not become ConPort, dope-memory, Task Orchestrator, Leantime, DCP, or repository domain authority.",
+    "mcp_catalog.yaml remains the single hand-edited fleet source. A v2 catalog cutover is permitted only after exact compatibility projection proves existing client placement, profile membership, endpoint, command, and environment-key semantics unchanged.",
+    "If v2 compatibility is not byte/semantic-equivalent at the normalized contract layer, P1 stops before changing mcp_catalog.yaml or the bundled default catalog.",
+    "Service lease v2 is endpoint authority only. Port formulas, filesystem paths, labels, compose names, and service-family probes do not independently prove ownership.",
+    "mutation_eligible=true requires OWNED classification with registry binding, exact active lease, service-family probe, and storage/mount corroboration all verified.",
+    "Generic materialization writes only to an explicit caller-supplied session/output directory and must never rewrite shared/global Claude, Codex, OpenCode, Gemini, or Copilot configuration.",
+    "P1 materialization is runner-agnostic foundation only. P7 owns runner-specific rendering, inherited-surface hardening, and activation.",
+    "P1 reconcile/adopt is read-only planning. It exposes no Docker/container/database/Redis/service adoption or migration executor.",
+    "ConPort remains WORKTREE_SCOPED; ConPort Wave 2 remains unauthorized.",
+    "dope-memory is not migrated in P1.",
+    "redis-events project isolation remains P5 and must precede dope-memory P4 consolidation.",
+    "Serena remains WORKTREE_SCOPED in V1; host sharing remains deferred.",
+    "Task Orchestrator project-scope migration remains P3 and is not implemented or activated here.",
+    "MCP SDK/protocol upgrade remains PX. P1 must not modify pyproject.toml or uv.lock.",
+    "No new general MCP gateway, canonical domain store, always-running lifecycle daemon, or multi_project_singleton is introduced.",
+    "No live runtime mutation is permitted during implementation or validation. Registry/lease write tests must use injected temporary paths."
+  ],
+  "depends_on": [
+    "TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001",
+    "TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-MULTIPROJECT",
+    "base_branch": "origin/main",
+    "parent_tp_id": "TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "codex/mcp-multiproject-p1-fleet-control-plane",
+    "base_branch": "origin/main",
+    "stacked_because": "Not stacked. Executed in a fresh isolated worktree from main after explicit operator P1 execution authorization."
+  },
+  "commit": {
+    "message": "feat(mcp): implement multiproject fleet control plane",
+    "allowlist": [
+      "task-packets/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001.json",
+      "task-packets/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001.md",
+      "task-packets/INDEX.md",
+      "docs/03-reference/mcp/multiproject-control-plane.md",
+      "mcp_catalog.yaml",
+      "src/dopemux/mcp/default_catalog.yaml",
+      "src/dopemux/mcp/fleet_catalog.py",
+      "src/dopemux/mcp/project_identity.py",
+      "src/dopemux/mcp/identity.py",
+      "src/dopemux/mcp/identity_registry.py",
+      "src/dopemux/mcp/service_leases.py",
+      "src/dopemux/mcp/ownership.py",
+      "src/dopemux/mcp/materialization.py",
+      "src/dopemux/mcp/reconcile.py",
+      "src/dopemux/mcp/control_plane.py",
+      "src/dopemux/mcp/docker_inspect.py",
+      "src/dopemux/mcp/docker_runtime.py",
+      "src/dopemux/mcp/fleet.py",
+      "src/dopemux/mcp/runtime_state.py",
+      "src/dopemux/commands/mcp_commands.py",
+      "tests/mcp/test_identity_registry_v2.py",
+      "tests/mcp/test_fleet_catalog_v2_runtime.py",
+      "tests/mcp/test_service_leases_v2.py",
+      "tests/mcp/test_ownership_v2.py",
+      "tests/mcp/test_materialization_v2.py",
+      "tests/mcp/test_reconcile_v2.py",
+      "tests/mcp/test_control_plane_v2.py",
+      "tests/unit/test_mcp_commands_catalog.py",
+      "tests/unit/test_mcp_doctor_repo_aware.py",
+      "tests/unit/test_mcp_runtime_registry.py",
+      "tests/arch/test_mcp_fleet_catalog_contract.py",
+      "tests/arch/test_mcp_multiproject_contracts.py",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/PROOF.json",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/AUDITOR_REPORT.md",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/implementation-notes.md",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/SHA256SUMS.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/review_bundle/AUDIT_INPUT.md",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/review_bundle/AUDIT_INVOCATION.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/review_bundle/AUDIT_OUTPUT.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/review_bundle/HEAD.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/review_bundle/DIFF_NAME_STATUS.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/review_bundle/VALIDATION.txt"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "uv run --extra test pytest -q tests/mcp/test_identity_registry_v2.py tests/mcp/test_fleet_catalog_v2_runtime.py tests/mcp/test_service_leases_v2.py tests/mcp/test_ownership_v2.py tests/mcp/test_materialization_v2.py tests/mcp/test_reconcile_v2.py tests/mcp/test_control_plane_v2.py",
+      "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_commands_catalog.py tests/unit/test_mcp_doctor_repo_aware.py tests/unit/test_mcp_runtime_registry.py",
+      "git diff --check",
+      "pre-commit run --files $(git diff --name-only origin/main...HEAD)",
+      "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
+    ]
+  },
+  "pr": {
+    "title": "feat(mcp): implement multiproject P1 fleet control plane",
+    "body": "## Summary\n- registry-backed project/workspace/instance identity\n- catalog-v2 compatibility compiler and guarded cutover\n- service-lease-v2 and ownership evidence\n- generic atomic materialization and read-only reconcile\n\n## Boundaries\n- no service topology flip\n- no live runtime mutation during implementation/validation\n- no ConPort Wave 2\n- no MCP SDK dependency change\n- no shared global runner-config rewrite\n- merge and activation remain operator-only\n\n## Audit\n- L3: one final independent different-family/runtime audit on the frozen substantive head\n",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "preflight",
+      "task": "Bind current main, P0 closure, the complete v1 catalog/identity consumer census, open-PR overlap, and rollback boundary before editing.",
+      "requirements": [
+        "Authoring observation main=328a31e9a48bc20c29f4d1cde79273f587d987ee; reharvest at dispatch and classify drift by affected paths rather than SHA inequality alone.",
+        "Read root/scoped AGENTS.md and current P0 identity/sharing ADR, topology, falsification contract, schemas, and MCP runtime modules.",
+        "Inventory every consumer of scope/state_scope/port_policy and every resolve_project_identity/ProjectIdentity/PortLeaseRegistry caller before editing.",
+        "Reharvest #1297 and #1271 exact changed paths. Authoring classification: #1297 disjoint; #1271 is the PX SDK lane and changes pyproject.toml/uv.lock only.",
+        "Use a new isolated worktree; never reuse R0/P0 worktrees."
+      ],
+      "commands": [
+        "git fetch origin main",
+        "git rev-parse origin/main",
+        "git status --short",
+        "git worktree list --porcelain",
+        "rg -n 'scope|state_scope|port_policy|resolve_project_identity|ProjectIdentity|PortLeaseRegistry' src/dopemux/mcp src/dopemux/commands tests"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Exact base/current main, branch, and clean worktree are recorded.",
+        "Every runtime consumer requiring mutation is already inside the packet allowlist.",
+        "If a required consumer is outside the allowlist, stop BLOCKED_P1_ALLOWLIST_INCOMPLETE rather than widening this packet in place."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docs/90-adr/adr-dmx-mcp-multiproject-identity-sharing-contract-001.md",
+        "docs/03-reference/mcp/multiproject-service-topology.json",
+        "docs/03-reference/mcp/multiproject-falsification-contract.md",
+        "mcp_catalog.yaml",
+        "src/dopemux/mcp/project_identity.py",
+        "src/dopemux/mcp/port_leases.py",
+        "src/dopemux/mcp/fleet_catalog.py"
+      ]
+    },
+    {
+      "id": "identity-registry",
+      "task": "Implement explicit registry-issued project/workspace/instance identity and fail-closed resolution.",
+      "requirements": [
+        "Create atomic JSON identity registry schema_version=dopemux.mcp.identity-registry.v1 with monotonically increasing generation.",
+        "IDs are issued only by explicit register_project/register_workspace/register_instance operations; path/env/probe evidence never auto-registers.",
+        "Use persistent random IDs prefixed prj_/ws_/inst_; persistent registry records, not deterministic path hashes, provide stability.",
+        "Production load(create_missing=False) is read-only when absent; tests inject tmp_path and never touch home registry.",
+        "resolve_execution_identity takes explicit actor_id/client_id, verifies alias/membership/claims, detects alias collisions, and returns VERIFIED|CONFLICTING|UNKNOWN.",
+        "Every resolver output validates against schemas/mcp/resolved-execution-identity.schema.json.",
+        "project_identity.py becomes locator compatibility only; new authoritative callers use identity.py."
+      ],
+      "commands": [
+        "uv run --extra test pytest -q tests/mcp/test_identity_registry_v2.py"
+      ],
+      "expected_files": [
+        "src/dopemux/mcp/identity_registry.py",
+        "src/dopemux/mcp/identity.py",
+        "src/dopemux/mcp/project_identity.py",
+        "tests/mcp/test_identity_registry_v2.py"
+      ],
+      "validation": [
+        "Relocated/symlinked worktrees retain stable project_id only through registered aliases.",
+        "Identical directory basenames across projects never collide.",
+        "Unknown alias, alias collision, wrong project/workspace/instance claim, invalid membership, or stale generation fails closed.",
+        "No canonical identifier is derived from path/git/env/port/container/MCP session/clientInfo."
+      ],
+      "context_files": [
+        "schemas/mcp/resolved-execution-identity.schema.json",
+        "docs/90-adr/adr-conport-canonical-record-service-v2.md"
+      ]
+    },
+    {
+      "id": "catalog-v2",
+      "task": "Implement v2 catalog loader/compiler and compatibility projection, then conditionally cut root/default catalogs to v2 only under zero semantic drift.",
+      "requirements": [
+        "load_root_catalog_v2 validates raw v2 against schemas/mcp/fleet-catalog-v2.schema.json.",
+        "compile_catalog_v2 joins current services to docs/03-reference/mcp/multiproject-service-topology.json and preserves transport/endpoint/command/profile/tool metadata.",
+        "Legacy runner placement is not service sharing_class; preserve current global/per-worktree client placement in explicit compatibility defaults and project an in-memory legacy scope only for old renderers.",
+        "Stored v2 server objects contain no scope/state_scope/port_policy/multi_project_singleton.",
+        "Before catalog mutation compare normalized v1 vs compiled-v2 profile membership, placement, endpoints, commands/args, environment key names, tool/admin/aux metadata.",
+        "Only zero semantic drift permits writing mcp_catalog.yaml and bundled default_catalog.yaml as version 2.",
+        "target_class remains inert data and cannot trigger start/topology behavior."
+      ],
+      "commands": [
+        "uv run --extra test pytest -q tests/mcp/test_fleet_catalog_v2_runtime.py tests/arch/test_mcp_fleet_catalog_contract.py"
+      ],
+      "expected_files": [
+        "mcp_catalog.yaml",
+        "src/dopemux/mcp/default_catalog.yaml",
+        "src/dopemux/mcp/fleet_catalog.py",
+        "tests/mcp/test_fleet_catalog_v2_runtime.py",
+        "tests/arch/test_mcp_fleet_catalog_contract.py"
+      ],
+      "validation": [
+        "Raw v2 catalog validates under the P0 v2 schema.",
+        "All 26 topology rows are mapped or explicitly non-catalog infrastructure; any ambiguous service mapping blocks cutover.",
+        "Normalized legacy/client semantics are identical before/after projection.",
+        "Any semantic difference stops before writing catalog files."
+      ],
+      "context_files": [
+        "schemas/mcp/fleet-catalog-v2.schema.json",
+        "docs/03-reference/mcp/multiproject-service-topology.json",
+        "mcp_catalog.yaml"
+      ]
+    },
+    {
+      "id": "service-leases",
+      "task": "Implement service lease v2 endpoint authority with atomic persistence and read-only legacy migration preview.",
+      "requirements": [
+        "Lease records validate against schemas/mcp/service-lease-v2.schema.json.",
+        "Lease key is service_id for HOST_SINGLETON, project_id+service_id for PROJECT_SCOPED, and project_id+instance_id+service_id for WORKTREE_SCOPED.",
+        "RETIRED never acquires a lease; stale/unknown/conflicting leases never authorize endpoint selection for mutation.",
+        "owner_epoch changes on ownership change; registry_generation binds the identity generation used to allocate/verify.",
+        "Port/path/labels are endpoint/evidence only.",
+        "Legacy PortLeaseRegistry may be read into MigrationPreview only; no live legacy registry import/write is authorized."
+      ],
+      "commands": [
+        "uv run --extra test pytest -q tests/mcp/test_service_leases_v2.py tests/unit/test_mcp_runtime_registry.py"
+      ],
+      "expected_files": [
+        "src/dopemux/mcp/service_leases.py",
+        "tests/mcp/test_service_leases_v2.py",
+        "tests/unit/test_mcp_runtime_registry.py"
+      ],
+      "validation": [
+        "Project leases are reusable across worktrees only for the same canonical project_id.",
+        "Worktree leases cannot cross instance_id.",
+        "Stale generation, retired class, wrong project/instance, malformed endpoint, or conflicting owner fails closed.",
+        "Migration preview performs no file/runtime mutation."
+      ],
+      "context_files": [
+        "schemas/mcp/service-lease-v2.schema.json",
+        "src/dopemux/mcp/port_leases.py"
+      ]
+    },
+    {
+      "id": "ownership",
+      "task": "Implement ownership evidence evaluation without allowing labels, ports, or probes to launder mutation authority.",
+      "requirements": [
+        "Decision validates against schemas/mcp/ownership-evidence.schema.json.",
+        "Classification is OWNED|FOREIGN|AMBIGUOUS|UNKNOWN.",
+        "mutation_eligible=true requires registry binding, exact active lease, service-family probe, and storage/mount corroboration all verified.",
+        "Labels and service-family probes are corroborating evidence only.",
+        "docker_inspect.py changes only structured read-only evidence extraction."
+      ],
+      "commands": [
+        "uv run --extra test pytest -q tests/mcp/test_ownership_v2.py"
+      ],
+      "expected_files": [
+        "src/dopemux/mcp/ownership.py",
+        "src/dopemux/mcp/docker_inspect.py",
+        "tests/mcp/test_ownership_v2.py"
+      ],
+      "validation": [
+        "Label-only/probe-only/port-only candidates never become mutation eligible.",
+        "Foreign expected-port owner is FOREIGN or AMBIGUOUS, never adopted.",
+        "Unlabeled right-family service stays UNKNOWN until exact ownership evidence closes."
+      ],
+      "context_files": [
+        "schemas/mcp/ownership-evidence.schema.json"
+      ]
+    },
+    {
+      "id": "materialization",
+      "task": "Implement runner-agnostic atomic session materialization and provenance receipts without shared/global config writes.",
+      "requirements": [
+        "Materializer accepts caller-supplied file payloads only; runner-specific rendering stays P7.",
+        "Writes are confined to explicit output root using temp generation, fsync, and atomic replacement.",
+        "Known shared/global Claude/Codex/OpenCode/Gemini/Copilot config paths are rejected.",
+        "Failure leaves the previous complete generation intact.",
+        "Receipt validates runner-materialization-receipt schema and authority=PROVENANCE_ONLY."
+      ],
+      "commands": [
+        "uv run --extra test pytest -q tests/mcp/test_materialization_v2.py"
+      ],
+      "expected_files": [
+        "src/dopemux/mcp/materialization.py",
+        "tests/mcp/test_materialization_v2.py"
+      ],
+      "validation": [
+        "Injected failure never leaves mixed generations.",
+        "Global/home runner config paths are rejected.",
+        "Strict mode cannot succeed with UNKNOWN inherited-surface status."
+      ],
+      "context_files": [
+        "schemas/mcp/runner-materialization-receipt.schema.json"
+      ]
+    },
+    {
+      "id": "reconcile-control-plane",
+      "task": "Compose identity, catalog, leases, ownership and materialization inputs into a read-only reconcile/control-plane plan.",
+      "requirements": [
+        "Reconcile statuses are MATCHED|MISSING|FOREIGN|AMBIGUOUS|STALE|LEGACY_UNBOUND.",
+        "Reconcile emits recommendations/data only and has no start/stop/rm/adopt/migrate executor.",
+        "ControlPlanePlan contains resolved identity, selected service specs, lease/endpoints, ownership evidence, materialization inputs, and blockers.",
+        "Existing fleet/runtime_state may consume canonical identity for read decisions; v2 mutation behavior stays dormant/default-off.",
+        "docker_runtime may add v2 label-construction helpers but may not alter topology/start behavior absent a later activation gate.",
+        "mcp_commands may expose read-only identity/catalog/reconcile preview surfaces only; no auto-registration or live mutation."
+      ],
+      "commands": [
+        "uv run --extra test pytest -q tests/mcp/test_reconcile_v2.py tests/mcp/test_control_plane_v2.py tests/unit/test_mcp_commands_catalog.py tests/unit/test_mcp_doctor_repo_aware.py"
+      ],
+      "expected_files": [
+        "src/dopemux/mcp/reconcile.py",
+        "src/dopemux/mcp/control_plane.py",
+        "src/dopemux/mcp/docker_runtime.py",
+        "src/dopemux/mcp/fleet.py",
+        "src/dopemux/mcp/runtime_state.py",
+        "src/dopemux/commands/mcp_commands.py",
+        "tests/mcp/test_reconcile_v2.py",
+        "tests/mcp/test_control_plane_v2.py",
+        "tests/unit/test_mcp_commands_catalog.py",
+        "tests/unit/test_mcp_doctor_repo_aware.py"
+      ],
+      "validation": [
+        "Two projects with identical basenames yield distinct canonical plans.",
+        "Two worktrees of one project retain distinct instance_id while sharing project identity.",
+        "Wrong-project lease, stale lease, foreign port, absent registry, alias collision, and stale materialization all block with zero mutation.",
+        "No P2/P3/P4/P5/P6/P7 activation occurs."
+      ],
+      "context_files": [
+        "docs/03-reference/mcp/multiproject-falsification-contract.md"
+      ]
+    },
+    {
+      "id": "docs-rollback",
+      "task": "Document dormant P1 behavior, compatibility projection, identity/lease locations, activation boundary, and rollback.",
+      "requirements": [
+        "Documentation states merge does not activate service topology changes.",
+        "Document production registry/lease paths but state implementation/validation must not write live/home state.",
+        "Document catalog-v2 compatibility gate and cutover stop condition.",
+        "Before activation rollback is git revert of the P1 merge; no runtime cleanup is expected.",
+        "Any observed live state mutation is FAIL_P1_UNAUTHORIZED_RUNTIME_MUTATION."
+      ],
+      "commands": [],
+      "expected_files": [
+        "docs/03-reference/mcp/multiproject-control-plane.md",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/implementation-notes.md"
+      ],
+      "validation": [
+        "Docs make no ConPort Wave2/service migration/runner activation/SDK upgrade/merge/activation claim."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "freeze-audit-finality",
+      "task": "Run L3 pre-push gates, freeze one substantive head, obtain one independent different-family/runtime final audit, close proof-only evidence, and stop for operator merge decision.",
+      "requirements": [
+        "Before first push run exact identity, allowlist, diff, packet/schema/frontmatter, focused/relevant suites, changed-file pre-commit, exact-range secret scan, and no-live-runtime-mutation checks.",
+        "Do not audit intermediate commits.",
+        "Auditor must be independent of implementer; exact runner/model is live-discovered and recorded. No silent fallback.",
+        "At most one bounded substantive repair; after repair rerun all deterministic gates, freeze a new head, and run one fresh final audit.",
+        "Proof-only successor preserves audit only after schema/signature/ancestry/path-closure validation.",
+        "PR Steward runs only after current review settlement and exact-head evidence.",
+        "No merge, service activation, ConPort Wave2, or P2-P8 dispatch."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "uv run --extra test pytest -q tests/mcp/test_identity_registry_v2.py tests/mcp/test_fleet_catalog_v2_runtime.py tests/mcp/test_service_leases_v2.py tests/mcp/test_ownership_v2.py tests/mcp/test_materialization_v2.py tests/mcp/test_reconcile_v2.py tests/mcp/test_control_plane_v2.py",
+        "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_commands_catalog.py tests/unit/test_mcp_doctor_repo_aware.py tests/unit/test_mcp_runtime_registry.py",
+        "git diff --check",
+        "pre-commit run --files $(git diff --name-only origin/main...HEAD)",
+        "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/PROOF.json",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/AUDITOR_REPORT.md",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/implementation-notes.md",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/SHA256SUMS.txt",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/review_bundle/AUDIT_INPUT.md",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/review_bundle/AUDIT_INVOCATION.txt",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/review_bundle/AUDIT_OUTPUT.txt",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/review_bundle/HEAD.txt",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/review_bundle/DIFF_NAME_STATUS.txt",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/review_bundle/VALIDATION.txt"
+      ],
+      "validation": [
+        "Change contract reports L3 PASS.",
+        "Final independent audit is PASS or explicit nonblocking PASS_WITH_RISKS on the frozen substantive head.",
+        "No live runtime mutation occurred.",
+        "PR Steward is READY or exact blockers are returned."
+      ],
+      "context_files": []
+    }
+  ]
+}

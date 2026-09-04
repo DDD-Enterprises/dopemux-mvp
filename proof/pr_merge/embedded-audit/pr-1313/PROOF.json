@@ -1,0 +1,70 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1313,
+  "head_sha": "36620e6a50d0724ee22559eb7acc1a3186263245",
+  "generated_at": "2026-09-04T09:58:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir <worktree-abs-path> --print=\"$(cat review_bundle/AUDIT_INPUT_REPAIR_1.md)\"; exact invocation record in review_bundle/AUDIT_INVOCATION_REPAIR_1.txt; raw output in review_bundle/AUDIT_OUTPUT_REPAIR_1.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/AUDITOR_REPAIR_REPORT.md",
+    "findings": [
+      {
+        "id": "R1-01",
+        "severity": "INFO",
+        "title": "Identity cwd normalization",
+        "status": "RESOLVED",
+        "body": "Auditor confirmed resolve_execution_identity (identity.py) and _normalize_alias (identity_registry.py) share one normalize_path_alias_value helper, so a relative or symlinked cwd now matches its registered absolute alias."
+      },
+      {
+        "id": "R1-02",
+        "severity": "INFO",
+        "title": "canonical_identity_summary schema completeness",
+        "status": "RESOLVED",
+        "body": "Auditor confirmed the summary now emits actor_id/client_id/aliases matching schemas/mcp/resolved-execution-identity.schema.json exactly, with no extra keys."
+      },
+      {
+        "id": "R1-03",
+        "severity": "INFO",
+        "title": "Mount evidence fail-closed",
+        "status": "RESOLVED",
+        "body": "Auditor confirmed inspect_container_mounts (docker_inspect.py) now requires source and dest, rejecting one-sided mount evidence."
+      },
+      {
+        "id": "R1-04",
+        "severity": "INFO",
+        "title": "Git-missing-binary test hardening (x2)",
+        "status": "RESOLVED",
+        "body": "Auditor confirmed both flagged tests (test_mcp_multiproject_contracts.py::test_no_runtime_effect_diff, test_fleet_catalog_v2_runtime.py::test_live_catalog_files_are_untouched_by_this_packet) now catch FileNotFoundError/OSError and skip gracefully."
+      },
+      {
+        "id": "R1-05",
+        "severity": "INFO",
+        "title": "Docstring typo",
+        "status": "RESOLVED",
+        "body": "Auditor confirmed legacy_client_placement's accidental fourth leading quote is removed."
+      }
+    ],
+    "fixes_applied": [
+      "identity_registry.py: added PATH_ALIAS_KINDS + normalize_path_alias_value(), applied in _normalize_alias",
+      "identity.py: resolve_execution_identity normalizes cwd via the shared helper before matching",
+      "runtime_state.py: canonical_identity_summary emits actor_id/client_id/aliases",
+      "docker_inspect.py: inspect_container_mounts requires source and dest",
+      "tests/arch/test_mcp_multiproject_contracts.py: except (FileNotFoundError, OSError) added",
+      "tests/mcp/test_fleet_catalog_v2_runtime.py: except (FileNotFoundError, OSError) added",
+      "fleet_catalog.py: fixed four-quote docstring in legacy_client_placement",
+      "tests/mcp/test_identity_registry_v2.py: added relative-cwd and symlinked-cwd resolution regression tests",
+      "tests/mcp/test_runtime_state_identity_summary.py: new file, schema-completeness regression tests",
+      "tests/mcp/test_ownership_v2.py: added one-sided mount evidence rejection regression test"
+    ],
+    "remaining_risks": [
+      "CATALOG_V2_CUTOVER remains BLOCKED_NOT_APPLIED pending a future tranche making fleet_catalog.load_root_catalog and mcp_commands._load_catalog version-tolerant.",
+      "fleet.py integration was skipped (no strictly-additive insertion point found); a later tranche may still want FleetDoctorReport to surface canonical identity.",
+      "CI's 'independent embedded audit' check (pal-mcp-clink/Anthropic-API route) still fails on this head -- known-obsolete CI route per Control Tower disposition, not a defect in this repair; PR Steward inherits that failure and shows final readiness=fail as a result. The exact-subject audit for merge authority is this AGY/Gemini round, imported here."
+    ],
+    "skip_reason": null
+  }
+}
