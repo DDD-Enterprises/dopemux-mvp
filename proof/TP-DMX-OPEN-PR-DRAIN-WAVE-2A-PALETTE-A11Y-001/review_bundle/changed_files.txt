@@ -1,0 +1,8 @@
+M	.Jules/palette.md
+M	ui-dashboard/package.json
+M	ui-dashboard/pnpm-lock.yaml
+M	ui-dashboard/src/App.tsx
+M	ui-dashboard/src/components/TaskSequencer.tsx
+M	ui-dashboard/src/components/TeamDashboard.tsx
+M	ui-dashboard/src/components/__tests__/Accessibility.test.tsx
+M	ui-dashboard/tsconfig.json

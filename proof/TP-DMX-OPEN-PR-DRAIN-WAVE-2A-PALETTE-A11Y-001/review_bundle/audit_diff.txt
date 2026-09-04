@@ -1,0 +1,656 @@
+diff --git a/.Jules/palette.md b/.Jules/palette.md
+index 8cb793d64..7850f7770 100644
+--- a/.Jules/palette.md
++++ b/.Jules/palette.md
+@@ -172,3 +172,7 @@
+ ## 2026-07-18 - [Dynamic Focus Preservation on List Transitions]
+ **Learning:** In highly interactive, stateful sequences (such as list-based task runners), transitioning to a new active item dynamically re-renders action controls. If keyboard focus is left on the previous item's controls, it can be dropped entirely when those controls are disabled or removed, resetting focus to the document body. Automatically restoring and advancing focus to the newly active item's primary action button preserves the user's navigational momentum and prevents tab-stop disorientation for screen reader and keyboard users.
+ **Action:** When list elements transition states and modify interactive components, track the previous item id and only move focus when the id actually changes. Do not use a one-shot `isInitialMount` flag — React 18 StrictMode double-invokes mount effects in development and would steal focus on page load.
++
++## 2026-07-19 - [Keyboard Dismissal for Soft Confirmations]
++**Learning:** For transient 'Soft Confirmation' patterns (like 3-second 'Confirm Skip' or 'Confirm Reset' states), keyboard users need an immediate, explicit way to cancel the pending destructive state without waiting out the timeout or risking an accidental second activation. Binding the `Escape` key (`onKeyDown`) to reset confirmation states provides an intuitive safety hatch for keyboard navigation.
++**Action:** Always attach an `onKeyDown` handler listening for `Escape` to reset confirmation states on soft confirmation buttons.
+diff --git a/ui-dashboard/package.json b/ui-dashboard/package.json
+index d3fcb74c6..c018cbf4f 100644
+--- a/ui-dashboard/package.json
++++ b/ui-dashboard/package.json
+@@ -25,6 +25,7 @@
+     "@testing-library/jest-dom": "^6.9.1",
+     "@testing-library/react": "^16.3.2",
+     "@types/jest": "^30.0.0",
++    "@types/node": "^26.4.1",
+     "@types/react": "^18.2.66",
+     "@types/react-dom": "^18.2.22",
+     "@typescript-eslint/eslint-plugin": "^8.57.2",
+diff --git a/ui-dashboard/pnpm-lock.yaml b/ui-dashboard/pnpm-lock.yaml
+index 6c80da3e2..674b68838 100644
+--- a/ui-dashboard/pnpm-lock.yaml
++++ b/ui-dashboard/pnpm-lock.yaml
+@@ -56,6 +56,9 @@ importers:
+       '@types/jest':
+         specifier: ^30.0.0
+         version: 30.0.0
++      '@types/node':
++        specifier: ^26.4.1
++        version: 26.4.1
+       '@types/react':
+         specifier: ^18.2.66
+         version: 18.3.28
+@@ -70,7 +73,7 @@ importers:
+         version: 8.57.2(eslint@10.1.0)(typescript@5.9.3)
+       '@vitejs/plugin-react':
+         specifier: ^6.0.2
+-        version: 6.0.2(vite@8.0.16(@types/node@25.5.0))
++        version: 6.0.2(vite@8.0.16(@types/node@26.4.1))
+       eslint:
+         specifier: ^10.1.0
+         version: 10.1.0
+@@ -88,10 +91,10 @@ importers:
+         version: 5.9.3
+       vite:
+         specifier: ^8.0.16
+-        version: 8.0.16(@types/node@25.5.0)
++        version: 8.0.16(@types/node@26.4.1)
+       vitest:
+         specifier: ^4.1.0
+-        version: 4.1.0(@types/node@25.5.0)(jsdom@28.1.0)(vite@8.0.16(@types/node@25.5.0))
++        version: 4.1.0(@types/node@26.4.1)(jsdom@28.1.0)(vite@8.0.16(@types/node@26.4.1))
+
+ packages:
+
+@@ -548,36 +551,42 @@ packages:
+     engines: {node: ^20.19.0 || >=22.12.0}
+     cpu: [arm64]
+     os: [linux]
++    libc: [glibc]
+
+   '@rolldown/binding-linux-arm64-musl@1.0.3':
+     resolution: {integrity: sha512-VWkUHwWriDciit80wleYwKILoR/KMvxh/IdwS/paX+ZgpuRpCrKLUdadJbc0NpBEiyhpYawsJ73j9aCvOH+f7Q==}
+     engines: {node: ^20.19.0 || >=22.12.0}
+     cpu: [arm64]
+     os: [linux]
++    libc: [musl]
+
+   '@rolldown/binding-linux-ppc64-gnu@1.0.3':
+     resolution: {integrity: sha512-5f1laC0SlIR0yDbFCd8acUhvJIag6N3zC5P7oUPN6wX0aOma+uKJ0wBDH5aq7I1PVI2ttTlhJwzwRIBnLiSGEg==}
+     engines: {node: ^20.19.0 || >=22.12.0}
+     cpu: [ppc64]
+     os: [linux]
++    libc: [glibc]
+
+   '@rolldown/binding-linux-s390x-gnu@1.0.3':
+     resolution: {integrity: sha512-Iq4ko0r4XsgbrF/LunNgHtAGLRRVE2kXonAXQ/MV0mC6jQpMOhW1SvtZja2EhC/kd05++bP78dsqBeIQyYJ6Yg==}
+     engines: {node: ^20.19.0 || >=22.12.0}
+     cpu: [s390x]
+     os: [linux]
++    libc: [glibc]
+
+   '@rolldown/binding-linux-x64-gnu@1.0.3':
+     resolution: {integrity: sha512-B8m6tD5+/N5FeNQFbKlLA/2yVq9ycQP1SeedyEYYKWBNR3ZQbkvIUcNnDNM03lO1l5F2roiiFJGgvoLLyZXtSg==}
+     engines: {node: ^20.19.0 || >=22.12.0}
+     cpu: [x64]
+     os: [linux]
++    libc: [glibc]
+
+   '@rolldown/binding-linux-x64-musl@1.0.3':
+     resolution: {integrity: sha512-pSdpdUJHkuCxun9LE7jvgUB9qsRgaiyNNCX7m/AvHTcq67AiT/Yhoxvw5zPfhrM8k/BfP8ce/hMOpthKDpEUow==}
+     engines: {node: ^20.19.0 || >=22.12.0}
+     cpu: [x64]
+     os: [linux]
++    libc: [musl]
+
+   '@rolldown/binding-openharmony-arm64@1.0.3':
+     resolution: {integrity: sha512-OXXS3RKJgX2uLwM+gYyuH5omcH8fL1LJs96pZGgtetVCahON57+d4SJHzTgZiOjxgGkSnpXpOsWuPDGAKAigEg==}
+@@ -700,8 +709,8 @@ packages:
+   '@types/json-schema@7.0.15':
+     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
+
+-  '@types/node@25.5.0':
+-    resolution: {integrity: sha512-jp2P3tQMSxWugkCUKLRPVUpGaL5MVFwF8RDuSRztfwgN1wmqJeMSbKlnEtQqU8UrhTmzEmZdu2I6v2dpp7XIxw==}
++  '@types/node@26.4.1':
++    resolution: {integrity: sha512-k97ENvZWtvA6yqz5/FS6a7duDgOPEeOQOc2iKS/nY6mX6qJUKtLnWzQS+Xj6tXweyj6ZcTAK2Qecetnvi9nCLA==}
+
+   '@types/parse-json@4.0.2':
+     resolution: {integrity: sha512-dISoDXWWQwUquiKsyZ4Ng+HX2KsPL7LyHKHQwgGFEA3IaKac4Obd+h2a/a6waisAoepJlBcx9paWqjA8/HVjCw==}
+@@ -1370,24 +1379,28 @@ packages:
+     engines: {node: '>= 12.0.0'}
+     cpu: [arm64]
+     os: [linux]
++    libc: [glibc]
+
+   lightningcss-linux-arm64-musl@1.32.0:
+     resolution: {integrity: sha512-UpQkoenr4UJEzgVIYpI80lDFvRmPVg6oqboNHfoH4CQIfNA+HOrZ7Mo7KZP02dC6LjghPQJeBsvXhJod/wnIBg==}
+     engines: {node: '>= 12.0.0'}
+     cpu: [arm64]
+     os: [linux]
++    libc: [musl]
+
+   lightningcss-linux-x64-gnu@1.32.0:
+     resolution: {integrity: sha512-V7Qr52IhZmdKPVr+Vtw8o+WLsQJYCTd8loIfpDaMRWGUZfBOYEJeyJIkqGIDMZPwPx24pUMfwSxxI8phr/MbOA==}
+     engines: {node: '>= 12.0.0'}
+     cpu: [x64]
+     os: [linux]
++    libc: [glibc]
+
+   lightningcss-linux-x64-musl@1.32.0:
+     resolution: {integrity: sha512-bYcLp+Vb0awsiXg/80uCRezCYHNg1/l3mt0gzHnWV9XP1W5sKa5/TCdGWaR/zBM2PeF/HbsQv/j2URNOiVuxWg==}
+     engines: {node: '>= 12.0.0'}
+     cpu: [x64]
+     os: [linux]
++    libc: [musl]
+
+   lightningcss-win32-arm64-msvc@1.32.0:
+     resolution: {integrity: sha512-8SbC8BR40pS6baCM8sbtYDSwEVQd4JlFTOlaD3gWGHfThTcABnNDBda6eTZeqbofalIJhFx0qKzgHJmcPTnGdw==}
+@@ -1733,8 +1746,8 @@ packages:
+     engines: {node: '>=14.17'}
+     hasBin: true
+
+-  undici-types@7.18.2:
+-    resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
++  undici-types@8.3.0:
++    resolution: {integrity: sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ==}
+
+   undici@7.29.0:
+     resolution: {integrity: sha512-IDxfleLmmbSskfWSUATiN1nfn2rDuvnMOqb5CWR92iIfojA0Ud+ulOAAEQ57LPr9rWmsreUyf5lwyao+7GNNVw==}
+@@ -2238,7 +2251,7 @@ snapshots:
+
+   '@jest/pattern@30.0.1':
+     dependencies:
+-      '@types/node': 25.5.0
++      '@types/node': 26.4.1
+       jest-regex-util: 30.0.1
+
+   '@jest/schemas@30.0.5':
+@@ -2251,7 +2264,7 @@ snapshots:
+       '@jest/schemas': 30.0.5
+       '@types/istanbul-lib-coverage': 2.0.6
+       '@types/istanbul-reports': 3.0.4
+-      '@types/node': 25.5.0
++      '@types/node': 26.4.1
+       '@types/yargs': 17.0.35
+       chalk: 4.1.2
+
+@@ -2517,9 +2530,9 @@ snapshots:
+
+   '@types/json-schema@7.0.15': {}
+
+-  '@types/node@25.5.0':
++  '@types/node@26.4.1':
+     dependencies:
+-      undici-types: 7.18.2
++      undici-types: 8.3.0
+
+   '@types/parse-json@4.0.2': {}
+
+@@ -2637,10 +2650,10 @@ snapshots:
+       '@typescript-eslint/types': 8.57.2
+       eslint-visitor-keys: 5.0.1
+
+-  '@vitejs/plugin-react@6.0.2(vite@8.0.16(@types/node@25.5.0))':
++  '@vitejs/plugin-react@6.0.2(vite@8.0.16(@types/node@26.4.1))':
+     dependencies:
+       '@rolldown/pluginutils': 1.0.1
+-      vite: 8.0.16(@types/node@25.5.0)
++      vite: 8.0.16(@types/node@26.4.1)
+
+   '@vitest/expect@4.1.0':
+     dependencies:
+@@ -2651,13 +2664,13 @@ snapshots:
+       chai: 6.2.2
+       tinyrainbow: 3.1.0
+
+-  '@vitest/mocker@4.1.0(vite@8.0.16(@types/node@25.5.0))':
++  '@vitest/mocker@4.1.0(vite@8.0.16(@types/node@26.4.1))':
+     dependencies:
+       '@vitest/spy': 4.1.0
+       estree-walker: 3.0.3
+       magic-string: 0.30.21
+     optionalDependencies:
+-      vite: 8.0.16(@types/node@25.5.0)
++      vite: 8.0.16(@types/node@26.4.1)
+
+   '@vitest/pretty-format@4.1.0':
+     dependencies:
+@@ -3128,7 +3141,7 @@ snapshots:
+   jest-mock@30.3.0:
+     dependencies:
+       '@jest/types': 30.3.0
+-      '@types/node': 25.5.0
++      '@types/node': 26.4.1
+       jest-util: 30.3.0
+
+   jest-regex-util@30.0.1: {}
+@@ -3136,7 +3149,7 @@ snapshots:
+   jest-util@30.3.0:
+     dependencies:
+       '@jest/types': 30.3.0
+-      '@types/node': 25.5.0
++      '@types/node': 26.4.1
+       chalk: 4.1.2
+       ci-info: 4.4.0
+       graceful-fs: 4.2.11
+@@ -3557,7 +3570,7 @@ snapshots:
+
+   typescript@5.9.3: {}
+
+-  undici-types@7.18.2: {}
++  undici-types@8.3.0: {}
+
+   undici@7.29.0: {}
+
+@@ -3588,7 +3601,7 @@ snapshots:
+       d3-time: 3.1.0
+       d3-timer: 3.0.1
+
+-  vite@8.0.16(@types/node@25.5.0):
++  vite@8.0.16(@types/node@26.4.1):
+     dependencies:
+       lightningcss: 1.32.0
+       picomatch: 4.0.4
+@@ -3596,13 +3609,13 @@ snapshots:
+       rolldown: 1.0.3
+       tinyglobby: 0.2.17
+     optionalDependencies:
+-      '@types/node': 25.5.0
++      '@types/node': 26.4.1
+       fsevents: 2.3.3
+
+-  vitest@4.1.0(@types/node@25.5.0)(jsdom@28.1.0)(vite@8.0.16(@types/node@25.5.0)):
++  vitest@4.1.0(@types/node@26.4.1)(jsdom@28.1.0)(vite@8.0.16(@types/node@26.4.1)):
+     dependencies:
+       '@vitest/expect': 4.1.0
+-      '@vitest/mocker': 4.1.0(vite@8.0.16(@types/node@25.5.0))
++      '@vitest/mocker': 4.1.0(vite@8.0.16(@types/node@26.4.1))
+       '@vitest/pretty-format': 4.1.0
+       '@vitest/runner': 4.1.0
+       '@vitest/snapshot': 4.1.0
+@@ -3619,10 +3632,10 @@ snapshots:
+       tinyexec: 1.2.4
+       tinyglobby: 0.2.17
+       tinyrainbow: 3.1.0
+-      vite: 8.0.16(@types/node@25.5.0)
++      vite: 8.0.16(@types/node@26.4.1)
+       why-is-node-running: 2.3.0
+     optionalDependencies:
+-      '@types/node': 25.5.0
++      '@types/node': 26.4.1
+       jsdom: 28.1.0
+     transitivePeerDependencies:
+       - msw
+diff --git a/ui-dashboard/src/App.tsx b/ui-dashboard/src/App.tsx
+index bd8f7ffe0..9951f2d28 100644
+--- a/ui-dashboard/src/App.tsx
++++ b/ui-dashboard/src/App.tsx
+@@ -633,13 +633,32 @@ function DashboardApp() {
+         <Collapse in={Boolean(errorMessage)}>
+           <Alert
+             severity="error"
+-            icon={<AlertTriangle size={20} />}
++            icon={<AlertTriangle size={20} aria-hidden="true" />}
+             onClose={() => setErrorMessage(null)}
++            closeText="Dismiss error notification"
++            slotProps={{
++              closeButton: {
++                'aria-label': 'Dismiss error notification',
++              },
++            }}
+             action={
+               connectionStatus === 'degraded' ? (
+-                <Button color="inherit" size="small" onClick={handleReconnect}>
+-                  RECONNECT
+-                </Button>
++                <Tooltip title="Attempt to re-establish connection to DØPEMÜX Ritual Daemon" arrow>
++                  <Button
++                    color="inherit"
++                    size="small"
++                    onClick={handleReconnect}
++                    aria-label="Retry connection to daemon"
++                    sx={{
++                      '&:focus-visible': {
++                        outline: `2px solid ${brandTokens.colors.errorRed}`,
++                        outlineOffset: 2,
++                      },
++                    }}
++                  >
++                    RECONNECT
++                  </Button>
++                </Tooltip>
+               ) : null
+             }
+             sx={{
+@@ -659,7 +678,7 @@ function DashboardApp() {
+               <Tooltip title={metric.tooltip} arrow describeChild>
+                 <Paper
+                   tabIndex={0}
+-                  aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : 'N/A'}%`}
++                  aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : 'N/A'}%. ${metric.roast}`}
+                   sx={{
+                     p: 2.5,
+                     minHeight: 140,
+@@ -788,6 +807,17 @@ function DashboardApp() {
+                     setNotifications([]);
+                     feedHeadingRef.current?.focus();
+                   }}
++                  onKeyDown={(e) => {
++                    if (isConfirmingClear && e.key === 'Escape') {
++                      e.preventDefault();
++                      e.stopPropagation();
++                      setIsConfirmingClear(false);
++                      if (clearConfirmTimeoutRef.current) {
++                        clearTimeout(clearConfirmTimeoutRef.current);
++                        clearConfirmTimeoutRef.current = null;
++                      }
++                    }
++                  }}
+                   aria-label={isConfirmingClear ? 'Confirm clear all notifications' : 'Clear all notifications'}
+                   sx={{
+                     ml: isLoading ? 1 : 'auto',
+@@ -887,7 +917,7 @@ function DashboardApp() {
+           )}
+           {layout.showTeamDashboard && !isMobile && (
+             <Grid item xs={12}>
+-              <TeamDashboard />
++              <TeamDashboard onError={setErrorMessage} />
+             </Grid>
+           )}
+         </Grid>
+diff --git a/ui-dashboard/src/components/TaskSequencer.tsx b/ui-dashboard/src/components/TaskSequencer.tsx
+index f733de84c..7c280411f 100644
+--- a/ui-dashboard/src/components/TaskSequencer.tsx
++++ b/ui-dashboard/src/components/TaskSequencer.tsx
+@@ -740,6 +740,17 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
+                     )
+                   }
+                   onClick={() => skipTask(currentTask.id)}
++                  onKeyDown={(e) => {
++                    if (isSkipConfirming && e.key === 'Escape') {
++                      e.preventDefault();
++                      e.stopPropagation();
++                      setIsSkipConfirming(false);
++                      if (skipConfirmTimeoutRef.current) {
++                        clearTimeout(skipConfirmTimeoutRef.current);
++                        skipConfirmTimeoutRef.current = null;
++                      }
++                    }
++                  }}
+                   sx={{
+                     color: isSkipConfirming ? brandTokens.colors.saintGold : brandTokens.colors.gremlinPink,
+                     transition: 'all 0.2s ease',
+@@ -804,6 +815,22 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
+                 )
+               }
+               onClick={resetTasks}
++              onKeyDown={(e) => {
++                if (isResetConfirming && e.key === 'Escape') {
++                  e.preventDefault();
++                  e.stopPropagation();
++                  setIsResetConfirming(false);
++                  if (resetTimeoutRef.current) {
++                    clearTimeout(resetTimeoutRef.current);
++                    resetTimeoutRef.current = null;
++                  }
++                }
++              }}
++              aria-label={
++                isResetConfirming
++                  ? 'Confirm reset task sequence and clear all progress'
++                  : 'Reset task sequence'
++              }
+               sx={{
+                 borderColor: isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint,
+                 color: isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint,
+diff --git a/ui-dashboard/src/components/TeamDashboard.tsx b/ui-dashboard/src/components/TeamDashboard.tsx
+index 2b270edc4..6cb553f38 100644
+--- a/ui-dashboard/src/components/TeamDashboard.tsx
++++ b/ui-dashboard/src/components/TeamDashboard.tsx
+@@ -16,7 +16,11 @@ const teamSignals = [
+   { label: 'Handoff', value: 'Clear', color: brandTokens.colors.saintGold },
+ ];
+
+-export default function TeamDashboard() {
++interface TeamDashboardProps {
++  onError?: (message: string) => void;
++}
++
++export default function TeamDashboard({ onError }: TeamDashboardProps = {}) {
+   const teamAverageLoad = Math.round(
+     teamMembers.reduce((total, member) => total + member.load, 0) / teamMembers.length
+   );
+@@ -37,7 +41,10 @@ export default function TeamDashboard() {
+   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+   const handleCopy = useCallback(async () => {
+-    if (!navigator.clipboard?.writeText) return;
++    if (!navigator.clipboard?.writeText) {
++      onError?.('Clipboard API is not supported in this browser or context.');
++      return;
++    }
+     try {
+       await navigator.clipboard.writeText(teamInsight);
+       setIsCopied(true);
+@@ -47,9 +54,10 @@ export default function TeamDashboard() {
+         copyTimeoutRef.current = null;
+       }, 2000);
+     } catch (err) {
+-      console.error('Failed to copy team insight:', err);
++      const errorMsg = err instanceof Error ? err.message : String(err);
++      onError?.(`Failed to copy team insight: ${errorMsg}`);
+     }
+-  }, [teamInsight]);
++  }, [teamInsight, onError]);
+
+   useEffect(() => {
+     return () => {
+@@ -160,7 +168,18 @@ export default function TeamDashboard() {
+                   size="small"
+                   label={statusStyles[member.status].label}
+                   aria-label={`${member.name}'s current status: ${statusStyles[member.status].label}`}
+-                  sx={{ cursor: 'help' }}
++                  tabIndex={0}
++                  sx={{
++                    cursor: 'help',
++                    transition: 'all 0.2s ease',
++                    border: '1px solid transparent',
++                    '&:hover, &:focus-visible': {
++                      bgcolor: alpha(statusStyles[member.status].color, 0.12),
++                      borderColor: statusStyles[member.status].color,
++                      boxShadow: `0 0 12px ${alpha(statusStyles[member.status].color, 0.3)}`,
++                      transform: 'translateY(-1px)',
++                    },
++                  }}
+                 />
+               </Tooltip>
+               <Box aria-hidden="true" sx={{ ml: 'auto', width: 6, height: 6, borderRadius: '50%', bgcolor: statusStyles[member.status].color }} />
+diff --git a/ui-dashboard/src/components/__tests__/Accessibility.test.tsx b/ui-dashboard/src/components/__tests__/Accessibility.test.tsx
+index 9335e0869..e5284b25e 100644
+--- a/ui-dashboard/src/components/__tests__/Accessibility.test.tsx
++++ b/ui-dashboard/src/components/__tests__/Accessibility.test.tsx
+@@ -8,6 +8,7 @@ import fs from 'fs';
+ import path from 'path';
+ import PredictionPanel from '../PredictionPanel';
+ import TaskSequencer from '../TaskSequencer';
++import TeamDashboard from '../TeamDashboard';
+
+ const componentsDir = path.resolve(__dirname, '..');
+
+@@ -87,6 +88,7 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
+   expect(content).toContain('aria-label="Team Average Cognitive Load Percentage"');
+   expect(content).toContain('aria-label={`${member.name}\'s Cognitive Load Percentage`}');
+   expect(content).toContain('aria-label={`Profile picture of ${member.name}`}');
++  expect(content).toMatch(/aria-label=\{\s*`\$\{member\.name\}'s current status: \$\{statusStyles\[member\.status\]\.label\}`\s*\}[\s\S]*tabIndex=\{0\}/);
+   expect(content).toContain('aria-label={`${member.name}\'s current status: ${statusStyles[member.status].label}`}');
+   expect(content).toContain('aria-label={`${member.name}\'s current energy level: ${member.energy}%`}');
+   expect(content).toContain('aria-label={`${member.name}\'s current attention focus: ${member.attention}%`}');
+@@ -111,19 +113,49 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
+   // Verify Member Card consolidation
+   expect(content).toMatch(/aria-label=\{\s*`\$\{member\.name\}: \$\{statusStyles\[member\.status\]\.label\}, \$\{member\.load\}% load, \$\{member\.energy\}% energy, \$\{member\.attention\}% attention`\s*\}/);
+
+-  // Verify AI Insight Copyable Surface
++  // Verify AI Insight Copyable Surface & Global Error Propagation
+   expect(content).toMatch(/<Tooltip title=\{isCopied \? 'Copied!' : 'Copy team insight'\} arrow>/);
+   expect(content).toMatch(/aria-label=\{\s*isCopied \? `Team insight: \$\{teamInsight\} \(Copied\)` : `Copy team insight: \$\{teamInsight\}`\s*\}/);
+   expect(content).toContain('role="button"');
+   expect(content).toContain('onKeyDown=');
+   expect(content).toContain("animation: 'insight-copy-pulse 0.4s ease-out'");
++  expect(content).toContain('interface TeamDashboardProps {');
++  expect(content).toContain('onError?: (message: string) => void;');
++  expect(content).toContain("onError?.('Clipboard API is not supported in this browser or context.');");
++});
++
++test('TeamDashboard propagates clipboard copy error via onError prop', async () => {
++  let errorMessage: string | null = null;
++  const handleError = (msg: string) => {
++    errorMessage = msg;
++  };
++
++  const originalClipboard = navigator.clipboard;
++  // Temporarily remove writeText to simulate unsupported browser/context
++  Object.defineProperty(navigator, 'clipboard', {
++    value: undefined,
++    configurable: true,
++  });
++
++  try {
++    render(<TeamDashboard onError={handleError} />);
++    const copyButton = screen.getByRole('button', { name: /Copy team insight:/i });
++    fireEvent.click(copyButton);
++
++    expect(errorMessage).toBe('Clipboard API is not supported in this browser or context.');
++  } finally {
++    Object.defineProperty(navigator, 'clipboard', {
++      value: originalClipboard,
++      configurable: true,
++    });
++  }
+ });
+
+ test('App.tsx exposes metric card tooltips with focus indicators and labels', () => {
+   const appContent = fs.readFileSync(path.join(componentsDir, '..', 'App.tsx'), 'utf8');
+   expect(appContent).toContain('<Tooltip title={metric.tooltip} arrow describeChild>');
+   expect(appContent).toMatch(/<Tooltip title=\{metric\.tooltip\} arrow describeChild>[\s\S]*tabIndex=\{0\}/);
+-  expect(appContent).toContain('aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : \'N/A\'}%`}');
++  expect(appContent).toContain('aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : \'N/A\'}%. ${metric.roast}`}');
+   expect(appContent).toContain('&:focus-visible');
+ });
+
+@@ -183,11 +215,86 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator',
+   expect(content).toContain('{isSkipConfirming ? \'Confirm Skip?\' : \'Skip\'}');
+   expect(content).toContain('<AlertTriangle aria-hidden="true" size={16} />');
+
++  // Verify Reset Ritual soft confirmation ARIA label and Escape dismissal
++  expect(content).toMatch(/aria-label=\{\s*isResetConfirming\s*\?\s*'Confirm reset task sequence and clear all progress'\s*:\s*'Reset task sequence'\s*\}/);
++
++  // Verify Escape key cancellation in TaskSequencer
++  expect(content).toContain("if (isSkipConfirming && e.key === 'Escape')");
++  expect(content).toContain("if (isResetConfirming && e.key === 'Escape')");
++
+   // Verify task sequence list empty state
+   expect(content).toContain('optimizedTasks.length === 0 ? (');
+   expect(content).toContain('role="status"');
+   expect(content).toContain("All tasks muzzled. Excellent work.");
+   expect(content).toContain("No tasks matching current cognitive state threshold.");
++
++  // Verify Reset Ritual predictive aria-label and Escape key soft confirmation cancellation
++  expect(content).toMatch(/aria-label=\{\s*isResetConfirming\s*\?\s*'Confirm reset task sequence and clear all progress'\s*:\s*'Reset task sequence'\s*\}/);
++});
++
++test('TaskSequencer Reset Ritual soft confirmation and Escape cancellation in DOM', () => {
++  const cognitiveState = {
++    energy: 80,
++    attention: 70,
++    load: 40,
++    status: 'optimal' as const,
++    recommendation: 'Complete tasks.',
++  };
++
++  render(<TaskSequencer cognitiveState={cognitiveState} />);
++
++  // Complete current tasks to reach the completed ritual state with Reset button
++  const completeBtn = screen.getByRole('button', { name: /Complete /i });
++  fireEvent.click(completeBtn);
++
++  const completeBtn2 = screen.getByRole('button', { name: /Complete /i });
++  fireEvent.click(completeBtn2);
++
++  const completeBtn3 = screen.getByRole('button', { name: /Complete /i });
++  fireEvent.click(completeBtn3);
++
++  // Initial Reset button state
++  const resetButton = screen.getByRole('button', { name: 'Reset task sequence' });
++  expect(resetButton).toBeInTheDocument();
++
++  // First click triggers soft confirmation state
++  fireEvent.click(resetButton);
++
++  const confirmResetButton = screen.getByRole('button', {
++    name: 'Confirm reset task sequence and clear all progress',
++  });
++  expect(confirmResetButton).toBeInTheDocument();
++
++  // Pressing Escape cancels soft confirmation state
++  fireEvent.keyDown(confirmResetButton, { key: 'Escape' });
++
++  expect(
++    screen.getByRole('button', { name: 'Reset task sequence' })
++  ).toBeInTheDocument();
++});
++
++test('TaskSequencer.tsx handles Escape key to cancel soft confirmation for Skip', () => {
++  const cognitiveState = {
++    energy: 80,
++    attention: 70,
++    load: 40,
++    status: 'optimal' as const,
++    recommendation: 'Stay focused.',
++  };
++
++  render(<TaskSequencer cognitiveState={cognitiveState} />);
++
++  // First click triggers soft confirmation
++  const skipButton = screen.getByRole('button', { name: /^Skip / });
++  fireEvent.click(skipButton);
++
++  expect(screen.getByRole('button', { name: /^Confirm skip / })).toBeInTheDocument();
++
++  // Pressing Escape cancels confirmation without skipping task
++  fireEvent.keyDown(skipButton, { key: 'Escape' });
++
++  expect(screen.getByRole('button', { name: /^Skip / })).toBeInTheDocument();
++  expect(screen.queryByRole('button', { name: /^Confirm skip / })).not.toBeInTheDocument();
+ });
+
+ test('TaskSequencer.tsx implements overtime visual cues', () => {
+@@ -242,6 +349,8 @@ test('App.tsx has accessible header chips and skip link', () => {
+   expect(appContent).toContain('animation: \'listeningPulse 1.4s infinite ease-in-out both\'');
+   expect(appContent).toContain('Waiting for signals...');
+   expect(appContent).toContain('severity="error"');
++  expect(appContent).toContain('closeText="Dismiss error notification"');
++  expect(appContent).toContain("'aria-label': 'Dismiss error notification'");
+   expect(themeContent).toContain('MuiChip');
+   expect(themeContent).toContain('&:focus-visible');
+   expect(appContent).toContain('ref={feedHeadingRef}');
+@@ -255,7 +364,10 @@ test('App.tsx has accessible header chips and skip link', () => {
+   expect(appContent).toContain("onClick={connectionStatus === 'degraded' ? handleReconnect : undefined}");
+   expect(appContent).toContain('action={');
+   expect(appContent).toContain("connectionStatus === 'degraded' ? (");
+-  expect(appContent).toContain('<Button color="inherit" size="small" onClick={handleReconnect}>');
++  expect(appContent).toContain('<Tooltip title="Attempt to re-establish connection to DØPEMÜX Ritual Daemon" arrow>');
++  expect(appContent).toContain('aria-label="Retry connection to daemon"');
++  expect(appContent).toContain('<Button');
++  expect(appContent).toContain('onClick={handleReconnect}');
+   expect(appContent).toContain('RECONNECT');
+
+   // Verify notification chips are focusable
+diff --git a/ui-dashboard/tsconfig.json b/ui-dashboard/tsconfig.json
+index 0ab6560a1..1cb0d6081 100644
+--- a/ui-dashboard/tsconfig.json
++++ b/ui-dashboard/tsconfig.json
+@@ -15,7 +15,7 @@
+     "isolatedModules": true,
+     "noEmit": true,
+     "jsx": "react-jsx",
+-    "types": ["vite/client"]
++    "types": ["vite/client", "node"]
+   },
+   "include": ["src"],
+   "references": []
