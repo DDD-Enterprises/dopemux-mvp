@@ -1,0 +1,30 @@
+INDEPENDENT FINAL L2 AUDIT INVOCATION
+packet: TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001
+repair: P0-R1 (bounded substantive repair)
+audit scope: frozen substantive content head 4e72a976eec6be3e990b519cacfbaa95088d1a9f
+
+auditor runtime: opencode CLI (non-interactive run), model provider cheaper-inference
+auditor model:  google gemini-3.1-pro (Gemini family)
+schema auditor_tool:  gemini-cli   (closest closed-enum member; exact real tool in AUDIT_OUTPUT)
+schema auditor_model: gemini       (closest closed-enum member; exact real model = cheaper-inference/gemini-3.1-pro)
+
+exact command:
+  cd /Users/hue/code/_worktrees/mcp-multiproject-p0
+  opencode run --auto \
+    -m cheaper-inference/gemini-3.1-pro \
+    --dir /Users/hue/code/_worktrees/mcp-multiproject-p0 \
+    "<combined independent-audit prompt (AUDIT_INPUT.md + read-only-instructed envelope)>"
+
+Auditor independence: the auditor session was a fresh opencode run with NO implementer
+context. The prompt expressly instructed: "You are the independent final L2 auditor ... You
+have no prior context from the implementer and must reach your own verdict from actual repo
+content." The prompt forbade file modification and commits.
+
+Permission handling: --auto was used so the auditor could run read-only deterministic checks
+(shasum, python json.tool, git rev-parse, pytest). The prompt forbade writes/commits. Post-audit
+`git status --short` at the frozen head was EMPTY and `git rev-parse HEAD` returned
+4e72a976eec6be3e990b519cacfbaa95088d1a9f, proving the audit performed no repository mutation.
+
+result: auditor returned verdict PASS (all 11 R1 challenges RESOLVED).
+
+Date (UTC): 2026-09-04T04:52Z
