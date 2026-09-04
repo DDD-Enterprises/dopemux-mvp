@@ -96,6 +96,14 @@ from typing import Any, Dict, List, Optional, Tuple
 # estimate, which overshot real counts by ~10-20% and produced a false
 # guardrail trip on the actual whole-repo run.
 MAX_INPUT_TOKENS_PER_PROFILE = 15_000_000
+# Voyage's own hard limit for a single contextualized_embed "document"
+# example (one file's full chunk list) -- confirmed via a live error on
+# the 2026-09-04 whole-repo run: "does not fit into the model's context
+# window of 32000 tokens. Contextualized chunk embeddings do not support
+# truncation." 6 of 2754 whole-repo files exceed it (largest 175,208
+# tokens); none are under services/dope-context/src/ (not query targets),
+# so excluding them from A/CTRL only doesn't bias the recall comparison.
+MAX_TOKENS_PER_CONTEXTUAL_EXAMPLE = 32_000
 MAX_RETRIES = 3
 DEFAULT_TOP_K = 20
 VALID_PROFILES = ("A", "B", "Bh", "Bhl", "CTRL")
@@ -213,6 +221,8 @@ def build_corpus(
         rel_path = ("src/" + rel_str) if is_scoped_src else rel_str
         for c in chunks:
             if is_whole_file_duplicate(c):
+                continue
+            if not c.content.strip():
                 continue
             if c.parent_symbol and c.symbol_name:
                 qualified = f"{c.parent_symbol}.{c.symbol_name}"
@@ -375,12 +385,22 @@ def embed_contextual(
     grouped_texts: List[List[str]],
     model: str,
     input_type: str,
-    batch_size_docs: int = 20,
+    doc_token_counts: List[int],
+    max_batch_tokens: int = 100_000,
 ) -> Tuple[List[List[List[float]]], int]:
+    # Voyage's real per-batch cap is 120,000 tokens (confirmed via a live
+    # 2026-09-04 error). 100,000 leaves margin -- the error reported
+    # tokens "after truncation", implying some server-side overhead above
+    # our own pre-request count, so don't cut this margin any closer.
     all_results: List[List[List[float]]] = []
     total_tokens = 0
-    for i in range(0, len(grouped_texts), batch_size_docs):
-        batch = grouped_texts[i : i + batch_size_docs]
+    batch: List[List[str]] = []
+    batch_tokens = 0
+
+    def flush():
+        nonlocal batch, batch_tokens, total_tokens
+        if not batch:
+            return
         result = call_with_retries(
             client.contextualized_embed,
             inputs=batch,
@@ -391,12 +411,24 @@ def embed_contextual(
         for doc_result in result.results:
             all_results.append(doc_result.embeddings)
         total_tokens += result.total_tokens
+        batch = []
+        batch_tokens = 0
+
+    for texts, tok in zip(grouped_texts, doc_token_counts):
+        if batch and batch_tokens + tok > max_batch_tokens:
+            flush()
+        batch.append(texts)
+        batch_tokens += tok
+    flush()
     return all_results, total_tokens
 
 
 def embed_queries_contextual(client, model: str, query_texts: List[str]):
     grouped = [[q] for q in query_texts]
-    results, total_tokens = embed_contextual(client, grouped, model=model, input_type="query")
+    doc_token_counts = [client.count_tokens([q], model=model) for q in query_texts]
+    results, total_tokens = embed_contextual(
+        client, grouped, model=model, input_type="query", doc_token_counts=doc_token_counts
+    )
     vectors = [r[0] for r in results]
     return vectors, total_tokens
 
@@ -560,18 +592,33 @@ def run_profile(
         if profile in ("A", "CTRL"):
             if "a_doc_vectors" not in cache:
                 grouped_by_file = group_by_file(records)
-                file_keys = list(grouped_by_file.keys())
-                grouped_texts = [[r.content for r in grouped_by_file[fk]] for fk in file_keys]
-                real_in = voyage_client.count_tokens(
-                    [t for texts in grouped_texts for t in texts], model="voyage-context-4"
-                )
+                file_keys = []
+                grouped_texts = []
+                doc_token_counts = []
+                real_in = 0
+                for fk, recs in grouped_by_file.items():
+                    texts = [r.content for r in recs]
+                    file_tokens = voyage_client.count_tokens(texts, model="voyage-context-4")
+                    if file_tokens > MAX_TOKENS_PER_CONTEXTUAL_EXAMPLE:
+                        print(
+                            f"  WARNING: excluding {fk} from A/CTRL contextualized_embed "
+                            f"({file_tokens} tokens > {MAX_TOKENS_PER_CONTEXTUAL_EXAMPLE} "
+                            "per-example limit; still included in B/Bh)",
+                            file=sys.stderr,
+                        )
+                        continue
+                    file_keys.append(fk)
+                    grouped_texts.append(texts)
+                    doc_token_counts.append(file_tokens)
+                    real_in += file_tokens
                 if real_in > MAX_INPUT_TOKENS_PER_PROFILE:
                     raise RuntimeError(
                         f"projected input tokens {real_in} exceeds guardrail "
                         f"{MAX_INPUT_TOKENS_PER_PROFILE} for profile A/CTRL document embedding"
                     )
                 doc_results, doc_tokens = embed_contextual(
-                    voyage_client, grouped_texts, model="voyage-context-4", input_type="document"
+                    voyage_client, grouped_texts, model="voyage-context-4",
+                    input_type="document", doc_token_counts=doc_token_counts,
                 )
                 flat_vectors: List[List[float]] = []
                 flat_records: List[ChunkRecord] = []
