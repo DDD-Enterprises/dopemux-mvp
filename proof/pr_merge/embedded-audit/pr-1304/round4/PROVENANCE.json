@@ -1,0 +1,28 @@
+{
+  "round": 4,
+  "audit_type": "delta re-audit",
+  "target_head": "e80cda77d949d8a815f8a6a2fbb6d0d7003e2c75",
+  "previous_audited_head": "9ef316d1b1327e201184e7bdf5dbf943f88b8fa3",
+  "delta_range": "8a06626c9..e80cda77d",
+  "auditor_tool": "agy",
+  "auditor_model_requested": "gemini-3.1-pro-high",
+  "agy_version": "1.1.26",
+  "model_probe_conversation": "79dd73c3-bbcf-4b72-bf67-5e2db0d0f7b0",
+  "model_probe_response": "Gemini 3.1 Pro",
+  "brain_conversation": "b3d665c5-5acb-4d1c-8fab-5b2eef51032f",
+  "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 15m --print=\"$(cat round4_prompt_full.md)\"",
+  "prompt_sha256": "af568d70fdcf813d8e984f28ef26dcaf81b4749d0cba9d03569e9c37cac5dee3",
+  "launched_utc": "2026-09-04T06:39:06Z",
+  "finished_utc": "2026-09-04T06:41:26Z",
+  "duration_seconds": 140,
+  "exit_code": 0,
+  "verdict": "OPEN",
+  "no_fallback_verification": {
+    "agy_models_lists_required_id": true,
+    "quota_error_encountered_first": true,
+    "quota_note": "Initial probes at 2026-09-04T06:2x returned status=ERROR 'Individual quota reached'. Audit was NOT run against a degraded or fallback model; the run below followed a successful post-reset identity probe."
+  },
+  "prompt_errata": [
+    "Section E asked whether commit 3e878cc8d disclosed the 4 knowingly-failing tests. The auditor correctly answered that this is not verifiable from the diff alone, since commit messages are not part of a diff. The commit message does contain an explicit 'KNOWN RED, pending ADR-226 amendment A3: 115 passed, 1 skipped, 4 failed' paragraph. Finding COMMIT_MESSAGE_DISCLOSURE is therefore answered by evidence outside the audited artifact, not a live defect."
+  ]
+}

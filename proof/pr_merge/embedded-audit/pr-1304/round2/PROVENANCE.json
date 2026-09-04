@@ -1,0 +1,14 @@
+{
+ "brain_conversation": "4c188bc3-6690-4b9f-86d6-b6879f01541f",
+ "model_probe_conversation": "ea14a89a-3b16-43f8-833c-2ada05210494",
+ "agy_version": "1.1.25",
+ "target_head": "1d87cb73284b4019aff0d7cfe2525baa626cb7cf",
+ "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 10m --print=\"$(cat prompt.md)\"",
+ "finished_utc": "2026-09-03T16:25:29Z",
+ "exit_code": 0,
+ "prompt_errata": [
+  "Prompt '## Context' described the carve-out as services/dope-context/eval/** plus services/dope-context/README.md. ADR-226 carves out eval/** (incl. eval/README.md) only; the top-level README.md is correctly still denied (verified at HEAD 1d87cb7 before and after the F-001-A fix). Does not affect the validity of F-001-A.",
+  "Auditor's example path services/dope-context/src/mcp/server.py is not in the red lane in this repo even in exact case; the class of bypass was reproduced with src/dopemux_pr_merge_specialist/QUEUE_DRAIN.py and SERVICES/dope-context/src/search/hybrid_search.py (both allowed at 1d87cb7, denied after fix)."
+ ],
+ "prompt_sha256": "355c65138ca4d4885670f04bb35c2f07c1085dc9b89d6c4b2839eb6ee449b54b"
+}

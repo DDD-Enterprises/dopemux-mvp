@@ -1,0 +1,17 @@
+{
+  "brain_conversation": "1b9d2761-aeed-4c88-89aa-18be55c29b3c",
+  "model_probe_conversation": "3a9a0e08-3200-4c57-b199-54eeafe8fbd1",
+  "agy_version": "1.1.25",
+  "target_head": "9ef316d1b1327e201184e7bdf5dbf943f88b8fa3",
+  "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 10m --print=\"$(cat prompt.md)\"",
+  "finished_utc": "2026-09-03T17:40:20Z",
+  "exit_code": 0,
+  "prompt_sha256": "97a9b087a100f000c7e79faa74d75755b01b283b6839869c4174cc9d28427ebf",
+  "prompt_errata": [],
+  "round": 3,
+  "finding": "F-001-A",
+  "fix_commit_audited": "a4f86c48c3f6f153330a1554141bcfc7e4ee2490",
+  "duration_seconds": 72.56635,
+  "num_turns": 1,
+  "launched_utc": "2026-09-03T17:38:54Z"
+}

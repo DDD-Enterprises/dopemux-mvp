@@ -8,8 +8,11 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+from src.embeddings.model_registry import DEFAULT_CODE_MODEL
 from src.index_profile import (
     CONTEXTUAL_MODEL_ENV,
+    VectorProfile,
+    fingerprint_profiles,
     PROFILE_DIGEST_LENGTH,
     assert_manifest_compatible,
     build_code_collection_profile,
@@ -37,10 +40,16 @@ def test_six_named_vector_index_query_profiles_identical():
             assert vector.index_input_type == "document"
             assert vector.query_input_type == "query"
             assert vector.dimension == 1024
-    assert code.content().endpoint == "contextualized_embeddings"
-    assert code.title().model == "voyage-code-3"
-    assert code.breadcrumb().model == "voyage-code-3"
-    assert docs.content().model == code.content().model
+    # D1 (2026-09-04): the code collection is a single flat vector space, so
+    # all three code vectors share one model and one endpoint.
+    assert code.content().endpoint == "embeddings"
+    assert code.content().model == DEFAULT_CODE_MODEL
+    assert code.title().model == code.content().model
+    assert code.breadcrumb().model == code.content().model
+    # Docs remain contextualized, so the two collections no longer share a
+    # content model. They previously did, which is what this line asserted.
+    assert docs.content().endpoint == "contextualized_embeddings"
+    assert docs.content().model != code.content().model
     matrix = six_vector_compatibility_matrix(code, docs)
     assert len(matrix) == 6
     for row in matrix.values():
@@ -68,7 +77,7 @@ def test_no_hardcoded_context3_in_active_index_query_paths():
 @pytest.mark.parametrize(
     "mutate",
     [
-        lambda p: build_code_collection_profile(contextual_model="voyage-context-3"),
+        lambda p: build_code_collection_profile(code_model="voyage-code-3"),
         lambda p: build_code_collection_profile(code_model="voyage-4"),
         lambda p: build_code_collection_profile(dimension=512),
         lambda p: build_code_collection_profile(dtype="int8"),
@@ -85,14 +94,54 @@ def test_profile_mutations_change_collection_identity(mutate):
     ) != versioned_collection_name("code", "abcd1234", other.profile_digest)
 
 
-def test_endpoint_change_changes_collection_identity():
-    """Endpoint is part of the fingerprint payload."""
+def test_contextual_model_is_inert_for_code_profiles():
+    """D1: the code collection has no contextualized vector.
+
+    ``contextual_model`` is retained for signature compatibility, so passing it
+    must not silently change code collection identity. Before D1 it selected
+    content_vec's model and did move the digest.
+    """
     base = build_code_collection_profile()
-    # Build a docs profile (all contextualized) vs code (mixed) for same models.
-    docs = build_docs_collection_profile(contextual_model=base.content().model)
-    # content_vec endpoint differs: embeddings vs contextualized is already different
-    # across code title vs docs content; ensure digests diverge when endpoint set differs.
-    assert base.profile_fingerprint != docs.profile_fingerprint
+    same = build_code_collection_profile(contextual_model="voyage-context-3")
+    assert same.profile_digest == base.profile_digest
+    assert same.content().model == base.content().model
+    assert same.content().endpoint == "embeddings"
+
+
+def test_endpoint_change_changes_collection_identity():
+    """Endpoint is part of the fingerprint payload.
+
+    Rewritten for D1: the code profile is now uniformly flat and the docs
+    profile uniformly contextualized, so the old "code is mixed" premise is
+    gone. Endpoint is genuinely isolated below: two vector sets identical in
+    every field but endpoint.
+    """
+    # Isolated: these two sets are identical in EVERY field except endpoint,
+    # so a fingerprint difference is attributable to endpoint alone. The
+    # previous version compared the code and docs profiles, which differ in
+    # model as well, and so isolated nothing (round-4 audit finding
+    # WEAKENED_TEST_ASSERTIONS).
+    common = dict(
+        vector_role="code.content_vec",
+        model="voyage-code-4",
+        index_input_type="document",
+        query_input_type="query",
+        dimension=1024,
+        dtype="float",
+        chunker_version="v1",
+        index_schema_version="dope-context-v2",
+    )
+    flat = {"content_vec": VectorProfile(endpoint="embeddings", **common)}
+    ctx = {"content_vec": VectorProfile(endpoint="contextualized_embeddings", **common)}
+    assert fingerprint_profiles(flat) != fingerprint_profiles(ctx)
+
+    # The real profiles must also differ: D1 made code flat, docs stay
+    # contextualized.
+    code = build_code_collection_profile()
+    docs = build_docs_collection_profile()
+    assert code.content().endpoint == "embeddings"
+    assert docs.content().endpoint == "contextualized_embeddings"
+    assert code.profile_fingerprint != docs.profile_fingerprint
 
 
 def test_legacy_unversioned_collection_never_selected_for_writes(tmp_path):
@@ -159,12 +208,18 @@ def test_context3_rollback_moves_all_contextual_paths_together(monkeypatch):
     assert model == "voyage-context-3"
     code = build_code_collection_profile()
     docs = build_docs_collection_profile()
-    assert code.content().model == "voyage-context-3"
+    # Docs are the contextual collection; all three docs vectors move together.
     assert docs.content().model == "voyage-context-3"
     assert docs.title().model == "voyage-context-3"
     assert docs.breadcrumb().model == "voyage-context-3"
-    # Title/breadcrumb code vectors stay on voyage-code-3
-    assert code.title().model == "voyage-code-3"
+    # D1: code has no contextualized vector, so the contextual rollback must
+    # not touch it. Rolling code back is a separate knob
+    # (DOPE_CONTEXT_CODE_EMBED_MODEL), which is the point of this assertion:
+    # the two rollbacks are independent and must not be conflated.
+    assert code.content().model == DEFAULT_CODE_MODEL
+    assert code.content().endpoint == "embeddings"
+    assert code.title().model == DEFAULT_CODE_MODEL
+    assert code.breadcrumb().model == DEFAULT_CODE_MODEL
 
 
 def test_conflicting_contextual_env_vars_fail_closed(monkeypatch):

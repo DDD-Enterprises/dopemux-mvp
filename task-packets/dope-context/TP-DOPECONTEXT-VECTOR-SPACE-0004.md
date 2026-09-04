@@ -145,6 +145,157 @@ exceeds $10, stop and re-estimate rather than continuing.
 - `docs/03-reference/systems/dope-context/modernization-audit-2026-07-22.md`
 - `docs/03-reference/systems/dope-context/vector-space-benchmark-<date>.md`
 - `task-packets/dope-context/TP-DOPECONTEXT-VECTOR-SPACE-0004.md`
+- `services/dope-context/eval/**` — **amendment 2026-09-03** (operator-approved
+  in session, "Amend packet, commit here"): the offline benchmark harness,
+  query set, and per-run results live here. The harness reads
+  `services/dope-context/src/preprocessing/code_chunker.py` and
+  `src/search/hybrid_search.py` read-only and writes only throwaway Qdrant
+  collections prefixed `eval_`; nothing under `src/` or `tests/` is modified
+  by benchmark runs. Reason: the review of the Rev 2.1 design (finding B12)
+  found Wave 0 could not ship without a home for the harness.
+- `services/dope-context/src/index_profile.py` — **amendment A2 2026-09-04,
+  APPROVED** (see below). Canonical writer of
+  `build_code_collection_profile()`, which is where `content_vec`'s model and
+  endpoint are actually set. The D1 change lives here, not in
+  `indexing_pipeline.py`.
+- `services/dope-context/src/embeddings/model_registry.py` — **amendment A2
+  2026-09-04, APPROVED** (see below). `MODEL_SPECS` does not
+  contain `voyage-code-4`, and `_vector_profile()` calls `get_model_spec()` +
+  `validate_dimension()`, both of which reject unregistered models. D1 cannot
+  be implemented without registering it here first.
+
+## Governance amendment A2 — Allowed-Files correction for the D1 implementation (2026-09-04)
+
+```text
+AMENDMENT_ID=A2
+AMENDMENT_STATUS=APPROVED
+APPROVED_BY=operator (session 3d420c77, 2026-09-04)
+AMENDMENT_ADDS_ALLOWED_FILES=services/dope-context/src/index_profile.py, services/dope-context/src/embeddings/model_registry.py
+REQUIRES_COMPANION_ADR_226_AMENDMENT=YES (regex extension; neither file is exempt today)
+AUTHORIZES_CONTENT_EDITS=NO (path-level only; TEXT_RULES scanning still applies)
+WAVES_1_4_SRC_LIFT=STILL_NOT_AUTHORIZED (this amendment is scoped to these two files only)
+```
+
+**Finding (observed 2026-09-04, after the Wave 0 benchmark produced the D1
+numbers).** This packet's Allowed Files do not cover where the D1 change
+actually has to be made. The named files are wrong in two ways:
+
+1. `content_vec`'s model and endpoint are set in
+   `build_code_collection_profile()` at `services/dope-context/src/index_profile.py:245-292`
+   — not in `indexing_pipeline.py` (which consumes an already-built profile)
+   and not in `mcp/server.py` (which already queries with
+   `content_profile.model`, verified at `server.py:1237`, so the query side
+   needs no change at all). The packet named the two files that *don't* need
+   editing and omitted the one that does.
+2. `MODEL_SPECS` in `services/dope-context/src/embeddings/model_registry.py`
+   registers seven models and `voyage-code-4` is not among them (live-verified
+   2026-09-04: the flat `embed` endpoint supports it, the API's own
+   unknown-model error lists it). `_vector_profile()` validates every model
+   through `get_model_spec()` and `validate_dimension()`, both of which raise
+   on an unregistered name — so the D1 target model must be registered before
+   the profile can reference it.
+
+**Scope.** Exactly these two files. This amendment does not lift the lane for
+any other path under `services/dope-context/src/**`; Waves 1–4 still each
+require their own packet enumeration and their own ADR-226 regex extension.
+
+**Companion requirement.** ADR-226's carve-out regex in
+`src/dopemux/dcp/red_lane_rules.py` currently exempts only `eval/`,
+`src/pipeline/indexing_pipeline.py`, `src/mcp/server.py`, and
+`tests/test_vector_space_invariants.py`. Both files added here are still
+hard-blocked by that regex, so this packet amendment is inert on its own —
+it must land together with the ADR-226 A2 amendment (exact regex change
+specified there) or the files remain uneditable.
+
+## Benchmark outcome — D1 and D3 decided on measurements (2026-09-04)
+
+Packet Plan steps 4 and 5 ("Record the numbers…", "Choose a direction on the
+measurements") are satisfied by
+`claudedocs/dope-context-eval-results-2026-09-03.md` (commit `4561980fc`;
+the write-up lives in `claudedocs/` rather than the
+`docs/03-reference/systems/dope-context/vector-space-benchmark-<date>.md`
+path named above because commit `ba5178715` relocated it for the
+markdown-location-guard CI check).
+
+Whole-repo corpus, 2,754 files / ~38K chunks, 41 queries, `top_k=20`, all
+real paid API calls:
+
+| Profile | Recall@5 | Recall@20 | MRR | NDCG@10 | Cost |
+|---|---|---|---|---|---|
+| A (`voyage-context-4`, contextualized) | 0.780 | 0.951 | 0.677 | 0.714 | $1.126 |
+| **B (`voyage-code-4`, flat)** | **0.951** | **1.000** | **0.855** | **0.890** | $1.181 |
+| Bh (B + scope header) | 0.951 | 1.000 | 0.729 | 0.788 | $1.327 |
+| CTRL (index/query space mismatch) | 0.000 | 0.000 | 0.000 | 0.000 | $0.0002 |
+| Bhl (phase-1 corpus only) | 1.000 | 1.000 | 0.795 | 0.848 | $0.627 |
+
+**D1 — code vector space: `voyage-code-4` on the flat `embeddings` endpoint,
+both index and query sides.** B wins every measured metric at whole-repo
+distractor scale and is cheaper than both alternatives. A, the contextualized
+option, is the weakest working profile — its cross-chunk context does not pay
+off at scale. Phase 1's 33-file corpus could not discriminate (all three
+profiles saturated at Recall 1.0); the whole-repo run is what made this
+decision-grade. CTRL collapsing to an exact 0.0 confirms the metrics
+discriminate rather than always-pass.
+
+**D3 — LLM situating-context layer: off by default.** Bhl ties Bh and still
+loses to B at phase-1 scale while costing ~40x more per query. A whole-repo
+Bhl run was never made: real per-chunk extrapolation projects **~$51 for the
+LLM step alone**, over 5x this packet's $10 ceiling, which is a stop
+condition. Total real spend for the whole benchmark: **$4.95 of $10**.
+
+## Governance amendment — DCP-RED-MERGE-SEAM-0001 carve-out (2026-09-03)
+
+```text
+SEAM_CARVEOUT_ADR=ADR-226
+SEAM_CARVEOUT_STATUS=OPERATOR_APPROVED_2026-09-03_LANDED_WITH_ADR_226
+SEAM_CARVEOUT_SCOPE=services/dope-context/eval/** + the three services/dope-context files in Allowed Files
+SEAM_CARVEOUT_AUTHORIZES_CONTENT_EDITS=NO
+WAVES_1_4_SRC_LIFT=NOT_AUTHORIZED
+```
+
+**Finding (observed 2026-09-03).** `src/dopemux/dcp/red_lane_rules.py`
+carries a blanket `^services/dope-context/.*$` entry in `FORBIDDEN_PATHS`
+(added 2026-06-04, commit `4a120ff8d`, identical on `origin/main`, no
+recorded rationale for the `services/*` entries, no override path). Hook H1
+therefore hard-denies every Edit/Write under the service — including all
+four service paths in this packet's Allowed Files. The denial was observed
+live on an Edit under `services/dope-context/eval/` (the pre-commit
+trailing-whitespace fix; the hook keeps no denial log, so the exact file is
+reconstructed, not recorded) and confirmed by a programmatic
+`surface_guard_block` probe on `eval/run_eval.py` and `src/mcp/server.py`.
+No workaround was attempted. Note that H1 imports the rules from the
+checkout `CLAUDE_PROJECT_DIR` names: in a session rooted at a main checkout
+that predates ADR-226 the denial persists even after the carve-out is on
+this branch, so implementation must run in a session whose hook enforces
+ADR-226's rules (post-merge, or rooted at this branch).
+
+**Ruling.** Operator chose the ADR-224 pattern (narrow, ADR-anchored,
+negative-lookahead carve-out; approval required before it lands) over
+relocating the harness or stopping. See
+`docs/90-adr/adr-226-dope-context-seam-narrow-carveout.md` for scope,
+invariants, alternatives, and rollback.
+
+**Disclosure.** The harness files under `services/dope-context/eval/`
+pre-existed this amendment as untracked files, created earlier the same day
+by a delegated sub-agent via a path the hook does not guard (exact mechanism
+UNKNOWN). Under the M11 precedent that was a route-around; nothing under
+`services/dope-context/` has been committed and nothing will be until
+ADR-226 is approved and landed.
+
+**What this amendment does not do.** It does not lift the lane for
+`services/dope-context/src/**`. Waves 1–4 of the retrieval redesign
+(`claudedocs/dope-context-retrieval-redesign-2026-09-03.md`) must each
+enumerate exact files in their own packets and extend ADR-226's regex by
+amendment before implementation. It does not change this packet's
+`DECISION_REQUIRED` gate.
+
+**Stop conditions (in addition to the packet's own).** Stop and return to
+operator if: any path under `services/dope-context/` other than `eval/**`
+and the three named files becomes editable; a symlink appears under
+`services/dope-context/eval/`; `TEXT_RULES` stops firing on forbidden
+content inside a carved-out file; or the carve-out commit touches any
+semantic file beyond `red_lane_rules.py`, the two test files, ADR-226, and
+this packet.
 
 ## Required Chain
 
@@ -243,3 +394,415 @@ Stop if:
 - whether contextualized code content outperforms `voyage-code-3` enough to
   justify the extra endpoint and complexity
 - the cost of the benchmark itself
+
+## Governance amendment A3 — withdraw A2's "no edit needed" claim; one test file left (2026-09-04)
+
+```text
+AMENDMENT_ID=A3
+AMENDMENT_STATUS=APPROVED
+APPROVED_BY=operator (session 3d420c77, 2026-09-04)
+AMENDMENT_ADDS_ALLOWED_FILES=services/dope-context/tests/test_vector_profiles_and_migration.py
+REQUIRES_COMPANION_ADR_226_AMENDMENT=YES (ADR-226 A3 regex extension)
+WITHDRAWS=A2's claim that indexing_pipeline.py and mcp/server.py "need no edit"
+WAVES_1_4_SRC_LIFT=STILL_NOT_AUTHORIZED
+```
+
+**Correction to A2.** A2 argued that `src/pipeline/indexing_pipeline.py` and
+`src/mcp/server.py` were "the wrong files" because neither sets `content_vec`'s
+model or endpoint. The first half was right — the canonical writer is
+`index_profile.py` — but the conclusion was wrong. Both files *consume*
+`content_profile` while hardcoding the **contextualized embedder object**, so
+neither dispatches on `content_profile.endpoint`. After D1 all three of these
+would send a flat code model to an endpoint that accepts only
+`voyage-context-*`:
+
+* `indexing_pipeline.py:300` (index-side content embedding)
+* `mcp/server.py:1235` (query-side content embedding)
+* `mcp/server.py:960` (constructs `ContextualizedEmbedder` from
+  `code_profile.content()`, failing at construction with
+  `ValueError: Voyage model 'voyage-code-4' uses endpoint 'embeddings', not
+  'contextualized_embeddings'`)
+
+Both files were already in Allowed Files, so fixing them needed no new
+authorization; A2's rationale is withdrawn so the record does not carry a
+false justification.
+
+**Ruling incorporated (operator, 2026-09-04).** `title_vec` and
+`breadcrumb_vec` move to `voyage-code-4` along with `content_vec`. A2 framed
+this as a "separate, unresolved question"; that was a false premise. All three
+already resolved through `resolve_code_embed_model()` → `DEFAULT_CODE_MODEL`,
+so they were never independent, and holding them back would have required
+inventing a new knob and preserving a multi-model code collection — the exact
+shape this packet exists to remove.
+
+**What A3 is for.** With the above fixed, the service suite is 115 passed,
+1 skipped, 4 failed, and all four failures are in one blocked file,
+`services/dope-context/tests/test_vector_profiles_and_migration.py`. Each
+asserts the pre-D1 contract and is supposed to change; the per-test detail and
+the required premise rewrites are enumerated in ADR-226 amendment A3. No other
+blocked test needs editing: the `120_000` assertions in
+`test_voyage_modernization.py` and `test_reliability_repairs.py` name
+`voyage-code-3` and `voyage-3-lite` literally, and those specs are unchanged.
+
+**Registry values recorded (live-measured 2026-09-04).** `voyage-code-4` is
+registered with `max_request_tokens=320_000`, **not** `voyage-code-3`'s
+`120_000`: the vendor's 120K-group sentence does not list `voyage-code-4`, the
+rate-limit tables group it with `voyage-4`/`voyage-3.5` (the 320K group), and a
+live 60-input batch of 300,000 tokens was accepted and billed in full
+(`total_tokens=299940`), which rules out a 120K ceiling empirically.
+
+`per_input_tokens=32_000` is recorded with a warning: the flat endpoint
+**silently truncates** rather than rejecting (a 320,000-token input returned
+success and billed `total_tokens=31993`), so an oversized chunk is
+half-embedded with no error. Upstream chunk-size enforcement is load-bearing.
+
+**Stop conditions (unchanged, plus).** Stop and return to operator if any path
+under `services/dope-context/` beyond `eval/**` and the six named files becomes
+editable, or if closing these four tests would require weakening the
+index/query agreement invariant rather than restating its premise.
+
+### Erratum to A3 — `max_request_tokens` provenance, verbatim re-check (2026-09-04)
+
+The `voyage-code-4` registry comment landed in `3e878cc8d` states that the
+vendor's 120K-group sentence omits `voyage-code-4`. That was written from a
+search snippet; it has since been confirmed against the page itself. The
+sentence reads, verbatim:
+
+> "The total number of tokens in the list is at most 1M for `voyage-4-lite`,
+> `voyage-3.5-lite`; 320K for `voyage-4`, `voyage-3.5`, and `voyage-2`; and
+> 120K for `voyage-4-large`, `voyage-3-large`, `voyage-code-3`,
+> `voyage-large-2-instruct`, `voyage-finance-2`, `voyage-multilingual-2`, and
+> `voyage-law-2`."
+
+`voyage-code-4` is absent from it — so the committed claim is accurate. But it
+is absent from **all three** groups, not just the 120K one: on that page it
+appears only in the model table (`32,000` context, `1024` default). The
+committed value of `320_000` is therefore an **inference** from the rate-limit
+tables (which group `voyage-code-4` with `voyage-4`/`voyage-3.5`) plus a
+measured `>=300,000` empirical floor — **not a vendor-documented figure**, and
+the source comment should not be read as claiming otherwise.
+
+Operational consequence: `max_request_tokens` sizes real batches
+(`voyage_embedder.py`, `max_tokens=spec.max_request_tokens`). Too low costs
+only extra round-trips; too high fails the request. **If indexing ever starts
+failing on batch size, drop this to `120_000` first.**
+
+This erratum lives here rather than in the source comment because the red-lane
+hook began denying edits to `services/dope-context/**` again partway through
+the session (see the note in the session record); the committed comment is
+accurate as written, so no source change is required to close this.
+
+### Operational consequence — pre-D1 code collections must be recreated (2026-09-04)
+
+Round-4 independent audit finding `STRANDED_COLLECTIONS`. D1 changes the code
+content vector's model and endpoint, both of which are recorded in the
+collection manifest and compared field by field by
+`compare_collection_manifests()`. Every code collection indexed before D1 will
+therefore raise `CollectionCompatibilityError` on the next write.
+
+This fails closed with an actionable message rather than corrupting silently,
+and no automatic migration is provided on purpose: the two vector spaces are
+not comparable, so an in-place upgrade would reintroduce the F-001 defect. The
+required action is explicit re-indexing. Docs collections are unaffected.
+Blast radius today is near zero — Qdrant holds no dopemux-mvp code index.
+
+Full rationale, including why `INDEX_SCHEMA_VERSION` is deliberately not
+bumped, is in ADR-226 under "Operational consequence of D1".
+
+### Live validation of D1 — and a deployment finding (2026-09-04)
+
+Executed against the real Voyage API inside `mcp-dope-context`, importing the
+fixed source from the mounted worktree. Cost **$0.00006** total.
+
+| Run | content/title/breadcrumb | docs | content_vector | errors | verdict |
+|---|---|---|---|---|---|
+| container env as-is | `voyage-code-3` / `embeddings` | 4 | `List[float]`, dim 1024 | 0 | PASS |
+| override cleared | `voyage-code-4` / `embeddings` | 4 | `List[float]`, dim 1024 | 0 | PASS |
+
+This is the first execution of the D1 path. It confirms the round-6 repairs:
+documents are produced (not the `([], [])` swallow signature), `content_vector`
+is a genuine list of floats rather than an `EmbeddingResponse`, and embedding
+cost accrues.
+
+**FINDING — D1 is currently INERT in the live deployment.** The running
+`mcp-dope-context` container sets:
+
+```
+DOPE_CONTEXT_CODE_EMBED_MODEL=voyage-code-3
+```
+
+`resolve_code_embed_model()` reads that variable and falls back to
+`DEFAULT_CODE_MODEL` only when it is unset, so the env value **overrides**
+D1's `voyage-code-4` default. The first run above resolved all three code
+vectors to `voyage-code-3` despite the code default having changed.
+
+Consequences:
+
+* The measured D1 benefit (whole-repo R@20 1.000 / MRR 0.855 on
+  `voyage-code-4`, versus the contextualized profile's 0.951 / 0.677) is **not
+  realised in the deployed service** until that variable is removed or set to
+  `voyage-code-4`.
+* This is **not** a correctness defect. Index and query both read the same
+  profile, so they still agree and F-001 stays closed — the collection is
+  simply built on the older model.
+* The variable is **not** in `compose.yml` or the repo `.env`; it comes from
+  the bespoke env file the container was started with. Landing D1 in code is
+  therefore insufficient — the deployment configuration must be updated
+  separately, and any pre-D1 collection recreated (see "Operational
+  consequence of D1" in ADR-226).
+
+Why six independent audit rounds could not have found this: it is a fact about
+the running deployment's environment, not about the source. Static review of a
+diff or even of the whole repository cannot observe it.
+
+## Governance amendment A4 — two files for round-5/6 findings (2026-09-04)
+
+```text
+AMENDMENT_ID=A4
+AMENDMENT_STATUS=APPROVED
+APPROVED_BY=operator (session 3d420c77, 2026-09-04)
+AMENDMENT_ADDS_ALLOWED_FILES=services/dope-context/src/embeddings/voyage_embedder.py, services/dope-context/src/search/dense_search.py
+REQUIRES_COMPANION_ADR_226_AMENDMENT=YES (ADR-226 A4)
+```
+
+Two findings cannot be closed inside the current Allowed Files:
+
+1. **`LIVE_TRAP_DEFAULT_TRUNCATION` (HIGH, round 5).** `truncation` defaults
+   to `True` in `voyage_embedder.py`, so the per-input guards never fire
+   unless a caller opts out. The round-5 fix opted out at six call sites,
+   which protects this packet's paths but not the next caller. The auditor
+   ruled the default itself indefensible; accepted. Fixing it touches every
+   caller in the service, so it needs its own review, not a ride-along.
+2. **Latent `qdrant-client` crash-loop.** `dense_search.py:19` imports
+   `SearchRequest`, which 1.19.0 removed and which the file **never uses**
+   (one occurrence, the import). The image installs from
+   `services/dope-context/requirements.txt` (`qdrant-client>=1.15.0`, no
+   upper bound), so any rebuild can reintroduce the crash. Deleting the dead
+   import fixes it permanently and beats pinning.
+
+**Correction to the earlier plan.** Prior notes said to pin `<1.19.0` in the
+root `pyproject.toml`. That was wrong twice over: `pyproject.toml` is not what
+builds this image (the Dockerfile installs from the service's
+`requirements.txt`), and the uncommitted edit has since been lost from the
+main checkout's working tree. It should not be restored.
+
+## A14 acceptance criterion — cannot be satisfied as written (2026-09-04)
+
+This packet's Acceptance Criteria include "Audit adversarial test A14 flips
+from FAIL to PASS", and Proof Requirements ask for "the A14 result".
+
+**Finding: A14 is undefined in every accessible artifact.** Searched: all of
+`docs/`, `claudedocs/`, `task-packets/`, `services/dope-context/` (including
+its own `docs/`), and `git log --all -S"A14"`. The only dope-context hits are
+this packet's own two references. The adversarial batteries are summarised in
+`docs/03-reference/systems/dope-context/postmerge-audit-pr-1112-2026-07-26.md`
+only in aggregate — "adversarial batteries A / B / C | 6 of 15, 2 of 6, 1 of 6
+FAIL" — so battery A had 15 tests and A14 was one of them, but the per-test
+list was never committed. Other `A14` hits in the repo belong to
+`TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001`, an unrelated program with its
+own A-numbering.
+
+**Proposed ruling (operator decision required).** Replace the criterion with
+the concrete property it was standing in for, which is now covered by real
+tests:
+
+* `test_code_content_index_and_query_models_agree` — code `content_vec` index
+  model/endpoint equals the query model/endpoint (this is F-001, the blocker
+  the packet exists to close).
+* `test_all_six_named_vectors_agree_across_index_and_query` — the six-vector
+  criterion, stated separately in Acceptance Criteria.
+* `test_index_and_query_paths_both_derive_models_from_the_profile` and
+  `test_flat_embeds_disable_truncation` — both pipelines read the profile
+  rather than naming models, asserted over the AST.
+
+Do **not** mark A14 "PASS": nothing is known about what it asserted, and
+claiming a pass for an undefined test would be a false record. Either retire
+the criterion with this substitution, or produce the battery-A list so the
+original can be run.
+
+## Required Chain — status (2026-09-04)
+
+Chain: `analyze -> apilookup -> thinkdeep -> challenge -> consensus -> planner
+-> challenge -> implement -> testgen -> codereview -> precommit ->
+embedded-audit -> PR-Steward`
+
+| Stage | Status | Evidence / why |
+|---|---|---|
+| analyze | **PASS** | Modernization audit + this session's tracing of the D1 change sites, call graph, and deployment env. |
+| apilookup | **PASS** | Live Voyage probes (per-input truncation, batch ceilings, model lineup) plus a verbatim re-check of the vendor limits page. Recorded in ADR-226 and packet errata. |
+| thinkdeep | **NOT_RUN** | PAL MCP unavailable — no `pal` container running, ports 3005/3010/3011 closed. |
+| challenge (1st) | **NOT_RUN as specified** | PAL unavailable. *Functionally substituted*, not equivalently: three independent AGY audits (rounds 4-6) challenged the work and overturned the implementer twice — a wrong `SILENT_TRUNCATION` refutation and two BLOCKER regressions. |
+| consensus | **NOT_RUN** | PAL unavailable. See ruling request below. |
+| planner | **NOT_RUN** | PAL unavailable. |
+| challenge (2nd) | **NOT_RUN as specified** | Same substitution as above. |
+| implement | **PASS** | D1 landed; commits `3e878cc8d`, `77f96ab55`, `eec45ec48`. |
+| testgen | **PASS** | Invariant, AST, and pipeline-execution tests added; suite 124 passed / 1 skipped / 0 failed. |
+| codereview | **PARTIAL** | Covered by AGY rounds 4-6 rather than a PAL codereview call. |
+| precommit | **PASS** | Every commit through repo preflight; `--no-verify` never used. |
+| embedded-audit | **OPEN** | Rounds 1-6 filed under `proof/pr_merge/embedded-audit/pr-1304/`. Round 6 verdict OPEN; round-6 findings closed except those pending amendment A4. The CI gate is structurally red — the runner has no trusted auditor credential. |
+| PR-Steward | **FAIL** | Strictly downstream of the embedded-audit gate (`audit=failure/failure steward=skipped`). |
+
+**Ruling requested — `consensus`.** The packet requires it "because this is a
+judgement call with two defensible answers, not a defect with one correct fix".
+That premise no longer holds: Wave 0 measured both answers on a whole-repo
+corpus and direction B won every metric, converting the judgement call into a
+measurement. Either (a) accept the benchmark as discharging `consensus`, or
+(b) restore PAL and run it. **Do not record `consensus` as PASS on the current
+evidence** — it was not run.
+
+## Deployment action required — D1 is not yet in force
+
+Established by the live run (see "Live validation of D1"). The running
+`mcp-dope-context` container sets `DOPE_CONTEXT_CODE_EMBED_MODEL=voyage-code-3`,
+which `resolve_code_embed_model()` prefers over `DEFAULT_CODE_MODEL`.
+
+The variable is **runtime-injected**, not repo-tracked: it is absent from the
+image config, from `compose.yml`, and from every file in the repository. It was
+supplied by the shell or env-file used when the container was started — per the
+session record, under `TP-DMX-MCP-RESET-RECOVERY-001`'s bespoke env file.
+
+Required operator action, in order:
+
+1. Confirm with the owner of `TP-DMX-MCP-RESET-RECOVERY-001` that the
+   `voyage-code-3` pin is not deliberate for that task. **Do not override
+   another task's configuration unilaterally.**
+2. Restart the service without the override (or with `voyage-code-4`) using
+   `dopemux mcp up --services dope-context`. **Never `down --services
+   dope-context`** — it falls back to a full-fleet `rm -f -s -v` and would wipe
+   volumes for conport/litellm/pal/serena.
+3. Recreate every pre-D1 code collection; the manifest comparison fails closed
+   on the model/endpoint change by design (see ADR-226, "Operational
+   consequence of D1"). There is deliberately no automatic migration.
+
+This is deliberately **not** actioned here: `mcp-dope-context` is a host
+singleton shared across projects, and restarting it is an outward-facing change
+belonging to the fleet owner.
+
+## Operator rulings (2026-09-04)
+
+**A4 — APPROVED.** Landed. Caller audit performed before flipping the
+`truncation` default, as the amendment required: all six `src` callers already
+pass `truncation=False` explicitly, and the only test callers use inputs of a
+few tokens. **No existing caller's behaviour changes**; the flip protects
+future callers only. `dense_search.py`'s unused `SearchRequest` import is
+deleted, so the qdrant-client 1.19 crash-loop cannot recur regardless of what
+a rebuild resolves — no version pin is needed, and the earlier
+`pyproject.toml` pin plan is formally abandoned.
+
+**`consensus` — PROCEED WITHOUT PAL.** Ruling: proceed unless restoring PAL is
+quick and easy. It is not. There is no `pal` container at all (not even
+stopped), `compose.yml` defines it with `build:` rather than an image, and the
+ports (3005/3010/3011) are closed — so restoring it means a Docker image build
+plus a fleet mutation on a host shared across projects. `consensus` therefore
+stays **NOT_RUN**, and is treated as discharged by the Wave 0 benchmark: the
+stage was required because the decision was "a judgement call with two
+defensible answers", and the whole-repo measurement settled it (direction B won
+every metric). Recorded as *not run and superseded by measurement*, never as
+PASS.
+
+**A14 — RETIRED AS UNRECOVERABLE, SUBSTITUTED.** The definition does not exist
+in any reachable artifact: `docs/`, `claudedocs/`, `task-packets/`,
+`services/dope-context/**`, `git log --all -S"A14"`, and PR #1112's body and
+comments were all searched. The PR-1112 audit records batteries only in
+aggregate, so battery A had 15 tests but the list was never committed.
+
+The criterion "Audit adversarial test A14 flips from FAIL to PASS" is replaced
+by the concrete tests that now assert the property it stood for:
+
+* `test_code_content_index_and_query_models_agree` — F-001 itself: code
+  `content_vec` index model/endpoint equals the query model/endpoint.
+* `test_all_six_named_vectors_agree_across_index_and_query` — the six-vector
+  criterion.
+* `test_flat_embeds_disable_truncation` and
+  `test_flat_embed_models_are_read_from_the_profile` — AST-asserted over the
+  whole `src/` tree: every flat embed opts out of truncation and derives its
+  model from a profile rather than a literal.
+
+**A14 is NOT recorded as PASS.** Nothing is known about what it asserted, so a
+pass would be a false record. It is retired because it became unanswerable, and
+the substitution carries the residual risk that A14 demanded something the
+replacements do not cover.
+
+### Why the override cannot simply be cleared — container config drift (2026-09-04)
+
+Attempted to clear `DOPE_CONTEXT_CODE_EMBED_MODEL=voyage-code-3` so D1 takes
+effect. Blocked, and the blocker is worth recording.
+
+**The running `mcp-dope-context` was not created from this repository's
+compose config.** It carries two things `compose.yml` does not define:
+
+| Present in container | In `compose.yml`? |
+|---|---|
+| `DOPE_CONTEXT_CODE_EMBED_MODEL=voyage-code-3` | no |
+| `DOPE_CONTEXT_CONTEXTUAL_EMBED_MODEL=voyage-context-4` | no |
+| `DOPE_CONTEXT_DOC_EMBED_MODEL=voyage-context-4` | no |
+| bind `/Users/hue/code -> /workspaces` (rw) | no |
+
+Searched for the source: every repo compose file (`compose.yml`,
+`docker-compose.{dev,prod,unified,smoke,monitoring,mcp-test}.yml`), `.envrc`,
+`.envrc.dopemux-mcp`. **None defines either the model overrides or the
+`/workspaces` mount.** Compose labels confirm the container belongs to project
+`dopemux`, service `dope-context`, so it was started through compose — but with
+a config that does not exist in the repository. Consistent with the session
+record: started under `TP-DMX-MCP-RESET-RECOVERY-001` with a bespoke env file.
+
+**The trap:** recreating from the repo's own compose would drop the override
+(wanted) **and** the `/workspaces` bind (not wanted). That mount is what the
+Wave 0 eval harness and the live D1 validation both read the worktree through.
+A naive `dopemux mcp up --services dope-context` therefore trades one problem
+for another, and `dopemux mcp up` exposes no way to supply the missing pieces
+(`--all` / `--services` only; no override-file or force-recreate flag).
+
+**Blast radius if it is cleared:** negligible. Qdrant holds exactly one
+collection, `code_2bd1584a_7a3fda64c982`, with **one point**, no
+`workspace_id`, and `model: voyage-context-4` — already pre-D1 and stale
+irrespective of this change.
+
+**Deliberately not done here.** Options, for the fleet owner:
+
+1. Recreate with the original config minus the model overrides — requires
+   whoever holds `TP-DMX-MCP-RESET-RECOVERY-001`'s env file.
+2. Commit the missing pieces to `compose.yml` (the `/workspaces` bind, without
+   the model overrides) so the config stops drifting. Note this makes a
+   read-write mount of the entire `~/code` tree part of the tracked config —
+   a security-relevant decision that is not this packet's to take.
+3. Leave as-is and accept that D1 is inert in this deployment.
+
+No option is taken unilaterally: `mcp-dope-context` is a host singleton shared
+across projects, and every path either mutates shared infrastructure or widens
+committed mount permissions.
+
+### Decision: defer the container recreate until PR #1304 merges (2026-09-04)
+
+Operator ruling. The config half is landed (`0994ce8a0`): the `/workspaces`
+bind is now read-only and fails closed on an unset `HOST_CODE_PARENT_DIR`.
+The container itself is **not** recreated yet.
+
+Why deferred rather than done now: only this branch's `compose.yml` contains
+the `/workspaces` mount — main's has none. Recreating today would mean running
+compose from the worktree, which changes the compose **project label** from
+`dopemux` to the worktree directory name. `container_name: mcp-dope-context`
+is pinned so there would be no duplicate container, but later
+`dopemux mcp` operations from main could stop recognising it as fleet-managed.
+That trades the current config drift for a different one. Merging #1304 makes
+the correct config canonical and turns the recreate into a routine operation.
+
+**Post-merge action (do in this order):**
+
+1. Ensure `HOST_CODE_PARENT_DIR` is exported — e.g. `/Users/hue/code`. It is
+   currently defined in neither `.envrc` nor `.envrc.dopemux-mcp`, and the
+   mount now **fails closed** without it rather than silently mounting `/tmp`.
+   Adding it to `.envrc.dopemux-mcp` is the natural home.
+2. `dopemux mcp up --services dope-context` from the main checkout. **Never
+   `down --services dope-context`** — it degrades to a full-fleet
+   `rm -f -s -v` and would wipe conport/litellm/pal/serena volumes.
+3. Verify the recreate: the three `DOPE_CONTEXT_*_EMBED_MODEL` overrides are
+   gone, `/workspaces` is mounted read-only at the right source, and
+   `build_code_collection_profile().content()` resolves to
+   `voyage-code-4` / `embeddings`.
+4. Drop the stale collection `code_2bd1584a_7a3fda64c982` (one point,
+   `model: voyage-context-4`, no `workspace_id`) so nothing reuses a pre-D1
+   vector space.
+
+Until step 2 runs, D1 remains correct, tested and audited in code, and inert in
+the deployed service.

@@ -31,7 +31,44 @@ FORBIDDEN_PATHS = [
     re.compile(r"^scripts/" + r"taskx$"),
     re.compile(r"^services/task-orchestrator/.*$"),
     re.compile(r"^services/dopecon-bridge/.*$"),
-    re.compile(r"^services/dope-context/.*$"),
+    # DCP-RED-MERGE-SEAM-0001 narrow carve-out (ADR-226, TP-DOPECONTEXT-VECTOR-SPACE-0004
+    # governance amendment 2026-09-03, extended by amendment A2 2026-09-04): the offline
+    # benchmark harness directory services/dope-context/eval/ and exactly the five service
+    # files named in packet 0004's Allowed Files are exempt from the path-level block.
+    # A2 added src/index_profile.py and src/embeddings/model_registry.py, which are the
+    # canonical writers the settled D1 decision actually needs; the two originally-named
+    # service files neither set content_vec's model/endpoint nor need a query-side edit.
+    # Every other path under services/dope-context/ (the rest of src/ and tests/,
+    # Dockerfile, constraints, near-miss filenames, same-named files in other directories)
+    # remains hard-blocked. TEXT_RULES content scanning in red_lane_scanner.py is untouched
+    # by this carve-out and still applies to the exempted paths.
+    re.compile(
+        r"^services/dope-context/"
+        r"(?!eval/)"
+        r"(?!src/pipeline/indexing_pipeline\.py$)"
+        r"(?!src/mcp/server\.py$)"
+        r"(?!src/index_profile\.py$)"
+        r"(?!src/embeddings/model_registry\.py$)"
+        r"(?!tests/test_vector_space_invariants\.py$)"
+        # A3 (2026-09-04): the landed D1 change invalidates four assertions in
+        # this file, each of which pins the pre-D1 contract. They must be
+        # rewritten, not deleted, so the file needs the same path-level
+        # exemption. No other file under tests/ is exempted.
+        r"(?!tests/test_vector_profiles_and_migration\.py$)"
+        # A4 (2026-09-04): voyage_embedder.py to flip the truncation default
+        # (round-5 LIVE_TRAP_DEFAULT_TRUNCATION); dense_search.py to delete an
+        # unused SearchRequest import that qdrant-client 1.19 removed.
+        r"(?!src/embeddings/voyage_embedder\.py$)"
+        r"(?!src/search/dense_search\.py$)"
+        r".*$"
+    ),
+    # Companion to the carve-out above. The hook's primary path reading is lexical (no
+    # `..` resolution); the realpath reading it also checks since the ADR-226 audit
+    # (F-001) is defence-in-depth, so a directory-scoped exemption must still refuse any
+    # traversal segment on its own or `services/dope-context/eval/../src/x.py` would
+    # escape the block. Applies to the whole service subtree; an exact `..` segment is
+    # the only thing it matches (`something..` or `..foo` are ordinary names).
+    re.compile(r"^services/dope-context/(?:.*/)?\.\.(?:/|$)"),
     re.compile(r"^services/working-memory-assistant/.*$"),
     re.compile(r"^docker/mcp-servers-source/conport/.*$"),
     re.compile(r"^src/conport/.*$")

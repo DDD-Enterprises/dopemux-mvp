@@ -1,0 +1,30 @@
+{
+  "round": 6,
+  "audit_type": "delta re-audit with mounted repository",
+  "target_head": "77f96ab55",
+  "previous_audited_head": "982ecd107",
+  "delta_range": "982ecd107..77f96ab55",
+  "auditor_tool": "agy",
+  "auditor_model_requested": "gemini-3.1-pro-high",
+  "agy_version": "1.1.26",
+  "brain_conversation": "df1b8424-aaeb-4955-b126-eb8bf3c7f0e0",
+  "prompt_sha256": "44b6791b8d27fa7522a5d58161ebd4f9e6642ab6c333b726dfa245340b7f1623",
+  "launched_utc": "2026-09-04T08:30:08Z",
+  "finished_utc": "2026-09-04T08:34:11Z",
+  "duration_seconds": 239.917902,
+  "exit_code": 0,
+  "verdict": "OPEN",
+  "subject_hash_recomputation": {
+    "status": "PASS",
+    "algorithm": "SHA-256",
+    "files": {
+      "services/dope-context/src/pipeline/indexing_pipeline.py": "a9c804a7fbadcb62992ef10b7fe9f2caf31995ca853c0aaf67b159a7912e7b84",
+      "services/dope-context/src/embeddings/voyage_embedder.py": "c0794681e085ab8bc29bcc83e346aeb4d1a779860efa00690574565a02733328"
+    },
+    "match_against_local_ground_truth": true
+  },
+  "no_fallback_verification": {
+    "identity_probe_response": "Gemini 3.1 Pro (High)",
+    "quota_error_encountered": false
+  }
+}

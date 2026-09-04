@@ -16,7 +16,6 @@ from qdrant_client.http.models import (
     Filter,
     MatchValue,
     PointStruct,
-    SearchRequest,
     VectorParams,
 )
 

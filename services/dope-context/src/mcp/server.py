@@ -956,14 +956,24 @@ async def _index_workspace_impl(
         output_dtype=code_profile.title().dtype,
     )
 
-    # Create contextualized embedder for content vectors
-    contextualized_embedder = ContextualizedEmbedder(
-        api_key=_get_voyage_api_key(),
-        cache_ttl_hours=24,
-        default_model=code_profile.content().model,
-        output_dimension=code_profile.content().dimension,
-        output_dtype=code_profile.content().dtype,
-    )
+    # D1: the code content vector is flat, so the contextualized embedder is
+    # only the fallback for a contextualized rollback. Deriving its default
+    # model from content() unconditionally would hand it a flat code model,
+    # which get_model_spec rejects for the contextualized endpoint.
+    code_content_profile = code_profile.content()
+    if code_content_profile.endpoint == "contextualized_embeddings":
+        contextualized_embedder = ContextualizedEmbedder(
+            api_key=_get_voyage_api_key(),
+            cache_ttl_hours=24,
+            default_model=code_content_profile.model,
+            output_dimension=code_content_profile.dimension,
+            output_dtype=code_content_profile.dtype,
+        )
+    else:
+        contextualized_embedder = ContextualizedEmbedder(
+            api_key=_get_voyage_api_key(),
+            cache_ttl_hours=24,
+        )
 
     config = IndexingConfig(
         workspace_path=workspace,
@@ -1232,19 +1242,34 @@ async def _search_code_impl(
             title_profile = code_profile.title()
             breadcrumb_profile = code_profile.breadcrumb()
 
-            content_response = await contextual_embedder.embed_document(
-                chunks=[query],
-                model=content_profile.model,
-                input_type=content_profile.query_input_type,
-                output_dimension=content_profile.dimension,
-                output_dtype=content_profile.dtype,
-                enable_auto_chunking=False,
-            )
-            if len(content_response.embeddings) != 1:
-                raise ValueError(
-                    f"Expected exactly one content query vector, got "
-                    f"{len(content_response.embeddings)}"
+            # D1: dispatch on the profile's endpoint. content_vec is now a flat
+            # code vector for code collections; sending that model to
+            # contextualized_embed would be rejected outright by the API.
+            if content_profile.endpoint == "embeddings":
+                content_query_response = await standard_embedder.embed(
+                    text=query,
+                    model=content_profile.model,
+                    input_type=content_profile.query_input_type,
+                    output_dimension=content_profile.dimension,
+                    output_dtype=content_profile.dtype,
+                    truncation=False,
                 )
+                content_query_vector = content_query_response.embedding
+            else:
+                content_response = await contextual_embedder.embed_document(
+                    chunks=[query],
+                    model=content_profile.model,
+                    input_type=content_profile.query_input_type,
+                    output_dimension=content_profile.dimension,
+                    output_dtype=content_profile.dtype,
+                    enable_auto_chunking=False,
+                )
+                if len(content_response.embeddings) != 1:
+                    raise ValueError(
+                        f"Expected exactly one content query vector, got "
+                        f"{len(content_response.embeddings)}"
+                    )
+                content_query_vector = content_response.embeddings[0]
 
             query_title = await standard_embedder.embed(
                 text=query,
@@ -1252,6 +1277,7 @@ async def _search_code_impl(
                 input_type=title_profile.query_input_type,
                 output_dimension=title_profile.dimension,
                 output_dtype=title_profile.dtype,
+                truncation=False,
             )
 
             query_breadcrumb = await standard_embedder.embed(
@@ -1260,6 +1286,7 @@ async def _search_code_impl(
                 input_type=breadcrumb_profile.query_input_type,
                 output_dimension=breadcrumb_profile.dimension,
                 output_dtype=breadcrumb_profile.dtype,
+                truncation=False,
             )
         except Exception as embed_error:
             logger.error(f"Embedding failed: {embed_error}")
@@ -1272,7 +1299,7 @@ async def _search_code_impl(
             ]
 
         query_vectors = {
-            "content": content_response.embeddings[0],
+            "content": content_query_vector,
             "title": query_title.embedding,
             "breadcrumb": query_breadcrumb.embedding,
         }

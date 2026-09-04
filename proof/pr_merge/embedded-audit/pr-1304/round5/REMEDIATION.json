@@ -1,0 +1,46 @@
+{
+  "round": 5,
+  "target_head": "982ecd107",
+  "auditor_verdict": "OPEN",
+  "disposition_author": "implementing agent (session 3d420c77)",
+  "headline": "The auditor overturned the round-4 refutation and was right. SILENT_TRUNCATION is a live HIGH finding.",
+  "findings": [
+    {
+      "id": "SILENT_TRUNCATION",
+      "auditor_severity": "HIGH",
+      "disposition": "ACCEPTED \u2014 my round-4 refutation was WRONG and is withdrawn",
+      "status": "NOT_RUN",
+      "evidence": "voyage_embedder.py declares `truncation: bool = True` as the DEFAULT at :273 (embed) and :333 (embed_batch). Both per-input guards are conditioned on `not truncation` (:293, :373), so under default calls neither ever fires. :386 confirms the intent: `min(count, spec.per_input_tokens) if truncation else count` sizes batches assuming truncation. An oversize chunk is therefore silently truncated and embedded as a vector covering only its first ~32K tokens.",
+      "my_method_error": "Round 4 verified that no CALLER passes truncation=True and never checked the DEFAULT VALUE. Checking call sites without checking the signature is only half the question. The refutation was filed with high confidence into a committed proof bundle; round4/REMEDIATION.json has been corrected in place rather than left standing.",
+      "fix_validated_not_yet_applied": "Pass truncation=False at all six flat embed call sites - indexing_pipeline.py content/title/breadcrumb, mcp/server.py content/title/breadcrumb query embeds. This activates the existing guards; voyage_embedder.py itself needs no change, so no new amendment is required (both files are already in Allowed Files).",
+      "why_not_change_the_default": "voyage_embedder.py is NOT in the ADR-226 carve-out. Flipping its default would also be a wider behavioural change for callers outside this packet's scope. Opting out explicitly at the call sites is the minimal correct change."
+    },
+    {
+      "id": "WEAKENED_TEST_ASSERTIONS_ROUND5",
+      "auditor_severity": "MEDIUM (implied)",
+      "disposition": "ACCEPTED",
+      "status": "NOT_RUN",
+      "evidence": "The auditor accepted test_endpoint_change_changes_collection_identity as genuinely isolating, but judged test_index_and_query_paths_both_derive_models_from_the_profile weak: `assert 'content_profile.model' in source` is a substring search that a real regression could survive by aliasing the profile or by hardcoding a module constant such as model=DEFAULT_CODE_MODEL. Correct.",
+      "fix_validated_not_yet_applied": "Two AST-based tests added. test_flat_embeds_disable_truncation walks every .embed/.embed_batch Call node and requires an explicit truncation=False keyword. test_flat_embed_models_are_read_from_the_profile requires each model= argument to be an Attribute ending in .model, which rejects both a literal string and a module constant while still permitting an aliased profile (cp.model), since that is genuinely deriving from the profile.",
+      "mutation_evidence": "Both were mutation-tested. Removing one truncation=False fails the first. Replacing model=content_profile.model with model=DEFAULT_CODE_MODEL fails the second - exactly the case the auditor said substring matching would miss."
+    },
+    {
+      "id": "INFERRED_MAX_TOKENS",
+      "auditor_severity": "MEDIUM",
+      "disposition": "CONFIRMED CLOSED by auditor",
+      "status": "PASS",
+      "evidence": "Auditor verified model_registry.py:72 sets 300_000 and that it aligns with how partition_indices consumes it."
+    },
+    {
+      "id": "STRANDED_COLLECTIONS",
+      "auditor_severity": "HIGH",
+      "disposition": "CHARACTERISATION CONFIRMED by auditor",
+      "status": "PASS",
+      "evidence": "Auditor confirmed compare_collection_manifests raises CollectionCompatibilityError with an actionable message: loud fail-closed, not silent corruption."
+    }
+  ],
+  "f001_regression_check": "PASS - auditor re-verified at this head with the repo mounted; carve-out anchoring, case-folding and traversal refusal all intact. Zero residual risks and zero regressions reported outside the two findings above.",
+  "subject_hash_recomputation": "PASS - auditor's SHA-256 matched local ground truth byte for byte (fa65b336...). First round in this bundle to satisfy independent hash recomputation.",
+  "method_lesson": "Mounting the repo (--add-dir) rather than embedding a diff is what made this round able to overturn a wrong refutation. Round 4 could not see voyage_embedder.py and so could neither confirm nor refute; round 5 read it and settled it. Prefer --add-dir for any audit whose findings depend on code outside the delta.",
+  "next_round_required": true
+}

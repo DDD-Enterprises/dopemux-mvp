@@ -252,9 +252,21 @@ def build_code_collection_profile(
     index_schema_version: str = INDEX_SCHEMA_VERSION,
     environ: Optional[Mapping[str, str]] = None,
 ) -> CollectionProfile:
-    """Code collection: contextual content_vec + voyage-code-3 title/breadcrumb."""
+    """Code collection: one flat code model across content/title/breadcrumb.
 
-    ctx_model = contextual_model or resolve_contextual_embed_model(environ=environ)
+    D1 (TP-DOPECONTEXT-VECTOR-SPACE-0004, decided on the Wave 0 benchmark
+    2026-09-04): ``content_vec`` was indexed with a contextualized model and
+    queried with a flat one — two different vector spaces that Qdrant accepted
+    silently because both are 1024-dimensional. All three code vectors now
+    resolve to the same flat code model on the ``embeddings`` endpoint, so
+    index and query agree by construction.
+
+    ``contextual_model`` is retained for signature compatibility and is now
+    inert for code collections; the code collection no longer has a
+    contextualized vector for it to select. Docs collections are unaffected and
+    remain contextualized — see :func:`build_docs_collection_profile`.
+    """
+
     id_model = code_model or resolve_code_embed_model(environ=environ)
     dim = dimension or DEFAULT_OUTPUT_DIMENSION
 
@@ -262,8 +274,8 @@ def build_code_collection_profile(
         "content_vec": _vector_profile(
             kind="code",
             vector_name="content_vec",
-            model=ctx_model,
-            endpoint="contextualized_embeddings",
+            model=id_model,
+            endpoint="embeddings",
             dimension=dim,
             dtype=dtype,
             chunker_version=chunker_version,

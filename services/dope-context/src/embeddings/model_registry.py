@@ -33,6 +33,50 @@ class EmbeddingModelSpec:
 _DIMENSIONS = frozenset({256, 512, 1024, 2048})
 
 MODEL_SPECS: Dict[str, EmbeddingModelSpec] = {
+    # D1 (TP-DOPECONTEXT-VECTOR-SPACE-0004, Wave 0 benchmark 2026-09-04): the
+    # code content/title/breadcrumb vectors all resolve here. Chosen on measured
+    # whole-repo retrieval — recall@20 1.000 / MRR 0.855, beating the
+    # contextualized voyage-context-4 profile (0.951 / 0.677) on the same
+    # 2,754-file corpus and 41-query set.
+    #
+    # WARNING — per_input_tokens is NOT enforced by the API for this model.
+    # Live-probed 2026-09-04: a single 320,000-token input returned success and
+    # billed total_tokens=31993, i.e. the flat embeddings endpoint SILENTLY
+    # TRUNCATES at ~32K instead of rejecting. (contextualized_embed refuses
+    # outright: "Contextualized chunk embeddings do not support truncation".)
+    # An oversized chunk is therefore half-embedded with no error surfaced,
+    # yielding a vector that represents only its first ~32K tokens. Upstream
+    # chunk-size enforcement is load-bearing; do not assume the API guards it.
+    #
+    # max_request_tokens is NOT voyage-code-3's 120_000. Evidence:
+    # (a) the vendor's 120K-group sentence enumerates voyage-code-3,
+    # voyage-4-large, voyage-3-large, voyage-large-2-instruct, voyage-finance-2,
+    # voyage-multilingual-2 and voyage-law-2 — voyage-code-4 is absent from it;
+    # (b) the rate-limit tables group voyage-code-4 with voyage-4 and
+    # voyage-3.5, which are the 320K group; (c) a live 60-input batch totalling
+    # 300,000 tokens was accepted and billed in full (total_tokens=299940),
+    # which rules out a 120K ceiling empirically. Copying 120_000 here would
+    # have been wrong.
+    #
+    # The recorded value is the MEASURED floor (300,000), not the inferred
+    # 320,000 of the voyage-4 rate-limit group. Round-4 independent audit
+    # (INFERRED_MAX_TOKENS) noted this field sizes real batches via
+    # partition_indices(max_tokens=...) in voyage_embedder.py, so a value
+    # above what was actually proven accepted can reject legitimate
+    # indexing batches. Never raise this above a figure a live request has
+    # demonstrated, unless the vendor documents one.
+    "voyage-code-4": EmbeddingModelSpec(
+        name="voyage-code-4",
+        endpoint="embeddings",
+        default_dimension=1024,
+        supported_dimensions=_DIMENSIONS,
+        per_input_tokens=32_000,
+        max_request_inputs=1_000,
+        max_request_tokens=300_000,
+        price_per_million_tokens=0.12,
+    ),
+    # Superseded by voyage-code-4 (D1). Retained registered so an explicit
+    # DOPE_CONTEXT_CODE_EMBED_MODEL=voyage-code-3 rollback still resolves.
     "voyage-code-3": EmbeddingModelSpec(
         name="voyage-code-3",
         endpoint="embeddings",
@@ -42,6 +86,7 @@ MODEL_SPECS: Dict[str, EmbeddingModelSpec] = {
         max_request_inputs=1_000,
         max_request_tokens=120_000,
         price_per_million_tokens=0.18,
+        legacy=True,
     ),
     "voyage-4-large": EmbeddingModelSpec(
         name="voyage-4-large",
@@ -109,7 +154,7 @@ MODEL_SPECS: Dict[str, EmbeddingModelSpec] = {
     ),
 }
 
-DEFAULT_CODE_MODEL = "voyage-code-3"
+DEFAULT_CODE_MODEL = "voyage-code-4"
 DEFAULT_DOC_MODEL = "voyage-context-4"
 DEFAULT_GENERAL_MODEL = "voyage-4"
 DEFAULT_RERANK_MODEL = "rerank-2.5"

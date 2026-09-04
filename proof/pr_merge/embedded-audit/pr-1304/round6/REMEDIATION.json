@@ -1,0 +1,48 @@
+{
+  "round": 6,
+  "target_head": "77f96ab55",
+  "auditor_verdict": "OPEN",
+  "disposition_author": "implementing agent (session 3d420c77)",
+  "headline": "Two BLOCKER regressions found in the D1 change I authored. Both CONFIRMED real. They would have broken code indexing silently.",
+  "findings": [
+    {
+      "id": "UNBOUND_LOCAL_ERROR_COST_TRACKING",
+      "auditor_severity": "BLOCKER",
+      "disposition": "ACCEPTED \u2014 CONFIRMED",
+      "status": "NOT_RUN",
+      "evidence": "indexing_pipeline.py: content_response is bound ONLY in the contextualized else-branch (:322) but read unconditionally at the embedding-cost sum (:344 pre-fix). With D1 the flat branch is the default, so every code file raises UnboundLocalError. Reproduced: driving _process_file against the repo source yields 'cannot access local variable content_response where it is not associated with a value'.",
+      "severity_is_worse_than_a_crash": "_process_file wraps the body in except Exception: log, progress.errors += 1, return ([], []). The error is therefore SWALLOWED \u2014 code indexing silently produces zero documents and reports an error count, rather than failing loudly."
+    },
+    {
+      "id": "EMBEDDING_RESPONSE_SERIALIZATION",
+      "auditor_severity": "BLOCKER",
+      "disposition": "ACCEPTED \u2014 CONFIRMED",
+      "status": "NOT_RUN",
+      "evidence": "standard_embedder.embed_batch returns List[EmbeddingResponse] (voyage_embedder.py:336). The flat branch assigned that list straight to content_embeddings, and the document builder does content_vector = content_embeddings[i] with a now-false comment '# Already List[float]'. title/breadcrumb correctly unwrap via .embedding; content did not. Qdrant would receive an object instead of a float list."
+    },
+    {
+      "id": "LIVE_TRAP_DEFAULT_TRUNCATION",
+      "auditor_severity": "HIGH",
+      "disposition": "ACKNOWLEDGED \u2014 deferred, not dismissed",
+      "status": "NOT_RUN",
+      "evidence": "Auditor ruled that leaving truncation: bool = True as VoyageEmbedder's default is NOT defensible because it traps the next caller. That is a fair criticism of my scope reasoning. The file is outside the ADR-226 carve-out, so flipping the default requires its own amendment and a review of every existing caller \u2014 it cannot ride on this packet. Recorded as required follow-up, NOT closed."
+    },
+    {
+      "id": "NARROW_AST_TESTS",
+      "auditor_severity": "MEDIUM",
+      "disposition": "ACCEPTED IN PART",
+      "status": "NOT_RUN",
+      "evidence": "Correct that the AST tests hardcode two files, so a flat embed added elsewhere escapes them. Mitigated this round by the new behavioural test that drives _process_file and asserts on truncation kwargs actually passed at runtime, which is file-location independent for that path. A full-tree AST sweep remains a reasonable follow-up."
+    },
+    {
+      "id": "RETAINED_WEAK_SUBSTRING_TEST",
+      "auditor_severity": "MEDIUM",
+      "disposition": "ACCEPTED",
+      "status": "NOT_RUN",
+      "evidence": "Auditor: retaining the original substring test alongside the AST tests is misleading and masks their narrow scope. Agreed \u2014 I kept it for 'extra coverage' and that was wrong reasoning; a test that cannot fail meaningfully is negative value. Should be removed."
+    }
+  ],
+  "f001_regression_check": "PASS \u2014 auditor re-verified at this head; carve-out anchoring, traversal refusal, and the _FALLBACK_FORBIDDEN subset invariant all intact.",
+  "why_five_rounds_missed_this": "Every prior round reasoned about the diff or read source statically. No test drove IndexingPipeline._process_file, so a green 123-test suite coexisted with a totally broken flat indexing path. The gap I had already flagged as NOT_RUN \u2014 'live index->search roundtrip' \u2014 is exactly where both BLOCKERs lived. Static review is not a substitute for executing the path.",
+  "next_round_required": true
+}

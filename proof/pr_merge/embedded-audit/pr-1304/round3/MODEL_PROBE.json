@@ -1,0 +1,1 @@
+{"conversation_id":"3a9a0e08-3200-4c57-b199-54eeafe8fbd1","status":"SUCCESS","response":"Gemini 3.1 Pro (High)\n","duration_seconds":10.541708,"num_turns":1,"usage":{"input_tokens":15317,"output_tokens":869,"thinking_tokens":859,"cache_read_tokens":0,"total_tokens":16186}}

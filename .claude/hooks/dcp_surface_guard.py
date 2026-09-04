@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import fnmatch
 import json
+import os
 import re
 from pathlib import Path
 
@@ -41,13 +42,81 @@ def _forbidden_patterns() -> tuple[re.Pattern, ...]:
         return _FALLBACK_COMPILED
 
 
-def _repo_relative(file_path: str, project_root: Path) -> str:
-    """Normalize file_path to forward-slash repo-relative string."""
+def _repo_relative_candidates(file_path: str, project_root: Path) -> tuple[str, ...]:
+    """Every repo-relative reading of ``file_path`` that lands inside the root.
+
+    Hardened after the ADR-226 independent audit (F-001): a purely lexical
+    ``Path.relative_to`` let ``<root>/../<root>/x``, a case-variant root
+    (``/USERS/...`` is the same file on macOS's default filesystem) and a
+    symlink alias of the root yield strings that no ``^``-anchored red-lane
+    pattern matches. The block tier therefore evaluates *all* of:
+
+      1. the raw path relative to the root (lexical; an in-tree ``..`` is kept
+         so the rules' own traversal guard can match it, a leading ``..`` is
+         dropped as it escapes the root);
+      2. ``os.path.realpath`` of the path relative to the root and to the
+         root's own realpath (resolves ``..`` and symlinks, including a
+         symlink placed inside an exempted directory);
+      3. a case-folded prefix match against those roots;
+      4. the fully case-folded form of each of the above (re-audit residual
+         F-001-A: intra-repo case variants such as ``SERVICES/...`` on a
+         case-insensitive volume; ``realpath`` does not correct case).
+
+    Paths that cannot be placed inside the root under any reading are not
+    repo files (e.g. memory files under ``~/.claude``) and are returned as
+    given, which is the pre-existing behaviour.
+    """
+    raw = Path(file_path)
+    candidates = [raw]
     try:
-        rel = Path(file_path).relative_to(project_root)
-    except ValueError:
-        rel = Path(file_path)
-    return rel.as_posix()
+        real = Path(os.path.realpath(file_path))
+        if real != raw:
+            candidates.append(real)
+    except (OSError, ValueError):
+        pass
+    roots = [Path(project_root)]
+    try:
+        real_root = Path(os.path.realpath(project_root))
+        if real_root != roots[0]:
+            roots.append(real_root)
+    except (OSError, ValueError):
+        pass
+
+    found: list[str] = []
+    for cand in candidates:
+        for root in roots:
+            try:
+                rel = cand.relative_to(root)
+            except ValueError:
+                continue
+            if rel.parts and rel.parts[0] == "..":
+                continue  # lexically escapes the root; realpath reading covers it
+            found.append(rel.as_posix())
+    for cand in candidates:
+        cand_s = cand.as_posix()
+        for root in roots:
+            root_s = root.as_posix().rstrip("/") + "/"
+            if cand_s.lower().startswith(root_s.lower()):
+                tail = Path(cand_s[len(root_s):])
+                if not (tail.parts and tail.parts[0] == ".."):
+                    found.append(tail.as_posix())
+    if not found:
+        return (raw.as_posix(),)
+    # ADR-226 re-audit residual F-001-A: on a case-insensitive filesystem
+    # `SERVICES/dope-context/src/x.py` is the same file as the lower-case
+    # spelling, `os.path.realpath` does NOT correct the case of existing
+    # components on macOS, and the red-lane patterns are lower-case literals.
+    # Adding the case-folded reading of every candidate can only ADD denials
+    # (the carve-out is a negative lookahead inside a deny pattern, so a
+    # folded candidate never widens it) and needs no filesystem I/O, so it is
+    # applied unconditionally rather than only on case-insensitive volumes.
+    found.extend([f.lower() for f in found])
+    return tuple(dict.fromkeys(found))
+
+
+def _repo_relative(file_path: str, project_root: Path) -> str:
+    """Normalize file_path to forward-slash repo-relative string (primary reading)."""
+    return _repo_relative_candidates(file_path, project_root)[0]
 
 
 def surface_guard_block(tool_name: str, tool_input: dict, project_root: Path) -> str | None:
@@ -57,9 +126,9 @@ def surface_guard_block(tool_name: str, tool_input: dict, project_root: Path) ->
     file_path = str((tool_input or {}).get("file_path") or "")
     if not file_path:
         return None
-    rel = _repo_relative(file_path, project_root)
-    for pattern in _forbidden_patterns():
-        if pattern.search(rel):
+    patterns = _forbidden_patterns()
+    for rel in _repo_relative_candidates(file_path, project_root):
+        if any(p.search(rel) for p in patterns):
             return (
                 f"🚫 `{rel}` is protected by red lane {RED_LANE_ID} "
                 f"(merge-seam, execute=True). Edits are hard-blocked. "
@@ -150,8 +219,11 @@ def surface_guard_warnings(
     if _proof_json_is_new(file_path):
         return []
 
-    rel = _repo_relative(file_path, project_root)
-    category = _matches_contract_surface(rel)
+    category = None
+    for rel in _repo_relative_candidates(file_path, project_root):
+        category = _matches_contract_surface(rel)
+        if category:
+            break
     if not category:
         return []
 

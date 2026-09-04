@@ -270,7 +270,12 @@ class VoyageEmbedder:
         text: str,
         model: Optional[str] = None,
         input_type: str = "document",
-        truncation: bool = True,
+        # Fail closed by default (ADR-226 A4, round-5 LIVE_TRAP_DEFAULT_TRUNCATION).
+        # The oversize guard below is conditioned on `not truncation`, so a True
+        # default silently truncates for any caller who does not think about it,
+        # embedding a vector that represents only the first ~32K tokens. Callers
+        # that genuinely want truncation must now ask for it.
+        truncation: bool = False,
         output_dimension: Optional[int] = None,
         output_dtype: Optional[str] = None,
     ) -> EmbeddingResponse:
@@ -330,7 +335,8 @@ class VoyageEmbedder:
         texts: List[str],
         model: Optional[str] = None,
         input_type: str = "document",
-        truncation: bool = True,
+        # Fail closed by default — see embed() above (ADR-226 A4).
+        truncation: bool = False,
         output_dimension: Optional[int] = None,
         output_dtype: Optional[str] = None,
     ) -> List[EmbeddingResponse]:
