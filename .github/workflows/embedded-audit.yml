@@ -14,6 +14,11 @@ on:
         required: true
         type: string
 
+
+concurrency:
+  group: embedded-audit-${{ github.event.pull_request.number || inputs.pr_number }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   pull-requests: read
@@ -103,8 +108,36 @@ jobs:
             printf 'verified=false\n' >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Static auditor route preflight
+      - name: Evaluate exact-head review quiescence
+        id: review_quiescence
         if: always() && steps.head_integrity.outputs.verified == 'true'
+        working-directory: trusted-source
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+        run: |
+          mkdir -p ../embedded-audit-artifacts
+          set +e
+          python -m tools.pr_steward.review_quiescence \
+            --repo "$GITHUB_REPOSITORY" \
+            --pr "${PR_NUMBER}" \
+            --head-sha "${HEAD_SHA}" \
+            --out ../embedded-audit-artifacts
+          quiescence_exit=$?
+          set -e
+          if [ -f ../embedded-audit-artifacts/REVIEW_QUIESCENCE.json ]; then
+            is_quiescent="$(jq -r '.is_quiescent // false' ../embedded-audit-artifacts/REVIEW_QUIESCENCE.json)"
+            verdict="$(jq -r '.verdict // "UNKNOWN"' ../embedded-audit-artifacts/REVIEW_QUIESCENCE.json)"
+          else
+            is_quiescent="false"
+            verdict="UNKNOWN"
+          fi
+          printf 'is_quiescent=%s\n' "$is_quiescent" >> "$GITHUB_OUTPUT"
+          printf 'verdict=%s\n' "$verdict" >> "$GITHUB_OUTPUT"
+          echo "Review quiescence evaluation: verdict=${verdict} is_quiescent=${is_quiescent}"
+
+      - name: Static auditor route preflight
+        if: always() && steps.head_integrity.outputs.verified == 'true' && steps.review_quiescence.outputs.is_quiescent == 'true'
         working-directory: trusted-source
         run: |
           mkdir -p ../embedded-audit-artifacts
@@ -131,13 +164,13 @@ jobs:
           fi
 
       - name: Setup trusted Claude audit runner
-        if: always() && steps.head_integrity.outputs.verified == 'true'
+        if: always() && steps.head_integrity.outputs.verified == 'true' && steps.review_quiescence.outputs.is_quiescent == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
       - name: Install trusted Claude audit runner
-        if: always() && steps.head_integrity.outputs.verified == 'true'
+        if: always() && steps.head_integrity.outputs.verified == 'true' && steps.review_quiescence.outputs.is_quiescent == 'true'
         run: npm install --global @anthropic-ai/claude-code@2.1.204
 
       - name: Run PAL clink audit
@@ -145,7 +178,7 @@ jobs:
         # payload with exit 0 so later steps always emit a diagnostic proof and
         # the hard enforcement step remains the sole green/red authority.
         # Tests prove synthetic error results cannot pass enforcement.
-        if: always() && steps.head_integrity.outputs.verified == 'true'
+        if: always() && steps.head_integrity.outputs.verified == 'true' && steps.review_quiescence.outputs.is_quiescent == 'true'
         id: runner
         working-directory: trusted-source
         env:
@@ -308,7 +341,17 @@ jobs:
           PY
             exit 0
           fi
-          if [ -f ../embedded-audit-artifacts/PROMPT_BUILD_UNAVAILABLE.txt ]; then
+          if [ "${{ steps.review_quiescence.outputs.is_quiescent }}" != 'true' ]; then
+            skip_reason="Review quiescence not satisfied on head ${HEAD_SHA} (verdict=${{ steps.review_quiescence.outputs.verdict }})."
+            python scripts/audit/run_embedded_audit.py \
+              --packet-id "TP-DMX-AUDIT-CI-PROVENANCE-104" \
+              --repo "$GITHUB_REPOSITORY" \
+              --pr "${PR_NUMBER}" \
+              --head-sha "${HEAD_SHA}" \
+              --route-json ../embedded-audit-artifacts/AUDITOR_ROUTE.json \
+              --force-skip-reason "${skip_reason}" \
+              --out ../embedded-audit-artifacts
+          elif [ -f ../embedded-audit-artifacts/PROMPT_BUILD_UNAVAILABLE.txt ]; then
             skip_reason="$(
               tr '\n' ' ' < ../embedded-audit-artifacts/PROMPT_BUILD_UNAVAILABLE.txt \
                 | sed 's/[[:space:]]*$//'

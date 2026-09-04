@@ -33,6 +33,7 @@ A packet is superseded by another packet
 
 | Packet ID | Subsystem | Title | Status | Related ADR |
 | --- | --- | --- | --- | --- |
+| TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001 | Governance / PR Steward | Gate final audit and PR Steward readiness on exact-head review quiescence | Ready | docs/ops/pr-steward.md |
 | TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001 | Control Tower / Planner | Design read-only interactive repository merge planner | Active (design only) | docs/91-rfc/repository-merge-planner.md |
 | TP-DMX-PCP-PLANNER-FOUNDATION-001 | Control Tower / Planner | Fixture-backed deterministic PCP planner foundation | Draft / blocked on design acceptance | TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001 |
 | TP-DMX-PCP-ADOPS-EXTENSION-002 | Control Tower / Planner | Read-only AdOps PROJECT extension | Draft / blocked on foundation | TP-DMX-PCP-PLANNER-FOUNDATION-001 |

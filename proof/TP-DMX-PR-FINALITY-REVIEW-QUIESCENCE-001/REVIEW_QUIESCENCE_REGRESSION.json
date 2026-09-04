@@ -1,0 +1,33 @@
+{
+  "packet_id": "TP-DMX-PR-FINALITY-REVIEW-QUIESCENCE-001",
+  "regression_fixture": {
+    "fixture_pr": 1286,
+    "fixture_title": "feat(pal): modernize PAL model catalog and routing gateway foundation",
+    "fixture_head_sha": "aa5f144c489cf3697e08ba6e85744cb8dd1b8a59",
+    "observed_flaw": "Independent embedded audit and PR Steward final readiness completed and published READY before late automated reviews from copilot-pull-request-reviewer and chatgpt-codex-connector arrived with blocking/unresolved issues.",
+    "anti_race_gate": {
+      "at_t1_before_reviewers": {
+        "review_quiescence_verdict": "UNKNOWN",
+        "is_quiescent": false,
+        "model_audit_invoked": false,
+        "audit_proof_status": "SKIPPED",
+        "steward_readiness": "BLOCKED"
+      },
+      "at_t4_with_unresolved_threads": {
+        "review_quiescence_verdict": "NEEDS_IMPLEMENTER",
+        "is_quiescent": false,
+        "unresolved_threads": 2,
+        "model_audit_invoked": false,
+        "steward_readiness": "NEEDS_IMPLEMENTER"
+      },
+      "at_t5_when_fully_resolved_and_quiescent": {
+        "review_quiescence_verdict": "QUIESCENT",
+        "is_quiescent": true,
+        "unresolved_threads": 0,
+        "model_audit_permitted": true
+      }
+    }
+  },
+  "verified_by": "tests/project_control_plane/test_pr_steward_quiescence.py",
+  "test_status": "PASS"
+}

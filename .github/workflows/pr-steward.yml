@@ -11,6 +11,11 @@ on:
         required: true
         type: string
 
+
+concurrency:
+  group: pr-steward-${{ github.event.workflow_run.id || inputs.audit_run_id }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   pull-requests: read
@@ -238,6 +243,12 @@ jobs:
           proof_path="$(find independent-audit-download -type f -name PROOF.json -print -quit)"
           cp "$proof_path" independent-audit/PROOF.json
 
+          quiescence_count="$(find independent-audit-download -type f -name REVIEW_QUIESCENCE.json | wc -l | tr -d ' ')"
+          if [ "$quiescence_count" = "1" ]; then
+            quiescence_path="$(find independent-audit-download -type f -name REVIEW_QUIESCENCE.json -print -quit)"
+            cp "$quiescence_path" independent-audit/REVIEW_QUIESCENCE.json
+          fi
+
           jq -e '.pr_number | numbers' independent-audit/PROOF.json >/dev/null
           jq -e '.head_sha | strings' independent-audit/PROOF.json >/dev/null
 
@@ -281,6 +292,18 @@ jobs:
               expected_repo=os.environ["EXPECTED_REPO"],
           )
           print("Independent audit proof identity enforcement: PASS")
+
+          quiescence_path = Path("independent-audit/REVIEW_QUIESCENCE.json")
+          if not quiescence_path.is_file():
+              raise SystemExit("Review quiescence receipt independent-audit/REVIEW_QUIESCENCE.json missing from audit artifact")
+          quiescence_payload = json.loads(quiescence_path.read_text(encoding="utf-8"))
+          if int(quiescence_payload.get("pr_number") or 0) != int(os.environ["PROOF_PR"]):
+              raise SystemExit(f"quiescence_pr_mismatch: {quiescence_payload.get('pr_number')} != {os.environ['PROOF_PR']}")
+          if str(quiescence_payload.get("head_sha") or "") != os.environ["EXPECTED_HEAD_SHA"]:
+              raise SystemExit(f"quiescence_head_mismatch: {quiescence_payload.get('head_sha')} != {os.environ['EXPECTED_HEAD_SHA']}")
+          if quiescence_payload.get("is_quiescent") is not True or quiescence_payload.get("verdict") != "QUIESCENT":
+              raise SystemExit(f"review_not_quiescent: verdict={quiescence_payload.get('verdict')} is_quiescent={quiescence_payload.get('is_quiescent')}")
+          print("Review quiescence receipt enforcement: PASS")
           PY
 
       - name: Bind proof identity outputs

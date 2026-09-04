@@ -17,7 +17,32 @@ PR Steward v1 is a check-only review-intake gate. It does not mutate GitHub, app
 
 **Evidence economy:** Steward still requires current exact-head gates and a current independent audit when the risk lane or packet requires one (L2/L3 / embedded-audit policy). Draft may be the only expected blocker before operator mark-ready. Proof-only successors must bind to the audited content head; path-escape or stale-head proofs fail closed. See `docs/03-reference/governance/evidence-economy.md`.
 
-The v1 GitHub Actions workflow is advisory. It may emit `NOT_READY`, `NEEDS_IMPLEMENTER`, `NEEDS_SUPERVISOR`, or `BLOCKED` while other checks are still running, but it does not fail the workflow job for those readiness states and must not be configured as a required branch-protection check until the pending-check race is solved.
+## Enforced Topology & Review Quiescence
+
+PR Steward final readiness is enforced via a deterministic exact-head gated pipeline:
+
+```
+[Automated Review Producers]
+   │ (Copilot, Codex, etc.)
+   ▼
+[Exact-Head Review Quiescence] ──► Fails closed if producer completion is missing or unresolved threads exist
+   │ (REVIEW_QUIESCENCE.json)
+   ▼
+[Independent Embedded Audit]   ──► Model auditor setup & invocation gated behind proven review quiescence
+   │ (PROOF.json)
+   ▼
+[PR Steward Final Readiness]   ──► Binds exact-head audit proof + quiescence receipt; publishes commit status
+   │ (MERGE_READINESS.json)
+   ▼
+[Operator Merge Decision]      ──► Merge executed sequentially after all live exact-head gates pass
+```
+
+### Review Quiescence Rules
+- **Prerequisite evidence**: Review quiescence is a derived prerequisite fact consumed by embedded audit and PR Steward. It does not grant merge authority, approval, or perform GitHub mutations.
+- **Deterministic producer completion**: Every mandatory automated review producer (`review_producers.json`) must have verifiable completion evidence bound to the exact candidate head SHA (e.g. review submission, completed check run, or reaction).
+- **No elapsed-time inference**: Elapsed time, quiet windows, or fixed sleeps alone never constitute completion authority.
+- **Fail closed**: Missing, unparseable, stale (prior-head), or ambiguous producer completion fails closed to `UNKNOWN` or `BLOCKED`.
+- **Unresolved threads**: Any active unresolved review thread yields `NEEDS_IMPLEMENTER` and prevents quiescence, blocking both model auditor invocation and PR Steward `READY`.
 
 ## Inputs
 
@@ -42,6 +67,7 @@ PR Steward must harvest:
 | `THREAD_DISPOSITIONS.json` | `schemas/pr_steward/thread_dispositions.schema.json` |
 | `CI_TRIAGE.json` | `schemas/pr_steward/ci_triage.schema.json` |
 | `PR_STATE_SNAPSHOT.json` | `schemas/pr_steward/pr_state_snapshot.schema.json` |
+| `REVIEW_QUIESCENCE.json` | `schemas/pr_steward/review_quiescence.schema.json` |
 
 ## Dispositions
 

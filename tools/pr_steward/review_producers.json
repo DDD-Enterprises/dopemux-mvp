@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0.0",
+  "review_producers": [
+    {
+      "producer_id": "copilot-pull-request-reviewer",
+      "mandatory": true,
+      "strategies": [
+        "review_submission",
+        "check_run",
+        "reaction"
+      ],
+      "check_names": [
+        "copilot-code-review",
+        "CodeQL",
+        "Analyze (python)",
+        "Analyze (javascript-typescript)",
+        "Analyze (ruby)"
+      ],
+      "description": "GitHub Copilot code review producer"
+    },
+    {
+      "producer_id": "chatgpt-codex-connector",
+      "mandatory": true,
+      "strategies": [
+        "review_submission",
+        "reaction"
+      ],
+      "description": "Codex/ChatGPT automated PR review connector"
+    },
+    {
+      "producer_id": "google-labs-jules",
+      "mandatory": false,
+      "strategies": [
+        "review_submission"
+      ],
+      "description": "Google Labs Jules assistant reviewer"
+    }
+  ]
+}
