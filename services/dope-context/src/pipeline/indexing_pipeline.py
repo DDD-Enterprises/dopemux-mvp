@@ -303,7 +303,12 @@ class IndexingPipeline:
             # to contextualized_embed is a hard API rejection, since that
             # endpoint only accepts voyage-context-3/4.
             if content_profile.endpoint == "embeddings":
-                content_embeddings = await self.standard_embedder.embed_batch(
+                # embed_batch returns List[EmbeddingResponse]; unwrap to the
+                # List[List[float]] the document builder below expects, and
+                # carry the cost separately. The contextualized branch returns
+                # a single response whose .embeddings is already unwrapped, so
+                # the two shapes must be normalised here rather than downstream.
+                content_responses = await self.standard_embedder.embed_batch(
                     texts=content_texts,
                     model=content_profile.model,
                     input_type=content_profile.index_input_type,
@@ -311,6 +316,8 @@ class IndexingPipeline:
                     output_dtype=content_profile.dtype,
                     truncation=False,
                 )
+                content_embeddings = [resp.embedding for resp in content_responses]
+                content_cost_usd = sum(resp.cost_usd for resp in content_responses)
             else:
                 content_response = await self.contextualized_embedder.embed_document(
                     chunks=content_texts,
@@ -320,6 +327,7 @@ class IndexingPipeline:
                     output_dtype=content_profile.dtype,
                 )
                 content_embeddings = content_response.embeddings
+                content_cost_usd = content_response.cost_usd
 
             title_embeddings = await self.standard_embedder.embed_batch(
                 texts=title_texts,
@@ -341,7 +349,7 @@ class IndexingPipeline:
 
             # Track embedding cost
             embedding_cost = (
-                content_response.cost_usd
+                content_cost_usd
                 + sum(resp.cost_usd for resp in title_embeddings)
                 + sum(resp.cost_usd for resp in breadcrumb_embeddings)
             )
