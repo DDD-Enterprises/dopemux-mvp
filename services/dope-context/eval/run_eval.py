@@ -87,13 +87,15 @@ from typing import Any, Dict, List, Optional, Tuple
 # Guardrails / constants
 # --------------------------------------------------------------------------
 
-# 200_000 covered only the phase-1 validation corpus (95,711 real tokens).
-# Phase 2 is the whole-repo Python corpus, measured at 6,888,067 tokens
-# with the real voyage-code-3 tokenizer (TP-DOPECONTEXT-VECTOR-SPACE-0004
-# budget table, 2026-07-26). 10M comfortably covers that plus Bh's header
-# inflation while still refusing the explicitly-forbidden
-# repo+docs/*.md corpus (~21M tokens).
-MAX_INPUT_TOKENS_PER_PROFILE = 10_000_000
+# Real (Voyage-tokenizer, not chars//4) whole-repo counts measured
+# 2026-09-04: A/B doc_tokens=9,889,927, Bh doc_tokens=11,103,687 (the real
+# max, from the scope-header prefix). 15M covers that with margin while
+# still refusing the explicitly-forbidden repo+docs/*.md corpus (~21M+
+# real tokens). The guardrail check itself now also uses the real
+# tokenizer (see run_profile) instead of the chars//4 approx_tokens()
+# estimate, which overshot real counts by ~10-20% and produced a false
+# guardrail trip on the actual whole-repo run.
+MAX_INPUT_TOKENS_PER_PROFILE = 15_000_000
 MAX_RETRIES = 3
 DEFAULT_TOP_K = 20
 VALID_PROFILES = ("A", "B", "Bh", "Bhl", "CTRL")
@@ -114,11 +116,6 @@ PRICE_PER_M = {
 # Rough "does this query mention a code identifier" detector: camelCase or
 # snake_case tokens.
 IDENTIFIER_RE = re.compile(r"\b([a-z]+[A-Z][a-zA-Z0-9]*|[a-z][a-z0-9]*_[a-z0-9_]+)\b")
-
-
-def approx_tokens(text: str) -> int:
-    """Cheap guardrail estimate: ~4 chars/token. Not billed usage."""
-    return max(1, len(text) // 4)
 
 
 def query_has_identifier(query_text: str) -> bool:
@@ -565,10 +562,12 @@ def run_profile(
                 grouped_by_file = group_by_file(records)
                 file_keys = list(grouped_by_file.keys())
                 grouped_texts = [[r.content for r in grouped_by_file[fk]] for fk in file_keys]
-                approx_in = sum(approx_tokens(t) for texts in grouped_texts for t in texts)
-                if approx_in > MAX_INPUT_TOKENS_PER_PROFILE:
+                real_in = voyage_client.count_tokens(
+                    [t for texts in grouped_texts for t in texts], model="voyage-context-4"
+                )
+                if real_in > MAX_INPUT_TOKENS_PER_PROFILE:
                     raise RuntimeError(
-                        f"projected input tokens {approx_in} exceeds guardrail "
+                        f"projected input tokens {real_in} exceeds guardrail "
                         f"{MAX_INPUT_TOKENS_PER_PROFILE} for profile A/CTRL document embedding"
                     )
                 doc_results, doc_tokens = embed_contextual(
@@ -599,10 +598,10 @@ def run_profile(
                 )
                 result.llm_tokens_in = llm_in
                 result.llm_tokens_out = llm_out
-            approx_in = sum(approx_tokens(t) for t in texts)
-            if approx_in > MAX_INPUT_TOKENS_PER_PROFILE:
+            real_in = voyage_client.count_tokens(texts, model="voyage-code-4")
+            if real_in > MAX_INPUT_TOKENS_PER_PROFILE:
                 raise RuntimeError(
-                    f"projected input tokens {approx_in} exceeds guardrail "
+                    f"projected input tokens {real_in} exceeds guardrail "
                     f"{MAX_INPUT_TOKENS_PER_PROFILE} for profile {profile} document embedding"
                 )
             doc_vectors, doc_tokens = embed_flat(
