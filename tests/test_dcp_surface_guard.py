@@ -135,6 +135,8 @@ _DOPE_CONTEXT_CARVED_OUT = (
     "services/dope-context/src/embeddings/model_registry.py",  # ADR-226 A2
     "services/dope-context/tests/test_vector_space_invariants.py",
     "services/dope-context/tests/test_vector_profiles_and_migration.py",  # ADR-226 A3
+    "services/dope-context/src/embeddings/voyage_embedder.py",  # ADR-226 A4
+    "services/dope-context/src/search/dense_search.py",  # ADR-226 A4
 )
 
 _DOPE_CONTEXT_STILL_BLOCKED = (
@@ -151,17 +153,23 @@ _DOPE_CONTEXT_STILL_BLOCKED = (
     "services/dope-context/eval/../src/mcp/server.py",  # traversal out of eval/
     "services/dope-context/eval/sub/../../src/search/hybrid_search.py",
     "services/dope-context/../dope-context/src/search/hybrid_search.py",
-    # ADR-226 A2 near-misses: the two newly-exempted files must not widen the lane.
-    # voyage_embedder.py is the same-directory neighbour of model_registry.py —
-    # exactly the case the anchored lookaheads have to survive.
-    "services/dope-context/src/embeddings/voyage_embedder.py",
+    # ADR-226 A2 near-misses: the newly-exempted files must not widen the lane.
+    # (voyage_embedder.py served as the same-directory near-miss here until A4
+    # exempted it; contextualized_embedder.py now plays that role.)
+    "services/dope-context/src/embeddings/contextualized_embedder.py",
     "services/dope-context/src/embeddings/model_registry.py.tmp",
     "services/dope-context/src/index_profile.py.bak",
     "services/dope-context/src/index_profile.py.orig",
     "services/dope-context/src/search/index_profile.py",  # same name, other directory
     "services/dope-context/src/embeddings/sub/model_registry.py",  # nested same name
     "services/dope-context/eval/../src/index_profile.py",  # traversal out of eval/
+    # ADR-226 A4 near-misses: exempting voyage_embedder.py and dense_search.py
+    # must not open their directories or survive a traversal.
     "services/dope-context/src/embeddings/../search/dense_search.py",
+    "services/dope-context/src/embeddings/voyage_embedder.py.bak",
+    "services/dope-context/src/search/dense_search.py.orig",
+    "services/dope-context/src/search/sub/dense_search.py",
+    "services/dope-context/src/embeddings/dense_search.py",  # same name, other dir
     # ADR-226 A3 near-misses: exempting one test file must not open tests/.
     "services/dope-context/tests/test_vector_profiles_and_migration.py.bak",
     "services/dope-context/tests/sub/test_vector_profiles_and_migration.py",

@@ -55,6 +55,11 @@ FORBIDDEN_PATHS = [
         # rewritten, not deleted, so the file needs the same path-level
         # exemption. No other file under tests/ is exempted.
         r"(?!tests/test_vector_profiles_and_migration\.py$)"
+        # A4 (2026-09-04): voyage_embedder.py to flip the truncation default
+        # (round-5 LIVE_TRAP_DEFAULT_TRUNCATION); dense_search.py to delete an
+        # unused SearchRequest import that qdrant-client 1.19 removed.
+        r"(?!src/embeddings/voyage_embedder\.py$)"
+        r"(?!src/search/dense_search\.py$)"
         r".*$"
     ),
     # Companion to the carve-out above. The hook's primary path reading is lexical (no

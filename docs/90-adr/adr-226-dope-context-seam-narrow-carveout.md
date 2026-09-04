@@ -716,7 +716,8 @@ version would additionally strand *docs* collections, which D1 does not touch.
 
 ```text
 AMENDMENT_ID=ADR-226-A4
-AMENDMENT_STATUS=PENDING_OPERATOR_APPROVAL
+AMENDMENT_STATUS=APPROVED
+APPROVED_BY=operator (session 3d420c77, 2026-09-04)
 ADDS_EXEMPTIONS=services/dope-context/src/embeddings/voyage_embedder.py, services/dope-context/src/search/dense_search.py
 AUTHORIZES_CONTENT_EDITS=NO (path-level only; TEXT_RULES scanning unchanged)
 WAVES_1_4_SRC_LIFT=STILL_NOT_AUTHORIZED

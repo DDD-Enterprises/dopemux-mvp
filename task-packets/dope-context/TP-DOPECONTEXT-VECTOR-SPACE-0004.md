@@ -559,7 +559,8 @@ diff or even of the whole repository cannot observe it.
 
 ```text
 AMENDMENT_ID=A4
-AMENDMENT_STATUS=PENDING_OPERATOR_APPROVAL
+AMENDMENT_STATUS=APPROVED
+APPROVED_BY=operator (session 3d420c77, 2026-09-04)
 AMENDMENT_ADDS_ALLOWED_FILES=services/dope-context/src/embeddings/voyage_embedder.py, services/dope-context/src/search/dense_search.py
 REQUIRES_COMPANION_ADR_226_AMENDMENT=YES (ADR-226 A4)
 ```
@@ -676,3 +677,48 @@ Required operator action, in order:
 This is deliberately **not** actioned here: `mcp-dope-context` is a host
 singleton shared across projects, and restarting it is an outward-facing change
 belonging to the fleet owner.
+
+## Operator rulings (2026-09-04)
+
+**A4 — APPROVED.** Landed. Caller audit performed before flipping the
+`truncation` default, as the amendment required: all six `src` callers already
+pass `truncation=False` explicitly, and the only test callers use inputs of a
+few tokens. **No existing caller's behaviour changes**; the flip protects
+future callers only. `dense_search.py`'s unused `SearchRequest` import is
+deleted, so the qdrant-client 1.19 crash-loop cannot recur regardless of what
+a rebuild resolves — no version pin is needed, and the earlier
+`pyproject.toml` pin plan is formally abandoned.
+
+**`consensus` — PROCEED WITHOUT PAL.** Ruling: proceed unless restoring PAL is
+quick and easy. It is not. There is no `pal` container at all (not even
+stopped), `compose.yml` defines it with `build:` rather than an image, and the
+ports (3005/3010/3011) are closed — so restoring it means a Docker image build
+plus a fleet mutation on a host shared across projects. `consensus` therefore
+stays **NOT_RUN**, and is treated as discharged by the Wave 0 benchmark: the
+stage was required because the decision was "a judgement call with two
+defensible answers", and the whole-repo measurement settled it (direction B won
+every metric). Recorded as *not run and superseded by measurement*, never as
+PASS.
+
+**A14 — RETIRED AS UNRECOVERABLE, SUBSTITUTED.** The definition does not exist
+in any reachable artifact: `docs/`, `claudedocs/`, `task-packets/`,
+`services/dope-context/**`, `git log --all -S"A14"`, and PR #1112's body and
+comments were all searched. The PR-1112 audit records batteries only in
+aggregate, so battery A had 15 tests but the list was never committed.
+
+The criterion "Audit adversarial test A14 flips from FAIL to PASS" is replaced
+by the concrete tests that now assert the property it stood for:
+
+* `test_code_content_index_and_query_models_agree` — F-001 itself: code
+  `content_vec` index model/endpoint equals the query model/endpoint.
+* `test_all_six_named_vectors_agree_across_index_and_query` — the six-vector
+  criterion.
+* `test_flat_embeds_disable_truncation` and
+  `test_flat_embed_models_are_read_from_the_profile` — AST-asserted over the
+  whole `src/` tree: every flat embed opts out of truncation and derives its
+  model from a profile rather than a literal.
+
+**A14 is NOT recorded as PASS.** Nothing is known about what it asserted, so a
+pass would be a false record. It is retired because it became unanswerable, and
+the substitution carries the residual risk that A14 demanded something the
+replacements do not cover.
