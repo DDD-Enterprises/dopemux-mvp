@@ -635,6 +635,12 @@ function DashboardApp() {
             severity="error"
             icon={<AlertTriangle size={20} aria-hidden="true" />}
             onClose={() => setErrorMessage(null)}
+            closeText="Dismiss error notification"
+            slotProps={{
+              closeButton: {
+                'aria-label': 'Dismiss error notification',
+              },
+            }}
             action={
               connectionStatus === 'degraded' ? (
                 <Tooltip title="Attempt to re-establish connection to DØPEMÜX Ritual Daemon" arrow>
