@@ -17,7 +17,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Optional, Tuple
 
-import litellm  # type: ignore
 import yaml
 
 
@@ -483,6 +482,8 @@ def sync_litellm_database(instance_dir: Path, db_url: str) -> tuple[str, bool]:
             "⚠️  LiteLLM metrics disabled (Prisma CLI not installed - install with `pip install prisma`)",
             False,
         )
+
+    import litellm  # type: ignore
 
     if not getattr(litellm, "__file__", None):
         return (
