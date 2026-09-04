@@ -1,0 +1,47 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1309,
+  "head_sha": "06d515dfd6c968d4a8a0c379f71f38998a62b49f",
+  "generated_at": "2026-09-04T06:20:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude --print --model sonnet (independent Claude Code session, audit of full branch base c2c74d896..head 06d515dfd, verifying closures F-1..F-4, F-7, F-8 with exact line references and an isolated clean 72/72 test run)",
+    "exit_code": 0,
+    "report_path": "proof/TP-UAG-T1-SEMANTIC-CORE-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "H-1",
+        "severity": "INFO",
+        "title": "test_valid_floats_accepted has a logically-vacuous second assertion",
+        "status": "ACCEPTED_RISK",
+        "body": "tests/unit/uag/test_hardening.py ~line 44: `\"0.0\" not in result or \"0\" in result` is always true. Cosmetic only; the preceding `\"1.5\" in result` assertion still validates normal-float serialization survives allow_nan=False. Does not weaken closure coverage."
+      },
+      {
+        "id": "H-2",
+        "severity": "INFO",
+        "title": "Coverage exceeds brief's stated test count",
+        "status": "ACCEPTED_RISK",
+        "body": "test_hardening.py holds 31 tests covering F-1..F-8, and the full tests/unit/uag/ suite is 72 tests, all passing at HEAD 06d515dfd in a clean isolated detached worktree (72 passed). Closures are more thoroughly tested than the brief described, not less."
+      }
+    ],
+    "fixes_applied": [
+      "F-1 receipt execution_authority=NONE enforced at construction",
+      "F-2 canonical_json allow_nan=False rejects NaN/Infinity",
+      "F-3 MappingLedger.for_kind() rejects non-CorrelationKind",
+      "F-4 UnknownItem.evidence_status runtime-validated",
+      "F-5 20 adversarial tests covering F-1..F-4 closures",
+      "F-7 LedgerEntry.evidence_status runtime-validated as EvidenceStatus",
+      "F-8 IdentityStage.evidence_status + confidence runtime-validated"
+    ],
+    "remaining_risks": [
+      "H-1 cosmetic (INFO) vacuous assertion in test_valid_floats_accepted.",
+      "H-2 test count exceeds brief description (31 in test_hardening, 72 total) — INFO, more coverage not less.",
+      "F-1-F-4, F-7, F-8 guards independently inspected with exact line refs and backed by an isolated clean 72/72 test run at audited head.",
+      "Signed attestation is an operator attestation with cryptographic code-binding, not an independently executed CI audit; the independent Claude Code session produced PASS with exact line + clean-run evidence."
+    ],
+    "skip_reason": null
+  }
+}
