@@ -1,0 +1,35 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1312,
+  "head_sha": "d40438603969a175201c6191c97bbb8a585163f2",
+  "generated_at": "2026-09-04T07:05:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/_worktrees/tp-uag-t1-semantic-core-001 --print=\"$(cat audit_prompt_followup.txt)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-UAG-IS-SHA256-TRAILING-NEWLINE-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "AUD-01",
+        "severity": "LOW",
+        "title": "is_sha256 accepted a single trailing newline via $ regex anchor",
+        "status": "RESOLVED",
+        "body": "Fixed by switching from re.compile(r'^[a-f0-9]{64}$') + .match() to an anchor-free pattern with .fullmatch(). Independently verified: PASS, 0 risks, byte-verified hash recomputation of primitives.py (3d79cd0a66811524886f6e7c7c9898256c1b067b88f7081237530c5dc679c938) matched local shasum."
+      }
+    ],
+    "fixes_applied": [
+      "src/dopemux/uag/primitives.py: is_sha256 uses fullmatch() on an anchor-free pattern instead of match() on ^...$"
+    ],
+    "remaining_risks": [],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}

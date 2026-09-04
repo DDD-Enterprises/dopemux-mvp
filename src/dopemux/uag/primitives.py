@@ -12,12 +12,12 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-_SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
+_SHA256_RE = re.compile(r"[a-f0-9]{64}")
 
 
 def is_sha256(value: object) -> bool:
     """Return True if ``value`` is a lowercase hex SHA-256 digest string."""
-    return isinstance(value, str) and bool(_SHA256_RE.match(value))
+    return isinstance(value, str) and _SHA256_RE.fullmatch(value) is not None
 
 
 def sha256_bytes(data: bytes) -> str:
