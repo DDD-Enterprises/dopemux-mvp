@@ -4,14 +4,16 @@
   "branch": "codex/mcp-multiproject-p1-fleet-control-plane",
   "base": "main",
   "base_sha": "328a31e9a48bc20c29f4d1cde79273f587d987ee",
-  "head_sha": "823e05704df24fcd784c11488609582ea59fc865",
-  "audited_parent": "86fcbd196cece01b3f4503b9778a4cebfaa51a19",
-  "generated_at": "2026-09-04T08:10:00Z",
-  "kind": "L3 implementation, first independent audit, no repair applied; proof-only successor (task-packet return-block reconciliation, no source touched, audited content unchanged from audited_parent)",
+  "head_sha": "d85164823e92b5dc29a0643dbad559df0957f512",
+  "audited_parent": "36620e6a50d0724ee22559eb7acc1a3186263245",
+  "generated_at": "2026-09-04T09:20:00Z",
+  "kind": "L3 implementation, repair round 1 (bounded repair of 6 PR #1313 Copilot review findings: identity cwd normalization, canonical_identity_summary schema completeness, docker mount evidence fail-closed, two git-missing test hardenings, one docstring typo), fresh independent audit on the repair content head; proof-only successor at head_sha (this proof bundle's own files added after the audit completed, no source touched since audited_parent)",
   "implementer": "Claude Sonnet 5 (Claude Code)",
   "risk_lane": "L3 (packet-declared; scripts/governance/validate_change_contract.py classified max_lane=L2 on the touched paths -- recorded honestly as a discrepancy, packet's own L3 classification governs)",
   "audited_files": [
     "docs/03-reference/mcp/multiproject-control-plane.md",
+    "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/AUDITOR_REPAIR_REPORT.md",
+    "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/implementation-notes.md",
     "src/dopemux/commands/mcp_commands.py",
     "src/dopemux/mcp/control_plane.py",
     "src/dopemux/mcp/docker_inspect.py",
@@ -36,10 +38,10 @@
     "tests/mcp/test_materialization_v2.py",
     "tests/mcp/test_ownership_v2.py",
     "tests/mcp/test_reconcile_v2.py",
+    "tests/mcp/test_runtime_state_identity_summary.py",
     "tests/mcp/test_service_leases_v2.py",
     "tests/unit/test_mcp_commands_catalog.py",
-    "tests/unit/test_mcp_runtime_registry.py",
-    "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/implementation-notes.md"
+    "tests/unit/test_mcp_runtime_registry.py"
   ],
   "validations": {
     "packet_canonical_schema": "PASS (python -m jsonschema against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json)",
@@ -50,7 +52,14 @@
     "change_contract": "PASS (scripts/governance/validate_change_contract.py; max_lane=L2, model_audit_required=True, proof_only=False)",
     "secret_scan": "PASS (0 matches across curated high-signal patterns on the exact added-lines diff)",
     "catalog_files_untouched": "PASS (mcp_catalog.yaml and src/dopemux/mcp/default_catalog.yaml byte-identical to origin/main)",
-    "no_live_runtime_mutation": "PASS (no ~/.dopemux/mcp/registry/* created; git status clean pre- and post-audit; no Docker/container command executed for real anywhere in implementation or tests)"
+    "no_live_runtime_mutation": "PASS (no ~/.dopemux/mcp/registry/* created; git status clean pre- and post-audit; no Docker/container command executed for real anywhere in implementation or tests)",
+    "repair_round_1_focused_tests": "PASS (120 passed: same focused P1 suite as original, re-run post-repair)",
+    "repair_round_1_relevant_suite": "PASS (190 passed: same relevant suite as original, re-run post-repair)",
+    "repair_round_1_new_regression_tests": "PASS (4 passed: tests/mcp/test_runtime_state_identity_summary.py, new in this round)",
+    "repair_round_1_git_diff_check": "PASS",
+    "repair_round_1_change_contract": "PASS (validate_change_contract.py; max_lane=L2, model_audit_required=True, proof_only=False, paths=44)",
+    "repair_round_1_full_suite": "PASS (749 passed, 1 pre-existing unrelated failure: tests/ci/test_pr_gate.py::test_ci_summary_needs_exact_job_count, a CI job-count assertion this diff does not touch)",
+    "repair_round_1_review_threads": "RESOLVED (all 6 GitHub Copilot review threads on PR #1313 replied-to and resolved via GraphQL)"
   },
   "catalog_v2_cutover": "BLOCKED_NOT_APPLIED",
   "catalog_v2_cutover_reasoning": "compile_catalog_v2 + legacy_client_projection prove zero semantic drift against the real live catalog (tests/mcp/test_fleet_catalog_v2_runtime.py::test_fingerprint_equal_between_real_v1_and_legacy_projected_v2), but fleet_catalog.load_root_catalog (fleet_catalog.py:194) and mcp_commands._load_catalog (mcp_commands.py:576) both hard-raise on version != 1 and the latter backs every `dopemux mcp *` command; flipping the live file without making both loaders version-tolerant would be an immediate fleet-wide CLI outage, and widening that loader is outside this packet's mcp_commands.py grant. See proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/implementation-notes.md.",
@@ -65,36 +74,62 @@
     "status": "PASS",
     "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir <worktree-abs-path> --print=\"$(cat review_bundle/AUDIT_INPUT.md)\"; exact timestamps and no-fallback probe results in review_bundle/AUDIT_INVOCATION.txt; raw output in review_bundle/AUDIT_OUTPUT.txt",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir <worktree-abs-path> --print=\"$(cat review_bundle/AUDIT_INPUT_REPAIR_1.md)\"; exact invocation record in review_bundle/AUDIT_INVOCATION_REPAIR_1.txt; raw output in review_bundle/AUDIT_OUTPUT_REPAIR_1.txt",
     "exit_code": 0,
-    "report_path": "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/AUDITOR_REPORT.md",
+    "report_path": "proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/AUDITOR_REPAIR_REPORT.md",
     "findings": [
       {
-        "id": "F-01",
+        "id": "R1-01",
         "severity": "INFO",
-        "title": "Materialization all-or-nothing property verified",
+        "title": "Identity cwd normalization",
         "status": "RESOLVED",
-        "body": "Auditor independently traced materialize_atomic (materialization.py:271): a process death before or immediately after the directory rename leaves the current symlink unchanged; the flip itself is os.replace (atomic)."
+        "body": "Auditor confirmed resolve_execution_identity (identity.py) and _normalize_alias (identity_registry.py) share one normalize_path_alias_value helper, so a relative or symlinked cwd now matches its registered absolute alias."
       },
       {
-        "id": "F-02",
+        "id": "R1-02",
         "severity": "INFO",
-        "title": "Catalog fingerprint comparator is load-bearing, not a no-op",
+        "title": "canonical_identity_summary schema completeness",
         "status": "RESOLVED",
-        "body": "Auditor confirmed catalog_semantic_fingerprint (fleet_catalog.py:1526) compares profile membership, placement, endpoints, commands, env key names, and tool metadata, and that the divergence-detection tests (test_fleet_catalog_v2_runtime.py:108) prove it actually detects change."
+        "body": "Auditor confirmed the summary now emits actor_id/client_id/aliases matching schemas/mcp/resolved-execution-identity.schema.json exactly, with no extra keys."
       },
       {
-        "id": "F-03",
+        "id": "R1-03",
         "severity": "INFO",
-        "title": "Live catalog files untouched",
+        "title": "Mount evidence fail-closed",
         "status": "RESOLVED",
-        "body": "Auditor independently confirmed mcp_catalog.yaml and src/dopemux/mcp/default_catalog.yaml are byte-for-byte identical to origin/main."
+        "body": "Auditor confirmed inspect_container_mounts (docker_inspect.py) now requires source and dest, rejecting one-sided mount evidence."
+      },
+      {
+        "id": "R1-04",
+        "severity": "INFO",
+        "title": "Git-missing-binary test hardening (x2)",
+        "status": "RESOLVED",
+        "body": "Auditor confirmed both flagged tests (test_mcp_multiproject_contracts.py::test_no_runtime_effect_diff, test_fleet_catalog_v2_runtime.py::test_live_catalog_files_are_untouched_by_this_packet) now catch FileNotFoundError/OSError and skip gracefully."
+      },
+      {
+        "id": "R1-05",
+        "severity": "INFO",
+        "title": "Docstring typo",
+        "status": "RESOLVED",
+        "body": "Auditor confirmed legacy_client_placement's accidental fourth leading quote is removed."
       }
     ],
-    "fixes_applied": [],
+    "fixes_applied": [
+      "identity_registry.py: added PATH_ALIAS_KINDS + normalize_path_alias_value(), applied in _normalize_alias",
+      "identity.py: resolve_execution_identity normalizes cwd via the shared helper before matching",
+      "runtime_state.py: canonical_identity_summary emits actor_id/client_id/aliases",
+      "docker_inspect.py: inspect_container_mounts requires source and dest",
+      "tests/arch/test_mcp_multiproject_contracts.py: except (FileNotFoundError, OSError) added",
+      "tests/mcp/test_fleet_catalog_v2_runtime.py: except (FileNotFoundError, OSError) added",
+      "fleet_catalog.py: fixed four-quote docstring in legacy_client_placement",
+      "tests/mcp/test_identity_registry_v2.py: added relative-cwd and symlinked-cwd resolution regression tests",
+      "tests/mcp/test_runtime_state_identity_summary.py: new file, schema-completeness regression tests",
+      "tests/mcp/test_ownership_v2.py: added one-sided mount evidence rejection regression test"
+    ],
     "remaining_risks": [
       "CATALOG_V2_CUTOVER remains BLOCKED_NOT_APPLIED pending a future tranche making fleet_catalog.load_root_catalog and mcp_commands._load_catalog version-tolerant.",
-      "fleet.py integration was skipped (no strictly-additive insertion point found); a later tranche may still want FleetDoctorReport to surface canonical identity."
+      "fleet.py integration was skipped (no strictly-additive insertion point found); a later tranche may still want FleetDoctorReport to surface canonical identity.",
+      "CI's 'independent embedded audit' check (pal-mcp-clink/Anthropic-API route) still fails on this head -- known-obsolete CI route per Control Tower disposition, not a defect in this repair; PR Steward inherits that failure and shows final readiness=fail as a result. The exact-subject audit for merge authority is this AGY/Gemini round, imported here."
     ],
     "skip_reason": null
   }
