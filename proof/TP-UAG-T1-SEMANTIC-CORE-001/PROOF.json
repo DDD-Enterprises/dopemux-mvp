@@ -77,6 +77,14 @@
     "3f5a309274129a82936887779b768d26d75fcdbc feat(uag): implement provider-neutral semantic core",
     "145abbf21313ea0ef05e8257b66dceacc62fda89 harden(uag): enforce receipt/lineage/request invariants"
   ],
+  "pr": {
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1309",
+    "number": 1309,
+    "base": "main",
+    "head": "feat/uag-t1-semantic-core-001",
+    "merge_authorized": false,
+    "activation_authorized": false
+  },
   "authority_effect": {
     "merge_authorized": false,
     "activation_authorized": false,
@@ -95,5 +103,5 @@
     "final merge/activation authority: requires later separate operator gate (not this packet)",
     "pal multi-model codereview/precommit tool gate: NOT_RUN in this environment"
   ],
-  "cleanup_status": "NOT_STARTED"
+  "cleanup_status": "WORKTREE_RETAINED"
 }
