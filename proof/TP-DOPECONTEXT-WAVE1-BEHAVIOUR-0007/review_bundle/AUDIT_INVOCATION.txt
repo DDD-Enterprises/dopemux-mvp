@@ -1,0 +1,9 @@
+# Exact invocation, PR #1318 embedded audit, round 1
+# host: darwin, agy 1.1.26
+# date: 2026-09-04T13:47:24Z
+# subject head_sha: 1f6af050aca60a21c10c280756f22358fc3596ec
+# base: f7f0ed626
+
+agy --model gemini-3.1-pro-high --output-format json --print-timeout 15m \
+  --add-dir /Users/hue/code/dopemux-mvp/.worktrees/dope-context-wave-reconciliation-001 \
+  --print="$(cat proof/TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007/review_bundle/AUDIT_INPUT.md)"

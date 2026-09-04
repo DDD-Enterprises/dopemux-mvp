@@ -1,0 +1,26 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1318,
+  "head_sha": "fecb5f3a35ec9b28cf849c2f8e29a5fcdb09f19a",
+  "generated_at": "2026-09-04T14:15:20Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "round 2 (delta): agy --model gemini-3.1-pro-high --output-format json --print-timeout 15m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/dope-context-wave-reconciliation-001 --print=<contents of proof/TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007/review_bundle/AUDIT_INPUT_REPAIR_1.md>; exact record in review_bundle/AUDIT_INVOCATION_REPAIR_1.txt, raw transport JSON in review_bundle/AUDIT_OUTPUT_REPAIR_1_RAW.json, rendered verdict in review_bundle/AGY_AUDIT_REPAIR_1.md. Round 1 (full, head 1f6af050a) recorded in review_bundle/AUDIT_INVOCATION.txt + AUDIT_OUTPUT_RAW.json + AGY_AUDIT.md.",
+    "exit_code": 0,
+    "report_path": "proof/TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007/AUDITOR_REPAIR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "claudedocs/dope-context-wave-reconciliation-2026-09-04.md, docs/90-adr/adr-226-dope-context-seam-narrow-carveout.md, task-packets/dope-context/TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007.md: expanded all 10 bare index_profile.py:<line> citations to services/dope-context/src/index_profile.py:<line> and re-wrapped the affected lines (commit fecb5f3a3, 4 Copilot review threads). Presentation only; round-2 audit check D1 confirms no claim, line number, ruling, scope decision or regex changed."
+    ],
+    "remaining_risks": [
+      "CI 'independent embedded audit' and 'PR Steward / final readiness' are red on this head for the standing structural reason (static auditor route preflights NEEDS_SUPERVISOR; PAL clink exits 127 with 'Trusted Claude provider credential is unavailable' -- run 33878654636, 24s, no provider call). This AGY round is the exact-subject audit imported through the local signed-attestation lane; it is not a claim that the CI route executed.",
+      "ADR-226 Amendment A5 is PROPOSED, not approved. src/dopemux/dcp/red_lane_rules.py is unchanged by this PR; the regex lands only on operator approval, as A2/A3/A4 each did. Nothing here opens the red lane.",
+      "The reconciliation record's finding R-6 (the pr-92 checkout carries no DCP red lane at all) was returned NOT_VERIFIABLE by the auditor because that checkout lies outside the mounted worktree. It rests on this session's own probe and was not independently reproduced. The in-scope half -- that this worktree does contain .claude/hooks/dcp_surface_guard.py and src/dopemux/dcp/red_lane_rules.py -- was verified.",
+      "The whole-repo dope-context benchmark remains NOT_RUN and TP-DOPECONTEXT-VECTOR-SPACE-0004 remains DECISION_REQUIRED. This PR changes neither."
+    ],
+    "skip_reason": null
+  }
+}

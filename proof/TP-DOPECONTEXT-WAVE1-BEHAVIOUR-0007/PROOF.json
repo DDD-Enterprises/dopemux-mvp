@@ -1,0 +1,55 @@
+{
+  "packet_id": "TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007",
+  "series": "DOPECONTEXT",
+  "branch": "claude/dope-context-wave-reconciliation-001",
+  "base": "main",
+  "base_sha": "f7f0ed626b33e855ae87b3f7fb657e15a60542c1",
+  "head_sha": "fecb5f3a35ec9b28cf849c2f8e29a5fcdb09f19a",
+  "generated_at": "2026-09-04T14:15:20Z",
+  "kind": "L1 documentation-only governance change: wave-plan reconciliation record, re-cut Wave 1 task packet, and ADR-226 Amendment A5 (PROPOSED, regex NOT applied). Round 2 after a Copilot-driven citation-path repair. head_sha is the LITERAL audited commit of round 2, not a proof-only successor, so this bundle satisfies local_audit_acceptance.py's packet_proof_head_sha_mismatch cross-check against proof/pr_merge/embedded-audit/pr-1318/PROOF.json.",
+  "proof_only_lineage": {
+    "audited_semantic_head": "fecb5f3a35ec9b28cf849c2f8e29a5fcdb09f19a",
+    "round_1_audited_head": "1f6af050aca60a21c10c280756f22358fc3596ec",
+    "statement": "Every commit after head_sha on this branch is proof-only: it touches only proof/TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007/** and proof/pr_merge/embedded-audit/pr-1318/**. The round-1 attestation at 1f6af050a was superseded, not reused: commit fecb5f3a3 is a content change, which voids the round-1 proof-only bond by design, so the head was re-audited (round 2, PASS, round_1_still_holds=true) and re-signed rather than re-attested unaudited."
+  },
+  "implementer": "Claude Opus 5 (1M context), session 5dd97667",
+  "risk_lane": "L1",
+  "audited_files": [
+    "claudedocs/dope-context-wave-reconciliation-2026-09-04.md",
+    "task-packets/dope-context/TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007.md",
+    "docs/90-adr/adr-226-dope-context-seam-narrow-carveout.md",
+    "claudedocs/dope-context-retrieval-redesign-2026-09-03.md"
+  ],
+  "validations": {
+    "dope_context_suite": "PASS - 124 passed, 1 skipped (mise exec -- python -m pytest tests -q in services/dope-context)",
+    "dcp_guard_suites": "PASS - 69 passed (tests/test_dcp_surface_guard.py + tests/dcp/test_dcp_0005_red_lane_scanner.py)",
+    "proposed_a5_regex": "PASS - 14/14 cases: 5 exempt resolve; workspace.py, metrics_tracker.py, conftest.py, hybrid_search.py, code_chunker.py, document_processor.py, a .bak near-miss and two ..-traversal forms stay blocked",
+    "red_lane_rules_unchanged": "PASS - src/dopemux/dcp/red_lane_rules.py is byte-identical to base; A5 is proposal-only",
+    "scope_discipline": "PASS - diff touches four markdown files, nothing under services/dope-context/ or src/dopemux/dcp/",
+    "ci_required_checks": "PASS - Unit Tests, Security Review, Documentation Check, identity-check, Analyze x4, CodeQL, preflight, Clobber Guard, Code Quality, Audit Proof Validator, Extractor lint/smoke/full, Model Routing, Auditor Router",
+    "ci_embedded_audit": "FAIL - structural provider-credential failure, superseded by this bundle",
+    "agy_round_2": "PASS - delta audit at head fecb5f3a3, D1-D5 all VERIFIED, round_1_still_holds=true, zero findings (112s, 71,421 tokens)",
+    "agy_round_1": "PASS - full audit at head 1f6af050a, 9 claims verified, R-6 NOT_VERIFIABLE, zero findings (462s, 758,903 tokens)",
+    "copilot_review_threads": "RESOLVED - 4 threads, each replied to with the scope of the fix and a correction to their shared premise (the repo has exactly one index_profile.py), then resolved"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "round 2 (delta): agy --model gemini-3.1-pro-high --output-format json --print-timeout 15m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/dope-context-wave-reconciliation-001 --print=<contents of proof/TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007/review_bundle/AUDIT_INPUT_REPAIR_1.md>; exact record in review_bundle/AUDIT_INVOCATION_REPAIR_1.txt, raw transport JSON in review_bundle/AUDIT_OUTPUT_REPAIR_1_RAW.json, rendered verdict in review_bundle/AGY_AUDIT_REPAIR_1.md. Round 1 (full, head 1f6af050a) recorded in review_bundle/AUDIT_INVOCATION.txt + AUDIT_OUTPUT_RAW.json + AGY_AUDIT.md.",
+    "exit_code": 0,
+    "report_path": "proof/TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007/AUDITOR_REPAIR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "claudedocs/dope-context-wave-reconciliation-2026-09-04.md, docs/90-adr/adr-226-dope-context-seam-narrow-carveout.md, task-packets/dope-context/TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007.md: expanded all 10 bare index_profile.py:<line> citations to services/dope-context/src/index_profile.py:<line> and re-wrapped the affected lines (commit fecb5f3a3, 4 Copilot review threads). Presentation only; round-2 audit check D1 confirms no claim, line number, ruling, scope decision or regex changed."
+    ],
+    "remaining_risks": [
+      "CI 'independent embedded audit' and 'PR Steward / final readiness' are red on this head for the standing structural reason (static auditor route preflights NEEDS_SUPERVISOR; PAL clink exits 127 with 'Trusted Claude provider credential is unavailable' -- run 33878654636, 24s, no provider call). This AGY round is the exact-subject audit imported through the local signed-attestation lane; it is not a claim that the CI route executed.",
+      "ADR-226 Amendment A5 is PROPOSED, not approved. src/dopemux/dcp/red_lane_rules.py is unchanged by this PR; the regex lands only on operator approval, as A2/A3/A4 each did. Nothing here opens the red lane.",
+      "The reconciliation record's finding R-6 (the pr-92 checkout carries no DCP red lane at all) was returned NOT_VERIFIABLE by the auditor because that checkout lies outside the mounted worktree. It rests on this session's own probe and was not independently reproduced. The in-scope half -- that this worktree does contain .claude/hooks/dcp_surface_guard.py and src/dopemux/dcp/red_lane_rules.py -- was verified.",
+      "The whole-repo dope-context benchmark remains NOT_RUN and TP-DOPECONTEXT-VECTOR-SPACE-0004 remains DECISION_REQUIRED. This PR changes neither."
+    ],
+    "skip_reason": null
+  }
+}

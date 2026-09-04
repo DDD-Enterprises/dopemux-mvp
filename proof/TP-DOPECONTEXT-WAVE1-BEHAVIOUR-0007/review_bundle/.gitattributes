@@ -1,0 +1,4 @@
+# A unified diff legitimately carries trailing whitespace on blank context lines.
+# Exempt the captured audit-subject patch from whitespace checks rather than
+# altering evidence that an auditor was shown.
+*.patch -whitespace

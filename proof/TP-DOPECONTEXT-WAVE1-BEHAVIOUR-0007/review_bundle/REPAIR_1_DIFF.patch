@@ -1,0 +1,87 @@
+diff --git a/claudedocs/dope-context-wave-reconciliation-2026-09-04.md b/claudedocs/dope-context-wave-reconciliation-2026-09-04.md
+index e20749393..075146c1b 100644
+--- a/claudedocs/dope-context-wave-reconciliation-2026-09-04.md
++++ b/claudedocs/dope-context-wave-reconciliation-2026-09-04.md
+@@ -84,7 +84,7 @@ not wrong arithmetic; it is the right arithmetic on the wrong Wave 1. §5 and §
+ 
+ 1. **`code_chunker.py` sits inside a wave Rev 2 calls "behaviour only, manifest-compatible".** It
+    cannot. `CODE_CHUNKER_VERSION` (`services/dope-context/src/index_profile.py:35`) is a member of
+-   `VectorProfile.fingerprint_payload()` (`index_profile.py:77-89`), which feeds
++   `VectorProfile.fingerprint_payload()` (`services/dope-context/src/index_profile.py:77-89`), which feeds
+    `fingerprint_profiles()` → `profile_digest` → the collection *name*. Any change to
+    `code_chunker.py` that changes chunk output requires bumping that constant, which is
+    manifest-affecting by construction. **Ruled: evicted from Wave 1** (§4, §6).
+@@ -107,7 +107,7 @@ C12 is `"\\n\\n".join(...)` at `src/preprocessing/document_processor.py:143,154`
+ `"\\n".join(...)` at `:173` — literal two-character `\n` sequences inserted into extracted
+ PDF/DOCX/HTML text. Fixing it **changes the text that gets chunked and embedded** for every
+ extracted document. That requires bumping `DOCS_CHUNKER_VERSION`
+-(`index_profile.py:36`, currently `"document_processor.v2-voyage-token-accounting"`), which is in
++(`services/dope-context/src/index_profile.py:36`, currently `"document_processor.v2-voyage-token-accounting"`), which is in
+ `fingerprint_payload()` and therefore strands every existing docs collection.
+ 
+ D1 deliberately left docs collections alone (ADR-226, "Operational consequence of D1": *"Docs
+@@ -399,7 +399,7 @@ Carried forward from the handoff and packet 0004, unchanged and still open:
+ | DCP guard + red-lane scanner suites | **PASS** — 69 passed |
+ | Carve-out regex on `main` matches the handoff's quoted text | **PASS** — `red_lane_rules.py:45-63`, verbatim |
+ | Every §5 row verified against the file, not the plan | **PASS** |
+-| `chunker_version` ∈ `fingerprint_payload()` (basis of the §4 corollary) | **PASS** — `index_profile.py:77-89` |
++| `chunker_version` ∈ `fingerprint_payload()` (basis of the §4 corollary) | **PASS** — `services/dope-context/src/index_profile.py:77-89` |
+ | `pr-92` checkout lacks the guard (R-6) | **PASS** — both paths confirmed absent |
+ | Whole-repo benchmark | **NOT_RUN** — unchanged; not this record's scope |
+ | Independent audit of this record (AGY/Gemini) | **NOT_RUN** |
+diff --git a/docs/90-adr/adr-226-dope-context-seam-narrow-carveout.md b/docs/90-adr/adr-226-dope-context-seam-narrow-carveout.md
+index d9c1d79e1..6946e1275 100644
+--- a/docs/90-adr/adr-226-dope-context-seam-narrow-carveout.md
++++ b/docs/90-adr/adr-226-dope-context-seam-narrow-carveout.md
+@@ -847,8 +847,10 @@ sections, it wins; Revision 2.1 §7 then adds `model_registry.py` to Wave
+ `document_processor.py`, `openai_generator.py` and `claude_generator.py`
+ entirely, and adds `code_chunker.py` — which the reconciliation record then
+ evicts again on manifest-boundary grounds (record §4, §2 R-2 item 1),
+-because `CODE_CHUNKER_VERSION` (`index_profile.py:35`) is a member of
+-`VectorProfile.fingerprint_payload()` (`index_profile.py:77-89`). Revision
++because `CODE_CHUNKER_VERSION`
++(`services/dope-context/src/index_profile.py:35`) is a member of
++`VectorProfile.fingerprint_payload()`
++(`services/dope-context/src/index_profile.py:77-89`). Revision
+ 2 also drops `mcp/server.py`; the record rules it back in (§2 R-2 item 3)
+ for C1 and C13, which costs this amendment nothing because that file is
+ already exempt under the base carve-out. Three
+diff --git a/task-packets/dope-context/TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007.md b/task-packets/dope-context/TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007.md
+index 4a8277ebf..3c44bff7b 100644
+--- a/task-packets/dope-context/TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007.md
++++ b/task-packets/dope-context/TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007.md
+@@ -51,8 +51,9 @@ the failure mode this programme has already paid for once.
+ - Three rulings from the reconciliation record are applied on top of Revision
+   2's own scope:
+   - `code_chunker.py` is **evicted**. `CODE_CHUNKER_VERSION`
+-    (`index_profile.py:35`) is a member of
+-    `VectorProfile.fingerprint_payload()` (`index_profile.py:77-89`), so any
++    (`services/dope-context/src/index_profile.py:35`) is a member of
++    `VectorProfile.fingerprint_payload()`
++    (`services/dope-context/src/index_profile.py:77-89`), so any
+     change to that file that alters chunk output is manifest-affecting by
+     construction and cannot sit in a wave defined as manifest-compatible.
+   - `server.py` is **pulled in**, even though Revision 2 splits it across
+@@ -180,14 +181,17 @@ rerank clients.
+ ## Explicitly out of scope
+ 
+ - `preprocessing/code_chunker.py` — manifest-affecting:
+-  `CODE_CHUNKER_VERSION` (`index_profile.py:35`) is a member of
+-  `fingerprint_payload()` (`index_profile.py:77-89`). Any behaviour change
+-  here bumps the manifest. → CHUNKING wave.
++  `CODE_CHUNKER_VERSION`
++  (`services/dope-context/src/index_profile.py:35`) is a member of
++  `fingerprint_payload()`
++  (`services/dope-context/src/index_profile.py:77-89`). Any behaviour
++  change here bumps the manifest. → CHUNKING wave.
+ - `preprocessing/document_processor.py` / C12 (`:143`, `:154`, `:173` emit
+   literal `\n` two-character sequences instead of real newlines) — manifest-
+   affecting for the same reason, via `DOCS_CHUNKER_VERSION`
+-  (`index_profile.py:36`). Fixing it changes the extracted text, hence the
+-  chunk content, hence the embeddings, and would strand every existing docs
++  (`services/dope-context/src/index_profile.py:36`). Fixing it changes the
++  extracted text, hence the chunk content, hence the embeddings, and would
++  strand every existing docs
+   collection — the exact thing D1 deliberately left alone. → CHUNKING wave.
+ - `context/openai_generator.py`, `context/claude_generator.py` (E7, E8, E9)
+   — not in the governing Wave 1 definition; D3 ruled the LLM context layer
