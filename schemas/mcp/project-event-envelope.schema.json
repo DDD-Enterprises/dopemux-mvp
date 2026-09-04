@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.local/schemas/mcp/project-event-envelope.schema.json",
+  "title": "Dopemux MCP Project Event Envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "project_id",
+    "workspace_id",
+    "instance_id",
+    "registry_generation",
+    "source_service",
+    "event_identity",
+    "payload_digest",
+    "stream_namespace"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "dopemux.mcp.project-event-envelope.v1"
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workspace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "instance_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "registry_generation": {
+      "type": "integer"
+    },
+    "source_service": {
+      "type": "string",
+      "minLength": 1
+    },
+    "event_identity": {
+      "type": "string",
+      "minLength": 1
+    },
+    "payload_digest": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "stream_namespace": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.local/schemas/mcp/runner-materialization-receipt.schema.json",
+  "title": "Dopemux MCP Runner Materialization Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "digest",
+    "shared_global_config_mutated",
+    "authority",
+    "project_id",
+    "workspace_id",
+    "instance_id",
+    "inherited_surface_status"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "dopemux.mcp.runner-materialization-receipt.v1"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "shared_global_config_mutated": {
+      "type": "boolean",
+      "const": false
+    },
+    "authority": {
+      "type": "string",
+      "const": "PROVENANCE_ONLY"
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workspace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "instance_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "inherited_surface_status": {
+      "type": "string",
+      "enum": ["KNOWN", "UNKNOWN"]
+    },
+    "mode": {
+      "type": "string"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "mode": { "const": "strict" }
+        }
+      },
+      "then": {
+        "properties": {
+          "inherited_surface_status": { "const": "KNOWN" }
+        }
+      }
+    }
+  ]
+}
