@@ -1,8 +1,10 @@
 {
   "packet_id": "TP-UAG-T1-SEMANTIC-CORE-001",
   "series_id": "UAG-DCP-DOPETASK-INTEGRATION-001",
-  "status": "PASS",
+  "status": "PASS_WITH_RISKS",
   "risk_lane": "L2_MATERIAL",
+  "head_sha": "06d515dfd6c968d4a8a0c379f71f38998a62b49f",
+  "generated_at": "2026-09-04T06:08:29Z",
   "repo_identity": {
     "project_id": "dopemux-mvp",
     "repo_marker": ".dopetaskroot",
@@ -18,15 +20,16 @@
     "path": "/Users/hue/code/_worktrees/tp-uag-t1-semantic-core-001",
     "branch": "feat/uag-t1-semantic-core-001",
     "base": "c2c74d896d3f300a7cce1d9a4f67b3a8af521036",
-    "base_note": "origin/main, post-#1283 (compatible ancestry with pinned 04be55535; non-overlap DCP movement)",
-    "content_head": "3f5a309274129a82936887779b768d26d75fcdbc",
-    "final_head": "145abbf21313ea0ef05e8257b66dceacc62fda89"
+    "base_note": "origin/main at PR creation, post-#1283",
+    "content_head": "06d515dfd6c968d4a8a0c379f71f38998a62b49f",
+    "final_head": "06d515dfd6c968d4a8a0c379f71f38998a62b49f"
   },
   "slices": [
     {"id": "S00", "name": "Preflight + implementer route", "status": "PASS"},
     {"id": "S01", "name": "Immutable request/attempt + three-lane IR", "status": "PASS"},
     {"id": "S02", "name": "Identity stages + correlation ledger primitives", "status": "PASS"},
-    {"id": "S03", "name": "Freeze + L2 validation + independent audit", "status": "PASS"}
+    {"id": "S03", "name": "Freeze + L2 validation + independent audit", "status": "PASS"},
+    {"id": "S04", "name": "Copilot-finding repair (F-7/F-8) + adversarial tests + re-freeze + fresh independent L2 audit", "status": "PASS"}
   ],
   "files_changed": [
     "src/dopemux/uag/__init__.py",
@@ -41,6 +44,7 @@
     "src/dopemux/uag/request.py",
     "tests/unit/uag/__init__.py",
     "tests/unit/uag/test_attempt_lineage.py",
+    "tests/unit/uag/test_hardening.py",
     "tests/unit/uag/test_identity.py",
     "tests/unit/uag/test_import_side_effects.py",
     "tests/unit/uag/test_ir.py",
@@ -52,30 +56,64 @@
   "validation": [
     {"command": "git diff --check", "exit_code": 0, "result": "PASS"},
     {"command": "python -m compileall -q src/dopemux/uag tests/unit/uag", "exit_code": 0, "result": "PASS"},
-    {"command": "python -m pytest -q tests/unit/uag", "exit_code": 0, "result": "PASS", "detail": "41 passed"},
+    {"command": "python -m pytest -q tests/unit/uag", "exit_code": 0, "result": "PASS", "detail": "72 passed"},
     {"command": "python -m pytest -q tests/contracts", "exit_code": 0, "result": "PASS", "detail": "187 passed"},
     {"command": "ruff check src/dopemux/uag tests/unit/uag", "exit_code": 0, "result": "PASS"},
     {"command": "changed-file allowlist closure", "exit_code": 0, "result": "PASS"},
     {"command": "scripts/governance/validate_change_contract.py --base c2c74d896 --head HEAD", "exit_code": 0, "result": "PASS", "detail": "max_lane=L2, model_audit_required=True"}
   ],
-  "independent_audit": {
+  "embedded_audit": {
     "required": true,
-    "verdict": "PASS",
-    "blocking_findings": 0,
-    "nonblocking_risks": 7,
-    "audited_head": "3f5a309274129a82936887779b768d26d75fcdbc",
-    "hardening_after_audit": "145abbf21313ea0ef05e8257b66dceacc62fda89",
-    "hardening_note": "Three nonblocking hardening fixes applied post-audit (attempt extend type-check, receipt exactly_once/digest enforcement, LogicalRequest contract type). Strictly narrowing; no authority/behavior expansion. Deterministic validation re-run PASS.",
-    "pal_tool_gate": "NOT_RUN",
-    "pal_note": "pal codereview/precommit MCP tools not available in this environment; independent audit was a manual line-by-line review with deterministic re-validation. Recommend re-running pal gate before merge if multi-model gate is a hard CI requirement."
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude -p --model sonnet --tools \"\" --permission-mode bypassPermissions --output-format text < /tmp/uag_audit_prompt.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-UAG-T1-SEMANTIC-CORE-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "AUD-01",
+        "severity": "LOW",
+        "title": "is_sha256 accepts a single trailing newline via $ regex anchor",
+        "status": "OPEN",
+        "body": "primitives.py _SHA256_RE = re.compile(r'^[a-f0-9]{64}$') combined with .match() admits a trailing newline (Python $ matches before a trailing newline). Weakens the exact-digest binding invariant that DigestRef and Receipt rely on. Untested in either direction."
+      },
+      {
+        "id": "AUD-02",
+        "severity": "LOW",
+        "title": "test_valid_floats_accepted has a tautological assertion",
+        "status": "OPEN",
+        "body": "tests/unit/uag/test_hardening.py::TestCanonicalJsonRejectsNonStandardFloats::test_valid_floats_accepted asserts (\"0.0\" not in result or \"0\" in result), which is satisfied regardless of actual float-serialization behavior and does not meaningfully verify the intended -0.0 handling."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Independent audit ran tools/MCP-disabled (static analysis only); no in-audit test execution or live git/gh cross-check. Deterministic suites (72 unit / 187 contracts / ruff / diff-check / change-contract) were run by the implementer, not the auditor.",
+      "Enum-value fidelity to ratified C0-R2 common_defs.schema.json could not be byte-verified (schema file not present in this checkout); only internal self-consistency was checked.",
+      "is_sha256 trailing-newline gap (AUD-01) is unpatched and untested as of this head.",
+      "No execution/approval surface verified via name-based denylist plus manual review only; reasonable for a pure-data module but not a formal proof of authority absence.",
+      "PublicCore.canonical() does not dedupe public_values keys on ties.",
+      "AttemptRecord.model_transport_receipt_ref and DigestRef.media_type remain free-form (cosmetic)."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
   },
   "precommit": {
     "status": "PASS",
-    "detail": "repo pre-commit preflight hook ran; wrote .runs/*.manifest.json (gitignored). No hook modified tracked files."
+    "detail": "repo pre-commit preflight hook ran on the repair commit; wrote .runs/*.manifest.json (gitignored). No hook modified tracked files."
   },
   "commits": [
     "3f5a309274129a82936887779b768d26d75fcdbc feat(uag): implement provider-neutral semantic core",
-    "145abbf21313ea0ef05e8257b66dceacc62fda89 harden(uag): enforce receipt/lineage/request invariants"
+    "145abbf21313ea0ef05e8257b66dceacc62fda89 harden(uag): enforce receipt/lineage/request invariants",
+    "261f00e6461561c37a5830ef3f3e1d5de2033ce5 proof(uag): add T1 semantic-core proof bundle",
+    "609c0adbae472d5666ecb943e4add62967fa3f72 proof(uag): record PR #1309 in T1 proof",
+    "f30d90a153a5c6c4d32532071c75833878b28011 fix(uag): harden semantic-core against 5 Copilot review findings",
+    "06d515dfd6c968d4a8a0c379f71f38998a62b49f fix(uag): close remaining Copilot findings F-7/F-8 (ledger + identity enum validation)"
   ],
   "pr": {
     "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1309",
@@ -94,14 +132,13 @@
     "retry_fallback": "NONE"
   },
   "residual_risks": [
-    "canonical_json does not pre-check NaN/Infinity floats; deterministic within CPython but not cross-runtime",
-    "PublicCore.canonical() does not dedupe public_values keys on ties",
-    "AttemptRecord.model_transport_receipt_ref and DigestRef.media_type remain free-form (cosmetic)",
-    "common_defs.schema.json not present in this checkout; enum value-space parity with C0-R2 not byte-verified here"
+    "is_sha256 accepts a single trailing newline ($ regex anchor); DigestRef/Receipt digest binding weakened (AUD-01).",
+    "test_hardening.TestCanonicalJsonRejectsNonStandardFloats.test_valid_floats_accepted is tautological (AUD-02)."
   ],
   "unknowns": [
     "final merge/activation authority: requires later separate operator gate (not this packet)",
-    "pal multi-model codereview/precommit tool gate: NOT_RUN in this environment"
+    "C0-R2 common_defs.schema.json enum parity not byte-verified in this checkout",
+    "PR is BEHIND origin/main (649fe5e7); rebase decision is separate from this repair"
   ],
   "cleanup_status": "WORKTREE_RETAINED"
 }

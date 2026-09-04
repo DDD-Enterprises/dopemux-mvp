@@ -1,0 +1,54 @@
+```json
+{
+  "status": "completed",
+  "verdict": "PASS_WITH_RISKS",
+  "findings": [
+    "POSITIVE: All new value types (LogicalRequest, WorkspaceBinding, AttemptRecord, AttemptLineage, IdentityStage, IdentityChain, LedgerEntry, MappingLedger, Receipt, PublicCore, FamilyEnvelope, PrivateStateCapsuleRef, RequestedOutputContract, DigestRef, SemanticCore) are declared with @dataclass(frozen=True); append-only collections (AttemptLineage.append/extend, IdentityChain.record, MappingLedger.add, SemanticCore.with_*) construct and return new instances rather than mutating the receiver, and IdentityChain.record explicitly refuses to overwrite an existing stage (identity.py, IdentityChain.record).",
+    "POSITIVE: src/dopemux/uag/*.py import only {dataclasses, enum, hashlib, json, re, typing, __future__} plus internal dopemux.uag modules; this is verified in-repo by an AST-based allowlist sweep (tests/unit/uag/test_import_side_effects.py::test_package_imports_are_stdlib_only) plus a subprocess import that asserts no files are written to a clean cwd (test_import_has_no_filesystem_side_effects). No provider SDK, socket, subprocess, env, or credential access appears anywhere in the diff.",
+    "POSITIVE: The commit-message-claimed hardening fixes for the prior Copilot review round are all present and match the corresponding test assertions: Receipt.__post_init__ rejects any execution_authority other than ExecutionAuthority.NONE and any exactly_once_claim other than the literal 'FORBIDDEN' (receipt.py, F-1); canonical_json uses json.dumps(..., allow_nan=False) so NaN/Infinity raise ValueError (primitives.py, F-2/F-6); MappingLedger.for_kind raises ValueError on any non-CorrelationKind argument (ledger.py, F-3); UnknownItem, LedgerEntry, and IdentityStage all isinstance-validate evidence_status against EvidenceStatus, and IdentityStage additionally validates confidence against Confidence (identity.py / ledger.py, F-4/F-7/F-8). Each of these has a corresponding adversarial test in tests/unit/uag/test_hardening.py that would fail if the guard were removed.",
+    "POSITIVE: 'No execution/approval surface' is asserted structurally, not just by convention: tests/unit/uag/test_no_execution_authority.py enumerates forbidden method names (execute, approve, run, retry, fallback, grant, route, call, invoke) and asserts none of AttemptLineage, MappingLedger, IdentityChain, AttemptRecord, or SemanticCore expose them as public callables.",
+    "NEGATIVE (minor, unflagged in the diff): primitives.py's `_SHA256_RE = re.compile(r'^[a-f0-9]{64}$')` combined with `re.match` is vulnerable to Python's `$`-before-trailing-newline semantics: `is_sha256('a'*64 + '\\n')` returns True because `$` (without re.MULTILINE) matches just before a trailing newline, not only end-of-string. `\\Z` or `.fullmatch()` without a trailing `$` would close this. This weakens the 'exact digest reference' invariant that DigestRef and Receipt rely on for binding integrity. No test in the diff exercises this edge case in either direction.",
+    "NEGATIVE (test-quality, non-blocking): tests/unit/uag/test_hardening.py::TestCanonicalJsonRejectsNonStandardFloats::test_valid_floats_accepted has a tautological assertion (`\"0.0\" not in result or \"0\" in result`) that is satisfied regardless of actual float-serialization behavior and does not meaningfully verify the intended -0.0 handling."
+  ],
+  "risks": [
+    "This audit was performed under an explicit tools/MCP-disabled constraint: no test suite execution, no CI status check, and no live `git`/`gh` cross-check of the stated repo/PR/head_sha/base_sha against GitHub was possible. All conclusions rest on static reading of the diff text supplied as candidate data; validation_status is therefore NOT_RUN.",
+    "The module's docstrings claim to mirror the ratified C0-R2 `common_defs.schema.json` value spaces (enum names/values for IdentityStageName, AttemptSemanticState, EvidenceStatus, etc.), but that schema file is not part of this diff and was not independently retrievable in this session, so enum-value fidelity to the ratified contract could not be cross-verified — only internal self-consistency was checked.",
+    "The `is_sha256` trailing-newline gap (see findings) is unpatched and untested in either direction as of this diff.",
+    "'No execution surface' is verified only via a name-based denylist (test_no_execution_authority.py) plus manual review of the code; this is reasonable evidence for a pure-data-object module of this size but is not a formal proof of the absence of any authority-granting behavior."
+  ],
+  "rationale": "PR #1309 adds a new, self-contained package (src/dopemux/uag/) implementing the UAG semantic-core value objects (logical request identity, append-only attempt lineage, identity-stage chain, mapping ledger, three-lane IR, deterministic receipts, and a frozen SemanticCore composition), plus a matching unit-test suite under tests/unit/uag/. Direct inspection of every changed source file confirms the package's central claims: all data structures are frozen dataclasses, all 'mutating' operations (append/record/add/with_*) return new instances instead of mutating the receiver, no execution/approval/retry/fallback method surface is exposed, and the only imports across the package are Python stdlib modules (dataclasses, enum, hashlib, json, re, typing, __future__) plus internal dopemux.uag modules — independently enforced by an AST import-allowlist test and a subprocess import smoke test that checks for filesystem side effects. The head commit (06d515dfd, 'fix(uag): close remaining Copilot findings F-7/F-8') and its immediate predecessor ('fix(uag): harden semantic-core against 5 Copilot review findings') both have concrete, verifiable code corresponding to their stated fixes (F-1 through F-8), each paired with an adversarial test in tests/unit/uag/test_hardening.py that specifically targets the guard added. One minor, unaddressed correctness gap was found by direct regex analysis (the `is_sha256` trailing-newline acceptance issue) and one test-quality nit (a tautological float-serialization assertion) — neither is severe, but both are real and not called out anywhere in the PR's own commit history or tests. Because this embedded audit runs with tools/MCP disabled, no test execution, CI check, or live GitHub provenance verification was possible; the verdict is bounded by that limitation and is based entirely on static analysis of the supplied diff.",
+  "inspected_paths": [
+    "src/dopemux/uag/__init__.py",
+    "src/dopemux/uag/attempt.py",
+    "src/dopemux/uag/core.py",
+    "src/dopemux/uag/enums.py",
+    "src/dopemux/uag/identity.py",
+    "src/dopemux/uag/ir.py",
+    "src/dopemux/uag/ledger.py",
+    "src/dopemux/uag/primitives.py",
+    "src/dopemux/uag/receipt.py",
+    "src/dopemux/uag/request.py",
+    "tests/unit/uag/__init__.py",
+    "tests/unit/uag/test_attempt_lineage.py",
+    "tests/unit/uag/test_hardening.py",
+    "tests/unit/uag/test_identity.py",
+    "tests/unit/uag/test_import_side_effects.py",
+    "tests/unit/uag/test_ir.py",
+    "tests/unit/uag/test_ledger.py",
+    "tests/unit/uag/test_no_execution_authority.py",
+    "tests/unit/uag/test_receipt.py",
+    "tests/unit/uag/test_request_immutability.py"
+  ],
+  "evidence_refs": [
+    "src/dopemux/uag/receipt.py: Receipt.__post_init__ rejects execution_authority != ExecutionAuthority.NONE and exactly_once_claim != 'FORBIDDEN' — corroborated by tests/unit/uag/test_hardening.py::TestReceiptExecutionAuthorityEnforcement and tests/unit/uag/test_receipt.py::test_receipt_rejects_non_forbidden_exactly_once_claim",
+    "src/dopemux/uag/primitives.py: canonical_json(...) passes allow_nan=False to json.dumps — corroborated by tests/unit/uag/test_hardening.py::TestCanonicalJsonRejectsNonStandardFloats",
+    "src/dopemux/uag/ledger.py: MappingLedger.for_kind raises ValueError('... CorrelationKind ...') on non-enum input; LedgerEntry.__post_init__ isinstance-checks evidence_status — corroborated by tests/unit/uag/test_hardening.py::TestMappingLedgerForKindRejectsInvalidInput and ::TestLedgerEntryEvidenceStatusValidation",
+    "src/dopemux/uag/identity.py: IdentityStage.__post_init__ isinstance-checks evidence_status/confidence and enforces attestation_class only on PROVIDER_ATTESTED; UnknownItem.__post_init__ isinstance-checks evidence_status — corroborated by tests/unit/uag/test_hardening.py::TestIdentityStageEnumTypedFields and ::TestUnknownItemEvidenceStatusValidation, and tests/unit/uag/test_identity.py",
+    "src/dopemux/uag/primitives.py: `_SHA256_RE = re.compile(r'^[a-f0-9]{64}$')` used via `.match()` in is_sha256 — Python `$` semantics admit a single trailing newline, an unflagged, untested edge case affecting DigestRef/Receipt digest validation",
+    "tests/unit/uag/test_import_side_effects.py::test_package_imports_are_stdlib_only and ::test_import_has_no_filesystem_side_effects — direct evidence for the 'no provider SDK/socket/filesystem/env/credential/subprocess/network I/O on import' claim in src/dopemux/uag/__init__.py's module docstring",
+    "tests/unit/uag/test_no_execution_authority.py — direct evidence for the 'no execution, approval, retry, fallback, or tool authority' claim"
+  ],
+  "validation_status": "NOT_RUN",
+  "instruction_like_acknowledged": false
+}
+```
