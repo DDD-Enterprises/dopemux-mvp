@@ -101,7 +101,9 @@ Official Voyage material checked on 2026-07-22 establishes:
 
 ### Code
 
-- Keep `voyage-code-3` until benchmark evidence supports a replacement.
+- ~~Keep `voyage-code-3` until benchmark evidence supports a replacement.~~
+  **Superseded 2026-09-04**: the evidence now exists — see "Code vector-space
+  benchmark outcome". Code vectors are `voyage-code-4` on the flat endpoint.
 - Split at AST and complete-symbol boundaries first.
 - Use Voyage-token-aware fallback chunks.
 - Benchmark a 300 to 900 token target band.
@@ -134,12 +136,56 @@ consumer model. Keep three distinct metrics:
 1. Add a collection-level manifest and fail closed when model, dimension,
    dtype, chunker, or discovery rules conflict.
 2. Reindex into versioned shadow collections instead of mixing vector schemas.
-3. Benchmark the current mixed code-vector strategy against all-code-3 vectors.
-4. Port one gitignore matcher with negation support for initial indexing and
+3. Port one gitignore matcher with negation support for initial indexing and
    sync.
-5. Add a sorted-path root digest covering file hashes and index configuration.
-6. Replace character-sized fallback chunks with Voyage-token-sized chunks.
-7. Add deleted-file reconciliation and bounded streaming upserts.
+4. Add a sorted-path root digest covering file hashes and index configuration.
+5. Replace character-sized fallback chunks with Voyage-token-sized chunks.
+6. Add deleted-file reconciliation and bounded streaming upserts.
+
+The former item 3 — "Benchmark the current mixed code-vector strategy against
+all-code-3 vectors" — is **CLOSED**; see "Code vector-space benchmark outcome"
+below.
+
+## Code vector-space benchmark outcome (2026-09-04)
+
+Run under `TP-DOPECONTEXT-VECTOR-SPACE-0004`. Whole-repo corpus: 2,754 files,
+~38K chunks, 41 queries, `top_k=20`. Full write-up and raw JSON in
+`claudedocs/dope-context-eval-results-2026-09-03.md`.
+
+| Profile | Model / endpoint | R@5 | R@20 | MRR | NDCG@10 | Cost |
+|---|---|---|---|---|---|---|
+| **B** | `voyage-code-4` flat, both sides | 0.951 | **1.000** | **0.855** | **0.890** | $1.181 |
+| Bh | B + scope header | 0.951 | 1.000 | 0.729 | 0.788 | $1.327 |
+| A | `voyage-context-4` contextualized | 0.780 | 0.951 | 0.677 | 0.714 | $1.126 |
+| CTRL | deliberate index/query mismatch | 0.000 | 0.000 | 0.000 | 0.000 | $0.0002 |
+
+The question the residual item posed is answered, though not as it was framed:
+the contest was never "mixed vs all-code-3" but "contextualized vs flat", and
+the flat profile won every metric while costing less than the header variant.
+CTRL collapsing to exactly 0.000 confirms the metrics discriminate rather than
+always passing. `voyage-code-3` was not benchmarked at all — it was superseded
+by `voyage-code-4`, which is both newer and cheaper ($0.12/M vs $0.18/M).
+
+Implemented as D1: all three code vectors (`content_vec`, `title_vec`,
+`breadcrumb_vec`) now resolve to `voyage-code-4` on the flat `embeddings`
+endpoint, so index and query share one space by construction. Docs collections
+remain contextualized on `voyage-context-4`.
+
+Two vendor behaviours measured during this work, both load-bearing:
+
+* The flat endpoint **silently truncates** at ~32K tokens per input rather than
+  rejecting — a 320,000-token input returned success and billed 31,993. An
+  oversized chunk is therefore half-embedded with no error. Upstream chunk-size
+  enforcement cannot be delegated to the API.
+* `voyage-code-4`'s per-request token ceiling is **not documented**: it is
+  absent from the vendor's 1M/320K/120K grouping sentence entirely. The
+  registry carries 320,000, inferred from the rate-limit tables plus a measured
+  ≥300,000 floor. If batch sizing ever fails, drop it to 120,000 first.
+
+Superseded by this outcome: the "keep `voyage-code-3` until benchmark evidence
+supports a replacement" recommendation above, and the ACCEPTED entry "use
+context-4 for docs and code-3 for code". The REJECTED entry "unbenchmarked
+code-model switching" stands — this switch was benchmarked.
 
 ## Migration Gate
 
@@ -158,7 +204,9 @@ consumer model. Keep three distinct metrics:
 
 - Preserve Python, FastMCP, and Qdrant.
 - Selectively backport upstream deterministic-indexing patterns.
-- Use context-4 for docs and code-3 for code.
+- Use context-4 for docs and code-3 for code. **Amended 2026-09-04**: code
+  moved to `voyage-code-4` (flat endpoint) on benchmark evidence; docs remain
+  on context-4.
 - Use model-specific tokenization for Voyage limits and cost.
 - Make index compatibility explicit and versioned.
 
