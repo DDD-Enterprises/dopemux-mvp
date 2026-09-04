@@ -1,0 +1,59 @@
+diff --git a/scripts/governance/validate_change_contract.py b/scripts/governance/validate_change_contract.py
+index ced326230..479074a0e 100755
+--- a/scripts/governance/validate_change_contract.py
++++ b/scripts/governance/validate_change_contract.py
+@@ -71,10 +71,11 @@ _PROOF_ARTIFACT = (
+     r"C\d+_HEAD\.txt|"
+     r"review_bundle/[A-Za-z0-9][A-Za-z0-9._-]*\.(txt|json|md|diff))"
+ )
++_PACKET_PROOF_ARTIFACT = rf"({_PROOF_ARTIFACT}|implementation-notes\.md)"
+ _PROOF_ONLY_ALLOWED = re.compile(
+     rf"^("
+     rf"proof/pr_merge/embedded-audit/pr-\d+/{_PROOF_ARTIFACT}"
+-    rf"|proof/[^/]+/{_PROOF_ARTIFACT}"
++    rf"|proof/[^/]+/{_PACKET_PROOF_ARTIFACT}"
+     rf")$"
+ )
+
+diff --git a/tests/governance/test_validate_change_contract.py b/tests/governance/test_validate_change_contract.py
+index 2a9c35903..0cb62e49d 100644
+--- a/tests/governance/test_validate_change_contract.py
++++ b/tests/governance/test_validate_change_contract.py
+@@ -446,6 +446,37 @@ def test_proof_only_arbitrary_pr_merge_path_fails() -> None:
+     assert any(f.code == "proof_only_escaped_path" for f in r.findings)
+
+
++def test_proof_only_packet_root_implementation_notes_only_allowed() -> None:
++    r = evaluate(
++        paths=["proof/TP-DMX-EXAMPLE/implementation-notes.md"],
++        cwd=ROOT,
++        proof_only_mode=True,
++        content_head="a" * 40,
++        audited_head="a" * 40,
++        proof_head="a" * 40,
++        file_text={"proof/TP-DMX-EXAMPLE/implementation-notes.md": "# notes\n"},
++    )
++    assert not any(f.code == "proof_only_escaped_path" for f in r.findings)
++
++    for path in (
++        "proof/TP-DMX-EXAMPLE/random.md",
++        "proof/TP-DMX-EXAMPLE/nested/implementation-notes.md",
++        "proof/pr_merge/embedded-audit/pr-1184/implementation-notes.md",
++    ):
++        rejected = evaluate(
++            paths=[path],
++            cwd=ROOT,
++            proof_only_mode=True,
++            content_head="a" * 40,
++            audited_head="a" * 40,
++            proof_head="a" * 40,
++        )
++        assert rejected.status == "FAIL", path
++        assert any(
++            f.code == "proof_only_escaped_path" for f in rejected.findings
++        ), path
++
++
+ def test_proof_only_review_bundle_evil_and_traversal_fail() -> None:
+     for path in (
+         "proof/pr_merge/embedded-audit/pr-1184/review_bundle/evil.bin",

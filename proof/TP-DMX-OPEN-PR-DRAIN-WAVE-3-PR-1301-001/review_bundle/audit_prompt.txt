@@ -1,0 +1,44 @@
+Independent embedded audit for DDD-Enterprises/dopemux-mvp PR #1301, part of a
+governed PR-drain packet (TP-DMX-OPEN-PR-DRAIN-MERGE-001, Wave 3). This PR
+modifies scripts/governance/validate_change_contract.py, a security-relevant
+validator that decides which file paths count as a "proof-only" delta (used
+to decide whether a signed audit attestation can be reused without
+re-auditing, and to gate what may land on top of an already-audited commit).
+
+THE CHANGE: it widens the packet-root proof-only allow-list regex from
+matching only `proof/<packet-id>/<known-artifact-pattern>` to also match
+`proof/<packet-id>/implementation-notes.md` as a literal, single-segment
+filename directly under the packet directory. Critically, this same widening
+was NOT applied to the separate `proof/pr_merge/embedded-audit/pr-<N>/`
+branch of the regex, which stays restricted to the original artifact
+pattern only.
+
+VERIFY, using real filesystem access via --add-dir:
+1. Read the actual current diff and confirm my summary above is accurate —
+   check the regex change character by character, not just the test names.
+2. Confirm the new test `test_proof_only_packet_root_implementation_notes_only_allowed`
+   actually tests what it claims: one ACCEPT case (packet-root, single
+   segment) and three REJECT cases (arbitrary filename, nested path, and
+   the pr_merge namespace). Run the actual test file yourself:
+   `cd /Users/hue/code/dopemux-mvp/.worktrees/pr-1301 && python3 -m pytest tests/governance/test_validate_change_contract.py -v`
+   and report the real pass/fail count.
+3. THIS IS THE SECURITY QUESTION: does allowing `implementation-notes.md` as
+   a proof-only path create any way for someone to smuggle a file with
+   attacker-controlled or semantically meaningful content past the
+   diff-scope check under a name that LOOKS like inert prose but isn't
+   (e.g. could a file literally named `implementation-notes.md` be used to
+   carry executable content, a symlink, or something the acceptance engine
+   would treat specially)? Check whether the acceptance engine anywhere
+   executes, imports, or specially interprets a file just because it's
+   named implementation-notes.md, or whether it is purely inert prose from
+   the acceptance engine's perspective.
+4. Is the exclusion of the pr_merge namespace from this widening still
+   correctly enforced (i.e. the reserved-namespace protection isn't
+   accidentally weakened)?
+5. Run the broader governance test suite if time permits:
+   `python3 -m pytest tests/governance/ -q` and report pass/fail.
+
+Return PASS / PASS_WITH_RISKS / FAIL / NEEDS_SUPERVISOR with findings (id,
+severity, title, status, body).
+
+Worktree: /Users/hue/code/dopemux-mvp/.worktrees/pr-1301
