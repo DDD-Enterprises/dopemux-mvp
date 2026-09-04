@@ -4,10 +4,9 @@
   "branch": "codex/mcp-multiproject-p1-fleet-control-plane",
   "base": "main",
   "base_sha": "328a31e9a48bc20c29f4d1cde79273f587d987ee",
-  "head_sha": "d85164823e92b5dc29a0643dbad559df0957f512",
-  "audited_parent": "36620e6a50d0724ee22559eb7acc1a3186263245",
-  "generated_at": "2026-09-04T09:20:00Z",
-  "kind": "L3 implementation, repair round 1 (bounded repair of 6 PR #1313 Copilot review findings: identity cwd normalization, canonical_identity_summary schema completeness, docker mount evidence fail-closed, two git-missing test hardenings, one docstring typo), fresh independent audit on the repair content head; proof-only successor at head_sha (this proof bundle's own files added after the audit completed, no source touched since audited_parent)",
+  "head_sha": "36620e6a50d0724ee22559eb7acc1a3186263245",
+  "generated_at": "2026-09-04T09:55:00Z",
+  "kind": "L3 implementation, repair round 1 (bounded repair of 6 PR #1313 Copilot review findings: identity cwd normalization, canonical_identity_summary schema completeness, docker mount evidence fail-closed, two git-missing test hardenings, one docstring typo), fresh independent audit on the repair content head. head_sha is the LITERAL audited commit (not a proof-only successor) so this bundle satisfies scripts/audit/local_audit_acceptance.py's packet_proof_head_sha_mismatch cross-check against proof/pr_merge/embedded-audit/pr-1313/PROOF.json; this proof bundle's own files (this update included) were added in commits on top of head_sha that touch only this packet's proof/ directory, per that same acceptance engine's diff-scope allowance.",
   "implementer": "Claude Sonnet 5 (Claude Code)",
   "risk_lane": "L3 (packet-declared; scripts/governance/validate_change_contract.py classified max_lane=L2 on the touched paths -- recorded honestly as a discrepancy, packet's own L3 classification governs)",
   "audited_files": [
