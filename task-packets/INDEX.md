@@ -173,6 +173,8 @@ A packet is superseded by another packet
 | TP-DCP-MCP-RO-0018 | DCP / MCP | Exact-Head Proof Readiness Evaluator | Active | TP-DCP-MCP-RO-0017 |
 | TP-DCP-MCP-RO-0017-VENDOR | DCP / MCP | Vendor-Live Preflight And Two-Target Isolation | Active | TP-DCP-MCP-RO-0017 |
 | DMX-DCP-PROMPT5-EXTRACT-RECON-001 | DCP / Prompt 5 | Extract Prompt 5 chat-history docs and reconcile PR/Task Orchestrator runway state | Active | N/A |
+| TP-DMX-C0-R2-SCHEMA-PUBLICATION-001 | Control Tower / DCP | Deterministic C0-R2 schema publication into schemas/dcp (exact-byte, L0) | Active (PR #1307 open) | N/A |
+| TP-DMX-C0-R2-SCHEMA-PUBLICATION-001-A1 | Control Tower / DCP | Publication admission amendment — C0-R2 ratification authority reconciliation | Active | TP-DMX-C0-R2-SCHEMA-PUBLICATION-001 |
 
 ────────────────────────────────────────────────────────────
 🟢 Completed Task Packets

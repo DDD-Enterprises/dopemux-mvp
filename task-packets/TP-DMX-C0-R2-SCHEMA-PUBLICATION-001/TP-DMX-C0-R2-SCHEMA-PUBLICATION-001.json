@@ -1,0 +1,211 @@
+{
+  "id": "TP-DMX-C0-R2-SCHEMA-PUBLICATION-001",
+  "project": "Dopemux / C0-R2 schema publication",
+  "target": "Publish the exact ratified C0-R2 schema bytes into the canonical dopemux-mvp schemas/dcp namespace after PR #1283 merges, update the existing DCP manifest deterministically, and prove byte identity/reference closure without semantic edits.",
+  "invariants": [
+    "RISK_LANE=L0_DETERMINISTIC_PUBLICATION.",
+    "SOURCE_C0_R2_ZIP_SHA256=a9d51a5b19170589cff38fee951fd611436e65711af4a8bbfcff4084ab884c19.",
+    "SOURCE_SUBJECT=TP-UAG-C0-DCP-UAG-DOPETASK-AUTHORITY-INTERFACE-FREEZE-001-R2.",
+    "C0_R2_OPERATOR_RATIFICATION_REQUIRED=YES.",
+    "PR_1283_MERGED_REQUIRED=YES.",
+    "POST_MERGE_MAIN_REHARVEST_REQUIRED=YES.",
+    "BYTE_IDENTICAL_SCHEMA_PUBLICATION_ONLY.",
+    "SEMANTIC_SCHEMA_EDITS=FORBIDDEN.",
+    "SCHEMA_RENAMING=FORBIDDEN.",
+    "SCHEMA_VERSION_REINTERPRETATION=FORBIDDEN.",
+    "DCP_MANIFEST_UPDATE=DETERMINISTIC_REGISTRATION_ONLY.",
+    "NEW_ARCHITECTURE_AUDIT=NOT_REQUIRED_IF_SOURCE_BYTES_AND_MEANING_UNCHANGED.",
+    "If any destination schema path already exists with different bytes, STOP_CONFLICT and do not overwrite.",
+    "If PR #1283 changes the manifest format or schema registry semantics, adapt only mechanically; any semantic registry change escalates out of L0.",
+    "Absolute $id values and relative $ref closure must remain valid after publication.",
+    "Canonical owner after publication is dopemux-mvp schemas/dcp; external C0-R2 package remains frozen provenance.",
+    "dopeTask mirror publication is NOT part of this packet.",
+    "No runtime wiring, feature enablement, UAG implementation, DCP/UAG integration, Dopetask release, pin change, merge, or activation authority is granted.",
+    "Repository mutation is authorized only after both admission gates are satisfied and only within the exact allowlist.",
+    "GitHub mutation is limited to opening the publication PR if repository policy requires it; merge remains operator-only.",
+    "If C0-R2 ratification cannot be proven, STOP.",
+    "If #1283 is not merged, STOP."
+  ],
+  "depends_on": [
+    "TP-UAG-C0-R2-OPERATOR-RATIFICATION-001",
+    "TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "UAG-DCP-DOPETASK-INTEGRATION-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-UAG-C0-R2-OPERATOR-RATIFICATION-001",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "chore(dcp): publish ratified C0-R2 schemas",
+    "allowlist": [
+      "schemas/dcp/common_defs.schema.json",
+      "schemas/dcp/dcp_route_authorization.schema.json",
+      "schemas/dcp/uag_transport_request.schema.json",
+      "schemas/dcp/uag_transport_result.schema.json",
+      "schemas/dcp/model_transport_receipt.schema.json",
+      "schemas/dcp/tool_intent.schema.json",
+      "schemas/dcp/macro_execution_authority_ref_v2.schema.json",
+      "schemas/dcp/dopetask_governed_execution_profile.schema.json",
+      "schemas/dcp/governed_execution_receipt.schema.json",
+      "schemas/dcp/uag_compatibility_certification.schema.json",
+      "schemas/dcp/manifest.json",
+      "proof/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001/**"
+    ],
+    "verify": [
+      "Repository/worktree/branch identity.",
+      "Post-#1283 merged main reharvest.",
+      "Changed-file allowlist exact.",
+      "git diff --check.",
+      "Each published schema byte-identical to C0-R2 source schema.",
+      "All published schema SHA-256 values match C0-R2 source manifest.",
+      "Draft-07 meta-validation PASS.",
+      "$ref closure PASS using canonical loader behavior.",
+      "DCP manifest registration consistent and deterministic.",
+      "No runtime/import/entrypoint changes.",
+      "Focused schema registry tests PASS.",
+      "Relevant complete schema/contract suite PASS.",
+      "Changed-file pre-commit lane PASS.",
+      "Secret scan PASS.",
+      "Proof records source and destination digests."
+    ]
+  },
+  "pr": {
+    "title": "chore(dcp): publish ratified C0-R2 schemas",
+    "body": "L0 deterministic publication of exact ratified C0-R2 schema bytes after DCP P0/#1283 merge. No semantic schema edits, runtime wiring, activation, Dopetask release, or pin change. Merge remains operator-only.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S00",
+      "task": "Admission: prove ratification and #1283 merge.",
+      "requirements": [
+        "Verify source C0-R2 ZIP SHA256=a9d51a5b19170589cff38fee951fd611436e65711af4a8bbfcff4084ab884c19.",
+        "Verify signed C0-R2 operator ratification record and post-signature digest in custody.",
+        "Fetch PR #1283 live state; require merged=true.",
+        "Record PR #1283 merge commit.",
+        "Fetch current main after merge and record SHA/tree.",
+        "Verify main contains #1283 merge ancestry.",
+        "If either gate fails, STOP without repository mutation."
+      ],
+      "validation": [
+        "C0_R2_RATIFICATION=PASS.",
+        "PR1283_MERGED=PASS.",
+        "POST_MERGE_MAIN_REHARVEST=PASS."
+      ]
+    },
+    {
+      "id": "S01",
+      "task": "Reharvest canonical DCP schema namespace and manifest semantics.",
+      "requirements": [
+        "Inventory schemas/dcp after #1283 merge.",
+        "Read schemas/dcp/manifest.json and any registry validation tests.",
+        "Classify each target destination as ABSENT, IDENTICAL, or CONFLICTING.",
+        "If any destination is CONFLICTING, STOP_CONFLICT.",
+        "Confirm manifest update can be deterministic registration only."
+      ],
+      "validation": [
+        "No conflicting destination bytes.",
+        "Manifest semantics require no L2 change."
+      ]
+    },
+    {
+      "id": "S02",
+      "task": "Publish exact C0-R2 schema bytes.",
+      "requirements": [
+        "Copy exactly the ten source schema files into schemas/dcp with original file names.",
+        "Do not normalize whitespace, reorder JSON, rewrite $id, or rewrite $ref.",
+        "For already-IDENTICAL files, leave bytes unchanged.",
+        "Record source and destination SHA-256 for each schema."
+      ],
+      "validation": [
+        "10/10 source-destination digest equality.",
+        "No semantic transformation."
+      ]
+    },
+    {
+      "id": "S03",
+      "task": "Register schemas in the canonical DCP manifest.",
+      "requirements": [
+        "Update only the existing manifest fields required to register the ten contracts.",
+        "Preserve all #1283/P0 registrations.",
+        "Do not change authority owners or semantics.",
+        "If manifest requires generated hashes, derive them from exact published bytes."
+      ],
+      "validation": [
+        "All pre-existing manifest entries preserved.",
+        "All ten C0-R2 entries resolvable.",
+        "No duplicate contract IDs or $ids."
+      ]
+    },
+    {
+      "id": "S04",
+      "task": "Run deterministic publication validation.",
+      "requirements": [
+        "Draft-07 meta-validate all affected schemas.",
+        "Resolve all $refs with the repository's canonical schema loader or equivalent exact behavior.",
+        "Run focused DCP schema/manifest tests.",
+        "Run relevant complete contract/schema test suite.",
+        "Run any publication/mirror drift checks already present.",
+        "Verify no runtime source/config/entrypoint changed."
+      ],
+      "validation": [
+        "Structural validation PASS.",
+        "Reference closure PASS.",
+        "Tests PASS.",
+        "Runtime wiring delta=0."
+      ]
+    },
+    {
+      "id": "S05",
+      "task": "Pre-push deterministic gate and proof.",
+      "requirements": [
+        "Verify repo/worktree/branch identity.",
+        "Verify changed-file allowlist.",
+        "Run git diff --check.",
+        "Run changed-file pre-commit lane.",
+        "Run secret scan on proof/package output.",
+        "Record exact source C0-R2 digest, signed ratification digest, #1283 merge commit, post-merge base SHA/tree, published schema digests, and manifest digest."
+      ],
+      "validation": [
+        "All L0/pre-push gates PASS.",
+        "No model audit required."
+      ]
+    },
+    {
+      "id": "S06",
+      "task": "Open publication PR only after clean deterministic gates.",
+      "requirements": [
+        "Commit exact allowed changes.",
+        "Push branch.",
+        "Open draft/non-draft PR according to repo policy.",
+        "Do not merge.",
+        "Do not mark READY unless current repository governance independently permits it."
+      ],
+      "validation": [
+        "PR head exactly matches proof.",
+        "MERGE_AUTHORIZED=NO.",
+        "ACTIVATION_AUTHORIZED=NO."
+      ]
+    },
+    {
+      "id": "S07",
+      "task": "Return publication result and next gate.",
+      "requirements": [
+        "Return source and destination digests, post-merge base, changed files, test results, PR number/head if created, and blockers.",
+        "If byte identity or manifest-only conditions fail, return BLOCKED and escalate.",
+        "Successful publication does not authorize runtime implementation."
+      ],
+      "validation": [
+        "FINAL_STATUS=PUBLICATION_PR_OPEN|PUBLICATION_COMPLETE_LOCAL|BLOCKED_RATIFICATION|BLOCKED_PR1283_UNMERGED|BLOCKED_CONFLICT|BLOCKED_VALIDATION.",
+        "NEXT_GATE=PR_STEWARD_OR_OPERATOR_PUBLICATION_MERGE_DECISION on PR success."
+      ]
+    }
+  ]
+}
