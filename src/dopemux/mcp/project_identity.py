@@ -1,4 +1,14 @@
-"""Project identity helpers for MCP state scoping."""
+"""Project identity helpers for MCP state scoping.
+
+P1 note: everything in this module is locator/evidence-only compatibility for
+existing v1 callers (lifecycle, fleet, doctor, mcp_commands). ``project_id``
+here is a deterministic path-hash, not a canonical identifier -- it must never
+be treated as registry authority. New authoritative callers resolve identity
+through ``dopemux.mcp.identity.resolve_execution_identity`` against an
+``dopemux.mcp.identity_registry.IdentityRegistry`` instead. ``as_locator_aliases``
+below is the bridge: it turns this module's locator facts into the
+EVIDENCE_ONLY alias dicts that registry consumers register/match against.
+"""
 
 from __future__ import annotations
 
@@ -35,6 +45,20 @@ class ProjectIdentity:
     @property
     def project_id(self) -> str:
         return f"{self.project_slug}-{self.project_hash}"
+
+    def as_locator_aliases(self) -> list[dict[str, str]]:
+        """Locator facts as EVIDENCE_ONLY alias dicts for the P1 identity
+        registry (``kind``/``value`` pairs suitable for
+        ``IdentityRegistry.register_*``/``add_alias``). Never authoritative;
+        registering these does not create or verify a canonical identity."""
+
+        aliases = [
+            {"kind": "worktree_root", "value": str(self.worktree_root)},
+            {"kind": "project_root", "value": str(self.project_root)},
+        ]
+        if self.git_common_dir is not None:
+            aliases.append({"kind": "git_common_dir", "value": str(self.git_common_dir)})
+        return aliases
 
 
 def _require_dir(path_value: str, *, env_name: str) -> Path:
