@@ -1,0 +1,59 @@
+{
+  "packet_id": "TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001",
+  "status": "PASS",
+  "risk_lane": "L1_LOW",
+  "head_sha": "892b856d33574fa2b76a9d21f96c7edc4b032d99",
+  "generated_at": "2026-09-04T17:15:00Z",
+  "repo_identity": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "remotes": {"origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git"},
+    "require_identity_match": true,
+    "match": true
+  },
+  "worktree": {
+    "path": "/Users/hue/code/dopemux-mvp/.worktrees/red-lane-hardening-1304",
+    "branch": "fix/red-lane-path-regex-hardening-001",
+    "base": "8910fd64c38e438b1cfbf9a77c6217511d8c7374",
+    "base_note": "origin/main tip after PR #1318 (dope-context wave reconciliation)",
+    "content_head": "892b856d33574fa2b76a9d21f96c7edc4b032d99",
+    "final_head": "892b856d33574fa2b76a9d21f96c7edc4b032d99"
+  },
+  "background": "Operator's post-#1318 governing order, item 1: TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001. Python's `$` matches immediately before a trailing newline (not strictly end-of-string), and `.` never crosses a newline without re.DOTALL. A control character embedded in a file_path could make an `^`-anchored, `.*$`-tailed DCP-RED-MERGE-SEAM-0001 FORBIDDEN_PATHS entry fail to match anywhere in the string (silent fall-through to unblocked) or make a negative-lookahead exemption falsely treat a control-character-suffixed string as the real exempted file. Previously recorded as an INFORMATIONAL 'no realistic bypass' finding (proof/TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R/FINAL_AUDIT_VERDICT.json, F3). ADR-226 Amendment A5a is about to add three more exemptions to this same matcher, so this closes the anchoring imprecision at the source: every FORBIDDEN_PATHS pattern now anchors with \\Z instead of $, every .*-containing pattern compiles with re.DOTALL, and surface_guard_block gains an unconditional, independent control-character fail-closed check as defense in depth. Round 2: a Copilot review finding (round-1 tests only exercised the control-character short-circuit, never the regex anchoring fix itself) was addressed by adding a direct FORBIDDEN_PATHS.search() assertion, then squashing into one clean content commit and re-auditing.",
+  "files_changed": [
+    ".claude/hooks/dcp_surface_guard.py",
+    "src/dopemux/dcp/red_lane_rules.py",
+    "tests/test_dcp_surface_guard.py"
+  ],
+  "validation": [
+    {"command": "uv run --frozen pytest tests/test_dcp_surface_guard.py tests/dcp/test_dcp_0005_red_lane_scanner.py -v", "exit_code": 0, "result": "PASS", "detail": "76 passed"},
+    {"command": "PYTHONPATH=src uv run --frozen pytest tests/dcp/ --deselect tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified", "exit_code": 0, "result": "PASS", "detail": "185 passed, 1 deselected"},
+    {"command": "uv run --frozen pytest tests/unit tests/test_voice_core.py tests/test_brand_voice.py -n auto --disable-warnings --no-cov --deselect tests/unit/test_pm_source_events.py::test_emit_pm_promotable_source_event_rejects_bare_non_repo_workspace_root", "exit_code": 0, "result": "PASS", "detail": "1878 passed, 2 skipped (pre-existing quarantines)"},
+    {"command": "uv run --frozen python scripts/brand_lint.py", "exit_code": 0, "result": "PASS", "detail": "0 errors, 0 warnings"}
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/red-lane-hardening-1304 --add-dir /tmp/pr1322_audit --print=\"$(cat /tmp/pr1322_audit/PROMPT.txt)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001/AUDITOR_REPORT.md",
+    "findings": [
+      {"id": "F-001", "severity": "INFO", "title": "Diff scope confined to the 3 stated files", "status": "RESOLVED", "body": "No product code, no secrets."},
+      {"id": "F-002", "severity": "HIGH", "title": "Regex anchor vulnerability independently reproduced and fix confirmed", "status": "RESOLVED", "body": "Blanket-pattern bypass and exemption-falsification both live-repro'd; \\Z + DOTALL closes both."},
+      {"id": "F-003", "severity": "HIGH", "title": "Control-character guard is unconditional and first", "status": "RESOLVED", "body": "Cannot be bypassed by a later normalization step."},
+      {"id": "F-004", "severity": "LOW", "title": "No Unicode-line-separator bypass gap", "status": "RESOLVED", "body": "Those characters never triggered the regex-level hazard."},
+      {"id": "F-005", "severity": "BLOCKING", "title": "Matched-path set unchanged for ordinary paths", "status": "RESOLVED", "body": "Verified against existing dope-context carve-outs."},
+      {"id": "F-006", "severity": "MEDIUM", "title": "Copilot addendum fix genuinely proves the regex-level fix independently", "status": "RESOLVED", "body": "_matches_forbidden_pattern() bypasses the guard's short-circuit."},
+      {"id": "F-007", "severity": "HIGH", "title": "Full guard test suite re-run on final head: 76/76 passed", "status": "RESOLVED", "body": "tests/test_dcp_surface_guard.py + tests/dcp/test_dcp_0005_red_lane_scanner.py."}
+    ],
+    "fixes_applied": [
+      "Added _matches_forbidden_pattern() direct-regex assertion per Copilot review finding, then squashed round-1 commits into one clean content commit before re-auditing"
+    ],
+    "remaining_risks": [],
+    "skip_reason": null,
+    "instruction_like_content": {"detected": false, "match_count": 0, "truncated": false, "matches": []}
+  }
+}

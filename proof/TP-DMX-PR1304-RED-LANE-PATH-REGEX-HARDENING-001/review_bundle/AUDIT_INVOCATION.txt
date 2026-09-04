@@ -1,0 +1,1 @@
+agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/red-lane-hardening-1304 --add-dir /tmp/pr1322_audit --print="$(cat /tmp/pr1322_audit/PROMPT.txt)"
