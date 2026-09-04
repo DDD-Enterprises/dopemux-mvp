@@ -898,7 +898,7 @@ function DashboardApp() {
           )}
           {layout.showTeamDashboard && !isMobile && (
             <Grid item xs={12}>
-              <TeamDashboard />
+              <TeamDashboard onError={setErrorMessage} />
             </Grid>
           )}
         </Grid>
