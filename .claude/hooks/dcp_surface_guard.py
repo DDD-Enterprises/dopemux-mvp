@@ -119,6 +119,14 @@ def _repo_relative(file_path: str, project_root: Path) -> str:
     return _repo_relative_candidates(file_path, project_root)[0]
 
 
+_CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f]")
+
+
+def _has_control_chars(s: str) -> bool:
+    """True if ``s`` contains any ASCII control byte (0x00-0x1F, 0x7F)."""
+    return bool(_CONTROL_CHARS.search(s))
+
+
 def surface_guard_block(tool_name: str, tool_input: dict, project_root: Path) -> str | None:
     """Return a block reason when an edit targets a red-lane seam file, else None."""
     if tool_name not in {"Edit", "Write", "NotebookEdit"}:
@@ -126,6 +134,23 @@ def surface_guard_block(tool_name: str, tool_input: dict, project_root: Path) ->
     file_path = str((tool_input or {}).get("file_path") or "")
     if not file_path:
         return None
+    # TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001: a control character (most
+    # notably a newline) embedded in file_path can make an `^`-anchored,
+    # `.*`-tailed forbidden pattern fail to match anywhere in the string — the
+    # match silently falls through to "not blocked" instead of either matching
+    # or correctly failing the exemption lookahead. red_lane_rules.py now
+    # anchors every pattern with `\Z` under `re.DOTALL` to close that at the
+    # regex level; this is the second, pattern-independent layer: no legitimate
+    # file_path contains a control character, so fail closed unconditionally
+    # rather than depend on every current and future FORBIDDEN_PATHS entry
+    # getting its anchoring exactly right.
+    if _has_control_chars(file_path):
+        return (
+            f"🚫 file_path contains a control character (e.g. embedded newline) "
+            f"and is hard-blocked by red lane {RED_LANE_ID} as a precaution — "
+            f"no legitimate edit target has one. If this is unexpected, inspect "
+            f"the literal tool_input.file_path value."
+        )
     patterns = _forbidden_patterns()
     for rel in _repo_relative_candidates(file_path, project_root):
         if any(p.search(rel) for p in patterns):

@@ -1,0 +1,30 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1322,
+  "head_sha": "892b856d33574fa2b76a9d21f96c7edc4b032d99",
+  "generated_at": "2026-09-04T17:15:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/red-lane-hardening-1304 --add-dir /tmp/pr1322_audit --print=\"$(cat /tmp/pr1322_audit/PROMPT.txt)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001/AUDITOR_REPORT.md",
+    "findings": [
+      {"id": "F-001", "severity": "INFO", "title": "Diff scope confined to the 3 stated files", "status": "RESOLVED", "body": "No product code, no secrets."},
+      {"id": "F-002", "severity": "HIGH", "title": "Regex anchor vulnerability independently reproduced and fix confirmed", "status": "RESOLVED", "body": "Blanket-pattern bypass and exemption-falsification both live-repro'd; \\Z + DOTALL closes both."},
+      {"id": "F-003", "severity": "HIGH", "title": "Control-character guard is unconditional and first", "status": "RESOLVED", "body": "Cannot be bypassed by a later normalization step."},
+      {"id": "F-004", "severity": "LOW", "title": "No Unicode-line-separator bypass gap", "status": "RESOLVED", "body": "Those characters never triggered the regex-level hazard."},
+      {"id": "F-005", "severity": "BLOCKING", "title": "Matched-path set unchanged for ordinary paths", "status": "RESOLVED", "body": "Verified against existing dope-context carve-outs."},
+      {"id": "F-006", "severity": "MEDIUM", "title": "Copilot addendum fix genuinely proves the regex-level fix independently", "status": "RESOLVED", "body": "_matches_forbidden_pattern() bypasses the guard's short-circuit."},
+      {"id": "F-007", "severity": "HIGH", "title": "Full guard test suite re-run on final head: 76/76 passed", "status": "RESOLVED", "body": "tests/test_dcp_surface_guard.py + tests/dcp/test_dcp_0005_red_lane_scanner.py."}
+    ],
+    "fixes_applied": [
+      "Added _matches_forbidden_pattern() direct-regex assertion per Copilot review finding, then squashed round-1 commits into one clean content commit before re-auditing"
+    ],
+    "remaining_risks": [],
+    "skip_reason": null,
+    "instruction_like_content": {"detected": false, "match_count": 0, "truncated": false, "matches": []}
+  }
+}

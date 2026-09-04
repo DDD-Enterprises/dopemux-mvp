@@ -23,6 +23,22 @@ from dcp_surface_guard import (  # noqa: E402
     surface_guard_warnings,
 )
 
+_SRC_DIR = Path(__file__).resolve().parents[1] / "src"
+if str(_SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(_SRC_DIR))
+
+from dopemux.dcp.red_lane_rules import FORBIDDEN_PATHS  # noqa: E402
+
+
+def _matches_forbidden_pattern(rel: str) -> bool:
+    """True if `rel` matches at least one live FORBIDDEN_PATHS pattern.
+
+    Bypasses surface_guard_block's control-character short-circuit so the
+    regex-level anchoring fix (\\Z + re.DOTALL) can be exercised on its own,
+    independent of the guard's separate defense-in-depth layer.
+    """
+    return any(p.search(rel) for p in FORBIDDEN_PATHS)
+
 
 # ---------------------------------------------------------------------------
 # Block tier — red-lane seam files
@@ -287,6 +303,87 @@ def test_path_outside_root_is_not_a_repo_file(tmp_path):
 def test_repo_relative_primary_reading_unchanged():
     fp = str(_ROOT / "services" / "dope-context" / "eval" / "run_eval.py")
     assert _repo_relative(fp, _ROOT) == "services/dope-context/eval/run_eval.py"
+
+
+# ---------------------------------------------------------------------------
+# TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001 (2026-09-04): Python's `$`
+# matches immediately before a *trailing* newline, and `.` (without DOTALL)
+# never matches a newline. Together, a control character embedded in
+# file_path could make an `^`-anchored, `.*$`-tailed forbidden pattern fail
+# to match anywhere in the string — silently falling through to "not
+# blocked" — or make a negative-lookahead exemption falsely treat a
+# differently-named string as equivalent to the real exempted filename.
+# Previously recorded as INFORMATIONAL / "no realistic bypass" in
+# proof/TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R/FINAL_AUDIT_VERDICT.json (F3);
+# closed here at two layers: `\Z` + `re.DOTALL` anchoring in
+# red_lane_rules.py, and an unconditional control-character fail-closed
+# block in surface_guard_block itself (belt-and-suspenders — holds even if
+# a future FORBIDDEN_PATHS entry gets its own anchoring wrong).
+# ---------------------------------------------------------------------------
+
+def test_trailing_newline_after_forbidden_target_is_still_blocked():
+    """A `.*` blanket pattern must not fail to match just because the tail
+    after the real forbidden prefix contains a newline."""
+    rel = "services/task-orchestrator/app/main.py\nextra"
+    assert _matches_forbidden_pattern(rel), "regex-level: \\Z + DOTALL must still match"
+    fp = str(_ROOT / "services" / "task-orchestrator" / "app" / "main.py") + "\nextra"
+    result = surface_guard_block("Edit", {"file_path": fp}, _ROOT)
+    assert result is not None
+
+
+def test_trailing_newline_variant_of_exempt_filename_is_not_falsely_exempt():
+    """`embedded-audit.yml\\n` must not inherit the real file's exemption."""
+    rel = ".github/workflows/embedded-audit.yml\n"
+    assert _matches_forbidden_pattern(rel), (
+        "regex-level: \\Z must not treat a trailing-newline variant as the "
+        "exact exempted filename"
+    )
+    fp = str(_ROOT / ".github" / "workflows" / "embedded-audit.yml") + "\n"
+    result = surface_guard_block("Edit", {"file_path": fp}, _ROOT)
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_embedded_newline_variant_of_exempt_filename_is_not_falsely_exempt():
+    """`src/index_profile.py\\nworkspace.py` must not inherit index_profile.py's
+    exemption and leak into src/workspace.py, which stays hard-blocked."""
+    rel = "services/dope-context/src/index_profile.py\nworkspace.py"
+    assert _matches_forbidden_pattern(rel), (
+        "regex-level: DOTALL must let `.*` cross the embedded newline so the "
+        "blanket pattern still matches, and \\Z must not falsely match the "
+        "lookahead's index_profile.py alternative mid-string"
+    )
+    fp = str(_ROOT / "services" / "dope-context") + "/src/index_profile.py\nworkspace.py"
+    result = surface_guard_block("Edit", {"file_path": fp}, _ROOT)
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_ordinary_exempt_path_still_does_not_match_forbidden_pattern():
+    """Sanity: the regex-level check itself must not false-positive on a
+    real, control-character-free exempted path."""
+    assert not _matches_forbidden_pattern("services/dope-context/eval/run_eval.py")
+    assert not _matches_forbidden_pattern(".github/workflows/embedded-audit.yml")
+
+
+def test_control_char_in_file_path_is_hard_blocked():
+    for bad_char in ("\n", "\r", "\x00", "\x1b", "\x7f"):
+        fp = str(_ROOT / "src" / "dopemux" / "cli.py") + bad_char + "x"
+        result = surface_guard_block("Edit", {"file_path": fp}, _ROOT)
+        assert result is not None, repr(bad_char)
+        assert RED_LANE_ID in result, repr(bad_char)
+
+
+def test_control_char_does_not_block_read_or_bash():
+    for tool in ("Read", "Bash", "Grep"):
+        fp = str(_ROOT / "src" / "dopemux" / "cli.py") + "\nx"
+        assert surface_guard_block(tool, {"file_path": fp}, _ROOT) is None
+
+
+def test_ordinary_path_with_no_control_chars_unaffected():
+    """Sanity: the control-character check must not false-positive on normal paths."""
+    inp = {"file_path": str(_ROOT / "src" / "dopemux" / "cli.py")}
+    assert surface_guard_block("Edit", inp, _ROOT) is None
 
 
 # ---------------------------------------------------------------------------
