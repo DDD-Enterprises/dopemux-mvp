@@ -554,3 +554,67 @@ Consequences:
 Why six independent audit rounds could not have found this: it is a fact about
 the running deployment's environment, not about the source. Static review of a
 diff or even of the whole repository cannot observe it.
+
+## Governance amendment A4 — two files for round-5/6 findings (2026-09-04)
+
+```text
+AMENDMENT_ID=A4
+AMENDMENT_STATUS=PENDING_OPERATOR_APPROVAL
+AMENDMENT_ADDS_ALLOWED_FILES=services/dope-context/src/embeddings/voyage_embedder.py, services/dope-context/src/search/dense_search.py
+REQUIRES_COMPANION_ADR_226_AMENDMENT=YES (ADR-226 A4)
+```
+
+Two findings cannot be closed inside the current Allowed Files:
+
+1. **`LIVE_TRAP_DEFAULT_TRUNCATION` (HIGH, round 5).** `truncation` defaults
+   to `True` in `voyage_embedder.py`, so the per-input guards never fire
+   unless a caller opts out. The round-5 fix opted out at six call sites,
+   which protects this packet's paths but not the next caller. The auditor
+   ruled the default itself indefensible; accepted. Fixing it touches every
+   caller in the service, so it needs its own review, not a ride-along.
+2. **Latent `qdrant-client` crash-loop.** `dense_search.py:19` imports
+   `SearchRequest`, which 1.19.0 removed and which the file **never uses**
+   (one occurrence, the import). The image installs from
+   `services/dope-context/requirements.txt` (`qdrant-client>=1.15.0`, no
+   upper bound), so any rebuild can reintroduce the crash. Deleting the dead
+   import fixes it permanently and beats pinning.
+
+**Correction to the earlier plan.** Prior notes said to pin `<1.19.0` in the
+root `pyproject.toml`. That was wrong twice over: `pyproject.toml` is not what
+builds this image (the Dockerfile installs from the service's
+`requirements.txt`), and the uncommitted edit has since been lost from the
+main checkout's working tree. It should not be restored.
+
+## A14 acceptance criterion — cannot be satisfied as written (2026-09-04)
+
+This packet's Acceptance Criteria include "Audit adversarial test A14 flips
+from FAIL to PASS", and Proof Requirements ask for "the A14 result".
+
+**Finding: A14 is undefined in every accessible artifact.** Searched: all of
+`docs/`, `claudedocs/`, `task-packets/`, `services/dope-context/` (including
+its own `docs/`), and `git log --all -S"A14"`. The only dope-context hits are
+this packet's own two references. The adversarial batteries are summarised in
+`docs/03-reference/systems/dope-context/postmerge-audit-pr-1112-2026-07-26.md`
+only in aggregate — "adversarial batteries A / B / C | 6 of 15, 2 of 6, 1 of 6
+FAIL" — so battery A had 15 tests and A14 was one of them, but the per-test
+list was never committed. Other `A14` hits in the repo belong to
+`TP-DMX-SECOND-BRAIN-ADR-CONTRACT-EVIDENCE-001`, an unrelated program with its
+own A-numbering.
+
+**Proposed ruling (operator decision required).** Replace the criterion with
+the concrete property it was standing in for, which is now covered by real
+tests:
+
+* `test_code_content_index_and_query_models_agree` — code `content_vec` index
+  model/endpoint equals the query model/endpoint (this is F-001, the blocker
+  the packet exists to close).
+* `test_all_six_named_vectors_agree_across_index_and_query` — the six-vector
+  criterion, stated separately in Acceptance Criteria.
+* `test_index_and_query_paths_both_derive_models_from_the_profile` and
+  `test_flat_embeds_disable_truncation` — both pipelines read the profile
+  rather than naming models, asserted over the AST.
+
+Do **not** mark A14 "PASS": nothing is known about what it asserted, and
+claiming a pass for an undefined test would be a false record. Either retire
+the criterion with this substitution, or produce the battery-A list so the
+original can be run.

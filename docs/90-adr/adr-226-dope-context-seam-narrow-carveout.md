@@ -709,3 +709,111 @@ dopemux-mvp code index to migrate.
 **Not changed:** `INDEX_SCHEMA_VERSION` stays `dope-context-v2`. The manifest
 comparison already catches this on model and endpoint, and bumping the schema
 version would additionally strand *docs* collections, which D1 does not touch.
+
+────────────────────────────────────────────────────────────
+
+## Amendment A4 — two files for findings raised by the round-5/6 audits (2026-09-04)
+
+```text
+AMENDMENT_ID=ADR-226-A4
+AMENDMENT_STATUS=PENDING_OPERATOR_APPROVAL
+ADDS_EXEMPTIONS=services/dope-context/src/embeddings/voyage_embedder.py, services/dope-context/src/search/dense_search.py
+AUTHORIZES_CONTENT_EDITS=NO (path-level only; TEXT_RULES scanning unchanged)
+WAVES_1_4_SRC_LIFT=STILL_NOT_AUTHORIZED
+```
+
+### Why — file 1: `src/embeddings/voyage_embedder.py`
+
+Round-5 finding `LIVE_TRAP_DEFAULT_TRUNCATION` (HIGH). `embed()` and
+`embed_batch()` declare `truncation: bool = True` (`:273`, `:333`), and both
+per-input guards are conditioned on `not truncation` (`:293`, `:373`). The
+guards therefore never fire unless a caller opts out explicitly.
+
+Round-5 remediation opted out at the six known call sites, which fixes *this*
+packet's paths. The auditor ruled that leaving the library default as `True`
+is **not defensible**, because it silently truncates for the next caller who
+forgets. That judgement is accepted: opting out per-call-site is a fix for the
+callers we happen to know about, not for the defect.
+
+The correct change is to make the safe behaviour the default. That cannot ride
+on the call-site fix, because the file is outside the carve-out **and** the
+default affects every caller in the service, not only the D1 paths — it
+requires its own review of each existing caller.
+
+### Why — file 2: `src/search/dense_search.py`
+
+`qdrant-client` 1.19.0 removed `SearchRequest` from
+`qdrant_client.http.models`. `dense_search.py` imports it at line 19 and
+**never uses it** — `SearchRequest` occurs exactly once in the file, in the
+import list. A rebuild that resolved 1.19.0 therefore crash-looped the
+container on a symbol the code does not need.
+
+The service image installs from `services/dope-context/requirements.txt`,
+whose qdrant line is `qdrant-client>=1.15.0` with **no upper bound**, so the
+next rebuild can reintroduce the failure at any time. (Note: an earlier
+mitigation pinned `<1.19.0` in the root `pyproject.toml`. That was aimed at
+the wrong file — `pyproject.toml` is not what builds this image — and the edit
+has since been lost from the working tree. Do not restore it; it would not
+have helped.)
+
+Deleting one dead import fixes the root cause permanently and makes any
+version pin unnecessary. That is strictly better than pinning, which only
+defers the upgrade.
+
+### Exact regex change
+
+```python
+    re.compile(
+        r"^services/dope-context/"
+        r"(?!eval/)"
+        r"(?!src/pipeline/indexing_pipeline\.py$)"
+        r"(?!src/mcp/server\.py$)"
+        r"(?!src/index_profile\.py$)"
+        r"(?!src/embeddings/model_registry\.py$)"
+        r"(?!tests/test_vector_space_invariants\.py$)"
+        r"(?!tests/test_vector_profiles_and_migration\.py$)"
++       r"(?!src/embeddings/voyage_embedder\.py$)"
++       r"(?!src/search/dense_search\.py$)"
+        r".*$"
+    ),
+```
+
+### Invariants preserved
+
+Unchanged from A2/A3: anchored `$` (so `.bak`/`.orig`/`.tmp` and same-named
+files elsewhere stay blocked), whole-path case folding, the traversal-refusal
+companion entry, and `TEXT_RULES` content scanning. Every other path under
+`services/dope-context/` remains hard-blocked — including
+`src/search/hybrid_search.py`, the same-directory neighbour of
+`dense_search.py`, and `src/embeddings/contextualized_embedder.py`, the
+same-directory neighbour of `voyage_embedder.py`.
+
+### What lands with this amendment
+
+Path-level exemption only. The authorized content changes, specified so the
+diff is reviewable before the lane opens:
+
+* `voyage_embedder.py`: flip both `truncation` defaults to `False`, then
+  audit every existing caller. Any caller that genuinely wants truncation must
+  opt in explicitly. **This is a behavioural change with blast radius beyond
+  D1** and must not be treated as cosmetic. If a caller is found that depends
+  on silent truncation, stop and report rather than changing it.
+* `dense_search.py`: delete the unused `SearchRequest` name from the
+  `qdrant_client.http.models` import list. Nothing else.
+
+### Rollback
+
+Revert the two lookahead lines. The `dense_search.py` change is independently
+revertable and carries no state. The `voyage_embedder.py` default flip should
+be reverted together with any caller changes made under it.
+
+### Verification before landing
+
+* `SearchRequest` no longer appears anywhere in `src/`, and
+  `python -c "from qdrant_client.http.models import ..."` succeeds on both
+  1.18.x and 1.19.x.
+* Every remaining `.embed`/`.embed_batch` call is either explicit about
+  `truncation` or verified safe under the new default.
+* `surface_guard_block` still denies `src/search/hybrid_search.py` and
+  `src/embeddings/contextualized_embedder.py`.
+* Full service suite green; the AST truncation test still passes.
