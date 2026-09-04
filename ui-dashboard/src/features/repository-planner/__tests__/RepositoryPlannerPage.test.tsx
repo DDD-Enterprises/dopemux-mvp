@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import RepositoryPlannerPage from '../RepositoryPlannerPage';
 import { buildFoundationLanes } from '../RepositoryPlannerPage';
@@ -26,6 +26,25 @@ describe('RepositoryPlannerPage', () => {
     expect(screen.getByText('Conflicting evidence')).toBeVisible();
     expect(screen.getByText(/Authority: NONE/)).toBeVisible();
     expect(screen.getByText(/Projection only/)).toBeVisible();
+  });
+
+  test('copies candidate SHA to clipboard when SHA chip is clicked', async () => {
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: writeTextMock,
+      },
+    });
+
+    render(<RepositoryPlannerPage />);
+    const expectedSha = dopemuxFixture.lanes[0].candidate_sha;
+    const shaChip = screen.getByRole('button', { name: `Copy candidate SHA: ${expectedSha}` });
+    expect(shaChip).toBeVisible();
+
+    fireEvent.click(shaChip);
+
+    expect(writeTextMock).toHaveBeenCalledWith(expectedSha);
+    expect(await screen.findByRole('button', { name: `Candidate SHA ${expectedSha} copied` })).toBeInTheDocument();
   });
 
   test('opens accessible lane details, provenance, and returns focus on close', () => {
