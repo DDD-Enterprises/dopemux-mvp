@@ -491,3 +491,20 @@ This erratum lives here rather than in the source comment because the red-lane
 hook began denying edits to `services/dope-context/**` again partway through
 the session (see the note in the session record); the committed comment is
 accurate as written, so no source change is required to close this.
+
+### Operational consequence — pre-D1 code collections must be recreated (2026-09-04)
+
+Round-4 independent audit finding `STRANDED_COLLECTIONS`. D1 changes the code
+content vector's model and endpoint, both of which are recorded in the
+collection manifest and compared field by field by
+`compare_collection_manifests()`. Every code collection indexed before D1 will
+therefore raise `CollectionCompatibilityError` on the next write.
+
+This fails closed with an actionable message rather than corrupting silently,
+and no automatic migration is provided on purpose: the two vector spaces are
+not comparable, so an in-place upgrade would reintroduce the F-001 defect. The
+required action is explicit re-indexing. Docs collections are unaffected.
+Blast radius today is near zero — Qdrant holds no dopemux-mvp code index.
+
+Full rationale, including why `INDEX_SCHEMA_VERSION` is deliberately not
+bumped, is in ADR-226 under "Operational consequence of D1".

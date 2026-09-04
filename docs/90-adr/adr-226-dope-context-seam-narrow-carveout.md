@@ -672,3 +672,40 @@ commit as well, which restores the old assertions' truth.
   `tests/test_mcp_server.py`, and
   `tests/test_vector_profiles_and_migration.py.bak`.
 * Full suite returns to zero failures.
+
+────────────────────────────────────────────────────────────
+
+## Operational consequence of D1 — existing code collections are stranded (2026-09-04)
+
+Raised by the round-4 independent audit as `STRANDED_COLLECTIONS`
+(`proof/pr_merge/embedded-audit/pr-1304/round4/`). It was a real disclosure
+gap: neither A2, A3, nor the D1 commit recorded it.
+
+**What happens.** D1 changes the code collection's content model from
+`voyage-context-4` on `contextualized_embeddings` to `voyage-code-4` on
+`embeddings`. `build_collection_manifest()` records model and endpoint, and
+`compare_collection_manifests()` compares them field by field. Any code
+collection indexed before D1 therefore mismatches on both `model` and
+`endpoint`, and every subsequent write to it raises
+`CollectionCompatibilityError`.
+
+**This is by design, not a defect.** The failure is loud, fails closed, and
+carries an actionable message ("recreate the collection explicitly instead of
+mixing vector generations"). Mixing a contextualized and a flat vector
+generation in one collection is exactly the F-001 class of silent corruption
+this packet exists to end, so refusing the write is correct. The audit rated
+this HIGH on the assumption it was undisclosed and unmitigated; the disclosure
+gap was real, the silent-corruption risk was not.
+
+**Required operator action.** Every pre-D1 code collection must be explicitly
+recreated (re-indexed). There is deliberately **no automatic migration**:
+vectors from the two spaces are not comparable, so a silent in-place upgrade
+would be precisely the mistake D1 removes. Docs collections are unaffected.
+
+**Blast radius at the time of writing.** Near zero. Qdrant currently holds one
+collection belonging to an unrelated project; there is no production
+dopemux-mvp code index to migrate.
+
+**Not changed:** `INDEX_SCHEMA_VERSION` stays `dope-context-v2`. The manifest
+comparison already catches this on model and endpoint, and bumping the schema
+version would additionally strand *docs* collections, which D1 does not touch.
