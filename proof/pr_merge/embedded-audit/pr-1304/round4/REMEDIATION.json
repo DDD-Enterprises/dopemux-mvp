@@ -1,0 +1,52 @@
+{
+  "round": 4,
+  "target_head": "e80cda77d949d8a815f8a6a2fbb6d0d7003e2c75",
+  "auditor_verdict": "OPEN",
+  "disposition_author": "implementing agent (session 3d420c77)",
+  "note": "Dispositions below are the implementer's response, not the auditor's. Any finding marked REFUTED cites evidence outside the audited diff, which is the auditor's stated blind spot for this round (delta-only, no repo mount).",
+  "findings": [
+    {
+      "id": "SILENT_TRUNCATION",
+      "auditor_severity": "HIGH",
+      "disposition": "REFUTED_WITH_EVIDENCE",
+      "status": "PASS",
+      "evidence": "The hazard is already guarded one layer below the diff. VoyageEmbedder.embed() raises ValueError when token_counts[0].count > spec.per_input_tokens unless truncation=True (src/embeddings/voyage_embedder.py:293-297), and embed_batch() raises for every oversize index under the same condition (:374-383). grep across services/dope-context/src shows no embedding caller passes truncation=True (only voyage_reranker.py:163, a different API). The registry's per_input_tokens=32_000 is what those guards read, so the new voyage-code-4 entry is covered by the same enforcement. The code fails closed before the API can silently truncate.",
+      "why_auditor_missed_it": "voyage_embedder.py is not part of the audited delta and the round-4 prompt embedded the diff rather than mounting the repo, so the guard was not visible.",
+      "residual": "The registry comment remains accurate as documentation of vendor behaviour and is worth keeping."
+    },
+    {
+      "id": "WEAKENED_TEST_ASSERTIONS",
+      "auditor_severity": "HIGH",
+      "disposition": "ACCEPTED",
+      "status": "NOT_RUN",
+      "evidence": "Substantively correct on both counts, with one factual inaccuracy. INACCURATE: the digest inequality was NOT replaced - 'assert code.profile_fingerprint != docs.profile_fingerprint' is still present. CORRECT AND SERIOUS: that assertion no longer isolates endpoint, because code and docs profiles differ in model as well as endpoint, so the test's own docstring claim that endpoint is 'isolated below by fingerprinting two vector sets that differ in nothing else' is false - the docstring overclaims what the code does. The added \"endpoint in payload\" check is a dict-key assertion, not a behavioural proof. Second finding also correct: test_all_six_named_vectors_agree_across_index_and_query reads one VectorProfile per vector and asserts index_input_type/query_input_type on that same object, so agreement holds by construction and the pipeline-level property is untested.",
+      "required_fix": "Isolate endpoint by fingerprinting two vector sets identical in model, dimension, dtype and versions, differing only in endpoint, and assert the fingerprints differ. For the six-vector test, assert that indexing_pipeline and mcp/server both derive their content/title/breadcrumb models from the same CollectionProfile, rather than asserting attributes of a single object. Correct the false docstring."
+    },
+    {
+      "id": "INFERRED_MAX_TOKENS",
+      "auditor_severity": "MEDIUM",
+      "disposition": "ACCEPTED",
+      "status": "NOT_RUN",
+      "evidence": "Correct, and sharper than the implementer's own reasoning. max_request_tokens feeds partition_indices(max_tokens=...) in voyage_embedder.py:392, so it sizes real batches. 320_000 exceeds the largest batch actually proven accepted (300,000 tokens, billed 299,940). If the true ceiling is between 300K and 320K, legitimate indexing batches are rejected and indexing fails closed.",
+      "required_fix": "Lower max_request_tokens to 300_000, the measured-accepted floor, so the value is evidence-backed rather than inferred. Keep the comment explaining the vendor docs assign voyage-code-4 to no request-token group."
+    },
+    {
+      "id": "STRANDED_COLLECTIONS",
+      "auditor_severity": "HIGH",
+      "disposition": "ACCEPTED_IN_PART",
+      "status": "NOT_RUN",
+      "evidence": "The disclosure gap is real: no ADR, packet or commit text records that existing code collections become manifest-incompatible. The safety characterisation is overstated, however - compare_collection_manifests raises CollectionCompatibilityError with an actionable 'recreate the collection explicitly instead of mixing vector generations' message, so this fails closed loudly rather than corrupting silently. Practical blast radius today is near zero: Qdrant currently holds only an unrelated project's collection.",
+      "required_fix": "Record the incompatibility and the explicit-recreation requirement in ADR-226 A2/A3 and the packet, as an operational consequence of D1."
+    },
+    {
+      "id": "COMMIT_MESSAGE_DISCLOSURE",
+      "auditor_severity": "LOW",
+      "disposition": "NOT_A_FINDING",
+      "status": "PASS",
+      "evidence": "The auditor correctly declined to assert this from a diff, since commit messages are not part of a diff. Commit 3e878cc8d does disclose it verbatim: 'KNOWN RED, pending ADR-226 amendment A3: 115 passed, 1 skipped, 4 failed. All four failures are in services/dope-context/tests/test_vector_profiles_and_migration.py, which is still hard-blocked by the red lane.'"
+    }
+  ],
+  "f001_regression_check": "PASS - auditor found no regression of F-001 or F-001-A; carve-out lookaheads correctly anchored, case-folding and traversal refusal intact.",
+  "next_round_required": true,
+  "next_round_scope": "Re-audit after the three ACCEPTED findings are remediated. Prefer --add-dir over prompt-embedding so the auditor can read files outside the delta and recompute hashes; SILENT_TRUNCATION would not have been raised against a mounted repo."
+}

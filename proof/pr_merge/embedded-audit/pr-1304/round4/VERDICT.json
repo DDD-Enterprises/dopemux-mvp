@@ -1,0 +1,48 @@
+{
+  "verdict": "OPEN",
+  "reasoning": "The delta introduces a significant correctness hazard by relying on the API's silent truncation for chunks exceeding 32,000 tokens on the flat endpoint, with no upstream chunk-size enforcement added. Additionally, test assertions were weakened (behavioral tests replaced by structural tautologies), and existing vector collections are stranded without a migration path or disclosure.",
+  "residual_risks": [
+    {
+      "id": "SILENT_TRUNCATION",
+      "severity": "HIGH",
+      "detail": "voyage-code-4 on the flat endpoint silently truncates inputs > 32K tokens. This hazard is merely commented in model_registry.py; no chunk-size enforcement was added to indexing_pipeline.py or CodeChunker. Oversized chunks will be silently half-embedded.",
+      "location": "services/dope-context/src/embeddings/model_registry.py:42"
+    },
+    {
+      "id": "STRANDED_COLLECTIONS",
+      "severity": "HIGH",
+      "detail": "Existing collections indexed with voyage-code-3 will fail manifest comparison against the new voyage-code-4 requirement. No migration path or version bump is provided, and this stranding is not disclosed.",
+      "location": "services/dope-context/src/embeddings/model_registry.py:149"
+    },
+    {
+      "id": "INFERRED_MAX_TOKENS",
+      "severity": "MEDIUM",
+      "detail": "max_request_tokens=320_000 is an inference, not a vendor-documented limit. If the true limit is lower (e.g., 300K), legitimate indexing batches will be rejected, causing indexing to fail closed.",
+      "location": "services/dope-context/src/embeddings/model_registry.py:65"
+    },
+    {
+      "id": "COMMIT_MESSAGE_DISCLOSURE",
+      "severity": "LOW",
+      "detail": "Cannot verify from the diff alone whether commit 3e878cc8d accurately disclosed that 4 tests were knowingly failing when it was made.",
+      "location": "Commit 3e878cc8d"
+    }
+  ],
+  "regressions_introduced": [
+    {
+      "id": "WEAKENED_TEST_ASSERTIONS",
+      "severity": "HIGH",
+      "detail": "In test_endpoint_change_changes_collection_identity, precision was lost by comparing profiles that differ in both model and endpoint, replacing the digest inequality assertion with a tautological 'endpoint' in payload check. In test_all_six_named_vectors_agree_across_index_and_query, the test merely asserts static properties of a single VectorProfile object rather than verifying that the index and query pipelines actually use matching models.",
+      "location": "services/dope-context/tests/test_vector_profiles_and_migration.py:109, services/dope-context/tests/test_vector_space_invariants.py:105"
+    }
+  ],
+  "f001_regression_check": "No regression. The carve-out lookaheads in red_lane_rules.py are properly anchored with $ to prevent suffix bypasses. The F-001-A whole-path case-folding fix still safely denies case-variant bypasses (e.g., INDEX_PROFILE.PY is blocked because the uppercase string matches the red lane regex, and failing closed correctly denies it). The companion traversal refusal pattern also remains intact.",
+  "bypass_attempts_considered": [
+    "services/dope-context/src/index_profile.py.bak",
+    "services/dope-context/src/INDEX_PROFILE.PY",
+    "SERVICES/dope-context/src/INDEX_PROFILE.PY",
+    "services/dope-context/tests/src/index_profile.py",
+    "services/dope-context/eval/../src/index_profile.py",
+    "services/dope-context/src/index_profile.py/foo.py"
+  ],
+  "test_integrity_finding": "Assertions were weakened. In test_vector_profiles_and_migration.py, test_endpoint_change_changes_collection_identity no longer isolates the endpoint (models also differ) and replaces the behavioral fingerprint assertion with a dictionary key check (`assert 'endpoint' in payload`). In test_vector_space_invariants.py, test_all_six_named_vectors_agree_across_index_and_query replaces the old index-vs-query model agreement test with a structural tautology that merely iterates over a single VectorProfile object's attributes, testing nothing about the actual pipeline agreement."
+}
