@@ -183,11 +183,39 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('{isSkipConfirming ? \'Confirm Skip?\' : \'Skip\'}');
   expect(content).toContain('<AlertTriangle aria-hidden="true" size={16} />');
 
+  // Verify Escape key cancellation in TaskSequencer
+  expect(content).toContain("if (isSkipConfirming && e.key === 'Escape')");
+  expect(content).toContain("if (isResetConfirming && e.key === 'Escape')");
+
   // Verify task sequence list empty state
   expect(content).toContain('optimizedTasks.length === 0 ? (');
   expect(content).toContain('role="status"');
   expect(content).toContain("All tasks muzzled. Excellent work.");
   expect(content).toContain("No tasks matching current cognitive state threshold.");
+});
+
+test('TaskSequencer.tsx handles Escape key to cancel soft confirmation for Skip', () => {
+  const cognitiveState = {
+    energy: 80,
+    attention: 70,
+    load: 40,
+    status: 'optimal' as const,
+    recommendation: 'Stay focused.',
+  };
+
+  render(<TaskSequencer cognitiveState={cognitiveState} />);
+
+  // First click triggers soft confirmation
+  const skipButton = screen.getByRole('button', { name: /^Skip / });
+  fireEvent.click(skipButton);
+
+  expect(screen.getByRole('button', { name: /^Confirm skip / })).toBeInTheDocument();
+
+  // Pressing Escape cancels confirmation without skipping task
+  fireEvent.keyDown(skipButton, { key: 'Escape' });
+
+  expect(screen.getByRole('button', { name: /^Skip / })).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /^Confirm skip / })).not.toBeInTheDocument();
 });
 
 test('TaskSequencer.tsx implements overtime visual cues', () => {

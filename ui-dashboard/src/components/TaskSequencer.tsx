@@ -740,6 +740,17 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                     )
                   }
                   onClick={() => skipTask(currentTask.id)}
+                  onKeyDown={(e) => {
+                    if (isSkipConfirming && e.key === 'Escape') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setIsSkipConfirming(false);
+                      if (skipConfirmTimeoutRef.current) {
+                        clearTimeout(skipConfirmTimeoutRef.current);
+                        skipConfirmTimeoutRef.current = null;
+                      }
+                    }
+                  }}
                   sx={{
                     color: isSkipConfirming ? brandTokens.colors.saintGold : brandTokens.colors.gremlinPink,
                     transition: 'all 0.2s ease',
@@ -804,6 +815,17 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                 )
               }
               onClick={resetTasks}
+              onKeyDown={(e) => {
+                if (isResetConfirming && e.key === 'Escape') {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsResetConfirming(false);
+                  if (resetTimeoutRef.current) {
+                    clearTimeout(resetTimeoutRef.current);
+                    resetTimeoutRef.current = null;
+                  }
+                }
+              }}
               sx={{
                 borderColor: isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint,
                 color: isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint,
