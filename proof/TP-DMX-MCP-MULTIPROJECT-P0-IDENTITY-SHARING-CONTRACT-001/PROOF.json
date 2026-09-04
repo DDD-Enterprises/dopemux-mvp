@@ -1,4 +1,40 @@
 {
+  "packet_id": "TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001",
+  "series": "DMX-MCP-MULTIPROJECT",
+  "branch": "codex/mcp-multiproject-p0-identity-sharing-contract",
+  "base": "main",
+  "base_sha": "04be55535d1582c304cf31a02923fb9c521ab547",
+  "audited_parent": "66de1b56db9b5bf8134a64b09a6498263b9635a7",
+  "head_sha": "4e72a976eec6be3e990b519cacfbaa95088d1a9f",
+  "tree_sha": "7e57c6f3d711813d90dc59cbeff292d48af47c19",
+  "generated_at": "2026-09-04T05:00:00Z",
+  "pr_number": 1306,
+  "kind": "bounded substantive repair P0-R1",
+  "packet_sha256": "90b01da43ae81d7ce3723f06107d49393303b610aca64545680d6690a44da49d",
+  "audited_files": [
+    "docs/03-reference/mcp/multiproject-falsification-contract.md",
+    "docs/90-adr/adr-dmx-mcp-multiproject-identity-sharing-contract-001.md",
+    "schemas/mcp/fleet-catalog-v2.schema.json",
+    "schemas/mcp/ownership-evidence.schema.json",
+    "schemas/mcp/project-event-envelope.schema.json",
+    "schemas/mcp/resolved-execution-identity.schema.json",
+    "schemas/mcp/runner-materialization-receipt.schema.json",
+    "schemas/mcp/service-lease-v2.schema.json",
+    "schemas/mcp/service-topology.schema.json",
+    "tests/arch/test_mcp_multiproject_contracts.py",
+    "task-packets/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001.json",
+    "proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/implementation-notes.md"
+  ],
+  "validations": {
+    "focused_tests": "PASS (67 passed: tests/arch/test_mcp_multiproject_contracts.py)",
+    "topology_r2_hash": "PASS (df8636983e23c273eeb8eb517ea4019653b4c6bcb50cae344cde2e847214d4c2)",
+    "falsification_payload_hash": "PASS (84b6e68f929e5b3f3ad37e9c2843755cc38a3a119fc87b5af057505d8ed83bcb)",
+    "packet_canonical_schema": "PASS",
+    "git_diff_check": "PASS",
+    "no_runtime_effect": "PASS (diff isolated to docs/, proof/, schemas/, task-packets/, tests/)",
+    "secret_scan": "PASS (no leaks, exit 0)",
+    "pre_commit": "PASS incl Enforce docs placement hygiene (proves R1-02 clean)"
+  },
   "embedded_audit": {
     "required": true,
     "status": "PASS",
@@ -92,5 +128,20 @@
       "auditor_tool=gemini-cli and auditor_model=gemini are closed-enum representational labels for an opencode-run Gemini 3.1 Pro (cheaper-inference/gemini-3.1-pro); exact real identity preserved in review_bundle/AUDIT_INVOCATION.txt and AUDIT_OUTPUT.txt."
     ],
     "skip_reason": null
+  },
+  "provenance": {
+    "audit_source": "fresh-independent-opencode-gemini",
+    "opencode_version": "1.18.27",
+    "requested_selector": "cheaper-inference/gemini-3.1-pro",
+    "observed_primary_model": "google-gemini-3.1-pro",
+    "tools_enabled": true,
+    "session_persistence": false,
+    "subagents_spawned": 0,
+    "implementer_family": "opencode (big-pickle)",
+    "auditor_family": "Google Gemini (via opencode cheaper-inference provider)",
+    "independence": "PROVEN_DIFFERENT_VENDOR_MODEL_FAMILY",
+    "pal_clink_used": false,
+    "raw_stdout_preserved": true,
+    "raw_stdout_file": "review_bundle/AUDIT_OUTPUT.txt"
   }
 }
