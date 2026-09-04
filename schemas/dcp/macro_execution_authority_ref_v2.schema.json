@@ -1,0 +1,639 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://frozen.dopemux.local/TP-UAG-C0-DCP-UAG-DOPETASK-AUTHORITY-INTERFACE-FREEZE-001-R2/schemas/macro_execution_authority_ref_v2.schema.json",
+  "title": "MacroExecutionAuthorityRefV2",
+  "description": "Versioned family successor of MacroExecutionAuthorityRef v1 (dopemux-macro-execution-authority-ref.v1 from DMX-DELEGATED-EXECUTION-ARCH-FREEZE-003). One grant family. v2 is NOT JSON-instance backward compatible with historical v1. DCPRouteAuthorization cannot substitute for this grant. DCP, UAG, and Dopetask cannot issue this grant to themselves. Allowlist cannot be widened by the consumer. At-most-once grant acceptance is not exactly-once external effect.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "family",
+    "lineage_parent",
+    "migration_semantics",
+    "authority_id",
+    "issuer",
+    "issued_at",
+    "expires_at",
+    "nonce",
+    "idempotency_key",
+    "project_id",
+    "repository",
+    "worktree_binding",
+    "subject",
+    "consumer",
+    "permitted_execution",
+    "dcp_route_authorization_digest",
+    "uag_profile",
+    "network_policy",
+    "credential_class",
+    "allowlist",
+    "repair",
+    "authority_effect",
+    "exactly_once_claim",
+    "acceptance_semantics"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "dopemux-macro-execution-authority-ref.v2"
+    },
+    "family": {
+      "const": "MacroExecutionAuthorityRef"
+    },
+    "authority_id": {
+      "$ref": "common_defs.schema.json#/definitions/nonempty"
+    },
+    "issuer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "class",
+        "principal_ref"
+      ],
+      "properties": {
+        "class": {
+          "type": "string",
+          "enum": [
+            "OPERATOR",
+            "CONTROL_TOWER",
+            "GOVERNED_DELIVERY_DISPATCH"
+          ],
+          "description": "Issuer is outside DCP/UAG/Dopetask. GOVERNED_DELIVERY_DISPATCH remains a family member from v1/GD006 and is not authorized by C0."
+        },
+        "principal_ref": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        }
+      }
+    },
+    "issued_at": {
+      "$ref": "common_defs.schema.json#/definitions/iso8601"
+    },
+    "expires_at": {
+      "$ref": "common_defs.schema.json#/definitions/iso8601"
+    },
+    "nonce": {
+      "$ref": "common_defs.schema.json#/definitions/nonempty"
+    },
+    "idempotency_key": {
+      "$ref": "common_defs.schema.json#/definitions/nonempty"
+    },
+    "revocation_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "project_id": {
+      "$ref": "common_defs.schema.json#/definitions/nonempty"
+    },
+    "repository": {
+      "$ref": "common_defs.schema.json#/definitions/nonempty"
+    },
+    "series_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "worktree_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "head_sha": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "origin_hint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "MACRO_PLAN",
+            "SINGLE_TASK_PACKET"
+          ]
+        },
+        "macro_id": {
+          "type": "string"
+        },
+        "macro_sha256": {
+          "$ref": "common_defs.schema.json#/definitions/sha256"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "plan_sha256": {
+          "$ref": "common_defs.schema.json#/definitions/sha256"
+        },
+        "child_bindings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "tp_id",
+              "tp_sha256"
+            ],
+            "properties": {
+              "tp_id": {
+                "$ref": "common_defs.schema.json#/definitions/nonempty"
+              },
+              "tp_sha256": {
+                "$ref": "common_defs.schema.json#/definitions/sha256"
+              },
+              "risk_lane": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "task_packet_id": {
+          "type": "string"
+        },
+        "task_packet_sha256": {
+          "$ref": "common_defs.schema.json#/definitions/sha256"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "MACRO_PLAN"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "macro_id",
+              "macro_sha256",
+              "plan_id",
+              "plan_sha256",
+              "child_bindings"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "SINGLE_TASK_PACKET"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "task_packet_id",
+              "task_packet_sha256"
+            ]
+          }
+        }
+      ]
+    },
+    "consumer": {
+      "const": "dopetask",
+      "description": "Governed execution consumer is Dopetask. UAG and DCP are not consumers of this grant."
+    },
+    "allowlist": {
+      "$ref": "common_defs.schema.json#/definitions/pathAllowlist",
+      "description": "Exact allowlist equality procedure: resolve the Task Packet by subject.task_packet_sha256; parse JSON; byte/array-compare packet.commit.allowlist to this grant.allowlist using exact ordered equality; fail closed on unavailable referenced bytes, parse failure, or mismatch."
+    },
+    "permitted_execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "runner",
+        "substitution_policy",
+        "max_attempts"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "CANONICAL_DOPETASK_ADAPTER",
+            "TRANSITIONAL_DIRECT_RUNNER",
+            "GOVERNED_SINGLE_TP"
+          ]
+        },
+        "runner": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "adapter_or_runner_ref": {
+          "type": "string"
+        },
+        "capability_certification_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "common_defs.schema.json#/definitions/nonempty"
+          }
+        },
+        "parallelism_ceiling": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "substitution_policy": {
+          "type": "string",
+          "enum": [
+            "forbid",
+            "grant_listed_only"
+          ]
+        },
+        "max_attempts": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "model_ceiling": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provider_ceiling": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "dcp_route_authorization_digest": {
+      "allOf": [
+        {
+          "$ref": "common_defs.schema.json#/definitions/sha256"
+        },
+        {
+          "description": "Digest of the DCPRouteAuthorization artifact. The artifact is not the grant and cannot substitute for this object."
+        }
+      ]
+    },
+    "uag_profile": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact compatibility profile id, or the literal 'none' if UAG is absent."
+    },
+    "network_policy": {
+      "$ref": "common_defs.schema.json#/definitions/networkPolicy"
+    },
+    "credential_class": {
+      "$ref": "common_defs.schema.json#/definitions/credentialClass"
+    },
+    "repair": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "attempts_per_subject_max",
+        "successor_grant_required_for_repair"
+      ],
+      "properties": {
+        "attempts_per_subject_max": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "repairable_failure_classes": {
+          "type": "array",
+          "items": {
+            "$ref": "common_defs.schema.json#/definitions/nonempty"
+          }
+        },
+        "successor_grant_required_for_repair": {
+          "type": "boolean"
+        }
+      }
+    },
+    "git_control": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "worktree_provisioning_allowed": {
+          "type": "boolean"
+        },
+        "branch_provisioning_allowed": {
+          "type": "boolean"
+        },
+        "push_allowed": {
+          "type": "boolean"
+        },
+        "pr_mutation_allowed": {
+          "type": "boolean"
+        }
+      },
+      "description": "Optional on MACRO_PLAN family members. GOVERNED_SINGLE_TP V1 forces all booleans false. This object cannot grant WORKFLOW_LEGALITY or MERGE."
+    },
+    "workflow": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "STATIC_PRE_GD002",
+            "CANONICAL_TASK_ORCHESTRATOR",
+            "NONE"
+          ]
+        },
+        "to_mutation_allowed": {
+          "type": "boolean"
+        }
+      },
+      "description": "Optional on MACRO_PLAN family members. GOVERNED_SINGLE_TP V1 forces mode=NONE and to_mutation_allowed=false."
+    },
+    "authority_effect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "grants",
+        "does_not_grant"
+      ],
+      "properties": {
+        "grants": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "TASK_PACKET_MUTATION_WITHIN_ALLOWLIST",
+              "RUNNER_INVOCATION",
+              "MACRO_PLAN_CHILD_INVOCATION"
+            ]
+          },
+          "minItems": 1
+        },
+        "does_not_grant": {
+          "const": [
+            "WORKFLOW_LEGALITY",
+            "MERGE",
+            "ACTIVATION",
+            "PRODUCTION_AUTHORITY",
+            "CREDENTIAL_CHANGE",
+            "POLICY_ROUTE_INVENTION",
+            "UAG_PROFILE_PROMOTION",
+            "EXACTLY_ONCE_EXTERNAL_EFFECT",
+            "ALLOWLIST_WIDENING",
+            "SELF_ISSUANCE"
+          ]
+        }
+      }
+    },
+    "exactly_once_claim": {
+      "$ref": "common_defs.schema.json#/definitions/exactlyOnceClaim"
+    },
+    "acceptance_semantics": {
+      "const": "AT_MOST_ONCE_GRANT_ACCEPT",
+      "description": "Grant accept is at-most-once. External mutation remains at-least-once possible."
+    },
+    "v1_governed_single_tp_defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Informative freeze of V1 governed single-TP defaults. Not a second grant family.",
+      "properties": {
+        "consumer": {
+          "const": "dopetask"
+        },
+        "runner": {
+          "const": "codex"
+        },
+        "max_attempts": {
+          "const": 1
+        },
+        "substitution_policy": {
+          "const": "forbid"
+        }
+      }
+    },
+    "lineage_parent": {
+      "const": "dopemux-macro-execution-authority-ref.v1",
+      "description": "Family parent. Historical v1 bytes remain valid historical lineage and are not rewritten."
+    },
+    "migration_semantics": {
+      "const": "FAMILY_SUCCESSOR_NOT_JSON_INSTANCE_BACKWARD_COMPATIBLE",
+      "description": "v2 adds mandatory DCP/UAG/worktree/allowlist binding for governed execution. A valid v1 JSON instance is not required to validate as v2."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "permitted_execution": {
+            "properties": {
+              "mode": {
+                "const": "GOVERNED_SINGLE_TP"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          }
+        },
+        "required": [
+          "permitted_execution"
+        ]
+      },
+      "then": {
+        "required": [
+          "subject",
+          "consumer",
+          "git_control",
+          "workflow",
+          "permitted_execution"
+        ],
+        "properties": {
+          "subject": {
+            "type": "object",
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "SINGLE_TASK_PACKET"
+              }
+            }
+          },
+          "consumer": {
+            "const": "dopetask"
+          },
+          "permitted_execution": {
+            "type": "object",
+            "required": [
+              "runner",
+              "max_attempts",
+              "substitution_policy",
+              "mode"
+            ],
+            "properties": {
+              "mode": {
+                "const": "GOVERNED_SINGLE_TP"
+              },
+              "runner": {
+                "const": "codex"
+              },
+              "max_attempts": {
+                "const": 1
+              },
+              "substitution_policy": {
+                "const": "forbid"
+              }
+            }
+          },
+          "git_control": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "worktree_provisioning_allowed",
+              "branch_provisioning_allowed",
+              "push_allowed",
+              "pr_mutation_allowed"
+            ],
+            "properties": {
+              "worktree_provisioning_allowed": {
+                "const": false
+              },
+              "branch_provisioning_allowed": {
+                "const": false
+              },
+              "push_allowed": {
+                "const": false
+              },
+              "pr_mutation_allowed": {
+                "const": false
+              }
+            }
+          },
+          "workflow": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "mode",
+              "to_mutation_allowed"
+            ],
+            "properties": {
+              "mode": {
+                "const": "NONE"
+              },
+              "to_mutation_allowed": {
+                "const": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "subject": {
+            "properties": {
+              "kind": {
+                "const": "SINGLE_TASK_PACKET"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          }
+        },
+        "required": [
+          "subject"
+        ]
+      },
+      "then": {
+        "properties": {
+          "authority_effect": {
+            "properties": {
+              "grants": {
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "TASK_PACKET_MUTATION_WITHIN_ALLOWLIST",
+                    "RUNNER_INVOCATION"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "subject": {
+            "properties": {
+              "kind": {
+                "const": "MACRO_PLAN"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          }
+        },
+        "required": [
+          "subject"
+        ]
+      },
+      "then": {
+        "properties": {
+          "authority_effect": {
+            "properties": {
+              "grants": {
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "TASK_PACKET_MUTATION_WITHIN_ALLOWLIST",
+                    "RUNNER_INVOCATION",
+                    "MACRO_PLAN_CHILD_INVOCATION"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "not": {
+    "properties": {
+      "issuer": {
+        "properties": {
+          "class": {
+            "enum": [
+              "DCP",
+              "UAG",
+              "DOPETASK",
+              "DCP_CONTROL_PLANE",
+              "DCP_READONLY_FACADE"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

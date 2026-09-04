@@ -1,0 +1,183 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://frozen.dopemux.local/TP-UAG-C0-DCP-UAG-DOPETASK-AUTHORITY-INTERFACE-FREEZE-001-R2/schemas/uag_transport_result.schema.json",
+  "title": "UAGTransportResult",
+  "description": "UAG egress result. Carries public output, ToolIntent references, attempt lineage, terminal state, usage, semantic-loss report, unknowns, and conflicts. Contains no tool-execution authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "logical_request_id",
+    "attempt_records",
+    "typed_stream_terminal",
+    "public_output",
+    "tool_intents",
+    "semantic_loss_report",
+    "unknowns",
+    "conflicts",
+    "tool_execution_authority",
+    "exactly_once_claim",
+    "provider_internal_retries",
+    "private_state_replay_scope",
+    "cross_restart_private_state_replay"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "dopemux-uag-transport-result.v1"
+    },
+    "logical_request_id": {
+      "$ref": "common_defs.schema.json#/definitions/nonempty"
+    },
+    "attempt_records": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "attempt_id",
+          "semantic_state",
+          "selected_route_profile_id"
+        ],
+        "properties": {
+          "attempt_id": {
+            "$ref": "common_defs.schema.json#/definitions/nonempty"
+          },
+          "semantic_state": {
+            "$ref": "common_defs.schema.json#/definitions/attemptSemanticState"
+          },
+          "selected_route_profile_id": {
+            "$ref": "common_defs.schema.json#/definitions/nonempty"
+          },
+          "model_transport_receipt_ref": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "provider_non_acceptance_evidence_ref": {
+            "$ref": "common_defs.schema.json#/definitions/providerNonAcceptanceEvidenceRef"
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "required": [
+                "semantic_state"
+              ],
+              "properties": {
+                "semantic_state": {
+                  "const": "NON_ACCEPTANCE_PROVEN"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "provider_non_acceptance_evidence_ref"
+              ]
+            }
+          },
+          {
+            "if": {
+              "required": [
+                "provider_non_acceptance_evidence_ref"
+              ]
+            },
+            "then": {
+              "required": [
+                "semantic_state"
+              ],
+              "properties": {
+                "semantic_state": {
+                  "const": "NON_ACCEPTANCE_PROVEN"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "typed_stream_terminal": {
+      "$ref": "common_defs.schema.json#/definitions/nonempty"
+    },
+    "public_output": {
+      "type": [
+        "object",
+        "string",
+        "null"
+      ]
+    },
+    "family_output_envelopes": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "private_state_capsule_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "common_defs.schema.json#/definitions/digestRef"
+      },
+      "description": "Process-lifetime UAG private-state capsule references only. Cross-restart replay is forbidden. Does not conflict with DCPRouteAuthorization artifact-scoped private-state prohibition."
+    },
+    "tool_intents": {
+      "type": "array",
+      "items": {
+        "$ref": "tool_intent.schema.json"
+      }
+    },
+    "runtime_identity_evidence": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "usage_evidence": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "semantic_loss_report": {
+      "$ref": "common_defs.schema.json#/definitions/semanticLossReport"
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "$ref": "common_defs.schema.json#/definitions/unknownItem"
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "$ref": "common_defs.schema.json#/definitions/conflictItem"
+      }
+    },
+    "tool_execution_authority": {
+      "$ref": "common_defs.schema.json#/definitions/noneExecutionAuthority"
+    },
+    "exactly_once_claim": {
+      "$ref": "common_defs.schema.json#/definitions/exactlyOnceClaim"
+    },
+    "provider_internal_retries": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "INDEPENDENTLY_EVIDENCED"
+      ],
+      "description": "Must remain UNKNOWN unless independently evidenced."
+    },
+    "sent_acceptance_unknown_treated_as_pre_state_safe_retry": {
+      "const": false
+    },
+    "private_state_replay_scope": {
+      "$ref": "common_defs.schema.json#/definitions/privateStateReplayScope"
+    },
+    "cross_restart_private_state_replay": {
+      "$ref": "common_defs.schema.json#/definitions/crossRestartPrivateStateReplay"
+    }
+  }
+}

@@ -1,0 +1,164 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://frozen.dopemux.local/TP-UAG-C0-DCP-UAG-DOPETASK-AUTHORITY-INTERFACE-FREEZE-001-R2/schemas/uag_transport_request.schema.json",
+  "title": "UAGTransportRequest",
+  "description": "UAG ingress request. Must reference an exact DCPRouteAuthorization digest and an exact UAGCompatibilityCertification digest. Selected profile must be a member of that authorization's ordered list, unexpired, and currently certified at or above minimum_conformance_status. Cannot add or reorder routes. Runtime UAG may not self-promote a compatibility profile to VERIFIED. V1 private-state capsule refs are process-lifetime only and do not conflict with DCPRouteAuthorization.provider_private_state_permitted=false.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "logical_request_id",
+    "dcp_authorization_ref",
+    "selected_profile_ref",
+    "route_mutation",
+    "requested_output_contract",
+    "certification_ref",
+    "private_state_replay_scope",
+    "cross_restart_private_state_replay",
+    "runtime_self_promotion"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "dopemux-uag-transport-request.v1"
+    },
+    "logical_request_id": {
+      "$ref": "common_defs.schema.json#/definitions/nonempty"
+    },
+    "dcp_authorization_ref": {
+      "$ref": "common_defs.schema.json#/definitions/digestRef"
+    },
+    "selected_profile_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "route_profile_id",
+        "compatibility_status_consumed"
+      ],
+      "properties": {
+        "route_profile_id": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "compatibility_status_consumed": {
+          "$ref": "common_defs.schema.json#/definitions/compatibilityStatus"
+        },
+        "profile_version": {
+          "type": "string"
+        }
+      },
+      "description": "Selected route_profile_id must be a member of the exact DCPRouteAuthorization referenced by dcp_authorization_ref. Membership, authorization expiry, certification currentness, and minimum conformance are enforced by the C0 R2 cross-contract pre-dispatch validator."
+    },
+    "route_mutation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "may_add_routes",
+        "may_reorder_routes",
+        "may_invent_fallback"
+      ],
+      "properties": {
+        "may_add_routes": {
+          "const": false
+        },
+        "may_reorder_routes": {
+          "const": false
+        },
+        "may_invent_fallback": {
+          "const": false
+        }
+      }
+    },
+    "runner_envelope": {
+      "type": "object"
+    },
+    "public_conversation_state": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "family_envelopes": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "private_state_capsule_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "common_defs.schema.json#/definitions/digestRef"
+      },
+      "description": "Process-lifetime UAG private-state capsule references only. V1 has no cross-restart read path. These refs do not conflict with DCPRouteAuthorization.provider_private_state_permitted=false, which is artifact-scoped to the DCP authorization object itself."
+    },
+    "model_tool_projections": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "session_binding_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "requested_output_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "class"
+      ],
+      "properties": {
+        "class": {
+          "type": "string",
+          "enum": [
+            "PUBLIC_TEXT",
+            "TYPED_FAMILY_ENVELOPE",
+            "TOOL_INTENT_ONLY",
+            "MIXED"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "runtime_self_promotion": {
+      "const": "FORBIDDEN",
+      "description": "RUNTIME_UAG_MAY_NOT_SELF_PROMOTE_A_PROFILE_TO_VERIFIED"
+    },
+    "certification_ref": {
+      "$ref": "common_defs.schema.json#/definitions/digestRef",
+      "description": "Exact UAGCompatibilityCertification record consumed for the selected profile. Must be resolved by digest before dispatch."
+    },
+    "private_state_replay_scope": {
+      "$ref": "common_defs.schema.json#/definitions/privateStateReplayScope"
+    },
+    "cross_restart_private_state_replay": {
+      "$ref": "common_defs.schema.json#/definitions/crossRestartPrivateStateReplay"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "private_state_capsule_refs": {
+            "minItems": 1
+          }
+        },
+        "required": [
+          "private_state_capsule_refs"
+        ]
+      },
+      "then": {
+        "properties": {
+          "private_state_replay_scope": {
+            "const": "PROCESS_LIFETIME_ONLY"
+          }
+        },
+        "required": [
+          "private_state_replay_scope"
+        ]
+      }
+    }
+  ]
+}

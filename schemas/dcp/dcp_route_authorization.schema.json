@@ -1,0 +1,369 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://frozen.dopemux.local/TP-UAG-C0-DCP-UAG-DOPETASK-AUTHORITY-INTERFACE-FREEZE-001-R2/schemas/dcp_route_authorization.schema.json",
+  "title": "DCPRouteAuthorization",
+  "description": "DCP_CONTROL_PLANE policy/routing/context authorization v1. This object is POLICY AUTHORITY ONLY. It grants no repository mutation, tool execution, workflow transition, merge, activation, credential change, or production authority. It is never execution authority. No provider-private state belongs in this artifact; that prohibition is artifact-scoped and does not prohibit process-lifetime UAG private-state capsule references on UAGTransportRequest. Array order of ordered_allowed_route_profiles is the sole canonical route order. Duplicate route_profile_id values fail closed. Downstream systems may only narrow or deny the ordered route list; they may not add or reorder it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "authorization_id",
+    "authority_class",
+    "execution_authority",
+    "issuer",
+    "issued_at",
+    "expires_at",
+    "policy_digest",
+    "project_workspace_request_binding",
+    "ordered_allowed_route_profiles",
+    "runner_provider_model_eligibility",
+    "reasoning_policy",
+    "retry_policy",
+    "fallback_policy",
+    "network_policy",
+    "cost_usage_ceilings",
+    "tool_contract_refs",
+    "minimum_conformance_status",
+    "identity_evidence_requirement",
+    "audit_independence_requirement",
+    "authority_effect"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "dopemux-dcp-route-authorization.v1"
+    },
+    "authorization_id": {
+      "$ref": "common_defs.schema.json#/definitions/nonempty"
+    },
+    "authority_class": {
+      "const": "POLICY_ROUTE_AUTHORIZATION"
+    },
+    "execution_authority": {
+      "$ref": "common_defs.schema.json#/definitions/noneExecutionAuthority"
+    },
+    "issuer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "system",
+        "principal_ref"
+      ],
+      "properties": {
+        "system": {
+          "const": "DCP_CONTROL_PLANE"
+        },
+        "principal_ref": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        }
+      }
+    },
+    "issued_at": {
+      "$ref": "common_defs.schema.json#/definitions/iso8601"
+    },
+    "expires_at": {
+      "$ref": "common_defs.schema.json#/definitions/iso8601"
+    },
+    "policy_digest": {
+      "$ref": "common_defs.schema.json#/definitions/sha256"
+    },
+    "project_workspace_request_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "project_id",
+        "workspace_ref",
+        "request_id"
+      ],
+      "properties": {
+        "project_id": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "workspace_ref": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "request_id": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "repository": {
+          "type": "string"
+        }
+      }
+    },
+    "ordered_allowed_route_profiles": {
+      "type": "array",
+      "description": "DCP-owned ordered eligibility list. JSON array order is the sole canonical route order. There is no second order representation. UAG may remove incompatible or stale profiles and must otherwise preserve remaining relative order. UAG and Dopetask may not add or reorder entries. Duplicate route_profile_id values fail closed via the C0 R2 cross-contract validator. Empty list is a deny.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "route_profile_id"
+        ],
+        "properties": {
+          "route_profile_id": {
+            "$ref": "common_defs.schema.json#/definitions/nonempty"
+          },
+          "runner_profile_id": {
+            "type": "string"
+          },
+          "provider_profile_id": {
+            "type": "string"
+          },
+          "model_ceiling": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "runner_provider_model_eligibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "allowed_runners",
+        "allowed_providers",
+        "allowed_models"
+      ],
+      "properties": {
+        "allowed_runners": {
+          "type": "array",
+          "items": {
+            "$ref": "common_defs.schema.json#/definitions/nonempty"
+          }
+        },
+        "allowed_providers": {
+          "type": "array",
+          "items": {
+            "$ref": "common_defs.schema.json#/definitions/nonempty"
+          }
+        },
+        "allowed_models": {
+          "type": "array",
+          "items": {
+            "$ref": "common_defs.schema.json#/definitions/nonempty"
+          }
+        }
+      }
+    },
+    "required_capabilities": {
+      "type": "array",
+      "items": {
+        "$ref": "common_defs.schema.json#/definitions/nonempty"
+      }
+    },
+    "reasoning_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "class"
+      ],
+      "properties": {
+        "class": {
+          "type": "string",
+          "enum": [
+            "NONE",
+            "PUBLIC_ONLY",
+            "PROFILE_BOUND",
+            "FORBIDDEN"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "retry_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_visible_attempts",
+        "sent_acceptance_unknown_retry"
+      ],
+      "properties": {
+        "max_visible_attempts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sent_acceptance_unknown_retry": {
+          "const": "NOT_EQUIVALENT_TO_PRE_STATE_SAFE_RETRY",
+          "description": "SENT_ACCEPTANCE_UNKNOWN is never equivalent to pre-state safe retry. A UAG-side request ledger proves only that UAG sent bytes."
+        },
+        "requires_provider_idempotency_for_post_send_retry": {
+          "type": "boolean"
+        }
+      }
+    },
+    "fallback_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authorized",
+        "may_be_invented_by_consumer"
+      ],
+      "properties": {
+        "authorized": {
+          "type": "boolean"
+        },
+        "may_be_invented_by_consumer": {
+          "const": false
+        },
+        "cross_family_requires_new_logical_request": {
+          "type": "boolean"
+        }
+      }
+    },
+    "network_policy": {
+      "$ref": "common_defs.schema.json#/definitions/networkPolicy"
+    },
+    "cost_usage_ceilings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "currency",
+        "max_cost",
+        "max_input_tokens",
+        "max_output_tokens"
+      ],
+      "properties": {
+        "currency": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "max_cost": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "max_input_tokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "max_output_tokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "max_latency_ms": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "tool_contract_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "common_defs.schema.json#/definitions/digestRef"
+      }
+    },
+    "minimum_conformance_status": {
+      "$ref": "common_defs.schema.json#/definitions/compatibilityStatus"
+    },
+    "identity_evidence_requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "minimum_posture"
+      ],
+      "properties": {
+        "minimum_posture": {
+          "type": "string",
+          "enum": [
+            "ORDINARY_RUNTIME_TRANSPORT",
+            "IMPLEMENTATION_PROOF",
+            "FORMAL_INDEPENDENT_AUDIT"
+          ]
+        },
+        "provider_attested_required": {
+          "type": "boolean"
+        }
+      }
+    },
+    "audit_independence_requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required"
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "classification_and_custody": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "classification": {
+          "type": "string"
+        },
+        "custody": {
+          "type": "string"
+        }
+      }
+    },
+    "authority_effect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "grants",
+        "does_not_grant",
+        "provider_private_state_permitted"
+      ],
+      "properties": {
+        "grants": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": [
+              "ROUTE_ELIGIBILITY",
+              "ROUTE_ORDER",
+              "RETRY_POLICY",
+              "FALLBACK_POLICY",
+              "NETWORK_POLICY",
+              "COST_USAGE_CEILINGS",
+              "IDENTITY_EVIDENCE_THRESHOLD",
+              "MINIMUM_CONFORMANCE_THRESHOLD",
+              "TOOL_CONTRACT_REFERENCE"
+            ]
+          }
+        },
+        "does_not_grant": {
+          "const": [
+            "REPOSITORY_MUTATION",
+            "TOOL_EXECUTION",
+            "WORKFLOW_TRANSITION",
+            "MERGE",
+            "ACTIVATION",
+            "CREDENTIAL_CHANGE",
+            "PRODUCTION_AUTHORITY",
+            "EXECUTION_GRANT",
+            "UAG_PROFILE_PROMOTION",
+            "EXACTLY_ONCE_EXTERNAL_EFFECT"
+          ]
+        },
+        "provider_private_state_permitted": {
+          "const": false,
+          "description": "Artifact-scoped: this DCPRouteAuthorization object must not embed provider-private state. This does not prohibit UAG process-lifetime private-state capsule references on the transport request."
+        }
+      }
+    }
+  }
+}
