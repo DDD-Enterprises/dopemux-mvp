@@ -1,0 +1,99 @@
+{
+  "packet_id": "TP-UAG-T1-SEMANTIC-CORE-001",
+  "series_id": "UAG-DCP-DOPETASK-INTEGRATION-001",
+  "status": "PASS",
+  "risk_lane": "L2_MATERIAL",
+  "repo_identity": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "remotes": {
+      "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+      "mvp": "https://github.com/DDD-Enterprises/dopemux-mvp.git"
+    },
+    "require_identity_match": true,
+    "match": true
+  },
+  "worktree": {
+    "path": "/Users/hue/code/_worktrees/tp-uag-t1-semantic-core-001",
+    "branch": "feat/uag-t1-semantic-core-001",
+    "base": "c2c74d896d3f300a7cce1d9a4f67b3a8af521036",
+    "base_note": "origin/main, post-#1283 (compatible ancestry with pinned 04be55535; non-overlap DCP movement)",
+    "content_head": "3f5a309274129a82936887779b768d26d75fcdbc",
+    "final_head": "145abbf21313ea0ef05e8257b66dceacc62fda89"
+  },
+  "slices": [
+    {"id": "S00", "name": "Preflight + implementer route", "status": "PASS"},
+    {"id": "S01", "name": "Immutable request/attempt + three-lane IR", "status": "PASS"},
+    {"id": "S02", "name": "Identity stages + correlation ledger primitives", "status": "PASS"},
+    {"id": "S03", "name": "Freeze + L2 validation + independent audit", "status": "PASS"}
+  ],
+  "files_changed": [
+    "src/dopemux/uag/__init__.py",
+    "src/dopemux/uag/attempt.py",
+    "src/dopemux/uag/core.py",
+    "src/dopemux/uag/enums.py",
+    "src/dopemux/uag/identity.py",
+    "src/dopemux/uag/ir.py",
+    "src/dopemux/uag/ledger.py",
+    "src/dopemux/uag/primitives.py",
+    "src/dopemux/uag/receipt.py",
+    "src/dopemux/uag/request.py",
+    "tests/unit/uag/__init__.py",
+    "tests/unit/uag/test_attempt_lineage.py",
+    "tests/unit/uag/test_identity.py",
+    "tests/unit/uag/test_import_side_effects.py",
+    "tests/unit/uag/test_ir.py",
+    "tests/unit/uag/test_ledger.py",
+    "tests/unit/uag/test_no_execution_authority.py",
+    "tests/unit/uag/test_receipt.py",
+    "tests/unit/uag/test_request_immutability.py"
+  ],
+  "validation": [
+    {"command": "git diff --check", "exit_code": 0, "result": "PASS"},
+    {"command": "python -m compileall -q src/dopemux/uag tests/unit/uag", "exit_code": 0, "result": "PASS"},
+    {"command": "python -m pytest -q tests/unit/uag", "exit_code": 0, "result": "PASS", "detail": "41 passed"},
+    {"command": "python -m pytest -q tests/contracts", "exit_code": 0, "result": "PASS", "detail": "187 passed"},
+    {"command": "ruff check src/dopemux/uag tests/unit/uag", "exit_code": 0, "result": "PASS"},
+    {"command": "changed-file allowlist closure", "exit_code": 0, "result": "PASS"},
+    {"command": "scripts/governance/validate_change_contract.py --base c2c74d896 --head HEAD", "exit_code": 0, "result": "PASS", "detail": "max_lane=L2, model_audit_required=True"}
+  ],
+  "independent_audit": {
+    "required": true,
+    "verdict": "PASS",
+    "blocking_findings": 0,
+    "nonblocking_risks": 7,
+    "audited_head": "3f5a309274129a82936887779b768d26d75fcdbc",
+    "hardening_after_audit": "145abbf21313ea0ef05e8257b66dceacc62fda89",
+    "hardening_note": "Three nonblocking hardening fixes applied post-audit (attempt extend type-check, receipt exactly_once/digest enforcement, LogicalRequest contract type). Strictly narrowing; no authority/behavior expansion. Deterministic validation re-run PASS.",
+    "pal_tool_gate": "NOT_RUN",
+    "pal_note": "pal codereview/precommit MCP tools not available in this environment; independent audit was a manual line-by-line review with deterministic re-validation. Recommend re-running pal gate before merge if multi-model gate is a hard CI requirement."
+  },
+  "precommit": {
+    "status": "PASS",
+    "detail": "repo pre-commit preflight hook ran; wrote .runs/*.manifest.json (gitignored). No hook modified tracked files."
+  },
+  "commits": [
+    "3f5a309274129a82936887779b768d26d75fcdbc feat(uag): implement provider-neutral semantic core",
+    "145abbf21313ea0ef05e8257b66dceacc62fda89 harden(uag): enforce receipt/lineage/request invariants"
+  ],
+  "authority_effect": {
+    "merge_authorized": false,
+    "activation_authorized": false,
+    "tool_execution_authority": "NONE",
+    "approval_authority": "NONE",
+    "provider_calls": "FORBIDDEN",
+    "retry_fallback": "NONE"
+  },
+  "residual_risks": [
+    "canonical_json does not pre-check NaN/Infinity floats; deterministic within CPython but not cross-runtime",
+    "PublicCore.canonical() does not dedupe public_values keys on ties",
+    "AttemptRecord.model_transport_receipt_ref and DigestRef.media_type remain free-form (cosmetic)",
+    "common_defs.schema.json not present in this checkout; enum value-space parity with C0-R2 not byte-verified here"
+  ],
+  "unknowns": [
+    "final merge/activation authority: requires later separate operator gate (not this packet)",
+    "pal multi-model codereview/precommit tool gate: NOT_RUN in this environment"
+  ],
+  "cleanup_status": "NOT_STARTED"
+}
