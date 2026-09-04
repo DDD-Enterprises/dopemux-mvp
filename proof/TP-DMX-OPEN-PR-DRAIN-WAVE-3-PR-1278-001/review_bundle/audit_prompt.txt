@@ -1,0 +1,28 @@
+Independent embedded audit for DDD-Enterprises/dopemux-mvp PR #1278, part of a
+governed PR-drain packet (TP-DMX-OPEN-PR-DRAIN-MERGE-001, Wave 3: bounded
+governance/evidence PRs). This PR reconciles dNh migration proof metadata:
+it adds proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/{EVIDENCE_RECONCILIATION_RECEIPT.json,PROOF.json}
+and task-packets/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A-EVIDENCE-RECONCILIATION-001.json,
+plus a small edit to the existing
+task-packets/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A.json. No runtime code,
+schema, or workflow file is touched.
+
+Verify, using your real filesystem access via --add-dir to the actual
+worktree:
+1. Confirm the changed files are exactly what's listed in
+   /tmp/audit_1278/DIFF.txt.
+2. Read PROOF.json and EVIDENCE_RECONCILIATION_RECEIPT.json and check they
+   are internally consistent (same packet_id, referenced head_sha/artifacts
+   actually present, no obviously fabricated or self-contradictory claims).
+3. Check the edit to the existing TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A.json
+   task packet is a small, additive/status-reconciling change, not a
+   destructive rewrite that would erase prior packet history.
+4. Scan for secrets/credentials.
+5. Confirm this is pure documentation/proof-metadata, inert to runtime
+   behavior.
+
+Return PASS / PASS_WITH_RISKS / FAIL / NEEDS_SUPERVISOR with findings (id,
+severity, title, status, body). Be concrete about what you actually read.
+
+Worktree: /Users/hue/code/dopemux-mvp/.worktrees/pr-1278
+Diff file: /tmp/audit_1278/DIFF.txt
