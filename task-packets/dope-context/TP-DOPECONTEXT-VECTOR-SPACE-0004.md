@@ -722,3 +722,52 @@ by the concrete tests that now assert the property it stood for:
 pass would be a false record. It is retired because it became unanswerable, and
 the substitution carries the residual risk that A14 demanded something the
 replacements do not cover.
+
+### Why the override cannot simply be cleared — container config drift (2026-09-04)
+
+Attempted to clear `DOPE_CONTEXT_CODE_EMBED_MODEL=voyage-code-3` so D1 takes
+effect. Blocked, and the blocker is worth recording.
+
+**The running `mcp-dope-context` was not created from this repository's
+compose config.** It carries two things `compose.yml` does not define:
+
+| Present in container | In `compose.yml`? |
+|---|---|
+| `DOPE_CONTEXT_CODE_EMBED_MODEL=voyage-code-3` | no |
+| `DOPE_CONTEXT_CONTEXTUAL_EMBED_MODEL=voyage-context-4` | no |
+| `DOPE_CONTEXT_DOC_EMBED_MODEL=voyage-context-4` | no |
+| bind `/Users/hue/code -> /workspaces` (rw) | no |
+
+Searched for the source: every repo compose file (`compose.yml`,
+`docker-compose.{dev,prod,unified,smoke,monitoring,mcp-test}.yml`), `.envrc`,
+`.envrc.dopemux-mcp`. **None defines either the model overrides or the
+`/workspaces` mount.** Compose labels confirm the container belongs to project
+`dopemux`, service `dope-context`, so it was started through compose — but with
+a config that does not exist in the repository. Consistent with the session
+record: started under `TP-DMX-MCP-RESET-RECOVERY-001` with a bespoke env file.
+
+**The trap:** recreating from the repo's own compose would drop the override
+(wanted) **and** the `/workspaces` bind (not wanted). That mount is what the
+Wave 0 eval harness and the live D1 validation both read the worktree through.
+A naive `dopemux mcp up --services dope-context` therefore trades one problem
+for another, and `dopemux mcp up` exposes no way to supply the missing pieces
+(`--all` / `--services` only; no override-file or force-recreate flag).
+
+**Blast radius if it is cleared:** negligible. Qdrant holds exactly one
+collection, `code_2bd1584a_7a3fda64c982`, with **one point**, no
+`workspace_id`, and `model: voyage-context-4` — already pre-D1 and stale
+irrespective of this change.
+
+**Deliberately not done here.** Options, for the fleet owner:
+
+1. Recreate with the original config minus the model overrides — requires
+   whoever holds `TP-DMX-MCP-RESET-RECOVERY-001`'s env file.
+2. Commit the missing pieces to `compose.yml` (the `/workspaces` bind, without
+   the model overrides) so the config stops drifting. Note this makes a
+   read-write mount of the entire `~/code` tree part of the tracked config —
+   a security-relevant decision that is not this packet's to take.
+3. Leave as-is and accept that D1 is inert in this deployment.
+
+No option is taken unilaterally: `mcp-dope-context` is a host singleton shared
+across projects, and every path either mutates shared infrastructure or widens
+committed mount permissions.
