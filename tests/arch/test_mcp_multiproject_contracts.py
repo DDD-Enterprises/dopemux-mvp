@@ -31,3 +31,46 @@ def test_service_topology_has_exact_contract_shape():
         "WORKTREE_SCOPED",
         "RETIRED",
     }
+
+
+def _load_schema(name: str) -> dict:
+    return json.loads((REPO_ROOT / "schemas/mcp" / name).read_text())
+
+def _verified_identity() -> dict:
+    return {
+        "schema_version": "dopemux.mcp.resolved-execution-identity.v1",
+        "resolution_status": "VERIFIED",
+        "project_id": "project-registry-id",
+        "workspace_id": "workspace-registry-id",
+        "instance_id": "instance-registry-id",
+        "actor_id": "operator",
+        "client_id": "codex-cli",
+        "registry_generation": 7,
+        "mutable_routing_allowed": True,
+        "aliases": [
+            {
+                "kind": "git_common_dir",
+                "value": "/Users/example/repo/.git",
+                "role": "EVIDENCE_ONLY",
+            }
+        ],
+    }
+
+def test_verified_identity_requires_registry_ids():
+    schema = _load_schema("resolved-execution-identity.schema.json")
+    jsonschema.validate(_verified_identity(), schema)
+
+def test_unknown_identity_cannot_allow_mutation():
+    schema = _load_schema("resolved-execution-identity.schema.json")
+    bad = _verified_identity()
+    bad["resolution_status"] = "UNKNOWN"
+    bad["mutable_routing_allowed"] = True
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(bad, schema)
+
+def test_alias_never_becomes_authority():
+    schema = _load_schema("resolved-execution-identity.schema.json")
+    bad = _verified_identity()
+    bad["aliases"][0]["role"] = "AUTHORITY"
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(bad, schema)

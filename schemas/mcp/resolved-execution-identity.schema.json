@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "resolution_status"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "dopemux.mcp.resolved-execution-identity.v1"
+    },
+    "resolution_status": {
+      "type": "string",
+      "enum": ["VERIFIED", "CONFLICTING", "UNKNOWN"]
+    },
+    "project_id": {
+      "type": ["string", "null"]
+    },
+    "workspace_id": {
+      "type": ["string", "null"]
+    },
+    "instance_id": {
+      "type": ["string", "null"]
+    },
+    "actor_id": {
+      "type": ["string", "null"]
+    },
+    "client_id": {
+      "type": ["string", "null"]
+    },
+    "registry_generation": {
+      "type": ["integer", "null"]
+    },
+    "mutable_routing_allowed": {
+      "type": "boolean"
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["role"],
+        "properties": {
+          "role": {
+            "type": "string",
+            "const": "EVIDENCE_ONLY"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "resolution_status": { "const": "VERIFIED" }
+        }
+      },
+      "then": {
+        "required": [
+          "project_id",
+          "workspace_id",
+          "instance_id",
+          "actor_id",
+          "client_id",
+          "registry_generation",
+          "mutable_routing_allowed"
+        ],
+        "properties": {
+          "project_id": { "type": "string", "minLength": 1 },
+          "workspace_id": { "type": "string", "minLength": 1 },
+          "instance_id": { "type": "string", "minLength": 1 },
+          "actor_id": { "type": "string", "minLength": 1 },
+          "client_id": { "type": "string", "minLength": 1 },
+          "registry_generation": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "else": {
+        "properties": {
+          "mutable_routing_allowed": { "const": false }
+        }
+      }
+    }
+  ]
+}
