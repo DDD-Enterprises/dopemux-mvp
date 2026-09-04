@@ -1,7 +1,7 @@
 {
   "packet_id": "TP-DMX-OPEN-PR-DRAIN-WAVE-3-PR-1301-001",
   "status": "PASS",
-  "risk_lane": "L1_LOW",
+  "risk_lane": "L2",
   "head_sha": "f2a72c6168113052d960d029e5814513f8558101",
   "generated_at": "2026-09-04T12:35:00Z",
   "repo_identity": {
