@@ -265,3 +265,4 @@ Backlog conversion of Memory Context Fabric + MCP fleet audit + forgotten-featur
 | DMX-ADR-003-lane-engine-dispatch | DMX-ADR | ADR | Ready | — |
 | DMX-ADR-004-complexity-scorer | DMX-ADR | ADR | Ready | — |
 | DMX-ADR-005-conport-graph-exposure | DMX-ADR | ADR | Ready | — |
+| TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001 | MCP Fleet | Freeze multiproject P0 identity and sharing contracts | Active | docs/90-adr/adr-dmx-mcp-multiproject-identity-sharing-contract-001.md |

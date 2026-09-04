@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.local/schemas/mcp/project-event-envelope.schema.json",
+  "$comment": "R1-08: frozen P0 project event envelope. Transport contract only. does not authorize Redis migration or dope-memory promotion.",
+  "title": "Dopemux MCP Project Event Envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "event_type",
+    "emitted_at",
+    "source_service_id",
+    "project_id",
+    "workspace_id",
+    "instance_id",
+    "registry_generation",
+    "payload_digest",
+    "stream_namespace",
+    "sequence",
+    "replay_key"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "dopemux.mcp.project-event-envelope.v1"
+    },
+    "event_id": { "type": "string", "minLength": 1 },
+    "event_type": { "type": "string", "minLength": 1 },
+    "emitted_at": { "type": "string", "format": "date-time" },
+    "source_service_id": { "type": "string", "minLength": 1 },
+    "project_id": { "type": "string", "minLength": 1 },
+    "workspace_id": { "type": "string", "minLength": 1 },
+    "instance_id": { "type": "string", "minLength": 1 },
+    "registry_generation": { "type": "integer", "minimum": 0 },
+    "payload_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "stream_namespace": { "type": "string", "minLength": 1 },
+    "sequence": { "type": "integer", "minimum": 0 },
+    "replay_key": { "type": "string", "minLength": 1 }
+  }
+}

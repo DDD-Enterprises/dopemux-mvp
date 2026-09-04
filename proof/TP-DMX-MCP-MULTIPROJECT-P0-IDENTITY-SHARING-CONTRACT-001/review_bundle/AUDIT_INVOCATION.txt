@@ -1,0 +1,37 @@
+INDEPENDENT FINAL L2 RE-AUDIT INVOCATION
+packet: TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001
+repair: P0-R1 (bounded substantive repair) + post-freeze cosmetic fix re-audit
+audit scope: new frozen substantive content head 2e31726c1467770030d1fcb7358e5d7295e09b7b
+
+auditor runtime: opencode CLI (non-interactive run), model provider cheaper-inference
+auditor model:  google gemini-3.1-pro (Gemini family)
+schema auditor_tool:  gemini-cli   (closest closed-enum member; exact real tool in AUDIT_OUTPUT)
+schema auditor_model: gemini       (closest closed-enum member; exact real model = cheaper-inference/gemini-3.1-pro)
+
+exact command:
+  cd /Users/hue/code/_worktrees/mcp-multiproject-p0
+  opencode run --auto \
+    -m cheaper-inference/gemini-3.1-pro \
+    --dir /Users/hue/code/_worktrees/mcp-multiproject-p0 \
+    "<combined independent re-audit prompt (AUDIT_INPUT.md + read-only-instructed envelope)>"
+
+Auditor independence: the auditor session was a fresh opencode run with NO implementer
+context. The prompt expressly instructed: "You are the independent final L2 auditor
+performing a FRESH re-audit. You have NO prior context from the implementer." The prompt
+forbade file modification and commits.
+
+Reason for re-audit: after the prior independent audit PASS at 4e72a976eec6be3e990b519cacfbaa95088d1a9f,
+one cosmetic content change advanced the content head to 2e31726c1467770030d1fcb7358e5d7295e09b7b:
+tests/arch/test_mcp_multiproject_contracts.py relocated the mid-file `import subprocess` to the
+module-top stdlib import group (import-convention fix per a Copilot PR #1306 review thread).
+Pure import placement; no behavioral change. A fresh independent re-audit of the new content head
+was required because the signed PR attestation binds head_sha.
+
+Permission handling: --auto was used so the auditor could run read-only deterministic checks
+(shasum, python json.tool, git rev-parse, pytest, python ast). The prompt forbade writes/commits.
+Post-audit `git status --short` at the frozen head was EMPTY and `git rev-parse HEAD` returned
+2e31726c1467770030d1fcb7358e5d7295e09b7b, proving the audit performed no repository mutation.
+
+result: auditor returned verdict PASS (all 11 re-audit challenges F-R2-01..11 RESOLVED).
+
+Date (UTC): 2026-09-04T05:10Z

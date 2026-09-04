@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.local/schemas/mcp/resolved-execution-identity.schema.json",
+  "$comment": "R1-09: registry identity authoritative, aliases evidence-only. mutable_routing_allowed required globally. UNKNOWN/CONFLICTING forces false. A verified identity may still be denied by later policy.",
+  "title": "Dopemux MCP Resolved Execution Identity",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "resolution_status",
+    "mutable_routing_allowed"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "dopemux.mcp.resolved-execution-identity.v1"
+    },
+    "resolution_status": {
+      "type": "string",
+      "enum": ["VERIFIED", "CONFLICTING", "UNKNOWN"]
+    },
+    "mutable_routing_allowed": {
+      "type": "boolean"
+    },
+    "project_id": {
+      "type": ["string", "null"]
+    },
+    "workspace_id": {
+      "type": ["string", "null"]
+    },
+    "instance_id": {
+      "type": ["string", "null"]
+    },
+    "actor_id": {
+      "type": ["string", "null"]
+    },
+    "client_id": {
+      "type": ["string", "null"]
+    },
+    "registry_generation": {
+      "type": ["integer", "null"]
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "kind", "value"],
+        "properties": {
+          "role": {
+            "type": "string",
+            "const": "EVIDENCE_ONLY"
+          },
+          "kind": {
+            "type": "string",
+            "minLength": 1
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "resolution_status": { "const": "VERIFIED" }
+        },
+        "required": ["resolution_status"]
+      },
+      "then": {
+        "required": [
+          "project_id",
+          "workspace_id",
+          "instance_id",
+          "actor_id",
+          "client_id",
+          "registry_generation",
+          "mutable_routing_allowed"
+        ],
+        "properties": {
+          "project_id": { "type": "string", "minLength": 1 },
+          "workspace_id": { "type": "string", "minLength": 1 },
+          "instance_id": { "type": "string", "minLength": 1 },
+          "actor_id": { "type": "string", "minLength": 1 },
+          "client_id": { "type": "string", "minLength": 1 },
+          "registry_generation": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "else": {
+        "properties": {
+          "mutable_routing_allowed": { "const": false }
+        }
+      }
+    }
+  ]
+}

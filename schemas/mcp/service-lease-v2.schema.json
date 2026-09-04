@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.local/schemas/mcp/service-lease-v2.schema.json",
+  "$comment": "R1-06: frozen P0 contract fields. Paths, path hashes, port formulas and labels are NOT authority fields.",
+  "title": "Dopemux MCP Service Lease v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "lease_id",
+    "service_id",
+    "sharing_class",
+    "registry_generation",
+    "owner_epoch",
+    "endpoint",
+    "owner_runtime_identity",
+    "status",
+    "created_at",
+    "updated_at",
+    "last_verified_at",
+    "evidence_refs"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "dopemux.mcp.service-lease.v2"
+    },
+    "lease_id": { "type": "string", "minLength": 1 },
+    "service_id": { "type": "string", "minLength": 1 },
+    "sharing_class": {
+      "type": "string",
+      "enum": ["HOST_SINGLETON", "PROJECT_SCOPED", "WORKTREE_SCOPED", "RETIRED"]
+    },
+    "registry_generation": { "type": "integer", "minimum": 0 },
+    "owner_epoch": { "type": "integer", "minimum": 0 },
+    "endpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["transport"],
+      "properties": {
+        "transport": { "type": "string", "minLength": 1 },
+        "host": { "type": "string" },
+        "port": { "type": "integer" },
+        "url": { "type": "string" }
+      }
+    },
+    "owner_runtime_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runtime_kind", "runtime_id"],
+      "properties": {
+        "runtime_kind": { "type": "string", "minLength": 1 },
+        "runtime_id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "stale", "released", "unknown", "conflicting"]
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "last_verified_at": { "type": "string", "format": "date-time" },
+    "evidence_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "project_id": { "type": "string", "minLength": 1 },
+    "instance_id": { "type": "string", "minLength": 1 }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "sharing_class": { "const": "PROJECT_SCOPED" } },
+        "required": ["sharing_class"]
+      },
+      "then": { "required": ["project_id"] }
+    },
+    {
+      "if": {
+        "properties": { "sharing_class": { "const": "WORKTREE_SCOPED" } },
+        "required": ["sharing_class"]
+      },
+      "then": { "required": ["project_id", "instance_id"] }
+    },
+    {
+      "if": {
+        "properties": { "sharing_class": { "const": "RETIRED" } },
+        "required": ["sharing_class"]
+      },
+      "then": { "not": {} }
+    }
+  ]
+}

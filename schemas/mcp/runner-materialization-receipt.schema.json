@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.local/schemas/mcp/runner-materialization-receipt.schema.json",
+  "$comment": "R1-07: frozen P0 runner materialization receipt. Authority is PROVENANCE_ONLY. never authorizes runtime mutation, execution, merge, or activation.",
+  "title": "Dopemux MCP Runner Materialization Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "authority",
+    "materialization_id",
+    "project_id",
+    "workspace_id",
+    "instance_id",
+    "registry_generation",
+    "runner_family",
+    "profile",
+    "catalog_digest",
+    "rendered_config_digest",
+    "lease_refs",
+    "generated_at",
+    "shared_global_config_mutated",
+    "strict_mode",
+    "inherited_surface_status"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "dopemux.mcp.runner-materialization-receipt.v1"
+    },
+    "authority": {
+      "type": "string",
+      "const": "PROVENANCE_ONLY"
+    },
+    "materialization_id": { "type": "string", "minLength": 1 },
+    "project_id": { "type": "string", "minLength": 1 },
+    "workspace_id": { "type": "string", "minLength": 1 },
+    "instance_id": { "type": "string", "minLength": 1 },
+    "registry_generation": { "type": "integer", "minimum": 0 },
+    "runner_family": {
+      "type": "string",
+      "enum": ["claude", "codex", "opencode", "gemini", "copilot"]
+    },
+    "profile": { "type": "string", "minLength": 1 },
+    "catalog_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "rendered_config_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "lease_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "shared_global_config_mutated": {
+      "type": "boolean",
+      "const": false
+    },
+    "strict_mode": { "type": "boolean" },
+    "inherited_surface_status": {
+      "type": "string",
+      "enum": ["KNOWN", "UNKNOWN"]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "strict_mode": { "const": true }
+        },
+        "required": ["strict_mode"]
+      },
+      "then": {
+        "properties": {
+          "inherited_surface_status": { "const": "KNOWN" }
+        }
+      }
+    }
+  ]
+}

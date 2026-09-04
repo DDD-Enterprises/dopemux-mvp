@@ -1,0 +1,641 @@
+{
+  "packet_id": "TP-DMX-MCP-MULTIPROJECT-R2-PRO-ADJUDICATION-001-A1",
+  "generated_at_utc": "2026-09-04T03:14:23Z",
+  "sharing_classes": [
+    "HOST_SINGLETON",
+    "PROJECT_SCOPED",
+    "WORKTREE_SCOPED",
+    "RETIRED"
+  ],
+  "selected_architecture": "HYBRID_HOST_PROJECT_WORKTREE_WITH_CLIENT_SIDE_MATERIALIZATION",
+  "services_count": 26,
+  "services": [
+    {
+      "SERVICE_ID": "postgres-age",
+      "CURRENT_CLASS": "HOST_SINGLETON",
+      "TARGET_CLASS": "HOST_SINGLETON",
+      "CURRENT_RUNTIME": "Observed shared PostgreSQL/AGE engine; current ConPort tenant wall not verified.",
+      "FLIP_GATE": [
+        "Per-project DB/schema/role or accepted RLS policy",
+        "Credential separation",
+        "Wrong-project query denial",
+        "Backup/restore proof"
+      ],
+      "CANONICAL_AUTHORITY": "Storage engine only; ConPort retains structured-record authority.",
+      "IDENTITY_SCOPE": "Per-project database principal and canonical project_id mapping.",
+      "STORAGE_SCOPE": "One host engine with project-isolated databases/schemas/roles/policies.",
+      "PORT_POLICY": "Fixed or externally managed host endpoint; port never proves tenancy.",
+      "FAIL_CLOSED_RULE": "Unknown/mismatched project principal, missing policy, or cross-project object access denies.",
+      "EVIDENCE_REFS": [
+        "SPEC§5/14",
+        "R0/15_SERVICE_SCOPE_MATRIX.json",
+        "R1/04_PRO_RELEVANT_FINDINGS.md#D"
+      ],
+      "DISPOSITION": "KEEP",
+      "ELIGIBLE_FOR_TARGET_NOW": false,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "redis-primary",
+      "CURRENT_CLASS": "HOST_SINGLETON",
+      "TARGET_CLASS": "HOST_SINGLETON",
+      "CURRENT_RUNTIME": "Observed host singleton; key-prefix lint status unknown and zero keys observed during R0.1 probe.",
+      "FLIP_GATE": [
+        "Complete writer/reader key namespace audit",
+        "Canonical project/workspace prefix helper",
+        "CI lint",
+        "Cross-project key scan fixture"
+      ],
+      "CANONICAL_AUTHORITY": "Infrastructure store only; owning subsystem retains authority.",
+      "IDENTITY_SCOPE": "Per-key canonical project_id/workspace_id namespace.",
+      "STORAGE_SCOPE": "One host engine with namespaced keys and optional ACL separation.",
+      "PORT_POLICY": "Fixed host endpoint.",
+      "FAIL_CLOSED_RULE": "Unprefixed or unknown-scope key access denies for scoped data.",
+      "EVIDENCE_REFS": [
+        "SPEC§5",
+        "R0/15_SERVICE_SCOPE_MATRIX.json",
+        "R0.1/33_EXT004_REDIS_EVENTS_CONTAMINATION.md"
+      ],
+      "DISPOSITION": "KEEP",
+      "ELIGIBLE_FOR_TARGET_NOW": false,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "qdrant",
+      "CURRENT_CLASS": "HOST_SINGLETON",
+      "TARGET_CLASS": "HOST_SINGLETON",
+      "CURRENT_RUNTIME": "Observed host singleton backing dope-context.",
+      "FLIP_GATE": [
+        "Project/workspace collection namespace",
+        "Manifest/source digest binding",
+        "Wrong-project retrieval tests",
+        "Purge/index residual tests"
+      ],
+      "CANONICAL_AUTHORITY": "Derived retrieval storage; canonical source systems retain truth.",
+      "IDENTITY_SCOPE": "Explicit canonical project_id/workspace_id per collection/query.",
+      "STORAGE_SCOPE": "Host engine with project/workspace-isolated collections and manifests.",
+      "PORT_POLICY": "Fixed host endpoint.",
+      "FAIL_CLOSED_RULE": "Unknown/mismatched namespace or collection provenance denies retrieval.",
+      "EVIDENCE_REFS": [
+        "SPEC§5/14",
+        "R0/15_SERVICE_SCOPE_MATRIX.json"
+      ],
+      "DISPOSITION": "KEEP",
+      "ELIGIBLE_FOR_TARGET_NOW": true,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "dope-context",
+      "CURRENT_CLASS": "HOST_SINGLETON",
+      "TARGET_CLASS": "HOST_SINGLETON",
+      "CURRENT_RUNTIME": "Observed host singleton with per-call workspace intent; current end-to-end isolation not proven by this pack.",
+      "FLIP_GATE": [
+        "Trusted identity resolver integration",
+        "No raw path/CWD authorization",
+        "Wrong-project retrieval zero-leak tests",
+        "Collection freshness/purge checks"
+      ],
+      "CANONICAL_AUTHORITY": "Semantic/lexical retrieval only; noncanonical.",
+      "IDENTITY_SCOPE": "Canonical project_id + workspace_id per call; path is locator only.",
+      "STORAGE_SCOPE": "Derived indexes partitioned by project/workspace.",
+      "PORT_POLICY": "Fixed host MCP endpoint.",
+      "FAIL_CLOSED_RULE": "Unknown/conflicting identity or unresolved collection ownership denies; result never self-promotes.",
+      "EVIDENCE_REFS": [
+        "SPEC§5/14",
+        "R0/15_SERVICE_SCOPE_MATRIX.json"
+      ],
+      "DISPOSITION": "KEEP",
+      "ELIGIBLE_FOR_TARGET_NOW": false,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "redis-events-engine",
+      "CURRENT_CLASS": "HOST_SINGLETON",
+      "TARGET_CLASS": "HOST_SINGLETON",
+      "CURRENT_RUNTIME": "Observed one host Redis engine on 6379.",
+      "FLIP_GATE": [
+        "Logical event plane namespaced project-scoped",
+        "ACL/namespace enforcement where practical",
+        "No unprefixed legacy writers"
+      ],
+      "CANONICAL_AUTHORITY": "Transport engine only.",
+      "IDENTITY_SCOPE": "Project identity carried by resolved namespace and envelope.",
+      "STORAGE_SCOPE": "One engine; every stream/group/replay cursor is project-scoped.",
+      "PORT_POLICY": "Fixed host endpoint; logical namespace resolver is authoritative for stream names.",
+      "FAIL_CLOSED_RULE": "Direct unprefixed stream/group access by managed components denies.",
+      "EVIDENCE_REFS": [
+        "R0.1/33_EXT004_REDIS_EVENTS_CONTAMINATION.md"
+      ],
+      "DISPOSITION": "AMEND",
+      "ELIGIBLE_FOR_TARGET_NOW": false,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "redis-events",
+      "CURRENT_CLASS": "HOST_SINGLETON",
+      "TARGET_CLASS": "PROJECT_SCOPED",
+      "CURRENT_RUNTIME": "Unsafe global streams activity.events.v1 and dopemux:events; global dope-memory-ingestor group; envelopes incomplete.",
+      "FLIP_GATE": [
+        "dmx:{project_id}:... stream names",
+        "Project-scoped consumer groups",
+        "Complete project/workspace/instance envelope",
+        "Writer/reader/replay migration",
+        "Legacy stream quarantine",
+        "Leak-and-loss falsification"
+      ],
+      "CANONICAL_AUTHORITY": "Event transport; dope-memory owns canonical chronology after validated promotion.",
+      "IDENTITY_SCOPE": "Canonical project_id namespace; explicit workspace_id and instance_id envelope.",
+      "STORAGE_SCOPE": "Per-project logical stream/group/cursor partitions on a host engine or dedicated engine.",
+      "PORT_POLICY": "Host engine endpoint plus deterministic project namespace; no port-based identity.",
+      "FAIL_CLOSED_RULE": "Missing/default/foreign identity, unprefixed names, or replay across project denies.",
+      "EVIDENCE_REFS": [
+        "R0.1/33_EXT004_REDIS_EVENTS_CONTAMINATION.md",
+        "SPEC§5"
+      ],
+      "DISPOSITION": "AMEND",
+      "ELIGIBLE_FOR_TARGET_NOW": false,
+      "DEFERRED_OPTION": "Physical host-engine sharing is already allowed; logical host-global streams are never a safe target."
+    },
+    {
+      "SERVICE_ID": "conport",
+      "CURRENT_CLASS": "WORKTREE_SCOPED",
+      "TARGET_CLASS": "PROJECT_SCOPED",
+      "CURRENT_RUNTIME": "Catalog says per-worktree; one live project-named container is bound to dnh_crm but lacks proven CRS v2 registry/storage wall.",
+      "FLIP_GATE": [
+        "Explicit Wave 2 operator authorization",
+        "Registry-backed project/workspace/instance binding",
+        "Storage-enforced project wall",
+        "Per-request instance membership",
+        "Migration/quarantine",
+        "Backup/restore",
+        "Two-worktree sharing",
+        "Second-repo storage denial"
+      ],
+      "CANONICAL_AUTHORITY": "Canonical structured decisions, context, progress and accepted custom records within its project.",
+      "IDENTITY_SCOPE": "Project endpoint/credential + durable workspace_id + explicit instance_id.",
+      "STORAGE_SCOPE": "Dedicated project DB/schema/role/RLS wall on shared Postgres/AGE engine.",
+      "PORT_POLICY": "Leased by (project_id, conport).",
+      "FAIL_CLOSED_RULE": "Unknown/mismatched registry, endpoint, instance membership, storage principal or migration provenance denies.",
+      "EVIDENCE_REFS": [
+        "R0/16_CONPORT_CRS_V2_STATUS.md",
+        "R0.1/31_EXT002_CONPORT_CRS_V2_WAVE_STATUS.md"
+      ],
+      "DISPOSITION": "KEEP",
+      "ELIGIBLE_FOR_TARGET_NOW": false,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "dope-memory",
+      "CURRENT_CLASS": "WORKTREE_SCOPED",
+      "TARGET_CLASS": "PROJECT_SCOPED",
+      "CURRENT_RUNTIME": "Live process is project-bound but identity silently defaults and /data/chronicle.sqlite env override makes request workspace storage-inert; SQLite/WAL is canonical.",
+      "FLIP_GATE": [
+        "Remove silent default/default-A identity",
+        "Project endpoint or non-forgeable capability binding",
+        "Explicit workspace/instance validation",
+        "One canonical SQLite file/volume per project",
+        "Remove tenancy-selecting ledger env override",
+        "Redis event isolation first",
+        "WAL contention/backpressure tests",
+        "Restart/backup/restore",
+        "Cross-project denial"
+      ],
+      "CANONICAL_AUTHORITY": "Canonical chronology and historical receipts for its project.",
+      "IDENTITY_SCOPE": "Project endpoint/credential + explicit registered workspace_id/instance_id every material call.",
+      "STORAGE_SCOPE": "One canonical SQLite WAL ledger per project for V1; optional derived Postgres mirror remains noncanonical.",
+      "PORT_POLICY": "Leased by (project_id, dope-memory).",
+      "FAIL_CLOSED_RULE": "Any missing/default/foreign identity, ambient path/env tenancy selection, wrong ledger, or unscoped event denies.",
+      "EVIDENCE_REFS": [
+        "R0.1/30_EXT001_DOPE_MEMORY_IDENTITY.md",
+        "R0.1/38_LOCAL_GROUND_TRUTH.md",
+        "R1/04_PRO_RELEVANT_FINDINGS.md#D/H"
+      ],
+      "DISPOSITION": "AMEND",
+      "ELIGIBLE_FOR_TARGET_NOW": false,
+      "DEFERRED_OPTION": "HOST_SINGLETON only after authenticated per-request/endpoint tenancy, multi-ledger derivation, concurrency limits and full leakage proof."
+    },
+    {
+      "SERVICE_ID": "task-orchestrator-kotlin",
+      "CURRENT_CLASS": "PROJECT_SCOPED",
+      "TARGET_CLASS": "PROJECT_SCOPED",
+      "CURRENT_RUNTIME": "Observed one project-bound process on global fixed 7890, currently bound to dnh_crm; topology cannot coexist safely across projects.",
+      "FLIP_GATE": [
+        "Operator re-ratification of proposed project-scoped ADR",
+        "Registry-backed project identity",
+        "Lease key (project_id, service_id)",
+        "Remove every hard-coded 7890 authority assumption",
+        "Project storage wall",
+        "One canonical writer",
+        "Idempotency/OCC",
+        "Restart persistence",
+        "Wrong-project/instance tests",
+        "Rollback"
+      ],
+      "CANONICAL_AUTHORITY": "Sole workflow legality, transition, blocker and next-legal-action authority.",
+      "IDENTITY_SCOPE": "Project endpoint/credential + explicit workspace/instance/task context.",
+      "STORAGE_SCOPE": "Persistent project-scoped workflow store; no cross-project process or database sharing without new authority.",
+      "PORT_POLICY": "Project lease; legacy 7890 is compatibility-only during bounded migration.",
+      "FAIL_CLOSED_RULE": "Unknown/mismatched project, foreign port owner, stale lease, nonpersistent fallback or second writer denies.",
+      "EVIDENCE_REFS": [
+        "R0/18_TASK_ORCHESTRATOR_STATUS.md",
+        "R0.1/36_LIFECYCLE_COMMAND_SURFACE_CORRECTION.md",
+        "R0.1/37_PR1086_GOVERNANCE_RECORD.md"
+      ],
+      "DISPOSITION": "AMEND",
+      "ELIGIBLE_FOR_TARGET_NOW": false,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "python-workflow-service",
+      "CURRENT_CLASS": "WORKTREE_SCOPED",
+      "TARGET_CLASS": "PROJECT_SCOPED",
+      "CURRENT_RUNTIME": "Runtime and consumers not observed; historical :8000 Task Orchestrator naming is a shadow-twin risk.",
+      "FLIP_GATE": [
+        "Exact code/entrypoint/runtime/consumer census",
+        "Distinct non-Task-Orchestrator service_id and name",
+        "Accepted authority ceiling",
+        "Project storage/identity contract",
+        "No consumer expects Kotlin authority",
+        "Rollback and deprecation plan"
+      ],
+      "CANONICAL_AUTHORITY": "None until a separate accepted contract proves its behavior; Kotlin Task Orchestrator retains workflow authority.",
+      "IDENTITY_SCOPE": "Safety floor is worktree identity; target project identity only after its own contract.",
+      "STORAGE_SCOPE": "Unknown; must not share Kotlin workflow storage or claim canonical transitions.",
+      "PORT_POLICY": "Distinct endpoint; never :8000-as-orchestrator by name or implicit default.",
+      "FAIL_CLOSED_RULE": "Unknown runtime, authority, consumer, or identity causes routing denial; do not retire unique behavior without evidence.",
+      "EVIDENCE_REFS": [
+        "SPEC§5",
+        "R0/18_TASK_ORCHESTRATOR_STATUS.md"
+      ],
+      "DISPOSITION": "KEEP",
+      "ELIGIBLE_FOR_TARGET_NOW": false,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "serena",
+      "CURRENT_CLASS": "WORKTREE_SCOPED",
+      "TARGET_CLASS": "WORKTREE_SCOPED",
+      "CURRENT_RUNTIME": "Not running; deployed image uses upstream one-project MCP entrypoint. In-repo multi-workspace wrapper is orphaned. Upstream active project is shared mutable and unsynchronized.",
+      "FLIP_GATE": [
+        "For current class: exact worktree root and read/write lane policy",
+        "For any future host flip: deployed per-request immutable workspace context, concurrency synchronization, LS isolation, mount allowlist, two-client adversarial test, resource benchmark"
+      ],
+      "CANONICAL_AUTHORITY": "Helper/code-intelligence surface only.",
+      "IDENTITY_SCOPE": "One registered instance/worktree per process in V1.",
+      "STORAGE_SCOPE": "Per-worktree source/mount and language-server subprocesses.",
+      "PORT_POLICY": "Worktree lease or local stdio endpoint.",
+      "FAIL_CLOSED_RULE": "Wrong root, project activation from another client, path outside allowlist, or ambiguous instance denies.",
+      "EVIDENCE_REFS": [
+        "R0.1/38_LOCAL_GROUND_TRUTH.md",
+        "R1/04_PRO_RELEVANT_FINDINGS.md#G"
+      ],
+      "DISPOSITION": "DEFER",
+      "ELIGIBLE_FOR_TARGET_NOW": true,
+      "DEFERRED_OPTION": "HOST_SINGLETON is a future option, not a current target commitment."
+    },
+    {
+      "SERVICE_ID": "pal-stdio",
+      "CURRENT_CLASS": "HOST_SINGLETON",
+      "TARGET_CLASS": "HOST_SINGLETON",
+      "CURRENT_RUNTIME": "Catalog declares the sole PAL MCP tool surface; runtime was not observed in R0.",
+      "FLIP_GATE": [
+        "One managed surface only",
+        "Profile/capability policy",
+        "Provider credential custody",
+        "No project-authority claims"
+      ],
+      "CANONICAL_AUTHORITY": "Reasoning infrastructure only.",
+      "IDENTITY_SCOPE": "Host/provider identity; project context supplied as data, not authority.",
+      "STORAGE_SCOPE": "Stateless/ephemeral reasoning state; no canonical project storage.",
+      "PORT_POLICY": "Managed host stdio/container endpoint.",
+      "FAIL_CLOSED_RULE": "Missing capability/credential policy or attempts to mutate canonical systems deny.",
+      "EVIDENCE_REFS": [
+        "R0/04_MCP_CATALOG.yaml",
+        "SPEC§5"
+      ],
+      "DISPOSITION": "KEEP",
+      "ELIGIBLE_FOR_TARGET_NOW": false,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "pal-http-wrapper",
+      "CURRENT_CLASS": "HOST_SINGLETON",
+      "TARGET_CLASS": "RETIRED",
+      "CURRENT_RUNTIME": "Catalog describes a health/lifecycle shim with no MCP endpoint.",
+      "FLIP_GATE": [
+        "Consumer census",
+        "Health replacement parity if needed",
+        "Catalog/profile removal",
+        "Start-forbidden test"
+      ],
+      "CANONICAL_AUTHORITY": "None.",
+      "IDENTITY_SCOPE": "Host only.",
+      "STORAGE_SCOPE": "No canonical storage.",
+      "PORT_POLICY": "Retired surface has no selectable endpoint.",
+      "FAIL_CLOSED_RULE": "Generated config or lifecycle attempt to start/expose it fails.",
+      "EVIDENCE_REFS": [
+        "R0/04_MCP_CATALOG.yaml",
+        "SPEC§5"
+      ],
+      "DISPOSITION": "KEEP",
+      "ELIGIBLE_FOR_TARGET_NOW": false,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "dcp-readonly-facade",
+      "CURRENT_CLASS": "HOST_SINGLETON",
+      "TARGET_CLASS": "HOST_SINGLETON",
+      "CURRENT_RUNTIME": "Catalog declares host singleton/per-repo read facade; R0 main-equivalence did not cover later DCP paths outside the listed domain.",
+      "FLIP_GATE": [
+        "Canonical target registry binding",
+        "Per-request repo/project identity",
+        "Read-only tool allowlist",
+        "Source provenance/freshness",
+        "No canonical writes"
+      ],
+      "CANONICAL_AUTHORITY": "Derived read projection only; source systems retain authority.",
+      "IDENTITY_SCOPE": "Canonical project/repository target per request.",
+      "STORAGE_SCOPE": "No canonical storage; bounded caches only if non-authoritative.",
+      "PORT_POLICY": "Fixed host endpoint or external managed endpoint.",
+      "FAIL_CLOSED_RULE": "Unknown target, stale source, write attempt, or authority laundering denies.",
+      "EVIDENCE_REFS": [
+        "SPEC§5",
+        "R0/04_MCP_CATALOG.yaml",
+        "R0.1/35_MAIN_EQUIVALENCE_CHECK.md"
+      ],
+      "DISPOSITION": "KEEP",
+      "ELIGIBLE_FOR_TARGET_NOW": false,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "litellm-and-external-research-proxies",
+      "CURRENT_CLASS": "HOST_SINGLETON",
+      "TARGET_CLASS": "HOST_SINGLETON",
+      "CURRENT_RUNTIME": "Provider infrastructure; two LiteLLM containers were exited in R0.",
+      "FLIP_GATE": [
+        "Credential/custody policy",
+        "Provider eligibility",
+        "No project truth persistence",
+        "Health/identity evidence"
+      ],
+      "CANONICAL_AUTHORITY": "None; external sources/providers retain authority.",
+      "IDENTITY_SCOPE": "Host/provider/account identity; request project identity is metadata/policy only.",
+      "STORAGE_SCOPE": "Stateless or provider-owned.",
+      "PORT_POLICY": "Externally managed/fixed host endpoint.",
+      "FAIL_CLOSED_RULE": "Unknown provider/credential/custody or hidden mutation route denies.",
+      "EVIDENCE_REFS": [
+        "SPEC§5",
+        "R0/25_R0_SUMMARY.md"
+      ],
+      "DISPOSITION": "KEEP",
+      "ELIGIBLE_FOR_TARGET_NOW": false,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "gpt-researcher",
+      "CURRENT_CLASS": "HOST_SINGLETON",
+      "TARGET_CLASS": "HOST_SINGLETON",
+      "CURRENT_RUNTIME": "Catalog host stdio provider surface.",
+      "FLIP_GATE": [
+        "Provider/custody policy",
+        "Project context minimization",
+        "Evidence-only output labeling"
+      ],
+      "CANONICAL_AUTHORITY": "External research evidence only.",
+      "IDENTITY_SCOPE": "External provider plus explicit request project context.",
+      "STORAGE_SCOPE": "No canonical project storage.",
+      "PORT_POLICY": "Managed host stdio endpoint.",
+      "FAIL_CLOSED_RULE": "Missing provider eligibility or attempt to self-promote research output denies.",
+      "EVIDENCE_REFS": [
+        "R0/04_MCP_CATALOG.yaml"
+      ],
+      "DISPOSITION": "KEEP",
+      "ELIGIBLE_FOR_TARGET_NOW": true,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "MCP_DOCKER",
+      "CURRENT_CLASS": "HOST_SINGLETON",
+      "TARGET_CLASS": "HOST_SINGLETON",
+      "CURRENT_RUNTIME": "Existing Docker MCP gateway exposed only to Claude in catalog.",
+      "FLIP_GATE": [
+        "Profile restriction",
+        "Exact connector/tool allowlist",
+        "No fleet identity/endpoint authority",
+        "No hidden global expansion"
+      ],
+      "CANONICAL_AUTHORITY": "Transport aggregator only.",
+      "IDENTITY_SCOPE": "Host session; scoped tools retain their own identity requirements.",
+      "STORAGE_SCOPE": "No canonical project storage.",
+      "PORT_POLICY": "Host stdio gateway.",
+      "FAIL_CLOSED_RULE": "Unknown connector identity, unapproved tool, or attempt to bypass the materializer denies.",
+      "EVIDENCE_REFS": [
+        "R0/04_MCP_CATALOG.yaml",
+        "SPEC§6"
+      ],
+      "DISPOSITION": "KEEP",
+      "ELIGIBLE_FOR_TARGET_NOW": false,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "desktop-commander",
+      "CURRENT_CLASS": "HOST_SINGLETON",
+      "TARGET_CLASS": "HOST_SINGLETON",
+      "CURRENT_RUNTIME": "Host automation surface; catalog agents exposure is none.",
+      "FLIP_GATE": [
+        "Operator/tool capability gate",
+        "No default runner exposure",
+        "Host-path allowlist",
+        "Audit trail for mutations"
+      ],
+      "CANONICAL_AUTHORITY": "No project truth authority; host action surface only.",
+      "IDENTITY_SCOPE": "Host principal/session.",
+      "STORAGE_SCOPE": "Host filesystem/process state.",
+      "PORT_POLICY": "Fixed host endpoint.",
+      "FAIL_CLOSED_RULE": "Absent explicit capability or out-of-scope host target denies.",
+      "EVIDENCE_REFS": [
+        "R0/04_MCP_CATALOG.yaml"
+      ],
+      "DISPOSITION": "KEEP",
+      "ELIGIBLE_FOR_TARGET_NOW": true,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "leantime-bridge",
+      "CURRENT_CLASS": "HOST_SINGLETON",
+      "TARGET_CLASS": "HOST_SINGLETON",
+      "CURRENT_RUNTIME": "Host SSE adapter; not an agent surface.",
+      "FLIP_GATE": [
+        "Explicit Leantime project binding",
+        "Adapter-only contract",
+        "No local canonical shadow"
+      ],
+      "CANONICAL_AUTHORITY": "Leantime retains PM authority.",
+      "IDENTITY_SCOPE": "Canonical project mapping per request/sync job.",
+      "STORAGE_SCOPE": "Bridge-local transport state only.",
+      "PORT_POLICY": "Fixed host adapter endpoint.",
+      "FAIL_CLOSED_RULE": "Unknown project mapping, unsupported write, or proxy output treated as canonical denies.",
+      "EVIDENCE_REFS": [
+        "R0/04_MCP_CATALOG.yaml",
+        "SPEC§2.1"
+      ],
+      "DISPOSITION": "KEEP",
+      "ELIGIBLE_FOR_TARGET_NOW": false,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "mcp-registry",
+      "CURRENT_CLASS": "HOST_SINGLETON",
+      "TARGET_CLASS": "HOST_SINGLETON",
+      "CURRENT_RUNTIME": "External host connector registry; not managed by repo.",
+      "FLIP_GATE": [
+        "Read-only connector metadata use",
+        "No project identity/authorization derivation"
+      ],
+      "CANONICAL_AUTHORITY": "None.",
+      "IDENTITY_SCOPE": "Host session.",
+      "STORAGE_SCOPE": "External registry state.",
+      "PORT_POLICY": "External.",
+      "FAIL_CLOSED_RULE": "Registry suggestions cannot authorize or auto-enable a connector.",
+      "EVIDENCE_REFS": [
+        "R0/04_MCP_CATALOG.yaml"
+      ],
+      "DISPOSITION": "KEEP",
+      "ELIGIBLE_FOR_TARGET_NOW": true,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "scheduled-tasks",
+      "CURRENT_CLASS": "HOST_SINGLETON",
+      "TARGET_CLASS": "HOST_SINGLETON",
+      "CURRENT_RUNTIME": "External host scheduler surface.",
+      "FLIP_GATE": [
+        "Separate scheduling authority",
+        "Project/task identity binding",
+        "No merge/activation/destructive automation"
+      ],
+      "CANONICAL_AUTHORITY": "Scheduler owns timing only; domain systems retain authority.",
+      "IDENTITY_SCOPE": "Host scheduler principal plus explicit project/task reference.",
+      "STORAGE_SCOPE": "External scheduler state.",
+      "PORT_POLICY": "External.",
+      "FAIL_CLOSED_RULE": "Unknown task authority or destructive action denies.",
+      "EVIDENCE_REFS": [
+        "R0/04_MCP_CATALOG.yaml"
+      ],
+      "DISPOSITION": "KEEP",
+      "ELIGIBLE_FOR_TARGET_NOW": true,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "context7",
+      "CURRENT_CLASS": "HOST_SINGLETON",
+      "TARGET_CLASS": "HOST_SINGLETON",
+      "CURRENT_RUNTIME": "External official-doc lookup.",
+      "FLIP_GATE": [
+        "Evidence/source labeling",
+        "No canonical project-state claims"
+      ],
+      "CANONICAL_AUTHORITY": "External documentation evidence only.",
+      "IDENTITY_SCOPE": "External provider.",
+      "STORAGE_SCOPE": "Provider-owned.",
+      "PORT_POLICY": "External.",
+      "FAIL_CLOSED_RULE": "Retrieved documentation cannot override current repo/runtime authority.",
+      "EVIDENCE_REFS": [
+        "R0/04_MCP_CATALOG.yaml"
+      ],
+      "DISPOSITION": "KEEP",
+      "ELIGIBLE_FOR_TARGET_NOW": true,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "github-official-readonly",
+      "CURRENT_CLASS": "HOST_SINGLETON",
+      "TARGET_CLASS": "HOST_SINGLETON",
+      "CURRENT_RUNTIME": "Catalog uses official GitHub MCP in read-only mode.",
+      "FLIP_GATE": [
+        "Read-only token/toolset",
+        "Project/repository target verification",
+        "Current-head freshness"
+      ],
+      "CANONICAL_AUTHORITY": "GitHub retains PR/check/review source authority.",
+      "IDENTITY_SCOPE": "Repository/organization plus authenticated principal.",
+      "STORAGE_SCOPE": "No local canonical storage.",
+      "PORT_POLICY": "Ephemeral stdio container/external API.",
+      "FAIL_CLOSED_RULE": "Wrong repo, stale head, write tool, or non-read-only token posture denies.",
+      "EVIDENCE_REFS": [
+        "R0/04_MCP_CATALOG.yaml"
+      ],
+      "DISPOSITION": "KEEP",
+      "ELIGIBLE_FOR_TARGET_NOW": true,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "playwright-mcp",
+      "CURRENT_CLASS": "WORKTREE_SCOPED",
+      "TARGET_CLASS": "WORKTREE_SCOPED",
+      "CURRENT_RUNTIME": "Catalog declares singleton host-session, but browser/cookie/page state is mutable and no cross-project isolation proof is frozen.",
+      "FLIP_GATE": [
+        "One isolated browser profile per instance",
+        "Target/origin allowlist",
+        "No production mutation authority",
+        "State cleanup/receipt"
+      ],
+      "CANONICAL_AUTHORITY": "No project truth authority; UI evidence only.",
+      "IDENTITY_SCOPE": "Instance/worktree session.",
+      "STORAGE_SCOPE": "Isolated browser profile and temporary artifacts per instance.",
+      "PORT_POLICY": "Local stdio per strict session.",
+      "FAIL_CLOSED_RULE": "Shared browser profile, foreign origin, stale cookie, or production action without authority denies.",
+      "EVIDENCE_REFS": [
+        "R0/04_MCP_CATALOG.yaml"
+      ],
+      "DISPOSITION": "AMEND",
+      "ELIGIBLE_FOR_TARGET_NOW": false,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "semgrep",
+      "CURRENT_CLASS": "HOST_SINGLETON",
+      "TARGET_CLASS": "HOST_SINGLETON",
+      "CURRENT_RUNTIME": "Catalog per-call-workspace stdio analysis surface.",
+      "FLIP_GATE": [
+        "Explicit canonical workspace locator",
+        "Read-only scan policy",
+        "No result self-promotion"
+      ],
+      "CANONICAL_AUTHORITY": "Derived static-analysis findings only.",
+      "IDENTITY_SCOPE": "Canonical project/workspace per call.",
+      "STORAGE_SCOPE": "Ephemeral caches/results.",
+      "PORT_POLICY": "Host/local stdio.",
+      "FAIL_CLOSED_RULE": "Unknown root or attempt to treat findings as accepted judgment denies.",
+      "EVIDENCE_REFS": [
+        "R0/04_MCP_CATALOG.yaml"
+      ],
+      "DISPOSITION": "KEEP",
+      "ELIGIBLE_FOR_TARGET_NOW": true,
+      "DEFERRED_OPTION": null
+    },
+    {
+      "SERVICE_ID": "repo-domain-read",
+      "CURRENT_CLASS": "WORKTREE_SCOPED",
+      "TARGET_CLASS": "WORKTREE_SCOPED",
+      "CURRENT_RUNTIME": "Command path is bound from DOPEMUX_PROJECT_ROOT; fixed-path repo read facade.",
+      "FLIP_GATE": [
+        "Exact resolved worktree root",
+        "Read-only contract",
+        "Source digest/freshness",
+        "No ambient fallback"
+      ],
+      "CANONICAL_AUTHORITY": "Repository bytes retain source authority; facade is transport only.",
+      "IDENTITY_SCOPE": "Project + instance/worktree.",
+      "STORAGE_SCOPE": "No persistent canonical storage.",
+      "PORT_POLICY": "Local stdio generated per worktree.",
+      "FAIL_CLOSED_RULE": "Missing/foreign root, stale head, or write request denies.",
+      "EVIDENCE_REFS": [
+        "R0/04_MCP_CATALOG.yaml"
+      ],
+      "DISPOSITION": "KEEP",
+      "ELIGIBLE_FOR_TARGET_NOW": false,
+      "DEFERRED_OPTION": null
+    }
+  ]
+}
