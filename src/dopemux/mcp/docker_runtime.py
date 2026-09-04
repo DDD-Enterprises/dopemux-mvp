@@ -111,6 +111,33 @@ def build_labels(
     }
 
 
+def build_v2_labels(
+    *,
+    project_id: str,
+    workspace_id: str,
+    instance_id: str,
+    registry_generation: int,
+    service_id: str,
+) -> Dict[str, str]:
+    """Registry-identity label set for the P1 fleet control plane.
+
+    Deliberately namespaced ``dopemux.v2.*`` -- disjoint from ``build_labels``'s
+    keys above -- so both label sets can coexist on a container without
+    collision. Pure data construction only: nothing in P1 calls this from a
+    container-creation path, and it never changes label-based lifecycle or
+    start/topology behavior. See ``ownership.py``: labels remain corroborating
+    evidence only, never sufficient by themselves for mutation eligibility.
+    """
+
+    return {
+        "dopemux.v2.project_id": project_id,
+        "dopemux.v2.workspace_id": workspace_id,
+        "dopemux.v2.instance_id": instance_id,
+        "dopemux.v2.registry_generation": str(registry_generation),
+        "dopemux.v2.service_id": service_id,
+    }
+
+
 def labels_as_compose_map(labels: Mapping[str, str]) -> str:
     lines = ["    labels:"]
     for key in sorted(labels.keys()):

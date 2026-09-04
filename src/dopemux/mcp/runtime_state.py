@@ -21,6 +21,28 @@ ENVRC_FILENAME = ".envrc.dopemux-mcp"
 PROJECT_MCP_FILENAME = ".mcp.json"
 
 
+def canonical_identity_summary(resolved: "Any") -> Dict[str, Any]:
+    """A ``ProjectIdentityView.to_dict()``-shaped read-only summary of a P1
+    ``identity.ResolvedExecutionIdentity``, for inclusion alongside the
+    v1 identity view in diagnostics.
+
+    Purely additive: nothing in this module calls it, and no existing
+    function's output changes. ``resolved`` is typed ``Any`` here to avoid a
+    hard import-time dependency from this v1 module onto P1's identity.py --
+    callers pass a ``dopemux.mcp.identity.ResolvedExecutionIdentity``.
+    """
+
+    return {
+        "schema_version": "dopemux.mcp.resolved-execution-identity.v1",
+        "resolution_status": getattr(resolved, "resolution_status", "UNKNOWN"),
+        "mutable_routing_allowed": getattr(resolved, "mutable_routing_allowed", False),
+        "project_id": getattr(resolved, "project_id", None),
+        "workspace_id": getattr(resolved, "workspace_id", None),
+        "instance_id": getattr(resolved, "instance_id", None),
+        "registry_generation": getattr(resolved, "registry_generation", None),
+    }
+
+
 @dataclass
 class ProjectIdentityView:
     project_id: Optional[str]
