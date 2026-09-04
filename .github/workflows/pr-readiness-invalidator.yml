@@ -1,0 +1,92 @@
+name: PR readiness invalidator
+
+"on":
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  pull_request_review_comment:
+    types: [created, edited, deleted]
+  pull_request_review_thread:
+    types: [resolved, unresolved]
+  issue_comment:
+    types: [created, edited, deleted]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  observe:
+    name: emit invalidation receipt
+    runs-on: ubuntu-latest
+    if: github.event_name != 'issue_comment' || github.event.issue.pull_request != null
+    steps:
+      - name: Write strict invalidation receipt
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_REPO: ${{ github.repository }}
+          EVENT_REPO: ${{ github.event.repository.full_name }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          OBSERVED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+        run: |
+          set -euo pipefail
+          test -n "$EXPECTED_REPO"
+          test "$EVENT_REPO" = "$EXPECTED_REPO"
+          printf '%s' "$WORKFLOW_RUN_ID" | grep -Eq '^[1-9][0-9]*$'
+          printf '%s' "$PR_NUMBER" | grep -Eq '^[1-9][0-9]*$'
+          case "$EVENT_NAME:$EVENT_ACTION" in
+            pull_request:opened|\
+            pull_request:synchronize|\
+            pull_request:reopened|\
+            pull_request:ready_for_review|\
+            pull_request_review:submitted|\
+            pull_request_review:edited|\
+            pull_request_review:dismissed|\
+            pull_request_review_comment:created|\
+            pull_request_review_comment:edited|\
+            pull_request_review_comment:deleted|\
+            pull_request_review_thread:resolved|\
+            pull_request_review_thread:unresolved|\
+            issue_comment:created|\
+            issue_comment:edited|\
+            issue_comment:deleted) ;;
+            *) exit 1 ;;
+          esac
+          if [ "$EVENT_NAME" = "issue_comment" ]; then
+            head_sha="$(gh api "repos/${EXPECTED_REPO}/pulls/${PR_NUMBER}" --jq '.head.sha')"
+          else
+            head_sha="$OBSERVED_HEAD_SHA"
+          fi
+          printf '%s' "$head_sha" | grep -Eq '^[0-9a-f]{40}$'
+          export RESOLVED_HEAD_SHA="$head_sha"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          receipt = {
+              "schema_version": 1,
+              "repository": os.environ["EXPECTED_REPO"],
+              "workflow_run_id": int(os.environ["WORKFLOW_RUN_ID"]),
+              "event_name": os.environ["EVENT_NAME"],
+              "event_action": os.environ["EVENT_ACTION"],
+              "pr_number": int(os.environ["PR_NUMBER"]),
+              "observed_head_sha": os.environ["RESOLVED_HEAD_SHA"],
+          }
+          Path("invalidation-receipt.json").write_text(
+              json.dumps(receipt, sort_keys=True, separators=(",", ":")) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Upload invalidation receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-readiness-invalidation-receipt-${{ github.run_id }}
+          path: invalidation-receipt.json
+          if-no-files-found: error
+          retention-days: 1

@@ -1,0 +1,136 @@
+{
+  "verdict": "PASS_WITH_RISKS",
+  "findings": [
+    {
+      "id": "IMPL-NOTES-A5-QUALIFICATION-INCOMPLETE-ENUMERATION",
+      "severity": "LOW",
+      "path": "proof/TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001/implementation-notes.md",
+      "line": 2384,
+      "description": "The 'A5 successor qualification' section correctly states that A7/A9 successors modified the reusable Gemini workflows (target-validation step, new workflow_call inputs, changed checkout ref, reduced MCP tool list in gemini-review.yml) and correctly supersedes the earlier 'inspect-only' claim. However the enumeration is not exhaustive: it omits that gemini-invoke.yml also lost an MCP tool (add_issue_comment), that gemini-triage.yml's entire label-application job (issues/pull-requests write permissions) was removed, and that permissions on issues/pull-requests were reduced from write to read across gemini-invoke.yml, gemini-plan-execute.yml, gemini-triage.yml, and gemini-review.yml. This does not misrepresent history (all omitted items make the workflows more restrictive, not less), but a reader relying on the qualification's list to gauge total change scope would undercount it.",
+      "required_action": "Optionally broaden the qualification's bullet list to reference the permission-scope reduction and the label-job removal, or state explicitly that the listed items are illustrative rather than exhaustive."
+    },
+    {
+      "id": "SETTLEMENT-PREFLIGHT-FALLBACK-REASON-MISLEADING",
+      "severity": "LOW",
+      "path": ".github/workflows/embedded-audit.yml",
+      "line": 329,
+      "description": "Carried over from the prior audit and independently re-confirmed as still present and unrelated to this diff's sole content change. When the 'Review settlement preflight' step fails because scripts/audit/review_settlement.py returns non-zero for a legitimate BLOCKED settlement (active changes-requested, unresolved threads, incomplete pagination, etc. -- not because the evaluator file is missing), no SETTLEMENT_PREFLIGHT_UNAVAILABLE.txt marker is written. The diagnostic-emission logic falls back to the generic reason 'Requested PR head SHA could not be fetched or no longer matches the PR head.', which misattributes a legitimate review-settlement block to a head-fetch/staleness problem.",
+      "required_action": "Capture and surface the actual review_settlement.py stdout/reasons (or its exit semantics) in the fallback diagnostic path instead of reusing the head-mismatch string for settlement-caused failures."
+    },
+    {
+      "id": "PYPROJECT-DCP-PACKAGE-SCOPE-NOTE",
+      "severity": "INFO",
+      "path": "pyproject.toml",
+      "line": 173,
+      "description": "Carried over from the prior audit and re-confirmed: pyproject.toml's sole change in this diff adds 'dopemux.dcp' to the packages list, a scope item unrelated to the embedded-audit/PR-steward/review-settlement feature this diff otherwise implements. It is now covered by test_built_wheel_runs_pr_steward_and_materializes_templates_off_tree, which asserts declared dcp packages exactly match the on-disk dcp package census.",
+      "required_action": "None required; note for traceability only."
+    },
+    {
+      "id": "SUCCESSOR-SINGLE-COMMIT-CLAIM-UNVERIFIABLE",
+      "severity": "INFO",
+      "path": null,
+      "line": null,
+      "description": "successor_note asserts subject_head adds 'exactly one documentation-only commit' on top of prior_audited_head. frozen.diff is a base_at_freeze..subject_head diff (32 files, matching changed-files.txt), not a prior_audited_head..subject_head diff, and no commit log/per-commit diff was supplied. implementation-notes.md itself is 'new file mode 100644' against base_at_freeze, so this diff cannot show which lines within that file were introduced by which commit. The claim that only implementation-notes.md changed between prior_audited_head and subject_head cannot be independently confirmed from the supplied artifacts alone.",
+      "required_action": "If exact commit-boundary verification is required, supply `git log prior_audited_head..subject_head --stat` or an equivalent per-commit diff alongside frozen.diff in future audit packages."
+    }
+  ],
+  "remaining_risks": [
+    "Wheel completeness for the two new template workflow files (and other packaged non-.py assets) is supported by a new build-and-inspect regression test (test_built_wheel_runs_pr_steward_and_materializes_templates_off_tree) that builds a real wheel via `uv build --wheel` and asserts required members are present, but this audit session cannot execute candidate/build code, and MANIFEST.in plus the full tool.setuptools.include-package-data configuration are not visible anywhere in frozen.diff (unchanged, and not shown as context). The prior BLOCKING wheel-completeness finding is very likely resolved based on this structural test evidence, but that conclusion rests partly on the (unverified-in-session) claim that the build+test were run externally and passed.",
+    "The 'exactly one documentation-only commit' successor scoping claim rests on git history not provided to this audit; only the net base..head diff was reviewable.",
+    "Broad functional review (embedded-audit.yml, pr-steward.yml, review_settlement.py, readiness invalidator/writer, Gemini reusable workflows) was performed via targeted reading of a very large (6700+ line) diff rather than exhaustive line-by-line review of every unchanged-vs-prior-audit code path; spot checks found no defects, but full re-derivation of every branch was out of scope given this successor audit's narrow binding to a documentation-only change."
+  ],
+  "checks": [
+    {
+      "id": "automatic-provider-spend-reachability",
+      "status": "PASS",
+      "evidence": "embedded-audit.yml's pull_request_target trigger removed, workflow_dispatch only; gemini-dispatch/invoke/review/triage/plan-execute all workflow_dispatch/workflow_call gated; ci-complete.yml and security-review.yml Claude actions gated by github.event_name=='workflow_dispatch' AND inputs.allow_api_spend==true AND nonempty ANTHROPIC_API_KEY (frozen.diff lines ~1-50, 51-338, 339-1533)."
+    },
+    {
+      "id": "manual-default-false-spend-authority",
+      "status": "PASS",
+      "evidence": "allow_api_spend declared as optional boolean default:false in embedded-audit.yml, ci-complete.yml, security-review.yml, gemini-dispatch.yml; docs/ops/ci-trigger-refresh.md documents default=false explicitly for all provider routes."
+    },
+    {
+      "id": "claude-gemini-advisory-only-constraints",
+      "status": "PASS",
+      "evidence": "Gemini reusable workflows' issues/pull-requests permissions reduced write->read; gemini-review.yml MCP includeTools reduced to read-only 'pull_request_read'; gemini-triage.yml's label-mutation job removed entirely; PAL clink audit is read-only diagnostic emission, not a mutating action."
+    },
+    {
+      "id": "exact-pr-base-audit-binding",
+      "status": "PASS",
+      "evidence": "embedded-audit.yml 'Resolve exact target PR' step validates repo/PR-number/head-sha/base-repo/base-sha via live GitHub API before any checkout; identical pattern in init-template embedded-audit.yml; gemini-*.yml 'Validate exact target' step re-derives repo/type/number/head from live API rather than trusting event payload."
+    },
+    {
+      "id": "trusted-source-vs-candidate-source-separation",
+      "status": "PASS",
+      "evidence": "embedded-audit.yml checks out trusted-source at default branch only; candidate head/base fetched as bare git objects ('fetched as objects only... Neither is checked out or executed under the trusted runner credential'); template embedded-audit.yml uses `git show HEAD:path` to read proof bytes without checking out candidate ref."
+    },
+    {
+      "id": "review-settlement",
+      "status": "PASS",
+      "evidence": "src/dopemux_pr_steward/review_settlement.py evaluate_snapshot() is fail-closed by default (reasons list seeded from any missing/mismatched fact; empty reasons required for SETTLED), covers pagination completeness, draft/merge/open state, change-requested reviews, unresolved threads, ready-age and activity-quiet windows, and trusted-invalidation timestamp validation with a stable sha256 fingerprint."
+    },
+    {
+      "id": "edited-review-thread-invalidation",
+      "status": "PASS",
+      "evidence": "pr-readiness-invalidator.yml observes opened/synchronize/reopened/ready_for_review/review/review_comment/review_thread(resolved|unresolved) events and emits only a 7-field JSON receipt via upload-artifact; pr-readiness-invalidation-writer.yml cross-validates workflow_run id/repo/name/path/status/conclusion, receipt schema/keys, associated-PR identity, and repository IDs before publishing a 'pending' status."
+    },
+    {
+      "id": "steward-s1-s2-s3-finality-race-handling",
+      "status": "PASS",
+      "evidence": "pr-steward.yml captures settlement_s1 before Steward run, settlement_s2 fetch+compare before success publication (gates 'success' state on SETTLEMENT_OUTCOME==success), then a post-publication 'Verify settlement after readiness publication' step fetches settlement_s3, compares to s2, and on any drift republishes 'pending' and fails the job."
+    },
+    {
+      "id": "template-repository-parity",
+      "status": "PASS",
+      "evidence": "tests/audit/test_run_embedded_audit.py::test_templates_match_repository_workflows asserts byte-identical content between src/dopemux/templates/init/.../pr-readiness-invalidator.yml and pr-readiness-invalidation-writer.yml and their repository counterparts; template embedded-audit.yml and pr-steward.yml intentionally differ (installed-package CLI vs repo scripts) and have dedicated structural tests instead."
+    },
+    {
+      "id": "packaged-settlement-runtime",
+      "status": "PASS",
+      "evidence": "scripts/audit/review_settlement.py is an 8-line compatibility shim ('Compatibility entrypoint for packaged PR review settlement') importing main from dopemux_pr_steward.review_settlement; test_repository_settlement_script_is_thin_package_wrapper asserts this."
+    },
+    {
+      "id": "wheel-completeness",
+      "status": "UNKNOWN",
+      "evidence": "tests/dopemux_init/test_pr_steward_scaffold.py adds test_built_wheel_runs_pr_steward_and_materializes_templates_off_tree, which runs `uv build --wheel`, opens the resulting archive, and asserts embedded-audit.yml/pr-steward.yml/pr-readiness-invalidator.yml/pr-readiness-invalidation-writer.yml plus dopemux_pr_steward/review_settlement.py and every dopemux.dcp module are wheel members -- strong structural evidence the prior BLOCKING finding is addressed. However MANIFEST.in and the full tool.setuptools.include-package-data value are not present anywhere in frozen.diff (unchanged file, not shown as context), and this audit session cannot execute build/candidate code to confirm the test currently passes."
+    },
+    {
+      "id": "proof-producer-consumer-contract",
+      "status": "PASS",
+      "evidence": "embedded-audit.yml writes AUDIT_SUBJECT_RECEIPT.json binding requested/live head, base, and trusted-runner-source SHAs; template embedded-audit.yml's 'Validate bound proof' step uses `jq -e` to assert PROOF.json's pr_number/head_sha match the independently-verified target before invoking `pr-steward audit`."
+    },
+    {
+      "id": "installed-wheel-off-tree-operation",
+      "status": "PASS",
+      "evidence": "test_built_wheel_runs_pr_steward_and_materializes_templates_off_tree installs the built wheel into a fresh venv, runs `python -I -c 'import dopemux; import dopemux.dcp'` and `python -I -m dopemux.cli pr-steward settlement fetch --help` from a runtime_dir outside ROOT with PYTHONPATH unset, asserting imported module paths resolve under the venv, not the source tree."
+    },
+    {
+      "id": "candidate-code-nonexecution",
+      "status": "PASS",
+      "evidence": "Explicit comments/asserts throughout: 'no candidate checkout, no candidate script execution, no credentials on candidate tree'; template embedded-audit.yml writes 'candidate_code_executed: false' to the job summary and extracts PROOF.json via `git show` rather than checkout+execute."
+    },
+    {
+      "id": "workflow-identity-path-event-binding",
+      "status": "PASS",
+      "evidence": "pr-steward.yml 'Validate audit workflow-run identity' now requires exact path=='.github/workflows/embedded-audit.yml', event=='workflow_dispatch', and head_branch==default_branch (tightened from a path.endswith() suffix check); pr-readiness-invalidation-writer.yml requires exact run name/path/status/conclusion and repository IDs."
+    },
+    {
+      "id": "fail-closed-behavior",
+      "status": "PASS",
+      "evidence": "review_settlement.py's run_parsed_args returns 2 on any OSError/RuntimeError/ValueError/JSONDecodeError with 'review settlement failed closed' message; missing evaluator file writes a SKIPPED diagnostic and exits 1; Steward S3 drift check republishes 'pending' and exits 1 on any settlement/compare failure."
+    },
+    {
+      "id": "security-authority-regressions",
+      "status": "PASS",
+      "evidence": "All permission changes found were reductions (issues/pull-requests write->read across four Gemini reusable workflows, label-mutation job deletion, MCP tool-list narrowing); no new write scopes, no new automatic triggers, no relaxed identity checks were found in the reviewed diff."
+    },
+    {
+      "id": "implementation-notes-narrative-accuracy",
+      "status": "PASS",
+      "evidence": "The 'A5 successor qualification' section's specific claims (new target-validation step, new workflow_call inputs, changed checkout ref, reduced MCP tool list in gemini-review.yml) were cross-checked line-by-line against the actual gemini-invoke.yml/gemini-plan-execute.yml/gemini-review.yml/gemini-triage.yml diffs and confirmed accurate; chronology (A1-A10 historical ledger with a scoped A5 correction) is internally consistent and does not alter or delete prior A1-A10 claims. Minor non-exhaustiveness noted as a LOW finding (see findings)."
+    }
+  ],
+  "audited_head": "6ea2cb89cb726302ae5b179b75a87a2bfe1849ce",
+  "audited_base": "5900c27d3c38b515204bd5dc4baed8b5e14e2a8e"
+}

@@ -1,88 +1,499 @@
 name: PR Steward
 
-"on":
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+on:
+  workflow_run:
+    workflows: [embedded-audit]
+    types: [completed]
   workflow_dispatch:
     inputs:
-      pr_number:
-        description: Pull request number to inspect
+      audit_run_id:
+        description: Completed embedded-audit workflow run ID to inspect
         required: true
         type: string
-      proof_path:
-        description: Proof bundle path to inspect
-        required: true
-        type: string
-        default: proof/PROOF.json
 
 permissions:
   contents: read
   pull-requests: read
   checks: read
-  statuses: read
+  # statuses: write posts readiness against the *candidate PR head* so the
+  # required check can attach to the PR commit (workflow_run jobs run on
+  # default-branch GITHUB_SHA and would otherwise be invisible to PR protection).
+  statuses: write
   actions: read
   issues: read
 
 jobs:
   pr-steward:
-    name: advisory check-only intake
+    # CHECK-NAME MIGRATION (branch-protection follow-up required, out of packet scope):
+    #   old check name: PR Steward / advisory check-only intake
+    #   new check name: PR Steward / final readiness
+    # Branch protection / rulesets that pin the old name will not enforce this gate
+    # until updated in an authorized follow-on packet. This packet does not modify
+    # branch protection.
+    name: final readiness
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
       DOPEMUX_INSTALL_SPEC: git+https://github.com/DDD-Enterprises/dopemux-mvp.git
     steps:
-      - name: Checkout
+      - name: Checkout trusted Steward source
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
-      - name: Install Dopemux
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install "$DOPEMUX_INSTALL_SPEC"
 
-      - name: Set PR number
-        id: pr
+      - name: Set audit run ID
+        id: audit_run
         env:
           EVENT_NAME: ${{ github.event_name }}
-          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
-          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
+          EVENT_AUDIT_RUN_ID: ${{ github.event.workflow_run.id }}
+          INPUT_AUDIT_RUN_ID: ${{ inputs.audit_run_id }}
         run: |
-          if [ "$EVENT_NAME" = "pull_request" ]; then
-            printf 'number=%s\n' "$EVENT_PR_NUMBER" >> "$GITHUB_OUTPUT"
+          if [ "$EVENT_NAME" = "workflow_run" ]; then
+            audit_run_id="$EVENT_AUDIT_RUN_ID"
           else
-            printf 'number=%s\n' "$INPUT_PR_NUMBER" >> "$GITHUB_OUTPUT"
+            audit_run_id="$INPUT_AUDIT_RUN_ID"
+          fi
+          if [ -z "$audit_run_id" ]; then
+            echo "audit_run_id_missing" >&2
+            exit 1
+          fi
+          printf 'id=%s\n' "$audit_run_id" >> "$GITHUB_OUTPUT"
+
+      - name: Validate audit workflow-run identity
+        id: run_identity
+        env:
+          AUDIT_RUN_ID: ${{ steps.audit_run.outputs.id }}
+          EXPECTED_REPO: ${{ github.repository }}
+          EXPECTED_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          # Do not trust arbitrary PROOF.json until the Actions run itself is
+          # proven to be the expected embedded-audit workflow in this repository.
+          gh api "repos/${EXPECTED_REPO}/actions/runs/${AUDIT_RUN_ID}" > /tmp/audit-run.json
+
+          python - <<'PY'
+          import json
+          import os
+          import sys
+          from pathlib import Path
+
+          run = json.loads(Path("/tmp/audit-run.json").read_text(encoding="utf-8"))
+          expected_repo = os.environ["EXPECTED_REPO"]
+          default_branch = os.environ["EXPECTED_DEFAULT_BRANCH"]
+          expected_id = int(os.environ["AUDIT_RUN_ID"])
+          errors = []
+
+          run_id = int(run.get("id") or 0)
+          if run_id != expected_id:
+              errors.append(f"run_id_mismatch: {run_id} != {expected_id}")
+
+          # Fail closed: missing repository identity is an error, not a default.
+          repo_full = (run.get("repository") or {}).get("full_name")
+          if not repo_full:
+              errors.append("repository_missing: actions run lacks repository.full_name")
+          elif repo_full != expected_repo:
+              errors.append(f"repository_mismatch: {repo_full!r} != {expected_repo!r}")
+
+          name = str(run.get("name") or "")
+          path = str(run.get("path") or "")
+          # Require both display name and workflow path for fail-closed identity.
+          if not (
+              name == "embedded-audit"
+              and path == ".github/workflows/embedded-audit.yml"
+          ):
+              errors.append(f"workflow_mismatch: name={name!r} path={path!r}")
+
+          event = str(run.get("event") or "")
+          if event != "workflow_dispatch":
+              errors.append(f"workflow_event_mismatch: event={event!r}")
+
+          head_branch = str(run.get("head_branch") or "")
+          if head_branch != default_branch:
+              errors.append(
+                  f"workflow_source_branch_mismatch: "
+                  f"head_branch={head_branch!r} default_branch={default_branch!r}"
+              )
+
+          status = str(run.get("status") or "")
+          if status != "completed":
+              errors.append(f"run_not_completed: status={status!r}")
+
+          # run.head_sha is NOT used for PR-head artifact identity.
+          # For pull_request_target, GitHub may report the base/default SHA here.
+          run_head_sha = str(run.get("head_sha") or "")
+          if not run_head_sha:
+              errors.append("run_head_sha_missing")
+
+          conclusion = str(run.get("conclusion") or "")
+          # Do NOT abort identity validation solely because conclusion != success.
+          # Failed/re-run audits must still bind candidate head and publish a
+          # failure status so a prior green status cannot stick.
+          if not conclusion:
+              errors.append("run_conclusion_missing")
+
+          if errors:
+              print("Audit workflow-run identity validation failed:", file=sys.stderr)
+              for err in errors:
+                  print(f"  - {err}", file=sys.stderr)
+              raise SystemExit(1)
+
+          out = Path(os.environ["GITHUB_OUTPUT"])
+          with out.open("a", encoding="utf-8") as fh:
+              fh.write(f"run_head_sha={run_head_sha}\n")
+              fh.write(f"conclusion={conclusion}\n")
+              fh.write(
+                  f"conclusion_ok={'true' if conclusion == 'success' else 'false'}\n"
+              )
+              fh.write(f"workflow_name={name}\n")
+              fh.write(f"workflow_path={path}\n")
+          print(
+              f"Validated embedded-audit run {run_id} "
+              f"run_head_sha={run_head_sha} conclusion={conclusion}"
+          )
+          if conclusion != "success":
+              print(
+                  f"NOTE: audit conclusion={conclusion!r}; continuing to bind "
+                  "candidate head and publish failure status.",
+                  file=sys.stderr,
+              )
+          PY
+
+      - name: Select and download independent audit artifact
+        id: audit
+        env:
+          AUDIT_RUN_ID: ${{ steps.audit_run.outputs.id }}
+          EXPECTED_REPO: ${{ github.repository }}
+          AUDIT_CONCLUSION: ${{ steps.run_identity.outputs.conclusion }}
+        run: |
+          set -euo pipefail
+          rm -rf independent-audit-download independent-audit
+          mkdir -p independent-audit-download independent-audit
+
+          # Select exactly one artifact by naming contract:
+          #   embedded-audit-pr-<PR>-head-<40-hex-pr-head>-proof
+          # IMPORTANT: PR head SHA comes from the artifact name (and later PROOF),
+          # not from workflow_run.head_sha (unreliable under pull_request_target).
+          # --paginate may emit multiple JSON objects; slurp+merge with jq -s.
+          # Runs even when audit conclusion != success so failure status can be
+          # published against the candidate head (overwriting stale green).
+          gh api "repos/${EXPECTED_REPO}/actions/runs/${AUDIT_RUN_ID}/artifacts" \
+            --paginate \
+            | jq -s 'map(.artifacts // []) | add | {artifacts: .}' \
+            > /tmp/audit-artifacts.json
+
+          python - <<'PY'
+          import json
+          import os
+          import re
+          import sys
+          from pathlib import Path
+
+          payload = json.loads(Path("/tmp/audit-artifacts.json").read_text(encoding="utf-8"))
+          artifacts = payload.get("artifacts") or []
+          # Capture PR number and candidate head SHA from the artifact name itself.
+          pattern = re.compile(
+              r"^embedded-audit-pr-(\d+)-head-([0-9a-f]{40})-proof$"
+          )
+          matches = []
+          for art in artifacts:
+              name = str(art.get("name") or "")
+              m = pattern.match(name)
+              if m:
+                  matches.append(
+                      (name, int(m.group(1)), m.group(2), art.get("id"))
+                  )
+
+          if not matches:
+              print(
+                  "No exact-name artifact found; refusing arbitrary PROOF.json selection.",
+                  file=sys.stderr,
+              )
+              print("Available artifacts:", file=sys.stderr)
+              for art in artifacts:
+                  print(f"  - {art.get('name')}", file=sys.stderr)
+              raise SystemExit("Expected embedded-audit proof artifact not found")
+
+          if len(matches) != 1:
+              print("Multiple matching proof artifacts:", file=sys.stderr)
+              for name, pr, head, _ in matches:
+                  print(f"  - {name} (pr={pr} head={head})", file=sys.stderr)
+              raise SystemExit("Exactly one expected proof artifact is required")
+
+          name, pr_number, pr_head_sha, artifact_id = matches[0]
+          out = Path(os.environ["GITHUB_OUTPUT"])
+          with out.open("a", encoding="utf-8") as fh:
+              fh.write(f"artifact_name={name}\n")
+              fh.write(f"pr_number={pr_number}\n")
+              fh.write(f"pr_head_sha={pr_head_sha}\n")
+              fh.write(f"artifact_id={artifact_id}\n")
+          Path("/tmp/selected-artifact-name.txt").write_text(name + "\n", encoding="utf-8")
+          Path("/tmp/selected-pr-number.txt").write_text(str(pr_number) + "\n", encoding="utf-8")
+          Path("/tmp/selected-pr-head-sha.txt").write_text(pr_head_sha + "\n", encoding="utf-8")
+          print(
+              f"Selected artifact {name} for PR {pr_number} "
+              f"candidate_head={pr_head_sha}"
+          )
+          PY
+
+          ARTIFACT_NAME="$(cat /tmp/selected-artifact-name.txt | tr -d '\n')"
+          SELECTED_PR="$(cat /tmp/selected-pr-number.txt | tr -d '\n')"
+          EXPECTED_HEAD_SHA="$(cat /tmp/selected-pr-head-sha.txt | tr -d '\n')"
+
+          gh run download "${AUDIT_RUN_ID}" \
+            --name "${ARTIFACT_NAME}" \
+            --dir independent-audit-download
+
+          proof_count="$(find independent-audit-download -type f -name PROOF.json | wc -l | tr -d ' ')"
+          test "$proof_count" = "1"
+          proof_path="$(find independent-audit-download -type f -name PROOF.json -print -quit)"
+          cp "$proof_path" independent-audit/PROOF.json
+
+          jq -e '.pr_number | numbers' independent-audit/PROOF.json >/dev/null
+          jq -e '.head_sha | strings' independent-audit/PROOF.json >/dev/null
+
+          proof_pr="$(jq -er '.pr_number' independent-audit/PROOF.json)"
+          proof_head="$(jq -er '.head_sha' independent-audit/PROOF.json)"
+          test "$proof_pr" = "$SELECTED_PR"
+          # proof_head (A, the audited content commit) is NOT required to
+          # equal EXPECTED_HEAD_SHA (H, the live PR head) here: the
+          # `pr-steward audit` hard gate below independently verifies
+          # A == H OR a proof-only successor from A to H. Every other
+          # identity binding in this job (settlement, readiness status,
+          # artifact naming) uses EXPECTED_HEAD_SHA (H) -- never A -- so
+          # readiness publishes on the commit branch protection watches.
+
+          # Cross-check live PR head still matches the artifact-bound head.
+          live_head="$(gh api "repos/${EXPECTED_REPO}/pulls/${SELECTED_PR}" --jq .head.sha)"
+          test "$live_head" = "$EXPECTED_HEAD_SHA"
+
+          # Trusted binding receipt: carries the repository source path the
+          # proof was committed at (proof_source_path) from the producer
+          # (embedded-audit.yml) to this consumer. Missing or tampered ->
+          # fail closed. Without this, a non-default proof_source_path
+          # would silently fall back to the default and either reject a
+          # legitimate successor or (worse) mis-evaluate the allow-list.
+          binding_path="$(find independent-audit-download -type f -name PROOF_BINDING.json -print -quit)"
+          if [ -z "$binding_path" ]; then
+            echo "proof_binding_receipt_missing: refusing READY without a validated proof_source_path binding" >&2
+            exit 2
+          fi
+          cp "$binding_path" independent-audit/PROOF_BINDING.json
+
+          jq -e '.schema == "dopemux.pr_steward.proof_binding.v1"' independent-audit/PROOF_BINDING.json >/dev/null
+          jq -e '.repository | strings' independent-audit/PROOF_BINDING.json >/dev/null
+          jq -e '.pr_number | numbers' independent-audit/PROOF_BINDING.json >/dev/null
+          jq -e '.live_head_sha | strings' independent-audit/PROOF_BINDING.json >/dev/null
+          jq -e '.audited_head_sha | strings' independent-audit/PROOF_BINDING.json >/dev/null
+          jq -e '.proof_source_path | strings' independent-audit/PROOF_BINDING.json >/dev/null
+          jq -e '.proof_sha256 | strings' independent-audit/PROOF_BINDING.json >/dev/null
+
+          binding_repo="$(jq -er '.repository' independent-audit/PROOF_BINDING.json)"
+          binding_pr="$(jq -er '.pr_number' independent-audit/PROOF_BINDING.json)"
+          binding_live_head="$(jq -er '.live_head_sha' independent-audit/PROOF_BINDING.json)"
+          binding_audited_head="$(jq -er '.audited_head_sha' independent-audit/PROOF_BINDING.json)"
+          binding_proof_source_path="$(jq -er '.proof_source_path' independent-audit/PROOF_BINDING.json)"
+          binding_proof_sha256="$(jq -er '.proof_sha256' independent-audit/PROOF_BINDING.json)"
+
+          test "$binding_repo" = "$EXPECTED_REPO"
+          test "$binding_pr" = "$SELECTED_PR"
+          test "$binding_live_head" = "$EXPECTED_HEAD_SHA"
+          test "$binding_audited_head" = "$proof_head"
+
+          # Tamper check: the receipt's own hash of PROOF.json must match
+          # the PROOF.json we actually downloaded, not one substituted after
+          # the receipt was signed off by embedded-audit.yml.
+          actual_proof_sha256="$(sha256sum independent-audit/PROOF.json | awk '{print $1}')"
+          test "$binding_proof_sha256" = "$actual_proof_sha256"
+
+          # Structural path safety, independent of the producer's own
+          # upstream validation (defense in depth): must be a normalized,
+          # traversal-free, repo-relative path.
+          printf '%s' "$binding_proof_source_path" | grep -Eq '^[A-Za-z0-9._/-]+$'
+          case "/${binding_proof_source_path}/" in
+            *"/../"*|*"/./"*|"//"*|*"//"*) exit 1 ;;
+          esac
+
+          # Bind identity outputs BEFORE hard enforce so failure status can still
+          # be published when the audit conclusion or proof is non-passing.
+          printf 'proof_path=independent-audit/PROOF.json\n' >> "$GITHUB_OUTPUT"
+          printf 'proof_source_path=%s\n' "$binding_proof_source_path" >> "$GITHUB_OUTPUT"
+          printf 'pr_head_sha=%s\n' "$EXPECTED_HEAD_SHA" >> "$GITHUB_OUTPUT"
+          printf 'pr_number=%s\n' "$SELECTED_PR" >> "$GITHUB_OUTPUT"
+
+          # Hard gate: non-success audit conclusion cannot produce READY.
+          if [ "${AUDIT_CONCLUSION}" != "success" ]; then
+            echo "Audit workflow conclusion is ${AUDIT_CONCLUSION}; refusing READY." >&2
+            exit 2
           fi
 
-      - name: Set proof path
+          python -m dopemux.cli pr-steward audit \
+            --proof independent-audit/PROOF.json \
+            --repo "$EXPECTED_REPO" \
+            --pr "$proof_pr" \
+            --head "$EXPECTED_HEAD_SHA" \
+            --proof-source-path "$binding_proof_source_path" \
+            --format json
+
+      - name: Bind proof identity outputs
         id: proof
-        env:
-          INPUT_PROOF_PATH: ${{ inputs.proof_path }}
+        if: always() && hashFiles('independent-audit/PROOF.json') != ''
         run: |
-          proof_path="${INPUT_PROOF_PATH:-proof/PROOF.json}"
-          printf 'path=%s\n' "$proof_path" >> "$GITHUB_OUTPUT"
+          pr_number="$(jq -er '.pr_number' independent-audit/PROOF.json)"
+          audited_head_sha="$(jq -er '.head_sha' independent-audit/PROOF.json)"
+          printf 'pr_number=%s\n' "$pr_number" >> "$GITHUB_OUTPUT"
+          # The audited content commit (A) -- NOT necessarily the live PR
+          # head. Never use this for status publication, settlement, or
+          # artifact naming; those must bind the live head (H), published
+          # by the "Select and download independent audit artifact" step
+          # as steps.audit.outputs.pr_head_sha.
+          printf 'audited_head_sha=%s\n' "$audited_head_sha" >> "$GITHUB_OUTPUT"
+          printf 'proof_path=independent-audit/PROOF.json\n' >> "$GITHUB_OUTPUT"
+
+      - name: Capture settlement before Steward
+        id: settlement_s1
+        if: success()
+        env:
+          SETTLEMENT_S1: /tmp/review-settlement-s1.json
+          PR_HEAD_SHA: ${{ steps.audit.outputs.pr_head_sha }}
+          PR_NUMBER: ${{ steps.proof.outputs.pr_number }}
+        run: |
+          set -euo pipefail
+          python -m dopemux.cli pr-steward settlement fetch \
+            --repo "$GITHUB_REPOSITORY" \
+            --pr "$PR_NUMBER" \
+            --head "$PR_HEAD_SHA" \
+            --min-ready-age-seconds 300 \
+            --min-activity-quiet-seconds 120 \
+            --output "$SETTLEMENT_S1"
 
       - name: Run PR Steward
         id: steward
-        continue-on-error: true
+        if: success()
         run: |
-          set +e
           python -m dopemux.cli pr-steward intake \
             --repo "$GITHUB_REPOSITORY" \
-            --pr "${{ steps.pr.outputs.number }}" \
+            --pr "${{ steps.proof.outputs.pr_number }}" \
             --out pr-steward-artifacts \
-            --proof-path "${{ steps.proof.outputs.path }}" \
             --strict \
-            --format text
-          status=$?
-          printf 'exit_code=%s\n' "$status" >> "$GITHUB_OUTPUT"
-          exit 0
+            --format text \
+            --proof-path independent-audit/PROOF.json \
+            --proof-source-path "${{ steps.audit.outputs.proof_source_path }}"
+
+      - name: Revalidate settlement before readiness publication
+        id: settlement_s2
+        if: success()
+        env:
+          SETTLEMENT_S1: /tmp/review-settlement-s1.json
+          SETTLEMENT_S2: /tmp/review-settlement-s2.json
+          PR_HEAD_SHA: ${{ steps.audit.outputs.pr_head_sha }}
+          PR_NUMBER: ${{ steps.proof.outputs.pr_number }}
+        run: |
+          set -euo pipefail
+          python -m dopemux.cli pr-steward settlement fetch \
+            --repo "$GITHUB_REPOSITORY" \
+            --pr "$PR_NUMBER" \
+            --head "$PR_HEAD_SHA" \
+            --min-ready-age-seconds 300 \
+            --min-activity-quiet-seconds 120 \
+            --output "$SETTLEMENT_S2"
+          python -m dopemux.cli pr-steward settlement compare \
+            --before "$SETTLEMENT_S1" \
+            --after "$SETTLEMENT_S2"
+
+      - name: Publish readiness status on candidate PR head
+        id: readiness
+        if: always() && steps.audit.outputs.pr_head_sha != ''
+        env:
+          PR_HEAD_SHA: ${{ steps.audit.outputs.pr_head_sha }}
+          PR_NUMBER: ${{ steps.proof.outputs.pr_number }}
+          STEWARD_OUTCOME: ${{ steps.steward.outcome }}
+          SETTLEMENT_OUTCOME: ${{ steps.settlement_s2.outcome }}
+          AUDIT_OUTCOME: ${{ steps.audit.outcome }}
+          AUDIT_CONCLUSION: ${{ steps.run_identity.outputs.conclusion }}
+        run: |
+          # workflow_run jobs execute against default-branch GITHUB_SHA. Publish
+          # an explicit commit status on the validated candidate head so branch
+          # protection can require "PR Steward / final readiness" on the PR.
+          # Always overwrite prior status for this context on this head, including
+          # when a later failed audit re-runs after an earlier green.
+          # Classifier excludes this exact context from readiness evaluation so a
+          # prior failed self-status cannot sticky-red the next Steward run.
+          if [ "${AUDIT_CONCLUSION}" = "success" ] \
+            && [ "${AUDIT_OUTCOME}" = "success" ] \
+            && [ "${STEWARD_OUTCOME}" = "success" ] \
+            && [ "${SETTLEMENT_OUTCOME}" = "success" ]; then
+            state="success"
+            description="final readiness READY for PR ${PR_NUMBER}"
+          else
+            state="failure"
+            description="final readiness not READY for PR ${PR_NUMBER} (audit=${AUDIT_CONCLUSION}/${AUDIT_OUTCOME} steward=${STEWARD_OUTCOME})"
+          fi
+          printf 'state=%s\n' "$state" >> "$GITHUB_OUTPUT"
+          gh api "repos/${GITHUB_REPOSITORY}/statuses/${PR_HEAD_SHA}" \
+            -f state="${state}" \
+            -f context="PR Steward / final readiness" \
+            -f description="${description}" \
+            -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          # Fail the job when not READY so the workflow itself is red.
+          if [ "${state}" != "success" ]; then
+            exit 1
+          fi
+
+      - name: Verify settlement after readiness publication
+        if: always() && steps.readiness.outputs.state == 'success'
+        env:
+          SETTLEMENT_S2: /tmp/review-settlement-s2.json
+          SETTLEMENT_S3: /tmp/review-settlement-s3.json
+          PR_HEAD_SHA: ${{ steps.audit.outputs.pr_head_sha }}
+          PR_NUMBER: ${{ steps.proof.outputs.pr_number }}
+        run: |
+          set -uo pipefail
+          settlement_ok=true
+          python -m dopemux.cli pr-steward settlement fetch \
+            --repo "$GITHUB_REPOSITORY" \
+            --pr "$PR_NUMBER" \
+            --head "$PR_HEAD_SHA" \
+            --min-ready-age-seconds 300 \
+            --min-activity-quiet-seconds 120 \
+            --output "$SETTLEMENT_S3" || settlement_ok=false
+          if [ "$settlement_ok" = true ]; then
+            python -m dopemux.cli pr-steward settlement compare \
+              --before "$SETTLEMENT_S2" \
+              --after "$SETTLEMENT_S3" || settlement_ok=false
+          fi
+          if [ "$settlement_ok" != true ]; then
+            state="pending"
+            context="PR Steward / final readiness"
+            description="live head or review settlement changed after readiness publication"
+            gh api "repos/${GITHUB_REPOSITORY}/statuses/${PR_HEAD_SHA}" \
+              -f state="$state" \
+              -f context="$context" \
+              -f description="$description" \
+              -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            exit 1
+          fi
 
       - name: Write job summary
         if: always()
         run: |
           {
-            printf '## PR Steward advisory result\n\n'
-            printf -- '- exit_code: %s\n' '${{ steps.steward.outputs.exit_code }}'
-            printf -- '- mutation_performed: false\n\n'
+            printf '## PR Steward final readiness\n\n'
+            printf -- '- audit_run_id: %s\n' '${{ steps.audit_run.outputs.id }}'
+            printf -- '- validated_head_sha: %s\n' '${{ steps.audit.outputs.pr_head_sha }}'
+            printf -- '- audited_content_head_sha: %s\n' '${{ steps.proof.outputs.audited_head_sha }}'
+            printf -- '- proof_source_path: %s\n' '${{ steps.audit.outputs.proof_source_path }}'
+            printf -- '- pr_number: %s\n' '${{ steps.proof.outputs.pr_number }}'
+            printf -- '- candidate_head_status_context: PR Steward / final readiness\n'
+            printf -- '- mutation_performed: false (read-only steward; status publish only)\n\n'
             if [ -f pr-steward-artifacts/PR_STEWARD_SUMMARY.md ]; then
               cat pr-steward-artifacts/PR_STEWARD_SUMMARY.md
             else
@@ -94,6 +505,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pr-steward-${{ steps.pr.outputs.number }}
+          # Attributable name from validated independent-audit proof identity
+          # (not a stale steps.pr.outputs.number reference).
+          name: pr-steward-pr-${{ steps.proof.outputs.pr_number }}-head-${{ steps.audit.outputs.pr_head_sha }}-readiness
           path: pr-steward-artifacts/
           if-no-files-found: warn

@@ -1,5 +1,10 @@
 name: 🚀 Complete CI Pipeline (ADHD-Optimized)
 
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
 on:
   push:
     branches: [main]
@@ -8,6 +13,12 @@ on:
   merge_group:
     types: [checks_requested]
   workflow_dispatch:
+    inputs:
+      allow_api_spend:
+        description: "Execution mechanism only; requires separate explicit operator spend authorization."
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -115,10 +126,10 @@ jobs:
           fetch-depth: 2
 
       - name: 🛡️ AI-Powered Security Analysis
-        if: ${{ env.ANTHROPIC_API_KEY != '' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.allow_api_spend == true && env.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-security-review@main
         with:
-          comment-pr: true
+          comment-pr: false
           claude-api-key: ${{ env.ANTHROPIC_API_KEY }}
           # Use absolute paths: the upstream composite action chdirs into
           # `github.action_path` before opening these files, so a repo-relative
@@ -132,7 +143,7 @@ jobs:
         if: always() && github.event_name == 'pull_request'
         run: |
           echo "## 🔒 Security Check Complete" >> $GITHUB_STEP_SUMMARY
-          echo "AI-powered analysis finished! Check PR comments for details." >> $GITHUB_STEP_SUMMARY
+          echo "Provider analysis is manual-only; automatic CI did not invoke it." >> $GITHUB_STEP_SUMMARY
           echo "_Remember: Security is about progress, not perfection._" >> $GITHUB_STEP_SUMMARY
 
   docs:

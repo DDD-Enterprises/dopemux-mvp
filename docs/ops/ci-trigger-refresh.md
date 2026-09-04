@@ -12,23 +12,50 @@ prelude: CI Trigger Refresh Runbook (how-to) for dopemux documentation and devel
 ---
 # CI Trigger Refresh Runbook
 
-## Current Status (TP-DMX-GHA-RELIABILITY-106)
+## Current Status
 
-Verified 2026-05-31 against runtime workflow YAML:
+Verified against runtime workflow YAML after
+`TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001`:
 
 - `.github/workflows/ci-complete.yml` handles `ready_for_review` and
-  `workflow_dispatch`.
-- `.github/workflows/pr-steward.yml` handles `ready_for_review` and
-  `workflow_dispatch` with explicit `pr_number` input.
+  `workflow_dispatch`; normal CI remains automatic, while its Claude security
+  action is manual-spend-gated.
+- `.github/workflows/security-review.yml` is `workflow_dispatch` only and its
+  Claude action is manual-spend-gated.
 - `.github/workflows/preflight.yml` handles `ready_for_review` and
   `workflow_dispatch`.
-- No `pull_request_target` trigger is used for these workflows.
+- `.github/workflows/embedded-audit.yml` handles explicit
+  `workflow_dispatch` only, with required `pr_number` and `head_sha` inputs.
+- `.github/workflows/pr-readiness-invalidator.yml` sets
+  `PR Steward / final readiness` to `pending` on `ready_for_review`, review
+  submission/dismissal, and review-thread comment activity.
+- `.github/workflows/pr-steward.yml` runs after a completed embedded audit or
+  by explicit dispatch with an audit run ID.
+- No automatic PR event invokes embedded audit.
 
-Use these trigger paths or GitHub's "Re-run jobs" control to refresh CI.
-Do not use empty commits as CI prods; they mutate branch history without
-changing the repo truth under test.
+`ready_for_review` starts review incubation and deterministic CI. It is not
+finalization and does not authorize a paid/model audit. After review findings
+are repaired or adjudicated, freeze the substantive head, verify review
+settlement, and explicitly dispatch embedded audit once for that exact head.
 
-## What Changed (TP-DMX-CI-TRIGGERS-008)
+Use supported deterministic trigger paths or GitHub's "Re-run jobs" control to
+refresh CI. Do not use empty commits as CI prods; they mutate branch history
+without changing the repo truth under test.
+
+## Provider Spend Boundary
+
+`pull_request`, `push`, and `merge_group` events cannot invoke either Claude
+security action. Ordinary `workflow_dispatch` also remains provider-free
+because `allow_api_spend` is a boolean input with default `false`.
+
+Setting `allow_api_spend=true` is only an execution mechanism. It does not
+grant spend authority. Separate explicit operator spend authorization remains
+required before any provider-backed dispatch.
+
+These invariants are enforced structurally by
+`tests/ci/test_ai_spend_containment.py`.
+
+## Historical Trigger Change (TP-DMX-CI-TRIGGERS-008)
 
 Three workflows were updated to fire on `ready_for_review` PR events and support manual `workflow_dispatch`:
 
@@ -37,6 +64,10 @@ Three workflows were updated to fire on `ready_for_review` PR events and support
 | `ci-complete.yml` | `[opened, synchronize, reopened]` | `[opened, synchronize, reopened, ready_for_review]` + `workflow_dispatch` |
 | `pr-steward.yml` | bare `pull_request:` | `[opened, synchronize, reopened, ready_for_review]` |
 | `preflight.yml` | bare `pull_request:` | `[opened, synchronize, reopened, ready_for_review]` |
+
+That historical PR Steward trigger description is superseded by current
+workflow truth above. Final Steward now consumes a completed, exact-head
+embedded-audit run.
 
 ## Why
 

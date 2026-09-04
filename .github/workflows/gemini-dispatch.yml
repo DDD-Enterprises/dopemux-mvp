@@ -1,22 +1,42 @@
 name: '🔀 Gemini Dispatch'
 
 on:
-  pull_request_review_comment:
-    types:
-      - 'created'
-  pull_request_review:
-    types:
-      - 'submitted'
-  pull_request:
-    types:
-      - 'opened'
-  issues:
-    types:
-      - 'opened'
-      - 'reopened'
-  issue_comment:
-    types:
-      - 'created'
+  workflow_dispatch:
+    inputs:
+      command:
+        description: 'Gemini route to invoke'
+        required: true
+        type: choice
+        default: 'review'
+        options:
+          - 'review'
+          - 'triage'
+          - 'invoke'
+          - 'approve'
+      target_type:
+        description: 'Exact target type for the selected route'
+        required: true
+        type: choice
+        options:
+          - 'pull_request'
+          - 'issue'
+      issue_number:
+        description: 'Pull request or issue number supplied to the selected route'
+        required: true
+        type: string
+      target_head_sha:
+        description: 'Exact live PR head SHA; empty for issue targets'
+        required: false
+        type: string
+      additional_context:
+        description: 'Bounded additional context for the selected route'
+        required: false
+        type: string
+      allow_api_spend:
+        description: 'Execution mechanism only; requires separate explicit operator spend authorization.'
+        required: false
+        type: boolean
+        default: false
 
 defaults:
   run:
@@ -43,76 +63,119 @@ jobs:
           env | grep '^DEBUG_'
 
   dispatch:
-    # For PRs: only if not from a fork
-    # For issues: only on open/reopen
-    # For comments: only if user types @gemini-cli and is OWNER/MEMBER/COLLABORATOR
     if: |-
-      (
-        github.event_name == 'pull_request' &&
-        github.event.pull_request.head.repo.fork == false
-      ) || (
-        github.event_name == 'issues' &&
-        contains(fromJSON('["opened", "reopened"]'), github.event.action)
-      ) || (
-        github.event.sender.type == 'User' &&
-        startsWith(github.event.comment.body || github.event.review.body || github.event.issue.body, '@gemini-cli') &&
-        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association || github.event.review.author_association || github.event.issue.author_association)
-      )
+      ${{ github.event_name == 'workflow_dispatch' && inputs.allow_api_spend == true }}
     runs-on: 'ubuntu-latest'
     permissions:
       contents: 'read'
-      issues: 'write'
-      pull-requests: 'write'
+      issues: 'read'
+      pull-requests: 'read'
     outputs:
       command: '${{ steps.extract_command.outputs.command }}'
       request: '${{ steps.extract_command.outputs.request }}'
       additional_context: '${{ steps.extract_command.outputs.additional_context }}'
       has_gemini_credentials: '${{ steps.detect_gemini_credentials.outputs.available }}'
-      issue_number: '${{ github.event.pull_request.number || github.event.issue.number }}'
+      target_repository: '${{ steps.validate_target.outputs.target_repository }}'
+      target_type: '${{ steps.validate_target.outputs.target_type }}'
+      target_number: '${{ steps.validate_target.outputs.target_number }}'
+      target_head_sha: '${{ steps.validate_target.outputs.target_head_sha }}'
+      repository_mutation_authorized: 'false'
     steps:
-      - name: 'Mint identity token'
-        id: 'mint_identity_token'
-        if: |-
-          ${{ vars.APP_ID }}
-        uses: 'actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1' # ratchet:actions/create-github-app-token@v3
+      - name: 'Validate exact target'
+        id: 'validate_target'
+        uses: 'actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd' # ratchet:actions/github-script@v8.0.0
+        env:
+          EXPECTED_REPOSITORY: 'DDD-Enterprises/dopemux-mvp'
+          COMMAND: '${{ inputs.command }}'
+          TARGET_TYPE: '${{ inputs.target_type }}'
+          TARGET_NUMBER: '${{ inputs.issue_number }}'
+          TARGET_HEAD_SHA: '${{ inputs.target_head_sha }}'
         with:
-          app-id: '${{ vars.APP_ID }}'
-          private-key: '${{ secrets.APP_PRIVATE_KEY }}'
-          permission-contents: 'read'
-          permission-issues: 'write'
-          permission-pull-requests: 'write'
+          script: |-
+            const expectedRepository = process.env.EXPECTED_REPOSITORY;
+            const liveRepository = `${context.repo.owner}/${context.repo.repo}`;
+            if (liveRepository !== expectedRepository) {
+              throw new Error('target_repository_mismatch');
+            }
+            const repository = await github.rest.repos.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            if (repository.data.full_name !== expectedRepository) {
+              throw new Error('live_repository_identity_mismatch');
+            }
+
+            const command = process.env.COMMAND;
+            const targetType = process.env.TARGET_TYPE;
+            const targetNumberText = process.env.TARGET_NUMBER || '';
+            const requestedHead = process.env.TARGET_HEAD_SHA || '';
+            if (!/^[1-9][0-9]*$/.test(targetNumberText)) {
+              throw new Error('target_number_invalid');
+            }
+            const targetNumber = Number(targetNumberText);
+            if (!Number.isSafeInteger(targetNumber)) {
+              throw new Error('target_number_invalid');
+            }
+            const allowedTypes = {
+              review: ['pull_request'],
+              triage: ['issue'],
+              invoke: ['pull_request', 'issue'],
+              approve: ['pull_request', 'issue'],
+            };
+            if (!allowedTypes[command]?.includes(targetType)) {
+              throw new Error('command_target_type_mismatch');
+            }
+
+            let targetHead = '';
+            if (targetType === 'pull_request') {
+              if (!/^[0-9a-f]{40}$/.test(requestedHead)) {
+                throw new Error('target_head_sha_invalid');
+              }
+              const pull = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: targetNumber,
+              });
+              if (pull.data.state !== 'open') {
+                throw new Error('target_pull_request_not_open');
+              }
+              targetHead = pull.data.head.sha;
+              if (targetHead !== requestedHead) {
+                throw new Error('target_head_sha_mismatch');
+              }
+            } else if (targetType === 'issue') {
+              if (requestedHead !== '') {
+                throw new Error('issue_target_head_sha_must_be_empty');
+              }
+              const issue = await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: targetNumber,
+              });
+              if (issue.data.pull_request || issue.data.state !== 'open') {
+                throw new Error('target_issue_invalid');
+              }
+            } else {
+              throw new Error('target_type_invalid');
+            }
+
+            core.setOutput('target_repository', liveRepository);
+            core.setOutput('target_type', targetType);
+            core.setOutput('target_number', String(targetNumber));
+            core.setOutput('target_head_sha', targetHead);
 
       - name: 'Extract command'
         id: 'extract_command'
         uses: 'actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd' # ratchet:actions/github-script@v8.0.0
         env:
-          EVENT_TYPE: '${{ github.event_name }}.${{ github.event.action }}'
-          REQUEST: '${{ github.event.comment.body || github.event.review.body || github.event.issue.body }}'
+          COMMAND: '${{ inputs.command }}'
+          ADDITIONAL_CONTEXT: '${{ inputs.additional_context }}'
         with:
           script: |
-            const eventType = process.env.EVENT_TYPE;
-            const request = process.env.REQUEST;
-            core.setOutput('request', request);
-
-            if (eventType === 'pull_request.opened') {
-              core.setOutput('command', 'review');
-            } else if (['issues.opened', 'issues.reopened'].includes(eventType)) {
-              core.setOutput('command', 'triage');
-            } else if (request.startsWith("@gemini-cli /review")) {
-              core.setOutput('command', 'review');
-              const additionalContext = request.replace(/^@gemini-cli \/review/, '').trim();
-              core.setOutput('additional_context', additionalContext);
-            } else if (request.startsWith("@gemini-cli /triage")) {
-              core.setOutput('command', 'triage');
-            } else if (request.startsWith("@gemini-cli /approve")) {
-              core.setOutput('command', 'approve');
-            } else if (request.startsWith("@gemini-cli")) {
-              const additionalContext = request.replace(/^@gemini-cli/, '').trim();
-              core.setOutput('command', 'invoke');
-              core.setOutput('additional_context', additionalContext);
-            } else {
-              core.setOutput('command', 'fallthrough');
-            }
+            const command = process.env.COMMAND || 'fallthrough';
+            core.setOutput('command', command);
+            core.setOutput('request', process.env.ADDITIONAL_CONTEXT || '');
+            core.setOutput('additional_context', process.env.ADDITIONAL_CONTEXT || '');
 
       - name: 'Detect Gemini credentials'
         id: 'detect_gemini_credentials'
@@ -127,71 +190,76 @@ jobs:
             echo 'available=false' >> "${GITHUB_OUTPUT}"
           fi
 
-      - name: 'Acknowledge request'
-        env:
-          GITHUB_TOKEN: '${{ steps.mint_identity_token.outputs.token || secrets.GITHUB_TOKEN || github.token }}'
-          ISSUE_NUMBER: '${{ github.event.pull_request.number || github.event.issue.number }}'
-          MESSAGE: |-
-            🤖 Hi @${{ github.actor }}, I've received your request, and I'm working on it now! You can track my progress [in the logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details.
-          REPOSITORY: '${{ github.repository }}'
-        run: |-
-          gh issue comment "${ISSUE_NUMBER}" \
-            --body "${MESSAGE}" \
-            --repo "${REPOSITORY}"
-
   review:
     needs: 'dispatch'
     if: |-
-      ${{ needs.dispatch.outputs.command == 'review' && needs.dispatch.outputs.has_gemini_credentials == 'true' }}
+      ${{ github.event_name == 'workflow_dispatch' && inputs.allow_api_spend == true && needs.dispatch.outputs.command == 'review' && needs.dispatch.outputs.has_gemini_credentials == 'true' }}
     uses: './.github/workflows/gemini-review.yml'
     permissions:
       contents: 'read'
       id-token: 'write'
-      issues: 'write'
-      pull-requests: 'write'
+      issues: 'read'
+      pull-requests: 'read'
     with:
+      target_repository: '${{ needs.dispatch.outputs.target_repository }}'
+      target_type: '${{ needs.dispatch.outputs.target_type }}'
+      target_number: '${{ needs.dispatch.outputs.target_number }}'
+      target_head_sha: '${{ needs.dispatch.outputs.target_head_sha }}'
       additional_context: '${{ needs.dispatch.outputs.additional_context }}'
     secrets: 'inherit'
 
   triage:
     needs: 'dispatch'
     if: |-
-      ${{ needs.dispatch.outputs.command == 'triage' && needs.dispatch.outputs.has_gemini_credentials == 'true' }}
+      ${{ github.event_name == 'workflow_dispatch' && inputs.allow_api_spend == true && needs.dispatch.outputs.command == 'triage' && needs.dispatch.outputs.has_gemini_credentials == 'true' }}
     uses: './.github/workflows/gemini-triage.yml'
     permissions:
       contents: 'read'
       id-token: 'write'
-      issues: 'write'
-      pull-requests: 'write'
+      issues: 'read'
+      pull-requests: 'read'
     with:
+      target_repository: '${{ needs.dispatch.outputs.target_repository }}'
+      target_type: '${{ needs.dispatch.outputs.target_type }}'
+      target_number: '${{ needs.dispatch.outputs.target_number }}'
+      target_head_sha: '${{ needs.dispatch.outputs.target_head_sha }}'
       additional_context: '${{ needs.dispatch.outputs.additional_context }}'
     secrets: 'inherit'
 
   invoke:
     needs: 'dispatch'
     if: |-
-      ${{ needs.dispatch.outputs.command == 'invoke' && needs.dispatch.outputs.has_gemini_credentials == 'true' }}
+      ${{ github.event_name == 'workflow_dispatch' && inputs.allow_api_spend == true && needs.dispatch.outputs.command == 'invoke' && needs.dispatch.outputs.has_gemini_credentials == 'true' }}
     uses: './.github/workflows/gemini-invoke.yml'
     permissions:
       contents: 'read'
       id-token: 'write'
-      issues: 'write'
-      pull-requests: 'write'
+      issues: 'read'
+      pull-requests: 'read'
     with:
+      target_repository: '${{ needs.dispatch.outputs.target_repository }}'
+      target_type: '${{ needs.dispatch.outputs.target_type }}'
+      target_number: '${{ needs.dispatch.outputs.target_number }}'
+      target_head_sha: '${{ needs.dispatch.outputs.target_head_sha }}'
       additional_context: '${{ needs.dispatch.outputs.additional_context }}'
     secrets: 'inherit'
 
   plan-execute:
     needs: 'dispatch'
     if: |-
-      ${{ needs.dispatch.outputs.command == 'approve' && needs.dispatch.outputs.has_gemini_credentials == 'true' }}
+      ${{ github.event_name == 'workflow_dispatch' && inputs.allow_api_spend == true && needs.dispatch.outputs.command == 'approve' && needs.dispatch.outputs.has_gemini_credentials == 'true' && needs.dispatch.outputs.repository_mutation_authorized == 'true' }}
     uses: './.github/workflows/gemini-plan-execute.yml'
     permissions:
-      contents: 'write'
+      contents: 'read'
       id-token: 'write'
       issues: 'write'
       pull-requests: 'write'
     with:
+      target_repository: '${{ needs.dispatch.outputs.target_repository }}'
+      target_type: '${{ needs.dispatch.outputs.target_type }}'
+      target_number: '${{ needs.dispatch.outputs.target_number }}'
+      target_head_sha: '${{ needs.dispatch.outputs.target_head_sha }}'
+      repository_mutation_authorized: false
       additional_context: '${{ needs.dispatch.outputs.additional_context }}'
     secrets: 'inherit'
 
@@ -207,29 +275,10 @@ jobs:
     runs-on: 'ubuntu-latest'
     permissions:
       contents: 'read'
-      issues: 'write'
-      pull-requests: 'write'
+      issues: 'read'
+      pull-requests: 'read'
     steps:
-      - name: 'Mint identity token'
-        id: 'mint_identity_token'
-        if: |-
-          ${{ vars.APP_ID }}
-        uses: 'actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1' # ratchet:actions/create-github-app-token@v3
-        with:
-          app-id: '${{ vars.APP_ID }}'
-          private-key: '${{ secrets.APP_PRIVATE_KEY }}'
-          permission-contents: 'read'
-          permission-issues: 'write'
-          permission-pull-requests: 'write'
-
-      - name: 'Send failure comment'
-        env:
-          GITHUB_TOKEN: '${{ steps.mint_identity_token.outputs.token || secrets.GITHUB_TOKEN || github.token }}'
-          ISSUE_NUMBER: '${{ github.event.pull_request.number || github.event.issue.number }}'
-          MESSAGE: |-
-            🤖 I'm sorry @${{ github.actor }}, but I was unable to process your request. Please [see the logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details.
-          REPOSITORY: '${{ github.repository }}'
+      - name: 'Record fail-closed outcome'
         run: |-
-          gh issue comment "${ISSUE_NUMBER}" \
-            --body "${MESSAGE}" \
-            --repo "${REPOSITORY}"
+          printf 'Gemini dispatch did not complete; no repository mutation performed.\n' \
+            >> "$GITHUB_STEP_SUMMARY"

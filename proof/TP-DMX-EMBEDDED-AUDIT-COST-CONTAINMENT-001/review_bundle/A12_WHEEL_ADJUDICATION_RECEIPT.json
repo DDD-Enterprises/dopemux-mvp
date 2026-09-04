@@ -1,0 +1,15 @@
+{
+  "packet_id": "TP-DMX-EMBEDDED-AUDIT-COST-CONTAINMENT-001-A12-FINDING-ADJUDICATION",
+  "purpose": "Empirically adjudicate R1 replacement final audit's BLOCKING wheel-completeness finding",
+  "subject_head": "b21e19dc261d3f6d327ada7efcc3f0559518d721",
+  "method": "isolated worktree at exact subject head; uv build --wheel; zipfile member inspection; pytest of existing regression test in a fresh venv with editable install",
+  "wheel_members_checked": [
+    "dopemux/templates/init/.github/workflows/pr-readiness-invalidator.yml",
+    "dopemux/templates/init/.github/workflows/pr-readiness-invalidation-writer.yml"
+  ],
+  "wheel_members_result": "BOTH PRESENT",
+  "test_run": "pytest tests/dopemux_init/test_pr_steward_scaffold.py::test_built_wheel_runs_pr_steward_and_materializes_templates_off_tree -q",
+  "test_result": "1 passed in 8.63s",
+  "conclusion": "R1's BLOCKING wheel-completeness finding is factually wrong. MANIFEST.in's recursive-include plus setuptools' default include-package-data=true make the two new template files wheel members without a pyproject.toml package-data change. No pyproject.toml edit was made.",
+  "pyproject_toml_changed": false
+}

@@ -3,13 +3,30 @@ name: '🔎 Gemini Review'
 on:
   workflow_call:
     inputs:
+      target_repository:
+        type: 'string'
+        description: 'Validated repository identity'
+        required: true
+      target_type:
+        type: 'string'
+        description: 'Validated target type'
+        required: true
+      target_number:
+        type: 'string'
+        description: 'Validated pull request number'
+        required: true
+      target_head_sha:
+        type: 'string'
+        description: 'Validated exact pull request head SHA'
+        required: false
+        default: ''
       additional_context:
         type: 'string'
         description: 'Any additional context from the request'
         required: false
 
 concurrency:
-  group: '${{ github.workflow }}-review-${{ github.event_name }}-${{ github.event.pull_request.number || github.event.issue.number }}'
+  group: '${{ github.workflow }}-review-${{ inputs.target_repository }}-${{ inputs.target_number }}-${{ inputs.target_head_sha }}'
   cancel-in-progress: true
 
 defaults:
@@ -21,17 +38,85 @@ jobs:
     runs-on: 'ubuntu-latest'
     timeout-minutes: 7
     # The Gemini CLI hard-fails in headless mode unless the workspace is trusted.
-    # Review is gated by gemini-dispatch.yml to OWNER/MEMBER/COLLABORATOR authors
-    # only, which bounds the trust to repo collaborators' PRs. Re-added after
-    # 4206a2972 removed it (a newer CLI now enforces trusted-folders).
+    # gemini-dispatch binds manual spend to an exact live pull request head.
     env:
       GEMINI_CLI_TRUST_WORKSPACE: 'true'
     permissions:
       contents: 'read'
       id-token: 'write'
-      issues: 'write'
-      pull-requests: 'write'
+      issues: 'read'
+      pull-requests: 'read'
     steps:
+      - name: 'Validate exact target'
+        id: 'validate_target'
+        uses: 'actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd' # ratchet:actions/github-script@v8.0.0
+        env:
+          TARGET_REPOSITORY: '${{ inputs.target_repository }}'
+          TARGET_TYPE: '${{ inputs.target_type }}'
+          TARGET_NUMBER: '${{ inputs.target_number }}'
+          TARGET_HEAD_SHA: '${{ inputs.target_head_sha }}'
+          ALLOWED_TARGET_TYPES: 'pull_request'
+        with:
+          script: |-
+            const liveRepository = `${context.repo.owner}/${context.repo.repo}`;
+            if (process.env.TARGET_REPOSITORY !== liveRepository) {
+              throw new Error('target_repository_mismatch');
+            }
+            const repository = await github.rest.repos.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            if (repository.data.full_name !== liveRepository) {
+              throw new Error('live_repository_identity_mismatch');
+            }
+            const targetType = process.env.TARGET_TYPE;
+            const allowedTypes = process.env.ALLOWED_TARGET_TYPES.split(',');
+            if (!allowedTypes.includes(targetType)) {
+              throw new Error('target_type_invalid');
+            }
+            const targetNumberText = process.env.TARGET_NUMBER || '';
+            if (!/^[1-9][0-9]*$/.test(targetNumberText)) {
+              throw new Error('target_number_invalid');
+            }
+            const targetNumber = Number(targetNumberText);
+            if (!Number.isSafeInteger(targetNumber)) {
+              throw new Error('target_number_invalid');
+            }
+            const requestedHead = process.env.TARGET_HEAD_SHA || '';
+            let target;
+            let liveHead = '';
+            if (targetType === 'pull_request') {
+              if (!/^[0-9a-f]{40}$/.test(requestedHead)) {
+                throw new Error('target_head_sha_invalid');
+              }
+              const pull = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: targetNumber,
+              });
+              target = pull.data;
+              liveHead = target.head.sha;
+              if (target.state !== 'open' || liveHead !== requestedHead) {
+                throw new Error('target_head_sha_mismatch');
+              }
+            } else {
+              const issue = await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: targetNumber,
+              });
+              target = issue.data;
+              if (requestedHead || target.pull_request || target.state !== 'open') {
+                throw new Error('target_issue_invalid');
+              }
+            }
+            core.setOutput('target_repository', liveRepository);
+            core.setOutput('target_type', targetType);
+            core.setOutput('target_number', String(targetNumber));
+            core.setOutput('target_head_sha', liveHead);
+            core.setOutput('target_title', target.title || '');
+            core.setOutput('target_body', target.body || '');
+
       - name: 'Mint identity token'
         id: 'mint_identity_token'
         if: |-
@@ -41,11 +126,14 @@ jobs:
           app-id: '${{ vars.APP_ID }}'
           private-key: '${{ secrets.APP_PRIVATE_KEY }}'
           permission-contents: 'read'
-          permission-issues: 'write'
-          permission-pull-requests: 'write'
+          permission-issues: 'read'
+          permission-pull-requests: 'read'
 
       - name: 'Checkout repository'
         uses: 'actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8' # ratchet:actions/checkout@v6
+        with:
+          ref: '${{ steps.validate_target.outputs.target_head_sha }}'
+          persist-credentials: false
 
       - name: 'Run Gemini pull request review'
         uses: 'google-github-actions/run-gemini-cli@v0' # ratchet:exclude
@@ -53,10 +141,10 @@ jobs:
         env:
           GEMINI_CLI_TRUST_WORKSPACE: 'true'
           GITHUB_TOKEN: '${{ steps.mint_identity_token.outputs.token || secrets.GITHUB_TOKEN || github.token }}'
-          ISSUE_TITLE: '${{ github.event.pull_request.title || github.event.issue.title }}'
-          ISSUE_BODY: '${{ github.event.pull_request.body || github.event.issue.body }}'
-          PULL_REQUEST_NUMBER: '${{ github.event.pull_request.number || github.event.issue.number }}'
-          REPOSITORY: '${{ github.repository }}'
+          ISSUE_TITLE: '${{ steps.validate_target.outputs.target_title }}'
+          ISSUE_BODY: '${{ steps.validate_target.outputs.target_body }}'
+          PULL_REQUEST_NUMBER: '${{ steps.validate_target.outputs.target_number }}'
+          REPOSITORY: '${{ steps.validate_target.outputs.target_repository }}'
           ADDITIONAL_CONTEXT: '${{ inputs.additional_context }}'
         with:
           gcp_location: '${{ vars.GOOGLE_CLOUD_LOCATION }}'
@@ -94,9 +182,7 @@ jobs:
                     "ghcr.io/github/github-mcp-server:v0.27.0"
                   ],
                   "includeTools": [
-                    "add_comment_to_pending_review",
-                    "pull_request_read",
-                    "pull_request_review_write"
+                    "pull_request_read"
                   ],
                   "env": {
                     "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"

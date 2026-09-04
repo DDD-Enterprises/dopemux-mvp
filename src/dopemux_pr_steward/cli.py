@@ -4,11 +4,13 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 from dopemux_pr_merge_specialist.steward_gate import steward_gate
 
 from . import CONTRACT_VERSION
+from . import proof_successor
+from . import review_settlement
 from .doctor import format_result, run_doctor
 
 
@@ -42,6 +44,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--proof-path",
         type=Path,
         help="Proof JSON path used in live mode to verify audit status and PR head SHA.",
+    )
+    intake.add_argument(
+        "--proof-source-path",
+        help=(
+            "Repository-relative path the proof was committed at (e.g. "
+            "'proof/PROOF.json'). Distinct from --proof-path (the local "
+            "filesystem location of the downloaded proof file); bounds the "
+            "allowed proof-only successor delta. Defaults to "
+            "proof_successor.DEFAULT_PROOF_PATH when omitted."
+        ),
     )
     intake.add_argument(
         "--allow-closed",
@@ -86,8 +98,36 @@ def build_parser() -> argparse.ArgumentParser:
         help="Inspect embedded audit status in a proof bundle.",
     )
     audit.add_argument("--proof", required=True, type=Path)
+    audit.add_argument("--repo", help="Expected GitHub repository owner/name.")
+    audit.add_argument("--pr", type=int, help="Expected pull request number.")
+    audit.add_argument("--head", help="Expected pull request head SHA (live PR head).")
+    audit.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path("."),
+        help=(
+            "Git working tree used to verify a proof-only successor when "
+            "--head does not equal the proof's own head_sha."
+        ),
+    )
+    audit.add_argument(
+        "--proof-source-path",
+        default=proof_successor.DEFAULT_PROOF_PATH,
+        help=(
+            "Repository-relative path the proof was committed at (e.g. "
+            "'proof/PROOF.json'). Bounds the allowed proof-only successor "
+            "delta; never widened to a whole directory."
+        ),
+    )
     audit.add_argument("--format", choices=["json", "text"], default="text")
     audit.set_defaults(handler=_run_audit)
+
+    settlement = subparsers.add_parser(
+        "settlement",
+        help="Fetch or compare exact-head PR review settlement.",
+    )
+    review_settlement.configure_parser(settlement)
+    settlement.set_defaults(handler=_run_settlement)
 
     doctor = subparsers.add_parser(
         "doctor",
@@ -119,10 +159,14 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 def _run_intake(args: argparse.Namespace) -> int:
     try:
+        from tools.pr_steward import collector
         from tools.pr_steward.intake import main as intake_main
     except ModuleNotFoundError as exc:
         print(f"pr-steward intake unavailable: {exc}", file=sys.stderr)
         return 2
+    # Installed downstream repositories do not carry scripts.audit. Bind the
+    # packaged mirror before collector evaluates proof bytes.
+    collector._independent_audit_errors = _independent_audit_errors
     forwarded = [
         "--repo",
         args.repo,
@@ -137,6 +181,8 @@ def _run_intake(args: argparse.Namespace) -> int:
         forwarded.extend(["--fixture-dir", str(args.fixture_dir)])
     if args.proof_path is not None:
         forwarded.extend(["--proof-path", str(args.proof_path)])
+    if args.proof_source_path is not None:
+        forwarded.extend(["--proof-source-path", str(args.proof_source_path)])
     if args.allow_closed:
         forwarded.append("--allow-closed")
     forwarded.extend(["--format", args.format])
@@ -208,16 +254,150 @@ def _run_audit(args: argparse.Namespace) -> int:
         return 2
     audit = proof.get("embedded_audit")
     status = str(audit.get("status") if isinstance(audit, dict) else "").upper()
+    identity_values = (args.repo, args.pr, args.head)
+    errors: list[str] = []
+    if any(value is not None for value in identity_values):
+        if not all(value is not None for value in identity_values):
+            errors.append(
+                "audit_identity_incomplete: --repo, --pr, and --head are required together"
+            )
+        else:
+            errors.extend(
+                _independent_audit_errors(
+                    proof,
+                    expected_repo=str(args.repo),
+                    expected_pr=int(args.pr),
+                    expected_head_sha=str(args.head),
+                    repo_root=args.repo_root,
+                    proof_source_path=args.proof_source_path,
+                )
+            )
+    if status not in {"PASS", "PASS_WITH_RISKS"}:
+        errors.append(f"Independent audit did not pass: {status or 'UNKNOWN'}")
     payload: dict[str, Any] = {
         "contract_version": CONTRACT_VERSION,
         "proof": str(args.proof),
         "embedded_audit_status": status or "UNKNOWN",
+        "errors": errors,
     }
     if args.format == "json":
         print(json.dumps(payload, indent=2, sort_keys=True))
     else:
         print(f"embedded_audit_status={payload['embedded_audit_status']}")
-    return 0 if status in {"PASS", "PASS_WITH_RISKS"} else 2
+    if errors:
+        print("; ".join(errors), file=sys.stderr)
+        return 2
+    return 0
+
+
+def _independent_audit_errors(
+    payload: Mapping[str, Any],
+    *,
+    expected_repo: str | None = None,
+    expected_pr: int | None = None,
+    expected_head_sha: str | None = None,
+    repo_root: Path | None = None,
+    proof_source_path: str = proof_successor.DEFAULT_PROOF_PATH,
+) -> list[str]:
+    """Mirror canonical independent-audit identity enforcement for packages.
+
+    Deliberately diverges from ``scripts/audit/run_embedded_audit.py``'s
+    ``independent_audit_errors`` (out of A15's scope: that module feeds this
+    repository's own root ``.github/workflows/embedded-audit.yml``, which
+    mints a fresh proof bound to the live head every run and never consumes
+    a committed proof, so it has no proof-only-successor problem to solve).
+    This mirror serves the packaged template's committed-proof convention,
+    where ``expected_head_sha`` (the live PR head) may legitimately differ
+    from ``payload['head_sha']`` (the audited commit) under the proof-only
+    successor pattern -- see ``proof_successor.verify_proof_successor``.
+    """
+    errors: list[str] = []
+
+    local_accepted = False
+    if expected_repo is not None and expected_pr is not None and expected_head_sha is not None:
+        try:
+            from scripts.audit import local_audit_acceptance
+            attestation = local_audit_acceptance.evaluate_local_audit(
+                repo_root=repo_root or __import__('pathlib').Path("."),
+                repo=expected_repo,
+                pr_number=expected_pr,
+                head_sha=expected_head_sha,
+                allowed_signers=local_audit_acceptance.DEFAULT_ALLOWED_SIGNERS,
+                schema_path=local_audit_acceptance.DEFAULT_SCHEMA_PATH,
+            )
+            local_accepted = attestation.get("accepted") is True
+        except ImportError:
+            pass
+
+    if "dry_run" in payload:
+
+        dry_run = payload.get("dry_run")
+        if dry_run is True:
+            errors.append(
+                "audit_proof_dry_run: final readiness requires an executed audit"
+            )
+        elif dry_run is not False:
+            errors.append(
+                "audit_proof_malformed_dry_run: dry_run must be a boolean when present"
+            )
+
+    if local_accepted:
+        # If cryptographically signed and verified, we bypass GHA provenance,
+        # execution metadata, and narrow successor path checks.
+        return errors
+
+    if payload.get("executed") is not True:
+
+        errors.append("audit_not_executed: final readiness requires executed=true")
+    if expected_pr is not None:
+        try:
+            proof_pr = int(payload.get("pr_number"))  # type: ignore[arg-type]
+        except (TypeError, ValueError):
+            proof_pr = None
+        if proof_pr != expected_pr:
+            errors.append(
+                f"audit_pr_mismatch: proof pr_number={payload.get('pr_number')!r} "
+                f"expected={expected_pr}"
+            )
+    if expected_head_sha is not None:
+        proof_head = str(payload.get("head_sha") or "")
+        if proof_head != expected_head_sha:
+            ok, reasons = proof_successor.verify_proof_successor(
+                repo_root or Path("."),
+                live_head_sha=expected_head_sha,
+                audited_head_sha=proof_head,
+                proof_path=proof_source_path,
+                proof_payload=payload,
+            )
+            if not ok:
+                errors.append(
+                    f"audit_head_mismatch: proof head_sha={proof_head!r} "
+                    f"expected={expected_head_sha} "
+                    f"successor_check_failed=[{'; '.join(reasons)}]"
+                )
+    if expected_repo is not None:
+        proof_repo = str(payload.get("repo") or "").strip()
+        if not proof_repo:
+            errors.append(
+                "audit_repo_missing: final readiness requires proof.repo when "
+                "expected_repo is provided"
+            )
+        elif proof_repo != expected_repo:
+            errors.append(
+                f"audit_repo_mismatch: proof repo={proof_repo!r} "
+                f"expected={expected_repo}"
+            )
+    provenance = payload.get("provenance")
+    if not isinstance(provenance, Mapping):
+        errors.append(
+            "audit_provenance_missing: final readiness requires trusted provenance"
+        )
+        return errors
+    if provenance.get("proof_author") != "independent-embedded-audit":
+        errors.append("audit_provenance_untrusted: unexpected proof author")
+    if provenance.get("workflow") != "embedded-audit.yml":
+        errors.append("audit_provenance_untrusted: unexpected workflow")
+    return errors
 
 
 def _run_doctor(args: argparse.Namespace) -> int:
@@ -228,6 +408,10 @@ def _run_doctor(args: argparse.Namespace) -> int:
     else:
         print(output, file=sys.stderr)
     return 0 if result.ok else 2
+
+
+def _run_settlement(args: argparse.Namespace) -> int:
+    return review_settlement.run_parsed_args(args)
 
 
 def _load_json(path: Path) -> dict[str, Any]:

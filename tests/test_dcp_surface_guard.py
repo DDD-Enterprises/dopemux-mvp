@@ -117,6 +117,49 @@ def test_nested_carved_out_filename_remains_blocked():
 
 
 # ---------------------------------------------------------------------------
+# ADR-225 / TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R Phase B: narrow carve-out
+# extension for the two PR-readiness-invalidation workflow files
+# ---------------------------------------------------------------------------
+
+def test_pr_readiness_invalidator_workflow_is_carved_out():
+    inp = {"file_path": str(_ROOT / ".github/workflows/pr-readiness-invalidator.yml")}
+    result = surface_guard_block("Edit", inp, _ROOT)
+    assert result is None
+
+
+def test_pr_readiness_invalidation_writer_workflow_is_carved_out():
+    inp = {
+        "file_path": str(
+            _ROOT / ".github/workflows/pr-readiness-invalidation-writer.yml"
+        )
+    }
+    result = surface_guard_block("Write", inp, _ROOT)
+    assert result is None
+
+
+def test_near_miss_invalidator_backup_filename_remains_blocked():
+    inp = {
+        "file_path": str(
+            _ROOT / ".github/workflows/pr-readiness-invalidator.yml.bak"
+        )
+    }
+    result = surface_guard_block("Edit", inp, _ROOT)
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_nested_invalidator_filename_remains_blocked():
+    inp = {
+        "file_path": str(
+            _ROOT / ".github/workflows/sub/pr-readiness-invalidator.yml"
+        )
+    }
+    result = surface_guard_block("Edit", inp, _ROOT)
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+# ---------------------------------------------------------------------------
 # Sync test: fallback ⊆ live FORBIDDEN_PATHS
 # ---------------------------------------------------------------------------
 

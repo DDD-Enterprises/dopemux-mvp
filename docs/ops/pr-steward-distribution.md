@@ -29,6 +29,14 @@ overwrite local workflow or policy edits.
 - Scaffolded workflows install Dopemux from `DOPEMUX_INSTALL_SPEC` before
   invoking the packaged command, because downstream repositories do not carry
   this source tree on `PYTHONPATH`.
+- Review settlement has one implementation in
+  `dopemux_pr_steward.review_settlement`. Repository automation reaches it
+  through the compatibility script; initialized repositories use packaged
+  `pr-steward settlement fetch|compare` commands.
+- Template Steward never imports downstream `tools.pr_steward` or
+  `scripts.audit` modules directly.
+- Template embedded audit reads candidate proof bytes from the validated live
+  PR head as Git data. It never checks out or executes candidate code.
 - The scaffold does not generate or copy `steward_gate` Python logic.
 - The scaffold does not add a setup subcommand, checksum manifest, or reusable
   composite action.
@@ -53,6 +61,25 @@ Distribution intentionally keeps runtime authority in the installed package:
 - scaffolded policy files are small operator-owned inputs
 - `dopemux init` does not overwrite existing workflow or policy files
 - doctor reports drift and config problems without mutating the target repo
+
+## Template Finality Contract
+
+Manual template audit dispatch binds repository, PR number, exact live head,
+base repository, base SHA, and proof path before reading `PROOF.json`. A valid
+run uploads exactly one artifact named
+`embedded-audit-pr-<PR>-head-<SHA>-proof`. Template Steward accepts that
+artifact only through a completed manual `workflow_dispatch` run sourced from
+the repository default branch. It revalidates workflow repository, name, path,
+event, source branch, live PR/head, and canonical proof identity, then evaluates
+settlement through the installed package before publishing final readiness.
+
+Proof validation alone is not publication authority. GitHub restricts manual
+dispatch to repository writers, and Steward's trusted run/artifact checks bind
+the validated candidate bytes to that manual publisher before any readiness
+status can be written.
+
+API spend permission is unrelated to repository mutation authority. These
+template workflows invoke no provider and grant no merge authority.
 
 This leaves downstream repositories with an explicit operator step for local
 policy drift. That is deliberate for v1; automatic migration or repair would

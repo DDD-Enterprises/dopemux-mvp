@@ -1,21 +1,13 @@
 name: '📋 Gemini Scheduled Issue Triage'
 
 on:
-  schedule:
-    - cron: '0 * * * *' # Runs every hour
-  pull_request:
-    branches:
-      - 'main'
-      - 'release/**/*'
-    paths:
-      - '.github/workflows/gemini-scheduled-triage.yml'
-  push:
-    branches:
-      - 'main'
-      - 'release/**/*'
-    paths:
-      - '.github/workflows/gemini-scheduled-triage.yml'
   workflow_dispatch:
+    inputs:
+      allow_api_spend:
+        description: 'Execution mechanism only; requires separate explicit operator spend authorization.'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: '${{ github.workflow }}'
@@ -27,6 +19,8 @@ defaults:
 
 jobs:
   triage:
+    if: |-
+      ${{ github.event_name == 'workflow_dispatch' && inputs.allow_api_spend == true }}
     runs-on: 'ubuntu-latest'
     timeout-minutes: 7
     env:
@@ -103,7 +97,10 @@ jobs:
       - name: 'Run Gemini Issue Analysis'
         id: 'gemini_issue_analysis'
         if: |-
-          steps.find_issues.outputs.issues_to_triage != '[]' && steps.detect_gemini_credentials.outputs.available == 'true'
+          github.event_name == 'workflow_dispatch' &&
+          inputs.allow_api_spend == true &&
+          steps.find_issues.outputs.issues_to_triage != '[]' &&
+          steps.detect_gemini_credentials.outputs.available == 'true'
         uses: 'google-github-actions/run-gemini-cli@v0' # ratchet:exclude
         env:
           GITHUB_TOKEN: '' # Do not pass any auth token here since this runs on untrusted inputs
@@ -143,87 +140,3 @@ jobs:
               }
             }
           prompt: '/gemini-scheduled-triage'
-
-  label:
-    runs-on: 'ubuntu-latest'
-    needs:
-      - 'triage'
-    if: |-
-      needs.triage.outputs.available_labels != '' &&
-      needs.triage.outputs.available_labels != '[]' &&
-      needs.triage.outputs.triaged_issues != '' &&
-      needs.triage.outputs.triaged_issues != '[]'
-    permissions:
-      contents: 'read'
-      issues: 'write'
-      pull-requests: 'write'
-    steps:
-      - name: 'Mint identity token'
-        id: 'mint_identity_token'
-        if: |-
-          ${{ vars.APP_ID }}
-        uses: 'actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1' # ratchet:actions/create-github-app-token@v3
-        with:
-          app-id: '${{ vars.APP_ID }}'
-          private-key: '${{ secrets.APP_PRIVATE_KEY }}'
-          permission-contents: 'read'
-          permission-issues: 'write'
-          permission-pull-requests: 'write'
-
-      - name: 'Apply labels'
-        env:
-          AVAILABLE_LABELS: '${{ needs.triage.outputs.available_labels }}'
-          TRIAGED_ISSUES: '${{ needs.triage.outputs.triaged_issues }}'
-        uses: 'actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd' # ratchet:actions/github-script@v8.0.0
-        with:
-          # Use the provided token so that the "gemini-cli" is the actor in the
-          # log for what changed the labels.
-          github-token: '${{ steps.mint_identity_token.outputs.token || secrets.GITHUB_TOKEN || github.token }}'
-          script: |-
-            // Parse the available labels
-            const availableLabels = (process.env.AVAILABLE_LABELS || '').split(',')
-              .map((label) => label.trim())
-              .sort()
-
-            // Parse out the triaged issues
-            const triagedIssues = (JSON.parse(process.env.TRIAGED_ISSUES || '{}'))
-              .sort((a, b) => a.issue_number - b.issue_number)
-
-            core.debug(`Triaged issues: ${JSON.stringify(triagedIssues)}`);
-
-            // Iterate over each label
-            for (const issue of triagedIssues) {
-              if (!issue) {
-                core.debug(`Skipping empty issue: ${JSON.stringify(issue)}`);
-                continue;
-              }
-
-              const issueNumber = issue.issue_number;
-              if (!issueNumber) {
-                core.debug(`Skipping issue with no data: ${JSON.stringify(issue)}`);
-                continue;
-              }
-
-              // Extract and reject invalid labels - we do this just in case
-              // someone was able to prompt inject malicious labels.
-              let labelsToSet = (issue.labels_to_set || [])
-                .map((label) => label.trim())
-                .filter((label) => availableLabels.includes(label))
-                .sort()
-
-              core.debug(`Identified labels to set: ${JSON.stringify(labelsToSet)}`);
-
-              if (labelsToSet.length === 0) {
-                core.info(`Skipping issue #${issueNumber} - no labels to set.`)
-                continue;
-              }
-
-              core.debug(`Setting labels on issue #${issueNumber} to ${labelsToSet.join(', ')} (${issue.explanation || 'no explanation'})`)
-
-              await github.rest.issues.setLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issueNumber,
-                labels: labelsToSet,
-              });
-            }

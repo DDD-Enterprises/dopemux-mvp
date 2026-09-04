@@ -63,7 +63,10 @@ jobs:
           else
             audit_run_id="$INPUT_AUDIT_RUN_ID"
           fi
-          test -n "$audit_run_id"
+          if [ -z "$audit_run_id" ]; then
+            echo "audit_run_id_missing" >&2
+            exit 1
+          fi
           printf 'id=%s\n' "$audit_run_id" >> "$GITHUB_OUTPUT"
 
       - name: Validate audit workflow-run identity
@@ -71,6 +74,7 @@ jobs:
         env:
           AUDIT_RUN_ID: ${{ steps.audit_run.outputs.id }}
           EXPECTED_REPO: ${{ github.repository }}
+          EXPECTED_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           # Do not trust arbitrary PROOF.json until the Actions run itself is
           # proven to be the expected embedded-audit workflow in this repository.
@@ -84,6 +88,7 @@ jobs:
 
           run = json.loads(Path("/tmp/audit-run.json").read_text(encoding="utf-8"))
           expected_repo = os.environ["EXPECTED_REPO"]
+          default_branch = os.environ["EXPECTED_DEFAULT_BRANCH"]
           expected_id = int(os.environ["AUDIT_RUN_ID"])
           errors = []
 
@@ -101,8 +106,22 @@ jobs:
           name = str(run.get("name") or "")
           path = str(run.get("path") or "")
           # Require both display name and workflow path for fail-closed identity.
-          if not (name == "embedded-audit" and path.endswith("embedded-audit.yml")):
+          if not (
+              name == "embedded-audit"
+              and path == ".github/workflows/embedded-audit.yml"
+          ):
               errors.append(f"workflow_mismatch: name={name!r} path={path!r}")
+
+          event = str(run.get("event") or "")
+          if event != "workflow_dispatch":
+              errors.append(f"workflow_event_mismatch: event={event!r}")
+
+          head_branch = str(run.get("head_branch") or "")
+          if head_branch != default_branch:
+              errors.append(
+                  f"workflow_source_branch_mismatch: "
+                  f"head_branch={head_branch!r} default_branch={default_branch!r}"
+              )
 
           status = str(run.get("status") or "")
           if status != "completed":
@@ -293,6 +312,23 @@ jobs:
           printf 'head_sha=%s\n' "$head_sha" >> "$GITHUB_OUTPUT"
           printf 'proof_path=independent-audit/PROOF.json\n' >> "$GITHUB_OUTPUT"
 
+      - name: Capture settlement before Steward
+        id: settlement_s1
+        if: success()
+        env:
+          SETTLEMENT_S1: /tmp/review-settlement-s1.json
+          PR_HEAD_SHA: ${{ steps.proof.outputs.head_sha }}
+          PR_NUMBER: ${{ steps.proof.outputs.pr_number }}
+        run: |
+          set -euo pipefail
+          python scripts/audit/review_settlement.py fetch \
+            --repo "$GITHUB_REPOSITORY" \
+            --pr "$PR_NUMBER" \
+            --head "$PR_HEAD_SHA" \
+            --min-ready-age-seconds 300 \
+            --min-activity-quiet-seconds 120 \
+            --output "$SETTLEMENT_S1"
+
       - name: Run PR Steward
         id: steward
         if: success()
@@ -305,12 +341,35 @@ jobs:
             --format text \
             --proof-path independent-audit/PROOF.json
 
+      - name: Revalidate settlement before readiness publication
+        id: settlement_s2
+        if: success()
+        env:
+          SETTLEMENT_S1: /tmp/review-settlement-s1.json
+          SETTLEMENT_S2: /tmp/review-settlement-s2.json
+          PR_HEAD_SHA: ${{ steps.proof.outputs.head_sha }}
+          PR_NUMBER: ${{ steps.proof.outputs.pr_number }}
+        run: |
+          set -euo pipefail
+          python scripts/audit/review_settlement.py fetch \
+            --repo "$GITHUB_REPOSITORY" \
+            --pr "$PR_NUMBER" \
+            --head "$PR_HEAD_SHA" \
+            --min-ready-age-seconds 300 \
+            --min-activity-quiet-seconds 120 \
+            --output "$SETTLEMENT_S2"
+          python scripts/audit/review_settlement.py compare \
+            --before "$SETTLEMENT_S1" \
+            --after "$SETTLEMENT_S2"
+
       - name: Publish readiness status on candidate PR head
+        id: readiness
         if: always() && steps.proof.outputs.head_sha != ''
         env:
           PR_HEAD_SHA: ${{ steps.proof.outputs.head_sha }}
           PR_NUMBER: ${{ steps.proof.outputs.pr_number }}
           STEWARD_OUTCOME: ${{ steps.steward.outcome }}
+          SETTLEMENT_OUTCOME: ${{ steps.settlement_s2.outcome }}
           AUDIT_OUTCOME: ${{ steps.audit.outcome }}
           AUDIT_CONCLUSION: ${{ steps.run_identity.outputs.conclusion }}
         run: |
@@ -323,13 +382,15 @@ jobs:
           # prior failed self-status cannot sticky-red the next Steward run.
           if [ "${AUDIT_CONCLUSION}" = "success" ] \
             && [ "${AUDIT_OUTCOME}" = "success" ] \
-            && [ "${STEWARD_OUTCOME}" = "success" ]; then
+            && [ "${STEWARD_OUTCOME}" = "success" ] \
+            && [ "${SETTLEMENT_OUTCOME}" = "success" ]; then
             state="success"
             description="final readiness READY for PR ${PR_NUMBER}"
           else
             state="failure"
             description="final readiness not READY for PR ${PR_NUMBER} (audit=${AUDIT_CONCLUSION}/${AUDIT_OUTCOME} steward=${STEWARD_OUTCOME})"
           fi
+          printf 'state=%s\n' "$state" >> "$GITHUB_OUTPUT"
           gh api "repos/${GITHUB_REPOSITORY}/statuses/${PR_HEAD_SHA}" \
             -f state="${state}" \
             -f context="PR Steward / final readiness" \
@@ -337,6 +398,40 @@ jobs:
             -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           # Fail the job when not READY so the workflow itself is red.
           if [ "${state}" != "success" ]; then
+            exit 1
+          fi
+
+      - name: Verify settlement after readiness publication
+        if: always() && steps.readiness.outputs.state == 'success'
+        env:
+          SETTLEMENT_S2: /tmp/review-settlement-s2.json
+          SETTLEMENT_S3: /tmp/review-settlement-s3.json
+          PR_HEAD_SHA: ${{ steps.proof.outputs.head_sha }}
+          PR_NUMBER: ${{ steps.proof.outputs.pr_number }}
+        run: |
+          set -uo pipefail
+          settlement_ok=true
+          python scripts/audit/review_settlement.py fetch \
+            --repo "$GITHUB_REPOSITORY" \
+            --pr "$PR_NUMBER" \
+            --head "$PR_HEAD_SHA" \
+            --min-ready-age-seconds 300 \
+            --min-activity-quiet-seconds 120 \
+            --output "$SETTLEMENT_S3" || settlement_ok=false
+          if [ "$settlement_ok" = true ]; then
+            python scripts/audit/review_settlement.py compare \
+              --before "$SETTLEMENT_S2" \
+              --after "$SETTLEMENT_S3" || settlement_ok=false
+          fi
+          if [ "$settlement_ok" != true ]; then
+            state="pending"
+            context="PR Steward / final readiness"
+            description="live head or review settlement changed after readiness publication"
+            gh api "repos/${GITHUB_REPOSITORY}/statuses/${PR_HEAD_SHA}" \
+              -f state="$state" \
+              -f context="$context" \
+              -f description="$description" \
+              -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
             exit 1
           fi
 

@@ -1,17 +1,18 @@
 name: 🔒 Security Review with Claude Code
 
 permissions:
-  pull-requests: write  # Needed for PR comments
   contents: read
-  issues: write         # For issue tracking
+  issues: read
+  pull-requests: read
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-  push:
-    branches: [main]
-  merge_group:
-    types: [checks_requested]
+  workflow_dispatch:
+    inputs:
+      allow_api_spend:
+        description: "Execution mechanism only; requires separate explicit operator spend authorization."
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   security-review:
@@ -19,6 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25  # ADHD-optimized: 25-minute chunks
     if: github.repository == 'DDD-Enterprises/dopemux-mvp' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    outputs:
+      provider_outcome: ${{ steps.claude_security_review.outcome }}
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
@@ -29,10 +32,11 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 2  # Get enough history for diff analysis
       - name: 🔐 ADHD-Optimized Security Review
-        if: ${{ env.ANTHROPIC_API_KEY != '' }}
+        id: claude_security_review
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.allow_api_spend == true && env.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-security-review@main
         with:
-          comment-pr: true
+          comment-pr: false
           claude-api-key: ${{ env.ANTHROPIC_API_KEY }}
           upload-results: true
 
@@ -61,7 +65,9 @@ jobs:
     name: "📊 ADHD-Friendly Security Summary"
     runs-on: ubuntu-latest
     needs: security-review
-    if: always() && github.event_name == 'pull_request'
+    if: always() && github.event_name == 'workflow_dispatch'
+    env:
+      PROVIDER_OUTCOME: ${{ needs.security-review.outputs.provider_outcome }}
 
     steps:
       - name: 🎯 Generate gentle security report
@@ -69,20 +75,21 @@ jobs:
           echo "🧠 **ADHD-Friendly Security Check Complete**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          if [ "${{ needs.security-review.result }}" == "success" ]; then
-            echo "✅ **Great news!** Your code changes look secure." >> $GITHUB_STEP_SUMMARY
+          if [ "${PROVIDER_OUTCOME}" == "success" ]; then
+            echo "✅ **Security provider completed successfully.**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "**What this means:**" >> $GITHUB_STEP_SUMMARY
-            echo "- No high-severity security issues detected" >> $GITHUB_STEP_SUMMARY
-            echo "- Memory system components are safe" >> $GITHUB_STEP_SUMMARY
-            echo "- Ready for merge when tests pass!" >> $GITHUB_STEP_SUMMARY
-          elif [ "${{ needs.security-review.result }}" == "skipped" ]; then
-            echo "⏭️ **Security review skipped** (API key missing or not required)" >> $GITHUB_STEP_SUMMARY
+            echo "- Review output is available in workflow artifacts" >> $GITHUB_STEP_SUMMARY
+            echo "- This result grants no merge or readiness authority" >> $GITHUB_STEP_SUMMARY
+          elif [ "${PROVIDER_OUTCOME}" == "skipped" ] || [ -z "${PROVIDER_OUTCOME}" ]; then
+            echo "⏭️ **Security provider was not invoked.**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "No security verdict was produced; explicit spend authority and credentials are required." >> $GITHUB_STEP_SUMMARY
           else
             echo "⚠️ **Security items need attention**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "**Next steps:**" >> $GITHUB_STEP_SUMMARY
-            echo "1. Check the detailed findings in the PR comments above" >> $GITHUB_STEP_SUMMARY
+            echo "1. Check the detailed findings in the uploaded results" >> $GITHUB_STEP_SUMMARY
             echo "2. Address high-priority items first (marked 🔴)" >> $GITHUB_STEP_SUMMARY
             echo "3. Ask for help if anything is unclear" >> $GITHUB_STEP_SUMMARY
           fi
