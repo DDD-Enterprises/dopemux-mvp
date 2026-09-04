@@ -2,16 +2,16 @@
 
 Audit ID: TP-DMX-DCP-P0-PR1283-REPAIR-001-FINAL-L2
 
-Auditor: GitHub Copilot CLI 1.0.81-9, model claude-sonnet-4.6.
+Auditor: AGY / Gemini 3.1 Pro High / Google
 Billing: PLAN_BACKED; included usage availability proven before invocation.
-Session: c990b248-d4c2-4947-9fcd-95c72b19d1db.
+Session: d8d91544-4731-49d4-b770-8fd8a05f223c.
 
 ## SUBJECT_IDENTITY
 
 | Check | Expected | Observed | Status |
 | --- | --- | --- | --- |
-| HEAD | a414d5d2b08a707b8722608cd56a0c60115aee20 | same | PASS |
-| Tree | 479e382d71f6f304e7578abb65143024ebe357a3 | same | PASS |
+| HEAD | bc7d96d539dac82c23caf67850742196dcc550c5 | same | PASS |
+| Tree | 7265628f75fab25cbb5362e498f9b13c186d07e0 | same | PASS |
 | Repair parent | b68d8e5faa316a2fdf70b5cecb8a0af6c8202d7e | same | PASS |
 | Main base | c7bc2fb479d7386825df73e028acdce723ee3388 | same, ancestor | PASS |
 | Content delta | 10 authorized paths | 10 authorized paths | PASS |

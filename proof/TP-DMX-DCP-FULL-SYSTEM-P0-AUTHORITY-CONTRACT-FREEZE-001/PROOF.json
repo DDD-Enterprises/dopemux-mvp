@@ -5,9 +5,9 @@
   "branch": "tp/DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001",
   "base_sha": "c7bc2fb479d7386825df73e028acdce723ee3388",
   "repair_parent_sha": "b68d8e5faa316a2fdf70b5cecb8a0af6c8202d7e",
-  "head_sha": "a414d5d2b08a707b8722608cd56a0c60115aee20",
-  "content_head": "a414d5d2b08a707b8722608cd56a0c60115aee20",
-  "content_tree": "479e382d71f6f304e7578abb65143024ebe357a3",
+  "head_sha": "bc7d96d539dac82c23caf67850742196dcc550c5",
+  "content_head": "bc7d96d539dac82c23caf67850742196dcc550c5",
+  "content_tree": "7265628f75fab25cbb5362e498f9b13c186d07e0",
   "generated_at": "2026-08-28T01:25:06Z",
   "proof_kind": "canonical_repaired_content_audit",
   "packet_sha256": "27f4fb613942e84ea71bcb7c3d7ad2ad66388645d51546d5ce83664281eb4f8a",
@@ -25,15 +25,15 @@
     "controlling_audit_session": "c990b248-d4c2-4947-9fcd-95c72b19d1db"
   },
   "auditor_identity": {
-    "runner": "copilot-cli",
+    "runner": "agy",
     "runner_version": "1.0.81-9",
-    "requested_model": "claude-sonnet-4.6",
-    "configured_model": "claude-sonnet-4.6",
-    "provider_family": "Anthropic",
+    "requested_model": "Gemini 3.1 Pro High",
+    "configured_model": "Gemini 3.1 Pro High",
+    "provider_family": "Google",
     "billing_mode": "PLAN_BACKED",
     "usage_availability": "PROVEN",
-    "independence": "PROVEN_ANTHROPIC_AUDITOR_VS_OPENAI_IMPLEMENTER",
-    "session_id": "c990b248-d4c2-4947-9fcd-95c72b19d1db"
+    "independence": "PROVEN_GOOGLE_AUDITOR_VS_OPENAI_IMPLEMENTER",
+    "session_id": "d8d91544-4731-49d4-b770-8fd8a05f223c"
   },
   "validation_summary": {
     "known_before_proof_generation": {
@@ -73,9 +73,9 @@
   "embedded_audit": {
     "required": true,
     "status": "PASS_WITH_RISKS",
-    "auditor_tool": "copilot-cli",
-    "auditor_model": "claude-sonnet-4.6",
-    "invocation": "COPILOT_HOME=/private/tmp/copilot-wave0-audit-home copilot --mode plan --model claude-sonnet-4.6 --effort high --max-ai-credits 300 --disable-builtin-mcps --disable-mcp-server github-mcp-server --excluded-tools=github-mcp-server --deny-tool=github-mcp-server --deny-tool=write --deny-url=https://github.com --deny-url=https://api.github.com --no-custom-instructions --no-remote --no-remote-export --no-auto-update",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "Antigravity CLI / d8d91544-4731-49d4-b770-8fd8a05f223c",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001/AUDITOR_REPORT.md",
     "findings": [

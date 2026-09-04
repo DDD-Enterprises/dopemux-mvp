@@ -1,8 +1,8 @@
 {
   "receipt_kind": "post_generation_proof_finality",
   "generated_at": "2026-08-28T01:25:06Z",
-  "audited_content_head": "a414d5d2b08a707b8722608cd56a0c60115aee20",
-  "audited_content_tree": "479e382d71f6f304e7578abb65143024ebe357a3",
+  "audited_content_head": "bc7d96d539dac82c23caf67850742196dcc550c5",
+  "audited_content_tree": "7265628f75fab25cbb5362e498f9b13c186d07e0",
   "canonical_proof": {
     "path": "proof/TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001/PROOF.json",
     "sha256": "0f5e57f6794bc438c2a1b058f454ce07642a9ed799faa289832210a432109605",
