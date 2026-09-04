@@ -1,5 +1,5 @@
-VALIDATION EVIDENCE — P0-R1 content head 4e72a976eec6be3e990b519cacfbaa95088d1a9f
-generated: 2026-09-04T04:53:14Z
+VALIDATION EVIDENCE — P0-R1 content head 2e31726c1467770030d1fcb7358e5d7295e09b7b (post-fix re-audit)
+generated: 2026-09-04T05:12Z
 
 == 1. topology full-file SHA256 (target df8636983e23c273eeb8eb517ea4019653b4c6bcb50cae344cde2e847214d4c2) ==
 df8636983e23c273eeb8eb517ea4019653b4c6bcb50cae344cde2e847214d4c2  docs/03-reference/mcp/multiproject-service-topology.json
@@ -7,18 +7,22 @@ df8636983e23c273eeb8eb517ea4019653b4c6bcb50cae344cde2e847214d4c2  docs/03-refere
 == 2. falsification post-frontmatter payload SHA256 (target 84b6e68f929e5b3f3ad37e9c2843755cc38a3a119fc87b5af057505d8ed83bcb) ==
 84b6e68f929e5b3f3ad37e9c2843755cc38a3a119fc87b5af057505d8ed83bcb
 
-== 3. focused test suite ==
+== 3. focused test suite (post-import-relocation) ==
 ...................................................................      [100%]
-67 passed in 0.47s
+67 passed in 0.35s
 
-== 4. packet canonical-schema validation ==
-== 5. git diff --check ==
+== 4. re-audit delta (prior audited head 4e72a976e -> new content head 2e31726c1) ==
+Only tests/arch/test_mcp_multiproject_contracts.py: relocate `import subprocess` from
+mid-file (~line 427) to the module-top stdlib import group. Purely cosmetic import placement.
+
+== 5. packet canonical-schema validation ==
+== 6. git diff --check ==
 unstaged diff-check clean
 staged diff-check clean
 
-== 6. packet json parse ==
+== 7. packet json parse ==
 json.tool OK
-== 7. packet root+step required fields ==
+== 8. packet root+step required fields ==
 root fields present: id project target repo_binding series commit pr steps
 every step has id/task/validation -> PASS
 steps: ['preflight', 'contract-spine', 'identity-schema', 'topology-and-catalog-v2', 'lease-and-ownership', 'runner-and-event-contracts', 'cross-contract-negative-gates', 'freeze-audit-finality']

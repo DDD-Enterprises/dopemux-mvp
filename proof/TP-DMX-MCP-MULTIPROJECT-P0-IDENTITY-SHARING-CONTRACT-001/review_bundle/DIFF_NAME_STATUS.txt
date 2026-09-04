@@ -3,6 +3,7 @@ A	docs/03-reference/mcp/multiproject-service-topology.json
 A	docs/90-adr/adr-dmx-mcp-multiproject-identity-sharing-contract-001.md
 A	proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/AUDITOR_REPORT.md
 A	proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/PROOF.json
+A	proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/PROOF.json.sig
 A	proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/implementation-notes.md
 A	proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/review_bundle/AUDIT_INPUT.md
 A	proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/review_bundle/AUDIT_INVOCATION.txt
@@ -10,6 +11,8 @@ A	proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/review_bundle/A
 A	proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/review_bundle/DIFF_NAME_STATUS.txt
 A	proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/review_bundle/HEAD.txt
 A	proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/review_bundle/VALIDATION.txt
+A	proof/pr_merge/embedded-audit/pr-1306/PROOF.json
+A	proof/pr_merge/embedded-audit/pr-1306/PROOF.json.sig
 A	schemas/mcp/fleet-catalog-v2.schema.json
 A	schemas/mcp/ownership-evidence.schema.json
 A	schemas/mcp/project-event-envelope.schema.json
