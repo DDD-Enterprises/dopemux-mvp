@@ -29,8 +29,22 @@ Profiles:
          different vector spaces.
 
 Guardrails:
-  - Refuses to run unless --corpus resolves to a path ending in
-    services/dope-context/src (never embeds anything else).
+  - Refuses to run unless --corpus resolves to either
+    services/dope-context/src (phase 1, the validation corpus) or the repo
+    root itself, identified by the presence of both
+    services/dope-context/src/ and pyproject.toml beneath it (phase 2,
+    whole-repo). Any other path is refused.
+  - Whole-repo mode additionally REQUIRES --file-list: a manifest of
+    relative .py paths (one per line), generated on the HOST with
+    ``git ls-files -z --cached --exclude-standard -- '*.py'`` (git ls-files
+    does not work inside this container for a linked worktree -- its
+    .git is a file with a host-path gitdir). Without --file-list a raw
+    rglob over the repo root would also embed .venv/, node_modules/, and
+    vendored docker build contexts, silently inflating cost.
+  - --project-only builds the corpus and prints projected token counts
+    and USD cost per requested profile using the Voyage client's local
+    (no-network) tokenizer, then exits 0 without making any embedding or
+    chat-completion API call. Always run this before a whole-repo spend.
   - Aborts a single profile (FAILED, not silently skipped) if its
     projected input tokens exceed MAX_INPUT_TOKENS_PER_PROFILE, checked
     BEFORE any embedding API call is made.
@@ -46,6 +60,13 @@ Usage (inside the mcp-dope-context container):
         --queries /path/to/eval/queries.jsonl \
         --profiles A,B,Bh,Bhl,CTRL \
         --json
+
+    python run_eval.py \
+        --corpus /path/to/repo/root \
+        --file-list /path/to/whole_repo_py_files.txt \
+        --queries /path/to/eval/queries.jsonl \
+        --profiles A,B,CTRL \
+        --project-only
 """
 from __future__ import annotations
 
@@ -66,7 +87,13 @@ from typing import Any, Dict, List, Optional, Tuple
 # Guardrails / constants
 # --------------------------------------------------------------------------
 
-MAX_INPUT_TOKENS_PER_PROFILE = 200_000
+# 200_000 covered only the phase-1 validation corpus (95,711 real tokens).
+# Phase 2 is the whole-repo Python corpus, measured at 6,888,067 tokens
+# with the real voyage-code-3 tokenizer (TP-DOPECONTEXT-VECTOR-SPACE-0004
+# budget table, 2026-07-26). 10M comfortably covers that plus Bh's header
+# inflation while still refusing the explicitly-forbidden
+# repo+docs/*.md corpus (~21M tokens).
+MAX_INPUT_TOKENS_PER_PROFILE = 10_000_000
 MAX_RETRIES = 3
 DEFAULT_TOP_K = 20
 VALID_PROFILES = ("A", "B", "Bh", "Bhl", "CTRL")
@@ -151,18 +178,42 @@ def is_whole_file_duplicate(chunk) -> bool:
     )
 
 
-def build_corpus(corpus_root: Path) -> List[ChunkRecord]:
-    if str(corpus_root) not in sys.path:
-        sys.path.insert(0, str(corpus_root))
+def build_corpus(
+    corpus_root: Path,
+    is_scoped_src: bool,
+    file_list: Optional[Path] = None,
+) -> List[ChunkRecord]:
+    # Import CodeChunker via this script's own known location, not
+    # corpus_root -- corpus_root is the repo root in whole-repo mode and
+    # does not contain the `preprocessing` package directly.
+    src_root = Path(__file__).resolve().parent.parent / "src"
+    if str(src_root) not in sys.path:
+        sys.path.insert(0, str(src_root))
     from preprocessing.code_chunker import CodeChunker  # type: ignore
 
     chunker = CodeChunker()
     records: List[ChunkRecord] = []
-    py_files = sorted(corpus_root.rglob("*.py"))
+    if file_list is not None:
+        rel_entries = [
+            line.strip()
+            for line in file_list.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        py_files = sorted(corpus_root / rel for rel in rel_entries)
+    else:
+        py_files = sorted(corpus_root.rglob("*.py"))
     for f in py_files:
-        chunks = chunker.chunk_file(f)
+        if not f.is_file():
+            print(f"  WARNING: skipping missing file {f}", file=sys.stderr)
+            continue
+        try:
+            chunks = chunker.chunk_file(f)
+        except Exception as exc:  # noqa: BLE001 - one bad file must not abort the corpus
+            print(f"  WARNING: skipping unparseable file {f}: {exc}", file=sys.stderr)
+            continue
         rel = f.relative_to(corpus_root)
-        rel_path = "src/" + str(rel).replace(os.sep, "/")
+        rel_str = str(rel).replace(os.sep, "/")
+        rel_path = ("src/" + rel_str) if is_scoped_src else rel_str
         for c in chunks:
             if is_whole_file_duplicate(c):
                 continue
@@ -217,6 +268,7 @@ def apply_llm_contexts(
     texts: List[str],
     file_text_cache: Dict[str, str],
     corpus_root: Path,
+    is_scoped_src: bool,
 ) -> Tuple[List[str], int, int]:
     """Prepend a 1-2 sentence LLM-generated situating context to each
     document text. The whole file is sent as a fixed leading user message,
@@ -244,7 +296,8 @@ def apply_llm_contexts(
 
     for file_key, recs in grouped.items():
         if file_key not in file_text_cache:
-            file_path = corpus_root / file_key[len("src/"):]
+            rel = file_key[len("src/"):] if is_scoped_src else file_key
+            file_path = corpus_root / rel
             try:
                 file_text_cache[file_key] = file_path.read_text(encoding="utf-8")
             except Exception:
@@ -492,6 +545,7 @@ def run_profile(
     cache: Dict[str, Any],
     top_k: int,
     corpus_root: Path,
+    is_scoped_src: bool,
 ) -> ProfileResult:
     result = ProfileResult(profile=profile)
 
@@ -540,7 +594,8 @@ def run_profile(
                 texts = [doc_text_scoped(r) for r in records]
             if profile == "Bhl":
                 texts, llm_in, llm_out = apply_llm_contexts(
-                    records, texts, cache.setdefault("file_text_cache", {}), corpus_root
+                    records, texts, cache.setdefault("file_text_cache", {}), corpus_root,
+                    is_scoped_src,
                 )
                 result.llm_tokens_in = llm_in
                 result.llm_tokens_out = llm_out
@@ -647,6 +702,65 @@ def run_profile(
 # --------------------------------------------------------------------------
 
 
+def project_costs(
+    records: List[ChunkRecord],
+    queries: List[Dict[str, Any]],
+    profiles: List[str],
+    voyage_client,
+) -> Dict[str, Any]:
+    """Local (no-network) token counts via the Voyage tokenizer, priced at
+    PRICE_PER_M. Makes zero embedding or chat-completion API calls."""
+    query_texts = [q["query"] for q in queries]
+    projections: Dict[str, Any] = {}
+    total_usd = 0.0
+    a_doc_tokens: Optional[int] = None
+
+    for p in profiles:
+        if p == "Bhl":
+            projections[p] = {
+                "doc_tokens": None,
+                "cost_usd": None,
+                "note": (
+                    "LLM situating-context cost cannot be projected here "
+                    "(no local tokenizer for gpt-5.6-luna in this harness). "
+                    "Run Bhl alone on a small corpus first and extrapolate "
+                    "llm_tokens_in/out linearly by chunk count before "
+                    "spending on a whole-repo Bhl run."
+                ),
+            }
+            continue
+        if p == "A":
+            if a_doc_tokens is None:
+                a_doc_tokens = voyage_client.count_tokens(
+                    [r.content for r in records], model="voyage-context-4"
+                )
+            doc_tokens = a_doc_tokens
+            doc_price = PRICE_PER_M["voyage-context-4"]
+            q_price = PRICE_PER_M["voyage-context-4"]
+        elif p == "CTRL":
+            doc_tokens = 0  # reuses A's already-computed embeddings
+            doc_price = 0.0
+            q_price = PRICE_PER_M["voyage-code-3"]
+        else:  # B, Bh
+            texts = [doc_text_plain(r) if p == "B" else doc_text_scoped(r) for r in records]
+            doc_tokens = voyage_client.count_tokens(texts, model="voyage-code-4")
+            doc_price = PRICE_PER_M["voyage-code-4"]
+            q_price = PRICE_PER_M["voyage-code-4"]
+        q_tokens = voyage_client.count_tokens(query_texts, model="voyage-code-3")
+        doc_cost = (doc_tokens / 1_000_000) * doc_price
+        query_cost = (q_tokens / 1_000_000) * q_price
+        cost = round(doc_cost + query_cost, 6)
+        projections[p] = {
+            "doc_tokens": doc_tokens,
+            "query_tokens": q_tokens,
+            "cost_usd": cost,
+        }
+        total_usd += cost
+
+    projections["_total_usd_excl_bhl"] = round(total_usd, 6)
+    return projections
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Wave 0 offline retrieval eval harness for dope-context")
     parser.add_argument("--corpus", required=True, type=Path)
@@ -654,15 +768,39 @@ def main() -> int:
     parser.add_argument("--profiles", default="A,B,Bh,Bhl", help="Comma-separated: A,B,Bh,Bhl,CTRL")
     parser.add_argument("--top-k", type=int, default=DEFAULT_TOP_K)
     parser.add_argument("--qdrant-url", default="http://mcp-qdrant:6333")
+    parser.add_argument(
+        "--file-list", type=Path, default=None,
+        help="Manifest of relative .py paths (one per line); required when --corpus is a whole-repo root",
+    )
+    parser.add_argument(
+        "--project-only", action="store_true",
+        help="Build the corpus and print projected token/cost estimates; make no embedding/chat API calls",
+    )
     parser.add_argument("--json", action="store_true", help="accepted for CLI compatibility; output is always JSON")
     args = parser.parse_args()
 
     corpus_root = args.corpus.resolve()
     normalized = str(corpus_root).replace(os.sep, "/")
-    if not normalized.endswith("services/dope-context/src"):
+    is_scoped_src = normalized.endswith("services/dope-context/src")
+    is_whole_repo = (
+        (corpus_root / "services" / "dope-context" / "src").is_dir()
+        and (corpus_root / "pyproject.toml").is_file()
+    )
+    if not (is_scoped_src or is_whole_repo):
         print(
-            f"REFUSING: corpus root {corpus_root} does not end with "
-            "services/dope-context/src -- refusing to embed anything outside it",
+            f"REFUSING: corpus root {corpus_root} is neither "
+            "services/dope-context/src nor a repo root (missing "
+            "services/dope-context/src/ or pyproject.toml beneath it) "
+            "-- refusing to embed anything outside those two shapes",
+            file=sys.stderr,
+        )
+        return 2
+    if is_whole_repo and args.file_list is None:
+        print(
+            "REFUSING: whole-repo corpus root requires --file-list (a "
+            "git ls-files manifest of relative .py paths) -- an "
+            "unrestricted walk would also embed .venv/, node_modules/, "
+            "and vendored docker build contexts",
             file=sys.stderr,
         )
         return 2
@@ -681,12 +819,19 @@ def main() -> int:
                 queries.append(json.loads(line))
 
     print(f"Building corpus from {corpus_root} ...", file=sys.stderr)
-    records = build_corpus(corpus_root)
+    records = build_corpus(corpus_root, is_scoped_src, args.file_list)
     print(f"  {len(records)} chunks across "
           f"{len({r.rel_path for r in records})} files", file=sys.stderr)
 
-    openai_key_present = bool(os.environ.get("OPENAI_API_KEY"))
     voyage_client = get_voyage_client()
+
+    if args.project_only:
+        print("PROJECTION MODE -- no embedding or chat-completion API calls will be made.", file=sys.stderr)
+        projections = project_costs(records, queries, profiles, voyage_client)
+        print(json.dumps(projections, indent=2))
+        return 0
+
+    openai_key_present = bool(os.environ.get("OPENAI_API_KEY"))
 
     cache: Dict[str, Any] = {}
     profile_results: Dict[str, ProfileResult] = {}
@@ -694,7 +839,7 @@ def main() -> int:
         print(f"Running profile {p} ...", file=sys.stderr)
         profile_results[p] = run_profile(
             p, records, queries, voyage_client, args.qdrant_url,
-            openai_key_present, cache, args.top_k, corpus_root,
+            openai_key_present, cache, args.top_k, corpus_root, is_scoped_src,
         )
         print(f"  {p}: {profile_results[p].status}", file=sys.stderr)
 
