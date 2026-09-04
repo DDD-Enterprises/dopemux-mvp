@@ -149,14 +149,21 @@ Files: `src/utils/model_tokenizer.py`, `src/utils/token_budget.py`.
 - **E2/E4.** `token_budget.py:35-36` declares `budget_starvation` and
   `degraded_guarantee_applied` and never assigns either anywhere in the file.
   Done means: both are actually set on the paths they are meant to signal.
-- **E17.** `token_budget.py:49` uses
-  `ceil(len(text.encode("utf-8")) / 3)` as a token-count estimate. The honest
-  limit here: the payload carries no `tokens` field until the CHUNKING wave
-  populates one, so this half is prefer-payload plumbing with a labelled
-  fallback, and it is inert — unobservable as an improvement — until that
-  wave lands. An implementer may reasonably defer E17 wholesale to the
-  CHUNKING wave; that is a legitimate outcome here, not a failure of this
-  packet.
+- **E17.** `token_budget.py:49` estimates tokens as the larger of
+  `ceil(len(text.encode("utf-8")) / 3)` and a lexical count, rather than
+  reading a real count. The limit here is **asymmetric, not total**:
+  - **Docs payloads already carry a real Voyage token count.**
+    `docs_pipeline.py:208` writes `token_count` into the point payload,
+    sourced from `document_processor.py:507,541`. E17 is therefore a real,
+    testable Wave 1 improvement on the `docs_search` budgeting path today.
+  - **Code payloads carry no token key at all.** `indexing_pipeline.py`
+    writes none, so that half is prefer-payload plumbing which stays inert
+    until the CHUNKING wave writes an equivalent key.
+
+  Done means: `token_budget` prefers a payload-supplied count where one
+  exists and falls back to the labelled heuristic where it does not.
+  Deferring the code half to CHUNKING is legitimate; deferring both would
+  give up an improvement that is available now.
 
 ## Scope — Wave 1c (needs ADR-226 A5b; severable)
 

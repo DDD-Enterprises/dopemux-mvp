@@ -832,7 +832,8 @@ SPLIT=A5a (test file + two leaf utilities) / A5b (two Voyage client modules) —
 A5a_ADDS_EXEMPTIONS=services/dope-context/tests/test_wave1_behaviour.py, services/dope-context/src/utils/model_tokenizer.py, services/dope-context/src/utils/token_budget.py
 A5b_ADDS_EXEMPTIONS=services/dope-context/src/embeddings/contextualized_embedder.py, services/dope-context/src/rerank/voyage_reranker.py
 AUTHORIZES_CONTENT_EDITS=NO (path-level only; TEXT_RULES scanning unchanged)
-WAVES_2_6_SRC_LIFT=STILL_NOT_AUTHORIZED
+WAVES_2_6_SRC_LIFT=STILL_NOT_AUTHORIZED (A5 exempts five named files; no
+  directory pattern and no Wave 1 src/ pattern is lifted)
 ```
 
 ### Why this amendment is smaller than expected
@@ -891,11 +892,17 @@ repair) expires then evicts oldest-first against `max_cache_entries`.
 E2/E4/E17. `budget_starvation` and `degraded_guarantee_applied` are
 declared at `:35-36` and **never assigned anywhere in the file** — dead
 flags that make a degraded response indistinguishable from a healthy one.
-E17: `:49` estimates tokens as
-`ceil(len(text.encode("utf-8")) / 3)`. The honest limit: the payload
-carries no `tokens` field until the CHUNKING wave, so the Wave 1 half of
-E17 is prefer-payload plumbing plus a labelled fallback and is **inert
-until then**; an implementer may reasonably defer E17 wholesale.
+E17: `:49` estimates tokens as the larger of
+`ceil(len(text.encode("utf-8")) / 3)` and a lexical count. The honest
+limit is asymmetric, not total. **Docs** payloads already carry a real
+Voyage token count — `docs_pipeline.py:208` writes `token_count`, sourced
+from `document_processor.py:507,541` — so E17 is observable on
+`docs_search` today. **Code** payloads carry no token key at all;
+`indexing_pipeline.py` writes none. The docs half of E17 is therefore a
+real, testable Wave 1 improvement, and only the code half is
+prefer-payload plumbing that stays inert until the CHUNKING wave writes an
+equivalent key. Deferring the code half is reasonable; deferring both
+gives up an improvement that is available now.
 
 ### Why — A5b: `src/embeddings/contextualized_embedder.py` and `src/rerank/voyage_reranker.py`
 
@@ -909,6 +916,19 @@ happen to know about, not for the defect" reasoning A4 itself rejected.
 These changes alter retry and therefore **billing** behaviour against a
 live paid API — the same blast-radius class A4 flagged for the truncation
 flip — which is why they are severed into their own approval.
+
+**Disclosed, not incidental: A5b exhausts two directories.** With
+`contextualized_embedder.py` exempt, all three modules in
+`src/embeddings/` are exempt (`voyage_embedder.py` under A4,
+`model_registry.py` under A2); with `voyage_reranker.py` exempt, the sole
+module in `src/rerank/` is. That is a directory-level lift arrived at
+file-by-file — the shape ADR-226 Alternative A rejected as "far broader
+than the reviewed need". It is stated here rather than left for an auditor
+to find. Two properties keep it inside Alternative A's intent: no pattern
+is widened — every exemption remains an anchored single-file lookahead, so
+a file added to either directory tomorrow is hard-blocked on creation —
+and the directories are exhausted by coincidence of size, not by design.
+If either grows, the seam holds by default.
 
 `voyage_reranker.py` needs nothing else in Wave 1: E3 is already closed
 (`voyage_reranker.py:29-33,180,258` raises loudly per F-014 and
@@ -993,10 +1013,10 @@ the diff is reviewable before the lane opens:
   parameterized by a `max_cache_entries`-shaped limit.
 * `token_budget.py`: assign `budget_starvation` and
   `degraded_guarantee_applied` at every place a degraded/starved path is
-  taken, instead of leaving both declared-and-unset; wire a `tokens`
-  payload field as prefer-payload input to `estimate_tokens`, falling
-  back to the byte/lexical heuristic with a label when absent (E17 may be
-  deferred wholesale, per "Why — A5a file 3" above).
+  taken, instead of leaving both declared-and-unset; read the payload's
+  `token_count` where it exists (docs, today) in preference to estimating,
+  falling back to the byte/lexical heuristic with a label when absent
+  (code, until the CHUNKING wave) — see "Why — A5a file 3" above.
 * `contextualized_embedder.py`: add `max_retries` to the `AsyncClient`
   construction at `:109`, matching whatever retry policy A4's
   `voyage_embedder.py` fix establishes.

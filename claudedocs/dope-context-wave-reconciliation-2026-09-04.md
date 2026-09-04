@@ -164,6 +164,9 @@ contain the guard at all:
   `__pycache__`).
 * `.claude/settings.json` `PreToolUse` registers one hook, `check_energy.sh`, on matcher
   `thinkdeep|morph|batch_edit|refactor|deep_research` — which matches no file-writing tool.
+* No other settings layer supplies it either: `.claude/settings.local.json`,
+  `~/.claude/settings.json` and `~/.claude/settings.local.json` contain zero references to
+  `dcp_surface_guard`. The guard is unregistered at every layer, not merely missing from one.
 
 So a session rooted at the main checkout in its current state enforces **nothing** on
 `services/dope-context/**`. An Edit there is silently permitted. The handoff's rule "if the Edit
@@ -269,7 +272,7 @@ Every row verified against the file, not against the plan. Struck items are done
 | **E16 limiter sleeps in the lock** | `voyage_embedder.py:140-154` | **OPEN** — `await asyncio.sleep(wait_seconds)` is inside `async with self._rate_limit_lock`; TPM unlimited | |
 | **E10 unbounded tokenizer cache** | `model_tokenizer.py:57,111,122` | **OPEN** — plain `Dict`, no eviction, process-lifetime | blocked file |
 | **E2/E4 degraded flags never set** | `token_budget.py:35-36` | **OPEN** — `budget_starvation` / `degraded_guarantee_applied` are declared and never assigned anywhere | blocked file |
-| **E17 real token counts** | `token_budget.py:49` | **OPEN** — `ceil(len(utf-8)/3)`. *Note: the payload has no `tokens` field until Wave 2, so a Wave 1 fix is prefer-payload plumbing plus a labelled fallback, and is inert until Wave 2 populates it.* | blocked file |
+| **E17 real token counts** | `token_budget.py:49` | **OPEN** — `ceil(len(utf-8)/3)` maxed against a lexical count. *Asymmetric, not total: **docs** payloads already carry a real Voyage token count (`docs_pipeline.py:208` writes `token_count`, sourced from `document_processor.py:507,541`), so E17 is **observable on `docs_search` today**. **Code** payloads carry no token key at all — `indexing_pipeline.py` writes none — so only that half waits on the CHUNKING wave.* | blocked file |
 | **C1 exclude passthrough** | `server.py:981,1073` | **OPEN** — `:981` substitutes `["*test*","*__pycache__*"]`, *replacing* the dataclass default (`.venv`, `node_modules`, `.worktrees`, …); `:1073` passes the caller's `None` straight through | exempt file |
 | **C6 per-file 2.0 s sleep** | `indexing_pipeline.py:484` | **OPEN** | exempt file |
 | **C13 `filter_language`** | `server.py:1309-1310` | **OPEN** — writes `filter_by["language"]` while the payload stores the suffix. *Query-side canonicalisation is Wave 1; storing a canonical `language` in the payload is Wave 2.* | exempt file |
@@ -403,8 +406,9 @@ Carried forward from the handoff and packet 0004, unchanged and still open:
 | Any product code changed | **none** |
 | Any red-lane rule changed | **none** |
 
-Remaining uncertainty, stated: E17's Wave 1 scope is plumbing that cannot be observed until Wave 2
-populates a `tokens` payload field — an implementer may reasonably move it wholesale to Wave 2, and
-the packet says so rather than pretending the Wave 1 half is verifiable. C1's correct default set is
+Remaining uncertainty, stated: E17 is verifiable in Wave 1 on the **docs** path only, because
+`docs_pipeline.py:208` already writes a real `token_count` into the payload; the **code** half stays
+inert until the CHUNKING wave writes an equivalent key, and an implementer may reasonably defer that
+half. The packet says so rather than presenting E17 as uniformly verifiable. C1's correct default set is
 inferred from `indexing_pipeline.py:48`'s dataclass field; whether `server.py:981`'s `*test*`
 exclusion is *also* wanted is a product question the packet flags rather than answers.
