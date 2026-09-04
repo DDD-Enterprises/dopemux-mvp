@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/second_brain/knowledge_compiler_input.schema.json",
+  "title": "Second Brain Knowledge Compiler Input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "input_id", "project_id", "snapshots", "policy", "output_authority", "execution_authority"],
+  "properties": {
+    "schema_version": {"const": "sb-knowledge-compiler-input.v0"},
+    "input_id": {"type": "string", "minLength": 1},
+    "project_id": {"type": "string", "minLength": 1},
+    "snapshots": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_system", "revision", "digest", "authority_label", "dereferenced"],
+        "properties": {
+          "source_system": {"type": "string", "minLength": 1},
+          "revision": {"type": "string", "minLength": 1},
+          "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+          "authority_label": {"const": "CANONICAL"},
+          "dereferenced": {"const": true}
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authority_first", "provider_policy_state", "unknown_denies"],
+      "properties": {
+        "authority_first": {"const": true},
+        "provider_policy_state": {"enum": ["ELIGIBLE", "INELIGIBLE", "UNKNOWN"]},
+        "unknown_denies": {"const": true}
+      }
+    },
+    "output_authority": {"const": "DERIVED_NON_CANONICAL"},
+    "execution_authority": {"const": false}
+  }
+}

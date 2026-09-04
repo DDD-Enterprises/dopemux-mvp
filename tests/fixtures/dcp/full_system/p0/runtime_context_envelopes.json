@@ -1,0 +1,5 @@
+[
+  {"name": "accepted_v1", "base": "run_context_packet", "mutations": []},
+  {"name": "legacy_contract", "base": "run_context_packet", "mutations": [{"path": "contract_id", "value": "DCP_CONTEXT_ENVELOPE_LEGACY"}]},
+  {"name": "executable_contract", "base": "run_context_packet", "mutations": [{"path": "execution_authority", "value": true}]}
+]

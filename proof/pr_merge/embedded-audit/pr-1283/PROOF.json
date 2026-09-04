@@ -1,0 +1,67 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1283,
+  "head_sha": "bc7d96d539dac82c23caf67850742196dcc550c5",
+  "generated_at": "2026-08-28T01:45:45Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "Antigravity CLI / d8d91544-4731-49d4-b770-8fd8a05f223c",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "P0-F1",
+        "severity": "MEDIUM",
+        "title": "PREJUDGMENT_FAILED receipt requires complete mandatory evidence",
+        "status": "ACCEPTED_RISK",
+        "body": "Retained from prior audit. Resolve before runtime implementation."
+      },
+      {
+        "id": "P0-F2",
+        "severity": "LOW",
+        "title": "CompiledClaim lacks explicit execution_authority false field",
+        "status": "ACCEPTED_RISK",
+        "body": "Retained from prior audit. Align schema family before promotion."
+      },
+      {
+        "id": "P0-F3",
+        "severity": "INFO",
+        "title": "Historical forbidden-files sentinel uses stale anchor",
+        "status": "ACCEPTED_RISK",
+        "body": "Retained and reproduced unsuppressed: 446 tests pass and only the known sentinel fails."
+      },
+      {
+        "id": "P0-NF1",
+        "severity": "INFO",
+        "title": "Materialization receipt conditional omits defensive required result",
+        "status": "ACCEPTED_RISK",
+        "body": "Outer schema already requires result, so omission is unreachable and nonblocking."
+      },
+      {
+        "id": "P0-NF2",
+        "severity": "INFO",
+        "title": "FormatChecker factory recreates its checker per validator",
+        "status": "ACCEPTED_RISK",
+        "body": "Functionally correct, deterministic, and nonblocking."
+      }
+    ],
+    "fixes_applied": [
+      "P0-R1 mandatory evidence reference integrity and coverage",
+      "P0-R2 SATISFIED exact auditor identity equality",
+      "P0-R3 Draft 7 RFC3339 format enforcement",
+      "P0-R4 PURGED implies purge_propagated true"
+    ],
+    "remaining_risks": [
+      "P0-F1 must be resolved before runtime implementation.",
+      "P0-F2 should be aligned before schema-family promotion.",
+      "P0-F3 historical stale sentinel remains red and unsuppressed.",
+      "P0-NF1 and P0-NF2 are nonblocking hygiene observations.",
+      "All P0 contracts remain design-only; runtime producer and consumer validation is NOT_RUN.",
+      "Copilot startup updated a tracked session-probe cache; exact committed bytes were restored before proof generation and content HEAD/tree remained unchanged."
+    ],
+    "skip_reason": null
+  }
+}

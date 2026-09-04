@@ -153,6 +153,10 @@ A packet is superseded by another packet
 | TP-DMX-ORCH-AUDIT-FIX-001 | Task Orchestrator | Close DMX-ORCH integration audit gaps | Active | N/A |
 | DMX-DCP-MODEL-ROUTING-MVP-0006 | DCP / Model Routing | Classifier provenance hardening for trust-lowering signals | Active | N/A |
 | DMX-DCP-MODEL-ROUTING-MVP-0007 | DCP / Model Routing | Trusted input-provenance contract for execution eligibility | Active | N/A |
+| TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001 | DCP / Full System | Freeze DCP full-system authority and contracts | Active | docs/90-adr/adr-dcp-full-system-v1-authority-and-contract-freeze.md |
+| TP-DMX-DCP-P0-PR1283-REPAIR-001 | DCP / Full System | Repair PR #1283 P0 contract review findings in place | Active | TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001 |
+| TP-DMX-DCP-P0-PR1283-REPAIR-002 | DCP / Full System | Repair PR #1283 P0 cross-object authority validation in place | Active | TP-DMX-DCP-P0-PR1283-REPAIR-001 |
+| TP-DMX-DCP-P0-PR1283-CROSS-AUTHORITY-CLOSURE-001 | DCP / Full System | Close PR #1283 cross-authority contract relationships | Active | TP-DMX-DCP-P0-PR1283-REPAIR-002 |
 | TP-DCP-MCP-RO-0002 | DCP / MCP | Architecture Doc And Multi Project Contract | Active | N/A |
 | TP-DCP-MCP-RO-0003 | DCP / MCP | Inspect Dopemux Init Registry Contract | Active | N/A |
 | TP-DCP-MCP-RO-0004 | DCP / MCP | Facade Scaffold Registry Resolver Repo Proof Tools | Active | N/A |

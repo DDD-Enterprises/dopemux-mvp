@@ -1,0 +1,78 @@
+{
+  "id": "TP-DMX-DCP-P0-PR1283-REPAIR-002",
+  "project": "dopemux-mvp",
+  "target": "Close PR #1283 P0 cross-object ContextPlan and AuditRequest authority validation gaps in place",
+  "invariants": [
+    "PARENT_PR=1283; STARTING_HEAD=b939d0a563fe77b04c87f1bd7ea262e52e772dc8; RISK_LANE=L2_MATERIAL.",
+    "One bounded implementer; no nested subagents; no runtime producer or consumer change.",
+    "READY resolves plan_ref to the exact ContextPlan and fails closed for absent, mismatched, substituted, duplicate, or misdirected mandatory evidence.",
+    "SATISFIED resolves request_ref to the exact AuditRequest and rejects uniform identity substitution across all result layers.",
+    "Manifest registration is mechanical and limited to P0-controlled contracts; historical stale sentinel remains unchanged.",
+    "No final independent audit, security-release, mark-ready, merge, activation, provider call, credential mutation, PAL clink, or workflow change is authorized.",
+    "Before final audit, obtain bounded early Codex and Copilot review or record BLOCKED_REVIEW_CAPACITY; final audit waits for controller coordination.",
+    "Fresh content invalidates prior security approval; security refresh occurs only after final proof/finality review."
+  ],
+  "depends_on": ["TP-DMX-DCP-P0-PR1283-REPAIR-001"],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-FULL-SYSTEM-IMPLEMENTATION-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-DCP-P0-PR1283-REPAIR-001",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "tp/DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001",
+    "base_branch": "main",
+    "stacked_because": "Operator authorized bounded in-place repair on existing PR #1283 branch."
+  },
+  "commit": {
+    "message": "fix(dcp): enforce P0 cross-object authority contracts",
+    "allowlist": [
+      "schemas/dcp/run_context_packet.schema.json",
+      "schemas/dcp/context_plan.schema.json",
+      "schemas/dcp/manifest.json",
+      "schemas/dcp/README.md",
+      "schemas/audit_broker/audit_request.schema.json",
+      "schemas/audit_broker/audit_result.schema.json",
+      "schemas/second_brain/materialization_receipt.schema.json",
+      "scripts/governance/validate_dcp_p0_contract_semantics.py",
+      "tests/contracts/test_dcp_full_system_p0_contracts.py",
+      "tests/fixtures/dcp/full_system/p0/adversarial_contracts.json",
+      "tests/fixtures/dcp/full_system/p0/positive_contracts.json",
+      "tests/fixtures/dcp/full_system/p0/runtime_context_envelopes.json",
+      "task-packets/TP-DMX-DCP-P0-PR1283-REPAIR-001.json",
+      "task-packets/TP-DMX-DCP-P0-PR1283-REPAIR-002.json",
+      "task-packets/INDEX.md",
+      "proof/TP-DMX-DCP-P0-PR1283-REPAIR-001/**",
+      "proof/TP-DMX-DCP-P0-PR1283-REPAIR-002/**",
+      "proof/TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001/**",
+      "proof/pr_merge/embedded-audit/pr-1283/**"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-DCP-P0-PR1283-REPAIR-002.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python3 -m pytest -q tests/contracts/test_dcp_full_system_p0_contracts.py",
+      "python3 scripts/governance/validate_dcp_p0_contract_semantics.py --fixtures tests/fixtures/dcp/full_system/p0/positive_contracts.json",
+      "python3 -m pytest -q tests/unit/dcp tests/dcp",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "pre-commit run --from-ref origin/main --to-ref HEAD",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "DCP full-system P0 authority and contract freeze",
+    "body": "In-place PR #1283 R2 repair for ContextPlan and AuditRequest cross-object authority validation. Stop before final independent audit, security release, readiness, merge, and activation.",
+    "base": "main"
+  },
+  "steps": [
+    {"id": "R2-0", "task": "Trace existing semantic validator, schemas, fixtures, callers, manifest, and live PR threads before mutation.", "validation": ["Observed/inferred/unknown authority trace recorded."]},
+    {"id": "R2-1", "task": "Add two hand-derived adversarial regressions and capture RED evidence before production semantic validation changes.", "validation": ["Self-consistent wrong-plan READY and uniform substituted SATISFIED each currently pass and fail the intended new assertion."]},
+    {"id": "R2-2", "task": "Implement minimal deterministic cross-object resolver validation and mechanical P0 manifest registration.", "validation": ["Referenced plan/request identity and required evidence are enforced fail-closed."]},
+    {"id": "R2-3", "task": "Run deterministic gates, commit and push in place, request bounded early Codex and Copilot review, then process only in-scope feedback.", "validation": ["Push/readback and review receipts recorded; no final audit, readiness, merge, or activation occurs."]}
+  ]
+}

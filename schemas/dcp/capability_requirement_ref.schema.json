@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/dcp/capability_requirement_ref.schema.json",
+  "title": "DCP Capability Requirement Reference",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "requirement_id",
+    "capability",
+    "requested_identity",
+    "substitution_allowed",
+    "evidence_policy",
+    "state",
+    "execution_authority"
+  ],
+  "properties": {
+    "schema_version": {"const": "dcp-capability-requirement-ref.v0"},
+    "requirement_id": {"type": "string", "minLength": 1},
+    "capability": {"type": "string", "minLength": 1},
+    "requested_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "model"],
+      "properties": {
+        "provider": {"type": "string", "minLength": 1},
+        "model": {"type": "string", "minLength": 1}
+      }
+    },
+    "substitution_allowed": {"const": false},
+    "evidence_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minimum_evidence_refs", "freshness", "required_identity_layers"],
+      "properties": {
+        "minimum_evidence_refs": {"type": "integer", "minimum": 1},
+        "freshness": {"const": "CURRENT"},
+        "required_identity_layers": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["requested", "configured", "response_claimed", "proxy_reported", "provider_attested"]
+          },
+          "allOf": [
+            {"contains": {"const": "requested"}},
+            {"contains": {"const": "configured"}},
+            {"contains": {"const": "response_claimed"}},
+            {"contains": {"const": "proxy_reported"}},
+            {"contains": {"const": "provider_attested"}}
+          ]
+        }
+      }
+    },
+    "state": {"const": "REQUIREMENT_ONLY"},
+    "execution_authority": {"const": false}
+  }
+}

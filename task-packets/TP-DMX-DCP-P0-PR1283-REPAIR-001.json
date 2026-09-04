@@ -1,0 +1,133 @@
+{
+  "id": "TP-DMX-DCP-P0-PR1283-REPAIR-001",
+  "project": "dopemux-mvp",
+  "target": "Repair PR #1283 P0 contract correctness findings in place and regenerate exact-head finality evidence",
+  "invariants": [
+    "PARENT_PR=1283; STARTING_PR_HEAD=b68d8e5faa316a2fdf70b5cecb8a0af6c8202d7e; BASE_MAIN=c7bc2fb479d7386825df73e028acdce723ee3388.",
+    "RISK_LANE=L2_MATERIAL; one primary implementer; nested subagents are forbidden.",
+    "Repair only P0-R1 mandatory-evidence reference integrity, P0-R2 exact auditor identity, P0-R3 Draft 7 date-time enforcement, and P0-R4 PURGED propagation semantics.",
+    "No runtime producer or consumer implementation is authorized.",
+    "JSON Schema remains the structural contract; cross-object reference and dynamic sibling-identity equality constraints use one bounded deterministic P0 semantic validator only where Draft 7 cannot express them truthfully.",
+    "READY requires every mandatory-evidence binding to resolve to one mandatory context item with the same reference; dangling, unrelated, incomplete, or truncated bindings fail closed.",
+    "SATISFIED requires requested, configured, response_claimed, proxy_reported, and provider_attested identities to be OBSERVED and exactly equal; missing identity remains UNKNOWN rather than inferred.",
+    "Draft 7 validation uses jsonschema.FormatChecker for consequential P0 date-time fields.",
+    "PURGED implies purge_propagated=true; incomplete purge uses a non-PURGED result.",
+    "The historical stale-anchor sentinel remains explicit and must not be repaired in this packet.",
+    "Prior audit, proof, CI, security-release approval, and PR Steward receipts are lineage only after substantive bytes change.",
+    "Freeze one repaired substantive head before exactly one independent final L2 audit.",
+    "Audit routing is PLAN_BACKED_FIRST. API-metered audit spend and PAL clink spend are not authorized. Before audit, record runner, model selector, billing mode, usage availability, independence, and subject access without model spend.",
+    "If no sufficient plan-backed independent L2 auditor is available, stop with BLOCKED_AUDITOR_CAPACITY and list API fallback candidates without invoking them.",
+    "Do not silently change runner, model, billing mode, or provenance; do not shop auditors after a substantive FAIL or NEEDS_SUPERVISOR verdict.",
+    "After content changes, PR #1283 requires fresh canonical proof, exact-head PR proof, CI, security-release approval, and PR Steward evidence.",
+    "No merge, activation, mark-ready transition, force-push, history rewrite, or replacement PR is authorized."
+  ],
+  "depends_on": [
+    "TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DCP-FULL-SYSTEM-IMPLEMENTATION-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "tp/DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001",
+    "base_branch": "main",
+    "stacked_because": "Operator authorized bounded in-place repair on existing open PR #1283 branch; replacement PR is forbidden."
+  },
+  "commit": {
+    "message": "fix(dcp): close P0 contract review gaps",
+    "allowlist": [
+      "schemas/dcp/run_context_packet.schema.json",
+      "schemas/dcp/README.md",
+      "schemas/audit_broker/audit_result.schema.json",
+      "schemas/second_brain/materialization_receipt.schema.json",
+      "tests/contracts/test_dcp_full_system_p0_contracts.py",
+      "tests/fixtures/dcp/full_system/p0/adversarial_contracts.json",
+      "tests/fixtures/dcp/full_system/p0/positive_contracts.json",
+      "tests/fixtures/dcp/full_system/p0/runtime_context_envelopes.json",
+      "scripts/governance/validate_dcp_p0_contract_semantics.py",
+      "task-packets/TP-DMX-DCP-P0-PR1283-REPAIR-001.json",
+      "task-packets/INDEX.md",
+      "proof/TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001/**",
+      "proof/pr_merge/embedded-audit/pr-1283/**"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-DCP-P0-PR1283-REPAIR-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python3 -m pytest -q tests/contracts/test_dcp_full_system_p0_contracts.py",
+      "python3 scripts/governance/validate_dcp_p0_contract_semantics.py --fixtures tests/fixtures/dcp/full_system/p0/positive_contracts.json",
+      "python3 -m pytest -q tests/unit/dcp tests/dcp",
+      "python3 scripts/docs_validator.py schemas/dcp/README.md",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "pre-commit run --from-ref origin/main --to-ref HEAD",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "DCP full-system P0 authority and contract freeze",
+    "body": "In-place PR #1283 repair for P0-R1 through P0-R4. Preserves DESIGN_ONLY scope and stale historical sentinel. Requires fresh content audit, proof, exact-head CI, security-release approval, and PR Steward evidence before operator merge adjudication.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "R0",
+      "task": "Reharvest PR #1283 head, origin/main, worktree identity, all live review threads, and current proof/security/steward lineage before mutation.",
+      "validation": [
+        "Remote PR head and local branch equal b68d8e5faa316a2fdf70b5cecb8a0af6c8202d7e or any drift is classified.",
+        "All five live threads are grouped into P0-R1 through P0-R4.",
+        "No foreign substantive drift exists."
+      ]
+    },
+    {
+      "id": "R1",
+      "task": "Add focused positive and adversarial regressions for dangling mandatory evidence, mismatched SATISFIED identities, malformed date-times, and false PURGED propagation, then observe expected RED failures.",
+      "validation": [
+        "Each regression fails for the intended missing enforcement before production contract changes.",
+        "Tests exercise real schema plus semantic validation behavior."
+      ]
+    },
+    {
+      "id": "R2",
+      "task": "Implement minimal structural and bounded semantic contract repairs without runtime producer or consumer changes.",
+      "validation": [
+        "JSON_SCHEMA + P0_SEMANTIC_VALIDATION is explicit and deterministic.",
+        "P0-R1 through P0-R4 regressions pass.",
+        "Missing evidence and identity remain fail-closed or UNKNOWN."
+      ]
+    },
+    {
+      "id": "R3",
+      "task": "Run focused, relevant DCP, documentation, packet-schema, changed-contract, pre-commit, diff, secret-scan, and allowlist gates; retain historical stale sentinel separately.",
+      "validation": [
+        "Every required gate is recorded PASS, FAIL, or NOT_RUN with exit code.",
+        "Changed paths remain inside this packet allowlist.",
+        "Historical sentinel is not suppressed or opportunistically repaired."
+      ]
+    },
+    {
+      "id": "R4",
+      "task": "Freeze substantive content; discover and run exactly one cheapest sufficient plan-backed independent final L2 audit, or stop without spend if none is available.",
+      "validation": [
+        "Audit route records runner, model selector, billing mode, usage availability, independence, and subject access.",
+        "Auditor explicitly verifies P0-R1 through P0-R4 and re-adjudicates retained P0 risks.",
+        "FAIL, NEEDS_SUPERVISOR, or no plan-backed capacity stops finalization."
+      ]
+    },
+    {
+      "id": "R5",
+      "task": "After acceptable audit, regenerate canonical and exact-head PR proof, sign, push fast-forward, obtain fresh CI, security-release approval, and PR Steward evidence, then close only objectively resolved review threads.",
+      "validation": [
+        "Final PR head has fresh proof, executable CI, security-release approval, and PR Steward evidence.",
+        "Thread replies cite repaired exact-head evidence.",
+        "Execution stops before merge and activation."
+      ]
+    }
+  ]
+}

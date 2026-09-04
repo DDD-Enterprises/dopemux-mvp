@@ -71,6 +71,23 @@
       "enforcement_side": "llm_advisory"
     },
     {
+      "contract_id": "DCP_CAPABILITY_REQUIREMENT_REF",
+      "schema_file": "schemas/dcp/capability_requirement_ref.schema.json",
+      "schema_version": "dcp-capability-requirement-ref.v0",
+      "contract_version": "0.1.0",
+      "validation_state": "DESIGN_ONLY",
+      "level": "L0",
+      "instance_files": [
+        "tests/fixtures/dcp/full_system/p0/positive_contracts.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
       "contract_id": "DCP_CHRONICLE_RECEIPT",
       "schema_file": "schemas/dcp/dcp_chronicle_receipt.schema.json",
       "schema_version": "dcp-chronicle-receipt.v0",
@@ -96,6 +113,23 @@
       "level": "L0",
       "instance_files": [
         "tests/dcp/fixtures/dcp_core_fixture.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
+      "contract_id": "DCP_CONTEXT_PLAN",
+      "schema_file": "schemas/dcp/context_plan.schema.json",
+      "schema_version": "dcp-context-plan.v0",
+      "contract_version": "0.1.0",
+      "validation_state": "DESIGN_ONLY",
+      "level": "L0",
+      "instance_files": [
+        "tests/fixtures/dcp/full_system/p0/positive_contracts.json"
       ],
       "runtime_producers": [],
       "runtime_consumers": [],
@@ -249,6 +283,24 @@
         "src/dopemux/dcp/red_lane_scanner.py",
         "src/dopemux/dcp/red_lane_taxonomy.py"
       ],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
+      "contract_id": "DCP_RUN_CONTEXT_PACKET",
+      "schema_file": "schemas/dcp/run_context_packet.schema.json",
+      "schema_version": "dcp-run-context-packet.v0",
+      "contract_version": "0.1.0",
+      "validation_state": "DESIGN_ONLY",
+      "level": "L0",
+      "instance_files": [
+        "tests/fixtures/dcp/full_system/p0/positive_contracts.json",
+        "tests/fixtures/dcp/full_system/p0/runtime_context_envelopes.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
       "ci_gates": [
         "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
       ],

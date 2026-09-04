@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/second_brain/materialization_receipt.schema.json",
+  "title": "Second Brain Materialization Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "receipt_id",
+    "input_ref",
+    "page_ref",
+    "input_digest",
+    "output_hash",
+    "result",
+    "purge_propagated",
+    "authority_label",
+    "write_back_performed"
+  ],
+  "properties": {
+    "schema_version": {"const": "sb-materialization-receipt.v0"},
+    "receipt_id": {"type": "string", "minLength": 1},
+    "input_ref": {"type": "string", "minLength": 1},
+    "page_ref": {"type": "string", "minLength": 1},
+    "input_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "output_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "result": {"enum": ["MATERIALIZED", "BLOCKED", "PURGED"]},
+    "purge_propagated": {"type": "boolean"},
+    "authority_label": {"const": "DERIVED_NON_CANONICAL"},
+    "write_back_performed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"result": {"const": "PURGED"}}},
+      "then": {"properties": {"purge_propagated": {"const": true}}}
+    }
+  ]
+}
