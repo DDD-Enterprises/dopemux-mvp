@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -423,8 +424,6 @@ def test_event_rejects_bad_payload_digest():
     event["payload_digest"] = "not-a-hex-digest"
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate(event, schema)
-
-import subprocess
 
 def test_service_topology_targets_and_eligibility():
     topology = json.loads((REPO_ROOT / "docs/03-reference/mcp/multiproject-service-topology.json").read_text())
