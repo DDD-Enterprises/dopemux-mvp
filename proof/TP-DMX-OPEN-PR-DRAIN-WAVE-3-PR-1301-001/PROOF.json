@@ -2,7 +2,7 @@
   "packet_id": "TP-DMX-OPEN-PR-DRAIN-WAVE-3-PR-1301-001",
   "status": "PASS",
   "risk_lane": "L2",
-  "head_sha": "8903c106d893d6cff7e1b99e2c3e4f0392c59ff7",
+  "head_sha": "f2a72c6168113052d960d029e5814513f8558101",
   "generated_at": "2026-09-04T12:59:00Z",
   "repo_identity": {
     "project_id": "dopemux-mvp",
@@ -17,8 +17,9 @@
     "branch": "fix/gov-proof-only-filename-policy-001",
     "base": "5900c27d3c38b515204bd5dc4baed8b5e14e2a8e",
     "base_note": "merge-base with origin/main at audit time; already contains packet_dir support",
-    "content_head": "8903c106d893d6cff7e1b99e2c3e4f0392c59ff7",
-    "final_head": "8903c106d893d6cff7e1b99e2c3e4f0392c59ff7"
+    "content_head": "f2a72c6168113052d960d029e5814513f8558101",
+    "final_head": "f2a72c6168113052d960d029e5814513f8558101",
+    "final_head_note": "head_sha/content_head/final_head are pinned to the true content commit (unchanged since the original PR head) rather than any individual proof-only successor commit, since this file cannot self-reference the commit that contains it. All commits after f2a72c616 (packet bundle, PR-level signed proof, and this fixes_applied/remaining_risks update) are proof-only successors under proof/TP-DMX-OPEN-PR-DRAIN-WAVE-3-PR-1301-001/** and proof/pr_merge/embedded-audit/pr-1301/**."
   },
   "background": "TP-DMX-OPEN-PR-DRAIN-MERGE-001 Wave 3 (§17). Widens the governance proof-only validator to accept implementation-notes.md at the packet root, without touching the pr_merge reserved namespace. GitHub PR: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1301",
   "files_changed": [
