@@ -1,3 +1,15 @@
+---
+id: 01_RATIFICATION_AUTHORITY_RECONCILIATION
+title: 01 Ratification Authority Reconciliation
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-09-03'
+last_review: '2026-09-03'
+next_review: '2026-12-02'
+prelude: 01 Ratification Authority Reconciliation (explanation) for dopemux documentation
+  and developer workflows.
+---
 # Ratification authority reconciliation
 
 ## Authority chronology

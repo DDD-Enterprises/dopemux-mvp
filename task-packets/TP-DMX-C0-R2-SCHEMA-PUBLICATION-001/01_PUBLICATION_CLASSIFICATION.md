@@ -1,3 +1,15 @@
+---
+id: 01_PUBLICATION_CLASSIFICATION
+title: 01 Publication Classification
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-09-03'
+last_review: '2026-09-03'
+next_review: '2026-12-02'
+prelude: 01 Publication Classification (explanation) for dopemux documentation and
+  developer workflows.
+---
 # Publication classification note
 
 This packet implements the reconciliation disposition:

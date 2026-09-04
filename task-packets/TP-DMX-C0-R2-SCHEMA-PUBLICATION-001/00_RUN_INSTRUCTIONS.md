@@ -1,3 +1,15 @@
+---
+id: 00_RUN_INSTRUCTIONS
+title: 00 Run Instructions
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-09-03'
+last_review: '2026-09-03'
+next_review: '2026-12-02'
+prelude: 00 Run Instructions (explanation) for dopemux documentation and developer
+  workflows.
+---
 # TP-DMX-C0-R2-SCHEMA-PUBLICATION-001 — Deterministic C0-R2 schema publication
 
 ## Current observed state at issuance

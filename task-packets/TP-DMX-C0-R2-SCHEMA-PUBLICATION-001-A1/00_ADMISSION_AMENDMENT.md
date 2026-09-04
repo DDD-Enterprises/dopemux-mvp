@@ -1,3 +1,15 @@
+---
+id: 00_ADMISSION_AMENDMENT
+title: 00 Admission Amendment
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-09-03'
+last_review: '2026-09-03'
+next_review: '2026-12-02'
+prelude: 00 Admission Amendment (explanation) for dopemux documentation and developer
+  workflows.
+---
 # TP-DMX-C0-R2-SCHEMA-PUBLICATION-001-A1 — Publication admission amendment
 
 ```text
