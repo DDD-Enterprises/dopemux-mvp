@@ -2,8 +2,8 @@
 
 ## Classification
 - **Risk Lane**: L0_DETERMINISTIC_PUBLICATION
-- **Model Audit**: NOT_REQUIRED (per Evidence Economy and packet rules for exact byte-identical publication)
-- **Status**: PASS
+- **Model Audit**: PASS_WITH_RISKS (opencode-cli / kimi-k3)
+- **Status**: PASS_WITH_RISKS
 
 ## Verification Summary
 - **Source C0-R2 Package**: `TP-UAG-C0-DCP-UAG-DOPETASK-AUTHORITY-INTERFACE-FREEZE-001-R2.zip` (SHA256: `a9d51a5b19170589cff38fee951fd611436e65711af4a8bbfcff4084ab884c19`)
@@ -14,8 +14,29 @@
 - **DCP Manifest**: Registered 10 contracts under `schemas/dcp/manifest.json` with `validation_state: DESIGN_ONLY`, `level: L0`, `enforcement_side: deterministic`.
 - **Validation**:
   - JSON Schema Draft-07 meta-validation: PASS (10/10)
-  - `$ref` closure: PASS (10/10)
-  - `tests/dcp/test_contracts_consistency.py`: PASS (11/11)
-  - `tests/contracts/test_dcp_full_system_p0_contracts.py`: PASS (115/115)
+  - `$ref` closure: PASS (167 external refs, 0 dangling)
+  - `tests/dcp/test_contracts_consistency.py`: PASS
+  - `tests/contracts/test_dcp_full_system_p0_contracts.py`: PASS (126/126)
   - C0-R2 suite `validate_c0_r2.py`: PASS (100%)
   - `git diff --check`: PASS
+
+## Independent Model Audit
+
+- **Tool**: opencode-cli (cheaper-inference/kimi-k3)
+- **Invocation**: `opencode run --model cheaper-inference/kimi-k3 --message <bounded audit prompt>` (read-only, no tools)
+- **Verdict**: PASS_WITH_RISKS
+
+### Findings
+
+| ID | Severity | Status | Body |
+|---|---|---|---|
+| F-01 | INFO | RESOLVED | Structural consistency holds across all 10 published schemas; ref counts, property naming, and stated purposes coherent; common_defs hub-and-spoke pattern verified. |
+| F-02 | LOW | ACCEPTED_RISK | governed_execution_receipt has highest ref count (33 external refs); consistent with receipt aggregating execution status/mutations/evidence; future ref growth warrants re-check for responsibility creep. |
+| F-03 | INFO | RESOLVED | DESIGN_ONLY/L0 registration consistent with ratification publication; all 10 schemas correctly registered for a publication event; no premature runtime enforcement claim. |
+| F-04 | LOW | ACCEPTED_RISK | macro_execution_authority_ref_v2 is the only versioned name among 10; v2 suffix implies v1 predecessor; v1 status is UNKNOWN; naming divergence is cosmetic and non-blocking. |
+
+### Remaining Risks
+
+1. All 10 published schemas remain design-only (DESIGN_ONLY/L0); runtime producer and consumer validation is NOT_RUN.
+2. governed_execution_receipt ref growth should be monitored in future schema-family reviews.
+3. macro_execution_authority_ref_v1 status remains UNKNOWN.

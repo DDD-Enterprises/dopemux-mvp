@@ -1,0 +1,49 @@
+You are an independent embedded auditor for the dopemux-mvp repository. Perform a bounded, read-only audit of the PR #1307 change set: a ratifier publication of 10 byte-identical C0-R2 DCP schemas plus a manifest update.
+
+DO NOT use any tools. Reason only over the evidence provided below. Do not attempt to read files, run commands, or access the filesystem. Produce your findings directly from the evidence.
+
+## Deterministic Pre-Checks (verified by scripts, not by you)
+- 10/10 published schemas: valid JSON, valid JSON-Schema Draft-07 documents
+- 167 external $ref links resolved across 10 schemas: 0 dangling references
+- All 10 published schemas registered in schemas/dcp/manifest.json as DESIGN_ONLY/L0
+- Manifest: 33 contracts, all with contract_id, schema_file, validation_state, level
+- All 10 schema_file values map correctly (e.g. "schemas/dcp/common_defs.schema.json")
+- Repo contract tests: tests/dcp/test_contracts_consistency.py + tests/contracts/test_dcp_full_system_p0_contracts.py → 126/126 PASS
+- git diff --check: clean
+
+## Schema File Summaries
+(common_defs.schema.json): common definitions schema — the base definitions imported by other schemas via $ref. 25 external refs, 24 local refs. Properties include type definitions, shared enums, common structures.
+
+(dcp_route_authorization.schema.json): DCP route authorization contract — governs transport authorization for DCP routes. 18 external refs. Properties include route identifiers, permission sets, authorization scopes.
+
+(dopetask_governed_execution_profile.schema.json): Dopetask governed execution profile — defines execution context and constraints for Dopetask runs. 5 external refs. Properties include execution lanes, timeout bounds, mutation permissions.
+
+(governed_execution_receipt.schema.json): Governed execution receipt — defines the receipt shape returned after governed execution. 33 external refs (highest ref count — aggregates multiple contract types). Properties include execution status, mutation results, evidence references.
+
+(macro_execution_authority_ref_v2.schema.json): Macro execution authority reference v2 — v2 authority binding for macro execution contexts. 22 external refs. Properties include authority identifiers, scope restrictions, delegation chains.
+
+(model_transport_receipt.schema.json): Model transport receipt — receipt shape for model-level transport operations. 26 external refs. Properties include model identifiers, transport status, receipt metadata.
+
+(tool_intent.schema.json): Tool intent contract — defines the intent schema for tool invocations. 7 external refs. Properties include intent type, tool identifier, parameters.
+
+(uag_compatibility_certification.schema.json): UAG compatibility certification — certifies compatibility for UAG transport interactions. 8 external refs. Properties include compatibility level, certification scope.
+
+(uag_transport_request.schema.json): UAG transport request — defines the request shape for UAG transport interactions. 8 external refs. Properties include request headers, payload, routing metadata.
+
+(uag_transport_result.schema.json): UAG transport result — defines the result shape returned from UAG transport interactions. 15 external refs. Properties include result status, payload, transport metadata.
+
+## Audit Dimensions (perform ONLY these checks over the provided summaries and evidence)
+1. Structural Consistency: Do the schemas appear internally consistent based on ref counts, property naming conventions, and contract purpose?
+2. Ref Integrity: Given 0 dangling refs were verified, does the high ref count in governed_execution_receipt (33) vs low in dopetask_governed_execution_profile (5) suggest a reasonable aggregation pattern, or a potential over-broadening?
+3. Manifest Consistency: All 10 schemas are registered as DESIGN_ONLY/L0. Is this consistent with a publication event (schemas published for ratification, not yet runtime-enforced)?
+4. Naming/Version Consistency: macro_execution_authority_ref_v2 uses v2 — does this imply a v1 was previously published, and is the v2 suffix consistent with the other schemas' naming?
+5. Scope Boundaries: The PR publishes schemas only (no runtime code changes). Is this a clean, single-concern publication?
+
+## Verdict
+Reply with EXACTLY this format:
+VERDICT: [PASS or PASS_WITH_RISKS]
+FINDINGS: [number]
+Then list each finding as:
+[F-ID] SEVERITY: [BLOCKING/HIGH/MEDIUM/LOW/INFO] STATUS: [OPEN/RESOLVED/ACCEPTED_RISK] BODY: [one line description]
+
+If no blocking findings exist, prefer PASS or PASS_WITH_RISKS with ACCEPTED_RISK/INFO severity for minor items.

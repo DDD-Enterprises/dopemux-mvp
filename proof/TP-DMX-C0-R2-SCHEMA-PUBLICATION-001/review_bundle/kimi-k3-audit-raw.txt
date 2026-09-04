@@ -1,0 +1,13 @@
+[0m
+> build · kimi-k3
+[0m
+VERDICT: PASS_WITH_RISKS
+FINDINGS: 4
+
+[F-01] SEVERITY: INFO STATUS: RESOLVED BODY: Structural consistency holds — ref counts, property naming, and stated purposes are coherent across all 10 schemas; common_defs as shared base (25 ext / 24 local refs) matches a hub-and-spoke import pattern with no anomalies visible in summaries.
+
+[F-02] SEVERITY: LOW STATUS: ACCEPTED_RISK BODY: governed_execution_receipt's 33 external refs are consistent with a receipt aggregating execution status, mutations, and evidence across contract types — not over-broadening — but it is the highest-coupling schema; future ref growth here warrants a re-check for responsibility creep. Not verifiable beyond summaries.
+
+[F-03] SEVERITY: INFO STATUS: RESOLVED BODY: DESIGN_ONLY/L0 registration for all 10 schemas is exactly the expected state for a ratification publication — schemas on record, no runtime enforcement claim, consistent with contract tests passing 126/126 and clean diff-check.
+
+[F-04] SEVERITY: LOW STATUS: ACCEPTED_RISK BODY: macro_execution_authority_ref_v2 is the only versioned name among 10; implies a v1 predecessor or planned lineage, but no v1 artifact is evidenced in the provided material — existence/status of v1 remains UNKNOWN; naming divergence is cosmetic, not blocking.
