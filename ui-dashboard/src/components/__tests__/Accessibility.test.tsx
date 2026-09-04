@@ -8,6 +8,7 @@ import fs from 'fs';
 import path from 'path';
 import PredictionPanel from '../PredictionPanel';
 import TaskSequencer from '../TaskSequencer';
+import TeamDashboard from '../TeamDashboard';
 
 const componentsDir = path.resolve(__dirname, '..');
 
@@ -87,6 +88,7 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   expect(content).toContain('aria-label="Team Average Cognitive Load Percentage"');
   expect(content).toContain('aria-label={`${member.name}\'s Cognitive Load Percentage`}');
   expect(content).toContain('aria-label={`Profile picture of ${member.name}`}');
+  expect(content).toMatch(/aria-label=\{\s*`\$\{member\.name\}'s current status: \$\{statusStyles\[member\.status\]\.label\}`\s*\}[\s\S]*tabIndex=\{0\}/);
   expect(content).toContain('aria-label={`${member.name}\'s current status: ${statusStyles[member.status].label}`}');
   expect(content).toContain('aria-label={`${member.name}\'s current energy level: ${member.energy}%`}');
   expect(content).toContain('aria-label={`${member.name}\'s current attention focus: ${member.attention}%`}');
@@ -111,19 +113,49 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars and To
   // Verify Member Card consolidation
   expect(content).toMatch(/aria-label=\{\s*`\$\{member\.name\}: \$\{statusStyles\[member\.status\]\.label\}, \$\{member\.load\}% load, \$\{member\.energy\}% energy, \$\{member\.attention\}% attention`\s*\}/);
 
-  // Verify AI Insight Copyable Surface
+  // Verify AI Insight Copyable Surface & Global Error Propagation
   expect(content).toMatch(/<Tooltip title=\{isCopied \? 'Copied!' : 'Copy team insight'\} arrow>/);
   expect(content).toMatch(/aria-label=\{\s*isCopied \? `Team insight: \$\{teamInsight\} \(Copied\)` : `Copy team insight: \$\{teamInsight\}`\s*\}/);
   expect(content).toContain('role="button"');
   expect(content).toContain('onKeyDown=');
   expect(content).toContain("animation: 'insight-copy-pulse 0.4s ease-out'");
+  expect(content).toContain('interface TeamDashboardProps {');
+  expect(content).toContain('onError?: (message: string) => void;');
+  expect(content).toContain("onError?.('Clipboard API is not supported in this browser or context.');");
+});
+
+test('TeamDashboard propagates clipboard copy error via onError prop', async () => {
+  let errorMessage: string | null = null;
+  const handleError = (msg: string) => {
+    errorMessage = msg;
+  };
+
+  const originalClipboard = navigator.clipboard;
+  // Temporarily remove writeText to simulate unsupported browser/context
+  Object.defineProperty(navigator, 'clipboard', {
+    value: undefined,
+    configurable: true,
+  });
+
+  try {
+    render(<TeamDashboard onError={handleError} />);
+    const copyButton = screen.getByRole('button', { name: /Copy team insight:/i });
+    fireEvent.click(copyButton);
+
+    expect(errorMessage).toBe('Clipboard API is not supported in this browser or context.');
+  } finally {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: originalClipboard,
+      configurable: true,
+    });
+  }
 });
 
 test('App.tsx exposes metric card tooltips with focus indicators and labels', () => {
   const appContent = fs.readFileSync(path.join(componentsDir, '..', 'App.tsx'), 'utf8');
   expect(appContent).toContain('<Tooltip title={metric.tooltip} arrow describeChild>');
   expect(appContent).toMatch(/<Tooltip title=\{metric\.tooltip\} arrow describeChild>[\s\S]*tabIndex=\{0\}/);
-  expect(appContent).toContain('aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : \'N/A\'}%`}');
+  expect(appContent).toContain('aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : \'N/A\'}%. ${metric.roast}`}');
   expect(appContent).toContain('&:focus-visible');
 });
 
@@ -183,11 +215,83 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('{isSkipConfirming ? \'Confirm Skip?\' : \'Skip\'}');
   expect(content).toContain('<AlertTriangle aria-hidden="true" size={16} />');
 
+  // Verify Reset Ritual soft confirmation ARIA label and Escape dismissal
+  expect(content).toMatch(/aria-label=\{\s*isResetConfirming\s*\?\s*'Confirm reset task sequence and clear all progress'\s*:\s*'Reset task sequence'\s*\}/);
+
+  // Verify Escape key cancellation in TaskSequencer
+  expect(content).toContain("if (isSkipConfirming && e.key === 'Escape')");
+  expect(content).toContain("if (isResetConfirming && e.key === 'Escape')");
+
   // Verify task sequence list empty state
   expect(content).toContain('optimizedTasks.length === 0 ? (');
   expect(content).toContain('role="status"');
   expect(content).toContain("All tasks muzzled. Excellent work.");
   expect(content).toContain("No tasks matching current cognitive state threshold.");
+});
+
+test('TaskSequencer Reset Ritual soft confirmation and Escape cancellation in DOM', () => {
+  const cognitiveState = {
+    energy: 80,
+    attention: 70,
+    load: 40,
+    status: 'optimal' as const,
+    recommendation: 'Complete tasks.',
+  };
+
+  render(<TaskSequencer cognitiveState={cognitiveState} />);
+
+  // Complete current tasks to reach the completed ritual state with Reset button
+  const completeBtn = screen.getByRole('button', { name: /Complete /i });
+  fireEvent.click(completeBtn);
+
+  const completeBtn2 = screen.getByRole('button', { name: /Complete /i });
+  fireEvent.click(completeBtn2);
+
+  const completeBtn3 = screen.getByRole('button', { name: /Complete /i });
+  fireEvent.click(completeBtn3);
+
+  // Initial Reset button state
+  const resetButton = screen.getByRole('button', { name: 'Reset task sequence' });
+  expect(resetButton).toBeInTheDocument();
+
+  // First click triggers soft confirmation state
+  fireEvent.click(resetButton);
+
+  const confirmResetButton = screen.getByRole('button', {
+    name: 'Confirm reset task sequence and clear all progress',
+  });
+  expect(confirmResetButton).toBeInTheDocument();
+
+  // Pressing Escape cancels soft confirmation state
+  fireEvent.keyDown(confirmResetButton, { key: 'Escape' });
+
+  expect(
+    screen.getByRole('button', { name: 'Reset task sequence' })
+  ).toBeInTheDocument();
+});
+
+test('TaskSequencer.tsx handles Escape key to cancel soft confirmation for Skip', () => {
+  const cognitiveState = {
+    energy: 80,
+    attention: 70,
+    load: 40,
+    status: 'optimal' as const,
+    recommendation: 'Stay focused.',
+  };
+
+  render(<TaskSequencer cognitiveState={cognitiveState} />);
+
+  // First click triggers soft confirmation
+  const skipButton = screen.getByRole('button', { name: /^Skip / });
+  fireEvent.click(skipButton);
+
+  expect(screen.getByRole('button', { name: /^Confirm skip / })).toBeInTheDocument();
+
+  // Pressing Escape cancels confirmation without skipping task
+  fireEvent.keyDown(skipButton, { key: 'Escape' });
+
+  expect(screen.getByRole('button', { name: /^Skip / })).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /^Confirm skip / })).not.toBeInTheDocument();
 });
 
 test('TaskSequencer.tsx implements overtime visual cues', () => {
@@ -242,6 +346,8 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('animation: \'listeningPulse 1.4s infinite ease-in-out both\'');
   expect(appContent).toContain('Waiting for signals...');
   expect(appContent).toContain('severity="error"');
+  expect(appContent).toContain('closeText="Dismiss error notification"');
+  expect(appContent).toContain("'aria-label': 'Dismiss error notification'");
   expect(themeContent).toContain('MuiChip');
   expect(themeContent).toContain('&:focus-visible');
   expect(appContent).toContain('ref={feedHeadingRef}');
@@ -255,7 +361,10 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain("onClick={connectionStatus === 'degraded' ? handleReconnect : undefined}");
   expect(appContent).toContain('action={');
   expect(appContent).toContain("connectionStatus === 'degraded' ? (");
-  expect(appContent).toContain('<Button color="inherit" size="small" onClick={handleReconnect}>');
+  expect(appContent).toContain('<Tooltip title="Attempt to re-establish connection to DØPEMÜX Ritual Daemon" arrow describeChild>');
+  expect(appContent).toContain('aria-label="Retry connection to daemon"');
+  expect(appContent).toContain('<Button');
+  expect(appContent).toContain('onClick={handleReconnect}');
   expect(appContent).toContain('RECONNECT');
 
   // Verify notification chips are focusable

@@ -633,13 +633,32 @@ function DashboardApp() {
         <Collapse in={Boolean(errorMessage)}>
           <Alert
             severity="error"
-            icon={<AlertTriangle size={20} />}
+            icon={<AlertTriangle size={20} aria-hidden="true" />}
             onClose={() => setErrorMessage(null)}
+            closeText="Dismiss error notification"
+            slotProps={{
+              closeButton: {
+                'aria-label': 'Dismiss error notification',
+              },
+            }}
             action={
               connectionStatus === 'degraded' ? (
-                <Button color="inherit" size="small" onClick={handleReconnect}>
-                  RECONNECT
-                </Button>
+                <Tooltip title="Attempt to re-establish connection to DØPEMÜX Ritual Daemon" arrow describeChild>
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={handleReconnect}
+                    aria-label="Retry connection to daemon"
+                    sx={{
+                      '&:focus-visible': {
+                        outline: `2px solid ${brandTokens.colors.errorRed}`,
+                        outlineOffset: 2,
+                      },
+                    }}
+                  >
+                    RECONNECT
+                  </Button>
+                </Tooltip>
               ) : null
             }
             sx={{
@@ -659,7 +678,7 @@ function DashboardApp() {
               <Tooltip title={metric.tooltip} arrow describeChild>
                 <Paper
                   tabIndex={0}
-                  aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : 'N/A'}%`}
+                  aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : 'N/A'}%. ${metric.roast}`}
                   sx={{
                     p: 2.5,
                     minHeight: 140,
@@ -788,6 +807,17 @@ function DashboardApp() {
                     setNotifications([]);
                     feedHeadingRef.current?.focus();
                   }}
+                  onKeyDown={(e) => {
+                    if (isConfirmingClear && e.key === 'Escape') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setIsConfirmingClear(false);
+                      if (clearConfirmTimeoutRef.current) {
+                        clearTimeout(clearConfirmTimeoutRef.current);
+                        clearConfirmTimeoutRef.current = null;
+                      }
+                    }
+                  }}
                   aria-label={isConfirmingClear ? 'Confirm clear all notifications' : 'Clear all notifications'}
                   sx={{
                     ml: isLoading ? 1 : 'auto',
@@ -887,7 +917,7 @@ function DashboardApp() {
           )}
           {layout.showTeamDashboard && !isMobile && (
             <Grid item xs={12}>
-              <TeamDashboard />
+              <TeamDashboard onError={setErrorMessage} />
             </Grid>
           )}
         </Grid>

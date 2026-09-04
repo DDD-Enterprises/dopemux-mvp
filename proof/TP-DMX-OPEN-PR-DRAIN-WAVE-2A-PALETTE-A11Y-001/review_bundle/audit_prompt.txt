@@ -1,0 +1,93 @@
+You are performing an independent embedded audit of an integration branch that
+merges 8 open GitHub pull requests into one coherent change, as part of a
+governed PR-drain packet (TP-DMX-OPEN-PR-DRAIN-MERGE-001) for the repo
+DDD-Enterprises/dopemux-mvp.
+
+CONTEXT: All 8 source PRs touch the same shared UI files
+(ui-dashboard/src/App.tsx, TaskSequencer.tsx, TeamDashboard.tsx, and
+ui-dashboard/src/components/__tests__/Accessibility.test.tsx). Critically,
+Accessibility.test.tsx contains tests that `fs.readFileSync` the component
+source and `expect(content).toContain(<literal source substring>)` — so it
+asserts on the exact text of the Escape-key handlers. Two of the source PRs
+(#1302 and #1305) implemented the SAME Reset-button Escape-cancel behavior
+with OPPOSITE operand order:
+  #1302: `if (isResetConfirming && e.key === 'Escape')`
+  #1305: `if (e.key === 'Escape' && isResetConfirming)`
+...and each PR's own test asserted its own spelling. Both literal-text
+assertions cannot pass simultaneously against one handler body, so this was a
+manual merge conducted by a human/agent operator, not an automatic git merge.
+
+WHAT WAS DONE (claimed, not yet independently verified — that is your job):
+- #1302 was kept as the canonical implementation (superset: both Skip and
+  Reset handlers, with preventDefault()+stopPropagation(), plus its App.tsx
+  change).
+- #1305's handler/test were NOT silently dropped: its Reset predictive
+  aria-label JSX block and its DOM-level fireEvent test were both KEPT, and
+  its literal-text assertion was REWRITTEN to match #1302's kept operand
+  order (not deleted).
+- #1285's handler edits were fully redundant with #1302/#1305 (same
+  behavior, different spelling) and were resolved to the already-kept
+  version; #1285's only unique payload, `.Jules/palette.md`, was kept.
+- #1272, #1279, #1293, #1296, #1300 added disjoint accessibility
+  improvements to App.tsx/TeamDashboard.tsx and were merged without
+  semantic conflict, EXCEPT that #1272's own copy of Accessibility.test.tsx
+  additions duplicated the Skip/Reset Escape-key source-text assertions
+  using the STALE pre-#1302 operand order. This was caught by running the
+  real test suite (`vitest run`) before freezing the head — 1 of 47 tests
+  failed — and the two duplicate/stale assertions were removed (the correct
+  assertions already exist elsewhere in the same test file).
+- #1291 and #1294 were classified as pure subsets of #1302 with no unique
+  payload and were NOT merged into this branch (they will be closed
+  referencing this integration PR, not merged separately).
+
+YOUR TASK — independently verify, do not just restate the claim above:
+
+1. Read the actual diff (FULL_DIFF.txt) and the actual current file contents
+   (you have --add-dir access to the real worktree at the path given below —
+   use it; do not rely solely on the diff hunks).
+2. Confirm TaskSequencer.tsx's Reset AND Skip Escape-key handlers each have
+   exactly ONE `onKeyDown` implementation (no duplicated/dead code from a bad
+   merge), and that behavior is sane: pressing Escape while in the
+   soft-confirming state cancels it and clears the associated timeout ref;
+   the aria-label update for Reset is present and matches the JSX pattern
+   the tests assert on.
+3. Grep ui-dashboard/src/components/__tests__/Accessibility.test.tsx yourself
+   for every `e.key === 'Escape'` occurrence and confirm each surviving
+   assertion's operand order textually matches the actual handler in
+   TaskSequencer.tsx at HEAD (not the diff, the actual file). Flag anything
+   that still doesn't match, or any assertion that looks like a leftover
+   duplicate.
+4. Confirm there is no unresolved git conflict marker (`<<<<<<<`, `=======`,
+   `>>>>>>>`) left anywhere in the diff or in the working tree under
+   ui-dashboard/src/.
+5. Independently run (or verify you can trust) the test suite: `cd
+   ui-dashboard && npx vitest run`. Report the actual pass/fail count you
+   observe, not the count claimed above.
+6. Confirm `.Jules/palette.md`'s changes are genuinely unique (not also
+   present via another merged PR) and are benign (documentation-only, no
+   executable content).
+7. Scan the full diff for anything security- or scope-sensitive: secrets,
+   credentials, unexpected file types, changes outside
+   ui-dashboard/**, .Jules/**, or lockfile/tsconfig housekeeping. This batch
+   is supposed to be UI-accessibility-only.
+8. State whether you consider the manual conflict-resolution decisions
+   (keep #1302's operand order + stopPropagation; harvest #1305's aria-label
+   + DOM test; rewrite rather than drop #1305's assertion) reasonable
+   engineering judgment, or whether you would have resolved anything
+   differently and why.
+
+Return your verdict as one of PASS / PASS_WITH_RISKS / FAIL /
+NEEDS_SUPERVISOR, a list of findings (each with id, severity, title, status,
+body), and any remaining risks. Be concrete — cite exact file paths and line
+content you actually observed, not the summary above.
+
+Worktree to inspect (has --add-dir access):
+/Users/hue/code/dopemux-mvp/.worktrees/integration-palette-a11y-2026-09
+Base commit (pre-integration main): ed3b207412fb632ecc3e76146d1f1b50c282ed63
+Frozen integration head (HEAD, audit subject):
+1d5c19deaf5bd4574b683f1a2bf03b6024c800f2
+Diff summary and full diff are also provided as files in this same directory
+tree if you prefer to read them directly:
+/tmp/wave2a_audit/DIFF_NAME_STATUS.txt
+/tmp/wave2a_audit/FULL_DIFF.txt
+/tmp/wave2a_audit/COMMIT_LOG.txt

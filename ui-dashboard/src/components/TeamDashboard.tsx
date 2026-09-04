@@ -16,7 +16,11 @@ const teamSignals = [
   { label: 'Handoff', value: 'Clear', color: brandTokens.colors.saintGold },
 ];
 
-export default function TeamDashboard() {
+interface TeamDashboardProps {
+  onError?: (message: string) => void;
+}
+
+export default function TeamDashboard({ onError }: TeamDashboardProps = {}) {
   const teamAverageLoad = Math.round(
     teamMembers.reduce((total, member) => total + member.load, 0) / teamMembers.length
   );
@@ -37,7 +41,10 @@ export default function TeamDashboard() {
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleCopy = useCallback(async () => {
-    if (!navigator.clipboard?.writeText) return;
+    if (!navigator.clipboard?.writeText) {
+      onError?.('Clipboard API is not supported in this browser or context.');
+      return;
+    }
     try {
       await navigator.clipboard.writeText(teamInsight);
       setIsCopied(true);
@@ -47,9 +54,10 @@ export default function TeamDashboard() {
         copyTimeoutRef.current = null;
       }, 2000);
     } catch (err) {
-      console.error('Failed to copy team insight:', err);
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      onError?.(`Failed to copy team insight: ${errorMsg}`);
     }
-  }, [teamInsight]);
+  }, [teamInsight, onError]);
 
   useEffect(() => {
     return () => {
@@ -160,7 +168,18 @@ export default function TeamDashboard() {
                   size="small"
                   label={statusStyles[member.status].label}
                   aria-label={`${member.name}'s current status: ${statusStyles[member.status].label}`}
-                  sx={{ cursor: 'help' }}
+                  tabIndex={0}
+                  sx={{
+                    cursor: 'help',
+                    transition: 'all 0.2s ease',
+                    border: '1px solid transparent',
+                    '&:hover, &:focus-visible': {
+                      bgcolor: alpha(statusStyles[member.status].color, 0.12),
+                      borderColor: statusStyles[member.status].color,
+                      boxShadow: `0 0 12px ${alpha(statusStyles[member.status].color, 0.3)}`,
+                      transform: 'translateY(-1px)',
+                    },
+                  }}
                 />
               </Tooltip>
               <Box aria-hidden="true" sx={{ ml: 'auto', width: 6, height: 6, borderRadius: '50%', bgcolor: statusStyles[member.status].color }} />

@@ -1,0 +1,52 @@
+This is a scoped follow-up independent audit. You previously (a few minutes
+ago, same conversation context/session is NOT retained — treat this as fresh)
+were asked to audit an integration branch merging 8 palette/accessibility
+PRs for DDD-Enterprises/dopemux-mvp, PR #1314. Your prior audit PASSED with
+6/6 findings verified.
+
+Since that PASS, an automated Copilot code review left two comments on the
+PR, and the operator applied two small fixes in direct response. Your job now
+is to independently verify ONLY these two fixes are correct and complete —
+not to redo the full original audit.
+
+FIX 1: Copilot flagged that the Tooltip wrapping the "RECONNECT" button in
+ui-dashboard/src/App.tsx (around line 646) was missing the `describeChild`
+prop, inconsistent with other Tooltips in the same file that already use it
+for accessibility (exposes the tooltip text to assistive tech via
+aria-describedby). Fix: added `describeChild` to that Tooltip. A test
+assertion in Accessibility.test.tsx that checked the literal source text of
+that exact Tooltip line was updated to match.
+
+FIX 2: Copilot flagged that ui-dashboard/src/components/__tests__/Accessibility.test.tsx
+had a duplicate assertion at (then) line 232 that exactly repeated the regex
+assertion at line 219, testing the same Reset-button aria-label with zero
+added coverage. Fix: the duplicate was deleted.
+
+VERIFY, using your real filesystem access via --add-dir to the actual
+worktree (inspect the real current file contents, not just the diff below):
+
+1. Confirm the Tooltip at ui-dashboard/src/App.tsx now has `describeChild`,
+   and that this is consistent with the other Tooltip usages in the same
+   file (grep for `<Tooltip` and check which ones use describeChild — this
+   should now be one of the "important action, needs description" ones like
+   the metric-card tooltip and the notification-dismiss tooltip, not the
+   purely decorative ones).
+2. Confirm the corresponding test assertion in Accessibility.test.tsx was
+   updated (not left stale) to include `describeChild` in its literal-text
+   match.
+3. Confirm the deleted duplicate assertion truly was an exact duplicate
+   (byte-for-byte or regex-equivalent) of another surviving assertion in the
+   same test, i.e. removing it did not reduce actual test coverage.
+4. Run `cd ui-dashboard && npx vitest run` yourself and report the actual
+   pass/fail count.
+5. Confirm no unrelated files changed and no conflict markers were
+   introduced.
+
+Return PASS / PASS_WITH_RISKS / FAIL / NEEDS_SUPERVISOR with findings.
+
+Worktree (has --add-dir access):
+/Users/hue/code/dopemux-mvp/.worktrees/integration-palette-a11y-2026-09
+Previously audited head (PASS): bee87c4eedd26da47802b0c3b72c099fb2051530
+New content head to verify: 1097a89aedadf88e4896478a131a9d5d26bab407
+Follow-up diff also provided at:
+/tmp/wave2a_audit2/FOLLOWUP_DIFF.txt
