@@ -35,7 +35,7 @@
   "commit": {
     "message": "test(pcp): migrate dNh RDCP manifest assertions",
     "allowlist": [
-    "tests/dnh_extension/test_dnh_artifact_only.py",
+      "tests/dnh_extension/test_dnh_artifact_only.py",
       "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/**",
       "proof/pr_merge/embedded-audit/pr-1267/**",
       "task-packets/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A.json"
