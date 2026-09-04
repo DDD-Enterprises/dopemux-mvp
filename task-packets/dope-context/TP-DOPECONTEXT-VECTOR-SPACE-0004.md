@@ -618,3 +618,61 @@ Do **not** mark A14 "PASS": nothing is known about what it asserted, and
 claiming a pass for an undefined test would be a false record. Either retire
 the criterion with this substitution, or produce the battery-A list so the
 original can be run.
+
+## Required Chain — status (2026-09-04)
+
+Chain: `analyze -> apilookup -> thinkdeep -> challenge -> consensus -> planner
+-> challenge -> implement -> testgen -> codereview -> precommit ->
+embedded-audit -> PR-Steward`
+
+| Stage | Status | Evidence / why |
+|---|---|---|
+| analyze | **PASS** | Modernization audit + this session's tracing of the D1 change sites, call graph, and deployment env. |
+| apilookup | **PASS** | Live Voyage probes (per-input truncation, batch ceilings, model lineup) plus a verbatim re-check of the vendor limits page. Recorded in ADR-226 and packet errata. |
+| thinkdeep | **NOT_RUN** | PAL MCP unavailable — no `pal` container running, ports 3005/3010/3011 closed. |
+| challenge (1st) | **NOT_RUN as specified** | PAL unavailable. *Functionally substituted*, not equivalently: three independent AGY audits (rounds 4-6) challenged the work and overturned the implementer twice — a wrong `SILENT_TRUNCATION` refutation and two BLOCKER regressions. |
+| consensus | **NOT_RUN** | PAL unavailable. See ruling request below. |
+| planner | **NOT_RUN** | PAL unavailable. |
+| challenge (2nd) | **NOT_RUN as specified** | Same substitution as above. |
+| implement | **PASS** | D1 landed; commits `3e878cc8d`, `77f96ab55`, `eec45ec48`. |
+| testgen | **PASS** | Invariant, AST, and pipeline-execution tests added; suite 124 passed / 1 skipped / 0 failed. |
+| codereview | **PARTIAL** | Covered by AGY rounds 4-6 rather than a PAL codereview call. |
+| precommit | **PASS** | Every commit through repo preflight; `--no-verify` never used. |
+| embedded-audit | **OPEN** | Rounds 1-6 filed under `proof/pr_merge/embedded-audit/pr-1304/`. Round 6 verdict OPEN; round-6 findings closed except those pending amendment A4. The CI gate is structurally red — the runner has no trusted auditor credential. |
+| PR-Steward | **FAIL** | Strictly downstream of the embedded-audit gate (`audit=failure/failure steward=skipped`). |
+
+**Ruling requested — `consensus`.** The packet requires it "because this is a
+judgement call with two defensible answers, not a defect with one correct fix".
+That premise no longer holds: Wave 0 measured both answers on a whole-repo
+corpus and direction B won every metric, converting the judgement call into a
+measurement. Either (a) accept the benchmark as discharging `consensus`, or
+(b) restore PAL and run it. **Do not record `consensus` as PASS on the current
+evidence** — it was not run.
+
+## Deployment action required — D1 is not yet in force
+
+Established by the live run (see "Live validation of D1"). The running
+`mcp-dope-context` container sets `DOPE_CONTEXT_CODE_EMBED_MODEL=voyage-code-3`,
+which `resolve_code_embed_model()` prefers over `DEFAULT_CODE_MODEL`.
+
+The variable is **runtime-injected**, not repo-tracked: it is absent from the
+image config, from `compose.yml`, and from every file in the repository. It was
+supplied by the shell or env-file used when the container was started — per the
+session record, under `TP-DMX-MCP-RESET-RECOVERY-001`'s bespoke env file.
+
+Required operator action, in order:
+
+1. Confirm with the owner of `TP-DMX-MCP-RESET-RECOVERY-001` that the
+   `voyage-code-3` pin is not deliberate for that task. **Do not override
+   another task's configuration unilaterally.**
+2. Restart the service without the override (or with `voyage-code-4`) using
+   `dopemux mcp up --services dope-context`. **Never `down --services
+   dope-context`** — it falls back to a full-fleet `rm -f -s -v` and would wipe
+   volumes for conport/litellm/pal/serena.
+3. Recreate every pre-D1 code collection; the manifest comparison fails closed
+   on the model/endpoint change by design (see ADR-226, "Operational
+   consequence of D1"). There is deliberately no automatic migration.
+
+This is deliberately **not** actioned here: `mcp-dope-context` is a host
+singleton shared across projects, and restarting it is an outward-facing change
+belonging to the fleet owner.
