@@ -13,6 +13,19 @@ class Rule:
     recommended_action: str = ""
 
 FORBIDDEN_PATHS = [
+    # TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001: every other entry below relies
+    # on Python `.` (no DOTALL) and `$` (matches before a trailing newline, not just
+    # true end-of-string) for its wildcard/exact-match semantics. A path containing an
+    # embedded or trailing control character (newline, CR, tab, ...) can therefore slip
+    # past a wildcard subtree rule, or be mistaken for an exact exempt filename. Rather
+    # than re-deriving DOTALL/\Z semantics for every carve-out lookahead individually
+    # (higher risk of narrowing an intended exemption), this rule blocks any path
+    # containing a C0 control character or DEL outright, independent of which other
+    # pattern would otherwise have governed it. `.*` needs `re.DOTALL` to reach a
+    # control character that is not the first byte; the scanner uses `.match()`
+    # (start-anchored, not full-string) so the leading `.*` is required even though
+    # this pattern carries no `^`.
+    re.compile(r".*[\x00-\x1f\x7f]", re.DOTALL),
     re.compile(r"^src/dopemux" + r"_pr_merge_specialist/queue" + r"_drain\.py$"),
     re.compile(r"^dopemux" + r"_pr_merge_specialist/queue" + r"_drain\.py$"),
     re.compile(r"^scripts/batch" + r"_resolve_and_merge\.py$"),

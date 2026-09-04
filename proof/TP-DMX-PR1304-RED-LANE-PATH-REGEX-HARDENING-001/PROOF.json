@@ -1,0 +1,27 @@
+{
+  "head_sha": "f1e9ff5f32d9127332ae231dd68a9433096b0124",
+  "generated_at": "2026-09-04T14:19:23Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir <worktree> --print=<prompt>",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F001",
+        "severity": "INFO",
+        "title": "Audit turnaround (39.5s) initially looked prompt-only; corroborated as live tool-driven verification",
+        "status": "RESOLVED",
+        "body": "Auditor left AGY_LIVE_PROBE_SCRIPT.py (this directory) behind at the worktree root after its --add-dir run: independently-authored Python that imports the live FORBIDDEN_PATHS list and drives both consumer call shapes against newline/CR/tab, exact-exemption-spoof, traversal+newline, near-miss+control-char, all 11 intended exemptions, and ordinary paths. Implementer re-ran it post-hoc: ALL TESTS PASSED (6/6 sub-cases). See AUDITOR_REPORT.md."
+      }
+    ],
+    "fixes_applied": [
+      "Added leading FORBIDDEN_PATHS entry re.compile(r\".*[\\x00-\\x1f\\x7f]\", re.DOTALL) in src/dopemux/dcp/red_lane_rules.py to fail-closed on any embedded/trailing control character, independent of downstream carve-out pattern correctness."
+    ],
+    "remaining_risks": [],
+    "skip_reason": null
+  }
+}

@@ -454,3 +454,47 @@ def test_cli_exits_nonzero_on_incomplete_proof(tmp_path):
         text=True,
     )
     assert result.returncode != 0
+
+
+# ---------------------------------------------------------------------------
+# TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001: FORBIDDEN_PATHS is consumed
+# here via `pattern.match(fpath)` (start-anchored, not full-string) — a
+# different call shape than dcp_surface_guard's `pattern.search(rel)`. Both
+# consumers must independently fail closed on an embedded/trailing control
+# character.
+# ---------------------------------------------------------------------------
+
+_NEWLINE_BYPASS_SCANNER_PROBES = (
+    "services/dope-context/src/\nsecret.py",
+    "services/dope-context/src/index_profile.py\n",
+    ".github/workflows/embedded-audit.yml\n",
+    "services/task-orchestrator/x/\ny",
+    "services/dope-context/src/index_profile.py\t",
+    "services/dope-context/src/index_profile.py\r",
+)
+
+
+def test_scanner_blocks_newline_and_control_character_paths(tmp_path):
+    repo_root = tmp_path / "tp_dcp_0005_newline_bypass"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    for fpath in _NEWLINE_BYPASS_SCANNER_PROBES:
+        report = scanner.scan(changed_files=[fpath])
+        assert report.status == Status.BLOCKED, fpath
+        assert any(f.category == "FORBIDDEN_PATH" for f in report.findings), fpath
+
+
+def test_scanner_legitimate_exemptions_unaffected(tmp_path):
+    repo_root = tmp_path / "tp_dcp_0005_exemptions_unaffected"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    for fpath in (
+        ".github/workflows/embedded-audit.yml",
+        ".github/workflows/pr-steward.yml",
+        "services/dope-context/eval/run_eval.py",
+        "services/dope-context/src/index_profile.py",
+    ):
+        report = scanner.scan(changed_files=[fpath])
+        assert not any(f.category == "FORBIDDEN_PATH" for f in report.findings), fpath
