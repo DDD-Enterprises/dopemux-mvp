@@ -1,7 +1,7 @@
 # INCIDENT_REPORT — TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001
 
 **Risk**: L3
-**Stage**: Phase A complete (read-only investigation). Phase B not started.
+**Stage**: Phase A complete (read-only investigation). Phase B executed (§11) with a canary block-validation PASS and a pass-validation invalidated by an admin-bypass merge error (§12); see §13 for the operator action still outstanding.
 **Status**: append-only record
 
 ## 1. Identities
@@ -62,7 +62,7 @@ Analyze (ruby), 📊 CI Pipeline Summary
 
 However, `proof/TP-DMX-PR-STEWARD-HARDEN-010/AUDITOR_REPORT.md` line 113 records, as an explicit **PASS** criterion for that hardening packet: **"No branch protection mutation."** That packet deliberately scoped out wiring the new fail-closed status into GitHub's required-checks list. No later packet closed that gap. The two enforcement mechanisms (branch protection contexts, ruleset rules) have not been touched to add either check since at least `2026-04-21T12:30:04Z` (ruleset `updated_at`) — well before Steward/audit fail-closed hardening shipped.
 
-So: the gate was built to fail closed in *workflow logic*, but was never connected to *merge enforcement*. It has silently been advisory-only for every PR merged since.
+So: the gate was built to fail closed in *workflow logic*, but was never connected to *merge enforcement*. It has silently been advisory-only for every PR merged at least since the ruleset's last update (`2026-04-21T12:30:04.081-07:00`) — classic branch-protection exposes no mutation history via this API, so this is not an unbounded historical guarantee (softened per the independent audit's finding, §10).
 
 ## 6. Scope check on #1224
 
@@ -87,7 +87,7 @@ No mutating action has been taken against `main`, branch protection, or rulesets
 
 **Performed 2026-08-15.** Runner: `agy` CLI (Antigravity) v1.1.13, `--model gemini-3.1-pro-high --effort high --sandbox`, proven-selected (no silent fallback — see `evidence/AGY_VERSION.txt` for exact invocation, `evidence/AGY_AUDIT_GEMINI31_PHASE_A_RAW.json` for raw transcript/usage). Run in an isolated `git worktree` pinned at this branch's exact head `4cb2b1f5916ed9dc05c4d17b11709455a193cfe3` (draft PR #1233), independent from the Claude Sonnet 5 session that authored §1–9.
 
-**Verdict: PASS_WITH_RISKS.** Full text: `evidence/AGY_AUDIT_GEMINI31_PHASE_A.md`. The auditor re-derived every claim in §1–9 from live `gh api`/`git` calls rather than trusting this document, and:
+**Verdict: PASS_WITH_RISKS.** Full text: `evidence/AGY_AUDIT_GEMINI31_PHASE_A.md`. `evidence/AGY_AUDIT_GEMINI31_PHASE_A_RAW.json`'s top-level `status` field reads `ERROR` — this is a trailing, unrelated internal cascade-step failure (`CORTEX_STEP_TYPE_RUN_COMMAND: ... no such directory`) that occurred *after* the auditor had already written its complete verdict; the `response` field (7823 chars) is intact and is the same text reproduced in `AGY_AUDIT_GEMINI31_PHASE_A.md`. The verdict text is treated as valid evidence on that basis, not despite the top-level status. The auditor re-derived every claim in §1–9 from live `gh api`/`git` calls rather than trusting this document, and:
 - Independently confirmed the #1227 chronology, the current classic-protection and ruleset configuration, the absence of both gates from either enforcement surface, and that no admin/ruleset bypass was exercised (the merge was fully compliant under the as-configured rules).
 - Confirmed `TP-DMX-PR-STEWARD-HARDEN-010`'s "No branch protection mutation" PASS line and that its diff never touched protection config.
 - **Softened §5's "advisory-only for every PR since" claim**: only provable back to the ruleset's `updated_at` (`2026-04-21T12:30:04.081-07:00`); classic branch-protection has no exposed mutation history via this API, so the claim should be read as "at least since the ruleset's last update" rather than an unbounded historical guarantee.

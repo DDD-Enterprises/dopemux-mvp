@@ -3,7 +3,7 @@ I have completed the independent L3 audit of the `TP-DMX-CI-TRUST-MERGE-GATE-INC
 
 Here is the final audit report:
 
-### Verdic
+### Verdict
 **PASS_WITH_RISKS**
 
 ### Findings
