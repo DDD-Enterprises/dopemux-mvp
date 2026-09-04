@@ -818,3 +818,222 @@ be reverted together with any caller changes made under it.
 * `surface_guard_block` still denies `src/search/hybrid_search.py` and
   `src/embeddings/contextualized_embedder.py`.
 * Full service suite green; the AST truncation test still passes.
+
+────────────────────────────────────────────────────────────
+
+## Amendment A5 — Wave 1 (BEHAVIOUR) file exemptions, split by governance cost (2026-09-04)
+
+```text
+AMENDMENT_ID=ADR-226-A5
+AMENDMENT_STATUS=PROPOSED
+APPROVED_BY=(none — operator approval required before the regex lands)
+COMPANION_PACKET=TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007 (same date)
+SPLIT=A5a (test file + two leaf utilities) / A5b (two Voyage client modules) — severable, approve independently
+A5a_ADDS_EXEMPTIONS=services/dope-context/tests/test_wave1_behaviour.py, services/dope-context/src/utils/model_tokenizer.py, services/dope-context/src/utils/token_budget.py
+A5b_ADDS_EXEMPTIONS=services/dope-context/src/embeddings/contextualized_embedder.py, services/dope-context/src/rerank/voyage_reranker.py
+AUTHORIZES_CONTENT_EDITS=NO (path-level only; TEXT_RULES scanning unchanged)
+WAVES_2_6_SRC_LIFT=STILL_NOT_AUTHORIZED
+```
+
+### Why this amendment is smaller than expected
+
+`claudedocs/dope-context-wave-reconciliation-2026-09-04.md` (R-1) found that
+the redesign document specifies Wave 1 twice, and the earlier estimate of
+~9 new exemptions was computed against the superseded list. Revision 2's
+own header states that where it conflicts with the earlier numbered
+sections, it wins; Revision 2.1 §7 then adds `model_registry.py` to Wave
+1's scope. Reconciled against Revision 2 (+ Revision 2.1 §7), Wave 1 drops
+`document_processor.py`, `openai_generator.py` and `claude_generator.py`
+entirely, and adds `code_chunker.py` — which the reconciliation record then
+evicts again on manifest-boundary grounds (record §4, §2 R-2 item 1),
+because `CODE_CHUNKER_VERSION` (`index_profile.py:35`) is a member of
+`VectorProfile.fingerprint_payload()` (`index_profile.py:77-89`). Revision
+2 also drops `mcp/server.py`; the record rules it back in (§2 R-2 item 3)
+for C1 and C13, which costs this amendment nothing because that file is
+already exempt under the base carve-out. Three
+items the earlier estimate carried as open are already closed on `main`:
+E3 (`voyage_reranker.py:29-33,180,258` raises loudly per F-014, and
+`server.py:1351-1353,1380-1381` surfaces `reranked`/`rerank_degraded`/
+`rerank_failure_reason`), E11 (`voyage_embedder.py:188-201`'s
+`_cache_response`, the F-012 repair), and E21 (`CostTracker.add_request`
+increments `total_requests` first in both `voyage_embedder.py:78-79` and
+`contextualized_embedder.py:60-61`). Net effect: this amendment proposes
+**5** new exemptions, not ~9.
+
+Wave 1a's *source* needs nothing new from this amendment: every file it
+touches is already exempt — `indexing_pipeline.py` and `mcp/server.py`
+under the base carve-out, `model_registry.py` under A2, and
+`voyage_embedder.py` under A4.
+
+### Why — A5a file 1: `tests/test_wave1_behaviour.py` (new)
+
+Every file under `services/dope-context/tests/` is blocked except the two
+carved out for D1 profile work — `test_vector_space_invariants.py` (base
+carve-out) and `test_vector_profiles_and_migration.py` (A3) — and neither
+is the right home for retry/limiter/exclude-pattern tests. This
+programme's own record is the reason a new test file is not optional:
+"Six audit rounds and a green 123-test suite coexisted with a completely
+broken indexing path" (reconciliation record §6), and one test that
+actually drove `IndexingPipeline._process_file` found two BLOCKERs in
+seconds. Shipping Wave 1a with no test file would repeat that.
+
+### Why — A5a file 2: `src/utils/model_tokenizer.py`
+
+E10. `VoyageTokenCounter._cache` at `:57` is a plain
+`Dict[Tuple[str, str], TokenCount]`, written at `:122`, read at `:111`,
+with no eviction and no bound — unbounded process-lifetime growth in a
+long-running MCP server. The fix mirrors an already-proven in-repo
+pattern: `voyage_embedder.py:188-201` (`_cache_response`, the F-012
+repair) expires then evicts oldest-first against `max_cache_entries`.
+
+### Why — A5a file 3: `src/utils/token_budget.py`
+
+E2/E4/E17. `budget_starvation` and `degraded_guarantee_applied` are
+declared at `:35-36` and **never assigned anywhere in the file** — dead
+flags that make a degraded response indistinguishable from a healthy one.
+E17: `:49` estimates tokens as
+`ceil(len(text.encode("utf-8")) / 3)`. The honest limit: the payload
+carries no `tokens` field until the CHUNKING wave, so the Wave 1 half of
+E17 is prefer-payload plumbing plus a labelled fallback and is **inert
+until then**; an implementer may reasonably defer E17 wholesale.
+
+### Why — A5b: `src/embeddings/contextualized_embedder.py` and `src/rerank/voyage_reranker.py`
+
+E1 retry parity only. All three Voyage clients are constructed as
+`AsyncClient(api_key=api_key)` with no `max_retries`:
+`voyage_embedder.py:129` (exempt under A4), `contextualized_embedder.py:109`
+(blocked), `voyage_reranker.py:112` (blocked). A single 429 drops the
+batch. Fixing only the exempt one is the same "a fix for the callers we
+happen to know about, not for the defect" reasoning A4 itself rejected.
+
+These changes alter retry and therefore **billing** behaviour against a
+live paid API — the same blast-radius class A4 flagged for the truncation
+flip — which is why they are severed into their own approval.
+
+`voyage_reranker.py` needs nothing else in Wave 1: E3 is already closed
+(`voyage_reranker.py:29-33,180,258` raises loudly per F-014 and
+`server.py:1351-1353,1380-1381` surfaces `reranked`/`rerank_degraded`/
+`rerank_failure_reason`), and the retry-once path belongs to the
+retrieval wave.
+
+### Exact regex change
+
+In `src/dopemux/dcp/red_lane_rules.py`, the ADR-226 carve-out entry gains
+five negative lookaheads (additions marked `+`); everything else is
+unchanged:
+
+```python
+    re.compile(
+        r"^services/dope-context/"
+        r"(?!eval/)"
+        r"(?!src/pipeline/indexing_pipeline\.py$)"
+        r"(?!src/mcp/server\.py$)"
+        r"(?!src/index_profile\.py$)"
+        r"(?!src/embeddings/model_registry\.py$)"
+        r"(?!tests/test_vector_space_invariants\.py$)"
+        r"(?!tests/test_vector_profiles_and_migration\.py$)"
+        r"(?!src/embeddings/voyage_embedder\.py$)"
+        r"(?!src/search/dense_search\.py$)"
++       r"(?!tests/test_wave1_behaviour\.py$)"
++       r"(?!src/utils/model_tokenizer\.py$)"
++       r"(?!src/utils/token_budget\.py$)"
++       r"(?!src/embeddings/contextualized_embedder\.py$)"
++       r"(?!src/rerank/voyage_reranker\.py$)"
+        r".*$"
+    ),
+```
+
+The first three additions are A5a; the last two are A5b. The companion
+traversal-refusal entry
+(`^services/dope-context/(?:.*/)?\.\.(?:/|$)`) is unchanged and continues
+to cover the newly-exempted paths.
+
+### Invariants preserved
+
+Unchanged from A2/A3/A4: anchored `$` (so `.bak`/`.orig`/`.tmp` and
+same-named files elsewhere stay blocked), whole-path case folding from the
+F-001-A fix (`a4f86c48c`), the traversal-refusal companion entry, and
+`TEXT_RULES` content scanning.
+
+Near-miss verification cases, the strongest available since `src/utils/`
+currently has no exempt file at all:
+
+* `src/utils/` has four modules; `model_tokenizer.py` and
+  `token_budget.py` become exempt while `src/utils/workspace.py` and
+  `src/utils/metrics_tracker.py` stay hard-blocked — two siblings in the
+  same directory with no lookahead naming them. `workspace.py` is the
+  load-bearing one: it owns `workspace_to_hash()` and is the
+  IDENTITY+RETRIEVAL wave's file, so a lookahead that leaked across the
+  directory would open identity work under a Wave 1 approval.
+* `src/embeddings/` has three files; `contextualized_embedder.py` becomes
+  exempt while `src/embeddings/voyage_embedder.py` (already exempt under
+  A4) and `src/embeddings/model_registry.py` (already exempt under A2)
+  are unaffected, and no other file in the directory exists to newly
+  block or unblock.
+* `src/rerank/` has exactly one file, `voyage_reranker.py`, which becomes
+  exempt; there is no sibling to hold blocked, which is itself worth
+  recording so a later reviewer does not go looking for one.
+* `tests/test_wave1_behaviour.py` becomes exempt while
+  `tests/conftest.py`, `tests/test_mcp_server.py`, and
+  `tests/test_reliability_repairs.py` stay hard-blocked.
+
+### What lands with this amendment
+
+Path-level exemption only. The authorized content changes, specified so
+the diff is reviewable before the lane opens:
+
+* `tests/test_wave1_behaviour.py` (new): tests that actually drive the
+  Wave 1a/1b/1c changed code paths — the exclude-pattern passthrough
+  (C1), the per-file sleep (C6), the rate-limit lock/sleep ordering
+  (E16), the R-5 dataclass truncation default, the tokenizer cache bound
+  (E10), the degraded-flag assignment (E2/E4), and the retry-on-429 path
+  (E1). No other test file is touched.
+* `model_tokenizer.py`: bound `VoyageTokenCounter._cache` with the same
+  expire-then-evict-oldest-first pattern as `voyage_embedder.py:188-201`,
+  parameterized by a `max_cache_entries`-shaped limit.
+* `token_budget.py`: assign `budget_starvation` and
+  `degraded_guarantee_applied` at every place a degraded/starved path is
+  taken, instead of leaving both declared-and-unset; wire a `tokens`
+  payload field as prefer-payload input to `estimate_tokens`, falling
+  back to the byte/lexical heuristic with a label when absent (E17 may be
+  deferred wholesale, per "Why — A5a file 3" above).
+* `contextualized_embedder.py`: add `max_retries` to the `AsyncClient`
+  construction at `:109`, matching whatever retry policy A4's
+  `voyage_embedder.py` fix establishes.
+* `voyage_reranker.py`: add `max_retries` to the `AsyncClient`
+  construction at `:112`. Nothing else in this file changes under Wave 1.
+
+### Rollback
+
+A5a and A5b revert independently — that is the point of the split.
+`tests/test_wave1_behaviour.py` is a new file, so reverting A5a means
+deleting it as well as reverting its three lookahead lines; the
+`model_tokenizer.py`/`token_budget.py` fixes are independently revertable
+and carry no state. The A5b retry changes to `contextualized_embedder.py`
+and `voyage_reranker.py` should be reverted together, since both change
+the same retry policy against the same vendor.
+
+### Verification before landing
+
+* `PYTHONPATH=src python -m pytest tests/test_dcp_surface_guard.py tests/dcp/test_dcp_0005_red_lane_scanner.py -v`
+  — expected full pass; baseline is 69 passed, so expect 69 or more with
+  any new table-driven cases added for this amendment.
+* `surface_guard_block` returns `None` for each of the five new paths
+  (`tests/test_wave1_behaviour.py`, `src/utils/model_tokenizer.py`,
+  `src/utils/token_budget.py`, `src/embeddings/contextualized_embedder.py`,
+  `src/rerank/voyage_reranker.py`) and still returns a
+  `DCP-RED-MERGE-SEAM-0001` block for `src/utils/workspace.py`,
+  `src/utils/metrics_tracker.py`, `tests/conftest.py`, and a
+  `..`-traversal form of each newly-exempted path (e.g.
+  `src/utils/../utils/model_tokenizer.py`).
+* The `services/dope-context` suite stays green — baseline 124 passed, 1
+  skipped.
+* The new test file contains at least one test that **actually drives**
+  the changed code path — e.g. it awaits `_check_rate_limit` under
+  contention and asserts the lock is not held across the sleep, and it
+  drives the retry path with a mocked 429 rather than asserting on the
+  constructor arguments alone — and each new assertion is
+  **mutation-tested**: flip the fix under test, confirm the assertion
+  fails, then restore it. `str.replace` fails silently, and a bad
+  experiment looks exactly like a weak test; prefer AST inspection over
+  substring matching in any source-scanning test.
