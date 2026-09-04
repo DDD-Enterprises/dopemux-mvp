@@ -1,0 +1,1 @@
+{"embedded_audit": {"required": true, "status": "PASS", "auditor_tool": "agy", "auditor_model": "gemini-3.1-pro-high", "invocation": "agy run", "exit_code": 0, "report_path": "proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/AUDITOR_REPORT.md", "findings": [], "fixes_applied": [], "remaining_risks": [], "skip_reason": null}}
