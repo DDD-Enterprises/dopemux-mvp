@@ -1,0 +1,54 @@
+Independent embedded audit for an integration branch merging 2 open
+dependency-update PRs for DDD-Enterprises/dopemux-mvp, part of a governed
+PR-drain packet (TP-DMX-OPEN-PR-DRAIN-MERGE-001, Wave 2B: patch/minor
+dependency batch).
+
+CONTEXT — READ THIS FIRST: a third PR (#1295, a "python-minor-patch"
+Dependabot group bump) was ORIGINALLY part of this batch and was pulled out
+after discovering a real regression: merging it silently upgraded FastAPI
+from 0.135.2 to 0.141.1 as an unpinned side-effect of `uv lock`
+re-resolving the dependency tree (pyproject.toml's constraint is the
+unpinned `fastapi>=0.115.12` in both cases -- the jump was not something
+#1295's stated diff intended). FastAPI 0.141.1 introduces a new internal
+`_IncludedRouter` lazy-wrapping class that broke
+`tests/unit/pm/test_pm_route_contracts.py::test_task_orchestrator_runtime_includes_project_workflow_router`,
+which passed on unmodified current main. This was confirmed by direct
+baseline comparison (checked out origin/main in a separate worktree, ran
+the same test, it passed there and failed on the integration branch with
+#1295 merged). #1295 was removed and the branch rebuilt from current main
+with only #1298 (pip 26.1.2->26.2) and #1299 (postcss-selector-parser
+6.1.2->6.1.4).
+
+YOUR TASK -- independently verify the CURRENT state (with #1295 excluded),
+using real filesystem access via --add-dir to the actual worktree:
+
+1. Confirm the actual diff between the integration branch and its base
+   (3e61f0d0a) touches ONLY uv.lock and package-lock.json -- no source
+   code, no pyproject.toml, no other files. (See
+   /tmp/wave2b_audit/DIFF_NAME_STATUS.txt.)
+2. Confirm uv.lock's only version change is pip 26.1.2 -> 26.2 (grep for
+   `version = ` diffs yourself; don't trust my summary).
+3. Confirm package-lock.json's only version change is
+   postcss-selector-parser 6.1.2 -> 6.1.4.
+4. Confirm fastapi's pinned version in uv.lock is UNCHANGED at 0.135.2 (the
+   version that was on origin/main before this batch) -- i.e. confirm the
+   regression that forced #1295 out is genuinely absent from what's being
+   merged now.
+5. Independently run the previously-failing test yourself:
+   `cd /Users/hue/code/dopemux-mvp/.worktrees/integration-deps-2026-09 &&
+   uv run --frozen pytest tests/unit/pm/test_pm_route_contracts.py -v` and
+   report the actual result.
+6. Scan for anything security-sensitive: does postcss-selector-parser
+   6.1.4 or pip 26.2's changelog-relevant diff introduce anything beyond a
+   routine patch bump (you have real tool access -- feel free to spot check
+   the actual package contents/metadata if useful, but the primary check is
+   confirming the lockfile diff itself is minimal and as described).
+7. Confirm no secrets/credentials appear anywhere in the diff.
+
+Return PASS / PASS_WITH_RISKS / FAIL / NEEDS_SUPERVISOR with findings (id,
+severity, title, status, body). Be concrete about what you actually
+observed.
+
+Worktree: /Users/hue/code/dopemux-mvp/.worktrees/integration-deps-2026-09
+Base (pre-batch): 3e61f0d0a8931b1cb50bff83d29e70794aef930d
+Frozen integration head: 6de2f30309db11ea79713382932a4320776ff1d1

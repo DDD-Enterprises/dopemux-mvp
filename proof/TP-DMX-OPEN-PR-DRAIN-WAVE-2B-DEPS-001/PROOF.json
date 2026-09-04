@@ -1,0 +1,59 @@
+{
+  "packet_id": "TP-DMX-OPEN-PR-DRAIN-WAVE-2B-DEPS-001",
+  "status": "PASS",
+  "risk_lane": "L1_LOW",
+  "head_sha": "6de2f30309db11ea79713382932a4320776ff1d1",
+  "generated_at": "2026-09-04T13:20:00Z",
+  "repo_identity": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "remotes": {"origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git"},
+    "require_identity_match": true,
+    "match": true
+  },
+  "worktree": {
+    "path": "/Users/hue/code/dopemux-mvp/.worktrees/integration-deps-2026-09",
+    "branch": "integration/deps-2026-09",
+    "base": "3e61f0d0a8931b1cb50bff83d29e70794aef930d",
+    "base_note": "origin/main tip after Wave 3 merges (#1301, #1316, #1317)",
+    "content_head": "6de2f30309db11ea79713382932a4320776ff1d1",
+    "final_head": "6de2f30309db11ea79713382932a4320776ff1d1"
+  },
+  "background": "TP-DMX-OPEN-PR-DRAIN-MERGE-001 Wave 2B (§15): PATCH/MINOR dependency batch. #1295 was pulled out after discovering it silently upgraded fastapi 0.135.2->0.141.1 (unpinned side-effect of uv lock re-resolution, not #1295's stated diff) which broke a route-introspection test via FastAPI's new _IncludedRouter lazy-wrapping. Confirmed via baseline worktree comparison against unmodified origin/main. Rebuilt with only #1298 (pip patch) and #1299 (postcss-selector-parser patch). #1295 reclassified for individual handling (Wave 2C).",
+  "files_changed": [
+    "package-lock.json",
+    "uv.lock"
+  ],
+  "validation": [
+    {"command": "uv lock --check", "exit_code": 0, "result": "PASS", "detail": "resolved 276 packages"},
+    {"command": "npm install --package-lock-only", "exit_code": 0, "result": "PASS", "detail": "no drift"},
+    {"command": "uv run --frozen pytest tests/unit tests/test_voice_core.py tests/test_brand_voice.py -n auto --disable-warnings --no-cov (with 1 pre-existing worktree-topology failure deselected)", "exit_code": 0, "result": "PASS", "detail": "1878 passed, 2 skipped"},
+    {"command": "uv run --frozen pytest services/working-memory-assistant/tests/test_mcp_http_endpoint.py", "exit_code": 0, "result": "PASS", "detail": "6 passed"},
+    {"command": "PYTHONPATH=src uv run --frozen pytest tests/dcp/ --deselect tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified", "exit_code": 0, "result": "PASS", "detail": "185 passed, 1 deselected"},
+    {"command": "uv run --frozen python scripts/brand_lint.py", "exit_code": 0, "result": "PASS", "detail": "0 errors, 0 warnings"}
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/integration-deps-2026-09 --add-dir /tmp/wave2b_audit --print=\"$(cat /tmp/wave2b_audit/PROMPT.txt)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-OPEN-PR-DRAIN-WAVE-2B-DEPS-001/AUDITOR_REPORT.md",
+    "findings": [
+      {"id": "F01", "severity": "INFO", "title": "Diff scope confined to uv.lock + package-lock.json only", "status": "RESOLVED", "body": "Verified via git diff --name-status."},
+      {"id": "F02", "severity": "INFO", "title": "uv.lock's only version change is pip 26.1.2->26.2", "status": "RESOLVED", "body": "Independently grepped."},
+      {"id": "F03", "severity": "INFO", "title": "package-lock.json's only version change is postcss-selector-parser 6.1.2->6.1.4", "status": "RESOLVED", "body": "Independently grepped."},
+      {"id": "F04", "severity": "INFO", "title": "FastAPI remains pinned at 0.135.2", "status": "RESOLVED", "body": "Regression confirmed excluded."},
+      {"id": "F05", "severity": "INFO", "title": "Route-contract test independently re-run", "status": "RESOLVED", "body": "3/3 passed."},
+      {"id": "F06", "severity": "INFO", "title": "No secrets, routine metadata only", "status": "RESOLVED", "body": "Version/hash/URL updates only."}
+    ],
+    "fixes_applied": [
+      "#1295 excluded from this batch after discovering the fastapi upgrade regression"
+    ],
+    "remaining_risks": [],
+    "skip_reason": null,
+    "instruction_like_content": {"detected": false, "match_count": 0, "truncated": false, "matches": []}
+  }
+}
