@@ -771,3 +771,38 @@ irrespective of this change.
 No option is taken unilaterally: `mcp-dope-context` is a host singleton shared
 across projects, and every path either mutates shared infrastructure or widens
 committed mount permissions.
+
+### Decision: defer the container recreate until PR #1304 merges (2026-09-04)
+
+Operator ruling. The config half is landed (`0994ce8a0`): the `/workspaces`
+bind is now read-only and fails closed on an unset `HOST_CODE_PARENT_DIR`.
+The container itself is **not** recreated yet.
+
+Why deferred rather than done now: only this branch's `compose.yml` contains
+the `/workspaces` mount — main's has none. Recreating today would mean running
+compose from the worktree, which changes the compose **project label** from
+`dopemux` to the worktree directory name. `container_name: mcp-dope-context`
+is pinned so there would be no duplicate container, but later
+`dopemux mcp` operations from main could stop recognising it as fleet-managed.
+That trades the current config drift for a different one. Merging #1304 makes
+the correct config canonical and turns the recreate into a routine operation.
+
+**Post-merge action (do in this order):**
+
+1. Ensure `HOST_CODE_PARENT_DIR` is exported — e.g. `/Users/hue/code`. It is
+   currently defined in neither `.envrc` nor `.envrc.dopemux-mcp`, and the
+   mount now **fails closed** without it rather than silently mounting `/tmp`.
+   Adding it to `.envrc.dopemux-mcp` is the natural home.
+2. `dopemux mcp up --services dope-context` from the main checkout. **Never
+   `down --services dope-context`** — it degrades to a full-fleet
+   `rm -f -s -v` and would wipe conport/litellm/pal/serena volumes.
+3. Verify the recreate: the three `DOPE_CONTEXT_*_EMBED_MODEL` overrides are
+   gone, `/workspaces` is mounted read-only at the right source, and
+   `build_code_collection_profile().content()` resolves to
+   `voyage-code-4` / `embeddings`.
+4. Drop the stale collection `code_2bd1584a_7a3fda64c982` (one point,
+   `model: voyage-context-4`, no `workspace_id`) so nothing reuses a pre-D1
+   vector space.
+
+Until step 2 runs, D1 remains correct, tested and audited in code, and inert in
+the deployed service.
