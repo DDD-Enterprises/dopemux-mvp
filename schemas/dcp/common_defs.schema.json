@@ -1,0 +1,417 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://frozen.dopemux.local/TP-UAG-C0-DCP-UAG-DOPETASK-AUTHORITY-INTERFACE-FREEZE-001-R2/schemas/common_defs.schema.json",
+  "title": "C0CommonDefinitions",
+  "description": "Shared JSON Schema Draft-07 definitions for TP-UAG-C0-DCP-UAG-DOPETASK-AUTHORITY-INTERFACE-FREEZE-001-R2. This file is not an instantiable document type. V1 cryptographic provider attestation is deferred; attestation_class permits only ABSENT or UNKNOWN.",
+  "definitions": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "Lowercase hex SHA-256 digest of canonical bytes."
+    },
+    "nonempty": {
+      "type": "string",
+      "minLength": 1
+    },
+    "iso8601": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 / ISO-8601 timestamp."
+    },
+    "evidenceStatus": {
+      "type": "string",
+      "enum": [
+        "OBSERVED",
+        "HISTORICALLY_RECORDED",
+        "CLAIMED",
+        "INFERRED",
+        "CONFLICTING",
+        "UNKNOWN",
+        "NOT_RUN"
+      ]
+    },
+    "validationResult": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FAIL",
+        "NOT_RUN"
+      ]
+    },
+    "compatibilityStatus": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "VERIFIED_WITH_TRANSFORMATION",
+        "DEGRADED",
+        "BLOCKED",
+        "UNKNOWN"
+      ]
+    },
+    "semanticLossClass": {
+      "type": "string",
+      "enum": [
+        "EXACT",
+        "EQUIVALENT_BY_PROFILE",
+        "NARROWING",
+        "MODEL_ONLY_SUPERSET_REQUIRES_CANONICAL_REVALIDATION",
+        "LOSSY",
+        "UNREPRESENTABLE",
+        "UNKNOWN"
+      ]
+    },
+    "attemptSemanticState": {
+      "type": "string",
+      "description": "Semantic attempt state space. FAILED_BEFORE_ACCEPTANCE is a transport observation, not a semantic state, and is not a legal value here; record it in the terminal stream/transport observation field. NON_ACCEPTANCE_PROVEN is the semantic conclusion and requires valid bound provider non-acceptance evidence.",
+      "enum": [
+        "NOT_SENT",
+        "NON_ACCEPTANCE_PROVEN",
+        "SENT_ACCEPTANCE_UNKNOWN",
+        "ACCEPTED_NO_OUTPUT",
+        "OUTPUT_STARTED",
+        "PRIVATE_STATE_EMITTED",
+        "TOOL_INTENT_EMITTED",
+        "EXTERNAL_SIDE_EFFECT_POSSIBLE",
+        "EXTERNAL_SIDE_EFFECT_CONFIRMED",
+        "COMPLETED",
+        "CANCEL_REQUESTED_TERMINATION_UNKNOWN"
+      ]
+    },
+    "identityStageName": {
+      "type": "string",
+      "enum": [
+        "requested",
+        "configured",
+        "policy_resolved",
+        "uag_resolved",
+        "attempted",
+        "gateway_reported",
+        "proxy_reported",
+        "provider_reported",
+        "provider_attested"
+      ]
+    },
+    "identityStage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stage",
+        "value",
+        "source",
+        "evidence_status",
+        "confidence"
+      ],
+      "properties": {
+        "stage": {
+          "$ref": "common_defs.schema.json#/definitions/identityStageName"
+        },
+        "value": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "timestamp": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "request_correlation_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evidence_status": {
+          "$ref": "common_defs.schema.json#/definitions/evidenceStatus"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "HIGH",
+            "MEDIUM",
+            "LOW",
+            "UNKNOWN"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        },
+        "attestation_class": {
+          "type": "string",
+          "enum": [
+            "ABSENT",
+            "UNKNOWN"
+          ],
+          "description": "Required when stage=provider_attested. Cannot be populated from aliases, ordinary model fields, proxy metadata, or gateway self-report. V1 permits only ABSENT or UNKNOWN. CRYPTOGRAPHIC_PROVIDER_ATTESTATION is deferred to a future schema revision and is rejected in V1."
+        }
+      }
+    },
+    "providerAttestedIdentityStage": {
+      "allOf": [
+        {
+          "$ref": "common_defs.schema.json#/definitions/identityStage"
+        },
+        {
+          "type": "object",
+          "required": [
+            "stage",
+            "attestation_class"
+          ],
+          "properties": {
+            "stage": {
+              "const": "provider_attested"
+            },
+            "attestation_class": {
+              "type": "string",
+              "enum": [
+                "ABSENT",
+                "UNKNOWN"
+              ],
+              "description": "V1 cryptographic provider attestation is deferred. CRYPTOGRAPHIC_PROVIDER_ATTESTATION is not a legal V1 value."
+            }
+          }
+        }
+      ]
+    },
+    "unknownItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "description"
+      ],
+      "properties": {
+        "code": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "description": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "evidence_status": {
+          "$ref": "common_defs.schema.json#/definitions/evidenceStatus"
+        }
+      }
+    },
+    "conflictItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "left",
+        "right",
+        "description"
+      ],
+      "properties": {
+        "code": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "left": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "right": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "description": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        }
+      }
+    },
+    "semanticLossReport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "class",
+        "blocking",
+        "declarations"
+      ],
+      "properties": {
+        "class": {
+          "$ref": "common_defs.schema.json#/definitions/semanticLossClass"
+        },
+        "blocking": {
+          "type": "boolean"
+        },
+        "declarations": {
+          "type": "array",
+          "items": {
+            "$ref": "common_defs.schema.json#/definitions/nonempty"
+          }
+        },
+        "omitted_constraints": {
+          "type": "array",
+          "items": {
+            "$ref": "common_defs.schema.json#/definitions/nonempty"
+          }
+        },
+        "unsupported_features": {
+          "type": "array",
+          "items": {
+            "$ref": "common_defs.schema.json#/definitions/nonempty"
+          }
+        }
+      }
+    },
+    "digestRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "sha256"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "sha256": {
+          "$ref": "common_defs.schema.json#/definitions/sha256"
+        },
+        "media_type": {
+          "type": "string"
+        }
+      }
+    },
+    "providerNonAcceptanceEvidenceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "sha256",
+        "logical_request_id",
+        "physical_attempt_id",
+        "exact_provider_api_route",
+        "evidence_class",
+        "provider_produced_or_policy_approved"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "sha256": {
+          "$ref": "common_defs.schema.json#/definitions/sha256"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "logical_request_id": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "physical_attempt_id": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "exact_provider_api_route": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "evidence_class": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "provider_produced_or_policy_approved": {
+          "const": true
+        }
+      },
+      "description": "Typed, digest-bound reference to a ProviderNonAcceptanceEvidence artifact whose body is owned outside this cross-system freeze. sha256 is that artifact's evidence_digest. The reference must bind the exact logical request, the exact physical attempt, and the exact provider/API route. It is not an untyped producer assertion: provider_produced_or_policy_approved is const true. Timeout or socket-close observation alone is never provider non-acceptance evidence. A UAG-local request ledger is correlation context only and can never substitute for this reference."
+    },
+    "noneExecutionAuthority": {
+      "type": "string",
+      "const": "NONE"
+    },
+    "exactlyOnceClaim": {
+      "type": "string",
+      "const": "FORBIDDEN"
+    },
+    "pathAllowlist": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "description": "fnmatch-style relative path pattern. Consumer may not widen."
+      }
+    },
+    "networkPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "class"
+      ],
+      "properties": {
+        "class": {
+          "type": "string",
+          "enum": [
+            "EXPLICIT_ALLOWLIST",
+            "LOCAL_PROFILE",
+            "DENIED",
+            "UNSPECIFIED_HOST_DEFAULT"
+          ]
+        },
+        "allowed_hosts": {
+          "type": "array",
+          "items": {
+            "$ref": "common_defs.schema.json#/definitions/nonempty"
+          }
+        },
+        "allowed_ports": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "description": "UNSPECIFIED_HOST_DEFAULT is insufficient when a grant requires an explicit class."
+    },
+    "credentialClass": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "class",
+        "origin_id"
+      ],
+      "properties": {
+        "class": {
+          "type": "string",
+          "enum": [
+            "OPERATOR_PROVIDED_OPAQUE_HANDLE",
+            "PROJECT_SCOPED_SECRET_STORE",
+            "RUNNER_HOST_DEFAULT",
+            "UNKNOWN"
+          ]
+        },
+        "origin_id": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "rotation_epoch": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "description": "RUNNER_HOST_DEFAULT and UNKNOWN are insufficient when a grant requires an explicit class."
+    },
+    "privateStateReplayScope": {
+      "type": "string",
+      "enum": [
+        "PROCESS_LIFETIME_ONLY",
+        "NONE"
+      ],
+      "description": "V1 private-state replay is process-lifetime only. There is no V1 cross-restart read path. CROSS_RESTART is not a legal V1 scope."
+    },
+    "crossRestartPrivateStateReplay": {
+      "const": "FORBIDDEN",
+      "description": "Cross-restart private-state replay is forbidden in V1."
+    }
+  }
+}

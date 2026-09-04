@@ -1,0 +1,82 @@
+FILE: common_defs.schema.json
+  title: C0CommonDefinitions
+  description: Shared JSON Schema Draft-07 definitions for TP-UAG-C0-DCP-UAG-DOPETASK-AUTHORITY-INTERFACE-FREEZE-001-R2. This file is n
+  external_refs: 25
+  local_refs: 0
+  top_properties_sample: []
+  required_sample: []
+
+FILE: dcp_route_authorization.schema.json
+  title: DCPRouteAuthorization
+  description: DCP_CONTROL_PLANE policy/routing/context authorization v1. This object is POLICY AUTHORITY ONLY. It grants no repository
+  external_refs: 18
+  local_refs: 0
+  top_properties_sample: ['schema_version', 'authorization_id', 'authority_class', 'execution_authority', 'issuer', 'issued_at', 'expires_at', 'policy_digest']
+  required_sample: ['schema_version', 'authorization_id', 'authority_class', 'execution_authority', 'issuer']
+
+FILE: dopetask_governed_execution_profile.schema.json
+  title: DopetaskGovernedExecutionProfile
+  description: Dopetask execution-mode freeze. LEGACY_LOCAL_MODE and GOVERNED_MODE are disjoint. In GOVERNED_MODE Dopetask consumes Mac
+  external_refs: 5
+  local_refs: 0
+  top_properties_sample: ['schema_version', 'mode', 'planner_invocation', 'grant_ref', 'bootstrap_axes', 'grant_override_policy', 'litellm_uag_v1', 'chained_fallback']
+  required_sample: ['schema_version', 'mode', 'planner_invocation', 'bootstrap_axes', 'grant_override_policy']
+
+FILE: governed_execution_receipt.schema.json
+  title: GovernedExecutionReceipt
+  description: Dopetask governed-execution receipt. Distinguishes policy_resolved and uag_resolved. Cannot self-certify workflow legali
+  external_refs: 33
+  local_refs: 0
+  top_properties_sample: ['schema_version', 'grant_ref', 'task_packet_digest', 'dcp_route_authorization_digest', 'uag_profile', 'runner_identity_stages', 'model_identity_stages', 'repo_worktree_identity']
+  required_sample: ['schema_version', 'grant_ref', 'task_packet_digest', 'dcp_route_authorization_digest', 'uag_profile']
+
+FILE: macro_execution_authority_ref_v2.schema.json
+  title: MacroExecutionAuthorityRefV2
+  description: Versioned family successor of MacroExecutionAuthorityRef v1 (dopemux-macro-execution-authority-ref.v1 from DMX-DELEGATED
+  external_refs: 22
+  local_refs: 0
+  top_properties_sample: ['schema_version', 'family', 'authority_id', 'issuer', 'issued_at', 'expires_at', 'nonce', 'idempotency_key']
+  required_sample: ['schema_version', 'family', 'lineage_parent', 'migration_semantics', 'authority_id']
+
+FILE: model_transport_receipt.schema.json
+  title: ModelTransportReceipt
+  description: Final UAG model-transport receipt. Identity stages remain separate. policy_resolved_identity and uag_resolved_identity M
+  external_refs: 26
+  local_refs: 0
+  top_properties_sample: ['schema_version', 'logical_request_id', 'attempt_ids', 'session_binding_ref', 'authorization_ref', 'compatibility_profile_ref', 'requested_identity', 'configured_identity']
+  required_sample: ['schema_version', 'logical_request_id', 'attempt_ids', 'authorization_ref', 'compatibility_profile_ref']
+
+FILE: tool_intent.schema.json
+  title: ToolIntent
+  description: UAG-emitted tool intent. Not a tool execution, approval, or grant. execution_authority is always NONE. Canonical ToolCon
+  external_refs: 7
+  local_refs: 0
+  top_properties_sample: ['schema_version', 'logical_tool_call_id', 'canonical_tool_contract_id', 'source_contract_digest', 'projection', 'arguments', 'attempt_ref', 'execution_authority']
+  required_sample: ['schema_version', 'logical_tool_call_id', 'canonical_tool_contract_id', 'source_contract_digest', 'projection']
+
+FILE: uag_compatibility_certification.schema.json
+  title: UAGCompatibilityCertification
+  description: Compatibility-registry certification roles and exact-tuple status. RUNTIME_UAG_MAY_NOT_SELF_PROMOTE_A_PROFILE_TO_VERIFIE
+  external_refs: 8
+  local_refs: 0
+  top_properties_sample: ['schema_version', 'tuple', 'status', 'roles', 'promoted_by', 'runtime_uag_self_promotion', 'installation_or_http_success_implies_verified', 'runtime_request_success_promotes_profile']
+  required_sample: ['schema_version', 'tuple', 'status', 'roles', 'runtime_uag_self_promotion']
+
+FILE: uag_transport_request.schema.json
+  title: UAGTransportRequest
+  description: UAG ingress request. Must reference an exact DCPRouteAuthorization digest and an exact UAGCompatibilityCertification dig
+  external_refs: 8
+  local_refs: 0
+  top_properties_sample: ['schema_version', 'logical_request_id', 'dcp_authorization_ref', 'selected_profile_ref', 'route_mutation', 'runner_envelope', 'public_conversation_state', 'family_envelopes']
+  required_sample: ['schema_version', 'logical_request_id', 'dcp_authorization_ref', 'selected_profile_ref', 'route_mutation']
+
+FILE: uag_transport_result.schema.json
+  title: UAGTransportResult
+  description: UAG egress result. Carries public output, ToolIntent references, attempt lineage, terminal state, usage, semantic-loss r
+  external_refs: 15
+  local_refs: 0
+  top_properties_sample: ['schema_version', 'logical_request_id', 'attempt_records', 'typed_stream_terminal', 'public_output', 'family_output_envelopes', 'private_state_capsule_refs', 'tool_intents']
+  required_sample: ['schema_version', 'logical_request_id', 'attempt_records', 'typed_stream_terminal', 'public_output']
+
+=== 10/10 JSON valid, Draft-07 meta-valid, 0 dangling refs, 126/126 contract tests pass ===
+=== manifest: 10 registered, all DESIGN_ONLY/L0, internal mapping consistent ===

@@ -1,0 +1,52 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1307,
+  "head_sha": "e6a1ce530b6f061d0ef1da06af9c21d16e52eae4",
+  "generated_at": "2026-09-04T05:20:44Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "opencode-cli",
+    "auditor_model": "kimi-k3",
+    "invocation": "opencode run --model cheaper-inference/kimi-k3 --message <bounded audit prompt> (read-only, no tools)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-01",
+        "severity": "INFO",
+        "title": "Structural consistency holds across all 10 published schemas",
+        "status": "RESOLVED",
+        "body": "Ref counts, property naming, and stated purposes are coherent; common_defs hub-and-spoke pattern verified."
+      },
+      {
+        "id": "F-02",
+        "severity": "LOW",
+        "title": "governed_execution_receipt has highest ref count (33 external refs)",
+        "status": "ACCEPTED_RISK",
+        "body": "Consistent with receipt aggregating execution status/mutations/evidence; future ref growth warrants re-check for responsibility creep."
+      },
+      {
+        "id": "F-03",
+        "severity": "INFO",
+        "title": "DESIGN_ONLY/L0 registration consistent with ratification publication",
+        "status": "RESOLVED",
+        "body": "All 10 schemas correctly registered as DESIGN_ONLY/L0 for a publication event; no premature runtime enforcement claim."
+      },
+      {
+        "id": "F-04",
+        "severity": "LOW",
+        "title": "macro_execution_authority_ref_v2 is the only versioned name among 10",
+        "status": "ACCEPTED_RISK",
+        "body": "v2 suffix implies v1 predecessor; v1 status is UNKNOWN; naming divergence is cosmetic and non-blocking."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "All 10 published schemas remain design-only (DESIGN_ONLY/L0); runtime producer and consumer validation is NOT_RUN.",
+      "governed_execution_receipt ref growth should be monitored in future schema-family reviews.",
+      "macro_execution_authority_ref_v1 status remains UNKNOWN."
+    ],
+    "skip_reason": null
+  }
+}
