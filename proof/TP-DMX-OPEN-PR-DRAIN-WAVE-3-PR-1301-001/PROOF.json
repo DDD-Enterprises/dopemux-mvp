@@ -1,0 +1,56 @@
+{
+  "packet_id": "TP-DMX-OPEN-PR-DRAIN-WAVE-3-PR-1301-001",
+  "status": "PASS",
+  "risk_lane": "L2",
+  "head_sha": "f2a72c6168113052d960d029e5814513f8558101",
+  "generated_at": "2026-09-04T12:59:00Z",
+  "repo_identity": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "remotes": {"origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git"},
+    "require_identity_match": true,
+    "match": true
+  },
+  "worktree": {
+    "path": "/Users/hue/code/dopemux-mvp/.worktrees/pr-1301",
+    "branch": "fix/gov-proof-only-filename-policy-001",
+    "base": "5900c27d3c38b515204bd5dc4baed8b5e14e2a8e",
+    "base_note": "merge-base with origin/main at audit time; already contains packet_dir support",
+    "content_head": "f2a72c6168113052d960d029e5814513f8558101",
+    "final_head": "f2a72c6168113052d960d029e5814513f8558101",
+    "final_head_note": "head_sha/content_head/final_head are pinned to the true content commit (unchanged since the original PR head) rather than any individual proof-only successor commit, since this file cannot self-reference the commit that contains it. All commits after f2a72c616 (packet bundle, PR-level signed proof, and this fixes_applied/remaining_risks update) are proof-only successors under proof/TP-DMX-OPEN-PR-DRAIN-WAVE-3-PR-1301-001/** and proof/pr_merge/embedded-audit/pr-1301/**."
+  },
+  "background": "TP-DMX-OPEN-PR-DRAIN-MERGE-001 Wave 3 (§17). Widens the governance proof-only validator to accept implementation-notes.md at the packet root, without touching the pr_merge reserved namespace. GitHub PR: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1301",
+  "files_changed": [
+    "scripts/governance/validate_change_contract.py",
+    "tests/governance/test_validate_change_contract.py"
+  ],
+  "validation": [
+    {"command": "git diff --check", "exit_code": 0, "result": "PASS"},
+    {"command": "python3 -m pytest tests/governance/test_validate_change_contract.py -v", "exit_code": 0, "result": "PASS", "detail": "30 passed"},
+    {"command": "python3 -m pytest tests/governance/", "exit_code": 0, "result": "PASS", "detail": "227 passed"}
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/pr-1301 --add-dir /tmp/audit_1301 --print=\"$(cat /tmp/audit_1301/PROMPT.txt)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-OPEN-PR-DRAIN-WAVE-3-PR-1301-001/AUDITOR_REPORT.md",
+    "findings": [
+      {"id": "F-01", "severity": "LOW", "title": "Regex widening applies only to the proof/[^/]+/ branch, pr_merge untouched", "status": "RESOLVED", "body": "Verified character-by-character against the actual diff."},
+      {"id": "F-02", "severity": "LOW", "title": "No smuggling risk", "status": "RESOLVED", "body": "Repo-wide grep confirms implementation-notes.md is never executed/imported/specially parsed."},
+      {"id": "F-03", "severity": "LOW", "title": "pr_merge namespace protection intact", "status": "RESOLVED", "body": "Explicit reject test for proof/pr_merge/embedded-audit/pr-1184/implementation-notes.md passes."}
+    ],
+    "fixes_applied": [
+      "proof/TP-DMX-OPEN-PR-DRAIN-WAVE-3-PR-1301-001/PROOF.json: risk_lane corrected L1_LOW -> L2 (Copilot review)"
+    ],
+    "remaining_risks": [
+      "Copilot also suggested tightening tests/governance/test_validate_change_contract.py's accept-case test with an additional 'assert r.proof_only is True'. Investigated: this test file has two unrelated pre-existing tests (test_proof_only_path_mismatch_detected_when_delta_readable, test_quarantine_forbids_signature) that dynamically read live git HEAD~1 and are fragile to whatever commit precedes HEAD -- adding any new commit on top (proof-only or not) can flip their outcome independent of code correctness. tests/governance/ is not part of the required CI 'Unit Tests' job so this is not a merge blocker. Not applying the suggestion here to avoid entangling an unrelated, pre-existing test-fragility issue with this PR's scope; left for separate remediation."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {"detected": false, "match_count": 0, "truncated": false, "matches": []}
+  }
+}

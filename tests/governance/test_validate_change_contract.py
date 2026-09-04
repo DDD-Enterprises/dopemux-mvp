@@ -446,6 +446,37 @@ def test_proof_only_arbitrary_pr_merge_path_fails() -> None:
     assert any(f.code == "proof_only_escaped_path" for f in r.findings)
 
 
+def test_proof_only_packet_root_implementation_notes_only_allowed() -> None:
+    r = evaluate(
+        paths=["proof/TP-DMX-EXAMPLE/implementation-notes.md"],
+        cwd=ROOT,
+        proof_only_mode=True,
+        content_head="a" * 40,
+        audited_head="a" * 40,
+        proof_head="a" * 40,
+        file_text={"proof/TP-DMX-EXAMPLE/implementation-notes.md": "# notes\n"},
+    )
+    assert not any(f.code == "proof_only_escaped_path" for f in r.findings)
+
+    for path in (
+        "proof/TP-DMX-EXAMPLE/random.md",
+        "proof/TP-DMX-EXAMPLE/nested/implementation-notes.md",
+        "proof/pr_merge/embedded-audit/pr-1184/implementation-notes.md",
+    ):
+        rejected = evaluate(
+            paths=[path],
+            cwd=ROOT,
+            proof_only_mode=True,
+            content_head="a" * 40,
+            audited_head="a" * 40,
+            proof_head="a" * 40,
+        )
+        assert rejected.status == "FAIL", path
+        assert any(
+            f.code == "proof_only_escaped_path" for f in rejected.findings
+        ), path
+
+
 def test_proof_only_review_bundle_evil_and_traversal_fail() -> None:
     for path in (
         "proof/pr_merge/embedded-audit/pr-1184/review_bundle/evil.bin",
