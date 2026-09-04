@@ -1,0 +1,68 @@
+{
+  "packet_id": "TP-DMX-OPEN-PR-DRAIN-WAVE-3-PR-1233-001",
+  "status": "PASS",
+  "risk_lane": "L0_DETERMINISTIC",
+  "head_sha": "6027687db442fad4d494529939c363c91108cf94",
+  "generated_at": "2026-09-04T12:15:00Z",
+  "repo_identity": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "remotes": {"origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git"},
+    "require_identity_match": true,
+    "match": true
+  },
+  "worktree": {
+    "path": "/Users/hue/code/dopemux-mvp/.worktrees/pr-1233",
+    "branch": "incident/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001",
+    "base": "75b4cfc581786a53445e412bfc8e25a6e0fdb978",
+    "base_note": "merge-base with origin/main at audit time",
+    "content_head": "6027687db442fad4d494529939c363c91108cf94",
+    "final_head": "6027687db442fad4d494529939c363c91108cf94"
+  },
+  "background": "TP-DMX-OPEN-PR-DRAIN-MERGE-001 Wave 3 (§17): bounded governance/evidence PR. Adds only evidence/documentation under proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/**, no runtime code. GitHub PR: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1233",
+  "files_changed": [
+    "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/INCIDENT_REPORT.md",
+    "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/AGY_AUDIT_GEMINI31_PHASE_A.md",
+    "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/AGY_AUDIT_GEMINI31_PHASE_A_RAW.json",
+    "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/AGY_VERSION.txt",
+    "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/PHASE_B_after_full_protection.json",
+    "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/PHASE_B_before_required_status_checks.json",
+    "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/PHASE_B_patch_response.json",
+    "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/branch_protection_main.json",
+    "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/canary_accidental_merge_commit.json",
+    "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/canary_pr1234_result.json",
+    "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/gate_workflow_history.txt",
+    "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/head_sha_check_runs.json",
+    "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/head_sha_status_api.json",
+    "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/merger_permission.json",
+    "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/pr1227_full.json",
+    "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/pr1227_timeline.json",
+    "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/pr1227_view.json",
+    "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/ruleset_13063360_detail.json",
+    "proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/rulesets_list.json"
+  ],
+  "validation": [
+    {"command": "git diff --check", "exit_code": 0, "result": "PASS"},
+    {"command": "grep -riE 'ghp_|github_pat_|bearer|authorization|token' proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/evidence/", "exit_code": 1, "result": "PASS", "detail": "no matches (secret scan)"}
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/pr-1233 --add-dir /tmp/audit_1233 --print=\"$(cat /tmp/audit_1233/PROMPT.txt)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-OPEN-PR-DRAIN-WAVE-3-PR-1233-001/AUDITOR_REPORT.md",
+    "findings": [
+      {"id": "FINDING-1", "severity": "INFO", "title": "Diff confined to proof/TP-DMX-CI-TRUST-MERGE-GATE-INCIDENT-001/**", "status": "RESOLVED", "body": "Verified: no runtime/workflow/schema files touched."},
+      {"id": "FINDING-2", "severity": "INFO", "title": "Evidence cross-checked and authentic", "status": "RESOLVED", "body": "branch_protection_main.json and pr1227_full.json spot-checked against INCIDENT_REPORT.md's claims; consistent."},
+      {"id": "FINDING-3", "severity": "INFO", "title": "Secret scan clean", "status": "RESOLVED", "body": "No exposed tokens/credentials found in evidence files."},
+      {"id": "FINDING-4", "severity": "INFO", "title": "Inert to runtime behavior", "status": "RESOLVED", "body": "Pure .md/.json/.txt documentation, no executable content."}
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null,
+    "instruction_like_content": {"detected": false, "match_count": 0, "truncated": false, "matches": []}
+  }
+}
