@@ -40,6 +40,8 @@ class LedgerEntry:
                 raise ValueError(f"LedgerEntry.{name} must be non-empty")
         if not isinstance(self.kind, CorrelationKind):
             raise ValueError("kind must be a CorrelationKind")
+        if not isinstance(self.evidence_status, EvidenceStatus):
+            raise ValueError("evidence_status must be an EvidenceStatus")
 
 
 @dataclass(frozen=True)

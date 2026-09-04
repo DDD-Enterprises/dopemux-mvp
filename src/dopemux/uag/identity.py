@@ -41,6 +41,10 @@ class IdentityStage:
             raise ValueError("stage must be an IdentityStageName")
         if not isinstance(self.source, str) or not self.source:
             raise ValueError("source must be a non-empty string")
+        if not isinstance(self.evidence_status, EvidenceStatus):
+            raise ValueError("evidence_status must be an EvidenceStatus")
+        if not isinstance(self.confidence, Confidence):
+            raise ValueError("confidence must be a Confidence")
         if self.stage is IdentityStageName.PROVIDER_ATTESTED:
             if self.attestation_class not in (AttestationClass.ABSENT, AttestationClass.UNKNOWN):
                 raise ValueError(

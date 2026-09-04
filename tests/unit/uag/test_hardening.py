@@ -7,6 +7,8 @@ Covers:
   F-4: UnknownItem.evidence_status must be validated as EvidenceStatus
   F-5: Receipt construction with various invalid execution_authority values
   F-6: canonical_json determinism under NaN/Infinity attack vectors
+  F-7: LedgerEntry.evidence_status must be validated as EvidenceStatus
+  F-8: IdentityStage.evidence_status / confidence must be enum-typed
 """
 
 from __future__ import annotations
@@ -15,10 +17,12 @@ import pytest
 
 from dopemux.uag.enums import (
     AttemptSemanticState,
+    Confidence,
     EvidenceStatus,
     ExecutionAuthority,
+    IdentityStageName,
 )
-from dopemux.uag.identity import UnknownItem
+from dopemux.uag.identity import IdentityStage, UnknownItem
 from dopemux.uag.ledger import CorrelationKind, LedgerEntry, MappingLedger
 from dopemux.uag.primitives import canonical_json
 from dopemux.uag.receipt import Receipt
@@ -165,3 +169,90 @@ class TestReceiptExecutionAuthorityEnforcement:
             semantic_state=AttemptSemanticState.COMPLETED,
         )
         assert r.execution_authority is ExecutionAuthority.NONE
+
+
+# ── F-7: LedgerEntry.evidence_status validated ────────────────────────────
+
+
+class TestLedgerEntryEvidenceStatusValidation:
+    """LedgerEntry must reject non-EvidenceStatus evidence_status values."""
+
+    def _make(self, evidence_status) -> LedgerEntry:
+        return LedgerEntry(
+            entry_id="e1",
+            kind=CorrelationKind.REQUEST_TO_ATTEMPT,
+            left_ref="r1",
+            right_ref="a1",
+            evidence_status=evidence_status,
+        )
+
+    def test_valid_status_accepted(self):
+        entry = self._make(EvidenceStatus.OBSERVED)
+        assert entry.evidence_status is EvidenceStatus.OBSERVED
+
+    def test_raw_string_rejected(self):
+        with pytest.raises(ValueError, match="EvidenceStatus"):
+            self._make("OBSERVED")  # type: ignore[arg-type]
+
+    def test_none_rejected(self):
+        with pytest.raises(ValueError, match="EvidenceStatus"):
+            self._make(None)  # type: ignore[arg-type]
+
+    def test_wrong_enum_type_rejected(self):
+        with pytest.raises(ValueError, match="EvidenceStatus"):
+            self._make(CorrelationKind.REQUEST_TO_ATTEMPT)  # type: ignore[arg-type]
+
+    def test_default_is_observed(self):
+        entry = LedgerEntry(
+            entry_id="e1",
+            kind=CorrelationKind.REQUEST_TO_ATTEMPT,
+            left_ref="r1",
+            right_ref="a1",
+        )
+        assert entry.evidence_status is EvidenceStatus.OBSERVED
+
+
+# ── F-8: IdentityStage evidence_status / confidence enum-typed ─────────────
+
+
+class TestIdentityStageEnumTypedFields:
+    """IdentityStage must reject non-enum evidence_status and confidence."""
+
+    def _make(
+        self,
+        *,
+        evidence_status=EvidenceStatus.OBSERVED,
+        confidence=Confidence.HIGH,
+    ) -> IdentityStage:
+        return IdentityStage(
+            stage=IdentityStageName.REQUESTED,
+            value="v",
+            source="test",
+            evidence_status=evidence_status,
+            confidence=confidence,
+        )
+
+    def test_valid_fields_accepted(self):
+        stage = self._make()
+        assert stage.evidence_status is EvidenceStatus.OBSERVED
+        assert stage.confidence is Confidence.HIGH
+
+    def test_evidence_status_raw_string_rejected(self):
+        with pytest.raises(ValueError, match="EvidenceStatus"):
+            self._make(evidence_status="OBSERVED")  # type: ignore[arg-type]
+
+    def test_evidence_status_none_rejected(self):
+        with pytest.raises(ValueError, match="EvidenceStatus"):
+            self._make(evidence_status=None)  # type: ignore[arg-type]
+
+    def test_confidence_raw_string_rejected(self):
+        with pytest.raises(ValueError, match="Confidence"):
+            self._make(confidence="HIGH")  # type: ignore[arg-type]
+
+    def test_confidence_none_rejected(self):
+        with pytest.raises(ValueError, match="Confidence"):
+            self._make(confidence=None)  # type: ignore[arg-type]
+
+    def test_confidence_wrong_enum_type_rejected(self):
+        with pytest.raises(ValueError, match="Confidence"):
+            self._make(confidence=EvidenceStatus.OBSERVED)  # type: ignore[arg-type]
