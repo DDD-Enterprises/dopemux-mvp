@@ -2,8 +2,8 @@
   "packet_id": "TP-DMX-OPEN-PR-DRAIN-WAVE-3-PR-1278-001",
   "status": "PASS",
   "risk_lane": "L0_DETERMINISTIC",
-  "head_sha": "3918a0cb60361ca4bbe61adbd6aa7dc96f283bd0",
-  "generated_at": "2026-09-04T12:32:00Z",
+  "head_sha": "978af9f523f8eff57cf04a4d6013bf2acc936942",
+  "generated_at": "2026-09-04T12:49:00Z",
   "repo_identity": {
     "project_id": "dopemux-mvp",
     "repo_marker": ".dopetaskroot",
@@ -17,10 +17,10 @@
     "branch": "redo/pr-1278-dnh-proof-metadata",
     "base": "f7f0ed626b33e855ae87b3f7fb657e15a60542c1",
     "base_note": "current main at redo time",
-    "content_head": "3918a0cb60361ca4bbe61adbd6aa7dc96f283bd0",
-    "final_head": "3918a0cb60361ca4bbe61adbd6aa7dc96f283bd0"
+    "content_head": "978af9f523f8eff57cf04a4d6013bf2acc936942",
+    "final_head": "978af9f523f8eff57cf04a4d6013bf2acc936942"
   },
-  "background": "TP-DMX-OPEN-PR-DRAIN-MERGE-001 Wave 3 (§17). Redo of #1278 (closed, superseded): base.sha predates the packet_dir fix in local_audit_acceptance.py. Content cherry-picked byte-identical onto current main, zero conflicts. GitHub PR: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1317",
+  "background": "TP-DMX-OPEN-PR-DRAIN-MERGE-001 Wave 3 (§17). Redo of #1278 (closed, superseded): base.sha predates the packet_dir fix in local_audit_acceptance.py. Content cherry-picked byte-identical onto current main, zero conflicts. Commit 978af9f fixes an allowlist indentation flagged by automated (Copilot) review; verified whitespace-only via json.loads(old)==json.loads(new), so the existing audit verdict carries forward without re-audit. GitHub PR: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1317",
   "files_changed": [
     "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/EVIDENCE_RECONCILIATION_RECEIPT.json",
     "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/PROOF.json",
