@@ -321,7 +321,7 @@ def inspect_container_mounts(
             continue
         source = str(mount.get("Source") or "")
         dest = str(mount.get("Destination") or "")
-        if source or dest:
+        if source and dest:
             out.append(f"{source}:{dest}")
     return sorted(set(out))
 

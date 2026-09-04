@@ -234,6 +234,23 @@ def test_inspect_container_mounts_never_raises_on_malformed_json():
     assert inspect_container_mounts("abc123", runner=runner) == []
 
 
+def test_inspect_container_mounts_rejects_one_sided_evidence():
+    def runner(*args, **kwargs):
+        return _fake_completed(
+            json.dumps(
+                [
+                    {"Source": "", "Destination": "/data"},
+                    {"Source": "/var/lib/dopemux/conport", "Destination": ""},
+                    {"Source": "/var/lib/dopemux/conport", "Destination": "/data"},
+                ]
+            )
+        )
+
+    mounts = inspect_container_mounts("abc123", runner=runner)
+    assert mounts == ["/var/lib/dopemux/conport:/data"]
+    assert not any(m.startswith(":") or m.endswith(":") for m in mounts)
+
+
 def test_inspect_container_mounts_never_invokes_mutating_docker_commands():
     seen_args: list = []
 

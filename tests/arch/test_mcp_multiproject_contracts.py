@@ -521,3 +521,5 @@ def test_no_runtime_effect_diff():
                 pytest.fail(f"Forbidden path mutated in P0's own merge range: {c}")
     except subprocess.CalledProcessError:
         pytest.skip("P0 merge range not available in this checkout")
+    except (FileNotFoundError, OSError):
+        pytest.skip("git binary not available in this environment")

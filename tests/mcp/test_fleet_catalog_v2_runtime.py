@@ -210,6 +210,8 @@ def test_live_catalog_files_are_untouched_by_this_packet():
         ).decode()
     except subprocess.CalledProcessError:
         pytest.skip("no trusted base ref available for git diff")
+    except (FileNotFoundError, OSError):
+        pytest.skip("git binary not available in this environment")
     changed = set(diff.splitlines())
     assert "mcp_catalog.yaml" not in changed
     assert "src/dopemux/mcp/default_catalog.yaml" not in changed

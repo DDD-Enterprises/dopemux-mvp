@@ -30,6 +30,14 @@ SCHEMA_VERSION = "dopemux.mcp.identity-registry.v1"
 REGISTRY_ENV = "DOPEMUX_MCP_IDENTITY_REGISTRY"
 DEFAULT_RELATIVE = Path(".dopemux/mcp/registry/identity.json")
 
+# Alias kinds treated as filesystem locators. Values of these kinds are
+# normalized (expanduser + resolve) both on write (_normalize_alias, used by
+# every register_*/add_alias call) and on read (identity.py's resolver
+# normalizes cwd the same way before matching) so a relative path, a
+# trailing slash, or a symlinked directory still matches its registered
+# alias -- see identity.py's ``resolve_execution_identity``.
+PATH_ALIAS_KINDS = frozenset({"path", "worktree_root", "project_root", "git_common_dir"})
+
 
 class IdentityRegistryError(RuntimeError):
     """Raised when the identity registry cannot be loaded, is corrupt, or a
@@ -61,11 +69,26 @@ def _empty_registry() -> Dict[str, Any]:
     }
 
 
+def normalize_path_alias_value(value: str) -> str:
+    """Canonicalize a filesystem-locator alias value: expand ``~`` and
+    resolve ``.``/``..``/symlinks so equivalent paths compare equal. Falls
+    back to the input unchanged if resolution fails (e.g. permission
+    errors) rather than raising -- this is a comparison aid, not validation.
+    """
+
+    try:
+        return str(Path(value).expanduser().resolve())
+    except OSError:
+        return value
+
+
 def _normalize_alias(kind: str, value: str) -> Dict[str, str]:
     if not kind or not kind.strip():
         raise IdentityRegistryError("alias kind must be non-empty")
     if not value or not value.strip():
         raise IdentityRegistryError("alias value must be non-empty")
+    if kind in PATH_ALIAS_KINDS:
+        value = normalize_path_alias_value(value)
     return {"kind": kind, "value": value}
 
 

@@ -20,14 +20,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from dopemux.mcp.identity_registry import IdentityRegistry
+from dopemux.mcp.identity_registry import (
+    PATH_ALIAS_KINDS,
+    IdentityRegistry,
+    normalize_path_alias_value,
+)
 
 SCHEMA_VERSION = "dopemux.mcp.resolved-execution-identity.v1"
-
-# Alias kinds treated as filesystem locators for cwd-based resolution. Any
-# other alias kind (origin_url, container_label, mcp_session, ...) is stored
-# as evidence but is never matched against a bare cwd here.
-PATH_ALIAS_KINDS = frozenset({"path", "worktree_root", "project_root", "git_common_dir"})
 
 
 @dataclass(frozen=True)
@@ -110,7 +109,10 @@ def resolve_execution_identity(
     if not actor_id or not actor_id.strip() or not client_id or not client_id.strip():
         return _denied(status="UNKNOWN", actor_id=actor_id, client_id=client_id)
 
-    cwd_str = str(cwd)
+    # Normalize the same way path-kind aliases are normalized on registration
+    # (identity_registry._normalize_alias) so a relative cwd, a trailing
+    # slash, or a symlinked directory still matches its registered alias.
+    cwd_str = normalize_path_alias_value(str(cwd))
     evidence_aliases: List[Dict[str, str]] = [
         {"kind": "cwd", "value": cwd_str, "role": "EVIDENCE_ONLY"}
     ]

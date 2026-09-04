@@ -1470,7 +1470,7 @@ def compile_catalog_v2(v1_catalog: dict[str, Any], topology: dict[str, Any]) -> 
 
 
 def legacy_client_placement(v2_catalog: dict[str, Any], server_id: str) -> str:
-    """"singleton" or "per-worktree" for one server, from the v2 catalog's
+    """Return "singleton" or "per-worktree" for one server, from the v2 catalog's
     ``defaults.per_worktree`` compatibility list -- the same list v1 already
     uses (see test_root_catalog_defaults_are_declared_per_worktree_servers).
     Sharing_class/identity_scope are NOT used here: they encode the R2

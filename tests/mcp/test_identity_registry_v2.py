@@ -163,6 +163,50 @@ def test_full_chain_alias_resolves_verified(tmp_path: Path):
     assert resolved.registry_generation == reg.generation
 
 
+def test_relative_cwd_resolves_registered_absolute_alias(tmp_path: Path, monkeypatch):
+    real_dir = tmp_path / "repo"
+    real_dir.mkdir()
+    reg = IdentityRegistry.load(tmp_path / "identity.json", create_missing=True)
+    pid = reg.register_project(aliases=[])
+    wid = reg.register_workspace(project_id=pid, aliases=[])
+    iid = reg.register_instance(
+        project_id=pid, workspace_id=wid, aliases=[{"kind": "worktree_root", "value": str(real_dir)}]
+    )
+
+    monkeypatch.chdir(tmp_path)
+    resolved = resolve_execution_identity(
+        cwd=Path("repo"), registry=reg, actor_id="operator", client_id="claude"
+    )
+    _validate(resolved)
+    assert resolved.resolution_status == "VERIFIED"
+    assert resolved.project_id == pid
+    assert resolved.workspace_id == wid
+    assert resolved.instance_id == iid
+
+
+def test_symlinked_cwd_resolves_registered_real_path_alias(tmp_path: Path):
+    real_dir = tmp_path / "real-repo"
+    real_dir.mkdir()
+    symlink_dir = tmp_path / "repo-link"
+    symlink_dir.symlink_to(real_dir)
+
+    reg = IdentityRegistry.load(tmp_path / "identity.json", create_missing=True)
+    pid = reg.register_project(aliases=[])
+    wid = reg.register_workspace(project_id=pid, aliases=[])
+    iid = reg.register_instance(
+        project_id=pid, workspace_id=wid, aliases=[{"kind": "worktree_root", "value": str(real_dir)}]
+    )
+
+    resolved = resolve_execution_identity(
+        cwd=symlink_dir, registry=reg, actor_id="operator", client_id="claude"
+    )
+    _validate(resolved)
+    assert resolved.resolution_status == "VERIFIED"
+    assert resolved.project_id == pid
+    assert resolved.workspace_id == wid
+    assert resolved.instance_id == iid
+
+
 def test_fx_ident_01_identical_basenames_distinct_projects(tmp_path: Path):
     """FX-IDENT-01: identical directory basenames across two projects must
     resolve to distinct registry project_id/endpoints; no alias-based
