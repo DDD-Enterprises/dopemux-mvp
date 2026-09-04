@@ -1,0 +1,17 @@
+Task Packet JSON parse: PASS, exit 0
+Task Packet canonical schema: PASS, exit 0; jsonschema CLI deprecation warning only
+Semantic contract JSON parse: PASS, exit 0
+Capability compiler focused tests: PASS, 13 passed, exit 0
+Capability plus existing fleet catalog suites: PASS, 83 passed, exit 0
+Compiler compileall: PASS, exit 0
+Ruff lint: PASS, exit 0
+Ruff format: initial check exit 1; formatter applied; focused tests rerun PASS; final format check PASS, exit 0
+Staged git diff check: PASS, exit 0
+Scoped pre-commit: PASS, exit 0; no hook mutation
+Changed-contract preflight at C1: PASS, exit 0, max_lane=L2, model_audit_required=True
+Independent AGY Gemini 3.1 Pro audit at C1: PASS, exit 0
+Runtime/client/provider probes: NOT_RUN by T0 authority
+PR-scoped finalization gate: NOT_RUN; no PR existed at audit time
+Merge: NOT_AUTHORIZED
+Activation: NOT_AUTHORIZED
+Mark ready: NOT_AUTHORIZED

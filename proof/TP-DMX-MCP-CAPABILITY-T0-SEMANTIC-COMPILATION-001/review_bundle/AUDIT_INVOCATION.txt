@@ -1,0 +1,16 @@
+AGY version: 1.1.22
+Requested selector: gemini-3.1-pro-high
+Observed local catalog display: Gemini 3.1 Pro (High)
+Audited head: f216854992526814beae93e38ee92bb0b7be1be3
+
+Parser-blocked precursor, exit 2, no model call:
+agy --model gemini-3.1-pro-high --effort high --mode plan --sandbox --disable-slash-commands --print --print-timeout 10m --prompt=<bounded exact-head T0 audit prompt>
+Error: --print consumed --print-timeout, so intended prompt was ignored.
+
+Controlling invocation, exit 0, one model call, no fallback:
+agy --model gemini-3.1-pro-high --effort high --mode plan --sandbox --disable-slash-commands --print-timeout 10m --print='Perform the one independent final L2 audit for Task Packet TP-DMX-MCP-CAPABILITY-T0-SEMANTIC-COMPILATION-001. Audit exact frozen substantive HEAD f216854992526814beae93e38ee92bb0b7be1be3 against origin/main in repository /Users/hue/code/dopemux-mvp/.worktrees/t0-semantic-compilation-001. Read AGENTS.md, the task packet, and changed files. Do not edit files, commit, push, open or modify PRs, access providers or runtime MCP services, run another model, or broaden scope. Review only concrete correctness, determinism, fail-closed semantics, schema-policy-code alignment, five-client target closure (claude, codex, opencode, gemini, copilot), explicit known non-target chatgpt handling, lifecycle/transport/exposure precedence, side-effect-free shadow posture, existing-config non-activation, and test sufficiency. Verify diff scope is allowlisted and HEAD matches the supplied SHA. Report findings first, ordered blocker/major/minor with file:line references. Distinguish observed from inferred and mark checks not run. End with exactly one verdict line: PASS, PASS_WITH_RISKS, or FAIL. PASS_WITH_RISKS is allowed only for explicitly non-blocking residual risks.'
+
+CLI warning before model output:
+--mode plan has no effect while slash command expansion is disabled.
+
+Sandbox remained enabled. Session identifier was not emitted in text output mode.
