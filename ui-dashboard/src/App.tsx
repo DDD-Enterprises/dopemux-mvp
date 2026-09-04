@@ -633,13 +633,26 @@ function DashboardApp() {
         <Collapse in={Boolean(errorMessage)}>
           <Alert
             severity="error"
-            icon={<AlertTriangle size={20} />}
+            icon={<AlertTriangle size={20} aria-hidden="true" />}
             onClose={() => setErrorMessage(null)}
             action={
               connectionStatus === 'degraded' ? (
-                <Button color="inherit" size="small" onClick={handleReconnect}>
-                  RECONNECT
-                </Button>
+                <Tooltip title="Attempt to re-establish connection to DØPEMÜX Ritual Daemon" arrow>
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={handleReconnect}
+                    aria-label="Retry connection to daemon"
+                    sx={{
+                      '&:focus-visible': {
+                        outline: `2px solid ${brandTokens.colors.errorRed}`,
+                        outlineOffset: 2,
+                      },
+                    }}
+                  >
+                    RECONNECT
+                  </Button>
+                </Tooltip>
               ) : null
             }
             sx={{
