@@ -1,3 +1,15 @@
+---
+id: 2026-09-03-mcp-multiproject-p0-identity-sharing-contract
+title: 2026 09 03 Mcp Multiproject P0 Identity Sharing Contract
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-09-03'
+last_review: '2026-09-03'
+next_review: '2026-12-02'
+prelude: 2026 09 03 Mcp Multiproject P0 Identity Sharing Contract (explanation) for
+  dopemux documentation and developer workflows.
+---
 # MCP Multi-Project P0 Identity + Sharing Contract Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

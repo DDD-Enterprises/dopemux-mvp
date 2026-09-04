@@ -9,7 +9,7 @@ import jsonschema
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 R2_TOPOLOGY_SHA256 = "df8636983e23c273eeb8eb517ea4019653b4c6bcb50cae344cde2e847214d4c2"
-R2_FALSIFICATION_SHA256 = "84b6e68f929e5b3f3ad37e9c2843755cc38a3a119fc87b5af057505d8ed83bcb"
+R2_FALSIFICATION_SHA256 = "9cd53e289114414df9d46b11126cc3a11117b318340b7c3c79ae3ae7d09693d6"
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()

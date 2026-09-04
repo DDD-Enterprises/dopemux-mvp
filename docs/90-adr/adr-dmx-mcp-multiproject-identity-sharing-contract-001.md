@@ -1,3 +1,20 @@
+---
+id: adr-dmx-mcp-multiproject-identity-sharing-contract-001
+title: Adr Dmx Mcp Multiproject Identity Sharing Contract 001
+type: adr
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-09-03'
+last_review: '2026-09-03'
+next_review: '2026-12-02'
+prelude: Adr Dmx Mcp Multiproject Identity Sharing Contract 001 (adr) for dopemux
+  documentation and developer workflows.
+status: proposed
+graph_metadata:
+  node_type: ADR
+  impact: medium
+  relates_to: []
+---
 # P0 Identity + Sharing Contract Specification
 
 **Program:** DMX-MCP-MULTIPROJECT

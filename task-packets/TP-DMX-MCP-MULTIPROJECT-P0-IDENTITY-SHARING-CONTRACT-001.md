@@ -1,3 +1,15 @@
+---
+id: TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001
+title: Tp Dmx Mcp Multiproject P0 Identity Sharing Contract 001
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-09-03'
+last_review: '2026-09-03'
+next_review: '2026-12-02'
+prelude: Tp Dmx Mcp Multiproject P0 Identity Sharing Contract 001 (explanation) for
+  dopemux documentation and developer workflows.
+---
 # TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001
 
 ## Identity
