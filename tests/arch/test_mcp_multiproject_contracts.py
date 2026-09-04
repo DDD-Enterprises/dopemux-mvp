@@ -244,3 +244,49 @@ def test_event_requires_fields(missing_field):
     del event[missing_field]
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate(event, schema)
+
+import subprocess
+
+def test_service_topology_targets_and_eligibility():
+    topology = json.loads((REPO_ROOT / "docs/03-reference/mcp/multiproject-service-topology.json").read_text())
+    services = {s["SERVICE_ID"]: s for s in topology["services"]}
+
+    conport = services["conport"]
+    assert conport["TARGET_CLASS"] == "PROJECT_SCOPED"
+    assert conport["ELIGIBLE_FOR_TARGET_NOW"] is False
+
+    dope_memory = services["dope-memory"]
+    assert dope_memory["TARGET_CLASS"] == "PROJECT_SCOPED"
+    assert "HOST_SINGLETON only after" in dope_memory["DEFERRED_OPTION"]
+
+    serena = services["serena"]
+    assert serena["TARGET_CLASS"] == "WORKTREE_SCOPED"
+
+    redis_events = services["redis-events"]
+    assert redis_events["TARGET_CLASS"] == "PROJECT_SCOPED"
+
+    task_orch = services["task-orchestrator-kotlin"]
+    assert "multi_project_singleton" not in str(task_orch)
+
+def test_p5_before_p4_dag():
+    adr = (REPO_ROOT / "docs/90-adr/adr-dmx-mcp-multiproject-identity-sharing-contract-001.md").read_text()
+    assert "redis-events logical -> PROJECT_SCOPED before dope-memory consolidation" in adr
+
+def test_no_runtime_effect_diff():
+    FORBIDDEN_P0_PATHS = [
+        "mcp_catalog.yaml",
+        "src/dopemux/mcp/",
+        "src/dopemux/commands/mcp_commands.py",
+        "services/",
+        "docker/",
+        ".mcp.json",
+    ]
+    try:
+        diff_out = subprocess.check_output(["git", "diff", "--name-only", "origin/main...HEAD"]).decode()
+        changed = diff_out.splitlines()
+        for fpath in FORBIDDEN_P0_PATHS:
+            for c in changed:
+                if c.startswith(fpath):
+                    pytest.fail(f"Forbidden path mutated: {c}")
+    except subprocess.CalledProcessError:
+        pytest.skip("No trusted base supplied to git diff")
