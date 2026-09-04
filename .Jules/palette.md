@@ -172,3 +172,7 @@
 ## 2026-07-18 - [Dynamic Focus Preservation on List Transitions]
 **Learning:** In highly interactive, stateful sequences (such as list-based task runners), transitioning to a new active item dynamically re-renders action controls. If keyboard focus is left on the previous item's controls, it can be dropped entirely when those controls are disabled or removed, resetting focus to the document body. Automatically restoring and advancing focus to the newly active item's primary action button preserves the user's navigational momentum and prevents tab-stop disorientation for screen reader and keyboard users.
 **Action:** When list elements transition states and modify interactive components, track the previous item id and only move focus when the id actually changes. Do not use a one-shot `isInitialMount` flag — React 18 StrictMode double-invokes mount effects in development and would steal focus on page load.
+
+## 2026-07-19 - [Keyboard Dismissal for Soft Confirmations]
+**Learning:** For transient 'Soft Confirmation' patterns (like 3-second 'Confirm Skip' or 'Confirm Reset' states), keyboard users need an immediate, explicit way to cancel the pending destructive state without waiting out the timeout or risking an accidental second activation. Binding the `Escape` key (`onKeyDown`) to reset confirmation states provides an intuitive safety hatch for keyboard navigation.
+**Action:** Always attach an `onKeyDown` handler listening for `Escape` to reset confirmation states on soft confirmation buttons.
