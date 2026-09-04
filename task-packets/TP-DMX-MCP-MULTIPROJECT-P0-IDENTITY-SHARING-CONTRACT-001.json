@@ -1,0 +1,303 @@
+{
+  "id": "TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001",
+  "project": "dopemux-mvp",
+  "target": "Freeze registry-backed MCP identity, sharing, lease, ownership, event namespace, and runner materialization contracts without runtime effect.",
+  "invariants": [
+    "This packet is L2 contract work only and must produce no service cutover, runtime mutation, container mutation, database mutation, runner-global configuration mutation, or migration.",
+    "The repo_binding.project_id value `dopemux-mvp` is the current Task Packet governance label only; it is not the future canonical MCP registry project_id.",
+    "Canonical MCP project identity is registry-issued and stable; Git common-dir, path, CWD, port, container, environment, MCP connection/session state, and clientInfo remain locators or evidence only.",
+    "Unknown or conflicting canonical identity cannot authorize mutable routing.",
+    "The only sharing classes are HOST_SINGLETON, PROJECT_SCOPED, WORKTREE_SCOPED, and RETIRED.",
+    "ConPort Wave 2 remains unauthorized; this packet may freeze its gate but may not implement or authorize it.",
+    "dope-memory V1 target is PROJECT_SCOPED; host-singleton remains deferred.",
+    "Serena V1 remains WORKTREE_SCOPED; host-singleton remains deferred.",
+    "redis-events project isolation must precede dope-memory project consolidation.",
+    "Normal runner launch or worktree switching must not rewrite shared global runner configuration.",
+    "MCP protocol or SDK session identity must never substitute for registry-backed tenancy.",
+    "Every service topology flip remains blocked by its exact flip gate and zero-tolerance falsification.",
+    "Current runtime files that implement v1 identity, catalog, leases, launch, or services are forbidden in this packet and remain P1-or-later work."
+  ],
+  "depends_on": [
+    "DMX-MCP-MULTIPROJECT-G0-RATIFICATION-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-MULTIPROJECT",
+    "base_branch": "origin/main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/mcp-multiproject-p0-identity-sharing-contract",
+    "base_branch": "origin/main",
+    "stacked_because": "Not stacked. Execute in an isolated worktree from current main after a separate operator P0 execution gate."
+  },
+  "commit": {
+    "message": "feat(mcp): freeze multiproject identity and sharing contracts",
+    "allowlist": [
+      "task-packets/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001.json",
+      "task-packets/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001.md",
+      "task-packets/INDEX.md",
+      "docs/90-adr/adr-dmx-mcp-multiproject-identity-sharing-contract-001.md",
+      "docs/03-reference/mcp/multiproject-service-topology.json",
+      "docs/03-reference/mcp/multiproject-falsification-contract.md",
+      "docs/superpowers/plans/2026-09-03-mcp-multiproject-p0-identity-sharing-contract.md",
+      "schemas/mcp/fleet-catalog-v2.schema.json",
+      "schemas/mcp/resolved-execution-identity.schema.json",
+      "schemas/mcp/service-topology.schema.json",
+      "schemas/mcp/service-lease-v2.schema.json",
+      "schemas/mcp/ownership-evidence.schema.json",
+      "schemas/mcp/runner-materialization-receipt.schema.json",
+      "schemas/mcp/project-event-envelope.schema.json",
+      "tests/arch/test_mcp_multiproject_contracts.py",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/PROOF.json",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/AUDITOR_REPORT.md",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/implementation-notes.md",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/SHA256SUMS.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/review_bundle/AUDIT_INPUT.md",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/review_bundle/AUDIT_OUTPUT.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/review_bundle/AUDIT_INVOCATION.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/review_bundle/HEAD.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/review_bundle/DIFF_NAME_STATUS.txt",
+      "proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/review_bundle/VALIDATION.txt"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py",
+      "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_runtime_registry.py",
+      "git diff --check",
+      "pre-commit run --files $(git diff --name-only origin/main...HEAD)"
+    ]
+  },
+  "pr": {
+    "title": "feat(mcp): freeze multiproject identity and sharing contracts",
+    "body": "## Summary\n- publish the ratified R2 P0 identity/sharing contract as design-only schemas and references\n- preserve current v1 runtime unchanged\n- add fail-closed negative contract tests\n\n## Boundaries\n- no service cutover or runtime mutation\n- no ConPort Wave 2\n- no global runner config rewrite\n- no merge or activation authority\n\n## Audit\n- one final independent L2 audit on the frozen substantive content head\n",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "preflight",
+      "task": "Bind current repository state, G0 architecture authority, exact allowlist, open-PR overlap, and isolated-worktree execution before any edit.",
+      "requirements": [
+        "Reharvest current main; authoring observation is 04be55535d1582c304cf31a02923fb9c521ab547.",
+        "Read the current root AGENTS.md and any closer scoped AGENTS.md before edits.",
+        "Use a new isolated worktree; do not reuse the detached R0 checkout or any foreign worktree.",
+        "Reharvest open PR exact-path overlap, including PR #1297 and MCP SDK compatibility PR #1271 if still open.",
+        "Stop if current main materially changes any allowed P0 path or governing identity/authority contract."
+      ],
+      "commands": [
+        "git fetch origin main",
+        "git rev-parse origin/main",
+        "git status --short",
+        "git worktree list --porcelain"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Current main, branch, worktree, clean-state, and overlap evidence are recorded before mutation.",
+        "No forbidden runtime/service file is added to the allowlist."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docs/90-adr/adr-conport-canonical-record-service-v2.md",
+        "schemas/mcp/fleet-catalog.schema.json",
+        "src/dopemux/mcp/project_identity.py",
+        "src/dopemux/mcp/port_leases.py"
+      ]
+    },
+    {
+      "id": "contract-spine",
+      "task": "Publish the P0 ADR, exact R2 service topology and falsification references, packet bytes, plan, and registry index entry without changing current runtime.",
+      "requirements": [
+        "R2 source package must remain bound to SHA-256 fa78556b2d51cd3b22d8c42ff36bd6c3964172ddee6a75662cde61db438e3996.",
+        "Service topology copy must hash to df8636983e23c273eeb8eb517ea4019653b4c6bcb50cae344cde2e847214d4c2.",
+        "Falsification contract copy must hash to 84b6e68f929e5b3f3ad37e9c2843755cc38a3a119fc87b5af057505d8ed83bcb.",
+        "ADR must preserve all ten operator binding conditions."
+      ],
+      "commands": [
+        "mkdir -p docs/03-reference/mcp docs/superpowers/plans schemas/mcp tests/arch",
+        "cp <frozen-P0-package>/sources/02_SERVICE_TOPOLOGY.json docs/03-reference/mcp/multiproject-service-topology.json",
+        "cp <frozen-P0-package>/sources/04_FALSIFICATION_CONTRACT.md docs/03-reference/mcp/multiproject-falsification-contract.md"
+      ],
+      "expected_files": [
+        "docs/90-adr/adr-dmx-mcp-multiproject-identity-sharing-contract-001.md",
+        "docs/03-reference/mcp/multiproject-service-topology.json",
+        "docs/03-reference/mcp/multiproject-falsification-contract.md",
+        "task-packets/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001.json",
+        "task-packets/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001.md",
+        "task-packets/INDEX.md",
+        "docs/superpowers/plans/2026-09-03-mcp-multiproject-p0-identity-sharing-contract.md"
+      ],
+      "validation": [
+        "Exact source hashes match the frozen R2 members.",
+        "Current v1 catalog, identity implementation, lease implementation, service code, compose, and runner-global configs are unchanged."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "identity-schema",
+      "task": "Add a strict resolved-execution-identity design schema that makes registry identity authoritative and aliases evidence-only.",
+      "requirements": [
+        "VERIFIED identity requires project_id, workspace_id, instance_id, registry_generation, actor_id, and client_id.",
+        "CONFLICTING or UNKNOWN identity forces mutable_routing_allowed=false.",
+        "Path/CWD/env/clientInfo/session/port/container facts may appear only in evidence/alias fields."
+      ],
+      "commands": [
+        "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py -k resolved_identity"
+      ],
+      "expected_files": [
+        "schemas/mcp/resolved-execution-identity.schema.json",
+        "tests/arch/test_mcp_multiproject_contracts.py"
+      ],
+      "validation": [
+        "Positive VERIFIED fixture validates.",
+        "Missing IDs, stale/conflicting registry generation, and evidence-only identity override fixtures fail closed."
+      ],
+      "context_files": [
+        "docs/90-adr/adr-conport-canonical-record-service-v2.md"
+      ]
+    },
+    {
+      "id": "topology-and-catalog-v2",
+      "task": "Add design-only service-topology and fleet-catalog-v2 schemas while preserving the live v1 catalog and loader.",
+      "requirements": [
+        "fleet-catalog-v2 version is exactly 2.",
+        "Legacy scope/state_scope/multi_project_singleton fields are rejected by the v2 schema.",
+        "Every v2 server declares sharing_class, target_class, identity_scope, state_authority, mutation_class, endpoint_policy, probe, idle_policy, and flip_gate.",
+        "R2 service topology validates as exactly 26 rows over the four allowed sharing classes."
+      ],
+      "commands": [
+        "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py -k 'topology or catalog_v2'"
+      ],
+      "expected_files": [
+        "schemas/mcp/fleet-catalog-v2.schema.json",
+        "schemas/mcp/service-topology.schema.json",
+        "tests/arch/test_mcp_multiproject_contracts.py"
+      ],
+      "validation": [
+        "Synthetic v2 catalog validates.",
+        "Legacy v1-only sharing fields and unauthorized multi_project_singleton fail.",
+        "Live mcp_catalog.yaml remains version 1 and byte-unmodified by this packet."
+      ],
+      "context_files": [
+        "mcp_catalog.yaml",
+        "schemas/mcp/fleet-catalog.schema.json",
+        "src/dopemux/mcp/fleet_catalog.py"
+      ]
+    },
+    {
+      "id": "lease-and-ownership",
+      "task": "Add design-only endpoint lease and ownership-evidence schemas that refuse foreign or ambiguous mutation.",
+      "requirements": [
+        "PROJECT_SCOPED leases require project_id; WORKTREE_SCOPED leases require project_id and instance_id.",
+        "RETIRED services cannot own leases.",
+        "Lease endpoint authority does not create domain authority.",
+        "mutation_eligible=true is valid only for OWNED classification with registry, exact lease, service-family probe, and storage/mount corroboration."
+      ],
+      "commands": [
+        "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py -k 'lease or ownership'"
+      ],
+      "expected_files": [
+        "schemas/mcp/service-lease-v2.schema.json",
+        "schemas/mcp/ownership-evidence.schema.json",
+        "tests/arch/test_mcp_multiproject_contracts.py"
+      ],
+      "validation": [
+        "Stale, foreign, ambiguous, and label-only ownership fixtures cannot authorize mutation.",
+        "No lease fixture derives ownership from a port formula or path hash."
+      ],
+      "context_files": [
+        "src/dopemux/mcp/port_leases.py"
+      ]
+    },
+    {
+      "id": "runner-and-event-contracts",
+      "task": "Add design-only runner materialization receipt and project event-envelope schemas.",
+      "requirements": [
+        "Runner receipt authority is PROVENANCE_ONLY.",
+        "shared_global_config_mutated is always false.",
+        "Strict runner mode cannot claim success with inherited_surface_status UNKNOWN.",
+        "Every project event has explicit project_id, workspace_id, instance_id, registry_generation, source service, event identity, and payload digest.",
+        "The event contract does not authorize Redis migration or canonical promotion."
+      ],
+      "commands": [
+        "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py -k 'materialization or event'"
+      ],
+      "expected_files": [
+        "schemas/mcp/runner-materialization-receipt.schema.json",
+        "schemas/mcp/project-event-envelope.schema.json",
+        "tests/arch/test_mcp_multiproject_contracts.py"
+      ],
+      "validation": [
+        "Global rewrite, missing identity, and unscoped event fixtures are rejected.",
+        "The event schema remains transport evidence, not canonical-domain authority."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "cross-contract-negative-gates",
+      "task": "Add cross-contract static/adversarial tests for authority, exact hashes, P5-before-P4 ordering, and P0 no-runtime-effect.",
+      "requirements": [
+        "Tests assert the ten G0 binding conditions and P0 tranche stop conditions.",
+        "Tests assert current runtime identity and v1 catalog files are not modified in the P0 diff.",
+        "Tests assert dope-memory V1=PROJECT_SCOPED, Serena V1=WORKTREE_SCOPED, P5 precedes P4, and ConPort target is gated."
+      ],
+      "commands": [
+        "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py"
+      ],
+      "expected_files": [
+        "tests/arch/test_mcp_multiproject_contracts.py"
+      ],
+      "validation": [
+        "All cross-contract negative gates pass with zero authority-widening fixture accepted."
+      ],
+      "context_files": [
+        "docs/03-reference/mcp/multiproject-service-topology.json",
+        "docs/03-reference/mcp/multiproject-falsification-contract.md"
+      ]
+    },
+    {
+      "id": "freeze-audit-finality",
+      "task": "Run the full P0 gate, freeze substantive bytes, obtain one independent L2 audit, record proof, and stop at operator merge decision.",
+      "requirements": [
+        "Do not audit an intermediate content head.",
+        "A substantive repair creates a new content head and requires a new final audit.",
+        "A proof-only successor may preserve the audit only after deterministic ancestry and exact-path closure validation.",
+        "Do not mark ready, merge, activate, authorize Wave 2, or dispatch P1 without their separate gates."
+      ],
+      "commands": [
+        "python -m jsonschema -i task-packets/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "uv run --extra test pytest -q tests/arch/test_mcp_multiproject_contracts.py tests/arch/test_mcp_fleet_catalog_contract.py tests/unit/test_mcp_runtime_registry.py",
+        "git diff --check",
+        "pre-commit run --files $(git diff --name-only origin/main...HEAD)"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/PROOF.json",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/AUDITOR_REPORT.md",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/implementation-notes.md",
+        "proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/SHA256SUMS.txt"
+      ],
+      "validation": [
+        "Exact allowlist passes.",
+        "Focused and relevant complete suites pass or every nonzero result is explicitly classified and blocks readiness when required.",
+        "Final audit is bound to the frozen substantive content head.",
+        "PR Steward finality is run only after current exact-head proof is valid."
+      ],
+      "context_files": []
+    }
+  ]
+}
