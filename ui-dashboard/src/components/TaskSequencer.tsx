@@ -826,6 +826,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                   }
                 }
               }}
+              aria-label={
+                isResetConfirming
+                  ? 'Confirm reset task sequence and clear all progress'
+                  : 'Reset task sequence'
+              }
               sx={{
                 borderColor: isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint,
                 color: isResetConfirming ? brandTokens.colors.saintGold : brandTokens.colors.serumMint,

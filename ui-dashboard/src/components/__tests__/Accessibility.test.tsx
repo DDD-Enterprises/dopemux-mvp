@@ -192,6 +192,50 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('role="status"');
   expect(content).toContain("All tasks muzzled. Excellent work.");
   expect(content).toContain("No tasks matching current cognitive state threshold.");
+
+  // Verify Reset Ritual predictive aria-label and Escape key soft confirmation cancellation
+  expect(content).toMatch(/aria-label=\{\s*isResetConfirming\s*\?\s*'Confirm reset task sequence and clear all progress'\s*:\s*'Reset task sequence'\s*\}/);
+});
+
+test('TaskSequencer Reset Ritual soft confirmation and Escape cancellation in DOM', () => {
+  const cognitiveState = {
+    energy: 80,
+    attention: 70,
+    load: 40,
+    status: 'optimal' as const,
+    recommendation: 'Complete tasks.',
+  };
+
+  render(<TaskSequencer cognitiveState={cognitiveState} />);
+
+  // Complete current tasks to reach the completed ritual state with Reset button
+  const completeBtn = screen.getByRole('button', { name: /Complete /i });
+  fireEvent.click(completeBtn);
+
+  const completeBtn2 = screen.getByRole('button', { name: /Complete /i });
+  fireEvent.click(completeBtn2);
+
+  const completeBtn3 = screen.getByRole('button', { name: /Complete /i });
+  fireEvent.click(completeBtn3);
+
+  // Initial Reset button state
+  const resetButton = screen.getByRole('button', { name: 'Reset task sequence' });
+  expect(resetButton).toBeInTheDocument();
+
+  // First click triggers soft confirmation state
+  fireEvent.click(resetButton);
+
+  const confirmResetButton = screen.getByRole('button', {
+    name: 'Confirm reset task sequence and clear all progress',
+  });
+  expect(confirmResetButton).toBeInTheDocument();
+
+  // Pressing Escape cancels soft confirmation state
+  fireEvent.keyDown(confirmResetButton, { key: 'Escape' });
+
+  expect(
+    screen.getByRole('button', { name: 'Reset task sequence' })
+  ).toBeInTheDocument();
 });
 
 test('TaskSequencer.tsx handles Escape key to cancel soft confirmation for Skip', () => {
