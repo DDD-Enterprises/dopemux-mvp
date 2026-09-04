@@ -153,6 +153,95 @@ exceeds $10, stop and re-estimate rather than continuing.
   collections prefixed `eval_`; nothing under `src/` or `tests/` is modified
   by benchmark runs. Reason: the review of the Rev 2.1 design (finding B12)
   found Wave 0 could not ship without a home for the harness.
+- `services/dope-context/src/index_profile.py` — **amendment A2 2026-09-04,
+  APPROVED** (see below). Canonical writer of
+  `build_code_collection_profile()`, which is where `content_vec`'s model and
+  endpoint are actually set. The D1 change lives here, not in
+  `indexing_pipeline.py`.
+- `services/dope-context/src/embeddings/model_registry.py` — **amendment A2
+  2026-09-04, APPROVED** (see below). `MODEL_SPECS` does not
+  contain `voyage-code-4`, and `_vector_profile()` calls `get_model_spec()` +
+  `validate_dimension()`, both of which reject unregistered models. D1 cannot
+  be implemented without registering it here first.
+
+## Governance amendment A2 — Allowed-Files correction for the D1 implementation (2026-09-04)
+
+```text
+AMENDMENT_ID=A2
+AMENDMENT_STATUS=APPROVED
+APPROVED_BY=operator (session 3d420c77, 2026-09-04)
+AMENDMENT_ADDS_ALLOWED_FILES=services/dope-context/src/index_profile.py, services/dope-context/src/embeddings/model_registry.py
+REQUIRES_COMPANION_ADR_226_AMENDMENT=YES (regex extension; neither file is exempt today)
+AUTHORIZES_CONTENT_EDITS=NO (path-level only; TEXT_RULES scanning still applies)
+WAVES_1_4_SRC_LIFT=STILL_NOT_AUTHORIZED (this amendment is scoped to these two files only)
+```
+
+**Finding (observed 2026-09-04, after the Wave 0 benchmark produced the D1
+numbers).** This packet's Allowed Files do not cover where the D1 change
+actually has to be made. The named files are wrong in two ways:
+
+1. `content_vec`'s model and endpoint are set in
+   `build_code_collection_profile()` at `services/dope-context/src/index_profile.py:245-292`
+   — not in `indexing_pipeline.py` (which consumes an already-built profile)
+   and not in `mcp/server.py` (which already queries with
+   `content_profile.model`, verified at `server.py:1237`, so the query side
+   needs no change at all). The packet named the two files that *don't* need
+   editing and omitted the one that does.
+2. `MODEL_SPECS` in `services/dope-context/src/embeddings/model_registry.py`
+   registers seven models and `voyage-code-4` is not among them (live-verified
+   2026-09-04: the flat `embed` endpoint supports it, the API's own
+   unknown-model error lists it). `_vector_profile()` validates every model
+   through `get_model_spec()` and `validate_dimension()`, both of which raise
+   on an unregistered name — so the D1 target model must be registered before
+   the profile can reference it.
+
+**Scope.** Exactly these two files. This amendment does not lift the lane for
+any other path under `services/dope-context/src/**`; Waves 1–4 still each
+require their own packet enumeration and their own ADR-226 regex extension.
+
+**Companion requirement.** ADR-226's carve-out regex in
+`src/dopemux/dcp/red_lane_rules.py` currently exempts only `eval/`,
+`src/pipeline/indexing_pipeline.py`, `src/mcp/server.py`, and
+`tests/test_vector_space_invariants.py`. Both files added here are still
+hard-blocked by that regex, so this packet amendment is inert on its own —
+it must land together with the ADR-226 A2 amendment (exact regex change
+specified there) or the files remain uneditable.
+
+## Benchmark outcome — D1 and D3 decided on measurements (2026-09-04)
+
+Packet Plan steps 4 and 5 ("Record the numbers…", "Choose a direction on the
+measurements") are satisfied by
+`claudedocs/dope-context-eval-results-2026-09-03.md` (commit `4561980fc`;
+the write-up lives in `claudedocs/` rather than the
+`docs/03-reference/systems/dope-context/vector-space-benchmark-<date>.md`
+path named above because commit `ba5178715` relocated it for the
+markdown-location-guard CI check).
+
+Whole-repo corpus, 2,754 files / ~38K chunks, 41 queries, `top_k=20`, all
+real paid API calls:
+
+| Profile | Recall@5 | Recall@20 | MRR | NDCG@10 | Cost |
+|---|---|---|---|---|---|
+| A (`voyage-context-4`, contextualized) | 0.780 | 0.951 | 0.677 | 0.714 | $1.126 |
+| **B (`voyage-code-4`, flat)** | **0.951** | **1.000** | **0.855** | **0.890** | $1.181 |
+| Bh (B + scope header) | 0.951 | 1.000 | 0.729 | 0.788 | $1.327 |
+| CTRL (index/query space mismatch) | 0.000 | 0.000 | 0.000 | 0.000 | $0.0002 |
+| Bhl (phase-1 corpus only) | 1.000 | 1.000 | 0.795 | 0.848 | $0.627 |
+
+**D1 — code vector space: `voyage-code-4` on the flat `embeddings` endpoint,
+both index and query sides.** B wins every measured metric at whole-repo
+distractor scale and is cheaper than both alternatives. A, the contextualized
+option, is the weakest working profile — its cross-chunk context does not pay
+off at scale. Phase 1's 33-file corpus could not discriminate (all three
+profiles saturated at Recall 1.0); the whole-repo run is what made this
+decision-grade. CTRL collapsing to an exact 0.0 confirms the metrics
+discriminate rather than always-pass.
+
+**D3 — LLM situating-context layer: off by default.** Bhl ties Bh and still
+loses to B at phase-1 scale while costing ~40x more per query. A whole-repo
+Bhl run was never made: real per-chunk extrapolation projects **~$51 for the
+LLM step alone**, over 5x this packet's $10 ceiling, which is a stop
+condition. Total real spend for the whole benchmark: **$4.95 of $10**.
 
 ## Governance amendment — DCP-RED-MERGE-SEAM-0001 carve-out (2026-09-03)
 

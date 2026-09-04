@@ -32,18 +32,23 @@ FORBIDDEN_PATHS = [
     re.compile(r"^services/task-orchestrator/.*$"),
     re.compile(r"^services/dopecon-bridge/.*$"),
     # DCP-RED-MERGE-SEAM-0001 narrow carve-out (ADR-226, TP-DOPECONTEXT-VECTOR-SPACE-0004
-    # governance amendment 2026-09-03): the offline benchmark harness directory
-    # services/dope-context/eval/ and exactly the three service files named in packet
-    # 0004's Allowed Files are exempt from the path-level block. Every other path under
-    # services/dope-context/ (the rest of src/ and tests/, Dockerfile, constraints,
-    # near-miss filenames, same-named files in other directories) remains hard-blocked.
-    # TEXT_RULES content scanning in red_lane_scanner.py is untouched by this carve-out
-    # and still applies to the exempted paths.
+    # governance amendment 2026-09-03, extended by amendment A2 2026-09-04): the offline
+    # benchmark harness directory services/dope-context/eval/ and exactly the five service
+    # files named in packet 0004's Allowed Files are exempt from the path-level block.
+    # A2 added src/index_profile.py and src/embeddings/model_registry.py, which are the
+    # canonical writers the settled D1 decision actually needs; the two originally-named
+    # service files neither set content_vec's model/endpoint nor need a query-side edit.
+    # Every other path under services/dope-context/ (the rest of src/ and tests/,
+    # Dockerfile, constraints, near-miss filenames, same-named files in other directories)
+    # remains hard-blocked. TEXT_RULES content scanning in red_lane_scanner.py is untouched
+    # by this carve-out and still applies to the exempted paths.
     re.compile(
         r"^services/dope-context/"
         r"(?!eval/)"
         r"(?!src/pipeline/indexing_pipeline\.py$)"
         r"(?!src/mcp/server\.py$)"
+        r"(?!src/index_profile\.py$)"
+        r"(?!src/embeddings/model_registry\.py$)"
         r"(?!tests/test_vector_space_invariants\.py$)"
         r".*$"
     ),

@@ -118,8 +118,11 @@ def test_nested_carved_out_filename_remains_blocked():
 
 
 # ---------------------------------------------------------------------------
-# ADR-226 / TP-DOPECONTEXT-VECTOR-SPACE-0004 governance amendment (2026-09-03):
-# narrow services/dope-context carve-out — eval/ directory + three exact files
+# ADR-226 / TP-DOPECONTEXT-VECTOR-SPACE-0004 governance amendment (2026-09-03,
+# extended by amendment A2 2026-09-04): narrow services/dope-context carve-out —
+# eval/ directory + five exact files. A2 added src/index_profile.py and
+# src/embeddings/model_registry.py, the canonical writers the settled D1 decision
+# needs; model_registry.py was previously pinned here as a still-blocked case.
 # ---------------------------------------------------------------------------
 
 _DOPE_CONTEXT_CARVED_OUT = (
@@ -128,13 +131,15 @@ _DOPE_CONTEXT_CARVED_OUT = (
     "services/dope-context/eval/results/2026-09-03/run.md",
     "services/dope-context/src/pipeline/indexing_pipeline.py",
     "services/dope-context/src/mcp/server.py",
+    "services/dope-context/src/index_profile.py",  # ADR-226 A2
+    "services/dope-context/src/embeddings/model_registry.py",  # ADR-226 A2
     "services/dope-context/tests/test_vector_space_invariants.py",
 )
 
 _DOPE_CONTEXT_STILL_BLOCKED = (
     "services/dope-context/src/search/hybrid_search.py",
     "services/dope-context/src/preprocessing/code_chunker.py",
-    "services/dope-context/src/embeddings/model_registry.py",
+    "services/dope-context/src/pipeline/docs_pipeline.py",
     "services/dope-context/tests/conftest.py",
     "services/dope-context/Dockerfile",
     "services/dope-context/evaluation.py",  # near-miss of the eval/ directory name
@@ -145,6 +150,17 @@ _DOPE_CONTEXT_STILL_BLOCKED = (
     "services/dope-context/eval/../src/mcp/server.py",  # traversal out of eval/
     "services/dope-context/eval/sub/../../src/search/hybrid_search.py",
     "services/dope-context/../dope-context/src/search/hybrid_search.py",
+    # ADR-226 A2 near-misses: the two newly-exempted files must not widen the lane.
+    # voyage_embedder.py is the same-directory neighbour of model_registry.py —
+    # exactly the case the anchored lookaheads have to survive.
+    "services/dope-context/src/embeddings/voyage_embedder.py",
+    "services/dope-context/src/embeddings/model_registry.py.tmp",
+    "services/dope-context/src/index_profile.py.bak",
+    "services/dope-context/src/index_profile.py.orig",
+    "services/dope-context/src/search/index_profile.py",  # same name, other directory
+    "services/dope-context/src/embeddings/sub/model_registry.py",  # nested same name
+    "services/dope-context/eval/../src/index_profile.py",  # traversal out of eval/
+    "services/dope-context/src/embeddings/../search/dense_search.py",
 )
 
 

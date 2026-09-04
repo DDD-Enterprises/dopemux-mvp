@@ -418,3 +418,152 @@ pushed at draft time, so no remote state to unwind.
   amendment), ADR-224 (mechanism precedent),
   `claudedocs/m11-red-lane-blocker-2026-07-29.md` (do-not-route-around
   precedent).
+
+────────────────────────────────────────────────────────────
+
+## Amendment A2 — extend the carve-out to the two files the D1 implementation actually needs (2026-09-04)
+
+```text
+AMENDMENT_ID=ADR-226-A2
+AMENDMENT_STATUS=APPROVED
+APPROVED_BY=operator (session 3d420c77, 2026-09-04)
+APPROVAL_SCOPE=path-level exemption as specified below; the content change is
+  authorized only as written under "What lands with this amendment"
+COMPANION_PACKET_AMENDMENT=TP-DOPECONTEXT-VECTOR-SPACE-0004 amendment A2 (same date)
+ADDS_EXEMPTIONS=services/dope-context/src/index_profile.py, services/dope-context/src/embeddings/model_registry.py
+AUTHORIZES_CONTENT_EDITS=NO (path-level only; TEXT_RULES scanning unchanged)
+WAVES_1_4_SRC_LIFT=STILL_NOT_AUTHORIZED
+```
+
+### Why
+
+The Wave 0 benchmark (completed 2026-09-04, results in
+`claudedocs/dope-context-eval-results-2026-09-03.md`, commit `4561980fc`)
+settled D1 on measurements: code `content_vec` moves to `voyage-code-4` on
+the flat `embeddings` endpoint. Implementing that decision requires editing
+two files that the original carve-out does not exempt, and that packet 0004's
+Allowed Files did not name:
+
+1. **`services/dope-context/src/index_profile.py`** —
+   `build_code_collection_profile()` (lines 245-292) is the canonical writer
+   of `content_vec`'s `model` and `endpoint`. The original packet named
+   `src/pipeline/indexing_pipeline.py` and `src/mcp/server.py`, but neither
+   sets those fields: the pipeline consumes an already-built profile, and
+   `search_code` already queries with `content_profile.model`
+   (`server.py:1237`), so the query side needs no edit at all. The two
+   originally-exempted service files are, for D1, the wrong files.
+2. **`services/dope-context/src/embeddings/model_registry.py`** —
+   `MODEL_SPECS` does not contain `voyage-code-4`, and `_vector_profile()`
+   validates every model through `get_model_spec()` and
+   `validate_dimension()`, both of which raise on an unregistered name. The
+   target model must be registered before any profile can name it.
+
+### Exact regex change
+
+In `src/dopemux/dcp/red_lane_rules.py`, the ADR-226 carve-out entry gains two
+negative lookaheads (additions marked `+`); everything else is unchanged:
+
+```python
+    re.compile(
+        r"^services/dope-context/"
+        r"(?!eval/)"
+        r"(?!src/pipeline/indexing_pipeline\.py$)"
+        r"(?!src/mcp/server\.py$)"
++       r"(?!src/index_profile\.py$)"
++       r"(?!src/embeddings/model_registry\.py$)"
+        r"(?!tests/test_vector_space_invariants\.py$)"
+        r".*$"
+    ),
+```
+
+The companion traversal-refusal entry
+(`^services/dope-context/(?:.*/)?\.\.(?:/|$)`) is unchanged and continues to
+cover the newly-exempted paths, so `eval/../src/index_profile.py` and
+`src/embeddings/../search/dense_search.py` stay blocked.
+
+### Invariants preserved
+
+* Anchored `$` on both new lookaheads — `index_profile.py.bak`,
+  `index_profile.py.orig`, and `src/embeddings/model_registry.py.tmp` remain
+  blocked, as do same-named files in other directories
+  (`src/search/index_profile.py` would still be blocked, since the lookahead
+  is rooted at `services/dope-context/`).
+* Whole-path case-folding from the F-001-A fix (commit `a4f86c48c`) applies
+  unchanged, so `SRC/INDEX_PROFILE.PY` is still denied fail-closed.
+* `TEXT_RULES` content scanning in `red_lane_scanner.py` is untouched; the
+  exempted paths are exempt from the *path* block only, not from content
+  rules.
+* Everything else under `services/dope-context/src/**` — including
+  `search/dense_search.py`, `search/hybrid_search.py`,
+  `preprocessing/code_chunker.py`, and `pipeline/docs_pipeline.py` — remains
+  hard-blocked.
+
+### What lands with this amendment
+
+Path-level exemption only. The authorized content change, specified here so
+the diff is reviewable before the lane opens:
+
+* `model_registry.py`: add a `voyage-code-4` entry to `MODEL_SPECS`
+  (`endpoint="embeddings"`, `default_dimension=1024`, standard
+  `_DIMENSIONS`, `price_per_million_tokens=0.12`); flip
+  `DEFAULT_CODE_MODEL` from `"voyage-code-3"` to `"voyage-code-4"`; mark the
+  superseded `voyage-code-3`, `voyage-context-3`, and `voyage-3-lite` entries
+  `legacy=True`.
+
+  **Limits — live-measured 2026-09-04, do not copy `voyage-code-3`'s values.**
+  Two probes against the real API (total billed $0.04):
+
+  * `per_input_tokens=32_000` — **confirmed, but the failure mode differs
+    from the contextualized endpoint.** Submitting a single 320,000-token
+    input returned success, not an error, and billed `total_tokens=31993`:
+    `voyage-code-4` on the flat endpoint **silently truncates** at ~32K
+    rather than rejecting. Contrast `contextualized_embed`, which refuses
+    outright ("Contextualized chunk embeddings do not support truncation").
+    This is a correctness hazard for the indexing pipeline, not just a
+    quota detail: an oversized chunk would be *half-embedded with no
+    error surfaced*, producing a vector that silently represents only the
+    first ~32K tokens of the content. Chunk-size enforcement upstream is
+    therefore load-bearing for D1 and must not be assumed to be guarded by
+    the API.
+  * `max_request_tokens` — **`voyage-code-3`'s 120,000 is wrong for
+    `voyage-code-4`.** A 60-input batch totalling 300,000 tokens was
+    accepted and billed in full (`total_tokens=299940`). The true ceiling is
+    therefore **>300,000 and was not pinned** — the probe established a
+    lower bound, not the limit. Either bind this to a vendor-documented
+    figure before landing, or carry a deliberately conservative value with a
+    comment saying it is a self-imposed floor rather than the API's ceiling.
+    Do not record 120,000 as if it were measured.
+
+  Note that the 32,000 / 120,000 pair the registry currently carries for
+  `voyage-code-3` matches exactly the two limits the Wave 0 benchmark hit on
+  the *contextualized* endpoint — which raises the question of whether
+  `voyage-code-3`'s own row was populated from the wrong endpoint's limits.
+  Out of scope for this amendment, but worth an entry on the audit's residual
+  list.
+* `index_profile.py`: in `build_code_collection_profile()`, `content_vec`
+  changes from `model=ctx_model, endpoint="contextualized_embeddings"` to the
+  resolved code model on `endpoint="embeddings"`, so index and query agree.
+  Whether `title_vec`/`breadcrumb_vec` also move from `voyage-code-3` to
+  `voyage-code-4` is a separate, unresolved question — it is consistent and
+  cheaper ($0.12/M vs $0.18/M) but is beyond D1's literal wording and is
+  **not** authorized by this amendment without an explicit ruling.
+
+### Rollback
+
+Revert the two lookahead lines. The lane returns to its 2026-09-03 shape with
+no other state to unwind; any commits made under the amendment stay in
+history and would need their own revert.
+
+### Verification before landing
+
+* `PYTHONPATH=src python -m pytest tests/test_dcp_surface_guard.py tests/dcp/test_dcp_0005_red_lane_scanner.py -v`
+  — expected full pass, including `test_fallback_patterns_covered_by_live_rules`
+  (the fallback tuple is a subset and is unaffected by adding exemptions).
+* `surface_guard_block("Edit", {"file_path": <root>/services/dope-context/src/index_profile.py}, <root>)`
+  returns `None`; the same call for
+  `services/dope-context/src/search/dense_search.py` and for
+  `services/dope-context/eval/../src/index_profile.py` still returns a
+  `DCP-RED-MERGE-SEAM-0001` block message.
+* A new case asserting `src/embeddings/model_registry.py` is exempt while
+  `src/embeddings/voyage_embedder.py` is still blocked — the two live in the
+  same directory, which is exactly the near-miss this anchoring must survive.
