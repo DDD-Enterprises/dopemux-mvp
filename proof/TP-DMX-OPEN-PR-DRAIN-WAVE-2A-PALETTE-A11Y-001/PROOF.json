@@ -2,8 +2,8 @@
   "packet_id": "TP-DMX-OPEN-PR-DRAIN-WAVE-2A-PALETTE-A11Y-001",
   "status": "PASS",
   "risk_lane": "L1_LOW",
-  "head_sha": "1d5c19deaf5bd4574b683f1a2bf03b6024c800f2",
-  "generated_at": "2026-09-04T11:20:00Z",
+  "head_sha": "1097a89aedadf88e4896478a131a9d5d26bab407",
+  "generated_at": "2026-09-04T11:47:00Z",
   "repo_identity": {
     "project_id": "dopemux-mvp",
     "repo_marker": ".dopetaskroot",
@@ -19,10 +19,10 @@
     "branch": "integration/palette-a11y-2026-09",
     "base": "ed3b207412fb632ecc3e76146d1f1b50c282ed63",
     "base_note": "origin/main tip after PR #1312 and PR #1313 merged",
-    "content_head": "1d5c19deaf5bd4574b683f1a2bf03b6024c800f2",
-    "final_head": "1d5c19deaf5bd4574b683f1a2bf03b6024c800f2"
+    "content_head": "1097a89aedadf88e4896478a131a9d5d26bab407",
+    "final_head": "1097a89aedadf88e4896478a131a9d5d26bab407"
   },
-  "background": "TP-DMX-OPEN-PR-DRAIN-MERGE-001 Wave 2A (§14): integration branch harvesting 8 open palette/accessibility PRs (#1302 canonical survivor, #1305, #1285, #1272, #1279, #1293, #1296, #1300) that all touch ui-dashboard/src/components/__tests__/Accessibility.test.tsx, which asserts on literal source text of TaskSequencer.tsx's Escape-key handlers. #1302 and #1305 implemented the same Reset-handler condition with opposite operand order and each PR's own test asserted its own spelling -- mutually exclusive, could not both merge unmodified. #1291 and #1294 were classified as subsets of #1302 with no unique payload and were not merged into this branch; they are closed referencing PR #1314 instead. GitHub PR: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1314",
+  "background": "TP-DMX-OPEN-PR-DRAIN-MERGE-001 Wave 2A (§14): integration branch harvesting 8 open palette/accessibility PRs (#1302 canonical survivor, #1305, #1285, #1272, #1279, #1293, #1296, #1300) that all touch ui-dashboard/src/components/__tests__/Accessibility.test.tsx, which asserts on literal source text of TaskSequencer.tsx's Escape-key handlers. #1302 and #1305 implemented the same Reset-handler condition with opposite operand order and each PR's own test asserted its own spelling -- mutually exclusive, could not both merge unmodified. #1291 and #1294 were classified as subsets of #1302 with no unique payload and were not merged into this branch; they are closed referencing PR #1314 instead. After the first audit (PASS at 1d5c19dea), Copilot's automated PR review flagged two small issues (missing describeChild on the reconnect Tooltip; a duplicate aria-label assertion) which were fixed and independently re-verified in a scoped follow-up audit (PASS at 1097a89ae). GitHub PR: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1314",
   "files_changed": [
     ".Jules/palette.md",
     "ui-dashboard/package.json",
@@ -46,16 +46,18 @@
     "status": "PASS",
     "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/integration-palette-a11y-2026-09 --add-dir /tmp/wave2a_audit --print=\"$(cat /tmp/wave2a_audit/AUDIT_PROMPT.txt)\"",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/integration-palette-a11y-2026-09 --add-dir /tmp/wave2a_audit2 --print=\"$(cat /tmp/wave2a_audit2/FOLLOWUP_PROMPT.txt)\"",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-OPEN-PR-DRAIN-WAVE-2A-PALETTE-A11Y-001/AUDITOR_REPORT.md",
     "findings": [
-      {"id": "FINDING-1", "severity": "INFO", "title": "Exactly one onKeyDown handler each for Skip/Reset; correct operand order, preventDefault+stopPropagation, aria-label present", "status": "RESOLVED", "body": "Verified directly against TaskSequencer.tsx lines 743 (Skip) and 818 (Reset)."},
-      {"id": "FINDING-2", "severity": "INFO", "title": "Escape-key test assertions textually match actual handlers", "status": "RESOLVED", "body": "Only 2 occurrences of e.key === 'Escape' in Accessibility.test.tsx (lines 222-223), both matching #1302's kept operand order; no stale duplicates."},
-      {"id": "FINDING-3", "severity": "INFO", "title": "No unresolved git conflict markers", "status": "RESOLVED", "body": "Regex scan of ui-dashboard/src/ for conflict markers: zero occurrences."},
-      {"id": "FINDING-4", "severity": "INFO", "title": "Independent test suite execution passes", "status": "RESOLVED", "body": "npx vitest run: 47/47 passed, 7 files."},
-      {"id": "FINDING-5", "severity": "INFO", "title": ".Jules/palette.md change is unique and benign", "status": "RESOLVED", "body": "Markdown-only addition documenting the keyboard-dismissal learning; no executable content."},
-      {"id": "FINDING-6", "severity": "INFO", "title": "No security or scope violations", "status": "RESOLVED", "body": "Diff confined to ui-dashboard/**, .Jules/**, and expected lockfile/tsconfig housekeeping; no secrets or credentials."}
+      {"id": "FINDING-1", "severity": "INFO", "title": "Exactly one onKeyDown handler each for Skip/Reset; correct operand order, preventDefault+stopPropagation, aria-label present", "status": "RESOLVED", "body": "Verified directly against TaskSequencer.tsx lines 743 (Skip) and 818 (Reset), round 1 audit at 1d5c19dea."},
+      {"id": "FINDING-2", "severity": "INFO", "title": "Escape-key test assertions textually match actual handlers", "status": "RESOLVED", "body": "Only 2 occurrences of e.key === 'Escape' in Accessibility.test.tsx, both matching #1302's kept operand order; no stale duplicates. Round 1 audit at 1d5c19dea."},
+      {"id": "FINDING-3", "severity": "INFO", "title": "No unresolved git conflict markers", "status": "RESOLVED", "body": "Regex scan of ui-dashboard/src/ for conflict markers: zero occurrences. Round 1 audit at 1d5c19dea."},
+      {"id": "FINDING-4", "severity": "INFO", "title": "Independent test suite execution passes", "status": "RESOLVED", "body": "npx vitest run: 47/47 passed, 7 files. Re-verified in round 2 audit at 1097a89ae."},
+      {"id": "FINDING-5", "severity": "INFO", "title": ".Jules/palette.md change is unique and benign", "status": "RESOLVED", "body": "Markdown-only addition documenting the keyboard-dismissal learning; no executable content. Round 1 audit at 1d5c19dea."},
+      {"id": "FINDING-6", "severity": "INFO", "title": "No security or scope violations", "status": "RESOLVED", "body": "Diff confined to ui-dashboard/**, .Jules/**, and expected lockfile/tsconfig housekeeping; no secrets or credentials. Round 1 audit at 1d5c19dea."},
+      {"id": "FINDING-7", "severity": "INFO", "title": "Copilot review fix 1 verified: reconnect Tooltip now has describeChild, consistent with other important-action tooltips in App.tsx", "status": "RESOLVED", "body": "Round 2 (follow-up) audit at 1097a89ae, independently verified against actual file contents, not just the diff."},
+      {"id": "FINDING-8", "severity": "INFO", "title": "Copilot review fix 2 verified: removed assertion was an exact byte-for-byte duplicate, no coverage lost", "status": "RESOLVED", "body": "Round 2 (follow-up) audit at 1097a89ae confirmed the deleted regex exactly duplicated the surviving assertion at line 219."}
     ],
     "fixes_applied": [],
     "remaining_risks": [],
