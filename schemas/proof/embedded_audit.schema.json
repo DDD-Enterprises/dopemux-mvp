@@ -39,6 +39,7 @@
         "copilot-cli",
         "gemini-cli",
         "grok-cli",
+        "opencode-cli",
         "pal-mcp-clink",
         "none"
       ]
@@ -52,6 +53,7 @@
         "gemini",
         "gemini-3.1-pro-high",
         "grok-4.5",
+        "kimi-k3",
         "unknown"
       ]
     },
@@ -307,6 +309,50 @@
         "properties": {
           "auditor_model": {
             "const": "grok-4.5"
+          }
+        },
+        "required": [
+          "auditor_model"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "auditor_model": {
+            "const": "kimi-k3"
+          }
+        },
+        "required": [
+          "auditor_model"
+        ]
+      },
+      "then": {
+        "properties": {
+          "auditor_tool": {
+            "const": "opencode-cli"
+          }
+        },
+        "required": [
+          "auditor_tool"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "auditor_tool": {
+            "const": "opencode-cli"
+          }
+        },
+        "required": [
+          "auditor_tool"
+        ]
+      },
+      "then": {
+        "properties": {
+          "auditor_model": {
+            "const": "kimi-k3"
           }
         },
         "required": [
