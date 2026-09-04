@@ -508,3 +508,49 @@ Blast radius today is near zero — Qdrant holds no dopemux-mvp code index.
 
 Full rationale, including why `INDEX_SCHEMA_VERSION` is deliberately not
 bumped, is in ADR-226 under "Operational consequence of D1".
+
+### Live validation of D1 — and a deployment finding (2026-09-04)
+
+Executed against the real Voyage API inside `mcp-dope-context`, importing the
+fixed source from the mounted worktree. Cost **$0.00006** total.
+
+| Run | content/title/breadcrumb | docs | content_vector | errors | verdict |
+|---|---|---|---|---|---|
+| container env as-is | `voyage-code-3` / `embeddings` | 4 | `List[float]`, dim 1024 | 0 | PASS |
+| override cleared | `voyage-code-4` / `embeddings` | 4 | `List[float]`, dim 1024 | 0 | PASS |
+
+This is the first execution of the D1 path. It confirms the round-6 repairs:
+documents are produced (not the `([], [])` swallow signature), `content_vector`
+is a genuine list of floats rather than an `EmbeddingResponse`, and embedding
+cost accrues.
+
+**FINDING — D1 is currently INERT in the live deployment.** The running
+`mcp-dope-context` container sets:
+
+```
+DOPE_CONTEXT_CODE_EMBED_MODEL=voyage-code-3
+```
+
+`resolve_code_embed_model()` reads that variable and falls back to
+`DEFAULT_CODE_MODEL` only when it is unset, so the env value **overrides**
+D1's `voyage-code-4` default. The first run above resolved all three code
+vectors to `voyage-code-3` despite the code default having changed.
+
+Consequences:
+
+* The measured D1 benefit (whole-repo R@20 1.000 / MRR 0.855 on
+  `voyage-code-4`, versus the contextualized profile's 0.951 / 0.677) is **not
+  realised in the deployed service** until that variable is removed or set to
+  `voyage-code-4`.
+* This is **not** a correctness defect. Index and query both read the same
+  profile, so they still agree and F-001 stays closed — the collection is
+  simply built on the older model.
+* The variable is **not** in `compose.yml` or the repo `.env`; it comes from
+  the bespoke env file the container was started with. Landing D1 in code is
+  therefore insufficient — the deployment configuration must be updated
+  separately, and any pre-D1 collection recreated (see "Operational
+  consequence of D1" in ADR-226).
+
+Why six independent audit rounds could not have found this: it is a fact about
+the running deployment's environment, not about the source. Static review of a
+diff or even of the whole repository cannot observe it.
