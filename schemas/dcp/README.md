@@ -1,3 +1,15 @@
+---
+id: dcp-core-contract-schemas
+title: DCP Core Contract Schemas
+type: reference
+owner: '@hu3mann'
+author: '@codex'
+date: '2026-08-27'
+last_review: '2026-08-27'
+next_review: '2026-11-25'
+prelude: Strict design-only DCP core contract schemas and validation boundary.
+---
+
 # DCP Core Contract Schemas — `schemas/dcp/`
 
 > Task Packet: `TP-DCP-0001` · Synthesis Authority: `DCP_ARCHITECTURE_SYNTHESIS_GPT55_REV1.md`
@@ -15,7 +27,7 @@ These schemas implement the provenance/validation meta-contract defined in REV1 
 
 ## Provenance and Validation Meta-Contract (REV1 §6.0)
 
-Every schema and every fixture instance carries two mandatory blocks:
+Legacy TP-DCP-0001 schemas and fixture instances carry two mandatory blocks:
 
 ```json
 "provenance": {
@@ -27,6 +39,29 @@ Every schema and every fixture instance carries two mandatory blocks:
   "notes": "<explanation>"
 }
 ```
+
+The three P0 full-system boundary schemas listed below use manifest-level
+`DESIGN_ONLY` provenance instead. Their payloads remain minimal strict authority
+records: source/evidence references live in the contract shape, while promotion
+state lives only in `manifest.json`. This exception does not promote `.v0` into
+runtime authority.
+
+P0 validation is the conjunction `JSON_SCHEMA + P0_SEMANTIC_VALIDATION`:
+
+- Execute Draft 7 with `jsonschema.FormatChecker`; declared `date-time` formats
+  are consequential contract constraints, not annotations.
+- Execute `scripts/governance/validate_dcp_p0_contract_semantics.py` for dynamic
+  relationships Draft 7 cannot compare: READY mandatory-evidence bindings must
+  resolve exactly to canonical-source context items with matching references;
+  eligible CompiledClaim inputs must resolve exactly to an ELIGIBLE
+  KnowledgeCompilerInput; and SATISFIED audit results must resolve the exact
+  capability requirement, request, certification, snapshot, execution receipt,
+  subject, route, independence, and provider/model identity chain.
+- `DERIVED_EVIDENCE` may remain optional supplemental context, but it cannot
+  satisfy a ContextPlan mandatory source reference.
+- Missing, ambiguous, stale, unavailable, substituted, mismatched, unverified,
+  or `UNKNOWN` audit-chain state forbids SATISFIED.
+- Neither validator substitutes for the other. A pass requires both.
 
 ### Provenance Tag Meanings
 
@@ -68,6 +103,9 @@ Every schema and every fixture instance carries two mandatory blocks:
 | `dcp_mutation_class.schema.json` | `REPO_VALIDATED` | `REPO_CROSS_CHECKED` | TP-DCP-0002. Tier vocabulary (T0-T6, TX, TU) verified against `approval_policy.yaml` + `policy.py`. PROVISIONAL classes per-entry where noted. Hard-block class `MC-MERGE-SEAM-FORBIDDEN`. |
 | `dcp_approval_artifact.schema.json` | `SYNTHESIS_INVENTED` | `PROVISIONAL_UNVERIFIED_ENFORCEMENT` | TP-DCP-0002. Envelope SYNTHESIS_INVENTED; tier/decision vocab REPO_VALIDATED. Approval record only — not a write executor. |
 | `dcp_project_resource_map.schema.json` | `REPO_VALIDATED` | `PROVISIONAL_UNVERIFIED_ENFORCEMENT` | TP-DCP-0002. Path roots REPO_VALIDATED from ARCHITECTURE.md + filesystem. Endpoint bindings PROVISIONAL or UNKNOWN only. |
+| `capability_requirement_ref.schema.json` | `SYNTHESIS_INVENTED` | `DESIGN_ONLY` | P0 capability requirement and exact-identity evidence policy only; grants no execution authority. |
+| `context_plan.schema.json` | `SYNTHESIS_INVENTED` | `DESIGN_ONLY` | P0 requirements and policy plan only; contains no fulfilled-evidence claim or mutation authority. |
+| `run_context_packet.schema.json` | `SYNTHESIS_INVENTED` | `DESIGN_ONLY` | P0 derived runtime-context envelope; READY rejects stale, UNKNOWN, conflicting, undereferenced, or truncated context. |
 
 ### TP-DCP-0002 Contracts (present as of branch `dcp/contract-derivation-tp-0002`)
 
@@ -143,7 +181,7 @@ Both fields bump together at L2→L3: `schema_version` moves from `.v0` to `.v1`
 
 ## Contracts Manifest — `manifest.json`
 
-`schemas/dcp/manifest.json` is the machine-readable registry of all 19 contracts in this directory. It:
+`schemas/dcp/manifest.json` is the machine-readable registry of all 22 contracts in this directory. It:
 
 - Lists one entry per `.schema.json` file (excluding `dcp_contracts_manifest.schema.json` itself).
 - Records `level`, `validation_state`, `enforcement_side`, `ci_gates`, `instance_files`, `runtime_producers`, and `runtime_consumers` for each contract.

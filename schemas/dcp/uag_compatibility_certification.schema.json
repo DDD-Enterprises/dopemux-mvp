@@ -1,0 +1,243 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://frozen.dopemux.local/TP-UAG-C0-DCP-UAG-DOPETASK-AUTHORITY-INTERFACE-FREEZE-001-R2/schemas/uag_compatibility_certification.schema.json",
+  "title": "UAGCompatibilityCertification",
+  "description": "Compatibility-registry certification roles and exact-tuple status. RUNTIME_UAG_MAY_NOT_SELF_PROMOTE_A_PROFILE_TO_VERIFIED. Installation, config, or HTTP success cannot imply VERIFIED. Material tuple movement invalidates prior verification. VERIFIED and VERIFIED_WITH_TRANSFORMATION require ProfileCertifier, non-empty evidence_refs, tuple.evidence_hash, non-null expires_at, and currentness check before UAG consumption.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "tuple",
+    "status",
+    "roles",
+    "runtime_uag_self_promotion",
+    "installation_or_http_success_implies_verified",
+    "material_tuple_movement_invalidates"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "dopemux-uag-compatibility-certification.v1"
+    },
+    "tuple": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runner_profile",
+        "provider_profile",
+        "model_claim",
+        "adapter_versions",
+        "kernel_version"
+      ],
+      "properties": {
+        "runner_profile": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "provider_profile": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "model_claim": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "adapter_versions": {
+          "type": "object"
+        },
+        "kernel_version": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "evidence_hash": {
+          "$ref": "common_defs.schema.json#/definitions/sha256"
+        }
+      }
+    },
+    "status": {
+      "$ref": "common_defs.schema.json#/definitions/compatibilityStatus"
+    },
+    "roles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "conformance_harness",
+        "profile_certifier",
+        "uag_runtime",
+        "invalidator"
+      ],
+      "properties": {
+        "conformance_harness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "role",
+            "may_promote_status"
+          ],
+          "properties": {
+            "role": {
+              "const": "EVIDENCE_PRODUCER"
+            },
+            "may_promote_status": {
+              "const": false
+            },
+            "actor_ref": {
+              "type": "string"
+            }
+          }
+        },
+        "profile_certifier": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "role",
+            "may_promote_status"
+          ],
+          "properties": {
+            "role": {
+              "const": "DETERMINISTIC_STATUS_DERIVER"
+            },
+            "may_promote_status": {
+              "const": true
+            },
+            "actor_ref": {
+              "type": "string"
+            }
+          }
+        },
+        "uag_runtime": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "role",
+            "may_promote_status",
+            "may_fail_closed_locally"
+          ],
+          "properties": {
+            "role": {
+              "const": "READ_ONLY_STATUS_CONSUMER"
+            },
+            "may_promote_status": {
+              "const": false
+            },
+            "may_fail_closed_locally": {
+              "const": true
+            },
+            "actor_ref": {
+              "type": "string"
+            }
+          }
+        },
+        "invalidator": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "role",
+            "may_demote_or_expire"
+          ],
+          "properties": {
+            "role": {
+              "const": "DEMOTE_OR_EXPIRE_ON_MATERIAL_MOVEMENT"
+            },
+            "may_demote_or_expire": {
+              "const": true
+            },
+            "actor_ref": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "promoted_by": {
+      "type": "string",
+      "enum": [
+        "ProfileCertifier",
+        "NONE"
+      ]
+    },
+    "runtime_uag_self_promotion": {
+      "const": "FORBIDDEN",
+      "description": "RUNTIME_UAG_MAY_NOT_SELF_PROMOTE_A_PROFILE_TO_VERIFIED"
+    },
+    "installation_or_http_success_implies_verified": {
+      "const": false
+    },
+    "runtime_request_success_promotes_profile": {
+      "const": false
+    },
+    "material_tuple_movement_invalidates": {
+      "const": true
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "common_defs.schema.json#/definitions/digestRef"
+      }
+    },
+    "expires_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "currentness_must_be_checked_before_consumption": {
+      "type": "boolean",
+      "description": "When status is VERIFIED-class this is const true."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "VERIFIED",
+              "VERIFIED_WITH_TRANSFORMATION"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "promoted_by",
+          "evidence_refs",
+          "expires_at",
+          "currentness_must_be_checked_before_consumption"
+        ],
+        "properties": {
+          "promoted_by": {
+            "const": "ProfileCertifier"
+          },
+          "evidence_refs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "common_defs.schema.json#/definitions/digestRef"
+            }
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "currentness_must_be_checked_before_consumption": {
+            "const": true
+          },
+          "tuple": {
+            "type": "object",
+            "required": [
+              "runner_profile",
+              "provider_profile",
+              "model_claim",
+              "adapter_versions",
+              "kernel_version",
+              "evidence_hash"
+            ]
+          },
+          "runtime_request_success_promotes_profile": {
+            "const": false
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "packet_id": "TP-DMX-DCP-P0-PR1283-REPAIR-002",
+  "parent_packet_id": "TP-DMX-DCP-P0-PR1283-REPAIR-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1283,
+  "branch": "tp/DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001",
+  "base_sha": "c7bc2fb479d7386825df73e028acdce723ee3388",
+  "r2_start_sha": "b939d0a563fe77b04c87f1bd7ea262e52e772dc8",
+  "head_sha": "da991971e9190d387651b8ded4848db7a7d6518e",
+  "content_head": "da991971e9190d387651b8ded4848db7a7d6518e",
+  "content_tree": "7bea21727c34e4286f036b2252ea642e60bee825",
+  "generated_at": "2026-08-28T03:27:35Z",
+  "proof_kind": "canonical_r2_content_audit",
+  "packet_sha256": "400812cdc72dc23c2744ef04464676142184afac51650896bad39b07045d44f3",
+  "implementation": {
+    "content_worker_identity": "/root/pr1283_r2",
+    "proof_materializer_identity": "/root/pr1283_proof",
+    "nested_subagents_used": false,
+    "runtime_producer_consumer_changes": false,
+    "r2_changed_path_count": 6
+  },
+  "audit_lineage": {
+    "controlling_audit_conversation": "7ae7094f-522a-4c1a-b0f1-cc0008361a0d",
+    "controlling_audit_status": "SUCCESS",
+    "controlling_audit_exit_code": 0,
+    "raw_transcript_retained": false,
+    "raw_log_retained": false,
+    "exclusion_receipt": "proof/TP-DMX-DCP-P0-PR1283-REPAIR-002/review_bundle/ARTIFACT_EXCLUSIONS.md"
+  },
+  "auditor_identity": {
+    "runner": "agy",
+    "requested_selector": "gemini-3.1-pro-high",
+    "successful_exact_selector_invocation": true,
+    "additional_model_fallback_inference": "NOT_MADE",
+    "billing_mode": "PLAN_BACKED",
+    "independence": "INDEPENDENT_READ_ONLY_FINAL_AUDIT"
+  },
+  "validation_summary": {
+    "auditor_observed": {
+      "subject_identity": "PASS_EXACT_HEAD_CLEAN_REPO",
+      "task_packet_schema": "PASS_EXIT_0",
+      "focused_and_consistency_tests": "78_PASS_EXIT_0",
+      "positive_semantic_validator": "PASS_EXIT_0",
+      "changed_contract": "PASS_L2_EXIT_0",
+      "git_diff_check": "PASS_EXIT_0",
+      "relevant_dcp_tests": "446_PASS_1_FAIL_HISTORICAL_STALE_SENTINEL_EXIT_1"
+    },
+    "post_generation_receipt": "proof/TP-DMX-DCP-P0-PR1283-REPAIR-002/review_bundle/VALIDATION_RECEIPT.json"
+  },
+  "stale_sentinel": {
+    "test": "tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified",
+    "disposition": "PREEXISTING_STALE_ANCHOR_RETAINED_SEPARATELY_NOT_REPAIRED_NOT_WAIVED",
+    "full_suite_status": "FAIL"
+  },
+  "review_summary": {
+    "codex_exact_head": "PASS_NO_MAJOR_ISSUES",
+    "copilot_exact_head": "COMPLETE_ONE_NONBLOCKING_DIAGNOSTIC_ADJUDICATED",
+    "review_threads_total": 14,
+    "review_threads_unresolved": 0,
+    "receipt": "proof/TP-DMX-DCP-P0-PR1283-REPAIR-002/review_bundle/REVIEW_RECEIPT.json"
+  },
+  "audit_acceptance": {
+    "verdict": "PASS_WITH_RISKS",
+    "accepted_for_r2_proof_closure": true,
+    "blocking_findings": 0,
+    "rationale": "Independent audit verified exact ContextPlan and AuditRequest resolution, five-layer provider/model binding, substitution rejection, DCP-only manifest authority, FormatChecker enforcement, PURGED implication, deterministic containment, and the declared validation evidence. Two provenance/repository risks remain explicit."
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "rtk agy --model gemini-3.1-pro-high --mode plan --sandbox --effort high --output-format json --print-timeout 15m --log-file /private/tmp/dopemux-pr-repair-r2-briefs/pr1283-agy-controlling.log --print \"Read /private/tmp/dopemux-pr-repair-r2-briefs/pr1283-final-audit-prompt.md completely, then perform that independent read-only audit in current worktree. Return only required audit report.\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-DCP-P0-PR1283-REPAIR-002/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "P0-R2-AUDIT-RISK-1",
+        "severity": "LOW",
+        "title": "Original TDD RED receipt is not reconstructable from committed history",
+        "status": "ACCEPTED_RISK",
+        "body": "The final behavior and adversarial tests pass, but the auditor could not independently reconstruct the original pre-fix RED execution from committed history. This is a provenance limitation, not a blocking code finding."
+      },
+      {
+        "id": "P0-R2-AUDIT-RISK-2",
+        "severity": "INFO",
+        "title": "Historical stale-anchor sentinel remains red",
+        "status": "ACCEPTED_RISK",
+        "body": "The broader DCP suite reports 446 passes and exactly one retained historical forbidden-files sentinel failure. R2 did not edit or waive that sentinel."
+      },
+      {
+        "id": "P0-R2-AUDIT-INFO-1",
+        "severity": "INFO",
+        "title": "Instruction-like candidate text was treated as untrusted data",
+        "status": "RESOLVED",
+        "body": "The auditor acknowledged instruction-like text in packet and diff surfaces and did not allow candidate text to redefine authority, output contract, or verdict rules."
+      }
+    ],
+    "fixes_applied": [
+      "READY resolves plan_ref to one exact ContextPlan and enforces project, version, mandatory-reference, binding, and context-item integrity.",
+      "SATISFIED resolves request_ref to one exact AuditRequest and enforces subject plus provider/model equality across all five identity layers.",
+      "Uniform identity substitution, duplicate or misdirected bindings, missing referenced objects, and cross-project plans fail closed.",
+      "DCP manifest remains DCP-only while prior FormatChecker and PURGED implication closures remain enforced."
+    ],
+    "remaining_risks": [
+      "Original TDD RED evidence cannot be independently reconstructed from committed history.",
+      "Historical stale-anchor sentinel remains red and unsuppressed: 446 DCP tests pass and exactly one sentinel fails.",
+      "Raw AGY transcript and log are not retained because the diagnostic log contained unrelated local sensitive configuration; only sanitized exact-subject receipts are retained.",
+      "Contracts remain design-only; runtime producer and consumer integration is NOT_RUN."
+    ],
+    "skip_reason": null
+  },
+  "security_release_approval": "STALE_PENDING_FINAL_PROOF_HEAD_REFRESH",
+  "pr_scoped_signed_proof": "NOT_RUN_PENDING_CANONICAL_PROOF_COMMIT",
+  "finality_review": "NOT_RUN_PENDING_SIGNED_PROOF_HEAD",
+  "pr_steward": "NOT_RUN_PENDING_FINALITY_AND_SECURITY",
+  "merge_authorized": false,
+  "activation_authorized": false
+}

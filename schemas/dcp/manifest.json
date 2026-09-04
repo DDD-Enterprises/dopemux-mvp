@@ -71,6 +71,23 @@
       "enforcement_side": "llm_advisory"
     },
     {
+      "contract_id": "DCP_CAPABILITY_REQUIREMENT_REF",
+      "schema_file": "schemas/dcp/capability_requirement_ref.schema.json",
+      "schema_version": "dcp-capability-requirement-ref.v0",
+      "contract_version": "0.1.0",
+      "validation_state": "DESIGN_ONLY",
+      "level": "L0",
+      "instance_files": [
+        "tests/fixtures/dcp/full_system/p0/positive_contracts.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
       "contract_id": "DCP_CHRONICLE_RECEIPT",
       "schema_file": "schemas/dcp/dcp_chronicle_receipt.schema.json",
       "schema_version": "dcp-chronicle-receipt.v0",
@@ -88,6 +105,38 @@
       "enforcement_side": "llm_advisory"
     },
     {
+      "contract_id": "DCP_COMMON_DEFS",
+      "schema_file": "schemas/dcp/common_defs.schema.json",
+      "schema_version": "UNKNOWN",
+      "contract_version": "0.1.0",
+      "validation_state": "DESIGN_ONLY",
+      "level": "L0",
+      "instance_files": [],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
+      "contract_id": "DCP_CONTEXT_PLAN",
+      "schema_file": "schemas/dcp/context_plan.schema.json",
+      "schema_version": "dcp-context-plan.v0",
+      "contract_version": "0.1.0",
+      "validation_state": "DESIGN_ONLY",
+      "level": "L0",
+      "instance_files": [
+        "tests/fixtures/dcp/full_system/p0/positive_contracts.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
       "contract_id": "DCP_CONTROL_SNAPSHOT",
       "schema_file": "schemas/dcp/dcp_control_snapshot.schema.json",
       "schema_version": "dcp-control-snapshot.v0",
@@ -97,6 +146,21 @@
       "instance_files": [
         "tests/dcp/fixtures/dcp_core_fixture.json"
       ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
+      "contract_id": "DCP_DOPETASK_GOVERNED_EXECUTION_PROFILE",
+      "schema_file": "schemas/dcp/dopetask_governed_execution_profile.schema.json",
+      "schema_version": "dopemux-dopetask-governed-execution-profile.v1",
+      "contract_version": "0.1.0",
+      "validation_state": "DESIGN_ONLY",
+      "level": "L0",
+      "instance_files": [],
       "runtime_producers": [],
       "runtime_consumers": [],
       "ci_gates": [
@@ -137,6 +201,21 @@
       "enforcement_side": "llm_advisory"
     },
     {
+      "contract_id": "DCP_GOVERNED_EXECUTION_RECEIPT",
+      "schema_file": "schemas/dcp/governed_execution_receipt.schema.json",
+      "schema_version": "dopemux-governed-execution-receipt.v1",
+      "contract_version": "0.1.0",
+      "validation_state": "DESIGN_ONLY",
+      "level": "L0",
+      "instance_files": [],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
       "contract_id": "DCP_HELPER_RECEIPT",
       "schema_file": "schemas/dcp/dcp_helper_receipt.schema.json",
       "schema_version": "dcp-helper-receipt.v0",
@@ -154,6 +233,21 @@
       "enforcement_side": "llm_advisory"
     },
     {
+      "contract_id": "DCP_MACRO_EXECUTION_AUTHORITY_REF_V2",
+      "schema_file": "schemas/dcp/macro_execution_authority_ref_v2.schema.json",
+      "schema_version": "dopemux-macro-execution-authority-ref.v2",
+      "contract_version": "0.1.0",
+      "validation_state": "DESIGN_ONLY",
+      "level": "L0",
+      "instance_files": [],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
       "contract_id": "DCP_MODEL_SLOT",
       "schema_file": "schemas/dcp/dcp_model_slot.schema.json",
       "schema_version": "UNKNOWN",
@@ -167,6 +261,21 @@
         "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
       ],
       "enforcement_side": "llm_advisory"
+    },
+    {
+      "contract_id": "DCP_MODEL_TRANSPORT_RECEIPT",
+      "schema_file": "schemas/dcp/model_transport_receipt.schema.json",
+      "schema_version": "dopemux-model-transport-receipt.v1",
+      "contract_version": "0.1.0",
+      "validation_state": "DESIGN_ONLY",
+      "level": "L0",
+      "instance_files": [],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
     },
     {
       "contract_id": "DCP_MUTATION_CLASS",
@@ -255,6 +364,21 @@
       "enforcement_side": "deterministic"
     },
     {
+      "contract_id": "DCP_ROUTE_AUTHORIZATION",
+      "schema_file": "schemas/dcp/dcp_route_authorization.schema.json",
+      "schema_version": "dopemux-dcp-route-authorization.v1",
+      "contract_version": "0.1.0",
+      "validation_state": "DESIGN_ONLY",
+      "level": "L0",
+      "instance_files": [],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
       "contract_id": "DCP_ROUTING_CLASSIFICATION",
       "schema_file": "schemas/dcp/dcp_routing_classification.schema.json",
       "schema_version": "UNKNOWN",
@@ -306,6 +430,24 @@
       "enforcement_side": "llm_advisory"
     },
     {
+      "contract_id": "DCP_RUN_CONTEXT_PACKET",
+      "schema_file": "schemas/dcp/run_context_packet.schema.json",
+      "schema_version": "dcp-run-context-packet.v0",
+      "contract_version": "0.1.0",
+      "validation_state": "DESIGN_ONLY",
+      "level": "L0",
+      "instance_files": [
+        "tests/fixtures/dcp/full_system/p0/positive_contracts.json",
+        "tests/fixtures/dcp/full_system/p0/runtime_context_envelopes.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
       "contract_id": "DCP_STOP_CONDITION",
       "schema_file": "schemas/dcp/dcp_stop_condition.schema.json",
       "schema_version": "UNKNOWN",
@@ -329,6 +471,21 @@
       "enforcement_side": "llm_advisory"
     },
     {
+      "contract_id": "DCP_TOOL_INTENT",
+      "schema_file": "schemas/dcp/tool_intent.schema.json",
+      "schema_version": "dopemux-tool-intent.v1",
+      "contract_version": "0.1.0",
+      "validation_state": "DESIGN_ONLY",
+      "level": "L0",
+      "instance_files": [],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
       "contract_id": "DCP_TRUSTED_INPUT_ADAPTER_REGISTRY",
       "schema_file": "schemas/dcp/trusted_input_adapter_registry.schema.json",
       "schema_version": "trusted-input-adapter-registry.v0",
@@ -342,6 +499,51 @@
       "runtime_consumers": [
         "src/dopemux/dcp/trusted_adapter_registry.py"
       ],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
+      "contract_id": "DCP_UAG_COMPATIBILITY_CERTIFICATION",
+      "schema_file": "schemas/dcp/uag_compatibility_certification.schema.json",
+      "schema_version": "dopemux-uag-compatibility-certification.v1",
+      "contract_version": "0.1.0",
+      "validation_state": "DESIGN_ONLY",
+      "level": "L0",
+      "instance_files": [],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
+      "contract_id": "DCP_UAG_TRANSPORT_REQUEST",
+      "schema_file": "schemas/dcp/uag_transport_request.schema.json",
+      "schema_version": "dopemux-uag-transport-request.v1",
+      "contract_version": "0.1.0",
+      "validation_state": "DESIGN_ONLY",
+      "level": "L0",
+      "instance_files": [],
+      "runtime_producers": [],
+      "runtime_consumers": [],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
+      "contract_id": "DCP_UAG_TRANSPORT_RESULT",
+      "schema_file": "schemas/dcp/uag_transport_result.schema.json",
+      "schema_version": "dopemux-uag-transport-result.v1",
+      "contract_version": "0.1.0",
+      "validation_state": "DESIGN_ONLY",
+      "level": "L0",
+      "instance_files": [],
+      "runtime_producers": [],
+      "runtime_consumers": [],
       "ci_gates": [
         "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
       ],

@@ -1,0 +1,9 @@
+AUDITOR_TOOL=agy
+AUDITOR_CLI_VERSION=1.1.26
+AUDITOR_MODEL_REQUESTED=gemini-3.1-pro-high
+AUDITOR_MODEL_DISPLAY=Gemini 3.1 Pro (High)
+INDEPENDENCE=different model family (Gemini/Google Antigravity) and different runtime from the implementer (Claude Sonnet 5 / Claude Code); separate agy CLI process with no access to this repo's Claude Code memory/CLAUDE.md context
+NO_FALLBACK_PROBE=echo/model-id probe SUCCESS, response "PROBE_OK Gemini 3.1 Pro (High)"
+INVOCATION_COMMAND=agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir <worktree-abs-path> --print="$(cat review_bundle/AUDIT_INPUT_REPAIR_1.md)"
+AUDITED_HEAD_AT_DISPATCH=36620e6a50d0724ee22559eb7acc1a3186263245
+DURATION_SECONDS=102.387364

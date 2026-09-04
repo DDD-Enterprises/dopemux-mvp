@@ -1,0 +1,66 @@
+{
+  "packet_id": "TP-UAG-IS-SHA256-TRAILING-NEWLINE-001",
+  "status": "PASS",
+  "risk_lane": "L2_MATERIAL",
+  "head_sha": "d40438603969a175201c6191c97bbb8a585163f2",
+  "generated_at": "2026-09-04T07:05:00Z",
+  "repo_identity": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "remotes": {
+      "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git"
+    },
+    "require_identity_match": true,
+    "match": true
+  },
+  "worktree": {
+    "path": "/Users/hue/code/_worktrees/tp-uag-t1-semantic-core-001",
+    "branch": "fix/uag-is-sha256-trailing-newline-001",
+    "base": "328a31e9a48bc20c29f4d1cde79273f587d987ee",
+    "base_note": "origin/main tip after PR #1309 merged (fe08a6efe)",
+    "content_head": "d40438603969a175201c6191c97bbb8a585163f2",
+    "final_head": "d40438603969a175201c6191c97bbb8a585163f2"
+  },
+  "background": "Standalone follow-up to PR #1309 (UAG T1 semantic core), which merged to main at fe08a6efe before finding AUD-01 (is_sha256 trailing-newline acceptance) from its own independent audit was fixed. This packet fixes only that finding, cherry-picked from PR #1309's in-flight fix commit onto current main.",
+  "files_changed": [
+    "src/dopemux/uag/primitives.py",
+    "tests/unit/uag/test_hardening.py"
+  ],
+  "validation": [
+    {"command": "git diff --check", "exit_code": 0, "result": "PASS"},
+    {"command": "python -m pytest -q tests/unit/uag", "exit_code": 0, "result": "PASS", "detail": "79 passed"},
+    {"command": "python -m pytest -q tests/contracts", "exit_code": 0, "result": "PASS", "detail": "187 passed"},
+    {"command": "ruff check src/dopemux/uag tests/unit/uag", "exit_code": 0, "result": "PASS"},
+    {"command": "scripts/governance/validate_change_contract.py --base origin/main --head HEAD", "exit_code": 0, "result": "PASS", "detail": "max_lane=L2, model_audit_required=True, paths=2"}
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/_worktrees/tp-uag-t1-semantic-core-001 --print=\"$(cat audit_prompt_followup.txt)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-UAG-IS-SHA256-TRAILING-NEWLINE-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "AUD-01",
+        "severity": "LOW",
+        "title": "is_sha256 accepted a single trailing newline via $ regex anchor",
+        "status": "RESOLVED",
+        "body": "Fixed by switching from re.compile(r'^[a-f0-9]{64}$') + .match() to an anchor-free pattern with .fullmatch(). Independently verified: PASS, 0 risks, byte-verified hash recomputation of primitives.py (3d79cd0a66811524886f6e7c7c9898256c1b067b88f7081237530c5dc679c938) matched local shasum."
+      }
+    ],
+    "fixes_applied": [
+      "src/dopemux/uag/primitives.py: is_sha256 uses fullmatch() on an anchor-free pattern instead of match() on ^...$"
+    ],
+    "remaining_risks": [],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}

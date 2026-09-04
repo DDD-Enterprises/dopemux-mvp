@@ -1,0 +1,31 @@
+```json
+{
+  "status": "COMPLETED",
+  "verdict": "PASS",
+  "findings": [
+    "The fix correctly removes the regex anchors `^` and `$` and replaces `.match()` with `.fullmatch()`. Python's `re.fullmatch()` requires the string to match the pattern perfectly, explicitly eliminating the trailing newline vulnerability previously caused by the `$` anchor.",
+    "TestIsSha256RejectsPadding correctly imports `is_sha256` from `dopemux.uag.primitives` and adds exhaustive padding/trailing checks. The newline negative test specifically pins the regression, as `VALID + '\\n'` would have evaluated to True under the old implementation.",
+    "Call sites for `is_sha256` in `DigestRef.__post_init__` and `Receipt.__post_init__` were inspected. Both simply raise ValueErrors if the digest is invalid. A correct, anchor-free `.fullmatch()` is fully backwards-compatible for legitimate 64-character lowercase hex strings; therefore, no valid inputs will be wrongly rejected.",
+    "The `git diff 328a31e9a48bc20c29f4d1cde79273f587d987ee..HEAD` check confirms the changes are strictly limited to the two specified files without scope creep.",
+    "No instruction-like or prompt-injection content was present in the candidate diff."
+  ],
+  "risks": [],
+  "rationale": "The candidate material correctly fixes the regex validation vulnerability using standard Python `re.fullmatch` semantics. Tests rigorously cover the exact padding edge cases, no other callers are broken, all local validations (pytest, ruff, diff --check) passed, and there is absolutely no scope creep.",
+  "inspected_paths": [
+    "src/dopemux/uag/primitives.py",
+    "tests/unit/uag/test_hardening.py",
+    "src/dopemux/uag/receipt.py"
+  ],
+  "evidence_refs": {
+    "primitives_sha256": "3d79cd0a66811524886f6e7c7c9898256c1b067b88f7081237530c5dc679c938",
+    "head_commit": "d40438603969a175201c6191c97bbb8a585163f2",
+    "base_commit": "328a31e9a48bc20c29f4d1cde79273f587d987ee"
+  },
+  "validation_status": {
+    "pytest_unit_uag": "PASS",
+    "pytest_contracts": "PASS",
+    "ruff_check": "PASS",
+    "git_diff_check": "PASS"
+  }
+}
+```

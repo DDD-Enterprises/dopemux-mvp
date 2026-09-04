@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/second_brain/materialized_wiki_page.schema.json",
+  "title": "Second Brain Materialized Wiki Page",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "page_id",
+    "source_snapshot_revisions",
+    "claim_refs",
+    "regions",
+    "freshness",
+    "content_hash",
+    "authority_label",
+    "canonical_source_wins",
+    "write_back_authorized",
+    "purge_propagation_required"
+  ],
+  "properties": {
+    "schema_version": {"const": "sb-materialized-wiki-page.v0"},
+    "page_id": {"type": "string", "minLength": 1},
+    "source_snapshot_revisions": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "claim_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "regions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "content"],
+        "properties": {
+          "kind": {"enum": ["MANAGED", "HUMAN_AUTHORED"]},
+          "content": {"type": "string"}
+        }
+      }
+    },
+    "freshness": {"enum": ["CURRENT", "STALE", "UNKNOWN"]},
+    "content_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "authority_label": {"const": "DERIVED_NON_CANONICAL"},
+    "canonical_source_wins": {"const": true},
+    "write_back_authorized": {"const": false},
+    "purge_propagation_required": {"const": true}
+  }
+}

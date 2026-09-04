@@ -1,0 +1,291 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://frozen.dopemux.local/TP-UAG-C0-DCP-UAG-DOPETASK-AUTHORITY-INTERFACE-FREEZE-001-R2/schemas/dopetask_governed_execution_profile.schema.json",
+  "title": "DopetaskGovernedExecutionProfile",
+  "description": "Dopetask execution-mode freeze. LEGACY_LOCAL_MODE and GOVERNED_MODE are disjoint. In GOVERNED_MODE Dopetask consumes MacroExecutionAuthorityRef v2 and must not call build_route_plan or silently use agent/model defaults. CLI --agent/--model and Task Packet execution.agent may constrain/check the grant but may not override it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "mode",
+    "planner_invocation",
+    "bootstrap_axes",
+    "grant_override_policy",
+    "litellm_uag_v1"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "dopemux-dopetask-governed-execution-profile.v1"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "LEGACY_LOCAL_MODE",
+        "GOVERNED_MODE"
+      ]
+    },
+    "planner_invocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "build_route_plan"
+      ],
+      "properties": {
+        "build_route_plan": {
+          "type": "string",
+          "enum": [
+            "PERMITTED_LEGACY_ONLY",
+            "FORBIDDEN"
+          ]
+        },
+        "planner_not_called_invariant": {
+          "type": "boolean"
+        }
+      }
+    },
+    "grant_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "bootstrap_axes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runner",
+        "model",
+        "provider_transport",
+        "uag_endpoint_profile",
+        "credential_origin_class",
+        "worktree"
+      ],
+      "properties": {
+        "runner": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value",
+            "source"
+          ],
+          "properties": {
+            "value": {
+              "$ref": "common_defs.schema.json#/definitions/nonempty"
+            },
+            "source": {
+              "enum": [
+                "GRANT",
+                "PACKET_CHECK",
+                "CLI_CHECK"
+              ]
+            }
+          }
+        },
+        "model": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value",
+            "source"
+          ],
+          "properties": {
+            "value": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "source": {
+              "enum": [
+                "GRANT_CEILING",
+                "PACKET_CHECK",
+                "CLI_CHECK"
+              ]
+            }
+          }
+        },
+        "provider_transport": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value"
+          ],
+          "properties": {
+            "value": {
+              "type": "string",
+              "enum": [
+                "codex_native",
+                "uag"
+              ],
+              "description": "LiteLLM/OpenRouter chained fallback is forbidden in UAG V1."
+            }
+          }
+        },
+        "uag_endpoint_profile": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "profile"
+          ],
+          "properties": {
+            "profile": {
+              "$ref": "common_defs.schema.json#/definitions/nonempty"
+            },
+            "endpoint": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "uag_executed": {
+              "type": "boolean",
+              "description": "Must be false when profile is the literal 'none'."
+            }
+          }
+        },
+        "credential_origin_class": {
+          "$ref": "common_defs.schema.json#/definitions/credentialClass"
+        },
+        "worktree": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "bound_before_exec"
+          ],
+          "properties": {
+            "path": {
+              "$ref": "common_defs.schema.json#/definitions/nonempty"
+            },
+            "bound_before_exec": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "grant_override_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cli_may_override_grant",
+        "packet_execution_agent_may_override_grant",
+        "host_default_sufficient_when_grant_requires_explicit_class",
+        "runner_model_profile_substitution_without_grant"
+      ],
+      "properties": {
+        "cli_may_override_grant": {
+          "const": false
+        },
+        "packet_execution_agent_may_override_grant": {
+          "const": false
+        },
+        "host_default_sufficient_when_grant_requires_explicit_class": {
+          "const": false
+        },
+        "runner_model_profile_substitution_without_grant": {
+          "const": "FAIL_CLOSED"
+        }
+      }
+    },
+    "litellm_uag_v1": {
+      "const": "FORBIDDEN"
+    },
+    "chained_fallback": {
+      "const": "FORBIDDEN"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "GOVERNED_MODE"
+          }
+        },
+        "required": [
+          "mode"
+        ]
+      },
+      "then": {
+        "required": [
+          "grant_ref"
+        ],
+        "properties": {
+          "planner_invocation": {
+            "properties": {
+              "build_route_plan": {
+                "const": "FORBIDDEN"
+              },
+              "planner_not_called_invariant": {
+                "const": true
+              }
+            },
+            "required": [
+              "build_route_plan",
+              "planner_not_called_invariant"
+            ]
+          },
+          "grant_ref": {
+            "$ref": "common_defs.schema.json#/definitions/nonempty"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "LEGACY_LOCAL_MODE"
+          }
+        },
+        "required": [
+          "mode"
+        ]
+      },
+      "then": {
+        "properties": {
+          "planner_invocation": {
+            "properties": {
+              "build_route_plan": {
+                "const": "PERMITTED_LEGACY_ONLY"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "bootstrap_axes": {
+            "properties": {
+              "uag_endpoint_profile": {
+                "properties": {
+                  "profile": {
+                    "const": "none"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "bootstrap_axes": {
+            "properties": {
+              "uag_endpoint_profile": {
+                "properties": {
+                  "uag_executed": {
+                    "const": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

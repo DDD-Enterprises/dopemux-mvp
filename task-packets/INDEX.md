@@ -153,6 +153,10 @@ A packet is superseded by another packet
 | TP-DMX-ORCH-AUDIT-FIX-001 | Task Orchestrator | Close DMX-ORCH integration audit gaps | Active | N/A |
 | DMX-DCP-MODEL-ROUTING-MVP-0006 | DCP / Model Routing | Classifier provenance hardening for trust-lowering signals | Active | N/A |
 | DMX-DCP-MODEL-ROUTING-MVP-0007 | DCP / Model Routing | Trusted input-provenance contract for execution eligibility | Active | N/A |
+| TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001 | DCP / Full System | Freeze DCP full-system authority and contracts | Active | docs/90-adr/adr-dcp-full-system-v1-authority-and-contract-freeze.md |
+| TP-DMX-DCP-P0-PR1283-REPAIR-001 | DCP / Full System | Repair PR #1283 P0 contract review findings in place | Active | TP-DMX-DCP-FULL-SYSTEM-P0-AUTHORITY-CONTRACT-FREEZE-001 |
+| TP-DMX-DCP-P0-PR1283-REPAIR-002 | DCP / Full System | Repair PR #1283 P0 cross-object authority validation in place | Active | TP-DMX-DCP-P0-PR1283-REPAIR-001 |
+| TP-DMX-DCP-P0-PR1283-CROSS-AUTHORITY-CLOSURE-001 | DCP / Full System | Close PR #1283 cross-authority contract relationships | Active | TP-DMX-DCP-P0-PR1283-REPAIR-002 |
 | TP-DCP-MCP-RO-0002 | DCP / MCP | Architecture Doc And Multi Project Contract | Active | N/A |
 | TP-DCP-MCP-RO-0003 | DCP / MCP | Inspect Dopemux Init Registry Contract | Active | N/A |
 | TP-DCP-MCP-RO-0004 | DCP / MCP | Facade Scaffold Registry Resolver Repo Proof Tools | Active | N/A |
@@ -169,6 +173,8 @@ A packet is superseded by another packet
 | TP-DCP-MCP-RO-0018 | DCP / MCP | Exact-Head Proof Readiness Evaluator | Active | TP-DCP-MCP-RO-0017 |
 | TP-DCP-MCP-RO-0017-VENDOR | DCP / MCP | Vendor-Live Preflight And Two-Target Isolation | Active | TP-DCP-MCP-RO-0017 |
 | DMX-DCP-PROMPT5-EXTRACT-RECON-001 | DCP / Prompt 5 | Extract Prompt 5 chat-history docs and reconcile PR/Task Orchestrator runway state | Active | N/A |
+| TP-DMX-C0-R2-SCHEMA-PUBLICATION-001 | Control Tower / DCP | Deterministic C0-R2 schema publication into schemas/dcp (exact-byte, L0) | Active (PR #1307 open) | N/A |
+| TP-DMX-C0-R2-SCHEMA-PUBLICATION-001-A1 | Control Tower / DCP | Publication admission amendment — C0-R2 ratification authority reconciliation | Active | TP-DMX-C0-R2-SCHEMA-PUBLICATION-001 |
 
 ────────────────────────────────────────────────────────────
 🟢 Completed Task Packets
@@ -261,3 +267,6 @@ Backlog conversion of Memory Context Fabric + MCP fleet audit + forgotten-featur
 | DMX-ADR-003-lane-engine-dispatch | DMX-ADR | ADR | Ready | — |
 | DMX-ADR-004-complexity-scorer | DMX-ADR | ADR | Ready | — |
 | DMX-ADR-005-conport-graph-exposure | DMX-ADR | ADR | Ready | — |
+| TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001 | MCP Fleet | Freeze multiproject P0 identity and sharing contracts | Active | docs/90-adr/adr-dmx-mcp-multiproject-identity-sharing-contract-001.md |
+| TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001 | MCP Fleet | Close merged P0 compose no-runtime-effect gate after PR #1306 | Active | TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001 |
+| TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001 | MCP Fleet | Dormant P1 fleet control plane: registry identity, catalog-v2 compiler, service-lease-v2, ownership, materialization, read-only reconcile | Active | TP-DMX-MCP-MULTIPROJECT-P0-POSTMERGE-CLOSURE-001 |

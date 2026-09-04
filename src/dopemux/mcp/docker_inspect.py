@@ -277,6 +277,55 @@ def _norm_path(value: str) -> str:
     return str(value).rstrip("/")
 
 
+def inspect_container_mounts(
+    container_id: str,
+    *,
+    runner: Optional[Runner] = None,
+    timeout: float = 15.0,
+) -> List[str]:
+    """Read-only ``docker inspect --format '{{json .Mounts}}'`` for one
+    container, normalized to a sorted list of ``"<source>:<destination>"``
+    strings.
+
+    P1 ownership evidence (``ownership.py``) uses this as storage/mount
+    corroboration only -- one of the four evidence classes required for
+    ``mutation_eligible``, never sufficient by itself. Never starts, stops,
+    or otherwise mutates anything; an unavailable/erroring docker binary
+    yields an empty list rather than raising.
+    """
+
+    run = runner or subprocess.run
+    if runner is None and shutil.which("docker") is None:
+        return []
+    try:
+        result = run(
+            ["docker", "inspect", "--format", "{{json .Mounts}}", container_id],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            check=False,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+        return []
+    if result.returncode != 0:
+        return []
+    try:
+        mounts = json.loads(result.stdout or "[]")
+    except json.JSONDecodeError:
+        return []
+    if not isinstance(mounts, list):
+        return []
+    out: List[str] = []
+    for mount in mounts:
+        if not isinstance(mount, dict):
+            continue
+        source = str(mount.get("Source") or "")
+        dest = str(mount.get("Destination") or "")
+        if source and dest:
+            out.append(f"{source}:{dest}")
+    return sorted(set(out))
+
+
 def find_containers_for_service(
     docker: DockerInspectResult,
     *,

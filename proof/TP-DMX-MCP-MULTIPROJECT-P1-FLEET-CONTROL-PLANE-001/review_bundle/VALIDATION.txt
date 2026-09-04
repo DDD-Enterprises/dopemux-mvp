@@ -1,0 +1,80 @@
+=== pytest: focused P1 suite ===
+........................................................................ [ 61%]
+.............................................                            [100%]
+117 passed in 0.57s
+
+=== pytest: relevant contract/regression suite ===
+........................................................................ [ 37%]
+........................................................................ [ 75%]
+..............................................                           [100%]
+190 passed in 1.44s
+
+=== git diff --check ===
+exit=0
+
+=== pre-commit (changed files) ===
+Evidence-economy change-contract preflight.................................................Passed
+Validate YAML frontmatter in docs..........................................................Passed
+Block deprecated memory backends in slash commands.....................(no files to check)Skipped
+Validate templates/skills SKILL.md frontmatter.........................(no files to check)Skipped
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+Validate proof bundle embedded_audit schema............................(no files to check)Skipped
+Validate GitHub Actions workflow syntax................................(no files to check)Skipped
+markdownlint...............................................................................Passed
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+
+=== validate_change_contract.py ===
+status=PASS
+max_lane=L2
+model_audit_required=True
+proof_only=False
+paths=29
+  [L2] docs/03-reference/mcp/multiproject-control-plane.md
+  [L0] proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/implementation-notes.md
+  [L2] src/dopemux/commands/mcp_commands.py
+  [L2] src/dopemux/mcp/control_plane.py
+  [L2] src/dopemux/mcp/docker_inspect.py
+  [L2] src/dopemux/mcp/docker_runtime.py
+  [L2] src/dopemux/mcp/fleet_catalog.py
+  [L2] src/dopemux/mcp/identity.py
+  [L2] src/dopemux/mcp/identity_registry.py
+  [L2] src/dopemux/mcp/materialization.py
+  [L2] src/dopemux/mcp/ownership.py
+  [L2] src/dopemux/mcp/project_identity.py
+  [L2] src/dopemux/mcp/reconcile.py
+  [L2] src/dopemux/mcp/runtime_state.py
+  [L2] src/dopemux/mcp/service_leases.py
+  [L0] task-packets/INDEX.md
+  [L0] task-packets/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001.json
+  [L0] task-packets/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001.md
+  [L2] tests/arch/test_mcp_fleet_catalog_contract.py
+  [L2] tests/arch/test_mcp_multiproject_contracts.py
+  [L2] tests/mcp/test_control_plane_v2.py
+  [L2] tests/mcp/test_fleet_catalog_v2_runtime.py
+  [L2] tests/mcp/test_identity_registry_v2.py
+  [L2] tests/mcp/test_materialization_v2.py
+  [L2] tests/mcp/test_ownership_v2.py
+  [L2] tests/mcp/test_reconcile_v2.py
+  [L2] tests/mcp/test_service_leases_v2.py
+  [L2] tests/unit/test_mcp_commands_catalog.py
+  [L2] tests/unit/test_mcp_runtime_registry.py
+
+=== secret scan (added lines, curated patterns) ===
+0
+0
+
+=== live-mutation check ===
+no live registry directory created (PASS)
+?? proof/TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001/review_bundle/
+git status exit=0
+catalog files untouched (PASS if empty above)

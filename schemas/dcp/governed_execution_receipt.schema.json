@@ -1,0 +1,540 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://frozen.dopemux.local/TP-UAG-C0-DCP-UAG-DOPETASK-AUTHORITY-INTERFACE-FREEZE-001-R2/schemas/governed_execution_receipt.schema.json",
+  "title": "GovernedExecutionReceipt",
+  "description": "Dopetask governed-execution receipt. Distinguishes policy_resolved and uag_resolved. Cannot self-certify workflow legality, audit PASS, merge readiness, or activation. exactly_once_claim remains FORBIDDEN. provider_internal_retries remain UNKNOWN unless independently evidenced. Mutation enforcement surrounding the runner window and post-run verification are const-true; prompt obedience is never sufficient.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "grant_ref",
+    "task_packet_digest",
+    "dcp_route_authorization_digest",
+    "uag_profile",
+    "runner_identity_stages",
+    "model_identity_stages",
+    "repo_worktree_identity",
+    "attempted_execution_descriptor",
+    "changed_paths",
+    "commands",
+    "validation",
+    "uag_transport_receipt_refs",
+    "terminal_state",
+    "unknowns",
+    "conflicts",
+    "mutation_enforcement",
+    "exactly_once_claim",
+    "provider_internal_retries",
+    "self_certification"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "dopemux-governed-execution-receipt.v1"
+    },
+    "grant_ref": {
+      "$ref": "common_defs.schema.json#/definitions/digestRef"
+    },
+    "task_packet_digest": {
+      "$ref": "common_defs.schema.json#/definitions/sha256"
+    },
+    "dcp_route_authorization_digest": {
+      "$ref": "common_defs.schema.json#/definitions/sha256"
+    },
+    "uag_profile": {
+      "$ref": "common_defs.schema.json#/definitions/nonempty"
+    },
+    "runner_identity_stages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requested",
+        "configured",
+        "policy_resolved",
+        "uag_resolved",
+        "attempted",
+        "provider_reported"
+      ],
+      "properties": {
+        "requested": {
+          "allOf": [
+            {
+              "$ref": "common_defs.schema.json#/definitions/identityStage"
+            },
+            {
+              "properties": {
+                "stage": {
+                  "const": "requested"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          ]
+        },
+        "configured": {
+          "allOf": [
+            {
+              "$ref": "common_defs.schema.json#/definitions/identityStage"
+            },
+            {
+              "properties": {
+                "stage": {
+                  "const": "configured"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          ]
+        },
+        "policy_resolved": {
+          "allOf": [
+            {
+              "$ref": "common_defs.schema.json#/definitions/identityStage"
+            },
+            {
+              "properties": {
+                "stage": {
+                  "const": "policy_resolved"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          ]
+        },
+        "uag_resolved": {
+          "allOf": [
+            {
+              "$ref": "common_defs.schema.json#/definitions/identityStage"
+            },
+            {
+              "properties": {
+                "stage": {
+                  "const": "uag_resolved"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          ]
+        },
+        "attempted": {
+          "allOf": [
+            {
+              "$ref": "common_defs.schema.json#/definitions/identityStage"
+            },
+            {
+              "properties": {
+                "stage": {
+                  "const": "attempted"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          ]
+        },
+        "gateway_reported": {
+          "allOf": [
+            {
+              "$ref": "common_defs.schema.json#/definitions/identityStage"
+            },
+            {
+              "properties": {
+                "stage": {
+                  "const": "gateway_reported"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          ]
+        },
+        "proxy_reported": {
+          "allOf": [
+            {
+              "$ref": "common_defs.schema.json#/definitions/identityStage"
+            },
+            {
+              "properties": {
+                "stage": {
+                  "const": "proxy_reported"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          ]
+        },
+        "provider_reported": {
+          "allOf": [
+            {
+              "$ref": "common_defs.schema.json#/definitions/identityStage"
+            },
+            {
+              "properties": {
+                "stage": {
+                  "const": "provider_reported"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          ]
+        },
+        "provider_attested": {
+          "$ref": "common_defs.schema.json#/definitions/providerAttestedIdentityStage"
+        }
+      }
+    },
+    "model_identity_stages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requested",
+        "configured",
+        "policy_resolved",
+        "uag_resolved",
+        "attempted",
+        "provider_reported"
+      ],
+      "properties": {
+        "requested": {
+          "allOf": [
+            {
+              "$ref": "common_defs.schema.json#/definitions/identityStage"
+            },
+            {
+              "properties": {
+                "stage": {
+                  "const": "requested"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          ]
+        },
+        "configured": {
+          "allOf": [
+            {
+              "$ref": "common_defs.schema.json#/definitions/identityStage"
+            },
+            {
+              "properties": {
+                "stage": {
+                  "const": "configured"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          ]
+        },
+        "policy_resolved": {
+          "allOf": [
+            {
+              "$ref": "common_defs.schema.json#/definitions/identityStage"
+            },
+            {
+              "properties": {
+                "stage": {
+                  "const": "policy_resolved"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          ]
+        },
+        "uag_resolved": {
+          "allOf": [
+            {
+              "$ref": "common_defs.schema.json#/definitions/identityStage"
+            },
+            {
+              "properties": {
+                "stage": {
+                  "const": "uag_resolved"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          ]
+        },
+        "attempted": {
+          "allOf": [
+            {
+              "$ref": "common_defs.schema.json#/definitions/identityStage"
+            },
+            {
+              "properties": {
+                "stage": {
+                  "const": "attempted"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          ]
+        },
+        "gateway_reported": {
+          "allOf": [
+            {
+              "$ref": "common_defs.schema.json#/definitions/identityStage"
+            },
+            {
+              "properties": {
+                "stage": {
+                  "const": "gateway_reported"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          ]
+        },
+        "proxy_reported": {
+          "allOf": [
+            {
+              "$ref": "common_defs.schema.json#/definitions/identityStage"
+            },
+            {
+              "properties": {
+                "stage": {
+                  "const": "proxy_reported"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          ]
+        },
+        "provider_reported": {
+          "allOf": [
+            {
+              "$ref": "common_defs.schema.json#/definitions/identityStage"
+            },
+            {
+              "properties": {
+                "stage": {
+                  "const": "provider_reported"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          ]
+        },
+        "provider_attested": {
+          "$ref": "common_defs.schema.json#/definitions/providerAttestedIdentityStage"
+        }
+      }
+    },
+    "repo_worktree_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "worktree_path",
+        "head_sha"
+      ],
+      "properties": {
+        "repository": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "worktree_path": {
+          "$ref": "common_defs.schema.json#/definitions/nonempty"
+        },
+        "head_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "origin_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "attempted_execution_descriptor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "argv"
+      ],
+      "properties": {
+        "argv": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "cwd": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "changed_paths": {
+      "type": "array",
+      "items": {
+        "$ref": "common_defs.schema.json#/definitions/nonempty"
+      }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "$ref": "common_defs.schema.json#/definitions/nonempty"
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "result"
+      ],
+      "properties": {
+        "result": {
+          "$ref": "common_defs.schema.json#/definitions/validationResult"
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "command",
+              "result"
+            ],
+            "properties": {
+              "command": {
+                "$ref": "common_defs.schema.json#/definitions/nonempty"
+              },
+              "result": {
+                "$ref": "common_defs.schema.json#/definitions/validationResult"
+              },
+              "exit_code": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "uag_transport_receipt_refs": {
+      "type": "array",
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "description": "Empty or null entries mean UAG transport was NOT_RUN."
+    },
+    "terminal_state": {
+      "$ref": "common_defs.schema.json#/definitions/nonempty"
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "$ref": "common_defs.schema.json#/definitions/unknownItem"
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "$ref": "common_defs.schema.json#/definitions/conflictItem"
+      }
+    },
+    "mutation_enforcement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "deterministic",
+        "prompt_only_sufficient",
+        "enforced_around_runner_execution",
+        "post_run_verification"
+      ],
+      "properties": {
+        "deterministic": {
+          "const": true
+        },
+        "prompt_only_sufficient": {
+          "const": false
+        },
+        "enforced_around_runner_execution": {
+          "const": true,
+          "description": "Deterministic enforcement MUST surround the runner mutation window."
+        },
+        "post_run_verification": {
+          "const": true,
+          "description": "Deterministic post-run verification is required."
+        },
+        "mechanism": {
+          "type": "string",
+          "description": "Implementation-agnostic. Any safe mechanism is allowed if it surrounds the runner mutation window and is not prompt obedience."
+        }
+      }
+    },
+    "exactly_once_claim": {
+      "$ref": "common_defs.schema.json#/definitions/exactlyOnceClaim"
+    },
+    "provider_internal_retries": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "INDEPENDENTLY_EVIDENCED"
+      ]
+    },
+    "self_certification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "workflow_legality",
+        "audit_pass",
+        "merge_readiness",
+        "activation"
+      ],
+      "properties": {
+        "workflow_legality": {
+          "const": "NOT_CERTIFIED_BY_THIS_RECEIPT"
+        },
+        "audit_pass": {
+          "const": "NOT_CERTIFIED_BY_THIS_RECEIPT"
+        },
+        "merge_readiness": {
+          "const": "NOT_CERTIFIED_BY_THIS_RECEIPT"
+        },
+        "activation": {
+          "const": "NOT_CERTIFIED_BY_THIS_RECEIPT"
+        }
+      }
+    }
+  }
+}

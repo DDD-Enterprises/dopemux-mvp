@@ -2407,3 +2407,145 @@ def mcp_snapshot_tools_cmd(
         source = entry.get("source", "?")
         tool_count = entry.get("tool_count", 0)
         console.logger.info(f"  {name:<20} source={source:<11} tools={tool_count}")
+
+
+# ---------------------------------------------------------------------------
+# P1 fleet control plane: read-only identity/catalog/reconcile preview
+# (TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001).
+#
+# Both commands below only ever read state and print it. Neither creates the
+# identity registry or the service-lease store if either is absent
+# (create_missing=False), neither writes mcp_catalog.yaml, and neither
+# selects/starts/stops/adopts a service. They exist so an operator can
+# inspect P1's dormant infrastructure without touching the live v1 catalog
+# pipeline (_load_catalog/load_root_catalog, unchanged above).
+# ---------------------------------------------------------------------------
+
+
+@mcp.group("control-plane")
+def mcp_control_plane_group():
+    """
+    🧭 P1 fleet control plane: read-only identity/catalog/reconcile preview.
+
+    Dormant infrastructure only -- no service starts, no catalog writes, no
+    registry auto-creation. See docs/03-reference/mcp/multiproject-control-plane.md.
+    """
+
+
+@mcp_control_plane_group.command("identity")
+@click.option(
+    "--repo",
+    "repo_arg",
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path),
+    help="Repo/worktree path to resolve identity for (default: cwd).",
+)
+@click.option("--json", "json_output", is_flag=True, help="Emit the resolved-execution-identity JSON.")
+def mcp_control_plane_identity_cmd(repo_arg: Optional[Path], json_output: bool):
+    """
+    Preview registry-backed execution identity for a path (read-only).
+
+    Never creates the identity registry: if none exists, resolution is
+    UNKNOWN by design (dormant/default-off), not an error.
+    """
+    import getpass
+
+    from dopemux.mcp.identity import resolve_execution_identity
+    from dopemux.mcp.identity_registry import IdentityRegistry
+
+    cwd = (repo_arg or Path.cwd()).resolve()
+    registry = IdentityRegistry.load(create_missing=False)
+    resolved = resolve_execution_identity(
+        cwd=cwd,
+        registry=registry,
+        actor_id=getpass.getuser() or "unknown-actor",
+        client_id="dopemux-cli",
+    )
+
+    if json_output:
+        sys.stdout.write(json.dumps(resolved.to_schema_dict(), indent=2, sort_keys=True) + "\n")
+        return
+    console.logger.info(f"[info]resolution_status={resolved.resolution_status}[/info]")
+    console.logger.info(f"[info]project_id={resolved.project_id}[/info]")
+    console.logger.info(f"[info]workspace_id={resolved.workspace_id}[/info]")
+    console.logger.info(f"[info]instance_id={resolved.instance_id}[/info]")
+    console.logger.info(f"[info]mutable_routing_allowed={resolved.mutable_routing_allowed}[/info]")
+
+
+@mcp_control_plane_group.command("reconcile")
+@click.option(
+    "--repo",
+    "repo_arg",
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path),
+    help="Repo/worktree path to build the plan for (default: cwd).",
+)
+@click.option("--json", "json_output", is_flag=True, help="Emit the reconcile report JSON.")
+def mcp_control_plane_reconcile_cmd(repo_arg: Optional[Path], json_output: bool):
+    """
+    Preview a read-only reconcile/control-plane plan (no executor).
+
+    Compiles the live v1 catalog to an in-memory v2 projection, resolves
+    identity, and reads the service-lease store (never creating it) to
+    classify each service MATCHED/MISSING/FOREIGN/AMBIGUOUS/STALE/
+    LEGACY_UNBOUND. A blocked plan (e.g. identity not VERIFIED) is a normal,
+    exit-0 result, not a CLI error.
+    """
+    import getpass
+
+    from dopemux.mcp import fleet_catalog
+    from dopemux.mcp.control_plane import build_control_plane_plan
+    from dopemux.mcp.identity import resolve_execution_identity
+    from dopemux.mcp.identity_registry import IdentityRegistry
+    from dopemux.mcp.service_leases import ServiceLeaseRegistry
+
+    repo = (repo_arg or get_repo_root(fallback_cwd=True) or Path.cwd())
+    repo = Path(repo).resolve()
+
+    v1_catalog = fleet_catalog.load_root_catalog(repo)
+    topology_path = repo / "docs/03-reference/mcp/multiproject-service-topology.json"
+    topology = json.loads(topology_path.read_text(encoding="utf-8"))
+    catalog_v2 = fleet_catalog.compile_catalog_v2(v1_catalog, topology)
+
+    identity_registry = IdentityRegistry.load(create_missing=False)
+    resolved = resolve_execution_identity(
+        cwd=repo,
+        registry=identity_registry,
+        actor_id=getpass.getuser() or "unknown-actor",
+        client_id="dopemux-cli",
+    )
+    lease_registry = ServiceLeaseRegistry.load(create_missing=False)
+
+    plan = build_control_plane_plan(
+        resolved_identity=resolved, catalog_v2=catalog_v2, lease_registry=lease_registry
+    )
+
+    if json_output:
+        payload = {
+            "resolved_identity": plan.resolved_identity.to_schema_dict(),
+            "blockers": list(plan.blockers),
+            "selected_service_count": len(plan.selected_services),
+            "reconcile": [
+                {
+                    "service_id": e.service_id,
+                    "status": str(e.status),
+                    "lease_verdict": e.lease_verdict,
+                    "recommendation": e.recommendation,
+                }
+                for e in plan.reconcile.entries
+            ],
+        }
+        sys.stdout.write(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+        return
+
+    if plan.is_blocked:
+        console.logger.info("[error]blocked:[/error]")
+        for reason in plan.blockers:
+            console.logger.info(f"[error]  - {reason}[/error]")
+        return
+
+    console.logger.info(
+        f"[info]identity: project_id={plan.resolved_identity.project_id} "
+        f"workspace_id={plan.resolved_identity.workspace_id} "
+        f"instance_id={plan.resolved_identity.instance_id}[/info]"
+    )
+    for entry in plan.reconcile.entries:
+        console.logger.info(f"[info]  {entry.service_id:<24} {entry.status:<14} {entry.recommendation}[/info]")

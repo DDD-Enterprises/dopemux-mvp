@@ -6,6 +6,7 @@ It validates catalog shape and static drift between committed config surfaces.
 
 from __future__ import annotations
 
+import copy
 import json
 import re
 from pathlib import Path
@@ -1182,3 +1183,385 @@ def validate_codex_config_toml_parity(repo_root: Path) -> list[str]:
             ".codex/config.toml declares [mcp_servers.*] outside the dopemux-managed region"
         )
     return errors
+
+
+# ---------------------------------------------------------------------------
+# P1 fleet control plane: catalog-v2 compiler and compatibility projection
+# (TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001).
+#
+# The v1 catalog and its loaders/renderers above remain untouched and live.
+# Everything below is dormant: it never writes ``mcp_catalog.yaml`` or
+# ``default_catalog.yaml`` in this tranche. ``load_root_catalog`` (line 192)
+# and ``mcp_commands._load_catalog`` both hard-raise on ``version != 1`` and
+# gate every ``dopemux mcp *`` command; flipping the live file to version 2
+# without also making both loaders version-tolerant would be an immediate
+# fleet-wide CLI outage, not a dormant change. Making mcp_commands._load_catalog
+# version-tolerant is out of this packet's mcp_commands.py grant ("read-only
+# identity/catalog/reconcile preview surfaces only" -- that loader also backs
+# start/stop/up/down). So even proven zero-drift compiles to
+# CATALOG_V2_CUTOVER=BLOCKED_NOT_APPLIED here; see implementation-notes.md.
+# ---------------------------------------------------------------------------
+
+# Evidence: catalog server "pal"'s description ("PAL http wrapper -- health/
+# lifecycle shim only (no MCP endpoint; P0 claim 11). Use pal-stdio for PAL
+# tools.") is a paraphrase-exact match for topology row pal-http-wrapper's
+# CURRENT_RUNTIME ("Catalog describes a health/lifecycle shim with no MCP
+# endpoint."); both cite R0/04_MCP_CATALOG.yaml as their evidence source.
+#
+# Evidence: catalog server "github-official" runs with GITHUB_READ_ONLY=1 and
+# `--read-only`; topology row github-official-readonly's CURRENT_RUNTIME:
+# "Catalog uses official GitHub MCP in read-only mode."
+#
+# Evidence: catalog server "task-orchestrator" has reserved_port=7890;
+# topology row task-orchestrator-kotlin's CURRENT_RUNTIME cites the same
+# "global fixed 7890" port and Kotlin runtime.
+#
+# No other catalog server name differs from its topology SERVICE_ID.
+CATALOG_TO_TOPOLOGY_ALIAS: dict[str, str] = {
+    "pal": "pal-http-wrapper",
+    "github-official": "github-official-readonly",
+    "task-orchestrator": "task-orchestrator-kotlin",
+}
+
+# Topology rows that are infrastructure the CLI fleet catalog does not
+# separately manage as an MCP server entry (databases, message buses, and the
+# unmanaged Python workflow shadow service). Confirmed by exhaustive diff
+# against the 19 catalog server keys -- see test_topology_join_is_closed.
+NON_CATALOG_INFRASTRUCTURE: frozenset[str] = frozenset(
+    {
+        "postgres-age",
+        "redis-primary",
+        "qdrant",
+        "redis-events-engine",
+        "redis-events",
+        "python-workflow-service",
+        "litellm-and-external-research-proxies",
+    }
+)
+
+# v1 catalog fields copied through into a v2 server object unchanged. Legacy
+# fields rejected by the v2 schema (scope, state_scope, port_policy,
+# multi_project_singleton) and follow_on_decision (superseded by
+# mutation_class + lifecycle=decision-required) are deliberately excluded.
+_V2_PASSTHROUGH_FIELDS: tuple[str, ...] = (
+    "agents",
+    "workflows",
+    "tools",
+    "admin_tools",
+    "aux_surfaces",
+    "managed",
+    "url",
+    "url_template",
+    "port_var",
+    "default_port_base",
+    "reserved_port",
+    "extra_port_vars",
+    "docker_compose_service",
+    "command",
+    "args",
+    "requires_env",
+    "optional_env",
+    "doctor_args",
+    "env_template",
+    "description",
+    "tool_aliases",
+)
+
+# v1 identity_scope -> v2 identity_scope (schema enum: singleton, per-project,
+# per-workspace, per-instance, per-call-workspace, external). "host-session"
+# collapses into "singleton": v1 never used identity_scope to drive placement
+# or endpoint behavior (only fleet_catalog's doctrine-doc renderer and the
+# personality-contract validator read it -- grep confirmed), so this is a
+# lossless simplification of a distinction v1 never acted on.
+_V1_IDENTITY_SCOPE_TO_V2: dict[str, str] = {
+    "singleton": "singleton",
+    "host-session": "singleton",
+    "per-call-workspace": "per-call-workspace",
+    "external-provider": "external",
+    "per-repo": "per-project",
+    "per-worktree": "per-instance",
+}
+
+# authority_role values already used as canonical-writer contract fields
+# (REQUIRED_SERVER_PERSONALITIES above) that end in "-authority" are the
+# services holding domain-canonical state.
+_DERIVED_AUTHORITY_ROLES: frozenset[str] = frozenset(
+    {"retrieval-projection", "read-plane-projection", "domain-read-facade"}
+)
+_ADAPTER_AUTHORITY_ROLES: frozenset[str] = frozenset(
+    {"pm-adapter", "docker-gateway", "connector-discovery", "github-read"}
+)
+
+_SHARING_CLASS_IDLE_POLICY: dict[str, str] = {
+    "HOST_SINGLETON": "always_on",
+    "PROJECT_SCOPED": "project_idle",
+    "WORKTREE_SCOPED": "instance_idle",
+    "RETIRED": "external",
+}
+
+
+def load_root_catalog_v2(repo_root: Path) -> dict[str, Any]:
+    """Load ``mcp_catalog.yaml`` as a v2 catalog and validate it against
+    ``schemas/mcp/fleet-catalog-v2.schema.json``.
+
+    Raises if the file is not ``version: 2`` -- i.e. cutover has not happened
+    -- or fails schema validation. This is the dormant read path a future
+    version-tolerant loader would call once cutover lands; it is not wired
+    into any live command in this tranche.
+    """
+
+    import jsonschema
+
+    data = load_yaml_no_duplicate_keys(repo_root / "mcp_catalog.yaml") or {}
+    if data.get("version") != 2:
+        raise MCPFleetCatalogError(
+            f"mcp_catalog.yaml is not a v2 catalog (version={data.get('version')!r}); "
+            "catalog-v2 cutover has not occurred"
+        )
+    schema = load_json_schema(repo_root / "schemas/mcp/fleet-catalog-v2.schema.json")
+    jsonschema.validate(data, schema)
+    return data
+
+
+def _topology_rows_by_id(topology: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    return {row["SERVICE_ID"]: row for row in topology["services"]}
+
+
+class CatalogTopologyJoinError(MCPFleetCatalogError):
+    """Raised when the catalog/topology join is not closed: a catalog server
+    has no topology row (via identity or CATALOG_TO_TOPOLOGY_ALIAS), or a
+    topology row is neither catalog-mapped nor NON_CATALOG_INFRASTRUCTURE."""
+
+
+def join_catalog_topology(
+    v1_catalog: dict[str, Any], topology: dict[str, Any]
+) -> tuple[dict[str, dict[str, Any]], list[str], list[str]]:
+    """Deterministically join every v1 catalog server to its topology row.
+
+    Returns ``(joined, unresolved_servers, unexplained_topology_rows)``.
+    Both lists must be empty for the join to be closed; a non-empty list
+    means ``compile_catalog_v2`` must not proceed to cutover.
+    """
+
+    topo_by_id = _topology_rows_by_id(topology)
+    joined: dict[str, dict[str, Any]] = {}
+    unresolved: list[str] = []
+    for server_id in v1_catalog.get("servers", {}):
+        topo_id = CATALOG_TO_TOPOLOGY_ALIAS.get(server_id, server_id)
+        row = topo_by_id.get(topo_id)
+        if row is None:
+            unresolved.append(server_id)
+        else:
+            joined[server_id] = row
+
+    covered_topology_ids = {
+        CATALOG_TO_TOPOLOGY_ALIAS.get(sid, sid) for sid in v1_catalog.get("servers", {})
+    }
+    unexplained = sorted(
+        set(topo_by_id) - covered_topology_ids - NON_CATALOG_INFRASTRUCTURE
+    )
+    return joined, sorted(unresolved), unexplained
+
+
+def _derive_state_authority(authority_role: str) -> str:
+    if authority_role.endswith("-authority"):
+        return "canonical"
+    if authority_role in _DERIVED_AUTHORITY_ROLES:
+        return "derived"
+    if authority_role in _ADAPTER_AUTHORITY_ROLES:
+        return "adapter"
+    return "stateless"
+
+
+def _derive_mutation_class(state_authority: str) -> str:
+    if state_authority == "canonical":
+        return "scoped"
+    if state_authority == "adapter":
+        return "operator"
+    return "none"
+
+
+def _derive_endpoint_policy(spec: dict[str, Any], sharing_class: str) -> str:
+    if spec.get("transport") == "external":
+        return "external"
+    if sharing_class in ("PROJECT_SCOPED", "WORKTREE_SCOPED"):
+        return "leased"
+    if spec.get("url") or spec.get("url_template") or spec.get("reserved_port"):
+        return "fixed"
+    return "generated"
+
+
+def _derive_probe(spec: dict[str, Any], description: str) -> str:
+    if spec.get("transport") == "external":
+        return "custom"
+    if "no mcp endpoint" in description.lower():
+        return "http"
+    return "mcp"
+
+
+def _derive_idle_policy(spec: dict[str, Any], sharing_class: str) -> str:
+    if spec.get("transport") == "external":
+        return "external"
+    return _SHARING_CLASS_IDLE_POLICY[sharing_class]
+
+
+def _compile_server_v2(server_id: str, spec: dict[str, Any], topo_row: dict[str, Any]) -> dict[str, Any]:
+    sharing_class = topo_row["CURRENT_CLASS"]
+    v1_identity_scope = str(spec.get("identity_scope") or "singleton")
+    identity_scope = _V1_IDENTITY_SCOPE_TO_V2.get(v1_identity_scope)
+    if identity_scope is None:
+        raise MCPFleetCatalogError(
+            f"{server_id}: no v1->v2 identity_scope mapping for {v1_identity_scope!r} "
+            "-- extend _V1_IDENTITY_SCOPE_TO_V2 deliberately rather than guessing"
+        )
+    authority_role = str(spec.get("authority_role") or "")
+    state_authority = _derive_state_authority(authority_role)
+    description = str(spec.get("description") or "")
+
+    server: dict[str, Any] = {
+        "sharing_class": sharing_class,
+        "target_class": topo_row["TARGET_CLASS"],
+        "transport": spec.get("transport"),
+        "plane": spec.get("plane"),
+        "authority_role": authority_role,
+        "lifecycle": spec.get("lifecycle"),
+        "management_model": spec.get("management_model"),
+        "identity_scope": identity_scope,
+        "state_authority": state_authority,
+        "mutation_class": _derive_mutation_class(state_authority),
+        "endpoint_policy": _derive_endpoint_policy(spec, sharing_class),
+        "probe": _derive_probe(spec, description),
+        "idle_policy": _derive_idle_policy(spec, sharing_class),
+        "flip_gate": list(topo_row["FLIP_GATE"]),
+    }
+    for field_name in _V2_PASSTHROUGH_FIELDS:
+        if field_name in spec:
+            server[field_name] = copy.deepcopy(spec[field_name])
+    return server
+
+
+def compile_catalog_v2(v1_catalog: dict[str, Any], topology: dict[str, Any]) -> dict[str, Any]:
+    """Compile the current v1 catalog into an in-memory v2-shaped catalog.
+
+    Joins every server to its topology row (raising ``CatalogTopologyJoinError``
+    if the join is not closed -- see ``join_catalog_topology``) and derives
+    the new v2-only governance fields deterministically. Never writes a file;
+    never mutates ``v1_catalog``.
+    """
+
+    joined, unresolved, unexplained = join_catalog_topology(v1_catalog, topology)
+    if unresolved or unexplained:
+        raise CatalogTopologyJoinError(
+            "catalog/topology join is not closed: "
+            f"unresolved catalog servers={unresolved} "
+            f"unexplained topology rows={unexplained}"
+        )
+
+    v2_servers = {
+        server_id: _compile_server_v2(server_id, spec, joined[server_id])
+        for server_id, spec in v1_catalog.get("servers", {}).items()
+    }
+    v2: dict[str, Any] = {"version": 2, "servers": v2_servers}
+    if "defaults" in v1_catalog:
+        v2["defaults"] = copy.deepcopy(v1_catalog["defaults"])
+    if "profiles" in v1_catalog:
+        v2["profiles"] = copy.deepcopy(v1_catalog["profiles"])
+    return v2
+
+
+def legacy_client_placement(v2_catalog: dict[str, Any], server_id: str) -> str:
+    """Return "singleton" or "per-worktree" for one server, from the v2 catalog's
+    ``defaults.per_worktree`` compatibility list -- the same list v1 already
+    uses (see test_root_catalog_defaults_are_declared_per_worktree_servers).
+    Sharing_class/identity_scope are NOT used here: they encode the R2
+    topology's analytical classification, which can legitimately differ from
+    today's literal client-wiring decision (e.g. serena is topology
+    WORKTREE_SCOPED but wired as a singleton client entry pending its
+    multi-workspace routing implementation)."""
+
+    per_worktree = set((v2_catalog.get("defaults") or {}).get("per_worktree") or [])
+    return "per-worktree" if server_id in per_worktree else "singleton"
+
+
+def legacy_client_projection(v2_catalog: dict[str, Any]) -> dict[str, Any]:
+    """Project a v2 catalog back into the v1 shape existing renderers expect
+    (``render_singleton_mcp_servers``, ``render_per_worktree_mcp_json``, ...),
+    reconstructing only ``scope`` -- the one legacy field those renderers key
+    off that the v2 schema forbids storing on the server record. This is an
+    in-memory compatibility view only; it is never persisted."""
+
+    servers = {}
+    for server_id, spec in v2_catalog.get("servers", {}).items():
+        projected = copy.deepcopy(spec)
+        projected["scope"] = legacy_client_placement(v2_catalog, server_id)
+        servers[server_id] = projected
+    projection: dict[str, Any] = {"version": 1, "servers": servers}
+    if "defaults" in v2_catalog:
+        projection["defaults"] = copy.deepcopy(v2_catalog["defaults"])
+    if "profiles" in v2_catalog:
+        projection["profiles"] = copy.deepcopy(v2_catalog["profiles"])
+    return projection
+
+
+# Facets whose exact equality between v1 and legacy-projected-v2 the packet
+# requires before any cutover: profile membership, placement, endpoints,
+# commands/args, environment key names, tool/admin/aux metadata. Governance
+# fields introduced by v2 (state_authority, mutation_class, endpoint_policy,
+# probe, idle_policy, identity_scope, sharing_class/target_class/flip_gate)
+# are deliberately NOT part of this comparison -- see the module docstring
+# above the compiler section.
+_ENDPOINT_FIELDS: tuple[str, ...] = (
+    "url",
+    "url_template",
+    "port_var",
+    "default_port_base",
+    "reserved_port",
+    "extra_port_vars",
+    "docker_compose_service",
+)
+_COMMAND_FIELDS: tuple[str, ...] = ("command", "args")
+_TOOL_METADATA_FIELDS: tuple[str, ...] = ("tools", "admin_tools", "aux_surfaces", "tool_aliases", "agents")
+
+
+def catalog_semantic_fingerprint(catalog: dict[str, Any]) -> dict[str, Any]:
+    """A normalized, comparable fingerprint of the facets that must survive a
+    v1<->v2 cutover unchanged. Accepts a raw v1 catalog or the output of
+    ``legacy_client_projection`` (same v1-compatible shape)."""
+
+    servers = catalog.get("servers", {})
+
+    placement = {sid: spec.get("scope") for sid, spec in servers.items()}
+
+    endpoints = {
+        sid: {f: spec.get(f) for f in _ENDPOINT_FIELDS if spec.get(f) is not None}
+        for sid, spec in servers.items()
+    }
+    commands = {
+        sid: {f: spec.get(f) for f in _COMMAND_FIELDS if spec.get(f) is not None}
+        for sid, spec in servers.items()
+    }
+    env_key_names = {
+        sid: sorted(
+            set(spec.get("requires_env") or [])
+            | set(spec.get("optional_env") or [])
+            | set((spec.get("env_template") or {}).keys())
+        )
+        for sid, spec in servers.items()
+    }
+    tool_metadata = {
+        sid: {f: spec.get(f) for f in _TOOL_METADATA_FIELDS if spec.get(f) is not None}
+        for sid, spec in servers.items()
+    }
+    profile_membership = {
+        name: sorted(profile.get("servers") or [])
+        for name, profile in (catalog.get("profiles") or {}).items()
+    }
+
+    return {
+        "profile_membership": profile_membership,
+        "placement": placement,
+        "endpoints": endpoints,
+        "commands": commands,
+        "env_key_names": env_key_names,
+        "tool_metadata": tool_metadata,
+    }

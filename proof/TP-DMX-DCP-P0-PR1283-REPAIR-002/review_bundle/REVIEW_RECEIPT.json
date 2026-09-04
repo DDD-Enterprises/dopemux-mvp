@@ -1,0 +1,35 @@
+{
+  "receipt_kind": "frontloaded_exact_head_review",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1283,
+  "head_sha": "da991971e9190d387651b8ded4848db7a7d6518e",
+  "readback_at": "2026-08-28T03:27:35Z",
+  "codex": {
+    "request_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1283#issuecomment-5447774094",
+    "request_at": "2026-08-28T02:48:32Z",
+    "response_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1283#issuecomment-5447790447",
+    "response_at": "2026-08-28T02:51:07Z",
+    "reviewer_login": "chatgpt-codex-connector",
+    "reviewed_commit_prefix": "da991971e9",
+    "result": "NO_MAJOR_ISSUES"
+  },
+  "copilot": {
+    "review_id": "PRR_kwDOPyIw988AAAABLNs9VQ",
+    "submitted_at": "2026-08-28T02:53:27Z",
+    "reviewer_login": "copilot-pull-request-reviewer",
+    "reviewed_commit": "da991971e9190d387651b8ded4848db7a7d6518e",
+    "state": "COMMENTED",
+    "finding_count": 1,
+    "disposition": "NON_SUBSTANTIVE_DIAGNOSTIC_ADJUDICATED_THREAD_RESOLVED"
+  },
+  "threads": {
+    "total": 14,
+    "resolved": 14,
+    "unresolved": 0
+  },
+  "security_release": {
+    "previous_approval_head": "b68d8e5faa316a2fdf70b5cecb8a0af6c8202d7e",
+    "previous_approval_run": "33086203711",
+    "status_for_current_head": "STALE"
+  }
+}

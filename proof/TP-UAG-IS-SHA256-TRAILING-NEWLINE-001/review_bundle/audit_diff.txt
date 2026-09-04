@@ -1,0 +1,76 @@
+diff --git a/src/dopemux/uag/primitives.py b/src/dopemux/uag/primitives.py
+index 310c7bd86..724626827 100644
+--- a/src/dopemux/uag/primitives.py
++++ b/src/dopemux/uag/primitives.py
+@@ -12,12 +12,12 @@ import re
+ from dataclasses import dataclass
+ from typing import Any
+
+-_SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
++_SHA256_RE = re.compile(r"[a-f0-9]{64}")
+
+
+ def is_sha256(value: object) -> bool:
+     """Return True if ``value`` is a lowercase hex SHA-256 digest string."""
+-    return isinstance(value, str) and bool(_SHA256_RE.match(value))
++    return isinstance(value, str) and _SHA256_RE.fullmatch(value) is not None
+
+
+ def sha256_bytes(data: bytes) -> str:
+diff --git a/tests/unit/uag/test_hardening.py b/tests/unit/uag/test_hardening.py
+index d19a3e773..1e514d681 100644
+--- a/tests/unit/uag/test_hardening.py
++++ b/tests/unit/uag/test_hardening.py
+@@ -9,6 +9,7 @@ Covers:
+   F-6: canonical_json determinism under NaN/Infinity attack vectors
+   F-7: LedgerEntry.evidence_status must be validated as EvidenceStatus
+   F-8: IdentityStage.evidence_status / confidence must be enum-typed
++  F-9: is_sha256 must reject trailing-newline/whitespace-padded digests
+ """
+
+ from __future__ import annotations
+@@ -24,7 +25,7 @@ from dopemux.uag.enums import (
+ )
+ from dopemux.uag.identity import IdentityStage, UnknownItem
+ from dopemux.uag.ledger import CorrelationKind, LedgerEntry, MappingLedger
+-from dopemux.uag.primitives import canonical_json
++from dopemux.uag.primitives import canonical_json, is_sha256
+ from dopemux.uag.receipt import Receip
+
+
+@@ -256,3 +257,35 @@ class TestIdentityStageEnumTypedFields:
+     def test_confidence_wrong_enum_type_rejected(self):
+         with pytest.raises(ValueError, match="Confidence"):
+             self._make(confidence=EvidenceStatus.OBSERVED)  # type: ignore[arg-type]
++
++
++# ── F-9: is_sha256 rejects trailing-newline/whitespace padding ───────────
++
++
++class TestIsSha256RejectsPadding:
++    """``$`` in Python regex matches before a trailing newline; is_sha256 mus
++    not inherit that laxity via re.match, or a padded digest binds as if i
++    were the exact 64-char lowercase hex value."""
++
++    VALID = "a" * 64
++
++    def test_valid_digest_accepted(self):
++        assert is_sha256(self.VALID) is True
++
++    def test_trailing_newline_rejected(self):
++        assert is_sha256(self.VALID + "\n") is False
++
++    def test_trailing_crlf_rejected(self):
++        assert is_sha256(self.VALID + "\r\n") is False
++
++    def test_trailing_space_rejected(self):
++        assert is_sha256(self.VALID + " ") is False
++
++    def test_leading_space_rejected(self):
++        assert is_sha256(" " + self.VALID) is False
++
++    def test_too_long_rejected(self):
++        assert is_sha256(self.VALID + "a") is False
++
++    def test_uppercase_rejected(self):
++        assert is_sha256("A" * 64) is False

@@ -1,0 +1,213 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/audit_broker/audit_result.schema.json",
+  "title": "Audit Broker Audit Result",
+  "$comment": "SATISFIED request, capability requirement, certification, snapshot, execution receipt, subject, route, independence, and exact identity equality are enforced by JSON_SCHEMA + scripts/governance/validate_dcp_p0_contract_semantics.py because Draft 7 cannot resolve or compare dynamic sibling values.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "result_id",
+    "request_ref",
+    "subject",
+    "outcome",
+    "identities",
+    "identity_requirement",
+    "findings",
+    "repository_mutation_authorized",
+    "task_mutation_authorized"
+  ],
+  "properties": {
+    "schema_version": {"const": "audit-broker-audit-result.v0"},
+    "result_id": {"type": "string", "minLength": 1},
+    "request_ref": {"type": "string", "minLength": 1},
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["packet_id", "head_sha", "tree_sha", "digest"],
+      "properties": {
+        "packet_id": {"type": "string", "minLength": 1},
+        "head_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "tree_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    },
+    "outcome": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["class", "status", "substantive_judgment_rendered"],
+          "properties": {
+            "class": {"const": "JUDGMENT"},
+            "status": {"enum": ["PASS", "PASS_WITH_RISKS", "FAIL", "NEEDS_SUPERVISOR"]},
+            "substantive_judgment_rendered": {"const": true}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["class", "status", "substantive_judgment_rendered"],
+          "properties": {
+            "class": {"const": "TERMINAL_INTAKE_FAILURE"},
+            "status": {"enum": ["MALFORMED", "HEAD_MISMATCH", "SUBJECT_MISMATCH", "REQUIRED_IDENTITY_UNKNOWN"]},
+            "substantive_judgment_rendered": {"const": false}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["class", "status", "substantive_judgment_rendered", "retry_disposition"],
+          "properties": {
+            "class": {"const": "PREJUDGMENT_EXECUTION_FAILURE"},
+            "status": {"enum": ["TRANSPORT_FAILURE", "CAPACITY_FAILURE"]},
+            "substantive_judgment_rendered": {"const": false},
+            "retry_disposition": {"const": "POLICY_REQUIRED"}
+          }
+        }
+      ]
+    },
+    "identities": {"$ref": "#/definitions/identity_layers"},
+    "identity_requirement": {"$ref": "#/definitions/identity_requirement"},
+    "findings": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "repository_mutation_authorized": {"const": false},
+    "task_mutation_authorized": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "identity_requirement": {
+            "properties": {"disposition": {"const": "SATISFIED"}}
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "identity_requirement": {
+            "properties": {"unresolved_layers": {"maxItems": 0}}
+          },
+          "identities": {
+            "properties": {
+              "requested": {"properties": {"state": {"const": "OBSERVED"}}},
+              "configured": {"properties": {"state": {"const": "OBSERVED"}}},
+              "response_claimed": {"properties": {"state": {"const": "OBSERVED"}}},
+              "proxy_reported": {"properties": {"state": {"const": "OBSERVED"}}},
+              "provider_attested": {"properties": {"state": {"const": "OBSERVED"}}}
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "identity_requirement": {
+            "properties": {"unresolved_layers": {"minItems": 1}}
+          },
+          "outcome": {
+            "properties": {
+              "class": {"const": "TERMINAL_INTAKE_FAILURE"},
+              "status": {"const": "REQUIRED_IDENTITY_UNKNOWN"},
+              "substantive_judgment_rendered": {"const": false}
+            }
+          },
+          "identities": {
+            "anyOf": [
+              {"properties": {"requested": {"properties": {"state": {"const": "UNKNOWN"}}}}},
+              {"properties": {"configured": {"properties": {"state": {"const": "UNKNOWN"}}}}},
+              {"properties": {"response_claimed": {"properties": {"state": {"const": "UNKNOWN"}}}}},
+              {"properties": {"proxy_reported": {"properties": {"state": {"const": "UNKNOWN"}}}}},
+              {"properties": {"provider_attested": {"properties": {"state": {"const": "UNKNOWN"}}}}}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "outcome": {
+            "properties": {"status": {"const": "REQUIRED_IDENTITY_UNKNOWN"}}
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "identity_requirement": {
+            "properties": {"disposition": {"const": "REQUIRED_IDENTITY_UNKNOWN"}}
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "identity_requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requirement_ref", "required_layers", "disposition", "unresolved_layers"],
+      "properties": {
+        "requirement_ref": {"type": "string", "minLength": 1},
+        "required_layers": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["requested", "configured", "response_claimed", "proxy_reported", "provider_attested"]
+          },
+          "allOf": [
+            {"contains": {"const": "requested"}},
+            {"contains": {"const": "configured"}},
+            {"contains": {"const": "response_claimed"}},
+            {"contains": {"const": "proxy_reported"}},
+            {"contains": {"const": "provider_attested"}}
+          ]
+        },
+        "disposition": {"enum": ["SATISFIED", "REQUIRED_IDENTITY_UNKNOWN"]},
+        "unresolved_layers": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": ["requested", "configured", "response_claimed", "proxy_reported", "provider_attested"]
+          }
+        }
+      }
+    },
+    "identity_layer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "provider", "model", "evidence_refs"],
+      "properties": {
+        "state": {"enum": ["OBSERVED", "UNKNOWN"]},
+        "provider": {"type": ["string", "null"]},
+        "model": {"type": ["string", "null"]},
+        "evidence_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"state": {"const": "UNKNOWN"}}},
+          "then": {"properties": {"provider": {"type": "null"}, "model": {"type": "null"}, "evidence_refs": {"maxItems": 0}}},
+          "else": {"properties": {"provider": {"type": "string", "minLength": 1}, "model": {"type": "string", "minLength": 1}, "evidence_refs": {"minItems": 1}}}
+        }
+      ]
+    },
+    "identity_layers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requested", "configured", "response_claimed", "proxy_reported", "provider_attested"],
+      "properties": {
+        "requested": {"$ref": "#/definitions/identity_layer"},
+        "configured": {"$ref": "#/definitions/identity_layer"},
+        "response_claimed": {"$ref": "#/definitions/identity_layer"},
+        "proxy_reported": {"$ref": "#/definitions/identity_layer"},
+        "provider_attested": {"$ref": "#/definitions/identity_layer"}
+      }
+    }
+  }
+}

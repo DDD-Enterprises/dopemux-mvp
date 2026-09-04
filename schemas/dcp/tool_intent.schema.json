@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://frozen.dopemux.local/TP-UAG-C0-DCP-UAG-DOPETASK-AUTHORITY-INTERFACE-FREEZE-001-R2/schemas/tool_intent.schema.json",
+  "title": "ToolIntent",
+  "description": "UAG-emitted tool intent. Not a tool execution, approval, or grant. execution_authority is always NONE. Canonical ToolContractId remains owned outside UAG.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "logical_tool_call_id",
+    "canonical_tool_contract_id",
+    "source_contract_digest",
+    "projection",
+    "arguments",
+    "attempt_ref",
+    "execution_authority",
+    "approval_authority"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "dopemux-tool-intent.v1"
+    },
+    "logical_tool_call_id": {
+      "$ref": "common_defs.schema.json#/definitions/nonempty"
+    },
+    "canonical_tool_contract_id": {
+      "$ref": "common_defs.schema.json#/definitions/nonempty"
+    },
+    "source_contract_digest": {
+      "$ref": "common_defs.schema.json#/definitions/sha256"
+    },
+    "projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "projection_digest",
+        "execution_revalidation_required"
+      ],
+      "properties": {
+        "projection_id": {
+          "type": "string"
+        },
+        "projection_digest": {
+          "$ref": "common_defs.schema.json#/definitions/sha256"
+        },
+        "projection_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "execution_revalidation_required": {
+          "const": true
+        }
+      }
+    },
+    "arguments": {
+      "type": "object",
+      "description": "Untrusted model-emitted arguments. additionalProperties allowed because payload shape is tool-specific. Arguments confer no authority."
+    },
+    "attempt_ref": {
+      "$ref": "common_defs.schema.json#/definitions/nonempty"
+    },
+    "execution_authority": {
+      "$ref": "common_defs.schema.json#/definitions/noneExecutionAuthority"
+    },
+    "approval_authority": {
+      "$ref": "common_defs.schema.json#/definitions/noneExecutionAuthority"
+    },
+    "runner_call_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "provider_call_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

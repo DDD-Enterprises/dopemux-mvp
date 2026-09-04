@@ -1,0 +1,119 @@
+{
+  "id": "TP-DMX-C0-R2-SCHEMA-PUBLICATION-001-A1",
+  "project": "Dopemux / C0-R2 schema publication",
+  "target": "Amend only the admission/provenance behavior of TP-DMX-C0-R2-SCHEMA-PUBLICATION-001 so the exact existing C0-R2 operator ratification receipt is accepted and the later unsigned redundant template does not re-block publication. All publication semantics remain unchanged.",
+  "invariants": [
+    "RISK_LANE=L0_INPUT_ADMISSION_AND_PROVENANCE_BINDING_ONLY.",
+    "PARENT_PACKET=TP-DMX-C0-R2-SCHEMA-PUBLICATION-001.",
+    "SUPERSEDES_ADMISSION_BEHAVIOR_ONLY=TP-DMX-C0-R2-SCHEMA-PUBLICATION-001.",
+    "SEMANTIC_PUBLICATION_TASK_CHANGE=NO.",
+    "C0_R2_SUBJECT_SHA256=a9d51a5b19170589cff38fee951fd611436e65711af4a8bbfcff4084ab884c19.",
+    "RATIFICATION_PACKAGE_SHA256=d48186344e6ba9f9003cb4bd4852ca0297a912c9dc2391290c071087fb612776.",
+    "00_OPERATOR_RATIFICATION.md with DECISION=RATIFY and C0_R2_CONTRACT_RATIFIED=YES is the admitted operator-ratification authority when exact custody checks pass.",
+    "Later OPERATOR_RATIFICATION_RECORD_C0_R2.md with STATUS=PROPOSED_UNSIGNED is REDUNDANT_NONAUTHORITY_DRAFT and MUST NOT re-block an already completed exact operator ratification.",
+    "Do not edit either ratification artifact during this packet.",
+    "No new operator ratification is required.",
+    "PR #1283 merged=true remains mandatory before repository mutation.",
+    "Post-merge main/tree reharvest remains mandatory.",
+    "All original L0 byte-identical publication constraints remain unchanged.",
+    "Repository mutation remains forbidden until PR #1283 is merged.",
+    "Merge of PR #1283 remains operator-authorized only; this packet grants no merge authority.",
+    "No implementation, runtime integration, Dopetask release, pin update, merge, or activation authority is granted."
+  ],
+  "depends_on": [
+    "TP-DMX-C0-R2-SCHEMA-PUBLICATION-001",
+    "TP-UAG-C0-R2-OPERATOR-RATIFICATION-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "UAG-DCP-DOPETASK-INTEGRATION-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-C0-R2-SCHEMA-PUBLICATION-001",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "SCHEMA_REQUIRED_INERT_METADATA__ADMISSION_AMENDMENT_ONLY__DO_NOT_COMMIT",
+    "allowlist": [
+      "__external_artifact_only__/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001-A1/**"
+    ],
+    "verify": [
+      "SCHEMA_REQUIRED_INERT_NOT_AUTHORITY.",
+      "COMMIT=NOT_RUN.",
+      "No repository mutation.",
+      "Only publication-packet admission semantics are amended."
+    ]
+  },
+  "pr": {
+    "title": "SCHEMA_REQUIRED_INERT_METADATA \u2014 no PR",
+    "body": "This is an external L0 admission amendment only. PR=NOT_RUN. No repository or GitHub mutation is authorized.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S00",
+      "task": "Admit exact existing C0-R2 operator ratification authority.",
+      "requirements": [
+        "Verify C0-R2 subject SHA256=a9d51a5b19170589cff38fee951fd611436e65711af4a8bbfcff4084ab884c19.",
+        "Verify TP-UAG-C0-R2-OPERATOR-RATIFICATION-001_AND_WAVE1.zip SHA256=d48186344e6ba9f9003cb4bd4852ca0297a912c9dc2391290c071087fb612776.",
+        "Read exact 00_OPERATOR_RATIFICATION.md from the admitted package.",
+        "Require RECORD_ID=TP-UAG-C0-R2-OPERATOR-RATIFICATION-001.",
+        "Require DECISION=RATIFY.",
+        "Require SUBJECT_ZIP_SHA256=a9d51a5b19170589cff38fee951fd611436e65711af4a8bbfcff4084ab884c19.",
+        "Require C0_R2_CONTRACT_RATIFIED=YES.",
+        "Require IMPLEMENTATION_AUTHORIZED=NO, MERGE_AUTHORIZED=NO, ACTIVATION_AUTHORIZED=NO."
+      ],
+      "validation": [
+        "C0_R2_RATIFICATION=PASS.",
+        "No new signature required."
+      ]
+    },
+    {
+      "id": "S01",
+      "task": "Classify the later unsigned formal template without changing it.",
+      "requirements": [
+        "Read OPERATOR_RATIFICATION_RECORD_C0_R2.md if present.",
+        "If it says STATUS=PROPOSED_UNSIGNED and binds the same C0-R2 subject, classify REDUNDANT_NONAUTHORITY_DRAFT.",
+        "Do not treat that later draft as revoking or superseding the earlier exact DECISION=RATIFY record.",
+        "Do not sign or edit it."
+      ],
+      "validation": [
+        "RATIFICATION_DUPLICATE_STATUS=REDUNDANT_NONAUTHORITY_DRAFT.",
+        "RATIFICATION_REOPENED=NO."
+      ]
+    },
+    {
+      "id": "S02",
+      "task": "Reharvest PR #1283 live state and preserve the real blocker.",
+      "requirements": [
+        "Fetch PR #1283 live state/head/mergedAt/mergeCommit.",
+        "Require head continuity or classify movement.",
+        "If merged=false, stop with BLOCKED_PR1283_UNMERGED and zero repo mutation.",
+        "If merged=true, reharvest current main/tree and resume parent packet at post-merge admission."
+      ],
+      "validation": [
+        "No repository mutation before merged=true.",
+        "Only PR #1283 merge may remain as admission blocker."
+      ]
+    },
+    {
+      "id": "S03",
+      "task": "Return amended admission disposition.",
+      "requirements": [
+        "Return ratification status independently from PR #1283 status.",
+        "If ratification PASS and #1283 unmerged, next gate is OPERATOR_PR1283_MERGE_DECISION.",
+        "If both PASS, resume TP-DMX-C0-R2-SCHEMA-PUBLICATION-001 at post-merge reharvest/S01.",
+        "No other parent semantics change."
+      ],
+      "validation": [
+        "C0_R2_RATIFICATION=PASS on exact admitted record.",
+        "IMPLEMENTATION_AUTHORIZED=NO.",
+        "MERGE_AUTHORIZED=NO."
+      ]
+    }
+  ]
+}

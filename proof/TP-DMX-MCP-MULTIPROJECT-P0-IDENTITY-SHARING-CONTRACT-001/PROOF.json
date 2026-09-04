@@ -1,0 +1,147 @@
+{
+  "packet_id": "TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001",
+  "series": "DMX-MCP-MULTIPROJECT",
+  "branch": "codex/mcp-multiproject-p0-identity-sharing-contract",
+  "base": "main",
+  "base_sha": "04be55535d1582c304cf31a02923fb9c521ab547",
+  "audited_parent": "66de1b56db9b5bf8134a64b09a6498263b9635a7",
+  "head_sha": "2e31726c1467770030d1fcb7358e5d7295e09b7b",
+  "tree_sha": "e52b29ad8059d72804164352fa8f877042c99bdc",
+  "generated_at": "2026-09-04T05:12:00Z",
+  "pr_number": 1306,
+  "kind": "bounded substantive repair P0-R1 + post-freeze cosmetic import-relocation re-audit",
+  "packet_sha256": "90b01da43ae81d7ce3723f06107d49393303b610aca64545680d6690a44da49d",
+  "audited_files": [
+    "docs/03-reference/mcp/multiproject-falsification-contract.md",
+    "docs/90-adr/adr-dmx-mcp-multiproject-identity-sharing-contract-001.md",
+    "schemas/mcp/fleet-catalog-v2.schema.json",
+    "schemas/mcp/ownership-evidence.schema.json",
+    "schemas/mcp/project-event-envelope.schema.json",
+    "schemas/mcp/resolved-execution-identity.schema.json",
+    "schemas/mcp/runner-materialization-receipt.schema.json",
+    "schemas/mcp/service-lease-v2.schema.json",
+    "schemas/mcp/service-topology.schema.json",
+    "tests/arch/test_mcp_multiproject_contracts.py",
+    "task-packets/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001.json",
+    "proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/implementation-notes.md"
+  ],
+  "validations": {
+    "focused_tests": "PASS (67 passed post-import-relocation: tests/arch/test_mcp_multiproject_contracts.py)",
+    "topology_r2_hash": "PASS (df8636983e23c273eeb8eb517ea4019653b4c6bcb50cae344cde2e847214d4c2)",
+    "falsification_payload_hash": "PASS (84b6e68f929e5b3f3ad37e9c2843755cc38a3a119fc87b5af057505d8ed83bcb)",
+    "packet_canonical_schema": "PASS",
+    "git_diff_check": "PASS",
+    "no_runtime_effect": "PASS (diff isolated to docs/, proof/, schemas/, task-packets/, tests/)",
+    "secret_scan": "PASS (no leaks, exit 0)",
+    "pre_commit": "PASS incl Enforce docs placement hygiene (proves R1-02 clean)"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "gemini-cli",
+    "auditor_model": "gemini",
+    "invocation": "opencode run --auto -m cheaper-inference/gemini-3.1-pro --dir /Users/hue/code/_worktrees/mcp-multiproject-p0 (fresh independent L2 RE-audit of new frozen content head 2e31726c1467770030d1fcb7358e5d7295e09b7b after cosmetic import-relocation advanced the head past prior audited 4e72a976e...; exact invocation + env in review_bundle/AUDIT_INVOCATION.txt; raw output in review_bundle/AUDIT_OUTPUT.txt; closed-enum label: auditor_tool=gemini-cli, auditor_model=gemini)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-R2-01",
+        "severity": "HIGH",
+        "title": "Alias authority creep prevention",
+        "status": "RESOLVED",
+        "body": "resolved-execution-identity.schema.json forbids role=AUTHORITY on aliases, prohibits project_id and other authority-shaped fields inside alias blocks via additionalProperties:false; test_alias_never_becomes_authority enforces it."
+      },
+      {
+        "id": "F-R2-02",
+        "severity": "HIGH",
+        "title": "Block mutable routing under UNKNOWN identity",
+        "status": "RESOLVED",
+        "body": "When resolution_status is UNKNOWN, conditional logic forces mutable_routing_allowed:false; tests test_unknown_identity_cannot_allow_mutation and test_unknown_identity_requires_mutable_routing_allowed_false enforce the contract."
+      },
+      {
+        "id": "F-R2-03",
+        "severity": "HIGH",
+        "title": "Rejection of multi_project_singleton and arbitrary sharing classes",
+        "status": "RESOLVED",
+        "body": "fleet-catalog-v2.schema.json restricts sharing_class/target_class to HOST_SINGLETON, PROJECT_SCOPED, WORKTREE_SCOPED, RETIRED; legacy fields multi_project_singleton/scope/state_scope/port_policy rejected via additionalProperties:false; 19 test parameterizations prove rejection."
+      },
+      {
+        "id": "F-R2-04",
+        "severity": "HIGH",
+        "title": "Lease endpoint/ownership evidence boundary",
+        "status": "RESOLVED",
+        "body": "service-lease-v2.schema.json requires runtime_kind/runtime_id in owner_runtime_identity and enforces additionalProperties:false in endpoint, blocking authority-field injection (e.g. path_hash) to launder identity."
+      },
+      {
+        "id": "F-R2-05",
+        "severity": "HIGH",
+        "title": "Prohibit global config mutation in receipts",
+        "status": "RESOLVED",
+        "body": "runner-materialization-receipt.schema.json requires shared_global_config_mutated=false and authority=PROVENANCE_ONLY; tests test_receipt_rejects_global_mutation and test_receipt_authority_must_be_provenance_only enforce it."
+      },
+      {
+        "id": "F-R2-06",
+        "severity": "MEDIUM",
+        "title": "ConPort TARGET_CLASS correctly assigned (no Wave 2 leakage)",
+        "status": "RESOLVED",
+        "body": "multiproject-service-topology.json assigns ConPort TARGET_CLASS=PROJECT_SCOPED with ELIGIBLE_FOR_TARGET_NOW=false, correctly leaving it WORKTREE_SCOPED in Wave 1."
+      },
+      {
+        "id": "F-R2-07",
+        "severity": "MEDIUM",
+        "title": "dope-memory and Serena target drift correct",
+        "status": "RESOLVED",
+        "body": "Topology defines dope-memory tracking towards PROJECT_SCOPED with explicit HOST_SINGLETON deferral, and serena with WORKTREE_SCOPED target; matches R1 requirements."
+      },
+      {
+        "id": "F-R2-08",
+        "severity": "MEDIUM",
+        "title": "P5-before-P4 topological ordering verified",
+        "status": "RESOLVED",
+        "body": "ADR encodes the DAG mandate that redis-events transitions to PROJECT_SCOPED before dope-memory consolidation is permitted; verified via test_p5_before_p4_dag."
+      },
+      {
+        "id": "F-R2-09",
+        "severity": "BLOCKING",
+        "title": "R2 topology/falsification hash binding exact",
+        "status": "RESOLVED",
+        "body": "Topology full-file SHA256==df8636983e23c273eeb8eb517ea4019653b4c6bcb50cae344cde2e847214d4c2 and falsification stripped-frontmatter payload SHA256==84b6e68f929e5b3f3ad37e9c2843755cc38a3a119fc87b5af057505d8ed83bcb both exact."
+      },
+      {
+        "id": "F-R2-10",
+        "severity": "BLOCKING",
+        "title": "No accidental runtime effect; diff isolated",
+        "status": "RESOLVED",
+        "body": "git diff confirms no paths outside docs/, proof/, schemas/, task-packets/, tests/ were mutated; runtime paths (mcp_catalog.yaml, src/dopemux/, services/) untouched; verified structurally and by test_no_runtime_effect_diff."
+      },
+      {
+        "id": "F-R2-11",
+        "severity": "MEDIUM",
+        "title": "Schema strictness / shape integrity",
+        "status": "RESOLVED",
+        "body": "All new schemas leverage additionalProperties:false across objects to prevent arbitrary vocabulary/property drift; negative tests confirm invalid shapes fail."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "F-R2 re-audit verified the new frozen content head by inspection and read-only deterministics; did not exercise a live MCP client against a running fleet (out of scope; repair is schema/doc/proof-only, no runtime effect by design).",
+      "auditor_tool=gemini-cli and auditor_model=gemini are closed-enum representational labels for an opencode-run Gemini 3.1 Pro (cheaper-inference/gemini-3.1-pro); exact real identity preserved in review_bundle/AUDIT_INVOCATION.txt and AUDIT_OUTPUT.txt."
+    ],
+    "skip_reason": null
+  },
+  "provenance": {
+    "audit_source": "fresh-independent-opencode-gemini",
+    "opencode_version": "1.18.27",
+    "requested_selector": "cheaper-inference/gemini-3.1-pro",
+    "observed_primary_model": "google-gemini-3.1-pro",
+    "tools_enabled": true,
+    "session_persistence": false,
+    "subagents_spawned": 0,
+    "implementer_family": "opencode (big-pickle)",
+    "auditor_family": "Google Gemini (via opencode cheaper-inference provider)",
+    "independence": "PROVEN_DIFFERENT_VENDOR_MODEL_FAMILY",
+    "pal_clink_used": false,
+    "raw_stdout_preserved": true,
+    "raw_stdout_file": "review_bundle/AUDIT_OUTPUT.txt"
+  }
+}

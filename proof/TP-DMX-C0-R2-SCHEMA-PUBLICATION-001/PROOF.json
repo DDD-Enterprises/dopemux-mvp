@@ -1,0 +1,126 @@
+{
+  "packet_id": "TP-DMX-C0-R2-SCHEMA-PUBLICATION-001",
+  "series_id": "UAG-DCP-DOPETASK-INTEGRATION-001",
+  "status": "PASS",
+  "risk_lane": "L0_DETERMINISTIC",
+  "source_package": {
+    "name": "TP-UAG-C0-DCP-UAG-DOPETASK-AUTHORITY-INTERFACE-FREEZE-001-R2",
+    "sha256": "a9d51a5b19170589cff38fee951fd611436e65711af4a8bbfcff4084ab884c19"
+  },
+  "ratification_record": {
+    "id": "TP-UAG-C0-R2-OPERATOR-RATIFICATION-001",
+    "package_sha256": "d48186344e6ba9f9003cb4bd4852ca0297a912c9dc2391290c071087fb612776",
+    "status": "PASS"
+  },
+  "admission": {
+    "pr1283_state": "MERGED",
+    "pr1283_merge_commit": "c2c74d896d3f300a7cce1d9a4f67b3a8af521036",
+    "post_merge_main_sha": "c2c74d896d3f300a7cce1d9a4f67b3a8af521036",
+    "post_merge_main_tree": "d15f6de5d1df697cefae99a2aaaaaa12391aacde"
+  },
+  "schemas": [
+    {
+      "file": "schemas/dcp/common_defs.schema.json",
+      "sha256": "769abe60377ec0725acb883b901677d8189245a4b1f5c1e963a9d23285dfd48f",
+      "byte_identical": true
+    },
+    {
+      "file": "schemas/dcp/dcp_route_authorization.schema.json",
+      "sha256": "997b57f4e62affc1c418335ee4c6193122ed03566b13becb95dce419f6336391",
+      "byte_identical": true
+    },
+    {
+      "file": "schemas/dcp/uag_transport_request.schema.json",
+      "sha256": "ee34216b4d99d56710690f474de76b2d9eea4c39282de3c5f1d4de1875f778c1",
+      "byte_identical": true
+    },
+    {
+      "file": "schemas/dcp/uag_transport_result.schema.json",
+      "sha256": "64595c5ed1e9bfd46cfd41b18a8808963ebbda6de64c3dd654ed672e2553197e",
+      "byte_identical": true
+    },
+    {
+      "file": "schemas/dcp/model_transport_receipt.schema.json",
+      "sha256": "03334b78d14c7e9a4cf9e08e7740cba8eca64fc42edbd42745bf4fe66a3ab930",
+      "byte_identical": true
+    },
+    {
+      "file": "schemas/dcp/tool_intent.schema.json",
+      "sha256": "3ee4c5ef8cf0fa94ea6d0e141624610d3135b14e2573c0be0ec3f917f3871e0a",
+      "byte_identical": true
+    },
+    {
+      "file": "schemas/dcp/macro_execution_authority_ref_v2.schema.json",
+      "sha256": "1d73d78e80585bedc997286116f52964bb6f5b96dfe53fcd80fb494181249a9a",
+      "byte_identical": true
+    },
+    {
+      "file": "schemas/dcp/dopetask_governed_execution_profile.schema.json",
+      "sha256": "1b492736585afbc02ba22b1a6136c310f329be7a51c3b16e77e2110c7dc8ed69",
+      "byte_identical": true
+    },
+    {
+      "file": "schemas/dcp/governed_execution_receipt.schema.json",
+      "sha256": "e7e4eef88f331461a585eb0c565d0871a3de134bbd791d02f1eee761e7dfd433",
+      "byte_identical": true
+    },
+    {
+      "file": "schemas/dcp/uag_compatibility_certification.schema.json",
+      "sha256": "81e152fadb1ef014d25cb6e96f18241b52f9337771dcfe3b680a7794a3f6339d",
+      "byte_identical": true
+    }
+  ],
+  "manifest": {
+    "file": "schemas/dcp/manifest.json",
+    "sha256": "3b421b452a562c6333daf92ba9025b50995bc67b32ab38712c9d98ea0531cba0",
+    "entries_added": 10,
+    "total_contracts": 33
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "opencode-cli",
+    "auditor_model": "kimi-k3",
+    "invocation": "opencode run --model cheaper-inference/kimi-k3 --message <bounded audit prompt> (read-only, no tools)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-01",
+        "severity": "INFO",
+        "title": "Structural consistency holds across all 10 published schemas",
+        "status": "RESOLVED",
+        "body": "Ref counts, property naming, and stated purposes are coherent; common_defs hub-and-spoke pattern verified."
+      },
+      {
+        "id": "F-02",
+        "severity": "LOW",
+        "title": "governed_execution_receipt has highest ref count (33 external refs)",
+        "status": "ACCEPTED_RISK",
+        "body": "Consistent with receipt aggregating execution status/mutations/evidence; future ref growth warrants re-check for responsibility creep."
+      },
+      {
+        "id": "F-03",
+        "severity": "INFO",
+        "title": "DESIGN_ONLY/L0 registration consistent with ratification publication",
+        "status": "RESOLVED",
+        "body": "All 10 schemas correctly registered as DESIGN_ONLY/L0 for a publication event; no premature runtime enforcement claim."
+      },
+      {
+        "id": "F-04",
+        "severity": "LOW",
+        "title": "macro_execution_authority_ref_v2 is the only versioned name among 10",
+        "status": "ACCEPTED_RISK",
+        "body": "v2 suffix implies v1 predecessor; v1 status is UNKNOWN; naming divergence is cosmetic and non-blocking."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "All 10 published schemas remain design-only (DESIGN_ONLY/L0); runtime producer and consumer validation is NOT_RUN.",
+      "governed_execution_receipt ref growth should be monitored in future schema-family reviews.",
+      "macro_execution_authority_ref_v1 status remains UNKNOWN."
+    ],
+    "skip_reason": null
+  },
+  "head_sha": "e6a1ce530b6f061d0ef1da06af9c21d16e52eae4"
+}

@@ -1,0 +1,87 @@
+{
+  "receipt_kind": "canonical_r2_proof_validation",
+  "generated_at": "2026-08-28T03:30:55Z",
+  "audited_content_head": "da991971e9190d387651b8ded4848db7a7d6518e",
+  "audited_content_tree": "7bea21727c34e4286f036b2252ea642e60bee825",
+  "checks": [
+    {
+      "name": "canonical_proof_embedded_audit_schema",
+      "command": "python scripts/audit/validate_audit_proof.py proof/TP-DMX-DCP-P0-PR1283-REPAIR-002/PROOF.json",
+      "exit_code": 0,
+      "result": "PASS_1_OF_1"
+    },
+    {
+      "name": "r2_task_packet_schema",
+      "command": "python -m jsonschema -i task-packets/TP-DMX-DCP-P0-PR1283-REPAIR-002.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0,
+      "result": "PASS_WITH_JSONSCHEMA_CLI_DEPRECATION_WARNING"
+    },
+    {
+      "name": "focused_contracts_and_dcp_consistency",
+      "command": "python3 -m pytest -q tests/contracts/test_dcp_full_system_p0_contracts.py tests/dcp/test_contracts_consistency.py",
+      "exit_code": 0,
+      "result": "78_PASS"
+    },
+    {
+      "name": "positive_semantic_fixture",
+      "command": "python3 scripts/governance/validate_dcp_p0_contract_semantics.py --fixtures tests/fixtures/dcp/full_system/p0/positive_contracts.json",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "name": "relevant_dcp_suite",
+      "command": "python3 -m pytest -q tests/unit/dcp tests/dcp",
+      "exit_code": 1,
+      "result": "446_PASS_1_FAIL_HISTORICAL_STALE_SENTINEL",
+      "failure": "tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified",
+      "disposition": "FAIL_RETAINED_SEPARATELY_NOT_REPAIRED_NOT_WAIVED"
+    },
+    {
+      "name": "changed_contract_content_head",
+      "command": "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "exit_code": 0,
+      "result": "PASS_L2_41_PATHS_MODEL_AUDIT_REQUIRED"
+    },
+    {
+      "name": "working_tree_diff_check",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "name": "proof_bundle_allowlist",
+      "command": "rg --files proof/TP-DMX-DCP-P0-PR1283-REPAIR-002",
+      "exit_code": 0,
+      "result": "PASS_ALL_FILES_UNDER_EXACT_PACKET_PROOF_ROOT"
+    },
+    {
+      "name": "proof_bundle_scoped_secret_scan",
+      "command": "gitleaks detect --no-git --source proof/TP-DMX-DCP-P0-PR1283-REPAIR-002 --redact --exit-code 1",
+      "exit_code": 0,
+      "result": "PASS_NO_LEAKS"
+    },
+    {
+      "name": "exact_audit_prompt_copy",
+      "command": "cmp -s /private/tmp/dopemux-pr-repair-r2-briefs/pr1283-final-audit-prompt.md proof/TP-DMX-DCP-P0-PR1283-REPAIR-002/review_bundle/AUDIT_PROMPT.md",
+      "exit_code": 0,
+      "result": "PASS_EXACT_BYTES"
+    },
+    {
+      "name": "scoped_pre_commit",
+      "command": "pre-commit run --files <eight canonical proof bundle files>",
+      "exit_code": 0,
+      "result": "PASS"
+    }
+  ],
+  "pending_after_receipt_generation": {
+    "canonical_commit": "NOT_RUN",
+    "post_commit_changed_contract": "NOT_RUN",
+    "post_commit_pre_commit_range": "NOT_RUN",
+    "push": "NOT_RUN",
+    "pr_scoped_signature": "NOT_RUN",
+    "finality_review": "NOT_RUN",
+    "security_release_refresh": "NOT_RUN",
+    "pr_steward": "NOT_RUN"
+  },
+  "self_reference_rule": "This receipt records deterministic checks around proof generation and is not hashed by PROOF.json. Post-commit and downstream states are read back separately."
+}

@@ -875,3 +875,62 @@ def test_doctor_runs_relative_stdio_resolution_from_repo_root(tmp_path, monkeypa
     blob = json.dumps(payload)
     assert "state_id=test-state" in blob
     assert "nothing listening" not in blob
+
+
+# ---- P1 control-plane preview commands (read-only) -------------------------
+
+
+def _isolated_p1_env(monkeypatch, tmp_path: Path) -> None:
+    """Point both P1 stores at paths under tmp_path that do not exist yet,
+    so a test can assert a command never creates them."""
+
+    monkeypatch.setenv("DOPEMUX_MCP_IDENTITY_REGISTRY", str(tmp_path / "identity.json"))
+    monkeypatch.setenv("DOPEMUX_MCP_SERVICE_LEASE_REGISTRY", str(tmp_path / "leases.json"))
+
+
+def test_control_plane_identity_json_unknown_without_registry(tmp_path, monkeypatch):
+    _isolated_p1_env(monkeypatch, tmp_path)
+
+    result = CliRunner().invoke(
+        mcp_commands.mcp_control_plane_identity_cmd, ["--repo", str(tmp_path), "--json"]
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["resolution_status"] == "UNKNOWN"
+    assert payload["mutable_routing_allowed"] is False
+    assert not (tmp_path / "identity.json").exists()
+
+
+def test_control_plane_reconcile_json_blocked_without_registry(tmp_path, monkeypatch):
+    _isolated_p1_env(monkeypatch, tmp_path)
+    repo_root = Path(__file__).resolve().parents[2]
+
+    result = CliRunner().invoke(
+        mcp_commands.mcp_control_plane_reconcile_cmd, ["--repo", str(repo_root), "--json"]
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["blockers"] != []
+    assert payload["resolved_identity"]["resolution_status"] == "UNKNOWN"
+    assert not (tmp_path / "identity.json").exists()
+    assert not (tmp_path / "leases.json").exists()
+
+
+def test_control_plane_reconcile_never_writes_live_catalog(tmp_path, monkeypatch):
+    _isolated_p1_env(monkeypatch, tmp_path)
+    repo_root = Path(__file__).resolve().parents[2]
+    catalog_path = repo_root / "mcp_catalog.yaml"
+    before = catalog_path.read_bytes()
+
+    CliRunner().invoke(mcp_commands.mcp_control_plane_reconcile_cmd, ["--repo", str(repo_root)])
+
+    assert catalog_path.read_bytes() == before
+
+
+def test_control_plane_identity_human_output(tmp_path, monkeypatch):
+    _isolated_p1_env(monkeypatch, tmp_path)
+    result = CliRunner().invoke(mcp_commands.mcp_control_plane_identity_cmd, ["--repo", str(tmp_path)])
+    assert result.exit_code == 0, result.output
+    assert "resolution_status=UNKNOWN" in result.output

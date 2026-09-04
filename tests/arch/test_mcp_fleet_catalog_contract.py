@@ -751,3 +751,20 @@ def test_copilot_proxy_config_drops_dead_hand_authored_servers():
     assert servers["conport"]["type"] == "sse"
     assert servers["pal-stdio"]["type"] == "stdio"
     assert servers["dope-memory"]["type"] == "http"
+
+
+# ---- P1 fleet control plane: catalog-v2 compiler contract ------------------
+# (TP-DMX-MCP-MULTIPROJECT-P1-FLEET-CONTROL-PLANE-001, task 3). Full
+# join/compile/projection/fingerprint coverage lives in
+# tests/mcp/test_fleet_catalog_v2_runtime.py; this file only asserts the
+# compiler never silently drops or invents a server relative to the live
+# catalog it was compiled from.
+
+
+def test_compiled_v2_server_set_matches_v1_exactly():
+    v1 = fleet_catalog.load_root_catalog(REPO_ROOT)
+    topology = json.loads(
+        (REPO_ROOT / "docs/03-reference/mcp/multiproject-service-topology.json").read_text()
+    )
+    v2 = fleet_catalog.compile_catalog_v2(v1, topology)
+    assert set(v2["servers"]) == set(v1["servers"])

@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.local/schemas/mcp/fleet-catalog-v2.schema.json",
+  "$comment": "Legacy fields scope, state_scope, port_policy, multi_project_singleton are rejected by additionalProperties:false on server objects.",
+  "title": "Dopemux MCP Fleet Catalog v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "servers"],
+  "properties": {
+    "version": {
+      "const": 2
+    },
+    "defaults": {
+      "type": "object"
+    },
+    "profiles": {
+      "type": "object"
+    },
+    "servers": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sharing_class",
+          "target_class",
+          "transport",
+          "plane",
+          "authority_role",
+          "lifecycle",
+          "management_model",
+          "identity_scope",
+          "state_authority",
+          "mutation_class",
+          "endpoint_policy",
+          "probe",
+          "idle_policy",
+          "flip_gate"
+        ],
+        "properties": {
+          "sharing_class": {
+            "type": "string",
+            "enum": ["HOST_SINGLETON", "PROJECT_SCOPED", "WORKTREE_SCOPED", "RETIRED"]
+          },
+          "target_class": {
+            "type": "string",
+            "enum": ["HOST_SINGLETON", "PROJECT_SCOPED", "WORKTREE_SCOPED", "RETIRED"]
+          },
+          "transport": { "type": "string" },
+          "plane": { "type": "string" },
+          "authority_role": { "type": "string" },
+          "lifecycle": { "type": "string" },
+          "management_model": { "type": "string" },
+          "identity_scope": {
+            "type": "string",
+            "enum": ["singleton", "per-project", "per-workspace", "per-instance", "per-call-workspace", "external"]
+          },
+          "state_authority": {
+            "type": "string",
+            "enum": ["canonical", "derived", "stateless", "adapter"]
+          },
+          "mutation_class": {
+            "type": "string",
+            "enum": ["none", "scoped", "operator"]
+          },
+          "endpoint_policy": {
+            "type": "string",
+            "enum": ["fixed", "leased", "generated", "external"]
+          },
+          "probe": {
+            "type": "string",
+            "enum": ["mcp", "http", "redis", "postgres", "custom", "none"]
+          },
+          "idle_policy": {
+            "type": "string",
+            "enum": ["always_on", "project_idle", "instance_idle", "external"]
+          },
+          "flip_gate": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "agents": { "type": ["string", "object"] },
+          "workflows": { "type": "array" },
+          "tools": { "type": "object" },
+          "admin_tools": { "type": "array" },
+          "aux_surfaces": { "type": "array" },
+          "managed": { "type": "boolean" },
+          "url": { "type": "string" },
+          "url_template": { "type": "string" },
+          "port_var": { "type": "string" },
+          "default_port_base": { "type": "integer" },
+          "reserved_port": { "type": "integer" },
+          "extra_port_vars": { "type": "array" },
+          "docker_compose_service": { "type": "string" },
+          "command": { "type": "string" },
+          "args": { "type": "array" },
+          "requires_env": { "type": "array" },
+          "optional_env": { "type": "array" },
+          "doctor_args": { "type": "array" },
+          "env_template": { "type": "object" },
+          "description": { "type": "string" },
+          "tool_aliases": { "type": "array" }
+        }
+      }
+    }
+  }
+}

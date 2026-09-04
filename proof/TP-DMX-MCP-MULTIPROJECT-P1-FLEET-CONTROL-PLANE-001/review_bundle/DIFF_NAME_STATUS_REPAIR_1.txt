@@ -1,0 +1,10 @@
+M	src/dopemux/mcp/docker_inspect.py
+M	src/dopemux/mcp/fleet_catalog.py
+M	src/dopemux/mcp/identity.py
+M	src/dopemux/mcp/identity_registry.py
+M	src/dopemux/mcp/runtime_state.py
+M	tests/arch/test_mcp_multiproject_contracts.py
+M	tests/mcp/test_fleet_catalog_v2_runtime.py
+M	tests/mcp/test_identity_registry_v2.py
+M	tests/mcp/test_ownership_v2.py
+A	tests/mcp/test_runtime_state_identity_summary.py

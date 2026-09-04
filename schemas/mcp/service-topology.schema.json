@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.local/schemas/mcp/service-topology.schema.json",
+  "$comment": "R1-04: enforces frozen R2 topology vocabulary. Exact R2 topology JSON must validate without modification.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "packet_id",
+    "generated_at_utc",
+    "sharing_classes",
+    "selected_architecture",
+    "services_count",
+    "services"
+  ],
+  "properties": {
+    "packet_id": { "type": "string", "minLength": 1 },
+    "generated_at_utc": { "type": "string", "minLength": 1 },
+    "sharing_classes": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "string",
+        "enum": ["HOST_SINGLETON", "PROJECT_SCOPED", "WORKTREE_SCOPED", "RETIRED"]
+      },
+      "uniqueItems": true
+    },
+    "selected_architecture": { "type": "string", "minLength": 1 },
+    "services_count": {
+      "type": "integer",
+      "const": 26
+    },
+    "services": {
+      "type": "array",
+      "minItems": 26,
+      "maxItems": 26,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "SERVICE_ID",
+          "CURRENT_CLASS",
+          "TARGET_CLASS",
+          "CURRENT_RUNTIME",
+          "FLIP_GATE",
+          "CANONICAL_AUTHORITY",
+          "IDENTITY_SCOPE",
+          "STORAGE_SCOPE",
+          "PORT_POLICY",
+          "FAIL_CLOSED_RULE",
+          "EVIDENCE_REFS",
+          "DISPOSITION",
+          "ELIGIBLE_FOR_TARGET_NOW",
+          "DEFERRED_OPTION"
+        ],
+        "properties": {
+          "SERVICE_ID": { "type": "string", "minLength": 1 },
+          "CURRENT_CLASS": {
+            "type": "string",
+            "enum": ["HOST_SINGLETON", "PROJECT_SCOPED", "WORKTREE_SCOPED", "RETIRED"]
+          },
+          "TARGET_CLASS": {
+            "type": "string",
+            "enum": ["HOST_SINGLETON", "PROJECT_SCOPED", "WORKTREE_SCOPED", "RETIRED"]
+          },
+          "CURRENT_RUNTIME": { "type": "string", "minLength": 1 },
+          "FLIP_GATE": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "CANONICAL_AUTHORITY": { "type": "string", "minLength": 1 },
+          "IDENTITY_SCOPE": { "type": "string", "minLength": 1 },
+          "STORAGE_SCOPE": { "type": "string", "minLength": 1 },
+          "PORT_POLICY": { "type": "string", "minLength": 1 },
+          "FAIL_CLOSED_RULE": { "type": "string", "minLength": 1 },
+          "EVIDENCE_REFS": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "DISPOSITION": {
+            "type": "string",
+            "enum": ["KEEP", "AMEND", "SUPERSEDE", "DEFER"]
+          },
+          "ELIGIBLE_FOR_TARGET_NOW": { "type": "boolean" },
+          "DEFERRED_OPTION": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}
