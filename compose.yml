@@ -409,7 +409,16 @@ services:
     volumes:
       - ./services/dope-context/data:/app/data
       - ./services/dope-context/logs:/app/logs
-      - ${HOST_CODE_PARENT_DIR:-/tmp}:/workspaces
+      # Read-only: dope-context only reads the code it indexes. Snapshots and
+      # BM25 caches go to ~/.dope-context/snapshots/, never into the workspace
+      # (src/utils/workspace.py::get_snapshot_dir), so :ro is sufficient and
+      # keeps the service from writing anywhere in the mounted tree.
+      #
+      # Fail closed on an unset var. The previous `:-/tmp` default silently
+      # mounted /tmp as /workspaces — a plausible-but-wrong mount that makes
+      # every indexed path resolve to nothing, with no error. Same defect class
+      # as an unsafe library default: it fails open into a wrong answer.
+      - ${HOST_CODE_PARENT_DIR:?set HOST_CODE_PARENT_DIR to the parent directory of your checkouts, e.g. /Users/you/code}:/workspaces:ro
     depends_on:
       - mcp-qdrant
     healthcheck:
