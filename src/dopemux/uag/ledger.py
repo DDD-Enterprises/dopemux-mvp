@@ -58,6 +58,8 @@ class MappingLedger:
         return MappingLedger(entries=self.entries + (entry,))
 
     def for_kind(self, kind: CorrelationKind) -> tuple[LedgerEntry, ...]:
+        if not isinstance(kind, CorrelationKind):
+            raise ValueError("kind must be a CorrelationKind; raw strings are rejected")
         return tuple(e for e in self.entries if e.kind is kind)
 
     def __len__(self) -> int:

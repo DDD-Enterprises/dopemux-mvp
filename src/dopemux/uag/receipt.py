@@ -39,6 +39,8 @@ class Receipt:
             raise ValueError("digest must be a lowercase 64-char hex digest")
         if not isinstance(self.semantic_state, AttemptSemanticState):
             raise ValueError("semantic_state must be an AttemptSemanticState")
+        if self.execution_authority is not ExecutionAuthority.NONE:
+            raise ValueError("execution_authority must be NONE; the semantic core grants no execution authority")
         if self.exactly_once_claim != "FORBIDDEN":
             raise ValueError("exactly_once_claim must be the literal FORBIDDEN")
 

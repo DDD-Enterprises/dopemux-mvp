@@ -66,6 +66,8 @@ class UnknownItem:
             raise ValueError("UnknownItem.code must be non-empty")
         if not isinstance(self.description, str) or not self.description:
             raise ValueError("UnknownItem.description must be non-empty")
+        if not isinstance(self.evidence_status, EvidenceStatus):
+            raise ValueError("evidence_status must be an EvidenceStatus")
 
 
 @dataclass(frozen=True)
