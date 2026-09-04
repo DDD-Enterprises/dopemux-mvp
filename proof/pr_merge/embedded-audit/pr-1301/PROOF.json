@@ -1,0 +1,24 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1301,
+  "head_sha": "f2a72c6168113052d960d029e5814513f8558101",
+  "generated_at": "2026-09-04T12:35:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/pr-1301 --add-dir /tmp/audit_1301 --print=\"$(cat /tmp/audit_1301/PROMPT.txt)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-OPEN-PR-DRAIN-WAVE-3-PR-1301-001/AUDITOR_REPORT.md",
+    "findings": [
+      {"id": "F-01", "severity": "LOW", "title": "Regex widening applies only to the proof/[^/]+/ branch, pr_merge untouched", "status": "RESOLVED", "body": "Verified character-by-character against the actual diff."},
+      {"id": "F-02", "severity": "LOW", "title": "No smuggling risk", "status": "RESOLVED", "body": "Repo-wide grep confirms implementation-notes.md is never executed/imported/specially parsed."},
+      {"id": "F-03", "severity": "LOW", "title": "pr_merge namespace protection intact", "status": "RESOLVED", "body": "Explicit reject test for proof/pr_merge/embedded-audit/pr-1184/implementation-notes.md passes."}
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null,
+    "instruction_like_content": {"detected": false, "match_count": 0, "truncated": false, "matches": []}
+  }
+}
