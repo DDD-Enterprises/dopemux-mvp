@@ -1,0 +1,14 @@
+{
+  "packet_id": "TP-DMX-C0-R2-SCHEMA-PUBLICATION-001-A1",
+  "task_packet_schema": "PASS",
+  "schema_errors": [],
+  "repair_class": "L0_INPUT_ADMISSION_AND_PROVENANCE_BINDING_ONLY",
+  "semantic_publication_change": false,
+  "c0_r2_ratification": "PASS",
+  "new_signature_required": false,
+  "pr1283_merged_observed": false,
+  "dispatchable_now": false,
+  "next_gate": "OPERATOR_PR1283_MERGE_DECISION",
+  "repository_mutation_authorized": false,
+  "merge_authorized": false
+}
