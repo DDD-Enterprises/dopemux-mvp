@@ -1,0 +1,32 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1314,
+  "head_sha": "1d5c19deaf5bd4574b683f1a2bf03b6024c800f2",
+  "generated_at": "2026-09-04T11:20:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/integration-palette-a11y-2026-09 --add-dir /tmp/wave2a_audit --print=\"$(cat /tmp/wave2a_audit/AUDIT_PROMPT.txt)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-OPEN-PR-DRAIN-WAVE-2A-PALETTE-A11Y-001/AUDITOR_REPORT.md",
+    "findings": [
+      {"id": "FINDING-1", "severity": "INFO", "title": "Exactly one onKeyDown handler each for Skip/Reset; correct operand order, preventDefault+stopPropagation, aria-label present", "status": "RESOLVED", "body": "Verified directly against TaskSequencer.tsx lines 743 (Skip) and 818 (Reset)."},
+      {"id": "FINDING-2", "severity": "INFO", "title": "Escape-key test assertions textually match actual handlers", "status": "RESOLVED", "body": "Only 2 occurrences of e.key === 'Escape' in Accessibility.test.tsx (lines 222-223), both matching #1302's kept operand order; no stale duplicates."},
+      {"id": "FINDING-3", "severity": "INFO", "title": "No unresolved git conflict markers", "status": "RESOLVED", "body": "Regex scan of ui-dashboard/src/ for conflict markers: zero occurrences."},
+      {"id": "FINDING-4", "severity": "INFO", "title": "Independent test suite execution passes", "status": "RESOLVED", "body": "npx vitest run: 47/47 passed, 7 files."},
+      {"id": "FINDING-5", "severity": "INFO", "title": ".Jules/palette.md change is unique and benign", "status": "RESOLVED", "body": "Markdown-only addition documenting the keyboard-dismissal learning; no executable content."},
+      {"id": "FINDING-6", "severity": "INFO", "title": "No security or scope violations", "status": "RESOLVED", "body": "Diff confined to ui-dashboard/**, .Jules/**, and expected lockfile/tsconfig housekeeping; no secrets or credentials."}
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}
