@@ -12,10 +12,20 @@ class Rule:
     path_scope: str = ".*"
     recommended_action: str = ""
 
+# TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001 (2026-09-04): every pattern below
+# anchors its tail with `\Z` (true end-of-string), never `$` (which Python also matches
+# immediately before a *trailing* newline), and any pattern containing `.*` compiles with
+# `re.DOTALL` so that wildcard cannot be blocked by an embedded (non-trailing) newline
+# either. Without both, a `file_path` containing a control character can make a forbidden
+# pattern fail to match at all — silently falling through to "not blocked" instead of
+# either correctly matching or correctly recognizing the string isn't the exact exempted
+# name. See docs/90-adr/adr-226-dope-context-seam-narrow-carveout.md Amendment A5 and
+# proof/TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R/FINAL_AUDIT_VERDICT.json (finding F3, the prior
+# INFORMATIONAL note this hardening now closes rather than continuing to accept).
 FORBIDDEN_PATHS = [
-    re.compile(r"^src/dopemux" + r"_pr_merge_specialist/queue" + r"_drain\.py$"),
-    re.compile(r"^dopemux" + r"_pr_merge_specialist/queue" + r"_drain\.py$"),
-    re.compile(r"^scripts/batch" + r"_resolve_and_merge\.py$"),
+    re.compile(r"^src/dopemux" + r"_pr_merge_specialist/queue" + r"_drain\.py\Z"),
+    re.compile(r"^dopemux" + r"_pr_merge_specialist/queue" + r"_drain\.py\Z"),
+    re.compile(r"^scripts/batch" + r"_resolve_and_merge\.py\Z"),
     # DCP-RED-MERGE-SEAM-0001 narrow carve-out (ADR-224, TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R
     # Phase A): exactly these two top-level workflow files are exempt from the path-level
     # block so their content can eventually be edited to wire embedded-audit schema
@@ -24,13 +34,14 @@ FORBIDDEN_PATHS = [
     # red_lane_scanner.py is untouched by this carve-out and still applies to these files.
     re.compile(
         r"^\.github/workflows/"
-        r"(?!embedded-audit\.yml$)(?!pr-steward\.yml$)"
-        r".*$"
+        r"(?!embedded-audit\.yml\Z)(?!pr-steward\.yml\Z)"
+        r".*\Z",
+        re.DOTALL,
     ),
-    re.compile(r"^scripts/" + r"dopetask$"),
-    re.compile(r"^scripts/" + r"taskx$"),
-    re.compile(r"^services/task-orchestrator/.*$"),
-    re.compile(r"^services/dopecon-bridge/.*$"),
+    re.compile(r"^scripts/" + r"dopetask\Z"),
+    re.compile(r"^scripts/" + r"taskx\Z"),
+    re.compile(r"^services/task-orchestrator/.*\Z", re.DOTALL),
+    re.compile(r"^services/dopecon-bridge/.*\Z", re.DOTALL),
     # DCP-RED-MERGE-SEAM-0001 narrow carve-out (ADR-226, TP-DOPECONTEXT-VECTOR-SPACE-0004
     # governance amendment 2026-09-03, extended by amendment A2 2026-09-04): the offline
     # benchmark harness directory services/dope-context/eval/ and exactly the five service
@@ -45,22 +56,23 @@ FORBIDDEN_PATHS = [
     re.compile(
         r"^services/dope-context/"
         r"(?!eval/)"
-        r"(?!src/pipeline/indexing_pipeline\.py$)"
-        r"(?!src/mcp/server\.py$)"
-        r"(?!src/index_profile\.py$)"
-        r"(?!src/embeddings/model_registry\.py$)"
-        r"(?!tests/test_vector_space_invariants\.py$)"
+        r"(?!src/pipeline/indexing_pipeline\.py\Z)"
+        r"(?!src/mcp/server\.py\Z)"
+        r"(?!src/index_profile\.py\Z)"
+        r"(?!src/embeddings/model_registry\.py\Z)"
+        r"(?!tests/test_vector_space_invariants\.py\Z)"
         # A3 (2026-09-04): the landed D1 change invalidates four assertions in
         # this file, each of which pins the pre-D1 contract. They must be
         # rewritten, not deleted, so the file needs the same path-level
         # exemption. No other file under tests/ is exempted.
-        r"(?!tests/test_vector_profiles_and_migration\.py$)"
+        r"(?!tests/test_vector_profiles_and_migration\.py\Z)"
         # A4 (2026-09-04): voyage_embedder.py to flip the truncation default
         # (round-5 LIVE_TRAP_DEFAULT_TRUNCATION); dense_search.py to delete an
         # unused SearchRequest import that qdrant-client 1.19 removed.
-        r"(?!src/embeddings/voyage_embedder\.py$)"
-        r"(?!src/search/dense_search\.py$)"
-        r".*$"
+        r"(?!src/embeddings/voyage_embedder\.py\Z)"
+        r"(?!src/search/dense_search\.py\Z)"
+        r".*\Z",
+        re.DOTALL,
     ),
     # Companion to the carve-out above. The hook's primary path reading is lexical (no
     # `..` resolution); the realpath reading it also checks since the ADR-226 audit
@@ -68,10 +80,10 @@ FORBIDDEN_PATHS = [
     # traversal segment on its own or `services/dope-context/eval/../src/x.py` would
     # escape the block. Applies to the whole service subtree; an exact `..` segment is
     # the only thing it matches (`something..` or `..foo` are ordinary names).
-    re.compile(r"^services/dope-context/(?:.*/)?\.\.(?:/|$)"),
-    re.compile(r"^services/working-memory-assistant/.*$"),
-    re.compile(r"^docker/mcp-servers-source/conport/.*$"),
-    re.compile(r"^src/conport/.*$")
+    re.compile(r"^services/dope-context/(?:.*/)?\.\.(?:/|\Z)", re.DOTALL),
+    re.compile(r"^services/working-memory-assistant/.*\Z", re.DOTALL),
+    re.compile(r"^docker/mcp-servers-source/conport/.*\Z", re.DOTALL),
+    re.compile(r"^src/conport/.*\Z", re.DOTALL),
 ]
 
 TEXT_RULES = [
