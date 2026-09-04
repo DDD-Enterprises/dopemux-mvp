@@ -37,6 +37,7 @@
     "allowlist": [
       "tests/dnh_extension/test_dnh_artifact_only.py",
       "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/**",
+      "proof/pr_merge/embedded-audit/pr-1267/**",
       "task-packets/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A.json"
     ],
     "verify": [
@@ -44,7 +45,9 @@
       "pytest -q tests/repository_planner/test_dnh_rdcp_adapter.py",
       "pytest -q tests/repository_planner tests/project_control_plane",
       "python scripts/audit/validate_audit_proof.py proof/TP-DMX-PCP-DNH-RDCP-BRIDGE-003/PROOF.json",
-      "python scripts/governance/validate_change_contract.py --base 6fefa9c47ce3fc87a04bc325961a99fdd7cc07ba --head HEAD --format text",
+      "python scripts/audit/validate_audit_proof.py proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/PROOF.json proof/pr_merge/embedded-audit/pr-1267/PROOF.json",
+      "python scripts/audit/local_audit_acceptance.py --repo DDD-Enterprises/dopemux-mvp --pr 1267 --head-sha dde2c33cb9baab0b16a3827ca9cc865df091e595 --repo-root . --out /tmp/pr-1267-local-audit-attestation.json",
+      "python scripts/governance/validate_change_contract.py --base c8222f5d314c999dae45d9c0433227227a944d8b --head b72a3b6ddf45139a19911bee7df298e13cef61b5 --format text",
       "git diff --check"
     ]
   },
@@ -74,11 +77,12 @@
     },
     {
       "id": "S3",
-      "task": "Run the targeted migration suite plus repository-planner and PCP Core regressions, then freeze proof without claiming an independent model audit.",
+      "task": "Run the targeted migration suite plus repository-planner and PCP Core regressions, freeze the content commit, and permit one independent audit plus proof-only successors without changing the audited content.",
       "validation": [
         "All 69 dNh artifact-only tests pass.",
         "The dNh adapter, repository-planner, and PCP Core suites pass.",
-        "Any missing required audit remains visible and blocks readiness."
+        "The canonical packet proof and PR-scoped signed proof bind the same audited content head and controlling verdict identity.",
+        "Any missing or invalid required audit remains visible and blocks readiness."
       ]
     }
   ]

@@ -1,0 +1,96 @@
+{
+  "packet_id": "TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A-EVIDENCE-RECONCILIATION-001",
+  "source_packet_id": "TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A",
+  "generated_at": "2026-08-25T23:03:54Z",
+  "status": "RECONCILED_METADATA_ONLY",
+  "model_invocations": 0,
+  "current_reconciliation_validation": {
+    "base_sha": "f0a01035832c02fc2c02b7a23a0f9c3517c69364",
+    "targeted_dnh_artifact_only": "69 passed",
+    "dnh_artifact_only_plus_adapter": "82 passed",
+    "repository_planner_plus_pcp_core": "450 passed, 1 warning",
+    "historical_count_disagreement": "The merged PR recorded 440 passing planner plus PCP Core tests; current main contains 10 additional passing tests. Both observations remain visible and are not treated as the same test denominator.",
+    "change_contract": "PASS, max_lane=L0, model_audit_required=false, four metadata paths",
+    "repository_wide_pytest": {
+      "status": "HALTED_AT_MAXFAIL_4",
+      "result": "1480 passed, 4 failed, 4 skipped, 1 warning",
+      "origin_main_reproduction": "All four failures reproduce on detached f0a01035832c02fc2c02b7a23a0f9c3517c69364.",
+      "pre_existing_failures": [
+        "tests/ci/test_pr_gate.py::TestCiSummaryStructure::test_ci_summary_needs_exact_job_count",
+        "tests/commandcode_router/test_probe_commandcode_runtime.py::test_dry_run_execution",
+        "tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified",
+        "tests/dopemux_cli/test_pr_steward_cmd.py::test_doctor_placeholder_fails_closed"
+      ]
+    }
+  },
+  "lineage": {
+    "pr_number": 1267,
+    "base_sha": "c8222f5d314c999dae45d9c0433227227a944d8b",
+    "audited_content_sha": "b72a3b6ddf45139a19911bee7df298e13cef61b5",
+    "canonical_proof_commit_sha": "e838a906de43471ee7d0be8f1cd38fb4411a67a8",
+    "signed_pr_proof_commit_sha": "dde2c33cb9baab0b16a3827ca9cc865df091e595",
+    "squash_merge_commit_sha": "61f9db6ced87344855fd2a9bf7a0757d30e9ea59"
+  },
+  "reproduced_checks": [
+    {
+      "check": "audited_content_is_ancestor_of_final_pr_head",
+      "status": "PASS",
+      "evidence": "git merge-base --is-ancestor b72a3b6ddf45139a19911bee7df298e13cef61b5 dde2c33cb9baab0b16a3827ca9cc865df091e595 exited 0"
+    },
+    {
+      "check": "detached_signature_namespace_and_signer",
+      "status": "PASS",
+      "evidence": "ssh-keygen -Y verify accepted namespace dopemux-embedded-audit for principal hue@local"
+    },
+    {
+      "check": "trusted_local_audit_acceptance",
+      "status": "PASS",
+      "evidence": "local_audit_acceptance.py accepted final PR head dde2c33cb9baab0b16a3827ca9cc865df091e595 and reported audited head b72a3b6ddf45139a19911bee7df298e13cef61b5"
+    },
+    {
+      "check": "historical_content_change_contract",
+      "status": "PASS",
+      "evidence": "c8222f5d314c999dae45d9c0433227227a944d8b..b72a3b6ddf45139a19911bee7df298e13cef61b5 is the exact content range"
+    }
+  ],
+  "review_claim_reconciliation": [
+    {
+      "claim": "The audited content is not an ancestor of the final PR head.",
+      "result": "REJECTED_STALE_INTERMEDIATE_HEAD",
+      "basis": "The final head contains b72a3b6ddf45139a19911bee7df298e13cef61b5 as an ancestor."
+    },
+    {
+      "claim": "The signed PR proof or namespace is invalid.",
+      "result": "REJECTED",
+      "basis": "Detached-signature verification and the trusted local acceptance engine both pass."
+    },
+    {
+      "claim": "DIFF_NAME_STATUS.txt must include proof-only successor files.",
+      "result": "REJECTED_SCOPE_MISREAD",
+      "basis": "The inventory is the auditor-visible candidate content range; proof-only successors are represented by explicit lineage and are outside the audited content diff."
+    },
+    {
+      "claim": "The packet has stale range, incomplete allowlist/self-proof verification, and the canonical proof omits test-count and lineage metadata.",
+      "result": "CONFIRMED_AND_REPAIRED",
+      "basis": "The original packet and canonical proof are reconciled by this successor."
+    }
+  ],
+  "preserved_artifact_sha256": {
+    "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/AUDITOR_REPORT.md": "daf4b7c5c2a5e420872bd3994bd32ed9bf5243e171f0b174b102b95f04b0f773",
+    "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/review_bundle/AGY_RAW_OUTPUT.json": "eb09b313d2895052b072dc189f7c7d7f678276510854942b5155ad306da4eef8",
+    "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/review_bundle/AUDITOR_VERDICT.json": "68b6d2f77e918c1504a296d4341cfe2454fe23d82d44a5b4ad2abe8fa30b62de",
+    "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/review_bundle/CANDIDATE_UNIFIED_DIFF.txt": "d377b600d6bf1c9e2b74994cbeb835e2d525e814590c80e93d94a1bcffd599d7",
+    "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/review_bundle/DIFF_NAME_STATUS.txt": "d1fe4ad582286a6cf8fa8e4ec636627ded3331f992736b9d1547e7fd53289fb7",
+    "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/review_bundle/MODEL_IDENTITY.json": "98756e8c14bbd73475133bf2fb24b5561b46264ae0ae96358ae6e0cb8f95178e",
+    "proof/pr_merge/embedded-audit/pr-1267/PROOF.json": "352c31ab7237e5a5b7d5db2ed11f9044b58128cc3637782a859bdcbc17e879a4",
+    "proof/pr_merge/embedded-audit/pr-1267/PROOF.json.sig": "c04e2697512b70991607e7e13f0cf36be4825b98d16ac9574c623a06f0e8d100"
+  },
+  "authority": {
+    "planner": "NONE",
+    "task_orchestrator": "NONE",
+    "merge_authorized": false,
+    "acceptance_authorized": false,
+    "activation_authorized": false,
+    "proof_signing_authorized": false
+  }
+}

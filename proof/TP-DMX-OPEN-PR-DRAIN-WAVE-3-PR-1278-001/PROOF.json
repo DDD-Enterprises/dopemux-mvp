@@ -1,0 +1,52 @@
+{
+  "packet_id": "TP-DMX-OPEN-PR-DRAIN-WAVE-3-PR-1278-001",
+  "status": "PASS",
+  "risk_lane": "L0_DETERMINISTIC",
+  "head_sha": "978af9f523f8eff57cf04a4d6013bf2acc936942",
+  "generated_at": "2026-09-04T12:49:00Z",
+  "repo_identity": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "remotes": {"origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git"},
+    "require_identity_match": true,
+    "match": true
+  },
+  "worktree": {
+    "path": "/Users/hue/code/dopemux-mvp/.worktrees/pr-1278-redo",
+    "branch": "redo/pr-1278-dnh-proof-metadata",
+    "base": "f7f0ed626b33e855ae87b3f7fb657e15a60542c1",
+    "base_note": "current main at redo time",
+    "content_head": "978af9f523f8eff57cf04a4d6013bf2acc936942",
+    "final_head": "978af9f523f8eff57cf04a4d6013bf2acc936942"
+  },
+  "background": "TP-DMX-OPEN-PR-DRAIN-MERGE-001 Wave 3 (§17). Redo of #1278 (closed, superseded): base.sha predates the packet_dir fix in local_audit_acceptance.py. Content cherry-picked byte-identical onto current main, zero conflicts. Commit 978af9f fixes an allowlist indentation flagged by automated (Copilot) review; verified whitespace-only via json.loads(old)==json.loads(new), so the existing audit verdict carries forward without re-audit. GitHub PR: https://github.com/DDD-Enterprises/dopemux-mvp/pull/1317",
+  "files_changed": [
+    "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/EVIDENCE_RECONCILIATION_RECEIPT.json",
+    "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/PROOF.json",
+    "task-packets/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A-EVIDENCE-RECONCILIATION-001.json",
+    "task-packets/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A.json"
+  ],
+  "validation": [
+    {"command": "git diff --check", "exit_code": 0, "result": "PASS"}
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/pr-1278 --add-dir /tmp/audit_1278 --print=\"$(cat /tmp/audit_1278/PROMPT.txt)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-OPEN-PR-DRAIN-WAVE-3-PR-1278-001/AUDITOR_REPORT.md",
+    "findings": [
+      {"id": "FINDING-1", "severity": "INFO", "title": "Files match diff exactly, only proof/task-packet metadata touched", "status": "RESOLVED", "body": "4 files, no runtime code."},
+      {"id": "FINDING-2", "severity": "INFO", "title": "PROOF.json and EVIDENCE_RECONCILIATION_RECEIPT.json internally consistent", "status": "RESOLVED", "body": "Matching head SHAs, referenced artifacts present on disk."},
+      {"id": "FINDING-3", "severity": "INFO", "title": "Task-packet edit is additive, not destructive", "status": "RESOLVED", "body": "Adds proof dir to allowlist, updates SHAs, refines wording; no history erased."},
+      {"id": "FINDING-4", "severity": "INFO", "title": "No secrets, inert to runtime", "status": "RESOLVED", "body": "Pure proof/task metadata."}
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null,
+    "instruction_like_content": {"detected": false, "match_count": 0, "truncated": false, "matches": []}
+  }
+}

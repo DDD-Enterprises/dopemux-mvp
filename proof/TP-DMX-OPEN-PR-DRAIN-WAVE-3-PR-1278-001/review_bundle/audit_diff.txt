@@ -1,0 +1,290 @@
+diff --git a/proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/EVIDENCE_RECONCILIATION_RECEIPT.json b/proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/EVIDENCE_RECONCILIATION_RECEIPT.json
+new file mode 100644
+index 000000000..b0decbbb7
+--- /dev/null
++++ b/proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/EVIDENCE_RECONCILIATION_RECEIPT.json
+@@ -0,0 +1,96 @@
++{
++  "packet_id": "TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A-EVIDENCE-RECONCILIATION-001",
++  "source_packet_id": "TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A",
++  "generated_at": "2026-08-25T23:03:54Z",
++  "status": "RECONCILED_METADATA_ONLY",
++  "model_invocations": 0,
++  "current_reconciliation_validation": {
++    "base_sha": "f0a01035832c02fc2c02b7a23a0f9c3517c69364",
++    "targeted_dnh_artifact_only": "69 passed",
++    "dnh_artifact_only_plus_adapter": "82 passed",
++    "repository_planner_plus_pcp_core": "450 passed, 1 warning",
++    "historical_count_disagreement": "The merged PR recorded 440 passing planner plus PCP Core tests; current main contains 10 additional passing tests. Both observations remain visible and are not treated as the same test denominator.",
++    "change_contract": "PASS, max_lane=L0, model_audit_required=false, four metadata paths",
++    "repository_wide_pytest": {
++      "status": "HALTED_AT_MAXFAIL_4",
++      "result": "1480 passed, 4 failed, 4 skipped, 1 warning",
++      "origin_main_reproduction": "All four failures reproduce on detached f0a01035832c02fc2c02b7a23a0f9c3517c69364.",
++      "pre_existing_failures": [
++        "tests/ci/test_pr_gate.py::TestCiSummaryStructure::test_ci_summary_needs_exact_job_count",
++        "tests/commandcode_router/test_probe_commandcode_runtime.py::test_dry_run_execution",
++        "tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified",
++        "tests/dopemux_cli/test_pr_steward_cmd.py::test_doctor_placeholder_fails_closed"
++      ]
++    }
++  },
++  "lineage": {
++    "pr_number": 1267,
++    "base_sha": "c8222f5d314c999dae45d9c0433227227a944d8b",
++    "audited_content_sha": "b72a3b6ddf45139a19911bee7df298e13cef61b5",
++    "canonical_proof_commit_sha": "e838a906de43471ee7d0be8f1cd38fb4411a67a8",
++    "signed_pr_proof_commit_sha": "dde2c33cb9baab0b16a3827ca9cc865df091e595",
++    "squash_merge_commit_sha": "61f9db6ced87344855fd2a9bf7a0757d30e9ea59"
++  },
++  "reproduced_checks": [
++    {
++      "check": "audited_content_is_ancestor_of_final_pr_head",
++      "status": "PASS",
++      "evidence": "git merge-base --is-ancestor b72a3b6ddf45139a19911bee7df298e13cef61b5 dde2c33cb9baab0b16a3827ca9cc865df091e595 exited 0"
++    },
++    {
++      "check": "detached_signature_namespace_and_signer",
++      "status": "PASS",
++      "evidence": "ssh-keygen -Y verify accepted namespace dopemux-embedded-audit for principal hue@local"
++    },
++    {
++      "check": "trusted_local_audit_acceptance",
++      "status": "PASS",
++      "evidence": "local_audit_acceptance.py accepted final PR head dde2c33cb9baab0b16a3827ca9cc865df091e595 and reported audited head b72a3b6ddf45139a19911bee7df298e13cef61b5"
++    },
++    {
++      "check": "historical_content_change_contract",
++      "status": "PASS",
++      "evidence": "c8222f5d314c999dae45d9c0433227227a944d8b..b72a3b6ddf45139a19911bee7df298e13cef61b5 is the exact content range"
++    }
++  ],
++  "review_claim_reconciliation": [
++    {
++      "claim": "The audited content is not an ancestor of the final PR head.",
++      "result": "REJECTED_STALE_INTERMEDIATE_HEAD",
++      "basis": "The final head contains b72a3b6ddf45139a19911bee7df298e13cef61b5 as an ancestor."
++    },
++    {
++      "claim": "The signed PR proof or namespace is invalid.",
++      "result": "REJECTED",
++      "basis": "Detached-signature verification and the trusted local acceptance engine both pass."
++    },
++    {
++      "claim": "DIFF_NAME_STATUS.txt must include proof-only successor files.",
++      "result": "REJECTED_SCOPE_MISREAD",
++      "basis": "The inventory is the auditor-visible candidate content range; proof-only successors are represented by explicit lineage and are outside the audited content diff."
++    },
++    {
++      "claim": "The packet has stale range, incomplete allowlist/self-proof verification, and the canonical proof omits test-count and lineage metadata.",
++      "result": "CONFIRMED_AND_REPAIRED",
++      "basis": "The original packet and canonical proof are reconciled by this successor."
++    }
++  ],
++  "preserved_artifact_sha256": {
++    "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/AUDITOR_REPORT.md": "daf4b7c5c2a5e420872bd3994bd32ed9bf5243e171f0b174b102b95f04b0f773",
++    "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/review_bundle/AGY_RAW_OUTPUT.json": "eb09b313d2895052b072dc189f7c7d7f678276510854942b5155ad306da4eef8",
++    "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/review_bundle/AUDITOR_VERDICT.json": "68b6d2f77e918c1504a296d4341cfe2454fe23d82d44a5b4ad2abe8fa30b62de",
++    "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/review_bundle/CANDIDATE_UNIFIED_DIFF.txt": "d377b600d6bf1c9e2b74994cbeb835e2d525e814590c80e93d94a1bcffd599d7",
++    "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/review_bundle/DIFF_NAME_STATUS.txt": "d1fe4ad582286a6cf8fa8e4ec636627ded3331f992736b9d1547e7fd53289fb7",
++    "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/review_bundle/MODEL_IDENTITY.json": "98756e8c14bbd73475133bf2fb24b5561b46264ae0ae96358ae6e0cb8f95178e",
++    "proof/pr_merge/embedded-audit/pr-1267/PROOF.json": "352c31ab7237e5a5b7d5db2ed11f9044b58128cc3637782a859bdcbc17e879a4",
++    "proof/pr_merge/embedded-audit/pr-1267/PROOF.json.sig": "c04e2697512b70991607e7e13f0cf36be4825b98d16ac9574c623a06f0e8d100"
++  },
++  "authority": {
++    "planner": "NONE",
++    "task_orchestrator": "NONE",
++    "merge_authorized": false,
++    "acceptance_authorized": false,
++    "activation_authorized": false,
++    "proof_signing_authorized": false
++  }
++}
+diff --git a/proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/PROOF.json b/proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/PROOF.json
+index ed70e624c..c3fdbf9dd 100644
+--- a/proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/PROOF.json
++++ b/proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/PROOF.json
+@@ -2,6 +2,40 @@
+   "packet_id": "TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A",
+   "head_sha": "b72a3b6ddf45139a19911bee7df298e13cef61b5",
+   "generated_at": "2026-08-24T05:23:55Z",
++  "validation": {
++    "status": "PASS",
++    "evidence_class": "RECORDED_PR_1267_EXECUTION_EVIDENCE",
++    "historical_red_baseline": {
++      "passed": 66,
++      "failed": 3,
++      "status": "EXPECTED_RED",
++      "note": "Recorded before the three superseded assertions were migrated; not rerun by the metadata reconciliation successor."
++    },
++    "green_suites": [
++      {
++        "scope": "tests/dnh_extension/test_dnh_artifact_only.py",
++        "passed": 69
++      },
++      {
++        "scope": "legacy dNh artifact-only plus dNh repository-planner adapter",
++        "passed": 82
++      },
++      {
++        "scope": "tests/repository_planner plus tests/project_control_plane",
++        "passed": 440
++      }
++    ]
++  },
++  "lineage": {
++    "pr_number": 1267,
++    "base_sha": "c8222f5d314c999dae45d9c0433227227a944d8b",
++    "audited_content_sha": "b72a3b6ddf45139a19911bee7df298e13cef61b5",
++    "canonical_proof_commit_sha": "e838a906de43471ee7d0be8f1cd38fb4411a67a8",
++    "signed_pr_proof_commit_sha": "dde2c33cb9baab0b16a3827ca9cc865df091e595",
++    "squash_merge_commit_sha": "61f9db6ced87344855fd2a9bf7a0757d30e9ea59",
++    "signed_pr_proof_path": "proof/pr_merge/embedded-audit/pr-1267/PROOF.json",
++    "proof_only_successors_preserve_audited_content": true
++  },
+   "embedded_audit": {
+     "required": true,
+     "status": "PASS",
+diff --git a/task-packets/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A-EVIDENCE-RECONCILIATION-001.json b/task-packets/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A-EVIDENCE-RECONCILIATION-001.json
+new file mode 100644
+index 000000000..3bd6411e5
+--- /dev/null
++++ b/task-packets/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A-EVIDENCE-RECONCILIATION-001.json
+@@ -0,0 +1,96 @@
++{
++  "id": "TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A-EVIDENCE-RECONCILIATION-001",
++  "project": "dopemux-mvp",
++  "target": "Reconcile PR #1267 packet and proof metadata with the exact audited branch lineage while preserving the valid independent audit, detached signature, and audited content bytes.",
++  "invariants": [
++    "This is an L0 deterministic metadata reconciliation; production code, tests, schemas, extension manifests, and source repositories are immutable.",
++    "The audited content remains b72a3b6ddf45139a19911bee7df298e13cef61b5 and its embedded audit remains PASS.",
++    "The AGY raw output, model identity, auditor verdict, candidate diff, candidate name-status inventory, auditor report, signed PR proof, and detached signature remain byte-identical.",
++    "The candidate name-status inventory describes the audited content range; proof-only successors are represented separately by the explicit commit lineage.",
++    "Historical red and green test counts are labeled as recorded evidence; this packet does not manufacture or rerun the historical red state.",
++    "No model invocation, re-audit, proof signing, merge, acceptance, activation, GitHub merge, CRM write, runtime write, or Task Orchestrator write is authorized.",
++    "Planner and Task Orchestrator authority remain NONE; Control Tower and repository authority remain terminal."
++  ],
++  "depends_on": [
++    "TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A"
++  ],
++  "repo_binding": {
++    "project_id": "dopemux-mvp",
++    "repo_marker": ".dopetaskroot",
++    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
++    "require_identity_match": true
++  },
++  "series": {
++    "id": "repository-merge-planner",
++    "base_branch": "main",
++    "parent_tp_id": "TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A",
++    "final_packet": false
++  },
++  "execution": {
++    "agent": "codex",
++    "branch": "fix/pcp-dnh-rdcp-proof-integrity-003b",
++    "base_branch": "main",
++    "stacked_because": "PR #1267 is already merged; this successor repairs only deterministic packet and proof metadata on current main."
++  },
++  "commit": {
++    "message": "docs(pcp): reconcile dNh migration proof metadata",
++    "allowlist": [
++      "task-packets/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A.json",
++      "task-packets/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A-EVIDENCE-RECONCILIATION-001.json",
++      "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/PROOF.json",
++      "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/EVIDENCE_RECONCILIATION_RECEIPT.json"
++    ],
++    "verify": [
++      "python -m jsonschema -i task-packets/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
++      "python -m jsonschema -i task-packets/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A-EVIDENCE-RECONCILIATION-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
++      "python scripts/audit/validate_audit_proof.py proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/PROOF.json proof/pr_merge/embedded-audit/pr-1267/PROOF.json",
++      "python scripts/audit/local_audit_acceptance.py --repo DDD-Enterprises/dopemux-mvp --pr 1267 --head-sha dde2c33cb9baab0b16a3827ca9cc865df091e595 --repo-root . --out /tmp/pr-1267-local-audit-attestation.json",
++      "python scripts/governance/validate_change_contract.py --base c8222f5d314c999dae45d9c0433227227a944d8b --head b72a3b6ddf45139a19911bee7df298e13cef61b5 --format text",
++      "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
++      "git diff --check"
++    ]
++  },
++  "pr": {
++    "title": "docs(pcp): reconcile dNh migration proof metadata",
++    "body": "Repairs stale verification-range, allowlist, self-proof, validation-count, and exact-lineage metadata for merged PR #1267. Preserves the valid AGY audit and signed local attestation byte-for-byte. L0 metadata only; no code, tests, model call, re-audit, signature, merge, acceptance, or activation authority. Publish as draft and stop for repository-authority review.",
++    "base": "main"
++  },
++  "steps": [
++    {
++      "id": "S1",
++      "task": "Reproduce each review claim against the final PR #1267 commit chain and classify it as confirmed or rejected using git ancestry, proof-schema, signature, and local-acceptance checks.",
++      "validation": [
++        "b72a3b6ddf45139a19911bee7df298e13cef61b5 is an ancestor of dde2c33cb9baab0b16a3827ca9cc865df091e595.",
++        "The detached signature verifies in namespace dopemux-embedded-audit for hue@local.",
++        "The trusted local acceptance engine accepts the final PR head and reports audited head b72a3b6ddf45139a19911bee7df298e13cef61b5."
++      ]
++    },
++    {
++      "id": "S2",
++      "task": "Repair the original packet allowlist, exact historical verification range, self-proof validation, and audit/proof-only-successor wording.",
++      "validation": [
++        "The original packet names proof/pr_merge/embedded-audit/pr-1267/** in its allowlist.",
++        "The original packet validates its own canonical proof and signed PR proof.",
++        "The content-range change contract uses c8222f5d314c999dae45d9c0433227227a944d8b..b72a3b6ddf45139a19911bee7df298e13cef61b5."
++      ]
++    },
++    {
++      "id": "S3",
++      "task": "Add validation and exact lineage to the canonical proof without changing its embedded_audit object or any audit/signature artifact.",
++      "validation": [
++        "The proof records the 66/3 historical red baseline and 69, 82, and 440 passing green suites as recorded PR evidence.",
++        "The proof distinguishes content, canonical-proof, signed-proof, and squash-merge commits.",
++        "Preserved artifact SHA-256 values match the reconciliation receipt."
++      ]
++    },
++    {
++      "id": "S4",
++      "task": "Run deterministic L0 validation and publish a draft-only PR; do not invoke a model, re-sign proof, mark ready, merge, accept, or activate.",
++      "validation": [
++        "Task-packet and proof schemas pass.",
++        "Historical exact-range and current reconciliation change contracts pass.",
++        "The draft PR remains non-authoritative and blocked from merge by this packet."
++      ]
++    }
++  ]
++}
+diff --git a/task-packets/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A.json b/task-packets/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A.json
+index 75d92a3e7..1e3e0cf39 100644
+--- a/task-packets/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A.json
++++ b/task-packets/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A.json
+@@ -35,8 +35,9 @@
+   "commit": {
+     "message": "test(pcp): migrate dNh RDCP manifest assertions",
+     "allowlist": [
+-      "tests/dnh_extension/test_dnh_artifact_only.py",
++    "tests/dnh_extension/test_dnh_artifact_only.py",
+       "proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/**",
++      "proof/pr_merge/embedded-audit/pr-1267/**",
+       "task-packets/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A.json"
+     ],
+     "verify": [
+@@ -44,7 +45,9 @@
+       "pytest -q tests/repository_planner/test_dnh_rdcp_adapter.py",
+       "pytest -q tests/repository_planner tests/project_control_plane",
+       "python scripts/audit/validate_audit_proof.py proof/TP-DMX-PCP-DNH-RDCP-BRIDGE-003/PROOF.json",
+-      "python scripts/governance/validate_change_contract.py --base 6fefa9c47ce3fc87a04bc325961a99fdd7cc07ba --head HEAD --format text",
++      "python scripts/audit/validate_audit_proof.py proof/TP-DMX-PCP-DNH-RDCP-TEST-MIGRATION-003A/PROOF.json proof/pr_merge/embedded-audit/pr-1267/PROOF.json",
++      "python scripts/audit/local_audit_acceptance.py --repo DDD-Enterprises/dopemux-mvp --pr 1267 --head-sha dde2c33cb9baab0b16a3827ca9cc865df091e595 --repo-root . --out /tmp/pr-1267-local-audit-attestation.json",
++      "python scripts/governance/validate_change_contract.py --base c8222f5d314c999dae45d9c0433227227a944d8b --head b72a3b6ddf45139a19911bee7df298e13cef61b5 --format text",
+       "git diff --check"
+     ]
+   },
+@@ -74,11 +77,12 @@
+     },
+     {
+       "id": "S3",
+-      "task": "Run the targeted migration suite plus repository-planner and PCP Core regressions, then freeze proof without claiming an independent model audit.",
++      "task": "Run the targeted migration suite plus repository-planner and PCP Core regressions, freeze the content commit, and permit one independent audit plus proof-only successors without changing the audited content.",
+       "validation": [
+         "All 69 dNh artifact-only tests pass.",
+         "The dNh adapter, repository-planner, and PCP Core suites pass.",
+-        "Any missing required audit remains visible and blocks readiness."
++        "The canonical packet proof and PR-scoped signed proof bind the same audited content head and controlling verdict identity.",
++        "Any missing or invalid required audit remains visible and blocks readiness."
+       ]
+     }
+   ]

@@ -1,0 +1,26 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1317,
+  "head_sha": "978af9f523f8eff57cf04a4d6013bf2acc936942",
+  "generated_at": "2026-09-04T12:49:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/pr-1278 --add-dir /tmp/audit_1278 --print=\"$(cat /tmp/audit_1278/PROMPT.txt)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-OPEN-PR-DRAIN-WAVE-3-PR-1278-001/AUDITOR_REPORT.md",
+    "findings": [
+      {"id": "FINDING-1", "severity": "INFO", "title": "Files match diff exactly, only proof/task-packet metadata touched", "status": "RESOLVED", "body": "4 files, no runtime code."},
+      {"id": "FINDING-2", "severity": "INFO", "title": "PROOF.json and EVIDENCE_RECONCILIATION_RECEIPT.json internally consistent", "status": "RESOLVED", "body": "Matching head SHAs, referenced artifacts present on disk."},
+      {"id": "FINDING-3", "severity": "INFO", "title": "Task-packet edit is additive, not destructive", "status": "RESOLVED", "body": "Adds proof dir to allowlist, updates SHAs, refines wording; no history erased."},
+      {"id": "FINDING-4", "severity": "INFO", "title": "No secrets, inert to runtime", "status": "RESOLVED", "body": "Pure proof/task metadata."},
+      {"id": "FINDING-5", "severity": "INFO", "title": "Copilot-flagged indentation fix verified whitespace-only", "status": "RESOLVED", "body": "json.loads(old)==json.loads(new) confirmed structurally identical; no re-audit needed."}
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null,
+    "instruction_like_content": {"detected": false, "match_count": 0, "truncated": false, "matches": []}
+  }
+}
