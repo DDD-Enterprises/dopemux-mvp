@@ -11,7 +11,8 @@
       "const": "dopemux.mcp.ownership-evidence.v1"
     },
     "classification": {
-      "type": "string"
+      "type": "string",
+      "enum": ["OWNED", "FOREIGN", "AMBIGUOUS", "UNKNOWN"]
     },
     "mutation_eligible": {
       "type": "boolean"
@@ -22,8 +23,8 @@
       "required": ["verified", "project_id", "registry_generation"],
       "properties": {
         "verified": { "type": "boolean" },
-        "project_id": { "type": "string" },
-        "registry_generation": { "type": "integer" }
+        "project_id": { "type": "string", "minLength": 1 },
+        "registry_generation": { "type": "integer", "minimum": 0 }
       }
     },
     "lease": {

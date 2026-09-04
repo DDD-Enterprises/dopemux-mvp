@@ -47,7 +47,6 @@
       "docs/90-adr/adr-dmx-mcp-multiproject-identity-sharing-contract-001.md",
       "docs/03-reference/mcp/multiproject-service-topology.json",
       "docs/03-reference/mcp/multiproject-falsification-contract.md",
-      "docs/superpowers/plans/2026-09-03-mcp-multiproject-p0-identity-sharing-contract.md",
       "schemas/mcp/fleet-catalog-v2.schema.json",
       "schemas/mcp/resolved-execution-identity.schema.json",
       "schemas/mcp/service-topology.schema.json",
@@ -121,15 +120,18 @@
     },
     {
       "id": "contract-spine",
-      "task": "Publish the P0 ADR, exact R2 service topology and falsification references, packet bytes, plan, and registry index entry without changing current runtime.",
+      "task": "Publish the P0 ADR, exact R2 service topology and falsification references, packet bytes, and registry index entry without changing current runtime. The frozen external implementation plan remains provenance/input evidence only and is not published into the repo by P0.",
       "requirements": [
         "R2 source package must remain bound to SHA-256 fa78556b2d51cd3b22d8c42ff36bd6c3964172ddee6a75662cde61db438e3996.",
         "Service topology copy must hash to df8636983e23c273eeb8eb517ea4019653b4c6bcb50cae344cde2e847214d4c2.",
         "Falsification contract copy must hash to 84b6e68f929e5b3f3ad37e9c2843755cc38a3a119fc87b5af057505d8ed83bcb.",
+        "REPO_DOC_FULL_FILE_HASH != R2_SUBJECT_HASH because repository YAML frontmatter is required on the published falsification doc.",
+        "R2_PAYLOAD_AFTER_FRONTMATTER_SHA256 = 84b6e68f929e5b3f3ad37e9c2843755cc38a3a119fc87b5af057505d8ed83bcb.",
+        "R2_ARCHITECTURE_SEMANTICS_CHANGED = NO.",
         "ADR must preserve all ten operator binding conditions."
       ],
       "commands": [
-        "mkdir -p docs/03-reference/mcp docs/superpowers/plans schemas/mcp tests/arch",
+        "mkdir -p docs/03-reference/mcp schemas/mcp tests/arch",
         "cp <frozen-P0-package>/sources/02_SERVICE_TOPOLOGY.json docs/03-reference/mcp/multiproject-service-topology.json",
         "cp <frozen-P0-package>/sources/04_FALSIFICATION_CONTRACT.md docs/03-reference/mcp/multiproject-falsification-contract.md"
       ],
@@ -139,8 +141,7 @@
         "docs/03-reference/mcp/multiproject-falsification-contract.md",
         "task-packets/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001.json",
         "task-packets/TP-DMX-MCP-MULTIPROJECT-P0-IDENTITY-SHARING-CONTRACT-001.md",
-        "task-packets/INDEX.md",
-        "docs/superpowers/plans/2026-09-03-mcp-multiproject-p0-identity-sharing-contract.md"
+        "task-packets/INDEX.md"
       ],
       "validation": [
         "Exact source hashes match the frozen R2 members.",

@@ -9,16 +9,45 @@ import jsonschema
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 R2_TOPOLOGY_SHA256 = "df8636983e23c273eeb8eb517ea4019653b4c6bcb50cae344cde2e847214d4c2"
-R2_FALSIFICATION_SHA256 = "9cd53e289114414df9d46b11126cc3a11117b318340b7c3c79ae3ae7d09693d6"
+# R2 payload hash: sha256 of 04_FALSIFICATION_CONTRACT.md (bare doc, no repo frontmatter).
+# REPO_DOC_FULL_FILE_HASH != R2_SUBJECT_HASH because repo requires YAML frontmatter.
+# R2_PAYLOAD_AFTER_FRONTMATTER_SHA256 = 84b6e68...
+# R2_ARCHITECTURE_SEMANTICS_CHANGED = NO
+R2_FALSIFICATION_PAYLOAD_SHA256 = "84b6e68f929e5b3f3ad37e9c2843755cc38a3a119fc87b5af057505d8ed83bcb"
+
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
-def test_ratified_r2_references_are_byte_exact():
+
+def _strip_yaml_frontmatter(path: Path) -> bytes:
+    """Return file bytes with YAML frontmatter stripped (everything after closing ---)."""
+    raw = path.read_bytes()
+    text = raw.decode("utf-8")
+    if not text.startswith("---"):
+        return raw
+    end = text.index("---", 3) + 3
+    if text[end : end + 1] == "\n":
+        end += 1
+    return text[end:].encode("utf-8")
+
+
+def test_ratified_r2_topology_is_byte_exact():
+    """Service topology JSON must be a full-file exact copy of the R2 source."""
     topology = REPO_ROOT / "docs/03-reference/mcp/multiproject-service-topology.json"
-    falsification = REPO_ROOT / "docs/03-reference/mcp/multiproject-falsification-contract.md"
     assert _sha256(topology) == R2_TOPOLOGY_SHA256
-    assert _sha256(falsification) == R2_FALSIFICATION_SHA256
+
+
+def test_ratified_r2_falsification_payload_is_byte_exact():
+    """Falsification contract post-frontmatter payload must be byte-identical to R2 source.
+
+    REPO_DOC_FULL_FILE_HASH != R2_SUBJECT_HASH because repo frontmatter is required.
+    R2_PAYLOAD_AFTER_FRONTMATTER_SHA256 = 84b6e68...
+    R2_ARCHITECTURE_SEMANTICS_CHANGED = NO
+    """
+    falsification = REPO_ROOT / "docs/03-reference/mcp/multiproject-falsification-contract.md"
+    payload = _strip_yaml_frontmatter(falsification)
+    assert hashlib.sha256(payload).hexdigest() == R2_FALSIFICATION_PAYLOAD_SHA256
 
 def test_service_topology_has_exact_contract_shape():
     topology = json.loads(
@@ -68,10 +97,37 @@ def test_unknown_identity_cannot_allow_mutation():
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate(bad, schema)
 
+def test_unknown_identity_requires_mutable_routing_allowed_false():
+    schema = _load_schema("resolved-execution-identity.schema.json")
+    bad = _verified_identity()
+    bad["resolution_status"] = "UNKNOWN"
+    bad["mutable_routing_allowed"] = False
+    bad["project_id"] = None
+    bad["workspace_id"] = None
+    bad["instance_id"] = None
+    bad["actor_id"] = None
+    bad["client_id"] = None
+    bad["registry_generation"] = None
+    jsonschema.validate(bad, schema)
+
+def test_identity_requires_mutable_routing_allowed_globally():
+    schema = _load_schema("resolved-execution-identity.schema.json")
+    bad = _verified_identity()
+    del bad["mutable_routing_allowed"]
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(bad, schema)
+
 def test_alias_never_becomes_authority():
     schema = _load_schema("resolved-execution-identity.schema.json")
     bad = _verified_identity()
     bad["aliases"][0]["role"] = "AUTHORITY"
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(bad, schema)
+
+def test_alias_rejects_nested_authority_shaped_fields():
+    schema = _load_schema("resolved-execution-identity.schema.json")
+    bad = _verified_identity()
+    bad["aliases"][0]["project_id"] = "rogue"
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate(bad, schema)
 
@@ -124,6 +180,39 @@ def test_multi_project_singleton_rejected():
         jsonschema.validate(bad, schema)
 
 
+# R1-03 negative fixtures: arbitrary / legacy vocab values must be rejected.
+@pytest.mark.parametrize("field,value", [
+    ("sharing_class", "GLOBAL_MAGIC"),
+    ("sharing_class", "global-mutable"),
+    ("target_class", "dynamic-rebind"),
+    ("target_class", "GLOBAL_MAGIC"),
+    ("identity_scope", "global"),
+    ("identity_scope", "GLOBAL_MAGIC"),
+    ("state_authority", "global-mutable"),
+    ("state_authority", "GLOBAL_MAGIC"),
+    ("mutation_class", "dynamic-rebind"),
+    ("mutation_class", "GLOBAL_MAGIC"),
+    ("endpoint_policy", "GLOBAL_MAGIC"),
+    ("probe", "GLOBAL_MAGIC"),
+    ("idle_policy", "GLOBAL_MAGIC"),
+])
+def test_arbitrary_vocab_rejected_by_v2_schema(field: str, value: str) -> None:
+    schema = _load_schema("fleet-catalog-v2.schema.json")
+    bad = _v2_catalog()
+    bad["servers"]["serena"][field] = value
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(bad, schema)
+
+
+@pytest.mark.parametrize("legacy_field", ["scope", "state_scope", "port_policy"])
+def test_legacy_field_names_rejected_by_v2_schema(legacy_field: str) -> None:
+    schema = _load_schema("fleet-catalog-v2.schema.json")
+    bad = _v2_catalog()
+    bad["servers"]["serena"][legacy_field] = "worktree"
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(bad, schema)
+
+
 def _owned_evidence() -> dict:
     return {
         "schema_version": "dopemux.mcp.ownership-evidence.v1",
@@ -135,25 +224,68 @@ def _owned_evidence() -> dict:
         "storage": {"verified": True, "evidence": "project-bound mount"},
     }
 
+def _valid_lease(sharing_class: str, **overrides) -> dict:
+    base = {
+        "schema_version": "dopemux.mcp.service-lease.v2",
+        "lease_id": "lease-1",
+        "service_id": "conport",
+        "sharing_class": sharing_class,
+        "registry_generation": 7,
+        "owner_epoch": 1,
+        "endpoint": {"transport": "http", "host": "127.0.0.1", "port": 7890},
+        "owner_runtime_identity": {"runtime_kind": "conport", "runtime_id": "conport-1"},
+        "status": "active",
+        "created_at": "2026-09-03T00:00:00Z",
+        "updated_at": "2026-09-03T00:00:00Z",
+        "last_verified_at": "2026-09-03T00:00:00Z",
+        "evidence_refs": ["evidence-1"],
+    }
+    if sharing_class in ("PROJECT_SCOPED", "WORKTREE_SCOPED"):
+        base["project_id"] = "proj-1"
+    if sharing_class == "WORKTREE_SCOPED":
+        base["instance_id"] = "inst-1"
+    base.update(overrides)
+    return base
+
 def test_valid_project_scoped_lease():
     schema = _load_schema("service-lease-v2.schema.json")
-    lease = {"sharing_class": "PROJECT_SCOPED", "status": "active", "project_id": "proj-1"}
-    jsonschema.validate(lease, schema)
+    jsonschema.validate(_valid_lease("PROJECT_SCOPED"), schema)
 
 def test_valid_worktree_scoped_lease():
     schema = _load_schema("service-lease-v2.schema.json")
-    lease = {"sharing_class": "WORKTREE_SCOPED", "status": "active", "project_id": "proj-1", "instance_id": "inst-1"}
-    jsonschema.validate(lease, schema)
+    jsonschema.validate(_valid_lease("WORKTREE_SCOPED"), schema)
 
 def test_invalid_worktree_lease_missing_instance_id():
     schema = _load_schema("service-lease-v2.schema.json")
-    lease = {"sharing_class": "WORKTREE_SCOPED", "status": "active", "project_id": "proj-1"}
+    lease = _valid_lease("WORKTREE_SCOPED")
+    del lease["instance_id"]
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(lease, schema)
+
+def test_invalid_project_lease_missing_project_id():
+    schema = _load_schema("service-lease-v2.schema.json")
+    lease = _valid_lease("PROJECT_SCOPED")
+    del lease["project_id"]
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate(lease, schema)
 
 def test_invalid_retired_lease():
     schema = _load_schema("service-lease-v2.schema.json")
-    lease = {"sharing_class": "RETIRED", "status": "active"}
+    lease = _valid_lease("RETIRED")
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(lease, schema)
+
+def test_lease_rejects_authority_shaped_endpoint_extra_fields():
+    schema = _load_schema("service-lease-v2.schema.json")
+    lease = _valid_lease("PROJECT_SCOPED")
+    lease["endpoint"]["path_hash"] = "deadbeef"
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(lease, schema)
+
+def test_lease_requires_owner_runtime_identity_fields():
+    schema = _load_schema("service-lease-v2.schema.json")
+    lease = _valid_lease("PROJECT_SCOPED")
+    del lease["owner_runtime_identity"]["runtime_id"]
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate(lease, schema)
 
@@ -185,12 +317,20 @@ def test_non_owned_classification_forces_mutation_eligible_false():
 def _valid_receipt() -> dict:
     return {
         "schema_version": "dopemux.mcp.runner-materialization-receipt.v1",
-        "digest": "a" * 64,
-        "shared_global_config_mutated": False,
         "authority": "PROVENANCE_ONLY",
+        "materialization_id": "mat-1",
         "project_id": "proj",
         "workspace_id": "workspace",
         "instance_id": "inst",
+        "registry_generation": 5,
+        "runner_family": "codex",
+        "profile": "default",
+        "catalog_digest": "b" * 64,
+        "rendered_config_digest": "c" * 64,
+        "lease_refs": ["lease-1"],
+        "generated_at": "2026-09-03T00:00:00Z",
+        "shared_global_config_mutated": False,
+        "strict_mode": False,
         "inherited_surface_status": "KNOWN"
     }
 
@@ -208,7 +348,7 @@ def test_receipt_rejects_global_mutation():
 def test_strict_receipt_rejects_unknown_surface_status():
     schema = _load_schema("runner-materialization-receipt.schema.json")
     receipt = _valid_receipt()
-    receipt["mode"] = "strict"
+    receipt["strict_mode"] = True
     receipt["inherited_surface_status"] = "UNKNOWN"
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate(receipt, schema)
@@ -220,28 +360,67 @@ def test_receipt_authority_must_be_provenance_only():
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate(receipt, schema)
 
+def test_receipt_rejects_bad_catalog_digest_format():
+    schema = _load_schema("runner-materialization-receipt.schema.json")
+    receipt = _valid_receipt()
+    receipt["catalog_digest"] = "ZZ" * 32
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(receipt, schema)
+
+def test_receipt_rejects_unknown_runner_family():
+    schema = _load_schema("runner-materialization-receipt.schema.json")
+    receipt = _valid_receipt()
+    receipt["runner_family"] = "not-a-runner"
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(receipt, schema)
+
 def _valid_event() -> dict:
     return {
         "schema_version": "dopemux.mcp.project-event-envelope.v1",
+        "event_id": "evt-1",
+        "event_type": "status_changed",
+        "emitted_at": "2026-09-03T00:00:00Z",
+        "source_service_id": "task-orchestrator",
         "project_id": "proj",
         "workspace_id": "workspace",
         "instance_id": "inst",
         "registry_generation": 4,
-        "source_service": "srv",
-        "event_identity": "evt123",
         "payload_digest": "a" * 64,
-        "stream_namespace": "ns"
+        "stream_namespace": "ns",
+        "sequence": 12,
+        "replay_key": "replay-1"
     }
 
 def test_valid_event():
     schema = _load_schema("project-event-envelope.schema.json")
     jsonschema.validate(_valid_event(), schema)
 
-@pytest.mark.parametrize("missing_field", ["project_id", "workspace_id", "instance_id", "registry_generation", "payload_digest", "stream_namespace"])
+@pytest.mark.parametrize("missing_field", ["event_id", "event_type", "emitted_at", "source_service_id", "project_id", "workspace_id", "instance_id", "registry_generation", "payload_digest", "stream_namespace", "sequence", "replay_key"])
 def test_event_requires_fields(missing_field):
     schema = _load_schema("project-event-envelope.schema.json")
     event = _valid_event()
     del event[missing_field]
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(event, schema)
+
+def test_event_rejects_negative_registry_generation():
+    schema = _load_schema("project-event-envelope.schema.json")
+    event = _valid_event()
+    event["registry_generation"] = -1
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(event, schema)
+
+def test_event_rejects_negative_sequence():
+    schema = _load_schema("project-event-envelope.schema.json")
+    event = _valid_event()
+    event["sequence"] = -1
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(event, schema)
+
+def test_event_rejects_bad_payload_digest():
+    schema = _load_schema("project-event-envelope.schema.json")
+    event = _valid_event()
+    event["payload_digest"] = "not-a-hex-digest"
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate(event, schema)
 

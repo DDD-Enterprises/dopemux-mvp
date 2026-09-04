@@ -288,11 +288,20 @@ identity, endpoint, catalog, and lease semantics.
 
 ## 11. Exact frozen falsification reference
 
-`docs/03-reference/mcp/multiproject-falsification-contract.md` is copied byte-for-byte from R2 and must
-retain SHA-256:
+`docs/03-reference/mcp/multiproject-falsification-contract.md` is copied byte-for-byte from R2 for
+everything after the repository-required YAML frontmatter delimiter, and must retain the post-frontmatter
+payload SHA-256:
 
 ```text
-84b6e68f929e5b3f3ad37e9c2843755cc38a3a119fc87b5af057505d8ed83bcb
+REPO_DOC_FULL_FILE_HASH != R2_SUBJECT_HASH because repo frontmatter is required.
+R2_PAYLOAD_AFTER_FRONTMATTER_SHA256 = 84b6e68f929e5b3f3ad37e9c2843755cc38a3a119fc87b5af057505d8ed83bcb
+R2_ARCHITECTURE_SEMANTICS_CHANGED = NO
+```
+
+The service-topology JSON remains a full-file exact-copy gate at:
+
+```text
+df8636983e23c273eeb8eb517ea4019653b4c6bcb50cae344cde2e847214d4c2
 ```
 
 P0 does not execute the 3-project × 4-worktree × 2-runner matrix. It freezes the contract that P8 must

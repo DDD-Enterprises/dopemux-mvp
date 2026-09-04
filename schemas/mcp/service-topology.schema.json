@@ -1,5 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.local/schemas/mcp/service-topology.schema.json",
+  "$comment": "R1-04: enforces frozen R2 topology vocabulary. Exact R2 topology JSON must validate without modification.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -11,16 +13,27 @@
     "services"
   ],
   "properties": {
-    "packet_id": { "type": "string" },
-    "generated_at_utc": { "type": "string" },
+    "packet_id": { "type": "string", "minLength": 1 },
+    "generated_at_utc": { "type": "string", "minLength": 1 },
     "sharing_classes": {
       "type": "array",
-      "items": { "type": "string" }
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "string",
+        "enum": ["HOST_SINGLETON", "PROJECT_SCOPED", "WORKTREE_SCOPED", "RETIRED"]
+      },
+      "uniqueItems": true
     },
-    "selected_architecture": { "type": "string" },
-    "services_count": { "type": "integer" },
+    "selected_architecture": { "type": "string", "minLength": 1 },
+    "services_count": {
+      "type": "integer",
+      "const": 26
+    },
     "services": {
       "type": "array",
+      "minItems": 26,
+      "maxItems": 26,
       "items": {
         "type": "object",
         "additionalProperties": false,
@@ -41,24 +54,35 @@
           "DEFERRED_OPTION"
         ],
         "properties": {
-          "SERVICE_ID": { "type": "string" },
-          "CURRENT_CLASS": { "type": "string" },
-          "TARGET_CLASS": { "type": "string" },
-          "CURRENT_RUNTIME": { "type": "string" },
+          "SERVICE_ID": { "type": "string", "minLength": 1 },
+          "CURRENT_CLASS": {
+            "type": "string",
+            "enum": ["HOST_SINGLETON", "PROJECT_SCOPED", "WORKTREE_SCOPED", "RETIRED"]
+          },
+          "TARGET_CLASS": {
+            "type": "string",
+            "enum": ["HOST_SINGLETON", "PROJECT_SCOPED", "WORKTREE_SCOPED", "RETIRED"]
+          },
+          "CURRENT_RUNTIME": { "type": "string", "minLength": 1 },
           "FLIP_GATE": {
             "type": "array",
-            "items": { "type": "string" }
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
           },
-          "CANONICAL_AUTHORITY": { "type": "string" },
-          "IDENTITY_SCOPE": { "type": "string" },
-          "STORAGE_SCOPE": { "type": "string" },
-          "PORT_POLICY": { "type": "string" },
-          "FAIL_CLOSED_RULE": { "type": "string" },
+          "CANONICAL_AUTHORITY": { "type": "string", "minLength": 1 },
+          "IDENTITY_SCOPE": { "type": "string", "minLength": 1 },
+          "STORAGE_SCOPE": { "type": "string", "minLength": 1 },
+          "PORT_POLICY": { "type": "string", "minLength": 1 },
+          "FAIL_CLOSED_RULE": { "type": "string", "minLength": 1 },
           "EVIDENCE_REFS": {
             "type": "array",
-            "items": { "type": "string" }
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
           },
-          "DISPOSITION": { "type": "string" },
+          "DISPOSITION": {
+            "type": "string",
+            "enum": ["KEEP", "AMEND", "SUPERSEDE", "DEFER"]
+          },
           "ELIGIBLE_FOR_TARGET_NOW": { "type": "boolean" },
           "DEFERRED_OPTION": { "type": ["string", "null"] }
         }

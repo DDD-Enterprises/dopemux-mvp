@@ -1,8 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dopemux.local/schemas/mcp/resolved-execution-identity.schema.json",
+  "$comment": "R1-09: registry identity authoritative, aliases evidence-only. mutable_routing_allowed required globally. UNKNOWN/CONFLICTING forces false. A verified identity may still be denied by later policy.",
+  "title": "Dopemux MCP Resolved Execution Identity",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "resolution_status"],
+  "required": [
+    "schema_version",
+    "resolution_status",
+    "mutable_routing_allowed"
+  ],
   "properties": {
     "schema_version": {
       "type": "string",
@@ -11,6 +18,9 @@
     "resolution_status": {
       "type": "string",
       "enum": ["VERIFIED", "CONFLICTING", "UNKNOWN"]
+    },
+    "mutable_routing_allowed": {
+      "type": "boolean"
     },
     "project_id": {
       "type": ["string", "null"]
@@ -30,25 +40,24 @@
     "registry_generation": {
       "type": ["integer", "null"]
     },
-    "mutable_routing_allowed": {
-      "type": "boolean"
-    },
     "aliases": {
       "type": "array",
       "items": {
         "type": "object",
-        "additionalProperties": true,
-        "required": ["role"],
+        "additionalProperties": false,
+        "required": ["role", "kind", "value"],
         "properties": {
           "role": {
             "type": "string",
             "const": "EVIDENCE_ONLY"
           },
           "kind": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "value": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           }
         }
       }
@@ -59,7 +68,8 @@
       "if": {
         "properties": {
           "resolution_status": { "const": "VERIFIED" }
-        }
+        },
+        "required": ["resolution_status"]
       },
       "then": {
         "required": [

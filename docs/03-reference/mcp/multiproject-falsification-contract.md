@@ -10,6 +10,7 @@ next_review: '2026-12-02'
 prelude: Multiproject Falsification Contract (reference) for dopemux documentation
   and developer workflows.
 ---
+
 # Falsification Contract
 
 ```text
