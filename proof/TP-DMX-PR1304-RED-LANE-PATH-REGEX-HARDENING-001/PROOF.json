@@ -12,10 +12,10 @@
     "findings": [
       {
         "id": "F001",
-        "severity": "LOW",
-        "title": "Audit turnaround (39.5s) faster than a from-scratch derivation might suggest; no explicit tool-call transcript evidence in the response beyond the final verdict block",
-        "status": "ACCEPTED_RISK",
-        "body": "Verdict accepted per packet acceptance criteria (PASS with 0 blocking findings from a PROVEN-independent route); disclosed rather than glossed over. See AUDITOR_REPORT.md caveat."
+        "severity": "INFO",
+        "title": "Audit turnaround (39.5s) initially looked prompt-only; corroborated as live tool-driven verification",
+        "status": "RESOLVED",
+        "body": "Auditor left AGY_LIVE_PROBE_SCRIPT.py (this directory) behind at the worktree root after its --add-dir run: independently-authored Python that imports the live FORBIDDEN_PATHS list and drives both consumer call shapes against newline/CR/tab, exact-exemption-spoof, traversal+newline, near-miss+control-char, all 11 intended exemptions, and ordinary paths. Implementer re-ran it post-hoc: ALL TESTS PASSED (6/6 sub-cases). See AUDITOR_REPORT.md."
       }
     ],
     "fixes_applied": [
