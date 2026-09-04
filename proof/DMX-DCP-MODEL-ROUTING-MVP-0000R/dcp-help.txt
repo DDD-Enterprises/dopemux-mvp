@@ -1,0 +1,10 @@
+Usage: python -m dopemux.cli dcp [OPTIONS] COMMAND [ARGS]...
+
+  Read-only DCP routing projection (classify + backend policy recommend).
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  classify           Classify task attributes into a conservative...
+  recommend-backend  Return inert backend policy recommendation for a...

@@ -1,0 +1,12 @@
+codex=/Users/hue/.local/share/mise/shims/codex
+codex-cli 0.145.0
+claude=/Users/hue/.local/bin/claude
+2.1.220 (Claude Code)
+opencode=/Users/hue/.opencode/bin/opencode
+1.18.5
+gemini=/opt/homebrew/bin/gemini
+0.46.0
+agy=/Users/hue/.local/bin/agy
+1.1.7
+grok=/Users/hue/.local/bin/grok
+grok 0.2.112 (9bbd559437aa) [stable]

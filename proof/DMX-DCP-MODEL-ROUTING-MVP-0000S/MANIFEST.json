@@ -1,0 +1,168 @@
+{
+  "artifacts": [
+    {
+      "bytes": 127,
+      "path": "AUDITOR_REPAIR_REPORT.md",
+      "sha256": "aebcc1f976cce0c88a146acc59b98e985c632667b159da0f09e8e237a30384f1"
+    },
+    {
+      "bytes": 996,
+      "path": "AUDITOR_REPORT.md",
+      "sha256": "1f8b32966f8d6cb4a573168a02d7ffae7c4154ad4c226a9eba85d9ad9091f6df"
+    },
+    {
+      "bytes": 525,
+      "path": "COMMAND_LOG.md",
+      "sha256": "c89e2994ad9f66e2f23bfae816fad149905accf84371c12f884f9b4a1a02fffd"
+    },
+    {
+      "bytes": 1017,
+      "path": "DIFF_NAME_ONLY.txt",
+      "sha256": "0f31373f6b2d40c82cf8d01ec0683e5cdab8b9fcb648955dede898e6ea5552e1"
+    },
+    {
+      "bytes": 1191,
+      "path": "DIFF_STAT.txt",
+      "sha256": "7e6f4b31d79ae37e596fc56697ce59e8f8bdae62de6951fc17adec68f9fb3833"
+    },
+    {
+      "bytes": 686,
+      "path": "EVIDENCE_LEDGER.md",
+      "sha256": "2db3cd8d7dccdc781ed0409b240f5093e1df1ab007c86e6d2fa53b08822d7132"
+    },
+    {
+      "bytes": 437,
+      "path": "FINALIZATION_POINTER.json",
+      "sha256": "d4523d719135091fec89326623bfd35e587ce9304824b125f159a1b3620490ab"
+    },
+    {
+      "bytes": 1326,
+      "path": "FINAL_STATUS_PORCELAIN.txt",
+      "sha256": "d519937caffd73c82c4b70c93a07ea398aa2b4cec78c586d6fc9368ffaf13cfe"
+    },
+    {
+      "bytes": 1527,
+      "path": "HANDOFF.json",
+      "sha256": "3edf37deb5ab2677038b67cb7329a54b0ae9866d7cd72171ea521729309bfc62"
+    },
+    {
+      "bytes": 281,
+      "path": "HANDOFF.md",
+      "sha256": "bcfc06efc45e7748f93bee6453c01b66bf437a719e82f4779f258d290bb94856"
+    },
+    {
+      "bytes": 599,
+      "path": "IMPLEMENTATION_REPORT.md",
+      "sha256": "1291320535b1c3775a7a1ec443b1ef5940dd2505066e379d4f0b7107a729d85b"
+    },
+    {
+      "bytes": 19657,
+      "path": "MODEL_ROUTING_SERIES_MAP.json",
+      "sha256": "44a5236c17923528a1f2bd298844303674737857a17a7f262618ed7993128428"
+    },
+    {
+      "bytes": 732,
+      "path": "PAL_CHAIN.md",
+      "sha256": "ff185587a8718c532536da9d171fc4a18e3f87e2aeb3088e4a29cd6d5ebd4f16"
+    },
+    {
+      "bytes": 2045,
+      "path": "PROOF.json",
+      "sha256": "66193c28295f99b6877cbfc1d5be9f26b71d28165aae5cfce92fa3ac1cef50dd"
+    },
+    {
+      "bytes": 654,
+      "path": "VALIDATION.json",
+      "sha256": "0ff2762de1209519109740a1c3af7dcd3651472eba829f0939d51364ca861087"
+    },
+    {
+      "bytes": 457,
+      "path": "WARNINGS_AND_BLOCKERS.json",
+      "sha256": "7597e515ffeadaab936744b22f31b71bfd2295ea8c7b0ace5a6ba6debdc7a252"
+    },
+    {
+      "bytes": 2,
+      "path": "gh-pr-all.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "bytes": 115499,
+      "path": "gh-pr-all.json",
+      "sha256": "243d758f5834802307f96d15b9c1f21e34ed93d5655938726dc51a286f9fc965"
+    },
+    {
+      "bytes": 1,
+      "path": "gh-pr-all.stderr.txt",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "bytes": 15891,
+      "path": "gh-pr-dcp-routing-related.json",
+      "sha256": "003aff59f2d4fd880b0bf11a870e90ad2f85c1c2c902e5fdf5ae687a72468fd3"
+    },
+    {
+      "bytes": 4480,
+      "path": "model-routing-packets.txt",
+      "sha256": "4a4be369338c37d59264c1b95695103979b5c57c0998215c0f0ee320b7dce4c5"
+    },
+    {
+      "bytes": 5673,
+      "path": "model-routing-proof.txt",
+      "sha256": "731e609e3a4e83c3768334eb662fc53ea03ec93d33b7ddc8704b4cccc358185f"
+    },
+    {
+      "bytes": 3174,
+      "path": "model-routing-runtime-files.txt",
+      "sha256": "f0a821ba43af536218d6c112b110300791571a1177ac1925c77a447f17d1ee13"
+    },
+    {
+      "bytes": 413,
+      "path": "review_bundle/CALLSITE_ANALYSIS.json",
+      "sha256": "00fc34cc08f686dd06e70dcfc20fa2bf177b6f42f970ec139eeb3fe0e2bd8cf1"
+    },
+    {
+      "bytes": 3799,
+      "path": "review_bundle/CANDIDATE_CHANGED_FILES.txt",
+      "sha256": "fab06af4d115cf5969c7a26489db12c914d7abb63506a5a600fd5e82ca795ce1"
+    },
+    {
+      "bytes": 552508,
+      "path": "review_bundle/CANDIDATE_UNIFIED_DIFF.patch",
+      "sha256": "daf322586d6856505b2dabdd5f746b5d87bb35467014ddeb0c800ac8abe8fb69"
+    },
+    {
+      "bytes": 33,
+      "path": "review_bundle/COMMAND_LOG.txt",
+      "sha256": "773ef779bbb37199ee14ad35c275e7f1efaf35b1d2599403b2fbb06805356499"
+    },
+    {
+      "bytes": 6818,
+      "path": "review_bundle/EXECUTION_GATE_OCCURRENCES.txt",
+      "sha256": "fe768174aef4aa98737e050d7616144c112a27af223ace577daf3b24272993c3"
+    },
+    {
+      "bytes": 1424,
+      "path": "review_bundle/MANIFEST.json",
+      "sha256": "37d43f1b2c81d5c901cabd719662b99e36bc1967c81c42970f966bc8a504d256"
+    },
+    {
+      "bytes": 41,
+      "path": "review_bundle/MERGE_BASE.txt",
+      "sha256": "6453471fa05533d285cf2d39b99f3984b918e0b9cc3cf5594d7359488eca1cfe"
+    },
+    {
+      "bytes": 41,
+      "path": "review_bundle/MERGE_TREE.txt",
+      "sha256": "dc94a2955eae93df612a456c823871c49b6cc95bbcf98b05c35ec7ceeb57198d"
+    },
+    {
+      "bytes": 654,
+      "path": "review_bundle/VALIDATION.json",
+      "sha256": "0ff2762de1209519109740a1c3af7dcd3651472eba829f0939d51364ca861087"
+    }
+  ],
+  "candidate_subject_sha": "3ce0db080527d64eeb3849e88786528422885333",
+  "created_at": "2026-07-29T10:15:14Z",
+  "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000S",
+  "trusted_main_sha": "72af781e42e0702d9047946e0f5a250e7dff0fa5"
+}
