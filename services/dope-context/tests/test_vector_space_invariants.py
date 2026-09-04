@@ -8,6 +8,7 @@ accepts a cross-family mismatch silently (F-001).
 
 import sys
 import types
+from pathlib import Path
 
 import pytest
 
@@ -114,6 +115,37 @@ def test_all_six_named_vectors_agree_across_index_and_query():
 
     assert len(seen) == 6, seen
     assert len(set(seen)) == 6, f"vector roles must be distinct: {seen}"
+
+
+def test_index_and_query_paths_both_derive_models_from_the_profile():
+    """The six-vector check above is only meaningful if both paths read it.
+
+    Round-4 audit finding WEAKENED_TEST_ASSERTIONS: comparing a vector to
+    itself is agreement by construction, since index and query read the same
+    VectorProfile object. The property that actually has to hold is that the
+    indexing pipeline and the search path both *derive* model and endpoint
+    from that profile rather than naming a model themselves -- which is
+    exactly the F-001 defect that D1 closed.
+    """
+    src_root = Path(__file__).resolve().parents[1] / "src"
+    paths = {
+        "indexing_pipeline": src_root / "pipeline" / "indexing_pipeline.py",
+        "server": src_root / "mcp" / "server.py",
+    }
+    for name, path in paths.items():
+        source = path.read_text(encoding="utf-8")
+        assert "content_profile.model" in source, (
+            f"{name} must embed content with the profile's model"
+        )
+        assert "content_profile.endpoint" in source, (
+            f"{name} must dispatch on the profile's endpoint; hardcoding the\n"
+            "contextualized embedder is what sent a flat model to\n"
+            "contextualized_embed and broke indexing"
+        )
+        for literal in ('model="voyage-code-4"', 'model="voyage-context-4"'):
+            assert literal not in source, (
+                f"{name} hard-codes {literal} instead of reading the profile"
+            )
 
 
 def test_code_content_vector_is_not_contextualized():

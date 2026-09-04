@@ -57,6 +57,14 @@ MODEL_SPECS: Dict[str, EmbeddingModelSpec] = {
     # 300,000 tokens was accepted and billed in full (total_tokens=299940),
     # which rules out a 120K ceiling empirically. Copying 120_000 here would
     # have been wrong.
+    #
+    # The recorded value is the MEASURED floor (300,000), not the inferred
+    # 320,000 of the voyage-4 rate-limit group. Round-4 independent audit
+    # (INFERRED_MAX_TOKENS) noted this field sizes real batches via
+    # partition_indices(max_tokens=...) in voyage_embedder.py, so a value
+    # above what was actually proven accepted can reject legitimate
+    # indexing batches. Never raise this above a figure a live request has
+    # demonstrated, unless the vendor documents one.
     "voyage-code-4": EmbeddingModelSpec(
         name="voyage-code-4",
         endpoint="embeddings",
@@ -64,7 +72,7 @@ MODEL_SPECS: Dict[str, EmbeddingModelSpec] = {
         supported_dimensions=_DIMENSIONS,
         per_input_tokens=32_000,
         max_request_inputs=1_000,
-        max_request_tokens=320_000,
+        max_request_tokens=300_000,
         price_per_million_tokens=0.12,
     ),
     # Superseded by voyage-code-4 (D1). Retained registered so an explicit

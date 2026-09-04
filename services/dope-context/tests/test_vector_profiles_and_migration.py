@@ -11,6 +11,8 @@ import pytest
 from src.embeddings.model_registry import DEFAULT_CODE_MODEL
 from src.index_profile import (
     CONTEXTUAL_MODEL_ENV,
+    VectorProfile,
+    fingerprint_profiles,
     PROFILE_DIGEST_LENGTH,
     assert_manifest_compatible,
     build_code_collection_profile,
@@ -111,22 +113,35 @@ def test_endpoint_change_changes_collection_identity():
 
     Rewritten for D1: the code profile is now uniformly flat and the docs
     profile uniformly contextualized, so the old "code is mixed" premise is
-    gone. Endpoint is isolated below by fingerprinting two vector sets that
-    differ in nothing else.
+    gone. Endpoint is genuinely isolated below: two vector sets identical in
+    every field but endpoint.
     """
+    # Isolated: these two sets are identical in EVERY field except endpoint,
+    # so a fingerprint difference is attributable to endpoint alone. The
+    # previous version compared the code and docs profiles, which differ in
+    # model as well, and so isolated nothing (round-4 audit finding
+    # WEAKENED_TEST_ASSERTIONS).
+    common = dict(
+        vector_role="code.content_vec",
+        model="voyage-code-4",
+        index_input_type="document",
+        query_input_type="query",
+        dimension=1024,
+        dtype="float",
+        chunker_version="v1",
+        index_schema_version="dope-context-v2",
+    )
+    flat = {"content_vec": VectorProfile(endpoint="embeddings", **common)}
+    ctx = {"content_vec": VectorProfile(endpoint="contextualized_embeddings", **common)}
+    assert fingerprint_profiles(flat) != fingerprint_profiles(ctx)
+
+    # The real profiles must also differ: D1 made code flat, docs stay
+    # contextualized.
     code = build_code_collection_profile()
     docs = build_docs_collection_profile()
     assert code.content().endpoint == "embeddings"
     assert docs.content().endpoint == "contextualized_embeddings"
     assert code.profile_fingerprint != docs.profile_fingerprint
-
-    # Isolate endpoint: same model, dimension, dtype and versions on both
-    # sides; only the endpoint differs.
-    payload = code.content().fingerprint_payload()
-    assert "endpoint" in payload, (
-        "endpoint must be part of the fingerprint payload, or a model could be "
-        "silently re-pointed at a different endpoint without changing identity"
-    )
 
 
 def test_legacy_unversioned_collection_never_selected_for_writes(tmp_path):
