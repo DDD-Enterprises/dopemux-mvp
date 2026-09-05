@@ -492,16 +492,6 @@ function DashboardApp() {
                       : 'error'
                 }
                 onClick={connectionStatus === 'degraded' ? handleReconnect : undefined}
-                onKeyDown={
-                  connectionStatus === 'degraded'
-                    ? (e) => {
-                        if (e.key === ' ' || e.key === 'Enter') {
-                          e.preventDefault();
-                          handleReconnect();
-                        }
-                      }
-                    : undefined
-                }
                 tabIndex={0}
                 sx={{
                   ...(connectionStatus === 'degraded' && {
@@ -530,13 +520,6 @@ function DashboardApp() {
                 aria-label={isHydrated ? 'Sip Logged! Stay Feral.' : 'Health and hydration status: [AFTERCARE] Logged. Hydrate. Click to log a hydration sip.'}
                 className="dopemux-chip"
                 onClick={handleHydrate}
-                onKeyDown={(e) => {
-                  if (e.key === ' ' || e.key === 'Enter') {
-                    e.preventDefault();
-                    handleHydrate();
-                  }
-                }}
-                tabIndex={0}
                 sx={{
                   borderColor: isHydrated ? alpha(brandTokens.colors.serumMint, 0.8) : alpha(brandTokens.colors.aftercareViolet, 0.8),
                   color: isHydrated ? brandTokens.colors.serumMint : brandTokens.colors.aftercareViolet,
@@ -594,13 +577,6 @@ function DashboardApp() {
                 label={`Recommendation: ${cognitiveState.recommendation}`}
                 aria-label={isCopied ? `AI Recommendation: ${cognitiveState.recommendation} (Copied)` : `Copy AI Recommendation: ${cognitiveState.recommendation}`}
                 onClick={handleCopyRecommendation}
-                onKeyDown={(e) => {
-                  if (e.key === ' ' || e.key === 'Enter') {
-                    e.preventDefault();
-                    void handleCopyRecommendation();
-                  }
-                }}
-                tabIndex={0}
                 sx={{
                   backgroundColor: alpha(brandTokens.colors.voidNavy, 0.65),
                   color: brandTokens.colors.serumMint,
