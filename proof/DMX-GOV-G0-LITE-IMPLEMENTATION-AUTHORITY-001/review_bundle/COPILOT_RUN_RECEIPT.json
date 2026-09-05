@@ -1,0 +1,34 @@
+{
+  "audit_id": "TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001-FINAL-L2",
+  "amendment_id": "DMX-WAVE0-REPAIR-AUDIT-RECOVERY-001",
+  "runner": "GitHub Copilot CLI",
+  "runner_version": "1.0.81-9",
+  "billing_mode": "PLAN_BACKED",
+  "usage_availability": "PROVEN",
+  "usage_preflight": {
+    "used_credits": 5866,
+    "plan_credits": 7000,
+    "percent_used": 83
+  },
+  "identities": {
+    "requested_model": "claude-sonnet-4.6",
+    "configured_model": "claude-sonnet-4.6",
+    "response_claimed_model": "claude-sonnet-4.6",
+    "proxy_reported_model": "UNKNOWN",
+    "provider_attested_model": "UNKNOWN"
+  },
+  "independence": "PROVEN_DIFFERENT_MODEL_FAMILY_FROM_CODEX_IMPLEMENTER",
+  "subject_head": "e339c74239e3a3ec157eeaaf1aa6fa580fea1ee7",
+  "subject_tree": "8c481613a467fe70c745455cca9af2828ba4faca",
+  "attempt": {
+    "authorized_once": true,
+    "exit_code": 0,
+    "transport_status": "SUCCESS",
+    "output_status": "SUBSTANTIVE_WELL_FORMED",
+    "verdict": "PASS_WITH_RISKS"
+  },
+  "invocation": "COPILOT_HOME=<isolated-temp-home> copilot --prompt '' --mode plan --model claude-sonnet-4.6 --reasoning-effort high --disable-builtin-mcps --disable-mcp-server github-mcp-server --no-custom-instructions --no-remote --no-remote-export --no-auto-update --no-ask-user --available-tools=view --available-tools=grep --available-tools=glob --allow-all-tools --output-format text --silent < bounded-audit-prompt",
+  "api_spend_authorized": false,
+  "api_spend_used": false,
+  "pal_clink_used": false
+}
