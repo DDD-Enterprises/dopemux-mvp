@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/governed_delivery/operator-decision-request.v1.schema.json",
+  "title": "OperatorDecisionRequest v1",
+  "description": "Requests authority from an operator. Creating this object grants nothing: it carries the current state, its evidence, blockers, risks, unknowns, a recommendation, alternatives and consequences so that a human can decide. recommended_action is never self-executing.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "decision_request_id", "decision_type",
+    "project_id", "repository_id", "worktree_id", "packet_id",
+    "work_item_id", "packet_ref", "exact_subject_ref",
+    "decision_required_from", "current_state", "evidence_refs",
+    "blockers", "risks", "unknowns",
+    "recommended_action", "alternatives", "consequences", "stop_conditions"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "governed-delivery.operator-decision-request.v1" },
+    "decision_request_id": { "type": "string", "minLength": 1 },
+    "decision_type": {
+      "type": "string",
+      "enum": [
+        "ARCHITECTURE_DECISION_REQUIRED", "RED_LANE_AUTHORIZATION_REQUIRED",
+        "SUPERVISOR_ESCALATION_REQUIRED", "MERGE_DECISION_REQUIRED",
+        "ACTIVATION_DECISION_REQUIRED"
+      ]
+    },
+    "project_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "repository_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "workspace_id": { "type": ["string", "null"], "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "worktree_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "instance_id": { "type": ["string", "null"], "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "packet_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "work_item_id": { "type": "string", "minLength": 1 },
+    "packet_ref": { "type": "string", "minLength": 1 },
+    "exact_subject_ref": { "type": "string", "minLength": 1 },
+    "decision_required_from": { "type": "string", "minLength": 1 },
+    "current_state": { "type": "string", "minLength": 1 },
+    "evidence_refs": {
+      "type": "array",
+      "items": { "$ref": "https://dopemux.dev/schemas/governed_delivery/evidence-reference.v1.schema.json" }
+    },
+    "blockers": { "type": "array", "items": { "type": "string" } },
+    "risks": { "type": "array", "items": { "type": "string" } },
+    "unknowns": { "type": "array", "items": { "type": "string" } },
+    "recommended_action": { "type": "string", "minLength": 1 },
+    "alternatives": { "type": "array", "items": { "type": "string" } },
+    "consequences": { "type": "array", "items": { "type": "string" } },
+    "expires_at": { "type": ["string", "null"] },
+    "stop_conditions": { "type": "array", "items": { "type": "string" } }
+  }
+}
