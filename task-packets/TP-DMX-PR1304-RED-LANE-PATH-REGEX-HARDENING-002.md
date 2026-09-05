@@ -1,3 +1,15 @@
+---
+id: TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002
+title: Red-Lane Scanner Control-Character Regression Coverage
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-09-04'
+last_review: '2026-09-04'
+next_review: '2026-10-04'
+prelude: Salvage packet porting existing scanner-side control-character regression
+  tests from open PR 1321, closing the coverage gap left by merged PR 1322.
+---
 # TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002
 
 **Scanner-side regression coverage for the red-lane control-character bypass.**
