@@ -1,0 +1,275 @@
+{
+  "id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT",
+  "project": "dopemux-mvp",
+  "target": "L3 CI-trust compatibility repair R1, superseding the stopped read-only A5 packet. Align PR Steward runtime and merge-readiness schema with the merged zero-spend audit-evidence contract so only the exact trusted NOT_REQUIRED representation (embedded_audit.required=false, status=SKIPPED, skip_reason=AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT) can be non-blocking/READY. Preserve fail-closed behavior for every required, malformed, ambiguous, unknown, or differently skipped audit. PR #1327 remains parked and unmodified.",
+  "invariants": [
+    "R1 supersedes A5 because S0 proved merge_readiness.schema.json also blocks READY+SKIPPED and was absent from the A5 allowlist",
+    "Runtime and merge-readiness schema must enforce the same exact NOT_REQUIRED exception independently; a runtime-only exception or schema-only broad allowance is forbidden",
+    "PR Steward normalized embedded_audit output must preserve required and skip_reason (or equivalently lossless fields) so the schema can distinguish trusted NOT_REQUIRED from arbitrary SKIPPED",
+    "READY+SKIPPED is schema-valid only when required is exactly false and skip_reason exactly equals AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT",
+    "READY+SKIPPED with required=true, missing/malformed required, or wrong/missing skip_reason must be schema-invalid even if classifier code regresses",
+    "Existing non-READY SKIPPED artifacts must remain representable for diagnostic/fail-closed outputs",
+    "Start from current trusted main 6a728f74c0311967f83213513308f97613e3f28d; fetch and reverify main before mutation",
+    "WSAC PR #1327 remains parked and unchanged at head a18c87fdcf96b1b830dc88345ce199e2ef209ac6 throughout this repair",
+    "This packet repairs PR Steward compatibility only; it does not alter the change-contract classifier or embedded-audit workflow NOT_REQUIRED emission",
+    "Canonical non-blocking NOT_REQUIRED representation is exact: embedded_audit.required=false, status=SKIPPED, skip_reason=AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT",
+    "SKIPPED remains blocking when required is true, missing, malformed, or not exactly false",
+    "SKIPPED remains blocking when skip_reason is missing or differs from AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT",
+    "FAIL and NEEDS_SUPERVISOR remain blocking",
+    "Unknown or malformed audit statuses remain fail-closed",
+    "PASS and PASS_WITH_RISKS retain existing non-blocking semantics",
+    "Do not globally remove SKIPPED from BLOCKING_AUDITS",
+    "Do not weaken signed-attestation, proof freshness/head binding, audit identity, security-release, review-thread, CI, or solo-owner gates",
+    "No CI model/provider audit execution may be reintroduced",
+    "No PAL/Clink audit or API-metered audit is authorized",
+    "Use test-driven development: add or adjust failing regression tests before changing classifier behavior",
+    "No changes outside the explicit allowlist",
+    "One bounded implementer only; no intermediate model audits",
+    "Risk lane L3: one final independent audit is required after substantive content freeze",
+    "Preferred final auditor is AGY gemini-3.1-pro-high high if exact live identity is reconfirmed; no silent substitution",
+    "Proof-only successors after frozen audited content do not require a second content audit",
+    "Do not mark repair PR ready, merge, force-push, rewrite history, delete branches, or change branch protection without explicit operator authority",
+    "Do not mutate PR #1327 ready/draft state, comments, labels, commits, or merge state",
+    "After this repair eventually lands, #1327 must be reharvested from new main; R0 remains unauthorized until #1327 itself lands",
+    "Packet creation is not repository mutation authority; OPERATOR_EXECUTION_GATE=YES is required before implementation"
+  ],
+  "depends_on": [
+    "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-STEWARD-NOT-REQUIRED-COMPAT"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopemux",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-CI-AUDIT-EVIDENCE-GATE",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-STEWARD-NOT-REQUIRED-COMPAT",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/ci-audit-steward-not-required-a5-r1",
+    "base_branch": "main",
+    "stacked_because": "Standalone L3 compatibility repair on current main; WSAC PR #1327 is evidence only and is not an implementation surface"
+  },
+  "commit": {
+    "message": "fix(pr-steward): align not-required runtime and readiness schema",
+    "allowlist": [
+      "tools/pr_steward/classifier.py",
+      "schemas/pr_steward/merge_readiness.schema.json",
+      "tests/pr_steward/test_intake.py",
+      "tests/pr_steward/test_classifier_embedded_audit_normalization.py",
+      "docs/ops/pr-steward.md",
+      "task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT.json",
+      "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT/**",
+      "proof/pr_merge/embedded-audit/pr-*/**",
+      "tests/fixtures/pr_steward/**",
+      "docs/ops/pr-fixtures.md"
+    ],
+    "verify": [
+      "python -m json.tool schemas/pr_steward/merge_readiness.schema.json",
+      "python -m pytest -q tests/pr_steward/test_classifier_embedded_audit_normalization.py tests/pr_steward/test_intake.py",
+      "python -m json.tool task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT.json",
+      "python -m jsonschema -i task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest -q tests/pr_steward/test_intake.py tests/pr_steward/test_classifier_embedded_audit_normalization.py",
+      "python -m pytest -q tests/audit tests/pr_steward",
+      "git diff --check",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "pre-commit run --from-ref origin/main --to-ref HEAD",
+      "gitleaks protect --staged --verbose"
+    ]
+  },
+  "pr": {
+    "title": "fix(pr-steward): align trusted audit not-required runtime and schema",
+    "body": "L3 CI-trust compatibility repair R1. The first A5 preflight proved two coupled defects: PR Steward blocks every SKIPPED audit, and merge_readiness.schema.json permits READY only for PASS/PASS_WITH_RISKS. R1 fixes both boundaries together. The normalized Steward audit artifact preserves required/skip_reason; runtime and schema permit READY+SKIPPED only for the exact trusted NOT_REQUIRED representation required=false + AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT. Required, malformed, unknown, or differently skipped audits remain fail-closed. WSAC PR #1327 remains parked and unchanged.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Establish fresh isolated custody from current origin/main and reprove the compatibility defect before editing.",
+      "requirements": [
+        "Require OPERATOR_EXECUTION_GATE=YES before repository mutation",
+        "Fetch origin/main and require it to contain 6a728f74c0311967f83213513308f97613e3f28d, or classify subsequent drift before proceeding",
+        "Create fresh worktree branch fix/ci-audit-steward-not-required-a5 from current origin/main",
+        "Read current RULES.md, AGENTS.md, parent packet, classifier, relevant Steward tests, and docs",
+        "Reproduce exact NOT_REQUIRED accepted by CI evidence gate but blocked by Steward as EMBEDDED_AUDIT_SKIPPED",
+        "Confirm PR #1327 remains unchanged or record its new live head without mutating it",
+        "Stop if equivalent compatibility fix already exists",
+        "Confirm A5 terminal preflight evidence: classifier blocks exact NOT_REQUIRED and merge_readiness.schema.json rejects simulated READY+SKIPPED",
+        "Confirm schemas/pr_steward/merge_readiness.schema.json is now inside the R1 allowlist before editing"
+      ],
+      "validation": [
+        "REPO_IDENTITY=PASS",
+        "FRESH_WORKTREE=PASS",
+        "CONTRACT_CONFLICT=REPRODUCED",
+        "EQUIVALENT_FIX_ALREADY_PRESENT=NO",
+        "PR_1327_MUTATIONS=0",
+        "A5_SCHEMA_CONFLICT=REPRODUCED",
+        "R1_SCHEMA_ALLOWLIST=PASS"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Add regression tests first for the exact NOT_REQUIRED success case and fail-closed neighbors.",
+      "requirements": [
+        "Test status=SKIPPED, required=false, exact canonical reason => no EMBEDDED_AUDIT_SKIPPED blocker",
+        "Test status=SKIPPED, required=true => blocks",
+        "Test status=SKIPPED, required=false, missing/wrong reason => blocks",
+        "Test missing or malformed required => blocks",
+        "Assert FAIL and NEEDS_SUPERVISOR remain blocking",
+        "Assert PASS and PASS_WITH_RISKS remain non-blocking under otherwise-green conditions",
+        "Assert unknown status remains fail-closed",
+        "Capture expected pre-fix failure of the new NOT_REQUIRED case",
+        "Add schema regression proving READY + SKIPPED + required=false + exact canonical reason validates",
+        "Add schema regression proving READY + SKIPPED + required=true rejects",
+        "Add schema regression proving READY + SKIPPED + missing/malformed required rejects",
+        "Add schema regression proving READY + SKIPPED + wrong/missing reason rejects"
+      ],
+      "validation": [
+        "TDD_RED_NOT_REQUIRED_CASE=PASS",
+        "REQUIRED_SKIPPED_FAIL_CLOSED_TEST=PASS_OR_EXISTING",
+        "WRONG_REASON_FAIL_CLOSED_TEST=PASS_OR_EXISTING",
+        "MALFORMED_REQUIRED_FAIL_CLOSED_TEST=PASS_OR_EXISTING",
+        "TDD_RED_SCHEMA_NOT_REQUIRED_CASE=PASS",
+        "SCHEMA_REQUIRED_SKIPPED_REJECT_TEST=PASS_OR_EXISTING",
+        "SCHEMA_WRONG_REASON_REJECT_TEST=PASS_OR_EXISTING"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement the minimum Steward compatibility rule.",
+      "requirements": [
+        "Preserve required and skip_reason from the raw embedded_audit in the normalized Steward artifact; if upstream fields are missing or malformed, preserve an explicit fail-closed diagnostic representation rather than inventing trusted values",
+        "Define one narrow helper/predicate for trusted NOT_REQUIRED semantics and use it for blocker classification",
+        "Suppress EMBEDDED_AUDIT_SKIPPED only when status=SKIPPED, required is exactly false, and skip_reason exactly equals AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT",
+        "Keep SKIPPED in BLOCKING_AUDITS; do not globally weaken it",
+        "Preserve existing raw/unknown audit-status handling and all other readiness gates",
+        "Update schemas/pr_steward/merge_readiness.schema.json embedded_audit shape to carry required and skip_reason",
+        "Update the READY conditional so embedded_audit is valid when either (a) status PASS/PASS_WITH_RISKS, or (b) status SKIPPED + required=false + exact canonical NOT_REQUIRED reason",
+        "Ensure the schema does not allow arbitrary READY+SKIPPED"
+      ],
+      "validation": [
+        "NORMALIZED_REQUIRED_FIELD_PRESERVED=PASS",
+        "NORMALIZED_SKIP_REASON_FIELD_PRESERVED=PASS",
+        "EXACT_NOT_REQUIRED_EXCEPTION=IMPLEMENTED",
+        "REQUIRED_SKIPPED_STILL_BLOCKS=PASS",
+        "WRONG_REASON_STILL_BLOCKS=PASS",
+        "MALFORMED_REQUIRED_STILL_BLOCKS=PASS",
+        "UNKNOWN_STATUS_FAILS_CLOSED=PASS",
+        "READY_NOT_REQUIRED_SCHEMA_VALID=PASS",
+        "READY_REQUIRED_SKIPPED_SCHEMA_REJECTED=PASS",
+        "READY_WRONG_REASON_SCHEMA_REJECTED=PASS"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Update Steward docs only as needed for the exact exception.",
+      "requirements": [
+        "State SKIPPED is ordinarily blocking",
+        "State the one exception: required=false plus exact trusted change-contract reason",
+        "State the exception is not PASS and waives no other readiness gate",
+        "Document that MERGE_READINESS.json preserves embedded_audit.required and skip_reason for this decision",
+        "Document that schema independently rejects arbitrary READY+SKIPPED"
+      ],
+      "validation": [
+        "DOCS_MATCH_RUNTIME=PASS",
+        "NO_AUTHORITY_EXPANSION=PASS"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run deterministic validation and freeze the substantive repair head.",
+      "requirements": [
+        "Run focused Steward tests and complete tests/audit plus tests/pr_steward",
+        "Validate Task Packet schema",
+        "Run diff-check and allowlist",
+        "Run change-contract",
+        "Run changed-file pre-commit and rerun if modified",
+        "Run staged secret scan",
+        "Require clean worktree after commit",
+        "Record FROZEN_CONTENT_HEAD",
+        "Validate merge_readiness.schema.json syntax and all READY+SKIPPED positive/negative schema cases",
+        "Run any existing fixture-based Steward schema validation covering MERGE_READINESS.json"
+      ],
+      "validation": [
+        "FOCUSED_TESTS=PASS",
+        "RELEVANT_COMPLETE_SUITE=PASS",
+        "TP_SCHEMA=PASS",
+        "DIFF_CHECK=PASS",
+        "ALLOWLIST=PASS",
+        "CHANGE_CONTRACT=PASS",
+        "PRECOMMIT=PASS",
+        "SECRET_SCAN=PASS",
+        "FROZEN_CONTENT_HEAD=<sha>",
+        "MERGE_READINESS_SCHEMA=PASS",
+        "SCHEMA_POSITIVE_NEGATIVE_MATRIX=PASS"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run exactly one final independent L3 audit on the frozen substantive repair head.",
+      "requirements": [
+        "Reconfirm live AGY runner and gemini-3.1-pro-high selector before invocation",
+        "Use high effort and prove independence from Codex implementer",
+        "Audit exact frozen content head only",
+        "Challenge fail-open cases: required=true SKIPPED, wrong reason, malformed required, unknown status, proof/security interactions",
+        "Record actual runner/model/effort/invocation/subject/verdict/findings/risks/independence",
+        "PASS or PASS_WITH_RISKS only if risks are explicit and non-blocking",
+        "FAIL, NEEDS_SUPERVISOR, identity uncertainty, malformed output, or head mismatch blocks",
+        "Auditor must inspect the merge-readiness schema conditional as well as classifier runtime",
+        "Auditor must explicitly test or reason through a divergence attack where runtime permits one case but schema would permit broader READY+SKIPPED"
+      ],
+      "validation": [
+        "AUDIT_SUBJECT_HEAD_MATCH=PASS",
+        "AUDITOR_INDEPENDENCE=PROVEN",
+        "INDEPENDENT_L3_AUDIT=PASS|PASS_WITH_RISKS",
+        "BLOCKING_AUDIT_FINDINGS=0"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Create proof-only successors for the frozen audited head without rerunning content audit.",
+      "requirements": [
+        "Create canonical proof under proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT/ bound to FROZEN_CONTENT_HEAD",
+        "Include AUDITOR_REPORT.md and non-empty review_bundle",
+        "If current trusted CI requires PR-scoped signed attestation, create and validate exact-head attestation",
+        "Validate schema, signature, ancestry, audited-head binding, and proof-only closure",
+        "Do not modify substantive files after FROZEN_CONTENT_HEAD"
+      ],
+      "validation": [
+        "CANONICAL_PROOF=PASS",
+        "PROOF_HEAD_BINDING=PASS",
+        "PROOF_ONLY_CLOSURE=PASS",
+        "CONTENT_REAUDIT=NOT_REQUIRED"
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Push/open a draft repair PR after all gates pass; harvest zero-spend CI and Steward; stop at operator gates.",
+      "requirements": [
+        "Require GitHub mutation authority if not already included in OPERATOR_EXECUTION_GATE",
+        "Push normally; force-push forbidden",
+        "Open repair PR as draft against current main",
+        "Require exact remote head identity",
+        "Require independent embedded audit CI model/provider calls=0",
+        "Run/harvest live PR Steward on exact head",
+        "Do not mark ready or merge without separate explicit operator authority",
+        "Do not mutate PR #1327",
+        "Return exact blockers and unknowns",
+        "If CodeQL or review threads identify a new trust defect, do not dismiss or resolve without evidence; stop or repair within this packet only if inside allowlist and before final content freeze"
+      ],
+      "validation": [
+        "CI_MODEL_EXECUTION=0",
+        "CI_PROVIDER_MODEL_CALLS=0",
+        "PR_STATE=OPEN_DRAFT",
+        "PR_STEWARD_RUN=PASS",
+        "MERGE=NO",
+        "READY_STATE_MUTATION=NO",
+        "PR_1327_MUTATIONS=0"
+      ]
+    }
+  ]
+}

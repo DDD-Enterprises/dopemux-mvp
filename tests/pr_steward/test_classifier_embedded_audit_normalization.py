@@ -26,6 +26,7 @@ _MERGE_READINESS_SCHEMA = (
 _PR_STATE_SNAPSHOT_SCHEMA = (
     _REPO_ROOT / "schemas" / "pr_steward" / "pr_state_snapshot.schema.json"
 )
+_NOT_REQUIRED_REASON = "AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT"
 
 
 def _minimal_harvest(audit_status: str | None) -> dict:
@@ -146,3 +147,250 @@ def test_canonical_status_does_not_add_unknown_blocker():
     )
     merge_readiness = artifacts["MERGE_READINESS.json"]
     assert "EMBEDDED_AUDIT_UNKNOWN" not in merge_readiness["blockers"]
+
+
+def _artifacts_for_audit(audit: dict) -> dict:
+    harvest = _minimal_harvest("PASS")
+    harvest["embedded_audit"] = audit
+    return build_artifacts(
+        harvest,
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=718,
+        strict=False,
+        allow_closed=False,
+    )
+
+
+def _ready_schema_candidate(audit: dict) -> dict:
+    candidate = _artifacts_for_audit(
+        {"status": "PASS", "report_path": "proof/test/AUDITOR_REPORT.md"}
+    )["MERGE_READINESS.json"]
+    candidate["readiness"] = "READY"
+    candidate["risk_tier"] = "CLEAR"
+    candidate["embedded_audit"] = audit
+    candidate["blockers"] = []
+    candidate["unknowns"] = []
+    return candidate
+
+
+def test_exact_trusted_not_required_is_nonblocking_and_preserves_fields(
+    merge_readiness_schema, pr_state_snapshot_schema
+):
+    artifacts = _artifacts_for_audit(
+        {
+            "status": "SKIPPED",
+            "required": False,
+            "skip_reason": _NOT_REQUIRED_REASON,
+            "report_path": "proof/test/AUDITOR_REPORT.md",
+        }
+    )
+
+    merge_readiness = artifacts["MERGE_READINESS.json"]
+    snapshot = artifacts["PR_STATE_SNAPSHOT.json"]
+    assert merge_readiness["readiness"] == "READY"
+    assert "EMBEDDED_AUDIT_SKIPPED" not in merge_readiness["blockers"]
+    assert merge_readiness["embedded_audit"]["required"] is False
+    assert merge_readiness["embedded_audit"]["skip_reason"] == _NOT_REQUIRED_REASON
+    assert set(snapshot["embedded_audit"]) == {"status", "report_path"}
+    jsonschema.Draft7Validator(merge_readiness_schema).validate(merge_readiness)
+    jsonschema.Draft7Validator(pr_state_snapshot_schema).validate(snapshot)
+
+
+@pytest.mark.parametrize(
+    "audit",
+    [
+        {
+            "status": "SKIPPED",
+            "required": True,
+            "skip_reason": _NOT_REQUIRED_REASON,
+            "report_path": "proof/test/AUDITOR_REPORT.md",
+        },
+        {
+            "status": "SKIPPED",
+            "required": None,
+            "skip_reason": _NOT_REQUIRED_REASON,
+            "report_path": "proof/test/AUDITOR_REPORT.md",
+        },
+        {
+            "status": "SKIPPED",
+            "required": "false",
+            "skip_reason": _NOT_REQUIRED_REASON,
+            "report_path": "proof/test/AUDITOR_REPORT.md",
+        },
+        {
+            "status": "SKIPPED",
+            "skip_reason": _NOT_REQUIRED_REASON,
+            "report_path": "proof/test/AUDITOR_REPORT.md",
+        },
+        {
+            "status": "SKIPPED",
+            "required": False,
+            "skip_reason": "UNTRUSTED_REASON",
+            "report_path": "proof/test/AUDITOR_REPORT.md",
+        },
+        {
+            "status": "SKIPPED",
+            "required": False,
+            "report_path": "proof/test/AUDITOR_REPORT.md",
+        },
+        {
+            "required": False,
+            "skip_reason": _NOT_REQUIRED_REASON,
+            "report_path": "proof/test/AUDITOR_REPORT.md",
+        },
+        {
+            "status": "skipped",
+            "required": False,
+            "skip_reason": _NOT_REQUIRED_REASON,
+            "report_path": "proof/test/AUDITOR_REPORT.md",
+        },
+    ],
+    ids=[
+        "required-true",
+        "required-null",
+        "required-string",
+        "required-missing",
+        "wrong-reason",
+        "missing-reason",
+        "missing-status",
+        "noncanonical-status-case",
+    ],
+)
+def test_nontrusted_skipped_audit_remains_blocking_and_schema_valid(
+    audit, merge_readiness_schema
+):
+    merge_readiness = _artifacts_for_audit(audit)["MERGE_READINESS.json"]
+
+    assert merge_readiness["readiness"] == "NEEDS_SUPERVISOR"
+    assert "EMBEDDED_AUDIT_SKIPPED" in merge_readiness["blockers"]
+    normalized = merge_readiness["embedded_audit"]
+    raw_required = audit.get("required")
+    raw_skip_reason = audit.get("skip_reason")
+    assert normalized["required"] == (
+        raw_required if isinstance(raw_required, bool) else None
+    )
+    assert normalized["skip_reason"] == (
+        raw_skip_reason if isinstance(raw_skip_reason, str) else None
+    )
+    jsonschema.Draft7Validator(merge_readiness_schema).validate(merge_readiness)
+
+
+@pytest.mark.parametrize("status", ["PASS", "PASS_WITH_RISKS"])
+def test_passing_audit_statuses_remain_nonblocking(status):
+    merge_readiness = _artifacts_for_audit(
+        {
+            "status": status,
+            "required": True,
+            "skip_reason": None,
+            "report_path": "proof/test/AUDITOR_REPORT.md",
+        }
+    )["MERGE_READINESS.json"]
+
+    assert merge_readiness["readiness"] == "READY"
+    assert not any(
+        blocker.startswith("EMBEDDED_AUDIT_")
+        for blocker in merge_readiness["blockers"]
+    )
+
+
+@pytest.mark.parametrize("status", ["FAIL", "NEEDS_SUPERVISOR"])
+def test_blocking_audit_statuses_remain_blocking(status):
+    merge_readiness = _artifacts_for_audit(
+        {
+            "status": status,
+            "required": True,
+            "skip_reason": None,
+            "report_path": "proof/test/AUDITOR_REPORT.md",
+        }
+    )["MERGE_READINESS.json"]
+
+    assert f"EMBEDDED_AUDIT_{status}" in merge_readiness["blockers"]
+
+
+def test_unknown_status_cannot_claim_trusted_not_required():
+    merge_readiness = _artifacts_for_audit(
+        {
+            "status": "UNKNOWN",
+            "required": False,
+            "skip_reason": _NOT_REQUIRED_REASON,
+            "report_path": "proof/test/AUDITOR_REPORT.md",
+        }
+    )["MERGE_READINESS.json"]
+
+    assert merge_readiness["readiness"] == "NEEDS_SUPERVISOR"
+    assert "EMBEDDED_AUDIT_UNKNOWN" in merge_readiness["blockers"]
+
+
+def test_ready_schema_accepts_exact_trusted_not_required(merge_readiness_schema):
+    candidate = _ready_schema_candidate(
+        {
+            "status": "SKIPPED",
+            "required": False,
+            "skip_reason": _NOT_REQUIRED_REASON,
+            "report_path": "proof/test/AUDITOR_REPORT.md",
+        }
+    )
+
+    jsonschema.Draft7Validator(merge_readiness_schema).validate(candidate)
+
+
+@pytest.mark.parametrize(
+    "audit",
+    [
+        {
+            "status": "SKIPPED",
+            "required": True,
+            "skip_reason": _NOT_REQUIRED_REASON,
+            "report_path": "proof/test/AUDITOR_REPORT.md",
+        },
+        {
+            "status": "SKIPPED",
+            "required": None,
+            "skip_reason": _NOT_REQUIRED_REASON,
+            "report_path": "proof/test/AUDITOR_REPORT.md",
+        },
+        {
+            "status": "SKIPPED",
+            "required": "false",
+            "skip_reason": _NOT_REQUIRED_REASON,
+            "report_path": "proof/test/AUDITOR_REPORT.md",
+        },
+        {
+            "status": "SKIPPED",
+            "skip_reason": _NOT_REQUIRED_REASON,
+            "report_path": "proof/test/AUDITOR_REPORT.md",
+        },
+        {
+            "status": "SKIPPED",
+            "required": False,
+            "skip_reason": "UNTRUSTED_REASON",
+            "report_path": "proof/test/AUDITOR_REPORT.md",
+        },
+        {
+            "status": "SKIPPED",
+            "required": False,
+            "report_path": "proof/test/AUDITOR_REPORT.md",
+        },
+        {
+            "required": False,
+            "skip_reason": _NOT_REQUIRED_REASON,
+            "report_path": "proof/test/AUDITOR_REPORT.md",
+        },
+    ],
+    ids=[
+        "required-true",
+        "required-null",
+        "required-string",
+        "required-missing",
+        "wrong-reason",
+        "missing-reason",
+        "missing-status",
+    ],
+)
+def test_ready_schema_rejects_nontrusted_skipped_audit(
+    audit, merge_readiness_schema
+):
+    candidate = _ready_schema_candidate(audit)
+
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.Draft7Validator(merge_readiness_schema).validate(candidate)
