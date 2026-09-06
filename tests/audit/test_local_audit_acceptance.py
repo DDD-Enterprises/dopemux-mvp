@@ -63,6 +63,47 @@ def _local_embedded_audit(status: str = "PASS", tool: str = "pal-mcp-clink") -> 
     }
 
 
+def _audit_identity(
+    *,
+    independence: str = "PROVEN",
+    implementer_model_family: str = "openai-gpt",
+    implementer_runtime_family: str = "codex-cli",
+    auditor_model_family: str = "anthropic-claude",
+    auditor_runtime_family: str = "pal-mcp-clink",
+) -> dict:
+    return {
+        "implementer": {
+            "runner": "codex-cli",
+            "model": "gpt-5.6-sol",
+            "model_family": implementer_model_family,
+            "runtime_family": implementer_runtime_family,
+        },
+        "auditor": {
+            "runner": "pal-mcp-clink",
+            "model": "sonnet",
+            "model_family": auditor_model_family,
+            "runtime_family": auditor_runtime_family,
+            "effort": "high",
+        },
+        "independence": independence,
+    }
+
+
+def _identity_for_audit(embedded: dict) -> dict:
+    identity = _audit_identity()
+    tool = str(embedded["auditor_tool"])
+    model = str(embedded["auditor_model"])
+    identity["auditor"]["runner"] = tool
+    identity["auditor"]["model"] = model
+    if tool == "agy" or model.startswith("gemini"):
+        identity["auditor"]["model_family"] = "google-gemini"
+        identity["auditor"]["runtime_family"] = "agy"
+    elif tool == "grok" or model.startswith("grok"):
+        identity["auditor"]["model_family"] = "xai-grok"
+        identity["auditor"]["runtime_family"] = "grok"
+    return identity
+
+
 class LocalAuditFixture:
     """Temp git repo with an audited commit, a signed proof commit, and keys."""
 
@@ -98,6 +139,7 @@ class LocalAuditFixture:
         *,
         packet_embedded: dict | None = None,
         packet_audited_sha: str | None = None,
+        packet_identity: dict | None = None,
         include_report: bool = True,
         include_review_bundle: bool = True,
         commit: bool = True,
@@ -109,11 +151,14 @@ class LocalAuditFixture:
         to exercise each new fail-closed check independently.
         """
         self.packet_dir.mkdir(parents=True, exist_ok=True)
+        effective_embedded = packet_embedded or _local_embedded_audit()
+        effective_identity = packet_identity or _identity_for_audit(effective_embedded)
         packet_proof = {
             "packet_id": PACKET_ID,
             "repo": REPO,
             "head_sha": packet_audited_sha or self.audited_sha,
-            "embedded_audit": packet_embedded or _local_embedded_audit(),
+            "embedded_audit": effective_embedded,
+            "audit_identity": effective_identity,
         }
         (self.packet_dir / "PROOF.json").write_text(
             json.dumps(packet_proof, indent=2, sort_keys=True) + "\n", encoding="utf-8"
@@ -139,11 +184,14 @@ class LocalAuditFixture:
         namespace: str = SIGNATURE_NAMESPACE,
         key: Path | None = None,
         tamper_after_signing: bool = False,
+        audit_identity: dict | None = None,
+        include_audit_identity: bool = True,
         write_packet_bundle: bool = True,
     ) -> None:
         if write_packet_bundle and not (self.packet_dir / "PROOF.json").exists():
             self.write_packet_bundle(packet_audited_sha=audited_sha or self.audited_sha)
         self.proof_dir.mkdir(parents=True, exist_ok=True)
+        effective_embedded = embedded or _local_embedded_audit()
         proof = {
             "packet_id": f"PR-MERGE-STEWARD-{pr_number}",
             "repo": REPO,
@@ -153,8 +201,12 @@ class LocalAuditFixture:
             "executed": True,
             "mutation_performed": False,
             "github_mutation_route_added": False,
-            "embedded_audit": embedded or _local_embedded_audit(),
+            "embedded_audit": effective_embedded,
         }
+        if include_audit_identity:
+            proof["audit_identity"] = audit_identity or _identity_for_audit(
+                effective_embedded
+            )
         proof_file = self.proof_dir / "PROOF.json"
         proof_file.write_text(
             json.dumps(proof, indent=2, sort_keys=True) + "\n", encoding="utf-8"
@@ -192,6 +244,7 @@ class LocalAuditFixture:
             head_sha=self.head(),
             allowed_signers=self.allowed_signers,
             schema_path=SCHEMA_PATH,
+            risk_lane="L3",
         )
         kwargs.update(overrides)
         return evaluate_local_audit(**kwargs)
@@ -205,6 +258,136 @@ def test_accepts_signed_proof_only_delta(tmp_path: Path) -> None:
     assert attestation["principal"] == "tester@example"
     assert attestation["audited_sha"] == fixture.audited_sha
     assert attestation["embedded_audit"]["status"] == "PASS"
+    assert attestation["audit_identity"]["independence"] == "PROVEN"
+
+
+def test_rejects_l3_proof_without_structured_audit_identity(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_and_sign_proof(include_audit_identity=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(r.startswith("audit_identity_missing") for r in attestation["reasons"])
+
+
+@pytest.mark.parametrize("independence", ["UNKNOWN", "LIMITED"])
+def test_rejects_l3_unknown_or_limited_independence(
+    tmp_path: Path, independence: str
+) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    identity = _audit_identity(independence=independence)
+    fixture.write_packet_bundle(packet_identity=identity)
+    fixture.write_and_sign_proof(audit_identity=identity, write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("audit_independence_not_proven")
+        for r in attestation["reasons"]
+    )
+
+
+def test_rejects_l3_same_model_family(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    identity = _audit_identity(auditor_model_family="openai-gpt")
+    fixture.write_packet_bundle(packet_identity=identity)
+    fixture.write_and_sign_proof(audit_identity=identity, write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("audit_model_family_not_independent")
+        for r in attestation["reasons"]
+    )
+
+
+def test_rejects_l3_same_runtime_family(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    identity = _audit_identity(auditor_runtime_family="codex-cli")
+    fixture.write_packet_bundle(packet_identity=identity)
+    fixture.write_and_sign_proof(audit_identity=identity, write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("audit_runtime_family_not_independent")
+        for r in attestation["reasons"]
+    )
+
+
+def test_rejects_identity_disagreeing_with_embedded_audit(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    identity = _audit_identity()
+    identity["auditor"]["model"] = "gemini-3.1-pro-high"
+    fixture.write_packet_bundle(packet_identity=identity)
+    fixture.write_and_sign_proof(audit_identity=identity, write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("audit_identity_model_mismatch")
+        for r in attestation["reasons"]
+    )
+
+
+def test_rejects_packet_audit_identity_mismatch(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_packet_bundle(
+        packet_identity=_audit_identity(independence="LIMITED")
+    )
+    fixture.write_and_sign_proof(
+        audit_identity=_audit_identity(),
+        write_packet_bundle=False,
+    )
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("packet_proof_audit_identity_mismatch")
+        for r in attestation["reasons"]
+    )
+
+
+def test_rejects_pass_with_risks_without_explicit_risks(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    audit = _local_embedded_audit(status="PASS_WITH_RISKS")
+    fixture.write_packet_bundle(packet_embedded=audit)
+    fixture.write_and_sign_proof(embedded=audit, write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("pass_with_risks_missing_risks")
+        for r in attestation["reasons"]
+    )
+
+
+def test_accepts_pass_with_explicit_nonblocking_risks(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    audit = _local_embedded_audit(status="PASS_WITH_RISKS")
+    audit["remaining_risks"] = [
+        "Targeted tests passed; full integration workflow was not run."
+    ]
+    fixture.write_packet_bundle(packet_embedded=audit)
+    fixture.write_and_sign_proof(embedded=audit, write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is True, attestation["reasons"]
+
+
+def test_rejects_pass_with_unresolved_blocking_finding(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    audit = _local_embedded_audit(status="PASS_WITH_RISKS")
+    audit["remaining_risks"] = ["Blocking finding remains open."]
+    audit["findings"] = [
+        {
+            "id": "F-1",
+            "severity": "BLOCKING",
+            "title": "Blocking issue",
+            "status": "OPEN",
+            "body": "Must not pass.",
+        }
+    ]
+    fixture.write_packet_bundle(packet_embedded=audit)
+    fixture.write_and_sign_proof(embedded=audit, write_packet_bundle=False)
+    attestation = fixture.evaluate()
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("pass_with_risks_blocking_finding")
+        for r in attestation["reasons"]
+    )
 
 
 def test_rejects_tampered_proof(tmp_path: Path) -> None:
@@ -304,6 +487,16 @@ def test_rejects_pr_number_mismatch(tmp_path: Path) -> None:
     attestation = fixture.evaluate()
     assert attestation["accepted"] is False
     assert any(r.startswith("local_proof_pr_mismatch") for r in attestation["reasons"])
+
+
+def test_rejects_repository_mismatch(tmp_path: Path) -> None:
+    fixture = LocalAuditFixture(tmp_path)
+    fixture.write_and_sign_proof()
+    attestation = fixture.evaluate(repo="DDD-Enterprises/not-dopemux")
+    assert attestation["accepted"] is False
+    assert any(
+        r.startswith("local_proof_repo_mismatch") for r in attestation["reasons"]
+    )
 
 
 def test_rejects_non_passing_local_status(tmp_path: Path) -> None:
@@ -1277,7 +1470,7 @@ def test_rejected_attestation_leaves_supervisor_path_unchanged() -> None:
 
 def test_workflow_evaluates_attestation_from_trusted_source() -> None:
     text = WORKFLOW_PATH.read_text(encoding="utf-8")
-    assert "Evaluate local signed audit attestation" in text
+    assert "Evaluate signed imported audit evidence" in text
     assert "python -m scripts.audit.local_audit_acceptance" in text
     assert "--allowed-signers config/audit/embedded-audit-allowed-signers" in text
     assert (
