@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Independent embedded-audit proof emitter.
+"""Deterministic embedded-audit evidence-gate proof emitter.
 
-This entrypoint is intended for the embedded-audit CI workflow. It normalizes a
-captured PAL clink audit output into the canonical embedded_audit proof object
-and records provenance without serializing token values.
+The active CI path consumes trusted change-contract classification and optional
+signed exact-head audit evidence. It never launches a model, provider, or audit
+runner. Legacy captured-output normalization remains callable for existing
+offline consumers; it only parses supplied files and has no execution fallback.
 """
 from __future__ import annotations
 
@@ -19,13 +20,15 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from tools.auditor_router.pal_clink import normalize_pal_clink_audit_output
+from tools.auditor_router.pal_clink import normalize_pal_clink_audit_output  # noqa: E402
 
 
 TOKEN_ENV_VAR = "EMBEDDED_AUDIT_TOKEN"
 PROOF_AUTHOR = "independent-embedded-audit"
 WORKFLOW_NAME = "embedded-audit.yml"
 PASSING_AUDIT_STATUSES = frozenset({"PASS", "PASS_WITH_RISKS"})
+NOT_REQUIRED_REASON = "AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT"
+NON_MODEL_AUDIT_LANES = frozenset({"L0", "L1"})
 
 
 def _utc_now_seconds() -> str:
@@ -65,7 +68,18 @@ def independent_audit_errors(
                 "audit_proof_malformed_dry_run: dry_run must be a boolean when present"
             )
 
-    if payload.get("executed") is not True:
+    embedded = payload.get("embedded_audit")
+    provenance = payload.get("provenance")
+    not_required_claimed = (
+        isinstance(embedded, Mapping)
+        and embedded.get("required") is False
+    ) or (
+        isinstance(provenance, Mapping)
+        and provenance.get("audit_source") == "trusted-change-contract"
+    )
+    if not_required_claimed:
+        errors.extend(_not_required_proof_errors(payload))
+    elif payload.get("executed") is not True:
         errors.append("audit_not_executed: final readiness requires executed=true")
 
     if expected_pr is not None:
@@ -100,7 +114,6 @@ def independent_audit_errors(
                 f"expected={expected_repo}"
             )
 
-    provenance = payload.get("provenance")
     if not isinstance(provenance, Mapping):
         errors.append(
             "audit_provenance_missing: final readiness requires trusted provenance"
@@ -111,6 +124,72 @@ def independent_audit_errors(
     if provenance.get("workflow") != WORKFLOW_NAME:
         errors.append("audit_provenance_untrusted: unexpected workflow")
     return errors
+
+
+def _not_required_proof_errors(payload: Mapping[str, Any]) -> list[str]:
+    errors: list[str] = []
+    embedded = payload.get("embedded_audit")
+    provenance = payload.get("provenance")
+    if payload.get("executed") is not False:
+        errors.append("audit_not_required_execution_invalid: executed must be false")
+    if not isinstance(embedded, Mapping):
+        return errors + ["audit_not_required_shape_invalid: embedded_audit missing"]
+    expected = {
+        "required": False,
+        "status": "SKIPPED",
+        "auditor_tool": "none",
+        "auditor_model": "unknown",
+        "invocation": None,
+        "exit_code": None,
+        "skip_reason": NOT_REQUIRED_REASON,
+    }
+    for field, value in expected.items():
+        if embedded.get(field) != value:
+            errors.append(
+                f"audit_not_required_shape_invalid: embedded_audit.{field}="
+                f"{embedded.get(field)!r} expected {value!r}"
+            )
+    if not isinstance(provenance, Mapping):
+        return errors
+    if provenance.get("audit_source") != "trusted-change-contract":
+        errors.append(
+            "audit_not_required_provenance_invalid: audit_source must be "
+            "trusted-change-contract"
+        )
+    contract = provenance.get("change_contract")
+    if not isinstance(contract, Mapping):
+        errors.append("audit_not_required_contract_missing: change_contract required")
+        return errors
+    if contract.get("status") != "PASS":
+        errors.append("audit_not_required_contract_invalid: status must be PASS")
+    if contract.get("model_audit_required") is not False:
+        errors.append(
+            "audit_not_required_contract_invalid: model_audit_required must be false"
+        )
+    if contract.get("max_lane") not in NON_MODEL_AUDIT_LANES:
+        errors.append("audit_not_required_contract_invalid: max_lane must be L0 or L1")
+    return errors
+
+
+def _passing_audit_errors(embedded: Mapping[str, Any]) -> list[str]:
+    status = str(embedded.get("status") or "").upper()
+    if status not in PASSING_AUDIT_STATUSES:
+        return [f"Independent audit did not pass: {status or 'UNKNOWN'}"]
+    if status == "PASS_WITH_RISKS":
+        risks = embedded.get("remaining_risks")
+        if not isinstance(risks, list) or not any(
+            isinstance(risk, str) and risk.strip() for risk in risks
+        ):
+            return ["PASS_WITH_RISKS requires explicit remaining_risks"]
+        findings = embedded.get("findings")
+        if isinstance(findings, list) and any(
+            isinstance(finding, Mapping)
+            and finding.get("severity") == "BLOCKING"
+            and finding.get("status") != "RESOLVED"
+            for finding in findings
+        ):
+            return ["PASS_WITH_RISKS contains unresolved BLOCKING finding"]
+    return []
 
 
 def enforce_independent_audit_proof(
@@ -133,9 +212,11 @@ def enforce_independent_audit_proof(
     embedded = payload.get("embedded_audit")
     if not isinstance(embedded, Mapping):
         raise SystemExit("audit_status_missing: embedded_audit object required")
-    status = str(embedded.get("status") or "").upper()
-    if status not in PASSING_AUDIT_STATUSES:
-        raise SystemExit(f"Independent audit did not pass: {status or 'UNKNOWN'}")
+    if embedded.get("required") is False:
+        return
+    passing_errors = _passing_audit_errors(embedded)
+    if passing_errors:
+        raise SystemExit("; ".join(passing_errors))
 
 
 def build_diagnostic_failure_proof(
@@ -167,6 +248,142 @@ def build_diagnostic_failure_proof(
         "mutation_performed": False,
         "github_mutation_route_added": False,
         "embedded_audit": _skipped_audit(report_path=report_path, reason=reason),
+    }
+
+
+def build_evidence_gate_proof(
+    *,
+    packet_id: str,
+    repo: str,
+    pr_number: int,
+    head_sha: str,
+    base_sha: str,
+    change_contract: Mapping[str, Any],
+    local_attestation: Mapping[str, Any] | None,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    """Build proof from trusted classification and optional signed evidence."""
+    report_path = f"proof/{packet_id}/AUDITOR_REPORT.md"
+    contract_status = change_contract.get("status")
+    model_required = change_contract.get("model_audit_required")
+    lane = change_contract.get("max_lane")
+    if (
+        contract_status != "PASS"
+        or not isinstance(model_required, bool)
+        or lane not in {"L0", "L1", "L2", "L3"}
+    ):
+        return build_diagnostic_failure_proof(
+            packet_id=packet_id,
+            repo=repo,
+            pr_number=pr_number,
+            head_sha=head_sha,
+            reason="TRUSTED_CHANGE_CONTRACT_INVALID",
+            generated_at=generated_at,
+        )
+
+    contract_provenance = {
+        "status": contract_status,
+        "max_lane": lane,
+        "model_audit_required": model_required,
+        "base_sha": base_sha,
+        "head_sha": head_sha,
+    }
+    provenance: dict[str, Any] = {
+        "proof_author": PROOF_AUTHOR,
+        "workflow": WORKFLOW_NAME,
+        "audit_source": "trusted-change-contract",
+        "change_contract": contract_provenance,
+        "engine_authored_proof": False,
+        "engine_requested_only": True,
+        "permissions": {
+            "actions": "read",
+            "checks": "read",
+            "contents": "read",
+            "pull-requests": "read",
+            "statuses": "read",
+        },
+    }
+
+    if model_required is False:
+        if lane not in NON_MODEL_AUDIT_LANES:
+            return build_diagnostic_failure_proof(
+                packet_id=packet_id,
+                repo=repo,
+                pr_number=pr_number,
+                head_sha=head_sha,
+                reason="TRUSTED_CHANGE_CONTRACT_LANE_CONFLICT",
+                generated_at=generated_at,
+            )
+        embedded_audit = {
+            "required": False,
+            "status": "SKIPPED",
+            "auditor_tool": "none",
+            "auditor_model": "unknown",
+            "invocation": None,
+            "exit_code": None,
+            "report_path": report_path,
+            "findings": [],
+            "fixes_applied": [],
+            "remaining_risks": [],
+            "skip_reason": NOT_REQUIRED_REASON,
+        }
+        return {
+            "packet_id": packet_id,
+            "repo": repo,
+            "pr_number": int(pr_number),
+            "head_sha": head_sha,
+            "generated_at": generated_at or _utc_now_seconds(),
+            "executed": False,
+            "mutation_performed": False,
+            "github_mutation_route_added": False,
+            "embedded_audit": embedded_audit,
+            "provenance": provenance,
+        }
+
+    accepted = _accepted_local_attestation(local_attestation)
+    if accepted is None or not isinstance(accepted.get("audit_identity"), Mapping):
+        return build_diagnostic_failure_proof(
+            packet_id=packet_id,
+            repo=repo,
+            pr_number=pr_number,
+            head_sha=head_sha,
+            reason="SIGNED_IMPORTED_AUDIT_EVIDENCE_REQUIRED",
+            generated_at=generated_at,
+        )
+
+    embedded_audit = dict(accepted["embedded_audit"])
+    embedded_audit["report_path"] = report_path
+    passing_errors = _passing_audit_errors(embedded_audit)
+    if passing_errors:
+        return build_diagnostic_failure_proof(
+            packet_id=packet_id,
+            repo=repo,
+            pr_number=pr_number,
+            head_sha=head_sha,
+            reason="SIGNED_IMPORTED_AUDIT_EVIDENCE_INVALID: " + "; ".join(passing_errors),
+            generated_at=generated_at,
+        )
+
+    provenance["audit_source"] = "signed-imported-evidence"
+    provenance["local_attestation"] = {
+        "principal": accepted.get("principal"),
+        "audited_sha": accepted.get("audited_sha"),
+        "proof_path": accepted.get("proof_path"),
+        "signature_namespace": accepted.get("signature_namespace"),
+        "signature_verified": True,
+    }
+    return {
+        "packet_id": packet_id,
+        "repo": repo,
+        "pr_number": int(pr_number),
+        "head_sha": head_sha,
+        "generated_at": generated_at or _utc_now_seconds(),
+        "executed": True,
+        "mutation_performed": False,
+        "github_mutation_route_added": False,
+        "embedded_audit": embedded_audit,
+        "audit_identity": dict(accepted["audit_identity"]),
+        "provenance": provenance,
     }
 
 
@@ -359,15 +576,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--repo", required=True)
     parser.add_argument("--pr", required=True, type=int)
     parser.add_argument("--head-sha", required=True)
-    parser.add_argument("--route-json", required=True, type=Path)
+    parser.add_argument("--base-sha")
+    parser.add_argument("--change-contract-json", type=Path)
+    parser.add_argument("--route-json", type=Path)
     parser.add_argument("--pal-output-json", type=Path)
     parser.add_argument(
         "--local-attestation-json",
         type=Path,
         help=(
             "Optional LOCAL_AUDIT_ATTESTATION.json produced by "
-            "scripts/audit/local_audit_acceptance.py; consumed only when the "
-            "CI auditor produced no real verdict."
+            "scripts/audit/local_audit_acceptance.py. Required evidence for a "
+            "trusted change contract that classifies model_audit_required=true."
         ),
     )
     parser.add_argument(
@@ -399,6 +618,32 @@ def run_cli(
 ) -> int:
     args = build_parser().parse_args(argv)
     environ = os.environ if env is None else env
+    if args.change_contract_json:
+        if not args.base_sha:
+            raise ValueError("--base-sha is required with --change-contract-json")
+        change_contract = _read_json_object(args.change_contract_json)
+        local_attestation: dict[str, Any] | None = None
+        if args.local_attestation_json:
+            local_attestation, _ = _read_optional_json_object(
+                args.local_attestation_json
+            )
+        proof = build_evidence_gate_proof(
+            packet_id=args.packet_id,
+            repo=args.repo,
+            pr_number=args.pr,
+            head_sha=args.head_sha,
+            base_sha=args.base_sha,
+            change_contract=change_contract,
+            local_attestation=local_attestation,
+            generated_at=args.generated_at,
+        )
+        _write_outputs(args.out, proof)
+        return 0
+
+    if args.route_json is None:
+        raise ValueError(
+            "--route-json is required for legacy captured-output normalization"
+        )
     route, route_error = _read_optional_json_object(args.route_json)
     pal_output, pal_output_error = (
         _read_optional_json_object(args.pal_output_json)
@@ -473,7 +718,7 @@ def _write_outputs(out_dir: Path, proof: dict[str, Any]) -> None:
 def _render_public_audit_report() -> str:
     return "\n".join(
         [
-            "# PAL Clink Audit Report",
+            "# Audit Evidence Gate Report",
             "",
             "The canonical embedded audit details are recorded in PROOF.json.",
             "This Markdown file intentionally omits raw finding and risk text.",

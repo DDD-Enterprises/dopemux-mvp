@@ -1,0 +1,15 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A3-OPERATOR-RISK-DISPOSITION",
+  "recorded_at": "2026-09-06T05:26:35.946510+00:00",
+  "operator_disposition": "ACCEPT_RESIDUAL_RISK",
+  "raw_log_delete_authorized": "YES",
+  "operator_selection_mode": "EXPLICIT_USER_CONFIRMATION",
+  "default_disposition_used": false,
+  "contains_secret_material": false,
+  "incident_status": "CLOSED_ACCEPTED_RESIDUAL_RISK",
+  "security_containment": "ACCEPTED_WITH_RESIDUAL_RISK",
+  "credential_owner": "UNKNOWN",
+  "old_credential_usable": "UNKNOWN",
+  "exact_credential_rotated_or_revoked": "NOT_PROVEN",
+  "raw_agy_log_removed": "YES"
+}

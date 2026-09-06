@@ -3,10 +3,9 @@
 
 Purpose
 -------
-The trusted embedded-audit workflow cannot execute an auditor CLI when no
-provider credentials are provisioned. This module lets the trusted workflow
-accept an audit that was executed *locally* (pr-merge/steward flow), under a
-strict, fail-closed contract:
+The trusted embedded-audit workflow does not execute auditor CLIs or provider
+calls. This module lets that workflow accept an audit executed *locally*
+(pr-merge/steward flow), under a strict, fail-closed contract:
 
 1. The PR branch carries ``proof/pr_merge/embedded-audit/pr-<N>/PROOF.json``
    plus a detached OpenSSH signature ``PROOF.json.sig`` over those exact bytes
@@ -103,6 +102,7 @@ PROOF_DIR_TEMPLATE = "proof/pr_merge/embedded-audit/pr-{pr_number}"
 # drift out of sync with the actual reserved path.
 RESERVED_PACKET_NAMESPACE = PROOF_DIR_TEMPLATE.split("/")[1]
 PASSING_AUDIT_STATUSES = frozenset({"PASS", "PASS_WITH_RISKS"})
+AUDIT_REQUIRED_LANES = frozenset({"L2", "L3"})
 _SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 
 # Deepen in two bounded steps; beyond this the proof commit is suspiciously far
@@ -399,6 +399,103 @@ def policy_errors(embedded: Mapping[str, Any]) -> list[str]:
         errors.append(f"local_audit_not_passing: {status!r}")
     if embedded.get("required") is not True:
         errors.append("local_audit_required_flag: embedded_audit.required must be true")
+    if status == "PASS_WITH_RISKS":
+        risks = embedded.get("remaining_risks")
+        if not isinstance(risks, list) or not any(
+            isinstance(risk, str) and risk.strip() for risk in risks
+        ):
+            errors.append(
+                "pass_with_risks_missing_risks: PASS_WITH_RISKS requires at least "
+                "one explicit remaining risk"
+            )
+        findings = embedded.get("findings")
+        if isinstance(findings, list) and any(
+            isinstance(finding, Mapping)
+            and finding.get("severity") == "BLOCKING"
+            and finding.get("status") != "RESOLVED"
+            for finding in findings
+        ):
+            errors.append(
+                "pass_with_risks_blocking_finding: unresolved BLOCKING finding "
+                "cannot be accepted as non-blocking risk"
+            )
+    return errors
+
+
+def audit_identity_errors(
+    identity: Any,
+    embedded: Mapping[str, Any],
+    *,
+    risk_lane: str,
+) -> list[str]:
+    """Validate signed structured identity and L3 family/runtime separation."""
+    if risk_lane not in AUDIT_REQUIRED_LANES:
+        return [f"risk_lane_invalid: imported audit requires L2 or L3, got {risk_lane!r}"]
+    if not isinstance(identity, Mapping):
+        return ["audit_identity_missing: signed audit_identity object required"]
+
+    errors: list[str] = []
+    expected_root = {"implementer", "auditor", "independence"}
+    if set(identity) != expected_root:
+        errors.append(
+            "audit_identity_shape_invalid: audit_identity keys must be exactly "
+            "auditor, implementer, independence"
+        )
+        return errors
+
+    implementer = identity.get("implementer")
+    auditor = identity.get("auditor")
+    if not isinstance(implementer, Mapping) or not isinstance(auditor, Mapping):
+        return [
+            "audit_identity_shape_invalid: implementer and auditor must be objects"
+        ]
+
+    implementer_keys = {"runner", "model", "model_family", "runtime_family"}
+    auditor_keys = implementer_keys | {"effort"}
+    if set(implementer) != implementer_keys:
+        errors.append(
+            "audit_identity_implementer_shape_invalid: implementer keys must be "
+            "exactly model, model_family, runner, runtime_family"
+        )
+    if set(auditor) != auditor_keys:
+        errors.append(
+            "audit_identity_auditor_shape_invalid: auditor keys must be exactly "
+            "effort, model, model_family, runner, runtime_family"
+        )
+    for role, record in (("implementer", implementer), ("auditor", auditor)):
+        for field, value in record.items():
+            if not isinstance(value, str) or not value.strip():
+                errors.append(
+                    f"audit_identity_value_invalid: {role}.{field} must be a "
+                    "non-empty string"
+                )
+
+    if identity.get("independence") != "PROVEN":
+        errors.append(
+            "audit_independence_not_proven: signed independence must equal PROVEN"
+        )
+    if auditor.get("runner") != embedded.get("auditor_tool"):
+        errors.append(
+            "audit_identity_runner_mismatch: auditor.runner must equal "
+            "embedded_audit.auditor_tool"
+        )
+    if auditor.get("model") != embedded.get("auditor_model"):
+        errors.append(
+            "audit_identity_model_mismatch: auditor.model must equal "
+            "embedded_audit.auditor_model"
+        )
+
+    if risk_lane == "L3":
+        if auditor.get("model_family") == implementer.get("model_family"):
+            errors.append(
+                "audit_model_family_not_independent: L3 auditor and implementer "
+                "model_family must differ"
+            )
+        if auditor.get("runtime_family") == implementer.get("runtime_family"):
+            errors.append(
+                "audit_runtime_family_not_independent: L3 auditor and implementer "
+                "runtime_family must differ"
+            )
     return errors
 
 
@@ -421,6 +518,7 @@ def evaluate_local_audit(
     head_sha: str,
     allowed_signers: Path,
     schema_path: Path,
+    risk_lane: str,
 ) -> dict[str, Any]:
     """Evaluate a signed local audit proof for exactly this PR head.
 
@@ -442,6 +540,8 @@ def evaluate_local_audit(
         "signature_namespace": SIGNATURE_NAMESPACE,
         "packet_id": None,
         "embedded_audit": None,
+        "audit_identity": None,
+        "risk_lane": risk_lane,
     }
     reasons: list[str] = attestation["reasons"]
 
@@ -525,6 +625,17 @@ def evaluate_local_audit(
     if schema_errors:
         reasons.extend(schema_errors)
         return attestation
+
+    audit_identity = proof.get("audit_identity")
+    identity_errors = audit_identity_errors(
+        audit_identity,
+        embedded,
+        risk_lane=risk_lane,
+    )
+    if identity_errors:
+        reasons.extend(identity_errors)
+        return attestation
+    attestation["audit_identity"] = audit_identity
 
     report_path = str(embedded.get("report_path") or "")
     packet_id = _extract_packet_id(report_path, schema)
@@ -629,6 +740,14 @@ def evaluate_local_audit(
         )
         return attestation
 
+    packet_identity = packet_proof.get("audit_identity")
+    if packet_identity != audit_identity:
+        reasons.append(
+            "packet_proof_audit_identity_mismatch: packet PROOF.json audit_identity "
+            "must exactly match signed PR proof audit_identity"
+        )
+        return attestation
+
     attestation["embedded_audit"] = embedded
     attestation["accepted"] = True
     return attestation
@@ -644,6 +763,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--repo", required=True)
     parser.add_argument("--pr", required=True, type=int)
     parser.add_argument("--head-sha", required=True)
+    parser.add_argument("--risk-lane", required=True, choices=sorted(AUDIT_REQUIRED_LANES))
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--allowed-signers", type=Path, default=DEFAULT_ALLOWED_SIGNERS)
     parser.add_argument("--schema", type=Path, default=DEFAULT_SCHEMA_PATH)
@@ -660,6 +780,7 @@ def main(argv: list[str] | None = None) -> int:
         head_sha=args.head_sha,
         allowed_signers=args.allowed_signers,
         schema_path=args.schema,
+        risk_lane=args.risk_lane,
     )
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(

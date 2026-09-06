@@ -1,0 +1,35 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "head_sha": "e82a35aaf814fb0af770a40b701b50a0bb7efc16",
+  "generated_at": "2026-09-06T05:42:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "rtk agy --model gemini-3.1-pro-high --effort high --mode plan --sandbox --output-format json --json-schema /private/tmp/tp-dmx-ci-audit-evidence-gate-001-audit-schema.json --print \"$(cat /private/tmp/tp-dmx-ci-audit-evidence-gate-001-audit-prompt.txt)\" --print-timeout 20m --log-file /private/tmp/tp-dmx-ci-audit-evidence-gate-001-agy.log",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "codex-cli",
+      "model": "gpt-5.6-sol",
+      "model_family": "openai-gpt",
+      "runtime_family": "codex-cli"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini-3.1-pro-high",
+      "model_family": "google-gemini",
+      "runtime_family": "agy",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  }
+}
