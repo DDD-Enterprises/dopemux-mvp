@@ -1,4 +1,6 @@
-import { Button, Chip, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Button, Chip, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import { Check, Copy } from 'lucide-react';
 
 import type { PlannerLane } from './extensionTypes';
 
@@ -6,20 +8,61 @@ const statusColor = { ready: 'success', blocked: 'error', stale: 'warning', unkn
 const statusLabel = { ready: 'Ready evidence', blocked: 'Blocked evidence', stale: 'Stale evidence', unknown: 'Unknown: audit', conflicting: 'Conflicting evidence' } as const;
 
 export default function PortfolioTable({ lanes, onInspect }: { lanes: readonly PlannerLane[]; onInspect: (lane: PlannerLane, trigger: HTMLButtonElement) => void }) {
+  const [copiedSha, setCopiedSha] = useState<string | null>(null);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleCopySha = useCallback(async (sha: string) => {
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(sha);
+        setCopiedSha(sha);
+        if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+        copyTimeoutRef.current = setTimeout(() => {
+          setCopiedSha(null);
+          copyTimeoutRef.current = null;
+        }, 2000);
+      } catch {
+        // Fallback or ignore
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    };
+  }, []);
+
   return (
     <TableContainer>
       <Table aria-label="Repository planning portfolio">
         <TableHead><TableRow><TableCell>Repository</TableCell><TableCell>Lane</TableCell><TableCell>Status</TableCell><TableCell>Candidate</TableCell><TableCell>Evidence</TableCell></TableRow></TableHead>
         <TableBody>
-          {lanes.map((lane) => (
-            <TableRow key={`${lane.projectId}\0${lane.laneId}\0${lane.candidateSha}`}>
-              <TableCell component="th" scope="row">{lane.projectId}</TableCell>
-              <TableCell>{lane.laneId}</TableCell>
-              <TableCell><Stack spacing={0.5} alignItems="flex-start"><Chip color={lane.states.includes('blocked') ? 'error' : lane.states.includes('stale') || lane.states.includes('conflicting') ? 'warning' : lane.states.includes('unknown') ? 'default' : 'success'} label={lane.recommendation} />{lane.states.map((state) => <Chip size="small" variant="outlined" color={statusColor[state]} label={statusLabel[state]} key={state} />)}</Stack></TableCell>
-              <TableCell><code>{lane.candidateSha.slice(0, 12)}</code></TableCell>
-              <TableCell><Button onClick={(event) => onInspect(lane, event.currentTarget)} aria-label={`Inspect ${lane.projectId} ${lane.laneId} ${lane.candidateSha}`}>Inspect</Button></TableCell>
-            </TableRow>
-          ))}
+          {lanes.map((lane) => {
+            const isCopied = copiedSha === lane.candidateSha;
+            const shortSha = lane.candidateSha.slice(0, 12);
+            return (
+              <TableRow key={`${lane.projectId}\0${lane.laneId}\0${lane.candidateSha}`}>
+                <TableCell component="th" scope="row">{lane.projectId}</TableCell>
+                <TableCell>{lane.laneId}</TableCell>
+                <TableCell><Stack spacing={0.5} alignItems="flex-start"><Chip color={lane.states.includes('blocked') ? 'error' : lane.states.includes('stale') || lane.states.includes('conflicting') ? 'warning' : lane.states.includes('unknown') ? 'default' : 'success'} label={lane.recommendation} />{lane.states.map((state) => <Chip size="small" variant="outlined" color={statusColor[state]} label={statusLabel[state]} key={state} />)}</Stack></TableCell>
+                <TableCell>
+                  <Tooltip title={isCopied ? 'SHA copied!' : 'Click to copy full candidate SHA'} arrow>
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      icon={isCopied ? <Check size={12} aria-hidden="true" /> : <Copy size={12} aria-hidden="true" />}
+                      label={shortSha}
+                      onClick={() => void handleCopySha(lane.candidateSha)}
+                      aria-label={isCopied ? `Candidate SHA ${shortSha} copied to clipboard` : `Copy candidate SHA ${shortSha}`}
+                      sx={{ fontFamily: 'monospace', cursor: 'pointer' }}
+                    />
+                  </Tooltip>
+                </TableCell>
+                <TableCell><Button onClick={(event) => onInspect(lane, event.currentTarget)} aria-label={`Inspect ${lane.projectId} ${lane.laneId} ${lane.candidateSha}`}>Inspect</Button></TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </TableContainer>
