@@ -1,0 +1,42 @@
+{
+  "conversation_id": "2ff7a38b-32a5-41d6-afc3-eb6a34a168ae",
+  "status": "SUCCESS",
+  "duration_seconds": 241.981805,
+  "num_turns": 1,
+  "verdict": {
+    "verdict": "PASS",
+    "subject_head": "6ae694021de3d637c84289477b045c32f568754f",
+    "head_match": true,
+    "independence": "PROVEN",
+    "blocking_findings": [],
+    "nonblocking_risks": [
+      "Lowercase or noncanonical skipped statuses remain blocking, but normalized output hides original casing while preserving the blocker. Diagnostic context is reduced; required security behavior remains fail-closed."
+    ],
+    "inspected_paths": [
+      "tools/pr_steward/classifier.py",
+      "schemas/pr_steward/merge_readiness.schema.json",
+      "tests/pr_steward/test_classifier_embedded_audit_normalization.py",
+      "docs/ops/pr-steward.md",
+      "task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT.json"
+    ],
+    "validations": [
+      {
+        "command": "git rev-parse HEAD && git status",
+        "exit_code": 0,
+        "result": "HEAD is 6ae694021de3d637c84289477b045c32f568754f, working tree clean"
+      },
+      {
+        "command": "pytest tests/pr_steward/test_classifier_embedded_audit_normalization.py",
+        "exit_code": 0,
+        "result": "37 passed in 0.11s"
+      },
+      {
+        "command": "git diff 6a728f74c0311967f83213513308f97613e3f28d..HEAD",
+        "exit_code": 0,
+        "result": "Diff inspected; runtime predicate uses raw fields and schema oneOf is strict"
+      }
+    ],
+    "divergence_attack_result": "PASS",
+    "rationale": "Runtime predicate evaluates raw exact values before normalization, malformed values become diagnostic nulls, and merge-readiness schema independently rejects every broader READY+SKIPPED shape. Tests cover runtime and schema positive/negative matrices."
+  }
+}

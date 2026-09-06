@@ -1,0 +1,49 @@
+{
+  "frozen_content_head": "6ae694021de3d637c84289477b045c32f568754f",
+  "results": [
+    {
+      "name": "focused_tests",
+      "status": "PASS",
+      "exit_code": 0,
+      "detail": "69 passed"
+    },
+    {
+      "name": "relevant_complete_suite",
+      "status": "PASS",
+      "exit_code": 0,
+      "detail": "806 passed, 2 skipped with explicit differential-moot reasons"
+    },
+    {
+      "name": "change_contract",
+      "status": "PASS",
+      "exit_code": 0,
+      "detail": "max_lane=L2; packet-selected execution lane remains L3"
+    },
+    {
+      "name": "precommit",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "secret_scan",
+      "status": "PASS",
+      "exit_code": 0,
+      "detail": "27.38 KB scanned; no leaks found"
+    },
+    {
+      "name": "diff_check",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "task_packet_schema",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "name": "merge_readiness_schema_matrix",
+      "status": "PASS",
+      "exit_code": 0
+    }
+  ]
+}

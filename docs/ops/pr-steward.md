@@ -65,11 +65,18 @@ Return `NOT_READY` or `NEEDS_SUPERVISOR` when:
 - any blocking review thread is unresolved
 - required CI failed, was cancelled, or is missing
 - proof is stale, missing, or lacks a valid supervisor-accepted self-reference exception
-- embedded audit is absent, skipped, failed, or stale
+- embedded audit is absent, failed, stale, or ordinarily skipped
 - GitHub auth or API state cannot be proven
 - any requested action would mutate GitHub state
 
 Return `BLOCKED` when the harvest is incomplete, the PR is draft, or the PR is closed without explicit `--allow-closed`. Return `NEEDS_IMPLEMENTER` when concrete implementation work is required, such as unresolved threads or failed checks. Unknown or untrusted reviewers and bots always block `READY`.
+
+One exact `SKIPPED` audit is nonblocking: `required=false` with
+`skip_reason=AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT`. This records that
+trusted change-contract classification did not require model audit; it is not a
+`PASS` verdict and waives no other readiness gate. `MERGE_READINESS.json`
+preserves `embedded_audit.required` and `embedded_audit.skip_reason`, and its
+schema independently rejects `READY` with any other `SKIPPED` shape.
 
 Explicit known reviewer logins are trusted. GitHub `authorAssociation` values `OWNER`, `MEMBER`, and `COLLABORATOR` are also trusted unless a future policy overrides that rule. External unknown actors and unclassified bots block `READY`.
 

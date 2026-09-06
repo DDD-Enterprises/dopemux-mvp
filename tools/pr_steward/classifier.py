@@ -20,6 +20,7 @@ from tools.pr_steward.solo_owner_security_release import (
 SCHEMA_VERSION = "1.1.0"
 PASSING_AUDITS = {"PASS", "PASS_WITH_RISKS"}
 BLOCKING_AUDITS = {"FAIL", "NEEDS_SUPERVISOR", "SKIPPED"}
+AUDIT_NOT_REQUIRED_REASON = "AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT"
 FAILED_CHECK_CONCLUSIONS = {
     "failure",
     "cancelled",
@@ -255,10 +256,12 @@ def build_artifacts(
     if _detect_mixed_sha_checks(harvest.get("checks") or [], pr_head_sha=pr["head_sha"]):
         _append_once(blockers, "MIXED_SHA_ARTIFACT_SET")
 
+    raw_embedded_audit = harvest.get("embedded_audit")
+    audit_not_required = _trusted_audit_not_required(raw_embedded_audit)
     embedded_audit = _embedded_audit(harvest)
     raw_status = embedded_audit.pop("_raw_status", "")
     audit_status = embedded_audit["status"]
-    if audit_status in BLOCKING_AUDITS:
+    if audit_status in BLOCKING_AUDITS and not audit_not_required:
         _append_once(blockers, f"EMBEDDED_AUDIT_{audit_status}")
     if raw_status:
         _append_once(blockers, "EMBEDDED_AUDIT_UNKNOWN")
@@ -465,7 +468,12 @@ def build_artifacts(
         "review_threads": _raw_list(harvest.get("review_threads") or []),
         "issue_comments": _raw_list(harvest.get("issue_comments") or []),
         "checks": checks["checks"],
-        "embedded_audit": embedded_audit,
+        # Snapshot schema remains intentionally narrow; readiness carries the
+        # fields used for the trusted NOT_REQUIRED decision.
+        "embedded_audit": {
+            "status": embedded_audit["status"],
+            "report_path": embedded_audit["report_path"],
+        },
         "proof": proof,
         "blockers": blockers,
     }
@@ -1115,8 +1123,18 @@ def _commits(commits: list[Any]) -> list[dict[str, Any]]:
     return payload
 
 
-def _embedded_audit(harvest: dict[str, Any]) -> dict[str, str]:
-    raw = harvest.get("embedded_audit") or {}
+def _trusted_audit_not_required(raw: Any) -> bool:
+    return (
+        isinstance(raw, dict)
+        and raw.get("status") == "SKIPPED"
+        and raw.get("required") is False
+        and raw.get("skip_reason") == AUDIT_NOT_REQUIRED_REASON
+    )
+
+
+def _embedded_audit(harvest: dict[str, Any]) -> dict[str, Any]:
+    raw_value = harvest.get("embedded_audit")
+    raw = raw_value if isinstance(raw_value, dict) else {}
     raw_status = str(raw.get("status") or "").upper()
     if raw_status in PASSING_AUDITS | BLOCKING_AUDITS:
         normalized = raw_status
@@ -1124,9 +1142,13 @@ def _embedded_audit(harvest: dict[str, Any]) -> dict[str, str]:
     else:
         normalized = "SKIPPED"
         was_unknown = bool(raw_status)  # only "unknown" if upstream supplied a non-empty bad value
+    raw_required = raw.get("required")
+    raw_skip_reason = raw.get("skip_reason")
     return {
         "status": normalized,
         "report_path": str(raw.get("report_path") or ""),
+        "required": raw_required if isinstance(raw_required, bool) else None,
+        "skip_reason": raw_skip_reason if isinstance(raw_skip_reason, str) else None,
         # `_raw_status` is internal; the caller uses it to add the
         # EMBEDDED_AUDIT_UNKNOWN blocker, then strips it before serializing.
         "_raw_status": raw_status if was_unknown else "",
