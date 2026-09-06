@@ -86,12 +86,10 @@
     },
     "auditor": {
       "runner": "agy",
-      "version": "1.1.27",
       "model": "gemini-3.1-pro-high",
       "model_family": "google-gemini",
       "runtime_family": "agy",
-      "effort": "high",
-      "conversation_id": "2ff7a38b-32a5-41d6-afc3-eb6a34a168ae"
+      "effort": "high"
     },
     "independence": "PROVEN"
   },
