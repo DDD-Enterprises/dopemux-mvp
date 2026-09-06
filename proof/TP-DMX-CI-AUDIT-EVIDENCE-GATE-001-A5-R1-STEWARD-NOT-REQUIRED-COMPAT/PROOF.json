@@ -1,0 +1,107 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT",
+  "status": "PASS",
+  "risk_lane": "L3",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "base_sha": "6a728f74c0311967f83213513308f97613e3f28d",
+  "head_sha": "6ae694021de3d637c84289477b045c32f568754f",
+  "generated_at": "2026-09-06T08:01:12Z",
+  "repo_identity": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopemux",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "remote": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "match": true
+  },
+  "worktree": {
+    "path": "/Users/hue/code/dopemux-wsac-000/.worktrees/ci-audit-steward-not-required-a5-r1",
+    "branch": "fix/ci-audit-steward-not-required-a5-r1",
+    "content_head": "6ae694021de3d637c84289477b045c32f568754f",
+    "content_tree": "d6a58484a465c72dad80d6e7901bc34e73902443"
+  },
+  "files_changed": [
+    "docs/ops/pr-steward.md",
+    "schemas/pr_steward/merge_readiness.schema.json",
+    "task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT.json",
+    "tests/pr_steward/test_classifier_embedded_audit_normalization.py",
+    "tools/pr_steward/classifier.py"
+  ],
+  "validation": [
+    {
+      "command": ".venv/bin/python -m pytest -q tests/pr_steward/test_classifier_embedded_audit_normalization.py tests/pr_steward/test_intake.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "detail": "69 passed"
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q tests/audit tests/pr_steward",
+      "exit_code": 0,
+      "result": "PASS",
+      "detail": "806 passed, 2 skipped"
+    },
+    {
+      "command": ".venv/bin/python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "exit_code": 0,
+      "result": "PASS",
+      "detail": "status=PASS; max_lane=L2; model_audit_required=True; paths=5"
+    },
+    {
+      "command": "pre-commit run --from-ref origin/main --to-ref HEAD",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.fsmonitor GIT_CONFIG_VALUE_0=false gitleaks protect --staged --verbose",
+      "exit_code": 0,
+      "result": "PASS",
+      "detail": "27.38 KB scanned; no leaks found"
+    },
+    {
+      "command": "git diff --check origin/main..HEAD",
+      "exit_code": 0,
+      "result": "PASS"
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "rtk agy --model gemini-3.1-pro-high --effort high --mode plan --sandbox --disable-slash-commands --print-timeout 10m --output-format json --log-file /tmp/tp-dmx-ci-audit-a5-r1-agy.log --print <inline prompt recorded in review_bundle/AUDIT_REQUEST.md>",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Lowercase or noncanonical skipped statuses remain blocking, but normalized output hides original casing while preserving the blocker. Diagnostic context is reduced; required security behavior remains fail-closed."
+    ],
+    "skip_reason": null
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "codex-cli",
+      "model": "gpt-5.6-sol",
+      "model_family": "openai-gpt",
+      "runtime_family": "codex-cli"
+    },
+    "auditor": {
+      "runner": "agy",
+      "version": "1.1.27",
+      "model": "gemini-3.1-pro-high",
+      "model_family": "google-gemini",
+      "runtime_family": "agy",
+      "effort": "high",
+      "conversation_id": "2ff7a38b-32a5-41d6-afc3-eb6a34a168ae"
+    },
+    "independence": "PROVEN"
+  },
+  "audit_result": {
+    "subject_head": "6ae694021de3d637c84289477b045c32f568754f",
+    "head_match": true,
+    "divergence_attack_result": "PASS",
+    "blocking_findings": 0,
+    "nonblocking_risks": 1,
+    "duration_seconds": 241.981805,
+    "num_turns": 1
+  }
+}
