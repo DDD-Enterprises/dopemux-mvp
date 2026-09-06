@@ -66,6 +66,24 @@ principles:
   - live_selectors_only_unknown_when_unverified
   - repo_truth_beats_docs
 
+# L2 catalog state only. Runtime credentials, reload, and cutover remain L3.
+model_catalog_contract:
+  authority: templates/routing.yaml
+  pal_projection_generator: scripts/generate_pal_model_manifest.py
+  active_routes:
+    - kimi-k3-ci
+    - fable-5-ci
+  disabled_candidates:
+    - kimi-k3-or
+    - fable-5-or
+    - kimi-k3-direct
+    - fable-5-direct
+  promotion:
+    default_slots: forbidden
+    fallbacks: forbidden
+  openrouter_active: false
+  activation_gate: separate_l3_packet
+
 # Evidence-economy model-call budgets (advisory governance; not a runtime enforcer).
 # Companion: docs/03-reference/governance/evidence-economy.md
 evidence_economy:

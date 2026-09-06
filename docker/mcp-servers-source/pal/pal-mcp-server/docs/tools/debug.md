@@ -68,12 +68,11 @@ This structured approach ensures Claude performs methodical groundwork before ex
 - `relevant_methods`: Specific methods/functions involved in the issue
 - `hypothesis`: Current best guess about the underlying cause
 - `confidence`: Confidence level in current hypothesis (exploring/low/medium/high/certain)
-- `backtrack_from_step`: Step number to backtrack from (for revisions)
 - `continuation_id`: Thread ID for continuing investigations across sessions
 - `images`: Visual debugging materials (error screenshots, logs, etc.)
 
 **Model Selection:**
-- `model`: auto|pro|flash|flash-2.0|flashlite|o3|o3-mini|o4-mini|gpt4.1|gpt5|gpt5-mini|gpt5-nano (default: server default)
+- `model`: auto|pro|flash|flash-2.0|flashlite|o3|o3-mini|o4-mini|gpt4.1|gpt5.2|gpt5.1-codex|gpt5.1-codex-mini|gpt5|gpt5-mini|gpt5-nano (default: server default)
 - `thinking_mode`: minimal|low|medium|high|max (default: medium, Gemini only)
 - `use_assistant_model`: Whether to use expert analysis phase (default: true, set to false to use Claude only)
 

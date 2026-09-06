@@ -1,6 +1,6 @@
 [project]
 name = "pal-mcp-server"
-version = "9.0.3"
+version = "9.8.2"
 description = "AI-powered PAL MCP server with multiple model providers"
 requires-python = ">=3.10"
 dependencies = [
@@ -18,11 +18,17 @@ include = ["tools*", "providers*", "systemprompts*", "utils*", "conf*", "clink*"
 py-modules = ["server", "config"]
 
 [tool.setuptools.package-data]
-"*" = ["conf/*.json"]
+"*" = [
+    "conf/*.json",
+    "conf/cli_clients/*.json",
+    "systemprompts/clink/*.txt",
+]
 
 [tool.setuptools.data-files]
 "conf" = [
     "conf/custom_models.json",
+    "conf/custom_models.direct-ci.json",
+    "conf/custom_models.gateway.json",
     "conf/openrouter_models.json",
     "conf/azure_models.json",
     "conf/openai_models.json",
@@ -32,6 +38,7 @@ py-modules = ["server", "config"]
 ]
 
 [project.scripts]
+pal-mcp-server = "server:run"
 zen-mcp-server = "server:run"
 
 [tool.black]
