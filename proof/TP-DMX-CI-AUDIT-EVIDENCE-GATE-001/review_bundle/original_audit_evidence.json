@@ -1,0 +1,19 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001",
+  "audited_content_head": "e82a35aaf814fb0af770a40b701b50a0bb7efc16",
+  "base_sha": "33a38119f97611e391aab719151ffadbf541f06c",
+  "source_session": "/Users/hue/.codex/sessions/2026/09/05/rollout-2026-09-05T19-07-39-01a07478-a90d-75e0-882a-b504550e3f3b.jsonl",
+  "source_lines": [1015, 1037, 1038, 1085],
+  "command_id": "exec-1507a929-b5ac-49dd-bab2-f2b5c691b4d6",
+  "process_id": 91664,
+  "conversation_id": "e93d8114-7ba5-43ea-8a5f-20d968f2ad05",
+  "auditor_runner": "agy",
+  "auditor_version": "1.1.27",
+  "auditor_model": "gemini-3.1-pro-high",
+  "auditor_effort": "high",
+  "verdict": "PASS",
+  "findings": [],
+  "remaining_risks": [],
+  "independence": "PROVEN",
+  "rationale": "The audit of commit e82a35aaf814fb0af770a40b701b50a0bb7efc16 successfully verifies all constraints for the L3 CI trust lane. The workflow strictly preserves the `independent embedded audit` status context and `pull_request_target` trigger. Both structural and functional testing confirm that the CI pipeline prevents model, provider, or Clink execution, regardless of injected credentials or manipulated environments. The pipeline uses trusted-source execution and reads candidate code purely as fetched objects without checkout, preventing unauthorized execution. It properly enforces strict fail-closed requirements, correctly yielding deterministic SKIPPED paths for L0/L1 while demanding signed imported evidence for L2/L3. The L3 validation fully enforces structural independence matching (PROVEN) and rejects overlapping model/runtime families between auditor and implementer. `PASS_WITH_RISKS` correctly requires explicit risks and fails on unresolved blocking findings. The automated tests are non-tautological and rigorously falsify the required matrix."
+}

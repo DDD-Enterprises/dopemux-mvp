@@ -1,0 +1,11 @@
+{
+  "repository": "DDD-Enterprises/dopemux-mvp",
+  "worktree": "/Users/hue/code/dopemux-ci-audit-evidence-gate-001",
+  "branch": "fix/ci-audit-evidence-gate-001",
+  "audited_content_head": "e82a35aaf814fb0af770a40b701b50a0bb7efc16",
+  "base_sha": "33a38119f97611e391aab719151ffadbf541f06c",
+  "merge_base": "33a38119f97611e391aab719151ffadbf541f06c",
+  "origin_main_head": "33a38119f97611e391aab719151ffadbf541f06c",
+  "main_drift_paths": [],
+  "main_drift_classification": "NO_RELEVANT_OVERLAP"
+}
