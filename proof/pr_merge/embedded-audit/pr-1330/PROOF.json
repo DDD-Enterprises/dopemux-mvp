@@ -1,0 +1,21 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1330,
+  "head_sha": "6ae694021de3d637c84289477b045c32f568754f",
+  "generated_at": "2026-09-06T08:09:44Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "rtk agy --model gemini-3.1-pro-high --effort high --mode plan --sandbox --disable-slash-commands --print-timeout 10m --output-format json --log-file /tmp/tp-dmx-ci-audit-a5-r1-agy.log --print <inline prompt recorded in review_bundle/AUDIT_REQUEST.md>",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Lowercase or noncanonical skipped statuses remain blocking, but normalized output hides original casing while preserving the blocker. Diagnostic context is reduced; required security behavior remains fail-closed."
+    ],
+    "skip_reason": null
+  }
+}
