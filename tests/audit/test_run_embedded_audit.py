@@ -7,6 +7,7 @@ from pathlib import Path
 import jsonschema
 import pytest
 
+from scripts.audit import run_embedded_audit as audit_runner
 from scripts.audit.run_embedded_audit import (
     build_diagnostic_failure_proof,
     build_embedded_audit_proof,
@@ -244,36 +245,14 @@ def test_embedded_audit_workflow_uses_trusted_source_and_least_privilege() -> No
     assert "persist-credentials: false" in text
 
 
-def test_embedded_audit_workflow_invokes_pal_runner_as_package_module() -> None:
+def test_embedded_audit_workflow_has_no_model_runner_setup() -> None:
     text = WORKFLOW_PATH.read_text(encoding="utf-8")
-    runner_step = text.split("- name: Run PAL clink audit", 1)[1].split(
-        "- name: Emit independent embedded audit proof", 1
-    )[0]
 
-    assert "working-directory: trusted-source" in runner_step
-    assert "python -m scripts.audit.pal_clink_runner" in runner_step
-    assert "python scripts/audit/pal_clink_runner.py" not in runner_step
-
-
-def test_embedded_audit_workflow_provisions_authenticated_claude_runner() -> None:
-    text = WORKFLOW_PATH.read_text(encoding="utf-8")
-    setup_step = text.split("- name: Setup trusted Claude audit runner", 1)[1].split(
-        "- name: Run PAL clink audit", 1
-    )[0]
-    runner_step = text.split("- name: Run PAL clink audit", 1)[1].split(
-        "- name: Emit independent embedded audit proof", 1
-    )[0]
-
-    assert "uses: actions/setup-node@v4" in setup_step
-    assert 'node-version: "22"' in setup_step
-    assert "npm install --global @anthropic-ai/claude-code@2.1.204" in setup_step
-    assert "steps.head_integrity.outputs.verified == 'true'" in setup_step
-    assert "ANTHROPIC_API_KEY" not in setup_step
-    assert (
-        "ANTHROPIC_API_KEY: "
-        "${{ secrets.ANTHROPIC_API_KEY || secrets.CLAUDE_API_KEY }}"
-    ) in runner_step
-    assert 'if [ -z "$ANTHROPIC_API_KEY" ]; then' in runner_step
+    assert "Setup trusted Claude audit runner" not in text
+    assert "Run PAL clink audit" not in text
+    assert "actions/setup-node" not in text
+    assert "npm install" not in text
+    assert "ANTHROPIC_API_KEY" not in text
 
 
 def test_embedded_audit_workflow_handles_pull_request_target_metadata() -> None:
@@ -282,7 +261,7 @@ def test_embedded_audit_workflow_handles_pull_request_target_metadata() -> None:
     assert 'EVENT_NAME" = "pull_request_target"' in text or \
         "\"$EVENT_NAME\" = \"pull_request_target\"" in text or \
         '[ "$EVENT_NAME" = "pull_request_target" ]' in text
-    assert '[ "$EVENT_NAME" = "pull_request" ] || [ "$EVENT_NAME" = "pull_request_target" ]' in text
+    assert '[ "$EVENT_NAME" = "pull_request_target" ]' in text
     assert '[ "$EVENT_NAME" = "workflow_dispatch" ]' in text
     assert "EVENT_PR_NUMBER" in text
     assert "EVENT_HEAD_SHA" in text
@@ -296,64 +275,30 @@ def test_embedded_audit_workflow_runs_emitter_from_trusted_source() -> None:
     assert "Checkout trusted audit source" in text
     assert "path: trusted-source" in text
     assert "ref: ${{ steps.pr.outputs.trusted_ref }}" in text
-    assert "TRUSTED_FALLBACK_REF: ${{ github.event.repository.default_branch }}" in text
-    assert "TRUSTED_FALLBACK_SHA" not in text
+    assert "TRUSTED_DEFAULT_REF: ${{ github.event.repository.default_branch }}" in text
     assert "working-directory: trusted-source" in text
     assert "id: head_integrity" in text
-    assert "Emit independent embedded audit proof" in text
-    assert "Enforce independent audit result" in text
+    assert "Emit audit evidence gate proof" in text
+    assert "Enforce audit evidence gate" in text
     assert "enforce_independent_audit_proof" in text
-    assert "EMBEDDED_AUDIT_TOKEN: ${{ secrets.EMBEDDED_AUDIT_TOKEN }}" in text
     assert "refs/pull/${PR_NUMBER}/head" in text
-    assert 'pr_head_sha" = "$EXPECTED_HEAD_SHA"' in text
-    assert "Requested PR head SHA could not be fetched or no longer matches the PR head." in text
-    assert "Emit skipped embedded audit proof" not in text
-    assert "NEEDS_SUPERVISOR" in text
+    assert 'test "$remote_head" = "$TARGET_PR_HEAD_SHA"' in text
+    assert "Candidate code is never checked out or executed" in text
     assert '"executed": False' in text or '"executed": false' in text
-    assert "git -C trusted-source fetch --no-tags --depth=1 origin" in text
+    assert "git -C trusted-source fetch --no-tags --depth=500 origin" in text
     assert "Checkout requested head" not in text
     assert "ref: ${{ steps.pr.outputs.head_sha }}" not in text
     assert "github.event.pull_request.head.sha || github.sha" not in text
-    assert "Verify requested head SHA" in text
-    assert "Run PAL clink audit" in text
-    assert "scripts/audit/pal_clink_runner.py" in text
-    assert "preflight_status=$?" in text
+    assert "Verify requested audit commits" in text
+    assert "Run PAL clink audit" not in text
+    assert "scripts/audit/pal_clink_runner.py" not in text
     assert "mkdir -p ../embedded-audit-artifacts" in text
-    assert "base_sha=\"$(git rev-parse HEAD)\"" in text
-    assert "head_sha='${{ steps.pr.outputs.head_sha }}'" in text
-    assert "git cat-file -e \"${head_sha}^{commit}\"" in text
-    assert "git diff --find-renames --name-status \"$base_sha\" \"$head_sha\"" in text
-    assert (
-        "git diff --find-renames --no-ext-diff "
-        "\"$base_sha\" \"$head_sha\""
-    ) in text
-    # Trusted prompt builder: candidate text is delimited in Python builder, not YAML.
-    assert "--build-prompt" in text
-    assert "INSTRUCTION_LIKE_CONTENT.json" in text
-    assert "--instruction-like-json" in text
-    assert "CANDIDATE_UNIFIED_DIFF.txt" in text
-    # Fail closed when builder/scanner unavailable (no false-clean scan).
-    assert "PROMPT_BUILDER_AVAILABLE" in text
-    assert "PROMPT_BUILD_UNAVAILABLE.txt" in text
-    assert "--force-skip-reason" in text
-    assert '{"detected":false,"match_count":0,"truncated":false,"matches":[]}' not in text
-    assert "--route-json ../embedded-audit-artifacts/AUDITOR_ROUTE.json" in text
-    assert (
-        "--pal-output-json "
-        "../embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json"
-    ) in text
-    assert (
-        'if [ "$actual_head_sha" = "$EXPECTED_HEAD_SHA" ] '
-        '&& [ "$pr_head_sha" = "$EXPECTED_HEAD_SHA" ]; then'
-    ) in text
-    # Soft runner exit is intentional; hard enforcement is authoritative.
-    assert "Soft exit is intentional" in text or "soft_runner_exit" in text
-    assert "missing on the trusted ref" in text
+    assert "--change-contract-json" in text
+    assert "--risk-lane" in text
+    assert "LOCAL_AUDIT_ATTESTATION.json" in text
     assert "embedded-audit-pr-${{ steps.pr.outputs.number }}-head-${{ steps.pr.outputs.head_sha }}-proof" in text
-    # Candidate must not be checked out as working tree with secrets.
     assert "path: candidate" not in text
-    assert "EMBEDDED_AUDIT_TOKEN" in text
-    # Token only appears in emit step context (trusted scripts), not in candidate checkout.
+    assert "secrets." not in text
 
 
 def test_pr_steward_workflow_uses_completed_independent_audit_artifact() -> None:
@@ -528,19 +473,17 @@ def test_diagnostic_missing_emitter_workflow_shape_is_schema_valid_skipped() -> 
     """Missing-emitter branch must emit SKIPPED+none/unknown (schema), not NEEDS_SUPERVISOR."""
     text = WORKFLOW_PATH.read_text(encoding="utf-8")
     # Both diagnostic paths use schema-valid SKIPPED with none/unknown.
-    assert "missing on the trusted ref" in text
-    assert "could not be fetched or no longer matches the PR head" in text
+    assert "evidence emitter is missing on trusted ref" in text
+    assert "repository, PR, base, or head identity could not be verified" in text
     assert '"status": "SKIPPED"' in text
     assert '"auditor_tool": "none"' in text
     assert '"auditor_model": "unknown"' in text
     # Invalid combo must not appear in diagnostic emission blocks.
     # (PASS_WITH_RISKS / NEEDS_SUPERVISOR may still appear elsewhere for other reasons.)
-    missing_emitter_block = text.split("is missing on the trusted ref.", 1)[1][:1200]
+    missing_emitter_block = text.split("is missing on trusted ref.", 1)[1][:1200]
     assert '"status": "SKIPPED"' in missing_emitter_block
     assert '"status": "NEEDS_SUPERVISOR"' not in missing_emitter_block
-    head_mismatch_block = text.split(
-        "could not be fetched or no longer matches the PR head.", 1
-    )[1][:1200]
+    head_mismatch_block = text.split("identity could not be verified.", 1)[1][:1200]
     assert '"status": "SKIPPED"' in head_mismatch_block
     assert '"status": "NEEDS_SUPERVISOR"' not in head_mismatch_block
 
@@ -647,7 +590,7 @@ def test_synthetic_runner_error_payload_cannot_pass_enforcement() -> None:
 # TP-DMX-EMBEDDED-AUDIT-PROMPT-TRUST-001
 # ---------------------------------------------------------------------------
 
-from tools.auditor_router.pal_clink import (
+from tools.auditor_router.pal_clink import (  # noqa: E402
     DELIM_END_UNTRUSTED,
     DELIM_TRUSTED_REPEAT,
     DELIM_UNTRUSTED_DIFF,
@@ -1058,25 +1001,17 @@ def test_candidate_forged_delimiters_are_neutralized() -> None:
     assert "REDACTED_DELIMITER" in untrusted
 
 
-def test_workflow_fail_closed_when_prompt_builder_missing() -> None:
-    """Missing runner must not embed candidate text or invent a clean scan."""
+def test_workflow_fail_closed_when_signed_evidence_missing() -> None:
     text = WORKFLOW_PATH.read_text(encoding="utf-8")
-    runner_step = text.split("- name: Run PAL clink audit", 1)[1].split(
-        "- name: Evaluate local signed audit attestation", 1
+    acceptance_step = text.split("- name: Evaluate signed imported audit evidence", 1)[1].split(
+        "- name: Emit audit evidence gate proof", 1
     )[0]
-    assert "PROMPT_BUILDER_AVAILABLE" in runner_step
-    assert "PROMPT_BUILD_UNAVAILABLE.txt" in runner_step
-    # Must not hardcode a false-clean scanner object.
-    # Explicit ban on the fabricated empty scan payload used by the old bootstrap.
-    assert '{"detected":false,"match_count":0,"truncated":false,"matches":[]}' not in runner_step
-    assert "PROMPT_BUILD_UNAVAILABLE.txt" in runner_step
-    assert "scripts/audit/pal_clink_runner.py missing" in runner_step
-    assert 'if [ "$PROMPT_BUILDER_AVAILABLE" != true ]; then' in runner_step
-    # Unavailable path must not synthesize auditor output for a green path.
-    assert (
-        'if [ "$PROMPT_BUILDER_AVAILABLE" = true ] && '
-        '[ ! -f ../embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json ]; then'
-    ) in runner_step
+
+    assert "set +e" in acceptance_step
+    assert "scripts.audit.local_audit_acceptance" in acceptance_step
+    assert "acceptance_exit=$?" in acceptance_step
+    assert "--local-attestation-json" in text
+    assert "model_audit_required == 'true'" in text
 
 
 def test_scanner_detects_instruction_like_on_deleted_lines() -> None:
@@ -1326,12 +1261,12 @@ def test_force_skip_reason_is_non_executed_skipped(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 
 import json as _json  # noqa: E402  (import kept local to this section for clarity)
-import os as _os
-import re as _re
-import subprocess as _subprocess
-import sys as _sys
+import os as _os  # noqa: E402
+import re as _re  # noqa: E402
+import subprocess as _subprocess  # noqa: E402
+import sys as _sys  # noqa: E402
 
-import yaml as _yaml
+import yaml as _yaml  # noqa: E402
 
 
 def _workflow_steps() -> list[dict]:
@@ -1440,14 +1375,15 @@ class TestDiagnosticProofShapeParity:
         trusted_source = tmp_path / "trusted-source"
         trusted_source.mkdir()
         artifact_dir = tmp_path / "embedded-audit-artifacts"
+        artifact_dir.mkdir()
         proof = _exec_inline_diagnostic(
-            "Emit independent embedded audit proof",
+            "Emit audit evidence gate proof",
             cwd=trusted_source,
             artifact_dir=artifact_dir,
             env_overrides=self._COMMON_ENV,
         )
         self._assert_canonical_shape(proof)
-        assert "run_embedded_audit.py" in proof["embedded_audit"]["skip_reason"]
+        assert "evidence emitter" in proof["embedded_audit"]["skip_reason"]
 
     def test_unavailable_head_diagnostic_matches_canonical_shape(
         self, tmp_path: Path
@@ -1458,48 +1394,38 @@ class TestDiagnosticProofShapeParity:
         artifact_dir = tmp_path / "embedded-audit-artifacts"
         artifact_dir.mkdir()
         proof = _exec_inline_diagnostic(
-            "Emit unavailable independent audit proof",
+            "Emit unavailable audit evidence proof",
             cwd=tmp_path,
             artifact_dir=artifact_dir,
             env_overrides=self._COMMON_ENV,
         )
         self._assert_canonical_shape(proof)
-        assert "head SHA" in proof["embedded_audit"]["skip_reason"]
+        assert "identity" in proof["embedded_audit"]["skip_reason"]
 
     def test_enforce_step_missing_proof_fallback_matches_canonical_shape(
         self, tmp_path: Path
     ) -> None:
-        # No PROOF.json present: the enforce step's own fallback branch must
-        # write one before raising SystemExit — that fallback is the third
-        # inline diagnostic-proof construction under test.
-        artifact_dir = tmp_path / "embedded-audit-artifacts"
-        proof = _exec_inline_diagnostic(
-            "Enforce independent audit result",
-            cwd=tmp_path,
-            artifact_dir=artifact_dir,
-            env_overrides=self._COMMON_ENV,
-        )
-        self._assert_canonical_shape(proof)
-        assert "missing" in proof["embedded_audit"]["skip_reason"].lower()
+        text = WORKFLOW_PATH.read_text(encoding="utf-8")
+        enforce_step = text.split("- name: Enforce audit evidence gate", 1)[1].split(
+            "- name: Publish audit summary", 1
+        )[0]
+        assert "enforce_independent_audit_proof" in enforce_step
+        assert "PROOF.json" in enforce_step
 
-    def test_all_three_diagnostic_reasons_are_distinct(self, tmp_path: Path) -> None:
+    def test_both_diagnostic_reasons_are_distinct(self, tmp_path: Path) -> None:
         # Regression guard: if these ever collapsed to an identical generic
         # reason string, a supervisor could no longer tell which failure path
         # produced a given SKIPPED proof.
         reasons = set()
         for step_name, subdir in (
-            ("Emit independent embedded audit proof", "trusted-source"),
-            ("Emit unavailable independent audit proof", None),
-            ("Enforce independent audit result", None),
+            ("Emit audit evidence gate proof", "trusted-source"),
+            ("Emit unavailable audit evidence proof", None),
         ):
             case_dir = tmp_path / step_name.replace(" ", "_")
             cwd = case_dir / subdir if subdir else case_dir
             cwd.mkdir(parents=True)
             artifact_dir = case_dir / "embedded-audit-artifacts"
-            if step_name == "Emit unavailable independent audit proof":
-                # Step's own `mkdir -p` precedes the heredoc in bash; not
-                # part of the extracted python, so pre-create it here.
-                artifact_dir.mkdir()
+            artifact_dir.mkdir()
             proof = _exec_inline_diagnostic(
                 step_name,
                 cwd=cwd,
@@ -1507,4 +1433,167 @@ class TestDiagnosticProofShapeParity:
                 env_overrides=self._COMMON_ENV,
             )
             reasons.add(proof["embedded_audit"]["skip_reason"])
-        assert len(reasons) == 3
+        assert len(reasons) == 2
+
+
+def _trusted_change_contract(*, required: bool, lane: str) -> dict:
+    return {
+        "status": "PASS",
+        "max_lane": lane,
+        "model_audit_required": required,
+        "proof_only": False,
+        "paths": [{"path": "src/example.py", "lane": lane}],
+        "findings": [],
+        "notes": [],
+    }
+
+
+def _imported_attestation(status: str = "PASS") -> dict:
+    risks = [] if status == "PASS" else ["One explicit non-blocking residual risk."]
+    return {
+        "accepted": True,
+        "principal": "tester@example",
+        "audited_sha": "a" * 40,
+        "proof_path": "proof/pr_merge/embedded-audit/pr-1042/PROOF.json",
+        "signature_namespace": "dopemux-embedded-audit",
+        "embedded_audit": {
+            "required": True,
+            "status": status,
+            "auditor_tool": "agy",
+            "auditor_model": "gemini-3.1-pro-high",
+            "invocation": "agy --model gemini-3.1-pro-high --effort high",
+            "exit_code": 0,
+            "report_path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001/AUDITOR_REPORT.md",
+            "findings": [],
+            "fixes_applied": [],
+            "remaining_risks": risks,
+            "skip_reason": None,
+        },
+        "audit_identity": {
+            "implementer": {
+                "runner": "codex-cli",
+                "model": "gpt-5.6-sol",
+                "model_family": "openai-gpt",
+                "runtime_family": "codex-cli",
+            },
+            "auditor": {
+                "runner": "agy",
+                "model": "gemini-3.1-pro-high",
+                "model_family": "google-gemini",
+                "runtime_family": "agy",
+                "effort": "high",
+            },
+            "independence": "PROVEN",
+        },
+    }
+
+
+def test_l0_trusted_classification_emits_exact_not_required_success() -> None:
+    proof = audit_runner.build_evidence_gate_proof(
+        packet_id="TP-DMX-AUDIT-CI-PROVENANCE-104",
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=1042,
+        head_sha="b" * 40,
+        base_sha="a" * 40,
+        change_contract=_trusted_change_contract(required=False, lane="L0"),
+        local_attestation=None,
+    )
+    assert proof["executed"] is False
+    assert proof["embedded_audit"] == {
+        "required": False,
+        "status": "SKIPPED",
+        "auditor_tool": "none",
+        "auditor_model": "unknown",
+        "invocation": None,
+        "exit_code": None,
+        "report_path": "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md",
+        "findings": [],
+        "fixes_applied": [],
+        "remaining_risks": [],
+        "skip_reason": "AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT",
+    }
+    audit_runner.enforce_independent_audit_proof(
+        proof,
+        expected_pr=1042,
+        expected_head_sha="b" * 40,
+        expected_repo="DDD-Enterprises/dopemux-mvp",
+    )
+
+
+def test_l3_without_imported_attestation_fails_closed() -> None:
+    proof = audit_runner.build_evidence_gate_proof(
+        packet_id="TP-DMX-AUDIT-CI-PROVENANCE-104",
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=1042,
+        head_sha="b" * 40,
+        base_sha="a" * 40,
+        change_contract=_trusted_change_contract(required=True, lane="L3"),
+        local_attestation=None,
+    )
+    with pytest.raises(SystemExit):
+        audit_runner.enforce_independent_audit_proof(proof)
+
+
+@pytest.mark.parametrize("status", ["PASS", "PASS_WITH_RISKS"])
+def test_l3_imported_signed_independent_evidence_passes(status: str) -> None:
+    proof = audit_runner.build_evidence_gate_proof(
+        packet_id="TP-DMX-AUDIT-CI-PROVENANCE-104",
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=1042,
+        head_sha="b" * 40,
+        base_sha="a" * 40,
+        change_contract=_trusted_change_contract(required=True, lane="L3"),
+        local_attestation=_imported_attestation(status),
+    )
+    assert proof["provenance"]["audit_source"] == "signed-imported-evidence"
+    assert proof["audit_identity"]["independence"] == "PROVEN"
+    audit_runner.enforce_independent_audit_proof(proof)
+
+
+def test_evidence_gate_cli_ignores_provider_credentials_and_clink(
+    tmp_path: Path,
+) -> None:
+    contract_path = tmp_path / "change-contract.json"
+    contract_path.write_text(
+        json.dumps(_trusted_change_contract(required=False, lane="L0")),
+        encoding="utf-8",
+    )
+    marker = tmp_path / "clink-called"
+    fake_clink = tmp_path / "clink"
+    fake_clink.write_text(
+        f"#!/bin/sh\nprintf called > {marker}\n",
+        encoding="utf-8",
+    )
+    fake_clink.chmod(0o755)
+    out_dir = tmp_path / "out"
+
+    exit_code = run_cli(
+        [
+            "--packet-id",
+            "TP-DMX-AUDIT-CI-PROVENANCE-104",
+            "--repo",
+            "DDD-Enterprises/dopemux-mvp",
+            "--pr",
+            "1042",
+            "--head-sha",
+            "b" * 40,
+            "--base-sha",
+            "a" * 40,
+            "--change-contract-json",
+            str(contract_path),
+            "--out",
+            str(out_dir),
+        ],
+        env={
+            "PATH": str(tmp_path),
+            "ANTHROPIC_API_KEY": "present-but-unused",
+            "CLAUDE_API_KEY": "present-but-unused",
+            "OPENAI_API_KEY": "present-but-unused",
+        },
+    )
+
+    assert exit_code == 0
+    assert not marker.exists()
+    proof = json.loads((out_dir / "PROOF.json").read_text(encoding="utf-8"))
+    assert proof["embedded_audit"]["required"] is False
+    assert proof["embedded_audit"]["status"] == "SKIPPED"

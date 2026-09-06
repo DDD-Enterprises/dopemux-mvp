@@ -1,0 +1,194 @@
+{
+  "id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001",
+  "project": "dopemux-mvp",
+  "target": "L3 CI trust: replace automatic PAL/Clink model auditing with trusted exact-base/head audit-requirement classification plus signed imported exact-head audit evidence, while preserving the required 'independent embedded audit' branch-protection context",
+  "invariants": [
+    "Explicit operator ruling authorizes this L3 CI-trust implementation slice; merge, mark-ready, branch-protection mutation, credential mutation, and production mutation remain unauthorized",
+    "CI model execution is zero: no workflow step may invoke PAL, Clink, Claude, Gemini, OpenAI, xAI, OpenRouter, or any paid/model provider to obtain audit judgment",
+    "Paid provider calls from CI are zero even when provider credentials happen to be present",
+    "New Clink audits are forbidden; legacy Clink/PAL audit machinery may be read as donor evidence but must not remain on the active embedded-audit execution path",
+    "The required branch-protection context name 'independent embedded audit' is preserved; no branch-protection configuration change is authorized",
+    "Trusted default-branch code evaluates the exact live target PR base/head with scripts/governance/validate_change_contract.py; candidate code is fetched as git objects only and is never checked out or executed by the trusted audit gate",
+    "Candidate-authored lane or audit-requirement claims never control the gate; the trusted-base evaluator result controls",
+    "If trusted change-contract evaluation returns status=PASS and model_audit_required=false, the workflow emits an exact-head deterministic NOT_REQUIRED proof with executed=false, embedded_audit.required=false, status=SKIPPED, auditor_tool=none, auditor_model=unknown, null invocation/exit_code, and skip_reason=AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT, then exits successfully",
+    "If trusted change-contract evaluation returns model_audit_required=true, CI performs zero model calls and requires signed imported audit evidence bound to the exact repository, PR, audited content head, and proof-only successor closure",
+    "Signed imported evidence must validate against the trusted embedded-audit schema, trusted allowed-signers file, exact repo/PR/head ancestry contract, and canonical packet proof bundle",
+    "Auditor independence is fail-closed and must be supported by signed structured identity evidence; do not infer independence from prose, tool names, or an operator signature",
+    "For L3, accepted imported evidence must prove a different auditor model family/runtime from the implementer; UNKNOWN or LIMITED independence blocks acceptance",
+    "If the current signed-proof structure lacks sufficient fields to prove independence, extend only the trusted local audit acceptance logic and tests within this packet; do not add a permissive fallback",
+    "PR #1287 is SUPERSET_DONOR evidence only: reuse bounded mechanics by inspection, do not merge/cherry-pick its broad 58-file payload and do not reintroduce allow_api_spend as an active CI audit mechanism",
+    "PR #1327 remains parked unchanged at 232fffa39cd641f02de84ac3f68e0219e05b537d during this repair",
+    "One bounded implementer only; no intermediate model audits",
+    "After substantive content head freeze, exactly one independent final L3 audit runs through AGY with requested model gemini-3.1-pro-high at high effort, subject to live selector discovery; no silent auditor substitution",
+    "A passing final audit is imported through proof-only successor files; unchanged content is not re-audited",
+    "No changes outside the explicit allowlist"
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopemux",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-CI-AUDIT-EVIDENCE-GATE",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/ci-audit-evidence-gate-001",
+    "base_branch": "main",
+    "stacked_because": "Standalone L3 CI-trust repair; PR #1287 is donor evidence only and PR #1327 remains parked unchanged"
+  },
+  "commit": {
+    "message": "fix(ci): replace model-calling audit with evidence gate",
+    "allowlist": [
+      ".github/workflows/embedded-audit.yml",
+      "scripts/audit/run_embedded_audit.py",
+      "scripts/audit/local_audit_acceptance.py",
+      "tests/audit/test_run_embedded_audit.py",
+      "tests/audit/test_local_audit_acceptance.py",
+      "tests/ci/test_embedded_audit_trigger_policy.py",
+      "tests/ci/test_ai_spend_containment.py",
+      "tools/pr_steward/collector.py",
+      "tools/pr_steward/classifier.py",
+      "tests/pr_steward/test_intake.py",
+      "task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001.json",
+      "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001/**",
+      "proof/pr_merge/embedded-audit/pr-*/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001.json",
+      "python -m jsonschema -i task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest -q tests/audit/test_run_embedded_audit.py tests/audit/test_local_audit_acceptance.py tests/ci/test_embedded_audit_trigger_policy.py tests/ci/test_ai_spend_containment.py tests/pr_steward/test_intake.py",
+      "git diff --check",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "pre-commit run --from-ref origin/main --to-ref HEAD",
+      "gitleaks protect --staged --verbose"
+    ]
+  },
+  "pr": {
+    "title": "fix(ci): replace automatic model audit with evidence gate",
+    "body": "L3 CI-trust repair. Removes automatic PAL/Clink/provider audit judgment from CI. The existing 'independent embedded audit' status becomes a trusted evidence gate: deterministic success when the trusted change contract says audit is not required; otherwise signed exact-head external audit evidence is mandatory. PR #1287 is donor evidence only. PR #1327 remains parked unchanged. Merge, mark-ready, branch-protection changes, credential changes, and production changes remain unauthorized.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Establish fresh dedicated worktree custody from current origin/main, reharvest the live embedded-audit/PR-Steward path, and classify overlap with PR #1287 before editing.",
+      "requirements": [
+        "Requested implementer route: Codex CLI, GPT-5.6 Sol, effort high",
+        "Record requested, configured, response-claimed, proxy-reported, and provider-attested model identity separately where available",
+        "Do not touch /Users/hue/code/dopemux-wsac-000 or PR #1327",
+        "Treat ordinary main movement as drift to reharvest, not an automatic stop"
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/governance/evidence-economy.md",
+        ".github/workflows/embedded-audit.yml",
+        ".github/workflows/pr-steward.yml",
+        "scripts/governance/validate_change_contract.py",
+        "scripts/audit/run_embedded_audit.py",
+        "scripts/audit/local_audit_acceptance.py",
+        "schemas/proof/embedded_audit.schema.json",
+        "config/audit/embedded-audit-allowed-signers"
+      ],
+      "validation": [
+        "Repository identity, origin, branch, worktree path, clean state, and current origin/main SHA are recorded",
+        "PR #1287 overlap is classified as donor evidence without cherry-pick/merge",
+        "PR #1327 head is rechecked and remains untouched",
+        "Changed-file plan remains inside this packet allowlist"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Replace automatic model/provider audit execution in embedded-audit CI with trusted exact-base/head change-contract classification and deterministic audit-requirement routing.",
+      "requirements": [
+        "Keep an automatic trusted evidence-gate trigger that can satisfy the required branch-protection context without model calls",
+        "Use trusted default-branch evaluator code and candidate git objects only",
+        "Do not consume candidate-authored scripts/config as trusted gate logic",
+        "Remove active PAL/Clink and provider-credential audit execution paths from the workflow"
+      ],
+      "validation": [
+        "L0/L1 fixture with model_audit_required=false emits required=false SKIPPED NOT_REQUIRED proof and exits success",
+        "L2/L3 fixture with model_audit_required=true cannot become green without imported signed passing evidence",
+        "Presence of ANTHROPIC_API_KEY, CLAUDE_API_KEY, OpenAI keys, or Clink installation cannot cause a provider/model invocation",
+        "Workflow still publishes the exact required context name 'independent embedded audit'",
+        "Candidate is not checked out or executed by the trusted workflow"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Make imported signed audit evidence the sole L2/L3 judgment path and harden exact identity, proof-only closure, and independence acceptance.",
+      "requirements": [
+        "Reuse current local_audit_acceptance signature/schema/repo/PR/head/ancestry checks where correct",
+        "Fail closed on missing, stale, unsigned, malformed, failed, NEEDS_SUPERVISOR, or SKIPPED evidence when audit is required",
+        "Require signed structured model/runner identity sufficient to evaluate independence",
+        "For L3 require different model family/runtime from implementer; UNKNOWN or LIMITED independence is blocking",
+        "Do not infer provider/model identity from filenames or marketing labels"
+      ],
+      "validation": [
+        "Exact-head PASS and acceptable PASS_WITH_RISKS imported evidence can pass",
+        "Stale-head proof fails",
+        "Wrong repo or PR proof fails",
+        "Unsigned or invalid-signature proof fails",
+        "Schema-invalid embedded_audit fails",
+        "Proof-only successor containing any non-proof path fails",
+        "L3 same-family/runtime or UNKNOWN independence fails",
+        "Signed identity fields and canonical packet proof identity must agree where both are present"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Run falsification tests, CI-trust regression suite, allowlist checks, pre-push gates, and secret scan; freeze the substantive content head.",
+      "validation": [
+        "Focused audit/evidence-gate tests pass",
+        "Relevant PR Steward tests pass if Steward files changed",
+        "No active CI path contains a new model/provider audit invocation",
+        "No active CI path contains a Clink audit invocation",
+        "git diff --check passes",
+        "Changed-contract preflight reports L3 and exact findings are recorded",
+        "Changed-range pre-commit passes cleanly; if hooks modify files, rerun until clean",
+        "gitleaks staged/diff scan passes with no secrets",
+        "Substantive content head is frozen before formal audit"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Hand the exact frozen substantive head to one independent AGY audit using requested gemini-3.1-pro-high at high effort; do not let the implementer audit its own work.",
+      "requirements": [
+        "Run live AGY model discovery first",
+        "If gemini-3.1-pro-high is unavailable, stop NEEDS_SUPERVISOR; do not silently substitute",
+        "Bind audit subject to exact frozen content head and changed-file allowlist",
+        "Require explicit independence statement versus Codex/OpenAI implementer",
+        "No repository mutation by the auditor"
+      ],
+      "validation": [
+        "Auditor runner/model/effort and actual subject head are recorded",
+        "Verdict is PASS or PASS_WITH_RISKS with every residual risk explicit and non-blocking",
+        "FAIL, NEEDS_SUPERVISOR, malformed output, unknown identity, or head mismatch blocks closure"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Create only the signed proof-only successor required to import the accepted AGY audit, then re-run deterministic proof/schema/ancestry/path-closure validation and publish a draft PR.",
+      "requirements": [
+        "No substantive implementation edits after S4 audit head",
+        "Proof-only successor may touch only the packet proof tree and exact PR signed-attestation tree",
+        "Use trusted existing signing mechanism; do not alter keys, allowed signers, credentials, or permissions"
+      ],
+      "validation": [
+        "Proof signature validates against trusted allowed-signers",
+        "Proof repo/PR/audited-head/ancestry/path closure are exact",
+        "Canonical embedded_audit schema passes",
+        "Proof-only changed-contract validation passes",
+        "Draft PR targets main and reports exact frozen content head plus proof-only successor head",
+        "MERGE_AUTHORIZED remains NO",
+        "MARK_READY_AUTHORIZED remains NO",
+        "PR #1327 remains unchanged"
+      ]
+    }
+  ]
+}

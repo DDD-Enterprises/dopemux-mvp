@@ -1,0 +1,11 @@
+{
+  "diff_check": {
+    "command": "git diff --check e82a35aaf814fb0af770a40b701b50a0bb7efc16..HEAD",
+    "exit_code": 0
+  },
+  "pytest": {
+    "command": "PYTHONPATH=src python -m pytest -q tests/audit/test_run_embedded_audit.py tests/audit/test_local_audit_acceptance.py tests/ci/test_embedded_audit_trigger_policy.py tests/ci/test_ai_spend_containment.py tests/pr_steward/test_intake.py",
+    "passed": 195,
+    "exit_code": 0
+  }
+}

@@ -32,249 +32,220 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
           EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           INPUT_PR_NUMBER: ${{ inputs.pr_number }}
           INPUT_HEAD_SHA: ${{ inputs.head_sha }}
-          TRUSTED_FALLBACK_REF: ${{ github.event.repository.default_branch }}
+          TRUSTED_DEFAULT_REF: ${{ github.event.repository.default_branch }}
         run: |
-          # pull_request_target and legacy pull_request both carry pull_request
-          # event metadata. workflow_dispatch uses validated inputs only.
-          if [ "$EVENT_NAME" = "pull_request" ] || [ "$EVENT_NAME" = "pull_request_target" ]; then
-            printf 'number=%s\n' "$EVENT_PR_NUMBER" >> "$GITHUB_OUTPUT"
-            printf 'head_sha=%s\n' "$EVENT_HEAD_SHA" >> "$GITHUB_OUTPUT"
-            printf 'trusted_ref=%s\n' "$EVENT_BASE_SHA" >> "$GITHUB_OUTPUT"
-            test -n "$EVENT_PR_NUMBER"
-            test -n "$EVENT_HEAD_SHA"
-            test -n "$EVENT_BASE_SHA"
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "pull_request_target" ]; then
+            pr_number="$EVENT_PR_NUMBER"
+            head_sha="$EVENT_HEAD_SHA"
           elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            printf 'number=%s\n' "$INPUT_PR_NUMBER" >> "$GITHUB_OUTPUT"
-            printf 'head_sha=%s\n' "$INPUT_HEAD_SHA" >> "$GITHUB_OUTPUT"
-            printf 'trusted_ref=%s\n' "$TRUSTED_FALLBACK_REF" >> "$GITHUB_OUTPUT"
-            test -n "$INPUT_PR_NUMBER"
-            test -n "$INPUT_HEAD_SHA"
-            test -n "$TRUSTED_FALLBACK_REF"
+            pr_number="$INPUT_PR_NUMBER"
+            head_sha="$INPUT_HEAD_SHA"
           else
             echo "Unsupported event: $EVENT_NAME" >&2
             exit 1
           fi
+          printf '%s' "$pr_number" | grep -Eq '^[1-9][0-9]*$'
+          printf '%s' "$head_sha" | grep -Eq '^[0-9a-f]{40}$'
+          test -n "$TRUSTED_DEFAULT_REF"
+          printf 'number=%s\n' "$pr_number" >> "$GITHUB_OUTPUT"
+          printf 'head_sha=%s\n' "$head_sha" >> "$GITHUB_OUTPUT"
+          printf 'trusted_ref=%s\n' "$TRUSTED_DEFAULT_REF" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve exact target PR
+        id: target_pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_REPO: ${{ github.repository }}
+          EXPECTED_PR: ${{ steps.pr.outputs.number }}
+          EXPECTED_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+        run: |
+          set -euo pipefail
+          gh api "repos/${EXPECTED_REPO}" > /tmp/expected-repository.json
+          gh api "repos/${EXPECTED_REPO}/pulls/${EXPECTED_PR}" > /tmp/target-pr.json
+          python - <<'PY'
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          sha_re = re.compile(r"^[0-9a-f]{40}$")
+          expected_repo = os.environ["EXPECTED_REPO"]
+          expected_pr = int(os.environ["EXPECTED_PR"])
+          expected_head = os.environ["EXPECTED_HEAD_SHA"]
+          repository = json.loads(
+              Path("/tmp/expected-repository.json").read_text(encoding="utf-8")
+          )
+          pull_request = json.loads(
+              Path("/tmp/target-pr.json").read_text(encoding="utf-8")
+          )
+          errors = []
+          if repository.get("full_name") != expected_repo:
+              errors.append("repository.full_name mismatch")
+          if pull_request.get("number") != expected_pr:
+              errors.append("pull_request.number mismatch")
+          if pull_request.get("state") != "open":
+              errors.append("pull_request.state is not open")
+          live_head = str((pull_request.get("head") or {}).get("sha") or "")
+          if not sha_re.fullmatch(live_head):
+              errors.append("head.sha invalid")
+          elif live_head != expected_head:
+              errors.append("head.sha mismatch")
+          base = pull_request.get("base") or {}
+          if (base.get("repo") or {}).get("full_name") != expected_repo:
+              errors.append("base.repo.full_name mismatch")
+          base_sha = str(base.get("sha") or "")
+          if not sha_re.fullmatch(base_sha):
+              errors.append("base.sha invalid")
+          if errors:
+              raise SystemExit("TARGET_PR_IDENTITY_UNKNOWN: " + ",".join(errors))
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as out:
+              out.write(f"pr_number={expected_pr}\n")
+              out.write(f"head_sha={live_head}\n")
+              out.write(f"base_sha={base_sha}\n")
+          PY
 
       - name: Checkout trusted audit source
         uses: actions/checkout@v4
         with:
-          # Trusted base/default-branch code only. Candidate head is fetched as
-          # data later and never checked out as the working tree.
           ref: ${{ steps.pr.outputs.trusted_ref }}
           fetch-depth: 2
           path: trusted-source
           persist-credentials: false
 
       - name: Verify trusted audit source
+        id: trusted_source
         env:
           EXPECTED_TRUSTED_REF: ${{ steps.pr.outputs.trusted_ref }}
         run: |
-          actual_trusted_ref="$(git -C trusted-source rev-parse HEAD)"
-          if printf '%s' "$EXPECTED_TRUSTED_REF" | grep -Eq '^[0-9a-f]{40}$'; then
-            test "$actual_trusted_ref" = "$EXPECTED_TRUSTED_REF"
-          else
-            test -n "$actual_trusted_ref"
-          fi
-          # Do not hard-fail here when run_embedded_audit.py is absent.
-          # The emit step writes a schema-valid SKIPPED diagnostic PROOF so
-          # artifact upload + Steward can still bind the head and overwrite a
-          # prior green "PR Steward / final readiness" status with failure.
+          set -euo pipefail
+          actual_sha="$(git -C trusted-source rev-parse HEAD)"
+          test -n "$actual_sha"
+          printf 'sha=%s\n' "$actual_sha" >> "$GITHUB_OUTPUT"
+          printf 'ref=%s\n' "$EXPECTED_TRUSTED_REF" >> "$GITHUB_OUTPUT"
 
-      - name: Verify requested head SHA
+      - name: Verify requested audit commits
         id: head_integrity
         env:
-          PR_NUMBER: ${{ steps.pr.outputs.number }}
-          EXPECTED_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          PR_NUMBER: ${{ steps.target_pr.outputs.pr_number }}
+          TARGET_PR_HEAD_SHA: ${{ steps.target_pr.outputs.head_sha }}
+          TARGET_PR_BASE_SHA: ${{ steps.target_pr.outputs.base_sha }}
         run: |
-          # Candidate material is fetched as objects only (no candidate checkout,
-          # no candidate script execution, no credentials on candidate tree).
-          if git -C trusted-source fetch --no-tags --depth=1 origin "$EXPECTED_HEAD_SHA"; then
-            actual_head_sha="$(git -C trusted-source rev-parse FETCH_HEAD)"
-          else
-            actual_head_sha=""
-          fi
-          pr_head_sha="$(git -C trusted-source ls-remote origin "refs/pull/${PR_NUMBER}/head" | awk '{print $1}')"
-          if [ "$actual_head_sha" = "$EXPECTED_HEAD_SHA" ] && [ "$pr_head_sha" = "$EXPECTED_HEAD_SHA" ]; then
-            printf 'verified=true\n' >> "$GITHUB_OUTPUT"
-          else
-            printf 'verified=false\n' >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Static auditor route preflight
-        if: always() && steps.head_integrity.outputs.verified == 'true'
-        working-directory: trusted-source
-        run: |
-          mkdir -p ../embedded-audit-artifacts
-          set +e
-          python -m tools.auditor_router.preflight \
-            --packet-id "TP-DMX-AUDIT-CI-PROVENANCE-104" \
-            --out ../embedded-audit-artifacts \
-            --format json
-          preflight_status=$?
-          set -e
-          if [ ! -f ../embedded-audit-artifacts/AUDITOR_ROUTE.json ]; then
-            cat > ../embedded-audit-artifacts/AUDITOR_ROUTE.json <<'JSON'
-          {
-            "tool": "pal-mcp-clink",
-            "underlying_cli": null,
-            "clink_client_name": null,
-            "audit_safe_config_proven": false,
-            "clink_mutation_flags_detected": [],
-            "invocation_template": null,
-            "status": "NEEDS_SUPERVISOR",
-            "reason": "Static auditor route preflight did not emit AUDITOR_ROUTE.json."
-          }
-          JSON
-          fi
-
-      - name: Setup trusted Claude audit runner
-        if: always() && steps.head_integrity.outputs.verified == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: Install trusted Claude audit runner
-        if: always() && steps.head_integrity.outputs.verified == 'true'
-        run: npm install --global @anthropic-ai/claude-code@2.1.204
-
-      - name: Run PAL clink audit
-        # Soft exit is intentional: the runner may emit a machine-readable error
-        # payload with exit 0 so later steps always emit a diagnostic proof and
-        # the hard enforcement step remains the sole green/red authority.
-        # Tests prove synthetic error results cannot pass enforcement.
-        if: always() && steps.head_integrity.outputs.verified == 'true'
-        id: runner
-        working-directory: trusted-source
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || secrets.CLAUDE_API_KEY }}
-        run: |
-          base_sha="$(git rev-parse HEAD)"
-          head_sha='${{ steps.pr.outputs.head_sha }}'
-          if ! git cat-file -e "${head_sha}^{commit}"; then
-            git fetch --no-tags --depth=1 origin "$head_sha"
-          fi
-          # Candidate material is text-only: name-status + unified diff objects.
-          # Never checkout or execute candidate code. Prompt uses unique trusted
-          # delimiters (not Markdown fencing alone) and repeats trusted instructions
-          # after untrusted candidate content.
-          mkdir -p ../embedded-audit-artifacts
-          git diff --find-renames --name-status "$base_sha" "$head_sha" \
-            > ../embedded-audit-artifacts/CANDIDATE_CHANGED_FILES.txt
-          git diff --find-renames --no-ext-diff "$base_sha" "$head_sha" \
-            > ../embedded-audit-artifacts/CANDIDATE_UNIFIED_DIFF.txt
-          # Fail closed when the trusted prompt builder / instruction-like scanner
-          # is unavailable: do NOT embed raw candidate text, do NOT invent a clean
-          # scan (detected:false), and do NOT invoke the model auditor.
-          PROMPT_BUILDER_AVAILABLE=false
-          if [ -f scripts/audit/pal_clink_runner.py ]; then
-            PROMPT_BUILDER_AVAILABLE=true
-            python -m scripts.audit.pal_clink_runner \
-              --build-prompt \
-              --repo "$GITHUB_REPOSITORY" \
-              --pr '${{ steps.pr.outputs.number }}' \
-              --head-sha "$head_sha" \
-              --base-sha "$base_sha" \
-              --changed-files ../embedded-audit-artifacts/CANDIDATE_CHANGED_FILES.txt \
-              --unified-diff ../embedded-audit-artifacts/CANDIDATE_UNIFIED_DIFF.txt \
-              --prompt-out ../embedded-audit-artifacts/PAL_CLINK_AUDIT_INPUT.md \
-              --instruction-like-out ../embedded-audit-artifacts/INSTRUCTION_LIKE_CONTENT.json
-          else
-            printf '%s\n' \
-              "Trusted prompt builder and instruction-like scanner unavailable: scripts/audit/pal_clink_runner.py missing on trusted ref." \
-              > ../embedded-audit-artifacts/PROMPT_BUILD_UNAVAILABLE.txt
-            # No candidate-laden prompt, no false-clean INSTRUCTION_LIKE_CONTENT.json,
-            # no PAL_CLINK_AUDIT_OUTPUT.json — emitter records schema-valid SKIPPED.
-          fi
-          set +e
-          if [ "$PROMPT_BUILDER_AVAILABLE" != true ]; then
-            status=127
-          elif [ -z "$ANTHROPIC_API_KEY" ]; then
-            printf '%s\n' '{"status":"error","risks":["Trusted Claude provider credential is unavailable."]}' \
-              > ../embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json
-            status=78
-          else
-            python -m scripts.audit.pal_clink_runner \
-              --route-json ../embedded-audit-artifacts/AUDITOR_ROUTE.json \
-              --prompt ../embedded-audit-artifacts/PAL_CLINK_AUDIT_INPUT.md \
-              --pal-output-json ../embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json \
-              --raw-output-json ../embedded-audit-artifacts/PAL_CLINK_AUDIT_RUNNER_OUTPUT.json
-            status=$?
-          fi
-          # Only synthesize an error payload when the trusted builder was present but
-          # the auditor invocation failed to emit output. Missing builder must remain
-          # a non-executed SKIPPED path (no fabricated scan / no candidate-to-model).
-          if [ "$PROMPT_BUILDER_AVAILABLE" = true ] && [ ! -f ../embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json ]; then
-            printf '{"status":"error","risks":["PAL clink runner did not emit output; exit_code=%s"]}\n' "$status" \
-              > ../embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json
-          fi
-          printf 'exit_code=%s\n' "$status" >> "$GITHUB_OUTPUT"
-          # Soft exit: hard proof enforcement is authoritative (see step comments).
-          exit 0
+          set -euo pipefail
+          # Candidate code is never checked out or executed; only git objects are read.
+          git -C trusted-source fetch --no-tags --depth=500 origin "$TARGET_PR_HEAD_SHA"
+          git -C trusted-source fetch --no-tags --depth=500 origin "$TARGET_PR_BASE_SHA"
+          git -C trusted-source cat-file -e "${TARGET_PR_HEAD_SHA}^{commit}"
+          git -C trusted-source cat-file -e "${TARGET_PR_BASE_SHA}^{commit}"
+          remote_head="$(
+            git -C trusted-source ls-remote origin "refs/pull/${PR_NUMBER}/head" \
+              | awk '{print $1}'
+          )"
+          test "$remote_head" = "$TARGET_PR_HEAD_SHA"
+          printf 'verified=true\n' >> "$GITHUB_OUTPUT"
 
       - name: Install canonical schema validator
-        # The acceptance gate validates the signed embedded_audit against the
-        # trusted schema under real Draft 7 semantics and fails closed when the
-        # engine is absent. jsonschema is a declared project dependency
-        # (pyproject.toml); this job installs no project deps, so provision it
-        # explicitly rather than rely on an undeclared runner-image package.
         if: always() && steps.head_integrity.outputs.verified == 'true'
         run: python -m pip install --quiet 'jsonschema>=4.20.0'
 
-      - name: Evaluate local signed audit attestation
+      - name: Classify trusted change contract
+        id: change_contract
         if: always() && steps.head_integrity.outputs.verified == 'true'
         working-directory: trusted-source
         env:
-          PR_NUMBER: ${{ steps.pr.outputs.number }}
-          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          TARGET_PR_BASE_SHA: ${{ steps.target_pr.outputs.base_sha }}
+          TARGET_PR_HEAD_SHA: ${{ steps.target_pr.outputs.head_sha }}
         run: |
-          # Fail-closed fallback for runs where no auditor CLI/provider is
-          # provisioned: accept a locally-executed audit ONLY when the PR head
-          # carries proof/pr_merge/embedded-audit/pr-<N>/PROOF.json signed by a
-          # key in the TRUSTED allowed-signers file, bound to this repo+PR, and
-          # the audited commit differs from the head by proof-dir files alone.
-          # Candidate PR code is read as git blobs only — never executed.
-          # Soft exit: a rejected/absent attestation leaves today's
-          # SKIPPED/red path unchanged; the emit + enforce steps stay the sole
-          # green/red authority.
+          mkdir -p ../embedded-audit-artifacts
+          set +e
+          if [ -f scripts/governance/validate_change_contract.py ]; then
+            python scripts/governance/validate_change_contract.py \
+              --repo . \
+              --base "$TARGET_PR_BASE_SHA" \
+              --head "$TARGET_PR_HEAD_SHA" \
+              --format json \
+              > ../embedded-audit-artifacts/CHANGE_CONTRACT.json
+            contract_exit=$?
+          else
+            contract_exit=2
+            printf '%s\n' \
+              '{"status":"FAIL","max_lane":"L3","model_audit_required":true,"proof_only":false,"paths":[],"findings":[{"code":"trusted_evaluator_missing","severity":"error","path":"scripts/governance/validate_change_contract.py","message":"Trusted evaluator missing"}],"notes":[]}' \
+              > ../embedded-audit-artifacts/CHANGE_CONTRACT.json
+          fi
+          set -e
+          python - "$contract_exit" <<'PY'
+          import json
+          import os
+          import sys
+          from pathlib import Path
+
+          contract_exit = int(sys.argv[1])
+          payload = json.loads(
+              Path("../embedded-audit-artifacts/CHANGE_CONTRACT.json").read_text(
+                  encoding="utf-8"
+              )
+          )
+          status = payload.get("status")
+          lane = payload.get("max_lane")
+          required = payload.get("model_audit_required")
+          if status not in {"PASS", "FAIL"}:
+              raise SystemExit("trusted change-contract status malformed")
+          if lane not in {"L0", "L1", "L2", "L3"}:
+              raise SystemExit("trusted change-contract lane malformed")
+          if not isinstance(required, bool):
+              raise SystemExit("trusted change-contract audit requirement malformed")
+          if (status == "PASS") != (contract_exit == 0):
+              raise SystemExit("trusted change-contract exit/status mismatch")
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as out:
+              out.write(f"status={status}\n")
+              out.write(f"max_lane={lane}\n")
+              out.write(f"model_audit_required={str(required).lower()}\n")
+          PY
+
+      - name: Evaluate signed imported audit evidence
+        if: >-
+          always() &&
+          steps.change_contract.outputs.status == 'PASS' &&
+          steps.change_contract.outputs.model_audit_required == 'true'
+        working-directory: trusted-source
+        env:
+          PR_NUMBER: ${{ steps.target_pr.outputs.pr_number }}
+          HEAD_SHA: ${{ steps.target_pr.outputs.head_sha }}
+          RISK_LANE: ${{ steps.change_contract.outputs.max_lane }}
+        run: |
           set +e
           python -m scripts.audit.local_audit_acceptance \
             --repo "$GITHUB_REPOSITORY" \
-            --pr "${PR_NUMBER}" \
-            --head-sha "${HEAD_SHA}" \
+            --pr "$PR_NUMBER" \
+            --head-sha "$HEAD_SHA" \
+            --risk-lane "$RISK_LANE" \
             --allowed-signers config/audit/embedded-audit-allowed-signers \
             --schema schemas/proof/embedded_audit.schema.json \
             --out ../embedded-audit-artifacts/LOCAL_AUDIT_ATTESTATION.json
-          attestation_status=$?
+          acceptance_exit=$?
           set -e
-          echo "local attestation evaluation exit=${attestation_status}"
+          echo "signed evidence acceptance exit=${acceptance_exit}"
           exit 0
 
-      - name: Emit independent embedded audit proof
+      - name: Emit audit evidence gate proof
         if: always() && steps.head_integrity.outputs.verified == 'true'
         working-directory: trusted-source
         env:
-          EMBEDDED_AUDIT_TOKEN: ${{ secrets.EMBEDDED_AUDIT_TOKEN }}
-          PR_NUMBER: ${{ steps.pr.outputs.number }}
-          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          PR_NUMBER: ${{ steps.target_pr.outputs.pr_number }}
+          HEAD_SHA: ${{ steps.target_pr.outputs.head_sha }}
+          BASE_SHA: ${{ steps.target_pr.outputs.base_sha }}
         run: |
           mkdir -p ../embedded-audit-artifacts
           if [ ! -f scripts/audit/run_embedded_audit.py ]; then
-            # Structured diagnostic only — schema-valid SKIPPED (none/unknown),
-            # executed=false; no forged trusted provenance. Enforce still reds.
             python - <<'PY'
           import json
           import os
           from pathlib import Path
 
-          reason = (
-              "Trusted audit emitter scripts/audit/run_embedded_audit.py "
-              "is missing on the trusted ref."
-          )
+          reason = "Trusted audit evidence emitter is missing on trusted ref."
           out = Path("../embedded-audit-artifacts")
-          out.mkdir(parents=True, exist_ok=True)
           report_path = "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md"
           proof = {
               "packet_id": "TP-DMX-AUDIT-CI-PROVENANCE-104",
@@ -302,39 +273,23 @@ jobs:
               json.dumps(proof, indent=2, sort_keys=True) + "\n", encoding="utf-8"
           )
           (out / "AUDITOR_REPORT.md").write_text(
-              f"# Embedded audit\n\nstatus: SKIPPED\n\nreason: {reason}\n",
+              f"# Audit evidence gate\n\nstatus: SKIPPED\n\nreason: {reason}\n",
               encoding="utf-8",
           )
           PY
-            exit 0
-          fi
-          if [ -f ../embedded-audit-artifacts/PROMPT_BUILD_UNAVAILABLE.txt ]; then
-            skip_reason="$(
-              tr '\n' ' ' < ../embedded-audit-artifacts/PROMPT_BUILD_UNAVAILABLE.txt \
-                | sed 's/[[:space:]]*$//'
-            )"
-            python scripts/audit/run_embedded_audit.py \
-              --packet-id "TP-DMX-AUDIT-CI-PROVENANCE-104" \
-              --repo "$GITHUB_REPOSITORY" \
-              --pr "${PR_NUMBER}" \
-              --head-sha "${HEAD_SHA}" \
-              --route-json ../embedded-audit-artifacts/AUDITOR_ROUTE.json \
-              --force-skip-reason "${skip_reason}" \
-              --out ../embedded-audit-artifacts
           else
             python scripts/audit/run_embedded_audit.py \
-              --packet-id "TP-DMX-AUDIT-CI-PROVENANCE-104" \
+              --packet-id TP-DMX-AUDIT-CI-PROVENANCE-104 \
               --repo "$GITHUB_REPOSITORY" \
-              --pr "${PR_NUMBER}" \
-              --head-sha "${HEAD_SHA}" \
-              --route-json ../embedded-audit-artifacts/AUDITOR_ROUTE.json \
-              --pal-output-json ../embedded-audit-artifacts/PAL_CLINK_AUDIT_OUTPUT.json \
+              --pr "$PR_NUMBER" \
+              --head-sha "$HEAD_SHA" \
+              --base-sha "$BASE_SHA" \
+              --change-contract-json ../embedded-audit-artifacts/CHANGE_CONTRACT.json \
               --local-attestation-json ../embedded-audit-artifacts/LOCAL_AUDIT_ATTESTATION.json \
-              --instruction-like-json ../embedded-audit-artifacts/INSTRUCTION_LIKE_CONTENT.json \
               --out ../embedded-audit-artifacts
           fi
 
-      - name: Emit unavailable independent audit proof
+      - name: Emit unavailable audit evidence proof
         if: always() && steps.head_integrity.outputs.verified != 'true'
         env:
           PR_NUMBER: ${{ steps.pr.outputs.number }}
@@ -346,16 +301,14 @@ jobs:
           import os
           from pathlib import Path
 
-          # Inline diagnostic shape mirrors build_diagnostic_failure_proof:
-          # executed=false, schema-valid SKIPPED (none/unknown), no trusted provenance.
-          reason = "Requested PR head SHA could not be fetched or no longer matches the PR head."
-          artifact_dir = Path("embedded-audit-artifacts")
+          reason = "Requested repository, PR, base, or head identity could not be verified."
+          out = Path("embedded-audit-artifacts")
           report_path = "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md"
           proof = {
               "packet_id": "TP-DMX-AUDIT-CI-PROVENANCE-104",
               "repo": os.environ["GITHUB_REPOSITORY"],
-              "pr_number": int(os.environ["PR_NUMBER"]),
-              "head_sha": os.environ["HEAD_SHA"],
+              "pr_number": int(os.environ.get("PR_NUMBER") or 0),
+              "head_sha": os.environ.get("HEAD_SHA") or "",
               "executed": False,
               "mutation_performed": False,
               "github_mutation_route_added": False,
@@ -373,23 +326,21 @@ jobs:
                   "skip_reason": reason,
               },
           }
-          (artifact_dir / "PROOF.json").write_text(
+          (out / "PROOF.json").write_text(
               json.dumps(proof, indent=2, sort_keys=True) + "\n", encoding="utf-8"
           )
-          (artifact_dir / "AUDITOR_REPORT.md").write_text(
-              f"# Embedded audit\n\nstatus: SKIPPED\n\nreason: {reason}\n",
+          (out / "AUDITOR_REPORT.md").write_text(
+              f"# Audit evidence gate\n\nstatus: SKIPPED\n\nreason: {reason}\n",
               encoding="utf-8",
           )
           PY
 
-      - name: Enforce independent audit result
+      - name: Enforce audit evidence gate
         if: always()
         env:
           EXPECTED_PR: ${{ steps.pr.outputs.number }}
           EXPECTED_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
         run: |
-          # Hard gate: status alone is never sufficient. Requires executed=true,
-          # trusted provenance, matching PR/head, and PASS|PASS_WITH_RISKS.
           python - <<'PY'
           import json
           import os
@@ -398,44 +349,11 @@ jobs:
 
           proof_path = Path("embedded-audit-artifacts/PROOF.json")
           if not proof_path.is_file():
-              # Schema-valid SKIPPED diagnostic; hard enforce still fails closed.
-              fallback = Path("embedded-audit-artifacts")
-              fallback.mkdir(parents=True, exist_ok=True)
-              reason = "Independent audit proof is missing."
-              report_path = "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md"
-              proof = {
-                  "packet_id": "TP-DMX-AUDIT-CI-PROVENANCE-104",
-                  "executed": False,
-                  "pr_number": int(os.environ.get("EXPECTED_PR") or 0),
-                  "head_sha": os.environ.get("EXPECTED_HEAD_SHA") or "",
-                  "repo": os.environ.get("GITHUB_REPOSITORY") or "",
-                  "mutation_performed": False,
-                  "github_mutation_route_added": False,
-                  "embedded_audit": {
-                      "required": True,
-                      "status": "SKIPPED",
-                      "auditor_tool": "none",
-                      "auditor_model": "unknown",
-                      "invocation": None,
-                      "exit_code": None,
-                      "report_path": report_path,
-                      "findings": [],
-                      "fixes_applied": [],
-                      "remaining_risks": [reason],
-                      "skip_reason": reason,
-                  },
-              }
-              (fallback / "PROOF.json").write_text(
-                  json.dumps(proof, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-              )
-              raise SystemExit(reason)
-
+              raise SystemExit("Audit evidence proof is missing.")
           trusted_root = Path("trusted-source")
-          if trusted_root.is_dir():
-              sys.path.insert(0, str(trusted_root.resolve()))
-          else:
-              sys.path.insert(0, str(Path.cwd()))
-
+          if not trusted_root.is_dir():
+              raise SystemExit("Trusted audit source is unavailable.")
+          sys.path.insert(0, str(trusted_root.resolve()))
           from scripts.audit.run_embedded_audit import enforce_independent_audit_proof
 
           proof = json.loads(proof_path.read_text(encoding="utf-8"))
@@ -443,7 +361,7 @@ jobs:
               proof,
               expected_pr=int(os.environ["EXPECTED_PR"]),
               expected_head_sha=os.environ["EXPECTED_HEAD_SHA"],
-              expected_repo=os.environ.get("GITHUB_REPOSITORY"),
+              expected_repo=os.environ["GITHUB_REPOSITORY"],
           )
           PY
 
@@ -451,18 +369,17 @@ jobs:
         if: always()
         run: |
           {
-            printf '## Embedded audit\n\n'
-            printf -- '- mutation_performed: false\n'
-            printf -- '- proof_author: independent-embedded-audit (only when executed=true)\n'
-            printf -- '- token_value_recorded: false\n'
-            printf -- '- soft_runner_exit: intentional; hard enforcement is authoritative\n'
+            printf '## Audit evidence gate\n\n'
+            printf -- '- model_calls: 0\n'
+            printf -- '- paid_calls: 0\n'
+            printf -- '- imported_signed_evidence_only: true\n'
+            printf -- '- candidate_executed: false\n'
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload embedded audit artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          # Collision-resistant identity: purpose + PR + exact head SHA.
           name: embedded-audit-pr-${{ steps.pr.outputs.number }}-head-${{ steps.pr.outputs.head_sha }}-proof
           path: embedded-audit-artifacts/
           if-no-files-found: error
