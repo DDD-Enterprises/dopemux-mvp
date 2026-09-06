@@ -17,5 +17,21 @@
       "Lowercase or noncanonical skipped statuses remain blocking, but normalized output hides original casing while preserving the blocker. Diagnostic context is reduced; required security behavior remains fail-closed."
     ],
     "skip_reason": null
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "codex-cli",
+      "model": "gpt-5.6-sol",
+      "model_family": "openai-gpt",
+      "runtime_family": "codex-cli"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini-3.1-pro-high",
+      "model_family": "google-gemini",
+      "runtime_family": "agy",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
   }
 }
