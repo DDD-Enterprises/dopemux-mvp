@@ -1,0 +1,22 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1325,
+  "head_sha": "582862ea5f9d9fa56fd1221b22d53036778706b2",
+  "generated_at": "2026-09-07T04:25:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/red-lane-cov-2 --add-dir /tmp/redlane002_audit --print=\"$(cat /tmp/redlane002_audit/PROMPT.txt)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/AUDITOR_REPORT.md",
+    "findings": [
+      {"id": "AUDIT-DCP-PR1304-001", "severity": "INFO", "title": "Diff scope exactly matches declared allowlist; red_lane_rules.py and dcp_surface_guard.py confirmed unmodified", "status": "RESOLVED", "body": "Auditor independently confirmed diff scope, execution order (control-character check before FORBIDDEN_PATHS matching and before filesystem access), fail-closed semantics, ran all three specified test commands itself (36/44/189 passed as expected), assessed test-probe quality, performed its own independent mutation test reproducing the exact-match bypass, checked for secrets, and assessed blast radius as zero."}
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null,
+    "instruction_like_content": {"detected": false, "match_count": 0, "truncated": false, "matches": []}
+  }
+}
