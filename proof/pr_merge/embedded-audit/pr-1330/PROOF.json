@@ -1,45 +1,49 @@
 {
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1330,
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE",
+  "head_sha": "8826b7174c78388e7033f4bb4fe2e49acf363aa2",
+  "generated_at": "2026-09-07T05:42:27.596135+00:00",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "rtk proxy python3 -B <local-custody-wrapper> --run -> agy --model gemini-3.1-pro-high --effort high --mode plan --sandbox --new-project --disable-slash-commands --add-dir <approved-audit-bundle> --output-format json --print <review_bundle/AUDIT_REQUEST.md> --print-timeout 10m",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Static independent review did not execute host tests; operator deterministic validation is separately recorded.",
+      "AGY warned --mode plan has no effect with slash command expansion disabled. --sandbox was explicitly selected; the approved bundle remained exactly unchanged. Plan mode is not claimed as an enforced boundary.",
+      "SSH signatures are operator attestations, not independently auditor-signed execution proofs."
+    ],
+    "skip_reason": null
+  },
   "audit_identity": {
-    "auditor": {
-      "effort": "high",
-      "model": "gemini-3.1-pro-high",
-      "model_family": "google-gemini",
-      "runner": "agy",
-      "runtime_family": "agy"
-    },
     "implementer": {
-      "model": "gpt-5",
-      "model_family": "openai-gpt",
       "runner": "codex-cli",
+      "model": "gpt-5.6-sol",
+      "model_family": "openai-gpt",
       "runtime_family": "codex-cli"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini-3.1-pro-high",
+      "effort": "high",
+      "model_family": "google-gemini",
+      "runtime_family": "agy"
     },
     "independence": "PROVEN"
   },
-  "embedded_audit": {
-    "auditor_model": "gemini-3.1-pro-high",
-    "auditor_tool": "agy",
-    "exit_code": 0,
-    "findings": [],
-    "fixes_applied": [],
-    "invocation": "rtk agy --model gemini-3.1-pro-high --effort high --mode plan --new-project --add-dir <bounded-audit-bundle> --print <request in review_bundle/AUDIT_REQUEST.md> --print-timeout 10m",
-    "remaining_risks": [],
-    "report_path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT/AUDITOR_REPORT.md",
-    "required": true,
-    "skip_reason": null,
-    "status": "PASS"
-  },
-  "generated_at": "2026-09-07T03:55:16Z",
-  "head_sha": "83fef3c528b4eb77c09eda15df40735a41c8d45c",
-  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT",
-  "pr_number": 1330,
   "provenance": {
     "audit_source": "local-independent-agy-attestation",
     "auditor_independence": "PROVEN",
-    "canonical_proof": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT/PROOF.json",
-    "canonical_report": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT/AUDITOR_REPORT.md",
-    "content_head": "83fef3c528b4eb77c09eda15df40735a41c8d45c",
-    "content_tree": "735ad8956e0395927a4d827605d681f4d8ee4b8c",
-    "proof_only_successor_head_before_signature": "abb36b1bbe9327b3c63f2b41a964d6f1628db549"
-  },
-  "repo": "DDD-Enterprises/dopemux-mvp"
+    "canonical_proof": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/PROOF.json",
+    "canonical_report": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/AUDITOR_REPORT.md",
+    "content_head": "8826b7174c78388e7033f4bb4fe2e49acf363aa2",
+    "content_tree": "b709f708a3d574e008693c1f86770d1df67cba7c",
+    "proof_only_successor_head_before_signature": "038965aa3073d2926f24b2180264c869a02e9eaf"
+  }
 }
