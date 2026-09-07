@@ -2,8 +2,8 @@
   "packet_id": "TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002",
   "status": "PASS",
   "risk_lane": "L3",
-  "head_sha": "582862ea5f9d9fa56fd1221b22d53036778706b2",
-  "generated_at": "2026-09-07T04:25:00Z",
+  "head_sha": "0ed8bd5eea4dd630d0f12ae0884963a966b634bb",
+  "generated_at": "2026-09-07T04:40:00Z",
   "repo_identity": {
     "project_id": "dopemux-mvp",
     "repo_marker": ".dopetaskroot",
@@ -17,35 +17,46 @@
     "branch": "tp/red-lane-scanner-coverage-002",
     "base": "33a38119f97611e391aab719151ffadbf541f06c",
     "base_note": "origin/main tip after PR #1322 (red-lane path-regex hardening); current origin/main at time of this proof is 6a728f74c0311967f83213513308f97613e3f28d (PR #1328, unrelated CI change) but this packet's own diff base is #1322's merge commit",
-    "content_head": "582862ea5f9d9fa56fd1221b22d53036778706b2",
-    "final_head": "582862ea5f9d9fa56fd1221b22d53036778706b2"
+    "round1_head": "582862ea5f9d9fa56fd1221b22d53036778706b2",
+    "content_head": "0ed8bd5eea4dd630d0f12ae0884963a966b634bb",
+    "final_head": "0ed8bd5eea4dd630d0f12ae0884963a966b634bb"
   },
-  "background": "L3 runtime closure for TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002. Automated review on this packet's own prior test-only draft (PR #1325) found and this session independently reproduced a live bypass: RedLaneScanner silently failed to block exact-match FORBIDDEN_PATHS entries carrying a control character, because PR #1322's \\Z re-anchoring correctly fixed the wildcard rules but regressed the exact-match rules on this consumer, which has no independent control-character layer the way the hook does. Adds an unconditional scanner-side short-circuit mirroring the hook's, plus a regression matrix covering exact-match, wildcard, exemption-spoof, arbitrary-malformed, and clean-control cases (wildcard cases ported from PR #1321, head 353bd8b245beb2c137f1ef94b45227d885328fed, fetched and hash-verified before extraction). Isolated anti-vacuity mutation confirms the fix is load-bearing. src/dopemux/dcp/red_lane_rules.py and .claude/hooks/dcp_surface_guard.py are untouched, per packet scope. This PR does not merge as part of this proof.",
+  "background": "L3 runtime closure for TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002. Automated review on this packet's own prior test-only draft (PR #1325) found and this session independently reproduced a live bypass: RedLaneScanner silently failed to block exact-match FORBIDDEN_PATHS entries carrying a control character, because PR #1322's \\Z re-anchoring correctly fixed the wildcard rules but regressed the exact-match rules on this consumer, which has no independent control-character layer the way the hook does. Adds an unconditional scanner-side short-circuit mirroring the hook's, plus a regression matrix covering exact-match, wildcard, exemption-spoof, arbitrary-malformed, and clean-control cases (wildcard cases ported from PR #1321, head 353bd8b245beb2c137f1ef94b45227d885328fed, fetched and hash-verified before extraction). Round 2 addresses further automated-review findings on the round-1 PR: fixed a mutation-test methodology flaw (bare loop only observed the first failing probe; parametrized so all 13 probes are independently verified), pinned the donor content digest as an expected value, tightened the packet's HEAD-verification step wording, corrected the packet header's authority fields (which had gone stale after runtime authorization was granted), and documented one automated-review finding that cited a nonexistent git SHA as factually wrong. red_lane_scanner.py is unchanged between round 1 and round 2. src/dopemux/dcp/red_lane_rules.py and .claude/hooks/dcp_surface_guard.py are untouched throughout, per packet scope. This PR does not merge as part of this proof.",
   "files_changed": [
     "src/dopemux/dcp/red_lane_scanner.py",
     "tests/dcp/test_dcp_0005_red_lane_scanner.py",
+    "task-packets/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002.md",
+    "task-packets/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002.json",
     "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/MUTATION_EVIDENCE.md"
   ],
   "validation": [
-    {"command": "PYTHONPATH=src uv run --frozen pytest tests/dcp/test_dcp_0005_red_lane_scanner.py -q", "exit_code": 0, "result": "PASS", "detail": "36 passed (32 baseline + 4 new)"},
+    {"command": "PYTHONPATH=src uv run --frozen pytest tests/dcp/test_dcp_0005_red_lane_scanner.py -q", "exit_code": 0, "result": "PASS", "detail": "53 passed (32 baseline + 21 new after parametrization)"},
     {"command": "uv run --frozen pytest tests/test_dcp_surface_guard.py -q", "exit_code": 0, "result": "PASS", "detail": "44 passed, confirms hook (untouched) unaffected"},
-    {"command": "uv run --frozen pytest tests/dcp/ -q --deselect tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified", "exit_code": 0, "result": "PASS", "detail": "189 passed, 1 deselected (deselected test fails pre-existing/environmentally, unrelated to this diff -- see MUTATION_EVIDENCE.md)"},
+    {"command": "uv run --frozen pytest tests/dcp/ -q --deselect tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified", "exit_code": 0, "result": "PASS", "detail": "206 passed, 1 deselected (deselected test fails pre-existing/environmentally, unrelated to this diff -- see MUTATION_EVIDENCE.md)"},
     {"command": "git diff --check", "exit_code": 0, "result": "PASS", "detail": "clean, no whitespace issues"},
-    {"command": "pre-commit run --files src/dopemux/dcp/red_lane_scanner.py tests/dcp/test_dcp_0005_red_lane_scanner.py", "exit_code": 0, "result": "PASS", "detail": "clean (no Python lint hooks configured in this repo)"},
-    {"command": "isolated anti-vacuity mutation: _has_control_chars body -> return False", "exit_code": 1, "result": "PASS", "detail": "2 failed, 34 passed; first failure is the exact-match probe scripts/dopetask, Status.UNKNOWN instead of BLOCKED -- reproduces the original silent bypass; restored and re-verified green"}
+    {"command": "pre-commit run --files task-packets/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002.md task-packets/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002.json tests/dcp/test_dcp_0005_red_lane_scanner.py proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/MUTATION_EVIDENCE.md", "exit_code": 0, "result": "PASS", "detail": "clean (markdownlint, docs frontmatter/prelude/knowledge-graph validators, repo-root hygiene)"},
+    {"command": "isolated anti-vacuity mutation (parametrized, all probes independently observed): _has_control_chars body -> return False, pytest -k control_char", "exit_code": 1, "result": "PASS", "detail": "14 failed, 6 passed, 33 deselected; all 13 probes in _CONTROL_CHARACTER_BLOCK_PROBES plus the filesystem-skip test independently fail Status.UNKNOWN instead of BLOCKED -- reproduces the original silent bypass exhaustively, not just on the first probe; restored and re-verified green"}
   ],
   "embedded_audit": {
     "required": true,
     "status": "PASS",
     "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/red-lane-cov-2 --add-dir /tmp/redlane002_audit --print=\"$(cat /tmp/redlane002_audit/PROMPT.txt)\"",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/red-lane-cov-2 --add-dir /tmp/redlane002_audit --print=\"$(cat /tmp/redlane002_audit/PROMPT_ROUND2.txt)\"",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/AUDITOR_REPORT.md",
     "findings": [
-      {"id": "AUDIT-DCP-PR1304-001", "severity": "INFO", "title": "Diff scope exactly matches declared allowlist; red_lane_rules.py and dcp_surface_guard.py confirmed unmodified", "status": "RESOLVED", "body": "Auditor independently confirmed diff scope, execution order, fail-closed semantics, ran all three specified test commands itself, assessed test-probe quality, performed its own independent mutation test reproducing the same bypass, checked for secrets, and assessed blast radius as zero. Full detail in AUDITOR_REPORT.md."}
+      {"id": "AUDIT-DCP-PR1304-001", "severity": "INFO", "title": "Round 1: diff scope, logic, tests, and mutation independently verified PASS", "status": "RESOLVED", "body": "See AUDITOR_REPORT.md Round 1 section. Runtime fix at head 582862ea5f9d9fa56fd1221b22d53036778706b2."},
+      {"id": "AUDIT-R2-01", "severity": "INFO", "title": "Round 2: red_lane_scanner.py byte-identical to round 1; no runtime change", "status": "RESOLVED", "body": "git diff 582862ea5..HEAD -- src/dopemux/dcp/red_lane_scanner.py is empty, independently confirmed by the auditor."},
+      {"id": "AUDIT-R2-03", "severity": "INFO", "title": "Round 2: mutation test now exhausts and independently fails all 13 probes, not just the first", "status": "RESOLVED", "body": "Auditor independently ran the parametrized mutation test and observed the exact same 14-failure list this session's own evidence reports."},
+      {"id": "AUDIT-R2-06", "severity": "INFO", "title": "Round 2: fabricated review-finding claim (nonexistent SHA) independently corroborated as false", "status": "RESOLVED", "body": "Auditor confirmed the cited SHA does not exist as a git object and the real ancestry check passes."}
     ],
-    "fixes_applied": [],
+    "fixes_applied": [
+      "Round 2: parametrized the two control-character test functions so mutation evidence covers all 13 probes independently, not just the first",
+      "Round 2: pinned the donor content SHA-256 as an expected value in the packet document",
+      "Round 2: corrected the packet header's IMPLEMENTATION_AUTHORITY/RUNTIME_IMPLEMENTATION/STATUS fields, which had gone stale after runtime authorization was granted",
+      "Round 2: tightened the S1 execution-HEAD-vs-current-main verification wording"
+    ],
     "remaining_risks": [],
     "skip_reason": null,
     "instruction_like_content": {"detected": false, "match_count": 0, "truncated": false, "matches": []}

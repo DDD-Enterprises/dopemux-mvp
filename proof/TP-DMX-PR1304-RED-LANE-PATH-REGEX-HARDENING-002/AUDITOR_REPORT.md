@@ -12,13 +12,14 @@ consumer specifically, since it has no independent control-character layer
 the way `.claude/hooks/dcp_surface_guard.py` does.
 
 - Base: `33a38119f97611e391aab719151ffadbf541f06c` (origin/main, PR #1322 merged)
-- Head: `582862ea5f9d9fa56fd1221b22d53036778706b2`
+- Round 1 head: `582862ea5f9d9fa56fd1221b22d53036778706b2`
+- Round 2 head (current): `0ed8bd5eea4dd630d0f12ae0884963a966b634bb`
 
 ## Auditor
 
 `agy` (Google Antigravity CLI), model `gemini-3.1-pro-high`.
 
-## Round 1 (head `582862ea5`, current)
+## Round 1 (head `582862ea5`)
 
 **PASS** — auditor independently verified diff scope, execution order,
 fail-closed semantics, all three test-run commands, test-probe quality, and
@@ -89,3 +90,24 @@ Full raw output: `review_bundle/AGY_AUDIT_RAW.json`.
   `TEXT_RULES` content-matching noise from scanning this actual repository's
   real file contents, which is unrelated to the `FORBIDDEN_PATH` /
   `MALFORMED_PATH_CONTROL_CHARACTER` categories this fix governs).
+
+## Round 2 (head `0ed8bd5ee`, current)
+
+**PASS** — 10/10 findings verified. This round covers only a
+documentation/test-methodology correction commit made in response to
+automated PR review findings on round 1's PR (no runtime file changed).
+
+| ID | Severity | Title | Status |
+|---|---|---|---|
+| AUDIT-R2-01 | INFO | Source code byte-identity confirmed — `red_lane_scanner.py` unchanged since round 1 | VERIFIED |
+| AUDIT-R2-02 | INFO | Parametrized test modification confirmed; auditor ran the command itself | VERIFIED |
+| AUDIT-R2-03 | INFO | Mutation test exhausts and independently fails all 13 probes (not just the first) | VERIFIED |
+| AUDIT-R2-04 | INFO | `MUTATION_EVIDENCE.md` matches observed behavior exactly | VERIFIED |
+| AUDIT-R2-05 | INFO | Donor content hash pin verified after explicit fetch | VERIFIED |
+| AUDIT-R2-06 | INFO | Fabricated review finding claim corroborated — cited SHA does not exist; real ancestry check passes | VERIFIED |
+| AUDIT-R2-07 | INFO | Packet header authority fields accurately updated | VERIFIED |
+| AUDIT-R2-08 | INFO | JSON companion still schema-valid | VERIFIED |
+| AUDIT-R2-09 | INFO | No secrets/credentials in this round's diff | VERIFIED |
+| AUDIT-R2-10 | INFO | Diff bounded to docs/tests/proof only — no `src/` change | VERIFIED |
+
+Full raw output: `review_bundle/AGY_AUDIT_R2_RAW.json`.
