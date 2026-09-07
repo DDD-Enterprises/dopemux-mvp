@@ -1,4 +1,5 @@
 import os
+import re
 import json
 from datetime import datetime
 from typing import List, Optional
@@ -9,6 +10,20 @@ from dopemux.dcp.red_lane import (
 )
 from dopemux.dcp.red_lane_taxonomy import load_red_lane_taxonomy_info
 from dopemux.dcp.red_lane_rules import FORBIDDEN_PATHS, TEXT_RULES, is_safe_false_positive, redact_secret_like
+
+# TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002 (2026-09-07): mirrors
+# .claude/hooks/dcp_surface_guard.py's _CONTROL_CHARS / _has_control_chars.
+# PR #1322's \Z re-anchoring of FORBIDDEN_PATHS fixed the wildcard rules but
+# regressed the exact-match rules (no `.*`, no DOTALL): a trailing/embedded
+# control character in changed_files now silently bypasses them, since this
+# scanner, unlike the hook, had no independent fail-closed layer in front of
+# pattern matching. This short-circuit closes that gap unconditionally.
+_CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f]")
+
+
+def _has_control_chars(s: str) -> bool:
+    return bool(_CONTROL_CHARS.search(s))
+
 
 class RedLaneScanner:
     def __init__(self, repo_root: str):
@@ -32,9 +47,39 @@ class RedLaneScanner:
         taxonomy_info = load_red_lane_taxonomy_info(self.repo_root)
         
         findings = []
-        
+
+        # Unconditional control-character fail-closed short-circuit. Must run
+        # before FORBIDDEN_PATHS matching and before any filesystem access is
+        # attempted for a changed_files entry. A path that trips this is
+        # excluded from both loops below -- no pattern matching, no
+        # os.path.exists/open -- and is recorded as its own distinguishable
+        # blocking finding, never silently merged into an ordinary
+        # FORBIDDEN_PATH finding.
+        malformed_control_char_paths = set()
+        for fpath in changed_files:
+            if _has_control_chars(fpath):
+                malformed_control_char_paths.add(fpath)
+                findings.append(Finding(
+                    category="MALFORMED_PATH_CONTROL_CHARACTER",
+                    severity=Severity.CRITICAL,
+                    status=Status.BLOCKED,
+                    authority_label=AuthorityLabel.OBSERVED,
+                    evidence=(
+                        f"changed_files path contains an ASCII control character "
+                        f"(0x00-0x1F or 0x7F, e.g. embedded/trailing newline): {fpath!r}"
+                    ),
+                    recommended_action=(
+                        "Remove the control character from the path. This path is "
+                        "rejected unconditionally, before FORBIDDEN_PATHS matching "
+                        "and before any filesystem access."
+                    ),
+                    path=fpath
+                ))
+
         # Check Paths
         for fpath in changed_files:
+            if fpath in malformed_control_char_paths:
+                continue
             for pattern in FORBIDDEN_PATHS:
                 if pattern.match(fpath):
                     findings.append(Finding(
@@ -49,6 +94,8 @@ class RedLaneScanner:
 
         # Check Source Text
         for fpath in changed_files:
+            if fpath in malformed_control_char_paths:
+                continue
             if is_safe_false_positive(fpath):
                 continue
             full_path = os.path.join(self.repo_root, fpath)
