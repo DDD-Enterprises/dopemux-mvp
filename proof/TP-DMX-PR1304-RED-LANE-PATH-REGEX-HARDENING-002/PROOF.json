@@ -2,8 +2,9 @@
   "packet_id": "TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002",
   "status": "PASS",
   "risk_lane": "L3",
-  "head_sha": "0ed8bd5eea4dd630d0f12ae0884963a966b634bb",
-  "generated_at": "2026-09-07T04:40:00Z",
+  "head_sha": "6be339b7f29f60114f74bbddcf97edba6cfa3eb3",
+  "generated_at": "2026-09-07T04:59:00Z",
+  "status_scope_note": "PASS describes this document's own claims: local implementation validation and independent embedded audit of the exact head_sha above. It does NOT assert current live CI or PR Steward outcomes for this exact commit -- those are necessarily determined AFTER this commit is pushed and cannot be causally embedded in the commit's own proof file. See ci_pr_steward_evidence below for the last-observed values and why a fresh live check is required before any merge decision.",
   "repo_identity": {
     "project_id": "dopemux-mvp",
     "repo_marker": ".dopetaskroot",
@@ -18,10 +19,11 @@
     "base": "33a38119f97611e391aab719151ffadbf541f06c",
     "base_note": "origin/main tip after PR #1322 (red-lane path-regex hardening); current origin/main at time of this proof is 6a728f74c0311967f83213513308f97613e3f28d (PR #1328, unrelated CI change) but this packet's own diff base is #1322's merge commit",
     "round1_head": "582862ea5f9d9fa56fd1221b22d53036778706b2",
-    "content_head": "0ed8bd5eea4dd630d0f12ae0884963a966b634bb",
-    "final_head": "0ed8bd5eea4dd630d0f12ae0884963a966b634bb"
+    "round2_head": "0ed8bd5eea4dd630d0f12ae0884963a966b634bb",
+    "content_head": "6be339b7f29f60114f74bbddcf97edba6cfa3eb3",
+    "final_head": "6be339b7f29f60114f74bbddcf97edba6cfa3eb3"
   },
-  "background": "L3 runtime closure for TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002. Automated review on this packet's own prior test-only draft (PR #1325) found and this session independently reproduced a live bypass: RedLaneScanner silently failed to block exact-match FORBIDDEN_PATHS entries carrying a control character, because PR #1322's \\Z re-anchoring correctly fixed the wildcard rules but regressed the exact-match rules on this consumer, which has no independent control-character layer the way the hook does. Adds an unconditional scanner-side short-circuit mirroring the hook's, plus a regression matrix covering exact-match, wildcard, exemption-spoof, arbitrary-malformed, and clean-control cases (wildcard cases ported from PR #1321, head 353bd8b245beb2c137f1ef94b45227d885328fed, fetched and hash-verified before extraction). Round 2 addresses further automated-review findings on the round-1 PR: fixed a mutation-test methodology flaw (bare loop only observed the first failing probe; parametrized so all 13 probes are independently verified), pinned the donor content digest as an expected value, tightened the packet's HEAD-verification step wording, corrected the packet header's authority fields (which had gone stale after runtime authorization was granted), and documented one automated-review finding that cited a nonexistent git SHA as factually wrong. red_lane_scanner.py is unchanged between round 1 and round 2. src/dopemux/dcp/red_lane_rules.py and .claude/hooks/dcp_surface_guard.py are untouched throughout, per packet scope. This PR does not merge as part of this proof.",
+  "background": "L3 runtime closure for TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002. Automated review on this packet's own prior test-only draft (PR #1325) found and this session independently reproduced a live bypass: RedLaneScanner silently failed to block exact-match FORBIDDEN_PATHS entries carrying a control character. Adds an unconditional scanner-side short-circuit mirroring the hook's, plus a regression matrix covering exact-match, wildcard, exemption-spoof, arbitrary-malformed, and clean-control cases. Round 2 fixed a mutation-test methodology flaw (parametrized so all 13 probes are independently verified), pinned the donor content digest, tightened S1's HEAD-verification wording, and corrected the packet header's authority fields. Round 3 fixed three further findings: the filesystem-access test now mocks and asserts os.path.exists/open are never called (independently proven non-vacuous by the auditor moving the short-circuit and confirming the test then fails); S1 now asserts hard equality with origin/main after an explicit fast-forward, not mere ancestry (which silently tolerated a stale HEAD); and MUTATION_EVIDENCE.md's claim was corrected to distinguish the 7 probes that genuinely revert to a full silent bypass (Status.UNKNOWN, zero findings) from the 6 wildcard/exemption probes that only lose their MALFORMED_PATH_CONTROL_CHARACTER category label while remaining correctly Status.BLOCKED via PR #1322's independent red_lane_rules.py fix. red_lane_scanner.py is unchanged since round 1 across all three rounds. src/dopemux/dcp/red_lane_rules.py and .claude/hooks/dcp_surface_guard.py are untouched throughout, per packet scope. This PR does not merge as part of this proof.",
   "files_changed": [
     "src/dopemux/dcp/red_lane_scanner.py",
     "tests/dcp/test_dcp_0005_red_lane_scanner.py",
@@ -30,32 +32,39 @@
     "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/MUTATION_EVIDENCE.md"
   ],
   "validation": [
-    {"command": "PYTHONPATH=src uv run --frozen pytest tests/dcp/test_dcp_0005_red_lane_scanner.py -q", "exit_code": 0, "result": "PASS", "detail": "53 passed (32 baseline + 21 new after parametrization)"},
+    {"command": "PYTHONPATH=src uv run --frozen pytest tests/dcp/test_dcp_0005_red_lane_scanner.py -q", "exit_code": 0, "result": "PASS", "detail": "53 passed"},
     {"command": "uv run --frozen pytest tests/test_dcp_surface_guard.py -q", "exit_code": 0, "result": "PASS", "detail": "44 passed, confirms hook (untouched) unaffected"},
     {"command": "uv run --frozen pytest tests/dcp/ -q --deselect tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified", "exit_code": 0, "result": "PASS", "detail": "206 passed, 1 deselected (deselected test fails pre-existing/environmentally, unrelated to this diff -- see MUTATION_EVIDENCE.md)"},
     {"command": "git diff --check", "exit_code": 0, "result": "PASS", "detail": "clean, no whitespace issues"},
-    {"command": "pre-commit run --files task-packets/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002.md task-packets/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002.json tests/dcp/test_dcp_0005_red_lane_scanner.py proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/MUTATION_EVIDENCE.md", "exit_code": 0, "result": "PASS", "detail": "clean (markdownlint, docs frontmatter/prelude/knowledge-graph validators, repo-root hygiene)"},
-    {"command": "isolated anti-vacuity mutation (parametrized, all probes independently observed): _has_control_chars body -> return False, pytest -k control_char", "exit_code": 1, "result": "PASS", "detail": "14 failed, 6 passed, 33 deselected; all 13 probes in _CONTROL_CHARACTER_BLOCK_PROBES plus the filesystem-skip test independently fail Status.UNKNOWN instead of BLOCKED -- reproduces the original silent bypass exhaustively, not just on the first probe; restored and re-verified green"}
+    {"command": "pre-commit run (all touched files)", "exit_code": 0, "result": "PASS", "detail": "clean (markdownlint, docs frontmatter/prelude/knowledge-graph validators, repo-root hygiene)"},
+    {"command": "isolated anti-vacuity mutation (parametrized): _has_control_chars body -> return False, per-probe status/category collected", "exit_code": 1, "result": "PASS", "detail": "7 of 13 probes (5 exact-match + 2 arbitrary-malformed) revert to Status.UNKNOWN with zero findings -- the true original bypass; the other 6 (wildcard/exemption-spoof) remain Status.BLOCKED via FORBIDDEN_PATH (PR #1322's independent fix) and fail only on the missing MALFORMED_PATH_CONTROL_CHARACTER category. See MUTATION_EVIDENCE.md for the full per-probe table."},
+    {"command": "non-vacuity check on the filesystem-access mock test: move the short-circuit after the filesystem loop in a scratch copy", "exit_code": 1, "result": "PASS", "detail": "test_scanner_control_char_short_circuit_skips_filesystem_access fails with AssertionError: Expected 'exists' to not have been called -- confirmed independently by the round-3 auditor"}
   ],
+  "ci_pr_steward_evidence": {
+    "note": "This document is committed as part of the same push whose CI/PR-Steward outcome it would need to report, so it cannot causally embed a result for its own head_sha at generation time. Values below are the last live-observed outcomes on this PR branch (round 2, head 0ed8bd5ee/94a172b40) as tracked via `gh pr checks 1325`; a fresh check against the actual final head is required before any merge decision, not reliance on this field.",
+    "last_observed_head": "94a172b40",
+    "independent_embedded_audit": "PASS",
+    "pr_steward_final_readiness": "NEEDS_IMPLEMENTER (blockers: REVIEW_ITEM_MUST_FIX, UNRESOLVED_REVIEW_THREAD -- both driven by the 5 review threads this round-3 commit addresses; all 13 prior threads were resolved before this round)",
+    "other_ci_checks_at_last_observation": "all passing (Unit Tests, Extractor Full/Lint/Smoke, Code Quality, Security Review, CodeQL, Analyze x4, identity-check x2, preflight, checks, Clobber Guard, Audit Proof Validator, Documentation Check, Auditor Router, Model Routing Consistency)"
+  },
   "embedded_audit": {
     "required": true,
     "status": "PASS",
     "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/red-lane-cov-2 --add-dir /tmp/redlane002_audit --print=\"$(cat /tmp/redlane002_audit/PROMPT_ROUND2.txt)\"",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/red-lane-cov-2 --add-dir /tmp/redlane002_audit --print=\"$(cat /tmp/redlane002_audit/PROMPT_ROUND3.txt)\"",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/AUDITOR_REPORT.md",
     "findings": [
       {"id": "AUDIT-DCP-PR1304-001", "severity": "INFO", "title": "Round 1: diff scope, logic, tests, and mutation independently verified PASS", "status": "RESOLVED", "body": "See AUDITOR_REPORT.md Round 1 section. Runtime fix at head 582862ea5f9d9fa56fd1221b22d53036778706b2."},
-      {"id": "AUDIT-R2-01", "severity": "INFO", "title": "Round 2: red_lane_scanner.py byte-identical to round 1; no runtime change", "status": "RESOLVED", "body": "git diff 582862ea5..HEAD -- src/dopemux/dcp/red_lane_scanner.py is empty, independently confirmed by the auditor."},
-      {"id": "AUDIT-R2-03", "severity": "INFO", "title": "Round 2: mutation test now exhausts and independently fails all 13 probes, not just the first", "status": "RESOLVED", "body": "Auditor independently ran the parametrized mutation test and observed the exact same 14-failure list this session's own evidence reports."},
-      {"id": "AUDIT-R2-06", "severity": "INFO", "title": "Round 2: fabricated review-finding claim (nonexistent SHA) independently corroborated as false", "status": "RESOLVED", "body": "Auditor confirmed the cited SHA does not exist as a git object and the real ancestry check passes."}
+      {"id": "AUDIT-R2-03", "severity": "INFO", "title": "Round 2: mutation test exhausts and independently fails all applicable probes", "status": "RESOLVED", "body": "Auditor independently ran the parametrized mutation test in round 2."},
+      {"id": "AUDIT-R3-02", "severity": "INFO", "title": "Round 3: filesystem-access mock test independently proven non-vacuous", "status": "RESOLVED", "body": "Auditor moved the short-circuit after the filesystem loop in its own scratch copy and confirmed the test then fails with AssertionError: Expected 'exists' to not have been called. Called 1 times."},
+      {"id": "AUDIT-R3-03", "severity": "INFO", "title": "Round 3: S1 hard-equality-after-fast-forward assertion confirmed", "status": "RESOLVED", "body": "Replaces a prior ancestry-only check that silently tolerated a stale HEAD."},
+      {"id": "AUDIT-R3-04", "severity": "INFO", "title": "Round 3: corrected 7-status-layer/6-category-layer mutation split independently reproduced exactly", "status": "RESOLVED", "body": "Auditor's own per-probe scan matched this session's evidence exactly: 5 exact-match + 2 arbitrary-malformed -> Status.UNKNOWN/no findings; 6 wildcard/exemption -> Status.BLOCKED via FORBIDDEN_PATH."}
     ],
     "fixes_applied": [
-      "Round 2: parametrized the two control-character test functions so mutation evidence covers all 13 probes independently, not just the first",
-      "Round 2: pinned the donor content SHA-256 as an expected value in the packet document",
-      "Round 2: corrected the packet header's IMPLEMENTATION_AUTHORITY/RUNTIME_IMPLEMENTATION/STATUS fields, which had gone stale after runtime authorization was granted",
-      "Round 2: tightened the S1 execution-HEAD-vs-current-main verification wording"
+      "Round 2: parametrized the two control-character test functions, pinned the donor content digest, corrected the packet header authority fields, tightened S1 wording",
+      "Round 3: mocked and asserted os.path.exists/open are never called in the filesystem-skip test; hardened S1 to a post-fast-forward equality assertion; corrected the mutation-evidence claim to distinguish status-layer bypass from category-layer regression"
     ],
     "remaining_risks": [],
     "skip_reason": null,
