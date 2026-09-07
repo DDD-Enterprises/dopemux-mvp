@@ -49,5 +49,21 @@
     "remaining_risks": [],
     "skip_reason": null,
     "instruction_like_content": {"detected": false, "match_count": 0, "truncated": false, "matches": []}
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "claude-sonnet-5",
+      "model_family": "anthropic-claude",
+      "runtime_family": "claude-code-cli"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini-3.1-pro-high",
+      "model_family": "google-gemini",
+      "runtime_family": "agy",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
   }
 }
