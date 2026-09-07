@@ -1,4 +1,20 @@
 {
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "gemini-3.1-pro-high",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "agy"
+    },
+    "implementer": {
+      "model": "gpt-5",
+      "model_family": "openai-gpt",
+      "runner": "codex-cli",
+      "runtime_family": "codex-cli"
+    },
+    "independence": "PROVEN"
+  },
   "embedded_audit": {
     "auditor_model": "gemini-3.1-pro-high",
     "auditor_tool": "agy",
