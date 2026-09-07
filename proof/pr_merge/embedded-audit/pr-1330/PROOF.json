@@ -1,37 +1,29 @@
 {
-  "repo": "DDD-Enterprises/dopemux-mvp",
-  "pr_number": 1330,
-  "head_sha": "6ae694021de3d637c84289477b045c32f568754f",
-  "generated_at": "2026-09-06T08:09:44Z",
   "embedded_audit": {
-    "required": true,
-    "status": "PASS",
-    "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "rtk agy --model gemini-3.1-pro-high --effort high --mode plan --sandbox --disable-slash-commands --print-timeout 10m --output-format json --log-file /tmp/tp-dmx-ci-audit-a5-r1-agy.log --print <inline prompt recorded in review_bundle/AUDIT_REQUEST.md>",
+    "auditor_tool": "agy",
     "exit_code": 0,
-    "report_path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT/AUDITOR_REPORT.md",
     "findings": [],
     "fixes_applied": [],
-    "remaining_risks": [
-      "Lowercase or noncanonical skipped statuses remain blocking, but normalized output hides original casing while preserving the blocker. Diagnostic context is reduced; required security behavior remains fail-closed."
-    ],
-    "skip_reason": null
+    "invocation": "rtk agy --model gemini-3.1-pro-high --effort high --mode plan --new-project --add-dir <bounded-audit-bundle> --print <request in review_bundle/AUDIT_REQUEST.md> --print-timeout 10m",
+    "remaining_risks": [],
+    "report_path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
   },
-  "audit_identity": {
-    "implementer": {
-      "runner": "codex-cli",
-      "model": "gpt-5.6-sol",
-      "model_family": "openai-gpt",
-      "runtime_family": "codex-cli"
-    },
-    "auditor": {
-      "runner": "agy",
-      "model": "gemini-3.1-pro-high",
-      "model_family": "google-gemini",
-      "runtime_family": "agy",
-      "effort": "high"
-    },
-    "independence": "PROVEN"
-  }
+  "generated_at": "2026-09-07T03:55:16Z",
+  "head_sha": "83fef3c528b4eb77c09eda15df40735a41c8d45c",
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT",
+  "pr_number": 1330,
+  "provenance": {
+    "audit_source": "local-independent-agy-attestation",
+    "auditor_independence": "PROVEN",
+    "canonical_proof": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT/PROOF.json",
+    "canonical_report": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT/AUDITOR_REPORT.md",
+    "content_head": "83fef3c528b4eb77c09eda15df40735a41c8d45c",
+    "content_tree": "735ad8956e0395927a4d827605d681f4d8ee4b8c",
+    "proof_only_successor_head_before_signature": "abb36b1bbe9327b3c63f2b41a964d6f1628db549"
+  },
+  "repo": "DDD-Enterprises/dopemux-mvp"
 }
