@@ -1,14 +1,15 @@
 {
   "audit_identity": {
     "auditor": {
-      "cli_version": "1.1.27",
       "effort": "high",
       "model": "gemini-3.1-pro-high",
+      "model_family": "google-gemini",
       "runner": "agy",
       "runtime_family": "agy"
     },
     "implementer": {
       "model": "gpt-5",
+      "model_family": "openai-gpt",
       "runner": "codex-cli",
       "runtime_family": "codex-cli"
     },
