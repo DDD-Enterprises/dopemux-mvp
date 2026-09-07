@@ -1,27 +1,26 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1325,
-  "head_sha": "0ed8bd5eea4dd630d0f12ae0884963a966b634bb",
-  "generated_at": "2026-09-07T04:40:00Z",
+  "head_sha": "6be339b7f29f60114f74bbddcf97edba6cfa3eb3",
+  "generated_at": "2026-09-07T04:59:00Z",
   "embedded_audit": {
     "required": true,
     "status": "PASS",
     "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/red-lane-cov-2 --add-dir /tmp/redlane002_audit --print=\"$(cat /tmp/redlane002_audit/PROMPT_ROUND2.txt)\"",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/red-lane-cov-2 --add-dir /tmp/redlane002_audit --print=\"$(cat /tmp/redlane002_audit/PROMPT_ROUND3.txt)\"",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/AUDITOR_REPORT.md",
     "findings": [
       {"id": "AUDIT-DCP-PR1304-001", "severity": "INFO", "title": "Round 1: diff scope, logic, tests, and mutation independently verified PASS", "status": "RESOLVED", "body": "See AUDITOR_REPORT.md Round 1 section. Runtime fix at head 582862ea5f9d9fa56fd1221b22d53036778706b2."},
-      {"id": "AUDIT-R2-01", "severity": "INFO", "title": "Round 2: red_lane_scanner.py byte-identical to round 1; no runtime change", "status": "RESOLVED", "body": "git diff 582862ea5..HEAD -- src/dopemux/dcp/red_lane_scanner.py is empty, independently confirmed by the auditor."},
-      {"id": "AUDIT-R2-03", "severity": "INFO", "title": "Round 2: mutation test now exhausts and independently fails all 13 probes, not just the first", "status": "RESOLVED", "body": "Auditor independently ran the parametrized mutation test and observed the exact same 14-failure list this session's own evidence reports."},
-      {"id": "AUDIT-R2-06", "severity": "INFO", "title": "Round 2: fabricated review-finding claim (nonexistent SHA) independently corroborated as false", "status": "RESOLVED", "body": "Auditor confirmed the cited SHA does not exist as a git object and the real ancestry check passes."}
+      {"id": "AUDIT-R2-03", "severity": "INFO", "title": "Round 2: mutation test exhausts and independently fails all applicable probes", "status": "RESOLVED", "body": "Auditor independently ran the parametrized mutation test in round 2."},
+      {"id": "AUDIT-R3-02", "severity": "INFO", "title": "Round 3: filesystem-access mock test independently proven non-vacuous", "status": "RESOLVED", "body": "Auditor moved the short-circuit after the filesystem loop in its own scratch copy and confirmed the test then fails with AssertionError: Expected 'exists' to not have been called. Called 1 times."},
+      {"id": "AUDIT-R3-03", "severity": "INFO", "title": "Round 3: S1 hard-equality-after-fast-forward assertion confirmed", "status": "RESOLVED", "body": "Replaces a prior ancestry-only check that silently tolerated a stale HEAD."},
+      {"id": "AUDIT-R3-04", "severity": "INFO", "title": "Round 3: corrected 7-status-layer/6-category-layer mutation split independently reproduced exactly", "status": "RESOLVED", "body": "Auditor's own per-probe scan matched this session's evidence exactly."}
     ],
     "fixes_applied": [
-      "Round 2: parametrized the two control-character test functions so mutation evidence covers all 13 probes independently, not just the first",
-      "Round 2: pinned the donor content SHA-256 as an expected value in the packet document",
-      "Round 2: corrected the packet header's IMPLEMENTATION_AUTHORITY/RUNTIME_IMPLEMENTATION/STATUS fields, which had gone stale after runtime authorization was granted",
-      "Round 2: tightened the S1 execution-HEAD-vs-current-main verification wording"
+      "Round 2: parametrized the two control-character test functions, pinned the donor content digest, corrected the packet header authority fields, tightened S1 wording",
+      "Round 3: mocked and asserted os.path.exists/open are never called in the filesystem-skip test; hardened S1 to a post-fast-forward equality assertion; corrected the mutation-evidence claim to distinguish status-layer bypass from category-layer regression"
     ],
     "remaining_risks": [],
     "skip_reason": null,
