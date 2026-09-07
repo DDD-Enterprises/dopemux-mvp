@@ -1,0 +1,152 @@
+{
+  "PACKET_ID": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE",
+  "RETURN_STATUS": "BLOCKED",
+  "BASE_MAIN": "6a728f74c0311967f83213513308f97613e3f28d",
+  "START_HEAD": "faaedb76d5d360ead80f75e1db4a9fa0523f7a2c",
+  "NEW_FROZEN_CONTENT_HEAD": "8826b7174c78388e7033f4bb4fe2e49acf363aa2",
+  "FINAL_PROOF_HEAD": "NOT_RUN",
+  "PR": 1330,
+  "FINALIZATION_NOT_REQUIRED_DEFECT_REPRODUCED": "YES",
+  "FINALIZATION_EVIDENCE_REQUIRED_PRESERVED": "PASS",
+  "FINALIZATION_EVIDENCE_SKIP_REASON_PRESERVED": "PASS",
+  "STRICT_PASS_FINALIZATION": "PASS",
+  "EXACT_NOT_REQUIRED_FINALIZATION": "PASS",
+  "PASS_WITH_RISKS_FINALIZATION": "DENIED",
+  "MIXED_FINALIZATION": "DENIED",
+  "MALFORMED_FINALIZATION": "DENIED",
+  "INHERITED_PROOF_SEMANTICS_UNCHANGED": "PASS",
+  "INHERITED_PROOF_PORTABILITY_PRIVACY": "PASS",
+  "INHERITED_PROOF_SCHEMA": "PASS",
+  "FOCUSED_TESTS": "PASS",
+  "RELEVANT_COMPLETE_SUITE": "PASS",
+  "CHANGE_CONTRACT": "PASS",
+  "PRECOMMIT": "PASS",
+  "SECRET_SCAN": "PASS",
+  "AUDITOR_RUNNER": "NOT_RUN",
+  "AUDITOR_MODEL": "NOT_RUN",
+  "AUDITOR_EFFORT": "NOT_RUN",
+  "AUDITOR_INDEPENDENCE": "NOT_RUN",
+  "INDEPENDENT_L3_AUDIT": "NOT_RUN",
+  "CANONICAL_PROOF": "NOT_RUN",
+  "NEW_PROOF_PORTABILITY_PRIVACY": "NOT_RUN",
+  "PR_SCOPED_ATTESTATION": "NOT_RUN",
+  "CONTENT_REAUDIT": "NOT_RUN",
+  "FINALIZATION_P1_THREAD": "OPEN",
+  "PROOF_PRIVACY_THREAD": "OPEN",
+  "NEW_BLOCKING_REVIEW_ITEMS": "UNKNOWN",
+  "CI_MODEL_EXECUTION": 0,
+  "CI_PROVIDER_MODEL_CALLS": 0,
+  "CLINK_AUDITS": 0,
+  "SECURITY_RELEASE_APPROVAL": "NOT_RUN",
+  "REQUIRED_CHECKS": "NOT_RUN",
+  "PR_STEWARD": "NOT_RUN",
+  "BLOCKERS": [
+    "EXTERNAL_AUDIT_SUBJECT_EXPORT_APPROVAL_PENDING"
+  ],
+  "UNKNOWNS": [
+    "independent auditor execution identity and result",
+    "final proof head",
+    "final exact-head CI and Steward readiness"
+  ],
+  "MERGE_READINESS": "NOT_RUN",
+  "NEW_PR_CREATED": "NO",
+  "READY_STATE_MUTATION": "NO",
+  "MERGE": "NO",
+  "PR_1327_MUTATIONS": 0,
+  "R0_LAUNCHED": "NO",
+  "phase": "S5_CONTENT_FROZEN_AWAITING_AUDIT_EXPORT_AUTHORITY",
+  "non_gating_ruff_probe": {
+    "path": "src/dopemux_pr_merge_specialist/queue_drain.py",
+    "baseline_exit_code": 1,
+    "frozen_head_exit_code": 1,
+    "diagnostics_per_head": 79,
+    "comparison_exit_code": 0,
+    "comparison": "Identical multisets of diagnostic code, message, and source line text at baseline and frozen head",
+    "disposition": "Pre-existing whole-module debt; no new diagnostics; no out-of-scope cleanup"
+  },
+  "subject_tree": "b709f708a3d574e008693c1f86770d1df67cba7c",
+  "validation": {
+    "focused": {
+      "exit_code": 0,
+      "passed": 118
+    },
+    "complete": {
+      "exit_code": 0,
+      "passed": 1035,
+      "skipped": 2,
+      "seconds": 31.59
+    },
+    "exact_committed_change_contract": {
+      "command": "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "exit_code": 0,
+      "classifier_lane": "L2",
+      "enforced_packet_lane": "L3"
+    },
+    "staged_precommit": {
+      "exit_code": 0,
+      "modified_files": 0
+    },
+    "exact_head_precommit": {
+      "command": "pre-commit run --from-ref origin/main --to-ref HEAD",
+      "exit_code": 0,
+      "modified_files": 0
+    },
+    "git_commit_hook": {
+      "exit_code": 0,
+      "smoke_tests": 6,
+      "syntax_files": 1041
+    },
+    "staged_gitleaks": {
+      "command": "env GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.fsmonitor GIT_CONFIG_VALUE_0=false gitleaks protect --staged --verbose --redact",
+      "exit_code": 0,
+      "scanned_bytes": 57215,
+      "findings": 0
+    },
+    "export_bundle_gitleaks": {
+      "exit_code": 0,
+      "scanned_bytes": 255582,
+      "findings": 0
+    },
+    "inherited_privacy": {
+      "changed_field": "worktree.path",
+      "new_value": ".",
+      "all_other_parsed_fields_equal": true,
+      "manifest_entries": 5,
+      "manifest_mismatches": 0,
+      "signature_coupling": "NOT_APPLICABLE"
+    }
+  },
+  "audit_subject": {
+    "directory_basename": "r3-audit-subject-8826b7174",
+    "files": 16,
+    "manifest_sha256": "39f5bb4a7928479071641da91e5e779e4ee6a8c8e8815b8425e05553581669be",
+    "redactions": [
+      "One inherited R1 worktree.path before-value in review diff; original diff hash retained"
+    ],
+    "exported": false,
+    "permission": "PENDING_EXPLICIT_OPERATOR_APPROVAL"
+  },
+  "auditor_discovery": {
+    "runner": "agy",
+    "selector": "gemini-3.1-pro-high",
+    "effort_option": "high",
+    "live_catalog_exit_code": 0,
+    "actual_audit_invocations": 0
+  },
+  "implementer": {
+    "runner": "codex-cli",
+    "model": "gpt-5.6-sol",
+    "effort": "high",
+    "session_id": "01a07a47-7704-7d30-a689-684ed3bbc3ec",
+    "exit_code": 0
+  },
+  "custody": {
+    "worktree": ".worktrees/ci-audit-finalization-a5-r3",
+    "branch": "detached",
+    "push_target": "fix/ci-audit-steward-not-required-a5-r1",
+    "source_content_frozen": true,
+    "remote_pushes": 0,
+    "cleanup": "PRESERVED_PENDING_AUDIT",
+    "prior_failed_receipts": "VALIDATION.json retained as historical stop; BASELINE_AMENDMENT.json resolved baseline failure."
+  }
+}

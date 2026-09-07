@@ -1,0 +1,158 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1330,
+  "head_sha": "8826b7174c78388e7033f4bb4fe2e49acf363aa2",
+  "content_tree": "b709f708a3d574e008693c1f86770d1df67cba7c",
+  "base_sha": "6a728f74c0311967f83213513308f97613e3f28d",
+  "generated_at": "2026-09-07T05:42:27.596135+00:00",
+  "risk_lane": "L3",
+  "status": "AUDIT_PASS_FINALIZATION_PENDING",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "rtk proxy python3 -B <local-custody-wrapper> --run -> agy --model gemini-3.1-pro-high --effort high --mode plan --sandbox --new-project --disable-slash-commands --add-dir <approved-audit-bundle> --output-format json --print <review_bundle/AUDIT_REQUEST.md> --print-timeout 10m",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Static independent review did not execute host tests; operator deterministic validation is separately recorded.",
+      "AGY warned --mode plan has no effect with slash command expansion disabled. --sandbox was explicitly selected; the approved bundle remained exactly unchanged. Plan mode is not claimed as an enforced boundary.",
+      "SSH signatures are operator attestations, not independently auditor-signed execution proofs."
+    ],
+    "skip_reason": null
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "codex-cli",
+      "model": "gpt-5.6-sol",
+      "model_family": "openai-gpt",
+      "runtime_family": "codex-cli"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini-3.1-pro-high",
+      "effort": "high",
+      "model_family": "google-gemini",
+      "runtime_family": "agy"
+    },
+    "independence": "PROVEN"
+  },
+  "audit_result": {
+    "verdict": "PASS",
+    "subject_head": "8826b7174c78388e7033f4bb4fe2e49acf363aa2",
+    "subject_tree": "b709f708a3d574e008693c1f86770d1df67cba7c",
+    "actual_runner": "AGY",
+    "actual_model": "gemini-3.1-pro-high",
+    "actual_effort": "high",
+    "independence_reasoning": "Static verification of the frozen repository bundle completed by AGY independently of the operator's runtime execution. The audit reviewed the source logic to confirm exact string matching, boolean typing, and strict pair matching for finalization contracts in `steward_gate.py` and `queue_drain.py`, successfully validating the absence of coercion and bypasses. Provided test assertions were reviewed and confirmed to non-vacuously cover all public paths and required malformed states. Inherited R1 privacy repair was checked in diff representation for semantic non-drift. No host tests were executed directly during this static review.",
+    "blocking_findings": [],
+    "nonblocking_risks": [],
+    "summary": "Final L3 audit successfully verified the strict finalization contract closure. Both `steward_gate.py` and `queue_drain.py` correctly implement the exact `SKIPPED` / `required=False` / canonical `skip_reason` trusted NOT_REQUIRED path while denying mixed cases, malformed evidence, and `PASS_WITH_RISKS`. Inherited proof privacy edit correctly replaces the absolute path without altering historical validity. Mirror hashes match, no CI model path was added, and tests comprehensively enforce the constraints."
+  },
+  "files_changed": [
+    ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+    ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+    ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+    ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+    "docs/ops/steward-merge-gate.md",
+    "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT/PROOF.json",
+    "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/VALIDATION.json",
+    "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/implementation-notes.md",
+    "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/review_bundle/BASELINE_AMENDMENT.json",
+    "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/review_bundle/DETERMINISTIC_VALIDATION.json",
+    "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/review_bundle/EXECUTION_AUTHORITY.json",
+    "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/review_bundle/TDD_GREEN.json",
+    "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/review_bundle/TDD_RED.json",
+    "src/dopemux_pr_merge_specialist/queue_drain.py",
+    "src/dopemux_pr_merge_specialist/steward_gate.py",
+    "task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE.json",
+    "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+    "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+    "tests/pr_merge_specialist/test_finalization_gate.py",
+    "tests/pr_merge_specialist/test_template_contracts.py"
+  ],
+  "validation": {
+    "focused": {
+      "exit_code": 0,
+      "passed": 118
+    },
+    "complete": {
+      "exit_code": 0,
+      "passed": 1035,
+      "skipped": 2,
+      "seconds": 31.59
+    },
+    "exact_committed_change_contract": {
+      "command": "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "exit_code": 0,
+      "classifier_lane": "L2",
+      "enforced_packet_lane": "L3"
+    },
+    "staged_precommit": {
+      "exit_code": 0,
+      "modified_files": 0
+    },
+    "exact_head_precommit": {
+      "command": "pre-commit run --from-ref origin/main --to-ref HEAD",
+      "exit_code": 0,
+      "modified_files": 0
+    },
+    "git_commit_hook": {
+      "exit_code": 0,
+      "smoke_tests": 6,
+      "syntax_files": 1041
+    },
+    "staged_gitleaks": {
+      "command": "env GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.fsmonitor GIT_CONFIG_VALUE_0=false gitleaks protect --staged --verbose --redact",
+      "exit_code": 0,
+      "scanned_bytes": 57215,
+      "findings": 0
+    },
+    "export_bundle_gitleaks": {
+      "exit_code": 0,
+      "scanned_bytes": 255582,
+      "findings": 0
+    },
+    "inherited_privacy": {
+      "changed_field": "worktree.path",
+      "new_value": ".",
+      "all_other_parsed_fields_equal": true,
+      "manifest_entries": 5,
+      "manifest_mismatches": 0,
+      "signature_coupling": "NOT_APPLICABLE"
+    }
+  },
+  "worktree": {
+    "path": ".worktrees/ci-audit-finalization-a5-r3",
+    "branch": "detached",
+    "push_target": "fix/ci-audit-steward-not-required-a5-r1",
+    "source_head": "faaedb76d5d360ead80f75e1db4a9fa0523f7a2c",
+    "content_head": "8826b7174c78388e7033f4bb4fe2e49acf363aa2",
+    "content_tree": "b709f708a3d574e008693c1f86770d1df67cba7c"
+  },
+  "authority": {
+    "operator_execution_gate": "YES",
+    "github_mutation_authority": "YES",
+    "external_audit_export_approval": "YES",
+    "approved_audit_bundle_files": 16,
+    "approved_manifest_sha256": "39f5bb4a7928479071641da91e5e779e4ee6a8c8e8815b8425e05553581669be"
+  },
+  "remaining_gates": [
+    "signed proof-only successor validation",
+    "normal push and exact-head CI",
+    "two targeted review-thread dispositions",
+    "fresh exact-final-head security-release authorization",
+    "final exact-head Steward"
+  ],
+  "stop_conditions": {
+    "merge_pr_1330": false,
+    "force_push": false,
+    "branch_protection_change": false,
+    "pr_1327_mutations": 0,
+    "r0_launched": false
+  }
+}

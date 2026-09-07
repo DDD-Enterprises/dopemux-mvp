@@ -1,0 +1,125 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr": 1330,
+  "source_head": "faaedb76d5d360ead80f75e1db4a9fa0523f7a2c",
+  "subject_head": "8826b7174c78388e7033f4bb4fe2e49acf363aa2",
+  "subject_tree": "b709f708a3d574e008693c1f86770d1df67cba7c",
+  "changed_paths": [
+    ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+    ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+    ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+    ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+    "docs/ops/steward-merge-gate.md",
+    "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT/PROOF.json",
+    "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/VALIDATION.json",
+    "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/implementation-notes.md",
+    "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/review_bundle/BASELINE_AMENDMENT.json",
+    "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/review_bundle/DETERMINISTIC_VALIDATION.json",
+    "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/review_bundle/EXECUTION_AUTHORITY.json",
+    "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/review_bundle/TDD_GREEN.json",
+    "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/review_bundle/TDD_RED.json",
+    "src/dopemux_pr_merge_specialist/queue_drain.py",
+    "src/dopemux_pr_merge_specialist/steward_gate.py",
+    "task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE.json",
+    "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+    "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+    "tests/pr_merge_specialist/test_finalization_gate.py",
+    "tests/pr_merge_specialist/test_template_contracts.py"
+  ],
+  "implementer": {
+    "runner": "codex-cli",
+    "model": "gpt-5.6-sol",
+    "effort": "high"
+  },
+  "requested_auditor": {
+    "runner": "agy",
+    "model": "gemini-3.1-pro-high",
+    "effort": "high"
+  },
+  "source_files": [
+    {
+      "path": "src/dopemux_pr_merge_specialist/steward_gate.py",
+      "git_blob": "d0bdef24e87e08929d42d06d25b55a64f25e75ad",
+      "sha256": "4280f2e456bdbc741ba05f754ec6795eb6dbde166fb11239c806dea60bb399a0"
+    },
+    {
+      "path": "src/dopemux_pr_merge_specialist/queue_drain.py",
+      "git_blob": "7b117ceabd0daeb37cfd27fff01e1c4520c47ec3",
+      "sha256": "d925b94f9cf8944dee49e91e77a13c808cd8c11d5c9c528fb1a6240afc158d39"
+    },
+    {
+      "path": "tests/pr_merge_specialist/test_finalization_gate.py",
+      "git_blob": "576c56c1c4feba7304a6c5f6de63ec8978e13a1f",
+      "sha256": "151a5cf3cfbb4a5cfc79d4727762037e9cdee70f5456268901a727a137468de7"
+    },
+    {
+      "path": "tests/pr_merge_specialist/test_template_contracts.py",
+      "git_blob": "c33b7ea8deaa2c4007f6ef3706c3acea6864c740",
+      "sha256": "d3afba0f0dbcf099b55385e4b623fe9def0105c95a549d086de9dca5b7f64d59"
+    },
+    {
+      "path": "tests/pr_merge_specialist/test_steward_gate.py",
+      "git_blob": "cf3a29d6104cde97994db232310337b958cc5402",
+      "sha256": "72ca015eeeb9e8c3c3a8c7515b785f4816282c3efe284657f3726ff5fdf8a5e6"
+    },
+    {
+      "path": "docs/ops/steward-merge-gate.md",
+      "git_blob": "97498d35a4dbc187246f56a79e73f14efda0a515",
+      "sha256": "377e14c5356ec309c8b5c1cbea66653092539ead54978654d7163e7ff1c02e89"
+    },
+    {
+      "path": "task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE.json",
+      "git_blob": "873928ce14482cb20a1f3cba758252b6f2a831c3",
+      "sha256": "b041003b604e2ef240d29c8dbcd6b72746f3bb1dd189fb9d65398f617d3dfcb9"
+    },
+    {
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT/PROOF.json",
+      "git_blob": "db3ff85dc20dda8c73e7056553be2857b8710207",
+      "sha256": "4103624d831919b2ae377f6f2df7850c3865a12ccb8ebebcf3ec1c601502e28e"
+    },
+    {
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/review_bundle/DETERMINISTIC_VALIDATION.json",
+      "git_blob": "df012d65162febb44c35f7f5da7ded4ed7d9b457",
+      "sha256": "30276d3eb8a55e443f74d66a9f6b2ff3cf2bb453bf637954a2f5930d248349e8"
+    },
+    {
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/review_bundle/TDD_RED.json",
+      "git_blob": "480186e85ebdb9f86f68e66ab4e98bef2e4e0304",
+      "sha256": "96f2f585068da9ce7ad0f6d9b6eb9c4393ca0e538cf1d786b33599a3c4cfe2bc"
+    },
+    {
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/review_bundle/TDD_GREEN.json",
+      "git_blob": "4212c59f44b57f272c2119f061bbcd22900eef47",
+      "sha256": "c30a95ea3572d782dc07fb12a470913c5d338c2bbe0310026106eb36ae0a2d1a"
+    },
+    {
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/review_bundle/BASELINE_AMENDMENT.json",
+      "git_blob": "5b8e8004735bd7dd885348d7a0293cd30ab60f0f",
+      "sha256": "bd0c1881621a1206754129ad29a5754e12d27d24c94cd89c6039787e1de7505c"
+    }
+  ],
+  "mirror_hashes": {
+    "steward_gate.py": {
+      "src/dopemux_pr_merge_specialist/steward_gate.py": "4280f2e456bdbc741ba05f754ec6795eb6dbde166fb11239c806dea60bb399a0",
+      "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py": "4280f2e456bdbc741ba05f754ec6795eb6dbde166fb11239c806dea60bb399a0",
+      ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py": "4280f2e456bdbc741ba05f754ec6795eb6dbde166fb11239c806dea60bb399a0",
+      ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py": "4280f2e456bdbc741ba05f754ec6795eb6dbde166fb11239c806dea60bb399a0"
+    },
+    "queue_drain.py": {
+      "src/dopemux_pr_merge_specialist/queue_drain.py": "d925b94f9cf8944dee49e91e77a13c808cd8c11d5c9c528fb1a6240afc158d39",
+      "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py": "d925b94f9cf8944dee49e91e77a13c808cd8c11d5c9c528fb1a6240afc158d39",
+      ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py": "d925b94f9cf8944dee49e91e77a13c808cd8c11d5c9c528fb1a6240afc158d39",
+      ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py": "d925b94f9cf8944dee49e91e77a13c808cd8c11d5c9c528fb1a6240afc158d39"
+    }
+  },
+  "unredacted_diff_sha256": "2fdaf13c1383ab793a4351cfcb0126ce93f2a8bb73260153cc9cb97142ca7aec",
+  "redactions": [
+    {
+      "artifact": "R3_DIFF.diff",
+      "field": "inherited R1 worktree.path before-value",
+      "count": 1
+    }
+  ],
+  "privacy_semantics": "Parsed R1 JSON differs only in worktree.path; original operator path omitted from this export."
+}
