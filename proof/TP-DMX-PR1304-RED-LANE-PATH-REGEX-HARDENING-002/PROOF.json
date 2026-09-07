@@ -9,7 +9,9 @@
     "project_id": "dopemux-mvp",
     "repo_marker": ".dopetaskroot",
     "origin_hint": "DDD-Enterprises/dopemux-mvp",
-    "remotes": {"origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git"},
+    "remotes": {
+      "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git"
+    },
     "require_identity_match": true,
     "match": true
   },
@@ -29,16 +31,58 @@
     "tests/dcp/test_dcp_0005_red_lane_scanner.py",
     "task-packets/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002.md",
     "task-packets/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002.json",
-    "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/MUTATION_EVIDENCE.md"
+    "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/MUTATION_EVIDENCE.md",
+    "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/AUDITOR_REPORT.md",
+    "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/PROOF.json",
+    "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/review_bundle/AGY_AUDIT_RAW.json",
+    "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/review_bundle/AGY_AUDIT_R2_RAW.json",
+    "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/review_bundle/AGY_AUDIT_R3_RAW.json",
+    "proof/pr_merge/embedded-audit/pr-1325/PROOF.json",
+    "proof/pr_merge/embedded-audit/pr-1325/PROOF.json.sig"
   ],
   "validation": [
-    {"command": "PYTHONPATH=src uv run --frozen pytest tests/dcp/test_dcp_0005_red_lane_scanner.py -q", "exit_code": 0, "result": "PASS", "detail": "53 passed"},
-    {"command": "uv run --frozen pytest tests/test_dcp_surface_guard.py -q", "exit_code": 0, "result": "PASS", "detail": "44 passed, confirms hook (untouched) unaffected"},
-    {"command": "uv run --frozen pytest tests/dcp/ -q --deselect tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified", "exit_code": 0, "result": "PASS", "detail": "206 passed, 1 deselected (deselected test fails pre-existing/environmentally, unrelated to this diff -- see MUTATION_EVIDENCE.md)"},
-    {"command": "git diff --check", "exit_code": 0, "result": "PASS", "detail": "clean, no whitespace issues"},
-    {"command": "pre-commit run (all touched files)", "exit_code": 0, "result": "PASS", "detail": "clean (markdownlint, docs frontmatter/prelude/knowledge-graph validators, repo-root hygiene)"},
-    {"command": "isolated anti-vacuity mutation (parametrized): _has_control_chars body -> return False, per-probe status/category collected", "exit_code": 1, "result": "PASS", "detail": "7 of 13 probes (5 exact-match + 2 arbitrary-malformed) revert to Status.UNKNOWN with zero findings -- the true original bypass; the other 6 (wildcard/exemption-spoof) remain Status.BLOCKED via FORBIDDEN_PATH (PR #1322's independent fix) and fail only on the missing MALFORMED_PATH_CONTROL_CHARACTER category. See MUTATION_EVIDENCE.md for the full per-probe table."},
-    {"command": "non-vacuity check on the filesystem-access mock test: move the short-circuit after the filesystem loop in a scratch copy", "exit_code": 1, "result": "PASS", "detail": "test_scanner_control_char_short_circuit_skips_filesystem_access fails with AssertionError: Expected 'exists' to not have been called -- confirmed independently by the round-3 auditor"}
+    {
+      "command": "PYTHONPATH=src uv run --frozen pytest tests/dcp/test_dcp_0005_red_lane_scanner.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "detail": "53 passed"
+    },
+    {
+      "command": "uv run --frozen pytest tests/test_dcp_surface_guard.py -q",
+      "exit_code": 0,
+      "result": "PASS",
+      "detail": "44 passed, confirms hook (untouched) unaffected"
+    },
+    {
+      "command": "uv run --frozen pytest tests/dcp/ -q --deselect tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified",
+      "exit_code": 0,
+      "result": "PASS",
+      "detail": "206 passed, 1 deselected (deselected test fails pre-existing/environmentally, unrelated to this diff -- see MUTATION_EVIDENCE.md)"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "PASS",
+      "detail": "clean, no whitespace issues"
+    },
+    {
+      "command": "pre-commit run (all touched files)",
+      "exit_code": 0,
+      "result": "PASS",
+      "detail": "clean (markdownlint, docs frontmatter/prelude/knowledge-graph validators, repo-root hygiene)"
+    },
+    {
+      "command": "isolated anti-vacuity mutation (parametrized): _has_control_chars body -> return False, per-probe status/category collected",
+      "exit_code": 1,
+      "result": "PASS",
+      "detail": "7 of 13 probes (5 exact-match + 2 arbitrary-malformed) revert to Status.UNKNOWN with zero findings -- the true original bypass; the other 6 (wildcard/exemption-spoof) remain Status.BLOCKED via FORBIDDEN_PATH (PR #1322's independent fix) and fail only on the missing MALFORMED_PATH_CONTROL_CHARACTER category. See MUTATION_EVIDENCE.md for the full per-probe table."
+    },
+    {
+      "command": "non-vacuity check on the filesystem-access mock test: move the short-circuit after the filesystem loop in a scratch copy",
+      "exit_code": 1,
+      "result": "PASS",
+      "detail": "test_scanner_control_char_short_circuit_skips_filesystem_access fails with AssertionError: Expected 'exists' to not have been called -- confirmed independently by the round-3 auditor"
+    }
   ],
   "ci_pr_steward_evidence": {
     "note": "This document is committed as part of the same push whose CI/PR-Steward outcome it would need to report, so it cannot causally embed a result for its own head_sha at generation time. Values below are the last live-observed outcomes on this PR branch (round 2, head 0ed8bd5ee/94a172b40) as tracked via `gh pr checks 1325`; a fresh check against the actual final head is required before any merge decision, not reliance on this field.",
@@ -56,11 +100,41 @@
     "exit_code": 0,
     "report_path": "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/AUDITOR_REPORT.md",
     "findings": [
-      {"id": "AUDIT-DCP-PR1304-001", "severity": "INFO", "title": "Round 1: diff scope, logic, tests, and mutation independently verified PASS", "status": "RESOLVED", "body": "See AUDITOR_REPORT.md Round 1 section. Runtime fix at head 582862ea5f9d9fa56fd1221b22d53036778706b2."},
-      {"id": "AUDIT-R2-03", "severity": "INFO", "title": "Round 2: mutation test exhausts and independently fails all applicable probes", "status": "RESOLVED", "body": "Auditor independently ran the parametrized mutation test in round 2."},
-      {"id": "AUDIT-R3-02", "severity": "INFO", "title": "Round 3: filesystem-access mock test independently proven non-vacuous", "status": "RESOLVED", "body": "Auditor moved the short-circuit after the filesystem loop in its own scratch copy and confirmed the test then fails with AssertionError: Expected 'exists' to not have been called. Called 1 times."},
-      {"id": "AUDIT-R3-03", "severity": "INFO", "title": "Round 3: S1 hard-equality-after-fast-forward assertion confirmed", "status": "RESOLVED", "body": "Replaces a prior ancestry-only check that silently tolerated a stale HEAD."},
-      {"id": "AUDIT-R3-04", "severity": "INFO", "title": "Round 3: corrected 7-status-layer/6-category-layer mutation split independently reproduced exactly", "status": "RESOLVED", "body": "Auditor's own per-probe scan matched this session's evidence exactly: 5 exact-match + 2 arbitrary-malformed -> Status.UNKNOWN/no findings; 6 wildcard/exemption -> Status.BLOCKED via FORBIDDEN_PATH."}
+      {
+        "id": "AUDIT-DCP-PR1304-001",
+        "severity": "INFO",
+        "title": "Round 1: diff scope, logic, tests, and mutation independently verified PASS",
+        "status": "RESOLVED",
+        "body": "See AUDITOR_REPORT.md Round 1 section. Runtime fix at head 582862ea5f9d9fa56fd1221b22d53036778706b2."
+      },
+      {
+        "id": "AUDIT-R2-03",
+        "severity": "INFO",
+        "title": "Round 2: mutation test exhausts and independently fails all applicable probes",
+        "status": "RESOLVED",
+        "body": "Auditor independently ran the parametrized mutation test in round 2."
+      },
+      {
+        "id": "AUDIT-R3-02",
+        "severity": "INFO",
+        "title": "Round 3: filesystem-access mock test independently proven non-vacuous",
+        "status": "RESOLVED",
+        "body": "Auditor moved the short-circuit after the filesystem loop in its own scratch copy and confirmed the test then fails with AssertionError: Expected 'exists' to not have been called. Called 1 times."
+      },
+      {
+        "id": "AUDIT-R3-03",
+        "severity": "INFO",
+        "title": "Round 3: S1 hard-equality-after-fast-forward assertion confirmed",
+        "status": "RESOLVED",
+        "body": "Replaces a prior ancestry-only check that silently tolerated a stale HEAD."
+      },
+      {
+        "id": "AUDIT-R3-04",
+        "severity": "INFO",
+        "title": "Round 3: corrected 7-status-layer/6-category-layer mutation split independently reproduced exactly",
+        "status": "RESOLVED",
+        "body": "Auditor's own per-probe scan matched this session's evidence exactly: 5 exact-match + 2 arbitrary-malformed -> Status.UNKNOWN/no findings; 6 wildcard/exemption -> Status.BLOCKED via FORBIDDEN_PATH."
+      }
     ],
     "fixes_applied": [
       "Round 2: parametrized the two control-character test functions, pinned the donor content digest, corrected the packet header authority fields, tightened S1 wording",
@@ -68,7 +142,12 @@
     ],
     "remaining_risks": [],
     "skip_reason": null,
-    "instruction_like_content": {"detected": false, "match_count": 0, "truncated": false, "matches": []}
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
   },
   "audit_identity": {
     "implementer": {

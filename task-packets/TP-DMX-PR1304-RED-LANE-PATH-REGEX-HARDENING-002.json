@@ -78,7 +78,7 @@
         "HEAD_SHA=$(git rev-parse HEAD)",
         "if [ \"$HEAD_SHA\" != \"$MAIN_SHA\" ]; then git merge --ff-only origin/main || { echo \"HEAD is not a fast-forward ancestor of origin/main -- stop, do not implement on a diverged tree\" >&2; exit 1; }; fi",
         "test \"$(git rev-parse HEAD)\" = \"$MAIN_SHA\"  # hard equality assertion after the fast-forward, not merely ancestry",
-        "python3 -c \"from dopemux.dcp.red_lane_scanner import RedLaneScanner; ...\" against the now-verified, up-to-date execution HEAD"
+        "PYTHONPATH=src python3 -c \"import tempfile; from dopemux.dcp.red_lane_scanner import RedLaneScanner; tmp = tempfile.mkdtemp(); s = RedLaneScanner(repo_root=tmp); probes = ['scripts/dopetask\\n', 'scripts/taskx\\n', 'dopemux_pr_merge_specialist/queue_drain.py\\n', 'src/dopemux_pr_merge_specialist/queue_drain.py\\n', 'scripts/batch_resolve_and_merge.py\\n']; [print(p, s.scan(changed_files=[p]).status) for p in probes]\"  # must print Status.UNKNOWN for all five before any change"
       ],
       "expected_files": [],
       "validation": [
