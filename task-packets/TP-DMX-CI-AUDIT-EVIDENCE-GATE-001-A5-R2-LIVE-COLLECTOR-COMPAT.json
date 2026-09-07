@@ -1,0 +1,255 @@
+{
+  "id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT",
+  "project": "dopemux-mvp",
+  "target": "L3 CI-trust live-path repair on existing PR #1330: preserve validated embedded-audit required and skip_reason metadata through tools/pr_steward/collector.py so the exact trusted NOT_REQUIRED classifier/schema semantics work in live PR Steward. Regenerate portable proof after the new frozen-head audit and resolve only the two current review threads with evidence. Do not merge PR #1330, mutate PR #1327, or launch WSAC R0.",
+  "invariants": [
+    "Fetch/reverify current trusted main; anchor=6a728f74c0311967f83213513308f97613e3f28d",
+    "Reuse existing PR #1330 and branch fix/ci-audit-steward-not-required-a5-r1; do not create a new PR",
+    "Reverify pre-repair PR head 3858be0d93da9176b121fdbfcbc6baa8ff05196a before mutation and classify drift if moved",
+    "PR #1330 ready/draft state must not be changed in this packet",
+    "PR #1327 remains untouched; PR_1327_MUTATIONS=0",
+    "The R2 defect is collector metadata loss after trusted proof validation; do not broaden the A5-R1 classifier/schema contract",
+    "Exact non-blocking NOT_REQUIRED remains status=SKIPPED, required=false, skip_reason=AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT",
+    "required=true + SKIPPED remains blocking; missing/malformed required remains blocking; wrong/missing skip_reason remains blocking",
+    "FAIL and NEEDS_SUPERVISOR remain blocking; unknown/noncanonical status remains fail-closed; PASS/PASS_WITH_RISKS retain existing semantics",
+    "Collector may preserve required/skip_reason only from proof already subjected to existing independent-proof validation; candidate-authored unvalidated metadata must not gain authority",
+    "If independent proof validation fails, collector must force NEEDS_SUPERVISOR and must not permit NOT_REQUIRED bypass",
+    "merge_readiness.schema.json is out of R2 scope; if R2 reveals another schema defect, stop for supervisor",
+    "No CI model/provider calls, no Clink/PAL audit, and no API-metered audit are authorized",
+    "Use TDD: add a failing live collector -> classifier/public-intake regression before implementation; classifier-only fixtures are insufficient",
+    "Canonical/shareable proof regenerated after R2 must not expose operator-specific absolute local filesystem paths or username-bearing worktree paths",
+    "Use repo-relative, neutral, null, or contract-approved portable provenance without silently deleting required provenance",
+    "collector.py is trusted PR-finality logic, therefore RISK_LANE=L3 and exactly one new independent final audit is required after the new substantive content head freezes",
+    "Preferred auditor is AGY gemini-3.1-pro-high high if exact live selector/identity is reconfirmed; no silent substitution",
+    "Proof-only successors after the new frozen audited content head do not require a second content audit",
+    "Fresh exact-head security-release authorization is required after the PR head changes; prior authorization at the old head is stale",
+    "PRRT_kwDOPyIw986fqt2i remains MUST_FIX until live collector preservation is proven",
+    "PRRT_kwDOPyIw986fquAS remains open until regenerated proof removes absolute local path disclosure",
+    "Do not resolve either review thread before evidence exists; do not dismiss new substantive review items",
+    "No merge, force push, history rewrite, branch deletion, branch-protection mutation, PR #1327 mutation, or R0 launch",
+    "Packet creation is not mutation authority; OPERATOR_EXECUTION_GATE=YES and GITHUB_MUTATION_AUTHORITY=YES are required before repository/GitHub mutation"
+  ],
+  "depends_on": [
+    "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopemux",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-CI-AUDIT-EVIDENCE-GATE",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/ci-audit-steward-not-required-a5-r1",
+    "base_branch": "main",
+    "stacked_because": "Continue the existing L3 repair on PR #1330; late review/live Steward exposed a collector seam after A5-R1."
+  },
+  "commit": {
+    "message": "fix(pr-steward): preserve trusted not-required metadata in collector",
+    "allowlist": [
+      "tools/pr_steward/collector.py",
+      "tests/pr_steward/test_intake.py",
+      "tests/pr_steward/test_classifier_embedded_audit_normalization.py",
+      "tests/pr_steward/test_collector_proof_state.py",
+      "docs/ops/pr-steward.md",
+      "task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT.json",
+      "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT/**",
+      "proof/pr_merge/embedded-audit/pr-1330/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT.json",
+      "python -m jsonschema -i task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest -q tests/pr_steward/test_intake.py tests/pr_steward/test_classifier_embedded_audit_normalization.py tests/pr_steward/test_collector_proof_state.py",
+      "python -m pytest -q tests/audit tests/pr_steward",
+      "git diff --check",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "pre-commit run --from-ref origin/main --to-ref HEAD",
+      "gitleaks protect --staged --verbose"
+    ]
+  },
+  "pr": {
+    "title": "fix(pr-steward): align trusted audit not-required runtime and schema",
+    "body": "Continue existing PR #1330. R2 preserves validated embedded_audit.required and skip_reason through the live collector path and regenerates portable exact-head proof. No merge, PR #1327 mutation, branch-protection change, or R0 launch is authorized.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Reharvest live main/PR/review state and establish isolated custody on the existing PR branch.",
+      "requirements": [
+        "Require both execution gates before mutation",
+        "Fetch origin/main and PR #1330; require open/unmerged and existing branch identity",
+        "Reharvest latest PR Steward status and both unresolved review threads",
+        "Read AGENTS.md, RULES.md if present, A5-R1 packet/proof, collector/classifier/schema/tests",
+        "Create or reuse a clean isolated worktree without touching foreign dirty state",
+        "Reproduce validated proof losing required/skip_reason before classifier-visible harvest",
+        "Stop if equivalent fix already exists"
+      ],
+      "validation": [
+        "REPO_IDENTITY=PASS",
+        "PR_1330_IDENTITY=PASS",
+        "LIVE_COLLECTOR_DEFECT=REPRODUCED",
+        "PR_1327_MUTATIONS=0"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Add failing live-path tests first.",
+      "requirements": [
+        "Test exact NOT_REQUIRED proof through collector._proof_state and classifier/public intake; assert no EMBEDDED_AUDIT_SKIPPED under green unrelated gates",
+        "Test required=true+SKIPPED blocks",
+        "Test wrong/missing reason blocks",
+        "Test invalid independent proof forces NEEDS_SUPERVISOR/fail-closed and cannot activate NOT_REQUIRED",
+        "Retain A5-R1 classifier/schema tests",
+        "Capture expected pre-fix failure"
+      ],
+      "validation": [
+        "TDD_RED_LIVE_NOT_REQUIRED_CASE=PASS",
+        "LIVE_REQUIRED_SKIPPED_FAIL_CLOSED_TEST=PASS_OR_EXISTING",
+        "LIVE_WRONG_REASON_FAIL_CLOSED_TEST=PASS_OR_EXISTING",
+        "LIVE_INVALID_PROOF_FAIL_CLOSED_TEST=PASS_OR_EXISTING"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement the minimum collector preservation repair.",
+      "requirements": [
+        "After existing independent proof validation, preserve embedded_audit.required and embedded_audit.skip_reason in collector output",
+        "Preserve exact types; do not coerce malformed values into trusted values",
+        "On independent proof validation error keep status=NEEDS_SUPERVISOR and prevent NOT_REQUIRED bypass",
+        "Do not change classifier.py or merge_readiness.schema.json; stop if required",
+        "Do not broaden proof trust sources or candidate authority",
+        "Keep report_path behavior unchanged unless tests require otherwise"
+      ],
+      "validation": [
+        "COLLECTOR_REQUIRED_PRESERVED=PASS",
+        "COLLECTOR_SKIP_REASON_PRESERVED=PASS",
+        "LIVE_NOT_REQUIRED_NONBLOCKING=PASS",
+        "LIVE_REQUIRED_SKIPPED_BLOCKING=PASS",
+        "LIVE_WRONG_REASON_BLOCKING=PASS",
+        "LIVE_INVALID_PROOF_FAIL_CLOSED=PASS"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Update docs only if needed for the live collector seam.",
+      "requirements": [
+        "Document preservation comes from validated proof only",
+        "Document SKIPPED is not generally passing",
+        "Do not change the exact NOT_REQUIRED authority contract"
+      ],
+      "validation": [
+        "DOCS_MATCH_RUNTIME=PASS",
+        "NO_AUTHORITY_EXPANSION=PASS"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run deterministic gates and freeze the new substantive R2 content head.",
+      "requirements": [
+        "Run focused live-path tests and complete tests/audit + tests/pr_steward",
+        "Validate packet schema, diff, allowlist, change contract, precommit, staged secret scan",
+        "Require no PR #1327 mutation and no out-of-allowlist change",
+        "Commit substantive R2 changes and record NEW_FROZEN_CONTENT_HEAD",
+        "Any later substantive edit invalidates freeze and requires one replacement final audit"
+      ],
+      "validation": [
+        "FOCUSED_TESTS=PASS",
+        "RELEVANT_COMPLETE_SUITE=PASS",
+        "TP_SCHEMA=PASS",
+        "DIFF_CHECK=PASS",
+        "ALLOWLIST=PASS",
+        "CHANGE_CONTRACT=PASS",
+        "PRECOMMIT=PASS",
+        "SECRET_SCAN=PASS",
+        "NEW_FROZEN_CONTENT_HEAD=<sha>"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run exactly one independent final L3 audit on NEW_FROZEN_CONTENT_HEAD.",
+      "requirements": [
+        "Reconfirm AGY and gemini-3.1-pro-high live identity; use high effort; prove independence from Codex implementer",
+        "Audit exact frozen head only",
+        "Challenge validated-proof -> collector -> classifier dataflow, malformed required, wrong reason, invalid proof, candidate metadata, status normalization, and fail-open risks",
+        "Confirm no weakening of security-release, proof freshness, review, or schema gates",
+        "PASS/PASS_WITH_RISKS only if risks are explicit/non-blocking; identity/head/output uncertainty blocks"
+      ],
+      "validation": [
+        "AUDIT_SUBJECT_HEAD_MATCH=PASS",
+        "AUDITOR_INDEPENDENCE=PROVEN",
+        "INDEPENDENT_L3_AUDIT=PASS|PASS_WITH_RISKS",
+        "BLOCKING_AUDIT_FINDINGS=0"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Regenerate canonical and PR-scoped proof as proof-only successors.",
+      "requirements": [
+        "Create canonical proof under proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT/ bound to NEW_FROZEN_CONTENT_HEAD",
+        "Include AUDITOR_REPORT.md and non-empty review_bundle",
+        "Remove operator-specific absolute local path/username from shareable proof using portable contract-approved representation and document replacement",
+        "Create fresh exact-head signed PR #1330 attestation under proof/pr_merge/embedded-audit/pr-1330/",
+        "Validate schema, signature, repo/PR/head, ancestry, independence, and proof-only closure",
+        "Do not rerun content audit for proof-only successors"
+      ],
+      "validation": [
+        "CANONICAL_PROOF=PASS",
+        "PROOF_PORTABILITY_PRIVACY=PASS",
+        "PR_SCOPED_ATTESTATION=PASS",
+        "PROOF_HEAD_BINDING=PASS",
+        "PROOF_ONLY_CLOSURE=PASS",
+        "CONTENT_REAUDIT=NOT_REQUIRED_AFTER_PROOF_ONLY_SUCCESSORS"
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Push the existing PR #1330 branch and reharvest current CI/reviews.",
+      "requirements": [
+        "Push normally to existing branch; force push forbidden",
+        "Require remote head exactly FINAL_PROOF_HEAD and PR still open/non-draft",
+        "Require embedded-audit CI model/provider calls=0",
+        "Wait for current required checks to settle; stale greens do not count",
+        "Reharvest review threads and classify any new item",
+        "Reply/resolve P1 collector thread only with exact fix/test evidence",
+        "Reply/resolve proof-path thread only with regenerated portable proof evidence",
+        "Stop on any new substantive MUST_FIX"
+      ],
+      "validation": [
+        "REMOTE_HEAD_MATCH=PASS",
+        "CI_MODEL_EXECUTION=0",
+        "CI_PROVIDER_MODEL_CALLS=0",
+        "REVIEW_THREAD_P1=RESOLVED_WITH_EVIDENCE",
+        "REVIEW_THREAD_PROOF_PATH=RESOLVED_WITH_EVIDENCE",
+        "NEW_BLOCKING_REVIEW_ITEMS=0"
+      ]
+    },
+    {
+      "id": "S8",
+      "task": "Obtain fresh exact-head security-release authorization, run final Steward, and stop at merge gate.",
+      "requirements": [
+        "Do not reuse prior solo-owner phrase; require fresh exact-head authorization at FINAL_PROOF_HEAD",
+        "Run/harvest exact-head Steward only after security release",
+        "Require current audit/proof, accepted release, no unresolved blocking threads, blockers=[], unknowns=[], readiness=READY",
+        "Do not merge; return READY_FOR_OPERATOR_MERGE_DECISION only",
+        "Do not mutate PR #1327 or launch R0"
+      ],
+      "validation": [
+        "SECURITY_RELEASE_APPROVAL=PASS",
+        "PR_STEWARD=PASS",
+        "BLOCKERS=[]",
+        "UNKNOWNS=[]",
+        "MERGE_READINESS=READY",
+        "MERGE=NO",
+        "PR_1327_MUTATIONS=0",
+        "R0_LAUNCHED=NO"
+      ]
+    }
+  ]
+}

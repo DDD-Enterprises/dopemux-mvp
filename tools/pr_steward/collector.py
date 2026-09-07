@@ -709,6 +709,8 @@ def _proof_state(
     return {
         "embedded_audit": {
             "status": audit_status,
+            "required": embedded.get("required"),
+            "skip_reason": embedded.get("skip_reason"),
             "report_path": str(
                 embedded.get("report_path")
                 or f"{proof_path.parent.as_posix()}/AUDITOR_REPORT.md"

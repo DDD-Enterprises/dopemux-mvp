@@ -5,8 +5,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 from jsonschema import Draft7Validator
 
+from scripts.audit.run_embedded_audit import build_evidence_gate_proof
 from tools.pr_steward import collector
 from tools.pr_steward.classifier import build_artifacts
 
@@ -468,8 +470,13 @@ def test_live_collection_rejects_dry_run_or_unproven_audit_proof(
     assert "EMBEDDED_AUDIT_NEEDS_SUPERVISOR" in readiness["blockers"]
 
 
-def _blocked_by_independent_audit(
-    tmp_path: Path, monkeypatch, proof_body: dict, pr_head: str
+def _artifacts_from_live_proof(
+    tmp_path: Path,
+    monkeypatch,
+    proof_body: dict,
+    pr_head: str,
+    *,
+    is_draft: bool = False,
 ) -> dict:
     proof_path = tmp_path / "PROOF.json"
     proof_path.write_text(json.dumps(proof_body), encoding="utf-8")
@@ -478,10 +485,12 @@ def _blocked_by_independent_audit(
         if args[:3] == ["gh", "auth", "status"]:
             return subprocess.CompletedProcess(args, 0, "", "")
         if args[:3] == ["gh", "pr", "view"]:
+            pr_payload = base_pr_payload(head_sha=pr_head)
+            pr_payload["isDraft"] = is_draft
             return subprocess.CompletedProcess(
                 args,
                 0,
-                json.dumps(base_pr_payload(head_sha=pr_head)),
+                json.dumps(pr_payload),
                 "",
             )
         raise AssertionError(f"unexpected gh command: {args}")
@@ -496,16 +505,133 @@ def _blocked_by_independent_audit(
         704,
         proof_path=proof_path,
     )
-    artifacts = build_artifacts(
+    return build_artifacts(
         harvest,
         repo="DDD-Enterprises/dopemux-mvp",
         pr_number=704,
         strict=True,
         allow_closed=False,
     )
+
+
+def _blocked_by_independent_audit(
+    tmp_path: Path, monkeypatch, proof_body: dict, pr_head: str
+) -> dict:
+    artifacts = _artifacts_from_live_proof(tmp_path, monkeypatch, proof_body, pr_head)
     readiness = artifacts["MERGE_READINESS.json"]
     assert isinstance(readiness, dict)
     return readiness
+
+
+def _not_required_proof(lane: str = "L1") -> dict:
+    return build_evidence_gate_proof(
+        packet_id="TP-DMX-PR-STEWARD-001",
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=704,
+        head_sha="a" * 40,
+        base_sha="b" * 40,
+        change_contract={
+            "status": "PASS",
+            "max_lane": lane,
+            "model_audit_required": False,
+        },
+        local_attestation=None,
+    )
+
+
+def _validate_collected_artifacts(artifacts: dict) -> None:
+    for name, schema_path in ARTIFACT_SCHEMAS.items():
+        Draft7Validator(load_json(schema_path)).validate(artifacts[name])
+
+
+@pytest.mark.parametrize("lane", ["L0", "L1"])
+def test_live_collection_preserves_trusted_not_required_through_readiness(
+    tmp_path: Path, monkeypatch, lane: str
+) -> None:
+    artifacts = _artifacts_from_live_proof(
+        tmp_path, monkeypatch, _not_required_proof(lane), "a" * 40
+    )
+
+    readiness = artifacts["MERGE_READINESS.json"]
+    assert readiness["readiness"] == "READY"
+    assert readiness["blockers"] == []
+    assert readiness["unknowns"] == []
+    assert readiness["embedded_audit"]["status"] == "SKIPPED"
+    assert readiness["embedded_audit"]["required"] is False
+    assert readiness["embedded_audit"]["skip_reason"] == (
+        "AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT"
+    )
+    assert readiness["proof"]["matches_pr_head"] is True
+    assert readiness["proof"]["proof_freshness"]["status"] == "CURRENT"
+    assert artifacts["PR_STATE_SNAPSHOT.json"]["harvest_complete"] is True
+    _validate_collected_artifacts(artifacts)
+
+
+_MISSING = object()
+
+
+@pytest.mark.parametrize(
+    "section,field,value",
+    [
+        ("embedded_audit", "required", True),
+        ("embedded_audit", "required", None),
+        ("embedded_audit", "required", "false"),
+        ("embedded_audit", "required", 0),
+        ("embedded_audit", "required", _MISSING),
+        ("embedded_audit", "skip_reason", "UNTRUSTED_REASON"),
+        ("embedded_audit", "skip_reason", None),
+        ("embedded_audit", "skip_reason", _MISSING),
+        ("embedded_audit", "status", _MISSING),
+        ("embedded_audit", "status", "skipped"),
+        ("embedded_audit", "status", "UNKNOWN"),
+        ("provenance", "audit_source", "untrusted"),
+        ("provenance", "proof_author", "untrusted"),
+        ("provenance", "change_contract", _MISSING),
+        (None, "repo", "untrusted/repo"),
+        (None, "pr_number", 705),
+        (None, "head_sha", "c" * 40),
+        (None, "dry_run", True),
+    ],
+    ids=[
+        "required-true", "required-null", "required-string", "required-zero",
+        "required-missing", "wrong-reason", "null-reason", "missing-reason",
+        "missing-status", "lowercase-status", "unknown-status", "untrusted-source",
+        "untrusted-author", "missing-contract", "wrong-repo", "wrong-pr",
+        "stale-head", "dry-run",
+    ],
+)
+def test_live_collection_rejects_untrusted_not_required_claims(
+    tmp_path: Path, monkeypatch, section, field, value
+) -> None:
+    proof = _not_required_proof()
+    target = proof if section is None else proof[section]
+    if value is _MISSING:
+        target.pop(field, None)
+    else:
+        target[field] = value
+
+    artifacts = _artifacts_from_live_proof(tmp_path, monkeypatch, proof, "a" * 40)
+
+    readiness = artifacts["MERGE_READINESS.json"]
+    assert readiness["readiness"] != "READY"
+    assert any(b.startswith("EMBEDDED_AUDIT_") for b in readiness["blockers"])
+    if field == "head_sha":
+        assert readiness["proof"]["matches_pr_head"] is False
+        assert "PROOF_STALE" in readiness["blockers"]
+    _validate_collected_artifacts(artifacts)
+
+
+def test_live_collection_not_required_does_not_clear_draft_gate(
+    tmp_path: Path, monkeypatch
+) -> None:
+    artifacts = _artifacts_from_live_proof(
+        tmp_path, monkeypatch, _not_required_proof(), "a" * 40, is_draft=True
+    )
+
+    readiness = artifacts["MERGE_READINESS.json"]
+    assert readiness["readiness"] == "BLOCKED"
+    assert readiness["blockers"] == ["PR_IS_DRAFT"]
+    _validate_collected_artifacts(artifacts)
 
 
 def test_live_collection_rejects_pass_with_executed_true_missing_provenance(
