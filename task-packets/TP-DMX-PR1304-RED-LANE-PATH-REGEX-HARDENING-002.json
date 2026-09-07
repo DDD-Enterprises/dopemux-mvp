@@ -47,7 +47,7 @@
     ],
     "verify": [
       "Require this packet document and JSON companion committed first, separately from any runtime change.",
-      "Require explicit separate operator authorization before any src/ or tests/ mutation, per RUNTIME_IMPLEMENTATION=NOT_YET_AUTHORIZED_BY_THIS_DECISION.",
+      "Runtime mutation required explicit separate operator authorization beyond the 2026-09-06 scoping decision -- granted 2026-09-07 (\"authorized\"); src/ and tests/ changes landed only after that grant.",
       "Require red_lane_rules.py and dcp_surface_guard.py byte-identical to BASE_SHA after implementation.",
       "Require the full regression matrix in packet section 3.2 green.",
       "Require the isolated mutation in section 4 to fail on exact-match probes specifically.",
@@ -67,14 +67,17 @@
       "id": "TP-002-S1",
       "task": "Re-verify the live bypass and current main identity before implementing.",
       "requirements": [
-        "origin/main head confirmed at or descended from 6a728f74c0311967f83213513308f97613e3f28d.",
+        "A dedicated worktree is created (or an existing one is fetched and re-verified) from the current origin/main tip, not merely checked to contain an old ancestor SHA.",
+        "The execution HEAD used for implementation is asserted equal to (or a fast-forward descendant of) origin/main at fetch time -- git merge-base --is-ancestor <execution_HEAD> origin/main AND git merge-base --is-ancestor origin/main <execution_HEAD> both hold only when they are equal; a stale worktree that is merely behind must be fast-forwarded first, never implemented on top of.",
         "PR #1322 confirmed merged and its content present in red_lane_rules.py.",
-        "The five exact-match probes independently reproduced as Status.UNKNOWN (bypass) against current main before any change."
+        "The five exact-match probes independently reproduced as Status.UNKNOWN (bypass) against the verified execution HEAD before any change."
       ],
       "commands": [
         "git fetch origin main",
-        "git merge-base --is-ancestor 33a38119f97611e391aab719151ffadbf541f06c origin/main",
-        "python3 -c \"from dopemux.dcp.red_lane_scanner import RedLaneScanner; ...\" against a clean checkout of current main"
+        "git rev-parse origin/main",
+        "git rev-parse HEAD  # the actual execution worktree HEAD, not a cited historical SHA",
+        "test \"$(git rev-parse HEAD)\" = \"$(git rev-parse origin/main)\" || git merge-base --is-ancestor HEAD origin/main  # fast-forward if HEAD is behind; never implement on a stale tree",
+        "python3 -c \"from dopemux.dcp.red_lane_scanner import RedLaneScanner; ...\" against the now-verified execution HEAD"
       ],
       "expected_files": [],
       "validation": [

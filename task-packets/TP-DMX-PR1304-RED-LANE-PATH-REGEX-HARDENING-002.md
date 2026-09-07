@@ -19,15 +19,16 @@ version of this packet.**
 ```
 PACKET_ID=TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002
 PARENT_PACKET=TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001
-STATUS=ESCALATED_L3_AWAITING_RUNTIME_IMPLEMENTATION_AUTHORITY
-PREVIOUS_STATUS=AUTHORED_AWAITING_OPERATOR_AUTHORIZATION (test-only, superseded)
-BASE_SHA=6a728f74c0311967f83213513308f97613e3f28d   # origin/main, current
-BASE_SHA_AT_PRIOR_VERSION=33a38119f97611e391aab719151ffadbf541f06c  # ancestor, via #1328
+STATUS=RUNTIME_IMPLEMENTED_AWAITING_MERGE_AUTHORITY
+PREVIOUS_STATUS_1=AUTHORED_AWAITING_OPERATOR_AUTHORIZATION (test-only, superseded 2026-09-06)
+PREVIOUS_STATUS_2=ESCALATED_L3_AWAITING_RUNTIME_IMPLEMENTATION_AUTHORITY (superseded 2026-09-07 — operator authorized runtime implementation)
+BASE_SHA=33a38119f97611e391aab719151ffadbf541f06c   # origin/main tip when implementation started; re-verified unmoved before implementing
+CURRENT_MAIN_AT_IMPLEMENTATION_TIME=6a728f74c0311967f83213513308f97613e3f28d   # confirmed identical/ahead-only via #1328 (unrelated CI change); re-verified with `git fetch origin main` immediately before S2
 RISK_LANE=L3
 LANE_DEVIATION=none — operator confirmed L3 (2026-09-06 Decision)
-IMPLEMENTATION_AUTHORITY=NOT_GRANTED
-RUNTIME_IMPLEMENTATION=NOT_YET_AUTHORIZED_BY_THIS_DECISION
-MERGE=NO
+IMPLEMENTATION_AUTHORITY=GRANTED — operator message "authorized" (2026-09-07), following the 2026-09-06 Decision's scope/repair-strategy/regression-matrix
+RUNTIME_IMPLEMENTATION=LANDED — src/dopemux/dcp/red_lane_scanner.py + tests/dcp/test_dcp_0005_red_lane_scanner.py, head 582862ea5f9d9fa56fd1221b22d53036778706b2, agy gemini-3.1-pro-high audit PASS (proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/)
+MERGE=NO — still withheld; a separate, explicit merge authorization is required
 ```
 
 > **Why this version exists.** The prior version of this packet (test-only,
@@ -176,8 +177,20 @@ hash verified, e.g.:
 git fetch origin pull/1321/head:tp-1321-donor
 git rev-parse tp-1321-donor   # must equal 353bd8b245beb2c137f1ef94b45227d885328fed
 git show 353bd8b24:tests/dcp/test_dcp_0005_red_lane_scanner.py \
-  | sha256sum   # record and compare against a pinned value before extracting lines
+  | sha256sum
+# expected: 2fa3ea27e4ebfea51932f0a7ac90680498c950d5ed9149c5788a67cb6a88eb20
+# (pinned by this session's own retrieval; git blob content is immutable —
+# any other value means the wrong object was fetched, not that the donor
+# changed)
 ```
+
+A second, independent line of evidence for the same claim: the donor
+branch's merge-base with `main` is `d032c25c3169eaf73ce40462ad3865fbb164371a`,
+and `git diff d032c25c3 33a38119f -- tests/dcp/test_dcp_0005_red_lane_scanner.py`
+is empty — the scanner test file is byte-identical between that merge-base
+and this packet's base, which is a stronger portability guarantee than a
+hash match alone (it proves the *append point* is conflict-free, not merely
+that some 44-line block exists somewhere in the donor's history).
 
 A donor block that cannot be retrieved and hash-verified this way must not be
 "reconstructed from memory" — write fresh tests asserting the same behavior
@@ -339,16 +352,16 @@ KNOWN_EXPLOITATION=NO
 
 ## 8. Execution constraints
 
-- **`RUNTIME_IMPLEMENTATION=NOT_YET_AUTHORIZED_BY_THIS_DECISION`.** This
-  document is authored output only. The operator's 2026-09-06 decision
-  authorized scoping this packet and repairing this document; it did
-  **not** authorize writing `red_lane_scanner.py` or its tests. A separate,
-  explicit authorization is required before any mutation under §2 begins.
-- **`MERGE=NO`.** PR #1325 stays open and unmerged while it carries this
-  packet document. It must not be merged as a documentation-only PR now
-  that its own scope calls for a runtime change — merge it (or a successor
-  PR) only once the runtime fix and its proof are attached and independently
-  audited.
+- **`RUNTIME_IMPLEMENTATION=LANDED`, `IMPLEMENTATION_AUTHORITY=GRANTED`.**
+  The operator's 2026-09-06 decision authorized scoping and repairing this
+  document only; it explicitly withheld runtime mutation authority. A
+  separate operator message ("authorized", 2026-09-07) granted it. The
+  runtime fix, tests, mutation evidence, and independent audit under §2–§4
+  have since landed at head `582862ea5f9d9fa56fd1221b22d53036778706b2`.
+- **`MERGE=NO` still holds.** PR #1325 carries the runtime fix and its
+  attached, independently-audited proof, but remains open and unmerged. A
+  separate, explicit merge authorization is required before it lands on
+  `main`.
 - Never route around the red lane. A denied write is a stop, not an
   obstacle.
 - Never `dopemux mcp down --services <x>` (degrades to a full-fleet

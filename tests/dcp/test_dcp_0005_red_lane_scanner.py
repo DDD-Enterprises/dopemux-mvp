@@ -508,40 +508,49 @@ _CONTROL_CHARACTER_BLOCK_PROBES = (
 )
 
 
-def test_scanner_blocks_control_character_paths(tmp_path):
+@pytest.mark.parametrize("fpath", _CONTROL_CHARACTER_BLOCK_PROBES)
+def test_scanner_blocks_control_character_paths(tmp_path, fpath):
+    # Each probe is its own parametrized case (not a loop-with-bare-assert)
+    # so that under the anti-vacuity mutation in
+    # proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/MUTATION_EVIDENCE.md
+    # every probe's actual pass/fail status is independently visible in the
+    # pytest report, rather than the loop stopping at the first failure and
+    # leaving the remaining probes unexercised.
     repo_root = tmp_path / "tp_dcp_0005_control_char_bypass"
     repo_root.mkdir()
     scanner = RedLaneScanner(repo_root=str(repo_root))
 
-    for fpath in _CONTROL_CHARACTER_BLOCK_PROBES:
-        report = scanner.scan(changed_files=[fpath])
-        assert report.status == Status.BLOCKED, fpath
-        assert any(
-            f.category == "MALFORMED_PATH_CONTROL_CHARACTER"
-            for f in report.findings
-        ), fpath
+    report = scanner.scan(changed_files=[fpath])
+    assert report.status == Status.BLOCKED, fpath
+    assert any(
+        f.category == "MALFORMED_PATH_CONTROL_CHARACTER"
+        for f in report.findings
+    ), fpath
 
 
-def test_scanner_legitimate_paths_unaffected_by_control_char_guard(tmp_path):
-    """Clean-control: legitimate paths at and near the C0/DEL boundary must
-    be unaffected — the fix must not be satisfiable by over-blocking."""
-    repo_root = tmp_path / "tp_dcp_0005_control_char_clean"
-    repo_root.mkdir()
-    scanner = RedLaneScanner(repo_root=str(repo_root))
-
-    for fpath in (
+@pytest.mark.parametrize(
+    "fpath",
+    (
         ".github/workflows/embedded-audit.yml",
         ".github/workflows/pr-steward.yml",
         "services/dope-context/eval/run_eval.py",
         "services/dope-context/src/index_profile.py",
         "README.md",
         "path with a literal space and a tilde~",  # 0x20, 0x7E: not C0/DEL
-    ):
-        report = scanner.scan(changed_files=[fpath])
-        assert not any(
-            f.category == "MALFORMED_PATH_CONTROL_CHARACTER"
-            for f in report.findings
-        ), fpath
+    ),
+)
+def test_scanner_legitimate_paths_unaffected_by_control_char_guard(tmp_path, fpath):
+    """Clean-control: legitimate paths at and near the C0/DEL boundary must
+    be unaffected — the fix must not be satisfiable by over-blocking."""
+    repo_root = tmp_path / "tp_dcp_0005_control_char_clean"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    report = scanner.scan(changed_files=[fpath])
+    assert not any(
+        f.category == "MALFORMED_PATH_CONTROL_CHARACTER"
+        for f in report.findings
+    ), fpath
 
 
 def test_scanner_control_char_short_circuit_skips_filesystem_access(tmp_path):
