@@ -454,3 +454,124 @@ def test_cli_exits_nonzero_on_incomplete_proof(tmp_path):
         text=True,
     )
     assert result.returncode != 0
+
+
+# ---------------------------------------------------------------------------
+# TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002: control-character
+# fail-closed short-circuit in RedLaneScanner.
+#
+# Background: PR #1322 re-anchored every FORBIDDEN_PATHS entry from `$` to
+# `\Z` and added re.DOTALL to every wildcard-bearing pattern, closing a
+# bypass for those rules. But the small set of exact-match, non-wildcard
+# rules (scripts/dopetask, scripts/taskx, both queue_drain.py variants,
+# scripts/batch_resolve_and_merge.py) regressed on this consumer
+# specifically: under the old `$`, a trailing newline used to accidentally
+# still match, so e.g. "scripts/dopetask\n" used to be blocked; under `\Z`
+# it silently was not, and unlike .claude/hooks/dcp_surface_guard.py this
+# scanner had no independent control-character layer standing in front of
+# it. This block proves that gap is closed.
+#
+# The wildcard-rule probes below originate from PR #1321 (donor SHA
+# 353bd8b245beb2c137f1ef94b45227d885328fed, tests/dcp/test_dcp_0005_red_lane_
+# scanner.py lines 457-500, fetched and hash-verified before porting). Their
+# assertion is adapted, not copied verbatim: -002's short-circuit intercepts
+# every control-character path *before* FORBIDDEN_PATHS matching, so such a
+# path now always produces a MALFORMED_PATH_CONTROL_CHARACTER finding, never
+# a FORBIDDEN_PATH one — including for paths that also fall under a
+# forbidden subtree.
+# ---------------------------------------------------------------------------
+
+_CONTROL_CHARACTER_BLOCK_PROBES = (
+    # Exact-match FORBIDDEN_PATHS rules — the -002 regression this packet
+    # closes. Each was silently NOT blocked by the scanner before this fix.
+    "scripts/dopetask\n",
+    "scripts/taskx\r",
+    "scripts/batch_resolve_and_merge.py\t",
+    "src/dopemux_pr_merge_specialist/queue_drain.py\x7f",
+    "dopemux_pr_merge_specialist/queue_drain.py\n",
+    # Wildcard FORBIDDEN_PATHS rules — already safe after PR #1322's \Z +
+    # re.DOTALL re-anchoring; ported from PR #1321 to prove they stay safe.
+    "services/dope-context/src/\nsecret.py",
+    "services/dope-context/src/index_profile.py\n",
+    "services/task-orchestrator/x/\ny",
+    "services/dope-context/src/index_profile.py\t",
+    "services/dope-context/src/index_profile.py\r",
+    # Exemption-spoof — a near-miss of an exact carve-out exemption plus a
+    # trailing control character must still be blocked, not treated as the
+    # exact exempted filename.
+    ".github/workflows/embedded-audit.yml\n",
+    # Arbitrary malformed path — not itself a forbidden path anywhere,
+    # proving the fail-closed rule is unconditional, not scoped to protected
+    # subtrees.
+    "docs/readme.md\n",
+    "some/totally/unrelated/file.txt\x01",
+)
+
+
+def test_scanner_blocks_control_character_paths(tmp_path):
+    repo_root = tmp_path / "tp_dcp_0005_control_char_bypass"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    for fpath in _CONTROL_CHARACTER_BLOCK_PROBES:
+        report = scanner.scan(changed_files=[fpath])
+        assert report.status == Status.BLOCKED, fpath
+        assert any(
+            f.category == "MALFORMED_PATH_CONTROL_CHARACTER"
+            for f in report.findings
+        ), fpath
+
+
+def test_scanner_legitimate_paths_unaffected_by_control_char_guard(tmp_path):
+    """Clean-control: legitimate paths at and near the C0/DEL boundary must
+    be unaffected — the fix must not be satisfiable by over-blocking."""
+    repo_root = tmp_path / "tp_dcp_0005_control_char_clean"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    for fpath in (
+        ".github/workflows/embedded-audit.yml",
+        ".github/workflows/pr-steward.yml",
+        "services/dope-context/eval/run_eval.py",
+        "services/dope-context/src/index_profile.py",
+        "README.md",
+        "path with a literal space and a tilde~",  # 0x20, 0x7E: not C0/DEL
+    ):
+        report = scanner.scan(changed_files=[fpath])
+        assert not any(
+            f.category == "MALFORMED_PATH_CONTROL_CHARACTER"
+            for f in report.findings
+        ), fpath
+
+
+def test_scanner_control_char_short_circuit_skips_filesystem_access(tmp_path):
+    """A malformed path must never reach the source-text loop's
+    os.path.exists/open — a control character in a real path could behave
+    unpredictably across filesystems, so it must be rejected before any
+    filesystem call is attempted for it."""
+    repo_root = tmp_path / "tp_dcp_0005_control_char_no_fs"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    report = scanner.scan(changed_files=["some/unrelated/file.txt\n"])
+    assert report.status == Status.BLOCKED
+    assert any(
+        f.category == "MALFORMED_PATH_CONTROL_CHARACTER"
+        for f in report.findings
+    )
+    # No TEXT_RULES finding is possible for a path the filesystem loop never
+    # touched — the only finding present is the short-circuit's own.
+    assert len(report.findings) == 1
+
+
+def test_scanner_reports_original_changed_files_even_when_blocked(tmp_path):
+    """report.inputs.changed_files reflects exactly what the caller passed,
+    including paths the control-character short-circuit removes from
+    further processing — telemetry must stay honest about scan inputs."""
+    repo_root = tmp_path / "tp_dcp_0005_control_char_inputs"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    probe = "scripts/dopetask\n"
+    report = scanner.scan(changed_files=[probe])
+    assert report.inputs.changed_files == [probe]
