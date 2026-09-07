@@ -4,8 +4,14 @@
 stack — independent of the implementer (Claude Sonnet 5, Anthropic), per
 governing packet §13's required auditor order.
 
-**Audited head**: `d1b6539f446085992e1e5e9e9535d51b429c4d9a`
-(`fix(dcp): scanner-side control-character fail-closed short-circuit`)
+**Audited head**: `1bc3c29c3448855577cd15de6655fbc15e8cdb2b`
+(rebound from prior audited head `d1b6539f446085992e1e5e9e9535d51b429c4d9a`,
+`fix(dcp): scanner-side control-character fail-closed short-circuit`, after a
+docs-only YAML frontmatter fix landed on top — `src/` and `tests/` are
+byte-identical between the two heads, independently re-verified by a full
+second audit round rather than asserted. See
+`review_bundle/original_audit_evidence.json` for the v2 raw output; the v1
+raw output survives at `AGY_AUDIT_RAW.json` for the record.)
 
 **Method**: `agy` was mounted against the real worktree
 (`--add-dir /Users/hue/code/dopemux-mvp/.worktrees/red-lane-scanner-fail-closed-002-clean`)
