@@ -47,20 +47,70 @@ FAILED ...test_scanner_blocks_control_character_paths[some/totally/unrelated/fil
 FAILED ...test_scanner_control_char_short_circuit_skips_filesystem_access
 ```
 
-Each failure is `Status.UNKNOWN` where `Status.BLOCKED` was expected — the
-exact shape of the original silent bypass in packet section 1.3.
+**Correction (automated review correctly flagged an earlier version of this
+claim as inaccurate):** not every failure is the same shape. Two distinct
+regressions occur under this mutation, and only one of them is the original
+silent bypass:
 
-The 6 remaining tests that stayed green under this mutation are exactly the
-ALLOW-case tests
-(`test_scanner_legitimate_paths_unaffected_by_control_char_guard`, one per
-clean-control probe) — correctly unaffected, since they assert the
+- **Status-layer bypass (7 probes — the real defect this packet closes):**
+  the 5 exact-match probes plus the 2 arbitrary-malformed probes revert
+  fully to `Status.UNKNOWN` with **zero** findings — this is exactly the
+  original silent bypass from packet section 1.3, where the scanner
+  reports nothing is wrong at all.
+- **Category-layer regression only (6 probes — a weaker, non-bypass
+  regression):** the 6 wildcard/exemption-spoof probes (the ones already
+  under a `services/dope-context/...`, `services/task-orchestrator/...`,
+  or `.github/workflows/...` `FORBIDDEN_PATHS` wildcard rule) still report
+  `Status.BLOCKED` under this mutation, via a `FORBIDDEN_PATH` finding —
+  because PR #1322's `\Z`+`re.DOTALL` fix in `red_lane_rules.py` (untouched
+  by this packet) independently still matches them. These 6 tests fail
+  only on their second assertion (the specific
+  `MALFORMED_PATH_CONTROL_CHARACTER` category is absent), not their first
+  (`Status.BLOCKED` still holds). Verified directly:
+
+  ```
+  UNKNOWN    cats=[]                    'scripts/dopetask\n'
+  UNKNOWN    cats=[]                    'scripts/taskx\r'
+  UNKNOWN    cats=[]                    'scripts/batch_resolve_and_merge.py\t'
+  UNKNOWN    cats=[]                    'src/dopemux_pr_merge_specialist/queue_drain.py\x7f'
+  UNKNOWN    cats=[]                    'dopemux_pr_merge_specialist/queue_drain.py\n'
+  BLOCKED    cats=['FORBIDDEN_PATH']    'services/dope-context/src/\nsecret.py'
+  BLOCKED    cats=['FORBIDDEN_PATH']    'services/dope-context/src/index_profile.py\n'
+  BLOCKED    cats=['FORBIDDEN_PATH']    'services/task-orchestrator/x/\ny'
+  BLOCKED    cats=['FORBIDDEN_PATH']    'services/dope-context/src/index_profile.py\t'
+  BLOCKED    cats=['FORBIDDEN_PATH']    'services/dope-context/src/index_profile.py\r'
+  BLOCKED    cats=['FORBIDDEN_PATH']    '.github/workflows/embedded-audit.yml\n'
+  UNKNOWN    cats=[]                    'docs/readme.md\n'
+  UNKNOWN    cats=[]                    'some/totally/unrelated/file.txt\x01'
+  ```
+
+  (`test_scanner_control_char_short_circuit_skips_filesystem_access` is an
+  8th status-layer failure — its probe is an arbitrary-malformed path, so
+  it also reverts to `Status.UNKNOWN`, for 7 status-layer failures total
+  among the 13 `_CONTROL_CHARACTER_BLOCK_PROBES` plus that dedicated test.)
+
+This is a **more precise and more honest** picture than the earlier
+blanket claim, and it is actually a stronger result: it shows this
+packet's fix has genuine, unique, non-redundant value specifically for the
+7 exact-match/arbitrary-path cases (the true original vulnerability class),
+while the 6 wildcard cases already have defense-in-depth from `…-001`'s
+independent `red_lane_rules.py` fix — losing this packet's short-circuit
+alone does not silently unblock those, it only degrades their finding
+category from `FORBIDDEN_PATH` to nothing being auditable-as-a-
+control-character-specific-event. Both regressions are real and both are
+caught by the test suite; they are simply different in severity, and the
+evidence now says so accurately.
+
+The 6 tests that stayed fully green under this mutation are the ALLOW-case
+tests (`test_scanner_legitimate_paths_unaffected_by_control_char_guard`,
+one per clean-control probe) — correctly unaffected, since they assert the
 *absence* of a `MALFORMED_PATH_CONTROL_CHARACTER` finding, which the
-mutation does not introduce.
+mutation does not introduce for any path.
 
-This is non-vacuous and now exhaustive: every probe the fix claims to
-protect is independently shown to regress to the original silent-bypass
-behavior when the fix is removed, not just the first one a loop happened to
-reach.
+This is non-vacuous: every probe the fix claims to protect is
+independently shown to regress under mutation, either at the status layer
+(the 7 cases that matter for the original defect) or the category layer
+(the 6 wildcard cases, correctly still blocked by a different mechanism).
 
 ## Restore
 

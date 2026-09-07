@@ -1,5 +1,7 @@
 import os
 import json
+from unittest import mock
+
 import pytest
 from dopemux.dcp.red_lane_scanner import RedLaneScanner
 from dopemux.dcp.red_lane import Status, Severity
@@ -557,12 +559,27 @@ def test_scanner_control_char_short_circuit_skips_filesystem_access(tmp_path):
     """A malformed path must never reach the source-text loop's
     os.path.exists/open — a control character in a real path could behave
     unpredictably across filesystems, so it must be rejected before any
-    filesystem call is attempted for it."""
+    filesystem call is attempted for it.
+
+    A malformed path is guaranteed not to exist on disk anyway, so
+    asserting only the report's shape (as an earlier version of this test
+    did) does not actually prove the filesystem loop was never reached --
+    os.path.exists could still be called and simply return False. Patch
+    both calls directly and assert they are never invoked, so a refactor
+    that moved the control-character check after the filesystem probe
+    would fail this test even though the report would look identical.
+    """
     repo_root = tmp_path / "tp_dcp_0005_control_char_no_fs"
     repo_root.mkdir()
     scanner = RedLaneScanner(repo_root=str(repo_root))
 
-    report = scanner.scan(changed_files=["some/unrelated/file.txt\n"])
+    with mock.patch("os.path.exists") as mock_exists, mock.patch(
+        "builtins.open"
+    ) as mock_open:
+        report = scanner.scan(changed_files=["some/unrelated/file.txt\n"])
+
+    mock_exists.assert_not_called()
+    mock_open.assert_not_called()
     assert report.status == Status.BLOCKED
     assert any(
         f.category == "MALFORMED_PATH_CONTROL_CHARACTER"

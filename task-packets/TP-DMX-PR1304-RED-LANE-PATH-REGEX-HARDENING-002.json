@@ -68,16 +68,17 @@
       "task": "Re-verify the live bypass and current main identity before implementing.",
       "requirements": [
         "A dedicated worktree is created (or an existing one is fetched and re-verified) from the current origin/main tip, not merely checked to contain an old ancestor SHA.",
-        "The execution HEAD used for implementation is asserted equal to (or a fast-forward descendant of) origin/main at fetch time -- git merge-base --is-ancestor <execution_HEAD> origin/main AND git merge-base --is-ancestor origin/main <execution_HEAD> both hold only when they are equal; a stale worktree that is merely behind must be fast-forwarded first, never implemented on top of.",
+        "The execution HEAD used for implementation is asserted EQUAL to origin/main at fetch time -- not merely an ancestor of it. A HEAD that is behind origin/main is an ancestor of it (git merge-base --is-ancestor HEAD origin/main succeeds even when stale), so ancestry alone is not sufficient: the check must reject inequality outright and require an actual fast-forward (or fresh checkout) before proceeding, never silently accept a stale-but-ancestor tree.",
         "PR #1322 confirmed merged and its content present in red_lane_rules.py.",
-        "The five exact-match probes independently reproduced as Status.UNKNOWN (bypass) against the verified execution HEAD before any change."
+        "The five exact-match probes independently reproduced as Status.UNKNOWN (bypass) against the verified, up-to-date execution HEAD before any change."
       ],
       "commands": [
         "git fetch origin main",
-        "git rev-parse origin/main",
-        "git rev-parse HEAD  # the actual execution worktree HEAD, not a cited historical SHA",
-        "test \"$(git rev-parse HEAD)\" = \"$(git rev-parse origin/main)\" || git merge-base --is-ancestor HEAD origin/main  # fast-forward if HEAD is behind; never implement on a stale tree",
-        "python3 -c \"from dopemux.dcp.red_lane_scanner import RedLaneScanner; ...\" against the now-verified execution HEAD"
+        "MAIN_SHA=$(git rev-parse origin/main)",
+        "HEAD_SHA=$(git rev-parse HEAD)",
+        "if [ \"$HEAD_SHA\" != \"$MAIN_SHA\" ]; then git merge --ff-only origin/main || { echo \"HEAD is not a fast-forward ancestor of origin/main -- stop, do not implement on a diverged tree\" >&2; exit 1; }; fi",
+        "test \"$(git rev-parse HEAD)\" = \"$MAIN_SHA\"  # hard equality assertion after the fast-forward, not merely ancestry",
+        "python3 -c \"from dopemux.dcp.red_lane_scanner import RedLaneScanner; ...\" against the now-verified, up-to-date execution HEAD"
       ],
       "expected_files": [],
       "validation": [
