@@ -454,3 +454,228 @@ def test_cli_exits_nonzero_on_incomplete_proof(tmp_path):
         text=True,
     )
     assert result.returncode != 0
+
+
+# ---------------------------------------------------------------------------
+# TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001: FORBIDDEN_PATHS is consumed
+# here via `pattern.match(fpath)` (start-anchored, not full-string) — a
+# different call shape than dcp_surface_guard's `pattern.search(rel)`. Both
+# consumers must independently fail closed on an embedded/trailing control
+# character.
+# ---------------------------------------------------------------------------
+
+_NEWLINE_BYPASS_SCANNER_PROBES = (
+    "services/dope-context/src/\nsecret.py",
+    "services/dope-context/src/index_profile.py\n",
+    ".github/workflows/embedded-audit.yml\n",
+    "services/task-orchestrator/x/\ny",
+    "services/dope-context/src/index_profile.py\t",
+    "services/dope-context/src/index_profile.py\r",
+)
+
+
+def test_scanner_blocks_newline_and_control_character_paths(tmp_path):
+    # TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002: donor assertion adapted.
+    # Every probe below contains a control character, so under the new
+    # unconditional short-circuit (§2/§3.1 of the -002 packet) it is now
+    # rejected by MALFORMED_PATH_CONTROL_CHARACTER before FORBIDDEN_PATHS
+    # matching ever runs -- these paths are never reached by the FORBIDDEN_PATH
+    # rule in normal operation, only under the isolated mutation in
+    # test_isolated_mutation_control_character_short_circuit below (where the
+    # short-circuit is disabled and the six wildcard/exemption-spoof probes in
+    # that mutation test fall through to the still-safe, unmutated
+    # FORBIDDEN_PATH rule instead).
+    repo_root = tmp_path / "tp_dcp_0005_newline_bypass"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    for fpath in _NEWLINE_BYPASS_SCANNER_PROBES:
+        report = scanner.scan(changed_files=[fpath])
+        assert report.status == Status.BLOCKED, fpath
+        assert any(
+            f.category == "MALFORMED_PATH_CONTROL_CHARACTER" for f in report.findings
+        ), fpath
+
+
+def test_scanner_legitimate_exemptions_unaffected(tmp_path):
+    repo_root = tmp_path / "tp_dcp_0005_exemptions_unaffected"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    for fpath in (
+        ".github/workflows/embedded-audit.yml",
+        ".github/workflows/pr-steward.yml",
+        "services/dope-context/eval/run_eval.py",
+        "services/dope-context/src/index_profile.py",
+    ):
+        report = scanner.scan(changed_files=[fpath])
+        assert not any(f.category == "FORBIDDEN_PATH" for f in report.findings), fpath
+
+
+# ---------------------------------------------------------------------------
+# TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002: full regression matrix per
+# packet section 3.2, supersedes the "port only" plan the -001-era donor block
+# above was limited to. Covers the newly-discovered exact-match gap, arbitrary
+# malformed paths (proving the rule is unconditional, not scoped to protected
+# subtrees), and the clean-control boundary (paths that must remain
+# unaffected).
+# ---------------------------------------------------------------------------
+
+_EXACT_MATCH_CONTROL_CHAR_PROBES = (
+    "scripts/dopetask\n",
+    "scripts/taskx\r",
+    "scripts/batch_resolve_and_merge.py\t",
+    "src/dopemux_pr_merge_specialist/queue_drain.py\x7f",
+    "dopemux_pr_merge_specialist/queue_drain.py\n",
+)
+
+_ARBITRARY_MALFORMED_PROBES = (
+    "docs/readme.md\n",
+    "some/totally/unrelated/file.txt\x01",
+)
+
+_CLEAN_CONTROL_BOUNDARY_PATHS = (
+    ".github/workflows/embedded-audit.yml",
+    ".github/workflows/pr-steward.yml",
+    "services/dope-context/eval/run_eval.py",
+    "services/dope-context/src/index_profile.py",
+    "README.md",
+    "path with a literal space and a tilde~",  # 0x20, 0x7E: not C0/DEL
+)
+
+
+def test_scanner_blocks_exact_match_control_character_paths(tmp_path):
+    """The bug this packet exists to fix: PR #1322's \\Z re-anchoring is
+    correct in isolation but regressed these five exact-match FORBIDDEN_PATHS
+    rules specifically, since they have no `.*`/DOTALL and (before this
+    packet) the scanner had no independent control-character short-circuit.
+    """
+    repo_root = tmp_path / "tp_dcp_0005_exact_match_control_char"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    for fpath in _EXACT_MATCH_CONTROL_CHAR_PROBES:
+        report = scanner.scan(changed_files=[fpath])
+        assert report.status == Status.BLOCKED, fpath
+        assert any(
+            f.category == "MALFORMED_PATH_CONTROL_CHARACTER" for f in report.findings
+        ), fpath
+
+
+def test_scanner_blocks_arbitrary_malformed_paths_unconditionally(tmp_path):
+    """The short-circuit must be unconditional -- not scoped to any protected
+    subtree or existing FORBIDDEN_PATHS entry."""
+    repo_root = tmp_path / "tp_dcp_0005_arbitrary_malformed"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    for fpath in _ARBITRARY_MALFORMED_PROBES:
+        report = scanner.scan(changed_files=[fpath])
+        assert report.status == Status.BLOCKED, fpath
+        assert any(
+            f.category == "MALFORMED_PATH_CONTROL_CHARACTER" for f in report.findings
+        ), fpath
+
+
+def test_scanner_clean_control_boundary_paths_unaffected(tmp_path):
+    """Legitimate paths at and near the C0/DEL boundary (including a literal
+    space 0x20 and tilde 0x7E, neither of which is a control character) must
+    never trip the new short-circuit."""
+    repo_root = tmp_path / "tp_dcp_0005_clean_control_boundary"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    for fpath in _CLEAN_CONTROL_BOUNDARY_PATHS:
+        report = scanner.scan(changed_files=[fpath])
+        assert not any(
+            f.category == "MALFORMED_PATH_CONTROL_CHARACTER" for f in report.findings
+        ), fpath
+
+
+def test_scanner_short_circuit_skips_filesystem_access(tmp_path, monkeypatch):
+    """PR #1325 review finding (thread PRRT_kwDOPyIw986fySn2): a shape-only
+    assertion on the report can pass even if a later refactor moves the
+    short-circuit after the filesystem loop. Assert the actual invariant:
+    os.path.exists/open are never invoked for a malformed path."""
+    import os as os_module
+    from unittest import mock
+
+    repo_root = tmp_path / "tp_dcp_0005_fs_non_invocation"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    with mock.patch.object(os_module.path, "exists") as mock_exists, mock.patch(
+        "builtins.open"
+    ) as mock_open:
+        report = scanner.scan(changed_files=["scripts/dopetask\n"])
+
+    assert report.status == Status.BLOCKED
+    mock_exists.assert_not_called()
+    mock_open.assert_not_called()
+
+
+def test_isolated_mutation_control_character_short_circuit(monkeypatch, tmp_path):
+    """Anti-vacuity mutation per packet section 4/9: disable *only* the new
+    short-circuit (via a test-only monkeypatch, not a source edit) and
+    collect every probe's actual result before asserting any expectation.
+    Expected split: the 5 exact-match + 2 arbitrary-malformed probes (7 total)
+    revert fully to Status.UNKNOWN with zero findings -- the true original
+    bypass this packet closes. The 6 wildcard/exemption-spoof probes remain
+    Status.BLOCKED via the independent, unmutated FORBIDDEN_PATH rule; only
+    their finding category is absent (MALFORMED_PATH_CONTROL_CHARACTER no
+    longer fires), never their status. Reporting all 13 as reverting to
+    UNKNOWN would be the exact accuracy defect a live PR #1325 review finding
+    (thread PRRT_kwDOPyIw986fya9B) caught in round 2 of the unauthorized
+    implementation this packet supersedes -- this test exists to make that
+    inaccuracy impossible to reintroduce silently.
+    """
+    import dopemux.dcp.red_lane_scanner as scanner_module
+
+    assert scanner_module._has_control_chars("x\n") is True  # pre-mutation sanity check
+    monkeypatch.setattr(scanner_module, "_has_control_chars", lambda s: False)
+    assert scanner_module._has_control_chars("x\n") is False  # mutation landed, non-zero effect
+
+    repo_root = tmp_path / "tp_dcp_0005_isolated_mutation"
+    repo_root.mkdir()
+    scanner = RedLaneScanner(repo_root=str(repo_root))
+
+    all_probes = (
+        list(_EXACT_MATCH_CONTROL_CHAR_PROBES)
+        + list(_ARBITRARY_MALFORMED_PROBES)
+        + list(_NEWLINE_BYPASS_SCANNER_PROBES)
+    )
+    results = []
+    for fpath in all_probes:
+        report = scanner.scan(changed_files=[fpath])
+        results.append(
+            {
+                "probe_id": fpath,
+                "probe_class": (
+                    "exact_match"
+                    if fpath in _EXACT_MATCH_CONTROL_CHAR_PROBES
+                    else "arbitrary_malformed"
+                    if fpath in _ARBITRARY_MALFORMED_PROBES
+                    else "wildcard_exemption_spoof"
+                ),
+                "actual_status": report.status,
+                "finding_categories": sorted({f.category for f in report.findings}),
+            }
+        )
+
+    reverted = [
+        r
+        for r in results
+        if r["probe_class"] in ("exact_match", "arbitrary_malformed")
+    ]
+    still_blocked = [r for r in results if r["probe_class"] == "wildcard_exemption_spoof"]
+
+    assert len(reverted) == 7, results
+    for r in reverted:
+        assert r["actual_status"] == Status.UNKNOWN, r
+        assert r["finding_categories"] == [], r
+
+    assert len(still_blocked) == 6, results
+    for r in still_blocked:
+        assert r["actual_status"] == Status.BLOCKED, r
+        assert "MALFORMED_PATH_CONTROL_CHARACTER" not in r["finding_categories"], r
+        assert "FORBIDDEN_PATH" in r["finding_categories"], r
