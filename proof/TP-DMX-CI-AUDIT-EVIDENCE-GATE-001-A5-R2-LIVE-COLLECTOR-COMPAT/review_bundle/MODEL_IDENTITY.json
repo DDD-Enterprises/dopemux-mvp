@@ -1,0 +1,7 @@
+{
+  "available_in_model_catalog": true,
+  "cli_version": "1.1.27",
+  "effort": "high",
+  "model": "gemini-3.1-pro-high",
+  "runner": "agy"
+}

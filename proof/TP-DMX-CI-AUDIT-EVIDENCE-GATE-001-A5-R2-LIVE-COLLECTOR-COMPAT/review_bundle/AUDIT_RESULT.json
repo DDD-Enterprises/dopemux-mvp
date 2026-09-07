@@ -1,0 +1,10 @@
+{
+  "auditor_independence": "PROVEN",
+  "blocking_findings": [],
+  "head_match": true,
+  "nonblocking_risks": [],
+  "subject_head": "83fef3c528b4eb77c09eda15df40735a41c8d45c",
+  "subject_tree": "735ad8956e0395927a4d827605d681f4d8ee4b8c",
+  "summary": "Fresh AGY audit found the LIVE collector repair preserves trusted not-required metadata through the live collector-to-classifier path while retaining fail-closed behavior for malformed or untrusted proofs.",
+  "verdict": "PASS"
+}

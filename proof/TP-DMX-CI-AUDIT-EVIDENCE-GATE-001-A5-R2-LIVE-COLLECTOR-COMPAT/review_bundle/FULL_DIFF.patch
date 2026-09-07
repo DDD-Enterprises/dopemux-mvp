@@ -1,0 +1,549 @@
+diff --git a/task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT.json b/task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT.json
+new file mode 100644
+index 000000000..50b2f8dce
+--- /dev/null
++++ b/task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT.json
+@@ -0,0 +1,255 @@
++{
++  "id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT",
++  "project": "dopemux-mvp",
++  "target": "L3 CI-trust live-path repair on existing PR #1330: preserve validated embedded-audit required and skip_reason metadata through tools/pr_steward/collector.py so the exact trusted NOT_REQUIRED classifier/schema semantics work in live PR Steward. Regenerate portable proof after the new frozen-head audit and resolve only the two current review threads with evidence. Do not merge PR #1330, mutate PR #1327, or launch WSAC R0.",
++  "invariants": [
++    "Fetch/reverify current trusted main; anchor=6a728f74c0311967f83213513308f97613e3f28d",
++    "Reuse existing PR #1330 and branch fix/ci-audit-steward-not-required-a5-r1; do not create a new PR",
++    "Reverify pre-repair PR head 3858be0d93da9176b121fdbfcbc6baa8ff05196a before mutation and classify drift if moved",
++    "PR #1330 ready/draft state must not be changed in this packet",
++    "PR #1327 remains untouched; PR_1327_MUTATIONS=0",
++    "The R2 defect is collector metadata loss after trusted proof validation; do not broaden the A5-R1 classifier/schema contract",
++    "Exact non-blocking NOT_REQUIRED remains status=SKIPPED, required=false, skip_reason=AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT",
++    "required=true + SKIPPED remains blocking; missing/malformed required remains blocking; wrong/missing skip_reason remains blocking",
++    "FAIL and NEEDS_SUPERVISOR remain blocking; unknown/noncanonical status remains fail-closed; PASS/PASS_WITH_RISKS retain existing semantics",
++    "Collector may preserve required/skip_reason only from proof already subjected to existing independent-proof validation; candidate-authored unvalidated metadata must not gain authority",
++    "If independent proof validation fails, collector must force NEEDS_SUPERVISOR and must not permit NOT_REQUIRED bypass",
++    "merge_readiness.schema.json is out of R2 scope; if R2 reveals another schema defect, stop for supervisor",
++    "No CI model/provider calls, no Clink/PAL audit, and no API-metered audit are authorized",
++    "Use TDD: add a failing live collector -> classifier/public-intake regression before implementation; classifier-only fixtures are insufficient",
++    "Canonical/shareable proof regenerated after R2 must not expose operator-specific absolute local filesystem paths or username-bearing worktree paths",
++    "Use repo-relative, neutral, null, or contract-approved portable provenance without silently deleting required provenance",
++    "collector.py is trusted PR-finality logic, therefore RISK_LANE=L3 and exactly one new independent final audit is required after the new substantive content head freezes",
++    "Preferred auditor is AGY gemini-3.1-pro-high high if exact live selector/identity is reconfirmed; no silent substitution",
++    "Proof-only successors after the new frozen audited content head do not require a second content audit",
++    "Fresh exact-head security-release authorization is required after the PR head changes; prior authorization at the old head is stale",
++    "PRRT_kwDOPyIw986fqt2i remains MUST_FIX until live collector preservation is proven",
++    "PRRT_kwDOPyIw986fquAS remains open until regenerated proof removes absolute local path disclosure",
++    "Do not resolve either review thread before evidence exists; do not dismiss new substantive review items",
++    "No merge, force push, history rewrite, branch deletion, branch-protection mutation, PR #1327 mutation, or R0 launch",
++    "Packet creation is not mutation authority; OPERATOR_EXECUTION_GATE=YES and GITHUB_MUTATION_AUTHORITY=YES are required before repository/GitHub mutation"
++  ],
++  "depends_on": [
++    "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT"
++  ],
++  "repo_binding": {
++    "project_id": "dopemux-mvp",
++    "repo_marker": ".dopemux",
++    "origin_hint": "DDD-Enterprises/dopemux-mvp",
++    "require_identity_match": true
++  },
++  "series": {
++    "id": "DMX-CI-AUDIT-EVIDENCE-GATE",
++    "base_branch": "main",
++    "parent_tp_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT",
++    "final_packet": false
++  },
++  "execution": {
++    "agent": "codex",
++    "branch": "fix/ci-audit-steward-not-required-a5-r1",
++    "base_branch": "main",
++    "stacked_because": "Continue the existing L3 repair on PR #1330; late review/live Steward exposed a collector seam after A5-R1."
++  },
++  "commit": {
++    "message": "fix(pr-steward): preserve trusted not-required metadata in collector",
++    "allowlist": [
++      "tools/pr_steward/collector.py",
++      "tests/pr_steward/test_intake.py",
++      "tests/pr_steward/test_classifier_embedded_audit_normalization.py",
++      "tests/pr_steward/test_collector_proof_state.py",
++      "docs/ops/pr-steward.md",
++      "task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT.json",
++      "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT/**",
++      "proof/pr_merge/embedded-audit/pr-1330/**"
++    ],
++    "verify": [
++      "python -m json.tool task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT.json",
++      "python -m jsonschema -i task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
++      "python -m pytest -q tests/pr_steward/test_intake.py tests/pr_steward/test_classifier_embedded_audit_normalization.py tests/pr_steward/test_collector_proof_state.py",
++      "python -m pytest -q tests/audit tests/pr_steward",
++      "git diff --check",
++      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
++      "pre-commit run --from-ref origin/main --to-ref HEAD",
++      "gitleaks protect --staged --verbose"
++    ]
++  },
++  "pr": {
++    "title": "fix(pr-steward): align trusted audit not-required runtime and schema",
++    "body": "Continue existing PR #1330. R2 preserves validated embedded_audit.required and skip_reason through the live collector path and regenerates portable exact-head proof. No merge, PR #1327 mutation, branch-protection change, or R0 launch is authorized.",
++    "base": "main"
++  },
++  "steps": [
++    {
++      "id": "S0",
++      "task": "Reharvest live main/PR/review state and establish isolated custody on the existing PR branch.",
++      "requirements": [
++        "Require both execution gates before mutation",
++        "Fetch origin/main and PR #1330; require open/unmerged and existing branch identity",
++        "Reharvest latest PR Steward status and both unresolved review threads",
++        "Read AGENTS.md, RULES.md if present, A5-R1 packet/proof, collector/classifier/schema/tests",
++        "Create or reuse a clean isolated worktree without touching foreign dirty state",
++        "Reproduce validated proof losing required/skip_reason before classifier-visible harvest",
++        "Stop if equivalent fix already exists"
++      ],
++      "validation": [
++        "REPO_IDENTITY=PASS",
++        "PR_1330_IDENTITY=PASS",
++        "LIVE_COLLECTOR_DEFECT=REPRODUCED",
++        "PR_1327_MUTATIONS=0"
++      ]
++    },
++    {
++      "id": "S1",
++      "task": "Add failing live-path tests first.",
++      "requirements": [
++        "Test exact NOT_REQUIRED proof through collector._proof_state and classifier/public intake; assert no EMBEDDED_AUDIT_SKIPPED under green unrelated gates",
++        "Test required=true+SKIPPED blocks",
++        "Test wrong/missing reason blocks",
++        "Test invalid independent proof forces NEEDS_SUPERVISOR/fail-closed and cannot activate NOT_REQUIRED",
++        "Retain A5-R1 classifier/schema tests",
++        "Capture expected pre-fix failure"
++      ],
++      "validation": [
++        "TDD_RED_LIVE_NOT_REQUIRED_CASE=PASS",
++        "LIVE_REQUIRED_SKIPPED_FAIL_CLOSED_TEST=PASS_OR_EXISTING",
++        "LIVE_WRONG_REASON_FAIL_CLOSED_TEST=PASS_OR_EXISTING",
++        "LIVE_INVALID_PROOF_FAIL_CLOSED_TEST=PASS_OR_EXISTING"
++      ]
++    },
++    {
++      "id": "S2",
++      "task": "Implement the minimum collector preservation repair.",
++      "requirements": [
++        "After existing independent proof validation, preserve embedded_audit.required and embedded_audit.skip_reason in collector output",
++        "Preserve exact types; do not coerce malformed values into trusted values",
++        "On independent proof validation error keep status=NEEDS_SUPERVISOR and prevent NOT_REQUIRED bypass",
++        "Do not change classifier.py or merge_readiness.schema.json; stop if required",
++        "Do not broaden proof trust sources or candidate authority",
++        "Keep report_path behavior unchanged unless tests require otherwise"
++      ],
++      "validation": [
++        "COLLECTOR_REQUIRED_PRESERVED=PASS",
++        "COLLECTOR_SKIP_REASON_PRESERVED=PASS",
++        "LIVE_NOT_REQUIRED_NONBLOCKING=PASS",
++        "LIVE_REQUIRED_SKIPPED_BLOCKING=PASS",
++        "LIVE_WRONG_REASON_BLOCKING=PASS",
++        "LIVE_INVALID_PROOF_FAIL_CLOSED=PASS"
++      ]
++    },
++    {
++      "id": "S3",
++      "task": "Update docs only if needed for the live collector seam.",
++      "requirements": [
++        "Document preservation comes from validated proof only",
++        "Document SKIPPED is not generally passing",
++        "Do not change the exact NOT_REQUIRED authority contract"
++      ],
++      "validation": [
++        "DOCS_MATCH_RUNTIME=PASS",
++        "NO_AUTHORITY_EXPANSION=PASS"
++      ]
++    },
++    {
++      "id": "S4",
++      "task": "Run deterministic gates and freeze the new substantive R2 content head.",
++      "requirements": [
++        "Run focused live-path tests and complete tests/audit + tests/pr_steward",
++        "Validate packet schema, diff, allowlist, change contract, precommit, staged secret scan",
++        "Require no PR #1327 mutation and no out-of-allowlist change",
++        "Commit substantive R2 changes and record NEW_FROZEN_CONTENT_HEAD",
++        "Any later substantive edit invalidates freeze and requires one replacement final audit"
++      ],
++      "validation": [
++        "FOCUSED_TESTS=PASS",
++        "RELEVANT_COMPLETE_SUITE=PASS",
++        "TP_SCHEMA=PASS",
++        "DIFF_CHECK=PASS",
++        "ALLOWLIST=PASS",
++        "CHANGE_CONTRACT=PASS",
++        "PRECOMMIT=PASS",
++        "SECRET_SCAN=PASS",
++        "NEW_FROZEN_CONTENT_HEAD=<sha>"
++      ]
++    },
++    {
++      "id": "S5",
++      "task": "Run exactly one independent final L3 audit on NEW_FROZEN_CONTENT_HEAD.",
++      "requirements": [
++        "Reconfirm AGY and gemini-3.1-pro-high live identity; use high effort; prove independence from Codex implementer",
++        "Audit exact frozen head only",
++        "Challenge validated-proof -> collector -> classifier dataflow, malformed required, wrong reason, invalid proof, candidate metadata, status normalization, and fail-open risks",
++        "Confirm no weakening of security-release, proof freshness, review, or schema gates",
++        "PASS/PASS_WITH_RISKS only if risks are explicit/non-blocking; identity/head/output uncertainty blocks"
++      ],
++      "validation": [
++        "AUDIT_SUBJECT_HEAD_MATCH=PASS",
++        "AUDITOR_INDEPENDENCE=PROVEN",
++        "INDEPENDENT_L3_AUDIT=PASS|PASS_WITH_RISKS",
++        "BLOCKING_AUDIT_FINDINGS=0"
++      ]
++    },
++    {
++      "id": "S6",
++      "task": "Regenerate canonical and PR-scoped proof as proof-only successors.",
++      "requirements": [
++        "Create canonical proof under proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT/ bound to NEW_FROZEN_CONTENT_HEAD",
++        "Include AUDITOR_REPORT.md and non-empty review_bundle",
++        "Remove operator-specific absolute local path/username from shareable proof using portable contract-approved representation and document replacement",
++        "Create fresh exact-head signed PR #1330 attestation under proof/pr_merge/embedded-audit/pr-1330/",
++        "Validate schema, signature, repo/PR/head, ancestry, independence, and proof-only closure",
++        "Do not rerun content audit for proof-only successors"
++      ],
++      "validation": [
++        "CANONICAL_PROOF=PASS",
++        "PROOF_PORTABILITY_PRIVACY=PASS",
++        "PR_SCOPED_ATTESTATION=PASS",
++        "PROOF_HEAD_BINDING=PASS",
++        "PROOF_ONLY_CLOSURE=PASS",
++        "CONTENT_REAUDIT=NOT_REQUIRED_AFTER_PROOF_ONLY_SUCCESSORS"
++      ]
++    },
++    {
++      "id": "S7",
++      "task": "Push the existing PR #1330 branch and reharvest current CI/reviews.",
++      "requirements": [
++        "Push normally to existing branch; force push forbidden",
++        "Require remote head exactly FINAL_PROOF_HEAD and PR still open/non-draft",
++        "Require embedded-audit CI model/provider calls=0",
++        "Wait for current required checks to settle; stale greens do not count",
++        "Reharvest review threads and classify any new item",
++        "Reply/resolve P1 collector thread only with exact fix/test evidence",
++        "Reply/resolve proof-path thread only with regenerated portable proof evidence",
++        "Stop on any new substantive MUST_FIX"
++      ],
++      "validation": [
++        "REMOTE_HEAD_MATCH=PASS",
++        "CI_MODEL_EXECUTION=0",
++        "CI_PROVIDER_MODEL_CALLS=0",
++        "REVIEW_THREAD_P1=RESOLVED_WITH_EVIDENCE",
++        "REVIEW_THREAD_PROOF_PATH=RESOLVED_WITH_EVIDENCE",
++        "NEW_BLOCKING_REVIEW_ITEMS=0"
++      ]
++    },
++    {
++      "id": "S8",
++      "task": "Obtain fresh exact-head security-release authorization, run final Steward, and stop at merge gate.",
++      "requirements": [
++        "Do not reuse prior solo-owner phrase; require fresh exact-head authorization at FINAL_PROOF_HEAD",
++        "Run/harvest exact-head Steward only after security release",
++        "Require current audit/proof, accepted release, no unresolved blocking threads, blockers=[], unknowns=[], readiness=READY",
++        "Do not merge; return READY_FOR_OPERATOR_MERGE_DECISION only",
++        "Do not mutate PR #1327 or launch R0"
++      ],
++      "validation": [
++        "SECURITY_RELEASE_APPROVAL=PASS",
++        "PR_STEWARD=PASS",
++        "BLOCKERS=[]",
++        "UNKNOWNS=[]",
++        "MERGE_READINESS=READY",
++        "MERGE=NO",
++        "PR_1327_MUTATIONS=0",
++        "R0_LAUNCHED=NO"
++      ]
++    }
++  ]
++}
+diff --git a/tests/pr_steward/test_collector_proof_state.py b/tests/pr_steward/test_collector_proof_state.py
+new file mode 100644
+index 000000000..83e6ad027
+--- /dev/null
++++ b/tests/pr_steward/test_collector_proof_state.py
+@@ -0,0 +1,87 @@
++from __future__ import annotations
++
++import json
++from pathlib import Path
++
++from scripts.audit.run_embedded_audit import build_evidence_gate_proof
++from tools.pr_steward import collector
++
++
++_REPO = "DDD-Enterprises/dopemux-mvp"
++_PR = 704
++_HEAD = "a" * 40
++_BASE = "b" * 40
++_NOT_REQUIRED_REASON = "AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT"
++
++
++def _not_required_proof() -> dict:
++    return build_evidence_gate_proof(
++        packet_id="TP-DMX-PR-STEWARD-001",
++        repo=_REPO,
++        pr_number=_PR,
++        head_sha=_HEAD,
++        base_sha=_BASE,
++        change_contract={
++            "status": "PASS",
++            "max_lane": "L1",
++            "model_audit_required": False,
++        },
++        local_attestation=None,
++    )
++
++
++def _write_proof(tmp_path: Path, proof: dict) -> Path:
++    path = tmp_path / "PROOF.json"
++    path.write_text(json.dumps(proof), encoding="utf-8")
++    return path
++
++
++def test_proof_state_preserves_validated_not_required_metadata(tmp_path: Path) -> None:
++    state, errors = collector._proof_state(
++        proof_path=_write_proof(tmp_path, _not_required_proof()),
++        pr_head_sha=_HEAD,
++        expected_pr=_PR,
++        expected_repo=_REPO,
++    )
++
++    assert errors == []
++    assert state["embedded_audit"]["status"] == "SKIPPED"
++    assert state["embedded_audit"]["required"] is False
++    assert state["embedded_audit"]["skip_reason"] == _NOT_REQUIRED_REASON
++    assert state["proof"]["matches_pr_head"] is True
++
++
++def test_proof_state_invalid_proof_forces_needs_supervisor(tmp_path: Path) -> None:
++    proof = _not_required_proof()
++    proof["provenance"]["proof_author"] = "self-attested"
++
++    state, errors = collector._proof_state(
++        proof_path=_write_proof(tmp_path, proof),
++        pr_head_sha=_HEAD,
++        expected_pr=_PR,
++        expected_repo=_REPO,
++    )
++
++    assert errors
++    assert state["embedded_audit"]["status"] == "NEEDS_SUPERVISOR"
++    assert state["embedded_audit"]["required"] is False
++    assert state["embedded_audit"]["skip_reason"] == _NOT_REQUIRED_REASON
++
++
++def test_proof_state_preserves_malformed_required_without_coercion(
++    tmp_path: Path,
++) -> None:
++    proof = _not_required_proof()
++    proof["embedded_audit"]["required"] = "false"
++
++    state, errors = collector._proof_state(
++        proof_path=_write_proof(tmp_path, proof),
++        pr_head_sha=_HEAD,
++        expected_pr=_PR,
++        expected_repo=_REPO,
++    )
++
++    assert errors
++    assert state["embedded_audit"]["status"] == "NEEDS_SUPERVISOR"
++    assert state["embedded_audit"]["required"] == "false"
++    assert state["embedded_audit"]["skip_reason"] == _NOT_REQUIRED_REASON
+diff --git a/tests/pr_steward/test_intake.py b/tests/pr_steward/test_intake.py
+index 897b1ac7e..83a812b34 100644
+--- a/tests/pr_steward/test_intake.py
++++ b/tests/pr_steward/test_intake.py
+@@ -5,8 +5,10 @@ import subprocess
+ import sys
+ from pathlib import Path
+
++import pytest
+ from jsonschema import Draft7Validator
+
++from scripts.audit.run_embedded_audit import build_evidence_gate_proof
+ from tools.pr_steward import collector
+ from tools.pr_steward.classifier import build_artifacts
+
+@@ -468,8 +470,13 @@ def test_live_collection_rejects_dry_run_or_unproven_audit_proof(
+     assert "EMBEDDED_AUDIT_NEEDS_SUPERVISOR" in readiness["blockers"]
+
+
+-def _blocked_by_independent_audit(
+-    tmp_path: Path, monkeypatch, proof_body: dict, pr_head: str
++def _artifacts_from_live_proof(
++    tmp_path: Path,
++    monkeypatch,
++    proof_body: dict,
++    pr_head: str,
++    *,
++    is_draft: bool = False,
+ ) -> dict:
+     proof_path = tmp_path / "PROOF.json"
+     proof_path.write_text(json.dumps(proof_body), encoding="utf-8")
+@@ -478,10 +485,12 @@ def _blocked_by_independent_audit(
+         if args[:3] == ["gh", "auth", "status"]:
+             return subprocess.CompletedProcess(args, 0, "", "")
+         if args[:3] == ["gh", "pr", "view"]:
++            pr_payload = base_pr_payload(head_sha=pr_head)
++            pr_payload["isDraft"] = is_draft
+             return subprocess.CompletedProcess(
+                 args,
+                 0,
+-                json.dumps(base_pr_payload(head_sha=pr_head)),
++                json.dumps(pr_payload),
+                 "",
+             )
+         raise AssertionError(f"unexpected gh command: {args}")
+@@ -496,18 +505,135 @@ def _blocked_by_independent_audit(
+         704,
+         proof_path=proof_path,
+     )
+-    artifacts = build_artifacts(
++    return build_artifacts(
+         harvest,
+         repo="DDD-Enterprises/dopemux-mvp",
+         pr_number=704,
+         strict=True,
+         allow_closed=False,
+     )
++
++
++def _blocked_by_independent_audit(
++    tmp_path: Path, monkeypatch, proof_body: dict, pr_head: str
++) -> dict:
++    artifacts = _artifacts_from_live_proof(tmp_path, monkeypatch, proof_body, pr_head)
+     readiness = artifacts["MERGE_READINESS.json"]
+     assert isinstance(readiness, dict)
+     return readiness
+
+
++def _not_required_proof(lane: str = "L1") -> dict:
++    return build_evidence_gate_proof(
++        packet_id="TP-DMX-PR-STEWARD-001",
++        repo="DDD-Enterprises/dopemux-mvp",
++        pr_number=704,
++        head_sha="a" * 40,
++        base_sha="b" * 40,
++        change_contract={
++            "status": "PASS",
++            "max_lane": lane,
++            "model_audit_required": False,
++        },
++        local_attestation=None,
++    )
++
++
++def _validate_collected_artifacts(artifacts: dict) -> None:
++    for name, schema_path in ARTIFACT_SCHEMAS.items():
++        Draft7Validator(load_json(schema_path)).validate(artifacts[name])
++
++
++@pytest.mark.parametrize("lane", ["L0", "L1"])
++def test_live_collection_preserves_trusted_not_required_through_readiness(
++    tmp_path: Path, monkeypatch, lane: str
++) -> None:
++    artifacts = _artifacts_from_live_proof(
++        tmp_path, monkeypatch, _not_required_proof(lane), "a" * 40
++    )
++
++    readiness = artifacts["MERGE_READINESS.json"]
++    assert readiness["readiness"] == "READY"
++    assert readiness["blockers"] == []
++    assert readiness["unknowns"] == []
++    assert readiness["embedded_audit"]["status"] == "SKIPPED"
++    assert readiness["embedded_audit"]["required"] is False
++    assert readiness["embedded_audit"]["skip_reason"] == (
++        "AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT"
++    )
++    assert readiness["proof"]["matches_pr_head"] is True
++    assert readiness["proof"]["proof_freshness"]["status"] == "CURRENT"
++    assert artifacts["PR_STATE_SNAPSHOT.json"]["harvest_complete"] is True
++    _validate_collected_artifacts(artifacts)
++
++
++_MISSING = object()
++
++
++@pytest.mark.parametrize(
++    "section,field,value",
++    [
++        ("embedded_audit", "required", True),
++        ("embedded_audit", "required", None),
++        ("embedded_audit", "required", "false"),
++        ("embedded_audit", "required", 0),
++        ("embedded_audit", "required", _MISSING),
++        ("embedded_audit", "skip_reason", "UNTRUSTED_REASON"),
++        ("embedded_audit", "skip_reason", None),
++        ("embedded_audit", "skip_reason", _MISSING),
++        ("embedded_audit", "status", _MISSING),
++        ("embedded_audit", "status", "skipped"),
++        ("embedded_audit", "status", "UNKNOWN"),
++        ("provenance", "audit_source", "untrusted"),
++        ("provenance", "proof_author", "untrusted"),
++        ("provenance", "change_contract", _MISSING),
++        (None, "repo", "untrusted/repo"),
++        (None, "pr_number", 705),
++        (None, "head_sha", "c" * 40),
++        (None, "dry_run", True),
++    ],
++    ids=[
++        "required-true", "required-null", "required-string", "required-zero",
++        "required-missing", "wrong-reason", "null-reason", "missing-reason",
++        "missing-status", "lowercase-status", "unknown-status", "untrusted-source",
++        "untrusted-author", "missing-contract", "wrong-repo", "wrong-pr",
++        "stale-head", "dry-run",
++    ],
++)
++def test_live_collection_rejects_untrusted_not_required_claims(
++    tmp_path: Path, monkeypatch, section, field, value
++) -> None:
++    proof = _not_required_proof()
++    target = proof if section is None else proof[section]
++    if value is _MISSING:
++        target.pop(field, None)
++    else:
++        target[field] = value
++
++    artifacts = _artifacts_from_live_proof(tmp_path, monkeypatch, proof, "a" * 40)
++
++    readiness = artifacts["MERGE_READINESS.json"]
++    assert readiness["readiness"] != "READY"
++    assert any(b.startswith("EMBEDDED_AUDIT_") for b in readiness["blockers"])
++    if field == "head_sha":
++        assert readiness["proof"]["matches_pr_head"] is False
++        assert "PROOF_STALE" in readiness["blockers"]
++    _validate_collected_artifacts(artifacts)
++
++
++def test_live_collection_not_required_does_not_clear_draft_gate(
++    tmp_path: Path, monkeypatch
++) -> None:
++    artifacts = _artifacts_from_live_proof(
++        tmp_path, monkeypatch, _not_required_proof(), "a" * 40, is_draft=True
++    )
++
++    readiness = artifacts["MERGE_READINESS.json"]
++    assert readiness["readiness"] == "BLOCKED"
++    assert readiness["blockers"] == ["PR_IS_DRAFT"]
++    _validate_collected_artifacts(artifacts)
++
++
+ def test_live_collection_rejects_pass_with_executed_true_missing_provenance(
+     tmp_path: Path, monkeypatch
+ ) -> None:
+diff --git a/tools/pr_steward/collector.py b/tools/pr_steward/collector.py
+index 00bbaaf6b..e503cbd57 100644
+--- a/tools/pr_steward/collector.py
++++ b/tools/pr_steward/collector.py
+@@ -709,6 +709,8 @@ def _proof_state(
+     return {
+         "embedded_audit": {
+             "status": audit_status,
++            "required": embedded.get("required"),
++            "skip_reason": embedded.get("skip_reason"),
+             "report_path": str(
+                 embedded.get("report_path")
+                 or f"{proof_path.parent.as_posix()}/AUDITOR_REPORT.md"

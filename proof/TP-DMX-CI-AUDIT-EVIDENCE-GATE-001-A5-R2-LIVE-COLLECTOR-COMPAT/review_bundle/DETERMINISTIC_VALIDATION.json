@@ -1,0 +1,48 @@
+{
+  "change_contract": {
+    "command": "scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  "ci_model_execution": 0,
+  "ci_provider_model_calls": 0,
+  "diff_check": {
+    "command": "git diff --check origin/main..HEAD",
+    "exit_code": 0
+  },
+  "focused_green": {
+    "command": "env PATH=.venv/bin:$PATH .venv/bin/python -m pytest -q tests/pr_steward/test_intake.py tests/pr_steward/test_classifier_embedded_audit_normalization.py tests/pr_steward/test_collector_proof_state.py",
+    "exit_code": 0,
+    "result": "93 passed in 1.81s"
+  },
+  "gitleaks_staged": {
+    "command": "gitleaks protect --staged --verbose",
+    "exit_code": 0,
+    "result": "no leaks found; git fsmonitor warning present on stderr"
+  },
+  "jsonschema": {
+    "command": "python -m jsonschema -i task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+    "exit_code": 0
+  },
+  "pre_commit": {
+    "command": "uv run pre-commit run --from-ref origin/main --to-ref HEAD",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  "relevant_suite": {
+    "command": "env PATH=.venv/bin:$PATH .venv/bin/python -m pytest -q tests/audit tests/pr_steward",
+    "exit_code": 0,
+    "result": "830 passed, 2 skipped in 27.62s"
+  },
+  "ruff": {
+    "command": "ruff check tools/pr_steward/collector.py tests/pr_steward/test_intake.py tests/pr_steward/test_collector_proof_state.py",
+    "exit_code": 0,
+    "result": "All checks passed"
+  },
+  "tdd_red": {
+    "command": "pytest focused not-required selection before collector fix",
+    "exit_code": 1,
+    "expected": true,
+    "failures": 3
+  }
+}
