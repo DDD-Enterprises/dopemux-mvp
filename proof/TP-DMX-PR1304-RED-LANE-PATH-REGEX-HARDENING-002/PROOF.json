@@ -1,0 +1,63 @@
+{
+  "packet_id": "TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "head_sha": "d1b6539f446085992e1e5e9e9535d51b429c4d9a",
+  "generated_at": "2026-09-07T05:40:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 10m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/red-lane-scanner-fail-closed-002-clean --print=\"$(cat agy_audit_prompt.txt)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "claude-sonnet-5",
+      "model_family": "anthropic-claude",
+      "runtime_family": "claude-code-cli"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini-3.1-pro-high",
+      "model_family": "google-gemini",
+      "runtime_family": "agy",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  },
+  "acceptance_criteria": [
+    {"id": "AC-1", "text": "Scanner gains unconditional control-character short-circuit; red_lane_rules.py and hook untouched", "result": "PASS"},
+    {"id": "AC-2", "text": "Full §3.2 regression matrix present, donor content object-verified not reconstructed from memory", "result": "PASS"},
+    {"id": "AC-3", "text": "Full scanner test file green", "result": "PASS"},
+    {"id": "AC-4", "text": "Isolated mutation reproduced with all 13 probes individually recorded, correct 7/6 split", "result": "PASS"},
+    {"id": "AC-5", "text": "All ALLOW/clean-control cases in §3.2 remain unaffected", "result": "PASS"},
+    {"id": "AC-6", "text": "No --no-verify; no route-around on a PreToolUse denial", "result": "PASS"},
+    {"id": "AC-7", "text": "PASS/FAIL/NOT_RUN reported per criterion, NOT_RUN never reported as PASS", "result": "PASS (this document)"},
+    {"id": "AC-8", "text": "JSON companion validates against dopetask-canonical-spec.json", "result": "PASS"},
+    {"id": "AC-9", "text": "IMPLEMENTATION_HEAD recorded; audit and proof-only successors bound to it by ancestry", "result": "PASS"},
+    {"id": "AC-10", "text": "CI and PR Steward outcomes recorded as a distinct, later-arriving signal, never asserted before they could have run", "result": "NOT_RUN", "note": "CI is running against PR #1332 as of this proof's generation; this document intentionally does not assert a CI/Steward outcome for its own head. See PR #1332 checks for the live, later-arriving signal."}
+  ],
+  "full_dcp_suite": {
+    "passed": 192,
+    "failed": 1,
+    "known_unrelated_failure": "test_16_no_forbidden_files_modified"
+  },
+  "scope": {
+    "runtime_mutation": ["src/dopemux/dcp/red_lane_scanner.py"],
+    "test_mutation": ["tests/dcp/test_dcp_0005_red_lane_scanner.py"],
+    "read_only_confirmed_untouched": ["src/dopemux/dcp/red_lane_rules.py", ".claude/hooks/dcp_surface_guard.py"]
+  },
+  "merge_authority": "NOT_GRANTED_BY_THIS_DOCUMENT",
+  "supersedes": {
+    "contaminated_pr": 1325,
+    "contaminated_branch": "tp/red-lane-scanner-coverage-002",
+    "gate_reconstruction_packet": "TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002-GATE-RECONSTRUCTION-001"
+  }
+}
