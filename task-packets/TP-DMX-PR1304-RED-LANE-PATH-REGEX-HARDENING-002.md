@@ -7,7 +7,8 @@ author: '@hu3mann'
 date: '2026-09-04'
 last_review: '2026-09-07'
 next_review: '2026-10-07'
-prelude: L3 runtime closure packet for a confirmed live control-character bypass
+prelude: >-
+  L3 runtime closure packet for a confirmed live control-character bypass
   in RedLaneScanner. This is the gate-reconstructed successor of the packet PR
   #1325 carried into unauthorized runtime/test implementation
   (TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002-GATE-RECONSTRUCTION-001,
