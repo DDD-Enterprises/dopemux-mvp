@@ -1,13 +1,13 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1332,
-  "head_sha": "d1b6539f446085992e1e5e9e9535d51b429c4d9a",
+  "head_sha": "1bc3c29c3448855577cd15de6655fbc15e8cdb2b",
   "embedded_audit": {
     "required": true,
     "status": "PASS",
     "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 10m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/red-lane-scanner-fail-closed-002-clean --print=\"$(cat agy_audit_prompt.txt)\"",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 10m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/red-lane-scanner-fail-closed-002-clean --print=\"$(cat agy_audit_prompt_v2.txt)\"",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/AUDITOR_REPORT.md",
     "findings": [],
