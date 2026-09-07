@@ -32,8 +32,10 @@ The gate denies when:
 - requested head SHA, PR Steward `pr.head_sha`, PR Steward `proof.proof_head_sha`,
   and embedded-audit proof `head_sha` do not all match
 - PR Steward readiness does not match the requested class
-- PR Steward embedded-audit status or independent proof embedded-audit status is
-  not `PASS` or `PASS_WITH_RISKS`
+- for remediation, either embedded-audit status is not `PASS` or
+  `PASS_WITH_RISKS`
+- for finalization, audit evidence is neither an exact `PASS` pair nor the
+  exact trusted not-required pair described below
 - either artifact timestamp is missing, invalid, future-dated, or older than TTL
 
 ## Readiness Classes
@@ -88,9 +90,14 @@ merge execution path. A live merge attempt through `_merge_prepared_result`
 must find fresh local `MERGE_READINESS.json` and `PROOF.json` artifacts at the
 explicit configured policy paths for the exact PR head SHA, PR Steward
 readiness `READY`, and strict independent
-embedded-audit status `PASS` in both artifacts. `PASS_WITH_RISKS` remains
-acceptable for remediation and general acceptance evidence, but does not grant
-finalization authority.
+embedded-audit status `PASS` in both artifacts. Sole non-`PASS` alternative
+requires both artifacts to independently carry exact status `SKIPPED`, boolean
+`required: false`, and skip reason
+`AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT`. Mixed `PASS`/not-required
+pairs, malformed metadata, missing metadata, lowercase or other noncanonical
+statuses, and `required` values merely equal to false fail closed.
+`PASS_WITH_RISKS` remains acceptable for remediation and general acceptance
+evidence, but does not grant finalization authority.
 
 When the finalization gate denies, queue drain writes
 `STEWARD_FINALIZATION_GATE.json` and stops before merge execution. Direct merge

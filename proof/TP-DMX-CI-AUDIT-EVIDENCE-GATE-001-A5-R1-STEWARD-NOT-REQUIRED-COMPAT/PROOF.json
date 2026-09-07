@@ -14,7 +14,7 @@
     "match": true
   },
   "worktree": {
-    "path": "/Users/hue/code/dopemux-wsac-000/.worktrees/ci-audit-steward-not-required-a5-r1",
+    "path": ".",
     "branch": "fix/ci-audit-steward-not-required-a5-r1",
     "content_head": "6ae694021de3d637c84289477b045c32f568754f",
     "content_tree": "d6a58484a465c72dad80d6e7901bc34e73902443"

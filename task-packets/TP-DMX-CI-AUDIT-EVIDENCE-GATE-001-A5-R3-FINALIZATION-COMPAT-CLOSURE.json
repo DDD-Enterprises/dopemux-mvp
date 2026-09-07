@@ -1,0 +1,322 @@
+{
+  "id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE",
+  "project": "dopemux-mvp",
+  "target": "L3 CI-trust/finality closure on existing PR #1330: propagate the exact trusted NOT_REQUIRED embedded-audit contract through governed finalization in steward_gate.py and queue_drain.py, while preserving the existing stricter FINALIZATION policy for PASS_WITH_RISKS and all fail-closed neighbors. In the same frozen successor, repair only the inherited A5-R1 proof portability/privacy defect by replacing the operator-specific absolute worktree path with a contract-valid portable representation without changing historical audit meaning. Resolve the two current exact review threads only after evidence exists. No merge, no PR #1327 mutation, no R0 launch.",
+  "invariants": [
+    "Current trusted main anchor is 6a728f74c0311967f83213513308f97613e3f28d; fetch and reverify before mutation and classify any drift",
+    "Existing repair PR #1330 is the sole PR for this successor; do not open a new PR",
+    "Expected start head is faaedb76d5d360ead80f75e1db4a9fa0523f7a2c; if live PR head differs, stop and classify drift before mutation",
+    "PR #1330 must remain open and non-draft; ready/draft-state mutation is not authorized",
+    "PR #1327 remains untouched; PR_1327_MUTATIONS=0",
+    "Finalization semantics must preserve existing strict PASS behavior and add only the exact trusted NOT_REQUIRED alternative",
+    "FINALIZATION strict PASS remains allowed only when both merge-readiness and audit-proof embedded_audit.status are exactly PASS",
+    "PASS_WITH_RISKS remains denied by require_steward_finalization_gate; do not weaken this policy",
+    "Trusted NOT_REQUIRED finalization is allowed only when BOTH merge-readiness and audit-proof embedded_audit independently satisfy status=SKIPPED, required=false, and skip_reason=AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT",
+    "Mixed PASS/NOT_REQUIRED artifact pairs remain denied",
+    "SKIPPED with required=true remains denied",
+    "SKIPPED with required missing, malformed, null, or not exactly boolean false remains denied",
+    "SKIPPED with skip_reason missing or not exactly AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT remains denied",
+    "FAIL, NEEDS_SUPERVISOR, unknown, lowercase/noncanonical, malformed, or empty status remains fail-closed",
+    "steward_gate evidence extraction must preserve required and skip_reason for both merge-readiness and audit-proof artifacts without coercing malformed values into trusted values",
+    "queue_drain must use the same exact finalization predicate or evidence result; do not create a broader second interpretation",
+    "No changes to PR Steward classifier/collector or merge_readiness.schema.json are expected; if tests prove such a change is necessary, stop for supervisor",
+    "The inherited proof privacy repair is limited to proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT/** and deterministic checksum/manifest references within that same proof bundle if present",
+    "Do not rewrite the inherited A5-R1 audit verdict, auditor identity, head binding, findings, risks, timestamps, validation results, or semantic claims",
+    "Replace only operator-specific absolute local worktree path disclosure with a repo-relative, neutral placeholder, null, or other schema/contract-valid portable representation; document the exact transformation",
+    "If the inherited proof bundle has signatures/hashes that make an in-place privacy edit semantically or cryptographically invalid, stop and report rather than forging/re-signing historical evidence",
+    "Current review thread PRRT_kwDOPyIw986fquAS remains open until the inherited proof privacy issue is actually repaired or formally dispositioned with evidence",
+    "Current review thread PRRT_kwDOPyIw986fyB9d remains MUST_FIX until governed finalization accepts exact trusted NOT_REQUIRED and fail-closed neighbors pass tests",
+    "Do not resolve either thread before its corresponding evidence exists",
+    "Before editing src/dopemux_pr_merge_specialist paths, inspect .claude/skills, .github/skills, and templates/skills copies for authority/generated-sync requirements; if repository policy requires synchronized changes outside the allowlist, stop for supervisor rather than expanding scope automatically",
+    "No CI model/provider audit execution may be introduced",
+    "No Clink/PAL audit and no API-metered audit route is authorized",
+    "Use TDD: add failing finalization tests before implementation",
+    "Because governed finalization behavior changes, risk lane is L3 and exactly one new independent final audit is required after the combined substantive R3 content head is frozen",
+    "Preferred auditor is AGY gemini-3.1-pro-high at high effort if exact live selector and identity are reconfirmed; no silent substitution",
+    "Bundle the proof privacy repair before the substantive R3 freeze so the single final L3 audit reviews the combined frozen content",
+    "After that audit, proof-only successor commits do not trigger another content audit unless substantive content changes",
+    "Any prior security-release authorization for head faaedb76d5d360ead80f75e1db4a9fa0523f7a2c becomes stale when the head changes; fresh exact-head authorization is required before final Steward readiness",
+    "Do not merge, force-push, rewrite history, delete branches, change branch protection, or launch R0",
+    "Packet creation does not authorize repository mutation; OPERATOR_EXECUTION_GATE=YES and GITHUB_MUTATION_AUTHORITY=YES are required before mutation",
+    "Operator amendment: OPERATOR_ALLOWLIST_AMENDMENT=YES; AMENDMENT_REASON=MANDATORY_PARITY_SYNCHRONIZATION. The six added mirror paths are synchronization-only; no semantic scope expansion. Runtime, template, Claude, and GitHub copies must finish byte-identical per module. Validate parity test and explicit hashes; divergence blocks."
+  ],
+  "depends_on": [
+    "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopemux",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-CI-AUDIT-EVIDENCE-GATE",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/ci-audit-steward-not-required-a5-r1",
+    "base_branch": "main",
+    "stacked_because": "Continue the existing L3 repair on PR #1330. R2 fixed live collector propagation; late review proved downstream governed finalization still rejects exact NOT_REQUIRED."
+  },
+  "commit": {
+    "message": "fix(finalization): honor trusted audit not-required evidence",
+    "allowlist": [
+      "src/dopemux_pr_merge_specialist/steward_gate.py",
+      "src/dopemux_pr_merge_specialist/queue_drain.py",
+      "tests/pr_merge_specialist/test_finalization_gate.py",
+      "tests/pr_merge_specialist/test_template_contracts.py",
+      "docs/ops/steward-merge-gate.md",
+      "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT/**",
+      "task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE.json",
+      "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/**",
+      "proof/pr_merge/embedded-audit/pr-1330/**",
+      "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+      "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+      ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+      ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+      ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+      ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE.json",
+      "python -m jsonschema -i task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest -q tests/pr_merge_specialist/test_finalization_gate.py",
+      "python -m pytest -q tests/pr_merge_specialist tests/audit tests/pr_steward",
+      "git diff --check",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "pre-commit run --from-ref origin/main --to-ref HEAD",
+      "gitleaks protect --staged --verbose"
+    ]
+  },
+  "pr": {
+    "title": "fix(pr-steward): align trusted audit not-required runtime and schema",
+    "body": "Continue existing PR #1330. R3 closes the remaining governed-finalization gap: strict PASS remains valid, PASS_WITH_RISKS remains denied for FINALIZATION, and the only additional allowed path is when both trusted artifacts independently carry exact NOT_REQUIRED metadata. R3 also removes the inherited A5-R1 absolute worktree path without rewriting historical audit meaning. No merge or activation authorized.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Reharvest exact live PR/main/review/check state and establish clean custody on the existing branch.",
+      "requirements": [
+        "Require OPERATOR_EXECUTION_GATE=YES and GITHUB_MUTATION_AUTHORITY=YES before mutation",
+        "Fetch origin/main and reverify current main; anchor=6a728f74c0311967f83213513308f97613e3f28d",
+        "Fetch PR #1330; require open=true, merged=false, branch=fix/ci-audit-steward-not-required-a5-r1",
+        "Require start head=faaedb76d5d360ead80f75e1db4a9fa0523f7a2c unless an explicitly authorized successor already moved it; otherwise stop and classify drift",
+        "Reharvest required checks and unresolved review threads",
+        "Read AGENTS.md, RULES.md if present, parent R2 packet/proof, steward_gate.py, queue_drain.py, relevant finalization tests, and docs/ops/steward-merge-gate.md",
+        "Inspect .claude/skills, .github/skills, and templates/skills duplicates to determine whether source files are canonical or require generated synchronization",
+        "If required synchronization falls outside allowlist, stop for supervisor",
+        "Create or reuse a clean isolated worktree for the existing PR branch without altering preserved/quarantined worktrees",
+        "Reproduce DENY_AUDIT_NOT_PASSING / DENY_AUDIT_NOT_STRICT_PASS for exact NOT_REQUIRED artifacts before edits"
+      ],
+      "validation": [
+        "REPO_IDENTITY=PASS",
+        "PR_1330_IDENTITY=PASS",
+        "FINALIZATION_NOT_REQUIRED_DEFECT=REPRODUCED",
+        "DUPLICATE_AUTHORITY_CLASSIFIED=PASS",
+        "PR_1327_MUTATIONS=0"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Add failing finalization tests first for strict PASS, exact NOT_REQUIRED, and fail-closed neighbors.",
+      "requirements": [
+        "Preserve existing test that strict PASS + strict PASS allows FINALIZATION",
+        "Preserve existing test that PASS_WITH_RISKS is denied by FINALIZATION",
+        "Add test where both artifacts carry exact status=SKIPPED, required=false, canonical skip_reason; expect ALLOW_FINALIZATION",
+        "Add mixed PASS/NOT_REQUIRED test; expect deny",
+        "Add required=true + SKIPPED test; expect deny",
+        "Add missing/malformed required test; expect deny",
+        "Add wrong/missing skip_reason test; expect deny",
+        "Add unknown/noncanonical status test; expect deny",
+        "Exercise both steward_gate and queue_drain.require_steward_finalization_gate, not only a helper predicate",
+        "Capture expected pre-fix failure of exact NOT_REQUIRED finalization"
+      ],
+      "validation": [
+        "TDD_RED_FINALIZATION_NOT_REQUIRED=PASS",
+        "STRICT_PASS_ALLOWED_TEST=PASS_OR_EXISTING",
+        "PASS_WITH_RISKS_DENIED_TEST=PASS_OR_EXISTING",
+        "MIXED_ARTIFACTS_DENIED_TEST=PASS_OR_EXISTING",
+        "REQUIRED_SKIPPED_DENIED_TEST=PASS_OR_EXISTING",
+        "WRONG_REASON_DENIED_TEST=PASS_OR_EXISTING",
+        "UNKNOWN_STATUS_DENIED_TEST=PASS_OR_EXISTING"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement one exact finalization audit predicate and evidence propagation.",
+      "requirements": [
+        "Extend steward_gate._evidence to preserve raw required and skip_reason for both merge-readiness and audit-proof embedded_audit objects",
+        "Do not coerce malformed required into false or normalize wrong/missing reason into the canonical string",
+        "Implement one exact helper/predicate that recognizes either strict PASS pair or exact NOT_REQUIRED pair",
+        "Use that predicate in steward_gate instead of broad PASSING_AUDIT_STATUSES for FINALIZATION acceptance",
+        "Preserve existing REMEDIATION semantics unless tests prove it already shares the affected FINALIZATION path; do not broaden unrelated behavior",
+        "Update queue_drain.require_steward_finalization_gate to accept only the same exact strict-PASS or exact-NOT_REQUIRED contract",
+        "Keep PASS_WITH_RISKS denied at queue-drain finalization",
+        "Do not change PR Steward classifier/collector or merge-readiness schema"
+      ],
+      "validation": [
+        "FINALIZATION_EVIDENCE_REQUIRED_PRESERVED=PASS",
+        "FINALIZATION_EVIDENCE_SKIP_REASON_PRESERVED=PASS",
+        "STRICT_PASS_FINALIZATION=PASS",
+        "EXACT_NOT_REQUIRED_FINALIZATION=PASS",
+        "PASS_WITH_RISKS_FINALIZATION=DENIED",
+        "MIXED_FINALIZATION=DENIED",
+        "MALFORMED_FINALIZATION=DENIED"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Repair inherited A5-R1 proof absolute worktree path without changing historical meaning.",
+      "requirements": [
+        "Inspect the inherited A5-R1 proof bundle schema, hashes, manifests, and any signatures before editing",
+        "Replace only operator-specific absolute worktree.path or directly coupled deterministic references",
+        "Prefer repo-relative path, neutral placeholder, null, or other contract-valid portable representation",
+        "Do not alter historical verdict, auditor identity, audited head, findings, risks, timestamps, test claims, or semantic statements",
+        "If signature/hash validity would require re-signing or semantic rewriting, stop and report instead",
+        "Record exact before/after field transformation without reproducing sensitive path in new shareable proof",
+        "Do not edit old failed/quarantined R2 proof bundles"
+      ],
+      "validation": [
+        "INHERITED_PROOF_SEMANTICS_UNCHANGED=PASS",
+        "INHERITED_PROOF_PORTABILITY_PRIVACY=PASS",
+        "INHERITED_PROOF_SCHEMA=PASS",
+        "INHERITED_PROOF_HASH_SIGNATURE_INTEGRITY=PASS_OR_NOT_APPLICABLE"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Update finalization documentation narrowly.",
+      "requirements": [
+        "Document strict PASS finalization remains valid",
+        "Document PASS_WITH_RISKS remains denied for FINALIZATION",
+        "Document exact NOT_REQUIRED is the sole non-PASS alternative and requires both artifacts to carry matching exact metadata",
+        "Document mixed or malformed evidence fails closed",
+        "Do not broaden automation/merge authority"
+      ],
+      "validation": [
+        "DOCS_MATCH_RUNTIME=PASS",
+        "NO_AUTHORITY_EXPANSION=PASS"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Run deterministic validation and freeze the combined substantive R3 content head.",
+      "requirements": [
+        "Run focused finalization tests",
+        "Run complete tests/pr_merge_specialist plus relevant tests/audit and tests/pr_steward",
+        "Validate task packet schema",
+        "Run git diff --check and exact changed-file allowlist",
+        "Run validate_change_contract.py against current origin/main",
+        "Run changed-file pre-commit and rerun if hooks mutate",
+        "Run staged secret scan",
+        "Confirm inherited proof privacy change passes its schema/hash/signature contract",
+        "Confirm no PR #1327 mutation and no unauthorized duplicate-skill path edits",
+        "Commit substantive code/tests/docs/privacy repair and record NEW_FROZEN_CONTENT_HEAD",
+        "Do not edit substantive files after freeze unless audit finds a blocking issue; any substantive repair requires a replacement final audit"
+      ],
+      "validation": [
+        "FOCUSED_TESTS=PASS",
+        "RELEVANT_COMPLETE_SUITE=PASS",
+        "TP_SCHEMA=PASS",
+        "DIFF_CHECK=PASS",
+        "ALLOWLIST=PASS",
+        "CHANGE_CONTRACT=PASS",
+        "PRECOMMIT=PASS",
+        "SECRET_SCAN=PASS",
+        "NEW_FROZEN_CONTENT_HEAD=<sha>"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Run exactly one independent final L3 audit on the combined frozen R3 content head.",
+      "requirements": [
+        "Reconfirm live AGY and gemini-3.1-pro-high selector before invocation",
+        "Use high effort and prove independence from Codex implementer",
+        "Audit exact NEW_FROZEN_CONTENT_HEAD only",
+        "Challenge fail-open behavior in steward_gate and queue_drain",
+        "Explicitly test/reason through PASS, PASS_WITH_RISKS, exact NOT_REQUIRED, mixed PASS/NOT_REQUIRED, required=true, missing/malformed required, wrong/missing reason, unknown status, and stale/mismatched SHA interactions",
+        "Review the inherited proof privacy edit for semantic non-drift",
+        "Confirm no CI model-call path was introduced",
+        "Record actual runner/model/effort/invocation/subject/verdict/findings/risks/independence",
+        "PASS or PASS_WITH_RISKS only if all risks are explicit and non-blocking",
+        "FAIL, NEEDS_SUPERVISOR, unknown identity, malformed output, or head mismatch blocks"
+      ],
+      "validation": [
+        "AUDIT_SUBJECT_HEAD_MATCH=PASS",
+        "AUDITOR_INDEPENDENCE=PROVEN",
+        "INDEPENDENT_L3_AUDIT=PASS|PASS_WITH_RISKS",
+        "BLOCKING_AUDIT_FINDINGS=0"
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Generate proof-only R3 successors and exact-head PR #1330 attestation without rerunning content audit.",
+      "requirements": [
+        "Create canonical proof under proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/ bound to NEW_FROZEN_CONTENT_HEAD",
+        "Include AUDITOR_REPORT.md and non-empty review_bundle",
+        "Generate fresh exact-head signed PR #1330 proof under proof/pr_merge/embedded-audit/pr-1330/",
+        "Ensure new shareable proof contains no operator-specific absolute filesystem paths",
+        "Validate proof schema, signature, repo/PR/head identity, ancestry, independence, and proof-only closure",
+        "Do not run a second content audit unless substantive content changed after freeze"
+      ],
+      "validation": [
+        "CANONICAL_PROOF=PASS",
+        "NEW_PROOF_PORTABILITY_PRIVACY=PASS",
+        "PR_SCOPED_ATTESTATION=PASS",
+        "PROOF_HEAD_BINDING=PASS",
+        "PROOF_ONLY_CLOSURE=PASS",
+        "CONTENT_REAUDIT=NOT_REQUIRED"
+      ]
+    },
+    {
+      "id": "S8",
+      "task": "Push normally to existing PR #1330 and resolve the two exact current review threads only with current evidence.",
+      "requirements": [
+        "Push normally to fix/ci-audit-steward-not-required-a5-r1; force-push forbidden",
+        "Confirm PR #1330 head advances exactly to FINAL_PROOF_HEAD and remains open/non-draft",
+        "Wait for current required checks to settle; stale green evidence is insufficient",
+        "Reharvest review threads before resolution and classify any newly arrived blocker",
+        "For PRRT_kwDOPyIw986fyB9d, reply with exact finalization implementation/tests/audit evidence and resolve only if concern is addressed",
+        "For PRRT_kwDOPyIw986fquAS, reply with inherited proof portability evidence and resolve only if concern is addressed",
+        "If a new substantive MUST_FIX appears, stop; do not dismiss or auto-resolve",
+        "Require embedded-audit CI model/provider calls=0"
+      ],
+      "validation": [
+        "REMOTE_HEAD_MATCH=PASS",
+        "CI_MODEL_EXECUTION=0",
+        "CI_PROVIDER_MODEL_CALLS=0",
+        "FINALIZATION_P1_THREAD=RESOLVED_WITH_EVIDENCE",
+        "PROOF_PRIVACY_THREAD=RESOLVED_WITH_EVIDENCE",
+        "NEW_BLOCKING_REVIEW_ITEMS=0"
+      ]
+    },
+    {
+      "id": "S9",
+      "task": "Obtain fresh exact-head security-release authorization, run final Steward, and stop at merge decision.",
+      "requirements": [
+        "Do not reuse prior security-release authorization from any earlier head",
+        "Require fresh exact-head operator security-release authorization for PR #1330 at FINAL_PROOF_HEAD",
+        "After authorization, rerun/harvest exact-head embedded audit and PR Steward",
+        "Require all current required checks settled and passing",
+        "Require blockers=[], unknowns=[], PR Steward success, merge_readiness=READY",
+        "Do not merge; return READY_FOR_OPERATOR_MERGE_DECISION only",
+        "Do not mutate PR #1327 or launch R0"
+      ],
+      "validation": [
+        "SECURITY_RELEASE_APPROVAL=PASS",
+        "REQUIRED_CHECKS=PASS",
+        "PR_STEWARD=PASS",
+        "BLOCKERS=[]",
+        "UNKNOWNS=[]",
+        "MERGE_READINESS=READY",
+        "MERGE=NO",
+        "PR_1327_MUTATIONS=0",
+        "R0_LAUNCHED=NO"
+      ]
+    }
+  ]
+}

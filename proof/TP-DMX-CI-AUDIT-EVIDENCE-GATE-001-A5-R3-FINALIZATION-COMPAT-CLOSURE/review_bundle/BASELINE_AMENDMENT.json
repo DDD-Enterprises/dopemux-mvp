@@ -1,0 +1,40 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE",
+  "operator_allowlist_amendment": "YES",
+  "amendment_reason": "BASELINE_STALE_TEST_EXPECTATION",
+  "added_path": "tests/pr_merge_specialist/test_template_contracts.py",
+  "semantic_scope_expansion": false,
+  "authorized_change": {
+    "before": [
+      "pr-merge-specialist"
+    ],
+    "after": [
+      "pr-merge-specialist",
+      "vibe-pr-merge"
+    ],
+    "assertion": "exact ordered equality",
+    "sync_registry_modified": false
+  },
+  "targeted_test": {
+    "command": ".venv/bin/python -B -m pytest -q -p no:cacheprovider tests/pr_merge_specialist/test_template_contracts.py::test_sync_repo_skills_family_includes_pr_merge_specialist",
+    "exit_code": 0,
+    "result": "1 passed in 0.03s"
+  },
+  "complete_baseline": {
+    "command": ".venv/bin/python -B -m pytest -q -p no:cacheprovider tests/pr_merge_specialist tests/audit tests/pr_steward",
+    "environment": "current worktree venv-first PATH",
+    "exit_code": 0,
+    "result": "928 passed, 2 skipped in 27.07s",
+    "status": "PASS",
+    "behavioral_implementation_started": false,
+    "base_head": "faaedb76d5d360ead80f75e1db4a9fa0523f7a2c",
+    "tracked_changes": [
+      "tests/pr_merge_specialist/test_template_contracts.py"
+    ]
+  },
+  "prior_failure_receipt": "VALIDATION.json",
+  "prior_failure_disposition": "Superseded for baseline readiness only; preserved original observed failure and stop.",
+  "behavioral_implementation_gate": "OPEN",
+  "test_only_new_model_audit": "NOT_REQUIRED",
+  "final_combined_l3_audit": "STILL_REQUIRED_AFTER_CONTENT_FREEZE"
+}

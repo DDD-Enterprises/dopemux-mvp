@@ -8,6 +8,7 @@ from typing import Any, Mapping
 
 
 PASSING_AUDIT_STATUSES = {"PASS", "PASS_WITH_RISKS"}
+AUDIT_NOT_REQUIRED_REASON = "AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT"
 READINESS_BY_CLASS = {
     "REMEDIATION": {"NEEDS_IMPLEMENTER"},
     "FINALIZATION": {"READY"},
@@ -49,7 +50,11 @@ def steward_gate(
             error=type(exc).__name__,
         )
 
-    evidence = _evidence(readiness, audit_proof)
+    evidence = _evidence(
+        readiness,
+        audit_proof,
+        normalize_audit_statuses=normalized_class == "REMEDIATION",
+    )
     required_sha_values = {
         "requested_head_sha": head_sha,
         "merge_readiness_pr_head_sha": evidence["merge_pr_head_sha"],
@@ -72,7 +77,10 @@ def steward_gate(
     if evidence["merge_readiness"] not in READINESS_BY_CLASS[normalized_class]:
         return _deny(normalized_class, "DENY_READINESS_CLASS_MISMATCH", **evidence)
 
-    if (
+    if normalized_class == "FINALIZATION":
+        if not finalization_audit_evidence_allowed(evidence):
+            return _deny(normalized_class, "DENY_AUDIT_NOT_STRICT_PASS", **evidence)
+    elif (
         evidence["merge_embedded_audit_status"] not in PASSING_AUDIT_STATUSES
         or evidence["proof_embedded_audit_status"] not in PASSING_AUDIT_STATUSES
     ):
@@ -98,12 +106,22 @@ def _load_json(path: Path) -> dict[str, Any]:
     return payload
 
 
-def _evidence(readiness: Mapping[str, Any], audit_proof: Mapping[str, Any]) -> dict[str, Any]:
+def _evidence(
+    readiness: Mapping[str, Any],
+    audit_proof: Mapping[str, Any],
+    *,
+    normalize_audit_statuses: bool,
+) -> dict[str, Any]:
     pr = _mapping(readiness.get("pr"))
     readiness_proof = _mapping(readiness.get("proof"))
     readiness_audit = _mapping(readiness.get("embedded_audit"))
     proof_audit = _mapping(audit_proof.get("embedded_audit"))
     proof_freshness = readiness_proof.get("proof_freshness")
+    merge_audit_status = readiness_audit.get("status")
+    proof_audit_status = proof_audit.get("status")
+    if normalize_audit_statuses:
+        merge_audit_status = str(merge_audit_status or "").upper()
+        proof_audit_status = str(proof_audit_status or "").upper()
     return {
         "merge_readiness": str(readiness.get("readiness") or ""),
         "merge_generated_at": str(readiness.get("generated_at") or ""),
@@ -112,9 +130,31 @@ def _evidence(readiness: Mapping[str, Any], audit_proof: Mapping[str, Any]) -> d
         "merge_proof_head_sha": str(readiness_proof.get("proof_head_sha") or ""),
         "merge_proof_freshness": proof_freshness,
         "audit_proof_head_sha": str(audit_proof.get("head_sha") or ""),
-        "merge_embedded_audit_status": str(readiness_audit.get("status") or "").upper(),
-        "proof_embedded_audit_status": str(proof_audit.get("status") or "").upper(),
+        "merge_embedded_audit_status": merge_audit_status,
+        "merge_embedded_audit_required": readiness_audit.get("required"),
+        "merge_embedded_audit_skip_reason": readiness_audit.get("skip_reason"),
+        "proof_embedded_audit_status": proof_audit_status,
+        "proof_embedded_audit_required": proof_audit.get("required"),
+        "proof_embedded_audit_skip_reason": proof_audit.get("skip_reason"),
     }
+
+
+def finalization_audit_evidence_allowed(evidence: Mapping[str, Any]) -> bool:
+    """Accept exact strict-PASS pair or exact trusted NOT_REQUIRED pair."""
+
+    if (
+        evidence.get("merge_embedded_audit_status") == "PASS"
+        and evidence.get("proof_embedded_audit_status") == "PASS"
+    ):
+        return True
+
+    return all(
+        evidence.get(f"{prefix}_embedded_audit_status") == "SKIPPED"
+        and evidence.get(f"{prefix}_embedded_audit_required") is False
+        and evidence.get(f"{prefix}_embedded_audit_skip_reason")
+        == AUDIT_NOT_REQUIRED_REASON
+        for prefix in ("merge", "proof")
+    )
 
 
 def _allows_self_reference_exception(evidence: Mapping[str, Any], *, head_sha: str) -> bool:

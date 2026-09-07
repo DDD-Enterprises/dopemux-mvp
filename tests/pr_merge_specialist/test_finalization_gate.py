@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
+
+import pytest
 
 from dopemux_pr_merge_specialist import merge, queue_drain
 from dopemux_pr_merge_specialist.github_api import GitHubClient
@@ -16,9 +19,12 @@ from dopemux_pr_merge_specialist.schema import (
     ValidationReport,
     ValidationStatus,
 )
+from dopemux_pr_merge_specialist.steward_gate import steward_gate
 
 
 HEAD_SHA = "abc123"
+_MISSING = object()
+_NOT_REQUIRED_REASON = "AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT"
 
 
 def _write_json(path: Path, payload: dict) -> Path:
@@ -44,35 +50,60 @@ def _pr_state() -> PullRequestState:
     )
 
 
-def _merge_readiness(*, readiness: str = "READY", audit_status: str = "PASS") -> dict:
+def _merge_readiness(
+    *,
+    readiness: str = "READY",
+    audit_status: object = "PASS",
+    audit_required: object = _MISSING,
+    audit_skip_reason: object = _MISSING,
+    generated_at: str = "2026-05-31T12:00:00Z",
+    head_sha: str = HEAD_SHA,
+) -> dict:
+    embedded_audit = {
+        "status": audit_status,
+        "source": "independent",
+    }
+    if audit_required is not _MISSING:
+        embedded_audit["required"] = audit_required
+    if audit_skip_reason is not _MISSING:
+        embedded_audit["skip_reason"] = audit_skip_reason
     return {
-        "generated_at": "2026-05-31T12:00:00Z",
+        "generated_at": generated_at,
         "readiness": readiness,
         "blockers": [],
         "pr": {
             "number": 203,
-            "head_sha": HEAD_SHA,
+            "head_sha": head_sha,
             "head_ref": "feature/finalize",
         },
         "proof": {
-            "proof_head_sha": HEAD_SHA,
+            "proof_head_sha": head_sha,
             "proof_path": "proof/TP/PROOF.json",
         },
-        "embedded_audit": {
-            "status": audit_status,
-            "source": "independent",
-        },
+        "embedded_audit": embedded_audit,
     }
 
 
-def _audit_proof(*, embedded_status: str = "PASS") -> dict:
+def _audit_proof(
+    *,
+    embedded_status: object = "PASS",
+    embedded_required: object = _MISSING,
+    embedded_skip_reason: object = _MISSING,
+    generated_at: str = "2026-05-31T12:00:00Z",
+    head_sha: str = HEAD_SHA,
+) -> dict:
+    embedded_audit = {
+        "status": embedded_status,
+        "source": "independent",
+    }
+    if embedded_required is not _MISSING:
+        embedded_audit["required"] = embedded_required
+    if embedded_skip_reason is not _MISSING:
+        embedded_audit["skip_reason"] = embedded_skip_reason
     return {
-        "generated_at": "2026-05-31T12:00:00Z",
-        "head_sha": HEAD_SHA,
-        "embedded_audit": {
-            "status": embedded_status,
-            "source": "independent",
-        },
+        "generated_at": generated_at,
+        "head_sha": head_sha,
+        "embedded_audit": embedded_audit,
     }
 
 
@@ -84,6 +115,39 @@ def _gate_policy(pr_dir: Path) -> dict:
             "audit_proof_path": str(pr_dir / "PROOF.json"),
         }
     }
+
+
+def _run_public_finalization_gate(
+    gate_name: str,
+    tmp_path: Path,
+    *,
+    readiness: dict | None = None,
+    proof: dict | None = None,
+):
+    pr_dir = tmp_path / gate_name / "pr" / "203"
+    readiness_path = _write_json(
+        pr_dir / "MERGE_READINESS.json",
+        readiness if readiness is not None else _merge_readiness(),
+    )
+    proof_path = _write_json(
+        pr_dir / "PROOF.json",
+        proof if proof is not None else _audit_proof(),
+    )
+    if gate_name == "steward_gate":
+        return steward_gate(
+            head_sha=HEAD_SHA,
+            required_class="FINALIZATION",
+            merge_readiness_path=readiness_path,
+            audit_proof_path=proof_path,
+            now=datetime(2026, 5, 31, 12, 30, tzinfo=timezone.utc),
+            ttl_seconds=3600,
+        )
+    return queue_drain.require_steward_finalization_gate(
+        pr=_pr_state(),
+        policy=_gate_policy(pr_dir),
+        pr_dir=pr_dir,
+        now="2026-05-31T12:30:00Z",
+    )
 
 
 class RecordingClient:
@@ -207,6 +271,329 @@ def test_finalization_gate_denies_pass_with_risks(tmp_path: Path):
 
     assert result.allowed is False
     assert result.reason_code == "DENY_AUDIT_NOT_STRICT_PASS"
+
+
+@pytest.mark.parametrize("gate_name", ["steward_gate", "queue_drain"])
+def test_public_finalization_gates_allow_strict_pass(gate_name: str, tmp_path: Path):
+    result = _run_public_finalization_gate(gate_name, tmp_path)
+
+    assert result.allowed is True
+    assert result.reason_code == "ALLOW_FINALIZATION"
+
+
+@pytest.mark.parametrize("gate_name", ["steward_gate", "queue_drain"])
+def test_public_finalization_gates_allow_exact_not_required(
+    gate_name: str, tmp_path: Path
+):
+    result = _run_public_finalization_gate(
+        gate_name,
+        tmp_path,
+        readiness=_merge_readiness(
+            audit_status="SKIPPED",
+            audit_required=False,
+            audit_skip_reason=_NOT_REQUIRED_REASON,
+        ),
+        proof=_audit_proof(
+            embedded_status="SKIPPED",
+            embedded_required=False,
+            embedded_skip_reason=_NOT_REQUIRED_REASON,
+        ),
+    )
+
+    assert result.allowed is True
+    assert result.reason_code == "ALLOW_FINALIZATION"
+
+
+@pytest.mark.parametrize("gate_name", ["steward_gate", "queue_drain"])
+@pytest.mark.parametrize(
+    ("merge_status", "proof_status"),
+    [
+        ("PASS_WITH_RISKS", "PASS"),
+        ("PASS", "PASS_WITH_RISKS"),
+    ],
+)
+def test_public_finalization_gates_deny_pass_with_risks(
+    gate_name: str,
+    merge_status: str,
+    proof_status: str,
+    tmp_path: Path,
+):
+    result = _run_public_finalization_gate(
+        gate_name,
+        tmp_path,
+        readiness=_merge_readiness(audit_status=merge_status),
+        proof=_audit_proof(embedded_status=proof_status),
+    )
+
+    assert result.allowed is False
+    if gate_name == "queue_drain":
+        assert result.reason_code == "DENY_AUDIT_NOT_STRICT_PASS"
+
+
+@pytest.mark.parametrize("gate_name", ["steward_gate", "queue_drain"])
+@pytest.mark.parametrize("not_required_side", ["merge", "proof"])
+def test_public_finalization_gates_deny_mixed_pass_and_not_required(
+    gate_name: str,
+    not_required_side: str,
+    tmp_path: Path,
+):
+    readiness = _merge_readiness()
+    proof = _audit_proof()
+    if not_required_side == "merge":
+        readiness = _merge_readiness(
+            audit_status="SKIPPED",
+            audit_required=False,
+            audit_skip_reason=_NOT_REQUIRED_REASON,
+        )
+    else:
+        proof = _audit_proof(
+            embedded_status="SKIPPED",
+            embedded_required=False,
+            embedded_skip_reason=_NOT_REQUIRED_REASON,
+        )
+
+    result = _run_public_finalization_gate(
+        gate_name,
+        tmp_path,
+        readiness=readiness,
+        proof=proof,
+    )
+
+    assert result.allowed is False
+
+
+@pytest.mark.parametrize("gate_name", ["steward_gate", "queue_drain"])
+@pytest.mark.parametrize("artifact_side", ["merge", "proof"])
+@pytest.mark.parametrize(
+    "required",
+    [_MISSING, True, None, 0, "false", [], {}],
+    ids=["missing", "true", "null", "zero", "string", "list", "dict"],
+)
+def test_public_finalization_gates_deny_noncanonical_not_required_required(
+    gate_name: str,
+    artifact_side: str,
+    required: object,
+    tmp_path: Path,
+):
+    readiness = _merge_readiness(
+        audit_status="SKIPPED",
+        audit_required=False,
+        audit_skip_reason=_NOT_REQUIRED_REASON,
+    )
+    proof = _audit_proof(
+        embedded_status="SKIPPED",
+        embedded_required=False,
+        embedded_skip_reason=_NOT_REQUIRED_REASON,
+    )
+    if artifact_side == "merge":
+        readiness = _merge_readiness(
+            audit_status="SKIPPED",
+            audit_required=required,
+            audit_skip_reason=_NOT_REQUIRED_REASON,
+        )
+    else:
+        proof = _audit_proof(
+            embedded_status="SKIPPED",
+            embedded_required=required,
+            embedded_skip_reason=_NOT_REQUIRED_REASON,
+        )
+    result = _run_public_finalization_gate(
+        gate_name,
+        tmp_path,
+        readiness=readiness,
+        proof=proof,
+    )
+
+    assert result.allowed is False
+
+
+@pytest.mark.parametrize("gate_name", ["steward_gate", "queue_drain"])
+@pytest.mark.parametrize("artifact_side", ["merge", "proof"])
+@pytest.mark.parametrize(
+    "skip_reason",
+    [_MISSING, None, "", "AUDIT_NOT_REQUIRED", 0, [], {}],
+    ids=["missing", "null", "empty", "wrong", "zero", "list", "dict"],
+)
+def test_public_finalization_gates_deny_noncanonical_not_required_reason(
+    gate_name: str,
+    artifact_side: str,
+    skip_reason: object,
+    tmp_path: Path,
+):
+    readiness = _merge_readiness(
+        audit_status="SKIPPED",
+        audit_required=False,
+        audit_skip_reason=_NOT_REQUIRED_REASON,
+    )
+    proof = _audit_proof(
+        embedded_status="SKIPPED",
+        embedded_required=False,
+        embedded_skip_reason=_NOT_REQUIRED_REASON,
+    )
+    if artifact_side == "merge":
+        readiness = _merge_readiness(
+            audit_status="SKIPPED",
+            audit_required=False,
+            audit_skip_reason=skip_reason,
+        )
+    else:
+        proof = _audit_proof(
+            embedded_status="SKIPPED",
+            embedded_required=False,
+            embedded_skip_reason=skip_reason,
+        )
+    result = _run_public_finalization_gate(
+        gate_name,
+        tmp_path,
+        readiness=readiness,
+        proof=proof,
+    )
+
+    assert result.allowed is False
+
+
+@pytest.mark.parametrize("gate_name", ["steward_gate", "queue_drain"])
+@pytest.mark.parametrize("artifact_side", ["merge", "proof"])
+@pytest.mark.parametrize(
+    "status",
+    [_MISSING, None, "", "pass", "skipped", "UNKNOWN", [], {}],
+    ids=["missing", "null", "empty", "lower-pass", "lower-skipped", "unknown", "list", "dict"],
+)
+def test_public_finalization_gates_deny_noncanonical_or_malformed_status(
+    gate_name: str,
+    artifact_side: str,
+    status: object,
+    tmp_path: Path,
+):
+    readiness = _merge_readiness(
+        audit_status="SKIPPED",
+        audit_required=False,
+        audit_skip_reason=_NOT_REQUIRED_REASON,
+    )
+    proof = _audit_proof(
+        embedded_status="SKIPPED",
+        embedded_required=False,
+        embedded_skip_reason=_NOT_REQUIRED_REASON,
+    )
+    if artifact_side == "merge":
+        readiness["embedded_audit"]["status"] = status
+        if status is _MISSING:
+            readiness["embedded_audit"].pop("status")
+    else:
+        proof["embedded_audit"]["status"] = status
+        if status is _MISSING:
+            proof["embedded_audit"].pop("status")
+    result = _run_public_finalization_gate(
+        gate_name,
+        tmp_path,
+        readiness=readiness,
+        proof=proof,
+    )
+
+    assert result.allowed is False
+
+
+@pytest.mark.parametrize("gate_name", ["steward_gate", "queue_drain"])
+def test_public_finalization_gates_preserve_raw_audit_metadata(
+    gate_name: str, tmp_path: Path
+):
+    result = _run_public_finalization_gate(
+        gate_name,
+        tmp_path,
+        readiness=_merge_readiness(
+            audit_status="skipped",
+            audit_required=0,
+            audit_skip_reason=[_NOT_REQUIRED_REASON],
+        ),
+        proof=_audit_proof(
+            embedded_status={"status": "SKIPPED"},
+            embedded_required="false",
+            embedded_skip_reason=None,
+        ),
+    )
+
+    assert result.allowed is False
+    assert result.evidence["merge_embedded_audit_status"] == "skipped"
+    assert result.evidence["merge_embedded_audit_required"] == 0
+    assert result.evidence["merge_embedded_audit_skip_reason"] == [
+        _NOT_REQUIRED_REASON
+    ]
+    assert result.evidence["proof_embedded_audit_status"] == {"status": "SKIPPED"}
+    assert result.evidence["proof_embedded_audit_required"] == "false"
+    assert result.evidence["proof_embedded_audit_skip_reason"] is None
+
+
+@pytest.mark.parametrize("gate_name", ["steward_gate", "queue_drain"])
+def test_public_finalization_gates_deny_stale_not_required_evidence(
+    gate_name: str, tmp_path: Path
+):
+    result = _run_public_finalization_gate(
+        gate_name,
+        tmp_path,
+        readiness=_merge_readiness(
+            audit_status="SKIPPED",
+            audit_required=False,
+            audit_skip_reason=_NOT_REQUIRED_REASON,
+            generated_at="2026-05-31T10:00:00Z",
+        ),
+        proof=_audit_proof(
+            embedded_status="SKIPPED",
+            embedded_required=False,
+            embedded_skip_reason=_NOT_REQUIRED_REASON,
+        ),
+    )
+
+    assert result.allowed is False
+    assert result.reason_code == "DENY_STALE_ARTIFACT"
+
+
+@pytest.mark.parametrize("gate_name", ["steward_gate", "queue_drain"])
+def test_public_finalization_gates_deny_head_mismatch_for_not_required_evidence(
+    gate_name: str, tmp_path: Path
+):
+    result = _run_public_finalization_gate(
+        gate_name,
+        tmp_path,
+        readiness=_merge_readiness(
+            audit_status="SKIPPED",
+            audit_required=False,
+            audit_skip_reason=_NOT_REQUIRED_REASON,
+        ),
+        proof=_audit_proof(
+            embedded_status="SKIPPED",
+            embedded_required=False,
+            embedded_skip_reason=_NOT_REQUIRED_REASON,
+            head_sha="mismatched-head",
+        ),
+    )
+
+    assert result.allowed is False
+    assert result.reason_code == "DENY_SHA_MISMATCH"
+
+
+def test_remediation_gate_preserves_status_normalization_and_pass_with_risks(
+    tmp_path: Path,
+):
+    readiness = _merge_readiness(
+        readiness="NEEDS_IMPLEMENTER",
+        audit_status="pass_with_risks",
+    )
+    proof = _audit_proof(embedded_status="pass")
+    readiness_path = _write_json(tmp_path / "MERGE_READINESS.json", readiness)
+    proof_path = _write_json(tmp_path / "PROOF.json", proof)
+
+    result = steward_gate(
+        head_sha=HEAD_SHA,
+        required_class="REMEDIATION",
+        merge_readiness_path=readiness_path,
+        audit_proof_path=proof_path,
+        now=datetime(2026, 5, 31, 12, 30, tzinfo=timezone.utc),
+        ttl_seconds=3600,
+    )
+
+    assert result.allowed is True
+    assert result.evidence["merge_embedded_audit_status"] == "PASS_WITH_RISKS"
+    assert result.evidence["proof_embedded_audit_status"] == "PASS"
 
 
 def test_run_merge_uses_graphql_expected_head_oid_without_shell_fallback(monkeypatch, tmp_path: Path):

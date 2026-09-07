@@ -483,24 +483,13 @@ def require_steward_finalization_gate(
         now=_steward_gate_now(now),
         ttl_seconds=int(gate_policy.get("artifact_ttl_seconds", 3600) or 3600),
     )
-    evidence = dict(result.evidence)
     if not result.allowed:
         return result
-    if (
-        evidence.get("merge_embedded_audit_status") != "PASS"
-        or evidence.get("proof_embedded_audit_status") != "PASS"
-    ):
-        return StewardGateResult(
-            allowed=False,
-            reason_code="DENY_AUDIT_NOT_STRICT_PASS",
-            required_class="FINALIZATION",
-            evidence=evidence,
-        )
     return StewardGateResult(
         allowed=True,
         reason_code=result.reason_code,
         required_class=result.required_class,
-        evidence=evidence,
+        evidence=dict(result.evidence),
     )
 
 

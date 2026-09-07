@@ -64,7 +64,10 @@ def test_sync_repo_skills_family_includes_pr_merge_specialist():
     spec.loader.exec_module(module)
 
     assert "pr-merge-specialist" in module.FAMILIES
-    assert module.FAMILIES["pr-merge-specialist"] == ["pr-merge-specialist"]
+    assert module.FAMILIES["pr-merge-specialist"] == [
+        "pr-merge-specialist",
+        "vibe-pr-merge",
+    ]
 
 
 def test_template_skill_files_exist_and_exclude_junk():
