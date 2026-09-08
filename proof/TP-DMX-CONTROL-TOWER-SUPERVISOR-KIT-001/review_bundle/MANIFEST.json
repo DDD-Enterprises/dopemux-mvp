@@ -1,7 +1,31 @@
 [
   {
+    "path": "AUDIT_VERDICT.json",
+    "sha256": "4d4ba0a5c158173c19e431fd5bb56471f28ce8e7fea9e219ac6f3be72be2ba50"
+  },
+  {
+    "path": "EGRESS_APPROVAL.json",
+    "sha256": "10a71cb3d655949beb50247e03244b57faa710a995f15333552a9179fe80ba4d"
+  },
+  {
     "path": "ROUTING_DECISION.json",
     "sha256": "9848529f010da0dd3964378106b7c07fa6a895c1101ba750287ad6d44f673039"
+  },
+  {
+    "path": "audit-attempt.json",
+    "sha256": "e7b4d1b8782c7c0128118ae221139d7ebc4392f26231fda97bcba9ec5fc97fce"
+  },
+  {
+    "path": "audit-raw.json",
+    "sha256": "0f47a3d2b3aaeae83130aa2b43d47e53ef3d8f64af4a4a655b3c23264f3ac077"
+  },
+  {
+    "path": "audit-receipt.json",
+    "sha256": "c04246d76a3e523833c6381d4300026ab3b58156700fd56fd207b91b6e8d3f09"
+  },
+  {
+    "path": "audit-stderr.txt",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   },
   {
     "path": "change-contract.json",
@@ -22,6 +46,14 @@
   {
     "path": "kit-inventory.json",
     "sha256": "f34a0a529d42f1af98af940a2bc45a6121678798f43c3b7c4121c69dbf52bea9"
+  },
+  {
+    "path": "pre-approval/AUDITOR_REPORT.md",
+    "sha256": "c6f765dfcf8ce2296e4c0a0959e768cf795ab8530d6c19a2678063500900bdaa"
+  },
+  {
+    "path": "pre-approval/PROOF.json",
+    "sha256": "6b5da48e95ba36b82a4ecd5f2e0256118e6979bdfb8580bb125688c31551718d"
   },
   {
     "path": "precommit.json",
