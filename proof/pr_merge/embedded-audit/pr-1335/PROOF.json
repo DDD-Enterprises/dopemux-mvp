@@ -1,0 +1,117 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "medium",
+      "model": "sonnet",
+      "model_family": "anthropic",
+      "runner": "claude-code-cli",
+      "runtime_family": "claude-code"
+    },
+    "implementer": {
+      "model": "gpt-6",
+      "model_family": "openai",
+      "runner": "codex",
+      "runtime_family": "codex"
+    },
+    "independence": "PROVEN"
+  },
+  "auditor_runtime_models_observed": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5"
+  ],
+  "auxiliary_model_roles": {
+    "claude-haiku-4-5-20251001": "UNKNOWN: separate CLI usage entry; not the returned audit message usage."
+  },
+  "embedded_audit": {
+    "auditor_model": "sonnet",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "`.control-tower/schemas/route_decision.schema.json` declares `schema_version` as `const: 1.0`, but `.control-tower/bin/ct` (`validate_route_obj`, lines ~46-63) only checks that the `schema_version` key is *present*, never that its value equals `1.0`. No `jsonschema` library or schema file is ever loaded/invoked anywhere in `ct` (`grep`-equivalent review of the file shows the schemas are pure documentation, not wired to validation logic). This means the `validate-route` command's 'PASS: routing decision valid' output does not actually reflect conformance to the schema shipped alongside it, which is misleading for a tool positioned as a supervisor-integrity gate. This does not bypass the audit-required check for L2/L3 (that check is a separate, correctly-enforced field comparison), so it does not defeat canonical gates, but it does mean the schema files provide false assurance of rigor.",
+        "id": "F1",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "title": "Shipped route/return JSON schemas are not enforced by any code path"
+      },
+      {
+        "body": "`package()`/`cmd_return_pack` in `.control-tower/bin/ct` (the `RETURN` branch) writes `args.reason or ''` and `args.decision_needed or ''` straight into `RETURN_METADATA.json` and the rendered `ARCHITECTURE_RETURN_PACKET.md` with no non-empty check. `.control-tower/schemas/return_packet.schema.json` lists `reason` and `decision_needed` as `required` but has no `minLength`, so an empty-string return packet is technically 'schema-valid' yet defeats the purpose of `ARCHITECTURE_RETURN_PROTOCOL.md`, which depends on `decision_needed` stating 'the exact decision' being requested. An operator/advisor could receive a return bundle with no articulated ask.",
+        "id": "F2",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "title": "return-pack permits empty `reason`/`decision-needed`, undermining the escalation contract"
+      },
+      {
+        "body": "`cmd_runner_inventory` unconditionally runs `agy models` when the `agy` binary is on PATH, and `SUPERVISOR_LAUNCH_PROMPT.md` step 5 instructs the supervisor to run this as part of routine bootstrap for every session. Tool discovery via `agy models` is plausibly a network/provider call rather than a pure local inventory check; the repo's own AGENTS.md \u00a77 principle ('do not run provider calls ... without explicit Task Packet authorization') is scoped to RTE work, but the underlying concern (unexplained provider egress presented as harmless 'doctor'-style inspection) generalizes. This is not proven to be unsafe, but it is unverified and should be called out rather than assumed benign.",
+        "id": "F3",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "title": "`ct runner-inventory` can trigger unprompted provider-side calls (`agy models`)"
+      },
+      {
+        "body": "`cmd_verify_zip` calls `ZipFile.testzip()` (CRC/readability) and prints the whole-archive SHA-256, but never re-reads `SHA256SUMS.txt` or `FILE_INVENTORY.json` inside the package to confirm per-file hashes match extracted content. A corrupted or substituted individual member with a valid CRC would still report 'PASS: zip readable'. The implementer's own smoke evidence independently recomputed manifest hashes outside the tool, which is itself evidence the tool doesn't do this. Naming/positioning ('verify') overstates what is implemented.",
+        "id": "F4",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "title": "`verify-zip` validates ZIP integrity only, not the embedded manifest/hash inventory"
+      },
+      {
+        "body": "The appended `CONTROL_TOWER_MANAGED`/`CONTROL_TOWER_REPO` blocks in `AGENTS.md` state 'For any supervised packet/workstream ... [b]efore substantive execution of each Task Packet, create and validate its routing decision' via `ct route-record`. This reads as a new mandatory step layered onto the pre-existing canonical lifecycle in AGENTS.md \u00a74 (steps 1-14), but the diff does not amend or cross-reference \u00a74 to reconcile the two. It is ambiguous whether every future Task Packet is now 'supervised' (requiring `ct route-record`) or only packets that explicitly opt into Control Tower supervision. The text does correctly subordinate itself ('Repository authority and live runtime/GitHub truth outrank this pointer'; 'kit's generic defaults do not override [repository governance]'), so authority is not inverted, but the scope of the new obligation inside the single most load-bearing governance file is under-specified.",
+        "id": "F5",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "title": "New AGENTS.md sections introduce a parallel packet-lifecycle requirement not integrated into the existing canonical 14-step lifecycle"
+      },
+      {
+        "body": "The change-contract tool computed `max_lane=L2`. `SUPERVISOR_OPERATING_CONTRACT.md`, itself part of this diff, states 'When uncertain, use the higher lane,' and lists L3 for 'trust/security/authority.' This packet edits the canonical Codex authority file (AGENTS.md) and introduces new local proof/return packaging tooling that produces artifacts resembling audit evidence. L2 (one final independent audit) may be appropriate given the explicit framing that this is 'local advisory routing/packaging tooling' and 'existing canonical gates remain mandatory,' but the classification should be affirmed by the operator rather than accepted purely on the automated tool's output, since the diff itself touches the definition of what counts as governance authority.",
+        "id": "F6",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "L2 risk-lane classification for a change that edits core governance authority (AGENTS.md) plus ships new proof/audit tooling merits explicit operator confirmation"
+      },
+      {
+        "body": "`load_project()` in `ct` only reads `.control-tower/project.json`; `defaults.json` (byte-identical apart from `project_name`) is never read by any code path in this diff. Harmless but unused installer scaffolding left in the repo; low risk of future drift/confusion between the two files.",
+        "id": "F7",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "`.control-tower/config/defaults.json` is dead weight, duplicating `.control-tower/project.json`"
+      },
+      {
+        "body": "`SECRET_PATTERNS` covers common formats (RSA/EC/OpenSSH keys, GitHub tokens, OpenAI-style keys, AWS access keys, generic `key/token/secret=` assignments \u226516 chars). This is a reasonable belt-and-suspenders check before packaging, but is not a substitute for a dedicated secret-scanning tool and will miss many credential formats (short secrets, cloud-provider-specific formats not listed, base64-wrapped secrets, etc.). Acceptable as defense-in-depth, not as a sole control.",
+        "id": "F8",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "Secret-scan regexes in `ct` are heuristic and non-exhaustive"
+      },
+      {
+        "body": "The task framing asserts the 12 kit payload files are byte-identical to a user-supplied archive. This auditor has no access to that external archive and cannot independently confirm the claim; it is accepted as asserted provenance, not verified evidence, consistent with instructions to preserve such uncertainty explicitly.",
+        "id": "F9",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "Byte-identical provenance claim for the 12 kit payload files is unverifiable from this diff alone"
+      }
+    ],
+    "fixes_applied": [],
+    "invocation": "/Users/hue/.local/bin/claude --print --safe-mode --no-session-persistence --permission-mode plan --tools '' --strict-mcp-config --model sonnet --effort medium --output-format json",
+    "remaining_risks": [
+      "Shipped JSON schemas for route/return packets are not enforced by the CLI, so 'validate-route'/packaging success does not guarantee schema conformance.",
+      "Return packets can be generated with empty reason/decision-needed fields, weakening the architecture-return escalation contract.",
+      "runner-inventory may perform provider-side calls (agy models) during routine bootstrap without a separate authorization gate.",
+      "verify-zip does not check the internal SHA256SUMS.txt/FILE_INVENTORY.json manifest, only ZIP structural integrity.",
+      "New AGENTS.md Control Tower sections introduce a routing-decision obligation whose scope relative to the existing \u00a74 canonical lifecycle is not fully reconciled.",
+      "L2 lane classification for a diff that edits core governance authority and ships new proof-adjacent tooling has not been independently reaffirmed by the operator against the kit's own 'use the higher lane when uncertain' guidance.",
+      "Full integration and CI validation for this diff are NOT_RUN; only change-contract preflight, pre-commit (many hooks skipped due to no matching files), git diff --check, and an ad hoc CLI smoke test outside this repo's tree were executed.",
+      "Provenance ('byte-identical to supplied archive') for the 12 kit files is asserted, not independently verified by this audit."
+    ],
+    "report_path": "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "generated_at": "2026-09-08T21:44:50.535017+00:00",
+  "head_sha": "648475216f2ffab9b249de6502294c124890f090",
+  "packet_id": "TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001",
+  "pr_number": 1335,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "risk_lane": "L2"
+}
