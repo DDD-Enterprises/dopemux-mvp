@@ -1,0 +1,9 @@
+{
+  "status": "NOT_RUN",
+  "phase": "pre-execution tool approval",
+  "frozen_head": "4b31331b93fae6ffb98d23b4c0cfa1df7f5e55d5",
+  "reason": "Security reviewer required explicit approval for the current frozen repair diff, governance and test evidence to Anthropic Claude.",
+  "provider_invocation_occurred": false,
+  "audit_attempt_marker_present": false,
+  "action": "Asked user for explicit destination-and-payload approval covering Dopemux, adOps and dNh_CRM; no alternate or indirect invocation."
+}

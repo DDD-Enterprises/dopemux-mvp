@@ -1,0 +1,11 @@
+{
+  "argv": [
+    ".control-tower/bin/ct",
+    "validate-route",
+    "--file",
+    ".control-tower/state/routes/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-REPAIR-002.json"
+  ],
+  "exit_code": 0,
+  "stderr": "",
+  "stdout": "PASS: routing decision valid\n"
+}

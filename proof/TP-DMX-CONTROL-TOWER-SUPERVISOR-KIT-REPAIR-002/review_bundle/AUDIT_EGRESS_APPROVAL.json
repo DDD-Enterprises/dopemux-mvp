@@ -1,0 +1,7 @@
+{
+  "user_response": "approved",
+  "approved_request": "Send the three frozen repair diffs, governance excerpts and test evidence to Anthropic's Claude service for their final Sonnet audits.",
+  "scope": ["Dopemux PR1335 repair-002", "adOps PR299 repair", "dNh_CRM PR276 closure"],
+  "supersedes_block": "AUDIT_EGRESS_BLOCK.json",
+  "does_not_grant": ["risk acceptance", "owner impersonation", "gate bypass", "additional audit retries", "production activation"]
+}
