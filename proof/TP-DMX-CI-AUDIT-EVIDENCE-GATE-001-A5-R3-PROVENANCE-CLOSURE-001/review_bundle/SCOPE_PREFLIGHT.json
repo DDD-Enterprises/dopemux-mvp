@@ -1,0 +1,90 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001",
+  "recorded_at": "2026-09-08 02:10:27 UTC",
+  "decision": "NEEDS_ALLOWLIST_COMPLETION",
+  "architecture_disposition": "APPROVED_BY_LATEST_OPERATOR",
+  "authority": {
+    "OPERATOR_PROVENANCE_REPAIR_AUTHORIZATION": "YES",
+    "OPERATOR_EXECUTION_GATE": "YES",
+    "GITHUB_MUTATION_AUTHORITY": "YES",
+    "AUDIT_EXPORT_NOW": "NO",
+    "MERGE_PR_1330": "FORBIDDEN",
+    "PR_1327_MUTATIONS": 0,
+    "R0_LAUNCHED": "NO"
+  },
+  "head": "13562c8df1bc6621229eb4a38473da42be199825",
+  "base": "6a728f74c0311967f83213513308f97613e3f28d",
+  "contract": {
+    "expected_identity": [
+      "expected_repo",
+      "expected_pr",
+      "expected_head_sha",
+      "expected_base_sha"
+    ],
+    "mandatory_for": "FINALIZATION",
+    "proof_derived_expectations": "FORBIDDEN",
+    "executed_pass_semantics": "UNCHANGED",
+    "not_required_surface": "UNCHANGED"
+  },
+  "observed": [
+    {
+      "path": "src/dopemux_pr_merge_specialist/github_api.py:158",
+      "fact": "GitHubClient stores self.repo from caller; Optional[str]. No fallback authorized. Explicit repo can be propagated; absent repo must deny."
+    },
+    {
+      "path": "src/dopemux_pr_merge_specialist/schema.py:349",
+      "fact": "PullRequestState carries both head_sha and base_sha."
+    },
+    {
+      "path": "tests/dopemux_cli/test_pr_steward_cmd.py:83",
+      "fact": "Existing packaged FINALIZATION CLI test omits repo/PR/base and expects ALLOW; exact test passes at start head. Authorized mandatory tuple means fixture must supply those inputs."
+    },
+    {
+      "path": ".github/workflows/embedded-audit.yml:360",
+      "fact": "Live audit hard gate calls canonical enforcement with expected PR/head/repo only; target_pr step already captures trusted base_sha."
+    },
+    {
+      "path": ".github/workflows/pr-steward.yml:277",
+      "fact": "Live Steward hard gate calls canonical enforcement with expected PR/head/repo only. Existing live PR request reads head.sha but not base.sha."
+    },
+    {
+      "path": "src/dopemux/templates/init/.github/workflows/",
+      "fact": "Embedded-audit/Steward scaffolds are distinct advisory workflows; do not call canonical enforcement and are not byte-parity mirrors of live workflows. No synchronization expansion proposed."
+    }
+  ],
+  "inference": "Enforcing caller-bound base at existing finality-sensitive NOT_REQUIRED hard gates needs explicit trusted base propagation through both workflow call sites. Leaving those callers on a weaker no-base path would not establish uniform hard-gate binding.",
+  "requested_allowlist_additions": [
+    "tests/dopemux_cli/test_pr_steward_cmd.py",
+    ".github/workflows/embedded-audit.yml",
+    ".github/workflows/pr-steward.yml"
+  ],
+  "requested_change_scope": [
+    "CLI existing PASS fixture: add explicit trusted repo, PR and base inputs; retain PASS assertion.",
+    "Embedded-audit hard gate: propagate already-captured target_pr base SHA to canonical enforcement.",
+    "Steward hard gate: capture live base/head from trusted GitHub PR metadata and pass base to canonical enforcement.",
+    "Use already-allowed tests/audit/test_run_embedded_audit.py for workflow propagation regressions. No trigger/permission/model/branch-protection changes."
+  ],
+  "validation": {
+    "live_anchor": "PASS",
+    "targeted_cli_baseline": {
+      "command": "PYTHONPATH=.:src python -B -m pytest -q -p no:cacheprovider tests/dopemux_cli/test_pr_steward_cmd.py::test_gate_subcommand_uses_packaged_steward_gate",
+      "result": "1 passed in 0.44s",
+      "exit_code": 0
+    },
+    "repair_tests": "NOT_RUN",
+    "complete_suite": "NOT_RUN",
+    "new_content_audit": "NOT_RUN"
+  },
+  "counters": {
+    "implementation_attempts": 0,
+    "implementation_workers": 0,
+    "new_audits": 0,
+    "exports": 0,
+    "github_mutations": 0,
+    "source_edits": 0,
+    "commits": 0,
+    "pushes": 0
+  },
+  "preservation": "Historical architecture return is not rewritten. Latest operator clears its design gate; this receipt records new scope-discovery evidence. Original audit/stop/intake evidence and unrelated dirt preserved.",
+  "next_action": "Approve the three exact path additions only; no new architecture decision or restart of completed R3 work requested."
+}

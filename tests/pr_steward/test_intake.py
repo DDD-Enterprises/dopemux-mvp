@@ -477,6 +477,7 @@ def _artifacts_from_live_proof(
     pr_head: str,
     *,
     is_draft: bool = False,
+    pr_base: str | None = "b" * 40,
 ) -> dict:
     proof_path = tmp_path / "PROOF.json"
     proof_path.write_text(json.dumps(proof_body), encoding="utf-8")
@@ -487,6 +488,10 @@ def _artifacts_from_live_proof(
         if args[:3] == ["gh", "pr", "view"]:
             pr_payload = base_pr_payload(head_sha=pr_head)
             pr_payload["isDraft"] = is_draft
+            if pr_base is None:
+                pr_payload.pop("baseRefOid", None)
+            else:
+                pr_payload["baseRefOid"] = pr_base
             return subprocess.CompletedProcess(
                 args,
                 0,
@@ -565,6 +570,17 @@ def test_live_collection_preserves_trusted_not_required_through_readiness(
     assert readiness["proof"]["proof_freshness"]["status"] == "CURRENT"
     assert artifacts["PR_STATE_SNAPSHOT.json"]["harvest_complete"] is True
     _validate_collected_artifacts(artifacts)
+
+
+@pytest.mark.parametrize("pr_base", [None, "", "f" * 40])
+def test_live_collection_denies_missing_or_changed_base(tmp_path: Path, monkeypatch, pr_base):
+    artifacts = _artifacts_from_live_proof(
+        tmp_path, monkeypatch, _not_required_proof(), "a" * 40, pr_base=pr_base
+    )
+    readiness = artifacts["MERGE_READINESS.json"]
+    assert readiness["readiness"] != "READY"
+    assert readiness["embedded_audit"]["status"] == "NEEDS_SUPERVISOR"
+    assert "EMBEDDED_AUDIT_NEEDS_SUPERVISOR" in readiness["blockers"]
 
 
 _MISSING = object()

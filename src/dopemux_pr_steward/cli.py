@@ -69,6 +69,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Evaluate packaged steward_gate over local artifacts.",
     )
     gate.add_argument("--head-sha", required=True)
+    gate.add_argument("--repo")
+    gate.add_argument("--pr", type=int)
+    gate.add_argument("--base-sha")
     gate.add_argument(
         "--required-class",
         required=True,
@@ -177,6 +180,9 @@ def _run_gate(args: argparse.Namespace) -> int:
     try:
         result = steward_gate(
             head_sha=args.head_sha,
+            expected_repo=args.repo,
+            expected_pr=args.pr,
+            expected_base_sha=args.base_sha,
             required_class=args.required_class,
             merge_readiness_path=args.merge_readiness,
             audit_proof_path=args.audit_proof,

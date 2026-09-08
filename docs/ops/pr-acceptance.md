@@ -72,6 +72,14 @@ Automated merge finalization is stricter than normal closeout. The merge
 specialist may execute a direct merge only after `steward_gate(FINALIZATION)`
 allows the exact head SHA with PR Steward readiness `READY` and independent
 embedded-audit `PASS`. `PASS_WITH_RISKS` does not authorize finalization.
+The sole non-`PASS` alternative is exact trusted not-required evidence in both
+artifacts: `SKIPPED`, boolean `required: false`, and
+`AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT`, plus canonical independent-proof
+provenance validated against the trusted caller's repo/PR/head/base tuple.
+Outer proof identity and nested change-contract head/base must match. Missing
+caller identity or a changed base denies finalization; proof fields never supply
+missing expected values. All four caller inputs are mandatory for finalization,
+including ordinary `PASS` calls; executed-audit proof semantics remain unchanged.
 
 Direct merge execution must use GraphQL `mergePullRequest` with
 `expectedHeadOid`. Missing GraphQL authority, missing PR node id, or missing

@@ -1,0 +1,81 @@
+{
+  "id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001",
+  "project": "dopemux-mvp",
+  "target": "Record supervisor intake and deterministic provenance-contract investigation; implementation is blocked at the architecture-return gate.",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopemux",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001",
+    "base_branch": "fix/ci-audit-steward-not-required-a5-r1",
+    "parent_tp_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "shell",
+    "base_branch": "13562c8df1bc6621229eb4a38473da42be199825",
+    "stacked_because": "Fresh detached custody preserves historical failed and stop evidence."
+  },
+  "invariants": [
+    "Current user supervisor-program launch authorizes bounded discovery and receipts.",
+    "This packet allows evidence only; no runtime implementation is approved by this packet.",
+    "Architecture return: canonical validator cannot prove nested change-contract head/base binding; standalone gate has no independently expected repo/PR inputs.",
+    "Parent session observed gpt-6-astra/high; requested highest available effort is ultra; bounded investigator dispatched gpt-6-astra/ultra. No provider-attested identity claim.",
+    "One read-only investigation worker; zero implementation workers and zero new independent audits.",
+    "No source, schema, signer, workflow, branch-protection, credential, PR 1327, or production mutations.",
+    "No merge, force push, history rewrite, branch deletion, audit export, or R0 launch.",
+    "Historical R3 PASS and both uncommitted stop artifacts remain unchanged.",
+    "Substantive successor implementation requires architecture disposition; audit export remains a separate exact frozen-manifest operator gate."
+  ],
+  "commit": {
+    "message": "proof(supervisor): record provenance architecture return",
+    "allowlist": [
+      "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/INTAKE_PACKET.json",
+      "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/verify_archive.py",
+      "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/reproduce_contract_binding.py",
+      "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/ARCHIVE_VERIFICATION.json",
+      "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/CONTRACT_BINDING_REPRO.json",
+      "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/LIVE_GITHUB.json",
+      "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/ARCHITECTURE_RETURN.json"
+    ],
+    "verify": [
+      "Validate intake packet against current canonical Draft7 schema.",
+      "Run archive hash/inventory/ZIP/JSON/schema verification and redacted secret scan.",
+      "Replay canonical-emitter counterexamples at exact start head.",
+      "Verify receipt scope, diff hygiene, preserved stop hashes, and Git state."
+    ]
+  },
+  "pr": {
+    "title": "PR 1330 provenance closure intake",
+    "body": "Evidence-only architecture return. No PR metadata mutation, push, attestation, or review resolution under this stopped intake.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Verify archive and reharvest exact live main/PR/check/review state.",
+      "validation": [
+        "All supplied hashes, inventories and nested ZIP bytes verified; current volatile facts recorded separately."
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Trace and challenge canonical validation and finalization identity inputs without code edits.",
+      "validation": [
+        "Original P1 reproduced at both consumers.",
+        "Canonical emitter baseline accepted; changed or missing nested head/base accepted, proving contract-binding gap."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Preserve replay and return at Control Tower handoff sections 10.4, 23.1, 23.2 and 24 before implementation.",
+      "validation": [
+        "Evidence-only allowlist and historical custody verified.",
+        "Implementation, audit export, independent audit, attestation, GitHub mutations and merge remain NOT_RUN."
+      ]
+    }
+  ]
+}

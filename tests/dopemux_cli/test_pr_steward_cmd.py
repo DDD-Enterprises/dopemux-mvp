@@ -6,9 +6,11 @@ import sys
 from pathlib import Path
 
 from click.testing import CliRunner
+import pytest
 
 from dopemux.cli import cli
 from dopemux_pr_steward.cli import main as steward_main
+from scripts.audit.run_embedded_audit import build_evidence_gate_proof
 
 
 def _write_json(path: Path, payload: dict) -> Path:
@@ -105,6 +107,12 @@ def test_gate_subcommand_uses_packaged_steward_gate(tmp_path: Path, capsys):
             "gate",
             "--head-sha",
             "abc123",
+            "--repo",
+            "DDD-Enterprises/dopemux-mvp",
+            "--pr",
+            "301",
+            "--base-sha",
+            "base123",
             "--required-class",
             "FINALIZATION",
             "--merge-readiness",
@@ -125,12 +133,52 @@ def test_gate_subcommand_uses_packaged_steward_gate(tmp_path: Path, capsys):
     assert payload["reason_code"] == "ALLOW_FINALIZATION"
 
 
-def test_doctor_placeholder_fails_closed(capsys):
-    rc = steward_main(["doctor"])
+@pytest.mark.parametrize("base", [None, "f" * 40, "b" * 40])
+def test_gate_cli_requires_matching_explicit_base(tmp_path: Path, capsys, base):
+    head = "a" * 40
+    proof = build_evidence_gate_proof(
+        packet_id="TP-CLI-PROVENANCE",
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=301,
+        head_sha=head,
+        base_sha="b" * 40,
+        change_contract={"status": "PASS", "max_lane": "L0", "model_audit_required": False},
+        local_attestation=None,
+        generated_at="2026-05-31T12:00:00Z",
+    )
+    proof_path = _write_json(tmp_path / "PROOF.json", proof)
+    readiness_path = _write_json(tmp_path / "MERGE_READINESS.json", {
+        "generated_at": "2026-05-31T12:00:00Z",
+        "readiness": "READY",
+        "pr": {"number": 301, "head_sha": head},
+        "proof": {"proof_head_sha": head},
+        "embedded_audit": proof["embedded_audit"],
+    })
+    args = [
+        "gate", "--repo", "DDD-Enterprises/dopemux-mvp", "--pr", "301",
+        "--head-sha", head, "--required-class", "FINALIZATION",
+        "--merge-readiness", str(readiness_path), "--audit-proof", str(proof_path),
+        "--now", "2026-05-31T12:15:00Z", "--format", "json",
+    ]
+    if base is not None:
+        args.extend(["--base-sha", base])
+    rc = steward_main(args)
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["allowed"] is (base == "b" * 40)
+    assert rc == (0 if base == "b" * 40 else 2)
+
+
+def test_doctor_reports_implemented_checks(capsys):
+    repo_root = Path(__file__).resolve().parents[2]
+    rc = steward_main(["doctor", "--workspace", str(repo_root), "--format", "json"])
 
     captured = capsys.readouterr()
-    assert rc == 2
-    assert "TP-DMX-STEWARD-DOCTOR-303" in captured.err
+    payload = json.loads(captured.out)
+    assert rc == 0
+    assert payload["status"] == "PASS"
+    assert payload["checks"]["config_schema"]["status"] == "PASS"
+    assert payload["checks"]["scaffold_skew"]["status"] == "PASS"
+    assert captured.err == ""
 
 
 def test_pr_steward_package_imports_outside_repo_root(tmp_path: Path):

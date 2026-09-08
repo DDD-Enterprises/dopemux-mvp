@@ -46,6 +46,7 @@ def independent_audit_errors(
     expected_pr: int | None = None,
     expected_head_sha: str | None = None,
     expected_repo: str | None = None,
+    expected_base_sha: str | None = None,
 ) -> list[str]:
     """Return fail-closed errors for an independent-audit proof payload.
 
@@ -78,11 +79,17 @@ def independent_audit_errors(
         and provenance.get("audit_source") == "trusted-change-contract"
     )
     if not_required_claimed:
-        errors.extend(_not_required_proof_errors(payload))
+        errors.extend(_not_required_proof_errors(
+            payload,
+            expected_repo=expected_repo,
+            expected_pr=expected_pr,
+            expected_head_sha=expected_head_sha,
+            expected_base_sha=expected_base_sha,
+        ))
     elif payload.get("executed") is not True:
         errors.append("audit_not_executed: final readiness requires executed=true")
 
-    if expected_pr is not None:
+    if expected_pr is not None and (not not_required_claimed or type(expected_pr) is int):
         try:
             proof_pr = int(payload.get("pr_number"))  # type: ignore[arg-type]
         except (TypeError, ValueError):
@@ -126,8 +133,33 @@ def independent_audit_errors(
     return errors
 
 
-def _not_required_proof_errors(payload: Mapping[str, Any]) -> list[str]:
+def _not_required_proof_errors(
+    payload: Mapping[str, Any],
+    *,
+    expected_repo: str | None,
+    expected_pr: int | None,
+    expected_head_sha: str | None,
+    expected_base_sha: str | None,
+) -> list[str]:
     errors: list[str] = []
+    # The classification belongs to the caller's exact base/head pair, not to
+    # identities supplied by the proof being validated.
+    for field, value in (
+        ("expected_repo", expected_repo),
+        ("expected_head_sha", expected_head_sha),
+        ("expected_base_sha", expected_base_sha),
+    ):
+        if not isinstance(value, str) or not value.strip():
+            errors.append(f"audit_not_required_identity_missing: {field} required")
+    if type(expected_pr) is not int or expected_pr <= 0:
+        errors.append("audit_not_required_identity_missing: expected_pr required")
+    for field, expected in (
+        ("repo", expected_repo),
+        ("pr_number", expected_pr),
+        ("head_sha", expected_head_sha),
+    ):
+        if type(payload.get(field)) is not type(expected) or payload.get(field) != expected:
+            errors.append(f"audit_not_required_identity_mismatch: {field}")
     embedded = payload.get("embedded_audit")
     provenance = payload.get("provenance")
     if payload.get("executed") is not False:
@@ -166,8 +198,17 @@ def _not_required_proof_errors(payload: Mapping[str, Any]) -> list[str]:
         errors.append(
             "audit_not_required_contract_invalid: model_audit_required must be false"
         )
-    if contract.get("max_lane") not in NON_MODEL_AUDIT_LANES:
+    if (
+        not isinstance(contract.get("max_lane"), str)
+        or contract.get("max_lane") not in NON_MODEL_AUDIT_LANES
+    ):
         errors.append("audit_not_required_contract_invalid: max_lane must be L0 or L1")
+    for field, expected in (
+        ("head_sha", expected_head_sha),
+        ("base_sha", expected_base_sha),
+    ):
+        if not isinstance(contract.get(field), str) or contract.get(field) != expected:
+            errors.append(f"audit_not_required_contract_binding_mismatch: {field}")
     return errors
 
 
@@ -198,6 +239,7 @@ def enforce_independent_audit_proof(
     expected_pr: int | None = None,
     expected_head_sha: str | None = None,
     expected_repo: str | None = None,
+    expected_base_sha: str | None = None,
 ) -> None:
     """Raise SystemExit unless the proof is a passing independent audit."""
     errors = independent_audit_errors(
@@ -205,6 +247,7 @@ def enforce_independent_audit_proof(
         expected_pr=expected_pr,
         expected_head_sha=expected_head_sha,
         expected_repo=expected_repo,
+        expected_base_sha=expected_base_sha,
     )
     if errors:
         raise SystemExit("; ".join(errors))

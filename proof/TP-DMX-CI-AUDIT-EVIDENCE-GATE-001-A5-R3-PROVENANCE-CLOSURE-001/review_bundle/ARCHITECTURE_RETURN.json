@@ -1,0 +1,190 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001",
+  "recorded_at": "2026-09-07T21:37:01Z",
+  "decision": "NEEDS_ARCHITECTURE_RETURN",
+  "confidence": "VERIFIED_COUNTEREXAMPLES_NOT_VERIFIED_REPAIR",
+  "authority": {
+    "source": "Latest operator request to execute the supplied supervisor program; read-only investigation and evidence intake authorized.",
+    "program": "ASTRA_DOPEMUX_SUPERVISOR_PROGRAM_2026-09-07",
+    "governing_gate": "Control Tower handoff sections 10.4, 23.1, 23.2 and 24",
+    "exact_stop": "shared validator cannot provide authoritative repo/PR/head binding",
+    "intake_scope": "Evidence only; substantive implementation NOT_RUN."
+  },
+  "identity": {
+    "requested_supervisor": {
+      "model": "gpt-6-astra",
+      "effort": "highest_available"
+    },
+    "observed_parent_session": {
+      "model": "gpt-6-astra",
+      "effort": "high",
+      "evidence": "Current thread's latest turn_context at 2026-09-07T21:24:30.053Z; selected fields only, no transcript export."
+    },
+    "observed_cli_version": "codex-cli 0.153.4",
+    "catalog_highest_effort": "ultra",
+    "investigator_dispatch": {
+      "task": "provenance_trace",
+      "model": "gpt-6-astra",
+      "effort": "ultra",
+      "tool_dispatch_accepted": true,
+      "purpose": "Bounded read-only investigation, not independent audit"
+    },
+    "parent_effort_changed": false,
+    "provider_attested_identity": "UNKNOWN; no provider attestation supplied by current session or delegation tool."
+  },
+  "git": {
+    "repo": "DDD-Enterprises/dopemux-mvp",
+    "worktree": ".worktrees/ci-audit-provenance-a5-r3",
+    "branch": "detached",
+    "head": "13562c8df1bc6621229eb4a38473da42be199825",
+    "main": "6a728f74c0311967f83213513308f97613e3f28d",
+    "remote_pr_branch": "fix/ci-audit-steward-not-required-a5-r1",
+    "fresh_worktree_initially_clean": true,
+    "source_changes": 0,
+    "new_commits": 0,
+    "pushes": 0,
+    "cleanup": "PRESERVED_WITH_UNCOMMITTED_EVIDENCE_ONLY"
+  },
+  "evidence": [
+    {
+      "state": "OBSERVED",
+      "claim": "Original P1 reproduced: steward_gate and queue_drain allow missing executed/auditor/provenance fixture; shared validator rejects.",
+      "source": "Historical S8_PROVENANCE_REPRO.txt rerun in new exact-head worktree; exit 0."
+    },
+    {
+      "state": "OBSERVED",
+      "claim": "Canonical-emitter valid NOT_REQUIRED baseline accepted with all expected_repo/expected_pr/expected_head_sha supplied. Six mutated nested head/base cases also accepted.",
+      "source": "review_bundle/CONTRACT_BINDING_REPRO.json; replay exit 0 confirms gap."
+    },
+    {
+      "state": "OBSERVED",
+      "claim": "Missing provenance and mismatched top-level repo/PR/head rejected. This limits finding to nested binding and caller authority, not all identity checks.",
+      "source": "review_bundle/CONTRACT_BINDING_REPRO.json"
+    },
+    {
+      "state": "OBSERVED",
+      "claim": "Shared NOT_REQUIRED validator checks contract status/model-required/lane only; emitter writes nested head/base.",
+      "source": "scripts/audit/run_embedded_audit.py:159-171,284-289"
+    },
+    {
+      "state": "OBSERVED",
+      "claim": "Canonical validator file at PR head identical to origin/main.",
+      "source": "git diff origin/main HEAD -- scripts/audit/run_embedded_audit.py; exit 0, empty."
+    },
+    {
+      "state": "OBSERVED",
+      "claim": "steward_gate and standalone gate CLI lack expected repo/PR inputs. Queue has PR/head and outer GitHub client can resolve repo.",
+      "source": "src/dopemux_pr_merge_specialist/steward_gate.py:26-34; src/dopemux_pr_steward/cli.py:69-84,176-187; queue_drain.py:450-485,550-582; github_api.py:243-264"
+    },
+    {
+      "state": "INFERRED",
+      "claim": "Direct reuse closes historical missing-provenance fixture but cannot fulfill full required exact-subject binding. Deriving expected identity from same supplied artifacts proves agreement, not independent authority.",
+      "source": "Observed caller inputs plus canonical counterexamples."
+    }
+  ],
+  "live_github": {
+    "reharvest_at": "2026-09-07T21:33:04Z",
+    "receipt": "review_bundle/LIVE_GITHUB.json",
+    "pr1330": {
+      "state": "OPEN",
+      "draft": false,
+      "merged": false,
+      "mergeable": true,
+      "head": "13562c8df1bc6621229eb4a38473da42be199825",
+      "steward": "FAILURE",
+      "unit_tests": "SUCCESS",
+      "ci_pipeline_summary": "SUCCESS",
+      "independent_embedded_audit": "SUCCESS_HISTORICAL_CONTENT",
+      "open_targeted_threads": 3,
+      "new_review_threads_since_handoff": 0
+    },
+    "pr1327": {
+      "state": "OPEN",
+      "draft": true,
+      "merged": false,
+      "head": "a18c87fdcf96b1b830dc88345ce199e2ef209ac6",
+      "mutations": 0
+    }
+  },
+  "validation": {
+    "archive": "PASS; review_bundle/ARCHIVE_VERIFICATION.json",
+    "intake_packet_schema": "PASS",
+    "original_p1_replay": "GAP_REPRODUCED_EXIT_0",
+    "canonical_binding_replay": "GAP_REPRODUCED_EXIT_0",
+    "python_syntax": "PASS",
+    "receipt_json": "PASS",
+    "diff_check": "PASS with core.fsmonitor=false",
+    "untracked_file_whitespace": "PASS; no-index exit 1 without diagnostics represents content difference",
+    "precommit": "PASS on six intake files and PASS on final receipt in separate invocation; both exit 0",
+    "secret_scan": "PASS on complete seven-file evidence directory; 37428 bytes scanned; exit 0",
+    "relevant_complete_suite": "NOT_RUN; architecture gate reached before implementation",
+    "independent_l3_audit": "NOT_RUN; no frozen repair or export grant",
+    "proof_signature_attestation": "NOT_RUN; existing attestation preserved"
+  },
+  "deterministic_tool_failures_preserved": [
+    {
+      "tool": "verify_archive.py initial run",
+      "exit_code": 1,
+      "cause": "Intake verifier supported mapping manifests but not observed A2 list-form manifest; added list parser and reran successfully. Archive hashes were not mismatched."
+    },
+    {
+      "tool": "precommit old test venv launcher",
+      "exit_code": 127,
+      "cause": "Launcher absent; discovered installed mise executable."
+    },
+    {
+      "tool": "precommit with default interpreter",
+      "exit_code": 1,
+      "cause": "PyYAML unavailable to hook interpreter; reran installed launcher with existing test venv first in PATH. No dependency install or repository hook change."
+    },
+    {
+      "tool": "initial no-index whitespace orchestration",
+      "exit_code": 1,
+      "cause": "Verifier misclassified Git no-index content-difference exit 1 with empty diagnostics as failure; corrected orchestration and reran. Files unchanged."
+    },
+    {
+      "tool": "Git fsmonitor",
+      "cause": "Inherited daemon IPC errors; deterministic reads rerun with per-command core.fsmonitor=false; no configuration change."
+    }
+  ],
+  "conflicts_unknowns": [
+    "Parent supervisor effort observed high, not requested highest available ultra. Current-session selector must be changed by runtime/operator; no silent substitution or success claim.",
+    "Provider-attested model identity remains UNKNOWN; configured session and dispatched child identities recorded separately.",
+    "Standalone gate expected repo/PR/base authority requires architecture disposition; do not take expected values from candidate proof/readiness.",
+    "Contract base binding policy requires decision; current validator has no expected_base_sha input and ignores nested base_sha.",
+    "Archived governance source manifest bound to 5f862d36f5417801b9fe148fccbb439731627234 is STALE versus current main for slots 1,2,15,17,23,25,30,31,32,34. Live runtime and latest user gates govern current lane.",
+    "Archived and live embedded-audit prose still describes Clink/model CI behavior inconsistent with current zero-spend runtime policy; no Clink or CI model invocation performed."
+  ],
+  "historical_custody": {
+    "r3_frozen_head": "8826b7174c78388e7033f4bb4fe2e49acf363aa2",
+    "r3_audit_verdict": "PASS_PRESERVED_NOT_CURRENT_READINESS",
+    "r3_final_proof_head": "13562c8df1bc6621229eb4a38473da42be199825",
+    "stop_receipt_sha256": "1bbd850a9f4182c55e3597f9812afc401b861a51e22176b6b99ba1a752637ded",
+    "stop_replay_sha256": "75b8469db4306ef8fb3978f2159ee07989bab7a30eccd30b74874e6d6a3292c4",
+    "foreign_dirt": "Primary advisor-cache and MCP setup documentation; historical R3 MCP setup documentation; preserved."
+  },
+  "counters": {
+    "new_implementation_attempts": 0,
+    "read_only_investigation_workers": 1,
+    "new_independent_audits": 0,
+    "external_audit_exports": 0,
+    "github_mutations": 0,
+    "review_replies": 0,
+    "review_resolutions": 0,
+    "workflow_reruns": 0,
+    "security_releases": 0,
+    "pr1327_mutations": 0,
+    "r0_launched": false,
+    "merge": false,
+    "force_push": false,
+    "branch_protection_change": false
+  },
+  "next_action": "Return to architecture-audit thread. Decide canonical validator nested head/base binding policy and independently expected repo/PR/base propagation through gate/CLI/queue before approving minimal implementation scope. No new trust subsystem or schema/signer change assumed.",
+  "evidence_needed_for_next_verdict": [
+    "Architecture-approved authoritative identity inputs and canonical binding rules.",
+    "Exact implementation allowlist covering proven necessary canonical validator/tests/callers/mirrors.",
+    "Fresh failing regressions then focused and relevant complete PASS, parity and precommit before content freeze.",
+    "Separate explicit export approval for new frozen hashed secret-scanned subject; one independent audit only after freeze."
+  ],
+  "rollback": "Preserve commits, historical audit and both old stop files. No reset, force push, rollback, cleanup, or attestation replacement performed."
+}

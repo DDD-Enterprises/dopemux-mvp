@@ -97,6 +97,7 @@ def collect_from_github(
         pr_head_sha=str(pr_payload.get("headRefOid") or ""),
         expected_pr=pr_number,
         expected_repo=repo,
+        expected_base_sha=str(pr_payload.get("baseRefOid") or ""),
     )
     errors.extend(proof_errors)
     threads, thread_errors = _fetch_review_threads(repo=repo, pr_number=pr_number)
@@ -678,6 +679,7 @@ def _proof_state(
     pr_head_sha: str | None,
     expected_pr: int | None = None,
     expected_repo: str | None = None,
+    expected_base_sha: str | None = None,
 ) -> tuple[dict[str, Any], list[str]]:
     if proof_path is None:
         return _missing_proof_state(None), ["proof_missing: --proof-path not provided"]
@@ -700,6 +702,7 @@ def _proof_state(
         expected_pr=expected_pr,
         expected_head_sha=pr_head_sha,
         expected_repo=expected_repo,
+        expected_base_sha=expected_base_sha,
     )
     if independent_errors:
         audit_status = "NEEDS_SUPERVISOR"
@@ -733,12 +736,14 @@ def _independent_audit_errors(
     expected_pr: int | None = None,
     expected_head_sha: str | None = None,
     expected_repo: str | None = None,
+    expected_base_sha: str | None = None,
 ) -> list[str]:
     """Delegate to the shared independent-audit proof validator.
 
     Parity with the embedded-audit workflow hard gate is intentional: both
     surfaces must accept and reject the same proof shapes. When known, pass
-    expected PR/repo/head so a proof from another PR cannot produce READY.
+    expected PR/repo/head/base so a proof from another subject cannot produce READY.
+    All four are mandatory for NOT_REQUIRED; incomplete diagnostic calls deny it.
     """
     # Local import keeps collector importable when scripts/ is unavailable in
     # tightly packaged test contexts, while remaining the single contract path.
@@ -749,6 +754,7 @@ def _independent_audit_errors(
         expected_pr=expected_pr,
         expected_head_sha=expected_head_sha or None,
         expected_repo=expected_repo,
+        expected_base_sha=expected_base_sha,
     )
 
 

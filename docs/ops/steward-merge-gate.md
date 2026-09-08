@@ -18,6 +18,8 @@ resolve threads, merge PRs, or enable governed automerge.
 ## Inputs
 
 - `head_sha`: expected PR head SHA.
+- `expected_repo`, `expected_pr`, `expected_base_sha`: trusted caller identity,
+  mandatory alongside `head_sha` for `FINALIZATION`.
 - `required_class`: `REMEDIATION` or `FINALIZATION`.
 - `MERGE_READINESS.json`: emitted by PR Steward intake.
 - independent embedded-audit `PROOF.json`.
@@ -29,6 +31,7 @@ The gate denies when:
 - either artifact is missing or invalid JSON
 - `required_class` is unsupported
 - `head_sha` is absent
+- finalization caller repo, PR, head, or base identity is missing or malformed
 - requested head SHA, PR Steward `pr.head_sha`, PR Steward `proof.proof_head_sha`,
   and embedded-audit proof `head_sha` do not all match
 - PR Steward readiness does not match the requested class
@@ -96,6 +99,22 @@ requires both artifacts to independently carry exact status `SKIPPED`, boolean
 `AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT`. Mixed `PASS`/not-required
 pairs, malformed metadata, missing metadata, lowercase or other noncanonical
 statuses, and `required` values merely equal to false fail closed.
+The exact not-required surface fields are necessary but not sufficient:
+`independent_audit_errors` must also validate canonical provenance against the
+trusted caller's repo, PR, head and base. Proof `repo`, `pr_number` and `head_sha`
+must match that tuple, and nested `provenance.change_contract.head_sha` and
+`base_sha` must match the caller's head and base. Missing canonical validation,
+missing bindings, malformed provenance, or any mismatch denies finalization.
+An omitted expected identity never falls back to the proof being validated.
+
+The live merge caller supplies `GitHubClient.repo` and
+`PullRequestState.pr_id`, `head_sha`, and `base_sha`. Standalone
+`pr-steward gate --required-class FINALIZATION` requires explicit `--repo`,
+`--pr`, `--head-sha`, and `--base-sha` inputs from a trusted source.
+PR Steward collection and both CI hard gates propagate the same live GitHub
+tuple. A base change after proof generation invalidates not-required evidence
+even when the PR head is unchanged. Ordinary executed-audit `PASS` proof
+semantics and remediation behavior are unchanged.
 `PASS_WITH_RISKS` remains acceptable for remediation and general acceptance
 evidence, but does not grant finalization authority.
 

@@ -246,9 +246,14 @@ jobs:
           test "$proof_pr" = "$SELECTED_PR"
           test "$proof_head" = "$EXPECTED_HEAD_SHA"
 
-          # Cross-check live PR head still matches the artifact-bound head.
-          live_head="$(gh api "repos/${EXPECTED_REPO}/pulls/${SELECTED_PR}" --jq .head.sha)"
+          # Bind base and head from the same trusted live PR response.
+          live_pr="$(gh api "repos/${EXPECTED_REPO}/pulls/${SELECTED_PR}")"
+          live_head="$(printf '%s' "$live_pr" | jq -er '.head.sha')"
           test "$live_head" = "$EXPECTED_HEAD_SHA"
+          test "$(printf '%s' "$live_pr" | jq -er '.number')" = "$SELECTED_PR"
+          test "$(printf '%s' "$live_pr" | jq -er '.base.repo.full_name')" = "$EXPECTED_REPO"
+          EXPECTED_BASE_SHA="$(printf '%s' "$live_pr" | jq -er '.base.sha')"
+          printf '%s' "$EXPECTED_BASE_SHA" | grep -Eq '^[0-9a-f]{40}$'
 
           # Bind identity outputs BEFORE hard enforce so failure status can still
           # be published when the audit conclusion or proof is non-passing.
@@ -262,8 +267,8 @@ jobs:
             exit 2
           fi
 
-          export PROOF_PR="$proof_pr"
-          export EXPECTED_HEAD_SHA
+          export EXPECTED_PR="$SELECTED_PR"
+          export EXPECTED_HEAD_SHA EXPECTED_BASE_SHA
           python - <<'PY'
           import json
           import os
@@ -276,9 +281,10 @@ jobs:
           proof = json.loads(Path("independent-audit/PROOF.json").read_text(encoding="utf-8"))
           enforce_independent_audit_proof(
               proof,
-              expected_pr=int(os.environ["PROOF_PR"]),
+              expected_pr=int(os.environ["EXPECTED_PR"]),
               expected_head_sha=os.environ["EXPECTED_HEAD_SHA"],
               expected_repo=os.environ["EXPECTED_REPO"],
+              expected_base_sha=os.environ["EXPECTED_BASE_SHA"],
           )
           print("Independent audit proof identity enforcement: PASS")
           PY

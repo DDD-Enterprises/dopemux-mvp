@@ -29,6 +29,9 @@ def steward_gate(
     required_class: str,
     merge_readiness_path: str | Path,
     audit_proof_path: str | Path,
+    expected_repo: str | None = None,
+    expected_pr: int | None = None,
+    expected_base_sha: str | None = None,
     now: datetime | None = None,
     ttl_seconds: int = 3600,
 ) -> StewardGateResult:
@@ -39,6 +42,15 @@ def steward_gate(
         return _deny(normalized_class, "DENY_UNSUPPORTED_CLASS")
     if not head_sha:
         return _deny(normalized_class, "DENY_MISSING_HEAD_SHA")
+    if normalized_class == "FINALIZATION" and (
+        any(
+            not isinstance(value, str) or not value.strip()
+            for value in (expected_repo, head_sha, expected_base_sha)
+        )
+        or type(expected_pr) is not int
+        or expected_pr <= 0
+    ):
+        return _deny(normalized_class, "DENY_MISSING_CALLER_IDENTITY")
 
     try:
         readiness = _load_json(Path(merge_readiness_path))
@@ -80,6 +92,23 @@ def steward_gate(
     if normalized_class == "FINALIZATION":
         if not finalization_audit_evidence_allowed(evidence):
             return _deny(normalized_class, "DENY_AUDIT_NOT_STRICT_PASS", **evidence)
+        if evidence["proof_embedded_audit_status"] == "SKIPPED":
+            try:
+                from scripts.audit.run_embedded_audit import independent_audit_errors
+            except ImportError:
+                return _deny(normalized_class, "DENY_AUDIT_VALIDATOR_UNAVAILABLE", **evidence)
+            errors = independent_audit_errors(
+                audit_proof,
+                expected_repo=expected_repo,
+                expected_pr=expected_pr,
+                expected_head_sha=head_sha,
+                expected_base_sha=expected_base_sha,
+            )
+            if errors:
+                return _deny(
+                    normalized_class, "DENY_AUDIT_PROVENANCE", **evidence,
+                    audit_provenance_errors=errors,
+                )
     elif (
         evidence["merge_embedded_audit_status"] not in PASSING_AUDIT_STATUSES
         or evidence["proof_embedded_audit_status"] not in PASSING_AUDIT_STATUSES

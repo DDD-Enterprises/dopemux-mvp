@@ -1,0 +1,75 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001",
+  "gate": "B0",
+  "status": "PASS",
+  "authority": "Operator bounded pre-existing baseline repair supplement; architecture remains approved",
+  "start_head": "13562c8df1bc6621229eb4a38473da42be199825",
+  "live_base": "6a728f74c0311967f83213513308f97613e3f28d",
+  "historical_failure_receipt": "BASELINE_STOP.json",
+  "pre_existing_baseline_repair_delta": {
+    "tests/dopemux_cli/test_pr_steward_cmd.py": {
+      "old_expectation": "STALE_UNIMPLEMENTED_PLACEHOLDER_EXPECTATION",
+      "current_observed_behavior": "IMPLEMENTED_DOCTOR_BEHAVIOR",
+      "test_change": "ALIGN_EXPECTATION_TO_ALREADY_IMPLEMENTED_BEHAVIOR",
+      "assertions": "Real doctor rc=0, PASS status, config_schema PASS, scaffold_skew PASS, empty stderr; explicit repository workspace",
+      "production_code_change": false
+    },
+    "pyproject.toml": {
+      "change": "Add only dopemux.dcp to existing explicit setuptools packages list",
+      "source_package_exists": true,
+      "pre_repair_install": "SUCCESS",
+      "pre_repair_isolated_import_dopmux_dcp": "FAIL",
+      "post_repair_install": "SUCCESS",
+      "post_repair_isolated_import_dopmux_dcp": "PASS",
+      "structured_toml_comparison": "PASS: adding this one declaration to parsed HEAD configuration yields exact parsed working configuration equality"
+    }
+  },
+  "provenance_closure_delta": "NOT_STARTED_AT_B0; baseline repairs do not establish provenance correctness",
+  "validation": [
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/dopemux_cli/test_pr_steward_cmd.py tests/dopemux_cli/test_doctor.py",
+      "result": "12 passed in 2.96s",
+      "exit_code": 0,
+      "covers": "Corrected doctor assertion, complete CLI module, installed-engine isolation test, existing positive and fail-closed doctor tests"
+    },
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/audit tests/pr_steward tests/pr_merge_specialist tests/dopemux_cli/test_pr_steward_cmd.py tests/dopemux_cli/test_doctor.py",
+      "result": "1047 passed, 2 skipped in 28.67s",
+      "exit_code": 0,
+      "skips": "Historical grok and opencode/kimi differential tests: origin/main already contains routes; no provider execution"
+    },
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/project_control_plane/test_packaging.py",
+      "result": "2 passed in 0.03s",
+      "exit_code": 0
+    },
+    {
+      "command": "python -m pip install --no-deps --no-build-isolation --target <temporary-site> <worktree>; isolated subprocess import dopemux.dcp.red_lane_rules",
+      "result": "INSTALL_EXIT=0; ISOLATED_DCP_IMPORT=PASS; PROBE_EXIT=0",
+      "isolation": "Temporary cwd outside repository, subprocess env contains only PYTHONPATH=<temporary-site>; asserts module file under installed site and outside repository; asserts every sys.path entry outside repository",
+      "exit_code": 0
+    },
+    {
+      "command": "pre-commit run --files pyproject.toml tests/dopemux_cli/test_pr_steward_cmd.py task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001.json",
+      "result": "PASS, no hook mutations; extension-specific hooks without matching files SKIPPED",
+      "exit_code": 0
+    },
+    {"command": "git diff --check", "result": "PASS", "exit_code": 0},
+    {"command": "gitleaks dir --no-banner --redact pyproject.toml", "result": "PASS, no leaks", "exit_code": 0},
+    {"command": "gitleaks dir --no-banner --redact tests/dopemux_cli/test_pr_steward_cmd.py", "result": "PASS, no leaks", "exit_code": 0},
+    {"command": "Draft7Validator live canonical Task Packet schema", "result": "PASS", "exit_code": 0}
+  ],
+  "test_environment": {
+    "python": "Existing mise Python 3.12.13 with pip; existing historical R3 virtualenv test dependencies",
+    "parent_pythonpath": "Current worktree root and src plus historical R3 test site-packages",
+    "pip_environment": {"PIP_NO_BUILD_ISOLATION": "0", "PIP_NO_INDEX": "1", "PIP_DISABLE_PIP_VERSION_CHECK": "1"},
+    "installed_probe_pythonpath": "Temporary installed target only, never repository source",
+    "network_requirement_added": false
+  },
+  "independent_audit": "NOT_RUN; required only on final frozen substantive head containing both deltas",
+  "audit_instruction": "pyproject.toml is PRE_EXISTING_PACKAGING_REPAIR; doctor assertion is PRE_EXISTING_TEST_EXPECTATION_REPAIR. Auditor must verify no authority expansion or concealed regression.",
+  "merge_authorized": false,
+  "ready_state_authorized": false,
+  "export_authorized": false,
+  "activation_authorized": false
+}

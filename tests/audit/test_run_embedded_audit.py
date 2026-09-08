@@ -1517,7 +1517,101 @@ def test_l0_trusted_classification_emits_exact_not_required_success() -> None:
         expected_pr=1042,
         expected_head_sha="b" * 40,
         expected_repo="DDD-Enterprises/dopemux-mvp",
+        expected_base_sha="a" * 40,
     )
+
+
+def test_not_required_rejects_missing_expected_base() -> None:
+    proof = audit_runner.build_evidence_gate_proof(
+        packet_id="TP-PROVENANCE-READONLY-PROBE",
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=1330,
+        head_sha="13562c8df1bc6621229eb4a38473da42be199825",
+        base_sha="6a728f74c0311967f83213513308f97613e3f28d",
+        change_contract={"status": "PASS", "model_audit_required": False, "max_lane": "L0"},
+        local_attestation=None,
+        generated_at="2026-09-07T12:00:00Z",
+    )
+
+    errors = independent_audit_errors(
+        proof,
+        expected_repo="DDD-Enterprises/dopemux-mvp",
+        expected_pr=1330,
+        expected_head_sha="13562c8df1bc6621229eb4a38473da42be199825",
+    )
+
+    assert any("expected_base_sha" in error for error in errors)
+
+
+@pytest.mark.parametrize("workflow", [WORKFLOW_PATH, STEWARD_WORKFLOW_PATH], ids=["audit", "steward"])
+@pytest.mark.parametrize(
+    "field,value,allowed",
+    [
+        ("EXPECTED_BASE_SHA", "a" * 40, True),
+        ("EXPECTED_BASE_SHA", None, False),
+        ("EXPECTED_BASE_SHA", "", False),
+        ("EXPECTED_BASE_SHA", "f" * 40, False),
+        ("EXPECTED_REPO", "foreign/repo", False),
+        ("EXPECTED_PR", "1043", False),
+        ("EXPECTED_HEAD_SHA", "f" * 40, False),
+    ],
+)
+def test_workflow_hard_gate_executes_canonical_subject_binding(
+    tmp_path: Path, workflow: Path, field: str, value, allowed: bool
+) -> None:
+    doc = _yaml.safe_load(workflow.read_text(encoding="utf-8"))
+    steps = [step for job in doc["jobs"].values() for step in job["steps"]]
+    step = next(step for step in steps if "enforce_independent_audit_proof(" in step.get("run", ""))
+    code = next(
+        body for body in _re.findall(r"<<'PY'\n(.*?)\nPY", step["run"], _re.S)
+        if "enforce_independent_audit_proof(" in body
+    )
+    proof = audit_runner.build_evidence_gate_proof(
+        packet_id="TP-PROVENANCE-WORKFLOW-TEST",
+        repo="DDD-Enterprises/dopemux-mvp",
+        pr_number=1042,
+        head_sha="b" * 40,
+        base_sha="a" * 40,
+        change_contract=_trusted_change_contract(required=False, lane="L0"),
+        local_attestation=None,
+    )
+    artifact_dir = tmp_path / (
+        "embedded-audit-artifacts" if workflow == WORKFLOW_PATH else "independent-audit"
+    )
+    artifact_dir.mkdir()
+    (artifact_dir / "PROOF.json").write_text(json.dumps(proof), encoding="utf-8")
+    (tmp_path / "trusted-source").symlink_to(ROOT, target_is_directory=True)
+    env = {
+        **_os.environ,
+        "PYTHONPATH": str(ROOT),
+        "EXPECTED_PR": "1042",
+        "EXPECTED_HEAD_SHA": "b" * 40,
+        "EXPECTED_BASE_SHA": "a" * 40,
+        "EXPECTED_REPO": "DDD-Enterprises/dopemux-mvp",
+        "GITHUB_REPOSITORY": "DDD-Enterprises/dopemux-mvp",
+    }
+    key = "GITHUB_REPOSITORY" if field == "EXPECTED_REPO" and workflow == WORKFLOW_PATH else field
+    if value is None:
+        env.pop(key)
+    else:
+        env[key] = value
+    completed = _subprocess.run(
+        [_sys.executable, "-B", "-"], input=code, text=True,
+        cwd=tmp_path, env=env, capture_output=True, check=False,
+    )
+    assert (completed.returncode == 0) is allowed, completed.stderr
+    if not allowed:
+        assert field.lower() in completed.stderr.lower() or "mismatch" in completed.stderr
+
+
+def test_workflow_expected_base_comes_from_trusted_pr_state() -> None:
+    audit_step = _step_by_name("Enforce audit evidence gate")
+    assert audit_step["env"]["EXPECTED_BASE_SHA"] == "${{ steps.target_pr.outputs.base_sha }}"
+    text = STEWARD_WORKFLOW_PATH.read_text(encoding="utf-8")
+    assert 'live_pr="$(gh api "repos/${EXPECTED_REPO}/pulls/${SELECTED_PR}")"' in text
+    assert 'EXPECTED_BASE_SHA="$(printf \'%s\' "$live_pr" | jq -er \'.base.sha\')"' in text
+    assert 'export EXPECTED_PR="$SELECTED_PR"' in text
+    assert 'export EXPECTED_HEAD_SHA EXPECTED_BASE_SHA' in text
 
 
 def test_l3_without_imported_attestation_fails_closed() -> None:

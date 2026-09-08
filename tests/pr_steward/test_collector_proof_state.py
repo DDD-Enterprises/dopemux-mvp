@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from scripts.audit.run_embedded_audit import build_evidence_gate_proof
 from tools.pr_steward import collector
 
@@ -42,6 +44,7 @@ def test_proof_state_preserves_validated_not_required_metadata(tmp_path: Path) -
         pr_head_sha=_HEAD,
         expected_pr=_PR,
         expected_repo=_REPO,
+        expected_base_sha=_BASE,
     )
 
     assert errors == []
@@ -60,6 +63,7 @@ def test_proof_state_invalid_proof_forces_needs_supervisor(tmp_path: Path) -> No
         pr_head_sha=_HEAD,
         expected_pr=_PR,
         expected_repo=_REPO,
+        expected_base_sha=_BASE,
     )
 
     assert errors
@@ -79,9 +83,43 @@ def test_proof_state_preserves_malformed_required_without_coercion(
         pr_head_sha=_HEAD,
         expected_pr=_PR,
         expected_repo=_REPO,
+        expected_base_sha=_BASE,
     )
 
     assert errors
     assert state["embedded_audit"]["status"] == "NEEDS_SUPERVISOR"
     assert state["embedded_audit"]["required"] == "false"
     assert state["embedded_audit"]["skip_reason"] == _NOT_REQUIRED_REASON
+
+
+@pytest.mark.parametrize("expected_base", [None, "", "f" * 40])
+def test_proof_state_denies_missing_or_mismatched_base(tmp_path: Path, expected_base) -> None:
+    state, errors = collector._proof_state(
+        proof_path=_write_proof(tmp_path, _not_required_proof()),
+        pr_head_sha=_HEAD,
+        expected_pr=_PR,
+        expected_repo=_REPO,
+        expected_base_sha=expected_base,
+    )
+
+    assert errors
+    assert state["embedded_audit"]["status"] == "NEEDS_SUPERVISOR"
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [("repo", "foreign/repo"), ("pr_number", 705), ("head_sha", "f" * 40)],
+)
+def test_proof_state_correct_base_does_not_allow_wrong_identity(tmp_path: Path, field, value) -> None:
+    proof = _not_required_proof()
+    proof[field] = value
+    state, errors = collector._proof_state(
+        proof_path=_write_proof(tmp_path, proof),
+        pr_head_sha=_HEAD,
+        expected_pr=_PR,
+        expected_repo=_REPO,
+        expected_base_sha=_BASE,
+    )
+
+    assert errors
+    assert state["embedded_audit"]["status"] == "NEEDS_SUPERVISOR"
