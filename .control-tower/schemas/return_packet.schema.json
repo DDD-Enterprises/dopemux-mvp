@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "required": [
+    "return_id",
+    "packet_id",
+    "decision_needed",
+    "reason",
+    "head_sha"
+  ],
+  "type": "object"
+}
