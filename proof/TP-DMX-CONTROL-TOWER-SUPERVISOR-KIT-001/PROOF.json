@@ -1,0 +1,117 @@
+{
+  "base_sha": "6a728f74c0311967f83213513308f97613e3f28d",
+  "branch": "codex/control-tower-supervisor-kit-20260908",
+  "changed_files": [
+    ".claude/PROJECT_INSTRUCTIONS.md",
+    ".claude/claude.md",
+    ".claude/llm.md",
+    ".claude/llms.md",
+    ".claude/modules/shared/governance-principles.md",
+    ".control-tower/backups/.gitignore",
+    ".control-tower/bin/ct",
+    ".control-tower/config/defaults.json",
+    ".control-tower/contracts/ARCHITECTURE_RETURN_PROTOCOL.md",
+    ".control-tower/contracts/OPERATOR_GATES.md",
+    ".control-tower/contracts/SUPERVISOR_OPERATING_CONTRACT.md",
+    ".control-tower/project.json",
+    ".control-tower/prompts/ARCHITECTURE_ADVISOR_PROMPT.md",
+    ".control-tower/prompts/SUPERVISOR_LAUNCH_PROMPT.md",
+    ".control-tower/schemas/return_packet.schema.json",
+    ".control-tower/schemas/route_decision.schema.json",
+    ".control-tower/state/.gitignore",
+    ".control-tower/templates/ARCHITECTURE_RETURN_PACKET.template.md",
+    ".control-tower/templates/ROUTING_DECISION.template.json",
+    ".control-tower/templates/SUPERVISOR_HANDOFF.template.md",
+    ".github/copilot-instructions.md",
+    ".pre-commit-config.yaml",
+    "AGENTS.md",
+    "config/repo_hygiene/root_hygiene_policy.json",
+    "task-packets/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001.json"
+  ],
+  "cleanup_status": "Retained isolated worktree for blocked review; original dirty checkout untouched.",
+  "diff_sha256": "810a025d860b3d9ee1d3530c81ab4dbd6a3e218a09dd475c7727b2067b7732d6",
+  "embedded_audit": {
+    "auditor_model": "unknown",
+    "auditor_tool": "none",
+    "exit_code": null,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": null,
+    "remaining_risks": [
+      "Imported kit review claims unresolved; see prior-kit-review.md.",
+      "No independent non-Codex final verdict exists."
+    ],
+    "report_path": "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": "NOT_RUN: approval system rejected outbound internal diff and governance before Claude process creation.",
+    "status": "SKIPPED"
+  },
+  "head_sha": "648475216f2ffab9b249de6502294c124890f090",
+  "packet_id": "TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "repo_identity": "PASS: .dopetaskroot and .dopetask/project.json project_id=dopemux-mvp",
+  "rollback": "Close unmerged PR; after an authorized merge use a successor revert, never reset source worktree.",
+  "slices_completed": [
+    "isolated current-main port",
+    "exact supplied kit payload",
+    "agent and LLM instruction synchronization",
+    "deterministic validation"
+  ],
+  "status": "BLOCKED",
+  "task_packet_path": "task-packets/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001.json",
+  "unknowns": [
+    "Formal auditor identity and verdict",
+    "Final risk-lane disposition",
+    "Current CI and Steward at publication"
+  ],
+  "validation": {
+    "change_contract": {
+      "evidence": "review_bundle/change-contract.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    "ci": {
+      "reason": "Pre-publication snapshot",
+      "status": "NOT_RUN"
+    },
+    "commit_hook": {
+      "exit_code": 0,
+      "status": "PASS",
+      "syntax_files": 1040,
+      "tests_passed": 6
+    },
+    "diff_check": {
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    "independent_final_audit": {
+      "reason": "Pre-execution approval denial: external audit payload egress",
+      "status": "NOT_RUN"
+    },
+    "kit_smoke": {
+      "evidence": "review_bundle/smoke.log",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    "packet_schema": {
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    "precommit": {
+      "evidence": "review_bundle/precommit.json",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    "proof_commit_initial_attempt": {
+      "evidence": "review_bundle/proof-preflight-initial-failure.json",
+      "exit_code": 1,
+      "reason": "Raw diff evidence has space-only context lines; encoded losslessly as content.diff.json without changing source diff bytes.",
+      "status": "FAIL"
+    },
+    "signed_audit_and_steward": {
+      "reason": "No passing independent audit",
+      "status": "NOT_RUN"
+    }
+  },
+  "worktree": "/private/tmp/control-tower-publish-20260908/dopemux-mvp"
+}

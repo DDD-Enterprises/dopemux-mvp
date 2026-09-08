@@ -1,0 +1,42 @@
+[
+  {
+    "path": "ROUTING_DECISION.json",
+    "sha256": "9848529f010da0dd3964378106b7c07fa6a895c1101ba750287ad6d44f673039"
+  },
+  {
+    "path": "change-contract.json",
+    "sha256": "52c39ee8649350a2e67a59e1838ad3a69a93bf03aea6d2244b1806148b22c887"
+  },
+  {
+    "path": "content.diff.json",
+    "sha256": "e2d16365cf2f280c35762cb70f01310fa9b7a0fe7145c126ffe4896abbe07daf"
+  },
+  {
+    "path": "diff-check.json",
+    "sha256": "f5a4e9bfae9e4f7cbb23565a3b93ccb7a4ddb9c58aa7c07eeb55d8da74d6b805"
+  },
+  {
+    "path": "frozen-head.json",
+    "sha256": "8cb9d5d677d899cbf800672c8171bc28101ccfcd8b8ce225e0886d21e8e5fe76"
+  },
+  {
+    "path": "kit-inventory.json",
+    "sha256": "f34a0a529d42f1af98af940a2bc45a6121678798f43c3b7c4121c69dbf52bea9"
+  },
+  {
+    "path": "precommit.json",
+    "sha256": "3776dd62677acb00f152ae2bd70e0d867cf3c5521b425995150f8312901d0bfa"
+  },
+  {
+    "path": "prior-kit-review.md",
+    "sha256": "b75935fdc522056bad847bfc2afd1bfc1355fc59817ec12efb0a2c0e82746fb7"
+  },
+  {
+    "path": "proof-preflight-initial-failure.json",
+    "sha256": "80a99ff2d4113da8f03c6119ddacf4f09f4fa7d9b2aa9ad46c65b8ac06b32352"
+  },
+  {
+    "path": "smoke.log",
+    "sha256": "52f1643f2e5b13392ba39629cee9ad094e7ebce5e9f123644c2b0853887a7ec3"
+  }
+]

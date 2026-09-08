@@ -1,0 +1,172 @@
+[
+  {
+    "bytes": 4213,
+    "path": "INSTALL.sh",
+    "sha256": "41aa77a35cec5453560c5970a99222d296bddac21719fb61e3f73a7822a2e7b6"
+  },
+  {
+    "bytes": 591,
+    "path": "QUICKSTART.md",
+    "sha256": "d7b01e803d611781c14b8414e8173c6b342cfd4b65346a9c238c7ee077f81a75"
+  },
+  {
+    "bytes": 1618,
+    "path": "README.md",
+    "sha256": "81b2ed9c51ad9a7e6f88c0ca9f85529c0b90c3a45dd92b95481fb09fb1540d28"
+  },
+  {
+    "bytes": 765,
+    "path": "UNINSTALL.sh",
+    "sha256": "7a45aa20bf06221ad3973ecc33a6135044f89bea5ebc9c9cd03d6cd4caa37c2f"
+  },
+  {
+    "bytes": 679,
+    "path": "VERIFY.sh",
+    "sha256": "c326589c73220f8497bffa6ecf88022d73343a56d11003047ef74e6d345f0613"
+  },
+  {
+    "bytes": 6,
+    "path": "VERSION",
+    "sha256": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03"
+  },
+  {
+    "bytes": 364,
+    "path": "diagrams/control-tower-flow.mmd",
+    "sha256": "c71aa961e838fa25f6476a667cc393df25facb89a78ca64beffa376130a4dcd5"
+  },
+  {
+    "bytes": 232,
+    "path": "diagrams/return-packaging.mmd",
+    "sha256": "00bb2519bc9919c2a043d429866b30fbd01b0fcaf1eec1016a46ac675602e64f"
+  },
+  {
+    "bytes": 214,
+    "path": "diagrams/routing-selection.mmd",
+    "sha256": "87eae20809657df8123a602c1c431f29219527d178dd1a7331b34ba65008cb64"
+  },
+  {
+    "bytes": 759,
+    "path": "docs/ARCHITECTURE_ADVISOR.md",
+    "sha256": "dfc4c191c4cb08de9e06a7a89b09fe044309a659a0f96a329b2a9312d16fdf6f"
+  },
+  {
+    "bytes": 3588,
+    "path": "docs/HIGH_LEVEL_OVERVIEW.md",
+    "sha256": "4d676b5d70ec47ac310d44e6d375b61d7f746884edbf1e68ccf84e536c3fe673"
+  },
+  {
+    "bytes": 2298,
+    "path": "docs/INSTALL.md",
+    "sha256": "19251ca0abdc2274926ea2102a8a1f4e44a963f1cce6319cbed6bf5099dec593"
+  },
+  {
+    "bytes": 3412,
+    "path": "docs/OPERATING_GUIDE.md",
+    "sha256": "1b6124029d2afae580ced5621f999a6782546a4d075b8cb2134ccf1d3d5e03e1"
+  },
+  {
+    "bytes": 653,
+    "path": "docs/PORTABILITY.md",
+    "sha256": "5bfa4a7855663b69850f9e763827802c13ae7791bc2262118ef46884c1fa953b"
+  },
+  {
+    "bytes": 1240,
+    "path": "docs/RETURN_AND_PROOF_PACKAGING.md",
+    "sha256": "2b75389ac2562594c3a10c573198f63e92ccc43c5d7d43cc9a1d612d7ed07df4"
+  },
+  {
+    "bytes": 1791,
+    "path": "docs/RUNNER_MODEL_ROUTING.md",
+    "sha256": "36340a7180ca374935e8def5383e1e3051c272765a69fb624c573bafa87ff367"
+  },
+  {
+    "bytes": 707,
+    "path": "docs/SECURITY.md",
+    "sha256": "5056090131319c45454e0897b5a6d5f659d0ec93230ac9c5a6a3b46f7862aa70"
+  },
+  {
+    "bytes": 1287,
+    "path": "examples/project-configs/adOps.json",
+    "sha256": "1c7682180ac3b085062b8c8e3168df58679e734e5965e6471041cff0641fc396"
+  },
+  {
+    "bytes": 1289,
+    "path": "examples/project-configs/dNh_CRM.json",
+    "sha256": "b4667cb0cb07dd73485c33c695c35ec44a3f4780cb6d8542ffabd95eb67b9897"
+  },
+  {
+    "bytes": 1293,
+    "path": "examples/project-configs/dopemux-mvp.json",
+    "sha256": "be4a7277b06be68c001679479170fa9b2c155c31457f8ad2dd6e84a6a3aaeeac"
+  },
+  {
+    "bytes": 1289,
+    "path": "examples/project-configs/generic.json",
+    "sha256": "c7d740343774afae8b6b68d922f23cfbb81c37379d22551fe7830dd880484d36"
+  },
+  {
+    "bytes": 16045,
+    "path": "payload/bin/ct",
+    "sha256": "cf328f038eccd5c74bdcf957bfb300dfbb72dbb3e34286686e6ed111789692c1"
+  },
+  {
+    "bytes": 1194,
+    "path": "payload/config/defaults.json",
+    "sha256": "1115c6adfe5a8fc5f3d014292448cf5fdc7a57507bbd8daddce67a74f6c926b0"
+  },
+  {
+    "bytes": 1430,
+    "path": "payload/contracts/ARCHITECTURE_RETURN_PROTOCOL.md",
+    "sha256": "1e1a77e77d2c1fed68f4b3d1055ccf22497c1bf08c6d30cbd5a1871fa86ad939"
+  },
+  {
+    "bytes": 484,
+    "path": "payload/contracts/OPERATOR_GATES.md",
+    "sha256": "19597911dbc6d2290d320aed51037d186c193aaa3fe62fc1067b51655d7c60ee"
+  },
+  {
+    "bytes": 2729,
+    "path": "payload/contracts/SUPERVISOR_OPERATING_CONTRACT.md",
+    "sha256": "b674626c24425bee0c5d19fda15a26ac1078699eb93cd080f58d3da95ba0c26f"
+  },
+  {
+    "bytes": 760,
+    "path": "payload/prompts/ARCHITECTURE_ADVISOR_PROMPT.md",
+    "sha256": "ff641ffd7475242aecbd083c0ecca3b15aab211b43c9d85f9c3c6487f4822e69"
+  },
+  {
+    "bytes": 3140,
+    "path": "payload/prompts/SUPERVISOR_LAUNCH_PROMPT.md",
+    "sha256": "94adf933d4b85b158b00d0e1e857850902982eba166564b3c1679b904a89a519"
+  },
+  {
+    "bytes": 191,
+    "path": "payload/schemas/return_packet.schema.json",
+    "sha256": "822cdc3d71573810aeb984003f73befb8b9a3d16231d6acefa5352455adc4586"
+  },
+  {
+    "bytes": 1793,
+    "path": "payload/schemas/route_decision.schema.json",
+    "sha256": "652ace33d1e3c98267322db93496107584b54a7c86f8bf568e892bd67c2d15a1"
+  },
+  {
+    "bytes": 949,
+    "path": "payload/templates/ARCHITECTURE_RETURN_PACKET.template.md",
+    "sha256": "b9a69edd6ba2c8ebebc35a9ba36400efa209a7140992a03f738978fac6136c12"
+  },
+  {
+    "bytes": 869,
+    "path": "payload/templates/ROUTING_DECISION.template.json",
+    "sha256": "3f369590c3f7ab05e38e2717297ada1634598e130d70bed0543828a860a194f3"
+  },
+  {
+    "bytes": 321,
+    "path": "payload/templates/SUPERVISOR_HANDOFF.template.md",
+    "sha256": "40d24f0963220f03e09f07d8a38780a80f9213c39979f71a354fbbe2d686d3e2"
+  },
+  {
+    "bytes": 1579,
+    "path": "tests/test_install.sh",
+    "sha256": "7c45f0c94523c65800cc5c648edbccf1b4971fb9dc448f3ff8cac0abce127cc8"
+  }
+]
