@@ -1,0 +1,16 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001",
+  "status": "LOSSLESS_PROOF_ONLY_REPRESENTATION",
+  "reason": "Staged diff check and native commit hook rejected trailing spaces in blank context lines of the embedded Git diff. The first commit attempt failed; no content commit was created.",
+  "raw_diff_sha256": "8115d84f8eaed8a3e5883484cd3cac5433f2a19f7ba83c0bd0238d5b5191c02c",
+  "repository_representation": "review_bundle/FINAL_SUBSTANTIVE_DIFF.json",
+  "decode": "Parse JSON; encode its content string as UTF-8; verify sha256 and byte length against the original manifest entry.",
+  "original_bytes_preserved": true,
+  "approved_export_changed": false,
+  "audited_content_changed": false,
+  "auditor_raw_verdict_changed": false,
+  "failed_hook_manifest": ".runs/run-20260908-111600.manifest.json",
+  "failed_hook_exit_code": 1,
+  "rerun_required": ["precommit", "staged diff check", "secret scan", "proof-only closure"],
+  "security_residual_risk_accepted": false
+}

@@ -1,0 +1,126 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001",
+  "operator_return": {
+    "RETURN_STATUS": "PASS_PROVENANCE_CLOSURE_READY_FOR_FINAL_AUDIT",
+    "INTEGRATION_FIXTURE_PATH_ADDED": 1,
+    "QUEUE_DRAIN_INTEGRATION_FIXTURE": "PASS",
+    "EXPLICIT_REPOSITORY_IDENTITY": "PASS",
+    "POSITIVE_HANDOFF_ASSERTIONS_PRESERVED": "YES",
+    "MISSING_REPOSITORY_IDENTITY_DENIAL": "PASS",
+    "MISMATCHED_REPOSITORY_IDENTITY_DENIAL": "PASS",
+    "EXPECTED_BASE_PROPAGATION": "PASS",
+    "MISSING_BASE_DENIAL": "PASS",
+    "MISMATCHED_BASE_DENIAL": "PASS",
+    "FOCUSED_PROVENANCE_TESTS": "PASS",
+    "RELEVANT_COMPLETE_SUITE": "PASS",
+    "WORKFLOW_VALIDATION": "PASS",
+    "PRECOMMIT": "PASS",
+    "DIFF_CHECK": "PASS",
+    "SECRET_SCAN": "PASS",
+    "PROOF_VALIDATION": "PASS_SCHEMA_ONLY",
+    "FINAL_SUBSTANTIVE_HEAD": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2",
+    "FINAL_SUBSTANTIVE_TREE": "43191a12172bc254ca494d37bf91725511e538b7",
+    "FINAL_INDEPENDENT_AUDIT": "NOT_RUN",
+    "WORKFLOW_TRIGGER_CHANGE": "NO",
+    "WORKFLOW_PERMISSION_CHANGE": "NO",
+    "MODEL_CALL_CHANGE": "NO",
+    "BRANCH_PROTECTION_CHANGE": "NO",
+    "MERGE_AUTHORIZED": "NO",
+    "READY_STATE_AUTHORIZED": "NO",
+    "EXPORT_AUTHORIZED": "NO",
+    "ACTIVATION_AUTHORIZED": "NO"
+  },
+  "subject": {
+    "head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2",
+    "tree": "43191a12172bc254ca494d37bf91725511e538b7",
+    "parent": "13562c8df1bc6621229eb4a38473da42be199825",
+    "worktree": ".worktrees/ci-audit-provenance-a5-r3",
+    "branch": "DETACHED_HEAD",
+    "repo": "DDD-Enterprises/dopemux-mvp",
+    "pr": 1330,
+    "commit_message": "fix(audit): bind finalization provenance to trusted PR identity",
+    "files_changed": 43,
+    "insertions": 2518,
+    "deletions": 26
+  },
+  "frozen_content_validation": {
+    "integration": "39 passed",
+    "focused": "324 passed",
+    "complete": "1118 passed, 2 skipped; exit 0",
+    "precommit_clean_rerun": {
+      "exit_code": 0,
+      "files": 43,
+      "hook_mutations": 0
+    },
+    "secret_scan_clean_rerun": {
+      "exit_code": 0,
+      "bytes": 912117
+    },
+    "native_commit_hook": {
+      "exit_code": 0,
+      "smoke_tests": "6 passed in 4.08s",
+      "python_syntax_files": 1041,
+      "source_manifest": ".runs/run-20260908-054143.manifest.json",
+      "ignored_manifest_not_for_export": true
+    },
+    "change_contract": {
+      "command": "python -B scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format json",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2",
+      "exit_code": 0,
+      "status": "PASS",
+      "max_lane": "L3",
+      "model_audit_required": true,
+      "findings": [],
+      "path_count": 86
+    },
+    "scope_parity_schema_postfreeze": "PASS"
+  },
+  "audit_subject": {
+    "manifest": "review_bundle/FROZEN_SUBJECT_MANIFEST.json",
+    "manifest_sha256": "f786e2320366b86904f82e7b496db49966dbc85927f68d5522a38694496406c4",
+    "files": 44,
+    "frozen_git_files": 43,
+    "derived_diff_files": 1,
+    "hash_validation": "PASS",
+    "secret_scan_bytes": 1074639,
+    "secret_scan_exit_code": 0,
+    "external_exports": 0
+  },
+  "identity_evidence": {
+    "supervisor_actual_model": "UNKNOWN: no provider-attested identity available in tool receipts",
+    "auditor_actual_model": "UNKNOWN_NOT_INVOKED",
+    "auditor_independence": "NOT_YET_PROVEN",
+    "route_evidence": "review_bundle/AUDIT_ROUTE_PREFLIGHT.json records offline capability discovery only; not provider identity proof"
+  },
+  "github": {
+    "pushed": false,
+    "remote_head_last_observed": "13562c8df1bc6621229eb4a38473da42be199825",
+    "pr_open": true,
+    "merged": false,
+    "review_threads_mutated": 0,
+    "security_release": "NOT_RUN_NEW_HEAD",
+    "ci_steward": "NOT_RUN_NEW_HEAD"
+  },
+  "preservation": {
+    "historical_stop_sha256": "dbd594cc70a9aa9d35c7b2d94cbf5ea4ce16dc483af4c7a52e455b8b3660eada",
+    "generated_test_artifact_directories": 5,
+    "generated_test_files": 10,
+    "not_staged_or_exported": true,
+    "worktree_cleanup": "NOT_RUN; preserve frozen checkout"
+  },
+  "postfreeze_artifacts": "Manifest, deterministic diff and this receipt are local proof-only uncommitted successors. No substantive file may change without a new freeze and revised audit subject.",
+  "gates": {
+    "next": "Separate exact-manifest external export and final independent audit approval; prove route identity and independence before invocation",
+    "forbidden": [
+      "merge",
+      "ready promotion",
+      "export without separate approval",
+      "activation",
+      "PR1327 mutation",
+      "R0 launch",
+      "force push",
+      "branch protection change"
+    ]
+  },
+  "rollback": "Preserve content commit and evidence. No rollback/history rewrite; any corrective revert requires separate authorization."
+}

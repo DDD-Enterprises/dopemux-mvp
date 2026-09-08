@@ -1,0 +1,92 @@
+"""Reconstruct only the operator-approved frozen subject. No model or network."""
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path, PurePosixPath
+import subprocess
+import tempfile
+
+PACKET = "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001"
+HEAD = "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+TREE = "43191a12172bc254ca494d37bf91725511e538b7"
+BASE = "13562c8df1bc6621229eb4a38473da42be199825"
+MANIFEST_HASH = "f786e2320366b86904f82e7b496db49966dbc85927f68d5522a38694496406c4"
+
+
+def git(*args: str) -> bytes:
+    return subprocess.check_output(["git", "-c", "core.fsmonitor=false", *args])
+
+
+def main() -> None:
+    source = Path("proof") / PACKET / "review_bundle/FROZEN_SUBJECT_MANIFEST.json"
+    raw = source.read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == MANIFEST_HASH
+    manifest = json.loads(raw)
+    assert manifest["subject_head"] == HEAD
+    assert manifest["subject_tree"] == TREE
+    assert manifest["comparison_head"] == BASE
+    assert git("rev-parse", "HEAD").decode().strip() == HEAD
+    assert git("rev-parse", f"{HEAD}^{{tree}}").decode().strip() == TREE
+    assert len(manifest["files"]) == manifest["file_count"] == 44
+    frozen = [i for i in manifest["files"] if i["source"] == "frozen_git_blob"]
+    assert len(frozen) == 43
+    assert {i["path"] for i in frozen} == set(
+        git("diff", "--name-only", BASE, HEAD).decode().splitlines()
+    )
+    root = Path(tempfile.mkdtemp(prefix="r3-opus-audit-", dir="/private/tmp"))
+    subject = root / "subject"
+    subject.mkdir()
+    seen = set()
+    for item in manifest["files"]:
+        path = PurePosixPath(item["path"])
+        assert not path.is_absolute() and ".." not in path.parts
+        assert str(path) not in seen
+        seen.add(str(path))
+        if item["source"] == "frozen_git_blob":
+            data = git("show", f"{HEAD}:{path}")
+            assert git("rev-parse", f"{HEAD}:{path}").decode().strip() == item["git_blob"]
+        else:
+            assert item["source"] == "deterministic_git_diff"
+            assert path.name == "FINAL_SUBSTANTIVE_DIFF.patch"
+            data = git("diff", "--no-ext-diff", "--no-textconv", "--binary",
+                       "--no-color", BASE, HEAD)
+        assert len(data) == item["bytes"]
+        assert hashlib.sha256(data).hexdigest() == item["sha256"]
+        target = subject / str(path)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+        target.chmod(0o444)
+    actual = {str(p.relative_to(subject)) for p in subject.rglob("*") if p.is_file()}
+    assert actual == seen
+    assert all(
+        ".DS_Store" not in PurePosixPath(p).parts and "__MACOSX" not in PurePosixPath(p).parts
+        for p in actual
+    ), "Forbidden metadata file in subject"
+    payload = b"\n".join((subject / i["path"]).read_bytes() for i in manifest["files"])
+    for marker in (b"/Users/", b"/private/var/folders/", b"file://"):
+        assert marker not in payload, "Portability/private-metadata check failed"
+    scan = subprocess.run(
+        ["gitleaks", "stdin", "--redact", "--no-banner"],
+        input=payload, capture_output=True,
+    )
+    assert scan.returncode == 0, "Secret scan failed; do not export"
+    print(json.dumps({
+        "subject_directory": str(subject),
+        "subject_head": HEAD,
+        "subject_tree": TREE,
+        "manifest_sha256": MANIFEST_HASH,
+        "all_44_present": "PASS",
+        "all_44_sha256_match_manifest": "PASS",
+        "secret_scan": "PASS",
+        "secret_scan_exit_code": scan.returncode,
+        "secret_scan_bytes": len(payload),
+        "portability_scan": "PASS",
+        "unmanifested_files": 0,
+        "exports": 0,
+        "audit_invocations": 0,
+    }, indent=2, sort_keys=True))
+
+
+if __name__ == "__main__":
+    main()

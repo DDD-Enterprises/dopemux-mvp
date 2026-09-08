@@ -1,0 +1,380 @@
+{
+  "audit_invocations": 0,
+  "comparison_head": "13562c8df1bc6621229eb4a38473da42be199825",
+  "exclusions": "Untracked test run artifacts, local caches, credentials, environment, Git author metadata and unrelated repository content excluded. Manifest is an inventory, not export approval.",
+  "export_authorized": false,
+  "file_count": 44,
+  "files": [
+    {
+      "bytes": 107898,
+      "git_blob": "ecd80ce51dd6dcff8af74a1f2744a4736f6eb3a1",
+      "path": ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+      "sha256": "77a47dc1260f324baffa7d2897babbdb60ffdb6a8aca7c227f5b067292276907",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 8864,
+      "git_blob": "fd19904a7e03875343dfa827f3cc85aefb51a421",
+      "path": ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+      "sha256": "bfdac599322c553566729edf84bf9e9920babbf4ecf551d8ff76149e410003c5",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 107898,
+      "git_blob": "ecd80ce51dd6dcff8af74a1f2744a4736f6eb3a1",
+      "path": ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+      "sha256": "77a47dc1260f324baffa7d2897babbdb60ffdb6a8aca7c227f5b067292276907",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 8864,
+      "git_blob": "fd19904a7e03875343dfa827f3cc85aefb51a421",
+      "path": ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+      "sha256": "bfdac599322c553566729edf84bf9e9920babbf4ecf551d8ff76149e410003c5",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 15965,
+      "git_blob": "f721b0a07a4a436ce63dcc689c2895fa22e37143",
+      "path": ".github/workflows/embedded-audit.yml",
+      "sha256": "a98e3154dcd477863c989f8feb445bbb74d449a9ee48c96aa6b4f04adbb25d99",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 16494,
+      "git_blob": "dbf37652eeeaf0cf1ad5a8da8851cac6913957a6",
+      "path": ".github/workflows/pr-steward.yml",
+      "sha256": "2ab130d873624fb4fb6f163a166f2bb1eeb34bd5203e3a8a7ef58a5b635b6b88",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 5520,
+      "git_blob": "52f5fad020fb595482f0d5ec8d95e2737a809244",
+      "path": "docs/ops/pr-acceptance.md",
+      "sha256": "bb4cbcaac0f8261c204f86eb160451d44f8c0506961fb98cedafa546ad968ccc",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 7064,
+      "git_blob": "66dd9eba3457e2951de281dc109fe6ca26814afc",
+      "path": "docs/ops/steward-merge-gate.md",
+      "sha256": "85e54e23fd511a660aedee879d85d505122583eb7e7e617e6e337cf9cfc16803",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 1451,
+      "git_blob": "5a8adb33793e748fcc3676c6e738e7e8bc333bf1",
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/AUDITOR_REPORT.md",
+      "sha256": "e8655a5aa341d05a2c0ffb582a029749b403460947a222b431aef5c6ebc30744",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 4438,
+      "git_blob": "e57c19f8f3e3609e43599e12c0f4526096e52cf7",
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/INTAKE_PACKET.json",
+      "sha256": "f99f0e625528b73d12c0a599978823b385f94e0158f6a513d045fb946f096b18",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 1696,
+      "git_blob": "d328a249d8d946b632cf380c450ecf8f9db4c657",
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/PROOF.json",
+      "sha256": "1f418311bf145ce532f3273ad986f8f59c5725fb98c6467aa1fca9e6070510b3",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 9771,
+      "git_blob": "22c6230c3044d0a8c2b5189225e82b3c662c7ac0",
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/ARCHITECTURE_RETURN.json",
+      "sha256": "76667c392237d1a16f10b73ac8bde909fe914886840ef01d741fd6e77cf735e4",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 963,
+      "git_blob": "2061c120d2a8eac0a11e779ca1785a4b6fd24769",
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/ARCHIVE_VERIFICATION.json",
+      "sha256": "f287388c6f803326a3c281a403d46ea71d0712b789dd6214657edd9c41e5c6c0",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 1496,
+      "git_blob": "7910097f0aafb7a9e79bd7ec32efc242b55616ad",
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/AUDIT_ROUTE_PREFLIGHT.json",
+      "sha256": "44b0fa59b79d9e08ce56385d63772ffa6f64475582535c44426f3259439b01c0",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 4619,
+      "git_blob": "5105094bceaba15a0e505b0bc1326b50b4a5e6db",
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/B0_BASELINE_REPAIR.json",
+      "sha256": "c5da32d085d886544ebd1f167912e189629737cb12979020a7639d669e79d7c2",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 6075,
+      "git_blob": "b676c882754379fd082e5a7006665a00fe13be8c",
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/BASELINE_STOP.json",
+      "sha256": "6f4bc48c489354cb0af55feaa7a788d6d8e327b89b4dd847d953dba70dda40d8",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 968,
+      "git_blob": "22441290f987ffa2e4ce88abf18a11cf018edaab",
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/CONTRACT_BINDING_REPRO.json",
+      "sha256": "cbc4fc9dff91bc7ae1a825b554e19ce614e517e56d44285637675aad1ed2d70f",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 13105,
+      "git_blob": "7b51a68425486511a490f65b3f20adc312889bd3",
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/LIVE_GITHUB.json",
+      "sha256": "e01468caa0c72e865ed6b6cd2ee3ce9025a1a9b3125a6579cc50d646fb27a3f1",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 3772,
+      "git_blob": "c1d44899f4b1f8a0624de815644b2f010a095d58",
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/P2_DETERMINISTIC_SCOPE.json",
+      "sha256": "f2c7cbcf1607ab3c5e3dad42644f949dd754119459af5af9ea84a0082b9a70c9",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 3189,
+      "git_blob": "48bee4d3e11cb779bd5690aa3a8eef788a74d15d",
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/P2_FINAL_VALIDATION.json",
+      "sha256": "f8ebbeb02103d2b7c3d38b69a289a339b853c943335d1699f5496d95897bd52e",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 3899,
+      "git_blob": "290d57d9500bd99d541b626a4c82a7d69364ff9b",
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/P2_INTEGRATION_ALIGNMENT.json",
+      "sha256": "c4d2c3aa816ad3f253e08435d8482d10b63b92aeb64d1000db971d346cd72ac1",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 7978,
+      "git_blob": "4d7823712e00dba7c909f7a53f6d7f594d35789d",
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/P2_SCOPE_STOP.json",
+      "sha256": "dbd594cc70a9aa9d35c7b2d94cbf5ea4ce16dc483af4c7a52e455b8b3660eada",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 4280,
+      "git_blob": "f7c3a7242cbfd61a2091f763135c06d314857319",
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/SCOPE_PREFLIGHT.json",
+      "sha256": "e5b2927daa2512e06d45224e879f202ee7a3d65bd5969452bfafae06601330fc",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 3000,
+      "git_blob": "0c3161da1f39d29f8c94e2dc3b76443dbf22e94c",
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/SCOPE_PREFLIGHT_SUPPLEMENT.json",
+      "sha256": "0de8bedd91556d69e62e760269b2c56ebb5f6738fc9292e69b8bbbe04d82ca4e",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 2391,
+      "git_blob": "9322921d7e101e11c8e1524f3fd53f3e297a422b",
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/reproduce_contract_binding.py",
+      "sha256": "5174ed5b6f7e471e4b1cca8ccb9062ffbb08bbd4bd7eba68c2c98e757e6789f1",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 5753,
+      "git_blob": "5442693821893f936600ce39b307cf2b3f451bc1",
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/verify_archive.py",
+      "sha256": "c997727a4a0f9c2df05969c3b80d9aaee4b3556a4ba5e2fbb3b442e519cc5113",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 4900,
+      "git_blob": "fdac00b3b5b7600618a05bf3f8ec549b1483a0a5",
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/verify_closure.py",
+      "sha256": "1200d707abf449f5889848a43c0bf612c78be0f29e563aa3dd184c3d3031148c",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 9462,
+      "git_blob": "a094106d5746edd0c4b8d6c4f8165de0c3aff153",
+      "path": "pyproject.toml",
+      "sha256": "dce67d75fd1017fe5a6584946680624de521ab4a7884f4de4b47405853ff4645",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 28454,
+      "git_blob": "b30be7f29a2145884f0a2c9840d15b40e3032f6a",
+      "path": "scripts/audit/run_embedded_audit.py",
+      "sha256": "d721e78bad89e5671578f212739ad820792e16ac6573649eb30c144dd294acfd",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 107898,
+      "git_blob": "ecd80ce51dd6dcff8af74a1f2744a4736f6eb3a1",
+      "path": "src/dopemux_pr_merge_specialist/queue_drain.py",
+      "sha256": "77a47dc1260f324baffa7d2897babbdb60ffdb6a8aca7c227f5b067292276907",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 8864,
+      "git_blob": "fd19904a7e03875343dfa827f3cc85aefb51a421",
+      "path": "src/dopemux_pr_merge_specialist/steward_gate.py",
+      "sha256": "bfdac599322c553566729edf84bf9e9920babbf4ecf551d8ff76149e410003c5",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 8720,
+      "git_blob": "ce33a9f458590ff63532726bfd50565b9a362492",
+      "path": "src/dopemux_pr_steward/cli.py",
+      "sha256": "3ab68c73222eb0f6656928c59a6a67acba90df9b741887c17a6975dec775ba17",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 9065,
+      "git_blob": "8d4132dac531ba65ed5e8ab5ebe01d12041a7727",
+      "path": "task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001.json",
+      "sha256": "f1cbb0d3ec660f880737d4f0a36e7cbd72081a59fd1cae344d2e67b92dca4d91",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 107898,
+      "git_blob": "ecd80ce51dd6dcff8af74a1f2744a4736f6eb3a1",
+      "path": "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+      "sha256": "77a47dc1260f324baffa7d2897babbdb60ffdb6a8aca7c227f5b067292276907",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 8864,
+      "git_blob": "fd19904a7e03875343dfa827f3cc85aefb51a421",
+      "path": "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+      "sha256": "bfdac599322c553566729edf84bf9e9920babbf4ecf551d8ff76149e410003c5",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 65014,
+      "git_blob": "f1e16bcaa9facc2c13bb82c7d42fd7ff9519546b",
+      "path": "tests/audit/test_run_embedded_audit.py",
+      "sha256": "a0e8c533c52dcdc57b34eff135b952b0811b824b71981ef8084c1d257350effb",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 8190,
+      "git_blob": "1d96743b292105dd63195939e0fd3eed5e7d34fc",
+      "path": "tests/dopemux_cli/test_pr_steward_cmd.py",
+      "sha256": "3aeb8036affd39708fbf5eb9da092293b070b46daa992b1f098d6bdd2c77b5ce",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 35656,
+      "git_blob": "0fca4d0ed2f069509ccbe5daf07ac0d3ddf6d126",
+      "path": "tests/pr_merge_specialist/test_finalization_gate.py",
+      "sha256": "0f48b8369ed082a42ee519e6cc3efaebf4bb96a8ebdb1666e521022f8ad5049d",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 71375,
+      "git_blob": "105e127492d6d1fb3fa5593cf5c5c7a69f9d6400",
+      "path": "tests/pr_merge_specialist/test_queue_drain_integration.py",
+      "sha256": "960d571ecc721d5d683ca9ce4fe75820565247f49fe22da1e6505c7c7526c26a",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 6738,
+      "git_blob": "73bcf14582a338a6e7fc8e75005d472a947563c5",
+      "path": "tests/pr_merge_specialist/test_steward_gate.py",
+      "sha256": "53bac50ebfe5729e39999af45c71d515010fcc9a085900646883920723c1f1ff",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 3791,
+      "git_blob": "c720f2d2bcdda461cfc7338e43e72148d419f63c",
+      "path": "tests/pr_steward/test_collector_proof_state.py",
+      "sha256": "e51423968ea7cc47a69e1f2b3b7d95f59f5016a6b9a56e1c42caae1d8b168837",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 39488,
+      "git_blob": "9975093c3dfa179e74a99f89b9688b9b87d024a2",
+      "path": "tests/pr_steward/test_intake.py",
+      "sha256": "bb168f5f4fe11b67546e9ce089b90ed2a134e8c2f7e5076f8f155521094dfe0e",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "bytes": 30287,
+      "git_blob": "50d4cf0cdc9d37f74639a81663cbb08076c25b71",
+      "path": "tools/pr_steward/collector.py",
+      "sha256": "fdbd89858a78c054486cce37aeb462c20dda52b3bf641640bc70c6d23c6979d8",
+      "source": "frozen_git_blob",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    },
+    {
+      "base_head": "13562c8df1bc6621229eb4a38473da42be199825",
+      "bytes": 162521,
+      "path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/FINAL_SUBSTANTIVE_DIFF.patch",
+      "sha256": "8115d84f8eaed8a3e5883484cd3cac5433f2a19f7ba83c0bd0238d5b5191c02c",
+      "source": "deterministic_git_diff",
+      "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2"
+    }
+  ],
+  "manifest_hashes": "PASS",
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001",
+  "portability_scan": "PASS",
+  "pr_base_sha": "6a728f74c0311967f83213513308f97613e3f28d",
+  "secret_scan": {
+    "bytes": 1074639,
+    "exit_code": 0,
+    "tool": "gitleaks stdin --redact --no-banner"
+  },
+  "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2",
+  "subject_tree": "43191a12172bc254ca494d37bf91725511e538b7",
+  "audit_requirements": [
+    "Audit only the exact frozen content head and deterministic comparison diff; preserve raw verdict, actual identity and exact subject binding.",
+    "Distinguish provenance closure, pre-existing packaging/doctor baseline repairs, and integration fixture alignment. Preserve all historical failed receipts and prior Gemini PASS as history, not current readiness.",
+    "Verify exact trusted NOT_REQUIRED surface plus canonical repo/PR/head/base bindings, strict PASS unchanged and PASS_WITH_RISKS denied at finalization.",
+    "Verify malformed/mixed evidence fail closed, six exact nested counterexamples, same original P1 bytes across canonical validator and both finalization consumers, missing/mismatched identity denials, collector/CLI/workflow propagation.",
+    "Verify mirror byte parity, proof portability/privacy, no broadened bypass, unchanged workflow triggers/permissions/model/provider calls, and no baseline repair concealing regression.",
+    "One final independent different-family/runtime L3 audit after separate export approval; runner actual identity and independence must be proven under applicable policy. No silent route substitution."
+  ]
+}

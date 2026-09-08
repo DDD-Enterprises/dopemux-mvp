@@ -1,0 +1,21 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001",
+  "operator_correction": "Subscription uses an existing long-lived OAuth token, which may appear in API-key-style UI.",
+  "observed_cause": "Initial isolated launch omitted CLAUDE_CODE_OAUTH_TOKEN exported by the operator shell startup configuration and fell back to an expired cached subscription session.",
+  "prior_operator_login_repair_request": "INCORRECT; failure did not prove the configured subscription token was unusable",
+  "credential_class": "OAuth token prefix, not API key",
+  "credential_value_recorded": false,
+  "credential_files_changed": false,
+  "corrected_auth_status": {"loggedIn": true, "authMethod": "oauth_token", "apiProvider": "firstParty"},
+  "auth_status_limit": "Local classification only; successful provider response remains necessary.",
+  "retry_scope": "One transport retry of prior authentication failure with no substantive response; same signed binary, opus selector, high effort, frozen head/tree/manifest and byte-identical prompt. Only existing OAuth credential forwarding corrected.",
+  "prior_failure_preserved": true,
+  "tools": [],
+  "mcp": [],
+  "fallback": null,
+  "api_key_variable_forwarded": false,
+  "credential_variable_forwarded": "CLAUDE_CODE_OAUTH_TOKEN",
+  "provider_substitution": false,
+  "session_persistence": false,
+  "substantive_audit_budget": 1
+}
