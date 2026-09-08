@@ -1,49 +1,124 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1330,
-  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE",
-  "head_sha": "8826b7174c78388e7033f4bb4fe2e49acf363aa2",
-  "generated_at": "2026-09-07T05:42:27.596135+00:00",
-  "embedded_audit": {
-    "required": true,
-    "status": "PASS",
-    "auditor_tool": "agy",
-    "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "rtk proxy python3 -B <local-custody-wrapper> --run -> agy --model gemini-3.1-pro-high --effort high --mode plan --sandbox --new-project --disable-slash-commands --add-dir <approved-audit-bundle> --output-format json --print <review_bundle/AUDIT_REQUEST.md> --print-timeout 10m",
-    "exit_code": 0,
-    "report_path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/AUDITOR_REPORT.md",
-    "findings": [],
-    "fixes_applied": [],
-    "remaining_risks": [
-      "Static independent review did not execute host tests; operator deterministic validation is separately recorded.",
-      "AGY warned --mode plan has no effect with slash command expansion disabled. --sandbox was explicitly selected; the approved bundle remained exactly unchanged. Plan mode is not claimed as an enforced boundary.",
-      "SSH signatures are operator attestations, not independently auditor-signed execution proofs."
-    ],
-    "skip_reason": null
-  },
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001",
+  "head_sha": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2",
+  "base_sha": "6a728f74c0311967f83213513308f97613e3f28d",
+  "generated_at": "2026-09-08T11:09:48.148218+00:00",
+  "executed": true,
   "audit_identity": {
     "implementer": {
-      "runner": "codex-cli",
-      "model": "gpt-5.6-sol",
-      "model_family": "openai-gpt",
-      "runtime_family": "codex-cli"
+      "runner": "codex",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "OpenAI",
+      "runtime_family": "Codex"
     },
     "auditor": {
-      "runner": "agy",
-      "model": "gemini-3.1-pro-high",
-      "effort": "high",
-      "model_family": "google-gemini",
-      "runtime_family": "agy"
+      "runner": "claude-code-cli",
+      "model": "opus",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI",
+      "effort": "high"
     },
     "independence": "PROVEN"
   },
-  "provenance": {
-    "audit_source": "local-independent-agy-attestation",
-    "auditor_independence": "PROVEN",
-    "canonical_proof": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/PROOF.json",
-    "canonical_report": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/AUDITOR_REPORT.md",
-    "content_head": "8826b7174c78388e7033f4bb4fe2e49acf363aa2",
-    "content_tree": "b709f708a3d574e008693c1f86770d1df67cba7c",
-    "proof_only_successor_head_before_signature": "038965aa3073d2926f24b2180264c869a02e9eaf"
-  }
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "opus",
+    "invocation": "claude --print --model opus --effort high --tools \"\" --strict-mcp-config --safe-mode --no-session-persistence --setting-sources \"\" --disable-slash-commands --no-chrome --permission-mode dontAsk --output-format stream-json --verbose --system-prompt <fixed-audit-contract>; identical manifested subject on stdin; existing subscription OAuth in process environment",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "R3-L3-01",
+        "severity": "MEDIUM",
+        "title": "src/dopemux_pr_merge_specialist/steward_gate.py [1]",
+        "status": "OPEN",
+        "body": "Canonical provenance validation is executed only when the proof's embedded_audit.status is exactly \"SKIPPED\". For the strict-PASS pair, control flows: `if not finalization_audit_evidence_allowed(evidence): deny` -> (status != SKIPPED) -> TTL -> `ALLOW_FINALIZATION`. `_evidence()` extracts only readiness/proof statuses, `required`, `skip_reason`, `generated_at` and the three head SHAs; it never reads `executed`, `dry_run`, `repo`, `pr_number` or `provenance`. Therefore a locally-present PROOF.json whose `embedded_audit.status == \"PASS\"` is accepted with (a) `executed: false`, (b) `dry_run: true`, (c) a foreign `repo`/`pr_number`, or (d) forged/absent `provenance`, provided only that `head_sha` matches the caller head and the timestamps are fresh. Note that fork commits share SHAs with upstream, so head-SHA equality is not repo-disambiguating. The newly added identity arguments (`expected_repo`/`expected_pr`/`expected_base_sha`) are mandatory for PASS calls (DENY_MISSING_CALLER_IDENTITY) but are then unused on that path. Consequence: the NOT_REQUIRED hardening delivered by this packet is asymmetric — an actor able to write the policy-path artifacts (the same capability required to forge NOT_REQUIRED evidence) can instead assert `PASS` and bypass every new check.\nAuditor disposition: PRE_EXISTING_RESIDUAL_RISK_NOT_INTRODUCED_BY_THIS_CHANGE. The diff does not alter the PASS branch, and task-packet invariant 'preserve ordinary executed PASS and PASS_WITH_RISKS semantics' plus docs/ops/steward-merge-gate.md ('executed-audit proof semantics ... are unchanged') explicitly scope it out. NON-BLOCKING for this packet; recorded as the primary remaining risk. Follow-on packet should extend independent_audit_errors coverage to the PASS branch (at minimum executed/dry_run/repo/pr_number/provenance-author/workflow)."
+      },
+      {
+        "id": "R3-L3-02",
+        "severity": "MEDIUM",
+        "title": "src/dopemux_pr_merge_specialist/steward_gate.py, tools/pr_steward/collector.py, pyproject.toml [2]",
+        "status": "OPEN",
+        "body": "The canonical validator lives in `scripts/audit/run_embedded_audit.py`. The explicit `packages` list in pyproject.toml enumerates `dopemux.*`, `dopemux_pr_*`, `tools`, `tools.pr_steward`, `conport`, `core`, `integrations`, `utils` — it does not contain `scripts` or `scripts.audit`. All four mirrored steward_gate.py copies (src, templates, .claude/skills, .github/skills) therefore reach the validator only from a repository checkout. In an installed/packaged deployment the FINALIZATION NOT_REQUIRED path returns `DENY_AUDIT_VALIDATOR_UNAVAILABLE` (correct fail-closed behaviour, exercised by test_finalization_gate.py::test_finalization_canonical_validator_unavailable_fails_closed_only_for_not_required), while the unvalidated PASS path continues to function — an availability asymmetry that biases operators toward the weaker evidence class. Separately, `collector._independent_audit_errors` performs the same import with no try/except despite its comment 'Local import keeps collector importable when scripts/ is unavailable'; an ImportError there propagates out of `_proof_state` rather than degrading to NEEDS_SUPERVISOR.\nAuditor disposition: PRE_EXISTING_PACKAGING/AVAILABILITY_RISK. Not introduced by this diff (the imports and the packages list predate it; this packet only adds `dopemux.dcp` and a kwarg). NON-BLOCKING: both failure modes are deny/raise, not allow. Recommend a follow-on packet either package the canonical validator or guard the collector import."
+      },
+      {
+        "id": "R3-L3-03",
+        "severity": "MEDIUM",
+        "title": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/PROOF.json [3]",
+        "status": "RESOLVED",
+        "body": "No supplied artifact binds the audited frozen head a54eb4ab151ba1d4c015648c9f111868b6d1fbf2 to the validated content. PROOF.json records `start_head_sha: 13562c8d...`, `head_sha: null`, `independent_audit_status: NOT_RUN`; P2_FINAL_VALIDATION.json and P2_INTEGRATION_ALIGNMENT.json record only the start head; BASELINE_STOP.json / P2_SCOPE_STOP.json record `final_substantive_head: null` (correctly, as preserved history). The 'post-commit freeze receipt' referenced by status_scope is not among the 44 supplied files. Consequently the closeout criterion in docs/ops/pr-acceptance.md ('proof is current to the PR head SHA') is not evidenced for a54eb4ab, and `change_contract_preflight` in P2_FINAL_VALIDATION.json explicitly states 'rerun on frozen HEAD required'.\nAuditor disposition: DOCUMENTATION/CLOSEOUT_GAP, NON-BLOCKING FOR CODE CORRECTNESS. Mitigated because this packet PROOF.json is not the artifact consumed by the gates (PR Steward reads the CI `independent-audit/PROOF.json` via `--proof-path`, and the merge specialist reads the configured `steward_gate.*_path` artifacts), and because the file itself asserts merge/ready/export/activation are all unauthorized. A supervisor must record the freeze receipt binding a54eb4ab before any readiness or merge claim.\nSupervisor deterministic closure: existing S3_FROZEN_CONTENT.json records the exact audited head/tree and post-freeze L3 change-contract check; this proof now pins that same head. Raw finding remains unchanged."
+      },
+      {
+        "id": "R3-L3-04",
+        "severity": "LOW",
+        "title": "scripts/audit/run_embedded_audit.py [4]",
+        "status": "OPEN",
+        "body": "The type guard is applied only in the NOT_REQUIRED branch. If a caller supplies a non-int, non-None `expected_pr` (e.g. \"\" or a dict) together with a proof that does not claim NOT_REQUIRED, `not not_required_claimed` is True, the guard short-circuits, and `int(expected_pr)` raises an uncaught ValueError/TypeError out of a fail-closed validator. All in-repo callers pass an int or None (argparse `type=int` in src/dopemux_pr_steward/cli.py and tools/pr_steward/intake; `int(os.environ[...])` in both workflows; `pr.pr_id` in queue_drain), so the path is not reachable today.\nAuditor disposition: ROBUSTNESS_ONLY, NON-BLOCKING. Recommend hoisting the identity type validation above the branch so malformed caller identity is always an error string rather than an exception."
+      },
+      {
+        "id": "R3-L3-05",
+        "severity": "LOW",
+        "title": "tests/dopemux_cli/test_pr_steward_cmd.py [5]",
+        "status": "OPEN",
+        "body": "A fail-closed assertion (rc==2 plus a TP-DMX-STEWARD-DOCTOR-303 stderr marker) is replaced by a PASS-only assertion (rc==0, status PASS, config_schema PASS, scaffold_skew PASS, empty stderr) against the repository workspace. src/dopemux_pr_steward/cli.py `_run_doctor` does delegate to the implemented `run_doctor` and returns 0 only when `result.ok`, so the old expectation was genuinely stale. However, `src/dopemux_pr_steward/doctor.py` and `tests/dopemux_cli/test_doctor.py` are not part of the supplied subject, so the compensating fail-closed coverage asserted by B0_BASELINE_REPAIR.json ('existing positive and fail-closed doctor tests', 5 passed) cannot be confirmed from the audited bytes.\nAuditor disposition: ACCEPTED_WITH_LIMITATION. `doctor` is report-only and holds no merge/finalization authority (no gate consumes it), so the security impact is negligible; recorded as unverified compensating coverage."
+      },
+      {
+        "id": "R3-L3-06",
+        "severity": "LOW",
+        "title": "tests/pr_merge_specialist/test_queue_drain_integration.py [6]",
+        "status": "OPEN",
+        "body": "The finalization gate is evaluated with `now=None`, i.e. the real clock (`_is_stale` falls back to `datetime.now(timezone.utc)`). With a fixed generated_at of 2026-05-31T12:00:00Z and a 10,000,000-second TTL (~115.7 days), the fixture expires deterministically and the test will begin failing without any code change. Pre-existing: the diff changes only two `repo=` keyword values in this test.\nAuditor disposition: PRE_EXISTING_TEST_TIME_DEPENDENCE, NON-BLOCKING. Recommend pinning `now` or deriving generated_at from the clock, as the sibling test test_live_queue_finalization_uses_client_repo_and_exact_pr_state already does."
+      },
+      {
+        "id": "R3-L3-07",
+        "severity": "INFO",
+        "title": "src/dopemux_pr_merge_specialist/steward_gate.py [7]",
+        "status": "OPEN",
+        "body": "The caller base SHA is bound only to the proof's nested `provenance.change_contract.base_sha`. MERGE_READINESS.json carries no base field and is bound to the subject solely through `pr.head_sha` / `proof.proof_head_sha` plus TTL. A readiness artifact generated against a different base but the same head is therefore not detected by base binding.\nAuditor disposition: OBSERVATION_ONLY. Consistent with the documented contract in docs/ops/steward-merge-gate.md; no action required in this packet."
+      },
+      {
+        "id": "R3-L3-08",
+        "severity": "INFO",
+        "title": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/P2_DETERMINISTIC_SCOPE.json [8]",
+        "status": "OPEN",
+        "body": "This receipt records PASS over a 22-path scope that predates the integration-fixture amendment and omits tests/pr_merge_specialist/test_queue_drain_integration.py; it carries no supersession marker. Only P2_INTEGRATION_ALIGNMENT.json and P2_FINAL_VALIDATION.json reflect the final 23-path scope, and PROOF.json points to those two as the authoritative receipts.\nAuditor disposition: PRESERVED_HISTORY_ACCEPTED. Layering is consistent with the packet's preserve-historical-receipts invariant; noted so a future reader does not mistake the earlier scope for the final one."
+      },
+      {
+        "id": "R3-L3-09",
+        "severity": "INFO",
+        "title": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/review_bundle/FINAL_SUBSTANTIVE_DIFF.patch [9]",
+        "status": "OPEN",
+        "body": "The comparison patch is itself part of the frozen tree but necessarily absent from the diff it contains (the diff shows 43 changed paths; the 44th supplied file is the patch). The supplied 13562c8d->head diff is therefore not a complete description of the frozen tree.\nAuditor disposition: EXPECTED_SELF_REFERENCE. Mitigated because full file contents were supplied for all 44 files and were audited directly rather than only through the diff."
+      }
+    ],
+    "fixes_applied": [
+      "Proof-only closure: bind packet proof to the audited frozen head and attach pre-existing freeze receipt; no substantive repair after audit."
+    ],
+    "remaining_risks": [
+      "PRE_EXISTING_RESIDUAL_RISK_NOT_INTRODUCED_BY_THIS_CHANGE. The diff does not alter the PASS branch, and task-packet invariant 'preserve ordinary executed PASS and PASS_WITH_RISKS semantics' plus docs/ops/steward-merge-gate.md ('executed-audit proof semantics ... are unchanged') explicitly scope it out. NON-BLOCKING for this packet; recorded as the primary remaining risk. Follow-on packet should extend independent_audit_errors coverage to the PASS branch (at minimum executed/dry_run/repo/pr_number/provenance-author/workflow). Canonical provenance validation is executed only when the proof's embedded_audit.status is exactly \"SKIPPED\". For the strict-PASS pair, control flows: `if not finalization_audit_evidence_allowed(evidence): deny` -> (status != SKIPPED) -> TTL -> `ALLOW_FINALIZATION`. `_evidence()` extracts only readiness/proof statuses, `required`, `skip_reason`, `generated_at` and the three head SHAs; it never reads `executed`, `dry_run`, `repo`, `pr_number` or `provenance`. Therefore a locally-present PROOF.json whose `embedded_audit.status == \"PASS\"` is accepted with (a) `executed: false`, (b) `dry_run: true`, (c) a foreign `repo`/`pr_number`, or (d) forged/absent `provenance`, provided only that `head_sha` matches the caller head and the timestamps are fresh. Note that fork commits share SHAs with upstream, so head-SHA equality is not repo-disambiguating. The newly added identity arguments (`expected_repo`/`expected_pr`/`expected_base_sha`) are mandatory for PASS calls (DENY_MISSING_CALLER_IDENTITY) but are then unused on that path. Consequence: the NOT_REQUIRED hardening delivered by this packet is asymmetric — an actor able to write the policy-path artifacts (the same capability required to forge NOT_REQUIRED evidence) can instead assert `PASS` and bypass every new check.",
+      "PRE_EXISTING_PACKAGING/AVAILABILITY_RISK. Not introduced by this diff (the imports and the packages list predate it; this packet only adds `dopemux.dcp` and a kwarg). NON-BLOCKING: both failure modes are deny/raise, not allow. Recommend a follow-on packet either package the canonical validator or guard the collector import. The canonical validator lives in `scripts/audit/run_embedded_audit.py`. The explicit `packages` list in pyproject.toml enumerates `dopemux.*`, `dopemux_pr_*`, `tools`, `tools.pr_steward`, `conport`, `core`, `integrations`, `utils` — it does not contain `scripts` or `scripts.audit`. All four mirrored steward_gate.py copies (src, templates, .claude/skills, .github/skills) therefore reach the validator only from a repository checkout. In an installed/packaged deployment the FINALIZATION NOT_REQUIRED path returns `DENY_AUDIT_VALIDATOR_UNAVAILABLE` (correct fail-closed behaviour, exercised by test_finalization_gate.py::test_finalization_canonical_validator_unavailable_fails_closed_only_for_not_required), while the unvalidated PASS path continues to function — an availability asymmetry that biases operators toward the weaker evidence class. Separately, `collector._independent_audit_errors` performs the same import with no try/except despite its comment 'Local import keeps collector importable when scripts/ is unavailable'; an ImportError there propagates out of `_proof_state` rather than degrading to NEEDS_SUPERVISOR.",
+      "ROBUSTNESS_ONLY, NON-BLOCKING. Recommend hoisting the identity type validation above the branch so malformed caller identity is always an error string rather than an exception. The type guard is applied only in the NOT_REQUIRED branch. If a caller supplies a non-int, non-None `expected_pr` (e.g. \"\" or a dict) together with a proof that does not claim NOT_REQUIRED, `not not_required_claimed` is True, the guard short-circuits, and `int(expected_pr)` raises an uncaught ValueError/TypeError out of a fail-closed validator. All in-repo callers pass an int or None (argparse `type=int` in src/dopemux_pr_steward/cli.py and tools/pr_steward/intake; `int(os.environ[...])` in both workflows; `pr.pr_id` in queue_drain), so the path is not reachable today.",
+      "ACCEPTED_WITH_LIMITATION. `doctor` is report-only and holds no merge/finalization authority (no gate consumes it), so the security impact is negligible; recorded as unverified compensating coverage. A fail-closed assertion (rc==2 plus a TP-DMX-STEWARD-DOCTOR-303 stderr marker) is replaced by a PASS-only assertion (rc==0, status PASS, config_schema PASS, scaffold_skew PASS, empty stderr) against the repository workspace. src/dopemux_pr_steward/cli.py `_run_doctor` does delegate to the implemented `run_doctor` and returns 0 only when `result.ok`, so the old expectation was genuinely stale. However, `src/dopemux_pr_steward/doctor.py` and `tests/dopemux_cli/test_doctor.py` are not part of the supplied subject, so the compensating fail-closed coverage asserted by B0_BASELINE_REPAIR.json ('existing positive and fail-closed doctor tests', 5 passed) cannot be confirmed from the audited bytes.",
+      "PRE_EXISTING_TEST_TIME_DEPENDENCE, NON-BLOCKING. Recommend pinning `now` or deriving generated_at from the clock, as the sibling test test_live_queue_finalization_uses_client_repo_and_exact_pr_state already does. The finalization gate is evaluated with `now=None`, i.e. the real clock (`_is_stale` falls back to `datetime.now(timezone.utc)`). With a fixed generated_at of 2026-05-31T12:00:00Z and a 10,000,000-second TTL (~115.7 days), the fixture expires deterministically and the test will begin failing without any code change. Pre-existing: the diff changes only two `repo=` keyword values in this test.",
+      "OBSERVATION_ONLY. Consistent with the documented contract in docs/ops/steward-merge-gate.md; no action required in this packet. The caller base SHA is bound only to the proof's nested `provenance.change_contract.base_sha`. MERGE_READINESS.json carries no base field and is bound to the subject solely through `pr.head_sha` / `proof.proof_head_sha` plus TTL. A readiness artifact generated against a different base but the same head is therefore not detected by base binding.",
+      "PRESERVED_HISTORY_ACCEPTED. Layering is consistent with the packet's preserve-historical-receipts invariant; noted so a future reader does not mistake the earlier scope for the final one. This receipt records PASS over a 22-path scope that predates the integration-fixture amendment and omits tests/pr_merge_specialist/test_queue_drain_integration.py; it carries no supersession marker. Only P2_INTEGRATION_ALIGNMENT.json and P2_FINAL_VALIDATION.json reflect the final 23-path scope, and PROOF.json points to those two as the authoritative receipts.",
+      "EXPECTED_SELF_REFERENCE. Mitigated because full file contents were supplied for all 44 files and were audited directly rather than only through the diff. The comparison patch is itself part of the frozen tree but necessarily absent from the diff it contains (the diff shows 43 changed paths; the 44th supplied file is the patch). The supplied 13562c8d->head diff is therefore not a complete description of the frozen tree."
+    ],
+    "skip_reason": null
+  },
+  "audit_subject_manifest_sha256": "f786e2320366b86904f82e7b496db49966dbc85927f68d5522a38694496406c4",
+  "audit_runtime_evidence": {
+    "receipt": "review_bundle/S4_AUDIT_EXECUTION.json",
+    "actual_auditor_model": "claude-opus-5",
+    "actual_auditor_provider": "Anthropic",
+    "implementer_exact_model": "UNKNOWN; family/runtime separation established from operator-described OpenAI/Codex lineage and separate signed Claude runtime"
+  },
+  "canonical_proof_head": "269d904030fc411803191d664a9d67376ed1f493",
+  "security_residual_risk_accepted": false,
+  "merge_authorized": false,
+  "ready_state_mutation": false
 }
