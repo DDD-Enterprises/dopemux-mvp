@@ -1,0 +1,36 @@
+{
+  "id": "TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-CLOSURE-003",
+  "project": "dopemux-mvp",
+  "target": "L3 bounded successor: close confirmed packet repository-binding, Markdown identity, committed-diff packaging and supervised model-routing defects, then independently audit and normally merge PR1335.",
+  "repo_binding": {"project_id": "dopemux-mvp", "repo_marker": ".dopetaskroot", "origin_hint": "DDD-Enterprises/dopemux-mvp", "require_identity_match": true},
+  "series": {"id": "DMX-CONTROL-TOWER-SUPERVISOR-KIT", "base_branch": "main", "parent_tp_id": "TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-REPAIR-002", "final_packet": true},
+  "commit": {
+    "message": "fix(governance): bind control tower packets to repository identity",
+    "allowlist": [
+      ".control-tower/bin/ct", ".control-tower/README.md", ".control-tower/templates/ROUTING_DECISION.template.json",
+      "AGENTS.md", ".claude/llm.md", ".claude/llms.md", "tests/unit/test_control_tower_kit.py",
+      "task-packets/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-CLOSURE-003.json",
+      "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-CLOSURE-003/**", "proof/pr_merge/embedded-audit/pr-1335/**"
+    ],
+    "verify": ["Only confirmed kit defects, directly related instruction/template consistency, focused tests and canonical proof may change.", "Preserve all earlier packets, audits and failed readiness evidence; no service, credentials, signer, protection or activation changes."]
+  },
+  "pr": {"title": "feat(governance): install Control Tower supervisor kit", "body": "Operator-authorized bounded successor with frozen-head independent audit and live final gates.", "base": "main"},
+  "invariants": [
+    "Latest user authorizes bounded successor repairs, cheap implementation, fresh final audits and normal merges; agy is explicitly required for CRM only, not this Dopemux auditor route.",
+    "Continue the verified clean isolated PR1335 worktree from b99e0f57aba6e9119502ef22a973b1495a53ba4a; main base is 6a728f74c0311967f83213513308f97613e3f28d. Preserve original checkout.",
+    "L3: one bounded Luna implementer, deterministic supervisor edits, one independent final Claude Sonnet medium audit after substantive freeze. No intermediate audits or automatic retries/fallbacks.",
+    "Prior detailed local Claude audit egress/public-proof publication approval remains in force. Never expose credentials or infer missing runner identity.",
+    "JSON require_identity_match bindings must match actual project identity, safe repository marker and normalized exact Git origin; malformed/missing required identity fails closed before output.",
+    "Markdown identity parsing must support existing canonical heading forms, ignore unrelated headings and code fences, and reject missing or ambiguous IDs.",
+    "Package committed merge-base-to-head evidence separately from uncommitted changes; fail closed when required Git evidence cannot be captured. Do not claim complete untracked-file content from git diff.",
+    "Ordinary unsupervised model selection retains repository/user authority and does not require an invented packet; supervised work retains validated routing.",
+    "Audit PASS_WITH_RISKS is passing only where existing native governance allows it; no relabeling, owner impersonation, security risk acceptance, merge bypass or protection changes.",
+    "Fresh out-of-scope blocking findings or non-passing final audit require supervisor return. Rollback is a scoped reviewed revert, never reset or history rewrite."
+  ],
+  "steps": [
+    {"id": "C1", "task": "Trace and reproduce the three new P2 findings and complete-diff limitation; lock minimal semantics and route.", "validation": ["Preserve baseline reproduction and authority evidence; validate this packet against the canonical schema."]},
+    {"id": "C2", "task": "Implement narrow shared CLI fixes and regression tests; align llm/llms ordinary-vs-supervised routing and template guidance.", "validation": ["Test foreign/malformed binding, equivalent origin forms, canonical and ambiguous Markdown headings, clean committed diff, dirty diff, Git failures and existing 19 cases.", "No source/proof authority or unrelated runtime changes."]},
+    {"id": "C3", "task": "Validate focused tests, schema, change contract and precommit; inspect full and incremental diffs, freeze substantive head and execute one final independent audit.", "validation": ["Audit inputs contain raw full and incremental diffs, commit-object/hash binding, allowlist check, actual instructions and raw test outputs.", "Preserve actual verdict and runtime identity without retry, substitution or invented results."]},
+    {"id": "C4", "task": "Commit canonical proof-only successor, sign existing attestation, publish, adjudicate repaired reviews and merge only through normal protection.", "validation": ["Fresh exact-head CI, independent audit and Steward READY; no unresolved blocking review threads immediately before merge.", "Verify remote merged state; no activation, branch deletion or history rewrite."]}
+  ]
+}

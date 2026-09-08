@@ -1,12 +1,12 @@
 """Focused regression tests for the standalone Control Tower kit CLI."""
 
-import importlib.util
 import hashlib
-from importlib.machinery import SourceFileLoader
+import importlib.util
 import json
 import subprocess
 import zipfile
 from argparse import Namespace
+from importlib.machinery import SourceFileLoader
 from pathlib import Path
 
 import pytest
@@ -257,6 +257,287 @@ def test_packet_identity_supports_json_and_markdown(tmp_path):
     packet_md.write_text("# Task Packet: TP-MD-001\n\nBody\n")
     assert ct.packet_identity(packet_md) == "TP-MD-001"
 
+    variants = {
+        "backtick.md": "# `DMX-DCP-001` — title\n",
+        "program.md": "# Task Packet (Program): DMX-DCP-002\n",
+        "em-dash.md": "# Task Packet — DMX-DCP-003\n",
+    }
+    for name, content in variants.items():
+        path = tmp_path / name
+        path.write_text(content)
+        assert ct.packet_identity(path).startswith("DMX-DCP-")
+
+    fenced = tmp_path / "fenced.md"
+    fenced.write_text(
+        "```markdown\n# DMX-DCP-004\n~~~\n# DMX-DCP-005\n```\n"
+        "# Task Packet: DMX-DCP-006\n"
+    )
+    assert ct.packet_identity(fenced) == "DMX-DCP-006"
+    long_fenced = tmp_path / "long-fenced.md"
+    long_fenced.write_text(
+        "````markdown\n# DMX-DCP-007\n```\n# DMX-DCP-008\n````\n"
+        "# Task Packet: DMX-DCP-009\n"
+    )
+    assert ct.packet_identity(long_fenced) == "DMX-DCP-009"
+    ambiguous = tmp_path / "ambiguous.md"
+    ambiguous.write_text("# Task Packet: DMX-DCP-010\n## DMX-DCP-011\n")
+    with pytest.raises(SystemExit, match="missing or ambiguous"):
+        ct.packet_identity(ambiguous)
+
+    invalid_encoding = tmp_path / "invalid-encoding.md"
+    invalid_encoding.write_bytes(b"# Task Packet: \xff\n")
+    with pytest.raises(SystemExit, match="invalid text encoding"):
+        ct.packet_identity(invalid_encoding)
+
+
+def test_packet_binding_requires_marker_identity_and_exact_origin(
+    tmp_path, monkeypatch
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / ".dopetaskroot").write_text("")
+    config_dir = repo / ".dopetask"
+    config_dir.mkdir()
+    (config_dir / "project.json").write_text(json.dumps({"project_id": "demo"}))
+    packet = tmp_path / "packet.json"
+    packet.write_text(
+        json.dumps(
+            {
+                "id": "DMX-DCP-001",
+                "repo_binding": {
+                    "project_id": "demo",
+                    "repo_marker": ".dopetaskroot",
+                    "origin_hint": "DDD-Enterprises/demo",
+                    "require_identity_match": True,
+                },
+            }
+        )
+    )
+    monkeypatch.setattr(
+        ct, "git_remote_url", lambda _: "git@github.com:DDD-Enterprises/demo.git"
+    )
+    ct.validate_packet_binding(repo, packet)
+
+    packet_data = json.loads(packet.read_text())
+    packet_data["repo_binding"]["origin_hint"] = "DDD-Enterprises/demo-other"
+    packet.write_text(json.dumps(packet_data))
+    with pytest.raises(SystemExit, match="origin mismatch"):
+        ct.validate_packet_binding(repo, packet)
+
+
+def test_packet_binding_allows_legacy_json_without_binding_but_rejects_present_null(
+    tmp_path,
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    legacy = tmp_path / "legacy.json"
+    legacy.write_text(json.dumps({"id": "TP-LEGACY-001"}))
+    ct.validate_packet_binding(repo, legacy)
+    legacy.write_text(json.dumps({"id": "TP-LEGACY-001", "repo_binding": None}))
+    with pytest.raises(SystemExit, match="repo_binding is missing or invalid"):
+        ct.validate_packet_binding(repo, legacy)
+
+
+@pytest.mark.parametrize(
+    "origin",
+    [
+        "https://user:password@github.com/example/repo.git",
+        "https://github.com/example/repo.git?query=1",
+        "https://github.com/example/repo.git#fragment",
+        "github.com/example/repo?query=1",
+        "github.com/example/repo#fragment",
+        "https://[invalid/example/repo.git",
+    ],
+)
+def test_origin_normalization_rejects_ambiguous_urls(origin):
+    assert ct._normalize_origin(origin) is None
+    assert ct._normalize_origin("https://github.com:8443/example/repo.git") == (
+        "github.com:8443/example/repo"
+    )
+    assert ct._normalize_origin("https://github.com:443/example/repo.git") == (
+        "github.com/example/repo"
+    )
+    assert ct._normalize_origin("ssh://git@github.com:22/example/repo.git") == (
+        "github.com/example/repo"
+    )
+
+
+def test_packet_binding_supports_taskx_marker_and_rejects_malformed_requirement(
+    tmp_path, monkeypatch
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / ".taskxroot").write_text("")
+    config_dir = repo / ".taskx"
+    config_dir.mkdir()
+    (config_dir / "project.json").write_text(json.dumps({"project_id": "taskx-demo"}))
+    packet = tmp_path / "packet.json"
+    packet.write_text(
+        json.dumps(
+            {
+                "id": "DMX-DCP-002",
+                "repo_binding": {
+                    "project_id": "taskx-demo",
+                    "repo_marker": ".taskxroot",
+                    "origin_hint": "example/taskx-demo",
+                    "require_identity_match": True,
+                },
+            }
+        )
+    )
+    monkeypatch.setattr(ct, "git_remote_url", lambda _: "example/taskx-demo")
+    ct.validate_packet_binding(repo, packet)
+
+    packet_data = json.loads(packet.read_text())
+    packet_data["repo_binding"]["require_identity_match"] = "true"
+    packet.write_text(json.dumps(packet_data))
+    with pytest.raises(SystemExit, match="must be boolean"):
+        ct.validate_packet_binding(repo, packet)
+
+
+def test_git_capture_disables_fsmonitor_and_fails_closed(tmp_path, monkeypatch):
+    calls = []
+
+    def failed_run(cmd, cwd=None):
+        calls.append((cmd, cwd))
+        return {"returncode": 1, "stdout": "", "stderr": "git failed"}
+
+    monkeypatch.setattr(ct, "run", failed_run)
+    with pytest.raises(SystemExit, match="Git evidence capture failed"):
+        ct.git_capture(tmp_path, "diff", "--binary", "base..head")
+    assert calls == [
+        (
+            ["git", "-c", "core.fsmonitor=false", "diff", "--binary", "base..head"],
+            tmp_path,
+        )
+    ]
+
+
+def test_git_remote_url_does_not_fallback_from_origin(tmp_path, monkeypatch):
+    calls = []
+
+    def fake_run(cmd, cwd=None):
+        calls.append(cmd)
+        if cmd[-3:] == ["remote", "get-url", "origin"]:
+            return {"returncode": 1, "stdout": "", "stderr": "missing origin"}
+        if cmd[-3:] == ["remote", "get-url", "upstream"]:
+            return {
+                "returncode": 0,
+                "stdout": "https://github.com/example/repo.git\n",
+                "stderr": "",
+            }
+        return {"returncode": 0, "stdout": "", "stderr": ""}
+
+    monkeypatch.setattr(ct, "run", fake_run)
+    assert ct.git_remote_url(tmp_path) is None
+    assert calls == [
+        ["git", "-c", "core.fsmonitor=false", "remote", "get-url", "origin"]
+    ]
+
+
+@pytest.mark.parametrize(
+    "marker", ["/tmp/escape", "../escape", ".dopetaskroot/../escape"]
+)
+def test_packet_binding_rejects_unsafe_marker(tmp_path, marker):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    packet = tmp_path / "packet.json"
+    packet.write_text(
+        json.dumps(
+            {
+                "id": "DMX-DCP-001",
+                "repo_binding": {
+                    "project_id": "demo",
+                    "repo_marker": marker,
+                    "origin_hint": "DDD-Enterprises/demo",
+                    "require_identity_match": True,
+                },
+            }
+        )
+    )
+    with pytest.raises(SystemExit, match="safe relative path"):
+        ct.validate_packet_binding(repo, packet)
+
+
+def test_packet_binding_rejects_nested_foreign_identity_fixture(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    fixture = repo / "fixtures"
+    fixture.mkdir()
+    (fixture / ".dopetaskroot").write_text("")
+    (fixture / ".dopetask").mkdir()
+    (fixture / ".dopetask" / "project.json").write_text(
+        json.dumps({"project_id": "foreign-fixture"})
+    )
+    packet = tmp_path / "packet.json"
+    packet.write_text(
+        json.dumps(
+            {
+                "id": "DMX-DCP-005",
+                "repo_binding": {
+                    "project_id": "foreign-fixture",
+                    "repo_marker": "fixtures/.dopetaskroot",
+                    "origin_hint": "example/repo",
+                    "require_identity_match": True,
+                },
+            }
+        )
+    )
+    monkeypatch.setattr(ct, "git_remote_url", lambda _: "example/repo")
+    with pytest.raises(SystemExit, match="supported canonical marker"):
+        ct.validate_packet_binding(repo, packet)
+
+
+def test_packet_binding_rejects_symlink_marker(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    outside = tmp_path / "outside"
+    outside.write_text("")
+    (repo / ".dopetaskroot").symlink_to(outside)
+    packet = tmp_path / "packet.json"
+    packet.write_text(
+        json.dumps(
+            {
+                "id": "DMX-DCP-003",
+                "repo_binding": {
+                    "project_id": "demo",
+                    "repo_marker": ".dopetaskroot",
+                    "origin_hint": "example/demo",
+                    "require_identity_match": True,
+                },
+            }
+        )
+    )
+    with pytest.raises(SystemExit, match="must not be a symlink"):
+        ct.validate_packet_binding(repo, packet)
+
+
+def test_packet_binding_rejects_identity_config_escaping_repo(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / ".dopetaskroot").write_text("")
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "project.json").write_text(json.dumps({"project_id": "demo"}))
+    (repo / ".dopetask").symlink_to(outside, target_is_directory=True)
+    packet = tmp_path / "packet.json"
+    packet.write_text(
+        json.dumps(
+            {
+                "id": "DMX-DCP-004",
+                "repo_binding": {
+                    "project_id": "demo",
+                    "repo_marker": ".dopetaskroot",
+                    "origin_hint": "example/demo",
+                    "require_identity_match": True,
+                },
+            }
+        )
+    )
+    monkeypatch.setattr(ct, "git_remote_url", lambda _: "example/demo")
+    with pytest.raises(SystemExit, match="config escapes repository"):
+        ct.validate_packet_binding(repo, packet)
+
 
 def test_get_route_rejects_stored_route_identity_mismatch(tmp_path, monkeypatch):
     routes = tmp_path / "routes"
@@ -332,6 +613,11 @@ def test_proof_pack_output_round_trips_through_manifest_verifier(tmp_path, monke
     state = fake_repo / "state"
     routes = state / "routes"
     routes.mkdir(parents=True)
+    (fake_repo / ".dopetaskroot").write_text("")
+    (fake_repo / ".dopetask").mkdir()
+    (fake_repo / ".dopetask" / "project.json").write_text(
+        json.dumps({"project_id": "test"})
+    )
     (routes / "TP-PACK-001.json").write_text(json.dumps(valid_route("TP-PACK-001")))
     monkeypatch.setattr(ct, "repo_root", lambda: fake_repo)
     monkeypatch.setattr(ct, "ct_root", lambda repo: REPO / ".control-tower")
@@ -358,10 +644,35 @@ def test_proof_pack_output_round_trips_through_manifest_verifier(tmp_path, monke
     monkeypatch.setattr(
         ct,
         "run",
-        lambda cmd, cwd=None: {"cmd": cmd, "returncode": 0, "stdout": "", "stderr": ""},
+        lambda cmd, cwd=None: {
+            "cmd": cmd,
+            "returncode": 0,
+            "stdout": (
+                "committed\n"
+                if any(".." in argument for argument in cmd)
+                else "dirty\n"
+            ),
+            "stderr": "",
+        },
+    )
+    monkeypatch.setattr(
+        ct, "git_remote_url", lambda repo: "https://github.com/example/repo.git"
     )
     packet = tmp_path / "TP-PACK-001.json"
-    packet.write_text(json.dumps({"id": "TP-PACK-001", "target": "test"}))
+    packet.write_text(
+        json.dumps(
+            {
+                "id": "TP-PACK-001",
+                "target": "test",
+                "repo_binding": {
+                    "project_id": "test",
+                    "repo_marker": ".dopetaskroot",
+                    "origin_hint": "example/repo",
+                    "require_identity_match": True,
+                },
+            }
+        )
+    )
     args = Namespace(
         packet_id="TP-PACK-001",
         packet=str(packet),
@@ -374,11 +685,32 @@ def test_proof_pack_output_round_trips_through_manifest_verifier(tmp_path, monke
     archives = list((tmp_path / "downloads").glob("*.zip"))
     assert len(archives) == 1
     assert ct.cmd_verify_zip(Namespace(zip=str(archives[0]))) == 0
+    with zipfile.ZipFile(archives[0]) as archive:
+        members = archive.namelist()
+        committed = next(
+            name for name in members if name.endswith("/COMMITTED_DIFF.patch")
+        )
+        dirty = next(name for name in members if name.endswith("/WORKTREE_DIFF.patch"))
+        assert archive.read(committed) == b"committed\n"
+        assert archive.read(dirty) == b"dirty\n"
 
     packet.write_text(json.dumps({"id": "TP-OTHER-001", "target": "crosswired"}))
     with pytest.raises(SystemExit, match="packet identity mismatch"):
         ct.cmd_proof_pack(args)
-    packet.write_text(json.dumps({"id": "TP-PACK-001", "target": "test"}))
+    packet.write_text(
+        json.dumps(
+            {
+                "id": "TP-PACK-001",
+                "target": "test",
+                "repo_binding": {
+                    "project_id": "test",
+                    "repo_marker": ".dopetaskroot",
+                    "origin_hint": "example/repo",
+                    "require_identity_match": True,
+                },
+            }
+        )
+    )
     return_args = Namespace(
         packet_id="TP-PACK-001",
         packet=str(packet),

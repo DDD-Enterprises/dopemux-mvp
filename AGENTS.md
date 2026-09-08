@@ -358,8 +358,8 @@ configuration is `.control-tower/project.json`, not the installer defaults.
 
 - Run `.control-tower/bin/ct` from the authorized repository/worktree. Confirm
   that checkout has its own installation; do not use another project's state.
-- Before substantive supervised packet execution, use `ct route-record` to record the
-  runner, model, effort, alternatives and evidence, then `ct validate-route --file`
+- Before substantive supervised packet execution, use `.control-tower/bin/ct route-record` to record the
+  runner, model, effort, alternatives and evidence, then `.control-tower/bin/ct validate-route --file`
   on the emitted path. Prefer deterministic shell work with justified
   `model=NOT_REQUIRED`; otherwise choose the cheapest adequate authorized route
   from current capability and cost evidence. Record unknowns; do not guess prices.
@@ -369,10 +369,10 @@ configuration is `.control-tower/project.json`, not the installer defaults.
 - Route records under `.control-tower/state/routes/` are mutable local state.
   Preserve each consumed decision in the packet's evidence before an authorized
   route change; `route-record` overwrites the same packet's local record.
-- `ct doctor` and `ct runner-inventory` inspect tools; they do not prove model
+- `.control-tower/bin/ct doctor` and `.control-tower/bin/ct runner-inventory` inspect tools; they do not prove model
   execution, auditor independence, CI success or acceptance. Inspect command
   return codes and preserve `PASS`, `FAIL`, `NOT_RUN` and `UNKNOWN`.
-- Use `ct proof-pack` for local proof ZIPs and `ct return-pack` at an applicable
+- Use `.control-tower/bin/ct proof-pack` for local proof ZIPs and `.control-tower/bin/ct return-pack` at an applicable
   supervisor return gate. Outputs default to `~/Downloads/PROOF` and
   `~/Downloads/RETURN`. Packaging does not replace canonical proof validation,
   authorize an upload, record acceptance, or grant merge/activation permission.
