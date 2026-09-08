@@ -10,6 +10,8 @@
 
 For supervised engineering packets, follow [Control Tower Packet Workflow](../AGENTS.md#control-tower-packet-workflow).
 Read the installed kit contracts and project configuration through that entry point.
+The additional kit routing and packaging requirements apply only to supervised work;
+ordinary work retains existing repository governance.
 Read `.claude/PROJECT_INSTRUCTIONS.md` and `.claude/PRIMER.md` first; this file adds project context.
 <!-- CONTROL_TOWER_ENTRY_END -->
 

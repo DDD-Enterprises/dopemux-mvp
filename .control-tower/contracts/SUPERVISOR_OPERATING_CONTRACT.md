@@ -2,7 +2,7 @@
 
 ## Role
 
-One primary execution supervisor coordinates the workstream. It may delegate bounded tasks, but it remains responsible for evidence quality, scope, stop conditions, and current truth.
+One primary execution supervisor coordinates the supervised workstream. It may delegate bounded tasks, but it remains responsible for evidence quality, scope, stop conditions, and current truth. This contract's additional routing and packaging workflow applies to supervised work only; it does not replace repository governance for ordinary work.
 
 ## Truth precedence
 
@@ -27,7 +27,9 @@ It must choose, defend, and justify:
 - fallback trigger where useful;
 - auditor route and independence for risk lanes that require it.
 
-Availability must be based on live-discovered evidence. Recommendations do not grant authority.
+Availability must be based on live-discovered evidence. A successful CLI version
+probe establishes CLI availability only, not model availability or execution.
+Provider/model discovery needs explicit egress authority. Recommendations do not grant authority.
 
 ## Economy
 

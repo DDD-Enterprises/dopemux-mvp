@@ -12,6 +12,7 @@
 For supervised packets, follow [Control Tower Packet Workflow](../../../AGENTS.md#control-tower-packet-workflow).
 The repository-owned integration preserves current governance and embedded-audit
 requirements; kit reports do not grant acceptance or merge authority.
+The kit does not impose its routing or packaging workflow on unsupervised work.
 <!-- CONTROL_TOWER_ENTRY_END -->
 
 ## Read Repo Instructions First

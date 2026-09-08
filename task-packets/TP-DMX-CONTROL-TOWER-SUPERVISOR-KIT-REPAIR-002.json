@@ -1,0 +1,34 @@
+{
+  "id": "TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-REPAIR-002",
+  "project": "dopemux-mvp",
+  "target": "L3 bounded repair of imported Control Tower validation/packaging and reviewed instruction ambiguity, followed by one independent final audit and normal protected PR1335 merge.",
+  "repo_binding": {"project_id": "dopemux-mvp", "repo_marker": ".dopetaskroot", "origin_hint": "DDD-Enterprises/dopemux-mvp", "require_identity_match": true},
+  "series": {"id": "DMX-CONTROL-TOWER-SUPERVISOR-KIT", "base_branch": "main", "parent_tp_id": "TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001", "final_packet": true},
+  "commit": {
+    "message": "fix(governance): close Control Tower validation gaps",
+    "allowlist": [
+      ".control-tower/bin/ct", ".control-tower/schemas/*.json", ".control-tower/prompts/*.md", ".control-tower/contracts/*.md",
+      ".control-tower/README.md", "AGENTS.md", ".claude/claude.md", ".claude/modules/shared/governance-principles.md",
+      "tests/unit/test_control_tower_kit.py", "task-packets/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-REPAIR-002.json",
+      "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-REPAIR-002/**", "proof/pr_merge/embedded-audit/pr-1335/**"
+    ],
+    "verify": ["Only reviewed kit/instruction defects and their focused tests/proof may change.", "Preserve the supplied v1.0.0 baseline and previous audit/proof in history; label locally repaired payload honestly.", "No service activation, credentials, signer policy, branch protection, or unrelated application edits."]
+  },
+  "pr": {"title": "feat(governance): install Control Tower supervisor kit", "body": "Bounded operator-authorized repair of the imported kit and exact-head audited publication.", "base": "main"},
+  "invariants": [
+    "User explicitly authorized bounded repairs, CodeQL disposition, and all protected merges; prior Claude audit egress and Dopemux public-proof approval remain in force.",
+    "Continue the existing clean isolated PR worktree from 46b35b3cb0192d69a45cb41ed55df6ba34201e0e; original dirty checkout is not an execution surface.",
+    "New packet governs this repair slice; previous final audit is preserved, not reused for changed content.",
+    "L3: one bounded implementer and one final independent non-Codex Sonnet audit, medium effort, after content freeze; no intermediate audits or automatic fallback.",
+    "Fail closed on unscanned inputs, identity mismatches, malformed routing, and incomplete return decisions; no secret bytes in diagnostics.",
+    "The kit remains advisory to repository audit/acceptance/merge authority. No fabricated verdict, owner acceptance, or security-risk acceptance.",
+    "Fresh blocking findings outside this slice require supervisor disposition; in-scope deterministic failures can be repaired before final freeze.",
+    "Rollback is a scoped reviewed revert, not reset or history rewrite."
+  ],
+  "steps": [
+    {"id": "R1", "task": "Reproduce reviewed defects and implement one shared repaired payload with focused regression tests.", "validation": ["Cover schema parity and invalid types/versions/empty values, large/unreadable inputs, packet-route identity, return decision metadata, failed tool probes, inventory egress opt-in, and ZIP manifest verification.", "Synthetic secret tests emit no actual or synthetic secret values."]},
+    {"id": "R2", "task": "Clarify supervised-only routing scope and installer defaults ownership; disposition proven CodeQL false positives without suppressing real findings.", "validation": ["Canonical governance remains intact and entry-point scope is unambiguous.", "CodeQL disposition binds exact source and deterministic tests; preserve alerts/comments/receipts."]},
+    {"id": "R3", "task": "Validate packet, focused tests, changed-contract preflight and precommit, then freeze and run one final audit.", "validation": ["Deterministic checks and actual audit result are captured with exact head and runtime identity.", "FAIL or NEEDS_SUPERVISOR is never relabeled PASS."]},
+    {"id": "R4", "task": "Publish proof-only successor and signed audit, reharvest current CI/reviews/Steward and merge through normal protection.", "validation": ["No unresolved blocking threads; current exact-head gates pass.", "No admin bypass, force push, or branch deletion; verify remote merged state."]}
+  ]
+}

@@ -343,7 +343,7 @@ Boundaries: code/commits/PRs written normal.
 
 <!-- CONTROL_TOWER_MANAGED_BEGIN -->
 ## Control Tower Supervisor
-For any supervised packet/workstream, read `.control-tower/contracts/SUPERVISOR_OPERATING_CONTRACT.md`, `.control-tower/contracts/ARCHITECTURE_RETURN_PROTOCOL.md`, and `.control-tower/project.json`. Before substantive execution of each Task Packet, create and validate its routing decision (runner/model/effort plus justification). Use `.control-tower/bin/ct proof-pack` for upload-ready proof bundles and `.control-tower/bin/ct return-pack` whenever a supervisor/advisor return gate fires. Repository authority and live runtime/GitHub truth outrank this pointer.
+For any supervised packet/workstream, read `.control-tower/contracts/SUPERVISOR_OPERATING_CONTRACT.md`, `.control-tower/contracts/ARCHITECTURE_RETURN_PROTOCOL.md`, and `.control-tower/project.json`. Before substantive execution of each supervised Task Packet, create and validate its routing decision (runner/model/effort plus justification). Use `.control-tower/bin/ct proof-pack` for upload-ready proof bundles and `.control-tower/bin/ct return-pack` whenever an applicable supervisor/advisor return gate fires. Repository authority and live runtime/GitHub truth outrank this pointer.
 <!-- CONTROL_TOWER_MANAGED_END -->
 
 <!-- CONTROL_TOWER_REPO_BEGIN -->
@@ -351,11 +351,14 @@ For any supervised packet/workstream, read `.control-tower/contracts/SUPERVISOR_
 
 This repository-owned section complements the installer-managed pointer above.
 Existing repository governance and the authorized Task Packet govern scope and
-acceptance; the kit's generic defaults do not override them.
+acceptance; the kit's generic defaults do not override them. These additional
+routing and packaging requirements apply only to supervised packets/workstreams;
+ordinary work retains the repository's existing workflow. The canonical runtime
+configuration is `.control-tower/project.json`, not the installer defaults.
 
 - Run `.control-tower/bin/ct` from the authorized repository/worktree. Confirm
   that checkout has its own installation; do not use another project's state.
-- Before substantive packet execution, use `ct route-record` to record the
+- Before substantive supervised packet execution, use `ct route-record` to record the
   runner, model, effort, alternatives and evidence, then `ct validate-route --file`
   on the emitted path. Prefer deterministic shell work with justified
   `model=NOT_REQUIRED`; otherwise choose the cheapest adequate authorized route

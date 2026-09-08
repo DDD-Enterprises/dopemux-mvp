@@ -2,6 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "properties": {
     "audit": {
+      "properties": {
+        "required": {
+          "type": "boolean"
+        }
+      },
       "required": [
         "required"
       ],
@@ -10,6 +15,15 @@
     "justification": {
       "properties": {
         "alternatives_considered": {
+          "items": {
+            "properties": {
+              "route": {"minLength": 1, "pattern": "\\S", "type": "string"},
+              "disposition": {"minLength": 1, "pattern": "\\S", "type": "string"},
+              "reason": {"minLength": 1, "pattern": "\\S", "type": "string"}
+            },
+            "required": ["route", "reason"],
+            "type": "object"
+          },
           "minItems": 1,
           "type": "array"
         },
