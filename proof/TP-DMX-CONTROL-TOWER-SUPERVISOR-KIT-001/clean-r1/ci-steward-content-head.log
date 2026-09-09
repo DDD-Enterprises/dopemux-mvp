@@ -1,0 +1,187 @@
+final readiness	Select and download independent audit artifact	﻿2026-09-09T01:38:34.7089110Z ##[group]Run set -euo pipefail
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7089502Z ^[[36;1mset -euo pipefail^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7089815Z ^[[36;1mrm -rf independent-audit-download independent-audit^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7090230Z ^[[36;1mmkdir -p independent-audit-download independent-audit^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7090563Z ^[[36;1m^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7090798Z ^[[36;1m# Select exactly one artifact by naming contract:^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7091173Z ^[[36;1m#   embedded-audit-pr-<PR>-head-<40-hex-pr-head>-proof^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7091621Z ^[[36;1m# IMPORTANT: PR head SHA comes from the artifact name (and later PROOF),^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7092140Z ^[[36;1m# not from workflow_run.head_sha (unreliable under pull_request_target).^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7092640Z ^[[36;1m# --paginate may emit multiple JSON objects; slurp+merge with jq -s.^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7093501Z ^[[36;1m# Runs even when audit conclusion != success so failure status can be^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7093974Z ^[[36;1m# published against the candidate head (overwriting stale green).^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7094498Z ^[[36;1mgh api "repos/${EXPECTED_REPO}/actions/runs/${AUDIT_RUN_ID}/artifacts" \^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7094891Z ^[[36;1m  --paginate \^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7095182Z ^[[36;1m  | jq -s 'map(.artifacts // []) | add | {artifacts: .}' \^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7095521Z ^[[36;1m  > /tmp/audit-artifacts.json^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7095773Z ^[[36;1m^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7095965Z ^[[36;1mpython - <<'PY'^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7096179Z ^[[36;1mimport json^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7096378Z ^[[36;1mimport os^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7096567Z ^[[36;1mimport re^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7096753Z ^[[36;1mimport sys^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7096963Z ^[[36;1mfrom pathlib import Path^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7097195Z ^[[36;1m^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7097546Z ^[[36;1mpayload = json.loads(Path("/tmp/audit-artifacts.json").read_text(encoding="utf-8"))^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7098010Z ^[[36;1martifacts = payload.get("artifacts") or []^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7098420Z ^[[36;1m# Capture PR number and candidate head SHA from the artifact name itself.^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7098819Z ^[[36;1mpattern = re.compile(^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7099125Z ^[[36;1m    r"^embedded-audit-pr-(\d+)-head-([0-9a-f]{40})-proof$"^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7099450Z ^[[36;1m)^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7099629Z ^[[36;1mmatches = []^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7099842Z ^[[36;1mfor art in artifacts:^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7100093Z ^[[36;1m    name = str(art.get("name") or "")^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7100373Z ^[[36;1m    m = pattern.match(name)^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7100613Z ^[[36;1m    if m:^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7100815Z ^[[36;1m        matches.append(^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7101121Z ^[[36;1m            (name, int(m.group(1)), m.group(2), art.get("id"))^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7101430Z ^[[36;1m        )^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7101614Z ^[[36;1m^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7101972Z ^[[36;1mif not matches:^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7102179Z ^[[36;1m    print(^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7102512Z ^[[36;1m        "No exact-name artifact found; refusing arbitrary PROOF.json selection.",^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7103214Z ^[[36;1m        file=sys.stderr,^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7103446Z ^[[36;1m    )^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7103687Z ^[[36;1m    print("Available artifacts:", file=sys.stderr)^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7103994Z ^[[36;1m    for art in artifacts:^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7104287Z ^[[36;1m        print(f"  - {art.get('name')}", file=sys.stderr)^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7104715Z ^[[36;1m    raise SystemExit("Expected embedded-audit proof artifact not found")^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7105084Z ^[[36;1m^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7105265Z ^[[36;1mif len(matches) != 1:^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7105589Z ^[[36;1m    print("Multiple matching proof artifacts:", file=sys.stderr)^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7105955Z ^[[36;1m    for name, pr, head, _ in matches:^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7106309Z ^[[36;1m        print(f"  - {name} (pr={pr} head={head})", file=sys.stderr)^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7106759Z ^[[36;1m    raise SystemExit("Exactly one expected proof artifact is required")^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7107313Z ^[[36;1m^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7107558Z ^[[36;1mname, pr_number, pr_head_sha, artifact_id = matches[0]^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7107907Z ^[[36;1mout = Path(os.environ["GITHUB_OUTPUT"])^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7108223Z ^[[36;1mwith out.open("a", encoding="utf-8") as fh:^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7108533Z ^[[36;1m    fh.write(f"artifact_name={name}\n")^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7108830Z ^[[36;1m    fh.write(f"pr_number={pr_number}\n")^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7109139Z ^[[36;1m    fh.write(f"pr_head_sha={pr_head_sha}\n")^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7109450Z ^[[36;1m    fh.write(f"artifact_id={artifact_id}\n")^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7109900Z ^[[36;1mPath("/tmp/selected-artifact-name.txt").write_text(name + "\n", encoding="utf-8")^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7110492Z ^[[36;1mPath("/tmp/selected-pr-number.txt").write_text(str(pr_number) + "\n", encoding="utf-8")^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7111092Z ^[[36;1mPath("/tmp/selected-pr-head-sha.txt").write_text(pr_head_sha + "\n", encoding="utf-8")^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7111519Z ^[[36;1mprint(^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7111768Z ^[[36;1m    f"Selected artifact {name} for PR {pr_number} "^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7112091Z ^[[36;1m    f"candidate_head={pr_head_sha}"^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7112349Z ^[[36;1m)^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7112520Z ^[[36;1mPY^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7112898Z ^[[36;1m^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7113235Z ^[[36;1mARTIFACT_NAME="$(cat /tmp/selected-artifact-name.txt | tr -d '\n')"^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7113724Z ^[[36;1mSELECTED_PR="$(cat /tmp/selected-pr-number.txt | tr -d '\n')"^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7114199Z ^[[36;1mEXPECTED_HEAD_SHA="$(cat /tmp/selected-pr-head-sha.txt | tr -d '\n')"^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7114562Z ^[[36;1m^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7114761Z ^[[36;1mgh run download "${AUDIT_RUN_ID}" \^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7115047Z ^[[36;1m  --name "${ARTIFACT_NAME}" \^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7115345Z ^[[36;1m  --dir independent-audit-download^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7115614Z ^[[36;1m^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7116009Z ^[[36;1mproof_count="$(find independent-audit-download -type f -name PROOF.json | wc -l | tr -d ' ')"^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7116495Z ^[[36;1mtest "$proof_count" = "1"^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7116919Z ^[[36;1mproof_path="$(find independent-audit-download -type f -name PROOF.json -print -quit)"^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7117420Z ^[[36;1mcp "$proof_path" independent-audit/PROOF.json^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7117712Z ^[[36;1m^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7118002Z ^[[36;1mjq -e '.pr_number | numbers' independent-audit/PROOF.json >/dev/null^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7118463Z ^[[36;1mjq -e '.head_sha | strings' independent-audit/PROOF.json >/dev/null^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7118805Z ^[[36;1m^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7119078Z ^[[36;1mproof_pr="$(jq -er '.pr_number' independent-audit/PROOF.json)"^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7119506Z ^[[36;1mproof_head="$(jq -er '.head_sha' independent-audit/PROOF.json)"^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7120011Z ^[[36;1mtest "$proof_pr" = "$SELECTED_PR"^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7120308Z ^[[36;1mtest "$proof_head" = "$EXPECTED_HEAD_SHA"^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7120582Z ^[[36;1m^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7120853Z ^[[36;1m# Cross-check live PR head still matches the artifact-bound head.^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7121356Z ^[[36;1mlive_head="$(gh api "repos/${EXPECTED_REPO}/pulls/${SELECTED_PR}" --jq .head.sha)"^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7121789Z ^[[36;1mtest "$live_head" = "$EXPECTED_HEAD_SHA"^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7122062Z ^[[36;1m^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7122357Z ^[[36;1m# Bind identity outputs BEFORE hard enforce so failure status can still^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7123025Z ^[[36;1m# be published when the audit conclusion or proof is non-passing.^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7123508Z ^[[36;1mprintf 'proof_path=independent-audit/PROOF.json\n' >> "$GITHUB_OUTPUT"^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7123981Z ^[[36;1mprintf 'pr_head_sha=%s\n' "$EXPECTED_HEAD_SHA" >> "$GITHUB_OUTPUT"^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7124410Z ^[[36;1mprintf 'pr_number=%s\n' "$SELECTED_PR" >> "$GITHUB_OUTPUT"^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7124726Z ^[[36;1m^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7124989Z ^[[36;1m# Hard gate: non-success audit conclusion cannot produce READY.^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7125520Z ^[[36;1mif [ "${AUDIT_CONCLUSION}" != "success" ]; then^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7125946Z ^[[36;1m  echo "Audit workflow conclusion is ${AUDIT_CONCLUSION}; refusing READY." >&2^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7126337Z ^[[36;1m  exit 2^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7126522Z ^[[36;1mfi^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7126695Z ^[[36;1m^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7126885Z ^[[36;1mexport PROOF_PR="$proof_pr"^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7127145Z ^[[36;1mexport EXPECTED_HEAD_SHA^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7127392Z ^[[36;1mpython - <<'PY'^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7127603Z ^[[36;1mimport json^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7127814Z ^[[36;1mimport os^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7128011Z ^[[36;1mimport sys^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7128220Z ^[[36;1mfrom pathlib import Path^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7128448Z ^[[36;1m^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7128655Z ^[[36;1msys.path.insert(0, str(Path.cwd()))^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7129072Z ^[[36;1mfrom scripts.audit.run_embedded_audit import enforce_independent_audit_proof^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7129482Z ^[[36;1m^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7129826Z ^[[36;1mproof = json.loads(Path("independent-audit/PROOF.json").read_text(encoding="utf-8"))^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7130270Z ^[[36;1menforce_independent_audit_proof(^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7130538Z ^[[36;1m    proof,^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7130779Z ^[[36;1m    expected_pr=int(os.environ["PROOF_PR"]),^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7131129Z ^[[36;1m    expected_head_sha=os.environ["EXPECTED_HEAD_SHA"],^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7131488Z ^[[36;1m    expected_repo=os.environ["EXPECTED_REPO"],^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7131768Z ^[[36;1m)^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7132044Z ^[[36;1mprint("Independent audit proof identity enforcement: PASS")^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7132408Z ^[[36;1mPY^[[0m
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7168927Z shell: /usr/bin/bash -e {0}
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7169177Z env:
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7171627Z   GH_TOKEN: ***
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7171908Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7172353Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7173087Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7173643Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7174108Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7174727Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7175143Z   AUDIT_RUN_ID: 34299929230
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7175465Z   EXPECTED_REPO: DDD-Enterprises/dopemux-mvp
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7226287Z   AUDIT_CONCLUSION: failure
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:34.7226549Z ##[endgroup]
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:35.0526790Z Selected artifact embedded-audit-pr-1337-head-0aaa239241e4ef486e332a1ba2dc9d1c963d6625-proof for PR 1337 candidate_head=0aaa239241e4ef486e332a1ba2dc9d1c963d6625
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:36.7201142Z Audit workflow conclusion is failure; refusing READY.
+final readiness	Select and download independent audit artifact	2026-09-09T01:38:36.7212508Z ##[error]Process completed with exit code 2.
+final readiness	Publish readiness status on candidate PR head	﻿2026-09-09T01:38:36.8002538Z ##[group]Run # workflow_run jobs execute against default-branch GITHUB_SHA. Publish
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8003483Z ^[[36;1m# workflow_run jobs execute against default-branch GITHUB_SHA. Publish^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8003983Z ^[[36;1m# an explicit commit status on the validated candidate head so branch^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8004453Z ^[[36;1m# protection can require "PR Steward / final readiness" on the PR.^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8004931Z ^[[36;1m# Always overwrite prior status for this context on this head, including^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8005399Z ^[[36;1m# when a later failed audit re-runs after an earlier green.^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8005854Z ^[[36;1m# Classifier excludes this exact context from readiness evaluation so a^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8006329Z ^[[36;1m# prior failed self-status cannot sticky-red the next Steward run.^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8006720Z ^[[36;1mif [ "${AUDIT_CONCLUSION}" = "success" ] \^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8007028Z ^[[36;1m  && [ "${AUDIT_OUTCOME}" = "success" ] \^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8007366Z ^[[36;1m  && [ "${STEWARD_OUTCOME}" = "success" ]; then^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8007661Z ^[[36;1m  state="success"^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8007971Z ^[[36;1m  description="final readiness READY for PR ${PR_NUMBER}"^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8008317Z ^[[36;1melse^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8008514Z ^[[36;1m  state="failure"^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8009079Z ^[[36;1m  description="final readiness not READY for PR ${PR_NUMBER} (audit=${AUDIT_CONCLUSION}/${AUDIT_OUTCOME} steward=${STEWARD_OUTCOME})"^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8009648Z ^[[36;1mfi^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8009935Z ^[[36;1mgh api "repos/${GITHUB_REPOSITORY}/statuses/${PR_HEAD_SHA}" \^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8010297Z ^[[36;1m  -f state="${state}" \^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8010595Z ^[[36;1m  -f context="PR Steward / final readiness" \^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8010922Z ^[[36;1m  -f description="${description}" \^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8011366Z ^[[36;1m  -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8011879Z ^[[36;1m# Fail the job when not READY so the workflow itself is red.^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8012241Z ^[[36;1mif [ "${state}" != "success" ]; then^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8012504Z ^[[36;1m  exit 1^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8012691Z ^[[36;1mfi^[[0m
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8045344Z shell: /usr/bin/bash -e {0}
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8045588Z env:
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8047969Z   GH_TOKEN: ***
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8048264Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8048690Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8049271Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8049645Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8050011Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8050386Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8050745Z   PR_HEAD_SHA: 0aaa239241e4ef486e332a1ba2dc9d1c963d6625
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8051042Z   PR_NUMBER: 1337
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8051256Z   STEWARD_OUTCOME: skipped
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8051487Z   AUDIT_OUTCOME: failure
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8051705Z   AUDIT_CONCLUSION: failure
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:36.8051919Z ##[endgroup]
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:37.6053606Z {"url":"https://api.github.com/repos/DDD-Enterprises/dopemux-mvp/statuses/0aaa239241e4ef486e332a1ba2dc9d1c963d6625","avatar_url":"https://avatars.githubusercontent.com/in/15368?v=4","id":53786675103,"node_id":"SC_kwDOPyIw988AAAAMhe-Hnw","state":"failure","description":"final readiness not READY for PR 1337 (audit=failure/failure steward=skipped)","target_url":"https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34299951063","context":"PR Steward / final readiness","created_at":"2026-09-09T01:38:37Z","updated_at":"2026-09-09T01:38:37Z","creator":{"login":"github-actions[bot]","id":41898282,"node_id":"MDM6Qm90NDE4OTgyODI=","avatar_url":"https://avatars.githubusercontent.com/in/15368?v=4","gravatar_id":"","url":"https://api.github.com/users/github-actions%5Bbot%5D","html_url":"https://github.com/apps/github-actions","followers_url":"https://api.github.com/users/github-actions%5Bbot%5D/followers","following_url":"https://api.github.com/users/github-actions%5Bbot%5D/following{/other_user}","gists_url":"https://api.github.com/users/github-actions%5Bbot%5D/gists{/gist_id}","starred_url":"https://api.github.com/users/github-actions%5Bbot%5D/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/github-actions%5Bbot%5D/subscriptions","organizations_url":"https://api.github.com/users/github-actions%5Bbot%5D/orgs","repos_url":"https://api.github.com/users/github-actions%5Bbot%5D/repos","events_url":"https://api.github.com/users/github-actions%5Bbot%5D/events{/privacy}","received_events_url":"https://api.github.com/users/github-actions%5Bbot%5D/received_events","type":"Bot","user_view_type":"public","site_admin":false}}
+final readiness	Publish readiness status on candidate PR head	2026-09-09T01:38:37.6061555Z ##[error]Process completed with exit code 1.

@@ -1,0 +1,54 @@
+{
+  "captured_at": "2026-09-09T01:53:42Z",
+  "packet_id": "TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001",
+  "pr_number": 1337,
+  "content_head": "0aaa239241e4ef486e332a1ba2dc9d1c963d6625",
+  "status": "PARKED_NOT_READY",
+  "ci_job_results": {
+    "terminal": true,
+    "successful_jobs": 21,
+    "deterministic_failures": 0,
+    "skipped": [
+      "Installer Smoke",
+      "Scoped Coverage",
+      "Integration Tests"
+    ],
+    "unit_tests": "PASS",
+    "control_tower_precommit_hook": "PASS",
+    "security_review_job": "SUCCESS",
+    "security_review_ai_analysis_step": "SKIPPED_NOT_RUN"
+  },
+  "required_gate_state": {
+    "independent_embedded_audit": "FAIL",
+    "independent_embedded_audit_reason": "audit_not_executed and audit_provenance_missing",
+    "pr_steward_final_readiness": "FAIL",
+    "pr_steward_reason": "The exact PR/head audit artifact was selected, but its workflow conclusion was failure; READY was refused and Steward execution was skipped.",
+    "final_independent_audit": "NOT_RUN",
+    "acceptance": "NOT_APPROVED"
+  },
+  "reviews": {
+    "review_decision": null,
+    "reviews": 0,
+    "threads": 0,
+    "unresolved_threads": 0
+  },
+  "raw_evidence": {
+    "ci-checks-content-head-final.raw.json": {
+      "container_sha256": "6217dc5e27624016f704a5625abf9c14ba4776f79dc9888614cca986dca0f5ae",
+      "raw_sha256": "7037683d99a711188a09a92f49f79af77cb811f5804f1ccdb702ac14aee98e53"
+    },
+    "ci-steward-content-head.log": "650a213903cca118e63d97a926f5fe67be0f1f4753fa90cf856bad95988a1efb",
+    "reviews-content-head-final.json": "64bdb70075052b43d980e6a29e77197673d4e7a8d460bdaea7d7c64a8dce867b",
+    "security-review-job-content-head.json": "c72445f2d386a689d5c08452976421c6f3f406fa04fbf9c4ebd45deaf2c0963c"
+  },
+  "raw_container_policy": {
+    "reason": "GitHub tabular output contains trailing tab bytes that fail git diff --check; JSON strings preserve those bytes as escapes without trimming.",
+    "original_raw_secret_scan": "PASS",
+    "staged_container_secret_scan": "PASS"
+  },
+  "notes": [
+    "The earlier bounded-cutoff receipt remains preserved with Unit Tests PENDING.",
+    "Security Review job SUCCESS contains a SKIPPED AI analysis step; it is not a security scan PASS or the independent final model audit.",
+    "No audit, review approval, readiness, merge or activation is inferred."
+  ]
+}
