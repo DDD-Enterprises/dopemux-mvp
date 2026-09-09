@@ -12,7 +12,7 @@ Investigations and redesigns must follow .claude/PRIMER.md
 
 For supervised engineering packets, follow [Control Tower Packet Workflow](../AGENTS.md#control-tower-packet-workflow).
 Read the installed kit contracts and project configuration through that entry point.
-Model selection is packet-specific. Attention accommodations affect presentation and pacing, not execution authority.
+Supervised model selection is packet-specific. Ordinary unsupervised work uses existing repository, user, and local model-selection authority. Attention accommodations affect presentation and pacing, not execution authority.
 <!-- CONTROL_TOWER_ENTRY_END -->
 
 ## 🤖 Specialized Agent Configurations
@@ -20,7 +20,7 @@ Model selection is packet-specific. Attention accommodations affect presentation
 ### Developer Agent
 
 **Primary Use**: Code implementation, debugging, testing
-**Model Route**: Current validated packet routing decision
+**Model Route**: Existing repository/user/local selection for ordinary work; current validated route for supervised packets
 **Context Limits**:
 
 - Scattered: 15k tokens max
@@ -37,7 +37,7 @@ Model selection is packet-specific. Attention accommodations affect presentation
 ### Architect Agent
 
 **Primary Use**: System design, decision analysis, pattern identification
-**Model Route**: Current validated packet routing decision
+**Model Route**: Existing repository/user/local selection for ordinary work; current validated route for supervised packets
 **Context Limits**:
 
 - Focused: 25k tokens max
@@ -53,7 +53,7 @@ Model selection is packet-specific. Attention accommodations affect presentation
 ### Researcher Agent
 
 **Primary Use**: Information gathering, documentation analysis
-**Model Route**: Current validated packet routing decision
+**Model Route**: Existing repository/user/local selection for ordinary work; current validated route for supervised packets
 **Context Limits**: 15k tokens max (controlled information gathering)
 
 **Behavior Patterns**:
@@ -72,19 +72,19 @@ scattered:
   response_length: concise (1-3 paragraphs)
   actions: single clear next step
   complexity: minimal
-  model_preference: packet_routing_decision
+  model_preference: repository_or_user_selection; packet_route_when_supervised
 
 focused:
   response_length: structured (3-5 sections)
   actions: prioritized list (max 3 items)
   complexity: moderate
-  model_preference: packet_routing_decision
+  model_preference: repository_or_user_selection; packet_route_when_supervised
 
 hyperfocus:
   response_length: comprehensive (detailed analysis)
   actions: full implementation plan
   complexity: high
-  model_preference: packet_routing_decision
+  model_preference: repository_or_user_selection; packet_route_when_supervised
 ```
 
 ### Context Switch Handling
@@ -140,7 +140,7 @@ hyperfocus:
 
 **Common Failures**:
 
-- Model timeout → Record the failure; follow the packet's retry and fallback authority
+- Model timeout → Record the failure; for supervised work follow packet retry/fallback authority, otherwise follow repository, user, and local authority
 - Context overflow → Prune context, focus on essentials
 - Tool unavailable → Graceful degradation, inform user
 
@@ -155,21 +155,21 @@ hyperfocus:
 
 ### Code Review Agent
 
-- **Model**: Validated packet route; preserve required reviewer independence
+- **Model**: Apply model-selection authority above; preserve required reviewer independence
 - **Context**: Include style guides and patterns
 - **Output**: Structured findings with severity levels
 - **Memory**: Log code quality patterns
 
 ### Sprint Planning Agent
 
-- **Model**: Validated packet route
+- **Model**: Apply model-selection authority above
 - **Context**: Recent decisions and active goals
 - **Output**: Organized sprint structure
 - **Memory**: Track planning decisions and rationale
 
 ### Debugging Agent
 
-- **Model**: Validated packet route; escalation requires packet authority
+- **Model**: Apply model-selection authority above; supervised escalation requires packet authority
 - **Context**: Error logs, relevant code sections
 - **Output**: Step-by-step investigation plan
 - **Memory**: Log root causes and solutions

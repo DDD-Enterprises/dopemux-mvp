@@ -12,16 +12,17 @@ Read `.claude/PROJECT_INSTRUCTIONS.md` and `.claude/PRIMER.md` first.
 
 ## Model Selection for Python
 
-Use the current validated packet routing decision for code, architecture, fixes
-and documentation. Discover available routes before choosing; static model names
-are not evidence of availability, current price or permission.
+Ordinary unsupervised work uses existing repository, user, and local model-selection
+authority. Supervised packets use the current validated routing decision after
+packet validation and before implementation. Discover available routes before
+choosing; static model names are not evidence of availability, price, or permission.
 
 ### Attention-Based Presentation
 
 - **Focused**: Provide relevant detail and explicit validation.
 - **Scattered**: Keep the next action concise and bounded.
 - **Hyperfocus**: Preserve scope and summarize checkpoints.
-- Attention state does not override the packet's model, effort or audit gates.
+- For supervised work, attention state does not override packet model, effort, or audit gates.
 
 ## Project-Specific Adaptations
 
@@ -59,7 +60,8 @@ orientation only, not evidence that a server or operation is available.
 - Use deterministic local tools where sufficient.
 - Choose the cheapest adequate authorized model using current evidence.
 - Preserve original evidence when reusing results; recheck relevance and scope.
-- Retry or change routes only within explicit packet authority.
+- For supervised work, retry or change routes only within explicit packet authority;
+  ordinary work follows repository, user, and local authority.
 
 ---
 

@@ -1,0 +1,20 @@
+{
+  "captured_at": "2026-09-09T01:09:10Z",
+  "status": "RECOVERED_WITHOUT_INSTALL_OR_CONFIG_MUTATION",
+  "failures": [
+    {
+      "count": 3,
+      "operation": "apply_patch",
+      "result": "BLOCKED_BEFORE_FILE_READ_OR_WRITE",
+      "error": "sandbox-exec exit 71; configured mise Codex binary target did not exist"
+    }
+  ],
+  "recovery": {
+    "binary": "/Applications/ChatGPT.app/Contents/Resources/codex",
+    "version": "codex-cli 0.153.4",
+    "mode": "--codex-run-as-apply-patch",
+    "probe_result": "patch parser invoked; empty patch returned no files modified",
+    "route_change": false,
+    "model_substitution": false
+  }
+}

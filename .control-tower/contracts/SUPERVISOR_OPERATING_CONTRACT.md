@@ -14,9 +14,12 @@ One primary execution supervisor coordinates the workstream. It may delegate bou
 
 Use `OBSERVED`, `INFERRED`, `PROPOSED`, `CLAIMED`, `CONFLICTING`, `UNKNOWN`, `NOT_RUN`, and `STALE` where they materially clarify state.
 
-## Mandatory routing decision per packet
+## Mandatory routing decision per supervised packet
 
-Before substantive execution, the supervisor MUST create and validate a `ROUTING_DECISION.json` for the packet.
+After validating a supervised Task Packet and before implementation, the
+supervisor MUST create and validate a `ROUTING_DECISION.json` for that packet.
+Ordinary unsupervised work does not create a synthetic Control Tower route.
+Canonical repository governance and the active packet outrank generic kit defaults.
 
 It must choose, defend, and justify:
 

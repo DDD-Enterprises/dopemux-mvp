@@ -22,6 +22,13 @@ repos:
         pass_filenames: false
         always_run: true
 
+      - id: control-tower-kit-tests
+        name: Validate Control Tower kit contracts
+        entry: python3 -m unittest discover -s .control-tower/tests -p test_*.py
+        language: system
+        files: ^(\.control-tower/|AGENTS\.md$|\.claude/(PROJECT_INSTRUCTIONS|claude|llm|llms)\.md$|\.claude/modules/shared/governance-principles\.md$|\.github/copilot-instructions\.md$|task-packets/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001\.json$|proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001/)
+        pass_filenames: false
+
       # Frontmatter validation (enable existing)
       - id: docs-frontmatter-guard
         name: Validate YAML frontmatter in docs

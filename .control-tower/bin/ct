@@ -1,10 +1,20 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse, json, os, re, shutil, subprocess, sys, tempfile, hashlib, zipfile
-from pathlib import Path
+import argparse, json, os, re, shutil, stat, subprocess, sys, tempfile, hashlib, zipfile
+from pathlib import Path, PurePosixPath
 from datetime import datetime, timezone
+from urllib.parse import urlsplit
 
 VERSION = "1.0.0"
+CHUNK_SIZE = 64 * 1024
+
+
+class PackageBlocked(RuntimeError):
+    """Packaging or verification stopped at a fail-closed boundary."""
+
+
+class PacketIdentityError(PackageBlocked):
+    """Canonical packet identity is missing, ambiguous, or conflicting."""
 
 def now_stamp(): return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 def run(cmd, cwd=None):
@@ -49,7 +59,7 @@ def tool_info(name, version_args):
     if not path: return {'tool':name,'availability':'UNKNOWN','path':None}
     r=run([name,*version_args])
     text=(r['stdout'] or r['stderr']).strip()
-    return {'tool':name,'availability':'PROVEN','path':path,'version_output':text[:2000],'returncode':r['returncode']}
+    return {'tool':name,'availability':'PROVEN' if r['returncode']==0 else 'UNKNOWN','path':path,'version_output':text[:2000],'returncode':r['returncode']}
 
 def cmd_doctor(args):
     repo=repo_root(); proj=load_project(repo)
@@ -65,34 +75,115 @@ def cmd_runner_inventory(args):
     repo=repo_root(); inv={'captured_at':now_stamp(),'tools':[]}
     specs=[('git',['--version']),('gh',['--version']),('codex',['--version']),('claude',['--version']),('agy',['--version']),('gemini',['--version'])]
     for n,a in specs: inv['tools'].append(tool_info(n,a))
-    if shutil.which('agy'):
+    if getattr(args,'probe_models',False) and shutil.which('agy'):
         r=run(['agy','models'],repo); inv['agy_models']={'returncode':r['returncode'],'stdout':r['stdout'][:20000],'stderr':r['stderr'][:4000]}
     out=state_dir(repo)/'RUNNER_INVENTORY.json'; out.write_text(json.dumps(inv,indent=2,sort_keys=True)+'\n'); print(out); return 0
 
 def routes_dir(repo):
     p=state_dir(repo)/'routes'; p.mkdir(parents=True,exist_ok=True); return p
 
-def validate_route_obj(d):
+def strict_identifier(value): return isinstance(value,str) and re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{2,127}',value) is not None
+
+def route_path(repo,packet_id):
+    if not strict_identifier(packet_id): raise PackageBlocked('BLOCK_PACKET_IDENTITY_INVALID: invalid packet id')
+    return routes_dir(repo)/(packet_id+'.json')
+
+SCHEMA_KEYWORDS={
+    '$schema','type','required','properties','enum','const','minLength','minItems',
+    'items','additionalProperties','pattern'
+}
+SCHEMA_TYPES={'object','array','string','integer','number','boolean','null'}
+
+def _schema_definition_errors(schema, where='$'):
+    if not isinstance(schema,dict): return [f'{where}: schema must be an object']
     errs=[]
-    for k in ['schema_version','packet_id','stage','risk_lane','selection','justification','audit']:
-        if k not in d: errs.append(f'missing {k}')
-    if d.get('risk_lane') not in {'L0','L1','L2','L3'}: errs.append('risk_lane must be L0-L3')
-    sel=d.get('selection',{})
-    for k in ['runner','runner_availability','model','effort']:
-        if not str(sel.get(k,'')).strip(): errs.append(f'missing selection.{k}')
-    if sel.get('runner_availability') not in {'PROVEN','PROPOSED','UNKNOWN'}: errs.append('selection.runner_availability invalid')
-    jus=d.get('justification',{})
-    for k in ['why_runner','why_model','why_effort']:
-        if not str(jus.get(k,'')).strip(): errs.append(f'missing justification.{k}')
-    alts=jus.get('alternatives_considered')
-    if not isinstance(alts,list) or not alts: errs.append('at least one alternative is required')
-    for i,a in enumerate(alts or []):
-        if not isinstance(a,dict) or not a.get('route') or not a.get('reason'): errs.append(f'alternative[{i}] requires route and reason')
+    for key in schema:
+        if key not in SCHEMA_KEYWORDS: errs.append(f'{where}: unsupported schema keyword {key}')
+    typ=schema.get('type')
+    if typ is not None and typ not in SCHEMA_TYPES: errs.append(f'{where}: unsupported schema type {typ!r}')
+    props=schema.get('properties',{})
+    if not isinstance(props,dict): errs.append(f'{where}.properties: must be an object')
+    else:
+        for key,child in props.items(): errs.extend(_schema_definition_errors(child,f'{where}.properties.{key}'))
+    if 'items' in schema: errs.extend(_schema_definition_errors(schema['items'],f'{where}.items'))
+    extra=schema.get('additionalProperties')
+    if extra is not None and not isinstance(extra,(bool,dict)): errs.append(f'{where}.additionalProperties: must be boolean or object')
+    elif isinstance(extra,dict): errs.extend(_schema_definition_errors(extra,f'{where}.additionalProperties'))
+    required=schema.get('required',[])
+    if not isinstance(required,list) or not all(isinstance(x,str) for x in required): errs.append(f'{where}.required: must be an array of strings')
+    for key in ('minLength','minItems'):
+        if key in schema and (type(schema[key]) is not int or schema[key]<0): errs.append(f'{where}.{key}: must be a nonnegative integer')
+    if 'enum' in schema and not isinstance(schema['enum'],list): errs.append(f'{where}.enum: must be an array')
+    if 'pattern' in schema:
+        try: re.compile(schema['pattern'])
+        except (TypeError,re.error): errs.append(f'{where}.pattern: must be a valid string regex')
+    return errs
+
+def _json_equal(left,right): return type(left) is type(right) and left==right
+
+def _schema_instance_errors(value,schema,where='$'):
+    errs=[]; typ=schema.get('type')
+    checks={
+        'object':lambda x:isinstance(x,dict),'array':lambda x:isinstance(x,list),
+        'string':lambda x:isinstance(x,str),'integer':lambda x:type(x) is int,
+        'number':lambda x:type(x) in (int,float),'boolean':lambda x:type(x) is bool,
+        'null':lambda x:x is None,
+    }
+    if typ and not checks[typ](value): return [f'{where}: expected {typ}']
+    if 'const' in schema and not _json_equal(value,schema['const']): errs.append(f'{where}: value does not match const')
+    if 'enum' in schema and not any(_json_equal(value,item) for item in schema['enum']): errs.append(f'{where}: value is not in enum')
+    if isinstance(value,str):
+        if len(value)<schema.get('minLength',0): errs.append(f'{where}: shorter than minLength')
+        if 'pattern' in schema and re.search(schema['pattern'],value) is None: errs.append(f'{where}: does not match pattern')
+    if isinstance(value,list):
+        if len(value)<schema.get('minItems',0): errs.append(f'{where}: shorter than minItems')
+        if 'items' in schema:
+            for i,item in enumerate(value): errs.extend(_schema_instance_errors(item,schema['items'],f'{where}[{i}]'))
+    if isinstance(value,dict):
+        for key in schema.get('required',[]):
+            if key not in value: errs.append(f'{where}: missing required property {key}')
+        props=schema.get('properties',{})
+        for key,child in props.items():
+            if key in value: errs.extend(_schema_instance_errors(value[key],child,f'{where}.{key}'))
+        extras=set(value)-set(props)
+        if schema.get('additionalProperties') is False and extras:
+            errs.append(f'{where}: additional properties not allowed: {sorted(extras)}')
+        elif isinstance(schema.get('additionalProperties'),dict):
+            for key in extras: errs.extend(_schema_instance_errors(value[key],schema['additionalProperties'],f'{where}.{key}'))
+    return errs
+
+def schema_errors(value,schema):
+    errs=_schema_definition_errors(schema)
+    return errs if errs else _schema_instance_errors(value,schema)
+
+def _load_json(path):
+    def reject_duplicates(pairs):
+        value={}
+        for key,item in pairs:
+            if key in value: raise ValueError(f'duplicate JSON key {key}')
+            value[key]=item
+        return value
+    try: return json.loads(Path(path).read_text(),object_pairs_hook=reject_duplicates)
+    except ValueError as exc:
+        detail=str(exc) if str(exc).startswith('duplicate JSON key ') else type(exc).__name__
+        raise PackageBlocked(f'{detail}: cannot load JSON {path}') from exc
+    except Exception as exc: raise PackageBlocked(f'{type(exc).__name__}: cannot load JSON {path}') from exc
+
+def validate_route_obj(d,repo=None):
+    repo=Path(repo) if repo is not None else repo_root()
+    try: schema=_load_json(ct_root(repo)/'schemas/route_decision.schema.json')
+    except PackageBlocked as exc: return [str(exc)]
+    errs=schema_errors(d,schema)
+    if not isinstance(d,dict): return errs
     risk=d.get('risk_lane'); audit=d.get('audit',{})
-    if risk in {'L2','L3'} and audit.get('required') is not True: errs.append(f'{risk} requires audit.required=true by generic baseline')
-    if audit.get('required') is True:
-        for k in ['runner','model','effort','independence','rationale']:
-            if not str(audit.get(k,'')).strip(): errs.append(f'missing audit.{k}')
+    if risk in {'L2','L3'} and (not isinstance(audit,dict) or audit.get('required') is not True): errs.append(f'{risk} requires audit.required=true by policy')
+    if isinstance(audit,dict) and audit.get('required') is True:
+        for key in ['runner','model','effort','independence','rationale']:
+            if not isinstance(audit.get(key),str) or not audit[key].strip(): errs.append(f'missing audit.{key}')
+    alternatives=d.get('justification',{}).get('alternatives_considered') if isinstance(d.get('justification'),dict) else None
+    if isinstance(alternatives,list):
+        for i,item in enumerate(alternatives):
+            if not isinstance(item,dict) or not isinstance(item.get('route'),str) or not item['route'].strip() or not isinstance(item.get('reason'),str) or not item['reason'].strip(): errs.append(f'alternatives_considered[{i}] requires nonblank route and reason')
     return errs
 
 def cmd_route_record(args):
@@ -105,125 +196,585 @@ def cmd_route_record(args):
     d={'schema_version':'1.0','packet_id':args.packet_id,'stage':args.stage,'risk_lane':args.risk,'selection':{'runner':args.runner,'runner_availability':args.runner_availability,'agent_role':args.agent_role,'custom_agent':args.custom_agent,'model':args.model,'effort':args.effort},'justification':{'why_runner':args.why_runner,'why_model':args.why_model,'why_effort':args.why_effort,'cost_latency_tradeoff':args.cost_latency_tradeoff or '', 'alternatives_considered':alternatives,'evidence':args.evidence},'fallback':{'runner':args.fallback_runner,'model':args.fallback_model,'trigger':args.fallback_trigger},'audit':{'required':audit_required,'runner':args.audit_runner,'model':args.audit_model,'effort':args.audit_effort,'independence':args.audit_independence,'rationale':args.audit_rationale or ''},'recorded_at':now_stamp()}
     errs=validate_route_obj(d)
     if errs: print('\n'.join('ERROR: '+e for e in errs),file=sys.stderr); return 2
-    out=routes_dir(repo)/(re.sub(r'[^A-Za-z0-9_.-]+','_',args.packet_id)+'.json'); out.write_text(json.dumps(d,indent=2,sort_keys=True)+'\n'); print(out); return 0
+    try: out=route_path(repo,args.packet_id)
+    except PackageBlocked as exc: print('ERROR: '+str(exc),file=sys.stderr); return 2
+    out.write_text(json.dumps(d,indent=2,sort_keys=True)+'\n'); print(out); return 0
 
 def cmd_validate_route(args):
-    d=json.loads(Path(args.file).read_text()); errs=validate_route_obj(d)
+    try: d=_load_json(args.file); errs=validate_route_obj(d)
+    except PackageBlocked as exc: print('ERROR: '+str(exc)); return 2
     if errs: print('\n'.join('ERROR: '+e for e in errs)); return 2
     print('PASS: routing decision valid'); return 0
 
 def get_route(repo, packet_id):
-    p=routes_dir(repo)/(re.sub(r'[^A-Za-z0-9_.-]+','_',packet_id)+'.json')
-    if not p.exists(): raise SystemExit(f'ERROR: no routing decision for {packet_id}: {p}')
-    d=json.loads(p.read_text()); errs=validate_route_obj(d)
-    if errs: raise SystemExit('ERROR: invalid routing decision: '+'; '.join(errs))
+    p=route_path(repo,packet_id)
+    if not p.exists(): raise PackageBlocked(f'ERROR: no routing decision for {packet_id}: {p}')
+    d=_load_json(p); errs=validate_route_obj(d,repo)
+    if errs: raise PackageBlocked('ERROR: invalid routing decision: '+'; '.join(errs))
+    assert_matching_identities(packet_id,d.get('packet_id'))
     return p
+
+def assert_matching_identities(*identities):
+    if not identities or any(not strict_identifier(value) for value in identities):
+        raise PackageBlocked('BLOCK_PACKET_IDENTITY_MISSING: canonical packet id required')
+    if len(set(identities))!=1: raise PackageBlocked('BLOCK_PACKET_IDENTITY_MISMATCH: package identity chain differs')
+    return identities[0]
+
+def _frontmatter_id(lines):
+    if not lines or lines[0].strip()!='---': return None,0
+    end=None
+    for index in range(1,len(lines)):
+        if lines[index].strip()=='---': end=index; break
+    if end is None: raise PacketIdentityError('BLOCK_PACKET_IDENTITY_AMBIGUOUS: unterminated frontmatter')
+    values=[]
+    for line in lines[1:end]:
+        match=re.match(r'^(?:id|packet_id|task_packet_id)\s*:\s*(.*?)\s*$',line,re.I)
+        if match:
+            value=match.group(1).strip().strip('"\'`')
+            if value: values.append(value)
+    if len(set(values))>1: raise PacketIdentityError('BLOCK_PACKET_IDENTITY_AMBIGUOUS: conflicting frontmatter ids')
+    return (values[0] if values else None),end+1
+
+def _markdown_packet_identity(path):
+    try: lines=Path(path).read_text(encoding='utf-8').splitlines()
+    except (OSError,UnicodeError) as exc: raise PacketIdentityError('BLOCK_PACKET_IDENTITY_MISSING: unreadable Markdown packet') from exc
+    front,start=_frontmatter_id(lines); values=[]
+    if front: values.append(front)
+    for index,line in enumerate(lines[start:],start):
+        if re.match(r'^##\s+Packet metadata\s*$',line,re.I):
+            cursor=index+1
+            while cursor<len(lines) and not re.match(r'^\s*(`{3,}|~{3,})',lines[cursor]): cursor+=1
+            if cursor>=len(lines): continue
+            opener=re.match(r'^\s*(`{3,}|~{3,})',lines[cursor]).group(1); cursor+=1
+            while cursor<len(lines) and not re.match(r'^\s*'+re.escape(opener[0])+r'{'+str(len(opener))+r',}',lines[cursor]):
+                match=re.match(r'^(?:packet_id|task_packet_id)\s*:\s*`?([A-Za-z0-9][A-Za-z0-9_.-]{2,127})`?\s*$',lines[cursor],re.I)
+                if match: values.append(match.group(1))
+                cursor+=1
+    fence=None
+    heading=re.compile(r'^#\s+Task Packet\s*(?::|\u2014|-)\s*`?([A-Za-z0-9][A-Za-z0-9_.-]{2,127})`?(?:\s|$)')
+    for line in lines[start:]:
+        marker=re.match(r'^\s*(`{3,}|~{3,})',line)
+        if marker:
+            token=marker.group(1)
+            if fence is None: fence=(token[0],len(token))
+            elif token[0]==fence[0] and len(token)>=fence[1]: fence=None
+            continue
+        if fence is not None: continue
+        match=heading.match(line)
+        if match: values.append(match.group(1))
+    unique=set(values)
+    if not unique: raise PacketIdentityError('BLOCK_PACKET_IDENTITY_MISSING: no authoritative packet id')
+    if len(unique)!=1: raise PacketIdentityError('BLOCK_PACKET_IDENTITY_AMBIGUOUS: conflicting authoritative packet ids')
+    identity=next(iter(unique))
+    if not strict_identifier(identity): raise PacketIdentityError('BLOCK_PACKET_IDENTITY_MISSING: invalid packet id')
+    return identity
+
+def packet_identity(path):
+    path=Path(path)
+    if path.suffix.lower()=='.json':
+        value=_load_json(path)
+        if not isinstance(value,dict) or not strict_identifier(value.get('id')):
+            raise PacketIdentityError('BLOCK_PACKET_IDENTITY_MISSING: JSON packet requires canonical id')
+        return value['id']
+    return _markdown_packet_identity(path)
+
+def proof_identity(path):
+    value=_load_json(path)
+    if not isinstance(value,dict): raise PacketIdentityError('BLOCK_PACKET_IDENTITY_MISSING: canonical proof must be an object')
+    found=[value[key] for key in ('packet_id','tp_id') if key in value]
+    return assert_matching_identities(*found)
+
+def git_capture(repo,*args):
+    result=run(['git','-c','core.fsmonitor=false',*args],repo)
+    if result['returncode']!=0: raise PackageBlocked(f'BLOCKED_GIT_EVIDENCE: git {" ".join(args)} failed')
+    return result['stdout']
+
+def git_remote_url(repo):
+    try: return git_capture(repo,'remote','get-url','origin').strip()
+    except PackageBlocked: return None
+
+def _normalize_origin(value):
+    if not isinstance(value,str) or not value.strip() or any(x in value for x in ('?','#','\\')): return None
+    raw=value.strip(); host='github.com'; path=''
+    if re.match(r'^[^/@\s]+@[^/:\s]+:',raw):
+        userhost,path=raw.split(':',1); host=userhost.split('@',1)[1].lower()
+    elif '://' in raw:
+        try: parsed=urlsplit(raw)
+        except ValueError: return None
+        if parsed.query or parsed.fragment or parsed.username not in (None,'git') or parsed.password: return None
+        if parsed.scheme not in ('http','https','ssh') or not parsed.hostname: return None
+        host=parsed.hostname.lower()
+        port=parsed.port
+        if port and not ((parsed.scheme=='https' and port==443) or (parsed.scheme=='http' and port==80) or (parsed.scheme=='ssh' and port==22)): host=f'{host}:{port}'
+        path=parsed.path
+    else: path=raw
+    path=path.strip('/')
+    if path.endswith('.git'): path=path[:-4]
+    parts=path.split('/')
+    if len(parts)!=2 or not all(re.fullmatch(r'[A-Za-z0-9_.-]+',part) for part in parts): return None
+    return (host+'/'+path).lower()
+
+def _safe_marker(repo,marker):
+    if not isinstance(marker,str) or not marker or '\\' in marker: return None
+    pure=PurePosixPath(marker)
+    if pure.is_absolute() or '..' in pure.parts: return None
+    path=repo/marker
+    try:
+        current=repo
+        for part in pure.parts:
+            current=current/part
+            info=current.lstat()
+            if stat.S_ISLNK(info.st_mode): return None
+        if not path.resolve(strict=True).is_relative_to(repo.resolve(strict=True)): return None
+    except OSError: return None
+    return path
+
+def validate_packet_binding(repo,packet):
+    packet=Path(packet); repo=Path(repo)
+    if packet.suffix.lower()!='.json': return
+    value=_load_json(packet)
+    if not isinstance(value,dict): raise PackageBlocked('BLOCKED_REPO_IDENTITY_MISMATCH: packet is not an object')
+    if 'repo_binding' not in value: return
+    binding=value.get('repo_binding')
+    if not isinstance(binding,dict) or type(binding.get('require_identity_match')) is not bool:
+        raise PackageBlocked('BLOCKED_REPO_IDENTITY_MISMATCH: malformed repository binding')
+    if binding.get('require_identity_match') is not True: return
+    project=load_project(repo).get('project_name'); expected=binding.get('project_id')
+    remote=_normalize_origin(git_remote_url(repo)); hinted=_normalize_origin(binding.get('origin_hint'))
+    if not isinstance(project,str) or expected!=project or _safe_marker(repo,binding.get('repo_marker')) is None or remote is None or hinted is None or remote!=hinted:
+        raise PackageBlocked('BLOCKED_REPO_IDENTITY_MISMATCH: project, marker, or origin does not match installed repository')
+
+def validate_return_metadata(metadata,repo=None):
+    repo=Path(repo) if repo is not None else repo_root()
+    try: schema=_load_json(ct_root(repo)/'schemas/return_packet.schema.json')
+    except PackageBlocked as exc: return [str(exc)]
+    return schema_errors(metadata,schema)
+
+def build_return_metadata(packet_id,stamp,project,reason,decision_needed,state,route):
+    if not isinstance(reason,str) or not reason.strip(): raise PackageBlocked('BLOCKED_RETURN_METADATA: reason must be nonblank')
+    if not isinstance(decision_needed,str) or not decision_needed.strip(): raise PackageBlocked('BLOCKED_RETURN_METADATA: decision_needed must be nonblank')
+    metadata={'return_id':f'RETURN-{project}-{packet_id}-{stamp}','packet_id':packet_id,'reason':reason.strip(),'decision_needed':decision_needed.strip(),'head_sha':state.get('head_sha'),'base_sha':state.get('merge_base_origin_main'),'branch':state.get('branch'),'project':project,'risk_lane':route.get('risk_lane')}
+    return metadata
 
 SECRET_PATTERNS=[
  ('PRIVATE_KEY', re.compile(rb'-----BEGIN (?:RSA |EC |OPENSSH |)PRIVATE KEY-----')),
  ('GITHUB_TOKEN', re.compile(rb'\b(?:ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,})\b')),
- ('OPENAI_KEY', re.compile(rb'\bsk-[A-Za-z0-9_-]{20,}\b')),
  ('AWS_ACCESS_KEY', re.compile(rb'\bAKIA[0-9A-Z]{16}\b')),
- ('SECRET_ASSIGNMENT', re.compile(rb'(?i)\b(?:password|passwd|api[_-]?key|token|secret)\s*[:=]\s*["\']?(?!<|\$\{|REDACTED|CHANGEME|example|none|null)[A-Za-z0-9_./+\-=]{16,}')),
 ]
+_VALUE_BYTES=frozenset(b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_./+-=')
+_WORD_BYTES=frozenset(b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_')
+_EXAMPLE_PREFIXES=(b'<',b'${',b'redacted',b'changeme',b'example',b'none',b'null')
+_ASSIGNMENT_KEY_PATTERN=re.compile(rb'(?i)(?<![A-Za-z0-9_])(?:password|passwd|api[_-]?key|token|secret)(?=\s|[:=])')
+
+class StreamingSecretScanner:
+    def __init__(self):
+        self.carry=b''; self.state='search'; self.search_tail=bytearray(); self.value=bytearray()
+        self.openai_state=0; self.openai_count=0; self.openai_prev_word=False
+    def _reset(self): self.state='search'; self.search_tail.clear(); self.value.clear()
+    def _assignment_data(self,chunk):
+        data=(bytes(self.search_tail)+chunk) if self.state=='search' else chunk
+        self.search_tail.clear(); index=0
+        while index<len(data):
+            if self.state=='search':
+                match=_ASSIGNMENT_KEY_PATTERN.search(data,index)
+                if match is None:
+                    self.search_tail.extend(data[-32:]); return
+                self.state='after_key'; index=match.end(); continue
+            byte=data[index]; whitespace=bytes((byte,)).isspace()
+            if self.state=='after_key':
+                if whitespace: index+=1; continue
+                if byte in (58,61): self.state='after_separator'; index+=1; continue
+                self._reset(); continue
+            if self.state=='after_separator':
+                if whitespace: index+=1; continue
+                if byte in (34,39): self.state='value'; index+=1; continue
+                if byte in _VALUE_BYTES: self.state='value'; continue
+                self._reset(); continue
+            if byte in _VALUE_BYTES:
+                if len(self.value)<32: self.value.append(byte+32 if 65<=byte<=90 else byte)
+                if bytes(self.value) in _EXAMPLE_PREFIXES:
+                    self._reset(); index+=1; continue
+                if len(self.value)>=16 and not any(bytes(self.value).startswith(prefix) for prefix in _EXAMPLE_PREFIXES):
+                    raise PackageBlocked('BLOCKED_SECRET_SCAN: SECRET_ASSIGNMENT')
+                index+=1; continue
+            self._reset()
+    def _openai_data(self,chunk):
+        for byte in chunk:
+            if self.openai_state==0:
+                if byte==115 and not self.openai_prev_word: self.openai_state=1
+                self.openai_prev_word=byte in _WORD_BYTES
+                continue
+            if self.openai_state==1:
+                self.openai_state=2 if byte==107 else 0
+                self.openai_prev_word=byte in _WORD_BYTES
+                continue
+            if self.openai_state==2:
+                self.openai_state=3 if byte==45 else 0
+                self.openai_count=0
+                self.openai_prev_word=byte in _WORD_BYTES
+                continue
+            if byte in _VALUE_BYTES:
+                self.openai_count+=1
+                self.openai_prev_word=byte in _WORD_BYTES
+                if self.openai_count>=20 and self.openai_prev_word:
+                    raise PackageBlocked('BLOCKED_SECRET_SCAN: OPENAI_KEY')
+                continue
+            boundary=not self.openai_prev_word
+            self.openai_state=1 if byte==115 and boundary else 0
+            self.openai_count=0
+            self.openai_prev_word=byte in _WORD_BYTES
+    def feed(self,chunk):
+        data=self.carry+chunk
+        for name,pattern in SECRET_PATTERNS:
+            if pattern.search(data): raise PackageBlocked(f'BLOCKED_SECRET_SCAN: {name}')
+        self.carry=data[-128:]
+        self._openai_data(chunk)
+        self._assignment_data(chunk)
+
+def _regular_stat(path):
+    try: info=Path(path).lstat()
+    except OSError as exc: raise PackageBlocked(f'BLOCKED_SECRET_SCAN: unreadable file {path}') from exc
+    if stat.S_ISLNK(info.st_mode) or not stat.S_ISREG(info.st_mode): raise PackageBlocked(f'BLOCKED_UNSAFE_PATH: regular non-symlink file required: {path}')
+    return info
+
+def scan_regular_file(path):
+    path=Path(path); before=_regular_stat(path); scanner=StreamingSecretScanner(); digest=hashlib.sha256(); count=0
+    try:
+        descriptor=os.open(path,os.O_RDONLY|getattr(os,'O_NOFOLLOW',0))
+        try:
+            opened=os.fstat(descriptor)
+            if (opened.st_dev,opened.st_ino)!=(before.st_dev,before.st_ino): raise PackageBlocked(f'BLOCKED_STAGING_DRIFT: {path}')
+            while True:
+                chunk=os.read(descriptor,CHUNK_SIZE)
+                if not chunk: break
+                scanner.feed(chunk); digest.update(chunk); count+=len(chunk)
+            after=os.fstat(descriptor)
+        finally: os.close(descriptor)
+    except PackageBlocked: raise
+    except OSError as exc: raise PackageBlocked(f'BLOCKED_SECRET_SCAN: unreadable file {path}') from exc
+    if count!=before.st_size: raise PackageBlocked(f'BLOCKED_SECRET_SCAN: partial read for {path}; expected {before.st_size}, got {count}')
+    if (after.st_dev,after.st_ino,after.st_size,after.st_mtime_ns)!=(before.st_dev,before.st_ino,before.st_size,before.st_mtime_ns):
+        raise PackageBlocked(f'BLOCKED_STAGING_DRIFT: file changed while scanning: {path}')
+    return digest.hexdigest(),count
+
+def scan_staged_tree(root):
+    root=Path(root); digests={}; counters={'files_scanned':0,'bytes_scanned':0,'files_skipped':0,'files_unreadable':0,'scan_errors':0}
+    def walk_error(exc): raise PackageBlocked(f'BLOCKED_UNSAFE_PATH: traversal failed: {exc}')
+    try: walked=list(os.walk(root,topdown=True,onerror=walk_error,followlinks=False))
+    except PackageBlocked: raise
+    except OSError as exc: raise PackageBlocked(f'BLOCKED_UNSAFE_PATH: traversal failed: {exc}') from exc
+    for directory,dirnames,filenames in walked:
+        base=Path(directory)
+        for name in dirnames:
+            if (base/name).is_symlink(): raise PackageBlocked(f'BLOCKED_UNSAFE_PATH: symlink in staged package: {base/name}')
+        for name in sorted(filenames):
+            path=base/name; digest,size=scan_regular_file(path)
+            digests[path.relative_to(root).as_posix()]=(digest,size)
+            counters['files_scanned']+=1; counters['bytes_scanned']+=size
+    return digests,counters
+
 def scan_files(paths):
     hits=[]
-    for p in paths:
-        if not p.is_file(): continue
-        try: data=p.read_bytes()
-        except Exception: continue
-        if len(data)>20_000_000: continue
-        for name,pat in SECRET_PATTERNS:
-            if pat.search(data): hits.append({'path':str(p),'pattern':name})
+    for path in paths:
+        try: scan_regular_file(path)
+        except PackageBlocked as exc: hits.append({'path':str(path),'pattern':str(exc).split(': ')[-1]})
     return hits
 
-def iter_input(path):
-    p=Path(path)
-    if p.is_file(): return [p]
-    if p.is_dir(): return [x for x in p.rglob('*') if x.is_file() and '.git' not in x.parts]
-    raise SystemExit(f'ERROR: missing input {p}')
+def _write_json(path,value): Path(path).write_text(json.dumps(value,indent=2,sort_keys=True)+'\n')
+
+def _local_git_state(repo):
+    return {
+        'repo_root':str(repo),
+        'head_sha':git_capture(repo,'rev-parse','HEAD').strip(),
+        'branch':git_capture(repo,'branch','--show-current').strip(),
+        'dirty':bool(git_capture(repo,'status','--porcelain=v1').strip()),
+        'status_porcelain':git_capture(repo,'status','--porcelain=v1'),
+        'origin':git_capture(repo,'remote','get-url','origin').strip(),
+        'merge_base_origin_main':git_capture(repo,'merge-base','HEAD','origin/main').strip(),
+        'captured_at':now_stamp(),
+    }
+
+def _copy_regular(source,destination):
+    source=Path(source); destination=Path(destination); before=_regular_stat(source); destination.parent.mkdir(parents=True,exist_ok=True)
+    src=None; dst=None; count=0
+    try:
+        src=os.open(source,os.O_RDONLY|getattr(os,'O_NOFOLLOW',0)); opened=os.fstat(src)
+        if (opened.st_dev,opened.st_ino)!=(before.st_dev,before.st_ino): raise PackageBlocked(f'BLOCKED_STAGING_DRIFT: {source}')
+        dst=os.open(destination,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
+        while True:
+            chunk=os.read(src,CHUNK_SIZE)
+            if not chunk: break
+            view=memoryview(chunk)
+            while view:
+                written=os.write(dst,view)
+                if written<=0: raise OSError('partial destination write')
+                view=view[written:]
+            count+=len(chunk)
+        after=os.fstat(src)
+    except PackageBlocked: raise
+    except OSError as exc: raise PackageBlocked(f'BLOCKED_STAGING_COPY: {source}') from exc
+    finally:
+        if src is not None: os.close(src)
+        if dst is not None: os.close(dst)
+    if count!=before.st_size or (after.st_dev,after.st_ino,after.st_size,after.st_mtime_ns)!=(before.st_dev,before.st_ino,before.st_size,before.st_mtime_ns):
+        raise PackageBlocked(f'BLOCKED_STAGING_DRIFT: partial or changed source {source}')
+
+def _copy_input(source,destination):
+    source=Path(source); destination=Path(destination)
+    try: info=source.lstat()
+    except OSError as exc: raise PackageBlocked(f'BLOCKED_STAGING_COPY: missing input {source}') from exc
+    if stat.S_ISLNK(info.st_mode): raise PackageBlocked(f'BLOCKED_UNSAFE_PATH: symlink input {source}')
+    if stat.S_ISREG(info.st_mode): _copy_regular(source,destination); return
+    if not stat.S_ISDIR(info.st_mode): raise PackageBlocked(f'BLOCKED_UNSAFE_PATH: special input {source}')
+    destination.mkdir(parents=True,exist_ok=False)
+    def walk_error(exc): raise PackageBlocked(f'BLOCKED_UNSAFE_PATH: input traversal failed: {exc}')
+    try: walked=list(os.walk(source,topdown=True,onerror=walk_error,followlinks=False))
+    except OSError as exc: raise PackageBlocked(f'BLOCKED_UNSAFE_PATH: input traversal failed: {exc}') from exc
+    for directory,dirnames,filenames in walked:
+        base=Path(directory); relative=base.relative_to(source); target=destination/relative
+        for name in dirnames:
+            child=base/name
+            if child.is_symlink(): raise PackageBlocked(f'BLOCKED_UNSAFE_PATH: symlink input {child}')
+            (target/name).mkdir(exist_ok=False)
+        for name in filenames: _copy_regular(base/name,target/name)
+
+def _validate_staged_identities(root,packet_id,kind,repo):
+    tasks=[path for path in root.iterdir() if path.is_file() and path.name.startswith('TASK_PACKET.')]
+    if len(tasks)!=1: raise PackageBlocked('BLOCK_PACKET_IDENTITY_MISSING: one staged Task Packet required')
+    validate_packet_binding(repo,tasks[0]); identities=[packet_id,packet_identity(tasks[0])]
+    route=_load_json(root/'ROUTING_DECISION.json'); route_errors=validate_route_obj(route,repo)
+    if route_errors: raise PackageBlocked('BLOCKED_ROUTE_INVALID: '+'; '.join(route_errors))
+    identities.append(route.get('packet_id') if isinstance(route,dict) else None)
+    proof=root/'PROOF_REVIEW'/'PROOF.json'
+    if proof.exists(): identities.append(proof_identity(proof))
+    if kind=='RETURN':
+        metadata=_load_json(root/'RETURN_METADATA.json'); identities.append(metadata.get('packet_id') if isinstance(metadata,dict) else None)
+    assert_matching_identities(*identities)
+
+def _write_manifests(root,primary,counters):
+    report={'status':'PASS','hits':[],'counter_scope':'primary staged payload','files_scanned':counters['files_scanned'],'bytes_scanned':counters['bytes_scanned'],'files_skipped':0,'files_unreadable':0,'scan_errors':0}
+    report_path=root/'SECRET_SCAN_REPORT.json'; _write_json(report_path,report); report_digest=scan_regular_file(report_path)
+    inventory_inputs=dict(primary); inventory_inputs['SECRET_SCAN_REPORT.json']=report_digest
+    inventory=[{'path':name,'sha256':value[0],'bytes':value[1]} for name,value in sorted(inventory_inputs.items())]
+    inventory_path=root/'FILE_INVENTORY.json'; _write_json(inventory_path,inventory); inventory_digest=scan_regular_file(inventory_path)
+    sums_inputs=dict(inventory_inputs); sums_inputs['FILE_INVENTORY.json']=inventory_digest
+    sums_path=root/'SHA256SUMS.txt'; sums_path.write_text(''.join(f'{value[0]}  {name}\n' for name,value in sorted(sums_inputs.items())))
+    sums_digest=scan_regular_file(sums_path)
+    expected=dict(sums_inputs); expected['SHA256SUMS.txt']=sums_digest
+    final,final_counters=scan_staged_tree(root)
+    if final!=expected or final_counters['files_scanned']!=len(expected): raise PackageBlocked('BLOCKED_STAGING_DRIFT: final package bytes differ from screened bytes')
+    return final
+
+def _write_zip_streamed(root,archive_path,expected):
+    with zipfile.ZipFile(archive_path,'w',zipfile.ZIP_DEFLATED) as archive:
+        for relative,(wanted_digest,wanted_size) in sorted(expected.items()):
+            path=root/relative; digest=hashlib.sha256(); count=0
+            with path.open('rb') as source,archive.open(f'{root.name}/{relative}','w') as destination:
+                while True:
+                    chunk=source.read(CHUNK_SIZE)
+                    if not chunk: break
+                    destination.write(chunk); digest.update(chunk); count+=len(chunk)
+            if digest.hexdigest()!=wanted_digest or count!=wanted_size: raise PackageBlocked(f'BLOCKED_STAGING_DRIFT: ZIP input changed: {relative}')
+
+def _sha256_file(path):
+    digest=hashlib.sha256(); count=0
+    with Path(path).open('rb') as source:
+        while True:
+            chunk=source.read(CHUNK_SIZE)
+            if not chunk: break
+            digest.update(chunk); count+=len(chunk)
+    return digest.hexdigest(),count
 
 def package(kind,args):
-    repo=repo_root(); proj=load_project(repo); route=get_route(repo,args.packet_id)
-    # refresh state
-    live=state_dir(repo)/'LIVE_STATE.json'; live.write_text(json.dumps(git_state(repo),indent=2,sort_keys=True)+'\n')
-    packet=Path(args.packet).resolve()
-    if not packet.exists(): raise SystemExit(f'ERROR: packet not found: {packet}')
-    proof=None
-    if args.proof_dir:
-        proof=Path(args.proof_dir).resolve()
-        if not proof.exists(): raise SystemExit(f'ERROR: proof dir not found: {proof}')
-    include=[Path(x).resolve() for x in args.include]
-    for p in include:
-        if not p.exists(): raise SystemExit(f'ERROR: include not found: {p}')
-    inputs=[packet,route,live]
-    if proof: inputs += iter_input(proof)
-    for p in include: inputs += iter_input(p)
-    hits=scan_files(inputs)
-    if hits:
-        print(json.dumps({'status':'BLOCKED_SECRET_SCAN','hits':hits},indent=2),file=sys.stderr); return 3
-    stamp=now_stamp(); project=re.sub(r'[^A-Za-z0-9_.-]+','_',proj.get('project_name','project')); pid=re.sub(r'[^A-Za-z0-9_.-]+','_',args.packet_id)
-    with tempfile.TemporaryDirectory(prefix='ct-pack-') as td:
-        td=Path(td); pack=td/f'{kind}_{project}_{pid}_{stamp}'; pack.mkdir()
-        # deterministic generated artifacts
-        shutil.copy2(packet,pack/('TASK_PACKET'+packet.suffix))
-        shutil.copy2(route,pack/'ROUTING_DECISION.json')
-        shutil.copy2(live,pack/'LIVE_STATE.json')
-        (pack/'GIT_STATUS.txt').write_text(run(['git','status','--porcelain=v1','--branch'],repo)['stdout'])
-        (pack/'WORKTREE_DIFF.patch').write_text(run(['git','diff','--binary','HEAD'],repo)['stdout'])
-        if proof:
-            dest=pack/'PROOF_REVIEW'; shutil.copytree(proof,dest,dirs_exist_ok=True)
-        if include:
-            inc=pack/'INCLUDED'; inc.mkdir()
-            for idx,p in enumerate(include,1):
-                dest=inc/f'{idx:02d}_{p.name}'
-                if p.is_dir(): shutil.copytree(p,dest)
-                else: shutil.copy2(p,dest)
-        if kind=='RETURN':
-            st=json.loads(live.read_text())
-            tmpl=(ct_root(repo)/'templates/ARCHITECTURE_RETURN_PACKET.template.md').read_text()
-            vals={'RETURN_ID':f'RETURN-{project}-{pid}-{stamp}','PACKET_ID':args.packet_id,'PROJECT':proj.get('project_name',''),'REPOSITORY':st.get('origin') or '', 'BASE_SHA':st.get('merge_base_origin_main') or '', 'HEAD_SHA':st.get('head_sha') or '', 'BRANCH':st.get('branch') or '', 'RISK_LANE':json.loads(route.read_text()).get('risk_lane',''), 'REASON':args.reason or '', 'DECISION_NEEDED':args.decision_needed or ''}
-            for k,v in vals.items(): tmpl=tmpl.replace('{{'+k+'}}',str(v))
-            (pack/'ARCHITECTURE_RETURN_PACKET.md').write_text(tmpl)
-            (pack/'RETURN_METADATA.json').write_text(json.dumps({'return_id':vals['RETURN_ID'],'packet_id':args.packet_id,'reason':args.reason or '', 'decision_needed':args.decision_needed or '', 'head_sha':st.get('head_sha'), 'base_sha':st.get('merge_base_origin_main'), 'branch':st.get('branch'), 'project':proj.get('project_name')},indent=2,sort_keys=True)+'\n')
-        generated_hits=scan_files([p for p in pack.rglob('*') if p.is_file()])
-        if generated_hits:
-            print(json.dumps({'status':'BLOCKED_SECRET_SCAN_GENERATED_PACKAGE','hits':generated_hits},indent=2),file=sys.stderr); return 3
-        # manifest
-        files=[p for p in pack.rglob('*') if p.is_file()]
-        sums=[]; inv=[]
-        for p in sorted(files):
-            rel=p.relative_to(pack).as_posix(); h=hashlib.sha256(p.read_bytes()).hexdigest(); sums.append(f'{h}  {rel}'); inv.append({'path':rel,'sha256':h,'bytes':p.stat().st_size})
-        (pack/'SHA256SUMS.txt').write_text('\n'.join(sums)+'\n')
-        (pack/'FILE_INVENTORY.json').write_text(json.dumps(inv,indent=2)+'\n')
-        (pack/'SECRET_SCAN_REPORT.json').write_text(json.dumps({'status':'PASS','hits':[],'scanned_inputs':len(inputs)},indent=2)+'\n')
-        outdir=expand(proj['downloads']['proof' if kind=='PROOF' else 'return']); outdir.mkdir(parents=True,exist_ok=True)
-        z=outdir/f'{stamp}_{project}_{pid}_{kind}.zip'
-        with zipfile.ZipFile(z,'w',zipfile.ZIP_DEFLATED) as zf:
-            for p in sorted(pack.rglob('*')):
-                if p.is_file(): zf.write(p,arcname=f'{pack.name}/{p.relative_to(pack).as_posix()}')
-        print(z); print('SHA256='+hashlib.sha256(z.read_bytes()).hexdigest())
-    return 0
+    try:
+        repo=repo_root(); project_config=load_project(repo); project=project_config.get('project_name')
+        if not strict_identifier(args.packet_id) or not strict_identifier(project): raise PackageBlocked('BLOCK_PACKET_IDENTITY_INVALID: packet or project id')
+        route_path_value=get_route(repo,args.packet_id); route=_load_json(route_path_value)
+        packet=Path(args.packet).absolute(); validate_packet_binding(repo,packet)
+        assert_matching_identities(args.packet_id,route.get('packet_id'),packet_identity(packet))
+        proof=Path(args.proof_dir).absolute() if args.proof_dir else None
+        includes=[Path(value).absolute() for value in args.include]
+        state=_local_git_state(repo); live=state_dir(repo)/'LIVE_STATE.json'; _write_json(live,state)
+        stamp=now_stamp(); package_root=f'{kind}_{project}_{args.packet_id}_{stamp}'
+        with tempfile.TemporaryDirectory(prefix='ct-pack-') as raw:
+            root=Path(raw)/package_root; root.mkdir(mode=0o700)
+            task_member='TASK_PACKET'+packet.suffix.lower(); _copy_regular(packet,root/task_member)
+            _copy_regular(route_path_value,root/'ROUTING_DECISION.json'); _copy_regular(live,root/'LIVE_STATE.json')
+            (root/'GIT_STATUS.txt').write_text(git_capture(repo,'status','--porcelain=v1','--branch'))
+            (root/'COMMITTED_DIFF.patch').write_text(git_capture(repo,'diff','--binary',state['merge_base_origin_main']+'..'+state['head_sha']))
+            (root/'WORKTREE_DIFF.patch').write_text(git_capture(repo,'diff','--binary','HEAD'))
+            if proof: _copy_input(proof,root/'PROOF_REVIEW')
+            if includes:
+                (root/'INCLUDED').mkdir()
+                for index,source in enumerate(includes,1): _copy_input(source,root/'INCLUDED'/f'{index:02d}_{source.name}')
+            manifest={'schema_version':'1.0','kind':kind,'packet_id':args.packet_id,'project':project,'package_root':package_root,'task_packet_member':task_member,'inventory_scope':'all members except FILE_INVENTORY.json and SHA256SUMS.txt','sha256sums_scope':'all members except SHA256SUMS.txt'}
+            _write_json(root/'MANIFEST.json',manifest)
+            if kind=='RETURN':
+                metadata=build_return_metadata(args.packet_id,stamp,project,args.reason,args.decision_needed,state,route)
+                errors=validate_return_metadata(metadata,repo)
+                if errors: raise PackageBlocked('BLOCKED_RETURN_METADATA: '+'; '.join(errors))
+                _write_json(root/'RETURN_METADATA.json',metadata)
+                template=(ct_root(repo)/'templates/ARCHITECTURE_RETURN_PACKET.template.md').read_text()
+                values={'RETURN_ID':metadata['return_id'],'PACKET_ID':args.packet_id,'PROJECT':project,'REPOSITORY':state['origin'],'BASE_SHA':state['merge_base_origin_main'],'HEAD_SHA':state['head_sha'],'BRANCH':state['branch'],'RISK_LANE':route.get('risk_lane'),'REASON':metadata['reason'],'DECISION_NEEDED':metadata['decision_needed']}
+                for key,value in values.items(): template=template.replace('{{'+key+'}}',str(value))
+                (root/'ARCHITECTURE_RETURN_PACKET.md').write_text(template)
+            _validate_staged_identities(root,args.packet_id,kind,repo)
+            primary,counters=scan_staged_tree(root); expected=_write_manifests(root,primary,counters)
+            private=Path(raw)/(package_root+'.zip'); _write_zip_streamed(root,private,expected)
+            code,message=verify_zip_file(private)
+            if code!=0: raise PackageBlocked(message)
+            outdir=expand(project_config['downloads']['proof' if kind=='PROOF' else 'return']); outdir.mkdir(parents=True,exist_ok=True)
+            output=outdir/f'{stamp}_{project}_{args.packet_id}_{kind}.zip'; temporary_output=None
+            try:
+                with tempfile.NamedTemporaryFile(dir=outdir,prefix='.ct-publish-',suffix='.tmp',delete=False) as destination,private.open('rb') as source:
+                    temporary_output=Path(destination.name); shutil.copyfileobj(source,destination,CHUNK_SIZE); destination.flush(); os.fsync(destination.fileno())
+                code,message=verify_zip_file(temporary_output)
+                if code!=0: raise PackageBlocked(message)
+                digest,_size=_sha256_file(temporary_output)
+                os.link(temporary_output,output)
+            finally:
+                if temporary_output is not None: temporary_output.unlink(missing_ok=True)
+            print(output); print('SHA256='+digest)
+        return 0
+    except (PackageBlocked,OSError,KeyError) as exc:
+        print(json.dumps({'status':'BLOCKED_PACKAGE','reason':str(exc)},indent=2),file=sys.stderr); return 3
 
 def cmd_proof_pack(args): return package('PROOF',args)
 def cmd_return_pack(args): return package('RETURN',args)
 
+def _json_data(data,label):
+    def reject_duplicates(pairs):
+        value={}
+        for key,item in pairs:
+            if key in value: raise PackageBlocked(f'duplicate JSON key {key} in {label}')
+            value[key]=item
+        return value
+    try: return json.loads(data.decode('utf-8'),object_pairs_hook=reject_duplicates)
+    except PackageBlocked: raise
+    except Exception as exc: raise PackageBlocked(f'invalid JSON in {label}: {type(exc).__name__}') from exc
+
+def _safe_zip_member(info):
+    name=info.filename
+    if not name or '\\' in name or '\x00' in name: raise PackageBlocked('unsafe ZIP member path')
+    pure=PurePosixPath(name)
+    raw_parts=name.split('/')
+    if pure.is_absolute() or pure.as_posix()!=name or any(part in ('','.', '..') for part in raw_parts): raise PackageBlocked('unsafe ZIP member path')
+    mode=(info.external_attr>>16)&0o170000
+    if mode==stat.S_IFLNK: raise PackageBlocked('symlink ZIP member is forbidden')
+    if mode not in (0,stat.S_IFREG): raise PackageBlocked('special ZIP member is forbidden')
+    if info.is_dir(): raise PackageBlocked('directory ZIP entries are forbidden')
+    return pure
+
+def _parse_inventory(data):
+    value=_json_data(data,'FILE_INVENTORY.json')
+    if not isinstance(value,list): raise PackageBlocked('FILE_INVENTORY must be an array')
+    result={}
+    for item in value:
+        if not isinstance(item,dict) or set(item)!={'path','sha256','bytes'}: raise PackageBlocked('invalid FILE_INVENTORY entry')
+        path=item['path']; digest=item['sha256']; size=item['bytes']
+        if path in result: raise PackageBlocked('duplicate FILE_INVENTORY path')
+        if not isinstance(path,str) or not re.fullmatch(r'[0-9a-f]{64}',digest or '') or type(size) is not int or size<0: raise PackageBlocked('invalid FILE_INVENTORY entry')
+        result[path]=(digest,size)
+    return result
+
+def _parse_sums(data):
+    try: lines=data.decode('utf-8').splitlines()
+    except UnicodeError as exc: raise PackageBlocked('invalid SHA256SUMS encoding') from exc
+    result={}
+    for line in lines:
+        match=re.fullmatch(r'([0-9a-f]{64})  ([^\\]+)',line)
+        if not match or match.group(2) in result: raise PackageBlocked('invalid or duplicate SHA256SUMS entry')
+        result[match.group(2)]=match.group(1)
+    return result
+
+def verify_zip_file(path,crc_only=False):
+    try:
+        with zipfile.ZipFile(path) as archive:
+            infos=archive.infolist()
+            if not infos: raise PackageBlocked('empty ZIP')
+            if len({info.filename for info in infos})!=len(infos): raise PackageBlocked('duplicate ZIP member')
+            pure_names=[_safe_zip_member(info) for info in infos]
+            roots={name.parts[0] for name in pure_names}
+            if len(roots)!=1 or any(len(name.parts)<2 for name in pure_names): raise PackageBlocked('ZIP must have exactly one package root')
+            if crc_only:
+                bad=archive.testzip()
+                if bad: raise PackageBlocked(f'corrupt ZIP member {bad}')
+                return 0,f'PASS: CRC-only; manifests not verified; members={len(infos)}'
+            root=next(iter(roots)); calculated={}; blobs={}
+            retained={'ROUTING_DECISION.json','MANIFEST.json','SECRET_SCAN_REPORT.json','FILE_INVENTORY.json','SHA256SUMS.txt','RETURN_METADATA.json','PROOF_REVIEW/PROOF.json'}
+            for info,pure in zip(infos,pure_names):
+                relative=PurePosixPath(*pure.parts[1:]).as_posix(); digest=hashlib.sha256(); scanner=StreamingSecretScanner(); count=0
+                keep=relative in retained or relative.startswith('TASK_PACKET.'); chunks=[] if keep else None
+                with archive.open(info) as stream:
+                    while True:
+                        chunk=stream.read(CHUNK_SIZE)
+                        if not chunk: break
+                        scanner.feed(chunk); digest.update(chunk); count+=len(chunk)
+                        if chunks is not None: chunks.append(chunk)
+                if count!=info.file_size: raise PackageBlocked(f'partial ZIP member read: {relative}')
+                calculated[relative]=(digest.hexdigest(),count)
+                if chunks is not None: blobs[relative]=b''.join(chunks)
+            required={'ROUTING_DECISION.json','MANIFEST.json','SECRET_SCAN_REPORT.json','FILE_INVENTORY.json','SHA256SUMS.txt'}
+            task_members=[name for name in calculated if name.startswith('TASK_PACKET.')]
+            if len(task_members)!=1 or not required.issubset(calculated): raise PackageBlocked('required root package members missing')
+            inventory=_parse_inventory(blobs['FILE_INVENTORY.json']); sums=_parse_sums(blobs['SHA256SUMS.txt'])
+            inventory_expected=set(calculated)-{'FILE_INVENTORY.json','SHA256SUMS.txt'}
+            sums_expected=set(calculated)-{'SHA256SUMS.txt'}
+            if set(inventory)!=inventory_expected or set(sums)!=sums_expected: raise PackageBlocked('manifest member coverage mismatch')
+            for name in inventory_expected:
+                if inventory[name]!=calculated[name]: raise PackageBlocked(f'inventory hash or size mismatch: {name}')
+            for name in sums_expected:
+                if sums[name]!=calculated[name][0]: raise PackageBlocked(f'checksum mismatch: {name}')
+            report=_json_data(blobs['SECRET_SCAN_REPORT.json'],'SECRET_SCAN_REPORT.json')
+            if not isinstance(report,dict) or report.get('status')!='PASS': raise PackageBlocked('missing expected secret PASS receipt')
+            for key in ('files_scanned','bytes_scanned','files_skipped','files_unreadable','scan_errors'):
+                if type(report.get(key)) is not int or report[key]<0: raise PackageBlocked('invalid secret scan receipt counters')
+            if any(report.get(key)!=0 for key in ('files_skipped','files_unreadable','scan_errors')):
+                raise PackageBlocked('secret scan receipt records skipped or failed members')
+            primary_names=set(calculated)-{'SECRET_SCAN_REPORT.json','FILE_INVENTORY.json','SHA256SUMS.txt'}
+            if report['files_scanned']!=len(primary_names) or report['bytes_scanned']!=sum(calculated[name][1] for name in primary_names):
+                raise PackageBlocked('secret scan receipt counters do not match primary payload')
+            manifest=_json_data(blobs['MANIFEST.json'],'MANIFEST.json'); route=_json_data(blobs['ROUTING_DECISION.json'],'ROUTING_DECISION.json')
+            task_name=task_members[0]
+            if task_name.endswith('.json'):
+                task=_json_data(blobs[task_name],task_name); task_id=task.get('id') if isinstance(task,dict) else None
+            else:
+                with tempfile.NamedTemporaryFile(suffix=Path(task_name).suffix) as temporary:
+                    temporary.write(blobs[task_name]); temporary.flush(); task_id=packet_identity(temporary.name)
+            identities=[manifest.get('packet_id') if isinstance(manifest,dict) else None,route.get('packet_id') if isinstance(route,dict) else None,task_id]
+            proof_name='PROOF_REVIEW/PROOF.json'
+            if proof_name in blobs:
+                proof=_json_data(blobs[proof_name],proof_name); proof_ids=[proof[key] for key in ('packet_id','tp_id') if isinstance(proof,dict) and key in proof]
+                identities.append(assert_matching_identities(*proof_ids))
+            if manifest.get('kind')=='RETURN':
+                if 'RETURN_METADATA.json' not in blobs: raise PackageBlocked('RETURN_METADATA.json missing')
+                metadata=_json_data(blobs['RETURN_METADATA.json'],'RETURN_METADATA.json'); identities.append(metadata.get('packet_id') if isinstance(metadata,dict) else None)
+            packet_id=assert_matching_identities(*identities)
+            if not isinstance(manifest,dict) or manifest.get('schema_version')!='1.0' or manifest.get('package_root')!=root or not strict_identifier(manifest.get('project')) or manifest.get('kind') not in ('PROOF','RETURN'):
+                raise PackageBlocked('package root manifest mismatch')
+            if manifest.get('task_packet_member')!=task_name or manifest.get('inventory_scope')!='all members except FILE_INVENTORY.json and SHA256SUMS.txt' or manifest.get('sha256sums_scope')!='all members except SHA256SUMS.txt':
+                raise PackageBlocked('package manifest scope mismatch')
+            expected_prefix=f"{manifest['kind']}_{manifest['project']}_{packet_id}_"
+            if not root.startswith(expected_prefix): raise PackageBlocked('package root identity mismatch')
+        return 0,f'PASS: ZIP CRC, manifests, inventory, screening, and identity valid; members={len(infos)}'
+    except Exception as exc:
+        return 2,f'FAIL: {exc}'
+
 def cmd_verify_zip(args):
-    z=Path(args.zip).resolve()
-    with zipfile.ZipFile(z) as f:
-        bad=f.testzip(); names=f.namelist()
-    if bad: print('FAIL: corrupt member '+bad); return 2
-    print(f'PASS: zip readable, members={len(names)}'); print('SHA256='+hashlib.sha256(z.read_bytes()).hexdigest()); return 0
+    z=Path(args.zip).resolve(); code,message=verify_zip_file(z,getattr(args,'crc_only',False)); print(message)
+    if code==0: print('SHA256='+hashlib.sha256(z.read_bytes()).hexdigest())
+    return code
 
 def main():
     ap=argparse.ArgumentParser(prog='ct'); sp=ap.add_subparsers(dest='cmd',required=True)
     for name,fn in [('doctor',cmd_doctor),('snapshot',cmd_snapshot),('runner-inventory',cmd_runner_inventory)]:
         p=sp.add_parser(name); p.set_defaults(fn=fn)
+        if name=='runner-inventory': p.add_argument('--probe-models',action='store_true',help='explicitly query configured model catalogs')
     p=sp.add_parser('route-record'); p.set_defaults(fn=cmd_route_record)
     p.add_argument('--packet-id',required=True); p.add_argument('--stage',required=True); p.add_argument('--risk',required=True,choices=['L0','L1','L2','L3']); p.add_argument('--runner',required=True); p.add_argument('--runner-availability',default='PROVEN',choices=['PROVEN','PROPOSED','UNKNOWN']); p.add_argument('--agent-role',default='implementer'); p.add_argument('--custom-agent'); p.add_argument('--model',required=True); p.add_argument('--effort',required=True); p.add_argument('--why-runner',required=True); p.add_argument('--why-model',required=True); p.add_argument('--why-effort',required=True); p.add_argument('--cost-latency-tradeoff'); p.add_argument('--alternative',action='append',default=[],required=True); p.add_argument('--evidence',action='append',default=[]); p.add_argument('--fallback-runner'); p.add_argument('--fallback-model'); p.add_argument('--fallback-trigger'); p.add_argument('--audit-required',action=argparse.BooleanOptionalAction,default=None); p.add_argument('--audit-runner'); p.add_argument('--audit-model'); p.add_argument('--audit-effort'); p.add_argument('--audit-independence'); p.add_argument('--audit-rationale')
     p=sp.add_parser('validate-route'); p.add_argument('--file',required=True); p.set_defaults(fn=cmd_validate_route)
     for name,fn in [('proof-pack',cmd_proof_pack),('return-pack',cmd_return_pack)]:
-        p=sp.add_parser(name); p.set_defaults(fn=fn); p.add_argument('--packet-id',required=True); p.add_argument('--packet',required=True); p.add_argument('--proof-dir'); p.add_argument('--include',action='append',default=[]); p.add_argument('--reason'); p.add_argument('--decision-needed')
-    p=sp.add_parser('verify-zip'); p.add_argument('--zip',required=True); p.set_defaults(fn=cmd_verify_zip)
+        p=sp.add_parser(name); p.set_defaults(fn=fn); p.add_argument('--packet-id',required=True); p.add_argument('--packet',required=True); p.add_argument('--proof-dir'); p.add_argument('--include',action='append',default=[]); p.add_argument('--reason',required=name=='return-pack'); p.add_argument('--decision-needed',required=name=='return-pack')
+    p=sp.add_parser('verify-zip'); p.add_argument('--zip',required=True); p.add_argument('--crc-only',action='store_true',help='check ZIP CRC only; do not verify manifests'); p.set_defaults(fn=cmd_verify_zip)
     args=ap.parse_args(); sys.exit(args.fn(args))
 if __name__=='__main__': main()

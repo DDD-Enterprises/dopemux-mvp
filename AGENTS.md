@@ -40,14 +40,15 @@ For implementation or repo-changing work, ChatGPT/Codex must execute this lifecy
 4. Verify the worktree root, remote, branch, markers, clean status, and that execution is not in the primary checkout.
 5. Create a Task Packet before implementation; assign risk lane L0–L3 per `docs/03-reference/governance/evidence-economy.md`.
 6. Validate the Task Packet against `dopetask-canonical-spec.json` when the schema is present; otherwise perform and report a manual schema check.
-7. Implement only files in the TP allowlist, in commit-sized slices (one bounded implementer).
-8. After each meaningful slice, run the smallest relevant **deterministic** validation and inspect the diff before continuing. Do **not** run intermediate model audits.
-9. Run targeted tests, lint, or type checks where relevant; always run `git diff --check`.
-10. Run changed-contract preflight: `python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text`.
-11. Run repo pre-commit hooks if configured and safe. If a hook modifies files, re-run until clean.
-12. Freeze content head. For L2/L3 only: one independent final audit (no intermediate audits). Proof-only successors use deterministic validation only.
-13. Commit only allowed files, push the branch, and open a PR with `gh pr create` when authenticated.
-14. Emit proof and remove the dedicated worktree after PR creation when safe.
+7. For a supervised packet/workstream only, create and validate its Control Tower routing decision. Ordinary unsupervised work does not synthesize a route record.
+8. Implement only files in the TP allowlist, in commit-sized slices (one bounded implementer).
+9. After each meaningful slice, run the smallest relevant **deterministic** validation and inspect the diff before continuing. Do **not** run intermediate model audits.
+10. Run targeted tests, lint, or type checks where relevant; always run `git diff --check`.
+11. Run changed-contract preflight: `python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text`.
+12. Run repo pre-commit hooks if configured and safe. If a hook modifies files, re-run until clean.
+13. Freeze content head. For L2/L3 only: one independent final audit (no intermediate audits). Proof-only successors use deterministic validation only.
+14. Commit only allowed files, push the branch, and open a PR with `gh pr create` when authenticated.
+15. Emit proof and remove the dedicated worktree after PR creation when safe.
 
 Do not emit standalone Task Packets as the final deliverable unless the user explicitly asks for only a packet.
 
@@ -343,7 +344,7 @@ Boundaries: code/commits/PRs written normal.
 
 <!-- CONTROL_TOWER_MANAGED_BEGIN -->
 ## Control Tower Supervisor
-For any supervised packet/workstream, read `.control-tower/contracts/SUPERVISOR_OPERATING_CONTRACT.md`, `.control-tower/contracts/ARCHITECTURE_RETURN_PROTOCOL.md`, and `.control-tower/project.json`. Before substantive execution of each Task Packet, create and validate its routing decision (runner/model/effort plus justification). Use `.control-tower/bin/ct proof-pack` for upload-ready proof bundles and `.control-tower/bin/ct return-pack` whenever a supervisor/advisor return gate fires. Repository authority and live runtime/GitHub truth outrank this pointer.
+For any supervised packet/workstream, read `.control-tower/contracts/SUPERVISOR_OPERATING_CONTRACT.md`, `.control-tower/contracts/ARCHITECTURE_RETURN_PROTOCOL.md`, and `.control-tower/project.json`. After packet validation and before implementation, create and validate its routing decision (runner/model/effort plus justification). Ordinary unsupervised work does not synthesize a route record. Use `.control-tower/bin/ct proof-pack` for upload-ready proof bundles and `.control-tower/bin/ct return-pack` whenever a supervisor/advisor return gate fires. Repository authority and live runtime/GitHub truth outrank this pointer.
 <!-- CONTROL_TOWER_MANAGED_END -->
 
 <!-- CONTROL_TOWER_REPO_BEGIN -->
@@ -355,11 +356,14 @@ acceptance; the kit's generic defaults do not override them.
 
 - Run `.control-tower/bin/ct` from the authorized repository/worktree. Confirm
   that checkout has its own installation; do not use another project's state.
-- Before substantive packet execution, use `ct route-record` to record the
+- For a supervised packet only, after packet validation and before implementation,
+  use `ct route-record` to record the
   runner, model, effort, alternatives and evidence, then `ct validate-route --file`
   on the emitted path. Prefer deterministic shell work with justified
   `model=NOT_REQUIRED`; otherwise choose the cheapest adequate authorized route
   from current capability and cost evidence. Record unknowns; do not guess prices.
+- Ordinary unsupervised work uses existing repository, user, and local model-selection
+  authority without creating a synthetic Control Tower route.
 - Honor pinned models, effort, provider restrictions, retry budgets and auditor
   independence. A timeout does not authorize substitution or another attempt.
   Required independent audits remain separate from implementation.

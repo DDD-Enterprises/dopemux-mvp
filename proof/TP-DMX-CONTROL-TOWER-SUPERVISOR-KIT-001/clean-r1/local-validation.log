@@ -1,0 +1,16 @@
+COMMAND: python3 -m py_compile .control-tower/bin/ct .control-tower/tests/test_ct.py
+EXIT py_compile=0
+COMMAND: python3 -m json.tool packet and changed JSON
+EXIT json_tool=0
+COMMAND: python3 -m jsonschema -i task-packets/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json
+/Users/hue/.local/share/mise/installs/python/3.12.13/bin/python3: No module named jsonschema
+EXIT packet_schema=1
+COMMAND: .control-tower/bin/ct validate-route --file .control-tower/state/routes/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001.json
+PASS: routing decision valid
+EXIT validate_route=0
+COMMAND: git diff --check
+EXIT diff_check=0
+COMMAND: /Users/hue/.local/share/uv/tools/dopetask/bin/python -m jsonschema -i task-packets/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json
+/Users/hue/.local/share/uv/tools/dopetask/lib/python3.12/site-packages/jsonschema/__main__.py:4: DeprecationWarning: The jsonschema CLI is deprecated and will be removed in a future version. Please use check-jsonschema instead, which can be installed from https://pypi.org/project/check-jsonschema/
+  from jsonschema.cli import main
+EXIT packet_schema_dopetask_env=0
