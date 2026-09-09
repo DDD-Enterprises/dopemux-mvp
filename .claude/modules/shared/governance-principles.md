@@ -12,6 +12,14 @@
 For supervised packets, follow [Control Tower Packet Workflow](../../../AGENTS.md#control-tower-packet-workflow).
 The repository-owned integration preserves current governance and embedded-audit
 requirements; kit reports do not grant acceptance or merge authority.
+
+Control Tower records exact runtime choices as ExecutionBinding; DCP retains
+the RouteDecision policy concept. Supervisor owns packet judgment; team lead
+coordinates a MacroPacket's bounded children. Authority, risk, audit and rollback
+stay child-specific. One mutating implementer per workstream permits disjoint,
+workflow-legal siblings in parallel. External policy/workflow/context/audit refs
+are optional and remain UNKNOWN/NOT_RUN when unproven. Previews and aggregate
+returns have authority NONE; no autonomous dispatch or operator gates are minted.
 <!-- CONTROL_TOWER_ENTRY_END -->
 
 ## Read Repo Instructions First

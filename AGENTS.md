@@ -40,8 +40,8 @@ For implementation or repo-changing work, ChatGPT/Codex must execute this lifecy
 4. Verify the worktree root, remote, branch, markers, clean status, and that execution is not in the primary checkout.
 5. Create a Task Packet before implementation; assign risk lane L0–L3 per `docs/03-reference/governance/evidence-economy.md`.
 6. Validate the Task Packet against `dopetask-canonical-spec.json` when the schema is present; otherwise perform and report a manual schema check.
-7. For a supervised packet/workstream only, create and validate its Control Tower routing decision. Ordinary unsupervised work does not synthesize a route record.
-8. Implement only files in the TP allowlist, in commit-sized slices (one bounded implementer).
+7. For a supervised packet/workstream only, create and validate its Control Tower ExecutionBinding. Ordinary unsupervised work does not synthesize a binding.
+8. Implement only files in each TP allowlist, in commit-sized slices (one mutating implementer per workstream; proven-disjoint legal siblings may run concurrently).
 9. After each meaningful slice, run the smallest relevant **deterministic** validation and inspect the diff before continuing. Do **not** run intermediate model audits.
 10. Run targeted tests, lint, or type checks where relevant; always run `git diff --check`.
 11. Run changed-contract preflight: `python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text`.
@@ -344,7 +344,7 @@ Boundaries: code/commits/PRs written normal.
 
 <!-- CONTROL_TOWER_MANAGED_BEGIN -->
 ## Control Tower Supervisor
-For any supervised packet/workstream, read `.control-tower/contracts/SUPERVISOR_OPERATING_CONTRACT.md`, `.control-tower/contracts/ARCHITECTURE_RETURN_PROTOCOL.md`, and `.control-tower/project.json`. After packet validation and before implementation, create and validate its routing decision (runner/model/effort plus justification). Ordinary unsupervised work does not synthesize a route record. Use `.control-tower/bin/ct proof-pack` for upload-ready proof bundles and `.control-tower/bin/ct return-pack` whenever a supervisor/advisor return gate fires. Repository authority and live runtime/GitHub truth outrank this pointer.
+For any supervised packet/workstream, read `.control-tower/contracts/SUPERVISOR_OPERATING_CONTRACT.md`, `.control-tower/contracts/SUPERVISOR_MACROPACKET_CONTRACT.md`, `.control-tower/contracts/ARCHITECTURE_RETURN_PROTOCOL.md`, and `.control-tower/project.json`. After packet validation and before implementation, create and validate its ExecutionBinding (runner/model/effort plus justification). Ordinary unsupervised work does not synthesize a binding. Use `.control-tower/bin/ct proof-pack` for upload-ready proof bundles and `.control-tower/bin/ct return-pack` whenever a supervisor/advisor return gate fires. Repository authority and live runtime/GitHub truth outrank this pointer.
 <!-- CONTROL_TOWER_MANAGED_END -->
 
 <!-- CONTROL_TOWER_REPO_BEGIN -->
@@ -357,8 +357,8 @@ acceptance; the kit's generic defaults do not override them.
 - Run `.control-tower/bin/ct` from the authorized repository/worktree. Confirm
   that checkout has its own installation; do not use another project's state.
 - For a supervised packet only, after packet validation and before implementation,
-  use `ct route-record` to record the
-  runner, model, effort, alternatives and evidence, then `ct validate-route --file`
+  use `ct bind-record --file` to record the
+  runner, model, effort, alternatives and evidence, then `ct validate-binding --file`
   on the emitted path. Prefer deterministic shell work with justified
   `model=NOT_REQUIRED`; otherwise choose the cheapest adequate authorized route
   from current capability and cost evidence. Record unknowns; do not guess prices.
@@ -367,9 +367,9 @@ acceptance; the kit's generic defaults do not override them.
 - Honor pinned models, effort, provider restrictions, retry budgets and auditor
   independence. A timeout does not authorize substitution or another attempt.
   Required independent audits remain separate from implementation.
-- Route records under `.control-tower/state/routes/` are mutable local state.
+- ExecutionBindings under `.control-tower/state/bindings/` are mutable local state.
   Preserve each consumed decision in the packet's evidence before an authorized
-  route change; `route-record` overwrites the same packet's local record.
+  binding change; `bind-record` overwrites the same subject's local record.
 - `ct doctor` and `ct runner-inventory` inspect tools; they do not prove model
   execution, auditor independence, CI success or acceptance. Inspect command
   return codes and preserve `PASS`, `FAIL`, `NOT_RUN` and `UNKNOWN`.
@@ -378,3 +378,12 @@ acceptance; the kit's generic defaults do not override them.
   `~/Downloads/RETURN`. Packaging does not replace canonical proof validation,
   authorize an upload, record acceptance, or grant merge/activation permission.
 <!-- CONTROL_TOWER_REPO_END -->
+
+The supervisor may issue one MacroPacket containing several child Task Packets.
+The team lead coordinates them with one mutating implementer per workstream;
+child scope, risk, audit, rollback and route authority are non-transferable.
+Parallel mutation requires disjoint physical/semantic writes, canonical writers,
+custody and current workflow legality. DCP policy, Task Orchestrator transitions,
+Audit Broker certification and operator gates remain separate. Generic kit
+previews and aggregate returns have authority NONE. No autonomous dispatch,
+merge/activation authority or self-audit authority is created by a MacroPacket.

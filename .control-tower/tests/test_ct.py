@@ -13,6 +13,7 @@ import tempfile
 import unittest
 import warnings
 import zipfile
+from copy import deepcopy
 from argparse import Namespace
 from importlib.machinery import SourceFileLoader
 from pathlib import Path
@@ -79,6 +80,7 @@ class ControlTowerTests(unittest.TestCase):
         (control / "schemas").mkdir()
         (control / "templates").mkdir()
         shutil.copy2(REPO / ".control-tower/schemas/route_decision.schema.json", control / "schemas")
+        shutil.copy2(REPO / ".control-tower/schemas/execution_binding.schema.json", control / "schemas")
         shutil.copy2(REPO / ".control-tower/schemas/return_packet.schema.json", control / "schemas")
         shutil.copy2(
             REPO / ".control-tower/templates/ARCHITECTURE_RETURN_PACKET.template.md",
@@ -718,6 +720,317 @@ class ControlTowerTests(unittest.TestCase):
             )
             self.assertEqual(0, result.returncode)
             self.assertIn("CRC-only; manifests not verified", result.stdout)
+
+
+class MacroPacketTests(unittest.TestCase):
+    def binding(self):
+        return json.loads((REPO / ".control-tower/templates/EXECUTION_BINDING.template.json").read_text())
+
+    def macro(self, count=2):
+        value = json.loads((REPO / ".control-tower/templates/SUPERVISOR_MACRO_PACKET.template.json").read_text())
+        child = value["workstreams"][0]
+        value["workstreams"] = []
+        value["parallelism"]["max_mutating_workstreams"] = count
+        for index in range(count):
+            current = deepcopy(child)
+            key = f"W{index + 1:02}"
+            current.update(workstream_id=key, write_surface=[f"src/{key}/**"],
+                           canonical_writers=[key], semantic_scope=[key])
+            current["task_packet_ref"] = {"path": f"{key}.md", "sha256": str(index + 1) * 64}
+            current["execution_route"]["preferred"] = {"runner": "shell", "model": "NONE", "effort": "low"}
+            value["workstreams"].append(current)
+        return value
+
+    def snapshots(self, macro):
+        result = {}
+        for child in macro["workstreams"]:
+            canonical = {key: deepcopy(child[key]) for key in (
+                "allowed_actions", "forbidden_actions", "write_surface", "canonical_writers",
+                "semantic_scope", "delivery_risk_lane", "rollback_boundary", "mutating", "execution_route")}
+            canonical.update(task_packet_sha256=child["task_packet_ref"]["sha256"], audit_required=child["audit"]["required"])
+            result[child["workstream_id"]] = {
+                "canonical_authority": canonical, "verified_upstream": True,
+                "operator": {"source_ref": "operator/child", "allowed_actions": list(child["allowed_actions"])},
+                "repository": {"source_ref": "repository/governance", "allowed_actions": list(child["allowed_actions"])},
+                "workflow": {"status": "LEGAL", "blockers": [], "source_ref": "workflow/current",
+                             "allowed_actions": list(child["allowed_actions"])},
+                "policy": {"required": False, "status": "NOT_APPLICABLE"},
+                "status": "NOT_RUN", "write_scope_verified": True, "custody_verified": True,
+            }
+        return result
+
+    def test_binding_schema_and_independent_risk_taxonomies(self):
+        binding = self.binding()
+        self.assertEqual([], ct.validate_binding_obj(binding, REPO))
+        for key, value in [("dcp_risk_class", "L2"), ("dcp_risk_class", "R2_MEDIUM")]:
+            mutant = deepcopy(binding)
+            mutant["policy_refs"][key] = value
+            self.assertTrue(ct.validate_binding_obj(mutant, REPO))
+        mutant = deepcopy(binding)
+        mutant["authority"] = "EXECUTE"
+        self.assertTrue(ct.validate_binding_obj(mutant, REPO))
+
+    def test_binding_has_exactly_one_packet_or_macro_subject(self):
+        binding = self.binding()
+        binding["macro_id"] = "SMP-TEST-001"
+        self.assertTrue(ct.validate_binding_obj(binding, REPO))
+        del binding["packet_id"]
+        self.assertEqual([], ct.validate_binding_obj(binding, REPO))
+        del binding["macro_id"]
+        self.assertTrue(ct.validate_binding_obj(binding, REPO))
+        self.assertTrue(ct.schema_errors({}, {"oneOf": [{"required": ["a"]}, {"unknownKeyword": True}]}))
+
+    def test_upstream_l3_audit_cannot_be_weakened_by_l1_or_stage(self):
+        binding = self.binding()
+        binding["delivery"]["risk_lane"] = "L1"
+        binding["stage"] = "investigation"
+        binding["audit"]["upstream_obligations"] = [{"source_ref": "upstream/L3", "required": True}]
+        binding["audit"]["effective_required"] = False
+        self.assertTrue(ct.validate_binding_obj(binding, REPO))
+        binding["audit"]["effective_required"] = True
+        self.assertTrue(ct.validate_binding_obj(binding, REPO))
+        binding["audit"]["effective_requirement_sources"].append("upstream/L3")
+        self.assertEqual([], ct.validate_binding_obj(binding, REPO))
+
+    def test_binding_rejects_operator_authority_and_incomplete_fallback(self):
+        for action in ("merge", "activate", "mark_ready", "force_push"):
+            binding = self.binding()
+            binding["constraints"]["allowed_actions"] = [action]
+            self.assertTrue(ct.validate_binding_obj(binding, REPO))
+        binding = self.binding()
+        binding["fallback"]["allowed"] = True
+        self.assertTrue(ct.validate_binding_obj(binding, REPO))
+        binding["fallback"] = {"allowed": True, "trigger": "runner unavailable",
+                               "binding": {"runner": "shell", "model": "NONE", "effort": "low"}}
+        self.assertEqual([], ct.validate_binding_obj(binding, REPO))
+
+    def test_legacy_route_preserved_and_new_package_member_canonical(self):
+        old = valid_route()
+        before = deepcopy(old)
+        converted = ct.legacy_execution_binding(old)
+        self.assertEqual([], ct.validate_binding_obj(converted, REPO))
+        self.assertEqual(before, old)
+        self.assertEqual(old, converted["compatibility"]["legacy_record"])
+        self.assertEqual("NOT_RUN", converted["policy_refs"]["dcp_risk_class"])
+        with tempfile.TemporaryDirectory() as raw:
+            fixture = ControlTowerTests()
+            repo, packet = fixture._packaging_repo(Path(raw))
+            with mock.patch.object(ct, "repo_root", return_value=repo):
+                self.assertEqual(0, ct.package("PROOF", fixture._pack_args("TP-PACK-001", packet)))
+            archive = next((Path(raw) / "output").glob("*.zip"))
+            with zipfile.ZipFile(archive) as source:
+                names = source.namelist()
+            self.assertTrue(any(name.endswith("/EXECUTION_BINDING.json") for name in names))
+            self.assertFalse(any(name.endswith("/ROUTING_DECISION.json") for name in names))
+
+    def test_schema_positive_and_strict_negative_fixtures(self):
+        macro = self.macro()
+        self.assertEqual([], ct.validate_macro_obj(macro, REPO))
+        for key in ("may_merge", "may_activate", "may_create_canonical_packets"):
+            mutant = deepcopy(macro)
+            mutant["team_lead"][key] = True
+            self.assertTrue(ct.validate_macro_obj(mutant, REPO))
+        mutant = deepcopy(macro)
+        mutant["auto_dispatch"] = True
+        self.assertTrue(ct.validate_macro_obj(mutant, REPO))
+        mutant = deepcopy(macro)
+        mutant["parallelism"]["max_mutating_workstreams"] = True
+        self.assertTrue(ct.validate_macro_obj(mutant, REPO))
+
+    def test_legacy_fallback_needs_explicit_effort_rebinding(self):
+        old = valid_route()
+        old["fallback"] = {"runner": "alternate", "model": "exact", "trigger": "unavailable"}
+        self.assertEqual([], ct.validate_route_obj(old, REPO))
+        converted = ct.legacy_execution_binding(old)
+        self.assertEqual(old, converted["compatibility"]["legacy_record"])
+        self.assertTrue(ct.validate_binding_obj(converted, REPO))
+        converted["fallback"]["binding"]["effort"] = "low"
+        self.assertEqual([], ct.validate_binding_obj(converted, REPO))
+
+    def test_immutable_packet_and_coordinator_refs_block_drift_and_symlinks(self):
+        macro = self.macro()
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            refs = [macro["team_lead"]["execution_binding_ref"]] + [c["task_packet_ref"] for c in macro["workstreams"]]
+            for ref in refs:
+                path = root / ref["path"]
+                path.write_text("immutable authority\n")
+                ref["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+            coordinator = self.binding()
+            del coordinator["packet_id"]
+            coordinator["macro_id"] = macro["macro_id"]
+            coordinator_path = root / refs[0]["path"]
+            coordinator_path.write_text(json.dumps(coordinator))
+            refs[0]["sha256"] = hashlib.sha256(coordinator_path.read_bytes()).hexdigest()
+            self.assertEqual([], ct.validate_macro_obj(macro, REPO, root))
+            original_bytes = coordinator_path.read_bytes()
+            original_scan = ct.scan_regular_file
+            scans = []
+            def drift_after_scan(path):
+                result = original_scan(path)
+                if path == coordinator_path:
+                    scans.append(path)
+                    if len(scans) == 2:
+                        changed = deepcopy(coordinator)
+                        changed["selection"]["runner"] = "unbound-runner"
+                        coordinator_path.write_text(json.dumps(changed))
+                return result
+            with mock.patch.object(ct, "scan_regular_file", side_effect=drift_after_scan):
+                self.assertTrue(ct.validate_macro_obj(macro, REPO, root))
+            coordinator_path.write_bytes(original_bytes)
+            (root / "W01.md").write_text("changed\n")
+            self.assertTrue(ct.validate_macro_obj(macro, REPO, root))
+            (root / "W01.md").unlink()
+            (root / "W01.md").symlink_to(root / "W02.md")
+            self.assertTrue(ct.validate_macro_obj(macro, REPO, root))
+            macro["workstreams"][0]["task_packet_ref"]["path"] = "../W01.md"
+            self.assertTrue(ct.validate_macro_obj(macro, REPO, root))
+
+    def test_dag_cycle_unknown_dependency_and_unknown_join_block(self):
+        for mode in ("cycle", "unknown", "join", "duplicate"):
+            macro = self.macro()
+            if mode == "cycle":
+                macro["workstreams"][0]["dependencies"] = ["W02"]
+                macro["workstreams"][1]["dependencies"] = ["W01"]
+            elif mode == "unknown": macro["workstreams"][0]["dependencies"] = ["MISSING"]
+            elif mode == "join": macro["joins"] = [{"join_id": "J01", "requires": ["MISSING"], "condition": "all"}]
+            else: macro["workstreams"][1]["workstream_id"] = "W01"
+            self.assertTrue(ct.validate_macro_obj(macro, REPO), mode)
+
+    def test_disjoint_l1_siblings_and_readonly_companion_preview_concurrently(self):
+        macro = self.macro()
+        snapshot = self.snapshots(macro)
+        result = ct.preview_macro(macro, snapshot, REPO)
+        self.assertEqual([["W01", "W02"]], result["candidate_batches"])
+        self.assertEqual("NONE", result["authority"])
+        self.assertEqual("PREVIEW_ONLY", result["status"])
+        macro["workstreams"][1].update(mutating=False, write_surface=[])
+        result = ct.preview_macro(macro, self.snapshots(macro), REPO)
+        self.assertEqual([["W01", "W02"]], result["candidate_batches"])
+
+    def test_preview_is_inert_deterministic_and_requires_custody(self):
+        macro = self.macro()
+        snapshots = self.snapshots(macro)
+        before = deepcopy((macro, snapshots))
+        with mock.patch.object(ct, "run", side_effect=AssertionError("must not dispatch")):
+            first = ct.preview_macro(macro, snapshots, REPO)
+            second = ct.preview_macro(macro, snapshots, REPO)
+        self.assertEqual(first, second)
+        self.assertEqual(before, (macro, snapshots))
+        self.assertEqual("NONE", first["dcp_summary"]["authority"])
+        snapshots["W01"]["custody_verified"] = False
+        self.assertEqual([["W02"]], ct.preview_macro(macro, snapshots, REPO)["candidate_batches"])
+
+    def test_overlap_shared_writer_and_semantic_collisions_require_explicit_serialization(self):
+        for key, value in [("write_surface", ["SRC/W01/child.py"]), ("canonical_writers", ["W01"]), ("semantic_scope", ["W01"])]:
+            macro = self.macro()
+            macro["workstreams"][1][key] = value
+            self.assertTrue(ct.validate_macro_obj(macro, REPO), key)
+            macro["workstreams"][1]["dependencies"] = ["W01"]
+            self.assertEqual([], ct.validate_macro_obj(macro, REPO), key)
+        macro = self.macro()
+        macro["workstreams"][1]["write_surface"] = ["src/*/child.py"]
+        self.assertTrue(ct.validate_macro_obj(macro, REPO))
+
+    def test_child_authority_cannot_transfer_or_widen_or_hide_writers(self):
+        macro = self.macro()
+        snapshots = self.snapshots(macro)
+        mutations = [("allowed_actions", ["read", "edit", "validate", "publish"]),
+                     ("write_surface", ["src/W02/**"]), ("delivery_risk_lane", "L0"),
+                     ("canonical_writers", ["W02"]), ("semantic_scope", ["W02"]),
+                     ("rollback_boundary", "shared rollback")]
+        for key, value in mutations:
+            mutant = deepcopy(macro)
+            mutant["authority"]["global_allowed_actions"].append("publish")
+            mutant["workstreams"][0][key] = value
+            result = ct.preview_macro(mutant, snapshots, REPO)
+            self.assertFalse(result["children"].get("W01", {}).get("candidate", False), key)
+        snapshots["W01"]["canonical_authority"]["audit_required"] = True
+        result = ct.preview_macro(macro, snapshots, REPO)
+        self.assertIn("CHILD_AUDIT_WAIVED", result["children"]["W01"]["blockers"])
+
+    def test_policy_workflow_operator_and_repository_denials_remain_local(self):
+        macro = self.macro()
+        for mode in ("DCP_UNKNOWN", "DCP_BLOCKED", "workflow", "operator", "repository", "unverified", "physical"):
+            snapshots = self.snapshots(macro)
+            mutant = deepcopy(macro)
+            first = snapshots["W01"]
+            if mode.startswith("DCP_"):
+                mutant["workstreams"][0]["dcp_status"] = mode[4:]
+                first["policy"] = {"required": True, "status": mode[4:]}
+            elif mode == "workflow": first["workflow"]["blockers"] = ["waiting"]
+            elif mode in ("operator", "repository"): first[mode]["allowed_actions"] = []
+            elif mode == "unverified": first["verified_upstream"] = False
+            else: first["write_scope_verified"] = False
+            result = ct.preview_macro(mutant, snapshots, REPO)
+            self.assertFalse(result["children"]["W01"]["candidate"], mode)
+            self.assertEqual([["W02"]], result["candidate_batches"], mode)
+
+    def test_l3_gate_and_upstream_audit_hold_only_affected_child(self):
+        macro = self.macro(3)
+        macro["workstreams"][0]["delivery_risk_lane"] = "L3"
+        macro["workstreams"][0]["audit"]["required"] = True
+        snapshots = self.snapshots(macro)
+        snapshots["W02"]["policy"]["audit_required"] = True
+        result = ct.preview_macro(macro, snapshots, REPO)
+        self.assertEqual([["W03"]], result["candidate_batches"])
+        self.assertEqual(["W01"], result["operator_gates_needed"])
+        self.assertIn("UPSTREAM_AUDIT_REQUIRED", result["children"]["W02"]["blockers"])
+
+    def test_independent_failure_does_not_stop_sibling_but_global_stop_does(self):
+        macro = self.macro()
+        macro["authority"]["global_stop_conditions"] = ["credential exposure"]
+        snapshots = self.snapshots(macro)
+        snapshots["W01"]["status"] = "FAIL"
+        self.assertEqual([["W02"]], ct.preview_macro(macro, snapshots, REPO)["candidate_batches"])
+        snapshots["W01"]["global_stop_triggered"] = True
+        self.assertEqual([], ct.preview_macro(macro, snapshots, REPO)["candidate_batches"])
+
+    def test_l3_operator_gate_requires_literal_true(self):
+        macro = self.macro()
+        macro["workstreams"][0]["delivery_risk_lane"] = "L3"
+        macro["workstreams"][0]["audit"]["required"] = True
+        for gate in (None, False, "false", "true", 1, [], {}):
+            snapshots = self.snapshots(macro)
+            snapshots["W01"]["operator_gate_verified"] = gate
+            result = ct.preview_macro(macro, snapshots, REPO)
+            self.assertEqual([["W02"]], result["candidate_batches"], repr(gate))
+        snapshots["W01"]["operator_gate_verified"] = True
+        self.assertEqual([["W01", "W02"]], ct.preview_macro(macro, snapshots, REPO)["candidate_batches"])
+
+    def test_dependency_completion_requires_bound_verified_source(self):
+        macro = self.macro()
+        macro["workstreams"][1]["dependencies"] = ["W01"]
+        snapshots = self.snapshots(macro)
+        snapshots["W01"].update(status="PASS", completion_verified=True)
+        self.assertEqual([], ct.preview_macro(macro, snapshots, REPO)["candidate_batches"])
+        snapshots["W01"]["completion_source_ref"] = "workflow/accepted-receipt"
+        self.assertEqual([["W02"]], ct.preview_macro(macro, snapshots, REPO)["candidate_batches"])
+        snapshots["W01"]["canonical_authority"]["task_packet_sha256"] = "f" * 64
+        self.assertEqual([], ct.preview_macro(macro, snapshots, REPO)["candidate_batches"])
+
+    def test_fallback_must_be_exact_pre_authorized_tuple(self):
+        macro = self.macro()
+        fallback = {"runner": "alternate", "model": "exact", "effort": "low"}
+        macro["workstreams"][0]["execution_route"]["allowed_fallbacks"] = [fallback]
+        snapshots = self.snapshots(macro)
+        snapshots["W01"].update(route_failed=True, selected_fallback=fallback)
+        self.assertTrue(ct.preview_macro(macro, snapshots, REPO)["children"]["W01"]["candidate"])
+        snapshots["W01"]["selected_fallback"] = dict(fallback, model="different")
+        self.assertIn("ROUTE_CEILING_EXCEEDED", ct.preview_macro(macro, snapshots, REPO)["children"]["W01"]["blockers"])
+
+    def test_aggregate_preserves_mixed_status_and_never_mints_finality(self):
+        macro = self.macro()
+        reports = {child["workstream_id"]: {"status": status, "task_packet_sha256": child["task_packet_ref"]["sha256"],
+                    "execution_subject": "a" * 40, "operator_gates_needed": ["audit"], "supervisor_decisions_needed": ["repair"]}
+                   for child, status in zip(macro["workstreams"], ["PASS", "FAIL"])}
+        result = ct.macro_return(macro, reports)
+        self.assertEqual("RETURNED_FOR_SUPERVISOR", result["status"])
+        self.assertEqual("NONE", result["authority"])
+        self.assertEqual("FAIL", result["children"]["W02"]["status"])
+        self.assertEqual(["audit"], result["operator_gates_needed"])
+        reports["W01"]["proof"] = {"subject": "b" * 40, "task_packet_sha256": reports["W01"]["task_packet_sha256"]}
+        self.assertEqual("BLOCKED", ct.macro_return(macro, reports)["status"])
 
 
 if __name__ == "__main__":

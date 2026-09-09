@@ -1,77 +1,86 @@
 # Supervisor Operating Contract
 
-## Role
+## Roles and authority
 
-One primary execution supervisor coordinates the workstream. It may delegate bounded tasks, but it remains responsible for evidence quality, scope, stop conditions, and current truth.
+The Control Tower supervisor owns program judgment, packet decomposition and
+adjudication within operator authority. It may issue one Supervisor MacroPacket
+containing several bounded child Task Packets.
 
-## Truth precedence
+The execution coordinator / team lead consumes that envelope and its exact
+ExecutionBinding. It coordinates legal work, delegates within each child's
+ceiling and collects evidence. It cannot author new canonical packet authority,
+change child scope/risk/audit/rollback, or serve as its own independent auditor.
 
-1. runtime code/config/tests/entrypoints/live GitHub;
-2. current truth/system/governance docs;
-3. active Task Packet/proof/audit/handoff claims;
-4. official vendor docs;
-5. inference.
+DCP owns policy eligibility and obligations; Task Orchestrator owns workflow
+legality; Universal Router ranks eligible candidates; Audit Broker supplies
+certified auditor evidence; Dopetask performs separately authorized execution.
+These remain separate authorities. The generic kit requires none of their
+runtimes. Optional references do not imply an integration has run.
 
-Use `OBSERVED`, `INFERRED`, `PROPOSED`, `CLAIMED`, `CONFLICTING`, `UNKNOWN`, `NOT_RUN`, and `STALE` where they materially clarify state.
+## Truth and dispatch boundaries
 
-## Mandatory routing decision per supervised packet
+Active repository governance and Task Packets control execution scope. Observed
+runtime, source and current GitHub evidence control behavior claims. Historical
+proof and model output never create current authority.
 
-After validating a supervised Task Packet and before implementation, the
-supervisor MUST create and validate a `ROUTING_DECISION.json` for that packet.
-Ordinary unsupervised work does not create a synthetic Control Tower route.
-Canonical repository governance and the active packet outrank generic kit defaults.
+For each child, allowed actions are the intersection of applicable operator,
+packet, repository, policy and legal workflow bounds. Denials combine by union;
+audit/proof obligations combine by maximum strictness. No child can borrow a
+sibling's permission. An L3 upstream audit requirement cannot be lowered by a
+local L1 binding or an investigation stage.
 
-It must choose, defend, and justify:
+Use OBSERVED, INFERRED, PROPOSED, CONFLICTING, UNKNOWN, NOT_RUN and STALE honestly.
 
-- runner;
-- model, or `NOT_REQUIRED`;
-- effort;
-- alternatives and why they were rejected/reserved;
-- fallback trigger where useful;
-- auditor route and independence for risk lanes that require it.
+## ExecutionBinding
 
-Availability must be based on live-discovered evidence. Recommendations do not grant authority.
+For every supervised packet, validate scope and then record its exact binding
+before implementation. Ordinary unsupervised work does not synthesize a binding.
 
-## Economy
+Canonical schema: `control_tower.execution_binding.v1`.
+Canonical artifact: `EXECUTION_BINDING.json`.
+Start with `templates/EXECUTION_BINDING.template.json`, fill current evidence,
+then run `ct bind-record --file <binding>` and `ct validate-binding --file <binding>`.
 
-- deterministic work -> shell/local;
-- one bounded implementer;
-- final model audit only after substantive content is frozen;
-- no re-audit of unchanged proof-only successors;
-- avoid packet recursion for formatting, hashes, manifests, or schema-only repairs;
-- one substantive repair attempt before changing family/escalating.
+Use exactly one subject: `packet_id` for a child or `macro_id` for the coordinator.
+The coordinator's binding does not authorize child mutation. Bind each child
+inside its own preferred/fallback set. Unavailable authorized routes return
+`ROUTE_CEILING_EXCEEDED` or `NO_POLICY_ELIGIBLE_LIVE_ROUTE`; no silent fallback.
 
-## Risk lanes
+Record exact runner/model/effort, availability, containment evidence, alternatives,
+identity provenance, constraints, external references and effective audit sources.
+Configured, response-claimed and provider-attested identity remain separate.
+Unknown external producers stay UNKNOWN/NOT_RUN.
 
-- L0 deterministic: no model audit normally required.
-- L1 bounded: focused + relevant complete tests; audit optional unless repo policy requires it.
-- L2 material: one final independent audit on frozen head.
-- L3 trust/security/authority: explicit operator gate, rollback, final independent audit, finality/Steward evidence.
+Delivery lanes L0-L3 and DCP classes R0_READ through RED_LANE are independent.
+Never infer a DCP class from a delivery lane. A binding has authority NONE:
+validation does not grant execution, attest availability or override policy.
+DCP's RouteDecision name is not used for current Control Tower bindings.
 
-When uncertain, use the higher lane.
+## Economy and concurrency
 
-## Independent audit
+Prefer deterministic local checks; otherwise choose the cheapest adequate
+authorized route from current evidence. Respect pinned models and retry budgets.
+One mutating implementer per workstream; several mutating workstreams may run
+concurrently only with disjoint physical/semantic write surfaces, canonical
+writers, rollback and custody, plus current legal workflow state. Shared writers
+require an explicit serialized dependency. See SUPERVISOR_MACROPACKET_CONTRACT.md.
 
-The auditor must review the final frozen substantive head, have mutation authority NONE, and meet the independence contract for the lane. Preserve its raw verdict. Do not reinterpret `FAIL` into `PASS`.
+L0 normally needs no model audit. L1 uses focused deterministic checks unless a
+stronger source requires audit. L2/L3 require one final independent audit after
+substantive freeze. Preserve upstream requirements even when this stage stops
+before audit. No intermediate model audits or redundant audits of unchanged bytes.
 
-## Operator-only gates by default
+## Operator and return gates
 
-- merge;
-- force push / history rewrite;
-- branch protection;
-- branch deletion;
-- credentials / permissions;
-- production mutation;
-- migrations;
-- publish / activate;
-- security residual-risk acceptance.
+Merge, activation, readiness promotion, force push/history rewrite, permissions,
+credentials, production, migrations and security risk acceptance remain separately
+gated. A packet reference or model recommendation never synthesizes an operator gate.
 
-Per-project config may add stricter gates but should not silently remove these without explicit project governance.
+Preserve failed evidence and raw independent audit verdicts. On an applicable
+supervisor/operator gate or global stop, stop substantive work and use
+`ct return-pack`. Otherwise continue legal independent siblings and return one
+aggregate result with each child status and exact subject preserved.
 
-## Architecture / supervisor returns
-
-When a return trigger fires, stop substantive mutation and run `ct return-pack`. The ZIP in `~/Downloads/RETURN` is the handoff artifact.
-
-## Completion discipline
-
-Never claim `DONE`, `READY`, or `PASS` without current proof. Historical proof remains evidence, not automatically current authority after substantive changes.
+The team lead cannot mint READY/DONE/PASS from mixed child states or model output.
+No autonomous workstream promotion, new MacroPacket creation or next-macro dispatch
+is implemented or authorized by this generic kit.

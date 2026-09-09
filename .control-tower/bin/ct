@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 import argparse, json, os, re, shutil, stat, subprocess, sys, tempfile, hashlib, zipfile
+from itertools import combinations
 from pathlib import Path, PurePosixPath
 from datetime import datetime, timezone
 from urllib.parse import urlsplit
@@ -90,7 +91,7 @@ def route_path(repo,packet_id):
 
 SCHEMA_KEYWORDS={
     '$schema','type','required','properties','enum','const','minLength','minItems',
-    'items','additionalProperties','pattern'
+    'items','additionalProperties','pattern','oneOf'
 }
 SCHEMA_TYPES={'object','array','string','integer','number','boolean','null'}
 
@@ -106,6 +107,11 @@ def _schema_definition_errors(schema, where='$'):
     else:
         for key,child in props.items(): errs.extend(_schema_definition_errors(child,f'{where}.properties.{key}'))
     if 'items' in schema: errs.extend(_schema_definition_errors(schema['items'],f'{where}.items'))
+    if 'oneOf' in schema:
+        branches=schema['oneOf']
+        if not isinstance(branches,list) or not branches: errs.append(f'{where}.oneOf: must be a nonempty array')
+        else:
+            for index,branch in enumerate(branches): errs.extend(_schema_definition_errors(branch,f'{where}.oneOf[{index}]'))
     extra=schema.get('additionalProperties')
     if extra is not None and not isinstance(extra,(bool,dict)): errs.append(f'{where}.additionalProperties: must be boolean or object')
     elif isinstance(extra,dict): errs.extend(_schema_definition_errors(extra,f'{where}.additionalProperties'))
@@ -130,6 +136,8 @@ def _schema_instance_errors(value,schema,where='$'):
         'null':lambda x:x is None,
     }
     if typ and not checks[typ](value): return [f'{where}: expected {typ}']
+    if 'oneOf' in schema and sum(not _schema_instance_errors(value,branch,where) for branch in schema['oneOf'])!=1:
+        errs.append(f'{where}: exactly one oneOf branch must match')
     if 'const' in schema and not _json_equal(value,schema['const']): errs.append(f'{where}: value does not match const')
     if 'enum' in schema and not any(_json_equal(value,item) for item in schema['enum']): errs.append(f'{where}: value is not in enum')
     if isinstance(value,str):
@@ -170,6 +178,8 @@ def _load_json(path):
     except Exception as exc: raise PackageBlocked(f'{type(exc).__name__}: cannot load JSON {path}') from exc
 
 def validate_route_obj(d,repo=None):
+    if isinstance(d,dict) and d.get('schema_version')=='control_tower.execution_binding.v1':
+        return validate_binding_obj(d,repo)
     repo=Path(repo) if repo is not None else repo_root()
     try: schema=_load_json(ct_root(repo)/'schemas/route_decision.schema.json')
     except PackageBlocked as exc: return [str(exc)]
@@ -196,7 +206,10 @@ def cmd_route_record(args):
     d={'schema_version':'1.0','packet_id':args.packet_id,'stage':args.stage,'risk_lane':args.risk,'selection':{'runner':args.runner,'runner_availability':args.runner_availability,'agent_role':args.agent_role,'custom_agent':args.custom_agent,'model':args.model,'effort':args.effort},'justification':{'why_runner':args.why_runner,'why_model':args.why_model,'why_effort':args.why_effort,'cost_latency_tradeoff':args.cost_latency_tradeoff or '', 'alternatives_considered':alternatives,'evidence':args.evidence},'fallback':{'runner':args.fallback_runner,'model':args.fallback_model,'trigger':args.fallback_trigger},'audit':{'required':audit_required,'runner':args.audit_runner,'model':args.audit_model,'effort':args.audit_effort,'independence':args.audit_independence,'rationale':args.audit_rationale or ''},'recorded_at':now_stamp()}
     errs=validate_route_obj(d)
     if errs: print('\n'.join('ERROR: '+e for e in errs),file=sys.stderr); return 2
-    try: out=route_path(repo,args.packet_id)
+    d=legacy_execution_binding(d)
+    errors=validate_binding_obj(d,repo)
+    if errors: print('\n'.join('ERROR: '+e for e in errors),file=sys.stderr); return 2
+    try: out=binding_path(repo,args.packet_id)
     except PackageBlocked as exc: print('ERROR: '+str(exc),file=sys.stderr); return 2
     out.write_text(json.dumps(d,indent=2,sort_keys=True)+'\n'); print(out); return 0
 
@@ -204,15 +217,337 @@ def cmd_validate_route(args):
     try: d=_load_json(args.file); errs=validate_route_obj(d)
     except PackageBlocked as exc: print('ERROR: '+str(exc)); return 2
     if errs: print('\n'.join('ERROR: '+e for e in errs)); return 2
-    print('PASS: routing decision valid'); return 0
+    print('PASS: execution binding or historical record valid; execution authority NONE'); return 0
 
 def get_route(repo, packet_id):
-    p=route_path(repo,packet_id)
+    canonical=binding_path(repo,packet_id)
+    p=canonical if canonical.exists() else route_path(repo,packet_id)
     if not p.exists(): raise PackageBlocked(f'ERROR: no routing decision for {packet_id}: {p}')
     d=_load_json(p); errs=validate_route_obj(d,repo)
     if errs: raise PackageBlocked('ERROR: invalid routing decision: '+'; '.join(errs))
-    assert_matching_identities(packet_id,d.get('packet_id'))
+    assert_matching_identities(packet_id,d.get('packet_id',d.get('macro_id')))
     return p
+
+
+def binding_path(repo,packet_id):
+    if not strict_identifier(packet_id): raise PackageBlocked('BLOCK_PACKET_IDENTITY_INVALID: invalid packet id')
+    directory=state_dir(repo)/'bindings'; directory.mkdir(parents=True,exist_ok=True)
+    return directory/(packet_id+'.json')
+
+
+def legacy_execution_binding(record):
+    """Explicit transport migration; retained legacy bytes are not DCP policy."""
+    if record.get('schema_version')=='control_tower.execution_binding.v1': return record
+    selected=record['selection']; audit=record['audit']; fallback=record.get('fallback',{})
+    lane=record['risk_lane']; required=audit['required']
+    return {
+        'schema_version':'control_tower.execution_binding.v1',
+        'packet_id':record['packet_id'],'stage':record['stage'],'authority':'NONE',
+        'authority_refs':{'task_packet_ref':'UNKNOWN','operator_gate_refs':[]},
+        'policy_refs':{'dcp_route_decision_ref':'NOT_RUN','dcp_status':'NOT_RUN','dcp_risk_class':'NOT_RUN',
+            'task_orchestrator_state_ref':'NOT_RUN','universal_router_recommendation_ref':'NOT_RUN',
+            'audit_broker_certification_ref':'NOT_RUN','context_packet_ref':'NOT_RUN'},
+        'delivery':{'risk_lane':lane},
+        'selection':{key:selected[key] for key in ('runner','runner_availability','model','effort')} | {
+            'connector':'UNKNOWN','configured_identity':'UNKNOWN','response_claimed_identity':'UNKNOWN',
+            'provider_attested_identity':'UNKNOWN','containment_evidence':[]},
+        'constraints':{'allowed_actions':[],'forbidden_actions':['merge','activate'],
+            'stop_conditions':[],'custody_constraints':[],'context_constraints':[]},
+        'justification':record['justification'],
+        'audit':{'effective_required':required,
+            'effective_requirement_sources':[f'delivery:{lane}'] if lane in {'L2','L3'} else (['legacy:required'] if required else []),
+            'upstream_obligations':[],'selected_auditor_binding':'NOT_RUN'},
+        'fallback':{'allowed':bool(fallback.get('runner') and fallback.get('model')),
+            'trigger':fallback.get('trigger') or 'NOT_RUN',
+            'binding':{'runner':fallback.get('runner') or 'NOT_RUN','model':fallback.get('model') or 'NOT_RUN','effort':'UNKNOWN'}},
+        'compatibility':{'legacy_source':'control_tower.routing_record.v1','legacy_record':record},
+    }
+
+
+def validate_binding_obj(binding,repo=None):
+    repo=Path(repo) if repo is not None else repo_root()
+    try: schema=_load_json(ct_root(repo)/'schemas/execution_binding.schema.json')
+    except PackageBlocked as exc: return [str(exc)]
+    errors=schema_errors(binding,schema)
+    if errors: return errors
+    if not strict_identifier(binding.get('packet_id',binding.get('macro_id'))): errors.append('invalid binding subject identity')
+    audit=binding['audit']; lane=binding['delivery']['risk_lane']
+    upstream=[entry['source_ref'] for entry in audit['upstream_obligations'] if entry['required']]
+    if (lane in {'L2','L3'} or upstream) and not audit['effective_required']:
+        errors.append('upstream/delivery audit obligation cannot be weakened')
+    required_sources=set(upstream)
+    if lane in {'L2','L3'}: required_sources.add(f'delivery:{lane}')
+    if not required_sources.issubset(audit['effective_requirement_sources']):
+        errors.append('audit requirement sources omit upstream/delivery obligation')
+    if audit['effective_required'] and not audit['effective_requirement_sources']:
+        errors.append('effective audit requires requirement sources')
+    policy=binding['policy_refs']
+    if policy['dcp_status']=='PASS' and policy['dcp_route_decision_ref'] in {'UNKNOWN','NOT_RUN'}:
+        errors.append('DCP PASS requires an external policy reference')
+    if policy['dcp_status']=='NOT_RUN' and policy['dcp_risk_class']!='NOT_RUN':
+        errors.append('DCP risk cannot be inferred without DCP policy')
+    constraints=binding['constraints']
+    if set(constraints['allowed_actions']) & set(constraints['forbidden_actions']):
+        errors.append('binding allowed/forbidden action conflict')
+    if set(constraints['allowed_actions']) & {'merge','activate','mark_ready','force_push'}:
+        errors.append('binding cannot create operator gate authority')
+    fallback=binding['fallback']
+    if fallback['allowed'] and (fallback['trigger'] in {'UNKNOWN','NOT_RUN'} or
+            any(value in {'UNKNOWN','NOT_RUN'} for value in fallback['binding'].values())):
+        errors.append('fallback requires explicit trigger and exact pre-authorized route')
+    return errors
+
+
+def cmd_binding_record(args):
+    repo=repo_root(); binding=_load_json(args.file); errors=validate_binding_obj(binding,repo)
+    if errors: raise PackageBlocked('BLOCKED_BINDING: '+'; '.join(errors))
+    path=binding_path(repo,binding.get('packet_id',binding.get('macro_id'))); _write_json(path,binding); print(path); return 0
+
+
+def cmd_validate_binding(args):
+    errors=validate_binding_obj(_load_json(args.file))
+    if errors: print('\n'.join('ERROR: '+error for error in errors)); return 2
+    print('PASS: ExecutionBinding valid; execution authority NONE'); return 0
+
+
+def _relative_surface(value):
+    """Conservative portable overlap domain: literal path or terminal /** only."""
+    if not isinstance(value,str) or not value or '\\' in value: raise ValueError('invalid relative surface')
+    prefix=value.endswith('/**'); raw=value[:-3] if prefix else value.rstrip('/')
+    if not raw or raw.startswith('/') or any(part in {'','.','..'} for part in raw.split('/')):
+        raise ValueError('unsafe relative surface')
+    if any(char in raw for char in '*?[]{}'): raise ValueError('unsupported write-surface pattern')
+    return raw.casefold(),prefix or value.endswith('/')
+
+
+def _surface_contains(parent,child):
+    p,recursive=_relative_surface(parent); c,child_recursive=_relative_surface(child)
+    return (p==c and (recursive or not child_recursive)) or (recursive and c.startswith(p+'/'))
+
+
+def _surfaces_overlap(left,right):
+    return any(_surface_contains(a,b) or _surface_contains(b,a) for a in left for b in right)
+
+
+def _bound_reference(root,reference,read_json=False):
+    raw=reference['path']; path,recursive=_relative_surface(raw)
+    if recursive: raise PackageBlocked('immutable reference must name one file')
+    candidate=Path(root)
+    for part in raw.split('/'):
+        candidate=candidate/part
+        if candidate.is_symlink(): raise PackageBlocked('immutable reference cannot traverse symlink')
+    if not candidate.resolve().is_relative_to(Path(root).resolve()): raise PackageBlocked('reference escaped package')
+    if not candidate.is_file(): raise PackageBlocked('immutable reference missing')
+    digest,_size=scan_regular_file(candidate)
+    if digest!=reference['sha256']: raise PackageBlocked('immutable reference digest mismatch')
+    if read_json:
+        descriptor=os.open(candidate,os.O_RDONLY|getattr(os,'O_NOFOLLOW',0)|getattr(os,'O_NONBLOCK',0))
+        with os.fdopen(descriptor,'rb') as source:
+            if not stat.S_ISREG(os.fstat(source.fileno()).st_mode): raise PackageBlocked('immutable reference is not regular')
+            data=source.read()
+        if hashlib.sha256(data).hexdigest()!=reference['sha256']:
+            raise PackageBlocked('immutable JSON reference changed before parsing')
+        return _json_data(data,str(candidate))
+    return candidate
+
+
+def macro_pairs(macro):
+    children={child['workstream_id']:child for child in macro['workstreams']}
+    def ancestors(key):
+        found=set(); pending=list(children[key]['dependencies'])
+        while pending:
+            current=pending.pop()
+            if current not in found:
+                found.add(current); pending.extend(children[current]['dependencies'])
+        return found
+    pairs=[]
+    for a,b in combinations(sorted(children),2):
+        left=children[a]; right=children[b]
+        if a in ancestors(b) or b in ancestors(a): classification='DEPENDENCY_SERIALIZED'
+        elif not (left['mutating'] and right['mutating']): classification='READ_ONLY_COMPANION'
+        elif _surfaces_overlap(left['write_surface'],right['write_surface']): classification='WRITE_OVERLAP'
+        elif set(left['canonical_writers']) & set(right['canonical_writers']): classification='SHARED_CANONICAL_WRITER'
+        elif set(left['semantic_scope']) & set(right['semantic_scope']): classification='SEMANTIC_OVERLAP'
+        else: classification='DISJOINT'
+        pairs.append({'workstreams':[a,b],'classification':classification})
+    return pairs
+
+
+def validate_macro_obj(macro,repo=None,package_root=None):
+    repo=Path(repo) if repo is not None else repo_root()
+    try: schema=_load_json(ct_root(repo)/'schemas/supervisor_macro_packet.schema.json')
+    except PackageBlocked as exc: return [str(exc)]
+    errors=schema_errors(macro,schema)
+    if errors: return errors
+    ids=[child['workstream_id'] for child in macro['workstreams']]
+    if len(set(ids))!=len(ids) or not all(strict_identifier(key) for key in ids): errors.append('duplicate/invalid child identity')
+    if not strict_identifier(macro['macro_id']): errors.append('invalid macro identity')
+    if macro['parallelism']['max_mutating_workstreams']<0: errors.append('negative parallel limit')
+    graph={child['workstream_id']:child['dependencies'] for child in macro['workstreams']}
+    remaining=set(graph)
+    while remaining:
+        ready={key for key in remaining if not (set(graph[key]) & remaining)}
+        if not ready: errors.append('dependency DAG contains a cycle'); break
+        remaining-=ready
+    for child in macro['workstreams']:
+        if any(dep not in graph for dep in child['dependencies']): errors.append('dependency does not resolve')
+        if len(set(child['dependencies']))!=len(child['dependencies']): errors.append('duplicate dependency')
+        try:
+            for surface in child['write_surface']: _relative_surface(surface)
+        except ValueError as exc: errors.append(str(exc))
+        if child['mutating'] and any(not child[key] for key in ('write_surface','canonical_writers','semantic_scope')):
+            errors.append('mutating child requires write, semantic and canonical-writer bounds')
+        if not child['mutating'] and child['write_surface']: errors.append('read-only child cannot claim writes')
+        if set(child['allowed_actions']) & (set(child['forbidden_actions'])|set(macro['authority']['global_forbidden_actions'])):
+            errors.append('child allowed action violates a denial')
+        if not set(child['allowed_actions']).issubset(macro['authority']['global_allowed_actions']):
+            errors.append('child actions exceed global ceiling')
+        if child['delivery_risk_lane'] in {'L2','L3'} and not child['audit']['required']:
+            errors.append('child delivery audit obligation cannot be waived')
+    join_ids=[join['join_id'] for join in macro['joins']]
+    if len(set(join_ids))!=len(join_ids): errors.append('duplicate join identity')
+    for join in macro['joins']:
+        if not join['requires'] or any(key not in graph for key in join['requires']): errors.append('join dependency does not resolve')
+    if not errors:
+        for pair in macro_pairs(macro):
+            if pair['classification'] in {'WRITE_OVERLAP','SHARED_CANONICAL_WRITER','SEMANTIC_OVERLAP'}:
+                errors.append('parallel conflict: '+'/'.join(pair['workstreams'])+' '+pair['classification'])
+    if package_root is not None:
+        for reference in [macro['team_lead']['execution_binding_ref']]+[child['task_packet_ref'] for child in macro['workstreams']]:
+            try: _bound_reference(package_root,reference)
+            except (PackageBlocked,OSError,ValueError) as exc: errors.append(str(exc))
+        if not errors:
+            try:
+                coordinator=_bound_reference(package_root,macro['team_lead']['execution_binding_ref'],read_json=True)
+                errors.extend(validate_binding_obj(coordinator,repo))
+                if coordinator.get('macro_id')!=macro['macro_id']: errors.append('coordinator binding subject mismatch')
+            except (PackageBlocked,OSError,ValueError) as exc: errors.append(str(exc))
+    return errors
+
+
+def delegation_errors(child,canonical):
+    """Check a proposal against one externally verified child view, never its siblings."""
+    errors=[]
+    if canonical.get('task_packet_sha256')!=child['task_packet_ref']['sha256']:
+        return ['CHILD_SUBJECT_MISMATCH']
+    for key in ('delivery_risk_lane','rollback_boundary','mutating'):
+        if child[key]!=canonical.get(key): errors.append('CHILD_BOUNDARY_CHANGED:'+key)
+    for key in ('canonical_writers','semantic_scope'):
+        if set(child[key])!=set(canonical.get(key,[])): errors.append('CHILD_BOUNDARY_CHANGED:'+key)
+    for key in ('allowed_actions',):
+        if not set(child[key]).issubset(canonical.get(key,[])): errors.append('CHILD_SCOPE_WIDENED:'+key)
+    if not set(canonical.get('forbidden_actions',[])).issubset(child['forbidden_actions']):
+        errors.append('CHILD_DENIAL_REMOVED')
+    try:
+        if any(not any(_surface_contains(bound,path) for bound in canonical.get('write_surface',[])) for path in child['write_surface']):
+            errors.append('CHILD_WRITE_ALLOWLIST_WIDENED')
+    except ValueError: errors.append('CHILD_WRITE_SCOPE_UNKNOWN')
+    required=canonical.get('audit_required')
+    if type(required) is not bool: errors.append('CHILD_AUDIT_OBLIGATION_UNKNOWN')
+    elif required and not child['audit']['required']: errors.append('CHILD_AUDIT_WAIVED')
+    if child['execution_route']!=canonical.get('execution_route'): errors.append('ROUTE_CEILING_EXCEEDED')
+    if set(child['allowed_actions']) & {'merge','activate','mark_ready','force_push'}:
+        errors.append('OPERATOR_GATE_NOT_DELEGABLE')
+    return errors
+
+
+def preview_macro(macro,snapshots,repo=None):
+    """Read-only projection. Project adapters, not model reports, verify upstream inputs."""
+    errors=validate_macro_obj(macro,repo)
+    result={'authority':'NONE','status':'BLOCKED' if errors else 'PREVIEW_ONLY','errors':errors,
+        'children':{},'candidate_batches':[],'pairs':[],'operator_gates_needed':[],
+        'supervisor_decisions_needed':[]}
+    if errors: return result
+    result['pairs']=macro_pairs(macro)
+    result['dcp_summary']={'authority':'NONE','max_delivery_risk_lane':max(
+        (child['delivery_risk_lane'] for child in macro['workstreams']),key=lambda lane:int(lane[1])),
+        'child_dcp_statuses':{child['workstream_id']:child['dcp_status'] for child in macro['workstreams']}}
+    global_stop=any(snapshot.get('global_stop_triggered') is True for snapshot in snapshots.values())
+    candidates=[]
+    for child in sorted(macro['workstreams'],key=lambda value:value['workstream_id']):
+        key=child['workstream_id']; snapshot=snapshots.get(key,{})
+        blockers=[]; canonical=snapshot.get('canonical_authority',{})
+        if snapshot.get('verified_upstream') is not True: blockers.append('UPSTREAM_UNVERIFIED')
+        else: blockers.extend(delegation_errors(child,canonical))
+        if snapshot.get('custody_verified') is not True: blockers.append('CUSTODY_UNVERIFIED')
+        for source in ('operator','repository'):
+            ceiling=snapshot.get(source,{})
+            if not ceiling.get('source_ref') or not set(child['allowed_actions']).issubset(ceiling.get('allowed_actions',[])):
+                blockers.append(source.upper()+'_ACTION_CEILING')
+            if set(child['allowed_actions']) & set(ceiling.get('forbidden_actions',[])):
+                blockers.append(source.upper()+'_DENIAL')
+            if ceiling.get('audit_required') is True and not child['audit']['required']:
+                blockers.append('UPSTREAM_AUDIT_REQUIRED')
+        if global_stop or snapshot.get('global_stop_triggered') is True: blockers.append('GLOBAL_STOP')
+        workflow=snapshot.get('workflow',{})
+        if workflow.get('status')!='LEGAL' or workflow.get('blockers') or not workflow.get('source_ref'):
+            blockers.append('WORKFLOW_NOT_LEGAL')
+        policy=snapshot.get('policy',{})
+        if policy.get('required') is True:
+            if policy.get('status')!='PASS' or not policy.get('source_ref') or child['dcp_status']!='PASS': blockers.append('DCP_NOT_ELIGIBLE')
+        elif policy.get('required') is not False or policy.get('status')!='NOT_APPLICABLE': blockers.append('POLICY_UNKNOWN')
+        elif child['dcp_status']!='NOT_RUN': blockers.append('POLICY_APPLICABILITY_CONFLICT')
+        if child['dcp_status'] in {'UNKNOWN','BLOCKED'}: blockers.append('DCP_NOT_ELIGIBLE')
+        for ceiling in (workflow,policy):
+            if set(child['allowed_actions']) & set(ceiling.get('forbidden_actions',[])):
+                blockers.append('UPSTREAM_DENIAL')
+            if ceiling.get('audit_required') is True and not child['audit']['required']:
+                blockers.append('UPSTREAM_AUDIT_REQUIRED')
+        if not set(child['allowed_actions']).issubset(workflow.get('allowed_actions',[])):
+            blockers.append('WORKFLOW_ACTION_CEILING')
+        if policy.get('required') and not set(child['allowed_actions']).issubset(policy.get('allowed_actions',[])):
+            blockers.append('POLICY_ACTION_CEILING')
+        if child['delivery_risk_lane']=='L3' and snapshot.get('operator_gate_verified') is not True:
+            blockers.append('OPERATOR_GATE_MISSING'); result['operator_gates_needed'].append(key)
+        for dep in child['dependencies']:
+            previous=snapshots.get(dep,{})
+            bound=next(item for item in macro['workstreams'] if item['workstream_id']==dep)
+            if previous.get('status')!='PASS' or previous.get('completion_verified') is not True or previous.get('verified_upstream') is not True or not previous.get('completion_source_ref') or previous.get('canonical_authority',{}).get('task_packet_sha256')!=bound['task_packet_ref']['sha256']:
+                blockers.append('DEPENDENCY_NOT_SATISFIED:'+dep)
+        if snapshot.get('route_failed') is True:
+            fallback=snapshot.get('selected_fallback')
+            if fallback not in child['execution_route']['allowed_fallbacks']: blockers.append('ROUTE_CEILING_EXCEEDED')
+        state=snapshot.get('status','NOT_RUN')
+        if state not in {'NOT_RUN','READY','PASS','FAIL','BLOCKED','UNKNOWN'}: blockers.append('CHILD_STATUS_UNKNOWN')
+        if state in {'FAIL','BLOCKED','UNKNOWN'}: blockers.append('CHILD_'+state)
+        if state=='PASS' and (snapshot.get('completion_verified') is not True or not snapshot.get('completion_source_ref')): blockers.append('COMPLETION_UNVERIFIED')
+        if child['mutating'] and snapshot.get('write_scope_verified') is not True: blockers.append('PHYSICAL_WRITE_SCOPE_UNVERIFIED')
+        result['children'][key]={'reported_status':state,'blockers':sorted(set(blockers)),
+            'candidate':not blockers and state in {'NOT_RUN','READY'},'task_packet_sha256':child['task_packet_ref']['sha256']}
+        if result['children'][key]['candidate']: candidates.append(child)
+    limit=macro['parallelism']['max_mutating_workstreams']; batches=[]
+    for child in candidates:
+        if child['mutating'] and limit==0:
+            result['children'][child['workstream_id']]['candidate']=False
+            result['children'][child['workstream_id']]['blockers'].append('MUTATION_LIMIT_ZERO'); continue
+        if not batches or batches[-1]['group']!=child['parallel_group'] or (child['mutating'] and batches[-1]['mutations']>=limit):
+            batches.append({'group':child['parallel_group'],'mutations':0,'workstreams':[]})
+        batches[-1]['workstreams'].append(child['workstream_id']); batches[-1]['mutations']+=int(child['mutating'])
+    result['candidate_batches']=[batch['workstreams'] for batch in batches]
+    return result
+
+
+def macro_return(macro,child_returns):
+    """Keep model/child reports inert; never aggregate a finality verdict."""
+    children={child['workstream_id']:child for child in macro['workstreams']}; errors=[]
+    if set(children)!=set(child_returns): errors.append('CHILD_RETURN_COVERAGE_MISMATCH')
+    for key,report in child_returns.items():
+        if key not in children or not isinstance(report,dict): errors.append('UNKNOWN_CHILD_RETURN'); continue
+        if report.get('task_packet_sha256')!=children[key]['task_packet_ref']['sha256']: errors.append('CHILD_RETURN_SUBJECT_MISMATCH:'+key)
+        for kind in ('proof','audit'):
+            receipt=report.get(kind)
+            if receipt and (not isinstance(receipt,dict) or not isinstance(report.get('execution_subject'),str) or not report['execution_subject'] or receipt.get('subject')!=report.get('execution_subject') or
+                    receipt.get('task_packet_sha256')!=report.get('task_packet_sha256')):
+                errors.append('RECEIPT_SUBJECT_MISMATCH:'+key+':'+kind)
+    return {'macro_id':macro['macro_id'],'authority':'NONE','status':'BLOCKED' if errors else 'RETURNED_FOR_SUPERVISOR',
+        'children':child_returns,'errors':errors,'operator_gates_needed':sorted({gate for report in child_returns.values() if isinstance(report,dict) for gate in report.get('operator_gates_needed',[])}),
+        'supervisor_decisions_needed':sorted({decision for report in child_returns.values() if isinstance(report,dict) for decision in report.get('supervisor_decisions_needed',[])})}
+
+
+def cmd_validate_macro(args):
+    path=Path(args.file); macro=_load_json(path); errors=validate_macro_obj(macro,package_root=path.parent)
+    print(json.dumps({'status':'FAIL' if errors else 'STATIC_VALID','authority':'NONE','errors':errors},sort_keys=True))
+    return 2 if errors else 0
 
 def assert_matching_identities(*identities):
     if not identities or any(not strict_identifier(value) for value in identities):
@@ -353,7 +688,7 @@ def validate_return_metadata(metadata,repo=None):
 def build_return_metadata(packet_id,stamp,project,reason,decision_needed,state,route):
     if not isinstance(reason,str) or not reason.strip(): raise PackageBlocked('BLOCKED_RETURN_METADATA: reason must be nonblank')
     if not isinstance(decision_needed,str) or not decision_needed.strip(): raise PackageBlocked('BLOCKED_RETURN_METADATA: decision_needed must be nonblank')
-    metadata={'return_id':f'RETURN-{project}-{packet_id}-{stamp}','packet_id':packet_id,'reason':reason.strip(),'decision_needed':decision_needed.strip(),'head_sha':state.get('head_sha'),'base_sha':state.get('merge_base_origin_main'),'branch':state.get('branch'),'project':project,'risk_lane':route.get('risk_lane')}
+    metadata={'return_id':f'RETURN-{project}-{packet_id}-{stamp}','packet_id':packet_id,'reason':reason.strip(),'decision_needed':decision_needed.strip(),'head_sha':state.get('head_sha'),'base_sha':state.get('merge_base_origin_main'),'branch':state.get('branch'),'project':project,'risk_lane':route.get('delivery',{}).get('risk_lane',route.get('risk_lane'))}
     return metadata
 
 SECRET_PATTERNS=[
@@ -542,9 +877,9 @@ def _validate_staged_identities(root,packet_id,kind,repo):
     tasks=[path for path in root.iterdir() if path.is_file() and path.name.startswith('TASK_PACKET.')]
     if len(tasks)!=1: raise PackageBlocked('BLOCK_PACKET_IDENTITY_MISSING: one staged Task Packet required')
     validate_packet_binding(repo,tasks[0]); identities=[packet_id,packet_identity(tasks[0])]
-    route=_load_json(root/'ROUTING_DECISION.json'); route_errors=validate_route_obj(route,repo)
+    route=_load_json(root/'EXECUTION_BINDING.json'); route_errors=validate_binding_obj(route,repo)
     if route_errors: raise PackageBlocked('BLOCKED_ROUTE_INVALID: '+'; '.join(route_errors))
-    identities.append(route.get('packet_id') if isinstance(route,dict) else None)
+    identities.append(route.get('packet_id',route.get('macro_id')) if isinstance(route,dict) else None)
     proof=root/'PROOF_REVIEW'/'PROOF.json'
     if proof.exists(): identities.append(proof_identity(proof))
     if kind=='RETURN':
@@ -589,7 +924,7 @@ def package(kind,args):
     try:
         repo=repo_root(); project_config=load_project(repo); project=project_config.get('project_name')
         if not strict_identifier(args.packet_id) or not strict_identifier(project): raise PackageBlocked('BLOCK_PACKET_IDENTITY_INVALID: packet or project id')
-        route_path_value=get_route(repo,args.packet_id); route=_load_json(route_path_value)
+        route_path_value=get_route(repo,args.packet_id); route=legacy_execution_binding(_load_json(route_path_value))
         packet=Path(args.packet).absolute(); validate_packet_binding(repo,packet)
         assert_matching_identities(args.packet_id,route.get('packet_id'),packet_identity(packet))
         proof=Path(args.proof_dir).absolute() if args.proof_dir else None
@@ -599,7 +934,7 @@ def package(kind,args):
         with tempfile.TemporaryDirectory(prefix='ct-pack-') as raw:
             root=Path(raw)/package_root; root.mkdir(mode=0o700)
             task_member='TASK_PACKET'+packet.suffix.lower(); _copy_regular(packet,root/task_member)
-            _copy_regular(route_path_value,root/'ROUTING_DECISION.json'); _copy_regular(live,root/'LIVE_STATE.json')
+            _write_json(root/'EXECUTION_BINDING.json',route); _copy_regular(live,root/'LIVE_STATE.json')
             (root/'GIT_STATUS.txt').write_text(git_capture(repo,'status','--porcelain=v1','--branch'))
             (root/'COMMITTED_DIFF.patch').write_text(git_capture(repo,'diff','--binary',state['merge_base_origin_main']+'..'+state['head_sha']))
             (root/'WORKTREE_DIFF.patch').write_text(git_capture(repo,'diff','--binary','HEAD'))
@@ -615,7 +950,7 @@ def package(kind,args):
                 if errors: raise PackageBlocked('BLOCKED_RETURN_METADATA: '+'; '.join(errors))
                 _write_json(root/'RETURN_METADATA.json',metadata)
                 template=(ct_root(repo)/'templates/ARCHITECTURE_RETURN_PACKET.template.md').read_text()
-                values={'RETURN_ID':metadata['return_id'],'PACKET_ID':args.packet_id,'PROJECT':project,'REPOSITORY':state['origin'],'BASE_SHA':state['merge_base_origin_main'],'HEAD_SHA':state['head_sha'],'BRANCH':state['branch'],'RISK_LANE':route.get('risk_lane'),'REASON':metadata['reason'],'DECISION_NEEDED':metadata['decision_needed']}
+                values={'RETURN_ID':metadata['return_id'],'PACKET_ID':args.packet_id,'PROJECT':project,'REPOSITORY':state['origin'],'BASE_SHA':state['merge_base_origin_main'],'HEAD_SHA':state['head_sha'],'BRANCH':state['branch'],'RISK_LANE':route['delivery']['risk_lane'],'REASON':metadata['reason'],'DECISION_NEEDED':metadata['decision_needed']}
                 for key,value in values.items(): template=template.replace('{{'+key+'}}',str(value))
                 (root/'ARCHITECTURE_RETURN_PACKET.md').write_text(template)
             _validate_staged_identities(root,args.packet_id,kind,repo)
@@ -701,7 +1036,7 @@ def verify_zip_file(path,crc_only=False):
                 if bad: raise PackageBlocked(f'corrupt ZIP member {bad}')
                 return 0,f'PASS: CRC-only; manifests not verified; members={len(infos)}'
             root=next(iter(roots)); calculated={}; blobs={}
-            retained={'ROUTING_DECISION.json','MANIFEST.json','SECRET_SCAN_REPORT.json','FILE_INVENTORY.json','SHA256SUMS.txt','RETURN_METADATA.json','PROOF_REVIEW/PROOF.json'}
+            retained={'EXECUTION_BINDING.json','ROUTING_DECISION.json','MANIFEST.json','SECRET_SCAN_REPORT.json','FILE_INVENTORY.json','SHA256SUMS.txt','RETURN_METADATA.json','PROOF_REVIEW/PROOF.json'}
             for info,pure in zip(infos,pure_names):
                 relative=PurePosixPath(*pure.parts[1:]).as_posix(); digest=hashlib.sha256(); scanner=StreamingSecretScanner(); count=0
                 keep=relative in retained or relative.startswith('TASK_PACKET.'); chunks=[] if keep else None
@@ -714,7 +1049,10 @@ def verify_zip_file(path,crc_only=False):
                 if count!=info.file_size: raise PackageBlocked(f'partial ZIP member read: {relative}')
                 calculated[relative]=(digest.hexdigest(),count)
                 if chunks is not None: blobs[relative]=b''.join(chunks)
-            required={'ROUTING_DECISION.json','MANIFEST.json','SECRET_SCAN_REPORT.json','FILE_INVENTORY.json','SHA256SUMS.txt'}
+            required={'MANIFEST.json','SECRET_SCAN_REPORT.json','FILE_INVENTORY.json','SHA256SUMS.txt'}
+            binding_members=set(calculated)&{'EXECUTION_BINDING.json','ROUTING_DECISION.json'}
+            if len(binding_members)!=1: raise PackageBlocked('exactly one execution binding or historical route member required')
+            binding_member=next(iter(binding_members))
             task_members=[name for name in calculated if name.startswith('TASK_PACKET.')]
             if len(task_members)!=1 or not required.issubset(calculated): raise PackageBlocked('required root package members missing')
             inventory=_parse_inventory(blobs['FILE_INVENTORY.json']); sums=_parse_sums(blobs['SHA256SUMS.txt'])
@@ -734,14 +1072,14 @@ def verify_zip_file(path,crc_only=False):
             primary_names=set(calculated)-{'SECRET_SCAN_REPORT.json','FILE_INVENTORY.json','SHA256SUMS.txt'}
             if report['files_scanned']!=len(primary_names) or report['bytes_scanned']!=sum(calculated[name][1] for name in primary_names):
                 raise PackageBlocked('secret scan receipt counters do not match primary payload')
-            manifest=_json_data(blobs['MANIFEST.json'],'MANIFEST.json'); route=_json_data(blobs['ROUTING_DECISION.json'],'ROUTING_DECISION.json')
+            manifest=_json_data(blobs['MANIFEST.json'],'MANIFEST.json'); route=_json_data(blobs[binding_member],binding_member)
             task_name=task_members[0]
             if task_name.endswith('.json'):
                 task=_json_data(blobs[task_name],task_name); task_id=task.get('id') if isinstance(task,dict) else None
             else:
                 with tempfile.NamedTemporaryFile(suffix=Path(task_name).suffix) as temporary:
                     temporary.write(blobs[task_name]); temporary.flush(); task_id=packet_identity(temporary.name)
-            identities=[manifest.get('packet_id') if isinstance(manifest,dict) else None,route.get('packet_id') if isinstance(route,dict) else None,task_id]
+            identities=[manifest.get('packet_id') if isinstance(manifest,dict) else None,route.get('packet_id',route.get('macro_id')) if isinstance(route,dict) else None,task_id]
             proof_name='PROOF_REVIEW/PROOF.json'
             if proof_name in blobs:
                 proof=_json_data(blobs[proof_name],proof_name); proof_ids=[proof[key] for key in ('packet_id','tp_id') if isinstance(proof,dict) and key in proof]
@@ -773,8 +1111,15 @@ def main():
     p=sp.add_parser('route-record'); p.set_defaults(fn=cmd_route_record)
     p.add_argument('--packet-id',required=True); p.add_argument('--stage',required=True); p.add_argument('--risk',required=True,choices=['L0','L1','L2','L3']); p.add_argument('--runner',required=True); p.add_argument('--runner-availability',default='PROVEN',choices=['PROVEN','PROPOSED','UNKNOWN']); p.add_argument('--agent-role',default='implementer'); p.add_argument('--custom-agent'); p.add_argument('--model',required=True); p.add_argument('--effort',required=True); p.add_argument('--why-runner',required=True); p.add_argument('--why-model',required=True); p.add_argument('--why-effort',required=True); p.add_argument('--cost-latency-tradeoff'); p.add_argument('--alternative',action='append',default=[],required=True); p.add_argument('--evidence',action='append',default=[]); p.add_argument('--fallback-runner'); p.add_argument('--fallback-model'); p.add_argument('--fallback-trigger'); p.add_argument('--audit-required',action=argparse.BooleanOptionalAction,default=None); p.add_argument('--audit-runner'); p.add_argument('--audit-model'); p.add_argument('--audit-effort'); p.add_argument('--audit-independence'); p.add_argument('--audit-rationale')
     p=sp.add_parser('validate-route'); p.add_argument('--file',required=True); p.set_defaults(fn=cmd_validate_route)
+    p=sp.add_parser('bind-record'); p.add_argument('--file',required=True); p.set_defaults(fn=cmd_binding_record)
+    p=sp.add_parser('validate-binding'); p.add_argument('--file',required=True); p.set_defaults(fn=cmd_validate_binding)
+    p=sp.add_parser('validate-macro'); p.add_argument('--file',required=True); p.set_defaults(fn=cmd_validate_macro)
     for name,fn in [('proof-pack',cmd_proof_pack),('return-pack',cmd_return_pack)]:
         p=sp.add_parser(name); p.set_defaults(fn=fn); p.add_argument('--packet-id',required=True); p.add_argument('--packet',required=True); p.add_argument('--proof-dir'); p.add_argument('--include',action='append',default=[]); p.add_argument('--reason',required=name=='return-pack'); p.add_argument('--decision-needed',required=name=='return-pack')
     p=sp.add_parser('verify-zip'); p.add_argument('--zip',required=True); p.add_argument('--crc-only',action='store_true',help='check ZIP CRC only; do not verify manifests'); p.set_defaults(fn=cmd_verify_zip)
-    args=ap.parse_args(); sys.exit(args.fn(args))
+    args=ap.parse_args()
+    try: result=args.fn(args)
+    except (PackageBlocked,OSError,ValueError) as exc:
+        print('ERROR: '+str(exc),file=sys.stderr); result=2
+    sys.exit(result)
 if __name__=='__main__': main()

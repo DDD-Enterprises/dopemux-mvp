@@ -1,21 +1,28 @@
 # Supervisor Handoff
 
-## Current state
+## Current subject
 
-- main/base:
-- active branch/PR:
-- packet:
-- risk lane:
-- frozen content head:
-- proof head:
-- audit:
-- blockers:
-- unknowns:
+- repository/worktree/base/head:
+- packet or macro_id:
+- immutable packet/child references:
+- delivery risk lanes:
+- coordinator EXECUTION_BINDING.json:
+- child execution bindings and allowed fallback sets:
+- DCP references/statuses/classes (independent of delivery lanes):
+- canonical workflow snapshot, ready children, blockers and joins:
+- disjoint write/canonical-writer/semantic/custody proof:
+- validation and rollback boundaries:
+- frozen substantive subjects:
+- independent audits and proof:
+- unknowns/conflicts:
 
-## Route decision
+## Aggregate return
 
-Attach the current validated `ROUTING_DECISION.json`.
+Preserve each child's status, subject, route, files, validation, proof/audit
+receipts, blockers and next legal action. Surface operator gates and supervisor
+decisions. Aggregation has authority NONE and cannot mint global PASS/READY/DONE.
 
-## Next exact action
+## Next authorized action
 
-State one executable next action and its stop conditions.
+State bounded legal child work, applicable ceilings/stops and the aggregate
+return gate. Team lead coordinates; supervisor adjudicates. No autonomous dispatch.
