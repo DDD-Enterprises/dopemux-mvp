@@ -1,0 +1,11 @@
+{
+  "runner": "Claude Code 2.1.266",
+  "configured_model": "claude-sonnet-5",
+  "schema_normalized_model": "sonnet",
+  "additional_runtime_model_usage": {},
+  "effort_configured": "high",
+  "effort_observed": "UNKNOWN",
+  "provider_attested": "UNKNOWN",
+  "independence": "PROVEN",
+  "invocation": "claude --print --safe-mode --strict-mcp-config --mcp-config '{\"mcpServers\":{}}' --tools \"\" --disable-slash-commands --no-session-persistence --permission-mode dontAsk --no-chrome --model claude-sonnet-5 --effort high --output-format stream-json --verbose < review.prompt.txt"
+}
