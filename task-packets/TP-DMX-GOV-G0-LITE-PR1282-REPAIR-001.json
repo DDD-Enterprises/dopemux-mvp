@@ -1,0 +1,111 @@
+{
+  "id": "TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001",
+  "project": "dopemux-mvp",
+  "target": "Repair PR #1282 in place by reconciling G0-Lite execution-anchor semantics, rebinding the authority record to the repaired packet bytes, and regenerating truthful content-audit and exact-head finality evidence without authorizing G0-Lite payload implementation, merge, or activation.",
+  "invariants": [
+    "PR #1282 remains the only publication PR. No replacement PR, merge, activation, or G0-Lite payload implementation is authorized.",
+    "The authority anchor is c7bc2fb479d7386825df73e028acdce723ee3388. Execution starts from current main containing the merged authority record; exact equality between execution HEAD and the anchor is not required.",
+    "The authority anchor must be an ancestor of execution-start main. Changes between them must be authority-publication-only or proven compatible and non-overlapping with the seventeen-path G0-Lite payload.",
+    "Changing the original G0-Lite packet invalidates its old SHA-256 and Git blob bindings. The authority record must bind the newly computed exact bytes.",
+    "The frozen substantive content subject and final PR head are distinct identities. The signed local attestation binds the audited content subject; trusted exact-head CI authors the PR-finality proof and records the audited SHA in provenance.",
+    "Canonical proof records only facts known when its bytes are generated. Post-generation schema, signature, proof-only closure, secret-scan, and exact-head freshness claims require separate deterministic or trusted CI receipts.",
+    "Historical audit, proof, and finality receipts remain lineage only after substantive content changes.",
+    "One final independent L2 audit may run only after substantive content freeze. DMX-AUDIT-ROUTING-ECONOMY-001 supersedes fixed product order: use only a proven plan-backed sufficient independent route; API-backed spend is not authorized.",
+    "PAL Clink, OpenCode on metered APIs, and every other API-metered audit route are forbidden without explicit operator spend authorization.",
+    "FAIL, NEEDS_SUPERVISOR, unresolved subject identity, proof-finality contract gap, conflicting drift, or an out-of-allowlist finding stops the lane.",
+    "Review threads may be resolved only after their substantive defect is objectively addressed and exact evidence is posted."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-GOV-G0-LITE-PR1282-REPAIR-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "docs/g0-lite-implementation-authority-001",
+    "base_branch": "main",
+    "stacked_because": "Bounded repair successor continues existing open PR #1282 at its verified remote head."
+  },
+  "commit": {
+    "message": "fix(governance): repair G0-Lite authority and proof bindings",
+    "allowlist": [
+      "task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json",
+      "task-packets/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001.json",
+      "task-packets/INDEX.md",
+      "docs/03-reference/governance/governed-delivery/g0-lite-implementation-authority.md",
+      "proof/DMX-GOV-G0-LITE-IMPLEMENTATION-AUTHORITY-001/**",
+      "proof/pr_merge/embedded-audit/pr-1282/**"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m jsonschema -i task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python scripts/docs_validator.py docs/03-reference/governance/governed-delivery/g0-lite-implementation-authority.md task-packets/INDEX.md",
+      "python scripts/docs_frontmatter_guard.py docs/03-reference/governance/governed-delivery/g0-lite-implementation-authority.md task-packets/INDEX.md",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "pre-commit run --from-ref origin/main --to-ref HEAD",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(governance): authorize G0-Lite implementation after merge",
+    "body": "Repair PR #1282 in place. Reconcile authority-anchor versus execution-start semantics, bind the repaired G0-Lite packet bytes, regenerate one fresh independent content audit, then emit separate signed content attestation and trusted exact-head finality evidence. Stop before merge or activation.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Re-harvest exact PR, main, worktree, review-thread, and proof-contract state before mutation.",
+      "validation": [
+        "PR #1282 is open on docs/g0-lite-implementation-authority-001; classify any head movement from 9519a2c25109acd2bf13089fe5ffc6d65d32eb44 before proceeding.",
+        "Origin main remains the execution-control base, and unrelated primary-checkout residue remains untouched.",
+        "All unresolved review threads are mapped to G0-R1, G0-R2, or G0-R3; an out-of-allowlist substantive finding stops."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docs/ops/embedded-audit.md",
+        "docs/03-reference/governance/evidence-economy.md",
+        "scripts/audit/local_audit_acceptance.py",
+        "scripts/audit/run_embedded_audit.py",
+        "scripts/audit/sign_local_audit_proof.sh"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Repair execution-anchor semantics and bind the authority record to the new exact original-packet bytes.",
+      "validation": [
+        "Original G0-Lite packet and authority record both distinguish AUTHORITY_ANCHOR_BASE_SHA from EXECUTION_START_POLICY.",
+        "Exact-equality language between execution HEAD and c7bc2fb479d7386825df73e028acdce723ee3388 is absent.",
+        "The authority anchor is required to be an ancestor of execution-start main, and intervening changes are limited to authority publication or proven compatible/non-overlapping G0-Lite payload changes.",
+        "Authority record PACKET_SHA256 and PACKET_BLOB equal independently recomputed values for the repaired original packet."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Freeze repaired substantive content and run deterministic L2 validation before the sole final audit.",
+      "validation": [
+        "Both Task Packets validate against dopetask-canonical-spec.json.",
+        "Docs validator, frontmatter guard, changed-file pre-commit, git diff --check, changed allowlist, and secret scan pass.",
+        "Content head and tree are recorded before audit; any later substantive change invalidates that audit subject.",
+        "Audit route metadata proves plan-backed billing, usable capacity, independence, exact selector, and frozen-subject access before invocation; otherwise BLOCKED_AUDITOR_CAPACITY."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "After an acceptable final audit, regenerate canonical and PR-scoped proof, sign, push fast-forward, and verify exact-head finality.",
+      "validation": [
+        "Canonical proof distinguishes pre-generation validations from post-generation finality receipts and does not claim self-validation.",
+        "Signed local attestation and canonical proof bind the audited substantive content SHA; trusted CI proof binds final PR head and records audited SHA separately in local-attestation provenance.",
+        "Proof schema, signature, proof-only closure, secret scan, exact-head CI, and PR Steward are evidenced by post-generation receipts at the final PR head.",
+        "All five review threads receive evidence; only objectively closed threads are resolved; lane stops before merge."
+      ]
+    }
+  ]
+}

@@ -33,6 +33,8 @@ A packet is superseded by another packet
 
 | Packet ID | Subsystem | Title | Status | Related ADR |
 | --- | --- | --- | --- | --- |
+| TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001 | Governance / Governed Delivery | Repair PR #1282 authority-anchor and proof-finality bindings in place | Active / merge blocked | TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001 |
+| TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002 | Governance / Governed Delivery | Close PR #1282 late R1 proof and overlap-action review gaps | Active / merge blocked | TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001 |
 | TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001 | Control Tower / Planner | Design read-only interactive repository merge planner | Active (design only) | docs/91-rfc/repository-merge-planner.md |
 | TP-DMX-PCP-PLANNER-FOUNDATION-001 | Control Tower / Planner | Fixture-backed deterministic PCP planner foundation | Draft / blocked on design acceptance | TP-DMX-REPOSITORY-MERGE-PLANNER-DESIGN-001 |
 | TP-DMX-PCP-ADOPS-EXTENSION-002 | Control Tower / Planner | Read-only AdOps PROJECT extension | Draft / blocked on foundation | TP-DMX-PCP-PLANNER-FOUNDATION-001 |

@@ -1,0 +1,122 @@
+{
+  "packet_id": "DMX-GOV-G0-LITE-IMPLEMENTATION-AUTHORITY-001",
+  "repair_packet_id": "TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "docs/g0-lite-implementation-authority-001",
+  "base_sha": "c7bc2fb479d7386825df73e028acdce723ee3388",
+  "head_sha": "e339c74239e3a3ec157eeaaf1aa6fa580fea1ee7",
+  "content_head": "e339c74239e3a3ec157eeaaf1aa6fa580fea1ee7",
+  "content_tree": "8c481613a467fe70c745455cca9af2828ba4faca",
+  "generated_at": "2026-08-27T19:32:58Z",
+  "proof_kind": "canonical_repair_audit_proof_only_successor",
+  "subject": {
+    "kind": "frozen_substantive_repair_content",
+    "paths": [
+      "docs/03-reference/governance/governed-delivery/g0-lite-implementation-authority.md",
+      "task-packets/INDEX.md",
+      "task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json",
+      "task-packets/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001.json"
+    ],
+    "audit_binding": "Exact committed content head and tree above. Proof-only successors cannot alter these paths."
+  },
+  "authority_bindings": {
+    "authority_anchor_base_sha": "c7bc2fb479d7386825df73e028acdce723ee3388",
+    "execution_start_policy": "CURRENT_MAIN_CONTAINING_MERGED_AUTHORITY_RECORD",
+    "anchor_ancestry": "PASS",
+    "intervening_change_policy": "AUTHORITY_PUBLICATION_ONLY_OR_PROVEN_COMPATIBLE_NON_OVERLAPPING",
+    "post_publication_exact_anchor_equality_required": false,
+    "g0_packet_id": "TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001",
+    "g0_packet_sha256": "cf3370d336b46157a690490a5b517dde198726e16e012486c1de2d38129197bb",
+    "g0_packet_blob": "1cfc6890714f06f9ab4d0ae607647f96efd953c2",
+    "authority_record_sha256": "d177b4b608ab9461fa9f325663f80349685b9fbab0c5d305475fd9b50d0af5f1",
+    "authority_record_blob": "d43488cb08fcb9b3e7d6a240ace601953332c052",
+    "implementation_effective": "NO_PENDING_OPERATOR_MERGE_AND_MERGED_MAIN_READBACK"
+  },
+  "subject_identity_separation": {
+    "audited_content_subject": "e339c74239e3a3ec157eeaaf1aa6fa580fea1ee7",
+    "local_pr_attestation_subject": "e339c74239e3a3ec157eeaaf1aa6fa580fea1ee7",
+    "final_pr_head_subject": "EMITTED_AFTER_PUSH_BY_TRUSTED_EXACT_HEAD_CI",
+    "provenance_rule": "Trusted final-head proof retains local_attestation.audited_sha equal to audited content subject.",
+    "pr_steward_rule": "PR Steward evaluates actual final pushed head and trusted exact-head proof."
+  },
+  "auditor_identity": {
+    "runner": "GitHub Copilot CLI",
+    "runner_version": "1.0.81-9",
+    "requested_model": "claude-sonnet-4.6",
+    "configured_model": "claude-sonnet-4.6",
+    "response_claimed_model": "claude-sonnet-4.6",
+    "proxy_reported_model": "UNKNOWN",
+    "provider_attested_model": "UNKNOWN",
+    "billing_mode": "PLAN_BACKED",
+    "usage_availability": "PROVEN",
+    "independence": "PROVEN_DIFFERENT_MODEL_FAMILY_FROM_CODEX_IMPLEMENTER"
+  },
+  "evidence_hashes": {
+    "auditor_report_sha256": "129388e9d97c44fbaa643af573d3c7cab730d96e43459ddfe414b0e674caef77",
+    "audit_prompt_sha256": "4648212a0e599f6f6efd38be84e6ad0e0e32cd5e3f3a34a58535551a6d126442",
+    "runner_receipt_sha256": "d98221c0f5be061a80d8d6a32a36e59fa3a0f7f1798e59948a5710b662e1c919",
+    "subject_binding_sha256": "fbd2934f5fdfdd20623e418256b31168d5d67eee273a12d6f68c9278d9564bb8"
+  },
+  "validation_finality": {
+    "known_before_proof_generation": {
+      "task_packet_schema_original": "PASS",
+      "task_packet_schema_repair": "PASS",
+      "packet_digest_blob_binding": "PASS",
+      "authority_record_binding": "PASS",
+      "execution_anchor_ancestry": "PASS",
+      "docs_validator": "PASS",
+      "docs_frontmatter_guard": "PASS",
+      "changed_contract_l2": "PASS",
+      "pre_commit_changed_file": "PASS",
+      "git_diff_check": "PASS",
+      "secret_scan_substantive_content": "PASS",
+      "changed_allowlist": "PASS",
+      "independent_final_audit": "PASS_WITH_RISKS"
+    },
+    "performed_on_or_after_proof_creation": {
+      "proof_schema": "PASS",
+      "canonical_signature": "PASS",
+      "proof_only_closure": "PASS",
+      "secret_scan_proof_delta": "PASS",
+      "pr_local_attestation_signature": "RECORDED_IN_SEPARATE_PR_SCOPED_PROOF_SUCCESSOR",
+      "trusted_exact_head_ci": "REQUIRED_AFTER_PUSH_NOT_CLAIMED_HERE",
+      "pr_steward": "REQUIRED_AFTER_EXACT_HEAD_CI_NOT_CLAIMED_HERE"
+    }
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "copilot-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "COPILOT_HOME=<isolated-temp-home> copilot --prompt '' --mode plan --model claude-sonnet-4.6 --reasoning-effort high --disable-builtin-mcps --disable-mcp-server github-mcp-server --no-custom-instructions --no-remote --no-remote-export --no-auto-update --no-ask-user --available-tools=view --available-tools=grep --available-tools=glob --allow-all-tools --output-format text --silent < bounded-audit-prompt",
+    "exit_code": 0,
+    "report_path": "proof/DMX-GOV-G0-LITE-IMPLEMENTATION-AUTHORITY-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "G0-REPAIR-F1",
+        "severity": "LOW",
+        "title": "Historical proof bound pre-repair packet bytes",
+        "status": "RESOLVED",
+        "body": "Old proof was lineage only after content changed. This canonical successor binds repaired packet SHA-256 and Git blob."
+      },
+      {
+        "id": "G0-REPAIR-F2",
+        "severity": "INFO",
+        "title": "Validation summary finality is script and CI enforced",
+        "status": "ACCEPTED_RISK",
+        "body": "Embedded-audit schema validates the formal audit object; deterministic scripts, signature verification, proof-only diff checks, secret scan, exact-head CI, and PR Steward enforce remaining finality receipts."
+      }
+    ],
+    "fixes_applied": [
+      "Regenerated canonical proof for repaired content subject and exact packet bytes."
+    ],
+    "remaining_risks": [
+      "Validation-summary finality fields are not themselves governed by embedded_audit.schema.json; deterministic scripts and trusted CI remain authoritative receipts.",
+      "Proxy-reported and provider-attested model identities remain UNKNOWN.",
+      "Authority record publication does not authorize G0-Lite payload implementation, merge, or activation."
+    ],
+    "skip_reason": null
+  },
+  "merge_authorized": false,
+  "activation_authorized": false
+}
