@@ -384,7 +384,7 @@ def test_merge_prepared_result_logs_auto_merge_handoff_truthfully(
     )
     monkeypatch.setattr(queue_drain_module, "write_pr_state_artifact", lambda *_args, **_kwargs: None)
 
-    client = FakeGitHubClient(repo=None, repo_root=tmp_path, policy={})
+    client = FakeGitHubClient(repo="DDD-Enterprises/dopemux-mvp", repo_root=tmp_path, policy={})
     prepared_result = _make_result(
         pr_id=190,
         lifecycle_state=PRState.QUEUED_FOR_MERGE.value,
@@ -427,7 +427,7 @@ def test_merge_prepared_result_logs_auto_merge_handoff_truthfully(
     )
 
     result = queue_drain_module._merge_prepared_result(
-        args=Namespace(id=190, out_dir=str(tmp_path), repo=None, execute=True),
+        args=Namespace(id=190, out_dir=str(tmp_path), repo="DDD-Enterprises/dopemux-mvp", execute=True),
         client=client,
         repo_root=tmp_path,
         policy={

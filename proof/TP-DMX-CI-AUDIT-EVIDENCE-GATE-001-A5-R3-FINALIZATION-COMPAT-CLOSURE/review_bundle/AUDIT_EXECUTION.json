@@ -1,0 +1,124 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE",
+  "phase": "S6_INDEPENDENT_AUDIT_ACCEPTED",
+  "launch": {
+    "timestamp_utc": "2026-09-07T05:40:12.573432+00:00",
+    "manifest_sha256": "39f5bb4a7928479071641da91e5e779e4ee6a8c8e8815b8425e05553581669be",
+    "manifest_hashes": "PASS",
+    "file_count": 16,
+    "secret_scan": "PASS",
+    "secret_scan_exit_code": 0,
+    "subject_head_binding": "8826b7174c78388e7033f4bb4fe2e49acf363aa2",
+    "subject_tree": "b709f708a3d574e008693c1f86770d1df67cba7c",
+    "source_blob_binding": "PASS",
+    "mirror_hashes": "PASS",
+    "export_approval": "AGY_EXTERNAL_AUDIT_EXPORT_APPROVAL=YES",
+    "implementer": {
+      "runner": "codex-cli",
+      "model": "gpt-5.6-sol",
+      "effort": "high"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini-3.1-pro-high",
+      "effort": "high"
+    },
+    "auditor_selector_live_catalog": "gemini-3.1-pro-high",
+    "auditor_independence": "PROVEN",
+    "independence_evidence": "Observed codex-cli startup gpt-5.6-sol/high; separate AGY executable and live model catalog; fresh --new-project session with explicit gemini-3.1-pro-high/high. No implementer conversation reuse.",
+    "runner_sha256": "d583be1344ea9cfa0c45cff2c1342af7837f4833c4edb65e69bee84776a45caa",
+    "substantive_audit_budget": 1,
+    "launch_flags": [
+      "--model",
+      "gemini-3.1-pro-high",
+      "--effort",
+      "high",
+      "--mode",
+      "plan",
+      "--sandbox",
+      "--new-project",
+      "--disable-slash-commands",
+      "--add-dir",
+      "<approved-audit-bundle>",
+      "--output-format",
+      "json",
+      "--print",
+      "<approved AUDIT_REQUEST.md>",
+      "--print-timeout",
+      "10m"
+    ]
+  },
+  "completion": {
+    "exit_code": 0,
+    "finished_utc": "2026-09-07T05:42:27.596135+00:00",
+    "postflight": {
+      "timestamp_utc": "2026-09-07T05:42:28.423702+00:00",
+      "manifest_sha256": "39f5bb4a7928479071641da91e5e779e4ee6a8c8e8815b8425e05553581669be",
+      "manifest_hashes": "PASS",
+      "file_count": 16,
+      "secret_scan": "PASS",
+      "secret_scan_exit_code": 0,
+      "subject_head_binding": "8826b7174c78388e7033f4bb4fe2e49acf363aa2",
+      "subject_tree": "b709f708a3d574e008693c1f86770d1df67cba7c",
+      "source_blob_binding": "PASS",
+      "mirror_hashes": "PASS",
+      "export_approval": "AGY_EXTERNAL_AUDIT_EXPORT_APPROVAL=YES",
+      "implementer": {
+        "runner": "codex-cli",
+        "model": "gpt-5.6-sol",
+        "effort": "high"
+      },
+      "auditor": {
+        "runner": "agy",
+        "model": "gemini-3.1-pro-high",
+        "effort": "high"
+      },
+      "auditor_selector_live_catalog": "gemini-3.1-pro-high",
+      "auditor_independence": "PROVEN",
+      "independence_evidence": "Observed codex-cli startup gpt-5.6-sol/high; separate AGY executable and live model catalog; fresh --new-project session with explicit gemini-3.1-pro-high/high. No implementer conversation reuse.",
+      "runner_sha256": "d583be1344ea9cfa0c45cff2c1342af7837f4833c4edb65e69bee84776a45caa",
+      "substantive_audit_budget": 1
+    }
+  },
+  "conversation_id": "9ef61701-6ed4-41d0-985c-e76527d7b75e",
+  "envelope_status": "SUCCESS",
+  "duration_seconds": 130.625981,
+  "usage": {
+    "input_tokens": 89185,
+    "output_tokens": 7707,
+    "thinking_tokens": 6102,
+    "cache_read_tokens": 496721,
+    "total_tokens": 96892
+  },
+  "substantive_audits": 1,
+  "transport_retries": 0,
+  "content_reaudit": "NOT_REQUIRED",
+  "output_parser": "scripts.audit.pal_clink_runner.parse_audit_json_object; pure deterministic parser only",
+  "output_format": "AGY JSON envelope containing one full-output fenced JSON object",
+  "evidence_validation": "PASS",
+  "audit_subject_head_match": "PASS",
+  "auditor_independence": "PROVEN",
+  "no_fallback_evidence": "Live AGY catalog advertised exact selector; argv explicitly selected gemini-3.1-pro-high/high in new project; returned exact identity agrees; no fallback warning or substituted identity appeared in captured output.",
+  "stderr": "warning: --mode plan has no effect while slash command expansion is disabled.",
+  "result": {
+    "verdict": "PASS",
+    "subject_head": "8826b7174c78388e7033f4bb4fe2e49acf363aa2",
+    "subject_tree": "b709f708a3d574e008693c1f86770d1df67cba7c",
+    "actual_runner": "AGY",
+    "actual_model": "gemini-3.1-pro-high",
+    "actual_effort": "high",
+    "independence_reasoning": "Static verification of the frozen repository bundle completed by AGY independently of the operator's runtime execution. The audit reviewed the source logic to confirm exact string matching, boolean typing, and strict pair matching for finalization contracts in `steward_gate.py` and `queue_drain.py`, successfully validating the absence of coercion and bypasses. Provided test assertions were reviewed and confirmed to non-vacuously cover all public paths and required malformed states. Inherited R1 privacy repair was checked in diff representation for semantic non-drift. No host tests were executed directly during this static review.",
+    "blocking_findings": [],
+    "nonblocking_risks": [],
+    "summary": "Final L3 audit successfully verified the strict finalization contract closure. Both `steward_gate.py` and `queue_drain.py` correctly implement the exact `SKIPPED` / `required=False` / canonical `skip_reason` trusted NOT_REQUIRED path while denying mixed cases, malformed evidence, and `PASS_WITH_RISKS`. Inherited proof privacy edit correctly replaces the absolute path without altering historical validity. Mirror hashes match, no CI model path was added, and tests comprehensively enforce the constraints."
+  },
+  "operator_noted_risks": [
+    "Static independent review did not execute host tests; operator deterministic validation is separately recorded.",
+    "AGY warned --mode plan has no effect with slash command expansion disabled. --sandbox was explicitly selected; the approved bundle remained exactly unchanged. Plan mode is not claimed as an enforced boundary.",
+    "SSH signatures are operator attestations, not independently auditor-signed execution proofs."
+  ],
+  "github_mutations": 0,
+  "ci_model_execution": 0,
+  "ci_provider_model_calls": 0,
+  "clink_audits": 0
+}

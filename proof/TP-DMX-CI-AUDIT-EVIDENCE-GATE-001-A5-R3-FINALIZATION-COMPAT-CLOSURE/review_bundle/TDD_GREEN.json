@@ -1,0 +1,27 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE",
+  "phase": "TDD_GREEN",
+  "environment": "current worktree venv-first PATH",
+  "validations": [
+    {
+      "command": ".venv/bin/python -B -m pytest -q -p no:cacheprovider tests/pr_merge_specialist/test_finalization_gate.py",
+      "exit_code": 0,
+      "result": "118 passed in 0.22s"
+    },
+    {
+      "command": ".venv/bin/python -B -m pytest -q -p no:cacheprovider tests/pr_merge_specialist/test_steward_gate.py",
+      "exit_code": 0,
+      "result": "6 passed in 0.08s"
+    },
+    {
+      "command": ".venv/bin/python -B -m pytest -q -p no:cacheprovider tests/pr_merge_specialist/test_template_contracts.py",
+      "exit_code": 0,
+      "result": "3 passed in 0.04s"
+    }
+  ],
+  "module_sha256": {
+    "steward_gate.py": "4280f2e456bdbc741ba05f754ec6795eb6dbde166fb11239c806dea60bb399a0",
+    "queue_drain.py": "d925b94f9cf8944dee49e91e77a13c808cd8c11d5c9c528fb1a6240afc158d39"
+  },
+  "parity": "runtime, template, Claude, and GitHub copies byte-identical per module"
+}

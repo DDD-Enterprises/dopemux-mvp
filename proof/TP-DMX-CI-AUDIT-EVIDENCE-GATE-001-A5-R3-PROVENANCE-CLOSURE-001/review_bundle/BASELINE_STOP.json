@@ -1,0 +1,112 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001",
+  "return_status": "BLOCKED_PROVENANCE_CLOSURE_PRE_EXISTING_BASELINE_FAILURES",
+  "architecture_approval": "VALID_NOT_REOPENED",
+  "supplemental_allowlist_paths": 1,
+  "total_added_allowlist_paths": 4,
+  "canonical_supplemental_path": "tests/pr_steward/test_collector_proof_state.py",
+  "head": "13562c8df1bc6621229eb4a38473da42be199825",
+  "tree": "8f6bbb4246dc66335803bc9a0bb5d880f168d782",
+  "live_pr_base": "6a728f74c0311967f83213513308f97613e3f28d",
+  "live_pr_state": "OPEN_NON_DRAFT_UNMERGED_MERGEABLE",
+  "validation": [
+    {
+      "id": "expanded_baseline",
+      "command": "PYTHONPATH=.:src python -B -m pytest -q -p no:cacheprovider tests/audit tests/pr_steward tests/pr_merge_specialist tests/dopemux_cli/test_pr_steward_cmd.py",
+      "interpreter": "historical R3 test virtual environment",
+      "exit_code": 1,
+      "result": "1040 passed, 2 skipped, 2 failed in 30.02s",
+      "failures": [
+        "test_doctor_placeholder_fails_closed: expected rc=2, observed rc=0",
+        "test_installed_pr_steward_console_can_import_engines: interpreter has no pip module"
+      ]
+    },
+    {
+      "id": "isolated_doctor_regression",
+      "command": "PYTHONPATH=.:src python -B -m pytest -q -p no:cacheprovider tests/dopemux_cli/test_pr_steward_cmd.py::test_doctor_placeholder_fails_closed",
+      "exit_code": 1,
+      "result": "1 failed in 0.63s; expected rc=2, observed rc=0"
+    },
+    {
+      "id": "existing_complete_core_baseline",
+      "command": "PYTHONPATH=.:src python -B -m pytest -q -p no:cacheprovider tests/audit tests/pr_steward tests/pr_merge_specialist",
+      "exit_code": 0,
+      "result": "1035 passed, 2 skipped in 26.74s",
+      "skips": "Two historical auditor-route differential tests are moot because origin/main already includes those routes. No audit/provider invocation."
+    },
+    {
+      "id": "installed_package_environment_diagnosis",
+      "command": "PIP_NO_BUILD_ISOLATION=0 PIP_NO_INDEX=1 PIP_DISABLE_PIP_VERSION_CHECK=1 PYTHONPATH=<current root>:<current src>:<existing test dependencies> python3 -B -m pytest -q -p no:cacheprovider tests/dopemux_cli/test_pr_steward_cmd.py::test_installed_pr_steward_console_can_import_engines",
+      "interpreter": "existing mise Python 3.12.13 with pip 26.2.1; existing local setuptools/wheel; offline, no installed environment changed",
+      "exit_code": 1,
+      "result": "1 failed in 2.99s; pip install succeeded, isolated installed-package import failed with ModuleNotFoundError: No module named 'dopemux.dcp.red_lane_rules'",
+      "probe_isolation": "Existing test sets subprocess PYTHONPATH to temporary installed target only; no source-tree fallback added."
+    },
+    {
+      "id": "implemented_doctor_contract",
+      "command": "PYTHONPATH=.:src python -B -m pytest -q -p no:cacheprovider tests/dopemux_cli/test_doctor.py",
+      "exit_code": 0,
+      "result": "5 passed in 0.04s"
+    }
+  ],
+  "observed_conflicts": [
+    {
+      "test": "tests/dopemux_cli/test_pr_steward_cmd.py:128",
+      "source": "src/dopemux_pr_steward/cli.py:223",
+      "fact": "Test expects unimplemented doctor placeholder and TP-DMX-STEWARD-DOCTOR-303 stderr. Runtime delegates to implemented run_doctor and returns 0 for valid configuration.",
+      "scope": "CLI file authorized for identity-binding fixture changes only; doctor assertion correction is outside approved semantic delta."
+    },
+    {
+      "test": "tests/dopemux_cli/test_pr_steward_cmd.py:152",
+      "source": "pyproject.toml:157",
+      "fact": "Explicit setuptools package list omits dopemux.dcp. Tracked src/dopemux/dcp/red_lane_rules.py is imported by installed tools.pr_steward.security_release_gate and absent in installed target.",
+      "scope": "pyproject.toml not allowlisted. Packaging repair is not authorized by the identity-propagation amendments."
+    }
+  ],
+  "read_only_worker": {
+    "task": "provenance_implementation",
+    "requested_model": "gpt-6-astra",
+    "requested_effort": "ultra",
+    "actual_model_and_effort": "UNKNOWN; requested dispatch is not provider-attested identity",
+    "activity": "Read-only canonical caller and fixture scope inventory; implementation never released because baseline failed.",
+    "result": "No further mandatory provenance caller path found. Out-of-allowlist test_local_audit_acceptance caller uses executed PASS and remains unchanged under approved contract.",
+    "source_edits": 0
+  },
+  "generated_artifacts": {
+    "paths": [
+      "proof/pr_merge/run_20260907_195346/PREFLIGHT_RESULT.json",
+      "proof/pr_merge/run_20260907_195346/RUN_MANIFEST.json",
+      "proof/pr_merge/run_20260907_195514/PREFLIGHT_RESULT.json",
+      "proof/pr_merge/run_20260907_195514/RUN_MANIFEST.json"
+    ],
+    "observation": "Appeared during baseline validation; manifests indicate preflight mode and no completed phases. Not manually authored, not staged, not in active packet allowlist.",
+    "disposition": "Preserved untracked; excluded from future commit/export. Contain local checkout metadata; do not publish."
+  },
+  "repair_status": {
+    "collector_fixture_correction": "NOT_RUN",
+    "cli_fixture_correction": "NOT_RUN",
+    "expected_base_propagation": "NOT_RUN",
+    "missing_base_denial": "NOT_RUN",
+    "mismatched_base_denial": "NOT_RUN",
+    "final_substantive_head": null,
+    "final_substantive_tree": null,
+    "final_independent_audit": "NOT_RUN"
+  },
+  "invariants": {
+    "workflow_trigger_change": false,
+    "workflow_permission_change": false,
+    "model_call_change": false,
+    "branch_protection_change": false,
+    "source_edits": 0,
+    "commits": 0,
+    "pushes": 0,
+    "github_mutations": 0,
+    "audits": 0,
+    "exports": 0,
+    "merge_authorized": false,
+    "ready_state_authorized": false,
+    "export_authorized": false,
+    "activation_authorized": false
+  },
+  "next_gate": "Operator disposition for pre-existing doctor test drift and missing package declaration; no silent skip, weakened test, or scope expansion. Architecture remains approved."
+}

@@ -1,0 +1,83 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE",
+  "phase": "POST_IMPLEMENTATION_DETERMINISTIC_VALIDATION",
+  "baseline_head": "faaedb76d5d360ead80f75e1db4a9fa0523f7a2c",
+  "implementer": {
+    "runner": "codex-cli",
+    "cli_version": "0.153.4",
+    "model": "gpt-5.6-sol",
+    "effort": "high",
+    "session_id": "01a07a47-7704-7d30-a689-684ed3bbc3ec",
+    "evidence": "Observed explicit CLI startup configuration. Continuation after supervisor-authorized stale-test amendment."
+  },
+  "validations": {
+    "baseline": {
+      "status": "PASS",
+      "exit_code": 0,
+      "passed": 928,
+      "skipped": 2,
+      "receipt": "BASELINE_AMENDMENT.json"
+    },
+    "focused_finalization": {
+      "status": "PASS",
+      "exit_code": 0,
+      "passed": 118,
+      "receipt": "TDD_GREEN.json"
+    },
+    "relevant_complete_suite": {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": ".venv/bin/python -B -m pytest -q -p no:cacheprovider tests/pr_merge_specialist tests/audit tests/pr_steward",
+      "environment": "current worktree venv-first PATH",
+      "passed": 1035,
+      "skipped": 2,
+      "duration_seconds": 31.59
+    },
+    "direct_steward": {
+      "status": "PASS",
+      "exit_code": 0,
+      "passed": 6
+    },
+    "template_contracts": {
+      "status": "PASS",
+      "exit_code": 0,
+      "passed": 3
+    },
+    "task_packet_schema": {
+      "status": "PASS",
+      "exit_code": 0
+    },
+    "diff_check": {
+      "status": "PASS",
+      "exit_code": 0
+    },
+    "mirror_hashes": {
+      "status": "PASS",
+      "exit_code": 0,
+      "steward_gate_sha256": "4280f2e456bdbc741ba05f754ec6795eb6dbde166fb11239c806dea60bb399a0",
+      "queue_drain_sha256": "d925b94f9cf8944dee49e91e77a13c808cd8c11d5c9c528fb1a6240afc158d39",
+      "copies_per_module": 4
+    },
+    "inherited_proof_semantics": {
+      "status": "PASS",
+      "exit_code": 0,
+      "comparison": "Parsed start-head and working JSON differ only at worktree.path; new value is ."
+    },
+    "shareable_path_scan": {
+      "status": "PASS",
+      "command": "rg -l for operator absolute path prefixes under new R3 proof root",
+      "exit_code": 1,
+      "meaning": "No matches"
+    }
+  },
+  "precommit": "NOT_RUN",
+  "secret_scan": "NOT_RUN",
+  "independent_l3_audit": "NOT_RUN",
+  "supersedes": "Earlier VALIDATION.json baseline stop is resolved by BASELINE_AMENDMENT.json. Implementer notes describe its assigned subset; this receipt records root full-suite validation.",
+  "transient_test_outputs": {
+    "preserved_outside_repo": true,
+    "description": "Generated run manifests moved to temporary custody; omitted from commits and audit export."
+  },
+  "github_mutations": 0,
+  "audit_subject_exports": 0
+}

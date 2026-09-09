@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Sequence
 
 from dopemux_pr_merge_specialist.steward_gate import steward_gate
+from dopemux_pr_merge_specialist.github_api import GitHubClient
 
 from . import CONTRACT_VERSION
 from .doctor import format_result, run_doctor
@@ -69,6 +70,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="Evaluate packaged steward_gate over local artifacts.",
     )
     gate.add_argument("--head-sha", required=True)
+    gate.add_argument("--repo")
+    gate.add_argument("--pr", type=int)
+    gate.add_argument("--base-sha")
+    gate.add_argument("--audit-run-id", type=int)
     gate.add_argument(
         "--required-class",
         required=True,
@@ -175,8 +180,18 @@ def _run_bridge(args: argparse.Namespace) -> int:
 
 def _run_gate(args: argparse.Namespace) -> int:
     try:
+        client = GitHubClient(repo=args.repo, repo_root=Path.cwd(), policy={})
+        expected_repo = args.repo
+        if not expected_repo and args.required_class == "FINALIZATION":
+            expected_repo = client.resolve_repo_slug()
+            client.repo = expected_repo
         result = steward_gate(
             head_sha=args.head_sha,
+            expected_repo=expected_repo,
+            expected_pr=args.pr,
+            expected_base_sha=args.base_sha,
+            github_client=client,
+            audit_run_id=args.audit_run_id,
             required_class=args.required_class,
             merge_readiness_path=args.merge_readiness,
             audit_proof_path=args.audit_proof,

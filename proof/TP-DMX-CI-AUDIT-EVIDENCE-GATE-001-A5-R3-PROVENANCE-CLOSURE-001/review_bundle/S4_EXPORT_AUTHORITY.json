@@ -1,0 +1,62 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001",
+  "authority_source": "Operator exact reconstructed 44-file export and final independent L3 audit approval",
+  "requested_runner": "Claude Code CLI",
+  "observed_version": "2.1.263",
+  "requested_model_selector": "opus",
+  "requested_effort": "high",
+  "tools": "NONE",
+  "mcp": "NONE",
+  "session_persistence": "OFF",
+  "fallback": "NONE",
+  "mutation_authority": "NONE",
+  "substantive_audit_budget": 1,
+  "manifest_sha256": "f786e2320366b86904f82e7b496db49966dbc85927f68d5522a38694496406c4",
+  "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2",
+  "subject_tree": "43191a12172bc254ca494d37bf91725511e538b7",
+  "subject_directory_basename": "r3-opus-audit-su4o2vfn/subject",
+  "pre_export_checks": {
+    "all_44_present": "PASS",
+    "all_44_sha256_match_manifest": "PASS",
+    "audit_invocations": 0,
+    "exports": 0,
+    "manifest_sha256": "f786e2320366b86904f82e7b496db49966dbc85927f68d5522a38694496406c4",
+    "portability_scan": "PASS",
+    "secret_scan": "PASS",
+    "secret_scan_bytes": 1074639,
+    "secret_scan_exit_code": 0,
+    "subject_head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2",
+    "subject_tree": "43191a12172bc254ca494d37bf91725511e538b7",
+    "unmanifested_files": 0
+  },
+  "runner_identity": {
+    "binary_sha256": "ef5d2909c8af49f31ab6d5487e90316777bc2fac170adfe8160716caa8aaf4f9",
+    "codesign_identifier": "com.anthropic.claude-code",
+    "team_identifier": "Q6L2SF6YDW",
+    "sandbox_verification": {
+      "exit_code": 1,
+      "result": "invalid signature"
+    },
+    "outside_sandbox_verification": {
+      "exit_code": 0,
+      "result": "valid on disk; satisfies its Designated Requirement"
+    },
+    "auth": {
+      "loggedIn": true,
+      "authMethod": "claude.ai",
+      "apiProvider": "firstParty",
+      "subscriptionType": "pro"
+    },
+    "ambient_provider_route_env_present": [],
+    "actual_model": "UNKNOWN_UNTIL_RESPONSE",
+    "auditor_independence": "PENDING_RUNTIME_MODEL_EVIDENCE"
+  },
+  "reconstruction_harness_note": "First portability check rejected literal .DS_Store references in approved archive-inspection source/receipts. Corrected to reject actual metadata paths while preserving file bytes; subsequent reconstruction and scan PASS. First directory preserved, not exported.",
+  "after_audit_condition": "Only PASS or PASS_WITH_RISKS plus proven identity/independence, matching subject and zero blockers permits proof-only closure and existing-branch push.",
+  "merge_authorized": false,
+  "ready_state_mutation": false,
+  "force_push": false,
+  "branch_protection_change": false,
+  "pr1327_mutations": 0,
+  "r0_launched": false
+}

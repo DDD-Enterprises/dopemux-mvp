@@ -1,0 +1,8 @@
+{
+  "CONTENT_HEAD": "25326aca3ef3e3d40ff9d0da68d8aa61fc0a2b67",
+  "CONTENT_TREE": "4978ab7459707377ccdef79a5ec1ececfa92237a",
+  "CONTENT_PARENT": "7c0cf162b31f73ed9ec3fec6f3db93bceca2711a",
+  "CHANGED_FILES": 21,
+  "DIFF_DIGEST": "8c5e1f51c0c9874bc6b335ad4cfc8bafd947208b4fd18a05512ae49c82cd315e",
+  "DIFF_SERIALIZATION": "git diff --binary --full-index"
+}

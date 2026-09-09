@@ -80,6 +80,18 @@
         },
         "report_path": {
           "type": "string"
+        },
+        "required": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "skip_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
@@ -187,16 +199,38 @@
       "then": {
         "properties": {
           "embedded_audit": {
-            "properties": {
-              "status": {
-                "enum": [
-                  "PASS",
-                  "PASS_WITH_RISKS"
+            "oneOf": [
+              {
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "PASS",
+                      "PASS_WITH_RISKS"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              {
+                "properties": {
+                  "status": {
+                    "const": "SKIPPED"
+                  },
+                  "required": {
+                    "const": false
+                  },
+                  "skip_reason": {
+                    "const": "AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT"
+                  }
+                },
+                "required": [
+                  "status",
+                  "required",
+                  "skip_reason"
                 ]
               }
-            },
-            "required": [
-              "status"
             ]
           },
           "proof": {

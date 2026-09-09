@@ -1,0 +1,15 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE",
+  "phase": "TDD_RED",
+  "command": ".venv/bin/python -B -m pytest -q -p no:cacheprovider --tb=short tests/pr_merge_specialist/test_finalization_gate.py",
+  "environment": "current worktree venv-first PATH",
+  "exit_code": 1,
+  "result": "8 failed, 65 passed in 0.22s",
+  "expected_failure_categories": [
+    "exact trusted NOT_REQUIRED rejected by both public finalization gates",
+    "PASS_WITH_RISKS accepted by direct finalization gate",
+    "FINALIZATION evidence status normalized instead of preserved raw",
+    "trusted NOT_REQUIRED rejected before stale-artifact validation"
+  ],
+  "unexpected_failures": []
+}

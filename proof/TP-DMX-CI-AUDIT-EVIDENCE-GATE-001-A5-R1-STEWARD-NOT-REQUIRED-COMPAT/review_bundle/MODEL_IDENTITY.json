@@ -1,0 +1,13 @@
+{
+  "runner": "agy",
+  "runner_version": "1.1.27",
+  "requested_model": "gemini-3.1-pro-high",
+  "requested_effort": "high",
+  "model_present_in_live_catalog": true,
+  "backend_override_label": "Gemini 3.1 Pro (High)",
+  "fallback_marker_observed": false,
+  "conversation_id": "2ff7a38b-32a5-41d6-afc3-eb6a34a168ae",
+  "run_status": "SUCCESS",
+  "raw_log_included": false,
+  "raw_log_exclusion_reason": "Local log contains account-identifying authentication metadata; only sanitized model-selection evidence is retained."
+}

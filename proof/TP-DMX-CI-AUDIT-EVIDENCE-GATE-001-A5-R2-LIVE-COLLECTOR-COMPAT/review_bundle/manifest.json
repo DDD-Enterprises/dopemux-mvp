@@ -1,0 +1,38 @@
+{
+  "algorithm": "sha256",
+  "files": [
+    {
+      "path": "AUDITOR_REPORT.md",
+      "sha256": "b18b20d3102b4e2ad3175594b6e3d302740c859992d47f8aaa93f3b9a1418180"
+    },
+    {
+      "path": "PROOF.json",
+      "sha256": "f993b4f0c1b26f5503f175f61861b1042365e6dd1b745a4036727e69b50bb60a"
+    },
+    {
+      "path": "review_bundle/AUDIT_REQUEST.md",
+      "sha256": "15966b92a81a609410fa4709301e09654a861ce919b1816435993e7533b5da2d"
+    },
+    {
+      "path": "review_bundle/AUDIT_RESULT.json",
+      "sha256": "7dfb1ef33692cfeda8b708d2bfce00d95b2026aef34305494b41231a4c1e9096"
+    },
+    {
+      "path": "review_bundle/DETERMINISTIC_VALIDATION.json",
+      "sha256": "8ecb4b47605e35bafd52d0f7e625e90e03de76a7b982a2720454869f5e1f9070"
+    },
+    {
+      "path": "review_bundle/FULL_DIFF.patch",
+      "sha256": "4034938327279828214da1546460c56facc6ae1539b002a7912f84185a8c18dd"
+    },
+    {
+      "path": "review_bundle/MODEL_IDENTITY.json",
+      "sha256": "97cc37e1e8c011ce3afba33c0618f54d6adee1f0a6c8ad484781f54e73be24c9"
+    },
+    {
+      "path": "review_bundle/SUBJECT_IDENTITY.json",
+      "sha256": "31111be8fb8bff6778499acfd857234a89d000a41e31287d73c2764b581e29df"
+    }
+  ],
+  "root": "packet_directory"
+}

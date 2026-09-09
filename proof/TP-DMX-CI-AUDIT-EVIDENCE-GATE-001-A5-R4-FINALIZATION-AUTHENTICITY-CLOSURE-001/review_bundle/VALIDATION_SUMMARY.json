@@ -1,0 +1,38 @@
+{
+  "SCRATCH_HOOK_EXIT": 0,
+  "SCRATCH_DIFF_MATCH": true,
+  "HOOK_CHANGED_CANDIDATE_BYTES": false,
+  "OUT_OF_ALLOWLIST_FILES": 0,
+  "FORBIDDEN_FILES": 0,
+  "RUFF_DELTA": 0,
+  "FINAL_AUDIT_BLOCKING_FINDINGS": 0,
+  "note": "Repository-wide ruff was NOT run (scoped to 9 changed canonical/test Python files only); this is not a repository-wide Ruff PASS claim.",
+  "scoped_ruff": {
+    "scope": "9 changed canonical/test Python files, not repository-wide",
+    "version": "0.14.14",
+    "baseline_findings": 79,
+    "current_findings": 79,
+    "new_findings": 0,
+    "baseline": "c1adbe6bd384eb9bd3c47bcee232265424b8edde"
+  },
+  "relevant_prior_tests": {
+    "passed": 1263,
+    "skipped": 2,
+    "deselected": 2,
+    "scope": [
+      "tests/pr_merge_specialist",
+      "tests/pr_steward",
+      "tests/pr_action_bridge",
+      "tests/audit",
+      "tests/dopemux_cli/test_pr_steward_cmd.py"
+    ],
+    "excluded": [
+      "test_installed_pr_steward_console_can_import_engines",
+      "test_module_entrypoint_works_without_pythonpath"
+    ],
+    "replacements": [
+      "package built and installed using uv into /private/tmp; all six installed resource checks and verifier import PASS",
+      "module entrypoint executed without PYTHONPATH with output redirected outside repo: exit 0"
+    ]
+  }
+}

@@ -246,15 +246,21 @@ jobs:
           test "$proof_pr" = "$SELECTED_PR"
           test "$proof_head" = "$EXPECTED_HEAD_SHA"
 
-          # Cross-check live PR head still matches the artifact-bound head.
-          live_head="$(gh api "repos/${EXPECTED_REPO}/pulls/${SELECTED_PR}" --jq .head.sha)"
+          # Bind base and head from the same trusted live PR response.
+          live_pr="$(gh api "repos/${EXPECTED_REPO}/pulls/${SELECTED_PR}")"
+          live_head="$(printf '%s' "$live_pr" | jq -er '.head.sha')"
           test "$live_head" = "$EXPECTED_HEAD_SHA"
+          test "$(printf '%s' "$live_pr" | jq -er '.number')" = "$SELECTED_PR"
+          test "$(printf '%s' "$live_pr" | jq -er '.base.repo.full_name')" = "$EXPECTED_REPO"
+          EXPECTED_BASE_SHA="$(printf '%s' "$live_pr" | jq -er '.base.sha')"
+          printf '%s' "$EXPECTED_BASE_SHA" | grep -Eq '^[0-9a-f]{40}$'
 
           # Bind identity outputs BEFORE hard enforce so failure status can still
           # be published when the audit conclusion or proof is non-passing.
           printf 'proof_path=independent-audit/PROOF.json\n' >> "$GITHUB_OUTPUT"
           printf 'pr_head_sha=%s\n' "$EXPECTED_HEAD_SHA" >> "$GITHUB_OUTPUT"
           printf 'pr_number=%s\n' "$SELECTED_PR" >> "$GITHUB_OUTPUT"
+          printf 'base_sha=%s\n' "$EXPECTED_BASE_SHA" >> "$GITHUB_OUTPUT"
 
           # Hard gate: non-success audit conclusion cannot produce READY.
           if [ "${AUDIT_CONCLUSION}" != "success" ]; then
@@ -262,8 +268,8 @@ jobs:
             exit 2
           fi
 
-          export PROOF_PR="$proof_pr"
-          export EXPECTED_HEAD_SHA
+          export EXPECTED_PR="$SELECTED_PR"
+          export EXPECTED_HEAD_SHA EXPECTED_BASE_SHA
           python - <<'PY'
           import json
           import os
@@ -273,14 +279,34 @@ jobs:
           sys.path.insert(0, str(Path.cwd()))
           from scripts.audit.run_embedded_audit import enforce_independent_audit_proof
 
-          proof = json.loads(Path("independent-audit/PROOF.json").read_text(encoding="utf-8"))
+          proof_bytes = Path("independent-audit/PROOF.json").read_bytes()
+          proof = json.loads(proof_bytes)
           enforce_independent_audit_proof(
               proof,
-              expected_pr=int(os.environ["PROOF_PR"]),
+              expected_pr=int(os.environ["EXPECTED_PR"]),
               expected_head_sha=os.environ["EXPECTED_HEAD_SHA"],
               expected_repo=os.environ["EXPECTED_REPO"],
+              expected_base_sha=os.environ["EXPECTED_BASE_SHA"],
           )
           print("Independent audit proof identity enforcement: PASS")
+          PY
+
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from dopemux_pr_merge_specialist.workflow_artifact_verifier import verify_workflow_artifact
+
+          proof_bytes = Path("independent-audit/PROOF.json").read_bytes()
+          if json.loads(proof_bytes).get("embedded_audit", {}).get("required") is False:
+              verify_workflow_artifact(
+                  proof_bytes,
+                  expected_pr=int(os.environ["EXPECTED_PR"]),
+                  expected_head_sha=os.environ["EXPECTED_HEAD_SHA"],
+                  expected_repo=os.environ["EXPECTED_REPO"],
+                  expected_base_sha=os.environ["EXPECTED_BASE_SHA"],
+                  audit_run_id=int(os.environ["AUDIT_RUN_ID"]),
+              )
           PY
 
       - name: Bind proof identity outputs
@@ -304,6 +330,44 @@ jobs:
             --strict \
             --format text \
             --proof-path independent-audit/PROOF.json
+
+      - name: Write PR Steward source receipt
+        if: success()
+        env:
+          AUDIT_RUN_ID: ${{ steps.audit_run.outputs.id }}
+          AUDIT_ARTIFACT_NAME: ${{ steps.audit.outputs.artifact_name }}
+          BASE_SHA: ${{ steps.audit.outputs.base_sha }}
+          PR_HEAD_SHA: ${{ steps.proof.outputs.head_sha }}
+          PR_NUMBER: ${{ steps.proof.outputs.pr_number }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          pr_number = int(os.environ["PR_NUMBER"])
+          head_sha = os.environ["PR_HEAD_SHA"]
+          receipt = {
+              "repo": os.environ["GITHUB_REPOSITORY"],
+              "pr": pr_number,
+              "head_sha": head_sha,
+              "base_sha": os.environ["BASE_SHA"],
+              "steward_run_id": int(os.environ["GITHUB_RUN_ID"]),
+              "audit_run_id": int(os.environ["AUDIT_RUN_ID"]),
+              "steward_workflow": ".github/workflows/pr-steward.yml",
+              "audit_workflow": ".github/workflows/embedded-audit.yml",
+              "readiness_artifact_name": (
+                  f"pr-steward-pr-{pr_number}-head-{head_sha}-readiness"
+              ),
+              "audit_artifact_name": os.environ["AUDIT_ARTIFACT_NAME"],
+          }
+          out = Path("pr-steward-artifacts")
+          out.mkdir(parents=True, exist_ok=True)
+          (out / "PR_STEWARD_SOURCE_RECEIPT.json").write_text(
+              json.dumps(receipt, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          PY
 
       - name: Publish readiness status on candidate PR head
         if: always() && steps.proof.outputs.head_sha != ''

@@ -1,0 +1,56 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001",
+  "recorded_at": "2026-09-08 02:26:02 UTC",
+  "return_status": "BLOCKED_PROVENANCE_CLOSURE_OUT_OF_ALLOWLIST_TEST_FIXTURE",
+  "architecture_approval": "VALID_NOT_REOPENED",
+  "approved_added_paths": [
+    "tests/dopemux_cli/test_pr_steward_cmd.py",
+    ".github/workflows/embedded-audit.yml",
+    ".github/workflows/pr-steward.yml"
+  ],
+  "observed": {
+    "local_head": "13562c8df1bc6621229eb4a38473da42be199825",
+    "local_tree": "8f6bbb4246dc66335803bc9a0bb5d880f168d782",
+    "branch": "DETACHED",
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "live_pr_head": "13562c8df1bc6621229eb4a38473da42be199825",
+    "live_pr_base": "6a728f74c0311967f83213513308f97613e3f28d",
+    "live_pr_state": "OPEN",
+    "live_pr_draft": false,
+    "live_pr_merged": false,
+    "live_pr_mergeable": "MERGEABLE",
+    "fixture_path": "tests/pr_steward/test_collector_proof_state.py",
+    "fixture_test": "test_proof_state_preserves_validated_not_required_metadata",
+    "fixture_behavior": "Builds valid NOT_REQUIRED evidence with _BASE, calls collector._proof_state with repo/PR/head but no expected base, and asserts errors == [] and SKIPPED.",
+    "caller_path": "tools/pr_steward/collector.py",
+    "caller_behavior": "_proof_state delegates to the shared canonical validator and converts validation errors to NEEDS_SUPERVISOR."
+  },
+  "inference": "Mandatory expected-base rejection makes the current positive fixture incompatible. Supplying expected_base_sha=_BASE is necessary to preserve its intended positive assertion without weakening missing-base denial.",
+  "requested_additional_path": "tests/pr_steward/test_collector_proof_state.py",
+  "requested_delta": "Supply the existing trusted fixture _BASE to collector calls, retain all current provenance and metadata assertions, and optionally add a narrow missing/mismatched caller-base denial regression. No runtime scope expansion.",
+  "validation": {
+    "baseline_command": "PYTHONPATH=.:src python -B -m pytest -q -p no:cacheprovider tests/pr_steward/test_collector_proof_state.py",
+    "baseline_result": "3 passed in 0.05s",
+    "baseline_exit_code": 0,
+    "repair_tests": "NOT_RUN",
+    "relevant_complete_suite": "NOT_RUN",
+    "final_independent_audit": "NOT_RUN"
+  },
+  "preservation": "Original SCOPE_PREFLIGHT.json and all historical stop/audit evidence unchanged. This fixture was missed in the prior scope preflight; its omission is not a new architecture issue.",
+  "stop_condition": "Another repository path outside the amended allowlist is necessary. Do not make expected base optional, derive it from proof, or bypass this test.",
+  "counters_this_turn": {
+    "source_edits": 0,
+    "implementation_workers": 0,
+    "audits": 0,
+    "exports": 0,
+    "github_mutations": 0,
+    "commits": 0,
+    "pushes": 0
+  },
+  "authority": {
+    "merge": false,
+    "ready_state": false,
+    "export": false,
+    "activation": false
+  }
+}

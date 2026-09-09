@@ -144,6 +144,9 @@ def test_finalization_gate_allows_valid_self_reference_exception(tmp_path: Path)
     result = steward_gate(
         head_sha=HEAD_SHA,
         required_class="FINALIZATION",
+        expected_repo="DDD-Enterprises/dopemux-mvp",
+        expected_pr=123,
+        expected_base_sha="base123",
         merge_readiness_path=readiness_path,
         audit_proof_path=proof_path,
         now=NOW,
@@ -201,6 +204,9 @@ def test_finalization_gate_requires_ready_readiness(tmp_path: Path):
     result = steward_gate(
         head_sha=HEAD_SHA,
         required_class="FINALIZATION",
+        expected_repo="DDD-Enterprises/dopemux-mvp",
+        expected_pr=123,
+        expected_base_sha="base123",
         merge_readiness_path=readiness_path,
         audit_proof_path=proof_path,
         now=NOW,

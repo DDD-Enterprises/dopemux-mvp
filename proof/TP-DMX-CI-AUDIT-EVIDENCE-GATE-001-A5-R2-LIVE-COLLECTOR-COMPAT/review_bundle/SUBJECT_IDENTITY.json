@@ -1,0 +1,28 @@
+{
+  "changed_files": [
+    "task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT.json",
+    "tests/pr_steward/test_collector_proof_state.py",
+    "tests/pr_steward/test_intake.py",
+    "tools/pr_steward/collector.py"
+  ],
+  "frozen_content_head": "83fef3c528b4eb77c09eda15df40735a41c8d45c",
+  "frozen_content_tree": "735ad8956e0395927a4d827605d681f4d8ee4b8c",
+  "model_identity": {
+    "cli_version": "1.1.27",
+    "effort": "high",
+    "model": "gemini-3.1-pro-high",
+    "runner": "agy"
+  },
+  "old_failed_audit": {
+    "migrated_into_this_proof": false,
+    "reason": "subject/provenance mismatch and output contract failure",
+    "status": "historical_FAIL_not_content_PASS"
+  },
+  "old_r2_commit_not_reused": "7e699be73001c4d28f4c07c4e87e1d1c7648d205",
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT",
+  "pr": 1330,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "source_head": "3858be0d93da9176b121fdbfcbc6baa8ff05196a",
+  "source_head_expected": "3858be0d93da9176b121fdbfcbc6baa8ff05196a",
+  "trusted_base_main": "6a728f74c0311967f83213513308f97613e3f28d"
+}

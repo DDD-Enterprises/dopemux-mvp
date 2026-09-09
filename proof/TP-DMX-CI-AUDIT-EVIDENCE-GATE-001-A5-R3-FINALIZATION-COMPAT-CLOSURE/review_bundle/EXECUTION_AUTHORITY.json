@@ -1,0 +1,49 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE",
+  "operator_execution_gate": "YES",
+  "github_mutation_authority": "YES",
+  "operator_allowlist_amendment": "YES",
+  "amendment_reason": "MANDATORY_PARITY_SYNCHRONIZATION",
+  "additional_paths": [
+    "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+    "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+    ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+    ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+    ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+    ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py"
+  ],
+  "synchronization_only": true,
+  "semantic_scope_expansion": false,
+  "expected_start_head": "faaedb76d5d360ead80f75e1db4a9fa0523f7a2c",
+  "trusted_main": "6a728f74c0311967f83213513308f97613e3f28d",
+  "worktree": {
+    "path": ".worktrees/ci-audit-finalization-a5-r3",
+    "checkout": "detached",
+    "reason": "Existing target branch remains held in preserved failed R2 worktree",
+    "push_target": "fix/ci-audit-steward-not-required-a5-r1"
+  },
+  "implementer": {
+    "runner": "codex-cli",
+    "cli_version": "0.153.4",
+    "model": "gpt-5.6-sol",
+    "effort": "high",
+    "session_id": "01a07a3f-3dc1-7692-a281-2e411dbe087c",
+    "evidence": "Observed CLI startup banner with explicit model and effort options"
+  },
+  "audit_route_discovery": {
+    "runner": "agy",
+    "selector": "gemini-3.1-pro-high",
+    "effort_option": "high",
+    "model_catalog_exit_code": 0,
+    "model_invocations": 0,
+    "subject_export_authority": "NOT_GRANTED",
+    "independence": "NOT_YET_EXERCISED"
+  },
+  "forbidden": {
+    "merge": true,
+    "force_push": true,
+    "branch_protection_change": true,
+    "pr_1327_mutation": true,
+    "r0_launch": true
+  }
+}

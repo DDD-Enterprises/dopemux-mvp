@@ -1,0 +1,63 @@
+{
+  "audit": "NOT_RUN",
+  "excluded_untracked_preserved_not_for_export": [
+    "proof/pr_merge/run_20260907_195346/PREFLIGHT_RESULT.json",
+    "proof/pr_merge/run_20260907_195346/RUN_MANIFEST.json",
+    "proof/pr_merge/run_20260907_195514/PREFLIGHT_RESULT.json",
+    "proof/pr_merge/run_20260907_195514/RUN_MANIFEST.json",
+    "proof/pr_merge/run_20260907_201507/PREFLIGHT_RESULT.json",
+    "proof/pr_merge/run_20260907_201507/RUN_MANIFEST.json",
+    "proof/pr_merge/run_20260907_203014/PREFLIGHT_RESULT.json",
+    "proof/pr_merge/run_20260907_203014/RUN_MANIFEST.json"
+  ],
+  "observed_head": "13562c8df1bc6621229eb4a38473da42be199825",
+  "packaging_only_existing_dcp_declaration": "PASS",
+  "packet_schema": "PASS",
+  "parity_sha256": {
+    "queue_drain.py": {
+      ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py": "77a47dc1260f324baffa7d2897babbdb60ffdb6a8aca7c227f5b067292276907",
+      ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py": "77a47dc1260f324baffa7d2897babbdb60ffdb6a8aca7c227f5b067292276907",
+      "src/dopemux_pr_merge_specialist/queue_drain.py": "77a47dc1260f324baffa7d2897babbdb60ffdb6a8aca7c227f5b067292276907",
+      "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py": "77a47dc1260f324baffa7d2897babbdb60ffdb6a8aca7c227f5b067292276907"
+    },
+    "steward_gate.py": {
+      ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py": "bfdac599322c553566729edf84bf9e9920babbf4ecf551d8ff76149e410003c5",
+      ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py": "bfdac599322c553566729edf84bf9e9920babbf4ecf551d8ff76149e410003c5",
+      "src/dopemux_pr_merge_specialist/steward_gate.py": "bfdac599322c553566729edf84bf9e9920babbf4ecf551d8ff76149e410003c5",
+      "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py": "bfdac599322c553566729edf84bf9e9920babbf4ecf551d8ff76149e410003c5"
+    }
+  },
+  "proof_json_parse_count": 12,
+  "scope": [
+    ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+    ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+    ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+    ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+    ".github/workflows/embedded-audit.yml",
+    ".github/workflows/pr-steward.yml",
+    "docs/ops/pr-acceptance.md",
+    "docs/ops/steward-merge-gate.md",
+    "pyproject.toml",
+    "scripts/audit/run_embedded_audit.py",
+    "src/dopemux_pr_merge_specialist/queue_drain.py",
+    "src/dopemux_pr_merge_specialist/steward_gate.py",
+    "src/dopemux_pr_steward/cli.py",
+    "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+    "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+    "tests/audit/test_run_embedded_audit.py",
+    "tests/dopemux_cli/test_pr_steward_cmd.py",
+    "tests/pr_merge_specialist/test_finalization_gate.py",
+    "tests/pr_merge_specialist/test_steward_gate.py",
+    "tests/pr_steward/test_collector_proof_state.py",
+    "tests/pr_steward/test_intake.py",
+    "tools/pr_steward/collector.py"
+  ],
+  "start_head": "13562c8df1bc6621229eb4a38473da42be199825",
+  "status": "PASS",
+  "workflow_permission_change": false,
+  "workflow_static_scope": {
+    ".github/workflows/embedded-audit.yml": "Only authorized step run/expected-base env changed; bash syntax PASS",
+    ".github/workflows/pr-steward.yml": "Only authorized step run/expected-base env changed; bash syntax PASS"
+  },
+  "workflow_trigger_change": false
+}

@@ -1,0 +1,113 @@
+{
+  "id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001",
+  "project": "dopemux-mvp",
+  "target": "Close NOT_REQUIRED provenance binding across canonical validation and trusted finalization callers, preserving strict PASS policy; freeze for final independent L3 audit.",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopemux",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001",
+    "base_branch": "fix/ci-audit-steward-not-required-a5-r1",
+    "parent_tp_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "base_branch": "13562c8df1bc6621229eb4a38473da42be199825",
+    "stacked_because": "Continue in existing isolated provenance worktree; preserve historical intake, architecture return, stop receipts and audit."
+  },
+  "invariants": [
+    "Integration fixture supplement adds only tests/pr_merge_specialist/test_queue_drain_integration.py to supply explicit matching repository identity in the positive handoff fixture and invocation. Preserve all positive assertions and missing/mismatched identity denial. No production path or fallback authorized. Preserve P2_SCOPE_STOP.json; distinguish integration fixture alignment from provenance closure and pre-existing baseline repairs.",
+    "L3_RED_EXISTING_PACKET_SCOPE. Operator architecture disposition and provenance repair approval remain valid; architecture not reopened.",
+    "Latest operator supplements add exactly four repository-relative paths: CLI test, two root workflows and collector proof-state test. Prior scope receipts remain immutable historical evidence.",
+    "Bounded baseline repair supplement adds only pyproject.toml for existing dopemux.dcp package declaration and permits stale doctor assertion correction in already-allowed CLI test. No production doctor change, dependencies, entrypoints, build backend or version change.",
+    "B0 must pass before provenance implementation: focused doctor, complete CLI suite, isolated installed artifact import, packaging tests, expanded baseline, diff check, precommit and secret scan. Stop BASELINE_SCOPE_INCOMPLETE if isolated failure persists after one declaration repair or another unapproved defect remains. Distinguish baseline repair delta from provenance closure delta in final proof.",
+    "All four trusted expected_repo, expected_pr, expected_head_sha, expected_base_sha inputs mandatory for FINALIZATION. No expected identity may be derived from proof.",
+    "NOT_REQUIRED canonical validation requires caller-bound repo/PR/head/base; missing expected base denies, never an optional-base compatibility path.",
+    "Bind outer repo/PR/head and nested change_contract.head_sha/base_sha to trusted caller tuple using shared independent_audit_errors; preserve ordinary executed PASS and PASS_WITH_RISKS semantics and exact NOT_REQUIRED surface contract.",
+    "Live callers use GitHubClient.repo and PullRequestState.pr_id/head_sha/base_sha; standalone CLI inputs explicit; workflow metadata from trusted GitHub target/live PR state.",
+    "One bounded implementer; no intermediate model audit. New independent different-family/runtime L3 audit required only after substantive freeze; external export separately gated and currently forbidden.",
+    "Historical audit on 8826b7174c78388e7033f4bb4fe2e49acf363aa2 remains historical PASS, not current readiness authority, and must not be repeated.",
+    "Runtime/template/Claude/GitHub gate and queue mirrors must be byte-identical; mirrors synchronization only.",
+    "No workflow trigger/permission changes, model/provider/audit-routing changes, signer/credential/branch-protection changes, history rewrite, merge, ready promotion, activation, export, PR 1327 mutations or R0 launch.",
+    "Stop on any necessary out-of-allowlist path, conflicting binding semantics, new P0/P1 trust bypass, new provenance subsystem or changed approved architecture. Missing trusted caller values fail closed; no proof or local fallback.",
+    "Freeze only after focused and complete relevant tests, workflow validation, parity hashes, scope closure, precommit, secret scan and proof/schema validation. Preserve commits/evidence; rollback only by separately authorized additive change."
+  ],
+  "commit": {
+    "message": "fix(audit): bind finalization provenance to trusted PR identity",
+    "allowlist": [
+      "pyproject.toml",
+      "scripts/audit/run_embedded_audit.py",
+      "tools/pr_steward/collector.py",
+      "src/dopemux_pr_merge_specialist/steward_gate.py",
+      "src/dopemux_pr_merge_specialist/queue_drain.py",
+      "src/dopemux_pr_steward/cli.py",
+      "tests/audit/test_run_embedded_audit.py",
+      "tests/pr_steward/test_intake.py",
+      "tests/pr_merge_specialist/test_steward_gate.py",
+      "tests/pr_merge_specialist/test_finalization_gate.py",
+      "tests/pr_merge_specialist/test_queue_drain_integration.py",
+      "tests/dopemux_cli/test_pr_steward_cmd.py",
+      "tests/pr_steward/test_collector_proof_state.py",
+      ".github/workflows/embedded-audit.yml",
+      ".github/workflows/pr-steward.yml",
+      "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+      "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+      ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+      ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+      ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/steward_gate.py",
+      ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/queue_drain.py",
+      "docs/ops/steward-merge-gate.md",
+      "docs/ops/pr-acceptance.md",
+      "task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001.json",
+      "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001/**"
+    ],
+    "verify": [
+      "Focused canonical/collector/gate/queue/CLI regression tests, including same-byte original P1 and six exact nested mutations.",
+      "Complete relevant audit, Steward, merge specialist and CLI suites; explicit mirror hashes and parity test.",
+      "Workflow syntax/static checks and unchanged triggers/permissions/model calls.",
+      "Changed-file allowlist closure, git diff --check, precommit clean rerun, secret scan, packet/proof schemas and change-contract preflight."
+    ]
+  },
+  "pr": {
+    "title": "PR 1330 provenance closure",
+    "body": "Bounded R3 canonical identity binding. Current execution ends at frozen-subject independent-audit export gate; no ready or merge authority.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "B0",
+      "task": "Correct stale implemented-doctor expectation and add only existing dopemux.dcp package to explicit setuptools list; preserve historical baseline stop.",
+      "validation": ["Focused doctor and complete CLI tests, isolated install and dopemux.dcp.red_lane_rules import, relevant packaging tests, expanded baseline, diff check, precommit and secret scan PASS before S1. One bounded packaging repair only."]
+    },
+    {
+      "id": "S0",
+      "task": "Reconcile authority and live repo/worktree/PR identity; challenge caller and fixture closure; run baseline.",
+      "validation": ["Exact head 13562c8df1bc6621229eb4a38473da42be199825 and base 6a728f74c0311967f83213513308f97613e3f28d verified; packet schema valid; baseline complete PASS."]
+    },
+    {
+      "id": "S1",
+      "task": "Write failing binding regressions, then implement shared validation and trusted caller propagation; synchronize mirrors.",
+      "requirements": [
+        "Preserve six existing nested head/base foreign, missing and malformed-object counterexamples verbatim in parameterized fixtures.",
+        "Same original malformed proof bytes denied by canonical validator, direct FINALIZATION and queue consumer.",
+        "Negative matrix includes missing caller tuple fields, nested bindings, changed caller base, wrong outer identity, malformed contract and mixed required/SKIPPED evidence.",
+        "Strict PASS acceptance and PASS_WITH_RISKS FINALIZATION denial remain unchanged; REMEDIATION unaffected."
+      ],
+      "validation": ["Observe RED before production edits, then focused GREEN; inspect diff and scope after meaningful edits."]
+    },
+    {
+      "id": "S2",
+      "task": "Run complete relevant validation, portability/privacy checks, precommit and clean rerun; freeze substantive content.",
+      "validation": ["All deterministic obligations recorded with exit codes; parity byte-identical; final content head/tree identified."]
+    },
+    {
+      "id": "S3",
+      "task": "Return frozen subject for independent final L3 audit and separate exact-manifest export approval.",
+      "validation": ["FINAL_INDEPENDENT_AUDIT=NOT_RUN until gate; no merge, ready promotion, export or activation."]
+    }
+  ]
+}

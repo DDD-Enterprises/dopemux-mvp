@@ -1,0 +1,158 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1330,
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R5-FINALIZATION-TRUST-CLOSURE-001",
+  "head_sha": "25326aca3ef3e3d40ff9d0da68d8aa61fc0a2b67",
+  "base_sha": "6a728f74c0311967f83213513308f97613e3f28d",
+  "generated_at": "2026-09-09T12:15:00+00:00",
+  "executed": true,
+  "audit_identity": {
+    "implementer": {
+      "runner": "codex",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "OpenAI",
+      "runtime_family": "Codex"
+    },
+    "auditor": {
+      "runner": "claude-code-cli",
+      "model": "sonnet",
+      "model_family": "Claude",
+      "runtime_family": "Claude Code",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude --print --safe-mode --strict-mcp-config --mcp-config '{\"mcpServers\":{}}' --tools \"\" --disable-slash-commands --no-session-persistence --permission-mode dontAsk --no-chrome --model claude-sonnet-5 --effort high --output-format stream-json --verbose < review.prompt.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R5-FINALIZATION-TRUST-CLOSURE-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "R5-F-01",
+        "severity": "LOW",
+        "title": "NONBLOCKING COVERAGE GAP",
+        "status": "OPEN",
+        "body": "NONBLOCKING COVERAGE GAP: DENY_READINESS_CHANGED (steward_gate.py) has no direct test analogous to test_local_proof_replacement_during_authentication_denies. Fail-closed by inspection."
+      },
+      {
+        "id": "R5-F-02",
+        "severity": "LOW",
+        "title": "NONBLOCKING COVERAGE GAP",
+        "status": "OPEN",
+        "body": "NONBLOCKING COVERAGE GAP: DENY_AUDIT_RUN_ID_MISMATCH has no test exercising a caller-supplied audit_run_id that disagrees with the receipt's audit_run_id at the steward_gate/CLI level. Fail-closed by inspection."
+      },
+      {
+        "id": "R5-F-03",
+        "severity": "LOW",
+        "title": "NONBLOCKING COVERAGE GAP",
+        "status": "OPEN",
+        "body": "NONBLOCKING COVERAGE GAP: test_retrieval_failure_has_no_offline_fallback covers only the five audit fetch methods, not the six new fetch_steward_*/download_steward_artifact methods, for RuntimeError propagation."
+      },
+      {
+        "id": "R5-F-04",
+        "severity": "INFO",
+        "title": "NONBLOCKING OBSERVATION",
+        "status": "OPEN",
+        "body": "NONBLOCKING OBSERVATION: fetch_steward_readiness_status uses the combined-status endpoint, which GitHub already dedupes to one entry per context; the latest/tie-break logic is defense-in-depth largely unexercised by live data."
+      },
+      {
+        "id": "R5-F-05",
+        "severity": "INFO",
+        "title": "NONBLOCKING OBSERVATION",
+        "status": "OPEN",
+        "body": "NONBLOCKING OBSERVATION: the combined-status call is unpaginated (default 30 contexts); a head with >30 contexts could omit the PR Steward context, causing a fail-closed denial (availability, not security)."
+      },
+      {
+        "id": "R5-F-06",
+        "severity": "INFO",
+        "title": "NONBLOCKING OBSERVATION",
+        "status": "OPEN",
+        "body": "NONBLOCKING OBSERVATION: GITHUB_ACTIONS_DETAILS_URL_RE (pre-existing, reused) doesn't bind owner/repo in target_url, but client.repo scoping (client_repo_mismatch) makes this moot."
+      },
+      {
+        "id": "R5-F-07",
+        "severity": "INFO",
+        "title": "NONBLOCKING OBSERVATION",
+        "status": "OPEN",
+        "body": "NONBLOCKING OBSERVATION (contract detail): _archive_member_bytes tightens the pre-existing proof path (rejects traversal/symlink members archive-wide, not just the target); reason code for '../PROOF.json' changed to proof_archive_member_unsafe (acknowledged in test comment); allow/deny outcome for well-formed archives is unchanged."
+      },
+      {
+        "id": "R5-F-08",
+        "severity": "INFO",
+        "title": "NONBLOCKING OBSERVATION",
+        "status": "OPEN",
+        "body": "NONBLOCKING OBSERVATION: redundant staleness re-check after successful authentication (harmless duplicate)."
+      },
+      {
+        "id": "R5-F-09",
+        "severity": "INFO",
+        "title": "NONBLOCKING OBSERVATION",
+        "status": "OPEN",
+        "body": "NONBLOCKING OBSERVATION: duplicate live-PR fetch (fetch_steward_pr and fetch_audit_pr both hit pulls/{pr_id})."
+      },
+      {
+        "id": "R5-F-10",
+        "severity": "INFO",
+        "title": "NONBLOCKING OBSERVATION",
+        "status": "OPEN",
+        "body": "NONBLOCKING OBSERVATION: the 'forged_local_audit_run_id' test parametrization actually exercises local_readiness_bytes_mismatch, not run-id logic (test name overstates coverage)."
+      },
+      {
+        "id": "R5-F-11",
+        "severity": "INFO",
+        "title": "VERIFIED EDGE",
+        "status": "RESOLVED",
+        "body": "VERIFIED EDGE (not a defect): receipt-write step is if: success() while status-publish is if: always(); a failed receipt step still fails closed via steward_run_not_successful or missing-receipt-member checks."
+      },
+      {
+        "id": "R5-F-12",
+        "severity": "INFO",
+        "title": "VERIFIED",
+        "status": "RESOLVED",
+        "body": "VERIFIED: receipt fields are sourced from workflow-internal values (GITHUB_RUN_ID, steps.audit_run.outputs.id, steps.audit.outputs.*, steps.proof.outputs.*); base_sha output is bound before the hard conclusion gate."
+      },
+      {
+        "id": "R5-F-13",
+        "severity": "INFO",
+        "title": "VERIFIED",
+        "status": "RESOLVED",
+        "body": "VERIFIED: run.head_sha for the workflow_run-triggered PR Steward run is correctly not bound to expected_head_sha (candidate-head binding instead comes from artifact name, readiness/receipt content, and live PR head)."
+      },
+      {
+        "id": "R5-F-14",
+        "severity": "INFO",
+        "title": "VERIFIED",
+        "status": "RESOLVED",
+        "body": "VERIFIED: allowed steward run events {workflow_run, workflow_dispatch} match workflow triggers; workflow_dispatch requires default-branch head_branch and PR base.ref, mirroring the audit-proof verifier."
+      }
+    ],
+    "fixes_applied": [
+      "None: this packet is publication of the already-completed R5 independent audit; the audited diff contained zero blocking findings, so no repair was required or performed in this round."
+    ],
+    "remaining_risks": [
+      "PRE-EXISTING TRUST ASSUMPTION (inherited): steward run_id authenticity ultimately depends on statuses:write being restricted to the trusted CI identity; downstream checks substantially limit forgery impact but status-creator identity is not itself verified.",
+      "PRE-EXISTING LIMITATION (explicitly preserved per scope): strict PASS/PASS finalization performs no network authentication of either artifact.",
+      "PRE-EXISTING / DEFERRED (noted in workflow comment, out of packet scope): branch protection still references the old check-name context; this diff correctly does not modify branch protection.",
+      "PRE-EXISTING TRUST ASSUMPTION: resolve_repo_slug() depends on the merge specialist's own top-level checkout/git config, not the untrusted PR worktree \u2014 same assumption as existing callers.",
+      "VALIDATION RECEIPTS ARE CLAIMS: pytest and ruff results are operator-reported, not independently executed (validation_status NOT_RUN).",
+      "MIRROR PARITY IS OPERATOR-VERIFIED: textual comparison of supplied patch hunks matches; full byte-identity of all 12 mirrors was not independently executed by this review.",
+      "TIE-BREAK FAIL-CLOSED: identical-timestamp statuses deny rather than choose \u2014 safe direction, not a bypass."
+    ],
+    "skip_reason": null
+  },
+  "audit_subject_manifest_sha256": "8c5e1f51c0c9874bc6b335ad4cfc8bafd947208b4fd18a05512ae49c82cd315e",
+  "audit_runtime_evidence": {
+    "receipt": "review_bundle/S4_AUDIT_EXECUTION.json",
+    "actual_auditor_model": "claude-sonnet-5",
+    "actual_auditor_provider": "Anthropic",
+    "implementer_exact_model": "UNKNOWN; family/runtime separation established from operator-described OpenAI/Codex lineage (codex:codex-rescue dispatches) and separate signed Claude runtime"
+  },
+  "canonical_proof_head": null,
+  "security_residual_risk_accepted": false,
+  "merge_authorized": false,
+  "ready_state_mutation": false
+}

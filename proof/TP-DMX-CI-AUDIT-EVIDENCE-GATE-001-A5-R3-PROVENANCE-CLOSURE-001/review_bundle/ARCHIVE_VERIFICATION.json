@@ -1,0 +1,27 @@
+{
+  "counts": {
+    "internal_checksums": 28,
+    "internal_inventory": 28,
+    "json_files": 38,
+    "lineage_checksums": 14,
+    "packets_schema_validated": 20,
+    "top_level_checksums": 114,
+    "top_level_inventory": 113,
+    "zip_files": 30
+  },
+  "excluded_authority": [
+    ".DS_Store"
+  ],
+  "manifest_self_hash": "SHA256SUMS cannot include its own digest; external authenticity is not proven.",
+  "scope": "Archive integrity, inventories, nested ZIP, JSON syntax, packet schemas, secret scan; not runtime truth.",
+  "secret_scan_archive_depth": 4,
+  "secret_scan_exit_code": 0,
+  "sha256sums_sha256": "bb72f3d5a5c863efac0fe93a4b48eddda88813e004ace9fbbb7a61fde2c9595c",
+  "status": "PASS",
+  "task_packet_schema_sha256": "7d86761589ab8cc82939e23b16d9f56e2b9d618e635c8f6fe8f9bee202824ee0",
+  "unmanifested": [
+    ".DS_Store",
+    "06_MANIFEST/SHA256SUMS.txt"
+  ],
+  "wsac_zip_sha256": "7a6d8dff43f7e67312bcc13a107f68cfaa2c2b2c3eef364fdd3071cce5a21e97"
+}

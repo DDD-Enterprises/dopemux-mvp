@@ -1,0 +1,30 @@
+{
+  "purpose": "Offline runner capability discovery only; not an audit invocation or identity attestation",
+  "runner": "claude-code-cli",
+  "observed_version": "2.1.263 (Claude Code)",
+  "observed_commands": ["claude --help", "claude --version", "which claude codex"],
+  "observed_exit_codes": [0, 0, 0],
+  "help_advertised_model_aliases": ["fable", "opus", "sonnet"],
+  "help_advertised_efforts": ["low", "medium", "high", "xhigh", "max"],
+  "help_advertised_boundaries": [
+    "--print",
+    "--model",
+    "--effort",
+    "--tools empty disables built-in tools",
+    "--strict-mcp-config",
+    "--safe-mode",
+    "--no-session-persistence",
+    "--output-format json or stream-json"
+  ],
+  "proposed_route": "Claude Code with live-proven policy-compatible Sonnet or Opus selector, no fallback, no tools/MCP, only approved frozen manifested subject",
+  "actual_auditor_model": "UNKNOWN_NOT_INVOKED",
+  "actual_provider": "UNKNOWN_NOT_INVOKED",
+  "auditor_independence": "NOT_YET_PROVEN",
+  "auth_readiness": "UNKNOWN_NOT_CHECKED",
+  "invocations": 0,
+  "exports": 0,
+  "final_independent_audit": "NOT_RUN",
+  "export_authorized": false,
+  "next_gate": "After freeze: exact subject manifest and separate operator export/audit authority; prove route identity and independence before invocation. Help-advertised aliases are not provider-attested identity.",
+  "historical_audit": "AGY Gemini audit of 8826b7174c78388e7033f4bb4fe2e49acf363aa2 remains historical PASS only; no repeat authorized"
+}

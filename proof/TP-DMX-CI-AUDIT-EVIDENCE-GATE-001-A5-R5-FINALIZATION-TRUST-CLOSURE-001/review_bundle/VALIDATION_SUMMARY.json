@@ -1,0 +1,14 @@
+{
+  "PYTEST_FOCUSED": "347 passed (round 2) / 349 passed (round 3) -- see VALIDATION history; final full broader run below",
+  "PYTEST_BROADER_FULL": "1248 passed, 2 skipped (pre-existing, unrelated), 0 failed -- tests/audit tests/pr_steward tests/pr_merge_specialist tests/dopemux_cli",
+  "MIRROR_PARITY": "PASS -- byte-identical, verified via diff -q for all 12 mirror files across 3 locations",
+  "GIT_DIFF_CHECK": "PASS",
+  "RUFF_DELTA": 0,
+  "RUFF_BASELINE_FINDINGS": 79,
+  "RUFF_CURRENT_FINDINGS": 79,
+  "SECRET_SCAN": "PASS (gitleaks, scoped to the substantive diff)",
+  "OUT_OF_ALLOWLIST_FILES": 0,
+  "FORBIDDEN_FILES": 0,
+  "FINAL_AUDIT_BLOCKING_FINDINGS": 0,
+  "note": "Repository-wide ruff was NOT run (scoped to the 8 changed canonical/test Python files only, compared against the same 8 files' baseline at the accepted parent commit); this is not a repository-wide Ruff PASS claim."
+}

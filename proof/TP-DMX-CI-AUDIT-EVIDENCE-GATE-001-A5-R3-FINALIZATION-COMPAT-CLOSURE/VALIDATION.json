@@ -1,0 +1,122 @@
+{
+  "PACKET_ID": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE",
+  "RETURN_STATUS": "NEEDS_SUPERVISOR",
+  "BASE_MAIN": "6a728f74c0311967f83213513308f97613e3f28d",
+  "START_HEAD": "faaedb76d5d360ead80f75e1db4a9fa0523f7a2c",
+  "NEW_FROZEN_CONTENT_HEAD": "NOT_RUN",
+  "FINAL_PROOF_HEAD": "NOT_RUN",
+  "PR": 1330,
+  "FINALIZATION_NOT_REQUIRED_DEFECT_REPRODUCED": "YES",
+  "FINALIZATION_EVIDENCE_REQUIRED_PRESERVED": "NOT_RUN",
+  "FINALIZATION_EVIDENCE_SKIP_REASON_PRESERVED": "NOT_RUN",
+  "STRICT_PASS_FINALIZATION": "NOT_RUN",
+  "EXACT_NOT_REQUIRED_FINALIZATION": "NOT_RUN",
+  "PASS_WITH_RISKS_FINALIZATION": "NOT_RUN",
+  "MIXED_FINALIZATION": "NOT_RUN",
+  "MALFORMED_FINALIZATION": "NOT_RUN",
+  "INHERITED_PROOF_SEMANTICS_UNCHANGED": "NOT_RUN",
+  "INHERITED_PROOF_PORTABILITY_PRIVACY": "NOT_RUN",
+  "INHERITED_PROOF_SCHEMA": "NOT_RUN",
+  "FOCUSED_TESTS": "NOT_RUN",
+  "RELEVANT_COMPLETE_SUITE": "FAIL",
+  "CHANGE_CONTRACT": "NOT_RUN",
+  "PRECOMMIT": "NOT_RUN",
+  "SECRET_SCAN": "NOT_RUN",
+  "AUDITOR_RUNNER": "NOT_RUN",
+  "AUDITOR_MODEL": "NOT_RUN",
+  "AUDITOR_EFFORT": "NOT_RUN",
+  "AUDITOR_INDEPENDENCE": "NOT_RUN",
+  "INDEPENDENT_L3_AUDIT": "NOT_RUN",
+  "CANONICAL_PROOF": "NOT_RUN",
+  "NEW_PROOF_PORTABILITY_PRIVACY": "NOT_RUN",
+  "PR_SCOPED_ATTESTATION": "NOT_RUN",
+  "CONTENT_REAUDIT": "NOT_RUN",
+  "FINALIZATION_P1_THREAD": "OPEN",
+  "PROOF_PRIVACY_THREAD": "OPEN",
+  "NEW_BLOCKING_REVIEW_ITEMS": "UNKNOWN",
+  "CI_MODEL_EXECUTION": 0,
+  "CI_PROVIDER_MODEL_CALLS": 0,
+  "CLINK_AUDITS": 0,
+  "SECURITY_RELEASE_APPROVAL": "NOT_RUN",
+  "REQUIRED_CHECKS": "NOT_RUN",
+  "PR_STEWARD": "NOT_RUN",
+  "BLOCKERS": [
+    "BASELINE_COMPLETE_SUITE_FAILURE_OUTSIDE_ALLOWLIST"
+  ],
+  "UNKNOWNS": [
+    "final R3 behavior",
+    "final auditor invocation identity and independence",
+    "current final-head CI/Steward"
+  ],
+  "MERGE_READINESS": "NOT_RUN",
+  "NEW_PR_CREATED": "NO",
+  "READY_STATE_MUTATION": "NO",
+  "MERGE": "NO",
+  "PR_1327_MUTATIONS": 0,
+  "R0_LAUNCHED": "NO",
+  "baseline_validation": {
+    "head": "faaedb76d5d360ead80f75e1db4a9fa0523f7a2c",
+    "worktree": ".worktrees/ci-audit-steward-live-a5-r2-reconstruct",
+    "command": "env PATH=<baseline-venv>/bin:/opt/homebrew/bin:/usr/bin:/bin .venv/bin/python -B -m pytest -q -p no:cacheprovider tests/pr_merge_specialist tests/audit tests/pr_steward",
+    "exit_code": 1,
+    "passed": 927,
+    "failed": 1,
+    "skipped": 2,
+    "duration_seconds": 29.45,
+    "failure": "tests/pr_merge_specialist/test_template_contracts.py::test_sync_repo_skills_family_includes_pr_merge_specialist",
+    "line": 67,
+    "expected": [
+      "pr-merge-specialist"
+    ],
+    "actual": [
+      "pr-merge-specialist",
+      "vibe-pr-merge"
+    ],
+    "required_repair_path": "tests/pr_merge_specialist/test_template_contracts.py",
+    "proposed_change": "Retain exact list assertion and update expected list to both existing shipped family members.",
+    "source": "scripts/skills/sync_repo_skills.py:14",
+    "existing_template": "templates/skills/vibe-pr-merge/SKILL.md"
+  },
+  "implementer": {
+    "runner": "codex-cli",
+    "model": "gpt-5.6-sol",
+    "effort": "high",
+    "session_id": "01a07a3f-3dc1-7692-a281-2e411dbe087c",
+    "status": "SUPERVISOR_INTERRUPTED_AT_PACKET_STOP",
+    "exit_code": 1,
+    "signal": "SIGINT",
+    "substantive_model_failure": false,
+    "source_edits": 0,
+    "test_edits": 0,
+    "commit_count": 0,
+    "audit_count": 0,
+    "reason": "Baseline required-suite failure requires out-of-allowlist test repair"
+  },
+  "custody": {
+    "worktree": ".worktrees/ci-audit-finalization-a5-r3",
+    "checkout": "detached",
+    "tracked_diff_empty": true,
+    "untracked": [
+      "task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE.json",
+      "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/"
+    ],
+    "cleanup": "PRESERVED_FOR_RESUME",
+    "github_mutations": 0,
+    "external_audit_subject_exports": 0
+  },
+  "validation": {
+    "amended_packet_schema": {
+      "status": "PASS",
+      "exit_code": 0
+    },
+    "frozen_dependency_install": {
+      "status": "PASS",
+      "exit_code": 0
+    },
+    "tracked_diff_check": {
+      "status": "PASS",
+      "exit_code": 0
+    }
+  },
+  "scope_note": "CI counters describe this execution only. No R3 CI run was triggered. Current remote readiness was not reharvested after stop."
+}

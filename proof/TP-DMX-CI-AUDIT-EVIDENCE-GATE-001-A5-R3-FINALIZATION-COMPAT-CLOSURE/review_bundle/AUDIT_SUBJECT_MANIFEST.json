@@ -1,0 +1,62 @@
+{
+  "AUDIT_REQUEST.md": {
+    "bytes": 2675,
+    "sha256": "511805aed795113ff0a33e99b31e03240ee23cf6dee53c34708c83382b66c914"
+  },
+  "R3_DIFF.diff": {
+    "bytes": 56456,
+    "sha256": "dfbb45eb931c75da3e0a2e3f72ee469b6cf14322d3c91e0598a8f587eb0f4ed5"
+  },
+  "SUBJECT_IDENTITY.json": {
+    "bytes": 7050,
+    "sha256": "b314f9dfa6c006dc87d1391e893c2dcd7235b78bcc93e20527e089ae6d77d674"
+  },
+  "subject/docs/ops/steward-merge-gate.md": {
+    "bytes": 5766,
+    "sha256": "377e14c5356ec309c8b5c1cbea66653092539ead54978654d7163e7ff1c02e89"
+  },
+  "subject/proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT/PROOF.json": {
+    "bytes": 3802,
+    "sha256": "4103624d831919b2ae377f6f2df7850c3865a12ccb8ebebcf3ec1c601502e28e"
+  },
+  "subject/proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/review_bundle/BASELINE_AMENDMENT.json": {
+    "bytes": 1620,
+    "sha256": "bd0c1881621a1206754129ad29a5754e12d27d24c94cd89c6039787e1de7505c"
+  },
+  "subject/proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/review_bundle/DETERMINISTIC_VALIDATION.json": {
+    "bytes": 2742,
+    "sha256": "30276d3eb8a55e443f74d66a9f6b2ff3cf2bb453bf637954a2f5930d248349e8"
+  },
+  "subject/proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/review_bundle/TDD_GREEN.json": {
+    "bytes": 1067,
+    "sha256": "c30a95ea3572d782dc07fb12a470913c5d338c2bbe0310026106eb36ae0a2d1a"
+  },
+  "subject/proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE/review_bundle/TDD_RED.json": {
+    "bytes": 705,
+    "sha256": "96f2f585068da9ce7ad0f6d9b6eb9c4393ca0e538cf1d786b33599a3c4cfe2bc"
+  },
+  "subject/src/dopemux_pr_merge_specialist/queue_drain.py": {
+    "bytes": 107712,
+    "sha256": "d925b94f9cf8944dee49e91e77a13c808cd8c11d5c9c528fb1a6240afc158d39"
+  },
+  "subject/src/dopemux_pr_merge_specialist/steward_gate.py": {
+    "bytes": 7635,
+    "sha256": "4280f2e456bdbc741ba05f754ec6795eb6dbde166fb11239c806dea60bb399a0"
+  },
+  "subject/task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-FINALIZATION-COMPAT-CLOSURE.json": {
+    "bytes": 21445,
+    "sha256": "b041003b604e2ef240d29c8dbcd6b72746f3bb1dd189fb9d65398f617d3dfcb9"
+  },
+  "subject/tests/pr_merge_specialist/test_finalization_gate.py": {
+    "bytes": 24591,
+    "sha256": "151a5cf3cfbb4a5cfc79d4727762037e9cdee70f5456268901a727a137468de7"
+  },
+  "subject/tests/pr_merge_specialist/test_steward_gate.py": {
+    "bytes": 6508,
+    "sha256": "72ca015eeeb9e8c3c3a8c7515b785f4816282c3efe284657f3726ff5fdf8a5e6"
+  },
+  "subject/tests/pr_merge_specialist/test_template_contracts.py": {
+    "bytes": 3090,
+    "sha256": "d3afba0f0dbcf099b55385e4b623fe9def0105c95a549d086de9dca5b7f64d59"
+  }
+}

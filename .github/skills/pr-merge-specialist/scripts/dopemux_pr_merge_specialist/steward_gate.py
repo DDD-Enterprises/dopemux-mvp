@@ -6,8 +6,16 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping
 
+from .github_api import GitHubClient
+from .workflow_artifact_verifier import (
+    WorkflowArtifactError,
+    verify_pr_steward_readiness_artifact,
+    verify_workflow_artifact,
+)
+
 
 PASSING_AUDIT_STATUSES = {"PASS", "PASS_WITH_RISKS"}
+AUDIT_NOT_REQUIRED_REASON = "AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT"
 READINESS_BY_CLASS = {
     "REMEDIATION": {"NEEDS_IMPLEMENTER"},
     "FINALIZATION": {"READY"},
@@ -28,20 +36,40 @@ def steward_gate(
     required_class: str,
     merge_readiness_path: str | Path,
     audit_proof_path: str | Path,
+    expected_repo: str | None = None,
+    expected_pr: int | None = None,
+    expected_base_sha: str | None = None,
+    github_client: GitHubClient | None = None,
+    audit_run_id: int | None = None,
     now: datetime | None = None,
     ttl_seconds: int = 3600,
 ) -> StewardGateResult:
-    """Pure fail-closed guard over local PR Steward and embedded-audit artifacts."""
+    """Fail-closed guard with online authentication for NOT_REQUIRED evidence."""
 
     normalized_class = required_class.upper()
     if normalized_class not in READINESS_BY_CLASS:
         return _deny(normalized_class, "DENY_UNSUPPORTED_CLASS")
     if not head_sha:
         return _deny(normalized_class, "DENY_MISSING_HEAD_SHA")
+    if normalized_class == "FINALIZATION" and (
+        any(
+            not isinstance(value, str) or not value.strip()
+            for value in (expected_repo, head_sha, expected_base_sha)
+        )
+        or type(expected_pr) is not int
+        or expected_pr <= 0
+    ):
+        return _deny(normalized_class, "DENY_MISSING_CALLER_IDENTITY")
 
     try:
-        readiness = _load_json(Path(merge_readiness_path))
-        audit_proof = _load_json(Path(audit_proof_path))
+        readiness_path = Path(merge_readiness_path)
+        proof_path = Path(audit_proof_path)
+        readiness_bytes = readiness_path.read_bytes()
+        readiness = _loads_json_object(readiness_bytes, readiness_path)
+        audit_proof_bytes = proof_path.read_bytes()
+        audit_proof = json.loads(audit_proof_bytes)
+        if not isinstance(audit_proof, dict):
+            raise ValueError("Audit proof must contain a JSON object")
     except (OSError, ValueError, TypeError) as exc:
         return _deny(
             normalized_class,
@@ -49,7 +77,11 @@ def steward_gate(
             error=type(exc).__name__,
         )
 
-    evidence = _evidence(readiness, audit_proof)
+    evidence = _evidence(
+        readiness,
+        audit_proof,
+        normalize_audit_statuses=normalized_class == "REMEDIATION",
+    )
     required_sha_values = {
         "requested_head_sha": head_sha,
         "merge_readiness_pr_head_sha": evidence["merge_pr_head_sha"],
@@ -72,7 +104,29 @@ def steward_gate(
     if evidence["merge_readiness"] not in READINESS_BY_CLASS[normalized_class]:
         return _deny(normalized_class, "DENY_READINESS_CLASS_MISMATCH", **evidence)
 
-    if (
+    authenticate_not_required = False
+    if normalized_class == "FINALIZATION":
+        if not finalization_audit_evidence_allowed(evidence):
+            return _deny(normalized_class, "DENY_AUDIT_NOT_STRICT_PASS", **evidence)
+        if evidence["proof_embedded_audit_status"] == "SKIPPED":
+            try:
+                from scripts.audit.run_embedded_audit import independent_audit_errors
+            except ImportError:
+                return _deny(normalized_class, "DENY_AUDIT_VALIDATOR_UNAVAILABLE", **evidence)
+            errors = independent_audit_errors(
+                audit_proof,
+                expected_repo=expected_repo,
+                expected_pr=expected_pr,
+                expected_head_sha=head_sha,
+                expected_base_sha=expected_base_sha,
+            )
+            if errors:
+                return _deny(
+                    normalized_class, "DENY_AUDIT_PROVENANCE", **evidence,
+                    audit_provenance_errors=errors,
+                )
+            authenticate_not_required = True
+    elif (
         evidence["merge_embedded_audit_status"] not in PASSING_AUDIT_STATUSES
         or evidence["proof_embedded_audit_status"] not in PASSING_AUDIT_STATUSES
     ):
@@ -83,6 +137,73 @@ def steward_gate(
     ):
         return _deny(normalized_class, "DENY_STALE_ARTIFACT", **evidence)
 
+    if authenticate_not_required:
+        try:
+            authenticated_readiness = verify_pr_steward_readiness_artifact(
+                readiness_bytes,
+                expected_repo=expected_repo,
+                expected_pr=expected_pr,
+                expected_head_sha=head_sha,
+                expected_base_sha=expected_base_sha,
+                github_client=github_client,
+            )
+            if Path(merge_readiness_path).read_bytes() != readiness_bytes:
+                return _deny(normalized_class, "DENY_READINESS_CHANGED", **evidence)
+            trusted_audit_run_id = authenticated_readiness["audit_run_id"]
+            if audit_run_id is not None and audit_run_id != trusted_audit_run_id:
+                return _deny(
+                    normalized_class,
+                    "DENY_AUDIT_RUN_ID_MISMATCH",
+                    **evidence,
+                    authenticated_readiness_artifact=authenticated_readiness,
+                    requested_audit_run_id=audit_run_id,
+                    trusted_audit_run_id=trusted_audit_run_id,
+                )
+        except Exception as exc:
+            return _deny(
+                normalized_class, "DENY_READINESS_ARTIFACT_AUTHENTICITY", **evidence,
+                artifact_error=type(exc).__name__,
+                artifact_reason=(
+                    str(exc)
+                    if isinstance(exc, WorkflowArtifactError)
+                    else "retrieval_failed"
+                ),
+            )
+        try:
+            authenticated = verify_workflow_artifact(
+                audit_proof_bytes,
+                expected_repo=expected_repo,
+                expected_pr=expected_pr,
+                expected_head_sha=head_sha,
+                expected_base_sha=expected_base_sha,
+                github_client=github_client,
+                audit_run_id=trusted_audit_run_id,
+            )
+            if Path(audit_proof_path).read_bytes() != audit_proof_bytes:
+                return _deny(normalized_class, "DENY_AUDIT_PROOF_CHANGED", **evidence)
+            if _is_stale(
+                evidence["merge_generated_at"],
+                now=now,
+                ttl_seconds=ttl_seconds,
+            ) or _is_stale(
+                evidence["proof_generated_at"],
+                now=now,
+                ttl_seconds=ttl_seconds,
+            ):
+                return _deny(normalized_class, "DENY_STALE_ARTIFACT", **evidence)
+        except Exception as exc:
+            return _deny(
+                normalized_class, "DENY_AUDIT_ARTIFACT_AUTHENTICITY", **evidence,
+                artifact_error=type(exc).__name__,
+                artifact_reason=(
+                    str(exc)
+                    if isinstance(exc, WorkflowArtifactError)
+                    else "retrieval_failed"
+                ),
+            )
+        evidence["authenticated_readiness_artifact"] = authenticated_readiness
+        evidence["authenticated_workflow_artifact"] = authenticated
+
     return StewardGateResult(
         allowed=True,
         reason_code=f"ALLOW_{normalized_class}",
@@ -92,18 +213,32 @@ def steward_gate(
 
 
 def _load_json(path: Path) -> dict[str, Any]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    return _loads_json_object(path.read_bytes(), path)
+
+
+def _loads_json_object(payload_bytes: bytes, path: Path) -> dict[str, Any]:
+    payload = json.loads(payload_bytes)
     if not isinstance(payload, dict):
         raise ValueError(f"{path} must contain a JSON object")
     return payload
 
 
-def _evidence(readiness: Mapping[str, Any], audit_proof: Mapping[str, Any]) -> dict[str, Any]:
+def _evidence(
+    readiness: Mapping[str, Any],
+    audit_proof: Mapping[str, Any],
+    *,
+    normalize_audit_statuses: bool,
+) -> dict[str, Any]:
     pr = _mapping(readiness.get("pr"))
     readiness_proof = _mapping(readiness.get("proof"))
     readiness_audit = _mapping(readiness.get("embedded_audit"))
     proof_audit = _mapping(audit_proof.get("embedded_audit"))
     proof_freshness = readiness_proof.get("proof_freshness")
+    merge_audit_status = readiness_audit.get("status")
+    proof_audit_status = proof_audit.get("status")
+    if normalize_audit_statuses:
+        merge_audit_status = str(merge_audit_status or "").upper()
+        proof_audit_status = str(proof_audit_status or "").upper()
     return {
         "merge_readiness": str(readiness.get("readiness") or ""),
         "merge_generated_at": str(readiness.get("generated_at") or ""),
@@ -112,9 +247,31 @@ def _evidence(readiness: Mapping[str, Any], audit_proof: Mapping[str, Any]) -> d
         "merge_proof_head_sha": str(readiness_proof.get("proof_head_sha") or ""),
         "merge_proof_freshness": proof_freshness,
         "audit_proof_head_sha": str(audit_proof.get("head_sha") or ""),
-        "merge_embedded_audit_status": str(readiness_audit.get("status") or "").upper(),
-        "proof_embedded_audit_status": str(proof_audit.get("status") or "").upper(),
+        "merge_embedded_audit_status": merge_audit_status,
+        "merge_embedded_audit_required": readiness_audit.get("required"),
+        "merge_embedded_audit_skip_reason": readiness_audit.get("skip_reason"),
+        "proof_embedded_audit_status": proof_audit_status,
+        "proof_embedded_audit_required": proof_audit.get("required"),
+        "proof_embedded_audit_skip_reason": proof_audit.get("skip_reason"),
     }
+
+
+def finalization_audit_evidence_allowed(evidence: Mapping[str, Any]) -> bool:
+    """Accept exact strict-PASS pair or exact trusted NOT_REQUIRED pair."""
+
+    if (
+        evidence.get("merge_embedded_audit_status") == "PASS"
+        and evidence.get("proof_embedded_audit_status") == "PASS"
+    ):
+        return True
+
+    return all(
+        evidence.get(f"{prefix}_embedded_audit_status") == "SKIPPED"
+        and evidence.get(f"{prefix}_embedded_audit_required") is False
+        and evidence.get(f"{prefix}_embedded_audit_skip_reason")
+        == AUDIT_NOT_REQUIRED_REASON
+        for prefix in ("merge", "proof")
+    )
 
 
 def _allows_self_reference_exception(evidence: Mapping[str, Any], *, head_sha: str) -> bool:

@@ -40,6 +40,7 @@ MODULES = [
     "runtime.py",
     "schema.py",
     "steward_gate.py",
+    "workflow_artifact_verifier.py",
     "validation.py",
 ]
 
@@ -51,6 +52,10 @@ def test_template_runtime_parity_for_runtime_modules():
     template_root = REPO_ROOT / "templates" / "skills" / "pr-merge-specialist" / "scripts" / "dopemux_pr_merge_specialist"
     for module_name in MODULES:
         assert (runtime_root / module_name).read_text(encoding="utf-8") == (template_root / module_name).read_text(encoding="utf-8")
+    for target in (".claude", ".github"):
+        mirror_root = REPO_ROOT / target / "skills" / "pr-merge-specialist" / "scripts" / "dopemux_pr_merge_specialist"
+        for module_name in ("steward_gate.py", "queue_drain.py", "github_api.py", "workflow_artifact_verifier.py"):
+            assert (runtime_root / module_name).read_bytes() == (mirror_root / module_name).read_bytes()
 
 
 def test_sync_repo_skills_family_includes_pr_merge_specialist():
@@ -64,7 +69,10 @@ def test_sync_repo_skills_family_includes_pr_merge_specialist():
     spec.loader.exec_module(module)
 
     assert "pr-merge-specialist" in module.FAMILIES
-    assert module.FAMILIES["pr-merge-specialist"] == ["pr-merge-specialist"]
+    assert module.FAMILIES["pr-merge-specialist"] == [
+        "pr-merge-specialist",
+        "vibe-pr-merge",
+    ]
 
 
 def test_template_skill_files_exist_and_exclude_junk():

@@ -1,0 +1,12 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "base_sha": "6a728f74c0311967f83213513308f97613e3f28d",
+  "subject_head": "6ae694021de3d637c84289477b045c32f568754f",
+  "subject_tree": "d6a58484a465c72dad80d6e7901bc34e73902443",
+  "branch": "fix/ci-audit-steward-not-required-a5-r1",
+  "worktree_clean_before_audit": true,
+  "worktree_clean_after_audit": true,
+  "head_match": true,
+  "pr_1327_head": "a18c87fdcf96b1b830dc88345ce199e2ef209ac6",
+  "pr_1327_mutations": 0
+}

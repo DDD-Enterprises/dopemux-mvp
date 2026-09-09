@@ -1,0 +1,26 @@
+{
+  "interpretation": "Exit zero confirms counterexamples, not security PASS.",
+  "results": {
+    "baseline": [],
+    "foreign_contract_base_sha": [],
+    "foreign_contract_head_sha": [],
+    "foreign_top_level_head_sha": [
+      "audit_head_mismatch: proof head_sha='ffffffffffffffffffffffffffffffffffffffff' expected=13562c8df1bc6621229eb4a38473da42be199825"
+    ],
+    "foreign_top_level_pr_number": [
+      "audit_pr_mismatch: proof pr_number=1331 expected=1330"
+    ],
+    "foreign_top_level_repo": [
+      "audit_repo_mismatch: proof repo='foreign/repo' expected=DDD-Enterprises/dopemux-mvp"
+    ],
+    "malformed_contract_base_sha": [],
+    "malformed_contract_head_sha": [],
+    "missing_contract_base_sha": [],
+    "missing_contract_head_sha": [],
+    "missing_provenance": [
+      "audit_provenance_missing: final readiness requires trusted provenance"
+    ]
+  },
+  "status": "GAP_REPRODUCED",
+  "subject_head": "13562c8df1bc6621229eb4a38473da42be199825"
+}

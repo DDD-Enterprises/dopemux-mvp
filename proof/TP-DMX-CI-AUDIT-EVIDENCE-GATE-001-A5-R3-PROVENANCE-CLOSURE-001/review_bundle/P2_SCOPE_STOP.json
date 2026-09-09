@@ -1,0 +1,129 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001",
+  "return_status": "BLOCKED_PROVENANCE_CLOSURE_INTEGRATION_FIXTURE_SCOPE",
+  "gate": "P2 complete validation and out-of-allowlist stop",
+  "baseline_b0": "PASS; see B0_BASELINE_REPAIR.json",
+  "classification": "Required fixture adaptation after approved mandatory-caller-identity change; NOT another pre-existing B0 failure",
+  "head": "13562c8df1bc6621229eb4a38473da42be199825",
+  "tree": "8f6bbb4246dc66335803bc9a0bb5d880f168d782",
+  "final_substantive_head": null,
+  "final_substantive_tree": null,
+  "latest_live_pr_readback": "OPEN, non-draft, unmerged, MERGEABLE; head and base unchanged",
+  "operator_return": {
+    "BASELINE_REPAIR_PATHS": 2,
+    "DOCTOR_ASSERTION_REPAIR": "PASS",
+    "DOCTOR_PRODUCTION_CODE_CHANGED": "NO",
+    "DOPMUX_DCP_PACKAGE_DECLARATION": "PASS",
+    "ISOLATED_PACKAGE_INSTALL": "PASS",
+    "ISOLATED_DOPMUX_DCP_IMPORT": "PASS",
+    "B0_EXPANDED_BASELINE": "PASS",
+    "EXPANDED_BASELINE": "FAIL_AT_P2_INTEGRATION_FIXTURE",
+    "EXPECTED_BASE_PROPAGATION": "PASS_FOCUSED",
+    "COLLECTOR_FIXTURE_CORRECTION": "PASS",
+    "CLI_IDENTITY_FIXTURE_CORRECTION": "PASS",
+    "MISSING_BASE_DENIAL": "PASS",
+    "MISMATCHED_BASE_DENIAL": "PASS",
+    "FOCUSED_TESTS": "324 passed",
+    "RELEVANT_COMPLETE_SUITE": "1117 passed, 2 skipped, 1 failed",
+    "WORKFLOW_VALIDATION": "PASS",
+    "PRECOMMIT": "PASS",
+    "DIFF_CHECK": "PASS",
+    "SECRET_SCAN": "PASS",
+    "PROOF_VALIDATION": "PASS_SCHEMA_ONLY",
+    "FINAL_INDEPENDENT_AUDIT": "NOT_RUN"
+  },
+  "blocking_test": {
+    "path": "tests/pr_merge_specialist/test_queue_drain_integration.py",
+    "test": "test_merge_prepared_result_logs_auto_merge_handoff_truthfully",
+    "fixture_line": 387,
+    "call_line": 429,
+    "observed_fixture": "FakeGitHubClient(repo=None, repo_root=tmp_path, policy={})",
+    "other_existing_identity": {"pr": 190, "head": "head-190", "base": "base-main"},
+    "observed_denial": "Steward finalization gate denied merge: DENY_MISSING_CALLER_IDENTITY",
+    "preserved_assertions": "Auto-merge handoff success, not merge success, exact expected-head forwarding",
+    "path_allowlisted": false,
+    "modified": false,
+    "proposed_bounded_amendment": "Add this repository-relative test path solely to supply explicit DDD-Enterprises/dopemux-mvp repository identity to the positive finalization handoff fixture and corresponding invocation; preserve all handoff/head assertions and missing-identity denial. No production fallback.",
+    "proposed_repair_validation": "NOT_RUN; no permission inferred to change fixture or emulate a permissive runtime"
+  },
+  "validation": [
+    {
+      "source": "Bounded implementer report",
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/audit/test_run_embedded_audit.py::test_not_required_rejects_missing_expected_base tests/pr_merge_specialist/test_finalization_gate.py::test_finalization_denies_missing_trusted_caller_identity",
+      "result": "RED: 2 failed in 0.35s before production edits",
+      "exit_code": 1
+    },
+    {
+      "source": "Bounded implementer report",
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/audit/test_run_embedded_audit.py tests/pr_steward/test_collector_proof_state.py tests/pr_steward/test_intake.py tests/pr_merge_specialist/test_steward_gate.py tests/pr_merge_specialist/test_finalization_gate.py tests/dopemux_cli/test_pr_steward_cmd.py tests/pr_merge_specialist/test_template_contracts.py",
+      "result": "324 passed in 5.57s",
+      "exit_code": 0
+    },
+    {
+      "source": "Supervisor direct execution",
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/audit tests/pr_steward tests/pr_merge_specialist tests/dopemux_cli/test_pr_steward_cmd.py tests/dopemux_cli/test_doctor.py tests/project_control_plane/test_packaging.py",
+      "environment": "Same absolute-path offline mise/PYTHONPATH environment documented in B0_BASELINE_REPAIR.json",
+      "result": "1117 passed, 2 skipped, 1 failed in 31.34s",
+      "exit_code": 1
+    },
+    {
+      "source": "Supervisor isolated reproduction",
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/pr_merge_specialist/test_queue_drain_integration.py::test_merge_prepared_result_logs_auto_merge_handoff_truthfully",
+      "result": "1 failed in 0.19s; same missing caller identity denial",
+      "exit_code": 1
+    },
+    {"command": "python -B proof/<packet>/review_bundle/verify_closure.py", "result": "PASS; scope, parity hashes, workflow structural invariants, packet schema and JSON parsing", "exit_code": 0},
+    {"command": "python -B scripts/check_workflow_syntax.py .github/workflows/embedded-audit.yml .github/workflows/pr-steward.yml", "result": "PASS, 2 workflows", "exit_code": 0},
+    {"command": "python -B -m pytest -q -p no:cacheprovider --no-cov tests/unit/test_extract_local_smoke.py", "result": "6 passed in 10.22s", "exit_code": 0},
+    {"command": "AST parse every Python file under src and tests", "result": "PASS, 1041 files", "exit_code": 0},
+    {"command": "python -B scripts/audit/validate_audit_proof.py proof/<packet>/PROOF.json", "result": "PASS schema only; audit remains NOT_RUN", "exit_code": 0}
+  ],
+  "intermediate_harness_failures": [
+    "Worker focused run: 315 passed, 1 failed because historical venv lacks pip",
+    "Worker next focused run: 315 passed, 1 failed because relative PYTHONPATH is invalid in child temporary cwd",
+    "Correct absolute B0 test environment passed without source workaround",
+    "Initial closure verifier printed inherited fsmonitor daemon error despite exit 0; per-command fsmonitor=false applied to remaining diff read and clean replay passed",
+    "actionlint executable unavailable; no installation attempted. Repository syntax guard plus parsed YAML structural comparison and bash -n used instead",
+    "First scope-result capture used too-small tool output budget, truncating JSON; parser refused it and no file was authored. Repeated identical deterministic verifier with sufficient output budget; complete JSON parsed and receipt written"
+  ],
+  "scope_inventory_correction": "Earlier read-only caller inventory missed this integration fixture. Complete suite found it. No inference of complete closure from focused green.",
+  "provenance_closure_delta": {
+    "expected_base_propagation": "PASS_FOCUSED",
+    "collector_fixture_correction": "PASS_FOCUSED",
+    "cli_identity_fixture_correction": "PASS_FOCUSED",
+    "missing_base_denial": "PASS_FOCUSED",
+    "mismatched_base_denial": "PASS_FOCUSED",
+    "original_p1_same_bytes_three_consumers": "PASS",
+    "exact_six_nested_mutations": "PASS",
+    "complete_validation": "FAIL_SCOPE_INCOMPLETE"
+  },
+  "parity_sha256": {
+    "steward_gate.py_all_four_copies": "bfdac599322c553566729edf84bf9e9920babbf4ecf551d8ff76149e410003c5",
+    "queue_drain.py_all_four_copies": "77a47dc1260f324baffa7d2897babbdb60ffdb6a8aca7c227f5b067292276907"
+  },
+  "invariants": {
+    "workflow_trigger_change": false,
+    "workflow_permission_change": false,
+    "model_call_change": false,
+    "provider_call_change": false,
+    "branch_protection_change": false,
+    "doctor_production_code_changed": false,
+    "base_optional_fallback_added": false
+  },
+  "counters_this_continuation": {
+    "commits": 0,
+    "pushes": 0,
+    "github_mutations": 0,
+    "audits": 0,
+    "exports": 0,
+    "pr1327_mutations": 0,
+    "r0_launched": false
+  },
+  "final_independent_audit": "NOT_RUN",
+  "merge_authorized": false,
+  "ready_state_authorized": false,
+  "export_authorized": false,
+  "activation_authorized": false,
+  "rollback": "Preserve authorized working changes, historical receipts and generated untracked run artifacts. No reset, rollback, force push, cleanup or history rewrite.",
+  "next_gate": "Operator bounded fixture scope amendment; no architecture change or fallback proposed. Rerun complete validation before freeze. Independent audit/export remain separately gated."
+}

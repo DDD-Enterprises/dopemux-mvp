@@ -1,0 +1,116 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001",
+  "return_status": "BLOCKED_PROVENANCE_CLOSURE_AUDITOR_AUTHENTICATION",
+  "final_independent_l3_audit": "NEEDS_SUPERVISOR",
+  "disposition_source": "Supervisor execution gate; no auditor verdict was produced.",
+  "auditor_verdict": "NOT_PRODUCED",
+  "audit_content_response": "NOT_PRODUCED",
+  "subject": {
+    "head": "a54eb4ab151ba1d4c015648c9f111868b6d1fbf2",
+    "tree": "43191a12172bc254ca494d37bf91725511e538b7",
+    "manifest_sha256": "f786e2320366b86904f82e7b496db49966dbc85927f68d5522a38694496406c4",
+    "reconstructed_file_count": 44,
+    "all_hashes": "PASS",
+    "secret_scan": "PASS",
+    "portability_scan": "PASS",
+    "unmanifested_files": 0,
+    "subject_directory_basename": "r3-opus-audit-su4o2vfn/subject"
+  },
+  "invocation": {
+    "runner": "Claude Code CLI",
+    "version": "2.1.263",
+    "requested_model_selector": "opus",
+    "requested_effort": "high",
+    "tools": [],
+    "mcp_servers": [],
+    "session_persistence": false,
+    "fallback": null,
+    "mutation_authority": "NONE",
+    "invocation_count": 1,
+    "substantive_response_count": 0,
+    "substantive_audit_verdict_count": 0,
+    "exit_code": 1,
+    "started_at": "2026-09-08T10:37:49.990752+00:00",
+    "completed_at": "2026-09-08T10:37:53.955291+00:00",
+    "prompt_bytes": 1138904,
+    "prompt_sha256": "e3c2b0b1d6058449456cf0fdf08b79b184d2047682504a10a1da296a5e28ed3b",
+    "raw_stream_sha256": "beb4740cf28008becb8944fb5076ff59fae180930b016497636dac89d0c8b8fb"
+  },
+  "error": {
+    "verbatim": "Failed to authenticate: OAuth session expired and could not be refreshed",
+    "assistant_model_field": "<synthetic>",
+    "result_is_error": true,
+    "model_usage": {},
+    "runtime_reported_total_cost_usd": 0,
+    "billing_claim": "Runtime report only; no independent billing verification",
+    "internal_retry_events": [
+      {
+        "attempt": 1,
+        "max_retries": 10,
+        "error_status": 401,
+        "error": "authentication_failed"
+      },
+      {
+        "attempt": 2,
+        "max_retries": 10,
+        "error_status": 401,
+        "error": "authentication_failed"
+      }
+    ],
+    "supervisor_retries": 0
+  },
+  "identity": {
+    "actual_runner": "PROVEN: signed executable, outside-sandbox verification and runtime init agree on Claude Code 2.1.263",
+    "configured_model_resolution": "claude-opus-5",
+    "actual_model": "UNKNOWN_NO_SUBSTANTIVE_PROVIDER_RESPONSE",
+    "preflight_auth": {
+      "loggedIn": true,
+      "authMethod": "claude.ai",
+      "apiProvider": "firstParty",
+      "subscriptionType": "pro"
+    },
+    "preflight_auth_limit": "Cached login status did not establish a usable current OAuth session",
+    "actual_provider": "UNKNOWN_NO_SUCCESSFUL_AUDIT_RESPONSE",
+    "auditor_independence": "NOT_PROVEN_FOR_COMPLETED_AUDIT",
+    "subject_manifest_match": "PASS_LOCAL",
+    "subject_head_match": "PASS_LOCAL",
+    "auditor_subject_acknowledgment": "NOT_PRODUCED"
+  },
+  "export": {
+    "operator_approved": true,
+    "attempted": true,
+    "wrapper_zip_used": false,
+    "actual_remote_receipt": "UNKNOWN: authentication failed; do not claim a successful subject delivery",
+    "unapproved_material_added": false,
+    "raw_output_exported": false
+  },
+  "raw_evidence_custody": {
+    "directory_basename": "r3-opus-audit-su4o2vfn",
+    "files": [
+      "INVOCATION_STARTED.json",
+      "RAW_STREAM.jsonl",
+      "RAW_STDERR.txt",
+      "INVOCATION_COMPLETED.json"
+    ],
+    "policy": "Original bytes retained locally outside subject and repository proof; startup transcript may contain local machine metadata. Public receipt preserves exact error and stream hash without those fields."
+  },
+  "governing_stop": "Invocation could not establish actual model, successful provider response, auditor independence or verdict. No conditional after-audit authority became active.",
+  "actions": {
+    "new_commits": 0,
+    "pushes": 0,
+    "attestations": 0,
+    "review_thread_mutations": 0,
+    "ci_reruns": 0,
+    "provider_route_substitutions": 0,
+    "credential_changes": 0,
+    "pr1327_mutations": 0,
+    "r0_launched": false
+  },
+  "remaining_audit_budget": "No substantive audit response/verdict consumed; do not silently rerun. Same-route transport retry only after operator restores OAuth and governing retry authority is confirmed.",
+  "next_action": "Operator restores Claude Code subscription OAuth outside this execution. Retry must retain opus/high, identical frozen head/tree/manifest, no tools/MCP/fallback. No API-key route.",
+  "merge_pr1330": false,
+  "ready_state_mutation": false,
+  "force_push": false,
+  "branch_protection_change": false,
+  "rollback": "Preserve frozen commit, manifests, failed reconstruction and audit receipts. No reset, cleanup or rollback."
+}

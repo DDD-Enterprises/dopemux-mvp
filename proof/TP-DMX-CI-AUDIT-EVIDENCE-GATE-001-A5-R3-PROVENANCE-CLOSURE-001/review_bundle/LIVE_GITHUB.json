@@ -1,0 +1,288 @@
+{
+  "data": {
+    "repository": {
+      "defaultBranchRef": {
+        "name": "main",
+        "target": {
+          "oid": "6a728f74c0311967f83213513308f97613e3f28d"
+        }
+      },
+      "p1330": {
+        "state": "OPEN",
+        "isDraft": false,
+        "mergedAt": null,
+        "mergeable": "MERGEABLE",
+        "headRefOid": "13562c8df1bc6621229eb4a38473da42be199825",
+        "headRefName": "fix/ci-audit-steward-not-required-a5-r1",
+        "baseRefOid": "6a728f74c0311967f83213513308f97613e3f28d",
+        "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1330",
+        "reviewThreads": {
+          "nodes": [
+            {
+              "id": "PRRT_kwDOPyIw986fqt2i",
+              "isResolved": true,
+              "isOutdated": false,
+              "comments": {
+                "nodes": [
+                  {
+                    "databaseId": 3943564837,
+                    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1330#discussion_r3943564837"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "PRRT_kwDOPyIw986fquAS",
+              "isResolved": false,
+              "isOutdated": true,
+              "comments": {
+                "nodes": [
+                  {
+                    "databaseId": 3943565764,
+                    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1330#discussion_r3943565764"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "PRRT_kwDOPyIw986fyB9d",
+              "isResolved": false,
+              "isOutdated": false,
+              "comments": {
+                "nodes": [
+                  {
+                    "databaseId": 3946470813,
+                    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1330#discussion_r3946470813"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "PRRT_kwDOPyIw986fzJHL",
+              "isResolved": false,
+              "isOutdated": false,
+              "comments": {
+                "nodes": [
+                  {
+                    "databaseId": 3946904487,
+                    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1330#discussion_r3946904487"
+                  }
+                ]
+              }
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false
+          }
+        },
+        "commits": {
+          "nodes": [
+            {
+              "commit": {
+                "statusCheckRollup": {
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "Analyze (actions)",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088370972/job/101636708960"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "identity-check",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088373353/job/101636712596"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "identity-check",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088370287/job/101636704096"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "\ud83d\udee1\ufe0f Clobber Guard",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088373419/job/101636713078"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "checks",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088373318/job/101636712470"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "independent embedded audit",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088372095/job/101636709674"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "preflight",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088373376/job/101636712745"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "\ud83d\udc85 Code Quality & Linting",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088373370/job/101636713295"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "Analyze (javascript-typescript)",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088370972/job/101636708861"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "Analyze (python)",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088370972/job/101636709037"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "Analyze (ruby)",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088370972/job/101636709006"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "\ud83d\udd12 Security Review",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088373370/job/101636713204"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "\ud83d\udcda Documentation Check",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088373370/job/101636713291"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "\ud83e\uddea Unit Tests",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088373370/job/101636713132"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "\ud83e\uddea Extractor Smoke",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088373370/job/101636713306"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "\ud83d\udd0d Audit Proof Validator (--all)",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088373370/job/101636713301"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "\ud83d\uddfa\ufe0f Model Routing Consistency",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088373370/job/101636713239"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "\ud83e\uddea Extractor Full",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088373370/job/101636713105"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "\ud83d\udd0d Extractor Lint",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088373370/job/101636713276"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "\ud83e\uddea Auditor Router",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088373370/job/101636713235"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "\ud83e\uddea Installer Smoke",
+                        "status": "COMPLETED",
+                        "conclusion": "SKIPPED",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088373370/job/101636713925"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "\ud83d\udcca Scoped Coverage",
+                        "status": "COMPLETED",
+                        "conclusion": "SKIPPED",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088373370/job/101636713835"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "\ud83d\udd17 Integration Tests",
+                        "status": "COMPLETED",
+                        "conclusion": "SKIPPED",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088373370/job/101636729407"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "\ud83d\udcca CI Pipeline Summary",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088373370/job/101638950422"
+                      },
+                      {
+                        "__typename": "StatusContext",
+                        "context": "PR Steward / final readiness",
+                        "state": "FAILURE",
+                        "targetUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34088405035"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "CodeQL",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/runs/101636820257"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "p1327": {
+        "state": "OPEN",
+        "isDraft": true,
+        "mergedAt": null,
+        "mergeable": "MERGEABLE",
+        "headRefOid": "a18c87fdcf96b1b830dc88345ce199e2ef209ac6",
+        "headRefName": "docs/wsac-series-registration-000",
+        "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1327"
+      }
+    }
+  }
+}

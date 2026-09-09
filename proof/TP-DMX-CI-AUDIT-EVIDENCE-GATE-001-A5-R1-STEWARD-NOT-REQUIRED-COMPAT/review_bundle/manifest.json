@@ -1,0 +1,25 @@
+{
+  "algorithm": "sha256",
+  "files": [
+    {
+      "path": "AUDIT_REQUEST.md",
+      "sha256": "fc7522cbb673414c0a26f19aabaa5c95ec013a50340ab96a25467b75e3500f76"
+    },
+    {
+      "path": "AUDIT_RESULT.json",
+      "sha256": "da9834a7e55d0106e070cedb73578433d3c40be88fe3002da9d9f0dfde4e4f26"
+    },
+    {
+      "path": "DETERMINISTIC_VALIDATION.json",
+      "sha256": "180d639580c1d59e9657b084d0e3d42b8c0b913d0cd750d91005b7232253dd44"
+    },
+    {
+      "path": "FROZEN_HEAD_IDENTITY.json",
+      "sha256": "358e79d58548a665527cf94d8fe03dc90a28821ae518c878be8f93024d56e2e7"
+    },
+    {
+      "path": "MODEL_IDENTITY.json",
+      "sha256": "1ec60cd0255b68aec12fe8ae7c0c26c6925d99b583ab98278b0f29959a7e092b"
+    }
+  ]
+}

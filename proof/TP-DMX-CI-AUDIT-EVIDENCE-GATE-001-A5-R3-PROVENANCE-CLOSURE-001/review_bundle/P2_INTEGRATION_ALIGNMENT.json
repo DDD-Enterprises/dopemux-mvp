@@ -1,0 +1,70 @@
+{
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R3-PROVENANCE-CLOSURE-001",
+  "amendment_class": "NARROW_INTEGRATION_TEST_FIXTURE_ALLOWLIST_SUPPLEMENT",
+  "repository_path_added": "tests/pr_merge_specialist/test_queue_drain_integration.py",
+  "authority": "Operator Integration Fixture Scope Amendment; architecture unchanged; no production path added.",
+  "historical_stop": {
+    "path": "review_bundle/P2_SCOPE_STOP.json",
+    "sha256": "dbd594cc70a9aa9d35c7b2d94cbf5ea4ce16dc483af4c7a52e455b8b3660eada",
+    "preserved": true
+  },
+  "start_head": "13562c8df1bc6621229eb4a38473da42be199825",
+  "live_pr": {
+    "number": 1330,
+    "state": "OPEN",
+    "draft": false,
+    "merged": false,
+    "mergeable": "MERGEABLE",
+    "head": "13562c8df1bc6621229eb4a38473da42be199825",
+    "base": "6a728f74c0311967f83213513308f97613e3f28d"
+  },
+  "delta_separation": {
+    "PROVENANCE_CLOSURE_DELTA": "Existing canonical repo/PR/head/base validation and trusted caller propagation, unchanged in this supplement.",
+    "PRE_EXISTING_BASELINE_REPAIRS": "Existing dopemux.dcp packaging declaration and stale doctor assertion; B0 PASS preserved in B0_BASELINE_REPAIR.json.",
+    "INTEGRATION_FIXTURE_ALIGNMENT": "Only repo=None -> explicit DDD-Enterprises/dopemux-mvp in positive handoff client and invocation. All four existing assertions preserved. No runtime change."
+  },
+  "validation": [
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/pr_merge_specialist/test_queue_drain_integration.py",
+      "result": "39 passed in 0.48s",
+      "exit_code": 0
+    },
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/audit/test_run_embedded_audit.py tests/pr_steward/test_collector_proof_state.py tests/pr_steward/test_intake.py tests/pr_merge_specialist/test_steward_gate.py tests/pr_merge_specialist/test_finalization_gate.py tests/dopemux_cli/test_pr_steward_cmd.py tests/pr_merge_specialist/test_template_contracts.py",
+      "result": "324 passed in 5.65s",
+      "exit_code": 0
+    },
+    {
+      "command": "python -B -m pytest -q -p no:cacheprovider tests/audit tests/pr_steward tests/pr_merge_specialist tests/dopemux_cli/test_pr_steward_cmd.py tests/dopemux_cli/test_doctor.py tests/project_control_plane/test_packaging.py",
+      "result": "1118 passed, 2 skipped in 30.44s",
+      "exit_code": 0
+    },
+    {
+      "command": "python -B scripts/check_workflow_syntax.py .github/workflows/embedded-audit.yml .github/workflows/pr-steward.yml",
+      "result": "PASS, 2 files",
+      "exit_code": 0
+    },
+    {
+      "command": "python -B proof/<packet>/review_bundle/verify_closure.py",
+      "result": "PASS: scope, packet schema, mirror hashes, packaging-only declaration, workflow parsed structure and bash syntax",
+      "exit_code": 0
+    }
+  ],
+  "test_environment": "Same absolute offline mise/PYTHONPATH environment from B0_BASELINE_REPAIR.json. No provider/model calls.",
+  "denials": "test_live_queue_finalization_uses_client_repo_and_exact_pr_state covers matching, missing, foreign client repo; same-byte consumer matrix covers missing/mismatched base, malformed identity and original P1.",
+  "skips": [
+    "Historical Grok differential: origin/main already carries route.",
+    "Historical OpenCode/Kimi differential: origin/main already carries route."
+  ],
+  "intermediate_failure": {
+    "result": "38 passed, 1 failed in 0.64s",
+    "exit_code": 1,
+    "reason": "Initial patch selected an earlier identical client fixture line, leaving intended client repo missing. Immediate diff review caught placement; restored own unrelated edit and targeted correct fixture. Failure retained; no runtime workaround."
+  },
+  "final_independent_audit": "NOT_RUN",
+  "freeze": "PENDING_FINAL_DETERMINISTIC_CHECKS",
+  "merge_authorized": false,
+  "ready_state_authorized": false,
+  "export_authorized": false,
+  "activation_authorized": false
+}

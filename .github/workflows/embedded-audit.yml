@@ -340,6 +340,7 @@ jobs:
         env:
           EXPECTED_PR: ${{ steps.pr.outputs.number }}
           EXPECTED_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          EXPECTED_BASE_SHA: ${{ steps.target_pr.outputs.base_sha }}
         run: |
           python - <<'PY'
           import json
@@ -362,6 +363,7 @@ jobs:
               expected_pr=int(os.environ["EXPECTED_PR"]),
               expected_head_sha=os.environ["EXPECTED_HEAD_SHA"],
               expected_repo=os.environ["GITHUB_REPOSITORY"],
+              expected_base_sha=os.environ["EXPECTED_BASE_SHA"],
           )
           PY
 

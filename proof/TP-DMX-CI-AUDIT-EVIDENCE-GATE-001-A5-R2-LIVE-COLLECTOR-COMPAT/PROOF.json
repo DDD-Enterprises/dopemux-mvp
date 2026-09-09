@@ -1,0 +1,136 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "gemini-3.1-pro-high",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "agy"
+    },
+    "implementer": {
+      "model": "gpt-5",
+      "model_family": "openai-gpt",
+      "runner": "codex-cli",
+      "runtime_family": "codex-cli"
+    },
+    "independence": "PROVEN"
+  },
+  "audit_result": {
+    "auditor_independence": "PROVEN",
+    "blocking_findings": [],
+    "head_match": true,
+    "nonblocking_risks": [],
+    "subject_head": "83fef3c528b4eb77c09eda15df40735a41c8d45c",
+    "subject_tree": "735ad8956e0395927a4d827605d681f4d8ee4b8c",
+    "summary": "Fresh AGY audit found the LIVE collector repair preserves trusted not-required metadata through the live collector-to-classifier path while retaining fail-closed behavior for malformed or untrusted proofs.",
+    "verdict": "PASS"
+  },
+  "base_sha": "6a728f74c0311967f83213513308f97613e3f28d",
+  "content_tree": "735ad8956e0395927a4d827605d681f4d8ee4b8c",
+  "embedded_audit": {
+    "auditor_model": "gemini-3.1-pro-high",
+    "auditor_tool": "agy",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": "rtk agy --model gemini-3.1-pro-high --effort high --mode plan --new-project --add-dir <bounded-audit-bundle> --print <request in review_bundle/AUDIT_REQUEST.md> --print-timeout 10m",
+    "remaining_risks": [],
+    "report_path": "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "files_changed": [
+    "task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT.json",
+    "tests/pr_steward/test_collector_proof_state.py",
+    "tests/pr_steward/test_intake.py",
+    "tools/pr_steward/collector.py"
+  ],
+  "generated_at": "2026-09-07T03:55:16Z",
+  "head_sha": "83fef3c528b4eb77c09eda15df40735a41c8d45c",
+  "packet_id": "TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT",
+  "pr_number": 1330,
+  "quarantined_evidence_not_migrated": [
+    "task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-COLLECTOR-COMPAT.json",
+    "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-COLLECTOR-COMPAT/**",
+    "proof/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R1-STEWARD-NOT-REQUIRED-COMPAT/PROOF.json"
+  ],
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "repo_identity": {
+    "match": true,
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "project_id": "dopemux-mvp",
+    "remote": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "repo_marker": ".dopemux"
+  },
+  "reused_hunks": [
+    "tests/pr_steward/test_intake.py",
+    "tools/pr_steward/collector.py"
+  ],
+  "risk_lane": "L3",
+  "status": "PASS",
+  "stop_conditions": {
+    "force_push": false,
+    "merge_pr_1330": false,
+    "new_pr_created": false,
+    "old_r2_commit_pushed": false,
+    "old_r2_worktree_mutations": 0,
+    "pr_1327_mutations": 0,
+    "r0_launched": false
+  },
+  "validation": {
+    "change_contract": {
+      "command": "scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    "ci_model_execution": 0,
+    "ci_provider_model_calls": 0,
+    "diff_check": {
+      "command": "git diff --check origin/main..HEAD",
+      "exit_code": 0
+    },
+    "focused_green": {
+      "command": "env PATH=.venv/bin:$PATH .venv/bin/python -m pytest -q tests/pr_steward/test_intake.py tests/pr_steward/test_classifier_embedded_audit_normalization.py tests/pr_steward/test_collector_proof_state.py",
+      "exit_code": 0,
+      "result": "93 passed in 1.81s"
+    },
+    "gitleaks_staged": {
+      "command": "gitleaks protect --staged --verbose",
+      "exit_code": 0,
+      "result": "no leaks found; git fsmonitor warning present on stderr"
+    },
+    "jsonschema": {
+      "command": "python -m jsonschema -i task-packets/TP-DMX-CI-AUDIT-EVIDENCE-GATE-001-A5-R2-LIVE-COLLECTOR-COMPAT.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "exit_code": 0
+    },
+    "pre_commit": {
+      "command": "uv run pre-commit run --from-ref origin/main --to-ref HEAD",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    "relevant_suite": {
+      "command": "env PATH=.venv/bin:$PATH .venv/bin/python -m pytest -q tests/audit tests/pr_steward",
+      "exit_code": 0,
+      "result": "830 passed, 2 skipped in 27.62s"
+    },
+    "ruff": {
+      "command": "ruff check tools/pr_steward/collector.py tests/pr_steward/test_intake.py tests/pr_steward/test_collector_proof_state.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    "tdd_red": {
+      "command": "pytest focused not-required selection before collector fix",
+      "exit_code": 1,
+      "expected": true,
+      "failures": 3
+    }
+  },
+  "worktree": {
+    "branch": "detached",
+    "content_head": "83fef3c528b4eb77c09eda15df40735a41c8d45c",
+    "content_tree": "735ad8956e0395927a4d827605d681f4d8ee4b8c",
+    "path": ".worktrees/ci-audit-steward-live-a5-r2-reconstruct",
+    "source_head": "3858be0d93da9176b121fdbfcbc6baa8ff05196a"
+  }
+}
