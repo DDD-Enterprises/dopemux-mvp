@@ -19,7 +19,9 @@ COPY pal_http_wrapper.py .
 # Install dependencies using uv
 RUN rm -rf .venv && uv venv && \
     . .venv/bin/activate && \
-    uv pip install -r requirements.txt
+    uv pip install -r requirements.txt && \
+    mkdir -p /opt && \
+    ln -s /app/.venv /opt/venv
 
 # Expose port
 EXPOSE 3003

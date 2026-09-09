@@ -1,5 +1,5 @@
 """
-Zen MCP Server - Main server implementation
+PAL MCP Server - Main server implementation
 
 This module implements the core MCP (Model Context Protocol) server that provides
 AI-powered tools for code analysis, review, and assistance using multiple AI models.
@@ -70,6 +70,7 @@ from tools import (  # noqa: E402
     VersionTool,
 )
 from tools.models import ToolOutput  # noqa: E402
+from tools.shared.exceptions import ToolExecutionError  # noqa: E402
 from utils.env import env_override_enabled, get_env  # noqa: E402
 
 # Configure logging for server operations
@@ -383,17 +384,17 @@ except Exception as e:
 
 logger = logging.getLogger(__name__)
 
-# Log ZEN_MCP_FORCE_ENV_OVERRIDE configuration for transparency
+# Log PAL_MCP_FORCE_ENV_OVERRIDE configuration for transparency
 if env_override_enabled():
-    logger.info("ZEN_MCP_FORCE_ENV_OVERRIDE enabled - .env file values will override system environment variables")
+    logger.info("PAL_MCP_FORCE_ENV_OVERRIDE enabled - .env file values will override system environment variables")
     logger.debug("Environment override prevents conflicts between different AI tools passing cached API keys")
 else:
-    logger.debug("ZEN_MCP_FORCE_ENV_OVERRIDE disabled - system environment variables take precedence")
+    logger.debug("PAL_MCP_FORCE_ENV_OVERRIDE disabled - system environment variables take precedence")
 
 
 # Create the MCP server instance with a unique name identifier
 # This name is used by MCP clients to identify and connect to this specific server
-server: Server = Server("zen-server")
+server: Server = Server("pal-server")
 
 
 # Constants for tool filtering
@@ -601,7 +602,7 @@ PROMPT_TEMPLATES = {
     "version": {
         "name": "version",
         "description": "Show server version and system information",
-        "template": "Show Zen MCP Server version",
+        "template": "Show PAL MCP Server version",
     },
 }
 
@@ -803,7 +804,8 @@ def configure_providers():
         try:
             registry = ModelProviderRegistry()
             if hasattr(registry, "_initialized_providers"):
-                for provider in list(registry._initialized_providers.items()):
+                # Iterate over provider instances (values), not (type, instance) tuples
+                for provider in list(registry._initialized_providers.values()):
                     try:
                         if provider and hasattr(provider, "close"):
                             provider.close()
@@ -1141,7 +1143,7 @@ async def handle_call_tool(name: str, arguments: dict[str, Any]) -> list[TextCon
                 content_type="text",
                 metadata={"tool_name": name, "requested_model": model_name},
             )
-            return [TextContent(type="text", text=error_output.model_dump_json())]
+            raise ToolExecutionError(error_output.model_dump_json())
 
         # Create model context with resolved model and option
         model_context = ModelContext(model_name, model_option)
@@ -1178,12 +1180,13 @@ async def handle_call_tool(name: str, arguments: dict[str, Any]) -> list[TextCon
 
         # EARLY FILE SIZE VALIDATION AT MCP BOUNDARY
         # Check file sizes before tool execution using resolved model
-        if "files" in arguments and arguments["files"]:
-            logger.debug(f"Checking file sizes for {len(arguments['files'])} files with model {model_name}")
-            file_size_check = check_total_file_size(arguments["files"], model_name)
+        argument_files = arguments.get("absolute_file_paths")
+        if argument_files:
+            logger.debug(f"Checking file sizes for {len(argument_files)} files with model {model_name}")
+            file_size_check = check_total_file_size(argument_files, model_name)
             if file_size_check:
                 logger.warning(f"File size check failed for {name} with model {model_name}")
-                return [TextContent(type="text", text=ToolOutput(**file_size_check).model_dump_json())]
+                raise ToolExecutionError(ToolOutput(**file_size_check).model_dump_json())
 
         # Execute tool with pre-resolved model context
         provider_span_id = _new_span_id()
@@ -1488,7 +1491,7 @@ async def reconstruct_thread_context(arguments: dict[str, Any]) -> dict[str, Any
     user_prompt = arguments.get("prompt", "")
     if user_prompt:
         # Capture files referenced in this turn
-        user_files = arguments.get("files", [])
+        user_files = arguments.get("absolute_file_paths") or []
         logger.debug(f"[CONVERSATION_DEBUG] Adding user turn to thread {continuation_id}")
         from utils.token_utils import estimate_tokens
 
@@ -1682,9 +1685,10 @@ async def reconstruct_thread_context(arguments: dict[str, Any]) -> dict[str, Any
     logger.info(f"Reconstructed context for thread {continuation_id} (turn {len(context.turns)})")
     logger.debug(f"[CONVERSATION_DEBUG] Final enhanced arguments keys: {list(enhanced_arguments.keys())}")
 
-    # Debug log files in the enhanced arguments for file tracking
-    if "files" in enhanced_arguments:
-        logger.debug(f"[CONVERSATION_DEBUG] Final files in enhanced arguments: {enhanced_arguments['files']}")
+    if "absolute_file_paths" in enhanced_arguments:
+        logger.debug(
+            f"[CONVERSATION_DEBUG] Final files in enhanced arguments: {enhanced_arguments['absolute_file_paths']}"
+        )
 
     # Log to activity file for monitoring
     try:
@@ -1704,7 +1708,7 @@ async def handle_list_prompts() -> list[Prompt]:
     """
     List all available prompts for CLI Code shortcuts.
 
-    This handler returns prompts that enable shortcuts like /zen:thinkdeeper.
+    This handler returns prompts that enable shortcuts like /pal:thinkdeeper.
     We automatically generate prompts from all tools (1:1 mapping) plus add
     a few marketing aliases with richer templates for commonly used tools.
 
@@ -1754,7 +1758,7 @@ async def handle_get_prompt(name: str, arguments: dict[str, Any] = None) -> GetP
     """
     Get prompt details and generate the actual prompt text.
 
-    This handler is called when a user invokes a prompt (e.g., /zen:thinkdeeper or /zen:chat:gpt5).
+    This handler is called when a user invokes a prompt (e.g., /pal:thinkdeeper or /pal:chat:gpt5).
     It generates the appropriate text that CLI will then use to call the
     underlying tool.
 
@@ -1776,14 +1780,14 @@ async def handle_get_prompt(name: str, arguments: dict[str, Any] = None) -> GetP
 
     # Handle special "continue" case
     if name.lower() == "continue":
-        # This is "/zen:continue" - use chat tool as default for continuation
+        # This is "/pal:continue" - use chat tool as default for continuation
         tool_name = "chat"
         template_info = {
             "name": "continue",
             "description": "Continue the previous conversation",
             "template": "Continue the conversation",
         }
-        logger.debug("Using /zen:continue - defaulting to chat tool")
+        logger.debug("Using /pal:continue - defaulting to chat tool")
     else:
         # Find the corresponding tool by checking prompt names
         tool_name = None
@@ -1831,7 +1835,7 @@ async def handle_get_prompt(name: str, arguments: dict[str, Any] = None) -> GetP
 
     # Generate tool call instruction
     if name.lower() == "continue":
-        # "/zen:continue" case
+        # "/pal:continue" case
         tool_instruction = (
             f"Continue the previous conversation using the {tool_name} tool. "
             "CRITICAL: You MUST provide the continuation_id from the previous response to maintain conversation context. "
@@ -1872,7 +1876,7 @@ async def main():
     configure_providers()
 
     # Log startup message
-    logger.info("Zen MCP Server starting up...")
+    logger.info("PAL MCP Server starting up...")
     logger.info(f"Log level: {log_level}")
 
     # Note: MCP client info will be logged during the protocol handshake
@@ -1898,7 +1902,7 @@ async def main():
     if IS_AUTO_MODE:
         handshake_instructions = (
             "When the user names a specific model (e.g. 'use chat with gpt5'), send that exact model in the tool call. "
-            "When no model is mentioned, first use the `listmodels` tool from zen to obtain available models to choose the best one from."
+            "When no model is mentioned, first use the `listmodels` tool from PAL to obtain available models to choose the best one from."
         )
     else:
         handshake_instructions = (
@@ -1913,7 +1917,7 @@ async def main():
             read_stream,
             write_stream,
             InitializationOptions(
-                server_name="zen",
+                server_name="PAL",
                 server_version=__version__,
                 instructions=handshake_instructions,
                 capabilities=ServerCapabilities(

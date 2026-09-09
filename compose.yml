@@ -317,6 +317,7 @@ services:
       - CUSTOM_API_URL=https://api.cheaperinference.com/v1
       - CUSTOM_API_KEY=${CHEAPERINFERENCE_API_KEY}
       - CUSTOM_MODEL_NAME=glm-4.6
+      - CUSTOM_MODELS_CONFIG_PATH=/app/conf/custom_models.direct-ci.json
       - MCP_SERVER_PORT=${PAL_PORT:-3003}
     ports:
       - "${PAL_PORT:-3003}:3003"
@@ -348,13 +349,14 @@ services:
       - CUSTOM_API_URL=https://api.cheaperinference.com/v1
       - CUSTOM_API_KEY=${CHEAPERINFERENCE_API_KEY}
       - CUSTOM_MODEL_NAME=glm-4.6
+      - CUSTOM_MODELS_CONFIG_PATH=/app/conf/custom_models.direct-ci.json
     # No ports exposed - Docker MCP Toolkit execs into container for stdio transport
 
   # LiteLLM - Model Router
   litellm:
     build:
       context: .
-      dockerfile: docker/mcp-servers/litellm/Dockerfile
+      dockerfile: docker/mcp-servers-source/litellm/Dockerfile
     container_name: mcp-litellm
     restart: unless-stopped
     networks:

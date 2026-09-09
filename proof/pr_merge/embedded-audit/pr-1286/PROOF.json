@@ -1,0 +1,33 @@
+{
+  "packet_id": "PR-MERGE-STEWARD-1286",
+  "pr_number": 1286,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "head_sha": "e3939772d7e1ca69fc84a53b2a5dc949c5eca938",
+  "generated_at": "2026-08-28T04:12:21Z",
+  "mutation_performed": false,
+  "github_mutation_route_added": false,
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "AGY conversation f30ad87b-79c5-416c-8853-65ee03e03b61; exact model gemini-3.1-pro-high, effort high, sandbox enabled, exact worktree and issued packet mounted read-only; two-turn same-audit correction supplied external packet authority without changing content.",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PAL-MODEL-ROUTING-MODERNIZATION-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Deferred to L3: live PAL-to-LiteLLM auth cutover and credential passthrough.",
+      "Deferred to L3: live routing catalog sync/reload and provider provenance probes.",
+      "Deferred to L3: live container restarts and end-to-end provider-backed validation.",
+      "Changed-module mypy remains non-clean with 48 repository baseline/import-surface errors."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}

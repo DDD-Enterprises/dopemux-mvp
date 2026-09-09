@@ -1,0 +1,134 @@
+{
+  "packet_id": "TP-DMX-PAL-MODEL-ROUTING-MODERNIZATION-001",
+  "series": "DMX-PAL-MODEL-ROUTING-MODERNIZATION-001",
+  "branch": "feat/pal-model-routing-modernization-001",
+  "base": "main",
+  "base_sha": "c7bc2fb479d7386825df73e028acdce723ee3388",
+  "head_sha": "e3939772d7e1ca69fc84a53b2a5dc949c5eca938",
+  "content_tree": "1fdef10ee7e59c30f8ecf3c495b50f5133cab02d",
+  "staged_diff_sha256": "7ea9003a3b52b0888c384cffa60422b59ee22ef6207fbea384004d6cf9455038",
+  "packet_sha256": "f1a9981f5279ae9e032e218c268b5752687c2d1ab7ebbb66f7d15f165e0d2834",
+  "timestamp": "2026-08-28T03:42:24Z",
+  "risk_lane": "L2",
+  "kind": "code+docs+tests",
+  "final_packet": false,
+  "files_changed": {
+    "count": 232,
+    "outside_allowlist": false,
+    "forbidden_paths_touched": []
+  },
+  "validations": {
+    "task_packet_schema": {
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "Issued JSON packet validated against docs/03-reference/spec/dopetask/dopetask-canonical-spec.json; deprecation warning only."
+    },
+    "baseline_focused_tests": {
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "23 passed before implementation."
+    },
+    "relevant_repo_tests": {
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "101 passed across routing config, model catalog, PAL manifest/runtime contract, routing policy/consistency, PAL catalog architecture, FreeFlow routing/quota/trace, and LiteLLM manager/proxy tests."
+    },
+    "vendored_pal_tests": {
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "880 passed, 4 skipped, 16 deselected; two pre-existing AsyncMock warnings."
+    },
+    "ruff_changed_python": {
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "All targeted checks passed."
+    },
+    "mypy_changed_modules": {
+      "status": "FAIL",
+      "exit_code": 1,
+      "summary": "48 errors in 7 files while checking 4 changed source files; includes repository baseline missing stubs, existing imported-module errors, and existing untyped routing CLI surfaces. No mypy-clean baseline claimed."
+    },
+    "generated_manifest_drift": {
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "scripts/generate_pal_model_manifest.py --check reported no drift."
+    },
+    "compose_parse": {
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "Compose parse passed with non-secret DOPECON_BRIDGE_TOKEN=validation-placeholder supplied for unrelated required interpolation. Initial parse without it failed closed."
+    },
+    "disposable_image_builds": {
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "LiteLLM, PAL HTTP, and PAL stdio images built from tracked canonical sources; no container started."
+    },
+    "docs_validation": {
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "Documentation frontmatter guard and docs validator passed."
+    },
+    "changed_file_precommit": {
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "Changed-file pre-commit lane passed; commit hook also passed repo preflight, 6 smoke tests, and syntax scan over 1001 files."
+    },
+    "diff_check": {
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "git diff --cached --check passed on frozen content."
+    },
+    "secret_scan": {
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "Gitleaks scanned 923.93 KB staged binary diff and found no leaks."
+    },
+    "instruction_like_content_scan": {
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "Deterministic scanner detected zero instruction-like matches in candidate diff."
+    },
+    "changed_contract_preflight": {
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "status=PASS, max_lane=L2, model_audit_required=True, proof_only=False, paths=232."
+    },
+    "independent_final_audit": {
+      "status": "PASS",
+      "exit_code": 0,
+      "summary": "One AGY gemini-3.1-pro-high audit conversation inspected exact frozen staged content; no fallback and no findings."
+    }
+  },
+  "not_run": [
+    "Real provider calls and provider provenance probes: forbidden by packet.",
+    "Live PAL-to-LiteLLM authentication cutover or credential passthrough: deferred to L3.",
+    "Live ~/.dopemux/routing.yaml sync/reload: forbidden by packet.",
+    "Container start/restart and live runtime handshake: forbidden by packet.",
+    "Foreign adops LiteLLM access: forbidden by packet.",
+    "PR Steward current-head readiness gate: NOT_RUN before draft PR creation; required before any future mark-ready request."
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "AGY conversation f30ad87b-79c5-416c-8853-65ee03e03b61; exact model gemini-3.1-pro-high, effort high, sandbox enabled, exact worktree and issued packet mounted read-only; two-turn same-audit correction supplied external packet authority without changing content.",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PAL-MODEL-ROUTING-MODERNIZATION-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Deferred to L3: live PAL-to-LiteLLM auth cutover and credential passthrough.",
+      "Deferred to L3: live routing catalog sync/reload and provider provenance probes.",
+      "Deferred to L3: live container restarts and end-to-end provider-backed validation.",
+      "Changed-module mypy remains non-clean with 48 repository baseline/import-surface errors."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}

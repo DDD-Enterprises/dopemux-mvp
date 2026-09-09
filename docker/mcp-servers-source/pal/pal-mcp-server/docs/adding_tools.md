@@ -1,6 +1,6 @@
-# Adding Tools to Zen MCP Server
+# Adding Tools to PAL MCP Server
 
-Zen MCP tools are Python classes that inherit from the shared infrastructure in `tools/shared/base_tool.py`.
+PAL MCP tools are Python classes that inherit from the shared infrastructure in `tools/shared/base_tool.py`.
 Every tool must provide a request model (Pydantic), a system prompt, and the methods the base class marks as
 abstract. The quickest path to a working tool is to copy an existing implementation that matches your use case
 (`tools/chat.py` for simple request/response tools, `tools/consensus.py` or `tools/codereview.py` for workflows).
@@ -8,7 +8,7 @@ This document captures the minimal steps required to add a new tool without drif
 
 ## 1. Pick the Tool Architecture
 
-Zen supports two architectures, implemented in `tools/simple/base.py` and `tools/workflow/base.py`.
+PAL supports two architectures, implemented in `tools/simple/base.py` and `tools/workflow/base.py`.
 
 - **SimpleTool** (`SimpleTool`): single MCP call – request comes in, you build one prompt, call the model, return.
   The base class handles schema generation, conversation threading, file loading, temperature bounds, retries,
@@ -51,9 +51,10 @@ from tools.simple.base import SimpleTool
 
 class ChatRequest(ToolRequest):
     prompt: str = Field(..., description="Your question or idea.")
-    files: list[str] | None = Field(default_factory=list)
-    working_directory: str = Field(
-        ..., description="Absolute full directory path where the assistant AI can save generated code for implementation."
+    absolute_file_paths: list[str] | None = Field(default_factory=list)
+    working_directory_absolute_path: str = Field(
+        ...,
+        description="Absolute path to an existing directory where generated code can be saved.",
     )
 
 class ChatTool(SimpleTool):
@@ -72,15 +73,15 @@ class ChatTool(SimpleTool):
     def get_tool_fields(self) -> dict[str, dict[str, object]]:
         return {
             "prompt": {"type": "string", "description": "Your question."},
-            "files": SimpleTool.FILES_FIELD,
-            "working_directory": {
+            "absolute_file_paths": SimpleTool.FILES_FIELD,
+            "working_directory_absolute_path": {
                 "type": "string",
-                "description": "Absolute full directory path where the assistant AI can save generated code for implementation.",
+                "description": "Absolute path to an existing directory for generated code artifacts.",
             },
         }
 
     def get_required_fields(self) -> list[str]:
-        return ["prompt", "working_directory"]
+        return ["prompt", "working_directory_absolute_path"]
 
     async def prepare_prompt(self, request: ChatRequest) -> str:
         return self.prepare_chat_style_prompt(request)

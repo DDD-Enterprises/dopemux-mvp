@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 from datetime import datetime
+from copy import deepcopy
 import logging
+import os
 from pathlib import Path
 import shutil
+import tempfile
 from typing import Any, Dict, Optional
 from urllib.parse import urlparse
 
@@ -15,6 +18,16 @@ logger = logging.getLogger(__name__)
 
 LOCAL_PROVIDER_NAMES = {"ollama", "lmstudio"}
 LOCAL_PROVIDER_HOSTNAMES = {"localhost", "127.0.0.1", "::1"}
+REPO_CATALOG_SECTIONS = (
+    "providers",
+    "models",
+    "slots",
+    "fallbacks",
+    "default_fallbacks",
+    "aliases",
+    "freeflow",
+    "pal_compatibility_models",
+)
 
 
 class RoutingConfigError(RuntimeError):
@@ -38,6 +51,44 @@ def _provider_allows_inline_auth(provider: Dict[str, Any]) -> bool:
         return True
     hostname = _provider_hostname(provider)
     return bool(hostname and hostname in LOCAL_PROVIDER_HOSTNAMES)
+
+
+def _entry_enabled(entry: Dict[str, Any]) -> bool:
+    """Return explicit enablement while preserving legacy active behavior."""
+    return entry.get("enabled", True) is True
+
+
+def _merge_repo_value(current: Any, template: Any) -> Any:
+    """Upsert template authority while retaining user-owned additive entries."""
+    if isinstance(template, dict):
+        merged = deepcopy(current) if isinstance(current, dict) else {}
+        for key, value in template.items():
+            merged[key] = _merge_repo_value(merged.get(key), value)
+        return merged
+
+    if isinstance(template, list):
+        current_list = current if isinstance(current, list) else []
+        template_named = all(
+            isinstance(item, dict) and item.get("name") for item in template
+        )
+        current_named = all(
+            isinstance(item, dict) and item.get("name") for item in current_list
+        )
+        if template_named and current_named:
+            template_names = {item["name"] for item in template}
+            return deepcopy(template) + [
+                deepcopy(item)
+                for item in current_list
+                if item["name"] not in template_names
+            ]
+
+        merged_list: list[Any] = deepcopy(template)
+        for item in current_list:
+            if item not in merged_list:
+                merged_list.append(deepcopy(item))
+        return merged_list
+
+    return deepcopy(template)
 
 
 class RoutingConfig:
@@ -181,6 +232,82 @@ class RoutingConfig:
             "audit": self.audit_alias_contract(repaired),
         }
 
+    def audit_catalog_contract(
+        self, config: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Compare repo-owned catalog sections with additive sync result."""
+        current = config if config is not None else self.load()
+        template = self.load_template()
+        merged = deepcopy(current)
+        for section in REPO_CATALOG_SECTIONS:
+            if section not in template:
+                continue
+            merged[section] = _merge_repo_value(
+                current.get(section), template[section]
+            )
+
+        changed_sections = [
+            section
+            for section in REPO_CATALOG_SECTIONS
+            if section in template and current.get(section) != merged.get(section)
+        ]
+        return {
+            "config_path": str(self.config_path),
+            "template_path": str(self.TEMPLATE_PATH),
+            "changed_sections": changed_sections,
+            "stale": bool(changed_sections),
+            "merged_config": merged,
+        }
+
+    def sync_catalog_contract(self, *, apply: bool = False) -> Dict[str, Any]:
+        """Preview or atomically apply additive repo catalog synchronization."""
+        current = self.load()
+        audit = self.audit_catalog_contract(current)
+        if not apply or not audit["stale"]:
+            return {"changed": False, "backup_path": None, "audit": audit}
+
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")
+        backup_path = self.config_path.with_name(
+            f"{self.config_path.name}.bak.{timestamp}"
+        )
+        shutil.copy2(self.config_path, backup_path)
+
+        temporary_path: Optional[Path] = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="w",
+                encoding="utf-8",
+                dir=self.config_path.parent,
+                prefix=f".{self.config_path.name}.",
+                suffix=".tmp",
+                delete=False,
+            ) as handle:
+                yaml.safe_dump(
+                    audit["merged_config"],
+                    handle,
+                    sort_keys=False,
+                    allow_unicode=True,
+                )
+                handle.flush()
+                os.fsync(handle.fileno())
+                temporary_path = Path(handle.name)
+
+            RoutingConfig(config_path=temporary_path).load()
+            os.replace(temporary_path, self.config_path)
+            temporary_path = None
+        except Exception:
+            if temporary_path is not None:
+                temporary_path.unlink(missing_ok=True)
+            raise
+
+        self._loaded = False
+        repaired = self.load()
+        return {
+            "changed": True,
+            "backup_path": str(backup_path),
+            "audit": self.audit_catalog_contract(repaired),
+        }
+
     def _write_alias_block(self, aliases: Dict[str, str]) -> None:
         """Rewrite only the top-level aliases block in routing.yaml."""
         text = self.config_path.read_text(encoding="utf-8")
@@ -262,6 +389,14 @@ class RoutingConfig:
         for provider in providers:
             if "name" not in provider:
                 raise RoutingConfigError("Provider missing 'name' field")
+            if "enabled" in provider and not isinstance(provider["enabled"], bool):
+                raise RoutingConfigError(
+                    f"Provider {provider['name']} enabled must be a boolean"
+                )
+            if provider["name"] in provider_names:
+                raise RoutingConfigError(
+                    f"Duplicate provider name: {provider['name']}"
+                )
             auth_mode = str(provider.get("auth_mode") or "env").lower()
             if auth_mode not in {"env", "none", "ignored"}:
                 raise RoutingConfigError(
@@ -288,6 +423,12 @@ class RoutingConfig:
         for model in models:
             if "name" not in model:
                 raise RoutingConfigError("Model missing 'name' field")
+            if "enabled" in model and not isinstance(model["enabled"], bool):
+                raise RoutingConfigError(
+                    f"Model {model['name']} enabled must be a boolean"
+                )
+            if model["name"] in model_names:
+                raise RoutingConfigError(f"Duplicate model name: {model['name']}")
             if "provider" not in model:
                 raise RoutingConfigError(
                     f"Model {model['name']} missing 'provider' field"
@@ -304,7 +445,15 @@ class RoutingConfig:
                     f"{model['provider']}"
                 )
 
+            self._validate_pal_metadata(model)
             model_names[model["name"]] = model
+
+        active_model_names = {
+            name
+            for name, model in model_names.items()
+            if _entry_enabled(model)
+            and _entry_enabled(provider_names[model["provider"]])
+        }
 
         # Validate slots
         slots = self.config.get("slots", {})
@@ -315,6 +464,10 @@ class RoutingConfig:
             if model_name not in model_names:
                 raise RoutingConfigError(
                     f"Slot {slot_name} references unknown model: {model_name}"
+                )
+            if model_name not in active_model_names:
+                raise RoutingConfigError(
+                    f"Slot {slot_name} references disabled model: {model_name}"
                 )
 
         # Validate fallbacks
@@ -327,6 +480,10 @@ class RoutingConfig:
                 raise RoutingConfigError(
                     f"Fallbacks contain unknown model: {model_name}"
                 )
+            if model_name not in active_model_names:
+                raise RoutingConfigError(
+                    f"Fallbacks contain disabled model: {model_name}"
+                )
             if not isinstance(fallback_list, list):
                 raise RoutingConfigError(
                     f"Fallbacks for {model_name} must be a list"
@@ -335,6 +492,11 @@ class RoutingConfig:
                 if fb_model not in model_names:
                     raise RoutingConfigError(
                         f"Fallbacks for {model_name} references unknown model: "
+                        f"{fb_model}"
+                    )
+                if fb_model not in active_model_names:
+                    raise RoutingConfigError(
+                        f"Fallbacks for {model_name} references disabled model: "
                         f"{fb_model}"
                     )
 
@@ -346,6 +508,10 @@ class RoutingConfig:
             if model_name not in model_names:
                 raise RoutingConfigError(
                     f"default_fallbacks contains unknown model: {model_name}"
+                )
+            if model_name not in active_model_names:
+                raise RoutingConfigError(
+                    f"default_fallbacks contains disabled model: {model_name}"
                 )
 
         # Validate aliases
@@ -364,6 +530,41 @@ class RoutingConfig:
             validate_freeflow_config(self.config)
         except ValueError as exc:
             raise RoutingConfigError(str(exc)) from exc
+
+    @staticmethod
+    def _validate_pal_metadata(model: Dict[str, Any]) -> None:
+        pal = model.get("pal")
+        if pal is None:
+            return
+        if not isinstance(pal, dict):
+            raise RoutingConfigError(f"Model {model['name']} pal metadata must be a dictionary")
+
+        for field in ("context_window", "max_output_tokens"):
+            if field in pal and (
+                not isinstance(pal[field], int) or isinstance(pal[field], bool) or pal[field] <= 0
+            ):
+                raise RoutingConfigError(
+                    f"Model {model['name']} pal.{field} must be a positive integer"
+                )
+
+        direct_name = pal.get("direct_model_name")
+        thinking_mode = pal.get("thinking_mode")
+        if direct_name == "kimi-k3":
+            if thinking_mode != "always_on":
+                raise RoutingConfigError("Kimi K3 thinking_mode must be always_on")
+            if pal.get("reasoning_efforts") != ["low", "high", "max"]:
+                raise RoutingConfigError(
+                    "Kimi K3 reasoning_efforts must be exactly low/high/max"
+                )
+        if direct_name == "claude-fable-5":
+            if thinking_mode != "adaptive_always_on":
+                raise RoutingConfigError(
+                    "Claude Fable 5 thinking_mode must be adaptive_always_on"
+                )
+            if pal.get("max_output_tokens") != 128000:
+                raise RoutingConfigError(
+                    "Claude Fable 5 max_output_tokens must be 128000"
+                )
 
     def generate_litellm_config(self, master_key: str) -> Dict[str, Any]:
         """Generate LiteLLM configuration from routing config.
@@ -387,7 +588,23 @@ class RoutingConfig:
         )
 
         if strict_free_enabled(self.config):
-            return generate_freeflow_litellm_config(self.config, master_key)
+            active_config = deepcopy(self.config)
+            providers_by_name = {
+                provider["name"]: provider
+                for provider in active_config.get("providers", [])
+            }
+            active_config["providers"] = [
+                provider
+                for provider in active_config.get("providers", [])
+                if _entry_enabled(provider)
+            ]
+            active_config["models"] = [
+                model
+                for model in active_config.get("models", [])
+                if _entry_enabled(model)
+                and _entry_enabled(providers_by_name[model["provider"]])
+            ]
+            return generate_freeflow_litellm_config(active_config, master_key)
 
         models = self.config.get("models", [])
         slots = self.config.get("slots", {})
@@ -399,6 +616,8 @@ class RoutingConfig:
         model_list = []
         for model in models:
             provider = self._get_provider_by_name(model["provider"])
+            if not _entry_enabled(model) or not _entry_enabled(provider):
+                continue
             auth_mode = str(provider.get("auth_mode") or "env").lower()
 
             litellm_params = {
@@ -477,6 +696,17 @@ class RoutingConfig:
         """
         models = self.config.get("models", [])
         slots = self.config.get("slots", {})
+
+        providers = {
+            provider["name"]: provider
+            for provider in self.config.get("providers", [])
+        }
+        all_model_names = [
+            model["name"]
+            for model in models
+            if _entry_enabled(model)
+            and _entry_enabled(providers[model["provider"]])
+        ]
 
         default_model = slots.get("default", all_model_names[0] if all_model_names else "default")
 

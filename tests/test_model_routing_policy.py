@@ -132,6 +132,25 @@ def test_cheaperinference_capabilities_are_honestly_stated():
     assert capabilities["provider_order"] == "not_supported"
 
 
+def test_kimi_fable_catalog_routes_keep_l2_activation_boundary():
+    contract = _load_policy()["model_catalog_contract"]
+
+    assert contract["authority"] == "templates/routing.yaml"
+    assert set(contract["active_routes"]) == {"kimi-k3-ci", "fable-5-ci"}
+    assert set(contract["disabled_candidates"]) == {
+        "kimi-k3-or",
+        "fable-5-or",
+        "kimi-k3-direct",
+        "fable-5-direct",
+    }
+    assert contract["promotion"] == {
+        "default_slots": "forbidden",
+        "fallbacks": "forbidden",
+    }
+    assert contract["openrouter_active"] is False
+    assert contract["activation_gate"] == "separate_l3_packet"
+
+
 def test_read_lanes_may_not_edit_or_decide():
     stages = _load_policy()["stages"]
     for stage in (
