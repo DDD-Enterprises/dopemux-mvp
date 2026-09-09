@@ -451,6 +451,7 @@ def require_steward_finalization_gate(
     *,
     pr: PullRequestState,
     expected_repo: Optional[str] = None,
+    github_client: Optional[GitHubClient] = None,
     policy: Dict[str, Any],
     pr_dir: Path,
     now: Any = None,
@@ -482,6 +483,7 @@ def require_steward_finalization_gate(
         expected_repo=expected_repo,
         expected_pr=pr.pr_id,
         expected_base_sha=pr.base_sha,
+        github_client=github_client,
         merge_readiness_path=merge_readiness_path,
         audit_proof_path=audit_proof_path,
         now=_steward_gate_now(now),
@@ -582,6 +584,7 @@ def _merge_prepared_result(
         gate_result = require_steward_finalization_gate(
             pr=prepared_result.pr_state,
             expected_repo=client.repo,
+            github_client=client,
             policy=policy,
             pr_dir=pr_dir,
         )

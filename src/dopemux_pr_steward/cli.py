@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Sequence
 
 from dopemux_pr_merge_specialist.steward_gate import steward_gate
+from dopemux_pr_merge_specialist.github_api import GitHubClient
 
 from . import CONTRACT_VERSION
 from .doctor import format_result, run_doctor
@@ -72,6 +73,7 @@ def build_parser() -> argparse.ArgumentParser:
     gate.add_argument("--repo")
     gate.add_argument("--pr", type=int)
     gate.add_argument("--base-sha")
+    gate.add_argument("--audit-run-id", type=int)
     gate.add_argument(
         "--required-class",
         required=True,
@@ -183,6 +185,8 @@ def _run_gate(args: argparse.Namespace) -> int:
             expected_repo=args.repo,
             expected_pr=args.pr,
             expected_base_sha=args.base_sha,
+            github_client=GitHubClient(repo=args.repo, repo_root=Path.cwd(), policy={}),
+            audit_run_id=args.audit_run_id,
             required_class=args.required_class,
             merge_readiness_path=args.merge_readiness,
             audit_proof_path=args.audit_proof,

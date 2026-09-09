@@ -278,7 +278,8 @@ jobs:
           sys.path.insert(0, str(Path.cwd()))
           from scripts.audit.run_embedded_audit import enforce_independent_audit_proof
 
-          proof = json.loads(Path("independent-audit/PROOF.json").read_text(encoding="utf-8"))
+          proof_bytes = Path("independent-audit/PROOF.json").read_bytes()
+          proof = json.loads(proof_bytes)
           enforce_independent_audit_proof(
               proof,
               expected_pr=int(os.environ["EXPECTED_PR"]),
@@ -287,6 +288,24 @@ jobs:
               expected_base_sha=os.environ["EXPECTED_BASE_SHA"],
           )
           print("Independent audit proof identity enforcement: PASS")
+          PY
+
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from dopemux_pr_merge_specialist.workflow_artifact_verifier import verify_workflow_artifact
+
+          proof_bytes = Path("independent-audit/PROOF.json").read_bytes()
+          if json.loads(proof_bytes).get("embedded_audit", {}).get("required") is False:
+              verify_workflow_artifact(
+                  proof_bytes,
+                  expected_pr=int(os.environ["EXPECTED_PR"]),
+                  expected_head_sha=os.environ["EXPECTED_HEAD_SHA"],
+                  expected_repo=os.environ["EXPECTED_REPO"],
+                  expected_base_sha=os.environ["EXPECTED_BASE_SHA"],
+                  audit_run_id=int(os.environ["AUDIT_RUN_ID"]),
+              )
           PY
 
       - name: Bind proof identity outputs

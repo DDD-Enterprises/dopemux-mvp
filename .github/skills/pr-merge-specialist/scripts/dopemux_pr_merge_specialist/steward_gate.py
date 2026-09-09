@@ -6,6 +6,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping
 
+from .github_api import GitHubClient
+from .workflow_artifact_verifier import WorkflowArtifactError, verify_workflow_artifact
+
 
 PASSING_AUDIT_STATUSES = {"PASS", "PASS_WITH_RISKS"}
 AUDIT_NOT_REQUIRED_REASON = "AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT"
@@ -32,10 +35,12 @@ def steward_gate(
     expected_repo: str | None = None,
     expected_pr: int | None = None,
     expected_base_sha: str | None = None,
+    github_client: GitHubClient | None = None,
+    audit_run_id: int | None = None,
     now: datetime | None = None,
     ttl_seconds: int = 3600,
 ) -> StewardGateResult:
-    """Pure fail-closed guard over local PR Steward and embedded-audit artifacts."""
+    """Fail-closed guard with online authentication for NOT_REQUIRED evidence."""
 
     normalized_class = required_class.upper()
     if normalized_class not in READINESS_BY_CLASS:
@@ -54,7 +59,10 @@ def steward_gate(
 
     try:
         readiness = _load_json(Path(merge_readiness_path))
-        audit_proof = _load_json(Path(audit_proof_path))
+        audit_proof_bytes = Path(audit_proof_path).read_bytes()
+        audit_proof = json.loads(audit_proof_bytes)
+        if not isinstance(audit_proof, dict):
+            raise ValueError("Audit proof must contain a JSON object")
     except (OSError, ValueError, TypeError) as exc:
         return _deny(
             normalized_class,
@@ -89,6 +97,7 @@ def steward_gate(
     if evidence["merge_readiness"] not in READINESS_BY_CLASS[normalized_class]:
         return _deny(normalized_class, "DENY_READINESS_CLASS_MISMATCH", **evidence)
 
+    authenticate_not_required = False
     if normalized_class == "FINALIZATION":
         if not finalization_audit_evidence_allowed(evidence):
             return _deny(normalized_class, "DENY_AUDIT_NOT_STRICT_PASS", **evidence)
@@ -109,6 +118,7 @@ def steward_gate(
                     normalized_class, "DENY_AUDIT_PROVENANCE", **evidence,
                     audit_provenance_errors=errors,
                 )
+            authenticate_not_required = True
     elif (
         evidence["merge_embedded_audit_status"] not in PASSING_AUDIT_STATUSES
         or evidence["proof_embedded_audit_status"] not in PASSING_AUDIT_STATUSES
@@ -119,6 +129,31 @@ def steward_gate(
         evidence["proof_generated_at"], now=now, ttl_seconds=ttl_seconds
     ):
         return _deny(normalized_class, "DENY_STALE_ARTIFACT", **evidence)
+
+    if authenticate_not_required:
+        try:
+            authenticated = verify_workflow_artifact(
+                audit_proof_bytes,
+                expected_repo=expected_repo,
+                expected_pr=expected_pr,
+                expected_head_sha=head_sha,
+                expected_base_sha=expected_base_sha,
+                github_client=github_client,
+                audit_run_id=audit_run_id,
+            )
+            if Path(audit_proof_path).read_bytes() != audit_proof_bytes:
+                return _deny(normalized_class, "DENY_AUDIT_PROOF_CHANGED", **evidence)
+            if _is_stale(evidence["merge_generated_at"], now=now, ttl_seconds=ttl_seconds) or _is_stale(
+                evidence["proof_generated_at"], now=now, ttl_seconds=ttl_seconds
+            ):
+                return _deny(normalized_class, "DENY_STALE_ARTIFACT", **evidence)
+        except Exception as exc:
+            return _deny(
+                normalized_class, "DENY_AUDIT_ARTIFACT_AUTHENTICITY", **evidence,
+                artifact_error=type(exc).__name__,
+                artifact_reason=str(exc) if isinstance(exc, WorkflowArtifactError) else "retrieval_failed",
+            )
+        evidence["authenticated_workflow_artifact"] = authenticated
 
     return StewardGateResult(
         allowed=True,

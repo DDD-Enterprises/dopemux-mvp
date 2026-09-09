@@ -11,6 +11,7 @@ import pytest
 from dopemux.cli import cli
 from dopemux_pr_steward.cli import main as steward_main
 from scripts.audit.run_embedded_audit import build_evidence_gate_proof
+from tests.pr_merge_specialist.test_workflow_artifact_verifier import install_artifact_transport
 
 
 def _write_json(path: Path, payload: dict) -> Path:
@@ -134,7 +135,7 @@ def test_gate_subcommand_uses_packaged_steward_gate(tmp_path: Path, capsys):
 
 
 @pytest.mark.parametrize("base", [None, "f" * 40, "b" * 40])
-def test_gate_cli_requires_matching_explicit_base(tmp_path: Path, capsys, base):
+def test_gate_cli_requires_matching_explicit_base(tmp_path: Path, capsys, base, monkeypatch):
     head = "a" * 40
     proof = build_evidence_gate_proof(
         packet_id="TP-CLI-PROVENANCE",
@@ -147,6 +148,7 @@ def test_gate_cli_requires_matching_explicit_base(tmp_path: Path, capsys, base):
         generated_at="2026-05-31T12:00:00Z",
     )
     proof_path = _write_json(tmp_path / "PROOF.json", proof)
+    install_artifact_transport(monkeypatch, proof_path.read_bytes())
     readiness_path = _write_json(tmp_path / "MERGE_READINESS.json", {
         "generated_at": "2026-05-31T12:00:00Z",
         "readiness": "READY",
@@ -179,6 +181,32 @@ def test_doctor_reports_implemented_checks(capsys):
     assert payload["checks"]["config_schema"]["status"] == "PASS"
     assert payload["checks"]["scaffold_skew"]["status"] == "PASS"
     assert captured.err == ""
+
+
+@pytest.mark.parametrize("forged", [False, True])
+def test_cli_requires_exact_authenticated_bytes_with_pinned_run(tmp_path, monkeypatch, capsys, forged):
+    from tests.pr_merge_specialist.test_workflow_artifact_verifier import proof_bytes
+    remote_bytes = proof_bytes()
+    transport = install_artifact_transport(monkeypatch, remote_bytes)
+    proof = json.loads(remote_bytes)
+    local_bytes = json.dumps({**proof, "packet_id": "TP-FORGED"}).encode() if forged else remote_bytes
+    path = tmp_path / "PROOF.json"
+    path.write_bytes(local_bytes)
+    readiness = _write_json(tmp_path / "MERGE_READINESS.json", {
+        "generated_at": proof["generated_at"], "readiness": "READY",
+        "pr": {"number": 1330, "head_sha": "a" * 40},
+        "proof": {"proof_head_sha": "a" * 40}, "embedded_audit": proof["embedded_audit"],
+    })
+    rc = steward_main([
+        "gate", "--repo", "DDD-Enterprises/dopemux-mvp", "--pr", "1330",
+        "--head-sha", "a" * 40, "--base-sha", "b" * 40, "--audit-run-id", "23",
+        "--required-class", "FINALIZATION", "--merge-readiness", str(readiness),
+        "--audit-proof", str(path), "--now", "2026-09-07T12:15:00Z", "--format", "json",
+    ])
+    result = json.loads(capsys.readouterr().out)
+    assert result["allowed"] is (not forged)
+    assert rc == (2 if forged else 0)
+    assert ("artifacts", transport.artifact["name"], 23) in transport.calls
 
 
 def test_pr_steward_package_imports_outside_repo_root(tmp_path: Path):

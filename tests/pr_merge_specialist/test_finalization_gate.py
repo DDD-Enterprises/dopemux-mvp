@@ -24,9 +24,11 @@ from dopemux_pr_merge_specialist.schema import (
 )
 from dopemux_pr_merge_specialist.steward_gate import steward_gate
 from scripts.audit.run_embedded_audit import build_evidence_gate_proof, independent_audit_errors
+from tests.pr_merge_specialist.test_workflow_artifact_verifier import install_artifact_transport
 
 
-HEAD_SHA = "abc123"
+HEAD_SHA = "a" * 40
+BASE_SHA = "b" * 40
 REPO = "DDD-Enterprises/dopemux-mvp"
 _MISSING = object()
 _NOT_REQUIRED_REASON = "AUDIT_NOT_REQUIRED_BY_TRUSTED_CHANGE_CONTRACT"
@@ -51,7 +53,7 @@ def _pr_state() -> PullRequestState:
         merge_state_status="CLEAN",
         review_decision="APPROVED",
         head_sha=HEAD_SHA,
-        base_sha="base123",
+        base_sha=BASE_SHA,
     )
 
 
@@ -128,7 +130,7 @@ def _trusted_not_required_proof(**overrides) -> dict:
         repo=REPO,
         pr_number=203,
         head_sha=overrides.pop("head_sha", HEAD_SHA),
-        base_sha="base123",
+        base_sha=BASE_SHA,
         change_contract={"status": "PASS", "model_audit_required": False, "max_lane": "L0"},
         local_attestation=None,
         generated_at=overrides.pop("generated_at", "2026-05-31T12:00:00Z"),
@@ -158,7 +160,7 @@ def _run_public_finalization_gate(
             head_sha=HEAD_SHA,
             expected_repo=REPO,
             expected_pr=203,
-            expected_base_sha="base123",
+            expected_base_sha=BASE_SHA,
             required_class="FINALIZATION",
             merge_readiness_path=readiness_path,
             audit_proof_path=proof_path,
@@ -174,7 +176,7 @@ def _run_public_finalization_gate(
     )
 
 
-class RecordingClient:
+class RecordingClient(GitHubClient):
     def __init__(self, payload: dict | None = None, result: CommandResult | None = None) -> None:
         self.repo = REPO
         self.payload = payload or {
@@ -395,12 +397,61 @@ def _same_bytes_provenance_consumers(
     return errors, direct, queue
 
 
-def test_same_bytes_trusted_not_required_passes_all_consumers(tmp_path: Path):
+def test_same_bytes_trusted_not_required_passes_all_consumers(tmp_path: Path, monkeypatch):
+    install_artifact_transport(monkeypatch, json.dumps(_provenance_proof()).encode())
     errors, direct, queue = _same_bytes_provenance_consumers(
         tmp_path, json.dumps(_provenance_proof()).encode("utf-8")
     )
     assert errors == []
     assert direct.allowed and queue.allowed
+
+
+def test_semantically_valid_forged_proof_denied_by_both_finalization_consumers(tmp_path, monkeypatch):
+    remote = _provenance_proof()
+    install_artifact_transport(monkeypatch, json.dumps(remote).encode())
+    forged = {**remote, "packet_id": "TP-FORGED-LOCAL-PROOF"}
+    errors, direct, queue = _same_bytes_provenance_consumers(tmp_path, json.dumps(forged).encode())
+    assert errors == []
+    assert not direct.allowed and not queue.allowed
+    assert direct.reason_code == queue.reason_code == "DENY_AUDIT_ARTIFACT_AUTHENTICITY"
+
+
+@pytest.mark.parametrize("gate_name", ["steward_gate", "queue_drain"])
+def test_finalization_authentication_unavailable_denies(tmp_path, monkeypatch, gate_name):
+    def unavailable(self):
+        raise RuntimeError("offline")
+    monkeypatch.setattr(GitHubClient, "fetch_audit_workflow", unavailable)
+    proof = _trusted_not_required_proof()
+    result = _run_public_finalization_gate(
+        gate_name, tmp_path, proof=proof,
+        readiness=_merge_readiness(audit_status="SKIPPED", audit_required=False,
+                                   audit_skip_reason=_NOT_REQUIRED_REASON),
+    )
+    assert not result.allowed and result.reason_code == "DENY_AUDIT_ARTIFACT_AUTHENTICITY"
+
+
+@pytest.mark.parametrize("gate_name", ["steward_gate", "queue_drain"])
+def test_local_proof_replacement_during_authentication_denies(tmp_path, monkeypatch, gate_name):
+    proof = _trusted_not_required_proof()
+    transport = install_artifact_transport(monkeypatch, json.dumps(proof).encode())
+    path = tmp_path / gate_name / "pr" / "203" / "PROOF.json"
+    transport.after_download = lambda: path.write_bytes(json.dumps(proof).encode() + b"\n")
+    result = _run_public_finalization_gate(
+        gate_name, tmp_path, proof=proof,
+        readiness=_merge_readiness(audit_status="SKIPPED", audit_required=False,
+                                   audit_skip_reason=_NOT_REQUIRED_REASON),
+    )
+    assert not result.allowed and result.reason_code == "DENY_AUDIT_PROOF_CHANGED"
+
+
+def test_strict_pass_does_not_require_network_authentication(tmp_path, monkeypatch):
+    calls = []
+    def unavailable(self):
+        calls.append(True)
+        raise RuntimeError("offline")
+    monkeypatch.setattr(GitHubClient, "fetch_audit_workflow", unavailable)
+    assert _run_public_finalization_gate("steward_gate", tmp_path).allowed
+    assert calls == []
 
 
 @pytest.mark.parametrize("field", ["head_sha", "base_sha"])
@@ -520,6 +571,7 @@ def test_live_queue_finalization_uses_client_repo_and_exact_pr_state(
     proof = _provenance_proof()
     generated_at = datetime.now(timezone.utc).isoformat()
     proof["generated_at"] = generated_at
+    install_artifact_transport(monkeypatch, json.dumps(proof).encode())
     _write_json(tmp_path / "PROOF.json", proof)
     _write_json(tmp_path / "MERGE_READINESS.json", _merge_readiness(
         head_sha=_PROVENANCE_HEAD,
@@ -583,8 +635,9 @@ def test_original_p1_evidence_bytes_denied_by_all_three_consumers(tmp_path: Path
 
 @pytest.mark.parametrize("gate_name", ["steward_gate", "queue_drain"])
 def test_public_finalization_gates_allow_exact_not_required(
-    gate_name: str, tmp_path: Path
+    gate_name: str, tmp_path: Path, monkeypatch
 ):
+    install_artifact_transport(monkeypatch, json.dumps(_trusted_not_required_proof()).encode())
     result = _run_public_finalization_gate(
         gate_name,
         tmp_path,

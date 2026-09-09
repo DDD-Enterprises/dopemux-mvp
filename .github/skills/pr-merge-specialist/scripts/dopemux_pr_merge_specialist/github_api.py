@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 import textwrap
 import time
 from collections import defaultdict
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from urllib.parse import urlencode
 
 from .runtime import CommandResult, json_loads_or_empty, run_command
 from .schema import CheckSummary, ReviewThread, ThreadComment
@@ -179,6 +181,53 @@ class GitHubClient:
             "invalidations": self.cache_invalidations,
             "keys": sorted(self.cache.keys()),
         }
+
+    def _audit_api_json(self, endpoint: str, *, paginate: bool = False) -> Any:
+        command = ["gh", "api", "--hostname", "github.com", "--method", "GET", endpoint]
+        if paginate:
+            command.extend(["--paginate", "--slurp"])
+        result = self._run(command)
+        if result.returncode != 0:
+            raise RuntimeError("GitHub audit artifact metadata retrieval failed")
+        return json.loads(result.stdout)
+
+    def fetch_audit_workflow(self) -> Dict[str, Any]:
+        return self._audit_api_json(
+            f"repos/{self.repo}/actions/workflows/embedded-audit.yml"
+        )
+
+    def fetch_audit_run(self, run_id: int) -> Dict[str, Any]:
+        return self._audit_api_json(f"repos/{self.repo}/actions/runs/{run_id}")
+
+    def fetch_audit_pr(self, pr_id: int) -> Dict[str, Any]:
+        return self._audit_api_json(f"repos/{self.repo}/pulls/{pr_id}")
+
+    def fetch_audit_artifacts(self, name: str, run_id: Optional[int] = None) -> List[Dict[str, Any]]:
+        prefix = f"repos/{self.repo}/actions"
+        if run_id is not None:
+            prefix += f"/runs/{run_id}"
+        query = urlencode({"name": name, "per_page": 100})
+        pages = self._audit_api_json(f"{prefix}/artifacts?{query}", paginate=True)
+        if not isinstance(pages, list) or not pages:
+            raise ValueError("GitHub artifact pages missing")
+        artifacts = []
+        for page in pages:
+            if not isinstance(page, dict) or not isinstance(page.get("artifacts"), list):
+                raise ValueError("Malformed GitHub artifact page")
+            artifacts.extend(page["artifacts"])
+        return artifacts
+
+    def download_audit_artifact(self, artifact_id: int) -> bytes:
+        # Keep ZIP bytes outside the existing text-only command result contract.
+        result = subprocess.run(
+            ["gh", "api", "--hostname", "github.com", "--method", "GET",
+             f"repos/{self.repo}/actions/artifacts/{artifact_id}/zip"],
+            cwd=self.repo_root, capture_output=True, check=False,
+            timeout=self.timeout_seconds,
+        )
+        if result.returncode != 0:
+            raise RuntimeError("GitHub audit artifact download failed")
+        return result.stdout
 
     def invalidate(self, prefix: str) -> None:
         doomed = [key for key in self.cache if key.startswith(prefix)]
