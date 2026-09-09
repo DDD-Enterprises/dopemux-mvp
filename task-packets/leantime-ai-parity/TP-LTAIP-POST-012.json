@@ -1,0 +1,260 @@
+{
+  "id": "TP-LTAIP-POST-012",
+  "project": "dopemux-mvp",
+  "target": "all-horizons-conditional/upstream-contribution-preparation",
+  "invariants": [
+    "Packet 008 selects a base.",
+    "Every contribution is generic and maintainer-aligned.",
+    "No sensitive fixture or secret.",
+    "External submission requires explicit operator approval.",
+    "Local fallback remains bounded and documented."
+  ],
+  "depends_on": [
+    "TP-LTAIP-H0-008"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "LTAIP-POST-SELECTION-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-LTAIP-H0-008",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "upstream/TP-LTAIP-POST-012-contribution-stream"
+  },
+  "commit": {
+    "message": "upstream: prepare generic parity contribution bundles",
+    "allowlist": [
+      "task-packets/leantime-ai-parity/TP-LTAIP-POST-012.json",
+      "task-packets/leantime-ai-parity/TP-LTAIP-POST-012.md",
+      "task-packets/INDEX.md",
+      "docs/INDEX.md",
+      "docs/docs_index.yaml",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-012/PROOF.json",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-012/COMMAND_LOG.md",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-012/AUDITOR_REPORT.md",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-012/GIT_STATUS_BEFORE.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-012/GIT_STATUS_AFTER.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-012/GIT_DIFF_STAT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-012/GIT_DIFF.patch",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-012/PRECOMMIT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-012/MERGE_READINESS.json",
+      "scripts/leantime-ai-parity/upstream/materialize_upstream_sources.py",
+      "scripts/leantime-ai-parity/upstream/build_contribution_bundle.py",
+      "scripts/leantime-ai-parity/upstream/run_compatibility.py",
+      "tests/prototypes/leantime-ai-parity/upstream/test_contribution_scope.py",
+      "reports/leantime-ai-parity/upstream/patches/",
+      "reports/leantime-ai-parity/upstream/contribution-register.json",
+      "reports/leantime-ai-parity/upstream/compatibility-results.json",
+      "reports/leantime-ai-parity/upstream/submission-readiness.json",
+      "reports/leantime-ai-parity/upstream/manifest.json",
+      "docs/06-research/leantime-ai-parity/upstream/contribution-strategy.md",
+      "docs/06-research/leantime-ai-parity/upstream/maintainer-alignment.md",
+      "docs/92-runbooks/leantime-ai-parity/upstream-submission.md"
+    ],
+    "verify": [
+      "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-POST-012.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))' ",
+      "python -m pytest -q tests/prototypes/leantime-ai-parity/upstream",
+      "python -m json.tool reports/leantime-ai-parity/upstream/contribution-register.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/upstream/compatibility-results.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/upstream/submission-readiness.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/upstream/manifest.json >/dev/null",
+      "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/upstream/contribution-strategy.md docs/06-research/leantime-ai-parity/upstream/maintainer-alignment.md docs/92-runbooks/leantime-ai-parity/upstream-submission.md",
+      "python scripts/check_docs_hygiene.py",
+      "python scripts/check_docs_filename_hygiene.py",
+      "python scripts/check_root_hygiene.py",
+      "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-POST-012/PROOF.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "upstream: prepare generic parity contribution bundles",
+    "body": "Conditional packet. Prepare maintainer-aligned generic manifests, tests, docs, or proven transaction-event patches. No automatic upstream submission and no broad fork.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "apilookup",
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "consensus",
+      "challenge",
+      "implement",
+      "testgen",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1-maintainer-alignment",
+      "task": "Materialize selected upstream source in tmp and document current contribution, security, and support expectations.",
+      "requirements": [
+        "Use current official upstream docs.",
+        "No external write."
+      ],
+      "commands": [
+        "python scripts/leantime-ai-parity/upstream/materialize_upstream_sources.py --decision reports/leantime-ai-parity/h0/base-selection/decision.json --output tmp/ltaip-upstream",
+        "python -m json.tool reports/leantime-ai-parity/upstream/contribution-register.json >/dev/null"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/upstream/contribution-register.json",
+        "docs/06-research/leantime-ai-parity/upstream/contribution-strategy.md",
+        "docs/06-research/leantime-ai-parity/upstream/maintainer-alignment.md"
+      ],
+      "validation": [
+        "Each candidate contribution has maintainer-aligned rationale and rejected alternatives."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-2-build-bundles",
+      "task": "Create bounded patches/tests/docs for approved generic contribution candidates.",
+      "requirements": [
+        "No product-specific secrets or policy.",
+        "Patch applies to pinned upstream source."
+      ],
+      "commands": [
+        "python scripts/leantime-ai-parity/upstream/build_contribution_bundle.py --register reports/leantime-ai-parity/upstream/contribution-register.json --source tmp/ltaip-upstream --output reports/leantime-ai-parity/upstream/patches"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/upstream/patches/",
+        "docs/92-runbooks/leantime-ai-parity/upstream-submission.md"
+      ],
+      "validation": [
+        "Every patch has purpose, test, compatibility, rollback, and local fallback."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-3-compatibility",
+      "task": "Run upstream suites where available and produce submission readiness without posting externally.",
+      "requirements": [
+        "Failures remain visible.",
+        "No issue/PR creation."
+      ],
+      "commands": [
+        "python scripts/leantime-ai-parity/upstream/run_compatibility.py --source tmp/ltaip-upstream --patches reports/leantime-ai-parity/upstream/patches --output reports/leantime-ai-parity/upstream/compatibility-results.json",
+        "python -m pytest -q tests/prototypes/leantime-ai-parity/upstream"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/upstream/compatibility-results.json",
+        "reports/leantime-ai-parity/upstream/submission-readiness.json"
+      ],
+      "validation": [
+        "Submission readiness is PASS, NEEDS_REWORK, or REJECTED with evidence."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-4-audit-proof-approval",
+      "task": "Run independent review and produce an operator-approved external submission plan.",
+      "requirements": [
+        "No external mutation in this packet.",
+        "Explicit approval required for later submission."
+      ],
+      "commands": [
+        "rm -rf tmp/ltaip-upstream",
+        "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-POST-012.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))' ",
+        "python -m pytest -q tests/prototypes/leantime-ai-parity/upstream",
+        "python -m json.tool reports/leantime-ai-parity/upstream/contribution-register.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/upstream/compatibility-results.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/upstream/submission-readiness.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/upstream/manifest.json >/dev/null",
+        "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/upstream/contribution-strategy.md docs/06-research/leantime-ai-parity/upstream/maintainer-alignment.md docs/92-runbooks/leantime-ai-parity/upstream-submission.md",
+        "python scripts/check_docs_hygiene.py",
+        "python scripts/check_docs_filename_hygiene.py",
+        "python scripts/check_root_hygiene.py",
+        "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-POST-012/PROOF.json",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/upstream/manifest.json",
+        "proof/leantime-ai-parity/TP-LTAIP-POST-012/PROOF.json",
+        "proof/leantime-ai-parity/TP-LTAIP-POST-012/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "Contribution bundle is reviewed and no external write occurred."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    }
+  ]
+}

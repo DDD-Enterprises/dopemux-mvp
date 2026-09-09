@@ -1,0 +1,237 @@
+{
+  "id": "TP-LTAIP-H0-001",
+  "project": "dopemux-mvp",
+  "target": "h0-research/economic-buyer-persona-workflow-lock",
+  "invariants": [
+    "Stage 08 verdict remains VALIDATE_WITH_PROTOTYPE; this packet cannot adopt a base product.",
+    "Exactly one economic buyer, two primary personas, and three must-win workflows are selected or the packet blocks.",
+    "No raw personal data, private transcript, recording, email, or name is committed.",
+    "Leantime and OpenProject remain co-primary candidates; fixtures must be product-neutral.",
+    "No production system, production credential, purchase, migration, or product write is authorized.",
+    "Contradictions and dissent remain visible."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "LTAIP-H0-VALIDATION-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "research/TP-LTAIP-H0-001-segment-workflow-lock"
+  },
+  "commit": {
+    "message": "research: lock leantime parity buyer personas and workflows",
+    "allowlist": [
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-001.json",
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-001.md",
+      "task-packets/INDEX.md",
+      "docs/INDEX.md",
+      "docs/docs_index.yaml",
+      "docs/06-research/leantime-ai-parity/h0/segment-lock/research-protocol.md",
+      "docs/06-research/leantime-ai-parity/h0/segment-lock/recruitment-and-consent.md",
+      "docs/06-research/leantime-ai-parity/h0/segment-lock/interview-guide.md",
+      "docs/06-research/leantime-ai-parity/h0/segment-lock/workflow-fixture-spec.md",
+      "docs/06-research/leantime-ai-parity/h0/segment-lock/segment-workflow-lock.md",
+      "docs/06-research/leantime-ai-parity/h0/segment-lock/assumptions-and-dissent.md",
+      "docs/90-adr/adr-ltaip-h0-001-segment-workflow-lock.md",
+      "reports/leantime-ai-parity/h0/segment-lock/participant-register.redacted.json",
+      "reports/leantime-ai-parity/h0/segment-lock/session-evidence.jsonl",
+      "reports/leantime-ai-parity/h0/segment-lock/criteria-ranking.csv",
+      "reports/leantime-ai-parity/h0/segment-lock/segment-workflow-lock.json",
+      "reports/leantime-ai-parity/h0/segment-lock/manifest.json",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-001/PROOF.json",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-001/COMMAND_LOG.md",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-001/AUDITOR_REPORT.md",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-001/GIT_STATUS_BEFORE.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-001/GIT_STATUS_AFTER.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-001/GIT_DIFF_STAT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-001/GIT_DIFF.patch",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-001/PRECOMMIT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-001/MERGE_READINESS.json"
+    ],
+    "verify": [
+      "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-H0-001.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))'",
+      "python -m json.tool reports/leantime-ai-parity/h0/segment-lock/participant-register.redacted.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/segment-lock/segment-workflow-lock.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/segment-lock/manifest.json >/dev/null",
+      "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/h0/segment-lock/research-protocol.md docs/06-research/leantime-ai-parity/h0/segment-lock/recruitment-and-consent.md docs/06-research/leantime-ai-parity/h0/segment-lock/interview-guide.md docs/06-research/leantime-ai-parity/h0/segment-lock/workflow-fixture-spec.md docs/06-research/leantime-ai-parity/h0/segment-lock/segment-workflow-lock.md docs/06-research/leantime-ai-parity/h0/segment-lock/assumptions-and-dissent.md docs/90-adr/adr-ltaip-h0-001-segment-workflow-lock.md",
+      "python scripts/check_docs_hygiene.py",
+      "python scripts/check_docs_filename_hygiene.py",
+      "python scripts/check_root_hygiene.py",
+      "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-H0-001/PROOF.json",
+      "bash scripts/lint-docs.sh",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "research: lock Leantime parity buyer, personas, and workflows",
+    "body": "Create the consent-safe Horizon 0 evidence protocol and lock one economic buyer, two primary personas, and three product-neutral must-win workflows. No base adoption, production data, product writes, or procurement.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1-preflight-and-protocol",
+      "task": "Validate repository and worktree identity, then create the consent-safe qualitative research protocol and pre-registered evidence model.",
+      "requirements": [
+        "No raw names, emails, recordings, or verbatim private transcripts may be committed.",
+        "The protocol must distinguish buyer evidence from user evidence.",
+        "The participant sample is a Horizon 0 qualitative pilot, not market-size proof."
+      ],
+      "commands": [
+        "git status --short",
+        "git rev-parse HEAD",
+        "python -m json.tool task-packets/leantime-ai-parity/TP-LTAIP-H0-001.json >/dev/null"
+      ],
+      "expected_files": [
+        "docs/06-research/leantime-ai-parity/h0/segment-lock/research-protocol.md",
+        "docs/06-research/leantime-ai-parity/h0/segment-lock/recruitment-and-consent.md",
+        "docs/06-research/leantime-ai-parity/h0/segment-lock/interview-guide.md",
+        "reports/leantime-ai-parity/h0/segment-lock/participant-register.redacted.json",
+        "reports/leantime-ai-parity/h0/segment-lock/session-evidence.jsonl"
+      ],
+      "validation": [
+        "The protocol defines qualification, consent, redaction, evidence grading, dissent capture, and withdrawal handling.",
+        "The committed participant register contains opaque IDs only.",
+        "The protocol pre-registers the minimum-evidence and stop rules before evidence is scored."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml",
+        "authority/stage08/EXECUTIVE-DECISION.md",
+        "authority/stage08/EPIC-08-001-economic-buyer-persona-and-workflow-lock.md"
+      ]
+    },
+    {
+      "id": "step-2-ingest-qualified-evidence",
+      "task": "Ingest only consented, redacted session summaries and rank economic-buyer criteria, user outcomes, switching triggers, and workflow frequency.",
+      "requirements": [
+        "At least five distinct qualified participants are required.",
+        "At least three sessions must include economic-buyer or budget-owning responsibility.",
+        "Each selected primary persona must be supported by at least three independent sessions; categories may overlap.",
+        "No internal preference may be counted as participant evidence."
+      ],
+      "commands": [
+        "python -m json.tool reports/leantime-ai-parity/h0/segment-lock/participant-register.redacted.json >/dev/null",
+        "python -c 'import json; [json.loads(line) for line in open(\"reports/leantime-ai-parity/h0/segment-lock/session-evidence.jsonl\") if line.strip()]'"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h0/segment-lock/session-evidence.jsonl",
+        "reports/leantime-ai-parity/h0/segment-lock/criteria-ranking.csv"
+      ],
+      "validation": [
+        "Every evidence row references an opaque participant ID and evidence class.",
+        "Buyer and user rankings are calculated separately before synthesis.",
+        "Contradictory sessions remain visible and are not averaged away."
+      ],
+      "context_files": [
+        "docs/06-research/leantime-ai-parity/h0/segment-lock/research-protocol.md",
+        "docs/06-research/leantime-ai-parity/h0/segment-lock/interview-guide.md"
+      ]
+    },
+    {
+      "id": "step-3-lock-segment-personas-workflows",
+      "task": "Select exactly one economic-buyer archetype, exactly two primary personas, and exactly three must-win workflows with explicit non-targets and reversal criteria.",
+      "requirements": [
+        "Each must-win workflow must be supported by at least three independent sessions.",
+        "A selected workflow must rank in the top five for both buyer importance and user frequency or pain.",
+        "Any unresolved P0 contradiction blocks the lock.",
+        "The fixture specification must be product-neutral and usable for both Leantime and OpenProject."
+      ],
+      "commands": [
+        "python -m json.tool reports/leantime-ai-parity/h0/segment-lock/segment-workflow-lock.json >/dev/null",
+        "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/h0/segment-lock/workflow-fixture-spec.md docs/06-research/leantime-ai-parity/h0/segment-lock/segment-workflow-lock.md docs/90-adr/adr-ltaip-h0-001-segment-workflow-lock.md"
+      ],
+      "expected_files": [
+        "docs/06-research/leantime-ai-parity/h0/segment-lock/workflow-fixture-spec.md",
+        "docs/06-research/leantime-ai-parity/h0/segment-lock/segment-workflow-lock.md",
+        "docs/06-research/leantime-ai-parity/h0/segment-lock/assumptions-and-dissent.md",
+        "docs/90-adr/adr-ltaip-h0-001-segment-workflow-lock.md",
+        "reports/leantime-ai-parity/h0/segment-lock/segment-workflow-lock.json",
+        "reports/leantime-ai-parity/h0/segment-lock/manifest.json"
+      ],
+      "validation": [
+        "The JSON contains exactly one buyer, two personas, three workflows, non-targets, thresholds, and reversal criteria.",
+        "The markdown and JSON agree.",
+        "The manifest hashes every evidence and decision artifact."
+      ],
+      "context_files": [
+        "reports/leantime-ai-parity/h0/segment-lock/criteria-ranking.csv",
+        "reports/leantime-ai-parity/h0/segment-lock/session-evidence.jsonl",
+        "authority/stage08/stage-08.json"
+      ]
+    },
+    {
+      "id": "step-4-audit-proof-and-pr",
+      "task": "Run the independent embedded audit, finalize proof, open the PR, and obtain PR Steward merge readiness.",
+      "requirements": [
+        "The auditor must attack sampling bias, evidence laundering, persona overreach, and fixture product bias.",
+        "The proof must conform to the canonical embedded-audit format.",
+        "Packet 002 remains blocked until this packet merges and the lock artifact hash is known."
+      ],
+      "commands": [
+        "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-H0-001.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))'",
+        "python -m json.tool reports/leantime-ai-parity/h0/segment-lock/participant-register.redacted.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/segment-lock/segment-workflow-lock.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/segment-lock/manifest.json >/dev/null",
+        "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/h0/segment-lock/research-protocol.md docs/06-research/leantime-ai-parity/h0/segment-lock/recruitment-and-consent.md docs/06-research/leantime-ai-parity/h0/segment-lock/interview-guide.md docs/06-research/leantime-ai-parity/h0/segment-lock/workflow-fixture-spec.md docs/06-research/leantime-ai-parity/h0/segment-lock/segment-workflow-lock.md docs/06-research/leantime-ai-parity/h0/segment-lock/assumptions-and-dissent.md docs/90-adr/adr-ltaip-h0-001-segment-workflow-lock.md",
+        "python scripts/check_docs_hygiene.py",
+        "python scripts/check_docs_filename_hygiene.py",
+        "python scripts/check_root_hygiene.py",
+        "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-H0-001/PROOF.json",
+        "bash scripts/lint-docs.sh",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "proof/leantime-ai-parity/TP-LTAIP-H0-001/PROOF.json",
+        "proof/leantime-ai-parity/TP-LTAIP-H0-001/AUDITOR_REPORT.md",
+        "proof/leantime-ai-parity/TP-LTAIP-H0-001/MERGE_READINESS.json"
+      ],
+      "validation": [
+        "Embedded audit is PASS or non-blocking PASS_WITH_RISKS.",
+        "PR Steward status is READY and current to latest head.",
+        "No raw personal data is present in the diff or proof."
+      ],
+      "context_files": [
+        "docs/ops/embedded-audit-proof.md",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/handoff-contract.md"
+      ]
+    }
+  ]
+}

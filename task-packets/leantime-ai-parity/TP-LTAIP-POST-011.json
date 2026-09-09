@@ -1,0 +1,294 @@
+{
+  "id": "TP-LTAIP-POST-011",
+  "project": "dopemux-mvp",
+  "target": "h2-conditional/bounded-read-draft-ai-pilot",
+  "invariants": [
+    "Read-only gateway is the sole product data path.",
+    "Every material output is cited or explicitly uncertain.",
+    "Human approves drafts before use.",
+    "Data-class route policy and redaction enforced.",
+    "Deterministic fallback exists.",
+    "Kill switch destroys or disables derived data."
+  ],
+  "depends_on": [
+    "TP-LTAIP-POST-009",
+    "TP-LTAIP-POST-010",
+    "TP-LTAIP-H0-005"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "LTAIP-POST-SELECTION-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-LTAIP-POST-009",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "feat/TP-LTAIP-POST-011-bounded-ai-pilot"
+  },
+  "commit": {
+    "message": "feat: add bounded cited read draft ai pilot",
+    "allowlist": [
+      "task-packets/leantime-ai-parity/TP-LTAIP-POST-011.json",
+      "task-packets/leantime-ai-parity/TP-LTAIP-POST-011.md",
+      "task-packets/INDEX.md",
+      "docs/INDEX.md",
+      "docs/docs_index.yaml",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-011/PROOF.json",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-011/COMMAND_LOG.md",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-011/AUDITOR_REPORT.md",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-011/GIT_STATUS_BEFORE.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-011/GIT_STATUS_AFTER.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-011/GIT_DIFF_STAT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-011/GIT_DIFF.patch",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-011/PRECOMMIT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-011/MERGE_READINESS.json",
+      "services/ltaip-ai-pilot/pyproject.toml",
+      "services/ltaip-ai-pilot/Dockerfile",
+      "services/ltaip-ai-pilot/src/ltaip_ai/__init__.py",
+      "services/ltaip-ai-pilot/src/ltaip_ai/app.py",
+      "services/ltaip-ai-pilot/src/ltaip_ai/gateway.py",
+      "services/ltaip-ai-pilot/src/ltaip_ai/policy.py",
+      "services/ltaip-ai-pilot/src/ltaip_ai/citations.py",
+      "services/ltaip-ai-pilot/src/ltaip_ai/budget.py",
+      "services/ltaip-ai-pilot/src/ltaip_ai/features/",
+      "services/ltaip-ai-pilot/tests/",
+      "compose/leantime-ai-parity/h2/compose.ai-pilot.yml",
+      "docs/03-reference/leantime-ai-parity/ai-pilot-contract.md",
+      "docs/06-research/leantime-ai-parity/h2/ai-pilot/evaluation-plan.md",
+      "docs/92-runbooks/leantime-ai-parity/ai-pilot-kill-switch.md",
+      "config/leantime-ai-parity/h2/ai-pilot.json",
+      "contracts/leantime-ai-parity/ai-draft.schema.json",
+      "reports/leantime-ai-parity/h2/ai-pilot/golden-results.json",
+      "reports/leantime-ai-parity/h2/ai-pilot/adversarial-results.json",
+      "reports/leantime-ai-parity/h2/ai-pilot/cost-usage.json",
+      "reports/leantime-ai-parity/h2/ai-pilot/manifest.json",
+      "tests/fixtures/leantime-ai-parity/h2/ai-pilot/golden-set.jsonl",
+      "tests/fixtures/leantime-ai-parity/h2/ai-pilot/adversarial-set.jsonl"
+    ],
+    "verify": [
+      "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-POST-011.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))' ",
+      "docker compose -f compose/leantime-ai-parity/h2/compose.ai-pilot.yml config --quiet",
+      "python -m pytest -q services/ltaip-ai-pilot/tests",
+      "python -m json.tool config/leantime-ai-parity/h2/ai-pilot.json >/dev/null",
+      "python -m json.tool contracts/leantime-ai-parity/ai-draft.schema.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h2/ai-pilot/golden-results.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h2/ai-pilot/adversarial-results.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h2/ai-pilot/cost-usage.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h2/ai-pilot/manifest.json >/dev/null",
+      "python scripts/docs_validator.py docs/03-reference/leantime-ai-parity/ai-pilot-contract.md docs/06-research/leantime-ai-parity/h2/ai-pilot/evaluation-plan.md docs/92-runbooks/leantime-ai-parity/ai-pilot-kill-switch.md",
+      "python scripts/check_docs_hygiene.py",
+      "python scripts/check_docs_filename_hygiene.py",
+      "python scripts/check_root_hygiene.py",
+      "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-POST-011/PROOF.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat: add bounded cited read/draft AI pilot",
+    "body": "Conditional H2 packet. Implement exactly two read/draft features through the read gateway with citations, human review, route policy, evaluation, budget, and kill switch. No writes or autonomous actions.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "apilookup",
+      "analyze",
+      "tracer",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "consensus",
+      "challenge",
+      "implement",
+      "testgen",
+      "secaudit",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1-feature-contract",
+      "task": "Select exactly two read/draft features from accepted evidence and pre-register golden/adversarial thresholds.",
+      "requirements": [
+        "No feature selected for novelty alone.",
+        "Each has deterministic baseline and human review."
+      ],
+      "commands": [
+        "python -m json.tool config/leantime-ai-parity/h2/ai-pilot.json >/dev/null",
+        "python -m json.tool contracts/leantime-ai-parity/ai-draft.schema.json >/dev/null"
+      ],
+      "expected_files": [
+        "config/leantime-ai-parity/h2/ai-pilot.json",
+        "contracts/leantime-ai-parity/ai-draft.schema.json",
+        "docs/03-reference/leantime-ai-parity/ai-pilot-contract.md",
+        "docs/06-research/leantime-ai-parity/h2/ai-pilot/evaluation-plan.md"
+      ],
+      "validation": [
+        "Exactly two features.",
+        "Thresholds, costs, privacy classes, and rollback are pre-registered."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-2-implement-pilot",
+      "task": "Implement external model gateway, policy, citations, budgets, feature flags, and human-review surfaces.",
+      "requirements": [
+        "No write credentials.",
+        "No arbitrary tools.",
+        "All context comes through Packet 009 gateway."
+      ],
+      "commands": [
+        "python -m pytest -q services/ltaip-ai-pilot/tests",
+        "docker compose -f compose/leantime-ai-parity/h2/compose.ai-pilot.yml up -d --build"
+      ],
+      "expected_files": [
+        "services/ltaip-ai-pilot/src/ltaip_ai/app.py",
+        "services/ltaip-ai-pilot/src/ltaip_ai/gateway.py",
+        "services/ltaip-ai-pilot/src/ltaip_ai/policy.py",
+        "services/ltaip-ai-pilot/src/ltaip_ai/citations.py"
+      ],
+      "validation": [
+        "Writes are structurally impossible.",
+        "Citations and uncertainty are schema-required."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-3-evaluate",
+      "task": "Run task-specific evaluation with overrides, denial, injection, provider failure, and budget tests.",
+      "requirements": [
+        "Zero authorization failure.",
+        "Material claims cited.",
+        "Costs below pre-registered budget."
+      ],
+      "commands": [
+        "python -m pytest -q services/ltaip-ai-pilot/tests",
+        "python -m json.tool reports/leantime-ai-parity/h2/ai-pilot/golden-results.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h2/ai-pilot/adversarial-results.json >/dev/null"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h2/ai-pilot/golden-results.json",
+        "reports/leantime-ai-parity/h2/ai-pilot/adversarial-results.json",
+        "reports/leantime-ai-parity/h2/ai-pilot/cost-usage.json"
+      ],
+      "validation": [
+        "Task thresholds pass.",
+        "Zero authorization failures.",
+        "Provider failure falls back deterministically."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-4-security-audit-proof",
+      "task": "Exercise kill switch and data destruction, run independent security audit, and request supervisor adjudication.",
+      "requirements": [
+        "No derived data survives disablement beyond declared retention."
+      ],
+      "commands": [
+        "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-POST-011.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))' ",
+        "docker compose -f compose/leantime-ai-parity/h2/compose.ai-pilot.yml config --quiet",
+        "python -m pytest -q services/ltaip-ai-pilot/tests",
+        "python -m json.tool config/leantime-ai-parity/h2/ai-pilot.json >/dev/null",
+        "python -m json.tool contracts/leantime-ai-parity/ai-draft.schema.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h2/ai-pilot/golden-results.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h2/ai-pilot/adversarial-results.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h2/ai-pilot/cost-usage.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h2/ai-pilot/manifest.json >/dev/null",
+        "python scripts/docs_validator.py docs/03-reference/leantime-ai-parity/ai-pilot-contract.md docs/06-research/leantime-ai-parity/h2/ai-pilot/evaluation-plan.md docs/92-runbooks/leantime-ai-parity/ai-pilot-kill-switch.md",
+        "python scripts/check_docs_hygiene.py",
+        "python scripts/check_docs_filename_hygiene.py",
+        "python scripts/check_root_hygiene.py",
+        "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-POST-011/PROOF.json",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "docs/92-runbooks/leantime-ai-parity/ai-pilot-kill-switch.md",
+        "reports/leantime-ai-parity/h2/ai-pilot/manifest.json",
+        "proof/leantime-ai-parity/TP-LTAIP-POST-011/PROOF.json",
+        "proof/leantime-ai-parity/TP-LTAIP-POST-011/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "Kill switch and deletion pass.",
+        "No P0/P1 audit finding.",
+        "Supervisor approves."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "id": "TP-PR1127-CI-001",
+  "project": "dopemux-mvp",
+  "target": "repair PR #1127 documentation frontmatter and whitespace CI failures",
+  "invariants": [
+    "Apply only deterministic output from existing repository formatting hooks.",
+    "Do not change workflow configuration, task-packet semantics, runtime code, or proof contents.",
+    "Preserve unrelated dirty worktree file .claude/claude_config.json without staging it.",
+    "Do not merge PR #1127."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "PR1127-CI-REPAIR-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/pr1127-ci-repair",
+    "base_branch": "main",
+    "stacked_because": "PR #1127 head f9acb478ecbb5bb9609a85ff15db4c1c85fc5f75 is behind main; repair targets its exact head."
+  },
+  "commit": {
+    "message": "fix(docs): normalize PR 1127 CI hook output",
+    "allowlist": [
+      "docs/ops/load-plans/ltaip-h0-load-instructions.md",
+      "task-packets/generated/TP-PR1127-CI-001.json",
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-001.md",
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-002.md",
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-003.md",
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-004.md",
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-005.md",
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-006.md",
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-007.md",
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-008.md",
+      "task-packets/leantime-ai-parity/TP-LTAIP-POST-009.md",
+      "task-packets/leantime-ai-parity/TP-LTAIP-POST-010.md",
+      "task-packets/leantime-ai-parity/TP-LTAIP-POST-011.md",
+      "task-packets/leantime-ai-parity/TP-LTAIP-POST-012.md"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/TP-PR1127-CI-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python scripts/docs_frontmatter_guard.py docs/ops/load-plans/ltaip-h0-load-instructions.md task-packets/leantime-ai-parity/TP-LTAIP-H0-001.md task-packets/leantime-ai-parity/TP-LTAIP-H0-002.md task-packets/leantime-ai-parity/TP-LTAIP-H0-003.md task-packets/leantime-ai-parity/TP-LTAIP-H0-004.md task-packets/leantime-ai-parity/TP-LTAIP-H0-005.md task-packets/leantime-ai-parity/TP-LTAIP-H0-006.md task-packets/leantime-ai-parity/TP-LTAIP-H0-007.md task-packets/leantime-ai-parity/TP-LTAIP-H0-008.md task-packets/leantime-ai-parity/TP-LTAIP-POST-009.md task-packets/leantime-ai-parity/TP-LTAIP-POST-010.md task-packets/leantime-ai-parity/TP-LTAIP-POST-011.md task-packets/leantime-ai-parity/TP-LTAIP-POST-012.md",
+      "pre-commit run --from-ref origin/main --to-ref HEAD",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(ltaip): import full macro-packet series and load-plan artifacts",
+    "body": "Repair PR #1127 exact-head CI failures by committing only existing frontmatter and whitespace hook output. No workflow or runtime change.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "reproduce",
+      "task": "Reproduce PR #1127 docs and complete-CI source failure at exact PR head.",
+      "requirements": [
+        "Use GitHub Actions failure logs and existing local hooks.",
+        "Confirm the complete-CI summary failure is derivative of code-quality failure."
+      ],
+      "validation": [
+        "GitHub Actions logs identify docs-frontmatter-guard and trailing-whitespace as source failures.",
+        "Complete CI summary lists code-quality as its only failed required gate."
+      ]
+    },
+    {
+      "id": "repair",
+      "task": "Commit deterministic frontmatter and whitespace normalization produced by existing repository hooks.",
+      "requirements": [
+        "Edit only paths in commit.allowlist.",
+        "Do not stage .claude/claude_config.json or modify CI workflow configuration."
+      ],
+      "validation": [
+        "docs_frontmatter_guard reports no remaining updates for affected markdown files.",
+        "pre-commit completes without modifying files."
+      ]
+    },
+    {
+      "id": "verify",
+      "task": "Validate packet, diff, scoped hook output, exact-head commit, push, and PR checks.",
+      "requirements": [
+        "Report embedded-audit and PR-Steward state separately from this CI-only repair.",
+        "Do not merge."
+      ],
+      "validation": [
+        "Task Packet validates against canonical schema.",
+        "git diff --check passes.",
+        "PR #1127 has a pushed repair commit."
+      ]
+    }
+  ]
+}

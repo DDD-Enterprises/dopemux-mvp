@@ -1,0 +1,226 @@
+{
+  "id": "TP-LTAIP-POST-010",
+  "project": "dopemux-mvp",
+  "target": "h1-conditional/deterministic-parity-child-series",
+  "invariants": [
+    "Packet 008 decision and Packet 006 package evidence are current.",
+    "At most three gaps.",
+    "One canonical writer per capability.",
+    "Each child packet has exact code paths after selected-base inspection.",
+    "No child packet is executable until supervisor review."
+  ],
+  "depends_on": [
+    "TP-LTAIP-H0-008",
+    "TP-LTAIP-H0-006"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "LTAIP-POST-SELECTION-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-LTAIP-H0-008",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "plan/TP-LTAIP-POST-010-parity-child-series"
+  },
+  "commit": {
+    "message": "plan: generate selected-base deterministic parity child packets",
+    "allowlist": [
+      "task-packets/leantime-ai-parity/TP-LTAIP-POST-010.json",
+      "task-packets/leantime-ai-parity/TP-LTAIP-POST-010.md",
+      "task-packets/INDEX.md",
+      "docs/INDEX.md",
+      "docs/docs_index.yaml",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-010/PROOF.json",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-010/COMMAND_LOG.md",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-010/AUDITOR_REPORT.md",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-010/GIT_STATUS_BEFORE.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-010/GIT_STATUS_AFTER.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-010/GIT_DIFF_STAT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-010/GIT_DIFF.patch",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-010/PRECOMMIT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-010/MERGE_READINESS.json",
+      "scripts/leantime-ai-parity/h1/generate_parity_child_packets.py",
+      "scripts/leantime-ai-parity/h1/validate_selected_gaps.py",
+      "tests/prototypes/leantime-ai-parity/h1/test_selected_gap_plan.py",
+      "tests/prototypes/leantime-ai-parity/h1/test_generated_child_packets.py",
+      "task-packets/leantime-ai-parity/generated/parity-foundation/",
+      "docs/06-research/leantime-ai-parity/h1/parity-foundation/selected-gap-plan.md",
+      "docs/06-research/leantime-ai-parity/h1/parity-foundation/child-packet-review.md",
+      "config/leantime-ai-parity/h1/selected-gap-plan.json",
+      "reports/leantime-ai-parity/h1/parity-foundation/capability-map.json",
+      "reports/leantime-ai-parity/h1/parity-foundation/child-packet-manifest.json",
+      "reports/leantime-ai-parity/h1/parity-foundation/manifest.json"
+    ],
+    "verify": [
+      "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-POST-010.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))' ",
+      "python -m pytest -q tests/prototypes/leantime-ai-parity/h1/test_selected_gap_plan.py tests/prototypes/leantime-ai-parity/h1/test_generated_child_packets.py",
+      "python -m json.tool config/leantime-ai-parity/h1/selected-gap-plan.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h1/parity-foundation/capability-map.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h1/parity-foundation/child-packet-manifest.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h1/parity-foundation/manifest.json >/dev/null",
+      "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/h1/parity-foundation/selected-gap-plan.md docs/06-research/leantime-ai-parity/h1/parity-foundation/child-packet-review.md",
+      "python scripts/check_docs_hygiene.py",
+      "python scripts/check_docs_filename_hygiene.py",
+      "python scripts/check_root_hygiene.py",
+      "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-POST-010/PROOF.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "plan: generate selected-base deterministic parity child packets",
+    "body": "Conditional macro-controller. Select at most three must-win deterministic gaps and generate bounded base-specific implementation child packets. This packet does not implement features itself.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "consensus",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1-gap-selection",
+      "task": "Map H0 workflow failures to at most three deterministic gaps and choose evidence-backed disposition.",
+      "requirements": [
+        "Hard-gate failures first.",
+        "No feature-count selection.",
+        "Package qualification considered."
+      ],
+      "commands": [
+        "python scripts/leantime-ai-parity/h1/validate_selected_gaps.py --decision reports/leantime-ai-parity/h0/base-selection/decision.json --output config/leantime-ai-parity/h1/selected-gap-plan.json"
+      ],
+      "expected_files": [
+        "config/leantime-ai-parity/h1/selected-gap-plan.json",
+        "reports/leantime-ai-parity/h1/parity-foundation/capability-map.json",
+        "docs/06-research/leantime-ai-parity/h1/parity-foundation/selected-gap-plan.md"
+      ],
+      "validation": [
+        "At most three gaps.",
+        "Each has canonical writer, evidence, disposition, and acceptance target."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-2-generate-child-packets",
+      "task": "Inspect selected-base runtime and generate exact per-gap packets under the strict schema.",
+      "requirements": [
+        "No wildcard runtime allowlists.",
+        "Each child packet commit-sized.",
+        "Permission, accessibility, mobile, upgrade, rollback, audit, and proof included."
+      ],
+      "commands": [
+        "python scripts/leantime-ai-parity/h1/generate_parity_child_packets.py --plan config/leantime-ai-parity/h1/selected-gap-plan.json --output task-packets/leantime-ai-parity/generated/parity-foundation --manifest reports/leantime-ai-parity/h1/parity-foundation/child-packet-manifest.json",
+        "python -m pytest -q tests/prototypes/leantime-ai-parity/h1/test_generated_child_packets.py"
+      ],
+      "expected_files": [
+        "task-packets/leantime-ai-parity/generated/parity-foundation/",
+        "reports/leantime-ai-parity/h1/parity-foundation/child-packet-manifest.json",
+        "docs/06-research/leantime-ai-parity/h1/parity-foundation/child-packet-review.md"
+      ],
+      "validation": [
+        "Every child packet validates.",
+        "Dependencies are acyclic.",
+        "No implementation performed."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-3-audit-proof",
+      "task": "Run independent packet audit, finalize proof, and request supervisor approval for child execution.",
+      "requirements": [
+        "Auditor reads selected-base runtime paths.",
+        "Supervisor approval required."
+      ],
+      "commands": [
+        "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-POST-010.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))' ",
+        "python -m pytest -q tests/prototypes/leantime-ai-parity/h1/test_selected_gap_plan.py tests/prototypes/leantime-ai-parity/h1/test_generated_child_packets.py",
+        "python -m json.tool config/leantime-ai-parity/h1/selected-gap-plan.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h1/parity-foundation/capability-map.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h1/parity-foundation/child-packet-manifest.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h1/parity-foundation/manifest.json >/dev/null",
+        "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/h1/parity-foundation/selected-gap-plan.md docs/06-research/leantime-ai-parity/h1/parity-foundation/child-packet-review.md",
+        "python scripts/check_docs_hygiene.py",
+        "python scripts/check_docs_filename_hygiene.py",
+        "python scripts/check_root_hygiene.py",
+        "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-POST-010/PROOF.json",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h1/parity-foundation/manifest.json",
+        "proof/leantime-ai-parity/TP-LTAIP-POST-010/PROOF.json",
+        "proof/leantime-ai-parity/TP-LTAIP-POST-010/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "Generated series is exact, bounded, and non-executing."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    }
+  ]
+}
