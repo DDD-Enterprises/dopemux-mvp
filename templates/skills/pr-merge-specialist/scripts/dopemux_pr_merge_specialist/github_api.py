@@ -196,10 +196,21 @@ class GitHubClient:
             f"repos/{self.repo}/actions/workflows/embedded-audit.yml"
         )
 
+    def fetch_steward_workflow(self) -> Dict[str, Any]:
+        return self._audit_api_json(
+            f"repos/{self.repo}/actions/workflows/pr-steward.yml"
+        )
+
     def fetch_audit_run(self, run_id: int) -> Dict[str, Any]:
         return self._audit_api_json(f"repos/{self.repo}/actions/runs/{run_id}")
 
+    def fetch_steward_run(self, run_id: int) -> Dict[str, Any]:
+        return self._audit_api_json(f"repos/{self.repo}/actions/runs/{run_id}")
+
     def fetch_audit_pr(self, pr_id: int) -> Dict[str, Any]:
+        return self._audit_api_json(f"repos/{self.repo}/pulls/{pr_id}")
+
+    def fetch_steward_pr(self, pr_id: int) -> Dict[str, Any]:
         return self._audit_api_json(f"repos/{self.repo}/pulls/{pr_id}")
 
     def fetch_audit_artifacts(self, name: str, run_id: Optional[int] = None) -> List[Dict[str, Any]]:
@@ -217,6 +228,9 @@ class GitHubClient:
             artifacts.extend(page["artifacts"])
         return artifacts
 
+    def fetch_steward_artifacts(self, name: str, run_id: Optional[int] = None) -> List[Dict[str, Any]]:
+        return self.fetch_audit_artifacts(name, run_id)
+
     def download_audit_artifact(self, artifact_id: int) -> bytes:
         # Keep ZIP bytes outside the existing text-only command result contract.
         result = subprocess.run(
@@ -228,6 +242,9 @@ class GitHubClient:
         if result.returncode != 0:
             raise RuntimeError("GitHub audit artifact download failed")
         return result.stdout
+
+    def download_steward_artifact(self, artifact_id: int) -> bytes:
+        return self.download_audit_artifact(artifact_id)
 
     def invalidate(self, prefix: str) -> None:
         doomed = [key for key in self.cache if key.startswith(prefix)]

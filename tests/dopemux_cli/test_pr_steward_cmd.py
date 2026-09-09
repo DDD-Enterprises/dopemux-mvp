@@ -148,7 +148,6 @@ def test_gate_cli_requires_matching_explicit_base(tmp_path: Path, capsys, base, 
         generated_at="2026-05-31T12:00:00Z",
     )
     proof_path = _write_json(tmp_path / "PROOF.json", proof)
-    install_artifact_transport(monkeypatch, proof_path.read_bytes())
     readiness_path = _write_json(tmp_path / "MERGE_READINESS.json", {
         "generated_at": "2026-05-31T12:00:00Z",
         "readiness": "READY",
@@ -156,6 +155,8 @@ def test_gate_cli_requires_matching_explicit_base(tmp_path: Path, capsys, base, 
         "proof": {"proof_head_sha": head},
         "embedded_audit": proof["embedded_audit"],
     })
+    transport = install_artifact_transport(monkeypatch, proof_path.read_bytes())
+    transport.set_steward_archive(readiness_path.read_bytes())
     args = [
         "gate", "--repo", "DDD-Enterprises/dopemux-mvp", "--pr", "301",
         "--head-sha", head, "--required-class", "FINALIZATION",
@@ -197,6 +198,7 @@ def test_cli_requires_exact_authenticated_bytes_with_pinned_run(tmp_path, monkey
         "pr": {"number": 1330, "head_sha": "a" * 40},
         "proof": {"proof_head_sha": "a" * 40}, "embedded_audit": proof["embedded_audit"],
     })
+    transport.set_steward_archive(readiness.read_bytes())
     rc = steward_main([
         "gate", "--repo", "DDD-Enterprises/dopemux-mvp", "--pr", "1330",
         "--head-sha", "a" * 40, "--base-sha", "b" * 40, "--audit-run-id", "23",

@@ -180,12 +180,17 @@ def _run_bridge(args: argparse.Namespace) -> int:
 
 def _run_gate(args: argparse.Namespace) -> int:
     try:
+        client = GitHubClient(repo=args.repo, repo_root=Path.cwd(), policy={})
+        expected_repo = args.repo
+        if not expected_repo and args.required_class == "FINALIZATION":
+            expected_repo = client.resolve_repo_slug()
+            client.repo = expected_repo
         result = steward_gate(
             head_sha=args.head_sha,
-            expected_repo=args.repo,
+            expected_repo=expected_repo,
             expected_pr=args.pr,
             expected_base_sha=args.base_sha,
-            github_client=GitHubClient(repo=args.repo, repo_root=Path.cwd(), policy={}),
+            github_client=client,
             audit_run_id=args.audit_run_id,
             required_class=args.required_class,
             merge_readiness_path=args.merge_readiness,

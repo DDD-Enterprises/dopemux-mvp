@@ -260,6 +260,7 @@ jobs:
           printf 'proof_path=independent-audit/PROOF.json\n' >> "$GITHUB_OUTPUT"
           printf 'pr_head_sha=%s\n' "$EXPECTED_HEAD_SHA" >> "$GITHUB_OUTPUT"
           printf 'pr_number=%s\n' "$SELECTED_PR" >> "$GITHUB_OUTPUT"
+          printf 'base_sha=%s\n' "$EXPECTED_BASE_SHA" >> "$GITHUB_OUTPUT"
 
           # Hard gate: non-success audit conclusion cannot produce READY.
           if [ "${AUDIT_CONCLUSION}" != "success" ]; then
@@ -329,6 +330,44 @@ jobs:
             --strict \
             --format text \
             --proof-path independent-audit/PROOF.json
+
+      - name: Write PR Steward source receipt
+        if: success()
+        env:
+          AUDIT_RUN_ID: ${{ steps.audit_run.outputs.id }}
+          AUDIT_ARTIFACT_NAME: ${{ steps.audit.outputs.artifact_name }}
+          BASE_SHA: ${{ steps.audit.outputs.base_sha }}
+          PR_HEAD_SHA: ${{ steps.proof.outputs.head_sha }}
+          PR_NUMBER: ${{ steps.proof.outputs.pr_number }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          pr_number = int(os.environ["PR_NUMBER"])
+          head_sha = os.environ["PR_HEAD_SHA"]
+          receipt = {
+              "repo": os.environ["GITHUB_REPOSITORY"],
+              "pr": pr_number,
+              "head_sha": head_sha,
+              "base_sha": os.environ["BASE_SHA"],
+              "steward_run_id": int(os.environ["GITHUB_RUN_ID"]),
+              "audit_run_id": int(os.environ["AUDIT_RUN_ID"]),
+              "steward_workflow": ".github/workflows/pr-steward.yml",
+              "audit_workflow": ".github/workflows/embedded-audit.yml",
+              "readiness_artifact_name": (
+                  f"pr-steward-pr-{pr_number}-head-{head_sha}-readiness"
+              ),
+              "audit_artifact_name": os.environ["AUDIT_ARTIFACT_NAME"],
+          }
+          out = Path("pr-steward-artifacts")
+          out.mkdir(parents=True, exist_ok=True)
+          (out / "PR_STEWARD_SOURCE_RECEIPT.json").write_text(
+              json.dumps(receipt, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          PY
 
       - name: Publish readiness status on candidate PR head
         if: always() && steps.proof.outputs.head_sha != ''

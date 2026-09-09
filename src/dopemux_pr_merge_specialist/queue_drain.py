@@ -457,6 +457,18 @@ def require_steward_finalization_gate(
     now: Any = None,
 ) -> StewardGateResult:
     gate_policy = policy.get("steward_gate", {})
+    resolved_repo = expected_repo
+    if not resolved_repo and github_client is not None:
+        try:
+            resolved_repo = github_client.resolve_repo_slug()
+            github_client.repo = resolved_repo
+        except Exception as exc:
+            return StewardGateResult(
+                allowed=False,
+                reason_code="DENY_MISSING_CALLER_IDENTITY",
+                required_class="FINALIZATION",
+                evidence={"error": type(exc).__name__},
+            )
     try:
         merge_readiness_path = _steward_artifact_path(
             gate_policy.get("merge_readiness_path"),
@@ -480,7 +492,7 @@ def require_steward_finalization_gate(
     result = steward_gate(
         head_sha=pr.head_sha,
         required_class="FINALIZATION",
-        expected_repo=expected_repo,
+        expected_repo=resolved_repo,
         expected_pr=pr.pr_id,
         expected_base_sha=pr.base_sha,
         github_client=github_client,
@@ -579,11 +591,29 @@ def _merge_prepared_result(
     pr_id = prepared_result.pr_state.pr_id
     pr_dir = pr_dir_for(pr_root, pr_id)
     commands_log = pr_dir / "COMMANDS_RUN.txt"
+    resolved_repo: Optional[str] = None
 
     if bool(getattr(args, "execute", False)):
+        try:
+            resolved_repo = client.repo or client.resolve_repo_slug()
+            client.repo = resolved_repo
+        except Exception as exc:
+            gate_result = StewardGateResult(
+                allowed=False,
+                reason_code="DENY_MISSING_CALLER_IDENTITY",
+                required_class="FINALIZATION",
+                evidence={"error": type(exc).__name__},
+            )
+            _write_steward_finalization_gate_artifact(
+                pr_dir=pr_dir,
+                gate_result=gate_result,
+            )
+            raise RuntimeError(
+                f"Steward finalization gate denied merge: {gate_result.reason_code}"
+            )
         gate_result = require_steward_finalization_gate(
             pr=prepared_result.pr_state,
-            expected_repo=client.repo,
+            expected_repo=resolved_repo,
             github_client=client,
             policy=policy,
             pr_dir=pr_dir,
@@ -602,7 +632,7 @@ def _merge_prepared_result(
         decision=decision,
         pr_id=pr_id,
         execute=bool(getattr(args, "execute", False)),
-        repo=getattr(args, "repo", None),
+        repo=resolved_repo or getattr(args, "repo", None),
         commands_log=commands_log,
         repo_root=repo_root,
         policy=policy,

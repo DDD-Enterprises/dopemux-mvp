@@ -16,8 +16,13 @@ from dopemux_pr_merge_specialist.github_api import GitHubClient
 from dopemux_pr_merge_specialist.runtime import CommandResult
 from dopemux_pr_merge_specialist.workflow_artifact_verifier import (
     MAX_PROOF_BYTES,
+    MAX_READINESS_BYTES,
+    PR_STEWARD_WORKFLOW_PATH,
+    READINESS_MEMBER,
+    SOURCE_RECEIPT_MEMBER,
     WORKFLOW_PATH,
     WorkflowArtifactError,
+    verify_pr_steward_readiness_artifact,
     verify_workflow_artifact,
 )
 from scripts.audit.run_embedded_audit import build_evidence_gate_proof
@@ -72,12 +77,87 @@ class ArtifactTransport:
             "created_at": "2026-09-07T12:00:00Z",
         }
         self.set_archive(zip_bytes([("PROOF.json", remote_proof), ("report.txt", b"report")]))
+        self.steward_workflow = {"id": 41, "name": "PR Steward", "path": PR_STEWARD_WORKFLOW_PATH}
+        self.steward_run = {
+            "id": 47, "workflow_id": 41, "name": "PR Steward", "path": PR_STEWARD_WORKFLOW_PATH,
+            "repository": {"full_name": self.repo, "default_branch": "main"},
+            "status": "completed", "conclusion": "success", "run_attempt": 1,
+            "event": "workflow_run", "head_sha": "d" * 40, "head_branch": "main",
+            "run_started_at": "2026-09-07T12:05:00Z",
+        }
+        self.steward_artifact = {
+            "id": 53, "expired": False,
+            "name": f"pr-steward-pr-{proof['pr_number']}-head-{proof['head_sha']}-readiness",
+            "workflow_run": {"id": 47, "head_sha": "d" * 40},
+            "created_at": "2026-09-07T12:06:00Z",
+        }
+        self.set_steward_archive()
         self.calls = []
         self.after_download = None
+        self.after_steward_download = None
 
     def set_archive(self, archive: bytes):
         self.archive = archive
         self.artifact.update(size_in_bytes=len(archive), digest="sha256:" + sha256(archive).hexdigest())
+
+    def source_receipt(self) -> dict:
+        proof = json.loads(self.remote_proof)
+        return {
+            "repo": self.repo,
+            "pr": proof["pr_number"],
+            "head_sha": proof["head_sha"],
+            "base_sha": proof["provenance"]["change_contract"]["base_sha"],
+            "steward_run_id": self.steward_run["id"],
+            "audit_run_id": self.run["id"],
+            "steward_workflow": PR_STEWARD_WORKFLOW_PATH,
+            "audit_workflow": WORKFLOW_PATH,
+            "readiness_artifact_name": self.steward_artifact["name"],
+            "audit_artifact_name": self.artifact["name"],
+        }
+
+    def readiness_bytes(self, **overrides) -> bytes:
+        proof = json.loads(self.remote_proof)
+        payload = {
+            "generated_at": proof["generated_at"],
+            "readiness": "READY",
+            "blockers": [],
+            "pr": {
+                "number": proof["pr_number"],
+                "head_sha": proof["head_sha"],
+                "head_ref": "feature/finalize",
+            },
+            "proof": {
+                "proof_head_sha": proof["head_sha"],
+                "proof_path": "proof/TP/PROOF.json",
+            },
+            "embedded_audit": proof["embedded_audit"],
+        }
+        payload.update(overrides)
+        return json.dumps(payload).encode()
+
+    def set_steward_archive(
+        self,
+        readiness: bytes | None = None,
+        receipt: bytes | None = None,
+        extra: list[tuple[str | zipfile.ZipInfo, bytes]] | None = None,
+    ):
+        readiness = self.readiness_bytes() if readiness is None else readiness
+        receipt = (
+            json.dumps(self.source_receipt(), indent=2, sort_keys=True).encode()
+            if receipt is None else receipt
+        )
+        members = [
+            (READINESS_MEMBER, readiness),
+            (SOURCE_RECEIPT_MEMBER, receipt),
+            ("PR_STEWARD_SUMMARY.md", b"summary"),
+        ]
+        if extra:
+            members.extend(extra)
+        self.steward_archive = zip_bytes(members)
+        self.steward_artifact.update(
+            size_in_bytes=len(self.steward_archive),
+            digest="sha256:" + sha256(self.steward_archive).hexdigest(),
+        )
 
     def fetch_audit_workflow(self):
         self.calls.append("workflow")
@@ -101,11 +181,35 @@ class ArtifactTransport:
             self.after_download()
         return self.archive
 
+    def fetch_steward_workflow(self):
+        self.calls.append("steward_workflow")
+        return copy.deepcopy(self.steward_workflow)
+
+    def fetch_steward_artifacts(self, name, run_id=None):
+        self.calls.append(("steward_artifacts", name, run_id))
+        return [copy.deepcopy(self.steward_artifact)]
+
+    def fetch_steward_run(self, run_id):
+        self.calls.append(("steward_run", run_id))
+        return copy.deepcopy(self.steward_run)
+
+    def fetch_steward_pr(self, pr_id):
+        self.calls.append(("steward_pr", pr_id))
+        return copy.deepcopy(self.pr)
+
+    def download_steward_artifact(self, artifact_id):
+        self.calls.append(("steward_download", artifact_id))
+        if self.after_steward_download:
+            self.after_steward_download()
+        return self.steward_archive
+
 
 def install_artifact_transport(monkeypatch, remote_proof: bytes) -> ArtifactTransport:
     transport = ArtifactTransport(remote_proof)
     for name in ("fetch_audit_workflow", "fetch_audit_run", "fetch_audit_artifacts",
-                 "fetch_audit_pr", "download_audit_artifact"):
+                 "fetch_audit_pr", "download_audit_artifact",
+                 "fetch_steward_workflow", "fetch_steward_run", "fetch_steward_artifacts",
+                 "fetch_steward_pr", "download_steward_artifact"):
         method = getattr(transport, name)
         monkeypatch.setattr(GitHubClient, name, lambda self, *args, _method=method: _method(*args))
     return transport
@@ -114,6 +218,15 @@ def install_artifact_transport(monkeypatch, remote_proof: bytes) -> ArtifactTran
 def verify(transport, local=None, **overrides):
     return verify_workflow_artifact(
         proof_bytes() if local is None else local, github_client=transport,
+        **{"expected_repo": REPO, "expected_pr": 1330,
+           "expected_head_sha": HEAD, "expected_base_sha": BASE, **overrides},
+    )
+
+
+def verify_readiness(transport, local=None, **overrides):
+    readiness = transport.readiness_bytes() if local is None else local
+    return verify_pr_steward_readiness_artifact(
+        readiness, github_client=transport,
         **{"expected_repo": REPO, "expected_pr": 1330,
            "expected_head_sha": HEAD, "expected_base_sha": BASE, **overrides},
     )
@@ -134,6 +247,161 @@ def test_exact_authenticated_artifact_binds_bytes_and_full_tuple(event, pin):
     assert result["run_status"] == "completed" and result["run_conclusion"] == "success"
     assert result["artifact_digest"] == "sha256:" + sha256(transport.archive).hexdigest()
     assert transport.calls.count(("run", 23)) == 2
+
+
+def test_exact_authenticated_steward_readiness_binds_bytes_and_source_receipt():
+    transport = ArtifactTransport(proof_bytes())
+    result = verify_readiness(transport)
+    assert result["local_readiness_sha256"] == result["downloaded_readiness_sha256"]
+    assert result["workflow_run_id"] == 47 and result["artifact_id"] == 53
+    assert result["repository"] == REPO and result["pr_number"] == 1330
+    assert result["head_sha"] == HEAD and result["base_sha"] == BASE
+    assert result["workflow_path"] == PR_STEWARD_WORKFLOW_PATH
+    assert result["readiness_member"] == READINESS_MEMBER
+    assert result["source_receipt_member"] == SOURCE_RECEIPT_MEMBER
+    assert result["audit_run_id"] == 23
+    assert result["source_receipt"]["audit_artifact_name"] == transport.artifact["name"]
+    assert ("steward_artifacts", transport.steward_artifact["name"], 47) in transport.calls
+    assert transport.calls.count(("steward_run", 47)) == 2
+
+
+@pytest.mark.parametrize("section,field,value", [
+    ("steward_workflow", "id", 99),
+    ("steward_workflow", "path", ".github/workflows/other-steward.yml"),
+    ("steward_workflow", "name", "other"),
+    ("steward_run", "repository", {"full_name": "attacker/repo"}),
+    ("steward_run", "id", 99),
+    ("steward_run", "workflow_id", 99),
+    ("steward_run", "path", ".github/workflows/forged.yml"),
+    ("steward_run", "name", "other"),
+    ("steward_run", "event", "push"),
+    ("steward_run", "status", "in_progress"),
+    ("steward_run", "conclusion", "failure"),
+    ("steward_run", "run_attempt", None),
+    ("steward_run", "head_sha", "not-a-sha"),
+    ("steward_run", "run_started_at", "2026-09-07T12:07:00Z"),
+    ("steward_artifact", "workflow_run", {"id": 99, "head_sha": "d" * 40}),
+    ("steward_artifact", "name", "forged-readiness"),
+    ("steward_artifact", "expired", True),
+    ("steward_artifact", "size_in_bytes", 0),
+    ("steward_artifact", "digest", "sha256:" + "0" * 64),
+    ("pr", "number", 1331),
+    ("pr", "state", "closed"),
+    ("pr", "head", {"sha": "e" * 40}),
+    ("pr", "base", {"sha": "e" * 40, "repo": {"full_name": REPO}}),
+    ("pr", "base", {"sha": BASE, "repo": {"full_name": "attacker/repo"}}),
+])
+def test_wrong_or_missing_steward_readiness_binding_denies(section, field, value):
+    transport = ArtifactTransport(proof_bytes())
+    getattr(transport, section)[field] = value
+    with pytest.raises(WorkflowArtifactError):
+        verify_readiness(transport)
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("repo", "attacker/repo"),
+        ("pr", 1331),
+        ("head_sha", "e" * 40),
+        ("base_sha", "e" * 40),
+        ("steward_run_id", 99),
+        ("audit_run_id", None),
+        ("audit_run_id", 0),
+        ("steward_workflow", ".github/workflows/forged.yml"),
+        ("audit_workflow", ".github/workflows/forged.yml"),
+        ("readiness_artifact_name", "forged-readiness"),
+        ("audit_artifact_name", "forged-proof"),
+    ],
+)
+def test_steward_source_receipt_identity_mismatch_denies(field, value):
+    transport = ArtifactTransport(proof_bytes())
+    receipt = transport.source_receipt()
+    receipt[field] = value
+    readiness = transport.readiness_bytes()
+    transport.set_steward_archive(
+        readiness,
+        json.dumps(receipt, indent=2, sort_keys=True).encode(),
+    )
+    with pytest.raises(WorkflowArtifactError, match="source_receipt_identity_mismatch"):
+        verify_pr_steward_readiness_artifact(
+            readiness, github_client=transport,
+            expected_repo=REPO, expected_pr=1330,
+            expected_head_sha=HEAD, expected_base_sha=BASE,
+        )
+
+
+@pytest.mark.parametrize("count", [0, 2])
+def test_missing_or_ambiguous_steward_readiness_artifacts_deny(count):
+    transport = ArtifactTransport(proof_bytes())
+    transport.fetch_steward_artifacts = lambda *args: [transport.steward_artifact] * count
+    with pytest.raises(WorkflowArtifactError, match="exact_single_artifact_required"):
+        verify_readiness(transport)
+
+
+def test_local_steward_readiness_bytes_mismatch_denies():
+    transport = ArtifactTransport(proof_bytes())
+    remote_readiness = transport.readiness_bytes()
+    local_readiness = remote_readiness + b"\n"
+    transport.set_steward_archive(remote_readiness)
+    with pytest.raises(WorkflowArtifactError, match="local_readiness_bytes_mismatch"):
+        verify_pr_steward_readiness_artifact(
+            local_readiness, github_client=transport,
+            expected_repo=REPO, expected_pr=1330,
+            expected_head_sha=HEAD, expected_base_sha=BASE,
+        )
+
+
+@pytest.mark.parametrize("members", [
+    [],
+    [("nested/MERGE_READINESS.json", b"same"), (SOURCE_RECEIPT_MEMBER, b"{}")],
+    [(READINESS_MEMBER, b"same")],
+    [(READINESS_MEMBER, b"same"), (SOURCE_RECEIPT_MEMBER, b"{}"), ("nested/MERGE_READINESS.json", b"same")],
+    [("../MERGE_READINESS.json", b"same"), (SOURCE_RECEIPT_MEMBER, b"{}")],
+])
+def test_exact_single_safe_readiness_and_source_receipt_members_required(members):
+    transport = ArtifactTransport(proof_bytes())
+    transport.steward_archive = zip_bytes(members)
+    transport.steward_artifact.update(
+        size_in_bytes=len(transport.steward_archive),
+        digest="sha256:" + sha256(transport.steward_archive).hexdigest(),
+    )
+    with pytest.raises(WorkflowArtifactError):
+        verify_pr_steward_readiness_artifact(
+            transport.readiness_bytes(), github_client=transport,
+            expected_repo=REPO, expected_pr=1330,
+            expected_head_sha=HEAD, expected_base_sha=BASE,
+        )
+
+
+def test_symlink_and_oversized_readiness_members_deny():
+    transport = ArtifactTransport(proof_bytes())
+    link = zipfile.ZipInfo(READINESS_MEMBER)
+    link.external_attr = (stat.S_IFLNK | 0o777) << 16
+    for member, contents in [
+        (link, transport.readiness_bytes()),
+        (READINESS_MEMBER, b"x" * (MAX_READINESS_BYTES + 1)),
+    ]:
+        transport.set_steward_archive(extra=[])
+        receipt = json.dumps(transport.source_receipt(), indent=2, sort_keys=True).encode()
+        transport.steward_archive = zip_bytes([(member, contents), (SOURCE_RECEIPT_MEMBER, receipt)])
+        transport.steward_artifact.update(
+            size_in_bytes=len(transport.steward_archive),
+            digest="sha256:" + sha256(transport.steward_archive).hexdigest(),
+        )
+        with pytest.raises(WorkflowArtifactError):
+            verify_pr_steward_readiness_artifact(
+                transport.readiness_bytes(), github_client=transport,
+                expected_repo=REPO, expected_pr=1330,
+                expected_head_sha=HEAD, expected_base_sha=BASE,
+            )
+
+
+def test_steward_readiness_download_race_denies():
+    transport = ArtifactTransport(proof_bytes())
+    transport.after_steward_download = lambda: transport.steward_run.update(status="queued")
+    with pytest.raises(WorkflowArtifactError, match="steward_run_changed_during_verification"):
+        verify_readiness(transport)
 
 
 @pytest.mark.parametrize("section,field,value", [
@@ -163,16 +431,21 @@ def test_wrong_or_missing_authenticated_binding_denies(section, field, value):
         verify(transport)
 
 
-@pytest.mark.parametrize("members", [
-    [], [("nested/PROOF.json", b"same")], [("../PROOF.json", b"same")],
-    [("PROOF.json", b"same"), ("nested/PROOF.json", b"same")],
-    [("PROOF.json", b"same"), ("proof.json", b"same")],
-    [("PROOF.json", b"same"), ("PROOF.json", b"same")],
+@pytest.mark.parametrize("members,expected_error", [
+    ([], "exact_single_proof_member_required"),
+    ([("nested/PROOF.json", b"same")], "exact_single_proof_member_required"),
+    # A traversal-shaped member name is now caught by the earlier, more
+    # explicit per-member safety check before the exact-match count is even
+    # considered -- a stricter rejection of the same malicious archive.
+    ([("../PROOF.json", b"same")], "proof_archive_member_unsafe"),
+    ([("PROOF.json", b"same"), ("nested/PROOF.json", b"same")], "exact_single_proof_member_required"),
+    ([("PROOF.json", b"same"), ("proof.json", b"same")], "exact_single_proof_member_required"),
+    ([("PROOF.json", b"same"), ("PROOF.json", b"same")], "exact_single_proof_member_required"),
 ])
-def test_exact_single_proof_member_required(members):
+def test_exact_single_proof_member_required(members, expected_error):
     transport = ArtifactTransport(proof_bytes())
     transport.set_archive(zip_bytes(members))
-    with pytest.raises(WorkflowArtifactError, match="exact_single_proof_member_required"):
+    with pytest.raises(WorkflowArtifactError, match=expected_error):
         verify(transport)
 
 
@@ -284,3 +557,11 @@ def test_workflow_uses_same_verifier_and_trusted_run_locator():
         "expected_pr", "expected_head_sha", "expected_repo", "expected_base_sha", "audit_run_id",
     }
     assert step["env"]["AUDIT_RUN_ID"] == "${{ steps.audit_run.outputs.id }}"
+    receipt_step = next(s for s in workflow["jobs"]["pr-steward"]["steps"]
+                        if s["name"] == "Write PR Steward source receipt")
+    assert receipt_step["env"]["AUDIT_RUN_ID"] == "${{ steps.audit_run.outputs.id }}"
+    assert receipt_step["env"]["AUDIT_ARTIFACT_NAME"] == "${{ steps.audit.outputs.artifact_name }}"
+    assert receipt_step["env"]["BASE_SHA"] == "${{ steps.audit.outputs.base_sha }}"
+    assert "PR_STEWARD_SOURCE_RECEIPT.json" in receipt_step["run"]
+    assert '"readiness_artifact_name"' in receipt_step["run"]
+    assert '"audit_artifact_name"' in receipt_step["run"]

@@ -7,7 +7,11 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from .github_api import GitHubClient
-from .workflow_artifact_verifier import WorkflowArtifactError, verify_workflow_artifact
+from .workflow_artifact_verifier import (
+    WorkflowArtifactError,
+    verify_pr_steward_readiness_artifact,
+    verify_workflow_artifact,
+)
 
 
 PASSING_AUDIT_STATUSES = {"PASS", "PASS_WITH_RISKS"}
@@ -58,8 +62,11 @@ def steward_gate(
         return _deny(normalized_class, "DENY_MISSING_CALLER_IDENTITY")
 
     try:
-        readiness = _load_json(Path(merge_readiness_path))
-        audit_proof_bytes = Path(audit_proof_path).read_bytes()
+        readiness_path = Path(merge_readiness_path)
+        proof_path = Path(audit_proof_path)
+        readiness_bytes = readiness_path.read_bytes()
+        readiness = _loads_json_object(readiness_bytes, readiness_path)
+        audit_proof_bytes = proof_path.read_bytes()
         audit_proof = json.loads(audit_proof_bytes)
         if not isinstance(audit_proof, dict):
             raise ValueError("Audit proof must contain a JSON object")
@@ -132,6 +139,37 @@ def steward_gate(
 
     if authenticate_not_required:
         try:
+            authenticated_readiness = verify_pr_steward_readiness_artifact(
+                readiness_bytes,
+                expected_repo=expected_repo,
+                expected_pr=expected_pr,
+                expected_head_sha=head_sha,
+                expected_base_sha=expected_base_sha,
+                github_client=github_client,
+            )
+            if Path(merge_readiness_path).read_bytes() != readiness_bytes:
+                return _deny(normalized_class, "DENY_READINESS_CHANGED", **evidence)
+            trusted_audit_run_id = authenticated_readiness["audit_run_id"]
+            if audit_run_id is not None and audit_run_id != trusted_audit_run_id:
+                return _deny(
+                    normalized_class,
+                    "DENY_AUDIT_RUN_ID_MISMATCH",
+                    **evidence,
+                    authenticated_readiness_artifact=authenticated_readiness,
+                    requested_audit_run_id=audit_run_id,
+                    trusted_audit_run_id=trusted_audit_run_id,
+                )
+        except Exception as exc:
+            return _deny(
+                normalized_class, "DENY_READINESS_ARTIFACT_AUTHENTICITY", **evidence,
+                artifact_error=type(exc).__name__,
+                artifact_reason=(
+                    str(exc)
+                    if isinstance(exc, WorkflowArtifactError)
+                    else "retrieval_failed"
+                ),
+            )
+        try:
             authenticated = verify_workflow_artifact(
                 audit_proof_bytes,
                 expected_repo=expected_repo,
@@ -139,20 +177,31 @@ def steward_gate(
                 expected_head_sha=head_sha,
                 expected_base_sha=expected_base_sha,
                 github_client=github_client,
-                audit_run_id=audit_run_id,
+                audit_run_id=trusted_audit_run_id,
             )
             if Path(audit_proof_path).read_bytes() != audit_proof_bytes:
                 return _deny(normalized_class, "DENY_AUDIT_PROOF_CHANGED", **evidence)
-            if _is_stale(evidence["merge_generated_at"], now=now, ttl_seconds=ttl_seconds) or _is_stale(
-                evidence["proof_generated_at"], now=now, ttl_seconds=ttl_seconds
+            if _is_stale(
+                evidence["merge_generated_at"],
+                now=now,
+                ttl_seconds=ttl_seconds,
+            ) or _is_stale(
+                evidence["proof_generated_at"],
+                now=now,
+                ttl_seconds=ttl_seconds,
             ):
                 return _deny(normalized_class, "DENY_STALE_ARTIFACT", **evidence)
         except Exception as exc:
             return _deny(
                 normalized_class, "DENY_AUDIT_ARTIFACT_AUTHENTICITY", **evidence,
                 artifact_error=type(exc).__name__,
-                artifact_reason=str(exc) if isinstance(exc, WorkflowArtifactError) else "retrieval_failed",
+                artifact_reason=(
+                    str(exc)
+                    if isinstance(exc, WorkflowArtifactError)
+                    else "retrieval_failed"
+                ),
             )
+        evidence["authenticated_readiness_artifact"] = authenticated_readiness
         evidence["authenticated_workflow_artifact"] = authenticated
 
     return StewardGateResult(
@@ -164,7 +213,11 @@ def steward_gate(
 
 
 def _load_json(path: Path) -> dict[str, Any]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    return _loads_json_object(path.read_bytes(), path)
+
+
+def _loads_json_object(payload_bytes: bytes, path: Path) -> dict[str, Any]:
+    payload = json.loads(payload_bytes)
     if not isinstance(payload, dict):
         raise ValueError(f"{path} must contain a JSON object")
     return payload
