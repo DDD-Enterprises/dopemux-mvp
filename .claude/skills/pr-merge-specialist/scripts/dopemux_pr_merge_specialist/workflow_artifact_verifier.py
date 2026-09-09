@@ -168,14 +168,29 @@ def _resolve_steward_run_id_from_readiness_status(
     )
     statuses = status_payload.get("statuses")
     _require(isinstance(statuses, list), "steward_status_list_invalid")
-    matches = [
-        _object(status)
-        for status in statuses
-        if _object(status).get("context") == PR_STEWARD_READINESS_CONTEXT
-        or _object(status).get("name") == PR_STEWARD_READINESS_CONTEXT
+    matches: list[tuple[datetime, Mapping[str, Any]]] = []
+    for item in statuses:
+        status = _object(item)
+        if (
+            status.get("context") != PR_STEWARD_READINESS_CONTEXT
+            and status.get("name") != PR_STEWARD_READINESS_CONTEXT
+        ):
+            continue
+        timestamp_value = status.get("updated_at") or status.get("created_at")
+        _require(isinstance(timestamp_value, str), "steward_status_timestamp_missing")
+        try:
+            timestamp = datetime.fromisoformat(timestamp_value.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise WorkflowArtifactError("steward_status_timestamp_invalid") from exc
+        _require(timestamp.tzinfo is not None, "steward_status_timestamp_timezone_missing")
+        matches.append((timestamp, status))
+    _require(matches, "steward_status_context_missing")
+    latest_timestamp = max(timestamp for timestamp, _ in matches)
+    latest_matches = [
+        status for timestamp, status in matches if timestamp == latest_timestamp
     ]
-    _require(len(matches) == 1, "steward_status_context_not_exact")
-    status = matches[0]
+    _require(len(latest_matches) == 1, "steward_status_latest_ambiguous")
+    status = latest_matches[0]
     outcome = str(status.get("state") or status.get("conclusion") or "").upper()
     _require(outcome == "SUCCESS", "steward_status_not_successful")
     target_url = str(

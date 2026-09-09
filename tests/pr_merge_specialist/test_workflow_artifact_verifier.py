@@ -89,6 +89,8 @@ class ArtifactTransport:
             "context": "PR Steward / final readiness",
             "state": "success",
             "target_url": f"https://github.com/{self.repo}/actions/runs/{self.steward_run['id']}",
+            "created_at": "2026-09-07T12:06:00Z",
+            "updated_at": "2026-09-07T12:06:00Z",
         }
         self.steward_artifact = {
             "id": 53, "expired": False,
@@ -299,18 +301,79 @@ def test_readiness_artifact_selection_uses_pinned_steward_status_run():
 @pytest.mark.parametrize("statuses", [
     [],
     [{"context": "Other", "state": "success", "target_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/47"}],
-    [
-        {"context": "PR Steward / final readiness", "state": "success", "target_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/47"},
-        {"context": "PR Steward / final readiness", "state": "success", "target_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/48"},
-    ],
 ])
-def test_missing_or_ambiguous_steward_readiness_status_context_denies(statuses):
+def test_missing_steward_readiness_status_context_denies(statuses):
     transport = ArtifactTransport(proof_bytes())
     transport.fetch_steward_readiness_status = lambda head_sha: {
         "sha": head_sha,
         "statuses": copy.deepcopy(statuses),
     }
-    with pytest.raises(WorkflowArtifactError, match="steward_status_context_not_exact"):
+    with pytest.raises(WorkflowArtifactError, match="steward_status_context_missing"):
+        verify_readiness(transport)
+
+
+def test_latest_steward_readiness_status_selects_run_from_multiple_successes():
+    transport = ArtifactTransport(proof_bytes())
+    older_status = {
+        **transport.steward_status,
+        "target_url": f"https://github.com/{transport.repo}/actions/runs/46",
+        "created_at": "2026-09-07T12:05:00Z",
+        "updated_at": "2026-09-07T12:05:00Z",
+    }
+    latest_status = {
+        **transport.steward_status,
+        "target_url": f"https://github.com/{transport.repo}/actions/runs/47",
+        "created_at": "2026-09-07T12:07:00Z",
+        "updated_at": "2026-09-07T12:07:00Z",
+    }
+    transport.fetch_steward_readiness_status = lambda head_sha: {
+        "sha": head_sha,
+        "statuses": [older_status, latest_status],
+    }
+    result = verify_readiness(transport)
+    assert result["workflow_run_id"] == 47
+    assert ("steward_artifacts", transport.steward_artifact["name"], 47) in transport.calls
+
+
+def test_latest_steward_readiness_status_must_be_successful():
+    transport = ArtifactTransport(proof_bytes())
+    older_success = {
+        **transport.steward_status,
+        "target_url": f"https://github.com/{transport.repo}/actions/runs/47",
+        "created_at": "2026-09-07T12:05:00Z",
+        "updated_at": "2026-09-07T12:05:00Z",
+    }
+    latest_pending = {
+        **transport.steward_status,
+        "state": "pending",
+        "target_url": f"https://github.com/{transport.repo}/actions/runs/48",
+        "created_at": "2026-09-07T12:07:00Z",
+        "updated_at": "2026-09-07T12:07:00Z",
+    }
+    transport.fetch_steward_readiness_status = lambda head_sha: {
+        "sha": head_sha,
+        "statuses": [latest_pending, older_success],
+    }
+    with pytest.raises(WorkflowArtifactError, match="steward_status_not_successful"):
+        verify_readiness(transport)
+
+
+def test_tied_latest_steward_readiness_status_denies():
+    transport = ArtifactTransport(proof_bytes())
+    statuses = [
+        {
+            **transport.steward_status,
+            "target_url": f"https://github.com/{transport.repo}/actions/runs/{run_id}",
+            "created_at": "2026-09-07T12:07:00Z",
+            "updated_at": "2026-09-07T12:07:00Z",
+        }
+        for run_id in (47, 48)
+    ]
+    transport.fetch_steward_readiness_status = lambda head_sha: {
+        "sha": head_sha,
+        "statuses": statuses,
+    }
+    with pytest.raises(WorkflowArtifactError, match="steward_status_latest_ambiguous"):
         verify_readiness(transport)
 
 
@@ -322,7 +385,7 @@ def test_missing_or_ambiguous_steward_readiness_status_context_denies(statuses):
 ])
 def test_wrong_steward_readiness_status_context_denies(status):
     transport = ArtifactTransport(proof_bytes())
-    transport.steward_status = status
+    transport.steward_status = {**transport.steward_status, **status}
     with pytest.raises(WorkflowArtifactError):
         verify_readiness(transport)
 
