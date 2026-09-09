@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "summary",
+    "repository_access",
+    "identity",
+    "findings",
+    "remaining_risks"
+  ],
+  "properties": {
+    "status": {
+      "enum": ["PASS", "PASS_WITH_RISKS", "FAIL", "NEEDS_SUPERVISOR"]
+    },
+    "summary": {"type": "string"},
+    "repository_access": {"type": "string"},
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requested_model",
+        "configured_model",
+        "response_claimed_model",
+        "proxy_reported_model",
+        "provider_attested_model"
+      ],
+      "properties": {
+        "requested_model": {"type": "string"},
+        "configured_model": {"type": "string"},
+        "response_claimed_model": {"type": "string"},
+        "proxy_reported_model": {"type": "string"},
+        "provider_attested_model": {"type": "string"}
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "severity", "title", "status", "body"],
+        "properties": {
+          "id": {"type": "string"},
+          "severity": {"enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]},
+          "title": {"type": "string"},
+          "status": {"type": "string"},
+          "body": {"type": "string"}
+        }
+      }
+    },
+    "remaining_risks": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  }
+}

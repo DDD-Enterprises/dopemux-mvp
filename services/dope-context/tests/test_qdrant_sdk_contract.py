@@ -14,6 +14,7 @@ These tests deliberately import the REAL client, never the stub.
 import importlib
 import inspect
 import os
+import subprocess
 import sys
 
 import pytest
@@ -30,6 +31,31 @@ for _name in list(sys.modules):
 
 real_qdrant = importlib.import_module("qdrant_client")
 RealAsyncClient = real_qdrant.AsyncQdrantClient
+
+
+def test_dense_search_module_imports_against_real_qdrant_sdk():
+    module_name = "src.search.dense_search"
+    missing = object()
+    parent_binding = sys.modules.get(module_name, missing)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            (
+                "import qdrant_client; "
+                "import src.search.dense_search as dense_search; "
+                "assert dense_search.AsyncQdrantClient is "
+                "qdrant_client.AsyncQdrantClient"
+            ),
+        ],
+        capture_output=True,
+        text=True,
+        env=os.environ.copy(),
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert sys.modules.get(module_name, missing) is parent_binding
 
 
 # Methods dope-context calls on the async client. Keep in sync with

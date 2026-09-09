@@ -49,6 +49,7 @@ A packet is superseded by another packet
 | DMX-MCPINT-HRD-EVHYG-008 | MCP Fleet (P7/HRD) | Chronicle ingress event_id dedup + PII redaction | Blocked on EVENTS-006 | adr-mcpint-004 (G2) |
 | DMX-MCPINT-HRD-IDENTITY-009 | MCP Fleet (P7/HRD) | Per-request instance identity + instances registry | Ready | CHATGPT_TARGET_RESOLUTION_CONTRACT |
 | DMX-MCPINT-HRD-DCTXIDX-010 | MCP Fleet (P7/HRD) | Enable dope-context decision auto-indexing | Blocked on G6 | adr-mcpint-006 |
+| TP-DMX-MCP-DOPE-CONTEXT-QDRANT-COMPAT-001 | MCP Fleet / dope-context | Repair Qdrant SDK import compatibility | Audited / draft PR pending | TP-DMX-MCP-FLEET-SECURE-RECOVERY-001 |
 | DMX-MCPINT-HRD-TOKTRUNC-011 | MCP Fleet (P7/HRD) | Fleet token-truncation standard (9K budget + boundary guard) | Ready | N/A |
 | DMX-MCPINT-HRD-LOOPBACK-012 | MCP Fleet (P7/HRD) | Loopback-only binds fleet-wide | Ready | N/A |
 | DMX-MCPINT-HRD-KGREAD-013 | MCP Fleet (P7/HRD) | Read-only KG graph traversal tools in conport | Blocked on G6 | adr-mcpint-006 |
