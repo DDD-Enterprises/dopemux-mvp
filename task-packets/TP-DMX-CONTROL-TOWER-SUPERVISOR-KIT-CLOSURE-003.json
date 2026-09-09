@@ -16,9 +16,9 @@
   },
   "pr": {"title": "feat(governance): install Control Tower supervisor kit", "body": "Operator-authorized bounded successor with frozen-head independent audit and live final gates.", "base": "main"},
   "invariants": [
-    "Latest user authorizes bounded successor repairs, cheap implementation, fresh final audits and normal merges; agy is explicitly required for CRM only, not this Dopemux auditor route.",
+    "Latest user authorizes bounded successor repairs, cheap implementation, fresh final audits and normal merges; agy is explicitly required for CRM only, while this Dopemux audit uses the separately approved Grok route.",
     "Continue the verified clean isolated PR1335 worktree from b99e0f57aba6e9119502ef22a973b1495a53ba4a; main base is 6a728f74c0311967f83213513308f97613e3f28d. Preserve original checkout.",
-    "L3: one bounded Luna implementer, deterministic supervisor edits, one independent final Claude Sonnet medium audit after substantive freeze. No intermediate audits or automatic retries/fallbacks.",
+    "L3: one bounded Luna implementer, deterministic supervisor edits, one independent final Grok 4.5 high-effort audit after substantive freeze. No intermediate audits or automatic retries/fallbacks.",
     "Prior detailed local Claude audit egress/public-proof publication approval remains in force. Never expose credentials or infer missing runner identity.",
     "JSON require_identity_match bindings must match actual project identity, safe repository marker and normalized exact Git origin; malformed/missing required identity fails closed before output.",
     "Markdown identity parsing must support existing canonical heading forms, ignore unrelated headings and code fences, and reject missing or ambiguous IDs.",
