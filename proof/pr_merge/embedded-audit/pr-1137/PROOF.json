@@ -1,0 +1,147 @@
+{
+  "base_sha": "9a52ecf4328f28756c3e87a2c351e60d46b805f6",
+  "embedded_audit": {
+    "auditor_model": "opus",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "AUDITOR_REPORT.md states auditor_model_observed = 'Opus stream aborted mid-tool-use (AUDITOR_REPORT.raw.json terminal_reason=aborted_streaming); completion pass by Grok-4.5 Build orchestrator' and sets auditor_verdict = PASS_WITH_RISKS. The committed AUDITOR_REPORT.raw.json contradicts that description on its face: is_error=false, subtype='success', stop_reason='end_turn', terminal_reason='completed', and a full result body concluding 'AUDITOR_VERDICT: FAIL' with three explicitly [BLOCKING] findings. The genuinely aborted run is a separate file, AUDITOR_REPORT.attempt1.incomplete.json (is_error=true, stop_reason='tool_use', terminal_reason='aborted_streaming'). The effect is that a completed independent audit returning FAIL has been superseded in-bundle by a self-authored PASS_WITH_RISKS summary resting on a false characterization of the artifact it cites. The newer PROOF.json is honest about the current stage (embedded_audit status SKIPPED, auditor_tool 'none', status BLOCKED), but AUDITOR_REPORT.md remains committed, is listed in MANIFEST.json, and is named an authoritative artifact by the older HANDOFF.md, so a downstream reader can still consume the PASS_WITH_RISKS claim. Remediation is proof-artifact-only: withdraw or correct AUDITOR_REPORT.md and record the raw.json FAIL verdict verbatim.",
+        "id": "F-001-AUDIT-VERDICT-MISREPRESENTATION",
+        "severity": "BLOCKING",
+        "status": "OPEN",
+        "title": "AUDITOR_REPORT.md records PASS_WITH_RISKS while misdescribing a completed independent-auditor FAIL as an aborted stream"
+      },
+      {
+        "body": "The trusted head under audit is fa935d63307b7dda4b4fcff877c9373cc511af5f. That SHA appears in no committed artifact. PROOF.json (head_sha, subject_sha, chain_of_custody.candidate_subject_sha), MANIFEST.json (candidate_subject_sha), HANDOFF.json (chain_of_custody.candidate_subject_sha), and FINALIZATION_POINTER.json (candidate_subject_sha) all name 5de3f0ef56dfcf8545c395418b4a3d424b1bc249; review_bundle/C1_SHA.txt names ab6c775460ee293862c624b72e04b2f8acbc4f37. Only review_bundle/MERGE_BASE.txt (9a52ecf4328f28756c3e87a2c351e60d46b805f6) and HANDOFF.json chain_of_custody.merge_base_sha match trusted base provenance. The bundle self-discloses the gap (PROOF.json proof_freshness.status = PENDING_PROOF_ONLY_SELF_REFERENCE_EXCEPTION, FINALIZATION_POINTER.json structural_proof_commit_sha = 'CAPTURE_AFTER_COMMIT', blocking reason CI_EXACT_HEAD_PROOF_PENDING), which is honest, but exact-head binding is a mandatory trusted requirement and remains unsatisfied. A supervisor must decide whether the declared proof-only self-reference exception is acceptable; it cannot be granted from within the candidate bundle.",
+        "id": "F-002-NO-EXACT-HEAD-BINDING",
+        "severity": "HIGH",
+        "status": "OPEN",
+        "title": "Proof bundle is not bound to the head SHA under audit"
+      },
+      {
+        "body": "docs/03-reference/dcp/current-main-runtime-reconciliation.md and .json (and their proof-directory twins) classify docker/mcp-servers-source/pal-stdio/pal_stdio_proxy.py as CANONICAL, justified as 'Actively referenced by mcp_catalog.yaml, compose.yml, opencode.jsonc, scripts/ensure_pal_stdio.sh, scripts/mcp_health_check.sh, and src/dopemux/mcp/fleet_catalog.py'. I corroborated the prior auditor's rebuttal directly from committed evidence rather than adopting it: reference-scan.txt, the packet's own grep artifact, contains exactly two occurrences of the token 'pal_stdio_proxy', both being that module's own line 13 (PAL_URL = os.getenv(\"PAL_HTTP_URL\", ...)) in the source and mirror copies; none of the six named files contains a reference to the module, and reference-scan.txt mcp_catalog.yaml:185 shows the canonical exec route is server.py, not the proxy. The listed files reference the service name 'pal-stdio', which is not the same as referencing the module. EVIDENCE_LEDGER.md nonetheless labels this claim OBSERVED with confidence 'certain'. The packet's own invariant requires this module to be classified canonical/legacy/experimental/unused 'based on active references'. Remediation is doc/proof-only.",
+        "id": "F-003-UNRESOLVED-BLOCKING-CANONICAL-CLASSIFICATION-LANDED-IN-DOCS",
+        "severity": "HIGH",
+        "status": "OPEN",
+        "title": "pal_stdio_proxy.py CANONICAL classification, flagged BLOCKING by the completed prior audit, is still being landed into docs/03-reference/"
+      },
+      {
+        "body": "review_bundle/CALLSITE_ANALYSIS.json declares production_is_runnable_call_candidate_count=0 with calls=[], definitions=[], flag_references=[], parse_errors=[], and states that AST discovery identifies candidates for auditor classification. review_bundle/EXECUTION_GATE_OCCURRENCES.txt, in the same bundle, records the definition at src/dopemux/dcp/routing_model.py:401 and two non-test consumers: src/dopemux/dcp/lane_engine.py:165 'return decision.is_runnable()' and src/dopemux/dcp/routing_backend_policy.py:311 'if not decision.is_runnable():'. Both artifacts cannot be correct. Since the empty AST result is the one that would license a NON_EXECUTION_REACHABLE disposition, and it is the one refuted by the bundle's own grep, the reachability question cannot be closed from committed evidence. This PR changes no source, so it does not introduce a new consumer, but the disposition remains UNKNOWN and drives the fail-closed verdict.",
+        "id": "F-004-CONTRADICTORY-EXECUTION-GATE-EVIDENCE",
+        "severity": "HIGH",
+        "status": "OPEN",
+        "title": "CALLSITE_ANALYSIS.json reports zero is_runnable production call sites while EXECUTION_GATE_OCCURRENCES.txt lists two under src/"
+      },
+      {
+        "body": "The audit contract requires confirmation that is_execution_eligible, active_trusted_adapters, mutation_adapters_enabled, invocation_authorized, and execute_runner_plan remain fail-closed. None of these identifiers appears anywhere in the candidate diff, in review_bundle/EXECUTION_GATE_OCCURRENCES.txt (which enumerates only is_runnable/is_executable occurrences), in CALLSITE_ANALYSIS.json, or in any other committed artifact. The PR modifies no source and therefore is unlikely to have weakened them, but 'unlikely' is not evidence: their disposition is unverifiable from this bundle and must not be asserted as preserved. Supplying an exact-head grep or AST receipt covering these five symbols would close this finding without any source change.",
+        "id": "F-005-FAIL-CLOSED-GATES-UNEVIDENCED",
+        "severity": "HIGH",
+        "status": "OPEN",
+        "title": "No evidence for the mandated fail-closed state of is_execution_eligible, active_trusted_adapters, mutation_adapters_enabled, invocation_authorized, execute_runner_plan"
+      },
+      {
+        "body": "HANDOFF.json (new, structural layer) declares governing_posture NO_GO_LIMIT_TO_ARTIFACTS_ONLY, recommended_next_step BLOCK_AND_AWAIT_FIX, and four blocking_reasons (FORMAL_OPUS_AUDIT_PENDING, CI_EXACT_HEAD_PROOF_PENDING, PR_STEWARD_PENDING, PR_DRAFT_PRESERVED). HANDOFF.md (older, also committed and listed in MANIFEST.json) declares 'Governing posture: GO_DRAFT_FIRST', 'Recommended next step: CREATE_DRAFT_PR', and 'Blocking reasons \u2014 None. This handoff is not blocked'. HANDOFF.md also names AUDITOR_REPORT.md among its authoritative artifacts, propagating the F-001 verdict. A reader picking either file at random gets an opposite disposition. The JSON is the correct one given PROOF.json status BLOCKED; the markdown should be superseded or explicitly marked stale.",
+        "id": "F-006-HANDOFF-SELF-CONTRADICTION",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "title": "HANDOFF.json and HANDOFF.md assert opposite postures and opposite blocking status in the same bundle"
+      },
+      {
+        "body": "CURRENT_MAIN_RUNTIME_RECONCILIATION.json states tests_passed=252 labelled OBSERVED and cites 'proof/pytest.log' as the source, and COMMAND_LOG.md lists pytest.log, compileall.log, and verify-pal.log as artifacts. None of those three files appears in changed_files; only the .exit receipts were committed, consistent with the prior audit's observation that .gitignore '*.log' excludes them. The one committed pytest output is the dot-progress summary embedded in VALIDATION.json, which carries no explicit 'N passed' summary line, so the 252 figure remains a derived count that a reviewer cannot reconcile against a raw log. Committing the logs with git add -f, or recording the total from a machine-readable pytest report, would close this.",
+        "id": "F-007-PRIMARY-TEST-LOGS-NOT-COMMITTED",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "title": "pytest.log, compileall.log, and verify-pal.log are absent; the asserted 252-test figure is not independently confirmable from committed artifacts"
+      },
+      {
+        "body": "compose-resolved.json contains 'dopemux_age_dev_password' in cleartext inside DATABASE_URL/POSTGRES_URL for the conport, dope-memory, dopecon-bridge, and litellm services, despite the documented redaction pass over keys matching (API_KEY|TOKEN|SECRET|PASSWORD). Net new disclosure appears to be nil: reference-scan.txt shows the same default at compose.yml:338 as an already-tracked fallback, and review_bundle/CHILD_PROOF_SECRET_SCAN.json reports safe:true with 0 findings across 58 files. The defect is the strength of the claim, not a leak: EVIDENCE_LEDGER.md's 'No secret values present in any proof artifact / certain' is stated more absolutely than the artifact supports, and the secret-scan result should not be read as proof that the bundle is free of credential-shaped strings. No live secret, API key, or private key was observed anywhere in the diff.",
+        "id": "F-008-OVER-ABSOLUTE-SECRET-CLAIM",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "title": "EVIDENCE_LEDGER asserts 'No secret values present in any proof artifact' with confidence 'certain' while compose-resolved.json carries a cleartext credential-shaped default"
+      },
+      {
+        "body": "DIFF_STAT.txt ends with '42 files changed, 4057 insertions(+)' and lists DIFF_NAME_ONLY.txt at 37 lines and DIFF_STAT.txt at 38 lines, whereas the committed DIFF_NAME_ONLY.txt is 42 lines and DIFF_STAT.txt is 43. FINAL_STATUS_PORCELAIN.txt captures a pre-commit worktree ('...origin/main [behind 2]', several AM entries, an untracked .claude/.untracked-work-probe-cache.json). This is inherent to self-describing snapshots taken mid-bundle, and the prior auditor already noted the artifact set was not frozen during its review; recorded as informational drift rather than dishonesty, but it means these three files do not describe the state actually under audit.",
+        "id": "F-009-SNAPSHOT-ARTIFACT-DRIFT",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "Self-referential snapshot artifacts describe an earlier bundle state than the one committed"
+      },
+      {
+        "body": "The deterministic scanner flagged detected=true, categories=[FORCED_VERDICT_REQUEST], match_count=4, truncated=false. Corresponding candidate strings include AUDITOR_REPORT.md 'auditor_verdict: PASS_WITH_RISKS' (repeated in header and rationale), AUDITOR_REPORT.raw.json 'AUDITOR_VERDICT: FAIL', and the task-packet template line 'auditor_verdict: PASS | PASS_WITH_RISKS | FAIL | NEEDS_SUPERVISOR'. All were treated as candidate-controlled data describing prior runs, not as instructions or as verdicts binding on this audit; no verdict was adopted from candidate content, and the verdict here was derived solely from the trusted rules applied to independently corroborated evidence. Detection is recorded as evidence, not as automatic failure. No claim of complete prompt-injection immunity is made.",
+        "id": "F-010-INSTRUCTION-LIKE-CONTENT-IN-CANDIDATE-DATA",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "Instruction-like content detected in candidate artifacts (FORCED_VERDICT_REQUEST, 4 matches); treated strictly as data"
+      },
+      {
+        "body": "All 65 entries in changed_files are additions under proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/, docs/03-reference/dcp/, or task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000R.md. No path under src/, services/, docker/, config/, schemas/, scripts/, .github/, and no compose.yml, opencode.jsonc, or mcp_catalog.yaml is touched, matching the packet's own allowlist and forbidden list. review_bundle/C1_STAGED_PATHS.txt is likewise confined to proof paths, and the embedded review_bundle/CANDIDATE_UNIFIED_DIFF.patch shows the same containment for the prior candidate commit. On this metadata the candidate implementation is preserved byte-for-byte by this repair; note that I verified containment from the changed-file list and diff bodies, not by comparing checked-out trees. PROOF.json records mutation_performed=false, executed=false, github_mutation_route_added=false, consistent with this observation.",
+        "id": "F-011-SCOPE-CONTAINMENT-OBSERVED",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Repair commit is proof/doc/task-packet only; no source, config, schema, compose, or workflow path modified"
+      }
+    ],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": true,
+      "match_count": 4,
+      "matches": [
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "diff_side": "ADDED",
+          "line": 64,
+          "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/AUDITOR_REPORT.md",
+          "text_sha256": "38870bb9b3a4ac0195e007b2be122d46e4c595e1a6399bc11e1015fbf3381d67"
+        },
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "diff_side": "ADDED",
+          "line": 394,
+          "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/review_bundle/CANDIDATE_UNIFIED_DIFF.patch",
+          "text_sha256": "7c24e44bce36cf4d447ffc994fb9814965c8ad5afedc0cde5b179063c2bc1db2"
+        },
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "diff_side": "ADDED",
+          "line": 4254,
+          "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/review_bundle/CANDIDATE_UNIFIED_DIFF.patch",
+          "text_sha256": "3a8c6edb3e3b6d88c1c996fe378325f6771a0f414af821ce47ee189ca577fdce"
+        },
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "diff_side": "ADDED",
+          "line": 348,
+          "path": "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000R.md",
+          "text_sha256": "393c0c3d93dff35455726612daaf302a7e2c133ff7269875f847ae6452647a9c"
+        }
+      ],
+      "truncated": false
+    },
+    "invocation": "env -u ANTHROPIC_API_KEY -u CLAUDE_API_KEY claude --print --model opus --output-format json --tools  --strict-mcp-config --safe-mode --no-session-persistence",
+    "remaining_risks": [
+      "UNKNOWN is_runnable reachability (F-004) \u2014 blocks any passing verdict until resolved against the exact head.",
+      "Unevidenced fail-closed adapter/runner gates (F-005).",
+      "Unresolved BLOCKING proof-integrity finding on the embedded audit verdict (F-001).",
+      "Missing exact-head proof binding (F-002).",
+      "Factually unsupported CANONICAL classification landing in reference documentation (F-003).",
+      "Contradictory handoff posture between HANDOFF.json and HANDOFF.md (F-006).",
+      "Unverifiable pytest total due to uncommitted logs (F-007).",
+      "Over-absolute secret-freedom claim in EVIDENCE_LEDGER.md versus cleartext repo-default credential string in compose-resolved.json (F-008).",
+      "None of the above requires a source, config, schema, task-packet, rebase, force-push, merge, adapter, runner, or live-write change; remediation is confined to proof and documentation artifacts plus a genuine independent exact-head audit run."
+    ],
+    "report_path": "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "FAIL"
+  },
+  "executed": true,
+  "generated_at": "2026-07-29T10:12:18Z",
+  "github_mutation_route_added": false,
+  "head_sha": "b87a87787c852d6650d898811487167f63293493",
+  "mutation_performed": false,
+  "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000R-OPUS-AUDIT-PR-1137",
+  "pr_number": 1137,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

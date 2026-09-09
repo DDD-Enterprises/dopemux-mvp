@@ -1,0 +1,35 @@
+{
+  "detected": true,
+  "match_count": 4,
+  "matches": [
+    {
+      "category": "FORCED_VERDICT_REQUEST",
+      "diff_side": "ADDED",
+      "line": 64,
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/AUDITOR_REPORT.md",
+      "text_sha256": "38870bb9b3a4ac0195e007b2be122d46e4c595e1a6399bc11e1015fbf3381d67"
+    },
+    {
+      "category": "FORCED_VERDICT_REQUEST",
+      "diff_side": "ADDED",
+      "line": 394,
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/review_bundle/CANDIDATE_UNIFIED_DIFF.patch",
+      "text_sha256": "7c24e44bce36cf4d447ffc994fb9814965c8ad5afedc0cde5b179063c2bc1db2"
+    },
+    {
+      "category": "FORCED_VERDICT_REQUEST",
+      "diff_side": "ADDED",
+      "line": 4254,
+      "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/review_bundle/CANDIDATE_UNIFIED_DIFF.patch",
+      "text_sha256": "3a8c6edb3e3b6d88c1c996fe378325f6771a0f414af821ce47ee189ca577fdce"
+    },
+    {
+      "category": "FORCED_VERDICT_REQUEST",
+      "diff_side": "ADDED",
+      "line": 348,
+      "path": "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000R.md",
+      "text_sha256": "393c0c3d93dff35455726612daaf302a7e2c133ff7269875f847ae6452647a9c"
+    }
+  ],
+  "truncated": false
+}

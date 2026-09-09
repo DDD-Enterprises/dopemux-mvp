@@ -1,0 +1,41 @@
+{
+  "authoritative_artifacts": [
+    "IMPLEMENTATION_REPORT.md",
+    "VALIDATION.json",
+    "WARNINGS_AND_BLOCKERS.json",
+    "FINALIZATION_POINTER.json"
+  ],
+  "base_branch": "main",
+  "blocking_reasons": [
+    "FORMAL_OPUS_AUDIT_PENDING",
+    "CI_EXACT_HEAD_PROOF_PENDING",
+    "PR_STEWARD_PENDING",
+    "PR_DRAFT_PRESERVED"
+  ],
+  "branch": "dcp/model-routing-0000r-runtime-reconcile",
+  "chain_of_custody": {
+    "candidate_subject_sha": "5de3f0ef56dfcf8545c395418b4a3d424b1bc249",
+    "created_at": "2026-07-29T10:12:17Z",
+    "merge_base_sha": "9a52ecf4328f28756c3e87a2c351e60d46b805f6",
+    "parent_bundle_ids": [
+      "DMX-DCP-MODEL-ROUTING-MVP-0000R"
+    ],
+    "skill_version": "finalization-repair-support/1.0.0",
+    "trusted_main_sha": "72af781e42e0702d9047946e0f5a250e7dff0fa5"
+  },
+  "governing_posture": "NO_GO_LIMIT_TO_ARTIFACTS_ONLY",
+  "handoff_id": "DMX-DCP-MODEL-ROUTING-MVP-0000R-FINALIZATION-HANDOFF-001",
+  "recommended_next_step": "BLOCK_AND_AWAIT_FIX",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "run_id": "proof-finalization-20260729T101217Z",
+  "source_skill": "proof-finalization-repair",
+  "supporting_artifacts": [
+    "review_bundle/"
+  ],
+  "target_skill": "independent-embedded-auditor",
+  "warnings": [
+    "The structural proof commit cannot name its own future commit SHA without a self-reference cycle.",
+    "A second proof-only commit must carry the signed Opus audit bound to this structural commit.",
+    "The PR remains draft and no draft-to-ready or merge action is authorized."
+  ]
+}
