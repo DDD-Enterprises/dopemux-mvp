@@ -1,0 +1,794 @@
+opencode.jsonc:13:    "pal-stdio": {
+opencode.jsonc:18:        "mcp-pal-stdio",
+compose.yml:31:  mcp_litellm_data:
+compose.yml:301:  pal-stdio:
+compose.yml:304:      dockerfile: docker/mcp-servers-source/pal-stdio/Dockerfile
+compose.yml:305:    container_name: mcp-pal-stdio
+compose.yml:323:  litellm:
+compose.yml:326:      dockerfile: docker/mcp-servers/litellm/Dockerfile
+compose.yml:327:    container_name: mcp-litellm
+compose.yml:338:      - DATABASE_URL=${LITELLM_DATABASE_URL:-postgresql://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@dopemux-postgres-age:5432/litellm}
+mcp_catalog.yaml:57:    # health/lifecycle shim only — /mcp, /sse, /messages all 404. pal-stdio
+mcp_catalog.yaml:75:    description: "PAL http wrapper — health/lifecycle shim only (no MCP endpoint; P0 claim 11). Use pal-stdio for PAL tools. Retrofit decision: PAL-HTTP-RETROFIT."
+mcp_catalog.yaml:175:  pal-stdio:
+mcp_catalog.yaml:185:    args: ["exec", "-i", "mcp-pal-stdio", "/app/.venv/bin/python", "server.py"]
+mcp_catalog.yaml:186:    docker_compose_service: pal-stdio
+mcp_catalog.yaml:196:      snapshot_key: pal-stdio
+config/repo_hygiene/root_hygiene_policy.json:89:    "litellm.config.yaml",
+config/repo_hygiene/root_hygiene_policy.json:94:    "litellm.config.yaml.backup",
+config/repo_hygiene/root_hygiene_policy.json:135:    "litellm.config",
+config/ai/model-routing.policy.yaml:29:# Human-readable companion: docs/03-reference/governance/model-routing.md
+config/ai/model-routing.policy.yaml:30:# How-to usage guide:       docs/02-how-to/model-routing-usage.md
+config/ai/model-routing.schema.json:3:  "description": "Canonical machine-readable stage list for Dopemux model routing governance. This file is the validation source; config/ai/model-routing.policy.yaml stages must match exactly.",
+config/ai/model-routing.schema.json:4:  "policy_source": "config/ai/model-routing.policy.yaml",
+config/profiles/adhd-default.yaml:16:    - litellm
+config/profiles/web-dev.yaml:16:    - litellm
+config/profiles/python-ml.yaml:19:    - litellm          # Unified LLM proxy
+scripts/doc_audit_prescan.toml:41:[model.litellm_fallback]
+scripts/doc_audit_prescan.py:97:    litellm_proxy_url: str
+scripts/doc_audit_prescan.py:159:        litellm_proxy_url=model_cfg.get("litellm_fallback", {}).get(
+scripts/doc_audit_prescan.py:384:        "dopemux.toml", "litellm.config", "Makefile",
+scripts/doc_audit_prescan.py:706:    litellm_model = config.model
+scripts/doc_audit_prescan.py:707:    if not litellm_model.startswith("xai/"):
+scripts/doc_audit_prescan.py:708:        litellm_model = f"xai/{config.model}"
+scripts/doc_audit_prescan.py:710:        "model": litellm_model,
+scripts/doc_audit_prescan.py:713:        "litellm_proxy_url": config.litellm_proxy_url,
+scripts/doc_audit_prescan.py:757:litellm --config litellm.config --port 4000
+scripts/doc_audit_prescan.py:760:curl {config.litellm_proxy_url}/chat/completions \\
+scripts/ensure_pal_stdio.sh:2:# ensure_pal_stdio.sh — make the pal-stdio MCP server usable, idempotently.
+scripts/ensure_pal_stdio.sh:5:#   pal-stdio is an exec-based MCP server (Docker MCP Toolkit / Claude Code run
+scripts/ensure_pal_stdio.sh:6:#   `docker exec -i mcp-pal-stdio /app/.venv/bin/python server.py`). It has NO
+scripts/ensure_pal_stdio.sh:12:#   Diagnosis: claudedocs/pal-stdio-model-context-diagnosis-2026-07-16.md
+scripts/ensure_pal_stdio.sh:15:#   1. ensure the container is running (docker compose up -d pal-stdio if not)
+scripts/ensure_pal_stdio.sh:26:CONTAINER="mcp-pal-stdio"
+scripts/ensure_pal_stdio.sh:27:COMPOSE_SERVICE="pal-stdio"
+scripts/ensure_pal_stdio.sh:81:log "   see: claudedocs/pal-stdio-model-context-diagnosis-2026-07-16.md"
+scripts/mcp_health_check.sh:111:check_stdio_mcp "PAL (stdio)" "mcp-pal-stdio" || record_failure
+scripts/mcp_health_check.sh:117:echo "PAL runs two servers: HTTP :3003 (mcp-pal) and stdio (mcp-pal-stdio, exec-based)."
+scripts/repo_control_plane_extract.py:28:    "litellm.config",
+scripts/repo_control_plane_extract.py:29:    "litellm.config.yaml",
+scripts/repo_control_plane_extract.py:30:    "litellm.config.yaml.backup",
+scripts/repo_control_plane_extract.py:112:        if any(k in p.as_posix().lower() for k in ["mcp", "litellm", "router", "proxy", "taskx", "compose", "hook", "ci", "gate"]):
+scripts/repo_control_plane_extract.py:129:    if yaml is not None and path.name in {"litellm.config", "litellm.config.yaml", "litellm.config.yaml.backup", ".pre-commit-config.yaml", "mcp-proxy-config.yaml", "mcp-proxy-config.copilot.yaml"}:
+scripts/repo_control_plane_extract.py:167:    known_services = ["conport", "serena", "dope-context", "taskx", "litellm", "dopecon-bridge"]
+scripts/repo_control_plane_extract.py:215:            if any(k in rp.lower() for k in ["proxy", "litellm", "router"]):
+scripts/repo_control_plane_extract.py:239:                    "proxy_type": "litellm_proxy" if "litellm" in rp.lower() else ("mcp_proxy" if "mcp" in rp.lower() else ("router" if "router" in rp.lower() else "unknown")),
+scripts/repo_control_plane_extract.py:320:        if not any(k in rp.lower() for k in ["router", "litellm", "proxy", "claude", "makefile", "compose", "ag" ]):
+scripts/repo_control_plane_extract.py:382:        if rules or ladders or any(k in rp.lower() for k in ["litellm.config", "mcp-proxy-config"]):
+scripts/repo_control_plane_extract.py:479:                    "action": {"commands": [snippet(ln)] if ln.strip() else [], "scripts": sorted(re.findall(r"[\w./-]+\.sh", ln)), "services": sorted(re.findall(r"service[s]?:\s*([\w-]+)", ln)), "tools_called": sorted([x for x in ["taskx", "litellm", "mcp"] if x in l]), "notes": None},
+scripts/repo_control_plane_extract.py:480:                    "couplings": {"touches_control_plane": sorted([x for x in ["router", "mcp", "litellm", "profiles", "instructions", "compose", "tmux"] if x in l]), "touches_runtime_code": [], "writes_state": ["unknown"]},
+scripts/repo_control_plane_extract.py:707:            elif "litellm" in joined or "proxy" in joined:
+scripts/repo_control_plane_extract.py:771:def extract_litellm(files: List[Path]) -> Dict[str, Any]:
+scripts/repo_control_plane_extract.py:786:        if not any(k in rp.lower() or k in low for k in ["litellm", "mcp-proxy", "proxy", "spend", "callback", "model_list"]):
+scripts/repo_control_plane_extract.py:790:        if "litellm.config" in rp:
+scripts/repo_control_plane_extract.py:791:            kind = "litellm_config"
+scripts/repo_control_plane_extract.py:801:        anchor, ex = line_anchor(txt, "litellm" if "litellm" in low else ("proxy" if "proxy" in low else (txt.splitlines()[0] if txt.splitlines() else "")))
+scripts/repo_control_plane_extract.py:802:        out_files.append({"path": rp, "kind": kind, "mentions": sorted(set([x for x in ["litellm", "proxy", "spend", "logging", "router", "fallback", "model"] if x in low])), "evidence": evidence(rp, anchor, ex)})
+scripts/repo_control_plane_extract.py:887:                        "mechanism": "litellm_spend_db" if "litellm" in low else "unknown",
+scripts/repo_control_plane_extract.py:902:                    if "litellm" in joined or "proxy" in joined:
+scripts/repo_control_plane_extract.py:1272:    litellm_surface = extract_litellm(files)
+scripts/repo_control_plane_extract.py:1286:        "REPO_LITELLM_SURFACE.json": litellm_surface,
+scripts/ui/neon_dashboard/collectors/impl_collector.py:32:            self.fetch_litellm_costs(),
+scripts/ui/neon_dashboard/collectors/impl_collector.py:43:            "litellm": self._safe_result(results[6]),
+scripts/ui/neon_dashboard/collectors/impl_collector.py:224:    async def fetch_litellm_costs(self) -> Dict[str, Any]:
+scripts/ui/neon_dashboard/collectors/impl_collector.py:225:        url = f"{self.services.litellm_url.rstrip('/')}/metrics"
+scripts/ui/neon_dashboard/config/settings.py:99:    litellm_url: str = "http://localhost:4000"
+scripts/ui/neon_dashboard/config/settings.py:110:            litellm_url=str(raw.get("litellm_url", cls.litellm_url)),
+scripts/ui/neon_dashboard/components/metrics_bar.py:43:    litellm = payload.get("litellm") or {}
+scripts/ui/neon_dashboard/components/metrics_bar.py:54:    cost = litellm.get("hourly_cost")
+scripts/ui/neon_dashboard/components/metrics_bar.py:57:    latency = litellm.get("latency_ms")
+scripts/ui/neon_dashboard/panes/system_monitor.py:27:        litellm = data.get("litellm") or {}
+scripts/ui/neon_dashboard/panes/system_monitor.py:56:        cost = litellm.get("hourly_cost")
+scripts/ui/neon_dashboard/panes/system_monitor.py:61:        latency = litellm.get("latency_ms")
+scripts/env_outputs/packages.txt:139:python	litellm>=1.0.0	pyproject.toml
+scripts/audit/auditor_router.py:34:# directory so pal-stdio does not crash at registry init.
+scripts/routing/start_here_routing.sh:57:echo "Logs: tail -f .dopemux/litellm/A/litellm.log"
+docker/mcp-servers-source/start-profile.sh:16:PROFILES[minimal]="pal litellm serena qdrant"
+docker/mcp-servers-source/start-profile.sh:17:PROFILES[development]="pal litellm serena qdrant dope-context task-orchestrator context7 desktop-commander exa"
+docker/mcp-servers-source/start-profile.sh:26:    echo -e "  ${GREEN}minimal${NC}      - 5 servers (pal, litellm, serena, qdrant)"
+docker/mcp-servers-source/README.md:77:| **litellm** | 4000 | LLM proxy & routing | HTTP |
+docker/mcp-servers-source/README.md:115:2. Missing bind-mounted files (e.g., `litellm.config.yaml`)
+docker/mcp-servers-source/PROFILES_GUIDE.md:28:4. **litellm** - LLM proxy
+docker/mcp-servers-source/PROFILES_GUIDE.md:41:- ✅ LLM proxy (litellm)
+docker/mcp-servers-source/PROFILES_GUIDE.md:197:docker-compose up -d pal litellm serena qdrant
+docker/mcp-servers-source/PROFILES_GUIDE.md:204:  pal litellm serena qdrant \
+docker/mcp-servers-source/PROFILES_GUIDE.md:239:docker-compose up -d pal litellm serena qdrant
+docker/mcp-servers-source/PROFILES_GUIDE.md:254:docker-compose up -d pal serena litellm
+docker/mcp-servers-source/PRIORITY3_COMPLETE.md:67:1. **litellm**: 347.9MB (5.87%) - Largest consumer
+docker/mcp-servers-source/PRIORITY3_COMPLETE.md:126:- pal, litellm, serena, qdrant, (conport when available)
+docker/mcp-servers-source/PRIORITY3_COMPLETE.md:180:   - litellm: 347MB (investigate cache settings)
+docker/mcp-servers-source/PRIORITY3_COMPLETE.md:299:1. **Investigate litellm memory** (347MB)
+docker/mcp-servers-source/PERFORMANCE_BASELINE.md:10:| **litellm** | 347.9MB | 5.87% | 🔴 Highest - needs optimization |
+docker/mcp-servers-source/PERFORMANCE_BASELINE.md:19:**Peak memory**: 347.9MB (litellm)
+docker/mcp-servers-source/PERFORMANCE_BASELINE.md:54:| litellm | 2026-02-05 18:13 | 5h 42m |
+docker/mcp-servers-source/PERFORMANCE_BASELINE.md:101:4. **Optimize litellm memory** - 347.9MB (3.5x average)
+docker/mcp-servers-source/PERFORMANCE_BASELINE.md:149:### litellm (Memory Concern)
+docker/mcp-servers-source/PERFORMANCE_BASELINE.md:156:**Investigation Needed**: Check litellm logs and configuration
+docker/mcp-servers-source/pal-stdio/pal_stdio_proxy.py:13:PAL_URL = os.getenv("PAL_HTTP_URL", "http://host.docker.internal:3003")
+docker/mcp-servers-source/pal-stdio/README.md:9:docker compose build pal-stdio
+docker/mcp-servers-source/pal-stdio/README.md:17:- `pal-stdio` (this): Runs `server.py` directly on stdio. Used by Docker MCP Toolkit via `docker mcp server add`.
+docker/mcp-servers-source/pal/pal-mcp-server/start-pal.sh:3:# start-pal.sh
+docker/mcp-servers-source/pal/pal-mcp-server/start-pal.sh:31:  echo "start-pal.sh: no virtualenv found (.venv or .zen_venv) in $SCRIPT_DIR" >&2
+docker/mcp-servers-source/litellm/Dockerfile:23:#   litellm>=1.83.7          (CVE-2026-35030, critical + 3 high)
+docker/mcp-servers-source/litellm/Dockerfile:32:    "litellm[proxy]>=1.83.7" \
+docker/mcp-servers-source/litellm/Dockerfile:42:# OpenSSL, high 7.5). litellm[proxy] pins cryptography<47.0, so this cannot be
+docker/mcp-servers-source/litellm/Dockerfile:43:# resolved in the same pip invocation — force-upgrade afterwards. litellm's
+docker/mcp-servers-source/litellm/Dockerfile:49:COPY docker/mcp-servers-source/litellm/litellm.config.yaml /app/config.yaml
+docker/mcp-servers-source/litellm/Dockerfile:50:COPY docker/mcp-servers-source/litellm/entrypoint.sh /app/entrypoint.sh
+docker/mcp-servers-source/litellm/litellm.config.yaml:3:  litellm_params:
+docker/mcp-servers-source/litellm/litellm.config.yaml:8:  litellm_params:
+docker/mcp-servers-source/litellm/litellm.config.yaml:14:  litellm_params:
+docker/mcp-servers-source/litellm/litellm.config.yaml:19:  litellm_params:
+docker/mcp-servers-source/litellm/litellm.config.yaml:30:  litellm_params:
+docker/mcp-servers-source/litellm/litellm.config.yaml:41:  litellm_params:
+docker/mcp-servers-source/litellm/litellm.config.yaml:52:  litellm_params:
+docker/mcp-servers-source/litellm/litellm.config.yaml:63:  litellm_params:
+docker/mcp-servers-source/litellm/litellm.config.yaml:74:  litellm_params:
+docker/mcp-servers-source/litellm/litellm.config.yaml:85:  litellm_params:
+docker/mcp-servers-source/litellm/litellm.config.yaml:96:  litellm_params:
+docker/mcp-servers-source/litellm/litellm.config.yaml:107:  litellm_params:
+docker/mcp-servers-source/litellm/litellm.config.yaml:118:  litellm_params:
+docker/mcp-servers-source/litellm/litellm.config.yaml:129:  litellm_params:
+docker/mcp-servers-source/litellm/litellm.config.yaml:139:litellm_settings:
+docker/mcp-servers-source/litellm/entrypoint.sh:8:export DATABASE_URL="${DATABASE_URL:-postgresql://dopemux_age:dopemux_age_dev_password@localhost:5432/litellm}"
+docker/mcp-servers-source/litellm/entrypoint.sh:12:rm -rf /usr/local/lib/python3.11/site-packages/litellm/proxy/generated 2>/dev/null || true
+docker/mcp-servers-source/litellm/entrypoint.sh:16:prisma generate --schema=/usr/local/lib/python3.11/site-packages/litellm/proxy/schema.prisma
+docker/mcp-servers-source/litellm/entrypoint.sh:20:cd /usr/local/lib/python3.11/site-packages/litellm/proxy
+docker/mcp-servers-source/litellm/entrypoint.sh:26:exec litellm --config /app/config.yaml --port 4000 --host 0.0.0.0
+docker/postgres/01-init-age.sql:5:SELECT 'CREATE DATABASE litellm'
+docker/postgres/01-init-age.sql:6:WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'litellm')\gexec
+docker/.claude/claude.md:24:│   ├── litellm/           # LiteLLM proxy
+docker/.claude/claude.md:72:| litellm | varies | HTTP |
+docker/mcp-servers-source/litellm/README.md:17:The service is configured via `/app/config.yaml` (mounted from project root `litellm.config.yaml`).
+docker/mcp-servers-source/litellm/README.md:77:response = litellm.completion(
+docker/mcp-servers-source/litellm/README.md:87:1. **Check YAML syntax**: `python -c "import yaml; yaml.safe_load(open('litellm.config.yaml'))"`
+docker/mcp-servers-source/litellm/README.md:89:3. **Check logs**: `docker logs mcp-litellm`
+docker/mcp-servers-source/litellm/README.md:139:Note on `cryptography`: `litellm[proxy]` pins `cryptography<47.0`, but
+docker/mcp-servers-source/litellm/README.md:148:- Log location: Container stdout (`docker logs mcp-litellm`)
+docker/mcp-servers-source/litellm/README.md:154:1. Edit `litellm.config.yaml` in project root
+docker/mcp-servers-source/litellm/README.md:155:2. Restart service: `docker-compose restart litellm`
+docker/mcp-servers-source/litellm/README.md:160:- [LiteLLM Documentation](https://docs.litellm.ai/)
+docker/mcp-servers/PRIORITY3_COMPLETE.md:67:1. **litellm**: 347.9MB (5.87%) - Largest consumer
+docker/mcp-servers/PRIORITY3_COMPLETE.md:126:- pal, litellm, serena, qdrant, (conport when available)
+docker/mcp-servers/PRIORITY3_COMPLETE.md:180:   - litellm: 347MB (investigate cache settings)
+docker/mcp-servers/PRIORITY3_COMPLETE.md:299:1. **Investigate litellm memory** (347MB)
+docker/mcp-servers/start-profile.sh:16:PROFILES[minimal]="pal litellm serena qdrant"
+docker/mcp-servers/start-profile.sh:17:PROFILES[development]="pal litellm serena qdrant dope-context task-orchestrator context7 desktop-commander exa"
+docker/mcp-servers/start-profile.sh:26:    echo -e "  ${GREEN}minimal${NC}      - 5 servers (pal, litellm, serena, qdrant)"
+docker/mcp-servers/pal/pal-mcp-server/start-pal.sh:3:# start-pal.sh
+docker/mcp-servers/pal/pal-mcp-server/start-pal.sh:31:  echo "start-pal.sh: no virtualenv found (.venv or .zen_venv) in $SCRIPT_DIR" >&2
+docker/mcp-servers/PROFILES_GUIDE.md:28:4. **litellm** - LLM proxy
+docker/mcp-servers/PROFILES_GUIDE.md:41:- ✅ LLM proxy (litellm)
+docker/mcp-servers/PROFILES_GUIDE.md:197:docker-compose up -d pal litellm serena qdrant
+docker/mcp-servers/PROFILES_GUIDE.md:204:  pal litellm serena qdrant \
+docker/mcp-servers/PROFILES_GUIDE.md:239:docker-compose up -d pal litellm serena qdrant
+docker/mcp-servers/PROFILES_GUIDE.md:254:docker-compose up -d pal serena litellm
+docker/mcp-servers/README.md:77:| **litellm** | 4000 | LLM proxy & routing | HTTP |
+docker/mcp-servers/README.md:115:2. Missing bind-mounted files (e.g., `litellm.config.yaml`)
+docker/mcp-servers/pal-stdio/README.md:9:docker compose build pal-stdio
+docker/mcp-servers/pal-stdio/README.md:17:- `pal-stdio` (this): Runs `server.py` directly on stdio. Used by Docker MCP Toolkit via `docker mcp server add`.
+docker/mcp-servers/PERFORMANCE_BASELINE.md:10:| **litellm** | 347.9MB | 5.87% | 🔴 Highest - needs optimization |
+docker/mcp-servers/PERFORMANCE_BASELINE.md:19:**Peak memory**: 347.9MB (litellm)
+docker/mcp-servers/PERFORMANCE_BASELINE.md:54:| litellm | 2026-02-05 18:13 | 5h 42m |
+docker/mcp-servers/PERFORMANCE_BASELINE.md:101:4. **Optimize litellm memory** - 347.9MB (3.5x average)
+docker/mcp-servers/PERFORMANCE_BASELINE.md:149:### litellm (Memory Concern)
+docker/mcp-servers/PERFORMANCE_BASELINE.md:156:**Investigation Needed**: Check litellm logs and configuration
+docker/mcp-servers/pal-stdio/pal_stdio_proxy.py:13:PAL_URL = os.getenv("PAL_HTTP_URL", "http://host.docker.internal:3003")
+docker/mcp-servers/litellm/README.md:17:The service is configured via `/app/config.yaml` (mounted from project root `litellm.config.yaml`).
+docker/mcp-servers/litellm/README.md:77:response = litellm.completion(
+docker/mcp-servers/litellm/README.md:87:1. **Check YAML syntax**: `python -c "import yaml; yaml.safe_load(open('litellm.config.yaml'))"`
+docker/mcp-servers/litellm/README.md:89:3. **Check logs**: `docker logs mcp-litellm`
+docker/mcp-servers/litellm/README.md:139:Note on `cryptography`: `litellm[proxy]` pins `cryptography<47.0`, but
+docker/mcp-servers/litellm/README.md:148:- Log location: Container stdout (`docker logs mcp-litellm`)
+docker/mcp-servers/litellm/README.md:154:1. Edit `litellm.config.yaml` in project root
+docker/mcp-servers/litellm/README.md:155:2. Restart service: `docker-compose restart litellm`
+docker/mcp-servers/litellm/README.md:160:- [LiteLLM Documentation](https://docs.litellm.ai/)
+docker/mcp-servers/litellm/entrypoint.sh:8:export DATABASE_URL="${DATABASE_URL:-postgresql://dopemux_age:dopemux_age_dev_password@localhost:5432/litellm}"
+docker/mcp-servers/litellm/entrypoint.sh:12:rm -rf /usr/local/lib/python3.11/site-packages/litellm/proxy/generated 2>/dev/null || true
+docker/mcp-servers/litellm/entrypoint.sh:16:prisma generate --schema=/usr/local/lib/python3.11/site-packages/litellm/proxy/schema.prisma
+docker/mcp-servers/litellm/entrypoint.sh:20:cd /usr/local/lib/python3.11/site-packages/litellm/proxy
+docker/mcp-servers/litellm/entrypoint.sh:26:exec litellm --config /app/config.yaml --port 4000 --host 0.0.0.0
+src/dopemux/dope_brainz_router.py:75:        provider_name: str = "litellm",
+src/dopemux/dope_brainz_router.py:170:        provider_name: str = "litellm",
+docker/mcp-servers/litellm/Dockerfile:23:#   litellm>=1.83.7          (CVE-2026-35030, critical + 3 high)
+docker/mcp-servers/litellm/Dockerfile:32:    "litellm[proxy]>=1.83.7" \
+docker/mcp-servers/litellm/Dockerfile:42:# OpenSSL, high 7.5). litellm[proxy] pins cryptography<47.0, so this cannot be
+docker/mcp-servers/litellm/Dockerfile:43:# resolved in the same pip invocation — force-upgrade afterwards. litellm's
+docker/mcp-servers/litellm/Dockerfile:49:COPY docker/mcp-servers-source/litellm/litellm.config.yaml /app/config.yaml
+docker/mcp-servers/litellm/Dockerfile:50:COPY docker/mcp-servers-source/litellm/entrypoint.sh /app/entrypoint.sh
+docker/mcp-servers/litellm/litellm.config.yaml:3:  litellm_params:
+docker/mcp-servers/litellm/litellm.config.yaml:8:  litellm_params:
+docker/mcp-servers/litellm/litellm.config.yaml:14:  litellm_params:
+docker/mcp-servers/litellm/litellm.config.yaml:19:  litellm_params:
+docker/mcp-servers/litellm/litellm.config.yaml:30:  litellm_params:
+docker/mcp-servers/litellm/litellm.config.yaml:41:  litellm_params:
+docker/mcp-servers/litellm/litellm.config.yaml:52:  litellm_params:
+docker/mcp-servers/litellm/litellm.config.yaml:63:  litellm_params:
+docker/mcp-servers/litellm/litellm.config.yaml:74:  litellm_params:
+docker/mcp-servers/litellm/litellm.config.yaml:85:  litellm_params:
+docker/mcp-servers/litellm/litellm.config.yaml:96:  litellm_params:
+docker/mcp-servers/litellm/litellm.config.yaml:107:  litellm_params:
+docker/mcp-servers/litellm/litellm.config.yaml:118:  litellm_params:
+docker/mcp-servers/litellm/litellm.config.yaml:129:  litellm_params:
+docker/mcp-servers/litellm/litellm.config.yaml:139:litellm_settings:
+src/dopemux/protection_interceptor.py:46:    "litellm.config.yaml",
+src/dopemux/launchd_services.py:29:    LITELLM_DIR = DOPEMUX_DIR / "litellm"
+src/dopemux/launchd_services.py:34:    LITELLM_SERVICE_NAME = "com.dopemux.litellm"
+src/dopemux/launchd_services.py:66:            "DOPEMUX_LITELLM_MASTER_KEY": self._generate_secure_key("litellm_master"),
+src/dopemux/launchd_services.py:73:        env_vars["DOPEMUX_LITELLM_PORT"] = str(ports.get("litellm", 4000))
+src/dopemux/launchd_services.py:152:    def _generate_litellm_wrapper_script(self) -> None:
+src/dopemux/launchd_services.py:154:        script_path = self.SCRIPTS_DIR / "litellm_wrapper.sh"
+src/dopemux/launchd_services.py:157:        litellm_bin = shutil.which("litellm")
+src/dopemux/launchd_services.py:158:        if not litellm_bin:
+src/dopemux/launchd_services.py:161:                "Please install LiteLLM: pip install litellm[proxy]"
+src/dopemux/launchd_services.py:190:LOG_FILE="$LOG_DIR/litellm_$(date +%Y%m%d_%H%M%S).log"
+src/dopemux/launchd_services.py:199:exec "{litellm_bin}" --config "{home_dir}/.dopemux/litellm/litellm.config.yaml" \\
+src/dopemux/launchd_services.py:268:    def _generate_litellm_config(self) -> None:
+src/dopemux/launchd_services.py:270:        config_path = self.LITELLM_DIR / "litellm.config.yaml"
+src/dopemux/launchd_services.py:276:        litellm_config = self.routing_config.generate_litellm_config(
+src/dopemux/launchd_services.py:282:            yaml.dump(litellm_config, f, sort_keys=False)
+src/dopemux/launchd_services.py:289:        litellm_port = env_vars.get("DOPEMUX_LITELLM_PORT", "4000")
+src/dopemux/launchd_services.py:290:        litellm_key = env_vars.get("DOPEMUX_LITELLM_MASTER_KEY", "")
+src/dopemux/launchd_services.py:293:            litellm_url=f"http://127.0.0.1:{litellm_port}",
+src/dopemux/launchd_services.py:294:            litellm_key=litellm_key,
+src/dopemux/launchd_services.py:305:    def _generate_litellm_plist(self) -> None:
+src/dopemux/launchd_services.py:315:                f"source {home_dir}/.dopemux/routing.env && {self.SCRIPTS_DIR}/litellm_wrapper.sh"
+src/dopemux/launchd_services.py:319:            "StandardErrorPath": str(self.LOGS_DIR / "litellm_launchd.log"),
+src/dopemux/launchd_services.py:320:            "StandardOutPath": str(self.LOGS_DIR / "litellm_launchd.log"),
+src/dopemux/launchd_services.py:369:        self._generate_litellm_wrapper_script()
+src/dopemux/launchd_services.py:371:        self._generate_litellm_config()
+src/dopemux/launchd_services.py:373:        self._generate_litellm_plist()
+src/dopemux/launchd_services.py:493:            self.SCRIPTS_DIR / "litellm_wrapper.sh",
+src/dopemux/launchd_services.py:495:            self.LITELLM_DIR / "litellm.config.yaml",
+src/dopemux/launchd_services.py:507:            "litellm": self._get_service_status(self.LITELLM_SERVICE_NAME),
+src/dopemux/launchd_services.py:542:            service: Specific service to kickstart ('litellm', 'ccr'), or None for all
+src/dopemux/launchd_services.py:550:        if service is None or service == "litellm":
+src/dopemux/launchd_services.py:582:        self._generate_litellm_config()
+src/dopemux/launchd_services.py:593:            "litellm_launchd": str(self.LOGS_DIR / "litellm_launchd.log"),
+src/dopemux/launchd_services.py:595:            "litellm_latest": self._get_latest_litellm_log()
+src/dopemux/launchd_services.py:598:    def _get_latest_litellm_log(self) -> str:
+src/dopemux/launchd_services.py:601:            logs = list(self.LOGS_DIR.glob("litellm_*.log"))
+src/dopemux/launchd_services.py:716:        litellm_healthy = health.get("litellm", {}).get("status") == "healthy"
+src/dopemux/launchd_services.py:719:        return litellm_healthy and ccr_healthy
+src/dopemux/launchd_services.py:751:            litellm_port = self.routing_config.config['ports']['litellm']
+src/dopemux/launchd_services.py:752:            litellm_url = f"http://localhost:{litellm_port}/health/readiness"
+src/dopemux/launchd_services.py:753:            response = requests.get(litellm_url, timeout=5)
+src/dopemux/launchd_services.py:754:            health["litellm"] = {
+src/dopemux/launchd_services.py:756:                "port": litellm_port,
+src/dopemux/launchd_services.py:760:            health["litellm"] = {
+src/dopemux/launchd_services.py:762:                "port": self.routing_config.config['ports']['litellm'],
+src/dopemux/launchd_services.py:789:        litellm_snippet = f"""
+src/dopemux/launchd_services.py:790:  dopemux-litellm:
+src/dopemux/launchd_services.py:791:    image: dopemux-litellm
+src/dopemux/launchd_services.py:793:      - "{ports['litellm']}:4000"
+src/dopemux/launchd_services.py:799:      - ~/.dopemux/litellm/litellm.config.yaml:/app/config.yaml
+src/dopemux/launchd_services.py:809:      - DOPEMUX_LITELLM_URL=http://dopemux-litellm:4000
+src/dopemux/launchd_services.py:815:      - dopemux-litellm
+src/dopemux/launchd_services.py:820:            "litellm": litellm_snippet,
+src/dopemux/routing_cli.py:116:            if (status.get("litellm", {}).get("status") == "running" or
+src/dopemux/routing_cli.py:342:        console.print(f"LiteLLM Port: {config.get('ports', {}).get('litellm', 'N/A')}", markup=False)
+src/dopemux/routing_cli.py:462:        click.echo(snippets['litellm'])
+src/dopemux/routing_cli.py:532:            console.print(f"  LiteLLM launchd log: {log_paths['litellm_launchd']}", markup=False)
+src/dopemux/routing_cli.py:534:            console.print(f"  Latest LiteLLM log: {log_paths['litellm_latest']}", markup=False)
+src/dopemux/routing_cli.py:537:            console.print("  • Check logs with: tail -f ~/.dopemux/logs/litellm_launchd.log")
+src/dopemux/litellm_manager.py:23:from dopemux.litellm_trace_logger import (
+src/dopemux/litellm_manager.py:32:TRACE_CALLBACK_PATH = "dopemux.litellm_trace_logger.DopemuxLiteLLMTraceLogger"
+src/dopemux/litellm_manager.py:247:            log_path = instance_dir / "litellm.log"
+src/dopemux/litellm_manager.py:248:            structured_log_path = instance_dir / "litellm.events.jsonl"
+src/dopemux/litellm_manager.py:388:        return self.project_root / ".dopemux" / "litellm" / instance_id
+src/dopemux/litellm_manager.py:423:        config_path = instance_dir / "litellm.config.yaml"
+src/dopemux/litellm_manager.py:429:        litellm_settings = config_data.setdefault("litellm_settings", {})
+src/dopemux/litellm_manager.py:430:        callbacks = litellm_settings.get("callbacks")
+src/dopemux/litellm_manager.py:432:            litellm_settings["callbacks"] = [TRACE_CALLBACK_PATH]
+src/dopemux/litellm_manager.py:440:            litellm_settings["callbacks"] = normalized_callbacks
+src/dopemux/litellm_manager.py:489:            "litellm",
+src/dopemux/litellm_manager.py:573:_litellm_manager: Optional[LiteLLMManager] = None
+src/dopemux/litellm_manager.py:576:def get_litellm_manager(project_root: Optional[Path] = None) -> LiteLLMManager:
+src/dopemux/litellm_manager.py:585:    global _litellm_manager
+src/dopemux/litellm_manager.py:587:    if _litellm_manager is None:
+src/dopemux/litellm_manager.py:590:        _litellm_manager = LiteLLMManager(project_root)
+src/dopemux/litellm_manager.py:592:    return _litellm_manager
+src/dopemux/agent_orchestrator.py:19:from .litellm_manager import (
+src/dopemux/agent_orchestrator.py:21:    get_litellm_manager,
+src/dopemux/agent_orchestrator.py:53:    litellm_instance: Optional[str] = None
+src/dopemux/agent_orchestrator.py:96:        self._litellm_manager = get_litellm_manager(self.project_root)
+src/dopemux/agent_orchestrator.py:116:            self._litellm_manager.start()
+src/dopemux/agent_orchestrator.py:129:            self._litellm_manager.stop()
+src/dopemux/agent_orchestrator.py:257:            if agent_config.litellm_instance:
+src/dopemux/agent_orchestrator.py:258:                self._ensure_litellm_instance(agent_config.litellm_instance)
+src/dopemux/agent_orchestrator.py:299:    def _ensure_litellm_instance(self, instance_id: str) -> LiteLLMProcessInfo:
+src/dopemux/agent_orchestrator.py:301:        instance = self._litellm_manager.get_instance(instance_id)
+src/dopemux/agent_orchestrator.py:312:                    "litellm_params": {
+src/dopemux/agent_orchestrator.py:318:            "litellm_settings": {
+src/dopemux/agent_orchestrator.py:326:        while self._litellm_manager._is_port_in_use(port):
+src/dopemux/agent_orchestrator.py:329:        return self._litellm_manager.start_instance(
+src/dopemux/agent_orchestrator.py:427:                "litellm_instances": len(self._litellm_manager.get_all_instances()),
+src/dopemux/agent_orchestrator.py:448:        litellm_status = self._litellm_manager.get_health_status()
+src/dopemux/agent_orchestrator.py:453:            "litellm_instances": litellm_status,
+src/dopemux/agent_orchestrator.py:562:                litellm_instance=config_data.get('litellm_instance'),
+src/dopemux/agent_orchestrator.py:593:            print(f"LiteLLM Instance: {agent.litellm_instance or 'None'}")
+src/dopemux/agent_orchestrator.py:640:        print(f"LiteLLM Instances: {status['litellm_instances']}")
+src/dopemux/agent_orchestrator.py:649:        if status['litellm_instances']:
+src/dopemux/agent_orchestrator.py:651:            for instance_id, instance_status in status['litellm_instances'].items():
+src/dopemux/agent_orchestrator.py:664:            "litellm_instance": "main",
+src/dopemux/agent_orchestrator.py:674:            "litellm_instance": "main",
+src/dopemux/agent_orchestrator.py:684:            "litellm_instance": "main",
+src/dopemux/agent_orchestrator.py:694:            "litellm_instance": "main",
+src/dopemux/agent_orchestrator.py:703:            "litellm_instance": "main",
+src/dopemux/agent_orchestrator.py:723:                litellm_instance=config_data.get('litellm_instance'),
+src/dopemux/cli.py:142:    from .litellm_proxy import (
+src/dopemux/cli.py:153:        sync_litellm_database,
+src/dopemux/cli.py:156:    if exc.name != "litellm":
+src/dopemux/cli.py:163:    def _raise_litellm_unavailable(*args: Any, **kwargs: Any) -> Any:
+src/dopemux/cli.py:165:            "LiteLLM proxy support is unavailable because the litellm package "
+src/dopemux/cli.py:174:    LiteLLMProxyManager = _raise_litellm_unavailable
+src/dopemux/cli.py:175:    ensure_master_key = _raise_litellm_unavailable
+src/dopemux/cli.py:176:    generate_multi_target_config = _raise_litellm_unavailable
+src/dopemux/cli.py:177:    generate_single_target_config = _raise_litellm_unavailable
+src/dopemux/cli.py:178:    start_simple_proxy = _raise_litellm_unavailable
+src/dopemux/cli.py:179:    sync_litellm_database = _raise_litellm_unavailable
+src/dopemux/cli.py:186:    if exc.name != "litellm":
+src/dopemux/cli.py:212:    if exc.name != "litellm":
+src/dopemux/cli.py:215:        "Tmux commands are unavailable because the litellm package is not importable."
+src/dopemux/cli.py:226:if "-litellm" in sys.argv:
+src/dopemux/cli.py:227:    sys.argv = ["--litellm" if arg == "-litellm" else arg for arg in sys.argv]
+src/dopemux/cli.py:419:def _load_litellm_models(config_path: Path) -> List[str]:
+src/dopemux/cli.py:870:    "--litellm",
+src/dopemux/cli.py:871:    "use_litellm",
+src/dopemux/cli.py:946:    use_litellm: bool,
+src/dopemux/cli.py:982:    original_litellm = use_litellm
+src/dopemux/cli.py:1063:    if not (use_grok or use_codex or use_altp or use_litellm) and (
+src/dopemux/cli.py:1064:        original_grok or original_codex or original_altp or original_litellm
+src/dopemux/cli.py:1087:            litellm_healthy = health.get("litellm", {}).get("status") == "healthy"
+src/dopemux/cli.py:1090:            if litellm_healthy and ccr_healthy:
+src/dopemux/cli.py:1099:                    if not litellm_healthy:
+src/dopemux/cli.py:1101:                            f"LiteLLM: {health.get('litellm', {}).get('error', 'unhealthy')}"
+src/dopemux/cli.py:1127:                    litellm_healthy = True
+src/dopemux/cli.py:1146:                        f"  LiteLLM launchd: {log_paths['litellm_launchd']}"
+src/dopemux/cli.py:1150:                        f"  LiteLLM latest: {log_paths['litellm_latest']}"
+src/dopemux/cli.py:1157:                    console.logger.info("  tail -f ~/.dopemux/logs/litellm_launchd.log")
+src/dopemux/cli.py:1168:                        if not litellm_healthy:
+src/dopemux/cli.py:1170:                                f"LiteLLM: {health.get('litellm', {}).get('error', 'unhealthy')}"
+src/dopemux/cli.py:1241:                "litellm package is not importable. Install project dependencies "
+src/dopemux/cli.py:1262:                litellm_model=provider["model"],
+src/dopemux/cli.py:1265:                extra_litellm_params=provider.get("extra_params"),
+src/dopemux/cli.py:1290:                use_litellm = False
+src/dopemux/cli.py:1328:                litellm_port, litellm_master_key = start_simple_proxy(
+src/dopemux/cli.py:1337:                f"[success]✅ LiteLLM proxy ready on port {litellm_port}[/success]"
+src/dopemux/cli.py:1343:            os.environ["ANTHROPIC_BASE_URL"] = f"http://127.0.0.1:{litellm_port}"
+src/dopemux/cli.py:1344:            os.environ["LITELLM_MASTER_KEY"] = litellm_master_key
+src/dopemux/cli.py:1345:            os.environ["DOPEMUX_LITELLM_MASTER_KEY"] = litellm_master_key
+src/dopemux/cli.py:1346:            os.environ["ANTHROPIC_API_KEY"] = litellm_master_key
+src/dopemux/cli.py:1349:            os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
+src/dopemux/cli.py:1351:                f"http://127.0.0.1:{litellm_port}/v1/chat/completions"
+src/dopemux/cli.py:1360:            use_litellm = True
+src/dopemux/cli.py:1364:                f"[text.dim]✓ {_routing_summary} (:{litellm_port})[/text.dim]"
+src/dopemux/cli.py:1370:        use_litellm = True
+src/dopemux/cli.py:1388:        instance_dir = Path.cwd() / ".dopemux" / "litellm" / "A"
+src/dopemux/cli.py:1390:        litellm_log = instance_dir / "litellm.log"
+src/dopemux/cli.py:1419:                "  DOPEMUX_LITELLM_DB_URL=postgresql://user:password@localhost:5432/litellm"
+src/dopemux/cli.py:1454:        litellm_port = 4000
+src/dopemux/cli.py:1455:        if not is_port_available(litellm_port):
+src/dopemux/cli.py:1457:            litellm_port = 4001
+src/dopemux/cli.py:1458:            if not is_port_available(litellm_port):
+src/dopemux/cli.py:1460:                litellm_port = 4002
+src/dopemux/cli.py:1461:                if not is_port_available(litellm_port):
+src/dopemux/cli.py:1470:                f"[warning]⚠️  Port 4000 is in use, using port {litellm_port} instead[/warning]"
+src/dopemux/cli.py:1473:        litellm_master_key = ""
+src/dopemux/cli.py:1475:        litellm_running = False
+src/dopemux/cli.py:1480:                f"http://localhost:{litellm_port}/health/readiness",
+src/dopemux/cli.py:1484:                litellm_running = True
+src/dopemux/cli.py:1486:                litellm_master_key = stored_master_key or env_master_key_raw or ""
+src/dopemux/cli.py:1497:        if not litellm_master_key:
+src/dopemux/cli.py:1499:            litellm_master_key, regenerated_master_key = ensure_master_key(
+src/dopemux/cli.py:1509:        os.environ["LITELLM_MASTER_KEY"] = litellm_master_key
+src/dopemux/cli.py:1511:        if not stored_master_key or stored_master_key != litellm_master_key:
+src/dopemux/cli.py:1513:                master_key_path.write_text(litellm_master_key, encoding="utf-8")
+src/dopemux/cli.py:1519:        if (instance_dir / "litellm.config.yaml").exists():
+src/dopemux/cli.py:1520:            config_source = instance_dir / "litellm.config.yaml"
+src/dopemux/cli.py:1536:        general_settings["master_key"] = litellm_master_key
+src/dopemux/cli.py:1544:                db_status_msg, db_enabled = sync_litellm_database(instance_dir, db_url)
+src/dopemux/cli.py:1557:                console.logger.info("  3. Ensure the 'litellm' database exists")
+src/dopemux/cli.py:1571:        config_path = instance_dir / "litellm.config.yaml"
+src/dopemux/cli.py:1581:        if litellm_running:
+src/dopemux/cli.py:1583:                f"[success]✓ LiteLLM proxy already running on port {litellm_port}[/success]"
+src/dopemux/cli.py:1588:                ["pkill", "-f", "litellm"],
+src/dopemux/cli.py:1597:                    f"[warning]   Stop the existing LiteLLM proxy on port {litellm_port} manually and rerun the command."
+src/dopemux/cli.py:1602:            litellm_log.parent.mkdir(parents=True, exist_ok=True)
+src/dopemux/cli.py:1603:            with open(litellm_log, "w", encoding="utf-8") as log_file:
+src/dopemux/cli.py:1606:                        "litellm",
+src/dopemux/cli.py:1610:                        str(litellm_port),
+src/dopemux/cli.py:1626:                        f"http://127.0.0.1:{litellm_port}/health/readiness",
+src/dopemux/cli.py:1650:                    f"[warning]   Check logs: tail -f {litellm_log}[/warning]"
+src/dopemux/cli.py:1657:                    f"  • Port {litellm_port} became busy during startup"
+src/dopemux/cli.py:1659:                console.logger.error("  • Configuration error in litellm.config.yaml")
+src/dopemux/cli.py:1663:                f"[success]✅ LiteLLM proxy ready on port {litellm_port}[/success]"
+src/dopemux/cli.py:1668:        os.environ["ANTHROPIC_BASE_URL"] = f"http://127.0.0.1:{litellm_port}"
+src/dopemux/cli.py:1669:        os.environ["LITELLM_MASTER_KEY"] = litellm_master_key
+src/dopemux/cli.py:1670:        os.environ["DOPEMUX_LITELLM_MASTER_KEY"] = litellm_master_key
+src/dopemux/cli.py:1671:        os.environ["ANTHROPIC_API_KEY"] = litellm_master_key
+src/dopemux/cli.py:1675:            f"http://127.0.0.1:{litellm_port}/v1/chat/completions"
+src/dopemux/cli.py:1678:        os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
+src/dopemux/cli.py:1680:        # Extract models from litellm config
+src/dopemux/cli.py:1681:        litellm_config = instance_dir / "litellm.config.yaml"
+src/dopemux/cli.py:1682:        models_list = _load_litellm_models(litellm_config)
+src/dopemux/cli.py:1688:                "[warning]⚠️  No models found in litellm.config.yaml[/warning]"
+src/dopemux/cli.py:1710:    if not use_litellm and not use_claude_router:
+src/dopemux/cli.py:1712:            use_litellm = True
+src/dopemux/cli.py:2120:        _configure_openrouter_litellm()
+src/dopemux/cli.py:2127:        os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
+src/dopemux/cli.py:2182:    litellm_proxy_info = None
+src/dopemux/cli.py:2186:    # If --litellm is passed, prefer enabling CCR unless explicitly disabled by user
+src/dopemux/cli.py:2187:    if use_litellm and not use_claude_router and not _direct_provider_routing:
+src/dopemux/cli.py:2189:    litellm_enabled = use_litellm or use_claude_router
+src/dopemux/cli.py:2192:        litellm_enabled
+src/dopemux/cli.py:2201:                "[text.dim]Set OPENROUTER_API_KEY before using --litellm[/text.dim]"
+src/dopemux/cli.py:2206:            litellm_manager = LiteLLMProxyManager(project_path, instance_id, port_base)
+src/dopemux/cli.py:2207:            litellm_proxy_info = litellm_manager.ensure_started()
+src/dopemux/cli.py:2208:            env_updates = litellm_manager.build_client_env(litellm_proxy_info)
+src/dopemux/cli.py:2215:            if not litellm_proxy_info.db_enabled:
+src/dopemux/cli.py:2223:            if litellm_proxy_info.already_running:
+src/dopemux/cli.py:2225:                    f"[success]✅ Reusing LiteLLM proxy at {litellm_proxy_info.base_url}[/success]"
+src/dopemux/cli.py:2229:                    f"[success]✅ LiteLLM proxy ready at {litellm_proxy_info.base_url}[/success]"
+src/dopemux/cli.py:2232:                    f"[text.dim]   Config: {litellm_proxy_info.config_path}[/text.dim]"
+src/dopemux/cli.py:2235:                    f"[text.dim]   Logs: {litellm_proxy_info.log_path}[/text.dim]"
+src/dopemux/cli.py:2237:            if litellm_proxy_info.db_status:
+src/dopemux/cli.py:2238:                prisma_log = litellm_proxy_info.log_path.parent / "prisma.log"
+src/dopemux/cli.py:2239:                color = "dim" if litellm_proxy_info.db_enabled else "yellow"
+src/dopemux/cli.py:2241:                    f"[{color}]   {litellm_proxy_info.db_status}[/{color}]"
+src/dopemux/cli.py:2262:            "DOPEMUX_LITELLM_MASTER_KEY" if litellm_proxy_info else None,
+src/dopemux/cli.py:2267:        if litellm_proxy_info:
+src/dopemux/cli.py:2268:            provider_url = f"{litellm_proxy_info.base_url}/v1/chat/completions"
+src/dopemux/cli.py:2269:            provider_name = provider_name or "litellm"
+src/dopemux/cli.py:2270:            provider_models = _load_litellm_models(litellm_proxy_info.config_path)
+src/dopemux/cli.py:2309:                "[text.dim]Set CLAUDE_CODE_ROUTER_UPSTREAM_URL or enable --litellm.[/text.dim]"
+src/dopemux/cli.py:2318:                "[text.dim]Set CLAUDE_CODE_ROUTER_MODELS or rely on --litellm defaults.[/text.dim]"
+src/dopemux/cli.py:2333:                provider_name=provider_name or "litellm",
+src/dopemux/cli.py:3184:    if exc.name != "litellm":
+src/dopemux/cli.py:3187:        "Extract commands are unavailable because the litellm package is not importable."
+src/dopemux/cli.py:3226:    if exc.name != "litellm":
+src/dopemux/cli.py:3677:def _configure_openrouter_litellm():
+src/dopemux/cli.py:3690:    os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
+src/dopemux/cli.py:3695:    os.environ["ZEN_DEFAULT_MODEL"] = "litellm/openrouter-openai-gpt-5"
+src/dopemux/cli.py:3697:        "litellm/openrouter-xai-grok-code-fast,litellm/openrouter-google-gemini-2-flash"
+src/dopemux/cli.py:3704:    os.environ["CLAUDE_CODE_LLM_PROVIDER"] = "litellm"
+src/dopemux/routing_config.py:253:        if "litellm" not in ports or "ccr" not in ports:
+src/dopemux/routing_config.py:254:            raise RoutingConfigError("Ports section must contain 'litellm' and 'ccr'")
+src/dopemux/routing_config.py:295:            if "model_id" not in model and "litellm_model" not in model:
+src/dopemux/routing_config.py:368:    def generate_litellm_config(self, master_key: str) -> Dict[str, Any]:
+src/dopemux/routing_config.py:385:            generate_freeflow_litellm_config,
+src/dopemux/routing_config.py:390:            return generate_freeflow_litellm_config(self.config, master_key)
+src/dopemux/routing_config.py:404:            litellm_params = {
+src/dopemux/routing_config.py:405:                "model": model.get("model_id") or model.get("litellm_model"),
+src/dopemux/routing_config.py:414:                litellm_params["api_key"] = str(provider.get("api_key") or "local")
+src/dopemux/routing_config.py:417:                litellm_params["api_key"] = f"os.environ/{provider['api_key_env']}"
+src/dopemux/routing_config.py:421:                litellm_params["api_base"] = provider["base_url"]
+src/dopemux/routing_config.py:424:                litellm_params["extra_headers"] = provider["extra_headers"]
+src/dopemux/routing_config.py:428:                "litellm_params": litellm_params,
+src/dopemux/routing_config.py:450:            "litellm_settings": {
+src/dopemux/routing_config.py:466:        self, litellm_url: str, litellm_key: str, ccr_api_key: str
+src/dopemux/routing_config.py:471:            litellm_url: URL of the LiteLLM proxy (without /v1)
+src/dopemux/routing_config.py:472:            litellm_key: Master key for LiteLLM
+src/dopemux/routing_config.py:491:                    "name": "litellm",
+src/dopemux/routing_config.py:492:                    "api_base_url": f"{litellm_url}/v1",
+src/dopemux/routing_config.py:493:                    "api_key": litellm_key,
+src/dopemux/routing_config.py:498:                "default": f"litellm,{default_model}",
+src/dopemux/freeflow.py:923:            model_id = str(model.get("model_id") or model.get("litellm_model") or "")
+src/dopemux/freeflow.py:1161:def generate_freeflow_litellm_config(
+src/dopemux/freeflow.py:1176:        litellm_params: Dict[str, Any] = {
+src/dopemux/freeflow.py:1188:            litellm_params["api_key"] = str(provider.get("api_key") or "local")
+src/dopemux/freeflow.py:1190:            litellm_params["api_key"] = f"os.environ/{provider['api_key_env']}"
+src/dopemux/freeflow.py:1192:            litellm_params["api_base"] = provider["base_url"]
+src/dopemux/freeflow.py:1194:            litellm_params["extra_headers"] = provider["extra_headers"]
+src/dopemux/freeflow.py:1226:                "litellm_params": litellm_params,
+src/dopemux/freeflow.py:1281:        "litellm_settings": {
+src/dopemux/litellm_trace_logger.py:12:from litellm.integrations.custom_logger import CustomLogger
+src/dopemux/litellm_trace_logger.py:25:LITELLM_COMPONENT_NAME = "dopemux_litellm_proxy"
+src/dopemux/litellm_trace_logger.py:107:    for key in ("metadata", "litellm_metadata"):
+src/dopemux/litellm_proxy.py:20:import litellm  # type: ignore
+src/dopemux/litellm_proxy.py:43:def generate_litellm_master_key() -> str:
+src/dopemux/litellm_proxy.py:66:    return generate_litellm_master_key(), True
+src/dopemux/litellm_proxy.py:71:    litellm_params:
+src/dopemux/litellm_proxy.py:77:    litellm_params:
+src/dopemux/litellm_proxy.py:83:    litellm_params:
+src/dopemux/litellm_proxy.py:93:    litellm_params:
+src/dopemux/litellm_proxy.py:102:litellm_settings:
+src/dopemux/litellm_proxy.py:188:    litellm_model: str,
+src/dopemux/litellm_proxy.py:192:    extra_litellm_params: Optional[Dict] = None,
+src/dopemux/litellm_proxy.py:201:    litellm_params: Dict = {
+src/dopemux/litellm_proxy.py:202:        "model": litellm_model,
+src/dopemux/litellm_proxy.py:206:    if extra_litellm_params:
+src/dopemux/litellm_proxy.py:207:        litellm_params.update(extra_litellm_params)
+src/dopemux/litellm_proxy.py:210:        "model_list": [{"model_name": target_name, "litellm_params": litellm_params}],
+src/dopemux/litellm_proxy.py:211:        "litellm_settings": {
+src/dopemux/litellm_proxy.py:262:        "extra_litellm_params": _OPENROUTER_PARAMS,
+src/dopemux/litellm_proxy.py:295:        max_tokens and extra_litellm_params.
+src/dopemux/litellm_proxy.py:301:        litellm_params: Dict = {
+src/dopemux/litellm_proxy.py:306:        extra = target.get("extra_litellm_params")
+src/dopemux/litellm_proxy.py:308:            litellm_params.update(extra)
+src/dopemux/litellm_proxy.py:310:        model_list.append({"model_name": target["name"], "litellm_params": litellm_params})
+src/dopemux/litellm_proxy.py:317:        "litellm_settings": {
+src/dopemux/litellm_proxy.py:334:    Kills any existing litellm processes, writes a fresh config, starts
+src/dopemux/litellm_proxy.py:346:    instance_dir = project_root / ".dopemux" / "litellm" / instance_id
+src/dopemux/litellm_proxy.py:366:    config_path = instance_dir / "litellm.config.yaml"
+src/dopemux/litellm_proxy.py:384:    # ── kill existing litellm processes if none were healthy ─────────────
+src/dopemux/litellm_proxy.py:388:        ["pkill", "-f", "litellm"],
+src/dopemux/litellm_proxy.py:411:    log_path = instance_dir / "litellm.log"
+src/dopemux/litellm_proxy.py:421:                "litellm",
+src/dopemux/litellm_proxy.py:468:def sync_litellm_database(instance_dir: Path, db_url: str) -> tuple[str, bool]:
+src/dopemux/litellm_proxy.py:499:    if not getattr(litellm, "__file__", None):
+src/dopemux/litellm_proxy.py:501:            "⚠️  LiteLLM metrics disabled (cannot locate litellm package path)",
+src/dopemux/litellm_proxy.py:505:    schema_dir = Path(litellm.__file__).resolve().parent / "proxy"
+src/dopemux/litellm_proxy.py:569:        self.base_dir = self.project_root / ".dopemux" / "litellm"
+src/dopemux/litellm_proxy.py:578:        log_path = self.instance_dir / "litellm.log"
+src/dopemux/litellm_proxy.py:640:                    "litellm executable not found. Install LiteLLM (pip install litellm)"
+src/dopemux/litellm_proxy.py:732:        repo_candidate = self.project_root / "litellm.config.yaml"
+src/dopemux/litellm_proxy.py:737:        default_config = Path(__file__).parent.parent.parent / "litellm.config.yaml"
+src/dopemux/litellm_proxy.py:784:        config_path = self.instance_dir / "litellm.config.yaml"
+src/dopemux/litellm_proxy.py:799:        return sync_litellm_database(self.instance_dir, db_url)
+src/dopemux/litellm_proxy.py:829:            "litellm",
+src/dopemux/litellm_proxy.py:856:        state_path = self.instance_dir / "litellm.state"
+src/dopemux/litellm_proxy.py:860:        """Try to cleanup a stale litellm instance on this port."""
+src/dopemux/litellm_proxy.py:861:        state_path = self.instance_dir / "litellm.state"
+src/dopemux/coldstart/secrets_resolver.py:113:        return f"postgresql://dopemux_age:{age_password}@dopemux-postgres-age:5432/litellm"
+src/dopemux/claude/launcher.py:343:            via_litellm = True
+src/dopemux/claude/launcher.py:358:            via_litellm = False
+src/dopemux/claude/launcher.py:362:            via_litellm = env.get("DOPEMUX_CLAUDE_VIA_LITELLM") in ("1", "true", "True")
+src/dopemux/claude/launcher.py:363:            if via_litellm:
+src/dopemux/claude/launcher.py:408:        if not via_litellm:
+src/dopemux/extractor/context.py:96:                "litellm.config.yaml",
+src/dopemux/extractor/context.py:139:                config_home / "litellm.config.yaml",
+src/dopemux/config/manager.py:203:    litellm_url: str = "http://localhost:4000"
+src/dopemux/config/manager.py:624:                    "litellm_url": "http://localhost:4000",
+src/dopemux/mcp/default_catalog.yaml:57:    # health/lifecycle shim only — /mcp, /sse, /messages all 404. pal-stdio
+src/dopemux/mcp/default_catalog.yaml:75:    description: "PAL http wrapper — health/lifecycle shim only (no MCP endpoint; P0 claim 11). Use pal-stdio for PAL tools. Retrofit decision: PAL-HTTP-RETROFIT."
+src/dopemux/mcp/default_catalog.yaml:175:  pal-stdio:
+src/dopemux/mcp/default_catalog.yaml:185:    args: ["exec", "-i", "mcp-pal-stdio", "/app/.venv/bin/python", "server.py"]
+src/dopemux/mcp/default_catalog.yaml:186:    docker_compose_service: pal-stdio
+src/dopemux/mcp/default_catalog.yaml:196:      snapshot_key: pal-stdio
+src/dopemux/mcp/instance_overlay.py:237:                f"  litellm:\n    ports:\n      - \"{self.port_map['LiteLLM']}:4000\""
+src/dopemux/mcp/fleet_catalog.py:122:    "pal-stdio": {
+src/dopemux/ux/wizard/partitions.py:23:        "litellm.config.yaml", "requirements.txt", "requirements-*.txt",
+src/dopemux/upgrades/context.py:96:                "litellm.config.yaml",
+src/dopemux/upgrades/context.py:139:                config_home / "litellm.config.yaml",
+src/dopemux/templates/init/.claude/claude.md:141:- `litellm.config.yaml` – OpenRouter/LiteLLM provider map.
+src/dopemux/tmux/cli.py:33:from ..litellm_proxy import (
+src/dopemux/tmux/cli.py:37:    sync_litellm_database,
+src/dopemux/tmux/cli.py:927:        litellm_env_orch = ""
+src/dopemux/tmux/cli.py:929:            litellm_master_key = os.environ.get("DOPEMUX_LITELLM_MASTER_KEY", "")
+src/dopemux/tmux/cli.py:930:            litellm_db_url = os.environ.get("DOPEMUX_LITELLM_DB_URL", "")
+src/dopemux/tmux/cli.py:931:            litellm_env_orch = (
+src/dopemux/tmux/cli.py:934:                f"export ANTHROPIC_API_KEY={shlex.quote(litellm_master_key)}; "
+src/dopemux/tmux/cli.py:935:                f"export LITELLM_MASTER_KEY={shlex.quote(litellm_master_key)}; "
+src/dopemux/tmux/cli.py:936:                f"export DOPEMUX_LITELLM_MASTER_KEY={shlex.quote(litellm_master_key)}; "
+src/dopemux/tmux/cli.py:937:                f"export DOPEMUX_LITELLM_DB_URL={shlex.quote(litellm_db_url)}; "
+src/dopemux/tmux/cli.py:938:                f"export LITELLM_DATABASE_URL={shlex.quote(litellm_db_url)}; "
+src/dopemux/tmux/cli.py:939:                f"export DATABASE_URL={shlex.quote(litellm_db_url)}; "
+src/dopemux/tmux/cli.py:940:                f"export CLAUDE_CODE_ROUTER_PROVIDER=litellm; "
+src/dopemux/tmux/cli.py:947:            f"{litellm_env_orch}"
+src/dopemux/tmux/cli.py:998:    litellm_env = ""
+src/dopemux/tmux/cli.py:1000:        litellm_master_key = os.environ.get("DOPEMUX_LITELLM_MASTER_KEY", "")
+src/dopemux/tmux/cli.py:1001:        litellm_db_url = os.environ.get("DOPEMUX_LITELLM_DB_URL", "")
+src/dopemux/tmux/cli.py:1002:        litellm_env = (
+src/dopemux/tmux/cli.py:1005:            f"export ANTHROPIC_API_KEY={shlex.quote(litellm_master_key)}; "
+src/dopemux/tmux/cli.py:1006:            f"export LITELLM_MASTER_KEY={shlex.quote(litellm_master_key)}; "
+src/dopemux/tmux/cli.py:1007:            f"export DOPEMUX_LITELLM_MASTER_KEY={shlex.quote(litellm_master_key)}; "
+src/dopemux/tmux/cli.py:1008:            f"export DOPEMUX_LITELLM_DB_URL={shlex.quote(litellm_db_url)}; "
+src/dopemux/tmux/cli.py:1009:            f"export LITELLM_DATABASE_URL={shlex.quote(litellm_db_url)}; "
+src/dopemux/tmux/cli.py:1010:            f"export DATABASE_URL={shlex.quote(litellm_db_url)}; "
+src/dopemux/tmux/cli.py:1014:        f"{litellm_env}"
+src/dopemux/tmux/cli.py:1037:            f"{litellm_env}"
+src/dopemux/tmux/cli.py:1351:            litellm_env_orch = ""
+src/dopemux/tmux/cli.py:1353:                litellm_master_key = os.environ.get("DOPEMUX_LITELLM_MASTER_KEY", "")
+src/dopemux/tmux/cli.py:1354:                litellm_db_url = os.environ.get("DOPEMUX_LITELLM_DB_URL", "")
+src/dopemux/tmux/cli.py:1355:                litellm_env_orch = (
+src/dopemux/tmux/cli.py:1358:                    f"export ANTHROPIC_API_KEY={shlex.quote(litellm_master_key)}; "
+src/dopemux/tmux/cli.py:1359:                    f"export LITELLM_MASTER_KEY={shlex.quote(litellm_master_key)}; "
+src/dopemux/tmux/cli.py:1360:                    f"export DOPEMUX_LITELLM_MASTER_KEY={shlex.quote(litellm_master_key)}; "
+src/dopemux/tmux/cli.py:1361:                    f"export DOPEMUX_LITELLM_DB_URL={shlex.quote(litellm_db_url)}; "
+src/dopemux/tmux/cli.py:1362:                    f"export LITELLM_DATABASE_URL={shlex.quote(litellm_db_url)}; "
+src/dopemux/tmux/cli.py:1363:                    f"export DOPEMUX_LITELLM_MASTER_KEY={shlex.quote(litellm_master_key)}; "
+src/dopemux/tmux/cli.py:1364:                    f"export DOPEMUX_LITELLM_DB_URL={shlex.quote(litellm_db_url)}; "
+src/dopemux/tmux/cli.py:1365:                    f"export LITELLM_DATABASE_URL={shlex.quote(litellm_db_url)}; "
+src/dopemux/tmux/cli.py:1366:                    f"export DATABASE_URL={shlex.quote(litellm_db_url)}; "
+src/dopemux/tmux/cli.py:1367:                    f"export CLAUDE_CODE_ROUTER_PROVIDER=litellm; "
+src/dopemux/tmux/cli.py:1374:                f"{litellm_env_orch}"
+src/dopemux/tmux/cli.py:1423:        litellm_env_agent = ""
+src/dopemux/tmux/cli.py:1425:            litellm_master_key = os.environ.get("DOPEMUX_LITELLM_MASTER_KEY", "")
+src/dopemux/tmux/cli.py:1426:            litellm_db_url = os.environ.get("DOPEMUX_LITELLM_DB_URL", "")
+src/dopemux/tmux/cli.py:1427:            litellm_env_agent = (
+src/dopemux/tmux/cli.py:1430:                f"export ANTHROPIC_API_KEY={shlex.quote(litellm_master_key)}; "
+src/dopemux/tmux/cli.py:1431:                f"export LITELLM_MASTER_KEY={shlex.quote(litellm_master_key)}; "
+src/dopemux/tmux/cli.py:1432:                f"export DOPEMUX_LITELLM_MASTER_KEY={shlex.quote(litellm_master_key)}; "
+src/dopemux/tmux/cli.py:1433:                f"export DOPEMUX_LITELLM_DB_URL={shlex.quote(litellm_db_url)}; "
+src/dopemux/tmux/cli.py:1434:                f"export LITELLM_DATABASE_URL={shlex.quote(litellm_db_url)}; "
+src/dopemux/tmux/cli.py:1435:                f"export DATABASE_URL={shlex.quote(litellm_db_url)}; "
+src/dopemux/tmux/cli.py:1436:                f"export CLAUDE_CODE_ROUTER_PROVIDER=litellm; "
+src/dopemux/tmux/cli.py:1443:            f"{litellm_env_agent}"
+src/dopemux/tmux/cli.py:1466:                f"{litellm_env_agent}"
+src/dopemux/tmux/cli.py:1867:        instance_dir = EnvPath(start_dir) / ".dopemux" / "litellm" / "A"
+src/dopemux/tmux/cli.py:1869:        litellm_log = instance_dir / "litellm.log"
+src/dopemux/tmux/cli.py:1892:            console.print("  DOPEMUX_LITELLM_DB_URL=postgresql://user:password@localhost:5432/litellm")
+src/dopemux/tmux/cli.py:1919:        litellm_port = 4000
+src/dopemux/tmux/cli.py:1920:        if not is_port_available(litellm_port):
+src/dopemux/tmux/cli.py:1922:            litellm_port = 4001
+src/dopemux/tmux/cli.py:1923:            if not is_port_available(litellm_port):
+src/dopemux/tmux/cli.py:1925:                litellm_port = 4002
+src/dopemux/tmux/cli.py:1926:                if not is_port_available(litellm_port):
+src/dopemux/tmux/cli.py:1930:            console.print(f"[warning]⚠️  Port 4000 is in use, using port {litellm_port} instead[/warning]")
+src/dopemux/tmux/cli.py:1932:        litellm_master_key = ""
+src/dopemux/tmux/cli.py:1934:        litellm_running = False
+src/dopemux/tmux/cli.py:1939:                    f"http://127.0.0.1:{litellm_port}/health/readiness",
+src/dopemux/tmux/cli.py:1943:                    litellm_master_key = candidate
+src/dopemux/tmux/cli.py:1944:                    litellm_running = True
+src/dopemux/tmux/cli.py:1954:        if not litellm_master_key:
+src/dopemux/tmux/cli.py:1956:            litellm_master_key, regenerated_master_key = ensure_master_key(base_candidate)
+src/dopemux/tmux/cli.py:1962:        os.environ["LITELLM_MASTER_KEY"] = litellm_master_key
+src/dopemux/tmux/cli.py:1964:        if not stored_master_key or stored_master_key != litellm_master_key:
+src/dopemux/tmux/cli.py:1966:                master_key_path.write_text(litellm_master_key, encoding="utf-8")
+src/dopemux/tmux/cli.py:1971:        if (instance_dir / "litellm.config.yaml").exists():
+src/dopemux/tmux/cli.py:1972:            config_source = instance_dir / "litellm.config.yaml"
+src/dopemux/tmux/cli.py:1986:        general_settings["master_key"] = litellm_master_key
+src/dopemux/tmux/cli.py:1989:            db_status_msg, db_enabled = sync_litellm_database(instance_dir, db_url)
+src/dopemux/tmux/cli.py:1996:            console.print("  3. Ensure the 'litellm' database exists")
+src/dopemux/tmux/cli.py:2008:        config_path = instance_dir / "litellm.config.yaml"
+src/dopemux/tmux/cli.py:2017:        if litellm_running:
+src/dopemux/tmux/cli.py:2022:                ["pkill", "-f", "litellm"],
+src/dopemux/tmux/cli.py:2028:                console.print(f"[warning]   Stop the existing LiteLLM proxy on port {litellm_port} manually and rerun the command.")
+src/dopemux/tmux/cli.py:2032:            litellm_log.parent.mkdir(parents=True, exist_ok=True)
+src/dopemux/tmux/cli.py:2033:            with open(litellm_log, "w", encoding="utf-8") as log_file:
+src/dopemux/tmux/cli.py:2035:                    ["litellm", "--config", str(config_path), "--port", str(litellm_port), "--host", "0.0.0.0"],
+src/dopemux/tmux/cli.py:2046:                        f"http://127.0.0.1:{litellm_port}/health/readiness",
+src/dopemux/tmux/cli.py:2064:                console.print(f"[warning]   Check logs: tail -f {litellm_log}[/warning]")
+src/dopemux/tmux/cli.py:2067:                console.print(f"  • Port {litellm_port} became busy during startup")
+src/dopemux/tmux/cli.py:2068:                console.print("  • Configuration error in litellm.config.yaml")
+src/dopemux/tmux/cli.py:2071:            console.print(f"[success]✅ LiteLLM ready on port {litellm_port}[/success]")
+src/dopemux/tmux/cli.py:2075:        os.environ["ANTHROPIC_BASE_URL"] = f"http://127.0.0.1:{litellm_port}"
+src/dopemux/tmux/cli.py:2076:        os.environ["DOPEMUX_LITELLM_MASTER_KEY"] = litellm_master_key
+src/dopemux/tmux/cli.py:2077:        os.environ["ANTHROPIC_API_KEY"] = litellm_master_key
+src/dopemux/tmux/cli.py:2079:        os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
+src/dopemux/tmux/cli.py:2080:        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = f"http://127.0.0.1:{litellm_port}/v1/chat/completions"
+src/dopemux/commands/mcp_commands.py:48:    "litellm",
+src/dopemux/commands/mcp_commands.py:1099:    both are consumed by clients (e.g. ``pal-stdio`` is the ``mcp-pal-stdio``
+src/dopemux/upgrades/runner.py:72:                # TODO: Implement actual LLM call via litellm if available
+services/registry.yaml:220:  - name: litellm
+services/registry.yaml:224:    compose_service_name: litellm
+services/repo-truth-extractor/PHASE_A_REPO_CONTROL_PLANE.md:38:- litellm.config*, mcp-proxy-config*.y*ml/json, start-mcp-servers.sh
+services/repo-truth-extractor/PHASE_A_REPO_CONTROL_PLANE.md:53:  ["mcp","litellm","router","provider","model","taskx","hook","compose","docker","tmux","agent","instruction","server","proxy","env","dotenv"]
+services/repo-truth-extractor/PHASE_A_REPO_CONTROL_PLANE.md:96:- server configs (mcp, litellm, proxy)
+services/repo-truth-extractor/PHASE_A_REPO_CONTROL_PLANE.md:151:- litellm.config* (also covered in A6 but extract routing bits here too)
+services/repo-truth-extractor/PHASE_A_REPO_CONTROL_PLANE.md:264:- litellm.config
+services/repo-truth-extractor/PHASE_A_REPO_CONTROL_PLANE.md:265:- litellm.config.yaml
+services/repo-truth-extractor/PHASE_A_REPO_CONTROL_PLANE.md:266:- any file referencing "litellm"
+services/repo-truth-extractor/PHASE_A_REPO_CONTROL_PLANE.md:267:- compose env for litellm
+services/repo-truth-extractor/PHASE_A_REPO_CONTROL_PLANE.md:268:- docs about litellm (index only)
+services/repo-truth-extractor/run_extraction_v5.py:2159:    ".config/litellm",
+services/repo-truth-extractor/run_extraction_v5.py:5355:        "litellm": any("litellm" in rel.lower() for rel in relpaths),
+services/repo-truth-extractor/run_extraction_v5.py:5530:        or name.startswith("litellm.config")
+services/repo-truth-extractor/run_extraction_v5.py:5537:        or lower.startswith("~/.config/litellm/")
+services/repo-truth-extractor/PHASE_R_ARBITRATION_GPT52.md:139:- Section 1: Repo control plane surfaces (instructions, hooks, compose, router, litellm, mcp)
+services/repo-truth-extractor/PHASE_R_ARBITRATION_GPT52.md:140:- Section 2: Home control plane surfaces (configs, router, litellm, mcp, sqlite state)
+services/repo-truth-extractor/PHASE_H_HOME_CONTROL_PLANE.md:8:~/.config/litellm/**
+services/repo-truth-extractor/PHASE_H_HOME_CONTROL_PLANE.md:40:- ~/.config/litellm
+services/repo-truth-extractor/PHASE_H_HOME_CONTROL_PLANE.md:52:  ["mcp","litellm","router","provider","model","taskx","profile","session","hook","tmux","compose","dashboard","db","sqlite","postgres","token","key","secret"]
+services/repo-truth-extractor/PHASE_H_HOME_CONTROL_PLANE.md:183:- ~/.dopemux/litellm/**
+services/repo-truth-extractor/PHASE_H_HOME_CONTROL_PLANE.md:184:- ~/.config/litellm/**
+services/repo-truth-extractor/PHASE_H_HOME_CONTROL_PLANE.md:220:- detected_tokens[] from ["workflow","task","packet","model","provider","server","mcp","litellm"]
+services/repo-truth-extractor/PHASE_C_CODE_SURFACES.md:87:- detected_tokens[] subset: ["fastapi","uvicorn","typer","click","sqlite","postgres","mcp","litellm"]
+services/repo-truth-extractor/run_extraction.py:34:    ".config/litellm",
+services/repo-truth-extractor/run_extraction_v3.py:769:    ".config/litellm",
+services/repo-truth-extractor/run_extraction_v3.py:2023:        "litellm": any("litellm" in rel.lower() for rel in relpaths),
+services/repo-truth-extractor/run_extraction_v3.py:2188:        or name.startswith("litellm.config")
+services/repo-truth-extractor/run_extraction_v3.py:2195:        or lower.startswith("~/.config/litellm/")
+services/repo-truth-extractor/archive/legacy_prompts/PROMPT_H8_NORMALIZE___MERGE___CANONICALIZE.md:76:      "type": "<litellm|claude_router|dopemux_router|unknown>",
+services/repo-truth-extractor/archive/legacy_prompts/PROMPT_H8_NORMALIZE___MERGE___CANONICALIZE.md:152:      "references": ["taskx","dopemux","docker","mcp","litellm","unknown"],
+services/repo-truth-extractor/tests/fixtures/run_extraction_v3/A1__A_P0005.FAILED.txt:1:{"artifacts":[{"artifact_name":"REPO_INSTRUCTION_SURFACE.json","payload":{"instruction_sources":[{"id":"INSTR_0001","path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/.claude/llms.md","kind":"other","scope":"project-specific","referenced_tools":[],"declared_behaviors":[],"declared_boundaries":[],"declared_dataflows":[]},{"id":"INSTR_0002","path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_HEALTH_REPORT.md","kind":"other","scope":"repo-wide","referenced_tools":[],"declared_behaviors":[],"declared_boundaries":[],"declared_dataflows":[]},{"id":"INSTR_0003","path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_IMPROVEMENT_PROGRESS.md","kind":"other","scope":"repo-wide","referenced_tools":[],"declared_behaviors":[],"declared_boundaries":[],"declared_dataflows":[]},{"id":"INSTR_0004","path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_NEXT_STEPS.md","kind":"other","scope":"repo-wide","referenced_tools":[],"declared_behaviors":[],"declared_boundaries":[],"declared_dataflows":[]},{"id":"INSTR_0005","path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_ORCHESTRATION_SUMMARY.md","kind":"other","scope":"repo-wide","referenced_tools":[],"declared_behaviors":[],"declared_boundaries":[],"declared_dataflows":[]},{"id":"INSTR_0006","path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/PERFORMANCE_BASELINE.md","kind":"other","scope":"repo-wide","referenced_tools":[],"declared_behaviors":[],"declared_boundaries":[],"declared_dataflows":[]},{"id":"INSTR_0007","path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/PRIORITY1_COMPLETE.md","kind":"other","scope":"repo-wide","referenced_tools":[],"declared_behaviors":[],"declared_boundaries":[],"declared_dataflows":[]},{"id":"INSTR_0008","path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/PRIORITY2_COMPLETE.md","kind":"other","scope":"repo-wide","referenced_tools":[],"declared_behaviors":[],"declared_boundaries":[],"declared_dataflows":[]},{"id":"INSTR_0009","path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/PRIORITY3_COMPLETE.md","kind":"other","scope":"repo-wide","referenced_tools":[],"declared_behaviors":[],"declared_boundaries":[],"declared_dataflows":[]},{"id":"INSTR_0010","path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/PROFILES_GUIDE.md","kind":"other","scope":"repo-wide","referenced_tools":[],"declared_behaviors":[],"declared_boundaries":[],"declared_dataflows":[]},{"id":"INSTR_0011","path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/README-MULTI-INSTANCE.md","kind":"other","scope":"repo-wide","referenced_tools":[],"declared_behaviors":[],"declared_boundaries":[],"declared_dataflows":[]},{"id":"INSTR_0012","path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/README.md","kind":"other","scope":"repo-wide","referenced_tools":["litellm"],"declared_behaviors":[],"declared_boundaries":[],"declared_dataflows":[]},{"id":"INSTR_0013","path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/SERVER_AUDIT_2026-02-05.md","kind":"other","scope":"repo-wide","referenced_tools":[],"declared_behaviors":[],"declared_boundaries":[],"declared_dataflows":[]},{"id":"INSTR_0014","path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/SERVER_REGISTRY.md","kind":"other","scope":"repo-wide","referenced_tools":[],"declared_behaviors":[],"declared_boundaries":[],"declared_dataflows":[]},{"id":"INSTR_0015","path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/SERVER_STATUS_SUMMARY.md","kind":"other","scope":"repo-wide","referenced_tools":[],"declared_behaviors":[],"declared_boundaries":[],"declared_dataflows":[]},{"id":"INSTR_0016","path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/claude-context/README.md","kind":"other","scope":"tool-specific","referenced_tools":[],"declared_behaviors":[],"declared_boundaries":[],"declared_dataflows":[]},{"id":"INSTR_0017","path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/conport-bridge/README.md","kind":"other","scope":"tool-specific","referenced_tools":[],"declared_behaviors":[],"declared_boundaries":[],"declared_dataflows":[]}]},"artifact_name":"REPO_INSTRUCTION_SURFACE.json"},{"artifact_name":"REPO_INSTRUCTION_REFERENCES.json","payload":{"references":[{"ref_type":"model","ref_value":"Gemini 2.5 Flash","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/.claude/llms.md","anchor_excerpt":"Quick Fixes: Gemini 2.5 Flash, GPT-5 Mini"},{"ref_type":"model","ref_value":"Claude Opus 4.1","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/.claude/llms.md","anchor_excerpt":"Architecture: Claude Opus 4.1, O3-Pro"},{"ref_type":"model","ref_value":"Claude Opus 4.1","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/.claude/llms.md","anchor_excerpt":"Documentation: Claude Opus 4.1, GPT-4.1"},{"ref_type":"model","ref_value":"Claude Sonnet 4","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/.claude/llms.md","anchor_excerpt":"Code Generation: Claude Sonnet 4, DeepSeek Chat"},{"ref_type":"service","ref_value":"conport","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_HEALTH_REPORT.md","anchor_excerpt":"| **conport** | Up 7h | 3004, 4004 | ✅ Healthy | Memory & decisions |"},{"ref_type":"service","ref_value":"dope-context","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_HEALTH_REPORT.md","anchor_excerpt":"| **dope-context** | Up 5h | 3010 | ✅ Healthy | Semantic search |"},{"ref_type":"service","ref_value":"serena-v2","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_HEALTH_REPORT.md","anchor_excerpt":"| **serena-v2** | Up 7h | 3006, 4006 | ✅ Healthy | Code navigation |"},{"ref_type":"service","ref_value":"litellm","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_HEALTH_REPORT.md","anchor_excerpt":"| **litellm** | Up 5h | - | ✅ Healthy | LLM proxy |"},{"ref_type":"service","ref_value":"mas-sequential-thinking","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_HEALTH_REPORT.md","anchor_excerpt":"| **mas-sequential-thinking** | Multi-step reasoning | MEDIUM | Replaced by Zen? |"},{"ref_type":"service","ref_value":"task-orchestrator","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_HEALTH_REPORT.md","anchor_excerpt":"1. **task-orchestrator** not running - This is a key workflow server with 37 tools"},{"ref_type":"service","ref_value":"pal","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_HEALTH_REPORT.md","anchor_excerpt":"| **pal** | Up 7h | 3003 | ✅ Healthy | apilookup, planner, thinkdeep |"},{"ref_type":"service","ref_value":"conport","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_IMPROVEMENT_PROGRESS.md","anchor_excerpt":"- ✅ conport (memory & decisions)"},{"ref_type":"service","ref_value":"dope-context","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_IMPROVEMENT_PROGRESS.md","anchor_excerpt":"- ✅ dope-context (semantic search)"},{"ref_type":"service","ref_value":"litellm","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_IMPROVEMENT_PROGRESS.md","anchor_excerpt":"- ✅ litellm (LLM proxy)"},{"ref_type":"service","ref_value":"mas-sequential-thinking","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_IMPROVEMENT_PROGRESS.md","anchor_excerpt":"- ❌ mas-sequential-thinking - May be replaced by Zen/pal"},{"ref_type":"service","ref_value":"task-orchestrator","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_IMPROVEMENT_PROGRESS.md","anchor_excerpt":"- ✅ **task-orchestrator** (37 workflow tools) - NOW FIXED!"},{"ref_type":"service","ref_value":"pal","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_IMPROVEMENT_PROGRESS.md","anchor_excerpt":"- ✅ pal (apilookup, planner, thinkdeep, consensus, debug, codereviewer, secaudit)"},{"ref_type":"service","ref_value":"conport","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_NEXT_STEPS.md","anchor_excerpt":"# 1. Investigate mas-sequential-thinking (30 min)"},{"ref_type":"service","ref_value":"mas-sequential-thinking","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_NEXT_STEPS.md","anchor_excerpt":"# 1. Investigate mas-sequential-thinking (30 min)"},{"ref_type":"service","ref_value":"pal apilookup","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_ORCHESTRATION_SUMMARY.md","anchor_excerpt":"### **Critical Path Servers (Highest Priority)**\n| Server | Port | Role | Description |\n|--------|------|------|-------------|\n| **PAL apilookup** | 3003 | Documentation | ALWAYS FIRST - Official API docs and patterns |"},{"ref_type":"service","ref_value":"conport","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_ORCHESTRATION_SUMMARY.md","anchor_excerpt":"| **ConPort** | 3004 | Memory | Project memory and decision tracking |"},{"ref_type":"service","ref_value":"serena","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_ORCHESTRATION_SUMMARY.md","anchor_excerpt":"| **Serena** | 3006 | Code Nav | LSP functionality, refactoring, project context |"},{"ref_type":"service","ref_value":"dope-context","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_ORCHESTRATION_SUMMARY.md","anchor_excerpt":"| **Claude Context** | 3007 | Code Search | Semantic search within repositories |"},{"ref_type":"service","ref_value":"pal apilookup","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_ORCHESTRATION_SUMMARY.md","anchor_excerpt":"1. **Priority Routing**: Always try PAL apilookup first for documentation"},{"ref_type":"service","ref_value":"pal apilookup","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_ORCHESTRATION_SUMMARY.md","anchor_excerpt":"2. **Fallback Chains**: PAL apilookup → Community research via Exa"},{"ref_type":"service","ref_value":"pal apilookup","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/MCP_ORCHESTRATION_SUMMARY.md","anchor_excerpt":"1. **PAL apilookup First Rule**: Always query PAL apilookup before any code generation"},{"ref_type":"service","ref_value":"pal","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/PERFORMANCE_BASELINE.md","anchor_excerpt":"| **pal** | 61.68MiB | 1.04% | ✅ Good |"},{"ref_type":"command","ref_value":"docker stats","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/PERFORMANCE_BASELINE.md","anchor_excerpt":"```bash\ndocker stats --no-stream --format \"table {{.Name}}\\t{{.CPUPerc}}\\t{{.MemUsage}}\"\n\n# Check startup times"},{"ref_type":"service","ref_value":"activity-capture","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/PRIORITY1_COMPLETE.md","anchor_excerpt":"1. **✅ activity-capture** - RUNNING"},{"ref_type":"service","ref_value":"mas-sequential-thinking","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/PRIORITY1_COMPLETE.md","anchor_excerpt":"2. **✅ mas-sequential-thinking** - REMOVED"},{"ref_type":"service","ref_value":"activity-capture","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/PRIORITY1_COMPLETE.md","anchor_excerpt":"3. **Update SERVER_REGISTRY.md** with current status"},{"ref_type":"service","ref_value":"activity-capture","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/PRIORITY1_COMPLETE.md","anchor_excerpt":"5. **Document activity-capture startup** in operations docs"},{"ref_type":"service","ref_value":"activity-capture","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/PRIORITY2_COMPLETE.md","anchor_excerpt":"- Server Crashes/Restarts - mcp-client, activity-capture specific fixes"},{"ref_type":"command","ref_value":"docker stats","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/PRIORITY3_COMPLETE.md","anchor_excerpt":"Monitor with `docker stats`"},{"ref_type":"service","ref_value":"conport","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/PROFILES_GUIDE.md","anchor_excerpt":"2. **conport** - Memory & decision tracking"},{"ref_type":"service","ref_value":"pal","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/PROFILES_GUIDE.md","anchor_excerpt":"1. **pal** - Multi-tool analysis (apilookup, planner, thinkdeep)"},{"ref_type":"command","ref_value":"docker stats","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/PROFILES_GUIDE.md","anchor_excerpt":"Monitor with `docker stats`"},{"ref_type":"service","ref_value":"Leantime","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/README.md","anchor_excerpt":"### Linked Mode (With Leantime Integration)\n\n**Prerequisites**:\n1. Leantime stack must be running"},{"ref_type":"service","ref_value":"ConPort","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/README.md","anchor_excerpt":"**Services included**: ConPort, Serena, Dope-Context, GPT-Researcher, LiteLLM, Task Orchestrator, Plane Coordinator, Desktop Commander, Activity Capture, Redis, Qdrant"},{"ref_type":"env_var","ref_value":"DOPEMUX_WORKSPACE_ID","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/README.md","anchor_excerpt":"**Common variables**:\n- `DOPEMUX_STACK_PREFIX`: Container name prefix (default: `dopemux`)\n- `DOPEMUX_WORKSPACE_ID`: Workspace path for context isolation"},{"ref_type":"service","ref_value":"mas-sequential-thinking","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/SERVER_AUDIT_2026-02-05.md","anchor_excerpt":"### Servers Investigated\n1. mas-sequential-thinking"},{"ref_type":"service","ref_value":"task-master-ai","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/SERVER_AUDIT_2026-02-05.md","anchor_excerpt":"2. task-master-ai"},{"ref_type":"service","ref_value":"activity-capture","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/SERVER_AUDIT_2026-02-05.md","anchor_excerpt":"### ✅ KEEP + FIX: activity-capture"},{"ref_type":"service","ref_value":"mas-sequential-thinking","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/SERVER_AUDIT_2026-02-05.md","anchor_excerpt":"- [ ] **Remove mas-sequential-thinking** from docker-compose.yml"},{"ref_type":"service","ref_value":"activity-capture","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/SERVER_AUDIT_2026-02-05.md","anchor_excerpt":"- [ ] **Fix activity-capture path** in docker-compose.yml"},{"ref_type":"service","ref_value":"activity-capture","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/SERVER_AUDIT_2026-02-05.md","anchor_excerpt":"- [ ] Add activity-capture startup docs"},{"ref_type":"service","ref_value":"pal apilookup","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/SERVER_REGISTRY.md","anchor_excerpt":"### PAL apilookup - Documentation & API References"},{"ref_type":"service","ref_value":"conport","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/SERVER_REGISTRY.md","anchor_excerpt":"### ConPort - Project Memory & Decision Tracking"},{"ref_type":"service","ref_value":"serena","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/SERVER_REGISTRY.md","anchor_excerpt":"### Serena - ADHD-Optimized Code Navigation & Project Memory"},{"ref_type":"service","ref_value":"dopeconbridge","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/SERVER_REGISTRY.md","anchor_excerpt":"### DopeconBridge - Two-Plane Coordinator"},{"ref_type":"service","ref_value":"Leantime","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/SERVER_REGISTRY.md","anchor_excerpt":"### Leantime - Project Management"},{"ref_type":"service","ref_value":"activity-capture","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/SERVER_REGISTRY.md","anchor_excerpt":"### Activity Capture - ADHD Activity Tracking"},{"ref_type":"service","ref_value":"pal","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/SERVER_STATUS_SUMMARY.md","anchor_excerpt":"| **pal** | dopemux-mcp-pal | 3003 | ✅ Healthy | Multi-tool analysis (apilookup, planner, thinkdeep, consensus, debug, codereviewer, secaudit) |"},{"ref_type":"service","ref_value":"activity-capture","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/SERVER_STATUS_SUMMARY.md","anchor_excerpt":"| **activity-capture** | dopemux-activity-capture | 8096 | ✅ Healthy | ADHD metrics tracking |"},{"ref_type":"service","ref_value":"mas-sequential-thinking","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/SERVER_STATUS_SUMMARY.md","anchor_excerpt":"| **mas-sequential-thinking** | Incomplete implementation (only .env, no code) | Zen/pal multi-step reasoning | 2026-02-05 |"},{"ref_type":"service","ref_value":"conport","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/conport-bridge/README.md","anchor_excerpt":"Real-time event streaming from ConPort MCP to Redis Streams, enabling agent coordination."},{"ref_type":"service","ref_value":"serena","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/conport-bridge/README.md","anchor_excerpt":"Serena has an EventBus consumer that caches decisions for LSP hover tooltips:"},{"ref_type":"env_var","ref_value":"CONPORT_DB_PATH","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/conport-bridge/README.md","anchor_excerpt":"Environment variables (see `.env.example`):\n\n- `CONPORT_DB_PATH` - Path to context.db (default: `~/code/dopemux-mvp/context_portal/context.db`)"},{"ref_type":"env_var","ref_value":"REDIS_URL","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/conport-bridge/README.md","anchor_excerpt":"- `REDIS_URL` - Redis connection URL (default: `redis://localhost:6379`)"},{"ref_type":"env_var","ref_value":"CONPORT_DB_PATH","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/conport-bridge/main.py","anchor_excerpt":"self.db_path = os.getenv(\n            'CONPORT_DB_PATH',\n            str(Path.home() / 'code/dopemux-mvp/context_portal/context.db'))"},{"ref_type":"env_var","ref_value":"REDIS_URL","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/conport-bridge/main.py","anchor_excerpt":"self.redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379')"},{"ref_type":"env_var","ref_value":"REDIS_URL","source_path":"/Users/hue/code/dopemux-mvp/docker/mcp-servers/conport-bridge/Dockerfile","anchor_excerpt":"ENV CONPORT_DB_PATH=/workspace/context_portal/context.db\nENV REDIS_URL=redis://dopemux-redis-events:6379"}]}}
+services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_2d_high_1_home_scan_consent.py:167:        ".config/litellm/config.toml",
+services/repo-truth-extractor/tests/regression/audit_2026_05_22/test_fa_2d_high_1_home_scan_consent.py:206:            ".config/litellm",
+services/repo-truth-extractor/lib/prescan/classifier.py:123:            "litellm.config",
+services/repo-truth-extractor/lib/promptgen/feature_detector.py:526:            "**/*litellm*", "**/*openai*", "**/*anthropic*",
+services/repo-truth-extractor/lib/promptgen/feature_detector.py:530:            r"import\s+litellm", r"import\s+openai",
+services/repo-truth-extractor/prompts/v3/PROMPT_M0_RUNTIME_EXPORT_INVENTORY.md:8:  - ~/.config/litellm/**
+services/repo-truth-extractor/prompts/v3/PROMPT_H0_INVENTORY___PARTITION_PLAN.md:32:      "category_hint": "<one of: mcp|router|litellm|profiles|tmux|sqlite|shell|other|unknown>",
+services/repo-truth-extractor/prompts/v3/PROMPT_H0_INVENTORY___PARTITION_PLAN.md:49:      "focus": "<mcp|router|litellm|profiles|tmux|sqlite|mixed>",
+services/repo-truth-extractor/prompts/v3/PROMPT_A1_INSTRUCTION_SURFACES.md:21:     - referenced_tools (list of strings found literally: e.g., "conport", "serena", "mcp", "litellm", "taskx")
+services/repo-truth-extractor/prompts/v3/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md:18:- Repo control plane surfaces (instructions, hooks, compose, router, litellm, mcp)
+services/repo-truth-extractor/prompts/v3/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md:19:- Home control plane surfaces (configs, router, litellm, mcp, sqlite state)
+services/repo-truth-extractor/prompts/v3/PROMPT_A7_LITELLM_SURFACE.md:29:      "id": "litellm:<stable_id>",
+services/repo-truth-extractor/prompts/v3/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md:9:  - routers/provider ladders (litellm.config*, any router yaml/toml/json)
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:106:        ".venv/lib/python3.12/site-packages/litellm/a2a_protocol/card_resolver.py",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:107:        ".venv/lib/python3.12/site-packages/litellm/integrations/litellm_agent/litellm_agent_model_resolver.py",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:108:        ".venv/lib/python3.12/site-packages/litellm/proxy/policy_engine/policy_resolver.py",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:109:        ".venv/lib/python3.12/site-packages/litellm/types/proxy/policy_engine/resolver_types.py",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:245:        ".venv/lib/python3.12/site-packages/litellm/caching/__pycache__/qdrant_semantic_cache.cpython-312.pyc",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:246:        ".venv/lib/python3.12/site-packages/litellm/caching/qdrant_semantic_cache.py",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:247:        ".venv/lib/python3.12/site-packages/litellm/llms/bedrock/embed/__pycache__/embedding.cpython-312.pyc"
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:500:        ".venv/lib/python3.12/site-packages/litellm/proxy/openapi.json",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:501:        ".venv/lib/python3.12/site-packages/litellm/proxy/openapi_registry.json",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:502:        ".worktrees/rte-live-cert-artifact-contract-hardening/.uv-cache/archive-v0/GbcOb9stWYZM4kG3XV2sb/litellm/proxy/openapi.json",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:503:        ".worktrees/rte-live-cert-artifact-contract-hardening/.uv-cache/archive-v0/GbcOb9stWYZM4kG3XV2sb/litellm/proxy/openapi_registry.json",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:504:        ".worktrees/rte-live-cert-artifact-contract-hardening/.venv/lib/python3.11/site-packages/litellm/proxy/openapi.json",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:505:        ".worktrees/rte-live-cert-artifact-contract-hardening/.venv/lib/python3.11/site-packages/litellm/proxy/openapi_registry.json"
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:715:        ".venv/lib/python3.12/site-packages/litellm/proxy/_new_new_secret_config.yaml",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:716:        ".venv/lib/python3.12/site-packages/litellm/proxy/_new_secret_config.yaml",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:717:        ".venv/lib/python3.12/site-packages/litellm/proxy/_super_secret_config.yaml",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:718:        ".venv/lib/python3.12/site-packages/litellm/proxy/example_config_yaml/_health_check_test_config.yaml",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:719:        ".venv/lib/python3.12/site-packages/litellm/proxy/example_config_yaml/aliases_config.yaml",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:720:        ".venv/lib/python3.12/site-packages/litellm/proxy/example_config_yaml/azure_config.yaml",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:721:        ".venv/lib/python3.12/site-packages/litellm/proxy/example_config_yaml/enterprise_config.yaml",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:722:        ".venv/lib/python3.12/site-packages/litellm/proxy/example_config_yaml/langfuse_config.yaml",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:723:        ".venv/lib/python3.12/site-packages/litellm/proxy/example_config_yaml/multi_instance_simple_config.yaml"
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:789:        ".venv/lib/python3.12/site-packages/litellm/integrations/__pycache__/opentelemetry.cpython-312.pyc",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:790:        ".venv/lib/python3.12/site-packages/litellm/integrations/datadog/__pycache__/datadog.cpython-312.pyc",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:791:        ".venv/lib/python3.12/site-packages/litellm/integrations/datadog/__pycache__/datadog_handler.cpython-312.pyc",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:792:        ".venv/lib/python3.12/site-packages/litellm/integrations/datadog/__pycache__/datadog_llm_obs.cpython-312.pyc"
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:952:        ".venv/bin/litellm",
+services/repo-truth-extractor/promptsets/generated/dopemux-mvp-2e346e2084bc/FEATURE_MAP.json:953:        ".venv/bin/litellm-proxy",
+services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H0_INVENTORY___PARTITION_PLAN.md:97:      "category_hint": "<one of: mcp|router|litellm|profiles|tmux|sqlite|shell|other|unknown>",
+services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H0_INVENTORY___PARTITION_PLAN.md:114:      "focus": "<mcp|router|litellm|profiles|tmux|sqlite|mixed>",
+services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md:66:2. Scan `litellm.config`, `config/router/*.yaml`, and `src/dopemux/router/**/*.py` for routing tables and model definitions.
+services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M0_RUNTIME_EXPORT_INVENTORY.md:63:  - ~/.config/litellm/**
+services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md:38:2. Map **Repo Control Plane**: Extract `instruction_surfaces`, `hooks`, `compose`, `router`, `litellm`, and `mcp` definitions from Phase A/C.
+services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md:39:3. Map **Home Control Plane**: Extract `configs`, `router`, `litellm`, `mcp`, and `sqlite` metadata from Phase H.
+services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md:66:- Repo control plane surfaces (instructions, hooks, compose, router, litellm, mcp)
+services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md:67:- Home control plane surfaces (configs, router, litellm, mcp, sqlite state)
+services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A7_LITELLM_SURFACE.md:69:2. Scan `litellm.config`, `config/litellm/*.yaml`, and `src/dopemux/router/litellm_proxy.py` for model and provider declarations.
+services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A7_LITELLM_SURFACE.md:79:6. For each LITELLM_SURFACE item, populate `id` (litellm:<stable_id>), required fields, and `evidence`.
+services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A7_LITELLM_SURFACE.md:120:      "id": "litellm:<stable_id>",
+services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A1_INSTRUCTION_SURFACES.md:73:3. Extract literal tool references: scan instruction text for mentions of "conport", "serena", "mcp", "litellm", "taskx", and "dope-context".
+services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A1_INSTRUCTION_SURFACES.md:113:     - referenced_tools (list of strings found literally: e.g., "conport", "serena", "mcp", "litellm", "taskx")
+services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md:116:  - routers/provider ladders (litellm.config*, any router yaml/toml/json)
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/PHASE_CONTRACT_MAP.json:1273:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/PHASE_CONTRACT_MAP.json:1844:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/PHASE_CONTRACT_MAP.json:8555:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040050Z/PHASE_CONTRACT_MAP.json:9067:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260410T214645Z/PHASE_CONTRACT_MAP.json:1273:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260410T214645Z/PHASE_CONTRACT_MAP.json:1844:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260410T214645Z/PHASE_CONTRACT_MAP.json:8555:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260410T214645Z/PHASE_CONTRACT_MAP.json:9067:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/PHASE_CONTRACT_MAP.json:1273:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/PHASE_CONTRACT_MAP.json:1844:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/PHASE_CONTRACT_MAP.json:8555:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T035946Z/PHASE_CONTRACT_MAP.json:9067:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260410T233918Z/PHASE_CONTRACT_MAP.json:1273:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260410T233918Z/PHASE_CONTRACT_MAP.json:1844:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260410T233918Z/PHASE_CONTRACT_MAP.json:8555:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260410T233918Z/PHASE_CONTRACT_MAP.json:9067:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260410T215440Z/PHASE_CONTRACT_MAP.json:1273:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260410T215440Z/PHASE_CONTRACT_MAP.json:1844:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260410T215440Z/PHASE_CONTRACT_MAP.json:8555:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260410T215440Z/PHASE_CONTRACT_MAP.json:9067:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/PHASE_CONTRACT_MAP.json:1273:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/PHASE_CONTRACT_MAP.json:1844:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/PHASE_CONTRACT_MAP.json:8555:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040138Z/PHASE_CONTRACT_MAP.json:9067:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/PHASE_CONTRACT_MAP.json:1273:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/PHASE_CONTRACT_MAP.json:1844:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/PHASE_CONTRACT_MAP.json:8555:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040217Z/PHASE_CONTRACT_MAP.json:9067:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/PHASE_CONTRACT_MAP.json:1273:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/PHASE_CONTRACT_MAP.json:1844:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/PHASE_CONTRACT_MAP.json:8555:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031748Z/PHASE_CONTRACT_MAP.json:9067:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/PHASE_CONTRACT_MAP.json:1273:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/PHASE_CONTRACT_MAP.json:1844:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/PHASE_CONTRACT_MAP.json:8555:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031028Z/PHASE_CONTRACT_MAP.json:9067:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/PHASE_CONTRACT_MAP.json:1273:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/PHASE_CONTRACT_MAP.json:1844:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/PHASE_CONTRACT_MAP.json:8555:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T031122Z/PHASE_CONTRACT_MAP.json:9067:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260410T220109Z/PHASE_CONTRACT_MAP.json:1273:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260410T220109Z/PHASE_CONTRACT_MAP.json:1844:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260410T220109Z/PHASE_CONTRACT_MAP.json:8555:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260410T220109Z/PHASE_CONTRACT_MAP.json:9067:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/PHASE_CONTRACT_MAP.json:1273:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/PHASE_CONTRACT_MAP.json:1844:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/PHASE_CONTRACT_MAP.json:8555:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T030942Z/PHASE_CONTRACT_MAP.json:9067:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/PHASE_CONTRACT_MAP.json:1273:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/PHASE_CONTRACT_MAP.json:1844:            "repo_litellm_surface@v1"
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/PHASE_CONTRACT_MAP.json:8555:            "home_litellm_surface@v1",
+services/repo-truth-extractor/extraction/repo-truth-extractor/v5/runs/run_20260418T040018Z/PHASE_CONTRACT_MAP.json:9067:            "home_litellm_surface@v1",
+services/claude_brain/brain_manager.py:18:from litellm import completion, completion_cost
+services/claude_brain/brain_manager.py:19:from litellm.exceptions import APIConnectionError, RateLimitError

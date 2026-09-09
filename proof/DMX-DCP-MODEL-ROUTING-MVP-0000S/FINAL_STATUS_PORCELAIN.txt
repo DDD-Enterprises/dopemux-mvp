@@ -1,0 +1,23 @@
+## dcp/model-routing-0000s-series-lineage
+ M .claude/claude_config.json
+A  docs/03-reference/dcp/model-routing-series-map.json
+A  docs/03-reference/dcp/model-routing-series-status.md
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/AUDITOR_REPORT.md
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/COMMAND_LOG.md
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/EVIDENCE_LEDGER.md
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/HANDOFF.json
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/HANDOFF.md
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/MODEL_ROUTING_SERIES_MAP.json
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/PAL_CHAIN.md
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/PROOF.json
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/gh-pr-all.exit
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/gh-pr-all.json
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/gh-pr-all.stderr.txt
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/gh-pr-dcp-routing-related.json
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/model-routing-packets.txt
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/model-routing-proof.txt
+A  proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/model-routing-runtime-files.txt
+A  task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000S.md
+?? proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/DIFF_NAME_ONLY.txt
+?? proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/DIFF_STAT.txt
+?? proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/FINAL_STATUS_PORCELAIN.txt

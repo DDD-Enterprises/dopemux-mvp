@@ -1,0 +1,10 @@
+{
+  "auditor_disposition_required": true,
+  "calls": [],
+  "definitions": [],
+  "disposition_rule": "Any execution-capable production consumption of is_runnable is blocking. AST discovery identifies candidates; the independent auditor must classify reachability.",
+  "flag_references": [],
+  "parse_errors": [],
+  "production_is_runnable_call_candidate_count": 0,
+  "production_is_runnable_call_candidates": []
+}
