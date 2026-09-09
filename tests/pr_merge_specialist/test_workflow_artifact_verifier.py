@@ -85,6 +85,11 @@ class ArtifactTransport:
             "event": "workflow_run", "head_sha": "d" * 40, "head_branch": "main",
             "run_started_at": "2026-09-07T12:05:00Z",
         }
+        self.steward_status = {
+            "context": "PR Steward / final readiness",
+            "state": "success",
+            "target_url": f"https://github.com/{self.repo}/actions/runs/{self.steward_run['id']}",
+        }
         self.steward_artifact = {
             "id": 53, "expired": False,
             "name": f"pr-steward-pr-{proof['pr_number']}-head-{proof['head_sha']}-readiness",
@@ -185,6 +190,10 @@ class ArtifactTransport:
         self.calls.append("steward_workflow")
         return copy.deepcopy(self.steward_workflow)
 
+    def fetch_steward_readiness_status(self, head_sha):
+        self.calls.append(("steward_readiness_status", head_sha))
+        return {"sha": head_sha, "statuses": [copy.deepcopy(self.steward_status)]}
+
     def fetch_steward_artifacts(self, name, run_id=None):
         self.calls.append(("steward_artifacts", name, run_id))
         return [copy.deepcopy(self.steward_artifact)]
@@ -208,7 +217,8 @@ def install_artifact_transport(monkeypatch, remote_proof: bytes) -> ArtifactTran
     transport = ArtifactTransport(remote_proof)
     for name in ("fetch_audit_workflow", "fetch_audit_run", "fetch_audit_artifacts",
                  "fetch_audit_pr", "download_audit_artifact",
-                 "fetch_steward_workflow", "fetch_steward_run", "fetch_steward_artifacts",
+                 "fetch_steward_workflow", "fetch_steward_run",
+                 "fetch_steward_readiness_status", "fetch_steward_artifacts",
                  "fetch_steward_pr", "download_steward_artifact"):
         method = getattr(transport, name)
         monkeypatch.setattr(GitHubClient, name, lambda self, *args, _method=method: _method(*args))
@@ -261,8 +271,77 @@ def test_exact_authenticated_steward_readiness_binds_bytes_and_source_receipt():
     assert result["source_receipt_member"] == SOURCE_RECEIPT_MEMBER
     assert result["audit_run_id"] == 23
     assert result["source_receipt"]["audit_artifact_name"] == transport.artifact["name"]
+    assert ("steward_readiness_status", HEAD) in transport.calls
     assert ("steward_artifacts", transport.steward_artifact["name"], 47) in transport.calls
+    assert ("steward_artifacts", transport.steward_artifact["name"], None) not in transport.calls
     assert transport.calls.count(("steward_run", 47)) == 2
+
+
+def test_readiness_artifact_selection_uses_pinned_steward_status_run():
+    transport = ArtifactTransport(proof_bytes())
+    stale_artifact = copy.deepcopy(transport.steward_artifact)
+    stale_artifact["id"] = 52
+    stale_artifact["workflow_run"] = {"id": 46, "head_sha": "d" * 40}
+
+    def artifacts(name, run_id=None):
+        transport.calls.append(("steward_artifacts", name, run_id))
+        if run_id == 47:
+            return [copy.deepcopy(transport.steward_artifact)]
+        return [stale_artifact, copy.deepcopy(transport.steward_artifact)]
+
+    transport.fetch_steward_artifacts = artifacts
+    result = verify_readiness(transport)
+    assert result["workflow_run_id"] == 47
+    assert result["artifact_id"] == 53
+    assert ("steward_artifacts", transport.steward_artifact["name"], None) not in transport.calls
+
+
+@pytest.mark.parametrize("statuses", [
+    [],
+    [{"context": "Other", "state": "success", "target_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/47"}],
+    [
+        {"context": "PR Steward / final readiness", "state": "success", "target_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/47"},
+        {"context": "PR Steward / final readiness", "state": "success", "target_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/48"},
+    ],
+])
+def test_missing_or_ambiguous_steward_readiness_status_context_denies(statuses):
+    transport = ArtifactTransport(proof_bytes())
+    transport.fetch_steward_readiness_status = lambda head_sha: {
+        "sha": head_sha,
+        "statuses": copy.deepcopy(statuses),
+    }
+    with pytest.raises(WorkflowArtifactError, match="steward_status_context_not_exact"):
+        verify_readiness(transport)
+
+
+@pytest.mark.parametrize("status", [
+    {"context": "PR Steward / final readiness", "state": "failure", "target_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/47"},
+    {"context": "PR Steward / final readiness", "state": "success", "target_url": ""},
+    {"context": "PR Steward / final readiness", "state": "success", "target_url": "https://example.invalid/actions/runs/47"},
+    {"context": "PR Steward / final readiness", "state": "success", "target_url": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/48"},
+])
+def test_wrong_steward_readiness_status_context_denies(status):
+    transport = ArtifactTransport(proof_bytes())
+    transport.steward_status = status
+    with pytest.raises(WorkflowArtifactError):
+        verify_readiness(transport)
+
+
+def test_steward_source_receipt_must_match_externally_pinned_run_id():
+    transport = ArtifactTransport(proof_bytes())
+    receipt = transport.source_receipt()
+    receipt["steward_run_id"] = 48
+    readiness = transport.readiness_bytes()
+    transport.set_steward_archive(
+        readiness,
+        json.dumps(receipt, indent=2, sort_keys=True).encode(),
+    )
+    with pytest.raises(WorkflowArtifactError, match="source_receipt_steward_run_mismatch"):
+        verify_pr_steward_readiness_artifact(
+            readiness, github_client=transport,
+            expected_repo=REPO, expected_pr=1330,
+            expected_head_sha=HEAD, expected_base_sha=BASE,
+        )
 
 
 @pytest.mark.parametrize("section,field,value", [
@@ -305,7 +384,6 @@ def test_wrong_or_missing_steward_readiness_binding_denies(section, field, value
         ("pr", 1331),
         ("head_sha", "e" * 40),
         ("base_sha", "e" * 40),
-        ("steward_run_id", 99),
         ("audit_run_id", None),
         ("audit_run_id", 0),
         ("steward_workflow", ".github/workflows/forged.yml"),
@@ -334,7 +412,10 @@ def test_steward_source_receipt_identity_mismatch_denies(field, value):
 @pytest.mark.parametrize("count", [0, 2])
 def test_missing_or_ambiguous_steward_readiness_artifacts_deny(count):
     transport = ArtifactTransport(proof_bytes())
-    transport.fetch_steward_artifacts = lambda *args: [transport.steward_artifact] * count
+    def artifacts(name, run_id=None):
+        assert run_id == transport.steward_run["id"]
+        return [transport.steward_artifact] * count
+    transport.fetch_steward_artifacts = artifacts
     with pytest.raises(WorkflowArtifactError, match="exact_single_artifact_required"):
         verify_readiness(transport)
 
@@ -520,7 +601,13 @@ def test_pinned_run_is_only_a_locator():
 def test_existing_github_client_uses_fixed_get_routes_and_preserves_zip_bytes(monkeypatch, tmp_path):
     client = GitHubClient(repo=REPO, repo_root=tmp_path, policy={})
     commands = []
-    responses = iter(['{}', '{}', '{}', '[{"artifacts": [{"id": 1}]}, {"artifacts": [{"id": 2}]}]'])
+    responses = iter([
+        '{}',
+        '{}',
+        '{}',
+        '{"sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","statuses":[]}',
+        '[{"artifacts": [{"id": 1}]}, {"artifacts": [{"id": 2}]}]',
+    ])
     def run(command):
         commands.append(command)
         return CommandResult(command, 0, next(responses), "")
@@ -528,6 +615,7 @@ def test_existing_github_client_uses_fixed_get_routes_and_preserves_zip_bytes(mo
     client.fetch_audit_workflow()
     client.fetch_audit_run(23)
     client.fetch_audit_pr(1330)
+    assert client.fetch_steward_readiness_status(HEAD) == {"sha": HEAD, "statuses": []}
     assert client.fetch_audit_artifacts("exact-name", 23) == [{"id": 1}, {"id": 2}]
     binary = b"PK\xff\x00\r\n"
     def download(command, **kwargs):
@@ -540,6 +628,7 @@ def test_existing_github_client_uses_fixed_get_routes_and_preserves_zip_bytes(mo
                for command in commands)
     assert commands[-1][-1] == f"repos/{REPO}/actions/artifacts/31/zip"
     assert commands[-2][-2:] == ["--paginate", "--slurp"]
+    assert f"repos/{REPO}/commits/{HEAD}/status" in commands[-3]
 
 
 def test_workflow_uses_same_verifier_and_trusted_run_locator():

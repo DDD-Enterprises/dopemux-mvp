@@ -11,10 +11,11 @@ from hashlib import sha256
 from pathlib import Path
 from typing import Any, Mapping
 
-from .github_api import GitHubClient
+from .github_api import GITHUB_ACTIONS_DETAILS_URL_RE, GitHubClient
 
 WORKFLOW_PATH = ".github/workflows/embedded-audit.yml"
 PR_STEWARD_WORKFLOW_PATH = ".github/workflows/pr-steward.yml"
+PR_STEWARD_READINESS_CONTEXT = "PR Steward / final readiness"
 PROOF_MEMBER = "PROOF.json"
 READINESS_MEMBER = "MERGE_READINESS.json"
 SOURCE_RECEIPT_MEMBER = "PR_STEWARD_SOURCE_RECEIPT.json"
@@ -155,6 +156,42 @@ def _expected_audit_artifact_name(*, expected_pr: int, expected_head_sha: str) -
     return f"embedded-audit-pr-{expected_pr}-head-{expected_head_sha}-proof"
 
 
+def _resolve_steward_run_id_from_readiness_status(
+    client: GitHubClient,
+    *,
+    expected_head_sha: str,
+) -> int:
+    status_payload = _object(client.fetch_steward_readiness_status(expected_head_sha))
+    _require(
+        status_payload.get("sha") == expected_head_sha,
+        "steward_status_head_mismatch",
+    )
+    statuses = status_payload.get("statuses")
+    _require(isinstance(statuses, list), "steward_status_list_invalid")
+    matches = [
+        _object(status)
+        for status in statuses
+        if _object(status).get("context") == PR_STEWARD_READINESS_CONTEXT
+        or _object(status).get("name") == PR_STEWARD_READINESS_CONTEXT
+    ]
+    _require(len(matches) == 1, "steward_status_context_not_exact")
+    status = matches[0]
+    outcome = str(status.get("state") or status.get("conclusion") or "").upper()
+    _require(outcome == "SUCCESS", "steward_status_not_successful")
+    target_url = str(
+        status.get("target_url")
+        or status.get("targetUrl")
+        or status.get("details_url")
+        or status.get("detailsUrl")
+        or ""
+    ).strip()
+    match = GITHUB_ACTIONS_DETAILS_URL_RE.match(target_url)
+    _require(match is not None, "steward_status_target_url_invalid")
+    run_id = int(match.group("run_id"))
+    _require(_positive_id(run_id), "steward_status_run_id_invalid")
+    return run_id
+
+
 def verify_pr_steward_readiness_artifact(
     local_readiness_bytes: bytes,
     *,
@@ -203,10 +240,13 @@ def verify_pr_steward_readiness_artifact(
         expected_pr=expected_pr,
         expected_head_sha=expected_head_sha,
     )
-    artifact = _select_artifact(client.fetch_steward_artifacts(name), name)
+    run_id = _resolve_steward_run_id_from_readiness_status(
+        client,
+        expected_head_sha=expected_head_sha,
+    )
+    artifact = _select_artifact(client.fetch_steward_artifacts(name, run_id), name)
     artifact_run = _object(artifact.get("workflow_run"))
-    run_id = artifact_run.get("id")
-    _require(_positive_id(run_id), "steward_artifact_run_missing")
+    _require(artifact_run.get("id") == run_id, "steward_artifact_run_mismatch")
     run = _object(client.fetch_steward_run(run_id))
     repository = _object(run.get("repository"))
     _require(
@@ -266,11 +306,14 @@ def verify_pr_steward_readiness_artifact(
     receipt = _object(json.loads(source_receipt_bytes))
     audit_run_id = receipt.get("audit_run_id")
     _require(
+        receipt.get("steward_run_id") == run_id,
+        "source_receipt_steward_run_mismatch",
+    )
+    _require(
         receipt.get("repo") == expected_repo
         and type(receipt.get("pr")) is int and receipt["pr"] == expected_pr
         and receipt.get("head_sha") == expected_head_sha
         and receipt.get("base_sha") == expected_base_sha
-        and receipt.get("steward_run_id") == run_id
         and _positive_id(audit_run_id)
         and receipt.get("steward_workflow") == PR_STEWARD_WORKFLOW_PATH
         and receipt.get("audit_workflow") == WORKFLOW_PATH

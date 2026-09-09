@@ -213,6 +213,9 @@ class GitHubClient:
     def fetch_steward_pr(self, pr_id: int) -> Dict[str, Any]:
         return self._audit_api_json(f"repos/{self.repo}/pulls/{pr_id}")
 
+    def fetch_steward_readiness_status(self, head_sha: str) -> Dict[str, Any]:
+        return self._audit_api_json(f"repos/{self.repo}/commits/{head_sha}/status")
+
     def fetch_audit_artifacts(self, name: str, run_id: Optional[int] = None) -> List[Dict[str, Any]]:
         prefix = f"repos/{self.repo}/actions"
         if run_id is not None:
