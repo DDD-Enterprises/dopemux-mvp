@@ -6,44 +6,78 @@
   "amendment": "OPERATOR-AMEND-030 (A/D -> API-metered) + OPERATOR OPTION 'b' (arity repair, second D attempt, Route A)",
   "return_utc": "2026-09-10T20:15:00Z",
   "MACRO_STATUS": "PARTIAL_RETURN_TO_SUPERVISOR",
-
   "HEADLINE": "Route D executed live three times on the amended API-metered path and never produced a research report -- but attempt 3 established WHY, and the cause is a structural defect in the frozen retrieval budget that would fail ANY model on ANY provider path. Route A never reached a provider: it requires a macOS Terminal.app process ancestry that no agent session can supply. Routes B and C are unchanged from 029.",
-
   "GATES_AND_MUTATIONS": {
     "REPOSITORY_MUTATION_AUTHORIZED": "NO (packet gate). NOT performed by this lead.",
-    "GITHUB_MUTATION_AUTHORIZED": "NO (packet gate). NOT performed by this lead.",
+    "GITHUB_MUTATION_AUTHORIZED": "NO in the packet gate, SUPERSEDED by an explicit operator instruction on 2026-09-10 to publish the evidence to a PR.",
     "ADOPTION_AUTHORIZED": "NO. Nothing adopted.",
     "ACTIVATION_AUTHORIZED": "NO. Nothing activated.",
-    "repository_mutations_made": 0,
-    "github_mutations_made": 0,
-    "note": "All work was performed on a REVERTIBLE COPY at /private/tmp/DMX-DR04-EXEC-012-AMEND-030. The audited original /private/tmp/DMX-DR04-EXEC-012-REPAIR-028 was never edited."
+    "repository_mutations_made": 1,
+    "github_mutations_made": 1,
+    "note": "All work was performed on a REVERTIBLE COPY at /private/tmp/DMX-DR04-EXEC-012-AMEND-030. The audited original /private/tmp/DMX-DR04-EXEC-012-REPAIR-028 was never edited.",
+    "github_mutation_detail": {
+      "action": "Pushed branch evidence/dmx-dr04-exec-012-amend-030 and opened PR #1341 against main.",
+      "scope": "EVIDENCE ONLY -- 76 files, all under claudedocs/exec-012-dr04-amend-030/. No product code, no configuration, no workflow touched.",
+      "authority": "Operator instruction: 'supervisor handoff and push evidence to pr'.",
+      "disclosure_decision": "The repository is PUBLIC and 11 receipts embed the raw /v1/models response body, which discloses the account's model entitlements. This was put to the operator before publication and they chose to publish unmodified, preserving receipt byte-exactness.",
+      "secret_scan_before_publication": "75 files, zero live credential values."
+    },
+    "repository_mutation_detail": "One commit on a new branch created from mvp/main in an isolated worktree. The dirty pr-92 checkout was never touched, and no existing branch was modified."
   },
-
   "ROUTE_OUTCOMES": {
     "A": {
       "status": "BLOCKED_TOPOLOGY_NEVER_REACHED_A_PROVIDER",
       "research_attempt_consumed": false,
-      "external_spend_usd": 0.00,
-      "codex_calls": 0, "voyage_calls": 0, "parallel_calls": 0,
+      "external_spend_usd": 0.0,
+      "codex_calls": 0,
+      "voyage_calls": 0,
+      "parallel_calls": 0,
       "blocker": "adapter/policy.py:72 top_level() requires a process ancestry reaching pid 1 that includes an executable path ending '/Terminal'. Rejection code TOP_LEVEL_TERMINAL_REQUIRED.",
       "scope": "NOT agent-specific: iTerm2 also fails it (its server is iTermServer-<version>). Route A requires macOS Terminal.app.",
       "circumvention": "REFUSED. Patching top_level(), faking /bin/ps output or re-parenting would each defeat a deliberate integrity control and invalidate Route A as benchmark evidence.",
       "readiness": "FULLY PREPARED. Authorization validates against the real gate offline; dry run PASS (0/0/0 calls); harness re-sealed; arity repair applied and regression-proven; parity with D confirmed; Voyage cost evidence verified twice from the official source; spent claim and budget archived so a relaunch starts clean.",
       "handover": "RUN_ROUTE_A_FROM_TERMINAL.command -- operator runs it from Terminal.app. Carries a budget warning and a y/N confirmation."
     },
-    "B": {"status": "REUSED_UNCHANGED", "research_attempt_consumed": false, "note": "B_RESEARCH_RERUN=FORBIDDEN honoured. Not touched."},
-    "C": {"status": "UNCHANGED_FROM_029", "launch_claim": "SPENT at the 028 root", "research_attempt_consumed": false, "external_spend_usd": 0.00, "note": "Still BLOCKED. Its diagnostic keychain read remains an open operator item."},
+    "B": {
+      "status": "REUSED_UNCHANGED",
+      "research_attempt_consumed": false,
+      "note": "B_RESEARCH_RERUN=FORBIDDEN honoured. Not touched."
+    },
+    "C": {
+      "status": "UNCHANGED_FROM_029",
+      "launch_claim": "SPENT at the 028 root",
+      "research_attempt_consumed": false,
+      "external_spend_usd": 0.0,
+      "note": "Still BLOCKED. Its diagnostic keychain read remains an open operator item."
+    },
     "D": {
       "status": "EXECUTED_LIVE_THREE_ATTEMPTS_ALL_CONSUMED_NO_REPORT",
       "attempts": [
-        {"n": 1, "outcome": "BLOCKED_CODEX_COMPLETION_AMBIGUOUS", "usd": 2.22, "cause": "Turn 3 emitted two agent_message items (prose preface + valid action); the harness required exactly one.", "fault": "HARNESS_ARITY_BRITTLENESS"},
-        {"n": 2, "outcome": "BLOCKED_ARTIFACT_ALREADY_EXISTS", "usd": 0.60, "cause": "Lead archived run/, loop_state/, broker_state/ but missed evidence/.", "fault": "LEAD_ERROR"},
-        {"n": 3, "outcome": "BLOCKED_CODEX_CALL_CEILING_NO_FINAL_REPORT", "usd": 5.09, "cause": "All 6 turns succeeded and all 6 retrieval slots were spent, leaving no turn to emit 'final'.", "fault": "STRUCTURAL_DEFECT_IN_THE_FROZEN_BUDGET"}
+        {
+          "n": 1,
+          "outcome": "BLOCKED_CODEX_COMPLETION_AMBIGUOUS",
+          "usd": 2.22,
+          "cause": "Turn 3 emitted two agent_message items (prose preface + valid action); the harness required exactly one.",
+          "fault": "HARNESS_ARITY_BRITTLENESS"
+        },
+        {
+          "n": 2,
+          "outcome": "BLOCKED_ARTIFACT_ALREADY_EXISTS",
+          "usd": 0.6,
+          "cause": "Lead archived run/, loop_state/, broker_state/ but missed evidence/.",
+          "fault": "LEAD_ERROR"
+        },
+        {
+          "n": 3,
+          "outcome": "BLOCKED_CODEX_CALL_CEILING_NO_FINAL_REPORT",
+          "usd": 5.09,
+          "cause": "All 6 turns succeeded and all 6 retrieval slots were spent, leaving no turn to emit 'final'.",
+          "fault": "STRUCTURAL_DEFECT_IN_THE_FROZEN_BUDGET"
+        }
       ],
       "runtime_isolation": "PASS. UNAPPROVED_NATIVE_TOOL_EVENT_COUNT = 0 across all six turns of attempt 3 -- the strongest isolation evidence this program has produced."
     }
   },
-
   "PRIMARY_FINDING": {
     "id": "D_BUDGET_STRUCTURALLY_UNSATISFIABLE",
     "severity": "BLOCKING_FOR_ROUTE_D_AS_SPECIFIED",
@@ -51,57 +85,107 @@
     "root_cause": "request_payload() passes 'retrieval_budget' to the model but NEVER passes the codex turn ceiling, and the mechanics string says only 'Return final report when complete'. The model is shown one budget and judged against a second, undisclosed one.",
     "evidence": "Attempt 3 ran search/fetch/search/fetch/search/fetch -- exactly 3 and 3, both ceilings hit precisely, six schema-valid actions, zero unapproved tool events -- and was then cut off.",
     "generality": "Route-level, not model-level. Any Route D run using full retrieval fails this way on any model, provider path or effort level.",
-    "remedies": ["Raise limits.codex to at least retrieval_slots + 1 (7).", "Or disclose the turn ceiling in request_payload so the model can reserve a turn."],
+    "remedies": [
+      "Raise limits.codex to at least retrieval_slots + 1 (7).",
+      "Or disclose the turn ceiling in request_payload so the model can reserve a turn."
+    ],
     "status": "NOT APPLIED. Both are benchmark METHOD amendments requiring operator authority."
   },
-
   "SECONDARY_FINDINGS": [
-    {"id": "PROMPT_CACHE_WRITES_BUT_NEVER_HITS", "detail": "cached_input_tokens = 0 with cache_write ~= input on ALL nine live turns across attempts 1 and 3. Each loop turn is a fresh `codex exec --ephemeral` thread, so the Responses API prompt_cache_key is almost certainly thread-scoped. Roughly 60% of Route D's cost was re-sending an unchanged 233 KB acceptance_schema prefix.", "confidence": "INFERENCE from usage counters, not a provider assertion."},
-    {"id": "AGENT_MESSAGE_ARITY_IS_NONDETERMINISTIC", "detail": "Narration observed on 1 of 3 turns in attempt 1 and 0 of 6 in attempt 3. Both harnesses assumed exactly one agent_message per turn.", "repair": "W01/message_arity.py, imported by absolute path by BOTH routes so parity is by construction. Regression-proven against attempt 1's real turn-3 fixture. HONEST STATUS: it never fired in attempt 3 -- that run is evidence it did no harm, not evidence it works in production."},
-    {"id": "SERVED_MODEL_NOT_ATTESTABLE", "detail": "The codex exec --json event stream carries no model identifier. served_model='UNKNOWN' is honest and unavoidable. What IS established: the request pins model=gpt-6-astra and that id is present in the account's /v1/models listing, so no silent fallback occurred."},
-    {"id": "API_ROUTE_PROVEN_END_TO_END", "detail": "The openai-api provider path works: credential resolved from the child environment via env_key with no codex login, --output-schema round-trips, tool isolation holds, broker retrieval works, and nine live turns completed. The amendment itself is sound."}
+    {
+      "id": "PROMPT_CACHE_WRITES_BUT_NEVER_HITS",
+      "detail": "cached_input_tokens = 0 with cache_write ~= input on ALL nine live turns across attempts 1 and 3. Each loop turn is a fresh `codex exec --ephemeral` thread, so the Responses API prompt_cache_key is almost certainly thread-scoped. Roughly 60% of Route D's cost was re-sending an unchanged 233 KB acceptance_schema prefix.",
+      "confidence": "INFERENCE from usage counters, not a provider assertion."
+    },
+    {
+      "id": "AGENT_MESSAGE_ARITY_IS_NONDETERMINISTIC",
+      "detail": "Narration observed on 1 of 3 turns in attempt 1 and 0 of 6 in attempt 3. Both harnesses assumed exactly one agent_message per turn.",
+      "repair": "W01/message_arity.py, imported by absolute path by BOTH routes so parity is by construction. Regression-proven against attempt 1's real turn-3 fixture. HONEST STATUS: it never fired in attempt 3 -- that run is evidence it did no harm, not evidence it works in production."
+    },
+    {
+      "id": "SERVED_MODEL_NOT_ATTESTABLE",
+      "detail": "The codex exec --json event stream carries no model identifier. served_model='UNKNOWN' is honest and unavoidable. What IS established: the request pins model=gpt-6-astra and that id is present in the account's /v1/models listing, so no silent fallback occurred."
+    },
+    {
+      "id": "API_ROUTE_PROVEN_END_TO_END",
+      "detail": "The openai-api provider path works: credential resolved from the child environment via env_key with no codex login, --output-schema round-trips, tool isolation holds, broker retrieval works, and nine live turns completed. The amendment itself is sound."
+    }
   ],
-
   "LEAD_ERRORS_DISCLOSED": {
     "count": 3,
-    "cost_usd": 0.60,
+    "cost_usd": 0.6,
     "incidents": [
-      {"route": "D", "attempt": 2, "missed": "the complete set of O_EXCL write targets (evidence/)"},
-      {"route": "A", "attempt": 1, "missed": "an authorization key the CONSUMER reads that no validator checks (voyage_service_label)"},
-      {"route": "A", "attempt": 2, "missed": "a runtime precondition on the post-claim path (top_level())"}
+      {
+        "route": "D",
+        "attempt": 2,
+        "missed": "the complete set of O_EXCL write targets (evidence/)"
+      },
+      {
+        "route": "A",
+        "attempt": 1,
+        "missed": "an authorization key the CONSUMER reads that no validator checks (voyage_service_label)"
+      },
+      {
+        "route": "A",
+        "attempt": 2,
+        "missed": "a runtime precondition on the post-claim path (top_level())"
+      }
     ],
     "common_root": "Each time I validated one layer and treated it as sufficient. A passing gate is evidence the gate is satisfied, not evidence the run will proceed.",
     "corrective_rule": "Before any dispatch that writes a one-shot claim, enumerate FROM THE SOURCE, on the path AFTER the claim: (1) every O_EXCL write target and bare mkdir(), (2) every input key the consumer reads, (3) every runtime precondition. All three checks are free. Each one I skipped cost an attempt.",
     "note": "Two of the three cost nothing. The third cost USD 0.60. None of the three consumed benchmark work."
   },
-
   "SPEND": {
     "total_usd_estimated": 8.28,
     "operator_ceiling_usd": 10,
     "remaining_usd": 1.72,
-    "token_totals": {"input": 772360, "output": 5924},
+    "token_totals": {
+      "input": 772360,
+      "output": 5924
+    },
     "rate": "$10 input / $50 output per million -- ASSUMED, not verified. Token counts are exact from turn.completed usage.",
-    "parallel_spend_usd": 0.00,
-    "voyage_spend_usd": 0.00,
+    "parallel_spend_usd": 0.0,
+    "voyage_spend_usd": 0.0,
     "ceiling_enforcement": "CONTRACTUAL ONLY. There is no dollar cap anywhere in either route's code -- only turn counts."
   },
-
   "INTEGRITY_ATTESTATIONS": {
     "audited_original_028": "UNCHANGED. Inventory diff: 138 entries, UNEXPECTED_FILES=1 (Route C's pre-existing .consumed marker only), MISSING_FILES=0, HASH_MISMATCHES=0.",
     "pycache_pollution": "NONE in either tree.",
     "secret_scan": "245 files scanned. Zero live credential values. Ten regex hits, all verified benign: four are the harnesses' own detector pattern definitions, six are one synthetic test fixture (a literal a-z0-9 alphabet behind an sk- prefix) which W07's own report annotates 'Not a live credential'. The fixture string is deliberately not reproduced here so this return does not itself trip a downstream secret scanner.",
     "credential_handling": "No secret value was read into any artifact, log or receipt. Keychain reads were value-reads only where required for dispatch; the Voyage labels were confirmed by a METADATA-ONLY lookup (no -w)."
   },
-
   "OPEN_ITEMS_FOR_THE_SUPERVISOR": [
-    {"id": "D_BUDGET_AMENDMENT", "decision": "Authorize raising limits.codex to >= 7, or disclosing the turn ceiling in request_payload -- then re-run Route D. Without one of these Route D cannot produce a report.", "blocking": true},
-    {"id": "A_TERMINAL_RUN", "decision": "Run RUN_ROUTE_A_FROM_TERMINAL.command from macOS Terminal.app. A's attempt is UNCONSUMED and everything else is prepared.", "blocking": true},
-    {"id": "A_SAME_CEILING_RISK", "decision": "Route A shares limits.codex=6 and 3+3 retrieval. Whether GPT Researcher's own loop hits the same wall is UNVERIFIED. Consider settling the budget amendment before spending A's single attempt.", "blocking": false},
-    {"id": "BUDGET_CEILING", "decision": "USD 1.72 remains of the USD 10 ceiling. Route A has not run. Raise the ceiling or accept the risk of a mid-run stop.", "blocking": true},
-    {"id": "C_DIAGNOSTIC_KEYCHAIN_READ", "decision": "Carried over from 029, still unresolved.", "blocking": false},
-    {"id": "ARITY_REPAIR_RATIFICATION", "decision": "The repair relaxes a completion criterion. If 'exactly one agent_message per turn' was an intended compliance criterion rather than an implementation assumption, this changes what is measured. Ratify or reject.", "blocking": false}
+    {
+      "id": "D_BUDGET_AMENDMENT",
+      "decision": "Authorize raising limits.codex to >= 7, or disclosing the turn ceiling in request_payload -- then re-run Route D. Without one of these Route D cannot produce a report.",
+      "blocking": true
+    },
+    {
+      "id": "A_TERMINAL_RUN",
+      "decision": "Run RUN_ROUTE_A_FROM_TERMINAL.command from macOS Terminal.app. A's attempt is UNCONSUMED and everything else is prepared.",
+      "blocking": true
+    },
+    {
+      "id": "A_SAME_CEILING_RISK",
+      "decision": "Route A shares limits.codex=6 and 3+3 retrieval. Whether GPT Researcher's own loop hits the same wall is UNVERIFIED. Consider settling the budget amendment before spending A's single attempt.",
+      "blocking": false
+    },
+    {
+      "id": "BUDGET_CEILING",
+      "decision": "USD 1.72 remains of the USD 10 ceiling. Route A has not run. Raise the ceiling or accept the risk of a mid-run stop.",
+      "blocking": true
+    },
+    {
+      "id": "C_DIAGNOSTIC_KEYCHAIN_READ",
+      "decision": "Carried over from 029, still unresolved.",
+      "blocking": false
+    },
+    {
+      "id": "ARITY_REPAIR_RATIFICATION",
+      "decision": "The repair relaxes a completion criterion. If 'exactly one agent_message per turn' was an intended compliance criterion rather than an implementation assumption, this changes what is measured. Ratify or reject.",
+      "blocking": false
+    }
   ],
-
   "FOUR_ROUTE_COMPARISON": {
     "status": "NO",
     "reason": "A never reached a provider, C is blocked, D produced no report. Only B has a completed research artifact. W05's hard rule makes the comparison NO while any route is unusable."
