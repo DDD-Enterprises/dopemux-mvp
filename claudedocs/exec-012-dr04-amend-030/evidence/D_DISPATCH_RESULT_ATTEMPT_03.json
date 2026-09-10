@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "route": "D", "attempt": 3,
+  "DISPATCH": "LIVE_EXECUTED",
+  "OUTCOME": "BLOCKED_CODEX_CALL_CEILING_NO_FINAL_REPORT",
+  "research_attempt_consumed": true,
+  "started_utc": "2026-09-10T20:03:21Z", "ended_utc": "2026-09-10T20:05:48Z", "elapsed_s": 146.4,
+
+  "CLASSIFICATION": {
+    "harness_fault": false, "lead_error": false, "model_quality_failure": false,
+    "verdict": "STRUCTURAL_DEFECT_IN_THE_FROZEN_RETRIEVAL_BUDGET_BINDING",
+    "significance": "This is the most substantive finding of the session. It is route-level, not model-level: ANY Route D run that uses its full retrieval allowance is GUARANTEED to fail this way, on any model, any provider path, any effort level."
+  },
+
+  "THE_DEFECT": {
+    "budget": {"codex": 6, "web_search": 3, "web_fetch": 3, "total_retrieval_slots": 6},
+    "loop_shape": "for _ in range(limits['codex']): reserve a codex turn; the turn either returns action.kind=='final' (loop returns) or it retrieves and continues. After the last turn: raise Blocked('CODEX_CALL_CEILING_NO_FINAL_REPORT').",
+    "the_arithmetic": "6 codex turns and 6 retrieval slots. Every retrieving turn consumes one codex turn. A model that uses all 6 retrieval slots has consumed all 6 codex turns and has ZERO turns left in which to emit 'final'. A final report is only reachable if the model VOLUNTARILY leaves at least one retrieval slot unused.",
+    "the_root_cause": "request_payload() tells the model its RETRIEVAL budget ('retrieval_budget': {'web_search': 3, 'web_fetch': 3}) but NEVER tells it the CODEX TURN ceiling. The mechanics string says only 'Return final report when complete'. A rational agent therefore spends its full, explicitly-stated retrieval allowance -- and in doing so guarantees its own failure against an undisclosed turn limit.",
+    "minimal_fix_options": [
+      "Raise limits.codex to at least total_retrieval_slots + 1 (i.e. 7).",
+      "Or disclose the turn ceiling in request_payload so the model can reserve a turn for the report.",
+      "Either is a BENCHMARK METHOD AMENDMENT and requires operator authority. NOT applied."
+    ]
+  },
+
+  "WHAT_THE_MODEL_ACTUALLY_DID": {
+    "strategy": "A coherent alternating search/fetch plan, exhausting the stated allowance exactly.",
+    "per_turn": ["1 retrieve/web_search", "2 retrieve/web_fetch", "3 retrieve/web_search",
+                 "4 retrieve/web_fetch", "5 retrieve/web_search", "6 retrieve/web_fetch"],
+    "retrieval_ledger": "web_search_01..03 and web_fetch_01..03 -- exactly 3 and 3, both ceilings hit precisely, none wasted.",
+    "assessment": "Six for six, every action schema-valid and validate_action-clean. The model did nothing wrong; it obeyed the only budget it was shown."
+  },
+
+  "RUNTIME_ISOLATION": {
+    "UNAPPROVED_NATIVE_TOOL_EVENT_COUNT": 0,
+    "across": "all 6 turns",
+    "RUNTIME_TOOL_POLICY": "PASS",
+    "note": "The strongest isolation evidence produced in this program: six consecutive live turns on the API-metered path with zero unapproved native tool events."
+  },
+
+  "ARITY_REPAIR_STATUS": {
+    "fired": false,
+    "observed": "All 6 turns reported agent_message_count=1, narration_preface_count=0.",
+    "honest_reading": "Attempt 3 passed turn 3 because the model did NOT narrate this time, NOT because the repair fired. Narration is nondeterministic (observed once in 3 turns in attempt 1, zero times in 6 turns here). The repair stood as insurance and was never needed. It is still correct and still regression-proven against attempt 1's real turn-3 fixture -- but this run is NOT evidence that it works in production, only that it did no harm."
+  },
+
+  "SPEND": {
+    "per_turn_input_tokens": [58065, 65406, 79063, 84571, 98977, 103306],
+    "totals": {"input_tokens": 489388, "output_tokens": 3937, "reasoning_output_tokens": 2662, "cached_input_tokens": 0},
+    "estimated_usd": 5.09,
+    "rate_assumed_not_verified": "$10 input / $50 output per million",
+    "caching": "cached_input_tokens = 0 on ALL SIX turns while cache_write ~= input each time. The thread-scoped cache-key inference from attempt 1 is now confirmed across six consecutive turns: every turn paid full input price despite the identical 233 KB acceptance_schema prefix. Roughly 60% of this run's cost was re-sending an unchanged prefix."
+  },
+
+  "NOT_produced": ["run/RAW_RESEARCH.md", "run/SOURCE_CAPTURE.json"],
+  "evidence": "18 artifacts in W03/ROUTE_D/run/ (request, native and receipt for all 6 turns), plus loop_state/ and broker_state/ ledgers and 6 retrieval captures in evidence/."
+}

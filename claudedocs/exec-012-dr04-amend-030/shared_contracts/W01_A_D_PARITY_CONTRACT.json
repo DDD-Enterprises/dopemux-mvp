@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "contract_id": "EXEC012-A-D-PARITY-028",
+  "requirement": "A and D execute under one frozen Codex isolation profile.",
+  "mechanism": "Both routes import W01/profile_argv.py and call isolation_argv(load_profile()). Neither route may construct, extend, reorder or override the isolation argv segment locally.",
+  "shared_artifacts": [
+    {
+      "path": "W01/W01_COMMON_CODEX_ISOLATION_PROFILE.json",
+      "must_be": "BYTE_IDENTICAL_SINGLE_SOURCE"
+    },
+    {
+      "path": "W01/profile_argv.py",
+      "must_be": "BYTE_IDENTICAL_SINGLE_SOURCE"
+    },
+    {
+      "path": "W01/W01_TOOL_EVENT_CLASSIFIER.json",
+      "must_be": "BYTE_IDENTICAL_SINGLE_SOURCE"
+    }
+  ],
+  "assertions": {
+    "A_D_CONFIG_BYTES_IDENTICAL": "isolation_argv() output of A and D compared element-wise and as a NUL-joined sha256",
+    "A_D_MODEL_EFFORT_PARITY": "model=gpt-6-astra and model_reasoning_effort=high live INSIDE the shared profile, so neither route can diverge",
+    "KNOWN_TOOL_SURFACES_DISABLED": "every packet key present in config_overrides with the observed supported form",
+    "MCP_CONFIG_EXPLICITLY_EMPTY": "mcp_servers == {}",
+    "PROJECT_CONTEXT_DISABLED": "project_doc_max_bytes == 0 and skills.include_instructions == false and include_apps_instructions == false",
+    "REPOSITORY_CWD_FORBIDDEN": "assert_repository_cwd_forbidden() raises before dispatch if cwd is the repo or beneath it"
+  },
+  "route_specific_allowed_outside_isolation_segment": {
+    "ROUTE_A": [
+      "-C <A run dir>",
+      "--output-schema <planner schema>",
+      "- (stdin prompt sentinel)"
+    ],
+    "ROUTE_D": [
+      "-C <D run dir>",
+      "--output-schema ROUTE_D/OUTPUT_SCHEMA.json",
+      "- (stdin prompt sentinel)"
+    ],
+    "rule": "These are per-route I/O bindings, not isolation settings. They must never carry a -c override or a sandbox/feature flag.",
+    "retrieval_ceilings_unchanged": {
+      "search_calls_max": 3,
+      "fetch_calls_max": 3
+    }
+  },
+  "no_D_specific_weakening": true
+}

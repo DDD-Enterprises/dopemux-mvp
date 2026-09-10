@@ -1,0 +1,144 @@
+{
+  "schema_version": "1.0",
+  "classifier_id": "EXEC012-TOOL-EVENT-CLASSIFIER-028",
+  "applies_to": [
+    "ROUTE_A",
+    "ROUTE_D"
+  ],
+  "stream": "codex exec --json JSONL event stream on child stdout",
+  "policy": "FAIL_CLOSED_ALLOWLIST",
+  "policy_note": "Anything not explicitly allowlisted is an unapproved native tool event. A new or renamed item type therefore fails the route rather than passing unnoticed.",
+  "vocabulary_source": "ThreadItem variant set extracted from the codex-darwin-arm64 0.153.4 binary plus the envelope set already parsed by the frozen Route A adapter.",
+  "allowed_envelope_types": [
+    "thread.started",
+    "turn.started",
+    "item.completed",
+    "turn.completed"
+  ],
+  "allowed_item_types": [
+    "agent_message",
+    "reasoning"
+  ],
+  "error_envelope": {
+    "type": "error",
+    "disposition": "ALLOWED_ONLY_IF_SAME_ROUTE_RECOVERY",
+    "note": "Retained from the frozen adapter. An error envelope is never evidence of tool use, but it is not a completion either."
+  },
+  "turn_failed": {
+    "type": "turn.failed",
+    "disposition": "ROUTE_FAILURE_NOT_TOOL_USE",
+    "note": "Observed during runner-availability probing (usage_limit_exceeded). Fails the route without setting FAIL_UNAPPROVED_NATIVE_TOOL_USE."
+  },
+  "forbidden_item_types": [
+    {
+      "item_type": "command_execution",
+      "forbidden_class": "shell"
+    },
+    {
+      "item_type": "user_shell",
+      "forbidden_class": "shell"
+    },
+    {
+      "item_type": "unified_exec_startup",
+      "forbidden_class": "unified exec"
+    },
+    {
+      "item_type": "unified_exec_interaction",
+      "forbidden_class": "unified exec"
+    },
+    {
+      "item_type": "file_change",
+      "forbidden_class": "apply/edit/patch"
+    },
+    {
+      "item_type": "apply_patch",
+      "forbidden_class": "apply/edit/patch"
+    },
+    {
+      "item_type": "web_search",
+      "forbidden_class": "web search"
+    },
+    {
+      "item_type": "mcp_tool_call",
+      "forbidden_class": "MCP"
+    },
+    {
+      "item_type": "dynamic_tool_call",
+      "forbidden_class": "apps/connectors"
+    },
+    {
+      "item_type": "collab_agent_tool_call",
+      "forbidden_class": "subagents"
+    },
+    {
+      "item_type": "function_call_output",
+      "forbidden_class": "JS REPL"
+    },
+    {
+      "item_type": "image_generation",
+      "forbidden_class": "computer"
+    },
+    {
+      "item_type": "image_view",
+      "forbidden_class": "computer"
+    },
+    {
+      "item_type": "sleep",
+      "forbidden_class": "computer"
+    },
+    {
+      "item_type": "list_files",
+      "forbidden_class": "repository access"
+    },
+    {
+      "item_type": "search",
+      "forbidden_class": "repository access"
+    },
+    {
+      "item_type": "memory_citation",
+      "forbidden_class": "repository access"
+    },
+    {
+      "item_type": "hook_prompt",
+      "forbidden_class": "skills"
+    },
+    {
+      "item_type": "plan",
+      "forbidden_class": "skills"
+    },
+    {
+      "item_type": "entered_review_mode",
+      "forbidden_class": "skills"
+    },
+    {
+      "item_type": "context_compaction",
+      "forbidden_class": "skills"
+    },
+    {
+      "item_type": "request_permissions",
+      "forbidden_class": "apps/connectors"
+    }
+  ],
+  "forbidden_envelope_types": [
+    {
+      "envelope": "item.started",
+      "reason": "Frozen adapter accepts only completed items; a started tool item is still an attempt."
+    },
+    {
+      "envelope": "item.updated",
+      "reason": "Same as item.started."
+    }
+  ],
+  "verdict_contract": {
+    "on_any_forbidden_event": {
+      "ROUTE_STATUS": "FAIL_UNAPPROVED_NATIVE_TOOL_USE",
+      "RERUN": "NO",
+      "note": "The route result remains benchmark evidence."
+    },
+    "on_zero_forbidden_events": {
+      "UNAPPROVED_NATIVE_TOOL_EVENT_COUNT": 0,
+      "RUNTIME_TOOL_POLICY": "PASS"
+    }
+  },
+  "approved_retrieval": "Benchmark-owned Parallel Search broker only, outside the model's native tool plane. Broker traffic never appears in this stream."
+}

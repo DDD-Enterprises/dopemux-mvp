@@ -1,0 +1,13 @@
+{
+  "arguments": {
+    "model_name": "gpt-6-astra",
+    "objective": "Find official sources for remaining DR04 gaps as of 2026-09-10: Grok Build subscription billing, allowance windows and telemetry; model-specific effort defaults and output limits, especially Grok Build 0.1 and Grok 4.20 multi-agent; dated Grok 4.6 release and task-fit evidence. Preserve conflicts and distinguish API, CLI and web/mobile products.",
+    "search_queries": [
+      "site:docs.x.ai/build billing usage limits",
+      "site:docs.x.ai \"grok-4.20\" \"effort\"",
+      "site:x.ai/news \"grok-4-6\""
+    ],
+    "session_id": "90cb4b68a2617d0bd0451ca0c1d4f2998cf6f97d8c1fd36e7a58e72a725a49a6"
+  },
+  "tool": "web_search"
+}

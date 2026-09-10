@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "route": "A", "attempt": 2,
+  "OUTCOME": "REJECTED_TOP_LEVEL_TERMINAL_REQUIRED",
+  "started_utc": "2026-09-10T20:00:30Z", "elapsed_s": 8.3,
+  "codex_calls": 0, "voyage_calls": 0, "parallel_calls": 0, "external_spend_usd": 0.00,
+
+  "THE_GATE": {
+    "location": "adapter/policy.py:72 top_level(), called from adapter/core.py:418 inside invoke()",
+    "requires": [
+      "libsystem_sandbox.sandbox_check(pid, NULL, 0) == 0 -- the process must NOT be sandboxed",
+      "no ancestor executable matching (?i)codex|sandbox-exec|code-mode-host",
+      "the ancestry walk must reach pid 1 AND include a process whose executable path ENDS WITH '/Terminal'"
+    ],
+    "which_condition_failed": "Only the third. The rejection was TOP_LEVEL_TERMINAL_REQUIRED, which is raised after the sandbox and nested-codex checks have already passed.",
+    "purpose": "A deliberate integrity control: Route A refuses to run except as a genuine top-level local process launched from macOS Terminal.app. It exists precisely to stop nested or agent-driven execution."
+  },
+
+  "OBSERVED_ANCESTRY": [
+    {"pid": 82541, "comm": "/bin/zsh"},
+    {"pid": 3033,  "comm": "claude"},
+    {"pid": 99215, "comm": "-zsh"},
+    {"pid": 99208, "comm": "/usr/bin/login"},
+    {"pid": 1760,  "comm": "/Users/hue/Library/Application Support/iTerm2/iTermServer-3.6.11"}
+  ],
+  "why_it_fails": "The chain terminates at iTermServer-3.6.11. No element ends with '/Terminal'.",
+  "IMPORTANT": "This is NOT specific to the agent. Route A cannot be launched from iTerm2 by anyone, because iTerm2's session server is named iTermServer-<version>. It requires macOS Terminal.app specifically.",
+
+  "DISPOSITION": {
+    "circumvention_considered_and_REFUSED": [
+      "Patching or stubbing top_level()",
+      "Faking /bin/ps output or spoofing the ancestry",
+      "Re-parenting the process to appear top-level"
+    ],
+    "reason": "Every one of these defeats a deliberate integrity control and would invalidate Route A as benchmark evidence. The gate is doing exactly what it was written to do; the correct response is to satisfy it, not to disable it.",
+    "legitimate_path": "The operator launches Route A from macOS Terminal.app.",
+    "handover": "TREE/RUN_ROUTE_A_FROM_TERMINAL.command (executable; supports --reset to archive spent claim/budget state before a retry)."
+  },
+
+  "STATE_RESET_FOR_THE_OPERATOR_RUN": {
+    "archived": ["EXECUTION_CLAIM.json", "budget/ (contained research_job_01.json and STOP.json)"],
+    "to": "AMEND_030_EVIDENCE/A_attempt_02/",
+    "authority": "Operator 2026-09-10, answer '1 and 2', authorizing the Route A retry. Preserved, not deleted.",
+    "note": "Attempt 2 DID reserve budget/research_job_01 before the topology rejection, and policy.Budget wrote budget/STOP.json (RESEARCH_FAILED_NO_RETRY). Both were archived, so the operator's run starts from a clean budget ledger."
+  },
+
+  "PREFLIGHT_LESSON": {
+    "gap": "My pre-dispatch audit covered write-target collisions and authorization keys, but NOT runtime environment preconditions on the post-claim path.",
+    "was_it_catchable": "YES, for free. top_level() is read-only and could have been called offline before dispatch. Three facets are needed, not two: (1) write targets, (2) input keys, (3) runtime preconditions -- all enumerated FROM THE SOURCE on the path after the one-shot claim."
+  }
+}

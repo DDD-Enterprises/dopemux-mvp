@@ -1,0 +1,51 @@
+{
+  "authority": "Operator amendment 2026-09-10 (A/D -> API-metered) plus operator option 'b' (arity repair on both harnesses, second D attempt, Route A).",
+  "codex_auth": "PROVEN_API_KEY_METERED",
+  "codex_auth_note": "PROVEN_API_KEY_METERED replaces PROVEN_CHATGPT_PLAN_BACKED. Asserting the predecessor string would be FALSE on this route: there is no ChatGPT login; the credential resolves from the child environment via model_providers.openai-api.env_key.",
+  "frozen_prompt_sha256": "ce17a2fa9281c11d36dc5e8bd83d18d7c57b86ec41b181675588e716c26f1e9b",
+  "gates": {
+    "A_D_PARITY": "PASS",
+    "ISOLATION": "PASS",
+    "ROUTE_A_LAUNCH_SURFACE": "PASS",
+    "ROUTE_B_LIVE_ISOLATION": "PASS",
+    "ROUTE_C_AUTH": "PASS",
+    "ROUTE_C_CLIENT": "PASS",
+    "ROUTE_D_LAUNCH_SURFACE": "PASS"
+  },
+  "isolation_prelaunch": "PASS_BY_CONSTRUCTION",
+  "isolation_profile_sha256": "333d4fc50314de6688cae96851680506993a1edeff1600b199593e4cddde1fb6",
+  "max_voyage_spend_usd": "0.02",
+  "operator": "houston@krohman.org",
+  "packet_id": "DMX-DR04-EXEC-012",
+  "research_date_parity": "Matches Route B (2026-09-10) and Route D attempts 1 and 2 (2026-09-10).",
+  "research_date_utc": "2026-09-10",
+  "route_tuple": {
+    "auth_mode": "API_KEY",
+    "billing_mode": "API_METERED",
+    "model": "gpt-6-astra",
+    "native_effort": "high",
+    "provider_path": "openai-api",
+    "runner": "Codex CLI"
+  },
+  "supervisor_authorized": true,
+  "surface_sha256sums": "fc944d3781b00146094d905b36c9b0ebbba2226f2233ee68f03ffc8935ddb83b",
+  "voyage_account_label": "dopemux",
+  "voyage_cost_evidence": {
+    "arithmetic": "cost_bound_usd = usd_per_million_tokens * 16384 / 1e6, where 16384 = calls(2) * max_tokens_per_call(8192).",
+    "calls": 2,
+    "cost_bound_usd": "0.00098304",
+    "max_tokens_per_call": 8192,
+    "model": "voyage-4",
+    "provenance": "Fetched 2026-09-10 from the official Voyage AI pricing page and independently re-fetched by the lead before use. The quote is the verbatim voyage-4 table row: model | USD per 1K tokens | USD per 1M tokens | free allowance.",
+    "retrieved_at": "2026-09-10T18:31:00Z",
+    "source_evidence": "`voyage-4` | $0.00006 | $0.06 | 200 million",
+    "source_sha256": "6132fa9d20f13177d73a4401d21d9a016c2b0bd9d3dec72893fe8c52703eaf68",
+    "source_url": "https://docs.voyageai.com/docs/pricing",
+    "status": "PASS",
+    "usd_per_million_tokens": "0.06"
+  },
+  "voyage_label_note": "Keychain service/account for the Voyage credential. These are LABELS, not secrets. They are read by integration()'s live branch (generic_integration.py:181) but are NOT among the 12 keys validate_authorization checks -- the gap that failed the first Route A dispatch. Confirmed by a METADATA-only keychain lookup (no -w), so no secret was read.",
+  "voyage_service_label": "VOYAGE_API_KEY",
+  "w01_argv_sha256": "64ff8541ff2e0fba3cbe0a20ca1ffa16eaae0081d921482ba2ab1c06a1487bd6",
+  "w01_arity_module_sha256": "63822f2772d950d299be6271abccfc06c830a3c8e15b50c56c9582233dc088fc"
+}

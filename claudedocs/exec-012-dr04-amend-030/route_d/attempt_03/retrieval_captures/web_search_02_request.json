@@ -1,0 +1,13 @@
+{
+  "arguments": {
+    "model_name": "gpt-6-astra",
+    "objective": "Find official sources filling DR04 gaps as of 2026-09-10: model-specific effort/defaults/output limits; Grok Build sandbox, network, billing and session controls; API versus subscription privacy, ZDR and regional custody. Prefer dated documentation. Preserve conflicting claims and exclude other research lanes.",
+    "search_queries": [
+      "site:docs.x.ai grok-build-0.1 reasoning output limits",
+      "site:docs.x.ai/build sandbox permissions billing telemetry",
+      "site:docs.x.ai privacy retention ZDR regions"
+    ],
+    "session_id": "90cb4b68a2617d0bd0451ca0c1d4f2998cf6f97d8c1fd36e7a58e72a725a49a6"
+  },
+  "tool": "web_search"
+}

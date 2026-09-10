@@ -1,0 +1,98 @@
+{
+  "_meta": {
+    "parallel/usage": [
+      {
+        "cost_usd": 0.001,
+        "count": 1,
+        "name": "sku_search"
+      }
+    ]
+  },
+  "content": [
+    {
+      "text": "{\n  \"search_id\": \"search_34fbdda69c959e2ccdf7ba06a81bcb16\",\n  \"results\": [\n    {\n      \"url\": \"https://docs.x.ai/build/features/permissions\",\n      \"title\": \"Permissions - Docs - Grok API Documentation - SpaceXAI\",\n      \"publish_date\": \"2026-07-21\",\n      \"excerpts\": [\n        \"Permissions - Docs - Grok API Documentation - SpaceXAI\\nJul 21, 2026 \u2014 Control what Grok Build may run: permission modes, allow and deny rules, and how they relate to the sandbox.\"\n      ]\n    },\n    {\n      \"url\": \"https://docs.x.ai/developers/models/grok-build-0.1.md\",\n      \"title\": \"Grok Build 0.1\",\n      \"publish_date\": null,\n      \"excerpts\": [\n        \"Grok Build 0.1\\nSpaceXAI's intelligent coding model for agentic software, engineering, and workflow tasks.\\nAt a glance\\n* Modalities: text, image \u2192 text\\n* Context window: 256,000 tokens\\n* Model name: grok-build-0.1\\n* Aliases: grok-code-fast-1, grok-code-fast, grok-code-fast-1-0825\\n* Batch API: Not supported\\nCapabilities\\n* Function calling: Yes\\n* Structured outputs: Yes\\n* Reasoning: Yes\\nPricing\\n* Type | < 200k prompt tokens (per 1M tokens) | \u2265 200k prompt tokens (per 1M tokens)\\n* Input | $1.00 | $2.00\\n* Cached input | $0.20 | $0.40\\n* Output | $2.00 | $4.00\\n  Requests whose prompt reaches 200k tokens are billed at the higher rate for all tokens in the request.\\nRate limits\\n* Limit | Value\\n* Requests per second | 37\\n* Tokens per minute | 10,000,000\\nRegions\\nAvailable in: us-east-1, us-west-2\"\n      ]\n    },\n    {\n      \"url\": \"https://docs.x.ai/build/features/sandbox\",\n      \"title\": \"Sandbox | SpaceXAI Docs\",\n      \"publish_date\": \"2026-07-21\",\n      \"excerpts\": [\n        \"Docs\\nSearch\\n\u2318 K\\nAPI Console\\nProducts\\nGrok\\nStatus\\nLoading...\\nResources\\nllms.txt Discord Email support Terms and Policies\\nFeatures # Sandbox Copy for LLM View as Markdown\\nCreate API key Meet grok-4.6\\nThe sandbox limits what the agent process and its children can read, write, and reach on the network (Landlock on Linux, Seatbelt on macOS). Off by default. Permissions gate whether a tool call runs; the sandbox limits what an approved call can do \u2014 see Permissions .\\nProfiles\\n* Profile | Filesystem read | Filesystem write | Child network | Use case\\n* off | Unrestricted | Unrestricted | Allowed | No sandbox (default)\\n* workspace | Everywhere | CWD, ~/.grok/ , temp | Allowed | Normal development\\n* devbox | Everywhere | Top-level dirs except /data | Allowed | Cloud devbox environments\\n* read-only | Everywhere | ~/.grok/ and temp only | Blocked | Code review, auditing\\n* strict | CWD and system paths | CWD, ~/.grok/ , temp | Blocked | Untrusted repositories\\n* Limitation | Detail\\n* Child network | Enforced on Linux only; no-op on macOS for read-only / strict\\n* Credentials | Built-ins do not permanently protect paths such as ~/.ssh ; use a custom deny list\\n* ~/.grok/ | Stays writable under sandboxed profiles so sessions can persist\\n* In-process network | Model API an\"\n      ]\n    },\n    {\n      \"url\": \"https://github.com/OpenRouterTeam/docs/blob/main/guides/features/zdr.mdx\",\n      \"title\": \"docs/guides/features/zdr.mdx at main \u00b7 OpenRouterTeam/docs\",\n      \"publish_date\": null,\n      \"excerpts\": [\n        \"docs/guides/features/zdr.mdx at main \u00b7 OpenRouterTeam/docs\\nOpenRouter has privacy settings that, when enabled, only allow you to route to endpoints that have a Zero Data Retention policy. You can enforce ZDR globally, per model group, per guardrail, or per request. Providers that do not retain your data are also unable to train on your data.\"\n      ]\n    },\n    {\n      \"url\": \"https://docs.x.ai/developers/models/grok-build-0.1\",\n      \"title\": \"Grok Build 0.1 | SpaceXAI Docs\",\n      \"publish_date\": null,\n      \"excerpts\": [\n        \"Docs\\nSearch\\n\u2318 K\\nAPI Console\\nProducts\\nGrok\\nStatus\\nLoading...\\nResources\\nllms.txt Discord Email support Terms and Policies\\nModels\\n/\\nGrok Build 0.1\\ngrok-build-0.1\\nSpaceXAI's intelligent coding model for agentic software, engineering, and workflow tasks.\\nCopy for LLM View as Markdown\\nTry in playground\\nAt a glance\\nModalities\\nText, Image\\nText\\nContext window\\n256,000\\nPricing\\n$1.00 $2.00\\nCapabilities\\nFunction calling\\nConnect the xAI model to external tools and systems.\\nStructured outputs\\nReturn responses in specific, organized formats.\\nReasoning\\nThe model can think before responding.\\nPricing\\nInput\\nTokens\\n$1.00 / 1M tokens\\nCached tokens\\n$0.20 / 1M tokens\\nOutput\\nTokens\\n$2.00 / 1M tokens\\nYou are charged for each token used when making calls to our API.\\nUsing cached input tokens can significantly reduce your costs.\\nThis model is available on multiple clusters, you can find full regional based pricing below.\\nHow does pricing work Tool pricing Request increased rate limits\\nHigher context pricing\\nWe charge different rates for requests which exceed the 200K context window\\nDetails\\nModel name\\ngrok-build-0.1\\nAliases\\ngrok-code-fast-1\\ngrok-code-fast\\ngrok-code-fast-1-0825\\nRegion\\nus-east-1, us-west-2\\nBatch API\\nNot supported\\nRate limits\\nRequests per second\\n37\\nTokens per minute\\n10\"\n      ]\n    },\n    {\n      \"url\": \"https://commandcode.ai/docs/resources/zdr\",\n      \"title\": \"Zero Data Retention (ZDR) | Command Code\",\n      \"publish_date\": null,\n      \"excerpts\": [\n        \"Zero Data Retention (ZDR) | Command Code\\nZero data retention on Command Code: an enterprise-grade privacy feature you can enforce on every request. How ZDR routing works, why it costs more, and how GOAT, Pro, and Enterprise plans use it.\"\n      ]\n    },\n    {\n      \"url\": \"https://docs.x.ai/developers/migration/may-15-retirement\",\n      \"title\": \"May 15, 2026 Model Retirement | SpaceXAI Docs\",\n      \"publish_date\": \"2026-09-02\",\n      \"excerpts\": [\n        \"Create API key Meet grok-4.6\\nAs we continue advancing Grok, we are retiring several earlier models to focus fully on our newest generation. Effective May 15, 2026 at 12:00 PM PT , the following models will be retired from the xAI API:\\n* grok-4-1-fast-reasoning\\n* grok-4-1-fast-non-reasoning\\n* grok-4-fast-reasoning\\n* grok-4-fast-non-reasoning\\n* grok-4-0709\\n* grok-code-fast-1\\n* grok-3\\n* grok-imagine-image-pro\\nAfter May 15, 2026 at 12:00 PM PT , requests to the retired model slugs above will automatically redirect to grok-4.3 .\\nIf you continue sending requests to a deprecated slug after May 15, please be aware that you will be billed at grok-4.3 pricing of $1.25 per 1M input tokens and $2.50 per 1M output tokens rather than the rates of the original model.\\nRecommended Replacements\\nWe have newer, more capable models ready for every workload. In most cases, migrating is as simple as changing the \\\"model\\\" field in your API request. Doing so explicitly lets you control which reasoning effort you pay for, rather than accepting the default applied by the redirect.\\n* Model being retired | Redirect target after May 15\\n* grok-4-1-fast-reasoning | grok-4.3 with low reasoning effort\\n* grok-4-1-fast-non-reasoning | grok-4.3 with none reasoning effort\\n* grok-4-fast-reason\"\n      ]\n    },\n    {\n      \"url\": \"https://docs.x.ai/developers/faq/security\",\n      \"title\": \"FAQ - API Security | SpaceXAI Docs\",\n      \"publish_date\": \"2026-07-27\",\n      \"excerpts\": [\n        \"[!NOTE]\\nxAI never trains on your API inputs or outputs without your explicit permission.\\nBy default, all API requests and responses are stored on our servers (encrypted at rest) for 30 days for auditing purposes in the event of suspected abuse or misuse. xAI does not train on this data, and it is automatically deleted after 30 days.\\nFor teams that require stricter data handling, see Zero Data Retention (ZDR) below.\\nWhat is Zero Data Retention (ZDR)?\\nBecause content deleted under ZDR can never be recovered or produced by xAI, only enable it when your compliance requirements truly demand it. For most teams, the default 30-day retention is the better choice.\\n* No storage of prompts: ZDR ensures that API request inputs (i.e., your prompt) and outputs (i.e., the tokens generated by the LLM) are never persisted to disk. The 30-day audit retention described above does not apply to ZDR-enabled teams.\\n* Applied at a team level: If enabled, ZDR is team-wide.\\nFeatures not supported with ZDR\\nAny capability that relies on xAI storing data is unavailable while ZDR is enabled:\\n* Collections API | Stores your documents on xAI so Grok can search and retrieve from them (RAG). Those documents must be stored to be retrieved, which ZDR does not allow. Existing collections ca\"\n      ]\n    },\n    {\n      \"url\": \"https://docs.x.ai/build/settings/reference\",\n      \"title\": \"Settings Reference | SpaceXAI Docs\",\n      \"publish_date\": \"2026-08-18\",\n      \"excerpts\": [\n        \"Settings Reference | SpaceXAI Docs\\nAug 18, 2026 \u2014 Grok Build environment variables and config.toml. Tools, sandbox, and features. Evaluation order: deny > ask > allow. Setting Values\"\n      ]\n    }\n  ],\n  \"warnings\": null,\n  \"metadata\": null,\n  \"session_id\": \"90cb4b68a2617d0bd0451ca0c1d4f2998cf6f97d8c1fd36e7a58e72a725a49a6\"\n}",
+      "type": "text"
+    }
+  ],
+  "isError": false,
+  "structuredContent": {
+    "metadata": null,
+    "results": [
+      {
+        "excerpts": [
+          "Permissions - Docs - Grok API Documentation - SpaceXAI\nJul 21, 2026 \u2014 Control what Grok Build may run: permission modes, allow and deny rules, and how they relate to the sandbox."
+        ],
+        "publish_date": "2026-07-21",
+        "title": "Permissions - Docs - Grok API Documentation - SpaceXAI",
+        "url": "https://docs.x.ai/build/features/permissions"
+      },
+      {
+        "excerpts": [
+          "Grok Build 0.1\nSpaceXAI's intelligent coding model for agentic software, engineering, and workflow tasks.\nAt a glance\n* Modalities: text, image \u2192 text\n* Context window: 256,000 tokens\n* Model name: grok-build-0.1\n* Aliases: grok-code-fast-1, grok-code-fast, grok-code-fast-1-0825\n* Batch API: Not supported\nCapabilities\n* Function calling: Yes\n* Structured outputs: Yes\n* Reasoning: Yes\nPricing\n* Type | < 200k prompt tokens (per 1M tokens) | \u2265 200k prompt tokens (per 1M tokens)\n* Input | $1.00 | $2.00\n* Cached input | $0.20 | $0.40\n* Output | $2.00 | $4.00\n  Requests whose prompt reaches 200k tokens are billed at the higher rate for all tokens in the request.\nRate limits\n* Limit | Value\n* Requests per second | 37\n* Tokens per minute | 10,000,000\nRegions\nAvailable in: us-east-1, us-west-2"
+        ],
+        "publish_date": null,
+        "title": "Grok Build 0.1",
+        "url": "https://docs.x.ai/developers/models/grok-build-0.1.md"
+      },
+      {
+        "excerpts": [
+          "Docs\nSearch\n\u2318 K\nAPI Console\nProducts\nGrok\nStatus\nLoading...\nResources\nllms.txt Discord Email support Terms and Policies\nFeatures # Sandbox Copy for LLM View as Markdown\nCreate API key Meet grok-4.6\nThe sandbox limits what the agent process and its children can read, write, and reach on the network (Landlock on Linux, Seatbelt on macOS). Off by default. Permissions gate whether a tool call runs; the sandbox limits what an approved call can do \u2014 see Permissions .\nProfiles\n* Profile | Filesystem read | Filesystem write | Child network | Use case\n* off | Unrestricted | Unrestricted | Allowed | No sandbox (default)\n* workspace | Everywhere | CWD, ~/.grok/ , temp | Allowed | Normal development\n* devbox | Everywhere | Top-level dirs except /data | Allowed | Cloud devbox environments\n* read-only | Everywhere | ~/.grok/ and temp only | Blocked | Code review, auditing\n* strict | CWD and system paths | CWD, ~/.grok/ , temp | Blocked | Untrusted repositories\n* Limitation | Detail\n* Child network | Enforced on Linux only; no-op on macOS for read-only / strict\n* Credentials | Built-ins do not permanently protect paths such as ~/.ssh ; use a custom deny list\n* ~/.grok/ | Stays writable under sandboxed profiles so sessions can persist\n* In-process network | Model API an"
+        ],
+        "publish_date": "2026-07-21",
+        "title": "Sandbox | SpaceXAI Docs",
+        "url": "https://docs.x.ai/build/features/sandbox"
+      },
+      {
+        "excerpts": [
+          "docs/guides/features/zdr.mdx at main \u00b7 OpenRouterTeam/docs\nOpenRouter has privacy settings that, when enabled, only allow you to route to endpoints that have a Zero Data Retention policy. You can enforce ZDR globally, per model group, per guardrail, or per request. Providers that do not retain your data are also unable to train on your data."
+        ],
+        "publish_date": null,
+        "title": "docs/guides/features/zdr.mdx at main \u00b7 OpenRouterTeam/docs",
+        "url": "https://github.com/OpenRouterTeam/docs/blob/main/guides/features/zdr.mdx"
+      },
+      {
+        "excerpts": [
+          "Docs\nSearch\n\u2318 K\nAPI Console\nProducts\nGrok\nStatus\nLoading...\nResources\nllms.txt Discord Email support Terms and Policies\nModels\n/\nGrok Build 0.1\ngrok-build-0.1\nSpaceXAI's intelligent coding model for agentic software, engineering, and workflow tasks.\nCopy for LLM View as Markdown\nTry in playground\nAt a glance\nModalities\nText, Image\nText\nContext window\n256,000\nPricing\n$1.00 $2.00\nCapabilities\nFunction calling\nConnect the xAI model to external tools and systems.\nStructured outputs\nReturn responses in specific, organized formats.\nReasoning\nThe model can think before responding.\nPricing\nInput\nTokens\n$1.00 / 1M tokens\nCached tokens\n$0.20 / 1M tokens\nOutput\nTokens\n$2.00 / 1M tokens\nYou are charged for each token used when making calls to our API.\nUsing cached input tokens can significantly reduce your costs.\nThis model is available on multiple clusters, you can find full regional based pricing below.\nHow does pricing work Tool pricing Request increased rate limits\nHigher context pricing\nWe charge different rates for requests which exceed the 200K context window\nDetails\nModel name\ngrok-build-0.1\nAliases\ngrok-code-fast-1\ngrok-code-fast\ngrok-code-fast-1-0825\nRegion\nus-east-1, us-west-2\nBatch API\nNot supported\nRate limits\nRequests per second\n37\nTokens per minute\n10"
+        ],
+        "publish_date": null,
+        "title": "Grok Build 0.1 | SpaceXAI Docs",
+        "url": "https://docs.x.ai/developers/models/grok-build-0.1"
+      },
+      {
+        "excerpts": [
+          "Zero Data Retention (ZDR) | Command Code\nZero data retention on Command Code: an enterprise-grade privacy feature you can enforce on every request. How ZDR routing works, why it costs more, and how GOAT, Pro, and Enterprise plans use it."
+        ],
+        "publish_date": null,
+        "title": "Zero Data Retention (ZDR) | Command Code",
+        "url": "https://commandcode.ai/docs/resources/zdr"
+      },
+      {
+        "excerpts": [
+          "Create API key Meet grok-4.6\nAs we continue advancing Grok, we are retiring several earlier models to focus fully on our newest generation. Effective May 15, 2026 at 12:00 PM PT , the following models will be retired from the xAI API:\n* grok-4-1-fast-reasoning\n* grok-4-1-fast-non-reasoning\n* grok-4-fast-reasoning\n* grok-4-fast-non-reasoning\n* grok-4-0709\n* grok-code-fast-1\n* grok-3\n* grok-imagine-image-pro\nAfter May 15, 2026 at 12:00 PM PT , requests to the retired model slugs above will automatically redirect to grok-4.3 .\nIf you continue sending requests to a deprecated slug after May 15, please be aware that you will be billed at grok-4.3 pricing of $1.25 per 1M input tokens and $2.50 per 1M output tokens rather than the rates of the original model.\nRecommended Replacements\nWe have newer, more capable models ready for every workload. In most cases, migrating is as simple as changing the \"model\" field in your API request. Doing so explicitly lets you control which reasoning effort you pay for, rather than accepting the default applied by the redirect.\n* Model being retired | Redirect target after May 15\n* grok-4-1-fast-reasoning | grok-4.3 with low reasoning effort\n* grok-4-1-fast-non-reasoning | grok-4.3 with none reasoning effort\n* grok-4-fast-reason"
+        ],
+        "publish_date": "2026-09-02",
+        "title": "May 15, 2026 Model Retirement | SpaceXAI Docs",
+        "url": "https://docs.x.ai/developers/migration/may-15-retirement"
+      },
+      {
+        "excerpts": [
+          "[!NOTE]\nxAI never trains on your API inputs or outputs without your explicit permission.\nBy default, all API requests and responses are stored on our servers (encrypted at rest) for 30 days for auditing purposes in the event of suspected abuse or misuse. xAI does not train on this data, and it is automatically deleted after 30 days.\nFor teams that require stricter data handling, see Zero Data Retention (ZDR) below.\nWhat is Zero Data Retention (ZDR)?\nBecause content deleted under ZDR can never be recovered or produced by xAI, only enable it when your compliance requirements truly demand it. For most teams, the default 30-day retention is the better choice.\n* No storage of prompts: ZDR ensures that API request inputs (i.e., your prompt) and outputs (i.e., the tokens generated by the LLM) are never persisted to disk. The 30-day audit retention described above does not apply to ZDR-enabled teams.\n* Applied at a team level: If enabled, ZDR is team-wide.\nFeatures not supported with ZDR\nAny capability that relies on xAI storing data is unavailable while ZDR is enabled:\n* Collections API | Stores your documents on xAI so Grok can search and retrieve from them (RAG). Those documents must be stored to be retrieved, which ZDR does not allow. Existing collections ca"
+        ],
+        "publish_date": "2026-07-27",
+        "title": "FAQ - API Security | SpaceXAI Docs",
+        "url": "https://docs.x.ai/developers/faq/security"
+      },
+      {
+        "excerpts": [
+          "Settings Reference | SpaceXAI Docs\nAug 18, 2026 \u2014 Grok Build environment variables and config.toml. Tools, sandbox, and features. Evaluation order: deny > ask > allow. Setting Values"
+        ],
+        "publish_date": "2026-08-18",
+        "title": "Settings Reference | SpaceXAI Docs",
+        "url": "https://docs.x.ai/build/settings/reference"
+      }
+    ],
+    "search_id": "search_34fbdda69c959e2ccdf7ba06a81bcb16",
+    "session_id": "90cb4b68a2617d0bd0451ca0c1d4f2998cf6f97d8c1fd36e7a58e72a725a49a6",
+    "warnings": null
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "arguments": {
+    "model_name": "gpt-6-astra",
+    "objective": "Find official xAI/Grok model catalogs and Grok Build documentation, with dated release or migration evidence applicable on 2026-09-10. Identify exact selectors, retirement redirects, and source dates; exclude competitor research and prior DR04 outputs.",
+    "search_queries": [
+      "site:docs.x.ai models pricing deprecated redirects",
+      "site:x.ai/news Grok Build release 2026",
+      "site:docs.x.ai/build models reasoning effort"
+    ],
+    "session_id": "90cb4b68a2617d0bd0451ca0c1d4f2998cf6f97d8c1fd36e7a58e72a725a49a6"
+  },
+  "tool": "web_search"
+}

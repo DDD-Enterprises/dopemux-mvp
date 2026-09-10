@@ -1,0 +1,98 @@
+{
+  "_meta": {
+    "parallel/usage": [
+      {
+        "cost_usd": 0.001,
+        "count": 1,
+        "name": "sku_search"
+      }
+    ]
+  },
+  "content": [
+    {
+      "text": "{\n  \"search_id\": \"search_9615de331e87ae386634ab511d728db5\",\n  \"results\": [\n    {\n      \"url\": \"https://docs.x.ai/console/billing\",\n      \"title\": \"Billing, Credits & Invoices | SpaceXAI Docs\",\n      \"publish_date\": null,\n      \"excerpts\": [\n        \"Billing, Credits & Invoices | SpaceXAI Docs\\nIf you want to use monthly billing, you can increase your invoiced billing limit on Billing -> API Credits page. xAI will attempt to use your prepaid credits first, and the remaining amount will be charged to your default payment method at the end of the month. This ensures you won't experience interruption while consuming the API.\"\n      ]\n    },\n    {\n      \"url\": \"https://docs.x.ai/developers/rest-api-reference/management/billing\",\n      \"title\": \"Billing Management | Management API - REST API Reference ...\",\n      \"publish_date\": null,\n      \"excerpts\": [\n        \"Billing Management | Management API - REST API Reference ...\\nGet the postpaid monthly spending limits. The API will stop functioning once the team has consumed all of the prepaid credits, and the postpaid usage amount has reached the user-set soft spending limit.\"\n      ]\n    },\n    {\n      \"url\": \"https://docs.x.ai/console/faq/billing\",\n      \"title\": \"FAQ - API Billing | SpaceXAI Docs\",\n      \"publish_date\": null,\n      \"excerpts\": [\n        \"FAQ - API Billing | SpaceXAI Docs\\nYour API consumption will be calculated when making the requests, and the corresponding amount will be deducted from your remaining credits or added to your monthly invoice. Check out Billing for more information.\"\n      ]\n    },\n    {\n      \"url\": \"https://docs.x.ai/developers/advanced-api-usage/prompt-caching/usage-and-pricing\",\n      \"title\": \"Usage & Pricing | SpaceXAI Docs\",\n      \"publish_date\": null,\n      \"excerpts\": [\n        \"Usage & Pricing | SpaceXAI Docs\\nRead cached token counts from API responses and understand prompt caching billing\"\n      ]\n    },\n    {\n      \"url\": \"https://x.ai/build\",\n      \"title\": \"Grok Build | SpaceXAI\",\n      \"publish_date\": null,\n      \"excerpts\": [\n        \"New Meet Grok 4.6 \u2022 Now powering Grok Build\\nBring Grok to\\nyour computer.\\nA powerful coding agent for complex work, now powered by Grok 4.6, our newest model.\\n$ curl -fsSL https://x.ai/cli/install.sh | bash\\nAvailable to try for Free\\nRead Docs Changelog Open Source\\nSkills\\nGrok Build adapts to your workflows and preferences with skills.\\n[install] \u203a browser-review v0.8.2 (workspace)\\n[install] \u203a github-flow v2.1.0 (workspace)\\n[install] \u203a xai-code-review v1.0.0 (workspace)\\n[installed]\\n\u276f\\ngrok-4.6 \u00b7 ask\\nQ&A\\nGrok Build asks the right questions to nail the details.\\n* Grok Build delegates larger tasks to specialized subagents\\n* Each child runs in parallel with its own context window\\n* Deep worktree support \u2014 launch subagents in their own worktrees\\nprojects/main jasong/folder\\n| |\\nexplore\\nExplore checkout flow explore \u00b7 grok-build\\nexplore\\nExplore infra and CI explore \u00b7 grok-build\\nexplore\\nExplore shared Go libraries explore \u00b7 grok-build\\nexplore\\nExplore order services explore \u00b7 grok-build\\nexplore\\nExplore fulfillment jobs explore \u00b7 grok-build\\nexplore\\nExplore pricing engine explore \u00b7 grok-build\\n\u276f find the source of the p99 latency regression\\n\u276f\\ngrok-4.6 \u00b7 ask\\nprojects/main jasong/folder\\n| 8.45% |\\n\u276f\\ngrok-4.6 \u00b7 ask\\nBring Grok to your computer\\nInstall now and start building with Grok 4.6 in Grok Build.\\n$ curl -fsSL https://x.ai/cli/\"\n      ]\n    },\n    {\n      \"url\": \"https://x.ai/?q\",\n      \"title\": \"SpaceXAI\",\n      \"publish_date\": null,\n      \"excerpts\": [\n        \"All posts\\nGrok Bot Aug 21, 2026 ### Grok Bot is now included with more plans Grok 4.6 on Google Enterprise Agent Platform Aug 21, 2026 ### Grok 4.6 on Google Enterprise Agent Platform Grok 4.6 on Amazon Bedrock Aug 19, 2026 ### Grok 4.6 on Amazon Bedrock Build Mode Available to All over a green gradient Aug 19, 2026 ### Grok Build on web and mobile\\nChoose how to get started\\nBuild on your own\\nLaunch your AI-powered product with:\\n* Access to all Grok models\\n* Usage-based pricing\\n* Automatically increasing rate limits\\n* Comprehensive documentation and guides\\n  Start Building\\nGet extra support\\nCustom rate limits and hands-on support for your team.\\n* Dedicated onboarding support\\n* Custom rate limits\\n* Billing via monthly invoices\\n* Single sign-on and audit logging\\n* Data residency options\\n  Contact Sales\"\n      ]\n    },\n    {\n      \"url\": \"https://docs.x.ai/developers/model-capabilities/text/reasoning\",\n      \"title\": \"Reasoning | SpaceXAI Docs\",\n      \"publish_date\": null,\n      \"excerpts\": [\n        \"Reasoning | SpaceXAI Docs\\nThe reasoning_effort parameter grok-4.6 and grok-4.5 support the reasoning_effort parameter, which controls how much effort the model spends thinking before responding.\"\n      ]\n    },\n    {\n      \"url\": \"https://docs.x.ai/grok/faq\",\n      \"title\": \"FAQ - Grok Website / Apps | SpaceXAI Docs\",\n      \"publish_date\": null,\n      \"excerpts\": [\n        \"FAQ - Grok Website / Apps | SpaceXAI Docs\\nInstead of separate daily limits for each product (like Chat, Imagine, Voice, or Build), you get one shared weekly usage pool that you can spend\"\n      ]\n    },\n    {\n      \"url\": \"https://docs.x.ai/developers/models/grok-4.6\",\n      \"title\": \"Grok 4.6 | SpaceXAI Docs\",\n      \"publish_date\": null,\n      \"excerpts\": [\n        \"Docs\\nSearch\\n\u2318 K\\nAPI Console\\nProducts\\nGrok\\nStatus\\nLoading...\\nResources\\nllms.txt Discord Email support Terms and Policies\\nModels\\n/\\nGrok 4.6\\ngrok-4.6\\nSpaceXAI's frontier model for coding, agentic tasks, and knowledge work.\\nCopy for LLM View as Markdown\\nRead announcement Try in playground\\nAt a glance\\nModalities\\nText, Image\\nText\\nContext window\\n500,000\\nPricing\\n$2.00 $6.00\\nCapabilities\\nFunction calling\\nConnect the xAI model to external tools and systems.\\nStructured outputs\\nReturn responses in specific, organized formats.\\nReasoning\\nThe model can think before responding.\\nPricing\\nInput\\nTokens\\n$2.00 / 1M tokens\\nCached tokens\\n$0.50 / 1M tokens\\nOutput\\nTokens\\n$6.00 / 1M tokens\\nYou are charged for each token used when making calls to our API.\\nUsing cached input tokens can significantly reduce your costs.\\nThis model is available on multiple clusters, you can find full regional based pricing below.\\nHow does pricing work Tool pricing Request increased rate limits\\nHigher context pricing\\nWe charge different rates for requests which exceed the 200K context window\\nDetails\\nModel name\\ngrok-4.6\\nRegion\\nus-east-1, us-west-2\\nBatch API\\nNot supported\\nRate limits\\nRequests per second\\n150\\nTokens per minute\\n50,000,000\\nLearn more #### Quickstart Create an API Key and make your first request. Learn more #### Tool use Let Grok perform actions and l\"\n      ]\n    }\n  ],\n  \"warnings\": null,\n  \"metadata\": null,\n  \"session_id\": \"90cb4b68a2617d0bd0451ca0c1d4f2998cf6f97d8c1fd36e7a58e72a725a49a6\"\n}",
+      "type": "text"
+    }
+  ],
+  "isError": false,
+  "structuredContent": {
+    "metadata": null,
+    "results": [
+      {
+        "excerpts": [
+          "Billing, Credits & Invoices | SpaceXAI Docs\nIf you want to use monthly billing, you can increase your invoiced billing limit on Billing -> API Credits page. xAI will attempt to use your prepaid credits first, and the remaining amount will be charged to your default payment method at the end of the month. This ensures you won't experience interruption while consuming the API."
+        ],
+        "publish_date": null,
+        "title": "Billing, Credits & Invoices | SpaceXAI Docs",
+        "url": "https://docs.x.ai/console/billing"
+      },
+      {
+        "excerpts": [
+          "Billing Management | Management API - REST API Reference ...\nGet the postpaid monthly spending limits. The API will stop functioning once the team has consumed all of the prepaid credits, and the postpaid usage amount has reached the user-set soft spending limit."
+        ],
+        "publish_date": null,
+        "title": "Billing Management | Management API - REST API Reference ...",
+        "url": "https://docs.x.ai/developers/rest-api-reference/management/billing"
+      },
+      {
+        "excerpts": [
+          "FAQ - API Billing | SpaceXAI Docs\nYour API consumption will be calculated when making the requests, and the corresponding amount will be deducted from your remaining credits or added to your monthly invoice. Check out Billing for more information."
+        ],
+        "publish_date": null,
+        "title": "FAQ - API Billing | SpaceXAI Docs",
+        "url": "https://docs.x.ai/console/faq/billing"
+      },
+      {
+        "excerpts": [
+          "Usage & Pricing | SpaceXAI Docs\nRead cached token counts from API responses and understand prompt caching billing"
+        ],
+        "publish_date": null,
+        "title": "Usage & Pricing | SpaceXAI Docs",
+        "url": "https://docs.x.ai/developers/advanced-api-usage/prompt-caching/usage-and-pricing"
+      },
+      {
+        "excerpts": [
+          "New Meet Grok 4.6 \u2022 Now powering Grok Build\nBring Grok to\nyour computer.\nA powerful coding agent for complex work, now powered by Grok 4.6, our newest model.\n$ curl -fsSL https://x.ai/cli/install.sh | bash\nAvailable to try for Free\nRead Docs Changelog Open Source\nSkills\nGrok Build adapts to your workflows and preferences with skills.\n[install] \u203a browser-review v0.8.2 (workspace)\n[install] \u203a github-flow v2.1.0 (workspace)\n[install] \u203a xai-code-review v1.0.0 (workspace)\n[installed]\n\u276f\ngrok-4.6 \u00b7 ask\nQ&A\nGrok Build asks the right questions to nail the details.\n* Grok Build delegates larger tasks to specialized subagents\n* Each child runs in parallel with its own context window\n* Deep worktree support \u2014 launch subagents in their own worktrees\nprojects/main jasong/folder\n| |\nexplore\nExplore checkout flow explore \u00b7 grok-build\nexplore\nExplore infra and CI explore \u00b7 grok-build\nexplore\nExplore shared Go libraries explore \u00b7 grok-build\nexplore\nExplore order services explore \u00b7 grok-build\nexplore\nExplore fulfillment jobs explore \u00b7 grok-build\nexplore\nExplore pricing engine explore \u00b7 grok-build\n\u276f find the source of the p99 latency regression\n\u276f\ngrok-4.6 \u00b7 ask\nprojects/main jasong/folder\n| 8.45% |\n\u276f\ngrok-4.6 \u00b7 ask\nBring Grok to your computer\nInstall now and start building with Grok 4.6 in Grok Build.\n$ curl -fsSL https://x.ai/cli/"
+        ],
+        "publish_date": null,
+        "title": "Grok Build | SpaceXAI",
+        "url": "https://x.ai/build"
+      },
+      {
+        "excerpts": [
+          "All posts\nGrok Bot Aug 21, 2026 ### Grok Bot is now included with more plans Grok 4.6 on Google Enterprise Agent Platform Aug 21, 2026 ### Grok 4.6 on Google Enterprise Agent Platform Grok 4.6 on Amazon Bedrock Aug 19, 2026 ### Grok 4.6 on Amazon Bedrock Build Mode Available to All over a green gradient Aug 19, 2026 ### Grok Build on web and mobile\nChoose how to get started\nBuild on your own\nLaunch your AI-powered product with:\n* Access to all Grok models\n* Usage-based pricing\n* Automatically increasing rate limits\n* Comprehensive documentation and guides\n  Start Building\nGet extra support\nCustom rate limits and hands-on support for your team.\n* Dedicated onboarding support\n* Custom rate limits\n* Billing via monthly invoices\n* Single sign-on and audit logging\n* Data residency options\n  Contact Sales"
+        ],
+        "publish_date": null,
+        "title": "SpaceXAI",
+        "url": "https://x.ai/?q"
+      },
+      {
+        "excerpts": [
+          "Reasoning | SpaceXAI Docs\nThe reasoning_effort parameter grok-4.6 and grok-4.5 support the reasoning_effort parameter, which controls how much effort the model spends thinking before responding."
+        ],
+        "publish_date": null,
+        "title": "Reasoning | SpaceXAI Docs",
+        "url": "https://docs.x.ai/developers/model-capabilities/text/reasoning"
+      },
+      {
+        "excerpts": [
+          "FAQ - Grok Website / Apps | SpaceXAI Docs\nInstead of separate daily limits for each product (like Chat, Imagine, Voice, or Build), you get one shared weekly usage pool that you can spend"
+        ],
+        "publish_date": null,
+        "title": "FAQ - Grok Website / Apps | SpaceXAI Docs",
+        "url": "https://docs.x.ai/grok/faq"
+      },
+      {
+        "excerpts": [
+          "Docs\nSearch\n\u2318 K\nAPI Console\nProducts\nGrok\nStatus\nLoading...\nResources\nllms.txt Discord Email support Terms and Policies\nModels\n/\nGrok 4.6\ngrok-4.6\nSpaceXAI's frontier model for coding, agentic tasks, and knowledge work.\nCopy for LLM View as Markdown\nRead announcement Try in playground\nAt a glance\nModalities\nText, Image\nText\nContext window\n500,000\nPricing\n$2.00 $6.00\nCapabilities\nFunction calling\nConnect the xAI model to external tools and systems.\nStructured outputs\nReturn responses in specific, organized formats.\nReasoning\nThe model can think before responding.\nPricing\nInput\nTokens\n$2.00 / 1M tokens\nCached tokens\n$0.50 / 1M tokens\nOutput\nTokens\n$6.00 / 1M tokens\nYou are charged for each token used when making calls to our API.\nUsing cached input tokens can significantly reduce your costs.\nThis model is available on multiple clusters, you can find full regional based pricing below.\nHow does pricing work Tool pricing Request increased rate limits\nHigher context pricing\nWe charge different rates for requests which exceed the 200K context window\nDetails\nModel name\ngrok-4.6\nRegion\nus-east-1, us-west-2\nBatch API\nNot supported\nRate limits\nRequests per second\n150\nTokens per minute\n50,000,000\nLearn more #### Quickstart Create an API Key and make your first request. Learn more #### Tool use Let Grok perform actions and l"
+        ],
+        "publish_date": null,
+        "title": "Grok 4.6 | SpaceXAI Docs",
+        "url": "https://docs.x.ai/developers/models/grok-4.6"
+      }
+    ],
+    "search_id": "search_9615de331e87ae386634ab511d728db5",
+    "session_id": "90cb4b68a2617d0bd0451ca0c1d4f2998cf6f97d8c1fd36e7a58e72a725a49a6",
+    "warnings": null
+  }
+}
