@@ -1,0 +1,40 @@
+{
+  "schema_version": "dopemux.governed_execution.writer_custody_receipt.v1",
+  "packet_id": "TP-DMX-GEC-V2-W01-CONTRACT-FOUNDATION-001",
+  "repo_identity": {
+    "origin_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "toplevel": "/Users/hue/code/dopemux-mvp/.worktrees/gec-v2-w01"
+  },
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/gec-v2-w01",
+  "branch": "feat/gec-v2-w01-contract-foundation-001",
+  "base_sha": "aaaaaaaa11111111bbbbbbbb22222222cccccccc",
+  "allowed_paths": [
+    "schemas/governed_execution/"
+  ],
+  "allowlist_digest": "1111111122222222333333334444444455555555666666667777777788888888",
+  "writer_identity": {
+    "runner": "claude-code-agent",
+    "session_ref": "session-w01",
+    "agent_role": "implementer"
+  },
+  "writer_lease": {
+    "issued_at": "2026-09-11T12:00:00Z",
+    "expires_at": "2026-09-11T13:00:00Z",
+    "lease_id": "lease-w01-001"
+  },
+  "diff_provenance": {
+    "base_sha": "aaaaaaaa11111111bbbbbbbb22222222cccccccc",
+    "head_sha": "bbbbbbbb22222222cccccccc33333333dddddddd",
+    "patch_sha256": "2222222233333333444444445555555566666666777777778888888899999999"
+  },
+  "rollback_locality": {
+    "strategy": "TELEPORT",
+    "boundary": "commits on feat/gec-v2-w01-contract-foundation-001 since base"
+  },
+  "filesystem_scope": {
+    "root": "/Users/hue/code/dopemux-mvp/.worktrees/gec-v2-w01",
+    "outside_root_writes": false
+  },
+  "custody_state": "HELD",
+  "authority": "NONE"
+}

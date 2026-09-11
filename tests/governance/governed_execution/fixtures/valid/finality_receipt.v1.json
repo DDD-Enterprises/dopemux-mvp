@@ -1,0 +1,23 @@
+{
+  "schema_version": "dopemux.governed_execution.finality_receipt.v1",
+  "packet_id": "TP-DMX-GEC-V2-W01-CONTRACT-FOUNDATION-001",
+  "macro_id": "MACRO-DMX-GOVERNED-EXECUTION-CONTRACT-V2-001",
+  "freeze_ref": {
+    "path": "proof/W01/freeze_receipt.json",
+    "sha256": "1111111122222222333333334444444455555555666666667777777788888888"
+  },
+  "audit_receipt_ref": {
+    "path": "proof/W01/audit_receipt.json",
+    "sha256": "2222222233333333444444445555555566666666777777778888888899999999"
+  },
+  "audited_head": "bbbbbbbb22222222cccccccc33333333dddddddd",
+  "finality_head": "bbbbbbbb22222222cccccccc33333333dddddddd",
+  "exact_head_equality": true,
+  "audit_verdict": "PASS_WITH_RISKS",
+  "pr_ref": "NOT_RUN",
+  "steward_readiness": "NOT_RUN",
+  "merge_authorized": false,
+  "activation_authorized": false,
+  "recorded_at": "2026-09-11T13:00:00Z",
+  "authority": "NONE"
+}

@@ -1,0 +1,98 @@
+{
+  "id": "TP-DMX-GEC-V2-W01-CONTRACT-FOUNDATION-001",
+  "project": "dopemux-mvp",
+  "target": "W01 contract foundation",
+  "invariants": [
+    "MACRO I01-I20 apply"
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-GOVERNED-EXECUTION-CONTRACT-V2-001",
+    "base_branch": "codex/control-tower-supervisor-kit-clean-r1",
+    "parent_tp_id": "MACRO-DMX-GOVERNED-EXECUTION-CONTRACT-V2-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "gemini",
+    "branch": "feat/gec-v2-w01-contract-foundation-001",
+    "base_branch": "codex/control-tower-supervisor-kit-clean-r1",
+    "stacked_because": "stacks on PR #1337"
+  },
+  "commit": {
+    "message": "feat(governance): W01 Governed Execution Contract v2 schema foundation",
+    "allowlist": [
+      "schemas/governed_execution/enums.v1.schema.json"
+    ],
+    "verify": [
+      "uv run --extra test pytest tests/governance/governed_execution -q"
+    ]
+  },
+  "pr": {
+    "title": "feat(governance): W01 Governed Execution Contract v2 schema foundation",
+    "body": "summary",
+    "base": "codex/control-tower-supervisor-kit-clean-r1"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "preflight",
+      "requirements": [
+        "clean tree"
+      ],
+      "commands": [
+        "git status --porcelain"
+      ],
+      "expected_files": [],
+      "validation": [
+        "exit 0"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-GOVERNED-EXECUTION-CONTRACT-V2-001",
+  "workstream_id": "W01",
+  "risk_lane": "L2",
+  "audit_group": "AGY-GEC-V2",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-sonnet-5",
+      "effort": "high"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "schemas/governed_execution/",
+    "tests/governance/governed_execution/"
+  ],
+  "canonical_writers": [
+    "claude-code-agent"
+  ],
+  "semantic_scope": [
+    "governed_execution_contract_v2"
+  ],
+  "rollback_boundary": "git reset --hard 67dbfe84a1580bad69900094316e6da06b178091",
+  "operator_gate_required": false,
+  "receipt_refs": {
+    "admission": {
+      "path": "proof/W01/admission_receipt.json",
+      "sha256": "1111111122222222333333334444444455555555666666667777777788888888"
+    }
+  },
+  "authority": "NONE",
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "Kimi PAL chain step"
+    ]
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/governed_execution/admission_receipt.v1.schema.json",
+  "title": "Governed Execution Contract v2 - AdmissionReceipt",
+  "description": "Records whether a Task Packet is admitted for execution. Validity is separated per I17 (schema-valid, authority-valid, classification-valid, audit-valid, execution-valid are distinct). admission_status is a derived, fail-closed aggregate, not an independent grant. is_execution_authority is always false: this receipt cannot self-certify workflow legality.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "dopemux.governed_execution.admission_receipt.v1"
+    },
+    "packet_id": { "type": "string", "minLength": 1 },
+    "packet_sha256": { "$ref": "enums.v1.schema.json#/definitions/sha256" },
+    "macro_id": { "type": "string", "minLength": 1 },
+    "schema_validity": { "$ref": "enums.v1.schema.json#/definitions/status_class" },
+    "authority_validity": { "$ref": "enums.v1.schema.json#/definitions/status_class" },
+    "classification_validity": { "$ref": "enums.v1.schema.json#/definitions/status_class" },
+    "audit_validity": { "$ref": "enums.v1.schema.json#/definitions/status_class" },
+    "execution_validity": { "$ref": "enums.v1.schema.json#/definitions/status_class" },
+    "admission_status": {
+      "description": "Derived from schema_validity, authority_validity, classification_validity, audit_validity and execution_validity. Fails closed: any non-PASS component yields a non-PASS admission_status. Never independently asserted.",
+      "$ref": "enums.v1.schema.json#/definitions/status_class"
+    },
+    "is_execution_authority": { "const": false },
+    "dcp_route_decision_ref": { "type": "string", "minLength": 1 },
+    "task_orchestrator_item_ref": { "type": "string", "minLength": 1 },
+    "recorded_at": { "$ref": "enums.v1.schema.json#/definitions/rfc3339_utc" },
+    "authority": { "const": "NONE" }
+  },
+  "required": [
+    "schema_version",
+    "packet_id",
+    "packet_sha256",
+    "macro_id",
+    "schema_validity",
+    "authority_validity",
+    "classification_validity",
+    "audit_validity",
+    "execution_validity",
+    "admission_status",
+    "is_execution_authority",
+    "dcp_route_decision_ref",
+    "task_orchestrator_item_ref",
+    "recorded_at",
+    "authority"
+  ]
+}

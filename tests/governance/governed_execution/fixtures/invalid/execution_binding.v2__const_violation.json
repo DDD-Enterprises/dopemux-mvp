@@ -1,0 +1,93 @@
+{
+  "schema_version": "dopemux.governed_execution.execution_binding.v2",
+  "macro_id": "MACRO-DMX-GOVERNED-EXECUTION-CONTRACT-V2-001",
+  "stage": "implementation",
+  "authority": "SOME",
+  "authority_refs": {
+    "task_packet_ref": "task-packets/TP-DMX-GEC-V2-W01-CONTRACT-FOUNDATION-001.json",
+    "operator_gate_refs": []
+  },
+  "policy_refs": {
+    "dcp_route_decision_ref": "NOT_RUN",
+    "dcp_status": "NOT_RUN",
+    "dcp_risk_class": "NOT_RUN",
+    "task_orchestrator_state_ref": "NOT_RUN",
+    "universal_router_recommendation_ref": "NOT_RUN",
+    "audit_broker_certification_ref": "NOT_RUN",
+    "context_packet_ref": "NOT_RUN"
+  },
+  "delivery": {
+    "risk_lane": "L2"
+  },
+  "selection": {
+    "runner": "claude-code-agent",
+    "runner_availability": "PROVEN",
+    "model": "claude-sonnet-5",
+    "effort": "high",
+    "connector": "cli",
+    "configured_identity": "claude-sonnet-5",
+    "response_claimed_identity": "claude-sonnet-5",
+    "provider_attested_identity": "UNKNOWN",
+    "containment_evidence": []
+  },
+  "constraints": {
+    "allowed_actions": [
+      "read",
+      "edit",
+      "validate"
+    ],
+    "forbidden_actions": [
+      "merge",
+      "activate"
+    ],
+    "stop_conditions": [],
+    "custody_constraints": [],
+    "context_constraints": []
+  },
+  "justification": {
+    "why_runner": "operator-authorized substitute for codex",
+    "why_model": "packet-pinned",
+    "why_effort": "packet-pinned",
+    "alternatives_considered": [
+      {
+        "route": "codex",
+        "disposition": "rejected",
+        "reason": "usage-limited"
+      }
+    ],
+    "cost_latency_tradeoff": "not evaluated",
+    "evidence": []
+  },
+  "audit": {
+    "effective_required": true,
+    "effective_requirement_sources": [
+      "delivery:L2"
+    ],
+    "upstream_obligations": [],
+    "selected_auditor_binding": "NOT_RUN"
+  },
+  "fallback": {
+    "allowed": false,
+    "trigger": "NOT_RUN",
+    "binding": {
+      "runner": "NOT_RUN",
+      "model": "NOT_RUN",
+      "effort": "NOT_RUN"
+    }
+  },
+  "recorded_at": "2026-09-11T12:00:00Z",
+  "runner_version": "claude-code-2026.09",
+  "effort_requested": "high",
+  "effort_observed": "high",
+  "auth_profile_ref": "profile-default",
+  "network_posture": "no-network-mutation",
+  "containment_posture": "worktree-scoped",
+  "fallback_outcome": {
+    "fallback_used": false,
+    "fallback_reason": "not triggered"
+  },
+  "response_claimed_model": "claude-sonnet-5",
+  "provider_attested_model": "UNKNOWN",
+  "independence_class": "UNKNOWN",
+  "qualification_receipt_ref": "NOT_RUN"
+}
