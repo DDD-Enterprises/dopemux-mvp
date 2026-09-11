@@ -5,6 +5,7 @@ import pytest
 
 from dopemux.governed_execution.audit_identity.location import (
     EvidenceKind,
+    EvidenceLocation,
     classify_location,
     exact_head_binding,
     split,
@@ -72,6 +73,21 @@ def test_split_partitions_changed_paths() -> None:
 
 def test_split_empty_input() -> None:
     assert split([]) == ((), ())
+
+
+def test_evidence_location_authority_is_none() -> None:
+    location = EvidenceLocation(kind=EvidenceKind.EVIDENCE_STORE, ref="proof/W07/AUDITOR_REPORT.md")
+    assert location.authority == "NONE"
+    assert location.kind is EvidenceKind.EVIDENCE_STORE
+    assert location.ref == "proof/W07/AUDITOR_REPORT.md"
+
+
+def test_evidence_location_candidate_branch_authority_is_none() -> None:
+    location = EvidenceLocation(
+        kind=EvidenceKind.CANDIDATE_BRANCH,
+        ref="src/dopemux/governed_execution/audit_identity/location.py",
+    )
+    assert location.authority == "NONE"
 
 
 def test_exact_head_binding_bound_true_on_triple_equality() -> None:

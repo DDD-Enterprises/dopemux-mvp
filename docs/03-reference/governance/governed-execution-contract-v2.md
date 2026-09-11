@@ -269,11 +269,11 @@ head being finalized.
 ## Audit identity and PR Steward boundary (W07)
 
 W07 (L3, operator gate `GATE-W07-L3-001`) adds
-`src/dopemux/governed_execution/audit_identity/` - new code only, under
-`schemas/audit_broker/` and `schemas/proof/embedded_audit.schema.json`,
-neither of which this packet touches. It decouples four concerns that were
-previously conflated: audit identity, evidence location, exact-head binding
-and the PR Steward's action boundary.
+`src/dopemux/governed_execution/audit_identity/` - new code only.
+`schemas/audit_broker/` and `schemas/proof/embedded_audit.schema.json` are
+untouched. It decouples four concerns that were previously conflated:
+audit identity, evidence location, exact-head binding and the PR
+Steward's action boundary.
 
 ### Identity layers and the no-reconciliation rule
 
@@ -289,13 +289,15 @@ mistake being reintroduced.
 
 `IdentityLayer` mirrors `enums.v1.schema.json#/definitions/identity_layer`
 exactly, including its fifth member, `PROXY_REPORTED`. `AuditIdentity` has
-no field for that layer - it follows the same four-layer shape already
-used by `execution_binding.v2.schema.json` (`response_claimed_model`,
-`provider_attested_model`, plus `selection.configured_identity`), which
-has no `proxy_reported` layer either. `PROXY_REPORTED` is a real layer,
-owned by the out-of-scope `schemas/audit_broker/` and `schemas/dcp/`
-families for LLM-routing-proxy identity; `layers()` therefore returns the
-four layers this packet's `AuditIdentity` actually carries, not five.
+no field for that layer: `execution_binding.v2.schema.json` (W01, this
+same MacroPacket, A1-audited PASS) already carries the same four
+model-identity fields - `response_claimed_model`, `provider_attested_model`
+plus `selection.configured_identity` and
+`selection.response_claimed_identity` - with no `proxy_reported` layer
+either. `PROXY_REPORTED` is a real layer, owned by the out-of-scope
+`schemas/audit_broker/` and `schemas/dcp/` families for LLM-routing-proxy
+identity; `layers()` therefore returns the four layers this packet's
+`AuditIdentity` actually carries, not five.
 
 ### Independence classes
 
@@ -374,3 +376,19 @@ those records exactly as before. `project_legacy_embedded_audit` is a new,
 additive, read-only view for callers that want an `AuditIdentity`-shaped
 projection; removing or superseding the legacy record shape is explicitly
 deferred to a separately authorized packet.
+
+### Relationship to the existing `audit_identity` proof-bundle field
+
+`scripts/audit/local_audit_acceptance.py` already reads and validates a
+signed proof-bundle field it also calls `audit_identity`: a JSON object
+with keys exactly `implementer`, `auditor` and `independence`, where each
+of `implementer`/`auditor` is `{runner, model, model_family,
+runtime_family[, effort]}` and `independence` must equal the literal
+`PROVEN` for acceptance. It is out of scope for this packet (not under
+`src/dopemux/governed_execution/`) and is untouched: same name, unrelated
+shape, unrelated module, not extended, referenced or superseded by
+`src/dopemux/governed_execution/audit_identity/`. Unlike this packet's
+`independence()`, that existing check is a binary L3 gate embedded in an
+acceptance function, not a pure assessment; reconciling the two names, if
+ever warranted, is out of scope here and left to a separately authorized
+packet.
