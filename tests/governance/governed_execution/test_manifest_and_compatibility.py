@@ -104,12 +104,22 @@ def _leaf_type_signature(node: dict, registry: Registry, base_uri: str) -> tuple
 def _walk_v1_properties(node: dict, prefix: str = "") -> dict[str, dict]:
     """Flatten every v1 property path -> its schema node.
 
-    Recurses into nested objects (one level of object nesting per call) and
+    Recurses into nested objects (one level of object nesting per call),
     into arrays-of-objects (workstreams[], joins[], alternatives_considered[],
-    upstream_obligations[], allowed_fallbacks[]), using a "name[]." path
-    segment for the latter so array-item properties are covered too.
+    upstream_obligations[], allowed_fallbacks[]) using a "name[]." path
+    segment, and into a "oneOf" list of full object/array-item branches
+    (macro_packet.v2's closed joins.items oneOf; task_packet.v2's closed
+    root oneOf) by unioning every branch's flattened properties under the
+    same prefix - each branch is a complete shape for the same conceptual
+    node, differing only in the documented conditional fields, so the
+    union recovers every v1 property regardless of which branch carries it.
     """
     out: dict[str, dict] = {}
+    if "oneOf" in node and isinstance(node["oneOf"], list):
+        for branch in node["oneOf"]:
+            if isinstance(branch, dict):
+                out.update(_walk_v1_properties(branch, prefix=prefix))
+        return out
     props = node.get("properties", {})
     for name, sub in props.items():
         path = f"{prefix}{name}"
@@ -118,8 +128,11 @@ def _walk_v1_properties(node: dict, prefix: str = "") -> dict[str, dict]:
             out.update(_walk_v1_properties(sub, prefix=f"{path}."))
         elif sub.get("type") == "array":
             items = sub.get("items")
-            if isinstance(items, dict) and items.get("type") == "object" and "properties" in items:
-                out.update(_walk_v1_properties(items, prefix=f"{path}[]."))
+            if isinstance(items, dict):
+                if items.get("type") == "object" and "properties" in items:
+                    out.update(_walk_v1_properties(items, prefix=f"{path}[]."))
+                elif "oneOf" in items:
+                    out.update(_walk_v1_properties(items, prefix=f"{path}[]."))
     return out
 
 
@@ -265,3 +278,81 @@ def test_no_inline_enum_outside_enums_v1(schemas) -> None:
         hits: list[str] = []
         _find_enum_keywords(schema, "", hits)
         assert not hits, f"{shortname}: inline enum literal list(s) found at {hits}; use $ref to enums.v1 instead"
+
+
+# ---------------------------------------------------------------------------
+# Drift guards for the two closed oneOf conditionals (W01-R3): each pair of
+# branches must be identical except at the documented delta, so duplicating
+# the full object shape (required because additionalProperties:false cannot
+# coexist with if/then/else) does not silently drift apart over time.
+# ---------------------------------------------------------------------------
+
+
+def test_task_packet_v2_oneof_branches_differ_only_at_agent_and_pal_chain(schemas) -> None:
+    schema = schemas["task_packet.v2"]
+    branches = schema["oneOf"]
+    assert len(branches) == 2, "expected exactly two root oneOf branches"
+
+    gemini_branch = next(b for b in branches if "pal_chain" in b["required"])
+    other_branch = next(b for b in branches if b is not gemini_branch)
+
+    gemini_props = gemini_branch["properties"]
+    other_props = other_branch["properties"]
+    assert set(gemini_props) == set(other_props), (
+        f"branch property-name sets differ: {set(gemini_props) ^ set(other_props)}"
+    )
+
+    allowed_delta_properties = {"execution", "pal_chain"}
+    for name in gemini_props:
+        if name in allowed_delta_properties:
+            continue
+        assert gemini_props[name] == other_props[name], (
+            f"task_packet.v2 oneOf branches drifted at undocumented property {name!r}"
+        )
+
+    # execution differs only in properties.agent; every other execution
+    # sub-property (branch, base_branch, stacked_because, required, etc.)
+    # must be identical.
+    gemini_execution = gemini_props["execution"]
+    other_execution = other_props["execution"]
+    assert gemini_execution["required"] == other_execution["required"]
+    assert gemini_execution["additionalProperties"] == other_execution["additionalProperties"]
+    gemini_exec_props = dict(gemini_execution["properties"])
+    other_exec_props = dict(other_execution["properties"])
+    gemini_agent = gemini_exec_props.pop("agent")
+    other_agent = other_exec_props.pop("agent")
+    assert gemini_exec_props == other_exec_props, "execution sub-properties drifted beyond agent"
+    assert gemini_agent != other_agent, "execution.agent must differ between the two branches"
+
+    # required sets: gemini adds exactly "pal_chain" beyond the shared set.
+    assert set(gemini_branch["required"]) - set(other_branch["required"]) == {"pal_chain"}
+    assert set(other_branch["required"]) - set(gemini_branch["required"]) == set()
+
+
+def test_macro_packet_v2_join_oneof_branches_differ_only_at_join_type_and_quorum(schemas) -> None:
+    schema = schemas["macro_packet.v2"]
+    branches = schema["properties"]["joins"]["items"]["oneOf"]
+    assert len(branches) == 2, "expected exactly two joins.items oneOf branches"
+
+    quorum_branch = next(b for b in branches if "quorum" in b["required"])
+    other_branch = next(b for b in branches if b is not quorum_branch)
+
+    quorum_props = quorum_branch["properties"]
+    other_props = other_branch["properties"]
+    assert set(quorum_props) - set(other_props) == {"quorum"}
+    assert set(other_props) - set(quorum_props) == set()
+
+    allowed_delta_properties = {"join_type", "quorum"}
+    for name in other_props:
+        if name in allowed_delta_properties:
+            continue
+        assert quorum_props[name] == other_props[name], (
+            f"macro_packet.v2 join oneOf branches drifted at undocumented property {name!r}"
+        )
+
+    assert quorum_props["join_type"] != other_props["join_type"], (
+        "join_type constraint must differ between the QUORUM and non-QUORUM branches"
+    )
+
+    assert set(quorum_branch["required"]) - set(other_branch["required"]) == {"quorum"}
+    assert set(other_branch["required"]) - set(quorum_branch["required"]) == set()

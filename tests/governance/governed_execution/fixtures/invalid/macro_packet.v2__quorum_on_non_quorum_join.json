@@ -566,18 +566,8 @@
         "W08"
       ],
       "condition": "all returned PASS",
-      "join_type": "ALL_REQUIRED"
-    },
-    {
-      "join_id": "J02",
-      "requires": [
-        "W06",
-        "W07",
-        "W08"
-      ],
-      "condition": "at least a quorum of W06/W07/W08 return PASS",
-      "join_type": "QUORUM",
-      "quorum": 2
+      "join_type": "ALL_REQUIRED",
+      "quorum": 1
     }
   ],
   "parallelism": {

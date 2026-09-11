@@ -53,13 +53,13 @@
       "path": "schemas/governed_execution/macro_packet.v2.schema.json",
       "schema_version": "dopemux.governed_execution.macro_packet.v2",
       "status": "ACTIVE",
-      "sha256": "9724c47add8b4219362e1134746d31252e69fba581ec12185e200960e09d9460"
+      "sha256": "9162c3520848752bdde3accd78a8d9c924afd93747f243515cf66fc0454e9ca3"
     },
     {
       "path": "schemas/governed_execution/task_packet.v2.schema.json",
       "schema_version": "dopemux.governed_execution.task_packet.v2",
       "status": "ACTIVE",
-      "sha256": "9f1a44a8d7f3e3eea94c5ac4fffeee77e0e9bc4cfdf10b72d279922d1a27991b"
+      "sha256": "5f78e8c2edc36687867f026eb869c132c9e8fe94dedc6fa9af70b6d62e84c156"
     },
     {
       "path": "schemas/governed_execution/writer_custody_receipt.v1.schema.json",

@@ -155,6 +155,25 @@ what may happen next: `finality_receipt.v1.merge_authorized` and
 
 The full, sha256-bound record of this table is `schemas/governed_execution/manifest.v1.json`.
 
+Conditionals in this schema set are expressed as closed `oneOf` branches,
+never `if`/`then`/`else`: `additionalProperties:false` inside an `if`
+subschema would make the conditional never match (an `if` only ever asserts
+a *subset* of properties, so an `if` closed to that subset rejects every
+instance that also carries the sibling properties the conditional is meant
+to gate). Two conditionals in this set therefore duplicate the full object
+shape into two closed branches instead: `macro_packet.v2.properties.joins
+.items` (`QUORUM` join types require `quorum`; every other `join_type`
+forbids it) and the `task_packet.v2` document root (`execution.agent
+"gemini"` requires `pal_chain` with `enabled: true`, preserving the
+canonical v1 spec's `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json`
+gemini-implies-pal_chain rule; every other agent leaves `pal_chain`
+optional). Each pair of branches is guaranteed identical outside its
+documented delta by a dedicated drift-guard test in
+`tests/governance/governed_execution/test_manifest_and_compatibility.py`
+(`test_task_packet_v2_oneof_branches_differ_only_at_agent_and_pal_chain`,
+`test_macro_packet_v2_join_oneof_branches_differ_only_at_join_type_and_quorum`),
+so the duplication this pattern requires cannot silently drift apart.
+
 ## v1 -> v2 compatibility and deprecation rule
 
 v1 records remain accepted; v2 is preferred for new records; a v2 successor

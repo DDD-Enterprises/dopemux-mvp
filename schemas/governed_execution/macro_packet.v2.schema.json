@@ -202,26 +202,47 @@
     "joins": {
       "type": "array",
       "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "join_id": { "type": "string", "minLength": 1 },
-          "requires": {
-            "type": "array",
-            "items": { "type": "string", "minLength": 1 }
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "join_id": { "type": "string", "minLength": 1 },
+              "requires": {
+                "type": "array",
+                "items": { "type": "string", "minLength": 1 }
+              },
+              "condition": { "type": "string", "minLength": 1 },
+              "join_type": {
+                "allOf": [
+                  { "$ref": "enums.v1.schema.json#/definitions/join_type" },
+                  { "const": "QUORUM" }
+                ]
+              },
+              "quorum": { "type": "integer", "minimum": 1 }
+            },
+            "required": ["join_id", "requires", "condition", "join_type", "quorum"]
           },
-          "condition": { "type": "string", "minLength": 1 },
-          "join_type": { "$ref": "enums.v1.schema.json#/definitions/join_type" },
-          "quorum": { "type": "integer", "minimum": 1 }
-        },
-        "required": ["join_id", "requires", "condition", "join_type"],
-        "if": {
-          "properties": { "join_type": { "const": "QUORUM" } },
-          "required": ["join_type"]
-        },
-        "then": {
-          "required": ["quorum"]
-        }
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "join_id": { "type": "string", "minLength": 1 },
+              "requires": {
+                "type": "array",
+                "items": { "type": "string", "minLength": 1 }
+              },
+              "condition": { "type": "string", "minLength": 1 },
+              "join_type": {
+                "allOf": [
+                  { "$ref": "enums.v1.schema.json#/definitions/join_type" },
+                  { "not": { "const": "QUORUM" } }
+                ]
+              }
+            },
+            "required": ["join_id", "requires", "condition", "join_type"]
+          }
+        ]
       }
     },
     "parallelism": {
