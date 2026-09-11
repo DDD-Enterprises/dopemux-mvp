@@ -1,0 +1,193 @@
+{
+  "id": "TP-DMX-GEC-V2-W01-CONTRACT-FOUNDATION-001",
+  "project": "dopemux-mvp",
+  "target": "W01 / P0 of MACRO-DMX-GOVERNED-EXECUTION-CONTRACT-V2-001: freeze Governed Execution Contract v2 terminology, authority ceilings, schemas and compatibility/deprecation rules as repo-owned JSON Schemas plus fixtures, tests and one reference document. Implementation base is PR #1337 head 9dfd8471db2467a33cac12d5e8d87f2fee3ed8f3 (operator decisions D3/D4, 2026-09-11). Kit schemas under .control-tower/schemas/ stay byte-identical and are bound by sha256; v2 successors and the six absent contract schemas are published under schemas/governed_execution/. No runtime implementation, no dispatch, no merge, no activation, no credential change.",
+  "invariants": [
+    "MACRO I01-I20 apply. This packet is scope, not authority: schema-valid does not imply authority-valid (I17). Every published schema carries authority const NONE where an authority field exists.",
+    "Base commit is exactly 9dfd8471db2467a33cac12d5e8d87f2fee3ed8f3 on branch feat/gec-v2-w01-contract-foundation-001 in worktree .worktrees/gec-v2-w01. Any other base, branch or worktree is STOP_WRONG_BASE.",
+    "The two kit schemas .control-tower/schemas/supervisor_macro_packet.schema.json and .control-tower/schemas/execution_binding.schema.json are NOT modified. Their sha256 at base is recorded in schemas/governed_execution/manifest.v1.json. Version-amendment happens by publishing macro_packet.v2 and execution_binding.v2 under schemas/governed_execution/ with an explicit compatibility rule: v1 records remain accepted, v2 preferred, no field of v1 is removed or retyped in v2 (additive only).",
+    "All schemas are JSON Schema draft-07, additionalProperties false at every object level, with $id under https://dopemux.dev/schemas/governed_execution/<name>.schema.json and a schema_version const of the form dopemux.governed_execution.<name>.v<N>. The pre-existing schemas/dcp/governed_execution_receipt.schema.json (const dopemux-governed-execution-receipt.v1) is a non-colliding predecessor and is not touched.",
+    "Shared enums live only in schemas/governed_execution/enums.v1.schema.json and are consumed via $ref. Tests resolve cross-file $ref through a referencing.Registry keyed by $id (jsonschema 4.25); a bare relative $ref that fails resolution is a test failure, not a skip.",
+    "UNKNOWN is a legal value wherever a status enum exists and is never coerced. Missing required fields fail closed (schema invalid), they are not defaulted.",
+    "Git object ids use pattern ^[0-9a-f]{40}$; digests use ^[0-9a-f]{64}$; timestamps are RFC 3339 strings with explicit UTC Z suffix.",
+    "No receipt schema contains a readiness, dispatch_eligible, merge_ready or approval predicate that could act as authority. FinalityReceipt carries merge_authorized const false and activation_authorized const false. AggregateReturnEnvelope carries authority const NONE and is referential (refs + digests), never a copy of evidence.",
+    "Kit tests .control-tower/tests/test_ct.py remain 43 passed. Existing repo tests outside the allowlist are not modified.",
+    "Allowlist is exact. Any path outside commit.allowlist is STOP_SCOPE_EXPANSION and returns to the team lead. .control-tower/** is read-only for this packet.",
+    "No model audit is invoked by the implementer (INTERMEDIATE_MODEL_AUDITS=FORBIDDEN). Final independent A1 audit is team-lead dispatched after content freeze, by a non-Anthropic-family auditor.",
+    "No Task Orchestrator, ConPort, dope-memory, GitHub, network or credential mutation by the implementer. Commits are local; no push.",
+    "Placeholders (TODO, TBD, FIXME, XXX, PLACEHOLDER, lorem) are forbidden in every allowlisted file.",
+    "One substantive implementation attempt. Deterministic defects (lint, diff --check, schema parse) are repaired in-attempt; a semantic defect stops and returns to the team lead."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-GOVERNED-EXECUTION-CONTRACT-V2-001",
+    "base_branch": "codex/control-tower-supervisor-kit-clean-r1",
+    "parent_tp_id": "MACRO-DMX-GOVERNED-EXECUTION-CONTRACT-V2-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "base_branch": "codex/control-tower-supervisor-kit-clean-r1",
+    "branch": "feat/gec-v2-w01-contract-foundation-001",
+    "stacked_because": "Operator decision D3 (2026-09-11): W01 extends PR #1337 (Control Tower kit clean-r1, head 9dfd8471d) which already publishes MacroPacket v1 and ExecutionBinding v1; stacking avoids a second authority for those schemas."
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": ["none: deterministic validation only; final independent audit is team-lead dispatched after freeze"]
+  },
+  "commit": {
+    "message": "feat(governance): W01 Governed Execution Contract v2 schema foundation",
+    "allowlist": [
+      "task-packets/TP-DMX-GEC-V2-W01-CONTRACT-FOUNDATION-001.json",
+      "schemas/governed_execution/manifest.v1.json",
+      "schemas/governed_execution/enums.v1.schema.json",
+      "schemas/governed_execution/macro_packet.v2.schema.json",
+      "schemas/governed_execution/execution_binding.v2.schema.json",
+      "schemas/governed_execution/task_packet.v2.schema.json",
+      "schemas/governed_execution/admission_receipt.v1.schema.json",
+      "schemas/governed_execution/writer_custody_receipt.v1.schema.json",
+      "schemas/governed_execution/freeze_receipt.v1.schema.json",
+      "schemas/governed_execution/finality_receipt.v1.schema.json",
+      "schemas/governed_execution/aggregate_return_envelope.v1.schema.json",
+      "tests/governance/governed_execution/__init__.py",
+      "tests/governance/governed_execution/conftest.py",
+      "tests/governance/governed_execution/test_schema_fixtures.py",
+      "tests/governance/governed_execution/test_manifest_and_compatibility.py",
+      "tests/governance/governed_execution/test_dag_and_authority.py",
+      "tests/governance/governed_execution/fixtures/valid/**",
+      "tests/governance/governed_execution/fixtures/invalid/**",
+      "docs/03-reference/governance/governed-execution-contract-v2.md"
+    ],
+    "verify": [
+      "test \"$(git merge-base HEAD 9dfd8471db2467a33cac12d5e8d87f2fee3ed8f3)\" = \"9dfd8471db2467a33cac12d5e8d87f2fee3ed8f3\"",
+      "uv run --extra test python -m jsonschema -i task-packets/TP-DMX-GEC-V2-W01-CONTRACT-FOUNDATION-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "uv run --extra test pytest tests/governance/governed_execution -q",
+      "uv run --extra test pytest .control-tower/tests/test_ct.py -q",
+      "uv run ruff check tests/governance/governed_execution",
+      "uv run python scripts/governance/validate_change_contract.py --base 9dfd8471db2467a33cac12d5e8d87f2fee3ed8f3 --head HEAD --format text",
+      "git diff --check 9dfd8471db2467a33cac12d5e8d87f2fee3ed8f3 HEAD",
+      "sh -c '! git grep -nE \"TODO|TBD|FIXME|XXX|PLACEHOLDER|lorem\" HEAD -- schemas/governed_execution tests/governance/governed_execution docs/03-reference/governance/governed-execution-contract-v2.md'",
+      "gitleaks git --no-banner --log-opts=9dfd8471db2467a33cac12d5e8d87f2fee3ed8f3..HEAD .",
+      "sh -c 'git diff --name-only 9dfd8471db2467a33cac12d5e8d87f2fee3ed8f3 HEAD | grep -E \"^\\.control-tower/\" ; test $? -eq 1'",
+      "sh -c 'test \"$(git diff --name-only 9dfd8471db2467a33cac12d5e8d87f2fee3ed8f3 HEAD | grep -vE \"^(task-packets/TP-DMX-GEC-V2-W01-CONTRACT-FOUNDATION-001\\.json|schemas/governed_execution/|tests/governance/governed_execution/|docs/03-reference/governance/governed-execution-contract-v2\\.md)\" | wc -l | tr -d \" \")\" = \"0\"'"
+    ]
+  },
+  "pr": {
+    "title": "feat(governance): W01 Governed Execution Contract v2 schema foundation",
+    "body": "## Summary\n- W01 of MACRO-DMX-GOVERNED-EXECUTION-CONTRACT-V2-001, stacked on PR #1337 (kit clean-r1)\n- repo-owned schemas under schemas/governed_execution/: enums v1, macro_packet v2, execution_binding v2, task_packet v2, admission/writer_custody/freeze/finality receipts v1, aggregate_return_envelope v1, manifest v1 binding kit v1 schemas by sha256\n- positive/negative fixtures, DAG closure, authority-collision, enum-consistency and v1->v2 compatibility tests\n- reference doc docs/03-reference/governance/governed-execution-contract-v2.md\n\n## Authority\nSchema-valid is not authority-valid. Every schema carries authority NONE. No runtime, dispatch, merge or activation behaviour.\n\n## Validation\nL2: deterministic verify list in the packet; kit tests unchanged (43 passed); final independent A1 audit after content freeze by a non-Anthropic-family auditor.\n\nMERGE_AUTHORIZED=NO ACTIVATION_AUTHORIZED=NO",
+    "base": "codex/control-tower-supervisor-kit-clean-r1"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Identity, base and custody preflight; no edits until every check passes.",
+      "requirements": [
+        "Worktree root is /Users/hue/code/dopemux-mvp/.worktrees/gec-v2-w01, branch feat/gec-v2-w01-contract-foundation-001, HEAD ancestry includes 9dfd8471db2467a33cac12d5e8d87f2fee3ed8f3, working tree clean except this packet file.",
+        "Record sha256 of .control-tower/schemas/supervisor_macro_packet.schema.json and .control-tower/schemas/execution_binding.schema.json at HEAD for the manifest.",
+        "Kit tests pass (43) before any change."
+      ],
+      "commands": [
+        "git rev-parse --show-toplevel",
+        "git branch --show-current",
+        "git merge-base --is-ancestor 9dfd8471db2467a33cac12d5e8d87f2fee3ed8f3 HEAD && echo ANCESTOR_OK",
+        "git status --porcelain",
+        "shasum -a 256 .control-tower/schemas/supervisor_macro_packet.schema.json .control-tower/schemas/execution_binding.schema.json",
+        "uv run --extra test pytest .control-tower/tests/test_ct.py -q"
+      ],
+      "validation": [
+        "All commands exit 0; ANCESTOR_OK printed; 43 passed.",
+        "Mismatch on any identity item is STOP_WRONG_BASE with no edits."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        ".control-tower/contracts/SUPERVISOR_MACROPACKET_CONTRACT.md",
+        ".control-tower/schemas/supervisor_macro_packet.schema.json",
+        ".control-tower/schemas/execution_binding.schema.json",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "schemas/dcp/governed_execution_receipt.schema.json",
+        "schemas/audit_broker/audit_request.schema.json"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Publish enums.v1 and manifest.v1.",
+      "requirements": [
+        "enums.v1.schema.json defines, as named definitions consumed by $ref: status_class {PASS,FAIL,UNKNOWN,NOT_RUN}; preflight_class {OBSERVED,CONFLICTING,UNKNOWN,NOT_RUN}; risk_lane {L0,L1,L2,L3}; dispatch_qualification {DISPATCHABLE,BLOCKED,NEEDS_SUPERVISOR}; drift_class {IDENTICAL,SUBSET,SUPERSET,COMPATIBLE,CONFLICTING,UNKNOWN}; join_type {ALL_REQUIRED,ANY_ONE,QUORUM,ORDERED,OPTIONAL_SIBLING,CONDITIONAL}; workstream_status {NOT_STARTED,IN_PROGRESS,PASS,BLOCKED,NEEDS_SUPERVISOR,FAIL,SUPERSEDED}; macro_status {PASS_IMPLEMENTATION_PROGRAM_COMPLETE,PARTIAL_BLOCKED,BLOCKED,BLOCKED_TEAM_LEAD_ROUTE_UNPROVEN,NO_LEGAL_EXECUTION_ROUTE,GLOBAL_AUTHORITY_CONFLICT,ARCHITECTURE_INVARIANT_BROKEN,NO_VALID_ROLLBACK_FOR_REQUIRED_MUTATION,OPERATOR_GATE_REQUIRED_FOR_ALL_REMAINING_WORK}; audit_verdict {PASS,PASS_WITH_RISKS,FAIL,NEEDS_SUPERVISOR,NOT_RUN}; independence_class {DIFFERENT_FAMILY,DIFFERENT_RUNTIME,DIFFERENT_FAMILY_AND_RUNTIME,SAME_FAMILY_DIFFERENT_SESSION,UNKNOWN}; identity_layer {REQUESTED,CONFIGURED,RESPONSE_CLAIMED,PROXY_REPORTED,PROVIDER_ATTESTED}; freeze_state {FROZEN,UNFROZEN,SUPERSEDED}; also reusable pattern definitions git_oid, sha256, rfc3339_utc.",
+        "manifest.v1.json lists every schema in schemas/governed_execution/ with {path, schema_version, status: ACTIVE|ADOPTED|DEPRECATED, sha256} and binds the two kit v1 schemas as status ADOPTED with their sha256 from S0, plus compatibility rules: v1 accepted, v2 preferred, additive-only, deprecation requires a MacroPacket-authorized successor. The manifest's own sha256 entries are verified by test."
+      ],
+      "commands": [
+        "uv run --extra test python -c \"import json;json.load(open('schemas/governed_execution/enums.v1.schema.json'));json.load(open('schemas/governed_execution/manifest.v1.json'));print('PARSE_OK')\""
+      ],
+      "validation": ["PARSE_OK printed; every enum listed above present exactly once."],
+      "context_files": ["schemas/audit_broker/audit_request.schema.json"]
+    },
+    {
+      "id": "S2",
+      "task": "Publish macro_packet.v2 and execution_binding.v2 as additive successors of the kit v1 schemas.",
+      "requirements": [
+        "execution_binding.v2 keeps every v1 property with identical types and adds, all required: runner_version (string), effort_requested (string), effort_observed (string), auth_profile_ref (string), network_posture (string), containment_posture (string), fallback_outcome {fallback_used: boolean, fallback_reason: string}, response_claimed_model (string), provider_attested_model (string), independence_class ($ref enums), qualification_receipt_ref (string), macro_id (string, now required). schema_version const dopemux.governed_execution.execution_binding.v2; authority const NONE.",
+        "macro_packet.v2 keeps every v1 property and: joins[].join_type ($ref enums join_type, required) with condition retained; joins[].quorum (integer, required only when join_type is QUORUM, enforce with if/then); workstreams[].audit_group (string, required); workstreams[].return_contract (array of the MACRO section 16 field names, required, minItems 1); team_lead.binding_policy (string, required); global_stop_conditions and immediate_return_triggers retained. schema_version const dopemux.governed_execution.macro_packet.v2; issued_by const control_tower_supervisor.",
+        "A v1-shaped instance must remain valid against the kit v1 schema (untouched) and invalid against v2 only because of the added required fields; the compatibility test proves both directions."
+      ],
+      "commands": [
+        "uv run --extra test python -c \"import json;[json.load(open(p)) for p in ('schemas/governed_execution/macro_packet.v2.schema.json','schemas/governed_execution/execution_binding.v2.schema.json')];print('PARSE_OK')\""
+      ],
+      "validation": ["PARSE_OK; no v1 property removed or retyped (asserted by test_manifest_and_compatibility)."],
+      "context_files": [".control-tower/schemas/supervisor_macro_packet.schema.json", ".control-tower/schemas/execution_binding.schema.json", ".control-tower/templates/EXECUTION_BINDING.template.json", ".control-tower/templates/SUPERVISOR_MACRO_PACKET.template.json"]
+    },
+    {
+      "id": "S3",
+      "task": "Publish task_packet.v2 and the five receipt schemas.",
+      "requirements": [
+        "task_packet.v2: superset of docs/03-reference/spec/dopetask/dopetask-canonical-spec.json (every v1 field retained, same required set) plus required: schema_version const dopemux.governed_execution.task_packet.v2; macro_id; workstream_id; risk_lane ($ref); audit_group; execution_requirements {preferred_route {runner,model,effort}, allowed_fallbacks[], binding: const LIVE_PROOF_REQUIRED, auditor_independence ($ref independence_class)}; write_surface (array of literal paths or terminal dir prefixes ending in /); canonical_writers (array, minItems 1); semantic_scope (array); rollback_boundary (string); operator_gate_required (boolean); receipt_refs (object of optional {path,sha256} refs keyed admission, writer_custody, freeze, finality); authority const NONE.",
+        "admission_receipt.v1: schema_version const; packet_id; packet_sha256; macro_id; separate validity fields each $ref status_class: schema_validity, authority_validity, classification_validity, audit_validity, execution_validity (I17); admission_status ($ref status_class) with description stating it is derived and fail-closed; is_execution_authority const false; dcp_route_decision_ref; task_orchestrator_item_ref; recorded_at; authority const NONE.",
+        "writer_custody_receipt.v1: schema_version const; packet_id; repo_identity {origin_url, toplevel}; worktree_path; branch; base_sha (git_oid); allowed_paths (array minItems 1); allowlist_digest (sha256); writer_identity {runner, session_ref, agent_role}; writer_lease {issued_at, expires_at, lease_id}; diff_provenance {base_sha, head_sha, patch_sha256}; rollback_locality {strategy enum REVERT_COMMITS|DELETE_BRANCH|RESET_TO_BASE, boundary string}; filesystem_scope {root, outside_root_writes: const false}; custody_state enum {HELD,RELEASED,AMBIGUOUS}; authority const NONE.",
+        "freeze_receipt.v1: schema_version const; packet_id; macro_id; repo_identity; base_sha; head_sha; tree_sha (git_oid); substantive_paths (array minItems 1); substantive_path_digest (sha256); candidate_digest (sha256); validation_refs (array of {path,sha256}, minItems 1); review_refs (array of {path,sha256}); frozen_at; freeze_state ($ref); supersedes_freeze_ref (optional {path,sha256}); no_audit_before_freeze const true; authority const NONE.",
+        "finality_receipt.v1: schema_version const; packet_id; macro_id; freeze_ref {path,sha256}; audit_receipt_ref {path,sha256}; audited_head (git_oid); finality_head (git_oid); exact_head_equality const true with description that audited_head must equal finality_head (asserted by test, not by schema); audit_verdict ($ref); pr_ref (string); steward_readiness enum {READY,NOT_READY,UNKNOWN,NOT_RUN}; merge_authorized const false; activation_authorized const false; recorded_at; authority const NONE.",
+        "aggregate_return_envelope.v1: schema_version const; macro_id; macro_status ($ref); workstreams (array minItems 1 of {workstream_id, status ($ref workstream_status), subject_sha (git_oid or literal NONE), return_ref {path,sha256}}); join_results (array of {join_id, join_type ($ref), satisfied boolean, affected_workstreams[], unaffected_workstreams[]}); model_calls {team_lead, implementers, auditors, total} integers; mcp {preflight, servers_used[], tools_used[], domain_reads integer, domain_writes integer, fallbacks[], task_orchestrator_state}; github_mutations integer; drift_classifications (array of {subject, class ($ref drift_class)}); blockers[], unknowns[], residual_risks[]; operator_gates_used[], operator_gates_needed[]; merge_authorized const false; activation_authorized const false; next_legal_action string; authority const NONE; is_canonical_truth const false."
+      ],
+      "commands": [
+        "uv run --extra test python -c \"import json,glob;[json.load(open(p)) for p in glob.glob('schemas/governed_execution/*.json')];print('PARSE_OK', len(glob.glob('schemas/governed_execution/*.json')))\""
+      ],
+      "validation": ["PARSE_OK 11 (enums, manifest, macro v2, binding v2, task_packet v2, five receipts, aggregate envelope)."],
+      "context_files": ["docs/03-reference/spec/dopetask/dopetask-canonical-spec.json", "schemas/pr_steward/merge_readiness.schema.json"]
+    },
+    {
+      "id": "S4",
+      "task": "Fixtures and tests.",
+      "requirements": [
+        "conftest.py builds a referencing.Registry from every schema in schemas/governed_execution/ keyed by $id and exposes a validator factory (Draft7Validator with that registry).",
+        "fixtures/valid/<schema>.json: at least one valid instance per schema (11 minus manifest = 10). fixtures/invalid/<schema>__<reason>.json: at least three per schema covering a missing required field, an undeclared field, and an enum/pattern violation; FinalityReceipt additionally audited_head != finality_head; FreezeReceipt additionally empty substantive_paths; AdmissionReceipt additionally is_execution_authority true.",
+        "test_schema_fixtures.py: parametrised; every valid fixture validates; every invalid fixture fails with at least one error; every schema declares additionalProperties false at every object level (walk the schema).",
+        "test_manifest_and_compatibility.py: manifest sha256 entries match file bytes at HEAD; kit v1 schema sha256 match the ADOPTED entries; every v1 property in the kit schemas exists in the v2 successor with equal type; the kit's own template instances (.control-tower/templates/*.json) validate against kit v1 and fail v2 only on missing new required fields (assert error paths are within the added-field set); enum values used anywhere in any schema are drawn from enums.v1 (no inline duplicate enum literal lists).",
+        "test_dag_and_authority.py: a MACRO fixture (macro_packet v2 valid instance modelling W01..W08 with the section 8 DAG and section 9 parallel group A) is acyclic, every dependency id resolves, W02/W03/W04/W05 write_surface prefixes are pairwise disjoint, W06 depends on W02 and W04, W07 on W04 and W06, W08 on W07; authority-collision: no two workstreams share a canonical_writer with overlapping write_surface; no schema in the set defines a property named merge_ready, dispatch_eligible, approved, or ready (placeholder-for-authority scan)."
+      ],
+      "commands": [
+        "uv run --extra test pytest tests/governance/governed_execution -q",
+        "uv run ruff check tests/governance/governed_execution"
+      ],
+      "validation": ["All tests pass; ruff clean; at least 40 invalid fixtures and 10 valid fixtures exist."],
+      "context_files": ["tests/governance/test_validate_change_contract.py", "tests/contracts/test_dcp_full_system_p0_contracts.py"]
+    },
+    {
+      "id": "S5",
+      "task": "Reference document and final verify.",
+      "requirements": [
+        "docs/03-reference/governance/governed-execution-contract-v2.md uses the same YAML frontmatter shape as sibling files in docs/03-reference/governance/ (id, title, type, owner, author, date, last_review, next_review, prelude) and passes the repo docs hooks. Content: terminology, the section 2 invariants as they bind these schemas, authority ceilings (every schema authority NONE; who may issue what), schema table with versions and status, v1->v2 compatibility and deprecation rule, the freeze lifecycle FROZEN -> UNFREEZE -> REPAIR -> REVALIDATE -> REVIEW_SETTLE -> NEW_FREEZE, exact-head rule, and the non-colliding relationship to schemas/dcp/governed_execution_receipt.schema.json and the kit v1 schemas.",
+        "Run the full commit.verify list; every line exits 0. Commit per coherent slice with the packet commit.message prefix; no push."
+      ],
+      "commands": [
+        "uvx pre-commit run --files docs/03-reference/governance/governed-execution-contract-v2.md",
+        "git log --oneline 9dfd8471db2467a33cac12d5e8d87f2fee3ed8f3..HEAD"
+      ],
+      "validation": ["pre-commit passes on the doc; every commit.verify command exits 0; return block per MACRO section 16 with MODEL_CALLS=0 (implementer invokes no model)."],
+      "context_files": ["docs/03-reference/governance/authority-boundaries.md", "docs/03-reference/governance/chain-of-custody-rules.md"]
+    }
+  ]
+}
