@@ -104,38 +104,45 @@ should not be public, **Option 3 plus a GitHub Support request is the only route
 removal** — and the broken provenance chain, plus the possibility that removal still fails, must be
 accepted with it.
 
-## Attestation — PENDING, NOT GRANTED
+## Attestation — GRANTED 2026-09-11
 
 An external supervisor review on 2026-09-11 recommended **option 1** and framed the disposition as
 `POLICY_COMPLIANT=NO` with `POLICY_EXCEPTION_REQUIRED=YES` and `SECURITY_RISK_OWNER=OPERATOR`. That
-framing is adopted here: retaining the receipts is **not** policy-compliant, and must be reported as
-a bounded operator exception rather than as compliance.
+framing is adopted: retaining the receipts is **not** policy-compliant and is reported here as a
+bounded operator exception, **never as compliance**.
 
-The same review stated that it **cannot manufacture the operator attestation by recommending it**.
-Neither can I. The block below is therefore a **template awaiting the operator**, and is
-deliberately left unsigned:
+The operator granted the attestation directly on 2026-09-11, having been shown the corrected
+options table — including that neither closing the PR nor rewriting history reliably removes the
+published bytes.
 
 ```text
-DISCLOSURE_DECISION=<PENDING>
-OPERATOR_RISK_ACCEPTANCE=<PENDING>
+DISCLOSURE_DECISION=RECONFIRM_PUBLICATION_UNMODIFIED
+OPERATOR_RISK_ACCEPTANCE=YES
 SCOPE=PR #1341, nine Route D turn receipts containing the raw account-visible /v1/models catalogue
-ACKNOWLEDGED_REPO_POLICY_EXCEPTION=<PENDING>
-ACKNOWLEDGED_PUBLIC_DISCLOSURE=<PENDING>
-ACKNOWLEDGED_NO_LIVE_CREDENTIAL_VALUES_FOUND=YES   # evidence-backed: two scans, zero findings
-REDACTION_AUTHORIZED=<PENDING>
-HISTORY_REWRITE_AUTHORIZED=<PENDING>
-CLOSE_PR_AUTHORIZED=<PENDING>
-GRANTED_BY=<PENDING>
-GRANTED_UTC=<PENDING>
+      (136 model ids each, with owned_by and shutdown_date)
+ACKNOWLEDGED_REPO_POLICY_EXCEPTION=YES
+ACKNOWLEDGED_PUBLIC_DISCLOSURE=YES
+ACKNOWLEDGED_NO_LIVE_CREDENTIAL_VALUES_FOUND=YES
+REDACTION_AUTHORIZED=NO
+HISTORY_REWRITE_AUTHORIZED=NO
+CLOSE_PR_AUTHORIZED=NO
+GRANTED_BY=OPERATOR (repository owner, DDD-Enterprises)
+GRANTED_UTC=2026-09-11
+RATIONALE=Preserve the only surviving byte-exact execution evidence. The /private/tmp working roots
+          have been reaped, so current-tip redaction would destroy evidence without removing the
+          already-published historical bytes, which remain reachable at bc4249ee and via
+          refs/pull/1341/head. The disclosed material is accepted as bounded provider/account
+          metadata risk -- not treated as policy-compliant, and not a credential leak.
 ```
 
-Only `ACKNOWLEDGED_NO_LIVE_CREDENTIAL_VALUES_FOUND` is pre-filled, because it is a scan result
-rather than a decision.
+`ACKNOWLEDGED_NO_LIVE_CREDENTIAL_VALUES_FOUND` is evidence-backed rather than a judgement: two
+independent scans returned zero findings.
 
-**Until the operator fills this in, the standing record remains what it has been since publication:
-an explicit operator risk acceptance taken on 2026-09-10, now pending re-confirmation** — not an
-oversight, and not a credential leak. Record the completed block here **and** in
-`SUPERVISOR_RETURN.json` → `GATES_AND_MUTATIONS.github_mutation_detail.disclosure_decision`.
+**How a downstream auditor must read this.** The correct verdict on this item is *not* `PASS`. It is
+an explicit, bounded, operator-owned policy exception with the risk accepted and recorded. An
+auditor reporting this PR as policy-compliant on the disclosure question would be reporting it
+wrongly.
 
-**Freeze gate:** do not freeze a head, run the independent L2 audit, or run PR Steward until this
-block is completed. The current head's Steward failure is expected and must not be re-run first.
+**Freeze gate: SATISFIED.** The head carrying this attestation may now be frozen, and the single
+independent L2 audit may be run against it. PR Steward follows only if that audit returns `PASS` or
+a policy-permitted `PASS_WITH_RISKS`. Do not re-run PR Steward before the audit.

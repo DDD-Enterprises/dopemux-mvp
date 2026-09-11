@@ -157,9 +157,10 @@ the successor working surface under supervisor authority.
 - **`ct route-record` / `ct validate-route`: `NOT_RUN`** — `.control-tower/` is not present on this
   branch, and AGENTS.md forbids borrowing another checkout's installation. Preserved as `NOT_RUN`,
   not simulated. The equivalent fields are captured in [`ROUTE_RECORD.json`](ROUTE_RECORD.json).
-- **The disclosure attestation is NOT granted.** Staged unsigned in
-  `DISCLOSURE_RECONFIRMATION.md`. **Freeze gate: do not freeze a head, run the L2 audit, or run PR
-  Steward until the operator completes it.** The current head's Steward failure is expected.
+- **The disclosure attestation IS granted** (operator, 2026-09-11) — recorded in
+  `DISCLOSURE_RECONFIRMATION.md`. **Freeze gate satisfied.** An auditor must read the disclosure
+  item as a bounded operator policy exception, not as a PASS. No audit or Steward run has been made
+  from this session; the current head's Steward failure predates the attestation.
 - **The two blocking supervisor decisions are untouched**: the Route D budget amendment
   (`limits.codex ≥ 7`) and the Route A Terminal.app run. This repair corrects the record of what
   happened; it does not advance the benchmark.
