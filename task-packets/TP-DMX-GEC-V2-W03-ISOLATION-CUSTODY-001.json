@@ -1,0 +1,56 @@
+{
+  "id": "TP-DMX-GEC-V2-W03-ISOLATION-CUSTODY-001",
+  "project": "dopemux-mvp",
+  "target": "W03 / P2 of MACRO-DMX-GOVERNED-EXECUTION-CONTRACT-V2-001: replace 'worktree isolation' with ExecutionEnvironmentProvisioning facts plus WriterCustodyReceipt authoring, at L2 only (repo identity, worktree, branch, allowed paths, writer identity, writer lease, diff provenance, rollback locality, filesystem scope). Base is the frozen, A1-audited W01 head 1c915b9141e9a5c3d835a5c7ea953381782ae875. Modelling and validation against fixtures only; no live provisioning side effects.",
+  "invariants": [
+    "MACRO I01-I20 apply. RISK=L2 with a hard trip-wire: if proving any invariant would require credentials, secret material, network egress control, sandbox permission changes, provider custody, chmod/umask/lock-file mode bits, reading credential-bearing git config, or executing `git worktree add`/`git checkout`/`git branch` against a real repository, the implementer STOPS, makes no further edits, and returns STATUS=BLOCKED with NEXT_LEGAL_ACTION=ESCALATE_W03B. The team lead does not authorize W03B inside this packet.",
+    "Allowed side effects in tests: tempfile directories and plain files only; a fake git facade (in-memory dict) stands in for repository state. Real git is used only read-only in S0 preflight.",
+    "WriterCustodyReceipt instances authored by this workstream MUST validate against schemas/governed_execution/writer_custody_receipt.v1.schema.json (use the referencing.Registry pattern from tests/governance/governed_execution/conftest.py; do not modify that conftest). custody_state is exactly HELD|RELEASED|AMBIGUOUS; any unprovable fact yields AMBIGUOUS, never HELD.",
+    "Provisioning is a pure planner: plan_environment(spec) -> EnvironmentPlan (repo identity, worktree path, branch, base sha, allowed paths, filesystem root) with no side effects; apply is out of scope (W03B or a later authorized packet).",
+    "allowlist_digest is sha256 over the sorted, newline-joined allowed_paths; diff_provenance.patch_sha256 is sha256 over caller-supplied patch bytes; both computed by this module and asserted by test against hashlib.",
+    "Base commit exactly 1c915b9141e9a5c3d835a5c7ea953381782ae875 in worktree .worktrees/gec-v2-w03 branch feat/gec-v2-w03-isolation-custody-001. Any other base is STOP_WRONG_BASE.",
+    "Write surface is exactly commit.allowlist. Forbidden: src/dopemux/governed_execution/__init__.py, tests/unit/governed_execution/__init__.py, sibling prefixes (dispatch/, receipts/, freeze/, join/), schemas/**, .control-tower/**, pyproject.toml, tests/governance/governed_execution/**.",
+    "Receipt objects carry authority const NONE. No readiness or dispatch predicate anywhere.",
+    "No model audits; no push; no TO/ConPort/dope-memory/GitHub mutation; no placeholders; ASCII only; ruff clean; frozen dataclasses; type hints; one substantive attempt."
+  ],
+  "depends_on": ["TP-DMX-GEC-V2-W01-CONTRACT-FOUNDATION-001"],
+  "repo_binding": {"project_id": "dopemux-mvp", "repo_marker": ".dopetaskroot", "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git", "require_identity_match": true},
+  "series": {"id": "MACRO-DMX-GOVERNED-EXECUTION-CONTRACT-V2-001", "base_branch": "feat/gec-v2-w01-contract-foundation-001", "parent_tp_id": "TP-DMX-GEC-V2-W01-CONTRACT-FOUNDATION-001", "final_packet": false},
+  "execution": {"agent": "claude", "base_branch": "feat/gec-v2-w01-contract-foundation-001", "branch": "feat/gec-v2-w03-isolation-custody-001", "stacked_because": "Consumes W01 writer_custody_receipt.v1 schema frozen at 1c915b9141e9a5c3d835a5c7ea953381782ae875; parallel group A sibling with disjoint write surface."},
+  "pal_chain": {"enabled": false, "steps": ["none: deterministic validation only; A2 group audit (W02+W03) is team-lead dispatched after freeze"]},
+  "commit": {
+    "message": "feat(governance): W03 environment planning and writer custody receipts",
+    "allowlist": [
+      "task-packets/TP-DMX-GEC-V2-W03-ISOLATION-CUSTODY-001.json",
+      "src/dopemux/governed_execution/environment/__init__.py",
+      "src/dopemux/governed_execution/environment/plan.py",
+      "src/dopemux/governed_execution/environment/custody.py",
+      "tests/unit/governed_execution/environment/__init__.py",
+      "tests/unit/governed_execution/environment/test_plan.py",
+      "tests/unit/governed_execution/environment/test_custody_receipt.py",
+      "tests/unit/governed_execution/environment/test_l2_boundary.py"
+    ],
+    "verify": [
+      "test \"$(git merge-base HEAD 1c915b9141e9a5c3d835a5c7ea953381782ae875)\" = \"1c915b9141e9a5c3d835a5c7ea953381782ae875\"",
+      "uv run --extra test python -m jsonschema -i task-packets/TP-DMX-GEC-V2-W03-ISOLATION-CUSTODY-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "uv run --extra test pytest tests/unit/governed_execution/environment -q",
+      "uv run --extra test pytest tests/governance/governed_execution -q",
+      "uv run ruff check src/dopemux/governed_execution/environment tests/unit/governed_execution/environment",
+      "uv run python scripts/governance/validate_change_contract.py --base 1c915b9141e9a5c3d835a5c7ea953381782ae875 --head HEAD --format text",
+      "git diff --check 1c915b9141e9a5c3d835a5c7ea953381782ae875 HEAD",
+      "sh -c '! git grep -nE \"TODO|TBD|FIXME|XXX|PLACEHOLDER|lorem\" HEAD -- src/dopemux/governed_execution/environment tests/unit/governed_execution/environment'",
+      "sh -c '! git grep -nE \"subprocess|os\\.chmod|os\\.umask|worktree add|credential|GIT_ASKPASS|SSH_AUTH_SOCK\" HEAD -- src/dopemux/governed_execution/environment'",
+      "gitleaks git --no-banner --log-opts=1c915b9141e9a5c3d835a5c7ea953381782ae875..HEAD .",
+      "sh -c 'test \"$(git diff --name-only 1c915b9141e9a5c3d835a5c7ea953381782ae875 HEAD | grep -vE \"^(task-packets/TP-DMX-GEC-V2-W03-ISOLATION-CUSTODY-001\\.json|src/dopemux/governed_execution/environment/|tests/unit/governed_execution/environment/)\" | wc -l | tr -d \" \")\" = \"0\"'",
+      "sh -c 'git diff --name-only 1c915b9141e9a5c3d835a5c7ea953381782ae875 HEAD | grep -E \"^(src/dopemux/governed_execution/(dispatch|receipts|freeze|join)/|src/dopemux/governed_execution/__init__\\.py|tests/unit/governed_execution/__init__\\.py|schemas/|\\.control-tower/|pyproject\\.toml)\" ; test $? -eq 1'"
+    ]
+  },
+  "pr": {"title": "feat(governance): W03 environment planning and writer custody receipts", "body": "## Summary\n- W03 of MACRO-DMX-GOVERNED-EXECUTION-CONTRACT-V2-001, stacked on W01\n- pure environment planner (repo identity, worktree, branch, allowed paths, filesystem scope)\n- WriterCustodyReceipt authoring validated against writer_custody_receipt.v1; AMBIGUOUS on any unprovable fact\n- L2 only: no live provisioning, credentials, permissions or egress; ESCALATE_W03B stop encoded and tested\n\nMERGE_AUTHORIZED=NO ACTIVATION_AUTHORIZED=NO", "base": "feat/gec-v2-w01-contract-foundation-001"},
+  "steps": [
+    {"id": "S0", "task": "Identity and base preflight.", "requirements": ["Worktree /Users/hue/code/dopemux-mvp/.worktrees/gec-v2-w03, branch feat/gec-v2-w03-isolation-custody-001, 1c915b9141e9a5c3d835a5c7ea953381782ae875 ancestor of HEAD, clean tree except this packet; tests/governance/governed_execution passes (91)."], "commands": ["git rev-parse --show-toplevel", "git branch --show-current", "git merge-base --is-ancestor 1c915b9141e9a5c3d835a5c7ea953381782ae875 HEAD && echo ANCESTOR_OK", "git status --porcelain", "uv run --extra test pytest tests/governance/governed_execution -q"], "validation": ["ANCESTOR_OK; 91 passed."], "context_files": ["task-packets/TP-DMX-GEC-V2-W01-CONTRACT-FOUNDATION-001.json", "docs/03-reference/governance/governed-execution-contract-v2.md", "schemas/governed_execution/writer_custody_receipt.v1.schema.json", "schemas/governed_execution/enums.v1.schema.json", "tests/governance/governed_execution/conftest.py"]},
+    {"id": "S1", "task": "Environment planner (plan.py).", "requirements": ["EnvironmentSpec(repo_origin_url, repo_toplevel, packet_id, base_sha, branch, worktree_root, allowed_paths) -> plan_environment(spec) -> EnvironmentPlan with worktree_path = worktree_root/packet-derived slug, filesystem_root = worktree_path, allowed_paths normalised (sorted, deduplicated, no '..' or absolute paths; violation -> PlanRejected with reason), rollback_locality {strategy RESET_TO_BASE, boundary 'branch:<branch>'}.", "Pure: no filesystem, no subprocess, no clock."], "commands": ["uv run ruff check src/dopemux/governed_execution/environment"], "validation": ["ruff clean."], "context_files": []},
+    {"id": "S2", "task": "Custody receipt authoring (custody.py).", "requirements": ["author_custody_receipt(plan, writer: WriterIdentity(runner, session_ref, agent_role), lease: WriterLease(lease_id, issued_at, expires_at), facts: ObservedFacts(head_sha, patch_bytes|None, outside_root_writes: bool|None, worktree_exists: bool|None, branch_matches: bool|None)) -> dict validating against writer_custody_receipt.v1.", "custody_state = HELD only when worktree_exists, branch_matches and outside_root_writes is False are all provably True; RELEASED when lease expired (expires_at <= a caller-supplied now); AMBIGUOUS otherwise (any None).", "allowlist_digest and diff_provenance.patch_sha256 computed by hashlib.sha256 as specified in invariants; filesystem_scope.outside_root_writes is always the literal False in the receipt (schema const) and a receipt is REFUSED (raise CustodyRefused) when facts.outside_root_writes is True or None.", "authority literal 'NONE'."], "commands": ["uv run ruff check src/dopemux/governed_execution/environment"], "validation": ["ruff clean."], "context_files": []},
+    {"id": "S3", "task": "Tests.", "requirements": ["test_plan: happy path; rejects '..' and absolute allowed paths; deterministic ordering.", "test_custody_receipt: every authored receipt validates against the v1 schema via a local Registry built from schemas/governed_execution/*.schema.json; HELD/RELEASED/AMBIGUOUS branches; CustodyRefused on outside-root writes; digest equality against an independent hashlib computation; authority == 'NONE'.", "test_l2_boundary: monkeypatch subprocess.run, os.chmod, os.umask and builtins.open to raise; every public function in the package still works on fixture input (proves no live side effects); a static test greps the package source for the forbidden tokens listed in the verify line and asserts zero hits."], "commands": ["uv run --extra test pytest tests/unit/governed_execution/environment -q"], "validation": ["All pass; at least 15 tests."], "context_files": []},
+    {"id": "S4", "task": "Final verify and return.", "requirements": ["Run every commit.verify line; all exit 0. Commit per slice. No push. If at any point the L2 trip-wire fires, stop and return STATUS=BLOCKED NEXT_LEGAL_ACTION=ESCALATE_W03B with the exact invariant that could not be proven at L2."], "commands": ["git log --oneline 1c915b9141e9a5c3d835a5c7ea953381782ae875..HEAD", "git status --porcelain"], "validation": ["Clean tree; section 16 return block; RISK_ACTUAL=L2; ESCALATED_TO_W03B=NO."], "context_files": []}
+  ]
+}
