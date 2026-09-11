@@ -4,6 +4,7 @@ scripts/governed_execution/benchmark.py.
 
 from __future__ import annotations
 
+import ast
 import hashlib
 import json
 import sys
@@ -21,6 +22,7 @@ FORBIDDEN_RUNTIME_MODULES = {
     "urllib3",
     "http.client",
     "socket",
+    "subprocess",
     "anthropic",
     "openai",
     "litellm",
@@ -128,6 +130,12 @@ def test_operator_gate_never_in_retirement_candidates(tmp_path: Path) -> None:
 
 
 def test_module_imports_no_network_model_or_process_module() -> None:
+    """sys.modules-delta check. This is order-dependent: if some earlier
+    test (or pytest itself) already imported a forbidden module, it will
+    already be in ``sys.modules`` before this test runs and can never show
+    up in the delta. It is kept because the packet asks for it, but the
+    real guarantee is the static AST check below.
+    """
     for name in list(sys.modules):
         if name == "scripts.governed_execution.benchmark" or name.startswith("scripts.governed_execution.benchmark."):
             del sys.modules[name]
@@ -138,3 +146,25 @@ def test_module_imports_no_network_model_or_process_module() -> None:
     delta = after - before
     leaked = delta & FORBIDDEN_RUNTIME_MODULES
     assert not leaked, f"benchmark.py pulled in forbidden modules: {sorted(leaked)}"
+
+
+def test_module_source_has_no_forbidden_top_level_import() -> None:
+    """Static, order-independent check: parse benchmark.py's own source
+    and collect every top-level module name named in an ``import`` or
+    ``from ... import`` statement, then assert none of them is a
+    network/model/subprocess module. Unlike the sys.modules-delta test
+    above, this cannot be defeated by import order or by another test
+    having already loaded the forbidden module first.
+    """
+    source = Path(bm.__file__).read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    imported_top_levels: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                imported_top_levels.add(alias.name.split(".")[0])
+        elif isinstance(node, ast.ImportFrom):
+            if node.module:
+                imported_top_levels.add(node.module.split(".")[0])
+    leaked = imported_top_levels & FORBIDDEN_RUNTIME_MODULES
+    assert not leaked, f"benchmark.py source imports forbidden modules: {sorted(leaked)}"
