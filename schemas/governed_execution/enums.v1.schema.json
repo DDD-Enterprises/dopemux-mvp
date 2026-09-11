@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/governed_execution/enums.v1.schema.json",
+  "title": "Governed Execution Contract v2 - Shared Enums",
+  "description": "Shared enum and pattern definitions consumed by $ref from every other schema in schemas/governed_execution/. No schema in this set may declare an inline duplicate enum literal list.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "dopemux.governed_execution.enums.v1"
+    }
+  },
+  "required": [
+    "schema_version"
+  ],
+  "definitions": {
+    "status_class": {
+      "enum": ["PASS", "FAIL", "UNKNOWN", "NOT_RUN"]
+    },
+    "preflight_class": {
+      "enum": ["OBSERVED", "CONFLICTING", "UNKNOWN", "NOT_RUN"]
+    },
+    "risk_lane": {
+      "enum": ["L0", "L1", "L2", "L3"]
+    },
+    "dispatch_qualification": {
+      "enum": ["DISPATCHABLE", "BLOCKED", "NEEDS_SUPERVISOR"]
+    },
+    "drift_class": {
+      "enum": ["IDENTICAL", "SUBSET", "SUPERSET", "COMPATIBLE", "CONFLICTING", "UNKNOWN"]
+    },
+    "join_type": {
+      "enum": ["ALL_REQUIRED", "ANY_ONE", "QUORUM", "ORDERED", "OPTIONAL_SIBLING", "CONDITIONAL"]
+    },
+    "workstream_status": {
+      "enum": ["NOT_STARTED", "IN_PROGRESS", "PASS", "BLOCKED", "NEEDS_SUPERVISOR", "FAIL", "SUPERSEDED"]
+    },
+    "macro_status": {
+      "enum": [
+        "PASS_IMPLEMENTATION_PROGRAM_COMPLETE",
+        "PARTIAL_BLOCKED",
+        "BLOCKED",
+        "BLOCKED_TEAM_LEAD_ROUTE_UNPROVEN",
+        "NO_LEGAL_EXECUTION_ROUTE",
+        "GLOBAL_AUTHORITY_CONFLICT",
+        "ARCHITECTURE_INVARIANT_BROKEN",
+        "NO_VALID_ROLLBACK_FOR_REQUIRED_MUTATION",
+        "OPERATOR_GATE_REQUIRED_FOR_ALL_REMAINING_WORK"
+      ]
+    },
+    "audit_verdict": {
+      "enum": ["PASS", "PASS_WITH_RISKS", "FAIL", "NEEDS_SUPERVISOR", "NOT_RUN"]
+    },
+    "independence_class": {
+      "enum": [
+        "DIFFERENT_FAMILY",
+        "DIFFERENT_RUNTIME",
+        "DIFFERENT_FAMILY_AND_RUNTIME",
+        "SAME_FAMILY_DIFFERENT_SESSION",
+        "UNKNOWN"
+      ]
+    },
+    "identity_layer": {
+      "enum": ["REQUESTED", "CONFIGURED", "RESPONSE_CLAIMED", "PROXY_REPORTED", "PROVIDER_ATTESTED"]
+    },
+    "freeze_state": {
+      "enum": ["FROZEN", "UNFROZEN", "SUPERSEDED"]
+    },
+    "dcp_status": {
+      "description": "Distinct from status_class: BLOCKED replaces FAIL in the DCP route-decision vocabulary.",
+      "enum": ["PASS", "BLOCKED", "UNKNOWN", "NOT_RUN"]
+    },
+    "dcp_risk_class": {
+      "enum": ["R0_READ", "R1_LOW", "R2_MEDIUM", "R3_HIGH", "RED_LANE", "UNKNOWN", "NOT_RUN"]
+    },
+    "runner_availability": {
+      "enum": ["PROVEN", "PROPOSED", "UNKNOWN"]
+    },
+    "execution_agent": {
+      "description": "Mirrors execution.agent in docs/03-reference/spec/dopetask/dopetask-canonical-spec.json (untouched predecessor).",
+      "enum": ["gemini", "codex", "claude", "vibe", "shell"]
+    },
+    "rollback_strategy": {
+      "enum": ["REVERT_COMMITS", "DELETE_BRANCH", "RESET_TO_BASE"]
+    },
+    "custody_state": {
+      "enum": ["HELD", "RELEASED", "AMBIGUOUS"]
+    },
+    "steward_readiness": {
+      "enum": ["READY", "NOT_READY", "UNKNOWN", "NOT_RUN"]
+    },
+    "manifest_status": {
+      "enum": ["ACTIVE", "ADOPTED", "DEPRECATED"]
+    },
+    "git_oid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "rfc3339_utc": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z$"
+    }
+  }
+}

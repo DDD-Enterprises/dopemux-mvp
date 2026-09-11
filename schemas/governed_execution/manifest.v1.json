@@ -1,0 +1,30 @@
+{
+  "manifest_version": "dopemux.governed_execution.manifest.v1",
+  "entries": [
+    {
+      "path": ".control-tower/schemas/execution_binding.schema.json",
+      "schema_version": "control_tower.execution_binding.v1",
+      "status": "ADOPTED",
+      "sha256": "c26bb89c28988769255857e9891e7fe5af52c1b14da430c1a50986a60016ccfd"
+    },
+    {
+      "path": ".control-tower/schemas/supervisor_macro_packet.schema.json",
+      "schema_version": "control_tower.supervisor_macro_packet.v1",
+      "status": "ADOPTED",
+      "sha256": "662c8ebf77f83e627874103383c6163f60dcf1805c88d8e7eb70977b44abd137"
+    },
+    {
+      "path": "schemas/governed_execution/enums.v1.schema.json",
+      "schema_version": "dopemux.governed_execution.enums.v1",
+      "status": "ACTIVE",
+      "sha256": "5742e55dfa62b89a6e1be505dad63502e8c65cc628a8b12a98b765858eddb561"
+    }
+  ],
+  "compatibility": {
+    "policy": "v1 accepted, v2 preferred, additive-only; deprecation requires a MacroPacket-authorized successor",
+    "v1_accepted": true,
+    "v2_preferred": true,
+    "additive_only": true,
+    "deprecation_requires_macropacket_authorized_successor": true
+  }
+}
