@@ -43,17 +43,17 @@ _RFC3339_UTC_RE = re.compile(
 
 def is_git_oid(value: object) -> bool:
     """Return True iff value is a lowercase 40-hex-digit git object id string."""
-    return isinstance(value, str) and bool(_GIT_OID_RE.match(value))
+    return isinstance(value, str) and bool(_GIT_OID_RE.fullmatch(value))
 
 
 def is_sha256(value: object) -> bool:
     """Return True iff value is a lowercase 64-hex-digit sha256 digest string."""
-    return isinstance(value, str) and bool(_SHA256_RE.match(value))
+    return isinstance(value, str) and bool(_SHA256_RE.fullmatch(value))
 
 
 def is_rfc3339_utc(value: object) -> bool:
     """Return True iff value matches the RFC 3339 UTC (trailing Z) pattern."""
-    return isinstance(value, str) and bool(_RFC3339_UTC_RE.match(value))
+    return isinstance(value, str) and bool(_RFC3339_UTC_RE.fullmatch(value))
 
 
 def parse_rfc3339_utc(value: str) -> datetime:
