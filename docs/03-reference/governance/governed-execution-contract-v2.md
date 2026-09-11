@@ -265,3 +265,130 @@ head being finalized.
   `manifest.v1.json` as `ADOPTED`, and are extended - never edited - by
   `macro_packet.v2.schema.json` and `execution_binding.v2.schema.json` under
   the `dopemux.governed_execution.*` const namespace.
+
+## Audit identity and PR Steward boundary (W07)
+
+W07 (L3, operator gate `GATE-W07-L3-001`) adds
+`src/dopemux/governed_execution/audit_identity/` - new code only.
+`schemas/audit_broker/` and `schemas/proof/embedded_audit.schema.json` are
+untouched. It decouples four concerns that were previously conflated:
+audit identity, evidence location, exact-head binding and the PR
+Steward's action boundary.
+
+### Identity layers and the no-reconciliation rule
+
+`AuditIdentity` is a frozen dataclass carrying `runner`, `runner_version`,
+four model-identity layers (`requested_model`, `configured_model`,
+`response_claimed_model`, `provider_attested_model`), `provider`,
+`effort_requested`, `effort_observed`, `auth_profile_ref`, `containment`,
+`network_posture`, `independence_class` and `qualification_receipt`. The
+literals `UNKNOWN` and `NOT_EXPOSED` are legal, uncoerced values on any
+string field (I16): no function in the package fills one layer from
+another, and a unit test grep-scans the package to guard against that
+mistake being reintroduced.
+
+`IdentityLayer` mirrors `enums.v1.schema.json#/definitions/identity_layer`
+exactly, including its fifth member, `PROXY_REPORTED`. `AuditIdentity` has
+no field for that layer: `execution_binding.v2.schema.json` (W01, this
+same MacroPacket, A1-audited PASS) already carries requested/configured/
+response-claimed/provider-attested identity fields (`selection.model`,
+`selection.configured_identity`, `selection.response_claimed_identity`,
+`selection.provider_attested_identity`) with no `proxy_reported` layer
+either. `PROXY_REPORTED` is a real layer, owned by the out-of-scope
+`schemas/audit_broker/` and `schemas/dcp/` families for LLM-routing-proxy
+identity; `layers()` therefore returns the four layers this packet's
+`AuditIdentity` actually carries, not five.
+
+### Independence classes
+
+`independence(implementer, auditor) -> IndependenceAssessment` is pure and
+fail-closed. It never approves anything - it returns an assessment, and
+every output carries `authority = "NONE"`. Any `UNKNOWN` or `NOT_EXPOSED`
+on a field a determination depends on yields class `UNKNOWN` rather than a
+guess. When `runner` and `provider` are both known and differ, the class is
+`DIFFERENT_FAMILY_AND_RUNTIME`; provider-only differs is `DIFFERENT_FAMILY`;
+runner-only differs is `DIFFERENT_RUNTIME`. When runner and provider are
+both the same, a same `auth_profile_ref` is `SELF_CERTIFICATION_RISK`
+(class `UNKNOWN`) regardless of `runner_version` - the self-certification
+clause is unconditional - and a differing `auth_profile_ref` or
+`runner_version` is `SAME_FAMILY_DIFFERENT_SESSION`.
+
+### Evidence-location model
+
+`EvidenceLocation(kind, ref)` classifies a repo-relative path as
+`CANDIDATE_BRANCH` or `EVIDENCE_STORE`. Paths under `proof/`, `proofs/`,
+`out/` or `reports/`, and paths ending in `.proof.json`, `PROOF.json` or
+`AUDITOR_REPORT.md`, are `EVIDENCE_STORE`; everything else is
+`CANDIDATE_BRANCH`. `split(changed_paths)` partitions a path list into
+`(candidate_paths, evidence_paths)`. Target architecture: the candidate
+branch carries only substantive candidate content, and the evidence store
+carries validation, audit and finality evidence - this packet documents
+and enforces the classification, not a migration of existing paths.
+
+### Exact-head binding
+
+`exact_head_binding(audited_head, finality_head, freeze_head)` extends the
+[Exact-head rule](#exact-head-rule) above - previously a pairwise
+`audited_head == finality_head` check enforced by the test suite - to a
+pure, three-way check: `bound` is `True` only when all three inputs are
+equal, well-formed 40-hex git oids (lowercase, per
+`enums.v1.schema.json#/definitions/git_oid`). Any inequality or malformed
+oid yields `bound = False` with the mismatching pair(s) named; no other
+code path in the module can produce `bound = True`.
+
+### PR Steward boundary
+
+`classify_steward_action(action) -> "ALLOWED" | "FORBIDDEN"` is fail-closed
+over a closed vocabulary: `READ_PR`, `READ_CHECKS`, `READ_REVIEWS`,
+`COMPUTE_READINESS` and `EMIT_READINESS_CLASSIFICATION` are `ALLOWED`;
+`PUSH_FIX`, `COMMIT`, `APPROVE_REVIEW`, `REQUEST_CHANGES`, `MERGE`,
+`MARK_READY`, `AUTHOR_AUDIT`, `WRITE_PROOF` and
+`MODIFY_BRANCH_PROTECTION` are `FORBIDDEN`; an action outside both sets is
+`FORBIDDEN`. The constants `CHECK_ONLY`, `NO_FIX`, `NO_APPROVAL`,
+`NO_MERGE` and `NO_AUDIT_AUTHORING` name the boundary; `READY` exists only
+as a classification string, never as anything the module can grant - the
+module exposes no `merge`, `approve`, `push` or `write` function. This
+boundary governs the live PR Steward's *legal action vocabulary*; the live
+PR Steward implementation under `tools/pr_steward/` is out of scope for
+this packet.
+
+### Legacy projection and proof self-reference compatibility
+
+`project_legacy_embedded_audit(record)` projects one
+`schemas/proof/embedded_audit.schema.json` record into an `AuditIdentity`
+without modifying the source record: `auditor_tool` becomes `runner`;
+`auditor_model` becomes both `requested_model` and `configured_model`,
+since the legacy schema has a single model field; `provider` comes only
+from a closed table keyed by `auditor_tool` (`agy`/`antigravity`/
+`gemini-cli` -> `google`, `claude-code-cli` -> `anthropic`,
+`copilot-cli` -> `github`, `grok-cli` -> `xai`, `opencode-cli` and
+`pal-mcp-clink` -> `UNKNOWN`, `none` -> `NONE`), never from model-name
+branding; and every field the legacy record has no equivalent for becomes
+`UNKNOWN`. The verbatim `invocation` string is preserved as
+`legacy_invocation` on the projection wrapper, not placed on
+`AuditIdentity` itself.
+
+Proof self-reference behaviour is unchanged by this packet: nothing under
+`schemas/proof/` is modified, no existing `embedded_audit` record is
+rewritten, and `scripts/audit/run_embedded_audit.py` and
+`scripts/audit/local_audit_acceptance.py` continue to read and validate
+those records exactly as before. `project_legacy_embedded_audit` is a new,
+additive, read-only view for callers that want an `AuditIdentity`-shaped
+projection; removing or superseding the legacy record shape is explicitly
+deferred to a separately authorized packet.
+
+### Relationship to the existing `audit_identity` proof-bundle field
+
+`scripts/audit/local_audit_acceptance.py` already reads and validates a
+signed proof-bundle field it also calls `audit_identity`: a JSON object
+with keys exactly `implementer`, `auditor` and `independence`, where each
+of `implementer`/`auditor` is `{runner, model, model_family,
+runtime_family[, effort]}` and `independence` must equal the literal
+`PROVEN` for acceptance. It is out of scope for this packet (not under
+`src/dopemux/governed_execution/`) and is untouched: same name, unrelated
+shape, unrelated module, not extended, referenced or superseded by
+`src/dopemux/governed_execution/audit_identity/`. Unlike this packet's
+`independence()`, that existing check is a binary L3 gate embedded in an
+acceptance function, not a pure assessment; reconciling the two names, if
+ever warranted, is out of scope here and left to a separately authorized
+packet.
