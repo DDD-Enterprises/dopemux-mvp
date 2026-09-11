@@ -41,7 +41,7 @@
     "OUT": [
       "Every file under route_d/.",
       "Every file under shared_contracts/.",
-      "usage, RESULTS and any measured block of any evidence/*.json.",
+      "The measured blocks of every evidence/*.json -- usage, RESULTS, elapsed_s, returncode, usage_findings, attempt_accounting. Verified UNCHANGED after the repair. NOTE: evidence/D_APIROUTE_PROBE.json DOES appear in the diff, because two of its NARRATIVE fields are in scope per scope.IN -- stderr_finding.material_finding and served_model_attestation.detail, both corrected under errata item E2. No measured value in that file was altered.",
       "Any product code, workflow or configuration anywhere in the repository.",
       "Running the embedded audit or PR Steward.",
       "Resolving GitHub review threads (operator/reviewer action)."
