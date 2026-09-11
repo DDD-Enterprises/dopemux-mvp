@@ -74,10 +74,18 @@ FreezeEvent = Union[Unfreeze, RepairRecorded, Revalidated, ReviewSettled, NewFre
 
 @dataclass(frozen=True)
 class FreezeLifecycle:
-    """The current lifecycle state for one FreezeReceipt subject."""
+    """The current lifecycle state for one FreezeReceipt subject.
+
+    ``FreezeLifecycle(receipt)`` constructs directly in the FROZEN state (a
+    freshly authored FreezeReceipt always records ``freeze_state ==
+    "FROZEN"``), matching the packet's ``FreezeLifecycle(receipt)`` shape.
+    ``FreezeLifecycle.start(receipt)`` is the same construction with an
+    explicit guard that ``receipt`` actually records FROZEN, for callers that
+    want that checked rather than assumed.
+    """
 
     receipt: Mapping[str, Any]
-    state: FreezeState
+    state: FreezeState = FreezeState.FROZEN
     predecessor: "FreezeLifecycle | None" = None
 
     @classmethod

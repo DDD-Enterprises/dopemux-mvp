@@ -9,8 +9,10 @@ import pytest
 
 import dopemux.governed_execution.receipts.store as store_module
 from dopemux.governed_execution.receipts.store import (
+    EvidenceRef,
     EvidenceStore,
     ImmutabilityViolation,
+    ValidationRef,
 )
 
 
@@ -62,3 +64,14 @@ def test_ref_sha256_equals_address(tmp_path: Path) -> None:
     ref = store.ref(address)
     assert ref.sha256 == address
     assert ref.path == f"{address[:2]}/{address}"
+
+
+def test_validation_ref_projects_to_evidence_ref() -> None:
+    validation_ref = ValidationRef(
+        kind="slice_validation",
+        path="proof/W04/slice_validation.json",
+        sha256="a" * 64,
+        status="PASS",
+    )
+    projected = validation_ref.as_evidence_ref()
+    assert projected == EvidenceRef(path=validation_ref.path, sha256=validation_ref.sha256)

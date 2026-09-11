@@ -48,8 +48,8 @@ class FreezeSubject:
 
 
 def substantive_path_digest(paths: Sequence[str]) -> str:
-    """sha256 of the newline-joined, sorted, deduplicated ``paths``."""
-    joined = "\n".join(sorted(set(paths)))
+    """sha256 of the newline-joined sorted ``paths`` (invariant 4, verbatim)."""
+    joined = "\n".join(sorted(paths))
     return sha256(joined.encode("utf-8")).hexdigest()
 
 

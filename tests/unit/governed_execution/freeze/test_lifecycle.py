@@ -65,6 +65,15 @@ def _lifecycle() -> FreezeLifecycle:
     return FreezeLifecycle.start(_receipt())
 
 
+def test_bare_constructor_matches_packet_freezelifecycle_receipt_shape() -> None:
+    receipt = _receipt()
+    lifecycle = FreezeLifecycle(receipt)
+    assert lifecycle.state is FreezeState.FROZEN
+    assert lifecycle.receipt is receipt
+    assert lifecycle.predecessor is None
+    assert lifecycle == FreezeLifecycle.start(receipt)
+
+
 def test_frozen_to_unfrozen_via_unfreeze() -> None:
     lifecycle = _lifecycle()
     unfrozen = lifecycle.apply(Unfreeze(reason="defect found in review"))
