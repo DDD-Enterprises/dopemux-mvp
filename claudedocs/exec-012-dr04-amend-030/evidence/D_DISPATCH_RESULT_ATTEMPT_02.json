@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "route": "D", "attempt": 2,
+  "DISPATCH": "LIVE_EXECUTED",
+  "OUTCOME": "BLOCKED_ARTIFACT_ALREADY_EXISTS",
+  "research_attempt_consumed": true,
+  "started_utc": "2026-09-10T18:22:35Z", "ended_utc": "2026-09-10T18:22:50Z", "elapsed_s": 14.4,
+
+  "CAUSE": {
+    "classification": "LEAD_ERROR_INCOMPLETE_ARCHIVE",
+    "not_the_benchmark": true, "not_the_model": true, "not_the_arity_repair": true,
+    "detail": "Before attempt 2 the lead archived run/, loop_state/ and broker_state/ but MISSED evidence/. The broker persists evidence/{tool}_{ordinal:02d}_{request,result}.json, and persist() uses O_EXCL. Because broker_state/ HAD been archived, the retrieval ledger restarted at ordinal 01 and tried to rewrite evidence/web_search_01_request.json, which attempt 1 had already created. O_EXCL refused -> ARTIFACT_ALREADY_EXISTS.",
+    "why_it_was_missed": "The archive list was taken from the three directories named in review rather than derived from the code. The complete set of persist() targets was never enumerated. The fix is to enumerate write targets from the source, not from memory.",
+    "responsibility": "The lead's, not the operator's and not the harness's."
+  },
+
+  "COMPLETE_persist_target_set_for_execute": [
+    "run/turn_{NN}_request.json", "run/turn_{NN}_native.json", "run/turn_{NN}_receipt.json",
+    "run/RAW_RESEARCH.md", "run/SOURCE_CAPTURE.json",
+    "loop_state/{research_job_NN,codex_NN,STOP}.json",
+    "broker_state/{SESSION,web_search_NN,web_fetch_NN,STOP}.json",
+    "evidence/{web_search,web_fetch}_{NN}_{request,result}.json"
+  ],
+  "directories_that_MUST_all_be_cleared_for_a_fresh_attempt": ["run", "loop_state", "broker_state", "evidence"],
+  "not_required_but_tidy": ["runtime/tmp (TMPDIR scratch; mkdir(exist_ok=True), no O_EXCL)"],
+  "untouched_by_execute": ["dry_run/", "DRY_RUN_RECEIPT.json"],
+
+  "WHAT_ATTEMPT_2_DID_PROVE": {
+    "arity_repair_is_LIVE_and_WORKING": "run/turn_01_receipt.json carries the new fields: agent_message_count=1, narration_preface_count=0. The shared W01 module is loaded and reconciling in production on both the schema branch and the receipt.",
+    "turn_1_succeeded": "58,065 input / 392 output tokens, RUNTIME_TOOL_POLICY=PASS, UNAPPROVED_NATIVE_TOOL_EVENT_COUNT=0, a valid retrieve action.",
+    "gates_all_passed": "validate_resume PASS against the re-sealed manifest 9f74e577..., verify_inputs PASS."
+  },
+
+  "SPEND": {
+    "codex": {"input_tokens": 58065, "output_tokens": 392, "reasoning_output_tokens": 276},
+    "estimated_usd": 0.60,
+    "parallel_spend_usd": 0.00,
+    "parallel_note": "broker_state/STOP.json reads PARALLEL_CALL_FAILED_NO_RETRY, but the failure was the evidence/ persist BEFORE self.mcp.call(). No Parallel tool call was transmitted. The anonymous MCP session was opened (broker_state/SESSION.json) which is free."
+  },
+
+  "STATUS": "Route D attempt 2 is consumed and terminally stopped. A THIRD attempt is NOT authorized -- the operator authorized exactly one repair attempt. Reported to the operator for decision.",
+  "attempt_01_evidence": "W03/ROUTE_D/attempt_01/",
+  "attempt_02_evidence": "still in place at W03/ROUTE_D/{run,loop_state,broker_state} plus attempt 1's evidence/ -- deliberately NOT archived, so the tree is not left looking armed for an unauthorized third attempt."
+}

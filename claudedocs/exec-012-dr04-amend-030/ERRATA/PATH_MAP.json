@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "map_id": "AMEND-030-EVIDENCE-PATH-MAP",
+  "recorded_utc": "2026-09-11",
+  "purpose": "Records inside this bundle cite artifacts by their WORKING-TREE path (W01/...), because that is what was true when they ran. Those citations were left exactly as recorded rather than rewritten. This table maps each cited path to where the artifact is published here.",
+  "why_records_were_not_rewritten": "A record that cites W01/message_arity.py is a true statement about the tree that executed. Rewriting it to shared_contracts/message_arity.py would make the record describe a layout that never ran. The mapping is supplied here instead.",
+  "working_tree_root": "/private/tmp/DMX-DR04-EXEC-012-AMEND-030 (REAPED -- no longer exists on disk as of 2026-09-11)",
+  "mappings": [
+    {"working_tree_path": "W01/message_arity.py", "published_path": "shared_contracts/message_arity.py"},
+    {"working_tree_path": "W01/profile_argv.py", "published_path": "shared_contracts/profile_argv.py"},
+    {"working_tree_path": "W01/successor_argv.txt", "published_path": "shared_contracts/successor_argv.txt"},
+    {"working_tree_path": "W01/W01_COMMON_CODEX_ISOLATION_PROFILE.json", "published_path": "shared_contracts/W01_COMMON_CODEX_ISOLATION_PROFILE.json"},
+    {"working_tree_path": "W01/W01_ARITY_RECONCILIATION_CONTRACT.json", "published_path": "shared_contracts/W01_ARITY_RECONCILIATION_CONTRACT.json"},
+    {"working_tree_path": "W01/W01_A_D_PARITY_CONTRACT.json", "published_path": "shared_contracts/W01_A_D_PARITY_CONTRACT.json"},
+    {"working_tree_path": "W01/W01_TOOL_EVENT_CLASSIFIER.json", "published_path": "shared_contracts/W01_TOOL_EVENT_CLASSIFIER.json"}
+  ],
+  "cited_but_not_published": [
+    {"working_tree_path": "W02/harness/adapter/core.py", "status": "NOT_IN_BUNDLE", "note": "Route A harness source. Cited by the arity and topology findings; lives in the 028/A surface, not in this evidence bundle."},
+    {"working_tree_path": "W02/harness/adapter/policy.py", "status": "NOT_IN_BUNDLE", "note": "Route A top_level() gate cited by A_TOPOLOGY_BLOCKER.json."},
+    {"working_tree_path": "research_loop.py", "status": "NOT_IN_BUNDLE", "note": "Route D loop source. The primary finding concerns its request_payload()."},
+    {"working_tree_path": "RUN_ROUTE_A_FROM_TERMINAL.command", "status": "NOT_IN_BUNDLE", "note": "Operator handover script. Referenced by the handoff's blocking decision 2; it stays in the working surface, and that surface has since been reaped -- see ERRATA.md item E5."},
+    {"working_tree_path": "W07/", "status": "NOT_IN_BUNDLE", "note": "Secret-scan reports. The 245-file scan result is summarised in SUPERVISOR_RETURN.json INTEGRITY_ATTESTATIONS."}
+  ]
+}

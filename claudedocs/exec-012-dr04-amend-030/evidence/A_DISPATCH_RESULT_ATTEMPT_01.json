@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "route": "A", "attempt": 1,
+  "DISPATCH": "LIVE_ATTEMPTED",
+  "OUTCOME": "ERROR_BEFORE_ANY_PROVIDER_CALL",
+  "reason": "KeyError: 'voyage_service_label'",
+  "started_utc": "2026-09-10T18:30:27Z", "ended_utc": "2026-09-10T18:30:34Z", "elapsed_s": 6.7,
+
+  "CONSUMPTION": {
+    "launch_claim_spent": true,
+    "launch_claim_artifact": "W02/harness/EXECUTION_CLAIM.json",
+    "research_attempt_consumed": false,
+    "codex_calls": 0, "voyage_calls": 0, "parallel_calls": 0, "research_jobs": 0,
+    "external_spend_usd": 0.00,
+    "detail": "Same shape as Route C: core.claim_once() wrote EXECUTION_CLAIM.json at generic_integration.py:179, and the KeyError was raised two lines later at :181. calls/ and budget/ are both EMPTY. Nothing was sent to any provider.",
+    "retry_barrier": "core.claim_once() raises Rejected('ATTEMPT_ALREADY_CLAIMED') on a pre-existing EXECUTION_CLAIM.json (O_EXCL). Re-entry requires that claim to be cleared, which is an OPERATOR decision, not the lead's."
+  },
+
+  "CAUSE": {
+    "classification": "LEAD_ERROR_VALIDATED_THE_GATE_NOT_THE_CONSUMER",
+    "detail": "The authorization dict was built from validate_authorization's requirements and validated offline against it -- and PASSED. But validate_authorization checks 12 keys, while integration()'s live branch consumes FOUR, of which 'voyage_service_label' is checked by NO gate. The offline validation was therefore necessary but not sufficient, and it gave false confidence.",
+    "the_gap": {
+      "keys_the_gate_checks": ["packet_id","supervisor_authorized","operator","gates","frozen_prompt_sha256","max_voyage_spend_usd","codex_auth","isolation_prelaunch","isolation_profile_sha256","research_date_utc","surface_sha256sums","voyage_cost_evidence"],
+      "keys_the_consumer_reads": ["packet_id","voyage_cost_evidence","voyage_service_label","voyage_account_label (optional)"],
+      "unchecked_by_any_gate": ["voyage_service_label","voyage_account_label"]
+    },
+    "responsibility": "The lead's. The correct pre-dispatch check is to enumerate every authorization key access in the harness (grep for authorization[...] / authorization.get) and satisfy the CONSUMER, not only the validator."
+  },
+
+  "FIX_APPLIED_AND_PROVEN": {
+    "added": {"voyage_service_label": "VOYAGE_API_KEY", "voyage_account_label": "dopemux"},
+    "provenance": "Confirmed by a METADATA-ONLY keychain lookup (security find-generic-password WITHOUT -w), which proves the labels exist and retrieves no secret.",
+    "proof": "The exact step that crashed was re-run offline, bypassing claim_once: BoundedVoyage construction PASS (full_run_cost_bound 0.00098304), GenericParallel construction PASS, gate validate_authorization still PASS. No secret was read -- BoundedVoyage validates label syntax at construction and only reads the keychain inside _embed().",
+    "authorization_file": "AMEND_030_EVIDENCE/A_AUTHORIZATION.json"
+  },
+
+  "EVERYTHING_ELSE_ABOUT_ROUTE_A_IS_READY": [
+    "Dry run PASS: 0 codex / 0 voyage / 0 parallel calls, PROMPT_BINDING PASS.",
+    "W02/harness re-sealed: SHA256SUMS.txt = fc944d3781b00146094d905b36c9b0ebbba2226f2233ee68f03ffc8935ddb83b; SOURCE_BINDING.json copied entries carry predecessor_sha256 + transform.",
+    "Arity repair live via the shared W01 module; 6/6 Route A regression cases pass across both schema and free-form modes.",
+    "Parity confirmed: A's isolation_profile_sha256 333d4fc5... and argv_sha256 64ff8541... are IDENTICAL to Route D's.",
+    "Voyage cost evidence verified twice today from the official pricing page: voyage-4 = $0.06/1M, cost_bound_usd = 0.00098304 <= the 0.02 ceiling.",
+    "Launch environment requirement understood: env -i sanitized parent (an ordinary shell carries ~22 SENSITIVE_NAME credential names -> UNSAFE_ENVIRONMENT_NAMES)."
+  ],
+
+  "STATUS": "Route A is one operator decision away from a clean dispatch: clear EXECUTION_CLAIM.json (and the empty calls/ and budget/ dirs) to permit re-entry. NOT done by the lead."
+}

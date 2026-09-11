@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0",
+  "packet_id": "AMEND-030-EVIDENCE-REPAIR-001",
+  "parent": "MACRO-DMX-DR04-EXEC-012-LIVE-DISPATCH-029 / OPERATOR-AMEND-030",
+  "recorded_utc": "2026-09-11",
+  "objective": "Repair the claim-side defects found by the PR #1341 review and its seven review threads, without altering any evidence record.",
+  "route": {
+    "runner": "Claude Code interactive session",
+    "model": "claude-opus-5",
+    "effort": "xhigh",
+    "effort_attestation": "Literal value of $CLAUDE_EFFORT in the executing session. Not inferred.",
+    "external_model_calls": 0,
+    "external_spend_usd": 0.0
+  },
+  "justification": "All work is deterministic local text repair plus arithmetic reconciliation against committed receipts. No inference task was delegated and no external provider was called, so no separate model spend arises. Opus was already the session model; the judgement content -- deciding which artifacts are claims and which are records -- is an authority/evidence-integrity call, which repo routing policy assigns to Opus rather than a cheaper lane.",
+  "alternatives_considered": [
+    {"option": "Delegate the mechanical edits to a Sonnet subagent", "rejected_because": "The edits are inseparable from the record-vs-claim judgement that governs each one. Splitting them risks a subagent silently 'fixing' a record, which is the exact failure this repair exists to avoid."},
+    {"option": "Regenerate the bundle from the working tree", "rejected_because": "IMPOSSIBLE. /private/tmp/DMX-DR04-EXEC-012-AMEND-030 has been reaped; the committed bundle is the only surviving copy."},
+    {"option": "Apply the two defect fixes in place", "rejected_because": "Both targets are records. See ERRATA/DEFECT-001 and DEFECT-002 for the full reasoning."}
+  ],
+  "evidence_basis": [
+    "The nine committed turn receipts (turn.completed usage blocks).",
+    "evidence/D_DISPATCH_RESULT{,_ATTEMPT_02,_ATTEMPT_03}.json SPEND blocks.",
+    "evidence/D_APIROUTE_PROBE.json usage block.",
+    "The seven unresolved GitHub review threads on PR #1341.",
+    "Live PR state via gh: head bc4249eecf4f428528488a7a3d4eeb3420aebfbc, embedded-audit FAILURE, PR Steward FAILURE."
+  ],
+  "control_tower_validation": {
+    "ct_route_record": "NOT_RUN",
+    "ct_validate_route": "NOT_RUN",
+    "reason": "AGENTS.md requires ct to be run from a checkout with its OWN installation and explicitly forbids using another project's state. .control-tower/ is not tracked on branch evidence/dmx-dr04-exec-012-amend-030 (which branches off mvp/main) and is therefore absent from this worktree. An installation exists in the primary checkout at /Users/hue/code/dopemux-mvp/.control-tower/bin/ct but belongs to a different branch context and was deliberately NOT borrowed.",
+    "mitigation": "This file records the same fields ct route-record would capture -- runner, model, effort, alternatives, evidence -- and is committed INTO the packet evidence rather than left in mutable local state under .control-tower/state/routes/.",
+    "disposition": "PRESERVED_AS_NOT_RUN. Not silenced, not simulated, not marked PASS."
+  },
+  "scope": {
+    "IN": [
+      "Claim-bearing files: SUPERVISOR_RETURN.json, SUPERVISOR_HANDOFF.md, README.md, and narrative-only fields of evidence/D_APIROUTE_PROBE.json.",
+      "New ERRATA/ artifacts.",
+      "An appended, dated correction entry in CHECKPOINT.md."
+    ],
+    "OUT": [
+      "Every file under route_d/.",
+      "Every file under shared_contracts/.",
+      "The measured blocks of every evidence/*.json -- usage, RESULTS, elapsed_s, returncode, usage_findings, attempt_accounting. Verified UNCHANGED after the repair. NOTE: evidence/D_APIROUTE_PROBE.json DOES appear in the diff, because two of its NARRATIVE fields are in scope per scope.IN -- stderr_finding.material_finding and served_model_attestation.detail, both corrected under errata item E2. No measured value in that file was altered.",
+      "Any product code, workflow or configuration anywhere in the repository.",
+      "Running the embedded audit or PR Steward.",
+      "Resolving GitHub review threads (operator/reviewer action)."
+    ]
+  },
+  "invariants": [
+    "No measured value is altered anywhere in the bundle.",
+    "Every corrected claim is traceable to the primary artifact that establishes the correct value.",
+    "The pre-repair bytes of every touched file remain retrievable at commit bc4249eecf4f428528488a7a3d4eeb3420aebfbc.",
+    "Nothing is adopted, activated or merged."
+  ]
+}

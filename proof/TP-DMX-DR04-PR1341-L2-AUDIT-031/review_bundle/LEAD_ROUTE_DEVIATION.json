@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "record_id": "PR1341-L2-FINALITY-031-LEAD-ROUTE-DEVIATION",
+  "packet_id": "MACRO-DMX-DR04-PR1341-L2-FINALITY-031",
+  "recorded_utc": "2026-09-11",
+  "deviation_class": "TEAM_LEAD_MODEL_BINDING",
+  "packet_binding": {
+    "runner": "Claude Code",
+    "model": "claude-sonnet-5",
+    "effort": "high",
+    "role": "TEAM_LEAD_AND_DETERMINISTIC_FINALITY_COORDINATOR"
+  },
+  "as_executed": {
+    "W01_W02_lead": {
+      "runner": "Claude Code",
+      "model": "claude-opus-5",
+      "effort": "xhigh",
+      "effort_attestation": "Literal value of $CLAUDE_EFFORT in the executing session; not inferred.",
+      "scope": "Custody verification, zero-call auditor qualification, audit-prompt authorship, single AGY dispatch."
+    },
+    "W03_W04_executor": {
+      "runner": "Claude Code subagent",
+      "model": "claude-sonnet-5",
+      "scope": "Canonical proof materialization, signing, and the proof-only successor commit."
+    }
+  },
+  "cause": "The packet pinned the team lead to claude-sonnet-5. The executing session was already operator-set to claude-opus-5, and per the repository's routing guidance the main-session model is operator-set via /model -- a session cannot self-switch. The binding could therefore not be satisfied in-session.",
+  "disposition": "Operator was shown the conflict BEFORE any substantive call (AUDITOR_CALLS=0 at the time) and selected: delegate W03/W04 to a claude-sonnet-5 subagent. W01/W02 remained with the Opus session; the deterministic proof-writing steps the binding targets are executed on the pinned model.",
+  "operator_decision_utc": "2026-09-11",
+  "scope_of_deviation": "Team-lead model identity for W01 and W02 ONLY. No auditor substitution. No widening of packet scope, authority, or budget.",
+  "independence_impact": {
+    "assessment": "NONE",
+    "reasoning": "forbidden_routes.yaml FR-001 blocks only when implementer provider, model AND runner all equal the auditor's. The auditor is AGY / Gemini (Google) -- a different provider, model family, runner and session from any Claude Code lead, whether Opus or Sonnet. Independence is unaffected by which Claude model coordinated.",
+    "contract_status_note": "contracts/openclaw-dcp-routing/*.yaml are status=PROPOSED, not ratified; cited as guidance."
+  },
+  "budget_impact": "NONE. No additional auditor call, no additional model spend beyond the single authorized AGY audit.",
+  "precedent": "Same shape as the runner substitution recorded and operator-ratified in MACRO-DMX-DR04-EXEC-012-LAUNCH-CONTRACT-REPAIR-028."
+}

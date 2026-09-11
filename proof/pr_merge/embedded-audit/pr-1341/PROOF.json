@@ -1,0 +1,69 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1341,
+  "head_sha": "d39d06bcb75fa2dcb5fac3de779e45c1cf0b502f",
+  "generated_at": "2026-09-11T15:05:19Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-3.8-flash-high --effort high --sandbox --mode plan --print-timeout 20m --output-format json --add-dir /Users/hue/code/dopemux-mvp/.worktrees/exec012-evidence --print=\"$(cat AUDIT_INPUT.md)\"; exact invocation record in review_bundle/AUDIT_INVOCATION.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-DR04-PR1341-L2-AUDIT-031/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-01",
+        "severity": "MEDIUM",
+        "status": "ACCEPTED_RISK",
+        "title": "Public disclosure of account model catalogue",
+        "body": "Nine turn receipts embed the raw /v1/models body (136 model ids each) in a public repo; explicitly operator-accepted 2026-09-11 (DISCLOSURE_DECISION=RECONFIRM_PUBLICATION_UNMODIFIED). POLICY_COMPLIANT=NO -- a bounded operator policy exception, NOT compliance."
+      },
+      {
+        "id": "F-02",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "DEFECT-001 narration_preface_count mislabels suffix narration",
+        "body": "Latent; auditor independently verified all 7 post-repair receipts report narration_preface_count=0 and attempt 1 turn 3 was prefix-shaped, so zero committed receipts carry a wrong value. Recorded unapplied because the target is a record. Non-blocking for an evidence-only PR."
+      },
+      {
+        "id": "F-03",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "DEFECT-002 unknown-event branch absent from fail-closed verdict contract",
+        "body": "Contract-completeness gap in a sealed 028 artifact; unexercised across all 10 live turns; implementation behaviour for unknown types remains UNKNOWN from bundle artifacts. Recorded unapplied. Non-blocking for an evidence-only PR."
+      },
+      {
+        "id": "F-04",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Spend total is a documented floor",
+        "body": "An earlier ~8,235-token cost-floor probe (~$0.08) has no evidence file and may be uncounted; $8.13 is published as a floor against a $10 ceiling."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "F-01: explicitly operator-accepted 2026-09-11 (DISCLOSURE_DECISION=RECONFIRM_PUBLICATION_UNMODIFIED); not a repo-policy compliance claim.",
+      "F-02: demonstrably non-blocking under repo policy for an evidence-only PR -- all 7 post-repair receipts independently verified to report narration_preface_count=0; not operator-accepted, advances on the non-blocking criterion.",
+      "F-03: demonstrably non-blocking under repo policy for an evidence-only PR -- unexercised across all 10 live turns; not operator-accepted, advances on the non-blocking criterion.",
+      "F-04: demonstrably non-blocking under repo policy -- $8.13 is documented as an estimated cost floor against a $10 ceiling; not operator-accepted, advances on the non-blocking criterion."
+    ],
+    "skip_reason": null
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runtime_family": "agy",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  }
+}

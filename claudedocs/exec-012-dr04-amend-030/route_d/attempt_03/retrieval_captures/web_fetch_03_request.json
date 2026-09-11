@@ -1,0 +1,38 @@
+{
+  "arguments": {
+    "full_content": false,
+    "model_name": "gpt-6-astra",
+    "objective": "Close DR04 gaps as of 2026-09-10: dated releases, effort defaults, output limits, inventory, billing, runner controls and privacy. Preserve contradictions, effective dates and unavailable metadata.",
+    "search_queries": [
+      "release date benchmark methodology",
+      "native effort default maximum output",
+      "multi agent count effort mapping",
+      "subscription usage windows credit multipliers",
+      "session compaction identity usage telemetry",
+      "discovery endpoints authentication network implications",
+      "retirement redirect grok-code-fast-1"
+    ],
+    "session_id": "90cb4b68a2617d0bd0451ca0c1d4f2998cf6f97d8c1fd36e7a58e72a725a49a6",
+    "urls": [
+      "https://x.ai/news/grok-4-6",
+      "https://x.ai/build/changelog",
+      "https://docs.x.ai/grok/faq",
+      "https://docs.x.ai/console/billing",
+      "https://docs.x.ai/developers/advanced-api-usage/prompt-caching/usage-and-pricing",
+      "https://docs.x.ai/developers/model-capabilities/text/reasoning",
+      "https://docs.x.ai/developers/model-capabilities/text/multi-agent",
+      "https://docs.x.ai/developers/models/grok-4.20-multi-agent-0309",
+      "https://docs.x.ai/developers/models/grok-4.20-0309-reasoning",
+      "https://docs.x.ai/developers/models/grok-4.20-0309-non-reasoning",
+      "https://docs.x.ai/developers/models/grok-build-0.1.md",
+      "https://docs.x.ai/developers/models/grok-4.3",
+      "https://docs.x.ai/developers/models",
+      "https://docs.x.ai/developers/rest-api-reference/inference/models",
+      "https://docs.x.ai/developers/migration/may-15-retirement",
+      "https://docs.x.ai/build/cli/reference",
+      "https://docs.x.ai/build/settings/reference",
+      "https://docs.x.ai/developers/faq/security"
+    ]
+  },
+  "tool": "web_fetch"
+}

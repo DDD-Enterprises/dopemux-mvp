@@ -1,0 +1,26 @@
+{
+  "arguments": {
+    "full_content": false,
+    "model_name": "gpt-6-astra",
+    "objective": "Extract selectors, efforts/defaults, prices, retirement exceptions, runner controls and discovery as of 2026-09-10. Preserve dates, versions, supporting excerpts, links and exposed redirect metadata.",
+    "search_queries": [
+      "native reasoning effort defaults unsupported",
+      "model retirement redirect exceptions dates",
+      "input output cache long-context pricing",
+      "Grok Build discovery sandbox authentication"
+    ],
+    "session_id": "90cb4b68a2617d0bd0451ca0c1d4f2998cf6f97d8c1fd36e7a58e72a725a49a6",
+    "urls": [
+      "https://docs.x.ai/developers/models",
+      "https://docs.x.ai/developers/model-capabilities/text/reasoning",
+      "https://docs.x.ai/developers/pricing",
+      "https://docs.x.ai/developers/migration/may-15-retirement",
+      "https://media.x.ai/v1/website/card-4p6-4cd2dc57.pdf",
+      "https://docs.x.ai/build/cli/reference",
+      "https://docs.x.ai/build/overview",
+      "http://x.ai/build/changelog",
+      "https://docs.x.ai/developers/rest-api-reference/inference/models"
+    ]
+  },
+  "tool": "web_fetch"
+}

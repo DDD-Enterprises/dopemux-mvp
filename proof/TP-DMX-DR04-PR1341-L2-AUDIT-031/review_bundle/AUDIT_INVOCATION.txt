@@ -1,0 +1,21 @@
+# Exact invocation record -- MACRO-DMX-DR04-PR1341-L2-FINALITY-031 / W02
+# Executed from: /Users/hue/code/dopemux-mvp/.worktrees/exec012-evidence
+# AUDIT_START_UTC=2026-09-11T14:51:02Z
+# AUDIT_END_UTC=2026-09-11T14:53:46Z
+# exit_code=0  duration_seconds=159.47  num_turns=1
+# conversation_id=1f6c53ec-39a9-49bd-8009-8d30c1f90cf3
+# usage: input=230480 output=35153 thinking=23041 cache_read=2955529 total=265633
+# raw output sha256=8ae94e2f841d694fcc26bc53286009a81348aa867336420d2a3b647799c62db8
+# custody re-verified immediately before dispatch: git rev-parse HEAD == d39d06bcb75fa2dcb5fac3de779e45c1cf0b502f
+
+agy --model gemini-3.8-flash-high --effort high --sandbox --mode plan \
+    --print-timeout 20m --output-format json --add-dir /Users/hue/code/dopemux-mvp/.worktrees/exec012-evidence \
+    --print="$(cat AUDIT_INPUT.md)"
+
+# AUDITOR_MODEL ENUM MAPPING (read this before flagging imprecision):
+# schemas/proof/embedded_audit.schema.json auditor_model enum does NOT list
+# gemini-3.8-flash-high. Per precedent proof/pr_merge/embedded-audit/pr-1174
+# (agy + generic "gemini") the generic bucket is used in PROOF.json, and the
+# PRECISE model id is recorded verbatim here and in the invocation string.
+# Precedent for a Flash-class auditor: proof/TP-DOPECONTEXT-VOYAGE4-REPAIR-0002
+# (AUDIT_INTAKE.json auditor_model "Gemini 3.6 Flash (High)").

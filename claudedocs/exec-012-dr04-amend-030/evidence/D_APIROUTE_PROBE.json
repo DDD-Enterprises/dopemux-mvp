@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0",
+  "probe_id": "EXEC012-D-APIROUTE-OUTPUT-SCHEMA-PROBE-030",
+  "purpose": "Prove the openai-api provider path supports the FULL Route D child command (isolation argv + -C + --output-schema + stdin sentinel) and that its event stream classifies clean, BEFORE consuming Route D's one-shot research attempt.",
+  "started_utc": "2026-09-10T17:54:12Z",
+  "elapsed_s": 4.7,
+  "returncode": 0,
+  "command_fidelity": "codex_command() taken VERBATIM from research_loop.py. The ONLY substitution was the -C value (run dir -> scratch dir) so nothing was written into the sealed surface. --output-schema still pointed at the real ROUTE_D/OUTPUT_SCHEMA.json.",
+  "env_fidelity": "Exactly the minimal dict native_reason() builds: HOME, PATH, LANG, PYTHONDONTWRITEBYTECODE, TMPDIR, OPENAI_API_KEY. This also proved the mise codex shim resolves under that restricted PATH.",
+  "prompt_sent": "Reply with exactly this object and nothing else: {\"action\":{\"kind\":\"final\",\"report\":\"ok\"}}",
+  "prompt_content_note": "Mechanically neutral. Carries NO benchmark or research content, same class as the four probes enumerated in W01_RUNNER_AVAILABILITY.json.",
+  "attempt_accounting": {
+    "research_attempt_consumed": false,
+    "reason": "Nothing in this probe touches RESUME_AUTHORIZATION.json, loop_state/ or the Ledger. It is a runner-capability probe, not a route dispatch."
+  },
+  "RESULTS": {
+    "envelope_types_observed": ["item.completed", "thread.started", "turn.completed", "turn.started"],
+    "item_types_observed": ["agent_message"],
+    "classify_events": "PASS",
+    "unapproved_native_tool_event_count": 0,
+    "agent_message_count": 1,
+    "turn_completed_present": true,
+    "completion_unambiguous": true,
+    "normalize_output": "PASS -- returned {kind: final, report: ok}, i.e. the OUTPUT_SCHEMA round-tripped through the Responses API strict json_schema surface AND through validate_action().",
+    "VERDICT": "PASS"
+  },
+  "usage": {
+    "input_tokens": 10902,
+    "cached_input_tokens": 0,
+    "cache_write_input_tokens": 10899,
+    "output_tokens": 21,
+    "reasoning_output_tokens": 0
+  },
+  "usage_findings": [
+    "Codex instruction preamble + output schema costs ~10,880 input tokens before any payload. The earlier 8,235-token figure was measured WITHOUT --output-schema.",
+    "cache_write_input_tokens=10899 proves automatic prompt caching is ACTIVE on this provider path. That matters: Route D's ~319 KB payload sorts acceptance_schema first, so the expensive prefix should cache across the loop's turns.",
+    "reasoning_output_tokens=0 at model_reasoning_effort=high for a trivial prompt -- effort is not a floor."
+  ],
+  "stderr_finding": {
+    "observed": "ONE line: 'ERROR codex_models_manager::manager: failed to refresh available models: ... missing field `models`', followed by the raw /v1/models JSON body (~21.9 KB).",
+    "disposition": "BENIGN_NON_FATAL",
+    "explanation": "Codex's model-catalogue refresher expects the ChatGPT-backend response shape (a `models` field). The standard OpenAI /v1/models returns {object:list, data:[...]}. Codex logs the decode failure and proceeds; the turn completed with returncode 0.",
+    "material_finding": "gpt-6-astra IS present in the account's /v1/models listing, so the pinned benchmark subject is available to the account on the API-metered path. This is a CATALOG-AVAILABILITY observation only; it says nothing about which backend served any given request.",
+    "cost_note": "This dump lands in every run/turn_NN_native.json via screen(). ~21.9 KB of noise per turn. It contains no secret material and passed screen() cleanly."
+  },
+  "served_model_attestation": {
+    "status": "NOT_ATTESTABLE_FROM_THIS_SURFACE",
+    "requested_model": "gpt-6-astra",
+    "catalog_availability": "OBSERVED_PRESENT",
+    "served_model": "UNKNOWN",
+    "provider_fallback": "UNKNOWN",
+    "detail": "The codex exec --json event stream carries NO model identifier -- thread.started, turn.started, item.completed and turn.completed contain none. research_loop.py already records served_model='UNKNOWN' for this reason; that is honest, not a defect introduced by the amendment. What IS established: the request pins -c model=\"gpt-6-astra\" and that id is present in the account catalogue. CORRECTION 2026-09-11: the earlier trailing inference -- that this showed the API did not silently substitute a fallback -- overreached and is WITHDRAWN. A catalogue listing attests account entitlement, not serving identity, and cannot rule out provider-side aliasing or fallback for a particular request. Both served_model and provider_fallback remain UNKNOWN. See ERRATA/ERRATA.md item E2."
+  }
+}

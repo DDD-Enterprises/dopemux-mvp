@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "defect_id": "DEFECT-001-NARRATION-PREFACE-COUNT",
+  "recorded_utc": "2026-09-11",
+  "status": "RECORDED_NOT_APPLIED",
+  "why_not_applied": "shared_contracts/message_arity.py is a RECORD, not a claim. It is the exact module Route D imported during attempt 3. Editing it here would make this bundle misrepresent what was in force during a run it is evidence for. The fix belongs in the successor working tree, applied under the operator's arity-repair ratification decision (SUPERVISOR_RETURN.json -> OPEN_ITEMS_FOR_THE_SUPERVISOR -> ARITY_REPAIR_RATIFICATION), not by rewriting published evidence.",
+  "raised_by": "PR #1341 review thread PRRT_kwDOPyIw986hQ8zR (copilot-pull-request-reviewer), shared_contracts/message_arity.py:63.",
+  "component": {
+    "published_path": "shared_contracts/message_arity.py",
+    "working_tree_path": "W01/message_arity.py",
+    "function": "reconcile(texts, accepts=None)",
+    "sha256_of_published_file_at_bc4249ee": "63822f2772d950d299be6271abccfc06c830a3c8e15b50c56c9582233dc088fc"
+  },
+  "defect": {
+    "statement": "In the output-contract-in-force branch, reconcile() returns len(kept) - 1 as narration_preface_count. That is the count of all NON-selected messages, not the count of messages PRECEDING the selected one. When the schema-conforming item is not last, suffix narration is mislabelled as a prefix.",
+    "severity": "LOW_LATENT",
+    "class": "INACCURATE_ORDERING_METADATA",
+    "affects": "Receipt metadata only. Selection of the conforming message, the Ambiguous conditions, and each route's failure taxonomy are all unaffected."
+  },
+  "reproduction": {
+    "method": "A COPY of the published module was imported in a scratchpad with python3 -B and PYTHONDONTWRITEBYTECODE=1. The published file was not imported and no __pycache__ was created anywhere in this tree.",
+    "accepts": "json.loads succeeds",
+    "cases": [
+      {"messages": ["Let me search for that.", "{\"action\":{\"kind\":\"final\"}}"], "reported": 1, "true_preface_count": 1, "verdict": "CORRECT"},
+      {"messages": ["{\"action\":{\"kind\":\"final\"}}", "Hope that helps!"], "reported": 1, "true_preface_count": 0, "verdict": "WRONG"},
+      {"messages": ["thinking...", "{\"action\":{\"kind\":\"final\"}}", "done!"], "reported": 2, "true_preface_count": 1, "verdict": "WRONG"}
+    ]
+  },
+  "blast_radius_in_this_bundle": {
+    "verdict": "ZERO. No committed receipt carries a wrong narration_preface_count.",
+    "reasoning": [
+      "Attempt 3 (the only run in which the repaired module was live for all six turns) emitted zero narration -- every turn had exactly one agent_message, so kept == 1 and len(kept)-1 == 0, which is correct.",
+      "Attempt 1 turn 3 -- the only real two-message turn ever observed -- had the shape [prose preface, conforming JSON], i.e. the conforming item LAST. For that shape len(kept)-1 is correct, and it is the case the regression fixture covers. It also predates the repair and wrote no receipt.",
+      "Therefore the defect is latent: it has never been reached by observed data."
+    ]
+  },
+  "fix_for_the_successor": {
+    "change": "Track the index of the single conforming item and return the number of kept messages that precede it.",
+    "sketch": "for i, text in enumerate(kept): ... collect (i, text) in conforming ... ; idx, chosen = conforming[0]; return chosen, len(kept), idx",
+    "also": "Consider reporting narration_suffix_count alongside it, so ordering evidence is complete rather than merely correct.",
+    "contract_impact": "shared_contracts/W01_ARITY_RECONCILIATION_CONTRACT.json documents reconcile()'s return tuple and must be amended in the same change.",
+    "parity_note": "Route A and Route D import this ONE module by absolute path, so a single corrected module keeps parity by construction. Do not fork or locally re-implement it."
+  }
+}

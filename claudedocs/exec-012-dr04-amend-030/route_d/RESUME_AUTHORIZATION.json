@@ -1,0 +1,75 @@
+{
+  "A_D_PARITY": "PASS",
+  "EXEC_012_PRELAUNCH": "PASS",
+  "ISOLATION": "PASS",
+  "ROUTE_D_LAUNCH_SURFACE": "PASS",
+  "amendment_030": {
+    "argv_change_reason": "--ignore-user-config is part of the frozen cli_flags, so a config.toml [model_providers.openai-api] block would be ignored by the child. The provider MUST therefore be supplied as -c overrides, which necessarily changes the derived argv. Recorded as PREDECESSOR -> SUCCESSOR, not hidden.",
+    "argv_changed": true,
+    "authority": "Operator amendment 2026-09-10: move Routes A and D together to API-metered inference because the ChatGPT-plan allowance is exhausted until 2026-09-15 17:47.",
+    "character": "AUTH_AND_BILLING_PATH_ONLY",
+    "code_delta_in_route_d": "ONE line: OPENAI_API_KEY added to research_loop.native_reason()'s child env dict, because Codex resolves model_providers.openai-api.env_key from the CHILD environment. No route logic changed.",
+    "executed_on": "A REVERTIBLE COPY at /private/tmp/DMX-DR04-EXEC-012-AMEND-030. The audited original /private/tmp/DMX-DR04-EXEC-012-REPAIR-028 is untouched.",
+    "parity_preserved": "A and D import the SAME amended W01 profile file, so A_D_CONFIG_BYTES_IDENTICAL still holds by construction.",
+    "predecessor_w01_argv_sha256": "70e13253cc12a74663e1382942494caf34bd5f240556c4f6d9b3f565a013148f",
+    "predecessor_w01_profile_sha256": "c856e538b57edbdfcdd3eaf85cde046044427adcc984581794316be031b75174",
+    "route_tuple": {
+      "auth_mode": "API_KEY",
+      "billing_mode": "API_METERED",
+      "model": "gpt-6-astra",
+      "native_effort": "high",
+      "provider_path": "openai-api",
+      "runner": "Codex CLI"
+    }
+  },
+  "attempt_02_authorization": {
+    "attempt_01_evidence_preserved_at": "W03/ROUTE_D/attempt_01/{run,loop_state,broker_state}",
+    "attempt_01_outcome": "BLOCKED_CODEX_COMPLETION_AMBIGUOUS at turn 3 (two agent_message items). See AMEND_030_EVIDENCE/D_DISPATCH_RESULT.json.",
+    "attempt_01_spend_usd_estimated": 2.33,
+    "authority": "Operator decision 2026-09-10, option 'b': authorize an arity repair applied identically to both harnesses, plus a second Route D attempt, plus Route A.",
+    "regression_evidence": "attempt_01 turn 3 replayed offline through the patched path now reconciles to narration_preface_count=1 and a valid retrieve action; turns 1-2 unchanged at 0.",
+    "repair_applied": "W01/message_arity.py, imported by absolute path by BOTH routes. See W01/W01_ARITY_RECONCILIATION_CONTRACT.json.",
+    "reservations": "attempt_01's ledgers were ARCHIVED, never deleted or rewound. RETRIEVAL_BUDGET_BINDING.ceiling_semantics says 'Fresh benchmark reservations, never reuse or reset historical reservations' -- attempt 2 is a freshly authorized run and so receives fresh reservations, while attempt 1's spent reservations survive as evidence."
+  },
+  "attempt_03_authorization": {
+    "attempt_02_outcome": "BLOCKED_ARTIFACT_ALREADY_EXISTS after a clean turn 1 -- lead error, an incomplete archive that missed evidence/. See AMEND_030_EVIDENCE/D_DISPATCH_RESULT_ATTEMPT_02.json.",
+    "authority": "Operator 2026-09-10, answer '1 and 2': a third Route D attempt is authorized.",
+    "complete_clear_set_now_derived_from_source": [
+      "run/",
+      "loop_state/",
+      "broker_state/",
+      "evidence/"
+    ],
+    "evidence_preserved": {
+      "attempt_01": "ROUTE_D/attempt_01/{run,loop_state,broker_state,evidence}",
+      "attempt_02": "ROUTE_D/attempt_02/{run,loop_state,broker_state}"
+    },
+    "preflight": "preflight_d.py harvests every persist() target and Ledger root from the source and asserts all four directories are empty before dispatch."
+  },
+  "authority": "/private/tmp/DMX-DR04-EXEC-012-AMEND-030/TASK_PACKET.md",
+  "authority_consumed": false,
+  "benchmark_id": "DMX-DR04-EXEC-012",
+  "codex_no_tools_isolation": "SUPERSEDED_BY_028",
+  "fallback": "NO",
+  "frozen_prompt_sha256": "ce17a2fa9281c11d36dc5e8bd83d18d7c57b86ec41b181675588e716c26f1e9b",
+  "gate_basis": "Superseded record. The predecessor correctly refused to attest an unobtainable fresh-runtime no-tools property. REPAIR-028 replaced that requirement with a common A/D isolation profile, parity, known-surface disablement and a runtime zero-unapproved-tool-event requirement. ISOLATION=PASS here attests ONLY the amended, offline-provable prelaunch property.",
+  "historical_permit_reused": false,
+  "install_gate": "INSTALLED 2026-09-10T17:48Z by MACRO-DMX-DR04-EXEC-012-LIVE-DISPATCH-029 lead under operator grant ROUTE_D_AUTHORIZATION_RECORD_INSTALL=AUTHORIZED.",
+  "isolation_basis": "PASS_BY_CONSTRUCTION: the child argv this harness constructs is byte-identical to the frozen W01 common A/D isolation profile derivation. This is NOT a claim that a fresh native no-tools attestation was obtained; no such CLI surface exists. That requirement was superseded by MACRO-DMX-DR04-EXEC-012-LAUNCH-CONTRACT-REPAIR-028. AMEND-030: still true - the child argv is byte-identical to the AMENDED frozen W01 profile derivation (argv_sha256 64ff8541ff2e0fba3cbe0a20ca1ffa16eaae0081d921482ba2ab1c06a1487bd6), and every tool-suppression flag is unchanged.",
+  "isolation_contract": "COMMON_CODEX_ISOLATION_PROFILE_028",
+  "launch_admission": "ADMITTED_UNDER_AMENDED_CONTRACT_028_PLUS_OPERATOR_AMENDMENT_030",
+  "packet_id": "MACRO-DMX-DR04-EXEC-012-RESEARCH-W04",
+  "research_date_utc": "2026-09-10",
+  "research_jobs_authorized": 1,
+  "route": "D",
+  "runtime_tool_policy": "PENDING_ACTUAL_RUN",
+  "status": "INSTALLED",
+  "supervisor_authorization_provenance": "supervisor_authorized and research_jobs_authorized are CARRIED FORWARD unchanged from the MACRO-DMX-DR04-EXEC-012-RESEARCH-W04 record. REPAIR-028 issues NO new research authorization; RESEARCH_AUTHORIZED_BY_028=NO.",
+  "supervisor_authorized": true,
+  "surface_checksums_sha256": "9f74e577d6d791d4c6d5f91261554ecb11b5e5d36ba6082ebc07c7e81883391a",
+  "unapproved_native_tool_event_count_required": 0,
+  "w01_argv_sha256": "64ff8541ff2e0fba3cbe0a20ca1ffa16eaae0081d921482ba2ab1c06a1487bd6",
+  "w01_arity_module_sha256": "63822f2772d950d299be6271abccfc06c830a3c8e15b50c56c9582233dc088fc",
+  "w01_classifier_sha256": "7d6583be8c61d9fac9deb0bae32b15da2411100253c87e7703f7331f70688039",
+  "w01_profile_sha256": "333d4fc50314de6688cae96851680506993a1edeff1600b199593e4cddde1fb6"
+}

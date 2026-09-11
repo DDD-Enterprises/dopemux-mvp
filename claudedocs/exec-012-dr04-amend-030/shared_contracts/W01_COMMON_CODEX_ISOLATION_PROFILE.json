@@ -1,0 +1,88 @@
+{
+  "schema_version": "1.0",
+  "profile_id": "EXEC012-COMMON-CODEX-ISOLATION-030-APIROUTE",
+  "packet_id": "MACRO-DMX-DR04-EXEC-012-LIVE-DISPATCH-029 (operator amendment: A/D -> OpenAI API route)",
+  "consumed_by": [
+    "ROUTE_A",
+    "ROUTE_D"
+  ],
+  "codex_cli_version_observed": "codex-cli 0.153.4",
+  "amendment": {
+    "supersedes": "FRESH_NATIVE_RUNTIME_NO_TOOLS_ATTESTATION=REQUIRED",
+    "with": [
+      "COMMON_CODEX_ISOLATION_PROFILE=REQUIRED",
+      "A_D_ISOLATION_PROFILE_PARITY=REQUIRED",
+      "KNOWN_NATIVE_TOOL_SURFACES_DISABLED=REQUIRED",
+      "UNAPPROVED_NATIVE_TOOL_CALLS_AT_RUNTIME=0_REQUIRED"
+    ],
+    "character": "BENCHMARK_METHOD_AMENDMENT",
+    "explicitly_not_claimed": "That Codex exposes literally zero latent tools."
+  },
+  "cli_flags": [
+    "exec",
+    "--ignore-user-config",
+    "--ignore-rules",
+    "--ephemeral",
+    "--skip-git-repo-check",
+    "--sandbox",
+    "read-only",
+    "--json",
+    "--color",
+    "never",
+    "--strict-config"
+  ],
+  "config_overrides": {
+    "model_provider": "openai-api",
+    "model": "gpt-6-astra",
+    "model_reasoning_effort": "high",
+    "approval_policy": "never",
+    "web_search": "disabled",
+    "features.shell_tool": false,
+    "features.unified_exec": false,
+    "features.js_repl": false,
+    "features.apps": false,
+    "features.multi_agent": false,
+    "project_doc_max_bytes": 0,
+    "skills.include_instructions": false,
+    "include_apps_instructions": false,
+    "history.persistence": "none",
+    "mcp_servers": {},
+    "model_providers.openai-api.name": "OpenAI API",
+    "model_providers.openai-api.base_url": "https://api.openai.com/v1",
+    "model_providers.openai-api.env_key": "OPENAI_API_KEY",
+    "model_providers.openai-api.wire_api": "responses",
+    "model_providers.openai-api.requires_openai_auth": false
+  },
+  "runtime_requirements": {
+    "EXPLICIT_MCP_SERVERS": "NONE",
+    "PROJECT_INSTRUCTIONS_LOADED": "NO",
+    "PROJECT_SKILLS_LOADED": "NO",
+    "REPOSITORY_CWD": "NO",
+    "repository_root_forbidden": "/Users/hue/code/dopemux-mvp",
+    "enforced_by": "profile_argv.assert_repository_cwd_forbidden"
+  },
+  "derivation": {
+    "module": "profile_argv.py",
+    "function": "isolation_argv",
+    "rule": "list(cli_flags) then, for each key in sorted(config_overrides), ['-c', key+'='+json.dumps(value,separators=(',',':'),sort_keys=True)]"
+  },
+  "amendment_030": {
+    "supersedes_profile_id": "EXEC012-COMMON-CODEX-ISOLATION-028",
+    "predecessor_argv_sha256": "70e13253cc12a74663e1382942494caf34bd5f240556c4f6d9b3f565a013148f",
+    "authority": "Operator amendment: move A and D together to provider_path=OpenAI API, auth_mode=API_KEY, billing_mode=API_METERED, because the ChatGPT-plan allowance is exhausted until 2026-09-15 17:47.",
+    "unchanged": [
+      "runner=Codex CLI",
+      "model=gpt-6-astra",
+      "model_reasoning_effort=high",
+      "all sandbox/feature/tool-suppression flags",
+      "web_search=disabled",
+      "mcp_servers={}"
+    ],
+    "changed": [
+      "model_provider: openai -> openai-api",
+      "added model_providers.openai-api.{name,base_url,env_key,wire_api,requires_openai_auth}"
+    ],
+    "why_a_distinct_provider_id": "Operator instruction: do NOT override the built-in [model_providers.openai] entry again - that produced a prior built-in-provider override conflict. The API route gets its own provider id.",
+    "parity": "A and D import THIS one file, so both derive the identical argv by construction. The delta between them remains solely GPTR+Voyage vs direct Codex."
+  }
+}

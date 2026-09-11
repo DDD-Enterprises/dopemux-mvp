@@ -1,0 +1,11 @@
+M	claudedocs/exec-012-dr04-amend-030/CHECKPOINT.md
+A	claudedocs/exec-012-dr04-amend-030/ERRATA/DEFECT-001-narration-preface-count.json
+A	claudedocs/exec-012-dr04-amend-030/ERRATA/DEFECT-002-unknown-tool-event-contract.json
+A	claudedocs/exec-012-dr04-amend-030/ERRATA/DISCLOSURE_RECONFIRMATION.md
+A	claudedocs/exec-012-dr04-amend-030/ERRATA/ERRATA.md
+A	claudedocs/exec-012-dr04-amend-030/ERRATA/PATH_MAP.json
+A	claudedocs/exec-012-dr04-amend-030/ERRATA/ROUTE_RECORD.json
+M	claudedocs/exec-012-dr04-amend-030/README.md
+M	claudedocs/exec-012-dr04-amend-030/SUPERVISOR_HANDOFF.md
+M	claudedocs/exec-012-dr04-amend-030/SUPERVISOR_RETURN.json
+M	claudedocs/exec-012-dr04-amend-030/evidence/D_APIROUTE_PROBE.json

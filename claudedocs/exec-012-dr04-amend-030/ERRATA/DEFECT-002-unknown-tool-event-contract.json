@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "defect_id": "DEFECT-002-UNKNOWN-TOOL-EVENT-VERDICT-GAP",
+  "recorded_utc": "2026-09-11",
+  "status": "RECORDED_NOT_APPLIED",
+  "why_not_applied": "shared_contracts/W01_TOOL_EVENT_CLASSIFIER.json is a FROZEN 028 artifact (classifier_id EXEC012-TOOL-EVENT-CLASSIFIER-028), sealed before amendment 030 and hash-covered by the 028 manifest. Amending it inside an evidence bundle would both misrepresent the contract that was in force during attempts 1-3 and diverge from the sealed original. It must be amended at the 028 surface under supervisor authority, as a versioned -031 classifier.",
+  "raised_by": "PR #1341 review (P2, fail-closed gap). Not raised by any GitHub review thread.",
+  "component": {
+    "published_path": "shared_contracts/W01_TOOL_EVENT_CLASSIFIER.json",
+    "working_tree_path": "W01/W01_TOOL_EVENT_CLASSIFIER.json",
+    "field": "verdict_contract"
+  },
+  "defect": {
+    "statement": "The file declares policy = FAIL_CLOSED_ALLOWLIST and its policy_note states that anything not explicitly allowlisted is an unapproved native tool event. But verdict_contract enumerates only two outcomes -- on_any_forbidden_event and on_zero_forbidden_events. There is no explicit outcome for an event that is NEITHER allowlisted NOR on the forbidden list: a new or renamed envelope or item type from a future codex build.",
+    "severity": "MEDIUM_CONTRACT_COMPLETENESS",
+    "class": "UNDERSPECIFIED_FAIL_CLOSED_CONTRACT",
+    "risk": "A reader implementing to the verdict_contract alone would route an UNKNOWN item type into the on_zero_forbidden_events path and emit RUNTIME_TOOL_POLICY = PASS -- precisely the silent-pass that the stated policy exists to prevent. The prose forbids it; the machine-readable contract does not encode it.",
+    "note_on_severity": "This is a contract-text gap. It is NOT evidence that any run mis-classified anything -- see verified_behaviour below."
+  },
+  "verified_behaviour_in_this_bundle": {
+    "verdict": "NO OBSERVED MISCLASSIFICATION.",
+    "evidence": "Across all ten live turns the only envelope types observed were thread.started, turn.started, item.completed and turn.completed, and the only item types were agent_message and reasoning. Every one is on the allowlist, so the unknown-event path was never exercised. UNAPPROVED_NATIVE_TOOL_EVENT_COUNT = 0 remains a true statement about these runs.",
+    "limitation": "Because the path was never exercised, this bundle contains no evidence either way about what the implementations actually do with an unknown type. The gap is in the contract; whether the code fails closed is UNKNOWN from these artifacts and must be verified from source before the next dispatch."
+  },
+  "fix_for_the_successor": {
+    "change": "Issue a -031 classifier adding an explicit third verdict branch.",
+    "proposed_clause": {
+      "on_any_unknown_event": {
+        "applies_to": "Any envelope type not in allowed_envelope_types and not in forbidden_envelope_types, or any item type not in allowed_item_types and not in forbidden_item_types.",
+        "ROUTE_STATUS": "FAIL_UNKNOWN_EVENT_TYPE",
+        "RERUN": "NO",
+        "RUNTIME_TOOL_POLICY": "FAIL",
+        "rationale": "Fail-closed allowlist. An unrecognised type is treated as unapproved, never as absence of tool use."
+      }
+    },
+    "also": "Tighten on_zero_forbidden_events so RUNTIME_TOOL_POLICY = PASS requires BOTH zero forbidden events AND zero unknown events.",
+    "verification_required_first": "Read the classify_events implementation in Route A (W02/harness/adapter/core.py) and Route D (research_loop.py) and confirm each already rejects unknown types. If either silently ignores them, this is an implementation defect, not merely a contract gap, and its severity rises."
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "title": "Two preventable claim burns in one session, same root shape",
+  "incidents": [
+    {"route": "D", "attempt": 2, "cost_usd": 0.60,
+     "error": "Archived run/, loop_state/, broker_state/ but missed evidence/ -> ARTIFACT_ALREADY_EXISTS.",
+     "validated": "that the three directories I knew about were clear",
+     "not_validated": "the COMPLETE set of persist() targets, derivable from the source in one grep"},
+    {"route": "A", "attempt": 1, "cost_usd": 0.00,
+     "error": "Authorization lacked voyage_service_label -> KeyError after the launch claim was written.",
+     "validated": "the authorization against validate_authorization, which PASSED",
+     "not_validated": "the authorization against integration()'s live branch, which reads a key no gate checks"}
+  ],
+  "common_root": "Both times I validated against ONE layer and treated that as sufficient. A passing gate is evidence the gate is satisfied, not evidence the run will proceed. Where a one-shot claim is written before the real work begins, the pre-flight must model the CONSUMER path end to end, derived from the source rather than from notes or memory.",
+  "corrective_rule": "Before any dispatch that writes a one-shot claim: (1) grep the source for every write target and every input-key access on the path AFTER the claim; (2) satisfy or clear each one; (3) only then dispatch. Cost of the check: one grep. Cost of skipping it: a burned attempt.",
+  "what_went_right": "Both failures were caught immediately, cost little or nothing, consumed no research work, and left complete evidence. The probe-before-dispatch discipline that preceded Route D attempt 1 is the pattern to keep -- it just needs to cover harness state and input keys, not only the provider path."
+}

@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "route": "D",
+  "DISPATCH": "LIVE_EXECUTED",
+  "OUTCOME": "BLOCKED_CODEX_COMPLETION_AMBIGUOUS",
+  "research_attempt_consumed": true,
+  "rerun_authorized": false,
+  "started_utc": "2026-09-10T17:57:27Z",
+  "ended_utc": "2026-09-10T17:58:16Z",
+  "elapsed_s": 48.9,
+  "route_tuple": {
+    "runner": "Codex CLI 0.153.4",
+    "provider_path": "openai-api",
+    "model": "gpt-6-astra",
+    "native_effort": "high",
+    "auth_mode": "API_KEY",
+    "billing_mode": "API_METERED"
+  },
+  "executed_on": "/private/tmp/DMX-DR04-EXEC-012-AMEND-030 (revertible copy). The audited original /private/tmp/DMX-DR04-EXEC-012-REPAIR-028 was NOT touched by this dispatch.",
+  "what_actually_happened": [
+    "Turn 1: 1 agent_message, pure JSON, action=retrieve/web_search. Broker reserved web_search_01. CLEAN.",
+    "Turn 2: 1 agent_message, pure JSON, action=retrieve/web_fetch. Broker reserved web_fetch_01. CLEAN.",
+    "Turn 3: returncode 0, turn.completed present, ZERO forbidden events -- but TWO agent_message items: a natural-language preface ('The supplied evidence distinguishes documented selectors from local availability...') followed by a perfectly valid schema-conforming retrieve action.",
+    "research_loop.native_reason() requires len(messages) == 1, so it raised CODEX_COMPLETION_AMBIGUOUS.",
+    "The enclosing except in execute() then called ledger.stop(), writing loop_state/STOP.json. Route D is now terminally stopped and its one authorized research job is spent."
+  ],
+  "FAILURE_CLASSIFICATION": {
+    "is_unapproved_tool_use": false,
+    "unapproved_native_tool_event_count": 0,
+    "detail": "Both items were type=agent_message, which IS on the W01 classifier allowlist. classify_events() raised nothing. The stop came from the route's own stricter arity rule (exactly one agent_message), not from the tool-isolation contract.",
+    "is_model_quality_failure": false,
+    "detail_2": "The model was performing the benchmark correctly: three sensible, well-formed research actions in a row, valid against OUTPUT_SCHEMA and validate_action. It simply narrated its intent before emitting the object on turn 3.",
+    "true_cause": "HARNESS_ARITY_BRITTLENESS. SYMPTOM (observed): turn 3 produced two agent_message items, one natural-language preface and one schema-conforming JSON object, and the harness requires exactly one. MECHANISM (NOT established): whether Codex passes --output-schema to the Responses API as a strict text.format constraint or merely as an instruction is not observable from the event stream, so WHY prose was surfaced as its own item is unknown. Recorded as INFERENCE_FROM_EVENT_STREAM, not as a provider assertion.",
+    "nondeterministic": "Yes -- turns 1 and 2 produced exactly one message under an identical harness. This is a per-turn coin flip, not a systematic incompatibility."
+  },
+  "AMENDMENT_CAUSATION_ASSESSMENT": {
+    "verdict": "NOT_ESTABLISHED_AS_AMENDMENT_CAUSED",
+    "reasoning": "There is no ChatGPT-plan-route run of Route D to compare against -- 028 deliberately never installed D's authorization, so this is the FIRST time Route D has ever executed. The multi-message behaviour therefore cannot be attributed to the API-metered path; it may be a property of the model/CLI on any provider path. Do not record this as an amendment defect.",
+    "what_the_amendment_DID_prove": "The openai-api provider path works end to end: auth from the child env, --output-schema round-trip, clean tool isolation, correct broker retrieval, and three successful model turns."
+  },
+  "ROUTE_A_CONTAGION_WARNING": {
+    "severity": "BLOCKING",
+    "finding": "Route A has the IDENTICAL arity rule at W02/harness/adapter/core.py:367 -- `if state != 3 or len(texts) != 1 or not texts[0].strip(): raise Rejected('MISSING_COMPLETION_OR_NONEXACT_OUTPUT')`.",
+    "implication": "Route A's one-shot attempt is exposed to exactly the same coin flip. Dispatching A as-is risks burning it on a narration event that is neither a tool violation nor a model failure.",
+    "action_taken": "Route A was NOT dispatched. Its attempt remains UNCONSUMED."
+  },
+  "SPEND": {
+    "token_counts_are_exact_from_turn_completed_usage": true,
+    "price_per_million_is_ASSUMED_not_verified": "$10 input / $50 output",
+    "probe": {
+      "input_tokens": 10902,
+      "output_tokens": 21
+    },
+    "turn_01": {
+      "input_tokens": 58065,
+      "output_tokens": 386,
+      "reasoning_output_tokens": 264
+    },
+    "turn_02": {
+      "input_tokens": 70858,
+      "output_tokens": 630,
+      "reasoning_output_tokens": 405
+    },
+    "turn_03": {
+      "input_tokens": 85082,
+      "output_tokens": 558,
+      "reasoning_output_tokens": 378
+    },
+    "totals": {
+      "input_tokens": 224907,
+      "output_tokens": 1595,
+      "cached_input_tokens": 0
+    },
+    "estimated_usd": 2.33,
+    "operator_ceiling_usd": 10,
+    "ceiling_enforcement": "CONTRACTUAL_ONLY -- there is no dollar cap anywhere in the code, only limits['codex']=6."
+  },
+  "COST_FINDING_PROMPT_CACHING_NEVER_HITS": {
+    "observed": "Every turn reported cache_write_input_tokens ~= input_tokens and cached_input_tokens = 0. The cache was written three times and read zero times.",
+    "probable_cause": "Each loop turn is a separate `codex exec --ephemeral` invocation with a fresh thread_id (01a08c74, 01a08c78, ...). Codex most likely scopes the Responses API prompt_cache_key per thread, so a new thread cannot hit the prior thread's cache entry.",
+    "consequence": "Every turn pays FULL input price even though the ~233 KB acceptance_schema prefix is byte-identical across turns. A full 6-turn run would have cost roughly 550-600K input tokens (~$5.5-6.0), not the ~$1.5 a caching model predicts.",
+    "status": "INFERENCE from the usage counters, not a provider assertion."
+  },
+  "artifacts_written_by_the_route": [
+    "run/turn_01_request.json",
+    "run/turn_01_native.json",
+    "run/turn_01_receipt.json",
+    "run/turn_02_request.json",
+    "run/turn_02_native.json",
+    "run/turn_02_receipt.json",
+    "run/turn_03_request.json",
+    "run/turn_03_native.json",
+    "loop_state/{research_job_01,codex_01,codex_02,codex_03,STOP}.json",
+    "broker_state/{SESSION,web_search_01,web_fetch_01}.json"
+  ],
+  "NOT_produced": [
+    "run/RAW_RESEARCH.md",
+    "run/SOURCE_CAPTURE.json"
+  ],
+  "turn_03_receipt_absent_explanation": "native_reason() raised before execute() reached its persist() call, so turn 3 has a native.json but no receipt.json. Its usage was recovered by parsing turn_03_native.json directly and IS included in the totals above."
+}

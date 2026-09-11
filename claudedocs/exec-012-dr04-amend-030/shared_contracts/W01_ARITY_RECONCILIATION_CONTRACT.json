@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0",
+  "contract_id": "EXEC012-COMMON-ARITY-RECONCILIATION-030",
+  "applies_to": ["ROUTE_A", "ROUTE_D"],
+  "character": "BENCHMARK_METHOD_AMENDMENT",
+  "authority": "Operator decision 2026-09-10 (option 'b'): authorize an arity repair applied identically to both harnesses, plus a second Route D attempt, plus Route A.",
+  "module": "W01/message_arity.py",
+  "module_sha256": "63822f2772d950d299be6271abccfc06c830a3c8e15b50c56c9582233dc088fc",
+  "parity_mechanism": "IDENTICAL_BY_CONSTRUCTION. Both routes import this ONE module by ABSOLUTE path -- Route A via core._load_shared_module, Route D via importlib.util.spec_from_file_location -- exactly the mechanism W01/profile_argv.py already establishes for the isolation argv. Neither route may fork, copy or locally re-implement reconcile().",
+
+  "problem": {
+    "observed_utc": "2026-09-10T17:58Z",
+    "where": "Route D, research turn 3 of attempt 1",
+    "symptom": "One turn produced TWO agent_message items: a natural-language preface ('The supplied evidence distinguishes documented selectors from local availability... I'll use the broker to seek official evidence for those gaps.') followed by a valid, schema-conforming retrieve action.",
+    "why_it_stopped_the_route": "Both harnesses required exactly one agent_message per turn -- research_loop.native_reason (`len(messages) != 1`) and adapter/core.py:367 (`len(texts) != 1`).",
+    "what_it_was_NOT": "Not unapproved tool use (both items were type=agent_message, which IS on the W01 classifier allowlist, and classify_events raised nothing). Not a model-quality failure (all three of the turn's actions were well-formed and schema-valid).",
+    "nondeterministic": "Turns 1 and 2 of the same run produced exactly one message each. Observed rate: 1 narration turn in 3."
+  },
+
+  "RULE": {
+    "statement": "A turn's output is the ordered sequence of its non-empty agent_message items, reconciled against whatever output contract is in force for that call.",
+    "output_contract_in_force": "Exactly one item must satisfy the contract; it is the output, and the others are narration, discarded from the output but preserved in the raw event stream. Zero, or two or more, is genuinely ambiguous and fails.",
+    "no_output_contract_in_force": "The output is all non-empty items joined in stream order by a blank line. Lossless.",
+    "unchanged_by_this_amendment": [
+      "The W01_TOOL_EVENT_CLASSIFIER.json fail-closed allowlist, in full.",
+      "The requirement that turn.completed be present.",
+      "UNAPPROVED_NATIVE_TOOL_EVENT_COUNT semantics.",
+      "Both routes' original error codes: reconcile() raises a neutral Ambiguous, which each route catches and re-raises as its OWN pre-existing code (CODEX_COMPLETION_AMBIGUOUS / MISSING_COMPLETION_OR_NONEXACT_OUTPUT). The failure taxonomy is untouched."
+    ],
+    "new_receipt_fields": ["agent_message_count", "narration_preface_count"]
+  },
+
+  "instantiation": {
+    "ROUTE_D": "Always has a contract in force: the text must strict-parse and validate against ROUTE_D/OUTPUT_SCHEMA.json.",
+    "ROUTE_A_schema_mode": "core.invoke(prompt, output_schema=SEARCH_PLAN_SCHEMA.json) -- the text must parse as JSON and satisfy generic_support.validate_search_request, the immutable search-plan contract.",
+    "ROUTE_A_free_form": "core.invoke(prompt) from CodexProvider.get_chat_response, GPT Researcher's LLM interface. No contract in force, so the join branch applies.",
+    "note": "The rule is one rule. The CONTRACT it reconciles against is legitimately route-specific and always was -- that asymmetry predates this amendment."
+  },
+
+  "METHOD_DECISION_join_not_last": {
+    "decision": "In free-form mode, JOIN all non-empty messages in stream order. Do NOT take the LAST message.",
+    "rejected_alternative": "Take the last agent_message as the answer and discard earlier ones as preface.",
+    "reasoning": "Both options preserve the raw evidence in the run artifacts, so neither loses data irrecoverably. They differ in the VISIBILITY of their failure mode. If JOIN is wrong, narration is concatenated into Route A's research report -- a defect that is visible in the output and that a scorer can strip, given narration_preface_count and agent_message_count. If LAST is wrong, a content-bearing earlier message is silently dropped and the report simply reads as if it was never written -- a defect invisible in the output and recoverable only by returning to the raw event stream. Under genuine uncertainty about which item carries the substance, choose the lossless option whose failure announces itself.",
+    "status": "This is the ONE genuine benchmark-method judgement in this repair. Everything else is mechanical. A scorer or auditor who disagrees should re-score from the preserved raw streams rather than assume the joined text was the model's single intended answer."
+  },
+
+  "honesty_notes": [
+    "This amendment RELAXES a completion criterion. If 'exactly one agent_message per turn' was an intended compliance criterion of the benchmark rather than an implementation assumption, then this repair changes what is being measured, and the operator authorized it knowing that.",
+    "Applying it to only one route would break A_D parity, which is why it is applied to both via one shared module even though only Route D has been observed failing.",
+    "It is NOT established that the API-metered provider path causes the narration. Route D had never executed before attempt 1, so there is no ChatGPT-plan baseline to compare against."
+  ]
+}
