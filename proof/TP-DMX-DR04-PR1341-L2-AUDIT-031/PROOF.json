@@ -1,0 +1,114 @@
+{
+  "packet_id": "TP-DMX-DR04-PR1341-L2-AUDIT-031",
+  "branch": "evidence/dmx-dr04-exec-012-amend-030",
+  "base": "main",
+  "base_sha": "640f0a2b56d795442455b0ecd98cef7c7d22703e",
+  "head_sha": "d39d06bcb75fa2dcb5fac3de779e45c1cf0b502f",
+  "generated_at": "2026-09-11T15:05:19Z",
+  "kind": "evidence_publication_audit",
+  "risk_lane": "L2",
+  "implementer": "Claude Code claude-opus-5 lead executed W01/W02 (custody verification, zero-call auditor qualification, audit-prompt authorship, single AGY dispatch); Claude Code claude-sonnet-5 subagent executed W03/W04 (canonical proof materialization, signing, proof-only successor commit); see review_bundle/LEAD_ROUTE_DEVIATION.json.",
+  "audited_files": [
+    "claudedocs/exec-012-dr04-amend-030/CHECKPOINT.md",
+    "claudedocs/exec-012-dr04-amend-030/ERRATA/DEFECT-001-narration-preface-count.json",
+    "claudedocs/exec-012-dr04-amend-030/ERRATA/DEFECT-002-unknown-tool-event-contract.json",
+    "claudedocs/exec-012-dr04-amend-030/ERRATA/DISCLOSURE_RECONFIRMATION.md",
+    "claudedocs/exec-012-dr04-amend-030/ERRATA/ERRATA.md",
+    "claudedocs/exec-012-dr04-amend-030/ERRATA/PATH_MAP.json",
+    "claudedocs/exec-012-dr04-amend-030/ERRATA/ROUTE_RECORD.json",
+    "claudedocs/exec-012-dr04-amend-030/README.md",
+    "claudedocs/exec-012-dr04-amend-030/SUPERVISOR_HANDOFF.md",
+    "claudedocs/exec-012-dr04-amend-030/SUPERVISOR_RETURN.json",
+    "claudedocs/exec-012-dr04-amend-030/evidence/D_APIROUTE_PROBE.json"
+  ],
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runtime_family": "agy",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  },
+  "validations": [
+    {
+      "name": "record-tier guard",
+      "result": "PASS",
+      "detail": "0 files changed under route_d/ and shared_contracts/ (git diff --name-only bc4249ee d39d06bcb -- claudedocs/exec-012-dr04-amend-030/route_d claudedocs/exec-012-dr04-amend-030/shared_contracts)."
+    },
+    {
+      "name": "ordinary CI",
+      "result": "PASS",
+      "detail": "Ordinary CI green on d39d06bcb."
+    },
+    {
+      "name": "JSON reparse",
+      "result": "PASS",
+      "detail": "72 files reparsed successfully."
+    },
+    {
+      "name": "secret scan",
+      "result": "PASS",
+      "detail": "0 findings."
+    },
+    {
+      "name": "signing preflight",
+      "result": "PASS",
+      "detail": "Signing key present and allow-listed prior to any signing operation."
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-3.8-flash-high --effort high --sandbox --mode plan --print-timeout 20m --output-format json --add-dir /Users/hue/code/dopemux-mvp/.worktrees/exec012-evidence --print=\"$(cat AUDIT_INPUT.md)\"; exact invocation record in review_bundle/AUDIT_INVOCATION.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-DR04-PR1341-L2-AUDIT-031/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-01",
+        "severity": "MEDIUM",
+        "status": "ACCEPTED_RISK",
+        "title": "Public disclosure of account model catalogue",
+        "body": "Nine turn receipts embed the raw /v1/models body (136 model ids each) in a public repo; explicitly operator-accepted 2026-09-11 (DISCLOSURE_DECISION=RECONFIRM_PUBLICATION_UNMODIFIED). POLICY_COMPLIANT=NO -- a bounded operator policy exception, NOT compliance."
+      },
+      {
+        "id": "F-02",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "DEFECT-001 narration_preface_count mislabels suffix narration",
+        "body": "Latent; auditor independently verified all 7 post-repair receipts report narration_preface_count=0 and attempt 1 turn 3 was prefix-shaped, so zero committed receipts carry a wrong value. Recorded unapplied because the target is a record. Non-blocking for an evidence-only PR."
+      },
+      {
+        "id": "F-03",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "DEFECT-002 unknown-event branch absent from fail-closed verdict contract",
+        "body": "Contract-completeness gap in a sealed 028 artifact; unexercised across all 10 live turns; implementation behaviour for unknown types remains UNKNOWN from bundle artifacts. Recorded unapplied. Non-blocking for an evidence-only PR."
+      },
+      {
+        "id": "F-04",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Spend total is a documented floor",
+        "body": "An earlier ~8,235-token cost-floor probe (~$0.08) has no evidence file and may be uncounted; $8.13 is published as a floor against a $10 ceiling."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "F-01: explicitly operator-accepted 2026-09-11 (DISCLOSURE_DECISION=RECONFIRM_PUBLICATION_UNMODIFIED); not a repo-policy compliance claim.",
+      "F-02: demonstrably non-blocking under repo policy for an evidence-only PR -- all 7 post-repair receipts independently verified to report narration_preface_count=0; not operator-accepted, advances on the non-blocking criterion.",
+      "F-03: demonstrably non-blocking under repo policy for an evidence-only PR -- unexercised across all 10 live turns; not operator-accepted, advances on the non-blocking criterion.",
+      "F-04: demonstrably non-blocking under repo policy -- $8.13 is documented as an estimated cost floor against a $10 ceiling; not operator-accepted, advances on the non-blocking criterion."
+    ],
+    "skip_reason": null
+  }
+}
