@@ -102,7 +102,13 @@ def _leaf_type_signature(node: dict, registry: Registry, base_uri: str) -> tuple
 
 
 def _walk_v1_properties(node: dict, prefix: str = "") -> dict[str, dict]:
-    """Flatten every v1 property path -> its schema node (one level of object nesting)."""
+    """Flatten every v1 property path -> its schema node.
+
+    Recurses into nested objects (one level of object nesting per call) and
+    into arrays-of-objects (workstreams[], joins[], alternatives_considered[],
+    upstream_obligations[], allowed_fallbacks[]), using a "name[]." path
+    segment for the latter so array-item properties are covered too.
+    """
     out: dict[str, dict] = {}
     props = node.get("properties", {})
     for name, sub in props.items():
@@ -110,6 +116,10 @@ def _walk_v1_properties(node: dict, prefix: str = "") -> dict[str, dict]:
         out[path] = sub
         if sub.get("type") == "object" and "properties" in sub:
             out.update(_walk_v1_properties(sub, prefix=f"{path}."))
+        elif sub.get("type") == "array":
+            items = sub.get("items")
+            if isinstance(items, dict) and items.get("type") == "object" and "properties" in items:
+                out.update(_walk_v1_properties(items, prefix=f"{path}[]."))
     return out
 
 
@@ -170,13 +180,11 @@ _MACRO_PACKET_ADDED: dict[tuple, set[str]] = {
 _TEMPLATE_CASES = [
     (
         ".control-tower/templates/EXECUTION_BINDING.template.json",
-        "supervisor_macro_packet_not_used",  # placeholder, unused for binding
         "execution_binding.v2.schema.json",
         _EXECUTION_BINDING_ADDED,
     ),
     (
         ".control-tower/templates/SUPERVISOR_MACRO_PACKET.template.json",
-        "supervisor_macro_packet_not_used",
         "macro_packet.v2.schema.json",
         _MACRO_PACKET_ADDED,
     ),
@@ -191,11 +199,11 @@ def _kit_v1_validator(kit_file: str) -> Draft7Validator:
 
 
 @pytest.mark.parametrize(
-    "template_rel,_unused,v2_file,added_map",
+    "template_rel,v2_file,added_map",
     _TEMPLATE_CASES,
     ids=[c[0] for c in _TEMPLATE_CASES],
 )
-def test_template_valid_v1_and_additive_only_v2(template_rel, _unused, v2_file, added_map, registry) -> None:
+def test_template_valid_v1_and_additive_only_v2(template_rel, v2_file, added_map, registry) -> None:
     template = _load(REPO_ROOT / template_rel)
     kit_file = "supervisor_macro_packet.schema.json" if "MACRO_PACKET" in template_rel else "execution_binding.schema.json"
 

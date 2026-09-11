@@ -22,7 +22,7 @@ Schema-valid does not imply authority-valid.
 
 This packet published schemas, fixtures, tests and this document only. It
 performed no runtime implementation, no dispatch, no merge, no activation and no
-credential change, and the implementer invoked no model.
+credential change.
 
 ## Terminology
 
@@ -48,6 +48,12 @@ credential change, and the implementer invoked no model.
 - **FinalityReceipt** - records the terminal state of an independently audited
   packet. It never carries merge or activation authority
   (`merge_authorized` and `activation_authorized` are always `false`).
+  `steward_readiness` *records* the PR Steward's own, separately produced
+  upstream verdict (`schemas/pr_steward/merge_readiness.schema.json`'s
+  `readiness` field, copied in) - it is not a readiness predicate minted by
+  this receipt, and recording it is distinct from the "no readiness,
+  dispatch-eligible, merge-ready or approval predicate" invariant below,
+  which bars a schema in this set from *originating* such a verdict.
 - **AggregateReturnEnvelope** - the team lead's single aggregate return for a
   MacroPacket: referential only (refs and digests, never a copy of evidence);
   `is_canonical_truth` is always `false`, so aggregation cannot mint PASS,

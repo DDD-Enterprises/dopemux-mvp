@@ -44,7 +44,7 @@
       },
       "objective": "Bounded child W01",
       "dependencies": [],
-      "parallel_group": "A",
+      "parallel_group": "P0",
       "mutating": true,
       "write_surface": [
         "schemas/governed_execution/"
@@ -370,7 +370,7 @@
         "W02",
         "W04"
       ],
-      "parallel_group": "A",
+      "parallel_group": "B",
       "mutating": true,
       "write_surface": [
         "src/dopemux/w06/"
@@ -436,7 +436,7 @@
         "W04",
         "W06"
       ],
-      "parallel_group": "A",
+      "parallel_group": "B",
       "mutating": true,
       "write_surface": [
         "src/dopemux/w07/"
@@ -501,7 +501,7 @@
       "dependencies": [
         "W07"
       ],
-      "parallel_group": "A",
+      "parallel_group": "C",
       "mutating": true,
       "write_surface": [
         "src/dopemux/w08/"

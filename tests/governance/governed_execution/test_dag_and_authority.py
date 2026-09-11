@@ -110,6 +110,13 @@ def test_w02_w03_w04_w05_write_surfaces_pairwise_disjoint(dag_macro) -> None:
                     )
 
 
+def test_parallel_group_a_is_w02_through_w05(dag_macro) -> None:
+    group_a = {
+        ws["workstream_id"] for ws in dag_macro["workstreams"] if ws["parallel_group"] == "A"
+    }
+    assert group_a == {"W02", "W03", "W04", "W05"}
+
+
 def test_expected_dependency_edges(dag_macro) -> None:
     graph = _dependency_graph(dag_macro)
     assert set(graph["W06"]) == {"W02", "W04"}
