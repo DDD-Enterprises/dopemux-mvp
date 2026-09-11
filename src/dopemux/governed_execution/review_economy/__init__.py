@@ -25,9 +25,20 @@ from dopemux.governed_execution.review_economy.keys import (
     is_sha256,
     parse_rfc3339_utc,
 )
+from dopemux.governed_execution.review_economy.lifecycle import (
+    EVENTS,
+    FinalAuditAlreadyConsumed,
+    IllegalStage,
+    LifecycleStage,
+    advance,
+)
 
 __all__ = [
     "DECISIONS",
+    "EVENTS",
+    "FinalAuditAlreadyConsumed",
+    "IllegalStage",
+    "LifecycleStage",
     "MODEL_REVIEWER_CLASSES",
     "REVIEW_TYPES",
     "REVIEWER_CLASSES",
@@ -38,6 +49,7 @@ __all__ = [
     "ReviewReceiptRecord",
     "ReviewRequest",
     "TRIGGERS",
+    "advance",
     "decide_review",
     "is_git_oid",
     "is_rfc3339_utc",
