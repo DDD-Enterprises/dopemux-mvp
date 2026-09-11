@@ -14,6 +14,18 @@
       "sha256": "662c8ebf77f83e627874103383c6163f60dcf1805c88d8e7eb70977b44abd137"
     },
     {
+      "path": "schemas/governed_execution/admission_receipt.v1.schema.json",
+      "schema_version": "dopemux.governed_execution.admission_receipt.v1",
+      "status": "ACTIVE",
+      "sha256": "3ba42cf48d25561a9beb5c8b69e856347de1885e063d58939ff6cce1c81f2241"
+    },
+    {
+      "path": "schemas/governed_execution/aggregate_return_envelope.v1.schema.json",
+      "schema_version": "dopemux.governed_execution.aggregate_return_envelope.v1",
+      "status": "ACTIVE",
+      "sha256": "20d8cfc72f71dee8344d59f835411bfc7c8145320f8967b9086ab5ef038ccacb"
+    },
+    {
       "path": "schemas/governed_execution/enums.v1.schema.json",
       "schema_version": "dopemux.governed_execution.enums.v1",
       "status": "ACTIVE",
@@ -26,10 +38,34 @@
       "sha256": "9245f17e9bacacab1ba9d712755e6b910838e90229c9fb0014c54e952bc4e71a"
     },
     {
+      "path": "schemas/governed_execution/finality_receipt.v1.schema.json",
+      "schema_version": "dopemux.governed_execution.finality_receipt.v1",
+      "status": "ACTIVE",
+      "sha256": "11dae343956f7009070d39dc6f66614aed9e41410e1b8ddcae4bf8fdfbdccc15"
+    },
+    {
+      "path": "schemas/governed_execution/freeze_receipt.v1.schema.json",
+      "schema_version": "dopemux.governed_execution.freeze_receipt.v1",
+      "status": "ACTIVE",
+      "sha256": "cd31ec7bdcbeb245a380206855bda4d1b85d4db86a34b645ea9b9195565c95ba"
+    },
+    {
       "path": "schemas/governed_execution/macro_packet.v2.schema.json",
       "schema_version": "dopemux.governed_execution.macro_packet.v2",
       "status": "ACTIVE",
       "sha256": "47a0d5d1766ccdd02d8d11dd9241e2c3dee03fb58d49517228cb24b7b51d6d82"
+    },
+    {
+      "path": "schemas/governed_execution/task_packet.v2.schema.json",
+      "schema_version": "dopemux.governed_execution.task_packet.v2",
+      "status": "ACTIVE",
+      "sha256": "9f1a44a8d7f3e3eea94c5ac4fffeee77e0e9bc4cfdf10b72d279922d1a27991b"
+    },
+    {
+      "path": "schemas/governed_execution/writer_custody_receipt.v1.schema.json",
+      "schema_version": "dopemux.governed_execution.writer_custody_receipt.v1",
+      "status": "ACTIVE",
+      "sha256": "ef2053fee2ce58b31e195cd8d9a9ebf06e330e51ca90f078000ee86bb96bc837"
     }
   ],
   "compatibility": {
