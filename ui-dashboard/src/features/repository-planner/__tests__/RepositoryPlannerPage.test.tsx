@@ -125,6 +125,36 @@ describe('RepositoryPlannerPage', () => {
     expect(screen.getByRole('button', { name: new RegExp(`Inspect dopemux-mvp pcp-planner-foundation ${fixture.lanes[0].candidate_sha}`) })).toBeVisible();
     expect(screen.getByRole('button', { name: /Inspect dopemux-mvp pcp-planner-foundation b{40}/ })).toBeVisible();
   });
+
+  test('candidate SHA chip copies SHA and updates ARIA label', async () => {
+    let copiedText = '';
+    const originalClipboard = navigator.clipboard;
+    Object.defineProperty(navigator, 'clipboard', {
+      value: {
+        writeText: async (text: string) => {
+          copiedText = text;
+        },
+      },
+      configurable: true,
+    });
+
+    try {
+      render(<RepositoryPlannerPage />);
+      const shaChips = screen.getAllByLabelText(/Candidate SHA:/i);
+      expect(shaChips.length).toBeGreaterThan(0);
+      const shaChip = shaChips[0];
+
+      fireEvent.click(shaChip);
+
+      expect(copiedText.length).toBe(40);
+      expect(await screen.findByLabelText(new RegExp(`SHA copied: ${copiedText}`, 'i'))).toBeInTheDocument();
+    } finally {
+      Object.defineProperty(navigator, 'clipboard', {
+        value: originalClipboard,
+        configurable: true,
+      });
+    }
+  });
 });
 
 describe('extension registry', () => {
