@@ -18,6 +18,18 @@
       "schema_version": "dopemux.governed_execution.enums.v1",
       "status": "ACTIVE",
       "sha256": "5742e55dfa62b89a6e1be505dad63502e8c65cc628a8b12a98b765858eddb561"
+    },
+    {
+      "path": "schemas/governed_execution/execution_binding.v2.schema.json",
+      "schema_version": "dopemux.governed_execution.execution_binding.v2",
+      "status": "ACTIVE",
+      "sha256": "9245f17e9bacacab1ba9d712755e6b910838e90229c9fb0014c54e952bc4e71a"
+    },
+    {
+      "path": "schemas/governed_execution/macro_packet.v2.schema.json",
+      "schema_version": "dopemux.governed_execution.macro_packet.v2",
+      "status": "ACTIVE",
+      "sha256": "47a0d5d1766ccdd02d8d11dd9241e2c3dee03fb58d49517228cb24b7b51d6d82"
     }
   ],
   "compatibility": {
