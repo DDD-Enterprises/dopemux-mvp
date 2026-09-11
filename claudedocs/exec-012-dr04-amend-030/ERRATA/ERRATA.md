@@ -114,6 +114,27 @@ published here under `shared_contracts/`. **The records were left as-is** — re
 make them describe a layout that never executed. [`PATH_MAP.json`](PATH_MAP.json) supplies the
 mapping, and also lists the artifacts cited by the records that are *not* in this bundle.
 
+### E8 — My own options table overstated removal *(correcting E4's companion document)*
+
+The first version of `DISCLOSURE_RECONFIRMATION.md` described closing PR #1341 as keeping the
+evidence "private", and a branch history rewrite as one that "genuinely removes the content".
+**Both were wrong**, and wrongly favourable — they made two options look protective.
+
+Verified against the live remote: the repository is **PUBLIC**, and `refs/pull/1341/head` is an
+**independent ref** alongside the branch ref. Closing the PR therefore un-publishes nothing, and a
+branch rewrite leaves the pull ref pointing at the old commit; GitHub further documents that old
+commits can persist via direct SHA, cached views, forks and clones, with full removal potentially
+requiring GitHub Support.
+
+Corrected in that file, with the evidence inline. The recommendation is unchanged and slightly
+strengthened: **no option reliably removes the content**, so option 3's certain cost buys an
+uncertain benefit.
+
+The disposition is also now stated explicitly, per external supervisor review on 2026-09-11:
+`POLICY_COMPLIANT=NO`, `POLICY_EXCEPTION_REQUIRED=YES`, `SECURITY_RISK_OWNER=OPERATOR`. Retaining
+the receipts must be reported as a **bounded operator exception, never as compliance**. The
+attestation block is staged **unsigned** — an attestation cannot be manufactured by recommending it.
+
 ---
 
 ## Defects recorded but deliberately NOT applied
@@ -136,6 +157,9 @@ the successor working surface under supervisor authority.
 - **`ct route-record` / `ct validate-route`: `NOT_RUN`** — `.control-tower/` is not present on this
   branch, and AGENTS.md forbids borrowing another checkout's installation. Preserved as `NOT_RUN`,
   not simulated. The equivalent fields are captured in [`ROUTE_RECORD.json`](ROUTE_RECORD.json).
+- **The disclosure attestation is NOT granted.** Staged unsigned in
+  `DISCLOSURE_RECONFIRMATION.md`. **Freeze gate: do not freeze a head, run the L2 audit, or run PR
+  Steward until the operator completes it.** The current head's Steward failure is expected.
 - **The two blocking supervisor decisions are untouched**: the Route D budget amendment
   (`limits.codex ≥ 7`) and the Route A Terminal.app run. This repair corrects the record of what
   happened; it does not advance the benchmark.
