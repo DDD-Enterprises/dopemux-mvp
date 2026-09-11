@@ -6,6 +6,13 @@
   "amendment": "OPERATOR-AMEND-030 (A/D -> API-metered) + OPERATOR OPTION 'b' (arity repair, second D attempt, Route A)",
   "return_utc": "2026-09-10T20:15:00Z",
   "MACRO_STATUS": "PARTIAL_RETURN_TO_SUPERVISOR",
+  "ERRATA": {
+    "corrected_from": "bc4249eecf4f428528488a7a3d4eeb3420aebfbc",
+    "corrected_utc": "2026-09-11",
+    "authority": "Operator instruction on 2026-09-11 to execute the repair sequence from the PR #1341 review.",
+    "principle": "CLAIMS were corrected in place; RECORDS were not touched. No file under route_d/, no shared_contracts/ module or contract, and no usage/RESULTS block was edited -- defects found in those are recorded unapplied under ERRATA/. The byte-exact originals of every corrected file remain retrievable at commit bc4249ee.",
+    "index": "ERRATA/ERRATA.md"
+  },
   "HEADLINE": "Route D executed live three times on the amended API-metered path and never produced a research report -- but attempt 3 established WHY, and the cause is a structural defect in the frozen retrieval budget that would fail ANY model on ANY provider path. Route A never reached a provider: it requires a macOS Terminal.app process ancestry that no agent session can supply. Routes B and C are unchanged from 029.",
   "GATES_AND_MUTATIONS": {
     "REPOSITORY_MUTATION_AUTHORIZED": "NO (packet gate). NOT performed by this lead.",
@@ -19,7 +26,7 @@
       "action": "Pushed branch evidence/dmx-dr04-exec-012-amend-030 and opened PR #1341 against main.",
       "scope": "EVIDENCE ONLY -- 76 files, all under claudedocs/exec-012-dr04-amend-030/. No product code, no configuration, no workflow touched.",
       "authority": "Operator instruction: 'supervisor handoff and push evidence to pr'.",
-      "disclosure_decision": "The repository is PUBLIC and 11 receipts embed the raw /v1/models response body, which discloses the account's model entitlements. This was put to the operator before publication and they chose to publish unmodified, preserving receipt byte-exactness.",
+      "disclosure_decision": "The repository is PUBLIC and NINE turn receipts (not 11 -- corrected count, see ERRATA item E4) embed the raw /v1/models response body in their stderr field, each disclosing 136 account-visible model ids with owned_by and shutdown_date. This was put to the operator before publication and they chose to publish unmodified, preserving receipt byte-exactness. STATUS 2026-09-11: the working tree holding the byte-exact originals has been reaped from /private/tmp, so these committed receipts are now the ONLY surviving copy. Redaction is therefore no longer a sanitisation step -- it would be irreversible destruction of the evidence. Operator re-confirmation requested: see ERRATA/DISCLOSURE_RECONFIRMATION.md.",
       "secret_scan_before_publication": "75 files, zero live credential values."
     },
     "repository_mutation_detail": "One commit on a new branch created from mvp/main in an isolated worktree. The dirty pr-92 checkout was never touched, and no existing branch was modified."
@@ -56,7 +63,7 @@
         {
           "n": 1,
           "outcome": "BLOCKED_CODEX_COMPLETION_AMBIGUOUS",
-          "usd": 2.22,
+          "usd": 2.33,
           "cause": "Turn 3 emitted two agent_message items (prose preface + valid action); the harness required exactly one.",
           "fault": "HARNESS_ARITY_BRITTLENESS"
         },
@@ -94,21 +101,25 @@
   "SECONDARY_FINDINGS": [
     {
       "id": "PROMPT_CACHE_WRITES_BUT_NEVER_HITS",
-      "detail": "cached_input_tokens = 0 with cache_write ~= input on ALL nine live turns across attempts 1 and 3. Each loop turn is a fresh `codex exec --ephemeral` thread, so the Responses API prompt_cache_key is almost certainly thread-scoped. Roughly 60% of Route D's cost was re-sending an unchanged 233 KB acceptance_schema prefix.",
+      "detail": "cached_input_tokens = 0 with cache_write ~= input on all NINE receipted live turns, which span attempts 1, 2 and 3 (2 + 1 + 6). Route D made TEN live codex turns in total; attempt 1 turn 3 wrote no receipt, and its usage is recorded in evidence/D_DISPATCH_RESULT.json SPEND.turn_03 with cached_input_tokens = 0 as well. Each loop turn is a fresh `codex exec --ephemeral` thread, so the Responses API prompt_cache_key is almost certainly thread-scoped. Roughly 60% of Route D's cost was re-sending an unchanged 233 KB acceptance_schema prefix.",
       "confidence": "INFERENCE from usage counters, not a provider assertion."
     },
     {
       "id": "AGENT_MESSAGE_ARITY_IS_NONDETERMINISTIC",
       "detail": "Narration observed on 1 of 3 turns in attempt 1 and 0 of 6 in attempt 3. Both harnesses assumed exactly one agent_message per turn.",
-      "repair": "W01/message_arity.py, imported by absolute path by BOTH routes so parity is by construction. Regression-proven against attempt 1's real turn-3 fixture. HONEST STATUS: it never fired in attempt 3 -- that run is evidence it did no harm, not evidence it works in production."
+      "repair": "W01/message_arity.py (working-tree path; published in this bundle at shared_contracts/message_arity.py -- see ERRATA/PATH_MAP.json), imported by absolute path by BOTH routes so parity is by construction. A latent defect in its narration_preface_count return value is recorded, unapplied, in ERRATA/DEFECT-001-narration-preface-count.json. Regression-proven against attempt 1's real turn-3 fixture. HONEST STATUS: it never fired in attempt 3 -- that run is evidence it did no harm, not evidence it works in production."
     },
     {
       "id": "SERVED_MODEL_NOT_ATTESTABLE",
-      "detail": "The codex exec --json event stream carries no model identifier. served_model='UNKNOWN' is honest and unavoidable. What IS established: the request pins model=gpt-6-astra and that id is present in the account's /v1/models listing, so no silent fallback occurred."
+      "requested_model": "gpt-6-astra",
+      "catalog_availability": "OBSERVED_PRESENT in the account /v1/models listing.",
+      "served_model": "UNKNOWN",
+      "provider_fallback": "UNKNOWN",
+      "detail": "The codex exec --json event stream carries no model identifier, so served_model='UNKNOWN' is honest and unavoidable. Catalog presence establishes that the account MAY be served gpt-6-astra; it does not attest which backend served any particular request and does not rule out provider-side aliasing or fallback. The earlier claim that it proved 'no silent fallback occurred' was an unsupported inference and is withdrawn -- see ERRATA/ERRATA.md item E2."
     },
     {
       "id": "API_ROUTE_PROVEN_END_TO_END",
-      "detail": "The openai-api provider path works: credential resolved from the child environment via env_key with no codex login, --output-schema round-trips, tool isolation holds, broker retrieval works, and nine live turns completed. The amendment itself is sound."
+      "detail": "The openai-api provider path works: credential resolved from the child environment via env_key with no codex login, --output-schema round-trips, tool isolation holds, broker retrieval works, and ten live turns completed across three attempts (nine of them receipted). The amendment itself is sound."
     }
   ],
   "LEAD_ERRORS_DISCLOSED": {
@@ -136,13 +147,25 @@
     "note": "Two of the three cost nothing. The third cost USD 0.60. None of the three consumed benchmark work."
   },
   "SPEND": {
-    "total_usd_estimated": 8.28,
+    "CORRECTED_IN_ERRATA_001": "The figure 8.28 published at bc4249ee was unreconciled. See ERRATA/ERRATA.md item E1.",
+    "route_d_attempts_usd": 8.02,
+    "probe_usd": 0.11,
+    "total_usd_estimated": 8.13,
     "operator_ceiling_usd": 10,
-    "remaining_usd": 1.72,
+    "remaining_usd": 1.87,
     "token_totals": {
       "input": 772360,
-      "output": 5924
+      "output": 5924,
+      "scope": "Route D attempts 1+2+3 ONLY. Excludes the D_APIROUTE_PROBE (10,902 in / 21 out). Verified: 224907+58065+489388 = 772360 and 1595+392+3937 = 5924."
     },
+    "ledger": [
+      {"item": "D attempt 1", "input": 224907, "output": 1595, "usd": 2.33, "basis": "OBSERVED -- evidence/D_DISPATCH_RESULT.json SPEND.totals. Turns 1-2 are receipted; turn 3 emitted no receipt (it failed arity before the receipt write) and its 85,082/558 is recorded in that same SPEND.turn_03 block."},
+      {"item": "D attempt 2", "input": 58065, "output": 392, "usd": 0.6, "basis": "OBSERVED -- 1 receipt + evidence/D_DISPATCH_RESULT_ATTEMPT_02.json."},
+      {"item": "D attempt 3", "input": 489388, "output": 3937, "usd": 5.09, "basis": "OBSERVED -- 6 receipts + evidence/D_DISPATCH_RESULT_ATTEMPT_03.json."},
+      {"item": "API-route probe", "input": 10902, "output": 21, "usd": 0.11, "basis": "OBSERVED -- evidence/D_APIROUTE_PROBE.json usage. Real spend, deliberately outside token_totals."}
+    ],
+    "earlier_no_schema_probe": "UNKNOWN whether the earlier ~8,235-token no-output-schema cost-floor probe (~USD 0.08) is captured anywhere in this ledger. It is not in token_totals and has no evidence file in this bundle. Treat the totals above as a floor.",
+    "arithmetic_check": "772360*10/1e6 + 5924*50/1e6 = 8.0198, consistent with 2.33+0.60+5.09 = 8.02. Adding the probe gives 8.13 against the USD 10 ceiling.",
     "rate": "$10 input / $50 output per million -- ASSUMED, not verified. Token counts are exact from turn.completed usage.",
     "parallel_spend_usd": 0.0,
     "voyage_spend_usd": 0.0,
@@ -151,7 +174,7 @@
   "INTEGRITY_ATTESTATIONS": {
     "audited_original_028": "UNCHANGED. Inventory diff: 138 entries, UNEXPECTED_FILES=1 (Route C's pre-existing .consumed marker only), MISSING_FILES=0, HASH_MISMATCHES=0.",
     "pycache_pollution": "NONE in either tree.",
-    "secret_scan": "245 files scanned. Zero live credential values. Ten regex hits, all verified benign: four are the harnesses' own detector pattern definitions, six are one synthetic test fixture (a literal a-z0-9 alphabet behind an sk- prefix) which W07's own report annotates 'Not a live credential'. The fixture string is deliberately not reproduced here so this return does not itself trip a downstream secret scanner.",
+    "secret_scan": "SCOPE: 245 files = the FULL amend-030 working tree at /private/tmp/DMX-DR04-EXEC-012-AMEND-030 (now reaped). A separate pre-publication scan covered 75 files of the published subset; this bundle contains 76 files because SUPERVISOR_RETURN.json itself was written after that scan ran. Neither count is the other's subset error. 245 files scanned. Zero live credential values. Ten regex hits, all verified benign: four are the harnesses' own detector pattern definitions, six are one synthetic test fixture (a literal a-z0-9 alphabet behind an sk- prefix) which W07's own report annotates 'Not a live credential'. The fixture string is deliberately not reproduced here so this return does not itself trip a downstream secret scanner.",
     "credential_handling": "No secret value was read into any artifact, log or receipt. Keychain reads were value-reads only where required for dispatch; the Voyage labels were confirmed by a METADATA-ONLY lookup (no -w)."
   },
   "OPEN_ITEMS_FOR_THE_SUPERVISOR": [
@@ -172,7 +195,7 @@
     },
     {
       "id": "BUDGET_CEILING",
-      "decision": "USD 1.72 remains of the USD 10 ceiling. Route A has not run. Raise the ceiling or accept the risk of a mid-run stop.",
+      "decision": "USD 1.87 remains of the USD 10 ceiling. Route A has not run. Raise the ceiling or accept the risk of a mid-run stop.",
       "blocking": true
     },
     {

@@ -366,3 +366,54 @@ re-sending an unchanged 233 KB prefix.
 
 ### SESSION SPEND: **$8.28 of $10** (772,360 in / 5,924 out). Remaining **$1.72**.
 Parallel $0.00, Voyage $0.00. Route A has not run and has no dollar cap in code.
+
+---
+
+## 2026-09-11 — POST-PUBLICATION CORRECTION (appended; nothing above was rewritten)
+
+PR #1341 was reviewed at head `bc4249eecf4f428528488a7a3d4eeb3420aebfbc`. Verdict
+`REQUEST_CHANGES` / `NOT_READY`: embedded audit FAILURE (`local_proof_absent` →
+`audit_not_executed` → `audit_provenance_missing`), PR Steward FAILURE, seven unresolved review
+threads, ordinary CI green. The operator authorised the repair sequence on 2026-09-11.
+
+**Rule applied: claims corrected in place, records untouched.** Nothing under `route_d/` or
+`shared_contracts/` was edited, and no measured `usage`/`RESULTS` block was altered. Full index in
+`ERRATA/ERRATA.md`; route record in `ERRATA/ROUTE_RECORD.json`.
+
+**The line in this log that was wrong:** `### SESSION SPEND: **$8.28 of $10** (772,360 in /
+5,924 out). Remaining **$1.72**.` — the dollar figure did not follow from the token counts beside
+it. Reconciled from the primary records:
+
+- 772,360 / 5,924 is **exactly** D attempts 1+2+3 (224,907+58,065+489,388 and 1,595+392+3,937)
+  and computes to **$8.02**, not $8.28.
+- Attempt 1 is **$2.33**, not the $2.22 carried in `SUPERVISOR_RETURN.json`. `D_DISPATCH_RESULT.json`
+  had it right all along.
+- The API-route probe (10,902 / 21 = **$0.11**) is real spend sitting *outside* `token_totals`.
+- **Session total $8.13, remaining $1.87.** Treat it as a floor: the earlier ~8,235-token no-schema
+  cost-floor probe (~$0.08) has no evidence file here and may be uncounted — recorded UNKNOWN.
+
+**Also corrected:** the served-model/no-fallback inference (withdrawn — catalogue presence attests
+entitlement, not serving identity); the handoff's "mutations: 0 / 0", which contradicted the machine
+return and is now split into benchmark-mutations 0 vs operator-authorized publication-mutations 1+1;
+"nine live turns across attempts 1 and 3" → **ten** turns across attempts 1, 2 and 3, nine receipted;
+the secret-scan scopes (245 = working tree, 75 = pre-publication subset); and the count of receipts
+embedding the `/v1/models` body — **nine**, not 11, at 136 model ids each.
+
+**Two defects recorded UNAPPLIED**, because both targets are records: `message_arity.py`'s
+`narration_preface_count` mislabels suffix narration (latent — no committed receipt is wrong), and
+the tool-event classifier's `verdict_contract` has no branch for an unknown event type despite
+declaring `FAIL_CLOSED_ALLOWLIST`. See `ERRATA/DEFECT-001…` and `ERRATA/DEFECT-002…`.
+
+**Environmental change since publication, and it matters:** `/private/tmp/DMX-DR04-EXEC-012-AMEND-030`
+and every other `/private/tmp/DMX-DR04-*` root have been **reaped**. This committed bundle is now the
+only surviving copy of the evidence. That reverses the trade-off behind the 2026-09-10 decision to
+publish the `/v1/models` bodies unmodified — redaction would now destroy evidence rather than
+sanitise it, and would not un-publish anything still reachable at `bc4249ee`. Put back to the
+operator in `ERRATA/DISCLOSURE_RECONFIRMATION.md`; **nothing was redacted**. It also means
+`RUN_ROUTE_A_FROM_TERMINAL.command` is gone and must be rebuilt before Route A can launch.
+
+`ct route-record` / `ct validate-route`: **NOT_RUN** — `.control-tower/` is absent from this branch
+and AGENTS.md forbids borrowing another checkout's install. Preserved as NOT_RUN, not simulated.
+
+No audit was re-run, no review thread was resolved, and the two blocking supervisor decisions
+(Route D budget amendment, Route A Terminal.app run) are untouched.
