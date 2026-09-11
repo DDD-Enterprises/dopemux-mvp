@@ -1,0 +1,21 @@
+{
+  "packet_id": "PKG-A",
+  "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "generated_at": "2026-01-01T00:00:00Z",
+  "model_calls": 4,
+  "ratification_record": {
+    "status": "PASS"
+  },
+  "admission": {
+    "post_merge_main_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "embedded_audit": {
+    "required": true,
+    "auditor_tool": "test-auditor",
+    "auditor_model": "test-model",
+    "fixes_applied": [
+      {"id": "F-1"},
+      {"id": "F-2"}
+    ]
+  }
+}
