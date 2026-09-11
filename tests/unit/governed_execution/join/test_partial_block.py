@@ -13,7 +13,12 @@ from pathlib import Path
 
 import pytest
 
-from dopemux.governed_execution.join.evaluate import derive_macro_status, evaluate_all, next_legal_action
+from dopemux.governed_execution.join.evaluate import (
+    _MACRO_STATUS_VALUES,
+    derive_macro_status,
+    evaluate_all,
+    next_legal_action,
+)
 from dopemux.governed_execution.join.types import JoinDecl, JoinResult, ReturnRef, WorkstreamResult
 
 _REPO_ROOT = Path(__file__).resolve().parents[4]
@@ -34,9 +39,7 @@ def test_macro_status_matches_enums_schema() -> None:
     expected = schema["definitions"]["macro_status"]["enum"]
     # derive_macro_status only ever returns a value from this closed set
     # (or a caller-validated global_stop override drawn from the same set).
-    assert "PASS_IMPLEMENTATION_PROGRAM_COMPLETE" in expected
-    assert "PARTIAL_BLOCKED" in expected
-    assert "BLOCKED" in expected
+    assert list(_MACRO_STATUS_VALUES) == expected
 
 
 def test_named_macro_w05_fixture_exact_literals() -> None:
