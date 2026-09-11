@@ -53,7 +53,7 @@
       "path": "schemas/governed_execution/macro_packet.v2.schema.json",
       "schema_version": "dopemux.governed_execution.macro_packet.v2",
       "status": "ACTIVE",
-      "sha256": "47a0d5d1766ccdd02d8d11dd9241e2c3dee03fb58d49517228cb24b7b51d6d82"
+      "sha256": "9724c47add8b4219362e1134746d31252e69fba581ec12185e200960e09d9460"
     },
     {
       "path": "schemas/governed_execution/task_packet.v2.schema.json",

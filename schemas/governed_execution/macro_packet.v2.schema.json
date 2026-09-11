@@ -42,6 +42,7 @@
         "global_stop_conditions"
       ]
     },
+    "execution_authority": { "const": "NONE" },
     "team_lead": {
       "type": "object",
       "additionalProperties": false,
@@ -268,6 +269,7 @@
     "base_policy",
     "issued_by",
     "authority",
+    "execution_authority",
     "team_lead",
     "workstreams",
     "joins",

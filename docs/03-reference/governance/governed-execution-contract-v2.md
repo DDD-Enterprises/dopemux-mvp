@@ -106,14 +106,25 @@ unknowable rather than simply not-yet-assigned.
 
 ## Authority ceilings
 
-Every schema in this set that carries an `authority` field sets it to the
-constant `NONE`. Concretely: `execution_binding.v2`, `task_packet.v2`,
+Every schema in this set that carries a scalar `authority` field sets it to
+the constant `NONE`. Concretely: `execution_binding.v2`, `task_packet.v2`,
 `admission_receipt.v1`, `writer_custody_receipt.v1`, `freeze_receipt.v1`,
 `finality_receipt.v1` and `aggregate_return_envelope.v1` all carry
-`"authority": "NONE"`. `macro_packet.v2` retains the kit v1 `authority` object
-(`operator_refs`, `global_allowed_actions`, `global_forbidden_actions`,
-`global_stop_conditions`) unchanged and additive-only; it does not carry a
-scalar `authority` field, so the `NONE` const does not apply to it.
+`"authority": "NONE"` directly. `macro_packet.v2` retains the kit v1
+`authority` object (`operator_refs`, `global_allowed_actions`,
+`global_forbidden_actions`, `global_stop_conditions`) unchanged and
+additive-only, so it does not carry a scalar `authority` field of its own.
+
+`macro_packet.v2.authority` is the Control Tower supervisor's authority
+**envelope** for the MacroPacket - the operator references and global
+allowed/forbidden-action/stop-condition ceilings the supervisor issued - not
+an execution-authority claim: nothing in that object asserts that issuing or
+holding the MacroPacket grants the right to execute. To make that explicit
+and additive (W01-R1 audit repair, W01-R2), `macro_packet.v2` also carries a
+new required top-level `execution_authority` field, const `NONE`, on every
+v2 instance: schema-valid a MacroPacket may be, but it never carries
+execution authority in its own right, matching every other schema in this
+set.
 
 Issuance stays where the kit places it: `macro_packet.v2.issued_by` is const
 `control_tower_supervisor`; only the Control Tower supervisor issues a
@@ -131,7 +142,7 @@ what may happen next: `finality_receipt.v1.merge_authorized` and
 | Schema | `$id` filename | `schema_version` | Status |
 | --- | --- | --- | --- |
 | Shared enums | `enums.v1.schema.json` | `dopemux.governed_execution.enums.v1` | ACTIVE |
-| SupervisorMacroPacket v2 | `macro_packet.v2.schema.json` | `dopemux.governed_execution.macro_packet.v2` | ACTIVE |
+| SupervisorMacroPacket v2 | `macro_packet.v2.schema.json` | `dopemux.governed_execution.macro_packet.v2` | ACTIVE - `authority` is the supervisor's authority envelope object (unchanged v1 shape); `execution_authority` is the new const `NONE` field (W01-R2) |
 | ExecutionBinding v2 | `execution_binding.v2.schema.json` | `dopemux.governed_execution.execution_binding.v2` | ACTIVE |
 | TaskPacket v2 | `task_packet.v2.schema.json` | `dopemux.governed_execution.task_packet.v2` | ACTIVE |
 | AdmissionReceipt v1 | `admission_receipt.v1.schema.json` | `dopemux.governed_execution.admission_receipt.v1` | ACTIVE |
@@ -160,8 +171,9 @@ adds fields only and never removes or retypes a v1 field. Concretely:
   `containment_posture`, `fallback_outcome`, `response_claimed_model`,
   `provider_attested_model`, `independence_class`,
   `qualification_receipt_ref`, and now-required `macro_id`), and on
-  `macro_packet.v2` (`team_lead.binding_policy`, each workstream's
-  `audit_group` and `return_contract`, and each join's `join_type` with a
+  `macro_packet.v2` (top-level `execution_authority` const `NONE`,
+  `team_lead.binding_policy`, each workstream's `audit_group` and
+  `return_contract`, and each join's `join_type` with a
   conditionally-required `quorum` when `join_type` is `QUORUM`) are all
   required and additive.
   `schema_version`'s *value* intentionally differs between v1 and v2 (that is

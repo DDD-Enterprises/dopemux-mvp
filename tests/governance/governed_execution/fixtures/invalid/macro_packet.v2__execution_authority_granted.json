@@ -127,5 +127,5 @@
       "global_stop"
     ]
   },
-  "execution_authority": "NONE"
+  "execution_authority": "GRANTED"
 }

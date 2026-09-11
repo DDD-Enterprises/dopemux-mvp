@@ -173,6 +173,7 @@ _EXECUTION_BINDING_ADDED: dict[tuple, set[str]] = {
 }
 
 _MACRO_PACKET_ADDED: dict[tuple, set[str]] = {
+    (): {"execution_authority"},
     ("team_lead",): {"binding_policy"},
     ("workstreams", 0): {"audit_group", "return_contract"},
 }

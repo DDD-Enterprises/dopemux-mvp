@@ -585,5 +585,6 @@
       "authority_conflict",
       "global_stop"
     ]
-  }
+  },
+  "execution_authority": "NONE"
 }
