@@ -29,7 +29,7 @@
       "path": "schemas/governed_execution/enums.v1.schema.json",
       "schema_version": "dopemux.governed_execution.enums.v1",
       "status": "ACTIVE",
-      "sha256": "5742e55dfa62b89a6e1be505dad63502e8c65cc628a8b12a98b765858eddb561"
+      "sha256": "f02937b51f82f0b79fde27c4f36cae24633d17e19f9a0f0b29e98a5d715c1410"
     },
     {
       "path": "schemas/governed_execution/execution_binding.v2.schema.json",

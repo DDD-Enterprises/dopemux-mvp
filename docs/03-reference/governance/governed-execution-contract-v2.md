@@ -84,6 +84,26 @@ credential change.
   by this packet; their sha256 at base is bound in `manifest.v1.json` with
   status `ADOPTED`.
 
+### Enum value sets: UNKNOWN-legal vs. closed outcome sets
+
+| Enum | Values | UNKNOWN? |
+| --- | --- | --- |
+| `workstream_status` | `NOT_STARTED`, `IN_PROGRESS`, `PASS`, `BLOCKED`, `NEEDS_SUPERVISOR`, `FAIL`, `SUPERSEDED`, `UNKNOWN` | Yes (W01-R1) |
+| `freeze_state` | `FROZEN`, `UNFROZEN`, `SUPERSEDED`, `UNKNOWN` | Yes (W01-R1) |
+| `dispatch_qualification` | `DISPATCHABLE`, `BLOCKED`, `NEEDS_SUPERVISOR` | No |
+| `macro_status` | `PASS_IMPLEMENTATION_PROGRAM_COMPLETE`, `PARTIAL_BLOCKED`, `BLOCKED`, `BLOCKED_TEAM_LEAD_ROUTE_UNPROVEN`, `NO_LEGAL_EXECUTION_ROUTE`, `GLOBAL_AUTHORITY_CONFLICT`, `ARCHITECTURE_INVARIANT_BROKEN`, `NO_VALID_ROLLBACK_FOR_REQUIRED_MUTATION`, `OPERATOR_GATE_REQUIRED_FOR_ALL_REMAINING_WORK` | No |
+| `audit_verdict` | `PASS`, `PASS_WITH_RISKS`, `FAIL`, `NEEDS_SUPERVISOR`, `NOT_RUN` | No |
+
+`workstream_status` and `freeze_state` carry `UNKNOWN` per W01-R1 (team-lead
+reconciliation, 2026-09-11): a child workstream whose state cannot currently
+be determined must be representable without coercion (I16), and a frozen
+subject that moved before classification is neither `FROZEN` nor `UNFROZEN`.
+`dispatch_qualification`, `macro_status` and `audit_verdict` are closed
+outcome sets fixed by the MacroPacket and deliberately carry no `UNKNOWN`
+value: each is only ever assigned once its determining inputs are already
+resolved, so there is no state in which one of these three is legitimately
+unknowable rather than simply not-yet-assigned.
+
 ## Authority ceilings
 
 Every schema in this set that carries an `authority` field sets it to the

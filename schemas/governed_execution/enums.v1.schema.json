@@ -33,7 +33,7 @@
       "enum": ["ALL_REQUIRED", "ANY_ONE", "QUORUM", "ORDERED", "OPTIONAL_SIBLING", "CONDITIONAL"]
     },
     "workstream_status": {
-      "enum": ["NOT_STARTED", "IN_PROGRESS", "PASS", "BLOCKED", "NEEDS_SUPERVISOR", "FAIL", "SUPERSEDED"]
+      "enum": ["NOT_STARTED", "IN_PROGRESS", "PASS", "BLOCKED", "NEEDS_SUPERVISOR", "FAIL", "SUPERSEDED", "UNKNOWN"]
     },
     "macro_status": {
       "enum": [
@@ -64,7 +64,7 @@
       "enum": ["REQUESTED", "CONFIGURED", "RESPONSE_CLAIMED", "PROXY_REPORTED", "PROVIDER_ATTESTED"]
     },
     "freeze_state": {
-      "enum": ["FROZEN", "UNFROZEN", "SUPERSEDED"]
+      "enum": ["FROZEN", "UNFROZEN", "SUPERSEDED", "UNKNOWN"]
     },
     "dcp_status": {
       "description": "Distinct from status_class: BLOCKED replaces FAIL in the DCP route-decision vocabulary.",
