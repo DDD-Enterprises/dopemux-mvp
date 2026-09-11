@@ -290,10 +290,10 @@ mistake being reintroduced.
 `IdentityLayer` mirrors `enums.v1.schema.json#/definitions/identity_layer`
 exactly, including its fifth member, `PROXY_REPORTED`. `AuditIdentity` has
 no field for that layer: `execution_binding.v2.schema.json` (W01, this
-same MacroPacket, A1-audited PASS) already carries the same four
-model-identity fields - `response_claimed_model`, `provider_attested_model`
-plus `selection.configured_identity` and
-`selection.response_claimed_identity` - with no `proxy_reported` layer
+same MacroPacket, A1-audited PASS) already carries requested/configured/
+response-claimed/provider-attested identity fields (`selection.model`,
+`selection.configured_identity`, `selection.response_claimed_identity`,
+`selection.provider_attested_identity`) with no `proxy_reported` layer
 either. `PROXY_REPORTED` is a real layer, owned by the out-of-scope
 `schemas/audit_broker/` and `schemas/dcp/` families for LLM-routing-proxy
 identity; `layers()` therefore returns the four layers this packet's
