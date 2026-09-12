@@ -1,0 +1,163 @@
+{
+  "id": "TP-DMX-DDD-RELEASE-GATE-KEY-ROTATION-002",
+  "project": "dopemux-mvp",
+  "target": "ddd-release-gate-key-rotation-state-reconciliation-and-completion",
+  "invariants": [
+    "Risk lane is L3 because this packet reconciles a disclosed GitHub App private key and conditionally authorizes credential mutation.",
+    "Verify current App key inventory before any mutation.",
+    "If the compromised fingerprint is absent and the effective secret-backed App authentication works, classify ALREADY_ROTATED_VERIFIED and perform no new rotation.",
+    "If current rotation state is unknown, stop without generating a key, rewriting a secret, or deleting a key.",
+    "A second replacement key without proven need is forbidden.",
+    "The known compromised public fingerprint is SHA256:Q5UQVn6HD0PCE0NvPSFugsydKz1beC3RpVvIUm3eicg=.",
+    "Private key material, JWTs, installation tokens, secret values, and credentials must not enter packet or proof artifacts.",
+    "App permissions, App ID, installation scope, secret visibility, workflow code, branch protection, unrelated repositories, approvals, merges, releases, and deployments must not change.",
+    "Exactly one independent plan-backed non-OpenAI-family final audit is required for a successful outcome.",
+    "PAL clink and metered API routes are forbidden without explicit operator spend authorization.",
+    "No merge, release, deployment, or PR approval is authorized."
+  ],
+  "depends_on": [
+    "TP-DMX-DDD-RELEASE-GATE-KEY-ROTATION-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-DDD-RELEASE-GATE-KEY-ROTATION",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-DDD-RELEASE-GATE-KEY-ROTATION-001",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "ops/ddd-release-gate-key-rotation-002",
+    "base_branch": "main",
+    "stacked_because": "Successor reconciles whether predecessor mutation already occurred before permitting any further credential mutation."
+  },
+  "commit": {
+    "message": "proof(security): reconcile ddd release gate key rotation",
+    "allowlist": [
+      "task-packets/TP-DMX-DDD-RELEASE-GATE-KEY-ROTATION-002.json",
+      "task-packets/TP-DMX-DDD-RELEASE-GATE-KEY-ROTATION-002.md",
+      "proof/TP-DMX-DDD-RELEASE-GATE-KEY-ROTATION-002/**"
+    ],
+    "verify": [
+      "Repository identity is DDD-Enterprises/dopemux-mvp.",
+      "Known compromised fingerprint is absent from current GitHub App key inventory.",
+      "Current effective Actions secrets mint an installation token before PR preflight fails on invalid PR 0.",
+      "No approval step ran during verification.",
+      "No key, secret, permission, installation, workflow, branch-protection, merge, release, or deployment mutation occurred in this packet.",
+      "All committed paths are allowlisted and contain no private material."
+    ]
+  },
+  "pr": {
+    "title": "proof(security): reconcile ddd release gate key rotation",
+    "body": "Verification-only L3 incident reconciliation. Records current absence of the compromised GitHub App key and successful secret-backed token mint. Performs no key, secret, permission, installation, approval, merge, release, or deployment mutation.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "tracer",
+      "planner",
+      "thinkdeep",
+      "challenge",
+      "implement",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S0_FRESH_CUSTODY",
+      "task": "Bind execution to current repository identity, main head, branch state, and governing runbook/workflow authority.",
+      "validation": [
+        "Repository root, remote, branch, status, and origin/main are recorded.",
+        "Remote identity exactly matches DDD-Enterprises/dopemux-mvp.",
+        "No conflicting newer authority is observed."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docs/runbooks/ddd-release-gate-app.md",
+        ".github/workflows/ddd-release-gate.yml",
+        "docs/03-reference/governance/evidence-economy.md"
+      ]
+    },
+    {
+      "id": "S1_PRIOR_RECEIPTS",
+      "task": "Search bounded repository history and known operator evidence locations for prior rotation receipts using identifiers only.",
+      "validation": [
+        "Prior receipt classification is explicit.",
+        "No recursive search for PEM, JWT, token, or secret material occurs.",
+        "Historical evidence is not treated as live key-state proof."
+      ]
+    },
+    {
+      "id": "S2_SECRET_METADATA",
+      "task": "Inventory relevant Actions secret names, scopes, visibility, selected repositories, and update timestamps without reading values.",
+      "validation": [
+        "Repository secret metadata is recorded without values.",
+        "Organization metadata failure remains UNKNOWN rather than inferred.",
+        "Secret timestamps remain supporting evidence only."
+      ]
+    },
+    {
+      "id": "S3_LIVE_APP_KEY_INVENTORY",
+      "task": "Inspect current ddd-release-gate private-key inventory in GitHub App settings and compare public fingerprints only.",
+      "validation": [
+        "Every currently registered public fingerprint visible in the UI is recorded.",
+        "Known compromised fingerprint presence is classified YES, NO, or UNKNOWN.",
+        "No generate or delete control is invoked."
+      ]
+    },
+    {
+      "id": "S4_CURRENT_SECRET_SMOKE",
+      "task": "Verify current secret-backed App authentication through trusted-main invalid-PR smoke without posting approval.",
+      "validation": [
+        "Secrets-present step passes.",
+        "Installation-token mint step passes.",
+        "PR 0 resolution fails as expected.",
+        "Exact-head approval step is skipped."
+      ]
+    },
+    {
+      "id": "S10_RECONCILIATION_RECEIPT",
+      "task": "Write truthful verification-only incident receipt and sanitized evidence bundle for Outcome A.",
+      "expected_files": [
+        "proof/TP-DMX-DDD-RELEASE-GATE-KEY-ROTATION-002/INCIDENT_RECEIPT.json",
+        "proof/TP-DMX-DDD-RELEASE-GATE-KEY-ROTATION-002/review_bundle/LIVE_EVIDENCE.md"
+      ],
+      "validation": [
+        "Receipt says ALREADY_ROTATED_VERIFIED and rotation_performed_by_this_packet=false.",
+        "Proof contains no private material.",
+        "All evidence statements trace to current GitHub UI/API/workflow readback."
+      ]
+    },
+    {
+      "id": "S11_INDEPENDENT_AUDIT",
+      "task": "Run one plan-backed Claude Code CLI audit against frozen content and capture exact verdict and provenance.",
+      "expected_files": [
+        "proof/TP-DMX-DDD-RELEASE-GATE-KEY-ROTATION-002/PROOF.json",
+        "proof/TP-DMX-DDD-RELEASE-GATE-KEY-ROTATION-002/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "Auditor route is plan-backed, non-OpenAI-family, and independent from implementer.",
+        "Audit examines the operation actually performed.",
+        "Only PASS or explicit non-blocking PASS_WITH_RISKS permits incident closure."
+      ]
+    },
+    {
+      "id": "S12_FIREKODI_CLOSURE",
+      "task": "Emit FireKodi closure handoff only after successful independent audit.",
+      "validation": [
+        "Rotation state is ALREADY_ROTATED_VERIFIED.",
+        "Compromised key currently present is NO.",
+        "Current release-gate authentication is PASS.",
+        "No private material enters closure proof.",
+        "Next action is FRESH_G12A_RECHECK."
+      ]
+    }
+  ]
+}
