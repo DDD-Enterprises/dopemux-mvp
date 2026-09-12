@@ -176,3 +176,7 @@
 ## 2026-07-19 - [Keyboard Dismissal for Soft Confirmations]
 **Learning:** For transient 'Soft Confirmation' patterns (like 3-second 'Confirm Skip' or 'Confirm Reset' states), keyboard users need an immediate, explicit way to cancel the pending destructive state without waiting out the timeout or risking an accidental second activation. Binding the `Escape` key (`onKeyDown`) to reset confirmation states provides an intuitive safety hatch for keyboard navigation.
 **Action:** Always attach an `onKeyDown` handler listening for `Escape` to reset confirmation states on soft confirmation buttons.
+
+## 2026-07-20 - [Tactile Candidate Copying in Data Tables]
+**Learning:** In dense data tables (like PortfolioTable), displaying commit SHAs as static text forces users to manually highlight text to copy full identities. Converting commit SHAs into interactive, copyable Chip components with icon swapping (`Copy` -> `Check`), dynamic `aria-label` updates, tooltips, and pulse feedback provides immediate utility without disrupting table density or layout.
+**Action:** Replace static SHA text in data tables with interactive copyable Chips using the Tactile Confirmation pattern.
