@@ -175,6 +175,19 @@ A packet is superseded by another packet
 | DMX-DCP-PROMPT5-EXTRACT-RECON-001 | DCP / Prompt 5 | Extract Prompt 5 chat-history docs and reconcile PR/Task Orchestrator runway state | Active | N/A |
 | TP-DMX-C0-R2-SCHEMA-PUBLICATION-001 | Control Tower / DCP | Deterministic C0-R2 schema publication into schemas/dcp (exact-byte, L0) | Active (PR #1307 open) | N/A |
 | TP-DMX-C0-R2-SCHEMA-PUBLICATION-001-A1 | Control Tower / DCP | Publication admission amendment — C0-R2 ratification authority reconciliation | Active | TP-DMX-C0-R2-SCHEMA-PUBLICATION-001 |
+| TP-DMX-WSAC-SERIES-REGISTRATION-000 | Whole-System Architecture | Register frozen WSAC packet series | Registered / registration only | N/A |
+| TP-DMX-WSAC-R0-LIVE-TRUTH-CENSUS-001 | Whole-System Architecture | Live repo/runtime truth census | Registered / next after 000 | N/A |
+| TP-DMX-WSAC-R1A-MCP-SERVICE-FLEET-001 | Whole-System Architecture | MCP and service fleet reconstruction | Registered / blocked on R0 | N/A |
+| TP-DMX-WSAC-R1B-RUNNER-AGENT-INTEGRATION-001 | Whole-System Architecture | Runner and custom-agent integration reconstruction | Registered / blocked on R0 | N/A |
+| TP-DMX-WSAC-R1C-DCP-UAG-CONTEXT-ROUTING-001 | Whole-System Architecture | DCP, UAG, context and routing reconstruction | Registered / blocked on R0 | N/A |
+| TP-DMX-WSAC-R1D-CANONICAL-SYSTEMS-DATAFLOW-001 | Whole-System Architecture | Canonical systems and dataflow reconstruction | Registered / blocked on R0 | N/A |
+| TP-DMX-WSAC-R1E-GOVERNANCE-EVIDENCE-FINALITY-001 | Whole-System Architecture | Governance, evidence and finality reconstruction | Registered / blocked on R0 | N/A |
+| TP-DMX-WSAC-R1F-SECURITY-IDENTITY-MULTIPROJECT-001 | Whole-System Architecture | Security, identity and multiproject reconstruction | Registered / blocked on R0 | N/A |
+| TP-DMX-WSAC-R1G-DEVELOPER-EXPERIENCE-ECONOMY-001 | Whole-System Architecture | Developer experience and context-economy reconstruction | Registered / blocked on R0 | N/A |
+| TP-DMX-WSAC-R2-EXTERNAL-CAPABILITY-RESEARCH-001 | Whole-System Architecture | External runner/MCP capability research | Registered / blocked on R0 | N/A |
+| TP-DMX-WSAC-S0-WHOLE-SYSTEM-SYNTHESIS-001 | Whole-System Architecture | Whole-system architecture synthesis | Registered / blocked on R1A-G + R2 | N/A |
+| TP-DMX-WSAC-A0-FINAL-ARCHITECTURE-AUDIT-001 | Whole-System Architecture | Final independent architecture audit | Registered / blocked on S0 | N/A |
+| TP-DMX-WSAC-P0-CROSS-SYSTEM-CONTRACT-FREEZE-001 | Whole-System Architecture | Cross-system contract freeze | Registered / blocked on A0 + operator ratification | N/A |
 
 ────────────────────────────────────────────────────────────
 🟢 Completed Task Packets
