@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from datetime import datetime
 from typing import List, Optional
 
@@ -9,6 +10,30 @@ from dopemux.dcp.red_lane import (
 )
 from dopemux.dcp.red_lane_taxonomy import load_red_lane_taxonomy_info
 from dopemux.dcp.red_lane_rules import FORBIDDEN_PATHS, TEXT_RULES, is_safe_false_positive, redact_secret_like
+
+# TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002: mirrors
+# .claude/hooks/dcp_surface_guard.py's _CONTROL_CHARS / _has_control_chars.
+# PR #1322 re-anchored every FORBIDDEN_PATHS entry to \Z (true end-of-string)
+# and added re.DOTALL to every wildcard-bearing pattern, which correctly
+# closed the bypass for those rules. But the small set of exact-match,
+# non-wildcard entries in FORBIDDEN_PATHS -- the merge-seam drain scripts,
+# the merge-seam batch script, and the dopetask/taskx launcher scripts --
+# regressed on this consumer specifically: under the old `$`, a trailing
+# newline used to accidentally still match (`$` matches just before a final
+# newline), so an exact-match forbidden filename plus a trailing newline
+# used to be blocked. Under `\Z` it no longer matches, and unlike the hook,
+# this scanner has no other layer standing in front of it -- the match call
+# below is evaluated directly against caller-supplied strings with no
+# normalisation. Fail closed on any control character unconditionally, the
+# same way the hook does, rather than depend on every current and future
+# FORBIDDEN_PATHS entry having exactly correct anchoring.
+_CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f]")
+
+
+def _has_control_chars(s: str) -> bool:
+    """True if ``s`` contains any ASCII control byte (0x00-0x1F, 0x7F)."""
+    return bool(_CONTROL_CHARS.search(s))
+
 
 class RedLaneScanner:
     def __init__(self, repo_root: str):
@@ -30,9 +55,40 @@ class RedLaneScanner:
         audit_paths = audit_paths or []
         merge_readiness_paths = merge_readiness_paths or []
         taxonomy_info = load_red_lane_taxonomy_info(self.repo_root)
-        
+
         findings = []
-        
+
+        # Reported inputs reflect exactly what the caller passed, even for
+        # paths the control-character short-circuit below removes from
+        # further processing.
+        reported_changed_files = list(changed_files)
+
+        # Control-character fail-closed short-circuit. Runs before
+        # FORBIDDEN_PATHS matching and before any filesystem access is
+        # attempted for the path (os.path.exists/open in the source-text
+        # loop below) -- a malformed path never reaches either.
+        safe_changed_files = []
+        for fpath in changed_files:
+            if _has_control_chars(fpath):
+                findings.append(Finding(
+                    category="MALFORMED_PATH_CONTROL_CHARACTER",
+                    severity=Severity.CRITICAL,
+                    status=Status.BLOCKED,
+                    authority_label=AuthorityLabel.OBSERVED,
+                    evidence=(
+                        "changed_files path contains an ASCII control "
+                        f"character (0x00-0x1F or 0x7F): {fpath!r}"
+                    ),
+                    recommended_action=(
+                        "Inspect the literal path value; no legitimate "
+                        "changed file has a control character in its path."
+                    ),
+                    path=fpath
+                ))
+            else:
+                safe_changed_files.append(fpath)
+        changed_files = safe_changed_files
+
         # Check Paths
         for fpath in changed_files:
             for pattern in FORBIDDEN_PATHS:
@@ -129,7 +185,7 @@ class RedLaneScanner:
             ),
             repo=RepoInfo(head_sha=expected_head_sha),
             inputs=InputsInfo(
-                changed_files=changed_files,
+                changed_files=reported_changed_files,
                 diff_text_supplied=bool(diff_text),
                 control_snapshot_paths=control_snapshot_paths,
                 proof_paths=proof_paths,

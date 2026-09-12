@@ -1,0 +1,45 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1325,
+  "head_sha": "6be339b7f29f60114f74bbddcf97edba6cfa3eb3",
+  "generated_at": "2026-09-07T04:59:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/red-lane-cov-2 --add-dir /tmp/redlane002_audit --print=\"$(cat /tmp/redlane002_audit/PROMPT_ROUND3.txt)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/AUDITOR_REPORT.md",
+    "findings": [
+      {"id": "AUDIT-DCP-PR1304-001", "severity": "INFO", "title": "Round 1: diff scope, logic, tests, and mutation independently verified PASS", "status": "RESOLVED", "body": "See AUDITOR_REPORT.md Round 1 section. Runtime fix at head 582862ea5f9d9fa56fd1221b22d53036778706b2."},
+      {"id": "AUDIT-R2-03", "severity": "INFO", "title": "Round 2: mutation test exhausts and independently fails all applicable probes", "status": "RESOLVED", "body": "Auditor independently ran the parametrized mutation test in round 2."},
+      {"id": "AUDIT-R3-02", "severity": "INFO", "title": "Round 3: filesystem-access mock test independently proven non-vacuous", "status": "RESOLVED", "body": "Auditor moved the short-circuit after the filesystem loop in its own scratch copy and confirmed the test then fails with AssertionError: Expected 'exists' to not have been called. Called 1 times."},
+      {"id": "AUDIT-R3-03", "severity": "INFO", "title": "Round 3: S1 hard-equality-after-fast-forward assertion confirmed", "status": "RESOLVED", "body": "Replaces a prior ancestry-only check that silently tolerated a stale HEAD."},
+      {"id": "AUDIT-R3-04", "severity": "INFO", "title": "Round 3: corrected 7-status-layer/6-category-layer mutation split independently reproduced exactly", "status": "RESOLVED", "body": "Auditor's own per-probe scan matched this session's evidence exactly."}
+    ],
+    "fixes_applied": [
+      "Round 2: parametrized the two control-character test functions, pinned the donor content digest, corrected the packet header authority fields, tightened S1 wording",
+      "Round 3: mocked and asserted os.path.exists/open are never called in the filesystem-skip test; hardened S1 to a post-fast-forward equality assertion; corrected the mutation-evidence claim to distinguish status-layer bypass from category-layer regression"
+    ],
+    "remaining_risks": [],
+    "skip_reason": null,
+    "instruction_like_content": {"detected": false, "match_count": 0, "truncated": false, "matches": []}
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "claude-sonnet-5",
+      "model_family": "anthropic-claude",
+      "runtime_family": "claude-code-cli"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini-3.1-pro-high",
+      "model_family": "google-gemini",
+      "runtime_family": "agy",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  }
+}

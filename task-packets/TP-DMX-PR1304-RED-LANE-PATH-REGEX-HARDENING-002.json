@@ -1,0 +1,199 @@
+{
+  "id": "TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002",
+  "project": "dopemux-mvp",
+  "target": "Close a confirmed live control-character bypass in RedLaneScanner (src/dopemux/dcp/red_lane_scanner.py) affecting exact-match FORBIDDEN_PATHS entries, without touching red_lane_rules.py or the already-safe .claude/hooks/dcp_surface_guard.py, and without merging until an independent audit and CI/PR Steward pass on the resulting runtime change.",
+  "invariants": [
+    "PR #1322 (merge commit 33a38119f97611e391aab719151ffadbf541f06c) remains merged and its \\Z/re.DOTALL re-anchoring of every wildcard FORBIDDEN_PATHS entry is unchanged.",
+    "src/dopemux/dcp/red_lane_rules.py is not modified by this packet.",
+    ".claude/hooks/dcp_surface_guard.py is not modified by this packet.",
+    "Any changed_files path containing an ASCII C0 (0x00-0x1F) or DEL (0x7F) byte resolves to Status.BLOCKED with a recorded blocking finding, before FORBIDDEN_PATHS matching and before any filesystem access is attempted for that path.",
+    "Every exact-match FORBIDDEN_PATHS rule (scripts/dopetask, scripts/taskx, both queue_drain.py variants, scripts/batch_resolve_and_merge.py) plus a control character remains blocked by the scanner.",
+    "Every existing ALLOW case (workflow exemptions, ADR-226 carve-outs, ordinary clean paths) remains unaffected; the fix is not satisfiable by blanket over-blocking.",
+    "The isolated mutation test (short-circuit removed) reproduces failure specifically on the exact-match probes that were previously silently bypassing.",
+    "PR #1321 donor test content is retrieved via explicit fetch and hash-verified before extraction, never reconstructed from memory.",
+    "No merge occurs as part of this packet's execution.",
+    "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/PROOF.json records honest PASS/FAIL/NOT_RUN per acceptance criterion.",
+    "Fresh independent audit is bound to the exact implementation head, not to the superseded test-only draft."
+  ],
+  "depends_on": [
+    "TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-SERIES",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "tp/red-lane-scanner-coverage-002",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(dcp): scanner-side control-character fail-closed short-circuit",
+    "allowlist": [
+      "task-packets/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002.md",
+      "task-packets/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002.json",
+      "src/dopemux/dcp/red_lane_scanner.py",
+      "tests/dcp/test_dcp_0005_red_lane_scanner.py",
+      "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/**",
+      "proof/pr_merge/embedded-audit/pr-1325/**"
+    ],
+    "verify": [
+      "Require this packet document and JSON companion committed first, separately from any runtime change.",
+      "Runtime mutation required explicit separate operator authorization beyond the 2026-09-06 scoping decision -- granted 2026-09-07 (\"authorized\"); src/ and tests/ changes landed only after that grant.",
+      "Require red_lane_rules.py and dcp_surface_guard.py byte-identical to BASE_SHA after implementation.",
+      "Require the full regression matrix in packet section 3.2 green.",
+      "Require the isolated mutation in section 4 to fail on exact-match probes specifically.",
+      "Require no --no-verify and no red-lane routing.",
+      "Require fresh independent audit bound to the exact implementation head.",
+      "Require current CI and PR Steward gates green before returning for merge decision.",
+      "Do not merge."
+    ]
+  },
+  "pr": {
+    "title": "fix(dcp): scanner-side control-character fail-closed repair (supersedes test-only draft)",
+    "body": "Closes a confirmed live bypass: RedLaneScanner silently fails to block exact-match FORBIDDEN_PATHS entries (scripts/dopetask, scripts/taskx, queue_drain.py variants, batch_resolve_and_merge.py) when the path carries a trailing or embedded control character, because the \\Z re-anchoring in PR #1322 correctly fixed the wildcard rules but regressed these exact-match rules on the one consumer (the scanner) that lacks the hook's independent control-character short-circuit. Adds an unconditional scanner-side fail-closed check mirroring the hook's, plus regression coverage for exact-match, wildcard, exemption-spoof, arbitrary-malformed, and clean-control cases. Supersedes this PR's prior test-only scope, which automated review correctly identified as insufficient. Does not merge.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "TP-002-S1",
+      "task": "Re-verify the live bypass and current main identity before implementing.",
+      "requirements": [
+        "A dedicated worktree is created (or an existing one is fetched and re-verified) from the current origin/main tip, not merely checked to contain an old ancestor SHA.",
+        "The execution HEAD used for implementation is asserted EQUAL to origin/main at fetch time -- not merely an ancestor of it. A HEAD that is behind origin/main is an ancestor of it (git merge-base --is-ancestor HEAD origin/main succeeds even when stale), so ancestry alone is not sufficient: the check must reject inequality outright and require an actual fast-forward (or fresh checkout) before proceeding, never silently accept a stale-but-ancestor tree.",
+        "PR #1322 confirmed merged and its content present in red_lane_rules.py.",
+        "The five exact-match probes independently reproduced as Status.UNKNOWN (bypass) against the verified, up-to-date execution HEAD before any change."
+      ],
+      "commands": [
+        "git fetch origin main",
+        "MAIN_SHA=$(git rev-parse origin/main)",
+        "HEAD_SHA=$(git rev-parse HEAD)",
+        "if [ \"$HEAD_SHA\" != \"$MAIN_SHA\" ]; then git merge --ff-only origin/main || { echo \"HEAD is not a fast-forward ancestor of origin/main -- stop, do not implement on a diverged tree\" >&2; exit 1; }; fi",
+        "test \"$(git rev-parse HEAD)\" = \"$MAIN_SHA\"  # hard equality assertion after the fast-forward, not merely ancestry",
+        "PYTHONPATH=src python3 -c \"import tempfile; from dopemux.dcp.red_lane_scanner import RedLaneScanner; tmp = tempfile.mkdtemp(); s = RedLaneScanner(repo_root=tmp); probes = ['scripts/dopetask\\n', 'scripts/taskx\\n', 'dopemux_pr_merge_specialist/queue_drain.py\\n', 'src/dopemux_pr_merge_specialist/queue_drain.py\\n', 'scripts/batch_resolve_and_merge.py\\n']; [print(p, s.scan(changed_files=[p]).status) for p in probes]\"  # must print Status.UNKNOWN for all five before any change"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Bypass reproduced with the exact same evidence shape as packet section 1.3.",
+        "No mutation performed yet."
+      ],
+      "context_files": [
+        "task-packets/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002.md",
+        "src/dopemux/dcp/red_lane_scanner.py",
+        "src/dopemux/dcp/red_lane_rules.py"
+      ]
+    },
+    {
+      "id": "TP-002-S2",
+      "task": "Add the unconditional control-character fail-closed short-circuit to RedLaneScanner.scan().",
+      "requirements": [
+        "Check runs before the FORBIDDEN_PATHS loop and before the source-text loop.",
+        "Any C0/DEL byte in a changed_files entry resolves that path to Status.BLOCKED with a distinguishable blocking finding.",
+        "No filesystem access (os.path.exists/open) is attempted for a path that trips the short-circuit.",
+        "red_lane_rules.py and dcp_surface_guard.py remain untouched."
+      ],
+      "commands": [
+        "implement the short-circuit in src/dopemux/dcp/red_lane_scanner.py"
+      ],
+      "expected_files": [
+        "src/dopemux/dcp/red_lane_scanner.py"
+      ],
+      "validation": [
+        "git diff shows exactly one file changed under src/.",
+        "The five previously-bypassing exact-match probes now report Status.BLOCKED."
+      ],
+      "context_files": [
+        ".claude/hooks/dcp_surface_guard.py"
+      ]
+    },
+    {
+      "id": "TP-002-S3",
+      "task": "Retrieve and hash-verify PR #1321's donor test block, then write the full regression matrix.",
+      "requirements": [
+        "PR #1321 head 353bd8b245beb2c137f1ef94b45227d885328fed fetched explicitly, not assumed present.",
+        "Donor content hash recorded and compared before extraction.",
+        "Full matrix from packet section 3.2 present: exact-match, wildcard, exemption-spoof, arbitrary-malformed, clean-control.",
+        "No other file modified."
+      ],
+      "commands": [
+        "git fetch origin pull/1321/head:tp-1321-donor",
+        "git rev-parse tp-1321-donor",
+        "git show 353bd8b24:tests/dcp/test_dcp_0005_red_lane_scanner.py | sha256sum",
+        "extract and adapt the donor block, then add the new exact-match/arbitrary/clean-control cases"
+      ],
+      "expected_files": [
+        "tests/dcp/test_dcp_0005_red_lane_scanner.py"
+      ],
+      "validation": [
+        "Full file green.",
+        "Every matrix row in packet section 3.2 has a corresponding assertion."
+      ],
+      "context_files": [
+        "task-packets/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002.md"
+      ]
+    },
+    {
+      "id": "TP-002-S4",
+      "task": "Run the isolated anti-vacuity mutation per packet section 4.",
+      "requirements": [
+        "Worktree reset to the clean implementation commit before the mutation.",
+        "Short-circuit removed as the only change; landed change count asserted non-zero.",
+        "Full regression matrix re-run; exact-match probes specifically shown to fail.",
+        "Worktree reset again after."
+      ],
+      "commands": [
+        "git stash / git worktree reset per packet section 4 procedure",
+        "apply the isolated mutation",
+        "run the full test file",
+        "record which probes fail and their actual Status",
+        "restore the clean implementation"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/MUTATION_EVIDENCE.md"
+      ],
+      "validation": [
+        "Mutation reported as BITES only with concrete failing-probe evidence attached.",
+        "No chained/sequential mutation without a reset between them."
+      ],
+      "context_files": []
+    },
+    {
+      "id": "TP-002-S5",
+      "task": "Validate, commit, push, and run independent audit; do not merge.",
+      "requirements": [
+        "Full tests/dcp/ suite green.",
+        "Pre-commit clean.",
+        "Fresh independent audit bound to the exact implementation head.",
+        "Current CI and PR Steward gates green.",
+        "PR remains open and unmerged."
+      ],
+      "commands": [
+        "run full tests/dcp/ suite",
+        "run pre-commit",
+        "commit under the allowlist",
+        "push to tp/red-lane-scanner-coverage-002",
+        "run independent audit against the exact head",
+        "observe CI and PR Steward",
+        "return non-merge handoff with PASS/FAIL/NOT_RUN per acceptance criterion"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/PROOF.json"
+      ],
+      "validation": [
+        "All required CI and PR Steward gates pass.",
+        "No merge performed."
+      ],
+      "context_files": [
+        "schemas/proof/embedded_audit.schema.json"
+      ]
+    }
+  ]
+}
