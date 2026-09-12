@@ -43,12 +43,20 @@ except ImportError:  # pragma: no cover
     markdown = Any  # type: ignore
 
 try:
-    from PyPDF2 import PdfReader
+    # pypdf is the maintained continuation of PyPDF2; PdfReader, .pages and
+    # .extract_text() are API-identical, so the extraction code below is
+    # unchanged. PyPDF2 stays as a fallback for environments still pinning it.
+    from pypdf import PdfReader
 
     PYPDF2_AVAILABLE = True
 except ImportError:  # pragma: no cover
-    PYPDF2_AVAILABLE = False
-    PdfReader = Any  # type: ignore
+    try:
+        from PyPDF2 import PdfReader
+
+        PYPDF2_AVAILABLE = True
+    except ImportError:
+        PYPDF2_AVAILABLE = False
+        PdfReader = Any  # type: ignore
 
 try:
     import magic
@@ -65,10 +73,21 @@ class DocumentProcessor:
 
     def __init__(self, encoding_name: str = "cl100k_base"):
         """Initialize document processor."""
+        self.encoding = None
         if TIKTOKEN_AVAILABLE:
-            self.encoding = tiktoken.get_encoding(encoding_name)
-        else:
-            self.encoding = None
+            try:
+                self.encoding = tiktoken.get_encoding(encoding_name)
+            except Exception as exc:  # pragma: no cover - needs a cold cache
+                # get_encoding() fetches the BPE file over the network when it
+                # is not already cached, so an installed tiktoken is not a
+                # guarantee. Match the import guards above and fall back to the
+                # character estimate rather than failing construction.
+                logger.warning(
+                    "tiktoken.get_encoding(%s) failed (%s); "
+                    "token_count will use the character estimate",
+                    encoding_name,
+                    exc,
+                )
         self.magic = magic.Magic(mime=True) if MAGIC_AVAILABLE else None
 
     def detect_document_type(self, file_path: str) -> DocumentType:

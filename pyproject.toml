@@ -125,6 +125,14 @@ services = [
     "beautifulsoup4>=4.12.0",
     "lxml>=6.1.0",
     "rank_bm25",
+    # dope-context's document_processor imports these three. Each sits behind a
+    # try/except ImportError, so an undeclared one degrades silently instead of
+    # failing: without tiktoken, count_tokens() falls back to a len(text)//4
+    # estimate and every chunk boundary shifts; without pypdf, PDFs raise; and
+    # without python-magic, MIME detection is skipped.
+    "tiktoken>=0.7.0",
+    "pypdf>=4.0.0",
+    "python-magic>=0.4.27",
     "python-multipart>=0.0.31",
     "aioredis>=2.0.1",
     "asyncio-mqtt>=0.16.0",

@@ -178,8 +178,13 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 0
 fi
 
-failures_json="$(json_array "${FAILURES[@]}")"
-skipped_json="$(json_array "${SKIPPED[@]}")"
+# `${arr[@]+"${arr[@]}"}` instead of `"${arr[@]}"`: under `set -u`, bash 3.2
+# (still the /bin/bash on macOS) treats expanding an EMPTY array as an unbound
+# variable and aborts. That inverted this gate -- it completed only when
+# something had already failed, and died on the all-green path, which is the
+# path that has to work. json_array() already handles zero arguments.
+failures_json="$(json_array ${FAILURES[@]+"${FAILURES[@]}"})"
+skipped_json="$(json_array ${SKIPPED[@]+"${SKIPPED[@]}"})"
 repo_url="$(git config --get remote.origin.url || true)"
 repo_url="${repo_url:-UNKNOWN}"
 branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
