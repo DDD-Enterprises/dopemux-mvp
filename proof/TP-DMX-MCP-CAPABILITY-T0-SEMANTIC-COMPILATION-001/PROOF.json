@@ -1,0 +1,29 @@
+{
+  "packet_id": "TP-DMX-MCP-CAPABILITY-T0-SEMANTIC-COMPILATION-001",
+  "head_sha": "f216854992526814beae93e38ee92bb0b7be1be3",
+  "generated_at": "2026-08-31T13:07:13Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy 1.1.22 --model gemini-3.1-pro-high --effort high --mode plan --sandbox --disable-slash-commands --print-timeout 10m --print=<bounded exact-head T0 audit prompt recorded in review_bundle/AUDIT_INVOCATION.txt>; local model catalog display=Gemini 3.1 Pro (High); one parser-rejected no-model precursor; one model invocation; no fallback; verdict=PASS",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-MCP-CAPABILITY-T0-SEMANTIC-COMPILATION-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "bounded-shadow-scope",
+        "severity": "LOW",
+        "title": "Runtime and generated-client integration remain outside T0",
+        "status": "ACCEPTED_RISK",
+        "body": "Auditor observed that T0 intentionally performs no runtime probes and does not render or apply client configuration. This is non-blocking under the ratified shadow-only T0 scope."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "T0 validates semantic shadow compilation only; runtime and client integration remain unexercised.",
+      "Auditor model identity is evidenced by the explicit AGY selector and AGY model catalog, not provider cryptographic attestation."
+    ],
+    "skip_reason": null
+  }
+}
