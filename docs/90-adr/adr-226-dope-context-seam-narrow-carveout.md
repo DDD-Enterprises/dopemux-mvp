@@ -825,15 +825,25 @@ be reverted together with any caller changes made under it.
 
 ```text
 AMENDMENT_ID=ADR-226-A5
-AMENDMENT_STATUS=PROPOSED
-APPROVED_BY=(none — operator approval required before the regex lands)
+AMENDMENT_STATUS=A5a_APPROVED / A5b_HOLD
+APPROVED_BY=operator, 2026-09-04 (A5a only — path-level exemption for the
+  three named A5a files; explicitly NOT a grant of A5's displayed regex
+  literally, and NOT a grant of A5b)
 COMPANION_PACKET=TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007 (same date)
 SPLIT=A5a (test file + two leaf utilities) / A5b (two Voyage client modules) — severable, approve independently
 A5a_ADDS_EXEMPTIONS=services/dope-context/tests/test_wave1_behaviour.py, services/dope-context/src/utils/model_tokenizer.py, services/dope-context/src/utils/token_budget.py
-A5b_ADDS_EXEMPTIONS=services/dope-context/src/embeddings/contextualized_embedder.py, services/dope-context/src/rerank/voyage_reranker.py
+A5b_ADDS_EXEMPTIONS=services/dope-context/src/embeddings/contextualized_embedder.py, services/dope-context/src/rerank/voyage_reranker.py (HOLD — retry
+  behaviour changes live paid Voyage API billing; separate cost/runtime
+  tranche required, per operator ruling)
 AUTHORIZES_CONTENT_EDITS=NO (path-level only; TEXT_RULES scanning unchanged)
-WAVES_2_6_SRC_LIFT=STILL_NOT_AUTHORIZED (A5 exempts five named files; no
+WAVES_2_6_SRC_LIFT=STILL_NOT_AUTHORIZED (A5a exempts three named files; no
   directory pattern and no Wave 1 src/ pattern is lifted)
+IMPLEMENTATION_NOTE=the operator's approval explicitly rejected this
+  section's displayed regex literal: its anchored `$` claim predates the
+  TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001 finding that Python's `$`
+  matches before a trailing newline (PR #1322, merged `33a38119f`). The
+  three A5a lookaheads actually landed with `\Z` + `re.DOTALL`, not `$` —
+  see the corrected code block below.
 ```
 
 ### Why this amendment is smaller than expected
@@ -940,42 +950,59 @@ retrieval wave.
 
 ### Exact regex change
 
-In `src/dopemux/dcp/red_lane_rules.py`, the ADR-226 carve-out entry gains
-five negative lookaheads (additions marked `+`); everything else is
-unchanged:
+**Corrected 2026-09-04 (post-A5a-approval).** The block below as originally
+drafted showed `$`-anchored additions on top of `$`-anchored existing
+entries, matching A2/A3/A4's own style at the time. `$` matches immediately
+before a *trailing* newline, not strictly end-of-string; combined with `.`
+not crossing an embedded newline without `re.DOTALL`, a control character in
+a candidate path could make the whole blanket pattern fail to match at all
+(silent fall-through to unblocked) or make a lookahead falsely treat a
+newline-suffixed string as the real exempted file
+(`proof/TP-DMX-DCP-WORKFLOW-SEAM-LIFT-001R/FINAL_AUDIT_VERDICT.json`, F3 —
+previously accepted as informational/no-realistic-bypass). PR #1322
+(`TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001`, merged `33a38119f`)
+closed this properly rather than re-accepting it for a third amendment in a
+row, converting every `$` in this pattern to `\Z` and adding `re.DOTALL`.
+Only A5a's three lookaheads actually landed (additions marked `+`); A5b's
+two are HOLD and were never added:
 
 ```python
     re.compile(
         r"^services/dope-context/"
         r"(?!eval/)"
-        r"(?!src/pipeline/indexing_pipeline\.py$)"
-        r"(?!src/mcp/server\.py$)"
-        r"(?!src/index_profile\.py$)"
-        r"(?!src/embeddings/model_registry\.py$)"
-        r"(?!tests/test_vector_space_invariants\.py$)"
-        r"(?!tests/test_vector_profiles_and_migration\.py$)"
-        r"(?!src/embeddings/voyage_embedder\.py$)"
-        r"(?!src/search/dense_search\.py$)"
-+       r"(?!tests/test_wave1_behaviour\.py$)"
-+       r"(?!src/utils/model_tokenizer\.py$)"
-+       r"(?!src/utils/token_budget\.py$)"
-+       r"(?!src/embeddings/contextualized_embedder\.py$)"
-+       r"(?!src/rerank/voyage_reranker\.py$)"
-        r".*$"
+        r"(?!src/pipeline/indexing_pipeline\.py\Z)"
+        r"(?!src/mcp/server\.py\Z)"
+        r"(?!src/index_profile\.py\Z)"
+        r"(?!src/embeddings/model_registry\.py\Z)"
+        r"(?!tests/test_vector_space_invariants\.py\Z)"
+        r"(?!tests/test_vector_profiles_and_migration\.py\Z)"
+        r"(?!src/embeddings/voyage_embedder\.py\Z)"
+        r"(?!src/search/dense_search\.py\Z)"
++       r"(?!tests/test_wave1_behaviour\.py\Z)"
++       r"(?!src/utils/model_tokenizer\.py\Z)"
++       r"(?!src/utils/token_budget\.py\Z)"
+        r".*\Z",
+        re.DOTALL,
     ),
 ```
 
-The first three additions are A5a; the last two are A5b. The companion
-traversal-refusal entry
-(`^services/dope-context/(?:.*/)?\.\.(?:/|$)`) is unchanged and continues
-to cover the newly-exempted paths.
+A5b's two lookaheads
+(`(?!src/embeddings/contextualized_embedder\.py\Z)`,
+`(?!src/rerank/voyage_reranker\.py\Z)`) are drafted here for the future
+approval decision but are NOT part of the pattern actually compiled in
+`red_lane_rules.py` today. The companion traversal-refusal entry
+(`^services/dope-context/(?:.*/)?\.\.(?:/|\Z)`, `re.DOTALL`) was hardened
+the same way in the same PR and continues to cover the newly-exempted
+paths.
 
 ### Invariants preserved
 
-Unchanged from A2/A3/A4: anchored `$` (so `.bak`/`.orig`/`.tmp` and
-same-named files elsewhere stay blocked), whole-path case folding from the
-F-001-A fix (`a4f86c48c`), the traversal-refusal companion entry, and
-`TEXT_RULES` content scanning.
+Same exact-match, non-widening intent as A2/A3/A4, now expressed with `\Z`
+instead of `$` (so `.bak`/`.orig`/`.tmp` and same-named files elsewhere stay
+blocked, and a trailing/embedded control character can no longer confuse the
+match either way — see "Exact regex change" above), whole-path case folding
+from the F-001-A fix (`a4f86c48c`), the traversal-refusal companion entry,
+and `TEXT_RULES` content scanning.
 
 Near-miss verification cases, the strongest available since `src/utils/`
 currently has no exempt file at all:
@@ -1035,27 +1062,36 @@ and carry no state. The A5b retry changes to `contextualized_embedder.py`
 and `voyage_reranker.py` should be reverted together, since both change
 the same retry policy against the same vendor.
 
-### Verification before landing
+### Verification before landing (A5a — done; A5b still pending)
 
 * `PYTHONPATH=src python -m pytest tests/test_dcp_surface_guard.py tests/dcp/test_dcp_0005_red_lane_scanner.py -v`
-  — expected full pass; baseline is 69 passed, so expect 69 or more with
-  any new table-driven cases added for this amendment.
-* `surface_guard_block` returns `None` for each of the five new paths
-  (`tests/test_wave1_behaviour.py`, `src/utils/model_tokenizer.py`,
-  `src/utils/token_budget.py`, `src/embeddings/contextualized_embedder.py`,
-  `src/rerank/voyage_reranker.py`) and still returns a
+  — baseline was 69 passed pre-A5; the red-lane-hardening PR (#1322) added 7
+  more (76); this amendment adds no new guard-suite cases of its own beyond
+  the carve-out/near-miss table entries. **76 passed, confirmed.**
+* `surface_guard_block` returns `None` for each of A5a's **three** new
+  paths (`tests/test_wave1_behaviour.py`, `src/utils/model_tokenizer.py`,
+  `src/utils/token_budget.py`) and still returns a
   `DCP-RED-MERGE-SEAM-0001` block for `src/utils/workspace.py`,
-  `src/utils/metrics_tracker.py`, `tests/conftest.py`, and a
-  `..`-traversal form of each newly-exempted path (e.g.
-  `src/utils/../utils/model_tokenizer.py`).
+  `src/utils/metrics_tracker.py`, `tests/conftest.py`,
+  `src/embeddings/contextualized_embedder.py`,
+  `src/rerank/voyage_reranker.py` (A5b, HOLD), and a `..`-traversal form of
+  each newly-exempted path (e.g. `src/utils/../utils/model_tokenizer.py`).
+  **Confirmed.**
 * The `services/dope-context` suite stays green — baseline 124 passed, 1
-  skipped.
-* The new test file contains at least one test that **actually drives**
-  the changed code path — e.g. it awaits `_check_rate_limit` under
-  contention and asserts the lock is not held across the sleep, and it
-  drives the retry path with a mocked 429 rather than asserting on the
-  constructor arguments alone — and each new assertion is
-  **mutation-tested**: flip the fix under test, confirm the assertion
-  fails, then restore it. `str.replace` fails silently, and a bad
-  experiment looks exactly like a weak test; prefer AST inspection over
-  substring matching in any source-scanning test.
+  skipped; A5a's 9 new tests bring it to **133 passed, 1 skipped,
+  confirmed.**
+* The new test file contains tests that **actually drive** the changed
+  code path (not a substring scan of the source): the eviction-order and
+  cache-hit tests genuinely exercise `VoyageTokenCounter._cache` through
+  `count_each`; the starvation tests genuinely exercise
+  `_truncate_results`' forced-degrade branch; the token_count-preference
+  tests genuinely compare truncated vs. untruncated output. Each of the
+  three fixes (E10, E2/E4, E17) was **mutation-tested**: the fix was
+  reverted, the corresponding test confirmed red, then the fix was
+  restored and the test confirmed green again — recorded in
+  `proof/TP-DMX-ADR226-A5A-WAVE1B-001/` alongside this PR. No test in this
+  file does source-pattern scanning, so the AST-vs-substring constraint
+  does not apply to it.
+* Wave 1a (R-5, E1, E16, C1, C6, C13, registry additions) and Wave 1c/A5b
+  are explicitly **not** part of this amendment's landing — see the
+  companion packet's Status section for the current tranche boundaries.
