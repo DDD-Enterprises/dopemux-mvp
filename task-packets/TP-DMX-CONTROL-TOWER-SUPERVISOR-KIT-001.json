@@ -1,0 +1,103 @@
+{
+  "id": "TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001",
+  "project": "dopemux-mvp",
+  "target": "Harden and republish the operator-requested Control Tower Supervisor Kit as a clean L2 successor with streamed egress screening, schema-backed validation, exact identity binding, and supervised-only routing integration.",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-CONTROL-TOWER-SUPERVISOR-KIT",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "commit": {
+    "message": "fix(governance): harden Control Tower package and identity checks",
+    "allowlist": [
+      ".control-tower/**",
+      ".control-tower/bin/ct",
+      ".control-tower/config/**",
+      ".control-tower/contracts/**",
+      ".control-tower/prompts/**",
+      ".control-tower/schemas/**",
+      ".control-tower/templates/**",
+      ".control-tower/project.json",
+      ".control-tower/state/.gitignore",
+      ".control-tower/backups/.gitignore",
+      "AGENTS.md",
+      ".claude/PROJECT_INSTRUCTIONS.md",
+      ".claude/claude.md",
+      ".claude/llm.md",
+      ".claude/llms.md",
+      ".claude/modules/shared/governance-principles.md",
+      ".github/copilot-instructions.md",
+      "config/repo_hygiene/root_hygiene_policy.json",
+      ".pre-commit-config.yaml",
+      "task-packets/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001.json",
+      "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001/**",
+      "proof/pr_merge/embedded-audit/pr-*/**"
+    ],
+    "verify": [
+      "Exclude local state, backups, secrets and unrelated primary-checkout changes.",
+      "Preserve current main governance; kit does not replace audit, acceptance or merge authority.",
+      "Only path-specific markdown location allowance for the installed kit is authorized."
+    ]
+  },
+  "pr": {
+    "title": "fix(governance): harden Control Tower supervisor kit",
+    "body": "Publish a clean successor that hardens local package screening, schema validation, identity binding, ZIP verification, and supervised-only instruction routing while preserving audit, proof, signer, finality, and operator gates.",
+    "base": "main"
+  },
+  "invariants": [
+    "Latest user authorizes the clean-r1 local commit and, only after supervisor followup, a normal push plus one draft PR. Merge is forbidden in this phase; no admin bypass, force push, branch deletion or credential/permission changes.",
+    "Latest architecture disposition authorizes clean-r1 custody in /private/tmp/kit001-clean-r1-20260908/checkout on codex/control-tower-supervisor-kit-clean-r1, created at 46b35b3cb0192d69a45cb41ed55df6ba34201e0e; current main remains 6a728f74c0311967f83213513308f97613e3f28d.",
+    "No donor merge or cherry-pick. Prior PR1335 proofs and signed evidence remain unchanged historical evidence; useful ideas are independently reconstructed and attributed in clean-r1 evidence.",
+    "L2 final independent audit is deferred while PR1330 remains open and must occur only after main refresh and final substantive freeze; no intermediate model audit.",
+    "No push until supervisor prepublication followup; no merge of any PR in this phase, and PR1335 receives no changes or closure.",
+    "Installed vendor payload is historical provenance; repository-maintained repairs and retained defaults ownership are explicit.",
+    "No canonical packet schema, signer authority, proof acceptance, or finality policy changes.",
+    "Rollback by reviewed revert of only the clean-r1 successor commit; retain original kit, state, donor custody bundles, and immutable evidence."
+  ],
+  "steps": [
+    {
+      "id": "CT1",
+      "task": "Reconstruct the approved scanner, schema, RETURN, runner inventory, ZIP, repository-binding, packet-identity, and supervised-routing repairs without donor ancestry.",
+      "validation": [
+        "Task packet satisfies tracked canonical schema.",
+        "Adversarial standard-library tests capture RED and cover large, boundary, unreadable, partial, generated, identity, binding, RETURN, inventory, path and semantic ZIP cases.",
+        "No runtime services or provider configuration changed."
+      ]
+    },
+    {
+      "id": "CT2",
+      "task": "Run the complete deterministic matrix, scoped CLI/contract checks, configured precommit, and preserve raw validation evidence before publication.",
+      "commands": [
+        "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+        "pre-commit run --from-ref origin/main --to-ref HEAD",
+        "git diff --check"
+      ],
+      "validation": [
+        "Required deterministic checks pass; failures captured and resolved only inside allowlist."
+      ]
+    },
+    {
+      "id": "CT3",
+      "task": "After PR1330 resolves, refresh from current main, freeze substantive content, obtain one independent permitted non-Codex audit, and preserve the raw verdict/proof.",
+      "validation": [
+        "Audit route/invocation/model/independence proven, no fallback concealed.",
+        "Missing, failed, stale or untrusted audit blocks merge; no fabricated or self-authored audit verdict."
+      ]
+    },
+    {
+      "id": "CT4",
+      "task": "Only after supervisor prepublication authorization, push this branch and create one draft PR; attach a valid proof-only successor as required and reharvest checks/reviews. Merge remains a later gated action.",
+      "validation": [
+        "Harvest exact-head CI, PR Steward and unresolved review truth with PASS, FAIL, NOT_RUN, UNKNOWN or STALE preserved; park before final audit.",
+        "No merge, PR1335 change/closure, branch deletion, history rewrite, audit substitution, or activation."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "command": "python3 -m unittest discover -s .control-tower/tests -p 'test_*.py' -v",
+  "expected_state": "RED",
+  "exit_code": 1,
+  "failures": 2,
+  "errors": 12,
+  "observed": [
+    "tool_info marked a failed executable probe PROVEN",
+    "runner-inventory invoked agy models without explicit opt-in",
+    "required scanner, schema, identity, RETURN and ZIP verification APIs were absent"
+  ],
+  "status": "PRESERVED_FAILURE",
+  "test_count": 14
+}

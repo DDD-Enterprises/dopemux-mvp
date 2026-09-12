@@ -1,0 +1,39 @@
+{
+  "argv": [
+    "/Users/hue/.local/bin/claude",
+    "--print",
+    "--safe-mode",
+    "--no-session-persistence",
+    "--permission-mode",
+    "plan",
+    "--tools",
+    "",
+    "--strict-mcp-config",
+    "--model",
+    "sonnet",
+    "--effort",
+    "medium",
+    "--output-format",
+    "json"
+  ],
+  "started_at_epoch": 1788903447.225557,
+  "head_sha": "648475216f2ffab9b249de6502294c124890f090",
+  "execution_head": "b174c91f52366dfa4f5a76be86b7eb14ed09f51d",
+  "proof_only_successor_paths": [
+    "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001/AUDITOR_REPORT.md",
+    "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001/PROOF.json",
+    "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001/review_bundle/MANIFEST.json",
+    "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001/review_bundle/ROUTING_DECISION.json",
+    "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001/review_bundle/change-contract.json",
+    "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001/review_bundle/content.diff.json",
+    "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001/review_bundle/diff-check.json",
+    "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001/review_bundle/frozen-head.json",
+    "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001/review_bundle/kit-inventory.json",
+    "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001/review_bundle/precommit.json",
+    "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001/review_bundle/prior-kit-review.md",
+    "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001/review_bundle/proof-preflight-initial-failure.json",
+    "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001/review_bundle/smoke.log"
+  ],
+  "egress_authority": "User explicitly approved scoped diff/governance/test evidence to Claude after prior pre-execution denial.",
+  "prompt_sha256": "fdb58ae5e8423d04166096dfea499a33f37cec15a1d2166d2a05361f1ce90e72"
+}

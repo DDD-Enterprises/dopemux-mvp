@@ -1,0 +1,40 @@
+{
+  "captured_at": "2026-09-09T01:09:10Z",
+  "packet_id": "TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001",
+  "clean_branch": "codex/control-tower-supervisor-kit-clean-r1",
+  "clean_creation_head": "46b35b3cb0192d69a45cb41ed55df6ba34201e0e",
+  "excluded_ancestry": {
+    "4b31331b93fae6ffb98d23b4c0cfa1df7f5e55d5": 1,
+    "6be4f29633292e0c37e146cea4e19045659a83f3": 1,
+    "b99e0f57aba6e9119502ef22a973b1495a53ba4a": 1
+  },
+  "donor_artifacts": [
+    {
+      "path": "/private/tmp/kit001-clean-r1-20260908/frozen-pr1335-lineage.bundle",
+      "sha256": "49d0ebb044c599215fbfe214593733694bbc4e418b709eac73c16fbeb84c5816",
+      "verification": "git bundle verify exit 0"
+    },
+    {
+      "path": "/private/tmp/kit001-clean-r1-20260908/donor-evidence.tar.gz",
+      "sha256": "582f7bbaccf84b2cf7ead589319e227a91d57a16b57d4a6c5a76715062712c77"
+    },
+    {
+      "path": "/private/tmp/kit001-clean-r1-20260908/donor-full.diff",
+      "sha256": "2ff33fda28acb052a4b3764233e3b86a2d70bbbc787a41eea24a2a023a3d64dc"
+    }
+  ],
+  "donor_heads": {
+    "local_latest": "d43ee015c94a1daba7bc265131c9b84485468347",
+    "remote_pr_1335": "b99e0f57aba6e9119502ef22a973b1495a53ba4a"
+  },
+  "adoption": "NO_COMMIT_OR_WHOLESALE_COPY",
+  "reused_ideas": [
+    "stream staged bytes without an arbitrary maximum",
+    "execute installed schemas with a stdlib supported subset",
+    "separate schema validation from route cross-field policy",
+    "bind Task Packet, route, proof, RETURN, repository, and package identities",
+    "verify ZIP member hashes, sizes, inventory, paths, and scan receipt",
+    "document project.json runtime ownership versus retained defaults scaffold"
+  ],
+  "reconstruction": "Implemented independently in the clean checkout with a new standard-library test matrix and preserved RED cases."
+}

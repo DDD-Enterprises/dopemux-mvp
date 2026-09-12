@@ -6,6 +6,104 @@
 
 ---
 
+<!-- CONTROL_TOWER_ENTRY_BEGIN -->
+## Control Tower Supervision
+
+For supervised packets, follow [Control Tower Packet Workflow](../../../AGENTS.md#control-tower-packet-workflow).
+The repository-owned integration preserves current governance and embedded-audit
+requirements; kit reports do not grant acceptance or merge authority.
+
+Every non-trivial execution request requires the Supervisor MacroPacket hierarchy
+below. Repository doctrine governs this requirement even where generic kit prose
+describes optional MacroPackets or unsupervised work. Unproven external
+policy/workflow/context/audit references remain UNKNOWN/NOT_RUN; optional kit
+references never waive an applicable repository or upstream obligation.
+<!-- CONTROL_TOWER_ENTRY_END -->
+
+## Supervisor MacroPacket and Team Lead Doctrine
+
+Mandatory operating hierarchy:
+
+```text
+OPERATOR
+ -> CONTROL TOWER SUPERVISOR
+ -> SUPERVISOR MACROPACKET
+ -> TEAM LEAD
+ -> MULTIPLE CHILD WORKSTREAMS
+ -> AGGREGATE RETURN
+```
+
+For every non-trivial design, implementation, investigation, repair,
+qualification, finality, or repo-changing execution request:
+
+1. The Control Tower supervisor must issue one Supervisor MacroPacket.
+2. Every MacroPacket must contain at least two genuine workstreams. Implementation,
+   validation, custody, evidence, compatibility, route qualification, finality, and
+   security are valid boundaries. Never invent ceremonial work to satisfy the count.
+3. Each child Task Packet remains scoped execution law, with its own authority,
+   risk lane, write allowlist, canonical writers, rollback, route, proof, and audit
+   obligations. These boundaries are non-transferable: the envelope is not pooled
+   authority and no child may borrow a sibling's permissions.
+4. The team lead coordinates legal children, collects their evidence, and returns
+   one aggregate result. It may not widen or transfer authority, lower risk, waive
+   proof or audit, override Task Orchestrator, create operator authority, merge,
+   activate, self-certify acceptance, or serve as the required independent auditor
+   for work it supervised.
+5. Use one mutating implementer per workstream. Mutating siblings may run in
+   parallel only when physical and semantic write surfaces, canonical writers,
+   rollback, and custody are proven disjoint and current workflow state permits
+   execution. Otherwise serialize them with explicit dependencies.
+6. Continue unaffected legal children when one blocks unless a global stop applies.
+   Return early at real authority, risk, custody, writer, rollback, audit, or
+   activation contradictions, no legal route, FAIL/NEEDS_SUPERVISOR, or an operator gate.
+7. Aggregate returns preserve child status, subject, proof, audit, blockers, and
+   next legal action. Their authority is NONE; they never create global
+   PASS/READY/DONE or canonical acceptance from mixed child states.
+
+### Routing and Layer Boundaries
+
+Before every MacroPacket or child Task Packet:
+
+```text
+TP_ROUTE
+runner=<runner or UNKNOWN>
+model=<exact selector or NONE|UNKNOWN>
+effort=<low|medium|high|xhigh|max|unknown>
+why=<one sentence>
+```
+
+Exact runtime runner/model/effort is a Control Tower ExecutionBinding, never DCP
+RouteDecision. Validate scope before recording and validating the coordinator's
+binding and each executing child's binding. The coordinator's binding cannot
+authorize child mutation. Preserve exact authorized routes, fallback restrictions,
+retry budgets, and configured versus provider-attested identity; unknown stays UNKNOWN.
+
+DCP owns policy, classification, context, and route eligibility. Task Orchestrator
+owns workflow legality. Universal Router ranks eligible routes. Audit Broker owns
+auditor certification and dispatch. Dopetask executes separately authorized effects.
+No layer may widen upstream authority or substitute its output for another layer's proof.
+
+### Evidence Economy and Finality
+
+Prefer one MacroPacket, legal parallel children, and one aggregate return. Use
+shell/local for deterministic facts; never spend model calls on hashes, manifests,
+inventories, or other deterministic work. Settle CI and reviews before freezing
+substantive content and running the one final independent L2/L3 audit. No
+intermediate model audits. Preserve stronger upstream audit obligations.
+
+The final audit binds the frozen substantive subject. Later semantic change
+invalidates it; proof-only successors do not automatically require re-audit.
+Validate their scope and subject binding deterministically, reuse valid
+subject-bound evidence, and reharvest only affected facts. Required embedded audit
+and canonical proof acceptance remain separate from aggregate reporting.
+
+Never merge, mark ready, close, force-push, rewrite history, alter credentials or
+permissions, activate, publish, migrate, mutate production, or accept security
+residual risk without required explicit operator authority. The team lead cannot
+mint a new canonical MacroPacket; autonomous next-MacroPacket creation, promotion,
+or dispatch remains separately gated. Generic kit previews and reports do not
+implement or authorize those actions.
+
 ## Read Repo Instructions First
 
 Before any non-trivial action:
@@ -138,8 +236,9 @@ This is the project doctrine layer over [AGENTS.md §2 (Truth Order)](../../../A
 
 **Canonical chain rules live in [AGENTS.md §5](../../../AGENTS.md)**:
 
-* Codex minimum chain: `analyze → planner → codereview → precommit`
-* Risky or architecture-sensitive chain: `analyze → thinkdeep → challenge → planner → challenge → implement → codereview → precommit → challenge`
+* Risk-laned execution and optional PAL chains follow AGENTS.md section 5.
+* Deterministic checks validate intermediate slices; no intermediate model audits.
+* L2/L3 require one final independent audit after CI/reviews settle and substantive freeze.
 * If `execution.agent = "gemini"`: `pal_chain.enabled = true`
 
 What this means for Claude Code sessions in this repo:
@@ -412,7 +511,7 @@ Rules:
 * `medium` means unresolved uncertainty
 * `low` means assumptions dominate
 
-Never present low-confidence reasoning as settled fact. Final confidence for repo-changing work must be `VERIFIED` per [AGENTS.md §8](../../../AGENTS.md).
+Never present low-confidence reasoning as settled fact. Final confidence for repo-changing work must be `VERIFIED` per [AGENTS.md §9](../../../AGENTS.md).
 
 ---
 
@@ -462,4 +561,4 @@ Every substantial response must contain:
 
 Do not omit uncertainty for aesthetics.
 
-For repo-changing work, also produce the full proof bundle per [AGENTS.md §8](../../../AGENTS.md): TP path/ID, worktree path, branch, repo identity result, slices completed, files changed, validations with exit codes, codereview status, precommit status, commit SHA, PR URL or exact blocker, residual risks, `UNKNOWN`s, cleanup status. No proof means incomplete.
+For repo-changing work, also produce the full proof bundle per [AGENTS.md §9](../../../AGENTS.md): TP path/ID, worktree path, branch, repo identity result, slices completed, files changed, validations with exit codes, codereview status, precommit status, commit SHA, PR URL or exact blocker, residual risks, `UNKNOWN`s, cleanup status. No proof means incomplete.
