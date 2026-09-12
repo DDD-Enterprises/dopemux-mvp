@@ -340,3 +340,40 @@ Stop: "stop caveman" or "normal mode"
 Auto-Clarity: drop caveman for security warnings, irreversible actions, user confused. Resume after.
 
 Boundaries: code/commits/PRs written normal.
+
+<!-- CONTROL_TOWER_MANAGED_BEGIN -->
+## Control Tower Supervisor
+For any supervised packet/workstream, read `.control-tower/contracts/SUPERVISOR_OPERATING_CONTRACT.md`, `.control-tower/contracts/ARCHITECTURE_RETURN_PROTOCOL.md`, and `.control-tower/project.json`. Before substantive execution of each supervised Task Packet, create and validate its routing decision (runner/model/effort plus justification). Use `.control-tower/bin/ct proof-pack` for upload-ready proof bundles and `.control-tower/bin/ct return-pack` whenever an applicable supervisor/advisor return gate fires. Repository authority and live runtime/GitHub truth outrank this pointer.
+<!-- CONTROL_TOWER_MANAGED_END -->
+
+<!-- CONTROL_TOWER_REPO_BEGIN -->
+## Control Tower Packet Workflow
+
+This repository-owned section complements the installer-managed pointer above.
+Existing repository governance and the authorized Task Packet govern scope and
+acceptance; the kit's generic defaults do not override them. These additional
+routing and packaging requirements apply only to supervised packets/workstreams;
+ordinary work retains the repository's existing workflow. The canonical runtime
+configuration is `.control-tower/project.json`, not the installer defaults.
+
+- Run `.control-tower/bin/ct` from the authorized repository/worktree. Confirm
+  that checkout has its own installation; do not use another project's state.
+- Before substantive supervised packet execution, use `.control-tower/bin/ct route-record` to record the
+  runner, model, effort, alternatives and evidence, then `.control-tower/bin/ct validate-route --file`
+  on the emitted path. Prefer deterministic shell work with justified
+  `model=NOT_REQUIRED`; otherwise choose the cheapest adequate authorized route
+  from current capability and cost evidence. Record unknowns; do not guess prices.
+- Honor pinned models, effort, provider restrictions, retry budgets and auditor
+  independence. A timeout does not authorize substitution or another attempt.
+  Required independent audits remain separate from implementation.
+- Route records under `.control-tower/state/routes/` are mutable local state.
+  Preserve each consumed decision in the packet's evidence before an authorized
+  route change; `route-record` overwrites the same packet's local record.
+- `.control-tower/bin/ct doctor` and `.control-tower/bin/ct runner-inventory` inspect tools; they do not prove model
+  execution, auditor independence, CI success or acceptance. Inspect command
+  return codes and preserve `PASS`, `FAIL`, `NOT_RUN` and `UNKNOWN`.
+- Use `.control-tower/bin/ct proof-pack` for local proof ZIPs and `.control-tower/bin/ct return-pack` at an applicable
+  supervisor return gate. Outputs default to `~/Downloads/PROOF` and
+  `~/Downloads/RETURN`. Packaging does not replace canonical proof validation,
+  authorize an upload, record acceptance, or grant merge/activation permission.
+<!-- CONTROL_TOWER_REPO_END -->

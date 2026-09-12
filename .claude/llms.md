@@ -2,20 +2,30 @@
 
 Multi-model AI configuration optimized for python development with ADHD accommodations.
 
+<!-- CONTROL_TOWER_ENTRY_BEGIN -->
+## Control Tower Supervision
+
+For supervised engineering packets, follow [Control Tower Packet Workflow](../AGENTS.md#control-tower-packet-workflow).
+Read the installed kit contracts and project configuration through that entry point.
+Read `.claude/PROJECT_INSTRUCTIONS.md` and `.claude/PRIMER.md` first.
+<!-- CONTROL_TOWER_ENTRY_END -->
+
 ## Model Selection for Python
 
-### Primary Models
+For supervised packets, use the current validated packet routing decision for
+code, architecture, fixes and documentation. For ordinary unsupervised work,
+follow existing user/repository model-selection authority and choose the cheapest
+adequate authorized available route; no packet or routing record is required.
+Verify route availability before choosing; static model names are not evidence
+of availability, current price or permission.
 
-- **Code Generation**: Claude Sonnet 4, DeepSeek Chat
-- **Architecture**: Claude Opus 4.1, O3-Pro
-- **Quick Fixes**: Gemini 2.5 Flash, GPT-5 Mini
-- **Documentation**: Claude Opus 4.1, GPT-4.1
+### Attention-Based Presentation
 
-
-### Attention-Based Routing
-- **Focused**: Use comprehensive models (Opus 4.1, O3-Pro)
-- **Scattered**: Use fast models (Gemini 2.5 Flash, GPT-5 Mini)
-- **Hyperfocus**: Use code-focused models (Sonnet 4, Grok Code Fast)
+- **Focused**: Provide relevant detail and explicit validation.
+- **Scattered**: Keep the next action concise and bounded.
+- **Hyperfocus**: Preserve scope and summarize checkpoints.
+- Attention state does not override applicable user/repository authority or a
+  supervised packet's model, effort or audit gates.
 
 ## Project-Specific Adaptations
 
@@ -35,7 +45,12 @@ Multi-model AI configuration optimized for python development with ADHD accommod
 
 ## MCP Server Integration
 
-### Active Servers
+### Tool Discovery
+
+Verify the live tool inventory before using the examples below. Listed names are
+orientation only, not evidence that a server or operation is available.
+
+### Server Examples
 
 - **mas-sequential-thinking**: Complex reasoning for architecture
 - **pal**: API/SDK documentation via apilookup
@@ -45,10 +60,11 @@ Multi-model AI configuration optimized for python development with ADHD accommod
 
 
 ### Cost Optimization
-- Prefer faster models for simple queries
-- Use premium models for complex architecture decisions
-- Cache responses for repeated patterns
-- Smart fallback chains
+- Use deterministic local tools where sufficient.
+- Choose the cheapest adequate authorized model using current evidence.
+- Preserve original evidence when reusing results; recheck relevance and scope.
+- Retry or change routes only within applicable user/repository authority and,
+  for supervised packets, the packet's explicit retry/fallback bounds.
 
 ---
 

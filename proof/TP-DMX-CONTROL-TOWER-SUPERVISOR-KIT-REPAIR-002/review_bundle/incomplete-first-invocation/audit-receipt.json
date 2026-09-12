@@ -1,0 +1,25 @@
+{
+  "argv": [
+    "/Users/hue/.local/bin/claude",
+    "--print",
+    "--safe-mode",
+    "--no-session-persistence",
+    "--permission-mode",
+    "plan",
+    "--tools",
+    "",
+    "--strict-mcp-config",
+    "--model",
+    "sonnet",
+    "--effort",
+    "medium",
+    "--output-format",
+    "json"
+  ],
+  "egress_authority": "Prior explicit scoped Claude audit/public proof approval plus latest authorized bounded repairs and all merges",
+  "exit_code": 0,
+  "finished_at_epoch": 1788907271.5579112,
+  "head_sha": "4b31331b93fae6ffb98d23b4c0cfa1df7f5e55d5",
+  "prompt_sha256": "bc24a2e6acac7a8cc9f4e21e7ccae58ba80ee209bad9a8ea36a9b32137770c5e",
+  "started_at_epoch": 1788907178.387681
+}

@@ -1,0 +1,49 @@
+{
+  "audit": {
+    "effort": "medium",
+    "independence": "PROPOSED: distinct provider/runtime to be proven by fresh final audit metadata",
+    "model": "sonnet",
+    "rationale": "One final non-Codex audit after substantive freeze; no fallback or interim audit",
+    "required": true,
+    "runner": "Claude CLI"
+  },
+  "fallback": {
+    "model": null,
+    "runner": null,
+    "trigger": null
+  },
+  "justification": {
+    "alternatives_considered": [
+      {
+        "disposition": "selected-for-validation",
+        "reason": "Use local tests and schema oracle without model calls",
+        "route": "deterministic-shell"
+      },
+      {
+        "disposition": "rejected",
+        "reason": "No demonstrated need for larger implementation route",
+        "route": "larger-Codex"
+      }
+    ],
+    "cost_latency_tradeoff": "",
+    "evidence": [
+      "Latest user: authorized, get alll merged; bounded repair packet REPAIR-002; shared_kit_repair spawned Luna high"
+    ],
+    "why_effort": "Security and schema-sensitive packaging requires careful focused reasoning",
+    "why_model": "Luna authorized by user and adequate for bounded stdlib fixes; no claim of current price optimality",
+    "why_runner": "User requested cheap agents; delegated Codex worker is available in current runtime"
+  },
+  "packet_id": "TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-REPAIR-002",
+  "recorded_at": "20260908T221038Z",
+  "risk_lane": "L3",
+  "schema_version": "1.0",
+  "selection": {
+    "agent_role": "worker",
+    "custom_agent": null,
+    "effort": "high",
+    "model": "gpt-5.6-luna",
+    "runner": "Codex",
+    "runner_availability": "PROVEN"
+  },
+  "stage": "bounded-repair"
+}

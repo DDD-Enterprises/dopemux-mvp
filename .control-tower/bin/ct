@@ -1,0 +1,652 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+import argparse, json, os, re, shutil, subprocess, sys, tempfile, hashlib, stat, zipfile
+from pathlib import Path
+from datetime import datetime, timezone
+from urllib.parse import urlsplit
+
+VERSION = "1.0.2-local"
+MAX_SCAN_BYTES = 20_000_000
+
+def now_stamp(): return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+def git_cmd(*args): return ['git','-c','core.fsmonitor=false',*args]
+def run(cmd, cwd=None):
+    try:
+        p=subprocess.run(cmd,cwd=cwd,text=True,capture_output=True,timeout=120)
+        return {'cmd':cmd,'returncode':p.returncode,'stdout':p.stdout,'stderr':p.stderr}
+    except Exception as e: return {'cmd':cmd,'returncode':127,'stdout':'','stderr':f'{type(e).__name__}: {e}'}
+
+def repo_root():
+    r=run(git_cmd('rev-parse','--show-toplevel'))
+    if r['returncode']!=0: raise SystemExit('ERROR: not inside a Git repository')
+    return Path(r['stdout'].strip()).resolve()
+
+def ct_root(repo): return repo/'.control-tower'
+def load_project(repo):
+    p=ct_root(repo)/'project.json'
+    if not p.exists(): raise SystemExit(f'ERROR: missing {p}; run installer')
+    return json.loads(p.read_text())
+def state_dir(repo):
+    p=ct_root(repo)/'state'; p.mkdir(parents=True,exist_ok=True); return p
+
+def expand(s): return Path(os.path.expanduser(s)).resolve()
+
+
+def git_capture(repo, *args):
+    result=run(git_cmd(*args), repo)
+    if result['returncode'] != 0:
+        raise SystemExit('ERROR: required Git evidence capture failed')
+    return result['stdout']
+
+
+def git_remote_url(repo):
+    result=run(git_cmd('remote','get-url','origin'), repo)
+    if result['returncode'] == 0 and result['stdout'].strip():
+        return result['stdout'].strip()
+    return None
+
+def git_state(repo):
+    def g(*args): return run(git_cmd(*args),repo)
+    head=g('rev-parse','HEAD'); branch=g('branch','--show-current'); status=g('status','--porcelain=v1'); remote=g('remote','get-url','origin'); base=g('merge-base','HEAD','origin/main')
+    d={'repo_root':str(repo),'head_sha':head['stdout'].strip() if head['returncode']==0 else None,'branch':branch['stdout'].strip() if branch['returncode']==0 else None,'dirty':bool(status['stdout'].strip()),'status_porcelain':status['stdout'],'origin':git_remote_url(repo),'merge_base_origin_main':base['stdout'].strip() if base['returncode']==0 else None,'captured_at':now_stamp()}
+    gh=shutil.which('gh')
+    if gh and d['branch']:
+        q=run(['gh','pr','view','--json','number,state,isDraft,headRefOid,baseRefOid,mergeable,url'],repo)
+        if q['returncode']==0:
+            try: d['pull_request']=json.loads(q['stdout'])
+            except Exception: d['pull_request_raw']=q['stdout']
+        else: d['pull_request_error']=q['stderr'].strip()
+    return d
+
+def cmd_snapshot(args):
+    repo=repo_root(); d=git_state(repo); out=state_dir(repo)/'LIVE_STATE.json'; out.write_text(json.dumps(d,indent=2,sort_keys=True)+'\n'); print(out); return 0
+
+def tool_info(name, version_args):
+    path=shutil.which(name)
+    if not path: return {'tool':name,'availability':'UNKNOWN','path':None}
+    r=run([name,*version_args])
+    text=(r['stdout'] or r['stderr']).strip()
+    availability = 'PROVEN' if r['returncode'] == 0 else 'UNKNOWN'
+    return {'tool':name,'availability':availability,'path':path,'version_output':text[:2000],'returncode':r['returncode']}
+
+def cmd_doctor(args):
+    repo=repo_root(); proj=load_project(repo)
+    checks={'git':tool_info('git',['--version']),'python3':tool_info('python3',['--version'])}
+    for n,a in [('gh',['--version']),('codex',['--version']),('claude',['--version']),('agy',['--version']),('gemini',['--version'])]: checks[n]=tool_info(n,a)
+    dirs={k:str(expand(v)) for k,v in proj.get('downloads',{}).items()}
+    for p in dirs.values(): Path(p).mkdir(parents=True,exist_ok=True)
+    report={'version':VERSION,'project':proj.get('project_name'),'repo':str(repo),'checks':checks,'download_dirs':dirs}
+    out=state_dir(repo)/'DOCTOR.json'; out.write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
+    print(json.dumps(report,indent=2)); return 0 if checks['git']['availability']=='PROVEN' and checks['python3']['availability']=='PROVEN' else 2
+
+def cmd_runner_inventory(args):
+    repo=repo_root(); inv={'captured_at':now_stamp(),'tools':[]}
+    specs=[('git',['--version']),('gh',['--version']),('codex',['--version']),('claude',['--version']),('agy',['--version']),('gemini',['--version'])]
+    for n,a in specs: inv['tools'].append(tool_info(n,a))
+    if args.probe_models and shutil.which('agy'):
+        r=run(['agy','models'],repo); inv['agy_models']={'returncode':r['returncode'],'stdout':r['stdout'][:20000],'stderr':r['stderr'][:4000]}
+    out=state_dir(repo)/'RUNNER_INVENTORY.json'; out.write_text(json.dumps(inv,indent=2,sort_keys=True)+'\n'); print(out); return 0
+
+def routes_dir(repo):
+    p=state_dir(repo)/'routes'; p.mkdir(parents=True,exist_ok=True); return p
+
+def _schema_type_ok(value, expected):
+    if expected == 'object': return isinstance(value, dict)
+    if expected == 'array': return isinstance(value, list)
+    if expected == 'string': return isinstance(value, str)
+    if expected == 'boolean': return isinstance(value, bool)
+    if expected == 'integer': return isinstance(value, int) and not isinstance(value, bool)
+    if expected == 'number': return isinstance(value, (int, float)) and not isinstance(value, bool)
+    if expected == 'null': return value is None
+    return False
+
+
+def _validate_schema(value, schema, path='$'):
+    """Validate the small JSON-Schema subset used by the shipped contracts."""
+    errs=[]
+    if not isinstance(schema, dict):
+        return [f'{path}: invalid schema']
+    supported={'$schema','$id','$comment','const','enum','type','minLength','minItems','items','properties','required','pattern','additionalProperties'}
+    unknown=sorted(set(schema) - supported)
+    if unknown:
+        errs.extend(f'{path}: unsupported schema keyword {key}' for key in unknown)
+    if 'const' in schema and value != schema['const']:
+        errs.append(f'{path}: must equal {schema["const"]!r}')
+    if 'enum' in schema and value not in schema['enum']:
+        errs.append(f'{path}: must be one of {schema["enum"]!r}')
+    expected=schema.get('type')
+    if expected and not _schema_type_ok(value, expected):
+        return errs + [f'{path}: expected {expected}']
+    if isinstance(value, str):
+        if 'minLength' in schema and len(value) < schema['minLength']:
+            errs.append(f'{path}: must not be empty')
+        if 'pattern' in schema:
+            try:
+                if re.search(schema['pattern'], value) is None:
+                    errs.append(f'{path}: does not match required pattern')
+            except re.error:
+                errs.append(f'{path}: invalid schema pattern')
+    if isinstance(value, list):
+        if 'minItems' in schema and len(value) < schema['minItems']:
+            errs.append(f'{path}: requires at least {schema["minItems"]} item(s)')
+        if 'items' in schema:
+            for i, item in enumerate(value):
+                errs.extend(_validate_schema(item, schema['items'], f'{path}[{i}]'))
+    if isinstance(value, dict):
+        for key in schema.get('required', []):
+            if key not in value:
+                errs.append(f'{path}: missing {key}')
+        properties=schema.get('properties', {})
+        for key, child in properties.items():
+            if key in value:
+                errs.extend(_validate_schema(value[key], child, f'{path}.{key}'))
+        if schema.get('additionalProperties') is False:
+            extras=sorted(set(value) - set(properties))
+            errs.extend(f'{path}: unexpected property {key}' for key in extras)
+    return errs
+
+
+def _load_schema(repo, name):
+    path=ct_root(repo)/'schemas'/name
+    try:
+        return json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SystemExit(f'ERROR: cannot load shipped schema {path}: {type(exc).__name__}')
+
+
+def validate_route_obj(d, repo=None):
+    if repo is None:
+        repo=repo_root()
+    if not isinstance(d, dict):
+        return ['$: expected object']
+    errs=_validate_schema(d, _load_schema(repo, 'route_decision.schema.json'))
+    for path, value in (
+        ('$.schema_version', d.get('schema_version')),
+        ('$.packet_id', d.get('packet_id')),
+        ('$.stage', d.get('stage')),
+        ('$.selection.runner', d.get('selection', {}).get('runner') if isinstance(d.get('selection'), dict) else None),
+        ('$.selection.model', d.get('selection', {}).get('model') if isinstance(d.get('selection'), dict) else None),
+        ('$.selection.effort', d.get('selection', {}).get('effort') if isinstance(d.get('selection'), dict) else None),
+        ('$.justification.why_runner', d.get('justification', {}).get('why_runner') if isinstance(d.get('justification'), dict) else None),
+        ('$.justification.why_model', d.get('justification', {}).get('why_model') if isinstance(d.get('justification'), dict) else None),
+        ('$.justification.why_effort', d.get('justification', {}).get('why_effort') if isinstance(d.get('justification'), dict) else None),
+    ):
+        if isinstance(value, str) and not value.strip():
+            errs.append(f'{path}: must not be blank')
+    risk=d.get('risk_lane')
+    audit=d.get('audit')
+    justification=d.get('justification')
+    alternatives=justification.get('alternatives_considered') if isinstance(justification, dict) else None
+    if isinstance(alternatives, list):
+        for index, alternative in enumerate(alternatives):
+            if isinstance(alternative, dict):
+                for key in ('route', 'reason'):
+                    value=alternative.get(key)
+                    if isinstance(value, str) and not value.strip():
+                        errs.append(f'$.justification.alternatives_considered[{index}].{key}: must not be blank')
+    if isinstance(risk, str) and risk in {'L2','L3'} and (not isinstance(audit, dict) or audit.get('required') is not True):
+        errs.append(f'{risk} requires audit.required=true by generic baseline')
+    if isinstance(audit, dict) and audit.get('required') is True:
+        for k in ['runner','model','effort','independence','rationale']:
+            if not isinstance(audit.get(k), str) or not audit[k].strip():
+                errs.append(f'missing audit.{k}')
+    return errs
+
+def cmd_route_record(args):
+    repo=repo_root(); alternatives=[]
+    for raw in args.alternative:
+        parts=raw.split('|',2)
+        if len(parts)!=3: raise SystemExit("ERROR: --alternative must be route|disposition|reason")
+        alternatives.append({'route':parts[0],'disposition':parts[1],'reason':parts[2]})
+    audit_required=args.audit_required if args.audit_required is not None else args.risk in {'L2','L3'}
+    audit={'required':audit_required}
+    if audit_required:
+        audit.update({'runner':args.audit_runner,'model':args.audit_model,'effort':args.audit_effort,'independence':args.audit_independence,'rationale':args.audit_rationale or ''})
+    d={'schema_version':'1.0','packet_id':args.packet_id,'stage':args.stage,'risk_lane':args.risk,'selection':{'runner':args.runner,'runner_availability':args.runner_availability,'agent_role':args.agent_role,'custom_agent':args.custom_agent,'model':args.model,'effort':args.effort},'justification':{'why_runner':args.why_runner,'why_model':args.why_model,'why_effort':args.why_effort,'cost_latency_tradeoff':args.cost_latency_tradeoff or '', 'alternatives_considered':alternatives,'evidence':args.evidence},'fallback':{'runner':args.fallback_runner,'model':args.fallback_model,'trigger':args.fallback_trigger},'audit':audit,'recorded_at':now_stamp()}
+    errs=validate_route_obj(d, repo)
+    if errs: print('\n'.join('ERROR: '+e for e in errs),file=sys.stderr); return 2
+    out=routes_dir(repo)/(re.sub(r'[^A-Za-z0-9_.-]+','_',args.packet_id)+'.json'); out.write_text(json.dumps(d,indent=2,sort_keys=True)+'\n'); print(out); return 0
+
+def cmd_validate_route(args):
+    try:
+        d=json.loads(Path(args.file).read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f'ERROR: invalid routing decision: {type(exc).__name__}')
+        return 2
+    try:
+        errs=validate_route_obj(d, repo_root())
+    except SystemExit as exc:
+        print(str(exc)); return 2
+    if errs: print('\n'.join('ERROR: '+e for e in errs)); return 2
+    print('PASS: routing decision valid'); return 0
+
+def get_route(repo, packet_id):
+    p=routes_dir(repo)/(re.sub(r'[^A-Za-z0-9_.-]+','_',packet_id)+'.json')
+    if not p.exists(): raise SystemExit(f'ERROR: no routing decision for {packet_id}: {p}')
+    try:
+        d=json.loads(p.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SystemExit(f'ERROR: invalid routing decision: {type(exc).__name__}')
+    errs=validate_route_obj(d, repo)
+    if errs: raise SystemExit('ERROR: invalid routing decision: '+'; '.join(errs))
+    if d.get('packet_id') != packet_id:
+        raise SystemExit(f'ERROR: routing decision packet identity mismatch for {packet_id}')
+    return p
+
+SECRET_PATTERNS=[
+ ('PRIVATE_KEY', re.compile(rb'-----BEGIN (?:RSA |EC |OPENSSH |)PRIVATE KEY-----')),
+ ('GITHUB_TOKEN', re.compile(rb'\b(?:ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,})\b')),
+ ('OPENAI_KEY', re.compile(rb'\bsk-[A-Za-z0-9_-]{20,}\b')),
+ ('AWS_ACCESS_KEY', re.compile(rb'\bAKIA[0-9A-Z]{16}\b')),
+ ('SECRET_ASSIGNMENT', re.compile(rb'(?i)\b(?:password|passwd|api[_-]?key|token|secret)\s*[:=]\s*["\']?(?!<|\$\{|REDACTED|CHANGEME|example|none|null)[A-Za-z0-9_./+\-=]{16,}')),
+]
+def scan_files(paths):
+    hits=[]
+    for p in paths:
+        if not p.is_file():
+            hits.append({'path':str(p),'pattern':'UNSCANNABLE_NOT_FILE'})
+            continue
+        try:
+            if p.stat().st_size > MAX_SCAN_BYTES:
+                hits.append({'path':str(p),'pattern':'UNSCANNABLE_OVERSIZED'})
+                continue
+            with p.open('rb') as stream:
+                data=stream.read(MAX_SCAN_BYTES + 1)
+        except (OSError, PermissionError):
+            hits.append({'path':str(p),'pattern':'UNSCANNABLE_UNREADABLE'})
+            continue
+        if len(data)>MAX_SCAN_BYTES:
+            hits.append({'path':str(p),'pattern':'UNSCANNABLE_OVERSIZED'})
+            continue
+        for name,pat in SECRET_PATTERNS:
+            if pat.search(data): hits.append({'path':str(p),'pattern':name})
+    return hits
+
+def iter_input(path):
+    p=Path(path)
+    if p.is_file(): return [p]
+    if p.is_dir():
+        files=[]
+        walk_errors=[]
+        def onerror(error):
+            if error.filename:
+                walk_errors.append(Path(error.filename))
+        for root, dirs, names in os.walk(p, onerror=onerror):
+            dirs[:] = [name for name in dirs if name != '.git']
+            files.extend(Path(root)/name for name in names)
+        # Keep traversal failures in the scan set. scan_files will fail closed
+        # without echoing the underlying OS error or any file contents.
+        files.extend(walk_errors)
+        return files
+    raise SystemExit(f'ERROR: missing input {p}')
+
+
+PACKET_ID_PATTERN=r'[A-Za-z][A-Za-z0-9_.-]*-[A-Za-z0-9_.-]+'
+
+
+def _markdown_heading_id(title):
+    title=title.strip()
+    task_prefix=re.match(r'(?i)^task packet(?:\s*\([^)]*\))?\s*(?::|[—–])\s*(.*)$', title)
+    if task_prefix:
+        body=task_prefix.group(1).strip()
+        if body.startswith('`'):
+            match=re.match(r'^`([^`]+)`(?:\s*(?:[—–:·-].*)?)?$', body)
+            if not match or not re.fullmatch(PACKET_ID_PATTERN, match.group(1)):
+                raise ValueError('malformed Task Packet heading')
+            return match.group(1)
+        match=re.match(rf'^({PACKET_ID_PATTERN})(?:\s*(?:[—–:·-].*)?)?$', body)
+        if not match:
+            raise ValueError('malformed Task Packet heading')
+        return match.group(1)
+    if title.startswith('`'):
+        match=re.match(r'^`([^`]+)`(?:\s*(?:[—–:·-].*)?)?$', title)
+        if match and re.fullmatch(PACKET_ID_PATTERN, match.group(1)):
+            return match.group(1)
+        if 'TP-' in title or 'DMX-' in title:
+            raise ValueError('malformed packet heading')
+        return None
+    match=re.match(rf'^({PACKET_ID_PATTERN})(?:\s*(?:[—–:·-].*)?)?$', title)
+    return match.group(1) if match else None
+
+
+def _read_packet(path):
+    try:
+        text=path.read_text()
+    except UnicodeDecodeError:
+        raise SystemExit('ERROR: cannot read packet: invalid text encoding')
+    except OSError as exc:
+        raise SystemExit(f'ERROR: cannot read packet: {type(exc).__name__}')
+    if path.suffix.lower() == '.json':
+        try:
+            value=json.loads(text)
+        except json.JSONDecodeError:
+            raise SystemExit('ERROR: packet is not valid JSON')
+        if not isinstance(value, dict):
+            raise SystemExit('ERROR: packet JSON must be an object')
+        return text, value
+    return text, None
+
+
+def packet_identity(path):
+    """Return exactly one canonical packet ID, ignoring fenced headings."""
+    text,value=_read_packet(path)
+    if value is not None:
+        packet_id=value.get('id', value.get('packet_id'))
+        if not isinstance(packet_id, str) or not packet_id.strip():
+            raise SystemExit('ERROR: packet JSON missing non-empty id or packet_id')
+        return packet_id.strip()
+    candidates=[]; fence_char=None; fence_len=0
+    for line in text.splitlines():
+        marker=line.strip()
+        fence=re.match(r'^(`{3,}|~{3,})(?:[^`~].*)?$', marker)
+        if fence:
+            chars=fence.group(1)
+            if fence_char is None:
+                fence_char=chars[0]; fence_len=len(chars)
+            elif chars[0] == fence_char and len(chars) >= fence_len:
+                fence_char=None; fence_len=0
+            continue
+        if fence_char is not None:
+            continue
+        match=re.match(r'^\s*#{1,6}\s+(.+?)\s*$', line)
+        if not match:
+            continue
+        try:
+            candidate=_markdown_heading_id(match.group(1))
+        except ValueError as exc:
+            raise SystemExit(f'ERROR: {exc}')
+        if candidate:
+            candidates.append(candidate)
+    if len(candidates) != 1:
+        raise SystemExit('ERROR: Markdown packet ID is missing or ambiguous')
+    return candidates[0]
+
+
+def _normalize_origin(value):
+    if not isinstance(value, str) or not value.strip():
+        return None
+    raw=value.strip()
+    if '?' in raw or '#' in raw:
+        return None
+    if raw.startswith('git@') and ':' in raw:
+        host, path=raw[4:].split(':',1)
+        scheme='ssh'
+    elif '://' not in raw and '/' in raw and not raw.startswith('/'):
+        first, remainder=raw.split('/',1)
+        if '@' in first:
+            return None
+        if '.' in first:
+            host, path=first, remainder
+        else:
+            host, path='github.com', raw
+        scheme=''
+    else:
+        try:
+            parsed=urlsplit(raw if '://' in raw else '//'+raw)
+            host=parsed.hostname or ''
+            port=parsed.port
+        except ValueError:
+            return None
+        if parsed.password is not None or parsed.query or parsed.fragment:
+            return None
+        scheme=parsed.scheme.lower()
+        default_ports={'http':80,'https':443,'ssh':22}
+        if port is not None and port != default_ports.get(scheme):
+            host=f'{host}:{port}'
+        path=parsed.path.lstrip('/')
+    path=path.strip().strip('/').removesuffix('.git').strip('/')
+    host=host.strip().lower()
+    if not host or not path or any(part in {'','.','..'} for part in path.split('/')):
+        return None
+    return f'{host}/{path.lower()}'
+
+
+def _safe_marker(repo, marker):
+    if not isinstance(marker, str) or not marker.strip():
+        raise SystemExit('ERROR: repo_binding.repo_marker is required')
+    relative=Path(marker)
+    if relative.is_absolute() or '\\' in marker or any(part in {'','.','..'} for part in relative.parts):
+        raise SystemExit('ERROR: repo_binding.repo_marker must be a safe relative path')
+    if relative.as_posix() not in {
+        '.dopetaskroot',
+        '.taskxroot',
+        '.dopetask/project.json',
+        '.taskx/project.json',
+    }:
+        raise SystemExit('ERROR: repo_binding.repo_marker is not a supported canonical marker')
+    marker_path=repo/relative
+    if marker_path.is_symlink():
+        raise SystemExit('ERROR: repo_binding.repo_marker must not be a symlink')
+    resolved=marker_path.resolve(strict=False)
+    try:
+        resolved.relative_to(repo.resolve())
+    except ValueError:
+        raise SystemExit('ERROR: repo_binding.repo_marker escapes repository')
+    if not marker_path.exists():
+        raise SystemExit('ERROR: repo_binding.repo_marker is missing')
+    return marker_path
+
+
+def _marker_identity(repo, marker_path):
+    if marker_path.name == '.dopetaskroot':
+        config=marker_path.parent/'.dopetask'/'project.json'
+    elif marker_path.name == '.taskxroot':
+        config=marker_path.parent/'.taskx'/'project.json'
+    elif marker_path.name == 'project.json':
+        config=marker_path
+    else:
+        raise SystemExit('ERROR: repo_binding marker has no supported identity config')
+    try:
+        config.resolve(strict=False).relative_to(repo.resolve())
+    except ValueError:
+        raise SystemExit('ERROR: marker-specific project identity config escapes repository')
+    if config.is_symlink() or not config.is_file():
+        raise SystemExit('ERROR: marker-specific project identity config is missing or unsafe')
+    try:
+        value=json.loads(config.read_text())
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        raise SystemExit('ERROR: marker-specific project identity config is invalid')
+    project_id=value.get('project_id') if isinstance(value, dict) else None
+    if not isinstance(project_id, str) or not project_id.strip():
+        raise SystemExit('ERROR: marker-specific project identity is missing')
+    return project_id.strip()
+
+
+def validate_packet_binding(repo, packet):
+    """Validate the packet's explicit repository identity binding."""
+    _, value=_read_packet(packet)
+    if value is None:
+        return
+    if 'repo_binding' not in value:
+        return
+    binding=value.get('repo_binding')
+    if not isinstance(binding, dict):
+        raise SystemExit('ERROR: JSON packet repo_binding is missing or invalid')
+    required=binding.get('require_identity_match')
+    if not isinstance(required, bool):
+        raise SystemExit('ERROR: repo_binding.require_identity_match must be boolean')
+    if not required:
+        return
+    for key in ('project_id','repo_marker','origin_hint'):
+        if not isinstance(binding.get(key), str) or not binding[key].strip():
+            raise SystemExit(f'ERROR: repo_binding.{key} is required')
+    marker=_safe_marker(repo,binding['repo_marker'])
+    actual_project_id=_marker_identity(repo,marker)
+    if actual_project_id != binding['project_id'].strip():
+        raise SystemExit('ERROR: packet repository project identity mismatch')
+    actual_origin=_normalize_origin(git_remote_url(repo))
+    expected_origin=_normalize_origin(binding['origin_hint'])
+    if not actual_origin or not expected_origin or actual_origin != expected_origin:
+        raise SystemExit('ERROR: packet repository origin mismatch')
+
+def package(kind,args):
+    repo=repo_root(); proj=load_project(repo); route=get_route(repo,args.packet_id)
+    # refresh state
+    state=git_state(repo)
+    live=state_dir(repo)/'LIVE_STATE.json'; live.write_text(json.dumps(state,indent=2,sort_keys=True)+'\n')
+    packet=Path(args.packet).resolve()
+    if not packet.exists(): raise SystemExit(f'ERROR: packet not found: {packet}')
+    actual_packet_id=packet_identity(packet)
+    if actual_packet_id != args.packet_id:
+        raise SystemExit(f'ERROR: packet identity mismatch: requested {args.packet_id}, found {actual_packet_id}')
+    validate_packet_binding(repo,packet)
+    if kind=='RETURN' and (not isinstance(args.reason, str) or not args.reason.strip() or not isinstance(args.decision_needed, str) or not args.decision_needed.strip()):
+        print('ERROR: return-pack requires non-empty --reason and --decision-needed', file=sys.stderr)
+        return 2
+    proof=None
+    if args.proof_dir:
+        proof=Path(args.proof_dir).resolve()
+        if not proof.exists(): raise SystemExit(f'ERROR: proof dir not found: {proof}')
+    include=[Path(x).resolve() for x in args.include]
+    for p in include:
+        if not p.exists(): raise SystemExit(f'ERROR: include not found: {p}')
+    status_text=git_capture(repo,'status','--porcelain=v1','--branch')
+    base_sha=state.get('merge_base_origin_main')
+    head_sha=state.get('head_sha')
+    if not isinstance(base_sha,str) or not base_sha or not isinstance(head_sha,str) or not head_sha:
+        raise SystemExit('ERROR: required Git base/head evidence is unavailable')
+    committed_diff=git_capture(repo,'diff','--binary',f'{base_sha}..{head_sha}')
+    dirty_diff=git_capture(repo,'diff','--binary','HEAD')
+    inputs=[packet,route,live]
+    if proof: inputs += iter_input(proof)
+    for p in include: inputs += iter_input(p)
+    hits=scan_files(inputs)
+    if hits:
+        print(json.dumps({'status':'BLOCKED_SECRET_SCAN','hits':hits},indent=2),file=sys.stderr); return 3
+    stamp=now_stamp(); project=re.sub(r'[^A-Za-z0-9_.-]+','_',proj.get('project_name','project')); pid=re.sub(r'[^A-Za-z0-9_.-]+','_',args.packet_id)
+    with tempfile.TemporaryDirectory(prefix='ct-pack-') as td:
+        td=Path(td); pack=td/f'{kind}_{project}_{pid}_{stamp}'; pack.mkdir()
+        # deterministic generated artifacts
+        shutil.copy2(packet,pack/('TASK_PACKET'+packet.suffix))
+        shutil.copy2(route,pack/'ROUTING_DECISION.json')
+        shutil.copy2(live,pack/'LIVE_STATE.json')
+        (pack/'GIT_STATUS.txt').write_text(status_text)
+        (pack/'COMMITTED_DIFF.patch').write_text(committed_diff)
+        (pack/'WORKTREE_DIFF.patch').write_text(dirty_diff)
+        if proof:
+            dest=pack/'PROOF_REVIEW'; shutil.copytree(proof,dest,dirs_exist_ok=True)
+        if include:
+            inc=pack/'INCLUDED'; inc.mkdir()
+            for idx,p in enumerate(include,1):
+                dest=inc/f'{idx:02d}_{p.name}'
+                if p.is_dir(): shutil.copytree(p,dest)
+                else: shutil.copy2(p,dest)
+        if kind=='RETURN':
+            st=json.loads(live.read_text())
+            tmpl=(ct_root(repo)/'templates/ARCHITECTURE_RETURN_PACKET.template.md').read_text()
+            vals={'RETURN_ID':f'RETURN-{project}-{pid}-{stamp}','PACKET_ID':args.packet_id,'PROJECT':proj.get('project_name',''),'REPOSITORY':st.get('origin') or '', 'BASE_SHA':st.get('merge_base_origin_main') or '', 'HEAD_SHA':st.get('head_sha') or '', 'BRANCH':st.get('branch') or '', 'RISK_LANE':json.loads(route.read_text()).get('risk_lane',''), 'REASON':args.reason or '', 'DECISION_NEEDED':args.decision_needed or ''}
+            for k,v in vals.items(): tmpl=tmpl.replace('{{'+k+'}}',str(v))
+            (pack/'ARCHITECTURE_RETURN_PACKET.md').write_text(tmpl)
+            metadata={'return_id':vals['RETURN_ID'],'packet_id':args.packet_id,'reason':args.reason.strip(), 'decision_needed':args.decision_needed.strip(), 'head_sha':st.get('head_sha'), 'base_sha':st.get('merge_base_origin_main'), 'branch':st.get('branch'), 'project':proj.get('project_name')}
+            metadata_errors=_validate_schema(metadata, _load_schema(repo, 'return_packet.schema.json'))
+            if metadata_errors:
+                print(json.dumps({'status':'BLOCKED_INVALID_RETURN_METADATA','errors':metadata_errors},indent=2),file=sys.stderr)
+                return 2
+            (pack/'RETURN_METADATA.json').write_text(json.dumps(metadata,indent=2,sort_keys=True)+'\n')
+        generated_hits=scan_files([p for p in pack.rglob('*') if p.is_file()])
+        if generated_hits:
+            print(json.dumps({'status':'BLOCKED_SECRET_SCAN_GENERATED_PACKAGE','hits':generated_hits},indent=2),file=sys.stderr); return 3
+        # The secret report is part of the hashed payload. The two manifest
+        # files are self-describing and therefore excluded from their own
+        # hash set.
+        (pack/'SECRET_SCAN_REPORT.json').write_text(json.dumps({'status':'PASS','hits':[],'scanned_inputs':len(inputs)},indent=2,sort_keys=True)+'\n')
+        root_manifests={pack/'SHA256SUMS.txt', pack/'FILE_INVENTORY.json'}
+        files=[p for p in pack.rglob('*') if p.is_file() and p not in root_manifests]
+        sums=[]; inv=[]
+        for p in sorted(files):
+            rel=p.relative_to(pack).as_posix(); h=hashlib.sha256(p.read_bytes()).hexdigest(); sums.append(f'{h}  {rel}'); inv.append({'path':rel,'sha256':h,'bytes':p.stat().st_size})
+        (pack/'SHA256SUMS.txt').write_text('\n'.join(sums)+'\n')
+        (pack/'FILE_INVENTORY.json').write_text(json.dumps(inv,indent=2,sort_keys=True)+'\n')
+        outdir=expand(proj['downloads']['proof' if kind=='PROOF' else 'return']); outdir.mkdir(parents=True,exist_ok=True)
+        z=outdir/f'{stamp}_{project}_{pid}_{kind}.zip'
+        with zipfile.ZipFile(z,'w',zipfile.ZIP_DEFLATED) as zf:
+            for p in sorted(pack.rglob('*')):
+                if p.is_file(): zf.write(p,arcname=f'{pack.name}/{p.relative_to(pack).as_posix()}')
+        print(z); print('SHA256='+hashlib.sha256(z.read_bytes()).hexdigest())
+    return 0
+
+def cmd_proof_pack(args): return package('PROOF',args)
+def cmd_return_pack(args): return package('RETURN',args)
+
+def cmd_verify_zip(args):
+    z=Path(args.zip).resolve()
+    try:
+        with zipfile.ZipFile(z) as f:
+            bad=f.testzip(); infos=f.infolist(); names=[i.filename for i in infos]
+            if bad: print('FAIL: corrupt member '+bad); return 2
+            if len(names) != len(set(names)):
+                print('FAIL: duplicate ZIP member'); return 2
+            for info in infos:
+                name=info.filename
+                raw_parts=name.split('/')
+                mode=(info.external_attr >> 16) & 0o170000
+                if (not name or name.startswith('/') or '\\' in name or
+                        any(part in {'', '.', '..'} for part in raw_parts) or
+                        mode == stat.S_IFLNK):
+                    print('FAIL: unsafe ZIP member'); return 2
+            manifests=[n for n in names if n.count('/')==1 and n.endswith('/SHA256SUMS.txt')]
+            if len(manifests) != 1:
+                print('FAIL: missing or duplicate root SHA256SUMS.txt'); return 2
+            root=manifests[0].split('/',1)[0]
+            if any(not name.startswith(root+'/') for name in names):
+                print('FAIL: ZIP contains member outside root'); return 2
+            required={f'{root}/SHA256SUMS.txt',f'{root}/FILE_INVENTORY.json',f'{root}/SECRET_SCAN_REPORT.json'}
+            if not required.issubset(names):
+                print('FAIL: missing root manifest member'); return 2
+            payload_names={n for n in names if n.startswith(root+'/') and n not in required}
+            sums_text=f.read(f'{root}/SHA256SUMS.txt').decode('utf-8')
+            expected={}
+            for line in sums_text.splitlines():
+                parts=line.split('  ',1)
+                if (len(parts)!=2 or not re.fullmatch(r'[0-9a-f]{64}',parts[0]) or
+                        not parts[1] or parts[1].startswith('/') or '\\' in parts[1] or
+                        any(part in {'', '.', '..'} for part in parts[1].split('/'))):
+                    print('FAIL: malformed SHA256SUMS.txt'); return 2
+                if parts[1] in expected:
+                    print('FAIL: duplicate manifest path'); return 2
+                expected[parts[1]]=parts[0]
+            expected_names={f'{root}/{p}' for p in expected}
+            if expected_names != payload_names | {f'{root}/SECRET_SCAN_REPORT.json'}:
+                print('FAIL: manifest member set mismatch'); return 2
+            for rel,digest in expected.items():
+                if hashlib.sha256(f.read(f'{root}/{rel}')).hexdigest() != digest:
+                    print('FAIL: manifest hash mismatch'); return 2
+            inventory=json.loads(f.read(f'{root}/FILE_INVENTORY.json'))
+            if not isinstance(inventory,list):
+                print('FAIL: invalid FILE_INVENTORY.json'); return 2
+            inv={}
+            for item in inventory:
+                digest=item.get('sha256') if isinstance(item,dict) else None
+                byte_count=item.get('bytes') if isinstance(item,dict) else None
+                if (not isinstance(item,dict) or not isinstance(item.get('path'),str) or
+                        not isinstance(digest,str) or not re.fullmatch(r'[0-9a-f]{64}',digest) or
+                        not isinstance(byte_count,int) or isinstance(byte_count,bool) or byte_count < 0 or
+                        item['path'] in inv):
+                    print('FAIL: malformed FILE_INVENTORY.json'); return 2
+                inv[item['path']]=item['sha256']
+            if set(inv) != set(expected):
+                print('FAIL: inventory member set mismatch'); return 2
+            if any(inv[k] != expected[k] for k in expected):
+                print('FAIL: inventory hash mismatch'); return 2
+            if any(item['bytes'] != len(f.read(f'{root}/{item["path"]}')) for item in inventory):
+                print('FAIL: inventory byte count mismatch'); return 2
+            report=json.loads(f.read(f'{root}/SECRET_SCAN_REPORT.json'))
+            if not isinstance(report,dict) or report.get('status')!='PASS' or report.get('hits')!=[]:
+                print('FAIL: secret scan report is not PASS'); return 2
+    except (OSError, zipfile.BadZipFile, UnicodeDecodeError, json.JSONDecodeError, KeyError):
+        print('FAIL: invalid ZIP or manifest'); return 2
+    print(f'PASS: zip manifest verified, members={len(names)}'); print('SHA256='+hashlib.sha256(z.read_bytes()).hexdigest()); return 0
+
+def main():
+    ap=argparse.ArgumentParser(prog='ct'); sp=ap.add_subparsers(dest='cmd',required=True)
+    for name,fn in [('doctor',cmd_doctor),('snapshot',cmd_snapshot),('runner-inventory',cmd_runner_inventory)]:
+        p=sp.add_parser(name); p.set_defaults(fn=fn)
+        if name=='runner-inventory': p.add_argument('--probe-models',action='store_true',help='explicitly permit provider model discovery')
+    p=sp.add_parser('route-record'); p.set_defaults(fn=cmd_route_record)
+    p.add_argument('--packet-id',required=True); p.add_argument('--stage',required=True); p.add_argument('--risk',required=True,choices=['L0','L1','L2','L3']); p.add_argument('--runner',required=True); p.add_argument('--runner-availability',default='PROVEN',choices=['PROVEN','PROPOSED','UNKNOWN']); p.add_argument('--agent-role',default='implementer'); p.add_argument('--custom-agent'); p.add_argument('--model',required=True); p.add_argument('--effort',required=True); p.add_argument('--why-runner',required=True); p.add_argument('--why-model',required=True); p.add_argument('--why-effort',required=True); p.add_argument('--cost-latency-tradeoff'); p.add_argument('--alternative',action='append',default=[],required=True); p.add_argument('--evidence',action='append',default=[]); p.add_argument('--fallback-runner'); p.add_argument('--fallback-model'); p.add_argument('--fallback-trigger'); p.add_argument('--audit-required',action=argparse.BooleanOptionalAction,default=None); p.add_argument('--audit-runner'); p.add_argument('--audit-model'); p.add_argument('--audit-effort'); p.add_argument('--audit-independence'); p.add_argument('--audit-rationale')
+    p=sp.add_parser('validate-route'); p.add_argument('--file',required=True); p.set_defaults(fn=cmd_validate_route)
+    for name,fn in [('proof-pack',cmd_proof_pack),('return-pack',cmd_return_pack)]:
+        p=sp.add_parser(name); p.set_defaults(fn=fn); p.add_argument('--packet-id',required=True); p.add_argument('--packet',required=True); p.add_argument('--proof-dir'); p.add_argument('--include',action='append',default=[]); p.add_argument('--reason',required=name=='return-pack'); p.add_argument('--decision-needed',required=name=='return-pack')
+    p=sp.add_parser('verify-zip'); p.add_argument('--zip',required=True); p.set_defaults(fn=cmd_verify_zip)
+    args=ap.parse_args(); sys.exit(args.fn(args))
+if __name__=='__main__': main()

@@ -1,0 +1,19 @@
+{
+  "approved": true,
+  "user_response": "approved",
+  "approved_request": "One corrected Sonnet invocation per repo, using verified inputs, tools disabled and network-enabled execution.",
+  "additional_invocations": 1,
+  "per_repository": true,
+  "repositories": [
+    "DDD-Enterprises/dopemux-mvp",
+    "DDD-Enterprises/adOps",
+    "DDD-Enterprises/dnh-crm"
+  ],
+  "no_authority_for": [
+    "automatic retries",
+    "model fallback",
+    "invented verdicts",
+    "gate bypass",
+    "human owner impersonation"
+  ]
+}

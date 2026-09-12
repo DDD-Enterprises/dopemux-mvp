@@ -1,0 +1,604 @@
+{
+  "captured_at": "2026-09-09T00:45:54.497714+00:00",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr": {
+    "baseRefOid": "6a728f74c0311967f83213513308f97613e3f28d",
+    "headRefOid": "b99e0f57aba6e9119502ef22a973b1495a53ba4a",
+    "isDraft": false,
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:18:47Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289975790/job/102274128095",
+        "name": "Analyze (actions)",
+        "startedAt": "2026-09-08T23:17:47Z",
+        "status": "COMPLETED",
+        "workflowName": "CodeQL"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:17:59Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289979038/job/102274133381",
+        "name": "identity-check",
+        "startedAt": "2026-09-08T23:17:48Z",
+        "status": "COMPLETED",
+        "workflowName": "Repo Identity Check"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:17:52Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289974121/job/102274118816",
+        "name": "identity-check",
+        "startedAt": "2026-09-08T23:17:44Z",
+        "status": "COMPLETED",
+        "workflowName": "Repo Identity Check"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:18:02Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289979051/job/102274133697",
+        "name": "\ud83d\udee1\ufe0f Clobber Guard",
+        "startedAt": "2026-09-08T23:17:48Z",
+        "status": "COMPLETED",
+        "workflowName": "clobber-guard"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:18:26Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289979057/job/102274133347",
+        "name": "checks",
+        "startedAt": "2026-09-08T23:17:47Z",
+        "status": "COMPLETED",
+        "workflowName": "docs"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:18:08Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289976659/job/102274126761",
+        "name": "independent embedded audit",
+        "startedAt": "2026-09-08T23:17:47Z",
+        "status": "COMPLETED",
+        "workflowName": "embedded-audit"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:18:29Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289979067/job/102274133544",
+        "name": "preflight",
+        "startedAt": "2026-09-08T23:17:48Z",
+        "status": "COMPLETED",
+        "workflowName": "preflight"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:18:26Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289979024/job/102274133972",
+        "name": "\ud83d\udc85 Code Quality & Linting",
+        "startedAt": "2026-09-08T23:17:48Z",
+        "status": "COMPLETED",
+        "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:18:40Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289975790/job/102274128374",
+        "name": "Analyze (javascript-typescript)",
+        "startedAt": "2026-09-08T23:17:46Z",
+        "status": "COMPLETED",
+        "workflowName": "CodeQL"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:19:41Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289975790/job/102274128252",
+        "name": "Analyze (python)",
+        "startedAt": "2026-09-08T23:17:48Z",
+        "status": "COMPLETED",
+        "workflowName": "CodeQL"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:18:39Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289975790/job/102274128412",
+        "name": "Analyze (ruby)",
+        "startedAt": "2026-09-08T23:17:47Z",
+        "status": "COMPLETED",
+        "workflowName": "CodeQL"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:18:00Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289979024/job/102274134106",
+        "name": "\ud83d\udd12 Security Review",
+        "startedAt": "2026-09-08T23:17:48Z",
+        "status": "COMPLETED",
+        "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:17:59Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289979024/job/102274133766",
+        "name": "\ud83d\udcda Documentation Check",
+        "startedAt": "2026-09-08T23:17:47Z",
+        "status": "COMPLETED",
+        "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:26:34Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289979024/job/102274134145",
+        "name": "\ud83e\uddea Unit Tests",
+        "startedAt": "2026-09-08T23:17:48Z",
+        "status": "COMPLETED",
+        "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:19:41Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289979024/job/102274134176",
+        "name": "\ud83e\uddea Extractor Smoke",
+        "startedAt": "2026-09-08T23:17:48Z",
+        "status": "COMPLETED",
+        "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:18:12Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289979024/job/102274134055",
+        "name": "\ud83d\udd0d Audit Proof Validator (--all)",
+        "startedAt": "2026-09-08T23:17:48Z",
+        "status": "COMPLETED",
+        "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:18:03Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289979024/job/102274133971",
+        "name": "\ud83d\uddfa\ufe0f Model Routing Consistency",
+        "startedAt": "2026-09-08T23:17:48Z",
+        "status": "COMPLETED",
+        "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:21:45Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289979024/job/102274134054",
+        "name": "\ud83e\uddea Extractor Full",
+        "startedAt": "2026-09-08T23:17:48Z",
+        "status": "COMPLETED",
+        "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:18:08Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289979024/job/102274133937",
+        "name": "\ud83d\udd0d Extractor Lint",
+        "startedAt": "2026-09-08T23:17:48Z",
+        "status": "COMPLETED",
+        "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:18:25Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289979024/job/102274134119",
+        "name": "\ud83e\uddea Auditor Router",
+        "startedAt": "2026-09-08T23:17:48Z",
+        "status": "COMPLETED",
+        "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:17:45Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289979024/job/102274134819",
+        "name": "\ud83e\uddea Installer Smoke",
+        "startedAt": "2026-09-08T23:17:45Z",
+        "status": "COMPLETED",
+        "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:17:45Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289979024/job/102274135142",
+        "name": "\ud83d\udcca Scoped Coverage",
+        "startedAt": "2026-09-08T23:17:45Z",
+        "status": "COMPLETED",
+        "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:17:45Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289979024/job/102274135203",
+        "name": "\ud83d\udd17 Integration Tests",
+        "startedAt": "2026-09-08T23:17:45Z",
+        "status": "COMPLETED",
+        "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:26:40Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34289979024/job/102276241127",
+        "name": "\ud83d\udcca CI Pipeline Summary",
+        "startedAt": "2026-09-08T23:26:37Z",
+        "status": "COMPLETED",
+        "workflowName": "\ud83d\ude80 Complete CI Pipeline (ADHD-Optimized)"
+      },
+      {
+        "__typename": "StatusContext",
+        "context": "PR Steward / final readiness",
+        "startedAt": "2026-09-08T23:29:38Z",
+        "state": "FAILURE",
+        "targetUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/34290808798"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-08T23:18:32Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/DDD-Enterprises/dopemux-mvp/runs/102274306571",
+        "name": "CodeQL",
+        "startedAt": "2026-09-08T23:18:29Z",
+        "status": "COMPLETED",
+        "workflowName": ""
+      }
+    ]
+  },
+  "codeql_alerts": [
+    {
+      "number": 269,
+      "state": "dismissed",
+      "dismissed_reason": "false positive",
+      "dismissed_comment": "Authorized PR1335 triage: source is constant pattern labels, not matched values. At ct content 6484752/PR head 46b35b3, generated-diff canary exits 3 and emits only path/pattern; no secret bytes. Detection completeness is a separate repair.",
+      "rule": {
+        "id": "py/clear-text-logging-sensitive-data",
+        "severity": "error",
+        "description": "Clear-text logging of sensitive information",
+        "name": "py/clear-text-logging-sensitive-data",
+        "tags": [
+          "external/cwe/cwe-312",
+          "external/cwe/cwe-359",
+          "external/cwe/cwe-532",
+          "security"
+        ],
+        "full_description": "Logging sensitive information without encryption or hashing can expose it to an attacker.",
+        "help": "# Clear-text logging of sensitive information\nIf sensitive data is written to a log entry it could be exposed to an attacker who gains access to the logs.\n\nPotential attackers can obtain sensitive user data when the log output is displayed. Additionally that data may expose system information such as full path names, system information, and sometimes usernames and passwords.\n\n\n## Recommendation\nSensitive data should not be logged.\n\n\n## Example\nIn the example the entire process environment is logged using \\`print\\`. Regular users of the production deployed application should not have access to this much information about the environment configuration.\n\n\n```python\n# BAD: Logging cleartext sensitive data\nimport os\nprint(f\"[INFO] Environment: {os.environ}\")\n```\nIn the second example the data that is logged is not sensitive.\n\n\n```python\nnot_sensitive_data = {'a': 1, 'b': 2}\n# GOOD: it is fine to log data that is not sensitive\nprint(f\"[INFO] Some object contains: {not_sensitive_data}\")\n```\n\n## References\n* OWASP: [Insertion of Sensitive Information into Log File](https://owasp.org/Top10/A09_2021-Security_Logging_and_Monitoring_Failures/).\n* Common Weakness Enumeration: [CWE-312](https://cwe.mitre.org/data/definitions/312.html).\n* Common Weakness Enumeration: [CWE-359](https://cwe.mitre.org/data/definitions/359.html).\n* Common Weakness Enumeration: [CWE-532](https://cwe.mitre.org/data/definitions/532.html).\n",
+        "security_severity_level": "high"
+      },
+      "most_recent_instance": {
+        "ref": "refs/pull/1335/head",
+        "analysis_key": "dynamic/github-code-scanning/codeql:analyze",
+        "environment": "{\"build-mode\":\"none\",\"category\":\"/language:python\",\"language\":\"python\",\"runner\":\"[\\\"ubuntu-latest\\\"]\"}",
+        "category": "/language:python",
+        "state": "dismissed",
+        "commit_sha": "b99e0f57aba6e9119502ef22a973b1495a53ba4a",
+        "message": {
+          "text": "This expression logs sensitive data (secret) as clear text.\nThis expression logs sensitive data (secret) as clear text.\nThis expression logs sensitive data (secret) as clear text.\nThis expression logs sensitive data (secret) as clear text.",
+          "markdown": "This expression logs [sensitive data (secret)](.control-tower/bin/ct#L220C17-L226C2) as clear text.\nThis expression logs [sensitive data (secret)](.control-tower/bin/ct#L220C17-L226C2) as clear text.\nThis expression logs [sensitive data (secret)](.control-tower/bin/ct#L220C17-L226C2) as clear text.\nThis expression logs [sensitive data (secret)](.control-tower/bin/ct#L220C17-L226C2) as clear text."
+        },
+        "location": {
+          "path": ".control-tower/bin/ct",
+          "start_line": 353,
+          "end_line": 353,
+          "start_column": 19,
+          "end_column": 112
+        },
+        "classifications": []
+      }
+    },
+    {
+      "number": 270,
+      "state": "dismissed",
+      "dismissed_reason": "false positive",
+      "dismissed_comment": "Authorized PR1335 triage: source is constant pattern labels, not matched values. At ct content 6484752/PR head 46b35b3, input-file canary exits 3 and emits only path/pattern; no secret bytes. Detection completeness is a separate repair.",
+      "rule": {
+        "id": "py/clear-text-logging-sensitive-data",
+        "severity": "error",
+        "description": "Clear-text logging of sensitive information",
+        "name": "py/clear-text-logging-sensitive-data",
+        "tags": [
+          "external/cwe/cwe-312",
+          "external/cwe/cwe-359",
+          "external/cwe/cwe-532",
+          "security"
+        ],
+        "full_description": "Logging sensitive information without encryption or hashing can expose it to an attacker.",
+        "help": "# Clear-text logging of sensitive information\nIf sensitive data is written to a log entry it could be exposed to an attacker who gains access to the logs.\n\nPotential attackers can obtain sensitive user data when the log output is displayed. Additionally that data may expose system information such as full path names, system information, and sometimes usernames and passwords.\n\n\n## Recommendation\nSensitive data should not be logged.\n\n\n## Example\nIn the example the entire process environment is logged using \\`print\\`. Regular users of the production deployed application should not have access to this much information about the environment configuration.\n\n\n```python\n# BAD: Logging cleartext sensitive data\nimport os\nprint(f\"[INFO] Environment: {os.environ}\")\n```\nIn the second example the data that is logged is not sensitive.\n\n\n```python\nnot_sensitive_data = {'a': 1, 'b': 2}\n# GOOD: it is fine to log data that is not sensitive\nprint(f\"[INFO] Some object contains: {not_sensitive_data}\")\n```\n\n## References\n* OWASP: [Insertion of Sensitive Information into Log File](https://owasp.org/Top10/A09_2021-Security_Logging_and_Monitoring_Failures/).\n* Common Weakness Enumeration: [CWE-312](https://cwe.mitre.org/data/definitions/312.html).\n* Common Weakness Enumeration: [CWE-359](https://cwe.mitre.org/data/definitions/359.html).\n* Common Weakness Enumeration: [CWE-532](https://cwe.mitre.org/data/definitions/532.html).\n",
+        "security_severity_level": "high"
+      },
+      "most_recent_instance": {
+        "ref": "refs/pull/1335/head",
+        "analysis_key": "dynamic/github-code-scanning/codeql:analyze",
+        "environment": "{\"build-mode\":\"none\",\"category\":\"/language:python\",\"language\":\"python\",\"runner\":\"[\\\"ubuntu-latest\\\"]\"}",
+        "category": "/language:python",
+        "state": "dismissed",
+        "commit_sha": "b99e0f57aba6e9119502ef22a973b1495a53ba4a",
+        "message": {
+          "text": "This expression logs sensitive data (secret) as clear text.\nThis expression logs sensitive data (secret) as clear text.\nThis expression logs sensitive data (secret) as clear text.\nThis expression logs sensitive data (secret) as clear text.",
+          "markdown": "This expression logs [sensitive data (secret)](.control-tower/bin/ct#L220C17-L226C2) as clear text.\nThis expression logs [sensitive data (secret)](.control-tower/bin/ct#L220C17-L226C2) as clear text.\nThis expression logs [sensitive data (secret)](.control-tower/bin/ct#L220C17-L226C2) as clear text.\nThis expression logs [sensitive data (secret)](.control-tower/bin/ct#L220C17-L226C2) as clear text."
+        },
+        "location": {
+          "path": ".control-tower/bin/ct",
+          "start_line": 321,
+          "end_line": 321,
+          "start_column": 15,
+          "end_column": 80
+        },
+        "classifications": []
+      }
+    }
+  ],
+  "threads": {
+    "data": {
+      "repository": {
+        "pullRequest": {
+          "headRefOid": "b99e0f57aba6e9119502ef22a973b1495a53ba4a",
+          "reviewThreads": {
+            "pageInfo": {
+              "hasNextPage": false
+            },
+            "nodes": [
+              {
+                "id": "PRRT_kwDOPyIw986ga0T7",
+                "isResolved": true,
+                "isOutdated": false,
+                "comments": {
+                  "nodes": [
+                    {
+                      "databaseId": 3962462560,
+                      "body": "## CodeQL / Clear-text logging of sensitive information\n\nThis expression logs [sensitive data (secret)](1) as clear text.\nThis expression logs [sensitive data (secret)](1) as clear text.\n\n[Show more details](https://github.com/DDD-Enterprises/dopemux-mvp/security/code-scanning/270)",
+                      "path": ".control-tower/bin/ct",
+                      "line": 321
+                    },
+                    {
+                      "databaseId": 3962719177,
+                      "body": "Disposition: CodeQL alert 270 is an authorized false positive. The traced source consists of constant detector labels; scan_files records only path and pattern name, never match contents. Synthetic input-file and generated-diff canaries at content 6484752 (unchanged ct through 46b35b3) both exit 3 without emitting canary bytes on stdout/stderr. Scope is these logging sinks only: the separate oversized/unreadable-file detection defect is being repaired, not waived.",
+                      "path": ".control-tower/bin/ct",
+                      "line": 321
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "PRRT_kwDOPyIw986ga0UD",
+                "isResolved": true,
+                "isOutdated": false,
+                "comments": {
+                  "nodes": [
+                    {
+                      "databaseId": 3962462569,
+                      "body": "## CodeQL / Clear-text logging of sensitive information\n\nThis expression logs [sensitive data (secret)](1) as clear text.\nThis expression logs [sensitive data (secret)](1) as clear text.\nThis expression logs [sensitive data (secret)](1) as clear text.\nThis expression logs [sensitive data (secret)](1) as clear text.\n\n[Show more details](https://github.com/DDD-Enterprises/dopemux-mvp/security/code-scanning/269)",
+                      "path": ".control-tower/bin/ct",
+                      "line": 353
+                    },
+                    {
+                      "databaseId": 3962719676,
+                      "body": "Disposition: CodeQL alert 269 is an authorized false positive. This generated-package failure path emits constant detector labels and filenames, not matched secret values. Synthetic generated-diff canary at content 6484752 (unchanged ct through 46b35b3) exits 3 and does not emit canary bytes on either stream. Detection completeness and filename sensitivity are outside this narrow disposition; actual scanning defects remain in the bounded repair.",
+                      "path": ".control-tower/bin/ct",
+                      "line": 353
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "PRRT_kwDOPyIw986gbIt4",
+                "isResolved": true,
+                "isOutdated": true,
+                "comments": {
+                  "nodes": [
+                    {
+                      "databaseId": 3962588525,
+                      "body": "tool_info() marks a tool as availability=PROVEN even when the version command fails (non-zero returncode). This can produce misleading DOCTOR/RUNNER_INVENTORY reports.\n\nThis issue also appears in the following locations of the same file:\n- line 68\n- line 75\n- line 182\n- line 211",
+                      "path": ".control-tower/bin/ct",
+                      "line": null
+                    },
+                    {
+                      "databaseId": 3963124762,
+                      "body": "Fixed in the repaired substantive head 4b31331b93fae6ffb98d23b4c0cfa1df7f5e55d5, carried by the proof-only successor b99e0f57aba6e9119502ef22a973b1495a53ba4a. .control-tower/bin/ct lines 48-54 now reports PROVEN only when the version probe returns code 0 and otherwise reports UNKNOWN; tests/unit/test_control_tower_kit.py::test_tool_info_only_proves_successful_version_probe covers the failure case. The canonical Sonnet audit records this repair evidence. No newer objection is present; resolving this outdated thread.",
+                      "path": ".control-tower/bin/ct",
+                      "line": null
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "PRRT_kwDOPyIw986gbIuP",
+                "isResolved": true,
+                "isOutdated": false,
+                "comments": {
+                  "nodes": [
+                    {
+                      "databaseId": 3962588568,
+                      "body": ".control-tower/config/defaults.json duplicates .control-tower/project.json but is never read by ct (load_project reads only project.json). This increases drift risk unless it is either wired into the tool or removed.",
+                      "path": ".control-tower/config/defaults.json",
+                      "line": 5
+                    },
+                    {
+                      "databaseId": 3963124809,
+                      "body": "Disposition retained intentionally: .control-tower/project.json is the runtime-canonical project config loaded by load_project, while config/defaults.json remains the installer/default scaffold. The repaired .control-tower/README.md documents that ownership, and the canonical Sonnet audit records PKG-01-DEFAULTS-VS-PROJECT-JSON-DUPLICATION as ACCEPTED_RISK. No newer objection is present; resolving this thread.",
+                      "path": ".control-tower/config/defaults.json",
+                      "line": 5
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "PRRT_kwDOPyIw986gbIuw",
+                "isResolved": true,
+                "isOutdated": true,
+                "comments": {
+                  "nodes": [
+                    {
+                      "databaseId": 3962588616,
+                      "body": "CONTROL_TOWER_MANAGED block says it applies to supervised workstreams, but then says \"Before substantive execution of each Task Packet\" which reads like a repo-wide new mandatory step. Wording should match intended scope to avoid governance ambiguity.",
+                      "path": "AGENTS.md",
+                      "line": null
+                    },
+                    {
+                      "databaseId": 3963124508,
+                      "body": "Fixed in 4b31331b93fae6ffb98d23b4c0cfa1df7f5e55d5: the repository-facing Control Tower text now scopes the extra routing and packaging obligations to supervised packets and workstreams and states that ordinary work retains the existing workflow. The canonical Sonnet audit records F5 as resolved. No newer objection is present; resolving this outdated thread.",
+                      "path": "AGENTS.md",
+                      "line": null
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "PRRT_kwDOPyIw986gbLCz",
+                "isResolved": true,
+                "isOutdated": true,
+                "comments": {
+                  "nodes": [
+                    {
+                      "databaseId": 3962602991,
+                      "body": "**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Scan oversized files before packaging**\n\nWhen `--proof-dir` or `--include` contains a file larger than 20,000,000 bytes, this branch silently skips it, but `package()` later copies it into the upload ZIP and emits `SECRET_SCAN_REPORT.json` with `status: PASS`. A large audit transcript containing a matching token or private key can therefore be exported despite the secret gate; scan it incrementally, block it, or report `UNKNOWN` instead.\n\nAGENTS.md reference: [AGENTS.md:L103-L105](https://github.com/DDD-Enterprises/dopemux-mvp/blob/46b35b3cb0192d69a45cb41ed55df6ba34201e0e/AGENTS.md#L103-L105)\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+                      "path": ".control-tower/bin/ct",
+                      "line": null
+                    },
+                    {
+                      "databaseId": 3963130041,
+                      "body": "Fixed in 4b31331b93fae6ffb98d23b4c0cfa1df7f5e55d5: .control-tower/bin/ct lines 227-247 now fails closed for oversized and unreadable inputs, and iter_input carries directory-walk errors into the scan set. The focused test test_secret_scan_fails_closed_for_oversized_and_unreadable covers the bounded cases; the canonical audit records SEC-01 resolved. No newer objection is present; resolving this outdated thread.",
+                      "path": ".control-tower/bin/ct",
+                      "line": null
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "PRRT_kwDOPyIw986gbLC6",
+                "isResolved": true,
+                "isOutdated": false,
+                "comments": {
+                  "nodes": [
+                    {
+                      "databaseId": 3962602999,
+                      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Reject packet and routing identity mismatches**\n\nWhen an operator supplies the wrong `--packet` path, packaging never parses its ID or compares it with `--packet-id` and the loaded routing record. For example, a valid route for `PACKET-A` plus a JSON packet declaring `PACKET-B` successfully produces a ZIP named for A containing `TASK_PACKET.json` for B, so reviewers can apply evidence and authority to the wrong work slice. Validate all three identities before creating the bundle.\n\nAGENTS.md reference: [AGENTS.md:L60-L73](https://github.com/DDD-Enterprises/dopemux-mvp/blob/46b35b3cb0192d69a45cb41ed55df6ba34201e0e/AGENTS.md#L60-L73)\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+                      "path": ".control-tower/bin/ct",
+                      "line": 302
+                    },
+                    {
+                      "databaseId": 3963130030,
+                      "body": "Fixed in 4b31331b93fae6ffb98d23b4c0cfa1df7f5e55d5: package derives packet_identity and rejects a mismatch with --packet-id, while get_route rejects a stored route whose packet id differs. Focused coverage includes test_get_route_rejects_stored_route_identity_mismatch and the crosswired-packet case in test_proof_pack_output_round_trips_through_manifest_verifier. No newer objection is present; resolving this thread.",
+                      "path": ".control-tower/bin/ct",
+                      "line": 302
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "PRRT_kwDOPyIw986gbLC_",
+                "isResolved": true,
+                "isOutdated": true,
+                "comments": {
+                  "nodes": [
+                    {
+                      "databaseId": 3962603005,
+                      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Enforce the shipped route-decision schema**\n\nWhen a route record is edited or empty values are passed to required CLI options, this validator checks only field presence rather than the shipped schema constraints. A record with `schema_version: \"9.9\"`, empty `packet_id`, and empty `stage` produces no validation errors even though the schema requires version `1.0` and non-empty strings, causing mandatory `validate-route` to print `PASS` for an incompatible record. Validate against the schema or mirror every constraint here.\n\nAGENTS.md reference: [AGENTS.md:L358-L362](https://github.com/DDD-Enterprises/dopemux-mvp/blob/46b35b3cb0192d69a45cb41ed55df6ba34201e0e/AGENTS.md#L358-L362)\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+                      "path": ".control-tower/bin/ct",
+                      "line": null
+                    },
+                    {
+                      "databaseId": 3963130032,
+                      "body": "Fixed in 4b31331b93fae6ffb98d23b4c0cfa1df7f5e55d5: validate_route_obj loads the shipped route schema and applies the supported constraints, including schema_version, types, non-empty fields, and the L2/L3 audit requirement. The focused suite includes schema-invalid cases and a jsonschema-oracle comparison; the canonical Sonnet audit records F1 resolved. No newer objection is present; resolving this outdated thread.",
+                      "path": ".control-tower/bin/ct",
+                      "line": null
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "PRRT_kwDOPyIw986gbLDA",
+                "isResolved": true,
+                "isOutdated": true,
+                "comments": {
+                  "nodes": [
+                    {
+                      "databaseId": 3962603007,
+                      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Require a reason and decision for return packs**\n\nWhen `return-pack` is invoked without `--reason` or `--decision-needed`, both optional arguments become empty strings and the command still emits a successful handoff bundle. At a real supervisor return gate, that leaves the advisor with neither trigger nor exact decision to adjudicate, defeating the required return workflow; reject missing or whitespace-only values before packaging.\n\nAGENTS.md reference: [AGENTS.md:L344-L346](https://github.com/DDD-Enterprises/dopemux-mvp/blob/46b35b3cb0192d69a45cb41ed55df6ba34201e0e/AGENTS.md#L344-L346)\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+                      "path": ".control-tower/bin/ct",
+                      "line": null
+                    },
+                    {
+                      "databaseId": 3963124782,
+                      "body": "Fixed in 4b31331b93fae6ffb98d23b4c0cfa1df7f5e55d5: return-pack requires both CLI flags, rejects blank values before packaging, and validates generated RETURN_METADATA.json against the shipped schema. Coverage is in test_return_pack_cli_requires_reason_and_decision and the blank-reason round-trip case; the canonical Sonnet audit records F2 resolved. No newer objection is present; resolving this outdated thread.",
+                      "path": ".control-tower/bin/ct",
+                      "line": null
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "PRRT_kwDOPyIw986gciV6",
+                "isResolved": false,
+                "isOutdated": false,
+                "comments": {
+                  "nodes": [
+                    {
+                      "databaseId": 3963159172,
+                      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Limit packet routing to supervised work**\n\nFor ordinary, unsupervised Claude work, no validated packet routing decision exists, yet this global model-selection section now requires one for all code, architecture, fixes, and documentation. This either blocks ordinary work or causes agents to invent extra routing steps, contradicting repository rule that Control Tower workflow applies only to supervised packets and ordinary work retains existing workflow. Qualify this instruction and related model-route entries with supervised scope, then retain a non-packet fallback.\n\nAGENTS.md reference: [AGENTS.md:L352-L357](https://github.com/DDD-Enterprises/dopemux-mvp/blob/b99e0f57aba6e9119502ef22a973b1495a53ba4a/AGENTS.md#L352-L357)\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+                      "path": ".claude/llms.md",
+                      "line": 17
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "PRRT_kwDOPyIw986gciV9",
+                "isResolved": false,
+                "isOutdated": false,
+                "comments": {
+                  "nodes": [
+                    {
+                      "databaseId": 3963159177,
+                      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Enforce packet repository binding before packaging**\n\nWhen a JSON packet has `repo_binding.require_identity_match: true`, packaging extracts only its ID and never checks `project_id`, `repo_marker`, or `origin_hint` against current checkout. Running an installed kit in another repository with a same-ID local route therefore emits a successful ZIP named for local project while containing a foreign packet, allowing evidence to be associated with wrong repository; validate packet binding against `project.json`, marker, and Git origin before packaging.\n\nAGENTS.md reference: [AGENTS.md:L70-L73](https://github.com/DDD-Enterprises/dopemux-mvp/blob/b99e0f57aba6e9119502ef22a973b1495a53ba4a/AGENTS.md#L70-L73)\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+                      "path": ".control-tower/bin/ct",
+                      "line": 305
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "PRRT_kwDOPyIw986gciWB",
+                "isResolved": false,
+                "isOutdated": false,
+                "comments": {
+                  "nodes": [
+                    {
+                      "databaseId": 3963159181,
+                      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Parse canonical Markdown packet headings**\n\nWhen packaging existing Markdown packets whose canonical heading wraps ID in backticks, such as `task-packets/DMX-DCP-MODEL-ROUTING-MVP-0007T.md`, this regex rejects first character and continues until `## Packet metadata`, returning `Packet`; headings using `Task Packet \u2014 ...` similarly return `Task`. `proof-pack` and `return-pack` consequently reject valid repository packets as identity mismatches, so parse supported heading variants or authoritative frontmatter instead of first alphabetic heading token.\n\nUseful? React with \ud83d\udc4d\u00a0/ \ud83d\udc4e.",
+                      "path": ".control-tower/bin/ct",
+                      "line": 294
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "scope": "Pre-freeze remote evidence only; final content and merge head must be checked again."
+}

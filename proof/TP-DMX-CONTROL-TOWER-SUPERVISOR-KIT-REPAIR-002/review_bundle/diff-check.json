@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "git",
+    "-c",
+    "core.fsmonitor=false",
+    "diff",
+    "--check",
+    "6a728f74c0311967f83213513308f97613e3f28d",
+    "4b31331b93fae6ffb98d23b4c0cfa1df7f5e55d5"
+  ],
+  "exit_code": 0,
+  "stderr": "",
+  "stdout": ""
+}

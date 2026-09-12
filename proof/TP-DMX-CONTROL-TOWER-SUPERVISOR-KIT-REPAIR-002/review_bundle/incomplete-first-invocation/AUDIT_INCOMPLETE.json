@@ -1,0 +1,15 @@
+{
+  "assessment_source": "Supervisor parsing the actual CLI response, not an auditor verdict",
+  "status": "NEEDS_SUPERVISOR",
+  "audit_verdict": "UNKNOWN",
+  "audited_content_head": "4b31331b93fae6ffb98d23b4c0cfa1df7f5e55d5",
+  "invocation_exit_code": 0,
+  "invocation_completed": true,
+  "verdict_returned": false,
+  "observed_result": "Claude returned a plan-mode handoff message instead of the requested JSON audit.",
+  "raw_evidence": "audit-raw.json",
+  "model_call_budget_consumed": 1,
+  "retry_performed": false,
+  "next_requested_authority": "One corrected same-model, same-input no-tool invocation using dontAsk instead of plan permission mode",
+  "must_not_claim": ["PASS", "content audit completed", "merge readiness"]
+}

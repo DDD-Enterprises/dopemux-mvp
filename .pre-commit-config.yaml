@@ -129,6 +129,9 @@ repos:
               if [[ "$normalized" =~ ^\./(claudedocs/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(qa/) ]]; then continue; fi
 
+              # Installed supervisor contracts and prompt assets.
+              if [[ "$normalized" =~ ^\./\.control-tower/(contracts|prompts|templates)/ ]]; then continue; fi
+
               # Config/state and tooling docs
               if [[ "$normalized" =~ /\.claude/ ]]; then continue; fi
               if [[ "$normalized" =~ /\.taskx/ ]]; then continue; fi

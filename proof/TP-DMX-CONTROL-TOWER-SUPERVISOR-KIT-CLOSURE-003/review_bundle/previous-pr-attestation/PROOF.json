@@ -1,0 +1,123 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "medium",
+      "model": "sonnet",
+      "model_family": "anthropic",
+      "runner": "claude-code-cli",
+      "runtime_family": "claude-code"
+    },
+    "implementer": {
+      "model": "gpt-5.6-luna",
+      "model_family": "openai",
+      "runner": "codex",
+      "runtime_family": "codex"
+    },
+    "independence": "PROVEN"
+  },
+  "auditor_runtime_models_observed": [
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-5"
+  ],
+  "auxiliary_model_roles": {
+    "claude-haiku-4-5-20251001": "UNKNOWN: auxiliary CLI usage, not returned audit message usage"
+  },
+  "embedded_audit": {
+    "auditor_model": "sonnet",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "`.control-tower/bin/ct` now loads the shipped `route_decision.schema.json` / `return_packet.schema.json` via `_load_schema` and validates against them with `_validate_schema`, a hand-rolled JSON-Schema subset (const/enum/type/minLength/minItems/items/properties/required/pattern/additionalProperties). `tests/unit/test_control_tower_kit.py::test_route_validation_matches_jsonschema_oracle` cross-checks both the valid and invalid case against the real `jsonschema` library for both schemas, which is credible evidence of behavioral parity for the cases exercised. Residual fragility: the validator explicitly rejects any schema keyword outside its supported set (`unsupported schema keyword <key>`), so a future schema edit adding e.g. `oneOf`/`anyOf` would silently break all validation until the code is updated. Not a defect against the current shipped schemas, but a latent maintenance trap worth flagging.",
+        "id": "F1-SCHEMA-CONFORMANCE",
+        "severity": "LOW",
+        "status": "RESOLVED",
+        "title": "Prior finding (schema not actually enforced) is now resolved with evidence"
+      },
+      {
+        "body": "`return-pack` now argparse-requires `--reason`/`--decision-needed`, and `package()` additionally rejects blank/whitespace-only values before packaging (`BLOCKED_...` exit 2). `RETURN_METADATA.json` is further validated against `return_packet.schema.json` before being written. `test_return_pack_cli_requires_reason_and_decision` and the return-pack blank-reason case in `test_proof_pack_output_round_trips_through_manifest_verifier` corroborate this at the CLI level.",
+        "id": "F2-RETURN-METADATA",
+        "severity": "LOW",
+        "status": "RESOLVED",
+        "title": "Prior finding (empty reason/decision-needed accepted) is resolved"
+      },
+      {
+        "body": "`runner-inventory` now only calls `agy models` when `--probe-models` is explicitly passed (`args.probe_models and shutil.which('agy')`), matching the AGENTS.md/contract language requiring explicit egress authority for provider/model discovery. `test_runner_inventory_does_not_probe_models_by_default` confirms the call is skipped by default.",
+        "id": "F3-RUNNER-INVENTORY-SIDE-EFFECT",
+        "severity": "LOW",
+        "status": "RESOLVED",
+        "title": "Prior finding (unconditional 'agy models' provider call) is resolved"
+      },
+      {
+        "body": "`cmd_verify_zip` now enforces a single root directory, rejects path-traversal/absolute/backslash/symlink members, requires exactly one root `SHA256SUMS.txt`, cross-validates `SHA256SUMS.txt`, `FILE_INVENTORY.json` (path/sha256/bytes types, no duplicates), and `SECRET_SCAN_REPORT.json` (`status==PASS`, `hits==[]`) against actual member content and byte counts. Tests cover tampered payload (hash mismatch), duplicate inventory entries, and malformed inventory field types (None/list/bool/str for sha256/bytes). This meaningfully closes the 'narrower guarantee than the name implies' gap noted in the historical audit.",
+        "id": "F4-VERIFY-ZIP-INTEGRITY",
+        "severity": "LOW",
+        "status": "RESOLVED",
+        "title": "Prior finding (verify-zip only checked CRC, not manifest hashes) is substantially resolved"
+      },
+      {
+        "body": "The new AGENTS.md \u00a7Control Tower Packet Workflow now explicitly states the extra routing/packaging requirements apply only to 'supervised packets/workstreams' and that 'ordinary work retains the repository's existing workflow,' and the same disclaimer is repeated in `.claude/claude.md`, `.claude/llm.md`, `.claude/llms.md`, `governance-principles.md`, and the kit's own `SUPERVISOR_OPERATING_CONTRACT.md`. This resolves the ambiguity about whether the kit universally overrides AGENTS.md \u00a74's 14-step Codex lifecycle. It does not mechanically insert a numbered step into \u00a74's list, but the disclaimer language is sufficient to prevent authority conflict.",
+        "id": "F5-ROUTING-OBLIGATION-SCOPE",
+        "severity": "LOW",
+        "status": "RESOLVED",
+        "title": "Prior finding (routing-decision obligation not reconciled with AGENTS.md lifecycle) is partially addressed by explicit scoping, not mechanical reconciliation"
+      },
+      {
+        "body": "`scan_files` now caps reads at `MAX_SCAN_BYTES` (20MB), treats oversized/unreadable files as scan hits (`UNSCANNABLE_OVERSIZED`/`UNSCANNABLE_UNREADABLE`), and `iter_input` captures `os.walk` traversal errors and folds them into the scanned-file set so directory-walk failures also surface as hits rather than being silently dropped. Since any hit blocks packaging (`BLOCKED_SECRET_SCAN`, exit 3), this converts a prior silent-skip risk into a fail-closed block. Redaction is preserved: only `{path, pattern-label}` is ever emitted, never the matched byte content (`test_secret_scan_reports_only_redacted_sink_metadata` confirms the canary value never appears in output) \u2014 this is consistent with the CodeQL disposition's 'constant-label dataflow' rationale for alerts 269/270, to the extent this code path is what the alerts refer to (not independently confirmable from the diff alone, see remaining_risks).",
+        "id": "SEC-01-SECRET-SCAN-FAIL-CLOSED",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Oversized/unreadable/undiscoverable inputs now fail closed instead of being silently skipped"
+      },
+      {
+        "body": "`get_route()` now rejects a stored route whose `packet_id` does not match the requested packet id, and `package()` independently extracts the actual packet id from the packet file content (`packet_identity()`) and rejects a mismatch against `--packet-id`. Both paths are covered by tests (`test_get_route_rejects_stored_route_identity_mismatch`, the crosswired-packet case in `test_proof_pack_output_round_trips_through_manifest_verifier`). This closes the route/packet identity-confusion class of defect called out in the audit brief.",
+        "id": "SEC-02-PACKET-ROUTE-IDENTITY",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Packet/route identity binding added"
+      },
+      {
+        "body": "`packet_identity()` for non-JSON packets scans line-by-line and returns the ID token from the *first* Markdown heading it encounters, only special-casing a 'Task Packet:' prefix if that first heading happens to start with it. A Markdown packet file with an earlier unrelated H1/H2 (e.g., a preamble title) before its canonical 'Task Packet: TP-...' heading would silently bind to the wrong identity rather than failing closed. Current tests only exercise the single-heading case. Local/operator-authored inputs limit exploitability, but this is a real gap in the identity-guard the diff is trying to establish for the Markdown path (the JSON path, used by the actual task-packets in this repo, is unaffected and correct).",
+        "id": "CORR-01-MARKDOWN-PACKET-IDENTITY-HEURISTIC",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "Markdown packet-identity extraction uses first heading matched, not a targeted 'Task Packet' heading search"
+      },
+      {
+        "body": "`.control-tower/config/defaults.json` and `.control-tower/project.json` are near-duplicate files; `README.md` now explicitly documents that `project.json` is canonical and the CLI does not read `defaults.json` at runtime (confirmed by source inspection \u2014 no reference to `config/defaults.json` anywhere in `ct`). This is a documentation-level disposition of the prior 'unused defaults.json' finding rather than a structural fix (e.g. removing the duplicate or deriving one from the other), which is an acceptable but non-ideal resolution for a locally-vendored config artifact.",
+        "id": "PKG-01-DEFAULTS-VS-PROJECT-JSON-DUPLICATION",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "config/defaults.json duplication documented but not enforced in code"
+      },
+      {
+        "body": "The CODEQL_DISPOSITION evidence asserts alerts 269/270 were dismissed as false positives based on 'constant-label dataflow and synthetic canaries' with exit 3 (no matched values). This auditor has no tool access and was not given the original CodeQL alert text/location, so the specific sink/source the alerts flagged cannot be matched to a specific line in this diff with certainty. The `scan_files`/logging code reviewed above is *consistent* with the stated rationale (only path + constant pattern-label are ever logged, never matched secret bytes), which supports the disposition, but this is inference from adjacent code, not confirmation of the actual alert. Per the task framing, this narrow dismissal does not itself waive scrutiny of the scanning/route/schema/return/integrity defects, which were reviewed independently above and found resolved.",
+        "id": "GOV-01-CODEQL-DISPOSITION-NOT-INDEPENDENTLY-VERIFIABLE",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "title": "CodeQL alert dismissal (alerts 269/270) cannot be independently confirmed from the supplied diff alone"
+      }
+    ],
+    "fixes_applied": [],
+    "invocation": "/Users/hue/.local/bin/claude --print --safe-mode --no-session-persistence --permission-mode dontAsk --permission-prompts none --tools '' --strict-mcp-config --model sonnet --effort medium --output-format json",
+    "remaining_risks": [
+      "Full integration and a fresh repaired-head CI run are explicitly NOT_RUN; this audit did not execute anything and relies entirely on implementer-supplied evidence (pytest, precommit, change-contract, diff --check, validate-route outputs) which is asserted, not independently reproduced.",
+      "The 19 passing unit tests in tests/unit/test_control_tower_kit.py were not executed by this auditor; their pass/fail status is implementer evidence only.",
+      "The CodeQL false-positive disposition for alerts 269/270 cannot be independently matched to specific source lines from the supplied materials; the reviewed code is consistent with but does not prove the stated rationale.",
+      "Markdown-path packet-identity extraction (packet_identity() for .md files) can silently bind to the wrong ID if a packet file has an earlier unrelated heading before its canonical 'Task Packet:' heading; no test covers this multi-heading case.",
+      "The hand-rolled JSON-Schema validator's 'reject unknown schema keyword' behavior means any future edit to the shipped schemas using an unsupported JSON-Schema keyword will break all route/return validation until the validator is updated in lockstep \u2014 a maintenance coupling, not a current defect.",
+      "config/defaults.json vs project.json canonical-authority separation is enforced only by documentation (README.md) and the absence of code references, not by a structural guarantee (e.g., schema-level markers or file removal).",
+      "This audit is diff-only; no operator risk acceptance is inferred, and no canonical merge/audit gate is treated as bypassed by anything reviewed here."
+    ],
+    "report_path": "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-REPAIR-002/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "generated_at": "2026-09-08T23:15:20.224886+00:00",
+  "head_sha": "4b31331b93fae6ffb98d23b4c0cfa1df7f5e55d5",
+  "packet_id": "TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-REPAIR-002",
+  "pr_number": 1335,
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "risk_lane": "L3"
+}
