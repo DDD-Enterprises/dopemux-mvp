@@ -151,6 +151,40 @@ test('TeamDashboard propagates clipboard copy error via onError prop', async () 
   }
 });
 
+test('TaskSequencer propagates clipboard copy error via onError prop', async () => {
+  let errorMessage: string | null = null;
+  const handleError = (msg: string) => {
+    errorMessage = msg;
+  };
+
+  const cognitiveState = {
+    energy: 80,
+    attention: 70,
+    load: 40,
+    status: 'optimal' as const,
+    recommendation: 'Complete tasks.',
+  };
+
+  const originalClipboard = navigator.clipboard;
+  Object.defineProperty(navigator, 'clipboard', {
+    value: undefined,
+    configurable: true,
+  });
+
+  try {
+    render(<TaskSequencer cognitiveState={cognitiveState} onError={handleError} />);
+    const copyButton = screen.getByRole('button', { name: 'Copy task title to clipboard' });
+    fireEvent.click(copyButton);
+
+    expect(errorMessage).toBe('Clipboard API is not supported in this browser or context.');
+  } finally {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: originalClipboard,
+      configurable: true,
+    });
+  }
+});
+
 test('App.tsx exposes metric card tooltips with focus indicators and labels', () => {
   const appContent = fs.readFileSync(path.join(componentsDir, '..', 'App.tsx'), 'utf8');
   expect(appContent).toContain('<Tooltip title={metric.tooltip} arrow describeChild>');
@@ -230,6 +264,7 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
 });
 
 test('TaskSequencer Reset Ritual soft confirmation and Escape cancellation in DOM', () => {
+  cleanup();
   const cognitiveState = {
     energy: 80,
     attention: 70,
@@ -271,6 +306,7 @@ test('TaskSequencer Reset Ritual soft confirmation and Escape cancellation in DO
 });
 
 test('TaskSequencer.tsx handles Escape key to cancel soft confirmation for Skip', () => {
+  cleanup();
   const cognitiveState = {
     energy: 80,
     attention: 70,
