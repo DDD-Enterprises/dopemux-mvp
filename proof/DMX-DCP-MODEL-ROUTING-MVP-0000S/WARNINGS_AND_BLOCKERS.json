@@ -1,0 +1,13 @@
+{
+  "blocking_reasons": [
+    "FORMAL_OPUS_AUDIT_PENDING",
+    "CI_EXACT_HEAD_PROOF_PENDING",
+    "PR_STEWARD_PENDING",
+    "PR_DRAFT_PRESERVED"
+  ],
+  "warnings": [
+    "The structural proof commit cannot name its own future commit SHA without a self-reference cycle.",
+    "A second proof-only commit must carry the signed Opus audit bound to this structural commit.",
+    "The PR remains draft and no draft-to-ready or merge action is authorized."
+  ]
+}

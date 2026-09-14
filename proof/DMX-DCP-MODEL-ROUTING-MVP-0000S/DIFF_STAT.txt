@@ -1,0 +1,19 @@
+ .../03-reference/dcp/model-routing-series-map.json | 676 +++++++++++++++++++++
+ .../dcp/model-routing-series-status.md             |  68 +++
+ .../AUDITOR_REPORT.md                              |  25 +
+ .../DMX-DCP-MODEL-ROUTING-MVP-0000S/COMMAND_LOG.md |  14 +
+ .../EVIDENCE_LEDGER.md                             |  12 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/HANDOFF.json |  22 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/HANDOFF.md   |   7 +
+ .../MODEL_ROUTING_SERIES_MAP.json                  | 676 +++++++++++++++++++++
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/PAL_CHAIN.md |  16 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/PROOF.json   |  68 +++
+ .../DMX-DCP-MODEL-ROUTING-MVP-0000S/gh-pr-all.exit |   1 +
+ .../DMX-DCP-MODEL-ROUTING-MVP-0000S/gh-pr-all.json |   1 +
+ .../gh-pr-all.stderr.txt                           |   1 +
+ .../gh-pr-dcp-routing-related.json                 | 422 +++++++++++++
+ .../model-routing-packets.txt                      |  79 +++
+ .../model-routing-proof.txt                        |  92 +++
+ .../model-routing-runtime-files.txt                |  58 ++
+ task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000S.md    | 409 +++++++++++++
+ 18 files changed, 2647 insertions(+)

@@ -1,0 +1,36 @@
+{
+  "artifacts": [
+    {
+      "bytes": 4845,
+      "path": "CANDIDATE_CHANGED_FILES.txt",
+      "sha256": "88598bf934cdaab3f4b749ea217fe8f0a95531dce8a9bd06a098e4cb22658307"
+    },
+    {
+      "bytes": 1138670,
+      "path": "CANDIDATE_UNIFIED_DIFF.patch",
+      "sha256": "bdc21c80736bb287ed88b6651a8d1f1e833a53574ce84f783d2a4e04bdfdf8c9"
+    },
+    {
+      "bytes": 24042,
+      "path": "CLAUDE_RAW_OUTPUT.json",
+      "sha256": "943ed6b67a62bd5483b516ff43d82aca163e05aeb039abe822c0386b72b28b3c"
+    },
+    {
+      "bytes": 2290,
+      "path": "INSTRUCTION_LIKE_CONTENT.json",
+      "sha256": "c7a3c8d84b25da582ee2262baa8e9b41b8368eee496b83f2d3255a9993383395"
+    },
+    {
+      "bytes": 22082,
+      "path": "NORMALIZED_AUDIT_PAYLOAD.json",
+      "sha256": "ad240f62642d9b616ae2b4fe73761caba161026f1ab1ecf71c31cfc089d64442"
+    },
+    {
+      "bytes": 1148532,
+      "path": "TRUSTED_AUDIT_PROMPT.md",
+      "sha256": "106df9ee8749a3a720b1bcded5475a9f222af60442f7773448919b388da98f6e"
+    }
+  ],
+  "audited_sha": "cdebf85b1f64ee0e88049f5aa63251a3105e8441",
+  "created_at": "2026-07-29T10:18:49Z"
+}

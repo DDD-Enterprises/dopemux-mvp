@@ -1,0 +1,200 @@
+{
+  "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000R",
+  "series": "DMX-DCP-MODEL-ROUTING-NEXT-TRANCHE-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "generated_by": "Claude Code Sonnet 5 (primary_executor)",
+  "created_at_note": "Timestamps below reflect wall-clock capture order, not a system clock read (tool constraint) — treat proof file mtimes as authoritative if exact time is required.",
+  "main_sha": {
+    "value": "9a52ecf4328f28756c3e87a2c351e60d46b805f6",
+    "label": "OBSERVED",
+    "evidence": "git rev-parse HEAD == git rev-parse origin/main, worktree at HEAD before any packet-owned change",
+    "note": "Packet's observed_main_sha_at_authoring (eb212dcaa73c407c271e0ddc60e38bdd2b7e4661) is stale per the packet's own admission; main has advanced. This reconciliation supersedes it."
+  },
+  "dcp_components": {
+    "label": "OBSERVED",
+    "evidence": "find src/dopemux/dcp -maxdepth 2 -type f (proof/inventory.txt)",
+    "files": [
+      "src/dopemux/dcp/__init__.py",
+      "src/dopemux/dcp/control_snapshot.py",
+      "src/dopemux/dcp/lane_engine.py",
+      "src/dopemux/dcp/lane_model.py",
+      "src/dopemux/dcp/proof_family.py",
+      "src/dopemux/dcp/proof_pointer_reader.py",
+      "src/dopemux/dcp/red_lane.py",
+      "src/dopemux/dcp/red_lane_rules.py",
+      "src/dopemux/dcp/red_lane_scanner.py",
+      "src/dopemux/dcp/red_lane_taxonomy.py",
+      "src/dopemux/dcp/routing_backend_policy.py",
+      "src/dopemux/dcp/routing_classifier.py",
+      "src/dopemux/dcp/routing_model.py"
+    ],
+    "compileall_result": {
+      "command": "python -m compileall -q src/dopemux/dcp src/dopemux/commands",
+      "exit_code": 0,
+      "label": "OBSERVED"
+    },
+    "focused_test_result": {
+      "command": "python -m pytest -q tests/unit/dcp tests/dcp/test_dcp_model_routing_0001_domain.py",
+      "exit_code": 0,
+      "tests_passed": 252,
+      "label": "OBSERVED",
+      "note": "pytest -q emitted dot-summary only (no verbose IDs, no explicit 'N passed' summary line in this pytest configuration); 252 is an exact count of '.' pass markers in the captured output (proof/pytest.log), with the final progress marker at [100%] and zero F/E/s markers present."
+    },
+    "related_test_dirs_out_of_focused_scope": {
+      "label": "OBSERVED",
+      "evidence": "find tests -type f -path '*dcp*' (proof/inventory.txt)",
+      "note": "tests/dcp/, tests/dcp_extension/, tests/contracts/test_openclaw_dcp_routing_contracts.py, tests/project_control_plane/test_dcp_extension_export.py, tests/test_dcp_surface_guard.py, tests/test_dcp_denylist_nudge.py exist beyond the packet's exact two focused paths. These were NOT run by this packet's exact command list (packet specifies only tests/unit/dcp and tests/dcp/test_dcp_model_routing_0001_domain.py) and their pass/fail status is UNKNOWN as of this reconciliation."
+    }
+  },
+  "dcp_cli_surface": {
+    "label": "OBSERVED",
+    "evidence": "python -m dopemux.cli dcp --help exit 0 (proof/dcp-help.txt)",
+    "commands": [
+      {
+        "name": "classify",
+        "summary": "Classify task attributes into a conservative route decision (read-only projection)."
+      },
+      {
+        "name": "recommend-backend",
+        "summary": "Return inert backend policy recommendation for a route decision (advisory only, no execution)."
+      }
+    ],
+    "top_level_help": "python -m dopemux.cli --help exits 0 (proof/dopemux-help.txt); dcp is a registered subcommand group described as 'Read-only DCP routing projection (classify + backend policy recommend)'."
+  },
+  "pal_route": {
+    "label": "OBSERVED",
+    "canonical_route": "pal-stdio (exec-based MCP server via `docker exec -i mcp-pal-stdio /app/.venv/bin/python server.py`)",
+    "evidence": [
+      "mcp_catalog.yaml:75 explicitly documents mcp-pal (HTTP :3003) as 'health/lifecycle shim only — /mcp, /sse, /messages all 404. ... Use pal-stdio for PAL tools.'",
+      "src/dopemux/mcp/default_catalog.yaml mirrors the same shim disposition and pal-stdio registration",
+      "opencode.jsonc registers 'pal-stdio' as an MCP server entry",
+      "This session's own PAL tool calls (mcp__pal-stdio__analyze, __challenge, __listmodels) succeeded live against the pal-stdio route during this packet's execution"
+    ],
+    "http_wrapper_disposition": "mcp-pal (HTTP :3003) is a health/lifecycle shim only, not a functional MCP tool endpoint, per in-repo comment in mcp_catalog.yaml:57,75"
+  },
+  "pal_proxy_disposition": {
+    "label": "OBSERVED",
+    "target": "docker/mcp-servers-source/pal-stdio/pal_stdio_proxy.py (mirrored at docker/mcp-servers/pal-stdio/pal_stdio_proxy.py)",
+    "classification": "CANONICAL",
+    "rationale": "Actively referenced by mcp_catalog.yaml (root + src/dopemux/mcp/default_catalog.yaml), compose.yml service 'pal-stdio' (container_name mcp-pal-stdio), opencode.jsonc, scripts/ensure_pal_stdio.sh, scripts/mcp_health_check.sh, and src/dopemux/mcp/fleet_catalog.py. Container mcp-pal-stdio was observed 'Up 51 minutes' in docker ps at capture time.",
+    "known_limitation": "scripts/ensure_pal_stdio.sh and claudedocs/pal-stdio-model-context-diagnosis-2026-07-16.md (referenced in-repo, not re-verified by this packet) document a known model_context import issue with a documented recovery of `docker restart mcp-pal-stdio`; this packet did not re-probe that failure mode (no live tool invocation beyond the analyze/challenge calls already made for this packet's own PAL chain, which succeeded)."
+  },
+  "opencode_wiring": {
+    "label": "OBSERVED",
+    "evidence": "opencode debug config exit 0 (proof/opencode-resolved-config.txt, secrets redacted)",
+    "model": "anthropic/claude-sonnet-4-5",
+    "small_model": "anthropic/claude-haiku-4-5",
+    "default_agent": "build",
+    "mcp_servers_declared_in_resolved_config": [
+      "serena (remote, http://localhost:3006/mcp)",
+      "dope-context (remote, http://localhost:3010/mcp)",
+      "desktop-commander (remote, http://localhost:3012/sse)",
+      "gpt-researcher (local, docker exec)",
+      "pal-stdio",
+      "task-orchestrator"
+    ],
+    "verify_pal_sh_result": {
+      "command": "bash scripts/opencode/verify-pal.sh",
+      "exit_code": 0,
+      "output_summary": "opencode.jsonc exists; PAL behavior guide exists; PAL agents exist; could not confirm 'pal' string literal in opencode debug config output (script's own grep heuristic) but flags this as non-fatal ('may still work'); verification reported complete.",
+      "caveat": "Script's own internal check for the literal string 'pal' did not match, which the script itself treats as a soft warning, not a failure. This packet treats opencode-PAL wiring as OBSERVED-STATIC (config file references exist) but NOT independently confirmed as functionally live by this packet (no `opencode run` smoke test was executed, consistent with scope-out on model inference calls)."
+    }
+  },
+  "litellm_state": {
+    "label": "OBSERVED",
+    "evidence": "docker ps --format '{{json .}}' (proof/docker-ps-summary.txt)",
+    "container": "mcp-litellm",
+    "image": "dopemux-litellm",
+    "status_string": "Up 51 minutes (healthy)",
+    "ports": "0.0.0.0:4000->4000/tcp",
+    "companion_container": {
+      "name": "litellm-db",
+      "image": "postgres:16.6",
+      "status_string": "Up 51 minutes (healthy)",
+      "ports": "0.0.0.0:2543->5432/tcp"
+    },
+    "caveat": "Health status is Docker's own HEALTHCHECK verdict at snapshot time, not independently re-probed by this packet (no HTTP call made to :4000, consistent with scope-out on live inference/network calls beyond discovered configuration)."
+  },
+  "pal_state": {
+    "label": "OBSERVED",
+    "evidence": "docker ps --format '{{json .}}' (proof/docker-ps-summary.txt)",
+    "containers": [
+      {"name": "mcp-pal", "image": "dopemux-pal", "status_string": "Up 51 minutes (healthy)", "ports": "0.0.0.0:3003->3003/tcp", "role": "HTTP health/lifecycle shim only, per mcp_catalog.yaml comment"},
+      {"name": "mcp-pal-stdio", "image": "dopemux-pal-stdio", "status_string": "Up 51 minutes", "ports": "(none published; exec-based)", "role": "canonical PAL tool route"},
+      {"name": "pal-mcp-server", "image": "pal-mcp-server:latest", "status_string": "Up 51 minutes (healthy)", "ports": "(none published)"},
+      {"name": "pal-mcp-server-stale-20260721", "image": "a34ca362b93f", "status_string": "Up 51 minutes (unhealthy)", "ports": "(none)", "note": "Name and unhealthy status suggest a leaked/stale prior instance; consistent with known pal-mcp-server container-leak pattern referenced in prior session memory (not independently re-diagnosed by this packet)."}
+    ]
+  },
+  "runner_inventory": {
+    "label": "OBSERVED",
+    "evidence": "for bin in codex claude opencode gemini agy grok (proof/runner-cli-inventory.txt); command -v + --version only, no inference calls made",
+    "runners": [
+      {"bin": "codex", "path": "/Users/hue/.local/share/mise/shims/codex", "version": "codex-cli 0.145.0"},
+      {"bin": "claude", "path": "/Users/hue/.local/bin/claude", "version": "2.1.220 (Claude Code)"},
+      {"bin": "opencode", "path": "/Users/hue/.opencode/bin/opencode", "version": "1.18.5"},
+      {"bin": "gemini", "path": "/opt/homebrew/bin/gemini", "version": "0.46.0"},
+      {"bin": "agy", "path": "/Users/hue/.local/bin/agy", "version": "1.1.7"},
+      {"bin": "grok", "path": "/Users/hue/.local/bin/grok", "version": "grok 0.2.112 (9bbd559437aa) [stable]"}
+    ],
+    "note": "Presence and version only. This packet made no paid inference calls against these runners for the purpose of the runner-inventory step itself. Separately, this packet's own required PAL chain did invoke pal-stdio (gemini-2.5-pro attempt failed with 429 RESOURCE_EXHAUSTED / quota-0; grok-4.5 succeeded for the analyze/challenge stages) — that usage is disclosed in PAL_CHAIN.md, not folded into this inert inventory."
+  },
+  "mcp_registry_state": {
+    "label": "OBSERVED",
+    "evidence": "mcp_catalog.yaml top-level server keys (15 total), docker ps (28 containers), route_manifest.py presence",
+    "mcp_catalog_top_level_servers_sample": ["pal", "serena", "dope-context", "desktop-commander", "gpt-researcher"],
+    "mcp_catalog_server_count": 15,
+    "live_containers_observed": 28,
+    "dcp_readonly_facade_route_manifest": {
+      "path": "services/dcp-readonly-facade/src/dcp_facade/route_manifest.py",
+      "label": "OBSERVED",
+      "note": "Confirms the DCP read-only facade (referenced in CLAUDE.md as the H2 hook's denylist source) exists as a real module on current main."
+    },
+    "caveat": "This is a static/snapshot registry+container view, not a live protocol-level health probe of each MCP endpoint (scope-out: no additional network calls beyond docker ps/compose config)."
+  },
+  "proof_contract_state": {
+    "label": "OBSERVED",
+    "evidence": "docs/03-reference/governance/proof-bundle-schema.md, docs/03-reference/governance/handoff-contract.md, schemas/proof/embedded_audit.schema.json all present and read for this packet's own bundle construction",
+    "proof_bundle_schema_present": true,
+    "handoff_contract_present": true,
+    "embedded_audit_schema_present": true,
+    "embedded_audit_schema_enums": {
+      "auditor_tool": ["agy", "antigravity", "claude-code-cli", "copilot-cli", "gemini-cli", "pal-mcp-clink", "none"],
+      "auditor_model": ["sonnet", "claude-sonnet-4.6", "opus", "gemini", "unknown"],
+      "status": ["PASS", "PASS_WITH_RISKS", "FAIL", "NEEDS_SUPERVISOR", "SKIPPED"]
+    },
+    "contradiction_note": {
+      "label": "CONFLICTING",
+      "detail": "docs/03-reference/governance/proof-bundle-schema.md and handoff-contract.md frontmatter declare next_review: 2026-06-15, which is in the past relative to this packet's execution date (2026-07-26). This is a stale-review-date flag on the doc metadata, not a claim that the schema content itself is wrong — the schema was used successfully to build this packet's own proof bundle without contradiction."
+    }
+  },
+  "pr_steward_state": {
+    "label": "OBSERVED",
+    "evidence": "gh pr list; git log -1 on origin/main",
+    "current_main_head_pr": {
+      "number": 1131,
+      "title": "feat(pr-steward): solo-owner exact-head security-release authorization",
+      "state": "MERGED"
+    },
+    "recent_pr_steward_related_open_prs": [1133],
+    "note": "pr-steward is under active development and its commits sit at the current tip of main; this packet does not itself invoke pr-steward against this packet's own (not-yet-pushed) branch. merge_readiness for THIS packet remains BLOCKED_NOT_REQUESTED until PR Steward inspects the exact pushed head, per packet mandate."
+  },
+  "unknowns": [
+    "Live health of :3003 (mcp-pal), :4000 (mcp-litellm), and other published MCP ports was NOT independently re-probed via HTTP by this packet; only docker's own HEALTHCHECK verdict at snapshot time was captured.",
+    "Whether pal-stdio's previously-documented model_context import issue (claudedocs/pal-stdio-model-context-diagnosis-2026-07-16.md, referenced but not re-read in full by this packet) still reproduces on current main was not re-tested beyond this packet's own successful analyze/challenge calls.",
+    "tests/dcp_extension/**, tests/contracts/test_openclaw_dcp_routing_contracts.py, tests/project_control_plane/test_dcp_extension_export.py, tests/test_dcp_surface_guard.py, tests/test_dcp_denylist_nudge.py exist but were outside this packet's exact two focused pytest paths and were not run; their current pass/fail status is UNKNOWN.",
+    "Whether `opencode run \"Use pal_listmodels...\"` (the smoke test verify-pal.sh itself recommends) currently succeeds was not tested — scope-out on live inference calls.",
+    "pal-mcp-server-stale-20260721's exact origin and whether it is safe to prune was not independently re-diagnosed by this packet."
+  ],
+  "contradictions": [
+    "See proof_contract_state.contradiction_note: governance doc next_review dates (2026-06-15) are stale relative to packet execution date (2026-07-26); content itself was not found to contradict runtime behavior."
+  ],
+  "next_packet_inputs": {
+    "recommended_next_packet": "DMX-DCP-MODEL-ROUTING-MVP-0000S",
+    "candidate_follow_ups": [
+      "Live HTTP health probe of mcp-pal (:3003) and mcp-litellm (:4000) endpoints under explicit no-write authorization",
+      "Run the remaining tests/dcp/** and tests/dcp_extension/** suites not covered by this packet's exact focused-test scope",
+      "Re-verify pal-stdio model_context import issue against current mcp-pal-stdio image (docker restart recovery path documented in prior session memory, not re-tested here)",
+      "Investigate and, if safe, prune pal-mcp-server-stale-20260721"
+    ]
+  }
+}
