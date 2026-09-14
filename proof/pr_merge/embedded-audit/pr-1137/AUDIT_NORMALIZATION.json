@@ -1,0 +1,10 @@
+{
+  "audited_sha": "b87a87787c852d6650d898811487167f63293493",
+  "is_runnable_status": "UNKNOWN",
+  "output_contract_errors": [],
+  "passing": false,
+  "prompt_sha256": "e230d1a6d5b563607e47f58dd6126beef7b67ff88440795d7cc6662cea156974",
+  "raw_cli_sha256": "facd2e3b80cd2db65c4326c3a82642b246ec8a25e0931b113ec03d1b909a4104",
+  "unified_diff_sha256": "bb837efc5b775f5a58490f27e2671dfb16d2aee7e7792e93e1d398163e66f59c",
+  "verdict": "FAIL"
+}

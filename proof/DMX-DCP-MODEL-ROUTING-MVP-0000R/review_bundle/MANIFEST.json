@@ -1,0 +1,82 @@
+{
+  "artifacts": [
+    {
+      "bytes": 41,
+      "path": "C1_SHA.txt",
+      "sha256": "09e7a63a12b8b6243bbd8e6a6cb4abdf660265c82440cddc13d0a346e886ce7c"
+    },
+    {
+      "bytes": 1128,
+      "path": "C1_STAGED_PATHS.txt",
+      "sha256": "465ce696166b4209499cea71d184d42774689c853e59d3df5c2cd1991ad078b6"
+    },
+    {
+      "bytes": 87,
+      "path": "C2_SECRET_SCAN.json",
+      "sha256": "aa69b86484b1be07af4559a7ab54fd58516c113ad678ba37b467ec8676aa9ef0"
+    },
+    {
+      "bytes": 41,
+      "path": "C2_SHA.txt",
+      "sha256": "983f26fcc88828b09b78e45928602ed7ef391bcde9d5d40004a3e333f3058a3a"
+    },
+    {
+      "bytes": 413,
+      "path": "CALLSITE_ANALYSIS.json",
+      "sha256": "00fc34cc08f686dd06e70dcfc20fa2bf177b6f42f970ec139eeb3fe0e2bd8cf1"
+    },
+    {
+      "bytes": 2566,
+      "path": "CANDIDATE_CHANGED_FILES.txt",
+      "sha256": "a33a85aa7125b73a641eda4b945cf04c3a50148941693e59968bba326510e1b7"
+    },
+    {
+      "bytes": 336723,
+      "path": "CANDIDATE_UNIFIED_DIFF.patch",
+      "sha256": "781ddf26bd38b6546d083a7e15ee80c2defe7828601e47fb7911476cb3cf7212"
+    },
+    {
+      "bytes": 87,
+      "path": "CHILD_PROOF_SECRET_SCAN.json",
+      "sha256": "c222f19ac585759407f7b777ce87ad450addc7a0de42af97ce56e10224c86e51"
+    },
+    {
+      "bytes": 33,
+      "path": "COMMAND_LOG.txt",
+      "sha256": "773ef779bbb37199ee14ad35c275e7f1efaf35b1d2599403b2fbb06805356499"
+    },
+    {
+      "bytes": 6818,
+      "path": "EXECUTION_GATE_OCCURRENCES.txt",
+      "sha256": "002f0a40d16484dd8bd95e4dfa18613ac51fed2998699f6244fd29469b97f937"
+    },
+    {
+      "bytes": 0,
+      "path": "GIT_STATUS_BEFORE_PROOF.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 436,
+      "path": "LOCAL_AUDIT_ATTESTATION.json",
+      "sha256": "91809222ae5409817a6315e33620470eef39bd6ecb53093d62dce9ba72024e9d"
+    },
+    {
+      "bytes": 41,
+      "path": "MERGE_BASE.txt",
+      "sha256": "6453471fa05533d285cf2d39b99f3984b918e0b9cc3cf5594d7359488eca1cfe"
+    },
+    {
+      "bytes": 41,
+      "path": "MERGE_TREE.txt",
+      "sha256": "6fe2e02e90b1bcbceaf46516135dbce84af0faeb7e5e4f8c7440d6d2768754cc"
+    },
+    {
+      "bytes": 654,
+      "path": "VALIDATION.json",
+      "sha256": "0ff2762de1209519109740a1c3af7dcd3651472eba829f0939d51364ca861087"
+    }
+  ],
+  "candidate_subject_sha": "5de3f0ef56dfcf8545c395418b4a3d424b1bc249",
+  "created_at": "2026-07-29T10:12:17Z",
+  "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000R"
+}
