@@ -34,8 +34,8 @@ class TestPrecommitWorkflowTool:
         """Test analytical temperature setting"""
         tool = PrecommitTool()
         temp = tool.get_default_temperature()
-        # Should be analytical temperature (0.2)
-        assert temp == 0.2
+        # Should be analytical temperature (now 1.0)
+        assert temp == 1.0
 
     def test_request_model_basic_validation(self):
         """Test basic request model validation"""
@@ -107,20 +107,6 @@ class TestPrecommitWorkflowTool:
         assert len(request.relevant_context) == 2
         assert len(request.issues_found) == 1
         assert len(request.images) == 1
-
-    def test_request_model_backtracking(self):
-        """Test backtracking functionality"""
-        request = PrecommitRequest(
-            step="Backtracking from previous step",
-            step_number=3,
-            total_steps=4,
-            next_step_required=True,
-            findings="Revised findings after backtracking",
-            backtrack_from_step=2,  # Backtrack from step 2
-        )
-
-        assert request.backtrack_from_step == 2
-        assert request.step_number == 3
 
     def test_precommit_specific_fields(self):
         """Test precommit-specific configuration fields"""

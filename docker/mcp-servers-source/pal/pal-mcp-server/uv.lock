@@ -570,7 +570,7 @@ wheels = [
 
 [[package]]
 name = "pal-mcp-server"
-version = "9.0.3"
+version = "9.8.2"
 source = { editable = "." }
 dependencies = [
     { name = "google-genai" },

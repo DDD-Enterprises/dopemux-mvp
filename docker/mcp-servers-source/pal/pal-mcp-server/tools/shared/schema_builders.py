@@ -1,5 +1,5 @@
 """
-Core schema building functionality for Zen MCP tools.
+Core schema building functionality for PAL MCP tools.
 
 This module provides base schema generation functionality for simple tools.
 Workflow-specific schema building is located in workflow/schema_builders.py
@@ -45,10 +45,10 @@ class SchemaBuilder:
 
     # Simple tool-specific field schemas (workflow tools use relevant_files instead)
     SIMPLE_FIELD_SCHEMAS = {
-        "files": {
+        "absolute_file_paths": {
             "type": "array",
             "items": {"type": "string"},
-            "description": COMMON_FIELD_DESCRIPTIONS["files"],
+            "description": COMMON_FIELD_DESCRIPTIONS["absolute_file_paths"],
         },
     }
 

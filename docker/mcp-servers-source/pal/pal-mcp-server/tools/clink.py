@@ -1,4 +1,4 @@
-"""clink tool - bridge Zen MCP requests to external AI CLIs."""
+"""clink tool - bridge PAL MCP requests to external AI CLIs."""
 
 from __future__ import annotations
 
@@ -17,6 +17,7 @@ from clink.models import ResolvedCLIClient, ResolvedCLIRole
 from config import TEMPERATURE_BALANCED
 from tools.models import ToolModelCategory, ToolOutput
 from tools.shared.base_models import COMMON_FIELD_DESCRIPTIONS
+from tools.shared.exceptions import ToolExecutionError
 from tools.simple.base import SchemaBuilder, SimpleTool
 
 logger = logging.getLogger(__name__)
@@ -37,9 +38,9 @@ class CLinkRequest(BaseModel):
         default=None,
         description="Optional role preset defined in the CLI configuration (defaults to 'default').",
     )
-    files: list[str] = Field(
+    absolute_file_paths: list[str] = Field(
         default_factory=list,
-        description=COMMON_FIELD_DESCRIPTIONS["files"],
+        description=COMMON_FIELD_DESCRIPTIONS["absolute_file_paths"],
     )
     images: list[str] = Field(
         default_factory=list,
@@ -77,7 +78,7 @@ class CLinkTool(SimpleTool):
 
     def get_description(self) -> str:
         return (
-            "Link a request to an external AI CLI (Gemini CLI, Qwen CLI, etc.) through Zen MCP to reuse "
+            "Link a request to an external AI CLI (Gemini CLI, Qwen CLI, etc.) through PAL MCP to reuse "
             "their capabilities inside existing workflows."
         )
 
@@ -145,7 +146,7 @@ class CLinkTool(SimpleTool):
                 "enum": self._all_roles or ["default"],
                 "description": role_description,
             },
-            "files": SchemaBuilder.SIMPLE_FIELD_SCHEMAS["files"],
+            "absolute_file_paths": SchemaBuilder.SIMPLE_FIELD_SCHEMAS["absolute_file_paths"],
             "images": SchemaBuilder.COMMON_FIELD_SCHEMAS["images"],
             "continuation_id": SchemaBuilder.COMMON_FIELD_SCHEMAS["continuation_id"],
         }
@@ -172,23 +173,23 @@ class CLinkTool(SimpleTool):
 
         path_error = self._validate_file_paths(request)
         if path_error:
-            return [self._error_response(path_error)]
+            self._raise_tool_error(path_error)
 
         selected_cli = request.cli_name or self._default_cli_name
         if not selected_cli:
-            return [self._error_response("No CLI clients are configured for clink.")]
+            self._raise_tool_error("No CLI clients are configured for clink.")
 
         try:
             client_config = self._registry.get_client(selected_cli)
         except KeyError as exc:
-            return [self._error_response(str(exc))]
+            self._raise_tool_error(str(exc))
 
         try:
             role_config = client_config.get_role(request.role)
         except KeyError as exc:
-            return [self._error_response(str(exc))]
+            self._raise_tool_error(str(exc))
 
-        files = self.get_request_files(request)
+        absolute_file_paths = self.get_request_files(request)
         images = self.get_request_images(request)
         continuation_id = self.get_request_continuation_id(request)
 
@@ -206,7 +207,7 @@ class CLinkTool(SimpleTool):
             )
         except Exception as exc:
             logger.exception("Failed to prepare clink prompt")
-            return [self._error_response(f"Failed to prepare prompt: {exc}")]
+            self._raise_tool_error(f"Failed to prepare prompt: {exc}")
 
         agent = create_agent(client_config)
         try:
@@ -214,18 +215,15 @@ class CLinkTool(SimpleTool):
                 role=role_config,
                 prompt=prompt_text,
                 system_prompt=system_prompt_text if system_prompt_text.strip() else None,
-                files=files,
+                files=absolute_file_paths,
                 images=images,
             )
         except CLIAgentError as exc:
             metadata = self._build_error_metadata(client_config, exc)
-            error_output = ToolOutput(
-                status="error",
-                content=f"CLI '{client_config.name}' execution failed: {exc}",
-                content_type="text",
+            self._raise_tool_error(
+                f"CLI '{client_config.name}' execution failed: {exc}",
                 metadata=metadata,
             )
-            return [TextContent(type="text", text=error_output.model_dump_json())]
 
         metadata = self._build_success_metadata(client_config, role_config, result)
         metadata = self._prune_metadata(metadata, client_config, reason="normal")
@@ -442,16 +440,16 @@ class CLinkTool(SimpleTool):
             metadata["stderr"] = exc.stderr.strip()
         return metadata
 
-    def _error_response(self, message: str) -> TextContent:
-        error_output = ToolOutput(status="error", content=message, content_type="text")
-        return TextContent(type="text", text=error_output.model_dump_json())
+    def _raise_tool_error(self, message: str, metadata: dict[str, Any] | None = None) -> None:
+        error_output = ToolOutput(status="error", content=message, content_type="text", metadata=metadata)
+        raise ToolExecutionError(error_output.model_dump_json())
 
     def _agent_capabilities_guidance(self) -> str:
         return (
             "You are operating through the Gemini CLI agent. You have access to your full suite of "
             "CLI capabilities—including launching web searches, reading files, and using any other "
             "available tools. Gather current information yourself and deliver the final answer without "
-            "asking the Zen MCP host to perform searches or file reads."
+            "asking the PAL MCP host to perform searches or file reads."
         )
 
     def _format_file_references(self, files: list[str]) -> str:

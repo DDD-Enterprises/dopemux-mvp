@@ -449,6 +449,70 @@ def repair_aliases(apply: bool):
         raise
 
 
+@routing.command("audit-catalog")
+@click.option("--json", "json_output", is_flag=True, help="Emit machine-readable JSON.")
+def audit_catalog(json_output: bool):
+    """Audit full repo-owned routing catalog drift without writing."""
+    try:
+        manager = LaunchdServiceManager.get_instance()
+        audit = manager.routing_config.audit_catalog_contract()
+        if json_output:
+            payload = {key: value for key, value in audit.items() if key != "merged_config"}
+            click.echo(json.dumps(payload, indent=2, sort_keys=True))
+            if audit["stale"]:
+                raise SystemExit(1)
+            return
+
+        console.print("Routing Catalog Audit")
+        console.print("=" * 50)
+        if not audit["stale"]:
+            console.print("Catalog matches repo-owned template.")
+            return
+        console.print("Stale repo-owned catalog sections:")
+        for section in audit["changed_sections"]:
+            console.print(f"  - {section}", markup=False)
+        raise SystemExit(1)
+    except RoutingConfigError as e:
+        click.echo(f"Error: {e}", err=True)
+        raise SystemExit(2)
+
+
+@routing.command("sync-catalog")
+@click.option(
+    "--apply",
+    is_flag=True,
+    help="Back up and atomically upsert repo-owned catalog sections.",
+)
+def sync_catalog(apply: bool):
+    """Preview or apply additive routing catalog synchronization."""
+    try:
+        manager = LaunchdServiceManager.get_instance()
+        result = manager.routing_config.sync_catalog_contract(apply=apply)
+        audit = result["audit"]
+
+        console.print("Routing Catalog Sync")
+        console.print("=" * 50)
+        if not audit["stale"] and not result["changed"]:
+            console.print("No catalog sync needed.")
+            return
+
+        console.print("Repo-owned sections to upsert:")
+        for section in audit["changed_sections"]:
+            console.print(f"  - {section}", markup=False)
+
+        if not apply:
+            console.print("\nDry run only. No files changed.")
+            console.print("Run `dopemux routing sync-catalog --apply` to write.")
+            return
+
+        console.print("\nCatalog synchronized.")
+        console.print(f"Backup: {result['backup_path']}", markup=False)
+        console.print(f"Updated: {manager.routing_config.config_path}", markup=False)
+    except RoutingConfigError as e:
+        click.echo(f"Error: {e}", err=True)
+        raise SystemExit(2)
+
+
 @routing.command()
 def docker():
     """Generate Docker Compose snippets for services."""
