@@ -534,6 +534,14 @@ function DashboardApp() {
                   if (e.key === ' ' || e.key === 'Enter') {
                     e.preventDefault();
                     handleHydrate();
+                  } else if (isHydrated && e.key === 'Escape') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsHydrated(false);
+                    if (hydrationTimeoutRef.current) {
+                      clearTimeout(hydrationTimeoutRef.current);
+                      hydrationTimeoutRef.current = null;
+                    }
                   }
                 }}
                 tabIndex={0}
