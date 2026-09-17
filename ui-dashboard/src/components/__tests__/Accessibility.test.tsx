@@ -68,11 +68,13 @@ test('PredictionPanel.tsx rendered accessibility and state feedback', () => {
   expect(screen.getByLabelText(/15-min prediction 40%, Flow Ritual/i)).toBeDefined();
 
   // Test 4: Verify dynamic trend icon (TrendingUp when prediction > currentLoad)
+  cleanup();
   const { container: containerUp } = render(<PredictionPanel prediction={0.8} currentLoad={0.4} />);
   expect(containerUp.querySelector('.lucide-trending-up')).not.toBeNull();
   expect(containerUp.querySelector('.lucide-trending-down')).toBeNull();
 
   // Test 5: Verify dynamic trend icon (TrendingDown when prediction < currentLoad)
+  cleanup();
   const { container: containerDown } = render(<PredictionPanel prediction={0.3} currentLoad={0.7} />);
   expect(containerDown.querySelector('.lucide-trending-down')).not.toBeNull();
   expect(containerDown.querySelector('.lucide-trending-up')).toBeNull();
@@ -140,6 +142,40 @@ test('TeamDashboard propagates clipboard copy error via onError prop', async () 
   try {
     render(<TeamDashboard onError={handleError} />);
     const copyButton = screen.getByRole('button', { name: /Copy team insight:/i });
+    fireEvent.click(copyButton);
+
+    expect(errorMessage).toBe('Clipboard API is not supported in this browser or context.');
+  } finally {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: originalClipboard,
+      configurable: true,
+    });
+  }
+});
+
+test('TaskSequencer propagates clipboard copy error via onError prop', async () => {
+  let errorMessage: string | null = null;
+  const handleError = (msg: string) => {
+    errorMessage = msg;
+  };
+
+  const cognitiveState = {
+    energy: 80,
+    attention: 70,
+    load: 40,
+    status: 'optimal' as const,
+    recommendation: 'Complete tasks.',
+  };
+
+  const originalClipboard = navigator.clipboard;
+  Object.defineProperty(navigator, 'clipboard', {
+    value: undefined,
+    configurable: true,
+  });
+
+  try {
+    render(<TaskSequencer cognitiveState={cognitiveState} onError={handleError} />);
+    const copyButton = screen.getByRole('button', { name: 'Copy task title to clipboard' });
     fireEvent.click(copyButton);
 
     expect(errorMessage).toBe('Clipboard API is not supported in this browser or context.');
@@ -230,6 +266,7 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
 });
 
 test('TaskSequencer Reset Ritual soft confirmation and Escape cancellation in DOM', () => {
+  cleanup();
   const cognitiveState = {
     energy: 80,
     attention: 70,
@@ -271,6 +308,7 @@ test('TaskSequencer Reset Ritual soft confirmation and Escape cancellation in DO
 });
 
 test('TaskSequencer.tsx handles Escape key to cancel soft confirmation for Skip', () => {
+  cleanup();
   const cognitiveState = {
     energy: 80,
     attention: 70,
