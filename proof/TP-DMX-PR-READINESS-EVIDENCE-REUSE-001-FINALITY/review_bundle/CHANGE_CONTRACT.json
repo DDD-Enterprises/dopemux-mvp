@@ -1,0 +1,39 @@
+{
+  "findings": [],
+  "max_lane": "L3",
+  "model_audit_required": true,
+  "model_call_budget": {
+    "auditor": 1,
+    "implementer": 1,
+    "operator_gate": true
+  },
+  "notes": [],
+  "paths": [
+    {
+      "lane": "L3",
+      "path": ".github/workflows/ci-complete.yml"
+    },
+    {
+      "lane": "L3",
+      "path": ".github/workflows/embedded-audit.yml"
+    },
+    {
+      "lane": "L3",
+      "path": ".github/workflows/pr-steward-recheck.yml"
+    },
+    {
+      "lane": "L3",
+      "path": ".github/workflows/preflight.yml"
+    },
+    {
+      "lane": "L2",
+      "path": "tests/ci/test_embedded_audit_trigger_policy.py"
+    },
+    {
+      "lane": "L2",
+      "path": "tests/ci/test_pr_readiness_evidence_reuse.py"
+    }
+  ],
+  "proof_only": false,
+  "status": "PASS"
+}
