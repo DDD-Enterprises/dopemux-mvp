@@ -1,0 +1,165 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/governed_execution/aggregate_return_envelope.v1.schema.json",
+  "title": "Governed Execution Contract v2 - AggregateReturnEnvelope",
+  "description": "The team lead's single aggregate return for a MacroPacket. Referential only: refs and digests, never a copy of evidence. authority is const NONE and is_canonical_truth is const false: aggregation cannot mint PASS, READY or DONE.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "dopemux.governed_execution.aggregate_return_envelope.v1"
+    },
+    "macro_id": { "type": "string", "minLength": 1 },
+    "macro_status": { "$ref": "enums.v1.schema.json#/definitions/macro_status" },
+    "workstreams": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "workstream_id": { "type": "string", "minLength": 1 },
+          "status": { "$ref": "enums.v1.schema.json#/definitions/workstream_status" },
+          "subject_sha": {
+            "oneOf": [
+              { "$ref": "enums.v1.schema.json#/definitions/git_oid" },
+              { "const": "NONE" }
+            ]
+          },
+          "return_ref": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": { "type": "string", "minLength": 1 },
+              "sha256": { "$ref": "enums.v1.schema.json#/definitions/sha256" }
+            },
+            "required": ["path", "sha256"]
+          }
+        },
+        "required": ["workstream_id", "status", "subject_sha", "return_ref"]
+      }
+    },
+    "join_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "join_id": { "type": "string", "minLength": 1 },
+          "join_type": { "$ref": "enums.v1.schema.json#/definitions/join_type" },
+          "satisfied": { "type": "boolean" },
+          "affected_workstreams": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "unaffected_workstreams": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          }
+        },
+        "required": ["join_id", "join_type", "satisfied", "affected_workstreams", "unaffected_workstreams"]
+      }
+    },
+    "model_calls": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "team_lead": { "type": "integer", "minimum": 0 },
+        "implementers": { "type": "integer", "minimum": 0 },
+        "auditors": { "type": "integer", "minimum": 0 },
+        "total": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["team_lead", "implementers", "auditors", "total"]
+    },
+    "mcp": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "preflight": { "$ref": "enums.v1.schema.json#/definitions/preflight_class" },
+        "servers_used": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "tools_used": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "domain_reads": { "type": "integer", "minimum": 0 },
+        "domain_writes": { "type": "integer", "minimum": 0 },
+        "fallbacks": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "task_orchestrator_state": { "type": "string", "minLength": 1 }
+      },
+      "required": [
+        "preflight",
+        "servers_used",
+        "tools_used",
+        "domain_reads",
+        "domain_writes",
+        "fallbacks",
+        "task_orchestrator_state"
+      ]
+    },
+    "github_mutations": { "type": "integer", "minimum": 0 },
+    "drift_classifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "subject": { "type": "string", "minLength": 1 },
+          "class": { "$ref": "enums.v1.schema.json#/definitions/drift_class" }
+        },
+        "required": ["subject", "class"]
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "residual_risks": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "operator_gates_used": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "operator_gates_needed": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "merge_authorized": { "const": false },
+    "activation_authorized": { "const": false },
+    "next_legal_action": { "type": "string", "minLength": 1 },
+    "authority": { "const": "NONE" },
+    "is_canonical_truth": { "const": false }
+  },
+  "required": [
+    "schema_version",
+    "macro_id",
+    "macro_status",
+    "workstreams",
+    "join_results",
+    "model_calls",
+    "mcp",
+    "github_mutations",
+    "drift_classifications",
+    "blockers",
+    "unknowns",
+    "residual_risks",
+    "operator_gates_used",
+    "operator_gates_needed",
+    "merge_authorized",
+    "activation_authorized",
+    "next_legal_action",
+    "authority",
+    "is_canonical_truth"
+  ]
+}

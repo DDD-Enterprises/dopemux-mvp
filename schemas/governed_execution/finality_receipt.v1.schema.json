@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/governed_execution/finality_receipt.v1.schema.json",
+  "title": "Governed Execution Contract v2 - FinalityReceipt",
+  "description": "Records the terminal state of an independently audited Task Packet. exact_head_equality is always true: the schema cannot itself compare audited_head and finality_head, so equality is asserted by the test suite, not by this schema. merge_authorized and activation_authorized are always false: a FinalityReceipt never carries merge or activation authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "dopemux.governed_execution.finality_receipt.v1"
+    },
+    "packet_id": { "type": "string", "minLength": 1 },
+    "macro_id": { "type": "string", "minLength": 1 },
+    "freeze_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "enums.v1.schema.json#/definitions/sha256" }
+      },
+      "required": ["path", "sha256"]
+    },
+    "audit_receipt_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "enums.v1.schema.json#/definitions/sha256" }
+      },
+      "required": ["path", "sha256"]
+    },
+    "audited_head": { "$ref": "enums.v1.schema.json#/definitions/git_oid" },
+    "finality_head": { "$ref": "enums.v1.schema.json#/definitions/git_oid" },
+    "exact_head_equality": {
+      "const": true,
+      "description": "audited_head must equal finality_head. Asserted by the test suite, not by this schema."
+    },
+    "audit_verdict": { "$ref": "enums.v1.schema.json#/definitions/audit_verdict" },
+    "pr_ref": { "type": "string", "minLength": 1 },
+    "steward_readiness": { "$ref": "enums.v1.schema.json#/definitions/steward_readiness" },
+    "merge_authorized": { "const": false },
+    "activation_authorized": { "const": false },
+    "recorded_at": { "$ref": "enums.v1.schema.json#/definitions/rfc3339_utc" },
+    "authority": { "const": "NONE" }
+  },
+  "required": [
+    "schema_version",
+    "packet_id",
+    "macro_id",
+    "freeze_ref",
+    "audit_receipt_ref",
+    "audited_head",
+    "finality_head",
+    "exact_head_equality",
+    "audit_verdict",
+    "pr_ref",
+    "steward_readiness",
+    "merge_authorized",
+    "activation_authorized",
+    "recorded_at",
+    "authority"
+  ]
+}
