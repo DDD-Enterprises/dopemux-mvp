@@ -1,0 +1,159 @@
+{
+  "artifact_selection": "SUPPORTED_WITH_LIMITS",
+  "base_head_proof_binding": "SUPPORTED_WITH_LIMITS",
+  "blocking_findings": [],
+  "candidate_execution_isolation": "SUPPORTED",
+  "ci_noop_behavior": "SUPPORTED",
+  "exact_head_binding": "SUPPORTED",
+  "native_verdict": "PASS_WITH_RISKS",
+  "newer_red_dominance": "SUPPORTED_WITH_LIMITS",
+  "nonblocking_risks": [
+    {
+      "detail": "Candidate collection requires run.status == 'completed' before an artifact is considered (trusted_run with successful=False). If the newest trusted embedded-audit run for the exact head failed and is then re-run (status in_progress, prior-attempt artifact still listed), that run is skipped as untrusted and the next-newest completed run \u2014 possibly an older green \u2014 is selected and dispatched. This is spec-conformant ('trusted completed') and test_newer_untrusted_run_is_not_considered[status=in_progress] enshrines it. The window is transient and self-correcting: when the re-run completes, pr-steward.yml's own workflow_run trigger on embedded-audit completion re-publishes from the newest run, and Steward re-verifies proof bytes and live head. Not attacker-mintable without write access.",
+      "evidence_refs": [
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/FILES/.github/workflows/pr-steward-recheck.yml:111-118",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/FILES/.github/workflows/pr-steward-recheck.yml:200-224",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/FILES/tests/ci/test_pr_readiness_evidence_reuse.py:419-434",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/EVIDENCE/UNCHANGED_CONTEXT/.github/workflows/pr-steward.yml:3-6"
+      ],
+      "id": "R1",
+      "severity": "low",
+      "title": "In-progress re-run attempt of a newer failed trusted audit opens a transient older-green window"
+    },
+    {
+      "detail": "Selection enumerates exact-name artifacts, not audit runs. A newer trusted audit run that failed before its upload step (or whose artifact expired/was deleted) contributes no candidate, so an older green artifact would be selected. Bounded: embedded-audit uploads with if: always()/if-no-files-found: error, and Steward cannot publish any commit status without a downloaded PROOF.json (publish step gated on steps.proof.outputs.head_sha), so no red status exists to be resurrected over in that case. No run_attempt/run_started_at binding is done in the recheck; Steward's per-run exact-single-artifact selector fails closed on duplicates.",
+      "evidence_refs": [
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/FILES/.github/workflows/pr-steward-recheck.yml:194-216",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/FILES/.github/workflows/embedded-audit.yml:381-387",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/EVIDENCE/UNCHANGED_CONTEXT/.github/workflows/pr-steward.yml:312-320",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/EVIDENCE/UNCHANGED_CONTEXT/.github/workflows/pr-steward.yml:372-373"
+      ],
+      "id": "R2",
+      "severity": "low",
+      "title": "Newer-red dominance is artifact-keyed; artifact-less or expired newer failed runs are invisible"
+    },
+    {
+      "detail": "Steward binds live head and base from one live PR read and passes expected_base_sha to enforce_independent_audit_proof. However independent_audit_errors applies expected_base_sha only on the not-required (L0/L1) branch via _not_required_proof_errors/contract binding, and verify_workflow_artifact (which checks provenance.change_contract.base_sha == expected_base_sha) is only invoked by pr-steward.yml when embedded_audit.required is False. For L2/L3 executed proofs, a proof classified at base B1 can be reused by a review-triggered Steward run after main advanced to B2 without failing closed at Steward. Head binding is fully enforced at every layer (artifact name, PROOF head_sha, live head, pre-dispatch re-check). Downstream, verify_pr_steward_readiness_artifact requires receipt.base_sha == live PR base at merge time, so base drift after the Steward run still fails closed. This is pre-existing unchanged-context behaviour, not introduced by the candidate, but the candidate makes the drift window reachable in practice (previously ready_for_review re-audited at current base). A follow-on should enforce contract.base_sha for executed proofs too.",
+      "evidence_refs": [
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/EVIDENCE/UNCHANGED_CONTEXT/.github/workflows/pr-steward.yml:249-256",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/EVIDENCE/UNCHANGED_CONTEXT/.github/workflows/pr-steward.yml:284-310",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/EVIDENCE/UNCHANGED_CONTEXT/scripts/audit/run_embedded_audit.py:72-133",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/EVIDENCE/UNCHANGED_CONTEXT/scripts/audit/run_embedded_audit.py:206-211",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/EVIDENCE/UNCHANGED_CONTEXT/src/dopemux_pr_merge_specialist/workflow_artifact_verifier.py:417-422",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/EVIDENCE/UNCHANGED_CONTEXT/src/dopemux_pr_merge_specialist/workflow_artifact_verifier.py:321-354"
+      ],
+      "id": "R3",
+      "severity": "medium",
+      "title": "Base-SHA binding of reused executed (model-required) proofs is not enforced inline by Steward; evidence reuse widens the audit-to-Steward base-drift window"
+    },
+    {
+      "detail": "Per GitHub semantics (not verifiable from INPUT), pull_request_review runs the workflow file from the PR merge ref and, for fork PRs, with a read-only GITHUB_TOKEN. Consequences: (a) a same-repo PR author with write access could alter pr-steward-recheck.yml in their branch and exercise actions:write \u2014 no escalation beyond what write access already grants (manual dispatch of pr-steward.yml), no secrets beyond github.token, and Steward independently re-validates run identity, proof bytes and live head; (b) ordinary reviews on fork PRs make the dispatch POST fail 403 -> red recheck run (fail closed, noisy); fork PR readiness relies on ready_for_review (pull_request_target, base context) or manual dispatch.",
+      "evidence_refs": [
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/FILES/.github/workflows/pr-steward-recheck.yml:3-21",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/FILES/.github/workflows/pr-steward-recheck.yml:234-238",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/EVIDENCE/UNCHANGED_CONTEXT/.github/workflows/pr-steward.yml:69-149"
+      ],
+      "id": "R4",
+      "severity": "low",
+      "title": "pull_request_review execution context: PR-merge-ref workflow definition for same-repo PRs; read-only token for fork PRs"
+    },
+    {
+      "detail": "Recheck concurrency cancels only rechecks per PR. pr-steward.yml (unchanged) is triggered both by embedded-audit completion and by recheck dispatch, and publishes the readiness status with last-writer-wins. Two Steward runs harvesting live review state seconds apart could finish out of order. Pre-existing; the candidate increases Steward trigger frequency (every review submitted/dismissed, every ready_for_review, every green PR CI completion).",
+      "evidence_refs": [
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/FILES/.github/workflows/pr-steward-recheck.yml:23-25",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/EVIDENCE/UNCHANGED_CONTEXT/.github/workflows/pr-steward.yml:1-12",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/EVIDENCE/UNCHANGED_CONTEXT/.github/workflows/pr-steward.yml:372-405"
+      ],
+      "id": "R5",
+      "severity": "low",
+      "title": "Steward has no concurrency group; recheck-dispatched and audit-completion Steward runs for the same head can interleave (status last-writer-wins)"
+    },
+    {
+      "detail": "Every Complete-CI completion (push to main, merge_group, dispatch) now produces a cheap green RECHECK_NOOP run (repaired from red). A successful PR CI completion that lands before embedded-audit has uploaded its artifact yields RECHECK_BLOCKED ('no reusable trusted audit artifact'), a red run in the Actions tab that is not attached to the PR; the subsequent audit completion triggers Steward directly, so readiness is not lost. gemini-dispatch.yml (unchanged, out of scope) still starts a run on every review submitted whose dispatch job is skipped by the @gemini-cli + collaborator + sender=User gate; model spend is zero.",
+      "evidence_refs": [
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/FILES/.github/workflows/pr-steward-recheck.yml:8-10",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/FILES/.github/workflows/pr-steward-recheck.yml:139-148",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/FILES/.github/workflows/pr-steward-recheck.yml:216",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/EVIDENCE/UNCHANGED_CONTEXT/.github/workflows/gemini-dispatch.yml:7-9",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/EVIDENCE/UNCHANGED_CONTEXT/.github/workflows/gemini-dispatch.yml:49-60"
+      ],
+      "id": "R6",
+      "severity": "low",
+      "title": "Residual trigger noise: recheck run per Complete-CI completion and red recheck when PR CI finishes before the audit artifact exists; gemini-dispatch skipped-job runs persist"
+    },
+    {
+      "detail": "The script relies on gh --paginate --slurp (gh >= 2.45), the GITHUB_REPOSITORY_ID default env var, and datetime.fromisoformat accepting '+00:00' offsets (Python >= 3.11). Absence of any yields CalledProcessError/KeyError/ValueError -> job failure with no dispatch, silently disabling reuse until fixed.",
+      "evidence_refs": [
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/FILES/.github/workflows/pr-steward-recheck.yml:61-69",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/FILES/.github/workflows/pr-steward-recheck.yml:81-91"
+      ],
+      "id": "R7",
+      "severity": "low",
+      "title": "Runner/tooling assumptions fail closed but untested live"
+    },
+    {
+      "detail": "Tests do exec the actual inline script from the YAML with only subprocess.run replaced, and cover A/B/C plus stale/wrong-head/failed/expired/ambiguous/API-error/race cases; the RED log proves the A/B/C tests fail against H1. Limits: the gemini gate test re-implements the Actions expression engine in Python (non-authoritative); execute() catches only SystemExit/ValueError/CalledProcessError, so KeyError/TypeError shapes (e.g. an artifact with name None reaching PROOF_NAME.fullmatch) are not characterised, though they fail closed via traceback; the 126/551 pass counts are operator-recorded, not re-executed here.",
+      "evidence_refs": [
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/FILES/tests/ci/test_pr_readiness_evidence_reuse.py:112-175",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/FILES/tests/ci/test_pr_readiness_evidence_reuse.py:454-479",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/FILES/.github/workflows/pr-steward-recheck.yml:227-230",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/EVIDENCE/AUDIT_REPAIR_RED_TESTS.log:62-75",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/EVIDENCE/AUDIT_REPAIR_PARENT_FOCUSED.log:3"
+      ],
+      "id": "R8",
+      "severity": "low",
+      "title": "Test limits: expression-engine emulation, uncharacterised exception classes, no live execution"
+    }
+  ],
+  "permission_scope": "SUPPORTED",
+  "publication_eligible": true,
+  "race_safety": "SUPPORTED_WITH_LIMITS",
+  "response_claimed_model": "claude-opus-5",
+  "review_reclassification": "SUPPORTED",
+  "route_and_independence_limitations": "Single-pass, non-interactive audit by one Claude Opus 5 session using read-only file tools (Read/Grep/Glob) on the frozen INPUT packet only; no shell, test execution, hash recomputation, network, web, prior-session or memory access. GitHub Actions/API semantics (event payload shapes, pull_request_review execution context, artifact/attempt behaviour, workflow_dispatch via GITHUB_TOKEN) were judged from built-in knowledge and not externally validated. Model-level independence from the implementers holds (initial implementation Codex gpt-6-astra; repair plan Kimi K3 applied by a deterministic local writer), but the prior H1 audit was also a Claude Opus 5 session, so cross-audit independence is limited to session isolation and the instruction to treat H1 as historical; H1 risks were re-derived from the repaired bytes rather than carried forward. Packet manifests, logs and pass counts were assembled by the operator pipeline and accepted as recorded.",
+  "scope_integrity": "SUPPORTED",
+  "steward_authority": "SUPPORTED",
+  "subject_commit": "bece0d38ab255c7020643179cbe2edf3712afb9d",
+  "subject_sha256": "5b2ffca829b9f1eb41c9299f54fd4279639eb583a5c44c630a9d4e0360691d07",
+  "test_adequacy": "SUPPORTED_WITH_LIMITS",
+  "trigger_economy": "SUPPORTED_WITH_LIMITS",
+  "unknowns": [
+    {
+      "detail": "Event payload shapes (workflow_run.pull_requests population and base.repo.id presence, pull_request_review payload without top-level number), artifacts API name filter/expiry fields, workflow lookup by filename, GITHUB_TOKEN with actions:write creating a workflow_dispatch that actually starts pr-steward.yml, and the pull_request_review execution context/token for fork PRs are assessed from auditor knowledge only. The first draft-PR CI run is the bounded runtime qualification.",
+      "evidence_refs": [
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/EVIDENCE/FIRST_AUDIT_REPAIR_CLOSURE.json:10-18",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/FILES/.github/workflows/pr-steward-recheck.yml:119-238"
+      ],
+      "id": "U1",
+      "title": "Live GitHub runtime behaviour of the new recheck workflow is unexercised"
+    },
+    {
+      "detail": "This route had read-only file tools and no shell; SHA256SUMS, SUBJECT_DIGEST subject_sha256, the 126 focused / 551 relevant pass counts, pre-commit, gitleaks and workflow-syntax results are accepted as recorded. Six-path scope was verified by reading NET_PATCH_FROM_MAIN.diff (exactly six file headers, one-line trigger hunks for the three expensive workflows) and comparing SUBJECT/FILES bytes against the diff content; AUDIT_REPAIR_PATCH.diff blob ids match the net diff.",
+      "evidence_refs": [
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/MANIFEST/SHA256SUMS.txt:1-35",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/NET_PATCH_FROM_MAIN.diff:1-32",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/NET_PATCH_FROM_MAIN.diff:275-304",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/AUDIT_REPAIR_PATCH.diff:1-4"
+      ],
+      "id": "U2",
+      "title": "Hashes, subject digest and test counts not recomputed by this auditor"
+    },
+    {
+      "detail": "Whether 'PR Steward / final readiness' and 'ci-summary' are required checks determines the practical impact of any status race or reuse-window issue; ci-complete.yml and pr-steward.yml both annotate this as UNKNOWN/out of scope.",
+      "evidence_refs": [
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/FILES/.github/workflows/ci-complete.yml:622-623",
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/EVIDENCE/UNCHANGED_CONTEXT/.github/workflows/pr-steward.yml:27-32"
+      ],
+      "id": "U3",
+      "title": "Branch-protection truth (required status contexts) is outside INPUT"
+    },
+    {
+      "detail": "scripts/governance/validate_change_contract.py is not included; whether lane/model_audit_required could change when only the base advances (affecting the materiality of R3) cannot be assessed.",
+      "evidence_refs": [
+        "INPUT/SMP-DMX-PR-READINESS-EVIDENCE-REUSE-REPAIRED-FREEZE-001/SUBJECT/FILES/.github/workflows/embedded-audit.yml:153-176"
+      ],
+      "id": "U4",
+      "title": "Sensitivity of the trusted change-contract classification to base drift is not in INPUT"
+    }
+  ]
+}
