@@ -1,0 +1,41 @@
+{
+  "audit": {
+    "effort": "high",
+    "independence": "PROPOSED",
+    "model": "LIVE_INDEPENDENT_SELECTOR",
+    "rationale": "",
+    "required": true,
+    "runner": "LIVE_INDEPENDENT_RUNNER"
+  },
+  "fallback": {
+    "model": null,
+    "runner": null,
+    "trigger": null
+  },
+  "justification": {
+    "alternatives_considered": [
+      {
+        "disposition": "rejected",
+        "reason": "",
+        "route": "shell/local"
+      }
+    ],
+    "cost_latency_tradeoff": "",
+    "evidence": [],
+    "why_effort": "",
+    "why_model": "",
+    "why_runner": ""
+  },
+  "packet_id": "TP-EXAMPLE-001",
+  "risk_lane": "L2",
+  "schema_version": "1.0",
+  "selection": {
+    "agent_role": "implementer",
+    "custom_agent": null,
+    "effort": "high",
+    "model": "LIVE_SELECTOR",
+    "runner": "codex",
+    "runner_availability": "PROVEN"
+  },
+  "stage": "implementation"
+}

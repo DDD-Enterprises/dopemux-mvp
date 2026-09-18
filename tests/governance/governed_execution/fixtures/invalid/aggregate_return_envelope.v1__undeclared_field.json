@@ -1,0 +1,60 @@
+{
+  "schema_version": "dopemux.governed_execution.aggregate_return_envelope.v1",
+  "macro_id": "MACRO-DMX-GOVERNED-EXECUTION-CONTRACT-V2-001",
+  "macro_status": "PASS_IMPLEMENTATION_PROGRAM_COMPLETE",
+  "workstreams": [
+    {
+      "workstream_id": "W01",
+      "status": "PASS",
+      "subject_sha": "bbbbbbbb22222222cccccccc33333333dddddddd",
+      "return_ref": {
+        "path": "proof/W01/RETURN.json",
+        "sha256": "1111111122222222333333334444444455555555666666667777777788888888"
+      }
+    }
+  ],
+  "join_results": [
+    {
+      "join_id": "J01",
+      "join_type": "ALL_REQUIRED",
+      "satisfied": true,
+      "affected_workstreams": [
+        "W01"
+      ],
+      "unaffected_workstreams": []
+    }
+  ],
+  "model_calls": {
+    "team_lead": 0,
+    "implementers": 0,
+    "auditors": 0,
+    "total": 0
+  },
+  "mcp": {
+    "preflight": "NOT_RUN",
+    "servers_used": [],
+    "tools_used": [],
+    "domain_reads": 0,
+    "domain_writes": 0,
+    "fallbacks": [],
+    "task_orchestrator_state": "NOT_RUN"
+  },
+  "github_mutations": 0,
+  "drift_classifications": [
+    {
+      "subject": "W01",
+      "class": "IDENTICAL"
+    }
+  ],
+  "blockers": [],
+  "unknowns": [],
+  "residual_risks": [],
+  "operator_gates_used": [],
+  "operator_gates_needed": [],
+  "merge_authorized": false,
+  "activation_authorized": false,
+  "next_legal_action": "RETURN_TO_TEAM_LEAD",
+  "authority": "NONE",
+  "is_canonical_truth": false,
+  "unexpected_field": "undeclared-value"
+}

@@ -6,6 +6,13 @@ Investigations and redesigns must follow .claude/PRIMER.md
 These instructions apply to all GitHub Copilot contributions in this repository.
 Goal: produce deterministic, auditable changes that match Dopemux architecture and operator workflow.
 
+<!-- CONTROL_TOWER_ENTRY_BEGIN -->
+## Control Tower Supervision
+
+For supervised engineering packets, follow [Control Tower Packet Workflow](../AGENTS.md#control-tower-packet-workflow).
+Read the installed kit contracts and project configuration through that entry point.
+<!-- CONTROL_TOWER_ENTRY_END -->
+
 ## Quick Reference
 
 ### Build, Test, and Lint Commands
