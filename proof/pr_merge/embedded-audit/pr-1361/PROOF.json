@@ -1,0 +1,46 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "opus",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-cli",
+      "runtime_family": "claude-code-cli"
+    },
+    "implementer": {
+      "model": "gpt-6-astra+moonshotai/kimi-k3",
+      "model_family": "openai-gpt+moonshot-kimi",
+      "runner": "supervised-multi-runner",
+      "runtime_family": "codex-cli+command-code+shell-local"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "auditor_model": "opus",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": "claude --print --model opus --effort high --restricted --disable-slash-commands --no-session-persistence --permission-mode manual --permission-prompts none --output-format json --json-schema NATIVE_RESULT_SCHEMA.json against frozen subject 5b2ffca829b9f1eb41c9299f54fd4279639eb583a5c44c630a9d4e0360691d07",
+    "remaining_risks": [
+      "R1: In-progress re-run attempt of a newer failed trusted audit opens a transient older-green window",
+      "R2: Newer-red dominance is artifact-keyed; artifact-less or expired newer failed runs are invisible",
+      "R3: Base-SHA binding of reused executed (model-required) proofs is not enforced inline by Steward; evidence reuse widens the audit-to-Steward base-drift window",
+      "R4: pull_request_review execution context: PR-merge-ref workflow definition for same-repo PRs; read-only token for fork PRs",
+      "R5: Steward has no concurrency group; recheck-dispatched and audit-completion Steward runs for the same head can interleave (status last-writer-wins)",
+      "R6: Residual trigger noise: recheck run per Complete-CI completion and red recheck when PR CI finishes before the audit artifact exists; gemini-dispatch skipped-job runs persist",
+      "R7: Runner/tooling assumptions fail closed but untested live",
+      "R8: Test limits: expression-engine emulation, uncharacterised exception classes, no live execution",
+      "U1: PARTIALLY_CLOSED_PARENT_RUNTIME_EVIDENCE \u2014 Official GitHub docs and live DDD-Enterprises/dopemux-mvp runs confirm workflow_run completion/conclusion behavior, Actions:write workflow dispatch permission, artifact metadata fields, GITHUB_REPOSITORY_ID, and actual Complete-CI/artifact shapes. New recheck workflow itself remains unexecuted until draft publication.",
+      "U4: PRESERVED_FOLLOWUP_BASE_DRIFT_REQUALIFICATION \u2014 Executed-proof base-SHA enforcement is pre-existing and outside this packet allowlist. Current main equals audited base. Publication/reuse must reharvest on base movement; separate L3 follow-up should enforce executed proof base_sha directly."
+    ],
+    "report_path": "proof/TP-DMX-PR-READINESS-EVIDENCE-REUSE-001-FINALITY/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "generated_at": "2026-09-18T13:20:23.391704+00:00",
+  "head_sha": "bece0d38ab255c7020643179cbe2edf3712afb9d",
+  "pr_number": 1361,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}
